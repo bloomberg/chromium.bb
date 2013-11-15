@@ -54,9 +54,9 @@ PassRefPtr<SVGAltGlyphElement> SVGAltGlyphElement::create(Document& document)
     return adoptRef(new SVGAltGlyphElement(document));
 }
 
-void SVGAltGlyphElement::setGlyphRef(const AtomicString&, ExceptionState& exceptionState)
+void SVGAltGlyphElement::setGlyphRef(const AtomicString&, ExceptionState& es)
 {
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 const AtomicString& SVGAltGlyphElement::glyphRef() const
@@ -64,9 +64,9 @@ const AtomicString& SVGAltGlyphElement::glyphRef() const
     return fastGetAttribute(SVGNames::glyphRefAttr);
 }
 
-void SVGAltGlyphElement::setFormat(const AtomicString&, ExceptionState& exceptionState)
+void SVGAltGlyphElement::setFormat(const AtomicString&, ExceptionState& es)
 {
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 const AtomicString& SVGAltGlyphElement::format() const

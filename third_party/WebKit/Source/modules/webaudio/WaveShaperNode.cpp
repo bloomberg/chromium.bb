@@ -56,7 +56,7 @@ Float32Array* WaveShaperNode::curve()
     return waveShaperProcessor()->curve();
 }
 
-void WaveShaperNode::setOversample(const String& type, ExceptionState& exceptionState)
+void WaveShaperNode::setOversample(const String& type, ExceptionState& es)
 {
     ASSERT(isMainThread());
 
@@ -72,7 +72,7 @@ void WaveShaperNode::setOversample(const String& type, ExceptionState& exception
     } else if (type == "4x") {
         waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample4x);
     } else {
-        exceptionState.throwDOMException(
+        es.throwDOMException(
             InvalidStateError,
             ExceptionMessages::failedToSet(
                 "oversample",

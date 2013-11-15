@@ -245,26 +245,26 @@ private:
     Vector<const char*, 10> m_messages;
 };
 
-bool getArrayBufferView(const Dictionary& raw, const char* propertyName, RefPtr<ArrayBufferView>& buffer, const ExceptionContext& context, ExceptionState& exceptionState)
+bool getArrayBufferView(const Dictionary& raw, const char* propertyName, RefPtr<ArrayBufferView>& buffer, const ExceptionContext& context, ExceptionState& es)
 {
     if (!raw.get(propertyName, buffer) || !buffer) {
-        exceptionState.throwTypeError(context.toString(propertyName, "Missing or not a ArrayBufferView"));
+        es.throwTypeError(context.toString(propertyName, "Missing or not a ArrayBufferView"));
         return false;
     }
     return true;
 }
 
-bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<Uint8Array>& array, const ExceptionContext& context, ExceptionState& exceptionState)
+bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<Uint8Array>& array, const ExceptionContext& context, ExceptionState& es)
 {
     if (!raw.get(propertyName, array) || !array) {
-        exceptionState.throwTypeError(context.toString(propertyName, "Missing or not a Uint8Array"));
+        es.throwTypeError(context.toString(propertyName, "Missing or not a Uint8Array"));
         return false;
     }
     return true;
 }
 
 // Gets an integer according to WebIDL's [EnforceRange].
-bool getOptionalInteger(const Dictionary& raw, const char* propertyName, bool& hasProperty, double& value, double minValue, double maxValue, const ExceptionContext& context, ExceptionState& exceptionState)
+bool getOptionalInteger(const Dictionary& raw, const char* propertyName, bool& hasProperty, double& value, double minValue, double maxValue, const ExceptionContext& context, ExceptionState& es)
 {
     double number;
     bool ok = raw.get(propertyName, number, hasProperty);
@@ -273,14 +273,14 @@ bool getOptionalInteger(const Dictionary& raw, const char* propertyName, bool& h
         return true;
 
     if (!ok || std::isnan(number)) {
-        exceptionState.throwTypeError(context.toString(propertyName, "Is not a number"));
+        es.throwTypeError(context.toString(propertyName, "Is not a number"));
         return false;
     }
 
     number = trunc(number);
 
     if (std::isinf(number) || number < minValue || number > maxValue) {
-        exceptionState.throwTypeError(context.toString(propertyName, "Outside of numeric range"));
+        es.throwTypeError(context.toString(propertyName, "Outside of numeric range"));
         return false;
     }
 
@@ -288,56 +288,56 @@ bool getOptionalInteger(const Dictionary& raw, const char* propertyName, bool& h
     return true;
 }
 
-bool getInteger(const Dictionary& raw, const char* propertyName, double& value, double minValue, double maxValue, const ExceptionContext& context, ExceptionState& exceptionState)
+bool getInteger(const Dictionary& raw, const char* propertyName, double& value, double minValue, double maxValue, const ExceptionContext& context, ExceptionState& es)
 {
     bool hasProperty;
-    if (!getOptionalInteger(raw, propertyName, hasProperty, value, minValue, maxValue, context, exceptionState))
+    if (!getOptionalInteger(raw, propertyName, hasProperty, value, minValue, maxValue, context, es))
         return false;
 
     if (!hasProperty) {
-        exceptionState.throwTypeError(context.toString(propertyName, "Missing required property"));
+        es.throwTypeError(context.toString(propertyName, "Missing required property"));
         return false;
     }
 
     return true;
 }
 
-bool getUint32(const Dictionary& raw, const char* propertyName, uint32_t& value, const ExceptionContext& context, ExceptionState& exceptionState)
+bool getUint32(const Dictionary& raw, const char* propertyName, uint32_t& value, const ExceptionContext& context, ExceptionState& es)
 {
     double number;
-    if (!getInteger(raw, propertyName, number, 0, 0xFFFFFFFF, context, exceptionState))
+    if (!getInteger(raw, propertyName, number, 0, 0xFFFFFFFF, context, es))
         return false;
     value = number;
     return true;
 }
 
-bool getUint16(const Dictionary& raw, const char* propertyName, uint16_t& value, const ExceptionContext& context, ExceptionState& exceptionState)
+bool getUint16(const Dictionary& raw, const char* propertyName, uint16_t& value, const ExceptionContext& context, ExceptionState& es)
 {
     double number;
-    if (!getInteger(raw, propertyName, number, 0, 0xFFFF, context, exceptionState))
+    if (!getInteger(raw, propertyName, number, 0, 0xFFFF, context, es))
         return false;
     value = number;
     return true;
 }
 
-bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& hasValue, uint32_t& value, const ExceptionContext& context, ExceptionState& exceptionState)
+bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& hasValue, uint32_t& value, const ExceptionContext& context, ExceptionState& es)
 {
     double number;
-    if (!getOptionalInteger(raw, propertyName, hasValue, number, 0, 0xFFFFFFFF, context, exceptionState))
+    if (!getOptionalInteger(raw, propertyName, hasValue, number, 0, 0xFFFFFFFF, context, es))
         return false;
     if (hasValue)
         value = number;
     return true;
 }
 
-bool parseAesCbcParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& exceptionState)
+bool parseAesCbcParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
     RefPtr<ArrayBufferView> iv;
-    if (!getArrayBufferView(raw, "iv", iv, context, exceptionState))
+    if (!getArrayBufferView(raw, "iv", iv, context, es))
         return false;
 
     if (iv->byteLength() != 16) {
-        exceptionState.throwTypeError(context.toString("iv", "Must be 16 bytes"));
+        es.throwTypeError(context.toString("iv", "Must be 16 bytes"));
         return false;
     }
 
@@ -345,10 +345,10 @@ bool parseAesCbcParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
     return true;
 }
 
-bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& exceptionState)
+bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
     uint16_t length;
-    if (!getUint16(raw, "length", length, context, exceptionState))
+    if (!getUint16(raw, "length", length, context, es))
         return false;
 
     params = adoptPtr(new blink::WebCryptoAesKeyGenParams(length));
@@ -357,90 +357,90 @@ bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorith
 
 bool normalizeAlgorithm(const Dictionary&, AlgorithmOperation, blink::WebCryptoAlgorithm&, ExceptionContext, ExceptionState&);
 
-bool parseHash(const Dictionary& raw, blink::WebCryptoAlgorithm& hash, ExceptionContext context, ExceptionState& exceptionState)
+bool parseHash(const Dictionary& raw, blink::WebCryptoAlgorithm& hash, ExceptionContext context, ExceptionState& es)
 {
     Dictionary rawHash;
     if (!raw.get("hash", rawHash)) {
-        exceptionState.throwTypeError(context.toString("hash", "Missing or not a dictionary"));
+        es.throwTypeError(context.toString("hash", "Missing or not a dictionary"));
         return false;
     }
 
     context.add("hash");
-    return normalizeAlgorithm(rawHash, Digest, hash, context, exceptionState);
+    return normalizeAlgorithm(rawHash, Digest, hash, context, es);
 }
 
-bool parseHmacParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& exceptionState)
+bool parseHmacParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
     blink::WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, exceptionState))
+    if (!parseHash(raw, hash, context, es))
         return false;
 
     params = adoptPtr(new blink::WebCryptoHmacParams(hash));
     return true;
 }
 
-bool parseHmacKeyParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& exceptionState)
+bool parseHmacKeyParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
     blink::WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, exceptionState))
+    if (!parseHash(raw, hash, context, es))
         return false;
 
     bool hasLength;
     uint32_t length = 0;
-    if (!getOptionalUint32(raw, "length", hasLength, length, context, exceptionState))
+    if (!getOptionalUint32(raw, "length", hasLength, length, context, es))
         return false;
 
     params = adoptPtr(new blink::WebCryptoHmacKeyParams(hash, hasLength, length));
     return true;
 }
 
-bool parseRsaSsaParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& exceptionState)
+bool parseRsaSsaParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
     blink::WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, exceptionState))
+    if (!parseHash(raw, hash, context, es))
         return false;
 
     params = adoptPtr(new blink::WebCryptoRsaSsaParams(hash));
     return true;
 }
 
-bool parseRsaKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& exceptionState)
+bool parseRsaKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
     uint32_t modulusLength;
-    if (!getUint32(raw, "modulusLength", modulusLength, context, exceptionState))
+    if (!getUint32(raw, "modulusLength", modulusLength, context, es))
         return false;
 
     RefPtr<Uint8Array> publicExponent;
-    if (!getUint8Array(raw, "publicExponent", publicExponent, context, exceptionState))
+    if (!getUint8Array(raw, "publicExponent", publicExponent, context, es))
         return false;
 
     params = adoptPtr(new blink::WebCryptoRsaKeyGenParams(modulusLength, static_cast<const unsigned char*>(publicExponent->baseAddress()), publicExponent->byteLength()));
     return true;
 }
 
-bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParamsType type, OwnPtr<blink::WebCryptoAlgorithmParams>& params, ExceptionContext& context, ExceptionState& exceptionState)
+bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParamsType type, OwnPtr<blink::WebCryptoAlgorithmParams>& params, ExceptionContext& context, ExceptionState& es)
 {
     switch (type) {
     case blink::WebCryptoAlgorithmParamsTypeNone:
         return true;
     case blink::WebCryptoAlgorithmParamsTypeAesCbcParams:
         context.add("AesCbcParams");
-        return parseAesCbcParams(raw, params, context, exceptionState);
+        return parseAesCbcParams(raw, params, context, es);
     case blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
         context.add("AesKeyGenParams");
-        return parseAesKeyGenParams(raw, params, context, exceptionState);
+        return parseAesKeyGenParams(raw, params, context, es);
     case blink::WebCryptoAlgorithmParamsTypeHmacParams:
         context.add("HmacParams");
-        return parseHmacParams(raw, params, context, exceptionState);
+        return parseHmacParams(raw, params, context, es);
     case blink::WebCryptoAlgorithmParamsTypeHmacKeyParams:
         context.add("HmacKeyParams");
-        return parseHmacKeyParams(raw, params, context, exceptionState);
+        return parseHmacKeyParams(raw, params, context, es);
     case blink::WebCryptoAlgorithmParamsTypeRsaSsaParams:
         context.add("RsaSSaParams");
-        return parseRsaSsaParams(raw, params, context, exceptionState);
+        return parseRsaSsaParams(raw, params, context, es);
     case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
         context.add("RsaKeyGenParams");
-        return parseRsaKeyGenParams(raw, params, context, exceptionState);
+        return parseRsaKeyGenParams(raw, params, context, es);
     case blink::WebCryptoAlgorithmParamsTypeAesGcmParams:
     case blink::WebCryptoAlgorithmParamsTypeRsaOaepParams:
         // TODO
@@ -451,22 +451,22 @@ bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParams
     return false;
 }
 
-const AlgorithmInfo* algorithmInfo(const Dictionary& raw, const ExceptionContext& context, ExceptionState& exceptionState)
+const AlgorithmInfo* algorithmInfo(const Dictionary& raw, const ExceptionContext& context, ExceptionState& es)
 {
     if (!raw.isObject()) {
-        exceptionState.throwTypeError(context.toString("Not an object"));
+        es.throwTypeError(context.toString("Not an object"));
         return 0;
     }
 
     String algorithmName;
     if (!raw.get("name", algorithmName)) {
-        exceptionState.throwTypeError(context.toString("name", "Missing or not a string"));
+        es.throwTypeError(context.toString("name", "Missing or not a string"));
         return 0;
     }
 
     const AlgorithmInfo* info = AlgorithmRegistry::instance().lookupAlgorithmByName(algorithmName);
     if (!info) {
-        exceptionState.throwDOMException(NotSupportedError, context.toString("Unrecognized algorithm name"));
+        es.throwDOMException(NotSupportedError, context.toString("Unrecognized algorithm name"));
         return 0;
     }
 
@@ -475,24 +475,24 @@ const AlgorithmInfo* algorithmInfo(const Dictionary& raw, const ExceptionContext
 
 // This implementation corresponds with:
 // http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
-bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryptoAlgorithm& algorithm, ExceptionContext context, ExceptionState& exceptionState)
+bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryptoAlgorithm& algorithm, ExceptionContext context, ExceptionState& es)
 {
     context.add("Algorithm");
 
-    const AlgorithmInfo* info = algorithmInfo(raw, context, exceptionState);
+    const AlgorithmInfo* info = algorithmInfo(raw, context, es);
     if (!info)
         return false;
 
     context.add(info->algorithmName);
 
     if (info->paramsForOperation[op] == UnsupportedOp) {
-        exceptionState.throwDOMException(NotSupportedError, context.toString("Unsupported operation"));
+        es.throwDOMException(NotSupportedError, context.toString("Unsupported operation"));
         return false;
     }
 
     blink::WebCryptoAlgorithmParamsType paramsType = static_cast<blink::WebCryptoAlgorithmParamsType>(info->paramsForOperation[op]);
     OwnPtr<blink::WebCryptoAlgorithmParams> params;
-    if (!parseAlgorithmParams(raw, paramsType, params, context, exceptionState))
+    if (!parseAlgorithmParams(raw, paramsType, params, context, es))
         return false;
 
     algorithm = blink::WebCryptoAlgorithm(info->algorithmId, params.release());
@@ -501,9 +501,9 @@ bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::Web
 
 } // namespace
 
-bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryptoAlgorithm& algorithm, ExceptionState& exceptionState)
+bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryptoAlgorithm& algorithm, ExceptionState& es)
 {
-    return normalizeAlgorithm(raw, op, algorithm, ExceptionContext(op), exceptionState);
+    return normalizeAlgorithm(raw, op, algorithm, ExceptionContext(op), es);
 }
 
 const char* algorithmIdToName(blink::WebCryptoAlgorithmId id)

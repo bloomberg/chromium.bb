@@ -97,12 +97,12 @@ PassRefPtr<Node> Text::mergeNextSiblingNodesIfPossible()
     return NodeTraversal::nextPostOrder(*this);
 }
 
-PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& exceptionState)
+PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& es)
 {
     // IndexSizeError: Raised if the specified offset is negative or greater than
     // the number of 16-bit units in data.
     if (offset > length()) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("splitText", "Text", "The offset " + String::number(offset) + " is larger than the Text node's length."));
+        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("splitText", "Text", "The offset " + String::number(offset) + " is larger than the Text node's length."));
         return 0;
     }
 
@@ -114,8 +114,8 @@ PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& exceptionState
     didModifyData(oldStr);
 
     if (parentNode())
-        parentNode()->insertBefore(newText.get(), nextSibling(), exceptionState);
-    if (exceptionState.hadException())
+        parentNode()->insertBefore(newText.get(), nextSibling(), es);
+    if (es.hadException())
         return 0;
 
     if (renderer())

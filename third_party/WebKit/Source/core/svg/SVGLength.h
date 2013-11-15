@@ -114,13 +114,13 @@ public:
             return *this;
 
         SVGLength length;
-        TrackExceptionState exceptionState;
+        TrackExceptionState es;
 
         if (fromType == LengthTypePercentage || toType == LengthTypePercentage) {
             float fromPercent = from.valueAsPercentage() * 100;
             float toPercent = valueAsPercentage() * 100;
-            length.newValueSpecifiedUnits(LengthTypePercentage, WebCore::blend(fromPercent, toPercent, progress), exceptionState);
-            if (exceptionState.hadException())
+            length.newValueSpecifiedUnits(LengthTypePercentage, WebCore::blend(fromPercent, toPercent, progress), es);
+            if (es.hadException())
                 return SVGLength();
             return length;
         }
@@ -129,10 +129,10 @@ public:
             float fromValue = from.valueInSpecifiedUnits();
             float toValue = valueInSpecifiedUnits();
             if (isZero())
-                length.newValueSpecifiedUnits(fromType, WebCore::blend(fromValue, toValue, progress), exceptionState);
+                length.newValueSpecifiedUnits(fromType, WebCore::blend(fromValue, toValue, progress), es);
             else
-                length.newValueSpecifiedUnits(toType, WebCore::blend(fromValue, toValue, progress), exceptionState);
-            if (exceptionState.hadException())
+                length.newValueSpecifiedUnits(toType, WebCore::blend(fromValue, toValue, progress), es);
+            if (es.hadException())
                 return SVGLength();
             return length;
         }
@@ -141,18 +141,18 @@ public:
         ASSERT(!from.isRelative());
 
         SVGLengthContext nonRelativeLengthContext(0);
-        float fromValueInUserUnits = nonRelativeLengthContext.convertValueToUserUnits(from.valueInSpecifiedUnits(), from.unitMode(), fromType, exceptionState);
-        if (exceptionState.hadException())
+        float fromValueInUserUnits = nonRelativeLengthContext.convertValueToUserUnits(from.valueInSpecifiedUnits(), from.unitMode(), fromType, es);
+        if (es.hadException())
             return SVGLength();
 
-        float fromValue = nonRelativeLengthContext.convertValueFromUserUnits(fromValueInUserUnits, unitMode(), toType, exceptionState);
-        if (exceptionState.hadException())
+        float fromValue = nonRelativeLengthContext.convertValueFromUserUnits(fromValueInUserUnits, unitMode(), toType, es);
+        if (es.hadException())
             return SVGLength();
 
         float toValue = valueInSpecifiedUnits();
-        length.newValueSpecifiedUnits(toType, WebCore::blend(fromValue, toValue, progress), exceptionState);
+        length.newValueSpecifiedUnits(toType, WebCore::blend(fromValue, toValue, progress), es);
 
-        if (exceptionState.hadException())
+        if (es.hadException())
             return SVGLength();
         return length;
     }

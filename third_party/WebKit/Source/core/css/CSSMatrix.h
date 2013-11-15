@@ -41,9 +41,9 @@ public:
     {
         return adoptRef(new CSSMatrix(m));
     }
-    static PassRefPtr<CSSMatrix> create(const String& s, ExceptionState& exceptionState)
+    static PassRefPtr<CSSMatrix> create(const String& s, ExceptionState& es)
     {
-        return adoptRef(new CSSMatrix(s, exceptionState));
+        return adoptRef(new CSSMatrix(s, es));
     }
 
     double a() const { return m_matrix.a(); }

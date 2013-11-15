@@ -496,7 +496,7 @@ PassRefPtr<Element> SelectorQuery::queryFirst(Node& rootNode) const
     return m_selectors.queryFirst(rootNode);
 }
 
-SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, const Document& document, ExceptionState& exceptionState)
+SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, const Document& document, ExceptionState& es)
 {
     HashMap<AtomicString, OwnPtr<SelectorQuery> >::iterator it = m_entries.find(selectors);
     if (it != m_entries.end())
@@ -507,13 +507,13 @@ SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, const Docu
     parser.parseSelector(selectors, selectorList);
 
     if (!selectorList.first()) {
-        exceptionState.throwDOMException(SyntaxError, "Failed to execute query: '" + selectors + "' is not a valid selector.");
+        es.throwDOMException(SyntaxError, "Failed to execute query: '" + selectors + "' is not a valid selector.");
         return 0;
     }
 
     // throw a NamespaceError if the selector includes any namespace prefixes.
     if (selectorList.selectorsNeedNamespaceResolution()) {
-        exceptionState.throwDOMException(NamespaceError, "Failed to execute query: '" + selectors + "' contains namespaces, which are not supported.");
+        es.throwDOMException(NamespaceError, "Failed to execute query: '" + selectors + "' contains namespaces, which are not supported.");
         return 0;
     }
 

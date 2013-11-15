@@ -622,12 +622,12 @@ double CSSPrimitiveValue::computeLengthDouble(const RenderStyle* style, const Re
     return result * multiplier;
 }
 
-void CSSPrimitiveValue::setFloatValue(unsigned short, double, ExceptionState& exceptionState)
+void CSSPrimitiveValue::setFloatValue(unsigned short, double, ExceptionState& es)
 {
     // Keeping values immutable makes optimizations easier and allows sharing of the primitive value objects.
     // No other engine supports mutating style through this API. Computed style is always read-only anyway.
     // Supporting setter would require making primitive value copy-on-write and taking care of style invalidation.
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(unsigned short unitType)
@@ -682,12 +682,12 @@ double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(unsigned short u
     return factor;
 }
 
-double CSSPrimitiveValue::getDoubleValue(unsigned short unitType, ExceptionState& exceptionState) const
+double CSSPrimitiveValue::getDoubleValue(unsigned short unitType, ExceptionState& es) const
 {
     double result = 0;
     bool success = getDoubleValueInternal(static_cast<UnitTypes>(unitType), &result);
     if (!success) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return 0.0;
     }
 
@@ -782,15 +782,15 @@ bool CSSPrimitiveValue::getDoubleValueInternal(UnitTypes requestedUnitType, doub
     return true;
 }
 
-void CSSPrimitiveValue::setStringValue(unsigned short, const String&, ExceptionState& exceptionState)
+void CSSPrimitiveValue::setStringValue(unsigned short, const String&, ExceptionState& es)
 {
     // Keeping values immutable makes optimizations easier and allows sharing of the primitive value objects.
     // No other engine supports mutating style through this API. Computed style is always read-only anyway.
     // Supporting setter would require making primitive value copy-on-write and taking care of style invalidation.
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
-String CSSPrimitiveValue::getStringValue(ExceptionState& exceptionState) const
+String CSSPrimitiveValue::getStringValue(ExceptionState& es) const
 {
     switch (m_primitiveUnitType) {
         case CSS_STRING:
@@ -803,7 +803,7 @@ String CSSPrimitiveValue::getStringValue(ExceptionState& exceptionState) const
         case CSS_PROPERTY_ID:
             return propertyName(m_value.propertyID);
         default:
-            exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+            es.throwUninformativeAndGenericDOMException(InvalidAccessError);
             break;
     }
 
@@ -829,40 +829,40 @@ String CSSPrimitiveValue::getStringValue() const
     return String();
 }
 
-Counter* CSSPrimitiveValue::getCounterValue(ExceptionState& exceptionState) const
+Counter* CSSPrimitiveValue::getCounterValue(ExceptionState& es) const
 {
     if (m_primitiveUnitType != CSS_COUNTER) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return 0;
     }
 
     return m_value.counter;
 }
 
-Rect* CSSPrimitiveValue::getRectValue(ExceptionState& exceptionState) const
+Rect* CSSPrimitiveValue::getRectValue(ExceptionState& es) const
 {
     if (m_primitiveUnitType != CSS_RECT) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return 0;
     }
 
     return m_value.rect;
 }
 
-Quad* CSSPrimitiveValue::getQuadValue(ExceptionState& exceptionState) const
+Quad* CSSPrimitiveValue::getQuadValue(ExceptionState& es) const
 {
     if (m_primitiveUnitType != CSS_QUAD) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return 0;
     }
 
     return m_value.quad;
 }
 
-PassRefPtr<RGBColor> CSSPrimitiveValue::getRGBColorValue(ExceptionState& exceptionState) const
+PassRefPtr<RGBColor> CSSPrimitiveValue::getRGBColorValue(ExceptionState& es) const
 {
     if (m_primitiveUnitType != CSS_RGBCOLOR) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return 0;
     }
 
@@ -870,10 +870,10 @@ PassRefPtr<RGBColor> CSSPrimitiveValue::getRGBColorValue(ExceptionState& excepti
     return RGBColor::create(m_value.rgbcolor);
 }
 
-Pair* CSSPrimitiveValue::getPairValue(ExceptionState& exceptionState) const
+Pair* CSSPrimitiveValue::getPairValue(ExceptionState& es) const
 {
     if (m_primitiveUnitType != CSS_PAIR) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return 0;
     }
 

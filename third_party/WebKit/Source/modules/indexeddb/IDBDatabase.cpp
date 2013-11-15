@@ -161,7 +161,7 @@ PassRefPtr<IDBAny> IDBDatabase::version() const
     return IDBAny::create(intVersion);
 }
 
-PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, const Dictionary& options, ExceptionState& exceptionState)
+PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, const Dictionary& options, ExceptionState& es)
 {
     IDBKeyPath keyPath;
     bool autoIncrement = false;
@@ -176,38 +176,38 @@ PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, co
         options.get("autoIncrement", autoIncrement);
     }
 
-    return createObjectStore(name, keyPath, autoIncrement, exceptionState);
+    return createObjectStore(name, keyPath, autoIncrement, es);
 }
 
-PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, const IDBKeyPath& keyPath, bool autoIncrement, ExceptionState& exceptionState)
+PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, const IDBKeyPath& keyPath, bool autoIncrement, ExceptionState& es)
 {
     IDB_TRACE("IDBDatabase::createObjectStore");
     blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBCreateObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
-        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
+        es.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
         return 0;
     }
     if (m_versionChangeTransaction->isFinished()) {
-        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
     if (!m_versionChangeTransaction->isActive()) {
-        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
 
     if (containsObjectStore(name)) {
-        exceptionState.throwDOMException(ConstraintError, "An object store with the specified name already exists.");
+        es.throwDOMException(ConstraintError, "An object store with the specified name already exists.");
         return 0;
     }
 
     if (!keyPath.isNull() && !keyPath.isValid()) {
-        exceptionState.throwDOMException(SyntaxError, "The keyPath option is not a valid key path.");
+        es.throwDOMException(SyntaxError, "The keyPath option is not a valid key path.");
         return 0;
     }
 
     if (autoIncrement && ((keyPath.type() == IDBKeyPath::StringType && keyPath.string().isEmpty()) || keyPath.type() == IDBKeyPath::ArrayType)) {
-        exceptionState.throwDOMException(InvalidAccessError, "The autoIncrement option was set but the keyPath option was empty or an array.");
+        es.throwDOMException(InvalidAccessError, "The autoIncrement option was set but the keyPath option was empty or an array.");
         return 0;
     }
 
@@ -223,26 +223,26 @@ PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, co
     return objectStore.release();
 }
 
-void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& exceptionState)
+void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& es)
 {
     IDB_TRACE("IDBDatabase::deleteObjectStore");
     blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
-        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
+        es.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
         return;
     }
     if (m_versionChangeTransaction->isFinished()) {
-        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return;
     }
     if (!m_versionChangeTransaction->isActive()) {
-        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return;
     }
 
     int64_t objectStoreId = findObjectStoreId(name);
     if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
-        exceptionState.throwDOMException(NotFoundError, "The specified object store was not found.");
+        es.throwDOMException(NotFoundError, "The specified object store was not found.");
         return;
     }
 
@@ -251,26 +251,26 @@ void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& exceptio
     m_metadata.objectStores.remove(objectStoreId);
 }
 
-PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, const Vector<String>& scope, const String& modeString, ExceptionState& exceptionState)
+PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, const Vector<String>& scope, const String& modeString, ExceptionState& es)
 {
     IDB_TRACE("IDBDatabase::transaction");
     blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
     if (!scope.size()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The storeNames parameter was empty.");
+        es.throwDOMException(InvalidAccessError, "The storeNames parameter was empty.");
         return 0;
     }
 
-    IndexedDB::TransactionMode mode = IDBTransaction::stringToMode(modeString, exceptionState);
-    if (exceptionState.hadException())
+    IndexedDB::TransactionMode mode = IDBTransaction::stringToMode(modeString, es);
+    if (es.hadException())
         return 0;
 
     if (m_versionChangeTransaction) {
-        exceptionState.throwDOMException(InvalidStateError, "A version change transaction is running.");
+        es.throwDOMException(InvalidStateError, "A version change transaction is running.");
         return 0;
     }
 
     if (m_closePending) {
-        exceptionState.throwDOMException(InvalidStateError, "The database connection is closing.");
+        es.throwDOMException(InvalidStateError, "The database connection is closing.");
         return 0;
     }
 
@@ -278,7 +278,7 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, c
     for (size_t i = 0; i < scope.size(); ++i) {
         int64_t objectStoreId = findObjectStoreId(scope[i]);
         if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
-            exceptionState.throwDOMException(NotFoundError, "One of the specified object stores was not found.");
+            es.throwDOMException(NotFoundError, "One of the specified object stores was not found.");
             return 0;
         }
         objectStoreIds.append(objectStoreId);
@@ -291,11 +291,11 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, c
     return transaction.release();
 }
 
-PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, const String& storeName, const String& mode, ExceptionState& exceptionState)
+PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, const String& storeName, const String& mode, ExceptionState& es)
 {
     RefPtr<DOMStringList> storeNames = DOMStringList::create();
     storeNames->append(storeName);
-    return transaction(context, storeNames, mode, exceptionState);
+    return transaction(context, storeNames, mode, es);
 }
 
 void IDBDatabase::forceClose()

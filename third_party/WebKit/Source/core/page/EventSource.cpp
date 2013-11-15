@@ -72,16 +72,16 @@ inline EventSource::EventSource(ExecutionContext* context, const KURL& url, cons
     eventSourceInit.get("withCredentials", m_withCredentials);
 }
 
-PassRefPtr<EventSource> EventSource::create(ExecutionContext* context, const String& url, const Dictionary& eventSourceInit, ExceptionState& exceptionState)
+PassRefPtr<EventSource> EventSource::create(ExecutionContext* context, const String& url, const Dictionary& eventSourceInit, ExceptionState& es)
 {
     if (url.isEmpty()) {
-        exceptionState.throwDOMException(SyntaxError, "Cannot open an EventSource to an empty URL.");
+        es.throwDOMException(SyntaxError, "Cannot open an EventSource to an empty URL.");
         return 0;
     }
 
     KURL fullURL = context->completeURL(url);
     if (!fullURL.isValid()) {
-        exceptionState.throwDOMException(SyntaxError, "Cannot open an EventSource to '" + url + "'. The URL is invalid.");
+        es.throwDOMException(SyntaxError, "Cannot open an EventSource to '" + url + "'. The URL is invalid.");
         return 0;
     }
 
@@ -93,7 +93,7 @@ PassRefPtr<EventSource> EventSource::create(ExecutionContext* context, const Str
     }
     if (!shouldBypassMainWorldContentSecurityPolicy && !context->contentSecurityPolicy()->allowConnectToSource(fullURL)) {
         // We can safely expose the URL to JavaScript, as this exception is generate synchronously before any redirects take place.
-        exceptionState.throwSecurityError("Refused to connect to '" + fullURL.elidedString() + "' because it violates the document's Content Security Policy.");
+        es.throwSecurityError("Refused to connect to '" + fullURL.elidedString() + "' because it violates the document's Content Security Policy.");
         return 0;
     }
 

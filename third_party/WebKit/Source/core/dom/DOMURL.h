@@ -45,18 +45,18 @@ class URLRegistrable;
 class DOMURL FINAL : public ScriptWrappable, public DOMURLUtils, public RefCounted<DOMURL> {
 
 public:
-    static PassRefPtr<DOMURL> create(const String& url, ExceptionState& exceptionState)
+    static PassRefPtr<DOMURL> create(const String& url, ExceptionState& es)
     {
-        return adoptRef(new DOMURL(url, blankURL(), exceptionState));
+        return adoptRef(new DOMURL(url, blankURL(), es));
     }
-    static PassRefPtr<DOMURL> create(const String& url, const String& base, ExceptionState& exceptionState)
+    static PassRefPtr<DOMURL> create(const String& url, const String& base, ExceptionState& es)
     {
-        return adoptRef(new DOMURL(url, KURL(KURL(), base), exceptionState));
+        return adoptRef(new DOMURL(url, KURL(KURL(), base), es));
     }
-    static PassRefPtr<DOMURL> create(const String& url, PassRefPtr<DOMURL> base, ExceptionState& exceptionState)
+    static PassRefPtr<DOMURL> create(const String& url, PassRefPtr<DOMURL> base, ExceptionState& es)
     {
         ASSERT(base);
-        return adoptRef(new DOMURL(url, base->m_url, exceptionState));
+        return adoptRef(new DOMURL(url, base->m_url, es));
     }
 
     static String createObjectURL(ExecutionContext*, Blob*);

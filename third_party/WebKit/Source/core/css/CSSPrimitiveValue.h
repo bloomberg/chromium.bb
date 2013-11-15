@@ -267,15 +267,15 @@ public:
     double getDoubleValue() const;
 
     void setFloatValue(unsigned short unitType, double floatValue, ExceptionState&);
-    float getFloatValue(unsigned short unitType, ExceptionState& exceptionState) const { return getValue<float>(unitType, exceptionState); }
+    float getFloatValue(unsigned short unitType, ExceptionState& es) const { return getValue<float>(unitType, es); }
     float getFloatValue(unsigned short unitType) const { return getValue<float>(unitType); }
     float getFloatValue() const { return getValue<float>(); }
 
-    int getIntValue(unsigned short unitType, ExceptionState& exceptionState) const { return getValue<int>(unitType, exceptionState); }
+    int getIntValue(unsigned short unitType, ExceptionState& es) const { return getValue<int>(unitType, es); }
     int getIntValue(unsigned short unitType) const { return getValue<int>(unitType); }
     int getIntValue() const { return getValue<int>(); }
 
-    template<typename T> inline T getValue(unsigned short unitType, ExceptionState& exceptionState) const { return clampTo<T>(getDoubleValue(unitType, exceptionState)); }
+    template<typename T> inline T getValue(unsigned short unitType, ExceptionState& es) const { return clampTo<T>(getDoubleValue(unitType, es)); }
     template<typename T> inline T getValue(unsigned short unitType) const { return clampTo<T>(getDoubleValue(unitType)); }
     template<typename T> inline T getValue() const { return clampTo<T>(getDoubleValue()); }
 

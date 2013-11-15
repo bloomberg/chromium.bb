@@ -128,10 +128,10 @@ void AudioBuffer::releaseMemory()
     m_channels.clear();
 }
 
-PassRefPtr<Float32Array> AudioBuffer::getChannelData(unsigned channelIndex, ExceptionState& exceptionState)
+PassRefPtr<Float32Array> AudioBuffer::getChannelData(unsigned channelIndex, ExceptionState& es)
 {
     if (channelIndex >= m_channels.size()) {
-        exceptionState.throwDOMException(
+        es.throwDOMException(
             IndexSizeError,
             ExceptionMessages::failedToExecute(
                 "getChannelData",

@@ -328,13 +328,13 @@ static const String& nullToSpace(const String& s)
     return s.isNull() ? space : s;
 }
 
-Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const String& text, ExceptionState& exceptionState)
+Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const String& text, ExceptionState& es)
 {
     Vector<RefPtr<FontFace> > matchedFonts;
 
     Font font;
     if (!resolveFontStyle(fontString, font)) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return matchedFonts;
     }
 
@@ -346,11 +346,11 @@ Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const Str
     return matchedFonts;
 }
 
-ScriptPromise FontFaceSet::load(const String& fontString, const String& text, ExceptionState& exceptionState)
+ScriptPromise FontFaceSet::load(const String& fontString, const String& text, ExceptionState& es)
 {
     Font font;
     if (!resolveFontStyle(fontString, font)) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return ScriptPromise();
     }
 
@@ -368,11 +368,11 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String& text, Ex
     return promise;
 }
 
-bool FontFaceSet::check(const String& fontString, const String& text, ExceptionState& exceptionState)
+bool FontFaceSet::check(const String& fontString, const String& text, ExceptionState& es)
 {
     Font font;
     if (!resolveFontStyle(fontString, font)) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return false;
     }
 

@@ -158,13 +158,13 @@ private:
 
 } // namespace
 
-PassRefPtr<File> DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, ExceptionState& exceptionState)
+PassRefPtr<File> DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, ExceptionState& es)
 {
     KURL fileSystemURL = createFileSystemURL(fileEntry);
     RefPtr<CreateFileHelper::CreateFileResult> result(CreateFileHelper::CreateFileResult::create());
     fileSystem()->createSnapshotFileAndReadMetadata(fileSystemURL, CreateFileHelper::create(result, fileEntry->name(), fileSystemURL, type()));
     if (result->m_failed) {
-        exceptionState.throwUninformativeAndGenericDOMException(result->m_code);
+        es.throwUninformativeAndGenericDOMException(result->m_code);
         return 0;
     }
     return result->m_file;
@@ -236,7 +236,7 @@ private:
 
 }
 
-PassRefPtr<FileWriterSync> DOMFileSystemSync::createWriter(const FileEntrySync* fileEntry, ExceptionState& exceptionState)
+PassRefPtr<FileWriterSync> DOMFileSystemSync::createWriter(const FileEntrySync* fileEntry, ExceptionState& es)
 {
     ASSERT(fileEntry);
 
@@ -252,7 +252,7 @@ PassRefPtr<FileWriterSync> DOMFileSystemSync::createWriter(const FileEntrySync* 
         ASSERT(!successCallback->fileWriterBase());
         FileError::ErrorCode errorCode = errorCallback->error()->code();
         if (errorCode)
-            FileError::throwDOMException(exceptionState, errorCode);
+            FileError::throwDOMException(es, errorCode);
         return 0;
     }
     ASSERT(successCallback->fileWriterBase());

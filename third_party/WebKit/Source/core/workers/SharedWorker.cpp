@@ -52,7 +52,7 @@ inline SharedWorker::SharedWorker(ExecutionContext* context)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const String& url, const String& name, ExceptionState& exceptionState)
+PassRefPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const String& url, const String& name, ExceptionState& es)
 {
     ASSERT(isMainThread());
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
@@ -71,16 +71,16 @@ PassRefPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const S
     // We don't currently support nested workers, so workers can only be created from documents.
     Document* document = toDocument(context);
     if (!document->securityOrigin()->canAccessSharedWorkers()) {
-        exceptionState.throwSecurityError("Failed to create 'SharedWorker': access to shared workers is denied to origin '" + document->securityOrigin()->toString() + "'.");
+        es.throwSecurityError("Failed to create 'SharedWorker': access to shared workers is denied to origin '" + document->securityOrigin()->toString() + "'.");
         return 0;
     }
 
-    KURL scriptURL = worker->resolveURL(url, exceptionState);
+    KURL scriptURL = worker->resolveURL(url, es);
     if (scriptURL.isEmpty())
         return 0;
 
     if (document->page() && document->page()->sharedWorkerRepositoryClient())
-        document->page()->sharedWorkerRepositoryClient()->connect(worker.get(), remotePort.release(), scriptURL, name, exceptionState);
+        document->page()->sharedWorkerRepositoryClient()->connect(worker.get(), remotePort.release(), scriptURL, name, es);
 
     return worker.release();
 }

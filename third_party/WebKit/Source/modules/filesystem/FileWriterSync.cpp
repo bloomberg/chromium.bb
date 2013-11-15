@@ -41,12 +41,12 @@
 
 namespace WebCore {
 
-void FileWriterSync::write(Blob* data, ExceptionState& exceptionState)
+void FileWriterSync::write(Blob* data, ExceptionState& es)
 {
     ASSERT(writer());
     ASSERT(m_complete);
     if (!data) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::failedToExecute("write", "FileReaderSync", FileError::typeMismatchErrorMessage));
+        es.throwDOMException(TypeMismatchError, ExceptionMessages::failedToExecute("write", "FileReaderSync", FileError::typeMismatchErrorMessage));
         return;
     }
 
@@ -54,7 +54,7 @@ void FileWriterSync::write(Blob* data, ExceptionState& exceptionState)
     writer()->write(position(), data->uuid());
     ASSERT(m_complete);
     if (m_error) {
-        FileError::throwDOMException(exceptionState, m_error);
+        FileError::throwDOMException(es, m_error);
         return;
     }
     setPosition(position() + data->size());
@@ -62,26 +62,26 @@ void FileWriterSync::write(Blob* data, ExceptionState& exceptionState)
         setLength(position());
 }
 
-void FileWriterSync::seek(long long position, ExceptionState& exceptionState)
+void FileWriterSync::seek(long long position, ExceptionState& es)
 {
     ASSERT(writer());
     ASSERT(m_complete);
     seekInternal(position);
 }
 
-void FileWriterSync::truncate(long long offset, ExceptionState& exceptionState)
+void FileWriterSync::truncate(long long offset, ExceptionState& es)
 {
     ASSERT(writer());
     ASSERT(m_complete);
     if (offset < 0) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("truncate", "FileWriterSync", FileError::invalidStateErrorMessage));
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("truncate", "FileWriterSync", FileError::invalidStateErrorMessage));
         return;
     }
     prepareForWrite();
     writer()->truncate(offset);
     ASSERT(m_complete);
     if (m_error) {
-        FileError::throwDOMException(exceptionState, m_error);
+        FileError::throwDOMException(es, m_error);
         return;
     }
     if (offset < position())

@@ -58,7 +58,7 @@ MIDIOutput::~MIDIOutput()
 {
 }
 
-void MIDIOutput::send(Uint8Array* array, double timestamp, ExceptionState& exceptionState)
+void MIDIOutput::send(Uint8Array* array, double timestamp, ExceptionState& es)
 {
     if (!array)
         return;
@@ -69,37 +69,37 @@ void MIDIOutput::send(Uint8Array* array, double timestamp, ExceptionState& excep
     // Filter out System Exclusive messages if we're not allowed.
     // FIXME: implement more extensive filtering.
     if (length > 0 && data[0] >= 0xf0 && !m_access->sysExEnabled()) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("send", "MIDIOutput", "permission to send system exclusive messages is denied."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("send", "MIDIOutput", "permission to send system exclusive messages is denied."));
         return;
     }
 
     m_access->sendMIDIData(m_portIndex, data, length, timestamp);
 }
 
-void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, ExceptionState& exceptionState)
+void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, ExceptionState& es)
 {
     RefPtr<Uint8Array> array = Uint8Array::create(unsignedData.size());
 
     for (size_t i = 0; i < unsignedData.size(); ++i) {
         if (unsignedData[i] > 0xff) {
-            exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+            es.throwUninformativeAndGenericDOMException(InvalidStateError);
             return;
         }
         unsigned char value = unsignedData[i] & 0xff;
         array->set(i, value);
     }
 
-    send(array.get(), timestamp, exceptionState);
+    send(array.get(), timestamp, es);
 }
 
-void MIDIOutput::send(Uint8Array* data, ExceptionState& exceptionState)
+void MIDIOutput::send(Uint8Array* data, ExceptionState& es)
 {
-    send(data, 0, exceptionState);
+    send(data, 0, es);
 }
 
-void MIDIOutput::send(Vector<unsigned> unsignedData, ExceptionState& exceptionState)
+void MIDIOutput::send(Vector<unsigned> unsignedData, ExceptionState& es)
 {
-    send(unsignedData, 0, exceptionState);
+    send(unsignedData, 0, es);
 }
 
 } // namespace WebCore

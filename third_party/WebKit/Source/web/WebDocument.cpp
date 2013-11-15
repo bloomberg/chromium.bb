@@ -244,9 +244,9 @@ WebElement WebDocument::fullScreenElement() const
 
 WebDOMEvent WebDocument::createEvent(const WebString& eventType)
 {
-    TrackExceptionState exceptionState;
-    WebDOMEvent event(unwrap<Document>()->createEvent(eventType, exceptionState));
-    if (exceptionState.hadException())
+    TrackExceptionState es;
+    WebDOMEvent event(unwrap<Document>()->createEvent(eventType, es));
+    if (es.hadException())
         return WebDOMEvent();
     return event;
 }
@@ -258,9 +258,9 @@ WebReferrerPolicy WebDocument::referrerPolicy() const
 
 WebElement WebDocument::createElement(const WebString& tagName)
 {
-    TrackExceptionState exceptionState;
-    WebElement element(unwrap<Document>()->createElement(tagName, exceptionState));
-    if (exceptionState.hadException())
+    TrackExceptionState es;
+    WebElement element(unwrap<Document>()->createElement(tagName, es));
+    if (es.hadException())
         return WebElement();
     return element;
 }
@@ -297,10 +297,10 @@ v8::Handle<v8::Value> WebDocument::registerEmbedderCustomElement(const WebString
 {
     Document* document = unwrap<Document>();
     Dictionary dictionary(options, v8::Isolate::GetCurrent());
-    TrackExceptionState exceptionState;
-    ScriptValue constructor = document->registerElement(ScriptState::current(), name, dictionary, exceptionState, CustomElement::EmbedderNames);
-    ec = exceptionState.code();
-    if (exceptionState.hadException())
+    TrackExceptionState es;
+    ScriptValue constructor = document->registerElement(ScriptState::current(), name, dictionary, es, CustomElement::EmbedderNames);
+    ec = es.code();
+    if (es.hadException())
         return v8::Handle<v8::Value>();
     return constructor.v8Value();
 }

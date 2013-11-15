@@ -62,13 +62,13 @@ WebKitSourceBuffer::~WebKitSourceBuffer()
 {
 }
 
-PassRefPtr<TimeRanges> WebKitSourceBuffer::buffered(ExceptionState& exceptionState) const
+PassRefPtr<TimeRanges> WebKitSourceBuffer::buffered(ExceptionState& es) const
 {
     // Section 3.1 buffered attribute steps.
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     if (isRemoved()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return 0;
     }
 
@@ -81,13 +81,13 @@ double WebKitSourceBuffer::timestampOffset() const
     return m_timestampOffset;
 }
 
-void WebKitSourceBuffer::setTimestampOffset(double offset, ExceptionState& exceptionState)
+void WebKitSourceBuffer::setTimestampOffset(double offset, ExceptionState& es)
 {
     // Section 3.1 timestampOffset attribute setter steps.
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     if (isRemoved()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
@@ -99,7 +99,7 @@ void WebKitSourceBuffer::setTimestampOffset(double offset, ExceptionState& excep
     // 5. If this object is waiting for the end of a media segment to be appended, then throw an InvalidStateError
     // and abort these steps.
     if (!m_webSourceBuffer->setTimestampOffset(offset)) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
@@ -107,7 +107,7 @@ void WebKitSourceBuffer::setTimestampOffset(double offset, ExceptionState& excep
     m_timestampOffset = offset;
 }
 
-void WebKitSourceBuffer::append(PassRefPtr<Uint8Array> data, ExceptionState& exceptionState)
+void WebKitSourceBuffer::append(PassRefPtr<Uint8Array> data, ExceptionState& es)
 {
     TRACE_EVENT0("media", "SourceBuffer::append");
 
@@ -116,14 +116,14 @@ void WebKitSourceBuffer::append(PassRefPtr<Uint8Array> data, ExceptionState& exc
 
     // 2. If data is null then throw an InvalidAccessError exception and abort these steps.
     if (!data) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
     }
 
     // 3. If this object has been removed from the sourceBuffers attribute of media source then throw
     //    an InvalidStateError exception and abort these steps.
     if (isRemoved()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
@@ -136,7 +136,7 @@ void WebKitSourceBuffer::append(PassRefPtr<Uint8Array> data, ExceptionState& exc
     m_webSourceBuffer->append(data->data(), data->length());
 }
 
-void WebKitSourceBuffer::abort(ExceptionState& exceptionState)
+void WebKitSourceBuffer::abort(ExceptionState& es)
 {
     // Section 3.2 abort() method steps.
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source
@@ -144,7 +144,7 @@ void WebKitSourceBuffer::abort(ExceptionState& exceptionState)
     // 2. If the readyState attribute of the parent media source is not in the "open" state
     //    then throw an InvalidStateError exception and abort these steps.
     if (isRemoved() || !m_source->isOpen()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 

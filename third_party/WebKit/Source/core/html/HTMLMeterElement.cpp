@@ -75,10 +75,10 @@ double HTMLMeterElement::min() const
     return parseToDoubleForNumberType(getAttribute(minAttr), 0);
 }
 
-void HTMLMeterElement::setMin(double min, ExceptionState& exceptionState)
+void HTMLMeterElement::setMin(double min, ExceptionState& es)
 {
     if (!std::isfinite(min)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
     setAttribute(minAttr, String::number(min));
@@ -89,10 +89,10 @@ double HTMLMeterElement::max() const
     return std::max(parseToDoubleForNumberType(getAttribute(maxAttr), std::max(1.0, min())), min());
 }
 
-void HTMLMeterElement::setMax(double max, ExceptionState& exceptionState)
+void HTMLMeterElement::setMax(double max, ExceptionState& es)
 {
     if (!std::isfinite(max)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
     setAttribute(maxAttr, String::number(max));
@@ -104,10 +104,10 @@ double HTMLMeterElement::value() const
     return std::min(std::max(value, min()), max());
 }
 
-void HTMLMeterElement::setValue(double value, ExceptionState& exceptionState)
+void HTMLMeterElement::setValue(double value, ExceptionState& es)
 {
     if (!std::isfinite(value)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
     setAttribute(valueAttr, String::number(value));
@@ -119,10 +119,10 @@ double HTMLMeterElement::low() const
     return std::min(std::max(low, min()), max());
 }
 
-void HTMLMeterElement::setLow(double low, ExceptionState& exceptionState)
+void HTMLMeterElement::setLow(double low, ExceptionState& es)
 {
     if (!std::isfinite(low)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
     setAttribute(lowAttr, String::number(low));
@@ -134,10 +134,10 @@ double HTMLMeterElement::high() const
     return std::min(std::max(high, low()), max());
 }
 
-void HTMLMeterElement::setHigh(double high, ExceptionState& exceptionState)
+void HTMLMeterElement::setHigh(double high, ExceptionState& es)
 {
     if (!std::isfinite(high)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
     setAttribute(highAttr, String::number(high));
@@ -149,10 +149,10 @@ double HTMLMeterElement::optimum() const
     return std::min(std::max(optimum, min()), max());
 }
 
-void HTMLMeterElement::setOptimum(double optimum, ExceptionState& exceptionState)
+void HTMLMeterElement::setOptimum(double optimum, ExceptionState& es)
 {
     if (!std::isfinite(optimum)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
     setAttribute(optimumAttr, String::number(optimum));

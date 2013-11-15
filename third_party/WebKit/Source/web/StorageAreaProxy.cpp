@@ -63,70 +63,70 @@ StorageAreaProxy::~StorageAreaProxy()
 {
 }
 
-unsigned StorageAreaProxy::length(ExceptionState& exceptionState, Frame* frame)
+unsigned StorageAreaProxy::length(ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToGet("length", "Storage", "access is denied for this document."));
+        es.throwSecurityError(ExceptionMessages::failedToGet("length", "Storage", "access is denied for this document."));
         return 0;
     }
     return m_storageArea->length();
 }
 
-String StorageAreaProxy::key(unsigned index, ExceptionState& exceptionState, Frame* frame)
+String StorageAreaProxy::key(unsigned index, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("length", "Storage", "access is denied for this document."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("length", "Storage", "access is denied for this document."));
         return String();
     }
     return m_storageArea->key(index);
 }
 
-String StorageAreaProxy::getItem(const String& key, ExceptionState& exceptionState, Frame* frame)
+String StorageAreaProxy::getItem(const String& key, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("getItem", "Storage", "access is denied for this document."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("getItem", "Storage", "access is denied for this document."));
         return String();
     }
     return m_storageArea->getItem(key);
 }
 
-void StorageAreaProxy::setItem(const String& key, const String& value, ExceptionState& exceptionState, Frame* frame)
+void StorageAreaProxy::setItem(const String& key, const String& value, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("setItem", "Storage", "access is denied for this document."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("setItem", "Storage", "access is denied for this document."));
         return;
     }
     blink::WebStorageArea::Result result = blink::WebStorageArea::ResultOK;
     m_storageArea->setItem(key, value, frame->document()->url(), result);
     if (result != blink::WebStorageArea::ResultOK)
-        exceptionState.throwDOMException(QuotaExceededError, ExceptionMessages::failedToExecute("setItem", "Storage", "Setting the value of '" + key + "' exceeded the quota."));
+        es.throwDOMException(QuotaExceededError, ExceptionMessages::failedToExecute("setItem", "Storage", "Setting the value of '" + key + "' exceeded the quota."));
 }
 
-void StorageAreaProxy::removeItem(const String& key, ExceptionState& exceptionState, Frame* frame)
+void StorageAreaProxy::removeItem(const String& key, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("removeItem", "Storage", "access is denied for this document."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("removeItem", "Storage", "access is denied for this document."));
         return;
     }
     m_storageArea->removeItem(key, frame->document()->url());
 }
 
-void StorageAreaProxy::clear(ExceptionState& exceptionState, Frame* frame)
+void StorageAreaProxy::clear(ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("clear", "Storage", "access is denied for this document."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("clear", "Storage", "access is denied for this document."));
         return;
     }
     m_storageArea->clear(frame->document()->url());
 }
 
-bool StorageAreaProxy::contains(const String& key, ExceptionState& exceptionState, Frame* frame)
+bool StorageAreaProxy::contains(const String& key, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("contains", "Storage", "access is denied for this document."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("contains", "Storage", "access is denied for this document."));
         return false;
     }
-    return !getItem(key, exceptionState, frame).isNull();
+    return !getItem(key, es, frame).isNull();
 }
 
 bool StorageAreaProxy::canAccessStorage(Frame* frame)

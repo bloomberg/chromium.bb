@@ -204,7 +204,7 @@ bool HTMLVideoElement::hasAvailableVideoFrame() const
     return player()->hasVideo() && player()->readyState() >= MediaPlayer::HaveCurrentData;
 }
 
-void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& exceptionState)
+void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& es)
 {
     if (isFullscreen())
         return;
@@ -212,7 +212,7 @@ void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& exceptionState)
     // Generate an exception if this isn't called in response to a user gesture, or if the
     // element does not support fullscreen.
     if ((userGestureRequiredForFullscreen() && !UserGestureIndicator::processingUserGesture()) || !supportsFullscreen()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 

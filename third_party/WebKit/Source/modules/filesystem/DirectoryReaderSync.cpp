@@ -48,18 +48,18 @@ DirectoryReaderSync::DirectoryReaderSync(PassRefPtr<DOMFileSystemBase> fileSyste
     ScriptWrappable::init(this);
 }
 
-EntrySyncVector DirectoryReaderSync::readEntries(ExceptionState& exceptionState)
+EntrySyncVector DirectoryReaderSync::readEntries(ExceptionState& es)
 {
     if (!m_hasMoreEntries)
         return EntrySyncVector();
 
     EntriesSyncCallbackHelper helper;
     if (!m_fileSystem->readDirectory(this, m_fullPath, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        exceptionState.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("readEntries", "DirectoryReaderSync"));
+        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("readEntries", "DirectoryReaderSync"));
         setHasMoreEntries(false);
         return EntrySyncVector();
     }
-    return helper.getResult(exceptionState);
+    return helper.getResult(es);
 }
 
 } // namespace

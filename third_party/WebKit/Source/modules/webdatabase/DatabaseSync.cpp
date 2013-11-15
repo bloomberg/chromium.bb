@@ -74,20 +74,20 @@ PassRefPtr<DatabaseBackendSync> DatabaseSync::backend()
     return this;
 }
 
-void DatabaseSync::changeVersion(const String& oldVersion, const String& newVersion, PassRefPtr<SQLTransactionSyncCallback> changeVersionCallback, ExceptionState& exceptionState)
+void DatabaseSync::changeVersion(const String& oldVersion, const String& newVersion, PassRefPtr<SQLTransactionSyncCallback> changeVersionCallback, ExceptionState& es)
 {
     ASSERT(m_executionContext->isContextThread());
 
     if (sqliteDatabase().transactionInProgress()) {
         reportChangeVersionResult(1, SQLError::DATABASE_ERR, 0);
         setLastErrorMessage("unable to changeVersion from within a transaction");
-        exceptionState.throwUninformativeAndGenericDOMException(SQLDatabaseError);
+        es.throwUninformativeAndGenericDOMException(SQLDatabaseError);
         return;
     }
 
     RefPtr<SQLTransactionSync> transaction = SQLTransactionSync::create(this, changeVersionCallback, false);
-    transaction->begin(exceptionState);
-    if (exceptionState.hadException()) {
+    transaction->begin(es);
+    if (es.hadException()) {
         ASSERT(!lastErrorMessage().isEmpty());
         return;
     }
@@ -96,20 +96,20 @@ void DatabaseSync::changeVersion(const String& oldVersion, const String& newVers
     if (!getVersionFromDatabase(actualVersion)) {
         reportChangeVersionResult(2, SQLError::UNKNOWN_ERR, sqliteDatabase().lastError());
         setLastErrorMessage("unable to read the current version", sqliteDatabase().lastError(), sqliteDatabase().lastErrorMsg());
-        exceptionState.throwDOMException(UnknownError, SQLError::unknownErrorMessage);
+        es.throwDOMException(UnknownError, SQLError::unknownErrorMessage);
         return;
     }
 
     if (actualVersion != oldVersion) {
         reportChangeVersionResult(3, SQLError::VERSION_ERR, 0);
         setLastErrorMessage("current version of the database and `oldVersion` argument do not match");
-        exceptionState.throwDOMException(VersionError, SQLError::versionErrorMessage);
+        es.throwDOMException(VersionError, SQLError::versionErrorMessage);
         return;
     }
 
 
-    transaction->execute(exceptionState);
-    if (exceptionState.hadException()) {
+    transaction->execute(es);
+    if (es.hadException()) {
         ASSERT(!lastErrorMessage().isEmpty());
         return;
     }
@@ -117,12 +117,12 @@ void DatabaseSync::changeVersion(const String& oldVersion, const String& newVers
     if (!setVersionInDatabase(newVersion)) {
         reportChangeVersionResult(4, SQLError::UNKNOWN_ERR, sqliteDatabase().lastError());
         setLastErrorMessage("unable to set the new version", sqliteDatabase().lastError(), sqliteDatabase().lastErrorMsg());
-        exceptionState.throwDOMException(UnknownError, SQLError::unknownErrorMessage);
+        es.throwDOMException(UnknownError, SQLError::unknownErrorMessage);
         return;
     }
 
-    transaction->commit(exceptionState);
-    if (exceptionState.hadException()) {
+    transaction->commit(es);
+    if (es.hadException()) {
         ASSERT(!lastErrorMessage().isEmpty());
         setCachedVersion(oldVersion);
         return;
@@ -134,14 +134,14 @@ void DatabaseSync::changeVersion(const String& oldVersion, const String& newVers
     setLastErrorMessage("");
 }
 
-void DatabaseSync::transaction(PassRefPtr<SQLTransactionSyncCallback> callback, ExceptionState& exceptionState)
+void DatabaseSync::transaction(PassRefPtr<SQLTransactionSyncCallback> callback, ExceptionState& es)
 {
-    runTransaction(callback, false, exceptionState);
+    runTransaction(callback, false, es);
 }
 
-void DatabaseSync::readTransaction(PassRefPtr<SQLTransactionSyncCallback> callback, ExceptionState& exceptionState)
+void DatabaseSync::readTransaction(PassRefPtr<SQLTransactionSyncCallback> callback, ExceptionState& es)
 {
-    runTransaction(callback, true, exceptionState);
+    runTransaction(callback, true, es);
 }
 
 void DatabaseSync::rollbackTransaction(PassRefPtr<SQLTransactionSync> transaction)
@@ -152,31 +152,31 @@ void DatabaseSync::rollbackTransaction(PassRefPtr<SQLTransactionSync> transactio
     return;
 }
 
-void DatabaseSync::runTransaction(PassRefPtr<SQLTransactionSyncCallback> callback, bool readOnly, ExceptionState& exceptionState)
+void DatabaseSync::runTransaction(PassRefPtr<SQLTransactionSyncCallback> callback, bool readOnly, ExceptionState& es)
 {
     ASSERT(m_executionContext->isContextThread());
 
     if (sqliteDatabase().transactionInProgress()) {
         setLastErrorMessage("unable to start a transaction from within a transaction");
-        exceptionState.throwUninformativeAndGenericDOMException(SQLDatabaseError);
+        es.throwUninformativeAndGenericDOMException(SQLDatabaseError);
         return;
     }
 
     RefPtr<SQLTransactionSync> transaction = SQLTransactionSync::create(this, callback, readOnly);
-    transaction->begin(exceptionState);
-    if (exceptionState.hadException()) {
+    transaction->begin(es);
+    if (es.hadException()) {
         rollbackTransaction(transaction);
         return;
     }
 
-    transaction->execute(exceptionState);
-    if (exceptionState.hadException()) {
+    transaction->execute(es);
+    if (es.hadException()) {
         rollbackTransaction(transaction);
         return;
     }
 
-    transaction->commit(exceptionState);
-    if (exceptionState.hadException()) {
+    transaction->commit(es);
+    if (es.hadException()) {
         rollbackTransaction(transaction);
         return;
     }

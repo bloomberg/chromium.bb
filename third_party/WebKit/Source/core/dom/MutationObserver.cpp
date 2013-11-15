@@ -74,10 +74,10 @@ MutationObserver::~MutationObserver()
     ASSERT(m_registrations.isEmpty());
 }
 
-void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, ExceptionState& exceptionState)
+void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, ExceptionState& es)
 {
     if (!node) {
-        exceptionState.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The provided node was null."));
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The provided node was null."));
         return;
     }
 
@@ -118,21 +118,21 @@ void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, 
 
     if (!(options & Attributes)) {
         if (options & AttributeOldValue) {
-            exceptionState.throwDOMException(TypeError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The options object may only set 'attributeOldValue' to true when 'attributes' is true or not present."));
+            es.throwDOMException(TypeError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The options object may only set 'attributeOldValue' to true when 'attributes' is true or not present."));
             return;
         }
         if (options & AttributeFilter) {
-            exceptionState.throwDOMException(TypeError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The options object may only set 'attributeFilter' when 'attributes' is true or not present."));
+            es.throwDOMException(TypeError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The options object may only set 'attributeFilter' when 'attributes' is true or not present."));
             return;
         }
     }
     if (!((options & CharacterData) || !(options & CharacterDataOldValue))) {
-        exceptionState.throwDOMException(TypeError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The options object may only set 'characterDataOldValue' to true when 'characterData' is true or not present."));
+        es.throwDOMException(TypeError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The options object may only set 'characterDataOldValue' to true when 'characterData' is true or not present."));
         return;
     }
 
     if (!(options & (Attributes | CharacterData | ChildList))) {
-        exceptionState.throwDOMException(TypeError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The options object must set at least one of 'attributes', 'characterData', or 'childList' to true."));
+        es.throwDOMException(TypeError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The options object must set at least one of 'attributes', 'characterData', or 'childList' to true."));
         return;
     }
 

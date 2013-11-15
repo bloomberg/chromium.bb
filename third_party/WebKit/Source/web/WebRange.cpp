@@ -81,18 +81,18 @@ int WebRange::endOffset() const
 WebNode WebRange::startContainer(WebExceptionCode& exceptionCode) const
 {
     // FIXME: Create a wrapper class that just sets the internal int.
-    TrackExceptionState exceptionState;
-    RefPtr<Node> node(m_private->startContainer(exceptionState));
-    exceptionCode = exceptionState.code();
+    TrackExceptionState es;
+    RefPtr<Node> node(m_private->startContainer(es));
+    exceptionCode = es.code();
     return node.release();
 }
 
 WebNode WebRange::endContainer(WebExceptionCode& exceptionCode) const
 {
     // FIXME: Create a wrapper class that just sets the internal int.
-    TrackExceptionState exceptionState;
-    RefPtr<Node> node(m_private->endContainer(exceptionState));
-    exceptionCode = exceptionState.code();
+    TrackExceptionState es;
+    RefPtr<Node> node(m_private->endContainer(es));
+    exceptionCode = es.code();
     return node.release();
 }
 

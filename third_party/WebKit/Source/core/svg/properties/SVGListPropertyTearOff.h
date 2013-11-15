@@ -80,41 +80,41 @@ public:
     }
 
     // SVGList API
-    void clear(ExceptionState& exceptionState)
+    void clear(ExceptionState& es)
     {
-        Base::clearValuesAndWrappers(exceptionState);
+        Base::clearValuesAndWrappers(es);
     }
 
-    PassListItemTearOff initialize(PassListItemTearOff passNewItem, ExceptionState& exceptionState)
+    PassListItemTearOff initialize(PassListItemTearOff passNewItem, ExceptionState& es)
     {
-        return Base::initializeValuesAndWrappers(passNewItem, exceptionState);
+        return Base::initializeValuesAndWrappers(passNewItem, es);
     }
 
-    PassListItemTearOff getItem(unsigned index, ExceptionState& exceptionState)
+    PassListItemTearOff getItem(unsigned index, ExceptionState& es)
     {
         ASSERT(m_animatedProperty);
-        return Base::getItemValuesAndWrappers(m_animatedProperty, index, exceptionState);
+        return Base::getItemValuesAndWrappers(m_animatedProperty, index, es);
     }
 
-    PassListItemTearOff insertItemBefore(PassListItemTearOff passNewItem, unsigned index, ExceptionState& exceptionState)
+    PassListItemTearOff insertItemBefore(PassListItemTearOff passNewItem, unsigned index, ExceptionState& es)
     {
-        return Base::insertItemBeforeValuesAndWrappers(passNewItem, index, exceptionState);
+        return Base::insertItemBeforeValuesAndWrappers(passNewItem, index, es);
     }
 
-    PassListItemTearOff replaceItem(PassListItemTearOff passNewItem, unsigned index, ExceptionState& exceptionState)
+    PassListItemTearOff replaceItem(PassListItemTearOff passNewItem, unsigned index, ExceptionState& es)
     {
-        return Base::replaceItemValuesAndWrappers(passNewItem, index, exceptionState);
+        return Base::replaceItemValuesAndWrappers(passNewItem, index, es);
     }
 
-    PassListItemTearOff removeItem(unsigned index, ExceptionState& exceptionState)
+    PassListItemTearOff removeItem(unsigned index, ExceptionState& es)
     {
         ASSERT(m_animatedProperty);
-        return Base::removeItemValuesAndWrappers(m_animatedProperty, index, exceptionState);
+        return Base::removeItemValuesAndWrappers(m_animatedProperty, index, es);
     }
 
-    PassListItemTearOff appendItem(PassListItemTearOff passNewItem, ExceptionState& exceptionState)
+    PassListItemTearOff appendItem(PassListItemTearOff passNewItem, ExceptionState& es)
     {
-        return Base::appendItemValuesAndWrappers(passNewItem, exceptionState);
+        return Base::appendItemValuesAndWrappers(passNewItem, es);
     }
 
     SVGElement* contextElement() const

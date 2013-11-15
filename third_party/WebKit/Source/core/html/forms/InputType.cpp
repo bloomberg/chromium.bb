@@ -208,9 +208,9 @@ double InputType::valueAsDate() const
     return DateComponents::invalidMilliseconds();
 }
 
-void InputType::setValueAsDate(double, ExceptionState& exceptionState) const
+void InputType::setValueAsDate(double, ExceptionState& es) const
 {
-    exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    es.throwUninformativeAndGenericDOMException(InvalidStateError);
 }
 
 double InputType::valueAsDouble() const
@@ -218,14 +218,14 @@ double InputType::valueAsDouble() const
     return numeric_limits<double>::quiet_NaN();
 }
 
-void InputType::setValueAsDouble(double doubleValue, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState) const
+void InputType::setValueAsDouble(double doubleValue, TextFieldEventBehavior eventBehavior, ExceptionState& es) const
 {
-    setValueAsDecimal(Decimal::fromDouble(doubleValue), eventBehavior, exceptionState);
+    setValueAsDecimal(Decimal::fromDouble(doubleValue), eventBehavior, es);
 }
 
-void InputType::setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState& exceptionState) const
+void InputType::setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState& es) const
 {
-    exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    es.throwUninformativeAndGenericDOMException(InvalidStateError);
 }
 
 bool InputType::supportsValidation() const
@@ -808,28 +808,28 @@ unsigned InputType::width() const
     return 0;
 }
 
-void InputType::applyStep(int count, AnyStepHandling anyStepHandling, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState)
+void InputType::applyStep(int count, AnyStepHandling anyStepHandling, TextFieldEventBehavior eventBehavior, ExceptionState& es)
 {
     StepRange stepRange(createStepRange(anyStepHandling));
     if (!stepRange.hasStep()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
     const Decimal current = parseToNumberOrNaN(element().value());
     if (!current.isFinite()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     Decimal newValue = current + stepRange.step() * count;
     if (!newValue.isFinite()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
     const Decimal acceptableErrorValue = stepRange.acceptableError();
     if (newValue - stepRange.minimum() < -acceptableErrorValue) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     if (newValue < stepRange.minimum())
@@ -840,13 +840,13 @@ void InputType::applyStep(int count, AnyStepHandling anyStepHandling, TextFieldE
         newValue = stepRange.alignValueForStep(current, newValue);
 
     if (newValue - stepRange.maximum() > acceptableErrorValue) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     if (newValue > stepRange.maximum())
         newValue = stepRange.maximum();
 
-    setValueAsDecimal(newValue, eventBehavior, exceptionState);
+    setValueAsDecimal(newValue, eventBehavior, es);
 
     if (AXObjectCache* cache = element().document().existingAXObjectCache())
         cache->postNotification(&element(), AXObjectCache::AXValueChanged, true);
@@ -865,13 +865,13 @@ StepRange InputType::createStepRange(AnyStepHandling) const
     return StepRange();
 }
 
-void InputType::stepUp(int n, ExceptionState& exceptionState)
+void InputType::stepUp(int n, ExceptionState& es)
 {
     if (!isSteppable()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
-    applyStep(n, RejectAny, DispatchNoEvent, exceptionState);
+    applyStep(n, RejectAny, DispatchNoEvent, es);
 }
 
 void InputType::stepUpFromRenderer(int n)

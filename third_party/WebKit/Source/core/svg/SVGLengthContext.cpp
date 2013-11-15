@@ -86,30 +86,30 @@ float SVGLengthContext::resolveLength(const SVGElement* context, SVGUnitTypes::S
     return x.valueAsPercentage();
 }
 
-float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode, SVGLengthType fromUnit, ExceptionState& exceptionState) const
+float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode, SVGLengthType fromUnit, ExceptionState& es) const
 {
     // If the SVGLengthContext carries a custom viewport, force resolving against it.
     if (!m_overridenViewport.isEmpty()) {
         // 100% = 100.0 instead of 1.0 for historical reasons, this could eventually be changed
         if (fromUnit == LengthTypePercentage)
             value /= 100;
-        return convertValueFromPercentageToUserUnits(value, mode, exceptionState);
+        return convertValueFromPercentageToUserUnits(value, mode, es);
     }
 
     switch (fromUnit) {
     case LengthTypeUnknown:
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     case LengthTypeNumber:
         return value;
     case LengthTypePX:
         return value;
     case LengthTypePercentage:
-        return convertValueFromPercentageToUserUnits(value / 100, mode, exceptionState);
+        return convertValueFromPercentageToUserUnits(value / 100, mode, es);
     case LengthTypeEMS:
-        return convertValueFromEMSToUserUnits(value, exceptionState);
+        return convertValueFromEMSToUserUnits(value, es);
     case LengthTypeEXS:
-        return convertValueFromEXSToUserUnits(value, exceptionState);
+        return convertValueFromEXSToUserUnits(value, es);
     case LengthTypeCM:
         return value * cssPixelsPerInch / 2.54f;
     case LengthTypeMM:
@@ -126,20 +126,20 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
     return 0;
 }
 
-float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mode, SVGLengthType toUnit, ExceptionState& exceptionState) const
+float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mode, SVGLengthType toUnit, ExceptionState& es) const
 {
     switch (toUnit) {
     case LengthTypeUnknown:
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     case LengthTypeNumber:
         return value;
     case LengthTypePercentage:
-        return convertValueFromUserUnitsToPercentage(value * 100, mode, exceptionState);
+        return convertValueFromUserUnitsToPercentage(value * 100, mode, es);
     case LengthTypeEMS:
-        return convertValueFromUserUnitsToEMS(value, exceptionState);
+        return convertValueFromUserUnitsToEMS(value, es);
     case LengthTypeEXS:
-        return convertValueFromUserUnitsToEXS(value, exceptionState);
+        return convertValueFromUserUnitsToEXS(value, es);
     case LengthTypePX:
         return value;
     case LengthTypeCM:
@@ -158,11 +158,11 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
     return 0;
 }
 
-float SVGLengthContext::convertValueFromUserUnitsToPercentage(float value, SVGLengthMode mode, ExceptionState& exceptionState) const
+float SVGLengthContext::convertValueFromUserUnitsToPercentage(float value, SVGLengthMode mode, ExceptionState& es) const
 {
     FloatSize viewportSize;
     if (!determineViewport(viewportSize)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -179,11 +179,11 @@ float SVGLengthContext::convertValueFromUserUnitsToPercentage(float value, SVGLe
     return 0;
 }
 
-float SVGLengthContext::convertValueFromPercentageToUserUnits(float value, SVGLengthMode mode, ExceptionState& exceptionState) const
+float SVGLengthContext::convertValueFromPercentageToUserUnits(float value, SVGLengthMode mode, ExceptionState& es) const
 {
     FloatSize viewportSize;
     if (!determineViewport(viewportSize)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -217,39 +217,39 @@ static inline RenderStyle* renderStyleForLengthResolving(const SVGElement* conte
     return 0;
 }
 
-float SVGLengthContext::convertValueFromUserUnitsToEMS(float value, ExceptionState& exceptionState) const
+float SVGLengthContext::convertValueFromUserUnitsToEMS(float value, ExceptionState& es) const
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
     float fontSize = style->specifiedFontSize();
     if (!fontSize) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
     return value / fontSize;
 }
 
-float SVGLengthContext::convertValueFromEMSToUserUnits(float value, ExceptionState& exceptionState) const
+float SVGLengthContext::convertValueFromEMSToUserUnits(float value, ExceptionState& es) const
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
     return value * style->specifiedFontSize();
 }
 
-float SVGLengthContext::convertValueFromUserUnitsToEXS(float value, ExceptionState& exceptionState) const
+float SVGLengthContext::convertValueFromUserUnitsToEXS(float value, ExceptionState& es) const
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -257,18 +257,18 @@ float SVGLengthContext::convertValueFromUserUnitsToEXS(float value, ExceptionSta
     // if this causes problems in real world cases maybe it would be best to remove this
     float xHeight = ceilf(style->fontMetrics().xHeight());
     if (!xHeight) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
     return value / xHeight;
 }
 
-float SVGLengthContext::convertValueFromEXSToUserUnits(float value, ExceptionState& exceptionState) const
+float SVGLengthContext::convertValueFromEXSToUserUnits(float value, ExceptionState& es) const
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 

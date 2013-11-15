@@ -158,16 +158,16 @@ void DatabaseManager::didDestructDatabaseContext()
 }
 #endif
 
-void DatabaseManager::throwExceptionForDatabaseError(const String& method, const String& context, DatabaseError error, const String& errorMessage, ExceptionState& exceptionState)
+void DatabaseManager::throwExceptionForDatabaseError(const String& method, const String& context, DatabaseError error, const String& errorMessage, ExceptionState& es)
 {
     switch (error) {
     case DatabaseError::None:
         return;
     case DatabaseError::GenericSecurityError:
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute(method, context, errorMessage));
+        es.throwSecurityError(ExceptionMessages::failedToExecute(method, context, errorMessage));
         return;
     case DatabaseError::InvalidDatabaseState:
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute(method, context, errorMessage));
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute(method, context, errorMessage));
         return;
     default:
         ASSERT_NOT_REACHED();

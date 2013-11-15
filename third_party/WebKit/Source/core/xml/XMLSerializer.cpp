@@ -29,10 +29,10 @@
 
 namespace WebCore {
 
-String XMLSerializer::serializeToString(Node* node, ExceptionState& exceptionState)
+String XMLSerializer::serializeToString(Node* node, ExceptionState& es)
 {
     if (!node) {
-        exceptionState.throwDOMException(TypeError, "Invalid node value.");
+        es.throwDOMException(TypeError, "Invalid node value.");
         return String();
     }
 

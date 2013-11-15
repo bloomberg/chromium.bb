@@ -58,10 +58,10 @@ void CharacterData::setData(const String& data)
     document().didRemoveText(this, 0, oldLength);
 }
 
-String CharacterData::substringData(unsigned offset, unsigned count, ExceptionState& exceptionState)
+String CharacterData::substringData(unsigned offset, unsigned count, ExceptionState& es)
 {
     if (offset > length()) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("substringData", "CharacterData", "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ")."));
+        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("substringData", "CharacterData", "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ")."));
         return String();
     }
 
@@ -92,10 +92,10 @@ void CharacterData::appendData(const String& data)
     // FIXME: Should we call textInserted here?
 }
 
-void CharacterData::insertData(unsigned offset, const String& data, ExceptionState& exceptionState, RecalcStyleBehavior recalcStyleBehavior)
+void CharacterData::insertData(unsigned offset, const String& data, ExceptionState& es, RecalcStyleBehavior recalcStyleBehavior)
 {
     if (offset > length()) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("insertData", "CharacterData", "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ")."));
+        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("insertData", "CharacterData", "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ")."));
         return;
     }
 
@@ -107,10 +107,10 @@ void CharacterData::insertData(unsigned offset, const String& data, ExceptionSta
     document().didInsertText(this, offset, data.length());
 }
 
-void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& exceptionState, RecalcStyleBehavior recalcStyleBehavior)
+void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& es, RecalcStyleBehavior recalcStyleBehavior)
 {
     if (offset > length()) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("deleteData", "CharacterData", "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ")."));
+        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("deleteData", "CharacterData", "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ")."));
         return;
     }
 
@@ -128,10 +128,10 @@ void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& 
     document().didRemoveText(this, offset, realCount);
 }
 
-void CharacterData::replaceData(unsigned offset, unsigned count, const String& data, ExceptionState& exceptionState)
+void CharacterData::replaceData(unsigned offset, unsigned count, const String& data, ExceptionState& es)
 {
     if (offset > length()) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("replaceData", "CharacterData", "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ")."));
+        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("replaceData", "CharacterData", "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ")."));
         return;
     }
 

@@ -78,19 +78,19 @@ IDBRequest::~IDBRequest()
     ASSERT(m_readyState == DONE || m_readyState == EarlyDeath || !executionContext());
 }
 
-PassRefPtr<IDBAny> IDBRequest::result(ExceptionState& exceptionState) const
+PassRefPtr<IDBAny> IDBRequest::result(ExceptionState& es) const
 {
     if (m_readyState != DONE) {
-        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
+        es.throwDOMException(InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
         return 0;
     }
     return m_result;
 }
 
-PassRefPtr<DOMError> IDBRequest::error(ExceptionState& exceptionState) const
+PassRefPtr<DOMError> IDBRequest::error(ExceptionState& es) const
 {
     if (m_readyState != DONE) {
-        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
+        es.throwDOMException(InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
         return 0;
     }
     return m_error;

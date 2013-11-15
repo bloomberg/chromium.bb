@@ -38,12 +38,12 @@
 
 namespace WebCore {
 
-PassRefPtr<RTCIceCandidate> RTCIceCandidate::create(const Dictionary& dictionary, ExceptionState& exceptionState)
+PassRefPtr<RTCIceCandidate> RTCIceCandidate::create(const Dictionary& dictionary, ExceptionState& es)
 {
     String candidate;
     bool ok = dictionary.get("candidate", candidate);
     if (!ok || !candidate.length()) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return 0;
     }
 

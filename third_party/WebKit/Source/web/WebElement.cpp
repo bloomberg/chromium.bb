@@ -101,9 +101,9 @@ bool WebElement::setAttribute(const WebString& attrName, const WebString& attrVa
     // TODO: Custom element callbacks need to be called on WebKit API methods that
     // mutate the DOM in any way.
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliverCustomElementCallbacks;
-    TrackExceptionState exceptionState;
-    unwrap<Element>()->setAttribute(attrName, attrValue, exceptionState);
-    return !exceptionState.hadException();
+    TrackExceptionState es;
+    unwrap<Element>()->setAttribute(attrName, attrValue, es);
+    return !es.hadException();
 }
 
 unsigned WebElement::attributeCount() const

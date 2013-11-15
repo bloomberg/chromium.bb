@@ -66,7 +66,7 @@ public:
 
     PassRefPtr<IDBObjectStore> createObjectStore(const String& name, const Dictionary&, ExceptionState&);
     PassRefPtr<IDBObjectStore> createObjectStore(const String& name, const IDBKeyPath&, bool autoIncrement, ExceptionState&);
-    PassRefPtr<IDBTransaction> transaction(ExecutionContext* context, PassRefPtr<DOMStringList> scope, const String& mode, ExceptionState& exceptionState) { return transaction(context, *scope, mode, exceptionState); }
+    PassRefPtr<IDBTransaction> transaction(ExecutionContext* context, PassRefPtr<DOMStringList> scope, const String& mode, ExceptionState& es) { return transaction(context, *scope, mode, es); }
     PassRefPtr<IDBTransaction> transaction(ExecutionContext*, const Vector<String>&, const String& mode, ExceptionState&);
     PassRefPtr<IDBTransaction> transaction(ExecutionContext*, const String&, const String& mode, ExceptionState&);
     void deleteObjectStore(const String& name, ExceptionState&);

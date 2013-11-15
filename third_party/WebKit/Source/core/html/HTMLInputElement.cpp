@@ -298,14 +298,14 @@ Decimal HTMLInputElement::findClosestTickMarkValue(const Decimal& value)
     return m_inputType->findClosestTickMarkValue(value);
 }
 
-void HTMLInputElement::stepUp(int n, ExceptionState& exceptionState)
+void HTMLInputElement::stepUp(int n, ExceptionState& es)
 {
-    m_inputType->stepUp(n, exceptionState);
+    m_inputType->stepUp(n, es);
 }
 
-void HTMLInputElement::stepDown(int n, ExceptionState& exceptionState)
+void HTMLInputElement::stepDown(int n, ExceptionState& es)
 {
-    m_inputType->stepUp(-n, exceptionState);
+    m_inputType->stepUp(-n, es);
 }
 
 void HTMLInputElement::blur()
@@ -515,73 +515,73 @@ bool HTMLInputElement::canHaveSelection() const
     return isTextField();
 }
 
-int HTMLInputElement::selectionStartForBinding(ExceptionState& exceptionState) const
+int HTMLInputElement::selectionStartForBinding(ExceptionState& es) const
 {
     if (!canHaveSelection()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return 0;
     }
     return HTMLTextFormControlElement::selectionStart();
 }
 
-int HTMLInputElement::selectionEndForBinding(ExceptionState& exceptionState) const
+int HTMLInputElement::selectionEndForBinding(ExceptionState& es) const
 {
     if (!canHaveSelection()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return 0;
     }
     return HTMLTextFormControlElement::selectionEnd();
 }
 
-String HTMLInputElement::selectionDirectionForBinding(ExceptionState& exceptionState) const
+String HTMLInputElement::selectionDirectionForBinding(ExceptionState& es) const
 {
     if (!canHaveSelection()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return String();
     }
     return HTMLTextFormControlElement::selectionDirection();
 }
 
-void HTMLInputElement::setSelectionStartForBinding(int start, ExceptionState& exceptionState)
+void HTMLInputElement::setSelectionStartForBinding(int start, ExceptionState& es)
 {
     if (!canHaveSelection()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     HTMLTextFormControlElement::setSelectionStart(start);
 }
 
-void HTMLInputElement::setSelectionEndForBinding(int end, ExceptionState& exceptionState)
+void HTMLInputElement::setSelectionEndForBinding(int end, ExceptionState& es)
 {
     if (!canHaveSelection()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     HTMLTextFormControlElement::setSelectionEnd(end);
 }
 
-void HTMLInputElement::setSelectionDirectionForBinding(const String& direction, ExceptionState& exceptionState)
+void HTMLInputElement::setSelectionDirectionForBinding(const String& direction, ExceptionState& es)
 {
     if (!canHaveSelection()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     HTMLTextFormControlElement::setSelectionDirection(direction);
 }
 
-void HTMLInputElement::setSelectionRangeForBinding(int start, int end, ExceptionState& exceptionState)
+void HTMLInputElement::setSelectionRangeForBinding(int start, int end, ExceptionState& es)
 {
     if (!canHaveSelection()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     HTMLTextFormControlElement::setSelectionRange(start, end);
 }
 
-void HTMLInputElement::setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionState& exceptionState)
+void HTMLInputElement::setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionState& es)
 {
     if (!canHaveSelection()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     HTMLTextFormControlElement::setSelectionRange(start, end, direction);
@@ -994,10 +994,10 @@ void HTMLInputElement::setEditingValue(const String& value)
     dispatchInputEvent();
 }
 
-void HTMLInputElement::setValue(const String& value, ExceptionState& exceptionState, TextFieldEventBehavior eventBehavior)
+void HTMLInputElement::setValue(const String& value, ExceptionState& es, TextFieldEventBehavior eventBehavior)
 {
     if (isFileUpload() && !value.isEmpty()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     setValue(value, eventBehavior);
@@ -1040,9 +1040,9 @@ double HTMLInputElement::valueAsDate() const
     return m_inputType->valueAsDate();
 }
 
-void HTMLInputElement::setValueAsDate(double value, ExceptionState& exceptionState)
+void HTMLInputElement::setValueAsDate(double value, ExceptionState& es)
 {
-    m_inputType->setValueAsDate(value, exceptionState);
+    m_inputType->setValueAsDate(value, es);
 }
 
 double HTMLInputElement::valueAsNumber() const
@@ -1050,13 +1050,13 @@ double HTMLInputElement::valueAsNumber() const
     return m_inputType->valueAsDouble();
 }
 
-void HTMLInputElement::setValueAsNumber(double newValue, ExceptionState& exceptionState, TextFieldEventBehavior eventBehavior)
+void HTMLInputElement::setValueAsNumber(double newValue, ExceptionState& es, TextFieldEventBehavior eventBehavior)
 {
     if (!std::isfinite(newValue)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
-    m_inputType->setValueAsDouble(newValue, eventBehavior, exceptionState);
+    m_inputType->setValueAsDouble(newValue, eventBehavior, es);
 }
 
 void HTMLInputElement::setValueFromRenderer(const String& value)
@@ -1285,10 +1285,10 @@ int HTMLInputElement::maxLength() const
     return m_maxLength;
 }
 
-void HTMLInputElement::setMaxLength(int maxLength, ExceptionState& exceptionState)
+void HTMLInputElement::setMaxLength(int maxLength, ExceptionState& es)
 {
     if (maxLength < 0)
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
     else
         setAttribute(maxlengthAttr, String::number(maxLength));
 }
@@ -1303,10 +1303,10 @@ void HTMLInputElement::setSize(unsigned size)
     setAttribute(sizeAttr, String::number(size));
 }
 
-void HTMLInputElement::setSize(unsigned size, ExceptionState& exceptionState)
+void HTMLInputElement::setSize(unsigned size, ExceptionState& es)
 {
     if (!size)
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
     else
         setSize(size);
 }
@@ -1786,24 +1786,24 @@ void ListAttributeTargetObserver::idTargetChanged()
     m_element->listAttributeTargetChanged();
 }
 
-void HTMLInputElement::setRangeText(const String& replacement, ExceptionState& exceptionState)
+void HTMLInputElement::setRangeText(const String& replacement, ExceptionState& es)
 {
     if (!m_inputType->supportsSelectionAPI()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
-    HTMLTextFormControlElement::setRangeText(replacement, exceptionState);
+    HTMLTextFormControlElement::setRangeText(replacement, es);
 }
 
-void HTMLInputElement::setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState& exceptionState)
+void HTMLInputElement::setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState& es)
 {
     if (!m_inputType->supportsSelectionAPI()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
-    HTMLTextFormControlElement::setRangeText(replacement, start, end, selectionMode, exceptionState);
+    HTMLTextFormControlElement::setRangeText(replacement, start, end, selectionMode, es);
 }
 
 bool HTMLInputElement::setupDateTimeChooserParameters(DateTimeChooserParameters& parameters)

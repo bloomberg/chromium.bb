@@ -563,7 +563,7 @@ inline size_t findNextLineStart(const CharacterType* characters, unsigned length
         // beyond the current character.
         if (index < length) {
             // The 3 common types of line terminators are 1. \r\n (Windows),
-            // 2. \r (old MacOS) and 3. \n (Unix'exceptionState).
+            // 2. \r (old MacOS) and 3. \n (Unix'es).
 
             if (c == '\n')
                 return index; // Case 3: just \n.

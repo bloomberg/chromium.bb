@@ -68,13 +68,13 @@ static bool isContextValid(ExecutionContext* context)
     return true;
 }
 
-PassRefPtr<IDBRequest> IDBFactory::getDatabaseNames(ExecutionContext* context, ExceptionState& exceptionState)
+PassRefPtr<IDBRequest> IDBFactory::getDatabaseNames(ExecutionContext* context, ExceptionState& es)
 {
     IDB_TRACE("IDBFactory::getDatabaseNames");
     if (!isContextValid(context))
         return 0;
     if (!context->securityOrigin()->canAccessDatabase()) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("getDatabaseNames", "IDBFactory", "access to the Indexed Database API is denied in this context."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("getDatabaseNames", "IDBFactory", "access to the Indexed Database API is denied in this context."));
         return 0;
     }
 
@@ -83,28 +83,28 @@ PassRefPtr<IDBRequest> IDBFactory::getDatabaseNames(ExecutionContext* context, E
     return request;
 }
 
-PassRefPtr<IDBOpenDBRequest> IDBFactory::open(ExecutionContext* context, const String& name, unsigned long long version, ExceptionState& exceptionState)
+PassRefPtr<IDBOpenDBRequest> IDBFactory::open(ExecutionContext* context, const String& name, unsigned long long version, ExceptionState& es)
 {
     IDB_TRACE("IDBFactory::open");
     if (!version) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
-    return openInternal(context, name, version, exceptionState);
+    return openInternal(context, name, version, es);
 }
 
-PassRefPtr<IDBOpenDBRequest> IDBFactory::openInternal(ExecutionContext* context, const String& name, int64_t version, ExceptionState& exceptionState)
+PassRefPtr<IDBOpenDBRequest> IDBFactory::openInternal(ExecutionContext* context, const String& name, int64_t version, ExceptionState& es)
 {
     blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBOpenCall, IDBMethodsMax);
     ASSERT(version >= 1 || version == IDBDatabaseMetadata::NoIntVersion);
     if (name.isNull()) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
     if (!isContextValid(context))
         return 0;
     if (!context->securityOrigin()->canAccessDatabase()) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("open", "IDBFactory", "access to the Indexed Database API is denied in this context."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("open", "IDBFactory", "access to the Indexed Database API is denied in this context."));
         return 0;
     }
 
@@ -115,24 +115,24 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::openInternal(ExecutionContext* context,
     return request;
 }
 
-PassRefPtr<IDBOpenDBRequest> IDBFactory::open(ExecutionContext* context, const String& name, ExceptionState& exceptionState)
+PassRefPtr<IDBOpenDBRequest> IDBFactory::open(ExecutionContext* context, const String& name, ExceptionState& es)
 {
     IDB_TRACE("IDBFactory::open");
-    return openInternal(context, name, IDBDatabaseMetadata::NoIntVersion, exceptionState);
+    return openInternal(context, name, IDBDatabaseMetadata::NoIntVersion, es);
 }
 
-PassRefPtr<IDBOpenDBRequest> IDBFactory::deleteDatabase(ExecutionContext* context, const String& name, ExceptionState& exceptionState)
+PassRefPtr<IDBOpenDBRequest> IDBFactory::deleteDatabase(ExecutionContext* context, const String& name, ExceptionState& es)
 {
     IDB_TRACE("IDBFactory::deleteDatabase");
     blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteDatabaseCall, IDBMethodsMax);
     if (name.isNull()) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
     if (!isContextValid(context))
         return 0;
     if (!context->securityOrigin()->canAccessDatabase()) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("deleteDatabase", "IDBFactory", "access to the Indexed Database API is denied in this context."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("deleteDatabase", "IDBFactory", "access to the Indexed Database API is denied in this context."));
         return 0;
     }
 
@@ -141,7 +141,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::deleteDatabase(ExecutionContext* contex
     return request;
 }
 
-short IDBFactory::cmp(ExecutionContext* context, const ScriptValue& firstValue, const ScriptValue& secondValue, ExceptionState& exceptionState)
+short IDBFactory::cmp(ExecutionContext* context, const ScriptValue& firstValue, const ScriptValue& secondValue, ExceptionState& es)
 {
     DOMRequestState requestState(context);
     RefPtr<IDBKey> first = scriptValueToIDBKey(&requestState, firstValue);
@@ -151,7 +151,7 @@ short IDBFactory::cmp(ExecutionContext* context, const ScriptValue& firstValue, 
     ASSERT(second);
 
     if (!first->isValid() || !second->isValid()) {
-        exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
+        es.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return 0;
     }
 

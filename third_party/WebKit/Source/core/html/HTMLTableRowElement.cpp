@@ -112,30 +112,30 @@ int HTMLTableRowElement::sectionRowIndex() const
     return rIndex;
 }
 
-PassRefPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionState& exceptionState)
+PassRefPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionState& es)
 {
     RefPtr<HTMLCollection> children = cells();
     int numCells = children ? children->length() : 0;
     if (index < -1 || index > numCells) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return 0;
     }
 
     RefPtr<HTMLTableCellElement> cell = HTMLTableCellElement::create(tdTag, document());
     if (index < 0 || index >= numCells)
-        appendChild(cell, exceptionState);
+        appendChild(cell, es);
     else {
         Node* n;
         if (index < 1)
             n = firstChild();
         else
             n = children->item(index);
-        insertBefore(cell, n, exceptionState);
+        insertBefore(cell, n, es);
     }
     return cell.release();
 }
 
-void HTMLTableRowElement::deleteCell(int index, ExceptionState& exceptionState)
+void HTMLTableRowElement::deleteCell(int index, ExceptionState& es)
 {
     RefPtr<HTMLCollection> children = cells();
     int numCells = children ? children->length() : 0;
@@ -143,9 +143,9 @@ void HTMLTableRowElement::deleteCell(int index, ExceptionState& exceptionState)
         index = numCells-1;
     if (index >= 0 && index < numCells) {
         RefPtr<Node> cell = children->item(index);
-        HTMLElement::removeChild(cell.get(), exceptionState);
+        HTMLElement::removeChild(cell.get(), es);
     } else {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
     }
 }
 
@@ -154,9 +154,9 @@ PassRefPtr<HTMLCollection> HTMLTableRowElement::cells()
     return ensureCachedHTMLCollection(TRCells);
 }
 
-void HTMLTableRowElement::setCells(HTMLCollection*, ExceptionState& exceptionState)
+void HTMLTableRowElement::setCells(HTMLCollection*, ExceptionState& es)
 {
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 }

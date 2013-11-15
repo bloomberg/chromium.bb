@@ -51,23 +51,23 @@ void AudioBasicInspectorNode::pullInputs(size_t framesToProcess)
     input(0)->pull(output(0)->bus(), framesToProcess);
 }
 
-void AudioBasicInspectorNode::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
+void AudioBasicInspectorNode::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& es)
 {
     ASSERT(isMainThread());
 
     AudioContext::AutoLocker locker(context());
 
-    AudioNode::connect(destination, outputIndex, inputIndex, exceptionState);
+    AudioNode::connect(destination, outputIndex, inputIndex, es);
     updatePullStatus();
 }
 
-void AudioBasicInspectorNode::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
+void AudioBasicInspectorNode::disconnect(unsigned outputIndex, ExceptionState& es)
 {
     ASSERT(isMainThread());
 
     AudioContext::AutoLocker locker(context());
 
-    AudioNode::disconnect(outputIndex, exceptionState);
+    AudioNode::disconnect(outputIndex, es);
     updatePullStatus();
 }
 

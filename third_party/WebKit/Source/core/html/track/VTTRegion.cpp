@@ -94,85 +94,85 @@ void VTTRegion::setId(const String& id)
     m_id = id;
 }
 
-void VTTRegion::setWidth(double value, ExceptionState& exceptionState)
+void VTTRegion::setWidth(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return;
     }
 
     if (value < 0 || value > 100) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
     m_width = value;
 }
 
-void VTTRegion::setHeight(long value, ExceptionState& exceptionState)
+void VTTRegion::setHeight(long value, ExceptionState& es)
 {
     if (value < 0) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
     m_heightInLines = value;
 }
 
-void VTTRegion::setRegionAnchorX(double value, ExceptionState& exceptionState)
+void VTTRegion::setRegionAnchorX(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return;
     }
 
     if (value < 0 || value > 100) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
     m_regionAnchor.setX(value);
 }
 
-void VTTRegion::setRegionAnchorY(double value, ExceptionState& exceptionState)
+void VTTRegion::setRegionAnchorY(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return;
     }
 
     if (value < 0 || value > 100) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
     m_regionAnchor.setY(value);
 }
 
-void VTTRegion::setViewportAnchorX(double value, ExceptionState& exceptionState)
+void VTTRegion::setViewportAnchorX(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return;
     }
 
     if (value < 0 || value > 100) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
     m_viewportAnchor.setX(value);
 }
 
-void VTTRegion::setViewportAnchorY(double value, ExceptionState& exceptionState)
+void VTTRegion::setViewportAnchorY(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return;
     }
 
     if (value < 0 || value > 100) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -189,12 +189,12 @@ const AtomicString VTTRegion::scroll() const
     return "";
 }
 
-void VTTRegion::setScroll(const AtomicString& value, ExceptionState& exceptionState)
+void VTTRegion::setScroll(const AtomicString& value, ExceptionState& es)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up", AtomicString::ConstructFromLiteral));
 
     if (value != emptyString() && value != upScrollValueKeyword) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 

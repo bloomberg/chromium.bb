@@ -158,7 +158,7 @@ double MediaController::currentTime() const
     return m_position;
 }
 
-void MediaController::setCurrentTime(double time, ExceptionState& exceptionState)
+void MediaController::setCurrentTime(double time, ExceptionState& es)
 {
     // When the user agent is to seek the media controller to a particular new playback position,
     // it must follow these steps:
@@ -174,7 +174,7 @@ void MediaController::setCurrentTime(double time, ExceptionState& exceptionState
 
     // Seek each slaved media element to the new playback position relative to the media element timeline.
     for (size_t index = 0; index < m_mediaElements.size(); ++index)
-        m_mediaElements[index]->seek(time, exceptionState);
+        m_mediaElements[index]->seek(time, es);
 
     scheduleTimeupdateEvent();
 }
@@ -252,7 +252,7 @@ void MediaController::setPlaybackRate(double rate)
     scheduleEvent(EventTypeNames::ratechange);
 }
 
-void MediaController::setVolume(double level, ExceptionState& exceptionState)
+void MediaController::setVolume(double level, ExceptionState& es)
 {
     if (m_volume == level)
         return;
@@ -260,7 +260,7 @@ void MediaController::setVolume(double level, ExceptionState& exceptionState)
     // If the new value is outside the range 0.0 to 1.0 inclusive, then, on setting, an
     // IndexSizeError exception must be raised instead.
     if (level < 0 || level > 1) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 

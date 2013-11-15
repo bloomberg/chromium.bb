@@ -86,9 +86,9 @@ struct SVGPropertyTraits<SVGMarkerOrientType> {
         if (value == "auto")
             return SVGMarkerOrientAuto;
 
-        TrackExceptionState exceptionState;
-        angle.setValueAsString(value, exceptionState);
-        if (!exceptionState.hadException())
+        TrackExceptionState es;
+        angle.setValueAsString(value, es);
+        if (!es.hadException())
             return SVGMarkerOrientAngle;
         return SVGMarkerOrientUnknown;
     }

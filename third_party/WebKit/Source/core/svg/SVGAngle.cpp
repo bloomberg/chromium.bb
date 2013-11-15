@@ -150,7 +150,7 @@ static bool parseValue(const String& value, float& valueInSpecifiedUnits, SVGAng
     return true;
 }
 
-void SVGAngle::setValueAsString(const String& value, ExceptionState& exceptionState)
+void SVGAngle::setValueAsString(const String& value, ExceptionState& es)
 {
     if (value.isEmpty()) {
         m_unitType = SVG_ANGLETYPE_UNSPECIFIED;
@@ -163,7 +163,7 @@ void SVGAngle::setValueAsString(const String& value, ExceptionState& exceptionSt
     bool success = value.is8Bit() ? parseValue<LChar>(value, valueInSpecifiedUnits, unitType)
                                   : parseValue<UChar>(value, valueInSpecifiedUnits, unitType);
     if (!success) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 
@@ -171,10 +171,10 @@ void SVGAngle::setValueAsString(const String& value, ExceptionState& exceptionSt
     m_valueInSpecifiedUnits = valueInSpecifiedUnits;
 }
 
-void SVGAngle::newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionState& exceptionState)
+void SVGAngle::newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionState& es)
 {
     if (unitType == SVG_ANGLETYPE_UNKNOWN || unitType > SVG_ANGLETYPE_GRAD) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
 
@@ -184,10 +184,10 @@ void SVGAngle::newValueSpecifiedUnits(unsigned short unitType, float valueInSpec
     m_valueInSpecifiedUnits = valueInSpecifiedUnits;
 }
 
-void SVGAngle::convertToSpecifiedUnits(unsigned short unitType, ExceptionState& exceptionState)
+void SVGAngle::convertToSpecifiedUnits(unsigned short unitType, ExceptionState& es)
 {
     if (unitType == SVG_ANGLETYPE_UNKNOWN || m_unitType == SVG_ANGLETYPE_UNKNOWN || unitType > SVG_ANGLETYPE_GRAD) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
 

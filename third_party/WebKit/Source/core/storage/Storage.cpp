@@ -51,73 +51,73 @@ Storage::~Storage()
 {
 }
 
-String Storage::anonymousIndexedGetter(unsigned index, ExceptionState& exceptionState)
+String Storage::anonymousIndexedGetter(unsigned index, ExceptionState& es)
 {
-    return anonymousNamedGetter(String::number(index), exceptionState);
+    return anonymousNamedGetter(String::number(index), es);
 }
 
-String Storage::anonymousNamedGetter(const AtomicString& name, ExceptionState& exceptionState)
+String Storage::anonymousNamedGetter(const AtomicString& name, ExceptionState& es)
 {
-    bool found = contains(name, exceptionState);
-    if (exceptionState.hadException() || !found)
+    bool found = contains(name, es);
+    if (es.hadException() || !found)
         return String();
-    String result = getItem(name, exceptionState);
-    if (exceptionState.hadException())
+    String result = getItem(name, es);
+    if (es.hadException())
         return String();
     return result;
 }
 
-bool Storage::anonymousNamedSetter(const AtomicString& name, const AtomicString& value, ExceptionState& exceptionState)
+bool Storage::anonymousNamedSetter(const AtomicString& name, const AtomicString& value, ExceptionState& es)
 {
-    setItem(name, value, exceptionState);
+    setItem(name, value, es);
     return true;
 }
 
-bool Storage::anonymousIndexedSetter(unsigned index, const AtomicString& value, ExceptionState& exceptionState)
+bool Storage::anonymousIndexedSetter(unsigned index, const AtomicString& value, ExceptionState& es)
 {
-    return anonymousNamedSetter(String::number(index), value, exceptionState);
+    return anonymousNamedSetter(String::number(index), value, es);
 }
 
-bool Storage::anonymousNamedDeleter(const AtomicString& name, ExceptionState& exceptionState)
+bool Storage::anonymousNamedDeleter(const AtomicString& name, ExceptionState& es)
 {
-    bool found = contains(name, exceptionState);
-    if (!found || exceptionState.hadException())
+    bool found = contains(name, es);
+    if (!found || es.hadException())
         return false;
-    removeItem(name, exceptionState);
-    if (exceptionState.hadException())
+    removeItem(name, es);
+    if (es.hadException())
         return false;
     return true;
 }
 
-bool Storage::anonymousIndexedDeleter(unsigned index, ExceptionState& exceptionState)
+bool Storage::anonymousIndexedDeleter(unsigned index, ExceptionState& es)
 {
-    return anonymousNamedDeleter(String::number(index), exceptionState);
+    return anonymousNamedDeleter(String::number(index), es);
 }
 
-void Storage::namedPropertyEnumerator(Vector<String>& names, ExceptionState& exceptionState)
+void Storage::namedPropertyEnumerator(Vector<String>& names, ExceptionState& es)
 {
-    unsigned length = this->length(exceptionState);
-    if (exceptionState.hadException())
+    unsigned length = this->length(es);
+    if (es.hadException())
         return;
     names.resize(length);
     for (unsigned i = 0; i < length; ++i) {
-        String key = this->key(i, exceptionState);
-        if (exceptionState.hadException())
+        String key = this->key(i, es);
+        if (es.hadException())
             return;
         ASSERT(!key.isNull());
-        String val = getItem(key, exceptionState);
-        if (exceptionState.hadException())
+        String val = getItem(key, es);
+        if (es.hadException())
             return;
         names[i] = key;
     }
 }
 
-bool Storage::namedPropertyQuery(const AtomicString& name, ExceptionState& exceptionState)
+bool Storage::namedPropertyQuery(const AtomicString& name, ExceptionState& es)
 {
     if (name == "length")
         return false;
-    bool found = contains(name, exceptionState);
-    if (exceptionState.hadException() || !found)
+    bool found = contains(name, es);
+    if (es.hadException() || !found)
         return false;
     return true;
 }

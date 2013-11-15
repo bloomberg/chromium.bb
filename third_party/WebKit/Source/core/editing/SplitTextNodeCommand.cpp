@@ -96,11 +96,11 @@ void SplitTextNodeCommand::doReapply()
 
 void SplitTextNodeCommand::insertText1AndTrimText2()
 {
-    TrackExceptionState exceptionState;
-    m_text2->parentNode()->insertBefore(m_text1.get(), m_text2.get(), exceptionState);
-    if (exceptionState.hadException())
+    TrackExceptionState es;
+    m_text2->parentNode()->insertBefore(m_text1.get(), m_text2.get(), es);
+    if (es.hadException())
         return;
-    m_text2->deleteData(0, m_offset, exceptionState, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
+    m_text2->deleteData(0, m_offset, es, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
 }
 
 } // namespace WebCore

@@ -43,14 +43,14 @@ FileEntrySync::FileEntrySync(PassRefPtr<DOMFileSystemBase> fileSystem, const Str
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<File> FileEntrySync::file(ExceptionState& exceptionState)
+PassRefPtr<File> FileEntrySync::file(ExceptionState& es)
 {
-    return filesystem()->createFile(this, exceptionState);
+    return filesystem()->createFile(this, es);
 }
 
-PassRefPtr<FileWriterSync> FileEntrySync::createWriter(ExceptionState& exceptionState)
+PassRefPtr<FileWriterSync> FileEntrySync::createWriter(ExceptionState& es)
 {
-    return filesystem()->createWriter(this, exceptionState);
+    return filesystem()->createWriter(this, es);
 }
 
 }

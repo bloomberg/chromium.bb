@@ -70,14 +70,14 @@ static void initProtocolHandlerWhitelist()
         protocolWhitelist->add(protocols[i]);
 }
 
-static bool verifyCustomHandlerURL(const String& baseURL, const String& url, ExceptionState& exceptionState)
+static bool verifyCustomHandlerURL(const String& baseURL, const String& url, ExceptionState& es)
 {
     // The specification requires that it is a SyntaxError if the "%s" token is
     // not present.
     static const char token[] = "%s";
     int index = url.find(token);
     if (-1 == index) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return false;
     }
 
@@ -90,7 +90,7 @@ static bool verifyCustomHandlerURL(const String& baseURL, const String& url, Exc
     KURL kurl(base, newURL);
 
     if (kurl.isEmpty() || !kurl.isValid()) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return false;
     }
 
@@ -104,22 +104,22 @@ static bool isProtocolWhitelisted(const String& scheme)
     return protocolWhitelist->contains(scheme);
 }
 
-static bool verifyProtocolHandlerScheme(const String& scheme, const String& method, ExceptionState& exceptionState)
+static bool verifyProtocolHandlerScheme(const String& scheme, const String& method, ExceptionState& es)
 {
     if (scheme.startsWith("web+")) {
         // The specification requires that the length of scheme is at least five characteres (including 'web+' prefix).
         if (scheme.length() >= 5 && isValidProtocol(scheme))
             return true;
         if (!isValidProtocol(scheme))
-            exceptionState.throwSecurityError(ExceptionMessages::failedToExecute(method, "Navigator", "The scheme '" + scheme + "' is not a valid protocol."));
+            es.throwSecurityError(ExceptionMessages::failedToExecute(method, "Navigator", "The scheme '" + scheme + "' is not a valid protocol."));
         else
-            exceptionState.throwSecurityError(ExceptionMessages::failedToExecute(method, "Navigator", "The scheme '" + scheme + "' is less than five characters long."));
+            es.throwSecurityError(ExceptionMessages::failedToExecute(method, "Navigator", "The scheme '" + scheme + "' is less than five characters long."));
         return false;
     }
 
     if (isProtocolWhitelisted(scheme))
         return true;
-    exceptionState.throwSecurityError(ExceptionMessages::failedToExecute(method, "Navigator", "The scheme '" + scheme + "' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'."));
+    es.throwSecurityError(ExceptionMessages::failedToExecute(method, "Navigator", "The scheme '" + scheme + "' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'."));
     return false;
 }
 
@@ -137,7 +137,7 @@ PassRefPtr<NavigatorContentUtils> NavigatorContentUtils::create(NavigatorContent
     return adoptRef(new NavigatorContentUtils(client));
 }
 
-void NavigatorContentUtils::registerProtocolHandler(Navigator* navigator, const String& scheme, const String& url, const String& title, ExceptionState& exceptionState)
+void NavigatorContentUtils::registerProtocolHandler(Navigator* navigator, const String& scheme, const String& url, const String& title, ExceptionState& es)
 {
     if (!navigator->frame())
         return;
@@ -148,10 +148,10 @@ void NavigatorContentUtils::registerProtocolHandler(Navigator* navigator, const 
 
     String baseURL = document->baseURL().baseAsString();
 
-    if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
+    if (!verifyCustomHandlerURL(baseURL, url, es))
         return;
 
-    if (!verifyProtocolHandlerScheme(scheme, "registerProtocolHandler", exceptionState))
+    if (!verifyProtocolHandlerScheme(scheme, "registerProtocolHandler", es))
         return;
 
     NavigatorContentUtils::from(navigator->frame()->page())->client()->registerProtocolHandler(scheme, baseURL, url, title);
@@ -177,7 +177,7 @@ static String customHandlersStateString(const NavigatorContentUtilsClient::Custo
     return String();
 }
 
-String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator* navigator, const String& scheme, const String& url, ExceptionState& exceptionState)
+String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator* navigator, const String& scheme, const String& url, ExceptionState& es)
 {
     DEFINE_STATIC_LOCAL(const String, declined, ("declined"));
 
@@ -187,16 +187,16 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator* navigator, 
     Document* document = navigator->frame()->document();
     String baseURL = document->baseURL().baseAsString();
 
-    if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
+    if (!verifyCustomHandlerURL(baseURL, url, es))
         return declined;
 
-    if (!verifyProtocolHandlerScheme(scheme, "isProtocolHandlerRegistered", exceptionState))
+    if (!verifyProtocolHandlerScheme(scheme, "isProtocolHandlerRegistered", es))
         return declined;
 
     return customHandlersStateString(NavigatorContentUtils::from(navigator->frame()->page())->client()->isProtocolHandlerRegistered(scheme, baseURL, url));
 }
 
-void NavigatorContentUtils::unregisterProtocolHandler(Navigator* navigator, const String& scheme, const String& url, ExceptionState& exceptionState)
+void NavigatorContentUtils::unregisterProtocolHandler(Navigator* navigator, const String& scheme, const String& url, ExceptionState& es)
 {
     if (!navigator->frame())
         return;
@@ -204,10 +204,10 @@ void NavigatorContentUtils::unregisterProtocolHandler(Navigator* navigator, cons
     Document* document = navigator->frame()->document();
     String baseURL = document->baseURL().baseAsString();
 
-    if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
+    if (!verifyCustomHandlerURL(baseURL, url, es))
         return;
 
-    if (!verifyProtocolHandlerScheme(scheme, "unregisterProtocolHandler", exceptionState))
+    if (!verifyProtocolHandlerScheme(scheme, "unregisterProtocolHandler", es))
         return;
 
     NavigatorContentUtils::from(navigator->frame()->page())->client()->unregisterProtocolHandler(scheme, baseURL, url);

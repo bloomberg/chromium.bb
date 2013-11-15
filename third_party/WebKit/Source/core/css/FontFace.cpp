@@ -61,48 +61,48 @@ static PassRefPtr<CSSValue> parseCSSValue(const String& s, CSSPropertyID propert
     return parsedStyle->getPropertyCSSValue(propertyID);
 }
 
-PassRefPtr<FontFace> FontFace::create(const String& family, const String& source, const Dictionary& descriptors, ExceptionState& exceptionState)
+PassRefPtr<FontFace> FontFace::create(const String& family, const String& source, const Dictionary& descriptors, ExceptionState& es)
 {
     RefPtr<CSSValue> src = parseCSSValue(source, CSSPropertySrc);
     if (!src || !src->isValueList()) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return 0;
     }
 
     RefPtr<FontFace> fontFace = adoptRef<FontFace>(new FontFace(src));
-    fontFace->setFamily(family, exceptionState);
-    if (exceptionState.hadException())
+    fontFace->setFamily(family, es);
+    if (es.hadException())
         return 0;
 
     String value;
     if (descriptors.get("style", value)) {
-        fontFace->setStyle(value, exceptionState);
-        if (exceptionState.hadException())
+        fontFace->setStyle(value, es);
+        if (es.hadException())
             return 0;
     }
     if (descriptors.get("weight", value)) {
-        fontFace->setWeight(value, exceptionState);
-        if (exceptionState.hadException())
+        fontFace->setWeight(value, es);
+        if (es.hadException())
             return 0;
     }
     if (descriptors.get("stretch", value)) {
-        fontFace->setStretch(value, exceptionState);
-        if (exceptionState.hadException())
+        fontFace->setStretch(value, es);
+        if (es.hadException())
             return 0;
     }
     if (descriptors.get("unicodeRange", value)) {
-        fontFace->setUnicodeRange(value, exceptionState);
-        if (exceptionState.hadException())
+        fontFace->setUnicodeRange(value, es);
+        if (es.hadException())
             return 0;
     }
     if (descriptors.get("variant", value)) {
-        fontFace->setVariant(value, exceptionState);
-        if (exceptionState.hadException())
+        fontFace->setVariant(value, es);
+        if (es.hadException())
             return 0;
     }
     if (descriptors.get("featureSettings", value)) {
-        fontFace->setFeatureSettings(value, exceptionState);
-        if (exceptionState.hadException())
+        fontFace->setFeatureSettings(value, es);
+        if (es.hadException())
             return 0;
     }
 
@@ -174,41 +174,41 @@ String FontFace::featureSettings() const
     return m_featureSettings ? m_featureSettings->cssText() : "normal";
 }
 
-void FontFace::setStyle(const String& s, ExceptionState& exceptionState)
+void FontFace::setStyle(const String& s, ExceptionState& es)
 {
-    setPropertyFromString(s, CSSPropertyFontStyle, exceptionState);
+    setPropertyFromString(s, CSSPropertyFontStyle, es);
 }
 
-void FontFace::setWeight(const String& s, ExceptionState& exceptionState)
+void FontFace::setWeight(const String& s, ExceptionState& es)
 {
-    setPropertyFromString(s, CSSPropertyFontWeight, exceptionState);
+    setPropertyFromString(s, CSSPropertyFontWeight, es);
 }
 
-void FontFace::setStretch(const String& s, ExceptionState& exceptionState)
+void FontFace::setStretch(const String& s, ExceptionState& es)
 {
-    setPropertyFromString(s, CSSPropertyFontStretch, exceptionState);
+    setPropertyFromString(s, CSSPropertyFontStretch, es);
 }
 
-void FontFace::setUnicodeRange(const String& s, ExceptionState& exceptionState)
+void FontFace::setUnicodeRange(const String& s, ExceptionState& es)
 {
-    setPropertyFromString(s, CSSPropertyUnicodeRange, exceptionState);
+    setPropertyFromString(s, CSSPropertyUnicodeRange, es);
 }
 
-void FontFace::setVariant(const String& s, ExceptionState& exceptionState)
+void FontFace::setVariant(const String& s, ExceptionState& es)
 {
-    setPropertyFromString(s, CSSPropertyFontVariant, exceptionState);
+    setPropertyFromString(s, CSSPropertyFontVariant, es);
 }
 
-void FontFace::setFeatureSettings(const String& s, ExceptionState& exceptionState)
+void FontFace::setFeatureSettings(const String& s, ExceptionState& es)
 {
-    setPropertyFromString(s, CSSPropertyWebkitFontFeatureSettings, exceptionState);
+    setPropertyFromString(s, CSSPropertyWebkitFontFeatureSettings, es);
 }
 
-void FontFace::setPropertyFromString(const String& s, CSSPropertyID propertyID, ExceptionState& exceptionState)
+void FontFace::setPropertyFromString(const String& s, CSSPropertyID propertyID, ExceptionState& es)
 {
     RefPtr<CSSValue> value = parseCSSValue(s, propertyID);
     if (!value || !setPropertyValue(value, propertyID))
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
 }
 
 bool FontFace::setPropertyFromStyle(const StylePropertySet* properties, CSSPropertyID propertyID)

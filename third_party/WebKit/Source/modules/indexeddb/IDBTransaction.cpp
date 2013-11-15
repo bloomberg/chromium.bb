@@ -135,10 +135,10 @@ void IDBTransaction::setError(PassRefPtr<DOMError> error)
     }
 }
 
-PassRefPtr<IDBObjectStore> IDBTransaction::objectStore(const String& name, ExceptionState& exceptionState)
+PassRefPtr<IDBObjectStore> IDBTransaction::objectStore(const String& name, ExceptionState& es)
 {
     if (m_state == Finished) {
-        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::transactionFinishedErrorMessage);
+        es.throwDOMException(InvalidStateError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
 
@@ -147,14 +147,14 @@ PassRefPtr<IDBObjectStore> IDBTransaction::objectStore(const String& name, Excep
         return it->value;
 
     if (!isVersionChange() && !m_objectStoreNames.contains(name)) {
-        exceptionState.throwDOMException(NotFoundError, IDBDatabase::noSuchObjectStoreErrorMessage);
+        es.throwDOMException(NotFoundError, IDBDatabase::noSuchObjectStoreErrorMessage);
         return 0;
     }
 
     int64_t objectStoreId = m_database->findObjectStoreId(name);
     if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
         ASSERT(isVersionChange());
-        exceptionState.throwDOMException(NotFoundError, IDBDatabase::noSuchObjectStoreErrorMessage);
+        es.throwDOMException(NotFoundError, IDBDatabase::noSuchObjectStoreErrorMessage);
         return 0;
     }
 
@@ -200,10 +200,10 @@ void IDBTransaction::setActive(bool active)
         backendDB()->commit(m_id);
 }
 
-void IDBTransaction::abort(ExceptionState& exceptionState)
+void IDBTransaction::abort(ExceptionState& es)
 {
     if (m_state == Finishing || m_state == Finished) {
-        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::transactionFinishedErrorMessage);
+        es.throwDOMException(InvalidStateError, IDBDatabase::transactionFinishedErrorMessage);
         return;
     }
 
@@ -294,7 +294,7 @@ bool IDBTransaction::hasPendingActivity() const
     return m_hasPendingActivity && !m_contextStopped;
 }
 
-IndexedDB::TransactionMode IDBTransaction::stringToMode(const String& modeString, ExceptionState& exceptionState)
+IndexedDB::TransactionMode IDBTransaction::stringToMode(const String& modeString, ExceptionState& es)
 {
     if (modeString.isNull()
         || modeString == IDBTransaction::modeReadOnly())
@@ -302,7 +302,7 @@ IndexedDB::TransactionMode IDBTransaction::stringToMode(const String& modeString
     if (modeString == IDBTransaction::modeReadWrite())
         return IndexedDB::TransactionReadWrite;
 
-    exceptionState.throwUninformativeAndGenericTypeError();
+    es.throwUninformativeAndGenericTypeError();
     return IndexedDB::TransactionReadOnly;
 }
 

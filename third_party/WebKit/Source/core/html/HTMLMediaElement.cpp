@@ -155,16 +155,16 @@ static void removeElementFromDocumentMap(HTMLMediaElement* element, Document* do
         map.add(document, set);
 }
 
-static void throwExceptionForMediaKeyException(MediaPlayer::MediaKeyException exception, ExceptionState& exceptionState)
+static void throwExceptionForMediaKeyException(MediaPlayer::MediaKeyException exception, ExceptionState& es)
 {
     switch (exception) {
     case MediaPlayer::NoError:
         return;
     case MediaPlayer::InvalidPlayerState:
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     case MediaPlayer::KeySystemNotSupported:
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
 
@@ -1801,7 +1801,7 @@ void HTMLMediaElement::prepareToPlay()
     m_player->prepareToPlay();
 }
 
-void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
+void HTMLMediaElement::seek(double time, ExceptionState& es)
 {
     LOG(Media, "HTMLMediaElement::seek(%f)", time);
 
@@ -1809,7 +1809,7 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
 
     // 1 - If the media element's readyState is HAVE_NOTHING, then raise an InvalidStateError exception.
     if (m_readyState == HAVE_NOTHING || !m_player) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
@@ -1975,13 +1975,13 @@ double HTMLMediaElement::currentTime() const
     return m_cachedTime;
 }
 
-void HTMLMediaElement::setCurrentTime(double time, ExceptionState& exceptionState)
+void HTMLMediaElement::setCurrentTime(double time, ExceptionState& es)
 {
     if (m_mediaController) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
-    seek(time, exceptionState);
+    seek(time, es);
 }
 
 double HTMLMediaElement::duration() const
@@ -2167,15 +2167,15 @@ void HTMLMediaElement::closeMediaSource()
     m_mediaSource = 0;
 }
 
-void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState& exceptionState)
+void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState& es)
 {
     if (keySystem.isEmpty()) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 
     if (!m_player) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
@@ -2187,33 +2187,33 @@ void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRef
     }
 
     MediaPlayer::MediaKeyException result = m_player->generateKeyRequest(keySystem, initDataPointer, initDataLength);
-    throwExceptionForMediaKeyException(result, exceptionState);
+    throwExceptionForMediaKeyException(result, es);
 }
 
-void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, ExceptionState& exceptionState)
+void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, ExceptionState& es)
 {
-    webkitGenerateKeyRequest(keySystem, Uint8Array::create(0), exceptionState);
+    webkitGenerateKeyRequest(keySystem, Uint8Array::create(0), es);
 }
 
-void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState& exceptionState)
+void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState& es)
 {
     if (keySystem.isEmpty()) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 
     if (!key) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 
     if (!key->length()) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
 
     if (!m_player) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
@@ -2225,28 +2225,28 @@ void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Arr
     }
 
     MediaPlayer::MediaKeyException result = m_player->addKey(keySystem, key->data(), key->length(), initDataPointer, initDataLength, sessionId);
-    throwExceptionForMediaKeyException(result, exceptionState);
+    throwExceptionForMediaKeyException(result, es);
 }
 
-void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, ExceptionState& exceptionState)
+void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, ExceptionState& es)
 {
-    webkitAddKey(keySystem, key, Uint8Array::create(0), String(), exceptionState);
+    webkitAddKey(keySystem, key, Uint8Array::create(0), String(), es);
 }
 
-void HTMLMediaElement::webkitCancelKeyRequest(const String& keySystem, const String& sessionId, ExceptionState& exceptionState)
+void HTMLMediaElement::webkitCancelKeyRequest(const String& keySystem, const String& sessionId, ExceptionState& es)
 {
     if (keySystem.isEmpty()) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 
     if (!m_player) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
     MediaPlayer::MediaKeyException result = m_player->cancelKeyRequest(keySystem, sessionId);
-    throwExceptionForMediaKeyException(result, exceptionState);
+    throwExceptionForMediaKeyException(result, es);
 }
 
 bool HTMLMediaElement::loop() const
@@ -2286,12 +2286,12 @@ double HTMLMediaElement::volume() const
     return m_volume;
 }
 
-void HTMLMediaElement::setVolume(double vol, ExceptionState& exceptionState)
+void HTMLMediaElement::setVolume(double vol, ExceptionState& es)
 {
     LOG(Media, "HTMLMediaElement::setVolume(%f)", vol);
 
     if (vol < 0.0f || vol > 1.0f) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -2533,7 +2533,7 @@ void HTMLMediaElement::removeAllInbandTracks()
     }
 }
 
-PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const String& kind, const String& label, const String& language, ExceptionState& exceptionState)
+PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const String& kind, const String& label, const String& language, ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::videoTrackEnabled());
 
@@ -2542,7 +2542,7 @@ PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const String& kind, const S
 
     // 1. If kind is not one of the following strings, then throw a SyntaxError exception and abort these steps
     if (!TextTrack::isValidKindKeyword(kind)) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return 0;
     }
 

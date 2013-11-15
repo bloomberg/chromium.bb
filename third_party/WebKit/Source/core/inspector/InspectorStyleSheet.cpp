@@ -547,13 +547,13 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> > Insp
 //
 // The propertyText (if not empty) is checked to be a valid style declaration (containing at least one property). If not,
 // the method returns false (denoting an error).
-bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText, bool overwrite, String* oldText, ExceptionState& exceptionState)
+bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText, bool overwrite, String* oldText, ExceptionState& es)
 {
     ASSERT(m_parentStyleSheet);
     DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
 
     if (!m_parentStyleSheet->ensureParsedDataReady()) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
 
@@ -568,27 +568,27 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
 
         // At least one property + the bogus property added just above should be present.
         if (propertyCount < 2) {
-            exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+            es.throwUninformativeAndGenericDOMException(SyntaxError);
             return false;
         }
 
         // Check for the proper propertyText termination (the parser could at least restore to the PROPERTY_NAME state).
         if (propertyData.at(propertyCount - 1).name != bogusPropertyName) {
-            exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+            es.throwUninformativeAndGenericDOMException(SyntaxError);
             return false;
         }
     }
 
     RefPtr<CSSRuleSourceData> sourceData = extractSourceData();
     if (!sourceData) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
 
     String text;
     bool success = styleText(&text);
     if (!success) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
 
@@ -598,7 +598,7 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
     InspectorStyleTextEditor editor(&allProperties, text, newLineAndWhitespaceDelimiters());
     if (overwrite) {
         if (index >= allProperties.size()) {
-            exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+            es.throwUninformativeAndGenericDOMException(IndexSizeError);
             return false;
         }
         *oldText = allProperties.at(index).rawText;
@@ -609,31 +609,31 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
     return applyStyleText(editor.styleText());
 }
 
-bool InspectorStyle::toggleProperty(unsigned index, bool disable, ExceptionState& exceptionState)
+bool InspectorStyle::toggleProperty(unsigned index, bool disable, ExceptionState& es)
 {
     ASSERT(m_parentStyleSheet);
     if (!m_parentStyleSheet->ensureParsedDataReady()) {
-        exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+        es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
         return false;
     }
 
     RefPtr<CSSRuleSourceData> sourceData = extractSourceData();
     if (!sourceData) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
 
     String text;
     bool success = styleText(&text);
     if (!success) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
 
     Vector<InspectorStyleProperty> allProperties;
     populateAllProperties(allProperties);
     if (index >= allProperties.size()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return false;
     }
 
@@ -1028,9 +1028,9 @@ void InspectorStyleSheet::reparseStyleSheet(const String& text)
     m_pageStyleSheet->ownerDocument()->styleResolverChanged(RecalcStyleImmediately, FullStyleUpdate);
 }
 
-bool InspectorStyleSheet::setText(const String& text, ExceptionState& exceptionState)
+bool InspectorStyleSheet::setText(const String& text, ExceptionState& es)
 {
-    if (!checkPageStyleSheet(exceptionState))
+    if (!checkPageStyleSheet(es))
         return false;
     if (!m_parsedStyleSheet)
         return false;
@@ -1041,35 +1041,35 @@ bool InspectorStyleSheet::setText(const String& text, ExceptionState& exceptionS
     return true;
 }
 
-String InspectorStyleSheet::ruleSelector(const InspectorCSSId& id, ExceptionState& exceptionState)
+String InspectorStyleSheet::ruleSelector(const InspectorCSSId& id, ExceptionState& es)
 {
     CSSStyleRule* rule = ruleForId(id);
     if (!rule) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return "";
     }
     return rule->selectorText();
 }
 
-bool InspectorStyleSheet::setRuleSelector(const InspectorCSSId& id, const String& selector, ExceptionState& exceptionState)
+bool InspectorStyleSheet::setRuleSelector(const InspectorCSSId& id, const String& selector, ExceptionState& es)
 {
-    if (!checkPageStyleSheet(exceptionState))
+    if (!checkPageStyleSheet(es))
         return false;
     CSSStyleRule* rule = ruleForId(id);
     if (!rule) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
     CSSStyleSheet* styleSheet = rule->parentStyleSheet();
     if (!styleSheet || !ensureParsedDataReady()) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
 
     rule->setSelectorText(selector);
     RefPtr<CSSRuleSourceData> sourceData = ruleSourceDataFor(rule->style());
     if (!sourceData) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
 
@@ -1087,26 +1087,26 @@ static bool checkStyleRuleSelector(Document* document, const String& selector)
     return selectorList.isValid();
 }
 
-CSSStyleRule* InspectorStyleSheet::addRule(const String& selector, ExceptionState& exceptionState)
+CSSStyleRule* InspectorStyleSheet::addRule(const String& selector, ExceptionState& es)
 {
-    if (!checkPageStyleSheet(exceptionState))
+    if (!checkPageStyleSheet(es))
         return 0;
     if (!checkStyleRuleSelector(m_pageStyleSheet->ownerDocument(), selector)) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return 0;
     }
 
     String text;
     bool success = getText(&text);
     if (!success) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return 0;
     }
     StringBuilder styleSheetText;
     styleSheetText.append(text);
 
-    m_pageStyleSheet->addRule(selector, "", exceptionState);
-    if (exceptionState.hadException())
+    m_pageStyleSheet->addRule(selector, "", es);
+    if (es.hadException())
         return 0;
     ASSERT(m_pageStyleSheet->length());
     unsigned lastRuleIndex = m_pageStyleSheet->length() - 1;
@@ -1118,7 +1118,7 @@ CSSStyleRule* InspectorStyleSheet::addRule(const String& selector, ExceptionStat
         // What we just added has to be a CSSStyleRule - we cannot handle other types of rules yet.
         // If it is not a style rule, pretend we never touched the stylesheet.
         m_pageStyleSheet->deleteRule(lastRuleIndex, ASSERT_NO_EXCEPTION);
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return 0;
     }
 
@@ -1135,31 +1135,31 @@ CSSStyleRule* InspectorStyleSheet::addRule(const String& selector, ExceptionStat
     return styleRule;
 }
 
-bool InspectorStyleSheet::deleteRule(const InspectorCSSId& id, ExceptionState& exceptionState)
+bool InspectorStyleSheet::deleteRule(const InspectorCSSId& id, ExceptionState& es)
 {
-    if (!checkPageStyleSheet(exceptionState))
+    if (!checkPageStyleSheet(es))
         return false;
     RefPtr<CSSStyleRule> rule = ruleForId(id);
     if (!rule) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
     CSSStyleSheet* styleSheet = rule->parentStyleSheet();
     if (!styleSheet || !ensureParsedDataReady()) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
 
     RefPtr<CSSRuleSourceData> sourceData = ruleSourceDataFor(rule->style());
     if (!sourceData) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
 
-    styleSheet->deleteRule(id.ordinal(), exceptionState);
+    styleSheet->deleteRule(id.ordinal(), es);
     // |rule| MAY NOT be addressed after this line!
 
-    if (exceptionState.hadException())
+    if (es.hadException())
         return false;
 
     String sheetText = m_parsedStyleSheet->text();
@@ -1329,17 +1329,17 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyleSheet::buildObjectForStyle(
     return result.release();
 }
 
-bool InspectorStyleSheet::setStyleText(const InspectorCSSId& id, const String& text, String* oldText, ExceptionState& exceptionState)
+bool InspectorStyleSheet::setStyleText(const InspectorCSSId& id, const String& text, String* oldText, ExceptionState& es)
 {
     RefPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
     if (!inspectorStyle || !inspectorStyle->cssStyle()) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
 
     bool success = inspectorStyle->styleText(oldText);
     if (!success) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
 
@@ -1347,33 +1347,33 @@ bool InspectorStyleSheet::setStyleText(const InspectorCSSId& id, const String& t
     if (success)
         fireStyleSheetChanged();
     else
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
     return success;
 }
 
-bool InspectorStyleSheet::setPropertyText(const InspectorCSSId& id, unsigned propertyIndex, const String& text, bool overwrite, String* oldText, ExceptionState& exceptionState)
+bool InspectorStyleSheet::setPropertyText(const InspectorCSSId& id, unsigned propertyIndex, const String& text, bool overwrite, String* oldText, ExceptionState& es)
 {
     RefPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
     if (!inspectorStyle) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
 
-    bool success = inspectorStyle->setPropertyText(propertyIndex, text, overwrite, oldText, exceptionState);
+    bool success = inspectorStyle->setPropertyText(propertyIndex, text, overwrite, oldText, es);
     if (success)
         fireStyleSheetChanged();
     return success;
 }
 
-bool InspectorStyleSheet::toggleProperty(const InspectorCSSId& id, unsigned propertyIndex, bool disable, ExceptionState& exceptionState)
+bool InspectorStyleSheet::toggleProperty(const InspectorCSSId& id, unsigned propertyIndex, bool disable, ExceptionState& es)
 {
     RefPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
     if (!inspectorStyle) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return false;
     }
 
-    bool success = inspectorStyle->toggleProperty(propertyIndex, disable, exceptionState);
+    bool success = inspectorStyle->toggleProperty(propertyIndex, disable, es);
     if (success)
         fireStyleSheetChanged();
     return success;
@@ -1540,10 +1540,10 @@ unsigned InspectorStyleSheet::ruleIndexByRule(const CSSRule* rule) const
     return index == kNotFound ? UINT_MAX : static_cast<unsigned>(index);
 }
 
-bool InspectorStyleSheet::checkPageStyleSheet(ExceptionState& exceptionState) const
+bool InspectorStyleSheet::checkPageStyleSheet(ExceptionState& es) const
 {
     if (!m_pageStyleSheet) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return false;
     }
     return true;
@@ -1609,12 +1609,12 @@ bool InspectorStyleSheet::setStyleText(CSSStyleDeclaration* style, const String&
     if (id.isEmpty())
         return false;
 
-    TrackExceptionState exceptionState;
-    style->setCSSText(text, exceptionState);
-    if (!exceptionState.hadException())
+    TrackExceptionState es;
+    style->setCSSText(text, es);
+    if (!es.hadException())
         m_parsedStyleSheet->setText(patchedStyleSheetText);
 
-    return !exceptionState.hadException();
+    return !es.hadException();
 }
 
 bool InspectorStyleSheet::styleSheetTextWithChangedStyle(CSSStyleDeclaration* style, const String& newStyleText, String* result)
@@ -1735,17 +1735,17 @@ bool InspectorStyleSheetForInlineStyle::getText(String* result) const
 bool InspectorStyleSheetForInlineStyle::setStyleText(CSSStyleDeclaration* style, const String& text)
 {
     ASSERT_UNUSED(style, style == inlineStyle());
-    TrackExceptionState exceptionState;
+    TrackExceptionState es;
 
     {
         InspectorCSSAgent::InlineStyleOverrideScope overrideScope(m_element->ownerDocument());
-        m_element->setAttribute("style", text, exceptionState);
+        m_element->setAttribute("style", text, es);
     }
 
     m_styleText = text;
     m_isStyleTextValid = true;
     m_ruleSourceData.clear();
-    return !exceptionState.hadException();
+    return !es.hadException();
 }
 
 PassOwnPtr<Vector<unsigned> > InspectorStyleSheetForInlineStyle::lineEndings() const

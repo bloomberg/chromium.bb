@@ -51,12 +51,12 @@ void DeleteFromTextNodeCommand::doApply()
     if (!m_node->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable))
         return;
 
-    TrackExceptionState exceptionState;
-    m_text = m_node->substringData(m_offset, m_count, exceptionState);
-    if (exceptionState.hadException())
+    TrackExceptionState es;
+    m_text = m_node->substringData(m_offset, m_count, es);
+    if (es.hadException())
         return;
 
-    m_node->deleteData(m_offset, m_count, exceptionState, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
+    m_node->deleteData(m_offset, m_count, es, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
 }
 
 void DeleteFromTextNodeCommand::doUnapply()

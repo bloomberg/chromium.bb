@@ -121,20 +121,20 @@ String MediaStreamTrack::readyState() const
     return String();
 }
 
-void MediaStreamTrack::getSources(ExecutionContext* context, PassRefPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& exceptionState)
+void MediaStreamTrack::getSources(ExecutionContext* context, PassRefPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& es)
 {
     RefPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequest::create(context, callback);
     if (!MediaStreamCenter::instance().getMediaStreamTrackSources(request.release()))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("getSources", "MediaStreamTrack", "Functionality not implemented yet"));
+        es.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("getSources", "MediaStreamTrack", "Functionality not implemented yet"));
 }
 
-void MediaStreamTrack::stopTrack(ExceptionState& exceptionState)
+void MediaStreamTrack::stopTrack(ExceptionState& es)
 {
     if (ended())
         return;
 
     if (!MediaStreamCenter::instance().didStopMediaStreamTrack(component()))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("stop", "MediaStreamTrack", "Functionality not implemented yet"));
+        es.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("stop", "MediaStreamTrack", "Functionality not implemented yet"));
 }
 
 bool MediaStreamTrack::ended() const

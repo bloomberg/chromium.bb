@@ -121,31 +121,31 @@ double NumberInputType::valueAsDouble() const
     return parseToDoubleForNumberType(element().value());
 }
 
-void NumberInputType::setValueAsDouble(double newValue, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState) const
+void NumberInputType::setValueAsDouble(double newValue, TextFieldEventBehavior eventBehavior, ExceptionState& es) const
 {
     // FIXME: We should use numeric_limits<double>::max for number input type.
     const double floatMax = numeric_limits<float>::max();
     if (newValue < -floatMax) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     if (newValue > floatMax) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     element().setValue(serializeForNumberType(newValue), eventBehavior);
 }
 
-void NumberInputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState) const
+void NumberInputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventBehavior eventBehavior, ExceptionState& es) const
 {
     // FIXME: We should use numeric_limits<double>::max for number input type.
     const Decimal floatMax = Decimal::fromDouble(numeric_limits<float>::max());
     if (newValue < -floatMax) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     if (newValue > floatMax) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     element().setValue(serializeForNumberType(newValue), eventBehavior);

@@ -56,22 +56,22 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& es)
     {
         m_anchorNode = m_node->nextSibling();
-        return redo(exceptionState);
+        return redo(es);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& es)
     {
-        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), exceptionState);
-        return !exceptionState.hadException();
+        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), es);
+        return !es.hadException();
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& es)
     {
-        m_parentNode->removeChild(m_node.get(), exceptionState);
-        return !exceptionState.hadException();
+        m_parentNode->removeChild(m_node.get(), es);
+        return !es.hadException();
     }
 
 private:
@@ -91,33 +91,33 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& es)
     {
         if (m_node->parentNode()) {
             m_removeChildAction = adoptPtr(new RemoveChildAction(m_node->parentNode(), m_node.get()));
-            if (!m_removeChildAction->perform(exceptionState))
+            if (!m_removeChildAction->perform(es))
                 return false;
         }
-        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), exceptionState);
-        return !exceptionState.hadException();
+        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), es);
+        return !es.hadException();
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& es)
     {
-        m_parentNode->removeChild(m_node.get(), exceptionState);
-        if (exceptionState.hadException())
+        m_parentNode->removeChild(m_node.get(), es);
+        if (es.hadException())
             return false;
         if (m_removeChildAction)
-            return m_removeChildAction->undo(exceptionState);
+            return m_removeChildAction->undo(es);
         return true;
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& es)
     {
-        if (m_removeChildAction && !m_removeChildAction->redo(exceptionState))
+        if (m_removeChildAction && !m_removeChildAction->redo(es))
             return false;
-        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), exceptionState);
-        return !exceptionState.hadException();
+        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), es);
+        return !es.hadException();
     }
 
 private:
@@ -137,15 +137,15 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& es)
     {
         m_value = m_element->getAttribute(m_name);
-        return redo(exceptionState);
+        return redo(es);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& es)
     {
-        m_element->setAttribute(m_name, m_value, exceptionState);
+        m_element->setAttribute(m_name, m_value, es);
         return true;
     }
 
@@ -173,26 +173,26 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& es)
     {
         m_hadAttribute = m_element->hasAttribute(m_name);
         if (m_hadAttribute)
             m_oldValue = m_element->getAttribute(m_name);
-        return redo(exceptionState);
+        return redo(es);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& es)
     {
         if (m_hadAttribute)
-            m_element->setAttribute(m_name, m_oldValue, exceptionState);
+            m_element->setAttribute(m_name, m_oldValue, es);
         else
             m_element->removeAttribute(m_name);
         return true;
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& es)
     {
-        m_element->setAttribute(m_name, m_value, exceptionState);
+        m_element->setAttribute(m_name, m_value, es);
         return true;
     }
 
@@ -218,23 +218,23 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& es)
     {
         m_oldHTML = createMarkup(m_node.get());
         ASSERT(m_node->ownerDocument());
         DOMPatchSupport domPatchSupport(m_domEditor.get(), *m_node->ownerDocument());
-        m_newNode = domPatchSupport.patchNode(m_node.get(), m_html, exceptionState);
-        return !exceptionState.hadException();
+        m_newNode = domPatchSupport.patchNode(m_node.get(), m_html, es);
+        return !es.hadException();
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& es)
     {
-        return m_history->undo(exceptionState);
+        return m_history->undo(es);
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& es)
     {
-        return m_history->redo(exceptionState);
+        return m_history->redo(es);
     }
 
     Node* newNode()
@@ -262,10 +262,10 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& es)
     {
         m_oldText = m_textNode->wholeText();
-        return redo(exceptionState);
+        return redo(es);
     }
 
     virtual bool undo(ExceptionState&)
@@ -297,21 +297,21 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& es)
     {
-        return redo(exceptionState);
+        return redo(es);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& es)
     {
-        m_parentNode->replaceChild(m_oldNode, m_newNode.get(), exceptionState);
-        return !exceptionState.hadException();
+        m_parentNode->replaceChild(m_oldNode, m_newNode.get(), es);
+        return !es.hadException();
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& es)
     {
-        m_parentNode->replaceChild(m_newNode, m_oldNode.get(), exceptionState);
-        return !exceptionState.hadException();
+        m_parentNode->replaceChild(m_newNode, m_oldNode.get(), es);
+        return !es.hadException();
     }
 
 private:
@@ -358,102 +358,102 @@ DOMEditor::DOMEditor(InspectorHistory* history) : m_history(history) { }
 
 DOMEditor::~DOMEditor() { }
 
-bool DOMEditor::insertBefore(Node* parentNode, PassRefPtr<Node> node, Node* anchorNode, ExceptionState& exceptionState)
+bool DOMEditor::insertBefore(Node* parentNode, PassRefPtr<Node> node, Node* anchorNode, ExceptionState& es)
 {
-    return m_history->perform(adoptPtr(new InsertBeforeAction(parentNode, node, anchorNode)), exceptionState);
+    return m_history->perform(adoptPtr(new InsertBeforeAction(parentNode, node, anchorNode)), es);
 }
 
-bool DOMEditor::removeChild(Node* parentNode, Node* node, ExceptionState& exceptionState)
+bool DOMEditor::removeChild(Node* parentNode, Node* node, ExceptionState& es)
 {
-    return m_history->perform(adoptPtr(new RemoveChildAction(parentNode, node)), exceptionState);
+    return m_history->perform(adoptPtr(new RemoveChildAction(parentNode, node)), es);
 }
 
-bool DOMEditor::setAttribute(Element* element, const String& name, const String& value, ExceptionState& exceptionState)
+bool DOMEditor::setAttribute(Element* element, const String& name, const String& value, ExceptionState& es)
 {
-    return m_history->perform(adoptPtr(new SetAttributeAction(element, name, value)), exceptionState);
+    return m_history->perform(adoptPtr(new SetAttributeAction(element, name, value)), es);
 }
 
-bool DOMEditor::removeAttribute(Element* element, const String& name, ExceptionState& exceptionState)
+bool DOMEditor::removeAttribute(Element* element, const String& name, ExceptionState& es)
 {
-    return m_history->perform(adoptPtr(new RemoveAttributeAction(element, name)), exceptionState);
+    return m_history->perform(adoptPtr(new RemoveAttributeAction(element, name)), es);
 }
 
-bool DOMEditor::setOuterHTML(Node* node, const String& html, Node** newNode, ExceptionState& exceptionState)
+bool DOMEditor::setOuterHTML(Node* node, const String& html, Node** newNode, ExceptionState& es)
 {
     OwnPtr<SetOuterHTMLAction> action = adoptPtr(new SetOuterHTMLAction(node, html));
     SetOuterHTMLAction* rawAction = action.get();
-    bool result = m_history->perform(action.release(), exceptionState);
+    bool result = m_history->perform(action.release(), es);
     if (result)
         *newNode = rawAction->newNode();
     return result;
 }
 
-bool DOMEditor::replaceWholeText(Text* textNode, const String& text, ExceptionState& exceptionState)
+bool DOMEditor::replaceWholeText(Text* textNode, const String& text, ExceptionState& es)
 {
-    return m_history->perform(adoptPtr(new ReplaceWholeTextAction(textNode, text)), exceptionState);
+    return m_history->perform(adoptPtr(new ReplaceWholeTextAction(textNode, text)), es);
 }
 
-bool DOMEditor::replaceChild(Node* parentNode, PassRefPtr<Node> newNode, Node* oldNode, ExceptionState& exceptionState)
+bool DOMEditor::replaceChild(Node* parentNode, PassRefPtr<Node> newNode, Node* oldNode, ExceptionState& es)
 {
-    return m_history->perform(adoptPtr(new ReplaceChildNodeAction(parentNode, newNode, oldNode)), exceptionState);
+    return m_history->perform(adoptPtr(new ReplaceChildNodeAction(parentNode, newNode, oldNode)), es);
 }
 
-bool DOMEditor::setNodeValue(Node* node, const String& value, ExceptionState& exceptionState)
+bool DOMEditor::setNodeValue(Node* node, const String& value, ExceptionState& es)
 {
-    return m_history->perform(adoptPtr(new SetNodeValueAction(node, value)), exceptionState);
+    return m_history->perform(adoptPtr(new SetNodeValueAction(node, value)), es);
 }
 
-static void populateErrorString(ExceptionState& exceptionState, ErrorString* errorString)
+static void populateErrorString(ExceptionState& es, ErrorString* errorString)
 {
-    if (exceptionState.hadException())
-        *errorString = DOMException::getErrorName(exceptionState.code());
+    if (es.hadException())
+        *errorString = DOMException::getErrorName(es.code());
 }
 
 bool DOMEditor::insertBefore(Node* parentNode, PassRefPtr<Node> node, Node* anchorNode, ErrorString* errorString)
 {
-    TrackExceptionState exceptionState;
-    bool result = insertBefore(parentNode, node, anchorNode, exceptionState);
-    populateErrorString(exceptionState, errorString);
+    TrackExceptionState es;
+    bool result = insertBefore(parentNode, node, anchorNode, es);
+    populateErrorString(es, errorString);
     return result;
 }
 
 bool DOMEditor::removeChild(Node* parentNode, Node* node, ErrorString* errorString)
 {
-    TrackExceptionState exceptionState;
-    bool result = removeChild(parentNode, node, exceptionState);
-    populateErrorString(exceptionState, errorString);
+    TrackExceptionState es;
+    bool result = removeChild(parentNode, node, es);
+    populateErrorString(es, errorString);
     return result;
 }
 
 bool DOMEditor::setAttribute(Element* element, const String& name, const String& value, ErrorString* errorString)
 {
-    TrackExceptionState exceptionState;
-    bool result = setAttribute(element, name, value, exceptionState);
-    populateErrorString(exceptionState, errorString);
+    TrackExceptionState es;
+    bool result = setAttribute(element, name, value, es);
+    populateErrorString(es, errorString);
     return result;
 }
 
 bool DOMEditor::removeAttribute(Element* element, const String& name, ErrorString* errorString)
 {
-    TrackExceptionState exceptionState;
-    bool result = removeAttribute(element, name, exceptionState);
-    populateErrorString(exceptionState, errorString);
+    TrackExceptionState es;
+    bool result = removeAttribute(element, name, es);
+    populateErrorString(es, errorString);
     return result;
 }
 
 bool DOMEditor::setOuterHTML(Node* node, const String& html, Node** newNode, ErrorString* errorString)
 {
-    TrackExceptionState exceptionState;
-    bool result = setOuterHTML(node, html, newNode, exceptionState);
-    populateErrorString(exceptionState, errorString);
+    TrackExceptionState es;
+    bool result = setOuterHTML(node, html, newNode, es);
+    populateErrorString(es, errorString);
     return result;
 }
 
 bool DOMEditor::replaceWholeText(Text* textNode, const String& text, ErrorString* errorString)
 {
-    TrackExceptionState exceptionState;
-    bool result = replaceWholeText(textNode, text, exceptionState);
-    populateErrorString(exceptionState, errorString);
+    TrackExceptionState es;
+    bool result = replaceWholeText(textNode, text, es);
+    populateErrorString(es, errorString);
     return result;
 }
 

@@ -898,7 +898,7 @@ struct _xmlSAX2Namespace {
 };
 typedef struct _xmlSAX2Namespace xmlSAX2Namespace;
 
-static inline void handleNamespaceAttributes(Vector<Attribute>& prefixedAttributes, const xmlChar** libxmlNamespaces, int nbNamespaces, ExceptionState& exceptionState)
+static inline void handleNamespaceAttributes(Vector<Attribute>& prefixedAttributes, const xmlChar** libxmlNamespaces, int nbNamespaces, ExceptionState& es)
 {
     xmlSAX2Namespace* namespaces = reinterpret_cast<xmlSAX2Namespace*>(libxmlNamespaces);
     for (int i = 0; i < nbNamespaces; i++) {
@@ -908,7 +908,7 @@ static inline void handleNamespaceAttributes(Vector<Attribute>& prefixedAttribut
             namespaceQName = "xmlns:" + toString(namespaces[i].prefix);
 
         QualifiedName parsedName = anyName;
-        if (!Element::parseAttributeName(parsedName, XMLNSNames::xmlnsNamespaceURI, namespaceQName, exceptionState))
+        if (!Element::parseAttributeName(parsedName, XMLNSNames::xmlnsNamespaceURI, namespaceQName, es))
             return;
 
         prefixedAttributes.append(Attribute(parsedName, namespaceURI));
@@ -924,7 +924,7 @@ struct _xmlSAX2Attributes {
 };
 typedef struct _xmlSAX2Attributes xmlSAX2Attributes;
 
-static inline void handleElementAttributes(Vector<Attribute>& prefixedAttributes, const xmlChar** libxmlAttributes, int nbAttributes, ExceptionState& exceptionState)
+static inline void handleElementAttributes(Vector<Attribute>& prefixedAttributes, const xmlChar** libxmlAttributes, int nbAttributes, ExceptionState& es)
 {
     xmlSAX2Attributes* attributes = reinterpret_cast<xmlSAX2Attributes*>(libxmlAttributes);
     for (int i = 0; i < nbAttributes; i++) {
@@ -935,7 +935,7 @@ static inline void handleElementAttributes(Vector<Attribute>& prefixedAttributes
         AtomicString attrQName = attrPrefix.isEmpty() ? toAtomicString(attributes[i].localname) : attrPrefix + ":" + toString(attributes[i].localname);
 
         QualifiedName parsedName = anyName;
-        if (!Element::parseAttributeName(parsedName, attrURI, attrQName, exceptionState))
+        if (!Element::parseAttributeName(parsedName, attrURI, attrQName, es))
             return;
 
         prefixedAttributes.append(Attribute(parsedName, attrValue));
@@ -975,17 +975,17 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
     }
 
     Vector<Attribute> prefixedAttributes;
-    TrackExceptionState exceptionState;
-    handleNamespaceAttributes(prefixedAttributes, libxmlNamespaces, nbNamespaces, exceptionState);
-    if (exceptionState.hadException()) {
+    TrackExceptionState es;
+    handleNamespaceAttributes(prefixedAttributes, libxmlNamespaces, nbNamespaces, es);
+    if (es.hadException()) {
         setAttributes(newElement.get(), prefixedAttributes, parserContentPolicy());
         stopParsing();
         return;
     }
 
-    handleElementAttributes(prefixedAttributes, libxmlAttributes, nbAttributes, exceptionState);
+    handleElementAttributes(prefixedAttributes, libxmlAttributes, nbAttributes, es);
     setAttributes(newElement.get(), prefixedAttributes, parserContentPolicy());
-    if (exceptionState.hadException()) {
+    if (es.hadException()) {
         stopParsing();
         return;
     }
@@ -1142,9 +1142,9 @@ void XMLDocumentParser::processingInstruction(const String& target, const String
     exitText();
 
     // ### handle exceptions
-    TrackExceptionState exceptionState;
-    RefPtr<ProcessingInstruction> pi = m_currentNode->document().createProcessingInstruction(target, data, exceptionState);
-    if (exceptionState.hadException())
+    TrackExceptionState es;
+    RefPtr<ProcessingInstruction> pi = m_currentNode->document().createProcessingInstruction(target, data, es);
+    if (es.hadException())
         return;
 
     pi->setCreatedByParser(true);

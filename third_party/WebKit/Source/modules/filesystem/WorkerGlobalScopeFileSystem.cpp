@@ -63,17 +63,17 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(WorkerGlobalScope* wor
     LocalFileSystem::from(worker)->requestFileSystem(worker, fileSystemType, size, FileSystemCallbacks::create(successCallback, errorCallback, worker, fileSystemType));
 }
 
-PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(WorkerGlobalScope* worker, int type, long long size, ExceptionState& exceptionState)
+PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(WorkerGlobalScope* worker, int type, long long size, ExceptionState& es)
 {
     ExecutionContext* secureContext = worker->executionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem()) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("webkitRequestFileSystemSync", "WorkerGlobalScopeFileSystem", FileError::securityErrorMessage));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("webkitRequestFileSystemSync", "WorkerGlobalScopeFileSystem", FileError::securityErrorMessage));
         return 0;
     }
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
-        exceptionState.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("webkitRequestFileSystemSync", "WorkerGlobalScopeFileSystem", "the type must be TEMPORARY or PERSISTENT."));
+        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("webkitRequestFileSystemSync", "WorkerGlobalScopeFileSystem", "the type must be TEMPORARY or PERSISTENT."));
         return 0;
     }
 
@@ -82,7 +82,7 @@ PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSyst
     callbacks->setShouldBlockUntilCompletion(true);
 
     LocalFileSystem::from(worker)->requestFileSystem(worker, fileSystemType, size, callbacks.release());
-    return helper.getResult(exceptionState);
+    return helper.getResult(es);
 }
 
 void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalScope* worker, const String& url, PassRefPtr<EntryCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
@@ -102,17 +102,17 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalSc
     LocalFileSystem::from(worker)->resolveURL(worker, completedURL, ResolveURICallbacks::create(successCallback, errorCallback, worker));
 }
 
-PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope* worker, const String& url, ExceptionState& exceptionState)
+PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope* worker, const String& url, ExceptionState& es)
 {
     KURL completedURL = worker->completeURL(url);
     ExecutionContext* secureContext = worker->executionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem() || !secureContext->securityOrigin()->canRequest(completedURL)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("webkitResolveLocalFileSystemSyncURL", "WorkerGlobalScopeFileSystem", FileError::securityErrorMessage));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("webkitResolveLocalFileSystemSyncURL", "WorkerGlobalScopeFileSystem", FileError::securityErrorMessage));
         return 0;
     }
 
     if (!completedURL.isValid()) {
-        exceptionState.throwDOMException(EncodingError, ExceptionMessages::failedToExecute("webkitResolveLocalFileSystemSyncURL", "WorkerGlobalScopeFileSystem", "the URL '" + url + "' is invalid."));
+        es.throwDOMException(EncodingError, ExceptionMessages::failedToExecute("webkitResolveLocalFileSystemSyncURL", "WorkerGlobalScopeFileSystem", "the URL '" + url + "' is invalid."));
         return 0;
     }
 
@@ -122,7 +122,7 @@ PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemS
 
     LocalFileSystem::from(worker)->resolveURL(worker, completedURL, callbacks.release());
 
-    RefPtr<EntrySync> entry = resolveURLHelper.getResult(exceptionState);
+    RefPtr<EntrySync> entry = resolveURLHelper.getResult(es);
     if (!entry)
         return 0;
     return entry.release();

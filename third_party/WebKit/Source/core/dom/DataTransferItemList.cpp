@@ -62,10 +62,10 @@ PassRefPtr<DataTransferItem> DataTransferItemList::item(unsigned long index)
     return DataTransferItem::create(m_clipboard, item);
 }
 
-void DataTransferItemList::deleteItem(unsigned long index, ExceptionState& exceptionState)
+void DataTransferItemList::deleteItem(unsigned long index, ExceptionState& es)
 {
     if (!m_clipboard->canWriteData()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     m_dataObject->deleteItem(index);
@@ -78,11 +78,11 @@ void DataTransferItemList::clear()
     m_dataObject->clearAll();
 }
 
-PassRefPtr<DataTransferItem> DataTransferItemList::add(const String& data, const String& type, ExceptionState& exceptionState)
+PassRefPtr<DataTransferItem> DataTransferItemList::add(const String& data, const String& type, ExceptionState& es)
 {
     if (!m_clipboard->canWriteData())
         return 0;
-    RefPtr<ChromiumDataObjectItem> item = m_dataObject->add(data, type, exceptionState);
+    RefPtr<ChromiumDataObjectItem> item = m_dataObject->add(data, type, es);
     if (!item)
         return 0;
     return DataTransferItem::create(m_clipboard, item);

@@ -91,21 +91,21 @@ void Attr::createTextChild()
     }
 }
 
-void Attr::setPrefix(const AtomicString& prefix, ExceptionState& exceptionState)
+void Attr::setPrefix(const AtomicString& prefix, ExceptionState& es)
 {
     UseCounter::count(document(), UseCounter::AttributeSetPrefix);
 
-    checkSetPrefix(prefix, exceptionState);
-    if (exceptionState.hadException())
+    checkSetPrefix(prefix, es);
+    if (es.hadException())
         return;
 
     if (prefix == xmlnsAtom && namespaceURI() != XMLNSNames::xmlnsNamespaceURI) {
-        exceptionState.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Attr", "The prefix '" + xmlnsAtom + "' may not be used on the namespace '" + namespaceURI() + "'."));
+        es.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Attr", "The prefix '" + xmlnsAtom + "' may not be used on the namespace '" + namespaceURI() + "'."));
         return;
     }
 
     if (this->qualifiedName() == xmlnsAtom) {
-        exceptionState.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Attr", "The prefix '" + prefix + "' may not be used as a namespace prefix for attributes whose qualified name is '" + xmlnsAtom + "'."));
+        es.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Attr", "The prefix '" + prefix + "' may not be used as a namespace prefix for attributes whose qualified name is '" + xmlnsAtom + "'."));
         return;
     }
 

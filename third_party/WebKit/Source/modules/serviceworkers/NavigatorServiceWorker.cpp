@@ -92,12 +92,12 @@ NavigatorServiceWorker* NavigatorServiceWorker::from(Navigator* navigator)
     return supplement;
 }
 
-ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* context, Navigator* navigator, const String& pattern, const String& url, ExceptionState& exceptionState)
+ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* context, Navigator* navigator, const String& pattern, const String& url, ExceptionState& es)
 {
-    return from(navigator)->registerServiceWorker(context, pattern, url, exceptionState);
+    return from(navigator)->registerServiceWorker(context, pattern, url, es);
 }
 
-ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* executionContext, const String& pattern, const String& scriptSrc, ExceptionState& exceptionState)
+ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* executionContext, const String& pattern, const String& scriptSrc, ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     ScriptPromise promise = ScriptPromise::createPending(executionContext);
@@ -127,12 +127,12 @@ ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* ex
     return promise;
 }
 
-ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* context, Navigator* navigator, const String& pattern, ExceptionState& exceptionState)
+ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* context, Navigator* navigator, const String& pattern, ExceptionState& es)
 {
-    return from(navigator)->unregisterServiceWorker(context, pattern, exceptionState);
+    return from(navigator)->unregisterServiceWorker(context, pattern, es);
 }
 
-ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* executionContext, const String& pattern, ExceptionState& exceptionState)
+ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* executionContext, const String& pattern, ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     ScriptPromise promise = ScriptPromise::createPending(executionContext);

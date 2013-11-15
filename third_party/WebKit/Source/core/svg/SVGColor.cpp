@@ -54,21 +54,21 @@ Color SVGColor::colorFromRGBColorString(const String& colorString)
     return Color();
 }
 
-void SVGColor::setRGBColor(const String&, ExceptionState& exceptionState)
+void SVGColor::setRGBColor(const String&, ExceptionState& es)
 {
     // The whole SVGColor interface is deprecated in SVG 1.1 (2nd edition).
     // The setters are the most problematic part so we remove the support for those first.
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
-void SVGColor::setRGBColorICCColor(const String&, const String&, ExceptionState& exceptionState)
+void SVGColor::setRGBColorICCColor(const String&, const String&, ExceptionState& es)
 {
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
-void SVGColor::setColor(unsigned short, const String&, const String&, ExceptionState& exceptionState)
+void SVGColor::setColor(unsigned short, const String&, const String&, ExceptionState& es)
 {
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 String SVGColor::customCSSText() const

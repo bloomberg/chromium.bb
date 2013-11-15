@@ -96,11 +96,11 @@ void ChromiumDataObject::clearAll()
     m_itemList.clear();
 }
 
-PassRefPtr<ChromiumDataObjectItem> ChromiumDataObject::add(const String& data, const String& type, ExceptionState& exceptionState)
+PassRefPtr<ChromiumDataObjectItem> ChromiumDataObject::add(const String& data, const String& type, ExceptionState& es)
 {
     RefPtr<ChromiumDataObjectItem> item = ChromiumDataObjectItem::createFromString(type, data);
     if (!internalAddStringItem(item)) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("add", "DataTransferItemList"));
+        es.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("add", "DataTransferItemList"));
         return 0;
     }
     return item;

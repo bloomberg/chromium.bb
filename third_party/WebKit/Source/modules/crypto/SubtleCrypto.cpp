@@ -49,30 +49,30 @@ namespace WebCore {
 
 namespace {
 
-ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, ArrayBufferView* signature, ArrayBufferView* dataBuffer, ExceptionState& exceptionState)
+ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, ArrayBufferView* signature, ArrayBufferView* dataBuffer, ExceptionState& es)
 {
     bool requiresKey = operationType != Digest;
 
     // Seems like the generated bindings should take care of these however it
     // currently doesn't. See also http://crbugh.com/264520
     if (requiresKey && !key) {
-        exceptionState.throwTypeError("Invalid key argument");
+        es.throwTypeError("Invalid key argument");
         return ScriptPromise();
     }
     if (operationType == Verify && !signature) {
-        exceptionState.throwTypeError("Invalid signature argument");
+        es.throwTypeError("Invalid signature argument");
         return ScriptPromise();
     }
     if (!dataBuffer) {
-        exceptionState.throwTypeError("Invalid dataBuffer argument");
+        es.throwTypeError("Invalid dataBuffer argument");
         return ScriptPromise();
     }
 
     blink::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, operationType, algorithm, exceptionState))
+    if (!normalizeAlgorithm(rawAlgorithm, operationType, algorithm, es))
         return ScriptPromise();
 
-    if (requiresKey && !key->canBeUsedForAlgorithm(algorithm, operationType, exceptionState))
+    if (requiresKey && !key->canBeUsedForAlgorithm(algorithm, operationType, es))
         return ScriptPromise();
 
     const unsigned char* data = static_cast<const unsigned char*>(dataBuffer->baseAddress());
@@ -112,39 +112,39 @@ SubtleCrypto::SubtleCrypto()
     ScriptWrappable::init(this);
 }
 
-ScriptPromise SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data, ExceptionState& exceptionState)
+ScriptPromise SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data, ExceptionState& es)
 {
-    return startCryptoOperation(rawAlgorithm, key, Encrypt, 0, data, exceptionState);
+    return startCryptoOperation(rawAlgorithm, key, Encrypt, 0, data, es);
 }
 
-ScriptPromise SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data, ExceptionState& exceptionState)
+ScriptPromise SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data, ExceptionState& es)
 {
-    return startCryptoOperation(rawAlgorithm, key, Decrypt, 0, data, exceptionState);
+    return startCryptoOperation(rawAlgorithm, key, Decrypt, 0, data, es);
 }
 
-ScriptPromise SubtleCrypto::sign(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data, ExceptionState& exceptionState)
+ScriptPromise SubtleCrypto::sign(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data, ExceptionState& es)
 {
-    return startCryptoOperation(rawAlgorithm, key, Sign, 0, data, exceptionState);
+    return startCryptoOperation(rawAlgorithm, key, Sign, 0, data, es);
 }
 
-ScriptPromise SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* signature, ArrayBufferView* data, ExceptionState& exceptionState)
+ScriptPromise SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* signature, ArrayBufferView* data, ExceptionState& es)
 {
-    return startCryptoOperation(rawAlgorithm, key, Verify, signature, data, exceptionState);
+    return startCryptoOperation(rawAlgorithm, key, Verify, signature, data, es);
 }
 
-ScriptPromise SubtleCrypto::digest(const Dictionary& rawAlgorithm, ArrayBufferView* data, ExceptionState& exceptionState)
+ScriptPromise SubtleCrypto::digest(const Dictionary& rawAlgorithm, ArrayBufferView* data, ExceptionState& es)
 {
-    return startCryptoOperation(rawAlgorithm, 0, Digest, 0, data, exceptionState);
+    return startCryptoOperation(rawAlgorithm, 0, Digest, 0, data, es);
 }
 
-ScriptPromise SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& exceptionState)
+ScriptPromise SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& es)
 {
     blink::WebCryptoKeyUsageMask keyUsages;
-    if (!Key::parseUsageMask(rawKeyUsages, keyUsages, exceptionState))
+    if (!Key::parseUsageMask(rawKeyUsages, keyUsages, es))
         return ScriptPromise();
 
     blink::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, GenerateKey, algorithm, exceptionState))
+    if (!normalizeAlgorithm(rawAlgorithm, GenerateKey, algorithm, es))
         return ScriptPromise();
 
     ScriptPromise promise = ScriptPromise::createPending();
@@ -153,24 +153,24 @@ ScriptPromise SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool ext
     return promise;
 }
 
-ScriptPromise SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& exceptionState)
+ScriptPromise SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& es)
 {
     blink::WebCryptoKeyFormat format;
-    if (!Key::parseFormat(rawFormat, format, exceptionState))
+    if (!Key::parseFormat(rawFormat, format, es))
         return ScriptPromise();
 
     if (!keyData) {
-        exceptionState.throwTypeError("Invalid keyData argument");
+        es.throwTypeError("Invalid keyData argument");
         return ScriptPromise();
     }
 
     blink::WebCryptoKeyUsageMask keyUsages;
-    if (!Key::parseUsageMask(rawKeyUsages, keyUsages, exceptionState))
+    if (!Key::parseUsageMask(rawKeyUsages, keyUsages, es))
         return ScriptPromise();
 
     // The algorithm is optional.
     blink::WebCryptoAlgorithm algorithm;
-    if (!rawAlgorithm.isUndefinedOrNull() && !normalizeAlgorithm(rawAlgorithm, ImportKey, algorithm, exceptionState))
+    if (!rawAlgorithm.isUndefinedOrNull() && !normalizeAlgorithm(rawAlgorithm, ImportKey, algorithm, es))
         return ScriptPromise();
 
     const unsigned char* keyDataBytes = static_cast<unsigned char*>(keyData->baseAddress());
@@ -181,19 +181,19 @@ ScriptPromise SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* 
     return promise;
 }
 
-ScriptPromise SubtleCrypto::exportKey(const String& rawFormat, Key* key, ExceptionState& exceptionState)
+ScriptPromise SubtleCrypto::exportKey(const String& rawFormat, Key* key, ExceptionState& es)
 {
     blink::WebCryptoKeyFormat format;
-    if (!Key::parseFormat(rawFormat, format, exceptionState))
+    if (!Key::parseFormat(rawFormat, format, es))
         return ScriptPromise();
 
     if (!key) {
-        exceptionState.throwTypeError("Invalid key argument");
+        es.throwTypeError("Invalid key argument");
         return ScriptPromise();
     }
 
     if (!key->extractable()) {
-        exceptionState.throwDOMException(NotSupportedError, "key is not extractable");
+        es.throwDOMException(NotSupportedError, "key is not extractable");
         return ScriptPromise();
     }
 

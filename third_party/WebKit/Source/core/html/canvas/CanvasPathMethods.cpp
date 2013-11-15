@@ -107,13 +107,13 @@ void CanvasPathMethods::bezierCurveTo(float cp1x, float cp1y, float cp2x, float 
         m_path.addBezierCurveTo(cp1, cp2, p1);
 }
 
-void CanvasPathMethods::arcTo(float x1, float y1, float x2, float y2, float r, ExceptionState& exceptionState)
+void CanvasPathMethods::arcTo(float x1, float y1, float x2, float y2, float r, ExceptionState& es)
 {
     if (!std::isfinite(x1) || !std::isfinite(y1) || !std::isfinite(x2) || !std::isfinite(y2) || !std::isfinite(r))
         return;
 
     if (r < 0) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -253,13 +253,13 @@ void degenerateEllipse(CanvasPathMethods* path, float x, float y, float radiusX,
 
 } // namespace
 
-void CanvasPathMethods::arc(float x, float y, float radius, float startAngle, float endAngle, bool anticlockwise, ExceptionState& exceptionState)
+void CanvasPathMethods::arc(float x, float y, float radius, float startAngle, float endAngle, bool anticlockwise, ExceptionState& es)
 {
     if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(radius) || !std::isfinite(startAngle) || !std::isfinite(endAngle))
         return;
 
     if (radius < 0) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -277,13 +277,13 @@ void CanvasPathMethods::arc(float x, float y, float radius, float startAngle, fl
     m_path.addArc(FloatPoint(x, y), radius, startAngle, adjustedEndAngle, anticlockwise);
 }
 
-void CanvasPathMethods::ellipse(float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise, ExceptionState& exceptionState)
+void CanvasPathMethods::ellipse(float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise, ExceptionState& es)
 {
     if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(radiusX) || !std::isfinite(radiusY) || !std::isfinite(rotation) || !std::isfinite(startAngle) || !std::isfinite(endAngle))
         return;
 
     if (radiusX < 0 || radiusY < 0) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 

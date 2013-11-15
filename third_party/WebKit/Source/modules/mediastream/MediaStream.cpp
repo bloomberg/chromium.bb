@@ -133,15 +133,15 @@ bool MediaStream::ended() const
     return m_stopped || m_descriptor->ended();
 }
 
-void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& exceptionState)
+void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& es)
 {
     if (ended()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
     if (!prpTrack) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
 
@@ -167,15 +167,15 @@ void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState
     MediaStreamCenter::instance().didAddMediaStreamTrack(m_descriptor.get(), newTrack->component());
 }
 
-void MediaStream::removeTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& exceptionState)
+void MediaStream::removeTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& es)
 {
     if (ended()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
     if (!prpTrack) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
 

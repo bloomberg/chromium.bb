@@ -90,7 +90,7 @@ public:
 
     static String toEncodingMimeType(const String& mimeType);
     String toDataURL(const String& mimeType, const double* quality, ExceptionState&);
-    String toDataURL(const String& mimeType, ExceptionState& exceptionState) { return toDataURL(mimeType, 0, exceptionState); }
+    String toDataURL(const String& mimeType, ExceptionState& es) { return toDataURL(mimeType, 0, es); }
 
     // Used for rendering
     void didDraw(const FloatRect&);

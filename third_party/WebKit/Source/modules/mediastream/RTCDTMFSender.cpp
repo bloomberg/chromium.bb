@@ -42,12 +42,12 @@ static const long maxToneDurationMs = 6000;
 static const long minInterToneGapMs = 50;
 static const long defaultInterToneGapMs = 50;
 
-PassRefPtr<RTCDTMFSender> RTCDTMFSender::create(ExecutionContext* context, RTCPeerConnectionHandler* peerConnectionHandler, PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& exceptionState)
+PassRefPtr<RTCDTMFSender> RTCDTMFSender::create(ExecutionContext* context, RTCPeerConnectionHandler* peerConnectionHandler, PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& es)
 {
     RefPtr<MediaStreamTrack> track = prpTrack;
     OwnPtr<RTCDTMFSenderHandler> handler = peerConnectionHandler->createDTMFSender(track->component());
     if (!handler) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -88,30 +88,30 @@ String RTCDTMFSender::toneBuffer() const
     return m_handler->currentToneBuffer();
 }
 
-void RTCDTMFSender::insertDTMF(const String& tones, ExceptionState& exceptionState)
+void RTCDTMFSender::insertDTMF(const String& tones, ExceptionState& es)
 {
-    insertDTMF(tones, defaultToneDurationMs, defaultInterToneGapMs, exceptionState);
+    insertDTMF(tones, defaultToneDurationMs, defaultInterToneGapMs, es);
 }
 
-void RTCDTMFSender::insertDTMF(const String& tones, long duration, ExceptionState& exceptionState)
+void RTCDTMFSender::insertDTMF(const String& tones, long duration, ExceptionState& es)
 {
-    insertDTMF(tones, duration, defaultInterToneGapMs, exceptionState);
+    insertDTMF(tones, duration, defaultInterToneGapMs, es);
 }
 
-void RTCDTMFSender::insertDTMF(const String& tones, long duration, long interToneGap, ExceptionState& exceptionState)
+void RTCDTMFSender::insertDTMF(const String& tones, long duration, long interToneGap, ExceptionState& es)
 {
     if (!canInsertDTMF()) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
 
     if (duration > maxToneDurationMs || duration < minToneDurationMs) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 
     if (interToneGap < minInterToneGapMs) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 
@@ -119,7 +119,7 @@ void RTCDTMFSender::insertDTMF(const String& tones, long duration, long interTon
     m_interToneGap = interToneGap;
 
     if (!m_handler->insertDTMF(tones, m_duration, m_interToneGap))
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
 }
 
 void RTCDTMFSender::didPlayTone(const String& tone)

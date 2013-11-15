@@ -63,18 +63,18 @@ const AtomicString& DedicatedWorkerGlobalScope::interfaceName() const
     return EventTargetNames::DedicatedWorkerGlobalScope;
 }
 
-void DedicatedWorkerGlobalScope::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
+void DedicatedWorkerGlobalScope::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& es)
 {
     // Disentangle the port in preparation for sending it to the remote context.
-    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, exceptionState);
-    if (exceptionState.hadException())
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, es);
+    if (es.hadException())
         return;
     thread()->workerObjectProxy().postMessageToWorkerObject(message, channels.release());
 }
 
-void DedicatedWorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState& exceptionState)
+void DedicatedWorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState& es)
 {
-    Base::importScripts(urls, exceptionState);
+    Base::importScripts(urls, es);
     thread()->workerObjectProxy().reportPendingActivity(hasPendingActivity());
 }
 

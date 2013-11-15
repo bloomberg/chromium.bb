@@ -141,13 +141,13 @@ void Location::setHref(DOMWindow* activeWindow, DOMWindow* firstWindow, const St
     setLocation(url, activeWindow, firstWindow);
 }
 
-void Location::setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& protocol, ExceptionState& exceptionState)
+void Location::setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& protocol, ExceptionState& es)
 {
     if (!m_frame)
         return;
     KURL url = m_frame->document()->url();
     if (!url.setProtocol(protocol)) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToSet("protocol", "Location", "'" + protocol + "' is an invalid protocol."));
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToSet("protocol", "Location", "'" + protocol + "' is an invalid protocol."));
         return;
     }
     setLocation(url.string(), activeWindow, firstWindow);

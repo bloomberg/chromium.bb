@@ -48,12 +48,12 @@ static String constructIllegalTypeExceptionMessage(const String& type)
     return "Illegal value of attribute 'type' : " + type;
 }
 
-PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(const Dictionary& descriptionInitDict, ExceptionState& exceptionState)
+PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(const Dictionary& descriptionInitDict, ExceptionState& es)
 {
     String type;
     bool ok = descriptionInitDict.get("type", type);
     if (ok && !verifyType(type)) {
-        exceptionState.throwDOMException(TypeMismatchError, constructIllegalTypeExceptionMessage(type));
+        es.throwDOMException(TypeMismatchError, constructIllegalTypeExceptionMessage(type));
         return 0;
     }
 
@@ -79,12 +79,12 @@ String RTCSessionDescription::type()
     return m_webSessionDescription.type();
 }
 
-void RTCSessionDescription::setType(const String& type, ExceptionState& exceptionState)
+void RTCSessionDescription::setType(const String& type, ExceptionState& es)
 {
     if (verifyType(type))
         m_webSessionDescription.setType(type);
     else
-        exceptionState.throwDOMException(TypeMismatchError, constructIllegalTypeExceptionMessage(type));
+        es.throwDOMException(TypeMismatchError, constructIllegalTypeExceptionMessage(type));
 }
 
 String RTCSessionDescription::sdp()

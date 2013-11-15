@@ -36,11 +36,11 @@
 
 namespace WebCore {
 
-PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ExecutionContext* context, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
+PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ExecutionContext* context, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& es)
 {
     // FIXME: add support for workers.
     if (!context || !context->isDocument()) {
-        exceptionState.throwDOMException(
+        es.throwDOMException(
             NotSupportedError,
             ExceptionMessages::failedToConstruct("OfflineAudioContext"));
         return 0;
@@ -49,7 +49,7 @@ PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ExecutionContext* co
     Document* document = toDocument(context);
 
     if (!numberOfFrames) {
-        exceptionState.throwDOMException(
+        es.throwDOMException(
             SyntaxError,
             ExceptionMessages::failedToConstruct(
                 "OfflineAudioContext",
@@ -58,7 +58,7 @@ PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ExecutionContext* co
     }
 
     if (numberOfChannels > 10) {
-        exceptionState.throwDOMException(
+        es.throwDOMException(
             SyntaxError,
             ExceptionMessages::failedToConstruct(
                 "OfflineAudioContext",
@@ -67,7 +67,7 @@ PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ExecutionContext* co
     }
 
     if (!isSampleRateRangeGood(sampleRate)) {
-        exceptionState.throwDOMException(
+        es.throwDOMException(
             SyntaxError,
             ExceptionMessages::failedToConstruct(
                 "OfflineAudioContext",

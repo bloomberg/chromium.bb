@@ -370,10 +370,10 @@ String HTMLCanvasElement::toEncodingMimeType(const String& mimeType)
     return lowercaseMimeType;
 }
 
-String HTMLCanvasElement::toDataURL(const String& mimeType, const double* quality, ExceptionState& exceptionState)
+String HTMLCanvasElement::toDataURL(const String& mimeType, const double* quality, ExceptionState& es)
 {
     if (!m_originClean) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("toDataURL", "HTMLCanvasElement", "tainted canvases may not be exported."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("toDataURL", "HTMLCanvasElement", "tainted canvases may not be exported."));
         return String();
     }
 

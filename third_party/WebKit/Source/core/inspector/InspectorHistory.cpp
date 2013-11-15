@@ -83,9 +83,9 @@ void InspectorHistory::Action::merge(PassOwnPtr<Action>)
 
 InspectorHistory::InspectorHistory() : m_afterLastActionIndex(0) { }
 
-bool InspectorHistory::perform(PassOwnPtr<Action> action, ExceptionState& exceptionState)
+bool InspectorHistory::perform(PassOwnPtr<Action> action, ExceptionState& es)
 {
-    if (!action->perform(exceptionState))
+    if (!action->perform(es))
         return false;
 
     if (!action->mergeId().isEmpty() && m_afterLastActionIndex > 0 && action->mergeId() == m_history[m_afterLastActionIndex - 1]->mergeId())
@@ -103,14 +103,14 @@ void InspectorHistory::markUndoableState()
     perform(adoptPtr(new UndoableStateMark()), IGNORE_EXCEPTION);
 }
 
-bool InspectorHistory::undo(ExceptionState& exceptionState)
+bool InspectorHistory::undo(ExceptionState& es)
 {
     while (m_afterLastActionIndex > 0 && m_history[m_afterLastActionIndex - 1]->isUndoableStateMark())
         --m_afterLastActionIndex;
 
     while (m_afterLastActionIndex > 0) {
         Action* action = m_history[m_afterLastActionIndex - 1].get();
-        if (!action->undo(exceptionState)) {
+        if (!action->undo(es)) {
             reset();
             return false;
         }
@@ -122,14 +122,14 @@ bool InspectorHistory::undo(ExceptionState& exceptionState)
     return true;
 }
 
-bool InspectorHistory::redo(ExceptionState& exceptionState)
+bool InspectorHistory::redo(ExceptionState& es)
 {
     while (m_afterLastActionIndex < m_history.size() && m_history[m_afterLastActionIndex]->isUndoableStateMark())
         ++m_afterLastActionIndex;
 
     while (m_afterLastActionIndex < m_history.size()) {
         Action* action = m_history[m_afterLastActionIndex].get();
-        if (!action->redo(exceptionState)) {
+        if (!action->redo(es)) {
             reset();
             return false;
         }

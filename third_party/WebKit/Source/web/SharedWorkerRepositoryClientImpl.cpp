@@ -152,7 +152,7 @@ static WebSharedWorkerRepositoryClient::DocumentID getId(void* document)
     return reinterpret_cast<WebSharedWorkerRepositoryClient::DocumentID>(document);
 }
 
-void SharedWorkerRepositoryClientImpl::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr<WebMessagePortChannel> port, const KURL& url, const String& name, ExceptionState& exceptionState)
+void SharedWorkerRepositoryClientImpl::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr<WebMessagePortChannel> port, const KURL& url, const String& name, ExceptionState& es)
 {
     ASSERT(m_client);
 
@@ -162,7 +162,7 @@ void SharedWorkerRepositoryClientImpl::connect(PassRefPtr<SharedWorker> worker, 
     OwnPtr<WebSharedWorker> webWorker = adoptPtr(m_client->createSharedWorker(url, name, getId(document)));
     if (!webWorker) {
         // Existing worker does not match this url, so return an error back to the caller.
-        exceptionState.throwDOMException(URLMismatchError, ExceptionMessages::failedToConstruct("SharedWorker", "The location of the SharedWorker named '" + name + "' does not exactly match the provided URL ('" + url.elidedString() + "')."));
+        es.throwDOMException(URLMismatchError, ExceptionMessages::failedToConstruct("SharedWorker", "The location of the SharedWorker named '" + name + "' does not exactly match the provided URL ('" + url.elidedString() + "')."));
         return;
     }
 

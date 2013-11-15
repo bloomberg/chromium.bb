@@ -197,9 +197,9 @@ WebNodeList WebNode::getElementsByTagName(const WebString& tag) const
 
 WebElement WebNode::querySelector(const WebString& tag, WebExceptionCode& ec) const
 {
-    TrackExceptionState exceptionState;
-    WebElement element(m_private->querySelector(tag, exceptionState));
-    ec = exceptionState.code();
+    TrackExceptionState es;
+    WebElement element(m_private->querySelector(tag, es));
+    ec = es.code();
     return element;
 }
 
@@ -215,9 +215,9 @@ bool WebNode::focused() const
 
 bool WebNode::remove()
 {
-    TrackExceptionState exceptionState;
-    m_private->remove(exceptionState);
-    return !exceptionState.hadException();
+    TrackExceptionState es;
+    m_private->remove(es);
+    return !es.hadException();
 }
 
 bool WebNode::hasNonEmptyBoundingBox() const

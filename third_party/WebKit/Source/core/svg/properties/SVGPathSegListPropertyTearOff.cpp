@@ -39,19 +39,19 @@ void SVGPathSegListPropertyTearOff::clearContextAndRoles()
     }
 }
 
-void SVGPathSegListPropertyTearOff::clear(ExceptionState& exceptionState)
+void SVGPathSegListPropertyTearOff::clear(ExceptionState& es)
 {
     ASSERT(m_values);
     if (m_values->isEmpty())
         return;
 
     clearContextAndRoles();
-    SVGPathSegListPropertyTearOff::Base::clearValues(exceptionState);
+    SVGPathSegListPropertyTearOff::Base::clearValues(es);
 }
 
-SVGPathSegListPropertyTearOff::PassListItemType SVGPathSegListPropertyTearOff::getItem(unsigned index, ExceptionState& exceptionState)
+SVGPathSegListPropertyTearOff::PassListItemType SVGPathSegListPropertyTearOff::getItem(unsigned index, ExceptionState& es)
 {
-    ListItemType returnedItem = Base::getItemValues(index, exceptionState);
+    ListItemType returnedItem = Base::getItemValues(index, es);
     if (returnedItem) {
         ASSERT(static_cast<SVGPathSegWithContext*>(returnedItem.get())->contextElement() == contextElement());
         ASSERT(static_cast<SVGPathSegWithContext*>(returnedItem.get())->role() == m_pathSegRole);
@@ -59,11 +59,11 @@ SVGPathSegListPropertyTearOff::PassListItemType SVGPathSegListPropertyTearOff::g
     return returnedItem.release();
 }
 
-SVGPathSegListPropertyTearOff::PassListItemType SVGPathSegListPropertyTearOff::replaceItem(PassListItemType passNewItem, unsigned index, ExceptionState& exceptionState)
+SVGPathSegListPropertyTearOff::PassListItemType SVGPathSegListPropertyTearOff::replaceItem(PassListItemType passNewItem, unsigned index, ExceptionState& es)
 {
     // Not specified, but FF/Opera do it this way, and it's just sane.
     if (!passNewItem) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
 
@@ -74,12 +74,12 @@ SVGPathSegListPropertyTearOff::PassListItemType SVGPathSegListPropertyTearOff::r
     }
 
     ListItemType newItem = passNewItem;
-    return Base::replaceItemValues(newItem, index, exceptionState);
+    return Base::replaceItemValues(newItem, index, es);
 }
 
-SVGPathSegListPropertyTearOff::PassListItemType SVGPathSegListPropertyTearOff::removeItem(unsigned index, ExceptionState& exceptionState)
+SVGPathSegListPropertyTearOff::PassListItemType SVGPathSegListPropertyTearOff::removeItem(unsigned index, ExceptionState& es)
 {
-    SVGPathSegListPropertyTearOff::ListItemType removedItem = SVGPathSegListPropertyTearOff::Base::removeItemValues(index, exceptionState);
+    SVGPathSegListPropertyTearOff::ListItemType removedItem = SVGPathSegListPropertyTearOff::Base::removeItemValues(index, es);
     if (removedItem)
         static_cast<SVGPathSegWithContext*>(removedItem.get())->setContextAndRole(0, PathSegUndefinedRole);
     return removedItem.release();

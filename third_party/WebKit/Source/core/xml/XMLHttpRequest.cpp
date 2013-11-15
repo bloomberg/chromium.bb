@@ -215,10 +215,10 @@ XMLHttpRequest::State XMLHttpRequest::readyState() const
     return m_state;
 }
 
-ScriptString XMLHttpRequest::responseText(ExceptionState& exceptionState)
+ScriptString XMLHttpRequest::responseText(ExceptionState& es)
 {
     if (m_responseTypeCode != ResponseTypeDefault && m_responseTypeCode != ResponseTypeText) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("responseText", "XMLHttpRequest", "the value is only accessible if the object's 'responseType' is '' or 'text' (was '" + responseType() + "')."));
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("responseText", "XMLHttpRequest", "the value is only accessible if the object's 'responseType' is '' or 'text' (was '" + responseType() + "')."));
         return ScriptString();
     }
     if (m_error || (m_state != LOADING && m_state != DONE))
@@ -235,10 +235,10 @@ ScriptString XMLHttpRequest::responseJSONSource()
     return m_responseText;
 }
 
-Document* XMLHttpRequest::responseXML(ExceptionState& exceptionState)
+Document* XMLHttpRequest::responseXML(ExceptionState& es)
 {
     if (m_responseTypeCode != ResponseTypeDefault && m_responseTypeCode != ResponseTypeDocument) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("responseXML", "XMLHttpRequest", "the value is only accessible if the object's 'responseType' is '' or 'document' (was '" + responseType() + "')."));
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("responseXML", "XMLHttpRequest", "the value is only accessible if the object's 'responseType' is '' or 'document' (was '" + responseType() + "')."));
         return 0;
     }
 
@@ -335,21 +335,21 @@ Stream* XMLHttpRequest::responseStream()
     return m_responseStream.get();
 }
 
-void XMLHttpRequest::setTimeout(unsigned long timeout, ExceptionState& exceptionState)
+void XMLHttpRequest::setTimeout(unsigned long timeout, ExceptionState& es)
 {
     // FIXME: Need to trigger or update the timeout Timer here, if needed. http://webkit.org/b/98156
     // XHR2 spec, 4.7.3. "This implies that the timeout attribute can be set while fetching is in progress. If that occurs it will still be measured relative to the start of fetching."
     if (executionContext()->isDocument() && !m_async) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::failedToSet("timeout", "XMLHttpRequest", "timeouts cannot be set for synchronous requests made from a document."));
+        es.throwDOMException(InvalidAccessError, ExceptionMessages::failedToSet("timeout", "XMLHttpRequest", "timeouts cannot be set for synchronous requests made from a document."));
         return;
     }
     m_timeoutMilliseconds = timeout;
 }
 
-void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState& exceptionState)
+void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState& es)
 {
     if (m_state >= LOADING) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("responseType", "XMLHttpRequest", "the response type cannot be set if the object's state is LOADING or DONE."));
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("responseType", "XMLHttpRequest", "the response type cannot be set if the object's state is LOADING or DONE."));
         return;
     }
 
@@ -358,7 +358,7 @@ void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState&
     // We'll only disable this functionality for HTTP(S) requests since sync requests for local protocols
     // such as file: and data: still make sense to allow.
     if (!m_async && executionContext()->isDocument() && m_url.protocolIsInHTTPFamily()) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::failedToSet("responseType", "XMLHttpRequest", "the response type can only be changed for asynchronous HTTP requests made from a document."));
+        es.throwDOMException(InvalidAccessError, ExceptionMessages::failedToSet("responseType", "XMLHttpRequest", "the response type can only be changed for asynchronous HTTP requests made from a document."));
         return;
     }
 
@@ -439,10 +439,10 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
     }
 }
 
-void XMLHttpRequest::setWithCredentials(bool value, ExceptionState& exceptionState)
+void XMLHttpRequest::setWithCredentials(bool value, ExceptionState& es)
 {
     if (m_state > OPENED || m_loader) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("withCredentials", "XMLHttpRequest", "the value may only be set if the object's state is UNSENT or OPENED."));
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("withCredentials", "XMLHttpRequest", "the value may only be set if the object's state is UNSENT or OPENED."));
         return;
     }
 
@@ -492,12 +492,12 @@ bool XMLHttpRequest::isAllowedHTTPHeader(const String& name)
         && !name.startsWith(staticData->m_secHeaderPrefix, false);
 }
 
-void XMLHttpRequest::open(const String& method, const KURL& url, ExceptionState& exceptionState)
+void XMLHttpRequest::open(const String& method, const KURL& url, ExceptionState& es)
 {
-    open(method, url, true, exceptionState);
+    open(method, url, true, es);
 }
 
-void XMLHttpRequest::open(const String& method, const KURL& url, bool async, ExceptionState& exceptionState)
+void XMLHttpRequest::open(const String& method, const KURL& url, bool async, ExceptionState& es)
 {
     LOG(Network, "XMLHttpRequest %p open('%s', '%s', %d)", this, method.utf8().data(), url.elidedString().utf8().data(), async);
 
@@ -516,24 +516,24 @@ void XMLHttpRequest::open(const String& method, const KURL& url, bool async, Exc
     ASSERT(m_state == UNSENT);
 
     if (!isValidHTTPToken(method)) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "'" + method + "' is not a valid HTTP method."));
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "'" + method + "' is not a valid HTTP method."));
         return;
     }
 
     if (!isAllowedHTTPMethod(method)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "'" + method + "' HTTP method is unsupported."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "'" + method + "' HTTP method is unsupported."));
         return;
     }
 
     if (!ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) && !executionContext()->contentSecurityPolicy()->allowConnectToSource(url)) {
         // We can safely expose the URL to JavaScript, as these checks happen synchronously before redirection. JavaScript receives no new information.
-        exceptionState.throwSecurityError("Refused to connect to '" + url.elidedString() + "' because it violates the document's Content Security Policy.");
+        es.throwSecurityError("Refused to connect to '" + url.elidedString() + "' because it violates the document's Content Security Policy.");
         return;
     }
 
     if (!async && executionContext()->isDocument()) {
         if (document()->settings() && !document()->settings()->syncXHRInDocumentsEnabled()) {
-            exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "synchronous requests are disabled for this page."));
+            es.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "synchronous requests are disabled for this page."));
             return;
         }
 
@@ -542,13 +542,13 @@ void XMLHttpRequest::open(const String& method, const KURL& url, bool async, Exc
         // We'll only disable this functionality for HTTP(S) requests since sync requests for local protocols
         // such as file: and data: still make sense to allow.
         if (url.protocolIsInHTTPFamily() && m_responseTypeCode != ResponseTypeDefault) {
-            exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "synchronous HTTP requests from a document must not set a response type."));
+            es.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "synchronous HTTP requests from a document must not set a response type."));
             return;
         }
 
         // Similarly, timeouts are disabled for synchronous requests as well.
         if (m_timeoutMilliseconds > 0) {
-            exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "synchronous requests must not set a timeout."));
+            es.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "synchronous requests must not set a timeout."));
             return;
         }
     }
@@ -569,30 +569,30 @@ void XMLHttpRequest::open(const String& method, const KURL& url, bool async, Exc
         m_state = OPENED;
 }
 
-void XMLHttpRequest::open(const String& method, const KURL& url, bool async, const String& user, ExceptionState& exceptionState)
+void XMLHttpRequest::open(const String& method, const KURL& url, bool async, const String& user, ExceptionState& es)
 {
     KURL urlWithCredentials(url);
     urlWithCredentials.setUser(user);
 
-    open(method, urlWithCredentials, async, exceptionState);
+    open(method, urlWithCredentials, async, es);
 }
 
-void XMLHttpRequest::open(const String& method, const KURL& url, bool async, const String& user, const String& password, ExceptionState& exceptionState)
+void XMLHttpRequest::open(const String& method, const KURL& url, bool async, const String& user, const String& password, ExceptionState& es)
 {
     KURL urlWithCredentials(url);
     urlWithCredentials.setUser(user);
     urlWithCredentials.setPass(password);
 
-    open(method, urlWithCredentials, async, exceptionState);
+    open(method, urlWithCredentials, async, es);
 }
 
-bool XMLHttpRequest::initSend(ExceptionState& exceptionState)
+bool XMLHttpRequest::initSend(ExceptionState& es)
 {
     if (!executionContext())
         return false;
 
     if (m_state != OPENED || m_loader) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("send", "XMLHttpRequest", "the object's state must be OPENED."));
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("send", "XMLHttpRequest", "the object's state must be OPENED."));
         return false;
     }
 
@@ -600,9 +600,9 @@ bool XMLHttpRequest::initSend(ExceptionState& exceptionState)
     return true;
 }
 
-void XMLHttpRequest::send(ExceptionState& exceptionState)
+void XMLHttpRequest::send(ExceptionState& es)
 {
-    send(String(), exceptionState);
+    send(String(), es);
 }
 
 bool XMLHttpRequest::areMethodAndURLValidForSend()
@@ -610,13 +610,13 @@ bool XMLHttpRequest::areMethodAndURLValidForSend()
     return m_method != "GET" && m_method != "HEAD" && m_url.protocolIsInHTTPFamily();
 }
 
-void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState)
+void XMLHttpRequest::send(Document* document, ExceptionState& es)
 {
     LOG(Network, "XMLHttpRequest %p send() Document %p", this, document);
 
     ASSERT(document);
 
-    if (!initSend(exceptionState))
+    if (!initSend(es))
         return;
 
     if (areMethodAndURLValidForSend()) {
@@ -636,14 +636,14 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState)
             m_requestEntityBody->setAlwaysStream(true);
     }
 
-    createRequest(exceptionState);
+    createRequest(es);
 }
 
-void XMLHttpRequest::send(const String& body, ExceptionState& exceptionState)
+void XMLHttpRequest::send(const String& body, ExceptionState& es)
 {
     LOG(Network, "XMLHttpRequest %p send() String '%s'", this, body.utf8().data());
 
-    if (!initSend(exceptionState))
+    if (!initSend(es))
         return;
 
     if (!body.isNull() && areMethodAndURLValidForSend()) {
@@ -660,14 +660,14 @@ void XMLHttpRequest::send(const String& body, ExceptionState& exceptionState)
             m_requestEntityBody->setAlwaysStream(true);
     }
 
-    createRequest(exceptionState);
+    createRequest(es);
 }
 
-void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState)
+void XMLHttpRequest::send(Blob* body, ExceptionState& es)
 {
     LOG(Network, "XMLHttpRequest %p send() Blob '%s'", this, body->uuid().utf8().data());
 
-    if (!initSend(exceptionState))
+    if (!initSend(es))
         return;
 
     if (areMethodAndURLValidForSend()) {
@@ -690,14 +690,14 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState)
             m_requestEntityBody->appendBlob(body->uuid(), body->blobDataHandle());
     }
 
-    createRequest(exceptionState);
+    createRequest(es);
 }
 
-void XMLHttpRequest::send(DOMFormData* body, ExceptionState& exceptionState)
+void XMLHttpRequest::send(DOMFormData* body, ExceptionState& es)
 {
     LOG(Network, "XMLHttpRequest %p send() DOMFormData %p", this, body);
 
-    if (!initSend(exceptionState))
+    if (!initSend(es))
         return;
 
     if (areMethodAndURLValidForSend()) {
@@ -710,10 +710,10 @@ void XMLHttpRequest::send(DOMFormData* body, ExceptionState& exceptionState)
         }
     }
 
-    createRequest(exceptionState);
+    createRequest(es);
 }
 
-void XMLHttpRequest::send(ArrayBuffer* body, ExceptionState& exceptionState)
+void XMLHttpRequest::send(ArrayBuffer* body, ExceptionState& es)
 {
     LOG(Network, "XMLHttpRequest %p send() ArrayBuffer %p", this, body);
 
@@ -722,21 +722,21 @@ void XMLHttpRequest::send(ArrayBuffer* body, ExceptionState& exceptionState)
 
     blink::Platform::current()->histogramEnumeration("WebCore.XHR.send.ArrayBufferOrView", XMLHttpRequestSendArrayBuffer, XMLHttpRequestSendArrayBufferOrViewMax);
 
-    sendBytesData(body->data(), body->byteLength(), exceptionState);
+    sendBytesData(body->data(), body->byteLength(), es);
 }
 
-void XMLHttpRequest::send(ArrayBufferView* body, ExceptionState& exceptionState)
+void XMLHttpRequest::send(ArrayBufferView* body, ExceptionState& es)
 {
     LOG(Network, "XMLHttpRequest %p send() ArrayBufferView %p", this, body);
 
     blink::Platform::current()->histogramEnumeration("WebCore.XHR.send.ArrayBufferOrView", XMLHttpRequestSendArrayBufferView, XMLHttpRequestSendArrayBufferOrViewMax);
 
-    sendBytesData(body->baseAddress(), body->byteLength(), exceptionState);
+    sendBytesData(body->baseAddress(), body->byteLength(), es);
 }
 
-void XMLHttpRequest::sendBytesData(const void* data, size_t length, ExceptionState& exceptionState)
+void XMLHttpRequest::sendBytesData(const void* data, size_t length, ExceptionState& es)
 {
-    if (!initSend(exceptionState))
+    if (!initSend(es))
         return;
 
     if (areMethodAndURLValidForSend()) {
@@ -745,21 +745,21 @@ void XMLHttpRequest::sendBytesData(const void* data, size_t length, ExceptionSta
             m_requestEntityBody->setAlwaysStream(true);
     }
 
-    createRequest(exceptionState);
+    createRequest(es);
 }
 
-void XMLHttpRequest::sendForInspectorXHRReplay(PassRefPtr<FormData> formData, ExceptionState& exceptionState)
+void XMLHttpRequest::sendForInspectorXHRReplay(PassRefPtr<FormData> formData, ExceptionState& es)
 {
     m_requestEntityBody = formData ? formData->deepCopy() : 0;
-    createRequest(exceptionState);
-    m_exceptionCode = exceptionState.code();
+    createRequest(es);
+    m_exceptionCode = es.code();
 }
 
-void XMLHttpRequest::createRequest(ExceptionState& exceptionState)
+void XMLHttpRequest::createRequest(ExceptionState& es)
 {
     // Only GET request is supported for blob URL.
     if (m_url.protocolIs("blob") && m_method != "GET") {
-        exceptionState.throwDOMException(NetworkError, ExceptionMessages::failedToExecute("send", "XMLHttpRequest", "'GET' is the only method allowed for 'blob:' URLs."));
+        es.throwDOMException(NetworkError, ExceptionMessages::failedToExecute("send", "XMLHttpRequest", "'GET' is the only method allowed for 'blob:' URLs."));
         return;
     }
 
@@ -836,7 +836,7 @@ void XMLHttpRequest::createRequest(ExceptionState& exceptionState)
     if (!m_exceptionCode && m_error)
         m_exceptionCode = NetworkError;
     if (m_exceptionCode)
-        exceptionState.throwUninformativeAndGenericDOMException(m_exceptionCode);
+        es.throwUninformativeAndGenericDOMException(m_exceptionCode);
 }
 
 void XMLHttpRequest::abort()
@@ -1015,20 +1015,20 @@ void XMLHttpRequest::overrideMimeType(const String& override)
     m_mimeTypeOverride = override;
 }
 
-void XMLHttpRequest::setRequestHeader(const AtomicString& name, const String& value, ExceptionState& exceptionState)
+void XMLHttpRequest::setRequestHeader(const AtomicString& name, const String& value, ExceptionState& es)
 {
     if (m_state != OPENED || m_loader) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("setRequestHeader", "XMLHttpRequest", "the object's state must be OPENED."));
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("setRequestHeader", "XMLHttpRequest", "the object's state must be OPENED."));
         return;
     }
 
     if (!isValidHTTPToken(name)) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("setRequestHeader", "XMLHttpRequest", "'" + name + "' is not a valid HTTP header field name."));
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("setRequestHeader", "XMLHttpRequest", "'" + name + "' is not a valid HTTP header field name."));
         return;
     }
 
     if (!isValidHTTPHeaderValue(value)) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("setRequestHeader", "XMLHttpRequest", "'" + value + "' is not a valid HTTP header field value."));
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("setRequestHeader", "XMLHttpRequest", "'" + value + "' is not a valid HTTP header field value."));
         return;
     }
 
@@ -1053,7 +1053,7 @@ String XMLHttpRequest::getRequestHeader(const AtomicString& name) const
     return m_requestHeaders.get(name);
 }
 
-String XMLHttpRequest::getAllResponseHeaders(ExceptionState& exceptionState) const
+String XMLHttpRequest::getAllResponseHeaders(ExceptionState& es) const
 {
     if (m_state < HEADERS_RECEIVED || m_error)
         return "";
@@ -1087,7 +1087,7 @@ String XMLHttpRequest::getAllResponseHeaders(ExceptionState& exceptionState) con
     return stringBuilder.toString();
 }
 
-String XMLHttpRequest::getResponseHeader(const AtomicString& name, ExceptionState& exceptionState) const
+String XMLHttpRequest::getResponseHeader(const AtomicString& name, ExceptionState& es) const
 {
     if (m_state < HEADERS_RECEIVED || m_error)
         return String();
@@ -1130,7 +1130,7 @@ bool XMLHttpRequest::responseIsXML() const
     return DOMImplementation::isXMLMIMEType(responseMIMEType().lower());
 }
 
-int XMLHttpRequest::status(ExceptionState& exceptionState) const
+int XMLHttpRequest::status(ExceptionState& es) const
 {
     if (m_state == UNSENT || m_state == OPENED || m_error)
         return 0;
@@ -1141,7 +1141,7 @@ int XMLHttpRequest::status(ExceptionState& exceptionState) const
     return 0;
 }
 
-String XMLHttpRequest::statusText(ExceptionState& exceptionState) const
+String XMLHttpRequest::statusText(ExceptionState& es) const
 {
     if (m_state == UNSENT || m_state == OPENED || m_error)
         return String();

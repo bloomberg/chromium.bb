@@ -45,9 +45,9 @@
 
 namespace WebCore {
 
-void CustomElementRegistrationContext::registerElement(Document* document, CustomElementConstructorBuilder* constructorBuilder, const AtomicString& type, CustomElement::NameSet validNames, ExceptionState& exceptionState)
+void CustomElementRegistrationContext::registerElement(Document* document, CustomElementConstructorBuilder* constructorBuilder, const AtomicString& type, CustomElement::NameSet validNames, ExceptionState& es)
 {
-    CustomElementDefinition* definition = m_registry.registerElement(document, constructorBuilder, type, validNames, exceptionState);
+    CustomElementDefinition* definition = m_registry.registerElement(document, constructorBuilder, type, validNames, es);
 
     if (!definition)
         return;

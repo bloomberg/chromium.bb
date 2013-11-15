@@ -123,18 +123,18 @@ const char* errorCodeToMessage(FileError::ErrorCode code)
 
 } // namespace
 
-void FileError::throwDOMException(ExceptionState& exceptionState, ErrorCode code)
+void FileError::throwDOMException(ExceptionState& es, ErrorCode code)
 {
     if (code == FileError::OK)
         return;
 
     // SecurityError is special-cased, as we want to route those exceptions through ExceptionState::throwSecurityError.
     if (code == FileError::SECURITY_ERR) {
-        exceptionState.throwSecurityError(FileError::securityErrorMessage);
+        es.throwSecurityError(FileError::securityErrorMessage);
         return;
     }
 
-    exceptionState.throwDOMException(errorCodeToExceptionCode(code), errorCodeToMessage(code));
+    es.throwDOMException(errorCodeToExceptionCode(code), errorCodeToMessage(code));
 }
 
 FileError::FileError(ErrorCode code)

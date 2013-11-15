@@ -218,14 +218,14 @@ static PassRefPtr<Range> makeSearchRange(const Position& pos)
         return 0;
 
     RefPtr<Range> searchRange(Range::create(d));
-    TrackExceptionState exceptionState;
+    TrackExceptionState es;
 
     Position start(pos.parentAnchoredEquivalent());
-    searchRange->selectNodeContents(boundary, exceptionState);
-    searchRange->setStart(start.containerNode(), start.offsetInContainerNode(), exceptionState);
+    searchRange->selectNodeContents(boundary, es);
+    searchRange->setStart(start.containerNode(), start.offsetInContainerNode(), es);
 
-    ASSERT(!exceptionState.hadException());
-    if (exceptionState.hadException())
+    ASSERT(!es.hadException());
+    if (es.hadException())
         return 0;
 
     return searchRange.release();

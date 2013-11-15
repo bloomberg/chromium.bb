@@ -76,10 +76,10 @@ double DateTimeLocalInputType::valueAsDate() const
     return DateComponents::invalidMilliseconds();
 }
 
-void DateTimeLocalInputType::setValueAsDate(double value, ExceptionState& exceptionState) const
+void DateTimeLocalInputType::setValueAsDate(double value, ExceptionState& es) const
 {
     // valueAsDate doesn't work for the datetime-local type according to the standard.
-    InputType::setValueAsDate(value, exceptionState);
+    InputType::setValueAsDate(value, es);
 }
 
 StepRange DateTimeLocalInputType::createStepRange(AnyStepHandling anyStepHandling) const

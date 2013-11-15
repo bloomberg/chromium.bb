@@ -58,7 +58,7 @@ Notification::Notification()
 }
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
-Notification::Notification(const String& title, const String& body, const String& iconURI, ExecutionContext* context, ExceptionState& exceptionState, PassRefPtr<NotificationCenter> provider)
+Notification::Notification(const String& title, const String& body, const String& iconURI, ExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
     : ActiveDOMObject(context)
     , m_title(title)
     , m_body(body)
@@ -69,13 +69,13 @@ Notification::Notification(const String& title, const String& body, const String
 
     ScriptWrappable::init(this);
     if (provider->checkPermission() != NotificationClient::PermissionAllowed) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("createNotification", "NotificationCenter", "Notification permission has not been granted."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("createNotification", "NotificationCenter", "Notification permission has not been granted."));
         return;
     }
 
     m_icon = iconURI.isEmpty() ? KURL() : executionContext()->completeURL(iconURI);
     if (!m_icon.isEmpty() && !m_icon.isValid()) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("createNotification", "NotificationCenter", "'" + iconURI + "' is not a valid icon URL."));
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("createNotification", "NotificationCenter", "'" + iconURI + "' is not a valid icon URL."));
         return;
     }
 }
@@ -100,9 +100,9 @@ Notification::~Notification()
 }
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
-PassRefPtr<Notification> Notification::create(const String& title, const String& body, const String& iconURI, ExecutionContext* context, ExceptionState& exceptionState, PassRefPtr<NotificationCenter> provider)
+PassRefPtr<Notification> Notification::create(const String& title, const String& body, const String& iconURI, ExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
 {
-    RefPtr<Notification> notification(adoptRef(new Notification(title, body, iconURI, context, exceptionState, provider)));
+    RefPtr<Notification> notification(adoptRef(new Notification(title, body, iconURI, context, es, provider)));
     notification->suspendIfNeeded();
     return notification.release();
 }

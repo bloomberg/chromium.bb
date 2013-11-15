@@ -51,7 +51,7 @@ inline Worker::Worker(ExecutionContext* context)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<Worker> Worker::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
+PassRefPtr<Worker> Worker::create(ExecutionContext* context, const String& url, ExceptionState& es)
 {
     ASSERT(isMainThread());
     UseCounter::count(toDocument(context)->domWindow(), UseCounter::WorkerStart);
@@ -60,7 +60,7 @@ PassRefPtr<Worker> Worker::create(ExecutionContext* context, const String& url, 
 
     worker->suspendIfNeeded();
 
-    KURL scriptURL = worker->resolveURL(url, exceptionState);
+    KURL scriptURL = worker->resolveURL(url, es);
     if (scriptURL.isEmpty())
         return 0;
 
@@ -85,11 +85,11 @@ const AtomicString& Worker::interfaceName() const
     return EventTargetNames::Worker;
 }
 
-void Worker::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
+void Worker::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& es)
 {
     // Disentangle the port in preparation for sending it to the remote context.
-    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, exceptionState);
-    if (exceptionState.hadException())
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, es);
+    if (es.hadException())
         return;
     m_contextProxy->postMessageToWorkerGlobalScope(message, channels.release());
 }

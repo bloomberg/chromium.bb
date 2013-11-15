@@ -221,10 +221,10 @@ static void frameContentAsPlainText(size_t maxChars, Frame* frame, StringBuilder
 
     // Select the document body.
     RefPtr<Range> range(document->createRange());
-    TrackExceptionState exceptionState;
-    range->selectNodeContents(document->body(), exceptionState);
+    TrackExceptionState es;
+    range->selectNodeContents(document->body(), es);
 
-    if (!exceptionState.hadException()) {
+    if (!es.hadException()) {
         // The text iterator will walk nodes giving us text. This is similar to
         // the plainText() function in core/editing/TextIterator.h, but we implement the maximum
         // size and also copy the results directly into a wstring, avoiding the
@@ -1601,13 +1601,13 @@ void WebFrameImpl::scopeStringMatches(int identifier, const WebString& searchTex
     Node* originalEndContainer = searchRange->endContainer();
     int originalEndOffset = searchRange->endOffset();
 
-    TrackExceptionState exceptionState, es2;
+    TrackExceptionState es, es2;
     if (m_resumeScopingFromRange) {
         // This is a continuation of a scoping operation that timed out and didn't
         // complete last time around, so we should start from where we left off.
-        searchRange->setStart(m_resumeScopingFromRange->startContainer(), m_resumeScopingFromRange->startOffset(es2) + 1, exceptionState);
-        if (exceptionState.hadException() || es2.hadException()) {
-            if (es2.hadException()) // A non-zero |exceptionState| happens when navigating during search.
+        searchRange->setStart(m_resumeScopingFromRange->startContainer(), m_resumeScopingFromRange->startOffset(es2) + 1, es);
+        if (es.hadException() || es2.hadException()) {
+            if (es2.hadException()) // A non-zero |es| happens when navigating during search.
                 ASSERT_NOT_REACHED();
             return;
         }
@@ -1630,13 +1630,13 @@ void WebFrameImpl::scopeStringMatches(int identifier, const WebString& searchTex
         RefPtr<Range> resultRange(findPlainText(searchRange.get(),
                                                 searchText,
                                                 options.matchCase ? 0 : CaseInsensitive));
-        if (resultRange->collapsed(exceptionState)) {
+        if (resultRange->collapsed(es)) {
             if (!resultRange->startContainer()->isInShadowTree())
                 break;
 
             searchRange->setStartAfter(
-                resultRange->startContainer()->deprecatedShadowAncestorNode(), exceptionState);
-            searchRange->setEnd(originalEndContainer, originalEndOffset, exceptionState);
+                resultRange->startContainer()->deprecatedShadowAncestorNode(), es);
+            searchRange->setEnd(originalEndContainer, originalEndOffset, es);
             continue;
         }
 
@@ -1681,11 +1681,11 @@ void WebFrameImpl::scopeStringMatches(int identifier, const WebString& searchTex
         // result range. There is no need to use a VisiblePosition here,
         // since findPlainText will use a TextIterator to go over the visible
         // text nodes.
-        searchRange->setStart(resultRange->endContainer(exceptionState), resultRange->endOffset(exceptionState), exceptionState);
+        searchRange->setStart(resultRange->endContainer(es), resultRange->endOffset(es), es);
 
         Node* shadowTreeRoot = searchRange->shadowRoot();
-        if (searchRange->collapsed(exceptionState) && shadowTreeRoot)
-            searchRange->setEnd(shadowTreeRoot, shadowTreeRoot->childNodeCount(), exceptionState);
+        if (searchRange->collapsed(es) && shadowTreeRoot)
+            searchRange->setEnd(shadowTreeRoot, shadowTreeRoot->childNodeCount(), es);
 
         m_resumeScopingFromRange = resultRange;
         timedOut = (currentTime() - startTime) >= maxScopingDuration;

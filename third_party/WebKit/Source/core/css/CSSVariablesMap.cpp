@@ -55,11 +55,11 @@ bool CSSVariablesMap::has(const AtomicString& name) const
     return false;
 }
 
-void CSSVariablesMap::set(const AtomicString& name, const String& value, ExceptionState& exceptionState)
+void CSSVariablesMap::set(const AtomicString& name, const String& value, ExceptionState& es)
 {
     if (!m_styleDeclaration)
         return;
-    if (m_styleDeclaration->setVariableValue(name, value, exceptionState)) {
+    if (m_styleDeclaration->setVariableValue(name, value, es)) {
         Iterators::iterator end = m_activeIterators.end();
         for (Iterators::iterator it = m_activeIterators.begin(); it != end; ++it)
             (*it)->addedVariable(name);
@@ -79,11 +79,11 @@ bool CSSVariablesMap::remove(const AtomicString& name)
     return false;
 }
 
-void CSSVariablesMap::clear(ExceptionState& exceptionState)
+void CSSVariablesMap::clear(ExceptionState& es)
 {
     if (!m_styleDeclaration)
         return;
-    if (m_styleDeclaration->clearVariables(exceptionState)) {
+    if (m_styleDeclaration->clearVariables(es)) {
         Iterators::iterator end = m_activeIterators.end();
         for (Iterators::iterator it = m_activeIterators.begin(); it != end; ++it)
             (*it)->clearedVariables();

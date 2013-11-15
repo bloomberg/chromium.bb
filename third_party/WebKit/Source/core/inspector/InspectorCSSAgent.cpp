@@ -318,25 +318,25 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& es)
     {
         if (!m_styleSheet->getText(&m_oldText))
             return false;
-        return redo(exceptionState);
+        return redo(es);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& es)
     {
-        if (m_styleSheet->setText(m_oldText, exceptionState)) {
+        if (m_styleSheet->setText(m_oldText, es)) {
             m_styleSheet->reparseStyleSheet(m_oldText);
             return true;
         }
         return false;
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& es)
     {
-        if (m_styleSheet->setText(m_text, exceptionState)) {
+        if (m_styleSheet->setText(m_text, es)) {
             m_styleSheet->reparseStyleSheet(m_text);
             return true;
         }
@@ -376,20 +376,20 @@ public:
         return mergeId() + ": " + m_oldText + " -> " + m_text;
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& es)
     {
-        return redo(exceptionState);
+        return redo(es);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& es)
     {
         String placeholder;
-        return m_styleSheet->setStyleText(m_cssId, m_oldText, &placeholder, exceptionState);
+        return m_styleSheet->setStyleText(m_cssId, m_oldText, &placeholder, es);
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& es)
     {
-        return m_styleSheet->setStyleText(m_cssId, m_text, &m_oldText, exceptionState);
+        return m_styleSheet->setStyleText(m_cssId, m_text, &m_oldText, es);
     }
 
     virtual String mergeId()
@@ -428,21 +428,21 @@ public:
         return mergeId() + ": " + m_oldText + " -> " + m_text;
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& es)
     {
-        return redo(exceptionState);
+        return redo(es);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& es)
     {
         String placeholder;
-        return m_styleSheet->setPropertyText(m_cssId, m_propertyIndex, m_overwrite ? m_oldText : "", true, &placeholder, exceptionState);
+        return m_styleSheet->setPropertyText(m_cssId, m_propertyIndex, m_overwrite ? m_oldText : "", true, &placeholder, es);
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& es)
     {
         String oldText;
-        bool result = m_styleSheet->setPropertyText(m_cssId, m_propertyIndex, m_text, m_overwrite, &oldText, exceptionState);
+        bool result = m_styleSheet->setPropertyText(m_cssId, m_propertyIndex, m_text, m_overwrite, &oldText, es);
         m_oldText = oldText.stripWhiteSpace();
         // FIXME: remove this once the model handles this case.
         if (!m_oldText.endsWith(';'))
@@ -482,19 +482,19 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& es)
     {
-        return redo(exceptionState);
+        return redo(es);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& es)
     {
-        return m_styleSheet->toggleProperty(m_cssId, m_propertyIndex, !m_disable, exceptionState);
+        return m_styleSheet->toggleProperty(m_cssId, m_propertyIndex, !m_disable, es);
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& es)
     {
-        return m_styleSheet->toggleProperty(m_cssId, m_propertyIndex, m_disable, exceptionState);
+        return m_styleSheet->toggleProperty(m_cssId, m_propertyIndex, m_disable, es);
     }
 
 private:
@@ -513,22 +513,22 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& es)
     {
-        m_oldSelector = m_styleSheet->ruleSelector(m_cssId, exceptionState);
-        if (exceptionState.hadException())
+        m_oldSelector = m_styleSheet->ruleSelector(m_cssId, es);
+        if (es.hadException())
             return false;
-        return redo(exceptionState);
+        return redo(es);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& es)
     {
-        return m_styleSheet->setRuleSelector(m_cssId, m_oldSelector, exceptionState);
+        return m_styleSheet->setRuleSelector(m_cssId, m_oldSelector, es);
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& es)
     {
-        return m_styleSheet->setRuleSelector(m_cssId, m_selector, exceptionState);
+        return m_styleSheet->setRuleSelector(m_cssId, m_selector, es);
     }
 
 private:
@@ -546,20 +546,20 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& es)
     {
-        return redo(exceptionState);
+        return redo(es);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& es)
     {
-        return m_styleSheet->deleteRule(m_newId, exceptionState);
+        return m_styleSheet->deleteRule(m_newId, es);
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& es)
     {
-        CSSStyleRule* cssStyleRule = m_styleSheet->addRule(m_selector, exceptionState);
-        if (exceptionState.hadException())
+        CSSStyleRule* cssStyleRule = m_styleSheet->addRule(m_selector, es);
+        if (es.hadException())
             return false;
         m_newId = m_styleSheet->ruleId(cssStyleRule);
         return true;
@@ -1132,9 +1132,9 @@ void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String
     if (!inspectorStyleSheet)
         return;
 
-    TrackExceptionState exceptionState;
-    m_domAgent->history()->perform(adoptPtr(new SetStyleSheetTextAction(inspectorStyleSheet, text)), exceptionState);
-    *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+    TrackExceptionState es;
+    m_domAgent->history()->perform(adoptPtr(new SetStyleSheetTextAction(inspectorStyleSheet, text)), es);
+    *errorString = InspectorDOMAgent::toErrorString(es);
 }
 
 void InspectorCSSAgent::setStyleText(ErrorString* errorString, const RefPtr<JSONObject>& fullStyleId, const String& text, RefPtr<TypeBuilder::CSS::CSSStyle>& result)
@@ -1146,11 +1146,11 @@ void InspectorCSSAgent::setStyleText(ErrorString* errorString, const RefPtr<JSON
     if (!inspectorStyleSheet)
         return;
 
-    TrackExceptionState exceptionState;
-    m_domAgent->history()->perform(adoptPtr(new SetStyleTextAction(inspectorStyleSheet, compoundId, text)), exceptionState);
-    if (!exceptionState.hadException())
+    TrackExceptionState es;
+    m_domAgent->history()->perform(adoptPtr(new SetStyleTextAction(inspectorStyleSheet, compoundId, text)), es);
+    if (!es.hadException())
         result = inspectorStyleSheet->buildObjectForStyle(inspectorStyleSheet->styleForId(compoundId));
-    *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+    *errorString = InspectorDOMAgent::toErrorString(es);
 }
 
 void InspectorCSSAgent::setPropertyText(ErrorString* errorString, const RefPtr<JSONObject>& fullStyleId, int propertyIndex, const String& text, bool overwrite, RefPtr<TypeBuilder::CSS::CSSStyle>& result)
@@ -1162,11 +1162,11 @@ void InspectorCSSAgent::setPropertyText(ErrorString* errorString, const RefPtr<J
     if (!inspectorStyleSheet)
         return;
 
-    TrackExceptionState exceptionState;
-    bool success = m_domAgent->history()->perform(adoptPtr(new SetPropertyTextAction(inspectorStyleSheet, compoundId, propertyIndex, text, overwrite)), exceptionState);
+    TrackExceptionState es;
+    bool success = m_domAgent->history()->perform(adoptPtr(new SetPropertyTextAction(inspectorStyleSheet, compoundId, propertyIndex, text, overwrite)), es);
     if (success)
         result = inspectorStyleSheet->buildObjectForStyle(inspectorStyleSheet->styleForId(compoundId));
-    *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+    *errorString = InspectorDOMAgent::toErrorString(es);
 }
 
 void InspectorCSSAgent::toggleProperty(ErrorString* errorString, const RefPtr<JSONObject>& fullStyleId, int propertyIndex, bool disable, RefPtr<TypeBuilder::CSS::CSSStyle>& result)
@@ -1178,11 +1178,11 @@ void InspectorCSSAgent::toggleProperty(ErrorString* errorString, const RefPtr<JS
     if (!inspectorStyleSheet)
         return;
 
-    TrackExceptionState exceptionState;
-    bool success = m_domAgent->history()->perform(adoptPtr(new TogglePropertyAction(inspectorStyleSheet, compoundId, propertyIndex, disable)), exceptionState);
+    TrackExceptionState es;
+    bool success = m_domAgent->history()->perform(adoptPtr(new TogglePropertyAction(inspectorStyleSheet, compoundId, propertyIndex, disable)), es);
     if (success)
         result = inspectorStyleSheet->buildObjectForStyle(inspectorStyleSheet->styleForId(compoundId));
-    *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+    *errorString = InspectorDOMAgent::toErrorString(es);
 }
 
 void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const RefPtr<JSONObject>& fullRuleId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result)
@@ -1194,14 +1194,14 @@ void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const RefPtr<J
     if (!inspectorStyleSheet)
         return;
 
-    TrackExceptionState exceptionState;
-    bool success = m_domAgent->history()->perform(adoptPtr(new SetRuleSelectorAction(inspectorStyleSheet, compoundId, selector)), exceptionState);
+    TrackExceptionState es;
+    bool success = m_domAgent->history()->perform(adoptPtr(new SetRuleSelectorAction(inspectorStyleSheet, compoundId, selector)), es);
 
     if (success) {
         CSSStyleRule* rule = inspectorStyleSheet->ruleForId(compoundId);
         result = inspectorStyleSheet->buildObjectForRule(rule, buildMediaListChain(rule));
     }
-    *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+    *errorString = InspectorDOMAgent::toErrorString(es);
 }
 
 void InspectorCSSAgent::addRule(ErrorString* errorString, const int contextNodeId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result)
@@ -1216,12 +1216,12 @@ void InspectorCSSAgent::addRule(ErrorString* errorString, const int contextNodeI
         return;
     }
 
-    TrackExceptionState exceptionState;
+    TrackExceptionState es;
     OwnPtr<AddRuleAction> action = adoptPtr(new AddRuleAction(inspectorStyleSheet, selector));
     AddRuleAction* rawAction = action.get();
-    bool success = m_domAgent->history()->perform(action.release(), exceptionState);
+    bool success = m_domAgent->history()->perform(action.release(), es);
     if (!success) {
-        *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+        *errorString = InspectorDOMAgent::toErrorString(es);
         return;
     }
 
@@ -1502,11 +1502,11 @@ InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(Document* documen
     if (inspectorStyleSheet || !createIfAbsent)
         return inspectorStyleSheet.get();
 
-    TrackExceptionState exceptionState;
-    RefPtr<Element> styleElement = document->createElement("style", exceptionState);
-    if (!exceptionState.hadException())
-        styleElement->setAttribute("type", "text/css", exceptionState);
-    if (!exceptionState.hadException()) {
+    TrackExceptionState es;
+    RefPtr<Element> styleElement = document->createElement("style", es);
+    if (!es.hadException())
+        styleElement->setAttribute("type", "text/css", es);
+    if (!es.hadException()) {
         ContainerNode* targetNode;
         // HEAD is absent in ImageDocuments, for example.
         if (document->head())
@@ -1518,12 +1518,12 @@ InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(Document* documen
 
         InlineStyleOverrideScope overrideScope(document);
         m_creatingViaInspectorStyleSheet = true;
-        targetNode->appendChild(styleElement, exceptionState);
+        targetNode->appendChild(styleElement, es);
         // At this point the added stylesheet will get bound through the updateActiveStyleSheets() invocation.
         // We just need to pick the respective InspectorStyleSheet from m_documentToInspectorStyleSheet.
         m_creatingViaInspectorStyleSheet = false;
     }
-    if (exceptionState.hadException())
+    if (es.hadException())
         return 0;
 
     return m_documentToInspectorStyleSheet.get(document);

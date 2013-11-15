@@ -196,26 +196,26 @@ String MediaList::item(unsigned index) const
     return String();
 }
 
-void MediaList::deleteMedium(const String& medium, ExceptionState& exceptionState)
+void MediaList::deleteMedium(const String& medium, ExceptionState& es)
 {
     CSSStyleSheet::RuleMutationScope mutationScope(m_parentRule);
 
     bool success = m_mediaQueries->remove(medium);
     if (!success) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return;
     }
     if (m_parentStyleSheet)
         m_parentStyleSheet->didMutate();
 }
 
-void MediaList::appendMedium(const String& medium, ExceptionState& exceptionState)
+void MediaList::appendMedium(const String& medium, ExceptionState& es)
 {
     CSSStyleSheet::RuleMutationScope mutationScope(m_parentRule);
 
     bool success = m_mediaQueries->add(medium);
     if (!success) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidCharacterError);
+        es.throwUninformativeAndGenericDOMException(InvalidCharacterError);
         return;
     }
 

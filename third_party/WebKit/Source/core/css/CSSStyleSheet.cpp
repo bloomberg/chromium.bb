@@ -292,26 +292,26 @@ PassRefPtr<CSSRuleList> CSSStyleSheet::rules()
     return nonCharsetRules.release();
 }
 
-unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, ExceptionState& exceptionState)
+unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, ExceptionState& es)
 {
     ASSERT(m_childRuleCSSOMWrappers.isEmpty() || m_childRuleCSSOMWrappers.size() == m_contents->ruleCount());
 
     if (index > length()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return 0;
     }
     CSSParser p(m_contents->parserContext(), UseCounter::getFrom(this));
     RefPtr<StyleRuleBase> rule = p.parseRule(m_contents.get(), ruleString);
 
     if (!rule) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return 0;
     }
     RuleMutationScope mutationScope(this);
 
     bool success = m_contents->wrapperInsertRule(rule, index);
     if (!success) {
-        exceptionState.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+        es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
         return 0;
     }
     if (!m_childRuleCSSOMWrappers.isEmpty())
@@ -320,12 +320,12 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
     return index;
 }
 
-void CSSStyleSheet::deleteRule(unsigned index, ExceptionState& exceptionState)
+void CSSStyleSheet::deleteRule(unsigned index, ExceptionState& es)
 {
     ASSERT(m_childRuleCSSOMWrappers.isEmpty() || m_childRuleCSSOMWrappers.size() == m_contents->ruleCount());
 
     if (index >= length()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
     RuleMutationScope mutationScope(this);
@@ -339,7 +339,7 @@ void CSSStyleSheet::deleteRule(unsigned index, ExceptionState& exceptionState)
     }
 }
 
-int CSSStyleSheet::addRule(const String& selector, const String& style, int index, ExceptionState& exceptionState)
+int CSSStyleSheet::addRule(const String& selector, const String& style, int index, ExceptionState& es)
 {
     StringBuilder text;
     text.append(selector);
@@ -348,15 +348,15 @@ int CSSStyleSheet::addRule(const String& selector, const String& style, int inde
     if (!style.isEmpty())
         text.append(' ');
     text.append('}');
-    insertRule(text.toString(), index, exceptionState);
+    insertRule(text.toString(), index, es);
 
     // As per Microsoft documentation, always return -1.
     return -1;
 }
 
-int CSSStyleSheet::addRule(const String& selector, const String& style, ExceptionState& exceptionState)
+int CSSStyleSheet::addRule(const String& selector, const String& style, ExceptionState& es)
 {
-    return addRule(selector, style, length(), exceptionState);
+    return addRule(selector, style, length(), es);
 }
 
 

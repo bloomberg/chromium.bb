@@ -1289,34 +1289,34 @@ void CanvasRenderingContext2D::drawImageInternal(Image* image, const FloatRect& 
     }
 }
 
-void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap, float x, float y, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap, float x, float y, ExceptionState& es)
 {
     if (!bitmap) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
-    drawImage(bitmap, x, y, bitmap->width(), bitmap->height(), exceptionState);
+    drawImage(bitmap, x, y, bitmap->width(), bitmap->height(), es);
 }
 
 void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
-    float x, float y, float width, float height, ExceptionState& exceptionState)
+    float x, float y, float width, float height, ExceptionState& es)
 {
     if (!bitmap) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
     if (!bitmap->bitmapRect().width() || !bitmap->bitmapRect().height())
         return;
 
-    drawImage(bitmap, 0, 0, bitmap->width(), bitmap->height(), x, y, width, height, exceptionState);
+    drawImage(bitmap, 0, 0, bitmap->width(), bitmap->height(), x, y, width, height, es);
 }
 
 void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
     float sx, float sy, float sw, float sh,
-    float dx, float dy, float dw, float dh, ExceptionState& exceptionState)
+    float dx, float dy, float dw, float dh, ExceptionState& es)
 {
     if (!bitmap) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
 
@@ -1331,7 +1331,7 @@ void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
     if (!dstRect.width() || !dstRect.height())
         return;
     if (!srcRect.width() || !srcRect.height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -1364,43 +1364,43 @@ void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
     drawImageInternal(imageForRendering.get(), actualSrcRect, actualDstRect, state().m_globalComposite, state().m_globalBlend);
 }
 
-void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, float x, float y, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, float x, float y, ExceptionState& es)
 {
     if (!image) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
     LayoutSize destRectSize = sizeFor(image, ImageSizeAfterDevicePixelRatio);
-    drawImage(image, x, y, destRectSize.width(), destRectSize.height(), exceptionState);
+    drawImage(image, x, y, destRectSize.width(), destRectSize.height(), es);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,
-    float x, float y, float width, float height, ExceptionState& exceptionState)
+    float x, float y, float width, float height, ExceptionState& es)
 {
     if (!image) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
     LayoutSize sourceRectSize = sizeFor(image, ImageSizeBeforeDevicePixelRatio);
-    drawImage(image, FloatRect(0, 0, sourceRectSize.width(), sourceRectSize.height()), FloatRect(x, y, width, height), exceptionState);
+    drawImage(image, FloatRect(0, 0, sourceRectSize.width(), sourceRectSize.height()), FloatRect(x, y, width, height), es);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,
     float sx, float sy, float sw, float sh,
-    float dx, float dy, float dw, float dh, ExceptionState& exceptionState)
+    float dx, float dy, float dw, float dh, ExceptionState& es)
 {
-    drawImage(image, FloatRect(sx, sy, sw, sh), FloatRect(dx, dy, dw, dh), exceptionState);
+    drawImage(image, FloatRect(sx, sy, sw, sh), FloatRect(dx, dy, dw, dh), es);
 }
 
-void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionState& es)
 {
-    drawImage(image, srcRect, dstRect, state().m_globalComposite, state().m_globalBlend, exceptionState);
+    drawImage(image, srcRect, dstRect, state().m_globalComposite, state().m_globalBlend, es);
 }
 
-void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator& op, const BlendMode& blendMode, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator& op, const BlendMode& blendMode, ExceptionState& es)
 {
     if (!image) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
 
@@ -1414,7 +1414,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
 
     LayoutSize size = sizeFor(image, ImageSizeBeforeDevicePixelRatio);
     if (!size.width() || !size.height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
@@ -1426,7 +1426,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
 
     FloatRect imageRect = FloatRect(FloatPoint(), size);
     if (!srcRect.width() || !srcRect.height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
     if (!imageRect.intersects(normalizedSrcRect))
@@ -1447,41 +1447,41 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
     drawImageInternal(imageForRendering, normalizedSrcRect, normalizedDstRect, op, blendMode);
 }
 
-void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, float x, float y, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, float x, float y, ExceptionState& es)
 {
-    drawImage(sourceCanvas, 0, 0, sourceCanvas->width(), sourceCanvas->height(), x, y, sourceCanvas->width(), sourceCanvas->height(), exceptionState);
+    drawImage(sourceCanvas, 0, 0, sourceCanvas->width(), sourceCanvas->height(), x, y, sourceCanvas->width(), sourceCanvas->height(), es);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas,
-    float x, float y, float width, float height, ExceptionState& exceptionState)
+    float x, float y, float width, float height, ExceptionState& es)
 {
-    drawImage(sourceCanvas, FloatRect(0, 0, sourceCanvas->width(), sourceCanvas->height()), FloatRect(x, y, width, height), exceptionState);
+    drawImage(sourceCanvas, FloatRect(0, 0, sourceCanvas->width(), sourceCanvas->height()), FloatRect(x, y, width, height), es);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas,
     float sx, float sy, float sw, float sh,
-    float dx, float dy, float dw, float dh, ExceptionState& exceptionState)
+    float dx, float dy, float dw, float dh, ExceptionState& es)
 {
-    drawImage(sourceCanvas, FloatRect(sx, sy, sw, sh), FloatRect(dx, dy, dw, dh), exceptionState);
+    drawImage(sourceCanvas, FloatRect(sx, sy, sw, sh), FloatRect(dx, dy, dw, dh), es);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const FloatRect& srcRect,
-    const FloatRect& dstRect, ExceptionState& exceptionState)
+    const FloatRect& dstRect, ExceptionState& es)
 {
     if (!sourceCanvas) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
 
     FloatRect srcCanvasRect = FloatRect(FloatPoint(), sourceCanvas->size());
 
     if (!srcCanvasRect.width() || !srcCanvasRect.height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
     if (!srcRect.width() || !srcRect.height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -1536,38 +1536,38 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const 
     }
 }
 
-void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, float x, float y, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, float x, float y, ExceptionState& es)
 {
     if (!video) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
     IntSize size = sizeFor(video);
-    drawImage(video, x, y, size.width(), size.height(), exceptionState);
+    drawImage(video, x, y, size.width(), size.height(), es);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video,
-    float x, float y, float width, float height, ExceptionState& exceptionState)
+    float x, float y, float width, float height, ExceptionState& es)
 {
     if (!video) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
     IntSize size = sizeFor(video);
-    drawImage(video, FloatRect(0, 0, size.width(), size.height()), FloatRect(x, y, width, height), exceptionState);
+    drawImage(video, FloatRect(0, 0, size.width(), size.height()), FloatRect(x, y, width, height), es);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video,
     float sx, float sy, float sw, float sh,
-    float dx, float dy, float dw, float dh, ExceptionState& exceptionState)
+    float dx, float dy, float dw, float dh, ExceptionState& es)
 {
-    drawImage(video, FloatRect(sx, sy, sw, sh), FloatRect(dx, dy, dw, dh), exceptionState);
+    drawImage(video, FloatRect(sx, sy, sw, sh), FloatRect(dx, dy, dw, dh), es);
 }
 
-void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionState& es)
 {
     if (!video) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
 
@@ -1576,7 +1576,7 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRec
 
     FloatRect videoRect = FloatRect(FloatPoint(), sizeFor(video));
     if (!srcRect.width() || !srcRect.height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -1697,10 +1697,10 @@ template<class T> void CanvasRenderingContext2D::fullCanvasCompositedFill(const 
     c->endLayer();
 }
 
-PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float x0, float y0, float x1, float y1, ExceptionState& exceptionState)
+PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float x0, float y0, float x1, float y1, ExceptionState& es)
 {
     if (!std::isfinite(x0) || !std::isfinite(y0) || !std::isfinite(x1) || !std::isfinite(y1)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -1708,15 +1708,15 @@ PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float 
     return gradient.release();
 }
 
-PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState& exceptionState)
+PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState& es)
 {
     if (!std::isfinite(x0) || !std::isfinite(y0) || !std::isfinite(r0) || !std::isfinite(x1) || !std::isfinite(y1) || !std::isfinite(r1)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
     if (r0 < 0 || r1 < 0) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return 0;
     }
 
@@ -1725,15 +1725,15 @@ PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGradient(float 
 }
 
 PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLImageElement* image,
-    const String& repetitionType, ExceptionState& exceptionState)
+    const String& repetitionType, ExceptionState& es)
 {
     if (!image) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return 0;
     }
     bool repeatX, repeatY;
-    CanvasPattern::parseRepetitionType(repetitionType, repeatX, repeatY, exceptionState);
-    if (exceptionState.hadException())
+    CanvasPattern::parseRepetitionType(repetitionType, repeatX, repeatY, es);
+    if (es.hadException())
         return 0;
 
     if (!image->complete())
@@ -1753,20 +1753,20 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLImageEleme
 }
 
 PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLCanvasElement* canvas,
-    const String& repetitionType, ExceptionState& exceptionState)
+    const String& repetitionType, ExceptionState& es)
 {
     if (!canvas) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return 0;
     }
     if (!canvas->width() || !canvas->height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return 0;
     }
 
     bool repeatX, repeatY;
-    CanvasPattern::parseRepetitionType(repetitionType, repeatX, repeatY, exceptionState);
-    if (exceptionState.hadException())
+    CanvasPattern::parseRepetitionType(repetitionType, repeatX, repeatY, es);
+    if (es.hadException())
         return 0;
     return CanvasPattern::create(canvas->copiedImage(), repeatX, repeatY, canvas->originClean());
 }
@@ -1837,24 +1837,24 @@ static PassRefPtr<ImageData> createEmptyImageData(const IntSize& size)
     return data.release();
 }
 
-PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(PassRefPtr<ImageData> imageData, ExceptionState& exceptionState) const
+PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(PassRefPtr<ImageData> imageData, ExceptionState& es) const
 {
     if (!imageData) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
     return createEmptyImageData(imageData->size());
 }
 
-PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(float sw, float sh, ExceptionState& exceptionState) const
+PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(float sw, float sh, ExceptionState& es) const
 {
     if (!sw || !sh) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return 0;
     }
     if (!std::isfinite(sw) || !std::isfinite(sh)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -1871,29 +1871,29 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(float sw, float 
     return createEmptyImageData(size);
 }
 
-PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(float sx, float sy, float sw, float sh, ExceptionState& exceptionState) const
+PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(float sx, float sy, float sw, float sh, ExceptionState& es) const
 {
-    return getImageData(ImageBuffer::LogicalCoordinateSystem, sx, sy, sw, sh, exceptionState);
+    return getImageData(ImageBuffer::LogicalCoordinateSystem, sx, sy, sw, sh, es);
 }
 
-PassRefPtr<ImageData> CanvasRenderingContext2D::webkitGetImageDataHD(float sx, float sy, float sw, float sh, ExceptionState& exceptionState) const
+PassRefPtr<ImageData> CanvasRenderingContext2D::webkitGetImageDataHD(float sx, float sy, float sw, float sh, ExceptionState& es) const
 {
-    return getImageData(ImageBuffer::BackingStoreCoordinateSystem, sx, sy, sw, sh, exceptionState);
+    return getImageData(ImageBuffer::BackingStoreCoordinateSystem, sx, sy, sw, sh, es);
 }
 
-PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(ImageBuffer::CoordinateSystem coordinateSystem, float sx, float sy, float sw, float sh, ExceptionState& exceptionState) const
+PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(ImageBuffer::CoordinateSystem coordinateSystem, float sx, float sy, float sw, float sh, ExceptionState& es) const
 {
     if (!canvas()->originClean()) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("getImageData", "CanvasRenderingContext2D", "the canvas has been tainted by cross-origin data."));
+        es.throwSecurityError(ExceptionMessages::failedToExecute("getImageData", "CanvasRenderingContext2D", "the canvas has been tainted by cross-origin data."));
         return 0;
     }
 
     if (!sw || !sh) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return 0;
     }
     if (!std::isfinite(sx) || !std::isfinite(sy) || !std::isfinite(sw) || !std::isfinite(sh)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -1926,44 +1926,44 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(ImageBuffer::Coordi
     return ImageData::create(imageDataRect.size(), byteArray.release());
 }
 
-void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, ExceptionState& es)
 {
     if (!data) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
-    putImageData(data, dx, dy, 0, 0, data->width(), data->height(), exceptionState);
+    putImageData(data, dx, dy, 0, 0, data->width(), data->height(), es);
 }
 
-void CanvasRenderingContext2D::webkitPutImageDataHD(ImageData* data, float dx, float dy, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::webkitPutImageDataHD(ImageData* data, float dx, float dy, ExceptionState& es)
 {
     if (!data) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
-    webkitPutImageDataHD(data, dx, dy, 0, 0, data->width(), data->height(), exceptionState);
+    webkitPutImageDataHD(data, dx, dy, 0, 0, data->width(), data->height(), es);
 }
 
 void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, float dirtyX, float dirtyY,
-    float dirtyWidth, float dirtyHeight, ExceptionState& exceptionState)
+    float dirtyWidth, float dirtyHeight, ExceptionState& es)
 {
-    putImageData(data, ImageBuffer::LogicalCoordinateSystem, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight, exceptionState);
+    putImageData(data, ImageBuffer::LogicalCoordinateSystem, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight, es);
 }
 
-void CanvasRenderingContext2D::webkitPutImageDataHD(ImageData* data, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::webkitPutImageDataHD(ImageData* data, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState& es)
 {
-    putImageData(data, ImageBuffer::BackingStoreCoordinateSystem, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight, exceptionState);
+    putImageData(data, ImageBuffer::BackingStoreCoordinateSystem, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight, es);
 }
 
 void CanvasRenderingContext2D::putImageData(ImageData* data, ImageBuffer::CoordinateSystem coordinateSystem, float dx, float dy, float dirtyX, float dirtyY,
-    float dirtyWidth, float dirtyHeight, ExceptionState& exceptionState)
+    float dirtyWidth, float dirtyHeight, ExceptionState& es)
 {
     if (!data) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
     if (!std::isfinite(dx) || !std::isfinite(dy) || !std::isfinite(dirtyX) || !std::isfinite(dirtyY) || !std::isfinite(dirtyWidth) || !std::isfinite(dirtyHeight)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
 

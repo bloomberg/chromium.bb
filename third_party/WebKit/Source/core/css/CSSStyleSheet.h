@@ -70,7 +70,7 @@ public:
     PassRefPtr<CSSRuleList> rules();
     int addRule(const String& selector, const String& style, int index, ExceptionState&);
     int addRule(const String& selector, const String& style, ExceptionState&);
-    void removeRule(unsigned index, ExceptionState& exceptionState) { deleteRule(index, exceptionState); }
+    void removeRule(unsigned index, ExceptionState& es) { deleteRule(index, es); }
 
     // For CSSRuleList.
     unsigned length() const;

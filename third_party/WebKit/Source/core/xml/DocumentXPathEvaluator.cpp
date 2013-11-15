@@ -54,12 +54,12 @@ DocumentXPathEvaluator* DocumentXPathEvaluator::from(DocumentSupplementable* doc
 }
 
 PassRefPtr<XPathExpression> DocumentXPathEvaluator::createExpression(DocumentSupplementable* document,
-    const String& expression, XPathNSResolver* resolver, ExceptionState& exceptionState)
+    const String& expression, XPathNSResolver* resolver, ExceptionState& es)
 {
     DocumentXPathEvaluator* suplement = from(document);
     if (!suplement->m_xpathEvaluator)
         suplement->m_xpathEvaluator = XPathEvaluator::create();
-    return suplement->m_xpathEvaluator->createExpression(expression, resolver, exceptionState);
+    return suplement->m_xpathEvaluator->createExpression(expression, resolver, es);
 }
 
 PassRefPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver(DocumentSupplementable* document, Node* nodeResolver)
@@ -72,12 +72,12 @@ PassRefPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver(DocumentSup
 
 PassRefPtr<XPathResult> DocumentXPathEvaluator::evaluate(DocumentSupplementable* document, const String& expression,
     Node* contextNode, XPathNSResolver* resolver, unsigned short type,
-    XPathResult* result, ExceptionState& exceptionState)
+    XPathResult* result, ExceptionState& es)
 {
     DocumentXPathEvaluator* suplement = from(document);
     if (!suplement->m_xpathEvaluator)
         suplement->m_xpathEvaluator = XPathEvaluator::create();
-    return suplement->m_xpathEvaluator->evaluate(expression, contextNode, resolver, type, result, exceptionState);
+    return suplement->m_xpathEvaluator->evaluate(expression, contextNode, resolver, type, result, es);
 }
 
 } // namespace WebCore

@@ -94,10 +94,10 @@ public:
     {
     }
 
-    ResultReturnType getResult(ExceptionState& exceptionState)
+    ResultReturnType getResult(ExceptionState& es)
     {
         if (m_errorCode)
-            FileError::throwDOMException(exceptionState, m_errorCode);
+            FileError::throwDOMException(es, m_errorCode);
 
         return m_result;
     }

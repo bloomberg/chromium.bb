@@ -111,7 +111,7 @@ unsigned long DefaultAudioDestinationNode::maxChannelCount() const
     return AudioDestination::maxChannelCount();
 }
 
-void DefaultAudioDestinationNode::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
+void DefaultAudioDestinationNode::setChannelCount(unsigned long channelCount, ExceptionState& es)
 {
     // The channelCount for the input to this node controls the actual number of channels we
     // send to the audio hardware. It can only be set depending on the maximum number of
@@ -120,7 +120,7 @@ void DefaultAudioDestinationNode::setChannelCount(unsigned long channelCount, Ex
     ASSERT(isMainThread());
 
     if (!maxChannelCount() || channelCount > maxChannelCount()) {
-        exceptionState.throwDOMException(
+        es.throwDOMException(
             IndexSizeError,
             ExceptionMessages::failedToSet(
                 "channelCount",
@@ -132,9 +132,9 @@ void DefaultAudioDestinationNode::setChannelCount(unsigned long channelCount, Ex
     }
 
     unsigned long oldChannelCount = this->channelCount();
-    AudioNode::setChannelCount(channelCount, exceptionState);
+    AudioNode::setChannelCount(channelCount, es);
 
-    if (!exceptionState.hadException() && this->channelCount() != oldChannelCount && isInitialized()) {
+    if (!es.hadException() && this->channelCount() != oldChannelCount && isInitialized()) {
         // Re-create destination.
         m_destination->stop();
         createDestination();

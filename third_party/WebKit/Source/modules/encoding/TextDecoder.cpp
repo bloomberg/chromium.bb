@@ -38,13 +38,13 @@
 
 namespace WebCore {
 
-PassRefPtr<TextDecoder> TextDecoder::create(const String& label, const Dictionary& options, ExceptionState& exceptionState)
+PassRefPtr<TextDecoder> TextDecoder::create(const String& label, const Dictionary& options, ExceptionState& es)
 {
     const String& encodingLabel = label.isNull() ? String("utf-8") : label;
 
     WTF::TextEncoding encoding(encodingLabel);
     if (!encoding.isValid()) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
 
@@ -77,7 +77,7 @@ String TextDecoder::encoding() const
     return name;
 }
 
-String TextDecoder::decode(ArrayBufferView* input, const Dictionary& options, ExceptionState& exceptionState)
+String TextDecoder::decode(ArrayBufferView* input, const Dictionary& options, ExceptionState& es)
 {
     bool stream = false;
     options.get("stream", stream);
@@ -94,7 +94,7 @@ String TextDecoder::decode(ArrayBufferView* input, const Dictionary& options, Ex
     String s = m_codec->decode(start, length, flush, m_fatal, sawError);
 
     if (m_fatal && sawError) {
-        exceptionState.throwDOMException(EncodingError, "The encoded data was not valid.");
+        es.throwDOMException(EncodingError, "The encoded data was not valid.");
         return String();
     }
 
