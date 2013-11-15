@@ -35,8 +35,6 @@ using blink::WebNode;
 using blink::WebPlugin;
 using blink::WebPluginContainer;
 using blink::WebPluginParams;
-using webkit_glue::CppArgumentList;
-using webkit_glue::CppVariant;
 
 namespace {
 const plugins::PluginPlaceholder* g_last_active_menu = NULL;
@@ -62,8 +60,13 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
       placeholder_routing_id_(MSG_ROUTING_NONE),
 #endif
       has_host_(false),
-      context_menu_request_id_(0) {
+      context_menu_request_id_(0),
+      weak_factory_(this) {
   RenderThread::Get()->AddObserver(this);
+  RegisterCallback(
+      "openAboutPlugins",
+      base::Bind(&ChromePluginPlaceholder::OpenAboutPluginsCallback,
+                 weak_factory_.GetWeakPtr()));
 }
 
 ChromePluginPlaceholder::~ChromePluginPlaceholder() {
@@ -217,9 +220,7 @@ void ChromePluginPlaceholder::OnLoadBlockedPlugins(
   plugins::PluginPlaceholder::OnLoadBlockedPlugins(identifier);
 }
 
-void ChromePluginPlaceholder::OpenAboutPluginsCallback(
-    const CppArgumentList& args,
-    CppVariant* result) {
+void ChromePluginPlaceholder::OpenAboutPluginsCallback() {
   RenderThread::Get()->Send(
       new ChromeViewHostMsg_OpenAboutPlugins(routing_id()));
 }
@@ -350,11 +351,4 @@ void ChromePluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
 
   context_menu_request_id_ = render_view()->ShowContextMenu(this, params);
   g_last_active_menu = this;
-}
-
-void ChromePluginPlaceholder::BindWebFrame(blink::WebFrame* frame) {
-  plugins::PluginPlaceholder::BindWebFrame(frame);
-  BindCallback("openAboutPlugins",
-               base::Bind(&ChromePluginPlaceholder::OpenAboutPluginsCallback,
-                          base::Unretained(this)));
 }

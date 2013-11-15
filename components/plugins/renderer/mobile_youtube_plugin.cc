@@ -79,7 +79,14 @@ MobileYouTubePlugin::MobileYouTubePlugin(content::RenderView* render_view,
                         frame,
                         params,
                         HtmlData(params, template_html),
-                        placeholderDataUrl) {}
+                        placeholderDataUrl),
+      weak_factory_(this) {
+  RegisterCallback("openYoutubeURL",
+                   base::Bind(&MobileYouTubePlugin::OpenYoutubeUrlCallback,
+                              weak_factory_.GetWeakPtr()));
+}
+
+MobileYouTubePlugin::~MobileYouTubePlugin() {}
 
 // static
 bool MobileYouTubePlugin::IsYouTubeURL(const GURL& url,
@@ -92,9 +99,7 @@ bool MobileYouTubePlugin::IsYouTubeURL(const GURL& url,
          LowerCaseEqualsASCII(mime_type, content::kFlashPluginSwfMimeType);
 }
 
-void MobileYouTubePlugin::OpenYoutubeUrlCallback(
-    const webkit_glue::CppArgumentList& args,
-    webkit_glue::CppVariant* result) {
+void MobileYouTubePlugin::OpenYoutubeUrlCallback() {
   std::string youtube("vnd.youtube:");
   GURL url(youtube.append(GetYoutubeVideoId(GetPluginParams())));
   WebURLRequest request;
@@ -102,12 +107,6 @@ void MobileYouTubePlugin::OpenYoutubeUrlCallback(
   request.setURL(url);
   render_view()->LoadURLExternally(
       GetFrame(), request, blink::WebNavigationPolicyNewForegroundTab);
-}
-void MobileYouTubePlugin::BindWebFrame(WebFrame* frame) {
-  PluginPlaceholder::BindWebFrame(frame);
-  BindCallback("openYoutubeURL",
-               base::Bind(&MobileYouTubePlugin::OpenYoutubeUrlCallback,
-                          base::Unretained(this)));
 }
 
 }  // namespace plugins

@@ -26,12 +26,12 @@ class MobileYouTubePlugin : public PluginPlaceholder {
   static bool IsYouTubeURL(const GURL& url, const std::string& mime_type);
 
  private:
-  // Opens a youtube app in the current tab.
-  void OpenYoutubeUrlCallback(const webkit_glue::CppArgumentList& args,
-                              webkit_glue::CppVariant* result);
+  virtual ~MobileYouTubePlugin();
 
-  // WebViewPlugin::Delegate (via PluginPlaceholder) method
-  virtual void BindWebFrame(blink::WebFrame* frame) OVERRIDE;
+  // Opens a youtube app in the current tab.
+  void OpenYoutubeUrlCallback();
+
+  base::WeakPtrFactory<MobileYouTubePlugin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MobileYouTubePlugin);
 };
