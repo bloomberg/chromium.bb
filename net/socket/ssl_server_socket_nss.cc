@@ -351,13 +351,12 @@ int SSLServerSocketNSS::InitializeSSLOptions() {
     const PRUint16 num_ciphers = SSL_GetNumImplementedCiphers();
 
     // Require forward security by iterating over the cipher suites and
-    // disabling all those that don't use either DHE or ECDHE.
+    // disabling all those that don't use ECDHE.
     for (unsigned i = 0; i < num_ciphers; i++) {
       SSLCipherSuiteInfo info;
       if (SSL_GetCipherSuiteInfo(ssl_ciphers[i], &info, sizeof(info)) ==
           SECSuccess) {
-        if (strcmp(info.keaTypeName, "ECDHE") != 0 &&
-            strcmp(info.keaTypeName, "DHE") != 0) {
+        if (strcmp(info.keaTypeName, "ECDHE") != 0) {
           SSL_CipherPrefSet(nss_fd_, ssl_ciphers[i], PR_FALSE);
         }
       }
