@@ -312,7 +312,7 @@ ScriptValue IDBCursor::value(ExecutionContext* context)
     DOMRequestState requestState(context);
     ScriptValue value = deserializeIDBValueBuffer(&requestState, m_value);
     RefPtr<IDBObjectStore> objectStore = effectiveObjectStore();
-    const IDBObjectStoreMetadata metadata = objectStore->metadata();
+    const IDBObjectStoreMetadata& metadata = objectStore->metadata();
     if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
 #ifndef NDEBUG
         RefPtr<IDBKey> expectedKey = createIDBKeyFromScriptValueAndKeyPath(&requestState, value, metadata.keyPath);

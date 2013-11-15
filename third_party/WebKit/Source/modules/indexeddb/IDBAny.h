@@ -102,7 +102,7 @@ public:
     const ScriptValue& scriptValue();
     int64_t integer();
     const String& string();
-    const IDBKeyPath& keyPath() { return m_idbKeyPath; };
+    const IDBKeyPath& keyPath() const { return m_idbKeyPath; };
 
 private:
     explicit IDBAny(Type);

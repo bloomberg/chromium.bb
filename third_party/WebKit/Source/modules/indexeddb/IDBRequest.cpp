@@ -325,7 +325,7 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> valueBuffer, PassRefPtr<IDBK
         return;
 
 #ifndef NDEBUG
-    ASSERT(keyPath == effectiveObjectStore(m_source)->keyPath());
+    ASSERT(keyPath == effectiveObjectStore(m_source)->metadata().keyPath);
 #endif
     DOMRequestState::Scope scope(m_requestState);
     ScriptValue value = deserializeIDBValueBuffer(requestState(), valueBuffer);

@@ -26,7 +26,7 @@
 [
 ] interface IDBObjectStore {
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString name;
-    [ImplementedAs=keyPathAny] readonly attribute IDBAny keyPath;
+    readonly attribute IDBAny keyPath;
     readonly attribute DOMStringList indexNames;
     readonly attribute IDBTransaction transaction;
     readonly attribute boolean autoIncrement;

@@ -41,13 +41,10 @@ public:
     static PassRefPtr<IDBVersionChangeEvent> create(PassRefPtr<IDBAny> oldVersion = IDBAny::createNull(), PassRefPtr<IDBAny> newVersion = IDBAny::createNull(), const AtomicString& eventType = AtomicString(), blink::WebIDBDataLoss = blink::WebIDBDataLossNone, const String& dataLossMessage = String());
     virtual ~IDBVersionChangeEvent();
 
-    virtual PassRefPtr<IDBAny> oldVersion() { return m_oldVersion; }
-    virtual PassRefPtr<IDBAny> newVersion() { return m_newVersion; }
+    virtual PassRefPtr<IDBAny> oldVersion() const { return m_oldVersion; }
+    virtual PassRefPtr<IDBAny> newVersion() const { return m_newVersion; }
     virtual const AtomicString& dataLoss();
-    virtual String dataLossMessage()
-    {
-        return m_dataLossMessage;
-    }
+    virtual const String& dataLossMessage() const { return m_dataLossMessage; }
 
     virtual const AtomicString& interfaceName() const;
 

@@ -79,8 +79,8 @@ public:
     void postSuccessHandlerCallback();
     void close();
     void setValueReady(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
-    PassRefPtr<IDBKey> idbPrimaryKey() { return m_primaryKey; }
-    IDBRequest* request() { return m_request.get(); }
+    PassRefPtr<IDBKey> idbPrimaryKey() const { return m_primaryKey; }
+    IDBRequest* request() const { return m_request.get(); }
     virtual bool isKeyCursor() const { return true; }
     virtual bool isCursorWithValue() const { return false; }
 

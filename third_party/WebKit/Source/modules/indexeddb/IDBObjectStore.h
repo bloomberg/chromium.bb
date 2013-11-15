@@ -58,8 +58,7 @@ public:
     // Implement the IDBObjectStore IDL
     int64_t id() const { return m_metadata.id; }
     const String& name() const { return m_metadata.name; }
-    PassRefPtr<IDBAny> keyPathAny() const { return IDBAny::create(m_metadata.keyPath); }
-    const IDBKeyPath& keyPath() const { return m_metadata.keyPath; }
+    PassRefPtr<IDBAny> keyPath() const { return IDBAny::create(m_metadata.keyPath); }
     PassRefPtr<DOMStringList> indexNames() const;
     PassRefPtr<IDBTransaction> transaction() const { return m_transaction; }
     bool autoIncrement() const { return m_metadata.autoIncrement; }
@@ -89,7 +88,7 @@ public:
     bool isDeleted() const { return m_deleted; }
     void transactionFinished();
 
-    IDBObjectStoreMetadata metadata() const { return m_metadata; }
+    const IDBObjectStoreMetadata& metadata() const { return m_metadata; }
     void setMetadata(const IDBObjectStoreMetadata& metadata) { m_metadata = metadata; }
 
     typedef Vector<RefPtr<IDBKey> > IndexKeys;
