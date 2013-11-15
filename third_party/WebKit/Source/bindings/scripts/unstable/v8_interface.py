@@ -82,7 +82,7 @@ def generate_interface(interface):
                   for attribute in interface.attributes]
     template_contents.update({
         'attributes': attributes,
-        'has_constructor_attributes': any(attribute['is_constructor'] for attribute in attributes),
+        'has_constructor_attributes': any(attribute['constructor_type'] for attribute in attributes),
         'has_per_context_enabled_attributes': any(attribute['per_context_enabled_function_name'] for attribute in attributes),
         'has_replaceable_attributes': any(attribute['is_replaceable'] for attribute in attributes),
         'has_runtime_enabled_attributes': any(attribute['runtime_enabled_function_name'] for attribute in attributes),

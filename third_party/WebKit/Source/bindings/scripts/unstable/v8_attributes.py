@@ -80,13 +80,11 @@ def generate_attribute(interface, attribute):
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
         'conditional_string': v8_utilities.conditional_string(attribute),
+        'constructor_type': v8_types.constructor_type(idl_type) if is_constructor_attribute(attribute) else None,
         'cpp_type': v8_types.cpp_type(idl_type),
         'deprecate_as': v8_utilities.deprecate_as(attribute),  # [DeprecateAs]
         'enum_validation_expression':
             v8_utilities.enum_validation_expression(idl_type),
-        'getter_callback_name': getter_callback_name(interface, attribute),
-        'getter_callback_name_for_main_world':
-            getter_callback_name_for_main_world(interface, attribute),
         'has_custom_getter': has_custom_getter,
         'has_custom_setter': has_custom_setter,
         'has_strict_type_checking': (
@@ -95,12 +93,12 @@ def generate_attribute(interface, attribute):
         'idl_type': idl_type,
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_check_security_for_node': is_check_security_for_node,
-        'is_constructor': is_constructor_attribute(attribute),
         'is_getter_raises_exception': (
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in [None, 'Getter']),
         'is_keep_alive_for_gc': is_keep_alive_for_gc(attribute),
         'is_nullable': attribute.is_nullable,
+        'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
         'is_read_only': attribute.is_read_only,
         'is_reflect': is_reflect,
         'is_replaceable': 'Replaceable' in attribute.extended_attributes,
@@ -114,13 +112,11 @@ def generate_attribute(interface, attribute):
         'per_context_enabled_function_name': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
         'property_attributes': property_attributes(attribute),
         'setter_callback_name': setter_callback_name(interface, attribute),
-        'setter_callback_name_for_main_world': setter_callback_name_for_main_world(interface, attribute),
         'v8_type': v8_types.v8_type(idl_type),
         'runtime_enabled_function_name': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
         'world_suffixes': ['', 'ForMainWorld']
                           if 'PerWorldBindings' in extended_attributes
                           else [''],  # [PerWorldBindings]
-        'wrapper_type_info': wrapper_type_info(attribute),
     }
 
     if is_constructor_attribute(attribute):
@@ -289,12 +285,6 @@ def scoped_name(interface, attribute, base_name):
 
 # Attribute configuration
 
-def getter_callback_name(interface, attribute):
-    if is_constructor_attribute(attribute):
-        return '{0}V8Internal::{0}ConstructorGetter'.format(cpp_name(interface))
-    return '%sV8Internal::%sAttributeGetterCallback' % (cpp_name(interface), attribute.name)
-
-
 # [Replaceable]
 def setter_callback_name(interface, attribute):
     cpp_class_name = cpp_name(interface)
@@ -306,26 +296,6 @@ def setter_callback_name(interface, attribute):
     if attribute.is_read_only:
         return '0'
     return '%sV8Internal::%sAttributeSetterCallback' % (cpp_class_name, attribute.name)
-
-
-# [PerWorldBindings]
-def getter_callback_name_for_main_world(interface, attribute):
-    if 'PerWorldBindings' not in attribute.extended_attributes:
-        return '0'
-    return '%sV8Internal::%sAttributeGetterCallbackForMainWorld' % (cpp_name(interface), attribute.name)
-
-
-def setter_callback_name_for_main_world(interface, attribute):
-    if ('PerWorldBindings' not in attribute.extended_attributes or
-        attribute.is_read_only):
-        return '0'
-    return '%sV8Internal::%sAttributeSetterCallbackForMainWorld' % (cpp_name(interface), attribute.name)
-
-
-def wrapper_type_info(attribute):
-    if not is_constructor_attribute(attribute):
-        return '0'
-    return 'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' % v8_types.constructor_type(attribute.idl_type)
 
 
 # [DoNotCheckSecurity], [Unforgeable]

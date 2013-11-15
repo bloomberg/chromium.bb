@@ -3,20 +3,40 @@
 
 {##############################################################################}
 {% macro attribute_configuration(attribute) %}
+{% set getter_callback_name =
+       '%sV8Internal::%sAttributeGetterCallback' %
+            (interface_name, attribute.name)
+       if not attribute.constructor_type else
+       '{0}V8Internal::{0}ConstructorGetter'.format(interface_name) %}
+{% set getter_callback_name_for_main_world =
+       '%sV8Internal::%sAttributeGetterCallbackForMainWorld' %
+            (interface_name, attribute.name)
+       if attribute.is_per_world_bindings else '0' %}
+{% set setter_callback_name = attribute.setter_callback_name %}
+{% set setter_callback_name_for_main_world =
+       '%sV8Internal::%sAttributeSetterCallbackForMainWorld' %
+           (interface_name, attribute.name)
+       if attribute.is_per_world_bindings and not attribute.is_read_only else '0' %}
+{% set wrapper_type_info =
+       'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' %
+            attribute.constructor_type
+        if attribute.constructor_type else '0' %}
 {% set access_control = 'static_cast<v8::AccessControl>(%s)' %
                         ' | '.join(attribute.access_control_list) %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
-{"{{attribute.name}}", {{attribute.getter_callback_name}}, {{attribute.setter_callback_name}}, {{attribute.getter_callback_name_for_main_world}}, {{attribute.setter_callback_name_for_main_world}}, {{attribute.wrapper_type_info}}, {{access_control}}, {{property_attribute}}, 0 /* on instance */}
+{"{{attribute.name}}", {{getter_callback_name}}, {{setter_callback_name}}, {{getter_callback_name_for_main_world}}, {{setter_callback_name_for_main_world}}, {{wrapper_type_info}}, {{access_control}}, {{property_attribute}}, 0 /* on instance */}
 {%- endmacro %}
 
 
 {##############################################################################}
 {% macro method_configuration(method) %}
-{% set callback_name_for_main_world =
+{% set method_callback_name =
+   '%sV8Internal::%sMethodCallback' % (interface_name, method.name) %}
+{% set method_callback_name_for_main_world =
    '%sV8Internal::%sMethodCallbackForMainWorld' % (interface_name, method.name)
    if method.is_per_world_bindings else '0' %}
-{"{{method.name}}", {{interface_name}}V8Internal::{{method.name}}MethodCallback, {{callback_name_for_main_world}}, {{method.number_of_required_or_variadic_arguments}}}
+{"{{method.name}}", {{method_callback_name}}, {{method_callback_name_for_main_world}}, {{method.number_of_required_or_variadic_arguments}}}
 {%- endmacro %}
 
 
@@ -155,7 +175,9 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     {% endif %}{# install_custom_signature #}
     {% endfor %}
     {% for attribute in attributes if attribute.is_static %}
-    desc->SetNativeDataProperty(v8::String::NewSymbol("{{attribute.name}}"), {{attribute.getter_callback_name}}, {{attribute.setter_callback_name}}, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    {% set getter_callback_name = '%sV8Internal::%sAttributeGetterCallback' %
+           (interface_name, attribute.name) %}
+    desc->SetNativeDataProperty(v8::String::NewSymbol("{{attribute.name}}"), {{getter_callback_name}}, {{attribute.setter_callback_name}}, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     {% endfor %}
     {% if constants %}
     {{install_constants() | indent}}

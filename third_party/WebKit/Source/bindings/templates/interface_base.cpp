@@ -74,7 +74,7 @@ template <typename T> void V8_USE(T) { }
 {% from 'attributes.cpp' import attribute_getter, attribute_getter_callback,
        attribute_setter, attribute_setter_callback
    with context %}
-{% for attribute in attributes if not attribute.is_constructor %}
+{% for attribute in attributes if not attribute.constructor_type %}
 {% for world_suffix in attribute.world_suffixes %}
 {% if not attribute.has_custom_getter %}
 {{attribute_getter(attribute, world_suffix)}}
