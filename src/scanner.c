@@ -64,6 +64,7 @@ struct protocol {
 };
 
 struct interface {
+	struct location loc;
 	char *name;
 	char *uppercase_name;
 	int version;
@@ -76,6 +77,7 @@ struct interface {
 };
 
 struct message {
+	struct location loc;
 	char *name;
 	char *uppercase_name;
 	struct wl_list arg_list;
@@ -268,6 +270,19 @@ fail(struct location *loc, const char *msg, ...)
 	exit(EXIT_FAILURE);
 }
 
+static void
+warn(struct location *loc, const char *msg, ...)
+{
+	va_list ap;
+
+	va_start(ap, msg);
+	fprintf(stderr, "%s:%d: warning: ",
+		loc->filename, loc->line_number);
+	vfprintf(stderr, msg, ap);
+	fprintf(stderr, "\n");
+	va_end(ap);
+}
+
 static int
 is_nullable_type(struct arg *arg)
 {
@@ -345,6 +360,7 @@ start_element(void *data, const char *element_name, const char **atts)
 			fail(&ctx->loc, "no interface version given");
 
 		interface = xmalloc(sizeof *interface);
+		interface->loc = ctx->loc;
 		interface->name = xstrdup(name);
 		interface->uppercase_name = uppercase_dup(name);
 		interface->version = version;
@@ -362,6 +378,7 @@ start_element(void *data, const char *element_name, const char **atts)
 			fail(&ctx->loc, "no request name given");
 
 		message = xmalloc(sizeof *message);
+		message->loc = ctx->loc;
 		message->name = xstrdup(name);
 		message->uppercase_name = uppercase_dup(name);
 		wl_list_init(&message->arg_list);
@@ -619,9 +636,10 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	}
 
 	if (!has_destructor && has_destroy) {
-		fprintf(stderr,
-			"interface %s has method named destroy but"
-			"no destructor", interface->name);
+		fail(&interface->loc,
+		     "interface '%s' has method named destroy "
+		     "but no destructor",
+		     interface->name);
 		exit(EXIT_FAILURE);
 	}
 
@@ -640,10 +658,10 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 
 	wl_list_for_each(m, message_list, link) {
 		if (m->new_id_count > 1) {
-			fprintf(stderr,
-				"warning: %s::%s has more than "
-				"one new_id arg, not emitting stub\n",
-				interface->name, m->name);
+			warn(&m->loc,
+			     "request '%s::%s' has more than "
+			     "one new_id arg, not emitting stub\n",
+			     interface->name, m->name);
 			continue;
 		}
 
