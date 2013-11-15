@@ -1126,7 +1126,7 @@ float WebViewImpl::legibleScale() const
     // (after double tap, find in page, etc), though the user should still
     // be allowed to manually pinch zoom in further if they desire.
     float legibleScale = 1;
-    if (page() && page()->settings().textAutosizingEnabled())
+    if (page())
         legibleScale *= page()->settings().textAutosizingFontScaleFactor();
     return legibleScale;
 }
@@ -2695,11 +2695,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
     // Pick a scale which is reasonably readable. This is the scale at which
     // the caret height will become minReadableCaretHeight (adjusted for dpi
     // and font scale factor).
-    float targetScale = 1;
-    if (page())
-        targetScale *= page()->settings().textAutosizingFontScaleFactor();
-
-    newScale = clampPageScaleFactorToLimits(minReadableCaretHeight * targetScale / caret.height);
+    newScale = clampPageScaleFactorToLimits(legibleScale() * minReadableCaretHeight / caret.height);
     const float deltaScale = newScale / pageScaleFactor();
 
     // Convert the rects to absolute space in the new scale.
