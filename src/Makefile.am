@@ -36,8 +36,6 @@ weston_SOURCES =				\
 	input-method-server-protocol.h		\
 	workspaces-protocol.c			\
 	workspaces-server-protocol.h		\
-	subsurface-protocol.c			\
-	subsurface-server-protocol.h		\
 	bindings.c				\
 	animation.c				\
 	noop-renderer.c				\
@@ -350,8 +348,6 @@ BUILT_SOURCES =					\
 	input-method-server-protocol.h		\
 	workspaces-server-protocol.h		\
 	workspaces-protocol.c			\
-	subsurface-server-protocol.h		\
-	subsurface-protocol.c			\
 	git-version.h
 
 CLEANFILES = $(BUILT_SOURCES)

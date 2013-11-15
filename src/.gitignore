@@ -19,6 +19,3 @@ workspaces-protocol.c
 workspaces-server-protocol.h
 input-method-protocol.c
 input-method-server-protocol.h
-subsurface-server-protocol.h
-subsurface-protocol.c
-
