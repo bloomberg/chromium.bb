@@ -33,7 +33,6 @@
 [
     NoInterfaceObject
 ] interface InspectorFrontendHost {
-    void closeWindow();
     void setZoomFactor(float zoom);
     void inspectedURLChanged(DOMString newURL);
 

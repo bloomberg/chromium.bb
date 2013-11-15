@@ -54,7 +54,6 @@ public:
     ~InspectorFrontendHost();
     void disconnectClient();
 
-    void closeWindow();
     void setZoomFactor(float);
     void inspectedURLChanged(const String&);
 

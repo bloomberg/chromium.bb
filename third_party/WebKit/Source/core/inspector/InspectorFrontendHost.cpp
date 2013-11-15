@@ -136,17 +136,6 @@ void InspectorFrontendHost::disconnectClient()
     m_frontendPage = 0;
 }
 
-void InspectorFrontendHost::closeWindow()
-{
-    if (m_client) {
-        RefPtr<JSONObject> message = JSONObject::create();
-        message->setNumber("id", 0);
-        message->setString("method", "closeWindow");
-        sendMessageToEmbedder(message->toJSONString());
-        disconnectClient(); // Disconnect from client.
-    }
-}
-
 void InspectorFrontendHost::setZoomFactor(float zoom)
 {
     m_frontendPage->mainFrame()->setPageAndTextZoomFactors(zoom, 1);
