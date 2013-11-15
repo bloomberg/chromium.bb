@@ -712,27 +712,6 @@
    fun:_ZN19WebSharedWorkerStub9OnConnectEii
 }
 {
-   bug_27838
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN3WTF13FastAllocBasenwEj
-   fun:_ZN7WebCore18MessagePortChannel6createEN3WTF10PassRefPtrINS_26PlatformMessagePortChannelEEE
-   fun:_ZN5blink19WebSharedWorkerImpl7connectEPNS_21WebMessagePortChannelEPNS_15WebSharedWorker15ConnectListenerE
-   fun:_ZN19WebSharedWorkerStub9OnConnectEii
-}
-{
-   bug_28200
-   Memcheck:Leak
-   fun:malloc
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN3WTF13FastAllocBasenwEj
-   fun:_ZN7WebCore18MessagePortChannel6createEN3WTF10PassRefPtrINS_26PlatformMessagePortChannelEEE
-   fun:_ZN5blink19WebSharedWorkerImpl7connectEPNS_21WebMessagePortChannelEPNS_15WebSharedWorker15ConnectListenerE
-   fun:_ZN19WebSharedWorkerStub9OnConnectEii
-}
-{
    # GTK tooltip doesn't always initialize variables.
    # https://bugzilla.gnome.org/show_bug.cgi?id=554686
    tooltip_554686
