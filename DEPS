@@ -651,6 +651,16 @@ hooks = [
     ],
   },
   {
+    "name": "gn_mac",
+    "pattern": "\\.sha1$",
+    "action": [ "download_from_google_storage",
+                "--platform=darwin",
+                "--directory",
+                "--bucket", "chromium-gn",
+                "src/tools/gn/bin/mac",
+    ],
+  },
+  {
     "name": "gn_linux",
     "pattern": "\\.sha1$",
     "action": [ "download_from_google_storage",
