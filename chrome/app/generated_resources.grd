@@ -2150,16 +2150,10 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_CREATE_SHORTCUTS" desc="Default installation menu label">
           Create application &amp;shortcuts...
         </message>
-        <message name="IDS_CREATE_HOSTED_APP" desc="Button text for creating a hosted app from the current website">
-          Create app from this website...
-        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_CREATE_SHORTCUTS" desc="In Title Case: Default installation menu label">
           Create Application &amp;Shortcuts...
-        </message>
-        <message name="IDS_CREATE_HOSTED_APP" desc="In Title Case: Button text for creating a hosted app from the current website">
-          Create App from this Website...
         </message>
       </if>
 

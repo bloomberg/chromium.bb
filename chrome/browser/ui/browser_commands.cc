@@ -1128,13 +1128,6 @@ void CreateApplicationShortcuts(Browser* browser) {
           CreateApplicationShortcuts();
 }
 
-void CreateHostedAppFromCurrentWebContents(Browser* browser) {
-  content::RecordAction(UserMetricsAction("CreateHostedApp"));
-  extensions::TabHelper::FromWebContents(
-      browser->tab_strip_model()->GetActiveWebContents())->
-          CreateHostedAppFromWebContents();
-}
-
 bool CanCreateApplicationShortcuts(const Browser* browser) {
   return extensions::TabHelper::FromWebContents(
       browser->tab_strip_model()->GetActiveWebContents())->
