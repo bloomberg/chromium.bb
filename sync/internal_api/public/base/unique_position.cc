@@ -154,38 +154,10 @@ void UniquePosition::ToProto(sync_pb::UniquePosition* proto) const {
   // This is the current preferred foramt.
   proto->set_custom_compressed_v1(compressed_);
 
-  // Some older clients (M28) don't know how to read that format.  We don't want
-  // to break them until they're obsolete.  We'll serialize to the old-style in
-  // addition to the new so they won't be confused.
-  std::string bytes = Uncompress(compressed_);
-  if (bytes.size() < kCompressBytesThreshold) {
-    // If it's small, then just write it.  This is the common case.
-    proto->set_value(bytes);
-  } else {
-    // We've got a large one.  Compress it.
-    proto->set_uncompressed_length(bytes.size());
-    std::string* compressed = proto->mutable_compressed_value();
-
-    uLongf compressed_len = compressBound(bytes.size());
-    compressed->resize(compressed_len);
-    int result = compress(reinterpret_cast<Bytef*>(string_as_array(compressed)),
-             &compressed_len,
-             reinterpret_cast<const Bytef*>(bytes.data()),
-             bytes.size());
-    if (result != Z_OK) {
-      NOTREACHED() << "Failed to compress position: " << result;
-      // Maybe we can write an uncompressed version?
-      proto->Clear();
-      proto->set_value(bytes);
-    } else if (compressed_len >= bytes.size()) {
-      // Oops, we made it bigger.  Just write the uncompressed version instead.
-      proto->Clear();
-      proto->set_value(bytes);
-    } else {
-      // Success!  Don't forget to adjust the string's length.
-      compressed->resize(compressed_len);
-    }
-  }
+  // Older clients used to write other formats.  We don't bother doing that
+  // anymore because that form of backwards compatibility is expensive.  We no
+  // longer want to pay that price just too support clients that have been
+  // obsolete for a long time.  See the proto definition for details.
 }
 
 void UniquePosition::SerializeToString(std::string* blob) const {

@@ -655,25 +655,16 @@ TEST_F(CompressedPositionTest, SerializeAndDeserialize) {
     UniquePosition deserialized = UniquePosition::FromProto(proto);
 
     EXPECT_PRED_FORMAT2(Equals, *it, deserialized);
-
   }
 }
 
-// Test that redundant serialization for legacy clients is correct, too.
-TEST_F(CompressedPositionTest, SerializeAndLegacyDeserialize) {
-  for (std::vector<UniquePosition>::const_iterator it = positions_.begin();
-       it != positions_.end(); ++it) {
-    SCOPED_TRACE("iteration: " + it->ToDebugString());
-    sync_pb::UniquePosition proto;
-
-    it->ToProto(&proto);
-
-    // Clear default encoding to force it to use legacy as fallback.
-    proto.clear_custom_compressed_v1();
-    UniquePosition deserialized = UniquePosition::FromProto(proto);
-
-    EXPECT_PRED_FORMAT2(Equals, *it, deserialized);
-  }
+// Test that deserialization failures of protobufs where we know none of its
+// fields is not catastrophic.  This may happen if all the fields currently
+// known to this client become deprecated in the future.
+TEST_F(CompressedPositionTest, DeserializeProtobufFromTheFuture) {
+  sync_pb::UniquePosition proto;
+  UniquePosition deserialized = UniquePosition::FromProto(proto);
+  EXPECT_FALSE(deserialized.IsValid());
 }
 
 // Make sure the comparison functions are working correctly.
