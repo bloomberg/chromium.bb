@@ -86,6 +86,8 @@ namespace WebCore {
 
         String mimeType() const;
 
+        void setUserChosenEncoding(const String& charset);
+
         const ResourceRequest& originalRequest() const;
         const ResourceRequest& originalRequestCopy() const;
 

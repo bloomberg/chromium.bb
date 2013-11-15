@@ -86,19 +86,21 @@ void DocumentWriter::appendReplacingData(const String& source)
 
 void DocumentWriter::reportDataReceived()
 {
-    ASSERT(m_decoder);
     if (m_hasReceivedSomeData)
         return;
     m_hasReceivedSomeData = true;
-    if (m_decoder->encoding().usesVisualOrdering())
+    RefPtr<TextResourceDecoder> decoder = m_parser->decoder();
+    if (decoder && decoder->encoding().usesVisualOrdering())
         m_document->setVisuallyOrdered();
 }
 
 void DocumentWriter::addData(const char* bytes, size_t length)
 {
     ASSERT(m_parser);
-    if (!m_decoder && m_parser->needsDecoder() && 0 < length)
-        m_decoder = m_decoderBuilder.buildFor(m_document);
+    if (m_parser->needsDecoder() && 0 < length) {
+        RefPtr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
+        m_parser->setDecoder(decoder);
+    }
     // appendBytes() can result replacing DocumentLoader::m_writer.
     RefPtr<DocumentWriter> protectingThis(this);
     size_t consumedChars = m_parser->appendBytes(bytes, length);
@@ -118,8 +120,10 @@ void DocumentWriter::end()
     if (!m_parser)
         return;
 
-    if (!m_decoder && m_parser->needsDecoder())
-        m_decoder = m_decoderBuilder.buildFor(m_document);
+    if (m_parser->needsDecoder()) {
+        RefPtr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
+        m_parser->setDecoder(decoder);
+    }
     // flush() can result replacing DocumentLoader::m_writer.
     RefPtr<DocumentWriter> protectingThis(this);
     size_t consumedChars = m_parser->flush();
@@ -131,6 +135,13 @@ void DocumentWriter::end()
     m_parser->finish();
     m_parser = 0;
     m_document = 0;
+}
+
+void DocumentWriter::setUserChosenEncoding(const String& charset)
+{
+    RefPtr<TextResourceDecoder> decoder = m_parser->decoder();
+    if (decoder)
+        decoder->setEncoding(charset, TextResourceDecoder::UserChosenEncoding);
 }
 
 void DocumentWriter::setDocumentWasLoadedAsPartOfNavigation()

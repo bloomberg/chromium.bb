@@ -25,6 +25,7 @@
 
 #include "config.h"
 #include "core/dom/DocumentParser.h"
+#include "core/fetch/TextResourceDecoder.h"
 
 #include "wtf/Assertions.h"
 
@@ -44,6 +45,16 @@ DocumentParser::~DocumentParser()
     // This ASSERT is slightly awkward for parsers with a fragment case
     // as there is no Document to release the ref.
     ASSERT(!m_document);
+}
+
+void DocumentParser::setDecoder(PassRefPtr<TextResourceDecoder>)
+{
+    ASSERT_NOT_REACHED();
+}
+
+PassRefPtr<TextResourceDecoder> DocumentParser::decoder()
+{
+    return 0;
 }
 
 void DocumentParser::startParsing()

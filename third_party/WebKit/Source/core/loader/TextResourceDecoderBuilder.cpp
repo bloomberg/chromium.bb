@@ -84,7 +84,9 @@ inline void TextResourceDecoderBuilder::setupEncoding(TextResourceDecoder* decod
     // FIXME: This might be too cautious for non-7bit-encodings and
     // we may consider relaxing this later after testing.
     if (frame && canReferToParentFrameEncoding(frame, parentFrame)) {
-        decoder->setHintEncoding(parentFrame->document()->decoder());
+        if (parentFrame->document()->encodingWasDetectedHeuristically())
+            decoder->setHintEncoding(parentFrame->document()->encoding());
+
         if (m_encoding.isEmpty())
             decoder->setEncoding(parentFrame->document()->inputEncoding(), TextResourceDecoder::EncodingFromParentFrame);
     }
@@ -94,7 +96,6 @@ PassRefPtr<TextResourceDecoder> TextResourceDecoderBuilder::buildFor(Document* d
 {
     RefPtr<TextResourceDecoder> decoder = createDecoderInstance(document);
     setupEncoding(decoder.get(), document);
-    document->setDecoder(decoder);
     return decoder.release();
 }
 

@@ -31,6 +31,7 @@
 #include "bindings/v8/ScriptValue.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DOMTimeStamp.h"
+#include "core/dom/DocumentEncodingData.h"
 #include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentLifecycle.h"
 #include "core/dom/DocumentSupplementable.h"
@@ -153,7 +154,6 @@ class StyleSheetContents;
 class StyleSheetList;
 class Text;
 class TextAutosizer;
-class TextResourceDecoder;
 class Touch;
 class TouchList;
 class TransformSource;
@@ -853,11 +853,11 @@ public:
 
     void finishedParsing();
 
-    void setDecoder(PassRefPtr<TextResourceDecoder>);
-    TextResourceDecoder* decoder() const { return m_decoder.get(); }
+    void setEncodingData(const DocumentEncodingData& newData);
+    const WTF::TextEncoding& encoding() const { return m_encodingData.encoding; }
 
-    void setEncoding(const WTF::TextEncoding&);
-    const WTF::TextEncoding& encoding() const { return m_encoding; }
+    bool encodingWasDetectedHeuristically() const { return m_encodingData.wasDetectedHeuristically; }
+    bool sawDecodingError() const { return m_encodingData.sawDecodingError; }
 
     void setAnnotatedRegionsDirty(bool f) { m_annotatedRegionsDirty = f; }
     bool annotatedRegionsDirty() const { return m_annotatedRegionsDirty; }
@@ -1235,8 +1235,7 @@ private:
 
     String m_contentLanguage;
 
-    RefPtr<TextResourceDecoder> m_decoder;
-    WTF::TextEncoding m_encoding;
+    DocumentEncodingData m_encodingData;
 
     InheritedBool m_designMode;
 

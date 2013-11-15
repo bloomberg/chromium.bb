@@ -26,6 +26,7 @@
 
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -33,6 +34,7 @@ class Document;
 class DocumentWriter;
 class SegmentedString;
 class ScriptableDocumentParser;
+class TextResourceDecoder;
 
 class DocumentParser : public RefCounted<DocumentParser> {
 public:
@@ -46,10 +48,12 @@ public:
     // insert is used by document.write.
     virtual void insert(const SegmentedString&) = 0;
 
-    // appendBytes and flush are used by DocumentWriter (the loader).
+    // The below functions are used by DocumentWriter (the loader).
     virtual size_t appendBytes(const char* bytes, size_t length) = 0;
     virtual size_t flush() = 0;
     virtual bool needsDecoder() const { return false; }
+    virtual void setDecoder(PassRefPtr<TextResourceDecoder>);
+    virtual PassRefPtr<TextResourceDecoder> decoder();
 
     // pinToMainThread also makes append() not yield before completion of that chunk.
     virtual void pinToMainThread() { }

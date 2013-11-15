@@ -66,6 +66,8 @@ public:
     // Exposed for DocumentLoader::replaceDocument.
     void appendReplacingData(const String&);
 
+    void setUserChosenEncoding(const String& charset);
+
     void setDocumentWasLoadedAsPartOfNavigation();
 
 private:
@@ -77,7 +79,6 @@ private:
     bool m_hasReceivedSomeData;
     TextResourceDecoderBuilder m_decoderBuilder;
 
-    RefPtr<TextResourceDecoder> m_decoder;
     RefPtr<DocumentParser> m_parser;
 };
 

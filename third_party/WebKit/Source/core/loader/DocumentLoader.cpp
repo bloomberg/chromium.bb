@@ -931,6 +931,12 @@ String DocumentLoader::mimeType() const
     return m_response.mimeType();
 }
 
+void DocumentLoader::setUserChosenEncoding(const String& charset)
+{
+    if (m_writer)
+        m_writer->setUserChosenEncoding(charset);
+}
+
 // This is only called by ScriptController::executeScriptIfJavaScriptURL
 // and always contains the result of evaluating a javascript: url.
 // This is the <iframe src="javascript:'html'"> case.

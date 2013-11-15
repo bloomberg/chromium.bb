@@ -1835,6 +1835,7 @@
             'dom/DecodedDataDocumentParser.cpp',
             'dom/DecodedDataDocumentParser.h',
             'dom/Document.cpp',
+            'dom/DocumentEncodingData.h',
             'dom/DocumentFragment.cpp',
             'dom/DocumentFullscreen.cpp',
             'dom/DocumentFullscreen.h',

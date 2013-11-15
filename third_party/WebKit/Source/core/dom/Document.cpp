@@ -519,8 +519,6 @@ Document::~Document()
     if (this == topDocument())
         clearAXObjectCache();
 
-    setDecoder(PassRefPtr<TextResourceDecoder>());
-
     if (m_styleSheetList)
         m_styleSheetList->detachFromDocument();
 
@@ -1097,7 +1095,7 @@ String Document::encodingName() const
     // TextEncoding::name() returns a char*, no need to allocate a new
     // String for it each time.
     // FIXME: We should fix TextEncoding to speak AtomicString anyway.
-    return AtomicString(m_encoding.name());
+    return AtomicString(encoding().name());
 }
 
 String Document::defaultCharset() const
@@ -1109,10 +1107,15 @@ String Document::defaultCharset() const
 
 void Document::setCharset(const String& charset)
 {
-    if (!decoder())
+    if (DocumentLoader* documentLoader = loader())
+        documentLoader->setUserChosenEncoding(charset);
+    WTF::TextEncoding encoding(charset);
+    // In case the encoding didn't exist, we keep the old one (helps some sites specifying invalid encodings).
+    if (!encoding.isValid())
         return;
-    decoder()->setEncoding(charset, TextResourceDecoder::UserChosenEncoding);
-    setEncoding(m_decoder->encoding());
+    DocumentEncodingData newEncodingData = m_encodingData;
+    newEncodingData.encoding = encoding;
+    setEncodingData(newEncodingData);
 }
 
 void Document::setContentLanguage(const String& language)
@@ -3160,7 +3163,7 @@ PassRefPtr<Document> Document::cloneDocumentWithoutChildren()
 void Document::cloneDataFromDocument(const Document& other)
 {
     setCompatibilityMode(other.compatibilityMode());
-    setEncoding(other.encoding());
+    setEncodingData(other.m_encodingData);
     setContextFeatures(other.contextFeatures());
     setSecurityOrigin(other.securityOrigin()->isolatedCopy());
 }
@@ -3984,17 +3987,8 @@ bool Document::parseQualifiedName(const String& qualifiedName, String& prefix, S
     return parseQualifiedNameInternal(qualifiedName, qualifiedName.characters16(), length, prefix, localName, es);
 }
 
-void Document::setDecoder(PassRefPtr<TextResourceDecoder> decoder)
+void Document::setEncodingData(const DocumentEncodingData& newData)
 {
-    m_decoder = decoder;
-    setEncoding(m_decoder ? m_decoder->encoding() : WTF::TextEncoding());
-}
-
-void Document::setEncoding(const WTF::TextEncoding& encoding)
-{
-    if (m_encoding == encoding)
-        return;
-
     // It's possible for the encoding of the document to change while we're decoding
     // data. That can only occur while we're processing the <head> portion of the
     // document. There isn't much user-visible content in the <head>, but there is
@@ -4002,17 +3996,18 @@ void Document::setEncoding(const WTF::TextEncoding& encoding)
     // document's title so that the user doesn't see an incorrectly decoded title
     // in the title bar.
     if (m_titleElement
+        && encoding() != newData.encoding
         && !m_titleElement->firstElementChild()
-        && m_encoding == Latin1Encoding()
+        && encoding() == Latin1Encoding()
         && m_titleElement->textContent().containsOnlyLatin1()) {
 
         CString originalBytes = m_titleElement->textContent().latin1();
-        OwnPtr<TextCodec> codec = newTextCodec(encoding);
+        OwnPtr<TextCodec> codec = newTextCodec(newData.encoding);
         String correctlyDecodedTitle = codec->decode(originalBytes.data(), originalBytes.length(), true);
         m_titleElement->setTextContent(correctlyDecodedTitle, IGNORE_EXCEPTION);
     }
 
-    m_encoding = encoding;
+    m_encodingData = newData;
 }
 
 KURL Document::completeURL(const String& url, const KURL& baseURLOverride) const
@@ -4023,9 +4018,9 @@ KURL Document::completeURL(const String& url, const KURL& baseURLOverride) const
     if (url.isNull())
         return KURL();
     const KURL& baseURL = ((baseURLOverride.isEmpty() || baseURLOverride == blankURL()) && parentDocument()) ? parentDocument()->baseURL() : baseURLOverride;
-    if (!m_decoder)
+    if (!encoding().isValid())
         return KURL(baseURL, url);
-    return KURL(baseURL, url, m_decoder->encoding());
+    return KURL(baseURL, url, encoding());
 }
 
 KURL Document::completeURL(const String& url) const

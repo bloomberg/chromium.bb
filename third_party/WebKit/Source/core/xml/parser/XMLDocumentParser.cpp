@@ -885,7 +885,7 @@ void XMLDocumentParser::doWrite(const String& parseString)
     }
 
     // FIXME: Why is this here?  And why is it after we process the passed source?
-    if (document()->decoder() && document()->decoder()->sawError()) {
+    if (document()->sawDecodingError()) {
         // If the decoder saw an error, report it as fatal (stops parsing)
         TextPosition position(OrdinalNumber::fromOneBasedInt(context->context()->input->line), OrdinalNumber::fromOneBasedInt(context->context()->input->col));
         handleError(XMLErrors::fatal, "Encoding error", position);

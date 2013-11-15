@@ -52,16 +52,18 @@ public:
 
     void setEncoding(const WTF::TextEncoding&, EncodingSource);
     const WTF::TextEncoding& encoding() const { return m_encoding; }
+    bool encodingWasDetectedHeuristically() const
+    {
+        return m_source == AutoDetectedEncoding
+            || m_source == EncodingFromContentSniffing;
+    }
 
     String decode(const char* data, size_t length);
     String flush();
 
-    void setHintEncoding(const TextResourceDecoder* hintDecoder)
+    void setHintEncoding(const WTF::TextEncoding& encoding)
     {
-        // hintEncoding is for use with autodetection, which should be
-        // only invoked when hintEncoding comes from auto-detection.
-        if (hintDecoder && hintDecoder->wasDetectedHueristically())
-            m_hintEncoding = hintDecoder->encoding().name();
+        m_hintEncoding = encoding.name();
     }
 
     void useLenientXMLDecoding() { m_useLenientXMLDecoding = true; }
@@ -73,8 +75,6 @@ private:
     enum ContentType { PlainText, HTML, XML, CSS }; // PlainText only checks for BOM.
     static ContentType determineContentType(const String& mimeType);
     static const WTF::TextEncoding& defaultEncoding(ContentType, const WTF::TextEncoding& defaultEncoding);
-
-    bool wasDetectedHueristically() const { return m_source == AutoDetectedEncoding || m_source == EncodingFromContentSniffing; }
 
     size_t checkForBOM(const char*, size_t);
     bool checkForCSSCharset(const char*, size_t, bool& movedDataToBuffer);

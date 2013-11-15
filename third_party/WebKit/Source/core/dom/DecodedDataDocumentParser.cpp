@@ -27,6 +27,7 @@
 #include "core/dom/DecodedDataDocumentParser.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/DocumentEncodingData.h"
 #include "core/fetch/TextResourceDecoder.h"
 
 namespace WebCore {
@@ -34,6 +35,20 @@ namespace WebCore {
 DecodedDataDocumentParser::DecodedDataDocumentParser(Document* document)
     : DocumentParser(document)
 {
+}
+
+DecodedDataDocumentParser::~DecodedDataDocumentParser()
+{
+}
+
+void DecodedDataDocumentParser::setDecoder(PassRefPtr<TextResourceDecoder> decoder)
+{
+    m_decoder = decoder;
+}
+
+PassRefPtr<TextResourceDecoder> DecodedDataDocumentParser::decoder()
+{
+    return m_decoder;
 }
 
 size_t DecodedDataDocumentParser::appendBytes(const char* data, size_t length)
@@ -47,8 +62,8 @@ size_t DecodedDataDocumentParser::appendBytes(const char* data, size_t length)
     if (isDetached())
         return 0;
 
-    String decoded = document()->decoder()->decode(data, length);
-    document()->setEncoding(document()->decoder()->encoding());
+    String decoded = m_decoder->decode(data, length);
+    updateDocumentEncoding();
 
     if (decoded.isEmpty())
         return 0;
@@ -69,11 +84,11 @@ size_t DecodedDataDocumentParser::flush()
 
     // null decoder indicates there is no data received.
     // We have nothing to do in that case.
-    TextResourceDecoder* decoder = document()->decoder();
-    if (!decoder)
+    if (!m_decoder)
         return 0;
-    String remainingData = decoder->flush();
-    document()->setEncoding(document()->decoder()->encoding());
+    String remainingData = m_decoder->flush();
+    updateDocumentEncoding();
+
     if (remainingData.isEmpty())
         return 0;
 
@@ -81,6 +96,15 @@ size_t DecodedDataDocumentParser::flush()
     append(remainingData.releaseImpl());
 
     return consumedChars;
+}
+
+void DecodedDataDocumentParser::updateDocumentEncoding()
+{
+    DocumentEncodingData encodingData;
+    encodingData.encoding = m_decoder->encoding();
+    encodingData.wasDetectedHeuristically = m_decoder->encodingWasDetectedHeuristically();
+    encodingData.sawDecodingError = m_decoder->sawError();
+    document()->setEncodingData(encodingData);
 }
 
 };

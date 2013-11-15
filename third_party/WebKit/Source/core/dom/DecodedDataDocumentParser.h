@@ -27,8 +27,10 @@
 #define DecodedDataDocumentParser_h
 
 #include "core/dom/DocumentParser.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
+class TextResourceDecoder;
 
 class DecodedDataDocumentParser : public DocumentParser {
 public:
@@ -36,17 +38,24 @@ public:
     // XMLHttpRequest if the responseXML was well formed.
     virtual bool wellFormed() const { return true; }
 
+    // The below functions are used by DocumentWriter (the loader).
+    virtual size_t appendBytes(const char* bytes, size_t length) OVERRIDE;
+    virtual size_t flush() OVERRIDE;
+    virtual bool needsDecoder() const OVERRIDE { return !m_decoder; }
+    virtual void setDecoder(PassRefPtr<TextResourceDecoder>) OVERRIDE;
+    virtual PassRefPtr<TextResourceDecoder> decoder() OVERRIDE;
+
 protected:
     explicit DecodedDataDocumentParser(Document*);
+    virtual ~DecodedDataDocumentParser();
 
 private:
     // append is used by DocumentWriter::replaceDocument.
     virtual void append(PassRefPtr<StringImpl>) = 0;
 
-    // appendBytes and flush are used by DocumentWriter (the loader).
-    virtual size_t appendBytes(const char* bytes, size_t length) OVERRIDE;
-    virtual size_t flush() OVERRIDE;
-    virtual bool needsDecoder() const OVERRIDE { return true; }
+    void updateDocumentEncoding();
+
+    RefPtr<TextResourceDecoder> m_decoder;
 };
 
 }
