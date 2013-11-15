@@ -4719,6 +4719,36 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ResourceDirectoryTimestampQueryLatency"
+    units="milliseconds">
+  <summary>
+    The initialization latency (in milliseconds) introduced to each extension
+    resource request by querying the directory timestamp.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ResourceLastModifiedDelta" units="seconds">
+  <summary>
+    The difference in seconds between an extension resource's last modification
+    time and its extension base directory's creation time. Recorded on each
+    extension resource request if the difference is non-negative (i.e., the
+    resource's last modification time is more recent than the directory's
+    creation time.) For cases where the directory creation date is more recent,
+    see Extensions.ResourceLastModifiedNegativeDelta instead.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ResourceLastModifiedNegativeDelta" units="seconds">
+  <summary>
+    The absolute difference in seconds between an extension resource's last
+    modification time and extension base directory's creation time. Recorded on
+    each extension resource request if the difference is negative (i.e., the
+    directory's creation time is more recent than the resource's last
+    modification time.) For cases where the resource modification time is more
+    recent, see Extensions.ResourceLastModifiedDelta instead.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.SandboxUnpackFailure">
   <summary>
     Count the number of times a sandboxed extension unpack fails.

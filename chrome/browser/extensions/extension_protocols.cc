@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/image_loader.h"
@@ -102,15 +104,6 @@ void ReadMimeTypeFromFile(const base::FilePath& filename,
                           std::string* mime_type,
                           bool* result) {
   *result = net::GetMimeTypeFromFile(filename, mime_type);
-}
-
-void GetLastModifiedTime(const base::FilePath& filename,
-                         base::Time* last_modified_time) {
-  if (base::PathExists(filename)) {
-    base::PlatformFileInfo info;
-    if (file_util::GetFileInfo(filename, &info))
-      *last_modified_time = info.last_modified;
-  }
 }
 
 class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
@@ -243,12 +236,51 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
   net::HttpResponseInfo response_info_;
 };
 
+base::Time GetFileLastModifiedTime(const base::FilePath& filename) {
+  if (base::PathExists(filename)) {
+    base::PlatformFileInfo info;
+    if (file_util::GetFileInfo(filename, &info))
+      return info.last_modified;
+  }
+  return base::Time();
+}
+
+base::Time GetFileCreationTime(const base::FilePath& filename) {
+  if (base::PathExists(filename)) {
+    base::PlatformFileInfo info;
+    if (file_util::GetFileInfo(filename, &info))
+      return info.creation_time;
+  }
+  return base::Time();
+}
+
 void ReadResourceFilePathAndLastModifiedTime(
     const extensions::ExtensionResource& resource,
+    const base::FilePath& directory,
     base::FilePath* file_path,
     base::Time* last_modified_time) {
   *file_path = resource.GetFilePath();
-  GetLastModifiedTime(*file_path, last_modified_time);
+  *last_modified_time = GetFileLastModifiedTime(*file_path);
+  // While we're here, log the delta between extension directory
+  // creation time and the resource's last modification time.
+  base::ElapsedTimer query_timer;
+  base::Time dir_creation_time = GetFileCreationTime(directory);
+  UMA_HISTOGRAM_TIMES("Extensions.ResourceDirectoryTimestampQueryLatency",
+                      query_timer.Elapsed());
+  int64 delta_seconds = (*last_modified_time - dir_creation_time).InSeconds();
+  if (delta_seconds >= 0) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ResourceLastModifiedDelta",
+                                delta_seconds,
+                                0,
+                                base::TimeDelta::FromDays(30).InSeconds(),
+                                50);
+  } else {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ResourceLastModifiedNegativeDelta",
+                                -delta_seconds,
+                                1,
+                                base::TimeDelta::FromDays(30).InSeconds(),
+                                50);
+  }
 }
 
 class URLRequestExtensionJob : public net::URLRequestFileJob {
@@ -265,6 +297,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
           content::BrowserThread::GetBlockingPool()->
               GetTaskRunnerWithShutdownBehavior(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
+      directory_path_(directory_path),
       // TODO(tc): Move all of these files into resources.pak so we don't break
       // when updating on Linux.
       resource_(extension_id, directory_path, relative_path),
@@ -283,6 +316,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     bool posted = content::BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(&ReadResourceFilePathAndLastModifiedTime, resource_,
+                   directory_path_,
                    base::Unretained(read_file_path),
                    base::Unretained(last_modified_time)),
         base::Bind(&URLRequestExtensionJob::OnFilePathAndLastModifiedTimeRead,
@@ -306,6 +340,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   }
 
   net::HttpResponseInfo response_info_;
+  base::FilePath directory_path_;
   extensions::ExtensionResource resource_;
   std::string content_security_policy_;
   bool send_cors_header_;
