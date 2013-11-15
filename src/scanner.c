@@ -255,10 +255,16 @@ desc_dump(char *desc, const char *fmt, ...)
 }
 
 static void
-fail(struct location *loc, const char *msg)
+fail(struct location *loc, const char *msg, ...)
 {
-	fprintf(stderr, "%s:%d: error: %s\n",
-		loc->filename, loc->line_number, msg);
+	va_list ap;
+
+	va_start(ap, msg);
+	fprintf(stderr, "%s:%d: error: ",
+		loc->filename, loc->line_number);
+	vfprintf(stderr, msg, ap);
+	fprintf(stderr, "\n");
+	va_end(ap);
 	exit(EXIT_FAILURE);
 }
 
@@ -378,7 +384,8 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (since != NULL) {
 			version = strtol(since, &end, 0);
 			if (errno == EINVAL || end == since || *end != '\0')
-				fail(&ctx->loc, "invalid integer\n");
+				fail(&ctx->loc,
+				     "invalid integer (%s)\n", since);
 			if (version < ctx->interface->since)
 				fail(&ctx->loc, "since version not increasing\n");
 			ctx->interface->since = version;
@@ -414,7 +421,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		} else if (strcmp(type, "object") == 0) {
 			arg->type = OBJECT;
 		} else {
-			fail(&ctx->loc, "unknown type");
+			fail(&ctx->loc, "unknown type (%s)", type);
 		}
 
 		switch (arg->type) {
@@ -431,7 +438,7 @@ start_element(void *data, const char *element_name, const char **atts)
 			break;
 		default:
 			if (interface_name != NULL)
-				fail(&ctx->loc, "interface not allowed");
+				fail(&ctx->loc, "interface attribute not allowed for type %s", type);
 			break;
 		}
 
@@ -440,7 +447,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		else if (strcmp(allow_null, "true") == 0)
 			arg->nullable = 1;
 		else
-			fail(&ctx->loc, "invalid value for allow-null attribute");
+			fail(&ctx->loc, "invalid value for allow-null attribute (%s)", allow_null);
 
 		if (allow_null != NULL && !is_nullable_type(arg))
 			fail(&ctx->loc, "allow-null is only valid for objects, strings, and arrays");
