@@ -14,6 +14,7 @@ class DictionaryValue;
 class ListValue;
 }  // namespace base
 
+class AutomaticProfileResetter;
 class BrandcodeConfigFetcher;
 class ProfileResetter;
 class ResettableSettingsSnapshot;
@@ -33,6 +34,7 @@ class ResetProfileSettingsHandler
       base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
+  virtual void Uninitialize() OVERRIDE;
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
@@ -53,6 +55,13 @@ class ResetProfileSettingsHandler
   // Resets profile settings to default values. |send_settings| is true if user
   // gave his consent to upload broken settings to Google for analysis.
   void ResetProfile(bool send_settings);
+
+  // Destroyed with the Profile, thus it should outlive us.
+  AutomaticProfileResetter* automatic_profile_resetter_;
+
+  // Records whether or not the Profile Reset confirmation dialog was opened at
+  // least once during the lifetime of the settings page.
+  bool has_shown_confirmation_dialog_;
 
   scoped_ptr<ProfileResetter> resetter_;
 

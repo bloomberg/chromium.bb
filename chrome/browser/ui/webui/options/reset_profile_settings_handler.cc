@@ -11,6 +11,8 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/profile_resetter/automatic_profile_resetter.h"
+#include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
@@ -25,22 +27,33 @@
 
 namespace options {
 
-ResetProfileSettingsHandler::ResetProfileSettingsHandler() {
+ResetProfileSettingsHandler::ResetProfileSettingsHandler()
+    : automatic_profile_resetter_(NULL), has_shown_confirmation_dialog_(false) {
   google_util::GetBrand(&brandcode_);
 }
 
-ResetProfileSettingsHandler::~ResetProfileSettingsHandler() {
-}
+ResetProfileSettingsHandler::~ResetProfileSettingsHandler() {}
 
 void ResetProfileSettingsHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   resetter_.reset(new ProfileResetter(profile));
+  automatic_profile_resetter_ =
+      AutomaticProfileResetterFactory::GetForBrowserContext(profile);
+  DCHECK(automatic_profile_resetter_);
 }
 
 void ResetProfileSettingsHandler::InitializePage() {
   web_ui()->CallJavascriptFunction(
       "ResetProfileSettingsOverlay.setResettingState",
       base::FundamentalValue(resetter_->IsActive()));
+}
+
+void ResetProfileSettingsHandler::Uninitialize() {
+  if (has_shown_confirmation_dialog_) {
+    DCHECK(automatic_profile_resetter_);
+    automatic_profile_resetter_->NotifyDidCloseWebUIResetDialog(
+        false /*performed_reset*/);
+  }
 }
 
 void ResetProfileSettingsHandler::GetLocalizedValues(
@@ -91,6 +104,7 @@ void ResetProfileSettingsHandler::HandleResetProfileSettings(
 }
 
 void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
+  DCHECK(automatic_profile_resetter_);
   web_ui()->CallJavascriptFunction("ResetProfileSettingsOverlay.doneResetting");
   if (setting_snapshot_) {
     Profile* profile = Profile::FromWebUI(web_ui());
@@ -100,10 +114,15 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
       setting_snapshot_->Subtract(current_snapshot);
       std::string report = SerializeSettingsReport(*setting_snapshot_,
                                                    difference);
-      SendSettingsFeedback(report, profile, PROFILE_RESET_WEBUI);
+      bool is_reset_prompt_active =
+          automatic_profile_resetter_->IsResetPromptFlowActive();
+      SendSettingsFeedback(report, profile, is_reset_prompt_active ?
+          PROFILE_RESET_PROMPT : PROFILE_RESET_WEBUI);
     }
     setting_snapshot_.reset();
   }
+  automatic_profile_resetter_->NotifyDidCloseWebUIResetDialog(
+      true /*performed_reset*/);
 }
 
 void ResetProfileSettingsHandler::OnShowResetProfileDialog(const ListValue*) {
@@ -113,6 +132,9 @@ void ResetProfileSettingsHandler::OnShowResetProfileDialog(const ListValue*) {
   web_ui()->CallJavascriptFunction(
       "ResetProfileSettingsOverlay.setFeedbackInfo",
       flashInfo);
+
+  automatic_profile_resetter_->NotifyDidOpenWebUIResetDialog();
+  has_shown_confirmation_dialog_ = true;
 
   if (brandcode_.empty())
     return;

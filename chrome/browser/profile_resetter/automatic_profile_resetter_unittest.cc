@@ -32,7 +32,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
-using testing::Invoke;
 
 namespace {
 
@@ -66,6 +65,8 @@ class AutomaticProfileResetterUnderTest : public AutomaticProfileResetter {
   virtual ~AutomaticProfileResetterUnderTest() {}
 
   MOCK_METHOD2(ReportStatistics, void(uint32, uint32));
+  MOCK_METHOD1(ReportPromptResult,
+      void(AutomaticProfileResetter::PromptResult));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutomaticProfileResetterUnderTest);
@@ -74,7 +75,7 @@ class AutomaticProfileResetterUnderTest : public AutomaticProfileResetter {
 class MockProfileResetterDelegate : public AutomaticProfileResetterDelegate {
  public:
   MockProfileResetterDelegate()
-      : emulated_default_search_provider_is_managed_(false) {}
+      : emulated_is_default_search_provider_managed_(false) {}
   virtual ~MockProfileResetterDelegate() {}
 
   MOCK_METHOD0(EnumerateLoadedModulesIfNeeded, void());
@@ -85,12 +86,18 @@ class MockProfileResetterDelegate : public AutomaticProfileResetterDelegate {
   MOCK_CONST_METHOD1(RequestCallbackWhenTemplateURLServiceIsLoaded,
                      void(const base::Closure&));
 
+  MOCK_METHOD0(FetchBrandcodedDefaultSettingsIfNeeded, void());
+  MOCK_CONST_METHOD1(RequestCallbackWhenBrandcodedDefaultsAreFetched,
+                     void(const base::Closure&));
+
   MOCK_CONST_METHOD0(OnGetLoadedModuleNameDigestsCalled, void());
   MOCK_CONST_METHOD0(OnGetDefaultSearchProviderDetailsCalled, void());
   MOCK_CONST_METHOD0(OnIsDefaultSearchProviderManagedCalled, void());
   MOCK_CONST_METHOD0(OnGetPrepopulatedSearchProvidersDetailsCalled, void());
 
-  MOCK_METHOD0(ShowPrompt, void());
+  MOCK_METHOD0(TriggerPrompt, bool());
+  MOCK_METHOD2(TriggerProfileSettingsReset, void(bool, const base::Closure&));
+  MOCK_METHOD0(DismissPrompt, void());
 
   virtual scoped_ptr<base::ListValue>
       GetLoadedModuleNameDigests() const OVERRIDE {
@@ -108,7 +115,7 @@ class MockProfileResetterDelegate : public AutomaticProfileResetterDelegate {
 
   virtual bool IsDefaultSearchProviderManaged() const OVERRIDE {
     OnIsDefaultSearchProviderManagedCalled();
-    return emulated_default_search_provider_is_managed_;
+    return emulated_is_default_search_provider_managed_;
   }
 
   virtual scoped_ptr<base::ListValue>
@@ -124,9 +131,9 @@ class MockProfileResetterDelegate : public AutomaticProfileResetterDelegate {
     EXPECT_CALL(*this, EnumerateLoadedModulesIfNeeded());
     EXPECT_CALL(*this, LoadTemplateURLServiceIfNeeded());
     EXPECT_CALL(*this, RequestCallbackWhenLoadedModulesAreEnumerated(_))
-        .WillOnce(Invoke(ClosureInvoker));
+        .WillOnce(testing::Invoke(ClosureInvoker));
     EXPECT_CALL(*this, RequestCallbackWhenTemplateURLServiceIsLoaded(_))
-        .WillOnce(Invoke(ClosureInvoker));
+        .WillOnce(testing::Invoke(ClosureInvoker));
   }
 
   void ExpectCallsToGetterMethods() {
@@ -134,6 +141,16 @@ class MockProfileResetterDelegate : public AutomaticProfileResetterDelegate {
     EXPECT_CALL(*this, OnGetDefaultSearchProviderDetailsCalled());
     EXPECT_CALL(*this, OnIsDefaultSearchProviderManagedCalled());
     EXPECT_CALL(*this, OnGetPrepopulatedSearchProvidersDetailsCalled());
+  }
+
+  void ExpectCallToShowPrompt() {
+    EXPECT_CALL(*this, TriggerPrompt()).WillOnce(testing::Return(true));
+    EXPECT_CALL(*this, FetchBrandcodedDefaultSettingsIfNeeded());
+  }
+
+  void ExpectCallToTriggerReset(bool send_feedback) {
+    EXPECT_CALL(*this, TriggerProfileSettingsReset(send_feedback, _))
+        .WillOnce(testing::SaveArg<1>(&reset_completion_));
   }
 
   base::DictionaryValue& emulated_default_search_provider_details() {
@@ -148,15 +165,20 @@ class MockProfileResetterDelegate : public AutomaticProfileResetterDelegate {
     return emulated_loaded_module_digests_;
   }
 
-  void set_emulated_default_search_provider_is_managed(bool value) {
-    emulated_default_search_provider_is_managed_ = value;
+  void set_emulated_is_default_search_provider_managed(bool value) {
+    emulated_is_default_search_provider_managed_ = value;
+  }
+
+  void EmulateProfileResetCompleted() {
+    reset_completion_.Run();
   }
 
  private:
   base::DictionaryValue emulated_default_search_provider_details_;
   base::ListValue emulated_search_providers_details_;
   base::ListValue emulated_loaded_module_digests_;
-  bool emulated_default_search_provider_is_managed_;
+  bool emulated_is_default_search_provider_managed_;
+  base::Closure reset_completion_;
 
   DISALLOW_COPY_AND_ASSIGN(MockProfileResetterDelegate);
 };
@@ -407,6 +429,10 @@ class AutomaticProfileResetterTestBase : public testing::Test {
       : waiting_task_runner_(new base::TestSimpleTaskRunner),
         local_state_(TestingBrowserProcess::GetGlobal()),
         profile_(new TestingProfile()),
+        field_trials_(new base::FieldTrialList(NULL)),
+        memento_in_prefs_(new PreferenceHostedPromptMemento(profile())),
+        memento_in_local_state_(new LocalStateHostedPromptMemento(profile())),
+        memento_in_file_(new FileHostedPromptMementoSynchronous(profile())),
         experiment_group_name_(experiment_group_name),
         inject_data_through_variation_params_(false),
         mock_delegate_(NULL) {
@@ -424,13 +450,11 @@ class AutomaticProfileResetterTestBase : public testing::Test {
         profile_->GetTestingPrefService()->registry();
     DCHECK(user_prefs_registry);
     user_prefs_registry->RegisterStringPref(
-        kTestPreferencePath,
-        "",
+        kTestPreferencePath, std::string(),
         user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 
   virtual void SetUp() OVERRIDE {
-    field_trials_.reset(new base::FieldTrialList(NULL));
     chrome_variations::testing::ClearAllVariationParams();
     base::FieldTrialList::CreateFieldTrial(kAutomaticProfileResetStudyName,
                                            experiment_group_name_);
@@ -439,6 +463,8 @@ class AutomaticProfileResetterTestBase : public testing::Test {
     mock_delegate_owned_.reset(
         new testing::StrictMock<MockProfileResetterDelegate>());
     mock_delegate_ = mock_delegate_owned_.get();
+
+    ExpectAllMementoValuesEqualTo(std::string());
   }
 
   void SetTestingHashSeed(const std::string& hash_seed) {
@@ -451,6 +477,12 @@ class AutomaticProfileResetterTestBase : public testing::Test {
 
   void AllowInjectingTestDataThroughVariationParams(bool value) {
     inject_data_through_variation_params_ = value;
+  }
+
+  void ExpectAllMementoValuesEqualTo(const std::string& value) {
+    EXPECT_EQ(value, memento_in_prefs_->ReadValue());
+    EXPECT_EQ(value, memento_in_local_state_->ReadValue());
+    EXPECT_EQ(value, memento_in_file_->ReadValue());
   }
 
   void UnleashResetterAndWait() {
@@ -483,8 +515,49 @@ class AutomaticProfileResetterTestBase : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  // Goes through an evaluation flow such that the reset criteria are satisfied.
+  // Used to reduce boilerplate for tests that need to verify behavior during
+  // the reset prompt flow.
+  void OrchestrateThroughEvaluationFlow() {
+    SetTestingProgram(ConstructProgram(true, true));
+    SetTestingHashSeed(kTestHashSeed);
+
+    mock_delegate().ExpectCallsToDependenciesSetUpMethods();
+    mock_delegate().ExpectCallsToGetterMethods();
+    mock_delegate().ExpectCallToShowPrompt();
+    EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x01u));
+
+    UnleashResetterAndWait();
+
+    testing::Mock::VerifyAndClearExpectations(&resetter());
+    testing::Mock::VerifyAndClearExpectations(&mock_delegate());
+  }
+
+  // Explicitly shut down the service to double-check that nothing explodes, but
+  // first, verify expectations to make sure the service makes no more calls to
+  // any mocked functions during or after shutdown.
+  void VerifyExpectationsThenShutdownResetter() {
+    testing::Mock::VerifyAndClearExpectations(&resetter());
+    testing::Mock::VerifyAndClearExpectations(&mock_delegate());
+
+    resetter_->Shutdown();
+    resetter_.reset();
+  }
+
   TestingProfile* profile() { return profile_.get(); }
   TestingPrefServiceSimple* local_state() { return local_state_.Get(); }
+
+  PreferenceHostedPromptMemento& memento_in_prefs() {
+    return *memento_in_prefs_;
+  }
+
+  LocalStateHostedPromptMemento& memento_in_local_state() {
+    return *memento_in_local_state_;
+  }
+
+  FileHostedPromptMementoSynchronous& memento_in_file() {
+    return *memento_in_file_;
+  }
 
   MockProfileResetterDelegate& mock_delegate() { return *mock_delegate_; }
   AutomaticProfileResetterUnderTest& resetter() { return *resetter_; }
@@ -495,6 +568,10 @@ class AutomaticProfileResetterTestBase : public testing::Test {
   ScopedTestingLocalState local_state_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<base::FieldTrialList> field_trials_;
+  scoped_ptr<PreferenceHostedPromptMemento> memento_in_prefs_;
+  scoped_ptr<LocalStateHostedPromptMemento> memento_in_local_state_;
+  scoped_ptr<FileHostedPromptMementoSynchronous> memento_in_file_;
+
   std::string experiment_group_name_;
   std::string testing_program_;
   std::string testing_hash_seed_;
@@ -530,35 +607,18 @@ class AutomaticProfileResetterTestDisabled
 // Tests ---------------------------------------------------------------------
 
 TEST_F(AutomaticProfileResetterTestDisabled, NothingIsDoneWhenDisabled) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
-
   SetTestingProgram(ConstructProgram(true, true));
   SetTestingHashSeed(kTestHashSeed);
 
   // No calls are expected to the delegate.
 
   UnleashResetterAndWait();
+  VerifyExpectationsThenShutdownResetter();
 
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
+  ExpectAllMementoValuesEqualTo(std::string());
 }
 
 TEST_F(AutomaticProfileResetterTestDryRun, ConditionsNotSatisfied) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
-
   SetTestingProgram(ConstructProgram(false, false));
   SetTestingHashSeed(kTestHashSeed);
 
@@ -567,68 +627,45 @@ TEST_F(AutomaticProfileResetterTestDryRun, ConditionsNotSatisfied) {
   EXPECT_CALL(resetter(), ReportStatistics(0x00u, 0x00u));
 
   UnleashResetterAndWait();
+  VerifyExpectationsThenShutdownResetter();
 
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
+  ExpectAllMementoValuesEqualTo(std::string());
 }
 
 TEST_F(AutomaticProfileResetterTestDryRun, OneConditionSatisfied) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
-
   SetTestingProgram(ConstructProgram(true, false));
   SetTestingHashSeed(kTestHashSeed);
 
   mock_delegate().ExpectCallsToDependenciesSetUpMethods();
   mock_delegate().ExpectCallsToGetterMethods();
   EXPECT_CALL(resetter(), ReportStatistics(0x01u, 0x01u));
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_NOT_TRIGGERED));
 
   UnleashResetterAndWait();
 
-  EXPECT_EQ(kTestMementoValue, memento_in_prefs.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  VerifyExpectationsThenShutdownResetter();
 }
 
 TEST_F(AutomaticProfileResetterTestDryRun, OtherConditionSatisfied) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
-
   SetTestingProgram(ConstructProgram(false, true));
   SetTestingHashSeed(kTestHashSeed);
 
   mock_delegate().ExpectCallsToDependenciesSetUpMethods();
   mock_delegate().ExpectCallsToGetterMethods();
   EXPECT_CALL(resetter(), ReportStatistics(0x02u, 0x01u));
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_NOT_TRIGGERED));
 
   UnleashResetterAndWait();
 
-  EXPECT_EQ(kTestMementoValue, memento_in_prefs.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  VerifyExpectationsThenShutdownResetter();
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
 TEST_F(AutomaticProfileResetterTestDryRun, ProgramSetThroughVariationParams) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
-
   SetTestingProgram(ConstructProgram(true, true));
   SetTestingHashSeed(kTestHashSeed);
   AllowInjectingTestDataThroughVariationParams(true);
@@ -636,24 +673,21 @@ TEST_F(AutomaticProfileResetterTestDryRun, ProgramSetThroughVariationParams) {
   mock_delegate().ExpectCallsToDependenciesSetUpMethods();
   mock_delegate().ExpectCallsToGetterMethods();
   EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x01u));
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_NOT_TRIGGERED));
 
   UnleashResetterAndWait();
 
-  EXPECT_EQ(kTestMementoValue, memento_in_prefs.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  VerifyExpectationsThenShutdownResetter();
 }
 #endif
 
 TEST_F(AutomaticProfileResetterTestDryRun,
        ConditionsSatisfiedAndInvalidMementos) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  memento_in_prefs.StoreValue(kTestInvalidMementoValue);
-  memento_in_local_state.StoreValue(kTestInvalidMementoValue);
-  memento_in_file.StoreValue(kTestInvalidMementoValue);
+  memento_in_prefs().StoreValue(kTestInvalidMementoValue);
+  memento_in_local_state().StoreValue(kTestInvalidMementoValue);
+  memento_in_file().StoreValue(kTestInvalidMementoValue);
 
   SetTestingProgram(ConstructProgram(true, true));
   SetTestingHashSeed(kTestHashSeed);
@@ -661,20 +695,17 @@ TEST_F(AutomaticProfileResetterTestDryRun,
   mock_delegate().ExpectCallsToDependenciesSetUpMethods();
   mock_delegate().ExpectCallsToGetterMethods();
   EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x01u));
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_NOT_TRIGGERED));
 
   UnleashResetterAndWait();
 
-  EXPECT_EQ(kTestMementoValue, memento_in_prefs.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  VerifyExpectationsThenShutdownResetter();
 }
 
 TEST_F(AutomaticProfileResetterTestDryRun, AlreadyHadPrefHostedMemento) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  memento_in_prefs.StoreValue(kTestMementoValue);
+  memento_in_prefs().StoreValue(kTestMementoValue);
 
   SetTestingProgram(ConstructProgram(true, true));
   SetTestingHashSeed(kTestHashSeed);
@@ -684,18 +715,15 @@ TEST_F(AutomaticProfileResetterTestDryRun, AlreadyHadPrefHostedMemento) {
   EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x03u));
 
   UnleashResetterAndWait();
+  VerifyExpectationsThenShutdownResetter();
 
-  EXPECT_EQ(kTestMementoValue, memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
+  EXPECT_EQ(kTestMementoValue, memento_in_prefs().ReadValue());
+  EXPECT_EQ(std::string(), memento_in_local_state().ReadValue());
+  EXPECT_EQ(std::string(), memento_in_file().ReadValue());
 }
 
 TEST_F(AutomaticProfileResetterTestDryRun, AlreadyHadLocalStateHostedMemento) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  memento_in_local_state.StoreValue(kTestMementoValue);
+  memento_in_local_state().StoreValue(kTestMementoValue);
 
   SetTestingProgram(ConstructProgram(true, true));
   SetTestingHashSeed(kTestHashSeed);
@@ -705,18 +733,15 @@ TEST_F(AutomaticProfileResetterTestDryRun, AlreadyHadLocalStateHostedMemento) {
   EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x05u));
 
   UnleashResetterAndWait();
+  VerifyExpectationsThenShutdownResetter();
 
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
+  EXPECT_EQ(std::string(), memento_in_prefs().ReadValue());
+  EXPECT_EQ(kTestMementoValue, memento_in_local_state().ReadValue());
+  EXPECT_EQ(std::string(), memento_in_file().ReadValue());
 }
 
 TEST_F(AutomaticProfileResetterTestDryRun, AlreadyHadFileHostedMemento) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  memento_in_file.StoreValue(kTestMementoValue);
+  memento_in_file().StoreValue(kTestMementoValue);
 
   SetTestingProgram(ConstructProgram(true, true));
   SetTestingHashSeed(kTestHashSeed);
@@ -726,38 +751,26 @@ TEST_F(AutomaticProfileResetterTestDryRun, AlreadyHadFileHostedMemento) {
   EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x09u));
 
   UnleashResetterAndWait();
+  VerifyExpectationsThenShutdownResetter();
 
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
+  EXPECT_EQ(std::string(), memento_in_prefs().ReadValue());
+  EXPECT_EQ(std::string(), memento_in_local_state().ReadValue());
+  EXPECT_EQ(kTestMementoValue, memento_in_file().ReadValue());
 }
 
 TEST_F(AutomaticProfileResetterTestDryRun, DoNothingWhenResourcesAreMissing) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  SetTestingProgram("");
-  SetTestingHashSeed("");
+  SetTestingProgram(std::string());
+  SetTestingHashSeed(std::string());
 
   // No calls are expected to the delegate.
 
   UnleashResetterAndWait();
+  VerifyExpectationsThenShutdownResetter();
 
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
+  ExpectAllMementoValuesEqualTo(std::string());
 }
 
 TEST_F(AutomaticProfileResetterTest, ConditionsNotSatisfied) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
-
   SetTestingProgram(ConstructProgram(false, false));
   SetTestingHashSeed(kTestHashSeed);
 
@@ -766,117 +779,84 @@ TEST_F(AutomaticProfileResetterTest, ConditionsNotSatisfied) {
   EXPECT_CALL(resetter(), ReportStatistics(0x00u, 0x00u));
 
   UnleashResetterAndWait();
+  VerifyExpectationsThenShutdownResetter();
 
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
+  ExpectAllMementoValuesEqualTo(std::string());
 }
 
 TEST_F(AutomaticProfileResetterTest, OneConditionSatisfied) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
-
   SetTestingProgram(ConstructProgram(true, false));
   SetTestingHashSeed(kTestHashSeed);
 
   mock_delegate().ExpectCallsToDependenciesSetUpMethods();
   mock_delegate().ExpectCallsToGetterMethods();
-  EXPECT_CALL(mock_delegate(), ShowPrompt());
+  mock_delegate().ExpectCallToShowPrompt();
   EXPECT_CALL(resetter(), ReportStatistics(0x01u, 0x01u));
 
   UnleashResetterAndWait();
 
-  EXPECT_EQ(kTestMementoValue, memento_in_prefs.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
+  VerifyExpectationsThenShutdownResetter();
 }
 
 TEST_F(AutomaticProfileResetterTest, OtherConditionSatisfied) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
-
   SetTestingProgram(ConstructProgram(false, true));
   SetTestingHashSeed(kTestHashSeed);
 
   mock_delegate().ExpectCallsToDependenciesSetUpMethods();
   mock_delegate().ExpectCallsToGetterMethods();
-  EXPECT_CALL(mock_delegate(), ShowPrompt());
+  mock_delegate().ExpectCallToShowPrompt();
   EXPECT_CALL(resetter(), ReportStatistics(0x02u, 0x01u));
 
   UnleashResetterAndWait();
 
-  EXPECT_EQ(kTestMementoValue, memento_in_prefs.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
+  VerifyExpectationsThenShutdownResetter();
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
 TEST_F(AutomaticProfileResetterTest, ProgramSetThroughVariationParams) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
-
   SetTestingProgram(ConstructProgram(true, true));
   SetTestingHashSeed(kTestHashSeed);
   AllowInjectingTestDataThroughVariationParams(true);
 
   mock_delegate().ExpectCallsToDependenciesSetUpMethods();
   mock_delegate().ExpectCallsToGetterMethods();
-  EXPECT_CALL(mock_delegate(), ShowPrompt());
+  mock_delegate().ExpectCallToShowPrompt();
   EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x01u));
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_SHOWN_BUBBLE));
 
   UnleashResetterAndWait();
+  resetter().NotifyDidShowResetBubble();
 
-  EXPECT_EQ(kTestMementoValue, memento_in_prefs.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  VerifyExpectationsThenShutdownResetter();
 }
 #endif
 
 TEST_F(AutomaticProfileResetterTest, ConditionsSatisfiedAndInvalidMementos) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  memento_in_prefs.StoreValue(kTestInvalidMementoValue);
-  memento_in_local_state.StoreValue(kTestInvalidMementoValue);
-  memento_in_file.StoreValue(kTestInvalidMementoValue);
+  memento_in_prefs().StoreValue(kTestInvalidMementoValue);
+  memento_in_local_state().StoreValue(kTestInvalidMementoValue);
+  memento_in_file().StoreValue(kTestInvalidMementoValue);
 
   SetTestingProgram(ConstructProgram(true, true));
   SetTestingHashSeed(kTestHashSeed);
 
   mock_delegate().ExpectCallsToDependenciesSetUpMethods();
   mock_delegate().ExpectCallsToGetterMethods();
-  EXPECT_CALL(mock_delegate(), ShowPrompt());
+  mock_delegate().ExpectCallToShowPrompt();
   EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x01u));
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_SHOWN_BUBBLE));
 
   UnleashResetterAndWait();
+  resetter().NotifyDidShowResetBubble();
 
-  EXPECT_EQ(kTestMementoValue, memento_in_prefs.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  VerifyExpectationsThenShutdownResetter();
 }
 
 TEST_F(AutomaticProfileResetterTest, PrefHostedMementoPreventsPrompt) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  memento_in_prefs.StoreValue(kTestMementoValue);
+  memento_in_prefs().StoreValue(kTestMementoValue);
 
   SetTestingProgram(ConstructProgram(true, true));
   SetTestingHashSeed(kTestHashSeed);
@@ -886,18 +866,15 @@ TEST_F(AutomaticProfileResetterTest, PrefHostedMementoPreventsPrompt) {
   EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x03u));
 
   UnleashResetterAndWait();
+  VerifyExpectationsThenShutdownResetter();
 
-  EXPECT_EQ(kTestMementoValue, memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
+  EXPECT_EQ(kTestMementoValue, memento_in_prefs().ReadValue());
+  EXPECT_EQ(std::string(), memento_in_local_state().ReadValue());
+  EXPECT_EQ(std::string(), memento_in_file().ReadValue());
 }
 
 TEST_F(AutomaticProfileResetterTest, LocalStateHostedMementoPreventsPrompt) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  memento_in_local_state.StoreValue(kTestMementoValue);
+  memento_in_local_state().StoreValue(kTestMementoValue);
 
   SetTestingProgram(ConstructProgram(true, true));
   SetTestingHashSeed(kTestHashSeed);
@@ -907,18 +884,15 @@ TEST_F(AutomaticProfileResetterTest, LocalStateHostedMementoPreventsPrompt) {
   EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x05u));
 
   UnleashResetterAndWait();
+  VerifyExpectationsThenShutdownResetter();
 
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
+  EXPECT_EQ(std::string(), memento_in_prefs().ReadValue());
+  EXPECT_EQ(kTestMementoValue, memento_in_local_state().ReadValue());
+  EXPECT_EQ(std::string(), memento_in_file().ReadValue());
 }
 
 TEST_F(AutomaticProfileResetterTest, FileHostedMementoPreventsPrompt) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  memento_in_file.StoreValue(kTestMementoValue);
+  memento_in_file().StoreValue(kTestMementoValue);
 
   SetTestingProgram(ConstructProgram(true, true));
   SetTestingHashSeed(kTestHashSeed);
@@ -928,27 +902,203 @@ TEST_F(AutomaticProfileResetterTest, FileHostedMementoPreventsPrompt) {
   EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x09u));
 
   UnleashResetterAndWait();
+  VerifyExpectationsThenShutdownResetter();
 
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
+  EXPECT_EQ(std::string(), memento_in_prefs().ReadValue());
+  EXPECT_EQ(std::string(), memento_in_local_state().ReadValue());
+  EXPECT_EQ(kTestMementoValue, memento_in_file().ReadValue());
 }
 
 TEST_F(AutomaticProfileResetterTest, DoNothingWhenResourcesAreMissing) {
-  PreferenceHostedPromptMemento memento_in_prefs(profile());
-  LocalStateHostedPromptMemento memento_in_local_state(profile());
-  FileHostedPromptMementoSynchronous memento_in_file(profile());
-
-  SetTestingProgram("");
-  SetTestingHashSeed("");
+  SetTestingProgram(std::string());
+  SetTestingHashSeed(std::string());
 
   // No calls are expected to the delegate.
 
   UnleashResetterAndWait();
+  VerifyExpectationsThenShutdownResetter();
 
-  EXPECT_EQ("", memento_in_prefs.ReadValue());
-  EXPECT_EQ("", memento_in_local_state.ReadValue());
-  EXPECT_EQ("", memento_in_file.ReadValue());
+  ExpectAllMementoValuesEqualTo(std::string());
+}
+
+TEST_F(AutomaticProfileResetterTest, PromptSuppressed) {
+  OrchestrateThroughEvaluationFlow();
+
+  VerifyExpectationsThenShutdownResetter();
+
+  ExpectAllMementoValuesEqualTo(std::string());
+}
+
+TEST_F(AutomaticProfileResetterTest, PromptNotSupported) {
+  SetTestingProgram(ConstructProgram(true, true));
+  SetTestingHashSeed(kTestHashSeed);
+
+  mock_delegate().ExpectCallsToDependenciesSetUpMethods();
+  mock_delegate().ExpectCallsToGetterMethods();
+  EXPECT_CALL(mock_delegate(), TriggerPrompt())
+      .WillOnce(testing::Return(false));
+  EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x01u));
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_NOT_TRIGGERED));
+
+  UnleashResetterAndWait();
+
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  VerifyExpectationsThenShutdownResetter();
+}
+
+TEST_F(AutomaticProfileResetterTest, PromptIgnored) {
+  OrchestrateThroughEvaluationFlow();
+
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_SHOWN_BUBBLE));
+  resetter().NotifyDidShowResetBubble();
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  VerifyExpectationsThenShutdownResetter();
+}
+
+TEST_F(AutomaticProfileResetterTest, PromptActionReset) {
+  OrchestrateThroughEvaluationFlow();
+
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_SHOWN_BUBBLE));
+  resetter().NotifyDidShowResetBubble();
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  testing::Mock::VerifyAndClearExpectations(&resetter());
+
+  mock_delegate().ExpectCallToTriggerReset(false);
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_ACTION_RESET));
+  resetter().TriggerProfileReset(false /*send_feedback*/);
+  testing::Mock::VerifyAndClearExpectations(&resetter());
+  testing::Mock::VerifyAndClearExpectations(&mock_delegate());
+
+  EXPECT_CALL(mock_delegate(), DismissPrompt());
+  mock_delegate().EmulateProfileResetCompleted();
+  VerifyExpectationsThenShutdownResetter();
+}
+
+TEST_F(AutomaticProfileResetterTest, PromptActionResetWithFeedback) {
+  OrchestrateThroughEvaluationFlow();
+
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_SHOWN_BUBBLE));
+  resetter().NotifyDidShowResetBubble();
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  testing::Mock::VerifyAndClearExpectations(&resetter());
+
+  mock_delegate().ExpectCallToTriggerReset(true);
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_ACTION_RESET));
+  resetter().TriggerProfileReset(true /*send_feedback*/);
+  testing::Mock::VerifyAndClearExpectations(&resetter());
+  testing::Mock::VerifyAndClearExpectations(&mock_delegate());
+
+  EXPECT_CALL(mock_delegate(), DismissPrompt());
+  mock_delegate().EmulateProfileResetCompleted();
+  VerifyExpectationsThenShutdownResetter();
+}
+
+TEST_F(AutomaticProfileResetterTest, PromptActionNoReset) {
+  OrchestrateThroughEvaluationFlow();
+
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_SHOWN_BUBBLE));
+  resetter().NotifyDidShowResetBubble();
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  testing::Mock::VerifyAndClearExpectations(&resetter());
+
+  EXPECT_CALL(mock_delegate(), DismissPrompt());
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_ACTION_NO_RESET));
+  resetter().SkipProfileReset();
+  VerifyExpectationsThenShutdownResetter();
+}
+
+TEST_F(AutomaticProfileResetterTest, PromptFollowedByWebUIReset) {
+  OrchestrateThroughEvaluationFlow();
+
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_SHOWN_BUBBLE));
+  resetter().NotifyDidShowResetBubble();
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  testing::Mock::VerifyAndClearExpectations(&resetter());
+
+  EXPECT_CALL(mock_delegate(), DismissPrompt());
+  resetter().NotifyDidOpenWebUIResetDialog();
+  testing::Mock::VerifyAndClearExpectations(&mock_delegate());
+
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_FOLLOWED_BY_WEBUI_RESET));
+  resetter().NotifyDidCloseWebUIResetDialog(true);
+  VerifyExpectationsThenShutdownResetter();
+}
+
+TEST_F(AutomaticProfileResetterTest, PromptFollowedByWebUINoReset) {
+  OrchestrateThroughEvaluationFlow();
+
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_SHOWN_BUBBLE));
+  resetter().NotifyDidShowResetBubble();
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  testing::Mock::VerifyAndClearExpectations(&resetter());
+
+  EXPECT_CALL(mock_delegate(), DismissPrompt());
+  resetter().NotifyDidOpenWebUIResetDialog();
+  testing::Mock::VerifyAndClearExpectations(&mock_delegate());
+
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_FOLLOWED_BY_WEBUI_NO_RESET));
+  resetter().NotifyDidCloseWebUIResetDialog(false);
+  VerifyExpectationsThenShutdownResetter();
+}
+
+TEST_F(AutomaticProfileResetterTest, PromptFollowedByIncidentalWebUIReset) {
+  OrchestrateThroughEvaluationFlow();
+
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_SHOWN_BUBBLE));
+  resetter().NotifyDidShowResetBubble();
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  testing::Mock::VerifyAndClearExpectations(&resetter());
+
+  // Missing NotifyDidOpenWebUIResetDialog().
+  // This can arise if a settings page was already opened at the time the prompt
+  // was triggered, and it used to initiate reset after dismissing the prompt.
+
+  EXPECT_CALL(mock_delegate(), DismissPrompt());
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_FOLLOWED_BY_WEBUI_RESET));
+  resetter().NotifyDidCloseWebUIResetDialog(true);
+  VerifyExpectationsThenShutdownResetter();
+}
+
+TEST_F(AutomaticProfileResetterTest, PromptSuppressedButHadWebUIReset) {
+  OrchestrateThroughEvaluationFlow();
+
+  EXPECT_CALL(mock_delegate(), DismissPrompt());
+  resetter().NotifyDidOpenWebUIResetDialog();
+  testing::Mock::VerifyAndClearExpectations(&mock_delegate());
+
+  EXPECT_CALL(resetter(), ReportPromptResult(
+      AutomaticProfileResetter::PROMPT_NOT_SHOWN_BUBBLE_BUT_HAD_WEBUI_RESET));
+  resetter().NotifyDidCloseWebUIResetDialog(true);
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  VerifyExpectationsThenShutdownResetter();
+}
+
+TEST_F(AutomaticProfileResetterTest, PromptSuppressedButHadWebUINoReset) {
+  OrchestrateThroughEvaluationFlow();
+
+  EXPECT_CALL(mock_delegate(), DismissPrompt());
+  resetter().NotifyDidOpenWebUIResetDialog();
+  testing::Mock::VerifyAndClearExpectations(&mock_delegate());
+
+  EXPECT_CALL(resetter(), ReportPromptResult(AutomaticProfileResetter::
+      PROMPT_NOT_SHOWN_BUBBLE_BUT_HAD_WEBUI_NO_RESET));
+  resetter().NotifyDidCloseWebUIResetDialog(false);
+  ExpectAllMementoValuesEqualTo(kTestMementoValue);
+  VerifyExpectationsThenShutdownResetter();
 }
 
 // Please see comments above ConstructProgramToCheckPreferences() to understand
@@ -963,8 +1113,8 @@ TEST_F(AutomaticProfileResetterTest, InputUserPreferencesCorrect) {
 
   mock_delegate().ExpectCallsToDependenciesSetUpMethods();
   mock_delegate().ExpectCallsToGetterMethods();
-  uint32 expected_mask =
-      HAS_EXPECTED_USER_PREFERENCE | USER_PREFERENCE_IS_USER_CONTROLLED;
+  uint32 expected_mask = HAS_EXPECTED_USER_PREFERENCE |
+                         USER_PREFERENCE_IS_USER_CONTROLLED;
   EXPECT_CALL(resetter(), ReportStatistics(0x00u, expected_mask));
 
   UnleashResetterAndWait();
@@ -979,8 +1129,8 @@ TEST_F(AutomaticProfileResetterTest, InputLocalStateCorrect) {
 
   mock_delegate().ExpectCallsToDependenciesSetUpMethods();
   mock_delegate().ExpectCallsToGetterMethods();
-  uint32 expected_mask =
-      HAS_EXPECTED_LOCAL_STATE_PREFERENCE | LOCAL_STATE_IS_USER_CONTROLLED;
+  uint32 expected_mask = HAS_EXPECTED_LOCAL_STATE_PREFERENCE |
+                         LOCAL_STATE_IS_USER_CONTROLLED;
   EXPECT_CALL(resetter(), ReportStatistics(0x00u, expected_mask));
 
   UnleashResetterAndWait();
@@ -1043,7 +1193,7 @@ TEST_F(AutomaticProfileResetterTest, InputSearchProviderManagedCorrect) {
 
   mock_delegate().emulated_default_search_provider_details().SetString(
       kSearchURLAttributeKey, kTestSearchURL);
-  mock_delegate().set_emulated_default_search_provider_is_managed(true);
+  mock_delegate().set_emulated_is_default_search_provider_managed(true);
 
   mock_delegate().ExpectCallsToDependenciesSetUpMethods();
   mock_delegate().ExpectCallsToGetterMethods();

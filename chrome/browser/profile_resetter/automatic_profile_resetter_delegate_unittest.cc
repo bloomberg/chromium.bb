@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
@@ -17,15 +18,25 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/google/google_util.h"
+#include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
+#include "chrome/browser/profile_resetter/profile_reset_global_error.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
+#include "chrome/browser/ui/global_error/global_error.h"
+#include "chrome/browser/ui/global_error/global_error_service.h"
+#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
+#include "net/http/http_response_headers.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,87 +46,48 @@
 
 namespace {
 
-// Test fixtures -------------------------------------------------------------
+const char kTestBrandcode[] = "FOOBAR";
 
-class AutomaticProfileResetterDelegateTest : public testing::Test {
- protected:
-  AutomaticProfileResetterDelegateTest() {}
-  virtual ~AutomaticProfileResetterDelegateTest() {}
+const char kTestHomepage[] = "http://google.com";
+const char kTestBrandedHomepage[] = "http://example.com";
 
-  virtual void SetUp() OVERRIDE {
-    resetter_delegate_.reset(new AutomaticProfileResetterDelegateImpl(NULL));
-  }
+const ProfileResetter::ResettableFlags kResettableAspectsForTest =
+    ProfileResetter::ALL & ~ProfileResetter::COOKIES_AND_SITE_DATA;
 
-  virtual void TearDown() OVERRIDE { resetter_delegate_.reset(); }
+// Helpers -------------------------------------------------------------------
 
-  AutomaticProfileResetterDelegate* resetter_delegate() {
-    return resetter_delegate_.get();
+// A testing version of the AutomaticProfileResetterDelegate that differs from
+// the real one only in that it has its feedback reporting mocked out, and it
+// will not reset COOKIES_AND_SITE_DATA, due to difficulties to set up some
+// required URLRequestContexts in unit tests.
+class AutomaticProfileResetterDelegateUnderTest
+    : public AutomaticProfileResetterDelegateImpl {
+ public:
+  explicit AutomaticProfileResetterDelegateUnderTest(Profile* profile)
+      : AutomaticProfileResetterDelegateImpl(
+            profile, kResettableAspectsForTest) {}
+  virtual ~AutomaticProfileResetterDelegateUnderTest() {}
+
+  MOCK_CONST_METHOD1(SendFeedback, void(const std::string&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AutomaticProfileResetterDelegateUnderTest);
+};
+
+class MockCallbackTarget {
+ public:
+  MockCallbackTarget() {}
+  ~MockCallbackTarget() {}
+
+  MOCK_CONST_METHOD0(Run, void(void));
+
+  base::Closure CreateClosure() {
+    return base::Bind(&MockCallbackTarget::Run, base::Unretained(this));
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<AutomaticProfileResetterDelegate> resetter_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutomaticProfileResetterDelegateTest);
+  DISALLOW_COPY_AND_ASSIGN(MockCallbackTarget);
 };
-
-class AutomaticProfileResetterDelegateTestTemplateURLs : public testing::Test {
- protected:
-  AutomaticProfileResetterDelegateTestTemplateURLs() {}
-  virtual ~AutomaticProfileResetterDelegateTestTemplateURLs() {}
-
-  virtual void SetUp() OVERRIDE {
-    test_util_.SetUp();
-    resetter_delegate_.reset(
-        new AutomaticProfileResetterDelegateImpl(test_util_.model()));
-  }
-
-  virtual void TearDown() OVERRIDE {
-    resetter_delegate_.reset();
-    test_util_.TearDown();
-  }
-
-  TestingProfile* profile() { return test_util_.profile(); }
-
-  AutomaticProfileResetterDelegate* resetter_delegate() {
-    return resetter_delegate_.get();
-  }
-
-  scoped_ptr<TemplateURL> CreateTestTemplateURL() {
-    TemplateURLData data;
-
-    data.SetURL("http://example.com/search?q={searchTerms}");
-    data.suggestions_url = "http://example.com/suggest?q={searchTerms}";
-    data.instant_url = "http://example.com/instant?q={searchTerms}";
-    data.image_url = "http://example.com/image?q={searchTerms}";
-    data.search_url_post_params = "search-post-params";
-    data.suggestions_url_post_params = "suggest-post-params";
-    data.instant_url_post_params = "instant-post-params";
-    data.image_url_post_params = "image-post-params";
-
-    data.favicon_url = GURL("http://example.com/favicon.ico");
-    data.new_tab_url = "http://example.com/newtab.html";
-    data.alternate_urls.push_back("http://example.com/s?q={searchTerms}");
-
-    data.short_name = base::ASCIIToUTF16("name");
-    data.SetKeyword(base::ASCIIToUTF16("keyword"));
-    data.search_terms_replacement_key = "search-terms-replacment-key";
-    data.prepopulate_id = 42;
-    data.input_encodings.push_back("UTF-8");
-    data.safe_for_autoreplace = true;
-
-    return scoped_ptr<TemplateURL>(new TemplateURL(profile(), data));
-  }
-
-  TemplateURLServiceTestUtil test_util_;
-
- private:
-  scoped_ptr<AutomaticProfileResetterDelegate> resetter_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutomaticProfileResetterDelegateTestTemplateURLs);
-};
-
-// Helper classes and functions ----------------------------------------------
 
 // Returns the details of the default search provider from |prefs| in a format
 // suitable for usage as |expected_details| in ExpectDetailsMatch().
@@ -170,32 +142,134 @@ void ExpectDetailsMatch(const base::DictionaryValue& expected_details,
   }
 }
 
-class MockCallbackTarget {
- public:
-  MockCallbackTarget() {}
-  ~MockCallbackTarget() {}
+// If |simulate_failure| is false, then replies to the pending request on
+// |fetcher| with a brandcoded config that only specifies a home page URL.
+// If |simulate_failure| is true, replies with 404.
+void ServicePendingBrancodedConfigFetch(net::TestURLFetcher* fetcher,
+                                        bool simulate_failure) {
+  const char kBrandcodedXmlSettings[] =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<response protocol=\"3.0\" server=\"prod\">"
+        "<app appid=\"{8A69D345-D564-463C-AFF1-A69D9E530F96}\" status=\"ok\">"
+          "<data index=\"skipfirstrunui-importsearch-defaultbrowser\" "
+          "name=\"install\" status=\"ok\">"
+            "{\"homepage\" : \"$1\"}"
+          "</data>"
+        "</app>"
+      "</response>";
 
-  MOCK_CONST_METHOD0(Run, void(void));
+  fetcher->set_response_code(simulate_failure ? 404 : 200);
+  scoped_refptr<net::HttpResponseHeaders> response_headers(
+      new net::HttpResponseHeaders(""));
+  response_headers->AddHeader("Content-Type: text/xml");
+  fetcher->set_response_headers(response_headers);
+  if (!simulate_failure) {
+    std::string response(kBrandcodedXmlSettings);
+    size_t placeholder_index = response.find("$1");
+    ASSERT_NE(std::string::npos, placeholder_index);
+    response.replace(placeholder_index, 2, kTestBrandedHomepage);
+    fetcher->SetResponseString(response);
+  }
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
 
-  base::Closure CreateClosure() {
-    return base::Closure(
-        base::Bind(&MockCallbackTarget::Run, base::Unretained(this)));
+
+// Test fixture --------------------------------------------------------------
+
+// ExtensionServiceTestBase sets up a TestingProfile with the ExtensionService,
+// we then add the TemplateURLService, so the ProfileResetter can be exercised.
+class AutomaticProfileResetterDelegateTest
+    : public ExtensionServiceTestBase,
+      public TemplateURLServiceTestUtilBase {
+ protected:
+  AutomaticProfileResetterDelegateTest() {}
+  virtual ~AutomaticProfileResetterDelegateTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    ExtensionServiceTestBase::SetUp();
+    ExtensionServiceInitParams params = CreateDefaultInitParams();
+    params.pref_file.clear();  // Prescribes a TestingPrefService to be created.
+    InitializeExtensionService(params);
+    TemplateURLServiceTestUtilBase::CreateTemplateUrlService();
+    resetter_delegate_.reset(
+        new AutomaticProfileResetterDelegateUnderTest(profile()));
   }
 
+  virtual void TearDown() OVERRIDE {
+    resetter_delegate_.reset();
+    ExtensionServiceTestBase::TearDown();
+  }
+
+  scoped_ptr<TemplateURL> CreateTestTemplateURL() {
+    TemplateURLData data;
+
+    data.SetURL("http://example.com/search?q={searchTerms}");
+    data.suggestions_url = "http://example.com/suggest?q={searchTerms}";
+    data.instant_url = "http://example.com/instant?q={searchTerms}";
+    data.image_url = "http://example.com/image?q={searchTerms}";
+    data.search_url_post_params = "search-post-params";
+    data.suggestions_url_post_params = "suggest-post-params";
+    data.instant_url_post_params = "instant-post-params";
+    data.image_url_post_params = "image-post-params";
+
+    data.favicon_url = GURL("http://example.com/favicon.ico");
+    data.new_tab_url = "http://example.com/newtab.html";
+    data.alternate_urls.push_back("http://example.com/s?q={searchTerms}");
+
+    data.short_name = base::ASCIIToUTF16("name");
+    data.SetKeyword(base::ASCIIToUTF16("keyword"));
+    data.search_terms_replacement_key = "search-terms-replacment-key";
+    data.prepopulate_id = 42;
+    data.input_encodings.push_back("UTF-8");
+    data.safe_for_autoreplace = true;
+
+    return scoped_ptr<TemplateURL>(new TemplateURL(profile(), data));
+  }
+
+  void ExpectNoPendingBrandcodedConfigFetch() {
+    EXPECT_FALSE(test_url_fetcher_factory_.GetFetcherByID(0));
+  }
+
+  void ExpectAndServicePendingBrandcodedConfigFetch(bool simulate_failure) {
+    net::TestURLFetcher* fetcher = test_url_fetcher_factory_.GetFetcherByID(0);
+    ASSERT_TRUE(fetcher);
+    EXPECT_THAT(fetcher->upload_data(),
+                testing::HasSubstr(kTestBrandcode));
+    ServicePendingBrancodedConfigFetch(fetcher, simulate_failure);
+  }
+
+  void ExpectResetPromptState(bool active) {
+    GlobalErrorService* global_error_service =
+        GlobalErrorServiceFactory::GetForProfile(profile());
+    GlobalError* global_error = global_error_service->
+        GetGlobalErrorByMenuItemCommandID(IDC_SHOW_SETTINGS_RESET_BUBBLE);
+    EXPECT_EQ(active, !!global_error);
+  }
+
+  AutomaticProfileResetterDelegateUnderTest* resetter_delegate() {
+    return resetter_delegate_.get();
+  }
+
+  // TemplateURLServiceTestUtilBase:
+  virtual TestingProfile* profile() const OVERRIDE { return profile_.get(); }
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockCallbackTarget);
+  net::TestURLFetcherFactory test_url_fetcher_factory_;
+  scoped_ptr<AutomaticProfileResetterDelegateUnderTest> resetter_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutomaticProfileResetterDelegateTest);
 };
+
 
 // Tests ---------------------------------------------------------------------
 
 TEST_F(AutomaticProfileResetterDelegateTest,
        TriggerAndWaitOnModuleEnumeration) {
-  testing::StrictMock<MockCallbackTarget> mock_target;
-
   // Expect ready_callback to be called just after the modules have been
   // enumerated. Fail if it is not called. Note: as the EnumerateModulesModel is
   // a global singleton, the callback might be invoked immediately if another
   // test-case (e.g. the one below) has already performed module enumeration.
+  testing::StrictMock<MockCallbackTarget> mock_target;
   EXPECT_CALL(mock_target, Run());
   resetter_delegate()->RequestCallbackWhenLoadedModulesAreEnumerated(
       mock_target.CreateClosure());
@@ -217,7 +291,8 @@ TEST_F(AutomaticProfileResetterDelegateTest,
   // Expect ready_callback to be posted immediately even when the modules had
   // already been enumerated when the delegate was constructed.
   scoped_ptr<AutomaticProfileResetterDelegate> late_resetter_delegate(
-      new AutomaticProfileResetterDelegateImpl(NULL));
+      new AutomaticProfileResetterDelegateImpl(profile(),
+                                               ProfileResetter::ALL));
 
   EXPECT_CALL(mock_target, Run());
   late_resetter_delegate->RequestCallbackWhenLoadedModulesAreEnumerated(
@@ -249,12 +324,10 @@ TEST_F(AutomaticProfileResetterDelegateTest, GetLoadedModuleNameDigests) {
 #endif
 }
 
-TEST_F(AutomaticProfileResetterDelegateTestTemplateURLs,
-       LoadAndWaitOnTemplateURLService) {
-  testing::StrictMock<MockCallbackTarget> mock_target;
-
+TEST_F(AutomaticProfileResetterDelegateTest, LoadAndWaitOnTemplateURLService) {
   // Expect ready_callback to be called just after the template URL service gets
   // initialized. Fail if it is not called, or called too early.
+  testing::StrictMock<MockCallbackTarget> mock_target;
   resetter_delegate()->RequestCallbackWhenTemplateURLServiceIsLoaded(
       mock_target.CreateClosure());
   base::RunLoop().RunUntilIdle();
@@ -277,7 +350,8 @@ TEST_F(AutomaticProfileResetterDelegateTestTemplateURLs,
   // Expect ready_callback to be posted immediately even when the template URL
   // service had already been initialized when the delegate was constructed.
   scoped_ptr<AutomaticProfileResetterDelegate> late_resetter_delegate(
-      new AutomaticProfileResetterDelegateImpl(test_util_.model()));
+      new AutomaticProfileResetterDelegateImpl(profile(),
+                                               ProfileResetter::ALL));
 
   EXPECT_CALL(mock_target, Run());
   late_resetter_delegate->RequestCallbackWhenTemplateURLServiceIsLoaded(
@@ -285,10 +359,11 @@ TEST_F(AutomaticProfileResetterDelegateTestTemplateURLs,
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AutomaticProfileResetterDelegateTestTemplateURLs,
+TEST_F(AutomaticProfileResetterDelegateTest,
        DefaultSearchProviderDataWhenNotManaged) {
-  TemplateURLService* template_url_service = test_util_.model();
-  test_util_.VerifyLoad();
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile());
+  TemplateURLServiceTestUtilBase::VerifyLoad();
 
   // Check that the "managed state" and the details returned by the delegate are
   // correct. We verify the details against the data stored by
@@ -309,18 +384,18 @@ TEST_F(AutomaticProfileResetterDelegateTestTemplateURLs,
   EXPECT_FALSE(resetter_delegate()->IsDefaultSearchProviderManaged());
 }
 
-TEST_F(AutomaticProfileResetterDelegateTestTemplateURLs,
+TEST_F(AutomaticProfileResetterDelegateTest,
        DefaultSearchProviderDataWhenManaged) {
   const char kTestSearchURL[] = "http://example.com/search?q={searchTerms}";
   const char kTestName[] = "name";
   const char kTestKeyword[] = "keyword";
 
-  test_util_.VerifyLoad();
+  TemplateURLServiceTestUtilBase::VerifyLoad();
 
   EXPECT_FALSE(resetter_delegate()->IsDefaultSearchProviderManaged());
 
   // Set managed preferences to emulate a default search provider set by policy.
-  test_util_.SetManagedDefaultSearchPreferences(
+  SetManagedDefaultSearchPreferences(
       true, kTestName, kTestKeyword, kTestSearchURL, std::string(),
       std::string(), std::string(), std::string(), std::string());
 
@@ -333,8 +408,8 @@ TEST_F(AutomaticProfileResetterDelegateTestTemplateURLs,
 
   // Set managed preferences to emulate that having a default search provider is
   // disabled by policy.
-  test_util_.RemoveManagedDefaultSearchPreferences();
-  test_util_.SetManagedDefaultSearchPreferences(
+  RemoveManagedDefaultSearchPreferences();
+  SetManagedDefaultSearchPreferences(
       true, std::string(), std::string(), std::string(), std::string(),
       std::string(), std::string(), std::string(), std::string());
 
@@ -343,10 +418,11 @@ TEST_F(AutomaticProfileResetterDelegateTestTemplateURLs,
   EXPECT_TRUE(dsp_details->empty());
 }
 
-TEST_F(AutomaticProfileResetterDelegateTestTemplateURLs,
+TEST_F(AutomaticProfileResetterDelegateTest,
        GetPrepopulatedSearchProvidersDetails) {
-  TemplateURLService* template_url_service = test_util_.model();
-  test_util_.VerifyLoad();
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile());
+  TemplateURLServiceTestUtilBase::VerifyLoad();
 
   scoped_ptr<base::ListValue> search_engines_details(
       resetter_delegate()->GetPrepopulatedSearchProvidersDetails());
@@ -377,6 +453,168 @@ TEST_F(AutomaticProfileResetterDelegateTestTemplateURLs,
         GetDefaultSearchProviderDetailsFromPrefs(prefs));
     ExpectDetailsMatch(*expected_dsp_details, *details);
   }
+}
+
+TEST_F(AutomaticProfileResetterDelegateTest,
+       FetchAndWaitOnDefaultSettingsVanilla) {
+  google_util::BrandForTesting scoped_brand_for_testing((std::string()));
+
+  // Expect ready_callback to be called just after empty brandcoded settings
+  // are loaded, given this is a vanilla build. Fail if it is not called, or
+  // called too early.
+  testing::StrictMock<MockCallbackTarget> mock_target;
+  resetter_delegate()->RequestCallbackWhenBrandcodedDefaultsAreFetched(
+      mock_target.CreateClosure());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(resetter_delegate()->brandcoded_defaults());
+
+  EXPECT_CALL(mock_target, Run());
+  resetter_delegate()->FetchBrandcodedDefaultSettingsIfNeeded();
+  base::RunLoop().RunUntilIdle();
+  ExpectNoPendingBrandcodedConfigFetch();
+
+  testing::Mock::VerifyAndClearExpectations(&mock_target);
+  EXPECT_TRUE(resetter_delegate()->brandcoded_defaults());
+
+  // Expect ready_callback to be posted immediately when the brandcoded settings
+  // have already been loaded.
+  EXPECT_CALL(mock_target, Run());
+  resetter_delegate()->RequestCallbackWhenBrandcodedDefaultsAreFetched(
+      mock_target.CreateClosure());
+  base::RunLoop().RunUntilIdle();
+
+  // No test for a new instance of AutomaticProfileResetterDelegate. That will
+  // need to fetch the brandcoded settings again.
+}
+
+TEST_F(AutomaticProfileResetterDelegateTest,
+       FetchAndWaitOnDefaultSettingsBranded) {
+  google_util::BrandForTesting scoped_brand_for_testing(kTestBrandcode);
+
+  // Expect ready_callback to be called just after the brandcoded settings are
+  // downloaded. Fail if it is not called, or called too early.
+  testing::StrictMock<MockCallbackTarget> mock_target;
+  resetter_delegate()->RequestCallbackWhenBrandcodedDefaultsAreFetched(
+      mock_target.CreateClosure());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(resetter_delegate()->brandcoded_defaults());
+
+  EXPECT_CALL(mock_target, Run());
+  resetter_delegate()->FetchBrandcodedDefaultSettingsIfNeeded();
+  ExpectAndServicePendingBrandcodedConfigFetch(false /*simulate_failure*/);
+  base::RunLoop().RunUntilIdle();
+
+  testing::Mock::VerifyAndClearExpectations(&mock_target);
+  const BrandcodedDefaultSettings* brandcoded_defaults =
+      resetter_delegate()->brandcoded_defaults();
+  ASSERT_TRUE(brandcoded_defaults);
+  std::string homepage_url;
+  EXPECT_TRUE(brandcoded_defaults->GetHomepage(&homepage_url));
+  EXPECT_EQ(kTestBrandedHomepage, homepage_url);
+
+  // Expect ready_callback to be posted immediately when the brandcoded settings
+  // have already been downloaded.
+  EXPECT_CALL(mock_target, Run());
+  resetter_delegate()->RequestCallbackWhenBrandcodedDefaultsAreFetched(
+      mock_target.CreateClosure());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(AutomaticProfileResetterDelegateTest,
+       FetchAndWaitOnDefaultSettingsBrandedFailure) {
+  google_util::BrandForTesting scoped_brand_for_testing(kTestBrandcode);
+
+  // Expect ready_callback to be called just after the brandcoded settings have
+  // failed to download. Fail if it is not called, or called too early.
+  testing::StrictMock<MockCallbackTarget> mock_target;
+  resetter_delegate()->RequestCallbackWhenBrandcodedDefaultsAreFetched(
+      mock_target.CreateClosure());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(mock_target, Run());
+  resetter_delegate()->FetchBrandcodedDefaultSettingsIfNeeded();
+  ExpectAndServicePendingBrandcodedConfigFetch(true /*simulate_failure*/);
+  base::RunLoop().RunUntilIdle();
+
+  testing::Mock::VerifyAndClearExpectations(&mock_target);
+  EXPECT_TRUE(resetter_delegate()->brandcoded_defaults());
+
+  // Expect ready_callback to be posted immediately when the brandcoded settings
+  // have already been attempted to be downloaded, but failed.
+  EXPECT_CALL(mock_target, Run());
+  resetter_delegate()->RequestCallbackWhenBrandcodedDefaultsAreFetched(
+      mock_target.CreateClosure());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(AutomaticProfileResetterDelegateTest, TriggerReset) {
+  google_util::BrandForTesting scoped_brand_for_testing(kTestBrandcode);
+
+  PrefService* prefs = profile()->GetPrefs();
+  DCHECK(prefs);
+  prefs->SetString(prefs::kHomePage, kTestHomepage);
+
+  testing::StrictMock<MockCallbackTarget> mock_target;
+  EXPECT_CALL(mock_target, Run());
+  EXPECT_CALL(*resetter_delegate(), SendFeedback(testing::_)).Times(0);
+  resetter_delegate()->TriggerProfileSettingsReset(
+      false /*send_feedback*/, mock_target.CreateClosure());
+  ExpectAndServicePendingBrandcodedConfigFetch(false /*simulate_failure*/);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(kTestBrandedHomepage, prefs->GetString(prefs::kHomePage));
+}
+
+TEST_F(AutomaticProfileResetterDelegateTest,
+       TriggerResetWithDefaultSettingsAlreadyLoaded) {
+  google_util::BrandForTesting scoped_brand_for_testing(kTestBrandcode);
+
+  PrefService* prefs = profile()->GetPrefs();
+  DCHECK(prefs);
+  prefs->SetString(prefs::kHomePage, kTestHomepage);
+
+  resetter_delegate()->FetchBrandcodedDefaultSettingsIfNeeded();
+  ExpectAndServicePendingBrandcodedConfigFetch(false /*simulate_failure*/);
+  base::RunLoop().RunUntilIdle();
+
+  testing::StrictMock<MockCallbackTarget> mock_target;
+  EXPECT_CALL(mock_target, Run());
+  EXPECT_CALL(*resetter_delegate(), SendFeedback(testing::_)).Times(0);
+  resetter_delegate()->TriggerProfileSettingsReset(
+      false /*send_feedback*/, mock_target.CreateClosure());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(kTestBrandedHomepage, prefs->GetString(prefs::kHomePage));
+}
+
+TEST_F(AutomaticProfileResetterDelegateTest,
+       TriggerResetAndSendFeedback) {
+  google_util::BrandForTesting scoped_brand_for_testing(kTestBrandcode);
+
+  PrefService* prefs = profile()->GetPrefs();
+  DCHECK(prefs);
+  prefs->SetString(prefs::kHomePage, kTestHomepage);
+
+  testing::StrictMock<MockCallbackTarget> mock_target;
+  EXPECT_CALL(mock_target, Run());
+  EXPECT_CALL(*resetter_delegate(),
+              SendFeedback(testing::HasSubstr(kTestHomepage)));
+
+  resetter_delegate()->TriggerProfileSettingsReset(
+      true /*send_feedback*/, mock_target.CreateClosure());
+  ExpectAndServicePendingBrandcodedConfigFetch(false /*simulate_failure*/);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(AutomaticProfileResetterDelegateTest, ShowAndDismissPrompt) {
+  resetter_delegate()->TriggerPrompt();
+  if (ProfileResetGlobalError::IsSupportedOnPlatform())
+    ExpectResetPromptState(true /*active*/);
+  else
+    ExpectResetPromptState(false /*active*/);
+  resetter_delegate()->DismissPrompt();
+  ExpectResetPromptState(false /*active*/);
+  resetter_delegate()->DismissPrompt();
 }
 
 }  // namespace

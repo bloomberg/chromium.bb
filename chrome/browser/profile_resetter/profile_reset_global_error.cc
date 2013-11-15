@@ -6,6 +6,12 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/profile_resetter/automatic_profile_resetter.h"
+#include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/global_error/global_error_service.h"
+#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/profile_reset_bubble.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -13,12 +19,21 @@
 
 namespace {
 
-// The maximum number of ignored bubbles we track in the NumNoThanksPerReset
-// histogram.
-const int kMaxIgnored = 50;
+// The URL that leads directly to the WebUI reset dialog in the settings page.
+const char kResetProfileSettingsURL[] =
+    "chrome://settings/resetProfileSettings";
 
-// The number of buckets we want the NumNoThanksPerReset histogram to use.
-const int kNumIgnoredBuckets = 5;
+base::TimeDelta GetPromptDelayHistogramMaximum() {
+  return base::TimeDelta::FromDays(7);
+}
+
+// Records the delay between when the reset prompt is triggered and when the
+// bubble can actually be shown.
+void RecordPromptDelay(const base::TimeDelta& delay) {
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "AutomaticProfileReset.PromptDelay", delay,
+      base::TimeDelta::FromSeconds(1), GetPromptDelayHistogramMaximum(), 50);
+}
 
 }  // namespace
 
@@ -26,9 +41,22 @@ const int kNumIgnoredBuckets = 5;
 // ProfileResetGlobalError ---------------------------------------------------
 
 ProfileResetGlobalError::ProfileResetGlobalError(Profile* profile)
-    : profile_(profile), num_times_bubble_view_shown_(0), bubble_view_(NULL) {}
+    : profile_(profile), has_shown_bubble_view_(false), bubble_view_(NULL) {
+  AutomaticProfileResetter* automatic_profile_resetter =
+      AutomaticProfileResetterFactory::GetForBrowserContext(profile_);
+  if (automatic_profile_resetter)
+    automatic_profile_resetter_ = automatic_profile_resetter->AsWeakPtr();
+}
 
-ProfileResetGlobalError::~ProfileResetGlobalError() {}
+ProfileResetGlobalError::~ProfileResetGlobalError() {
+  if (!has_shown_bubble_view_)
+    RecordPromptDelay(GetPromptDelayHistogramMaximum());
+}
+
+// static
+bool ProfileResetGlobalError::IsSupportedOnPlatform() {
+  return IsProfileResetBubbleSupported();
+}
 
 bool ProfileResetGlobalError::HasMenuItem() { return true; }
 
@@ -43,20 +71,27 @@ string16 ProfileResetGlobalError::MenuItemLabel() {
 }
 
 void ProfileResetGlobalError::ExecuteMenuItem(Browser* browser) {
-  ShowBubbleView(browser);
+  browser->OpenURL(content::OpenURLParams(
+      GURL(kResetProfileSettingsURL), content::Referrer(),
+      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
 }
 
 bool ProfileResetGlobalError::HasBubbleView() { return true; }
 
 bool ProfileResetGlobalError::HasShownBubbleView() {
-  return num_times_bubble_view_shown_ > 0;
+  return has_shown_bubble_view_;
 }
 
 void ProfileResetGlobalError::ShowBubbleView(Browser* browser) {
-  if (bubble_view_)
+  if (has_shown_bubble_view_)
     return;
-  ++num_times_bubble_view_shown_;
+
+  has_shown_bubble_view_ = true;
   bubble_view_ = ShowProfileResetBubble(AsWeakPtr(), browser);
+
+  if (automatic_profile_resetter_)
+    automatic_profile_resetter_->NotifyDidShowResetBubble();
+  RecordPromptDelay(timer_.Elapsed());
 }
 
 void ProfileResetGlobalError::OnBubbleViewDidClose() {
@@ -65,16 +100,13 @@ void ProfileResetGlobalError::OnBubbleViewDidClose() {
 
 void ProfileResetGlobalError::OnBubbleViewResetButtonPressed(
     bool send_feedback) {
-  // TODO(engedy): Integrate with the AutomaticProfileResetter.
-  UMA_HISTOGRAM_CUSTOM_COUNTS("SettingsResetBubble.NumNoThanksPerReset",
-                              num_times_bubble_view_shown_ - 1,
-                              0,
-                              kMaxIgnored,
-                              kNumIgnoredBuckets);
+  if (automatic_profile_resetter_)
+    automatic_profile_resetter_->TriggerProfileReset(send_feedback);
 }
 
 void ProfileResetGlobalError::OnBubbleViewNoThanksButtonPressed() {
-  // TODO(engedy): Integrate with the AutomaticProfileResetter.
+  if (automatic_profile_resetter_)
+    automatic_profile_resetter_->SkipProfileReset();
 }
 
 GlobalErrorBubbleViewBase* ProfileResetGlobalError::GetBubbleView() {

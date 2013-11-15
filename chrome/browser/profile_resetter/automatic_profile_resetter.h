@@ -36,6 +36,36 @@ class ListValue;
 // otherwise.
 class AutomaticProfileResetter : public BrowserContextKeyedService {
  public:
+  // Enumeration listing the possible outcomes of triggering the profile reset
+  // prompt.
+  enum PromptResult {
+    // The reset prompt was not triggered because only a dry-run was performed,
+    // or because it was not supported on the current platform.
+    PROMPT_NOT_TRIGGERED,
+    // The reset bubble actually got shown. In contrast to the wrench menu item
+    // that can always be shown, the bubble might be delayed or might never be
+    // shown if another bubble was shown at the time of triggering the prompt.
+    // This enumeration value is usually recorded in conjunction with another
+    // PromptResult, the absence of which indicates that the prompt was ignored.
+    PROMPT_SHOWN_BUBBLE,
+    // The user selected "Reset" or "No, thanks" (respectively) directly from
+    // within the bubble.
+    PROMPT_ACTION_RESET,
+    PROMPT_ACTION_NO_RESET,
+    // The reset bubble was shown, then dismissed without taking definitive
+    // action. Then, however, the user initiated or refrained from doing a reset
+    // (respectively) from the conventional, WebUI-based reset dialog.
+    PROMPT_FOLLOWED_BY_WEBUI_RESET,
+    PROMPT_FOLLOWED_BY_WEBUI_NO_RESET,
+    // The reset bubble was suppressed (not shown) because another bubble was
+    // already being shown at the time. Regardless, however, the user initiated
+    // or refrained from doing a reset (respectively) from the conventional,
+    // WebUI-based reset dialog.
+    PROMPT_NOT_SHOWN_BUBBLE_BUT_HAD_WEBUI_RESET,
+    PROMPT_NOT_SHOWN_BUBBLE_BUT_HAD_WEBUI_NO_RESET,
+    PROMPT_RESULT_MAX
+  };
+
   explicit AutomaticProfileResetter(Profile* profile);
   virtual ~AutomaticProfileResetter();
 
@@ -49,6 +79,41 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
   // |program_| to run (in which case the service also gets disabled).
   // Called by the AutomaticProfileResetterFactory.
   void Activate();
+
+  // Called in case the user chooses to reset their profile settings from inside
+  // the reset bubble. Will trigger the reset, optionally |send_feedback|, and
+  // conclude the reset prompt flow.
+  void TriggerProfileReset(bool send_feedback);
+
+  // Called in case the user chooses from inside the reset bubble that they do
+  // not want to reset their profile settings. Will conclude the reset prompt
+  // flow without setting off a reset.
+  void SkipProfileReset();
+
+  // Returns whether or not the profile reset prompt flow is currently active,
+  // that is, we have triggered the prompt and are waiting for the user to take
+  // definitive action (and we are not yet performing a reset).
+  bool IsResetPromptFlowActive() const;
+
+  // Called to give notice that the reset bubble has actually been shown.
+  void NotifyDidShowResetBubble();
+
+  // Called to give notice that the conventional, WebUI-based settings reset
+  // dialog has been opened. This will dismiss the menu item in the wrench menu.
+  // This should always be followed by a corresponding call to
+  // NotifyDidCloseWebUIResetDialog().
+  void NotifyDidOpenWebUIResetDialog();
+
+  // Called to give notice that the conventional, WebUI-based settings reset
+  // dialog has been closed, with |performed_reset| indicating whether or not a
+  // reset was requested. This is required so that we can record the appropriate
+  // PromptResult, dismiss the prompt, and conclude the reset prompt flow early
+  // without setting off any resets in the future.
+  void NotifyDidCloseWebUIResetDialog(bool performed_reset);
+
+  base::WeakPtr<AutomaticProfileResetter> AsWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
   // Should be called before Activate().
   void SetProgramForTesting(const std::string& program);
@@ -65,6 +130,9 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
   void SetTaskRunnerForWaitingForTesting(
       const scoped_refptr<base::TaskRunner>& task_runner);
 
+  // BrowserContextKeyedService:
+  virtual void Shutdown() OVERRIDE;
+
  private:
   class InputBuilder;
   struct EvaluationResults;
@@ -75,7 +143,14 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
     STATE_DISABLED,
     STATE_WAITING_ON_DEPENDENCIES,
     STATE_READY,
-    STATE_WORKING,
+    STATE_EVALUATING_CONDITIONS,
+    // The reset prompt has been triggered; but the reset bubble has not yet
+    // been shown.
+    STATE_HAS_TRIGGERED_PROMPT,
+    // The reset prompt has been triggered; the reset bubble has been shown, and
+    // potentially already dismissed by the user.
+    STATE_HAS_SHOWN_BUBBLE,
+    STATE_PERFORMING_RESET,
     STATE_DONE
   };
 
@@ -115,28 +190,62 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
       const std::string& program,
       scoped_ptr<base::DictionaryValue> program_input);
 
-  // Called back when EvaluateConditionsOnWorkerPoolThread() completes executing
-  // the program with |results|. Finishes the evaluation flow, and, based on the
-  // result, will potentially show the reset prompt.
-  void FinishEvaluationFlow(scoped_ptr<EvaluationResults> results);
-
   // Reports the given metrics through UMA. Virtual, so it can be mocked out in
   // tests to verify that the correct value are being reported.
   virtual void ReportStatistics(uint32 satisfied_criteria_mask,
                                 uint32 combined_status_mask);
 
-  // BrowserContextKeyedService:
-  virtual void Shutdown() OVERRIDE;
+  // Called back when EvaluateConditionsOnWorkerPoolThread completes executing
+  // the program with |results|. Finishes the evaluation flow, and, based on the
+  // result, potentially initiates the reset prompt flow.
+  void FinishEvaluationFlow(scoped_ptr<EvaluationResults> results);
+
+  // Begins the reset prompt flow by triggering the reset prompt, which consists
+  // of two parts: (1.) the profile reset (pop-up) bubble, and (2.) a menu item
+  // in the wrench menu (provided by a GlobalError).
+  // The flow lasts until we receive a clear indication from the user about
+  // whether or not they wish to reset their settings. This indication can come
+  // in a variety of flavors:
+  //  * taking definitive action (i.e. selecting either "Reset" or "No, thanks")
+  //    in the pop-up reset bubble itself,
+  //  * dismissing the bubble, but then selecting the wrench menu item, which
+  //    takes them to the WebUI reset dialog in chrome://settings, and then the
+  //    user can make their choice there,
+  //  * the user going to the WebUI reset dialog by themself.
+  // For the most part, the conclusion of the reset flow coincides with when the
+  // reset prompt is dismissed, with the one exception being that the prompt is
+  // closed as soon as the WebUI reset dialog is opened, we do not wait until
+  // the user actually makes a choice in that dialog.
+  void BeginResetPromptFlow();
+
+  // Called back by the ProfileResetter once resetting the profile settings has
+  // been completed, when requested by the user from inside the reset bubble.
+  // Will dismiss the prompt and conclude the reset prompt flow.
+  void OnProfileSettingsResetCompleted();
+
+  // Reports the result of triggering the prompt through UMA. Virtual, so it can
+  // be mocked out in tests to verify that the correct value is being reported.
+  virtual void ReportPromptResult(PromptResult result);
+
+  // Writes the memento values returned by the evaluation program to disk, and
+  // then destroys |evaluation_results_|.
+  void PersistMementos();
+
+  // Concludes the reset prompt flow.
+  void FinishResetPromptFlow();
 
   Profile* profile_;
 
   State state_;
   bool enumeration_of_loaded_modules_ready_;
   bool template_url_service_ready_;
+  bool has_already_dismissed_prompt_;
 
   scoped_ptr<InputBuilder> input_builder_;
   std::string hash_seed_;
   std::string program_;
+
+  scoped_ptr<EvaluationResults> evaluation_results_;
 
   scoped_ptr<AutomaticProfileResetterDelegate> delegate_;
   scoped_refptr<base::TaskRunner> task_runner_for_waiting_;

@@ -7,19 +7,25 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 
+class AutomaticProfileResetter;
 class GlobalErrorBubbleViewBase;
 class Profile;
 
-// Shows preferences reset errors on the wrench menu and exposes a menu item to
-// launch a bubble view.
+// Encapsulates UI-related functionality for the one-time profile settings reset
+// prompt. The UI consists of two parts: (1.) the profile reset (pop-up) bubble,
+// and (2.) a menu item in the wrench menu (provided by us being a GlobalError).
 class ProfileResetGlobalError
     : public GlobalError,
       public base::SupportsWeakPtr<ProfileResetGlobalError> {
  public:
   explicit ProfileResetGlobalError(Profile* profile);
   virtual ~ProfileResetGlobalError();
+
+  // Returns whether or not the reset prompt is supported on this platform.
+  static bool IsSupportedOnPlatform();
 
   // Called by the bubble view when it is closed.
   void OnBubbleViewDidClose();
@@ -45,9 +51,17 @@ class ProfileResetGlobalError
  private:
   Profile* profile_;
 
-  // The number of times we have shown the bubble so far. This can be >1 if the
-  // user dismissed the bubble, then selected the menu item to show it again.
-  int num_times_bubble_view_shown_;
+  // GlobalErrorService owns us, on which AutomaticProfileResetter depends, so
+  // during shutdown, it may get destroyed before we are.
+  // Note: the AutomaticProfileResetter expects call-backs from us to always be
+  // synchronous, so that there will be no call-backs once we are destroyed.
+  base::WeakPtr<AutomaticProfileResetter> automatic_profile_resetter_;
+
+  // Used to measure the delay before the bubble actually gets shown.
+  base::ElapsedTimer timer_;
+
+  // Whether or not we have already shown the bubble.
+  bool has_shown_bubble_view_;
 
   // The reset bubble, if we're currently showing one.
   GlobalErrorBubbleViewBase* bubble_view_;

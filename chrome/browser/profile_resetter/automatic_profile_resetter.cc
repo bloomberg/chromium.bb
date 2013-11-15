@@ -91,18 +91,6 @@ COMPILE_ASSERT(
     arraysize(kCombinedStatusMaskKeys) == kCombinedStatusMaskNumberOfBits,
     combined_status_mask_bits_mismatch);
 
-// Enumeration of the possible outcomes of showing the profile reset prompt.
-enum PromptResult {
-  // Prompt was not shown because only a dry-run was performed.
-  PROMPT_NOT_SHOWN,
-  PROMPT_ACTION_RESET,
-  PROMPT_ACTION_NO_RESET,
-  PROMPT_DISMISSED,
-  // Prompt was still shown (not dismissed by the user) when Chrome was closed.
-  PROMPT_IGNORED,
-  PROMPT_RESULT_MAX
-};
-
 // Returns whether or not a dry-run shall be performed.
 bool ShouldPerformDryRun() {
   return StartsWithASCII(
@@ -392,6 +380,7 @@ AutomaticProfileResetter::AutomaticProfileResetter(Profile* profile)
       state_(STATE_UNINITIALIZED),
       enumeration_of_loaded_modules_ready_(false),
       template_url_service_ready_(false),
+      has_already_dismissed_prompt_(false),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
 }
@@ -423,7 +412,7 @@ void AutomaticProfileResetter::Initialize() {
   }
 
   delegate_.reset(new AutomaticProfileResetterDelegateImpl(
-      TemplateURLServiceFactory::GetForProfile(profile_)));
+      profile_, ProfileResetter::ALL));
   task_runner_for_waiting_ =
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::UI);
@@ -451,6 +440,79 @@ void AutomaticProfileResetter::Activate() {
   }
 }
 
+void AutomaticProfileResetter::TriggerProfileReset(bool send_feedback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_EQ(state_, STATE_HAS_SHOWN_BUBBLE);
+
+  state_ = STATE_PERFORMING_RESET;
+
+  ReportPromptResult(PROMPT_ACTION_RESET);
+  delegate_->TriggerProfileSettingsReset(
+      send_feedback,
+      base::Bind(&AutomaticProfileResetter::OnProfileSettingsResetCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AutomaticProfileResetter::SkipProfileReset() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_EQ(state_, STATE_HAS_SHOWN_BUBBLE);
+
+  ReportPromptResult(PROMPT_ACTION_NO_RESET);
+  delegate_->DismissPrompt();
+  FinishResetPromptFlow();
+}
+
+bool AutomaticProfileResetter::IsResetPromptFlowActive() const {
+  return state_ == STATE_HAS_TRIGGERED_PROMPT ||
+      state_ == STATE_HAS_SHOWN_BUBBLE;
+}
+
+void AutomaticProfileResetter::NotifyDidShowResetBubble() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_EQ(state_, STATE_HAS_TRIGGERED_PROMPT);
+
+  state_ = STATE_HAS_SHOWN_BUBBLE;
+
+  PersistMementos();
+  ReportPromptResult(PROMPT_SHOWN_BUBBLE);
+}
+
+void AutomaticProfileResetter::NotifyDidOpenWebUIResetDialog() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // This notification is invoked unconditionally by the WebUI, only care about
+  // it when the prompt flow is currently active (and not yet resetting).
+  if (state_ == STATE_HAS_TRIGGERED_PROMPT ||
+      state_ == STATE_HAS_SHOWN_BUBBLE) {
+    has_already_dismissed_prompt_ = true;
+    delegate_->DismissPrompt();
+  }
+}
+
+void AutomaticProfileResetter::NotifyDidCloseWebUIResetDialog(
+    bool performed_reset) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // This notification is invoked unconditionally by the WebUI, only care about
+  // it when the prompt flow is currently active (and not yet resetting).
+  if (state_ == STATE_HAS_TRIGGERED_PROMPT ||
+      state_ == STATE_HAS_SHOWN_BUBBLE) {
+    if (!has_already_dismissed_prompt_)
+      delegate_->DismissPrompt();
+    if (state_ == STATE_HAS_TRIGGERED_PROMPT) {
+      PersistMementos();
+      ReportPromptResult(performed_reset ?
+          PROMPT_NOT_SHOWN_BUBBLE_BUT_HAD_WEBUI_RESET :
+          PROMPT_NOT_SHOWN_BUBBLE_BUT_HAD_WEBUI_NO_RESET);
+    } else {  // if (state_ == STATE_HAS_SHOWN_PROMPT)
+      ReportPromptResult(performed_reset ?
+          PROMPT_FOLLOWED_BY_WEBUI_RESET :
+          PROMPT_FOLLOWED_BY_WEBUI_NO_RESET);
+    }
+    FinishResetPromptFlow();
+  }
+}
+
 void AutomaticProfileResetter::SetProgramForTesting(
     const std::string& program) {
   program_ = program;
@@ -469,6 +531,19 @@ void AutomaticProfileResetter::SetDelegateForTesting(
 void AutomaticProfileResetter::SetTaskRunnerForWaitingForTesting(
     const scoped_refptr<base::TaskRunner>& task_runner) {
   task_runner_for_waiting_ = task_runner;
+}
+
+void AutomaticProfileResetter::Shutdown() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // We better not do anything substantial at this point. The metrics service
+  // has already been shut down; and local state has already been commited to
+  // file (in the regular fashion) for the last time.
+
+  state_ = STATE_DISABLED;
+
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  delegate_.reset();
 }
 
 void AutomaticProfileResetter::PrepareEvaluationFlow() {
@@ -517,7 +592,7 @@ void AutomaticProfileResetter::BeginEvaluationFlow() {
   DCHECK(!program_.empty());
   DCHECK(!input_builder_);
 
-  state_ = STATE_WORKING;
+  state_ = STATE_EVALUATING_CONDITIONS;
 
   input_builder_.reset(new InputBuilder(profile_, delegate_.get()));
   input_builder_->BuildEvaluatorProgramInput(
@@ -528,7 +603,7 @@ void AutomaticProfileResetter::BeginEvaluationFlow() {
 void AutomaticProfileResetter::ContinueWithEvaluationFlow(
     scoped_ptr<base::DictionaryValue> program_input) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK_EQ(state_, STATE_WORKING);
+  DCHECK_EQ(state_, STATE_EVALUATING_CONDITIONS);
 
   input_builder_.reset();
 
@@ -586,35 +661,6 @@ scoped_ptr<AutomaticProfileResetter::EvaluationResults>
   return results.Pass();
 }
 
-void AutomaticProfileResetter::FinishEvaluationFlow(
-    scoped_ptr<EvaluationResults> results) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK_EQ(state_, STATE_WORKING);
-
-  ReportStatistics(results->satisfied_criteria_mask,
-                   results->combined_status_mask);
-
-  if (results->satisfied_criteria_mask != 0 && !results->had_prompted_already) {
-    PreferenceHostedPromptMemento memento_in_prefs(profile_);
-    LocalStateHostedPromptMemento memento_in_local_state(profile_);
-    FileHostedPromptMemento memento_in_file(profile_);
-
-    memento_in_prefs.StoreValue(results->memento_value_in_prefs);
-    memento_in_local_state.StoreValue(results->memento_value_in_local_state);
-    memento_in_file.StoreValue(results->memento_value_in_file);
-
-    if (ShouldPerformLiveRun()) {
-      delegate_->ShowPrompt();
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("AutomaticProfileReset.PromptResult",
-                                PROMPT_NOT_SHOWN,
-                                PROMPT_RESULT_MAX);
-    }
-  }
-
-  state_ = STATE_DONE;
-}
-
 void AutomaticProfileResetter::ReportStatistics(uint32 satisfied_criteria_mask,
                                                 uint32 combined_status_mask) {
   UMA_HISTOGRAM_ENUMERATION("AutomaticProfileReset.SatisfiedCriteriaMask",
@@ -625,10 +671,77 @@ void AutomaticProfileResetter::ReportStatistics(uint32 satisfied_criteria_mask,
                             kCombinedStatusMaskMaximumValue);
 }
 
-void AutomaticProfileResetter::Shutdown() {
+void AutomaticProfileResetter::FinishEvaluationFlow(
+    scoped_ptr<EvaluationResults> results) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_EQ(state_, STATE_EVALUATING_CONDITIONS);
 
-  state_ = STATE_DISABLED;
-  delegate_.reset();
-  weak_ptr_factory_.InvalidateWeakPtrs();
+  ReportStatistics(results->satisfied_criteria_mask,
+                   results->combined_status_mask);
+
+  if (results->satisfied_criteria_mask != 0 && !results->had_prompted_already) {
+    evaluation_results_ = results.Pass();
+    BeginResetPromptFlow();
+  } else {
+    state_ = STATE_DONE;
+  }
+}
+
+void AutomaticProfileResetter::BeginResetPromptFlow() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_EQ(state_, STATE_EVALUATING_CONDITIONS);
+
+  state_ = STATE_HAS_TRIGGERED_PROMPT;
+
+  if (ShouldPerformLiveRun() && delegate_->TriggerPrompt()) {
+    // Start fetching the brandcoded default settings speculatively in the
+    // background, so as to reduce waiting time if the user chooses to go
+    // through with the reset.
+    delegate_->FetchBrandcodedDefaultSettingsIfNeeded();
+  } else {
+    PersistMementos();
+    ReportPromptResult(PROMPT_NOT_TRIGGERED);
+    FinishResetPromptFlow();
+  }
+}
+
+void AutomaticProfileResetter::OnProfileSettingsResetCompleted() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_EQ(state_, STATE_PERFORMING_RESET);
+
+  delegate_->DismissPrompt();
+  FinishResetPromptFlow();
+}
+
+void AutomaticProfileResetter::ReportPromptResult(PromptResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "AutomaticProfileReset.PromptResult", result, PROMPT_RESULT_MAX);
+}
+
+void AutomaticProfileResetter::PersistMementos() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(state_ == STATE_HAS_TRIGGERED_PROMPT ||
+         state_ == STATE_HAS_SHOWN_BUBBLE);
+  DCHECK(evaluation_results_);
+
+  PreferenceHostedPromptMemento memento_in_prefs(profile_);
+  LocalStateHostedPromptMemento memento_in_local_state(profile_);
+  FileHostedPromptMemento memento_in_file(profile_);
+
+  memento_in_prefs.StoreValue(evaluation_results_->memento_value_in_prefs);
+  memento_in_local_state.StoreValue(
+      evaluation_results_->memento_value_in_local_state);
+  memento_in_file.StoreValue(evaluation_results_->memento_value_in_file);
+
+  evaluation_results_.reset();
+}
+
+void AutomaticProfileResetter::FinishResetPromptFlow() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(state_ == STATE_HAS_TRIGGERED_PROMPT ||
+         state_ == STATE_HAS_SHOWN_BUBBLE ||
+         state_ == STATE_PERFORMING_RESET);
+  DCHECK(!evaluation_results_);
+
+  state_ = STATE_DONE;
 }
