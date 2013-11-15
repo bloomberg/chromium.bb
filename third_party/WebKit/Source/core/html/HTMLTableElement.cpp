@@ -71,10 +71,10 @@ HTMLTableCaptionElement* HTMLTableElement::caption() const
     return 0;
 }
 
-void HTMLTableElement::setCaption(PassRefPtr<HTMLTableCaptionElement> newCaption, ExceptionState& es)
+void HTMLTableElement::setCaption(PassRefPtr<HTMLTableCaptionElement> newCaption, ExceptionState& exceptionState)
 {
     deleteCaption();
-    insertBefore(newCaption, firstChild(), es);
+    insertBefore(newCaption, firstChild(), exceptionState);
 }
 
 HTMLTableSectionElement* HTMLTableElement::tHead() const
@@ -86,7 +86,7 @@ HTMLTableSectionElement* HTMLTableElement::tHead() const
     return 0;
 }
 
-void HTMLTableElement::setTHead(PassRefPtr<HTMLTableSectionElement> newHead, ExceptionState& es)
+void HTMLTableElement::setTHead(PassRefPtr<HTMLTableSectionElement> newHead, ExceptionState& exceptionState)
 {
     deleteTHead();
 
@@ -95,7 +95,7 @@ void HTMLTableElement::setTHead(PassRefPtr<HTMLTableSectionElement> newHead, Exc
         if (child->isElementNode() && !child->hasTagName(captionTag) && !child->hasTagName(colgroupTag))
             break;
 
-    insertBefore(newHead, child, es);
+    insertBefore(newHead, child, exceptionState);
 }
 
 HTMLTableSectionElement* HTMLTableElement::tFoot() const
@@ -107,7 +107,7 @@ HTMLTableSectionElement* HTMLTableElement::tFoot() const
     return 0;
 }
 
-void HTMLTableElement::setTFoot(PassRefPtr<HTMLTableSectionElement> newFoot, ExceptionState& es)
+void HTMLTableElement::setTFoot(PassRefPtr<HTMLTableSectionElement> newFoot, ExceptionState& exceptionState)
 {
     deleteTFoot();
 
@@ -116,7 +116,7 @@ void HTMLTableElement::setTFoot(PassRefPtr<HTMLTableSectionElement> newFoot, Exc
         if (child->isElementNode() && !child->hasTagName(captionTag) && !child->hasTagName(colgroupTag) && !child->hasTagName(theadTag))
             break;
 
-    insertBefore(newFoot, child, es);
+    insertBefore(newFoot, child, exceptionState);
 }
 
 PassRefPtr<HTMLElement> HTMLTableElement::createTHead()
@@ -179,10 +179,10 @@ HTMLTableSectionElement* HTMLTableElement::lastBody() const
     return 0;
 }
 
-PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& es)
+PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& exceptionState)
 {
     if (index < -1) {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return 0;
     }
 
@@ -197,7 +197,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& e
             row = HTMLTableRowsCollection::rowAfter(this, lastRow.get());
             if (!row) {
                 if (i != index) {
-                    es.throwUninformativeAndGenericDOMException(IndexSizeError);
+                    exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
                     return 0;
                 }
                 break;
@@ -214,18 +214,18 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& e
         if (!parent) {
             RefPtr<HTMLTableSectionElement> newBody = HTMLTableSectionElement::create(tbodyTag, document());
             RefPtr<HTMLTableRowElement> newRow = HTMLTableRowElement::create(document());
-            newBody->appendChild(newRow, es);
-            appendChild(newBody.release(), es);
+            newBody->appendChild(newRow, exceptionState);
+            appendChild(newBody.release(), exceptionState);
             return newRow.release();
         }
     }
 
     RefPtr<HTMLTableRowElement> newRow = HTMLTableRowElement::create(document());
-    parent->insertBefore(newRow, row.get(), es);
+    parent->insertBefore(newRow, row.get(), exceptionState);
     return newRow.release();
 }
 
-void HTMLTableElement::deleteRow(int index, ExceptionState& es)
+void HTMLTableElement::deleteRow(int index, ExceptionState& exceptionState)
 {
     HTMLTableRowElement* row = 0;
     if (index == -1)
@@ -238,10 +238,10 @@ void HTMLTableElement::deleteRow(int index, ExceptionState& es)
         }
     }
     if (!row) {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
-    row->remove(es);
+    row->remove(exceptionState);
 }
 
 static inline bool isTableCellAncestor(Node* n)

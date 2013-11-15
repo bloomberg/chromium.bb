@@ -45,20 +45,20 @@ NavigatorMediaStream::~NavigatorMediaStream()
 {
 }
 
-void NavigatorMediaStream::webkitGetUserMedia(Navigator* navigator, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback> successCallback, PassRefPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& es)
+void NavigatorMediaStream::webkitGetUserMedia(Navigator* navigator, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback> successCallback, PassRefPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& exceptionState)
 {
     if (!successCallback)
         return;
 
     UserMediaController* userMedia = UserMediaController::from(navigator->frame() ? navigator->frame()->page() : 0);
     if (!userMedia) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
 
-    RefPtr<UserMediaRequest> request = UserMediaRequest::create(navigator->frame()->document(), userMedia, options, successCallback, errorCallback, es);
+    RefPtr<UserMediaRequest> request = UserMediaRequest::create(navigator->frame()->document(), userMedia, options, successCallback, errorCallback, exceptionState);
     if (!request) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
 

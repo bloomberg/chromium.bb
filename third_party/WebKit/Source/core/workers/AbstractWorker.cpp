@@ -49,28 +49,28 @@ AbstractWorker::~AbstractWorker()
 {
 }
 
-KURL AbstractWorker::resolveURL(const String& url, ExceptionState& es)
+KURL AbstractWorker::resolveURL(const String& url, ExceptionState& exceptionState)
 {
     if (url.isEmpty()) {
-        es.throwDOMException(SyntaxError, "Failed to create a worker: an empty URL was provided.");
+        exceptionState.throwDOMException(SyntaxError, "Failed to create a worker: an empty URL was provided.");
         return KURL();
     }
 
     // FIXME: This should use the dynamic global scope (bug #27887)
     KURL scriptURL = executionContext()->completeURL(url);
     if (!scriptURL.isValid()) {
-        es.throwDOMException(SyntaxError, "Failed to create a worker: '" + url + "' is not a valid URL.");
+        exceptionState.throwDOMException(SyntaxError, "Failed to create a worker: '" + url + "' is not a valid URL.");
         return KURL();
     }
 
     // We can safely expose the URL in the following exceptions, as these checks happen synchronously before redirection. JavaScript receives no new information.
     if (!executionContext()->securityOrigin()->canRequest(scriptURL)) {
-        es.throwSecurityError("Failed to create a worker: script at '" + scriptURL.elidedString() + "' cannot be accessed from origin '" + executionContext()->securityOrigin()->toString() + "'.");
+        exceptionState.throwSecurityError("Failed to create a worker: script at '" + scriptURL.elidedString() + "' cannot be accessed from origin '" + executionContext()->securityOrigin()->toString() + "'.");
         return KURL();
     }
 
     if (executionContext()->contentSecurityPolicy() && !executionContext()->contentSecurityPolicy()->allowScriptFromSource(scriptURL)) {
-        es.throwSecurityError("Failed to create a worker: access to the script at '" + scriptURL.elidedString() + "' is denied by the document's Content Security Policy.");
+        exceptionState.throwSecurityError("Failed to create a worker: access to the script at '" + scriptURL.elidedString() + "' is denied by the document's Content Security Policy.");
         return KURL();
     }
 

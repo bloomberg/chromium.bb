@@ -488,11 +488,11 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
 
         case GIFExtension: {
             size_t bytesInBlock = currentComponent[1];
-            GIFState es = GIFSkipBlock;
+            GIFState exceptionState = GIFSkipBlock;
 
             switch (*currentComponent) {
             case 0xf9:
-                es = GIFControlExtension;
+                exceptionState = GIFControlExtension;
                 // The GIF spec mandates that the GIFControlExtension header block length is 4 bytes,
                 // and the parser for this block reads 4 bytes, so we must enforce that the buffer
                 // contains at least this many bytes. If the GIF specifies a different length, we
@@ -511,16 +511,16 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
                 break;
 
             case 0xff:
-                es = GIFApplicationExtension;
+                exceptionState = GIFApplicationExtension;
                 break;
 
             case 0xfe:
-                es = GIFConsumeComment;
+                exceptionState = GIFConsumeComment;
                 break;
             }
 
             if (bytesInBlock)
-                GETN(bytesInBlock, es);
+                GETN(bytesInBlock, exceptionState);
             else
                 GETN(1, GIFImageStart);
             break;

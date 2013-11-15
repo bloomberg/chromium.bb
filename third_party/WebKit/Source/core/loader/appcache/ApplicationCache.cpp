@@ -70,18 +70,18 @@ unsigned short ApplicationCache::status() const
     return cacheHost->status();
 }
 
-void ApplicationCache::update(ExceptionState& es)
+void ApplicationCache::update(ExceptionState& exceptionState)
 {
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (!cacheHost || !cacheHost->update())
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("update", "ApplicationCache", "there is no application cache to update."));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("update", "ApplicationCache", "there is no application cache to update."));
 }
 
-void ApplicationCache::swapCache(ExceptionState& es)
+void ApplicationCache::swapCache(ExceptionState& exceptionState)
 {
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (!cacheHost || !cacheHost->swapCache())
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("swapCache", "ApplicationCache", "there is no newer application cache to swap to."));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("swapCache", "ApplicationCache", "there is no newer application cache to swap to."));
 }
 
 void ApplicationCache::abort()

@@ -39,19 +39,19 @@
 
 namespace WebCore {
 
-PassRefPtr<TextEncoder> TextEncoder::create(const String& utfLabel, ExceptionState& es)
+PassRefPtr<TextEncoder> TextEncoder::create(const String& utfLabel, ExceptionState& exceptionState)
 {
     const String& encodingLabel = utfLabel.isNull() ? String("utf-8") : utfLabel;
 
     WTF::TextEncoding encoding(encodingLabel);
     if (!encoding.isValid()) {
-        es.throwUninformativeAndGenericTypeError();
+        exceptionState.throwUninformativeAndGenericTypeError();
         return 0;
     }
 
     String name(encoding.name());
     if (name != "UTF-8" && name != "UTF-16LE" && name != "UTF-16BE") {
-        es.throwUninformativeAndGenericTypeError();
+        exceptionState.throwUninformativeAndGenericTypeError();
         return 0;
     }
 

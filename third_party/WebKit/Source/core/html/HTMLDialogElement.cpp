@@ -84,10 +84,10 @@ PassRefPtr<HTMLDialogElement> HTMLDialogElement::create(Document& document)
     return adoptRef(new HTMLDialogElement(document));
 }
 
-void HTMLDialogElement::close(const String& returnValue, ExceptionState& es)
+void HTMLDialogElement::close(const String& returnValue, ExceptionState& exceptionState)
 {
     if (!fastHasAttribute(openAttr)) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     closeDialog(returnValue);
@@ -126,10 +126,10 @@ void HTMLDialogElement::show()
     forceLayoutForCentering();
 }
 
-void HTMLDialogElement::showModal(ExceptionState& es)
+void HTMLDialogElement::showModal(ExceptionState& exceptionState)
 {
     if (fastHasAttribute(openAttr) || !inDocument()) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     document().addToTopLayer(this);

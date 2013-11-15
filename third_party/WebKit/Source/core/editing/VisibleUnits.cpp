@@ -460,11 +460,11 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     Vector<UChar, 1024> string;
     unsigned suffixLength = 0;
 
-    TrackExceptionState es;
+    TrackExceptionState exceptionState;
     if (requiresContextForWordBoundary(c.characterBefore())) {
         RefPtr<Range> forwardsScanRange(d.createRange());
-        forwardsScanRange->setEndAfter(boundary, es);
-        forwardsScanRange->setStart(end.deprecatedNode(), end.deprecatedEditingOffset(), es);
+        forwardsScanRange->setEndAfter(boundary, exceptionState);
+        forwardsScanRange->setStart(end.deprecatedNode(), end.deprecatedEditingOffset(), exceptionState);
         TextIterator forwardsIterator(forwardsScanRange.get());
         while (!forwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
@@ -478,11 +478,11 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
         }
     }
 
-    searchRange->setStart(start.deprecatedNode(), start.deprecatedEditingOffset(), es);
-    searchRange->setEnd(end.deprecatedNode(), end.deprecatedEditingOffset(), es);
+    searchRange->setStart(start.deprecatedNode(), start.deprecatedEditingOffset(), exceptionState);
+    searchRange->setEnd(end.deprecatedNode(), end.deprecatedEditingOffset(), exceptionState);
 
-    ASSERT(!es.hadException());
-    if (es.hadException())
+    ASSERT(!exceptionState.hadException());
+    if (exceptionState.hadException())
         return VisiblePosition();
 
     SimplifiedBackwardsTextIterator it(searchRange.get());

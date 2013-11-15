@@ -115,7 +115,7 @@ public:
     void setInnerHTML(const String&, ExceptionState&);
 
     PassRefPtr<Node> cloneNode(bool, ExceptionState&);
-    PassRefPtr<Node> cloneNode(ExceptionState& es) { return cloneNode(true, es); }
+    PassRefPtr<Node> cloneNode(ExceptionState& exceptionState) { return cloneNode(true, exceptionState); }
 
     StyleSheetList* styleSheets();
 

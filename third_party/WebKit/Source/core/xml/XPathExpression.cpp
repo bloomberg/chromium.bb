@@ -40,12 +40,12 @@ namespace WebCore {
 
 using namespace XPath;
 
-PassRefPtr<XPathExpression> XPathExpression::createExpression(const String& expression, XPathNSResolver* resolver, ExceptionState& es)
+PassRefPtr<XPathExpression> XPathExpression::createExpression(const String& expression, XPathNSResolver* resolver, ExceptionState& exceptionState)
 {
     RefPtr<XPathExpression> expr = XPathExpression::create();
     Parser parser;
 
-    expr->m_topExpression = parser.parseStatement(expression, resolver, es);
+    expr->m_topExpression = parser.parseStatement(expression, resolver, exceptionState);
     if (!expr->m_topExpression)
         return 0;
 
@@ -57,10 +57,10 @@ XPathExpression::~XPathExpression()
     delete m_topExpression;
 }
 
-PassRefPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionState& es)
+PassRefPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionState& exceptionState)
 {
     if (!isValidContextNode(contextNode)) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -74,13 +74,13 @@ PassRefPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned sh
 
     if (evaluationContext.hadTypeConversionError) {
         // It is not specified what to do if type conversion fails while evaluating an expression.
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
         return 0;
     }
 
     if (type != XPathResult::ANY_TYPE) {
-        result->convertTo(type, es);
-        if (es.hadException())
+        result->convertTo(type, exceptionState);
+        if (exceptionState.hadException())
             return 0;
     }
 

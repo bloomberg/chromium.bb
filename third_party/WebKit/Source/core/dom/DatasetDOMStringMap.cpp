@@ -178,20 +178,20 @@ bool DatasetDOMStringMap::contains(const String& name)
     return false;
 }
 
-void DatasetDOMStringMap::setItem(const String& name, const String& value, ExceptionState& es)
+void DatasetDOMStringMap::setItem(const String& name, const String& value, ExceptionState& exceptionState)
 {
     if (!isValidPropertyName(name)) {
-        es.throwDOMException(SyntaxError, ExceptionMessages::failedToSet(name, "DOMStringMap", "'" + name + "' is not a valid property name."));
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToSet(name, "DOMStringMap", "'" + name + "' is not a valid property name."));
         return;
     }
 
-    m_element->setAttribute(convertPropertyNameToAttributeName(name), value, es);
+    m_element->setAttribute(convertPropertyNameToAttributeName(name), value, exceptionState);
 }
 
-void DatasetDOMStringMap::deleteItem(const String& name, ExceptionState& es)
+void DatasetDOMStringMap::deleteItem(const String& name, ExceptionState& exceptionState)
 {
     if (!isValidPropertyName(name)) {
-        es.throwDOMException(SyntaxError, ExceptionMessages::failedToDelete(name, "DOMStringMap", "'" + name + "' is not a valid property name."));
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToDelete(name, "DOMStringMap", "'" + name + "' is not a valid property name."));
         return;
     }
 

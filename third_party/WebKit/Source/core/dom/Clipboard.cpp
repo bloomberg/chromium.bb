@@ -211,13 +211,13 @@ PassRefPtr<FileList> Clipboard::files() const
     return files.release();
 }
 
-void Clipboard::setDragImage(Element* image, int x, int y, ExceptionState& es)
+void Clipboard::setDragImage(Element* image, int x, int y, ExceptionState& exceptionState)
 {
     if (!isForDragAndDrop())
         return;
 
     if (!image) {
-        es.throwTypeError("setDragImage: Invalid first argument");
+        exceptionState.throwTypeError("setDragImage: Invalid first argument");
         return;
     }
     IntPoint location(x, y);

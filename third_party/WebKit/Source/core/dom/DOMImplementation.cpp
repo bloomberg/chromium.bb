@@ -179,10 +179,10 @@ bool DOMImplementation::hasFeature(const String& feature, const String& version)
 }
 
 PassRefPtr<DocumentType> DOMImplementation::createDocumentType(const String& qualifiedName,
-    const String& publicId, const String& systemId, ExceptionState& es)
+    const String& publicId, const String& systemId, ExceptionState& exceptionState)
 {
     String prefix, localName;
-    if (!Document::parseQualifiedName(qualifiedName, prefix, localName, es))
+    if (!Document::parseQualifiedName(qualifiedName, prefix, localName, exceptionState))
         return 0;
 
     return DocumentType::create(m_document, qualifiedName, publicId, systemId);
@@ -194,7 +194,7 @@ DOMImplementation* DOMImplementation::getInterface(const String& /*feature*/)
 }
 
 PassRefPtr<Document> DOMImplementation::createDocument(const String& namespaceURI,
-    const String& qualifiedName, DocumentType* doctype, ExceptionState& es)
+    const String& qualifiedName, DocumentType* doctype, ExceptionState& exceptionState)
 {
     RefPtr<Document> doc;
     DocumentInit init = DocumentInit::fromContext(m_document->contextDocument());
@@ -211,8 +211,8 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& namespaceUR
 
     RefPtr<Node> documentElement;
     if (!qualifiedName.isEmpty()) {
-        documentElement = doc->createElementNS(namespaceURI, qualifiedName, es);
-        if (es.hadException())
+        documentElement = doc->createElementNS(namespaceURI, qualifiedName, exceptionState);
+        if (exceptionState.hadException())
             return 0;
     }
 

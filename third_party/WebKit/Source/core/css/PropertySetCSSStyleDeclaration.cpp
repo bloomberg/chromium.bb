@@ -152,12 +152,12 @@ String PropertySetCSSStyleDeclaration::cssText() const
     return m_propertySet->asText();
 }
 
-void PropertySetCSSStyleDeclaration::setCSSText(const String& text, ExceptionState& es)
+void PropertySetCSSStyleDeclaration::setCSSText(const String& text, ExceptionState& exceptionState)
 {
     StyleAttributeMutationScope mutationScope(this);
     willMutate();
 
-    // FIXME: Detect syntax errors and set es.
+    // FIXME: Detect syntax errors and set exceptionState.
     m_propertySet->parseDeclaration(text, contextStyleSheet());
 
     didMutate(PropertyChanged);
@@ -208,7 +208,7 @@ bool PropertySetCSSStyleDeclaration::isPropertyImplicit(const String& propertyNa
     return m_propertySet->isPropertyImplicit(propertyID);
 }
 
-void PropertySetCSSStyleDeclaration::setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState& es)
+void PropertySetCSSStyleDeclaration::setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState& exceptionState)
 {
     StyleAttributeMutationScope mutationScope(this);
     CSSPropertyID propertyID = cssPropertyID(propertyName);
@@ -230,7 +230,7 @@ void PropertySetCSSStyleDeclaration::setProperty(const String& propertyName, con
     }
 }
 
-String PropertySetCSSStyleDeclaration::removeProperty(const String& propertyName, ExceptionState& es)
+String PropertySetCSSStyleDeclaration::removeProperty(const String& propertyName, ExceptionState& exceptionState)
 {
     StyleAttributeMutationScope mutationScope(this);
     CSSPropertyID propertyID = cssPropertyID(propertyName);
@@ -259,7 +259,7 @@ String PropertySetCSSStyleDeclaration::getPropertyValueInternal(CSSPropertyID pr
     return m_propertySet->getPropertyValue(propertyID);
 }
 
-void PropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID propertyID, const String& value, bool important, ExceptionState& es)
+void PropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID propertyID, const String& value, bool important, ExceptionState& exceptionState)
 {
     StyleAttributeMutationScope mutationScope(this);
     willMutate();

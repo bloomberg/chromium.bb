@@ -46,62 +46,62 @@ FileReaderSync::FileReaderSync()
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<ArrayBuffer> FileReaderSync::readAsArrayBuffer(ExecutionContext* executionContext, Blob* blob, ExceptionState& es)
+PassRefPtr<ArrayBuffer> FileReaderSync::readAsArrayBuffer(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
 {
     if (!blob) {
-        es.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
+        exceptionState.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
         return 0;
     }
 
     FileReaderLoader loader(FileReaderLoader::ReadAsArrayBuffer, 0);
-    startLoading(executionContext, loader, *blob, es);
+    startLoading(executionContext, loader, *blob, exceptionState);
 
     return loader.arrayBufferResult();
 }
 
-String FileReaderSync::readAsBinaryString(ExecutionContext* executionContext, Blob* blob, ExceptionState& es)
+String FileReaderSync::readAsBinaryString(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
 {
     if (!blob) {
-        es.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
+        exceptionState.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
         return String();
     }
 
     FileReaderLoader loader(FileReaderLoader::ReadAsBinaryString, 0);
-    startLoading(executionContext, loader, *blob, es);
+    startLoading(executionContext, loader, *blob, exceptionState);
     return loader.stringResult();
 }
 
-String FileReaderSync::readAsText(ExecutionContext* executionContext, Blob* blob, const String& encoding, ExceptionState& es)
+String FileReaderSync::readAsText(ExecutionContext* executionContext, Blob* blob, const String& encoding, ExceptionState& exceptionState)
 {
     if (!blob) {
-        es.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
+        exceptionState.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
         return String();
     }
 
     FileReaderLoader loader(FileReaderLoader::ReadAsText, 0);
     loader.setEncoding(encoding);
-    startLoading(executionContext, loader, *blob, es);
+    startLoading(executionContext, loader, *blob, exceptionState);
     return loader.stringResult();
 }
 
-String FileReaderSync::readAsDataURL(ExecutionContext* executionContext, Blob* blob, ExceptionState& es)
+String FileReaderSync::readAsDataURL(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
 {
     if (!blob) {
-        es.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
+        exceptionState.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
         return String();
     }
 
     FileReaderLoader loader(FileReaderLoader::ReadAsDataURL, 0);
     loader.setDataType(blob->type());
-    startLoading(executionContext, loader, *blob, es);
+    startLoading(executionContext, loader, *blob, exceptionState);
     return loader.stringResult();
 }
 
-void FileReaderSync::startLoading(ExecutionContext* executionContext, FileReaderLoader& loader, const Blob& blob, ExceptionState& es)
+void FileReaderSync::startLoading(ExecutionContext* executionContext, FileReaderLoader& loader, const Blob& blob, ExceptionState& exceptionState)
 {
     loader.start(executionContext, blob.blobDataHandle());
     if (loader.errorCode())
-        FileError::throwDOMException(es, loader.errorCode());
+        FileError::throwDOMException(exceptionState, loader.errorCode());
 }
 
 } // namespace WebCore

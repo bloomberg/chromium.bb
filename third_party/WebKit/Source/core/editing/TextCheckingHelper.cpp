@@ -160,12 +160,12 @@ PassRefPtr<Range> TextCheckingParagraph::subrange(int characterOffset, int chara
     return TextIterator::subrange(paragraphRange().get(), characterOffset, characterCount);
 }
 
-int TextCheckingParagraph::offsetTo(const Position& position, ExceptionState& es) const
+int TextCheckingParagraph::offsetTo(const Position& position, ExceptionState& exceptionState) const
 {
     ASSERT(m_checkingRange);
     RefPtr<Range> range = offsetAsRange()->cloneRange(ASSERT_NO_EXCEPTION);
-    range->setEnd(position.containerNode(), position.computeOffsetInContainerNode(), es);
-    if (es.hadException())
+    range->setEnd(position.containerNode(), position.computeOffsetInContainerNode(), exceptionState);
+    if (exceptionState.hadException())
         return 0;
     return TextIterator::rangeLength(range.get());
 }

@@ -69,7 +69,7 @@ protected:
         JapaneseJP = 0x411, // ja
         KoreanKR = 0x0412, // ko
         Persian = 0x0429, // fa
-        Spanish = 0x040A, // es
+        Spanish = 0x040A, // exceptionState
     };
 
     DateComponents dateComponents(int year, int month, int day)

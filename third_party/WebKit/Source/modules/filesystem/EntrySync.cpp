@@ -50,44 +50,44 @@ PassRefPtr<EntrySync> EntrySync::create(EntryBase* entry)
     return adoptRef(new DirectoryEntrySync(entry->m_fileSystem, entry->m_fullPath));
 }
 
-PassRefPtr<Metadata> EntrySync::getMetadata(ExceptionState& es)
+PassRefPtr<Metadata> EntrySync::getMetadata(ExceptionState& exceptionState)
 {
     MetadataSyncCallbackHelper helper;
     if (!m_fileSystem->getMetadata(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("getMetadata", "EntrySync"));
+        exceptionState.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("getMetadata", "EntrySync"));
         return 0;
     }
-    return helper.getResult(es);
+    return helper.getResult(exceptionState);
 }
 
-PassRefPtr<EntrySync> EntrySync::moveTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionState& es) const
+PassRefPtr<EntrySync> EntrySync::moveTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionState& exceptionState) const
 {
     EntrySyncCallbackHelper helper;
     if (!m_fileSystem->move(this, parent.get(), name, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("moveTo", "EntrySync"));
+        exceptionState.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("moveTo", "EntrySync"));
         return 0;
     }
-    return helper.getResult(es);
+    return helper.getResult(exceptionState);
 }
 
-PassRefPtr<EntrySync> EntrySync::copyTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionState& es) const
+PassRefPtr<EntrySync> EntrySync::copyTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionState& exceptionState) const
 {
     EntrySyncCallbackHelper helper;
     if (!m_fileSystem->copy(this, parent.get(), name, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("copyTo", "EntrySync"));
+        exceptionState.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("copyTo", "EntrySync"));
         return 0;
     }
-    return helper.getResult(es);
+    return helper.getResult(exceptionState);
 }
 
-void EntrySync::remove(ExceptionState& es) const
+void EntrySync::remove(ExceptionState& exceptionState) const
 {
     VoidSyncCallbackHelper helper;
     if (!m_fileSystem->remove(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("remove", "EntrySync"));
+        exceptionState.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("remove", "EntrySync"));
         return;
     }
-    helper.getResult(es);
+    helper.getResult(exceptionState);
 }
 
 PassRefPtr<EntrySync> EntrySync::getParent() const

@@ -107,10 +107,10 @@ void SpeechSynthesis::startSpeakingImmediately(SpeechSynthesisUtterance* utteran
     m_platformSpeechSynthesizer->speak(utterance->platformUtterance());
 }
 
-void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance, ExceptionState& es)
+void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance, ExceptionState& exceptionState)
 {
     if (!utterance) {
-        es.throwTypeError("Invalid utterance argument");
+        exceptionState.throwTypeError("Invalid utterance argument");
         return;
     }
 

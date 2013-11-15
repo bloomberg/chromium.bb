@@ -943,7 +943,7 @@ String urlToMarkup(const KURL& url, const String& title)
     return markup.toString();
 }
 
-PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& markup, Element* contextElement, ParserContentPolicy parserContentPolicy, const char* method, ExceptionState& es)
+PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& markup, Element* contextElement, ParserContentPolicy parserContentPolicy, const char* method, ExceptionState& exceptionState)
 {
     Document& document = contextElement->hasTagName(templateTag) ? contextElement->document().ensureTemplateDocument() : contextElement->document();
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
@@ -955,7 +955,7 @@ PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& marku
 
     bool wasValid = fragment->parseXML(markup, contextElement, parserContentPolicy);
     if (!wasValid) {
-        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute(method, "Node", "The provided markup is invalid XML, and therefore cannot be inserted into an XML document."));
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute(method, "Node", "The provided markup is invalid XML, and therefore cannot be inserted into an XML document."));
         return 0;
     }
     return fragment.release();
@@ -996,16 +996,16 @@ static inline void removeElementPreservingChildren(PassRefPtr<DocumentFragment> 
     fragment->removeChild(element);
 }
 
-PassRefPtr<DocumentFragment> createContextualFragment(const String& markup, HTMLElement* element, ParserContentPolicy parserContentPolicy, ExceptionState& es)
+PassRefPtr<DocumentFragment> createContextualFragment(const String& markup, HTMLElement* element, ParserContentPolicy parserContentPolicy, ExceptionState& exceptionState)
 {
     ASSERT(element);
     if (element->ieForbidsInsertHTML() || element->hasLocalName(colTag) || element->hasLocalName(colgroupTag) || element->hasLocalName(framesetTag)
         || element->hasLocalName(headTag) || element->hasLocalName(styleTag) || element->hasLocalName(titleTag)) {
-        es.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("createContextualFragment", "Range", "The range's container is '" + element->localName() + "', which is not supported."));
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("createContextualFragment", "Range", "The range's container is '" + element->localName() + "', which is not supported."));
         return 0;
     }
 
-    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, element, parserContentPolicy, "createContextualFragment", es);
+    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, element, parserContentPolicy, "createContextualFragment", exceptionState);
     if (!fragment)
         return 0;
 
@@ -1026,7 +1026,7 @@ PassRefPtr<DocumentFragment> createContextualFragment(const String& markup, HTML
     return fragment.release();
 }
 
-void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFragment> fragment, ExceptionState& es)
+void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFragment> fragment, ExceptionState& exceptionState)
 {
     ASSERT(container);
     RefPtr<ContainerNode> containerNode(container);
@@ -1044,15 +1044,15 @@ void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFr
     }
 
     if (containerNode->hasOneChild()) {
-        containerNode->replaceChild(fragment, containerNode->firstChild(), es);
+        containerNode->replaceChild(fragment, containerNode->firstChild(), exceptionState);
         return;
     }
 
     containerNode->removeChildren();
-    containerNode->appendChild(fragment, es);
+    containerNode->appendChild(fragment, exceptionState);
 }
 
-void replaceChildrenWithText(ContainerNode* container, const String& text, ExceptionState& es)
+void replaceChildrenWithText(ContainerNode* container, const String& text, ExceptionState& exceptionState)
 {
     ASSERT(container);
     RefPtr<ContainerNode> containerNode(container);
@@ -1067,15 +1067,15 @@ void replaceChildrenWithText(ContainerNode* container, const String& text, Excep
     RefPtr<Text> textNode = Text::create(containerNode->document(), text);
 
     if (containerNode->hasOneChild()) {
-        containerNode->replaceChild(textNode.release(), containerNode->firstChild(), es);
+        containerNode->replaceChild(textNode.release(), containerNode->firstChild(), exceptionState);
         return;
     }
 
     containerNode->removeChildren();
-    containerNode->appendChild(textNode.release(), es);
+    containerNode->appendChild(textNode.release(), exceptionState);
 }
 
-void mergeWithNextTextNode(PassRefPtr<Node> node, ExceptionState& es)
+void mergeWithNextTextNode(PassRefPtr<Node> node, ExceptionState& exceptionState)
 {
     ASSERT(node && node->isTextNode());
     Node* next = node->nextSibling();
@@ -1086,7 +1086,7 @@ void mergeWithNextTextNode(PassRefPtr<Node> node, ExceptionState& es)
     RefPtr<Text> textNext = toText(next);
     textNode->appendData(textNext->data());
     if (textNext->parentNode()) // Might have been removed by mutation event.
-        textNext->remove(es);
+        textNext->remove(exceptionState);
 }
 
 }

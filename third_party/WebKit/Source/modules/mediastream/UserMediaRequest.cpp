@@ -45,14 +45,14 @@
 
 namespace WebCore {
 
-static PassRefPtr<MediaConstraintsImpl> parseOptions(const Dictionary& options, const String& mediaType, ExceptionState& es)
+static PassRefPtr<MediaConstraintsImpl> parseOptions(const Dictionary& options, const String& mediaType, ExceptionState& exceptionState)
 {
     RefPtr<MediaConstraintsImpl> constraints;
 
     Dictionary constraintsDictionary;
     bool ok = options.get(mediaType, constraintsDictionary);
     if (ok && !constraintsDictionary.isUndefinedOrNull())
-        constraints = MediaConstraintsImpl::create(constraintsDictionary, es);
+        constraints = MediaConstraintsImpl::create(constraintsDictionary, exceptionState);
     else {
         bool mediaRequested = false;
         options.get(mediaType, mediaRequested);
@@ -63,14 +63,14 @@ static PassRefPtr<MediaConstraintsImpl> parseOptions(const Dictionary& options, 
     return constraints.release();
 }
 
-PassRefPtr<UserMediaRequest> UserMediaRequest::create(ExecutionContext* context, UserMediaController* controller, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback> successCallback, PassRefPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& es)
+PassRefPtr<UserMediaRequest> UserMediaRequest::create(ExecutionContext* context, UserMediaController* controller, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback> successCallback, PassRefPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& exceptionState)
 {
-    RefPtr<MediaConstraintsImpl> audio = parseOptions(options, "audio", es);
-    if (es.hadException())
+    RefPtr<MediaConstraintsImpl> audio = parseOptions(options, "audio", exceptionState);
+    if (exceptionState.hadException())
         return 0;
 
-    RefPtr<MediaConstraintsImpl> video = parseOptions(options, "video", es);
-    if (es.hadException())
+    RefPtr<MediaConstraintsImpl> video = parseOptions(options, "video", exceptionState);
+    if (exceptionState.hadException())
         return 0;
 
     if (!audio && !video)

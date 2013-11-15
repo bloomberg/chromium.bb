@@ -71,47 +71,47 @@ public:
     // SVGList API
     void clear(ExceptionState&);
 
-    PassListItemType initialize(PassListItemType passNewItem, ExceptionState& es)
+    PassListItemType initialize(PassListItemType passNewItem, ExceptionState& exceptionState)
     {
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            es.throwUninformativeAndGenericTypeError();
+            exceptionState.throwUninformativeAndGenericTypeError();
             return 0;
         }
 
         clearContextAndRoles();
         ListItemType newItem = passNewItem;
-        return Base::initializeValues(newItem, es);
+        return Base::initializeValues(newItem, exceptionState);
     }
 
     PassListItemType getItem(unsigned index, ExceptionState&);
 
-    PassListItemType insertItemBefore(PassListItemType passNewItem, unsigned index, ExceptionState& es)
+    PassListItemType insertItemBefore(PassListItemType passNewItem, unsigned index, ExceptionState& exceptionState)
     {
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            es.throwUninformativeAndGenericTypeError();
+            exceptionState.throwUninformativeAndGenericTypeError();
             return 0;
         }
 
         ListItemType newItem = passNewItem;
-        return Base::insertItemBeforeValues(newItem, index, es);
+        return Base::insertItemBeforeValues(newItem, index, exceptionState);
     }
 
     PassListItemType replaceItem(PassListItemType, unsigned index, ExceptionState&);
 
     PassListItemType removeItem(unsigned index, ExceptionState&);
 
-    PassListItemType appendItem(PassListItemType passNewItem, ExceptionState& es)
+    PassListItemType appendItem(PassListItemType passNewItem, ExceptionState& exceptionState)
     {
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            es.throwUninformativeAndGenericTypeError();
+            exceptionState.throwUninformativeAndGenericTypeError();
             return 0;
         }
 
         ListItemType newItem = passNewItem;
-        return Base::appendItemValues(newItem, es);
+        return Base::appendItemValues(newItem, exceptionState);
     }
 
 private:

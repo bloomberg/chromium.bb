@@ -36,12 +36,12 @@ namespace WebCore {
 
 const double maximumAllowedDelayTime = 180;
 
-DelayNode::DelayNode(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionState& es)
+DelayNode::DelayNode(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionState& exceptionState)
     : AudioBasicProcessorNode(context, sampleRate)
 {
     ScriptWrappable::init(this);
     if (maxDelayTime <= 0 || maxDelayTime >= maximumAllowedDelayTime) {
-        es.throwDOMException(
+        exceptionState.throwDOMException(
             NotSupportedError,
             ExceptionMessages::failedToConstruct(
                 "DelayNode",

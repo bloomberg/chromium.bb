@@ -47,8 +47,8 @@ TEST(CoreAnimationAnimatableStrokeDasharrayListTest, EqualTo)
     RefPtr<AnimatableStrokeDasharrayList> listB = AnimatableStrokeDasharrayList::create(vectorB);
     EXPECT_TRUE(listA->equals(listB.get()));
 
-    TrackExceptionState es;
-    vectorB[3].newValueSpecifiedUnits(LengthTypePX, 50, es);
+    TrackExceptionState exceptionState;
+    vectorB[3].newValueSpecifiedUnits(LengthTypePX, 50, exceptionState);
     listB = AnimatableStrokeDasharrayList::create(vectorB);
     EXPECT_FALSE(listA->equals(listB.get()));
 

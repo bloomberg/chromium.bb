@@ -280,9 +280,9 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
         break;
     case AnimatedLength: {
         ASSERT(m_data.length);
-        TrackExceptionState es;
-        m_data.length->setValueAsString(value, SVGLength::lengthModeForAnimatedLengthAttribute(attrName), es);
-        return !es.hadException();
+        TrackExceptionState exceptionState;
+        m_data.length->setValueAsString(value, SVGLength::lengthModeForAnimatedLengthAttribute(attrName), exceptionState);
+        return !exceptionState.hadException();
     }
     case AnimatedLengthList:
         ASSERT(m_data.lengthList);

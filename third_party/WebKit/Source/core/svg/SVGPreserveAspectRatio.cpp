@@ -37,20 +37,20 @@ SVGPreserveAspectRatio::SVGPreserveAspectRatio()
 {
 }
 
-void SVGPreserveAspectRatio::setAlign(unsigned short align, ExceptionState& es)
+void SVGPreserveAspectRatio::setAlign(unsigned short align, ExceptionState& exceptionState)
 {
     if (align == SVG_PRESERVEASPECTRATIO_UNKNOWN || align > SVG_PRESERVEASPECTRATIO_XMAXYMAX) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
 
     m_align = static_cast<SVGPreserveAspectRatioType>(align);
 }
 
-void SVGPreserveAspectRatio::setMeetOrSlice(unsigned short meetOrSlice, ExceptionState& es)
+void SVGPreserveAspectRatio::setMeetOrSlice(unsigned short meetOrSlice, ExceptionState& exceptionState)
 {
     if (meetOrSlice == SVG_MEETORSLICE_UNKNOWN || meetOrSlice > SVG_MEETORSLICE_SLICE) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
 

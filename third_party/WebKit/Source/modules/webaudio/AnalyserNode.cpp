@@ -74,10 +74,10 @@ void AnalyserNode::reset()
     m_analyser.reset();
 }
 
-void AnalyserNode::setFftSize(unsigned size, ExceptionState& es)
+void AnalyserNode::setFftSize(unsigned size, ExceptionState& exceptionState)
 {
     if (!m_analyser.setFftSize(size)) {
-        es.throwDOMException(
+        exceptionState.throwDOMException(
             IndexSizeError,
             ExceptionMessages::failedToSet(
                 "fftSize",
@@ -89,12 +89,12 @@ void AnalyserNode::setFftSize(unsigned size, ExceptionState& es)
     }
 }
 
-void AnalyserNode::setMinDecibels(float k, ExceptionState& es)
+void AnalyserNode::setMinDecibels(float k, ExceptionState& exceptionState)
 {
     if (k <= maxDecibels()) {
         m_analyser.setMinDecibels(k);
     } else {
-        es.throwDOMException(
+        exceptionState.throwDOMException(
             IndexSizeError,
             ExceptionMessages::failedToSet(
                 "minDecibels",
@@ -105,12 +105,12 @@ void AnalyserNode::setMinDecibels(float k, ExceptionState& es)
     }
 }
 
-void AnalyserNode::setMaxDecibels(float k, ExceptionState& es)
+void AnalyserNode::setMaxDecibels(float k, ExceptionState& exceptionState)
 {
     if (k >= minDecibels()) {
         m_analyser.setMaxDecibels(k);
     } else {
-        es.throwDOMException(
+        exceptionState.throwDOMException(
             IndexSizeError,
             ExceptionMessages::failedToSet(
                 "maxDecibels",
@@ -121,12 +121,12 @@ void AnalyserNode::setMaxDecibels(float k, ExceptionState& es)
     }
 }
 
-void AnalyserNode::setSmoothingTimeConstant(float k, ExceptionState& es)
+void AnalyserNode::setSmoothingTimeConstant(float k, ExceptionState& exceptionState)
 {
     if (k >= 0 && k <= 1) {
         m_analyser.setSmoothingTimeConstant(k);
     } else {
-        es.throwDOMException(
+        exceptionState.throwDOMException(
             IndexSizeError,
             ExceptionMessages::failedToSet(
                 "smoothingTimeConstant",

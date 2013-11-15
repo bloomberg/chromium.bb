@@ -59,14 +59,14 @@ Crypto::Crypto()
 }
 
 // Note: This implementation must be thread-safe, as it is used by workers.
-void Crypto::getRandomValues(ArrayBufferView* array, ExceptionState& es)
+void Crypto::getRandomValues(ArrayBufferView* array, ExceptionState& exceptionState)
 {
     if (!array || !isIntegerArray(array)) {
-        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
     if (array->byteLength() > 65536) {
-        es.throwUninformativeAndGenericDOMException(QuotaExceededError);
+        exceptionState.throwUninformativeAndGenericDOMException(QuotaExceededError);
         return;
     }
     cryptographicallyRandomValues(array->baseAddress(), array->byteLength());

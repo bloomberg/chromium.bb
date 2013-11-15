@@ -43,13 +43,13 @@ CSSMatrix::CSSMatrix(const TransformationMatrix& m)
     ScriptWrappable::init(this);
 }
 
-CSSMatrix::CSSMatrix(const String& s, ExceptionState& es)
+CSSMatrix::CSSMatrix(const String& s, ExceptionState& exceptionState)
 {
     ScriptWrappable::init(this);
-    setMatrixValue(s, es);
+    setMatrixValue(s, exceptionState);
 }
 
-void CSSMatrix::setMatrixValue(const String& string, ExceptionState& es)
+void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionState)
 {
     if (string.isEmpty())
         return;
@@ -66,7 +66,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& es)
 
         TransformOperations operations;
         if (!TransformBuilder::createTransformOperations(value.get(), 0, 0, operations)) {
-            es.throwUninformativeAndGenericDOMException(SyntaxError);
+            exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
             return;
         }
 
@@ -75,7 +75,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& es)
         TransformationMatrix t;
         for (unsigned i = 0; i < operations.operations().size(); ++i) {
             if (operations.operations()[i].get()->apply(t, IntSize(0, 0))) {
-                es.throwUninformativeAndGenericDOMException(SyntaxError);
+                exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
                 return;
             }
         }
@@ -83,7 +83,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& es)
         // set the matrix
         m_matrix = t;
     } else { // There is something there but parsing failed.
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
     }
 }
 
@@ -96,10 +96,10 @@ PassRefPtr<CSSMatrix> CSSMatrix::multiply(CSSMatrix* secondMatrix) const
     return CSSMatrix::create(TransformationMatrix(m_matrix).multiply(secondMatrix->m_matrix));
 }
 
-PassRefPtr<CSSMatrix> CSSMatrix::inverse(ExceptionState& es) const
+PassRefPtr<CSSMatrix> CSSMatrix::inverse(ExceptionState& exceptionState) const
 {
     if (!m_matrix.isInvertible()) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 

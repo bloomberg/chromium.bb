@@ -43,10 +43,10 @@ TreeWalker::TreeWalker(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPt
     ScriptWrappable::init(this);
 }
 
-void TreeWalker::setCurrentNode(PassRefPtr<Node> node, ExceptionState& es)
+void TreeWalker::setCurrentNode(PassRefPtr<Node> node, ExceptionState& exceptionState)
 {
     if (!node) {
-        es.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("setCurrentNode", "TreeWalker", "The Node provided is invalid."));
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("setCurrentNode", "TreeWalker", "The Node provided is invalid."));
         return;
     }
     m_current = node;

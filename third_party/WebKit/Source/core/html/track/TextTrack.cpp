@@ -252,7 +252,7 @@ void TextTrack::addCue(PassRefPtr<TextTrackCue> prpCue)
         m_client->textTrackAddCue(this, cue.get());
 }
 
-void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& es)
+void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
 {
     if (!cue)
         return;
@@ -264,13 +264,13 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& es)
     // 1. If the given cue is not currently listed in the method's TextTrack
     // object's text track's text track list of cues, then throw a NotFoundError exception.
     if (cue->track() != this) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
         return;
     }
 
     // 2. Remove cue from the method's TextTrack object's text track's text track list of cues.
     if (!m_cues || !m_cues->remove(cue)) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
@@ -330,7 +330,7 @@ void TextTrack::addRegion(PassRefPtr<VTTRegion> prpRegion)
     regionList->add(region);
 }
 
-void TextTrack::removeRegion(VTTRegion* region, ExceptionState &es)
+void TextTrack::removeRegion(VTTRegion* region, ExceptionState &exceptionState)
 {
     if (!region)
         return;
@@ -338,12 +338,12 @@ void TextTrack::removeRegion(VTTRegion* region, ExceptionState &es)
     // 1. If the given region is not currently listed in the method's TextTrack
     // object's text track list of regions, then throw a NotFoundError exception.
     if (region->track() != this) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
         return;
     }
 
     if (!m_regions || !m_regions->remove(region)) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 

@@ -207,7 +207,7 @@ int HTMLSelectElement::activeSelectionEndListIndex() const
     return lastSelectedListIndex();
 }
 
-void HTMLSelectElement::add(HTMLElement* element, HTMLElement* before, ExceptionState& es)
+void HTMLSelectElement::add(HTMLElement* element, HTMLElement* before, ExceptionState& exceptionState)
 {
     // Make sure the element is ref'd and deref'd so we don't leak it.
     RefPtr<HTMLElement> protectNewChild(element);
@@ -215,7 +215,7 @@ void HTMLSelectElement::add(HTMLElement* element, HTMLElement* before, Exception
     if (!element || !(element->hasLocalName(optionTag) || element->hasLocalName(hrTag)))
         return;
 
-    insertBefore(element, before, es);
+    insertBefore(element, before, exceptionState);
     setNeedsValidityCheck();
 }
 
@@ -413,7 +413,7 @@ Node* HTMLSelectElement::item(unsigned index)
     return options()->item(index);
 }
 
-void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, ExceptionState& es)
+void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, ExceptionState& exceptionState)
 {
     if (index > maxSelectItems - 1)
         index = maxSelectItems - 1;
@@ -421,21 +421,21 @@ void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, Exc
     RefPtr<HTMLElement> before = 0;
     // Out of array bounds? First insert empty dummies.
     if (diff > 0) {
-        setLength(index, es);
+        setLength(index, exceptionState);
         // Replace an existing entry?
     } else if (diff < 0) {
         before = toHTMLElement(options()->item(index+1));
         remove(index);
     }
     // Finally add the new element.
-    if (!es.hadException()) {
-        add(option, before.get(), es);
+    if (!exceptionState.hadException()) {
+        add(option, before.get(), exceptionState);
         if (diff >= 0 && option->selected())
             optionSelectionStateChanged(option, true);
     }
 }
 
-void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& es)
+void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionState)
 {
     if (newLen > maxSelectItems)
         newLen = maxSelectItems;
@@ -445,8 +445,8 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& es)
         do {
             RefPtr<Element> option = document().createElement(optionTag, false);
             ASSERT(option);
-            add(toHTMLElement(option), 0, es);
-            if (es.hadException())
+            add(toHTMLElement(option), 0, exceptionState);
+            if (exceptionState.hadException())
                 break;
         } while (++diff);
     } else {
@@ -467,7 +467,7 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& es)
         for (size_t i = 0; i < itemsToRemove.size(); ++i) {
             Element* item = itemsToRemove[i].get();
             if (item->parentNode())
-                item->parentNode()->removeChild(item, es);
+                item->parentNode()->removeChild(item, exceptionState);
         }
     }
     setNeedsValidityCheck();
@@ -1563,17 +1563,17 @@ void HTMLSelectElement::finishParsingChildren()
     updateListItemSelectedStates();
 }
 
-bool HTMLSelectElement::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionState& es)
+bool HTMLSelectElement::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
 {
     if (!value) {
-        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return false;
     }
-    setOption(index, value.get(), es);
+    setOption(index, value.get(), exceptionState);
     return true;
 }
 
-bool HTMLSelectElement::anonymousIndexedSetterRemove(unsigned index, ExceptionState& es)
+bool HTMLSelectElement::anonymousIndexedSetterRemove(unsigned index, ExceptionState& exceptionState)
 {
     remove(index);
     return true;

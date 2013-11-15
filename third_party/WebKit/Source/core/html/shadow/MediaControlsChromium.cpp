@@ -69,68 +69,68 @@ bool MediaControlsChromium::initializeControls(Document& document)
 
     RefPtr<MediaControlPanelElement> panel = MediaControlPanelElement::create(document);
 
-    TrackExceptionState es;
+    TrackExceptionState exceptionState;
 
     RefPtr<MediaControlPlayButtonElement> playButton = MediaControlPlayButtonElement::create(document);
     m_playButton = playButton.get();
-    panel->appendChild(playButton.release(), es);
-    if (es.hadException())
+    panel->appendChild(playButton.release(), exceptionState);
+    if (exceptionState.hadException())
         return false;
 
     RefPtr<MediaControlTimelineElement> timeline = MediaControlTimelineElement::create(document, this);
     m_timeline = timeline.get();
-    panel->appendChild(timeline.release(), es);
-    if (es.hadException())
+    panel->appendChild(timeline.release(), exceptionState);
+    if (exceptionState.hadException())
         return false;
 
     RefPtr<MediaControlCurrentTimeDisplayElement> currentTimeDisplay = MediaControlCurrentTimeDisplayElement::create(document);
     m_currentTimeDisplay = currentTimeDisplay.get();
     m_currentTimeDisplay->hide();
-    panel->appendChild(currentTimeDisplay.release(), es);
-    if (es.hadException())
+    panel->appendChild(currentTimeDisplay.release(), exceptionState);
+    if (exceptionState.hadException())
         return false;
 
     RefPtr<MediaControlTimeRemainingDisplayElement> durationDisplay = MediaControlTimeRemainingDisplayElement::create(document);
     m_durationDisplay = durationDisplay.get();
-    panel->appendChild(durationDisplay.release(), es);
-    if (es.hadException())
+    panel->appendChild(durationDisplay.release(), exceptionState);
+    if (exceptionState.hadException())
         return false;
 
     RefPtr<MediaControlPanelMuteButtonElement> panelMuteButton = MediaControlPanelMuteButtonElement::create(document, this);
     m_panelMuteButton = panelMuteButton.get();
-    panel->appendChild(panelMuteButton.release(), es);
-    if (es.hadException())
+    panel->appendChild(panelMuteButton.release(), exceptionState);
+    if (exceptionState.hadException())
         return false;
 
     RefPtr<MediaControlPanelVolumeSliderElement> slider = MediaControlPanelVolumeSliderElement::create(document);
     m_volumeSlider = slider.get();
     m_volumeSlider->setClearMutedOnUserInteraction(true);
-    panel->appendChild(slider.release(), es);
-    if (es.hadException())
+    panel->appendChild(slider.release(), exceptionState);
+    if (exceptionState.hadException())
         return false;
 
     if (RenderTheme::theme().supportsClosedCaptioning()) {
         RefPtr<MediaControlToggleClosedCaptionsButtonElement> toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(document, this);
         m_toggleClosedCaptionsButton = toggleClosedCaptionsButton.get();
-        panel->appendChild(toggleClosedCaptionsButton.release(), es);
-        if (es.hadException())
+        panel->appendChild(toggleClosedCaptionsButton.release(), exceptionState);
+        if (exceptionState.hadException())
             return false;
     }
 
     RefPtr<MediaControlFullscreenButtonElement> fullscreenButton = MediaControlFullscreenButtonElement::create(document);
     m_fullScreenButton = fullscreenButton.get();
-    panel->appendChild(fullscreenButton.release(), es);
-    if (es.hadException())
+    panel->appendChild(fullscreenButton.release(), exceptionState);
+    if (exceptionState.hadException())
         return false;
 
     m_panel = panel.get();
-    enclosure->appendChild(panel.release(), es);
-    if (es.hadException())
+    enclosure->appendChild(panel.release(), exceptionState);
+    if (exceptionState.hadException())
         return false;
 
     m_enclosure = enclosure.get();
-    appendChild(enclosure.release(), es);
-    if (es.hadException())
+    appendChild(enclosure.release(), exceptionState);
+    if (exceptionState.hadException())
         return false;
 
     return true;

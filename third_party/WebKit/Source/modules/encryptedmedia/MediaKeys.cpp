@@ -37,20 +37,20 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaKeys> MediaKeys::create(const String& keySystem, ExceptionState& es)
+PassRefPtr<MediaKeys> MediaKeys::create(const String& keySystem, ExceptionState& exceptionState)
 {
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-media-keys-constructor>:
     // The MediaKeys(keySystem) constructor must run the following steps:
 
     // 1. If keySystem is null or an empty string, throw an InvalidAccessError exception and abort these steps.
     if (keySystem.isEmpty()) {
-        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return 0;
     }
 
     // 2. If keySystem is not one of the user agent's supported Key Systems, throw a NotSupportedError and abort these steps.
     if (!ContentDecryptionModule::supportsKeySystem(keySystem)) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -58,7 +58,7 @@ PassRefPtr<MediaKeys> MediaKeys::create(const String& keySystem, ExceptionState&
     // 4. Load cdm if necessary.
     OwnPtr<ContentDecryptionModule> cdm = ContentDecryptionModule::create(keySystem);
     if (!cdm) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -84,7 +84,7 @@ MediaKeys::~MediaKeys()
         m_sessions[i]->close();
 }
 
-PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, const String& type, Uint8Array* initData, ExceptionState& es)
+PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, const String& type, Uint8Array* initData, ExceptionState& exceptionState)
 {
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-createsession>:
     // The createSession(type, initData) method must run the following steps:
@@ -93,7 +93,7 @@ PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, 
     // 1. If type is null or an empty string and initData is not null or an empty string, throw an
     // InvalidAccessError exception and abort these steps.
     if ((type.isEmpty()) && (!initData || initData->length())) {
-        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return 0;
     }
 
@@ -101,7 +101,7 @@ PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, 
     // a NotSupportedError exception and abort these steps.
     ASSERT(!type.isEmpty());
     if (type.isEmpty() || !m_cdm->supportsMIMEType(type)) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 

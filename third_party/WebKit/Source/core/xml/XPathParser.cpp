@@ -464,7 +464,7 @@ bool Parser::expandQName(const String& qName, String& localName, String& namespa
     return true;
 }
 
-Expression* Parser::parseStatement(const String& statement, PassRefPtr<XPathNSResolver> resolver, ExceptionState& es)
+Expression* Parser::parseStatement(const String& statement, PassRefPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
 {
     reset(statement);
 
@@ -498,9 +498,9 @@ Expression* Parser::parseStatement(const String& statement, PassRefPtr<XPathNSRe
         m_topExpr = 0;
 
         if (m_gotNamespaceError)
-            es.throwUninformativeAndGenericDOMException(NamespaceError);
+            exceptionState.throwUninformativeAndGenericDOMException(NamespaceError);
         else
-            es.throwUninformativeAndGenericDOMException(SyntaxError);
+            exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
         return 0;
     }
 

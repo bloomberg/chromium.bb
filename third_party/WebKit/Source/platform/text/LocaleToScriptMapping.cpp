@@ -212,7 +212,7 @@ UScriptCode localeToScriptCodeForFontSelection(const String& locale)
         { "efi", USCRIPT_LATIN },
         { "el", USCRIPT_GREEK },
         { "en", USCRIPT_LATIN },
-        { "es", USCRIPT_LATIN },
+        { "exceptionState", USCRIPT_LATIN },
         { "et", USCRIPT_LATIN },
         { "eu", USCRIPT_LATIN },
         { "fa", USCRIPT_ARABIC },

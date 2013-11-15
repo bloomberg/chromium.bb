@@ -58,7 +58,7 @@ MessagePort::~MessagePort()
         m_executionContext->destroyedMessagePort(this);
 }
 
-void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& es)
+void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
 {
     if (!isEntangled())
         return;
@@ -70,12 +70,12 @@ void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const M
         for (unsigned int i = 0; i < ports->size(); ++i) {
             MessagePort* dataPort = (*ports)[i].get();
             if (dataPort == this) {
-                es.throwDOMException(DataCloneError, ExceptionMessages::failedToExecute("postMessage", "MessagePort", "Item #" + String::number(i) + " in the array of ports contains the source port."));
+                exceptionState.throwDOMException(DataCloneError, ExceptionMessages::failedToExecute("postMessage", "MessagePort", "Item #" + String::number(i) + " in the array of ports contains the source port."));
                 return;
             }
         }
-        channels = MessagePort::disentanglePorts(ports, es);
-        if (es.hadException())
+        channels = MessagePort::disentanglePorts(ports, exceptionState);
+        if (exceptionState.hadException())
             return;
     }
     m_entangledChannel->postMessageToRemote(message, channels.release());
@@ -183,7 +183,7 @@ bool MessagePort::hasPendingActivity()
     return isEntangled();
 }
 
-PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessagePortArray* ports, ExceptionState& es)
+PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessagePortArray* ports, ExceptionState& exceptionState)
 {
     if (!ports || !ports->size())
         return nullptr;
@@ -202,7 +202,7 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessageP
                 type = "already neutered";
             else
                 type = "a duplicate";
-            es.throwDOMException(DataCloneError, ExceptionMessages::failedToExecute("disentanglePorts", "MessagePort", "Item #"  + String::number(i) + " in the array of ports is " + type + "."));
+            exceptionState.throwDOMException(DataCloneError, ExceptionMessages::failedToExecute("disentanglePorts", "MessagePort", "Item #"  + String::number(i) + " in the array of ports is " + type + "."));
             return nullptr;
         }
         portSet.add(port);

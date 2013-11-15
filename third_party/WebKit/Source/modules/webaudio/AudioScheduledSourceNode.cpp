@@ -139,12 +139,12 @@ void AudioScheduledSourceNode::updateSchedulingInfo(size_t quantumFrameSize,
 }
 
 
-void AudioScheduledSourceNode::start(double when, ExceptionState& es)
+void AudioScheduledSourceNode::start(double when, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
     if (m_playbackState != UNSCHEDULED_STATE) {
-        es.throwDOMException(
+        exceptionState.throwDOMException(
             InvalidStateError,
             ExceptionMessages::failedToExecute(
                 "start",
@@ -157,19 +157,19 @@ void AudioScheduledSourceNode::start(double when, ExceptionState& es)
     m_playbackState = SCHEDULED_STATE;
 }
 
-void AudioScheduledSourceNode::stop(double when, ExceptionState& es)
+void AudioScheduledSourceNode::stop(double when, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
     if (m_stopCalled) {
-        es.throwDOMException(
+        exceptionState.throwDOMException(
             InvalidStateError,
             ExceptionMessages::failedToExecute(
                 "stop",
                 "OscillatorNode",
                 "cannot call stop more than once."));
     } else if (m_playbackState == UNSCHEDULED_STATE) {
-        es.throwDOMException(
+        exceptionState.throwDOMException(
             InvalidStateError,
             ExceptionMessages::failedToExecute(
                 "stop",

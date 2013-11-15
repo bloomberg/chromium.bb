@@ -359,9 +359,9 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
         else
             m_selection.setWithoutValidation(m_selection.end(), m_selection.start());
     } else if (RefPtr<Range> range = m_selection.firstRange()) {
-        TrackExceptionState es;
-        Range::CompareResults compareResult = range->compareNode(&node, es);
-        if (!es.hadException() && (compareResult == Range::NODE_BEFORE_AND_AFTER || compareResult == Range::NODE_INSIDE)) {
+        TrackExceptionState exceptionState;
+        Range::CompareResults compareResult = range->compareNode(&node, exceptionState);
+        if (!exceptionState.hadException() && (compareResult == Range::NODE_BEFORE_AND_AFTER || compareResult == Range::NODE_INSIDE)) {
             // If we did nothing here, when this node's renderer was destroyed, the rect that it
             // occupied would be invalidated, but, selection gaps that change as a result of
             // the removal wouldn't be invalidated.
@@ -1427,9 +1427,9 @@ bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, bool clo
 
     // Non-collapsed ranges are not allowed to start at the end of a line that is wrapped,
     // they start at the beginning of the next line instead
-    TrackExceptionState es;
-    bool collapsed = range->collapsed(es);
-    if (es.hadException())
+    TrackExceptionState exceptionState;
+    bool collapsed = range->collapsed(exceptionState);
+    if (exceptionState.hadException())
         return false;
 
     // FIXME: Can we provide extentAffinity?
