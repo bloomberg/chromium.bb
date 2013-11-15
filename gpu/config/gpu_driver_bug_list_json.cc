@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "3.4",
+  "version": "3.5",
   "entries": [
     {
       "id": 1,
@@ -183,21 +183,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "features": [
         "max_texture_size_limit_4096",
         "max_cube_map_texture_size_limit_4096"
-      ]
-    },
-    {
-      "id": 15,
-      "description": "Some Android Qualcomm drivers falsely report GL_ANGLE_framebuffer_multisample",
-      "cr_bugs": [165736],
-      "os": {
-        "type": "android"
-      },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Qualcomm"
-      },
-      "features": [
-        "disable_angle_framebuffer_multisample"
       ]
     },
     {
@@ -709,6 +694,20 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "texsubimage2d_faster_than_teximage2d"
+      ]
+    },
+    {
+      "id": 52,
+      "description": "ES3 MSAA is broken on Qualcomm.",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Qualcomm"
+      },
+      "features": [
+        "disable_framebuffer_multisample"
       ]
     }
   ]

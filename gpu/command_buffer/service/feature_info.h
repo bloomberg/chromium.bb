@@ -27,12 +27,17 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     FeatureFlags();
 
     bool chromium_framebuffer_multisample;
+    // Use glBlitFramebuffer() and glRenderbufferStorageMultisample() with
+    // GL_EXT_framebuffer_multisample-style semantics, since they are exposed
+    // as core GL functions on this implementation.
+    bool use_core_framebuffer_multisample;
     bool multisampled_render_to_texture;
     // Use the IMG GLenum values and functions rather than EXT.
     bool use_img_for_multisampled_render_to_texture;
     bool oes_standard_derivatives;
     bool oes_egl_image_external;
     bool oes_depth24;
+    bool packed_depth24_stencil8;
     bool npot_ok;
     bool enable_texture_float_linear;
     bool enable_texture_half_float_linear;
@@ -53,6 +58,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool map_buffer_range;
     bool ext_discard_framebuffer;
     bool angle_depth_texture;
+    bool is_angle;
   };
 
   struct Workarounds {

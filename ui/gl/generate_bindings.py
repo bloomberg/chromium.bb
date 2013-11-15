@@ -63,6 +63,11 @@ GL_FUNCTIONS = [
   'arguments':
       'GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha', },
 { 'return_type': 'void',
+  'names': ['glBlitFramebuffer'],
+  'arguments': 'GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, '
+               'GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, '
+               'GLbitfield mask, GLenum filter', },
+{ 'return_type': 'void',
   'names': ['glBlitFramebufferEXT', 'glBlitFramebuffer'],
   'arguments': 'GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, '
                'GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, '
@@ -472,6 +477,10 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glReleaseShaderCompiler'],
   'arguments': 'void', },
+{ 'return_type': 'void',
+  'names': ['glRenderbufferStorageMultisample'],
+  'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
+               'GLsizei width, GLsizei height', },
 { 'return_type': 'void',
   'names': ['glRenderbufferStorageMultisampleEXT',
             'glRenderbufferStorageMultisample'],

@@ -14,8 +14,6 @@
          clear_alpha_in_readpixels)                          \
   GPU_OP(CLEAR_UNIFORMS_BEFORE_PROGRAM_USE,                  \
          clear_uniforms_before_program_use)                  \
-  GPU_OP(DISABLE_ANGLE_FRAMEBUFFER_MULTISAMPLE,              \
-         disable_angle_framebuffer_multisample)              \
   GPU_OP(DISABLE_ANGLE_INSTANCED_ARRAYS,                     \
          disable_angle_instanced_arrays)                     \
   GPU_OP(DISABLE_ASYNC_READPIXELS,                           \
@@ -30,6 +28,8 @@
          disable_ext_draw_buffers)                           \
   GPU_OP(DISABLE_EXT_OCCLUSION_QUERY,                        \
          disable_ext_occlusion_query)                        \
+  GPU_OP(DISABLE_FRAMEBUFFER_MULTISAMPLE,                    \
+         disable_framebuffer_multisample)                    \
   GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \
          disable_multimonitor_multisampling)                 \
   GPU_OP(DISABLE_OES_STANDARD_DERIVATIVES,                   \

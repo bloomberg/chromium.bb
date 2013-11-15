@@ -100,11 +100,13 @@ void StringToWorkarounds(
 
 FeatureInfo::FeatureFlags::FeatureFlags()
     : chromium_framebuffer_multisample(false),
+      use_core_framebuffer_multisample(false),
       multisampled_render_to_texture(false),
       use_img_for_multisampled_render_to_texture(false),
       oes_standard_derivatives(false),
       oes_egl_image_external(false),
       oes_depth24(false),
+      packed_depth24_stencil8(false),
       npot_ok(false),
       enable_texture_float_linear(false),
       enable_texture_half_float_linear(false),
@@ -124,7 +126,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       use_async_readpixels(false),
       map_buffer_range(false),
       ext_discard_framebuffer(false),
-      angle_depth_texture(false) {
+      angle_depth_texture(false),
+      is_angle(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -205,6 +208,20 @@ void FeatureInfo::InitializeFeatures() {
       reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
 
   bool npot_ok = false;
+
+  const char* renderer_str =
+      reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+  if (renderer_str) {
+    feature_flags_.is_angle = StartsWithASCII(renderer_str, "ANGLE", true);
+  }
+
+  bool is_es3 = false;
+  const char* version_str =
+      reinterpret_cast<const char*>(glGetString(GL_VERSION));
+  if (version_str) {
+    std::string lstr(StringToLowerASCII(std::string(version_str)));
+    is_es3 = (lstr.substr(0, 12) == "opengl es 3.");
+  }
 
   AddExtensionString("GL_ANGLE_translated_shader_source");
   AddExtensionString("GL_CHROMIUM_async_pixel_transfers");
@@ -313,7 +330,7 @@ void FeatureInfo::InitializeFeatures() {
   if (!workarounds_.disable_depth_texture &&
       (extensions.Contains("GL_ARB_depth_texture") ||
        extensions.Contains("GL_OES_depth_texture") ||
-       extensions.Contains("GL_ANGLE_depth_texture"))) {
+       extensions.Contains("GL_ANGLE_depth_texture") || is_es3)) {
     enable_depth_texture = true;
     feature_flags_.angle_depth_texture =
         extensions.Contains("GL_ANGLE_depth_texture");
@@ -331,11 +348,12 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (extensions.Contains("GL_EXT_packed_depth_stencil") ||
-      extensions.Contains("GL_OES_packed_depth_stencil")) {
+      extensions.Contains("GL_OES_packed_depth_stencil") || is_es3) {
     AddExtensionString("GL_OES_packed_depth_stencil");
+    feature_flags_.packed_depth24_stencil8 = true;
     if (enable_depth_texture) {
-      texture_format_validators_[GL_DEPTH_STENCIL].AddValue(
-          GL_UNSIGNED_INT_24_8);
+      texture_format_validators_[GL_DEPTH_STENCIL]
+          .AddValue(GL_UNSIGNED_INT_24_8);
       validators_.texture_internal_format.AddValue(GL_DEPTH_STENCIL);
       validators_.texture_format.AddValue(GL_DEPTH_STENCIL);
       validators_.pixel_type.AddValue(GL_UNSIGNED_INT_24_8);
@@ -473,13 +491,15 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   // Check for multisample support
-  if (!disallowed_features_.multisampling) {
+  if (!disallowed_features_.multisampling &&
+      !workarounds_.disable_framebuffer_multisample) {
     bool ext_has_multisample =
-        extensions.Contains("GL_EXT_framebuffer_multisample");
-    if (!workarounds_.disable_angle_framebuffer_multisample) {
+        extensions.Contains("GL_EXT_framebuffer_multisample") || is_es3;
+    if (feature_flags_.is_angle) {
       ext_has_multisample |=
-         extensions.Contains("GL_ANGLE_framebuffer_multisample");
+          extensions.Contains("GL_ANGLE_framebuffer_multisample");
     }
+    feature_flags_.use_core_framebuffer_multisample = is_es3;
     if (ext_has_multisample) {
       feature_flags_.chromium_framebuffer_multisample = true;
       validators_.frame_buffer_target.AddValue(GL_READ_FRAMEBUFFER_EXT);
@@ -506,7 +526,8 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
-  if (extensions.Contains("GL_OES_depth24") || gfx::HasDesktopGLFeatures()) {
+  if (extensions.Contains("GL_OES_depth24") || gfx::HasDesktopGLFeatures() ||
+      is_es3) {
     AddExtensionString("GL_OES_depth24");
     feature_flags_.oes_depth24 = true;
     validators_.render_buffer_format.AddValue(GL_DEPTH_COMPONENT24);
@@ -665,13 +686,6 @@ void FeatureInfo::InitializeFeatures() {
 
   if (!disallowed_features_.swap_buffer_complete_callback)
     AddExtensionString("GL_CHROMIUM_swapbuffers_complete_callback");
-
-  bool is_es3 = false;
-  const char* str = reinterpret_cast<const char*>(glGetString(GL_VERSION));
-  if (str) {
-    std::string lstr(StringToLowerASCII(std::string(str)));
-    is_es3 = (lstr.substr(0, 12) == "opengl es 3.");
-  }
 
   bool ui_gl_fence_works = extensions.Contains("GL_NV_fence") ||
                            extensions.Contains("GL_ARB_sync") ||
