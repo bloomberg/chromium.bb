@@ -1630,9 +1630,6 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     }
 }
 
-// FIXME: This method and checkForSiblingStyleChanges and checkForEmptyStyleChange
-// should all be renamed to something better than "check", since it's not clear that
-// they alter the style bits of siblings and children.
 void Element::checkForChildrenAdjacentRuleChanges()
 {
     bool hasDirectAdjacentRules = childrenAffectedByDirectAdjacentRules();
@@ -1770,25 +1767,26 @@ bool Element::childTypeAllowed(NodeType type) const
     return false;
 }
 
-static void inline checkForEmptyStyleChange(Element* element, RenderStyle* style)
+void Element::checkForEmptyStyleChange(RenderStyle* style)
 {
-    if (!style && !element->styleAffectedByEmpty())
+    if (!style && !styleAffectedByEmpty())
         return;
 
-    if (!style || (element->styleAffectedByEmpty() && (!style->emptyState() || element->hasChildNodes())))
-        element->setNeedsStyleRecalc();
+    if (!style || (styleAffectedByEmpty() && (!style->emptyState() || hasChildNodes())))
+        setNeedsStyleRecalc();
 }
 
-static void checkForSiblingStyleChanges(Element* e, RenderStyle* style, bool finishedParsingCallback,
-                                        Node* beforeChange, Node* afterChange, int childCountDelta)
+void Element::checkForSiblingStyleChanges(bool finishedParsingCallback, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
-    if (!e->inActiveDocument() || e->document().hasPendingForcedStyleRecalc() || e->styleChangeType() >= SubtreeStyleChange)
+    if (!inActiveDocument() || document().hasPendingForcedStyleRecalc() || styleChangeType() >= SubtreeStyleChange)
         return;
 
-    // :empty selector.
-    checkForEmptyStyleChange(e, style);
+    RenderStyle* style = renderStyle();
 
-    if (!style || (e->needsStyleRecalc() && e->childrenAffectedByPositionalRules()))
+    // :empty selector.
+    checkForEmptyStyleChange(style);
+
+    if (!style || (needsStyleRecalc() && childrenAffectedByPositionalRules()))
         return;
 
     // Forward positional selectors include the ~ selector, nth-child, nth-of-type, first-of-type and only-of-type.
@@ -1798,17 +1796,17 @@ static void checkForSiblingStyleChanges(Element* e, RenderStyle* style, bool fin
     // |afterChange| is 0 in the parser callback case, so we won't do any work for the forward case if we don't have to.
     // For performance reasons we just mark the parent node as changed, since we don't want to make childrenChanged O(n^2) by crawling all our kids
     // here. recalcStyle will then force a walk of the children when it sees that this has happened.
-    if ((e->childrenAffectedByForwardPositionalRules() && afterChange) || (e->childrenAffectedByBackwardPositionalRules() && beforeChange)) {
-        e->setNeedsStyleRecalc();
+    if ((childrenAffectedByForwardPositionalRules() && afterChange) || (childrenAffectedByBackwardPositionalRules() && beforeChange)) {
+        setNeedsStyleRecalc();
         return;
     }
 
     // :first-child.  In the parser callback case, we don't have to check anything, since we were right the first time.
     // In the DOM case, we only need to do something if |afterChange| is not 0.
     // |afterChange| is 0 in the parser case, so it works out that we'll skip this block.
-    if (e->childrenAffectedByFirstChildRules() && afterChange) {
+    if (childrenAffectedByFirstChildRules() && afterChange) {
         // Find our new first child.
-        Node* newFirstChild = e->firstElementChild();
+        Node* newFirstChild = firstElementChild();
         RenderStyle* newFirstChildStyle = newFirstChild ? newFirstChild->renderStyle() : 0;
 
         // Find the first element node following |afterChange|
@@ -1826,9 +1824,9 @@ static void checkForSiblingStyleChanges(Element* e, RenderStyle* style, bool fin
 
     // :last-child.  In the parser callback case, we don't have to check anything, since we were right the first time.
     // In the DOM case, we only need to do something if |afterChange| is not 0.
-    if (e->childrenAffectedByLastChildRules() && beforeChange) {
+    if (childrenAffectedByLastChildRules() && beforeChange) {
         // Find our new last child.
-        Node* newLastChild = e->lastElementChild();
+        Node* newLastChild = lastElementChild();
         RenderStyle* newLastChildStyle = newLastChild ? newLastChild->renderStyle() : 0;
 
         // Find the last element node going backwards from |beforeChange|
@@ -1846,7 +1844,7 @@ static void checkForSiblingStyleChanges(Element* e, RenderStyle* style, bool fin
 
     // The + selector.  We need to invalidate the first element following the insertion point.  It is the only possible element
     // that could be affected by this DOM change.
-    if (e->childrenAffectedByDirectAdjacentRules() && afterChange) {
+    if (childrenAffectedByDirectAdjacentRules() && afterChange) {
         if (Node* firstElementAfterInsertion = afterChange->isElementNode() ? afterChange : afterChange->nextElementSibling())
             firstElementAfterInsertion->setNeedsStyleRecalc();
     }
@@ -1856,9 +1854,9 @@ void Element::childrenChanged(bool changedByParser, Node* beforeChange, Node* af
 {
     ContainerNode::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
     if (changedByParser)
-        checkForEmptyStyleChange(this, renderStyle());
+        checkForEmptyStyleChange(renderStyle());
     else
-        checkForSiblingStyleChanges(this, renderStyle(), false, beforeChange, afterChange, childCountDelta);
+        checkForSiblingStyleChanges(false, beforeChange, afterChange, childCountDelta);
 
     if (ElementShadow* shadow = this->shadow())
         shadow->setNeedsDistributionRecalc();
@@ -1879,7 +1877,7 @@ void Element::beginParsingChildren()
 void Element::finishParsingChildren()
 {
     setIsParsingChildrenFinished();
-    checkForSiblingStyleChanges(this, renderStyle(), true, lastChild(), 0, 0);
+    checkForSiblingStyleChanges(true, lastChild(), 0, 0);
     if (isCustomElement())
         CustomElement::didFinishParsingChildren(this);
 }
