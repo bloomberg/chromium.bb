@@ -23,7 +23,7 @@ class SequencedTaskRunner;
 }
 
 namespace drive {
-class DriveAPIService;
+class DriveServiceInterface;
 class DriveNotificationManager;
 }
 
@@ -47,7 +47,7 @@ class SyncEngine : public RemoteFileSyncService,
 
   SyncEngine(const base::FilePath& base_dir,
              base::SequencedTaskRunner* task_runner,
-             scoped_ptr<drive::DriveAPIService> drive_service,
+             scoped_ptr<drive::DriveServiceInterface> drive_service,
              drive::DriveNotificationManager* notification_manager,
              ExtensionService* extension_service);
   virtual ~SyncEngine();
@@ -147,7 +147,7 @@ class SyncEngine : public RemoteFileSyncService,
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  scoped_ptr<drive::DriveAPIService> drive_service_;
+  scoped_ptr<drive::DriveServiceInterface> drive_service_;
   scoped_ptr<MetadataDatabase> metadata_database_;
 
   // These external services are not owned by SyncEngine.

@@ -107,7 +107,7 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
         new drive_backend::SyncEngine(
             GetSyncFileSystemDir(context->GetPath()),
             task_runner.get(),
-            drive_service.Pass(),
+            drive_service.PassAs<drive::DriveServiceInterface>(),
             notification_manager,
             extension_service));
 

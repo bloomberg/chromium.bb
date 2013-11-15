@@ -25,7 +25,7 @@ namespace drive_backend {
 SyncEngine::SyncEngine(
     const base::FilePath& base_dir,
     base::SequencedTaskRunner* task_runner,
-    scoped_ptr<drive::DriveAPIService> drive_service,
+    scoped_ptr<drive::DriveServiceInterface> drive_service,
     drive::DriveNotificationManager* notification_manager,
     ExtensionService* extension_service)
     : base_dir_(base_dir),
@@ -45,7 +45,8 @@ SyncEngine::SyncEngine(
 SyncEngine::~SyncEngine() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   drive_service_->RemoveObserver(this);
-  notification_manager_->RemoveObserver(this);
+  if (notification_manager_)
+    notification_manager_->RemoveObserver(this);
 }
 
 void SyncEngine::Initialize() {
@@ -62,7 +63,8 @@ void SyncEngine::Initialize() {
       base::Bind(&SyncEngine::DidInitialize, weak_ptr_factory_.GetWeakPtr(),
                  initializer));
 
-  notification_manager_->AddObserver(this);
+  if (notification_manager_)
+    notification_manager_->AddObserver(this);
   drive_service_->AddObserver(this);
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 
@@ -275,12 +277,12 @@ RemoteChangeProcessor* SyncEngine::GetRemoteChangeProcessor() {
 
 void SyncEngine::DoDisableApp(const std::string& app_id,
                               const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+  metadata_database_->DisableApp(app_id, callback);
 }
 
 void SyncEngine::DoEnableApp(const std::string& app_id,
                              const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+  metadata_database_->EnableApp(app_id, callback);
 }
 
 void SyncEngine::DidInitialize(SyncEngineInitializer* initializer,
