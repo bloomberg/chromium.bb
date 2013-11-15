@@ -20,7 +20,7 @@
 #include "chrome/common/extensions/api/media_galleries_private/media_galleries_handler.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
-#include "chrome/common/extensions/api/sockets/sockets_handler.h"
+#include "chrome/common/extensions/api/sockets/sockets_manifest_handler.h"
 #include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
 #include "chrome/common/extensions/api/spellcheck/spellcheck_handler.h"
 #include "chrome/common/extensions/api/system_indicator/system_indicator_handler.h"
@@ -90,7 +90,7 @@ void RegisterChromeManifestHandlers() {
   (new SettingsOverridesHandler)->Register();
   (new ScriptBadgeHandler)->Register();
   (new SharedModuleHandler)->Register();
-  (new SocketsHandler)->Register();
+  (new SocketsManifestHandler)->Register();
   (new SpellcheckHandler)->Register();
   (new StorageSchemaManifestHandler)->Register();
   (new SystemIndicatorHandler)->Register();

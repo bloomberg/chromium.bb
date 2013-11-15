@@ -207,9 +207,11 @@ class ThemeSyncableServiceTest : public testing::Test {
                                           GetThemeLocation(),
                                           kCustomThemeUrl);
     extensions::APIPermissionSet empty_set;
+    extensions::ManifestPermissionSet empty_manifest_permissions;
     extensions::URLPatternSet empty_extent;
     scoped_refptr<extensions::PermissionSet> permissions =
-        new extensions::PermissionSet(empty_set, empty_extent, empty_extent);
+        new extensions::PermissionSet(empty_set, empty_manifest_permissions,
+                                      empty_extent, empty_extent);
     service->extension_prefs()->AddGrantedPermissions(
         theme_extension_->id(), permissions.get());
     service->AddExtension(theme_extension_.get());

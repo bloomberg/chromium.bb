@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/common/extensions/extension.h"
+#include "extensions/common/permissions/manifest_permission.h"
+#include "extensions/common/permissions/manifest_permission_set.h"
 
 namespace extensions {
 
@@ -57,6 +59,15 @@ void ManifestHandler::Register() {
     GetRegistry()->RegisterManifestHandler(keys[i], this_linked);
 }
 
+ManifestPermission* ManifestHandler::CreatePermission() {
+  return NULL;
+}
+
+ManifestPermission* ManifestHandler::CreateInitialRequiredPermission(
+    const Extension* extension) {
+  return NULL;
+}
+
 // static
 void ManifestHandler::FinalizeRegistration() {
   GetRegistry()->Finalize();
@@ -77,6 +88,18 @@ bool ManifestHandler::ValidateExtension(const Extension* extension,
                                         std::string* error,
                                         std::vector<InstallWarning>* warnings) {
   return GetRegistry()->ValidateExtension(extension, error, warnings);
+}
+
+// static
+ManifestPermission* ManifestHandler::CreatePermission(const std::string& name) {
+  return GetRegistry()->CreatePermission(name);
+}
+
+// static
+void ManifestHandler::AddExtensionInitialRequiredPermissions(
+    const Extension* extension, ManifestPermissionSet* permission_set) {
+  return GetRegistry()->AddExtensionInitialRequiredPermissions(extension,
+                                                               permission_set);
 }
 
 // static
@@ -142,6 +165,27 @@ bool ManifestHandlerRegistry::ValidateExtension(
       return false;
   }
   return true;
+}
+
+ManifestPermission* ManifestHandlerRegistry::CreatePermission(
+    const std::string& name) {
+  ManifestHandlerMap::const_iterator it = handlers_.find(name);
+  if (it == handlers_.end())
+    return NULL;
+
+  return it->second->CreatePermission();
+}
+
+void ManifestHandlerRegistry::AddExtensionInitialRequiredPermissions(
+    const Extension* extension, ManifestPermissionSet* permission_set) {
+  for (ManifestHandlerMap::const_iterator it = handlers_.begin();
+      it != handlers_.end(); ++it) {
+    ManifestPermission* permission =
+        it->second->CreateInitialRequiredPermission(extension);
+    if (permission) {
+      permission_set->insert(permission);
+    }
+  }
 }
 
 // static

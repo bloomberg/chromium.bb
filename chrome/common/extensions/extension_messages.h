@@ -143,6 +143,16 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExternalConnectionInfo)
   IPC_STRUCT_MEMBER(GURL, source_url)
 IPC_STRUCT_END()
 
+// Parameters structure for ExtensionMsg_UpdatePermissions.
+IPC_STRUCT_BEGIN(ExtensionMsg_UpdatePermissions_Params)
+  IPC_STRUCT_MEMBER(int /* UpdateExtensionPermissionsInfo::REASON */, reason_id)
+  IPC_STRUCT_MEMBER(std::string, extension_id)
+  IPC_STRUCT_MEMBER(extensions::APIPermissionSet, apis)
+  IPC_STRUCT_MEMBER(extensions::ManifestPermissionSet, manifest_permissions)
+  IPC_STRUCT_MEMBER(extensions::URLPatternSet, explicit_hosts)
+  IPC_STRUCT_MEMBER(extensions::URLPatternSet, scriptable_hosts)
+IPC_STRUCT_END()
+
 IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo::IconInfo)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(width)
@@ -233,6 +243,7 @@ struct ExtensionMsg_Loaded_Params {
 
   // The extension's active permissions.
   extensions::APIPermissionSet apis;
+  extensions::ManifestPermissionSet manifest_permissions;
   extensions::URLPatternSet explicit_hosts;
   extensions::URLPatternSet scriptable_hosts;
 
@@ -278,6 +289,14 @@ struct ParamTraits<extensions::APIPermission*> {
 template <>
 struct ParamTraits<extensions::APIPermissionSet> {
   typedef extensions::APIPermissionSet param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<extensions::ManifestPermissionSet> {
+  typedef extensions::ManifestPermissionSet param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
@@ -374,12 +393,8 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_SetTabId,
                     int /* id of tab */)
 
 // Tell the renderer to update an extension's permission set.
-IPC_MESSAGE_CONTROL5(ExtensionMsg_UpdatePermissions,
-                     int /* UpdateExtensionPermissionsInfo::REASON */,
-                     std::string /* extension_id */,
-                     extensions::APIPermissionSet /* permissions */,
-                     extensions::URLPatternSet /* explicit_hosts */,
-                     extensions::URLPatternSet /* scriptable_hosts */)
+IPC_MESSAGE_CONTROL1(ExtensionMsg_UpdatePermissions,
+                     ExtensionMsg_UpdatePermissions_Params)
 
 // Tell the renderer about new tab-specific permissions for an extension.
 IPC_MESSAGE_CONTROL4(ExtensionMsg_UpdateTabSpecificPermissions,

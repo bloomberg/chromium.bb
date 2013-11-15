@@ -56,6 +56,9 @@ scoped_ptr<Permissions> PackPermissionSet(const PermissionSet* set) {
     }
   }
 
+  // TODO(rpaquay): We currently don't expose manifest permissions
+  // to apps/extensions via the permissions API.
+
   permissions->origins.reset(new std::vector<std::string>());
   URLPatternSet hosts = set->explicit_hosts();
   for (URLPatternSet::const_iterator i = hosts.begin(); i != hosts.end(); ++i)
@@ -121,6 +124,10 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
     }
   }
 
+  // TODO(rpaquay): We currently don't expose manifest permissions
+  // to apps/extensions via the permissions API.
+  ManifestPermissionSet manifest_permissions;
+
   URLPatternSet origins;
   if (permissions.origins.get()) {
     for (std::vector<std::string>::iterator it = permissions.origins->begin();
@@ -142,7 +149,7 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
   }
 
   return scoped_refptr<PermissionSet>(
-      new PermissionSet(apis, origins, URLPatternSet()));
+      new PermissionSet(apis, manifest_permissions, origins, URLPatternSet()));
 }
 
 }  // namespace permissions_api_helpers

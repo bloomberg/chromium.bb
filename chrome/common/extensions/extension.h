@@ -45,6 +45,7 @@ class ImageSkia;
 namespace extensions {
 class PermissionsData;
 class APIPermissionSet;
+class ManifestPermissionSet;
 class PermissionSet;
 
 // Represents a Chrome extension.

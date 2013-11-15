@@ -138,13 +138,16 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* host = i.GetCurrentValue();
     Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-    if (profile_->IsSameProfile(profile))
-      host->Send(new ExtensionMsg_UpdatePermissions(
-          static_cast<int>(reason),
-          extension->id(),
-          changed->apis(),
-          changed->explicit_hosts(),
-          changed->scriptable_hosts()));
+    if (profile_->IsSameProfile(profile)) {
+      ExtensionMsg_UpdatePermissions_Params info;
+      info.reason_id = static_cast<int>(reason);
+      info.extension_id = extension->id();
+      info.apis = changed->apis();
+      info.manifest_permissions = changed->manifest_permissions();
+      info.explicit_hosts = changed->explicit_hosts();
+      info.scriptable_hosts = changed->scriptable_hosts();
+      host->Send(new ExtensionMsg_UpdatePermissions(info));
+    }
   }
 
   // Trigger the onAdded and onRemoved events in the extension.

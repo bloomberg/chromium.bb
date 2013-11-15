@@ -16,6 +16,8 @@
 
 namespace extensions {
 class Extension;
+class ManifestPermission;
+class ManifestPermissionSet;
 
 // An interface for clients that recognize and parse keys in extension
 // manifests.
@@ -64,6 +66,19 @@ class ManifestHandler {
   // (new MyManifestHandler)->Register();
   void Register();
 
+  // Creates a |ManifestPermission| instance for the given manifest key |name|.
+  // The returned permission does not contain any permission data, so this
+  // method is usually used before calling |FromValue| or |Read|. Returns
+  // |NULL| if the manifest handler does not support custom permissions.
+  virtual ManifestPermission* CreatePermission();
+
+  // Creates a |ManifestPermission| instance containing the initial set of
+  // required manifest permissions for the given |extension|. Returns |NULL| if
+  // the manifest handler does not support custom permissions or if there was
+  // no manifest key in the extension manifest for this handler.
+  virtual ManifestPermission* CreateInitialRequiredPermission(
+      const Extension* extension);
+
   // Calling FinalizeRegistration indicates that there are no more
   // manifest handlers to be registered.
   static void FinalizeRegistration();
@@ -78,6 +93,20 @@ class ManifestHandler {
   static bool ValidateExtension(const Extension* extension,
                                 std::string* error,
                                 std::vector<InstallWarning>* warnings);
+
+  // Calls |CreatePermission| on the manifest handler for |key|. Returns |NULL|
+  // if there is no manifest handler for |key| or if the manifest handler for
+  // |key| does not support custom permissions.
+  static ManifestPermission* CreatePermission(const std::string& key);
+
+  // Calls |CreateInitialRequiredPermission| on all registered manifest handlers
+  // and adds the returned permissions to |permission_set|. Note this should be
+  // called after all manifest data elements have been read, parsed and stored
+  // in the manifest data property of |extension|, as manifest handlers need
+  // access to their manifest data to initialize their required manifest
+  // permission.
+  static void AddExtensionInitialRequiredPermissions(
+      const Extension* extension, ManifestPermissionSet* permission_set);
 
  protected:
   // A convenience method for handlers that only register for 1 key,
@@ -107,6 +136,12 @@ class ManifestHandlerRegistry {
   bool ValidateExtension(const Extension* extension,
                          std::string* error,
                          std::vector<InstallWarning>* warnings);
+
+  ManifestPermission* CreatePermission(const std::string& key);
+
+  void AddExtensionInitialRequiredPermissions(
+      const Extension* extension,
+      ManifestPermissionSet* permission_set);
 
   // Overrides the current global ManifestHandlerRegistry with
   // |registry|, returning the current one.

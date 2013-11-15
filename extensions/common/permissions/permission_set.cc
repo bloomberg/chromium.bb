@@ -38,9 +38,11 @@ PermissionSet::PermissionSet() {}
 
 PermissionSet::PermissionSet(
     const APIPermissionSet& apis,
+    const ManifestPermissionSet& manifest_permissions,
     const URLPatternSet& explicit_hosts,
     const URLPatternSet& scriptable_hosts)
     : apis_(apis),
+      manifest_permissions_(manifest_permissions),
       scriptable_hosts_(scriptable_hosts) {
   AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
   InitImplicitPermissions();
@@ -58,6 +60,11 @@ PermissionSet* PermissionSet::CreateDifference(
   APIPermissionSet apis;
   APIPermissionSet::Difference(set1_safe->apis(), set2_safe->apis(), &apis);
 
+  ManifestPermissionSet manifest_permissions;
+  ManifestPermissionSet::Difference(set1_safe->manifest_permissions(),
+                                    set2_safe->manifest_permissions(),
+                                    &manifest_permissions);
+
   URLPatternSet explicit_hosts;
   URLPatternSet::CreateDifference(set1_safe->explicit_hosts(),
                                   set2_safe->explicit_hosts(),
@@ -68,7 +75,8 @@ PermissionSet* PermissionSet::CreateDifference(
                                   set2_safe->scriptable_hosts(),
                                   &scriptable_hosts);
 
-  return new PermissionSet(apis, explicit_hosts, scriptable_hosts);
+  return new PermissionSet(apis, manifest_permissions,
+                           explicit_hosts, scriptable_hosts);
 }
 
 // static
@@ -82,6 +90,11 @@ PermissionSet* PermissionSet::CreateIntersection(
   APIPermissionSet apis;
   APIPermissionSet::Intersection(set1_safe->apis(), set2_safe->apis(), &apis);
 
+  ManifestPermissionSet manifest_permissions;
+  ManifestPermissionSet::Intersection(set1_safe->manifest_permissions(),
+                                      set2_safe->manifest_permissions(),
+                                      &manifest_permissions);
+
   URLPatternSet explicit_hosts;
   URLPatternSet::CreateIntersection(set1_safe->explicit_hosts(),
                                     set2_safe->explicit_hosts(),
@@ -92,7 +105,8 @@ PermissionSet* PermissionSet::CreateIntersection(
                                     set2_safe->scriptable_hosts(),
                                     &scriptable_hosts);
 
-  return new PermissionSet(apis, explicit_hosts, scriptable_hosts);
+  return new PermissionSet(apis, manifest_permissions,
+                           explicit_hosts, scriptable_hosts);
 }
 
 // static
@@ -106,6 +120,11 @@ PermissionSet* PermissionSet::CreateUnion(
   APIPermissionSet apis;
   APIPermissionSet::Union(set1_safe->apis(), set2_safe->apis(), &apis);
 
+  ManifestPermissionSet manifest_permissions;
+  ManifestPermissionSet::Union(set1_safe->manifest_permissions(),
+                               set2_safe->manifest_permissions(),
+                               &manifest_permissions);
+
   URLPatternSet explicit_hosts;
   URLPatternSet::CreateUnion(set1_safe->explicit_hosts(),
                              set2_safe->explicit_hosts(),
@@ -116,18 +135,21 @@ PermissionSet* PermissionSet::CreateUnion(
                              set2_safe->scriptable_hosts(),
                              &scriptable_hosts);
 
-  return new PermissionSet(apis, explicit_hosts, scriptable_hosts);
+  return new PermissionSet(apis, manifest_permissions,
+                           explicit_hosts, scriptable_hosts);
 }
 
 bool PermissionSet::operator==(
     const PermissionSet& rhs) const {
   return apis_ == rhs.apis_ &&
+      manifest_permissions_ == rhs.manifest_permissions_ &&
       scriptable_hosts_ == rhs.scriptable_hosts_ &&
       explicit_hosts_ == rhs.explicit_hosts_;
 }
 
 bool PermissionSet::Contains(const PermissionSet& set) const {
   return apis_.Contains(set.apis()) &&
+         manifest_permissions_.Contains(set.manifest_permissions()) &&
          explicit_hosts().Contains(set.explicit_hosts()) &&
          scriptable_hosts().Contains(set.scriptable_hosts());
 }
@@ -147,7 +169,7 @@ bool PermissionSet::IsEmpty() const {
     return false;
 
   // Or if it has no api permissions.
-  return apis().empty();
+  return apis().empty() && manifest_permissions().empty();
 }
 
 bool PermissionSet::HasAPIPermission(

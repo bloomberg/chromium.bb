@@ -222,6 +222,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     AddPattern(&shost_permissions_, "http://example.com/*");
 
     APIPermissionSet empty_set;
+    ManifestPermissionSet empty_manifest_permissions;
     URLPatternSet empty_extent;
     scoped_refptr<PermissionSet> permissions;
     scoped_refptr<PermissionSet> granted_permissions;
@@ -232,7 +233,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     EXPECT_TRUE(granted_permissions->IsEmpty());
 
     permissions = new PermissionSet(
-        api_perm_set1_, empty_extent, empty_extent);
+        api_perm_set1_, empty_manifest_permissions, empty_extent, empty_extent);
 
     // Add part of the api permissions.
     prefs()->AddGrantedPermissions(extension_id_, permissions.get());
@@ -246,7 +247,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
 
     // Add part of the explicit host permissions.
     permissions = new PermissionSet(
-        empty_set, ehost_perm_set1_, empty_extent);
+        empty_set, empty_manifest_permissions, ehost_perm_set1_, empty_extent);
     prefs()->AddGrantedPermissions(extension_id_, permissions.get());
     granted_permissions = prefs()->GetGrantedPermissions(extension_id_);
     EXPECT_FALSE(granted_permissions->IsEmpty());
@@ -259,7 +260,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
 
     // Add part of the scriptable host permissions.
     permissions = new PermissionSet(
-        empty_set, empty_extent, shost_perm_set1_);
+        empty_set, empty_manifest_permissions, empty_extent, shost_perm_set1_);
     prefs()->AddGrantedPermissions(extension_id_, permissions.get());
     granted_permissions = prefs()->GetGrantedPermissions(extension_id_);
     EXPECT_FALSE(granted_permissions->IsEmpty());
@@ -276,7 +277,8 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
 
     // Add the rest of the permissions.
     permissions = new PermissionSet(
-        api_perm_set2_, ehost_perm_set2_, shost_perm_set2_);
+        api_perm_set2_, empty_manifest_permissions,
+        ehost_perm_set2_, shost_perm_set2_);
 
     APIPermissionSet::Union(expected_apis, api_perm_set2_, &api_permissions_);
 
@@ -334,6 +336,8 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
     api_perms.insert(APIPermission::kBookmark);
     api_perms.insert(APIPermission::kHistory);
 
+    ManifestPermissionSet empty_manifest_permissions;
+
     URLPatternSet ehosts;
     AddPattern(&ehosts, "http://*.google.com/*");
     AddPattern(&ehosts, "http://example.com/*");
@@ -343,7 +347,8 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
     AddPattern(&shosts, "https://*.google.com/*");
     AddPattern(&shosts, "http://reddit.com/r/test/*");
 
-    active_perms_ = new PermissionSet(api_perms, ehosts, shosts);
+    active_perms_ = new PermissionSet(
+        api_perms, empty_manifest_permissions, ehosts, shosts);
 
     // Make sure the active permissions start empty.
     scoped_refptr<PermissionSet> active(

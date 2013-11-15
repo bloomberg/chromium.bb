@@ -17,6 +17,8 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
+#include "extensions/common/permissions/manifest_permission.h"
+#include "extensions/common/permissions/manifest_permission_set.h"
 #include "extensions/common/url_pattern_set.h"
 
 namespace extensions {
@@ -32,10 +34,11 @@ class PermissionSet
   PermissionSet();
 
   // Creates a new permission set based on the specified data: the API
-  // permissions, host permissions, and scriptable hosts. The effective hosts
-  // of the newly created permission set will be inferred from the given
-  // host permissions.
+  // permissions, manifest key permissions, host permissions, and scriptable
+  // hosts. The effective hosts of the newly created permission set will be
+  // inferred from the given host permissions.
   PermissionSet(const APIPermissionSet& apis,
+                const ManifestPermissionSet& manifest_permissions,
                 const URLPatternSet& explicit_hosts,
                 const URLPatternSet& scriptable_hosts);
 
@@ -102,6 +105,10 @@ class PermissionSet
 
   const APIPermissionSet& apis() const { return apis_; }
 
+  const ManifestPermissionSet& manifest_permissions() const {
+      return manifest_permissions_;
+  }
+
   const URLPatternSet& effective_hosts() const { return effective_hosts_; }
 
   const URLPatternSet& explicit_hosts() const { return explicit_hosts_; }
@@ -125,6 +132,10 @@ class PermissionSet
   // The api list is used when deciding if an extension can access certain
   // extension APIs and features.
   APIPermissionSet apis_;
+
+  // The manifest key permission list is used when deciding if an extension
+  // can access certain extension APIs and features.
+  ManifestPermissionSet manifest_permissions_;
 
   // The list of hosts that can be accessed directly from the extension.
   // TODO(jstritar): Rename to "hosts_"?

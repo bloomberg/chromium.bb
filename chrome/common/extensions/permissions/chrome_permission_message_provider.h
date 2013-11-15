@@ -39,6 +39,10 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
   std::set<PermissionMessage> GetAPIPermissionMessages(
       const PermissionSet* permissions) const;
 
+  // Gets the permission messages for the Manifest permissions.
+  std::set<PermissionMessage> GetManifestPermissionMessages(
+      const PermissionSet* permissions) const;
+
   // Gets the permission messages for the host permissions.
   std::set<PermissionMessage> GetHostPermissionMessages(
       const PermissionSet* permissions,

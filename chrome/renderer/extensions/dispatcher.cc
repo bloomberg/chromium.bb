@@ -1375,17 +1375,23 @@ void Dispatcher::AddOrRemoveBindings(const std::string& extension_id) {
                  base::Unretained(this)));
 }
 
-void Dispatcher::OnUpdatePermissions(int reason_id,
-                                     const std::string& extension_id,
-                                     const APIPermissionSet& apis,
-                                     const URLPatternSet& explicit_hosts,
-                                     const URLPatternSet& scriptable_hosts) {
+void Dispatcher::OnUpdatePermissions(
+  const ExtensionMsg_UpdatePermissions_Params& params) {
+  int reason_id = params.reason_id;
+  const std::string& extension_id = params.extension_id;
+  const APIPermissionSet& apis = params.apis;
+  const ManifestPermissionSet& manifest_permissions =
+      params.manifest_permissions;
+  const URLPatternSet& explicit_hosts = params.explicit_hosts;
+  const URLPatternSet& scriptable_hosts = params.scriptable_hosts;
+
   const Extension* extension = extensions_.GetByID(extension_id);
   if (!extension)
     return;
 
   scoped_refptr<const PermissionSet> delta =
-      new PermissionSet(apis, explicit_hosts, scriptable_hosts);
+      new PermissionSet(apis, manifest_permissions,
+                        explicit_hosts, scriptable_hosts);
   scoped_refptr<const PermissionSet> old_active =
       extension->GetActivePermissions();
   UpdatedExtensionPermissionsInfo::Reason reason =
@@ -1428,7 +1434,8 @@ void Dispatcher::OnUpdateTabSpecificPermissions(
   PermissionsData::UpdateTabSpecificPermissions(
       extension,
       tab_id,
-      new PermissionSet(APIPermissionSet(), origin_set, URLPatternSet()));
+      new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                        origin_set, URLPatternSet()));
 }
 
 void Dispatcher::OnClearTabSpecificPermissions(

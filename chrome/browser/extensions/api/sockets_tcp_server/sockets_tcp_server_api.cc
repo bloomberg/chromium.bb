@@ -6,7 +6,7 @@
 
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
 #include "chrome/browser/extensions/api/sockets_tcp_server/tcp_server_socket_event_dispatcher.h"
-#include "chrome/common/extensions/api/sockets/sockets_handler.h"
+#include "chrome/common/extensions/api/sockets/sockets_manifest_data.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "content/public/common/socket_permission_request.h"

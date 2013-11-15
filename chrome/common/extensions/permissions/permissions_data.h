@@ -22,6 +22,7 @@ namespace extensions {
 class PermissionSet;
 class APIPermissionSet;
 class Extension;
+class ManifestPermissionSet;
 class URLPatternSet;
 class UserScript;
 
@@ -179,6 +180,9 @@ class PermissionsData {
 
   // Parse the permissions of a given extension in the initialization process.
   bool ParsePermissions(Extension* extension, string16* error);
+
+  // Ensure manifest handlers provide their custom manifest permissions.
+  void InitializeManifestPermissions(Extension* extension);
 
   // Finalize permissions after the initialization process completes.
   void FinalizePermissions(Extension* extension);

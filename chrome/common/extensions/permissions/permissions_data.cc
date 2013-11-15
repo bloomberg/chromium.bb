@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -20,6 +21,7 @@
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -244,6 +246,7 @@ bool IsTrustedId(const std::string& extension_id) {
 
 struct PermissionsData::InitialPermissions {
   APIPermissionSet api_permissions;
+  ManifestPermissionSet manifest_permissions;
   URLPatternSet host_permissions;
   URLPatternSet scriptable_hosts;
 };
@@ -593,19 +596,27 @@ bool PermissionsData::ParsePermissions(Extension* extension, string16* error) {
   return true;
 }
 
+void PermissionsData::InitializeManifestPermissions(Extension* extension) {
+  ManifestHandler::AddExtensionInitialRequiredPermissions(
+    extension, &initial_required_permissions_->manifest_permissions);
+}
+
 void PermissionsData::FinalizePermissions(Extension* extension) {
   active_permissions_ = new PermissionSet(
       initial_required_permissions_->api_permissions,
+      initial_required_permissions_->manifest_permissions,
       initial_required_permissions_->host_permissions,
       initial_required_permissions_->scriptable_hosts);
 
   required_permission_set_ = new PermissionSet(
       initial_required_permissions_->api_permissions,
+      initial_required_permissions_->manifest_permissions,
       initial_required_permissions_->host_permissions,
       initial_required_permissions_->scriptable_hosts);
 
   optional_permission_set_ = new PermissionSet(
       initial_optional_permissions_->api_permissions,
+      initial_optional_permissions_->manifest_permissions,
       initial_optional_permissions_->host_permissions,
       URLPatternSet());
 

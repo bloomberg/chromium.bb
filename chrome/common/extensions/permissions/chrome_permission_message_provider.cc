@@ -37,8 +37,12 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
   std::set<PermissionMessage> host_msgs =
       GetHostPermissionMessages(permissions, extension_type);
   std::set<PermissionMessage> api_msgs = GetAPIPermissionMessages(permissions);
+  std::set<PermissionMessage> manifest_permission_msgs =
+      GetManifestPermissionMessages(permissions);
   messages.insert(messages.end(), host_msgs.begin(), host_msgs.end());
   messages.insert(messages.end(), api_msgs.begin(), api_msgs.end());
+  messages.insert(messages.end(), manifest_permission_msgs.begin(),
+                  manifest_permission_msgs.end());
 
   return messages;
 }
@@ -189,6 +193,22 @@ ChromePermissionMessageProvider::GetAPIPermissionMessages(
             PermissionMessage::kDeclarativeWebRequest, string16()));
   }
 
+  return messages;
+}
+
+std::set<PermissionMessage>
+ChromePermissionMessageProvider::GetManifestPermissionMessages(
+    const PermissionSet* permissions) const {
+  std::set<PermissionMessage> messages;
+  for (ManifestPermissionSet::const_iterator permission_it =
+           permissions->manifest_permissions().begin();
+      permission_it != permissions->manifest_permissions().end();
+      ++permission_it) {
+    if (permission_it->HasMessages()) {
+      PermissionMessages new_messages = permission_it->GetMessages();
+      messages.insert(new_messages.begin(), new_messages.end());
+    }
+  }
   return messages;
 }
 

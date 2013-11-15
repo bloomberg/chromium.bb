@@ -59,7 +59,8 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
   if (!new_apis.empty() || !new_hosts.is_empty()) {
     granted_extensions_.Insert(extension);
     scoped_refptr<const PermissionSet> new_permissions =
-        new PermissionSet(new_apis, new_hosts, URLPatternSet());
+        new PermissionSet(new_apis, ManifestPermissionSet(),
+                          new_hosts, URLPatternSet());
     PermissionsData::UpdateTabSpecificPermissions(extension,
                                                   tab_id_,
                                                   new_permissions);

@@ -37,7 +37,7 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
   AddPattern(&hosts, "http://b.com/*");
 
   scoped_refptr<PermissionSet> permission_set =
-      new PermissionSet(apis, hosts, URLPatternSet());
+      new PermissionSet(apis, ManifestPermissionSet(), hosts, URLPatternSet());
 
   // Pack the permission set to value and verify its contents.
   scoped_ptr<Permissions> permissions(PackPermissionSet(permission_set.get()));

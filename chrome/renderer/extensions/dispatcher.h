@@ -31,6 +31,7 @@ class ModuleSystem;
 class URLPattern;
 struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_Loaded_Params;
+struct ExtensionMsg_UpdatePermissions_Params;
 
 namespace blink {
 class WebFrame;
@@ -50,6 +51,7 @@ namespace extensions {
 class ContentWatcher;
 class Extension;
 class FilteredEventRouter;
+class ManifestPermissionSet;
 class RequestSender;
 class UserScriptSlave;
 struct Message;
@@ -179,11 +181,7 @@ class Dispatcher : public content::RenderProcessObserver {
   void OnPageActionsUpdated(const std::string& extension_id,
       const std::vector<std::string>& page_actions);
   void OnActivateExtension(const std::string& extension_id);
-  void OnUpdatePermissions(int reason_id,
-                           const std::string& extension_id,
-                           const APIPermissionSet& apis,
-                           const URLPatternSet& explicit_hosts,
-                           const URLPatternSet& scriptable_hosts);
+  void OnUpdatePermissions(const ExtensionMsg_UpdatePermissions_Params& params);
   void OnUpdateTabSpecificPermissions(int page_id,
                                       int tab_id,
                                       const std::string& extension_id,

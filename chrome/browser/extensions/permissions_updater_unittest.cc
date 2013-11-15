@@ -119,10 +119,13 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
 
   APIPermissionSet default_apis;
   default_apis.insert(APIPermission::kManagement);
+  ManifestPermissionSet empty_manifest_permissions;
+
   URLPatternSet default_hosts;
   AddPattern(&default_hosts, "http://a.com/*");
   scoped_refptr<PermissionSet> default_permissions =
-      new PermissionSet(default_apis, default_hosts, URLPatternSet());
+      new PermissionSet(default_apis, empty_manifest_permissions,
+                        default_hosts, URLPatternSet());
 
   // Make sure it loaded properly.
   scoped_refptr<const PermissionSet> permissions =
@@ -138,7 +141,8 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   AddPattern(&hosts, "http://*.c.com/*");
 
   scoped_refptr<PermissionSet> delta =
-      new PermissionSet(apis, hosts, URLPatternSet());
+      new PermissionSet(apis, empty_manifest_permissions,
+                        hosts, URLPatternSet());
 
   PermissionsUpdaterListener listener;
   PermissionsUpdater updater(profile_.get());
@@ -175,7 +179,8 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   // In the second part of the test, we'll remove the permissions that we
   // just added except for 'notification'.
   apis.erase(APIPermission::kNotification);
-  delta = new PermissionSet(apis, hosts, URLPatternSet());
+  delta = new PermissionSet(apis, empty_manifest_permissions,
+                            hosts, URLPatternSet());
 
   listener.Reset();
   updater.RemovePermissions(extension.get(), delta.get());

@@ -548,7 +548,8 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
 
   {
     scoped_refptr<PermissionSet> permissions(
-        new PermissionSet(APIPermissionSet(), allowed_hosts, URLPatternSet()));
+        new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                          allowed_hosts, URLPatternSet()));
     PermissionsData::UpdateTabSpecificPermissions(
         extension.get(), 0, permissions);
     EXPECT_EQ(permissions->explicit_hosts(),
@@ -576,7 +577,8 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
 
   {
     scoped_refptr<PermissionSet> permissions(
-        new PermissionSet(APIPermissionSet(), allowed_hosts, URLPatternSet()));
+        new PermissionSet(APIPermissionSet(),  ManifestPermissionSet(),
+                          allowed_hosts, URLPatternSet()));
     PermissionsData::UpdateTabSpecificPermissions(
         extension.get(), 0, permissions);
     EXPECT_EQ(permissions->explicit_hosts(),
@@ -584,6 +586,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
                   ->explicit_hosts());
 
     permissions = new PermissionSet(APIPermissionSet(),
+                                    ManifestPermissionSet(),
                                     more_allowed_hosts,
                                     URLPatternSet());
     PermissionsData::UpdateTabSpecificPermissions(

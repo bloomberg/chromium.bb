@@ -557,6 +557,7 @@ bool Extension::InitFromValue(int flags, string16* error) {
 
   finished_parsing_manifest_ = true;
 
+  permissions_data_->InitializeManifestPermissions(this);
   permissions_data_->FinalizePermissions(this);
 
   return true;

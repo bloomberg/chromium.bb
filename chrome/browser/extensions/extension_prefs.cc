@@ -157,6 +157,7 @@ const char kPrefGrantedPermissions[] = "granted_permissions";
 
 // The preference names for PermissionSet values.
 const char kPrefAPIs[] = "api";
+const char kPrefManifestPermissions[] = "manifest_permissions";
 const char kPrefExplicitHosts[] = "explicit_host";
 const char kPrefScriptableHosts[] = "scriptable_host";
 
@@ -545,6 +546,18 @@ PermissionSet* ExtensionPrefs::ReadPrefAsPermissionSet(
                                     &apis, NULL, NULL);
   }
 
+  // Retrieve the Manifest Keys permissions. Please refer to
+  // |SetExtensionPrefPermissionSet| for manifest_permissions_values format.
+  ManifestPermissionSet manifest_permissions;
+  const ListValue* manifest_permissions_values = NULL;
+  std::string manifest_permission_pref =
+      JoinPrefs(pref_key, kPrefManifestPermissions);
+  if (ReadPrefAsList(extension_id, manifest_permission_pref,
+                     &manifest_permissions_values)) {
+    ManifestPermissionSet::ParseFromJSON(
+        manifest_permissions_values, &manifest_permissions, NULL, NULL);
+  }
+
   // Retrieve the explicit host permissions.
   URLPatternSet explicit_hosts;
   ReadPrefAsURLPatternSet(
@@ -557,36 +570,50 @@ PermissionSet* ExtensionPrefs::ReadPrefAsPermissionSet(
       extension_id, JoinPrefs(pref_key, kPrefScriptableHosts),
       &scriptable_hosts, UserScript::ValidUserScriptSchemes());
 
-  return new PermissionSet(apis, explicit_hosts, scriptable_hosts);
+  return new PermissionSet(
+      apis, manifest_permissions, explicit_hosts, scriptable_hosts);
+}
+
+// Set the API or Manifest permissions.
+// The format of api_values is:
+// [ "permission_name1",   // permissions do not support detail.
+//   "permission_name2",
+//   {"permission_name3": value },
+//   // permission supports detail, permission detail will be stored in value.
+//   ...
+// ]
+template<typename T>
+static ListValue* CreatePermissionList(const T& permissions) {
+  ListValue* values = new ListValue();
+  for (typename T::const_iterator i = permissions.begin();
+      i != permissions.end(); ++i) {
+    scoped_ptr<Value> detail(i->ToValue());
+    if (detail) {
+      DictionaryValue* tmp = new DictionaryValue();
+      tmp->Set(i->name(), detail.release());
+      values->Append(tmp);
+    } else {
+      values->Append(new base::StringValue(i->name()));
+    }
+  }
+  return values;
 }
 
 void ExtensionPrefs::SetExtensionPrefPermissionSet(
     const std::string& extension_id,
     const std::string& pref_key,
     const PermissionSet* new_value) {
-  // Set the API permissions.
-  // The format of api_values is:
-  // [ "permission_name1",   // permissions do not support detail.
-  //   "permission_name2",
-  //   {"permission_name3": value },
-  //   // permission supports detail, permission detail will be stored in value.
-  //   ...
-  // ]
-  ListValue* api_values = new ListValue();
-  APIPermissionSet apis = new_value->apis();
   std::string api_pref = JoinPrefs(pref_key, kPrefAPIs);
-  for (APIPermissionSet::const_iterator i = apis.begin();
-       i != apis.end(); ++i) {
-    scoped_ptr<Value> detail(i->ToValue());
-    if (detail) {
-      DictionaryValue* tmp = new DictionaryValue();
-      tmp->Set(i->name(), detail.release());
-      api_values->Append(tmp);
-    } else {
-      api_values->Append(new base::StringValue(i->name()));
-    }
-  }
+  ListValue* api_values = CreatePermissionList(new_value->apis());
   UpdateExtensionPref(extension_id, api_pref, api_values);
+
+  std::string manifest_permissions_pref =
+      JoinPrefs(pref_key, kPrefManifestPermissions);
+  ListValue* manifest_permissions_values = CreatePermissionList(
+      new_value->manifest_permissions());
+  UpdateExtensionPref(extension_id,
+                      manifest_permissions_pref,
+                      manifest_permissions_values);
 
   // Set the explicit host permissions.
   if (!new_value->explicit_hosts().is_empty()) {

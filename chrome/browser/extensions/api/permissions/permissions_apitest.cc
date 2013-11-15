@@ -72,10 +72,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsGranted) {
   // Mark all the tested APIs as granted to bypass the confirmation UI.
   APIPermissionSet apis;
   apis.insert(APIPermission::kBookmark);
+  ManifestPermissionSet manifest_permissions;
   URLPatternSet explicit_hosts;
   AddPattern(&explicit_hosts, "http://*.c.com/*");
   scoped_refptr<PermissionSet> granted_permissions =
-      new PermissionSet(apis, explicit_hosts, URLPatternSet());
+      new PermissionSet(apis, manifest_permissions,
+                        explicit_hosts, URLPatternSet());
 
   ExtensionPrefs* prefs =
       browser()->profile()->GetExtensionService()->extension_prefs();

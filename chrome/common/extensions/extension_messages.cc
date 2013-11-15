@@ -9,14 +9,17 @@
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/common/common_param_traits.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/permissions_info.h"
 
 using extensions::APIPermission;
 using extensions::APIPermissionInfo;
-using extensions::APIPermissionMap;
 using extensions::APIPermissionSet;
 using extensions::Extension;
 using extensions::Manifest;
+using extensions::ManifestHandler;
+using extensions::ManifestPermission;
+using extensions::ManifestPermissionSet;
 using extensions::PermissionSet;
 using extensions::URLPatternSet;
 
@@ -32,6 +35,8 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
       location(extension->location()),
       path(extension->path()),
       apis(extension->GetActivePermissions()->apis()),
+      manifest_permissions(
+          extension->GetActivePermissions()->manifest_permissions()),
       explicit_hosts(extension->GetActivePermissions()->explicit_hosts()),
       scriptable_hosts(extension->GetActivePermissions()->scriptable_hosts()),
       id(extension->id()),
@@ -45,7 +50,8 @@ scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
   if (extension.get()) {
     extensions::PermissionsData::SetActivePermissions(
         extension.get(),
-        new PermissionSet(apis, explicit_hosts, scriptable_hosts));
+        new PermissionSet(apis, manifest_permissions,
+                          explicit_hosts, scriptable_hosts));
   }
   return extension;
 }
@@ -179,6 +185,41 @@ bool ParamTraits<APIPermissionSet>::Read(
 }
 
 void ParamTraits<APIPermissionSet>::Log(
+    const param_type& p, std::string* l) {
+  LogParam(p.map(), l);
+}
+
+void ParamTraits<ManifestPermissionSet>::Write(
+    Message* m, const param_type& p) {
+  ManifestPermissionSet::const_iterator it = p.begin();
+  const ManifestPermissionSet::const_iterator end = p.end();
+  WriteParam(m, p.size());
+  for (; it != end; ++it) {
+    WriteParam(m, it->name());
+    it->Write(m);
+  }
+}
+
+bool ParamTraits<ManifestPermissionSet>::Read(
+    const Message* m, PickleIterator* iter, param_type* r) {
+  size_t size;
+  if (!ReadParam(m, iter, &size))
+    return false;
+  for (size_t i = 0; i < size; ++i) {
+    std::string name;
+    if (!ReadParam(m, iter, &name))
+      return false;
+    scoped_ptr<ManifestPermission> p(ManifestHandler::CreatePermission(name));
+    if (!p)
+      return false;
+    if (!p->Read(m, iter))
+      return false;
+    r->insert(p.release());
+  }
+  return true;
+}
+
+void ParamTraits<ManifestPermissionSet>::Log(
     const param_type& p, std::string* l) {
   LogParam(p.map(), l);
 }

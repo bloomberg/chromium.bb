@@ -16,6 +16,7 @@ namespace extensions {
 class APIPermissionSet;
 class Extension;
 class FeatureProvider;
+class ManifestPermissionSet;
 class PermissionMessage;
 class PermissionMessageProvider;
 class PermissionsProvider;
