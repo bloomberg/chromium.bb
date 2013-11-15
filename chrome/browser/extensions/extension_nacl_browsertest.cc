@@ -157,7 +157,8 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_WebStoreExtension) {
 }
 
 // Test that the NaCl plugin is blocked for non-Webstore extensions.
-IN_PROC_BROWSER_TEST_F(NaClExtensionTest, NonWebStoreExtension) {
+// Disabled: http://crbug.com/319892
+IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_NonWebStoreExtension) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_NON_WEBSTORE);
