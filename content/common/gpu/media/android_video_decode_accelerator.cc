@@ -149,12 +149,12 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
   base::Time queued_time = pending_bitstream_buffers_.front().second;
   UMA_HISTOGRAM_TIMES("Media.AVDA.InputQueueTime",
                       base::Time::Now() - queued_time);
-  media::BitstreamBuffer& bitstream_buffer =
+  media::BitstreamBuffer bitstream_buffer =
       pending_bitstream_buffers_.front().first;
+  pending_bitstream_buffers_.pop();
 
   if (bitstream_buffer.id() == -1) {
     media_codec_->QueueEOS(input_buf_index);
-    pending_bitstream_buffers_.pop();
     return;
   }
 
@@ -179,7 +179,6 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
   RETURN_ON_FAILURE(status == media::MEDIA_CODEC_OK,
                     "Failed to QueueInputBuffer: " << status,
                     PLATFORM_FAILURE);
-  pending_bitstream_buffers_.pop();
 
   // We should call NotifyEndOfBitstreamBuffer(), when no more decoded output
   // will be returned from the bitstream buffer. However, MediaCodec API is
