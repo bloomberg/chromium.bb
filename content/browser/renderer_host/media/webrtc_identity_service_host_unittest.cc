@@ -183,4 +183,11 @@ TEST_F(WebRTCIdentityServiceHostTest, TestOriginAccessDenied) {
   VerifyRequestFailedMessage(net::ERR_ACCESS_DENIED);
 }
 
+// Verifies that we do not crash if we try to cancel a completed request.
+TEST_F(WebRTCIdentityServiceHostTest, TestCancelAfterRequestCompleted) {
+  SendRequestToHost();
+  store_->RunCompletionCallback(net::OK, FAKE_CERTIFICATE, FAKE_PRIVATE_KEY);
+  SendCancelRequestToHost();
+}
+
 }  // namespace content

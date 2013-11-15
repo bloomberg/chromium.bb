@@ -66,7 +66,10 @@ void WebRTCIdentityServiceHost::OnRequestIdentity(
 }
 
 void WebRTCIdentityServiceHost::OnCancelRequest() {
-  base::ResetAndReturn(&cancel_callback_).Run();
+  // cancel_callback_ may be null if we have sent the reponse to the renderer
+  // but the renderer has not received it.
+  if (!cancel_callback_.is_null())
+    base::ResetAndReturn(&cancel_callback_).Run();
 }
 
 void WebRTCIdentityServiceHost::OnComplete(int status,
