@@ -699,31 +699,34 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		       "{\n");
 		if (ret) {
 			printf("\tstruct wl_proxy *%s;\n\n"
-			       "\t%s = wl_proxy_create("
-			       "(struct wl_proxy *) %s,\n",
-			       ret->name, ret->name, interface->name);
-			if (ret->interface_name == NULL)
-				printf("\t\t\t     interface);\n");
-			else
-				printf("\t\t\t     &%s_interface);\n",
-				       ret->interface_name);
+			       "\t%s = wl_proxy_marshal_constructor("
+			       "(struct wl_proxy *) %s,\n"
+			       "\t\t\t %s_%s, ",
+			       ret->name, ret->name,
+			       interface->name,
+			       interface->uppercase_name,
+			       m->uppercase_name);
 
-			printf("\tif (!%s)\n"
-			       "\t\treturn NULL;\n\n",
-			       ret->name);
+			if (ret->interface_name == NULL)
+				printf("interface");
+			else
+				printf("&%s_interface", ret->interface_name);
+		} else {
+			printf("\twl_proxy_marshal((struct wl_proxy *) %s,\n"
+			       "\t\t\t %s_%s",
+			       interface->name,
+			       interface->uppercase_name,
+			       m->uppercase_name);
 		}
 
-		printf("\twl_proxy_marshal((struct wl_proxy *) %s,\n"
-		       "\t\t\t %s_%s",
-		       interface->name,
-		       interface->uppercase_name,
-		       m->uppercase_name);
-
 		wl_list_for_each(a, &m->arg_list, link) {
-			if (a->type == NEW_ID && a->interface_name == NULL)
-				printf(", interface->name, version");
-			printf(", ");
-			printf("%s", a->name);
+			if (a->type == NEW_ID) {
+				if (a->interface_name == NULL)
+					printf(", interface->name, version");
+				printf(", NULL");
+			} else {
+				printf(", %s", a->name);
+			}
 		}
 		printf(");\n");
 

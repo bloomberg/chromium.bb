@@ -194,6 +194,29 @@ wl_display_create_queue(struct wl_display *display)
 	return queue;
 }
 
+static struct wl_proxy *
+proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
+{
+	struct wl_proxy *proxy;
+	struct wl_display *display = factory->display;
+
+	proxy = malloc(sizeof *proxy);
+	if (proxy == NULL)
+		return NULL;
+
+	proxy->object.interface = interface;
+	proxy->object.implementation = NULL;
+	proxy->dispatcher = NULL;
+	proxy->display = display;
+	proxy->queue = factory->queue;
+	proxy->flags = 0;
+	proxy->refcount = 1;
+
+	proxy->object.id = wl_map_insert_new(&display->objects, 0, proxy);
+
+	return proxy;
+}
+
 /** Create a proxy object with a given interface
  *
  * \param factory Factory proxy object
@@ -216,23 +239,11 @@ wl_display_create_queue(struct wl_display *display)
 WL_EXPORT struct wl_proxy *
 wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 {
-	struct wl_proxy *proxy;
 	struct wl_display *display = factory->display;
-
-	proxy = malloc(sizeof *proxy);
-	if (proxy == NULL)
-		return NULL;
-
-	proxy->object.interface = interface;
-	proxy->object.implementation = NULL;
-	proxy->dispatcher = NULL;
-	proxy->display = display;
-	proxy->queue = factory->queue;
-	proxy->flags = 0;
-	proxy->refcount = 1;
+	struct wl_proxy *proxy;
 
 	pthread_mutex_lock(&display->mutex);
-	proxy->object.id = wl_map_insert_new(&display->objects, 0, proxy);
+	proxy = proxy_create(factory, interface);
 	pthread_mutex_unlock(&display->mutex);
 
 	return proxy;
@@ -382,27 +393,107 @@ wl_proxy_add_dispatcher(struct wl_proxy *proxy,
 	return 0;
 }
 
+static struct wl_proxy *
+create_outgoing_proxy(struct wl_proxy *proxy, const struct wl_message *message,
+		      union wl_argument *args,
+		      const struct wl_interface *interface)
+{
+	int i, count;
+	const char *signature;
+	struct argument_details arg;
+	struct wl_proxy *new_proxy = NULL;
+
+	signature = message->signature;
+	count = arg_count_for_signature(signature);
+	for (i = 0; i < count; i++) {
+		signature = get_next_argument(signature, &arg);
+
+		switch (arg.type) {
+		case 'n':
+			new_proxy = proxy_create(proxy, interface);
+			if (new_proxy == NULL)
+				return NULL;
+
+			args[i].o = &new_proxy->object;
+			break;
+		}
+	}
+
+	return new_proxy;
+}
+
+/** Prepare a request to be sent to the compositor
+ *
+ * \param proxy The proxy object
+ * \param opcode Opcode of the request to be sent
+ * \param args Extra arguments for the given request
+ * \param iterface The interface to use for the new proxy
+ *
+ * Translates the request given by opcode and the extra arguments into the
+ * wire format and write it to the connection buffer.  This version takes an
+ * array of the union type wl_argument.
+ *
+ * For new-id arguments, this function will allocate a new wl_proxy
+ * and send the ID to the server.  The new wl_proxy will be returned
+ * on success or NULL on errror with errno set accordingly.
+ *
+ * \note This is intended to be used by language bindings and not in
+ * non-generated code.
+ *
+ * \sa wl_proxy_marshal()
+ *
+ * \memberof wl_proxy
+ */
+WL_EXPORT struct wl_proxy *
+wl_proxy_marshal_array_constructor(struct wl_proxy *proxy,
+				   uint32_t opcode, union wl_argument *args,
+				   const struct wl_interface *interface)
+{
+	struct wl_closure *closure;
+	struct wl_proxy *new_proxy = NULL;
+	const struct wl_message *message;
+
+	pthread_mutex_lock(&proxy->display->mutex);
+
+	message = &proxy->object.interface->methods[opcode];
+	if (interface) {
+		new_proxy = create_outgoing_proxy(proxy, message,
+						  args, interface);
+		if (new_proxy == NULL)
+			goto err_unlock;
+	}
+
+	closure = wl_closure_marshal(&proxy->object, opcode, args, message);
+	if (closure == NULL) {
+		fprintf(stderr, "Error marshalling request\n");
+		abort();
+	}
+
+	if (wl_debug)
+		wl_closure_print(closure, &proxy->object, true);
+
+	if (wl_closure_send(closure, proxy->display->connection)) {
+		fprintf(stderr, "Error sending request: %m\n");
+		abort();
+	}
+
+	wl_closure_destroy(closure);
+
+ err_unlock:
+	pthread_mutex_unlock(&proxy->display->mutex);
+
+	return new_proxy;
+}
+
+
 /** Prepare a request to be sent to the compositor
  *
  * \param proxy The proxy object
  * \param opcode Opcode of the request to be sent
  * \param ... Extra arguments for the given request
  *
- * Translates the request given by opcode and the extra arguments into the
- * wire format and write it to the connection buffer.
- *
- * The example below creates a proxy object with the wl_surface_interface
- * using a wl_compositor factory interface and sends the
- * \c compositor.create_surface request using \ref wl_proxy_marshal(). Note
- * the \c id is the extra argument to the request as specified by the
- * protocol.
- *
- * \code
- * id = wl_proxy_create((struct wl_proxy *) wl_compositor,
- *                      &wl_surface_interface);
- * wl_proxy_marshal((struct wl_proxy *) wl_compositor,
- *                  WL_COMPOSITOR_CREATE_SURFACE, id);
- * \endcode
+ * This function is similar to wl_proxy_marshal_constructor(), except
+ * it doesn't create proxies for new-id arguments.
  *
  * \note This should not normally be used by non-generated code.
  *
@@ -421,7 +512,42 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 				 args, WL_CLOSURE_MAX_ARGS, ap);
 	va_end(ap);
 
-	wl_proxy_marshal_array(proxy, opcode, args);
+	wl_proxy_marshal_array_constructor(proxy, opcode, args, NULL);
+}
+
+/** Prepare a request to be sent to the compositor
+ *
+ * \param proxy The proxy object
+ * \param opcode Opcode of the request to be sent
+ * \param iterface The interface to use for the new proxy
+ * \param ... Extra arguments for the given request
+ * \return A new wl_proxy for the new_id argument or NULL on error
+ *
+ * Translates the request given by opcode and the extra arguments into the
+ * wire format and write it to the connection buffer.
+ *
+ * For new-id arguments, this function will allocate a new wl_proxy
+ * and send the ID to the server.  The new wl_proxy will be returned
+ * on success or NULL on errror with errno set accordingly.
+ *
+ * \note This should not normally be used by non-generated code.
+ *
+ * \memberof wl_proxy
+ */
+WL_EXPORT struct wl_proxy *
+wl_proxy_marshal_constructor(struct wl_proxy *proxy, uint32_t opcode,
+			     const struct wl_interface *interface, ...)
+{
+	union wl_argument args[WL_CLOSURE_MAX_ARGS];
+	va_list ap;
+
+	va_start(ap, interface);
+	wl_argument_from_va_list(proxy->object.interface->methods[opcode].signature,
+				 args, WL_CLOSURE_MAX_ARGS, ap);
+	va_end(ap);
+
+	return wl_proxy_marshal_array_constructor(proxy, opcode,
+						  args, interface);
 }
 
 /** Prepare a request to be sent to the compositor
@@ -430,9 +556,8 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
  * \param opcode Opcode of the request to be sent
  * \param args Extra arguments for the given request
  *
- * Translates the request given by opcode and the extra arguments into the
- * wire format and write it to the connection buffer.  This version takes an
- * array of the union type wl_argument.
+ * This function is similar to wl_proxy_marshal_array_constructor(), except
+ * it doesn't create proxies for new-id arguments.
  *
  * \note This is intended to be used by language bindings and not in
  * non-generated code.
@@ -445,29 +570,7 @@ WL_EXPORT void
 wl_proxy_marshal_array(struct wl_proxy *proxy, uint32_t opcode,
 		       union wl_argument *args)
 {
-	struct wl_closure *closure;
-
-	pthread_mutex_lock(&proxy->display->mutex);
-
-	closure = wl_closure_marshal(&proxy->object, opcode, args,
-				     &proxy->object.interface->methods[opcode]);
-
-	if (closure == NULL) {
-		fprintf(stderr, "Error marshalling request\n");
-		abort();
-	}
-
-	if (wl_debug)
-		wl_closure_print(closure, &proxy->object, true);
-
-	if (wl_closure_send(closure, proxy->display->connection)) {
-		fprintf(stderr, "Error sending request: %m\n");
-		abort();
-	}
-
-	wl_closure_destroy(closure);
-
-	pthread_mutex_unlock(&proxy->display->mutex);
+	wl_proxy_marshal_array_constructor(proxy, opcode, args, NULL);
 }
 
 static void

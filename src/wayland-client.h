@@ -126,6 +126,14 @@ void wl_proxy_marshal_array(struct wl_proxy *p, uint32_t opcode,
 			    union wl_argument *args);
 struct wl_proxy *wl_proxy_create(struct wl_proxy *factory,
 				 const struct wl_interface *interface);
+struct wl_proxy *wl_proxy_marshal_constructor(struct wl_proxy *proxy,
+					      uint32_t opcode,
+					      const struct wl_interface *interface,
+					      ...);
+struct wl_proxy *
+wl_proxy_marshal_array_constructor(struct wl_proxy *proxy,
+				   uint32_t opcode, union wl_argument *args,
+				   const struct wl_interface *interface);
 
 void wl_proxy_destroy(struct wl_proxy *proxy);
 int wl_proxy_add_listener(struct wl_proxy *proxy,
