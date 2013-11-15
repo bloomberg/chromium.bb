@@ -38,11 +38,12 @@
 #include "core/editing/TextCheckingHelper.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
-#include "core/html/HTMLInputElement.h"
-#include "core/page/EditorClient.h"
 #include "core/frame/Frame.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
+#include "core/page/SpellCheckerClient.h"
 #include "core/rendering/RenderTextControl.h"
 #include "platform/text/TextCheckerClient.h"
 
@@ -65,14 +66,22 @@ PassOwnPtr<SpellChecker> SpellChecker::create(Frame& frame)
     return adoptPtr(new SpellChecker(frame));
 }
 
-EditorClient& SpellChecker::editorClient() const
+static SpellCheckerClient& emptySpellCheckerClient()
 {
-    return m_frame.editor().client();
+    DEFINE_STATIC_LOCAL(EmptySpellCheckerClient, client, ());
+    return client;
+}
+
+SpellCheckerClient& SpellChecker::spellCheckerClient() const
+{
+    if (Page* page = m_frame.page())
+        return page->spellCheckerClient();
+    return emptySpellCheckerClient();
 }
 
 TextCheckerClient& SpellChecker::textChecker() const
 {
-    return editorClient().textChecker();
+    return spellCheckerClient().textChecker();
 }
 
 SpellChecker::SpellChecker(Frame& frame)
@@ -87,12 +96,12 @@ SpellChecker::~SpellChecker()
 
 bool SpellChecker::isContinuousSpellCheckingEnabled() const
 {
-    return editorClient().isContinuousSpellCheckingEnabled();
+    return spellCheckerClient().isContinuousSpellCheckingEnabled();
 }
 
 void SpellChecker::toggleContinuousSpellChecking()
 {
-    editorClient().toggleContinuousSpellChecking();
+    spellCheckerClient().toggleContinuousSpellChecking();
     if (isContinuousSpellCheckingEnabled())
         return;
     for (Frame* frame = m_frame.page()->mainFrame(); frame && frame->document(); frame = frame->tree().traverseNext()) {
@@ -104,7 +113,7 @@ void SpellChecker::toggleContinuousSpellChecking()
 
 bool SpellChecker::isGrammarCheckingEnabled()
 {
-    return editorClient().isGrammarCheckingEnabled();
+    return spellCheckerClient().isGrammarCheckingEnabled();
 }
 
 void SpellChecker::didBeginEditing(Element* element)
@@ -215,7 +224,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     RefPtr<Range> firstMisspellingRange;
     if (unifiedTextCheckerEnabled()) {
         grammarSearchRange = spellingSearchRange->cloneRange(IGNORE_EXCEPTION);
-        foundItem = TextCheckingHelper(editorClient(), spellingSearchRange).findFirstMisspellingOrBadGrammar(isGrammarCheckingEnabled(), isSpelling, foundOffset, grammarDetail);
+        foundItem = TextCheckingHelper(spellCheckerClient(), spellingSearchRange).findFirstMisspellingOrBadGrammar(isGrammarCheckingEnabled(), isSpelling, foundOffset, grammarDetail);
         if (isSpelling) {
             misspelledWord = foundItem;
             misspellingOffset = foundOffset;
@@ -224,7 +233,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
             grammarPhraseOffset = foundOffset;
         }
     } else {
-        misspelledWord = TextCheckingHelper(editorClient(), spellingSearchRange).findFirstMisspelling(misspellingOffset, false, firstMisspellingRange);
+        misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchRange).findFirstMisspelling(misspellingOffset, false, firstMisspellingRange);
         grammarSearchRange = spellingSearchRange->cloneRange(IGNORE_EXCEPTION);
         if (!misspelledWord.isEmpty()) {
             // Stop looking at start of next misspelled word
@@ -234,7 +243,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         }
 
         if (isGrammarCheckingEnabled())
-            badGrammarPhrase = TextCheckingHelper(editorClient(), grammarSearchRange).findFirstBadGrammar(grammarDetail, grammarPhraseOffset, false);
+            badGrammarPhrase = TextCheckingHelper(spellCheckerClient(), grammarSearchRange).findFirstBadGrammar(grammarDetail, grammarPhraseOffset, false);
     }
 
     // If we found neither bad grammar nor a misspelled word, wrap and try again (but don't bother if we started at the beginning of the
@@ -246,7 +255,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
 
         if (unifiedTextCheckerEnabled()) {
             grammarSearchRange = spellingSearchRange->cloneRange(IGNORE_EXCEPTION);
-            foundItem = TextCheckingHelper(editorClient(), spellingSearchRange).findFirstMisspellingOrBadGrammar(isGrammarCheckingEnabled(), isSpelling, foundOffset, grammarDetail);
+            foundItem = TextCheckingHelper(spellCheckerClient(), spellingSearchRange).findFirstMisspellingOrBadGrammar(isGrammarCheckingEnabled(), isSpelling, foundOffset, grammarDetail);
             if (isSpelling) {
                 misspelledWord = foundItem;
                 misspellingOffset = foundOffset;
@@ -255,7 +264,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
                 grammarPhraseOffset = foundOffset;
             }
         } else {
-            misspelledWord = TextCheckingHelper(editorClient(), spellingSearchRange).findFirstMisspelling(misspellingOffset, false, firstMisspellingRange);
+            misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchRange).findFirstMisspelling(misspellingOffset, false, firstMisspellingRange);
             grammarSearchRange = spellingSearchRange->cloneRange(IGNORE_EXCEPTION);
             if (!misspelledWord.isEmpty()) {
                 // Stop looking at start of next misspelled word
@@ -265,7 +274,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
             }
 
             if (isGrammarCheckingEnabled())
-                badGrammarPhrase = TextCheckingHelper(editorClient(), grammarSearchRange).findFirstBadGrammar(grammarDetail, grammarPhraseOffset, false);
+                badGrammarPhrase = TextCheckingHelper(spellCheckerClient(), grammarSearchRange).findFirstBadGrammar(grammarDetail, grammarPhraseOffset, false);
         }
     }
 
@@ -291,7 +300,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         m_frame.selection().setSelection(VisibleSelection(misspellingRange.get(), DOWNSTREAM));
         m_frame.selection().revealSelection();
 
-        editorClient().updateSpellingUIWithMisspelledWord(misspelledWord);
+        spellCheckerClient().updateSpellingUIWithMisspelledWord(misspelledWord);
         m_frame.document()->markers()->addMarker(misspellingRange.get(), DocumentMarker::Spelling);
     }
 }
@@ -328,13 +337,13 @@ String SpellChecker::misspelledWordAtCaretOrRange(Node* clickedNode) const
 
 void SpellChecker::showSpellingGuessPanel()
 {
-    if (editorClient().spellingUIIsShowing()) {
-        editorClient().showSpellingUI(false);
+    if (spellCheckerClient().spellingUIIsShowing()) {
+        spellCheckerClient().showSpellingUI(false);
         return;
     }
 
     advanceToNextMisspelling(true);
-    editorClient().showSpellingUI(true);
+    spellCheckerClient().showSpellingUI(true);
 }
 
 void SpellChecker::clearMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
@@ -431,7 +440,7 @@ void SpellChecker::markMisspellingsOrBadGrammar(const VisibleSelection& selectio
     if (!isSpellCheckingEnabledFor(editableNode))
         return;
 
-    TextCheckingHelper checker(editorClient(), searchRange);
+    TextCheckingHelper checker(spellCheckerClient(), searchRange);
     if (checkSpelling)
         checker.markAllMisspellings(firstMisspellingRange);
     else if (isGrammarCheckingEnabled())

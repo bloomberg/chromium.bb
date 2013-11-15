@@ -59,6 +59,9 @@ void fillWithEmptyClients(Page::PageClients& pageClients)
 
     static BackForwardClient* dummyBackForwardClient = adoptPtr(new EmptyBackForwardClient).leakPtr();
     pageClients.backForwardClient = dummyBackForwardClient;
+
+    static SpellCheckerClient* dummySpellCheckerClient = adoptPtr(new EmptySpellCheckerClient).leakPtr();
+    pageClients.spellCheckerClient = dummySpellCheckerClient;
 }
 
 class EmptyPopupMenu : public PopupMenu {

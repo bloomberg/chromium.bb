@@ -32,10 +32,7 @@
 #define EditorClientImpl_h
 
 #include "core/page/EditorClient.h"
-#include "platform/Timer.h"
-#include "platform/text/TextCheckerClient.h"
 #include "wtf/Deque.h"
-#include "wtf/HashSet.h"
 
 namespace WebCore {
 class Frame;
@@ -44,17 +41,13 @@ class HTMLInputElement;
 
 namespace blink {
 class WebViewImpl;
-class WebTextCheckingCompletionImpl;
 
-class EditorClientImpl : public WebCore::EditorClient, public WebCore::TextCheckerClient {
+class EditorClientImpl : public WebCore::EditorClient {
 public:
     EditorClientImpl(WebViewImpl*);
 
     virtual ~EditorClientImpl();
 
-    virtual bool isContinuousSpellCheckingEnabled() OVERRIDE;
-    virtual void toggleContinuousSpellChecking() OVERRIDE;
-    virtual bool isGrammarCheckingEnabled() OVERRIDE;
     virtual void respondToChangedContents() OVERRIDE;
     virtual void respondToChangedSelection(WebCore::Frame*) OVERRIDE;
     virtual void didCancelCompositionOnSelectionChange() OVERRIDE;
@@ -71,18 +64,7 @@ public:
     virtual void textFieldDidEndEditing(WebCore::Element*) OVERRIDE;
     virtual void textDidChangeInTextField(WebCore::Element*) OVERRIDE;
     virtual bool doTextFieldCommandFromEvent(WebCore::Element*, WebCore::KeyboardEvent*) OVERRIDE;
-    virtual bool shouldEraseMarkersAfterChangeSelection(WebCore::TextCheckingType) const OVERRIDE;
-    virtual void checkSpellingOfString(const String&, int* misspellingLocation, int* misspellingLength) OVERRIDE;
-    virtual void checkGrammarOfString(const String&, WTF::Vector<WebCore::GrammarDetail>&,
-        int* badGrammarLocation, int* badGrammarLength) OVERRIDE;
-    virtual WTF::String getAutoCorrectSuggestionForMisspelledWord(const WTF::String&) OVERRIDE;
-    virtual void updateSpellingUIWithMisspelledWord(const WTF::String&) OVERRIDE;
-    virtual void showSpellingUI(bool show) OVERRIDE;
-    virtual bool spellingUIIsShowing() OVERRIDE;
     virtual void willSetInputMethodState() OVERRIDE;
-    virtual void requestCheckingOfString(WTF::PassRefPtr<WebCore::TextCheckingRequest>) OVERRIDE;
-
-    virtual WebCore::TextCheckerClient& textChecker() { return *this; }
 
     const char* interpretKeyEvent(const WebCore::KeyboardEvent*);
 
@@ -90,30 +72,12 @@ private:
     bool handleEditingKeyboardEvent(WebCore::KeyboardEvent*);
     void modifySelection(WebCore::Frame*, WebCore::KeyboardEvent*);
 
-    // Returns whether or not the focused control needs spell-checking.
-    // Currently, this function just retrieves the focused node and determines
-    // whether or not it is a <textarea> element or an element whose
-    // contenteditable attribute is true.
-    // FIXME: Bug 740540: This code just implements the default behavior
-    // proposed in this issue. We should also retrieve "spellcheck" attributes
-    // for text fields and create a flag to over-write the default behavior.
-    bool shouldSpellcheckByDefault();
-
     WebViewImpl* m_webView;
     bool m_inRedo;
 
     typedef Deque<RefPtr<WebCore::UndoStep> > UndoManagerStack;
     UndoManagerStack m_undoStack;
     UndoManagerStack m_redoStack;
-
-    // This flag is set to false if spell check for this editor is manually
-    // turned off. The default setting is SpellCheckAutomatic.
-    enum {
-        SpellCheckAutomatic,
-        SpellCheckForcedOn,
-        SpellCheckForcedOff
-    };
-    int m_spellCheckThisFieldStatus;
 };
 
 } // namespace blink

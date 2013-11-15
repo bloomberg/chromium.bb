@@ -37,6 +37,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"
+#include "core/page/SpellCheckerClient.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextCheckerClient.h"
 
@@ -218,7 +219,7 @@ int TextCheckingParagraph::checkingLength() const
     return m_checkingLength;
 }
 
-TextCheckingHelper::TextCheckingHelper(EditorClient& client, PassRefPtr<Range> range)
+TextCheckingHelper::TextCheckingHelper(SpellCheckerClient& client, PassRefPtr<Range> range)
     : m_client(&client)
     , m_range(range)
 {

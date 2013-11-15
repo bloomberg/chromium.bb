@@ -91,6 +91,8 @@
       'SpeechInputClientImpl.h',
       'SpeechRecognitionClientProxy.cpp',
       'SpeechRecognitionClientProxy.h',
+      'SpellCheckerClientImpl.cpp',
+      'SpellCheckerClientImpl.h',
       'StorageAreaProxy.cpp',
       'StorageAreaProxy.h',
       'StorageNamespaceProxy.cpp',

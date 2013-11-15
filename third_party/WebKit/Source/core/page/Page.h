@@ -72,6 +72,7 @@ class ScrollableArea;
 class ScrollingCoordinator;
 class Settings;
 class SharedWorkerRepositoryClient;
+class SpellCheckerClient;
 class StorageNamespace;
 class ValidationMessageClient;
 
@@ -98,6 +99,7 @@ public:
         DragClient* dragClient;
         InspectorClient* inspectorClient;
         BackForwardClient* backForwardClient;
+        SpellCheckerClient* spellCheckerClient;
     };
 
     explicit Page(PageClients&);
@@ -111,6 +113,7 @@ public:
     PluginData* pluginData() const;
 
     EditorClient& editorClient() const { return *m_editorClient; }
+    SpellCheckerClient& spellCheckerClient() const { return *m_spellCheckerClient; }
 
     void setMainFrame(PassRefPtr<Frame>);
     Frame* mainFrame() const { return m_mainFrame.get(); }
@@ -259,6 +262,7 @@ private:
     EditorClient* const m_editorClient;
     ValidationMessageClient* m_validationMessageClient;
     SharedWorkerRepositoryClient* m_sharedWorkerRepositoryClient;
+    SpellCheckerClient* const m_spellCheckerClient;
 
     UseCounter m_useCounter;
 

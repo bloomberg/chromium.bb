@@ -41,6 +41,7 @@
 #include "PageOverlayList.h"
 #include "PageScaleConstraintsSet.h"
 #include "PageWidgetDelegate.h"
+#include "SpellCheckerClientImpl.h"
 #include "UserMediaClientImpl.h"
 #include "WebInputEvent.h"
 #include "WebNavigationPolicy.h"
@@ -654,6 +655,7 @@ private:
     EditorClientImpl m_editorClientImpl;
     InspectorClientImpl m_inspectorClientImpl;
     BackForwardClientImpl m_backForwardClientImpl;
+    SpellCheckerClientImpl m_spellCheckerClientImpl;
 
     WebSize m_size;
     bool m_fixedLayoutSizeLock;

@@ -29,6 +29,7 @@
 #ifndef EmptyClients_h
 #define EmptyClients_h
 
+#include "core/editing/UndoStep.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/BackForwardClient.h"
@@ -38,6 +39,7 @@
 #include "core/page/EditorClient.h"
 #include "core/page/FocusDirection.h"
 #include "core/page/Page.h"
+#include "core/page/SpellCheckerClient.h"
 #include "core/platform/DragImage.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/network/ResourceError.h"
@@ -260,15 +262,31 @@ public:
     virtual void requestCheckingOfString(PassRefPtr<TextCheckingRequest>) OVERRIDE;
 };
 
+class EmptySpellCheckerClient : public SpellCheckerClient {
+    WTF_MAKE_NONCOPYABLE(EmptySpellCheckerClient); WTF_MAKE_FAST_ALLOCATED;
+public:
+    EmptySpellCheckerClient() { }
+    virtual ~EmptySpellCheckerClient() { }
+
+    virtual bool isContinuousSpellCheckingEnabled() OVERRIDE { return false; }
+    virtual void toggleContinuousSpellChecking() OVERRIDE { }
+    virtual bool isGrammarCheckingEnabled() OVERRIDE { return false; }
+
+    TextCheckerClient& textChecker() { return m_textCheckerClient; }
+
+    virtual void updateSpellingUIWithMisspelledWord(const String&) OVERRIDE { }
+    virtual void showSpellingUI(bool) OVERRIDE { }
+    virtual bool spellingUIIsShowing() OVERRIDE { return false; }
+
+private:
+    EmptyTextCheckerClient m_textCheckerClient;
+};
+
 class EmptyEditorClient : public EditorClient {
     WTF_MAKE_NONCOPYABLE(EmptyEditorClient); WTF_MAKE_FAST_ALLOCATED;
 public:
     EmptyEditorClient() { }
     virtual ~EmptyEditorClient() { }
-
-    virtual bool isContinuousSpellCheckingEnabled() OVERRIDE { return false; }
-    virtual void toggleContinuousSpellChecking() OVERRIDE { }
-    virtual bool isGrammarCheckingEnabled() OVERRIDE { return false; }
 
     virtual void respondToChangedContents() OVERRIDE { }
     virtual void respondToChangedSelection(Frame*) OVERRIDE { }
@@ -292,16 +310,7 @@ public:
     virtual void textDidChangeInTextField(Element*) OVERRIDE { }
     virtual bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*) OVERRIDE { return false; }
 
-    TextCheckerClient& textChecker() { return m_textCheckerClient; }
-
-    virtual void updateSpellingUIWithMisspelledWord(const String&) OVERRIDE { }
-    virtual void showSpellingUI(bool) OVERRIDE { }
-    virtual bool spellingUIIsShowing() OVERRIDE { return false; }
-
     virtual void willSetInputMethodState() OVERRIDE { }
-
-private:
-    EmptyTextCheckerClient m_textCheckerClient;
 };
 
 class EmptyContextMenuClient : public ContextMenuClient {

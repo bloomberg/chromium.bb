@@ -34,8 +34,8 @@
 
 namespace WebCore {
 
-class EditorClient;
 class Frame;
+class SpellCheckerClient;
 class SpellCheckRequest;
 class SpellCheckRequester;
 class TextCheckerClient;
@@ -49,7 +49,7 @@ public:
 
     ~SpellChecker();
 
-    EditorClient& editorClient() const;
+    SpellCheckerClient& spellCheckerClient() const;
     TextCheckerClient& textChecker() const;
 
     bool isContinuousSpellCheckingEnabled() const;

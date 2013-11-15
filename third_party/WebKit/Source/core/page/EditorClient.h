@@ -27,39 +27,18 @@
 #ifndef EditorClient_h
 #define EditorClient_h
 
-#include "core/editing/TextAffinity.h"
-#include "core/editing/UndoStep.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/text/TextChecking.h"
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-class ArchiveResource;
-class DocumentFragment;
-class Editor;
 class Element;
 class Frame;
-class HTMLElement;
 class KeyboardEvent;
-class Node;
-class Range;
-class SharedBuffer;
-class StylePropertySet;
-class TextCheckerClient;
-class VisibleSelection;
-class VisiblePosition;
-
-struct GrammarDetail;
+class UndoStep;
 
 class EditorClient {
 public:
     virtual ~EditorClient() { }
-
-    virtual bool isContinuousSpellCheckingEnabled() = 0;
-    virtual void toggleContinuousSpellChecking() = 0;
-    virtual bool isGrammarCheckingEnabled() = 0;
 
     virtual void respondToChangedContents() = 0;
     virtual void respondToChangedSelection(Frame*) = 0;
@@ -83,11 +62,6 @@ public:
     virtual void textDidChangeInTextField(Element*) = 0;
     virtual bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*) = 0;
 
-    virtual TextCheckerClient& textChecker() = 0;
-
-    virtual void updateSpellingUIWithMisspelledWord(const String&) = 0;
-    virtual void showSpellingUI(bool show) = 0;
-    virtual bool spellingUIIsShowing() = 0;
     virtual void willSetInputMethodState() = 0;
 };
 

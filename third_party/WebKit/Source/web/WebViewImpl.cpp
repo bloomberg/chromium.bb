@@ -378,6 +378,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_editorClientImpl(this)
     , m_inspectorClientImpl(this)
     , m_backForwardClientImpl(this)
+    , m_spellCheckerClientImpl(this)
     , m_fixedLayoutSizeLock(false)
     , m_shouldAutoResize(false)
     , m_zoomLevel(0)
@@ -441,6 +442,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     pageClients.dragClient = &m_dragClientImpl;
     pageClients.inspectorClient = &m_inspectorClientImpl;
     pageClients.backForwardClient = &m_backForwardClientImpl;
+    pageClients.spellCheckerClient = &m_spellCheckerClientImpl;
 
     m_page = adoptPtr(new Page(pageClients));
     provideUserMediaTo(m_page.get(), &m_userMediaClientImpl);

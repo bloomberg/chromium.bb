@@ -27,40 +27,23 @@
 #include "config.h"
 #include "EditorClientImpl.h"
 
-#include "HTMLNames.h"
 #include "WebAutofillClient.h"
-#include "WebElement.h"
-#include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebInputElement.h"
 #include "WebInputEventConversion.h"
-#include "WebKit.h"
-#include "WebNode.h"
 #include "WebPermissionClient.h"
-#include "WebRange.h"
-#include "WebSpellCheckClient.h"
-#include "WebTextAffinity.h"
-#include "WebTextCheckingCompletionImpl.h"
-#include "WebTextCheckingResult.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
-#include "core/dom/Document.h"
-#include "core/dom/DocumentMarkerController.h"
 #include "core/editing/Editor.h"
-#include "core/editing/SpellChecker.h"
-#include "core/editing/TextCheckingHelper.h"
 #include "core/editing/UndoStep.h"
 #include "core/events/KeyboardEvent.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/Frame.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/chromium/KeyboardCodes.h"
-#include "core/rendering/RenderObject.h"
 #include "platform/PlatformKeyboardEvent.h"
-#include "wtf/text/WTFString.h"
 
 using namespace WebCore;
 
@@ -75,76 +58,11 @@ static const size_t maximumUndoStackDepth = 1000;
 EditorClientImpl::EditorClientImpl(WebViewImpl* webview)
     : m_webView(webview)
     , m_inRedo(false)
-    , m_spellCheckThisFieldStatus(SpellCheckAutomatic)
 {
 }
 
 EditorClientImpl::~EditorClientImpl()
 {
-}
-
-bool EditorClientImpl::shouldSpellcheckByDefault()
-{
-    // Spellcheck should be enabled for all editable areas (such as textareas,
-    // contentEditable regions, designMode docs and inputs).
-    const Frame* frame = m_webView->focusedWebCoreFrame();
-    if (!frame)
-        return false;
-    if (frame->spellChecker().isSpellCheckingEnabledInFocusedNode())
-        return true;
-    const Document* document = frame->document();
-    if (!document)
-        return false;
-    const Element* element = document->focusedElement();
-    // If |element| is null, we default to allowing spellchecking. This is done
-    // in order to mitigate the issue when the user clicks outside the textbox,
-    // as a result of which |element| becomes null, resulting in all the spell
-    // check markers being deleted. Also, the Frame will decide not to do
-    // spellchecking if the user can't edit - so returning true here will not
-    // cause any problems to the Frame's behavior.
-    if (!element)
-        return true;
-    const RenderObject* renderer = element->renderer();
-    if (!renderer)
-        return false;
-
-    return true;
-}
-
-bool EditorClientImpl::isContinuousSpellCheckingEnabled()
-{
-    if (m_spellCheckThisFieldStatus == SpellCheckForcedOff)
-        return false;
-    if (m_spellCheckThisFieldStatus == SpellCheckForcedOn)
-        return true;
-    return shouldSpellcheckByDefault();
-}
-
-void EditorClientImpl::toggleContinuousSpellChecking()
-{
-    if (isContinuousSpellCheckingEnabled()) {
-        m_spellCheckThisFieldStatus = SpellCheckForcedOff;
-        if (Page* page = m_webView->page()) {
-            for (Frame* frame = page->mainFrame(); frame && frame->document(); frame = frame->tree().traverseNext()) {
-                frame->document()->markers()->removeMarkers(DocumentMarker::MisspellingMarkers());
-            }
-        }
-    } else {
-        m_spellCheckThisFieldStatus = SpellCheckForcedOn;
-        if (Frame* frame = m_webView->focusedWebCoreFrame()) {
-            VisibleSelection frameSelection = frame->selection().selection();
-            // If a selection is in an editable element spell check its content.
-            if (Element* rootEditableElement = frameSelection.rootEditableElement()) {
-                frame->editor().didBeginEditing(rootEditableElement);
-            }
-        }
-    }
-}
-
-bool EditorClientImpl::isGrammarCheckingEnabled()
-{
-    const Frame* frame = m_webView->focusedWebCoreFrame();
-    return frame && frame->settings() && (frame->settings()->asynchronousSpellCheckingEnabled() || frame->settings()->unifiedTextCheckerEnabled());
 }
 
 void EditorClientImpl::respondToChangedSelection(Frame* frame)
@@ -538,116 +456,6 @@ bool EditorClientImpl::doTextFieldCommandFromEvent(Element* element, KeyboardEve
     // The Mac code appears to use this method as a hook to implement special
     // keyboard commands specific to Safari's auto-fill implementation. We
     // just return false to allow the default action.
-    return false;
-}
-
-bool EditorClientImpl::shouldEraseMarkersAfterChangeSelection(TextCheckingType type) const
-{
-    const Frame* frame = m_webView->focusedWebCoreFrame();
-    return !frame || !frame->settings() || (!frame->settings()->asynchronousSpellCheckingEnabled() && !frame->settings()->unifiedTextCheckerEnabled());
-}
-
-void EditorClientImpl::checkSpellingOfString(const String& text, int* misspellingLocation, int* misspellingLength)
-{
-    // SpellCheckWord will write (0, 0) into the output vars, which is what our
-    // caller expects if the word is spelled correctly.
-    int spellLocation = -1;
-    int spellLength = 0;
-
-    // Check to see if the provided text is spelled correctly.
-    if (m_webView->spellCheckClient()) {
-        m_webView->spellCheckClient()->spellCheck(text, spellLocation, spellLength, 0);
-    } else {
-        spellLocation = 0;
-        spellLength = 0;
-    }
-
-    // Note: the Mac code checks if the pointers are null before writing to them,
-    // so we do too.
-    if (misspellingLocation)
-        *misspellingLocation = spellLocation;
-    if (misspellingLength)
-        *misspellingLength = spellLength;
-}
-
-void EditorClientImpl::requestCheckingOfString(WTF::PassRefPtr<WebCore::TextCheckingRequest> request)
-{
-    if (m_webView->spellCheckClient()) {
-        const String& text = request->data().text();
-        const Vector<uint32_t>& markers = request->data().markers();
-        const Vector<unsigned>& markerOffsets = request->data().offsets();
-        m_webView->spellCheckClient()->requestCheckingOfText(text, markers, markerOffsets, new WebTextCheckingCompletionImpl(request));
-    }
-}
-
-String EditorClientImpl::getAutoCorrectSuggestionForMisspelledWord(const String& misspelledWord)
-{
-    if (!(isContinuousSpellCheckingEnabled() && m_webView->client()))
-        return String();
-
-    // Do not autocorrect words with capital letters in it except the
-    // first letter. This will remove cases changing "IMB" to "IBM".
-    for (size_t i = 1; i < misspelledWord.length(); i++) {
-        if (u_isupper(static_cast<UChar32>(misspelledWord[i])))
-            return String();
-    }
-
-    if (m_webView->spellCheckClient())
-        return m_webView->spellCheckClient()->autoCorrectWord(WebString(misspelledWord));
-    return String();
-}
-
-void EditorClientImpl::checkGrammarOfString(const String& text, WTF::Vector<GrammarDetail>& details, int* badGrammarLocation, int* badGrammarLength)
-{
-    if (badGrammarLocation)
-        *badGrammarLocation = -1;
-    if (badGrammarLength)
-        *badGrammarLength = 0;
-
-    if (!m_webView->spellCheckClient())
-        return;
-    WebVector<WebTextCheckingResult> webResults;
-    m_webView->spellCheckClient()->checkTextOfParagraph(text, WebTextCheckingTypeGrammar, &webResults);
-    if (!webResults.size())
-        return;
-
-    // Convert a list of WebTextCheckingResults to a list of GrammarDetails. If
-    // the converted vector of GrammarDetails has grammar errors, we set
-    // badGrammarLocation and badGrammarLength to tell WebKit that the input
-    // text has grammar errors.
-    for (size_t i = 0; i < webResults.size(); ++i) {
-        if (webResults[i].decoration == WebTextDecorationTypeGrammar) {
-            GrammarDetail detail;
-            detail.location = webResults[i].location;
-            detail.length = webResults[i].length;
-            detail.userDescription = webResults[i].replacement;
-            details.append(detail);
-        }
-    }
-    if (!details.size())
-        return;
-    if (badGrammarLocation)
-        *badGrammarLocation = 0;
-    if (badGrammarLength)
-        *badGrammarLength = text.length();
-}
-
-void EditorClientImpl::updateSpellingUIWithMisspelledWord(const String& misspelledWord)
-{
-    if (m_webView->spellCheckClient())
-        m_webView->spellCheckClient()->updateSpellingUIWithMisspelledWord(WebString(misspelledWord));
-}
-
-void EditorClientImpl::showSpellingUI(bool show)
-{
-    if (m_webView->spellCheckClient())
-        m_webView->spellCheckClient()->showSpellingUI(show);
-}
-
-bool EditorClientImpl::spellingUIIsShowing()
-{
-    if (m_webView->spellCheckClient())
-        return m_webView->spellCheckClient()->isShowingSpellingUI();
     return false;
 }
 
