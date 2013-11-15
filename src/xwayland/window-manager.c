@@ -902,6 +902,7 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 		wl_list_remove(&window->surface_destroy_listener.link);
 	window->surface = NULL;
 	window->shsurf = NULL;
+	window->view = NULL;
 	xcb_unmap_window(wm->conn, window->frame_id);
 }
 
@@ -2028,6 +2029,7 @@ surface_destroy(struct wl_listener *listener, void *data)
        Don't try to use it later. */
 	window->shsurf = NULL;
 	window->surface = NULL;
+	window->view = NULL;
 }
 
 static struct weston_wm_window *
