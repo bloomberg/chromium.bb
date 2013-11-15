@@ -2508,12 +2508,8 @@ public class AwSettingsTest extends AwTestBase {
                         views.getContents1(), views.getClient1(), true));
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    http://crbug.com/304548
-    */
-    @DisabledTest
     public void testSetInitialScale() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
