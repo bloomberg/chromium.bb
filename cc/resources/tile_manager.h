@@ -92,10 +92,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
       ManagedTileState::TileVersion& tile_version =
           mts.tile_versions[HIGH_QUALITY_NO_LCD_RASTER_MODE];
 
-      tile_version.resource_ = make_scoped_ptr(
-          new ResourcePool::Resource(resource_provider,
-                                     gfx::Size(1, 1),
-                                     resource_provider->best_texture_format()));
+      tile_version.resource_ = resource_pool_->AcquireResource(
+          gfx::Size(1, 1), resource_provider->best_texture_format());
 
       bytes_releasable_ += BytesConsumedIfAllocated(tiles[i]);
       ++resources_releasable_;

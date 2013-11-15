@@ -68,7 +68,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     scoped_ptr<ResourceProvider> resource_provider =
         ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1);
 
-    FakePictureLayerTilingClient client;
+    FakePictureLayerTilingClient client(resource_provider.get());
     client.SetTileSize(gfx::Size(256, 256));
     gfx::Size layer_bounds(1000, 800);
     PictureLayerTilingSet set(&client, layer_bounds);

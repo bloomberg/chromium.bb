@@ -63,6 +63,8 @@ class CC_EXPORT ResourcePool {
   bool ResourceUsageTooHigh();
 
  private:
+  void DidFinishUsingResource(ResourcePool::Resource* resource);
+
   ResourceProvider* resource_provider_;
   size_t max_memory_usage_bytes_;
   size_t max_unused_memory_usage_bytes_;

@@ -39,7 +39,16 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider)
 }
 
 ResourcePool::~ResourcePool() {
+  while (!busy_resources_.empty()) {
+    DidFinishUsingResource(busy_resources_.front());
+    busy_resources_.pop_front();
+  }
+
   SetResourceUsageLimits(0, 0, 0);
+  DCHECK_EQ(0u, unused_resources_.size());
+  DCHECK_EQ(0u, memory_usage_bytes_);
+  DCHECK_EQ(0u, unused_memory_usage_bytes_);
+  DCHECK_EQ(0u, resource_count_);
 }
 
 scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
@@ -126,13 +135,17 @@ void ResourcePool::CheckBusyResources() {
     Resource* resource = *it;
 
     if (resource_provider_->CanLockForWrite(resource->id())) {
-      unused_memory_usage_bytes_ += resource->bytes();
-      unused_resources_.push_back(resource);
+      DidFinishUsingResource(resource);
       it = busy_resources_.erase(it);
     } else {
       ++it;
     }
   }
+}
+
+void ResourcePool::DidFinishUsingResource(ResourcePool::Resource* resource) {
+  unused_memory_usage_bytes_ += resource->bytes();
+  unused_resources_.push_back(resource);
 }
 
 }  // namespace cc

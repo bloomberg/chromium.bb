@@ -29,6 +29,14 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
       twin_tiling_(NULL),
       allow_create_tile_(true) {}
 
+FakePictureLayerTilingClient::FakePictureLayerTilingClient(
+    ResourceProvider* resource_provider)
+    : tile_manager_(
+          new FakeTileManager(&tile_manager_client_, resource_provider)),
+      pile_(new FakeInfinitePicturePileImpl()),
+      twin_tiling_(NULL),
+      allow_create_tile_(true) {}
+
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
 }
 
