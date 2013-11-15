@@ -94,7 +94,7 @@ void BlobBuilder::append(Blob* blob)
 {
     if (!blob)
         return;
-    if (blob->isFile()) {
+    if (blob->hasBackingFile()) {
         File* file = toFile(blob);
         // If the blob is file that is not snapshoted, capture the snapshot now.
         // FIXME: This involves synchronous file operation. We need to figure out how to make it asynchronous.
@@ -122,7 +122,7 @@ void BlobBuilder::appendBytesData(const void* data, size_t length)
     m_size += buffer.size() - oldSize;
 }
 
-PassRefPtr<Blob> BlobBuilder::getBlob(const String& contentType)
+PassRefPtr<Blob> BlobBuilder::createBlob(const String& contentType)
 {
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(contentType);
@@ -134,7 +134,22 @@ PassRefPtr<Blob> BlobBuilder::getBlob(const String& contentType)
     // Instead, we only need to keep a reference to the blob data just created.
     m_items.append(BlobDataItem(blob->blobDataHandle(), 0, m_size));
 
-    return blob;
+    return blob.release();
+}
+
+PassRefPtr<File> BlobBuilder::createFile(const String& contentType, const String& fileName, double modificationTime)
+{
+    OwnPtr<BlobData> blobData = BlobData::create();
+    blobData->setContentType(contentType);
+    blobData->swapItems(m_items);
+
+    RefPtr<File> file = File::create(fileName, modificationTime, BlobDataHandle::create(blobData.release(), m_size));
+
+    // After creating a file from the current blob data, we do not need to keep the data around any more.
+    // Instead, we only need to keep a reference to the blob data just created.
+    m_items.append(BlobDataItem(file->blobDataHandle(), 0, m_size));
+
+    return file.release();
 }
 
 } // namespace WebCore

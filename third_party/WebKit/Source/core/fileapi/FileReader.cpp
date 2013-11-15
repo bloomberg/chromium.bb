@@ -54,7 +54,7 @@ const CString utf8BlobUUID(Blob* blob)
 
 const CString utf8FilePath(Blob* blob)
 {
-    return blob->isFile() ? toFile(blob)->path().utf8() : "";
+    return blob->hasBackingFile() ? toFile(blob)->path().utf8() : "";
 }
 #endif
 

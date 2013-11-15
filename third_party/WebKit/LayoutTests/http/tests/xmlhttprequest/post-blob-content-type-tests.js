@@ -45,4 +45,25 @@ var xhrBlobTestCases = [{
     expectedMime: 'text/plain;charset=utf-8',
     url: 'http://localhost:8000',
     allowOrigin: '?origin=http://127.0.0.1:8000'
+}, {
+    mime: 'text/plain;charset=utf-8',
+    expectedMime: 'text/plain;charset=utf-8',
+    file: 'hello.txt'
+}, {
+    mime: 'ASCII/CR\r;charset=invalid',
+    expectedMime: '',
+    file: 'hello.txt'
+}, {
+    mime: '',
+    expectedMime: '',
+    file: 'hello.txt'
+}, {
+    mime: 'multipart/mixed;boundary="--blob-boundary"',
+    expectedMime: 'multipart/mixed;boundary="--blob-boundary"',
+    file: 'hello.txt'
+}, {
+    mime: '\u0422\u0435\u0441\u0442',
+    expectedMime: '',
+    shouldThrow: true,
+    file: 'hello.txt'
 }];

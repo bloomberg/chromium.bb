@@ -60,7 +60,10 @@ public:
     String uuid() const { return m_blobDataHandle->uuid(); }
     String type() const {  return m_blobDataHandle->type(); }
     virtual unsigned long long size() const { return m_blobDataHandle->size(); }
+    // True for all File instances, including the user-built ones.
     virtual bool isFile() const { return false; }
+    // Only true for File instances that are backed by platform files.
+    virtual bool hasBackingFile() const { return false; }
     PassRefPtr<BlobDataHandle> blobDataHandle() const { return m_blobDataHandle; }
     PassRefPtr<Blob> slice(long long start = 0, long long end = std::numeric_limits<long long>::max(), const String& contentType = String()) const;
 

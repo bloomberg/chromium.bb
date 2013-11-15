@@ -684,7 +684,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& es)
 
         // FIXME: add support for uploading bundles.
         m_requestEntityBody = FormData::create();
-        if (body->isFile())
+        if (body->hasBackingFile())
             m_requestEntityBody->appendFile(toFile(body)->path());
         else
             m_requestEntityBody->appendBlob(body->uuid(), body->blobDataHandle());

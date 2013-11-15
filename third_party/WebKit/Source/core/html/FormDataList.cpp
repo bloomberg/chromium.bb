@@ -115,7 +115,7 @@ void FormDataList::appendKeyValuePairItemsTo(FormData* formData, const WTF::Text
             // Append body
             formData->appendData(header.data(), header.size());
             if (value.blob()) {
-                if (value.blob()->isFile()) {
+                if (value.blob()->hasBackingFile()) {
                     File* file = toFile(value.blob());
                     // Do not add the file if the path is empty.
                     if (!file->path().isEmpty())

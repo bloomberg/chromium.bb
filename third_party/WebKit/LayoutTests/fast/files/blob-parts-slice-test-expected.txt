@@ -1,4 +1,4 @@
-Test Blob.slice().
+Test the Blob.slice() behavior for Blobs made of multiple parts.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

@@ -1,73 +1,78 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <script src="/js-test-resources/js-test.js"></script>
-</head>
-<body>
-  <script src="post-blob-content-type-tests.js"></script>
-  <script type="text/javascript">
-    description("Test verifies that content MIME type is set correctly " +
-                "when Blob is sent using " +
-                "<a href='http://www.w3.org/TR/XMLHttpRequest/#the-send-method'>XMLHttpRequest asynchronously.</a>");
 
-    var xhr;
-    var expectedMimeType;
-    window.jsTestIsAsync = true;
-    var asyncTestCase = 0;
+<script src="/js-test-resources/js-test.js"></script>
+<script src="post-blob-content-type-tests.js"></script>
+<script type="text/javascript">
+  description("Test verifies that content MIME type is set correctly " +
+              "when Blob is sent using " +
+              "<a href='http://www.w3.org/TR/XMLHttpRequest/#the-send-method'>XMLHttpRequest asynchronously.</a>");
 
-    function runNextAsyncTest() {
-        asyncTestCase++;
-        runAsyncTests();
-    }
+  var xhr;
+  var expectedMimeType;
+  window.jsTestIsAsync = true;
+  var asyncTestCase = 0;
 
-    function reportResult(e) {
-        if (xhr.status === 200) {
-            expectedMimeType = JSON.parse(xhr.response)['content-type'] || "";
-            shouldBeEqualToString("expectedMimeType", xhrBlobTestCases[asyncTestCase].expectedMime);
-        } else if (xhr.status === 0 && xhrBlobTestCases[asyncTestCase].shouldThrow){
-            testPassed("Cross-origin request without CORS headers should fail.");
-        } else {
-            testFailed("Unknown error");
-        }
+  function runNextAsyncTest() {
+      asyncTestCase++;
+      runAsyncTests();
+  }
 
-        runNextAsyncTest();
-    }
+  function reportResult(e) {
+      var testCase = xhrBlobTestCases[asyncTestCase];
+      if (xhr.status === 200) {
+          postedMimeType = JSON.parse(xhr.response)['content-type'] || "";
+          shouldBeEqualToString("postedMimeType", testCase.expectedMime);
+      } else if (xhr.status === 0 && testCase.shouldThrow){
+          testPassed("Cross-origin request without CORS headers should fail.");
+      } else {
+          testFailed("Unknown error");
+      }
 
-    function runAsyncTests() {
-        if (asyncTestCase >= xhrBlobTestCases.length) {
-            finishJSTest();
-            return;
-        } else {
-            var mime = xhrBlobTestCases[asyncTestCase].mime;
-            var url = xhrBlobTestCases[asyncTestCase].url !== undefined ? xhrBlobTestCases[asyncTestCase].url + xhrBlobTestUrl : xhrBlobTestUrl;
-            url += xhrBlobTestCases[asyncTestCase].allowOrigin || "";
-            if (xhrBlobTestCases[asyncTestCase].shouldThrow !== undefined) {
-                try {
-                    testBlobContentTypeAsync(url, mime);
-                } catch (e) {
-                    testPassed("Exception should be thrown.")
-                    runNextAsyncTest();
-                }
-            } else
-                testBlobContentTypeAsync(url, mime);
-        }
-    }
+      runNextAsyncTest();
+  }
 
-    function testBlobContentTypeAsync(url, mimeType) {
-        var blob;
-        if (mimeType !== "")
-            blob = new Blob(["Test content"], {type: mimeType});
-        else
-            blob = new Blob(["Test content"]);
+  function runAsyncTests() {
+      if (asyncTestCase >= xhrBlobTestCases.length) {
+          finishJSTest();
+          return;
+      } else {
+          var testCase = xhrBlobTestCases[asyncTestCase];
+          var mime = testCase.mime;
+          var file = testCase.file;
+          var url = testCase.url !== undefined ? testCase.url + xhrBlobTestUrl : xhrBlobTestUrl;
+          url += testCase.allowOrigin || "";
+          if (testCase.shouldThrow !== undefined) {
+              try {
+                  testBlobContentTypeAsync(url, mime, file);
+              } catch (e) {
+                  testPassed("Exception should be thrown.")
+                  runNextAsyncTest();
+              }
+          } else
+              testBlobContentTypeAsync(url, mime);
+      }
+  }
 
-        xhr = new XMLHttpRequest();
-        xhr.onloadend = reportResult;
-        xhr.open("POST", url, true);
-        xhr.send(blob);
-    }
+  function testBlobContentTypeAsync(url, mimeType, fileName) {
+      var blob;
+      if (fileName) {
+          if (mimeType !== "")
+              blob = new File(["Test content"], fileName, {type: mimeType});
+          else
+              blob = new File(["Test content"], fileName);
+      } else {
+          if (mimeType !== "")
+              blob = new Blob(["Test content"], {type: mimeType});
+          else
+              blob = new Blob(["Test content"]);
+      }
 
-    runAsyncTests();
+      xhr = new XMLHttpRequest();
+      xhr.onloadend = reportResult;
+      xhr.open("POST", url, true);
+      xhr.send(blob);
+  }
 
-  </script>
-</body>
-</html>
+  runAsyncTests();
+
+</script>

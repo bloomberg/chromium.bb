@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,38 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BlobBuilder_h
-#define BlobBuilder_h
+#ifndef V8BlobCustomHelpers_h
+#define V8BlobCustomHelpers_h
 
-#include "platform/blob/BlobData.h"
-#include "wtf/Forward.h"
+#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 
-class Blob;
-class File;
+class BlobBuilder;
 
-class BlobBuilder {
-public:
-    BlobBuilder();
+// Shared code between the custom constructor bindings for Blob and File.
+namespace V8BlobCustomHelpers {
 
-    void append(Blob*);
-    void append(const String& text, const String& ending);
-    void append(ArrayBuffer*);
-    void append(ArrayBufferView*);
+// Extracts the "type" and "endings" properties out of the BlobPropertyBag passed to a Blob constructor.
+// http://www.w3.org/TR/FileAPI/#constructorParams
+// Returns true if everything went well, false if a JS exception was thrown.
+bool processBlobPropertyBag(v8::Local<v8::Value> propertyBag, const char* blobClassName, String& contentType, String& endings, v8::Isolate*);
 
-    PassRefPtr<Blob> createBlob(const String& contentType);
-    PassRefPtr<File> createFile(const String& contentType, const String& fileName, double modificationTime);
+// Appends the blobParts passed to a Blob constructor into a BlobBuilder.
+// http://www.w3.org/TR/FileAPI/#constructorParams
+// Returns true if everything went well, false if a JS exception was thrown.
+bool processBlobParts(v8::Local<v8::Object> blobParts, uint32_t blobPartsLength, const String& endings, BlobBuilder&, v8::Isolate*);
 
-private:
-    void appendBytesData(const void*, size_t);
-
-    Vector<char>& getBuffer();
-
-    long long m_size;
-    BlobDataItemList m_items;
-};
+} // namespace V8BlobCustomHelpers
 
 } // namespace WebCore
 
-#endif // BlobBuilder_h
+#endif // V8BlobCustomHelpers_h

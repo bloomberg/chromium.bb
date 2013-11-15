@@ -14,6 +14,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] Error
 [Worker] EvalError
 [Worker] EventSource
+[Worker] File
 [Worker] FileError
 [Worker] FileReader
 [Worker] FileReaderSync

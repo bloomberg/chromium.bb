@@ -49,6 +49,11 @@ public:
         return adoptRef(new File(path, policy));
     }
 
+    static PassRefPtr<File> create(const String& name, double modificationTime, PassRefPtr<BlobDataHandle> blobDataHandle)
+    {
+        return adoptRef(new File(name, modificationTime, blobDataHandle));
+    }
+
     // For deserialization.
     static PassRefPtr<File> create(const String& path, PassRefPtr<BlobDataHandle> blobDataHandle)
     {
@@ -70,7 +75,7 @@ public:
         return adoptRef(new File(url, metadata));
     }
 
-    KURL fileSystemURL() const { return m_fileSystemURL; }
+    KURL fileSystemURL() const { ASSERT(m_hasBackingFile); return m_fileSystemURL; }
 
     // Create a file with a name exposed to the author (via File.name and associated DOM properties) that differs from the one provided in the path.
     static PassRefPtr<File> createWithName(const String& path, const String& name, ContentTypeLookupPolicy policy = WellKnownContentTypes)
@@ -80,10 +85,11 @@ public:
         return adoptRef(new File(path, name, policy));
     }
 
-    virtual unsigned long long size() const;
-    virtual bool isFile() const { return true; }
+    virtual unsigned long long size() const OVERRIDE;
+    virtual bool isFile() const OVERRIDE { return true; }
+    virtual bool hasBackingFile() const OVERRIDE { return m_hasBackingFile; }
 
-    const String& path() const { return m_path; }
+    const String& path() const { ASSERT(m_hasBackingFile); return m_path; }
     const String& name() const { return m_name; }
 
     // This returns the current date and time if the file's last modifiecation date is not known (per spec: http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate).
@@ -99,12 +105,14 @@ private:
     File(const String& path, ContentTypeLookupPolicy);
     File(const String& path, const String& name, ContentTypeLookupPolicy);
     File(const String& path, PassRefPtr<BlobDataHandle>);
+    File(const String& name, double modificationTime, PassRefPtr<BlobDataHandle>);
     File(const String& name, const FileMetadata&);
     File(const KURL& fileSystemURL, const FileMetadata&);
 
     // Returns true if this has a valid snapshot metadata (i.e. m_snapshotSize >= 0).
     bool hasValidSnapshotMetadata() const { return m_snapshotSize >= 0; }
 
+    bool m_hasBackingFile;
     String m_path;
     String m_name;
 

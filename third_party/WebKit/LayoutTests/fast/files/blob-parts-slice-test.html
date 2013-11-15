@@ -4,7 +4,7 @@
 <script src="../../resources/js-test.js"></script>
 <script src="resources/blob-slice-common.js"></script>
 <script>
-description("Test Blob.slice().");
+description("Test the Blob.slice() behavior for Blobs made of multiple parts.");
 
 var sliceTestCases = [
     [2, 3, "2"],
@@ -38,8 +38,10 @@ var sliceTestCases = [
 
 function runTests()
 {
-    blob = new Blob(["0123456789"]);
-    file = new File(["0123456789"], "slice-test.txt");
+    blob = new Blob(["0", new File(["12"], "slice-piece.txt"),
+        new Blob(["345"]), "6789"]);
+    file = new File(["0", new File(["12"], "slice-piece.txt"),
+        new Blob(["345"]), "6789"], "slice-text.txt");
 
     runNextTest();
 }

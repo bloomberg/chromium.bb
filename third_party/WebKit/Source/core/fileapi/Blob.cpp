@@ -82,7 +82,7 @@ PassRefPtr<Blob> Blob::slice(long long start, long long end, const String& conte
     // The modification time will be used to verify if the file has been changed or not, when the underlying data are accessed.
     long long size;
     double modificationTime;
-    if (isFile()) {
+    if (hasBackingFile()) {
         // FIXME: This involves synchronous file operation. We need to figure out how to make it asynchronous.
         toFile(this)->captureSnapshot(size, modificationTime);
     } else {
@@ -112,7 +112,7 @@ PassRefPtr<Blob> Blob::slice(long long start, long long end, const String& conte
     long long length = end - start;
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(contentType);
-    if (isFile()) {
+    if (hasBackingFile()) {
         if (!toFile(this)->fileSystemURL().isEmpty())
             blobData->appendFileSystemURL(toFile(this)->fileSystemURL(), start, length, modificationTime);
         else
