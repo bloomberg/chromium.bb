@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from intro_data_source import IntroDataSource
 from server_instance import ServerInstance
 from test_data.canned_data import CANNED_TEST_FILE_SYSTEM_DATA
 from test_file_system import TestFileSystem
@@ -10,11 +11,11 @@ import unittest
 
 class IntroDataSourceTest(unittest.TestCase):
   def setUp(self):
-    self._server = ServerInstance.ForTest(
+    self._server_instance = ServerInstance.ForTest(
         TestFileSystem(CANNED_TEST_FILE_SYSTEM_DATA))
 
   def testIntro(self):
-    intro_data_source = self._server.intro_data_source_factory.Create()
+    intro_data_source = IntroDataSource(self._server_instance, None)
     data = intro_data_source.get('test')
     self.assertEqual('hi', data['title'])
     # TODO(kalman): test links.

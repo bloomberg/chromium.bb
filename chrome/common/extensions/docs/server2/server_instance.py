@@ -126,11 +126,6 @@ class ServerInstance(object):
     self.api_data_source_factory.SetSamplesDataSourceFactory(
         self.samples_data_source_factory)
 
-    self.intro_data_source_factory = IntroDataSource.Factory(
-        self.compiled_fs_factory,
-        host_fs_at_trunk,
-        self.ref_resolver_factory)
-
     self.path_canonicalizer = PathCanonicalizer(
         self.compiled_fs_factory,
         host_fs_at_trunk)

@@ -26,7 +26,6 @@ class TemplateRenderer(object):
       'base_path': server_instance.base_path,
       'extensions_samples_url': EXTENSIONS_SAMPLES,
       'false': False,
-      'intros': server_instance.intro_data_source_factory.Create(),
       'samples': server_instance.samples_data_source_factory.Create(request),
       'static': server_instance.base_path + 'static',
       'true': True,

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from data_source import DataSource
+from intro_data_source import IntroDataSource
 from manifest_data_source import ManifestDataSource
 from permissions_data_source import PermissionsDataSource
 from sidenav_data_source import SidenavDataSource
@@ -11,6 +12,7 @@ from template_data_source import TemplateDataSource
 
 
 _all_data_sources = {
+  'intros': IntroDataSource,
   'manifest_source': ManifestDataSource,
   'partials': TemplateDataSource,
   'permissions': PermissionsDataSource,

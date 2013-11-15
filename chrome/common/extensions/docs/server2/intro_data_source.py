@@ -8,8 +8,10 @@ import os
 import re
 
 from extensions_paths import INTROS_TEMPLATES, ARTICLES_TEMPLATES
+from data_source import DataSource
 from docs_server_utils import FormatKey
 from file_system import FileNotFoundError
+from future import Future
 from third_party.handlebar import Handlebar
 
 
@@ -60,53 +62,48 @@ class _IntroParser(HTMLParser):
     elif self._recent_tag in ['h2', 'h3']:
       self._current_heading['title'] += data
 
-class IntroDataSource(object):
+class IntroDataSource(DataSource):
   '''This class fetches the intros for a given API. From this intro, a table
   of contents dictionary is created, which contains the headings in the intro.
   '''
-  class Factory(object):
-    def __init__(self, compiled_fs_factory, file_system, ref_resolver_factory):
-      self._cache = compiled_fs_factory.Create(file_system,
-                                               self._MakeIntroDict,
-                                               IntroDataSource)
-      self._ref_resolver = ref_resolver_factory.Create()
 
-    def _MakeIntroDict(self, intro_path, intro):
-      # Guess the name of the API from the path to the intro.
-      api_name = os.path.splitext(intro_path.split('/')[-1])[0]
-      intro_with_links = self._ref_resolver.ResolveAllLinks(intro,
-                                                            namespace=api_name)
-      # TODO(kalman): Do $ref replacement after rendering the template, not
-      # before, so that (a) $ref links can contain template annotations, and (b)
-      # we can use CompiledFileSystem.ForTemplates to create the templates and
-      # save ourselves some effort.
-      apps_parser = _IntroParser()
-      apps_parser.feed(Handlebar(intro_with_links).render(
-          { 'is_apps': True }).text)
-      extensions_parser = _IntroParser()
-      extensions_parser.feed(Handlebar(intro_with_links).render(
-          { 'is_apps': False }).text)
-      # TODO(cduvall): Use the normal template rendering system, so we can check
-      # errors.
-      if extensions_parser.page_title != apps_parser.page_title:
-        logging.error(
-            'Title differs for apps and extensions: Apps: %s, Extensions: %s.' %
-                (extensions_parser.page_title, apps_parser.page_title))
-      # The templates will render the heading themselves, so remove it from the
-      # HTML content.
-      intro_with_links = re.sub(_H1_REGEX, '', intro_with_links, count=1)
-      return {
-        'intro': Handlebar(intro_with_links),
-        'title': apps_parser.page_title,
-        'apps_toc': apps_parser.toc,
-        'extensions_toc': extensions_parser.toc,
-      }
+  def __init__(self, server_instance, _):
+    self._cache = server_instance.compiled_fs_factory.Create(
+        server_instance.host_file_system_provider.GetTrunk(),
+        self._MakeIntroDict,
+        IntroDataSource)
+    self._ref_resolver = server_instance.ref_resolver_factory.Create()
 
-    def Create(self):
-      return IntroDataSource(self._cache)
-
-  def __init__(self, cache):
-    self._cache = cache
+  def _MakeIntroDict(self, intro_path, intro):
+    # Guess the name of the API from the path to the intro.
+    api_name = os.path.splitext(intro_path.split('/')[-1])[0]
+    intro_with_links = self._ref_resolver.ResolveAllLinks(intro,
+                                                          namespace=api_name)
+    # TODO(kalman): Do $ref replacement after rendering the template, not
+    # before, so that (a) $ref links can contain template annotations, and (b)
+    # we can use CompiledFileSystem.ForTemplates to create the templates and
+    # save ourselves some effort.
+    apps_parser = _IntroParser()
+    apps_parser.feed(Handlebar(intro_with_links).render(
+        { 'is_apps': True }).text)
+    extensions_parser = _IntroParser()
+    extensions_parser.feed(Handlebar(intro_with_links).render(
+        { 'is_apps': False }).text)
+    # TODO(cduvall): Use the normal template rendering system, so we can check
+    # errors.
+    if extensions_parser.page_title != apps_parser.page_title:
+      logging.error(
+          'Title differs for apps and extensions: Apps: %s, Extensions: %s.' %
+              (extensions_parser.page_title, apps_parser.page_title))
+    # The templates will render the heading themselves, so remove it from the
+    # HTML content.
+    intro_with_links = re.sub(_H1_REGEX, '', intro_with_links, count=1)
+    return {
+      'intro': Handlebar(intro_with_links),
+      'title': apps_parser.page_title,
+      'apps_toc': apps_parser.toc,
+      'extensions_toc': extensions_parser.toc,
+    }
 
   def get(self, key):
     path = FormatKey(key)
@@ -122,3 +119,7 @@ class IntroDataSource(object):
     # know that it'll fail.
     get_from_base_path(base_paths[0])
     raise AssertionError()
+
+  def Cron(self):
+    # TODO(kalman): Walk through the intros and articles directory.
+    return Future(value=())
