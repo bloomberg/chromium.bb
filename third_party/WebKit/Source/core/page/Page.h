@@ -52,6 +52,7 @@ class FocusController;
 class Frame;
 class FrameSelection;
 class HaltablePlugin;
+class HistoryController;
 class HistoryItem;
 class InspectorClient;
 class InspectorController;
@@ -115,6 +116,8 @@ public:
     EditorClient& editorClient() const { return *m_editorClient; }
     SpellCheckerClient& spellCheckerClient() const { return *m_spellCheckerClient; }
 
+    HistoryController* history() const { return m_history.get(); }
+
     void setMainFrame(PassRefPtr<Frame>);
     Frame* mainFrame() const { return m_mainFrame.get(); }
 
@@ -122,9 +125,6 @@ public:
 
     bool openedByDOM() const;
     void setOpenedByDOM();
-
-    // DEPRECATED. Use backForward() instead of the following function.
-    void goToItem(HistoryItem*);
 
     enum PageGroupType { PrivatePageGroup, SharedPageGroup };
     void setGroupType(PageGroupType);
@@ -251,6 +251,7 @@ private:
     const OwnPtr<PointerLockController> m_pointerLockController;
     RefPtr<ScrollingCoordinator> m_scrollingCoordinator;
 
+    const OwnPtr<HistoryController> m_history;
     const OwnPtr<Settings> m_settings;
     const OwnPtr<ProgressTracker> m_progress;
 

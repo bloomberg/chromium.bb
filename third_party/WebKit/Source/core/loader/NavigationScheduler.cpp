@@ -123,7 +123,7 @@ protected:
         m_haveToldClient = true;
 
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        if (frame->loader().history()->currentItemShouldBeReplaced())
+        if (frame->page()->history()->currentItemShouldBeReplaced(frame))
             setLockBackForwardList(true);
     }
 
@@ -240,7 +240,7 @@ public:
         m_haveToldClient = true;
 
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        if (frame->loader().history()->currentItemShouldBeReplaced())
+        if (frame->page()->history()->currentItemShouldBeReplaced(frame))
             setLockBackForwardList(true);
     }
 

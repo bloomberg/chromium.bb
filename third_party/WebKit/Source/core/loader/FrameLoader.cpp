@@ -69,6 +69,7 @@
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
+#include "core/page/BackForwardClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/CreateWindow.h"
@@ -142,7 +143,6 @@ private:
 FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     : m_frame(frame)
     , m_client(client)
-    , m_history(frame)
     , m_mixedContentChecker(frame)
     , m_state(FrameStateProvisional)
     , m_loadType(FrameLoadTypeStandard)
@@ -178,6 +178,11 @@ void FrameLoader::init()
     m_frame->document()->cancelParsing();
     m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocument);
     m_progressTracker = FrameProgressTracker::create(m_frame);
+}
+
+HistoryController* FrameLoader::history() const
+{
+    return m_frame->page() ? m_frame->page()->history() : 0;
 }
 
 void FrameLoader::setDefersLoading(bool defers)
@@ -220,7 +225,8 @@ void FrameLoader::stopLoading()
 
 bool FrameLoader::closeURL()
 {
-    history()->saveDocumentAndScrollState();
+    if (m_frame->page())
+        history()->saveDocumentAndScrollState(m_frame);
 
     // Should only send the pagehide event here if the current document exists.
     if (m_frame->document())
@@ -311,8 +317,8 @@ void FrameLoader::didBeginDocument(bool dispatch)
     m_isComplete = false;
     m_frame->document()->setReadyState(Document::Loading);
 
-    if (history()->currentItem() && m_loadType == FrameLoadTypeBackForward)
-        m_frame->domWindow()->statePopped(history()->currentItem()->stateObject());
+    if (history()->currentItem(m_frame) && m_loadType == FrameLoadTypeBackForward)
+        m_frame->domWindow()->statePopped(history()->currentItem(m_frame)->stateObject());
 
     if (dispatch)
         dispatchDidClearWindowObjectsInAllWorlds();
@@ -340,7 +346,7 @@ void FrameLoader::didBeginDocument(bool dispatch)
         }
     }
 
-    history()->restoreDocumentState();
+    history()->restoreDocumentState(m_frame);
 }
 
 void FrameLoader::finishedParsing()
@@ -520,14 +526,14 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     // replaceRequestURLForSameDocumentNavigation(), since we add based on
     // the current request.
     if (updateBackForwardList == UpdateBackForwardList)
-        history()->updateBackForwardListForFragmentScroll();
+        history()->updateBackForwardListForFragmentScroll(m_frame);
 
     if (sameDocumentNavigationSource == SameDocumentNavigationDefault)
-        history()->updateForSameDocumentNavigation();
+        history()->updateForSameDocumentNavigation(m_frame);
     else if (sameDocumentNavigationSource == SameDocumentNavigationPushState)
-        history()->pushState(data, newURL.string());
+        history()->pushState(m_frame, data, newURL.string());
     else if (sameDocumentNavigationSource == SameDocumentNavigationReplaceState)
-        history()->replaceState(data, newURL.string());
+        history()->replaceState(m_frame, data, newURL.string());
     else
         ASSERT_NOT_REACHED();
 
@@ -603,20 +609,6 @@ void FrameLoader::started()
         frame->loader().m_isComplete = false;
 }
 
-void FrameLoader::prepareForHistoryNavigation()
-{
-    // If there is no currentItem, but we still want to engage in
-    // history navigation we need to manufacture one, and update
-    // the state machine of this frame to impersonate having
-    // loaded it.
-    RefPtr<HistoryItem> currentItem = history()->currentItem();
-    if (!currentItem) {
-        insertDummyHistoryItem();
-        ASSERT(stateMachine()->isDisplayingInitialEmptyDocument());
-        stateMachine()->advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
-    }
-}
-
 void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSendReferrer shouldSendReferrer)
 {
     if (shouldSendReferrer == NeverSendReferrer) {
@@ -648,7 +640,7 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
 {
     if (m_frame->tree().parent() && !m_stateMachine.startedFirstRealLoad())
         return FrameLoadTypeInitialInChildFrame;
-    if (!m_frame->tree().parent() && !history()->currentItem())
+    if (!m_frame->tree().parent() && !m_frame->page()->backForward().backForwardListCount())
         return FrameLoadTypeStandard;
     if (request.resourceRequest().cachePolicy() == ReloadIgnoringCacheData)
         return FrameLoadTypeReload;
@@ -756,9 +748,6 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
     DocumentLoader* documentLoader = activeDocumentLoader();
     if (!documentLoader)
         return;
-
-    if (m_state == FrameStateProvisional)
-        insertDummyHistoryItem();
 
     ResourceRequest request = documentLoader->request();
     // FIXME: We need to reset cache policy to prevent it from being incorrectly propagted to the reload.
@@ -878,7 +867,7 @@ void FrameLoader::commitProvisionalLoad()
     if (isLoadingMainFrame())
         m_frame->page()->chrome().client().needTouchEvents(false);
 
-    history()->updateForCommit();
+    history()->updateForCommit(m_frame);
     m_client->transitionToCommittedForNewPage();
 
     m_frame->navigationScheduler().cancel();
@@ -993,7 +982,7 @@ void FrameLoader::checkLoadCompleteForThisFrame()
     // If the user had a scroll point, scroll to it, overriding the anchor point if any.
     if (m_frame->page()) {
         if (isBackForwardLoadType(m_loadType) || m_loadType == FrameLoadTypeReload || m_loadType == FrameLoadTypeReloadFromOrigin)
-            history()->restoreScrollPositionAndViewState();
+            history()->restoreScrollPositionAndViewState(m_frame);
     }
 
     if (!m_stateMachine.committedFirstRealDocumentLoad())
@@ -1015,7 +1004,7 @@ void FrameLoader::didFirstLayout()
         return;
 
     if (isBackForwardLoadType(m_loadType) || m_loadType == FrameLoadTypeReload || m_loadType == FrameLoadTypeReloadFromOrigin)
-        history()->restoreScrollPositionAndViewState();
+        history()->restoreScrollPositionAndViewState(m_frame);
 }
 
 void FrameLoader::detachChildren()
@@ -1222,7 +1211,7 @@ void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const Navigatio
             m_provisionalDocumentLoader->detachFromFrame();
         m_provisionalDocumentLoader = 0;
     }
-    history()->setProvisionalItem(0);
+    history()->clearProvisionalEntry();
     loadInSameDocument(request.url(), 0, isNewNavigation, clientRedirect);
 }
 
@@ -1415,9 +1404,10 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
 
 bool FrameLoader::shouldTreatURLAsSameAsCurrent(const KURL& url) const
 {
-    if (!history()->currentItem())
+    HistoryItem* item = history()->currentItem(m_frame);
+    if (!item)
         return false;
-    return url == history()->currentItem()->url() || url == history()->currentItem()->originalURL();
+    return url == item->url() || url == item->originalURL();
 }
 
 bool FrameLoader::shouldTreatURLAsSrcdocDocument(const KURL& url) const
@@ -1461,18 +1451,12 @@ Frame* FrameLoader::findFrameForNavigation(const AtomicString& name, Document* a
     return frame;
 }
 
-void FrameLoader::loadHistoryItem(HistoryItem* item)
+void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoadType)
 {
-    HistoryItem* currentItem = history()->currentItem();
-
-    if (currentItem && item->shouldDoSameDocumentNavigationTo(currentItem)) {
-        history()->setCurrentItem(item);
+    if (historyLoadType == HistorySameDocumentLoad) {
         loadInSameDocument(item->url(), item->stateObject(), false, NotClientRedirect);
         return;
     }
-
-    // Remember this item so we can traverse any child items as child frames load
-    history()->setProvisionalItem(item);
 
     RefPtr<FormData> formData = item->formData();
     ResourceRequest request(item->url());
@@ -1486,12 +1470,6 @@ void FrameLoader::loadHistoryItem(HistoryItem* item)
     }
 
     loadWithNavigationAction(NavigationAction(request, FrameLoadTypeBackForward, formData), FrameLoadTypeBackForward, 0, SubstituteData());
-}
-
-void FrameLoader::insertDummyHistoryItem()
-{
-    RefPtr<HistoryItem> currentItem = HistoryItem::create();
-    history()->setCurrentItem(currentItem.get());
 }
 
 void FrameLoader::dispatchDocumentElementAvailable()
