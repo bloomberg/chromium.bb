@@ -5,19 +5,26 @@
 
 import json
 from cStringIO import StringIO
+from functools import partial
+from hashlib import sha1
+from random import random
 import unittest
 from zipfile import ZipFile
 
 from caching_file_system import CachingFileSystem
 from file_system import FileNotFoundError, StatInfo
-from fake_url_fetcher import FakeURLFSFetcher
+from fake_url_fetcher import FakeURLFSFetcher, MockURLFetcher
 from local_file_system import LocalFileSystem
 from new_github_file_system import GithubFileSystem
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
+from test_util import EnableLogging
 
-# A made up sha hash value.
-FAKE_HASH = '7becb9f554dec76bd0fc12c1d32dbaff1d134a4d'
+
+def _GenerateFakeHash():
+  '''Generates a fake SHA1 hash.
+  '''
+  return sha1(str(random())).hexdigest()
 
 
 def _ZipFromFiles(file_dict):
@@ -32,7 +39,8 @@ def _ZipFromFiles(file_dict):
 
 class TestGithubFileSystem(unittest.TestCase):
   def setUp(self):
-    self._gfs = GithubFileSystem.ForTest('repo', FakeURLFSFetcher.CreateLocal())
+    self._gfs = GithubFileSystem.ForTest(
+        'repo', partial(FakeURLFSFetcher, LocalFileSystem('')))
     # Start and finish the repository load.
     self._cgfs = CachingFileSystem(self._gfs, ObjectStoreCreator.ForTest())
 
@@ -71,14 +79,17 @@ class TestGithubFileSystem(unittest.TestCase):
     self.assertEqual(expected[''], sorted(read['']))
 
   def testStat(self):
+    # This is the hash value from the zip on disk.
+    real_hash = '7becb9f554dec76bd0fc12c1d32dbaff1d134a4d'
+
     self._gfs.Refresh().Get()
-    dir_stat = StatInfo(FAKE_HASH, {
-      'hello.notpy': StatInfo(FAKE_HASH),
-      '__init__.notpy': StatInfo(FAKE_HASH)
+    dir_stat = StatInfo(real_hash, {
+      'hello.notpy': StatInfo(real_hash),
+      '__init__.notpy': StatInfo(real_hash)
     })
 
-    self.assertEqual(StatInfo(FAKE_HASH), self._gfs.Stat('README.md'))
-    self.assertEqual(StatInfo(FAKE_HASH), self._gfs.Stat('src/hello.notpy'))
+    self.assertEqual(StatInfo(real_hash), self._gfs.Stat('README.md'))
+    self.assertEqual(StatInfo(real_hash), self._gfs.Stat('src/hello.notpy'))
     self.assertEqual(dir_stat, self._gfs.Stat('src/'))
 
   def testBadReads(self):
@@ -117,8 +128,7 @@ class TestGithubFileSystem(unittest.TestCase):
       from copy import deepcopy
       commit_json = json.loads(deepcopy(LocalFileSystem('').ReadSingle(
           'test_data/github_file_system/test_owner/repo/commits/HEAD').Get()))
-      commit_json['commit']['tree']['sha'] = 'hash' + FAKE_HASH[4:]
-
+      commit_json['commit']['tree']['sha'] = hash_value
       return json.dumps(commit_json)
 
     files = {
@@ -135,40 +145,81 @@ class TestGithubFileSystem(unittest.TestCase):
       'test_owner': {
         'changing-repo': {
           'commits': {
-            'HEAD': make_sha_json(FAKE_HASH)
+            'HEAD': make_sha_json(_GenerateFakeHash())
           },
           'zipball': string
         }
       }
     }
 
+    def mutate_file_data():
+      fake_hash = _GenerateFakeHash()
+      files['zipfile/hello.txt'] = fake_hash
+      files['zipfile/new-file'] = fake_hash
+      files['zipfile/dir/file1'] = fake_hash
+      test_files['test_owner']['changing-repo']['zipball'] = _ZipFromFiles(
+          files)
+      test_files['test_owner']['changing-repo']['commits']['HEAD'] = (
+          make_sha_json(fake_hash))
+      return fake_hash, fake_hash
+
     test_file_system = TestFileSystem(test_files)
-
+    fetchers = []
+    def create_mock_url_fetcher(base_path):
+      fetchers.append(
+          MockURLFetcher(FakeURLFSFetcher(test_file_system, base_path)))
+      return fetchers[-1]
     gfs = GithubFileSystem.ForTest(
-        'changing-repo', FakeURLFSFetcher.Create(test_file_system), path='')
+        'changing-repo', create_mock_url_fetcher, path='')
+    fetcher = fetchers[0]
 
+    # It shouldn't fetch until Refresh does so; then it will do 2, one for the
+    # stat, and another for the read.
+    self.assertTrue(*fetcher.CheckAndReset())
     gfs.Refresh().Get()
+    self.assertTrue(*fetcher.CheckAndReset(fetch_count=1,
+                                           fetch_async_count=1,
+                                           fetch_resolve_count=1))
+
+    # Refreshing again will stat but not fetch.
+    gfs.Refresh().Get()
+    self.assertTrue(*fetcher.CheckAndReset(fetch_count=1))
+
     initial_dir_read = sorted(gfs.ReadSingle('').Get())
     initial_file_read = gfs.ReadSingle('dir/file1').Get()
 
-    # Change the underlying data.
-    files['zipfile/hello.txt'] = 'hello world again'
-    files['zipfile/new-file'] = 'a new file'
-    files['zipfile/dir/file1'] = 'changed file'
-    test_files['test_owner']['changing-repo']['zipball'] = _ZipFromFiles(files)
-    test_files['test_owner']['changing-repo']['commits']['HEAD'] = (
-        make_sha_json(FAKE_HASH + 'hash'))
+    version, data = mutate_file_data()
 
     # Check that changes have not effected the file system yet.
     self.assertEqual(initial_dir_read, sorted(gfs.ReadSingle('').Get()))
     self.assertEqual(initial_file_read, gfs.ReadSingle('dir/file1').Get())
+    self.assertNotEqual(StatInfo(version), gfs.Stat(''))
 
     gfs.Refresh().Get()
+    self.assertTrue(*fetcher.CheckAndReset(fetch_count=1,
+                                           fetch_async_count=1,
+                                           fetch_resolve_count=1))
 
-    # Check that the changes have effected the file system.
-    self.assertTrue('new-file' in gfs.ReadSingle('').Get())
+    # Check that the changes have affected the file system.
+    self.assertEqual(data, gfs.ReadSingle('new-file').Get())
     self.assertEqual(files['zipfile/dir/file1'],
                      gfs.ReadSingle('dir/file1').Get())
+    self.assertEqual(StatInfo(version), gfs.Stat('new-file'))
+
+    # Regression test: ensure that reading the data after it's been mutated,
+    # but before Refresh() has been realised, still returns the correct data.
+    version, data = mutate_file_data()
+
+    refresh_future = gfs.Refresh()
+    self.assertTrue(*fetcher.CheckAndReset(fetch_count=1, fetch_async_count=1))
+
+    self.assertEqual(data, gfs.ReadSingle('new-file').Get())
+    self.assertEqual(files['zipfile/dir/file1'],
+                     gfs.ReadSingle('dir/file1').Get())
+    self.assertEqual(StatInfo(version), gfs.Stat('new-file'))
+
+    refresh_future.Get()
+    self.assertTrue(*fetcher.CheckAndReset(fetch_resolve_count=1))
 
 
 if __name__ == '__main__':
