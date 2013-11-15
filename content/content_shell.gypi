@@ -260,11 +260,6 @@
             '../ui/shell/shell.gyp:shell',
            ],
         }], # chromeos==1
-        ['use_ash==1', {
-          'dependencies': [
-            '../ash/ash.gyp:ash',
-           ],
-        }],
         ['use_custom_freetype==1', {
           'dependencies': [
              '../third_party/freetype2/freetype2.gyp:freetype2',
