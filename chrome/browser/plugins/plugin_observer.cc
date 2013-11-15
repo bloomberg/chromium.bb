@@ -191,9 +191,22 @@ void PluginObserver::RenderViewCreated(
   // the IO thread by PluginInfoMessageFilter of this proces,s but it's more
   // complex to manage a map of Ash views in PluginInfoMessageFilter than
   // just telling the renderer via IPC.
-  content::WebContentsView* wcv = web_contents()->GetView();
-  aura::Window* window = wcv->GetNativeView();
-  if (chrome::GetHostDesktopTypeForNativeView(window) ==
+
+  // TODO(shrikant): Implement solution which will help associate
+  // render_view_host/webcontents/view/window instance with host desktop.
+  // Refer to issue http://crbug.com/317940.
+  // When non-active tabs are restored they are not added in view/window parent
+  // hierarchy (chrome::CreateRestoredTab/CreateParams). Normally we traverse
+  // parent hierarchy to identify containing desktop (like in function
+  // chrome::GetHostDesktopTypeForNativeView).
+  // Possible issue with chrome::GetActiveDesktop, is that it's global
+  // state, which remembers last active desktop, which may break in scenarios
+  // where we have instances on both Ash and Native desktop.
+
+  // We will do both tests. Both have some factor of unreliability.
+  aura::Window* window = web_contents()->GetView()->GetNativeView();
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH ||
+      chrome::GetHostDesktopTypeForNativeView(window) ==
       chrome::HOST_DESKTOP_TYPE_ASH) {
     int routing_id = render_view_host->GetRoutingID();
     render_view_host->Send(new ChromeViewMsg_NPAPINotSupported(routing_id));
