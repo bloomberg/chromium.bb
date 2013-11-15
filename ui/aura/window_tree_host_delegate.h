@@ -53,6 +53,7 @@ class AURA_EXPORT RootWindowHostDelegate {
   virtual float GetDeviceScaleFactor() = 0;
 
   virtual RootWindow* AsRootWindow() = 0;
+  virtual const RootWindow* AsRootWindow() const = 0;
 
  protected:
   virtual ~RootWindowHostDelegate() {}

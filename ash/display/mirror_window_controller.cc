@@ -179,12 +179,12 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
         display_info.id();
     root_window_->Init();
 #if defined(USE_X11)
-    DisableInput(root_window_->GetAcceleratedWidget());
+    DisableInput(root_window_->host()->GetAcceleratedWidget());
 #endif
 
     aura::client::SetCaptureClient(root_window_->window(),
                                    new NoneCaptureClient());
-    root_window_->ShowRootWindow();
+    root_window_->host()->Show();
 
     // TODO(oshima): Start mirroring.
     aura::Window* mirror_window = new aura::Window(NULL);
@@ -321,9 +321,9 @@ void MirrorWindowController::OnRootWindowHostResized(
     const aura::RootWindow* root) {
   // Do not use |old_size| as it contains RootWindow's (but not host's) size,
   // and this parameter wil be removed soon.
-  if (mirror_window_host_size_ == root->GetHostSize())
+  if (mirror_window_host_size_ == root->host()->GetBounds().size())
     return;
-  mirror_window_host_size_ = root->GetHostSize();
+  mirror_window_host_size_ = root->host()->GetBounds().size();
   reflector_->OnMirroringCompositorResized();
   root_window_->SetRootWindowTransformer(
       CreateRootWindowTransformer().Pass());

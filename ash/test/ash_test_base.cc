@@ -121,7 +121,7 @@ void AshTestBase::SetUp() {
   ash_test_helper_->SetUp(start_session_);
 
   Shell::GetPrimaryRootWindow()->Show();
-  Shell::GetPrimaryRootWindow()->GetDispatcher()->ShowRootWindow();
+  Shell::GetPrimaryRootWindow()->GetDispatcher()->host()->Show();
   // Move the mouse cursor to far away so that native events doesn't
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));

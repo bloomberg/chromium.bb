@@ -784,7 +784,7 @@ void Shell::Init() {
   AddShellObserver(overlay_filter_.get());
 
   input_method_filter_.reset(new views::corewm::InputMethodEventFilter(
-      root_window->GetDispatcher()->GetAcceleratedWidget()));
+      root_window->GetDispatcher()->host()->GetAcceleratedWidget()));
   AddPreTargetHandler(input_method_filter_.get());
 
   accelerator_filter_.reset(new internal::AcceleratorFilter);

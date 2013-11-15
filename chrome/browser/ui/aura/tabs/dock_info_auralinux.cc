@@ -27,7 +27,7 @@ class BaseWindowFinder : public ui::EnumerateWindowsDelegate {
   explicit BaseWindowFinder(const std::set<aura::Window*>& ignore) {
     std::set<aura::Window*>::iterator iter;
     for (iter = ignore.begin(); iter != ignore.end(); iter++) {
-      XID xid = (*iter)->GetDispatcher()->GetAcceleratedWidget();
+      XID xid = (*iter)->GetDispatcher()->host()->GetAcceleratedWidget();
       ignore_.insert(xid);
     }
   }

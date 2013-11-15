@@ -591,7 +591,7 @@ TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChangedNoInternal) {
   EXPECT_EQ("1,1 100x100",
             GetDisplayInfoForId(10).bounds_in_native().ToString());
   EXPECT_EQ("100x100", ash::Shell::GetPrimaryRootWindow()->GetDispatcher()->
-      GetHostSize().ToString());
+      host()->GetBounds().size().ToString());
 }
 
 #if defined(OS_WIN)
@@ -979,7 +979,8 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
   EXPECT_EQ("0,0 300x400",
             Shell::GetScreen()->GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("400x500", test_api.GetRootWindow()->GetHostSize().ToString());
+  EXPECT_EQ("400x500",
+      test_api.GetRootWindow()->host()->GetBounds().size().ToString());
   EXPECT_EQ("300x400",
             test_api.GetRootWindow()->window()->bounds().size().ToString());
   EXPECT_TRUE(display_manager->IsMirrored());
@@ -1092,32 +1093,32 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateDisplayWithHostOrigin) {
   aura::WindowEventDispatcher* dispatcher0 = root_windows[0]->GetDispatcher();
   aura::WindowEventDispatcher* dispatcher1 = root_windows[1]->GetDispatcher();
 
-  EXPECT_EQ("1,1", dispatcher0->GetHostOrigin().ToString());
-  EXPECT_EQ("100x200", dispatcher0->GetHostSize().ToString());
+  EXPECT_EQ("1,1", dispatcher0->host()->GetBounds().origin().ToString());
+  EXPECT_EQ("100x200", dispatcher0->host()->GetBounds().size().ToString());
   // UpdateDisplay set the origin if it's not set.
-  EXPECT_NE("1,1", dispatcher1->GetHostOrigin().ToString());
-  EXPECT_EQ("300x400", dispatcher1->GetHostSize().ToString());
+  EXPECT_NE("1,1", dispatcher1->host()->GetBounds().origin().ToString());
+  EXPECT_EQ("300x400", dispatcher1->host()->GetBounds().size().ToString());
 
   UpdateDisplay("100x200,200+300-300x400");
   ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ("0,0", dispatcher0->GetHostOrigin().ToString());
-  EXPECT_EQ("100x200", dispatcher0->GetHostSize().ToString());
-  EXPECT_EQ("200,300", dispatcher1->GetHostOrigin().ToString());
-  EXPECT_EQ("300x400", dispatcher1->GetHostSize().ToString());
+  EXPECT_EQ("0,0", dispatcher0->host()->GetBounds().origin().ToString());
+  EXPECT_EQ("100x200", dispatcher0->host()->GetBounds().size().ToString());
+  EXPECT_EQ("200,300", dispatcher1->host()->GetBounds().origin().ToString());
+  EXPECT_EQ("300x400", dispatcher1->host()->GetBounds().size().ToString());
 
   UpdateDisplay("400+500-200x300,300x400");
   ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ("400,500", dispatcher0->GetHostOrigin().ToString());
-  EXPECT_EQ("200x300", dispatcher0->GetHostSize().ToString());
-  EXPECT_EQ("0,0", dispatcher1->GetHostOrigin().ToString());
-  EXPECT_EQ("300x400", dispatcher1->GetHostSize().ToString());
+  EXPECT_EQ("400,500", dispatcher0->host()->GetBounds().origin().ToString());
+  EXPECT_EQ("200x300", dispatcher0->host()->GetBounds().size().ToString());
+  EXPECT_EQ("0,0", dispatcher1->host()->GetBounds().origin().ToString());
+  EXPECT_EQ("300x400", dispatcher1->host()->GetBounds().size().ToString());
 
   UpdateDisplay("100+200-100x200,300+500-200x300");
   ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ("100,200", dispatcher0->GetHostOrigin().ToString());
-  EXPECT_EQ("100x200", dispatcher0->GetHostSize().ToString());
-  EXPECT_EQ("300,500", dispatcher1->GetHostOrigin().ToString());
-  EXPECT_EQ("200x300", dispatcher1->GetHostSize().ToString());
+  EXPECT_EQ("100,200", dispatcher0->host()->GetBounds().origin().ToString());
+  EXPECT_EQ("100x200", dispatcher0->host()->GetBounds().size().ToString());
+  EXPECT_EQ("300,500", dispatcher1->host()->GetBounds().origin().ToString());
+  EXPECT_EQ("200x300", dispatcher1->host()->GetBounds().size().ToString());
 }
 
 }  // namespace internal

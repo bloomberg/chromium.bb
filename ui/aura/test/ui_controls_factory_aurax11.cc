@@ -118,11 +118,11 @@ class UIControlsX11 : public UIControlsAura {
     xevent.xkey.keycode =
         XKeysymToKeycode(gfx::GetXDisplay(),
                          ui::XKeysymForWindowsKeyCode(key, shift));
-    root_window_->PostNativeEvent(&xevent);
+    root_window_->host()->PostNativeEvent(&xevent);
 
     // Send key release events.
     xevent.xkey.type = KeyRelease;
-    root_window_->PostNativeEvent(&xevent);
+    root_window_->host()->PostNativeEvent(&xevent);
     if (alt)
       UnmaskAndSetKeycodeThenSend(&xevent, Mod1Mask, XK_Alt_L);
     if (shift)
@@ -153,7 +153,7 @@ class UIControlsX11 : public UIControlsAura {
     xmotion->state = button_down_mask;
     xmotion->same_screen = True;
     // RootWindow will take care of other necessary fields.
-    root_window_->PostNativeEvent(&xevent);
+    root_window_->host()->PostNativeEvent(&xevent);
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
@@ -193,12 +193,12 @@ class UIControlsX11 : public UIControlsAura {
     // RootWindow will take care of other necessary fields.
     if (state & DOWN) {
       xevent.xbutton.type = ButtonPress;
-      root_window_->PostNativeEvent(&xevent);
+      root_window_->host()->PostNativeEvent(&xevent);
       button_down_mask |= xbutton->state;
     }
     if (state & UP) {
       xevent.xbutton.type = ButtonRelease;
-      root_window_->PostNativeEvent(&xevent);
+      root_window_->host()->PostNativeEvent(&xevent);
       button_down_mask = (button_down_mask | xbutton->state) ^ xbutton->state;
     }
     RunClosureAfterAllPendingUIEvents(closure);
@@ -220,7 +220,7 @@ class UIControlsX11 : public UIControlsAura {
       marker_event->xclient.format = 8;
     }
     marker_event->xclient.message_type = MarkerEventAtom();
-    root_window_->PostNativeEvent(marker_event);
+    root_window_->host()->PostNativeEvent(marker_event);
     new EventWaiter(closure, &Matcher);
   }
  private:
@@ -229,7 +229,7 @@ class UIControlsX11 : public UIControlsAura {
                                  unsigned int mask) {
     xevent->xkey.keycode =
         XKeysymToKeycode(gfx::GetXDisplay(), keysym);
-    root_window_->PostNativeEvent(xevent);
+    root_window_->host()->PostNativeEvent(xevent);
     xevent->xkey.state |= mask;
   }
 
@@ -239,7 +239,7 @@ class UIControlsX11 : public UIControlsAura {
     xevent->xkey.state ^= mask;
     xevent->xkey.keycode =
         XKeysymToKeycode(gfx::GetXDisplay(), keysym);
-    root_window_->PostNativeEvent(xevent);
+    root_window_->host()->PostNativeEvent(xevent);
   }
 
   aura::RootWindow* root_window_;

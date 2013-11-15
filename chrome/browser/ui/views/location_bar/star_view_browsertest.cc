@@ -106,8 +106,8 @@ IN_PROC_BROWSER_TEST_F(StarViewTestNoDWM, WindowedNPAPIPluginHidden) {
   LOG(ERROR) << "3";
 
   // Now get the region of the plugin before the star view is shown.
-  HWND hwnd =
-      tab->GetView()->GetNativeView()->GetDispatcher()->GetAcceleratedWidget();
+  HWND hwnd = tab->GetView()->GetNativeView()->GetDispatcher()->host()->
+      GetAcceleratedWidget();
   HWND child = NULL;
   EnumChildWindows(hwnd, EnumerateChildren,reinterpret_cast<LPARAM>(&child));
   LOG(ERROR) << "4";

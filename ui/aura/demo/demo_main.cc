@@ -151,7 +151,7 @@ int DemoMain() {
   window3.Show();
   window2.AddChild(&window3);
 
-  root_window->ShowRootWindow();
+  root_window->host()->Show();
   base::MessageLoopForUI::current()->Run();
 
   return 0;

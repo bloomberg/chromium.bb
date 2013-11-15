@@ -17,7 +17,6 @@ class RootWindowHostWin : public RootWindowHost, public gfx::WindowImpl {
   RootWindowHostWin(const gfx::Rect& bounds);
   virtual ~RootWindowHostWin();
   // RootWindowHost:
-  virtual void SetDelegate(RootWindowHostDelegate* delegate) OVERRIDE;
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -36,7 +35,6 @@ class RootWindowHostWin : public RootWindowHost, public gfx::WindowImpl {
   virtual void UnConfineCursor() OVERRIDE;
   virtual void OnCursorVisibilityChanged(bool show) OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
-  virtual void SetFocusWhenShown(bool focus_when_shown) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
@@ -74,8 +72,6 @@ class RootWindowHostWin : public RootWindowHost, public gfx::WindowImpl {
   void OnMove(const CPoint& point);
   void OnPaint(HDC dc);
   void OnSize(UINT param, const CSize& size);
-
-  RootWindowHostDelegate* delegate_;
 
   bool fullscreen_;
   bool has_capture_;

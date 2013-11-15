@@ -622,7 +622,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
     shell->desktop_background_controller()->OnRootWindowAdded(root_window());
     shell->high_contrast_controller()->OnRootWindowAdded(
         root_window_->window());
-    root_window_->ShowRootWindow();
+    root_window_->host()->Show();
 
     // Create a launcher if a user is already logged in.
     if (shell->session_state_delegate()->NumberOfLoggedInUsers())

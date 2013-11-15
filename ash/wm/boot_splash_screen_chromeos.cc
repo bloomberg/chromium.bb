@@ -35,9 +35,8 @@ class BootSplashScreen::CopyHostContentLayerDelegate
     // TODO(derat): Instead of copying the data, use GLX_EXT_texture_from_pixmap
     // to create a zero-copy texture (when possible):
     // https://codereview.chromium.org/10543125
-    ui::CopyAreaToCanvas(root_window_->GetAcceleratedWidget(),
-        gfx::Rect(root_window_->GetHostOrigin(), root_window_->GetHostSize()),
-        gfx::Point(), canvas);
+    ui::CopyAreaToCanvas(root_window_->host()->GetAcceleratedWidget(),
+        root_window_->host()->GetBounds(), gfx::Point(), canvas);
   }
 
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {}

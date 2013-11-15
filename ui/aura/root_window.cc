@@ -85,7 +85,7 @@ RootWindowHost* CreateHost(RootWindow* root_window,
                            const RootWindow::CreateParams& params) {
   RootWindowHost* host = params.host ?
       params.host : RootWindowHost::Create(params.initial_bounds);
-  host->SetDelegate(root_window);
+  host->set_delegate(root_window);
   return host;
 }
 
@@ -203,17 +203,9 @@ void RootWindow::Init() {
   compositor()->SetRootLayer(window()->layer());
   transformer_.reset(
       new SimpleRootWindowTransformer(window(), gfx::Transform()));
-  UpdateRootWindowSize(GetHostSize());
+  UpdateRootWindowSize(host_->GetBounds().size());
   Env::GetInstance()->NotifyRootWindowInitialized(this);
   window()->Show();
-}
-
-void RootWindow::ShowRootWindow() {
-  host_->Show();
-}
-
-void RootWindow::HideRootWindow() {
-  host_->Hide();
 }
 
 void RootWindow::PrepareForShutdown() {
@@ -267,10 +259,6 @@ void RootWindow::SetHostSize(const gfx::Size& size_in_pixel) {
   synthesize_mouse_move_ = false;
 }
 
-gfx::Size RootWindow::GetHostSize() const {
-  return host_->GetBounds().size();
-}
-
 void RootWindow::SetHostBounds(const gfx::Rect& bounds_in_pixel) {
   DCHECK(!bounds_in_pixel.IsEmpty());
   DispatchDetails details = DispatchHeldEvents();
@@ -278,10 +266,6 @@ void RootWindow::SetHostBounds(const gfx::Rect& bounds_in_pixel) {
     return;
   host_->SetBounds(bounds_in_pixel);
   synthesize_mouse_move_ = false;
-}
-
-gfx::Point RootWindow::GetHostOrigin() const {
-  return host_->GetBounds().origin();
 }
 
 void RootWindow::SetCursor(gfx::NativeCursor cursor) {
@@ -319,18 +303,6 @@ void RootWindow::MoveCursorToHostLocation(const gfx::Point& host_location) {
   gfx::Point root_location(host_location);
   ConvertPointFromHost(&root_location);
   MoveCursorToInternal(root_location, host_location);
-}
-
-bool RootWindow::ConfineCursorToWindow() {
-  // We would like to be able to confine the cursor to that window. However,
-  // currently, we do not have such functionality in X. So we just confine
-  // to the root window. This is ok because this option is currently only
-  // being used in fullscreen mode, so root_window bounds = window bounds.
-  return host_->ConfineCursorToRootWindow();
-}
-
-void RootWindow::UnConfineCursor() {
-  host_->UnConfineCursor();
 }
 
 void RootWindow::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
@@ -434,22 +406,6 @@ void RootWindow::RemoveRootWindowObserver(RootWindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void RootWindow::PostNativeEvent(const base::NativeEvent& native_event) {
-  host_->PostNativeEvent(native_event);
-}
-
-void RootWindow::ConvertPointToNativeScreen(gfx::Point* point) const {
-  ConvertPointToHost(point);
-  gfx::Point location = host_->GetLocationOnNativeScreen();
-  point->Offset(location.x(), location.y());
-}
-
-void RootWindow::ConvertPointFromNativeScreen(gfx::Point* point) const {
-  gfx::Point location = host_->GetLocationOnNativeScreen();
-  point->Offset(-location.x(), -location.y());
-  ConvertPointFromHost(point);
-}
-
 void RootWindow::ConvertPointToHost(gfx::Point* point) const {
   gfx::Point3F point_3f(*point);
   GetRootTransform().TransformPoint(&point_3f);
@@ -471,14 +427,6 @@ void RootWindow::ProcessedTouchEvent(ui::TouchEvent* event,
   DispatchDetails details = ProcessGestures(gestures.get());
   if (details.dispatcher_destroyed)
     return;
-}
-
-gfx::AcceleratedWidget RootWindow::GetAcceleratedWidget() {
-  return host_->GetAcceleratedWidget();
-}
-
-void RootWindow::ToggleFullScreen() {
-  host_->ToggleFullScreen();
 }
 
 void RootWindow::HoldPointerMoves() {
@@ -504,10 +452,6 @@ void RootWindow::ReleasePointerMoves() {
   TRACE_EVENT_ASYNC_END0("ui", "RootWindow::HoldPointerMoves", this);
 }
 
-void RootWindow::SetFocusWhenShown(bool focused) {
-  host_->SetFocusWhenShown(focused);
-}
-
 gfx::Point RootWindow::GetLastMouseLocationInRoot() const {
   gfx::Point location = Env::GetInstance()->last_mouse_location();
   client::ScreenPositionClient* client =
@@ -515,10 +459,6 @@ gfx::Point RootWindow::GetLastMouseLocationInRoot() const {
   if (client)
     client->ConvertPointFromScreen(window(), &location);
   return location;
-}
-
-bool RootWindow::QueryMouseLocationForTest(gfx::Point* point) const {
-  return host_->QueryMouseLocation(point);
 }
 
 void RootWindow::SetRootWindowTransformer(
@@ -529,7 +469,7 @@ void RootWindow::SetRootWindowTransformer(
   // If the layer is not animating, then we need to update the root window
   // size immediately.
   if (!window()->layer()->GetAnimator()->is_animating())
-    UpdateRootWindowSize(GetHostSize());
+    UpdateRootWindowSize(host_->GetBounds().size());
 }
 
 gfx::Transform RootWindow::GetRootTransform() const {
@@ -544,10 +484,6 @@ void RootWindow::SetTransform(const gfx::Transform& transform) {
   scoped_ptr<RootWindowTransformer> transformer(
       new SimpleRootWindowTransformer(window(), transform));
   SetRootWindowTransformer(transformer.Pass());
-}
-
-void RootWindow::DeviceScaleFactorChanged(float device_scale_factor) {
-  host_->OnDeviceScaleFactorChanged(device_scale_factor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -754,7 +690,7 @@ void RootWindow::DispatchCancelTouchEvent(ui::TouchEvent* event) {
 
 void RootWindow::OnLayerAnimationEnded(
     ui::LayerAnimationSequence* animation) {
-  UpdateRootWindowSize(GetHostSize());
+  UpdateRootWindowSize(host_->GetBounds().size());
 }
 
 void RootWindow::OnLayerAnimationScheduled(
@@ -903,6 +839,10 @@ float RootWindow::GetDeviceScaleFactor() {
 }
 
 RootWindow* RootWindow::AsRootWindow() {
+  return this;
+}
+
+const RootWindow* RootWindow::AsRootWindow() const {
   return this;
 }
 

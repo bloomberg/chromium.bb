@@ -363,7 +363,7 @@ int main(int argc, char** argv) {
   ui::PrintLayerHierarchy(root_window->window()->layer(), gfx::Point(100, 100));
 #endif
 
-  root_window->ShowRootWindow();
+  root_window->host()->Show();
   base::MessageLoopForUI::current()->Run();
   focus_client.reset();
   root_window.reset();

@@ -44,10 +44,10 @@ bool ActiveDesktopMonitor::IsDesktopWindow(aura::RootWindow* root_window) {
   // for an Ash display.
 #if defined(OS_WIN)
   return views::DesktopRootWindowHostWin::GetContentWindowForHWND(
-      root_window->GetAcceleratedWidget()) != NULL;
+      root_window->host()->GetAcceleratedWidget()) != NULL;
 #elif defined(USE_X11)
   return views::DesktopRootWindowHostX11::GetContentWindowForXID(
-      root_window->GetAcceleratedWidget()) != NULL;
+      root_window->host()->GetAcceleratedWidget()) != NULL;
 #else
   NOTREACHED();
   return true;

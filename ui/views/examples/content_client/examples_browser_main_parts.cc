@@ -52,7 +52,7 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   // Set up basic pieces of views::corewm.
   minimal_shell_.reset(new shell::MinimalShell(gfx::Size(800, 600)));
   // Ensure the X window gets mapped.
-  minimal_shell_->root_window()->ShowRootWindow();
+  minimal_shell_->root_window()->host()->Show();
   // Ensure Aura knows where to open new windows.
   window_context = minimal_shell_->root_window()->window();
 #elif defined(USE_AURA)

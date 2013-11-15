@@ -15,7 +15,8 @@ namespace views {
 namespace {
 
 gfx::Point GetOrigin(const aura::Window* root_window) {
-  gfx::Point origin_in_pixels = root_window->GetDispatcher()->GetHostOrigin();
+  gfx::Point origin_in_pixels =
+      root_window->GetDispatcher()->host()->GetBounds().origin();
   aura::Window* window = const_cast<aura::Window*>(root_window);
   float scale = gfx::Screen::GetScreenFor(window)->
        GetDisplayNearestWindow(window).device_scale_factor();

@@ -636,7 +636,7 @@ void CreateDialogImpl(content::BrowserContext* browser_context,
   if (window) {
     HWND dialog_handle;
 #if defined(USE_AURA)
-    dialog_handle = window->GetDispatcher()->GetAcceleratedWidget();
+    dialog_handle = window->GetDispatcher()->host()->GetAcceleratedWidget();
 #else
     dialog_handle = window;
 #endif
@@ -784,4 +784,4 @@ bool CreatePrintDialogFromCommandLine(const CommandLine& command_line) {
   return false;
 }
 
-}  // end namespace
+}  // namespace print_dialog_cloud

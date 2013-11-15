@@ -1107,8 +1107,8 @@ ui::EventHandler* DesktopNativeWidgetAura::GetEventHandler() {
 void DesktopNativeWidgetAura::InstallInputMethodEventFilter() {
   DCHECK(!input_method_event_filter_.get());
 
-  input_method_event_filter_.reset(
-      new corewm::InputMethodEventFilter(root_window_->GetAcceleratedWidget()));
+  input_method_event_filter_.reset(new corewm::InputMethodEventFilter(
+      root_window_->host()->GetAcceleratedWidget()));
   input_method_event_filter_->SetInputMethodPropertyInRootWindow(
       root_window_->window());
   root_window_event_filter_->AddHandler(input_method_event_filter_.get());

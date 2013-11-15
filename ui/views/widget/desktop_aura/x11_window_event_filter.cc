@@ -61,7 +61,7 @@ namespace views {
 X11WindowEventFilter::X11WindowEventFilter(
     aura::RootWindow* root_window)
     : xdisplay_(gfx::GetXDisplay()),
-      xwindow_(root_window->GetAcceleratedWidget()),
+      xwindow_(root_window->host()->GetAcceleratedWidget()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
       is_active_(false) {

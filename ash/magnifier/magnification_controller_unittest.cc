@@ -54,7 +54,7 @@ class MagnificationControllerTest: public test::AshTestBase {
 
   std::string GetHostMouseLocation() {
     gfx::Point point;
-    GetRootWindow()->GetDispatcher()->QueryMouseLocationForTest(&point);
+    GetRootWindow()->GetDispatcher()->host()->QueryMouseLocation(&point);
     return point.ToString();
   }
 

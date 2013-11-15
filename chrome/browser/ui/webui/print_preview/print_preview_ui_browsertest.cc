@@ -110,8 +110,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, WindowedNPAPIPluginHidden) {
 
   // Now get the region of the plugin before and after the print preview is
   // shown. They should be different.
-  HWND hwnd =
-      tab->GetView()->GetNativeView()->GetDispatcher()->GetAcceleratedWidget();
+  HWND hwnd = tab->GetView()->GetNativeView()->GetDispatcher()->host()->
+      GetAcceleratedWidget();
   HWND child = NULL;
   EnumChildWindows(hwnd, EnumerateChildren,reinterpret_cast<LPARAM>(&child));
 

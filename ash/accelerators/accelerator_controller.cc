@@ -285,7 +285,7 @@ bool HandleRotateScreen() {
 }
 
 bool HandleToggleRootWindowFullScreen() {
-  Shell::GetPrimaryRootWindow()->GetDispatcher()->ToggleFullScreen();
+  Shell::GetPrimaryRootWindow()->GetDispatcher()->host()->ToggleFullScreen();
   return true;
 }
 

@@ -62,7 +62,8 @@ void ShowCertificateViewer(content::WebContents* web_contents,
   if (chrome::GetHostDesktopTypeForNativeWindow(parent) !=
       chrome::HOST_DESKTOP_TYPE_ASH) {
     ShowCertificateViewerImpl(
-        web_contents, parent->GetDispatcher()->GetAcceleratedWidget(), cert);
+        web_contents,
+        parent->GetDispatcher()->host()->GetAcceleratedWidget(), cert);
   } else {
     NOTIMPLEMENTED();
   }

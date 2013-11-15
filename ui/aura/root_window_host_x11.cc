@@ -320,8 +320,7 @@ class RootWindowHostX11::MouseMoveFilter {
 // RootWindowHostX11
 
 RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
-    : delegate_(NULL),
-      xdisplay_(gfx::GetXDisplay()),
+    : xdisplay_(gfx::GetXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       current_cursor_(ui::kCursorNull),
@@ -584,10 +583,6 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
   return true;
 }
 
-void RootWindowHostX11::SetDelegate(RootWindowHostDelegate* delegate) {
-  delegate_ = delegate;
-}
-
 RootWindow* RootWindowHostX11::GetRootWindow() {
   return delegate_->AsRootWindow();
 }
@@ -790,17 +785,6 @@ void RootWindowHostX11::MoveCursorTo(const gfx::Point& location) {
                bounds_.y() + location.y());
 }
 
-void RootWindowHostX11::SetFocusWhenShown(bool focus_when_shown) {
-  static const char* k_NET_WM_USER_TIME = "_NET_WM_USER_TIME";
-  focus_when_shown_ = focus_when_shown;
-  if (IsWindowManagerPresent() && !focus_when_shown_) {
-    ui::SetIntProperty(xwindow_,
-                       k_NET_WM_USER_TIME,
-                       k_NET_WM_USER_TIME,
-                       0);
-  }
-}
-
 void RootWindowHostX11::PostNativeEvent(
     const base::NativeEvent& native_event) {
   DCHECK(xwindow_);
@@ -824,7 +808,7 @@ void RootWindowHostX11::PostNativeEvent(
       xevent.xmotion.time = CurrentTime;
 
       gfx::Point point(xevent.xmotion.x, xevent.xmotion.y);
-      delegate_->AsRootWindow()->ConvertPointToNativeScreen(&point);
+      delegate_->AsRootWindow()->host()->ConvertPointToNativeScreen(&point);
       xevent.xmotion.x_root = point.x();
       xevent.xmotion.y_root = point.y();
     }

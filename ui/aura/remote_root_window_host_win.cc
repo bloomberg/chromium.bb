@@ -299,10 +299,6 @@ Window* RemoteRootWindowHostWin::GetAshWindow() {
   return GetRootWindow()->window();
 }
 
-void RemoteRootWindowHostWin::SetDelegate(RootWindowHostDelegate* delegate) {
-  delegate_ = delegate;
-}
-
 RootWindow* RemoteRootWindowHostWin::GetRootWindow() {
   return delegate_->AsRootWindow();
 }
@@ -405,10 +401,6 @@ void RemoteRootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
   ignore_mouse_moves_until_set_cursor_ack_ = true;
   VLOG(1) << "In MoveCursorTo. Sending IPC";
   host_->Send(new MetroViewerHostMsg_SetCursorPos(location.x(), location.y()));
-}
-
-void RemoteRootWindowHostWin::SetFocusWhenShown(bool focus_when_shown) {
-  NOTIMPLEMENTED();
 }
 
 void RemoteRootWindowHostWin::PostNativeEvent(

@@ -373,7 +373,7 @@ TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
   dispatcher()->MoveCursorTo(gfx::Point(10, 10));
 #if !defined(OS_WIN)
   gfx::Point mouse_location;
-  EXPECT_TRUE(dispatcher()->QueryMouseLocationForTest(&mouse_location));
+  EXPECT_TRUE(dispatcher()->host()->QueryMouseLocation(&mouse_location));
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.OD
   EXPECT_EQ("50,120", mouse_location.ToString());
 #endif
@@ -461,7 +461,7 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
 #if !defined(OS_WIN)
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.
   gfx::Point mouse_location;
-  EXPECT_TRUE(dispatcher()->QueryMouseLocationForTest(&mouse_location));
+  EXPECT_TRUE(dispatcher()->host()->QueryMouseLocation(&mouse_location));
   EXPECT_EQ("169,80", mouse_location.ToString());
 #endif
   EXPECT_EQ("20,53",
@@ -1535,7 +1535,7 @@ TEST_F(WindowTest, IgnoreEventsTest) {
 
 // Tests transformation on the root window.
 TEST_F(WindowTest, Transform) {
-  gfx::Size size = dispatcher()->GetHostSize();
+  gfx::Size size = dispatcher()->host()->GetBounds().size();
   EXPECT_EQ(gfx::Rect(size),
             gfx::Screen::GetScreenFor(root_window())->GetDisplayNearestPoint(
                 gfx::Point()).bounds());
@@ -1557,11 +1557,11 @@ TEST_F(WindowTest, Transform) {
 
   // Host size shouldn't change.
   EXPECT_EQ(size.ToString(),
-            dispatcher()->GetHostSize().ToString());
+            dispatcher()->host()->GetBounds().size().ToString());
 }
 
 TEST_F(WindowTest, TransformGesture) {
-  gfx::Size size = dispatcher()->GetHostSize();
+  gfx::Size size = dispatcher()->host()->GetBounds().size();
 
   scoped_ptr<GestureTrackPositionDelegate> delegate(
       new GestureTrackPositionDelegate);
@@ -2295,7 +2295,7 @@ TEST_F(WindowTest, VisibilityClientIsVisible) {
 
 // Tests mouse events on window change.
 TEST_F(WindowTest, MouseEventsOnWindowChange) {
-  gfx::Size size = dispatcher()->GetHostSize();
+  gfx::Size size = dispatcher()->host()->GetBounds().size();
 
   EventGenerator generator(root_window());
   generator.MoveMouseTo(50, 50);

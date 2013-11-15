@@ -684,7 +684,8 @@ void DesktopDragDropClientAuraX11::DragTranslate(
     scoped_ptr<ui::DropTargetEvent>* event,
     aura::client::DragDropDelegate** delegate) {
   gfx::Point root_location = root_window_location;
-  root_window_->GetDispatcher()->ConvertPointFromNativeScreen(&root_location);
+  root_window_->GetDispatcher()->host()->ConvertPointFromNativeScreen(
+      &root_location);
   aura::Window* target_window =
       root_window_->GetEventHandlerForPoint(root_location);
   bool target_window_changed = false;

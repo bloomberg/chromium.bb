@@ -58,7 +58,6 @@ DesktopRootWindowHostWin::DesktopRootWindowHostWin(
       message_handler_(new HWNDMessageHandler(this)),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
-      root_window_host_delegate_(NULL),
       content_window_(NULL),
       drag_drop_client_(NULL),
       should_animate_window_close_(false),
@@ -86,7 +85,7 @@ ui::NativeTheme* DesktopRootWindowHost::GetNativeTheme(aura::Window* window) {
   aura::WindowEventDispatcher* dispatcher =
       window ? window->GetDispatcher() : NULL;
   if (dispatcher) {
-    HWND host_hwnd = dispatcher->GetAcceleratedWidget();
+    HWND host_hwnd = dispatcher->host()->GetAcceleratedWidget();
     if (host_hwnd &&
         DesktopRootWindowHostWin::GetContentWindowForHWND(host_hwnd)) {
       return ui::NativeThemeWin::instance();
@@ -112,8 +111,10 @@ void DesktopRootWindowHostWin::Init(
                         native_widget_delegate_);
 
   HWND parent_hwnd = NULL;
-  if (params.parent && params.parent->GetDispatcher())
-    parent_hwnd = params.parent->GetDispatcher()->GetAcceleratedWidget();
+  if (params.parent && params.parent->GetDispatcher()) {
+    parent_hwnd =
+        params.parent->GetDispatcher()->host()->GetAcceleratedWidget();
+  }
 
   message_handler_->set_remove_standard_frame(params.remove_standard_frame);
 
@@ -377,12 +378,6 @@ bool DesktopRootWindowHostWin::IsAnimatingClosed() const {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostWin, RootWindowHost implementation:
 
-
-void DesktopRootWindowHostWin::SetDelegate(
-    aura::RootWindowHostDelegate* delegate) {
-  root_window_host_delegate_ = delegate;
-}
-
 aura::RootWindow* DesktopRootWindowHostWin::GetRootWindow() {
   return root_window_;
 }
@@ -495,9 +490,6 @@ void DesktopRootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
   POINT cursor_location = location.ToPOINT();
   ::ClientToScreen(GetHWND(), &cursor_location);
   ::SetCursorPos(cursor_location.x, cursor_location.y);
-}
-
-void DesktopRootWindowHostWin::SetFocusWhenShown(bool focus_when_shown) {
 }
 
 void DesktopRootWindowHostWin::PostNativeEvent(
@@ -651,11 +643,11 @@ void DesktopRootWindowHostWin::HandleAppDeactivated() {
 void DesktopRootWindowHostWin::HandleActivationChanged(bool active) {
   // This can be invoked from HWNDMessageHandler::Init(), at which point we're
   // not in a good state and need to ignore it.
-  if (!root_window_host_delegate_)
+  if (!delegate_)
     return;
 
   if (active)
-    root_window_host_delegate_->OnHostActivated();
+    delegate_->OnHostActivated();
   desktop_native_widget_aura_->HandleActivationChanged(active);
 }
 
@@ -667,11 +659,11 @@ bool DesktopRootWindowHostWin::HandleAppCommand(short command) {
 }
 
 void DesktopRootWindowHostWin::HandleCancelMode() {
-  root_window_host_delegate_->OnHostCancelMode();
+  delegate_->OnHostCancelMode();
 }
 
 void DesktopRootWindowHostWin::HandleCaptureLost() {
-  root_window_host_delegate_->OnHostLostWindowCapture();
+  delegate_->OnHostLostWindowCapture();
   native_widget_delegate_->OnMouseCaptureLost();
 }
 
@@ -725,8 +717,8 @@ void DesktopRootWindowHostWin::HandleEndWMSizeMove() {
 
 void DesktopRootWindowHostWin::HandleMove() {
   native_widget_delegate_->OnNativeWidgetMove();
-  if (root_window_host_delegate_)
-    root_window_host_delegate_->OnHostMoved(GetBounds().origin());
+  if (delegate_)
+    delegate_->OnHostMoved(GetBounds().origin());
 }
 
 void DesktopRootWindowHostWin::HandleWorkAreaChanged() {
@@ -743,8 +735,8 @@ void DesktopRootWindowHostWin::HandleVisibilityChanged(bool visible) {
 
 void DesktopRootWindowHostWin::HandleClientSizeChanged(
     const gfx::Size& new_size) {
-  if (root_window_host_delegate_)
-    root_window_host_delegate_->OnHostResized(new_size);
+  if (delegate_)
+    delegate_->OnHostResized(new_size);
 }
 
 void DesktopRootWindowHostWin::HandleFrameChanged() {
@@ -770,8 +762,7 @@ void DesktopRootWindowHostWin::HandleNativeBlur(HWND focused_window) {
 bool DesktopRootWindowHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
   if (base::win::IsTSFAwareRequired() && event.IsAnyButton())
     ui::TSFBridge::GetInstance()->CancelComposition();
-  return root_window_host_delegate_->OnHostMouseEvent(
-      const_cast<ui::MouseEvent*>(&event));
+  return delegate_->OnHostMouseEvent(const_cast<ui::MouseEvent*>(&event));
 }
 
 bool DesktopRootWindowHostWin::HandleKeyEvent(const ui::KeyEvent& event) {
@@ -781,8 +772,7 @@ bool DesktopRootWindowHostWin::HandleKeyEvent(const ui::KeyEvent& event) {
 bool DesktopRootWindowHostWin::HandleUntranslatedKeyEvent(
     const ui::KeyEvent& event) {
   scoped_ptr<ui::KeyEvent> duplicate_event(event.Copy());
-  return static_cast<aura::RootWindowHostDelegate*>(root_window_)->
-      OnHostKeyEvent(duplicate_event.get());
+  return delegate_->OnHostKeyEvent(duplicate_event.get());
 }
 
 void DesktopRootWindowHostWin::HandleTouchEvent(
@@ -807,11 +797,11 @@ void DesktopRootWindowHostWin::HandleTouchEvent(
                                   static_cast<View*>(NULL));
       target_event.set_location(gfx::Point(target_location));
       target_event.set_root_location(target_event.location());
-      target->root_window_host_delegate_->OnHostTouchEvent(&target_event);
+      target->delegate_->OnHostTouchEvent(&target_event);
       return;
     }
   }
-  root_window_host_delegate_->OnHostTouchEvent(
+  delegate_->OnHostTouchEvent(
       const_cast<ui::TouchEvent*>(&event));
 }
 
@@ -841,7 +831,7 @@ bool DesktopRootWindowHostWin::HandlePaintAccelerated(
 }
 
 void DesktopRootWindowHostWin::HandlePaint(gfx::Canvas* canvas) {
-  root_window_host_delegate_->OnHostPaint(gfx::Rect());
+  delegate_->OnHostPaint(gfx::Rect());
 }
 
 bool DesktopRootWindowHostWin::HandleTooltipNotify(int w_param,

@@ -40,8 +40,7 @@ gfx::Size RootWindowHost::GetNativeScreenSize() {
 }
 
 RootWindowHostWin::RootWindowHostWin(const gfx::Rect& bounds)
-    : delegate_(NULL),
-      fullscreen_(false),
+    : fullscreen_(false),
       has_capture_(false),
       saved_window_style_(0),
       saved_window_ex_style_(0) {
@@ -53,10 +52,6 @@ RootWindowHostWin::RootWindowHostWin(const gfx::Rect& bounds)
 
 RootWindowHostWin::~RootWindowHostWin() {
   DestroyWindow(hwnd());
-}
-
-void RootWindowHostWin::SetDelegate(RootWindowHostDelegate* delegate) {
-  delegate_ = delegate;
 }
 
 RootWindow* RootWindowHostWin::GetRootWindow() {
@@ -220,10 +215,6 @@ void RootWindowHostWin::OnCursorVisibilityChanged(bool show) {
 
 void RootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
   // Deliberately not implemented.
-}
-
-void RootWindowHostWin::SetFocusWhenShown(bool focus_when_shown) {
-  NOTIMPLEMENTED();
 }
 
 void RootWindowHostWin::PostNativeEvent(const base::NativeEvent& native_event) {

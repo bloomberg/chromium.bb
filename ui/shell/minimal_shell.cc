@@ -30,7 +30,7 @@ MinimalShell::MinimalShell(const gfx::Size& default_window_size) {
   root_window_->window()->SetEventFilter(root_window_event_filter_);
 
   input_method_filter_.reset(new views::corewm::InputMethodEventFilter(
-      root_window_->GetAcceleratedWidget()));
+      root_window_->host()->GetAcceleratedWidget()));
   input_method_filter_->SetInputMethodPropertyInRootWindow(
       root_window_->window());
   root_window_event_filter_->AddHandler(input_method_filter_.get());

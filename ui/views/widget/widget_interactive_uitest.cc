@@ -194,7 +194,8 @@ TEST_F(WidgetTest, DesktopNativeWidgetAuraActivationAndFocusTest) {
   widget2.Show();
   aura::Window* root_window2 = widget2.GetNativeView()->GetRootWindow();
   contents_view2->RequestFocus();
-  ::SetActiveWindow(root_window2->GetDispatcher()->GetAcceleratedWidget());
+  ::SetActiveWindow(
+      root_window2->GetDispatcher()->host()->GetAcceleratedWidget());
 
   aura::client::ActivationClient* activation_client2 =
       aura::client::GetActivationClient(root_window2);
@@ -206,7 +207,8 @@ TEST_F(WidgetTest, DesktopNativeWidgetAuraActivationAndFocusTest) {
   // Now set focus back to widget 1 and expect the active window to be its
   // window.
   contents_view1->RequestFocus();
-  ::SetActiveWindow(root_window1->GetDispatcher()->GetAcceleratedWidget());
+  ::SetActiveWindow(
+      root_window1->GetDispatcher()->host()->GetAcceleratedWidget());
   EXPECT_EQ(activation_client2->GetActiveWindow(),
             reinterpret_cast<aura::Window*>(NULL));
   EXPECT_EQ(activation_client1->GetActiveWindow(), widget1.GetNativeView());

@@ -400,8 +400,8 @@ TEST_F(ShellTest, ManagedWindowModeBasics) {
   EXPECT_TRUE(launcher_widget->IsVisible());
   // Shelf is at bottom-left of screen.
   EXPECT_EQ(0, launcher_widget->GetWindowBoundsInScreen().x());
-  EXPECT_EQ(
-      Shell::GetPrimaryRootWindow()->GetDispatcher()->GetHostSize().height(),
+  EXPECT_EQ(Shell::GetPrimaryRootWindow()->GetDispatcher()->host()->
+      GetBounds().height(),
       launcher_widget->GetWindowBoundsInScreen().bottom());
   // We have a desktop background but not a bare layer.
   // TODO (antrim): enable once we find out why it fails component build.

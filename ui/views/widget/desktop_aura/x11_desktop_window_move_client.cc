@@ -52,7 +52,7 @@ void X11DesktopWindowMoveClient::OnMouseMovement(XMotionEvent* event) {
   gfx::Point cursor_point(event->x_root, event->y_root);
   gfx::Point system_loc = cursor_point - window_offset_;
 
-  gfx::Rect target_rect(system_loc, root_window_->GetHostSize());
+  gfx::Rect target_rect(system_loc, root_window_->host()->GetBounds().size());
 
   window_move_timer_.Start(
       FROM_HERE,

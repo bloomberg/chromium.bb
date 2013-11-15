@@ -299,7 +299,7 @@ void SelectFileDialogImplKDE::GetKDialogCommandLine(const std::string& type,
   CHECK(command_line);
 
   // Attach to the current Chrome window.
-  int window_id = parent->GetDispatcher()->GetAcceleratedWidget();
+  int window_id = parent->GetDispatcher()->host()->GetAcceleratedWidget();
   command_line->AppendSwitchNative(
       desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE3 ? "--embed" : "--attach",
       base::IntToString(window_id));

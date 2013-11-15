@@ -44,7 +44,7 @@ void AppShellBrowserMainParts::PreMainMessageLoopRun() {
   // Set up basic pieces of views::corewm.
   minimal_shell_.reset(new shell::MinimalShell(gfx::Size(800, 600)));
   // Ensure the X window gets mapped.
-  minimal_shell_->root_window()->ShowRootWindow();
+  minimal_shell_->root_window()->host()->Show();
 
   // TODO(jamescook): Create an apps::ShellWindow here. For now, create a
   // window with a WebView just to ensure that the content module is properly

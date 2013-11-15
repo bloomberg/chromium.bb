@@ -27,7 +27,6 @@ class RootWindowHostOzone : public RootWindowHost,
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // RootWindowHost Overrides.
-  virtual void SetDelegate(RootWindowHostDelegate* delegate) OVERRIDE;
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -46,12 +45,10 @@ class RootWindowHostOzone : public RootWindowHost,
   virtual void UnConfineCursor() OVERRIDE;
   virtual void OnCursorVisibilityChanged(bool show) OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
-  virtual void SetFocusWhenShown(bool focus_when_shown) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
 
-  RootWindowHostDelegate* delegate_;
   gfx::AcceleratedWidget widget_;
   gfx::Rect bounds_;
 

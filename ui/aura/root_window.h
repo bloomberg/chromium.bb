@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/capture_delegate.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/aura/window_tree_host_delegate.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/compositor/compositor.h"
@@ -80,6 +81,11 @@ class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
     return const_cast<Window*>(const_cast<const RootWindow*>(this)->window());
   }
   const Window* window() const { return window_.get(); }
+  RootWindowHost* host() {
+    return const_cast<RootWindowHost*>(
+        const_cast<const RootWindow*>(this)->host());
+  }
+  const RootWindowHost* host() const { return host_.get(); }
   ui::Compositor* compositor() { return compositor_.get(); }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
@@ -87,12 +93,6 @@ class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
 
   // Initializes the root window.
   void Init();
-
-  // Shows the root window host.
-  void ShowRootWindow();
-
-  // Hides the root window host.
-  void HideRootWindow();
 
   // Stop listening events in preparation for shutdown.
   void PrepareForShutdown();
@@ -106,13 +106,9 @@ class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
 
   // Gets/sets the size of the host window.
   void SetHostSize(const gfx::Size& size_in_pixel);
-  gfx::Size GetHostSize() const;
 
   // Sets the bounds of the host window.
   void SetHostBounds(const gfx::Rect& size_in_pizel);
-
-  // Returns where the RootWindow is on screen.
-  gfx::Point GetHostOrigin() const;
 
   // Sets the currently-displayed cursor. If the cursor was previously hidden
   // via ShowCursor(false), it will remain hidden until ShowCursor(true) is
@@ -131,12 +127,6 @@ class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
 
   // Moves the cursor to the |host_location| given in host coordinates.
   void MoveCursorToHostLocation(const gfx::Point& host_location);
-
-  // Clips the cursor movement to the root_window.
-  bool ConfineCursorToWindow();
-
-  // Restores the cursor movement beyond the root window.
-  void UnConfineCursor();
 
   // Draw the damage_rect.
   void ScheduleRedrawRect(const gfx::Rect& damage_rect);
@@ -184,16 +174,6 @@ class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
   void AddRootWindowObserver(RootWindowObserver* observer);
   void RemoveRootWindowObserver(RootWindowObserver* observer);
 
-  // Posts |native_event| to the platform's event queue.
-  void PostNativeEvent(const base::NativeEvent& native_event);
-
-  // Converts |point| from the root window's coordinate system to native
-  // screen's.
-  void ConvertPointToNativeScreen(gfx::Point* point) const;
-
-  // Converts |point| from native screen coordinate system to the root window's.
-  void ConvertPointFromNativeScreen(gfx::Point* point) const;
-
   // Converts |point| from the root window's coordinate system to the
   // host window's.
   void ConvertPointToHost(gfx::Point* point) const;
@@ -213,12 +193,6 @@ class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
                            Window* window,
                            ui::EventResult result);
 
-  // Returns the accelerated widget from the RootWindowHost.
-  gfx::AcceleratedWidget GetAcceleratedWidget();
-
-  // Toggles the host's full screen state.
-  void ToggleFullScreen();
-
   // These methods are used to defer the processing of mouse/touch events
   // related to resize. A client (typically a RenderWidgetHostViewAura) can call
   // HoldPointerMoves when an resize is initiated and then ReleasePointerMoves
@@ -229,22 +203,14 @@ class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
   void HoldPointerMoves();
   void ReleasePointerMoves();
 
-  // Sets if the window should be focused when shown.
-  void SetFocusWhenShown(bool focus_when_shown);
-
   // Gets the last location seen in a mouse event in this root window's
   // coordinates. This may return a point outside the root window's bounds.
   gfx::Point GetLastMouseLocationInRoot() const;
-
-  // Exposes RootWindowHost::QueryMouseLocation() for test purposes.
-  bool QueryMouseLocationForTest(gfx::Point* point) const;
 
   void SetRootWindowTransformer(scoped_ptr<RootWindowTransformer> transformer);
   gfx::Transform GetRootTransform() const;
 
   void SetTransform(const gfx::Transform& transform);
-
-  void DeviceScaleFactorChanged(float device_scale_factor);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RootWindowTest, KeepTranslatedEventInRoot);
@@ -335,6 +301,7 @@ class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
   virtual void OnHostResized(const gfx::Size& size) OVERRIDE;
   virtual float GetDeviceScaleFactor() OVERRIDE;
   virtual RootWindow* AsRootWindow() OVERRIDE;
+  virtual const RootWindow* AsRootWindow() const OVERRIDE;
 
   ui::EventDispatchDetails OnHostMouseEventImpl(ui::MouseEvent* event)
       WARN_UNUSED_RESULT;

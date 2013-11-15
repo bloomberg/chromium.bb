@@ -52,7 +52,7 @@ void VirtualKeyboardWindowController::UpdateWindow(
     RootWindowController::CreateForVirtualKeyboardDisplay(root_window);
     root_window_controller_.reset(GetRootWindowController(
         root_window->window()));
-    root_window_controller_->dispatcher()->ShowRootWindow();
+    root_window_controller_->dispatcher()->host()->Show();
   } else {
     aura::RootWindow* root_window = root_window_controller_->dispatcher();
     GetRootWindowSettings(root_window->window())->display_id =

@@ -40,7 +40,7 @@ class FillLayout : public aura::LayoutManager {
   }
 
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
-    child->SetBounds(gfx::Rect(root_->GetHostSize()));
+    child->SetBounds(gfx::Rect(root_->host()->GetBounds().size()));
   }
 
   virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {
@@ -128,7 +128,7 @@ ShellAuraPlatformData::ShellAuraPlatformData() {
   aura::TestScreen* screen = aura::TestScreen::Create();
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen);
   root_window_.reset(screen->CreateRootWindowForPrimaryDisplay());
-  root_window_->ShowRootWindow();
+  root_window_->host()->Show();
   root_window_->window()->SetLayoutManager(new FillLayout(root_window_.get()));
 
   focus_client_.reset(new aura::test::TestFocusClient());

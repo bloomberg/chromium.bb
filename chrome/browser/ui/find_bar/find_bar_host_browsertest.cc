@@ -1644,8 +1644,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, WindowedNPAPIPluginHidden) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // Now get the region of the plugin before the find bar is shown.
-  HWND hwnd =
-      tab->GetView()->GetNativeView()->GetDispatcher()->GetAcceleratedWidget();
+  HWND hwnd = tab->GetView()->GetNativeView()->GetDispatcher()->host()->
+      GetAcceleratedWidget();
   HWND child = NULL;
   EnumChildWindows(hwnd, EnumerateChildren,reinterpret_cast<LPARAM>(&child));
 

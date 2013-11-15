@@ -195,10 +195,10 @@ TEST_F(AshNativeCursorManagerTest, DisabledQueryMouseLocation) {
 #endif
   aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
   gfx::Point mouse_location;
-  EXPECT_TRUE(dispatcher->QueryMouseLocationForTest(&mouse_location));
+  EXPECT_TRUE(dispatcher->host()->QueryMouseLocation(&mouse_location));
   EXPECT_EQ("10,10", mouse_location.ToString());
   Shell::GetInstance()->cursor_manager()->DisableMouseEvents();
-  EXPECT_FALSE(dispatcher->QueryMouseLocationForTest(&mouse_location));
+  EXPECT_FALSE(dispatcher->host()->QueryMouseLocation(&mouse_location));
   EXPECT_EQ("0,0", mouse_location.ToString());
 }
 

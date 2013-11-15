@@ -24,7 +24,7 @@ TEST_F(WindowWatcherTest, ShellDeleteInstance) {
 
   shell::ShellDelegateImpl* delegate = new ash::shell::ShellDelegateImpl;
   Shell::CreateInstance(delegate);
-  Shell::GetPrimaryRootWindow()->GetDispatcher()->ShowRootWindow();
+  Shell::GetPrimaryRootWindow()->GetDispatcher()->host()->Show();
   Shell::GetInstance()->CreateLauncher();
   Shell::GetInstance()->UpdateAfterLoginStatusChange(
       user::LOGGED_IN_USER);

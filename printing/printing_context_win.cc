@@ -41,7 +41,7 @@ HWND GetRootWindow(gfx::NativeView view) {
   HWND window = NULL;
 #if defined(USE_AURA)
   if (view)
-    window = view->GetDispatcher()->GetAcceleratedWidget();
+    window = view->GetDispatcher()->host()->GetAcceleratedWidget();
 #else
   if (view && IsWindow(view)) {
     window = GetAncestor(view, GA_ROOTOWNER);

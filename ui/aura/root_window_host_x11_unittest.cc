@@ -62,6 +62,9 @@ class TestRootWindowHostDelegate : public aura::RootWindowHostDelegate {
   virtual aura::RootWindow* AsRootWindow() OVERRIDE {
     return NULL;
   }
+  virtual const aura::RootWindow* AsRootWindow() const OVERRIDE {
+    return NULL;
+  }
 
   ui::EventType last_touch_type() {
     return last_touch_type_;
@@ -103,7 +106,7 @@ TEST_F(RootWindowHostX11Test, DispatchTouchEventToOneRootWindow) {
       new RootWindowHostX11(gfx::Rect(0, 0, 2560, 1700)));
   scoped_ptr<TestRootWindowHostDelegate> delegate(
       new TestRootWindowHostDelegate());
-  root_window_host->SetDelegate(delegate.get());
+  root_window_host->set_delegate(delegate.get());
 
   std::vector<unsigned int> devices;
   devices.push_back(0);
@@ -167,14 +170,14 @@ TEST_F(RootWindowHostX11Test, DispatchTouchEventToTwoRootWindow) {
       new RootWindowHostX11(gfx::Rect(0, 0, 2560, 1700)));
   scoped_ptr<TestRootWindowHostDelegate> delegate1(
       new TestRootWindowHostDelegate());
-  root_window_host1->SetDelegate(delegate1.get());
+  root_window_host1->set_delegate(delegate1.get());
 
   int host2_y_offset = 1700;
   scoped_ptr<RootWindowHostX11> root_window_host2(
       new RootWindowHostX11(gfx::Rect(0, host2_y_offset, 1920, 1080)));
   scoped_ptr<TestRootWindowHostDelegate> delegate2(
       new TestRootWindowHostDelegate());
-  root_window_host2->SetDelegate(delegate2.get());
+  root_window_host2->set_delegate(delegate2.get());
 
   std::vector<unsigned int> devices;
   devices.push_back(0);

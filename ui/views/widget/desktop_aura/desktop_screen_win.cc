@@ -55,7 +55,7 @@ gfx::Display DesktopScreenWin::GetDisplayMatching(
 
 HWND DesktopScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
   aura::WindowEventDispatcher* dispatcher = window->GetDispatcher();
-  return dispatcher ? dispatcher->GetAcceleratedWidget() : NULL;
+  return dispatcher ? dispatcher->host()->GetAcceleratedWidget() : NULL;
 }
 
 gfx::NativeWindow DesktopScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {

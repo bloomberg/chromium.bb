@@ -194,7 +194,7 @@ gfx::Display DesktopScreenX11::GetDisplayNearestWindow(
   aura::WindowEventDispatcher* dispatcher = window->GetDispatcher();
   if (dispatcher) {
     DesktopRootWindowHostX11* rwh = DesktopRootWindowHostX11::GetHostForXID(
-        dispatcher->GetAcceleratedWidget());
+        dispatcher->host()->GetAcceleratedWidget());
     if (rwh)
       return GetDisplayMatching(rwh->GetX11RootWindowBounds());
   }

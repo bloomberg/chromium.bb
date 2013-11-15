@@ -11,7 +11,8 @@
 namespace aura {
 
 RootWindowHostOzone::RootWindowHostOzone(const gfx::Rect& bounds)
-    : delegate_(NULL), widget_(0), bounds_(bounds) {
+    : widget_(0),
+      bounds_(bounds) {
   ui::OzonePlatform::Initialize();
   factory_.reset(ui::EventFactoryOzone::GetInstance());
   factory_->StartProcessingEvents();
@@ -41,10 +42,6 @@ bool RootWindowHostOzone::Dispatch(const base::NativeEvent& ne) {
     delegate_->OnHostMouseEvent(mouseev);
   }
   return true;
-}
-
-void RootWindowHostOzone::SetDelegate(RootWindowHostDelegate* delegate) {
-  delegate_ = delegate;
 }
 
 RootWindow* RootWindowHostOzone::GetRootWindow() {
@@ -102,10 +99,6 @@ void RootWindowHostOzone::OnCursorVisibilityChanged(bool show) {
 }
 
 void RootWindowHostOzone::MoveCursorTo(const gfx::Point& location) {
-  NOTIMPLEMENTED();
-}
-
-void RootWindowHostOzone::SetFocusWhenShown(bool focus_when_shown) {
   NOTIMPLEMENTED();
 }
 

@@ -29,7 +29,7 @@ class RootWindowHostDelegate;
 // aura.
 class AURA_EXPORT RootWindowHost {
  public:
-  virtual ~RootWindowHost() {}
+  virtual ~RootWindowHost();
 
   // Creates a new RootWindowHost. The caller owns the returned value.
   static RootWindowHost* Create(const gfx::Rect& bounds);
@@ -38,8 +38,9 @@ class AURA_EXPORT RootWindowHost {
   // (gfx::Screen only reports on the virtual desktop exposed by Aura.)
   static gfx::Size GetNativeScreenSize();
 
-  // Sets the delegate, which is normally done by the root window.
-  virtual void SetDelegate(RootWindowHostDelegate* delegate) = 0;
+  void set_delegate(RootWindowHostDelegate* delegate) {
+    delegate_ = delegate;
+  }
 
   virtual RootWindow* GetRootWindow() = 0;
 
@@ -64,8 +65,12 @@ class AURA_EXPORT RootWindowHost {
   virtual gfx::Insets GetInsets() const = 0;
   virtual void SetInsets(const gfx::Insets& insets) = 0;
 
-  // Returns the location of the RootWindow on native screen.
-  virtual gfx::Point GetLocationOnNativeScreen() const = 0;
+  // Converts |point| from the root window's coordinate system to native
+  // screen's.
+  void ConvertPointToNativeScreen(gfx::Point* point) const;
+
+  // Converts |point| from native screen coordinate system to the root window's.
+  void ConvertPointFromNativeScreen(gfx::Point* point) const;
 
   // Sets the OS capture to the root window.
   virtual void SetCapture() = 0;
@@ -85,6 +90,10 @@ class AURA_EXPORT RootWindowHost {
   virtual bool QueryMouseLocation(gfx::Point* location_return) = 0;
 
   // Clips the cursor to the bounds of the root window until UnConfineCursor().
+  // We would like to be able to confine the cursor to that window. However,
+  // currently, we do not have such functionality in X. So we just confine
+  // to the root window. This is ok because this option is currently only
+  // being used in fullscreen mode, so root_window bounds = window bounds.
   virtual bool ConfineCursorToRootWindow() = 0;
   virtual void UnConfineCursor() = 0;
 
@@ -94,9 +103,6 @@ class AURA_EXPORT RootWindowHost {
   // Moves the cursor to the specified location relative to the root window.
   virtual void MoveCursorTo(const gfx::Point& location) = 0;
 
-  // Sets if the window should be focused when shown.
-  virtual void SetFocusWhenShown(bool focus_when_shown) = 0;
-
   // Posts |native_event| to the platform's event queue.
   virtual void PostNativeEvent(const base::NativeEvent& native_event) = 0;
 
@@ -105,6 +111,17 @@ class AURA_EXPORT RootWindowHost {
 
   // Stop listening events in preparation for shutdown.
   virtual void PrepareForShutdown() = 0;
+
+ protected:
+  RootWindowHost();
+
+  // Returns the location of the RootWindow on native screen.
+  virtual gfx::Point GetLocationOnNativeScreen() const = 0;
+
+  RootWindowHostDelegate* delegate_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RootWindowHost);
 };
 
 }  // namespace aura

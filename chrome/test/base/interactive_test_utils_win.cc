@@ -29,7 +29,7 @@ void HideNativeWindow(gfx::NativeWindow window) {
     HideNativeWindowAura(window);
     return;
   }
-  HWND hwnd = window->GetDispatcher()->GetAcceleratedWidget();
+  HWND hwnd = window->GetDispatcher()->host()->GetAcceleratedWidget();
 #else
   HWND hwnd = window;
 #endif
@@ -43,7 +43,7 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
     ShowAndFocusNativeWindowAura(window);
   window->Show();
   // Always make sure the window hosting ash is visible and focused.
-  HWND hwnd = window->GetDispatcher()->GetAcceleratedWidget();
+  HWND hwnd = window->GetDispatcher()->host()->GetAcceleratedWidget();
 #else
   HWND hwnd = window;
 #endif

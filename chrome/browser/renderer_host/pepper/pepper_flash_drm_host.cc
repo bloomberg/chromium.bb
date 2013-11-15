@@ -84,7 +84,7 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
     aura::WindowEventDispatcher* dispatcher = native_view->GetDispatcher();
     if (!dispatcher)
       return;
-    HWND window = dispatcher->GetAcceleratedWidget();
+    HWND window = dispatcher->host()->GetAcceleratedWidget();
 #else
     HWND window = native_view;
 #endif

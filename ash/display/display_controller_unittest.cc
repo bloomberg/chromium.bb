@@ -290,7 +290,7 @@ void GetPrimaryAndSeconary(aura::Window** primary,
 
 std::string GetXWindowName(aura::RootWindow* window) {
   char* name = NULL;
-  XFetchName(gfx::GetXDisplay(), window->GetAcceleratedWidget(), &name);
+  XFetchName(gfx::GetXDisplay(), window->host()->GetAcceleratedWidget(), &name);
   std::string ret(name);
   XFree(name);
   return ret;

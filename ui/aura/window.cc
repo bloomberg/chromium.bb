@@ -25,6 +25,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/animation/multi_animation.h"
@@ -652,7 +653,7 @@ void* Window::GetNativeWindowProperty(const char* key) const {
 void Window::OnDeviceScaleFactorChanged(float device_scale_factor) {
   ScopedCursorHider hider(this);
   if (dispatcher_)
-    dispatcher_->DeviceScaleFactorChanged(device_scale_factor);
+    dispatcher_->host()->OnDeviceScaleFactorChanged(device_scale_factor);
   if (delegate_)
     delegate_->OnDeviceScaleFactorChanged(device_scale_factor);
 }
