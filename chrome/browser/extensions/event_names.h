@@ -15,7 +15,6 @@ namespace event_names {
 extern const char kOnDirectoryChanged[];
 extern const char kOnFileBrowserMountCompleted[];
 extern const char kOnFileTransfersUpdated[];
-extern const char kOnDocumentFeedFetched[];
 extern const char kOnFileBrowserPreferencesChanged[];
 extern const char kOnFileBrowserDriveConnectionStatusChanged[];
 extern const char kOnFileBrowserCopyProgress[];
@@ -26,20 +25,12 @@ extern const char kOnInputMethodChanged[];
 // Context menus.
 extern const char kOnContextMenus[];
 
-// OffscreenTabs.
-extern const char kOnOffscreenTabUpdated[];
-
 // Bluetooth.
 extern const char kBluetoothOnDeviceDiscovered[];
 extern const char kBluetoothOnDeviceSearchFinished[];
 extern const char kBluetoothOnDeviceSearchResult[];
 
-// systemInfo event names.
-extern const char kOnDisplayChanged[];
-extern const char kOnStorageAvailableCapacityChanged[];
-
 // Notifications.
-extern const char kOnNotificationDisplayed[];
 extern const char kOnNotificationError[];
 
 }  // namespace event_names
