@@ -62,9 +62,6 @@ class AshTestHelper {
   // Owned by ash::AcceleratorController
   TestScreenshotDelegate* test_screenshot_delegate_;
 
-  // true, if NetworkHandler was initialized by this instance.
-  bool tear_down_network_handler_;
-
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };
 
