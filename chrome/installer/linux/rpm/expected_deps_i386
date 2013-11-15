@@ -1,6 +1,7 @@
 ld-linux.so.2
 ld-linux.so.2(GLIBC_2.3)
 libasound.so.2
+libatk-1.0.so.0
 libcairo.so.2
 libc.so.6
 libc.so.6(GLIBC_2.0)
@@ -34,7 +35,6 @@ libgconf-2.so.4
 libgcrypt.so.11
 libgdk_pixbuf-2.0.so.0
 libgdk-x11-2.0.so.0
-libgio-2.0.so.0
 libglib-2.0.so.0
 libgobject-2.0.so.0
 libgtk-x11-2.0.so.0
@@ -65,12 +65,10 @@ libstdc++.so.6(GLIBCXX_3.4.5)
 libstdc++.so.6(GLIBCXX_3.4.9)
 libX11.so.6
 libXcomposite.so.1
-libXcursor.so.1
 libXdamage.so.1
 libXext.so.6
 libXfixes.so.3
 libXi.so.6
-libXrandr.so.2
 libXrender.so.1
 libXss.so.1
 libXtst.so.6
