@@ -129,8 +129,8 @@ v8::Handle<v8::FunctionTemplate> V8TestNamedConstructorConstructor::GetTemplate(
     v8::HandleScope scope(isolate);
     result = v8::FunctionTemplate::New(V8TestNamedConstructorConstructorCallback);
 
-    v8::Local<v8::ObjectTemplate> instance = result->InstanceTemplate();
-    instance->SetInternalFieldCount(V8TestNamedConstructor::internalFieldCount);
+    v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
+    instanceTemplate->SetInternalFieldCount(V8TestNamedConstructor::internalFieldCount);
     result->SetClassName(v8::String::NewSymbol("TestNamedConstructor"));
     result->Inherit(V8TestNamedConstructor::GetTemplate(isolate, currentWorldType));
     data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
@@ -138,24 +138,24 @@ v8::Handle<v8::FunctionTemplate> V8TestNamedConstructorConstructor::GetTemplate(
     return scope.Close(result);
 }
 
-static v8::Handle<v8::FunctionTemplate> ConfigureV8TestNamedConstructorTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static v8::Handle<v8::FunctionTemplate> ConfigureV8TestNamedConstructorTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    desc->ReadOnlyPrototype();
+    functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestNamedConstructor", v8::Local<v8::FunctionTemplate>(), V8TestNamedConstructor::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestNamedConstructor", v8::Local<v8::FunctionTemplate>(), V8TestNamedConstructor::internalFieldCount,
         0, 0,
         0, 0,
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
-    v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
-    v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance);
-    UNUSED_PARAM(proto);
+    v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
+    UNUSED_PARAM(instanceTemplate);
+    UNUSED_PARAM(prototypeTemplate);
 
     // Custom toString template
-    desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
-    return desc;
+    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    return functionTemplate;
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestNamedConstructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)

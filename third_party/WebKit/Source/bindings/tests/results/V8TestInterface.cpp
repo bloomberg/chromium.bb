@@ -838,32 +838,32 @@ void V8TestInterface::constructorCallback(const v8::FunctionCallbackInfo<v8::Val
     TestInterfaceV8Internal::constructor(info);
 }
 
-static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    desc->ReadOnlyPrototype();
+    functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestInterface", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterface", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount,
         V8TestInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceAttributes),
         V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods),
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
-    desc->SetCallHandler(V8TestInterface::constructorCallback);
-    desc->SetLength(1);
-    v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
-    v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance);
-    UNUSED_PARAM(proto);
+    functionTemplate->SetCallHandler(V8TestInterface::constructorCallback);
+    functionTemplate->SetLength(1);
+    v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
+    UNUSED_PARAM(instanceTemplate);
+    UNUSED_PARAM(prototypeTemplate);
     if (RuntimeEnabledFeatures::featureName23Enabled()) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"Node23", TestInterfaceV8Internal::Node23AttributeGetterCallback, TestInterfaceV8Internal::Node23AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
+        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate, currentWorldType);
     }
 #if ENABLE(Condition11) || ENABLE(Condition12)
     if (RuntimeEnabledFeatures::condition13Enabled()) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"Node13", TestInterfaceV8Internal::Node13AttributeGetterCallback, TestInterfaceV8Internal::Node13AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
+        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate, currentWorldType);
     }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
     static const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
@@ -872,42 +872,42 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
         {"SUPPLEMENTALCONSTANT1", 1},
         {"SUPPLEMENTALCONSTANT2", 2},
     };
-    V8DOMConfiguration::installConstants(desc, proto, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants), isolate);
+    V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants), isolate);
     COMPILE_ASSERT(1 == TestImplements::IMPLEMENTSCONSTANT1, TheValueOfTestInterface_IMPLEMENTSCONSTANT1DoesntMatchWithImplementation);
     COMPILE_ASSERT(2 == TestImplements::CONST_IMPL, TheValueOfTestInterface_CONST_IMPLDoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestPartialInterface::SUPPLEMENTALCONSTANT1, TheValueOfTestInterface_SUPPLEMENTALCONSTANT1DoesntMatchWithImplementation);
     COMPILE_ASSERT(2 == TestPartialInterface::CONST_IMPL, TheValueOfTestInterface_CONST_IMPLDoesntMatchWithImplementation);
-    desc->InstanceTemplate()->SetNamedPropertyHandler(TestInterfaceV8Internal::namedPropertyGetterCallback, TestInterfaceV8Internal::namedPropertySetterCallback, TestInterfaceV8Internal::namedPropertyQueryCallback, 0, TestInterfaceV8Internal::namedPropertyEnumeratorCallback);
+    functionTemplate->InstanceTemplate()->SetNamedPropertyHandler(TestInterfaceV8Internal::namedPropertyGetterCallback, TestInterfaceV8Internal::namedPropertySetterCallback, TestInterfaceV8Internal::namedPropertyQueryCallback, 0, TestInterfaceV8Internal::namedPropertyEnumeratorCallback);
 
     // Custom Signature 'implementsMethod2'
     const int implementsMethod2Argc = 2;
     v8::Handle<v8::FunctionTemplate> implementsMethod2Argv[implementsMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> implementsMethod2Signature = v8::Signature::New(desc, implementsMethod2Argc, implementsMethod2Argv);
-    proto->Set(v8::String::NewSymbol("implementsMethod2"), v8::FunctionTemplate::New(TestInterfaceV8Internal::implementsMethod2MethodCallback, v8Undefined(), implementsMethod2Signature, 2));
-    desc->Set(v8::String::NewSymbol("implementsMethod4"), v8::FunctionTemplate::New(TestInterfaceV8Internal::implementsMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+    v8::Handle<v8::Signature> implementsMethod2Signature = v8::Signature::New(functionTemplate, implementsMethod2Argc, implementsMethod2Argv);
+    prototypeTemplate->Set(v8::String::NewSymbol("implementsMethod2"), v8::FunctionTemplate::New(TestInterfaceV8Internal::implementsMethod2MethodCallback, v8Undefined(), implementsMethod2Signature, 2));
+    functionTemplate->Set(v8::String::NewSymbol("implementsMethod4"), v8::FunctionTemplate::New(TestInterfaceV8Internal::implementsMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
     // Custom Signature 'supplementalMethod2'
     const int supplementalMethod2Argc = 2;
     v8::Handle<v8::FunctionTemplate> supplementalMethod2Argv[supplementalMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> supplementalMethod2Signature = v8::Signature::New(desc, supplementalMethod2Argc, supplementalMethod2Argv);
-    proto->Set(v8::String::NewSymbol("supplementalMethod2"), v8::FunctionTemplate::New(TestInterfaceV8Internal::supplementalMethod2MethodCallback, v8Undefined(), supplementalMethod2Signature, 2));
+    v8::Handle<v8::Signature> supplementalMethod2Signature = v8::Signature::New(functionTemplate, supplementalMethod2Argc, supplementalMethod2Argv);
+    prototypeTemplate->Set(v8::String::NewSymbol("supplementalMethod2"), v8::FunctionTemplate::New(TestInterfaceV8Internal::supplementalMethod2MethodCallback, v8Undefined(), supplementalMethod2Signature, 2));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    desc->Set(v8::String::NewSymbol("supplementalMethod4"), v8::FunctionTemplate::New(TestInterfaceV8Internal::supplementalMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+    functionTemplate->Set(v8::String::NewSymbol("supplementalMethod4"), v8::FunctionTemplate::New(TestInterfaceV8Internal::supplementalMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
-    desc->SetNativeDataProperty(v8::String::NewSymbol("implementsStaticReadOnlyAttr"), TestInterfaceV8Internal::implementsStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    desc->SetNativeDataProperty(v8::String::NewSymbol("implementsStaticAttr"), TestInterfaceV8Internal::implementsStaticAttrAttributeGetterCallback, TestInterfaceV8Internal::implementsStaticAttrAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("implementsStaticReadOnlyAttr"), TestInterfaceV8Internal::implementsStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("implementsStaticAttr"), TestInterfaceV8Internal::implementsStaticAttrAttributeGetterCallback, TestInterfaceV8Internal::implementsStaticAttrAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    desc->SetNativeDataProperty(v8::String::NewSymbol("supplementalStaticReadOnlyAttr"), TestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("supplementalStaticReadOnlyAttr"), TestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    desc->SetNativeDataProperty(v8::String::NewSymbol("supplementalStaticAttr"), TestInterfaceV8Internal::supplementalStaticAttrAttributeGetterCallback, TestInterfaceV8Internal::supplementalStaticAttrAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("supplementalStaticAttr"), TestInterfaceV8Internal::supplementalStaticAttrAttributeGetterCallback, TestInterfaceV8Internal::supplementalStaticAttrAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
     // Custom toString template
-    desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
-    return desc;
+    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    return functionTemplate;
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestInterface::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -937,23 +937,23 @@ bool V8TestInterface::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::I
         || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, WorkerWorld);
 }
 
-void V8TestInterface::installPerContextEnabledProperties(v8::Handle<v8::Object> instance, TestInterface* impl, v8::Isolate* isolate)
+void V8TestInterface::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, TestInterface* impl, v8::Isolate* isolate)
 {
-    v8::Local<v8::Object> proto = v8::Local<v8::Object>::Cast(instance->GetPrototype());
+    v8::Local<v8::Object> prototypeTemplate = v8::Local<v8::Object>::Cast(instanceTemplate->GetPrototype());
     if (ContextFeatures::featureName24Enabled(impl->document())) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"Node24", TestInterfaceV8Internal::Node24AttributeGetterCallback, TestInterfaceV8Internal::Node24AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
+        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
     }
     if (ContextFeatures::condition14Enabled(impl->document())) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"Node14", TestInterfaceV8Internal::Node14AttributeGetterCallback, TestInterfaceV8Internal::Node14AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
+        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
     }
     if (ContextFeatures::condition16Enabled(impl->document())) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"Node15", TestInterfaceV8Internal::Node15AttributeGetterCallback, TestInterfaceV8Internal::Node15AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
+        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
     }
 }
 

@@ -1451,7 +1451,7 @@ END
     $svgWrappedNativeType* imp = &impInstance;
 END
         }
-    } elsif ($attrExt->{"OnProto"} || $attrExt->{"Unforgeable"}) {
+    } elsif ($attrExt->{"OnPrototype"} || $attrExt->{"Unforgeable"}) {
         if ($interfaceName eq "Window") {
             $code .= <<END;
     v8::Handle<v8::Object> holder = info.Holder();
@@ -1910,7 +1910,7 @@ END
             $code .= "    $svgWrappedNativeType& impInstance = wrapper->propertyReference();\n";
             $code .= "    $svgWrappedNativeType* imp = &impInstance;\n";
         }
-    } elsif ($attrExt->{"OnProto"}) {
+    } elsif ($attrExt->{"OnPrototype"}) {
         $code .= <<END;
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
 END
@@ -3054,8 +3054,8 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::GetTemplate(v8::Isol
     v8::HandleScope scope(isolate);
     result = v8::FunctionTemplate::New(${v8ClassName}ConstructorCallback);
 
-    v8::Local<v8::ObjectTemplate> instance = result->InstanceTemplate();
-    instance->SetInternalFieldCount(${v8ClassName}::internalFieldCount);
+    v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
+    instanceTemplate->SetInternalFieldCount(${v8ClassName}::internalFieldCount);
     result->SetClassName(v8::String::NewSymbol("${implClassName}"));
     result->Inherit(${v8ClassName}::GetTemplate(isolate, currentWorldType));
     data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
@@ -3195,9 +3195,9 @@ sub GenerateAttributeConfigurationParameters
         $setterForMainWorld = "0";
     }
 
-    # An accessor can be installed on the proto
-    if ($attrExt->{"OnProto"}) {
-        $onProto = "1 /* on proto */";
+    # An accessor can be installed on the prototype
+    if ($attrExt->{"OnPrototype"}) {
+        $onProto = "1 /* on prototype */";
     }
 
     if (!$attrExt->{"PerWorldBindings"}) {
@@ -3236,7 +3236,7 @@ sub GenerateStaticAttribute
     my $conditionalString = GenerateConditionalString($attribute);
 
     $code .= "#if ${conditionalString}\n" if $conditionalString;
-    $code .= "    desc->SetNativeDataProperty(v8::String::NewSymbol(\"$attrName\"), $getter, $setter, v8::External::New($data), $propAttribute, v8::Handle<v8::AccessorSignature>(), $accessControl);\n";
+    $code .= "    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol(\"$attrName\"), $getter, $setter, v8::External::New($data), $propAttribute, v8::Handle<v8::AccessorSignature>(), $accessControl);\n";
     $code .= "#endif // ${conditionalString}\n" if $conditionalString;
 
     return $code;
@@ -3281,12 +3281,12 @@ sub GenerateNonStandardFunction
 
     my $commentInfo = "Function '$name' (Extended Attributes: '" . join(' ', keys(%{$attrExt})) . "')";
 
-    my $template = "proto";
+    my $template = "prototypeTemplate";
     if ($attrExt->{"Unforgeable"}) {
-        $template = "instance";
+        $template = "instanceTemplate";
     }
     if ($function->isStatic) {
-        $template = "desc";
+        $template = "functionTemplate";
     }
 
     my $conditional4 = "";  # 4 space indent context
@@ -3346,7 +3346,7 @@ END
         $property_attributes = ", static_cast<v8::PropertyAttribute>($property_attributes)";
     }
 
-    if ($template eq "proto" && $conditional4 eq "" && $signature eq "defaultSignature" && $property_attributes eq "") {
+    if ($template eq "prototypeTemplate" && $conditional4 eq "" && $signature eq "defaultSignature" && $property_attributes eq "") {
         die "This shouldn't happen: Class '$implClassName' $commentInfo\n";
     }
 
@@ -3469,7 +3469,7 @@ sub GenerateImplementationIndexedPropertyAccessors
 
     my $code = "";
     if ($indexedGetterFunction || $indexedSetterFunction || $indexedDeleterFunction || $indexedEnumeratorFunction || $hasQuery) {
-        $code .= "    desc->${setOn}Template()->SetIndexedPropertyHandler(${implClassName}V8Internal::indexedPropertyGetterCallback";
+        $code .= "    functionTemplate->${setOn}Template()->SetIndexedPropertyHandler(${implClassName}V8Internal::indexedPropertyGetterCallback";
         $code .= $indexedSetterFunction ? ", ${implClassName}V8Internal::indexedPropertySetterCallback" : ", 0";
         $code .= ", 0"; # IndexedPropertyQuery -- not being used at the moment.
         $code .= $indexedDeleterFunction ? ", ${implClassName}V8Internal::indexedPropertyDeleterCallback" : ", 0";
@@ -3687,7 +3687,7 @@ sub GenerateImplementationNamedPropertyAccessors
             $setOn = "Prototype";
         }
 
-        $subCode .= "    desc->${setOn}Template()->SetNamedPropertyHandler(";
+        $subCode .= "    functionTemplate->${setOn}Template()->SetNamedPropertyHandler(";
         $subCode .= $namedGetterFunction ? "${implClassName}V8Internal::namedPropertyGetterCallback, " : "0, ";
         $subCode .= $namedSetterFunction ? "${implClassName}V8Internal::namedPropertySetterCallback, " : "0, ";
         $subCode .= $namedEnumeratorFunction ? "${implClassName}V8Internal::namedPropertyQueryCallback, " : "0, ";
@@ -4054,7 +4054,7 @@ sub GenerateImplementationLegacyCall
     my $v8ClassName = GetV8ClassName($interface);
 
     if ($interface->extendedAttributes->{"CustomLegacyCall"}) {
-        $code .= "    desc->InstanceTemplate()->SetCallAsFunctionHandler(${v8ClassName}::legacyCallCustom);\n";
+        $code .= "    functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler(${v8ClassName}::legacyCallCustom);\n";
     }
     return $code;
 }
@@ -4066,7 +4066,7 @@ sub GenerateImplementationMasqueradesAsUndefined
 
     if ($interface->extendedAttributes->{"MasqueradesAsUndefined"})
     {
-        $code .= "    desc->InstanceTemplate()->MarkAsUndetectable();\n";
+        $code .= "    functionTemplate->InstanceTemplate()->MarkAsUndetectable();\n";
     }
     return $code;
 }
@@ -4166,7 +4166,7 @@ END
         AddIncludesForType($attrType);
 
         if ($attrType eq "EventHandler" && $interfaceName eq "Window") {
-            $attrExt->{"OnProto"} = 1;
+            $attrExt->{"OnPrototype"} = 1;
         }
 
         if ($attrType eq "SerializedScriptValue") {
@@ -4361,7 +4361,7 @@ END
 
     my $accessCheck = "";
     if ($interface->extendedAttributes->{"CheckSecurity"} && $interfaceName ne "Window") {
-        $accessCheck = "instance->SetAccessCheckCallbacks(${implClassName}V8Internal::namedSecurityCheck, ${implClassName}V8Internal::indexedSecurityCheck, v8::External::New(const_cast<WrapperTypeInfo*>(&${v8ClassName}::wrapperTypeInfo)));";
+        $accessCheck = "instanceTemplate->SetAccessCheckCallbacks(${implClassName}V8Internal::namedSecurityCheck, ${implClassName}V8Internal::indexedSecurityCheck, v8::External::New(const_cast<WrapperTypeInfo*>(&${v8ClassName}::wrapperTypeInfo)));";
     }
 
     # For the Window interface, generate the shadow object template
@@ -4385,9 +4385,9 @@ END
 
     # Generate the template configuration method
     $code =  <<END;
-static v8::Handle<v8::FunctionTemplate> Configure${v8ClassName}Template(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static v8::Handle<v8::FunctionTemplate> Configure${v8ClassName}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    desc->ReadOnlyPrototype();
+    functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
 END
@@ -4397,11 +4397,11 @@ END
         my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($interface);
         $code .= <<END;
     if (!${runtimeEnabledFunction}())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, \"\", $parentClassTemplate, ${v8ClassName}::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, \"\", $parentClassTemplate, ${v8ClassName}::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
     else
 END
     }
-    $code .=  "    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, \"${interfaceName}\", $parentClassTemplate, ${v8ClassName}::internalFieldCount,\n";
+    $code .=  "    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, \"${interfaceName}\", $parentClassTemplate, ${v8ClassName}::internalFieldCount,\n";
     $code .= "        " . ($hasAttributes ? "${v8ClassName}Attributes, WTF_ARRAY_LENGTH(${v8ClassName}Attributes),\n" : "0, 0,\n");
     $code .= "        " . ($hasFunctions ? "${v8ClassName}Methods, WTF_ARRAY_LENGTH(${v8ClassName}Methods),\n" : "0, 0,\n");
     $code .= "        isolate, currentWorldType);\n";
@@ -4410,16 +4410,16 @@ END
     $code .= "    UNUSED_PARAM(defaultSignature);\n";
 
     if (IsConstructable($interface)) {
-        $code .= "    desc->SetCallHandler(${v8ClassName}::constructorCallback);\n";
+        $code .= "    functionTemplate->SetCallHandler(${v8ClassName}::constructorCallback);\n";
         my $interfaceLength = GetInterfaceLength($interface);
-        $code .= "    desc->SetLength(${interfaceLength});\n";
+        $code .= "    functionTemplate->SetLength(${interfaceLength});\n";
     }
 
         $code .=  <<END;
-    v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
-    v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance);
-    UNUSED_PARAM(proto);
+    v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
+    UNUSED_PARAM(instanceTemplate);
+    UNUSED_PARAM(prototypeTemplate);
 END
 
     if ($accessCheck) {
@@ -4435,7 +4435,7 @@ END
         $code .= "        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\\\n";
         $code .= GenerateAttributeConfiguration($interface, $runtimeEnabledAttribute, ";", "    ");
         $code .= <<END;
-        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
+        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate, currentWorldType);
     }
 END
         $code .= "#endif // ${conditionalString}\n" if $conditionalString;
@@ -4464,7 +4464,7 @@ END
         }
         $code .= "    };\n";
         $code .= <<END;
-    V8DOMConfiguration::installConstants(desc, proto, ${v8ClassName}Constants, WTF_ARRAY_LENGTH(${v8ClassName}Constants), isolate);
+    V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, ${v8ClassName}Constants, WTF_ARRAY_LENGTH(${v8ClassName}Constants), isolate);
 END
         # Define runtime enabled constants.
         foreach my $runtimeEnabledConstant (@runtimeEnabledConstants) {
@@ -4474,7 +4474,7 @@ END
             $code .= "    if (${runtimeEnabledFunction}()) {\n";
             $code .= <<END;
         static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"${name}", static_cast<signed int>(${value})};
-        V8DOMConfiguration::installConstants(desc, proto, &constantConfiguration, 1, isolate);
+        V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, &constantConfiguration, 1, isolate);
 END
             $code .= "    }\n";
         }
@@ -4507,26 +4507,26 @@ END
     if ($interfaceName eq "Window") {
         $code .= <<END;
 
-    proto->SetInternalFieldCount(V8Window::internalFieldCount);
-    desc->SetHiddenPrototype(true);
-    instance->SetInternalFieldCount(V8Window::internalFieldCount);
+    prototypeTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
+    functionTemplate->SetHiddenPrototype(true);
+    instanceTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
     // Set access check callbacks, but turned off initially.
     // When a context is detached from a frame, turn on the access check.
     // Turning on checks also invalidates inline caches of the object.
-    instance->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)), false);
+    instanceTemplate->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)), false);
 END
     }
     if ($interfaceName eq "HTMLDocument" or $interfaceName eq "DedicatedWorkerGlobalScope" or $interfaceName eq "SharedWorkerGlobalScope") {
         $code .= <<END;
-    desc->SetHiddenPrototype(true);
+    functionTemplate->SetHiddenPrototype(true);
 END
     }
 
     $code .= <<END;
 
     // Custom toString template
-    desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
-    return desc;
+    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    return functionTemplate;
 }
 
 END
@@ -4569,9 +4569,9 @@ END
     if (@perContextEnabledAttributes) {
         my $code = "";
         $code .= <<END;
-void ${v8ClassName}::installPerContextEnabledProperties(v8::Handle<v8::Object> instance, ${nativeType}* impl, v8::Isolate* isolate)
+void ${v8ClassName}::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, ${nativeType}* impl, v8::Isolate* isolate)
 {
-    v8::Local<v8::Object> proto = v8::Local<v8::Object>::Cast(instance->GetPrototype());
+    v8::Local<v8::Object> prototypeTemplate = v8::Local<v8::Object>::Cast(instanceTemplate->GetPrototype());
 END
 
         # Define per-context enabled attributes.
@@ -4582,7 +4582,7 @@ END
             $code .= "        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\\\n";
             $code .= GenerateAttributeConfiguration($interface, $perContextEnabledAttribute, ";", "    ");
             $code .= <<END;
-        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
+        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
 END
             $code .= "    }\n";
         }
@@ -4596,16 +4596,16 @@ END
     if (@perContextEnabledFunctions) {
         my $code = "";
         $code .= <<END;
-void ${v8ClassName}::installPerContextEnabledMethods(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
+void ${v8ClassName}::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
 {
-    UNUSED_PARAM(proto);
+    UNUSED_PARAM(prototypeTemplate);
 END
         # Define per-context enabled operations.
         $code .=  <<END;
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(GetTemplate(isolate, worldType(isolate)));
     UNUSED_PARAM(defaultSignature);
 
-    ExecutionContext* context = toExecutionContext(proto->CreationContext());
+    ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
 END
 
         foreach my $perContextEnabledFunction (@perContextEnabledFunctions) {
@@ -4616,7 +4616,7 @@ END
             $code .= "    if (context && context->isDocument() && ${contextEnabledFunction}(toDocument(context)))\n";
             my $name = $perContextEnabledFunction->name;
             $code .= <<END;
-        proto->Set(v8::String::NewSymbol("${name}"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), defaultSignature, $functionLength)->GetFunction());
+        prototypeTemplate->Set(v8::String::NewSymbol("${name}"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), defaultSignature, $functionLength)->GetFunction());
 END
             $code .= "#endif // ${conditionalString}\n" if $conditionalString;
         }
@@ -5012,7 +5012,7 @@ END
     if (IsTypedArrayType($interface->name)) {
       AddToImplIncludes("bindings/v8/custom/V8ArrayBufferCustom.h");
       $code .= <<END;
-    impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
+    impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
 END
     }
 
@@ -5021,7 +5021,7 @@ END
       $code .= <<END;
     for (unsigned i = 0, n = impl->numberOfChannels(); i < n; i++) {
         Float32Array* channelData = impl->getChannelData(i);
-        channelData->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
+        channelData->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
     }
 END
     }
@@ -5467,7 +5467,7 @@ sub CreateCustomSignature
         }
     }
     $code .= " };\n";
-    $code .= "    v8::Handle<v8::Signature> ${name}Signature = v8::Signature::New(desc, ${name}Argc, ${name}Argv);\n";
+    $code .= "    v8::Handle<v8::Signature> ${name}Signature = v8::Signature::New(functionTemplate, ${name}Argc, ${name}Argv);\n";
     return $code;
 }
 

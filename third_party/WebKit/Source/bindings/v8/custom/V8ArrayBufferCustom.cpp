@@ -39,7 +39,7 @@ namespace WebCore {
 
 using namespace WTF;
 
-V8ArrayBufferDeallocationObserver* V8ArrayBufferDeallocationObserver::instance()
+V8ArrayBufferDeallocationObserver* V8ArrayBufferDeallocationObserver::instanceTemplate()
 {
     DEFINE_STATIC_LOCAL(V8ArrayBufferDeallocationObserver, deallocationObserver, ());
     return &deallocationObserver;
@@ -71,7 +71,7 @@ v8::Handle<v8::Object> V8ArrayBuffer::createWrapper(PassRefPtr<ArrayBuffer> impl
     ASSERT(!DOMDataStore::containsWrapper<V8ArrayBuffer>(impl.get(), isolate));
 
     v8::Handle<v8::Object> wrapper = v8::ArrayBuffer::New(impl->data(), impl->byteLength());
-    impl->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
+    impl->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
 
     V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
@@ -89,7 +89,7 @@ ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
 
     v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
     ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(),
-        V8ArrayBufferDeallocationObserver::instance());
+        V8ArrayBufferDeallocationObserver::instanceTemplate());
     RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(contents);
     V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(buffer.release(), &wrapperTypeInfo, object, v8::Isolate::GetCurrent(), WrapperConfiguration::Dependent);
 

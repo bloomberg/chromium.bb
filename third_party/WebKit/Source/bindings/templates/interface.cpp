@@ -118,27 +118,27 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class_name}}Methods[] 
 {##############################################################################}
 {% block configure_class_template %}
 {# FIXME: rename to install_dom_template and Install{{v8_class_name}}DOMTemplate #}
-static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    desc->ReadOnlyPrototype();
+    functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "{{interface_name}}", v8::Local<v8::FunctionTemplate>(), {{v8_class_name}}::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "{{interface_name}}", v8::Local<v8::FunctionTemplate>(), {{v8_class_name}}::internalFieldCount,
         {# Test needed as size 0 constant arrays are not allowed in VC++ #}
         {%+ if attributes %}{{v8_class_name}}Attributes, WTF_ARRAY_LENGTH({{v8_class_name}}Attributes){% else %}0, 0{% endif %},
         {%+ if methods %}{{v8_class_name}}Methods, WTF_ARRAY_LENGTH({{v8_class_name}}Methods){% else %}0, 0{% endif %},
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
-    v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
-    v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance);
-    UNUSED_PARAM(proto);
+    v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
+    UNUSED_PARAM(instanceTemplate);
+    UNUSED_PARAM(prototypeTemplate);
     {% for attribute in attributes if attribute.runtime_enabled_function_name %}
     {% filter conditional(attribute.conditional_string) %}
     if ({{attribute.runtime_enabled_function_name}}()) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {{attribute_configuration(attribute)}};
-        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
+        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate, currentWorldType);
     }
     {% endfilter %}
     {% endfor %}
@@ -150,7 +150,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     // Custom Signature '{{method.name}}'
     const int {{method.name}}Argc = {{method.arguments | length}};
     v8::Handle<v8::FunctionTemplate> {{method.name}}Argv[{{method.name}}Argc] = { {{method.custom_signature}} };
-    v8::Handle<v8::Signature> {{method.name}}Signature = v8::Signature::New(desc, {{method.name}}Argc, {{method.name}}Argv);
+    v8::Handle<v8::Signature> {{method.name}}Signature = v8::Signature::New(functionTemplate, {{method.name}}Argc, {{method.name}}Argv);
     {% endif %}
     {# install_custom_signature #}
     {% if not method.overload_index or method.overload_index == 1 %}
@@ -177,15 +177,15 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     {% for attribute in attributes if attribute.is_static %}
     {% set getter_callback_name = '%sV8Internal::%sAttributeGetterCallback' %
            (interface_name, attribute.name) %}
-    desc->SetNativeDataProperty(v8::String::NewSymbol("{{attribute.name}}"), {{getter_callback_name}}, {{attribute.setter_callback_name}}, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("{{attribute.name}}"), {{getter_callback_name}}, {{attribute.setter_callback_name}}, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     {% endfor %}
     {% if constants %}
     {{install_constants() | indent}}
     {% endif %}
 
     // Custom toString template
-    desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
-    return desc;
+    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    return functionTemplate;
 }
 
 {% endblock %}
@@ -211,12 +211,12 @@ static const V8DOMConfiguration::ConstantConfiguration {{v8_class_name}}Constant
     {"{{constant.name}}", {{constant.value}}},
     {% endfor %}
 };
-V8DOMConfiguration::installConstants(desc, proto, {{v8_class_name}}Constants, WTF_ARRAY_LENGTH({{v8_class_name}}Constants), isolate);
+V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, {{v8_class_name}}Constants, WTF_ARRAY_LENGTH({{v8_class_name}}Constants), isolate);
 {# Runtime-enabled constants #}
 {% for constant in constants if constant.runtime_enabled_function_name %}
 if ({{constant.runtime_enabled_function_name}}()) {
     static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"{{constant.name}}", static_cast<signed int>({{constant.value}})};
-    V8DOMConfiguration::installConstants(desc, proto, &constantConfiguration, 1, isolate);
+    V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, &constantConfiguration, 1, isolate);
 }
 {% endfor %}
 {# Check constants #}
@@ -269,14 +269,14 @@ bool {{v8_class_name}}::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8:
 {##############################################################################}
 {% block install_per_context_attributes %}
 {% if has_per_context_enabled_attributes %}
-void {{v8_class_name}}::installPerContextEnabledProperties(v8::Handle<v8::Object> instance, {{cpp_class_name}}* impl, v8::Isolate* isolate)
+void {{v8_class_name}}::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, {{cpp_class_name}}* impl, v8::Isolate* isolate)
 {
-    v8::Local<v8::Object> proto = v8::Local<v8::Object>::Cast(instance->GetPrototype());
+    v8::Local<v8::Object> prototypeTemplate = v8::Local<v8::Object>::Cast(instanceTemplate->GetPrototype());
     {% for attribute in attributes if attribute.per_context_enabled_function_name %}
     if ({{attribute.per_context_enabled_function_name}}(impl->document())) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {{attribute_configuration(attribute)}};
-        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
+        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
     }
     {% endfor %}
 }
@@ -288,17 +288,17 @@ void {{v8_class_name}}::installPerContextEnabledProperties(v8::Handle<v8::Object
 {##############################################################################}
 {% block install_per_context_methods %}
 {% if has_per_context_enabled_methods %}
-void {{v8_class_name}}::installPerContextEnabledMethods(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
+void {{v8_class_name}}::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
 {
-    UNUSED_PARAM(proto);
+    UNUSED_PARAM(prototypeTemplate);
     {# Define per-context enabled operations #}
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(GetTemplate(isolate, worldType(isolate)));
     UNUSED_PARAM(defaultSignature);
 
-    ExecutionContext* context = toExecutionContext(proto->CreationContext());
+    ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
     {% for method in methods if method.per_context_enabled_function_name %}
     if (context && context->isDocument() && {{method.per_context_enabled_function_name}}(toDocument(context)))
-        proto->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{cpp_class_name}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
+        prototypeTemplate->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{cpp_class_name}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
     {% endfor %}
 }
 

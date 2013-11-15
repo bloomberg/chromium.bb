@@ -158,29 +158,29 @@ void V8TestExtendedEvent::constructorCallback(const v8::FunctionCallbackInfo<v8:
     EventV8Internal::constructor(info);
 }
 
-static v8::Handle<v8::FunctionTemplate> ConfigureV8TestExtendedEventTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static v8::Handle<v8::FunctionTemplate> ConfigureV8TestExtendedEventTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    desc->ReadOnlyPrototype();
+    functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
     if (!RuntimeEnabledFeatures::testEnabled())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "", V8TestEvent::GetTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "", V8TestEvent::GetTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
     else
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestExtendedEvent", V8TestEvent::GetTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestExtendedEvent", V8TestEvent::GetTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount,
         V8TestExtendedEventAttributes, WTF_ARRAY_LENGTH(V8TestExtendedEventAttributes),
         0, 0,
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
-    desc->SetCallHandler(V8TestExtendedEvent::constructorCallback);
-    desc->SetLength(1);
-    v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
-    v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance);
-    UNUSED_PARAM(proto);
+    functionTemplate->SetCallHandler(V8TestExtendedEvent::constructorCallback);
+    functionTemplate->SetLength(1);
+    v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
+    UNUSED_PARAM(instanceTemplate);
+    UNUSED_PARAM(prototypeTemplate);
 
     // Custom toString template
-    desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
-    return desc;
+    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    return functionTemplate;
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestExtendedEvent::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)

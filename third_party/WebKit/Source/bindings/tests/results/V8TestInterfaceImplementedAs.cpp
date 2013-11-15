@@ -176,30 +176,30 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceImplementedA
     {"func1", RealClassV8Internal::func1MethodCallback, 0, 1},
 };
 
-static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceImplementedAsTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceImplementedAsTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    desc->ReadOnlyPrototype();
+    functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestInterfaceImplementedAs", v8::Local<v8::FunctionTemplate>(), V8TestInterfaceImplementedAs::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfaceImplementedAs", v8::Local<v8::FunctionTemplate>(), V8TestInterfaceImplementedAs::internalFieldCount,
         V8TestInterfaceImplementedAsAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceImplementedAsAttributes),
         V8TestInterfaceImplementedAsMethods, WTF_ARRAY_LENGTH(V8TestInterfaceImplementedAsMethods),
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
-    v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
-    v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance);
-    UNUSED_PARAM(proto);
+    v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
+    UNUSED_PARAM(instanceTemplate);
+    UNUSED_PARAM(prototypeTemplate);
 
     // Custom Signature 'funcTestInterfaceImplementedAsParam'
     const int funcTestInterfaceImplementedAsParamArgc = 1;
     v8::Handle<v8::FunctionTemplate> funcTestInterfaceImplementedAsParamArgv[funcTestInterfaceImplementedAsParamArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceImplementedAs::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> funcTestInterfaceImplementedAsParamSignature = v8::Signature::New(desc, funcTestInterfaceImplementedAsParamArgc, funcTestInterfaceImplementedAsParamArgv);
-    proto->Set(v8::String::NewSymbol("funcTestInterfaceImplementedAsParam"), v8::FunctionTemplate::New(RealClassV8Internal::funcTestInterfaceImplementedAsParamMethodCallback, v8Undefined(), funcTestInterfaceImplementedAsParamSignature, 1));
+    v8::Handle<v8::Signature> funcTestInterfaceImplementedAsParamSignature = v8::Signature::New(functionTemplate, funcTestInterfaceImplementedAsParamArgc, funcTestInterfaceImplementedAsParamArgv);
+    prototypeTemplate->Set(v8::String::NewSymbol("funcTestInterfaceImplementedAsParam"), v8::FunctionTemplate::New(RealClassV8Internal::funcTestInterfaceImplementedAsParamMethodCallback, v8Undefined(), funcTestInterfaceImplementedAsParamSignature, 1));
 
     // Custom toString template
-    desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
-    return desc;
+    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    return functionTemplate;
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestInterfaceImplementedAs::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)

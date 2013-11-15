@@ -107,10 +107,10 @@ namespace WebCore {
                 derefObjectFunction(object);
         }
 
-        void installPerContextEnabledMethods(v8::Handle<v8::Object> proto, v8::Isolate* isolate) const
+        void installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate) const
         {
             if (installPerContextEnabledMethodsFunction)
-                installPerContextEnabledMethodsFunction(proto, isolate);
+                installPerContextEnabledMethodsFunction(prototypeTemplate, isolate);
         }
 
         ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object> object) const

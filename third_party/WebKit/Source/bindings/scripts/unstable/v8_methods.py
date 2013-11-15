@@ -52,15 +52,11 @@ def generate_method(interface, method):
     this_custom_signature = custom_signature(method, arguments)
 
     def function_template():
-        # FIXME: Rename as follows (also in v8/V8DOMConfiguration):
-        # desc => functionTemplate
-        # instance => instanceTemplate
-        # proto => prototypeTemplate
         if is_static:
-            return 'desc'
+            return 'functionTemplate'
         if 'Unforgeable' in extended_attributes:
-            return 'instance'
-        return 'proto'
+            return 'instanceTemplate'
+        return 'prototypeTemplate'
 
     def signature():
         if this_custom_signature:

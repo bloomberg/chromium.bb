@@ -33,10 +33,10 @@
 
 namespace WebCore {
 
-void V8DOMConfiguration::installAttributes(v8::Handle<v8::ObjectTemplate> instance, v8::Handle<v8::ObjectTemplate> prototype, const AttributeConfiguration* attributes, size_t attributeCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+void V8DOMConfiguration::installAttributes(v8::Handle<v8::ObjectTemplate> instanceTemplate, v8::Handle<v8::ObjectTemplate> prototype, const AttributeConfiguration* attributes, size_t attributeCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     for (size_t i = 0; i < attributeCount; ++i)
-        installAttribute(instance, prototype, attributes[i], isolate, currentWorldType);
+        installAttribute(instanceTemplate, prototype, attributes[i], isolate, currentWorldType);
 }
 
 void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototype, const ConstantConfiguration* constants, size_t constantCount, v8::Isolate* isolate)
@@ -64,8 +64,8 @@ v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<
     size_t fieldCount, const AttributeConfiguration* attributes, size_t attributeCount, const MethodConfiguration* callbacks, size_t callbackCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionDescriptor->SetClassName(v8::String::NewSymbol(interfaceName));
-    v8::Local<v8::ObjectTemplate> instance = functionDescriptor->InstanceTemplate();
-    instance->SetInternalFieldCount(fieldCount);
+    v8::Local<v8::ObjectTemplate> instanceTemplate = functionDescriptor->InstanceTemplate();
+    instanceTemplate->SetInternalFieldCount(fieldCount);
     if (!parentClass.IsEmpty()) {
         functionDescriptor->Inherit(parentClass);
         // Marks the prototype object as one of native-backed objects.
@@ -76,7 +76,7 @@ v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<
     }
 
     if (attributeCount)
-        installAttributes(instance, functionDescriptor->PrototypeTemplate(), attributes, attributeCount, isolate, currentWorldType);
+        installAttributes(instanceTemplate, functionDescriptor->PrototypeTemplate(), attributes, attributeCount, isolate, currentWorldType);
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(functionDescriptor);
     if (callbackCount)
         installCallbacks(functionDescriptor->PrototypeTemplate(), defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete), callbacks, callbackCount, isolate, currentWorldType);

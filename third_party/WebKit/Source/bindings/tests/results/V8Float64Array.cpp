@@ -157,33 +157,33 @@ void V8Float64Array::constructorCallback(const v8::FunctionCallbackInfo<v8::Valu
     Float64ArrayV8Internal::constructor(info);
 }
 
-static v8::Handle<v8::FunctionTemplate> ConfigureV8Float64ArrayTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static v8::Handle<v8::FunctionTemplate> ConfigureV8Float64ArrayTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    desc->ReadOnlyPrototype();
+    functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "Float64Array", V8ArrayBufferView::GetTemplate(isolate, currentWorldType), V8Float64Array::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "Float64Array", V8ArrayBufferView::GetTemplate(isolate, currentWorldType), V8Float64Array::internalFieldCount,
         0, 0,
         V8Float64ArrayMethods, WTF_ARRAY_LENGTH(V8Float64ArrayMethods),
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
-    desc->SetCallHandler(V8Float64Array::constructorCallback);
-    desc->SetLength(1);
-    v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
-    v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance);
-    UNUSED_PARAM(proto);
-    desc->InstanceTemplate()->SetIndexedPropertyHandler(Float64ArrayV8Internal::indexedPropertyGetterCallback, Float64ArrayV8Internal::indexedPropertySetterCallback, 0, 0, indexedPropertyEnumerator<Float64Array>);
+    functionTemplate->SetCallHandler(V8Float64Array::constructorCallback);
+    functionTemplate->SetLength(1);
+    v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
+    UNUSED_PARAM(instanceTemplate);
+    UNUSED_PARAM(prototypeTemplate);
+    functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler(Float64ArrayV8Internal::indexedPropertyGetterCallback, Float64ArrayV8Internal::indexedPropertySetterCallback, 0, 0, indexedPropertyEnumerator<Float64Array>);
 
     // Custom Signature 'foo'
     const int fooArgc = 1;
     v8::Handle<v8::FunctionTemplate> fooArgv[fooArgc] = { v8::Handle<v8::FunctionTemplate>() };
-    v8::Handle<v8::Signature> fooSignature = v8::Signature::New(desc, fooArgc, fooArgv);
-    proto->Set(v8::String::NewSymbol("foo"), v8::FunctionTemplate::New(Float64ArrayV8Internal::fooMethodCallback, v8Undefined(), fooSignature, 1));
+    v8::Handle<v8::Signature> fooSignature = v8::Signature::New(functionTemplate, fooArgc, fooArgv);
+    prototypeTemplate->Set(v8::String::NewSymbol("foo"), v8::FunctionTemplate::New(Float64ArrayV8Internal::fooMethodCallback, v8Undefined(), fooSignature, 1));
 
     // Custom toString template
-    desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
-    return desc;
+    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    return functionTemplate;
 }
 
 v8::Handle<v8::FunctionTemplate> V8Float64Array::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -228,7 +228,7 @@ v8::Handle<v8::Object> V8Float64Array::createWrapper(PassRefPtr<Float64Array> im
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
+    impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
     installPerContextEnabledProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8Float64Array>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;

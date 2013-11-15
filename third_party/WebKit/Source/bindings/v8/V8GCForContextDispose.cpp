@@ -60,7 +60,7 @@ void V8GCForContextDispose::notifyIdleSooner(double maximumFireInterval)
     }
 }
 
-V8GCForContextDispose& V8GCForContextDispose::instance()
+V8GCForContextDispose& V8GCForContextDispose::instanceTemplate()
 {
     DEFINE_STATIC_LOCAL(V8GCForContextDispose, staticInstance, ());
     return staticInstance;

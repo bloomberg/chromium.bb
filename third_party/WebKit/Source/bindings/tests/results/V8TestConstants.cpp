@@ -73,20 +73,20 @@ template <typename T> void V8_USE(T) { }
 
 } // namespace TestConstantsV8Internal
 
-static v8::Handle<v8::FunctionTemplate> ConfigureV8TestConstantsTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static v8::Handle<v8::FunctionTemplate> ConfigureV8TestConstantsTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    desc->ReadOnlyPrototype();
+    functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestConstants", v8::Local<v8::FunctionTemplate>(), V8TestConstants::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestConstants", v8::Local<v8::FunctionTemplate>(), V8TestConstants::internalFieldCount,
         0, 0,
         0, 0,
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
-    v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
-    v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance);
-    UNUSED_PARAM(proto);
+    v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
+    UNUSED_PARAM(instanceTemplate);
+    UNUSED_PARAM(prototypeTemplate);
     static const V8DOMConfiguration::ConstantConfiguration V8TestConstantsConstants[] = {
         {"CONST_VALUE_0", 0},
         {"CONST_VALUE_1", 1},
@@ -106,10 +106,10 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestConstantsTemplate(v8::Han
         {"DEPRECATED_CONSTANT", 1},
         {"CONST_JAVASCRIPT", 1},
     };
-    V8DOMConfiguration::installConstants(desc, proto, V8TestConstantsConstants, WTF_ARRAY_LENGTH(V8TestConstantsConstants), isolate);
+    V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, V8TestConstantsConstants, WTF_ARRAY_LENGTH(V8TestConstantsConstants), isolate);
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"FEATURE_ENABLED_CONST", static_cast<signed int>(1)};
-        V8DOMConfiguration::installConstants(desc, proto, &constantConfiguration, 1, isolate);
+        V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, &constantConfiguration, 1, isolate);
     }
     COMPILE_ASSERT(0 == TestConstants::CONST_VALUE_0, TheValueOfTestConstants_CONST_VALUE_0DoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestConstants::CONST_VALUE_1, TheValueOfTestConstants_CONST_VALUE_1DoesntMatchWithImplementation);
@@ -131,8 +131,8 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestConstantsTemplate(v8::Han
     COMPILE_ASSERT(1 == TestConstants::CONST_IMPL, TheValueOfTestConstants_CONST_IMPLDoesntMatchWithImplementation);
 
     // Custom toString template
-    desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
-    return desc;
+    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    return functionTemplate;
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestConstants::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)

@@ -148,7 +148,7 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
         {
             ArrayBuffer* arrayBuffer = xmlHttpRequest->responseArrayBuffer();
             if (arrayBuffer) {
-                arrayBuffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
+                arrayBuffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
             }
             v8SetReturnValueFast(info, arrayBuffer, xmlHttpRequest);
             return;

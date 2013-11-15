@@ -1760,7 +1760,7 @@ private:
             return 0;
         const void* bufferStart = m_buffer + m_position;
         RefPtr<ArrayBuffer> arrayBuffer = ArrayBuffer::create(bufferStart, byteLength);
-        arrayBuffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
+        arrayBuffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
         m_position += byteLength;
         return arrayBuffer.release();
     }
@@ -2174,7 +2174,7 @@ public:
         v8::Handle<v8::Object> result = m_arrayBuffers.at(index);
         if (result.IsEmpty()) {
             RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(m_arrayBufferContents->at(index));
-            buffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
+            buffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
             v8::V8::AdjustAmountOfExternalAllocatedMemory(buffer->byteLength());
             result = toV8Object(buffer.get(), m_reader.getIsolate());
             m_arrayBuffers[index] = result;

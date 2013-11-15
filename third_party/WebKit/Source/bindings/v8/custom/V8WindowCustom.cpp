@@ -147,7 +147,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
     // use of any idle time. Aim for the middle of the interval for simplicity.
     if (timeout >= 0) {
         double maximumFireInterval = static_cast<double>(timeout) / 1000 / 2;
-        V8GCForContextDispose::instance().notifyIdleSooner(maximumFireInterval);
+        V8GCForContextDispose::instanceTemplate().notifyIdleSooner(maximumFireInterval);
     }
 
     v8SetReturnValue(info, timerId);

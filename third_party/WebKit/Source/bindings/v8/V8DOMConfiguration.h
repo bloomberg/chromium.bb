@@ -59,9 +59,9 @@ public:
     static void installAttributes(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::ObjectTemplate>, const AttributeConfiguration*, size_t attributeCount, v8::Isolate*, WrapperWorldType currentWorldType);
 
     template<class ObjectOrTemplate>
-    static inline void installAttribute(v8::Handle<ObjectOrTemplate> instance, v8::Handle<ObjectOrTemplate> prototype, const AttributeConfiguration& attribute, v8::Isolate*)
+    static inline void installAttribute(v8::Handle<ObjectOrTemplate> instanceTemplate, v8::Handle<ObjectOrTemplate> prototype, const AttributeConfiguration& attribute, v8::Isolate*)
     {
-        (attribute.onPrototype ? prototype : instance)->SetAccessor(v8::String::NewSymbol(attribute.name),
+        (attribute.onPrototype ? prototype : instanceTemplate)->SetAccessor(v8::String::NewSymbol(attribute.name),
                                                                     attribute.getter,
                                                                     attribute.setter,
                                                                     v8::External::New(const_cast<WrapperTypeInfo*>(attribute.data)),
@@ -70,7 +70,7 @@ public:
     }
 
     template<class ObjectOrTemplate>
-    static inline void installAttribute(v8::Handle<ObjectOrTemplate> instance, v8::Handle<ObjectOrTemplate> prototype, const AttributeConfiguration& attribute, v8::Isolate*, WrapperWorldType currentWorldType)
+    static inline void installAttribute(v8::Handle<ObjectOrTemplate> instanceTemplate, v8::Handle<ObjectOrTemplate> prototype, const AttributeConfiguration& attribute, v8::Isolate*, WrapperWorldType currentWorldType)
     {
         v8::AccessorGetterCallback getter = attribute.getter;
         v8::AccessorSetterCallback setter = attribute.setter;
@@ -80,7 +80,7 @@ public:
             if (attribute.setterForMainWorld)
                 setter = attribute.setterForMainWorld;
         }
-        (attribute.onPrototype ? prototype : instance)->SetAccessor(v8::String::NewSymbol(attribute.name),
+        (attribute.onPrototype ? prototype : instanceTemplate)->SetAccessor(v8::String::NewSymbol(attribute.name),
             getter,
             setter,
             v8::External::New(const_cast<WrapperTypeInfo*>(attribute.data)),

@@ -95,10 +95,10 @@ v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(const Wra
 
     v8::Context::Scope scope(v8::Local<v8::Context>::New(m_isolate, m_context));
     v8::Local<v8::Function> function = constructorForType(type);
-    v8::Local<v8::Object> instance = V8ObjectConstructor::newInstance(function);
-    if (!instance.IsEmpty()) {
-        m_wrapperBoilerplates.set(type, UnsafePersistent<v8::Object>(m_isolate, instance));
-        return instance->Clone();
+    v8::Local<v8::Object> instanceTemplate = V8ObjectConstructor::newInstance(function);
+    if (!instanceTemplate.IsEmpty()) {
+        m_wrapperBoilerplates.set(type, UnsafePersistent<v8::Object>(m_isolate, instanceTemplate));
+        return instanceTemplate->Clone();
     }
     return v8::Local<v8::Object>();
 }
@@ -116,10 +116,10 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
         return v8::Local<v8::Function>();
 
     if (type->parentClass) {
-        v8::Local<v8::Object> proto = constructorForType(type->parentClass);
-        if (proto.IsEmpty())
+        v8::Local<v8::Object> prototypeTemplate = constructorForType(type->parentClass);
+        if (prototypeTemplate.IsEmpty())
             return v8::Local<v8::Function>();
-        function->SetPrototype(proto);
+        function->SetPrototype(prototypeTemplate);
     }
 
     v8::Local<v8::Value> prototypeValue = function->Get(v8::String::NewSymbol("prototype"));

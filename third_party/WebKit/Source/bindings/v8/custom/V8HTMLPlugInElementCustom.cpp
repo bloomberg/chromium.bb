@@ -51,11 +51,11 @@ static void npObjectNamedGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (!wrapper)
         return;
 
-    v8::Local<v8::Object> instance = wrapper->newLocal(info.GetIsolate());
-    if (instance.IsEmpty())
+    v8::Local<v8::Object> instanceTemplate = wrapper->newLocal(info.GetIsolate());
+    if (instanceTemplate.IsEmpty())
         return;
 
-    npObjectGetNamedProperty(instance, name, info);
+    npObjectGetNamedProperty(instanceTemplate, name, info);
 }
 
 template <class C>
@@ -66,11 +66,11 @@ static void npObjectNamedSetter(v8::Local<v8::String> name, v8::Local<v8::Value>
     if (!wrapper)
         return;
 
-    v8::Local<v8::Object> instance = wrapper->newLocal(info.GetIsolate());
-    if (instance.IsEmpty())
+    v8::Local<v8::Object> instanceTemplate = wrapper->newLocal(info.GetIsolate());
+    if (instanceTemplate.IsEmpty())
         return;
 
-    npObjectSetNamedProperty(instance, name, value, info);
+    npObjectSetNamedProperty(instanceTemplate, name, value, info);
 }
 
 void V8HTMLAppletElement::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -132,11 +132,11 @@ void npObjectIndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Va
     if (!wrapper)
         return;
 
-    v8::Local<v8::Object> instance = wrapper->newLocal(info.GetIsolate());
-    if (instance.IsEmpty())
+    v8::Local<v8::Object> instanceTemplate = wrapper->newLocal(info.GetIsolate());
+    if (instanceTemplate.IsEmpty())
         return;
 
-    npObjectGetIndexedProperty(instance, index, info);
+    npObjectGetIndexedProperty(instanceTemplate, index, info);
 }
 
 template <class C>
@@ -147,11 +147,11 @@ void npObjectIndexedSetter(uint32_t index, v8::Local<v8::Value> value, const v8:
     if (!wrapper)
         return;
 
-    v8::Local<v8::Object> instance = wrapper->newLocal(info.GetIsolate());
-    if (instance.IsEmpty())
+    v8::Local<v8::Object> instanceTemplate = wrapper->newLocal(info.GetIsolate());
+    if (instanceTemplate.IsEmpty())
         return;
 
-    npObjectSetIndexedProperty(instance, index, value, info);
+    npObjectSetIndexedProperty(instanceTemplate, index, value, info);
 }
 
 void V8HTMLAppletElement::indexedPropertyGetterCustom(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)

@@ -41,7 +41,7 @@ public:
     void notifyContextDisposed(bool isMainFrame);
     void notifyIdleSooner(double maximumFireInterval);
 
-    static V8GCForContextDispose& instance();
+    static V8GCForContextDispose& instanceTemplate();
 
 private:
     V8GCForContextDispose(); // Use instance() instead.

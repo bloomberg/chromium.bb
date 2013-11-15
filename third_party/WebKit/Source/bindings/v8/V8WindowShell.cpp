@@ -105,7 +105,7 @@ void V8WindowShell::disposeContext()
     // It's likely that disposing the context has created a lot of
     // garbage. Notify V8 about this so it'll have a chance of cleaning
     // it up when idle.
-    V8GCForContextDispose::instance().notifyContextDisposed(m_frame->isMainFrame());
+    V8GCForContextDispose::instanceTemplate().notifyContextDisposed(m_frame->isMainFrame());
 }
 
 void V8WindowShell::clearForClose(bool destroyGlobal)

@@ -40,7 +40,7 @@ public:
     {
         v8::V8::AdjustAmountOfExternalAllocatedMemory(-static_cast<int>(sizeInBytes));
     }
-    static V8ArrayBufferDeallocationObserver* instance();
+    static V8ArrayBufferDeallocationObserver* instanceTemplate();
 
 protected:
     virtual void blinkAllocatedMemory(unsigned sizeInBytes) OVERRIDE
