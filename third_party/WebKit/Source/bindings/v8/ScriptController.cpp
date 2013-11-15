@@ -153,16 +153,18 @@ v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> fun
     return ScriptController::callFunction(m_frame->document(), function, receiver, argc, info, m_isolate);
 }
 
-static void resourceInfo(const v8::Handle<v8::Function> function, String& resourceName, int& lineNumber)
+static bool resourceInfo(const v8::Handle<v8::Function> function, String& resourceName, int& lineNumber)
 {
     v8::ScriptOrigin origin = function->GetScriptOrigin();
     if (origin.ResourceName().IsEmpty()) {
         resourceName = "undefined";
         lineNumber = 1;
     } else {
-        resourceName = toWebCoreString(origin.ResourceName());
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringResourceName, origin.ResourceName(), false);
+        resourceName = stringResourceName;
         lineNumber = function->GetScriptLineNumber() + 1;
     }
+    return true;
 }
 
 v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> info[], v8::Isolate* isolate)
@@ -171,7 +173,8 @@ v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v
     if (InspectorInstrumentation::timelineAgentEnabled(context)) {
         String resourceName;
         int lineNumber;
-        resourceInfo(function, resourceName, lineNumber);
+        if (!resourceInfo(function, resourceName, lineNumber))
+            return v8::Local<v8::Value>();
         cookie = InspectorInstrumentation::willCallFunction(context, resourceName, lineNumber);
     }
 
