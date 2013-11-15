@@ -59,6 +59,7 @@ DoNotCheckSignature
 DoNotGenerateToV8
 DoNotGenerateWrap
 EnforceRange
+ExposeJSAccessors
 GenerateIsReachable=*
 GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope
 Immutable

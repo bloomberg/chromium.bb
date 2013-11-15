@@ -172,6 +172,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestNodeTemplate(v8::Handle<v
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestNode", V8Node::GetTemplate(isolate, currentWorldType), V8TestNode::internalFieldCount,
         V8TestNodeAttributes, WTF_ARRAY_LENGTH(V8TestNodeAttributes),
         0, 0,
+        0, 0,
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     functionTemplate->SetCallHandler(V8TestNode::constructorCallback);

@@ -81,6 +81,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceEmptyTemplate(v8
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfaceEmpty", v8::Local<v8::FunctionTemplate>(), V8TestInterfaceEmpty::internalFieldCount,
         0, 0,
         0, 0,
+        0, 0,
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();

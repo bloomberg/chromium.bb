@@ -1368,6 +1368,7 @@ sub GenerateNormalAttributeGetterCallback
     my $attribute = shift;
     my $interface = shift;
     my $forMainWorldSuffix = shift;
+    my $exposeJSAccessors = shift;
 
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
@@ -1378,7 +1379,11 @@ sub GenerateNormalAttributeGetterCallback
     my $code = "";
     $code .= "#if ${conditionalString}\n" if $conditionalString;
 
-    $code .= "static void ${attrName}AttributeGetterCallback${forMainWorldSuffix}(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
+    if ($exposeJSAccessors) {
+        $code .= "static void ${attrName}AttributeGetterCallback${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& info)\n";
+    } else {
+        $code .= "static void ${attrName}AttributeGetterCallback${forMainWorldSuffix}(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
+    }
     $code .= "{\n";
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMGetter\");\n";
     $code .= GenerateFeatureObservation($attrExt->{"MeasureAs"});
@@ -1414,6 +1419,7 @@ sub GenerateNormalAttributeGetter
     my $attribute = shift;
     my $interface = shift;
     my $forMainWorldSuffix = shift;
+    my $exposeJSAccessors = shift;
 
     my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
@@ -1434,10 +1440,12 @@ sub GenerateNormalAttributeGetter
     my $conditionalString = GenerateConditionalString($attribute);
     my $code = "";
     $code .= "#if ${conditionalString}\n" if $conditionalString;
-    $code .= <<END;
-static void ${attrName}AttributeGetter${forMainWorldSuffix}(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-END
+    if ($exposeJSAccessors) {
+        $code .= "static void ${attrName}AttributeGetter${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& info)\n";
+    } else {
+        $code .= "static void ${attrName}AttributeGetter${forMainWorldSuffix}(const v8::PropertyCallbackInfo<v8::Value>& info)\n";
+    }
+    $code .= "{\n";
     if ($svgNativeType) {
         my $svgWrappedNativeType = GetSVGWrappedTypeNeedingTearOff($interfaceName);
         if ($svgWrappedNativeType =~ /List/) {
@@ -1810,6 +1818,7 @@ sub GenerateNormalAttributeSetterCallback
     my $attribute = shift;
     my $interface = shift;
     my $forMainWorldSuffix = shift;
+    my $exposeJSAccessors = shift;
 
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
@@ -1820,8 +1829,14 @@ sub GenerateNormalAttributeSetterCallback
     my $code = "";
     $code .= "#if ${conditionalString}\n" if $conditionalString;
 
-    $code .= "static void ${attrName}AttributeSetterCallback${forMainWorldSuffix}(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)\n";
-    $code .= "{\n";
+    if ($exposeJSAccessors) {
+        $code .= "static void ${attrName}AttributeSetterCallback${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& info)\n";
+        $code .= "{\n";
+        $code .= "    v8::Local<v8::Value> jsValue = info[0]\n";
+    } else {
+        $code .= "static void ${attrName}AttributeSetterCallback${forMainWorldSuffix}(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)\n";
+        $code .= "{\n";
+    }
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMSetter\");\n";
     $code .= GenerateFeatureObservation($attrExt->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($attrExt->{"DeprecateAs"});
@@ -1858,6 +1873,7 @@ sub GenerateNormalAttributeSetter
     my $attribute = shift;
     my $interface = shift;
     my $forMainWorldSuffix = shift;
+    my $exposeJSAccessors = shift;
 
     my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
@@ -1874,7 +1890,11 @@ sub GenerateNormalAttributeSetter
     my $conditionalString = GenerateConditionalString($attribute);
     my $code = "";
     $code .= "#if ${conditionalString}\n" if $conditionalString;
-    $code .= "static void ${attrName}AttributeSetter${forMainWorldSuffix}(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)\n";
+    if ($exposeJSAccessors) {
+        $code .= "static void ${attrName}AttributeSetter${forMainWorldSuffix}(v8::Local<v8::Value> jsValue, const v8::FunctionCallbackInfo<v8::Value>& info)\n";
+    } else {
+        $code .= "static void ${attrName}AttributeSetter${forMainWorldSuffix}(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)\n";
+    }
     $code .= "{\n";
 
     # If the "StrictTypeChecking" extended attribute is present, and the attribute's type is an
@@ -3092,13 +3112,14 @@ sub GenerateAttributeConfigurationArray
 {
     my $interface = shift;
     my $attributes = shift;
-    my $code = "";
+    my $exposeJSAccessors = shift;
 
+    my $code = "";
     foreach my $attribute (@$attributes) {
         my $conditionalString = GenerateConditionalString($attribute);
         my $subCode = "";
         $subCode .= "#if ${conditionalString}\n" if $conditionalString;
-        $subCode .= GenerateAttributeConfiguration($interface, $attribute, ",", "");
+        $subCode .= GenerateAttributeConfiguration($interface, $attribute, ",", "", $exposeJSAccessors);
         $subCode .= "#endif // ${conditionalString}\n" if $conditionalString;
         $code .= $subCode;
     }
@@ -3214,11 +3235,16 @@ sub GenerateAttributeConfiguration
     my $attribute = shift;
     my $delimiter = shift;
     my $indent = shift;
+    my $exposeJSAccessors = shift;
+
     my $code = "";
 
-    my ($attrName, $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute, $onProto) = GenerateAttributeConfigurationParameters($interface, $attribute);
-
-    $code .= $indent . "    {\"$attrName\", $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute, $onProto}" . $delimiter . "\n";
+    my ($attrName, $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute, $onProto) = GenerateAttributeConfigurationParameters($interface, $attribute, $exposeJSAccessors);
+    if ($exposeJSAccessors) {
+        $code .= $indent . "    {\"$attrName\", $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute}" . $delimiter . "\n";
+    } else {
+        $code .= $indent . "    {\"$attrName\", $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute, $onProto}" . $delimiter . "\n";
+    }
     return $code;
 }
 
@@ -4179,16 +4205,17 @@ END
             $hasReplaceable = 1;
         }
 
+        my $exposeJSAccessors = $attrExt->{"ExposeJSAccessors"};
         my @worldSuffixes = ("");
         if ($attrExt->{"PerWorldBindings"}) {
             push(@worldSuffixes, "ForMainWorld");
         }
         foreach my $worldSuffix (@worldSuffixes) {
-            GenerateNormalAttributeGetter($attribute, $interface, $worldSuffix);
-            GenerateNormalAttributeGetterCallback($attribute, $interface, $worldSuffix);
+            GenerateNormalAttributeGetter($attribute, $interface, $worldSuffix, $exposeJSAccessors);
+            GenerateNormalAttributeGetterCallback($attribute, $interface, $worldSuffix, $exposeJSAccessors);
             if (!$isReplaceable && !IsReadonly($attribute)) {
-                GenerateNormalAttributeSetter($attribute, $interface, $worldSuffix);
-                GenerateNormalAttributeSetterCallback($attribute, $interface, $worldSuffix);
+                GenerateNormalAttributeSetter($attribute, $interface, $worldSuffix, $exposeJSAccessors);
+                GenerateNormalAttributeSetterCallback($attribute, $interface, $worldSuffix, $exposeJSAccessors);
             }
         }
     }
@@ -4277,6 +4304,7 @@ END
     my @runtimeEnabledAttributes;
     my @perContextEnabledAttributes;
     my @normalAttributes;
+    my @normalAccessors;
     my @staticAttributes;
     foreach my $attribute (@$attributes) {
 
@@ -4288,6 +4316,8 @@ END
             push(@perContextEnabledAttributes, $attribute);
         } elsif ($attribute->extendedAttributes->{"RuntimeEnabled"}) {
             push(@runtimeEnabledAttributes, $attribute);
+        } elsif ($attribute->extendedAttributes->{"ExposeJSAccessors"}) {
+            push(@normalAccessors, $attribute);
         } else {
             push(@normalAttributes, $attribute);
         }
@@ -4308,6 +4338,16 @@ END
         my $code = "";
         $code .= "static const V8DOMConfiguration::AttributeConfiguration ${v8ClassName}Attributes[] = {\n";
         $code .= GenerateAttributeConfigurationArray($interface, \@normalAttributes);
+        $code .= "};\n\n";
+        $implementation{nameSpaceWebCore}->add($code);
+    }
+
+    my $hasAccessors = 0;
+    if (@normalAccessors) {
+        $hasAccessors = 1;
+        my $code = "";
+        $code .= "static const V8DOMConfiguration::AccessorConfiguration ${v8ClassName}Accessors[] = {\n";
+        $code .= GenerateAttributeConfigurationArray($interface, \@normalAccessors, "accessor");
         $code .= "};\n\n";
         $implementation{nameSpaceWebCore}->add($code);
     }
@@ -4397,12 +4437,13 @@ END
         my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($interface);
         $code .= <<END;
     if (!${runtimeEnabledFunction}())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, \"\", $parentClassTemplate, ${v8ClassName}::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, \"\", $parentClassTemplate, ${v8ClassName}::internalFieldCount, 0, 0, 0, 0, 0, 0, isolate, currentWorldType);
     else
 END
     }
     $code .=  "    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, \"${interfaceName}\", $parentClassTemplate, ${v8ClassName}::internalFieldCount,\n";
     $code .= "        " . ($hasAttributes ? "${v8ClassName}Attributes, WTF_ARRAY_LENGTH(${v8ClassName}Attributes),\n" : "0, 0,\n");
+    $code .= "        " . ($hasAccessors ? "${v8ClassName}Accessors, WTF_ARRAY_LENGTH(${v8ClassName}Accessors),\n" : "0, 0,\n");
     $code .= "        " . ($hasFunctions ? "${v8ClassName}Methods, WTF_ARRAY_LENGTH(${v8ClassName}Methods),\n" : "0, 0,\n");
     $code .= "        isolate, currentWorldType);\n";
 

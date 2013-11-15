@@ -81,6 +81,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestConstantsTemplate(v8::Han
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestConstants", v8::Local<v8::FunctionTemplate>(), V8TestConstants::internalFieldCount,
         0, 0,
         0, 0,
+        0, 0,
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();

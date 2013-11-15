@@ -160,6 +160,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestCustomAccessorsTemplate(v
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestCustomAccessors", v8::Local<v8::FunctionTemplate>(), V8TestCustomAccessors::internalFieldCount,
         0, 0,
+        0, 0,
         V8TestCustomAccessorsMethods, WTF_ARRAY_LENGTH(V8TestCustomAccessorsMethods),
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);

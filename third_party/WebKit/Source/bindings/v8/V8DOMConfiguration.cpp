@@ -39,6 +39,32 @@ void V8DOMConfiguration::installAttributes(v8::Handle<v8::ObjectTemplate> instan
         installAttribute(instanceTemplate, prototype, attributes[i], isolate, currentWorldType);
 }
 
+void V8DOMConfiguration::installAccessors(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, const AccessorConfiguration* accessors, size_t accessorCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+{
+    for (size_t i = 0; i < accessorCount; ++i) {
+        v8::FunctionCallback getterCallback = accessors[i].getter;
+        v8::FunctionCallback setterCallback = accessors[i].setter;
+        if (currentWorldType == MainWorld) {
+            if (accessors[i].getterForMainWorld)
+                getterCallback = accessors[i].getterForMainWorld;
+            if (accessors[i].setterForMainWorld)
+                setterCallback = accessors[i].setterForMainWorld;
+        }
+
+        v8::Local<v8::FunctionTemplate> getter;
+        if (getterCallback) {
+            getter = v8::FunctionTemplate::New(getterCallback, v8::External::New(const_cast<WrapperTypeInfo*>(accessors[i].data)), signature, 0);
+            getter->RemovePrototype();
+        }
+        v8::Local<v8::FunctionTemplate> setter;
+        if (setterCallback) {
+            setter = v8::FunctionTemplate::New(setterCallback, v8::External::New(const_cast<WrapperTypeInfo*>(accessors[i].data)), signature, 1);
+            setter->RemovePrototype();
+        }
+        prototype->SetAccessorProperty(v8::String::NewSymbol(accessors[i].name), getter, setter, accessors[i].attribute, accessors[i].settings);
+    }
+}
+
 void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototype, const ConstantConfiguration* constants, size_t constantCount, v8::Isolate* isolate)
 {
     for (size_t i = 0; i < constantCount; ++i) {
@@ -60,8 +86,11 @@ void V8DOMConfiguration::installCallbacks(v8::Handle<v8::ObjectTemplate> prototy
     }
 }
 
-v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<v8::FunctionTemplate> functionDescriptor, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass,
-    size_t fieldCount, const AttributeConfiguration* attributes, size_t attributeCount, const MethodConfiguration* callbacks, size_t callbackCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<v8::FunctionTemplate> functionDescriptor, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass, size_t fieldCount,
+    const AttributeConfiguration* attributes, size_t attributeCount,
+    const AccessorConfiguration* accessors, size_t accessorCount,
+    const MethodConfiguration* callbacks, size_t callbackCount,
+    v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionDescriptor->SetClassName(v8::String::NewSymbol(interfaceName));
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionDescriptor->InstanceTemplate();
@@ -75,9 +104,11 @@ v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<
         prototype->SetInternalFieldCount(v8PrototypeInternalFieldcount);
     }
 
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(functionDescriptor);
     if (attributeCount)
         installAttributes(instanceTemplate, functionDescriptor->PrototypeTemplate(), attributes, attributeCount, isolate, currentWorldType);
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(functionDescriptor);
+    if (accessorCount)
+        installAccessors(functionDescriptor->PrototypeTemplate(), defaultSignature, accessors, accessorCount, isolate, currentWorldType);
     if (callbackCount)
         installCallbacks(functionDescriptor->PrototypeTemplate(), defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete), callbacks, callbackCount, isolate, currentWorldType);
     return defaultSignature;

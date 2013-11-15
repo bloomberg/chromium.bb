@@ -82,6 +82,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventTemplate(v8::Handle<
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestEvent", V8Event::GetTemplate(isolate, currentWorldType), V8TestEvent::internalFieldCount,
         0, 0,
         0, 0,
+        0, 0,
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();

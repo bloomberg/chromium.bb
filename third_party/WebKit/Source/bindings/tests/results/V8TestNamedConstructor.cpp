@@ -146,6 +146,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestNamedConstructorTemplate(
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestNamedConstructor", v8::Local<v8::FunctionTemplate>(), V8TestNamedConstructor::internalFieldCount,
         0, 0,
         0, 0,
+        0, 0,
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();

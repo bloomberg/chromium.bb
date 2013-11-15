@@ -57,6 +57,7 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     attribute DOMString                stringAttr;
     attribute EventHandler             eventHandlerAttr;
     [MeasureAs=TestFeature] attribute TestObject testObjAttr;
+    [ExposeJSAccessors] attribute DOMString attrWithJSGetterAndSetter;
 
     // WK_ucfirst, WK_lcfirst exceptional cases.
     attribute TestObject                  XMLObjAttr;

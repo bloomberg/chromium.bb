@@ -506,6 +506,34 @@ static void testObjAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void attrWithJSGetterAndSetterAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->attrWithJSGetterAndSetter(), info.GetIsolate());
+}
+
+static void attrWithJSGetterAndSetterAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::attrWithJSGetterAndSetterAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void attrWithJSGetterAndSetterAttributeSetter(v8::Local<v8::Value> jsValue, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    imp->setAttrWithJSGetterAndSetter(cppValue);
+}
+
+static void attrWithJSGetterAndSetterAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> jsValue = info[0]
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjV8Internal::attrWithJSGetterAndSetterAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void XMLObjAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -5014,6 +5042,10 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"locationWithException", TestObjV8Internal::locationWithExceptionAttributeGetterCallback, TestObjV8Internal::locationWithExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
+static const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] = {
+    {"attrWithJSGetterAndSetter", TestObjV8Internal::attrWithJSGetterAndSetterAttributeGetterCallback, TestObjV8Internal::attrWithJSGetterAndSetterAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None)},
+};
+
 static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethod", TestObjV8Internal::voidMethodMethodCallback, 0, 0},
     {"longMethod", TestObjV8Internal::longMethodMethodCallback, 0, 0},
@@ -5113,6 +5145,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestObject", V8EventTarget::GetTemplate(isolate, currentWorldType), V8TestObject::internalFieldCount,
         V8TestObjectAttributes, WTF_ARRAY_LENGTH(V8TestObjectAttributes),
+        V8TestObjectAccessors, WTF_ARRAY_LENGTH(V8TestObjectAccessors),
         V8TestObjectMethods, WTF_ARRAY_LENGTH(V8TestObjectMethods),
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);

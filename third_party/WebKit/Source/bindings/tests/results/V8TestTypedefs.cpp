@@ -527,6 +527,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestTypedefsTemplate(v8::Hand
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestTypedefs", v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::internalFieldCount,
         V8TestTypedefsAttributes, WTF_ARRAY_LENGTH(V8TestTypedefsAttributes),
+        0, 0,
         V8TestTypedefsMethods, WTF_ARRAY_LENGTH(V8TestTypedefsMethods),
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);

@@ -287,6 +287,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v8::H
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestEventTarget", V8EventTarget::GetTemplate(isolate, currentWorldType), V8TestEventTarget::internalFieldCount,
         0, 0,
+        0, 0,
         V8TestEventTargetMethods, WTF_ARRAY_LENGTH(V8TestEventTargetMethods),
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);

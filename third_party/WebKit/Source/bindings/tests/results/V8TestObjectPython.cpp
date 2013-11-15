@@ -6328,6 +6328,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestObjectPython", v8::Local<v8::FunctionTemplate>(), V8TestObjectPython::internalFieldCount,
         V8TestObjectPythonAttributes, WTF_ARRAY_LENGTH(V8TestObjectPythonAttributes),
+        0, 0,
         V8TestObjectPythonMethods, WTF_ARRAY_LENGTH(V8TestObjectPythonMethods),
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);

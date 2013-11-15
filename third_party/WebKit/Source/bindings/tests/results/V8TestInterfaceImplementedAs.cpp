@@ -183,6 +183,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceImplementedAsTem
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfaceImplementedAs", v8::Local<v8::FunctionTemplate>(), V8TestInterfaceImplementedAs::internalFieldCount,
         V8TestInterfaceImplementedAsAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceImplementedAsAttributes),
+        0, 0,
         V8TestInterfaceImplementedAsMethods, WTF_ARRAY_LENGTH(V8TestInterfaceImplementedAsMethods),
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);

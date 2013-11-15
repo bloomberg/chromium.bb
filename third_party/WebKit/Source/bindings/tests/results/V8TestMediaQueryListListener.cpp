@@ -105,6 +105,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestMediaQueryListListenerTem
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestMediaQueryListListener", v8::Local<v8::FunctionTemplate>(), V8TestMediaQueryListListener::internalFieldCount,
         0, 0,
+        0, 0,
         V8TestMediaQueryListListenerMethods, WTF_ARRAY_LENGTH(V8TestMediaQueryListListenerMethods),
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);

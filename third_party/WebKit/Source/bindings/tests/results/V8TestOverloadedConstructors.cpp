@@ -173,6 +173,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestOverloadedConstructorsTem
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestOverloadedConstructors", v8::Local<v8::FunctionTemplate>(), V8TestOverloadedConstructors::internalFieldCount,
         0, 0,
         0, 0,
+        0, 0,
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     functionTemplate->SetCallHandler(V8TestOverloadedConstructors::constructorCallback);

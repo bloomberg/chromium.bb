@@ -56,6 +56,19 @@ public:
         bool onPrototype;
     };
 
+    // AccessorConfiguration translates into calls to SetAccessorProperty()
+    // on prototype ObjectTemplate.
+    struct AccessorConfiguration {
+        const char* const name;
+        v8::FunctionCallback getter;
+        v8::FunctionCallback setter;
+        v8::FunctionCallback getterForMainWorld;
+        v8::FunctionCallback setterForMainWorld;
+        const WrapperTypeInfo* data;
+        v8::AccessControl settings;
+        v8::PropertyAttribute attribute;
+    };
+
     static void installAttributes(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::ObjectTemplate>, const AttributeConfiguration*, size_t attributeCount, v8::Isolate*, WrapperWorldType currentWorldType);
 
     template<class ObjectOrTemplate>
@@ -109,7 +122,13 @@ public:
 
     static void installCallbacks(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, v8::PropertyAttribute, const MethodConfiguration*, size_t callbackCount, v8::Isolate*, WrapperWorldType);
 
-    static v8::Local<v8::Signature> installDOMClassTemplate(v8::Handle<v8::FunctionTemplate>, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass, size_t fieldCount, const AttributeConfiguration*, size_t attributeCount, const MethodConfiguration*, size_t callbackCount, v8::Isolate*, WrapperWorldType);
+    static void installAccessors(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, const AccessorConfiguration*, size_t accessorCount, v8::Isolate*, WrapperWorldType);
+
+    static v8::Local<v8::Signature> installDOMClassTemplate(v8::Handle<v8::FunctionTemplate>, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass, size_t fieldCount,
+        const AttributeConfiguration*, size_t attributeCount,
+        const AccessorConfiguration*, size_t accessorCount,
+        const MethodConfiguration*, size_t callbackCount,
+        v8::Isolate*, WrapperWorldType);
 };
 
 } // namespace WebCore
