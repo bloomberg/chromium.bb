@@ -1041,6 +1041,31 @@ def ListInstalledPackages(board):
   return packages
 
 
+def _HandleIllegalXMLChars(text):
+  """Handles illegal XML Characters.
+
+  XML 1.0 acceptable character range:
+  Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | \
+           [#x10000-#x10FFFF]
+
+  This function finds all illegal characters in the text and filters
+  out all whitelisted characters (e.g. ^L).
+
+  Args:
+    text: text to examine.
+
+  Returns:
+    Filtered |text| and a list of non-whitelisted illegal characters found.
+  """
+  whitelist_re = re.compile(u'[\x0c]')
+  text = whitelist_re.sub('', text)
+  # illegal_chars_re includes all illegal characters (whitelisted or
+  # not), so we can expand the whitelist without modifying this line.
+  illegal_chars_re = re.compile(
+      u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
+  return (text, illegal_chars_re.findall(text))
+
+
 def ReadUnknownEncodedFile(file_path, logging_text):
   """Read a file of unknown encoding (UTF-8 or latin) by trying in sequence.
 
@@ -1050,6 +1075,9 @@ def ReadUnknownEncodedFile(file_path, logging_text):
 
   Returns:
     file content, possibly converted from latin1 to UTF-8.
+
+  Raises: Assertion error: if non-whitelisted illegal XML characters
+    are found in the file.
   """
 
   try:
@@ -1060,6 +1088,13 @@ def ReadUnknownEncodedFile(file_path, logging_text):
     with codecs.open(file_path, encoding="latin1") as c:
       file_txt = c.read()
       logging.info("%s %s (latin1)", logging_text, file_path)
+
+  file_txt, char_list = _HandleIllegalXMLChars(file_txt)
+
+  if char_list:
+    raise ValueError('Illegal XML characters %s found in %s.' %
+                     (char_list, file_path))
+
   return file_txt
 
 
