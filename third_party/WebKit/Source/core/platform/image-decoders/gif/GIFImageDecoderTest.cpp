@@ -146,14 +146,17 @@ TEST(GIFImageDecoderTest, decodeTwoFrames)
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
 
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
+    uint32_t generationID0 = frame->getSkBitmap().getGenerationID();
     EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
     EXPECT_EQ(16, frame->getSkBitmap().width());
     EXPECT_EQ(16, frame->getSkBitmap().height());
 
     frame = decoder->frameBufferAtIndex(1);
+    uint32_t generationID1 = frame->getSkBitmap().getGenerationID();
     EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
     EXPECT_EQ(16, frame->getSkBitmap().width());
     EXPECT_EQ(16, frame->getSkBitmap().height());
+    EXPECT_TRUE(generationID0 != generationID1);
 
     EXPECT_EQ(2u, decoder->frameCount());
     EXPECT_EQ(cAnimationLoopInfinite, decoder->repetitionCount());
