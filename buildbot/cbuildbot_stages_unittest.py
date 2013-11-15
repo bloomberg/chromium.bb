@@ -1304,59 +1304,6 @@ class PublishUprevChangesStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-@mock.patch('chromite.buildbot.cbuildbot_commands.GenerateBreakpadSymbols')
-@mock.patch('chromite.buildbot.cbuildbot_commands.GenerateDebugTarball')
-@mock.patch('chromite.buildbot.cbuildbot_commands.UploadSymbols')
-class DebugSymbolsStageTest(AbstractStageTest):
-  """Test DebugSymbolsStage"""
-
-  def setUp(self):
-    self.build_config = copy.deepcopy(config.config['link-release'])
-    self.StartPatcher(ArchiveStageMock())
-    self.StartPatcher(parallel_unittest.ParallelMock())
-
-    self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
-    self.rc_mock.SetDefaultCmdResult(output='')
-
-  def ConstructStage(self):
-    """Create a DebugSymbolsStage instance for testing"""
-    archive_stage = stages.ArchiveStage(self.options, self.build_config,
-                                        self._current_board, '')
-    return stages.DebugSymbolsStage(self.options, self.build_config,
-                                    self._current_board, archive_stage)
-
-  def testPerformStageEnabled(self, upload_mock, tar_mock, gen_mock):
-    """Smoke test for an PerformStage when debugging is enabled"""
-    self.build_config.update({
-        'archive_build_debug': True,
-        'vm_tests': True,
-        'upload_symbols': True,
-    })
-
-    tar_mock.side_effect = '/my/tar/ball'
-    stage = self.ConstructStage()
-    stage.PerformStage()
-
-    self.assertEqual(gen_mock.call_count, 1)
-    self.assertEqual(tar_mock.call_count, 1)
-    self.assertEqual(upload_mock.call_count, 1)
-
-  def testPerformStageDisabled(self, upload_mock, tar_mock, gen_mock):
-    """Smoke test for an PerformStage when debugging is disabled"""
-    self.build_config.update({
-        'archive_build_debug': False,
-        'vm_tests': False,
-        'upload_symbols': False,
-    })
-
-    stage = self.ConstructStage()
-    stage.PerformStage()
-
-    self.assertEqual(gen_mock.call_count, 0)
-    self.assertEqual(tar_mock.call_count, 0)
-    self.assertEqual(upload_mock.call_count, 0)
-
-
 class PassStage(bs.BuilderStage):
   """PassStage always works"""
 
