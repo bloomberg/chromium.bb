@@ -49,6 +49,9 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
                           const string16& title);
   virtual ~ChromePluginPlaceholder();
 
+  // WebViewPlugin::Delegate (via PluginPlaceholder) method
+  virtual void BindWebFrame(blink::WebFrame* frame) OVERRIDE;
+
   // content::RenderViewObserver (via PluginPlaceholder) override:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -63,7 +66,9 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
   virtual void OnMenuClosed(int request_id) OVERRIDE;
 
   // Javascript callback opens chrome://plugins in a new tab.
-  void OpenAboutPluginsCallback();
+  // Arguments are required by the caller, but not used.
+  void OpenAboutPluginsCallback(const webkit_glue::CppArgumentList& args,
+                                webkit_glue::CppVariant* result);
 
   void OnLoadBlockedPlugins(const std::string& identifier);
   void OnSetIsPrerendering(bool is_prerendering);
@@ -91,8 +96,6 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
   bool has_host_;
   int context_menu_request_id_;  // Nonzero when request pending.
   string16 plugin_name_;
-
-  base::WeakPtrFactory<ChromePluginPlaceholder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePluginPlaceholder);
 };

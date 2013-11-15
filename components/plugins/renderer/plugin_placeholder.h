@@ -5,18 +5,13 @@
 #ifndef COMPONENTS_PLUGINS_RENDERER_PLUGIN_PLACEHOLDER_H_
 #define COMPONENTS_PLUGINS_RENDERER_PLUGIN_PLACEHOLDER_H_
 
-#include <map>
-#include <string>
-
-#include "base/callback_forward.h"
-#include "base/memory/weak_ptr.h"
 #include "components/plugins/renderer/webview_plugin.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
-#include "v8/include/v8.h"
+#include "webkit/renderer/cpp_bound_class.h"
 
 namespace content {
 struct WebPluginInfo;
@@ -26,6 +21,7 @@ namespace plugins {
 // Placeholders can be used if a plug-in is missing or not available
 // (blocked or disabled).
 class PluginPlaceholder : public content::RenderViewObserver,
+                          public webkit_glue::CppBoundClass,
                           public WebViewPlugin::Delegate {
  public:
 
@@ -47,12 +43,6 @@ class PluginPlaceholder : public content::RenderViewObserver,
                     GURL placeholderDataUrl);
 
   virtual ~PluginPlaceholder();
-
-  // Derived classes should invoke this method to install additional callbacks
-  // on the window.plugin object. When a callback is invoked, it will be
-  // forwarded to |callback|.
-  void RegisterCallback(const std::string& callback_name,
-                        const base::Closure& callback);
 
   void OnLoadBlockedPlugins(const std::string& identifier);
   void OnSetIsPrerendering(bool is_prerendering);
@@ -84,14 +74,19 @@ class PluginPlaceholder : public content::RenderViewObserver,
   virtual void ShowContextMenu(const blink::WebMouseEvent&) OVERRIDE;
 
   // Javascript callbacks:
+  // All ignore arguments (which are, however, required by caller) and return
+  // nothing.
 
   // Load the blocked plugin by calling LoadPlugin().
-  void LoadCallback();
+  void LoadCallback(const webkit_glue::CppArgumentList& args,
+                    webkit_glue::CppVariant* result);
 
   // Hide the blocked plugin by calling HidePlugin().
-  void HideCallback();
+  void HideCallback(const webkit_glue::CppArgumentList& args,
+                    webkit_glue::CppVariant* result);
 
-  void DidFinishLoadingCallback();
+  void DidFinishLoadingCallback(const webkit_glue::CppArgumentList& args,
+                                webkit_glue::CppVariant* result);
 
   void UpdateMessage();
 
@@ -111,10 +106,6 @@ class PluginPlaceholder : public content::RenderViewObserver,
   bool hidden_;
   bool finished_loading_;
   std::string identifier_;
-
-  std::map<std::string, base::Closure> callbacks_;
-
-  base::WeakPtrFactory<PluginPlaceholder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginPlaceholder);
 };
