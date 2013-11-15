@@ -139,9 +139,6 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   // device is present, returns 0.
   base::TimeDelta GpuLatencyEstimate();
 
-  // Has the output surface been lost.
-  bool IsLost();
-
  protected:
   // Synchronously initialize context3d and enter hardware mode.
   // This can only supported in threaded compositing mode.
@@ -216,8 +213,6 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   std::deque<unsigned> available_gpu_latency_query_ids_;
   std::deque<unsigned> pending_gpu_latency_query_ids_;
   RollingTimeDeltaHistory gpu_latency_history_;
-
-  bool is_lost_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };

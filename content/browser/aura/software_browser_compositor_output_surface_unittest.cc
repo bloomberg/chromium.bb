@@ -112,7 +112,6 @@ SoftwareBrowserCompositorOutputSurfaceTest::CreateSurface(
     scoped_ptr<cc::SoftwareOutputDevice> device) {
   return scoped_ptr<content::BrowserCompositorOutputSurface>(
       new content::SoftwareBrowserCompositorOutputSurface(
-          true,
           surface_proxy_,
           device.Pass(),
           1,

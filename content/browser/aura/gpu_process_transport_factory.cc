@@ -187,9 +187,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  bool avoid_hardware = SizeRequiresSoftwareCompositor(compositor->size());
-  if (!avoid_hardware &&
-      !command_line->HasSwitch(switches::kUIEnableSoftwareCompositing)) {
+  if (!command_line->HasSwitch(switches::kUIEnableSoftwareCompositing)) {
     context_provider = ContextProviderCommandBuffer::Create(
         GpuProcessTransportFactory::CreateContextCommon(data->surface_id),
         "Compositor");
@@ -205,7 +203,6 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
 
     scoped_ptr<SoftwareBrowserCompositorOutputSurface> surface(
         new SoftwareBrowserCompositorOutputSurface(
-            !avoid_hardware,
             output_surface_proxy_,
             CreateSoftwareOutputDevice(compositor),
             per_compositor_data_[compositor]->surface_id,

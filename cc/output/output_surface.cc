@@ -55,8 +55,7 @@ OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
       check_for_retroactive_begin_impl_frame_pending_(false),
       external_stencil_test_enabled_(false),
       weak_ptr_factory_(this),
-      gpu_latency_history_(kGpuLatencyHistorySize),
-      is_lost_(false) {}
+      gpu_latency_history_(kGpuLatencyHistorySize) {}
 
 OutputSurface::OutputSurface(
     scoped_ptr<cc::SoftwareOutputDevice> software_device)
@@ -72,8 +71,7 @@ OutputSurface::OutputSurface(
       check_for_retroactive_begin_impl_frame_pending_(false),
       external_stencil_test_enabled_(false),
       weak_ptr_factory_(this),
-      gpu_latency_history_(kGpuLatencyHistorySize),
-      is_lost_(false) {}
+      gpu_latency_history_(kGpuLatencyHistorySize) {}
 
 OutputSurface::OutputSurface(
     scoped_refptr<ContextProvider> context_provider,
@@ -91,8 +89,7 @@ OutputSurface::OutputSurface(
       check_for_retroactive_begin_impl_frame_pending_(false),
       external_stencil_test_enabled_(false),
       weak_ptr_factory_(this),
-      gpu_latency_history_(kGpuLatencyHistorySize),
-      is_lost_(false) {}
+      gpu_latency_history_(kGpuLatencyHistorySize) {}
 
 void OutputSurface::InitializeBeginImplFrameEmulation(
     base::SingleThreadTaskRunner* task_runner,
@@ -245,10 +242,7 @@ void OutputSurface::DidLoseOutputSurface() {
   pending_gpu_latency_query_ids_.clear();
   available_gpu_latency_query_ids_.clear();
   client_->DidLoseOutputSurface();
-  is_lost_ = true;
 }
-
-bool OutputSurface::IsLost() { return is_lost_; }
 
 void OutputSurface::SetExternalStencilTest(bool enabled) {
   external_stencil_test_enabled_ = enabled;

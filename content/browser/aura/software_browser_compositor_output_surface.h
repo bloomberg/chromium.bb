@@ -26,7 +26,6 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
  public:
   SoftwareBrowserCompositorOutputSurface(
-      bool failed_creating_hardware,
       scoped_refptr<BrowserCompositorOutputSurfaceProxy> surface_proxy,
       scoped_ptr<cc::SoftwareOutputDevice> software_device,
       int surface_id,
