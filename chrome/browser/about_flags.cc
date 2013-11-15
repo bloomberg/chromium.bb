@@ -834,11 +834,11 @@ const Experiment kExperiments[] = {
   },
 #endif  // defined(OS_ANDROID)
   {
-    "enable-opus-playback",
-    IDS_FLAGS_ENABLE_OPUS_PLAYBACK_NAME,
-    IDS_FLAGS_ENABLE_OPUS_PLAYBACK_DESCRIPTION,
+    "disable-opus-playback",
+    IDS_FLAGS_DISABLE_OPUS_PLAYBACK_NAME,
+    IDS_FLAGS_DISABLE_OPUS_PLAYBACK_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableOpusPlayback)
+    SINGLE_VALUE_TYPE(switches::kDisableOpusPlayback)
   },
  {
     "disable-vp8-alpha-playback",
