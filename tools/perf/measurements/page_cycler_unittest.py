@@ -32,7 +32,7 @@ class MockMemoryMetric(object):
 class PageCyclerUnitTest(unittest.TestCase):
 
   # TODO(tonyg): Remove this backfill when we can assume python 2.7 everywhere.
-  def assertIn(self, first, second, msg=None):
+  def assertIn(self, first, second, _=None):
     self.assertTrue(first in second,
                     msg="'%s' not found in '%s'" % (first, second))
 

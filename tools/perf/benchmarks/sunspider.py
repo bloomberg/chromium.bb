@@ -6,9 +6,11 @@ import json
 import os
 
 from telemetry import test
-from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
+
+
+_URL = 'http://www.webkit.org/perf/sunspider-1.0.2/sunspider-1.0.2/driver.html'
 
 
 class _SunspiderMeasurement(page_measurement.PageMeasurement):
@@ -40,11 +42,9 @@ class Sunspider(test.Test):
   test = _SunspiderMeasurement
 
   def CreatePageSet(self, options):
-    sunspider_dir = os.path.join(util.GetChromiumSrcDir(),
-                                 'chrome', 'test', 'data', 'sunspider')
     return page_set.PageSet.FromDict(
         {
-          'serving_dirs': ['.'],
-          'pages': [{ 'url': 'file://sunspider-1.0/driver.html' }],
-        },
-        sunspider_dir)
+          'archive_data_file': '../page_sets/data/sunspider.json',
+          'make_javascript_deterministic': False,
+          'pages': [{ 'url': _URL }],
+        }, os.path.abspath(__file__))
