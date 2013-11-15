@@ -72,7 +72,9 @@ class GPU_EXPORT CommandBufferHelper {
   // Parameters:
   //   count: number of entries needed. This value must be at most
   //     the size of the buffer minus one.
-  void WaitForAvailableEntries(int32 count);
+  // Returns:
+  //   true on success, false on failure.
+  bool WaitForAvailableEntries(int32 count);
 
   // Inserts a new token into the command buffer. This token either has a value
   // different from previously inserted tokens, or ensures that previously
@@ -243,6 +245,43 @@ class GPU_EXPORT CommandBufferHelper {
 
   bool AllocateRingBuffer();
   void FreeResources();
+  CommandBufferEntry* GetSpaceForEntries(uint32 entries) {
+    CommandBufferEntry* space = &entries_[put_];
+    put_ += entries;
+    DCHECK_LE(put_, total_entry_count_);
+    if (put_ == total_entry_count_) {
+      put_ = 0;
+    }
+    return space;
+  }
+
+  uint32 SpaceAvailableImmediately() {
+    return get_offset() > put_ ? get_offset() - put_
+      : total_entry_count_ - put_;
+  }
+
+  void FlushIfNeeded() {
+    const int kCommandsPerFlushCheck = 100;
+    const double kFlushDelay = 1.0 / (5.0 * 60.0);
+
+    // Force a flush if the buffer is getting half full, or even earlier if the
+    // reader is known to be idle.
+    int32 pending =
+      (put_ + total_entry_count_ - last_put_sent_) % total_entry_count_;
+    int32 limit = total_entry_count_ /
+      ((get_offset() == last_put_sent_) ? 16 : 2);
+    if (pending > limit) {
+      Flush();
+    } else if (flush_automatically_ &&
+               (commands_issued_ % kCommandsPerFlushCheck == 0)) {
+      // Allow this command buffer to be pre-empted by another if a "reasonable"
+      // amount of work has been done. On highend machines, this reduces the
+      // latency of GPU commands.
+      clock_t current_time = clock();
+      if (current_time - last_flush_time_ > kFlushDelay * CLOCKS_PER_SEC)
+        Flush();
+    }
+  }
 
   CommandBuffer* command_buffer_;
   int32 ring_buffer_id_;
