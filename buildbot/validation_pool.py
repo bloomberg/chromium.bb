@@ -449,7 +449,7 @@ class PatchSeries(object):
     """
     if self.force_content_merging:
       return True
-    return change.GetCheckout(self.manifest, strict=True).IsContentMerging()
+    return self.manifest.ProjectIsContentMerging(change.project)
 
   @_ManifestDecorator
   def ApplyChange(self, change, dryrun=False):
@@ -1551,7 +1551,7 @@ class ValidationPool(object):
     changes_in_manifest = []
     changes_not_in_manifest = []
     for change in changes:
-      if change.GetCheckout(manifest):
+      if change.GetCheckout(manifest, strict=False):
         changes_in_manifest.append(change)
       else:
         changes_not_in_manifest.append(change)
