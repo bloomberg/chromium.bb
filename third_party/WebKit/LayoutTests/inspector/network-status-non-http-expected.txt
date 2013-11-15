@@ -1,5 +1,6 @@
 {
-    0 : "network-test.js: Success"
-    1 : "non-existent-file.js: (failed)"
+    0 : "data:application/javascript: (data)"
+    1 : "network-test.js: Finished"
+    2 : "non-existent-file.js: (failed)"
 }
 
