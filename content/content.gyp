@@ -392,7 +392,7 @@
             '../base/base.gyp:base',
             '../media/media.gyp:media_java',
             '../net/net.gyp:net',
-            '../ui/ui.gyp:ui_java',
+            '../ui/android/ui_android.gyp:ui_java',
             'common_aidl',
             'content_common',
             'page_transition_types_java',

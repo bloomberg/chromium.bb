@@ -25,7 +25,7 @@
         '../net/net.gyp:cert_verify_result_android_java',
         '../net/net.gyp:net_errors_java',
         '../net/net.gyp:private_key_types_java',
-        '../ui/ui.gyp:window_open_disposition_java',
+        '../ui/android/ui_android.gyp:window_open_disposition_java',
       ],
     }, # target_name: All
   ],  # targets

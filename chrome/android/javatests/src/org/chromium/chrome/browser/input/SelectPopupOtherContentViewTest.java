@@ -15,8 +15,8 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
-import org.chromium.ui.ActivityWindowAndroid;
-import org.chromium.ui.WindowAndroid;
+import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.WindowAndroid;
 
 public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
     private static final int WAIT_TIMEOUT_SECONDS = 2;

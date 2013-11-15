@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.chromium.ui.R;
-import org.chromium.ui.ViewAndroidDelegate;
+import org.chromium.ui.base.ViewAndroidDelegate;
 
 /**
  * The Autofill suggestion popup that lists relevant suggestions.

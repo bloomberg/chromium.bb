@@ -36,7 +36,7 @@
 #include "base/android/jni_android.h"
 #include "chrome/browser/android/chrome_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
-#include "ui/base/android/ui_jni_registrar.h"
+#include "ui/base/android/ui_base_jni_registrar.h"
 #include "ui/gfx/android/gfx_jni_registrar.h"
 #include "ui/gl/android/gl_jni_registrar.h"
 #endif

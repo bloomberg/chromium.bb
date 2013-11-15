@@ -346,8 +346,8 @@
             'surface_jni_headers',
           ],
           'sources': [
-            '../android/java/src/org/chromium/ui/gfx/SurfaceTexturePlatformWrapper.java',
-            '../android/java/src/org/chromium/ui/gfx/SurfaceTextureListener.java',
+            '../android/java/src/org/chromium/ui/gl/SurfaceTexturePlatformWrapper.java',
+            '../android/java/src/org/chromium/ui/gl/SurfaceTextureListener.java',
           ],
           'variables': {
             'jni_gen_package': 'ui/gl',

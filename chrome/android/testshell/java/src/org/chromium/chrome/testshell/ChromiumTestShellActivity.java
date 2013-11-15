@@ -26,8 +26,8 @@ import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.CommandLine;
 import org.chromium.sync.signin.ChromeSigninController;
-import org.chromium.ui.ActivityWindowAndroid;
-import org.chromium.ui.WindowAndroid;
+import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * The {@link android.app.Activity} component of a basic test shell to test Chrome features.

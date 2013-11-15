@@ -12,7 +12,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import org.chromium.content.browser.ContentViewRenderView;
-import org.chromium.ui.WindowAndroid;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * The TabManager hooks together all of the related {@link View}s that are used to represent

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.ui;
+package org.chromium.ui.base;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -12,6 +12,8 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.util.Log;
 import android.view.View;
+
+import org.chromium.ui.UiUtils;
 
 import java.io.ByteArrayOutputStream;
 

@@ -14,7 +14,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.chromium.base.PathUtils;
-import org.chromium.ui.LocalizationUtils;
+import org.chromium.ui.base.LocalizationUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;

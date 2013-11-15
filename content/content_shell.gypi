@@ -786,7 +786,7 @@
             '../media/media.gyp:media_java',
             '../net/net.gyp:net_java',
             '../tools/android/forwarder/forwarder.gyp:forwarder',
-            '../ui/ui.gyp:ui_java',
+            '../ui/android/ui_android.gyp:ui_java',
           ],
           'variables': {
             'apk_name': 'ContentShell',

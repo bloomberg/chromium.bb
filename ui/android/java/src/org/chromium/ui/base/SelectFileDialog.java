@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.ui;
+package org.chromium.ui.base;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -13,14 +13,15 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 
+import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
+import org.chromium.ui.R;
+import org.chromium.ui.base.WindowAndroid;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
-import org.chromium.ui.WindowAndroid;
 
 /**
  * A dialog that is triggered from a file input field that allows a user to select a file based on

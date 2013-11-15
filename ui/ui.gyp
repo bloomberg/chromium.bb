@@ -54,8 +54,8 @@
         'base/accessibility/accessible_text_utils.h',
         'base/accessibility/accessible_view_state.cc',
         'base/accessibility/accessible_view_state.h',
-        'base/android/ui_jni_registrar.cc',
-        'base/android/ui_jni_registrar.h',
+        'base/android/ui_base_jni_registrar.cc',
+        'base/android/ui_base_jni_registrar.h',
         'base/android/view_android.cc',
         'base/android/view_android.h',
         'base/android/window_android.cc',
@@ -561,7 +561,7 @@
             'base/ui_base_types.cc',
           ],
           'dependencies': [
-            'ui_jni_headers',
+            'ui_base_jni_headers',
           ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/ui',
@@ -574,7 +574,7 @@
         }],
         ['OS=="android" and android_webview_build==0', {
           'dependencies': [
-            'ui_java',
+            'android/ui_android.gyp:ui_java',
           ],
         }],
         ['OS=="android" or OS=="ios"', {
@@ -621,7 +621,7 @@
     ['OS=="android"' , {
        'targets': [
          {
-           'target_name': 'ui_jni_headers',
+           'target_name': 'ui_base_jni_headers',
            'type': 'none',
            'direct_dependent_settings': {
              'include_dirs': [
@@ -629,45 +629,17 @@
              ],
            },
            'sources': [
-             'android/java/src/org/chromium/ui/Clipboard.java',
-             'android/java/src/org/chromium/ui/LocalizationUtils.java',
-             'android/java/src/org/chromium/ui/SelectFileDialog.java',
-             'android/java/src/org/chromium/ui/ViewAndroid.java',
-             'android/java/src/org/chromium/ui/WindowAndroid.java',
+             'android/java/src/org/chromium/ui/base/Clipboard.java',
+             'android/java/src/org/chromium/ui/base/LocalizationUtils.java',
+             'android/java/src/org/chromium/ui/base/SelectFileDialog.java',
+             'android/java/src/org/chromium/ui/base/ViewAndroid.java',
+             'android/java/src/org/chromium/ui/base/WindowAndroid.java',
            ],
            'variables': {
              'jni_gen_package': 'ui',
              'jni_generator_ptr_type': 'long',
            },
            'includes': [ '../build/jni_generator.gypi' ],
-         },
-         {
-           'target_name': 'ui_java',
-           'type': 'none',
-           'variables': {
-             'java_in_dir': '../ui/android/java',
-             'has_java_resources': 1,
-             'R_package': 'org.chromium.ui',
-             'R_package_relpath': 'org/chromium/ui',
-             'java_strings_grd': 'android_ui_strings.grd',
-           },
-           'dependencies': [
-             '../base/base.gyp:base_java',
-             'window_open_disposition_java',
-           ],
-           'includes': [ '../build/java.gypi' ],
-         },
-         {
-           'target_name': 'window_open_disposition_java',
-           'type': 'none',
-           'sources': [
-             'android/java/WindowOpenDisposition.template',
-           ],
-           'variables': {
-             'package_name': 'org/chromium/ui',
-             'template_deps': ['base/window_open_disposition_list.h'],
-           },
-           'includes': [ '../build/android/java_cpp_template.gypi' ],
          },
        ],
     }],

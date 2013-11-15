@@ -1011,7 +1011,7 @@
             '../printing/printing.gyp:printing_java',
             '../sync/sync.gyp:sync_java',
             '../third_party/guava/guava.gyp:guava_javalib',
-            '../ui/ui.gyp:ui_java',
+            '../ui/android/ui_android.gyp:ui_java',
           ],
           'variables': {
             'java_in_dir': '../chrome/android/java',

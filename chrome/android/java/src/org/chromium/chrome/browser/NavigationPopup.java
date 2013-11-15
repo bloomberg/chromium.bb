@@ -25,7 +25,7 @@ import android.widget.TextView;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
-import org.chromium.ui.LocalizationUtils;
+import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.chrome.R;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.NavigationClient;

@@ -64,7 +64,7 @@
         ['OS=="android"',
           {
             'dependencies': [
-              '../ui.gyp:ui_jni_headers',
+              '../ui.gyp:ui_base_jni_headers',
             ],
             'include_dirs': [
               '<(SHARED_INTERMEDIATE_DIR)/ui',
@@ -79,7 +79,7 @@
         ['OS=="android" and android_webview_build==0',
           {
             'dependencies': [
-              '../ui.gyp:ui_java',
+              '../android/ui_android.gyp:ui_java',
             ],
           }
         ],

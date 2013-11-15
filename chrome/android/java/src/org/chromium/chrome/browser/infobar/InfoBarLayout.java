@@ -17,7 +17,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 
-import org.chromium.ui.LocalizationUtils;
+import org.chromium.ui.base.LocalizationUtils;
 
 import java.util.ArrayList;
 

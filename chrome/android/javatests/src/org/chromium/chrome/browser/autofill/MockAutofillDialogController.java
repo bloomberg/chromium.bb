@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.autofill.AutofillDialogControllerAndroid.Auto
 import org.chromium.chrome.browser.autofill.AutofillDialogControllerAndroid.AutofillDialogDelegate;
 import org.chromium.chrome.browser.autofill.AutofillDialogControllerAndroid.AutofillDialogFactory;
 import org.chromium.chrome.browser.autofill.AutofillDialogResult;
-import org.chromium.ui.WindowAndroid;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Mock of the AutofillDialog that returns a predefined set of values.

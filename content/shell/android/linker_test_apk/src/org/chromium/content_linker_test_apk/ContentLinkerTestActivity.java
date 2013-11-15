@@ -21,8 +21,8 @@ import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellManager;
-import org.chromium.ui.ActivityWindowAndroid;
-import org.chromium.ui.WindowAndroid;
+import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.WindowAndroid;
 
 public class ContentLinkerTestActivity extends Activity {
     public static final String COMMAND_LINE_FILE =

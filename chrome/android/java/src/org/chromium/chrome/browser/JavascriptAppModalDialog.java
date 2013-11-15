@@ -20,7 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.ui.WindowAndroid;
+import org.chromium.ui.base.WindowAndroid;
 
 public class JavascriptAppModalDialog implements DialogInterface.OnClickListener {
     private static final String TAG = "JavascriptAppModalDialog";

@@ -213,7 +213,7 @@
         '../components/components.gyp:navigation_interception_java',
         '../components/components.gyp:web_contents_delegate_android_java',
         '../content/content.gyp:content_java',
-        '../ui/ui.gyp:ui_java',
+        '../ui/android/ui_android.gyp:ui_java',
       ],
       'variables': {
         'java_in_dir': '../android_webview/java',

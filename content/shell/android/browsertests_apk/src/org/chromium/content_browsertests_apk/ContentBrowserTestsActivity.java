@@ -16,8 +16,8 @@ import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell.ShellManager;
-import org.chromium.ui.ActivityWindowAndroid;
-import org.chromium.ui.WindowAndroid;
+import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.WindowAndroid;
 
 @JNINamespace("content")
 public class ContentBrowserTestsActivity extends Activity {
