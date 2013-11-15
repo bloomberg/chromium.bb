@@ -153,11 +153,10 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* collecti
     collectActiveCSSStyleSheetsFromSeamlessParents(activeCSSStyleSheets, document());
     collectStyleSheets(collections, styleSheets, activeCSSStyleSheets);
 
-    StyleResolverUpdateType styleResolverUpdateType;
-    bool requiresFullStyleRecalc;
-    analyzeStyleSheetChange(updateMode, activeAuthorStyleSheets(), activeCSSStyleSheets, styleResolverUpdateType, requiresFullStyleRecalc);
+    StyleSheetChange change;
+    analyzeStyleSheetChange(updateMode, activeAuthorStyleSheets(), activeCSSStyleSheets, change);
 
-    if (styleResolverUpdateType == Reconstruct) {
+    if (change.styleResolverUpdateType == Reconstruct) {
         document()->clearStyleResolver();
     } else {
         StyleResolver* styleResolver = document()->styleResolverIfExists();
@@ -165,11 +164,13 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* collecti
         // FIXME: We might have already had styles in child treescope. In this case, we cannot use buildScopedStyleTreeInDocumentOrder.
         // Need to change "false" to some valid condition.
         styleResolver->setBuildScopedStyleTreeInDocumentOrder(false);
-        if (styleResolverUpdateType == Reset) {
+        if (change.styleResolverUpdateType != Additive) {
+            ASSERT(change.styleResolverUpdateType == Reset || change.styleResolverUpdateType == ResetStyleResolverAndFontSelector);
             resetAllRuleSetsInTreeScope(styleResolver);
+            if (change.styleResolverUpdateType == ResetStyleResolverAndFontSelector)
+                styleResolver->resetFontSelector();
             styleResolver->appendAuthorStyleSheets(0, activeCSSStyleSheets);
         } else {
-            ASSERT(styleResolverUpdateType == Additive);
             styleResolver->appendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), activeCSSStyleSheets);
         }
     }
@@ -178,7 +179,7 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* collecti
     m_styleSheetsForStyleSheetList.swap(styleSheets);
     updateUsesRemUnits();
 
-    return requiresFullStyleRecalc;
+    return change.requiresFullStyleRecalc;
 }
 
 }

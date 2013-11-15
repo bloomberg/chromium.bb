@@ -75,9 +75,20 @@ protected:
     enum StyleResolverUpdateType {
         Reconstruct,
         Reset,
-        Additive
+        Additive,
+        ResetStyleResolverAndFontSelector
     };
-    void analyzeStyleSheetChange(StyleResolverUpdateMode, const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, StyleResolverUpdateType&, bool& requiresFullStyleRecalc);
+
+    struct StyleSheetChange {
+        StyleResolverUpdateType styleResolverUpdateType;
+        bool requiresFullStyleRecalc;
+
+        StyleSheetChange()
+            : styleResolverUpdateType(Reconstruct)
+            , requiresFullStyleRecalc(true) { }
+    };
+
+    void analyzeStyleSheetChange(StyleResolverUpdateMode, const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, StyleSheetChange&);
     void resetAllRuleSetsInTreeScope(StyleResolver*);
     void updateUsesRemUnits();
 

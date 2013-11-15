@@ -250,6 +250,17 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, const KURL& s
     }
 }
 
+void StyleResolver::resetFontSelector()
+{
+    ASSERT(m_fontSelector);
+    m_fontSelector->unregisterForInvalidationCallbacks(this);
+    m_fontSelector->clearDocument();
+    invalidateMatchedPropertiesCache();
+
+    m_fontSelector = CSSFontSelector::create(&m_document);
+    m_fontSelector->registerForInvalidationCallbacks(this);
+}
+
 void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
 {
     // FIXME: When chanking scoped attribute, scopingNode's hasScopedHTMLStyleChild has been already modified.

@@ -142,6 +142,7 @@ public:
     void resetAuthorStyle(const ContainerNode*);
     void resetAtHostRules(const ShadowRoot*);
     void finishAppendAuthorStyleSheets();
+    void resetFontSelector();
 
     TreeBoundaryCrossingRules& treeBoundaryCrossingRules() { return m_treeBoundaryCrossingRules; }
     void processScopedRules(const RuleSet& authorRules, const KURL&, ContainerNode* scope = 0);

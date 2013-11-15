@@ -62,6 +62,7 @@ StyleSheetContents::StyleSheetContents(StyleRuleImport* ownerRule, const String&
     , m_usesRemUnits(false)
     , m_isMutable(false)
     , m_isInMemoryCache(false)
+    , m_hasFontFaceRule(false)
     , m_parserContext(context)
 {
 }
@@ -80,6 +81,7 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
     , m_usesRemUnits(o.m_usesRemUnits)
     , m_isMutable(false)
     , m_isInMemoryCache(false)
+    , m_hasFontFaceRule(o.m_hasFontFaceRule)
     , m_parserContext(o.m_parserContext)
 {
     ASSERT(o.isCacheable());

@@ -89,6 +89,9 @@ public:
     void setHasSyntacticallyValidCSSHeader(bool b) { m_hasSyntacticallyValidCSSHeader = b; }
     bool hasSyntacticallyValidCSSHeader() const { return m_hasSyntacticallyValidCSSHeader; }
 
+    void setHasFontFaceRule(bool b) { m_hasFontFaceRule = b; }
+    bool hasFontFaceRule() const { return m_hasFontFaceRule; }
+
     void parserAddNamespace(const AtomicString& prefix, const AtomicString& uri);
     void parserAppendRule(PassRefPtr<StyleRuleBase>);
     void parserSetEncodingFromCharsetRule(const String& encoding);
@@ -161,6 +164,7 @@ private:
     bool m_usesRemUnits : 1;
     bool m_isMutable : 1;
     bool m_isInMemoryCache : 1;
+    bool m_hasFontFaceRule : 1;
 
     CSSParserContext m_parserContext;
 

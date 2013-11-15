@@ -29,6 +29,7 @@
 
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleInvalidationAnalysis.h"
+#include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
@@ -121,11 +122,18 @@ bool StyleSheetCollection::activeLoadingStyleSheetLoaded(const Vector<RefPtr<CSS
     return false;
 }
 
-void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updateMode, const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStyleSheets, StyleResolverUpdateType& styleResolverUpdateType, bool& requiresFullStyleRecalc)
+static bool styleSheetContentsHasFontFaceRule(Vector<StyleSheetContents*> sheets)
 {
-    styleResolverUpdateType = Reconstruct;
-    requiresFullStyleRecalc = true;
+    for (unsigned i =  0; i < sheets.size(); ++i) {
+        ASSERT(sheets[i]);
+        if (sheets[i]->hasFontFaceRule())
+            return true;
+    }
+    return false;
+}
 
+void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updateMode, const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStyleSheets, StyleSheetChange& change)
+{
     if (activeLoadingStyleSheetLoaded(newStyleSheets))
         return;
 
@@ -137,10 +145,18 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
     // Find out which stylesheets are new.
     Vector<StyleSheetContents*> addedSheets;
     if (oldStyleSheets.size() <= newStyleSheets.size()) {
-        styleResolverUpdateType = compareStyleSheets(oldStyleSheets, newStyleSheets, addedSheets);
+        change.styleResolverUpdateType = compareStyleSheets(oldStyleSheets, newStyleSheets, addedSheets);
     } else {
         StyleResolverUpdateType updateType = compareStyleSheets(newStyleSheets, oldStyleSheets, addedSheets);
-        styleResolverUpdateType = updateType != Additive ? updateType : Reset;
+        if (updateType != Additive) {
+            change.styleResolverUpdateType = updateType;
+        } else {
+            if (styleSheetContentsHasFontFaceRule(addedSheets)) {
+                change.styleResolverUpdateType = ResetStyleResolverAndFontSelector;
+                return;
+            }
+            change.styleResolverUpdateType = Reset;
+        }
     }
 
     // FIXME: If styleResolverUpdateType is still Reconstruct, we could return early here
@@ -153,7 +169,8 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
     if (invalidationAnalysis.dirtiesAllStyle())
         return;
     invalidationAnalysis.invalidateStyle(*document());
-    requiresFullStyleRecalc = false;
+    change.requiresFullStyleRecalc = false;
+    return;
 }
 
 void StyleSheetCollection::resetAllRuleSetsInTreeScope(StyleResolver* styleResolver)

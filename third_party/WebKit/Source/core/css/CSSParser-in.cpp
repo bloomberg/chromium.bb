@@ -11218,6 +11218,8 @@ StyleRuleBase* CSSParser::createFontFaceRule()
     StyleRuleFontFace* result = rule.get();
     m_parsedRules.append(rule.release());
     endRuleBody();
+    if (m_styleSheet)
+        m_styleSheet->setHasFontFaceRule(true);
     return result;
 }
 

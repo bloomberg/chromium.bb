@@ -97,26 +97,23 @@ bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* collec
     Vector<RefPtr<CSSStyleSheet> > activeCSSStyleSheets;
     collectStyleSheets(collections, styleSheets, activeCSSStyleSheets);
 
-    bool requiresFullStyleRecalc = true;
-
-    StyleResolverUpdateType styleResolverUpdateType;
-    analyzeStyleSheetChange(updateMode, activeAuthorStyleSheets(), activeCSSStyleSheets, styleResolverUpdateType, requiresFullStyleRecalc);
+    StyleSheetChange change;
+    analyzeStyleSheetChange(updateMode, activeAuthorStyleSheets(), activeCSSStyleSheets, change);
 
     if (StyleResolver* styleResolver = document()->styleResolverIfExists()) {
         // FIXME: We might have already had styles in child treescope. In this case, we cannot use buildScopedStyleTreeInDocumentOrder.
         // Need to change "false" to some valid condition.
         styleResolver->setBuildScopedStyleTreeInDocumentOrder(false);
-        if (styleResolverUpdateType == Reset || styleResolverUpdateType == Reconstruct) {
+        if (change.styleResolverUpdateType != Additive) {
             // We should not destroy StyleResolver when we find any stylesheet update in a shadow tree.
             // In this case, we will reset rulesets created from style elements in the shadow tree.
             resetAllRuleSetsInTreeScope(styleResolver);
             styleResolver->appendAuthorStyleSheets(0, activeCSSStyleSheets);
         } else {
-            ASSERT(styleResolverUpdateType == Additive);
             styleResolver->appendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), activeCSSStyleSheets);
         }
     }
-    if (requiresFullStyleRecalc)
+    if (change.requiresFullStyleRecalc)
         toShadowRoot(m_treeScope.rootNode())->host()->setNeedsStyleRecalc();
 
     m_scopingNodesForStyleScoped.didRemoveScopingNodes();
@@ -124,7 +121,7 @@ bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* collec
     m_styleSheetsForStyleSheetList.swap(styleSheets);
     updateUsesRemUnits();
 
-    return requiresFullStyleRecalc;
+    return change.requiresFullStyleRecalc;
 }
 
 }
