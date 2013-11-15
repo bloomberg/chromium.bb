@@ -146,15 +146,15 @@ class SamplesDataSource(object):
             'link': ref_data['href']
           })
 
-        sample_base_path = posixpath.join('examples', sample_path)
         if is_apps:
-          url = url_constants.GITHUB_BASE + '/' + sample_base_path
-          icon_base = url_constants.RAW_GITHUB_BASE + '/' + sample_base_path
+          url = url_constants.GITHUB_BASE + '/' + sample_path
+          icon_base = url_constants.RAW_GITHUB_BASE + '/' + sample_path
           download_url = url
         else:
-          url = sample_base_path
-          icon_base = sample_base_path
-          download_url = sample_base_path + '.zip'
+          extension_sample_path = posixpath.join('examples', sample_path)
+          url = extension_sample_path
+          icon_base = extension_sample_path
+          download_url = extension_sample_path + '.zip'
 
         manifest_data = self._GetDataFromManifest(
             posixpath.join(base_path, sample_path), file_system)
