@@ -927,7 +927,7 @@ to third_party/chromiumos-overlay/licenses/""" %
     env = {
         'name': "%s-%s" % (package.name, package.version),
         'url': package.homepages[0] if package.homepages else '',
-        'licenses_txt': cgi.escape('\n'.join(license_text)) or '',
+        'licenses_txt': '\n'.join(license_text) or '',
         'licenses_ptr': '\n'.join(license_pointers) or '',
     }
     self.package_text[package] = self.EvaluateTemplate(self.entry_template, env)
@@ -958,7 +958,7 @@ to third_party/chromiumos-overlay/licenses/""" %
         logging.info("Collapsing shared license %s into single use license "
                      "(only used by %s)", sln, pkg_fullnamerev)
         license_type = self._FindLicenseType(sln)
-        license_txt = self._ReadSharedLicense(sln)
+        license_txt = cgi.escape(self._ReadSharedLicense(sln))
         single_license = "%s License %s:\n\n%s" % (license_type, sln,
                                                    license_txt)
         pkg = self.packages[pkg_fullnamerev]
@@ -979,7 +979,7 @@ to third_party/chromiumos-overlay/licenses/""" %
     for license_name in self.sorted_licenses:
       env = {
           'license_name': license_name,
-          'license': self._ReadSharedLicense(license_name),
+          'license': cgi.escape(self._ReadSharedLicense(license_name)),
           'license_type': self._FindLicenseType(license_name),
           'license_packages': ' '.join(self.LicensedPackages(license_name)),
       }
