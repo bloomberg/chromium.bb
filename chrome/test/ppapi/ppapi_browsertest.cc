@@ -368,15 +368,17 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, DISABLED_TCPSocket) {
   );
 }
 
-TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivate)
-TEST_PPAPI_NACL_WITH_SSL_SERVER(TCPSocketPrivate)
+// http://crbug.com/316933
+TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(DISABLED_TCPSocketPrivate)
+TEST_PPAPI_NACL_WITH_SSL_SERVER(DISABLED_TCPSocketPrivate)
 
 TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
 
 // UDPSocket tests.
 // UDPSocket_Broadcast is disabled for OSX because it requires root permissions
 // on OSX 10.7+.
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, UDPSocket) {
+// http://crbug.com/316933
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, DISABLED_UDPSocket) {
   RunTestViaHTTP(
       LIST_TEST(UDPSocket_ReadWrite)
       LIST_TEST(UDPSocket_SetOption)
@@ -414,18 +416,28 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, UDPSocket) {
 }
 
 // UDPSocketPrivate tests.
+// http://crbug.com/316933
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_UDPSocketPrivate_Connect)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_ConnectFailure)
+
 // UDPSocketPrivate_Broadcast is disabled for OSX because it requires
 // root permissions on OSX 10.7+.
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_Connect)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_ConnectFailure)
 #if !defined(OS_MACOSX)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_Broadcast)
+// http://crbug.com/316933
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_UDPSocketPrivate_Broadcast)
 #endif  // !defined(OS_MACOSX)
+
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_SetSocketFeatureErrors)
-TEST_PPAPI_NACL(UDPSocketPrivate_Connect)
+
+// http://crbug.com/316933
+TEST_PPAPI_NACL(DISABLED_UDPSocketPrivate_Connect)
 TEST_PPAPI_NACL(UDPSocketPrivate_ConnectFailure)
+
+// UDPSocketPrivate_Broadcast is disabled for OSX because it requires
+// root permissions on OSX 10.7+.
 #if !defined(OS_MACOSX)
-TEST_PPAPI_NACL(UDPSocketPrivate_Broadcast)
+// http://crbug.com/316933
+TEST_PPAPI_NACL(DISABLED_UDPSocketPrivate_Broadcast)
 #endif  // !defined(OS_MACOSX)
 TEST_PPAPI_NACL(UDPSocketPrivate_SetSocketFeatureErrors)
 
@@ -434,7 +446,8 @@ TEST_PPAPI_NACL_DISALLOWED_SOCKETS(TCPServerSocketPrivateDisallowed)
 TEST_PPAPI_NACL_DISALLOWED_SOCKETS(TCPSocketPrivateDisallowed)
 TEST_PPAPI_NACL_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
 
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPServerSocketPrivate)
+// http://crbug.com/316933
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_TCPServerSocketPrivate)
 TEST_PPAPI_NACL(TCPServerSocketPrivate)
 
 // HostResolver tests.
