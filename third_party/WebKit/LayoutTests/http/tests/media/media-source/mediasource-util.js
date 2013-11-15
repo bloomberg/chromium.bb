@@ -21,7 +21,7 @@
         expectations.push(eventInfo);
 
         var t = this;
-        var waitHandler = this.test_.step_func(function() { t.handleWaitCallback_(); });
+        var waitHandler = this.test_.step_func(this.handleWaitCallback_.bind(this));
         var eventHandler = this.test_.step_func(function(event)
         {
             object.removeEventListener(eventName, eventHandler);
@@ -40,7 +40,7 @@
     EventExpectationsManager.prototype.waitForExpectedEvents = function(callback)
     {
         this.waitCallbacks_.push(callback);
-        setTimeout(this.handleWaitCallback_.bind(this), 0);
+        setTimeout(this.test_.step_func(this.handleWaitCallback_.bind(this)), 0);
     };
 
     EventExpectationsManager.prototype.expectingEvents = function()
