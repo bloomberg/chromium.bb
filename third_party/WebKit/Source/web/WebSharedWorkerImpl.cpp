@@ -42,7 +42,6 @@
 #include "WorkerPermissionClient.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
-#include "core/dom/MessagePortChannel.h"
 #include "core/events/MessageEvent.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
@@ -238,14 +237,13 @@ bool WebSharedWorkerImpl::isStarted()
 
 void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel, ConnectListener* listener)
 {
-    OwnPtr<MessagePortChannel> channel = MessagePortChannel::create(webChannel);
     workerThread()->runLoop().postTask(
-        createCallbackTask(&connectTask, channel.release()));
+        createCallbackTask(&connectTask, adoptPtr(webChannel)));
     if (listener)
         listener->connected();
 }
 
-void WebSharedWorkerImpl::connectTask(ExecutionContext* context, PassOwnPtr<MessagePortChannel> channel)
+void WebSharedWorkerImpl::connectTask(ExecutionContext* context, PassOwnPtr<WebMessagePortChannel> channel)
 {
     // Wrap the passed-in channel in a MessagePort, and send it off via a connect event.
     RefPtr<MessagePort> port = MessagePort::create(*context);

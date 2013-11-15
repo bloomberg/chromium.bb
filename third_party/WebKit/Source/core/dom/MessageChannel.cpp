@@ -28,16 +28,32 @@
 #include "core/dom/MessageChannel.h"
 
 #include "core/dom/MessagePort.h"
-#include "core/dom/MessagePortChannel.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebMessagePortChannel.h"
 
 namespace WebCore {
+
+static void createChannel(MessagePort* port1, MessagePort* port2)
+{
+    // Create proxies for each endpoint.
+    OwnPtr<blink::WebMessagePortChannel> channel1 = adoptPtr(blink::Platform::current()->createMessagePortChannel());
+    OwnPtr<blink::WebMessagePortChannel> channel2 = adoptPtr(blink::Platform::current()->createMessagePortChannel());
+
+    // Entangle the two endpoints.
+    channel1->entangle(channel2.get());
+    channel2->entangle(channel1.get());
+
+    // Now entangle the proxies with the appropriate local ports.
+    port1->entangle(channel2.release());
+    port2->entangle(channel1.release());
+}
 
 MessageChannel::MessageChannel(ExecutionContext* context)
     : m_port1(MessagePort::create(*context))
     , m_port2(MessagePort::create(*context))
 {
     ScriptWrappable::init(this);
-    MessagePortChannel::createChannel(m_port1.get(), m_port2.get());
+    createChannel(m_port1.get(), m_port2.get());
 }
 
 MessageChannel::~MessageChannel()

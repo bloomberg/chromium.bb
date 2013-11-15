@@ -30,7 +30,8 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
-#include "core/dom/MessagePortChannel.h"
+#include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebMessagePortChannelClient.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -45,11 +46,15 @@ class ExceptionState;
 class Frame;
 class MessagePort;
 class ExecutionContext;
+class SerializedScriptValue;
 
 // The overwhelmingly common case is sending a single port, so handle that efficiently with an inline buffer of size 1.
 typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
 
-class MessagePort : public RefCounted<MessagePort>, public ScriptWrappable, public EventTargetWithInlineData {
+// Not to be confused with blink::WebMessagePortChannelArray; this one uses Vector and OwnPtr instead of WebVector and raw pointers.
+typedef Vector<OwnPtr<blink::WebMessagePortChannel>, 1> MessagePortChannelArray;
+
+class MessagePort : public RefCounted<MessagePort>, public ScriptWrappable, public EventTargetWithInlineData, public blink::WebMessagePortChannelClient {
     REFCOUNTED_EVENT_TARGET(MessagePort);
 public:
     static PassRefPtr<MessagePort> create(ExecutionContext& executionContext) { return adoptRef(new MessagePort(executionContext)); }
@@ -60,8 +65,8 @@ public:
     void start();
     void close();
 
-    void entangle(PassOwnPtr<MessagePortChannel>);
-    PassOwnPtr<MessagePortChannel> disentangle();
+    void entangle(PassOwnPtr<blink::WebMessagePortChannel>);
+    PassOwnPtr<blink::WebMessagePortChannel> disentangle();
 
     // Returns 0 if there is an exception, or if the passed-in array is 0/empty.
     static PassOwnPtr<MessagePortChannelArray> disentanglePorts(const MessagePortArray*, ExceptionState&);
@@ -69,7 +74,6 @@ public:
     // Returns 0 if the passed array is 0/empty.
     static PassOwnPtr<MessagePortArray> entanglePorts(ExecutionContext&, PassOwnPtr<MessagePortChannelArray>);
 
-    void messageAvailable();
     bool started() const { return m_started; }
 
     void contextDestroyed();
@@ -98,7 +102,10 @@ public:
 private:
     explicit MessagePort(ExecutionContext&);
 
-    OwnPtr<MessagePortChannel> m_entangledChannel;
+    // WebMessagePortChannelClient implementation.
+    virtual void messageAvailable() OVERRIDE;
+
+    OwnPtr<blink::WebMessagePortChannel> m_entangledChannel;
 
     bool m_started;
     bool m_closed;

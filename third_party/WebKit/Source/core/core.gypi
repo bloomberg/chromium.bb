@@ -1904,7 +1904,6 @@
             'dom/MessageChannel.cpp',
             'dom/MessageChannel.h',
             'dom/MessagePort.cpp',
-            'dom/MessagePortChannel.cpp',
             'dom/Microtask.cpp',
             'dom/Microtask.h',
             'dom/MutationCallback.h',

@@ -41,7 +41,6 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/MessagePortChannel.h"
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/ContentSecurityPolicy.h"
@@ -61,7 +60,7 @@ namespace blink {
 // Callback class that keeps the SharedWorker and WebSharedWorker objects alive while loads are potentially happening, and also translates load errors into error events on the worker.
 class SharedWorkerScriptLoader : private WorkerScriptLoaderClient, private WebSharedWorker::ConnectListener {
 public:
-    SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassOwnPtr<MessagePortChannel> channel, PassOwnPtr<WebSharedWorker> webWorker)
+    SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassOwnPtr<WebMessagePortChannel> channel, PassOwnPtr<WebSharedWorker> webWorker)
         : m_worker(worker)
         , m_url(url)
         , m_name(name)
@@ -89,7 +88,7 @@ private:
     KURL m_url;
     String m_name;
     OwnPtr<WebSharedWorker> m_webWorker;
-    OwnPtr<MessagePortChannel> m_channel;
+    OwnPtr<WebMessagePortChannel> m_channel;
     RefPtr<WorkerScriptLoader> m_scriptLoader;
     bool m_loading;
     long long m_responseAppCacheID;
@@ -137,10 +136,8 @@ void SharedWorkerScriptLoader::notifyFinished()
 
 void SharedWorkerScriptLoader::sendConnect()
 {
-    WebMessagePortChannel* webChannel = m_channel->webChannelRelease();
-    m_channel.clear();
     // Send the connect event off, and linger until it is done sending.
-    m_webWorker->connect(webChannel, this);
+    m_webWorker->connect(m_channel.leakPtr(), this);
 }
 
 void SharedWorkerScriptLoader::connected()
@@ -155,7 +152,7 @@ static WebSharedWorkerRepositoryClient::DocumentID getId(void* document)
     return reinterpret_cast<WebSharedWorkerRepositoryClient::DocumentID>(document);
 }
 
-void SharedWorkerRepositoryClientImpl::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr<MessagePortChannel> port, const KURL& url, const String& name, ExceptionState& exceptionState)
+void SharedWorkerRepositoryClientImpl::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr<WebMessagePortChannel> port, const KURL& url, const String& name, ExceptionState& exceptionState)
 {
     ASSERT(m_client);
 

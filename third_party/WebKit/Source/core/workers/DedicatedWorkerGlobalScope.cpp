@@ -32,6 +32,7 @@
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/frame/DOMWindow.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/WorkerClients.h"

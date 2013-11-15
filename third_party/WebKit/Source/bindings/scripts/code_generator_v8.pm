@@ -2883,6 +2883,7 @@ END
         # If we're in an isolated world, create a SerializedScriptValue and store it in the event for
         # later cloning if the property is accessed from another world.
         # The main world case is handled lazily (in Custom code).
+        AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
         $implementation{nameSpaceInternal}->add("    if (isolatedWorldForIsolate(info.GetIsolate())) {\n");
         foreach my $attrName (@serializableAnyAttributeNames) {
             my $setter = "setSerialized" . FirstLetterToUpperCase($attrName);

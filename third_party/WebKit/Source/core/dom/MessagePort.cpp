@@ -30,12 +30,15 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/MessageEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/DOMWindow.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebString.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
@@ -63,6 +66,7 @@ void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const M
     if (!isEntangled())
         return;
     ASSERT(m_executionContext);
+    ASSERT(m_entangledChannel);
 
     OwnPtr<MessagePortChannelArray> channels;
     // Make sure we aren't connected to any of the passed-in ports.
@@ -78,14 +82,21 @@ void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const M
         if (exceptionState.hadException())
             return;
     }
-    m_entangledChannel->postMessageToRemote(message, channels.release());
+
+    blink::WebString messageString = message->toWireString();
+    blink::WebMessagePortChannelArray* webChannels = 0;
+    if (channels && channels->size()) {
+        webChannels = new blink::WebMessagePortChannelArray(channels->size());
+        for (size_t i = 0; i < channels->size(); ++i)
+            (*webChannels)[i] = (*channels)[i].leakPtr();
+    }
+    m_entangledChannel->postMessage(messageString, webChannels);
 }
 
-PassOwnPtr<MessagePortChannel> MessagePort::disentangle()
+PassOwnPtr<blink::WebMessagePortChannel> MessagePort::disentangle()
 {
     ASSERT(m_entangledChannel);
-
-    m_entangledChannel->disentangle();
+    m_entangledChannel->setClient(0);
 
     // We can't receive any messages or generate any events, so remove ourselves from the list of active ports.
     ASSERT(m_executionContext);
@@ -120,18 +131,18 @@ void MessagePort::start()
 void MessagePort::close()
 {
     if (isEntangled())
-        m_entangledChannel->close();
+        m_entangledChannel->setClient(0);
     m_closed = true;
 }
 
-void MessagePort::entangle(PassOwnPtr<MessagePortChannel> remote)
+void MessagePort::entangle(PassOwnPtr<blink::WebMessagePortChannel> remote)
 {
     // Only invoked to set our initial entanglement.
     ASSERT(!m_entangledChannel);
     ASSERT(m_executionContext);
 
-    remote->entangle(this);
     m_entangledChannel = remote;
+    m_entangledChannel->setClient(this);
 }
 
 void MessagePort::contextDestroyed()
@@ -153,6 +164,22 @@ ExecutionContext* MessagePort::executionContext() const
     return m_executionContext;
 }
 
+static bool tryGetMessageFrom(blink::WebMessagePortChannel& webChannel, RefPtr<SerializedScriptValue>& message, OwnPtr<MessagePortChannelArray>& channels)
+{
+    blink::WebString messageString;
+    blink::WebMessagePortChannelArray webChannels;
+    if (!webChannel.tryGetMessage(&messageString, webChannels))
+        return false;
+
+    if (webChannels.size()) {
+        channels = adoptPtr(new MessagePortChannelArray(webChannels.size()));
+        for (size_t i = 0; i < webChannels.size(); ++i)
+            (*channels)[i] = adoptPtr(webChannels[i]);
+    }
+    message = SerializedScriptValue::createFromWire(messageString);
+    return true;
+}
+
 void MessagePort::dispatchMessages()
 {
     // Messages for contexts that are not fully active get dispatched too, but JSAbstractEventListener::handleEvent() doesn't call handlers for these.
@@ -161,8 +188,7 @@ void MessagePort::dispatchMessages()
 
     RefPtr<SerializedScriptValue> message;
     OwnPtr<MessagePortChannelArray> channels;
-    while (m_entangledChannel && m_entangledChannel->tryGetMessageFromRemote(message, channels)) {
-
+    while (m_entangledChannel && tryGetMessageFrom(*m_entangledChannel, message, channels)) {
         // close() in Worker onmessage handler should prevent next message from dispatching.
         if (m_executionContext->isWorkerGlobalScope() && toWorkerGlobalScope(m_executionContext)->isClosing())
             return;
@@ -178,7 +204,7 @@ bool MessagePort::hasPendingActivity()
 {
     // The spec says that entangled message ports should always be treated as if they have a strong reference.
     // We'll also stipulate that the queue needs to be open (if the app drops its reference to the port before start()-ing it, then it's not really entangled as it's unreachable).
-    if (m_started && m_entangledChannel && m_entangledChannel->hasPendingActivity())
+    if (m_started && m_entangledChannel)
         return true;
     return isEntangled();
 }

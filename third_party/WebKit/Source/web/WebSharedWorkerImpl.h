@@ -119,7 +119,7 @@ private:
     void initializeLoader(const WebURL&);
 
 
-    static void connectTask(WebCore::ExecutionContext*, PassOwnPtr<WebCore::MessagePortChannel>);
+    static void connectTask(WebCore::ExecutionContext*, PassOwnPtr<WebMessagePortChannel>);
     // Tasks that are run on the main thread.
     void workerGlobalScopeClosedOnMainThread();
     void workerGlobalScopeDestroyedOnMainThread();

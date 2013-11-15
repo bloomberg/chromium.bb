@@ -34,12 +34,15 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
+namespace blink {
+class WebMessagePortChannel;
+}
+
 namespace WebCore {
 
 class Document;
 class ExceptionState;
 class KURL;
-class MessagePortChannel;
 class SharedWorker;
 
 class SharedWorkerRepositoryClient {
@@ -48,7 +51,7 @@ public:
     SharedWorkerRepositoryClient() { }
     virtual ~SharedWorkerRepositoryClient() { }
 
-    virtual void connect(PassRefPtr<SharedWorker>, PassOwnPtr<MessagePortChannel>, const KURL&, const String& name, ExceptionState&)  = 0;
+    virtual void connect(PassRefPtr<SharedWorker>, PassOwnPtr<blink::WebMessagePortChannel>, const KURL&, const String& name, ExceptionState&)  = 0;
 
     virtual void documentDetached(Document*) = 0;
 };

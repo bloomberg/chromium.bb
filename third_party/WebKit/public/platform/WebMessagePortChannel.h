@@ -59,4 +59,21 @@ protected:
 
 } // namespace blink
 
-#endif
+#if INSIDE_BLINK
+
+namespace WTF {
+
+template<typename T> struct OwnedPtrDeleter;
+template<> struct OwnedPtrDeleter<blink::WebMessagePortChannel> {
+    static void deletePtr(blink::WebMessagePortChannel* channel)
+    {
+        if (channel)
+            channel->destroy();
+    }
+};
+
+} // namespace WTF
+
+#endif // INSIDE_BLINK
+
+#endif // WebMessagePortChannel_h
