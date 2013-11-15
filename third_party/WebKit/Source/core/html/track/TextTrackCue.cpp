@@ -272,11 +272,11 @@ void TextTrackCue::setId(const String& id)
     cueDidChange();
 }
 
-void TextTrackCue::setStartTime(double value, ExceptionState& es)
+void TextTrackCue::setStartTime(double value, ExceptionState& exceptionState)
 {
     // NaN, Infinity and -Infinity values should trigger a TypeError.
     if (std::isinf(value) || std::isnan(value)) {
-        es.throwUninformativeAndGenericTypeError();
+        exceptionState.throwUninformativeAndGenericTypeError();
         return;
     }
 
@@ -289,11 +289,11 @@ void TextTrackCue::setStartTime(double value, ExceptionState& es)
     cueDidChange();
 }
 
-void TextTrackCue::setEndTime(double value, ExceptionState& es)
+void TextTrackCue::setEndTime(double value, ExceptionState& exceptionState)
 {
     // NaN, Infinity and -Infinity values should trigger a TypeError.
     if (std::isinf(value) || std::isnan(value)) {
-        es.throwUninformativeAndGenericTypeError();
+        exceptionState.throwUninformativeAndGenericTypeError();
         return;
     }
 
@@ -331,7 +331,7 @@ const String& TextTrackCue::vertical() const
     }
 }
 
-void TextTrackCue::setVertical(const String& value, ExceptionState& es)
+void TextTrackCue::setVertical(const String& value, ExceptionState& exceptionState)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-vertical
     // On setting, the text track cue writing direction must be set to the value given
@@ -347,7 +347,7 @@ void TextTrackCue::setVertical(const String& value, ExceptionState& es)
     else if (value == verticalGrowingRightKeyword())
         direction = VerticalGrowingRight;
     else
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
 
     if (direction == m_writingDirection)
         return;
@@ -367,13 +367,13 @@ void TextTrackCue::setSnapToLines(bool value)
     cueDidChange();
 }
 
-void TextTrackCue::setLine(int position, ExceptionState& es)
+void TextTrackCue::setLine(int position, ExceptionState& exceptionState)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-line
     // On setting, if the text track cue snap-to-lines flag is not set, and the new
     // value is negative or greater than 100, then throw an IndexSizeError exception.
     if (!m_snapToLines && (position < 0 || position > 100)) {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -387,13 +387,13 @@ void TextTrackCue::setLine(int position, ExceptionState& es)
     cueDidChange();
 }
 
-void TextTrackCue::setPosition(int position, ExceptionState& es)
+void TextTrackCue::setPosition(int position, ExceptionState& exceptionState)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-position
     // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError exception.
     // Otherwise, set the text track cue text position to the new value.
     if (position < 0 || position > 100) {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -406,13 +406,13 @@ void TextTrackCue::setPosition(int position, ExceptionState& es)
     cueDidChange();
 }
 
-void TextTrackCue::setSize(int size, ExceptionState& es)
+void TextTrackCue::setSize(int size, ExceptionState& exceptionState)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-size
     // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError
     // exception. Otherwise, set the text track cue size to the new value.
     if (size < 0 || size > 100) {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -444,7 +444,7 @@ const String& TextTrackCue::align() const
     }
 }
 
-void TextTrackCue::setAlign(const String& value, ExceptionState& es)
+void TextTrackCue::setAlign(const String& value, ExceptionState& exceptionState)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-align
     // On setting, the text track cue alignment must be set to the value given in the
@@ -464,7 +464,7 @@ void TextTrackCue::setAlign(const String& value, ExceptionState& es)
     else if (value == rightKeyword())
         alignment = Right;
     else
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
 
     if (alignment == m_cueAlignment)
         return;

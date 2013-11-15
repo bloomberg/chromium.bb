@@ -56,30 +56,30 @@ const StylePropertySet* HTMLTableSectionElement::additionalPresentationAttribute
 
 // these functions are rather slow, since we need to get the row at
 // the index... but they aren't used during usual HTML parsing anyway
-PassRefPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index, ExceptionState& es)
+PassRefPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index, ExceptionState& exceptionState)
 {
     RefPtr<HTMLTableRowElement> row;
     RefPtr<HTMLCollection> children = rows();
     int numRows = children ? (int)children->length() : 0;
     if (index < -1 || index > numRows)
-        es.throwUninformativeAndGenericDOMException(IndexSizeError); // per the DOM
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError); // per the DOM
     else {
         row = HTMLTableRowElement::create(document());
         if (numRows == index || index == -1)
-            appendChild(row, es);
+            appendChild(row, exceptionState);
         else {
             Node* n;
             if (index < 1)
                 n = firstChild();
             else
                 n = children->item(index);
-            insertBefore(row, n, es);
+            insertBefore(row, n, exceptionState);
         }
     }
     return row.release();
 }
 
-void HTMLTableSectionElement::deleteRow(int index, ExceptionState& es)
+void HTMLTableSectionElement::deleteRow(int index, ExceptionState& exceptionState)
 {
     RefPtr<HTMLCollection> children = rows();
     int numRows = children ? (int)children->length() : 0;
@@ -87,9 +87,9 @@ void HTMLTableSectionElement::deleteRow(int index, ExceptionState& es)
         index = numRows - 1;
     if (index >= 0 && index < numRows) {
         RefPtr<Node> row = children->item(index);
-        HTMLElement::removeChild(row.get(), es);
+        HTMLElement::removeChild(row.get(), exceptionState);
     } else {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
     }
 }
 

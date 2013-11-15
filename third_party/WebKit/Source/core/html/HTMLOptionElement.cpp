@@ -61,14 +61,14 @@ PassRefPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
 }
 
 PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document& document, const String& data, const String& value,
-    bool defaultSelected, bool selected, ExceptionState& es)
+    bool defaultSelected, bool selected, ExceptionState& exceptionState)
 {
     RefPtr<HTMLOptionElement> element = adoptRef(new HTMLOptionElement(document));
 
     RefPtr<Text> text = Text::create(document, data.isNull() ? "" : data);
 
-    element->appendChild(text.release(), es);
-    if (es.hadException())
+    element->appendChild(text.release(), exceptionState);
+    if (exceptionState.hadException())
         return 0;
 
     if (!value.isNull())
@@ -120,7 +120,7 @@ String HTMLOptionElement::text() const
     return text.stripWhiteSpace(isHTMLSpace<UChar>).simplifyWhiteSpace(isHTMLSpace<UChar>);
 }
 
-void HTMLOptionElement::setText(const String &text, ExceptionState& es)
+void HTMLOptionElement::setText(const String &text, ExceptionState& exceptionState)
 {
     RefPtr<Node> protectFromMutationEvents(this);
 
@@ -137,7 +137,7 @@ void HTMLOptionElement::setText(const String &text, ExceptionState& es)
         toText(child)->setData(text);
     else {
         removeChildren();
-        appendChild(Text::create(document(), text), es);
+        appendChild(Text::create(document(), text), exceptionState);
     }
 
     if (selectIsMenuList && select->selectedIndex() != oldSelectedIndex)

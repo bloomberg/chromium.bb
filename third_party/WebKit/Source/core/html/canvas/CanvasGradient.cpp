@@ -46,16 +46,16 @@ CanvasGradient::CanvasGradient(const FloatPoint& p0, float r0, const FloatPoint&
     ScriptWrappable::init(this);
 }
 
-void CanvasGradient::addColorStop(float value, const String& color, ExceptionState& es)
+void CanvasGradient::addColorStop(float value, const String& color, ExceptionState& exceptionState)
 {
     if (!(value >= 0 && value <= 1.0f)) {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
     RGBA32 rgba = 0;
     if (!parseColorOrCurrentColor(rgba, color, 0 /*canvas*/)) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 

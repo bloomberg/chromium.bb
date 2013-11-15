@@ -205,15 +205,15 @@ static inline bool hasVisibleTextArea(RenderObject* renderer, HTMLElement* inner
 }
 
 
-void HTMLTextFormControlElement::setRangeText(const String& replacement, ExceptionState& es)
+void HTMLTextFormControlElement::setRangeText(const String& replacement, ExceptionState& exceptionState)
 {
-    setRangeText(replacement, selectionStart(), selectionEnd(), String(), es);
+    setRangeText(replacement, selectionStart(), selectionEnd(), String(), exceptionState);
 }
 
-void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState& es)
+void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState& exceptionState)
 {
     if (start > end) {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 

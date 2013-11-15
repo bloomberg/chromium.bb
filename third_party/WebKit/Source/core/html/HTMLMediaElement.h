@@ -181,8 +181,8 @@ public:
     double percentLoaded() const;
 
     PassRefPtr<TextTrack> addTextTrack(const String& kind, const String& label, const String& language, ExceptionState&);
-    PassRefPtr<TextTrack> addTextTrack(const String& kind, const String& label, ExceptionState& es) { return addTextTrack(kind, label, emptyString(), es); }
-    PassRefPtr<TextTrack> addTextTrack(const String& kind, ExceptionState& es) { return addTextTrack(kind, emptyString(), emptyString(), es); }
+    PassRefPtr<TextTrack> addTextTrack(const String& kind, const String& label, ExceptionState& exceptionState) { return addTextTrack(kind, label, emptyString(), exceptionState); }
+    PassRefPtr<TextTrack> addTextTrack(const String& kind, ExceptionState& exceptionState) { return addTextTrack(kind, emptyString(), emptyString(), exceptionState); }
 
     TextTrackList* textTracks();
     CueList currentlyActiveCues() const { return m_currentlyActiveCues; }
