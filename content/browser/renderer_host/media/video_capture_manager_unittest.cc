@@ -16,7 +16,6 @@
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_stream_options.h"
-#include "media/video/capture/fake_video_capture_device.h"
 #include "media/video/capture/video_capture_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -168,8 +167,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwice) {
 
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1)
-      .WillOnce(SaveArg<1>(&devices));
+      .Times(1).WillOnce(SaveArg<1>(&devices));
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(2);
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(2);
 
@@ -189,101 +187,6 @@ TEST_F(VideoCaptureManagerTest, OpenTwice) {
   vcm_->Close(video_session_id_second);
 
   // Wait to check callbacks before removing the listener.
-  message_loop_->RunUntilIdle();
-  vcm_->Unregister();
-}
-
-// Connect and disconnect devices.
-TEST_F(VideoCaptureManagerTest, ConnectAndDisconnectDevices) {
-  StreamDeviceInfoArray devices;
-  int number_of_devices_keep =
-      media::FakeVideoCaptureDevice::NumberOfFakeDevices();
-
-  InSequence s;
-  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1)
-      .WillOnce(SaveArg<1>(&devices));
-  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
-  message_loop_->RunUntilIdle();
-  ASSERT_EQ(devices.size(), 2u);
-
-  // Simulate we remove 1 fake device.
-  media::FakeVideoCaptureDevice::SetNumberOfFakeDevices(1);
-  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1)
-      .WillOnce(SaveArg<1>(&devices));
-  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
-  message_loop_->RunUntilIdle();
-  ASSERT_EQ(devices.size(), 1u);
-
-  // Simulate we add 2 fake devices.
-  media::FakeVideoCaptureDevice::SetNumberOfFakeDevices(3);
-  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1)
-      .WillOnce(SaveArg<1>(&devices));
-  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
-  message_loop_->RunUntilIdle();
-  ASSERT_EQ(devices.size(), 3u);
-
-  vcm_->Unregister();
-  media::FakeVideoCaptureDevice::SetNumberOfFakeDevices(number_of_devices_keep);
-}
-
-// Enumerate devices and open the first, then check the capabilities. Then start
-// the opened device. The capability list should be reduced to just one format,
-// and this should be the one used when configuring-starting the device. Finally
-// stop the device and check that the capabilities have been restored.
-TEST_F(VideoCaptureManagerTest, ManipulateDeviceAndCheckCapabilities) {
-  StreamDeviceInfoArray devices;
-
-  InSequence s;
-  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1)
-      .WillOnce(SaveArg<1>(&devices));
-  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
-  message_loop_->RunUntilIdle();
-
-  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
-  int video_session_id = vcm_->Open(devices.front());
-  message_loop_->RunUntilIdle();
-
-  // When the device has been opened, we should see all the devices'
-  // capabilities.
-  media::VideoCaptureCapabilities device_capabilities;
-  vcm_->GetDeviceCapabilities(video_session_id, &device_capabilities);
-  ASSERT_EQ(devices.size(), 2u);
-  ASSERT_GT(device_capabilities.size(), 1u);
-  EXPECT_GT(device_capabilities[0].width, 1);
-  EXPECT_GT(device_capabilities[0].height, 1);
-  EXPECT_GT(device_capabilities[0].frame_rate, 1);
-  EXPECT_GT(device_capabilities[1].width, 1);
-  EXPECT_GT(device_capabilities[1].height, 1);
-  EXPECT_GT(device_capabilities[1].frame_rate, 1);
-
-  VideoCaptureControllerID client_id = StartClient(video_session_id, true);
-  message_loop_->RunUntilIdle();
-  // After StartClient(), the device's capabilities should be reduced to one.
-  vcm_->GetDeviceCapabilities(video_session_id, &device_capabilities);
-  ASSERT_EQ(device_capabilities.size(), 1u);
-  EXPECT_GT(device_capabilities[0].width, 1);
-  EXPECT_GT(device_capabilities[0].height, 1);
-  EXPECT_GT(device_capabilities[0].frame_rate, 1);
-
-  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
-  StopClient(client_id);
-  message_loop_->RunUntilIdle();
-  // After StopClient(), the device's list of capabilities should be restored
-  // to the original one.
-  vcm_->GetDeviceCapabilities(video_session_id, &device_capabilities);
-  ASSERT_GT(device_capabilities.size(), 1u);
-  EXPECT_GT(device_capabilities[0].width, 1);
-  EXPECT_GT(device_capabilities[0].height, 1);
-  EXPECT_GT(device_capabilities[0].frame_rate, 1);
-  EXPECT_GT(device_capabilities[1].width, 1);
-  EXPECT_GT(device_capabilities[1].height, 1);
-  EXPECT_GT(device_capabilities[1].frame_rate, 1);
-
-  vcm_->Close(video_session_id);
   message_loop_->RunUntilIdle();
   vcm_->Unregister();
 }

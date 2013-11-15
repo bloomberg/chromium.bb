@@ -19,23 +19,15 @@ namespace media {
 static const int kFakeCaptureTimeoutMs = 50;
 static const int kFakeCaptureBeepCycle = 20;  // Visual beep every 1s.
 static const int kFakeCaptureCapabilityChangePeriod = 30;
+enum { kNumberOfFakeDevices = 2 };
 
-int FakeVideoCaptureDevice::number_of_fake_devices_ = 2;
 bool FakeVideoCaptureDevice::fail_next_create_ = false;
-
-void FakeVideoCaptureDevice::SetNumberOfFakeDevices(int num) {
-  number_of_fake_devices_ = num;
-}
-
-int FakeVideoCaptureDevice::NumberOfFakeDevices(void) {
-  return number_of_fake_devices_;
-}
 
 void FakeVideoCaptureDevice::GetDeviceNames(Names* const device_names) {
   // Empty the name list.
   device_names->erase(device_names->begin(), device_names->end());
 
-  for (int n = 0; n < number_of_fake_devices_; n++) {
+  for (int n = 0; n < kNumberOfFakeDevices; n++) {
     Name name(base::StringPrintf("fake_device_%d", n),
               base::StringPrintf("/dev/video%d", n));
     device_names->push_back(name);
@@ -45,19 +37,12 @@ void FakeVideoCaptureDevice::GetDeviceNames(Names* const device_names) {
 void FakeVideoCaptureDevice::GetDeviceSupportedFormats(
     const Name& device,
     VideoCaptureCapabilities* formats) {
-  formats->clear();
-  VideoCaptureCapability capture_format_640x480;
-  capture_format_640x480.color = media::PIXEL_FORMAT_I420;
-  capture_format_640x480.width = 640;
-  capture_format_640x480.height = 480;
-  capture_format_640x480.frame_rate = 1000 / kFakeCaptureTimeoutMs;
-  formats->push_back(capture_format_640x480);
-  VideoCaptureCapability capture_format_320x240;
-  capture_format_320x240.color = media::PIXEL_FORMAT_I420;
-  capture_format_320x240.width = 320;
-  capture_format_320x240.height = 240;
-  capture_format_320x240.frame_rate = 1000 / kFakeCaptureTimeoutMs;
-  formats->push_back(capture_format_320x240);
+  VideoCaptureCapability capture_format;
+  capture_format.color = media::PIXEL_FORMAT_I420;
+  capture_format.width = 640;
+  capture_format.height = 480;
+  capture_format.frame_rate = 1000 / kFakeCaptureTimeoutMs;
+  formats->push_back(capture_format);
 }
 
 VideoCaptureDevice* FakeVideoCaptureDevice::Create(const Name& device_name) {
@@ -65,7 +50,7 @@ VideoCaptureDevice* FakeVideoCaptureDevice::Create(const Name& device_name) {
     fail_next_create_ = false;
     return NULL;
   }
-  for (int n = 0; n < number_of_fake_devices_; ++n) {
+  for (int n = 0; n < kNumberOfFakeDevices; ++n) {
     std::string possible_id = base::StringPrintf("/dev/video%d", n);
     if (device_name.id().compare(possible_id) == 0) {
       return new FakeVideoCaptureDevice();
