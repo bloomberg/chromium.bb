@@ -10,6 +10,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "remoting/base/util.h"
 #include "remoting/client/frame_producer.h"
+#include "remoting/client/jni/chromoting_jni_instance.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
@@ -17,8 +18,11 @@
 
 namespace remoting {
 
-JniFrameConsumer::JniFrameConsumer(ChromotingJniRuntime* jni_runtime)
+JniFrameConsumer::JniFrameConsumer(
+    ChromotingJniRuntime* jni_runtime,
+    scoped_refptr<ChromotingJniInstance> jni_instance)
     : jni_runtime_(jni_runtime),
+      jni_instance_(jni_instance),
       frame_producer_(NULL) {
 }
 
@@ -68,7 +72,10 @@ void JniFrameConsumer::ApplyBuffer(const webrtc::DesktopSize& view_size,
   }
 
   // TODO(lambroslambrou): Optimize this by only repainting the changed pixels.
+  base::TimeTicks start_time = base::TimeTicks::Now();
   jni_runtime_->RedrawCanvas();
+  jni_instance_->RecordPaintTime(
+      (base::TimeTicks::Now() - start_time).InMilliseconds());
 
   // Supply |frame_producer_| with a buffer to render the next frame into.
   frame_producer_->DrawBuffer(buffer);

@@ -9,6 +9,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/client/frame_consumer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -22,6 +23,7 @@ class DesktopFrame;
 }  // namespace webrtc
 
 namespace remoting {
+class ChromotingJniInstance;
 class ChromotingJniRuntime;
 class FrameProducer;
 
@@ -29,7 +31,8 @@ class FrameProducer;
 class JniFrameConsumer : public FrameConsumer {
  public:
   // The instance does not take ownership of |jni_runtime|.
-  explicit JniFrameConsumer(ChromotingJniRuntime* jni_runtime);
+  explicit JniFrameConsumer(ChromotingJniRuntime* jni_runtime,
+                            scoped_refptr<ChromotingJniInstance> jni_instance);
 
   virtual ~JniFrameConsumer();
 
@@ -58,6 +61,9 @@ class JniFrameConsumer : public FrameConsumer {
 
   // Used to obtain task runner references and make calls to Java methods.
   ChromotingJniRuntime* jni_runtime_;
+
+  // Used to record statistics.
+  scoped_refptr<ChromotingJniInstance> jni_instance_;
 
   FrameProducer* frame_producer_;
   webrtc::DesktopSize view_size_;
