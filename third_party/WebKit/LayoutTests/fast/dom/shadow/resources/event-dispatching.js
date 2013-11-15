@@ -171,6 +171,16 @@ function moveMouse(oldElementId, newElementId)
     debugDispatchedEvent('mouseover');
 }
 
+function clickElement(elementId)
+{
+    clearEventRecords();
+    debug('\n' + 'Click ' + elementId);
+    var clickEvent = document.createEvent("MouseEvents");
+    clickEvent.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+    getNodeInTreeOfTrees(elementId).dispatchEvent(clickEvent);
+    debugDispatchedEvent('click');
+}
+
 function showSandboxTree()
 {
     var sandbox = document.getElementById('sandbox');

@@ -15,8 +15,9 @@ getDistributedNodes() for "host/shadow" should return [host/shadow-child]
 PASS distributedNodes.length is expectedDistributedNodes.length
 PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
 
-getDistributedNodes() for "host/shadow" should return []
+getDistributedNodes() for "host/shadow" should return [host-child]
 PASS distributedNodes.length is expectedDistributedNodes.length
+PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
 
 getDistributedNodes() for "host/shadow" should return [host-child]
 PASS distributedNodes.length is expectedDistributedNodes.length
@@ -30,10 +31,11 @@ getDistributedNodes() for "host//shadow" should return [host/older-child]
 PASS distributedNodes.length is expectedDistributedNodes.length
 PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
 
-getDistributedNodes() for "host//shadow" should return [host/older-child-1,host/older-child-2]
+getDistributedNodes() for "host//shadow" should return [host/older-child-1,host-child,host/older-child-2]
 PASS distributedNodes.length is expectedDistributedNodes.length
 PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
 PASS distributedNodes.item(1) is getNodeInTreeOfTrees(expectedDistributedNodes[1])
+PASS distributedNodes.item(2) is getNodeInTreeOfTrees(expectedDistributedNodes[2])
 
 getDistributedNodes() for "host//shadow" should return [host/older-child-1,host-child,host/older-child-2]
 PASS distributedNodes.length is expectedDistributedNodes.length
