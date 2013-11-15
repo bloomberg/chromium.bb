@@ -362,7 +362,7 @@ TEST_F(CoreAnimationCompositorAnimationsTest, ConvertTimingForCompositorIteratio
     EXPECT_FALSE(convertTimingForCompositor(m_timing, m_compositorTiming));
 }
 
-TEST_F(CoreAnimationCompositorAnimationsTest, ConvertTimingForCompositorIterationCount)
+TEST_F(CoreAnimationCompositorAnimationsTest, DISABLED_ConvertTimingForCompositorIterationCount)
 {
     m_timing.iterationCount = 5.0;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
