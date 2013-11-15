@@ -105,6 +105,23 @@ directory are:
 .fi
 .RE
 .TP 7
+.TP 7
+.BI "backend=" headless-backend.so
+overrides defaults backend. Available backend modules in the
+.IR "__weston_modules_dir__"
+directory are:
+.PP
+.RS 10
+.nf
+.BR drm-backend.so
+.BR fbdev-backend.so
+.BR headless-backend.so
+.BR rdp-backend.so
+.BR rpi-backend.so
+.BR wayland-backend.so
+.BR x11-backend.so
+.fi
+.RE
 .BI "gbm-format="format
 sets the GBM format used for the framebuffer for the GBM backend. Can be
 .B xrgb8888,

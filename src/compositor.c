@@ -3772,6 +3772,7 @@ int main(int argc, char *argv[])
 				 struct weston_config *config);
 	int i;
 	char *backend = NULL;
+	char *option_backend = NULL;
 	char *shell = NULL;
 	char *modules, *option_modules = NULL;
 	char *log = NULL;
@@ -3783,7 +3784,7 @@ int main(int argc, char *argv[])
 	struct weston_config_section *section;
 
 	const struct weston_option core_options[] = {
-		{ WESTON_OPTION_STRING, "backend", 'B', &backend },
+		{ WESTON_OPTION_STRING, "backend", 'B', &option_backend },
 		{ WESTON_OPTION_STRING, "shell", 0, &shell },
 		{ WESTON_OPTION_STRING, "socket", 'S', &socket_name },
 		{ WESTON_OPTION_INTEGER, "idle-time", 'i', &idle_time },
@@ -3829,6 +3830,19 @@ int main(int argc, char *argv[])
 	signals[3] = wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler,
 					      NULL);
 
+	config = weston_config_parse("weston.ini");
+	if (config != NULL) {
+		weston_log("Using config file '%s'\n",
+			   weston_config_get_full_path(config));
+	} else {
+		weston_log("Starting with no config file.\n");
+	}
+	section = weston_config_get_section(config, "core", NULL, NULL);
+
+	weston_config_section_get_string(section, "backend", &backend, NULL);
+	if (option_backend) {
+		backend = option_backend;
+	}
 	if (!backend) {
 		if (getenv("WAYLAND_DISPLAY"))
 			backend = "wayland-backend.so";
@@ -3838,14 +3852,6 @@ int main(int argc, char *argv[])
 			backend = WESTON_NATIVE_BACKEND;
 	}
 
-	config = weston_config_parse("weston.ini");
-	if (config != NULL) {
-		weston_log("Using config file '%s'\n",
-			   weston_config_get_full_path(config));
-	} else {
-		weston_log("Starting with no config file.\n");
-	}
-	section = weston_config_get_section(config, "core", NULL, NULL);
 	weston_config_section_get_string(section, "modules", &modules, "");
 
 	backend_init = weston_load_module(backend, "backend_init");
