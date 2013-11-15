@@ -412,7 +412,7 @@ drm_output_release_fb(struct drm_output *output, struct drm_fb *fb)
 			gbm_bo_destroy(fb->bo);
 		else
 			gbm_surface_release_buffer(output->surface,
-						   output->current->bo);
+						   fb->bo);
 	}
 }
 
