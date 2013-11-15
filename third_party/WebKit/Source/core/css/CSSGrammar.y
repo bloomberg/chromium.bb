@@ -291,6 +291,7 @@ inline static CSSParserValue makeOperatorValue(int value)
 %type <rule> supports
 %type <rule> viewport
 %type <rule> filter
+%type <boolean> keyframes_rule_start
 
 %type <string> maybe_ns_prefix
 
@@ -876,19 +877,20 @@ before_keyframes_rule:
     }
     ;
 
+keyframes_rule_start:
+    before_keyframes_rule KEYFRAMES_SYM maybe_space {
+        $$ = false;
+    }
+  | before_keyframes_rule WEBKIT_KEYFRAMES_SYM maybe_space {
+        $$ = true;
+    }
+    ;
+
 keyframes:
-    before_keyframes_rule KEYFRAMES_SYM maybe_space keyframe_name at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space location_label keyframes_rule closing_brace {
-        $$ = parser->createKeyframesRule($4, parser->sinkFloatingKeyframeVector($10), false /* isPrefixed */);
+    keyframes_rule_start keyframe_name at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space location_label keyframes_rule closing_brace {
+        $$ = parser->createKeyframesRule($2, parser->sinkFloatingKeyframeVector($8), $1 /* isPrefixed */);
     }
-  |
-    before_keyframes_rule WEBKIT_KEYFRAMES_SYM maybe_space keyframe_name at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space location_label keyframes_rule closing_brace {
-        $$ = parser->createKeyframesRule($4, parser->sinkFloatingKeyframeVector($10), true /* isPrefixed */);
-    }
-  | before_keyframes_rule KEYFRAMES_SYM at_rule_recovery {
-        $$ = 0;
-        parser->endRuleBody(true);
-    }
-  | before_keyframes_rule WEBKIT_KEYFRAMES_SYM at_rule_recovery {
+  | keyframes_rule_start at_rule_recovery {
         $$ = 0;
         parser->endRuleBody(true);
     }
