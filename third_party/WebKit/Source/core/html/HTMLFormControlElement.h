@@ -81,7 +81,8 @@ public:
     virtual bool appendFormData(FormDataList&, bool) { return false; }
     virtual String resultForDialogSubmit();
 
-    virtual bool isSuccessfulSubmitButton() const { return false; }
+    virtual bool canBeSuccessfulSubmitButton() const { return false; }
+    bool isSuccessfulSubmitButton() const;
     virtual bool isActivatedSubmit() const { return false; }
     virtual void setActivatedSubmit(bool) { }
 

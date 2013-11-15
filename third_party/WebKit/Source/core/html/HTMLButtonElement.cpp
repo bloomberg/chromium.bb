@@ -159,11 +159,9 @@ bool HTMLButtonElement::willRespondToMouseClickEvents()
     return HTMLFormControlElement::willRespondToMouseClickEvents();
 }
 
-bool HTMLButtonElement::isSuccessfulSubmitButton() const
+bool HTMLButtonElement::canBeSuccessfulSubmitButton() const
 {
-    // HTML spec says that buttons must have names to be considered successful.
-    // However, other browsers do not impose this constraint.
-    return m_type == SUBMIT && !isDisabledFormControl();
+    return m_type == SUBMIT;
 }
 
 bool HTMLButtonElement::isActivatedSubmit() const

@@ -503,6 +503,11 @@ HTMLFormElement* HTMLFormControlElement::virtualForm() const
     return FormAssociatedElement::form();
 }
 
+bool HTMLFormControlElement::isSuccessfulSubmitButton() const
+{
+    return canBeSuccessfulSubmitButton() && !isDisabledFormControl();
+}
+
 bool HTMLFormControlElement::isDefaultButtonForForm() const
 {
     return isSuccessfulSubmitButton() && form() && form()->defaultButton() == this;

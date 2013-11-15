@@ -60,7 +60,7 @@ private:
     virtual bool supportLabels() const OVERRIDE { return true; }
     virtual bool isInteractiveContent() const OVERRIDE;
 
-    virtual bool isSuccessfulSubmitButton() const;
+    virtual bool canBeSuccessfulSubmitButton() const OVERRIDE;
     virtual bool isActivatedSubmit() const;
     virtual void setActivatedSubmit(bool flag);
 

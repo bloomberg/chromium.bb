@@ -808,11 +808,9 @@ String HTMLInputElement::altText() const
     return alt;
 }
 
-bool HTMLInputElement::isSuccessfulSubmitButton() const
+bool HTMLInputElement::canBeSuccessfulSubmitButton() const
 {
-    // HTML spec says that buttons must have names to be considered successful.
-    // However, other browsers do not impose this constraint. So we do not.
-    return !isDisabledFormControl() && m_inputType->canBeSuccessfulSubmitButton();
+    return m_inputType->canBeSuccessfulSubmitButton();
 }
 
 bool HTMLInputElement::isActivatedSubmit() const

@@ -331,7 +331,7 @@ private:
     virtual bool appendFormData(FormDataList&, bool) OVERRIDE;
     virtual String resultForDialogSubmit() OVERRIDE;
 
-    virtual bool isSuccessfulSubmitButton() const;
+    virtual bool canBeSuccessfulSubmitButton() const OVERRIDE;
 
     virtual void resetImpl() OVERRIDE;
 
