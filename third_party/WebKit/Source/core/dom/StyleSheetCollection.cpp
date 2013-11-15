@@ -42,6 +42,7 @@ namespace WebCore {
 StyleSheetCollection::StyleSheetCollection(TreeScope& treeScope)
     : m_treeScope(treeScope)
     , m_hadActiveLoadingStylesheet(false)
+    , m_usesRemUnits(false)
 {
 }
 
