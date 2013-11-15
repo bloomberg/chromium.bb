@@ -41,9 +41,9 @@
   <ul>
   {{#sample:samples_list}}
     <li><strong><a href="samples.html#{{sample.id}}">{{sample.name}}</a></strong>
-    {{?description}}
-    &ndash; {{description}}
-    {{/description}}</li>
+    {{?sample.description}}
+    &ndash; {{sample.description}}
+    {{/sample.description}}</li>
   {{/samples_list}}
   </ul>
 {{/samples_list}}
