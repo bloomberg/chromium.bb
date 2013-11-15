@@ -60,7 +60,7 @@ private:
     virtual void createShadowSubtree() OVERRIDE;
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
     virtual void handleDOMActivateEvent(Event*) OVERRIDE;
-    virtual void detach() OVERRIDE;
+    virtual void closePopupView() OVERRIDE;
     virtual bool shouldRespectListAttribute() OVERRIDE;
     virtual bool typeMismatchFor(const String&) const OVERRIDE;
 

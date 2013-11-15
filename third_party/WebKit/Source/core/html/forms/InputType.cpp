@@ -506,10 +506,6 @@ void InputType::accessKeyAction(bool)
     element().focus(false);
 }
 
-void InputType::detach()
-{
-}
-
 void InputType::countUsage()
 {
 }

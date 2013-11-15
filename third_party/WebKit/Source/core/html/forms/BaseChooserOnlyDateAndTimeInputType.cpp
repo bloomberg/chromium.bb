@@ -87,7 +87,7 @@ void BaseChooserOnlyDateAndTimeInputType::setValue(const String& value, bool val
         updateAppearance();
 }
 
-void BaseChooserOnlyDateAndTimeInputType::detach()
+void BaseChooserOnlyDateAndTimeInputType::closePopupView()
 {
     closeDateTimeChooser();
 }

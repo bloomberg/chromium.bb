@@ -778,7 +778,7 @@ void HTMLInputElement::attach(const AttachContext& context)
 
     HTMLTextFormControlElement::attach(context);
 
-    m_inputTypeView->attach();
+    m_inputTypeView->startResourceLoading();
     m_inputType->countUsage();
 
     if (document().focusedElement() == this)
@@ -789,7 +789,7 @@ void HTMLInputElement::detach(const AttachContext& context)
 {
     HTMLTextFormControlElement::detach(context);
     setFormControlValueMatchesRenderer(false);
-    m_inputType->detach();
+    m_inputTypeView->closePopupView();
 }
 
 String HTMLInputElement::altText() const

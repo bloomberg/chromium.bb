@@ -168,7 +168,6 @@ public:
     // Miscellaneous functions
 
     virtual bool rendererIsNeeded();
-    virtual void detach();
     virtual void countUsage();
     virtual void sanitizeValueInResponseToMinOrMaxAttributeChange();
     virtual bool shouldRespectAlignAttribute();

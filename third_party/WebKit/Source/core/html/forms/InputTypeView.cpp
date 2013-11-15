@@ -120,7 +120,11 @@ void InputTypeView::handleBlurEvent()
 {
 }
 
-void InputTypeView::attach()
+void InputTypeView::startResourceLoading()
+{
+}
+
+void InputTypeView::closePopupView()
 {
 }
 

@@ -139,9 +139,9 @@ void ImageInputType::srcAttributeChanged()
     element().imageLoader()->updateFromElementIgnoringPreviousError();
 }
 
-void ImageInputType::attach()
+void ImageInputType::startResourceLoading()
 {
-    BaseButtonInputType::attach();
+    BaseButtonInputType::startResourceLoading();
 
     HTMLImageLoader* imageLoader = element().imageLoader();
     imageLoader->updateFromElement();

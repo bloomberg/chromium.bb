@@ -162,7 +162,7 @@ void ColorInputType::handleDOMActivateEvent(Event* event)
     event->setDefaultHandled();
 }
 
-void ColorInputType::detach()
+void ColorInputType::closePopupView()
 {
     endColorChooser();
 }

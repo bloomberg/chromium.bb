@@ -45,7 +45,7 @@ private:
 
     // InputType functions:
     virtual void createShadowSubtree() OVERRIDE;
-    virtual void detach() OVERRIDE;
+    virtual void closePopupView() OVERRIDE;
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
     virtual void handleDOMActivateEvent(Event*) OVERRIDE;
     virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE;
