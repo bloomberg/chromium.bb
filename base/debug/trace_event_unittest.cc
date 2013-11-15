@@ -359,6 +359,8 @@ std::vector<const DictionaryValue*> FindTraceEntries(
   return hits;
 }
 
+const char* kControlCharacters = "\001\002\003\n\r";
+
 void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
   {
     TRACE_EVENT_BEGIN_ETW("TRACE_EVENT_BEGIN_ETW call", 0x1122, "extrastring1");
@@ -455,6 +457,9 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
     TraceScopedTrackableObject<int> trackable("all", "tracked object 2",
                                               0x2128506);
     trackable.snapshot("world");
+
+    TRACE_EVENT1(kControlCharacters, kControlCharacters,
+                 kControlCharacters, kControlCharacters);
   } // Scope close causes TRACE_EVENT0 etc to send their END events.
 
   if (task_complete_event)
@@ -794,6 +799,9 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_TRUE(item && item->GetString("id", &id));
     EXPECT_EQ("0x2128506", id);
   }
+
+  EXPECT_FIND_(kControlCharacters);
+  EXPECT_SUB_FIND_(kControlCharacters);
 }
 
 void TraceManyInstantEvents(int thread_id, int num_events,

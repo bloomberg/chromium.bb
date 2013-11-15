@@ -12,6 +12,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/debug/trace_event.h"
 #include "base/format_macros.h"
+#include "base/json/string_escape.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
@@ -609,7 +610,6 @@ void TraceEvent::UpdateDuration(const TimeTicks& now) {
 void TraceEvent::AppendValueAsJSON(unsigned char type,
                                    TraceEvent::TraceValue value,
                                    std::string* out) {
-  std::string::size_type start_pos;
   switch (type) {
     case TRACE_VALUE_TYPE_BOOL:
       *out += value.as_bool ? "true" : "false";
@@ -653,17 +653,7 @@ void TraceEvent::AppendValueAsJSON(unsigned char type,
       break;
     case TRACE_VALUE_TYPE_STRING:
     case TRACE_VALUE_TYPE_COPY_STRING:
-      *out += "\"";
-      start_pos = out->size();
-      *out += value.as_string ? value.as_string : "NULL";
-      // insert backslash before special characters for proper json format.
-      while ((start_pos = out->find_first_of("\\\"", start_pos)) !=
-             std::string::npos) {
-        out->insert(start_pos, 1, '\\');
-        // skip inserted escape character and following character.
-        start_pos += 2;
-      }
-      *out += "\"";
+      JsonDoubleQuote(value.as_string ? value.as_string : "NULL", true, out);
       break;
     default:
       NOTREACHED() << "Don't know how to print this value";
