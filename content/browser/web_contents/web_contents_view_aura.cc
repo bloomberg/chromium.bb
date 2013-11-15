@@ -754,6 +754,15 @@ class WebContentsViewAura::WindowObserver
     // Windows, unregister first so that the debug check doesn't fire.
     if (parent && parent == window->GetRootWindow())
       parent->RemoveObserver(this);
+
+    // We need to undo the above if we were parented to the root window and then
+    // got parented to another window. At that point, the code before the ifdef
+    // would have stopped watching the root window.
+    if (window->GetRootWindow() &&
+        parent != window->GetRootWindow() &&
+        !window->GetRootWindow()->HasObserver(this)) {
+      window->GetRootWindow()->AddObserver(this);
+    }
 #endif
 
     parent_ = parent;
