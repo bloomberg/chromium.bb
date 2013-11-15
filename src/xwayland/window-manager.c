@@ -695,12 +695,14 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 	}
 
 	if (wm->focus_window) {
-		frame_unset_flag(wm->focus_window->frame, FRAME_FLAG_ACTIVE);
+		if (wm->focus_window->frame)
+			frame_unset_flag(wm->focus_window->frame, FRAME_FLAG_ACTIVE);
 		weston_wm_window_schedule_repaint(wm->focus_window);
 	}
 	wm->focus_window = window;
 	if (wm->focus_window) {
-		frame_set_flag(wm->focus_window->frame, FRAME_FLAG_ACTIVE);
+		if (wm->focus_window->frame)
+			frame_set_flag(wm->focus_window->frame, FRAME_FLAG_ACTIVE);
 		weston_wm_window_schedule_repaint(wm->focus_window);
 	}
 }
