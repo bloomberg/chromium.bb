@@ -83,20 +83,6 @@ EditorClientImpl::~EditorClientImpl()
 {
 }
 
-bool EditorClientImpl::smartInsertDeleteEnabled()
-{
-    if (m_webView->page())
-        return m_webView->page()->settings().smartInsertDeleteEnabled();
-    return false;
-}
-
-bool EditorClientImpl::isSelectTrailingWhitespaceEnabled()
-{
-    if (m_webView->page())
-        return m_webView->page()->settings().selectTrailingWhitespaceEnabled();
-    return false;
-}
-
 bool EditorClientImpl::shouldSpellcheckByDefault()
 {
     // Spellcheck should be enabled for all editable areas (such as textareas,
@@ -663,15 +649,6 @@ bool EditorClientImpl::spellingUIIsShowing()
     if (m_webView->spellCheckClient())
         return m_webView->spellCheckClient()->isShowingSpellingUI();
     return false;
-}
-
-bool EditorClientImpl::supportsGlobalSelection()
-{
-#if OS(WIN) || OS(MACOSX)
-    return false;
-#else
-    return true;
-#endif
 }
 
 void EditorClientImpl::willSetInputMethodState()

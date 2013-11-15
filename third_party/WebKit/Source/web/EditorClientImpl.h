@@ -52,8 +52,6 @@ public:
 
     virtual ~EditorClientImpl();
 
-    virtual bool smartInsertDeleteEnabled() OVERRIDE;
-    virtual bool isSelectTrailingWhitespaceEnabled() OVERRIDE;
     virtual bool isContinuousSpellCheckingEnabled() OVERRIDE;
     virtual void toggleContinuousSpellChecking() OVERRIDE;
     virtual bool isGrammarCheckingEnabled() OVERRIDE;
@@ -83,7 +81,6 @@ public:
     virtual bool spellingUIIsShowing() OVERRIDE;
     virtual void willSetInputMethodState() OVERRIDE;
     virtual void requestCheckingOfString(WTF::PassRefPtr<WebCore::TextCheckingRequest>) OVERRIDE;
-    virtual bool supportsGlobalSelection() OVERRIDE;
 
     virtual WebCore::TextCheckerClient& textChecker() { return *this; }
 

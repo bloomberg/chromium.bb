@@ -87,7 +87,7 @@ public:
     bool canCopy() const;
     bool canPaste() const;
     bool canDelete() const;
-    bool canSmartCopyOrDelete();
+    bool canSmartCopyOrDelete() const;
 
     void cut();
     void copy();
@@ -187,8 +187,8 @@ public:
 
     // smartInsertDeleteEnabled and selectTrailingWhitespaceEnabled are
     // mutually exclusive, meaning that enabling one will disable the other.
-    bool smartInsertDeleteEnabled();
-    bool isSelectTrailingWhitespaceEnabled();
+    bool smartInsertDeleteEnabled() const;
+    bool isSelectTrailingWhitespaceEnabled() const;
 
     bool preventRevealSelection() const { return m_preventRevealSelection; }
 

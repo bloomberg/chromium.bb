@@ -266,8 +266,6 @@ public:
     EmptyEditorClient() { }
     virtual ~EmptyEditorClient() { }
 
-    virtual bool smartInsertDeleteEnabled() OVERRIDE { return false; }
-    virtual bool isSelectTrailingWhitespaceEnabled() OVERRIDE { return false; }
     virtual bool isContinuousSpellCheckingEnabled() OVERRIDE { return false; }
     virtual void toggleContinuousSpellChecking() OVERRIDE { }
     virtual bool isGrammarCheckingEnabled() OVERRIDE { return false; }

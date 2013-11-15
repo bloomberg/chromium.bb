@@ -263,19 +263,23 @@ bool Editor::canDeleteRange(Range* range) const
     return true;
 }
 
-bool Editor::smartInsertDeleteEnabled()
+bool Editor::smartInsertDeleteEnabled() const
 {
-    return client().smartInsertDeleteEnabled();
+    if (Settings* settings = m_frame.settings())
+        return settings->smartInsertDeleteEnabled();
+    return false;
 }
 
-bool Editor::canSmartCopyOrDelete()
+bool Editor::canSmartCopyOrDelete() const
 {
-    return client().smartInsertDeleteEnabled() && m_frame.selection().granularity() == WordGranularity;
+    return smartInsertDeleteEnabled() && m_frame.selection().granularity() == WordGranularity;
 }
 
-bool Editor::isSelectTrailingWhitespaceEnabled()
+bool Editor::isSelectTrailingWhitespaceEnabled() const
 {
-    return client().isSelectTrailingWhitespaceEnabled();
+    if (Settings* settings = m_frame.settings())
+        return settings->selectTrailingWhitespaceEnabled();
+    return false;
 }
 
 bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity granularity, bool killRing, bool isTypingAction)
@@ -443,7 +447,7 @@ bool Editor::dispatchCPPEvent(const AtomicString &eventType, ClipboardAccessPoli
 
 bool Editor::canSmartReplaceWithPasteboard(Pasteboard* pasteboard)
 {
-    return client().smartInsertDeleteEnabled() && pasteboard->canSmartReplace();
+    return smartInsertDeleteEnabled() && pasteboard->canSmartReplace();
 }
 
 void Editor::replaceSelectionWithFragment(PassRefPtr<DocumentFragment> fragment, bool selectReplacement, bool smartReplace, bool matchStyle)

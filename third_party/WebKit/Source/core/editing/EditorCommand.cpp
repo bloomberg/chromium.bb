@@ -935,7 +935,7 @@ static bool executePaste(Frame& frame, Event*, EditorCommandSource, const String
 
 static bool executePasteGlobalSelection(Frame& frame, Event*, EditorCommandSource source, const String&)
 {
-    if (!frame.editor().client().supportsGlobalSelection())
+    if (!frame.editor().behavior().supportsGlobalSelection())
         return false;
     ASSERT_UNUSED(source, source == CommandFromMenuOrKeyBinding);
 
