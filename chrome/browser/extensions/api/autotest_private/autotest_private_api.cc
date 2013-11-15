@@ -14,10 +14,10 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/extensions/api/autotest_private.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
-#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/screen_locker.h"

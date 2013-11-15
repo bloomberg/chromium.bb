@@ -16,8 +16,8 @@
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_view_host.h"
+#include "extensions/common/extension.h"
 
 namespace {
 

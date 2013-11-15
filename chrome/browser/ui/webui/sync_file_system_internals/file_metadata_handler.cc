@@ -14,9 +14,9 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/extension_statuses_handler.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "extensions/common/extension.h"
 #include "grit/sync_file_system_internals_resources.h"
 
 using sync_file_system::RemoteFileSyncService;

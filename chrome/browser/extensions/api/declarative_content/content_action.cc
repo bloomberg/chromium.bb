@@ -15,9 +15,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/extension.h"
 
 namespace extensions {
 

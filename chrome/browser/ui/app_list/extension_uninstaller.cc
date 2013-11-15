@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 
 ExtensionUninstaller::ExtensionUninstaller(
     Profile* profile,

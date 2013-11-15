@@ -15,8 +15,8 @@
 #include "base/synchronization/lock.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/extension.h"
 #include "sql/connection.h"
 #include "sql/init_status.h"
 

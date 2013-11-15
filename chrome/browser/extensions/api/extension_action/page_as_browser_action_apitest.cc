@@ -19,9 +19,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 
 // These are a mash-up of the tests from from page_actions_apitest.cc and

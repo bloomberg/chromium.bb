@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 
 LauncherItemController::LauncherItemController(
     Type type,

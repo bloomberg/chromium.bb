@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/app_sync_data.h"
 
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "sync/api/sync_data.h"
 #include "sync/protocol/app_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"

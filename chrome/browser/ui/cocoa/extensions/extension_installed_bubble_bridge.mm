@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using extensions::BundleInstaller;

@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 
 StackedPanelCollection::StackedPanelCollection(PanelManager* panel_manager)
     : PanelCollection(PanelCollection::STACKED),

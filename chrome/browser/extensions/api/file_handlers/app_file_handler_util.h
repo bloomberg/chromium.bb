@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "chrome/common/extensions/api/file_handlers/file_handlers_parser.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 
 class Profile;
 

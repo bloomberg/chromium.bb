@@ -6,8 +6,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "extensions/common/extension.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace extensions {

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/manifest.h"
 

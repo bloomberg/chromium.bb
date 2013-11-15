@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 
 namespace extensions {
 

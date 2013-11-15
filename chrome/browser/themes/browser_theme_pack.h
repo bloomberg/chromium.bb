@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/color_utils.h"

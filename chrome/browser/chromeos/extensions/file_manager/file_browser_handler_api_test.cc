@@ -15,10 +15,10 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/common/extension.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/common/fileapi/file_system_types.h"
 

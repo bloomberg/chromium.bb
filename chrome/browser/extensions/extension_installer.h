@@ -12,7 +12,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/requirements_checker.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 
 class Profile;
 

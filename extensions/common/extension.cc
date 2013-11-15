@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 
 #include "base/base64.h"
 #include "base/basictypes.h"
@@ -20,8 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -31,13 +29,13 @@
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "url/url_util.h"
 
 #if defined(OS_WIN)

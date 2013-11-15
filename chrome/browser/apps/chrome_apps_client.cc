@@ -8,7 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/apps/app_metro_infobar_delegate_win.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 
 #if defined(OS_WIN)
 #include "win8/util/win8_util.h"

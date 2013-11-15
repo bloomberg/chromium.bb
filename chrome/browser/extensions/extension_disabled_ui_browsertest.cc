@@ -18,10 +18,10 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
+#include "extensions/common/extension.h"
 #include "net/url_request/url_fetcher.h"
 
 using extensions::Extension;

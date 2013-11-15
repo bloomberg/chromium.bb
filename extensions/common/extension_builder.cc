@@ -4,7 +4,7 @@
 
 #include "extensions/common/extension_builder.h"
 
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 
 namespace extensions {
 

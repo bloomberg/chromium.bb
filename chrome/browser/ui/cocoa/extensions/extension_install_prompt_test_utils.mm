@@ -9,7 +9,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 
 using extensions::Extension;
 

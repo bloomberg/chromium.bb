@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 
 namespace extensions {

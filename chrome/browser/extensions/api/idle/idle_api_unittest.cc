@@ -15,10 +15,10 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/common/extensions/api/idle.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/extension.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

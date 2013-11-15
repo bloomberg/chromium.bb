@@ -21,7 +21,7 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/common/extensions/api/events.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/matcher/url_matcher.h"
 
 namespace base {

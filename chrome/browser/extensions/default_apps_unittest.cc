@@ -8,10 +8,10 @@
 #include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/external_pref_loader.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using default_apps::Provider;

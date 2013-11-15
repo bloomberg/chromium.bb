@@ -9,7 +9,7 @@
 #include "ash/shell.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "ui/aura/remote_root_window_host_win.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 

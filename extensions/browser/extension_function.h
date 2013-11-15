@@ -16,10 +16,10 @@
 #include "base/process/process.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/extensions/extension_function_histogram_value.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/console_message_level.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/common/extension.h"
 #include "ipc/ipc_message.h"
 
 class ChromeRenderMessageFilter;

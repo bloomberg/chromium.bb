@@ -18,7 +18,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/dom_action_types.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "sql/error_delegate_util.h"
 #include "sql/transaction.h"
 #include "url/gurl.h"

@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "sync/api/string_ordinal.h"
 
 class ExtensionScopedPrefs;

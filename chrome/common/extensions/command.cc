@@ -10,8 +10,8 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_version_info.h"  // TODO(finnur): Remove.
-#include "chrome/common/extensions/extension.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"

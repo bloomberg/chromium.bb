@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/version.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "url/gurl.h"
 

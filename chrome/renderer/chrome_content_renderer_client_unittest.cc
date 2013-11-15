@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "content/public/common/webplugininfo.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"

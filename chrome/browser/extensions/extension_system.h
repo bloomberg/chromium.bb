@@ -9,8 +9,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/extension.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/one_shot_event.h"
 
 class ExtensionService;

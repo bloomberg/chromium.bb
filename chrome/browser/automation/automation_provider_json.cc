@@ -14,8 +14,8 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/automation_messages.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/extension.h"
 
 using content::WebContents;
 

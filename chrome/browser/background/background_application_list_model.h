@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/extension.h"
 
 class Profile;
 

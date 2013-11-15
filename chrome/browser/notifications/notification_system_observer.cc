@@ -8,8 +8,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/common/extension.h"
 
 NotificationSystemObserver::NotificationSystemObserver(
     NotificationUIManager* ui_manager)

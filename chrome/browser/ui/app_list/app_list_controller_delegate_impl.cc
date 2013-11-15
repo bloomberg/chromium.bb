@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "extensions/common/extension.h"
 #include "net/base/url_util.h"
 #include "ui/gfx/image/image_skia.h"
 

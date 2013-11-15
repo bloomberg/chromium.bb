@@ -17,9 +17,9 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/browser/value_store/value_store.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/extension.h"
 
 using content::BrowserThread;
 using sync_datatype_helper::test;

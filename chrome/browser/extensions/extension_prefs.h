@@ -15,9 +15,9 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
-#include "chrome/common/extensions/extension.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/url_pattern_set.h"
 #include "sync/api/string_ordinal.h"
 

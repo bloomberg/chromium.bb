@@ -16,13 +16,13 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/session_storage_namespace.h"
+#include "content/public/browser/web_contents.h"
+#include "extensions/common/extension.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"

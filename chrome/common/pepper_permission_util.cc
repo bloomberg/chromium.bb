@@ -10,10 +10,10 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
 
 using extensions::Extension;
 using extensions::Manifest;

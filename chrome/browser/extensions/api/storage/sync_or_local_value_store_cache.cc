@@ -13,9 +13,9 @@
 #include "chrome/browser/extensions/api/storage/settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/api/storage/weak_unlimited_settings_storage.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
 
 using content::BrowserThread;

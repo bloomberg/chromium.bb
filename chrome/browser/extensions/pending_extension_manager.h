@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chrome/browser/extensions/pending_extension_info.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 
 class ExtensionServiceInterface;

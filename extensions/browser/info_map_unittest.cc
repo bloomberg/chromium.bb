@@ -6,9 +6,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -28,9 +28,9 @@
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/common/extensions/api/identity.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/extension.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "url/gurl.h"
 

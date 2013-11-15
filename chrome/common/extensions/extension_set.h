@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "url/gurl.h"
 
 // The one true extension container. Extensions are identified by their id.

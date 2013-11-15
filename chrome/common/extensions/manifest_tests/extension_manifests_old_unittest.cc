@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Tests that the old permission name "unlimited_storage" still works for

@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
 #include "chrome/browser/ui/global_error/global_error.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 
 class Browser;
 class ExtensionService;

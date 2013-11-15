@@ -6,9 +6,9 @@
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/master_preferences_constants.h"
+#include "extensions/common/extension.h"
 
 BrandcodedDefaultSettings::BrandcodedDefaultSettings() {
 }

@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 
 using base::DictionaryValue;
 using base::ListValue;

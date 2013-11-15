@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "ui/gfx/rect.h"
 

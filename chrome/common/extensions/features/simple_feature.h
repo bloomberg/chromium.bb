@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/manifest.h"
 

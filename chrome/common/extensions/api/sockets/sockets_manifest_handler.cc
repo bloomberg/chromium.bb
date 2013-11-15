@@ -6,7 +6,7 @@
 
 #include "chrome/common/extensions/api/sockets/sockets_manifest_data.h"
 #include "chrome/common/extensions/api/sockets/sockets_manifest_permission.h"
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 
 namespace extensions {

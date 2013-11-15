@@ -17,8 +17,8 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/app_runtime.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/extension.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)

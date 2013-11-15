@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_PERMISSIONS_DATA_H_
-#define CHROME_COMMON_EXTENSIONS_PERMISSIONS_PERMISSIONS_DATA_H_
+#ifndef EXTENSIONS_COMMON_PERMISSIONS_PERMISSIONS_DATA_H_
+#define EXTENSIONS_COMMON_PERMISSIONS_PERMISSIONS_DATA_H_
 
 #include <map>
 #include <vector>
@@ -215,4 +215,4 @@ class PermissionsData {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_PERMISSIONS_PERMISSIONS_DATA_H_
+#endif  // EXTENSIONS_COMMON_PERMISSIONS_PERMISSIONS_DATA_H_

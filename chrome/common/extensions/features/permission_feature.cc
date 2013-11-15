@@ -4,8 +4,8 @@
 
 #include "chrome/common/extensions/features/permission_feature.h"
 
-#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 

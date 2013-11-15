@@ -9,10 +9,10 @@ include_rules = [
   #
   # TODO(benwells): Remove these. http://crbug.com/162530
   "+chrome/common/extensions/api/generated_schemas.h",
-  "+chrome/common/extensions/extension.h",
-  "+chrome/common/extensions/permissions/permissions_data.h",
+  "+grit/chromium_strings.h",
   "+grit/common_resources.h",
   "+grit/extensions_api_resources.h",
+  "+grit/theme_resources.h",
   # TODO(jamescook): Extract extensions-related strings from this file.
   "+grit/generated_resources.h",
 ]

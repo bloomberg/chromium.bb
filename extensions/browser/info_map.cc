@@ -4,10 +4,10 @@
 
 #include "extensions/browser/info_map.h"
 
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 
 using content::BrowserThread;
