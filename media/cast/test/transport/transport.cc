@@ -154,13 +154,15 @@ void Transport::StopReceiving() {
 
 void Transport::SetLocalReceiver(PacketReceiver* packet_receiver,
                                  std::string ip_address,
+                                 std::string local_ip_address,
                                  int port) {
-  net::IPEndPoint bind_address;
+  net::IPEndPoint bind_address, local_bind_address;
   CreateUDPAddress(ip_address, port, &bind_address);
+  CreateUDPAddress(local_ip_address, port, &local_bind_address);
   local_udp_transport_data_->set_packet_receiver(packet_receiver);
   udp_socket_->AllowAddressReuse();
   udp_socket_->SetMulticastLoopbackMode(true);
-  udp_socket_->Listen(bind_address);
+  udp_socket_->Listen(local_bind_address);
 
   // Start listening once receiver has been set.
   local_udp_transport_data_->ListenTo(bind_address);

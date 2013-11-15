@@ -29,6 +29,7 @@ class Transport {
   // Will start listening immediately.
   void SetLocalReceiver(PacketReceiver* packet_receiver,
                         std::string ip_address,
+                        std::string local_ip_address,
                         int port);
 
   // Specifies the destination port and IP address.

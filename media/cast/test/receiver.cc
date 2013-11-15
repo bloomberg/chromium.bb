@@ -60,8 +60,8 @@ void GetPorts(int* tx_port, int* rx_port) {
   *rx_port = rx_input.GetIntInput();
 }
 
-std::string GetIpAddress() {
- test::InputBuilder input("Enter destination IP.",DEFAULT_SEND_IP,
+std::string GetIpAddress(const std::string display_text) {
+ test::InputBuilder input(display_text, DEFAULT_SEND_IP,
       INT_MIN, INT_MAX);
   std::string ip_address = input.GetStringInput();
   // Ensure correct form:
@@ -226,8 +226,10 @@ int main(int argc, char** argv) {
 
   int send_to_port, receive_port;
   media::cast::GetPorts(&send_to_port, &receive_port);
-  std::string ip_address = media::cast::GetIpAddress();
-  transport->SetLocalReceiver(packet_receiver, ip_address, receive_port);
+  std::string ip_address = media::cast::GetIpAddress("Enter destination IP.");
+  std::string local_ip_address = media::cast::GetIpAddress("Enter local IP.");
+  transport->SetLocalReceiver(packet_receiver, ip_address, local_ip_address,
+                              receive_port);
   transport->SetSendDestination(ip_address, send_to_port);
 
   media::cast::ReceiveProcess receive_process(cast_environment, frame_receiver);
