@@ -28,6 +28,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 using ::testing::AllOf;
 using ::testing::Contains;
 using ::testing::Not;
@@ -269,6 +273,14 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, TestClassification) {
 }
 
 IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, DisableDetection) {
+#if defined(OS_MACOSX)
+  if (base::mac::IsOSMountainLionOrLater()) {
+    // This test flakes on 10.8 only for an unknown reason.
+    // http://crbug.com/316709
+    return;
+  }
+#endif
+
   // No scorer yet, so the classifier is not ready.
   EXPECT_FALSE(classifier_->is_ready());
 
