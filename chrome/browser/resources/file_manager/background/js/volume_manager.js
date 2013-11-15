@@ -467,11 +467,12 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     }
     var requestKey = this.makeRequestKey_('unmount', mountPath);
     var requested = requestKey in this.requests_;
-    if (event.status === 'success' && !requested &&
-        this.volumeInfoList.find(mountPath)) {
+    var volumeInfo = this.volumeInfoList.find(mountPath);
+    if (event.status === 'success' && !requested && volumeInfo) {
       console.warn('Mounted volume without a request: ', mountPath);
       var e = new Event('externally-unmounted');
       e.mountPath = mountPath;
+      e.volumeType = volumeInfo.volumeType;
       this.dispatchEvent(e);
     }
     this.finishRequest_(requestKey, status);
