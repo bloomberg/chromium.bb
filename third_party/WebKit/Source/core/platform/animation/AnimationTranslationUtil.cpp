@@ -60,12 +60,9 @@ using namespace blink;
 
 namespace WebCore {
 
-PassOwnPtr<WebTransformOperations> toWebTransformOperations(const TransformOperations& transformOperations, const FloatSize& boxSize)
+void toWebTransformOperations(const TransformOperations& transformOperations, const FloatSize& boxSize, WebTransformOperations* webTransformOperations)
 {
     // We need to do a deep copy the transformOperations may contain ref pointers to TransformOperation objects.
-    OwnPtr<WebTransformOperations> webTransformOperations = adoptPtr(Platform::current()->compositorSupport()->createTransformOperations());
-    if (!webTransformOperations)
-        return nullptr;
     for (size_t j = 0; j < transformOperations.size(); ++j) {
         switch (transformOperations.operations()[j]->type()) {
         case TransformOperation::ScaleX:
@@ -132,8 +129,6 @@ PassOwnPtr<WebTransformOperations> toWebTransformOperations(const TransformOpera
             break;
         } // switch
     } // for each operation
-
-    return webTransformOperations.release();
 }
 
 template <class Value, class Keyframe, class Curve>
@@ -154,13 +149,15 @@ template <>
 bool appendKeyframeWithStandardTimingFunction<TransformAnimationValue, WebTransformKeyframe, WebTransformAnimationCurve>(WebTransformAnimationCurve* curve, double keyTime, const TransformAnimationValue* value, const TransformAnimationValue* lastValue, blink::WebAnimationCurve::TimingFunctionType timingFunctionType, const FloatSize& boxSize)
 {
     bool canBlend = !lastValue;
-    OwnPtr<WebTransformOperations> operations(toWebTransformOperations(*value->value(), boxSize));
+    OwnPtr<WebTransformOperations> operations = adoptPtr(Platform::current()->compositorSupport()->createTransformOperations());
     if (!operations)
         return false;
+    toWebTransformOperations(*value->value(), boxSize, operations.get());
     if (!canBlend) {
-        OwnPtr<WebTransformOperations> lastOperations(toWebTransformOperations(*lastValue->value(), boxSize));
+        OwnPtr<WebTransformOperations> lastOperations = adoptPtr(Platform::current()->compositorSupport()->createTransformOperations());
         if (!lastOperations)
             return false;
+        toWebTransformOperations(*lastValue->value(), boxSize, lastOperations.get());
         canBlend = lastOperations->canBlendWith(*operations);
     }
     if (canBlend) {
@@ -174,13 +171,15 @@ template <>
 bool appendKeyframeWithCustomBezierTimingFunction<TransformAnimationValue, WebTransformKeyframe, WebTransformAnimationCurve>(WebTransformAnimationCurve* curve, double keyTime, const TransformAnimationValue* value, const TransformAnimationValue* lastValue, double x1, double y1, double x2, double y2, const FloatSize& boxSize)
 {
     bool canBlend = !lastValue;
-    OwnPtr<WebTransformOperations> operations(toWebTransformOperations(*value->value(), boxSize));
+    OwnPtr<WebTransformOperations> operations = adoptPtr(Platform::current()->compositorSupport()->createTransformOperations());
     if (!operations)
         return false;
+    toWebTransformOperations(*value->value(), boxSize, operations.get());
     if (!canBlend) {
-        OwnPtr<WebTransformOperations> lastOperations(toWebTransformOperations(*lastValue->value(), boxSize));
+        OwnPtr<WebTransformOperations> lastOperations = adoptPtr(Platform::current()->compositorSupport()->createTransformOperations());
         if (!lastOperations)
             return false;
+        toWebTransformOperations(*lastValue->value(), boxSize, lastOperations.get());
         canBlend = lastOperations->canBlendWith(*operations);
     }
     if (canBlend) {
@@ -188,6 +187,14 @@ bool appendKeyframeWithCustomBezierTimingFunction<TransformAnimationValue, WebTr
         return true;
     }
     return false;
+}
+
+bool toWebFilterOperations(const FilterOperations& inOperations, WebFilterOperations* outOperations)
+{
+    SkiaImageFilterBuilder builder;
+    FilterOutsets outsets = inOperations.outsets();
+    builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
+    return builder.buildFilterOperations(inOperations, outOperations);
 }
 
 template <>
@@ -199,11 +206,8 @@ bool appendKeyframeWithStandardTimingFunction<FilterAnimationValue, WebFilterKey
     // progresses.
     if (value->value()->hasFilterThatMovesPixels())
         return false;
-    SkiaImageFilterBuilder builder;
     OwnPtr<WebFilterOperations> operations = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
-    FilterOutsets outsets = value->value()->outsets();
-    builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
-    if (!builder.buildFilterOperations(*value->value(), operations.get()))
+    if (!toWebFilterOperations(*(value->value()), operations.get()))
         return false;
     curve->add(WebFilterKeyframe(keyTime, operations.release()), timingFunctionType);
     return true;
@@ -218,11 +222,9 @@ bool appendKeyframeWithCustomBezierTimingFunction<FilterAnimationValue, WebFilte
     // progresses.
     if (value->value()->hasFilterThatMovesPixels())
         return false;
-    SkiaImageFilterBuilder builder;
+
     OwnPtr<WebFilterOperations> operations = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
-    FilterOutsets outsets = value->value()->outsets();
-    builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
-    if (!builder.buildFilterOperations(*value->value(), operations.get()))
+    if (!toWebFilterOperations(*(value->value()), operations.get()))
         return false;
     curve->add(WebFilterKeyframe(keyTime, operations.release()), x1, y1, x2, y2);
     return true;
@@ -310,6 +312,7 @@ PassOwnPtr<blink::WebAnimation> createWebAnimation(const KeyframeValueList& valu
             addedKeyframe = appendKeyframeWithCustomBezierTimingFunction<Value, Keyframe, Curve>(curve, keyTime, originalValue, lastOriginalValue, x1, y1, x2, y2, boxSize);
         else
             addedKeyframe = appendKeyframeWithStandardTimingFunction<Value, Keyframe, Curve>(curve, keyTime, originalValue, lastOriginalValue, timingFunctionType, boxSize);
+
         if (!addedKeyframe)
             return nullptr;
     }

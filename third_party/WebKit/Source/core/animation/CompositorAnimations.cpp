@@ -32,6 +32,7 @@
 #include "core/animation/CompositorAnimations.h"
 
 #include "core/animation/AnimatableDouble.h"
+#include "core/animation/AnimatableFilterOperations.h"
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/CompositorAnimationsImpl.h"
@@ -43,8 +44,12 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebAnimation.h"
 #include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebFilterAnimationCurve.h"
+#include "public/platform/WebFilterKeyframe.h"
 #include "public/platform/WebFloatAnimationCurve.h"
 #include "public/platform/WebFloatKeyframe.h"
+#include "public/platform/WebTransformAnimationCurve.h"
+#include "public/platform/WebTransformKeyframe.h"
 
 #include <algorithm>
 #include <cmath>
@@ -139,10 +144,12 @@ void CompositorAnimations::startCompositorAnimation(const Element& element, cons
     const KeyframeAnimationEffect& keyframeEffect = *toKeyframeAnimationEffect(&effect);
 
     RenderLayer* layer = toRenderBoxModelObject(element.renderer())->layer();
+    ASSERT(layer);
+    ASSERT(layer->renderBox());
 
     // FIXME: Should we check in some way if there is an animation already created?
     Vector<OwnPtr<blink::WebAnimation> > animations;
-    CompositorAnimationsImpl::getCompositorAnimations(timing, keyframeEffect, animations);
+    CompositorAnimationsImpl::getCompositorAnimations(timing, keyframeEffect, animations, layer->renderBox()->pixelSnappedBorderBoxRect().size());
     for (size_t i = 0; i < animations.size(); ++i) {
         startedAnimationIds.append(animations[i]->id());
         layer->compositedLayerMapping()->mainGraphicsLayer()->addAnimation(animations[i].release());
@@ -202,15 +209,24 @@ bool CompositorAnimationsImpl::isCandidateForCompositor(const Keyframe& keyframe
     // Only replace mode can be accelerated
     if (keyframe.composite() != AnimationEffect::CompositeReplace)
         return false;
-
     // Check all the properties can be accelerated
     const PropertySet properties = keyframe.properties(); // FIXME: properties creates a whole new PropertySet!
     for (PropertySet::const_iterator it = properties.begin(); it != properties.end(); ++it) {
         switch (*it) {
         case CSSPropertyOpacity:
-        case CSSPropertyWebkitFilter: // FIXME: What about CSSPropertyFilter?
         case CSSPropertyWebkitTransform:
             continue;
+        case CSSPropertyWebkitFilter: {
+            const FilterOperations& operations = toAnimatableFilterOperations(keyframe.propertyValue(CSSPropertyWebkitFilter))->operations();
+            if (operations.hasFilterThatMovesPixels())
+                return false;
+            for (size_t i = 0; i < operations.size(); i++) {
+                const FilterOperation& op = *operations.at(i);
+                if (op.type() == FilterOperation::VALIDATED_CUSTOM || op.type() == FilterOperation::CUSTOM)
+                    return false;
+            }
+            continue;
+        }
         default:
             return false;
         }
@@ -345,7 +361,7 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
 namespace {
 
 template<typename PlatformAnimationKeyframeType>
-static PassOwnPtr<PlatformAnimationKeyframeType> createPlatformKeyframe(double offset, const AnimatableValue&)
+static PassOwnPtr<PlatformAnimationKeyframeType> createPlatformKeyframe(double offset, const AnimatableValue&, const IntSize&)
 {
     // Only the specialized versions of this templated function (found in
     // the cpp file) should ever be called.
@@ -355,10 +371,31 @@ static PassOwnPtr<PlatformAnimationKeyframeType> createPlatformKeyframe(double o
 
 template<>
 PassOwnPtr<blink::WebFloatKeyframe> createPlatformKeyframe<blink::WebFloatKeyframe>(
-    double offset, const AnimatableValue& value)
+    double offset, const AnimatableValue& value, const IntSize&)
 {
     const AnimatableDouble* d = toAnimatableDouble(&value);
     return adoptPtr(new blink::WebFloatKeyframe(offset, d->toDouble()));
+}
+
+template<>
+PassOwnPtr<blink::WebTransformKeyframe> createPlatformKeyframe<blink::WebTransformKeyframe>(
+    double offset, const AnimatableValue& value, const IntSize& elementSize)
+{
+    const AnimatableTransform* t = toAnimatableTransform(&value);
+    blink::WebTransformOperations* ops = blink::Platform::current()->compositorSupport()->createTransformOperations();
+    toWebTransformOperations(t->transformOperations(), elementSize, ops);
+    return adoptPtr(new blink::WebTransformKeyframe(offset, adoptPtr(ops)));
+}
+
+template<>
+PassOwnPtr<blink::WebFilterKeyframe> createPlatformKeyframe<blink::WebFilterKeyframe>(
+    double offset, const AnimatableValue& value, const IntSize& elementSize)
+{
+    const AnimatableFilterOperations* f = toAnimatableFilterOperations(&value);
+    blink::WebFilterOperations* operations = blink::Platform::current()->compositorSupport()->createFilterOperations();
+    bool converted = toWebFilterOperations(f->operations(), operations);
+    ASSERT_UNUSED(converted, converted);
+    return adoptPtr(new blink::WebFilterKeyframe(offset, adoptPtr(operations)));
 }
 
 template<typename PlatformAnimationCurveType, typename PlatformAnimationKeyframeType>
@@ -419,7 +456,7 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
 } // namespace anoymous
 
 template<typename PlatformAnimationCurveType, typename PlatformAnimationKeyframeType>
-void CompositorAnimationsImpl::addKeyframesToCurve(PlatformAnimationCurveType& curve, const CompositorAnimationsKeyframeEffectHelper::KeyframeValues& values, const TimingFunction& timingFunction)
+void CompositorAnimationsImpl::addKeyframesToCurve(PlatformAnimationCurveType& curve, const CompositorAnimationsKeyframeEffectHelper::KeyframeValues& values, const TimingFunction& timingFunction, const IntSize& elementSize)
 {
     for (size_t i = 0; i < values.size(); i++) {
         const TimingFunction* keyframeTimingFunction = 0;
@@ -448,13 +485,13 @@ void CompositorAnimationsImpl::addKeyframesToCurve(PlatformAnimationCurveType& c
 
         ASSERT(!values[i].second->dependsOnUnderlyingValue());
         RefPtr<AnimatableValue> value = values[i].second->compositeOnto(0);
-        OwnPtr<PlatformAnimationKeyframeType> keyframe = createPlatformKeyframe<PlatformAnimationKeyframeType>(values[i].first, *value.get());
+        OwnPtr<PlatformAnimationKeyframeType> keyframe = createPlatformKeyframe<PlatformAnimationKeyframeType>(values[i].first, *value.get(), elementSize);
         addKeyframeWithTimingFunction(curve, *keyframe.get(), keyframeTimingFunction);
     }
 }
 
 void CompositorAnimationsImpl::getCompositorAnimations(
-    const Timing& timing, const KeyframeAnimationEffect& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
+    const Timing& timing, const KeyframeAnimationEffect& effect, Vector<OwnPtr<blink::WebAnimation> >& animations, const IntSize& elementSize)
 {
     CompositorTiming compositorTiming;
     bool timingValid = convertTimingForCompositor(timing, compositorTiming);
@@ -475,21 +512,23 @@ void CompositorAnimationsImpl::getCompositorAnimations(
         switch (properties->at(i)) {
         case CSSPropertyOpacity: {
             targetProperty = blink::WebAnimation::TargetPropertyOpacity;
-
-            OwnPtr<blink::WebFloatAnimationCurve> floatCurve = adoptPtr(blink::Platform::current()->compositorSupport()->createFloatAnimationCurve());
-            addKeyframesToCurve<blink::WebFloatAnimationCurve, blink::WebFloatKeyframe>(*floatCurve.get(), *values.get(), *timingFunction.get());
-            curve = floatCurve.release();
-
+            blink::WebFloatAnimationCurve* floatCurve = blink::Platform::current()->compositorSupport()->createFloatAnimationCurve();
+            addKeyframesToCurve<blink::WebFloatAnimationCurve, blink::WebFloatKeyframe>(*floatCurve, *values.get(), *timingFunction.get(), elementSize);
+            curve = adoptPtr(floatCurve);
             break;
         }
         case CSSPropertyWebkitFilter: {
             targetProperty = blink::WebAnimation::TargetPropertyFilter;
-            ASSERT_NOT_REACHED();
+            blink::WebFilterAnimationCurve* filterCurve = blink::Platform::current()->compositorSupport()->createFilterAnimationCurve();
+            addKeyframesToCurve<blink::WebFilterAnimationCurve, blink::WebFilterKeyframe>(*filterCurve, *values.get(), *timingFunction, elementSize);
+            curve = adoptPtr(filterCurve);
             break;
         }
         case CSSPropertyWebkitTransform: {
             targetProperty = blink::WebAnimation::TargetPropertyTransform;
-            ASSERT_NOT_REACHED();
+            blink::WebTransformAnimationCurve* transformCurve = blink::Platform::current()->compositorSupport()->createTransformAnimationCurve();
+            addKeyframesToCurve<blink::WebTransformAnimationCurve, blink::WebTransformKeyframe>(*transformCurve, *values.get(), *timingFunction.get(), elementSize);
+            curve = adoptPtr(transformCurve);
             break;
         }
         default:
@@ -498,8 +537,7 @@ void CompositorAnimationsImpl::getCompositorAnimations(
         }
         ASSERT(curve.get());
 
-        OwnPtr<blink::WebAnimation> animation = adoptPtr(
-            blink::Platform::current()->compositorSupport()->createAnimation(*curve, targetProperty));
+        OwnPtr<blink::WebAnimation> animation = adoptPtr(blink::Platform::current()->compositorSupport()->createAnimation(*curve, targetProperty));
 
         animation->setIterations(compositorTiming.adjustedIterationCount);
         animation->setTimeOffset(compositorTiming.scaledTimeOffset);

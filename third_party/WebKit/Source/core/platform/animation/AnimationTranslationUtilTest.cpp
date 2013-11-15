@@ -36,13 +36,47 @@
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "public/platform/WebAnimation.h"
+#include "public/platform/WebFilterOperations.h"
 #include "wtf/RefPtr.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 using namespace WebCore;
 using namespace blink;
 
 namespace {
+
+class WebTransformOperationsMock : public blink::WebTransformOperations {
+public:
+    MOCK_CONST_METHOD1(canBlendWith, bool(const WebTransformOperations&));
+    MOCK_METHOD3(appendTranslate, void(double, double, double));
+    MOCK_METHOD4(appendRotate, void(double, double, double, double));
+    MOCK_METHOD3(appendScale, void(double, double, double));
+    MOCK_METHOD2(appendSkew, void(double, double));
+    MOCK_METHOD1(appendPerspective, void(double));
+    MOCK_METHOD1(appendMatrix, void(const SkMatrix44&));
+    MOCK_METHOD0(appendIdentity, void());
+    MOCK_CONST_METHOD0(isIdentity, bool());
+};
+
+class WebFilterOperationsMock : public blink::WebFilterOperations {
+public:
+    MOCK_METHOD1(appendGrayscaleFilter, void(float));
+    MOCK_METHOD1(appendSepiaFilter, void(float));
+    MOCK_METHOD1(appendSaturateFilter, void(float));
+    MOCK_METHOD1(appendHueRotateFilter, void(float));
+    MOCK_METHOD1(appendInvertFilter, void(float));
+    MOCK_METHOD1(appendBrightnessFilter, void(float));
+    MOCK_METHOD1(appendContrastFilter, void(float));
+    MOCK_METHOD1(appendOpacityFilter, void(float));
+    MOCK_METHOD1(appendBlurFilter, void(float));
+    MOCK_METHOD3(appendDropShadowFilter, void(WebPoint, float, WebColor));
+    MOCK_METHOD1(appendColorMatrixFilter, void(SkScalar[20]));
+    MOCK_METHOD2(appendZoomFilter, void(float, int));
+    MOCK_METHOD1(appendSaturatingBrightnessFilter, void(float));
+    MOCK_METHOD1(appendReferenceFilter, void(SkImageFilter*));
+    MOCK_METHOD0(clear, void());
+};
 
 bool animationCanBeTranslated(const KeyframeValueList& values, CSSAnimationData* animation)
 {
@@ -277,6 +311,41 @@ TEST(AnimationTranslationUtilTest, createReversedAlternatingAnimation)
     animation->setIterationCount(2);
 
     EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
+}
+
+TEST(AnimationTranslationUtilTest, transformsWork)
+{
+    TransformOperations ops;
+    FloatSize box(100, 200);
+    WebTransformOperationsMock outOps;
+
+    EXPECT_CALL(outOps, appendTranslate(2, 0, 0));
+    EXPECT_CALL(outOps, appendTranslate(2, 60, 0));
+    EXPECT_CALL(outOps, appendRotate(0.1, 0.2, 0.3, 200000.4));
+    EXPECT_CALL(outOps, appendScale(50.2, 100, -4));
+
+    ops.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TranslateX));
+    ops.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Percent), Length(30, WebCore::Percent), TransformOperation::Translate));
+    ops.operations().append(RotateTransformOperation::create(0.1, 0.2, 0.3, 200000.4, TransformOperation::Rotate3D));
+    ops.operations().append(ScaleTransformOperation::create(50.2, 100, -4, TransformOperation::Scale3D));
+    toWebTransformOperations(ops, box, &outOps);
+}
+
+TEST(AnimationTranslationUtilTest, filtersWork)
+{
+    FilterOperations ops;
+    WebFilterOperationsMock outOps;
+
+    EXPECT_CALL(outOps, appendSaturateFilter(0.5));
+    EXPECT_CALL(outOps, appendGrayscaleFilter(0.2f));
+    EXPECT_CALL(outOps, appendSepiaFilter(0.8f));
+    EXPECT_CALL(outOps, appendOpacityFilter(0.1f));
+
+    ops.operations().append(BasicColorMatrixFilterOperation::create(0.5, FilterOperation::SATURATE));
+    ops.operations().append(BasicColorMatrixFilterOperation::create(0.2, FilterOperation::GRAYSCALE));
+    ops.operations().append(BasicColorMatrixFilterOperation::create(0.8, FilterOperation::SEPIA));
+    ops.operations().append(BasicColorMatrixFilterOperation::create(0.1, FilterOperation::OPACITY));
+    toWebFilterOperations(ops, &outOps);
 }
 
 }

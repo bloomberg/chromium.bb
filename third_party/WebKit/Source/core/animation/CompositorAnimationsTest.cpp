@@ -33,6 +33,7 @@
 #include "core/animation/CompositorAnimations.h"
 
 #include "core/animation/AnimatableDouble.h"
+#include "core/animation/AnimatableFilterOperations.h"
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableValueTestHelper.h"
 #include "core/animation/CompositorAnimationsImpl.h"
@@ -114,10 +115,12 @@ public:
     {
         return CompositorAnimationsImpl::isCandidateForCompositor(k);
     }
-    void getCompositorAnimations(Timing& timing, KeyframeAnimationEffect& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
+    void getCompositorAnimations(Timing& timing, KeyframeAnimationEffect& effect, Vector<OwnPtr<blink::WebAnimation> >& animations, const IntSize& size = empty)
     {
-        return CompositorAnimationsImpl::getCompositorAnimations(timing, effect, animations);
+        return CompositorAnimationsImpl::getCompositorAnimations(timing, effect, animations, size);
     }
+
+    static IntSize empty;
 
     // -------------------------------------------------------------------
 
@@ -206,6 +209,28 @@ public:
 
 };
 
+IntSize CoreAnimationCompositorAnimationsTest::empty;
+
+class CustomFilterOperationMock : public FilterOperation {
+public:
+    virtual bool operator==(const FilterOperation&) const OVERRIDE FINAL {
+        ASSERT_NOT_REACHED();
+        return false;
+    }
+
+    MOCK_CONST_METHOD2(blend, PassRefPtr<FilterOperation>(const FilterOperation*, double));
+
+    static PassRefPtr<CustomFilterOperationMock> create()
+    {
+        return adoptRef(new CustomFilterOperationMock());
+    }
+
+    CustomFilterOperationMock()
+        : FilterOperation(FilterOperation::CUSTOM)
+    {
+    }
+};
+
 // -----------------------------------------------------------------------
 // -----------------------------------------------------------------------
 
@@ -260,6 +285,18 @@ TEST_F(CoreAnimationCompositorAnimationsTest, isCandidateForCompositorKeyframeMu
     keyframeBadMultiple2ID->setPropertyValue(CSSPropertyWidth, AnimatableDouble::create(10.0).get());
     EXPECT_FALSE(isCandidateForCompositor(*keyframeBadMultiple2ID.get()));
     EXPECT_GT(HashFunctions::hash(CSSPropertyWebkitTransform), HashFunctions::hash(CSSPropertyWidth));
+}
+
+TEST_F(CoreAnimationCompositorAnimationsTest, isNotCandidateForCompositorCustomFilter)
+{
+    FilterOperations ops;
+    ops.operations().append(BasicColorMatrixFilterOperation::create(0.5, FilterOperation::SATURATE));
+    RefPtr<Keyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitFilter, AnimatableFilterOperations::create(ops).get());
+    EXPECT_TRUE(isCandidateForCompositor(*goodKeyframe.get()));
+
+    ops.operations().append(CustomFilterOperationMock::create());
+    RefPtr<Keyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyFilter, AnimatableFilterOperations::create(ops).get());
+    EXPECT_FALSE(isCandidateForCompositor(*badKeyframe.get()));
 }
 
 TEST_F(CoreAnimationCompositorAnimationsTest, isCandidateForCompositorKeyframeEffectGoodSingleFrame)
