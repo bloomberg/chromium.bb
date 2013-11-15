@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/browser.h"
@@ -33,14 +34,8 @@ class WebContents;
 // derived test class additional Instant-related functionality.
 class InstantTestBase {
  protected:
-  InstantTestBase()
-      : https_test_server_(
-            net::SpawnedTestServer::TYPE_HTTPS,
-            net::BaseTestServer::SSLOptions(),
-            base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))),
-        init_suggestions_url_(false) {
-  }
-  virtual ~InstantTestBase() {}
+  InstantTestBase();
+  virtual ~InstantTestBase();
 
  protected:
   void SetupInstant(Browser* browser);

@@ -20,11 +20,30 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/variations/entropy_provider.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 
+InstantUnitTestBase::InstantUnitTestBase() {
+  field_trial_list_.reset(new base::FieldTrialList(
+      new metrics::SHA1EntropyProvider("42")));
+}
+
+InstantUnitTestBase::~InstantUnitTestBase() {
+}
+
 void InstantUnitTestBase::SetUp() {
+  SetUpHelper();
+}
+
+void InstantUnitTestBase::SetUpWithoutCacheableNTP() {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group1 use_cacheable_ntp:0"));
+  SetUpHelper();
+}
+
+void InstantUnitTestBase::SetUpHelper() {
   chrome::EnableInstantExtendedAPIForTesting();
   BrowserWithTestWindowTest::SetUp();
 

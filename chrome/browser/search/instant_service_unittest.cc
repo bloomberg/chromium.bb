@@ -52,9 +52,7 @@ class MockWebContentsObserver : public content::WebContentsObserver {
 class InstantServiceTest : public InstantUnitTestBase {
  protected:
   virtual void SetUp() OVERRIDE {
-    InstantUnitTestBase::SetUp();
-    field_trial_list_.reset(new base::FieldTrialList(
-        new metrics::SHA1EntropyProvider("42")));
+    InstantUnitTestBase::SetUpWithoutCacheableNTP();
 
     instant_service_observer_.reset(new MockInstantServiceObserver());
     instant_service_->AddObserver(instant_service_observer_.get());
@@ -72,7 +70,6 @@ class InstantServiceTest : public InstantUnitTestBase {
 
   scoped_ptr<MockInstantServiceObserver> instant_service_observer_;
   scoped_ptr<MockWebContentsObserver> instant_ntp_contents_observer_;
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 TEST_F(InstantServiceTest, DispatchDefaultSearchProviderChanged) {
@@ -105,7 +102,7 @@ TEST_F(InstantServiceTest, DispatchGoogleURLUpdated) {
 }
 
 TEST_F(InstantServiceTest, SendsSearchURLsToRenderer) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
       "Group1 use_cacheable_ntp:1"));
   scoped_ptr<content::MockRenderProcessHost> rph(
       new content::MockRenderProcessHost(profile()));

@@ -20,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/variations/entropy_provider.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -36,8 +37,23 @@ std::string WrapScript(const std::string& script) {
 
 // InstantTestBase -----------------------------------------------------------
 
+InstantTestBase::InstantTestBase()
+    : https_test_server_(
+          net::SpawnedTestServer::TYPE_HTTPS,
+          net::BaseTestServer::SSLOptions(),
+          base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))),
+      init_suggestions_url_(false) {
+}
+
+InstantTestBase::~InstantTestBase() {}
+
 void InstantTestBase::SetupInstant(Browser* browser) {
   browser_ = browser;
+
+  // TODO(samarth): update tests to work with cacheable NTP and remove this.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group1 use_cacheable_ntp:0"));
+
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(browser_->profile());
   ui_test_utils::WaitForTemplateURLServiceToLoad(service);

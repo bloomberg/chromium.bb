@@ -48,13 +48,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LocalNTPJavascriptTest) {
   EXPECT_TRUE(success);
 }
 
-// Flaky on Linux Tests bot.
-#if defined(OS_LINUX)
-#define MAYBE_NTPRespectsBrowserLanguageSetting DISABLED_NTPRespectsBrowserLanguageSetting
-#else
-#define MAYBE_NTPRespectsBrowserLanguageSetting NTPRespectsBrowserLanguageSetting
-#endif
-IN_PROC_BROWSER_TEST_F(LocalNTPTest, MAYBE_NTPRespectsBrowserLanguageSetting) {
+// Flaky.
+IN_PROC_BROWSER_TEST_F(LocalNTPTest,
+                       DISABLED_NTPRespectsBrowserLanguageSetting) {
   // Make sure the default language is not French.
   std::string default_locale = g_browser_process->GetApplicationLocale();
   EXPECT_NE("fr", default_locale);
