@@ -90,14 +90,7 @@ BOOL CALLBACK EnumerateChildren(HWND hwnd, LPARAM l_param) {
 IN_PROC_BROWSER_TEST_F(StarViewTestNoDWM, WindowedNPAPIPluginHidden) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
                                                true);
-
-  // First switch to a new tab and back, to also test a scenario where we
-  // stopped watching the root window.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("about:blank"), NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
-
+  LOG(ERROR) << "1";
   // First load the page and wait for the NPAPI plugin's window to display.
   string16 expected_title(ASCIIToUTF16("ready"));
   content::WebContents* tab =
@@ -108,13 +101,16 @@ IN_PROC_BROWSER_TEST_F(StarViewTestNoDWM, WindowedNPAPIPluginHidden) {
       base::FilePath().AppendASCII("printing"),
       base::FilePath().AppendASCII("npapi_plugin.html"));
   ui_test_utils::NavigateToURL(browser(), url);
+  LOG(ERROR) << "2";
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  LOG(ERROR) << "3";
 
   // Now get the region of the plugin before the star view is shown.
   HWND hwnd = tab->GetView()->GetNativeView()->GetDispatcher()->host()->
       GetAcceleratedWidget();
   HWND child = NULL;
   EnumChildWindows(hwnd, EnumerateChildren,reinterpret_cast<LPARAM>(&child));
+  LOG(ERROR) << "4";
 
   RECT region_before, region_after;
   int result = GetWindowRgnBox(child, &region_before);
@@ -128,13 +124,16 @@ IN_PROC_BROWSER_TEST_F(StarViewTestNoDWM, WindowedNPAPIPluginHidden) {
 
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
+  LOG(ERROR) << "5";
   // Verify that clicking once shows the bookmark bubble.
   ui_test_utils::MoveMouseToCenterAndPress(
       star_view,
       ui_controls::LEFT,
       ui_controls::DOWN | ui_controls::UP,
       runner->QuitClosure());
+  LOG(ERROR) << "6";
   runner->Run();
+  LOG(ERROR) << "7";
 
   EXPECT_TRUE(BookmarkBubbleView::IsShowing());
 
