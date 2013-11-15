@@ -50,6 +50,8 @@ public:
         , m_url(url)
         , m_startPosition(startPosition)
     {
+        if (!m_url.isEmpty())
+            m_url.removeFragmentIdentifier();
     }
 
     // We lose the encoding information from ScriptResource.
@@ -57,7 +59,6 @@ public:
     ScriptSourceCode(ScriptResource* cs)
         : m_source(cs->script())
         , m_resource(cs)
-        , m_url(cs->url())
         , m_startPosition(TextPosition::minimumPosition())
     {
     }
@@ -68,8 +69,11 @@ public:
     ScriptResource* resource() const { return m_resource.get(); }
     const KURL& url() const
     {
-        if (m_resource)
-            return m_resource->response().url();
+        if (m_url.isEmpty() && m_resource) {
+            m_url = m_resource->response().url();
+            if (!m_url.isEmpty())
+                m_url.removeFragmentIdentifier();
+        }
         return m_url;
     }
     int startLine() const { return m_startPosition.m_line.oneBasedInt(); }
@@ -78,7 +82,7 @@ public:
 private:
     String m_source;
     ResourcePtr<ScriptResource> m_resource;
-    KURL m_url;
+    mutable KURL m_url;
     TextPosition m_startPosition;
 };
 
