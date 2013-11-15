@@ -116,8 +116,11 @@ goto :END
 
 
 :PYTHON_CHECK
+:: Note: while the variable talks about 2.7.5, we are now installing 2.7.6.
+:: Sorry for the confusion. :(
 if "%DEPOT_TOOLS_PYTHON_275%" == "0" goto :PY26_CHECK
-goto :PY275_CHECK
+if "%DEPOT_TOOLS_PYTHON_27%" == "0" goto :PY26_CHECK
+goto :PY27_CHECK
 
 
 :PY26_CHECK
@@ -127,27 +130,27 @@ set ERRORLEVEL=0
 goto :END
 
 
-:PY275_CHECK
-if not exist "%WIN_TOOLS_ROOT_DIR%\python275_bin" goto :PY275_INSTALL
-if not exist "%WIN_TOOLS_ROOT_DIR%\python.bat" goto :PY275_INSTALL
+:PY27_CHECK
+if not exist "%WIN_TOOLS_ROOT_DIR%\python276_bin" goto :PY27_INSTALL
+if not exist "%WIN_TOOLS_ROOT_DIR%\python.bat" goto :PY27_INSTALL
 set ERRORLEVEL=0
 goto :END
 
 
-:PY275_INSTALL
-echo Installing python 2.7.5...
+:PY27_INSTALL
+echo Installing python 2.7.6...
 :: Cleanup python directory if it was existing.
-if exist "%WIN_TOOLS_ROOT_DIR%\python275_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python275_bin"
-if exist "%ZIP_DIR%\python275.zip" del "%ZIP_DIR%\python275.zip"
-echo Fetching from %WIN_TOOLS_ROOT_URL%/third_party/python275_bin.zip
-cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/python275_bin.zip "%ZIP_DIR%\python275_bin.zip"
+if exist "%WIN_TOOLS_ROOT_DIR%\python276_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python276_bin"
+if exist "%ZIP_DIR%\python276.zip" del "%ZIP_DIR%\python276.zip"
+echo Fetching from %WIN_TOOLS_ROOT_URL%/third_party/python276_bin.zip
+cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/python276_bin.zip "%ZIP_DIR%\python276_bin.zip"
 if errorlevel 1 goto :PYTHON_FAIL
-:: Will create python275_bin\...
-cscript //nologo //e:jscript "%~dp0unzip.js" "%ZIP_DIR%\python275_bin.zip" "%WIN_TOOLS_ROOT_DIR%"
+:: Will create python276_bin\...
+cscript //nologo //e:jscript "%~dp0unzip.js" "%ZIP_DIR%\python276_bin.zip" "%WIN_TOOLS_ROOT_DIR%"
 :: Create the batch files.
-call copy /y "%~dp0python275.new.bat" "%WIN_TOOLS_ROOT_DIR%\python.bat" 1>nul
+call copy /y "%~dp0python276.new.bat" "%WIN_TOOLS_ROOT_DIR%\python.bat" 1>nul
 call copy /y "%~dp0pylint.new.bat" "%WIN_TOOLS_ROOT_DIR%\pylint.bat" 1>nul
-del "%ZIP_DIR%\python275_bin.zip"
+del "%ZIP_DIR%\python276_bin.zip"
 set ERRORLEVEL=0
 goto :END
 

@@ -4,5 +4,5 @@
 :: found in the LICENSE file.
 
 setlocal
-set PATH=%~dp0python275_bin;%~dp0python275_bin\Scripts;%PATH%
-"%~dp0python275_bin\python.exe" %*
+set PATH=%~dp0python276_bin;%~dp0python276_bin\Scripts;%PATH%
+"%~dp0python276_bin\python.exe" %*
