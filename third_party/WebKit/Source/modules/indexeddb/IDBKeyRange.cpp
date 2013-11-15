@@ -34,12 +34,6 @@
 
 namespace WebCore {
 
-PassRefPtr<IDBKeyRange> IDBKeyRange::create(PassRefPtr<IDBKey> prpKey)
-{
-    RefPtr<IDBKey> key = prpKey;
-    return adoptRef(new IDBKeyRange(key, key, LowerBoundClosed, UpperBoundClosed));
-}
-
 PassRefPtr<IDBKeyRange> IDBKeyRange::fromScriptValue(ExecutionContext* context, const ScriptValue& value, ExceptionState& exceptionState)
 {
     DOMRequestState requestState(context);
@@ -147,16 +141,6 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::bound(ExecutionContext* context, const Scri
     }
 
     return IDBKeyRange::create(lower, upper, lowerOpen ? LowerBoundOpen : LowerBoundClosed, upperOpen ? UpperBoundOpen : UpperBoundClosed);
-}
-
-bool IDBKeyRange::isOnlyKey() const
-{
-    if (m_lowerType != LowerBoundClosed || m_upperType != UpperBoundClosed)
-        return false;
-
-    ASSERT(m_lower);
-    ASSERT(m_upper);
-    return m_lower->isEqual(m_upper.get());
 }
 
 } // namespace WebCore

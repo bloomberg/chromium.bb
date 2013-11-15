@@ -59,8 +59,6 @@ public:
     static const AtomicString& modeReadOnly();
     static const AtomicString& modeReadWrite();
     static const AtomicString& modeVersionChange();
-    static const AtomicString& modeReadOnlyLegacy();
-    static const AtomicString& modeReadWriteLegacy();
 
     static IndexedDB::TransactionMode stringToMode(const String&, ExceptionState&);
     static const AtomicString& modeToString(IndexedDB::TransactionMode);

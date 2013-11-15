@@ -51,8 +51,6 @@ public:
     {
         return adoptRef(new IDBKeyRange(lower, upper, lowerType, upperType));
     }
-    static PassRefPtr<IDBKeyRange> create(PassRefPtr<IDBKey> prpKey);
-
     // Null if the script value is null or undefined, the range if it is one, otherwise tries to convert to a key and throws if it fails.
     static PassRefPtr<IDBKeyRange> fromScriptValue(ExecutionContext*, const ScriptValue&, ExceptionState&);
 
@@ -73,8 +71,6 @@ public:
     static PassRefPtr<IDBKeyRange> bound(ExecutionContext*, const ScriptValue& lower, const ScriptValue& upper, bool lowerOpen, bool upperOpen, ExceptionState&);
 
     static PassRefPtr<IDBKeyRange> only(PassRefPtr<IDBKey> value, ExceptionState&);
-
-    bool isOnlyKey() const;
 
 private:
     IDBKeyRange(PassRefPtr<IDBKey> lower, PassRefPtr<IDBKey> upper, LowerBoundType lowerType, UpperBoundType upperType);

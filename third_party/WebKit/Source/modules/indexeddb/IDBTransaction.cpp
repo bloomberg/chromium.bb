@@ -74,19 +74,6 @@ const AtomicString& IDBTransaction::modeVersionChange()
     return versionchange;
 }
 
-const AtomicString& IDBTransaction::modeReadOnlyLegacy()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, readonly, ("0", AtomicString::ConstructFromLiteral));
-    return readonly;
-}
-
-const AtomicString& IDBTransaction::modeReadWriteLegacy()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, readwrite, ("1", AtomicString::ConstructFromLiteral));
-    return readwrite;
-}
-
-
 IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, IndexedDB::TransactionMode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
     : ActiveDOMObject(context)
     , m_id(id)

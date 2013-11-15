@@ -53,11 +53,9 @@ public:
     // Implement the IDL
     const String& name() const { return m_metadata.name; }
     PassRefPtr<IDBObjectStore> objectStore() const { return m_objectStore; }
-    PassRefPtr<IDBAny> keyPathAny() const { return IDBAny::create(m_metadata.keyPath); }
-    const IDBKeyPath& keyPath() const { return m_metadata.keyPath; }
+    PassRefPtr<IDBAny> keyPath() const { return IDBAny::create(m_metadata.keyPath); }
     bool unique() const { return m_metadata.unique; }
     bool multiEntry() const { return m_metadata.multiEntry; }
-    int64_t id() const { return m_metadata.id; }
 
     PassRefPtr<IDBRequest> openCursor(ExecutionContext*, const ScriptValue& key, const String& direction, ExceptionState&);
     PassRefPtr<IDBRequest> openKeyCursor(ExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);

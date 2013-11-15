@@ -61,7 +61,6 @@ public:
     {
         KeyArray result;
 
-        size_t sizeEstimate = 0;
         for (size_t i = 0; i < array.size(); i++) {
             if (!array[i]->isValid())
                 continue;
@@ -75,21 +74,16 @@ public:
             }
             if (!skip) {
                 result.append(array[i]);
-                sizeEstimate += array[i]->m_sizeEstimate;
             }
         }
-        RefPtr<IDBKey> idbKey = adoptRef(new IDBKey(result, sizeEstimate));
+        RefPtr<IDBKey> idbKey = adoptRef(new IDBKey(result));
         ASSERT(idbKey->isValid());
         return idbKey.release();
     }
 
     static PassRefPtr<IDBKey> createArray(const KeyArray& array)
     {
-        size_t sizeEstimate = 0;
-        for (size_t i = 0; i < array.size(); ++i)
-            sizeEstimate += array[i]->m_sizeEstimate;
-
-        return adoptRef(new IDBKey(array, sizeEstimate));
+        return adoptRef(new IDBKey(array));
     }
 
     ~IDBKey();
@@ -135,31 +129,19 @@ public:
     bool isLessThan(const IDBKey* other) const;
     bool isEqual(const IDBKey* other) const;
 
-    size_t sizeEstimate() const { return m_sizeEstimate; }
-
-    static int compareTypes(Type a, Type b)
-    {
-        return b - a;
-    }
-
     using RefCounted<IDBKey>::ref;
     using RefCounted<IDBKey>::deref;
 
 private:
-    IDBKey() : m_type(InvalidType), m_number(0), m_sizeEstimate(OverheadSize) { }
-    IDBKey(Type type, double number) : m_type(type), m_number(number), m_sizeEstimate(OverheadSize + sizeof(double)) { }
-    explicit IDBKey(const String& value) : m_type(StringType), m_string(value), m_number(0), m_sizeEstimate(OverheadSize + value.length() * sizeof(UChar)) { }
-    IDBKey(const KeyArray& keyArray, size_t arraySize) : m_type(ArrayType), m_array(keyArray), m_number(0), m_sizeEstimate(OverheadSize + arraySize) { }
+    IDBKey() : m_type(InvalidType), m_number(0) { }
+    IDBKey(Type type, double number) : m_type(type), m_number(number) { }
+    explicit IDBKey(const String& value) : m_type(StringType), m_string(value), m_number(0) { }
+    explicit IDBKey(const KeyArray& keyArray) : m_type(ArrayType), m_array(keyArray), m_number(0) { }
 
     const Type m_type;
     const KeyArray m_array;
     const String m_string;
     const double m_number;
-
-    const size_t m_sizeEstimate;
-
-    // Very rough estimate of minimum key size overhead.
-    enum { OverheadSize = 16 };
 };
 
 } // namespace WebCore
