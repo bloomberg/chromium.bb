@@ -52,15 +52,13 @@ Player::Player(DocumentTimeline& timeline, TimedItem* content)
     : m_pauseStartTime(nullValue())
     , m_playbackRate(1)
     , m_timeDrift(0)
-    , m_startTime(effectiveTime(timeline.currentTime()))
+    , m_startTime(nullValue())
     , m_content(content)
     , m_timeline(timeline)
     , m_isPausedForTesting(false)
 {
-    ASSERT(m_startTime >= 0);
     if (m_content)
         m_content->attach(this);
-    update();
 }
 
 Player::~Player()
@@ -69,9 +67,19 @@ Player::~Player()
         m_content->detach();
 }
 
+void Player::setStartTime(double startTime)
+{
+    ASSERT(!isNull(startTime));
+    ASSERT(!hasStartTime());
+    m_startTime = startTime;
+    update();
+}
+
 double Player::currentTimeBeforeDrift() const
 {
-    return (effectiveTime(m_timeline.currentTime()) - m_startTime) * m_playbackRate;
+    if (isNull(m_startTime))
+        return 0;
+    return (effectiveTime(m_timeline.currentTime()) - startTime()) * m_playbackRate;
 }
 
 double Player::pausedTimeDrift() const
