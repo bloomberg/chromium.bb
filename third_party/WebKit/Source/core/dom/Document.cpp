@@ -376,13 +376,8 @@ private:
 Document::Document(const DocumentInit& initializer, DocumentClassFlags documentClasses)
     : ContainerNode(0, CreateDocument)
     , TreeScope(this)
-    , m_styleResolverThrowawayTimer(this, &Document::styleResolverThrowawayTimerFired)
-    , m_styleResolverAccessCount(0)
-    , m_lastStyleResolverAccessCount(0)
-    , m_didCalculateStyleResolver(false)
     , m_hasNodesWithPlaceholderStyle(false)
     , m_needsNotifyRemoveAllPendingStylesheet(false)
-    , m_ignorePendingStylesheets(false)
     , m_evaluateMediaQueriesOnStyleRecalc(false)
     , m_pendingSheetLayout(NoLayoutWithPendingSheets)
     , m_frame(initializer.frame())
@@ -527,12 +522,10 @@ Document::~Document()
         m_import = 0;
     }
 
-    m_styleEngine.clear();
+    m_styleEngine.clear(); // We need to destory CSSFontSelector before destroying m_fetcher.
 
     if (m_elemSheet)
         m_elemSheet->clearOwnerNode();
-
-    clearStyleResolver(); // We need to destory CSSFontSelector before destroying m_fetcher.
 
     // It's possible for multiple Documents to end up referencing the same ResourceFetcher (e.g., SVGImages
     // load the initial empty document and the SVGDocument with the same DocumentLoader).
@@ -1615,7 +1608,7 @@ void Document::setStyleDependentState(RenderStyle* documentStyle)
 
     FontBuilder fontBuilder;
     fontBuilder.initForStyleResolve(*this, documentStyle, isSVGDocument());
-    RefPtr<CSSFontSelector> selector = m_styleResolver ? m_styleResolver->fontSelector() : 0;
+    RefPtr<CSSFontSelector> selector = m_styleEngine->fontSelector();
     fontBuilder.createFontForDocument(selector, documentStyle);
 }
 
@@ -1717,7 +1710,7 @@ void Document::recalcStyle(StyleRecalcChange change)
 
         if (change == Force || (change >= Inherit && shouldDisplaySeamlesslyWithParent())) {
             m_hasNodesWithPlaceholderStyle = false;
-            RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this, m_styleResolver ? m_styleResolver->fontSelector() : 0);
+            RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this, m_styleEngine->fontSelector());
             StyleRecalcChange localChange = RenderStyle::compare(documentStyle.get(), renderView()->style());
             if (localChange != NoChange)
                 renderView()->setStyle(documentStyle.release());
@@ -1752,10 +1745,10 @@ void Document::recalcStyle(StyleRecalcChange change)
         if (m_styleEngine->needsUpdateActiveStylesheetsOnStyleRecalc())
             setNeedsStyleRecalc();
 
-        if (m_styleResolver) {
+        if (m_styleEngine->hasResolver()) {
             // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
-            m_styleEngine->resetCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
-            m_styleResolver->clearStyleSharingList();
+            m_styleEngine->resetCSSFeatureFlags(m_styleEngine->resolver()->ruleFeatureSet());
+            m_styleEngine->resolver()->clearStyleSharingList();
         }
     }
 
@@ -1830,26 +1823,26 @@ void Document::setNeedsFocusedElementCheck()
 
 void Document::recalcStyleForLayoutIgnoringPendingStylesheets()
 {
-    TemporaryChange<bool> ignorePendingStylesheets(m_ignorePendingStylesheets, m_ignorePendingStylesheets);
-    if (!haveStylesheetsLoaded()) {
-        m_ignorePendingStylesheets = true;
-        // FIXME: We are willing to attempt to suppress painting with outdated style info only once.
-        // Our assumption is that it would be dangerous to try to stop it a second time, after page
-        // content has already been loaded and displayed with accurate style information. (Our
-        // suppression involves blanking the whole page at the moment. If it were more refined, we
-        // might be able to do something better.) It's worth noting though that this entire method
-        // is a hack, since what we really want to do is suspend JS instead of doing a layout with
-        // inaccurate information.
-        HTMLElement* bodyElement = body();
-        if (bodyElement && !bodyElement->renderer() && m_pendingSheetLayout == NoLayoutWithPendingSheets) {
-            m_pendingSheetLayout = DidLayoutWithPendingSheets;
-            styleResolverChanged(RecalcStyleImmediately);
-        } else if (m_hasNodesWithPlaceholderStyle) {
-            // If new nodes have been added or style recalc has been done with style sheets still
-            // pending, some nodes may not have had their real style calculated yet. Normally this
-            // gets cleaned when style sheets arrive but here we need up-to-date style immediately.
-            recalcStyle(Force);
-        }
+    if (haveStylesheetsLoaded())
+        return;
+
+    StyleEngine::IgnoringPendingStylesheet ignoring(m_styleEngine.get());
+    // FIXME: We are willing to attempt to suppress painting with outdated style info only once.
+    // Our assumption is that it would be dangerous to try to stop it a second time, after page
+    // content has already been loaded and displayed with accurate style information. (Our
+    // suppression involves blanking the whole page at the moment. If it were more refined, we
+    // might be able to do something better.) It's worth noting though that this entire method
+    // is a hack, since what we really want to do is suspend JS instead of doing a layout with
+    // inaccurate information.
+    HTMLElement* bodyElement = body();
+    if (bodyElement && !bodyElement->renderer() && m_pendingSheetLayout == NoLayoutWithPendingSheets) {
+        m_pendingSheetLayout = DidLayoutWithPendingSheets;
+        styleResolverChanged(RecalcStyleImmediately);
+    } else if (m_hasNodesWithPlaceholderStyle) {
+        // If new nodes have been added or style recalc has been done with style sheets still
+        // pending, some nodes may not have had their real style calculated yet. Normally this
+        // gets cleaned when style sheets arrive but here we need up-to-date style immediately.
+        recalcStyle(Force);
     }
 }
 
@@ -1876,7 +1869,7 @@ void Document::partialUpdateLayoutIgnorePendingStylesheets(Node* stopLayoutAtNod
         return;
     }
 
-    TemporaryChange<bool> ignorePendingStylesheets(m_ignorePendingStylesheets, m_ignorePendingStylesheets);
+    StyleEngine::ProtectingPendingStylesheet protecting(m_styleEngine.get());
     recalcStyleForLayoutIgnoringPendingStylesheets();
 
     if (stopLayoutAtNode) {
@@ -1902,7 +1895,7 @@ void Document::partialUpdateLayoutIgnorePendingStylesheets(Node* stopLayoutAtNod
 PassRefPtr<RenderStyle> Document::styleForElementIgnoringPendingStylesheets(Element* element)
 {
     ASSERT_ARG(element, element->document() == this);
-    TemporaryChange<bool> ignoreStyleSheets(m_ignorePendingStylesheets, true);
+    StyleEngine::IgnoringPendingStylesheet ignoring(m_styleEngine.get());
     return styleResolver()->styleForElement(element, element->parentNode() ? element->parentNode()->computedStyle() : 0);
 }
 
@@ -1965,20 +1958,19 @@ void Document::setIsViewSource(bool isViewSource)
     didUpdateSecurityOrigin();
 }
 
-void Document::createStyleResolver()
+StyleResolver* Document::styleResolverIfExists() const
 {
-    // It is a programming error to attempt to resolve style on a Document
-    // which is not in a frame. Code which hits this should have checked
-    // Document::isActive() before calling into code which could get here.
-    ASSERT(frame());
+    return m_styleEngine->resolverIfExists();
+}
 
-    m_styleResolver = adoptPtr(new StyleResolver(*this));
-    m_styleEngine->combineCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
+StyleResolver* Document::styleResolver() const
+{
+    return m_styleEngine->resolver();
 }
 
 void Document::clearStyleResolver()
 {
-    m_styleResolver.clear();
+    m_styleEngine->clearResolver();
 }
 
 void Document::attach(const AttachContext& context)
@@ -1993,7 +1985,7 @@ void Document::attach(const AttachContext& context)
     m_renderView->setStyle(StyleResolver::styleForDocument(*this));
     view()->updateCompositingLayersAfterStyleChange();
 
-    m_styleResolverThrowawayTimer.startRepeating(60);
+    m_styleEngine->didAttach();
 
     ContainerNode::attach(context);
 
@@ -2045,13 +2037,11 @@ void Document::detach(const AttachContext& context)
     m_focusedElement = 0;
     m_activeElement = 0;
 
-    m_styleResolverThrowawayTimer.stop();
-
     ContainerNode::detach(context);
 
     unscheduleStyleRecalc();
 
-    clearStyleResolver();
+    m_styleEngine->didDetach();
 
     if (renderView)
         renderView->destroy();
@@ -3201,13 +3191,12 @@ void Document::styleResolverChanged(RecalcStyleTime updateTime, StyleResolverUpd
 {
     // Don't bother updating, since we haven't loaded all our style info yet
     // and haven't calculated the style selector for the first time.
-    if (!isActive() || (!m_didCalculateStyleResolver && !haveStylesheetsLoaded())) {
-        m_styleResolver.clear();
+    if (!isActive() || m_styleEngine->shouldClearResolver()) {
+        m_styleEngine->clearResolver();
         return;
     }
-    m_didCalculateStyleResolver = true;
 
-    bool needsRecalc = m_styleEngine->updateActiveStyleSheets(updateMode);
+    bool needsRecalc = m_styleEngine->resolverChanged(updateMode);
 
     if (didLayoutWithPendingStylesheets() && !m_styleEngine->hasPendingSheets()) {
         // We need to manually repaint because we avoid doing all repaints in layout or style
@@ -4334,13 +4323,6 @@ void Document::sharedObjectPoolClearTimerFired(Timer<Document>*)
     m_sharedObjectPool.clear();
 }
 
-void Document::styleResolverThrowawayTimerFired(Timer<Document>*)
-{
-    if (m_styleResolverAccessCount == m_lastStyleResolverAccessCount)
-        clearStyleResolver();
-    m_lastStyleResolverAccessCount = m_styleResolverAccessCount;
-}
-
 const Vector<IconURL>& Document::shortcutIconURLs()
 {
     // Include any icons where type = link, rel = "shortcut icon".
@@ -5132,7 +5114,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
 
 bool Document::haveStylesheetsLoaded() const
 {
-    return !m_styleEngine->hasPendingSheets() || m_ignorePendingStylesheets;
+    return m_styleEngine->haveStylesheetsLoaded();
 }
 
 Locale& Document::getCachedLocale(const AtomicString& locale)

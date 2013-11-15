@@ -281,9 +281,9 @@ unsigned Internals::updateStyleAndReturnAffectedElementCount(ExceptionState& es)
         return 0;
     }
 
-    unsigned beforeCount = document->styleResolverAccessCount();
+    unsigned beforeCount = document->styleEngine()->resolverAccessCount();
     document->updateStyleIfNeeded();
-    return document->styleResolverAccessCount() - beforeCount;
+    return document->styleEngine()->resolverAccessCount() - beforeCount;
 }
 
 bool Internals::isPreloaded(const String& url)

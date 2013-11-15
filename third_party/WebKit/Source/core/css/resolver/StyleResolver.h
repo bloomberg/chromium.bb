@@ -215,6 +215,9 @@ public:
     void disableStats();
     void printStats();
 
+    unsigned accessCount() const { return m_accessCount; }
+    void didAccess() { ++m_accessCount; }
+
 private:
     // FontSelectorClient implementation.
     virtual void fontsNeedUpdate(FontSelector*);
@@ -310,6 +313,8 @@ private:
     OwnPtr<StyleResolverStats> m_styleResolverStats;
     OwnPtr<StyleResolverStats> m_styleResolverStatsTotals;
     unsigned m_styleResolverStatsSequence;
+
+    unsigned m_accessCount;
 };
 
 inline bool checkRegionSelector(const CSSSelector* regionSelector, Element* regionElement)

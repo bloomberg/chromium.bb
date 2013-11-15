@@ -65,6 +65,10 @@ StyleEngine::StyleEngine(Document& document)
     , m_usesFirstLetterRules(false)
     , m_usesRemUnits(false)
     , m_maxDirectAdjacentSelectors(0)
+    , m_ignorePendingStylesheets(false)
+    , m_didCalculateResolver(false)
+    , m_lastResolverAccessCount(0)
+    , m_resolverThrowawayTimer(this, &StyleEngine::resolverThrowawayTimerFired)
 {
 }
 
@@ -414,6 +418,62 @@ void StyleEngine::appendActiveAuthorStyleSheets(StyleResolver* styleResolver)
     }
     styleResolver->finishAppendAuthorStyleSheets();
     styleResolver->setBuildScopedStyleTreeInDocumentOrder(false);
+}
+
+void StyleEngine::createResolver()
+{
+    // It is a programming error to attempt to resolve style on a Document
+    // which is not in a frame. Code which hits this should have checked
+    // Document::isActive() before calling into code which could get here.
+
+    ASSERT(m_document.frame());
+
+    m_resolver = adoptPtr(new StyleResolver(m_document));
+    combineCSSFeatureFlags(m_resolver->ruleFeatureSet());
+}
+
+void StyleEngine::clearResolver()
+{
+    m_resolver.clear();
+}
+
+unsigned StyleEngine::resolverAccessCount() const
+{
+    return m_resolver ? m_resolver->accessCount() : 0;
+}
+
+void StyleEngine::resolverThrowawayTimerFired(Timer<StyleEngine>*)
+{
+    if (resolverAccessCount() == m_lastResolverAccessCount)
+        clearResolver();
+    m_lastResolverAccessCount = resolverAccessCount();
+}
+
+CSSFontSelector* StyleEngine::fontSelector()
+{
+    return m_resolver ? m_resolver->fontSelector() : 0;
+}
+
+void StyleEngine::didAttach()
+{
+    m_resolverThrowawayTimer.startRepeating(60);
+}
+
+void StyleEngine::didDetach()
+{
+    m_resolverThrowawayTimer.stop();
+    clearResolver();
+}
+
+bool StyleEngine::shouldClearResolver() const
+{
+    return !m_didCalculateResolver && !haveStylesheetsLoaded();
+}
+
+bool StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
+{
+    m_didCalculateResolver = true;
+    return updateActiveStyleSheets(mode);
 }
 
 }

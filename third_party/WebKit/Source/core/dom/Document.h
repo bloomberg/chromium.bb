@@ -386,19 +386,13 @@ public:
     bool isSrcdocDocument() const { return m_isSrcdocDocument; }
     bool isMobileDocument() const { return m_isMobileDocument; }
 
-    StyleResolver* styleResolverIfExists() const { return m_styleResolver.get(); }
+    StyleResolver* styleResolverIfExists() const;
+    StyleResolver* styleResolver() const;
 
     bool isViewSource() const { return m_isViewSource; }
     void setIsViewSource(bool);
 
     bool sawElementsInKnownNamespaces() const { return m_sawElementsInKnownNamespaces; }
-
-    StyleResolver* styleResolver()
-    {
-        if (!m_styleResolver)
-            createStyleResolver();
-        return m_styleResolver.get();
-    }
 
     void notifyRemovePendingSheetIfNeeded();
 
@@ -422,11 +416,6 @@ public:
     void addedStyleSheet(StyleSheet*, RecalcStyleTime when = RecalcStyleDeferred) { styleResolverChanged(when); }
     void modifiedStyleSheet(StyleSheet*, RecalcStyleTime when = RecalcStyleDeferred, StyleResolverUpdateMode = FullStyleUpdate);
     void changedSelectorWatch() { styleResolverChanged(RecalcStyleDeferred); }
-
-    void didAccessStyleResolver() { ++m_styleResolverAccessCount; }
-
-    // This is only for internals, don't use it.
-    unsigned styleResolverAccessCount() const { return m_styleResolverAccessCount; }
 
     void evaluateMediaQueryList();
 
@@ -1069,8 +1058,6 @@ private:
     void updateFocusAppearanceTimerFired(Timer<Document>*);
     void updateBaseURL();
 
-    void createStyleResolver();
-
     void executeScriptsWaitingForResourcesIfNeeded();
 
     void seamlessParentUpdatedStylesheets();
@@ -1104,13 +1091,6 @@ private:
 
     DocumentLifecycle m_lifecyle;
 
-    // FIXME: This should probably be handled inside the style resolver itself.
-    Timer<Document> m_styleResolverThrowawayTimer;
-    unsigned m_styleResolverAccessCount;
-    unsigned m_lastStyleResolverAccessCount;
-
-    OwnPtr<StyleResolver> m_styleResolver;
-    bool m_didCalculateStyleResolver;
     bool m_hasNodesWithPlaceholderStyle;
     bool m_needsNotifyRemoveAllPendingStylesheet;
     // But sometimes you need to ignore pending stylesheet count to

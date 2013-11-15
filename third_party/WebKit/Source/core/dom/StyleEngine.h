@@ -34,23 +34,48 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefPtr.h"
+#include "wtf/TemporaryChange.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
+class CSSFontSelector;
 class CSSStyleSheet;
+class FontSelector;
 class Node;
 class RuleFeatureSet;
 class ShadowTreeStyleSheetCollection;
+class StyleResolver;
 class StyleSheet;
 class StyleSheetCollection;
 class StyleSheetContents;
 class StyleSheetList;
 
+
 class StyleEngine {
     WTF_MAKE_FAST_ALLOCATED;
 public:
+
+    class IgnoringPendingStylesheet : public TemporaryChange<bool> {
+    public:
+        IgnoringPendingStylesheet(StyleEngine* engine)
+            : TemporaryChange<bool>(engine->m_ignorePendingStylesheets, true)
+        {
+        }
+    };
+
+    class ProtectingPendingStylesheet : public TemporaryChange<bool> {
+    public:
+        ProtectingPendingStylesheet(StyleEngine* engine)
+            : TemporaryChange<bool>(engine->m_ignorePendingStylesheets, engine->m_ignorePendingStylesheets)
+        {
+        }
+    };
+
+    friend class IgnoringPendingStylesheet;
+    friend class ProtectingPendingStylesheet;
+
     static PassOwnPtr<StyleEngine> create(Document& document) { return adoptPtr(new StyleEngine(document)); }
 
     ~StyleEngine();
@@ -88,6 +113,7 @@ public:
     void removePendingSheet(Node* styleSheetCandidateNode, RemovePendingSheetNotificationType = RemovePendingSheetNotifyImmediately);
 
     bool hasPendingSheets() const { return m_pendingStylesheets > 0; }
+    bool haveStylesheetsLoaded() const { return !hasPendingSheets() || m_ignorePendingStylesheets; }
 
     unsigned maxDirectAdjacentSelectors() const { return m_maxDirectAdjacentSelectors; }
     bool usesSiblingRules() const { return m_usesSiblingRules || m_usesSiblingRulesOverride; }
@@ -107,6 +133,28 @@ public:
     void appendActiveAuthorStyleSheets(StyleResolver*);
     void getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const;
 
+    StyleResolver* resolverIfExists() const
+    {
+        return m_resolver.get();
+    }
+
+    StyleResolver* resolver()
+    {
+        if (!m_resolver)
+            createResolver();
+        return m_resolver.get();
+    }
+
+    bool hasResolver() const { return m_resolver.get(); }
+    void clearResolver();
+
+    CSSFontSelector* fontSelector();
+    void didAttach();
+    void didDetach();
+    bool shouldClearResolver() const;
+    bool resolverChanged(StyleResolverUpdateMode);
+    unsigned resolverAccessCount() const;
+
 private:
     StyleEngine(Document&);
 
@@ -114,9 +162,12 @@ private:
     StyleSheetCollection* styleSheetCollectionFor(TreeScope&);
     void activeStyleSheetsUpdatedForInspector();
     bool shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode);
+    void resolverThrowawayTimerFired(Timer<StyleEngine>*);
 
     typedef ListHashSet<TreeScope*, 16> TreeScopeSet;
     static void insertTreeScopeInDocumentOrder(TreeScopeSet&, TreeScope*);
+
+    void createResolver();
 
     Document& m_document;
 
@@ -149,6 +200,12 @@ private:
     bool m_usesFirstLetterRules;
     bool m_usesRemUnits;
     unsigned m_maxDirectAdjacentSelectors;
+
+    bool m_ignorePendingStylesheets;
+    bool m_didCalculateResolver;
+    unsigned m_lastResolverAccessCount;
+    Timer<StyleEngine> m_resolverThrowawayTimer;
+    OwnPtr<StyleResolver> m_resolver;
 };
 
 }

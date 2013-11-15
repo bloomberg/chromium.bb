@@ -128,6 +128,7 @@ StyleResolver::StyleResolver(Document& document)
     , m_viewportStyleResolver(ViewportStyleResolver::create(&document))
     , m_styleResourceLoader(document.fetcher())
     , m_styleResolverStatsSequence(0)
+    , m_accessCount(0)
 {
     Element* root = document.documentElement();
 
@@ -667,7 +668,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         return s_styleNotYetAvailable;
     }
 
-    document().didAccessStyleResolver();
+    didAccess();
 
     if (element == document().documentElement())
         resetDirectionAndWritingModeOnDocument(document());
@@ -791,7 +792,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const Render
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
 
-    document().didAccessStyleResolver();
+    didAccess();
 
     return state.takeStyle();
 }
@@ -902,7 +903,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
         adjuster.adjustRenderStyle(state.style(), state.parentStyle(), 0);
     }
 
-    document().didAccessStyleResolver();
+    didAccess();
 
     if (PseudoElement* pseudoElement = e->pseudoElement(pseudoStyleRequest.pseudoId))
         setAnimationUpdateIfNeeded(state, *pseudoElement);
@@ -951,7 +952,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
 
-    document().didAccessStyleResolver();
+    didAccess();
 
     // Now return the style.
     return state.takeStyle();
