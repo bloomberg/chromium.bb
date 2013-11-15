@@ -161,7 +161,7 @@ static bool isSupportedSVG11Feature(const String& feature, const String& version
         && svgFeatures.contains(feature.right(feature.length() - 35));
 }
 
-DOMImplementation::DOMImplementation(Document* document)
+DOMImplementation::DOMImplementation(Document& document)
     : m_document(document)
 {
     ScriptWrappable::init(this);
@@ -185,7 +185,7 @@ PassRefPtr<DocumentType> DOMImplementation::createDocumentType(const String& qua
     if (!Document::parseQualifiedName(qualifiedName, prefix, localName, exceptionState))
         return 0;
 
-    return DocumentType::create(m_document, qualifiedName, publicId, systemId);
+    return DocumentType::create(&m_document, qualifiedName, publicId, systemId);
 }
 
 DOMImplementation* DOMImplementation::getInterface(const String& /*feature*/)
@@ -197,17 +197,17 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& namespaceUR
     const String& qualifiedName, DocumentType* doctype, ExceptionState& exceptionState)
 {
     RefPtr<Document> doc;
-    DocumentInit init = DocumentInit::fromContext(m_document->contextDocument());
+    DocumentInit init = DocumentInit::fromContext(m_document.contextDocument());
     if (namespaceURI == SVGNames::svgNamespaceURI) {
         doc = SVGDocument::create(init);
     } else if (namespaceURI == HTMLNames::xhtmlNamespaceURI) {
-        doc = Document::createXHTML(init.withRegistrationContext(m_document->registrationContext()));
+        doc = Document::createXHTML(init.withRegistrationContext(m_document.registrationContext()));
     } else {
         doc = Document::create(init);
     }
 
-    doc->setSecurityOrigin(m_document->securityOrigin()->isolatedCopy());
-    doc->setContextFeatures(m_document->contextFeatures());
+    doc->setSecurityOrigin(m_document.securityOrigin()->isolatedCopy());
+    doc->setContextFeatures(m_document.contextFeatures());
 
     RefPtr<Node> documentElement;
     if (!qualifiedName.isEmpty()) {
@@ -307,15 +307,15 @@ bool DOMImplementation::isTextMIMEType(const String& mimeType)
 
 PassRefPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const String& title)
 {
-    DocumentInit init = DocumentInit::fromContext(m_document->contextDocument())
-        .withRegistrationContext(m_document->registrationContext());
+    DocumentInit init = DocumentInit::fromContext(m_document.contextDocument())
+        .withRegistrationContext(m_document.registrationContext());
     RefPtr<HTMLDocument> d = HTMLDocument::create(init);
     d->open();
     d->write("<!doctype html><html><body></body></html>");
     if (!title.isNull())
         d->setTitle(title);
-    d->setSecurityOrigin(m_document->securityOrigin()->isolatedCopy());
-    d->setContextFeatures(m_document->contextFeatures());
+    d->setSecurityOrigin(m_document.securityOrigin()->isolatedCopy());
+    d->setContextFeatures(m_document.contextFeatures());
     return d.release();
 }
 

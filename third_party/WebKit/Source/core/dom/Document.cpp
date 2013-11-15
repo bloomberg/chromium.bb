@@ -645,7 +645,7 @@ void Document::setDoctype(PassRefPtr<DocumentType> docType)
 DOMImplementation* Document::implementation()
 {
     if (!m_implementation)
-        m_implementation = DOMImplementation::create(this);
+        m_implementation = DOMImplementation::create(*this);
     return m_implementation.get();
 }
 
