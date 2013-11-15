@@ -799,6 +799,13 @@ class WebContentsViewAura::WindowObserver
       window->GetDispatcher()->RemoveRootWindowObserver(this);
 #if defined(OS_WIN)
       window->GetRootWindow()->RemoveObserver(this);
+
+      const aura::Window::Windows& root_children =
+          window->GetRootWindow()->children();
+      for (size_t i = 0; i < root_children.size(); ++i) {
+        if (root_children[i] != view_->window_ && root_children[i] != parent_)
+          root_children[i]->RemoveObserver(this);
+      }
 #endif
     }
   }
