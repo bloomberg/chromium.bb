@@ -60,7 +60,7 @@ public:
     unsigned numberOfActiveAnimations(Document*) const; // To be used only for testing
 
     bool isRunningAnimationOnRenderer(RenderObject*, CSSPropertyID, bool isRunningNow = true) const;
-    bool isRunningAcceleratableAnimationOnRenderer(RenderObject*) const;
+    bool isRunningAcceleratableAnimationOnRenderer(RenderObject*, bool isOpacityAcceleratable) const;
     bool isRunningAcceleratedAnimationOnRenderer(RenderObject*, CSSPropertyID, bool isRunningNow = true) const;
 
     void serviceAnimations();

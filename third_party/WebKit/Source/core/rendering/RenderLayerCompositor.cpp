@@ -1677,7 +1677,10 @@ bool RenderLayerCompositor::requiresCompositingForAnimation(RenderObject* render
 {
     if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
         return false;
-    return renderer->animation().isRunningAcceleratableAnimationOnRenderer(renderer);
+
+    // FIXME: Remove this condition once force-compositing-mode is enabled on all platforms.
+    bool shouldAccelerateOpacity = inCompositingMode();
+    return renderer->animation().isRunningAcceleratableAnimationOnRenderer(renderer, shouldAccelerateOpacity);
 }
 
 bool RenderLayerCompositor::requiresCompositingForTransition(RenderObject* renderer) const
