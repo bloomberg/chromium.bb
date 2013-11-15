@@ -194,6 +194,7 @@ class AesDecryptorTest : public testing::Test {
             base::Bind(&AesDecryptorTest::KeyError, base::Unretained(this)),
             base::Bind(&AesDecryptorTest::KeyMessage, base::Unretained(this)),
             base::Bind(&AesDecryptorTest::SetSession, base::Unretained(this))),
+        reference_id_(MediaKeys::kInvalidReferenceId),
         decrypt_cb_(base::Bind(&AesDecryptorTest::BufferDecrypted,
                                base::Unretained(this))),
         original_data_(kOriginalData, kOriginalData + kOriginalDataSize),
