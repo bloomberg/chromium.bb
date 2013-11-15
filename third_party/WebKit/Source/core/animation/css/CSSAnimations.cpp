@@ -640,6 +640,7 @@ void CSSAnimations::calculateAnimationCompositableValues(CSSAnimationUpdate* upd
     if (update->newAnimations().isEmpty() && update->cancelledAnimationPlayers().isEmpty()) {
         AnimationEffect::CompositableValueMap compositableValuesForAnimations(AnimationStack::compositableValues(animationStack, 0, 0, Animation::DefaultPriority));
         update->adoptCompositableValuesForAnimations(compositableValuesForAnimations);
+        return;
     }
 
     Vector<InertAnimation*> newAnimations;
