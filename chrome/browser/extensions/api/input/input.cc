@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/input/input.h"
 
-#include "ash/root_window_controller.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
@@ -17,6 +16,7 @@
 #include "ui/keyboard/keyboard_switches.h"
 
 #if defined(USE_ASH)
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ui/keyboard/keyboard_util.h"
 #endif
