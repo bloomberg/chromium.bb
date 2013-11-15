@@ -25,10 +25,31 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 
 namespace WebCore {
 
 using namespace WTF;
+
+AtomicString CSSParserString::atomicSubstring(unsigned position, unsigned length) const
+{
+    ASSERT(m_length >= position + length);
+
+    if (is8Bit())
+        return AtomicString(characters8() + position, length);
+    return AtomicString(characters16() + position, length);
+}
+
+void CSSParserString::trimTrailingWhitespace()
+{
+    if (is8Bit()) {
+        while (m_length > 0 && isHTMLSpace<LChar>(m_data.characters8[m_length - 1]))
+            --m_length;
+    } else {
+        while (m_length > 0 && isHTMLSpace<UChar>(m_data.characters16[m_length - 1]))
+            --m_length;
+    }
+}
 
 CSSParserValueList::~CSSParserValueList()
 {
@@ -234,5 +255,4 @@ CSSParserSelector* CSSParserSelector::findDistributedPseudoElementSelector() con
     return 0;
 }
 
-}
-
+} // namespace WebCore

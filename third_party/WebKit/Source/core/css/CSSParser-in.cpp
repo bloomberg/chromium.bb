@@ -235,26 +235,6 @@ CSSParser::~CSSParser()
     deleteAllValues(m_floatingFunctions);
 }
 
-AtomicString CSSParserString::atomicSubstring(unsigned position, unsigned length) const
-{
-    ASSERT(m_length >= position + length);
-
-    if (is8Bit())
-        return AtomicString(characters8() + position, length);
-    return AtomicString(characters16() + position, length);
-}
-
-void CSSParserString::trimTrailingWhitespace()
-{
-    if (is8Bit()) {
-        while (m_length > 0 && isHTMLSpace<LChar>(m_data.characters8[m_length - 1]))
-            --m_length;
-    } else {
-        while (m_length > 0 && isHTMLSpace<UChar>(m_data.characters16[m_length - 1]))
-            --m_length;
-    }
-}
-
 void CSSParser::setupParser(const char* prefix, unsigned prefixLength, const String& string, const char* suffix, unsigned suffixLength)
 {
     m_parsedTextPrefixLength = prefixLength;
@@ -9639,12 +9619,6 @@ static inline CharacterType* skipWhiteSpace(CharacterType* currentCharacter)
 }
 
 // Main CSS tokenizer functions.
-
-template <>
-const LChar* CSSParserString::characters<LChar>() const { return characters8(); }
-
-template <>
-const UChar* CSSParserString::characters<UChar>() const { return characters16(); }
 
 template <>
 inline LChar*& CSSParser::currentCharacter<LChar>()

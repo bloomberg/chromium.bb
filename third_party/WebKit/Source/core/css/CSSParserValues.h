@@ -131,6 +131,12 @@ struct CSSParserString {
     bool m_is8Bit;
 };
 
+template <>
+inline const LChar* CSSParserString::characters<LChar>() const { return characters8(); }
+
+template <>
+inline const UChar* CSSParserString::characters<UChar>() const { return characters16(); }
+
 struct CSSParserFunction;
 
 struct CSSParserValue {
