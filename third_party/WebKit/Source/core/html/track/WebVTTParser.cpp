@@ -150,14 +150,14 @@ void WebVTTParser::flush()
 
 void WebVTTParser::parse()
 {
-    // 4.8.10.13.3 WHATWG WebVTT Parser algorithm.
-    // 1-3 - Initial setup.
+    // WebVTT parser algorithm. (5.1 WebVTT file parsing.)
+    // Steps 1 - 3 - Initial setup.
 
     String line;
     while (m_lineReader.getLine(line)) {
         switch (m_state) {
         case Initial:
-            // 4-12 - Check for a valid WebVTT signature.
+            // Steps 4 - 9 - Check for a valid WebVTT signature.
             if (!hasRequiredFileIdentifier(line)) {
                 if (m_client)
                     m_client->fileFailedToParse();
@@ -168,9 +168,9 @@ void WebVTTParser::parse()
             break;
 
         case Header:
+            // Steps 10 - 14 - Allow a header (comment area) under the WEBVTT line.
             collectMetadataHeader(line);
 
-            // 13-18 - Allow a header (comment area) under the WEBVTT line.
             if (line.isEmpty()) {
                 if (m_client && m_regionList.size())
                     m_client->newRegionsParsed();
@@ -179,35 +179,39 @@ void WebVTTParser::parse()
                 break;
             }
 
+            // Step 16 - Line is not the empty string and does not contain "-->".
             break;
 
         case Id:
-            // 19-29 - Allow any number of line terminators, then initialize new cue values.
+            // Steps 17 - 20 - Allow any number of line terminators, then initialize new cue values.
             if (line.isEmpty())
                 break;
+
+            // Step 21 - Cue creation (start a new cue).
             resetCueValues();
 
-            // 30-39 - Check if this line contains an optional identifier or timing data.
+            // Steps 22 - 25 - Check if this line contains an optional identifier or timing data.
             m_state = collectCueId(line);
             break;
 
         case TimingsAndSettings:
+            // Steps 26 - 27 - Discard current cue if the line is empty.
             if (line.isEmpty()) {
                 m_state = Id;
                 break;
             }
 
-            // 40 - Collect cue timings and settings.
+            // Steps 28 - 29 - Collect cue timings and settings.
             m_state = collectTimingsAndSettings(line);
             break;
 
         case CueText:
-            // 41-53 - Collect the cue text, create a cue, and add it to the output.
+            // Steps 31 - 41 - Collect the cue text, create a cue, and add it to the output.
             m_state = collectCueText(line);
             break;
 
         case BadCue:
-            // 54-62 - Collect and discard the remaining cue.
+            // Steps 42 - 48 - Discard lines until an empty line or a potential timing line is seen.
             m_state = ignoreBadCue(line);
             break;
         }
@@ -237,10 +241,10 @@ bool WebVTTParser::hasRequiredFileIdentifier(const String& line)
 
 void WebVTTParser::collectMetadataHeader(const String& line)
 {
-    // 4.1 Extension of WebVTT header parsing (11 - 15)
+    // WebVTT header parsing (WebVTT parser algorithm step 12)
     DEFINE_STATIC_LOCAL(const AtomicString, regionHeaderName, ("Region", AtomicString::ConstructFromLiteral));
 
-    // 15.4 If line contains the character ":" (A U+003A COLON), then set metadata's
+    // Step 12.4 If line contains the character ":" (A U+003A COLON), then set metadata's
     // name to the substring of line before the first ":" character and
     // metadata's value to the substring after this character.
     if (!RuntimeEnabledFeatures::webVTTRegionsEnabled() || !line.contains(":"))
@@ -249,10 +253,10 @@ void WebVTTParser::collectMetadataHeader(const String& line)
     unsigned colonPosition = line.find(":");
     String headerName = line.substring(0, colonPosition);
 
-    // 15.5 If metadata's name equals "Region":
+    // Steps 12.5 If metadata's name equals "Region":
     if (headerName == regionHeaderName) {
         String headerValue = line.substring(colonPosition + 1);
-        // 15.5.1 - 15.5.8 Region creation: Let region be a new text track region [...]
+        // Steps 12.5.1 - 12.5.11 Region creation: Let region be a new text track region [...]
         createNewRegion(headerValue);
     }
 }
@@ -267,12 +271,12 @@ WebVTTParser::ParseState WebVTTParser::collectCueId(const String& line)
 
 WebVTTParser::ParseState WebVTTParser::collectTimingsAndSettings(const String& line)
 {
-    // 4.8.10.13.3 Collect WebVTT cue timings and settings.
-    // 1-3 - Let input be the string being parsed and position be a pointer into input
+    // Collect WebVTT cue timings and settings. (5.3 WebVTT cue timings and settings parsing.)
+    // Steps 1 - 3 - Let input be the string being parsed and position be a pointer into input.
     unsigned position = 0;
     skipWhiteSpace(line, &position);
 
-    // 4-5 - Collect a WebVTT timestamp. If that fails, then abort and return failure. Otherwise, let cue's text track cue start time be the collected time.
+    // Steps 4 - 5 - Collect a WebVTT timestamp. If that fails, then abort and return failure. Otherwise, let cue's text track cue start time be the collected time.
     m_currentStartTime = collectTimeStamp(line, &position);
     if (m_currentStartTime == malformedTime)
         return BadCue;
@@ -281,7 +285,7 @@ WebVTTParser::ParseState WebVTTParser::collectTimingsAndSettings(const String& l
 
     skipWhiteSpace(line, &position);
 
-    // 6-9 - If the next three characters are not "-->", abort and return failure.
+    // Steps 6 - 9 - If the next three characters are not "-->", abort and return failure.
     if (line.find("-->", position) == kNotFound)
         return BadCue;
     position += 3;
@@ -290,13 +294,13 @@ WebVTTParser::ParseState WebVTTParser::collectTimingsAndSettings(const String& l
 
     skipWhiteSpace(line, &position);
 
-    // 10-11 - Collect a WebVTT timestamp. If that fails, then abort and return failure. Otherwise, let cue's text track cue end time be the collected time.
+    // Steps 10 - 11 - Collect a WebVTT timestamp. If that fails, then abort and return failure. Otherwise, let cue's text track cue end time be the collected time.
     m_currentEndTime = collectTimeStamp(line, &position);
     if (m_currentEndTime == malformedTime)
         return BadCue;
     skipWhiteSpace(line, &position);
 
-    // 12 - Parse the WebVTT settings for the cue (conducted in TextTrackCue).
+    // Step 12 - Parse the WebVTT settings for the cue (conducted in TextTrackCue).
     m_currentSettings = line.substring(position, line.length()-1);
     return CueText;
 }
@@ -341,8 +345,8 @@ private:
 PassRefPtr<DocumentFragment> WebVTTTreeBuilder::buildFromString(const String& cueText)
 {
     // Cue text processing based on
-    // 4.8.10.13.4 WebVTT cue text parsing rules and
-    // 4.8.10.13.5 WebVTT cue text DOM construction rules.
+    // 5.4 WebVTT cue text parsing rules, and
+    // 5.5 WebVTT cue text DOM construction rules
 
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(m_document);
 
@@ -395,10 +399,11 @@ void WebVTTParser::createNewRegion(const String& headerValue)
     if (headerValue.isEmpty())
         return;
 
+    // Steps 12.5.1 - 12.5.9 - Construct and initialize a WebVTT Region object.
     RefPtr<VTTRegion> region = VTTRegion::create();
     region->setRegionSettings(headerValue);
 
-    // 15.5.10 If the text track list of regions regions contains a region
+    // Step 12.5.10 If the text track list of regions regions contains a region
     // with the same region identifier value as region, remove that region.
     for (size_t i = 0; i < m_regionList.size(); ++i)
         if (m_regionList[i]->id() == region->id()) {
@@ -406,27 +411,28 @@ void WebVTTParser::createNewRegion(const String& headerValue)
             break;
         }
 
+    // Step 12.5.11
     m_regionList.append(region);
 }
 
 double WebVTTParser::collectTimeStamp(const String& line, unsigned* position)
 {
-    // 4.8.10.13.3 Collect a WebVTT timestamp.
-    // 1-4 - Initial checks, let most significant units be minutes.
+    // Collect a WebVTT timestamp (5.3 WebVTT cue timings and settings parsing.)
+    // Steps 1 - 4 - Initial checks, let most significant units be minutes.
     enum Mode { minutes, hours };
     Mode mode = minutes;
     if (*position >= line.length() || !isASCIIDigit(line[*position]))
         return malformedTime;
 
-    // 5-6 - Collect a sequence of characters that are 0-9.
+    // Steps 5 - 6 - Collect a sequence of characters that are 0-9.
     String digits1 = collectDigits(line, position);
     int value1 = digits1.toInt();
 
-    // 7 - If not 2 characters or value is greater than 59, interpret as hours.
+    // Step 7 - If not 2 characters or value is greater than 59, interpret as hours.
     if (digits1.length() != 2 || value1 > 59)
         mode = hours;
 
-    // 8-12 - Collect the next sequence of 0-9 after ':' (must be 2 chars).
+    // Steps 8 - 11 - Collect the next sequence of 0-9 after ':' (must be 2 chars).
     if (*position >= line.length() || line[(*position)++] != ':')
         return malformedTime;
     if (*position >= line.length() || !isASCIIDigit(line[(*position)]))
@@ -436,7 +442,7 @@ double WebVTTParser::collectTimeStamp(const String& line, unsigned* position)
     if (digits2.length() != 2)
         return malformedTime;
 
-    // 13 - Detect whether this timestamp includes hours.
+    // Step 12 - Detect whether this timestamp includes hours.
     int value3;
     if (mode == hours || (*position < line.length() && line[*position] == ':')) {
         if (*position >= line.length() || line[(*position)++] != ':')
@@ -453,7 +459,7 @@ double WebVTTParser::collectTimeStamp(const String& line, unsigned* position)
         value1 = 0;
     }
 
-    // 14-19 - Collect next sequence of 0-9 after '.' (must be 3 chars).
+    // Steps 13 - 17 - Collect next sequence of 0-9 after '.' (must be 3 chars).
     if (*position >= line.length() || line[(*position)++] != '.')
         return malformedTime;
     if (*position >= line.length() || !isASCIIDigit(line[*position]))
@@ -465,7 +471,7 @@ double WebVTTParser::collectTimeStamp(const String& line, unsigned* position)
     if (value2 > 59 || value3 > 59)
         return malformedTime;
 
-    // 20-21 - Calculate result.
+    // Steps 18 - 19 - Calculate result.
     return (value1 * secondsPerHour) + (value2 * secondsPerMinute) + value3 + (value4 * secondsPerMillisecond);
 }
 
