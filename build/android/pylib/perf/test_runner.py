@@ -46,6 +46,7 @@ import logging
 import os
 import pickle
 import sys
+import threading
 import time
 
 from pylib import constants
@@ -88,6 +89,14 @@ class _HeartBeatLogger(object):
     """A file-like class for keeping the buildbot alive."""
     self._len = 0
     self._tick = time.time()
+    self._stopped = threading.Event()
+    self._timer = threading.Thread(target=self._runner)
+    self._timer.start()
+
+  def _runner(self):
+    while not self._stopped.is_set():
+      self.flush()
+      self._stopped.wait(_HeartBeatLogger._PRINT_INTERVAL)
 
   def write(self, data):
     self._len += len(data)
@@ -97,6 +106,9 @@ class _HeartBeatLogger(object):
     if now - self._tick >= _HeartBeatLogger._PRINT_INTERVAL:
       self._tick = now
       print '--single-step output length %d' % self._len
+
+  def stop(self):
+    self._stopped.set()
 
 
 class TestRunner(base_test_runner.BaseTestRunner):
@@ -173,6 +185,9 @@ class TestRunner(base_test_runner.BaseTestRunner):
         full_cmd, cwd=cwd,
         withexitstatus=True, logfile=logfile, timeout=timeout,
         env=os.environ)
+    if self._options.single_step:
+      # Stop the logger.
+      logfile.stop()
     end_time = datetime.datetime.now()
     if exit_code is None:
       exit_code = -1
