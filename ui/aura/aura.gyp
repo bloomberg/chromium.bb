@@ -232,7 +232,6 @@
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        '../../ipc/ipc.gyp:ipc',
         'aura',
         'aura_test_support',
       ],
