@@ -27,7 +27,7 @@
       }, {
         'use_alsa%': 0,
       }],
-      ['os_posix==1 and OS!="mac" and OS!="android" and chromeos!=1', {
+      ['os_posix==1 and OS!="mac" and OS!="android" and chromeos!=1 and embedded!=1', {
         'use_pulseaudio%': 1,
       }, {
         'use_pulseaudio%': 0,
