@@ -134,11 +134,8 @@ public:
     BLINK_EXPORT static void enableTouch(bool);
     BLINK_EXPORT static bool isTouchEnabled();
 
-    // FIXME: Default values are a temporary measure until the addition of an
-    // 'enable' parameter here is rolled into Chromium and runtime_features.cc
-    // is updated.
-    BLINK_EXPORT static void enableWebAnimationsCSS(bool enable = true);
-    BLINK_EXPORT static void enableWebAnimationsSVG(bool enable = true);
+    BLINK_EXPORT static void enableWebAnimationsCSS(bool);
+    BLINK_EXPORT static void enableWebAnimationsSVG(bool);
 
     BLINK_EXPORT static void enableWebAudio(bool);
     BLINK_EXPORT static bool isWebAudioEnabled();
