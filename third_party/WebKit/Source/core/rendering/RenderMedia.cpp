@@ -40,13 +40,6 @@ RenderMedia::RenderMedia(HTMLMediaElement* video)
     setImageResource(RenderImageResource::create());
 }
 
-RenderMedia::RenderMedia(HTMLMediaElement* video, const IntSize& intrinsicSize)
-    : RenderImage(video)
-{
-    setImageResource(RenderImageResource::create());
-    setIntrinsicSize(intrinsicSize);
-}
-
 RenderMedia::~RenderMedia()
 {
 }

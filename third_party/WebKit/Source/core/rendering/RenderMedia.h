@@ -35,7 +35,6 @@ class HTMLMediaElement;
 class RenderMedia : public RenderImage {
 public:
     explicit RenderMedia(HTMLMediaElement*);
-    RenderMedia(HTMLMediaElement*, const IntSize& intrinsicSize);
     virtual ~RenderMedia();
 
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
