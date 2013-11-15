@@ -178,7 +178,6 @@ private:
     bool containsOnlyWhitespace(unsigned from, unsigned len) const;
     float widthFromCache(const Font&, int start, int len, float xPos, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow*) const;
     bool isAllASCII() const { return m_isAllASCII; }
-    void updateNeedsTranscoding();
 
     void secureText(UChar mask);
 
@@ -197,7 +196,6 @@ private:
     bool m_isAllASCII : 1;
     bool m_canUseSimpleFontCodePath : 1;
     mutable bool m_knownToHaveNoOverflowAndNoFallbackFonts : 1;
-    bool m_needsTranscoding : 1;
 
     float m_minWidth;
     float m_maxWidth;
