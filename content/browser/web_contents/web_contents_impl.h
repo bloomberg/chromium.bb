@@ -572,10 +572,9 @@ class CONTENT_EXPORT WebContentsImpl
   WebContentsImpl(BrowserContext* browser_context,
                   WebContentsImpl* opener);
 
-  // Add and remove observers for page navigation notifications. Adding or
-  // removing multiple times has no effect. The order in which notifications
-  // are sent to observers is undefined. Clients must be sure to remove the
-  // observer before they go away.
+  // Add and remove observers for page navigation notifications. The order in
+  // which notifications are sent to observers is undefined. Clients must be
+  // sure to remove the observer before they go away.
   void AddObserver(WebContentsObserver* observer);
   void RemoveObserver(WebContentsObserver* observer);
 
