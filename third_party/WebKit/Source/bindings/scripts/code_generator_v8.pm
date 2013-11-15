@@ -1338,7 +1338,7 @@ sub GenerateActivityLogging
         $code .= <<END;
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->log("${interfaceName}.${propertyName}", info.Length(), loggerArgs.data(), "${accessType}");
     }
 END

@@ -461,6 +461,14 @@ namespace WebCore {
         }
     };
 
+    template<>
+    struct NativeValueTraits<v8::Handle<v8::Value> > {
+        static inline v8::Handle<v8::Value> nativeValue(const v8::Handle<v8::Value>& value)
+        {
+            return value;
+        }
+    };
+
     // Converts a JavaScript value to an array as per the Web IDL specification:
     // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-array
     template <class T, class V8T>
@@ -556,8 +564,6 @@ namespace WebCore {
             result.uncheckedAppend(TraitsType::nativeValue(info[i]));
         return result;
     }
-
-    Vector<v8::Handle<v8::Value> > toVectorOfArguments(const v8::FunctionCallbackInfo<v8::Value>&);
 
     // Validates that the passed object is a sequence type per WebIDL spec
     // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-sequence

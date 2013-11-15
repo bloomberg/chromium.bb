@@ -4610,7 +4610,7 @@ static void activityLoggedMethod1MethodCallback(const v8::FunctionCallbackInfo<v
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->log("TestObject.activityLoggedMethod1", info.Length(), loggerArgs.data(), "Method");
     }
     TestObjV8Internal::activityLoggedMethod1Method(info);
@@ -4633,7 +4633,7 @@ static void activityLoggedMethod2MethodCallback(const v8::FunctionCallbackInfo<v
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->log("TestObject.activityLoggedMethod2", info.Length(), loggerArgs.data(), "Method");
     }
     TestObjV8Internal::activityLoggedMethod2Method(info);
@@ -4656,7 +4656,7 @@ static void activityLoggedMethod2MethodCallbackForMainWorld(const v8::FunctionCa
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->log("TestObject.activityLoggedMethod2", info.Length(), loggerArgs.data(), "Method");
     }
     TestObjV8Internal::activityLoggedMethod2MethodForMainWorld(info);
@@ -4679,7 +4679,7 @@ static void activityLoggedInIsolatedWorldMethodMethodCallback(const v8::Function
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->log("TestObject.activityLoggedInIsolatedWorldMethod", info.Length(), loggerArgs.data(), "Method");
     }
     TestObjV8Internal::activityLoggedInIsolatedWorldMethodMethod(info);
@@ -4760,7 +4760,7 @@ static void overloadedActivityLoggedMethodMethodCallback(const v8::FunctionCallb
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->log("TestObject.overloadedActivityLoggedMethod", info.Length(), loggerArgs.data(), "Method");
     }
     TestObjV8Internal::overloadedActivityLoggedMethodMethod(info);
@@ -4801,7 +4801,7 @@ static void overloadedActivityLoggedMethodMethodCallbackForMainWorld(const v8::F
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->log("TestObject.overloadedActivityLoggedMethod", info.Length(), loggerArgs.data(), "Method");
     }
     TestObjV8Internal::overloadedActivityLoggedMethodMethodForMainWorld(info);

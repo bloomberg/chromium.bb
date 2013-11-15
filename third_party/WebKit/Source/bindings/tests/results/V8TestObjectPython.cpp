@@ -5418,7 +5418,7 @@ static void activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::Func
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->log("TestObjectPython.activityLoggingAccessForAllWorldsMethod", info.Length(), loggerArgs.data(), "Method");
     }
     TestObjectPythonV8Internal::activityLoggingAccessForAllWorldsMethodMethod(info);
@@ -5815,7 +5815,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback(
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->log("TestObjectPython.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data(), "Method");
     }
     TestObjectPythonV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethod(info);
@@ -5833,7 +5833,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackF
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->log("TestObjectPython.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data(), "Method");
     }
     TestObjectPythonV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodForMainWorld(info);
@@ -5851,7 +5851,7 @@ static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCall
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->log("TestObjectPython.activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data(), "Method");
     }
     TestObjectPythonV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethod(info);

@@ -123,15 +123,6 @@ v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator()
     return &arrayBufferAllocator;
 }
 
-Vector<v8::Handle<v8::Value> > toVectorOfArguments(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    Vector<v8::Handle<v8::Value> > result;
-    size_t length = info.Length();
-    for (size_t i = 0; i < length; ++i)
-        result.append(info[i]);
-    return result;
-}
-
 PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback, v8::Isolate* isolate)
 {
     RefPtr<NodeFilter> filter = NodeFilter::create();

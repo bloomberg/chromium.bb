@@ -196,7 +196,7 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     if (contextData && contextData->activityLogger()) {
         {# FIXME: replace toVectorOfArguments with toNativeArguments(info, 0)
            and delete toVectorOfArguments #}
-        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->log("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.data(), "Method");
     }
     {% endif %}

@@ -197,7 +197,7 @@ static void perWorldBindingsMethodWithDoNotCheckSecurityMethodCallback(const v8:
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
-        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->log("TestActiveDOMObject.perWorldBindingsMethodWithDoNotCheckSecurity", info.Length(), loggerArgs.data(), "Method");
     }
     TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityMethod(info);
