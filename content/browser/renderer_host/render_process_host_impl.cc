@@ -926,6 +926,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableUniversalAcceleratedOverflowScroll,
     switches::kDisableUnprefixedMediaSource,
     switches::kDisableVp8AlphaPlayback,
+    switches::kDisableWebAnimationsCSS,
     switches::kDisableWebAudio,
     switches::kDisableWebKitMediaSource,
     switches::kDomAutomationController,

@@ -306,14 +306,17 @@ const char kDisableThreadedHTMLParser[]     = "disable-threaded-html-parser";
 const char kDisableUniversalAcceleratedOverflowScroll[] =
     "disable-universal-accelerated-overflow-scroll";
 
+// Disables unprefixed Media Source API (i.e., the MediaSource object).
+const char kDisableUnprefixedMediaSource[]  = "disable-unprefixed-media-source";
+
+// Disable CSS Transitions / Animations on the Web Animations model.
+const char kDisableWebAnimationsCSS[]        = "disable-web-animations-css";
+
 // Disable web audio API.
 const char kDisableWebAudio[]               = "disable-webaudio";
 
 // Disables prefixed Media Source API (i.e., the WebKitMediaSource object).
 const char kDisableWebKitMediaSource[]      = "disable-webkit-media-source";
-
-// Disables unprefixed Media Source API (i.e., the MediaSource object).
-const char kDisableUnprefixedMediaSource[]  = "disable-unprefixed-media-source";
 
 // Don't enforce the same-origin policy. (Used by people testing their sites.)
 const char kDisableWebSecurity[]            = "disable-web-security";

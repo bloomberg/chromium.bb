@@ -110,11 +110,15 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisablePrefixedEncryptedMedia))
     WebRuntimeFeatures::enablePrefixedEncryptedMedia(false);
 
+  // FIXME: Remove the enable switch once Web Animations CSS is enabled by
+  // default in Blink.
   if (command_line.HasSwitch(switches::kEnableWebAnimationsCSS))
-    WebRuntimeFeatures::enableWebAnimationsCSS();
+    WebRuntimeFeatures::enableWebAnimationsCSS(true);
+  else if (command_line.HasSwitch(switches::kDisableWebAnimationsCSS))
+    WebRuntimeFeatures::enableWebAnimationsCSS(false);
 
   if (command_line.HasSwitch(switches::kEnableWebAnimationsSVG))
-    WebRuntimeFeatures::enableWebAnimationsSVG();
+    WebRuntimeFeatures::enableWebAnimationsSVG(true);
 
   if (command_line.HasSwitch(switches::kEnableWebMIDI))
     WebRuntimeFeatures::enableWebMIDI(true);
