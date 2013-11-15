@@ -232,6 +232,8 @@ class BuildUpdater(object):
         # If dest is just a dir listing, do nothing.
         if not os.path.basename(dest):
           continue
+        if not os.path.isdir(os.path.dirname(dest)):
+          os.makedirs(os.path.dirname(dest))
         with z.open(content) as unzipped_content:
           logging.info('Extracting %s to %s (%s)', content, dest, dl_file)
           with file(dest, 'wb') as dest_file:
