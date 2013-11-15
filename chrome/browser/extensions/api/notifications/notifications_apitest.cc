@@ -626,7 +626,13 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestProgressNotification) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
+#if defined(OS_LINUX)
+// Failing after disabling Linux Aura: http://crbug.com/319689
+#define MAYBE_TestPartialUpdate DISABLED_TestPartialUpdate
+#else
+#define MAYBE_TestPartialUpdate TestPartialUpdate
+#endif
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestPartialUpdate) {
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
 
   // Create a new notification.
