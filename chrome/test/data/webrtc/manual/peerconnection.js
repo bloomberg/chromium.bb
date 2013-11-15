@@ -170,10 +170,15 @@ function updateGetUserMediaConstraints() {
     }
     if ($('video').checked == true) {
       if (devices.video_id != null) {
-        constraints.video = {optional: [{sourceId: devices.video_id}]};
+        constraints.video = {optional: [{sourceId: devices.video_id},
+                                        {minWidth: $('video-width').value},
+                                        {minHeight: $('video-height').value}]
+        };
       }
       else {
-        constraints.video = true;
+        constraints.video = {optional: [{minWidth: $('video-width').value},
+                                        {minHeight: $('video-height').value}]
+        };
       }
     }
   }

@@ -30,10 +30,13 @@
         onchange="updateGetUserMediaConstraints();"></select>
     Video source <select class="drop-down" id="videosrc"
         onchange="updateGetUserMediaConstraints();"></select>
+    Optional min size<input type="text" id="video-width" value="1280" size="5px"
+        onblur="updateGetUserMediaConstraints();">x<input type="text"
+        id="video-height" value="720" size="5px"
+        onblur="updateGetUserMediaConstraints();">
     <button id="refresh-devices" onclick="getDevices();">
         Refresh devices</button>
-    Use <a href="constraints.html">constraints.html</a> to create more
-        advanced constraints (then paste them into the Constraints box above).
+    You can also use <a href="constraints.html">constraints.html</a>&nbsp;&nbsp;
     <a href="peerconnection-help.html" target="_blank">Help</a>
     <br/>
   </div>
