@@ -19,3 +19,6 @@ WebViewTest.VisitedLinkCrash
 
 # Disabled until blink roll r151682
 DeferredImageDecoderTest.drawScaledIntoSkPicture
+
+# crbug.com/320005
+CoreAnimationCompositorAnimationsTest.ConvertTimingForCompositorIterationCount
