@@ -3,49 +3,84 @@
 // found in the LICENSE file.
 
 #include "sync/engine/download.h"
+
+#include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
+#include "sync/engine/sync_directory_update_handler.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/sessions/debug_info_getter.h"
 #include "sync/sessions/nudge_tracker.h"
-#include "sync/test/engine/fake_model_worker.h"
-#include "sync/test/engine/syncer_command_test.h"
+#include "sync/sessions/status_controller.h"
+#include "sync/syncable/directory.h"
+#include "sync/test/engine/test_directory_setter_upper.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
 // A test fixture for tests exercising download updates functions.
-class DownloadUpdatesTest : public SyncerCommandTest {
+class DownloadUpdatesTest : public ::testing::Test {
  protected:
-  DownloadUpdatesTest() {
+  DownloadUpdatesTest()
+      : update_handler_map_deleter_(&update_handler_map_) {
   }
 
   virtual void SetUp() {
-    workers()->clear();
-    mutable_routing_info()->clear();
-    workers()->push_back(
-        make_scoped_refptr(new FakeModelWorker(GROUP_DB)));
-    workers()->push_back(
-        make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
-    (*mutable_routing_info())[AUTOFILL] = GROUP_DB;
-    (*mutable_routing_info())[BOOKMARKS] = GROUP_UI;
-    (*mutable_routing_info())[PREFERENCES] = GROUP_UI;
-    SyncerCommandTest::SetUp();
+    dir_maker_.SetUp();
+
+    AddUpdateHandler(AUTOFILL);
+    AddUpdateHandler(BOOKMARKS);
+    AddUpdateHandler(PREFERENCES);
+  }
+
+  virtual void TearDown() {
+    dir_maker_.TearDown();
+  }
+
+  ModelTypeSet proto_request_types() {
+    ModelTypeSet types;
+    for (UpdateHandlerMap::iterator it = update_handler_map_.begin();
+         it != update_handler_map_.end(); ++it) {
+      types.Put(it->first);
+    }
+    return types;
+  }
+
+  syncable::Directory* directory() {
+    return dir_maker_.directory();
+  }
+
+  UpdateHandlerMap* update_handler_map() {
+    return &update_handler_map_;
   }
 
  private:
+  void AddUpdateHandler(ModelType type) {
+    DCHECK(directory());
+    update_handler_map_.insert(
+        std::make_pair(type,
+                       new SyncDirectoryUpdateHandler(directory(), type)));
+  }
+
+  base::MessageLoop loop_;  // Needed for directory init.
+  TestDirectorySetterUpper dir_maker_;
+
+  UpdateHandlerMap update_handler_map_;
+  STLValueDeleter<UpdateHandlerMap> update_handler_map_deleter_;
+
   DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesTest);
 };
 
-TEST_F(DownloadUpdatesTest, ExecuteNoStates) {
+// Basic test to make sure nudges are expressed properly in the request.
+TEST_F(DownloadUpdatesTest, BookmarkNudge) {
   sessions::NudgeTracker nudge_tracker;
   nudge_tracker.RecordLocalChange(ModelTypeSet(BOOKMARKS));
 
-  scoped_ptr<sessions::SyncSession> session(
-      sessions::SyncSession::Build(context(), delegate()));
   sync_pb::ClientToServerMessage msg;
-  BuildNormalDownloadUpdates(session.get(),
-                             false,
-                             GetRoutingInfoTypes(routing_info()),
-                             nudge_tracker,
-                             &msg);
+  download::BuildNormalDownloadUpdatesImpl(proto_request_types(),
+                                           update_handler_map(),
+                                           nudge_tracker,
+                                           msg.mutable_get_updates());
 
   const sync_pb::GetUpdatesMessage& gu_msg = msg.get_updates();
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::LOCAL,
@@ -54,7 +89,6 @@ TEST_F(DownloadUpdatesTest, ExecuteNoStates) {
   for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
     syncer::ModelType type = GetModelTypeFromSpecificsFieldNumber(
         gu_msg.from_progress_marker(i).data_type_id());
-    EXPECT_TRUE(GetRoutingInfoTypes(routing_info()).Has(type));
 
     const sync_pb::DataTypeProgressMarker& progress_marker =
         gu_msg.from_progress_marker(i);
@@ -76,7 +110,8 @@ TEST_F(DownloadUpdatesTest, ExecuteNoStates) {
   }
 }
 
-TEST_F(DownloadUpdatesTest, ExecuteWithStates) {
+// Basic test to ensure invalidation payloads are expressed in the request.
+TEST_F(DownloadUpdatesTest, NotifyMany) {
   sessions::NudgeTracker nudge_tracker;
   nudge_tracker.RecordRemoteInvalidation(
       BuildInvalidationMap(AUTOFILL, 1, "autofill_payload"));
@@ -89,14 +124,11 @@ TEST_F(DownloadUpdatesTest, ExecuteWithStates) {
   notified_types.Put(BOOKMARKS);
   notified_types.Put(PREFERENCES);
 
-  scoped_ptr<sessions::SyncSession> session(
-      sessions::SyncSession::Build(context(), delegate()));
   sync_pb::ClientToServerMessage msg;
-  BuildNormalDownloadUpdates(session.get(),
-                             false,
-                             GetRoutingInfoTypes(routing_info()),
-                             nudge_tracker,
-                             &msg);
+  download::BuildNormalDownloadUpdatesImpl(proto_request_types(),
+                                           update_handler_map(),
+                                           nudge_tracker,
+                                           msg.mutable_get_updates());
 
   const sync_pb::GetUpdatesMessage& gu_msg = msg.get_updates();
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::NOTIFICATION,
@@ -105,7 +137,6 @@ TEST_F(DownloadUpdatesTest, ExecuteWithStates) {
   for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
     syncer::ModelType type = GetModelTypeFromSpecificsFieldNumber(
         gu_msg.from_progress_marker(i).data_type_id());
-    EXPECT_TRUE(GetRoutingInfoTypes(routing_info()).Has(type));
 
     const sync_pb::DataTypeProgressMarker& progress_marker =
         gu_msg.from_progress_marker(i);
@@ -125,45 +156,119 @@ TEST_F(DownloadUpdatesTest, ExecuteWithStates) {
   }
 }
 
-// Test that debug info is sent uploaded only once per sync session.
-TEST_F(DownloadUpdatesTest, VerifyAppendDebugInfo) {
-  // Start by expecting that no events are uploaded.
-  sessions::NudgeTracker nudge_tracker;
-  nudge_tracker.RecordLocalChange(ModelTypeSet(BOOKMARKS));
+TEST_F(DownloadUpdatesTest, ConfigureTest) {
+  sync_pb::ClientToServerMessage msg;
+  download::BuildDownloadUpdatesForConfigureImpl(
+      proto_request_types(),
+      update_handler_map(),
+      sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
+      msg.mutable_get_updates());
 
-  sync_pb::ClientToServerMessage msg1;
-  scoped_ptr<sessions::SyncSession> session1(
-      sessions::SyncSession::Build(context(), delegate()));
-  BuildNormalDownloadUpdates(session1.get(),
-                             false,
-                             GetRoutingInfoTypes(routing_info()),
-                             nudge_tracker,
-                             &msg1);
-  EXPECT_EQ(0, msg1.debug_info().events_size());
+  const sync_pb::GetUpdatesMessage& gu_msg = msg.get_updates();
 
-  // Create a new session, record an event, and try again.
-  scoped_ptr<sessions::SyncSession> session2(
-      sessions::SyncSession::Build(context(), delegate()));
-  DataTypeConfigurationStats stats;
-  stats.model_type = BOOKMARKS;
-  debug_info_event_listener()->OnDataTypeConfigureComplete(
-      std::vector<DataTypeConfigurationStats>(1, stats));
-  sync_pb::ClientToServerMessage msg2;
-  BuildNormalDownloadUpdates(session2.get(),
-                             false,
-                             GetRoutingInfoTypes(routing_info()),
-                             nudge_tracker,
-                             &msg2);
-  EXPECT_EQ(1, msg2.debug_info().events_size());
+  EXPECT_EQ(sync_pb::SyncEnums::RECONFIGURATION, gu_msg.get_updates_origin());
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
+            gu_msg.caller_info().source());
 
-  // Events should never be sent up more than once per session.
-  sync_pb::ClientToServerMessage msg3;
-  BuildNormalDownloadUpdates(session2.get(),
-                             false,
-                             GetRoutingInfoTypes(routing_info()),
-                             nudge_tracker,
-                             &msg3);
-  EXPECT_EQ(0, msg3.debug_info().events_size());
+  ModelTypeSet progress_types;
+  for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
+    syncer::ModelType type = GetModelTypeFromSpecificsFieldNumber(
+        gu_msg.from_progress_marker(i).data_type_id());
+    progress_types.Put(type);
+  }
+  EXPECT_TRUE(proto_request_types().Equals(progress_types));
+}
+
+TEST_F(DownloadUpdatesTest, PollTest) {
+  sync_pb::ClientToServerMessage msg;
+  download::BuildDownloadUpdatesForPollImpl(
+      proto_request_types(),
+      update_handler_map(),
+      msg.mutable_get_updates());
+
+  const sync_pb::GetUpdatesMessage& gu_msg = msg.get_updates();
+
+  EXPECT_EQ(sync_pb::SyncEnums::PERIODIC, gu_msg.get_updates_origin());
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::PERIODIC,
+            gu_msg.caller_info().source());
+
+  ModelTypeSet progress_types;
+  for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
+    syncer::ModelType type = GetModelTypeFromSpecificsFieldNumber(
+        gu_msg.from_progress_marker(i).data_type_id());
+    progress_types.Put(type);
+  }
+  EXPECT_TRUE(proto_request_types().Equals(progress_types));
+}
+
+class MockDebugInfoGetter : public sessions::DebugInfoGetter {
+ public:
+  MockDebugInfoGetter() {}
+  virtual ~MockDebugInfoGetter() {}
+
+  virtual void GetAndClearDebugInfo(sync_pb::DebugInfo* debug_info) OVERRIDE {
+    debug_info->CopyFrom(debug_info_);
+    debug_info_.Clear();
+  }
+
+  void AddDebugEvent() {
+    debug_info_.add_events();
+  }
+
+ private:
+  sync_pb::DebugInfo debug_info_;
+};
+
+class DownloadUpdatesDebugInfoTest : public ::testing::Test {
+ public:
+  DownloadUpdatesDebugInfoTest() {}
+  virtual ~DownloadUpdatesDebugInfoTest() {}
+
+  sessions::StatusController* status() {
+    return &status_;
+  }
+
+  sessions::DebugInfoGetter* debug_info_getter() {
+    return &debug_info_getter_;
+  }
+
+  void AddDebugEvent() {
+    debug_info_getter_.AddDebugEvent();
+  }
+
+ private:
+  sessions::StatusController status_;
+  MockDebugInfoGetter debug_info_getter_;
+};
+
+
+// Verify AppendDebugInfo when there are no events to upload.
+TEST_F(DownloadUpdatesDebugInfoTest, VerifyAppendDebugInfo_Empty) {
+  sync_pb::DebugInfo debug_info;
+  download::AppendClientDebugInfoIfNeeded(debug_info_getter(),
+                                          status(),
+                                          &debug_info);
+  EXPECT_EQ(0, debug_info.events_size());
+}
+
+// We should upload debug info only once per sync cycle.
+TEST_F(DownloadUpdatesDebugInfoTest, TryDoubleAppend) {
+  sync_pb::DebugInfo debug_info1;
+
+  AddDebugEvent();
+  download::AppendClientDebugInfoIfNeeded(debug_info_getter(),
+                                          status(),
+                                          &debug_info1);
+  EXPECT_EQ(1, debug_info1.events_size());
+
+
+  // Repeated invocations should not send up more events.
+  AddDebugEvent();
+  sync_pb::DebugInfo debug_info2;
+  download::AppendClientDebugInfoIfNeeded(debug_info_getter(),
+                                          status(),
+                                          &debug_info2);
+  EXPECT_EQ(0, debug_info2.events_size());
 }
 
 }  // namespace syncer

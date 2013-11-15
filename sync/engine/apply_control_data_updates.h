@@ -11,18 +11,13 @@ namespace syncer {
 
 class Cryptographer;
 
-namespace sessions {
-class SyncSession;
-}
-
 namespace syncable {
 class Directory;
 class MutableEntry;
 class WriteTransaction;
 }
 
-SYNC_EXPORT_PRIVATE void ApplyControlDataUpdates(
-    sessions::SyncSession* session);
+SYNC_EXPORT_PRIVATE void ApplyControlDataUpdates(syncable::Directory* dir);
 void ApplyNigoriUpdate(syncable::WriteTransaction* trans,
                        syncable::MutableEntry* const entry,
                        Cryptographer* cryptographer);

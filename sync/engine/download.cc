@@ -16,14 +16,14 @@
 #include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/syncable_read_transaction.h"
 
-using sync_pb::DebugInfo;
-
 namespace syncer {
 
 using sessions::StatusController;
 using sessions::SyncSession;
 using sessions::SyncSessionContext;
 using std::string;
+
+namespace download {
 
 namespace {
 
@@ -80,27 +80,10 @@ bool ShouldRequestEncryptionKey(
   return need_encryption_key;
 }
 
-void AppendClientDebugInfoIfNeeded(
-    SyncSession* session,
-    DebugInfo* debug_info) {
-  // We want to send the debug info only once per sync cycle. Check if it has
-  // already been sent.
-  if (!session->status_controller().debug_info_sent()) {
-    DVLOG(1) << "Sending client debug info ...";
-    // Could be null in some unit tests.
-    if (session->context()->debug_info_getter()) {
-      session->context()->debug_info_getter()->GetAndClearDebugInfo(
-          debug_info);
-    }
-    session->mutable_status_controller()->set_debug_info_sent();
-  }
-}
-
-void InitDownloadUpdatesRequest(
+void InitDownloadUpdatesContext(
     SyncSession* session,
     bool create_mobile_bookmarks_folder,
-    sync_pb::ClientToServerMessage* message,
-    ModelTypeSet proto_request_types) {
+    sync_pb::ClientToServerMessage* message) {
   message->set_share(session->context()->account_name());
   message->set_message_contents(sync_pb::ClientToServerMessage::GET_UPDATES);
 
@@ -111,8 +94,10 @@ void InitDownloadUpdatesRequest(
   // (e.g. Bookmark URLs but not their containing folders).
   get_updates->set_fetch_folders(true);
 
-  DebugInfo* debug_info = message->mutable_debug_info();
-  AppendClientDebugInfoIfNeeded(session, debug_info);
+  sync_pb::DebugInfo* debug_info = message->mutable_debug_info();
+  AppendClientDebugInfoIfNeeded(session->context()->debug_info_getter(),
+                                session->mutable_status_controller(),
+                                debug_info);
 
   get_updates->set_create_mobile_bookmarks_folder(
       create_mobile_bookmarks_folder);
@@ -122,12 +107,12 @@ void InitDownloadUpdatesRequest(
   // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
   get_updates->mutable_caller_info()->set_notifications_enabled(
       session->context()->notifications_enabled());
+}
 
-  StatusController* status = session->mutable_status_controller();
-  status->set_updates_request_types(proto_request_types);
-
-  UpdateHandlerMap* handler_map = session->context()->update_handler_map();
-
+void InitDownloadUpdatesProgress(
+    ModelTypeSet proto_request_types,
+    UpdateHandlerMap* handler_map,
+    sync_pb::GetUpdatesMessage* get_updates) {
   for (ModelTypeSet::Iterator it = proto_request_types.First();
        it.Good(); it.Inc()) {
     UpdateHandlerMap::iterator handler_it = handler_map->find(it.Get());
@@ -219,18 +204,34 @@ void BuildNormalDownloadUpdates(
     ModelTypeSet request_types,
     const sessions::NudgeTracker& nudge_tracker,
     sync_pb::ClientToServerMessage* client_to_server_message) {
-  InitDownloadUpdatesRequest(
-      session,
-      create_mobile_bookmarks_folder,
-      client_to_server_message,
-      Intersection(request_types, ProtocolTypes()));
-  sync_pb::GetUpdatesMessage* get_updates =
-      client_to_server_message->mutable_get_updates();
-
   // Request updates for all requested types.
   DVLOG(1) << "Getting updates for types "
            << ModelTypeSetToString(request_types);
   DCHECK(!request_types.Empty());
+
+  InitDownloadUpdatesContext(
+      session,
+      create_mobile_bookmarks_folder,
+      client_to_server_message);
+
+  BuildNormalDownloadUpdatesImpl(
+      Intersection(request_types, ProtocolTypes()),
+      session->context()->update_handler_map(),
+      nudge_tracker,
+      client_to_server_message->mutable_get_updates());
+}
+
+void BuildNormalDownloadUpdatesImpl(
+    ModelTypeSet proto_request_types,
+    UpdateHandlerMap* update_handler_map,
+    const sessions::NudgeTracker& nudge_tracker,
+    sync_pb::GetUpdatesMessage* get_updates) {
+  DCHECK(!proto_request_types.Empty());
+
+  InitDownloadUpdatesProgress(
+      proto_request_types,
+      update_handler_map,
+      get_updates);
 
   // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
   get_updates->mutable_caller_info()->set_source(
@@ -262,18 +263,32 @@ void BuildDownloadUpdatesForConfigure(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
     ModelTypeSet request_types,
     sync_pb::ClientToServerMessage* client_to_server_message) {
-  InitDownloadUpdatesRequest(
-      session,
-      create_mobile_bookmarks_folder,
-      client_to_server_message,
-      Intersection(request_types, ProtocolTypes()));
-  sync_pb::GetUpdatesMessage* get_updates =
-      client_to_server_message->mutable_get_updates();
-
   // Request updates for all enabled types.
   DVLOG(1) << "Initial download for types "
            << ModelTypeSetToString(request_types);
-  DCHECK(!request_types.Empty());
+
+  InitDownloadUpdatesContext(
+      session,
+      create_mobile_bookmarks_folder,
+      client_to_server_message);
+  BuildDownloadUpdatesForConfigureImpl(
+      Intersection(request_types, ProtocolTypes()),
+      session->context()->update_handler_map(),
+      source,
+      client_to_server_message->mutable_get_updates());
+}
+
+void BuildDownloadUpdatesForConfigureImpl(
+    ModelTypeSet proto_request_types,
+    UpdateHandlerMap* update_handler_map,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    sync_pb::GetUpdatesMessage* get_updates) {
+  DCHECK(!proto_request_types.Empty());
+
+  InitDownloadUpdatesProgress(
+      proto_request_types,
+      update_handler_map,
+      get_updates);
 
   // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
   get_updates->mutable_caller_info()->set_source(source);
@@ -289,17 +304,29 @@ void BuildDownloadUpdatesForPoll(
     bool create_mobile_bookmarks_folder,
     ModelTypeSet request_types,
     sync_pb::ClientToServerMessage* client_to_server_message) {
-  InitDownloadUpdatesRequest(
-      session,
-      create_mobile_bookmarks_folder,
-      client_to_server_message,
-      Intersection(request_types, ProtocolTypes()));
-  sync_pb::GetUpdatesMessage* get_updates =
-      client_to_server_message->mutable_get_updates();
-
   DVLOG(1) << "Polling for types "
            << ModelTypeSetToString(request_types);
-  DCHECK(!request_types.Empty());
+
+  InitDownloadUpdatesContext(
+      session,
+      create_mobile_bookmarks_folder,
+      client_to_server_message);
+  BuildDownloadUpdatesForPollImpl(
+      Intersection(request_types, ProtocolTypes()),
+      session->context()->update_handler_map(),
+      client_to_server_message->mutable_get_updates());
+}
+
+void BuildDownloadUpdatesForPollImpl(
+    ModelTypeSet proto_request_types,
+    UpdateHandlerMap* update_handler_map,
+    sync_pb::GetUpdatesMessage* get_updates) {
+  DCHECK(!proto_request_types.Empty());
+
+  InitDownloadUpdatesProgress(
+      proto_request_types,
+      update_handler_map,
+      get_updates);
 
   // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
   get_updates->mutable_caller_info()->set_source(
@@ -364,5 +391,23 @@ SyncerError ExecuteDownloadUpdates(
     return result;
   }
 }
+
+void AppendClientDebugInfoIfNeeded(
+    sessions::DebugInfoGetter* debug_info_getter,
+    StatusController* status,
+    sync_pb::DebugInfo* debug_info) {
+  // We want to send the debug info only once per sync cycle. Check if it has
+  // already been sent.
+  if (!status->debug_info_sent()) {
+    DVLOG(1) << "Sending client debug info ...";
+    // Could be null in some unit tests.
+    if (debug_info_getter) {
+      debug_info_getter->GetAndClearDebugInfo(debug_info);
+    }
+    status->set_debug_info_sent();
+  }
+}
+
+}  // namespace download
 
 }  // namespace syncer

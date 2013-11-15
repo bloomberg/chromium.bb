@@ -22,10 +22,6 @@ struct SYNC_EXPORT ModelNeutralState {
   ModelNeutralState();
   ~ModelNeutralState();
 
-  // We GetUpdates for some combination of types at once.
-  // requested_update_types stores the set of types which were requested.
-  ModelTypeSet updates_request_types;
-
   // The set of types for which commits were sent to the server.
   ModelTypeSet commit_request_types;
 

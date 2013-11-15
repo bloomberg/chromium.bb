@@ -24,8 +24,7 @@ using syncable::SERVER_SPECIFICS;
 using syncable::SPECIFICS;
 using syncable::SYNCER;
 
-void ApplyControlDataUpdates(sessions::SyncSession* session) {
-  syncable::Directory* dir = session->context()->directory();
+void ApplyControlDataUpdates(syncable::Directory* dir) {
   syncable::WriteTransaction trans(FROM_HERE, SYNCER, dir);
 
   std::vector<int64> handles;

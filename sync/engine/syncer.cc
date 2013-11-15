@@ -63,7 +63,7 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
     if (!DownloadAndApplyUpdates(
             request_types,
             session,
-            base::Bind(&BuildNormalDownloadUpdates,
+            base::Bind(&download::BuildNormalDownloadUpdates,
                        session,
                        kCreateMobileBookmarksFolder,
                        request_types,
@@ -88,7 +88,7 @@ bool Syncer::ConfigureSyncShare(
   DownloadAndApplyUpdates(
       request_types,
       session,
-      base::Bind(&BuildDownloadUpdatesForConfigure,
+      base::Bind(&download::BuildDownloadUpdatesForConfigure,
                  session,
                  kCreateMobileBookmarksFolder,
                  source,
@@ -103,7 +103,7 @@ bool Syncer::PollSyncShare(ModelTypeSet request_types,
   DownloadAndApplyUpdates(
       request_types,
       session,
-      base::Bind(&BuildDownloadUpdatesForPoll,
+      base::Bind(&download::BuildDownloadUpdatesForPoll,
                  session,
                  kCreateMobileBookmarksFolder,
                  request_types));
@@ -113,7 +113,7 @@ bool Syncer::PollSyncShare(ModelTypeSet request_types,
 void Syncer::ApplyUpdates(SyncSession* session) {
   TRACE_EVENT0("sync", "ApplyUpdates");
 
-  ApplyControlDataUpdates(session);
+  ApplyControlDataUpdates(session->context()->directory());
 
   ApplyUpdatesAndResolveConflictsCommand apply_updates;
   apply_updates.Execute(session);
@@ -133,7 +133,7 @@ bool Syncer::DownloadAndApplyUpdates(
     sync_pb::ClientToServerMessage msg;
     build_fn.Run(&msg);
     SyncerError download_result =
-        ExecuteDownloadUpdates(request_types, session, &msg);
+        download::ExecuteDownloadUpdates(request_types, session, &msg);
     session->mutable_status_controller()->set_last_download_updates_result(
         download_result);
     if (download_result != SYNCER_OK) {
