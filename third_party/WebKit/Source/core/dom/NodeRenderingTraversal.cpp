@@ -49,10 +49,12 @@ void ParentDetails::didTraverseShadowRoot(const ShadowRoot* root)
 
 ContainerNode* parent(const Node* node, ParentDetails* details)
 {
+    // FIXME: We should probably ASSERT(!node->document().childNeedsDistributionRecalc()) here, but
+    // a bunch of things use NodeRenderingTraversal::parent in places where that looks like it could
+    // be false.
     ASSERT(node);
     if (isActiveInsertionPoint(*node))
         return 0;
-    // FIXME: Once everything lazy attaches we should assert that we don't need a distribution recalc here.
     ComposedTreeWalker walker(node, ComposedTreeWalker::CanStartFromShadowBoundary);
     return toContainerNode(walker.traverseParent(walker.get(), details));
 }
