@@ -486,8 +486,8 @@ void RemoteToLocalSyncer::HandleRename(
   DCHECK_NE(dirty_tracker_->synced_details().title(),
             remote_metadata_->details().title());
 
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
+  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForDeletion,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void RemoteToLocalSyncer::HandleReorganize(
@@ -595,6 +595,7 @@ void RemoteToLocalSyncer::SyncCompleted(const SyncStatusCallback& callback,
   DCHECK(dirty_tracker_);
   DCHECK(remote_metadata_);
   DCHECK(remote_metadata_->has_details());
+
   metadata_database()->UpdateTracker(dirty_tracker_->tracker_id(),
                                      remote_metadata_->details(),
                                      callback);

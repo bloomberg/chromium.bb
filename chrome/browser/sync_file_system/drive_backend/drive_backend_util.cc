@@ -130,5 +130,13 @@ std::string FileKindToString(FileKind file_kind) {
   return "unknown";
 }
 
+bool HasFileAsParent(const FileDetails& details, const std::string& file_id) {
+  for (int i = 0; i < details.parent_folder_ids_size(); ++i) {
+    if (details.parent_folder_ids(i) == file_id)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace drive_backend
 }  // namespace sync_file_system
