@@ -26,6 +26,7 @@ const char kPrivetURLValueOffline[] = "1";
 
 const char kPrivetContentTypePDF[] = "application/pdf";
 const char kPrivetContentTypePWGRaster[] = "image/pwg-raster";
+const char kPrivetContentTypeAny[] = "*/*";
 const char kPrivetContentTypeCJT[] = "application/json";
 
 const char kPrivetCDDKeySupportedContentTypes[] =
@@ -515,7 +516,8 @@ void PrivetLocalPrintOperationImpl::OnCapabilitiesResponse(
       if (supported_content_types->GetDictionary(i, &content_type_value) &&
           content_type_value->GetString(kPrivetCDDKeyContentType,
                                         &content_type) &&
-          content_type == kPrivetContentTypePDF) {
+          (content_type == kPrivetContentTypePDF ||
+           content_type == kPrivetContentTypeAny) ) {
         use_pdf_ = true;
       }
     }

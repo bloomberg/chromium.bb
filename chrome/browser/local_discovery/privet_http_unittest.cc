@@ -162,6 +162,16 @@ const char kSampleCapabilitiesResponsePWGOnly[] = "{"
     "}"
     "}";
 
+const char kSampleCapabilitiesResponseWithAnyMimetype[] = "{"
+    "\"version\" : \"1.0\","
+    "\"printer\" : {"
+    "  \"supported_content_type\" : ["
+    "   { \"content_type\" : \"*/*\" },"
+    "   { \"content_type\" : \"image/pwg-raster\" }"
+    "  ]"
+    "}"
+    "}";
+
 const char kSampleErrorResponsePrinterBusy[] = "{"
     "\"error\": \"invalid_print_job\","
     "\"timeout\": 1 "
@@ -769,6 +779,33 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrint) {
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/capabilities"),
       kSampleCapabilitiesResponse));
+
+  local_print_operation_->SendData("Sample print data");
+
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+
+  // TODO(noamsml): Is encoding spaces as pluses standard?
+  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+      GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
+           "user=sample%40gmail.com&jobname=Sample+job+name"),
+      "Sample print data",
+      kSampleLocalPrintResponse));
+};
+
+TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithAnyMimetype) {
+  local_print_operation_->SetUsername("sample@gmail.com");
+  local_print_operation_->SetJobname("Sample job name");
+  local_print_operation_->Start();
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/info"),
+      kSampleInfoResponse));
+
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingRequestPDFInternal());
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/capabilities"),
+      kSampleCapabilitiesResponseWithAnyMimetype));
 
   local_print_operation_->SendData("Sample print data");
 
