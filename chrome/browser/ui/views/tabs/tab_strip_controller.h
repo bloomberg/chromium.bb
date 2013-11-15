@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_
 
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "ui/base/ui_base_types.h"
 
@@ -92,6 +93,11 @@ class TabStripController {
 
   // Creates the new tab.
   virtual void CreateNewTab() = 0;
+
+  // Creates a new tab, and loads |location| in the tab. If |location| is a
+  // valid URL, then simply loads the URL, otherwise this can open a
+  // search-result page for |location|.
+  virtual void CreateNewTabWithLocation(const base::string16& location) = 0;
 
   // Returns true if the tab strip is in an incognito window.
   virtual bool IsIncognito() = 0;

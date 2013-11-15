@@ -7,6 +7,9 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -350,7 +353,18 @@ bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
 }
 
 void BrowserTabStripController::CreateNewTab() {
-  model_->delegate()->AddBlankTabAt(-1, true);
+  model_->delegate()->AddURLTabAt(GURL(), -1, true);
+}
+
+void BrowserTabStripController::CreateNewTabWithLocation(
+    const base::string16& location) {
+  // Use autocomplete to clean up the text, going so far as to turn it into
+  // a search query if necessary.
+  AutocompleteMatch match;
+  AutocompleteClassifierFactory::GetForProfile(profile())->Classify(
+      location, false, false, &match, NULL);
+  if (match.destination_url.is_valid())
+    model_->delegate()->AddURLTabAt(match.destination_url, -1, true);
 }
 
 bool BrowserTabStripController::IsIncognito() {

@@ -18,19 +18,24 @@
 
 namespace chrome {
 
-void AddBlankTabAt(Browser* browser, int index, bool foreground) {
+void AddURLTabAt(Browser* browser, const GURL& url, int idx, bool foreground) {
   // Time new tab page creation time.  We keep track of the timing data in
   // WebContents, but we want to include the time it takes to create the
   // WebContents object too.
   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
-  chrome::NavigateParams params(browser, GURL(chrome::kChromeUINewTabURL),
-                                content::PAGE_TRANSITION_TYPED);
+  chrome::NavigateParams params(browser,
+      url.is_empty() ? GURL(chrome::kChromeUINewTabURL) : url,
+      content::PAGE_TRANSITION_TYPED);
   params.disposition = foreground ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
-  params.tabstrip_index = index;
+  params.tabstrip_index = idx;
   chrome::Navigate(&params);
   CoreTabHelper* core_tab_helper =
       CoreTabHelper::FromWebContents(params.target_contents);
   core_tab_helper->set_new_tab_start_time(new_tab_start_time);
+}
+
+void AddBlankTabAt(Browser* browser, int index, bool foreground) {
+  AddURLTabAt(browser, GURL(), index, foreground);
 }
 
 content::WebContents* AddSelectedTabWithURL(

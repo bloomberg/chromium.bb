@@ -108,6 +108,10 @@ bool FakeBaseTabStripController::IsCompatibleWith(TabStrip* other) const {
 void FakeBaseTabStripController::CreateNewTab() {
 }
 
+void FakeBaseTabStripController::CreateNewTabWithLocation(
+    const base::string16& location) {
+}
+
 bool FakeBaseTabStripController::IsIncognito() {
   return false;
 }

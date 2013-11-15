@@ -13,7 +13,9 @@ TestTabStripModelDelegate::TestTabStripModelDelegate() {
 TestTabStripModelDelegate::~TestTabStripModelDelegate() {
 }
 
-void TestTabStripModelDelegate::AddBlankTabAt(int index, bool foreground) {
+void TestTabStripModelDelegate::AddURLTabAt(const GURL& url,
+                                            int index,
+                                            bool foreground) {
 }
 
 Browser* TestTabStripModelDelegate::CreateNewStripWithContents(

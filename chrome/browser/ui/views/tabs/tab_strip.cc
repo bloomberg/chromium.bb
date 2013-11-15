@@ -239,6 +239,16 @@ int stacked_tab_right_clip() {
   return value;
 }
 
+base::string16 GetClipboardText() {
+  if (!ui::Clipboard::IsSupportedClipboardType(ui::CLIPBOARD_TYPE_SELECTION))
+    return base::string16();
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  CHECK(clipboard);
+  base::string16 clipboard_text;
+  clipboard->ReadText(ui::CLIPBOARD_TYPE_SELECTION, &clipboard_text);
+  return clipboard_text;
+}
+
 // Animation delegate used when a dragged tab is released. When done sets the
 // dragging state to false.
 class ResetDraggingStateDelegate
@@ -346,6 +356,10 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
     : views::ImageButton(listener),
       tab_strip_(tab_strip),
       destroyed_(NULL) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  set_triggerable_event_flags(triggerable_event_flags() |
+                              ui::EF_MIDDLE_MOUSE_BUTTON);
+#endif
 }
 
 NewTabButton::~NewTabButton() {
@@ -1511,6 +1525,16 @@ void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
     content::RecordAction(UserMetricsAction("NewTab_Button"));
     UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
                               TabStripModel::NEW_TAB_ENUM_COUNT);
+    if (event.IsMouseEvent()) {
+      const ui::MouseEvent& mouse = static_cast<const ui::MouseEvent&>(event);
+      if (mouse.IsOnlyMiddleMouseButton()) {
+        base::string16 clipboard_text = GetClipboardText();
+        if (!clipboard_text.empty())
+          controller()->CreateNewTabWithLocation(clipboard_text);
+        return;
+      }
+    }
+
     controller()->CreateNewTab();
     if (event.type() == ui::ET_GESTURE_TAP)
       TouchUMA::RecordGestureAction(TouchUMA::GESTURE_NEWTAB_TAP);

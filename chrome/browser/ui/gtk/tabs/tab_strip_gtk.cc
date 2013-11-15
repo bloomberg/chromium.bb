@@ -2185,7 +2185,7 @@ void TabStripGtk::OnNewTabClicked(GtkWidget* widget) {
       content::RecordAction(UserMetricsAction("NewTab_Button"));
       UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
                                 TabStripModel::NEW_TAB_ENUM_COUNT);
-      model_->delegate()->AddBlankTabAt(-1, true);
+      model_->delegate()->AddURLTabAt(GURL(), -1, true);
       break;
     case 2: {
       // On middle-click, try to parse the PRIMARY selection as a URL and load

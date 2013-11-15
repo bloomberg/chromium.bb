@@ -24,6 +24,11 @@ class Rect;
 
 namespace chrome {
 
+// Adds a tab to the tab strip of the specified browser and loads |url| into it.
+// If |url| is an empty URL, then the new tab-page is laoded. An |index| of -1
+// means to append it to the end of the tab strip.
+void AddURLTabAt(Browser* browser, const GURL& url, int index, bool foreground);
+
 // Adds a blank tab to the tab strip of the specified browser; an |index| of -1
 // means to append it to the end of the tab strip.
 void AddBlankTabAt(Browser* browser, int index, bool foreground);
