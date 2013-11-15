@@ -22,7 +22,7 @@ var testEditable = document.getElementById('test_editable');
 var testTextArea = document.getElementById('test_textarea');
 var testTextField = document.getElementById('test_textfield');
 
-function setFocusOnEditableElements() {
+function triggerSpellingForEditables() {
     testEditable.focus();
     testTextArea.focus();
     testTextField.focus();
@@ -30,13 +30,11 @@ function setFocusOnEditableElements() {
 
 var expectedNumberOfMarkers;
 var textNode;
-
 function verifySpellingMarkers(expectation, doneCallback) {
     expectedNumberOfMarkers = expectation;
-    textNode = findFirstTextNode(testEditable);
-    shouldBecomeEqual('internals.markerCountForNode(textNode, "spelling")', 'expectedNumberOfMarkers', function() {
-        shouldBecomeEqual('internals.markerCountForNode(textNode, "spelling")', 'expectedNumberOfMarkers', function() {
-            shouldBecomeEqual('internals.markerCountForNode(textNode, "spelling")', 'expectedNumberOfMarkers', function() {
+    shouldBecomeEqual('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', 'expectedNumberOfMarkers', function() {
+        shouldBecomeEqual('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', 'expectedNumberOfMarkers', function() {
+            shouldBecomeEqual('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', 'expectedNumberOfMarkers', function() {
                 doneCallback();
                 // After focusing the editable elements, check whether they have spelling markers.
                 verifySpellingMarkers(3, finishJSTest);
@@ -56,7 +54,7 @@ function test() {
 
     // Check whether non-focused elements do not have spelling markers, then
     // verify them when they get focused.
-    verifySpellingMarkers(0, setFocusOnEditableElements);
+    verifySpellingMarkers(0, triggerSpellingForEditables);
 }
 
 </script>
