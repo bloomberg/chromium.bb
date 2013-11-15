@@ -42,5 +42,11 @@
     '<(DEPTH)',
     '<(SHARED_INTERMEDIATE_DIR)',
   ],
+  'direct_dependent_settings': {
+    'include_dirs': [
+      '<(DEPTH)',
+      '<(SHARED_INTERMEDIATE_DIR)',
+    ],
+  },
   'hard_dependency': 1,
 }

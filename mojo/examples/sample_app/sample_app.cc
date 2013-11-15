@@ -3,7 +3,12 @@
 // found in the LICENSE file.
 
 #include <stdio.h>
+#include <string>
 
+#include "base/message_loop/message_loop.h"
+#include "mojo/common/bindings_support_impl.h"
+#include "mojo/examples/sample_app/hello_world_client_impl.h"
+#include "mojo/public/bindings/lib/bindings_support.h"
 #include "mojo/public/system/core.h"
 #include "mojo/public/system/macros.h"
 
@@ -17,59 +22,33 @@
 #define SAMPLE_APP_EXPORT __attribute__((visibility("default")))
 #endif
 
-char* ReadStringFromPipe(mojo::Handle pipe) {
-  uint32_t len = 0;
-  char* buf = NULL;
-  MojoResult result = mojo::ReadMessage(pipe, buf, &len, NULL, NULL,
-                                        MOJO_READ_MESSAGE_FLAG_NONE);
-  if (result == MOJO_RESULT_RESOURCE_EXHAUSTED) {
-    buf = new char[len];
-    result = mojo::ReadMessage(pipe, buf, &len, NULL, NULL,
-                               MOJO_READ_MESSAGE_FLAG_NONE);
-  }
-  if (result < MOJO_RESULT_OK) {
-    // Failure..
-    if (buf)
-      delete[] buf;
-    return NULL;
-  }
-  return buf;
+namespace mojo {
+namespace examples {
+
+void SayHello(mojo::Handle pipe) {
+  // Send message out.
+  HelloWorldClientImpl client(pipe);
+  mojo::ScratchBuffer buf;
+  const std::string kGreeting("hello, world!");
+  mojo::String* greeting = mojo::String::NewCopyOf(&buf, kGreeting);
+  client.service()->Greeting(greeting);
+
+  // Run loop to receieve Ack. The client will quit the loop.
+  base::MessageLoop::current()->Run();
 }
 
-class SampleMessageWaiter {
- public:
-  explicit SampleMessageWaiter(mojo::Handle pipe) : pipe_(pipe) {}
-  ~SampleMessageWaiter() {}
-
-  void Read() {
-    char* string = ReadStringFromPipe(pipe_);
-    if (string) {
-      printf("Read string from pipe: %s\n", string);
-      delete[] string;
-      string = NULL;
-    }
-  }
-
-  void WaitAndRead() {
-    for (int i = 0; i < 100;) {
-      MojoResult result = mojo::Wait(pipe_, MOJO_WAIT_FLAG_READABLE, 100);
-      if (result < MOJO_RESULT_OK) {
-        // Failure...
-        continue;
-      }
-      ++i;
-      Read();
-    }
-  }
-
- private:
-  mojo::Handle pipe_;
-
-  MOJO_DISALLOW_COPY_AND_ASSIGN(SampleMessageWaiter);
-};
+}  // examples
+}  // mojo
 
 extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
     mojo::Handle pipe) {
-  SampleMessageWaiter(pipe).WaitAndRead();
+  base::MessageLoop loop;
+  // Set the global bindings support.
+  mojo::common::BindingsSupportImpl bindings_support;
+  mojo::BindingsSupport::Set(&bindings_support);
+
+  mojo::examples::SayHello(pipe);
+
+  mojo::BindingsSupport::Set(NULL);
   return MOJO_RESULT_OK;
 }

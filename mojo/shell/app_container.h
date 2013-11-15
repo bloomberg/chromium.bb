@@ -8,12 +8,14 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/simple_thread.h"
+#include "mojo/examples/hello_world_service/hello_world_service_impl.h"
 #include "mojo/public/system/core.h"
 #include "mojo/shell/loader.h"
 
 namespace base {
 class FilePath;
-class Thread;
+class PlatformThreadHandle;
 }
 
 namespace mojo {
@@ -25,7 +27,9 @@ namespace shell {
 class Context;
 
 // A container class that runs an app on its own thread.
-class AppContainer : public Loader::Delegate {
+class AppContainer
+    : public Loader::Delegate,
+      public base::DelegateSimpleThread::Delegate {
  public:
   explicit AppContainer(Context* context);
   virtual ~AppContainer();
@@ -33,19 +37,23 @@ class AppContainer : public Loader::Delegate {
   void Load(const GURL& app_url);
 
  private:
-  // From Loader::Delegate
+  // From Loader::Delegate.
   virtual void DidCompleteLoad(const GURL& app_url,
                                const base::FilePath& app_path) OVERRIDE;
+
+  // From base::DelegateSimpleThread::Delegate.
+  virtual void Run() OVERRIDE;
 
   void AppCompleted();
 
   Context* context_;
+  base::FilePath app_path_;
+  Handle app_handle_raw_;
+  base::Closure ack_closure_;
   scoped_ptr<Loader::Job> request_;
-  scoped_ptr<base::Thread> thread_;
+  scoped_ptr<base::DelegateSimpleThread> thread_;
+  scoped_ptr<examples::HelloWorldServiceImpl> hello_world_service_;
   scoped_ptr<services::NativeViewportController> native_viewport_controller_;
-
-  // Following members are valid only on app thread.
-  Handle shell_handle_;
 
   base::WeakPtrFactory<AppContainer> weak_factory_;
 
