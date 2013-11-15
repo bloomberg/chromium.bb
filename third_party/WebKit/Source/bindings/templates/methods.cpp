@@ -104,7 +104,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 %}
 EventTarget* impl = {{v8_class_name}}::toNative(info.Holder());
 if (DOMWindow* window = impl->toDOMWindow()) {
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
