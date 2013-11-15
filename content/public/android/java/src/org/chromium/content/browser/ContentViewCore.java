@@ -1419,6 +1419,11 @@ public class ContentViewCore
         }
     }
 
+    @VisibleForTesting
+    public void sendDoubleTapForTest(long timeMs, int x, int y, Bundle b) {
+        sendGesture(ContentViewGestureHandler.GESTURE_DOUBLE_TAP, timeMs, x, y, b);
+    }
+
     @Override
     public void sendSingleTapUMA(int type) {
         if (mNativeContentViewCore == 0) return;
