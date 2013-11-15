@@ -58,13 +58,13 @@ The following table lists the currently available permissions:
     <th>Permission</th>
     <th>Description</th>
   </tr>
-  {{#permissions}}
-  <tr id="{{anchor}}">
+  {{#p:permissions}}
+  <tr id="{{p.anchor}}">
     <td>
-      <code>"{{name}}"</code>
+      <code>"{{p.name}}"</code>
     </td>
     <td>
-      {{+description platform:platform name:name}}
+      {{+p.description platform:platform name:p.name/}}
     </td>
   </tr>
   {{/permissions}}

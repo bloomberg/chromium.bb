@@ -1,15 +1,12 @@
 <table>
   <tr><th>Name</th><th>Description</th>{{?is_stable}}<th>Since</th>{{/}}</tr>
-  {{#apis}}
+  {{#a:apis}}
    <tr>
-     <td><a href="{{name}}.html">{{name}}</a></td>
-     <td>{{{description}}}</td>
-     {{?is_stable}}
-     <td>{{version}}</td>
-     {{/}}
+     <td><a href="{{a.name}}.html">{{a.name}}</a></td>
+     <td>{{{a.description}}}</td>
+     {{?a.is_stable}}
+     <td>{{a.version}}</td>
+     {{/a.is_stable}}
    </tr>
   {{/apis}}
 </table>
-
-
-

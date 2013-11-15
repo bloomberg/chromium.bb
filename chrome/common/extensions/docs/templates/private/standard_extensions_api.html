@@ -1,39 +1,38 @@
 <!DOCTYPE html>
 <html>
   <head>
-    {{+partials.header_head}}
-    {{+partials.title}}
+    {{+partials.header_head/}}
+    {{+partials.title api:api/}}
   </head>
   <body>
-    {{+partials.header_body title:strings.extensions_title platform:strings.extension}}
+    {{+partials.header_body title:strings.extensions_title platform:strings.extension/}}
     <div id="gc-container">
-      {{+partials.sidenav items:sidenavs.extensions}}
+      {{+partials.sidenav items:sidenavs.extensions/}}
       <div id="gc-pagecontent">
-        <h1 class="page_title">{{+partials.api_title api:api}}</h1>
-        {{?api.channelWarning.trunk}}{{+partials.warning_trunk}}{{/}}
-        {{?api.channelWarning.dev}}{{+partials.warning_dev}}{{/}}
-        {{?api.channelWarning.beta}}{{+partials.warning_beta}}{{/}}
+        <h1 class="page_title">{{+partials.api_title api:api/}}</h1>
+        {{?api.channelWarning.trunk +partials.warning_trunk/}}
+        {{?api.channelWarning.dev +partials.warning_dev/}}
+        {{?api.channelWarning.beta +partials.warning_beta/}}
         {{?intro.extensions_toc}}
         {{+partials.table_of_contents toc_items:intro.extensions_toc
                                       has_toc:true
                                       api:api
                                       samples_list:api.samples.extensions
-                                      title:strings.extensions_title}}
+                                      title:strings.extensions_title/}}
         {{:intro.extensions_toc}}
         {{+partials.table_of_contents has_toc:false
                                       api:api
                                       samples_list:api.samples.extensions
-                                      title:strings.extensions_title}}
+                                      title:strings.extensions_title/}}
         {{/intro.extensions_toc}}
-        {{+partials.intro_table}}
+        {{+partials.intro_table api:api/}}
 {{- This is unindented because it contains <pre> tags -}}
-{{?intro}}
-{{+intro is_apps:false}}
-{{/intro}}
+{{?intro +intro.intro is_apps:false/}}
         {{+partials.api_reference samples_list:api.samples.extensions
-                                  title:strings.extensions_title}}
+                                  title:strings.extensions_title
+                                  api:api/}}
       </div>
     </div>
   </body>
-  {{+partials.footer}}
+  {{+partials.footer/}}
 </html>

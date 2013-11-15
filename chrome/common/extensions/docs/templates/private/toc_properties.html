@@ -1,17 +1,17 @@
 <a href="#{{?parentName}}{{parentName}}-{{/}}properties">Properties</a>
 <ol>
-  {{#properties}}
+  {{#p:properties}}
   <li>
-    <a href="#{{id}}">{{name}}</a>
-    {{?functions}}<ol><li>
-      {{+partials.toc_functions parentName:name functions:functions}}
-    </li></ol>{{/functions}}
-    {{?events}}<ol><li>
-      {{+partials.toc_events parentName:name events:events}}
-    </li></ol>{{/events}}
-    {{?properties}}<ol><li>
-      {{+partials.toc_properties parentName:name properties:properties}}
-    </li></ol>{{/properties}}
+    <a href="#{{p.id}}">{{p.name}}</a>
+    {{?p.functions}}<ol><li>
+      {{+partials.toc_functions parentName:name functions:p.functions/}}
+    </li></ol>{{/p.functions}}
+    {{?p.events}}<ol><li>
+      {{+partials.toc_events parentName:p.name events:p.events/}}
+    </li></ol>{{/p.events}}
+    {{?p.properties}}<ol><li>
+      {{+partials.toc_properties parentName:p.name properties:p.properties/}}
+    </li></ol>{{/p.properties}}
   </li>
   {{/}}
 </ol>

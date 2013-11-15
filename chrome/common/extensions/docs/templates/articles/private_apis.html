@@ -4,8 +4,8 @@
 
 <ul>
 {{?is_apps}}
-{{+partials.api_table apis:api_list.apps.private is_stable:false}}
+{{+partials.api_table apis:api_list.apps.private is_stable:false/}}
 {{:is_apps}}
-{{+partials.api_table apis:api_list.extensions.private is_stable:false}}
+{{+partials.api_table apis:api_list.extensions.private is_stable:false/}}
 {{/is_apps}}
 </ul>

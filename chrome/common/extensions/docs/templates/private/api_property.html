@@ -1,28 +1,30 @@
+{{#property}}
 <div>
   <h3 id="{{id}}">{{name}}</h3>
   <div class="summary">
-    <div class="line">{{+partials.api_namespace api:api}}{{name}}</div>
+    <div class="line">{{+partials.api_namespace api:api/}}{{name}}</div>
   </div>
   <div>
-    <dt><span class="property">{{name}}</span> {{+partials.type_name link:link @:property}}</dt>
+    <dt><span class="property">{{name}}</span> {{+partials.type_name link:link type:property/}}</dt>
     {{?description}}<dd>
       {{{description}}}
     </dd>{{/description}}
     {{?properties}}
-    <h4 id="{{property.name}}-properties">
-      Properties of <a href="#property-{{property.name}}">{{property.name}}</a>
+    <h4 id="{{name}}-properties">
+      Properties of <a href="#property-{{name}}">{{name}}</a>
     </h4>
-    <dd><dl>{{#properties}}
-      {{+partials.parameter_full}}
-    {{/}}</dl></dd>
+    <dd><dl>{{#p:properties}}
+      {{+partials.parameter_full parameter:p parentName:false/}}
+    {{/properties}}</dl></dd>
     {{/properties}}
     {{?functions}}
-    <h4 id="{{property.name}}-functions">
-      Methods of <a href="#property-{{property.name}}">{{property.name}}</a>
+    <h4 id="{{name}}-functions">
+      Methods of <a href="#property-{{name}}">{{name}}</a>
     </h4>
-    <dd><dl>{{#functions}}
-      {{+partials.function @:@}}
+    <dd><dl>{{#f:functions}}
+      {{+partials.function function:f parentName:false/}}
     {{/}}</dl></dd>
     {{/functions}}
   </div>
 </div>
+{{/property}}

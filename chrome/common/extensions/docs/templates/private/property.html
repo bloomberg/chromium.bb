@@ -1,24 +1,26 @@
+{{#property}}
 <dt>
   <span class="variable">{{name}}</span>
   <span class="property">
     (
       {{?optional}}<span class="optional">optional</span>{{/}}
-      {{+partials.variable_type}}
+      {{+partials.variable_type type:property/}}
     )
   </span>
 </dt>
 <dd>
 {{?deprecated}}
-  {{+partials.warning_deprecated item:property}}
+  {{+partials.warning_deprecated item:property/}}
 {{/deprecated}}
 {{?description}}
   {{{description}}}
 {{/description}}
-{{+partials.enum_descriptions values:enum_values}}
+{{+partials.enum_descriptions enums:enum_values/}}
 {{?array.is_object}}
   <h5>Properties of each object in <span class="variable">{{name}}</span></h5>
   <dl>
-    {{+partials.type @:array}}
+    {{+partials.type type:array/}}
   </dl>
 {{/array.is_object}}
 </dd>
+{{/property}}

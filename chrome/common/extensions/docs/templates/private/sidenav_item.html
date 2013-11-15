@@ -11,7 +11,5 @@
       <span class="level{{item.level}}">{{item.title}}</span>
     {{/item.href}}
   {{/item.toggleable}}
-  {{?item.items}}
-    {{+partials.sidenav_items items:item.items parent:item}}
-  {{/item.items}}
+  {{?item.items +partials.sidenav_items items:item.items parent:item/}}
 </li>

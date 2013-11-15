@@ -7,21 +7,21 @@ Chrome provides {{platform}}s with many special-purpose APIs like
 {{?stable_apis}}
 <h2 id="stable_apis">Stable APIs</h2>
 <p>
-{{+partials.api_table apis:stable_apis is_stable:true}}
+{{+partials.api_table apis:stable_apis is_stable:true/}}
 </p>
 {{/stable_apis}}
 
 {{?beta_apis}}
 <h2 id="beta_apis">Beta APIs</h2>
 <p>These APIs are only available in the Chrome Beta and Dev channels:
-{{+partials.api_table apis:beta_apis is_stable:false}}
+{{+partials.api_table apis:beta_apis is_stable:false/}}
 </p>
 {{/beta_apis}}
 
 {{?dev_apis}}
 <h2 id="dev_apis">Dev APIs</h2>
 <p>These APIs are only available in the Chrome Dev channel:
-{{+partials.api_table apis:dev_apis is_stable:false}}
+{{+partials.api_table apis:dev_apis is_stable:false/}}
 </p>
 {{/dev_apis}}
 

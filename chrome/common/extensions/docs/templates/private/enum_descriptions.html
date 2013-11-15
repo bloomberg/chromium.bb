@@ -1,12 +1,12 @@
-{{?values}}
-  {{#values}}
-  {{?@.description}}
+{{?enums}}
+  {{#enum:enums}}
+  {{?enum.description}}
     <dl>
-      <dt>{{name}}</dt>
+      <dt>{{enum.name}}</dt>
       <dd>
-        {{{description}}}
+        {{{enum.description}}}
       </dd>
     </dl>
-  {{/@.description}}
-  {{/values}}
-{{/values}}
+  {{/enum.description}}
+  {{/enums}}
+{{/enums}}

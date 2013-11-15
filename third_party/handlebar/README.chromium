@@ -2,8 +2,8 @@ Name: Handlebar, cross-platform data binding templates.
 Short Name: handlebar
 URL: https://github.com/kalman/templates
 Version: 0
-Date: July 13, 2012
-Revision: commit b00ffd4655708f98092a7ae9203f39c564251ecf
+Date: November 14, 2013
+Revision: commit 4e707d26d5564c9046867602b8c67de4f792e2ef
 License: Apache 2.0
 License File: NOT_SHIPPED
 Security Critical: no

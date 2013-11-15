@@ -1,12 +1,12 @@
 <div id="toc">
   <ol>
     {{?has_toc}}
-    {{#toc_items}}
+    {{#i:toc_items}}
     <li>
-      <a href="#{{link}}">{{{title}}}</a>
-      {{?subheadings}}
+      <a href="#{{i.link}}">{{{i.title}}}</a>
+      {{?i.subheadings}}
       <ol>
-        {{#subheadings}}<li><a href="#{{link}}">{{{title}}}</a></li>{{/}}
+        {{#sh:i.subheadings}}<li><a href="#{{sh.link}}">{{{sh.title}}}</a></li>{{/}}
       </ol>
       {{/}}
     </li>
@@ -17,37 +17,37 @@
       <li>
         <a href="#apiReference">Reference</a>
         <ol>
-          {{#api}}
-          {{?types}}
+          {{#a:api}}
+          {{?a.types}}
           <li>
-            {{+partials.toc_types types:types}}
+            {{+partials.toc_types types:a.types/}}
           </li>
-          {{/types}}
-          {{?properties}}
+          {{/a.types}}
+          {{?a.properties}}
           <li>
-            {{+partials.toc_properties properties:properties}}
+            {{+partials.toc_properties properties:a.properties/}}
           </li>
-          {{/properties}}
-          {{?functions}}
+          {{/a.properties}}
+          {{?a.functions}}
           <li>
-            {{+partials.toc_functions functions:functions}}
+            {{+partials.toc_functions functions:a.functions/}}
           </li>
-          {{/functions}}
-          {{?events}}
+          {{/a.functions}}
+          {{?a.events}}
           <li>
-            {{+partials.toc_events events:events}}
+            {{+partials.toc_events events:a.events/}}
           </li>
-          {{/events}}
-          {{?domEvents}}
+          {{/a.events}}
+          {{?a.domEvents}}
           <li>
-            {{+partials.toc_dom_events domEvents:domEvents}}
+            {{+partials.toc_dom_events domEvents:a.domEvents/}}
           </li>
-          {{/domEvents}}
-          {{?samples_list}}
+          {{/a.domEvents}}
+          {{?a.samples_list}}
           <li>
-            {{+partials.toc_samples title:title}}
+            {{+partials.toc_samples title:a.title/}}
           </li>
-          {{/samples_list}}
+          {{/a.samples_list}}
           {{/api}}
         </ol>
       </li>

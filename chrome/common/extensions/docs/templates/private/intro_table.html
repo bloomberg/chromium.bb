@@ -1,17 +1,17 @@
 <table class="intro" id="intro">
-  {{#api.introList}}
+  {{#item:api.introList}}
   <tr>
-    <td class="title">{{title}}:</td>
+    <td class="title">{{item.title}}:</td>
     <td>
-      {{#content}}
-        {{?link}}<a href="{{link}}">{{/link}}
-        {{?class}}<span class="{{class}}">{{/class}}
-        {{?text}}{{{text}}}{{/text}}
-        {{?partial}}{{+partial content:content}}{{/partial}}
-        {{?class}}</span>{{/class}}
-        {{?link}}</a>{{/link}}
+      {{#c:item.content}}
+        {{?c.link}}<a href="{{c.link}}">{{/c.link}}
+        {{?c.class}}<span class="{{c.class}}">{{/c.class}}
+        {{?c.text}}{{{c.text}}}{{/c.text}}
+        {{?c.partial +c.partial content:c/}}
+        {{?c.class}}</span>{{/c.class}}
+        {{?c.link}}</a>{{/c.link}}
         <br>
-      {{/content}}
+      {{/item.content}}
     </td>
   </tr>
   {{/api.introList}}

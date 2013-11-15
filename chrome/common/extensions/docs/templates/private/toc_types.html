@@ -1,14 +1,15 @@
+{{!types Types in the TOC}}
 <a href="#{{?parentName}}{{parentName}}-{{/}}types">Types</a>
 <ol>
-  {{#types}}
+  {{#t:types}}
   <li>
-    <a href="#{{id}}">{{name}}</a>
-    {{?functions}}<ol><li>
-      {{+partials.toc_functions parentName:name functions:functions}}
+    <a href="#{{t.id}}">{{t.name}}</a>
+    {{?t.functions}}<ol><li>
+      {{+partials.toc_functions parentName:t.name functions:t.functions/}}
     </li></ol>{{/}}
-    {{?events}}<ol><li>
-      {{+partials.toc_events parentName:name events:events}}
-    </li></ol>{{/}}
+    {{?t.events}}<ol><li>
+      {{+partials.toc_events parentName:t.name events:t.events/}}
+    </li></ol>{{/t.events}}
   </li>
-  {{/}}
+  {{/types}}
 </ol>

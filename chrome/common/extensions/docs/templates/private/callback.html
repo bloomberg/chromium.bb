@@ -1,3 +1,4 @@
+{{#callback}}
 <h4>Callback</h4>
 <p>
   {{?optional}}
@@ -8,7 +9,7 @@
       that looks like this:
   {{/optional}}
 </p>
-<pre>function({{#parameters}}{{+partials.variable_type}} {{name}}{{^last}}, {{/}}{{/}}) <span class="subdued">{...}</span>;</pre>
+<pre>function({{#p:parameters}}{{+partials.variable_type type:p/}} {{p.name}}{{^p.last}}, {{/}}{{/}}) <span class="subdued">{...}</span>;</pre>
 {{?description}}
 <p>
   {{{description}}}
@@ -16,8 +17,9 @@
 {{/description}}
 {{?parameters}}
 <dl>
-  {{#parameters}}
-    {{+partials.parameter_full}}
+  {{#p:parameters}}
+    {{+partials.parameter_full parameter:p/}}
   {{/parameters}}
 </dl>
 {{/parameters}}
+{{/callback}}

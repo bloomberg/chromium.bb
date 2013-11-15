@@ -1,27 +1,27 @@
-<h1 id="apiReference">{{+partials.api_title api:api}} reference</h1>
+<h1 id="apiReference">{{+partials.api_title api:api/}} reference</h1>
 <div class="api_reference">
   {{?api.types}}
     <h2 id="types">Types</h2>
-    {{#api.types}}
-      {{+partials.type display_name:name}}
+    {{#t:api.types}}
+      {{+partials.type display_name:t.name type:t/}}
     {{/}}
   {{/api.types}}
   {{?api.properties}}
     <h2 id="properties">Properties</h2>
-    {{#api.properties}}
-      {{+partials.api_property api:api property:@}}
+    {{#p:api.properties}}
+      {{+partials.api_property api:api property:p/}}
     {{/}}
   {{/api.properties}}
   {{?api.functions}}
     <h2 id="methods">Methods</h2>
-    {{#api.functions}}
-      {{+partials.function @:@ api:api}}
+    {{#f:api.functions}}
+      {{+partials.function function:f api:api parentName:false/}}
     {{/}}
   {{/api.functions}}
   {{?api.events}}
     <h2 id="events">Events</h2>
-    {{#api.events}}
-      {{+partials.event @:@ api:api}}
+    {{#e:api.events}}
+      {{+partials.event event:e api:api/}}
     {{/}}
   {{/api.events}}
   {{?api.domEvents}}
@@ -31,16 +31,16 @@
       <a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget.addEventListener">addEventListener</a>
       API. Listeners receive a custom <code>Event</code> object which can have
       additional properties as listed with each event.</dd>
-    {{#api.domEvents}}
-      {{+partials.dom_event display_name:name @:@ api:api}}
+    {{#e:api.domEvents}}
+      {{+partials.dom_event display_name:e.name event:e api:api/}}
     {{/api.domEvents}}
   {{/api.domEvents}}
 </div>
 {{?samples_list}}
   <h2 id="samples">Sample {{title}} that use chrome.{{api.name}}</h2>
   <ul>
-  {{#samples_list}}
-    <li><strong><a href="samples.html#{{id}}">{{name}}</a></strong>
+  {{#sample:samples_list}}
+    <li><strong><a href="samples.html#{{sample.id}}">{{sample.name}}</a></strong>
     {{?description}}
     &ndash; {{description}}
     {{/description}}</li>

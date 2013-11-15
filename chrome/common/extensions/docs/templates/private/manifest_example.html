@@ -1,11 +1,11 @@
 <pre>
 {
   <em>// Required</em>
-  {{#manifest_source}}
-  {{?annotations}}
+  {{#mp:manifest_source}}
+  {{?mp.annotations}}
 
-  {{/annotations}}
-  {{+partials.manifest_property}}
+  {{/mp.annotations}}
+  {{+partials.manifest_property property:mp/}}
   {{/manifest_source}}
 }
 </pre>

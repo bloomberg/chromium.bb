@@ -4,5 +4,5 @@
     |parentName|: name of the parent object of the function
 -}}
 <div class="line">
-<span>{{?function.returns}}{{+partials.variable_type}} {{/}}{{?api}}{{+partials.api_namespace api:api}}{{/}}{{?parentName}}{{parentName}}.{{/}}{{function.name}}</span>({{#function.parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})
+<span>{{?r:function.returns}}{{+partials.variable_type type:r/}} {{/}}{{?api}}{{+partials.api_namespace api:api/}}{{/}}{{?parentName}}{{parentName}}.{{/}}{{function.name}}</span>({{#p:function.parameters}}{{+partials.parameter_item parameter:p/}}{{^p.last}}, {{/}}{{/}})
 </div>

@@ -1,6 +1,7 @@
+{{#event}}
 <div>
   <h4 id="{{id}}">{{name}}</h4>
-  {{+partials.warning_deprecated item:@}}
+  {{+partials.warning_deprecated item:event/}}
   <div class="description">
     {{?description}}<p>
       {{{description}}}
@@ -13,38 +14,39 @@
     <div class="summary">
       {{+partials.function_signature function:byName.addRules
                                      parentName:name
-                                     api:api}}
+                                     api:api/}}
       {{+partials.function_signature function:byName.removeRules
                                      parentName:name
-                                     api:api}}
+                                     api:api/}}
       {{+partials.function_signature function:byName.getRules
                                      parentName:name
-                                     api:api}}
+                                     api:api/}}
     </div>
     {{?conditions}}
       <h4>Supported conditions</h4>
       <ul>
-        {{#conditions}}<div><li>{{+partials.ref_link}}</li></div>{{/}}
+        {{#c:conditions}}<div><li>{{+partials.ref_link link:c/}}</li></div>{{/}}
       </ul>
     {{/conditions}}
     {{?actions}}
       <h4>Supported actions</h4>
       <ul>
-        {{#actions}}<div><li>{{+partials.ref_link}}</li></div>{{/}}
+        {{#a:actions}}<div><li>{{+partials.ref_link link:a/}}</li></div>{{/}}
       </ul>
     {{/actions}}
     {{/supportsRules}}
     {{?filters}}
       <h4>Filters</h4>
       <dl>
-        {{#filters}}{{+partials.parameter_full}}{{/}}
+        {{#f:filters +partials.parameter_full parameter:f/}}
       </dl>
     {{/filters}}
     {{?supportsListeners}}
-      {{+partials.function @:byName.addListener
+      {{+partials.function function:byName.addListener
                            parentName:name
                            api:api
-                           parentId:id}}
+                           parentId:id/}}
     {{/supportsListeners}}
   </div>
 </div>
+{{/event}}

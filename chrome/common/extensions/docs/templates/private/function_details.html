@@ -1,32 +1,29 @@
-{{- Parameters:
-    |api|: the schema for the API that the function belongs to
-    |function|: the schema for the function
-    |parentName|: name of the parent object of the function
--}}
-<div class="summary{{^function.returns}}{{?api}} uncapitalize{{/}}{{/}}">
+{{#function}}
+<div class="summary{{^returns}}{{?api}} uncapitalize{{/}}{{/}}">
 {{+partials.function_signature function:function
                                parentName:parentName
-                               api:api}}
+                               api:api/}}
 </div>
 <div class="description">
-  {{?function.description}}
+  {{?description}}
   <p>
-    {{{function.description}}}
+    {{{description}}}
   </p>
-  {{/function.description}}
-  {{?function.parameters}}
+  {{/description}}
+  {{?parameters}}
   <h4>Parameters</h4>
   <dl>
-    {{#function.parameters}}
-      {{+partials.parameter_full}}
-    {{/function.parameters}}
+    {{#p:parameters}}
+      {{+partials.parameter_full parameter:p/}}
+    {{/parameters}}
   </dl>
-  {{/function.parameters}}
-  {{?function.callback}}
-    {{+partials.callback}}
-  {{/function.callback}}
-  {{?function.returns.is_object}}
+  {{/parameters}}
+  {{?callback}}
+    {{+partials.callback callback:callback/}}
+  {{/callback}}
+  {{?returns.is_object}}
     <h4>Properties of return type</h4>
-    {{+partials.type @:function.returns}}
-  {{/function.returns.is_object}}
+    {{+partials.type type:returns/}}
+  {{/returns.is_object}}
 </div>
+{{/function}}

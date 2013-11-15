@@ -1,8 +1,7 @@
-{{- Parameters:
-    |item|: the schema for the item
--}}
-{{?item.deprecated}}
+{{#item}}
+{{?deprecated}}
 <p class="warning">
-  {{item.name}} is deprecated. {{{item.deprecated}}}
+  {{name}} is deprecated. {{{deprecated}}}
 </p>
-{{/item.deprecated}}
+{{/deprecated}}
+{{/item}}

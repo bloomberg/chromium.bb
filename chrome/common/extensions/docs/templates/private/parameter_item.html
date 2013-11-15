@@ -1,1 +1,3 @@
-<span{{?optional}} class="optional"{{/}}>{{+partials.variable_type}} <span class="variable">{{name}}</span></span>
+{{#parameter}}
+<span{{?optional}} class="optional"{{/}}>{{+partials.variable_type type:parameter/}} <span class="variable">{{name}}</span></span>
+{{/parameter}}

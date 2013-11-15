@@ -5,8 +5,6 @@
 {{/display_name}}
 <dd>
   <dl>
-    {{#items}}
-      {{+item_partial @:@}}
-    {{/items}}
+    {{#i:items +item_partial parameter:i property:i event:i function:i/}}
   </dl>
 </dd>

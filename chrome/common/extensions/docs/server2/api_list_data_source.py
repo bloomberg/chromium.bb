@@ -8,6 +8,7 @@ import posixpath
 
 import docs_server_utils as utils
 from branch_utility import ChannelInfo
+from environment import IsPreviewServer
 from extensions_paths import PUBLIC_TEMPLATES
 from file_system import FileNotFoundError
 
@@ -75,6 +76,7 @@ class APIListDataSource(object):
       documented_apis = self._cache.GetFromFileListing(PUBLIC_TEMPLATES).Get()
 
       def _GetChannelInfo(api_name):
+        if IsPreviewServer(): return ChannelInfo('dev', 'dev', 1000)
         return self._availability_finder.GetApiAvailability(api_name)
 
       def _GetApiPlatform(api_name):
