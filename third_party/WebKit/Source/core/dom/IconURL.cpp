@@ -33,9 +33,18 @@
 
 namespace WebCore {
 
-IconURL IconURL::defaultIconURL(const KURL& url, IconType type)
+IconURL IconURL::defaultFavicon(const KURL& documentURL)
 {
-    IconURL result(url, emptyString(), emptyString(), type);
+    ASSERT(documentURL.protocolIsInHTTPFamily());
+    KURL url;
+    bool couldSetProtocol = url.setProtocol(documentURL.protocol());
+    ASSERT_UNUSED(couldSetProtocol, couldSetProtocol);
+    url.setHost(documentURL.host());
+    if (documentURL.hasPort())
+        url.setPort(documentURL.port());
+    url.setPath("/favicon.ico");
+
+    IconURL result(url, emptyString(), emptyString(), Favicon);
     result.m_isDefaultIcon = true;
     return result;
 }

@@ -4323,22 +4323,17 @@ void Document::sharedObjectPoolClearTimerFired(Timer<Document>*)
     m_sharedObjectPool.clear();
 }
 
-const Vector<IconURL>& Document::shortcutIconURLs()
+Vector<IconURL> Document::iconURLs(int iconTypesMask)
 {
-    // Include any icons where type = link, rel = "shortcut icon".
-    return iconURLs(Favicon);
-}
+    IconURL firstFavicon;
+    IconURL firstTouchIcon;
+    IconURL firstTouchPrecomposedIcon;
+    Vector<IconURL> secondaryIcons;
 
-const Vector<IconURL>& Document::iconURLs(int iconTypesMask)
-{
-    m_iconURLs.clear();
-
-    if (!head() || !(head()->children()))
-        return m_iconURLs;
-
-    RefPtr<HTMLCollection> children = head()->children();
-    unsigned int length = children->length();
-    for (unsigned int i = 0; i < length; ++i) {
+    // Start from the last child node so that icons seen later take precedence as required by the spec.
+    RefPtr<HTMLCollection> children = head() ? head()->children() : 0;
+    unsigned length = children ? children->length() : 0;
+    for (unsigned i = 0; i < length; i++) {
         Node* child = children->item(i);
         if (!child->hasTagName(linkTag))
             continue;
@@ -4347,13 +4342,42 @@ const Vector<IconURL>& Document::iconURLs(int iconTypesMask)
             continue;
         if (linkElement->href().isEmpty())
             continue;
+#if !ENABLE(TOUCH_ICON_LOADING)
+        if (linkElement->iconType() != Favicon)
+            continue;
+#endif
 
-        // Put it at the front to ensure that icons seen later take precedence as required by the spec.
         IconURL newURL(linkElement->href(), linkElement->iconSizes(), linkElement->type(), linkElement->iconType());
-        m_iconURLs.prepend(newURL);
+        if (linkElement->iconType() == Favicon) {
+            if (firstFavicon.m_iconType != InvalidIcon)
+                secondaryIcons.append(firstFavicon);
+            firstFavicon = newURL;
+        } else if (linkElement->iconType() == TouchIcon) {
+            if (firstTouchIcon.m_iconType != InvalidIcon)
+                secondaryIcons.append(firstTouchIcon);
+            firstTouchIcon = newURL;
+        } else if (linkElement->iconType() == TouchPrecomposedIcon) {
+            if (firstTouchPrecomposedIcon.m_iconType != InvalidIcon)
+                secondaryIcons.append(firstTouchPrecomposedIcon);
+            firstTouchPrecomposedIcon = newURL;
+        } else {
+            ASSERT_NOT_REACHED();
+        }
     }
 
-    return m_iconURLs;
+    Vector<IconURL> iconURLs;
+    if (firstFavicon.m_iconType != InvalidIcon)
+        iconURLs.append(firstFavicon);
+    else if (m_url.protocolIsInHTTPFamily() && iconTypesMask & Favicon)
+        iconURLs.append(IconURL::defaultFavicon(m_url));
+
+    if (firstTouchIcon.m_iconType != InvalidIcon)
+        iconURLs.append(firstTouchIcon);
+    if (firstTouchPrecomposedIcon.m_iconType != InvalidIcon)
+        iconURLs.append(firstTouchPrecomposedIcon);
+    for (int i = secondaryIcons.size() - 1; i >= 0; --i)
+        iconURLs.append(secondaryIcons[i]);
+    return iconURLs;
 }
 
 void Document::setUseSecureKeyboardEntryWhenActive(bool usesSecureKeyboard)

@@ -70,7 +70,7 @@ struct IconURL {
     {
     }
 
-    static IconURL defaultIconURL(const KURL&, IconType);
+    static IconURL defaultFavicon(const KURL&);
 };
 
 bool operator==(const IconURL&, const IconURL&);

@@ -815,8 +815,7 @@ public:
     bool hasNodesWithPlaceholderStyle() const { return m_hasNodesWithPlaceholderStyle; }
     void setHasNodesWithPlaceholderStyle() { m_hasNodesWithPlaceholderStyle = true; }
 
-    const Vector<IconURL>& shortcutIconURLs();
-    const Vector<IconURL>& iconURLs(int iconTypesMask);
+    Vector<IconURL> iconURLs(int iconTypesMask);
 
     void setUseSecureKeyboardEntryWhenActive(bool);
     bool useSecureKeyboardEntryWhenActive() const;
@@ -1229,8 +1228,6 @@ private:
     bool m_annotatedRegionsDirty;
 
     HashMap<String, RefPtr<HTMLCanvasElement> > m_cssCanvasElements;
-
-    Vector<IconURL> m_iconURLs;
 
     OwnPtr<SelectorQueryCache> m_selectorQueryCache;
 

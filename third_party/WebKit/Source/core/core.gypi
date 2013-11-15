@@ -1159,8 +1159,6 @@
             'loader/FrameLoader.cpp',
             'loader/FrameLoaderStateMachine.cpp',
             'loader/HistoryController.cpp',
-            'loader/IconController.cpp',
-            'loader/IconController.h',
             'loader/ImageLoader.cpp',
             'loader/ImageLoader.h',
             'loader/LinkLoader.cpp',

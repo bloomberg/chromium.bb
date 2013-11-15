@@ -84,7 +84,6 @@ public:
 
     HistoryController* history() const { return &m_history; }
 
-    IconController* icon() const { return m_icon.get(); }
     MixedContentChecker* mixedContentChecker() const { return &m_mixedContentChecker; }
 
     void prepareForHistoryNavigation();
@@ -257,7 +256,6 @@ private:
     // Some of these could be lazily created for memory savings on devices.
     mutable HistoryController m_history;
     mutable FrameLoaderStateMachine m_stateMachine;
-    OwnPtr<IconController> m_icon;
     mutable MixedContentChecker m_mixedContentChecker;
 
     class FrameProgressTracker;

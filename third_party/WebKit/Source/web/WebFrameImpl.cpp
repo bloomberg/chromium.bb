@@ -148,7 +148,6 @@
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/IconController.h"
 #include "core/loader/SubstituteData.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
@@ -552,7 +551,7 @@ WebVector<WebIconURL> WebFrameImpl::iconURLs(int iconTypesMask) const
     // The URL to the icon may be in the header. As such, only
     // ask the loader for the icon if it's finished loading.
     if (frame()->loader().state() == FrameStateComplete)
-        return frame()->loader().icon()->urlsForTypes(iconTypesMask);
+        return frame()->document()->iconURLs(iconTypesMask);
     return WebVector<WebIconURL>();
 }
 
