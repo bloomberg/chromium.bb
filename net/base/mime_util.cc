@@ -309,6 +309,7 @@ static const char* const common_media_codecs[] = {
 #if !defined(OS_ANDROID)  // Android doesn't support Ogg Theora.
   "theora",
 #endif
+  "opus",
   "vorbis",
   "vp8",
   "vp9",
@@ -419,6 +420,12 @@ static bool IsCodecSupportedOnAndroid(const std::string& codec) {
       base::android::BuildInfo::GetInstance()->sdk_int() < 19) {
     return false;
   }
+
+  // TODO(vigneshv): Change this similar to the VP9 check once Opus is
+  // supported on Android (http://crbug.com/318436).
+  if (!codec.compare("opus")) {
+    return false;
+  }
   return true;
 }
 #endif
@@ -429,8 +436,8 @@ struct MediaFormatStrict {
 };
 
 static const MediaFormatStrict format_codec_mappings[] = {
-  { "video/webm", "vorbis,vp8,vp8.0,vp9,vp9.0" },
-  { "audio/webm", "vorbis" },
+  { "video/webm", "opus,vorbis,vp8,vp8.0,vp9,vp9.0" },
+  { "audio/webm", "opus,vorbis" },
   { "audio/wav", "1" }
 };
 
