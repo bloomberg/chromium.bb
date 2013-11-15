@@ -91,6 +91,7 @@ TEST_F(StorageSchemaManifestHandlerTest, Validate) {
   permissions.AppendString("storage");
   manifest_.Set("permissions", permissions.DeepCopy());
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
   // Absolute path.
   manifest_.SetString("storage.managed_schema", "/etc/passwd");
   EXPECT_FALSE(Validates(""));
@@ -136,6 +137,7 @@ TEST_F(StorageSchemaManifestHandlerTest, Validate) {
       "  \"type\": \"object\","
       "  \"additionalProperties\": {}"
       "}"));
+#endif
 
   // All good now.
   EXPECT_TRUE(Validates(
