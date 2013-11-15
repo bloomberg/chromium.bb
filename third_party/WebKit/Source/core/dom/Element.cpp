@@ -1368,12 +1368,13 @@ void Element::attach(const AttachContext& context)
 
     StyleResolverParentPusher parentPusher(*this);
 
-    // We've already been through detach when doing a lazy attach, but we might
+    // We've already been through detach when doing an attach, but we might
     // need to clear any state that's been added since then.
     if (hasRareData() && styleChangeType() == NeedsReattachStyleChange) {
         ElementRareData* data = elementRareData();
         data->clearComputedStyle();
         data->resetDynamicRestyleObservations();
+        // Only clear the style state if we're not going to reuse the style from recalcStyle.
         if (!context.resolvedStyle)
             data->resetStyleState();
     }
@@ -1426,13 +1427,14 @@ void Element::detach(const AttachContext& context)
         data->setPseudoElement(BEFORE, 0);
         data->setPseudoElement(AFTER, 0);
         data->setPseudoElement(BACKDROP, 0);
-        data->clearComputedStyle();
-        data->resetDynamicRestyleObservations();
         data->setIsInsideRegion(false);
 
-        // Only clear the style state if we're not going to reuse the style from recalcStyle.
-        if (!context.resolvedStyle)
+        // attach() will perform the below steps for us when inside recalcStyle.
+        if (!document().inStyleRecalc()) {
             data->resetStyleState();
+            data->clearComputedStyle();
+            data->resetDynamicRestyleObservations();
+        }
 
         if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && !context.performingReattach) {
             if (ActiveAnimations* activeAnimations = data->activeAnimations())
