@@ -639,6 +639,8 @@ private:
 
     bool m_inViewport;
 
+    bool m_internal;
+
     CSSParserLocation m_locationLabel;
 
     bool useLegacyBackgroundSizeShorthandBehavior() const;

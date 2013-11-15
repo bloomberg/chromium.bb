@@ -216,6 +216,7 @@ CSSParser::CSSParser(const CSSParserContext& context, UseCounter* counter)
     , m_allowImportRules(true)
     , m_allowNamespaceDeclarations(true)
     , m_inViewport(false)
+    , m_internal(true)
     , m_useCounter(counter)
 {
 #if YYDEBUG > 0
@@ -297,6 +298,7 @@ void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, cons
     m_lineNumber = 0;
     m_startPosition = startPosition;
     m_source = &string;
+    m_internal = false;
     setupParser("", string, "");
     cssyyparse(this);
     sheet->shrinkToFit();
@@ -306,6 +308,7 @@ void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, cons
     m_lineEndings.clear();
     m_ignoreErrors = false;
     m_logErrors = false;
+    m_internal = true;
 }
 
 PassRefPtr<StyleRuleBase> CSSParser::parseRule(StyleSheetContents* sheet, const String& string)
@@ -10359,7 +10362,7 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
             m_token = VIEWPORT_RULE_SYM;
         }
         CASE("-internal-rule") {
-            if (LIKELY(!hasEscape))
+            if (LIKELY(!hasEscape && m_internal))
                 m_token = INTERNAL_RULE_SYM;
         }
         CASE("-webkit-region") {
@@ -10371,32 +10374,38 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
                 m_token = WEBKIT_FILTER_RULE_SYM;
         }
         CASE("-internal-decls") {
-            if (LIKELY(!hasEscape))
+            if (LIKELY(!hasEscape && m_internal))
                 m_token = INTERNAL_DECLS_SYM;
         }
         CASE("-internal-value") {
-            if (LIKELY(!hasEscape))
+            if (LIKELY(!hasEscape && m_internal))
                 m_token = INTERNAL_VALUE_SYM;
         }
         CASE("-webkit-keyframes") {
             m_token = WEBKIT_KEYFRAMES_SYM;
         }
         CASE("-internal-selector") {
-            if (LIKELY(!hasEscape))
+            if (LIKELY(!hasEscape && m_internal))
                 m_token = INTERNAL_SELECTOR_SYM;
         }
         CASE("-internal-medialist") {
+            if (!m_internal)
+                return;
             m_parsingMode = MediaQueryMode;
             m_token = INTERNAL_MEDIALIST_SYM;
         }
         CASE("-internal-keyframe-rule") {
-            if (LIKELY(!hasEscape))
+            if (LIKELY(!hasEscape && m_internal))
                 m_token = INTERNAL_KEYFRAME_RULE_SYM;
         }
         CASE("-internal-keyframe-key-list") {
+            if (!m_internal)
+                return;
             m_token = INTERNAL_KEYFRAME_KEY_LIST_SYM;
         }
         CASE("-internal-supports-condition") {
+            if (!m_internal)
+                return;
             m_parsingMode = SupportsMode;
             m_token = INTERNAL_SUPPORTS_CONDITION_SYM;
         }
