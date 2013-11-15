@@ -87,8 +87,8 @@ namespace WTF {
         friend PassRefPtr adoptRef<T>(T*);
 
     private:
-        // adopting constructor
-        PassRefPtr(T* ptr, bool) : m_ptr(ptr) { }
+        enum AdoptRefTag { AdoptRef };
+        PassRefPtr(T* ptr, AdoptRefTag) : m_ptr(ptr) { }
 
         PassRefPtr& operator=(const PassRefPtr&) { COMPILE_ASSERT(!sizeof(T*), PassRefPtr_should_never_be_assigned_to); return *this; }
 
@@ -162,7 +162,7 @@ namespace WTF {
     template<typename T> inline PassRefPtr<T> adoptRef(T* p)
     {
         adopted(p);
-        return PassRefPtr<T>(p, true);
+        return PassRefPtr<T>(p, PassRefPtr<T>::AdoptRef);
     }
 
     template<typename T, typename U> inline PassRefPtr<T> static_pointer_cast(const PassRefPtr<U>& p)
