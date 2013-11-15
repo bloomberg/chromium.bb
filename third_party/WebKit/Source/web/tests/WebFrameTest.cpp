@@ -1190,15 +1190,15 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorOverridesLoadWithOverviewMod
     client.m_screenInfo.deviceScaleFactor = 1;
     int viewportWidth = 640;
     int viewportHeight = 480;
-    float enforcedPageScalePactor = 0.5f;
+    float enforcedPageScaleFactor = 0.5f;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport-auto-initial-scale.html", true, 0, &client, enableViewportSettings);
     webViewHelper.webView()->settings()->setLoadWithOverviewMode(false);
-    webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScalePactor);
+    webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScaleFactor);
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
 
-    EXPECT_EQ(enforcedPageScalePactor, webViewHelper.webView()->pageScaleFactor());
+    EXPECT_EQ(enforcedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
 TEST_F(WebFrameTest, PermanentInitialPageScaleFactorOverridesPageViewportInitialScale)
@@ -1220,73 +1220,39 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorOverridesPageViewportInitial
     EXPECT_EQ(enforcedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_F(WebFrameTest, SmallPermanentInitialPageScaleFactorIsClobberedWithDeviceWidth)
+TEST_F(WebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbered)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
-    registerMockedHttpURLLoad("viewport-device-0.5x-initial-scale.html");
+    const char* pages[] = {
+        // These pages trigger the clobbering condition. There must be a matching item in "pageScaleFactors" array.
+        "viewport-device-0.5x-initial-scale.html",
+        "viewport-initial-scale-1.html",
+        // These ones do not.
+        "viewport-auto-initial-scale.html",
+        "viewport-target-densitydpi-device-and-fixed-width.html"
+    };
+    float pageScaleFactors[] = { 0.5f, 1.0f };
+    for (size_t i = 0; i < ARRAY_SIZE(pages); ++i)
+        registerMockedHttpURLLoad(pages[i]);
 
     FixedLayoutTestWebViewClient client;
     client.m_screenInfo.deviceScaleFactor = 1;
-    int viewportWidth = 640;
-    int viewportHeight = 480;
-    float enforcedPageScalePactor = 0.75f;
-    float pageScaleFactor = 0.5f;
+    int viewportWidth = 400;
+    int viewportHeight = 300;
+    float enforcedPageScaleFactor = 0.75f;
 
-    {
-        FrameTestHelpers::WebViewHelper webViewHelper;
-        webViewHelper.initializeAndLoad(m_baseURL + "viewport-device-0.5x-initial-scale.html", true, 0, &client);
-        webViewHelper.webView()->settings()->setViewportEnabled(true);
-        webViewHelper.webView()->settings()->setClobberUserAgentInitialScaleQuirk(false);
-        webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScalePactor);
-        webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+    for (size_t i = 0; i < ARRAY_SIZE(pages); ++i) {
+        for (int quirkEnabled = 0; quirkEnabled <= 1; ++quirkEnabled) {
+            FrameTestHelpers::WebViewHelper webViewHelper;
+            webViewHelper.initializeAndLoad(m_baseURL + pages[i], true, 0, &client);
+            webViewHelper.webView()->settings()->setViewportEnabled(true);
+            webViewHelper.webView()->settings()->setClobberUserAgentInitialScaleQuirk(quirkEnabled);
+            webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScaleFactor);
+            webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
 
-        EXPECT_EQ(enforcedPageScalePactor, webViewHelper.webView()->pageScaleFactor());
-    }
-
-    {
-        FrameTestHelpers::WebViewHelper webViewHelper;
-        webViewHelper.initializeAndLoad(m_baseURL + "viewport-device-0.5x-initial-scale.html", true, 0, &client);
-        webViewHelper.webView()->settings()->setViewportEnabled(true);
-        webViewHelper.webView()->settings()->setClobberUserAgentInitialScaleQuirk(true);
-        webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScalePactor);
-        webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
-
-        EXPECT_EQ(pageScaleFactor, webViewHelper.webView()->pageScaleFactor());
-    }
-}
-
-TEST_F(WebFrameTest, SmallPermanentInitialPageScaleFactorIsClobberedWithAutoWidthAndInitialScale1)
-{
-    UseMockScrollbarSettings mockScrollbarSettings;
-    registerMockedHttpURLLoad("viewport-initial-scale-1.html");
-
-    FixedLayoutTestWebViewClient client;
-    client.m_screenInfo.deviceScaleFactor = 1;
-    int viewportWidth = 640;
-    int viewportHeight = 480;
-    float enforcedPageScalePactor = 0.75f;
-    float pageScaleFactor = 1.0f;
-
-    {
-        FrameTestHelpers::WebViewHelper webViewHelper;
-        webViewHelper.initializeAndLoad(m_baseURL + "viewport-initial-scale-1.html", true, 0, &client);
-        webViewHelper.webView()->settings()->setViewportEnabled(true);
-        webViewHelper.webView()->settings()->setClobberUserAgentInitialScaleQuirk(false);
-        webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScalePactor);
-        webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
-
-        EXPECT_EQ(enforcedPageScalePactor, webViewHelper.webView()->pageScaleFactor());
-    }
-
-    {
-        FrameTestHelpers::WebViewHelper webViewHelper;
-        webViewHelper.initializeAndLoad(m_baseURL + "viewport-initial-scale-1.html", true, 0, &client);
-        webViewHelper.webView()->settings()->setViewportEnabled(true);
-        webViewHelper.webView()->settings()->setClobberUserAgentInitialScaleQuirk(true);
-        webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScalePactor);
-        webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
-
-        EXPECT_EQ(pageScaleFactor, webViewHelper.webView()->pageScaleFactor());
+            float expectedPageScaleFactor = quirkEnabled && i < ARRAY_SIZE(pageScaleFactors) ? pageScaleFactors[i] : enforcedPageScaleFactor;
+            EXPECT_EQ(expectedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
+        }
     }
 }
 
@@ -1298,7 +1264,7 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWidth)
     client.m_screenInfo.deviceScaleFactor = 1;
     int viewportWidth = 640;
     int viewportHeight = 480;
-    float enforcedPageScalePactor = 0.5;
+    float enforcedPageScaleFactor = 0.5;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad("about:blank", true, 0, &client);
@@ -1306,11 +1272,11 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWidth)
     webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
     webViewHelper.webView()->settings()->setUseWideViewport(false);
     webViewHelper.webView()->settings()->setLoadWithOverviewMode(false);
-    webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScalePactor);
+    webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScaleFactor);
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
 
-    EXPECT_EQ(viewportWidth / enforcedPageScalePactor, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
-    EXPECT_EQ(enforcedPageScalePactor, webViewHelper.webView()->pageScaleFactor());
+    EXPECT_EQ(viewportWidth / enforcedPageScaleFactor, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
+    EXPECT_EQ(enforcedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
 TEST_F(WebFrameTest, WideViewportInitialScaleDoesNotExpandFixedLayoutWidth)
