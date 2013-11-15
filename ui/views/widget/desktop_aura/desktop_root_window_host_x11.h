@@ -49,7 +49,8 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   static DesktopRootWindowHostX11* GetHostForXID(XID xid);
 
   // Get all open top-level windows. This includes windows that may not be
-  // visible.
+  // visible. This list is sorted in their stacking order, i.e. the first window
+  // is the topmost window.
   static std::vector<aura::Window*> GetAllOpenWindows();
 
   // Returns the current bounds in terms of the X11 Root Window.

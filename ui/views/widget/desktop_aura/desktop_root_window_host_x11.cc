@@ -170,8 +170,11 @@ gfx::Rect DesktopRootWindowHostX11::GetX11RootWindowBounds() const {
 
 void DesktopRootWindowHostX11::HandleNativeWidgetActivationChanged(
     bool active) {
-  if (active)
+  if (active) {
     delegate_->OnHostActivated();
+    open_windows().remove(xwindow_);
+    open_windows().insert(open_windows().begin(), xwindow_);
+  }
 
   desktop_native_widget_aura_->HandleActivationChanged(active);
 

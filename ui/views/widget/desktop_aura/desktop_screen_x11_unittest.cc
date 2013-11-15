@@ -201,10 +201,11 @@ TEST_F(DesktopScreenX11Test, GetPrimaryDisplay) {
 TEST_F(DesktopScreenX11Test, GetWindowAtScreenPoint) {
   Widget* window_one = BuildTopLevelDesktopWidget(gfx::Rect(10, 10, 10, 10));
   Widget* window_two = BuildTopLevelDesktopWidget(gfx::Rect(50, 50, 10, 10));
+  Widget* window_three = BuildTopLevelDesktopWidget(gfx::Rect(15, 15, 20, 20));
 
   // Make sure the internal state of DesktopRootWindowHostX11 is set up
   // correctly.
-  ASSERT_EQ(2u, DesktopRootWindowHostX11::GetAllOpenWindows().size());
+  ASSERT_EQ(3u, DesktopRootWindowHostX11::GetAllOpenWindows().size());
 
   EXPECT_EQ(window_one->GetNativeWindow(),
             screen()->GetWindowAtScreenPoint(gfx::Point(15, 15)));
@@ -212,6 +213,12 @@ TEST_F(DesktopScreenX11Test, GetWindowAtScreenPoint) {
             screen()->GetWindowAtScreenPoint(gfx::Point(55, 55)));
   EXPECT_EQ(NULL,
             screen()->GetWindowAtScreenPoint(gfx::Point(100, 100)));
+
+  // Bring the third window in front. It overlaps with the first window.
+  // Hit-testing on the intersecting region should give the third window.
+  window_three->Activate();
+  EXPECT_EQ(window_three->GetNativeWindow(),
+            screen()->GetWindowAtScreenPoint(gfx::Point(15, 15)));
 
   window_one->CloseNow();
   window_two->CloseNow();
