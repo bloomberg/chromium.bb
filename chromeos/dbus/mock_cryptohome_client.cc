@@ -7,8 +7,9 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 
-using ::testing::Invoke;
 using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::Invoke;
 
 namespace chromeos {
 
@@ -23,6 +24,7 @@ void RunCallbackWithTrue(const BoolDBusMethodCallback& callback) {
 }  // namespace
 
 MockCryptohomeClient::MockCryptohomeClient() {
+  EXPECT_CALL(*this, Init(_)).Times(AnyNumber());
   ON_CALL(*this, IsMounted(_))
       .WillByDefault(Invoke(&RunCallbackWithTrue));
   ON_CALL(*this, InstallAttributesIsReady(_))
