@@ -363,10 +363,6 @@ bool GIFImageDecoder::initFrameBuffer(size_t frameIndex)
         if (!buffer->copyBitmapData(*prevBuffer))
             return setFailed();
 
-        // We will eventually change the pixels. Notify the bitmap so that it
-        // gets a generation ID different from that of the previous frame.
-        buffer->getSkBitmap().notifyPixelsChanged();
-
         if (prevBuffer->disposalMethod() == ImageFrame::DisposeOverwriteBgcolor) {
             // We want to clear the previous frame to transparent, without
             // affecting pixels in the image outside of the frame.
