@@ -1338,6 +1338,10 @@ destroy_surface(struct wl_resource *resource)
 {
 	struct weston_surface *surface = wl_resource_get_user_data(resource);
 
+	/* Set the resource to NULL, since we don't want to leave a
+	 * dangling pointer if the surface was refcounted and survives
+	 * the weston_surface_destroy() call. */
+	surface->resource = NULL;
 	weston_surface_destroy(surface);
 }
 
