@@ -124,6 +124,10 @@
             '-Wno-unused-value',
           ]
         }],
+        ['OS=="win"', {
+          # TODO(eae): C4267 on amd64. size_t -> int, size_t -> unsigned int
+          'msvs_disabled_warnings': [4267],
+        }],
       ],
     },
   ],
