@@ -3080,6 +3080,10 @@
             'browser/password_manager/native_backend_gnome_x.cc',
             'browser/password_manager/native_backend_gnome_x.h',
           ],
+        }, {
+          'dependencies': [
+            '../build/linux/system.gyp:gnome_keyring',
+          ],
         }],
         ['use_aura==1', {
           'sources/': [
@@ -3169,11 +3173,6 @@
                   '-ldl',
                 ],
               },
-            }],
-            ['use_gnome_keyring==1', {
-              'dependencies': [
-                '../build/linux/system.gyp:gnome_keyring',
-              ],
             }],
           ],
         }],
