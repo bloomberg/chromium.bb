@@ -398,6 +398,15 @@
         '-Wstring-conversion',
       ],
     }],
+    # On windows, GDI handles are a scarse system-wide resource so we have to keep
+    # the glyph cache, which holds up to 4 GDI handles per entry, to a fairly small
+    # size.
+    # http://crbug.com/314387
+    [ 'OS == "win"', {
+      'defines': [
+        'SK_DEFAULT_FONT_CACHE_COUNT_LIMIT=256',
+      ],
+    }],
   ],
   'target_conditions': [
     # Pull in specific Mac files for iOS (which have been filtered out
@@ -440,9 +449,6 @@
     'SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS',
 
     'SK_DEFAULT_FONT_CACHE_LIMIT=<(default_font_cache_limit)',
-
-     # http://crbug.com/314387
-    'SK_DEFAULT_FONT_CACHE_COUNT_LIMIT=64',
   ],
 
   'direct_dependent_settings': {
