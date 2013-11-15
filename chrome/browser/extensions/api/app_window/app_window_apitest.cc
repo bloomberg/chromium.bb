@@ -10,6 +10,7 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/testing_profile.h"
 #include "ui/base/base_window.h"
 #include "ui/gfx/rect.h"
@@ -137,9 +138,16 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiProperties) {
 
 #endif  // defined(TOOLKIT_VIEWS)
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiAlwaysOnTop) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiAlwaysOnTopDev) {
   EXPECT_TRUE(RunPlatformAppTest("platform_apps/windows_api_always_on_top"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiAlwaysOnTopStable) {
+  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_STABLE);
+  EXPECT_TRUE(
+      RunPlatformAppTest("platform_apps/windows_api_always_on_top_stable"))
+          << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiGet) {
