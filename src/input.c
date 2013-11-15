@@ -335,7 +335,8 @@ default_grab_keyboard_modifiers(struct weston_keyboard_grab *grab,
 		wl_keyboard_send_modifiers(resource, serial, mods_depressed,
 					   mods_latched, mods_locked, group);
 	}
-	if (pointer && pointer->focus && pointer->focus->surface != keyboard->focus) {
+	if (pointer && pointer->focus && pointer->focus->surface->resource &&
+	    pointer->focus->surface != keyboard->focus) {
 		struct wl_client *pointer_client =
 			wl_resource_get_client(pointer->focus->surface->resource);
 		send_modifiers_to_client_in_list(pointer_client,
@@ -1504,11 +1505,13 @@ should_send_modifiers_to_client(struct weston_seat *seat,
 {
 	if (seat->keyboard &&
 	    seat->keyboard->focus &&
+	    seat->keyboard->focus->resource &&
 	    wl_resource_get_client(seat->keyboard->focus->resource) == client)
 		return 1;
 
 	if (seat->pointer &&
 	    seat->pointer->focus &&
+	    seat->pointer->focus->surface->resource &&
 	    wl_resource_get_client(seat->pointer->focus->surface->resource) == client)
 		return 1;
 
