@@ -63,9 +63,9 @@ void PluginStatusPrefSetter::GotPlugins(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Set the values on the PrefService instead of through the PrefMembers to
   // notify observers if they changed.
-  profile_->GetPrefs()
-      ->SetBoolean(clear_plugin_lso_data_enabled_.GetPrefName().c_str(),
-                   PluginDataRemoverHelper::IsSupported(plugin_prefs.get()));
+  profile_->GetPrefs()->SetBoolean(
+      clear_plugin_lso_data_enabled_.GetPrefName().c_str(),
+      PluginDataRemoverHelper::IsSupported(plugin_prefs.get()));
   profile_->GetPrefs()->SetBoolean(
       pepper_flash_settings_enabled_.GetPrefName().c_str(),
       PepperFlashSettingsManager::IsPepperFlashInUse(plugin_prefs.get(), NULL));

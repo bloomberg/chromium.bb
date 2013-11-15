@@ -58,12 +58,13 @@ class PluginStatusPrefSetter : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   // Weak pointer.
   Profile* profile_;
-  base::WeakPtrFactory<PluginStatusPrefSetter> factory_;
 
   // Whether clearing LSO data is supported.
   BooleanPrefMember clear_plugin_lso_data_enabled_;
   // Whether we should show Pepper Flash-specific settings.
   BooleanPrefMember pepper_flash_settings_enabled_;
+
+  base::WeakPtrFactory<PluginStatusPrefSetter> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginStatusPrefSetter);
 };
