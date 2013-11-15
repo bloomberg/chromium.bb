@@ -69,12 +69,9 @@ class PolicyApplicator : public base::RefCounted<PolicyApplicator> {
   // Sends Shill the command to delete profile entry |entry| from |profile_|.
   void DeleteEntry(const std::string& entry);
 
-  // Creates a Shill configuration from the given parameters and sends them to
-  // Shill. |user_settings| can be NULL if none exist.
-  void CreateAndWriteNewShillConfiguration(
-      const std::string& guid,
-      const base::DictionaryValue& policy,
-      const base::DictionaryValue* user_settings);
+  // Sends the Shill configuration |shill_dictionary| to Shill.
+  void WriteNewShillConfiguration(const base::DictionaryValue& shill_dictionary,
+                                  const base::DictionaryValue& policy);
 
   // Adds properties to |properties_to_update|, which are enforced on an
   // unamaged network by the global network config of the policy.

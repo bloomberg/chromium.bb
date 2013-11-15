@@ -251,6 +251,18 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
   return success;
 }
 
+bool DoIdentifyingPropertiesMatch(const base::DictionaryValue& properties_a,
+                                  const base::DictionaryValue& properties_b) {
+  base::DictionaryValue identifying_a;
+  if (!CopyIdentifyingProperties(properties_a, &identifying_a))
+    return false;
+  base::DictionaryValue identifying_b;
+  if (!CopyIdentifyingProperties(properties_b, &identifying_b))
+    return false;
+
+  return identifying_a.Equals(&identifying_b);
+}
+
 }  // namespace shill_property_util
 
 namespace {

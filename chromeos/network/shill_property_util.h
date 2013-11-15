@@ -59,6 +59,13 @@ void SetUIData(const NetworkUIData& ui_data,
 bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
                                base::DictionaryValue* dest);
 
+// Compares the identifying configuration properties of |properties_a| and
+// |properties_b|, returns true if they are identical. See also
+// CopyIdentifyingProperties. Only WiFi, VPN, Ethernet and EthernetEAP are
+// supported. WiMax and Cellular are not supported.
+bool DoIdentifyingPropertiesMatch(const base::DictionaryValue& properties_a,
+                                  const base::DictionaryValue& properties_b);
+
 }  // namespace shill_property_util
 
 class CHROMEOS_EXPORT NetworkTypePattern {
