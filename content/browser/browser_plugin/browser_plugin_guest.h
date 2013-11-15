@@ -388,6 +388,14 @@ class CONTENT_EXPORT BrowserPluginGuest
   // Instructs the guest to execute an edit command decoded in the embedder.
   void OnExecuteEditCommand(int instance_id,
                             const std::string& command);
+
+  // Returns compositor resources reclaimed in the embedder to the guest.
+  void OnReclaimCompositorResources(int instance_id,
+                                    int route_id,
+                                    uint32 output_surface_id,
+                                    int renderer_host_id,
+                                    const cc::CompositorFrameAck& ack);
+
   // Overriden in tests.
   virtual void OnHandleInputEvent(int instance_id,
                                   const gfx::Rect& guest_window_rect,

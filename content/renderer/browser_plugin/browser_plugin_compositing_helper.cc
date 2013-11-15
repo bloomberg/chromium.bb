@@ -186,12 +186,13 @@ void BrowserPluginCompositingHelper::OnContainerDestroy() {
     container_->setWebLayer(NULL);
   container_ = NULL;
 
-  if (resource_collection_) {
-    resource_collection_->LoseAllResources();
-    resource_collection_ = NULL;
-  }
+  if (resource_collection_)
+    resource_collection_->SetClient(NULL);
+
   ack_pending_ = false;
   software_ack_pending_ = false;
+  resource_collection_ = NULL;
+  frame_provider_ = NULL;
   texture_layer_ = NULL;
   delegated_layer_ = NULL;
   background_layer_ = NULL;
@@ -347,7 +348,8 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
   DCHECK(!texture_layer_.get());
 
   cc::DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
-  if (!frame_data)
+  // Do nothing if we are getting destroyed or have no frame data.
+  if (!frame_data || !background_layer_)
     return;
 
   DCHECK(!frame_data->render_pass_list.empty());
@@ -368,7 +370,10 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
     // Drop the cc::DelegatedFrameResourceCollection so that we will not return
     // any resources from the old output surface with the new output surface id.
     if (resource_collection_) {
-      resource_collection_->LoseAllResources();
+      resource_collection_->SetClient(NULL);
+
+      if (resource_collection_->LoseAllResources())
+        SendReturnedDelegatedResources();
       resource_collection_ = NULL;
     }
     last_output_surface_id_ = output_surface_id;
@@ -377,8 +382,7 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
   }
   if (!resource_collection_) {
     resource_collection_ = new cc::DelegatedFrameResourceCollection;
-    // TODO(danakj): Could return resources sooner if we set a client here and
-    // listened for UnusedResourcesAreAvailable().
+    resource_collection_->SetClient(this);
   }
   if (!frame_provider_.get() || frame_provider_->frame_size() != frame_size) {
     frame_provider_ = new cc::DelegatedFrameProvider(
@@ -407,6 +411,29 @@ void BrowserPluginCompositingHelper::UpdateVisibility(bool visible) {
     texture_layer_->SetIsDrawable(visible);
   if (delegated_layer_.get())
     delegated_layer_->SetIsDrawable(visible);
+}
+
+void BrowserPluginCompositingHelper::UnusedResourcesAreAvailable() {
+  if (ack_pending_)
+    return;
+
+  SendReturnedDelegatedResources();
+}
+
+void BrowserPluginCompositingHelper::SendReturnedDelegatedResources() {
+  cc::CompositorFrameAck ack;
+  if (resource_collection_)
+    resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
+  DCHECK(!ack.resources.empty());
+
+  browser_plugin_manager_->Send(
+      new BrowserPluginHostMsg_ReclaimCompositorResources(
+          host_routing_id_,
+          instance_id_,
+          last_route_id_,
+          last_output_surface_id_,
+          last_host_id_,
+          ack));
 }
 
 }  // namespace content

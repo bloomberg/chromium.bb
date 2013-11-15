@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/layers/delegated_frame_resource_collection.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/size.h"
@@ -38,7 +39,8 @@ namespace content {
 class BrowserPluginManager;
 
 class CONTENT_EXPORT BrowserPluginCompositingHelper :
-    public base::RefCounted<BrowserPluginCompositingHelper> {
+    public base::RefCounted<BrowserPluginCompositingHelper>,
+    public cc::DelegatedFrameResourceCollectionClient {
  public:
   BrowserPluginCompositingHelper(blink::WebPluginContainer* container,
                                  BrowserPluginManager* manager,
@@ -57,6 +59,10 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
                                 uint32 output_surface_id,
                                 int host_id);
   void UpdateVisibility(bool);
+
+  // cc::DelegatedFrameProviderClient implementation.
+  virtual void UnusedResourcesAreAvailable() OVERRIDE;
+
  protected:
   // Friend RefCounted so that the dtor can be non-public.
   friend class base::RefCounted<BrowserPluginCompositingHelper>;
@@ -78,7 +84,7 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
     unsigned software_frame_id;
     base::SharedMemory* shared_memory;
   };
-  ~BrowserPluginCompositingHelper();
+  virtual ~BrowserPluginCompositingHelper();
   void CheckSizeAndAdjustLayerBounds(const gfx::Size& new_size,
                                      float device_scale_factor,
                                      cc::Layer* layer);
@@ -88,6 +94,8 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
   void MailboxReleased(SwapBuffersInfo mailbox,
                        unsigned sync_point,
                        bool lost_resource);
+  void SendReturnedDelegatedResources();
+
   int instance_id_;
   int host_routing_id_;
   int last_route_id_;
