@@ -33,7 +33,7 @@
 
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/chromium/DeferredImageDecoder.h"
+#include "core/platform/graphics/DeferredImageDecoder.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "platform/PlatformInstrumentation.h"
 #include "platform/TraceEvent.h"

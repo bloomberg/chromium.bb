@@ -35,8 +35,8 @@
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GlyphPageTreeNode.h"
 #include "core/platform/graphics/SimpleFontData.h"
-#include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
-#include "core/platform/graphics/chromium/UniscribeHelperTextRun.h"
+#include "core/platform/graphics/win/FontPlatformDataWin.h"
+#include "core/platform/graphics/win/UniscribeHelperTextRun.h"
 #include "platform/win/HWndDC.h"
 #include "platform/win/SystemInfo.h"
 

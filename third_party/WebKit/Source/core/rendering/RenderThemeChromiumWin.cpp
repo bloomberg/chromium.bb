@@ -35,7 +35,7 @@
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/chromium/TransparencyWin.h"
+#include "core/platform/graphics/win/TransparencyWin.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderProgress.h"

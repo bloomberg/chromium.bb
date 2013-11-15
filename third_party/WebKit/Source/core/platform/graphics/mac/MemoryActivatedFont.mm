@@ -27,7 +27,7 @@
 // do the loading of in-memory fonts and keep track of them.
 
 #import "config.h"
-#import "core/platform/graphics/chromium/CrossProcessFontLoading.h"
+#import "core/platform/graphics/mac/MemoryActivatedFont.h"
 
 #import <AppKit/NSFont.h>
 #import "core/platform/graphics/FontPlatformData.h"
@@ -171,7 +171,7 @@ MemoryActivatedFont::~MemoryActivatedFont()
 //
 // Considerations:
 // * cgFont must be CFRelease()ed by the caller when done.
-// 
+//
 // Parameters:
 // * nsFont - The font we wish to load.
 // * fontSize - point size of the font we wish to load.
@@ -193,7 +193,7 @@ void FontPlatformData::loadFont(NSFont* nsFont, float fontSize, NSFont*& outNSFo
         m_inMemoryFont = loadFontFromBrowserProcess(outNSFont);
         if (m_inMemoryFont) {
             cgFont = m_inMemoryFont->cgFont();
-            
+
             // Need to add an extra retain so output semantics of this function
             // are consistent.
             CFRetain(cgFont);

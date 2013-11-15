@@ -43,7 +43,7 @@
 #include "core/page/Settings.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"
-#include "core/platform/graphics/chromium/ImageDecodingStore.h"
+#include "core/platform/graphics/ImageDecodingStore.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
 #include "platform/graphics/media/MediaPlayer.h"
 #include "wtf/Assertions.h"

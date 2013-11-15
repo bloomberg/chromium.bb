@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/chromium/LazyDecodingPixelRef.h"
+#include "core/platform/graphics/LazyDecodingPixelRef.h"
 
 #include "SkData.h"
-#include "core/platform/graphics/chromium/ImageDecodingStore.h"
-#include "core/platform/graphics/chromium/ImageFrameGenerator.h"
+#include "core/platform/graphics/ImageDecodingStore.h"
+#include "core/platform/graphics/ImageFrameGenerator.h"
 #include "platform/TraceEvent.h"
 
 namespace WebCore {

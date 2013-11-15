@@ -38,7 +38,7 @@
 #include <unicode/unorm.h>
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
+#include "core/platform/graphics/win/FontPlatformDataWin.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/win/HWndDC.h"

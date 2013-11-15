@@ -29,7 +29,7 @@
 #define ImageBuffer_h
 
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/chromium/Canvas2DLayerBridge.h"
+#include "core/platform/graphics/Canvas2DLayerBridge.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ColorSpace.h"

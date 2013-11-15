@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CrossProcessFontLoading_h
-#define CrossProcessFontLoading_h
+#ifndef MemoryActivatedFont_h
+#define MemoryActivatedFont_h
 
 #import <wtf/RefCounted.h>
 #import <wtf/RetainPtr.h>
@@ -92,4 +92,4 @@ private:
 
 } // namespace WebCore
 
-#endif // CrossProcessFontLoading_h
+#endif // MemoryActivatedFont_h

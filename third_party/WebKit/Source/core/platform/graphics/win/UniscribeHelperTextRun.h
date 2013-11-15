@@ -31,7 +31,7 @@
 #ifndef UniscribeHelperTextRun_h
 #define UniscribeHelperTextRun_h
 
-#include "core/platform/graphics/chromium/UniscribeHelper.h"
+#include "core/platform/graphics/win/UniscribeHelper.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

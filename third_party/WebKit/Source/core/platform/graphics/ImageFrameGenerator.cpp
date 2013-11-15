@@ -25,10 +25,10 @@
 
 #include "config.h"
 
-#include "core/platform/graphics/chromium/ImageFrameGenerator.h"
+#include "core/platform/graphics/ImageFrameGenerator.h"
 
-#include "core/platform/graphics/chromium/DiscardablePixelRef.h"
-#include "core/platform/graphics/chromium/ImageDecodingStore.h"
+#include "core/platform/graphics/DiscardablePixelRef.h"
+#include "core/platform/graphics/ImageDecodingStore.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"

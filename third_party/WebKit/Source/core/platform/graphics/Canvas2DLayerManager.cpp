@@ -23,7 +23,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include "config.h"
 
-#include "core/platform/graphics/chromium/Canvas2DLayerManager.h"
+#include "core/platform/graphics/Canvas2DLayerManager.h"
 
 #include "public/platform/Platform.h"
 #include "wtf/StdLibExtras.h"

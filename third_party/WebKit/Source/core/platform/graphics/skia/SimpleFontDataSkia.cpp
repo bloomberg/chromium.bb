@@ -36,7 +36,7 @@
 #include "SkPath.h"
 #include "SkTypeface.h"
 #include "SkTypes.h"
-#include "core/platform/graphics/chromium/VDMXParser.h"
+#include "core/platform/graphics/VDMXParser.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/geometry/FloatRect.h"
 #include "wtf/unicode/Unicode.h"

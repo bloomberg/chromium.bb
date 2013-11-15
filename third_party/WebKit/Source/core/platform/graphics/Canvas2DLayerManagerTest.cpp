@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include "core/platform/graphics/chromium/Canvas2DLayerManager.h"
+#include "core/platform/graphics/Canvas2DLayerManager.h"
 
 #include "SkDevice.h"
 #include "SkSurface.h"

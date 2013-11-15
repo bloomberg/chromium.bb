@@ -25,7 +25,7 @@
 
 #ifndef MockImageDecoder_h
 
-#include "core/platform/graphics/chromium/ImageFrameGenerator.h"
+#include "core/platform/graphics/ImageFrameGenerator.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 #include "wtf/PassOwnPtr.h"
 

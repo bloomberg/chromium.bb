@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/chromium/DeferredImageDecoder.h"
+#include "core/platform/graphics/DeferredImageDecoder.h"
 
 #include "SkBitmapDevice.h"
 #include "SkCanvas.h"
 #include "SkPicture.h"
-#include "core/platform/graphics/chromium/ImageDecodingStore.h"
-#include "core/platform/graphics/chromium/test/MockImageDecoder.h"
+#include "core/platform/graphics/ImageDecodingStore.h"
+#include "core/platform/graphics/test/MockImageDecoder.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "platform/SharedBuffer.h"
 #include "platform/Task.h"

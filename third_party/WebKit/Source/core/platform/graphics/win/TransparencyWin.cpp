@@ -34,8 +34,8 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/SimpleFontData.h"
-#include "core/platform/graphics/chromium/TransparencyWin.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
+#include "core/platform/graphics/win/TransparencyWin.h"
 #include "platform/transforms/AffineTransform.h"
 
 #include "SkColorPriv.h"

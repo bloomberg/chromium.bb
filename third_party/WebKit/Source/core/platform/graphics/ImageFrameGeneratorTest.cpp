@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/chromium/ImageFrameGenerator.h"
+#include "core/platform/graphics/ImageFrameGenerator.h"
 
-#include "core/platform/graphics/chromium/ImageDecodingStore.h"
-#include "core/platform/graphics/chromium/test/MockImageDecoder.h"
+#include "core/platform/graphics/ImageDecodingStore.h"
+#include "core/platform/graphics/test/MockImageDecoder.h"
 #include "platform/SharedBuffer.h"
 #include "platform/Task.h"
 #include "public/platform/Platform.h"

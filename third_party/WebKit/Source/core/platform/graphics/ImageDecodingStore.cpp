@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/chromium/ImageDecodingStore.h"
+#include "core/platform/graphics/ImageDecodingStore.h"
 
 #include "platform/TraceEvent.h"
 #include "platform/graphics/ScaledImageFragment.h"

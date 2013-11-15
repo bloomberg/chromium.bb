@@ -28,7 +28,7 @@
 #define GraphicsLayer_h
 
 #include "core/platform/graphics/GraphicsLayerClient.h"
-#include "core/platform/graphics/chromium/OpaqueRectTrackingContentLayerDelegate.h"
+#include "core/platform/graphics/OpaqueRectTrackingContentLayerDelegate.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatPoint3D.h"

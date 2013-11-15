@@ -34,11 +34,11 @@
 #include "core/platform/graphics/ImageBuffer.h"
 
 #include "core/platform/graphics/BitmapImage.h"
+#include "core/platform/graphics/Canvas2DLayerBridge.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GaneshUtils.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
-#include "core/platform/graphics/chromium/Canvas2DLayerBridge.h"
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"

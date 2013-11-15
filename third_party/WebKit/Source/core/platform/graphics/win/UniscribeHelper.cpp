@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/chromium/UniscribeHelper.h"
+#include "core/platform/graphics/win/UniscribeHelper.h"
 
 #include <windows.h>
 #include "core/platform/graphics/Font.h"

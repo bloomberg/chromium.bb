@@ -35,7 +35,7 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Pattern.h"
 #include "core/platform/graphics/SimpleFontData.h"
-#include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
+#include "core/platform/graphics/win/FontPlatformDataWin.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"

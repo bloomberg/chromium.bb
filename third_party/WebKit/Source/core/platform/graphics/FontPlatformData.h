@@ -24,7 +24,7 @@
 
 // FIXME: This is temporary until all ports switch to using this file.
 #if OS(WIN)
-#include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
+#include "core/platform/graphics/win/FontPlatformDataWin.h"
 #elif !OS(MACOSX)
 #include "core/platform/graphics/harfbuzz/FontPlatformDataHarfBuzz.h"
 
@@ -54,7 +54,7 @@ typedef const struct __CTFont* CTFontRef;
 #include "wtf/text/StringImpl.h"
 
 #if OS(MACOSX)
-#include "core/platform/graphics/chromium/CrossProcessFontLoading.h"
+#include "core/platform/graphics/mac/MemoryActivatedFont.h"
 #endif
 
 #if OS(MACOSX)

@@ -716,8 +716,12 @@
             ['exclude', 'Posix\\.cpp$'],
 
             ['include', 'platform/ScrollbarThemeWin\\.(cpp|h)$'],
-            ['include', 'platform/graphics/chromium/FontFallbackWin\\.(cpp|h)$'],
-            ['include', 'platform/graphics/chromium/TransparencyWin\\.(cpp|h)$'],
+            ['include', 'platform/graphics/win/FontFallbackWin\\.(cpp|h)$'],
+            ['include', 'platform/graphics/win/FontPlatformDataWin\\.(cpp|h)$'],
+            ['include', 'platform/graphics/win/FontWin\\.cpp$'],
+            ['include', 'platform/graphics/win/TransparencyWin\\.(cpp|h)$'],
+            ['include', 'platform/graphics/win/UniscribeHelper\\.(cpp|h)$'],
+            ['include', 'platform/graphics/win/UniscribeHelperTextRun\\.(cpp|h)$'],
             ['include', 'platform/graphics/opentype/'],
             ['include', 'platform/graphics/skia/SkiaFontWin\\.(cpp|h)$'],
 
@@ -741,9 +745,9 @@
                 ['include', 'platform/graphics/skia/FontCacheSkiaWin\\.cpp$'],
                 ['include', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
                 ['include', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
-                ['exclude', 'platform/graphics/chromium/SimpleFontDataChromiumWin\\.cpp$'],
-                ['exclude', 'platform/graphics/chromium/GlyphPageTreeNodeChromiumWin\\.cpp$'],
-                ['exclude', 'platform/graphics/chromium/FontCacheChromiumWin\\.cpp$'],
+                ['exclude', 'platform/graphics/win/SimpleFontDataWin\\.cpp$'],
+                ['exclude', 'platform/graphics/win/GlyphPageTreeNodeWin\\.cpp$'],
+                ['exclude', 'platform/graphics/win/FontCacheWin\\.cpp$'],
                 ['exclude', 'platform/graphics/win/FontCustomPlatformDataWin\\.cpp$'],
               ],
             }],
@@ -754,7 +758,7 @@
                 ['include', 'platform/graphics/harfbuzz/HarfBuzzShaper\\.(cpp|h)$'],
                 ['include', 'platform/graphics/harfbuzz/HarfBuzzShaperBase\\.(cpp|h)$'],
                 ['include', 'platform/graphics/harfbuzz/HarfBuzzFaceSkia\\.cpp$'],
-                ['exclude', 'platform/graphics/chromium/FontChromiumWin\\.cpp$'],
+                ['exclude', 'platform/graphics/win/FontWin\\.cpp$'],
                 ['exclude', '/(Uniscribe)[^/]*\\.(cpp|h)$'],
               ],
               'dependencies': [
@@ -778,8 +782,8 @@
           'sources/': [
             ['include', 'platform/chromium/ClipboardChromiumLinux\\.cpp$'],
             ['include', 'platform/chromium/FileSystemChromiumLinux\\.cpp$'],
-            ['include', 'platform/graphics/chromium/GlyphPageTreeNodeLinux\\.cpp$'],
-            ['include', 'platform/graphics/chromium/VDMXParser\\.cpp$'],
+            ['include', 'platform/graphics/linux/GlyphPageTreeNodeLinux\\.cpp$'],
+            ['include', 'platform/graphics/VDMXParser\\.cpp$'],
           ],
         }, { # OS!="android"
           'sources/': [

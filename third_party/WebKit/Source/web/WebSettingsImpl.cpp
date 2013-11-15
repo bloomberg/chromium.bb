@@ -32,7 +32,7 @@
 #include "WebSettingsImpl.h"
 
 #include "core/page/Settings.h"
-#include "core/platform/graphics/chromium/DeferredImageDecoder.h"
+#include "core/platform/graphics/DeferredImageDecoder.h"
 #include "wtf/UnusedParam.h"
 
 #include "public/platform/WebString.h"
