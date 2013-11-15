@@ -62,6 +62,14 @@
         'x11_input_method_context_impl_gtk2.cc',
         'x11_input_method_context_impl_gtk2.h',
       ],
+      'conditions': [
+        ['use_gconf==0', {
+          'sources!': [
+            'gconf_titlebar_listener.cc',
+            'gconf_titlebar_listener.h',
+          ],
+        }],
+      ],
     },
   ],
 }

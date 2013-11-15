@@ -185,9 +185,11 @@ class Gtk2UI : public views::LinuxUI {
   SkColor inactive_selection_bg_color_;
   SkColor inactive_selection_fg_color_;
 
+#if defined(USE_GCONF)
   // Currently, the only source of window button configuration. This will
   // change if we ever have to support XFCE's configuration system or KDE's.
   scoped_ptr<GConfTitlebarListener> titlebar_listener_;
+#endif  // defined(USE_GCONF)
 
   // If either of these vectors are non-empty, they represent the current
   // window button configuration.

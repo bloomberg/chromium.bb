@@ -16,7 +16,6 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/libgtk2ui/app_indicator_icon.h"
 #include "chrome/browser/ui/libgtk2ui/chrome_gtk_frame.h"
-#include "chrome/browser/ui/libgtk2ui/gconf_titlebar_listener.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "chrome/browser/ui/libgtk2ui/native_theme_gtk2.h"
 #include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl.h"
@@ -37,6 +36,10 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/linux_ui/window_button_order_observer.h"
+
+#if defined(USE_GCONF)
+#include "chrome/browser/ui/libgtk2ui/gconf_titlebar_listener.h"
+#endif
 
 // A minimized port of GtkThemeService into something that can provide colors
 // and images for aura.
@@ -330,8 +333,10 @@ void Gtk2UI::Initialize() {
   LoadGtkValues();
   SetXDGIconTheme();
 
+#if defined(USE_GCONF)
   // We must build this after GTK gets initialized.
   titlebar_listener_.reset(new GConfTitlebarListener(this));
+#endif  // defined(USE_GCONF)
 
   indicators_count = 0;
 }
