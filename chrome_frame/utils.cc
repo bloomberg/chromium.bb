@@ -429,8 +429,11 @@ IEVersion GetIEVersion() {
       case 9:
         ie_version = IE_9;
         break;
+      case 10:
+        ie_version = IE_10;
+        break;
       default:
-        ie_version = (major_version >= 10) ? IE_10 : IE_UNSUPPORTED;
+        ie_version = (major_version >= 11) ? IE_11 : IE_UNSUPPORTED;
         break;
     }
   }
