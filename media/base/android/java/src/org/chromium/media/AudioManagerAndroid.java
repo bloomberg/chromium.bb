@@ -64,6 +64,9 @@ class AudioManagerAndroid {
         }
 
         mOriginalSpeakerStatus = mAudioManager.isSpeakerphoneOn();
+        if (!mOriginalSpeakerStatus) {
+            mAudioManager.setSpeakerphoneOn(true);
+        }
         IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
 
         mReceiver = new BroadcastReceiver() {
