@@ -107,7 +107,9 @@ class BindingsTests(object):
             _, self.event_names_filename = provider.newtempfile()
 
     def run_command(self, cmd):
-        return self.executive.run_command(cmd)
+        output = self.executive.run_command(cmd)
+        if output:
+            print output
 
     def generate_from_idl_pl(self, idl_file, output_directory):
         cmd = ['perl', '-w',
@@ -123,12 +125,11 @@ class BindingsTests(object):
                '--idlAttributesFile', 'bindings/IDLExtendedAttributes.txt',
                idl_file]
         try:
-            output = self.run_command(cmd)
+            self.run_command(cmd)
         except ScriptError, e:
+            print 'ERROR: generate_bindings.pl: ' + os.path.basename(idl_file)
             print e.output
             return e.exit_code
-        if output:
-            print output
         return 0
 
     def generate_from_idl_py(self, idl_file, output_directory):
@@ -141,12 +142,11 @@ class BindingsTests(object):
                self.interface_dependencies_filename,
                idl_file]
         try:
-            output = self.run_command(cmd)
+            self.run_command(cmd)
         except ScriptError, e:
+            print 'ERROR: idl_compiler.py: ' + os.path.basename(idl_file)
             print e.output
             return e.exit_code
-        if output:
-            print output
         return 0
 
     def generate_interface_dependencies(self):
@@ -186,31 +186,28 @@ class BindingsTests(object):
         if self.reset_results and self.verbose:
             print 'Reset results: EventInterfaces.in'
         try:
-            output = self.run_command(cmd)
+            self.run_command(cmd)
         except ScriptError, e:
+            print 'ERROR: compute_dependencies.py'
             print e.output
             return e.exit_code
-        if output:
-            print output
         return 0
 
     def identical_file(self, reference_filename, work_filename):
+        reference_basename = os.path.basename(reference_filename)
         cmd = ['diff',
                '-u',
                '-N',
                reference_filename,
                work_filename]
         try:
-            output = self.run_command(cmd)
+            self.run_command(cmd)
         except ScriptError, e:
+            # run_command throws an exception on diff (b/c non-zero exit code)
+            print 'FAIL: %s' % reference_basename
             print e.output
             return False
 
-        reference_basename = os.path.basename(reference_filename)
-        if output:
-            print 'FAIL: %s' % reference_basename
-            print output
-            return False
         if self.verbose:
             print 'PASS: %s' % reference_basename
         return True
