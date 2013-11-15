@@ -40,15 +40,15 @@
 
 namespace WebCore {
 
-DOMURL::DOMURL(const String& url, const KURL& base, ExceptionState& es)
+DOMURL::DOMURL(const String& url, const KURL& base, ExceptionState& exceptionState)
 {
     ScriptWrappable::init(this);
     if (!base.isValid())
-        es.throwDOMException(SyntaxError, ExceptionMessages::failedToConstruct("URL", "Invalid base URL"));
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToConstruct("URL", "Invalid base URL"));
 
     m_url = KURL(base, url);
     if (!m_url.isValid())
-        es.throwDOMException(SyntaxError, ExceptionMessages::failedToConstruct("URL", "Invalid URL"));
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToConstruct("URL", "Invalid URL"));
 }
 
 void DOMURL::setInput(const String& value)

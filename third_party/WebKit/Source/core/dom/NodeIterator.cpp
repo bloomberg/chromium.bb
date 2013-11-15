@@ -88,10 +88,10 @@ NodeIterator::~NodeIterator()
     root()->document().detachNodeIterator(this);
 }
 
-PassRefPtr<Node> NodeIterator::nextNode(ScriptState* state, ExceptionState& es)
+PassRefPtr<Node> NodeIterator::nextNode(ScriptState* state, ExceptionState& exceptionState)
 {
     if (m_detached) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("nextNode", "NodeIterator", "The iterator is detached."));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("nextNode", "NodeIterator", "The iterator is detached."));
         return 0;
     }
 
@@ -117,10 +117,10 @@ PassRefPtr<Node> NodeIterator::nextNode(ScriptState* state, ExceptionState& es)
     return result.release();
 }
 
-PassRefPtr<Node> NodeIterator::previousNode(ScriptState* state, ExceptionState& es)
+PassRefPtr<Node> NodeIterator::previousNode(ScriptState* state, ExceptionState& exceptionState)
 {
     if (m_detached) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("previousNode", "NodeIterator", "The iterator is detached."));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("previousNode", "NodeIterator", "The iterator is detached."));
         return 0;
     }
 

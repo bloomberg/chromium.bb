@@ -49,18 +49,18 @@ public:
     virtual bool contains(const String& name) = 0;
     virtual void setItem(const String& name, const String& value, ExceptionState&) = 0;
     virtual void deleteItem(const String& name, ExceptionState&) = 0;
-    bool anonymousNamedSetter(const String& name, const String& value, ExceptionState& es)
+    bool anonymousNamedSetter(const String& name, const String& value, ExceptionState& exceptionState)
     {
-        setItem(name, value, es);
+        setItem(name, value, exceptionState);
         return true;
     }
     bool anonymousNamedDeleter(const AtomicString& name, ExceptionState&)
     {
         // FIXME: Remove ExceptionState parameter.
 
-        TrackExceptionState es;
-        deleteItem(name, es);
-        bool result = !es.hadException();
+        TrackExceptionState exceptionState;
+        deleteItem(name, exceptionState);
+        bool result = !exceptionState.hadException();
         // DOMStringMap deleter should ignore exception.
         // Behavior of Firefox and Opera are same.
         // delete document.body.dataset["-foo"] // false instead of DOM Exception 12
@@ -77,13 +77,13 @@ public:
     {
         return item(String::number(index));
     }
-    bool anonymousIndexedSetter(uint32_t index, const String& value, ExceptionState& es)
+    bool anonymousIndexedSetter(uint32_t index, const String& value, ExceptionState& exceptionState)
     {
-        return anonymousNamedSetter(String::number(index), value, es);
+        return anonymousNamedSetter(String::number(index), value, exceptionState);
     }
-    bool anonymousIndexedDeleter(uint32_t index, ExceptionState& es)
+    bool anonymousIndexedDeleter(uint32_t index, ExceptionState& exceptionState)
     {
-        return anonymousNamedDeleter(AtomicString(String::number(index)), es);
+        return anonymousNamedDeleter(AtomicString(String::number(index)), exceptionState);
     }
 
     virtual Element* element() = 0;

@@ -884,10 +884,10 @@ const AtomicString& Element::getAttributeNS(const AtomicString& namespaceURI, co
     return getAttribute(QualifiedName(nullAtom, localName, namespaceURI));
 }
 
-void Element::setAttribute(const AtomicString& localName, const AtomicString& value, ExceptionState& es)
+void Element::setAttribute(const AtomicString& localName, const AtomicString& value, ExceptionState& exceptionState)
 {
     if (!Document::isValidName(localName)) {
-        es.throwUninformativeAndGenericDOMException(InvalidCharacterError);
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidCharacterError);
         return;
     }
 
@@ -1232,10 +1232,10 @@ String Element::nodeNamePreservingCase() const
     return m_tagName.toString();
 }
 
-void Element::setPrefix(const AtomicString& prefix, ExceptionState& es)
+void Element::setPrefix(const AtomicString& prefix, ExceptionState& exceptionState)
 {
-    checkSetPrefix(prefix, es);
-    if (es.hadException())
+    checkSetPrefix(prefix, exceptionState);
+    if (exceptionState.hadException())
         return;
 
     m_tagName.setPrefix(prefix.isEmpty() ? AtomicString() : prefix);
@@ -1701,7 +1701,7 @@ void Element::didAffectSelector(AffectedSelectorMask mask)
         elementShadow->didAffectSelector(mask);
 }
 
-PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& es)
+PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
 {
     if (alwaysCreateUserAgentShadowRoot())
         ensureUserAgentShadowRoot();
@@ -1713,7 +1713,7 @@ PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& es)
     // subtrees won't work well in that element. Until they are fixed, we disable
     // adding author shadow root for them.
     if (!areAuthorShadowsAllowed()) {
-        es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+        exceptionState.throwUninformativeAndGenericDOMException(HierarchyRequestError);
         return 0;
     }
     return PassRefPtr<ShadowRoot>(ensureShadow().addShadowRoot(*this, ShadowRoot::AuthorShadowRoot));
@@ -1918,10 +1918,10 @@ const Vector<RefPtr<Attr> >& Element::attrNodeList()
     return *attrNodeListForElement(this);
 }
 
-PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& es)
+PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& exceptionState)
 {
     if (!attrNode) {
-        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return 0;
     }
 
@@ -1932,7 +1932,7 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& es)
     // InUseAttributeError: Raised if node is an Attr that is already an attribute of another Element object.
     // The DOM user must explicitly clone Attr nodes to re-use them in other elements.
     if (attrNode->ownerElement()) {
-        es.throwUninformativeAndGenericDOMException(InUseAttributeError);
+        exceptionState.throwUninformativeAndGenericDOMException(InUseAttributeError);
         return 0;
     }
 
@@ -1956,19 +1956,19 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& es)
     return oldAttrNode.release();
 }
 
-PassRefPtr<Attr> Element::setAttributeNodeNS(Attr* attr, ExceptionState& es)
+PassRefPtr<Attr> Element::setAttributeNodeNS(Attr* attr, ExceptionState& exceptionState)
 {
-    return setAttributeNode(attr, es);
+    return setAttributeNode(attr, exceptionState);
 }
 
-PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& es)
+PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& exceptionState)
 {
     if (!attr) {
-        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return 0;
     }
     if (attr->ownerElement() != this) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
         return 0;
     }
 
@@ -1978,7 +1978,7 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& es)
 
     size_t index = elementData()->getAttrIndex(attr);
     if (index == kNotFound) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
         return 0;
     }
 
@@ -1987,17 +1987,17 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& es)
     return guard.release();
 }
 
-bool Element::parseAttributeName(QualifiedName& out, const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& es)
+bool Element::parseAttributeName(QualifiedName& out, const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState)
 {
     String prefix, localName;
-    if (!Document::parseQualifiedName(qualifiedName, prefix, localName, es))
+    if (!Document::parseQualifiedName(qualifiedName, prefix, localName, exceptionState))
         return false;
-    ASSERT(!es.hadException());
+    ASSERT(!exceptionState.hadException());
 
     QualifiedName qName(prefix, localName, namespaceURI);
 
     if (!Document::hasValidNamespaceForAttributes(qName)) {
-        es.throwUninformativeAndGenericDOMException(NamespaceError);
+        exceptionState.throwUninformativeAndGenericDOMException(NamespaceError);
         return false;
     }
 
@@ -2005,10 +2005,10 @@ bool Element::parseAttributeName(QualifiedName& out, const AtomicString& namespa
     return true;
 }
 
-void Element::setAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& value, ExceptionState& es)
+void Element::setAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& value, ExceptionState& exceptionState)
 {
     QualifiedName parsedName = anyName;
-    if (!parseAttributeName(parsedName, namespaceURI, qualifiedName, es))
+    if (!parseAttributeName(parsedName, namespaceURI, qualifiedName, exceptionState))
         return;
     setAttribute(parsedName, value);
 }
@@ -2231,38 +2231,38 @@ String Element::outerHTML() const
     return createMarkup(this);
 }
 
-void Element::setInnerHTML(const String& html, ExceptionState& es)
+void Element::setInnerHTML(const String& html, ExceptionState& exceptionState)
 {
-    if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, this, AllowScriptingContent, "innerHTML", es)) {
+    if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, this, AllowScriptingContent, "innerHTML", exceptionState)) {
         ContainerNode* container = this;
         if (hasTagName(templateTag))
             container = toHTMLTemplateElement(this)->content();
-        replaceChildrenWithFragment(container, fragment.release(), es);
+        replaceChildrenWithFragment(container, fragment.release(), exceptionState);
     }
 }
 
-void Element::setOuterHTML(const String& html, ExceptionState& es)
+void Element::setOuterHTML(const String& html, ExceptionState& exceptionState)
 {
     Node* p = parentNode();
     if (!p || !p->isElementNode()) {
-        es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
         return;
     }
     RefPtr<Element> parent = toElement(p);
     RefPtr<Node> prev = previousSibling();
     RefPtr<Node> next = nextSibling();
 
-    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, parent.get(), AllowScriptingContent, "outerHTML", es);
-    if (es.hadException())
+    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, parent.get(), AllowScriptingContent, "outerHTML", exceptionState);
+    if (exceptionState.hadException())
         return;
 
-    parent->replaceChild(fragment.release(), this, es);
+    parent->replaceChild(fragment.release(), this, exceptionState);
     RefPtr<Node> node = next ? next->previousSibling() : 0;
-    if (!es.hadException() && node && node->isTextNode())
-        mergeWithNextTextNode(node.release(), es);
+    if (!exceptionState.hadException() && node && node->isTextNode())
+        mergeWithNextTextNode(node.release(), exceptionState);
 
-    if (!es.hadException() && prev && prev->isTextNode())
-        mergeWithNextTextNode(prev.release(), es);
+    if (!exceptionState.hadException() && prev && prev->isTextNode())
+        mergeWithNextTextNode(prev.release(), exceptionState);
 }
 
 String Element::innerText()
@@ -2683,14 +2683,14 @@ RenderObject* Element::pseudoElementRenderer(PseudoId pseudoId) const
     return 0;
 }
 
-bool Element::webkitMatchesSelector(const String& selector, ExceptionState& es)
+bool Element::webkitMatchesSelector(const String& selector, ExceptionState& exceptionState)
 {
     if (selector.isEmpty()) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
         return false;
     }
 
-    SelectorQuery* selectorQuery = document().selectorQueryCache().add(selector, document(), es);
+    SelectorQuery* selectorQuery = document().selectorQueryCache().add(selector, document(), exceptionState);
     if (!selectorQuery)
         return false;
     return selectorQuery->matches(*this);

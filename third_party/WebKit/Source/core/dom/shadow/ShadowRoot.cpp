@@ -126,9 +126,9 @@ bool ShadowRoot::isOldestAuthorShadowRoot() const
     return true;
 }
 
-PassRefPtr<Node> ShadowRoot::cloneNode(bool, ExceptionState& es)
+PassRefPtr<Node> ShadowRoot::cloneNode(bool, ExceptionState& exceptionState)
 {
-    es.throwDOMException(DataCloneError, ExceptionMessages::failedToExecute("cloneNode", "ShadowRoot", "ShadowRoot nodes are not clonable."));
+    exceptionState.throwDOMException(DataCloneError, ExceptionMessages::failedToExecute("cloneNode", "ShadowRoot", "ShadowRoot nodes are not clonable."));
     return 0;
 }
 
@@ -137,15 +137,15 @@ String ShadowRoot::innerHTML() const
     return createMarkup(this, ChildrenOnly);
 }
 
-void ShadowRoot::setInnerHTML(const String& markup, ExceptionState& es)
+void ShadowRoot::setInnerHTML(const String& markup, ExceptionState& exceptionState)
 {
     if (isOrphan()) {
-        es.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("setInnerHTML", "ShadowRoot", "The ShadowRoot does not have a host."));
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("setInnerHTML", "ShadowRoot", "The ShadowRoot does not have a host."));
         return;
     }
 
-    if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, host(), AllowScriptingContent, "innerHTML", es))
-        replaceChildrenWithFragment(this, fragment.release(), es);
+    if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, host(), AllowScriptingContent, "innerHTML", exceptionState))
+        replaceChildrenWithFragment(this, fragment.release(), exceptionState);
 }
 
 bool ShadowRoot::childTypeAllowed(NodeType type) const

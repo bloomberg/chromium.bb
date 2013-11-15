@@ -55,45 +55,45 @@ PassRefPtr<Node> NamedNodeMap::getNamedItemNS(const AtomicString& namespaceURI, 
     return m_element->getAttributeNodeNS(namespaceURI, localName);
 }
 
-PassRefPtr<Node> NamedNodeMap::removeNamedItem(const AtomicString& name, ExceptionState& es)
+PassRefPtr<Node> NamedNodeMap::removeNamedItem(const AtomicString& name, ExceptionState& exceptionState)
 {
     size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(name, m_element->shouldIgnoreAttributeCase()) : kNotFound;
     if (index == kNotFound) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
         return 0;
     }
     return m_element->detachAttribute(index);
 }
 
-PassRefPtr<Node> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState& es)
+PassRefPtr<Node> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState& exceptionState)
 {
     size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(QualifiedName(nullAtom, localName, namespaceURI)) : kNotFound;
     if (index == kNotFound) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
         return 0;
     }
     return m_element->detachAttribute(index);
 }
 
-PassRefPtr<Node> NamedNodeMap::setNamedItem(Node* node, ExceptionState& es)
+PassRefPtr<Node> NamedNodeMap::setNamedItem(Node* node, ExceptionState& exceptionState)
 {
     if (!node) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
         return 0;
     }
 
     // Not mentioned in spec: throw a HIERARCHY_REQUEST_ERROR if the user passes in a non-attribute node
     if (!node->isAttributeNode()) {
-        es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+        exceptionState.throwUninformativeAndGenericDOMException(HierarchyRequestError);
         return 0;
     }
 
-    return m_element->setAttributeNode(toAttr(node), es);
+    return m_element->setAttributeNode(toAttr(node), exceptionState);
 }
 
-PassRefPtr<Node> NamedNodeMap::setNamedItemNS(Node* node, ExceptionState& es)
+PassRefPtr<Node> NamedNodeMap::setNamedItemNS(Node* node, ExceptionState& exceptionState)
 {
-    return setNamedItem(node, es);
+    return setNamedItem(node, exceptionState);
 }
 
 PassRefPtr<Node> NamedNodeMap::item(unsigned index) const

@@ -448,42 +448,42 @@ Node* Node::pseudoAwareLastChild() const
     return lastChild();
 }
 
-void Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& es)
+void Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& exceptionState)
 {
     if (isContainerNode())
-        toContainerNode(this)->insertBefore(newChild, refChild, es);
+        toContainerNode(this)->insertBefore(newChild, refChild, exceptionState);
     else
-        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute("insertBefore", "Node", "This node type does not support this method."));
+        exceptionState.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute("insertBefore", "Node", "This node type does not support this method."));
 }
 
-void Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& es)
+void Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& exceptionState)
 {
     if (isContainerNode())
-        toContainerNode(this)->replaceChild(newChild, oldChild, es);
+        toContainerNode(this)->replaceChild(newChild, oldChild, exceptionState);
     else
-        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute("replaceChild", "Node", "This node type does not support this method."));
+        exceptionState.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute("replaceChild", "Node", "This node type does not support this method."));
 }
 
-void Node::removeChild(Node* oldChild, ExceptionState& es)
+void Node::removeChild(Node* oldChild, ExceptionState& exceptionState)
 {
     if (isContainerNode())
-        toContainerNode(this)->removeChild(oldChild, es);
+        toContainerNode(this)->removeChild(oldChild, exceptionState);
     else
-        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeChild", "Node", "This node type does not support this method."));
+        exceptionState.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeChild", "Node", "This node type does not support this method."));
 }
 
-void Node::appendChild(PassRefPtr<Node> newChild, ExceptionState& es)
+void Node::appendChild(PassRefPtr<Node> newChild, ExceptionState& exceptionState)
 {
     if (isContainerNode())
-        toContainerNode(this)->appendChild(newChild, es);
+        toContainerNode(this)->appendChild(newChild, exceptionState);
     else
-        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute("appendChild", "Node", "This node type does not support this method."));
+        exceptionState.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute("appendChild", "Node", "This node type does not support this method."));
 }
 
-void Node::remove(ExceptionState& es)
+void Node::remove(ExceptionState& exceptionState)
 {
     if (ContainerNode* parent = parentNode())
-        parent->removeChild(this, es);
+        parent->removeChild(this, exceptionState);
 }
 
 void Node::normalize()
@@ -515,12 +515,12 @@ const AtomicString& Node::prefix() const
     return nullAtom;
 }
 
-void Node::setPrefix(const AtomicString& /*prefix*/, ExceptionState& es)
+void Node::setPrefix(const AtomicString& /*prefix*/, ExceptionState& exceptionState)
 {
     // The spec says that for nodes other than elements and attributes, prefix is always null.
     // It does not say what to do when the user tries to set the prefix on another type of
     // node, however Mozilla throws a NamespaceError exception.
-    es.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Node", "Prefixes are only supported on element and attribute nodes."));
+    exceptionState.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Node", "Prefixes are only supported on element and attribute nodes."));
 }
 
 const AtomicString& Node::localName() const
@@ -831,13 +831,13 @@ void Node::clearNodeLists()
     rareData()->clearNodeLists();
 }
 
-void Node::checkSetPrefix(const AtomicString& prefix, ExceptionState& es)
+void Node::checkSetPrefix(const AtomicString& prefix, ExceptionState& exceptionState)
 {
     // Perform error checking as required by spec for setting Node.prefix. Used by
     // Element::setPrefix() and Attr::setPrefix()
 
     if (!prefix.isEmpty() && !Document::isValidName(prefix)) {
-        es.throwDOMException(InvalidCharacterError, ExceptionMessages::failedToSet("prefix", "Node", "The prefix '" + prefix + "' is not a valid name."));
+        exceptionState.throwDOMException(InvalidCharacterError, ExceptionMessages::failedToSet("prefix", "Node", "The prefix '" + prefix + "' is not a valid name."));
         return;
     }
 
@@ -845,12 +845,12 @@ void Node::checkSetPrefix(const AtomicString& prefix, ExceptionState& es)
 
     const AtomicString& nodeNamespaceURI = namespaceURI();
     if (nodeNamespaceURI.isEmpty() && !prefix.isEmpty()) {
-        es.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Node", "No namespace is set, so a namespace prefix may not be set."));
+        exceptionState.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Node", "No namespace is set, so a namespace prefix may not be set."));
         return;
     }
 
     if (prefix == xmlAtom && nodeNamespaceURI != XMLNames::xmlNamespaceURI) {
-        es.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Node", "The prefix '" + xmlAtom + "' may not be set on namespace '" + nodeNamespaceURI + "'."));
+        exceptionState.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Node", "The prefix '" + xmlAtom + "' may not be set on namespace '" + nodeNamespaceURI + "'."));
         return;
     }
     // Attribute-specific checks are in Attr::setPrefix().
@@ -1276,27 +1276,27 @@ PassRefPtr<RadioNodeList> Node::radioNodeList(const AtomicString& name)
     return ensureRareData().ensureNodeLists().addCacheWithAtomicName<RadioNodeList>(this, RadioNodeListType, name);
 }
 
-PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, ExceptionState& es)
+PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, ExceptionState& exceptionState)
 {
     if (selectors.isEmpty()) {
-        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("querySelector", "Node", "The provided selector is empty."));
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("querySelector", "Node", "The provided selector is empty."));
         return 0;
     }
 
-    SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), es);
+    SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), exceptionState);
     if (!selectorQuery)
         return 0;
     return selectorQuery->queryFirst(*this);
 }
 
-PassRefPtr<NodeList> Node::querySelectorAll(const AtomicString& selectors, ExceptionState& es)
+PassRefPtr<NodeList> Node::querySelectorAll(const AtomicString& selectors, ExceptionState& exceptionState)
 {
     if (selectors.isEmpty()) {
-        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("querySelectorAll", "Node", "The provided selector is empty."));
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("querySelectorAll", "Node", "The provided selector is empty."));
         return 0;
     }
 
-    SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), es);
+    SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), exceptionState);
     if (!selectorQuery)
         return 0;
     return selectorQuery->queryAll(*this);
@@ -1587,7 +1587,7 @@ String Node::textContent(bool convertBRsToNewlines) const
     return isNullString ? String() : content.toString();
 }
 
-void Node::setTextContent(const String& text, ExceptionState& es)
+void Node::setTextContent(const String& text, ExceptionState& exceptionState)
 {
     switch (nodeType()) {
         case TEXT_NODE:
@@ -1604,7 +1604,7 @@ void Node::setTextContent(const String& text, ExceptionState& es)
             ChildListMutationScope mutation(*this);
             container->removeChildren();
             if (!text.isEmpty())
-                container->appendChild(document().createTextNode(text), es);
+                container->appendChild(document().createTextNode(text), exceptionState);
             return;
         }
         case DOCUMENT_NODE:
