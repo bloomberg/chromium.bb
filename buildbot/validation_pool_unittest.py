@@ -862,9 +862,9 @@ class TestCoreLogic(MoxBase):
 
     manifest = MockManifest(self.build_root, projects=projects)
     for patch in allowed_patches:
-      patch.GetCheckout = lambda _: True
+      patch.GetCheckout = lambda *_args, **_kwargs: True
     for patch in filtered_patches:
-      patch.GetCheckout = lambda _: False
+      patch.GetCheckout = lambda *_args, **_kwargs: False
 
     self.mox.ReplayAll()
     results = validation_pool.ValidationPool._FilterNonCrosProjects(
