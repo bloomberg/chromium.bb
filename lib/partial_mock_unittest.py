@@ -69,6 +69,10 @@ class RecursiveCompareTest(cros_test_lib.MoxTestCase):
                      {1: self.LHS_DICT, 3: self.LIST + [5]})
     self.FalseHelper(self.LIST, self.TUPLE)
 
+  def testUnicode(self):
+    """Test recursively comparing unicode and non-unicode strings."""
+    self.assertTrue(partial_mock._RecursiveCompare(['foo'], [u'foo']))
+
 
 class ListContainsTest(cros_test_lib.MoxTestCase):
 
@@ -91,6 +95,10 @@ class ListContainsTest(cros_test_lib.MoxTestCase):
       self.assertTrue(partial_mock.ListContains(x, self.L))
     for x in self.FALSE_LISTS:
       self.assertFalse(partial_mock.ListContains(x, self.L))
+
+  def testUnicode(self):
+    """Test ListContains with unicode and non-unicode strings."""
+    self.assertTrue(partial_mock.ListContains(['foo'], [u'foo']))
 
 
 class MockedCallResultsTest(cros_test_lib.MoxTestCase):

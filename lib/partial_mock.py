@@ -121,10 +121,9 @@ def _RecursiveCompare(lhs, rhs):
   """
   if isinstance(lhs, Comparator):
     return lhs.Match(rhs)
-  elif type(lhs) != type(rhs):
-    return False
   elif isinstance(lhs, (tuple, list)):
-    return (len(lhs) == len(rhs) and
+    return (type(lhs) == type(rhs) and
+            len(lhs) == len(rhs) and
             all(_RecursiveCompare(i, j) for i, j in zip(lhs, rhs)))
   elif isinstance(lhs, dict):
     return _RecursiveCompare(sorted(lhs.iteritems()), sorted(rhs.iteritems()))
