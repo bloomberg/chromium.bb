@@ -420,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateToURL(shell(), base_url.Resolve("blank.html"));
   FrameTreeNode* root =
       static_cast<WebContentsImpl*>(shell()->web_contents())->
-      GetFrameTree()->GetRootForTesting();
+      GetFrameTree()->root();
   EXPECT_EQ(0U, root->child_count());
 
   // Add 2 same-site frames. Verify 3 nodes in tree with proper names.
@@ -451,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       wc->GetRenderViewHost());
-  FrameTreeNode* root = wc->GetFrameTree()->GetRootForTesting();
+  FrameTreeNode* root = wc->GetFrameTree()->root();
 
   // Check that the root node is properly created with the frame id of the
   // initial navigation.
@@ -473,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // tree in the browser process.
   NavigateToURL(shell(), test_server()->GetURL("files/title1.html"));
 
-  root = wc->GetFrameTree()->GetRootForTesting();
+  root = wc->GetFrameTree()->root();
   EXPECT_EQ(0UL, root->child_count());
   EXPECT_EQ(std::string(), root->frame_name());
   EXPECT_EQ(rvh->main_frame_id(), root->frame_id());

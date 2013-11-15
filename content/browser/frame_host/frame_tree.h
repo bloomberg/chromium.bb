@@ -17,7 +17,10 @@ namespace content {
 class FrameTreeNode;
 class Navigator;
 class RenderProcessHost;
+class RenderViewHostDelegate;
 class RenderViewHostImpl;
+class RenderViewHostManager;
+class RenderWidgetHostDelegate;
 
 // Represents the frame tree for a page. With the exception of the main frame,
 // all FrameTreeNodes will be created/deleted in response to frame attach and
@@ -38,7 +41,14 @@ class CONTENT_EXPORT FrameTree {
  public:
   // Each FrameTreeNode will default to using the given |navigator| for
   // navigation tasks in the frame.
-  FrameTree(Navigator* navigator);
+  // A set of delegates are remembered here so that we can create
+  // RenderViewHostManagers.
+  // TODO(creis): This set of delegates will change as we move things to
+  // Navigator.
+  FrameTree(Navigator* navigator,
+            RenderViewHostDelegate* render_view_delegate,
+            RenderWidgetHostDelegate* render_widget_delegate,
+            RenderViewHostManager::Delegate* manager_delegate);
   ~FrameTree();
 
   // Returns the FrameTreeNode with the given |frame_tree_node_id|.
@@ -92,7 +102,7 @@ class CONTENT_EXPORT FrameTree {
   void SetFrameRemoveListener(
       const base::Callback<void(RenderViewHostImpl*, int64)>& on_frame_removed);
 
-  FrameTreeNode* GetRootForTesting() { return root_.get(); }
+  FrameTreeNode* root() const { return root_.get(); }
 
  private:
   // Returns the FrameTreeNode with the given renderer-specific |frame_id|.
@@ -105,6 +115,12 @@ class CONTENT_EXPORT FrameTree {
                                        int render_frame_host_id,
                                        Navigator* navigator,
                                        RenderProcessHost* render_process_host);
+
+  // These delegates are installed into all the RenderViewHosts and
+  // RenderFrameHosts that we create.
+  RenderViewHostDelegate* render_view_delegate_;
+  RenderWidgetHostDelegate* render_widget_delegate_;
+  RenderViewHostManager::Delegate* manager_delegate_;
 
   scoped_ptr<FrameTreeNode> root_;
 

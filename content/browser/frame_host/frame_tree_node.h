@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "content/browser/frame_host/render_view_host_manager.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -27,11 +28,13 @@ class CONTENT_EXPORT FrameTreeNode {
  public:
   static const int64 kInvalidFrameId;
 
-  FrameTreeNode(
-    int64 frame_id,
-    const std::string& name,
-    Navigator* navigator,
-    scoped_ptr<RenderFrameHostImpl> render_frame_host);
+  FrameTreeNode(Navigator* navigator,
+                RenderViewHostDelegate* render_view_delegate,
+                RenderWidgetHostDelegate* render_widget_delegate,
+                RenderViewHostManager::Delegate* manager_delegate,
+                int64 frame_id,
+                const std::string& name,
+                scoped_ptr<RenderFrameHostImpl> render_frame_host);
 
   ~FrameTreeNode();
 
@@ -47,6 +50,14 @@ class CONTENT_EXPORT FrameTreeNode {
   // TODO(ajwong): Remove this method once the main frame RenderFrameHostImpl is
   // no longer owned by the RenderViewHostImpl.
   void ResetForMainFrame(RenderFrameHostImpl* new_render_frame_host);
+
+  Navigator* navigator() {
+    return navigator_.get();
+  }
+
+  RenderViewHostManager* render_manager() {
+    return &render_manager_;
+  }
 
   int64 frame_tree_node_id() const {
     return frame_tree_node_id_;
@@ -86,13 +97,21 @@ class CONTENT_EXPORT FrameTreeNode {
     return render_frame_host_;
   }
 
-  Navigator* navigator() {
-    return navigator_.get();
-  }
-
  private:
   // The next available browser-global FrameTreeNode ID.
   static int64 next_frame_tree_node_id_;
+
+  // The Navigator object responsible for managing navigations at this node
+  // of the frame tree.
+  scoped_refptr<Navigator> navigator_;
+
+  // Manages creation and swapping of RenderViewHosts for this frame.  This must
+  // be declared before |children_| so that it gets deleted after them.  That's
+  // currently necessary so that RenderFrameHostImpl's destructor can call
+  // GetProcess.
+  // TODO(creis): This will become a RenderFrameHostManager, which eliminates
+  // the need for |render_frame_host_| below.
+  RenderViewHostManager render_manager_;
 
   // A browser-global identifier for the frame in the page, which stays stable
   // even if the frame does a cross-process navigation.
@@ -110,10 +129,6 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // The immediate children of this specific frame.
   ScopedVector<FrameTreeNode> children_;
-
-  // The Navigator object responsible for managing navigations at this node
-  // of the frame tree.
-  scoped_refptr<Navigator> navigator_;
 
   // When ResetForMainFrame() is called, this is set to false and the
   // |render_frame_host_| below is not deleted on destruction.

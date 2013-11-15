@@ -23,7 +23,7 @@ class FrameTreeTest : public RenderViewHostTestHarness {
   // Prints a FrameTree, for easy assertions of the tree hierarchy.
   std::string GetTreeState(FrameTree* frame_tree) {
     std::string result;
-    AppendTreeNodeState(frame_tree->GetRootForTesting(), &result);
+    AppendTreeNodeState(frame_tree->root(), &result);
     return result;
   }
 
@@ -52,22 +52,22 @@ class FrameTreeTest : public RenderViewHostTestHarness {
 //  - Swapping back to NULL doesn't crash (easier tear-down for interstitials).
 //  - Main frame does not own RenderFrameHost.
 TEST_F(FrameTreeTest, RootNode) {
-  FrameTree frame_tree(new Navigator(NULL, NULL));
+  FrameTree frame_tree(new Navigator(NULL, NULL), NULL, NULL, NULL);
 
   // Initial state has empty node.
-  FrameTreeNode* root = frame_tree.GetRootForTesting();
+  FrameTreeNode* root = frame_tree.root();
   ASSERT_TRUE(root);
   EXPECT_FALSE(frame_tree.GetMainFrame());
 
   // Swap in main frame.
   RenderFrameHostImpl* dummy = reinterpret_cast<RenderFrameHostImpl*>(0x1);
   frame_tree.SwapMainFrame(dummy);
-  EXPECT_EQ(root, frame_tree.GetRootForTesting());
+  EXPECT_EQ(root, frame_tree.root());
   EXPECT_EQ(dummy, frame_tree.GetMainFrame());
 
   // Move back to NULL.
   frame_tree.SwapMainFrame(NULL);
-  EXPECT_EQ(root, frame_tree.GetRootForTesting());
+  EXPECT_EQ(root, frame_tree.root());
   EXPECT_FALSE(frame_tree.GetMainFrame());
 
   // Move back to an invalid pointer, let the FrameTree go out of scope. Test
@@ -79,26 +79,26 @@ TEST_F(FrameTreeTest, RootNode) {
 //  - On creation, frame id is unassigned.
 //  - After a swap, frame id is unassigned.
 TEST_F(FrameTreeTest, FirstNavigationAfterSwap) {
-  FrameTree frame_tree(new Navigator(NULL, NULL));
+  FrameTree frame_tree(new Navigator(NULL, NULL), NULL, NULL, NULL);
 
   EXPECT_TRUE(frame_tree.IsFirstNavigationAfterSwap());
   EXPECT_EQ(FrameTreeNode::kInvalidFrameId,
-            frame_tree.GetRootForTesting()->frame_id());
+            frame_tree.root()->frame_id());
   frame_tree.OnFirstNavigationAfterSwap(1);
   EXPECT_FALSE(frame_tree.IsFirstNavigationAfterSwap());
-  EXPECT_EQ(1, frame_tree.GetRootForTesting()->frame_id());
+  EXPECT_EQ(1, frame_tree.root()->frame_id());
 
   frame_tree.SwapMainFrame(NULL);
   EXPECT_TRUE(frame_tree.IsFirstNavigationAfterSwap());
   EXPECT_EQ(FrameTreeNode::kInvalidFrameId,
-            frame_tree.GetRootForTesting()->frame_id());
+            frame_tree.root()->frame_id());
 }
 
 // Exercise tree manipulation routines.
 //  - Add a series of nodes and verify tree structure.
 //  - Remove a series of nodes and verify tree structure.
 TEST_F(FrameTreeTest, Shape) {
-  FrameTree frame_tree(new Navigator(NULL, NULL));
+  FrameTree frame_tree(new Navigator(NULL, NULL), NULL, NULL, NULL);
 
   std::string no_children_node("no children node");
   std::string deep_subtree("node with deep subtree");

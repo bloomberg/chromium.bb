@@ -48,7 +48,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   // State accessor.
   bool cross_navigation_pending() {
-    return render_manager_.cross_navigation_pending_;
+    return GetRenderManager()->cross_navigation_pending_;
   }
 
   // Overrides WebContentsImpl::ShouldTransitionCrossSite so that we can test

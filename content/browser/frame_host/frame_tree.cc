@@ -42,9 +42,20 @@ bool FrameTreeNodeForFrameId(int64 frame_id,
 
 }  // namespace
 
-FrameTree::FrameTree(Navigator* navigator)
-    : root_(new FrameTreeNode(FrameTreeNode::kInvalidFrameId, std::string(),
-                              navigator, scoped_ptr<RenderFrameHostImpl>())) {
+FrameTree::FrameTree(Navigator* navigator,
+                     RenderViewHostDelegate* render_view_delegate,
+                     RenderWidgetHostDelegate* render_widget_delegate,
+                     RenderViewHostManager::Delegate* manager_delegate)
+    : render_view_delegate_(render_view_delegate),
+      render_widget_delegate_(render_widget_delegate),
+      manager_delegate_(manager_delegate),
+      root_(new FrameTreeNode(navigator,
+                              render_view_delegate,
+                              render_widget_delegate,
+                              manager_delegate,
+                              FrameTreeNode::kInvalidFrameId,
+                              std::string(),
+                              scoped_ptr<RenderFrameHostImpl>())) {
 }
 
 FrameTree::~FrameTree() {
@@ -158,8 +169,9 @@ scoped_ptr<FrameTreeNode> FrameTree::CreateNode(
       new RenderFrameHostImpl(root_->render_frame_host()->render_view_host(),
                               this, render_frame_host_id, false));
 
-  return make_scoped_ptr(new FrameTreeNode(
-      frame_id, frame_name, navigator, render_frame_host.Pass()));
+  return make_scoped_ptr(new FrameTreeNode(navigator,
+      render_view_delegate_, render_widget_delegate_, manager_delegate_,
+      frame_id, frame_name, render_frame_host.Pass()));
 }
 
 }  // namespace content
