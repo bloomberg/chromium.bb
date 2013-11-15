@@ -44,9 +44,6 @@ const char kNoAssociatedShellWindow[] =
 const char kDevChannelOnly[] =
     "This function is currently only available in the Dev channel.";
 
-const char kAlwaysOnTopPermission[] =
-    "The \"alwaysOnTopWindows\" permission is required.";
-
 const int kUnboundedSize = apps::ShellWindow::SizeConstraints::kUnboundedSize;
 
 }  // namespace
@@ -260,12 +257,6 @@ bool AppCurrentWindowInternalSetInputRegionFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetAlwaysOnTopFunction::RunWithWindow(
     ShellWindow* window) {
-  if (!GetExtension()->HasAPIPermission(
-          extensions::APIPermission::kAlwaysOnTopWindows)) {
-    error_ = kAlwaysOnTopPermission;
-    return false;
-  }
-
   scoped_ptr<SetAlwaysOnTop::Params> params(
       SetAlwaysOnTop::Params::Create(*args_));
   CHECK(params.get());

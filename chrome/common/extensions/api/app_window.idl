@@ -110,10 +110,8 @@ namespace app.window {
 
     // If true, the window will stay above most other windows. If there are
     // multiple windows of this kind, the currently focused window will be in
-    // the foreground. Requires the <code>"alwaysOnTopWindows"</code>
-    // permission. Defaults to false.<br>
-    // Call <code>setAlwaysOnTop()</code> on the window to change this property
-    // after creation.
+    // the foreground. Defaults to false. Call <code>setAlwaysOnTop()</code> on
+    // the window to change this property after creation.
     boolean? alwaysOnTop;
   };
 
@@ -219,8 +217,7 @@ namespace app.window {
     // Is the window always on top?
     static boolean isAlwaysOnTop();
 
-    // Set whether the window should stay above most other windows. Requires the
-    // <code>"alwaysOnTopWindows"</code> permission.
+    // Set whether the window should stay above most other windows.
     static void setAlwaysOnTop(boolean alwaysOnTop);
 
     // The JavaScript 'window' object for the created child.
