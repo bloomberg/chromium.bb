@@ -176,16 +176,12 @@ def DumpFileContents(name):
     # Make the bots go red
     logging.error('@@@STEP_FAILURE@@@')
 
-def PrintCompilationResult(path, test):
-  ''' Print the compilation and run results for the specified test.
+def PrintTestsuiteCompilationResult(path, test):
+  ''' Print the compilation and run results for the specified test in the
+      LLVM testsuite.
       These results are left in several different log files by the testsuite
       driver, and are different for MultiSource/SingleSource tests
   '''
-  if not path:
-    # The path, which comes from options['buildpath'], is only valid
-    # and set for the LLVM testsuite.  The LLVM regression/lit tests
-    # don't set buildpath and shouldn't expect to execute this code.
-    return
   logging.debug('RESULTS for %s', test)
   testpath = os.path.join(path, test)
   testdir, testname = os.path.split(testpath)
@@ -262,12 +258,13 @@ def Report(options, filename=None, filecontents=None):
                                            alltests=alltests)
 
   # Regardless of the verbose option, do a dry run of
-  # PrintCompilationResult so we can catch errors when intermediate
+  # PrintTestsuiteCompilationResult so we can catch errors when intermediate
   # filenames in the compilation pipeline change.
   # E.g. https://code.google.com/p/nativeclient/issues/detail?id=3659
-  if len(alltests):
+  if len(alltests) and options['testsuite']:
     logging.disable(logging.INFO)
-    PrintCompilationResult(options['buildpath'], alltests.values()[0][0])
+    PrintTestsuiteCompilationResult(options['buildpath'],
+                                    alltests.values()[0][0])
     logging.disable(logging.NOTSET)
 
   # intersect them and check for unexpected fails/passes
@@ -279,7 +276,8 @@ def Report(options, filename=None, filecontents=None):
         if test not in EXCLUDES:
           unexpected_failures += 1
           logging.info('[  FAILED  ] %s: %s failure', test, failures[test])
-          PrintCompilationResult(options['buildpath'], test)
+          if options['testsuite']:
+            PrintTestsuiteCompilationResult(options['buildpath'], test)
       elif test in EXCLUDES:
         unexpected_passes += 1
         logging.info('%s: unexpected success', test)

@@ -283,8 +283,8 @@ def RunLitTest(testdir, testarg, lit_failures, env, options):
     parse_options['attributes'].append(env['BUILD_PLATFORM'])
     print (str(datetime.datetime.now()) + ' ' +
            'Parsing LIT test report output.')
-    parse_llvm_test_report.Report(parse_options, filecontents=make_stdout)
-  return 0
+    ret = parse_llvm_test_report.Report(parse_options, filecontents=make_stdout)
+  return ret
 
 
 def EnsureSdkExists(env):

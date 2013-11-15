@@ -437,7 +437,7 @@ tc-test-bot() {
     done
 
     echo "@@@BUILD_STEP libcxx-test ${arch} @@@"
-    python ${LLVM_TEST} --libcxx-test --arch ${arch} -v -c || handle-error
+    python ${LLVM_TEST} --libcxx-test --arch ${arch} -c || handle-error
 
     archived-frontend-test ${arch}
 
