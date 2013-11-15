@@ -135,7 +135,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
 
     ClipPathOperation* clipPathOperation = style->clipPath();
     if (clipPathOperation && clipPathOperation->type() == ClipPathOperation::SHAPE) {
-        ShapeClipPathOperation* clipPath = static_cast<ShapeClipPathOperation*>(clipPathOperation);
+        ShapeClipPathOperation* clipPath = toShapeClipPathOperation(clipPathOperation);
         m_paintInfo->context->clipPath(clipPath->path(object->objectBoundingBox()), clipPath->windRule());
     }
 

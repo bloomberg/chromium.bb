@@ -40,8 +40,8 @@ PassRefPtr<AnimatableValue> AnimatableClipPathOperation::interpolateTo(const Ani
     if (m_operation->type() != ClipPathOperation::SHAPE || toOperation->m_operation->type() != ClipPathOperation::SHAPE)
         return defaultInterpolateTo(this, value, fraction);
 
-    const BasicShape* fromShape = static_cast<ShapeClipPathOperation*>(clipPathOperation())->basicShape();
-    const BasicShape* toShape = static_cast<ShapeClipPathOperation*>(toOperation->clipPathOperation())->basicShape();
+    const BasicShape* fromShape = toShapeClipPathOperation(clipPathOperation())->basicShape();
+    const BasicShape* toShape = toShapeClipPathOperation(toOperation->clipPathOperation())->basicShape();
 
     if (!fromShape->canBlend(toShape))
         return defaultInterpolateTo(this, value, fraction);

@@ -2696,11 +2696,9 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitClipPath:
             if (ClipPathOperation* operation = style->clipPath()) {
                 if (operation->type() == ClipPathOperation::SHAPE)
-                    return valueForBasicShape(*style, static_cast<ShapeClipPathOperation*>(operation)->basicShape());
-                if (operation->type() == ClipPathOperation::REFERENCE) {
-                    ReferenceClipPathOperation* referenceOperation = static_cast<ReferenceClipPathOperation*>(operation);
-                    return CSSPrimitiveValue::create(referenceOperation->url(), CSSPrimitiveValue::CSS_URI);
-                }
+                    return valueForBasicShape(*style, toShapeClipPathOperation(operation)->basicShape());
+                if (operation->type() == ClipPathOperation::REFERENCE)
+                    return CSSPrimitiveValue::create(toReferenceClipPathOperation(operation)->url(), CSSPrimitiveValue::CSS_URI);
             }
             return cssValuePool().createIdentifierValue(CSSValueNone);
         case CSSPropertyWebkitFlowInto:
