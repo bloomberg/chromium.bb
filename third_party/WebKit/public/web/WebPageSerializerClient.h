@@ -63,13 +63,13 @@ public:
     // status indicates the status of data serialization.
     virtual void didSerializeDataForFrame(const WebURL& frameURL,
                                           const WebCString& data,
-                                          PageSerializationStatus) = 0;
+                                          PageSerializationStatus status) = 0;
     WebPageSerializerClient() { }
 
 protected:
     virtual ~WebPageSerializerClient() { }
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

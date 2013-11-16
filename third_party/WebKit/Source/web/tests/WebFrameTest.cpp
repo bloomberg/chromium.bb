@@ -4031,7 +4031,7 @@ TEST_F(WebFrameTest, HTMLDocument)
 
 TEST_F(WebFrameTest, EmptyDocument)
 {
-    registerMockedHttpURLLoad("pageserializer/svg/green_rectangle.svg");
+    registerMockedHttpURLLoad("pageserializer/green_rectangle.svg");
 
     TestWillInsertBodyWebFrameClient webFrameClient;
     FrameTestHelpers::WebViewHelper webViewHelper;

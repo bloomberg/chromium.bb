@@ -97,7 +97,7 @@ protected:
     virtual void appendElement(StringBuilder&, Element*, Namespaces*);
     void appendOpenTag(StringBuilder&, Element*, Namespaces*);
     void appendCloseTag(StringBuilder&, Element*);
-    virtual void appendAttribute(StringBuilder&, Element*, const Attribute&, Namespaces*);
+    void appendAttribute(StringBuilder&, Element*, const Attribute&, Namespaces*);
     void appendCDATASection(StringBuilder&, const String&);
     void appendStartMarkup(StringBuilder&, const Node*, Namespaces*);
     bool shouldSelfClose(const Node*);
