@@ -696,8 +696,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   // Track the keyboard container window.
   aura::WindowTracker tracker;
   tracker.Add(keyboard_container);
-  // Mock a login state change to reinitialize the keyboard.
-  ash::Shell::GetInstance()->OnLoginStateChanged(user::LOGGED_IN_OWNER);
+  // Mock a login user profile change to reinitialize the keyboard.
+  ash::Shell::GetInstance()->OnLoginUserProfilePrepared();
   // keyboard_container should no longer be present.
   EXPECT_FALSE(tracker.Contains(keyboard_container));
 }

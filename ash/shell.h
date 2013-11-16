@@ -269,6 +269,9 @@ class ASH_EXPORT Shell
   // Called when the user logs in.
   void OnLoginStateChanged(user::LoginStatus status);
 
+  // Called after the logged-in user's profile is ready.
+  void OnLoginUserProfilePrepared();
+
   // Called when the login status changes.
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
   void UpdateAfterLoginStatusChange(user::LoginStatus status);
@@ -282,6 +285,10 @@ class ASH_EXPORT Shell
 
   // Initializes |launcher_|.  Does nothing if it's already initialized.
   void CreateLauncher();
+
+  // Creates virtual keyboard. Deletes the old virtual keyboard if it's already
+  // exist.
+  void CreateKeyboard();
 
   // Show shelf view if it was created hidden (before session has started).
   void ShowLauncher();
@@ -539,8 +546,8 @@ class ASH_EXPORT Shell
 
   void Init();
 
-  // Initializes virtual keyboard controller and attaches it to |root|.
-  void InitKeyboard(internal::RootWindowController* root);
+  // Initializes virtual keyboard controller.
+  void InitKeyboard();
 
   // Initializes the root window so that it can host browser windows.
   void InitRootWindow(aura::Window* root_window);

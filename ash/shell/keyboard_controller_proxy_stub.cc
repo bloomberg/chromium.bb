@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard_controller_proxy_stub.h"
+#include "ash/shell/keyboard_controller_proxy_stub.h"
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ui/aura/window.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 
 using namespace content;
@@ -16,6 +17,12 @@ KeyboardControllerProxyStub::KeyboardControllerProxyStub() {
 }
 
 KeyboardControllerProxyStub::~KeyboardControllerProxyStub() {
+}
+
+aura::Window* KeyboardControllerProxyStub::GetKeyboardWindow() {
+  aura::Window* window = new aura::Window(&delegate_);
+  window->Init(ui::LAYER_NOT_DRAWN);
+  return window;
 }
 
 BrowserContext* KeyboardControllerProxyStub::GetBrowserContext() {

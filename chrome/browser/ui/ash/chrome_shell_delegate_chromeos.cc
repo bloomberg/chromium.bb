@@ -225,7 +225,7 @@ void ChromeShellDelegate::Observe(int type,
                                   const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED:
-      ash::Shell::GetInstance()->CreateLauncher();
+      ash::Shell::GetInstance()->OnLoginUserProfilePrepared();
       break;
     case chrome::NOTIFICATION_SESSION_STARTED:
       RestoreFocus();

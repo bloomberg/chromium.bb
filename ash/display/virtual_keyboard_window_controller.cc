@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
 namespace internal {
@@ -26,6 +27,11 @@ VirtualKeyboardWindowController::VirtualKeyboardWindowController() {
 VirtualKeyboardWindowController::~VirtualKeyboardWindowController() {
   // Make sure the root window gets deleted before cursor_window_delegate.
   Close();
+}
+
+void VirtualKeyboardWindowController::ActivateKeyboard(
+    keyboard::KeyboardController* keyboard_controller) {
+  root_window_controller_->ActivateKeyboard(keyboard_controller);
 }
 
 void VirtualKeyboardWindowController::UpdateWindow(
@@ -53,6 +59,8 @@ void VirtualKeyboardWindowController::UpdateWindow(
     root_window_controller_.reset(GetRootWindowController(
         root_window->window()));
     root_window_controller_->dispatcher()->host()->Show();
+    root_window_controller_->ActivateKeyboard(
+        Shell::GetInstance()->keyboard_controller());
   } else {
     aura::RootWindow* root_window = root_window_controller_->dispatcher();
     GetRootWindowSettings(root_window->window())->display_id =

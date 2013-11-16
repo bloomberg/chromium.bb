@@ -9,7 +9,15 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace keyboard {
+class KeyboardController;
+}
+
 namespace ash {
+
+namespace test {
+class VirtualKeyboardWindowControllerTest;
+}  // namespace test
 
 namespace internal {
 class DisplayInfo;
@@ -22,6 +30,8 @@ class ASH_EXPORT VirtualKeyboardWindowController {
   VirtualKeyboardWindowController();
   virtual ~VirtualKeyboardWindowController();
 
+  void ActivateKeyboard(keyboard::KeyboardController* keyboard_controller);
+
   // Updates the root window's bounds using |display_info|.
   // Creates the new root window if one doesn't exist.
   void UpdateWindow(const DisplayInfo& display_info);
@@ -30,6 +40,12 @@ class ASH_EXPORT VirtualKeyboardWindowController {
   void Close();
 
  private:
+  friend class test::VirtualKeyboardWindowControllerTest;
+
+  RootWindowController* root_window_controller_for_test() {
+    return root_window_controller_.get();
+  }
+
   scoped_ptr<RootWindowController> root_window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardWindowController);

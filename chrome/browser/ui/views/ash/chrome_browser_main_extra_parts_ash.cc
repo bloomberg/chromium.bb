@@ -95,9 +95,12 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   // Initialize TabScrubber after the Ash Shell has been initialized.
   TabScrubber::GetInstance();
   // Activate virtual keyboard after profile is initialized. It depends on the
-  // default profile.
-  ash::Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
-      ash::Shell::GetInstance()->keyboard_controller());
+  // default profile. If keyboard usability experiment flag is set, defer the
+  // activation to UpdateWindow() in virtual_keyboard_window_controller.cc.
+  if (!keyboard::IsKeyboardUsabilityExperimentEnabled()) {
+    ash::Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
+        ash::Shell::GetInstance()->keyboard_controller());
+  }
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
