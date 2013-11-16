@@ -52,10 +52,13 @@ void IPhotoDataProvider::BuildIndices(const parser::Library& library) {
   typedef base::hash_map<uint64, std::string> IdFileNameIndex;
 
   IdIndex photo_id_index;
+  IdIndex originals_id_index;
   for (std::set<parser::Photo>::const_iterator photo_it =
            library.all_photos.begin();
        photo_it != library.all_photos.end(); photo_it++) {
     photo_id_index[photo_it->id] = &(photo_it->location);
+    if (!photo_it->original_location.empty())
+      originals_id_index[photo_it->id] = &(photo_it->original_location);
   }
 
   // Build up a set of IDs which have in-album duplicates.
@@ -79,9 +82,11 @@ void IPhotoDataProvider::BuildIndices(const parser::Library& library) {
       else
         album_paths.insert(filename);
     }
-  }
+ }
 
   // Now build the directory index.
+  dir_index_.clear();
+  originals_index_.clear();
   for (parser::Albums::const_iterator album_it = library.albums.begin();
        album_it != library.albums.end(); album_it++) {
     std::string album_name = album_it->first;
@@ -102,6 +107,10 @@ void IPhotoDataProvider::BuildIndices(const parser::Library& library) {
       }
 
       dir_index_[album_name][filename] = path;
+
+      IdIndex::const_iterator original_it = originals_id_index.find(id);
+      if (original_it != originals_id_index.end())
+        originals_index_[album_name][filename] = *(original_it->second);
     }
   }
 }
@@ -140,6 +149,38 @@ base::FilePath IPhotoDataProvider::GetPhotoLocationInAlbum(
     return base::FilePath();
   FileIndex::const_iterator file_it = dir_it->second.find(filename);
   if (file_it == dir_it->second.end())
+    return base::FilePath();
+  return file_it->second;
+}
+
+bool IPhotoDataProvider::HasOriginals(const std::string& album) const {
+  DirIndex::const_iterator originals_it = originals_index_.find(album);
+  return originals_it != originals_index_.end();
+}
+
+std::map<std::string, base::FilePath> IPhotoDataProvider::GetOriginals(
+    const std::string& album) const {
+  std::map<std::string, base::FilePath> locations;
+  DirIndex::const_iterator originals_it = originals_index_.find(album);
+  if (originals_it == originals_index_.end())
+    return locations;
+
+  for (FileIndex::const_iterator file_it = originals_it->second.begin();
+       file_it != originals_it->second.end(); file_it++) {
+    locations.insert(make_pair(file_it->first, file_it->second));
+  }
+
+  return locations;
+}
+
+base::FilePath IPhotoDataProvider::GetOriginalPhotoLocation(
+      const std::string& album,
+      const std::string& filename) const {
+  DirIndex::const_iterator originals_it = originals_index_.find(album);
+  if (originals_it == originals_index_.end())
+    return base::FilePath();
+  FileIndex::const_iterator file_it = originals_it->second.find(filename);
+  if (file_it == originals_it->second.end())
     return base::FilePath();
   return file_it->second;
 }

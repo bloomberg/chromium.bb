@@ -41,6 +41,13 @@ class IPhotoDataProvider : public iapps::IAppsDataProvider {
       const std::string& album,
       const std::string& filename) const;
 
+  virtual bool HasOriginals(const std::string& album) const;
+  virtual std::map<std::string, base::FilePath> GetOriginals(
+      const std::string& album) const;
+  virtual base::FilePath GetOriginalPhotoLocation(
+      const std::string& album,
+      const std::string& filename) const;
+
  private:
   typedef base::hash_map<std::string, base::FilePath> FileIndex;
   // Map from album name to a map of filename to path.
@@ -54,6 +61,9 @@ class IPhotoDataProvider : public iapps::IAppsDataProvider {
 
   // Index for library data as it is presented in the virtual FS.
   DirIndex dir_index_;
+
+  // Index for originals data.
+  DirIndex originals_index_;
 
   scoped_refptr<iapps::SafeIAppsLibraryParser> xml_parser_;
 

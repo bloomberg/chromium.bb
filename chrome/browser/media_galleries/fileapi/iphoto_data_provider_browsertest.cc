@@ -261,6 +261,8 @@ class IPhotoDataProviderBasicTest : public IPhotoDataProviderTest {
       "    <string>/vol/dupe/path2.jpg</string>"
       "    <key>ThumbPath</key>"
       "    <string>/vol/dupe/thumb2.jpg</string>"
+      "    <key>OriginalPath</key>"             \
+      "    <string>/original/vol/another2.jpg</string>"  \
       "  </dict>\n"
       "</dict>\n"
       "</dict></plist>\n";
@@ -313,6 +315,22 @@ class IPhotoDataProviderBasicTest : public IPhotoDataProviderTest {
     photos = data_provider()->GetAlbumContents("Album2");
     EXPECT_EQ(1U, photos.size());
     EXPECT_TRUE(ContainsKey(photos, "path2.jpg"));
+
+    EXPECT_FALSE(data_provider()->HasOriginals("Album1"));
+    EXPECT_TRUE(data_provider()->HasOriginals("Album5"));
+    std::map<std::string, base::FilePath> originals =
+        data_provider()->GetOriginals("Album1");
+    EXPECT_EQ(0U, originals.size());
+    originals = data_provider()->GetOriginals("Album5");
+    EXPECT_EQ(1U, originals.size());
+    EXPECT_TRUE(ContainsKey(originals, "path2.jpg"));
+    EXPECT_FALSE(ContainsKey(originals, "path1.jpg"));
+    EXPECT_EQ(FilePath("/original/vol/another2.jpg").value(),
+              originals["path2.jpg"].value());
+    base::FilePath original_path =
+        data_provider()->GetOriginalPhotoLocation("Album5", "path2.jpg");
+    EXPECT_EQ(FilePath("/original/vol/another2.jpg").value(),
+              original_path.value());
 
     TestDone();
   }
