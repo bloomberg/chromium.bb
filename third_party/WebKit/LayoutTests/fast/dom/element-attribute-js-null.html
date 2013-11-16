@@ -262,22 +262,24 @@
                     type: 'HTMLFrameElement',
                     elementToUse: document.createElement('frame'),
                     attributes: [
-                        {name: 'frameBorder', expectedNull: ''},
-                        {name: 'longDesc', expectedNull: ''},
+                        // location is a non-standard attribute, which reflects the src content
+                        // attribute when getting, and must therefore be tested before src.
+                        {name: 'location', expectedNull: ''},
+                        {name: 'frameBorder', expectedNull: 'null'},
+                        {name: 'longDesc', expectedNull: 'null', isUrl: true},
                         {name: 'marginHeight', expectedNull: ''},
                         {name: 'marginWidth', expectedNull: ''},
-                        {name: 'name', expectedNull: ''},
-                        {name: 'scrolling', expectedNull: ''},
-                        {name: 'src', expectedNull: ''},
-                        {name: 'location', expectedNull: ''} // not a documented attribute
+                        {name: 'name', expectedNull: 'null'},
+                        {name: 'scrolling', expectedNull: 'null'},
+                        {name: 'src', expectedNull: 'null', isUrl: true}
                     ]
                 },
                 {
                     type: 'HTMLFrameSetElement',
                     elementToUse: document.createElement('frameset'),
                     attributes: [
-                        {name: 'cols', expectedNull: ''},
-                        {name: 'rows', expectedNull: ''}
+                        {name: 'cols', expectedNull: 'null'},
+                        {name: 'rows', expectedNull: 'null'}
                     ]
                 },
                 {
@@ -315,16 +317,17 @@
                     type: 'HTMLIFrameElement',
                     elementToUse: document.createElement('iframe'),
                     attributes: [
-                        {name: 'align', expectedNull: ''},
-                        {name: 'frameBorder', expectedNull: ''},
-                        {name: 'height', expectedNull: ''},
-                        {name: 'longDesc', expectedNull: ''},
+                        {name: 'align', expectedNull: 'null'},
+                        {name: 'frameBorder', expectedNull: 'null'},
+                        {name: 'height', expectedNull: 'null'},
+                        {name: 'longDesc', expectedNull: 'null', isUrl: true},
                         {name: 'marginHeight', expectedNull: ''},
                         {name: 'marginWidth', expectedNull: ''},
-                        {name: 'name', expectedNull: ''},
-                        {name: 'scrolling', expectedNull: ''},
-                        {name: 'src', expectedNull: ''},
-                        {name: 'width', expectedNull: ''}
+                        {name: 'name', expectedNull: 'null'},
+                        {name: 'scrolling', expectedNull: 'null'},
+                        {name: 'src', expectedNull: 'null', isUrl: true},
+                        {name: 'srcdoc', expectedNull: 'null'},
+                        {name: 'width', expectedNull: 'null'}
                     ]
                 },
                 {

@@ -20,14 +20,14 @@
 
 interface HTMLFrameElement : HTMLElement {
 
-    [Reflect, TreatNullAs=NullString] attribute DOMString frameBorder;
-    [Reflect, TreatNullAs=NullString] attribute DOMString longDesc;
+    [Reflect] attribute DOMString frameBorder;
+    [Reflect, URL] attribute DOMString longDesc;
     [Reflect, TreatNullAs=NullString] attribute DOMString marginHeight;
     [Reflect, TreatNullAs=NullString] attribute DOMString marginWidth;
-    [Reflect, TreatNullAs=NullString] attribute DOMString name;
+    [Reflect] attribute DOMString name;
     [Reflect] attribute boolean noResize;
-    [Reflect, TreatNullAs=NullString] attribute DOMString scrolling;
-    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
+    [Reflect] attribute DOMString scrolling;
+    [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
 
     // Introduced in DOM Level 2:
     [CheckSecurity=Node] readonly attribute Document contentDocument;
@@ -41,6 +41,4 @@ interface HTMLFrameElement : HTMLElement {
 
     readonly attribute long width;
     readonly attribute long height;
-
 };
-

@@ -19,19 +19,19 @@
  */
 
 interface HTMLIFrameElement : HTMLElement {
-    [Reflect, TreatNullAs=NullString] attribute DOMString align;
-    [Reflect, TreatNullAs=NullString] attribute DOMString frameBorder;
-    [Reflect, TreatNullAs=NullString] attribute DOMString height;
-    [Reflect, TreatNullAs=NullString] attribute DOMString longDesc;
+    [Reflect] attribute DOMString align;
+    [Reflect] attribute DOMString frameBorder;
+    [Reflect] attribute DOMString height;
+    [Reflect, URL] attribute DOMString longDesc;
     [Reflect, TreatNullAs=NullString] attribute DOMString marginHeight;
     [Reflect, TreatNullAs=NullString] attribute DOMString marginWidth;
-    [Reflect, TreatNullAs=NullString] attribute DOMString name;
+    [Reflect] attribute DOMString name;
     [Reflect, TreatNullAs=NullString] attribute DOMString sandbox;
     [Reflect, RuntimeEnabled=SeamlessIFrames] attribute boolean seamless;
-    [Reflect, TreatNullAs=NullString] attribute DOMString scrolling;
-    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
-    [Reflect, TreatNullAs=NullString] attribute DOMString srcdoc;
-    [Reflect, TreatNullAs=NullString] attribute DOMString width;
+    [Reflect] attribute DOMString scrolling;
+    [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
+    [Reflect] attribute DOMString srcdoc;
+    [Reflect] attribute DOMString width;
 
     // Introduced in DOM Level 2:
     [CheckSecurity=Node] readonly attribute Document contentDocument;
@@ -41,4 +41,3 @@ interface HTMLIFrameElement : HTMLElement {
 
     [CheckSecurity=Node, RaisesException] SVGDocument getSVGDocument();
 };
-

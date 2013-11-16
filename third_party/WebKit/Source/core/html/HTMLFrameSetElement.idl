@@ -20,8 +20,8 @@
 
 interface HTMLFrameSetElement : HTMLElement {
     [ImplementedAs=anonymousNamedGetter, OverrideBuiltins, NotEnumerable] getter Window (DOMString name);
-    [Reflect, TreatNullAs=NullString] attribute DOMString cols;
-    [Reflect, TreatNullAs=NullString] attribute DOMString rows;
+    [Reflect] attribute DOMString cols;
+    [Reflect] attribute DOMString rows;
 
     [Conditional=ORIENTATION_EVENTS] attribute EventHandler onorientationchange;
 
