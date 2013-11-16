@@ -93,6 +93,46 @@ class SQL_EXPORT Recovery {
   // Handle to the temporary recovery database.
   sql::Connection* db() { return &recover_db_; }
 
+  // Attempt to recover the named table from the corrupt database into
+  // the recovery database using a temporary recover virtual table.
+  // The virtual table schema is derived from the named table's schema
+  // in database [main].  Data is copied using INSERT OR REPLACE, so
+  // duplicates overwrite each other.
+  //
+  // |extend_columns| allows recovering tables which have excess
+  // columns relative to the target schema.  The recover virtual table
+  // treats more data than specified as a sign of corruption.
+  //
+  // Returns true if all operations succeeded, with the number of rows
+  // recovered in |*rows_recovered|.
+  //
+  // NOTE(shess): Due to a flaw in the recovery virtual table, at this
+  // time this code injects the DEFAULT value of the target table in
+  // locations where the recovery table returns NULL.  This is not
+  // entirely correct, because it happens both when there is a short
+  // row (correct) but also where there is an actual NULL value
+  // (incorrect).
+  //
+  // TODO(shess): Flag for INSERT OR REPLACE vs IGNORE.
+  // TODO(shess): Handle extended table names.
+  bool AutoRecoverTable(const char* table_name,
+                        size_t extend_columns,
+                        size_t* rows_recovered);
+
+  // Setup a recover virtual table at temp.recover_meta, reading from
+  // corrupt.meta.  Returns true if created.
+  // TODO(shess): Perhaps integrate into Begin().
+  // TODO(shess): Add helpers to fetch additional items from the meta
+  // table as needed.
+  bool SetupMeta();
+
+  // Fetch the version number from temp.recover_meta.  Returns false
+  // if the query fails, or if there is no version row.  Otherwise
+  // returns true, with the version in |*version_number|.
+  //
+  // Only valid to call after successful SetupMeta().
+  bool GetMetaVersionNumber(int* version_number);
+
  private:
   explicit Recovery(Connection* connection);
 
