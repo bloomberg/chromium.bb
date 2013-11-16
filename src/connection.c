@@ -744,6 +744,15 @@ wl_connection_demarshal(struct wl_connection *connection,
 			p = next;
 			break;
 		case 'h':
+			if (connection->fds_in.tail == connection->fds_in.head) {
+				printf("file descriptor expected, "
+				       "object (%d), message %s(%s)\n",
+				       closure->sender_id, message->name,
+				       message->signature);
+				errno = EINVAL;
+				goto err;
+			}
+
 			wl_buffer_copy(&connection->fds_in, &fd, sizeof fd);
 			connection->fds_in.tail += sizeof fd;
 			closure->args[i].h = fd;
