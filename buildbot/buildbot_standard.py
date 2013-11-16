@@ -21,20 +21,6 @@ from buildbot_lib import (
 
 # Windows-specific environment manipulation
 def SetupWindowsEnvironment(context):
-  # Blow away path for now if on the bots (to be more hermetic).
-  if os.environ.get('BUILDBOT_SLAVENAME'):
-    paths = [
-        r'c:\b\depot_tools',
-        r'c:\b\depot_tools\python_bin',
-        r'c:\b\build_internal\tools',
-        r'e:\b\depot_tools',
-        r'e:\b\depot_tools\python_bin',
-        r'e:\b\build_internal\tools',
-        r'C:\WINDOWS\system32',
-        r'C:\WINDOWS\system32\WBEM',
-        ]
-    context.SetEnv('PATH', os.pathsep.join(paths))
-
   # Poke around looking for MSVC.  We should do something more principled in
   # the future.
 

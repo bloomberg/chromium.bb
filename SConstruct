@@ -291,11 +291,6 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'pp', default=False,
     desc='Enable pretty printing')
 
-  # By default SCons does not use the system's environment variables when
-  # executing commands, to help isolate the build process.
-  BitFromArgument(env, 'use_environ', arg_name='USE_ENVIRON',
-    default=False, desc='Expose existing environment variables to the build')
-
   # Defaults on when --verbose is specified
   # --verbose sets 'brief_comstr' to False, so this looks a little strange
   BitFromArgument(env, 'sysinfo', default=not GetOption('brief_comstr'),
@@ -445,6 +440,9 @@ kwargs = {}
 if ARGUMENTS.get('DESTINATION_ROOT') is not None:
   kwargs['DESTINATION_ROOT'] = ARGUMENTS.get('DESTINATION_ROOT')
 pre_base_env = Environment(
+    # Use the environment that scons was run in to run scons invoked commands.
+    # This allows in things like externally provided PATH, PYTHONPATH.
+    ENV = os.environ.copy(),
     tools = ['component_setup'],
     # SOURCE_ROOT is one leave above the native_client directory.
     SOURCE_ROOT = Dir('#/..').abspath,
@@ -512,12 +510,6 @@ def DisableCrashDialog():
 
 if pre_base_env.Bit('disable_crash_dialog'):
   DisableCrashDialog()
-
-# Scons normally wants to scrub the environment.  However, sometimes
-# we want to allow PATH and other variables through so that Scons
-# scripts can find nacl-gcc without needing a Scons-specific argument.
-if pre_base_env.Bit('use_environ'):
-  pre_base_env['ENV'] = os.environ.copy()
 
 # We want to pull CYGWIN setup in our environment or at least set flag
 # nodosfilewarning. It does not do anything when CYGWIN is not involved

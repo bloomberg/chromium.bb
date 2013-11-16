@@ -6,16 +6,6 @@ echo on
 
 set GYP_MSVS_VERSION=2008
 
-:: Blow away path for now if on the bots (to be more hermetic).
-if "%BUILDBOT_SLAVENAME%" equ "" goto SkipPathReset
-set PATH=
-set PATH=%PATH%;c:\b\depot_tools;c:\b\depot_tools\python_bin
-set PATH=%PATH%;c:\b\build_internal\tools
-set PATH=%PATH%;e:\b\depot_tools;e:\b\depot_tools\python_bin
-set PATH=%PATH%;e:\b\build_internal\tools
-set PATH=%PATH%;C:\WINDOWS\system32;C:\WINDOWS\system32\WBEM
-:SkipPathReset
-
 :: Adding in both the 32-bit on 64-bit program files install location for both
 :: MSVS2008 and MSVS2005 including the team tools.
 

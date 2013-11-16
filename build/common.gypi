@@ -146,17 +146,6 @@
     'nacl_validator_ragel%': 1,
 
     'linux2%': 0,
-      'conditions': [
-        ['OS=="win"', {
-          'python_exe': [
-            'call <(DEPTH)/native_client/tools/win_py.cmd'
-          ],
-        }, {
-          'python_exe': [
-             'python'
-          ],
-        }],
-      ],
   },
 
   'target_defaults': {
@@ -626,7 +615,7 @@
                   '$(IntDir)/$(InputName).obj',
                 ],
                 'action': [
-                   '<@(python_exe)',
+                   'python',
                    '<(DEPTH)/native_client/tools/win_as.py',
                    # target architecture: Win32 or x64
                    '-a', '$(PlatformName)',

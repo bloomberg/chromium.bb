@@ -76,7 +76,7 @@
             '<(validate_gen_out)/decode.cc',
           ],
           'action': [
-            '<@(python_exe)',
+            'python',
             'dgen/generate_decoder.py',
             'mips-opt.table',
             '<@(_outputs)',

@@ -3,8 +3,7 @@
 # found in the LICENSE file.
 
 # This file is used via 'includes' by an irt_test.gyp both here and in
-# chromium/src/ppapi/native_client.  The including file must first include
-# build/common.gypi to get 'python_exe' set.  The including file must first
+# chromium/src/ppapi/native_client.  The including file must first
 # set the variable 'irt_test_nexe' (e.g. to 'irt_core'); setting that to ''
 # (the empty string) instructs this file to run the test on the
 # nacl_irt_*.nexe file instead of a named one.  The including file must
@@ -77,7 +76,7 @@
               },
             }],
           ],
-          'action': ['>(python_exe)',
+          'action': ['python',
                      '<(DEPTH)/native_client/src/untrusted/irt/check_tls.py',
                      '<(check_tls_arch)', '<(nacl_objdump)',
                      '<@(_inputs)', '<@(_outputs)'],

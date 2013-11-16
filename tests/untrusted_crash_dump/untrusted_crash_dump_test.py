@@ -5,6 +5,7 @@
 
 import linecache
 import os
+import re
 import sys
 
 
@@ -49,7 +50,10 @@ def CheckStackTrace(core, main_nexe, nmf_filename, addr2line,
   actual = []
   for scope in trace:
     lineno = int(scope['lineno'])
-    line = linecache.getline(scope['filename'], lineno).strip()
+    filename = scope['filename']
+    # Convert cygwin paths to something python can open.
+    filename = re.sub('^/cygdrive/([A-Za-z])/', '\\1:/', filename)
+    line = linecache.getline(filename, lineno).strip()
     actual.append((scope['function'], line))
   if expected != actual[:len(expected)]:
     sys.stderr.write('ERROR - stack trace does not match expected\n')

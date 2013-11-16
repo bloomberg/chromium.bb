@@ -65,7 +65,7 @@
               ],
               'outputs': ['>(newlib_dir)/stamp.untar'],
               'action': [
-                '>(python_exe)',
+                'python',
                 '<(DEPTH)/native_client/build/untar_toolchain.py',
                 '--tool', 'x86_newlib',
                 '--tmp', '<(SHARED_INTERMEDIATE_DIR)/untar',
@@ -88,7 +88,7 @@
               ],
               'outputs': ['>(glibc_dir)/stamp.untar'],
               'action': [
-                '>(python_exe)',
+                'python',
                 '<(DEPTH)/native_client/build/untar_toolchain.py',
                 '--tool', 'x86_glibc',
                 '--tmp', '<(SHARED_INTERMEDIATE_DIR)/untar',
@@ -111,7 +111,7 @@
               ],
               'outputs': ['>(pnacl_dir)/stamp.untar'],
               'action': [
-                '>(python_exe)',
+                'python',
                 '<(DEPTH)/native_client/build/untar_toolchain.py',
                 '--tool', 'pnacl',
                 '--tmp', '<(SHARED_INTERMEDIATE_DIR)/untar',
@@ -137,7 +137,7 @@
               ],
               'outputs': ['>(arm_dir)/stamp.untar'],
               'action': [
-                '>(python_exe)',
+                'python',
                 '<(DEPTH)/native_client/build/untar_toolchain.py',
                 '--tool', 'arm_newlib',
                 '--tmp', '<(SHARED_INTERMEDIATE_DIR)/untar',
@@ -178,7 +178,7 @@
               ],
               'outputs': ['<(newlib_dir)/stamp.prep'],
               'action': [
-                '>(python_exe)',
+                'python',
                 '<(DEPTH)/native_client/build/prep_nacl_sdk.py',
                 '--tool', 'x86_newlib',
                 '--path', '<(newlib_dir)',
@@ -198,7 +198,7 @@
               ],
               'outputs': ['<(glibc_dir)/stamp.prep'],
               'action': [
-                '>(python_exe)',
+                'python',
                 '<(DEPTH)/native_client/build/prep_nacl_sdk.py',
                 '--tool', 'x86_glibc',
                 '--path', '<(glibc_dir)',
@@ -218,7 +218,7 @@
               ],
               'outputs': ['<(arm_dir)/stamp.prep'],
               'action': [
-                '>(python_exe)',
+                'python',
                 '<(DEPTH)/native_client/build/prep_nacl_sdk.py',
                 '--tool', 'arm_newlib',
                 '--path', '<(arm_dir)',
@@ -238,7 +238,7 @@
               ],
               'outputs': ['<(pnacl_dir)/stamp.prep'],
               'action': [
-                '>(python_exe)',
+                'python',
                 '<(DEPTH)/native_client/build/prep_nacl_sdk.py',
                 '--tool', 'pnacl',
                 '--path', '<(pnacl_dir)',

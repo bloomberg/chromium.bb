@@ -101,7 +101,7 @@
               # TODO(gregoryd): find out how to generate a file
               # in such a location that can be found in both
               # NaCl and Chrome builds.
-              ['<@(python_exe)', 'nacl_syscall_handlers_gen.py',
+              ['python', 'nacl_syscall_handlers_gen.py',
                '-i', '<@(syscall_handler)',
                '-o', '<@(_outputs)'],
 
@@ -144,7 +144,7 @@
                   ],
                   'process_outputs_as_sources': 1,
                   'action': [
-                    '<(python_exe)', '<@(_inputs)', '<@(_outputs)',
+                    'python', '<@(_inputs)', '<@(_outputs)',
                   ],
                   'message': 'Generating mig plumbing for exc.defs',
                 },

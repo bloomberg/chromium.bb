@@ -57,8 +57,6 @@ def main(argv):
       #
       # Run the C compiler as a preprocessor and pipe the output into a string
       #
-      cl_env = os.environ.copy()
-      cl_env['PATH'] = os.environ['PRE_WINPY_PATH']
       p = subprocess.Popen(['cl.exe',
                             '/nologo',
                             '/D__ASSEMBLER__',
@@ -69,7 +67,6 @@ def main(argv):
                             '/E',
                             '/I' + nacl_path,
                             filename],
-                           env=cl_env,
                            shell=True,
                            stdout=subprocess.PIPE,
                            stderr=open(os.devnull, 'w'))
