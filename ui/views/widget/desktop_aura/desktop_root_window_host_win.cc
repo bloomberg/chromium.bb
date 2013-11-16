@@ -42,6 +42,24 @@
 
 namespace views {
 
+namespace {
+
+gfx::Size GetExpandedWindowSize(DWORD window_style, gfx::Size size) {
+  if (!(window_style & WS_EX_COMPOSITED) || !ui::win::IsAeroGlassEnabled())
+    return size;
+
+  // Some AMD drivers can't display windows that are less than 64x64 pixels,
+  // so expand them to be at least that size. http://crbug.com/286609
+  gfx::Size expanded(std::max(size.width(), 64), std::max(size.height(), 64));
+  return expanded;
+}
+
+void InsetBottomRight(gfx::Rect* rect, gfx::Vector2d vector) {
+  rect->Inset(0, 0, vector.x(), vector.y());
+}
+
+}  // namespace
+
 DEFINE_WINDOW_PROPERTY_KEY(aura::Window*, kContentWindowForRootWindow, NULL);
 
 // Identifies the DesktopRootWindowHostWin associated with the RootWindow.
@@ -199,7 +217,12 @@ bool DesktopRootWindowHostWin::IsVisible() const {
 
 void DesktopRootWindowHostWin::SetSize(const gfx::Size& size) {
   gfx::Size size_in_pixels = gfx::win::DIPToScreenSize(size);
-  message_handler_->SetSize(size_in_pixels);
+  gfx::Size expanded = GetExpandedWindowSize(
+      message_handler_->window_ex_style(), size_in_pixels);
+  window_enlargement_ =
+      gfx::Vector2d(expanded.width() - size_in_pixels.width(),
+                    expanded.height() - size_in_pixels.height());
+  message_handler_->SetSize(expanded);
 }
 
 void DesktopRootWindowHostWin::CenterWindow(const gfx::Size& size) {
@@ -211,21 +234,25 @@ void DesktopRootWindowHostWin::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   message_handler_->GetWindowPlacement(bounds, show_state);
+  InsetBottomRight(bounds, window_enlargement_);
   *bounds = gfx::win::ScreenToDIPRect(*bounds);
 }
 
 gfx::Rect DesktopRootWindowHostWin::GetWindowBoundsInScreen() const {
   gfx::Rect pixel_bounds = message_handler_->GetWindowBoundsInScreen();
+  InsetBottomRight(&pixel_bounds, window_enlargement_);
   return gfx::win::ScreenToDIPRect(pixel_bounds);
 }
 
 gfx::Rect DesktopRootWindowHostWin::GetClientAreaBoundsInScreen() const {
   gfx::Rect pixel_bounds = message_handler_->GetClientAreaBoundsInScreen();
+  InsetBottomRight(&pixel_bounds, window_enlargement_);
   return gfx::win::ScreenToDIPRect(pixel_bounds);
 }
 
 gfx::Rect DesktopRootWindowHostWin::GetRestoredBounds() const {
   gfx::Rect pixel_bounds = message_handler_->GetRestoredBounds();
+  InsetBottomRight(&pixel_bounds, window_enlargement_);
   return gfx::win::ScreenToDIPRect(pixel_bounds);
 }
 
@@ -416,8 +443,10 @@ gfx::Rect DesktopRootWindowHostWin::GetBounds() const {
   gfx::Rect without_expansion(
       bounds.x() + window_expansion_top_left_delta_.x(),
       bounds.y() + window_expansion_top_left_delta_.y(),
-      bounds.width() - window_expansion_bottom_right_delta_.x(),
-      bounds.height() - window_expansion_bottom_right_delta_.y());
+      bounds.width() - window_expansion_bottom_right_delta_.x() -
+          window_enlargement_.x(),
+      bounds.height() - window_expansion_bottom_right_delta_.y() -
+          window_enlargement_.y());
   return without_expansion;
 }
 
@@ -430,7 +459,15 @@ void DesktopRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
       bounds.y() - window_expansion_top_left_delta_.y(),
       bounds.width() + window_expansion_bottom_right_delta_.x(),
       bounds.height() + window_expansion_bottom_right_delta_.y());
-  message_handler_->SetBounds(expanded);
+
+  gfx::Rect new_expanded(
+      expanded.origin(),
+      GetExpandedWindowSize(message_handler_->window_ex_style(),
+                            expanded.size()));
+  window_enlargement_ =
+      gfx::Vector2d(new_expanded.width() - expanded.width(),
+                    new_expanded.height() - expanded.height());
+  message_handler_->SetBounds(new_expanded);
 }
 
 gfx::Insets DesktopRootWindowHostWin::GetInsets() const {

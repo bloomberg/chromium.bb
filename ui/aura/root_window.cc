@@ -829,7 +829,7 @@ void RootWindow::OnHostResized(const gfx::Size& size) {
 
   // The layer, and the observers should be notified of the
   // transformed size of the root window.
-  UpdateRootWindowSize(size);
+  UpdateRootWindowSize(host_->GetBounds().size());
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
                     OnRootWindowHostResized(this));
 }

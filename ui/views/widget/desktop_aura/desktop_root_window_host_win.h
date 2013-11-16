@@ -241,6 +241,10 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   gfx::Vector2d window_expansion_top_left_delta_;
   gfx::Vector2d window_expansion_bottom_right_delta_;
 
+  // Windows are enlarged to be at least 64x64 pixels, so keep track of the
+  // extra added here.
+  gfx::Vector2d window_enlargement_;
+
   // Whether the window close should be converted to a hide, and then actually
   // closed on the completion of the hide animation. This is cached because
   // the property is set on the contained window which has a shorter lifetime.
