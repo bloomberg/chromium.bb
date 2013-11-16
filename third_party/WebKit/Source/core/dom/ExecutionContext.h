@@ -38,7 +38,6 @@
 #include "core/frame/DOMTimer.h"
 #include "platform/LifecycleContext.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -54,7 +53,6 @@ class EventListener;
 class EventQueue;
 class EventTarget;
 class ExecutionContextTask;
-class MessagePort;
 class PublicURLManager;
 class SecurityOrigin;
 class ScriptCallStack;
@@ -107,13 +105,6 @@ public:
     // Called after the construction of an ActiveDOMObject to synchronize suspend state.
     void suspendActiveDOMObjectIfNeeded(ActiveDOMObject*);
 
-    // MessagePort is conceptually a kind of ActiveDOMObject, but it needs to be tracked separately for message dispatch.
-    void processMessagePortMessagesSoon();
-    void dispatchMessagePortEvents();
-    void createdMessagePort(MessagePort*);
-    void destroyedMessagePort(MessagePort*);
-    const HashSet<MessagePort*>& messagePorts() const { return m_messagePorts; }
-
     void ref() { refExecutionContext(); }
     void deref() { derefExecutionContext(); }
 
@@ -139,8 +130,6 @@ private:
 
     bool dispatchErrorEvent(PassRefPtr<ErrorEvent>, AccessControlStatus);
 
-    void closeMessagePorts();
-
     virtual void refExecutionContext() = 0;
     virtual void derefExecutionContext() = 0;
     // LifecycleContext implementation.
@@ -151,7 +140,6 @@ private:
 
     ExecutionContextClient* m_client;
     SandboxFlags m_sandboxFlags;
-    HashSet<MessagePort*> m_messagePorts;
 
     int m_circularSequentialID;
     typedef HashMap<int, OwnPtr<DOMTimer> > TimeoutMap;

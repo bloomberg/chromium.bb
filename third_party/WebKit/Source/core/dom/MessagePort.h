@@ -28,16 +28,18 @@
 #define MessagePort_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebMessagePortChannelClient.h"
-#include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+#include "wtf/WeakPtr.h"
 
 namespace WebCore {
 
@@ -54,10 +56,14 @@ typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
 // Not to be confused with blink::WebMessagePortChannelArray; this one uses Vector and OwnPtr instead of WebVector and raw pointers.
 typedef Vector<OwnPtr<blink::WebMessagePortChannel>, 1> MessagePortChannelArray;
 
-class MessagePort : public RefCounted<MessagePort>, public ScriptWrappable, public EventTargetWithInlineData, public blink::WebMessagePortChannelClient {
+class MessagePort : public RefCounted<MessagePort>
+    , public ActiveDOMObject
+    , public EventTargetWithInlineData
+    , public ScriptWrappable
+    , public blink::WebMessagePortChannelClient {
     REFCOUNTED_EVENT_TARGET(MessagePort);
 public:
-    static PassRefPtr<MessagePort> create(ExecutionContext& executionContext) { return adoptRef(new MessagePort(executionContext)); }
+    static PassRefPtr<MessagePort> create(ExecutionContext&);
     virtual ~MessagePort();
 
     void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
@@ -76,15 +82,15 @@ public:
 
     bool started() const { return m_started; }
 
-    void contextDestroyed();
-
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
     MessagePort* toMessagePort() OVERRIDE { return this; }
 
     void dispatchMessages();
 
-    bool hasPendingActivity();
+    // ActiveDOMObject implementation.
+    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void stop() OVERRIDE { close(); }
 
     void setOnmessage(PassRefPtr<EventListener> listener, DOMWrapperWorld* world)
     {
@@ -94,10 +100,10 @@ public:
     EventListener* onmessage(DOMWrapperWorld* world) { return getAttributeEventListener(EventTypeNames::message, world); }
 
     // A port starts out its life entangled, and remains entangled until it is closed or is cloned.
-    bool isEntangled() { return !m_closed && !isNeutered(); }
+    bool isEntangled() const { return !m_closed && !isNeutered(); }
 
     // A port gets neutered when it is transferred to a new owner via postMessage().
-    bool isNeutered() { return !m_entangledChannel; }
+    bool isNeutered() const { return !m_entangledChannel; }
 
 private:
     explicit MessagePort(ExecutionContext&);
@@ -110,7 +116,7 @@ private:
     bool m_started;
     bool m_closed;
 
-    ExecutionContext* m_executionContext;
+    WeakPtrFactory<MessagePort> m_weakFactory;
 };
 
 } // namespace WebCore

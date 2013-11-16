@@ -32,7 +32,6 @@
 #include "bindings/v8/V8GCController.h"
 
 #include <algorithm>
-#include "V8MessagePort.h"
 #include "V8MutationObserver.h"
 #include "V8Node.h"
 #include "V8ScriptRunner.h"
@@ -258,14 +257,7 @@ public:
         const WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
         void* object = toNative(*wrapper);
 
-        if (V8MessagePort::wrapperTypeInfo.equals(type)) {
-            // Mark each port as in-use if it's entangled. For simplicity's sake,
-            // we assume all ports are remotely entangled, since the Chromium port
-            // implementation can't tell the difference.
-            MessagePort* port = static_cast<MessagePort*>(object);
-            if (port->isEntangled() || port->hasPendingActivity())
-                m_isolate->SetObjectGroupId(*value, liveRootId());
-        } else if (V8MutationObserver::wrapperTypeInfo.equals(type)) {
+        if (V8MutationObserver::wrapperTypeInfo.equals(type)) {
             // FIXME: Allow opaqueRootForGC to operate on multiple roots and move this logic into V8MutationObserverCustom.
             MutationObserver* observer = static_cast<MutationObserver*>(object);
             HashSet<Node*> observedNodes = observer->getObservedNodes();

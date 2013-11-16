@@ -31,7 +31,6 @@
 #include "core/dom/AddConsoleMessageTask.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "core/dom/MessagePort.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMTimer.h"
@@ -43,19 +42,6 @@
 #include "wtf/MainThread.h"
 
 namespace WebCore {
-
-class ProcessMessagesSoonTask : public ExecutionContextTask {
-public:
-    static PassOwnPtr<ProcessMessagesSoonTask> create()
-    {
-        return adoptPtr(new ProcessMessagesSoonTask);
-    }
-
-    virtual void performTask(ExecutionContext* context)
-    {
-        context->dispatchMessagePortEvents();
-    }
-};
 
 class ExecutionContext::PendingException {
     WTF_MAKE_NONCOPYABLE(PendingException);
@@ -87,66 +73,11 @@ ExecutionContext::ExecutionContext()
 
 ExecutionContext::~ExecutionContext()
 {
-    HashSet<MessagePort*>::iterator messagePortsEnd = m_messagePorts.end();
-    for (HashSet<MessagePort*>::iterator iter = m_messagePorts.begin(); iter != messagePortsEnd; ++iter) {
-        ASSERT((*iter)->executionContext() == this);
-        (*iter)->contextDestroyed();
-    }
-}
-
-void ExecutionContext::processMessagePortMessagesSoon()
-{
-    postTask(ProcessMessagesSoonTask::create());
-}
-
-void ExecutionContext::dispatchMessagePortEvents()
-{
-    RefPtr<ExecutionContext> protect(this);
-
-    // Make a frozen copy.
-    Vector<MessagePort*> ports;
-    copyToVector(m_messagePorts, ports);
-
-    unsigned portCount = ports.size();
-    for (unsigned i = 0; i < portCount; ++i) {
-        MessagePort* port = ports[i];
-        // The port may be destroyed, and another one created at the same address, but this is safe, as the worst that can happen
-        // as a result is that dispatchMessages() will be called needlessly.
-        if (m_messagePorts.contains(port) && port->started())
-            port->dispatchMessages();
-    }
-}
-
-void ExecutionContext::createdMessagePort(MessagePort* port)
-{
-    ASSERT(port);
-    ASSERT((isDocument() && isMainThread())
-        || (isWorkerGlobalScope() && toWorkerGlobalScope(this)->thread()->isCurrentThread()));
-
-    m_messagePorts.add(port);
-}
-
-void ExecutionContext::destroyedMessagePort(MessagePort* port)
-{
-    ASSERT(port);
-    ASSERT((isDocument() && isMainThread())
-        || (isWorkerGlobalScope() && toWorkerGlobalScope(this)->thread()->isCurrentThread()));
-
-    m_messagePorts.remove(port);
 }
 
 bool ExecutionContext::hasPendingActivity()
 {
-    if (lifecycleNotifier().hasPendingActivity())
-        return true;
-
-    HashSet<MessagePort*>::const_iterator messagePortsEnd = m_messagePorts.end();
-    for (HashSet<MessagePort*>::const_iterator iter = m_messagePorts.begin(); iter != messagePortsEnd; ++iter) {
-        if ((*iter)->hasPendingActivity())
-            return true;
-    }
-
-    return false;
+    return lifecycleNotifier().hasPendingActivity();
 }
 
 void ExecutionContext::suspendActiveDOMObjects()
@@ -165,8 +96,6 @@ void ExecutionContext::stopActiveDOMObjects()
 {
     m_activeDOMObjectsAreStopped = true;
     lifecycleNotifier().notifyStoppingActiveDOMObjects();
-    // Also close MessagePorts. If they were ActiveDOMObjects (they could be) then they could be stopped instead.
-    closeMessagePorts();
 }
 
 void ExecutionContext::suspendScheduledTasks()
@@ -189,15 +118,6 @@ void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
     // Ensure all ActiveDOMObjects are suspended also newly created ones.
     if (m_activeDOMObjectsAreSuspended)
         object->suspend();
-}
-
-void ExecutionContext::closeMessagePorts()
-{
-    HashSet<MessagePort*>::iterator messagePortsEnd = m_messagePorts.end();
-    for (HashSet<MessagePort*>::iterator iter = m_messagePorts.begin(); iter != messagePortsEnd; ++iter) {
-        ASSERT((*iter)->executionContext() == this);
-        (*iter)->close();
-    }
 }
 
 bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus corsStatus)

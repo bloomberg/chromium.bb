@@ -4670,13 +4670,10 @@ END
     }
 
     if (InheritsExtendedAttribute($interface, "ActiveDOMObject")) {
-        # MessagePort is handled like an active dom object even though it doesn't inherit
-        # from ActiveDOMObject, so don't try to cast it to ActiveDOMObject.
-        my $returnValue = $interfaceName eq "MessagePort" ? "0" : "toNative(object)";
         $implementation{nameSpaceWebCore}->add(<<END);
 ActiveDOMObject* ${v8ClassName}::toActiveDOMObject(v8::Handle<v8::Object> object)
 {
-    return $returnValue;
+    return toNative(object);
 }
 
 END
