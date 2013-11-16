@@ -82,12 +82,16 @@ public:
 
     Frame* frame() const { return m_frame; }
 
+    HistoryController* history() const { return &m_history; }
+
     MixedContentChecker* mixedContentChecker() const { return &m_mixedContentChecker; }
+
+    void prepareForHistoryNavigation();
 
     // These functions start a load. All eventually call into loadWithNavigationAction() or loadInSameDocument().
     void load(const FrameLoadRequest&); // The entry point for non-reload, non-history loads.
     void reload(ReloadPolicy = NormalReload, const KURL& overrideURL = KURL(), const String& overrideEncoding = String());
-    void loadHistoryItem(HistoryItem*, HistoryLoadType = HistoryDifferentDocumentLoad); // The entry point for all back/forward loads
+    void loadHistoryItem(HistoryItem*); // The entry point for all back/forward loads
 
     static void reportLocalLoadFailed(Frame*, const String& url);
 
@@ -130,7 +134,6 @@ public:
 
     bool subframeIsLoading() const;
 
-    bool shouldTreatURLAsSameAsCurrent(const KURL&) const;
     bool shouldTreatURLAsSrcdocDocument(const KURL&) const;
 
     FrameLoadType loadType() const;
@@ -206,14 +209,14 @@ public:
     void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, UpdateBackForwardListPolicy);
 
 private:
-    HistoryController* history() const;
-
     bool allChildrenAreComplete() const; // immediate children, not all descendants
 
     void completed();
 
     void checkTimerFired(Timer<FrameLoader>*);
     void didAccessInitialDocumentTimerFired(Timer<FrameLoader>*);
+
+    void insertDummyHistoryItem();
 
     bool prepareRequestForThisFrame(FrameLoadRequest&);
     void setReferrerForFrameRequest(ResourceRequest&, ShouldSendReferrer);
@@ -243,12 +246,15 @@ private:
     void scheduleCheckCompleted();
     void startCheckCompleteTimer();
 
+    bool shouldTreatURLAsSameAsCurrent(const KURL&) const;
+
     Frame* m_frame;
     FrameLoaderClient* m_client;
 
     // FIXME: These should be OwnPtr<T> to reduce build times and simplify
     // header dependencies unless performance testing proves otherwise.
     // Some of these could be lazily created for memory savings on devices.
+    mutable HistoryController m_history;
     mutable FrameLoaderStateMachine m_stateMachine;
     mutable MixedContentChecker m_mixedContentChecker;
 

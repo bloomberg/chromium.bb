@@ -1575,9 +1575,9 @@ TEST_F(WebFrameTest, pageScaleFactorWrittenToHistoryItem)
     webViewHelper.webView()->layout();
 
     webViewHelper.webView()->setPageScaleFactor(3, WebPoint());
-    webViewHelper.webViewImpl()->page()->history()->saveDocumentAndScrollState(webViewHelper.webViewImpl()->page()->mainFrame());
+    webViewHelper.webViewImpl()->page()->mainFrame()->loader().history()->saveDocumentAndScrollState();
     webViewHelper.webView()->setPageScaleFactor(1, WebPoint());
-    webViewHelper.webViewImpl()->page()->history()->restoreScrollPositionAndViewState(webViewHelper.webViewImpl()->page()->mainFrame());
+    webViewHelper.webViewImpl()->page()->mainFrame()->loader().history()->restoreScrollPositionAndViewState();
     EXPECT_EQ(3, webViewHelper.webView()->pageScaleFactor());
 }
 

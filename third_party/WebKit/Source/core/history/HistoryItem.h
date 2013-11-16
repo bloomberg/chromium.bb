@@ -99,14 +99,27 @@ public:
     void setFormContentType(const String&);
 
     void addChildItem(PassRefPtr<HistoryItem>);
+    void setChildItem(PassRefPtr<HistoryItem>);
+    HistoryItem* childItemWithTarget(const String&) const;
+    HistoryItem* childItemWithDocumentSequenceNumber(long long number) const;
     const HistoryItemVector& children() const;
     void clearChildren();
 
+    bool shouldDoSameDocumentNavigationTo(HistoryItem* otherItem) const;
+    bool hasSameFrames(HistoryItem* otherItem) const;
+
     bool isCurrentDocument(Document*) const;
+
+#ifndef NDEBUG
+    int showTree() const;
+    int showTreeWithIndent(unsigned indentLevel) const;
+#endif
 
 private:
     HistoryItem();
     explicit HistoryItem(const HistoryItem&);
+
+    bool hasSameDocumentTree(HistoryItem* otherItem) const;
 
     String m_urlString;
     String m_originalURLString;
@@ -142,5 +155,10 @@ private:
 }; //class HistoryItem
 
 } //namespace WebCore
+
+#ifndef NDEBUG
+// Outside the WebCore namespace for ease of invocation from gdb.
+extern "C" int showTree(const WebCore::HistoryItem*);
+#endif
 
 #endif // HISTORYITEM_H

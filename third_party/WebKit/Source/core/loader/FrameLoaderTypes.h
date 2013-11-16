@@ -99,11 +99,6 @@ enum ClientRedirectPolicy {
     ClientRedirect
 };
 
-enum HistoryLoadType {
-    HistorySameDocumentLoad,
-    HistoryDifferentDocumentLoad
-};
-
 }
 
 #endif

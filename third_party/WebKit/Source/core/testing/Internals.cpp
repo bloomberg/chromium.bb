@@ -712,22 +712,33 @@ void Internals::selectColorInColorChooser(Element* element, const String& colorV
 
 Vector<String> Internals::formControlStateOfPreviousHistoryItem(ExceptionState& es)
 {
-    HistoryItem* mainItem = frame()->page()->history()->previousItem(frame());
+    HistoryItem* mainItem = frame()->loader().history()->previousItem();
     if (!mainItem) {
         es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return Vector<String>();
     }
-    return mainItem->documentState();
+    String uniqueName = frame()->tree().uniqueName();
+    if (mainItem->target() != uniqueName && !mainItem->childItemWithTarget(uniqueName)) {
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        return Vector<String>();
+    }
+    return mainItem->target() == uniqueName ? mainItem->documentState() : mainItem->childItemWithTarget(uniqueName)->documentState();
 }
 
 void Internals::setFormControlStateOfPreviousHistoryItem(const Vector<String>& state, ExceptionState& es)
 {
-    HistoryItem* mainItem = frame()->page()->history()->previousItem(frame());
+    HistoryItem* mainItem = frame()->loader().history()->previousItem();
     if (!mainItem) {
         es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
     }
-    mainItem->setDocumentState(state);
+    String uniqueName = frame()->tree().uniqueName();
+    if (mainItem->target() == uniqueName)
+        mainItem->setDocumentState(state);
+    else if (HistoryItem* subItem = mainItem->childItemWithTarget(uniqueName))
+        subItem->setDocumentState(state);
+    else
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
 }
 
 void Internals::setEnableMockPagePopup(bool enabled, ExceptionState& es)
@@ -2047,8 +2058,8 @@ PassRefPtr<TypeConversions> Internals::typeConversions() const
 
 Vector<String> Internals::getReferencedFilePaths() const
 {
-    frame()->page()->history()->saveDocumentAndScrollState(frame());
-    return FormController::getReferencedFilePaths(frame()->page()->history()->currentItem(frame())->documentState());
+    frame()->loader().history()->saveDocumentAndScrollState();
+    return FormController::getReferencedFilePaths(frame()->loader().history()->currentItem()->documentState());
 }
 
 void Internals::startTrackingRepaints(Document* document, ExceptionState& es)

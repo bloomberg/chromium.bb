@@ -729,7 +729,7 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
-    webViewImpl->page()->history()->saveDocumentAndScrollState(webViewImpl->page()->mainFrame());
+    webViewImpl->page()->mainFrame()->loader().history()->saveDocumentAndScrollState();
 
     // Confirm that restoring the page state restores the parameters.
     webViewImpl->setPageScaleFactor(1.5f, WebPoint(16, 24));
@@ -740,11 +740,11 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
     // wasScrolledByUser flag on the main frame, and prevent restoreScrollPositionAndViewState
     // from restoring the scrolling position.
     webViewImpl->page()->mainFrame()->view()->setWasScrolledByUser(false);
-    webViewImpl->page()->history()->restoreScrollPositionAndViewState(webViewImpl->page()->mainFrame());
+    webViewImpl->page()->mainFrame()->loader().history()->restoreScrollPositionAndViewState();
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
-    webViewImpl->page()->history()->saveDocumentAndScrollState(webViewImpl->page()->mainFrame());
+    webViewImpl->page()->mainFrame()->loader().history()->saveDocumentAndScrollState();
 
     // Confirm that resetting the page state resets the saved scroll position.
     // The HistoryController treats a page scale factor of 0.0f as special and avoids
@@ -753,7 +753,7 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
     EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
-    webViewImpl->page()->history()->restoreScrollPositionAndViewState(webViewImpl->page()->mainFrame());
+    webViewImpl->page()->mainFrame()->loader().history()->restoreScrollPositionAndViewState();
     EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);

@@ -104,7 +104,6 @@ Page::Page(PageClients& pageClients)
     , m_contextMenuController(ContextMenuController::create(this, pageClients.contextMenuClient))
     , m_inspectorController(InspectorController::create(this, pageClients.inspectorClient))
     , m_pointerLockController(PointerLockController::create(this))
-    , m_history(adoptPtr(new HistoryController(this)))
     , m_settings(Settings::create(this))
     , m_progress(ProgressTracker::create())
     , m_backForwardClient(pageClients.backForwardClient)
@@ -221,6 +220,18 @@ bool Page::openedByDOM() const
 void Page::setOpenedByDOM()
 {
     m_openedByDOM = true;
+}
+
+void Page::goToItem(HistoryItem* item)
+{
+    // stopAllLoaders may end up running onload handlers, which could cause further history traversals that may lead to the passed in HistoryItem
+    // being deref()-ed. Make sure we can still use it with HistoryController::goToItem later.
+    RefPtr<HistoryItem> protector(item);
+
+    if (m_mainFrame->loader().history()->shouldStopLoadingForHistoryItem(item))
+        m_mainFrame->loader().stopAllLoaders();
+
+    m_mainFrame->loader().history()->goToItem(item);
 }
 
 void Page::clearPageGroup()

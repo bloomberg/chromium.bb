@@ -70,7 +70,7 @@ SerializedScriptValue* History::stateInternal() const
     if (!m_frame)
         return 0;
 
-    if (HistoryItem* historyItem = m_frame->page()->history()->currentItem(m_frame))
+    if (HistoryItem* historyItem = m_frame->loader().history()->currentItem())
         return historyItem->stateObject();
 
     return 0;

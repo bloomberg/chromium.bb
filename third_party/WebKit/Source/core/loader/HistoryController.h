@@ -32,7 +32,6 @@
 
 #include "core/history/HistoryItem.h"
 #include "core/loader/FrameLoaderTypes.h"
-#include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -40,158 +39,68 @@
 namespace WebCore {
 
 class Frame;
-class HistoryEntry;
-class Page;
 class SerializedScriptValue;
-
-
-// A guide to history state in Blink:
-//
-// HistoryController: Owned by Page, is the entry point for interacting with history.
-//     Handles most of the operations to modify history state, navigate to an existing
-//     back/forward entry, etc.
-// HistoryEntry: Represents a single entry in the back/forward list, encapsulating
-//     all frames in the page it represents. It provides access to each frame's
-//     state via lookups by frame id or frame name.
-// HistoryNode: Represents a single frame in a HistoryEntry. Owned by a HistoryEntry. HistoryNodes
-// form a tree that mirrors the FrameTree in the corresponding page. HistoryNodes represent
-// the structure of the page, but don't hold any per-frame state except a list of child frames.
-// HistoryItem (lives in a separate file): The state for a given frame. Can persist across
-//     navigations. HistoryItem is reference counted, and each HistoryNode holds a reference
-//     to its single corresponding HistoryItem. Can be referenced by multiple HistoryNodes and
-//     can therefore exist in multiple HistoryEntry instances.
-//
-// Suppose we have the following page, foo.com, which embeds foo.com/a in an iframe:
-//
-// HistoryEntry 0:
-//     HistoryNode 0_0 (HistoryItem A (url: foo.com))
-//         HistoryNode 0_1: (HistoryItem B (url: foo.com/a))
-//
-// Now we navigation the top frame to bar.com, which embeds bar.com/b and bar.com/c in iframes,
-// and bar.com/b in turn embeds bar.com/d. We will create a new HistoryEntry with a tree
-// containing 4 new HistoryNodes. The state will be:
-//
-// HistoryEntry 1:
-//     HistoryNode 1_0 (HistoryItem C (url: bar.com))
-//         HistoryNode 1_1: (HistoryItem D (url: bar.com/b))
-//             HistoryNode 1_3: (HistoryItem F (url: bar.com/d))
-//         HistoryNode 1_2: (HistoryItem E (url: bar.com/c))
-//
-//
-// Finally, we navigate the first subframe from bar.com/b to bar.com/e, which embeds bar.com/f.
-// We will create a new HistoryEntry and new HistoryNode for each frame. Any frame that
-// navigates (bar.com/e and its child, bar.com/f) will receive a new HistoryItem. However,
-// 2 frames were not navigated (bar.com and bar.com/c), so those two frames will reuse the
-// existing HistoryItem:
-//
-// HistoryEntry 2:
-//     HistoryNode 2_0 (HistoryItem C (url: bar.com))  *REUSED*
-//         HistoryNode 2_1: (HistoryItem G (url: bar.com/e))
-//            HistoryNode 2_3: (HistoryItem H (url: bar.com/f))
-//         HistoryNode 2_2: (HistoryItem E (url: bar.com/c)) *REUSED*
-//
-
-class HistoryNode {
-public:
-    static PassOwnPtr<HistoryNode> create(HistoryEntry*, HistoryItem*);
-    ~HistoryNode() { }
-
-    HistoryNode* addChild(PassRefPtr<HistoryItem>);
-    PassOwnPtr<HistoryNode> cloneAndReplace(HistoryEntry*, HistoryItem* newItem, HistoryItem* oldItem, bool clipAtTarget, Frame*);
-    HistoryItem* value() { return m_value.get(); }
-    void updateValue(PassRefPtr<HistoryItem> item) { m_value = item; }
-    const Vector<OwnPtr<HistoryNode> >& children() const { return m_children; }
-
-private:
-    HistoryNode(HistoryEntry*, HistoryItem*);
-
-    HistoryEntry* m_entry;
-    Vector<OwnPtr<HistoryNode> > m_children;
-    RefPtr<HistoryItem> m_value;
-};
-
-class HistoryEntry {
-public:
-    static PassOwnPtr<HistoryEntry> create(HistoryItem* root);
-    PassOwnPtr<HistoryEntry> cloneAndReplace(HistoryItem* newItem, HistoryItem* oldItem, bool clipAtTarget, Page*);
-
-    HistoryNode* historyNodeForFrame(Frame*);
-    HistoryItem* itemForFrame(Frame*);
-    HistoryItem* root() const { return m_root->value(); }
-    HistoryNode* rootHistoryNode() const { return m_root.get(); }
-
-private:
-    friend class HistoryNode;
-
-    HistoryEntry() { }
-    explicit HistoryEntry(HistoryItem* root);
-
-    OwnPtr<HistoryNode> m_root;
-    HashMap<uint64_t, HistoryNode*> m_framesToItems;
-    HashMap<String, HistoryNode*> m_uniqueNamesToItems;
-};
 
 class HistoryController {
     WTF_MAKE_NONCOPYABLE(HistoryController);
 public:
-    explicit HistoryController(Page*);
+    explicit HistoryController(Frame*);
     ~HistoryController();
 
-    // Should only be called by embedder. To request a back/forward
-    // navigation, call FrameLoaderClient::navigateBackForward().
-    void goToItem(HistoryItem*);
-
     void clearScrollPositionAndViewState();
-    void restoreScrollPositionAndViewState(Frame*);
+    void restoreScrollPositionAndViewState();
 
-    void updateBackForwardListForFragmentScroll(Frame*);
+    void updateBackForwardListForFragmentScroll();
 
-    void saveDocumentAndScrollState(Frame*);
-    void restoreDocumentState(Frame*);
+    void saveDocumentAndScrollState();
+    void restoreDocumentState();
 
-    void updateForCommit(Frame*);
-    void updateForSameDocumentNavigation(Frame*);
+    void updateForCommit();
+    void updateForSameDocumentNavigation();
 
-    PassRefPtr<HistoryItem> currentItemForExport(Frame*);
-    PassRefPtr<HistoryItem> previousItemForExport(Frame*);
-    PassRefPtr<HistoryItem> provisionalItemForExport(Frame*);
+    HistoryItem* currentItem() const { return m_currentItem.get(); }
+    void setCurrentItem(HistoryItem*);
+    bool currentItemShouldBeReplaced() const;
 
-    HistoryItem* currentItem(Frame*) const;
-    bool currentItemShouldBeReplaced(Frame*) const;
+    HistoryItem* previousItem() const { return m_previousItem.get(); }
 
-    HistoryItem* previousItem(Frame*) const;
-    void clearProvisionalEntry();
+    HistoryItem* provisionalItem() const { return m_provisionalItem.get(); }
+    void setProvisionalItem(HistoryItem*);
 
-    bool inSameDocumentLoad() const { return !m_sameDocumentLoadsInProgress.isEmpty() && m_differentDocumentLoadsInProgress.isEmpty(); }
-
-    void pushState(Frame*, PassRefPtr<SerializedScriptValue>, const String& url);
-    void replaceState(Frame*, PassRefPtr<SerializedScriptValue>, const String& url);
+    void pushState(PassRefPtr<SerializedScriptValue>, const String& url);
+    void replaceState(PassRefPtr<SerializedScriptValue>, const String& url);
 
     void setDefersLoading(bool);
 
 private:
-    void goToEntry(PassOwnPtr<HistoryEntry>);
-    void recursiveGoToEntry(Frame*);
+    friend class Page;
+    bool shouldStopLoadingForHistoryItem(HistoryItem*) const;
+    void goToItem(HistoryItem*);
 
-    void initializeItem(HistoryItem*, Frame*);
-    PassRefPtr<HistoryItem> createItem(Frame*);
-    void createItemTree(Frame* targetFrame, bool clipAtTarget);
+    void initializeItem(HistoryItem*);
+    PassRefPtr<HistoryItem> createItem();
+    PassRefPtr<HistoryItem> createItemTree(Frame* targetFrame, bool clipAtTarget);
 
-    void updateForStandardLoad(Frame*);
-    void updateForInitialLoadInChildFrame(Frame*);
+    void updateForStandardLoad();
+    void updateForInitialLoadInChildFrame();
 
-    void createNewBackForwardItem(Frame*, bool doClip);
-    void updateWithoutCreatingNewBackForwardItem(Frame*);
+    void recursiveSetProvisionalItem(HistoryItem*, HistoryItem*);
+    void recursiveGoToItem(HistoryItem*, HistoryItem*);
+    void recursiveUpdateForCommit();
+    void recursiveUpdateForSameDocumentNavigation();
+    bool itemsAreClones(HistoryItem*, HistoryItem*) const;
+    bool currentFramesMatchItem(HistoryItem*) const;
 
-    Page* m_page;
+    void createNewBackForwardItem(bool doClip);
+    void updateWithoutCreatingNewBackForwardItem();
 
-    OwnPtr<HistoryEntry> m_currentEntry;
-    OwnPtr<HistoryEntry> m_previousEntry;
-    OwnPtr<HistoryEntry> m_provisionalEntry;
+    void clearProvisionalItemsInAllFrames();
 
-    typedef HashMap<Frame*, HistoryItem*> HistoryFrameLoadSet;
-    HistoryFrameLoadSet m_sameDocumentLoadsInProgress;
-    HistoryFrameLoadSet m_differentDocumentLoadsInProgress;
+    Frame* m_frame;
+
+    RefPtr<HistoryItem> m_currentItem;
+    RefPtr<HistoryItem> m_previousItem;
+    RefPtr<HistoryItem> m_provisionalItem;
 
     bool m_defersLoading;
     RefPtr<HistoryItem> m_deferredItem;

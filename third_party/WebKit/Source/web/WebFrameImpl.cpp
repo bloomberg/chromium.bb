@@ -922,7 +922,12 @@ void WebFrameImpl::loadHistoryItem(const WebHistoryItem& item)
     ASSERT(frame());
     RefPtr<HistoryItem> historyItem = PassRefPtr<HistoryItem>(item);
     ASSERT(historyItem);
-    frame()->page()->history()->goToItem(historyItem.get());
+
+    frame()->loader().prepareForHistoryNavigation();
+    RefPtr<HistoryItem> currentItem = frame()->loader().history()->currentItem();
+    m_inSameDocumentHistoryLoad = currentItem && currentItem->shouldDoSameDocumentNavigationTo(historyItem.get());
+    frame()->page()->goToItem(historyItem.get());
+    m_inSameDocumentHistoryLoad = false;
 }
 
 void WebFrameImpl::loadData(const WebData& data, const WebString& mimeType, const WebString& textEncoding, const WebURL& baseURL, const WebURL& unreachableURL, bool replace)
@@ -993,7 +998,7 @@ WebHistoryItem WebFrameImpl::previousHistoryItem() const
     // only get saved to history when it becomes the previous item.  The caller
     // is expected to query the history item after a navigation occurs, after
     // the desired history item has become the previous entry.
-    return WebHistoryItem(frame()->page()->history()->previousItemForExport(frame()));
+    return WebHistoryItem(frame()->loader().history()->previousItem());
 }
 
 WebHistoryItem WebFrameImpl::currentHistoryItem() const
@@ -1009,13 +1014,13 @@ WebHistoryItem WebFrameImpl::currentHistoryItem() const
     // document state.  However, it is OK for new navigations.
     // FIXME: Can we make this a plain old getter, instead of worrying about
     // clobbering here?
-    if (!frame()->page()->history()->inSameDocumentLoad() && (frame()->loader().loadType() == FrameLoadTypeStandard
+    if (!m_inSameDocumentHistoryLoad && (frame()->loader().loadType() == FrameLoadTypeStandard
         || !frame()->loader().activeDocumentLoader()->isLoadingInAPISense()))
-        frame()->page()->history()->saveDocumentAndScrollState(frame());
+        frame()->loader().history()->saveDocumentAndScrollState();
 
-    if (RefPtr<HistoryItem> item = frame()->page()->history()->provisionalItemForExport(frame()))
+    if (HistoryItem* item = frame()->loader().history()->provisionalItem())
         return WebHistoryItem(item);
-    return WebHistoryItem(frame()->page()->history()->currentItemForExport(frame()));
+    return WebHistoryItem(frame()->page()->mainFrame()->loader().history()->currentItem());
 }
 
 void WebFrameImpl::enableViewSourceMode(bool enable)
@@ -2099,6 +2104,7 @@ WebFrameImpl::WebFrameImpl(WebFrameClient* client, long long embedderIdentifier)
     , m_nextInvalidateAfter(0)
     , m_findMatchMarkersVersion(0)
     , m_findMatchRectsAreValid(false)
+    , m_inSameDocumentHistoryLoad(false)
     , m_inputEventsScaleFactorForEmulation(1)
 {
     blink::Platform::current()->incrementStatsCounter(webFrameActiveCount);
@@ -2187,11 +2193,12 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     if (!childFrame->tree().parent())
         return 0;
 
+    HistoryItem* parentItem = frame()->loader().history()->currentItem();
     HistoryItem* childItem = 0;
     // If we're moving in the back/forward list, we might want to replace the content
     // of this child frame with whatever was there at that point.
-    if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished())
-        childItem = frame()->page()->history()->currentItem(childFrame.get());
+    if (parentItem && parentItem->children().size() && isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished())
+        childItem = parentItem->childItemWithTarget(childFrame->tree().uniqueName());
 
     if (childItem)
         childFrame->loader().loadHistoryItem(childItem);
