@@ -115,7 +115,6 @@ body:not(.controls-visible) .dynamic {
   right: 0;
   pointer-events: auto;
   position: absolute;
-  top: 0;
 }
 
 #toolbar-puller-wrapper.puller-reset {
@@ -243,8 +242,12 @@ body.browser #toolbar {
 #main-fast-canvas-wrapper,
 #main-canvas-wrapper canvas,
 #main-fast-canvas-wrapper canvas {
-  pointer-events: none;
   width: 100%;
+}
+
+#main-canvas-wrapper canvas,
+#main-fast-canvas-wrapper canvas {
+  pointer-events: none;
 }
 
 #error {

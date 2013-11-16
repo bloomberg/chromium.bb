@@ -564,7 +564,7 @@ camera.util.Queue.prototype.continue_ = function() {
  * any of these are detected, then the callback is called.
  *
  * @param {HTMLElement} element Element to be monitored.
- * @param {function()} callback Callback triggered on events detected.
+ * @param {function(Event)} callback Callback triggered on events detected.
  * @constructor
  */
 camera.util.PointerTracker = function(element, callback) {
@@ -575,7 +575,7 @@ camera.util.PointerTracker = function(element, callback) {
   this.element_ = element;
 
   /**
-   * @type {function()}
+   * @type {function(Event)}
    * @private
    */
   this.callback_ = callback;
@@ -603,7 +603,7 @@ camera.util.PointerTracker = function(element, callback) {
  * @private
  */
 camera.util.PointerTracker.prototype.onMouseDown_ = function(event) {
-  this.callback_();
+  this.callback_(event);
   this.lastMousePosition_ = [event.screenX, event.screenY];
 };
 
@@ -622,7 +622,7 @@ camera.util.PointerTracker.prototype.onMouseMove_ = function(event) {
     return;
   }
 
-  this.callback_();
+  this.callback_(event);
   this.lastMousePosition_ = [event.screenX, event.screenY];
 };
 
@@ -633,7 +633,7 @@ camera.util.PointerTracker.prototype.onMouseMove_ = function(event) {
  * @private
  */
 camera.util.PointerTracker.prototype.onTouchStart_ = function(event) {
-  this.callback_();
+  this.callback_(event);
 };
 
 /**
@@ -643,7 +643,7 @@ camera.util.PointerTracker.prototype.onTouchStart_ = function(event) {
  * @private
  */
 camera.util.PointerTracker.prototype.onTouchMove_ = function(event) {
-  this.callback_();
+  this.callback_(event);
 };
 
 /**

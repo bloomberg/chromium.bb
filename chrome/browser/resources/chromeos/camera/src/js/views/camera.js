@@ -561,15 +561,32 @@ camera.views.Camera.prototype.onWindowKeyDown_ = function(event) {
 
 /**
  * Handles pointer actions, such as mouse or touch activity.
+ * @param {Event} event Activity event.
  * @private
  */
-camera.views.Camera.prototype.onPointerActivity_ = function() {
+camera.views.Camera.prototype.onPointerActivity_ = function(event) {
   // Show the window controls.
   this.setControlsVisible_(true);
 
-  // Prevent auto-hiding the ribbon.
-  if (this.expanded_)
-    this.setExpanded_(true);
+  // Update the ribbon's visibility.
+  switch (event.type) {
+    case 'mousedown':
+    case 'touchstart':
+      // Toggle the ribbon if clicking on static area.
+      if (event.target == document.body ||
+          document.querySelector('#main-canvas-wrapper').contains(
+              event.target) ||
+          document.querySelector('#main-fast-canvas-wrapper').contains(
+              event.target)) {
+        this.setExpanded_(!this.expanded_);
+        break;
+      }  // Otherwise continue.
+    default:
+      // Prevent auto-hiding the ribbon for any other activity.
+      if (this.expanded_)
+        this.setExpanded_(true);
+      break;
+  }
 };
 
 /**
