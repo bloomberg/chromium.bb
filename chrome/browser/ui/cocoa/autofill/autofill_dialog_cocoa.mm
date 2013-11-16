@@ -329,12 +329,6 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
         [[AutofillSignInContainer alloc] initWithDialog:autofillDialog]);
     [[signInContainer_ view] setHidden:YES];
 
-    NSRect clientRect = [[mainContainer_ view] frame];
-    clientRect.origin = NSMakePoint(chrome_style::kClientBottomPadding,
-                                    chrome_style::kHorizontalPadding);
-    [[mainContainer_ view] setFrame:clientRect];
-    [[signInContainer_ view] setFrame:clientRect];
-
     // Set dialog title.
     titleTextField_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
     [titleTextField_ setEditable:NO];
@@ -345,11 +339,8 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
         base::SysUTF16ToNSString(autofillDialog->delegate()->DialogTitle())];
     [titleTextField_ sizeToFit];
 
-    NSRect headerRect = clientRect;
-    headerRect.size.height = kAccountChooserHeight;
-    headerRect.origin.y = NSMaxY(clientRect);
     accountChooser_.reset([[AutofillAccountChooser alloc]
-                              initWithFrame:headerRect
+                              initWithFrame:NSZeroRect
                                  delegate:autofillDialog->delegate()]);
 
     loadingShieldTextField_.reset(
