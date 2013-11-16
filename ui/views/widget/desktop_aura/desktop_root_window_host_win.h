@@ -261,6 +261,9 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   // a reference.
   corewm::TooltipWin* tooltip_;
 
+  // State of the cursor.
+  bool is_cursor_visible_;
+
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostWin);
 };
 
