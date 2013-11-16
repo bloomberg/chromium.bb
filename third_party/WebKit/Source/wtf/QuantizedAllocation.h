@@ -62,7 +62,7 @@ public:
 
     // Using "unsigned" is not a limitation because Chromium's max malloc() is
     // 2GB even on 64-bit.
-    static const size_t kMaxUnquantizedAllocation = UINT_MAX - kMaxRounding;
+    static const size_t kMaxUnquantizedAllocation = INT_MAX - kMaxRounding;
 
     static void init();
 

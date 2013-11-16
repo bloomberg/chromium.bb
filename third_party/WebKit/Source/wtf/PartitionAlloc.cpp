@@ -448,6 +448,7 @@ void partitionFreeSlowPath(PartitionPageHeader* page)
 
 void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t newSize)
 {
+    RELEASE_ASSERT(newSize <= QuantizedAllocation::kMaxUnquantizedAllocation);
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     return realloc(ptr, newSize);
 #else

@@ -401,6 +401,7 @@ ALWAYS_INLINE void partitionFree(void* ptr)
 
 ALWAYS_INLINE void* partitionAllocGeneric(PartitionRoot* root, size_t size)
 {
+    RELEASE_ASSERT(size <= QuantizedAllocation::kMaxUnquantizedAllocation);
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     void* result = malloc(size);
     RELEASE_ASSERT(result);
