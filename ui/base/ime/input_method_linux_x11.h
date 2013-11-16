@@ -9,8 +9,6 @@
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
 
-typedef struct _GtkIMContext GtkIMContext;
-
 namespace ui {
 
 // A ui::InputMethod implementation for a X11 event loop on GNU/Linux.
