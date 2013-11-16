@@ -580,6 +580,77 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
   ScheduleAction(action);
 }
 
+// static
+bool DevToolsWindow::HandleBeforeUnload(content::WebContents* frontend_contents,
+    bool proceed, bool* proceed_to_fire_unload) {
+  DevToolsWindow* window = AsDevToolsWindow(
+      frontend_contents->GetRenderViewHost());
+  DCHECK(window);
+  if (!window->intercepted_page_beforeunload_)
+    return false;
+  window->BeforeUnloadFired(frontend_contents, proceed,
+      proceed_to_fire_unload);
+  return true;
+}
+
+// static
+bool DevToolsWindow::InterceptPageBeforeUnload(content::WebContents* contents) {
+  DevToolsWindow* window =
+      DevToolsWindow::GetInstanceForInspectedRenderViewHost(
+          contents->GetRenderViewHost());
+  if (!window || window->intercepted_page_beforeunload_)
+    return false;
+
+  window->intercepted_page_beforeunload_ = true;
+  // Handle case of devtools inspecting another devtools instance by passing
+  // the call up to the inspecting devtools instance.
+  if (!DevToolsWindow::InterceptPageBeforeUnload(window->web_contents())) {
+    window->web_contents()->GetRenderViewHost()->FirePageBeforeUnload(false);
+  }
+  return true;
+}
+
+// static
+bool DevToolsWindow::NeedsToInterceptBeforeUnload(
+    content::WebContents* contents) {
+  DevToolsWindow* window =
+      DevToolsWindow::GetInstanceForInspectedRenderViewHost(
+          contents->GetRenderViewHost());
+  return window && !window->intercepted_page_beforeunload_;
+}
+
+// static
+bool DevToolsWindow::HasFiredBeforeUnloadEventForDevToolsBrowser(
+    Browser* browser) {
+  DCHECK(browser->is_devtools());
+  // When FastUnloadController is used, devtools frontend will be detached
+  // from the browser window at this point which means we've already fired
+  // beforeunload.
+  if (browser->tab_strip_model()->empty())
+    return true;
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetWebContentsAt(0);
+  DevToolsWindow* window = AsDevToolsWindow(contents->GetRenderViewHost());
+  DCHECK(window);
+  return window->intercepted_page_beforeunload_;
+}
+
+// static
+void DevToolsWindow::OnPageCloseCanceled(content::WebContents* contents) {
+  DevToolsWindow *window =
+      DevToolsWindow::GetInstanceForInspectedRenderViewHost(
+          contents->GetRenderViewHost());
+  if (!window)
+    return;
+  window->intercepted_page_beforeunload_ = false;
+  // Propagate to devtools opened on devtools if any.
+  DevToolsWindow::OnPageCloseCanceled(window->web_contents());
+}
+
+void DevToolsWindow::SetDockSideForTest(DevToolsDockSide dock_side) {
+  SetDockSide(SideToString(dock_side));
+}
+
 DevToolsWindow::DevToolsWindow(Profile* profile,
                                const GURL& url,
                                content::RenderViewHost* inspected_rvh,
@@ -592,6 +663,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       width_(-1),
       height_(-1),
       dock_side_before_minimized_(dock_side),
+      intercepted_page_beforeunload_(false),
       weak_factory_(this) {
   web_contents_ =
       content::WebContents::Create(content::WebContents::CreateParams(profile));
@@ -813,11 +885,26 @@ void DevToolsWindow::CloseContents(content::WebContents* source) {
 void DevToolsWindow::BeforeUnloadFired(content::WebContents* tab,
                                        bool proceed,
                                        bool* proceed_to_fire_unload) {
-  if (proceed) {
-    content::DevToolsManager::GetInstance()->ClientHostClosing(
-        frontend_host_.get());
+  if (!intercepted_page_beforeunload_) {
+    // Docked devtools window closed directly.
+    if (proceed) {
+      content::DevToolsManager::GetInstance()->ClientHostClosing(
+          frontend_host_.get());
+    }
+    *proceed_to_fire_unload = proceed;
+  } else {
+    // Inspected page is attempting to close.
+    content::WebContents* inspected_web_contents = GetInspectedWebContents();
+    if (proceed) {
+      inspected_web_contents->GetRenderViewHost()->FirePageBeforeUnload(false);
+    } else {
+      bool should_proceed;
+      inspected_web_contents->GetDelegate()->BeforeUnloadFired(
+          inspected_web_contents, false, &should_proceed);
+      DCHECK(!should_proceed);
+    }
+    *proceed_to_fire_unload = false;
   }
-  *proceed_to_fire_unload = proceed;
 }
 
 bool DevToolsWindow::PreHandleKeyboardEvent(

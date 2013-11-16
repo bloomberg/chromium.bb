@@ -64,6 +64,9 @@ class FastUnloadController : public content::NotificationObserver,
   // renderer.
   bool CanCloseContents(content::WebContents* contents);
 
+  // Returns true if we need to run unload events for the |contents|.
+  static bool ShouldRunUnloadEventsHelper(content::WebContents* contents);
+
   // Helper function to run beforeunload listeners on a WebContents.
   // Returns true if |contents| beforeunload listeners were invoked.
   static bool RunUnloadEventsHelper(content::WebContents* contents);

@@ -139,6 +139,11 @@ bool BrowserTabStripModelDelegate::RunUnloadListenerBeforeClosing(
   return Browser::RunUnloadEventsHelper(contents);
 }
 
+bool BrowserTabStripModelDelegate::ShouldRunUnloadListenerBeforeClosing(
+    content::WebContents* contents) {
+  return Browser::ShouldRunUnloadEventsHelper(contents);
+}
+
 bool BrowserTabStripModelDelegate::CanBookmarkAllTabs() const {
   return chrome::CanBookmarkAllTabs(browser_);
 }

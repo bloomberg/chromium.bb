@@ -1199,6 +1199,8 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
     std::map<content::RenderProcessHost*, size_t> processes;
     for (size_t i = 0; i < indices.size(); ++i) {
       WebContents* closing_contents = GetWebContentsAtImpl(indices[i]);
+      if (delegate_->ShouldRunUnloadListenerBeforeClosing(closing_contents))
+        continue;
       content::RenderProcessHost* process =
           closing_contents->GetRenderProcessHost();
       ++processes[process];

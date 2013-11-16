@@ -130,6 +130,82 @@ class DevToolsWindow : private content::NotificationObserver,
 
   void Show(const DevToolsToggleAction& action);
 
+  // BeforeUnload interception ////////////////////////////////////////////////
+
+  // In order to preserve any edits the user may have made in devtools, the
+  // beforeunload event of the inspected page is hooked - devtools gets the
+  // first shot at handling beforeunload and presents a dialog to the user. If
+  // the user accepts the dialog then the script is given a chance to handle
+  // it. This way 2 dialogs may be displayed: one from the devtools asking the
+  // user to confirm that they're ok with their devtools edits going away and
+  // another from the webpage as the result of its beforeunload handler.
+  // The following set of methods handle beforeunload event flow through
+  // devtools window. When the |contents| with devtools opened on them are
+  // getting closed, the following sequence of calls takes place:
+  // 1. |DevToolsWindow::InterceptPageBeforeUnload| is called and indicates
+  //    whether devtools intercept the beforeunload event.
+  //    If InterceptPageBeforeUnload() returns true then the following steps
+  //    will take place; otherwise only step 4 will be reached and none of the
+  //    corresponding functions in steps 2 & 3 will get called.
+  // 2. |DevToolsWindow::InterceptPageBeforeUnload| fires beforeunload event
+  //    for devtools frontend, which will asynchronously call
+  //    |WebContentsDelegate::BeforeUnloadFired| method.
+  //    In case of docked devtools window, devtools are set as a delegate for
+  //    its frontend, so method |DevToolsWindow::BeforeUnloadFired| will be
+  //    called directly.
+  //    If devtools window is undocked it's not set as the delegate so the call
+  //    to BeforeUnloadFired is proxied through HandleBeforeUnload() rather
+  //    than getting called directly.
+  // 3a. If |DevToolsWindow::BeforeUnloadFired| is called with |proceed|=false
+  //     it calls throught to the content's BeforeUnloadFired(), which from the
+  //     WebContents perspective looks the same as the |content|'s own
+  //     beforeunload dialog having had it's 'stay on this page' button clicked.
+  // 3b. If |proceed| = true, then it fires beforeunload event on |contents|
+  //     and everything proceeds as it normally would without the Devtools
+  //     interception.
+  // 4. If the user cancels the dialog put up by either the WebContents or
+  //    devtools frontend, then |contents|'s |BeforeUnloadFired| callback is
+  //    called with the proceed argument set to false, this causes
+  //    |DevToolsWindow::OnPageCloseCancelled| to be called.
+
+  // Devtools window in undocked state is not set as a delegate of
+  // its frontend. Instead, an instance of browser is set as the delegate, and
+  // thus beforeunload event callback from devtools frontend is not delivered
+  // to the instance of devtools window, which is solely responsible for
+  // managing custom beforeunload event flow.
+  // This is a helper method to route callback from
+  // |Browser::BeforeUnloadFired| back to |DevToolsWindow::BeforeUnloadFired|.
+  // * |proceed| - true if the user clicked 'ok' in the beforeunload dialog,
+  //   false otherwise.
+  // * |proceed_to_fire_unload| - output parameter, whether we should continue
+  //   to fire the unload event or stop things here.
+  // Returns true if devtools window is in a state of intercepting beforeunload
+  // event and if it will manage unload process on its own.
+  static bool HandleBeforeUnload(content::WebContents* contents,
+                                 bool proceed,
+                                 bool* proceed_to_fire_unload);
+
+  // Returns true if this contents beforeunload event was intercepted by
+  // devtools and false otherwise. If the event was intercepted, caller should
+  // not fire beforeunlaod event on |contents| itself as devtools window will
+  // take care of it, otherwise caller should continue handling the event as
+  // usual.
+  static bool InterceptPageBeforeUnload(content::WebContents* contents);
+
+  // Returns true if devtools browser has already fired its beforeunload event
+  // as a result of beforeunload event interception.
+  static bool HasFiredBeforeUnloadEventForDevToolsBrowser(Browser* browser);
+
+  // Returns true if devtools window would like to hook beforeunload event
+  // of this |contents|.
+  static bool NeedsToInterceptBeforeUnload(content::WebContents* contents);
+
+  // Notify devtools window that closing of |contents| was cancelled
+  // by user.
+  static void OnPageCloseCanceled(content::WebContents* contents);
+
+  void SetDockSideForTest(DevToolsDockSide dock_side);
+
  private:
   friend class DevToolsControllerTest;
 
@@ -281,6 +357,9 @@ class DevToolsWindow : private content::NotificationObserver,
   int width_;
   int height_;
   DevToolsDockSide dock_side_before_minimized_;
+  // True if we're in the process of handling a beforeunload event originating
+  // from the inspected webcontents, see InterceptPageBeforeUnload for details.
+  bool intercepted_page_beforeunload_;
 
   scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
   base::WeakPtrFactory<DevToolsWindow> weak_factory_;

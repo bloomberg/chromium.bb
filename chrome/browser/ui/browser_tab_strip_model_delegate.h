@@ -36,6 +36,8 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
   virtual void CreateHistoricalTab(content::WebContents* contents) OVERRIDE;
   virtual bool RunUnloadListenerBeforeClosing(
       content::WebContents* contents) OVERRIDE;
+  virtual bool ShouldRunUnloadListenerBeforeClosing(
+      content::WebContents* contents) OVERRIDE;
   virtual bool CanBookmarkAllTabs() const OVERRIDE;
   virtual void BookmarkAllTabs() OVERRIDE;
   virtual RestoreTabType GetRestoreTabType() OVERRIDE;

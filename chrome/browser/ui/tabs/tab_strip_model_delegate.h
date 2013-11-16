@@ -106,6 +106,11 @@ class TabStripModelDelegate {
   virtual bool RunUnloadListenerBeforeClosing(
       content::WebContents* contents) = 0;
 
+  // Returns true if we should run unload listeners before attempts
+  // to close |contents|.
+  virtual bool ShouldRunUnloadListenerBeforeClosing(
+      content::WebContents* contents) = 0;
+
   // Returns the current tab restore type.
   virtual RestoreTabType GetRestoreTabType() = 0;
 

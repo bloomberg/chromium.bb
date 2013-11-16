@@ -20,7 +20,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -158,32 +161,121 @@ class DevToolsSanityTest : public InProcessBrowserTest {
 class DevToolsWindowBeforeUnloadObserver
     : public content::WebContentsObserver {
  public:
-  explicit DevToolsWindowBeforeUnloadObserver(
-      content::WebContents* web_contents);
-  bool Fired();
+  explicit DevToolsWindowBeforeUnloadObserver(DevToolsWindow*);
+  void Wait();
  private:
   // Invoked when the beforeunload handler fires.
   virtual void BeforeUnloadFired(const base::TimeTicks& proceed_time) OVERRIDE;
 
   bool m_fired;
-
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindowBeforeUnloadObserver);
 };
 
 DevToolsWindowBeforeUnloadObserver::DevToolsWindowBeforeUnloadObserver(
-    content::WebContents* web_contents)
-    : WebContentsObserver(web_contents),
+    DevToolsWindow* devtools_window)
+    : WebContentsObserver(devtools_window->web_contents()),
       m_fired(false) {
 }
 
-bool DevToolsWindowBeforeUnloadObserver::Fired() {
-  return m_fired;
+void DevToolsWindowBeforeUnloadObserver::Wait() {
+  if (m_fired)
+    return;
+  message_loop_runner_ = new content::MessageLoopRunner;
+  message_loop_runner_->Run();
 }
 
 void DevToolsWindowBeforeUnloadObserver::BeforeUnloadFired(
     const base::TimeTicks& proceed_time) {
   m_fired = true;
+  if (message_loop_runner_.get())
+    message_loop_runner_->Quit();
 }
+
+class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
+ public:
+  void CloseInspectedTab() {
+    browser()->tab_strip_model()->CloseWebContentsAt(0,
+        TabStripModel::CLOSE_NONE);
+  }
+
+  void CloseDockedDevTools() {
+    DevToolsWindow::ToggleDevToolsWindow(inspected_rvh_, false,
+        DevToolsToggleAction::Toggle());
+  }
+
+  void CloseUndockedDevTools() {
+    chrome::CloseWindow(window_->browser());
+  }
+
+  void CloseInspectedBrowser() {
+    chrome::CloseWindow(browser());
+  }
+ protected:
+  void InjectBeforeUnloadListener(content::WebContents* web_contents) {
+    ASSERT_TRUE(content::ExecuteScript(web_contents->GetRenderViewHost(),
+        "window.addEventListener('beforeunload',"
+        "function(event) { event.returnValue = 'Foo'; });"));
+  }
+
+  void RunBeforeUnloadSanityTest(DevToolsDockSide dock_side,
+                             base::Callback<void(void)> close_method,
+                             bool wait_for_browser_close = true) {
+    OpenDevToolsWindow(kDebuggerTestPage);
+    window_->SetDockSideForTest(dock_side);
+    content::WindowedNotificationObserver devtools_close_observer(
+        content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+        content::Source<content::WebContents>(window_->web_contents()));
+    InjectBeforeUnloadListener(window_->web_contents());
+    {
+      DevToolsWindowBeforeUnloadObserver before_unload_observer(window_);
+      close_method.Run();
+      CancelModalDialog();
+      before_unload_observer.Wait();
+    }
+    {
+      content::WindowedNotificationObserver close_observer(
+          chrome::NOTIFICATION_BROWSER_CLOSED,
+          content::Source<Browser>(browser()));
+      close_method.Run();
+      AcceptModalDialog();
+      if (wait_for_browser_close)
+        close_observer.Wait();
+    }
+    devtools_close_observer.Wait();
+  }
+
+  DevToolsWindow* OpenDevToolWindowOnWebContents(
+      content::WebContents* contents) {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    DevToolsWindow* window = DevToolsWindow::OpenDevToolsWindow(
+        contents->GetRenderViewHost());
+    observer.Wait();
+    return window;
+  }
+
+  void AcceptModalDialog() {
+    NativeAppModalDialog* native_dialog = GetDialog();
+    native_dialog->AcceptAppModalDialog();
+  }
+
+  void CancelModalDialog() {
+    NativeAppModalDialog* native_dialog = GetDialog();
+    native_dialog->CancelAppModalDialog();
+  }
+
+  NativeAppModalDialog* GetDialog() {
+    AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
+    EXPECT_TRUE(dialog->IsJavaScriptModalDialog());
+    JavaScriptAppModalDialog* js_dialog =
+        static_cast<JavaScriptAppModalDialog*>(dialog);
+    NativeAppModalDialog* native_dialog = js_dialog->native_dialog();
+    EXPECT_TRUE(native_dialog);
+    return native_dialog;
+  }
+};
 
 void TimeoutCallback(const std::string& timeout_message) {
   FAIL() << timeout_message;
@@ -433,20 +525,118 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
   DevToolsWindow* window_;
 };
 
-// Test beforeunload event delivery.
-// Crashes on Win only.  http://crbug.com/313658
-#if defined(OS_WIN)
-#define MAYBE_TestBeforeUnloadEvents DISABLED_TestBeforeUnloadEvents
-#else
-#define MAYBE_TestBeforeUnloadEvents TestBeforeUnloadEvents
-#endif
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestBeforeUnloadEvents) {
-  OpenDevToolsWindow(kDebuggerTestPage);
-  scoped_ptr<DevToolsWindowBeforeUnloadObserver> contents_observer;
-  contents_observer.reset(
-      new DevToolsWindowBeforeUnloadObserver(window_->web_contents()));
-  ToggleDevToolsWindow();
-  ASSERT_TRUE(contents_observer->Fired());
+// Tests that BeforeUnload event gets called on docked devtools if
+// we try to close them.
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestDockedDevToolsClose) {
+  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_BOTTOM, base::Bind(
+      &DevToolsBeforeUnloadTest::CloseDockedDevTools, this), false);
+}
+
+// Tests that BeforeUnload event gets called on docked devtools if
+// we try to close the inspected page.
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
+                       TestDockedDevToolsInspectedTabClose) {
+  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_BOTTOM, base::Bind(
+      &DevToolsBeforeUnloadTest::CloseInspectedTab, this));
+}
+
+// Tests that BeforeUnload event gets called on docked devtools if
+// we try to close the inspected browser.
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
+                       TestDockedDevToolsInspectedBrowserClose) {
+  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_BOTTOM, base::Bind(
+      &DevToolsBeforeUnloadTest::CloseInspectedBrowser, this));
+}
+
+// Tests that BeforeUnload event gets called on undocked devtools if
+// we try to close them.
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestUndockedDevToolsClose) {
+  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_UNDOCKED, base::Bind(
+      &DevToolsBeforeUnloadTest::CloseUndockedDevTools, this), false);
+}
+
+// Tests that BeforeUnload event gets called on undocked devtools if
+// we try to close the inspected page.
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
+                       TestUndockedDevToolsInspectedTabClose) {
+  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_UNDOCKED, base::Bind(
+      &DevToolsBeforeUnloadTest::CloseInspectedTab, this));
+}
+
+// Tests that BeforeUnload event gets called on undocked devtools if
+// we try to close the inspected browser.
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
+                       TestUndockedDevToolsInspectedBrowserClose) {
+  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_UNDOCKED, base::Bind(
+      &DevToolsBeforeUnloadTest::CloseInspectedBrowser, this));
+}
+
+// Tests that BeforeUnload event gets called on undocked devtools if
+// we try to exit application.
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
+                       TestUndockedDevToolsApplicationClose) {
+  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_UNDOCKED, base::Bind(
+      &chrome::CloseAllBrowsers));
+}
+
+// Tests that BeforeUnload event gets called on devtools that are opened
+// on another devtools.
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestDevToolsOnDevTools) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL url = test_server()->GetURL(kDebuggerTestPage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  std::vector<DevToolsWindow*> windows;
+  std::vector<content::WindowedNotificationObserver*> close_observers;
+  content::WebContents* inspected_web_contents = GetInspectedTab();
+  for (int i = 0; i < 3; ++i) {
+    DevToolsWindow* devtools_window = OpenDevToolWindowOnWebContents(
+      inspected_web_contents);
+    windows.push_back(devtools_window);
+    content::WindowedNotificationObserver* close_observer =
+        new content::WindowedNotificationObserver(
+                content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                content::Source<content::WebContents>(
+                    devtools_window->web_contents()));
+    close_observers.push_back(close_observer);
+    inspected_web_contents = devtools_window->web_contents();
+  }
+
+  InjectBeforeUnloadListener(windows[0]->web_contents());
+  InjectBeforeUnloadListener(windows[2]->web_contents());
+  // Try to close second devtools.
+  {
+    content::WindowedNotificationObserver cancel_browser(
+        chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
+        content::NotificationService::AllSources());
+    chrome::CloseWindow(windows[1]->browser());
+    CancelModalDialog();
+    cancel_browser.Wait();
+  }
+  // Try to close browser window.
+  {
+    content::WindowedNotificationObserver cancel_browser(
+        chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
+        content::NotificationService::AllSources());
+    chrome::CloseWindow(browser());
+    AcceptModalDialog();
+    CancelModalDialog();
+    cancel_browser.Wait();
+  }
+  // Try to exit application.
+  {
+    content::WindowedNotificationObserver close_observer(
+        chrome::NOTIFICATION_BROWSER_CLOSED,
+        content::Source<Browser>(browser()));
+    chrome::CloseAllBrowsers();
+    AcceptModalDialog();
+    AcceptModalDialog();
+    close_observer.Wait();
+  }
+  for (size_t i = 0; i < close_observers.size(); ++i) {
+    close_observers[i]->Wait();
+    delete close_observers[i];
+  }
 }
 
 // Tests scripts panel showing.

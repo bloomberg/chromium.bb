@@ -28,6 +28,8 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   virtual void DuplicateContentsAt(int index) OVERRIDE;
   virtual void CloseFrameAfterDragSession() OVERRIDE;
   virtual void CreateHistoricalTab(content::WebContents* contents) OVERRIDE;
+  virtual bool ShouldRunUnloadListenerBeforeClosing(
+      content::WebContents* contents) OVERRIDE;
   virtual bool RunUnloadListenerBeforeClosing(
       content::WebContents* contents) OVERRIDE;
   virtual RestoreTabType GetRestoreTabType() OVERRIDE;

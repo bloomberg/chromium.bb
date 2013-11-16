@@ -394,6 +394,9 @@ class Browser : public TabStripModelObserver,
 
   /////////////////////////////////////////////////////////////////////////////
 
+  // Returns true if we need to run unload events for the |contents|.
+  static bool ShouldRunUnloadEventsHelper(content::WebContents* contents);
+
   // Helper function to run unload listeners on a WebContents.
   static bool RunUnloadEventsHelper(content::WebContents* contents);
 
