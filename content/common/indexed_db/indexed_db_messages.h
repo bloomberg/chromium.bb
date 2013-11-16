@@ -387,11 +387,12 @@ IPC_MESSAGE_CONTROL4(IndexedDBHostMsg_CursorAdvance,
                      unsigned long) /* count */
 
 // WebIDBCursor::continue() message.
-IPC_MESSAGE_CONTROL4(IndexedDBHostMsg_CursorContinue,
+IPC_MESSAGE_CONTROL5(IndexedDBHostMsg_CursorContinue,
                      int32, /* ipc_cursor_id */
                      int32, /* ipc_thread_id */
                      int32, /* ipc_callbacks_id */
-                     content::IndexedDBKey) /* key */
+                     content::IndexedDBKey, /* key */
+                     content::IndexedDBKey) /* primary_key */
 
 // WebIDBCursor::prefetchContinue() message.
 IPC_MESSAGE_CONTROL4(IndexedDBHostMsg_CursorPrefetch,

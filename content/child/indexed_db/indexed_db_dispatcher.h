@@ -87,6 +87,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
                                int32 ipc_cursor_id);
 
   virtual void RequestIDBCursorContinue(const IndexedDBKey& key,
+                                        const IndexedDBKey& primary_key,
                                         blink::WebIDBCallbacks* callbacks_ptr,
                                         int32 ipc_cursor_id);
 

@@ -41,7 +41,8 @@ class MockDispatcher : public IndexedDBDispatcher {
     callbacks_.reset(callbacks);
   }
 
-  virtual void RequestIDBCursorContinue(const IndexedDBKey&,
+  virtual void RequestIDBCursorContinue(const IndexedDBKey& key,
+                                        const IndexedDBKey& primary_key,
                                         WebIDBCallbacks* callbacks,
                                         int32 ipc_cursor_id) OVERRIDE {
     ++continue_calls_;

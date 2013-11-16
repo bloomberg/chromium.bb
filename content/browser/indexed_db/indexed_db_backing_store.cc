@@ -1866,7 +1866,11 @@ bool IndexedDBBackingStore::Cursor::Advance(uint32 count) {
 }
 
 bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
+                                             const IndexedDBKey* primary_key,
                                              IteratorState next_state) {
+  DCHECK(!key || key->IsValid());
+  DCHECK(!primary_key || primary_key->IsValid());
+
   // TODO(alecflett): avoid a copy here?
   IndexedDBKey previous_key = current_key_ ? *current_key_ : IndexedDBKey();
 
@@ -1882,8 +1886,14 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
   for (;;) {
     if (next_state == SEEK) {
       // TODO(jsbell): Optimize seeking for reverse cursors as well.
-      if (first_iteration && key && key->IsValid() && forward) {
-        iterator_->Seek(EncodeKey(*key));
+      if (first_iteration && key && forward) {
+        std::string leveldb_key;
+        if (primary_key) {
+          leveldb_key = EncodeKey(*key, *primary_key);
+        } else {
+          leveldb_key = EncodeKey(*key);
+        }
+        iterator_->Seek(leveldb_key);
         first_iteration = false;
       } else if (forward) {
         iterator_->Next();
@@ -1924,11 +1934,17 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
     if (!LoadCurrentRow())
       continue;
 
-    if (key && key->IsValid()) {
+    if (key) {
       if (forward) {
+        if (primary_key && current_key_->IsEqual(*key) &&
+            this->primary_key().IsLessThan(*primary_key))
+          continue;
         if (current_key_->IsLessThan(*key))
           continue;
       } else {
+        if (primary_key && key->IsEqual(*current_key_) &&
+            primary_key->IsLessThan(this->primary_key()))
+          continue;
         if (key->IsLessThan(*current_key_))
           continue;
       }
@@ -2028,6 +2044,11 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
     return ObjectStoreDataKey::Encode(
         cursor_options_.database_id, cursor_options_.object_store_id, key);
   }
+  virtual std::string EncodeKey(const IndexedDBKey& key,
+                                const IndexedDBKey& primary_key) OVERRIDE {
+    NOTREACHED();
+    return std::string();
+  }
 
  private:
   explicit ObjectStoreKeyCursorImpl(const ObjectStoreKeyCursorImpl* other)
@@ -2076,6 +2097,11 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
   virtual std::string EncodeKey(const IndexedDBKey& key) OVERRIDE {
     return ObjectStoreDataKey::Encode(
         cursor_options_.database_id, cursor_options_.object_store_id, key);
+  }
+  virtual std::string EncodeKey(const IndexedDBKey& key,
+                                const IndexedDBKey& primary_key) OVERRIDE {
+    NOTREACHED();
+    return std::string();
   }
 
  private:
@@ -2142,6 +2168,14 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
                                 cursor_options_.object_store_id,
                                 cursor_options_.index_id,
                                 key);
+  }
+  virtual std::string EncodeKey(const IndexedDBKey& key,
+                                const IndexedDBKey& primary_key) OVERRIDE {
+    return IndexDataKey::Encode(cursor_options_.database_id,
+                                cursor_options_.object_store_id,
+                                cursor_options_.index_id,
+                                key,
+                                primary_key);
   }
 
  private:
@@ -2238,6 +2272,14 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
                                 cursor_options_.object_store_id,
                                 cursor_options_.index_id,
                                 key);
+  }
+  virtual std::string EncodeKey(const IndexedDBKey& key,
+                                const IndexedDBKey& primary_key) OVERRIDE {
+    return IndexDataKey::Encode(cursor_options_.database_id,
+                                cursor_options_.object_store_id,
+                                cursor_options_.index_id,
+                                key,
+                                primary_key);
   }
 
  private:

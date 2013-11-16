@@ -814,7 +814,8 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
     int32 ipc_cursor_id,
     int32 ipc_thread_id,
     int32 ipc_callbacks_id,
-    const IndexedDBKey& key) {
+    const IndexedDBKey& key,
+    const IndexedDBKey& primary_key) {
   DCHECK(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBCursor* idb_cursor =
@@ -823,7 +824,10 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
     return;
 
   idb_cursor->Continue(
-      make_scoped_ptr(new IndexedDBKey(key)),
+      key.IsValid() ? make_scoped_ptr(new IndexedDBKey(key))
+                    : scoped_ptr<IndexedDBKey>(),
+      primary_key.IsValid() ? make_scoped_ptr(new IndexedDBKey(primary_key))
+                            : scoped_ptr<IndexedDBKey>(),
       new IndexedDBCallbacks(
           parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
 }

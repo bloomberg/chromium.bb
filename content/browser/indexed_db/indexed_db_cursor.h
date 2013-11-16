@@ -28,6 +28,7 @@ class CONTENT_EXPORT IndexedDBCursor
 
   void Advance(uint32 count, scoped_refptr<IndexedDBCallbacks> callbacks);
   void Continue(scoped_ptr<IndexedDBKey> key,
+                scoped_ptr<IndexedDBKey> primary_key,
                 scoped_refptr<IndexedDBCallbacks> callbacks);
   void PrefetchContinue(int number_to_fetch,
                         scoped_refptr<IndexedDBCallbacks> callbacks);
@@ -42,6 +43,7 @@ class CONTENT_EXPORT IndexedDBCursor
   void Close();
 
   void CursorIterationOperation(scoped_ptr<IndexedDBKey> key,
+                                scoped_ptr<IndexedDBKey> primary_key,
                                 scoped_refptr<IndexedDBCallbacks> callbacks,
                                 IndexedDBTransaction* transaction);
   void CursorAdvanceOperation(uint32 count,

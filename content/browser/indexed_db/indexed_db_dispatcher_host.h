@@ -219,7 +219,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnContinue(int32 ipc_object_store_id,
                     int32 ipc_thread_id,
                     int32 ipc_callbacks_id,
-                    const IndexedDBKey& key);
+                    const IndexedDBKey& key,
+                    const IndexedDBKey& primary_key);
     void OnPrefetch(int32 ipc_cursor_id,
                     int32 ipc_thread_id,
                     int32 ipc_callbacks_id,

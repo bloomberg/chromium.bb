@@ -180,6 +180,7 @@ void IndexedDBDispatcher::RequestIDBCursorAdvance(
 
 void IndexedDBDispatcher::RequestIDBCursorContinue(
     const IndexedDBKey& key,
+    const IndexedDBKey& primary_key,
     WebIDBCallbacks* callbacks_ptr,
     int32 ipc_cursor_id) {
   // Reset all cursor prefetch caches except for this cursor.
@@ -189,7 +190,7 @@ void IndexedDBDispatcher::RequestIDBCursorContinue(
 
   int32 ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   Send(new IndexedDBHostMsg_CursorContinue(
-      ipc_cursor_id, CurrentWorkerId(), ipc_callbacks_id, key));
+      ipc_cursor_id, CurrentWorkerId(), ipc_callbacks_id, key, primary_key));
 }
 
 void IndexedDBDispatcher::RequestIDBCursorPrefetch(

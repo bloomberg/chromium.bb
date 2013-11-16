@@ -31,6 +31,7 @@ IndexedDBCursor::~IndexedDBCursor() {
 }
 
 void IndexedDBCursor::Continue(scoped_ptr<IndexedDBKey> key,
+                               scoped_ptr<IndexedDBKey> primary_key,
                                scoped_refptr<IndexedDBCallbacks> callbacks) {
   IDB_TRACE("IndexedDBCursor::Continue");
 
@@ -39,6 +40,7 @@ void IndexedDBCursor::Continue(scoped_ptr<IndexedDBKey> key,
       base::Bind(&IndexedDBCursor::CursorIterationOperation,
                  this,
                  base::Passed(&key),
+                 base::Passed(&primary_key),
                  callbacks));
 }
 
@@ -68,17 +70,19 @@ void IndexedDBCursor::CursorAdvanceOperation(
 
 void IndexedDBCursor::CursorIterationOperation(
     scoped_ptr<IndexedDBKey> key,
+    scoped_ptr<IndexedDBKey> primary_key,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* /*transaction*/) {
   IDB_TRACE("IndexedDBCursor::CursorIterationOperation");
   if (!cursor_ ||
-      !cursor_->Continue(key.get(), IndexedDBBackingStore::Cursor::SEEK)) {
+      !cursor_->Continue(
+           key.get(), primary_key.get(), IndexedDBBackingStore::Cursor::SEEK)) {
     cursor_.reset();
     callbacks->OnSuccess(static_cast<std::string*>(NULL));
     return;
   }
 
-  callbacks->OnSuccess(this->key(), primary_key(), Value());
+  callbacks->OnSuccess(this->key(), this->primary_key(), Value());
 }
 
 void IndexedDBCursor::PrefetchContinue(

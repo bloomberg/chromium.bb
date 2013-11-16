@@ -396,6 +396,11 @@ class IndexDataKey {
                             int64 object_store_id,
                             int64 index_id,
                             const IndexedDBKey& user_key);
+  static std::string Encode(int64 database_id,
+                            int64 object_store_id,
+                            int64 index_id,
+                            const IndexedDBKey& user_key,
+                            const IndexedDBKey& user_primary_key);
   static std::string EncodeMinKey(int64 database_id,
                                   int64 object_store_id,
                                   int64 index_id);

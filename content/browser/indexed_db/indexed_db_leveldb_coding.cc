@@ -1731,6 +1731,23 @@ std::string IndexDataKey::Encode(int64 database_id,
       database_id, object_store_id, index_id, encoded_key, MinIDBKey(), 0);
 }
 
+std::string IndexDataKey::Encode(int64 database_id,
+                                 int64 object_store_id,
+                                 int64 index_id,
+                                 const IndexedDBKey& user_key,
+                                 const IndexedDBKey& user_primary_key) {
+  std::string encoded_key;
+  EncodeIDBKey(user_key, &encoded_key);
+  std::string encoded_primary_key;
+  EncodeIDBKey(user_primary_key, &encoded_primary_key);
+  return Encode(database_id,
+                object_store_id,
+                index_id,
+                encoded_key,
+                encoded_primary_key,
+                0);
+}
+
 std::string IndexDataKey::EncodeMinKey(int64 database_id,
                                        int64 object_store_id,
                                        int64 index_id) {

@@ -56,12 +56,20 @@ void RendererWebIDBCursorImpl::advance(unsigned long count,
 void RendererWebIDBCursorImpl::continueFunction(
     const WebIDBKey& key,
     WebIDBCallbacks* callbacks_ptr) {
+  continueFunction(key, WebIDBKey::createNull(), callbacks_ptr);
+}
+
+void RendererWebIDBCursorImpl::continueFunction(
+    const WebIDBKey& key,
+    const WebIDBKey& primary_key,
+    WebIDBCallbacks* callbacks_ptr) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  if (key.keyType() == blink::WebIDBKeyTypeNull) {
-    // No key, so this would qualify for a prefetch.
+  if (key.keyType() == blink::WebIDBKeyTypeNull &&
+      primary_key.keyType() == blink::WebIDBKeyTypeNull) {
+    // No key(s), so this would qualify for a prefetch.
     ++continue_count_;
 
     if (!prefetch_keys_.empty()) {
@@ -88,8 +96,10 @@ void RendererWebIDBCursorImpl::continueFunction(
     ResetPrefetchCache();
   }
 
-  dispatcher->RequestIDBCursorContinue(
-      IndexedDBKeyBuilder::Build(key), callbacks.release(), ipc_cursor_id_);
+  dispatcher->RequestIDBCursorContinue(IndexedDBKeyBuilder::Build(key),
+                                       IndexedDBKeyBuilder::Build(primary_key),
+                                       callbacks.release(),
+                                       ipc_cursor_id_);
 }
 
 void RendererWebIDBCursorImpl::postSuccessHandlerCallback() {

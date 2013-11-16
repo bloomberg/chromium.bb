@@ -32,6 +32,9 @@ class CONTENT_EXPORT RendererWebIDBCursorImpl
   virtual void advance(unsigned long count, blink::WebIDBCallbacks* callback);
   virtual void continueFunction(const blink::WebIDBKey& key,
                                 blink::WebIDBCallbacks* callback);
+  virtual void continueFunction(const blink::WebIDBKey& key,
+                                const blink::WebIDBKey& primary_key,
+                                blink::WebIDBCallbacks* callback);
   virtual void postSuccessHandlerCallback();
 
   void SetPrefetchData(const std::vector<IndexedDBKey>& keys,

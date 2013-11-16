@@ -218,8 +218,13 @@ class CONTENT_EXPORT IndexedDBBackingStore
     };
 
     const IndexedDBKey& key() const { return *current_key_; }
-    bool Continue() { return Continue(NULL, SEEK); }
-    bool Continue(const IndexedDBKey* key, IteratorState state);
+    bool Continue() { return Continue(NULL, NULL, SEEK); }
+    bool Continue(const IndexedDBKey* key, IteratorState state) {
+      return Continue(key, NULL, state);
+    }
+    bool Continue(const IndexedDBKey* key,
+                  const IndexedDBKey* primary_key,
+                  IteratorState state);
     bool Advance(uint32 count);
     bool FirstSeek();
 
@@ -235,6 +240,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
     explicit Cursor(const IndexedDBBackingStore::Cursor* other);
 
     virtual std::string EncodeKey(const IndexedDBKey& key) = 0;
+    virtual std::string EncodeKey(const IndexedDBKey& key,
+                                  const IndexedDBKey& primary_key) = 0;
 
     bool IsPastBounds() const;
     bool HaveEnteredRange() const;
