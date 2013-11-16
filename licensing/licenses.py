@@ -35,7 +35,7 @@ Recommended build:
   # This will take about 10mn on a Z620.
   ./build_packages --board=$board --nowithautotest --nowithtest --nowithdev \
                    --nowithfactory
-  cd ~/trunk/chromite/license-generation
+  cd ~/trunk/chromite/licensing
   %(prog)s [--debug] $board out.html 2>&1 | tee output.sav
 
 For debugging during development, you can get a faster run of just one package
@@ -71,7 +71,6 @@ import codecs
 import logging
 import os
 import re
-import sys
 
 from chromite.buildbot import portage_utilities
 from chromite.lib import commandline
@@ -1167,6 +1166,3 @@ this run.
 List of packages with errors:
 %s
   """ % '\n'.join(licensing.incomplete_packages))
-
-if __name__ == '__main__':
-  main(sys.argv[1:])
