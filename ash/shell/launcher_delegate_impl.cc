@@ -21,10 +21,6 @@ LauncherDelegateImpl::LauncherDelegateImpl(WindowWatcher* watcher)
 LauncherDelegateImpl::~LauncherDelegateImpl() {
 }
 
-ash::LauncherID LauncherDelegateImpl::GetIDByWindow(aura::Window* window) {
-  return watcher_ ? watcher_->GetIDByWindow(window) : 0;
-}
-
 void LauncherDelegateImpl::OnLauncherCreated(Launcher* launcher) {
 }
 

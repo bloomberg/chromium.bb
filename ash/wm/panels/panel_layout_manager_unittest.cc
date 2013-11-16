@@ -12,6 +12,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_types.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -224,9 +225,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test_api.SetAnimationDuration(1);
     test_api.RunMessageLoopUntilAnimationsDone();
     ShelfModel* model = test::ShellTestApi(Shell::GetInstance()).shelf_model();
-    test::TestLauncherDelegate* launcher_delegate =
-        test::TestLauncherDelegate::instance();
-    int index = model->ItemIndexByID(launcher_delegate->GetIDByWindow(window));
+    int index = model->ItemIndexByID(GetLauncherIDForWindow(window));
     gfx::Rect bounds = test_api.GetButton(index)->GetBoundsInScreen();
 
     aura::test::EventGenerator& event_generator = GetEventGenerator();

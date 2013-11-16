@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
@@ -45,6 +46,13 @@ void BrowserStatusMonitor::LocalWebContentsObserver::DidNavigateMainFrame(
 
   monitor_->UpdateAppItemState(web_contents(), state);
   monitor_->UpdateBrowserItemState();
+
+  // Navigating may change the LauncherID associated with the WebContents.
+  if (browser->tab_strip_model()->GetActiveWebContents() == web_contents()) {
+    ash::SetLauncherIDForWindow(
+        monitor_->GetLauncherIDForWebContents(web_contents()),
+        browser->window()->GetNativeWindow());
+  }
 }
 
 BrowserStatusMonitor::BrowserStatusMonitor(
@@ -227,6 +235,9 @@ void BrowserStatusMonitor::ActiveTabChanged(content::WebContents* old_contents,
         ChromeLauncherController::APP_STATE_ACTIVE;
     UpdateAppItemState(new_contents, state);
     UpdateBrowserItemState();
+    ash::SetLauncherIDForWindow(
+        GetLauncherIDForWebContents(new_contents),
+        browser->window()->GetNativeWindow());
   }
 }
 
@@ -250,6 +261,14 @@ void BrowserStatusMonitor::TabReplacedAt(TabStripModel* tab_strip_model,
       (tab_strip_model->GetActiveWebContents() == new_contents))
     state = ChromeLauncherController::APP_STATE_WINDOW_ACTIVE;
   UpdateAppItemState(new_contents, state);
+  UpdateBrowserItemState();
+
+  if (tab_strip_model->GetActiveWebContents() == new_contents) {
+    ash::SetLauncherIDForWindow(
+        GetLauncherIDForWebContents(new_contents),
+        browser->window()->GetNativeWindow());
+  }
+
   AddWebContentsObserver(new_contents);
 }
 
@@ -314,4 +333,9 @@ void BrowserStatusMonitor::RemoveWebContentsObserver(
       webcontents_to_observer_map_.end());
   delete webcontents_to_observer_map_[contents];
   webcontents_to_observer_map_.erase(contents);
+}
+
+ash::LauncherID BrowserStatusMonitor::GetLauncherIDForWebContents(
+    content::WebContents* contents) {
+  return launcher_controller_->GetLauncherIDForWebContents(contents);
 }

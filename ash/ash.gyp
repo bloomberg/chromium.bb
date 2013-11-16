@@ -222,6 +222,8 @@
         'shelf/shelf_tooltip_manager.cc',
         'shelf/shelf_tooltip_manager.h',
         'shelf/shelf_types.h',
+        'shelf/shelf_util.cc',
+        'shelf/shelf_util.h',
         'shelf/shelf_view.cc',
         'shelf/shelf_view.h',
         'shelf/shelf_widget.cc',

@@ -9,6 +9,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_model_util.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -74,9 +75,13 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
     Browser* browser = chrome::FindBrowserWithWindow(window);
     if (IsBrowserRepresentedInBrowserList(browser)) {
       browser_status = ash::STATUS_ACTIVE;
-      // If an app is running in active window, browser item status cannot be
-      // active.
-      if (launcher_controller()->GetIDByWindow(window) != browser_item.id)
+      // If an app that has item is running in active WebContents, browser item
+      // status cannot be active.
+      content::WebContents* contents =
+          browser->tab_strip_model()->GetActiveWebContents();
+      if (contents &&
+          (launcher_controller()->GetLauncherIDForWebContents(contents) !=
+              browser_item.id))
         browser_status = ash::STATUS_RUNNING;
     }
   }
@@ -97,21 +102,6 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
     browser_item.status = browser_status;
     model->Set(browser_index, browser_item);
   }
-}
-
-bool BrowserShortcutLauncherItemController::IsCurrentlyShownInWindow(
-    aura::Window* window) const {
-  const BrowserList* ash_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  for (BrowserList::const_iterator it = ash_browser_list->begin();
-       it != ash_browser_list->end(); ++it) {
-    // During browser creation it is possible that this function is called
-    // before a browser got a window (see crbug.com/263563).
-    if ((*it)->window() &&
-        (*it)->window()->GetNativeWindow() == window)
-      return true;
-  }
-  return false;
 }
 
 bool BrowserShortcutLauncherItemController::IsOpen() const {

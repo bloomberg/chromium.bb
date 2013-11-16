@@ -9,6 +9,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_types.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -145,7 +146,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
     for (std::vector<aura::Window*>::const_iterator iter =
          window_order.begin(); iter != window_order.end();
          ++iter, ++panel_index) {
-      LauncherID id = launcher_delegate_->GetIDByWindow(*iter);
+      LauncherID id = GetLauncherIDForWindow(*iter);
       EXPECT_EQ(id, model_->items()[panel_index].id);
     }
   }

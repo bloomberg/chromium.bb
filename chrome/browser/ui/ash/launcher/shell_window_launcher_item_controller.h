@@ -55,7 +55,6 @@ class ShellWindowLauncherItemController : public LauncherItemController,
   const std::string& app_launcher_id() const { return app_launcher_id_; }
 
   // LauncherItemController overrides:
-  virtual bool IsCurrentlyShownInWindow(aura::Window* window) const OVERRIDE;
   virtual bool IsOpen() const OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
   virtual void Launch(ash::LaunchSource source, int event_flags) OVERRIDE;

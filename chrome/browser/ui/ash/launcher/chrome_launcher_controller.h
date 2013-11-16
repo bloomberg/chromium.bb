@@ -270,6 +270,10 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // have changed,
   void UpdateAppState(content::WebContents* contents, AppState app_state);
 
+  // Returns LauncherID for |contents|. If |contents| is not an app or is not
+  // pinned, returns the id of browser shrotcut.
+  ash::LauncherID GetLauncherIDForWebContents(content::WebContents* contents);
+
   // Limits application refocusing to urls that match |url| for |id|.
   void SetRefocusURLPatternForTest(ash::LauncherID id, const GURL& url);
 
@@ -283,7 +287,6 @@ class ChromeLauncherController : public ash::LauncherDelegate,
                                         bool allow_minimize);
 
   // ash::LauncherDelegate overrides:
-  virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
   virtual void OnLauncherCreated(ash::Launcher* launcher) OVERRIDE;
   virtual void OnLauncherDestroyed(ash::Launcher* launcher) OVERRIDE;
   virtual ash::LauncherID GetLauncherIDForAppID(

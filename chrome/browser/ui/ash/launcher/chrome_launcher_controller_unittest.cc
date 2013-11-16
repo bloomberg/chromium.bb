@@ -229,9 +229,6 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   virtual ~TestV2AppLauncherItemController() {}
 
   // Override for LauncherItemController:
-  virtual bool IsCurrentlyShownInWindow(aura::Window* window) const OVERRIDE {
-    return true;
-  }
   virtual bool IsOpen() const OVERRIDE { return true; }
   virtual bool IsVisible() const OVERRIDE { return true; }
   virtual void Launch(ash::LaunchSource source, int event_flags) OVERRIDE {}

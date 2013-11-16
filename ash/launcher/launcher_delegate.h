@@ -21,13 +21,6 @@ class ASH_EXPORT LauncherDelegate {
   // Launcher owns the delegate.
   virtual ~LauncherDelegate() {}
 
-  // Returns the id of the item associated with the specified window, or 0 if
-  // there isn't one.
-  // Note: Windows of tabbed browsers will return the |LauncherID| of the
-  // currently active tab or selected tab.
-  // TODO(simon.hong81): Remove this and handle in LauncherItemDelegateManager.
-  virtual LauncherID GetIDByWindow(aura::Window* window) = 0;
-
   // Callback used to allow delegate to perform initialization actions that
   // depend on the Launcher being in a known state.
   virtual void OnLauncherCreated(Launcher* launcher) = 0;

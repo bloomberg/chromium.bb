@@ -36,7 +36,6 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   std::vector<content::WebContents*> GetRunningApplications();
 
   // LauncherItemController overrides:
-  virtual bool IsCurrentlyShownInWindow(aura::Window* window) const OVERRIDE;
   virtual bool IsOpen() const OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
   virtual void Launch(ash::LaunchSource source, int event_flags) OVERRIDE;

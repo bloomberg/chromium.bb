@@ -56,8 +56,7 @@ class ASH_EXPORT LauncherItemDelegateManager : public ShelfModelObserver {
   // Remove and destroy LauncherItemDelegate for |id|.
   void RemoveLauncherItemDelegate(ash::LauncherID id);
 
-  // Clear all exsiting LauncherItemDelegate for test.
-  // Not owned by LauncherItemDelegate.
+  // Owned by Shell.
   ShelfModel* model_;
 
   LauncherIDToItemDelegateMap id_to_item_delegate_map_;

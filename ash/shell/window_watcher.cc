@@ -8,6 +8,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell/window_watcher_launcher_item_delegate.h"
@@ -90,15 +91,6 @@ aura::Window* WindowWatcher::GetWindowByID(ash::LauncherID id) {
   return i != id_to_window_.end() ? i->second : NULL;
 }
 
-ash::LauncherID WindowWatcher::GetIDByWindow(aura::Window* window) const {
-  for (IDToWindow::const_iterator i = id_to_window_.begin();
-       i != id_to_window_.end(); ++i) {
-    if (i->second == window)
-      return i->first;
-  }
-  return 0;  // TODO: add a constant for this.
-}
-
 // aura::WindowObserver overrides:
 void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   if (new_window->type() != aura::client::WINDOW_TYPE_NORMAL &&
@@ -130,6 +122,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   scoped_ptr<LauncherItemDelegate> delegate(
       new WindowWatcherLauncherItemDelegate(id, this));
   manager->SetLauncherItemDelegate(id, delegate.Pass());
+  SetLauncherIDForWindow(id, new_window);
 }
 
 void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {

@@ -1016,6 +1016,26 @@ void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
   }
 }
 
+ash::LauncherID ChromeLauncherController::GetLauncherIDForWebContents(
+    content::WebContents* contents) {
+  DCHECK(contents);
+
+  std::string app_id = app_tab_helper_->GetAppID(contents);
+
+  if (app_id.empty() && ContentCanBeHandledByGmailApp(contents))
+    app_id = kGmailAppId;
+
+  ash::LauncherID id = GetLauncherIDForAppID(app_id);
+
+  if (app_id.empty() || !id) {
+    int browser_index =
+        ash::GetShelfItemIndexForType(ash::TYPE_BROWSER_SHORTCUT, *model_);
+    return model_->items()[browser_index].id;
+  }
+
+  return id;
+}
+
 void ChromeLauncherController::SetRefocusURLPatternForTest(ash::LauncherID id,
                                                            const GURL& url) {
   DCHECK(HasItemController(id));
@@ -1077,28 +1097,6 @@ void ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
     window->Show();
     window->Activate();
   }
-}
-
-ash::LauncherID ChromeLauncherController::GetIDByWindow(aura::Window* window) {
-  int browser_index =
-      ash::GetShelfItemIndexForType(ash::TYPE_BROWSER_SHORTCUT, *model_);
-  DCHECK_GE(browser_index, 0);
-  ash::LauncherID browser_id = model_->items()[browser_index].id;
-
-  IDToItemControllerMap::const_iterator i = id_to_item_controller_map_.begin();
-  for (; i != id_to_item_controller_map_.end(); ++i) {
-    // Since a |window| can be used by multiple applications, an explicit
-    // application always gets chosen over the generic browser.
-    if (i->first != browser_id && i->second->IsCurrentlyShownInWindow(window))
-      return i->first;
-  }
-
-  if (i == id_to_item_controller_map_.end() &&
-      GetBrowserShortcutLauncherItemController()->
-          IsCurrentlyShownInWindow(window))
-    return browser_id;
-
-  return 0;
 }
 
 void ChromeLauncherController::OnLauncherCreated(ash::Launcher* launcher) {

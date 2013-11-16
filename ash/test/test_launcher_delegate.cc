@@ -6,6 +6,7 @@
 
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/test/test_launcher_item_delegate.h"
 #include "base/strings/string_util.h"
@@ -40,8 +41,7 @@ void TestLauncherDelegate::AddLauncherItem(
     item.type = ash::TYPE_APP_PANEL;
   else
     item.type = ash::TYPE_PLATFORM_APP;
-  DCHECK(window_to_id_.find(window) == window_to_id_.end());
-  window_to_id_[window] = model_->next_id();
+  LauncherID id = model_->next_id();
   item.status = status;
   model_->Add(item);
   window->AddObserver(this);
@@ -51,17 +51,17 @@ void TestLauncherDelegate::AddLauncherItem(
   // |manager| owns TestLauncherItemDelegate.
   scoped_ptr<LauncherItemDelegate> delegate(
       new TestLauncherItemDelegate(window));
-  manager->SetLauncherItemDelegate(window_to_id_[window], delegate.Pass());
+  manager->SetLauncherItemDelegate(id, delegate.Pass());
+  SetLauncherIDForWindow(id, window);
 }
 
 void TestLauncherDelegate::RemoveLauncherItemForWindow(aura::Window* window) {
-  ash::LauncherID id = GetIDByWindow(window);
+  ash::LauncherID id = GetLauncherIDForWindow(window);
   if (id == 0)
     return;
   int index = model_->ItemIndexByID(id);
   DCHECK_NE(-1, index);
   model_->RemoveItemAt(index);
-  window_to_id_.erase(window);
   window->RemoveObserver(this);
 }
 
@@ -76,13 +76,6 @@ void TestLauncherDelegate::OnWindowHierarchyChanging(
   // then remove the launcher item.
   if (!params.new_parent)
     RemoveLauncherItemForWindow(params.target);
-}
-
-ash::LauncherID TestLauncherDelegate::GetIDByWindow(aura::Window* window) {
-  WindowToID::const_iterator found = window_to_id_.find(window);
-  if (found == window_to_id_.end())
-    return 0;
-  return found->second;
 }
 
 void TestLauncherDelegate::OnLauncherCreated(Launcher* launcher) {

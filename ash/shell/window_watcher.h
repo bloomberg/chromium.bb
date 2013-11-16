@@ -32,7 +32,6 @@ class WindowWatcher : public aura::WindowObserver,
   virtual ~WindowWatcher();
 
   aura::Window* GetWindowByID(ash::LauncherID id);
-  ash::LauncherID GetIDByWindow(aura::Window* window) const;
 
   // aura::WindowObserver overrides:
   virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE;

@@ -109,14 +109,6 @@ void ShellWindowLauncherItemController::SetActiveWindow(aura::Window* window) {
     last_active_shell_window_ = *iter;
 }
 
-bool ShellWindowLauncherItemController::IsCurrentlyShownInWindow(
-    aura::Window* window) const {
-  ShellWindowList::const_iterator iter =
-      std::find_if(shell_windows_.begin(), shell_windows_.end(),
-                   ShellWindowHasWindow(window));
-  return iter != shell_windows_.end();
-}
-
 bool ShellWindowLauncherItemController::IsOpen() const {
   return !shell_windows_.empty();
 }

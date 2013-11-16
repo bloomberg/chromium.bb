@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_controller.h"
 
 #include "apps/shell_window.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/stringprintf.h"
@@ -176,6 +177,7 @@ void ShellWindowLauncherController::RegisterApp(ShellWindow* shell_window) {
     app_controller_map_[app_launcher_id] = controller;
   }
   owner_->SetItemStatus(launcher_id, status);
+  ash::SetLauncherIDForWindow(launcher_id, window);
 }
 
 void ShellWindowLauncherController::UnregisterApp(aura::Window* window) {

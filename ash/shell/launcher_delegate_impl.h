@@ -25,7 +25,6 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
   void set_watcher(WindowWatcher* watcher) { watcher_ = watcher; }
 
   // LauncherDelegate overrides:
-  virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
   virtual void OnLauncherCreated(Launcher* launcher) OVERRIDE;
   virtual void OnLauncherDestroyed(Launcher* launcher) OVERRIDE;
   virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE;

@@ -16,6 +16,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_navigator.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -81,7 +82,7 @@ void Launcher::SetAlignment(ShelfAlignment alignment) {
 }
 
 gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
-  LauncherID id = delegate_->GetIDByWindow(window);
+  LauncherID id = GetLauncherIDForWindow(window);
   gfx::Rect bounds(shelf_view_->GetIdealBoundsOfItemIcon(id));
   gfx::Point screen_origin;
   views::View::ConvertPointToScreen(shelf_view_, &screen_origin);
@@ -93,7 +94,7 @@ gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
 
 void Launcher::UpdateIconPositionForWindow(aura::Window* window) {
   shelf_view_->UpdatePanelIconPosition(
-      delegate_->GetIDByWindow(window),
+      GetLauncherIDForWindow(window),
       ash::ScreenAsh::ConvertRectFromScreen(
           shelf_widget()->GetNativeView(),
           window->GetBoundsInScreen()).CenterPoint());
