@@ -41,10 +41,6 @@ enum V8ErrorType {
 class V8ThrowException {
 public:
 
-    static v8::Handle<v8::Value> createDOMException(int ec, v8::Isolate* isolate)
-    {
-        return createDOMException(ec, String(), v8::Handle<v8::Object>(), isolate);
-    }
     static v8::Handle<v8::Value> createDOMException(int ec, const String& message, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
     {
         return createDOMException(ec, message, String(), creationContext, isolate);
