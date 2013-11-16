@@ -130,24 +130,24 @@ StyleResolver::StyleResolver(Document& document)
     , m_styleResolverStatsSequence(0)
     , m_accessCount(0)
 {
-    Element* root = document.documentElement();
-
     m_fontSelector->registerForInvalidationCallbacks(this);
 
-    CSSDefaultStyleSheets::initDefaultStyle(root);
+    // FIXME: Why do this here instead of as part of resolving style on the root?
+    CSSDefaultStyleSheets::loadDefaultStylesheetIfNecessary();
 
-    // construct document root element default style. this is needed
+    // Construct document root element default style. This is needed
     // to evaluate media queries that contain relative constraints, like "screen and (max-width: 10em)"
-    // This is here instead of constructor, because when constructor is run,
-    // document doesn't have documentElement
-    // NOTE: this assumes that element that gets passed to styleForElement -call
-    // is always from the document that owns the style selector
+    // This is here instead of constructor because when constructor is run,
+    // Document doesn't have documentElement.
+    // NOTE: This assumes that element that gets passed to the styleForElement call
+    // is always from the document that owns the StyleResolver.
     FrameView* view = document.view();
     if (view)
         m_medium = adoptPtr(new MediaQueryEvaluator(view->mediaType()));
     else
         m_medium = adoptPtr(new MediaQueryEvaluator("all"));
 
+    Element* root = document.documentElement();
     if (root)
         m_rootDefaultStyle = styleForElement(root, 0, DisallowStyleSharing, MatchOnlyUserAgentRules);
 
@@ -540,10 +540,6 @@ void StyleResolver::matchWatchSelectorRules(ElementRuleCollector& collector)
 void StyleResolver::matchUARules(ElementRuleCollector& collector)
 {
     collector.setMatchingUARules(true);
-
-    // First we match rules from the user agent sheet.
-    if (CSSDefaultStyleSheets::simpleDefaultStyleSheet)
-        collector.matchedResult().isCacheable = false;
 
     RuleSet* userAgentStyleSheet = m_medium->mediaTypeMatchSpecific("print")
         ? CSSDefaultStyleSheets::defaultPrintStyle : CSSDefaultStyleSheets::defaultStyle;
