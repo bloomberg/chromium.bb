@@ -1534,6 +1534,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableBenchmarking,
       switches::kEnableNaCl,
       switches::kEnableNetBenchmarking,
+      switches::kEnableProxyPreconnectHints,
       switches::kEnableWatchdog,
       switches::kMemoryProfiling,
       switches::kMessageLoopHistogrammer,

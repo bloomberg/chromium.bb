@@ -14,12 +14,14 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/net/predictor.h"
+#include "chrome/browser/net/spdyproxy/proxy_advisor.h"
 #include "chrome/browser/net/url_info.h"
 #include "chrome/common/net/predictor_common.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/address_list.h"
 #include "net/base/winsock_init.h"
 #include "net/dns/mock_host_resolver.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -35,19 +37,23 @@ typedef base::RepeatingTimer<WaitForResolutionHelper> HelperTimer;
 class WaitForResolutionHelper {
  public:
   WaitForResolutionHelper(Predictor* predictor, const UrlList& hosts,
-                          HelperTimer* timer)
+                          HelperTimer* timer, int checks_until_quit)
       : predictor_(predictor),
         hosts_(hosts),
-        timer_(timer) {
+        timer_(timer),
+        checks_until_quit_(checks_until_quit) {
   }
 
-  void Run() {
-    for (UrlList::const_iterator i = hosts_.begin(); i != hosts_.end(); ++i)
-      if (predictor_->GetResolutionDuration(*i) ==
-          UrlInfo::NullDuration())
-        return;  // We don't have resolution for that host.
+  void CheckIfResolutionsDone() {
+    if (--checks_until_quit_ > 0) {
+      for (UrlList::const_iterator i = hosts_.begin(); i != hosts_.end(); ++i)
+        if (predictor_->GetResolutionDuration(*i) ==
+            UrlInfo::NullDuration())
+          return;  // We don't have resolution for that host.
+    }
 
-    // When all hostnames have been resolved, exit the loop.
+    // When all hostnames have been resolved, or we've hit the limit,
+    // exit the loop.
     timer_->Stop();
     base::MessageLoop::current()->Quit();
     delete timer_;
@@ -58,6 +64,7 @@ class WaitForResolutionHelper {
   Predictor* predictor_;
   const UrlList hosts_;
   HelperTimer* timer_;
+  int checks_until_quit_;
 };
 
 class PredictorTest : public testing::Test {
@@ -89,9 +96,19 @@ class PredictorTest : public testing::Test {
 
   void WaitForResolution(Predictor* predictor, const UrlList& hosts) {
     HelperTimer* timer = new HelperTimer();
+    // By default allow the loop to run for a minute -- 600 iterations.
     timer->Start(FROM_HERE, TimeDelta::FromMilliseconds(100),
-                 new WaitForResolutionHelper(predictor, hosts, timer),
-                 &WaitForResolutionHelper::Run);
+                 new WaitForResolutionHelper(predictor, hosts, timer, 600),
+                 &WaitForResolutionHelper::CheckIfResolutionsDone);
+    base::MessageLoop::current()->Run();
+  }
+
+  void WaitForResolutionWithLimit(
+      Predictor* predictor, const UrlList& hosts, int limit) {
+    HelperTimer* timer = new HelperTimer();
+    timer->Start(FROM_HERE, TimeDelta::FromMilliseconds(100),
+                 new WaitForResolutionHelper(predictor, hosts, timer, limit),
+                 &WaitForResolutionHelper::CheckIfResolutionsDone);
     base::MessageLoop::current()->Run();
   }
 
@@ -678,5 +695,106 @@ TEST_F(PredictorTest, DiscardPredictorResults) {
 
   predictor.Shutdown();
 }
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+// Tests for the predictor with a proxy advisor
+
+class TestProxyAdvisor : public ProxyAdvisor {
+ public:
+  TestProxyAdvisor()
+      : ProxyAdvisor(NULL, NULL),
+        would_proxy_(false),
+        advise_count_(0),
+        would_proxy_count_(0) {
+  }
+
+  virtual ~TestProxyAdvisor() {}
+
+  virtual void Advise(const GURL& url,
+                      UrlInfo::ResolutionMotivation motivation,
+                      bool is_preconnect) OVERRIDE {
+    ++advise_count_;
+  }
+
+  virtual bool WouldProxyURL(const GURL& url) OVERRIDE {
+    ++would_proxy_count_;
+    return would_proxy_;
+  }
+
+  bool would_proxy_;
+  int advise_count_;
+  int would_proxy_count_;
+};
+
+TEST_F(PredictorTest, SingleLookupTestWithDisabledAdvisor) {
+  Predictor testing_master(true);
+  TestProxyAdvisor* advisor = new TestProxyAdvisor();
+  testing_master.SetHostResolver(host_resolver_.get());
+  testing_master.proxy_advisor_.reset(advisor);
+
+  GURL goog("http://www.google.com:80");
+
+  advisor->would_proxy_ = false;
+
+  UrlList names;
+  names.push_back(goog);
+  testing_master.ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
+
+  WaitForResolution(&testing_master, names);
+  EXPECT_TRUE(testing_master.WasFound(goog));
+  EXPECT_EQ(advisor->would_proxy_count_, 1);
+  EXPECT_EQ(advisor->advise_count_, 1);
+
+  base::MessageLoop::current()->RunUntilIdle();
+
+  testing_master.Shutdown();
+}
+
+TEST_F(PredictorTest, SingleLookupTestWithEnabledAdvisor) {
+  Predictor testing_master(true);
+  testing_master.SetHostResolver(host_resolver_.get());
+  TestProxyAdvisor* advisor = new TestProxyAdvisor();
+  testing_master.proxy_advisor_.reset(advisor);
+
+  GURL goog("http://www.google.com:80");
+
+  advisor->would_proxy_ = true;
+
+  UrlList names;
+  names.push_back(goog);
+
+  testing_master.ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
+
+  // Attempt to resolve a few times.
+  WaitForResolutionWithLimit(&testing_master, names, 10);
+
+  // Because the advisor indicated that the url would be proxied,
+  // no resolution should have occurred.
+  EXPECT_FALSE(testing_master.WasFound(goog));
+  EXPECT_EQ(advisor->would_proxy_count_, 1);
+  EXPECT_EQ(advisor->advise_count_, 1);
+
+  base::MessageLoop::current()->RunUntilIdle();
+
+  testing_master.Shutdown();
+}
+
+TEST_F(PredictorTest, TestSimplePreconnectAdvisor) {
+  Predictor testing_master(true);
+  testing_master.SetHostResolver(host_resolver_.get());
+  TestProxyAdvisor* advisor = new TestProxyAdvisor();
+  testing_master.proxy_advisor_.reset(advisor);
+
+  GURL goog("http://www.google.com:80");
+
+  testing_master.PreconnectUrl(goog, goog, UrlInfo::OMNIBOX_MOTIVATED, 2);
+
+  EXPECT_EQ(advisor->would_proxy_count_, 0);
+  EXPECT_EQ(advisor->advise_count_, 1);
+
+  testing_master.Shutdown();
+}
+
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 }  // namespace chrome_browser_net

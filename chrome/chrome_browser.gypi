@@ -1279,6 +1279,8 @@
         'browser/net/spdyproxy/data_reduction_proxy_settings_ios.h',
         'browser/net/spdyproxy/http_auth_handler_spdyproxy.cc',
         'browser/net/spdyproxy/http_auth_handler_spdyproxy.h',
+        'browser/net/spdyproxy/proxy_advisor.cc',
+        'browser/net/spdyproxy/proxy_advisor.h',
         'browser/net/sqlite_server_bound_cert_store.cc',
         'browser/net/sqlite_server_bound_cert_store.h',
         'browser/net/ssl_config_service_manager.h',
@@ -3248,6 +3250,8 @@
             'browser/metrics/variations/variations_request_scheduler_mobile.h',
             'browser/net/spdyproxy/data_reduction_proxy_settings.cc',
             'browser/net/spdyproxy/data_reduction_proxy_settings.h',
+            'browser/net/spdyproxy/proxy_advisor.cc',
+            'browser/net/spdyproxy/proxy_advisor.h',
           ],
         }],
         ['OS=="android"', {

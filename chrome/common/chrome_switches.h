@@ -205,6 +205,7 @@ extern const char kDisablePeopleSearch[];
 extern const char kEnablePrecache[];
 extern const char kEnablePrivetLocalPrinting[];
 extern const char kEnableProfiling[];
+extern const char kEnableProxyPreconnectHints[];
 extern const char kEnableQuic[];
 extern const char kEnableQuicHttps[];
 extern const char kEnableQuickofficeViewing[];

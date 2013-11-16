@@ -721,6 +721,9 @@ const char kEnablePrivetLocalPrinting[]     = "enable-privet-local-printing";
 // during chrome_browser_main.
 const char kEnableProfiling[]               = "enable-profiling";
 
+// Enables forwarding preconnection hints to suitable proxy servers.
+const char kEnableProxyPreconnectHints[]    = "enable-proxy-preconnect-hints";
+
 // Enables support for the QUIC protocol.  This is a temporary testing flag.
 const char kEnableQuic[]                    = "enable-quic";
 

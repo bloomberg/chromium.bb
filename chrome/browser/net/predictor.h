@@ -29,6 +29,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/net/referrer.h"
+#include "chrome/browser/net/spdyproxy/proxy_advisor.h"
 #include "chrome/browser/net/timed_cache.h"
 #include "chrome/browser/net/url_info.h"
 #include "chrome/common/net/predictor_common.h"
@@ -267,6 +268,10 @@ class Predictor {
     host_resolver_ = host_resolver;
   }
   // Used for testing.
+  void SetProxyAdvisor(ProxyAdvisor* proxy_advisor) {
+    proxy_advisor_.reset(proxy_advisor);
+  }
+  // Used for testing.
   size_t max_concurrent_dns_lookups() const {
     return max_concurrent_dns_lookups_;
   }
@@ -295,6 +300,9 @@ class Predictor {
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueuePushPopTest);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueueReorderTest);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, ReferrerSerializationTrimTest);
+  FRIEND_TEST_ALL_PREFIXES(PredictorTest, SingleLookupTestWithDisabledAdvisor);
+  FRIEND_TEST_ALL_PREFIXES(PredictorTest, SingleLookupTestWithEnabledAdvisor);
+  FRIEND_TEST_ALL_PREFIXES(PredictorTest, TestSimplePreconnectAdvisor);
   friend class WaitForResolutionHelper;  // For testing.
 
   class LookupRequest;
@@ -405,6 +413,13 @@ class Predictor {
   // Only for testing;
   size_t peak_pending_lookups() const { return peak_pending_lookups_; }
 
+  // If a proxy advisor is defined, let it know that |url| will be prefetched or
+  // preconnected to. Can be called on either UI or IO threads and will post to
+  // the IO thread if necessary, invoking AdviseProxyOnIOThread().
+  void AdviseProxy(const GURL& url,
+                   UrlInfo::ResolutionMotivation motivation,
+                   bool is_preconnect);
+
   // ------------- Start IO thread methods.
 
   // Perform actual resolution or preconnection to subresources now.  This is
@@ -421,9 +436,11 @@ class Predictor {
                       const GURL& url, bool found);
 
   // Queue hostname for resolution.  If queueing was done, return the pointer
-  // to the queued instance, otherwise return NULL.
+  // to the queued instance, otherwise return NULL. If the proxy advisor is
+  // enabled, and |url| is likely to be proxied, the hostname will not be
+  // queued as the browser is not expected to fetch it directly.
   UrlInfo* AppendToResolutionQueue(const GURL& url,
-      UrlInfo::ResolutionMotivation motivation);
+                                   UrlInfo::ResolutionMotivation motivation);
 
   // Check to see if too much queuing delay has been noted for the given info,
   // which indicates that there is "congestion" or growing delay in handling the
@@ -457,6 +474,12 @@ class Predictor {
   // If it does not process all the URLs in that vector, it posts a task to
   // continue with them shortly (i.e., it yeilds and continues).
   void IncrementalTrimReferrers(bool trim_all_now);
+
+  // If a proxy advisor is defined, let it know that |url| will be prefetched or
+  // preconnected to.
+  void AdviseProxyOnIOThread(const GURL& url,
+                             UrlInfo::ResolutionMotivation motivation,
+                             bool is_preconnect);
 
   // ------------- End IO thread methods.
 
@@ -531,6 +554,8 @@ class Predictor {
   base::TimeTicks next_trim_time_;
 
   scoped_ptr<base::WeakPtrFactory<Predictor> > weak_factory_;
+
+  scoped_ptr<ProxyAdvisor> proxy_advisor_;
 
   DISALLOW_COPY_AND_ASSIGN(Predictor);
 };
