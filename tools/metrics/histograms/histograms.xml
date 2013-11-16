@@ -21220,9 +21220,12 @@ other types of suffix sets.
   <int value="42" label="Credit card: date, Unknown"/>
   <int value="43" label="Credit card: date, Match"/>
   <int value="44" label="Credit card: date, Mismatch"/>
-  <int value="45" label="Password, Unknown"/>
-  <int value="46" label="Password, Match"/>
-  <int value="47" label="Password, Mismatch"/>
+  <int value="45" label="Credit card: type, Unknown"/>
+  <int value="46" label="Credit card: type, Match"/>
+  <int value="47" label="Credit card: type, Mismatch"/>
+  <int value="48" label="Password, Unknown"/>
+  <int value="49" label="Password, Match"/>
+  <int value="50" label="Password, Mismatch"/>
 </enum>
 
 <enum name="AutofillUserHappiness" type="int">
