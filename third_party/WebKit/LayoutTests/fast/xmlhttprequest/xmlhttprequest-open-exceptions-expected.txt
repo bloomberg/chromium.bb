@@ -7,6 +7,11 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS xhrException.message is "Failed to execute 'open' on 'XMLHttpRequest': 'TRACE' HTTP method is unsupported."
 PASS xhrException.message is "Refused to connect to 'http://not.example.com/' because it violates the document's Content Security Policy."
+PASS xhr.readyState is XMLHttpRequest.UNSENT
+PASS xhr.open('GET', 'resources/xmlhttprequest-get-data.xml', true, badString, 'password'); threw exception Exception in toString().
+PASS xhr.readyState is XMLHttpRequest.UNSENT
+PASS xhr.open('GET', 'resources/xmlhttprequest-get-data.xml', true, 'username', badString); threw exception Exception in toString().
+PASS xhr.readyState is XMLHttpRequest.UNSENT
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -26,6 +26,14 @@
             xhrException = e;
             shouldBeEqualToString("xhrException.message", "Refused to connect to 'http://not.example.com/' because it violates the document's Content Security Policy.");
         }
+
+        var badString = { toString: function() { throw "Exception in toString()"; } };
+        var xhr = new XMLHttpRequest();
+        shouldBe("xhr.readyState", "XMLHttpRequest.UNSENT");
+        shouldThrow("xhr.open('GET', 'resources/xmlhttprequest-get-data.xml', true, badString, 'password');", "'Exception in toString()'");
+        shouldBe("xhr.readyState", "XMLHttpRequest.UNSENT");
+        shouldThrow("xhr.open('GET', 'resources/xmlhttprequest-get-data.xml', true, 'username', badString);", "'Exception in toString()'");
+        shouldBe("xhr.readyState", "XMLHttpRequest.UNSENT");
     </script>
 </body>
 </html>

@@ -45,7 +45,7 @@ using namespace HTMLNames;
 void V8HTMLFrameElement::locationAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     HTMLFrameElement* frame = V8HTMLFrameElement::toNative(info.Holder());
-    String locationValue = toWebCoreStringWithNullCheck(value);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, locationValue, value);
 
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (protocolIsJavaScript(stripLeadingAndTrailingHTMLSpaces(locationValue)) && !BindingSecurity::shouldAllowAccessToFrame(frame->contentFrame(), exceptionState)) {

@@ -56,7 +56,7 @@ void V8InspectorFrontendHost::portMethodCustom(const v8::FunctionCallbackInfo<v8
 {
 }
 
-static void populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMenu& menu)
+static bool populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMenu& menu)
 {
     for (size_t i = 0; i < itemArray->Length(); ++i) {
         v8::Local<v8::Object> item = v8::Local<v8::Object>::Cast(itemArray->Get(i));
@@ -77,11 +77,13 @@ static void populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMen
         } else if (typeString == "subMenu" && subItems->IsArray()) {
             ContextMenu subMenu;
             v8::Local<v8::Array> subItemsArray = v8::Local<v8::Array>::Cast(subItems);
-            populateContextMenuItems(subItemsArray, subMenu);
+            if (!populateContextMenuItems(subItemsArray, subMenu))
+                return false;
+            V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithNullCheck>, labelString, label, false);
             ContextMenuItem item(SubmenuType,
-                                 ContextMenuItemCustomTagNoAction,
-                                 toWebCoreStringWithNullCheck(label),
-                                 &subMenu);
+                ContextMenuItemCustomTagNoAction,
+                labelString,
+                &subMenu);
             menu.appendItem(item);
         } else {
             ContextMenuAction typedId = static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + id->ToInt32()->Value());
@@ -93,6 +95,7 @@ static void populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMen
             menu.appendItem(menuItem);
         }
     }
+    return true;
 }
 
 void V8InspectorFrontendHost::showContextMenuMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -110,7 +113,8 @@ void V8InspectorFrontendHost::showContextMenuMethodCustom(const v8::FunctionCall
 
     v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(info[1]);
     ContextMenu menu;
-    populateContextMenuItems(array, menu);
+    if (!populateContextMenuItems(array, menu))
+        return;
 
     InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toNative(info.Holder());
     Vector<ContextMenuItem> items = menu.items();

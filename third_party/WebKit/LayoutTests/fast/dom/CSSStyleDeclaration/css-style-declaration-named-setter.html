@@ -16,6 +16,10 @@ shouldBeEqualToString("document.body.style.margin", "1px");
 shouldBe("document.body.style.margin = 2", "2");
 shouldBeEqualToString("document.body.style.margin", "2px");
 
+var badString = { toString: function() { throw "Exception in toString()"; } };
+shouldThrow("document.body.style.margin = badString", "'Exception in toString()'");
+shouldBeEqualToString("document.body.style.margin", "2px"); // Should not reset the previous value.
+
 </script>
 </body>
 </html>
