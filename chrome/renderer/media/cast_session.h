@@ -13,6 +13,13 @@ namespace base {
 class MessageLoopProxy;
 }  // namespace base
 
+namespace media {
+namespace cast {
+struct AudioSenderConfig;
+struct VideoSenderConfig;
+}  // namespace cast
+}  // namespace media
+
 class CastSessionDelegate;
 
 // This class represents a Cast session and allows the session to be
@@ -21,6 +28,10 @@ class CastSessionDelegate;
 class CastSession : public base::RefCounted<CastSession> {
  public:
   CastSession();
+
+  // Start encoding of audio and video using the provided configuration.
+  void StartAudio(const media::cast::AudioSenderConfig& config);
+  void StartVideo(const media::cast::VideoSenderConfig& config);
 
  private:
   friend class base::RefCounted<CastSession>;
