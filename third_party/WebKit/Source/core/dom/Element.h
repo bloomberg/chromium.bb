@@ -368,6 +368,7 @@ public:
     virtual void accessKeyAction(bool /*sendToAnyEvent*/) { }
 
     virtual bool isURLAttribute(const Attribute&) const { return false; }
+    bool isJavaScriptURLAttribute(const Attribute&) const;
     virtual bool isHTMLContentAttribute(const Attribute&) const { return false; }
 
     KURL getURLAttribute(const QualifiedName&) const;
@@ -667,8 +668,6 @@ private:
     void detachAllAttrNodesFromElement();
     void detachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
     void detachAttrNodeAtIndex(Attr*, size_t index);
-
-    bool isJavaScriptURLAttribute(const Attribute&) const;
 
     RefPtr<ElementData> m_elementData;
 };
