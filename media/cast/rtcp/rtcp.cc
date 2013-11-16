@@ -17,7 +17,7 @@
 namespace media {
 namespace cast {
 
-static const int kMaxRttMs = 1000000;  // 1000 seconds.
+static const int kMaxRttMs = 10000;  // 10 seconds.
 
 // Time limit for received RTCP messages when we stop using it for lip-sync.
 static const int64 kMaxDiffSinceReceivedRtcpMs = 100000;  // 100 seconds.
@@ -103,7 +103,6 @@ Rtcp::Rtcp(base::TickClock* clock,
       receiver_feedback_(new LocalRtcpReceiverFeedback(this)),
       rtt_feedback_(new LocalRtcpRttFeedback(this)),
       rtcp_sender_(new RtcpSender(paced_packet_sender, local_ssrc, c_name)),
-      last_report_sent_(0),
       last_report_received_(0),
       last_received_rtp_timestamp_(0),
       last_received_ntp_seconds_(0),
@@ -220,9 +219,7 @@ void Rtcp::SendRtcp(const base::TimeTicks& now,
     } else {
       memset(&sender_info, 0, sizeof(sender_info));
     }
-    time_last_report_sent_ = now;
-    last_report_sent_ = (sender_info.ntp_seconds << 16) +
-                        (sender_info.ntp_fraction >> 16);
+    SaveLastSentNtpTime(now, sender_info.ntp_seconds, sender_info.ntp_fraction);
 
     RtcpDlrrReportBlock dlrr;
     if (!time_last_report_received_.is_null()) {
@@ -274,9 +271,7 @@ void Rtcp::SendRtcp(const base::TimeTicks& now,
     packet_type_flags |= RtcpSender::kRtcpRrtr;
     RtcpReceiverReferenceTimeReport rrtr;
     ConvertTimeTicksToNtp(now, &rrtr.ntp_seconds, &rrtr.ntp_fraction);
-
-    time_last_report_sent_ = now;
-    last_report_sent_ = ConvertToNtpDiff(rrtr.ntp_seconds, rrtr.ntp_fraction);
+    SaveLastSentNtpTime(now, rrtr.ntp_seconds, rrtr.ntp_fraction);
 
     rtcp_sender_->SendRtcp(packet_type_flags,
                            NULL,
@@ -344,11 +339,39 @@ bool Rtcp::RtpTimestampInSenderTime(int frequency, uint32 rtp_timestamp,
 void Rtcp::OnReceivedDelaySinceLastReport(uint32 receivers_ssrc,
                                           uint32 last_report,
                                           uint32 delay_since_last_report) {
-  if (last_report_sent_ != last_report)  return;  // Feedback on another report.
-  if (time_last_report_sent_.is_null())  return;
-
-  base::TimeDelta sender_delay = clock_->NowTicks() - time_last_report_sent_;
+  RtcpSendTimeMap::iterator it = last_reports_sent_map_.find(last_report);
+  if (it == last_reports_sent_map_.end()) {
+    return;  // Feedback on another report.
+  }
+  base::TimeDelta sender_delay = clock_->NowTicks() - it->second;
   UpdateRtt(sender_delay, ConvertFromNtpDiff(delay_since_last_report));
+}
+
+void Rtcp::SaveLastSentNtpTime(const base::TimeTicks& now,
+                               uint32 last_ntp_seconds,
+                               uint32 last_ntp_fraction) {
+  // Make sure |now| is always greater than the last element in
+  // |last_reports_sent_queue_|.
+  if (!last_reports_sent_queue_.empty()) {
+    DCHECK(now >= last_reports_sent_queue_.back().second);
+  }
+
+  uint32 last_report = ConvertToNtpDiff(last_ntp_seconds, last_ntp_fraction);
+  last_reports_sent_map_[last_report] = now;
+  last_reports_sent_queue_.push(std::make_pair(last_report, now));
+
+  base::TimeTicks timeout = now - base::TimeDelta::FromMilliseconds(kMaxRttMs);
+
+  // Cleanup old statistics older than |timeout|.
+  while (!last_reports_sent_queue_.empty()) {
+    RtcpSendTimePair oldest_report = last_reports_sent_queue_.front();
+    if (oldest_report.second < timeout) {
+      last_reports_sent_map_.erase(oldest_report.first);
+      last_reports_sent_queue_.pop();
+    } else {
+      break;
+    }
+  }
 }
 
 void Rtcp::UpdateRtt(const base::TimeDelta& sender_delay,
