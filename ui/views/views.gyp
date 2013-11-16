@@ -1050,10 +1050,10 @@
         '../../third_party/icu/icu.gyp:icuuc',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
-        '../shell/shell.gyp:shell',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         '../ui.gyp:ui_test_pak',
+        '../wm/wm.gyp:wm_test_support',
         'views',
         'views_examples_with_content_lib',
         'views_test_support'

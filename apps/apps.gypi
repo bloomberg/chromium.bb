@@ -112,8 +112,8 @@
             '../content/content.gyp:content',
             '../content/content_shell_and_tests.gyp:content_shell_lib',
             '../skia/skia.gyp:skia',
-            '../ui/shell/shell.gyp:shell',
             '../ui/views/views.gyp:views',
+            '../ui/wm/wm.gyp:wm_test_support',
           ],
           'include_dirs': [
             '..',

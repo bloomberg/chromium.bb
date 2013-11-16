@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_SHELL_MINIMAL_SHELL_H_
-#define UI_SHELL_MINIMAL_SHELL_H_
+#ifndef UI_WM_TEST_MINIMAL_SHELL_H_
+#define UI_WM_TEST_MINIMAL_SHELL_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -31,7 +31,7 @@ class InputMethodEventFilter;
 }  // corewm
 }  // views
 
-namespace shell {
+namespace wm {
 
 // Creates a minimal environment for running the shell. We can't pull in all of
 // ash here, but we can create attach several of the same things we'd find in
@@ -62,6 +62,6 @@ class MinimalShell : public aura::client::WindowTreeClient {
   DISALLOW_COPY_AND_ASSIGN(MinimalShell);
 };
 
-}  // namespace shell
+}  // namespace wm
 
-#endif  // UI_SHELL_MINIMAL_SHELL_H_
+#endif  // UI_WM_TEST_MINIMAL_SHELL_H_

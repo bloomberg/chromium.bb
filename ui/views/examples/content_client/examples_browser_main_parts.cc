@@ -29,7 +29,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
-#include "ui/shell/minimal_shell.h"
+#include "ui/wm/test/minimal_shell.h"
 #endif
 
 namespace views {
@@ -50,7 +50,7 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
   // Set up basic pieces of views::corewm.
-  minimal_shell_.reset(new shell::MinimalShell(gfx::Size(800, 600)));
+  minimal_shell_.reset(new wm::MinimalShell(gfx::Size(800, 600)));
   // Ensure the X window gets mapped.
   minimal_shell_->root_window()->host()->Show();
   // Ensure Aura knows where to open new windows.

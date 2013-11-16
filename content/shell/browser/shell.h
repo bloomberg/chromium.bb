@@ -27,14 +27,14 @@ typedef struct _GtkToolItem GtkToolItem;
 #include "base/android/scoped_java_ref.h"
 #elif defined(USE_AURA)
 #if defined(OS_CHROMEOS)
-namespace shell {
+namespace wm {
 class MinimalShell;
-}  // namespace shell
+}
 #endif  // defined(OS_CHROMEOS)
 namespace views {
 class Widget;
 class ViewsDelegate;
-}  // namespace views
+}
 #endif  // defined(USE_AURA)
 
 class GURL;
@@ -262,7 +262,7 @@ class Shell : public WebContentsDelegate,
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 #elif defined(USE_AURA)
 #if defined(OS_CHROMEOS)
-  static shell::MinimalShell* minimal_shell_;
+  static wm::MinimalShell* minimal_shell_;
 #endif
 #if defined(TOOLKIT_VIEWS)
   static views::ViewsDelegate* views_delegate_;

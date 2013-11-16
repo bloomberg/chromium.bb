@@ -8,7 +8,7 @@
   },
   'targets': [
     {
-      'target_name': 'shell',
+      'target_name': 'wm_test_support',
       'type': 'static_library',
       'dependencies': [
         '../../skia/skia.gyp:skia',
@@ -16,8 +16,8 @@
         '../views/views.gyp:views',
       ],
       'sources': [
-        'minimal_shell.cc',
-        'minimal_shell.h',
+        'test/minimal_shell.cc',
+        'test/minimal_shell.h',
       ],
     },
   ],

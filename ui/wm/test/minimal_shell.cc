@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/shell/minimal_shell.h"
+#include "ui/wm/test/minimal_shell.h"
 
 #include "ui/aura/client/default_activation_client.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -12,7 +12,7 @@
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 
-namespace shell {
+namespace wm {
 
 MinimalShell::MinimalShell(const gfx::Size& default_window_size) {
   aura::Env::CreateInstance();
@@ -53,4 +53,4 @@ aura::Window* MinimalShell::GetDefaultParent(
   return root_window_->window();
 }
 
-}  // namespace shell
+}  // namespace wm

@@ -257,7 +257,7 @@
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos',
-            '../ui/shell/shell.gyp:shell',
+            '../ui/wm/wm.gyp:wm_test_support',
            ],
         }], # chromeos==1
         ['use_custom_freetype==1', {

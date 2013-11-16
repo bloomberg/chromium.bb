@@ -31,7 +31,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/aura/test/test_screen.h"
-#include "ui/shell/minimal_shell.h"
+#include "ui/wm/test/minimal_shell.h"
 #endif
 
 #if defined(OS_WIN)
@@ -292,7 +292,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 }  // namespace
 
 #if defined(OS_CHROMEOS)
-shell::MinimalShell* Shell::minimal_shell_ = NULL;
+wm::MinimalShell* Shell::minimal_shell_ = NULL;
 #endif
 views::ViewsDelegate* Shell::views_delegate_ = NULL;
 
@@ -306,7 +306,7 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
   chromeos::DBusThreadManager::Initialize();
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
-  minimal_shell_ = new shell::MinimalShell(default_window_size);
+  minimal_shell_ = new wm::MinimalShell(default_window_size);
 #else
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
