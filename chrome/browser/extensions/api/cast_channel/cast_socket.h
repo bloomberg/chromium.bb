@@ -301,6 +301,9 @@ class CastSocket : public ApiResource,
   // being written.
   std::queue<WriteRequest> write_queue_;
 
+  // Used to protect against DoConnectLoop() re-entrancy.
+  bool in_connect_loop_;
+
   FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestCastURLs);
   FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestRead);
   FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestReadMany);

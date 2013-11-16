@@ -80,7 +80,8 @@ CastSocket::CastSocket(const std::string& owner_extension_id,
     read_callback_pending_(false),
     current_message_size_(0),
     net_log_(net_log),
-    next_state_(CONN_STATE_NONE) {
+    next_state_(CONN_STATE_NONE),
+    in_connect_loop_(false) {
   DCHECK(net_log_);
   net_log_source_.type = net::NetLog::SOURCE_SOCKET;
   net_log_source_.id = net_log_->NextID();
@@ -202,7 +203,12 @@ void CastSocket::Connect(const net::CompletionCallback& callback) {
 //    is done. OnConnectComplete calls this method to continue the state
 //    machine transitions.
 int CastSocket::DoConnectLoop(int result) {
-  // Network operations can either finish sycnronously or asynchronously.
+  // Avoid re-entrancy as a result of synchronous completion.
+  if (in_connect_loop_)
+    return net::ERR_IO_PENDING;
+  in_connect_loop_ = true;
+
+  // Network operations can either finish synchronously or asynchronously.
   // This method executes the state machine transitions in a loop so that
   // correct state transitions happen even when network operations finish
   // synchronously.
@@ -245,6 +251,8 @@ int CastSocket::DoConnectLoop(int result) {
   // Get out of the loop either when:
   // a. A network operation is pending, OR
   // b. The Do* method called did not change state
+
+  in_connect_loop_ = false;
 
   return rv;
 }
