@@ -102,6 +102,12 @@ void BookmarksBridge::GetBookmarksForFolder(JNIEnv* env,
   if (!folder->is_folder() || !IsReachable(folder))
     return;
 
+  // Recreate the java bookmarkId object due to fallback.
+  ScopedJavaLocalRef<jobject> folder_id_obj =
+      Java_BookmarksBridge_createBookmarkId(
+          env, folder->id(), GetBookmarkType(folder));
+  j_folder_id_obj = folder_id_obj.obj();
+
   // If this is the Mobile bookmarks folder then add the "Managed bookmarks"
   // folder first, so that it's the first entry.
   if (folder == bookmark_model_->mobile_node() &&
@@ -139,6 +145,12 @@ void BookmarksBridge::GetCurrentFolderHierarchy(JNIEnv* env,
 
   if (!folder->is_folder() || !IsReachable(folder))
     return;
+
+  // Recreate the java bookmarkId object due to fallback.
+  ScopedJavaLocalRef<jobject> folder_id_obj =
+      Java_BookmarksBridge_createBookmarkId(
+          env, folder->id(), GetBookmarkType(folder));
+  j_folder_id_obj = folder_id_obj.obj();
 
   // Get the folder heirarchy
   const BookmarkNode* node = folder;

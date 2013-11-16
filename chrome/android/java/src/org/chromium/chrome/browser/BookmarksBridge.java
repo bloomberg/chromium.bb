@@ -290,6 +290,11 @@ public class BookmarksBridge {
         bookmarksList.add(bookmark);
     }
 
+    @CalledByNative
+    private static BookmarkId createBookmarkId(long id, int type) {
+        return new BookmarkId(id, type);
+    }
+
     private native void nativeGetBookmarksForFolder(int nativeBookmarksBridge,
             BookmarkId folderId, BookmarksCallback callback,
             List<BookmarkItem> bookmarksList);
