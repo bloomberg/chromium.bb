@@ -13,6 +13,7 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
 
@@ -34,6 +35,7 @@ class ProfileItemView;
 class ProfileChooserView : public views::BubbleDelegateView,
                            public views::ButtonListener,
                            public views::LinkListener,
+                           public views::MenuButtonListener,
                            public AvatarMenuObserver,
                            public OAuth2TokenService::Observer {
  public:
@@ -63,6 +65,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   typedef std::vector<size_t> Indexes;
   typedef std::map<views::Button*, int> ButtonIndexes;
+  typedef std::map<views::View*, std::string> AccountButtonIndexes;
 
   // Different views that can be displayed in the bubble.
   enum BubbleViewMode {
@@ -78,16 +81,20 @@ class ProfileChooserView : public views::BubbleDelegateView,
                      Browser* browser);
   virtual ~ProfileChooserView();
 
-  // BubbleDelegateView:
+  // views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
 
-  // ButtonListener:
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // LinkListener:
+  // views::LinkListener:
   virtual void LinkClicked(views::Link* sender, int event_flags) OVERRIDE;
+
+  // views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   // AvatarMenuObserver:
   virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) OVERRIDE;
@@ -99,7 +106,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   static ProfileChooserView* profile_bubble_;
   static bool close_on_deactivate_for_testing_;
 
-  void ResetLinksAndButtons();
+  void ResetView();
 
   // Shows either the profile chooser or the account management views.
   void ShowView(BubbleViewMode view_to_display,
@@ -126,6 +133,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   // Other profiles used in the "fast profile switcher" view.
   ButtonIndexes open_other_profile_indexes_map_;
+
+  // Accounts associated with the current profile.
+  AccountButtonIndexes current_profile_accounts_map_;
 
   // Links displayed in the active profile card.
   views::Link* manage_accounts_link_;

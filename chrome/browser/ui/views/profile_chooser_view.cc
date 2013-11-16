@@ -27,6 +27,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
@@ -226,7 +227,7 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
   // Reset the default margins inherited from the BubbleDelegateView.
   set_margins(gfx::Insets());
 
-  ResetLinksAndButtons();
+  ResetView();
 
   avatar_menu_.reset(new AvatarMenu(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
@@ -247,7 +248,7 @@ ProfileChooserView::~ProfileChooserView() {
     oauth2_token_service->RemoveObserver(this);
 }
 
-void ProfileChooserView::ResetLinksAndButtons() {
+void ProfileChooserView::ResetView() {
   manage_accounts_link_ = NULL;
   signout_current_profile_link_ = NULL;
   signin_current_profile_link_ = NULL;
@@ -258,6 +259,7 @@ void ProfileChooserView::ResetLinksAndButtons() {
   add_user_button_ = NULL;
   add_account_button_ = NULL;
   open_other_profile_indexes_map_.clear();
+  current_profile_accounts_map_.clear();
 }
 
 void ProfileChooserView::Init() {
@@ -300,7 +302,7 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
     DCHECK(active_item.signed_in);
   }
 
-  ResetLinksAndButtons();
+  ResetView();
   RemoveAllChildViews(true);
   view_mode_ = view_to_display;
 
@@ -419,6 +421,18 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         match->second,
         ui::DispositionFromEventFlags(event.flags()) == NEW_WINDOW);
   }
+}
+
+void ProfileChooserView::OnMenuButtonClicked(views::View* source,
+                                             const gfx::Point& point) {
+  AccountButtonIndexes::const_iterator match =
+      current_profile_accounts_map_.find(source);
+  DCHECK(match != current_profile_accounts_map_.end());
+
+  ProfileOAuth2TokenService* oauth2_token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
+  if (oauth2_token_service)
+    oauth2_token_service->RevokeCredentials(match->second);
 }
 
 void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
@@ -643,18 +657,32 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
   Profile* profile = browser_->profile();
   std::vector<std::string> accounts(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->GetAccounts());
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   for (size_t i = 0; i < accounts.size(); ++i) {
-    if (i != 0)
+    bool is_primary_account = (i == 0);
+
+    // Use a MenuButtonListener and not a regular ButtonListener to be
+    // able to distinguish between the unnamed "other profile" buttons and the
+    // unnamed "multiple accounts" buttons.
+    views::MenuButton* email_button = new views::MenuButton(
+        NULL,
+        gfx::ElideEmail(UTF8ToUTF16(accounts[i]),
+                        rb->GetFontList(ui::ResourceBundle::BaseFont),
+                        width()),
+        is_primary_account ? NULL : this,  // Cannot delete the primary account.
+        !is_primary_account);
+    email_button->SetFont(rb->GetFont(ui::ResourceBundle::BaseFont));
+    email_button->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 0));
+    if (!is_primary_account) {
+      email_button->set_menu_marker(
+          rb->GetImageNamed(IDR_CLOSE_1).ToImageSkia());
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-    views::Label* email_label = new views::Label(UTF8ToUTF16(accounts[i]));
-    email_label->SetElideBehavior(views::Label::ELIDE_AS_EMAIL);
-    email_label->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
-        ui::ResourceBundle::BaseFont));
-    email_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
+    }
     layout->StartRow(1, 0);
-    layout->AddView(email_label);
+    layout->AddView(email_button);
+
+    // Save the original email address, as the button text could be elided.
+    current_profile_accounts_map_[email_button] = accounts[i];
   }
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
