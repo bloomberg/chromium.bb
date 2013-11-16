@@ -86,10 +86,6 @@
         # non-Official builds).
         'buildtype%': 'Dev',
 
-        # goma settings.
-        'goma_status%': '',
-        'gomadir%': '',
-
         'conditions': [
           # Compute the architecture that we're building for. Default to the
           # architecture that we're building on.
@@ -116,8 +112,6 @@
       'target_arch%': '<(target_arch)',
       'branding%': '<(branding)',
       'buildtype%': '<(buildtype)',
-      'goma_status%': '<(goma_status)',
-      'gomadir%': '<(gomadir)',
 
       'conditions': [
         # The system root for cross-compiles. Default: none.
@@ -139,8 +133,6 @@
     'branding%': '<(branding)',
     'buildtype%': '<(buildtype)',
     'component%': '<(component)',
-    'goma_status%': '<(goma_status)',
-    'gomadir%': '<(gomadir)',
 
     'nacl_strict_warnings%': 1,
     'nacl_validator_ragel%': 1,
