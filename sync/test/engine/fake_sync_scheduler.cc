@@ -34,10 +34,9 @@ void FakeSyncScheduler::ScheduleInvalidationNudge(
     const tracked_objects::Location& nudge_location) {
 }
 
-bool FakeSyncScheduler::ScheduleConfiguration(
+void FakeSyncScheduler::ScheduleConfiguration(
      const ConfigurationParams& params) {
   params.ready_task.Run();
-  return true;
 }
 
 void FakeSyncScheduler::SetNotificationsEnabled(bool notifications_enabled) {

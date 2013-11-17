@@ -52,7 +52,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   virtual ~SyncSchedulerImpl();
 
   virtual void Start(Mode mode) OVERRIDE;
-  virtual bool ScheduleConfiguration(
+  virtual void ScheduleConfiguration(
       const ConfigurationParams& params) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void ScheduleLocalNudge(
@@ -159,7 +159,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   void DoNudgeSyncSessionJob(JobPriority priority);
 
   // Invoke the syncer to perform a configuration job.
-  bool DoConfigurationSyncSessionJob(JobPriority priority);
+  void DoConfigurationSyncSessionJob(JobPriority priority);
 
   // Helper function for Do{Nudge,Configuration}SyncSessionJob.
   void HandleFailure(

@@ -73,12 +73,15 @@ ConfigurationParams::ConfigurationParams(
     const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
     ModelTypeSet types_to_download,
     const ModelSafeRoutingInfo& routing_info,
-    const base::Closure& ready_task)
+    const base::Closure& ready_task,
+    const base::Closure& retry_task)
     : source(source),
       types_to_download(types_to_download),
       routing_info(routing_info),
-      ready_task(ready_task) {
+      ready_task(ready_task),
+      retry_task(retry_task) {
   DCHECK(!ready_task.is_null());
+  DCHECK(!retry_task.is_null());
 }
 ConfigurationParams::~ConfigurationParams() {}
 
@@ -274,7 +277,7 @@ void BuildModelSafeParams(
 
 }  // namespace.
 
-bool SyncSchedulerImpl::ScheduleConfiguration(
+void SyncSchedulerImpl::ScheduleConfiguration(
     const ConfigurationParams& params) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsConfigRelatedUpdateSourceValue(params.source));
@@ -296,22 +299,11 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
   // Only reconfigure if we have types to download.
   if (!params.types_to_download.Empty()) {
     pending_configure_params_.reset(new ConfigurationParams(params));
-    bool succeeded = DoConfigurationSyncSessionJob(NORMAL_PRIORITY);
-
-    // If we failed, the job would have been saved as the pending configure
-    // job and a wait interval would have been set.
-    if (!succeeded) {
-      DCHECK(pending_configure_params_);
-    } else {
-      DCHECK(!pending_configure_params_);
-    }
-    return succeeded;
+    DoConfigurationSyncSessionJob(NORMAL_PRIORITY);
   } else {
     SDVLOG(2) << "No change in routing info, calling ready task directly.";
     params.ready_task.Run();
   }
-
-  return true;
 }
 
 bool SyncSchedulerImpl::CanRunJobNow(JobPriority priority) {
@@ -497,13 +489,18 @@ void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
   }
 }
 
-bool SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
+void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(mode_, CONFIGURATION_MODE);
+  DCHECK(pending_configure_params_ != NULL);
 
   if (!CanRunJobNow(priority)) {
     SDVLOG(2) << "Unable to run configure job right now.";
-    return false;
+    if (!pending_configure_params_->retry_task.is_null()) {
+      pending_configure_params_->retry_task.Run();
+      pending_configure_params_->retry_task.Reset();
+    }
+    return;
   }
 
   SDVLOG(2) << "Will run configure SyncShare with routes "
@@ -529,10 +526,12 @@ bool SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
     // If we're here, then we successfully reached the server.  End all backoff.
     wait_interval_.reset();
     NotifyRetryTime(base::Time());
-    return true;
   } else {
     HandleFailure(session->status_controller().model_neutral_state());
-    return false;
+    if (!pending_configure_params_->retry_task.is_null()) {
+      pending_configure_params_->retry_task.Run();
+      pending_configure_params_->retry_task.Reset();
+    }
   }
 }
 

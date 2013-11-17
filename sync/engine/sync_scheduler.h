@@ -30,7 +30,8 @@ struct SYNC_EXPORT_PRIVATE ConfigurationParams {
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
       ModelTypeSet types_to_download,
       const ModelSafeRoutingInfo& routing_info,
-      const base::Closure& ready_task);
+      const base::Closure& ready_task,
+      const base::Closure& retry_task);
   ~ConfigurationParams();
 
   // Source for the configuration.
@@ -41,6 +42,8 @@ struct SYNC_EXPORT_PRIVATE ConfigurationParams {
   ModelSafeRoutingInfo routing_info;
   // Callback to invoke on configuration completion.
   base::Closure ready_task;
+  // Callback to invoke on configuration failure.
+  base::Closure retry_task;
 };
 
 class SYNC_EXPORT_PRIVATE SyncScheduler
@@ -71,9 +74,11 @@ class SYNC_EXPORT_PRIVATE SyncScheduler
   // Schedules the configuration task specified by |params|. Returns true if
   // the configuration task executed immediately, false if it had to be
   // scheduled for a later attempt. |params.ready_task| is invoked whenever the
-  // configuration task executes.
+  // configuration task executes. |params.retry_task| is invoked once if the
+  // configuration task could not execute. |params.ready_task| will still be
+  // called when configuration finishes.
   // Note: must already be in CONFIGURATION mode.
-  virtual bool ScheduleConfiguration(const ConfigurationParams& params) = 0;
+  virtual void ScheduleConfiguration(const ConfigurationParams& params) = 0;
 
   // Request that the syncer avoid starting any new tasks and prepare for
   // shutdown.

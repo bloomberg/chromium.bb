@@ -2780,7 +2780,7 @@ class MockSyncScheduler : public FakeSyncScheduler {
   virtual ~MockSyncScheduler() {}
 
   MOCK_METHOD1(Start, void(SyncScheduler::Mode));
-  MOCK_METHOD1(ScheduleConfiguration, bool(const ConfigurationParams&));
+  MOCK_METHOD1(ScheduleConfiguration, void(const ConfigurationParams&));
 };
 
 class ComponentsFactory : public TestInternalComponentsFactory {
@@ -2838,7 +2838,7 @@ TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
   ConfigurationParams params;
   EXPECT_CALL(*scheduler(), Start(SyncScheduler::CONFIGURATION_MODE));
   EXPECT_CALL(*scheduler(), ScheduleConfiguration(_)).
-      WillOnce(DoAll(SaveArg<0>(&params), Return(true)));
+      WillOnce(SaveArg<0>(&params));
 
   // Set data for all types.
   ModelTypeSet protocol_types = ProtocolTypes();
@@ -2890,7 +2890,7 @@ TEST_F(SyncManagerTestWithMockScheduler, ReConfiguration) {
   ConfigurationParams params;
   EXPECT_CALL(*scheduler(), Start(SyncScheduler::CONFIGURATION_MODE));
   EXPECT_CALL(*scheduler(), ScheduleConfiguration(_)).
-      WillOnce(DoAll(SaveArg<0>(&params), Return(true)));
+      WillOnce(SaveArg<0>(&params));
 
   // Set data for all types except those recently disabled (so we can verify
   // only those recently disabled are purged) .
@@ -2929,38 +2929,6 @@ TEST_F(SyncManagerTestWithMockScheduler, ReConfiguration) {
   // Verify only the recently disabled types were purged.
   EXPECT_TRUE(sync_manager_.GetTypesWithEmptyProgressMarkerToken(
       ProtocolTypes()).Equals(disabled_types));
-}
-
-// Test that the retry callback is invoked on configuration failure.
-TEST_F(SyncManagerTestWithMockScheduler, ConfigurationRetry) {
-  ConfigureReason reason = CONFIGURE_REASON_RECONFIGURATION;
-  ModelTypeSet types_to_download(BOOKMARKS, PREFERENCES);
-  ModelSafeRoutingInfo new_routing_info;
-  GetModelSafeRoutingInfo(&new_routing_info);
-
-  ConfigurationParams params;
-  EXPECT_CALL(*scheduler(), Start(SyncScheduler::CONFIGURATION_MODE));
-  EXPECT_CALL(*scheduler(), ScheduleConfiguration(_)).
-      WillOnce(DoAll(SaveArg<0>(&params), Return(false)));
-
-  CallbackCounter ready_task_counter, retry_task_counter;
-  sync_manager_.ConfigureSyncer(
-      reason,
-      types_to_download,
-      ModelTypeSet(),
-      ModelTypeSet(),
-      ModelTypeSet(),
-      new_routing_info,
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&ready_task_counter)),
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&retry_task_counter)));
-  EXPECT_EQ(0, ready_task_counter.times_called());
-  EXPECT_EQ(1, retry_task_counter.times_called());
-  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
-            params.source);
-  EXPECT_TRUE(types_to_download.Equals(params.types_to_download));
-  EXPECT_EQ(new_routing_info, params.routing_info);
 }
 
 // Test that PurgePartiallySyncedTypes purges only those types that have not

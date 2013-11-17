@@ -330,11 +330,11 @@ void SyncManagerImpl::ConfigureSyncer(
   ConfigurationParams params(GetSourceFromReason(reason),
                              to_download,
                              new_routing_info,
-                             ready_task);
+                             ready_task,
+                             retry_task);
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE);
-  if (!scheduler_->ScheduleConfiguration(params))
-    retry_task.Run();
+  scheduler_->ScheduleConfiguration(params);
 }
 
 void SyncManagerImpl::Init(
