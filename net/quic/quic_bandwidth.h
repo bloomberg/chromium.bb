@@ -56,6 +56,8 @@ class NET_EXPORT_PRIVATE QuicBandwidth {
 
   QuicBandwidth Scale(float scale_factor) const;
 
+  QuicTime::Delta TransferTime(QuicByteCount bytes) const;
+
  private:
   explicit QuicBandwidth(int64 bits_per_second);
   int64 bits_per_second_;

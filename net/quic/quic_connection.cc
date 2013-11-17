@@ -406,6 +406,10 @@ void QuicConnection::OnVersionNegotiationPacket(
 void QuicConnection::OnRevivedPacket() {
 }
 
+bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
+  return true;
+}
+
 bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   if (debug_visitor_) {
     debug_visitor_->OnPacketHeader(header);
@@ -717,6 +721,7 @@ void QuicConnection::OnPacketComplete() {
              << last_congestion_frames_.size() << " congestions, "
              << last_goaway_frames_.size() << " goaways, "
              << last_rst_frames_.size() << " rsts, "
+             << last_close_frames_.size() << " closes, "
              << last_stream_frames_.size()
              << " stream frames for " << last_header_.public_header.guid;
   if (!last_packet_revived_) {
@@ -893,8 +898,9 @@ QuicConsumedData QuicConnection::SendStreamData(
     notifier = new QuicAckNotifier(delegate);
   }
 
-  // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketBundler ack_bundler(this, true);
+  // Opportunistically bundle an ack with this outgoing packet, unless it's the
+  // crypto stream.
+  ScopedPacketBundler ack_bundler(this, id != kCryptoStreamId);
   QuicConsumedData consumed_data =
       packet_generator_.ConsumeData(id, data, offset, fin, notifier);
 
@@ -1089,15 +1095,8 @@ void QuicConnection::WritePendingRetransmissions() {
         pending.sequence_number, serialized_packet.sequence_number);
 
     SendOrQueuePacket(pending.retransmittable_frames.encryption_level(),
-                      serialized_packet.sequence_number,
-                      serialized_packet.packet,
-                      serialized_packet.entropy_hash,
-                      pending.transmission_type,
-                      HAS_RETRANSMITTABLE_DATA,
-                      HasCryptoHandshake(
-                          serialized_packet.retransmittable_frames),
-                      HasForcedFrames(
-                          serialized_packet.retransmittable_frames));
+                      serialized_packet,
+                      pending.transmission_type);
   }
 }
 
@@ -1256,6 +1255,13 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
                 << sequence_number;
     CloseConnection(QUIC_ENCRYPTION_FAILURE, false);
     return false;
+  }
+
+  // If it's the ConnectionClose packet, the only FORCED frame type,
+  // clone a copy for resending later by the TimeWaitListManager.
+  if (forced == FORCE) {
+    DCHECK(connection_close_packet_.get() == NULL);
+    connection_close_packet_.reset(encrypted->Clone());
   }
 
   if (encrypted->length() > options()->max_packet_length) {
@@ -1446,17 +1452,8 @@ bool QuicConnection::OnSerializedPacket(
   // The TransmissionType is NOT_RETRANSMISSION because all retransmissions
   // serialize packets and invoke SendOrQueuePacket directly.
   return SendOrQueuePacket(encryption_level_,
-                           serialized_packet.sequence_number,
-                           serialized_packet.packet,
-                           serialized_packet.entropy_hash,
-                           NOT_RETRANSMISSION,
-                           serialized_packet.retransmittable_frames != NULL ?
-                               HAS_RETRANSMITTABLE_DATA :
-                               NO_RETRANSMITTABLE_DATA,
-                           HasCryptoHandshake(
-                               serialized_packet.retransmittable_frames),
-                           HasForcedFrames(
-                               serialized_packet.retransmittable_frames));
+                           serialized_packet,
+                           NOT_RETRANSMISSION);
 }
 
 QuicPacketSequenceNumber QuicConnection::GetNextPacketSequenceNumber() {
@@ -1473,22 +1470,24 @@ void QuicConnection::OnPacketNacked(QuicPacketSequenceNumber sequence_number,
 }
 
 bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
-                                       QuicPacketSequenceNumber sequence_number,
-                                       QuicPacket* packet,
-                                       QuicPacketEntropyHash entropy_hash,
-                                       TransmissionType transmission_type,
-                                       HasRetransmittableData retransmittable,
-                                       IsHandshake handshake,
-                                       Force forced) {
-  sent_entropy_manager_.RecordPacketEntropyHash(sequence_number, entropy_hash);
-  if (!WritePacket(level, sequence_number, packet,
-                   transmission_type, retransmittable, handshake, forced)) {
-    queued_packets_.push_back(QueuedPacket(sequence_number, packet, level,
-                                           transmission_type, retransmittable,
-                                           handshake, forced));
-    return false;
+                                       const SerializedPacket& packet,
+                                       TransmissionType transmission_type) {
+  IsHandshake handshake = HasCryptoHandshake(packet.retransmittable_frames);
+  Force forced = HasForcedFrames(packet.retransmittable_frames);
+  HasRetransmittableData retransmittable =
+      (transmission_type != NOT_RETRANSMISSION ||
+       packet.retransmittable_frames != NULL) ?
+           HAS_RETRANSMITTABLE_DATA : NO_RETRANSMITTABLE_DATA;
+  sent_entropy_manager_.RecordPacketEntropyHash(packet.sequence_number,
+                                                packet.entropy_hash);
+  if (WritePacket(level, packet.sequence_number, packet.packet,
+                  transmission_type, retransmittable, handshake, forced)) {
+    return true;
   }
-  return true;
+  queued_packets_.push_back(QueuedPacket(packet.sequence_number, packet.packet,
+                                         level, transmission_type,
+                                         retransmittable, handshake, forced));
+  return false;
 }
 
 void QuicConnection::UpdateSentPacketInfo(SentPacketInfo* sent_info) {
@@ -1619,10 +1618,7 @@ const QuicDecrypter* QuicConnection::alternative_decrypter() const {
 void QuicConnection::QueueUndecryptablePacket(
     const QuicEncryptedPacket& packet) {
   DVLOG(1) << ENDPOINT << "Queueing undecryptable packet.";
-  char* data = new char[packet.length()];
-  memcpy(data, packet.data(), packet.length());
-  undecryptable_packets_.push_back(
-      new QuicEncryptedPacket(data, packet.length(), true));
+  undecryptable_packets_.push_back(packet.Clone());
 }
 
 void QuicConnection::MaybeProcessUndecryptablePackets() {
@@ -1790,7 +1786,7 @@ void QuicConnection::SetIdleNetworkTimeout(QuicTime::Delta timeout) {
     idle_network_timeout_ = timeout;
     CheckForTimeout();
   } else {
-     idle_network_timeout_ = timeout;
+    idle_network_timeout_ = timeout;
   }
 }
 

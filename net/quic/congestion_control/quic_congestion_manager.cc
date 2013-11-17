@@ -234,7 +234,7 @@ QuicBandwidth QuicCongestionManager::BandwidthEstimate() {
   return send_algorithm_->BandwidthEstimate();
 }
 
-QuicByteCount QuicCongestionManager::GetCongestionWindow() {
+QuicByteCount QuicCongestionManager::GetCongestionWindow() const {
   return send_algorithm_->GetCongestionWindow();
 }
 

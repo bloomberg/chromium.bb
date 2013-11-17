@@ -173,16 +173,13 @@ void QuicTestClient::Initialize(IPEndPoint address,
                                 const string& hostname,
                                 bool secure) {
   server_address_ = address;
-  stream_ = NULL;
-  stream_error_ = QUIC_STREAM_NO_ERROR;
   priority_ = 3;
-  bytes_read_ = 0;
-  bytes_written_= 0;
   connect_attempted_ = false;
   secure_ = secure;
   auto_reconnect_ = false;
   buffer_body_ = true;
   proof_verifier_ = NULL;
+  ClearPerRequestState();
   ExpectCertificates(secure_);
 }
 
@@ -322,6 +319,8 @@ void QuicTestClient::ClearPerRequestState() {
   headers_.Clear();
   bytes_read_ = 0;
   bytes_written_ = 0;
+  response_header_size_ = 0;
+  response_body_size_ = 0;
 }
 
 void QuicTestClient::WaitForResponseForMs(int timeout_ms) {
@@ -395,6 +394,8 @@ void QuicTestClient::OnClose(ReliableQuicStream* stream) {
   stream_error_ = stream_->stream_error();
   bytes_read_ = stream_->stream_bytes_read();
   bytes_written_ = stream_->stream_bytes_written();
+  response_header_size_ = headers_.GetSizeForWriteBuffer();
+  response_body_size_ = stream_->data().size();
   stream_ = NULL;
 }
 

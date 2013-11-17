@@ -131,7 +131,7 @@ QuicTime::Delta FixRateSender::RetransmissionDelay() {
   return latest_rtt_.Add(latest_rtt_);
 }
 
-QuicByteCount FixRateSender::GetCongestionWindow() {
+QuicByteCount FixRateSender::GetCongestionWindow() const {
   return 0;
 }
 

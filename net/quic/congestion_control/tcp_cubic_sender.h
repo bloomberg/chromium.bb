@@ -47,12 +47,11 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
                              QuicTime::Delta rtt) OVERRIDE;
   virtual void OnIncomingLoss(QuicPacketSequenceNumber largest_loss,
                               QuicTime ack_receive_time) OVERRIDE;
-  virtual bool OnPacketSent(
-      QuicTime sent_time,
-      QuicPacketSequenceNumber sequence_number,
-      QuicByteCount bytes,
-      TransmissionType transmission_type,
-      HasRetransmittableData is_retransmittable) OVERRIDE;
+  virtual bool OnPacketSent(QuicTime sent_time,
+                            QuicPacketSequenceNumber sequence_number,
+                            QuicByteCount bytes,
+                            TransmissionType transmission_type,
+                            HasRetransmittableData is_retransmittable) OVERRIDE;
   virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
                                  QuicByteCount abandoned_bytes) OVERRIDE;
   virtual QuicTime::Delta TimeUntilSend(
@@ -63,7 +62,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   virtual QuicBandwidth BandwidthEstimate() OVERRIDE;
   virtual QuicTime::Delta SmoothedRtt() OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() OVERRIDE;
-  virtual QuicByteCount GetCongestionWindow() OVERRIDE;
+  virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
   virtual void SetCongestionWindow(QuicByteCount window) OVERRIDE;
   // End implementation of SendAlgorithmInterface.
 

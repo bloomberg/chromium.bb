@@ -99,4 +99,9 @@ QuicBandwidth QuicBandwidth::Scale(float scale_factor) const {
   return QuicBandwidth(bits_per_second_ * scale_factor);
 }
 
+QuicTime::Delta QuicBandwidth::TransferTime(QuicByteCount bytes) const {
+  return QuicTime::Delta::FromMicroseconds(
+      bytes * 8 * base::Time::kMicrosecondsPerSecond / bits_per_second_);
+}
+
 }  // namespace net

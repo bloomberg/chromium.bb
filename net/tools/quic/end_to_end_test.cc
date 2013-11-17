@@ -367,7 +367,7 @@ TEST_P(EndToEndTest, RequestOverMultiplePackets) {
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
-TEST_P(EndToEndTest, MultipleFramesRandomOrder) {
+TEST_P(EndToEndTest, MultiplePacketsRandomOrder) {
   // Send a large enough request to guarantee fragmentation.
   string huge_request =
       "https://www.google.com/some/path?query=" + string(kMaxPacketSize, '.');

@@ -492,8 +492,6 @@ QuicEncryptedPacket* QuicFramer::BuildVersionNegotiationPacket(
 }
 
 bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
-  // TODO(satyamshekhar): Don't RaiseError (and close the connection) for
-  // invalid (unauthenticated) packets.
   DCHECK(!reader_.get());
   reader_.reset(new QuicDataReader(packet.data(), packet.length()));
 
@@ -549,7 +547,6 @@ bool QuicFramer::ProcessDataPacket(
     const QuicEncryptedPacket& packet) {
   QuicPacketHeader header(public_header);
   if (!ProcessPacketHeader(&header, packet)) {
-    DCHECK_NE(QUIC_NO_ERROR, error_);  // ProcessPacketHeader sets the error.
     DLOG(WARNING) << "Unable to process data packet header.";
     return false;
   }
@@ -951,6 +948,10 @@ bool QuicFramer::ProcessPacketHeader(
   if (header->packet_sequence_number == 0u) {
     set_detailed_error("Packet sequence numbers cannot be 0.");
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
+  }
+
+  if (!visitor_->OnUnauthenticatedHeader(*header)) {
+    return false;
   }
 
   if (!DecryptPayload(*header, packet)) {

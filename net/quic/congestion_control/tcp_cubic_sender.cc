@@ -207,7 +207,7 @@ QuicTime::Delta TcpCubicSender::RetransmissionDelay() {
       smoothed_rtt_.ToMicroseconds() + 4 * mean_deviation_.ToMicroseconds());
 }
 
-QuicByteCount TcpCubicSender::GetCongestionWindow() {
+QuicByteCount TcpCubicSender::GetCongestionWindow() const {
   return congestion_window_ * kMaxSegmentSize;
 }
 

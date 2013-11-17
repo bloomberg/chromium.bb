@@ -2621,12 +2621,26 @@ TEST_P(QuicConnectionTest, SendDelayedAckOnOutgoingPacket) {
   }
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   ProcessPacket(1);
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(kStreamId3, "foo", 0, !kFin, NULL);
   // Check that ack is bundled with outgoing data and that delayed ack
   // alarm is reset.
   EXPECT_EQ(2u, writer_->frame_count());
   EXPECT_TRUE(writer_->ack());
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+}
+
+TEST_P(QuicConnectionTest, DontSendDelayedAckOnOutgoingCryptoPacket) {
+  if (!FLAGS_bundle_ack_with_outgoing_packet) {
+    // This test specifically tests ack bundling behavior.
+    return;
+  }
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  ProcessPacket(1);
+  connection_.SendStreamDataWithString(kCryptoStreamId, "foo", 0, !kFin, NULL);
+  // Check that ack is not bundled with outgoing data.
+  EXPECT_EQ(1u, writer_->frame_count());
+  EXPECT_FALSE(writer_->ack());
+  EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
 }
 
 TEST_P(QuicConnectionTest, NoAckForClose) {

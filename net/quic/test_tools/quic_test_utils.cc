@@ -45,6 +45,9 @@ MockFramerVisitor::MockFramerVisitor() {
       .WillByDefault(testing::Return(false));
 
   // By default, we want to accept packets.
+  ON_CALL(*this, OnUnauthenticatedHeader(_))
+      .WillByDefault(testing::Return(true));
+
   ON_CALL(*this, OnPacketHeader(_))
       .WillByDefault(testing::Return(true));
 
@@ -72,6 +75,11 @@ MockFramerVisitor::~MockFramerVisitor() {
 
 bool NoOpFramerVisitor::OnProtocolVersionMismatch(QuicVersion version) {
   return false;
+}
+
+bool NoOpFramerVisitor::OnUnauthenticatedHeader(
+    const QuicPacketHeader& header) {
+  return true;
 }
 
 bool NoOpFramerVisitor::OnPacketHeader(const QuicPacketHeader& header) {
@@ -253,16 +261,11 @@ PacketSavingConnection::~PacketSavingConnection() {
 
 bool PacketSavingConnection::SendOrQueuePacket(
     EncryptionLevel level,
-    QuicPacketSequenceNumber sequence_number,
-    QuicPacket* packet,
-    QuicPacketEntropyHash /* entropy_hash */,
-    TransmissionType /* transmission_type */,
-    HasRetransmittableData /* retransmittable */,
-    IsHandshake /* handshake */,
-    Force /* forced */) {
-  packets_.push_back(packet);
+    const SerializedPacket& packet,
+    TransmissionType transmission_type) {
+  packets_.push_back(packet.packet);
   QuicEncryptedPacket* encrypted =
-      framer_.EncryptPacket(level, sequence_number, *packet);
+      framer_.EncryptPacket(level, packet.sequence_number, *packet.packet);
   encrypted_packets_.push_back(encrypted);
   return true;
 }

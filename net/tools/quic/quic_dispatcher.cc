@@ -106,8 +106,10 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
       DLOG(INFO) << "Failed to create session for " << guid;
       // Add this guid fo the time-wait state, to safely reject future packets.
       // We don't know the version here, so assume latest.
+      // TODO(ianswett): Produce a no-version version negotiation packet.
       time_wait_list_manager_->AddGuidToTimeWait(guid,
-                                                 supported_versions_.front());
+                                                 supported_versions_.front(),
+                                                 NULL);
       time_wait_list_manager_->ProcessPacket(server_address,
                                              client_address,
                                              guid,
@@ -125,10 +127,13 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
 }
 
 void QuicDispatcher::CleanUpSession(SessionMap::iterator it) {
-  QuicSession* session = it->second;
-  write_blocked_list_.erase(session->connection());
+  QuicConnection* connection = it->second->connection();
+  QuicEncryptedPacket* connection_close_packet =
+          connection->ReleaseConnectionClosePacket();
+  write_blocked_list_.erase(connection);
   time_wait_list_manager_->AddGuidToTimeWait(it->first,
-                                             session->connection()->version());
+                                             connection->version(),
+                                             connection_close_packet);
   session_map_.erase(it);
 }
 

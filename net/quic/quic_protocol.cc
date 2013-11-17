@@ -442,6 +442,12 @@ SerializedPacket::SerializedPacket(
 
 SerializedPacket::~SerializedPacket() {}
 
+QuicEncryptedPacket* QuicEncryptedPacket::Clone() const {
+  char* buffer = new char[this->length()];
+  memcpy(buffer, this->data(), this->length());
+  return new QuicEncryptedPacket(buffer, this->length(), true);
+}
+
 ostream& operator<<(ostream& os, const QuicEncryptedPacket& s) {
   os << s.length() << "-byte data";
   return os;

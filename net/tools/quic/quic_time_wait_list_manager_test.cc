@@ -32,6 +32,32 @@ using testing::Truly;
 namespace net {
 namespace tools {
 namespace test {
+
+class QuicTimeWaitListManagerPeer {
+ public:
+  static QuicVersion version(QuicTimeWaitListManager* manager) {
+    return manager->framer_.version();
+  }
+
+  static bool is_write_blocked(QuicTimeWaitListManager* manager) {
+    return manager->is_write_blocked_;
+  }
+
+  static bool ShouldSendResponse(QuicTimeWaitListManager* manager,
+                          int received_packet_count) {
+    return manager->ShouldSendResponse(received_packet_count);
+  }
+
+  static QuicTime::Delta time_wait_period(QuicTimeWaitListManager* manager) {
+    return manager->kTimeWaitPeriod_;
+  }
+
+  static QuicVersion GetQuicVersionFromGuid(QuicTimeWaitListManager* manager,
+                                            QuicGuid guid) {
+    return manager->GetQuicVersionFromGuid(guid);
+  }
+};
+
 namespace {
 
 class TestTimeWaitListManager : public QuicTimeWaitListManager {
@@ -40,11 +66,6 @@ class TestTimeWaitListManager : public QuicTimeWaitListManager {
                           EpollServer* epoll_server)
       : QuicTimeWaitListManager(writer, epoll_server, QuicSupportedVersions()) {
   }
-
-  using QuicTimeWaitListManager::is_write_blocked;
-  using QuicTimeWaitListManager::time_wait_period;
-  using QuicTimeWaitListManager::ShouldSendPublicReset;
-  using QuicTimeWaitListManager::GetQuicVersionFromGuid;
 };
 
 class MockFakeTimeEpollServer : public FakeTimeEpollServer {
@@ -56,7 +77,8 @@ class MockFakeTimeEpollServer : public FakeTimeEpollServer {
 class QuicTimeWaitListManagerTest : public testing::Test {
  protected:
   QuicTimeWaitListManagerTest()
-      : time_wait_list_manager_(&writer_, &epoll_server_),
+      : time_wait_list_manager_(
+          &writer_, &epoll_server_, QuicSupportedVersions()),
         framer_(QuicSupportedVersions(), QuicTime::Zero(), true),
         guid_(45) {
   }
@@ -64,11 +86,13 @@ class QuicTimeWaitListManagerTest : public testing::Test {
   virtual ~QuicTimeWaitListManagerTest() {}
 
   void AddGuid(QuicGuid guid) {
-    time_wait_list_manager_.AddGuidToTimeWait(guid, test::QuicVersionMax());
+    AddGuid(guid, test::QuicVersionMax(), NULL);
   }
 
-  void AddGuid(QuicGuid guid, QuicVersion version) {
-    time_wait_list_manager_.AddGuidToTimeWait(guid, version);
+  void AddGuid(QuicGuid guid,
+               QuicVersion version,
+               QuicEncryptedPacket* packet) {
+    time_wait_list_manager_.AddGuidToTimeWait(guid, version, packet);
   }
 
   bool IsGuidInTimeWait(QuicGuid guid) {
@@ -114,7 +138,7 @@ class QuicTimeWaitListManagerTest : public testing::Test {
 
   MockFakeTimeEpollServer epoll_server_;
   MockPacketWriter writer_;
-  TestTimeWaitListManager time_wait_list_manager_;
+  QuicTimeWaitListManager time_wait_list_manager_;
   QuicFramer framer_;
   QuicGuid guid_;
   IPEndPoint server_address_;
@@ -169,6 +193,24 @@ TEST_F(QuicTimeWaitListManagerTest, CheckGuidInTimeWait) {
   EXPECT_TRUE(IsGuidInTimeWait(guid_));
 }
 
+TEST_F(QuicTimeWaitListManagerTest, SendConnectionClose) {
+  size_t kConnectionCloseLength = 100;
+  AddGuid(guid_,
+          QuicVersionMax(),
+          new QuicEncryptedPacket(
+              new char[kConnectionCloseLength], kConnectionCloseLength, true));
+  const int kRandomSequenceNumber = 1;
+  scoped_ptr<QuicEncryptedPacket> packet(
+      ConstructEncryptedPacket(ENCRYPTION_NONE, guid_, kRandomSequenceNumber));
+  EXPECT_CALL(writer_, WritePacket(_, kConnectionCloseLength,
+                                   server_address_.address(),
+                                   client_address_,
+                                   &time_wait_list_manager_))
+      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
+
+  ProcessPacket(guid_, *packet);
+}
+
 TEST_F(QuicTimeWaitListManagerTest, SendPublicReset) {
   AddGuid(guid_);
   const int kRandomSequenceNumber = 1;
@@ -207,8 +249,7 @@ TEST_F(QuicTimeWaitListManagerTest, DropInvalidPacket) {
   const char buffer[] = "invalid";
   QuicEncryptedPacket packet(buffer, arraysize(buffer));
   // Will get called for a valid packet since received packet count = 1 (2 ^ 0).
-  EXPECT_CALL(writer_, WritePacket(_, _, _, _, _))
-      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
+  EXPECT_CALL(writer_, WritePacket(_, _, _, _, _)).Times(0);
   ProcessPacket(guid_, packet);
 }
 
@@ -223,8 +264,7 @@ TEST_F(QuicTimeWaitListManagerTest, DropPublicResetPacket) {
   scoped_ptr<QuicEncryptedPacket> public_reset_packet(
       QuicFramer::BuildPublicResetPacket(packet));
   // Will get called for a data packet since received packet count = 1 (2 ^ 0).
-  EXPECT_CALL(writer_, WritePacket(_, _, _, _, _))
-      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
+  EXPECT_CALL(writer_, WritePacket(_, _, _, _, _)).Times(0);
   ProcessPacket(guid_, *public_reset_packet);
 }
 
@@ -240,11 +280,11 @@ TEST_F(QuicTimeWaitListManagerTest, SendPublicResetWithExponentialBackOff) {
     ProcessPacket(guid_, *packet);
     // Send public reset with exponential back off.
     if ((sequence_number & (sequence_number - 1)) == 0) {
-      EXPECT_TRUE(
-          time_wait_list_manager_.ShouldSendPublicReset(sequence_number));
+      EXPECT_TRUE(QuicTimeWaitListManagerPeer::ShouldSendResponse(
+                      &time_wait_list_manager_, sequence_number));
     } else {
-      EXPECT_FALSE(
-          time_wait_list_manager_.ShouldSendPublicReset(sequence_number));
+      EXPECT_FALSE(QuicTimeWaitListManagerPeer::ShouldSendResponse(
+                       &time_wait_list_manager_, sequence_number));
     }
   }
 }
@@ -261,7 +301,7 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldGuids) {
 
   // Add remaining guids such that their add time is 2 * kTimeWaitPeriod.
   const QuicTime::Delta time_wait_period =
-      time_wait_list_manager_.time_wait_period();
+      QuicTimeWaitListManagerPeer::time_wait_period(&time_wait_list_manager_);
   epoll_server_.set_now_in_usec(time_wait_period.ToMicroseconds());
   for (int guid = kOldGuidCount + 1; guid <= kGuidCount; ++guid) {
     AddGuid(guid);
@@ -286,7 +326,7 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldGuids) {
 TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   QuicGuid guid = 1;
   AddGuid(guid);
-  QuicPacketSequenceNumber sequence_number = 1;
+  QuicPacketSequenceNumber sequence_number = 234;
   scoped_ptr<QuicEncryptedPacket> packet(
       ConstructEncryptedPacket(ENCRYPTION_NONE, guid, sequence_number));
   // Let first write through.
@@ -298,7 +338,8 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
                                            sequence_number)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
   ProcessPacket(guid, *packet);
-  EXPECT_FALSE(time_wait_list_manager_.is_write_blocked());
+  EXPECT_FALSE(
+      QuicTimeWaitListManagerPeer::is_write_blocked(&time_wait_list_manager_));
 
   // write block for the next packet.
   EXPECT_CALL(writer_, WritePacket(_, _,
@@ -311,15 +352,17 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   ProcessPacket(guid, *packet);
   // 3rd packet. No public reset should be sent;
   ProcessPacket(guid, *packet);
-  EXPECT_TRUE(time_wait_list_manager_.is_write_blocked());
+  EXPECT_TRUE(
+      QuicTimeWaitListManagerPeer::is_write_blocked(&time_wait_list_manager_));
 
   // write packet should not be called since already write blocked but the
   // should be queued.
   QuicGuid other_guid = 2;
   AddGuid(other_guid);
+  QuicPacketSequenceNumber other_sequence_number = 23423;
   scoped_ptr<QuicEncryptedPacket> other_packet(
       ConstructEncryptedPacket(
-          ENCRYPTION_NONE, other_guid, sequence_number));
+          ENCRYPTION_NONE, other_guid, other_sequence_number));
   EXPECT_CALL(writer_, WritePacket(_, _, _, _, _))
       .Times(0);
   ProcessPacket(other_guid, *other_packet);
@@ -337,11 +380,44 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
                                    client_address_,
                                    &time_wait_list_manager_))
       .With(Args<0, 1>(PublicResetPacketEq(other_guid,
-                                           sequence_number)))
+                                           other_sequence_number)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK,
                                    other_packet->length())));
   time_wait_list_manager_.OnCanWrite();
-  EXPECT_FALSE(time_wait_list_manager_.is_write_blocked());
+  EXPECT_FALSE(
+      QuicTimeWaitListManagerPeer::is_write_blocked(&time_wait_list_manager_));
+}
+
+TEST_F(QuicTimeWaitListManagerTest, MakeSureFramerUsesCorrectVersion) {
+  const int kRandomSequenceNumber = 1;
+  scoped_ptr<QuicEncryptedPacket> packet;
+
+  AddGuid(guid_, test::QuicVersionMin(), NULL);
+  framer_.set_version(test::QuicVersionMin());
+  packet.reset(
+      ConstructEncryptedPacket(ENCRYPTION_NONE, guid_, kRandomSequenceNumber));
+
+  // Reset packet should be written, using the minimum quic version.
+  EXPECT_CALL(writer_, WritePacket(_, _, _, _, _)).Times(1)
+      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
+  ProcessPacket(guid_, *packet);
+  EXPECT_EQ(QuicTimeWaitListManagerPeer::version(&time_wait_list_manager_),
+            test::QuicVersionMin());
+
+  // New guid
+  ++guid_;
+
+  AddGuid(guid_, test::QuicVersionMax(), NULL);
+  framer_.set_version(test::QuicVersionMax());
+  packet.reset(
+      ConstructEncryptedPacket(ENCRYPTION_NONE, guid_, kRandomSequenceNumber));
+
+  // Reset packet should be written, using the maximum quic version.
+  EXPECT_CALL(writer_, WritePacket(_, _, _, _, _)).Times(1)
+    .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
+  ProcessPacket(guid_, *packet);
+  EXPECT_EQ(QuicTimeWaitListManagerPeer::version(&time_wait_list_manager_),
+            test::QuicVersionMax());
 }
 
 TEST_F(QuicTimeWaitListManagerTest, GetQuicVersionFromMap) {
@@ -349,16 +425,19 @@ TEST_F(QuicTimeWaitListManagerTest, GetQuicVersionFromMap) {
   const int kGuid2 = 456;
   const int kGuid3 = 789;
 
-  AddGuid(kGuid1, test::QuicVersionMin());
-  AddGuid(kGuid2, test::QuicVersionMax());
-  AddGuid(kGuid3, test::QuicVersionMax());
+  AddGuid(kGuid1, test::QuicVersionMin(), NULL);
+  AddGuid(kGuid2, test::QuicVersionMax(), NULL);
+  AddGuid(kGuid3, test::QuicVersionMax(), NULL);
 
   EXPECT_EQ(test::QuicVersionMin(),
-            time_wait_list_manager_.GetQuicVersionFromGuid(kGuid1));
+            QuicTimeWaitListManagerPeer::GetQuicVersionFromGuid(
+                &time_wait_list_manager_, kGuid1));
   EXPECT_EQ(test::QuicVersionMax(),
-            time_wait_list_manager_.GetQuicVersionFromGuid(kGuid2));
+            QuicTimeWaitListManagerPeer::GetQuicVersionFromGuid(
+                &time_wait_list_manager_, kGuid2));
   EXPECT_EQ(test::QuicVersionMax(),
-            time_wait_list_manager_.GetQuicVersionFromGuid(kGuid3));
+            QuicTimeWaitListManagerPeer::GetQuicVersionFromGuid(
+                &time_wait_list_manager_, kGuid3));
 }
 
 }  // namespace

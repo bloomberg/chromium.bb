@@ -334,7 +334,7 @@ QuicTime::Delta InterArrivalSender::RetransmissionDelay() {
   return smoothed_rtt_.Add(smoothed_rtt_);
 }
 
-QuicByteCount InterArrivalSender::GetCongestionWindow() {
+QuicByteCount InterArrivalSender::GetCongestionWindow() const {
   return 0;
 }
 

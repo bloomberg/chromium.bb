@@ -837,6 +837,9 @@ class NET_EXPORT_PRIVATE QuicEncryptedPacket : public QuicData {
   QuicEncryptedPacket(char* buffer, size_t length, bool owns_buffer)
       : QuicData(buffer, length, owns_buffer) {}
 
+  // Clones the packet into a new packet which owns the buffer.
+  QuicEncryptedPacket* Clone() const;
+
   // By default, gtest prints the raw bytes of an object. The bool data
   // member (in the base class QuicData) causes this object to have padding
   // bytes, which causes the default gtest object printer to read

@@ -84,6 +84,11 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // before it has been processed.
   virtual void OnRevivedPacket() = 0;
 
+  // Called when the unauthenticated portion of the header has been parsed.
+  // If OnUnauthenticatedHeader returns false, framing for this packet will
+  // cease.
+  virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) = 0;
+
   // Called when the complete header of a packet had been parsed.
   // If OnPacketHeader returns false, framing for this packet will cease.
   virtual bool OnPacketHeader(const QuicPacketHeader& header) = 0;

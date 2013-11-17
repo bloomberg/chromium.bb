@@ -279,6 +279,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) OVERRIDE;
   virtual void OnRevivedPacket() OVERRIDE;
+  virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual void OnFecProtectedPayload(base::StringPiece payload) OVERRIDE;
   virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
@@ -332,6 +333,10 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Testing only.
   size_t NumQueuedPackets() const { return queued_packets_.size(); }
+
+  QuicEncryptedPacket* ReleaseConnectionClosePacket() {
+    return connection_close_packet_.release();
+  }
 
   // Flush any queued frames immediately.  Preserves the batch write mode and
   // does nothing if there are no pending frames.
@@ -400,6 +405,11 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   bool is_server() const { return is_server_; }
 
+  // Returns the underlying congestion manager.
+  const QuicCongestionManager& congestion_manager() const {
+    return congestion_manager_;
+  }
+
  protected:
   // Send a packet to the peer using encryption |level|. If |sequence_number|
   // is present in the |retransmission_map_|, then contents of this packet will
@@ -411,13 +421,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // manager, and when |forced| is true, it bypasses the congestion manager.
   // TODO(wtc): none of the callers check the return value.
   virtual bool SendOrQueuePacket(EncryptionLevel level,
-                                 QuicPacketSequenceNumber sequence_number,
-                                 QuicPacket* packet,
-                                 QuicPacketEntropyHash entropy_hash,
-                                 TransmissionType transmission_type,
-                                 HasRetransmittableData retransmittable,
-                                 IsHandshake handshake,
-                                 Force forced);
+                                 const SerializedPacket& packet,
+                                 TransmissionType transmission_type);
 
   // Writes the given packet to socket, encrypted with |level|, with the help
   // of helper. Returns true on successful write, false otherwise. However,
@@ -692,6 +697,9 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Contains information about the current write in progress, if any.
   scoped_ptr<PendingWrite> pending_write_;
+
+  // Contains the connection close packet if the connection has been closed.
+  scoped_ptr<QuicEncryptedPacket> connection_close_packet_;
 
   // True when the socket becomes unwritable.
   bool write_blocked_;

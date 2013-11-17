@@ -231,6 +231,11 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     return accept_packet_;
   }
 
+  virtual bool OnUnauthenticatedHeader(
+      const QuicPacketHeader& header) OVERRIDE {
+    return true;
+  }
+
   virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
     frame_count_++;
     stream_frames_.push_back(new QuicStreamFrame(frame));

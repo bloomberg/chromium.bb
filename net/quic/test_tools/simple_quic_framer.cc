@@ -47,6 +47,11 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  virtual bool OnUnauthenticatedHeader(
+      const QuicPacketHeader& header) OVERRIDE {
+    return true;
+  }
+
   virtual void OnFecProtectedPayload(StringPiece payload) OVERRIDE {}
 
   virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {

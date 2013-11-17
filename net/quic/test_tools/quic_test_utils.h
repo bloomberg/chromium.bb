@@ -68,6 +68,7 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
                void(const QuicVersionNegotiationPacket& packet));
   MOCK_METHOD0(OnRevivedPacket, void());
   // The constructor sets this up to return true by default.
+  MOCK_METHOD1(OnUnauthenticatedHeader, bool(const QuicPacketHeader& header));
   MOCK_METHOD1(OnPacketHeader, bool(const QuicPacketHeader& header));
   MOCK_METHOD1(OnFecProtectedPayload, void(base::StringPiece payload));
   MOCK_METHOD1(OnStreamFrame, bool(const QuicStreamFrame& frame));
@@ -97,6 +98,7 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
       const QuicVersionNegotiationPacket& packet) OVERRIDE {}
   virtual void OnRevivedPacket() OVERRIDE {}
   virtual bool OnProtocolVersionMismatch(QuicVersion version) OVERRIDE;
+  virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual void OnFecProtectedPayload(base::StringPiece payload) OVERRIDE {}
   virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
@@ -267,15 +269,9 @@ class PacketSavingConnection : public MockConnection {
   PacketSavingConnection(QuicGuid guid, IPEndPoint address, bool is_server);
   virtual ~PacketSavingConnection();
 
-  virtual bool SendOrQueuePacket(
-      EncryptionLevel level,
-      QuicPacketSequenceNumber sequence_number,
-      QuicPacket* packet,
-      QuicPacketEntropyHash entropy_hash,
-      TransmissionType transmission_type,
-      HasRetransmittableData has_retransmittable_data,
-      IsHandshake handshake,
-      Force forced) OVERRIDE;
+  virtual bool SendOrQueuePacket(EncryptionLevel level,
+                                 const SerializedPacket& packet,
+                                 TransmissionType transmission_type) OVERRIDE;
 
   std::vector<QuicPacket*> packets_;
   std::vector<QuicEncryptedPacket*> encrypted_packets_;
@@ -368,7 +364,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD0(BandwidthEstimate, QuicBandwidth(void));
   MOCK_METHOD0(SmoothedRtt, QuicTime::Delta(void));
   MOCK_METHOD0(RetransmissionDelay, QuicTime::Delta(void));
-  MOCK_METHOD0(GetCongestionWindow, QuicByteCount());
+  MOCK_CONST_METHOD0(GetCongestionWindow, QuicByteCount());
   MOCK_METHOD1(SetCongestionWindow, void(QuicByteCount));
 
  private:
