@@ -18,9 +18,9 @@
 
       var current = internals.numberOfActiveAnimations();
       if (current == 0)
-        document.getElementById('result').innerHTML = "Number of active transitions is (0) as expected";
+        document.getElementById('result').innerHTML = "PASS: Number of active transitions is (0) as expected";
       else
-        document.getElementById('result').innerHTML = "Number of active transitions is (" + current + ") but was expecting (0)";
+        document.getElementById('result').innerHTML = "FAIL: Number of active transitions is (" + current + ") but was expecting (0)";
       testRunner.notifyDone();
     }
 
