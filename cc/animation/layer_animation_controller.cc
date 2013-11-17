@@ -92,6 +92,15 @@ void LayerAnimationController::RemoveAnimation(
   UpdateActivation(NormalActivation);
 }
 
+void LayerAnimationController::AbortAnimations(
+    Animation::TargetProperty target_property) {
+  for (size_t i = 0; i < active_animations_.size(); ++i) {
+    if (active_animations_[i]->target_property() == target_property &&
+        !active_animations_[i]->is_finished())
+      active_animations_[i]->SetRunState(Animation::Aborted, last_tick_time_);
+  }
+}
+
 // Ensures that the list of active animations on the main thread and the impl
 // thread are kept in sync.
 void LayerAnimationController::PushAnimationUpdatesTo(
@@ -312,6 +321,17 @@ void LayerAnimationController::NotifyAnimationFinished(
         layer_animation_delegate_->NotifyAnimationFinished(wall_clock_time);
 
       return;
+    }
+  }
+}
+
+void LayerAnimationController::NotifyAnimationAborted(
+    const AnimationEvent& event) {
+  for (size_t i = 0; i < active_animations_.size(); ++i) {
+    if (active_animations_[i]->group() == event.group_id &&
+        active_animations_[i]->target_property() == event.target_property) {
+      active_animations_[i]->SetRunState(Animation::Aborted,
+                                         event.monotonic_time);
     }
   }
 }
@@ -545,6 +565,7 @@ void LayerAnimationController::PromoteStartedAnimations(
 void LayerAnimationController::MarkFinishedAnimations(double monotonic_time) {
   for (size_t i = 0; i < active_animations_.size(); ++i) {
     if (active_animations_[i]->IsFinishedAt(monotonic_time) &&
+        active_animations_[i]->run_state() != Animation::Aborted &&
         active_animations_[i]->run_state() != Animation::WaitingForDeletion)
       active_animations_[i]->SetRunState(Animation::Finished, monotonic_time);
   }
@@ -586,6 +607,21 @@ void LayerAnimationController::MarkAnimationsForDeletion(
   // have received a finished event before marking them for deletion.
   for (size_t i = 0; i < active_animations_.size(); i++) {
     int group_id = active_animations_[i]->group();
+    if (active_animations_[i]->run_state() == Animation::Aborted) {
+      if (events && !active_animations_[i]->is_impl_only()) {
+        AnimationEvent aborted_event(
+            AnimationEvent::Aborted,
+            id_,
+            group_id,
+            active_animations_[i]->target_property(),
+            monotonic_time);
+        events->push_back(aborted_event);
+      }
+      active_animations_[i]->SetRunState(Animation::WaitingForDeletion,
+                                         monotonic_time);
+      continue;
+    }
+
     bool all_anims_with_same_id_are_finished = false;
 
     // Since deleting an animation on the main thread leads to its deletion
@@ -595,9 +631,8 @@ void LayerAnimationController::MarkAnimationsForDeletion(
         events || active_animations_[i]->received_finished_event();
     // If an animation is finished, and not already marked for deletion,
     // find out if all other animations in the same group are also finished.
-    if (active_animations_[i]->run_state() == Animation::Aborted ||
-        (active_animations_[i]->run_state() == Animation::Finished &&
-         animation_i_will_send_or_has_received_finish_event)) {
+    if (active_animations_[i]->run_state() == Animation::Finished &&
+        animation_i_will_send_or_has_received_finish_event) {
       all_anims_with_same_id_are_finished = true;
       for (size_t j = 0; j < active_animations_.size(); ++j) {
         bool animation_j_will_send_or_has_received_finish_event =
@@ -616,7 +651,8 @@ void LayerAnimationController::MarkAnimationsForDeletion(
       // group_id (and send along animation finished notifications, if
       // necessary).
       for (size_t j = i; j < active_animations_.size(); j++) {
-        if (group_id == active_animations_[j]->group()) {
+        if (active_animations_[j]->group() == group_id &&
+            active_animations_[j]->run_state() != Animation::Aborted) {
           if (events) {
             AnimationEvent finished_event(
                 AnimationEvent::Finished,

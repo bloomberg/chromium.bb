@@ -595,6 +595,10 @@ void LayerTreeHost::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
                                                   wall_clock_time.ToDoubleT());
           break;
 
+        case AnimationEvent::Aborted:
+          (*iter).second->NotifyAnimationAborted((*events)[event_index]);
+          break;
+
         case AnimationEvent::PropertyUpdate:
           (*iter).second->NotifyAnimationPropertyUpdate((*events)[event_index]);
           break;

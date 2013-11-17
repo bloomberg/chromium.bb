@@ -38,16 +38,16 @@ class CC_EXPORT LayerAnimationController
 
   int id() const { return id_; }
 
-  // These methods are virtual for testing.
-  virtual void AddAnimation(scoped_ptr<Animation> animation);
-  virtual void PauseAnimation(int animation_id, double time_offset);
-  virtual void RemoveAnimation(int animation_id);
-  virtual void RemoveAnimation(int animation_id,
-                               Animation::TargetProperty target_property);
+  void AddAnimation(scoped_ptr<Animation> animation);
+  void PauseAnimation(int animation_id, double time_offset);
+  void RemoveAnimation(int animation_id);
+  void RemoveAnimation(int animation_id,
+                       Animation::TargetProperty target_property);
+  void AbortAnimations(Animation::TargetProperty target_property);
 
   // Ensures that the list of active animations on the main thread and the impl
   // thread are kept in sync. This function does not take ownership of the impl
-  // thread controller.
+  // thread controller. This method is virtual for testing.
   virtual void PushAnimationUpdatesTo(
       LayerAnimationController* controller_impl);
 
@@ -90,6 +90,7 @@ class CC_EXPORT LayerAnimationController
                               double wall_clock_time);
   void NotifyAnimationFinished(const AnimationEvent& event,
                                double wall_clock_time);
+  void NotifyAnimationAborted(const AnimationEvent& event);
   void NotifyAnimationPropertyUpdate(const AnimationEvent& event);
 
   void AddValueObserver(LayerAnimationValueObserver* observer);
