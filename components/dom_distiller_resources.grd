@@ -12,7 +12,7 @@
       <include name="IDR_ABOUT_DOM_DISTILLER_HTML" file="dom_distiller/webui/resources/about_dom_distiller.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_ABOUT_DOM_DISTILLER_CSS" file="dom_distiller/webui/resources/about_dom_distiller.css" type="BINDATA" />
       <include name="IDR_ABOUT_DOM_DISTILLER_JS" file="dom_distiller/webui/resources/about_dom_distiller.js" type="BINDATA" />
-      <include name="IDR_DISTILLER_JS" file="dom_distiller/core/resources/distiller.js" type="BINDATA" />
+      <include name="IDR_DISTILLER_JS" file="../third_party/readability/js/readability.js" type="BINDATA" />
     </includes>
   </release>
 </grit>
