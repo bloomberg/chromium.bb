@@ -830,8 +830,7 @@ STDMETHODIMP BrowserAccessibilityWin::scrollTo(enum IA2ScrollType scroll_type) {
       break;
   }
 
-  static_cast<BrowserAccessibilityManagerWin*>(manager_)
-      ->TrackScrollingObject(this);
+  manager_->ToBrowserAccessibilityManagerWin()->TrackScrollingObject(this);
 
   return S_OK;
 }
@@ -855,9 +854,7 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToPoint(
   }
 
   manager_->ScrollToPoint(*this, scroll_to);
-
-  static_cast<BrowserAccessibilityManagerWin*>(manager_)
-      ->TrackScrollingObject(this);
+  manager_->ToBrowserAccessibilityManagerWin()->TrackScrollingObject(this);
 
   return S_OK;
 }
@@ -1914,6 +1911,43 @@ STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
   return S_OK;
 }
 
+STDMETHODIMP BrowserAccessibilityWin::get_characterExtents(
+    LONG offset,
+    enum IA2CoordinateType coordinate_type,
+    LONG* out_x,
+    LONG* out_y,
+    LONG* out_width,
+    LONG* out_height) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!out_x || !out_y || !out_width || !out_height)
+    return E_INVALIDARG;
+
+  const string16& text_str = TextForIAccessibleText();
+  HandleSpecialTextOffset(text_str, &offset);
+
+  if (offset < 0 || offset > static_cast<LONG>(text_str.size()))
+    return E_INVALIDARG;
+
+  gfx::Rect character_bounds;
+  if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
+    character_bounds = GetGlobalBoundsForRange(offset, 1);
+  } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
+    character_bounds = GetLocalBoundsForRange(offset, 1);
+    character_bounds -= location().OffsetFromOrigin();
+  } else {
+    return E_INVALIDARG;
+  }
+
+  *out_x = character_bounds.x();
+  *out_y = character_bounds.y();
+  *out_width = character_bounds.width();
+  *out_height = character_bounds.height();
+
+  return S_OK;
+}
+
 STDMETHODIMP BrowserAccessibilityWin::get_nSelections(LONG* n_selections) {
   if (!instance_active_)
     return E_FAIL;
@@ -2642,6 +2676,68 @@ STDMETHODIMP BrowserAccessibilityWin::get_domText(BSTR* dom_text) {
 
   return GetStringAttributeAsBstr(
       AccessibilityNodeData::ATTR_NAME, dom_text);
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_clippedSubstringBounds(
+    unsigned int start_index,
+    unsigned int end_index,
+    int* out_x,
+    int* out_y,
+    int* out_width,
+    int* out_height) {
+  // TODO(dmazzoni): fully support this API by intersecting the
+  // rect with the container's rect.
+  return get_unclippedSubstringBounds(
+      start_index, end_index, out_x, out_y, out_width, out_height);
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_unclippedSubstringBounds(
+    unsigned int start_index,
+    unsigned int end_index,
+    int* out_x,
+    int* out_y,
+    int* out_width,
+    int* out_height) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!out_x || !out_y || !out_width || !out_height)
+    return E_INVALIDARG;
+
+  const string16& text_str = TextForIAccessibleText();
+  if (start_index > text_str.size() ||
+      end_index > text_str.size() ||
+      start_index > end_index) {
+    return E_INVALIDARG;
+  }
+
+  gfx::Rect bounds = GetGlobalBoundsForRange(
+      start_index, end_index - start_index);
+  *out_x = bounds.x();
+  *out_y = bounds.y();
+  *out_width = bounds.width();
+  *out_height = bounds.height();
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::scrollToSubstring(
+    unsigned int start_index,
+    unsigned int end_index) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  const string16& text_str = TextForIAccessibleText();
+  if (start_index > text_str.size() ||
+      end_index > text_str.size() ||
+      start_index > end_index) {
+    return E_INVALIDARG;
+  }
+
+  manager_->ScrollToMakeVisible(*this, GetLocalBoundsForRange(
+      start_index, end_index - start_index));
+  manager_->ToBrowserAccessibilityManagerWin()->TrackScrollingObject(this);
+
+  return S_OK;
 }
 
 //

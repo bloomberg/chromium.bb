@@ -445,6 +445,14 @@ BrowserAccessibilityWin
 
   CONTENT_EXPORT STDMETHODIMP get_caretOffset(LONG* offset);
 
+  CONTENT_EXPORT STDMETHODIMP get_characterExtents(
+      LONG offset,
+      enum IA2CoordinateType coord_type,
+      LONG* out_x,
+      LONG* out_y,
+      LONG* out_width,
+      LONG* out_height);
+
   CONTENT_EXPORT STDMETHODIMP get_nSelections(LONG* n_selections);
 
   CONTENT_EXPORT STDMETHODIMP get_selection(LONG selection_index,
@@ -511,14 +519,6 @@ BrowserAccessibilityWin
   CONTENT_EXPORT STDMETHODIMP get_attributes(LONG offset, LONG* start_offset,
                                              LONG* end_offset,
                                              BSTR* text_attributes) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_characterExtents(LONG offset,
-      enum IA2CoordinateType coord_type,
-      LONG* x,
-      LONG* y,
-      LONG* width,
-      LONG* height) {
     return E_NOTIMPL;
   }
 
@@ -682,27 +682,21 @@ BrowserAccessibilityWin
   CONTENT_EXPORT STDMETHODIMP get_clippedSubstringBounds(
       unsigned int start_index,
       unsigned int end_index,
-      int* x,
-      int* y,
-      int* width,
-      int* height) {
-    return E_NOTIMPL;
-  }
+      int* out_x,
+      int* out_y,
+      int* out_width,
+      int* out_height);
 
   CONTENT_EXPORT STDMETHODIMP get_unclippedSubstringBounds(
       unsigned int start_index,
       unsigned int end_index,
-      int* x,
-      int* y,
-      int* width,
-      int* height) {
-    return E_NOTIMPL;
-  }
+      int* out_x,
+      int* out_y,
+      int* out_width,
+      int* out_height);
 
   CONTENT_EXPORT STDMETHODIMP scrollToSubstring(unsigned int start_index,
-                                                unsigned int end_index)  {
-    return E_NOTIMPL;
-  }
+                                                unsigned int end_index);
 
   CONTENT_EXPORT STDMETHODIMP get_fontFamily(BSTR *font_family)  {
     return E_NOTIMPL;
