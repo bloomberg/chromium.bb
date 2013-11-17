@@ -22,7 +22,6 @@
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
-#include "ash/shelf/shelf_model_util.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
@@ -101,8 +100,10 @@ const SkColor kCaptionItemForegroundColor = SK_ColorBLACK;
 const int kMaximumAppMenuItemLength = 350;
 
 // The distance of the cursor from the outer rim of the shelf before it
-// separates.
+// separates / re-inserts. Note that the rip off distance is bigger then the
+// re-insertion distance to avoid "flickering" between the two states.
 const int kRipOffDistance = 48;
+const int kReinsertDistance = 32;
 
 // The rip off drag and drop proxy image should get scaled by this factor.
 const float kDragAndDropProxyScale = 1.5f;
@@ -1067,16 +1068,17 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
 }
 
 bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
+  // Determine the distance to the shelf.
+  int delta = CalculateShelfDistance(event.root_location());
   int current_index = view_model_->GetIndexOfView(drag_view_);
   DCHECK_NE(-1, current_index);
   // To avoid ugly forwards and backwards flipping we use different constants
   // for ripping off / re-inserting the items.
   if (dragged_off_shelf_) {
-    // If the shelf/overflow bubble bounds contains |event| we insert the item
-    // back into the shelf.
-    gfx::Point event_position_in_screen =
-        GetPositionInScreen(event.root_location(), this);
-    if (GetBoundsForDragInsertInScreen().Contains(event_position_in_screen)) {
+    // If the re-insertion distance is undercut we insert the item back into
+    // the shelf. Note that the reinsertion value is slightly smaller then the
+    // rip off distance to avoid flickering.
+    if (delta < kReinsertDistance) {
       // Destroy our proxy view item.
       DestroyDragIconProxy();
       // Re-insert the item and return simply false since the caller will handle
@@ -1094,8 +1096,6 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
     return true;
   }
   // Check if we are too far away from the shelf to enter the ripped off state.
-  // Determine the distance to the shelf.
-  int delta = CalculateShelfDistance(event.root_location());
   if (delta > kRipOffDistance) {
     // Create a proxy view item which can be moved anywhere.
     LauncherButton* button = static_cast<LauncherButton*>(drag_view_);
@@ -1329,40 +1329,6 @@ bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) {
 
 gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
   gfx::Size preferred_size = GetPreferredSize();
-  gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);
-  ConvertPointToScreen(this, &origin);
-  return gfx::Rect(origin, preferred_size);
-}
-
-gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
-  DCHECK(dragged_off_shelf_);
-
-  gfx::Size preferred_size;
-  if (is_overflow_mode()) {
-    DCHECK(owner_overflow_bubble_);
-    gfx::Rect bubble_bounds = owner_overflow_bubble_->GetBubbleBounds();
-    preferred_size = bubble_bounds.size();
-  } else {
-    const int preferred_shelf_size = layout_manager_->GetPreferredShelfSize();
-
-    const int last_button_index = view_model_->view_size() - 1;
-    gfx::Rect last_button_bounds =
-        view_model_->view_at(last_button_index)->bounds();
-    if (overflow_button_->visible() &&
-        GetShelfItemIndexForType(TYPE_APP_PANEL, *model_) == -1) {
-      // When overflow button is visible and shelf has no panel items,
-      // last_button_bounds should be overflow button's bounds.
-      last_button_bounds = overflow_button_->bounds();
-    }
-
-    if (layout_manager_->IsHorizontalAlignment()) {
-      preferred_size = gfx::Size(last_button_bounds.right() + leading_inset_,
-                                 preferred_shelf_size);
-    } else {
-      preferred_size = gfx::Size(preferred_shelf_size,
-                                 last_button_bounds.bottom() + leading_inset_);
-    }
-  }
   gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);
   ConvertPointToScreen(this, &origin);
   return gfx::Rect(origin, preferred_size);

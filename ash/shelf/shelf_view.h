@@ -212,15 +212,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // is valid, the new position of the corresponding item is returned.
   int CancelDrag(int modified_index);
 
-  // Returns rectangle bounds used for drag insertion.
-  // Note:
-  //  * When overflow button is visible, returns bounds from first item
-  //    to overflow button.
-  //  * When overflow button is visible and one or more panel items exists,
-  //    returns bounds from first item to last panel item.
-  //  * In the overflow mode, returns only bubble's bounds.
-  gfx::Rect GetBoundsForDragInsertInScreen();
-
   // Common setup done for all children.
   void ConfigureChildView(views::View* view);
 

@@ -200,8 +200,6 @@
         'shelf/background_animator.h',
         'shelf/overflow_bubble.cc',
         'shelf/overflow_bubble.h',
-        'shelf/overflow_bubble_view.cc',
-        'shelf/overflow_bubble_view.h',
         'shelf/overflow_button.cc',
         'shelf/overflow_button.h',
         'shelf/scoped_observer_with_duplicated_sources.h',

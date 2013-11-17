@@ -198,8 +198,8 @@ TEST_F(ShelfViewIconObserverTest, BoundsChanged) {
 // ShelfView tests.
 
 // LauncherItemDelegate for ShelfViewTest.OverflowBubbleSize only.
-// This class should only be used for re-insert test because it cannot handle
-// unpin request.
+// To test ripping off an item in OverflowBubbleSize, all item should be
+// pinned.
 class TestLauncherDelegateForShelfView : public TestLauncherDelegate {
  public:
   explicit TestLauncherDelegateForShelfView(ShelfModel* model)
@@ -1364,6 +1364,7 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
 
   int ripped_index = test_for_overflow_view.GetLastVisibleIndex();
   gfx::Size bubble_size = test_for_overflow_view.GetPreferredSize();
+  int total_item_count = model_->item_count();
   int item_width = test_for_overflow_view.GetButtonSize() +
       test_for_overflow_view.GetButtonSpacing();
 
@@ -1389,19 +1390,14 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
               test_api_->overflow_bubble()->IsShowing());
 
   // Re-insert an item into the overflow bubble.
-  int first_index = test_for_overflow_view.GetFirstVisibleIndex();
-  button = test_for_overflow_view.GetButton(first_index);
-
-  // Check the bubble size after an item is re-inserted.
-  generator.MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
+  generator.MoveMouseTo(start_point);
   test_for_overflow_view.RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(bubble_size.width(),
-            test_for_overflow_view.GetPreferredSize().width());
-
   generator.ReleaseLeftButton();
   test_for_overflow_view.RunMessageLoopUntilAnimationsDone();
+  // Check the bubble size after an item is re-inserted.
   EXPECT_EQ(bubble_size.width(),
             test_for_overflow_view.GetPreferredSize().width());
+  EXPECT_EQ(total_item_count, model_->item_count());
 }
 
 // Check that the first item in the list follows Fitt's law by including the
@@ -1415,99 +1411,8 @@ TEST_F(ShelfViewLegacyShelfLayoutTest, CheckFittsLaw) {
   EXPECT_GT(ideal_bounds_0.width(), ideal_bounds_1.width());
 }
 
-class ShelfViewMultiMonitorTest : public ShelfViewTest {
- public:
-  ShelfViewMultiMonitorTest() {}
-
-  virtual ~ShelfViewMultiMonitorTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    ShelfViewTest::SetUp();
-    UpdateDisplay("800x600,800x600");
-
-    Launcher* secondary_launcher =
-        Launcher::ForWindow(ash::Shell::GetAllRootWindows()[1]);
-    internal::ShelfView* shelf_view_for_secondary =
-        test::LauncherTestAPI(secondary_launcher).shelf_view();
-
-    // The bounds should be big enough for 4 buttons + overflow chevron.
-    shelf_view_for_secondary->SetBounds(0, 0, 500,
-        internal::ShelfLayoutManager::GetPreferredShelfSize());
-
-    test_api_for_secondary_.reset(
-        new ShelfViewTestAPI(shelf_view_for_secondary));
-    // Speeds up animation for test.
-    test_api_for_secondary_->SetAnimationDuration(1);
-  }
-
- protected:
-  scoped_ptr<ShelfViewTestAPI> test_api_for_secondary_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfViewMultiMonitorTest);
-};
-
-// Check the drag insertion bounds of shelf view in multi monitor environment.
-TEST_F(ShelfViewMultiMonitorTest, CheckDragInsertBounds) {
-  // Add buttons until overflow.
-  int items_added = 0;
-  while (!test_api_->IsOverflowButtonVisible()) {
-    AddAppShortcut();
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
-
-  // Test #1: Test drag insertion bounds of primary shelf.
-  // Show overflow bubble.
-  test_api_->ShowOverflowBubble();
-  ASSERT_TRUE(test_api_->overflow_bubble() &&
-              test_api_->overflow_bubble()->IsShowing());
-
-  ash::test::ShelfViewTestAPI test_api_for_overflow_view(
-      test_api_->overflow_bubble()->shelf_view());
-
-  ash::internal::LauncherButton* button = test_api_for_overflow_view.GetButton(
-      test_api_for_overflow_view.GetLastVisibleIndex());
-
-  // Checks that a point in shelf is contained in drag insert bounds.
-  gfx::Point point_in_shelf_view = button->GetBoundsInScreen().CenterPoint();
-  gfx::Rect drag_reinsert_bounds =
-      test_api_for_overflow_view.GetBoundsForDragInsertInScreen();
-  EXPECT_TRUE(drag_reinsert_bounds.Contains(point_in_shelf_view));
-  // Checks that a point out of shelf is not contained in drag insert bounds.
-  EXPECT_FALSE(drag_reinsert_bounds.Contains(
-      gfx::Point(point_in_shelf_view.x(), 0)));
-
-  // Test #2: Test drag insertion bounds of secondary shelf.
-  // Show overflow bubble.
-  test_api_for_secondary_->ShowOverflowBubble();
-  ASSERT_TRUE(test_api_for_secondary_->overflow_bubble() &&
-              test_api_for_secondary_->overflow_bubble()->IsShowing());
-
-  ash::test::ShelfViewTestAPI test_api_for_overflow_view_of_secondary(
-      test_api_for_secondary_->overflow_bubble()->shelf_view());
-
-  ash::internal::LauncherButton* button_in_secondary =
-      test_api_for_overflow_view_of_secondary.GetButton(
-          test_api_for_overflow_view_of_secondary.GetLastVisibleIndex());
-
-  // Checks that a point in shelf is contained in drag insert bounds.
-  gfx::Point point_in_secondary_shelf_view =
-      button_in_secondary->GetBoundsInScreen().CenterPoint();
-  gfx::Rect drag_reinsert_bounds_in_secondary =
-      test_api_for_overflow_view_of_secondary.GetBoundsForDragInsertInScreen();
-  EXPECT_TRUE(drag_reinsert_bounds_in_secondary.Contains(
-      point_in_secondary_shelf_view));
-  // Checks that a point out of shelf is not contained in drag insert bounds.
-  EXPECT_FALSE(drag_reinsert_bounds_in_secondary.Contains(
-      gfx::Point(point_in_secondary_shelf_view.x(), 0)));
-  // Checks that a point in primary shelf should not be contained by insert
-  // bounds of secondary shelf.
-  EXPECT_FALSE(drag_reinsert_bounds_in_secondary.Contains(point_in_shelf_view));
-}
-
 class ShelfViewVisibleBoundsTest : public ShelfViewTest,
-                                   public testing::WithParamInterface<bool> {
+                                      public testing::WithParamInterface<bool> {
  public:
   ShelfViewVisibleBoundsTest() : text_direction_change_(GetParam()) {}
 
