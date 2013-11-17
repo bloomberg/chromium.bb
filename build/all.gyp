@@ -430,6 +430,7 @@
             '../chrome/chrome.gyp:performance_browser_tests',
             '../chrome/chrome.gyp:performance_ui_tests',
             '../chrome/chrome.gyp:sync_performance_tests',
+            '../media/media.gyp:media_perftests',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
           ],
           'conditions': [

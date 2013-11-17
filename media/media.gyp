@@ -1090,6 +1090,9 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../testing/perf/perf_test.gyp:perf_test',
+        '../ui/gfx/gfx.gyp:gfx',
+        '../ui/ui.gyp:ui',
+        '../ui/gl/gl.gyp:gl',
       ],
       'sources': [
         'base/audio_bus_perftest.cc',
@@ -1101,6 +1104,33 @@
         'base/vector_math_perftest.cc',
         'filters/pipeline_integration_perftest.cc',
         'filters/pipeline_integration_test_base.cc',
+      ],
+      'conditions': [
+        ['arm_neon==1', {
+          'defines': [
+            'USE_NEON'
+          ],
+        }],
+        ['OS=="android"', {
+          'conditions': [
+            ['gtest_target_type=="shared_library"', {
+              'dependencies': [
+                '../testing/android/native_test.gyp:native_test_native_code',
+              ],
+            }],
+          ],
+        }],
+        ['media_use_ffmpeg==1', {
+          'dependencies': [
+            '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
+          ],
+        }, {  # media_use_ffmpeg==0
+          'sources!': [
+            'base/demuxer_perftest.cc',
+            'filters/pipeline_integration_perftest.cc',
+            'filters/pipeline_integration_test_base.cc',
+          ],
+        }],
       ],
     },
     {
@@ -1386,6 +1416,19 @@
           'variables': {
             'test_suite_name': 'media_unittests',
             'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)media_unittests<(SHARED_LIB_SUFFIX)',
+          },
+          'includes': ['../build/apk_test.gypi'],
+        },
+        {
+          'target_name': 'media_perftests_apk',
+          'type': 'none',
+          'dependencies': [
+            'media_java',
+            'media_perftests',
+          ],
+          'variables': {
+            'test_suite_name': 'media_perftests',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)media_perftests<(SHARED_LIB_SUFFIX)',
           },
           'includes': ['../build/apk_test.gypi'],
         },

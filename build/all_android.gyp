@@ -83,6 +83,7 @@
         '../gpu/gpu.gyp:gl_tests',
         '../gpu/gpu.gyp:gpu_unittests',
         '../ipc/ipc.gyp:ipc_tests',
+        '../media/media.gyp:media_perftests_apk',
         '../media/media.gyp:media_unittests',
         '../net/net.gyp:net_unittests',
         '../sandbox/sandbox.gyp:sandbox_linux_unittests',
