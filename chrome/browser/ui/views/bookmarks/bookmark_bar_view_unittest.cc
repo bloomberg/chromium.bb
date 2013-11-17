@@ -18,21 +18,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "ui/views/controls/button/text_button.h"
 
-typedef BrowserWithTestWindowTest BookmarkBarViewTest;
-
-// Verify that the apps shortcut is never visible without instant extended.
-TEST_F(BookmarkBarViewTest, NoAppsShortcutWithoutInstantExtended) {
-  ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
-  profile()->CreateBookmarkModel(true);
-  test::WaitForBookmarkModelToLoad(profile());
-  BookmarkBarView bookmark_bar_view(browser(), NULL);
-  bookmark_bar_view.set_owned_by_client();
-  EXPECT_FALSE(bookmark_bar_view.apps_page_shortcut_->visible());
-  browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kShowAppsShortcutInBookmarkBar, true);
-  EXPECT_FALSE(bookmark_bar_view.apps_page_shortcut_->visible());
-}
-
 class BookmarkBarViewInstantExtendedTest : public BrowserWithTestWindowTest {
  public:
   BookmarkBarViewInstantExtendedTest() {

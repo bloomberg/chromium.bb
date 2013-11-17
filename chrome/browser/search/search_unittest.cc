@@ -297,9 +297,9 @@ typedef InstantExtendedAPIEnabledTest ShouldSuppressInstantExtendedOnSRPTest;
 TEST_F(ShouldSuppressInstantExtendedOnSRPTest, NotSet) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                      "Group1 espv:2"));
-  EXPECT_FALSE(ShouldSuppressInstantExtendedOnSRP());
+  EXPECT_TRUE(ShouldSuppressInstantExtendedOnSRP());
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_TRUE(IsQueryExtractionEnabled());
+  EXPECT_FALSE(IsQueryExtractionEnabled());
   EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
 }
 
@@ -454,38 +454,6 @@ struct SearchTestCase {
   bool expected_result;
   const char* comment;
 };
-
-TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedDisabled) {
-  DisableInstantExtendedAPIForTesting();
-
-  const SearchTestCase kTestCases[] = {
-    {"chrome-search://foo/bar",                 false,  ""},
-    {"http://foo.com/instant",                  false,  ""},
-    {"http://foo.com/instant?foo=bar",          false,  ""},
-    {"https://foo.com/instant",                 false,  ""},
-    {"https://foo.com/instant#foo=bar",         false,  ""},
-    {"HtTpS://fOo.CoM/instant",                 false,  ""},
-    {"http://foo.com:80/instant",               false,  ""},
-    {"invalid URL",                             false, "Invalid URL"},
-    {"unknown://scheme/path",                   false, "Unknown scheme"},
-    {"ftp://foo.com/instant",                   false, "Non-HTTP scheme"},
-    {"http://sub.foo.com/instant",              false, "Non-exact host"},
-    {"http://foo.com:26/instant",               false, "Non-default port"},
-    {"http://foo.com/instant/bar",              false, "Non-exact path"},
-    {"http://foo.com/Instant",                  false, "Case sensitive path"},
-    {"http://foo.com/",                         false, "Non-exact path"},
-    {"https://foo.com/",                        false, "Non-exact path"},
-    {"https://foo.com/url?strk",                false, "Non-extended mode"},
-    {"https://foo.com/alt?strk",                false, "Non-extended mode"},
-  };
-
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    const SearchTestCase& test = kTestCases[i];
-    EXPECT_EQ(test.expected_result,
-              ShouldAssignURLToInstantRenderer(GURL(test.url), profile()))
-        << test.url << " " << test.comment;
-  }
-}
 
 TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedEnabled) {
   EnableInstantExtendedAPIForTesting();
@@ -708,6 +676,9 @@ const SearchTestCase kInstantNTPTestCases[] = {
 
 TEST_F(SearchTest, InstantNTPExtendedEnabled) {
   EnableInstantExtendedAPIForTesting();
+  // TODO(samarth): update test cases to use cacheable NTP URLs and remove this.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group1 use_cacheable_ntp:0"));
   AddTab(browser(), GURL("chrome://blank"));
   for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
     const SearchTestCase& test = kInstantNTPTestCases[i];
@@ -719,19 +690,11 @@ TEST_F(SearchTest, InstantNTPExtendedEnabled) {
   }
 }
 
-TEST_F(SearchTest, InstantNTPExtendedDisabled) {
-  AddTab(browser(), GURL("chrome://blank"));
-  for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
-    const SearchTestCase& test = kInstantNTPTestCases[i];
-    NavigateAndCommitActiveTab(GURL(test.url));
-    const content::WebContents* contents =
-        browser()->tab_strip_model()->GetWebContentsAt(0);
-    EXPECT_FALSE(IsInstantNTP(contents)) << test.url << " " << test.comment;
-  }
-}
-
 TEST_F(SearchTest, InstantNTPCustomNavigationEntry) {
   EnableInstantExtendedAPIForTesting();
+  // TODO(samarth): update test cases to use cacheable NTP URLs and remove this.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group1 use_cacheable_ntp:0"));
   AddTab(browser(), GURL("chrome://blank"));
   for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
     const SearchTestCase& test = kInstantNTPTestCases[i];
@@ -826,10 +789,7 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsBlockedForSupervisedUser) {
   EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin, false));
 }
 
-TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
-  // Instant is disabled, so no Instant URL.
-  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin, false));
-
+TEST_F(SearchTest, GetInstantURL) {
   // Enable Instant. Still no Instant URL because "strk" is missing.
   EnableInstantExtendedAPIForTesting();
   SetDefaultInstantTemplateUrl(false);
@@ -853,10 +813,7 @@ TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
 }
 
 TEST_F(SearchTest, StartMarginCGI) {
-  // Instant is disabled, so no Instant URL.
-  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin, false));
-
-  // Enable Instant. No margin.
+  // No margin.
   EnableInstantExtendedAPIForTesting();
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
 
@@ -932,7 +889,7 @@ TEST_F(SearchTest, CommandLineOverrides) {
 
 TEST_F(SearchTest, ShouldShowInstantNTP_Default) {
   EnableInstantExtendedAPIForTesting();
-  EXPECT_TRUE(ShouldShowInstantNTP());
+  EXPECT_FALSE(ShouldShowInstantNTP());
 }
 
 TEST_F(SearchTest, ShouldShowInstantNTP_DisabledViaFinch) {
@@ -951,7 +908,7 @@ TEST_F(SearchTest, ShouldShowInstantNTP_DisabledByUseCacheableNTPFinchFlag) {
 
 TEST_F(SearchTest, ShouldUseCacheableNTP_Default) {
   EnableInstantExtendedAPIForTesting();
-  EXPECT_FALSE(ShouldUseCacheableNTP());
+  EXPECT_TRUE(ShouldUseCacheableNTP());
 }
 
 TEST_F(SearchTest, ShouldUseCacheableNTP_EnabledViaFinch) {
@@ -1009,12 +966,7 @@ TEST_F(SearchTest, IsNTPURL) {
   GURL local_ntp_url(GetLocalInstantURL(profile()));
 
   EXPECT_FALSE(chrome::IsNTPURL(invalid_url, profile()));
-  EXPECT_FALSE(chrome::IsNTPURL(local_ntp_url, profile()));
-
-  EXPECT_TRUE(chrome::IsNTPURL(ntp_url, NULL));
-  EXPECT_FALSE(chrome::IsNTPURL(local_ntp_url, NULL));
-
-  // Enable Instant. No margin.
+  // No margin.
   EnableInstantExtendedAPIForTesting();
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
   GURL remote_ntp_url(GetInstantURL(profile(), kDisableStartMargin, false));

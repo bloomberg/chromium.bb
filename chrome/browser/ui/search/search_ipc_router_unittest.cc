@@ -610,7 +610,8 @@ TEST_F(SearchIPCRouterTest, DoNotSendSetPromoInformationMsg) {
 TEST_F(SearchIPCRouterTest,
        SendSetDisplayInstantResultsMsg_EnableInstantOnResultsPage) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:42 prefetch_results_srp:1"));
+      "EmbeddedSearch",
+      "Group1 espv:42 suppress_on_srp:0 prefetch_results_srp:1"));
   NavigateAndCommitActiveTab(GURL("https://foo.com/url?espv&bar=abc"));
 
   // Make sure ChromeViewMsg_SearchBoxSetDisplayInstantResults message param is
@@ -649,6 +650,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendSetDisplayInstantResultsMsg) {
   EXPECT_CALL(*policy, ShouldSendSetDisplayInstantResults()).Times(1)
       .WillOnce(testing::Return(false));
 
+  process()->sink().ClearMessages();
   GetSearchIPCRouter().SetDisplayInstantResults();
   EXPECT_FALSE(MessageWasSent(
       ChromeViewMsg_SearchBoxSetDisplayInstantResults::ID));
@@ -661,6 +663,7 @@ TEST_F(SearchIPCRouterTest, SendSetSuggestionToPrefetch) {
   EXPECT_CALL(*policy, ShouldSendSetSuggestionToPrefetch()).Times(1)
       .WillOnce(testing::Return(true));
 
+  process()->sink().ClearMessages();
   content::WebContents* contents = web_contents();
   GetSearchTabHelper(contents)->SetSuggestionToPrefetch(InstantSuggestion());
   EXPECT_TRUE(MessageWasSent(
@@ -674,6 +677,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendSetSuggestionToPrefetch) {
   EXPECT_CALL(*policy, ShouldSendSetSuggestionToPrefetch()).Times(1)
       .WillOnce(testing::Return(false));
 
+  process()->sink().ClearMessages();
   content::WebContents* contents = web_contents();
   GetSearchTabHelper(contents)->SetSuggestionToPrefetch(InstantSuggestion());
   EXPECT_FALSE(MessageWasSent(
@@ -687,6 +691,7 @@ TEST_F(SearchIPCRouterTest, SendMostVisitedItemsMsg) {
   EXPECT_CALL(*policy, ShouldSendMostVisitedItems()).Times(1)
       .WillOnce(testing::Return(true));
 
+  process()->sink().ClearMessages();
   GetSearchIPCRouter().SendMostVisitedItems(
       std::vector<InstantMostVisitedItem>());
   EXPECT_TRUE(MessageWasSent(
@@ -700,6 +705,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendMostVisitedItemsMsg) {
   EXPECT_CALL(*policy, ShouldSendMostVisitedItems()).Times(1)
       .WillOnce(testing::Return(false));
 
+  process()->sink().ClearMessages();
   GetSearchIPCRouter().SendMostVisitedItems(
       std::vector<InstantMostVisitedItem>());
   EXPECT_FALSE(MessageWasSent(
@@ -713,6 +719,7 @@ TEST_F(SearchIPCRouterTest, SendThemeBackgroundInfoMsg) {
   EXPECT_CALL(*policy, ShouldSendThemeBackgroundInfo()).Times(1)
       .WillOnce(testing::Return(true));
 
+  process()->sink().ClearMessages();
   GetSearchIPCRouter().SendThemeBackgroundInfo(ThemeBackgroundInfo());
   EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxThemeChanged::ID));
 }
@@ -724,6 +731,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendThemeBackgroundInfoMsg) {
   EXPECT_CALL(*policy, ShouldSendThemeBackgroundInfo()).Times(1)
       .WillOnce(testing::Return(false));
 
+  process()->sink().ClearMessages();
   GetSearchIPCRouter().SendThemeBackgroundInfo(ThemeBackgroundInfo());
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxThemeChanged::ID));
 }
@@ -735,6 +743,7 @@ TEST_F(SearchIPCRouterTest, SendSubmitMsg) {
   EXPECT_CALL(*policy, ShouldSubmitQuery()).Times(1)
       .WillOnce(testing::Return(true));
 
+  process()->sink().ClearMessages();
   GetSearchIPCRouter().Submit(string16());
   EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxSubmit::ID));
 }
@@ -746,6 +755,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendSubmitMsg) {
   EXPECT_CALL(*policy, ShouldSubmitQuery()).Times(1)
       .WillOnce(testing::Return(false));
 
+  process()->sink().ClearMessages();
   GetSearchIPCRouter().Submit(string16());
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxSubmit::ID));
 }
@@ -757,6 +767,7 @@ TEST_F(SearchIPCRouterTest, SendToggleVoiceSearch) {
   EXPECT_CALL(*policy, ShouldSendToggleVoiceSearch()).Times(1)
       .WillOnce(testing::Return(true));
 
+  process()->sink().ClearMessages();
   GetSearchIPCRouter().ToggleVoiceSearch();
   EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxToggleVoiceSearch::ID));
 }
@@ -768,6 +779,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendToggleVoiceSearch) {
   EXPECT_CALL(*policy, ShouldSendToggleVoiceSearch()).Times(1)
       .WillOnce(testing::Return(false));
 
+  process()->sink().ClearMessages();
   GetSearchIPCRouter().ToggleVoiceSearch();
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxToggleVoiceSearch::ID));
 }

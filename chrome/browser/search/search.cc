@@ -317,12 +317,12 @@ uint64 EmbeddedSearchPageVersion() {
   uint64 group_num = 0;
   if (GetFieldTrialInfo(&flags, &group_num)) {
     if (group_num == 0)
-      return kEmbeddedPageVersionDisabled;
+      return kEmbeddedPageVersionDefault;
     return GetUInt64ValueForFlagWithDefault(kEmbeddedPageVersionFlagName,
                                             kEmbeddedPageVersionDefault,
                                             flags);
   }
-  return kEmbeddedPageVersionDisabled;
+  return kEmbeddedPageVersionDefault;
 }
 
 bool IsQueryExtractionEnabled() {
@@ -546,8 +546,8 @@ bool ShouldUseCacheableNTP() {
     return true;
 
   FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
-      kUseCacheableNTP, false, flags);
+  return !GetFieldTrialInfo(&flags, NULL) || GetBoolValueForFlagWithDefault(
+      kUseCacheableNTP, true, flags);
 }
 
 bool ShouldShowInstantNTP() {
@@ -569,8 +569,13 @@ bool ShouldShowRecentTabsOnNTP() {
 
 bool ShouldSuppressInstantExtendedOnSRP() {
   FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
-      kSuppressInstantExtendedOnSRPFlagName, false, flags);
+
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableInstantExtendedAPI))
+    return false;
+
+  return !GetFieldTrialInfo(&flags, NULL) || GetBoolValueForFlagWithDefault(
+      kSuppressInstantExtendedOnSRPFlagName, true, flags);
 }
 
 DisplaySearchButtonConditions GetDisplaySearchButtonConditions() {

@@ -217,9 +217,6 @@ TEST_F(OmniboxFieldTrialTest, GetUndemotableTopTypes) {
 }
 
 TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
-  // This test starts with Instant Extended off (the default state), then
-  // enables Instant Extended and tests again on the same rules.
-
   {
     std::map<std::string, std::string> params;
     // Rule 1 has some exact matches and fallbacks at every level.
@@ -246,84 +243,85 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
   base::FieldTrialList::CreateFieldTrial(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
-  // Tests with Instant Extended disabled.
-  // Tests for rule 1.
-  ExpectRuleValue("rule1-1-0-value",
-                  "rule1", AutocompleteInput::NTP);  // exact match
-  ExpectRuleValue("rule1-1-0-value",
-                  "rule1", AutocompleteInput::NTP);  // exact match
-  ExpectRuleValue("rule1-*-*-value",
-                  "rule1", AutocompleteInput::BLANK);      // fallback to global
-  ExpectRuleValue("rule1-3-0-value",
-                  "rule1", AutocompleteInput::HOME_PAGE);  // exact match
-  ExpectRuleValue("rule1-4-*-value",
-                  "rule1", AutocompleteInput::OTHER);      // partial fallback
-  ExpectRuleValue("rule1-*-*-value",
-                  "rule1",
-                  AutocompleteInput::                      // fallback to global
-                      SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT);
-  // Tests for rule 2.
-  ExpectRuleValue("rule2-*-0-value",
-                  "rule2", AutocompleteInput::HOME_PAGE);  // partial fallback
-  ExpectRuleValue("rule2-*-0-value",
-                  "rule2", AutocompleteInput::OTHER);      // partial fallback
+  if (chrome::IsInstantExtendedAPIEnabled()) {
+    // Tests with Instant Extended enabled.
+    // Tests for rule 1.
+    ExpectRuleValue("rule1-4-1-value",
+                    "rule1", AutocompleteInput::OTHER);    // exact match
+    ExpectRuleValue("rule1-*-1-value",
+                    "rule1", AutocompleteInput::BLANK);    // partial fallback
+    ExpectRuleValue("rule1-*-1-value",
+                    "rule1",
+                    AutocompleteInput::NTP);               // partial fallback
 
-  // Tests for rule 3.
-  ExpectRuleValue("rule3-*-*-value",
-                  "rule3", AutocompleteInput::HOME_PAGE);  // fallback to global
-  ExpectRuleValue("rule3-*-*-value",
-                  "rule3", AutocompleteInput::OTHER);      // fallback to global
+    // Tests for rule 2.
+    ExpectRuleValue("rule2-1-*-value",
+                    "rule2",
+                    AutocompleteInput::NTP);               // partial fallback
+    ExpectRuleValue("rule2-*-*-value",
+                    "rule2", AutocompleteInput::OTHER);    // global fallback
 
-  // Tests for rule 4.
-  ExpectRuleValue("",
-                  "rule4", AutocompleteInput::BLANK);      // no global fallback
-  ExpectRuleValue("",
-                  "rule4", AutocompleteInput::HOME_PAGE);  // no global fallback
-  ExpectRuleValue("rule4-4-0-value",
-                  "rule4", AutocompleteInput::OTHER);      // exact match
+    // Tests for rule 3.
+    ExpectRuleValue("rule3-*-*-value",
+                    "rule3",
+                    AutocompleteInput::HOME_PAGE);         // global fallback
+    ExpectRuleValue("rule3-*-*-value",
+                    "rule3",
+                    AutocompleteInput::OTHER);             // global fallback
 
-  // Tests for rule 5 (a missing rule).
-  ExpectRuleValue("",
-                  "rule5", AutocompleteInput::OTHER);      // no rule at all
+    // Tests for rule 4.
+    ExpectRuleValue("",
+                    "rule4",
+                    AutocompleteInput::BLANK);             // no global fallback
+    ExpectRuleValue("",
+                    "rule4",
+                    AutocompleteInput::HOME_PAGE);         // no global fallback
 
-  // Now change the Instant Extended state and run analogous tests.
-  // Instant Extended only works on non-mobile platforms.
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  chrome::ResetInstantExtendedOptInStateGateForTest();
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableInstantExtendedAPI);
+    // Tests for rule 5 (a missing rule).
+    ExpectRuleValue("",
+                    "rule5", AutocompleteInput::OTHER);    // no rule at all
+  } else {
+    // Tests for rule 1.
+    ExpectRuleValue("rule1-1-0-value",
+                    "rule1", AutocompleteInput::NTP);      // exact match
+    ExpectRuleValue("rule1-1-0-value",
+                    "rule1", AutocompleteInput::NTP);      // exact match
+    ExpectRuleValue("rule1-*-*-value",
+                    "rule1", AutocompleteInput::BLANK);    // fallback to global
+    ExpectRuleValue("rule1-3-0-value",
+                    "rule1",
+                    AutocompleteInput::HOME_PAGE);         // exact match
+    ExpectRuleValue("rule1-4-*-value",
+                    "rule1", AutocompleteInput::OTHER);    // partial fallback
+    ExpectRuleValue("rule1-*-*-value",
+                    "rule1",
+                    AutocompleteInput::                    // fallback to global
+                    SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT);
+    // Tests for rule 2.
+    ExpectRuleValue("rule2-*-0-value",
+                    "rule2",
+                    AutocompleteInput::HOME_PAGE);         // partial fallback
+    ExpectRuleValue("rule2-*-0-value",
+                    "rule2", AutocompleteInput::OTHER);    // partial fallback
 
-  // Tests with Instant Extended enabled.
-  // Tests for rule 1.
-  ExpectRuleValue("rule1-4-1-value",
-                  "rule1", AutocompleteInput::OTHER);      // exact match
-  ExpectRuleValue("rule1-*-1-value",
-                  "rule1", AutocompleteInput::BLANK);      // partial fallback
-  ExpectRuleValue("rule1-*-1-value",
-                  "rule1",
-                  AutocompleteInput::NTP);        // partial fallback
+    // Tests for rule 3.
+    ExpectRuleValue("rule3-*-*-value",
+                    "rule3",
+                    AutocompleteInput::HOME_PAGE);         // fallback to global
+    ExpectRuleValue("rule3-*-*-value",
+                    "rule3", AutocompleteInput::OTHER);    // fallback to global
 
-  // Tests for rule 2.
-  ExpectRuleValue("rule2-1-*-value",
-                  "rule2",
-                  AutocompleteInput::NTP);        // partial fallback
-  ExpectRuleValue("rule2-*-*-value",
-                  "rule2", AutocompleteInput::OTHER);      // global fallback
+    // Tests for rule 4.
+    ExpectRuleValue("",
+                    "rule4", AutocompleteInput::BLANK);    // no global fallback
+    ExpectRuleValue("",
+                    "rule4",
+                    AutocompleteInput::HOME_PAGE);         // no global fallback
+    ExpectRuleValue("rule4-4-0-value",
+                    "rule4", AutocompleteInput::OTHER);    // exact match
 
-  // Tests for rule 3.
-  ExpectRuleValue("rule3-*-*-value",
-                  "rule3", AutocompleteInput::HOME_PAGE);  // global fallback
-  ExpectRuleValue("rule3-*-*-value",
-                  "rule3", AutocompleteInput::OTHER);      // global fallback
-
-  // Tests for rule 4.
-  ExpectRuleValue("",
-                  "rule4", AutocompleteInput::BLANK);      // no global fallback
-  ExpectRuleValue("",
-                  "rule4", AutocompleteInput::HOME_PAGE);  // no global fallback
-
-  // Tests for rule 5 (a missing rule).
-  ExpectRuleValue("",
-                  "rule5", AutocompleteInput::OTHER);      // no rule at all
-#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
+    // Tests for rule 5 (a missing rule).
+    ExpectRuleValue("",
+                    "rule5", AutocompleteInput::OTHER);    // no rule at all
+  }
 }
