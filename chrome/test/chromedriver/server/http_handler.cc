@@ -643,15 +643,7 @@ scoped_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareResponseHelper(
     return response.Pass();
   }
 
-  if (trimmed_path == internal::kNewSessionPathPattern && status.IsOk()) {
-    // Creating a session involves a HTTP request to /session, which is
-    // supposed to redirect to /session/:sessionId, which returns the
-    // session info.
-    scoped_ptr<net::HttpServerResponseInfo> response(
-        new net::HttpServerResponseInfo(net::HTTP_SEE_OTHER));
-    response->AddHeader("Location", url_base_ + "session/" + session_id);
-    return response.Pass();
-  } else if (status.IsError()) {
+  if (status.IsError()) {
     Status full_status(status);
     full_status.AddDetails(base::StringPrintf(
         "Driver info: chromedriver=%s,platform=%s %s %s",

@@ -68,10 +68,14 @@ TEST(HttpHandlerTest, HandleNewSession) {
   request.path = "/base/session";
   net::HttpServerResponseInfo response;
   handler.Handle(request, base::Bind(&OnResponse, &response));
-  ASSERT_EQ(net::HTTP_SEE_OTHER, response.status_code());
-  ASSERT_NE(std::string::npos,
-            response.Serialize().find("Location:/base/session/"))
-      << response.Serialize();
+  ASSERT_EQ(net::HTTP_OK, response.status_code());
+  base::DictionaryValue body;
+  body.SetInteger("status", kOk);
+  body.SetInteger("value", 1);
+  body.SetString("sessionId", "session_id");
+  std::string json;
+  base::JSONWriter::Write(&body, &json);
+  ASSERT_EQ(json, response.body());
 }
 
 TEST(HttpHandlerTest, HandleInvalidPost) {
@@ -116,7 +120,7 @@ TEST(HttpHandlerTest, HandleCommand) {
   body.SetString("sessionId", "session_id");
   std::string json;
   base::JSONWriter::Write(&body, &json);
-  ASSERT_STREQ(json.c_str(), response.body().c_str());
+  ASSERT_EQ(json, response.body());
 }
 
 TEST(MatchesCommandTest, DiffMethod) {
@@ -125,7 +129,7 @@ TEST(MatchesCommandTest, DiffMethod) {
   base::DictionaryValue params;
   ASSERT_FALSE(internal::MatchesCommand(
       "get", "path", command, &session_id, &params));
-  ASSERT_STREQ("", session_id.c_str());
+  ASSERT_TRUE(session_id.empty());
   ASSERT_EQ(0u, params.size());
 }
 
