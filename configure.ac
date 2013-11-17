@@ -521,7 +521,7 @@ AC_ARG_WITH(cache-dir,
 case $fc_cachedir in
 no|yes)
 	if test "$os_win32" = "yes"; then
-		fc_cachedir="WINDOWSTEMPDIR_FONTCONFIG_CACHE"
+		fc_cachedir="LOCAL_APPDATA_FONTCONFIG_CACHE"
 	else
 		fc_cachedir='${localstatedir}/cache/${PACKAGE}'
 	fi
