@@ -16,9 +16,8 @@ KEYBOARD_EXPORT extern const char kEnableSwipeSelection[];
 // Enables the virtual keyboard.
 KEYBOARD_EXPORT extern const char kEnableVirtualKeyboard[];
 
-// Enables the keyboard usability experiment. This is an experimental mode for
-// testing the usability of various experimental keyboard layouts.
-KEYBOARD_EXPORT extern const char kKeyboardUsabilityExperiment[];
+// Enables the keyboard usability test.
+KEYBOARD_EXPORT extern const char kKeyboardUsabilityTest[];
 
 }  // namespace switches
 }  // namespace keyboard

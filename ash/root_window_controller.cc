@@ -542,11 +542,9 @@ void RootWindowController::ActivateKeyboard(
     return;
   }
   DCHECK(keyboard_controller);
-  if (!keyboard::IsKeyboardUsabilityExperimentEnabled()) {
-    keyboard_controller->AddObserver(shelf()->shelf_layout_manager());
-    keyboard_controller->AddObserver(panel_layout_manager_);
-    keyboard_controller->AddObserver(docked_layout_manager_);
-  }
+  keyboard_controller->AddObserver(shelf()->shelf_layout_manager());
+  keyboard_controller->AddObserver(panel_layout_manager_);
+  keyboard_controller->AddObserver(docked_layout_manager_);
   aura::Window* parent = root_window();
   aura::Window* keyboard_container =
       keyboard_controller->GetContainerWindow();
@@ -567,11 +565,9 @@ void RootWindowController::DeactivateKeyboard(
       keyboard_controller->GetContainerWindow();
   if (keyboard_container->GetRootWindow() == root_window()) {
     root_window()->RemoveChild(keyboard_container);
-    if (!keyboard::IsKeyboardUsabilityExperimentEnabled()) {
-      keyboard_controller->RemoveObserver(shelf()->shelf_layout_manager());
-      keyboard_controller->RemoveObserver(panel_layout_manager_);
-      keyboard_controller->RemoveObserver(docked_layout_manager_);
-    }
+    keyboard_controller->RemoveObserver(shelf()->shelf_layout_manager());
+    keyboard_controller->RemoveObserver(panel_layout_manager_);
+    keyboard_controller->RemoveObserver(docked_layout_manager_);
   }
 }
 
@@ -597,16 +593,13 @@ RootWindowController::RootWindowController(aura::RootWindow* root_window)
 
 void RootWindowController::Init(RootWindowType root_window_type,
                                 bool first_run_after_boot) {
-  Shell* shell = Shell::GetInstance();
-  shell->InitRootWindow(root_window());
+  Shell::GetInstance()->InitRootWindow(root_window());
 
   root_window_->SetCursor(ui::kCursorPointer);
   CreateContainersInRootWindow(root_window_->window());
 
-  if (root_window_type == VIRTUAL_KEYBOARD) {
-    shell->InitKeyboard();
+  if (root_window_type == VIRTUAL_KEYBOARD)
     return;
-  }
 
   CreateSystemBackground(first_run_after_boot);
 
@@ -618,12 +611,12 @@ void RootWindowController::Init(RootWindowType root_window_type,
     GetSystemModalLayoutManager(NULL)->CreateModalBackground();
   }
 
+  Shell* shell = Shell::GetInstance();
   shell->AddShellObserver(this);
 
   if (root_window_type == PRIMARY) {
     root_window_layout()->OnWindowResized();
-    if (!keyboard::IsKeyboardUsabilityExperimentEnabled())
-      shell->InitKeyboard();
+    shell->InitKeyboard(this);
   } else {
     root_window_layout()->OnWindowResized();
     shell->desktop_background_controller()->OnRootWindowAdded(root_window());

@@ -27,8 +27,7 @@ namespace {
 const int kHideKeyboardDelayMs = 100;
 
 gfx::Rect KeyboardBoundsFromWindowBounds(const gfx::Rect& window_bounds) {
-  const float kKeyboardHeightRatio =
-      keyboard::IsKeyboardUsabilityExperimentEnabled() ? 1.0f : 0.3f;
+  const float kKeyboardHeightRatio = 0.3f;
   return gfx::Rect(
       window_bounds.x(),
       window_bounds.y() + window_bounds.height() * (1 - kKeyboardHeightRatio),
@@ -192,7 +191,8 @@ void KeyboardController::OnTextInputStateChanged(
   ui::TextInputType type =
       client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
   if (type == ui::TEXT_INPUT_TYPE_NONE &&
-      !IsKeyboardUsabilityExperimentEnabled()) {
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kKeyboardUsabilityTest)) {
     should_show = false;
   } else {
     if (container_->children().empty()) {
@@ -202,8 +202,7 @@ void KeyboardController::OnTextInputStateChanged(
       container_->AddChild(keyboard);
       container_->layout_manager()->OnWindowResized();
     }
-    if (type != ui::TEXT_INPUT_TYPE_NONE)
-      proxy_->SetUpdateInputType(type);
+    proxy_->SetUpdateInputType(type);
     container_->parent()->StackChildAtTop(container_.get());
     should_show = true;
   }

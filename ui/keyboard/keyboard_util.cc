@@ -42,12 +42,9 @@ namespace keyboard {
 bool IsKeyboardEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableVirtualKeyboard) ||
-          IsKeyboardUsabilityExperimentEnabled();
-}
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kKeyboardUsabilityTest);
 
-bool IsKeyboardUsabilityExperimentEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kKeyboardUsabilityExperiment);
 }
 
 bool InsertText(const base::string16& text, aura::Window* root_window) {

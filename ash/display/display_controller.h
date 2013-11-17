@@ -84,11 +84,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
     return mirror_window_controller_.get();
   }
 
-  internal::VirtualKeyboardWindowController*
-      virtual_keyboard_window_controller() {
-    return virtual_keyboard_window_controller_.get();
-  }
-
   // Initializes primary display.
   void InitPrimaryDisplay();
 

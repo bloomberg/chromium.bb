@@ -338,7 +338,7 @@ class KeyboardControllerUsabilityTest : public KeyboardControllerTest {
 
   virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kKeyboardUsabilityExperiment);
+        switches::kKeyboardUsabilityTest);
     KeyboardControllerTest::SetUp();
   }
 
