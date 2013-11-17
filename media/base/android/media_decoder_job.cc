@@ -28,6 +28,7 @@ MediaDecoderJob::MediaDecoderJob(
       media_codec_bridge_(media_codec_bridge),
       needs_flush_(false),
       input_eos_encountered_(false),
+      skip_eos_enqueue_(true),
       prerolling_(true),
       weak_this_(this),
       request_data_cb_(request_data_cb),
@@ -288,6 +289,17 @@ void MediaDecoderJob::DecodeInternal(
     return;
   }
 
+  if (skip_eos_enqueue_) {
+    if (unit.end_of_stream || unit.data.empty()) {
+      input_eos_encountered_ = true;
+      callback.Run(MEDIA_CODEC_OUTPUT_END_OF_STREAM, kNoTimestamp(), 0);
+      return;
+    }
+
+    skip_eos_enqueue_ = false;
+  }
+
+
   MediaCodecStatus input_status = MEDIA_CODEC_INPUT_END_OF_STREAM;
   if (!input_eos_encountered_) {
     input_status = QueueInputBuffer(unit);
@@ -333,7 +345,7 @@ void MediaDecoderJob::DecodeInternal(
   // input queueing without immediate dequeue when |input_status| !=
   // |MEDIA_CODEC_OK|. Need to use the |presentation_timestamp| for video, and
   // use |size| to calculate the timestamp for audio. See
-  // http://crbug.com/310823 and b/11356652.
+  // http://crbug.com/310823 and http://b/11356652.
   bool render_output  = unit.timestamp >= preroll_timestamp_ &&
       (status != MEDIA_CODEC_OUTPUT_END_OF_STREAM || size != 0u);
   base::TimeDelta time_to_render;

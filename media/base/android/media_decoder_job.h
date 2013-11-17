@@ -144,7 +144,14 @@ class MediaDecoderJob {
   bool needs_flush_;
 
   // Whether input EOS is encountered.
+  // TODO(wolenetz/qinmin): Protect with a lock. See http://crbug.com/320043.
   bool input_eos_encountered_;
+
+  // Tracks whether DecodeInternal() should skip decoding if the first access
+  // unit is EOS or empty, and report |MEDIA_CODEC_OUTPUT_END_OF_STREAM|. This
+  // is to work around some decoders that could crash otherwise. See
+  // http://b/11696552.
+  bool skip_eos_enqueue_;
 
   // The timestamp the decoder needs to preroll to. If an access unit's
   // timestamp is smaller than |preroll_timestamp_|, don't render it.

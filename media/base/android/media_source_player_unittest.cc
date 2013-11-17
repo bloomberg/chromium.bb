@@ -39,7 +39,8 @@ static const char kVideoWebM[] = "video/webm";
 class MockMediaPlayerManager : public MediaPlayerManager {
  public:
   explicit MockMediaPlayerManager(base::MessageLoop* message_loop)
-      : message_loop_(message_loop) {}
+      : message_loop_(message_loop),
+        playback_completed_(false) {}
   virtual ~MockMediaPlayerManager() {}
 
   // MediaPlayerManager implementation.
@@ -54,6 +55,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
       int player_id, base::TimeDelta duration, int width, int height,
       bool success) OVERRIDE {}
   virtual void OnPlaybackComplete(int player_id) OVERRIDE {
+    playback_completed_ = true;
     if (message_loop_->is_running())
       message_loop_->Quit();
   }
@@ -85,8 +87,13 @@ class MockMediaPlayerManager : public MediaPlayerManager {
                               uint32 reference_id,
                               const std::string& session_id) OVERRIDE {}
 
+  bool playback_completed() const {
+    return playback_completed_;
+  }
+
  private:
   base::MessageLoop* message_loop_;
+  bool playback_completed_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaPlayerManager);
 };
@@ -217,23 +224,37 @@ class MediaSourcePlayerTest : public testing::Test {
     return player_.IsEventPending(player_.SURFACE_CHANGE_EVENT_PENDING);
   }
 
-  DemuxerConfigs CreateAudioDemuxerConfigs() {
+  DemuxerConfigs CreateAudioDemuxerConfigs(AudioCodec audio_codec) {
     DemuxerConfigs configs;
-    configs.audio_codec = kCodecVorbis;
+    configs.audio_codec = audio_codec;
     configs.audio_channels = 2;
-    configs.audio_sampling_rate = 44100;
     configs.is_audio_encrypted = false;
     configs.duration_ms = kDefaultDurationInMs;
-    scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vorbis-extradata");
+
+    if (audio_codec == kCodecVorbis) {
+      configs.audio_sampling_rate = 44100;
+      scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(
+          "vorbis-extradata");
+      configs.audio_extra_data = std::vector<uint8>(
+          buffer->data(),
+          buffer->data() + buffer->data_size());
+      return configs;
+    }
+
+    // Other codecs are not yet supported by this helper.
+    EXPECT_EQ(audio_codec, kCodecAAC);
+
+    configs.audio_sampling_rate = 48000;
+    uint8 aac_extra_data[] = { 0x13, 0x10 };
     configs.audio_extra_data = std::vector<uint8>(
-        buffer->data(),
-        buffer->data() + buffer->data_size());
+        aac_extra_data,
+        aac_extra_data + 2);
     return configs;
   }
 
   // Starts an audio decoder job.
   void StartAudioDecoderJob() {
-    Start(CreateAudioDemuxerConfigs());
+    Start(CreateAudioDemuxerConfigs(kCodecVorbis));
   }
 
   DemuxerConfigs CreateVideoDemuxerConfigs() {
@@ -246,7 +267,7 @@ class MediaSourcePlayerTest : public testing::Test {
   }
 
   DemuxerConfigs CreateAudioVideoDemuxerConfigs() {
-    DemuxerConfigs configs = CreateAudioDemuxerConfigs();
+    DemuxerConfigs configs = CreateAudioDemuxerConfigs(kCodecVorbis);
     configs.video_codec = kCodecVP8;
     configs.video_size = gfx::Size(320, 240);
     configs.is_video_encrypted = false;
@@ -579,7 +600,7 @@ TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithInvalidConfig) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test audio decoder job will not be created when failed to start the codec.
-  DemuxerConfigs configs = CreateAudioDemuxerConfigs();
+  DemuxerConfigs configs = CreateAudioDemuxerConfigs(kCodecVorbis);
   // Replace with invalid |audio_extra_data|
   configs.audio_extra_data.clear();
   uint8 invalid_codec_data[] = { 0x00, 0xff, 0xff, 0xff, 0xff };
@@ -731,7 +752,7 @@ TEST_F(MediaSourcePlayerTest, AudioOnlyStartAfterSeekFinish) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test audio decoder job will not start until pending seek event is handled.
-  DemuxerConfigs configs = CreateAudioDemuxerConfigs();
+  DemuxerConfigs configs = CreateAudioDemuxerConfigs(kCodecVorbis);
   player_.OnDemuxerConfigsAvailable(configs);
   EXPECT_FALSE(GetMediaDecoderJob(true));
   EXPECT_EQ(0, demuxer_->num_data_requests());
@@ -954,6 +975,42 @@ TEST_F(MediaSourcePlayerTest, ReplayAfterInputEOS) {
 
   // Reconfirm only 1 seek request has occurred.
   EXPECT_EQ(1, demuxer_->num_seek_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, FirstDataIsEOS) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test decode of EOS buffer without any prior decode. See also
+  // http://b/11696552.
+  Start(CreateAudioDemuxerConfigs(kCodecAAC));
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+  player_.OnDemuxerDataAvailable(CreateEOSAck(true));
+  EXPECT_FALSE(manager_.playback_completed());
+
+  message_loop_.Run();
+  EXPECT_TRUE(manager_.playback_completed());
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, FirstDataAfterSeekIsEOS) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test decode of EOS buffer, just after seeking, without any prior decode
+  // (other than the simulated |kAborted| resulting from the seek process.)
+  // See also http://b/11696552.
+  Start(CreateAudioDemuxerConfigs(kCodecAAC));
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+
+  SeekPlayer(true, base::TimeDelta());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+  player_.OnDemuxerDataAvailable(CreateEOSAck(true));
+  EXPECT_FALSE(manager_.playback_completed());
+
+  message_loop_.Run();
+  EXPECT_TRUE(manager_.playback_completed());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
 }
 
 TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterAbort) {
@@ -1261,7 +1318,7 @@ TEST_F(MediaSourcePlayerTest, PrerollContinuesAcrossConfigChange) {
   EXPECT_EQ(1, demuxer_->num_config_requests());
 
   // Simulate arrival of new configs.
-  player_.OnDemuxerConfigsAvailable(CreateAudioDemuxerConfigs());
+  player_.OnDemuxerConfigsAvailable(CreateAudioDemuxerConfigs(kCodecVorbis));
 
   // Send some data before the seek position.
   for (int i = 1; i < 4; ++i) {
@@ -1661,7 +1718,7 @@ TEST_F(MediaSourcePlayerTest, ConfigChangedThenReleaseThenConfigsAvailable) {
   StartConfigChange(true, true, 0);
   ReleasePlayer();
 
-  player_.OnDemuxerConfigsAvailable(CreateAudioDemuxerConfigs());
+  player_.OnDemuxerConfigsAvailable(CreateAudioDemuxerConfigs(kCodecVorbis));
   EXPECT_FALSE(GetMediaDecoderJob(true));
   EXPECT_FALSE(player_.IsPlaying());
   EXPECT_EQ(1, demuxer_->num_data_requests());
@@ -1690,7 +1747,7 @@ TEST_F(MediaSourcePlayerTest, ConfigChangedThenReleaseThenStart) {
   EXPECT_FALSE(GetMediaDecoderJob(true));
   EXPECT_EQ(1, demuxer_->num_data_requests());
 
-  player_.OnDemuxerConfigsAvailable(CreateAudioDemuxerConfigs());
+  player_.OnDemuxerConfigsAvailable(CreateAudioDemuxerConfigs(kCodecVorbis));
   EXPECT_TRUE(GetMediaDecoderJob(true));
   EXPECT_EQ(2, demuxer_->num_data_requests());
 
