@@ -930,8 +930,8 @@ Atom GetAtom(const char* name) {
 
 void SetWindowClassHint(XDisplay* display,
                         XID window,
-                        std::string res_name,
-                        std::string res_class) {
+                        const std::string& res_name,
+                        const std::string& res_class) {
   XClassHint class_hints;
   // const_cast is safe because XSetClassHint does not modify the strings.
   // Just to be safe, the res_name and res_class parameters are local copies,
@@ -939,6 +939,18 @@ void SetWindowClassHint(XDisplay* display,
   class_hints.res_name = const_cast<char*>(res_name.c_str());
   class_hints.res_class = const_cast<char*>(res_class.c_str());
   XSetClassHint(display, window, &class_hints);
+}
+
+void SetWindowRole(XDisplay* display, XID window, const std::string& role) {
+  if (role.empty()) {
+    XDeleteProperty(display, window, GetAtom("WM_WINDOW_ROLE"));
+  } else {
+    char* role_c = const_cast<char*>(role.c_str());
+    XChangeProperty(display, window, GetAtom("WM_WINDOW_ROLE"), XA_STRING, 8,
+                    PropModeReplace,
+                    reinterpret_cast<unsigned char*>(role_c),
+                    role.size());
+  }
 }
 
 XID GetParentWindow(XID window) {

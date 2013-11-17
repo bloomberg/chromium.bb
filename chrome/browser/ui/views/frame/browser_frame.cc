@@ -120,6 +120,8 @@ void BrowserFrame::InitBrowserFrame() {
         command_line.GetSwitchValueNative(switches::kUserDataDir);
     params.wm_class_name += " (" + user_data_dir + ")";
   }
+  const char kX11WindowRoleBrowser[] = "browser";
+  params.wm_role_name = std::string(kX11WindowRoleBrowser);
 #endif  // defined(OS_LINUX)
 
   Init(params);

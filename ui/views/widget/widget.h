@@ -165,6 +165,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
     InitParams();
     explicit InitParams(Type type);
+    ~InitParams();
 
     // Will return the first of the following that isn't NULL: the native view,
     // |parent|, |context|.
@@ -229,6 +230,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // Only used by X11, for root level windows. Specifies the res_name and
     // res_class fields, respectively, of the WM_CLASS window property. Controls
     // window grouping and desktop file matching in Linux window managers.
+    std::string wm_role_name;
     std::string wm_class_name;
     std::string wm_class_class;
   };

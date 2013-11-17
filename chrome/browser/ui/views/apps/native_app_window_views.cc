@@ -230,6 +230,8 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   // X11 environments to distinguish them from main browser windows.
   init_params.wm_class_name = web_app::GetWMClassFromAppName(app_name);
   init_params.wm_class_class = ShellIntegrationLinux::GetProgramClassName();
+  const char kX11WindowRoleApp[] = "app";
+  init_params.wm_role_name = std::string(kX11WindowRoleApp);
 #endif
 
   OnBeforeWidgetInit(&init_params, window_);

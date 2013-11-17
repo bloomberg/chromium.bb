@@ -1015,6 +1015,12 @@ void DesktopRootWindowHostX11::InitX11Window(
     ui::SetWindowClassHint(
         xdisplay_, xwindow_, params.wm_class_name, params.wm_class_class);
   }
+  if (!params.wm_role_name.empty() ||
+      params.type == Widget::InitParams::TYPE_POPUP) {
+    const char kX11WindowRolePopup[] = "popup";
+    ui::SetWindowRole(xdisplay_, xwindow_, params.wm_role_name.empty() ?
+                      std::string(kX11WindowRolePopup) : params.wm_role_name);
+  }
 
   // If we have a parent, record the parent/child relationship. We use this
   // data during destruction to make sure that when we try to close a parent

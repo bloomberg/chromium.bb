@@ -158,6 +158,9 @@ Widget::InitParams::InitParams(Type type)
       context(NULL) {
 }
 
+Widget::InitParams::~InitParams() {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 

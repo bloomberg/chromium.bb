@@ -205,8 +205,13 @@ Atom GetAtom(const char* atom_name);
 // Sets the WM_CLASS attribute for a given X11 window.
 UI_EXPORT void SetWindowClassHint(XDisplay* display,
                                   XID window,
-                                  std::string res_name,
-                                  std::string res_class);
+                                  const std::string& res_name,
+                                  const std::string& res_class);
+
+// Sets the WM_WINDOW_ROLE attribute for a given X11 window.
+UI_EXPORT void SetWindowRole(XDisplay* display,
+                             XID window,
+                             const std::string& role);
 
 // Get |window|'s parent window, or None if |window| is the root window.
 UI_EXPORT XID GetParentWindow(XID window);
