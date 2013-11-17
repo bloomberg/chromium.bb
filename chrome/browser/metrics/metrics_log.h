@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/metrics/metrics_network_observer.h"
 #include "chrome/common/metrics/metrics_log_base.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "ui/gfx/size.h"
 
@@ -84,14 +85,15 @@ class MetricsLog : public MetricsLogBase {
   static const std::string& version_extension();
 
   // Records the current operating environment.  Takes the list of installed
-  // plugins and Google Update statistics as parameters because those can't be
-  // obtained synchronously from the UI thread.
-  // profile_metrics, if non-null, gives a dictionary of all profile metrics
-  // that are to be recorded. Each value in profile_metrics should be a
-  // dictionary giving the metrics for the profile.
+  // plugins, Google Update statistics, and synthetic trial IDs as parameters
+  // because those can't be obtained synchronously from the UI thread.
+  // A synthetic trial is one that is set up dynamically by code in Chrome. For
+  // example, a pref may be mapped to a synthetic trial such that the group
+  // is determined by the pref value.
   void RecordEnvironment(
       const std::vector<content::WebPluginInfo>& plugin_list,
       const GoogleUpdateMetrics& google_update_metrics,
+      const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials,
       base::TimeDelta incremental_uptime);
 
   // Records the current operating environment.  Takes the list of installed
@@ -102,7 +104,8 @@ class MetricsLog : public MetricsLogBase {
   // upload.
   void RecordEnvironmentProto(
       const std::vector<content::WebPluginInfo>& plugin_list,
-      const GoogleUpdateMetrics& google_update_metrics);
+      const GoogleUpdateMetrics& google_update_metrics,
+      const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials);
 
   // Records the input text, available choices, and selected entry when the
   // user uses the Omnibox to open a URL.
@@ -123,6 +126,10 @@ class MetricsLog : public MetricsLogBase {
   void RecordIncrementalStabilityElements(
       const std::vector<content::WebPluginInfo>& plugin_list,
       base::TimeDelta incremental_uptime);
+
+  const base::TimeTicks& creation_time() const {
+    return creation_time_;
+  }
 
  protected:
   // Exposed for the sake of mocking in test code.
@@ -200,6 +207,9 @@ class MetricsLog : public MetricsLogBase {
 
   // Bluetooth Adapter instance for collecting information about paired devices.
   scoped_refptr<device::BluetoothAdapter> adapter_;
+
+  // The time when the current log was created.
+  const base::TimeTicks creation_time_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLog);
 };

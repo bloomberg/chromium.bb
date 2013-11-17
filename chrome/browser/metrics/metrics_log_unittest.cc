@@ -27,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/variations/entropy_provider.h"
+#include "components/variations/metrics_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
@@ -64,6 +65,10 @@ const chrome_variations::ActiveGroupId kFieldTrialIds[] = {
   {37, 43},
   {13, 47},
   {23, 17}
+};
+const chrome_variations::ActiveGroupId kSyntheticTrials[] = {
+  {55, 15},
+  {66, 16}
 };
 
 class TestMetricsLog : public MetricsLog {
@@ -139,10 +144,18 @@ class MetricsLogTest : public testing::Test {
 
     std::vector<content::WebPluginInfo> plugins;
     GoogleUpdateMetrics google_update_metrics;
-    if (proto_only)
-      log.RecordEnvironmentProto(plugins, google_update_metrics);
-    else
-      log.RecordEnvironment(plugins, google_update_metrics, base::TimeDelta());
+    std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
+    // Add two synthetic trials.
+    synthetic_trials.push_back(kSyntheticTrials[0]);
+    synthetic_trials.push_back(kSyntheticTrials[1]);
+
+    if (proto_only) {
+      log.RecordEnvironmentProto(plugins, google_update_metrics,
+                                 synthetic_trials);
+    } else {
+      log.RecordEnvironment(plugins, google_update_metrics,
+                            synthetic_trials, base::TimeDelta());
+    }
 
     // Computed from original time of 1373051956.
     EXPECT_EQ(1373050800, log.system_profile().install_date());
@@ -151,13 +164,20 @@ class MetricsLogTest : public testing::Test {
     EXPECT_EQ(1373000400, log.system_profile().uma_enabled_date());
 
     const metrics::SystemProfileProto& system_profile = log.system_profile();
-    ASSERT_EQ(arraysize(kFieldTrialIds),
+    ASSERT_EQ(arraysize(kFieldTrialIds) + arraysize(kSyntheticTrials),
               static_cast<size_t>(system_profile.field_trial_size()));
     for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
       const metrics::SystemProfileProto::FieldTrial& field_trial =
           system_profile.field_trial(i);
       EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
       EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
+    }
+    // Verify the right data is present for the synthetic trials.
+    for (size_t i = 0; i < arraysize(kSyntheticTrials); ++i) {
+      const metrics::SystemProfileProto::FieldTrial& field_trial =
+          system_profile.field_trial(i + arraysize(kFieldTrialIds));
+      EXPECT_EQ(kSyntheticTrials[i].name, field_trial.name_id());
+      EXPECT_EQ(kSyntheticTrials[i].group, field_trial.group_id());
     }
 
     EXPECT_EQ(kBrandForTesting, system_profile.brand_code());
@@ -380,7 +400,8 @@ TEST_F(MetricsLogTest, MultiProfileUserCount) {
   TestMetricsLog log(kClientId, kSessionId);
   std::vector<content::WebPluginInfo> plugins;
   GoogleUpdateMetrics google_update_metrics;
-  log.RecordEnvironmentProto(plugins, google_update_metrics);
+  std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
+  log.RecordEnvironmentProto(plugins, google_update_metrics, synthetic_trials);
   EXPECT_EQ(2u, log.system_profile().multi_profile_user_count());
 }
 
@@ -402,8 +423,9 @@ TEST_F(MetricsLogTest, MultiProfileCountInvalidated) {
   EXPECT_EQ(1u, log.system_profile().multi_profile_user_count());
 
   user_manager->LoginUser(user2);
+  std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
   log.RecordEnvironmentProto(std::vector<content::WebPluginInfo>(),
-                             GoogleUpdateMetrics());
+                             GoogleUpdateMetrics(), synthetic_trials);
   EXPECT_EQ(0u, log.system_profile().multi_profile_user_count());
 }
 #endif  // OS_CHROMEOS
