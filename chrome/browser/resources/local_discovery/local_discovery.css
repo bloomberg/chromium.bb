@@ -100,3 +100,7 @@ html[dir='rtl'] .controls {
 section {
   margin-bottom: 23px;
 }
+
+.dialog-contents {
+    padding-left: 17px;
+}
