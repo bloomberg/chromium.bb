@@ -1596,6 +1596,7 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START:
+    case ui::ET_GESTURE_END:
       EndDrag(END_DRAG_COMPLETE);
       if (adjust_layout_) {
         SetLayoutType(TAB_STRIP_LAYOUT_STACKED, true);
