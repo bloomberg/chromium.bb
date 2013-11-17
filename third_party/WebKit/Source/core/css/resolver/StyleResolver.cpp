@@ -1279,7 +1279,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
             // Unfortunately the link status is treated like an inherited property. We need to explicitly restore it.
             state.style()->setInsideLink(linkStatus);
 
-            if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()
+            if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && animatingElement
                 && (animatingElement->hasActiveAnimations()
                     || (state.style()->transitions() && !state.style()->transitions()->isEmpty())
                     || (state.style()->animations() && !state.style()->animations()->isEmpty())))
