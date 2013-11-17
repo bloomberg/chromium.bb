@@ -944,7 +944,7 @@ void TabStripModel::ExecuteContextMenuCommand(
       UMA_HISTOGRAM_ENUMERATION("Tab.NewTab",
                                 TabStripModel::NEW_TAB_CONTEXT_MENU,
                                 TabStripModel::NEW_TAB_ENUM_COUNT);
-      delegate()->AddURLTabAt(GURL(), context_index + 1, true);
+      delegate()->AddTabAt(GURL(), context_index + 1, true);
       break;
 
     case CommandReload: {

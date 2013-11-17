@@ -209,14 +209,14 @@ void ChromeShellDelegate::Observe(int type,
         Browser* browser =
             chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
         if (browser && browser->is_type_tabbed()) {
-          chrome::AddBlankTabAt(browser, -1, true);
+          chrome::AddTabAt(browser, GURL(), -1, true);
           return;
         }
 
         chrome::ScopedTabbedBrowserDisplayer displayer(
             ProfileManager::GetDefaultProfileOrOffTheRecord(),
             chrome::HOST_DESKTOP_TYPE_ASH);
-        chrome::AddBlankTabAt(displayer.browser(), -1, true);
+        chrome::AddTabAt(displayer.browser(), GURL(), -1, true);
       }
       break;
     }

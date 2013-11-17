@@ -405,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioQualityBrowserTest,
   content::WebContents* left_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  chrome::AddBlankTabAt(browser(), -1, true);
+  chrome::AddTabAt(browser(), GURL(), -1, true);
   content::WebContents* right_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(

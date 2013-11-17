@@ -13,7 +13,7 @@ TestTabStripModelDelegate::TestTabStripModelDelegate() {
 TestTabStripModelDelegate::~TestTabStripModelDelegate() {
 }
 
-void TestTabStripModelDelegate::AddURLTabAt(const GURL& url,
+void TestTabStripModelDelegate::AddTabAt(const GURL& url,
                                             int index,
                                             bool foreground) {
 }

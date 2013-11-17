@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewFocusTest, DISABLED_BrowsersRememberFocus) {
       new Browser(Browser::CreateParams(browser()->profile(),
                                         browser()->host_desktop_type()));
   ASSERT_TRUE(browser2);
-  chrome::AddBlankTabAt(browser2, -1, true);
+  chrome::AddTabAt(browser2, GURL(), -1, true);
   browser2->window()->Show();
   ui_test_utils::NavigateToURL(browser2, url);
 

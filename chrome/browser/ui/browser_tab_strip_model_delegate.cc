@@ -39,10 +39,10 @@ BrowserTabStripModelDelegate::~BrowserTabStripModelDelegate() {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripModelDelegate, TabStripModelDelegate implementation:
 
-void BrowserTabStripModelDelegate::AddURLTabAt(const GURL& url,
-                                               int index,
-                                               bool foreground) {
-  chrome::AddURLTabAt(browser_, url, index, foreground);
+void BrowserTabStripModelDelegate::AddTabAt(const GURL& url,
+                                            int index,
+                                            bool foreground) {
+  chrome::AddTabAt(browser_, url, index, foreground);
 }
 
 Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(

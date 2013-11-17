@@ -47,8 +47,8 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, CloseWithTabs) {
   Browser* browser2 =
       new Browser(Browser::CreateParams(browser()->profile(),
                                         browser()->host_desktop_type()));
-  chrome::AddBlankTabAt(browser2, -1, true);
-  chrome::AddBlankTabAt(browser2, -1, true);
+  chrome::AddTabAt(browser2, GURL(), -1, true);
+  chrome::AddTabAt(browser2, GURL(), -1, true);
   TestWebContentsObserver observer(
       browser2->tab_strip_model()->GetWebContentsAt(0),
       browser2->tab_strip_model()->GetWebContentsAt(1));

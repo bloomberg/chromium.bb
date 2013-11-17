@@ -731,7 +731,7 @@ class V1App {
         profile,
         chrome::HOST_DESKTOP_TYPE_ASH);
     browser_.reset(chrome::CreateBrowserWithTestWindowForParams(&params));
-    chrome::AddBlankTabAt(browser_.get(), 0, true);
+    chrome::AddTabAt(browser_.get(), GURL(), 0, true);
   }
 
   virtual ~V1App() {

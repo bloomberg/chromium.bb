@@ -1075,7 +1075,7 @@ void TestingAutomationProvider::OpenNewBrowserWindowOfType(
   Browser* browser = new Browser(
       Browser::CreateParams(static_cast<Browser::Type>(type), profile_,
                             chrome::HOST_DESKTOP_TYPE_NATIVE));
-  chrome::AddBlankTabAt(browser, -1, true);
+  chrome::AddTabAt(browser, GURL(), -1, true);
   if (show)
     browser->window()->Show();
 }
@@ -1093,7 +1093,7 @@ void TestingAutomationProvider::OpenNewBrowserWindow(
   Browser* browser = new Browser(
       Browser::CreateParams(Browser::TYPE_TABBED, profile_,
                             chrome::HOST_DESKTOP_TYPE_NATIVE));
-  chrome::AddBlankTabAt(browser, -1, true);
+  chrome::AddTabAt(browser, GURL(), -1, true);
   if (show)
     browser->window()->Show();
 }

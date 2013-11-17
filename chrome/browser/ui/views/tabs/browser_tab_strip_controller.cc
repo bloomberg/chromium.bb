@@ -353,7 +353,7 @@ bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
 }
 
 void BrowserTabStripController::CreateNewTab() {
-  model_->delegate()->AddURLTabAt(GURL(), -1, true);
+  model_->delegate()->AddTabAt(GURL(), -1, true);
 }
 
 void BrowserTabStripController::CreateNewTabWithLocation(
@@ -364,7 +364,7 @@ void BrowserTabStripController::CreateNewTabWithLocation(
   AutocompleteClassifierFactory::GetForProfile(profile())->Classify(
       location, false, false, &match, NULL);
   if (match.destination_url.is_valid())
-    model_->delegate()->AddURLTabAt(match.destination_url, -1, true);
+    model_->delegate()->AddTabAt(match.destination_url, -1, true);
 }
 
 bool BrowserTabStripController::IsIncognito() {

@@ -192,7 +192,7 @@ class WebrtcBrowserTest : public WebRtcTestBase {
   }
 
   content::WebContents* OpenTestPageAndGetUserMediaInNewTab() {
-    chrome::AddBlankTabAt(browser(), -1, true);
+    chrome::AddTabAt(browser(), GURL(), -1, true);
     ui_test_utils::NavigateToURL(
         browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
     content::WebContents* left_tab =
@@ -335,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   SleepInJavascript(left_tab, 10000);
 
   // Start measurements.
-  chrome::AddBlankTabAt(browser(), -1, true);
+  chrome::AddTabAt(browser(), GURL(), -1, true);
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://webrtc-internals"));
   content::WebContents* webrtc_internals_tab =
       browser()->tab_strip_model()->GetActiveWebContents();

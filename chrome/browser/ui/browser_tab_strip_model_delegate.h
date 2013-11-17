@@ -20,7 +20,7 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
 
  private:
   // Overridden from TabStripModelDelegate:
-  virtual void AddURLTabAt(const GURL& url,
+  virtual void AddTabAt(const GURL& url,
                            int index,
                            bool foreground) OVERRIDE;
   virtual Browser* CreateNewStripWithContents(

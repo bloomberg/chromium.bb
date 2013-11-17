@@ -16,7 +16,7 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   virtual ~TestTabStripModelDelegate();
 
   // Overridden from TabStripModelDelegate:
-  virtual void AddURLTabAt(const GURL& url, int index, bool foregroud) OVERRIDE;
+  virtual void AddTabAt(const GURL& url, int index, bool foregroud) OVERRIDE;
   virtual Browser* CreateNewStripWithContents(
       const std::vector<NewStripContents>& contentses,
       const gfx::Rect& window_bounds,

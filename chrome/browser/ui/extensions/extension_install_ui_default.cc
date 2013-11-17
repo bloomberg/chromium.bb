@@ -62,7 +62,7 @@ Browser* FindOrCreateVisibleBrowser(Profile* profile) {
       profile, chrome::GetActiveDesktop());
   Browser* browser = displayer.browser();
   if (browser->tab_strip_model()->count() == 0)
-    chrome::AddBlankTabAt(browser, -1, true);
+    chrome::AddTabAt(browser, GURL(), -1, true);
   return browser;
 }
 

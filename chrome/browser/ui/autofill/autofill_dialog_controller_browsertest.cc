@@ -1107,7 +1107,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, TabOpensToJustRight) {
   EXPECT_EQ(0, tab_strip->GetIndexOfWebContents(dialog_invoker));
 
   // Open a tab to about:blank in the background at the end of the tab strip.
-  chrome::AddBlankTabAt(browser(), -1, false);
+  chrome::AddTabAt(browser(), GURL(), -1, false);
   // Tabs should now be: / rAc() \/ blank \.
   EXPECT_EQ(2, tab_strip->count());
   EXPECT_EQ(0, tab_strip->active_index());
