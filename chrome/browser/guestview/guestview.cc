@@ -12,6 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
+#include "net/base/escape.h"
 
 using content::WebContents;
 
@@ -92,6 +94,28 @@ GuestView* GuestView::From(int embedder_process_id, int guest_instance_id) {
   EmbedderGuestViewMap::iterator it = guest_map->find(
       std::make_pair(embedder_process_id, guest_instance_id));
   return it == guest_map->end() ? NULL : it->second;
+}
+
+// static
+bool GuestView::GetGuestPartitionConfigForSite(const GURL& site,
+                                               std::string* partition_domain,
+                                               std::string* partition_name,
+                                               bool* in_memory) {
+  if (!site.SchemeIs(content::kGuestScheme))
+    return false;
+
+  // Since guest URLs are only used for packaged apps, there must be an app
+  // id in the URL.
+  CHECK(site.has_host());
+  *partition_domain = site.host();
+  // Since persistence is optional, the path must either be empty or the
+  // literal string.
+  *in_memory = (site.path() != "/persist");
+  // The partition name is user supplied value, which we have encoded when the
+  // URL was created, so it needs to be decoded.
+  *partition_name = net::UnescapeURLComponent(site.query(),
+                                              net::UnescapeRule::NORMAL);
+  return true;
 }
 
 void GuestView::Attach(content::WebContents* embedder_web_contents,

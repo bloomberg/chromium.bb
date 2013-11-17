@@ -535,12 +535,20 @@ bool WebViewGuest::AllowChromeExtensionURLs() {
 
 void WebViewGuest::AddWebViewToExtensionRendererState() {
   const GURL& site_url = web_contents()->GetSiteInstance()->GetSiteURL();
+  std::string partition_domain;
+  std::string partition_id;
+  bool in_memory;
+  if (!GetGuestPartitionConfigForSite(
+          site_url, &partition_domain, &partition_id, &in_memory)) {
+    NOTREACHED();
+    return;
+  }
+  DCHECK(extension_id() == partition_domain);
+
   ExtensionRendererState::WebViewInfo webview_info;
   webview_info.embedder_process_id = embedder_render_process_id();
   webview_info.instance_id = view_instance_id();
-  // TODO(fsamuel): Partition IDs should probably be a chrome-only concept. They
-  // should probably be passed in via attach args.
-  webview_info.partition_id =  site_url.query();
+  webview_info.partition_id =  partition_id;
   webview_info.extension_id = extension_id();
   webview_info.allow_chrome_extension_urls = AllowChromeExtensionURLs();
 

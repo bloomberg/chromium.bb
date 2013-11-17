@@ -50,6 +50,18 @@ class GuestView : public content::BrowserPluginGuestDelegate {
 
   static GuestView* From(int embedder_process_id, int instance_id);
 
+  // For GuestViews, we create special guest processes, which host the
+  // tag content separately from the main application that embeds the tag.
+  // A GuestView can specify both the partition name and whether the storage
+  // for that partition should be persisted. Each tag gets a SiteInstance with
+  // a specially formatted URL, based on the application it is hosted by and
+  // the partition requested by it. The format for that URL is:
+  // chrome-guest://partition_domain/persist?partition_name
+  static bool GetGuestPartitionConfigForSite(const GURL& site,
+                                             std::string* partition_domain,
+                                             std::string* partition_name,
+                                             bool* in_memory);
+
   virtual void Attach(content::WebContents* embedder_web_contents,
                       const base::DictionaryValue& args);
 

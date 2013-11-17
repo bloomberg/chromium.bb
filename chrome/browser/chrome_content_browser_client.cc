@@ -43,6 +43,7 @@
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/guestview/adview/adview_guest.h"
+#include "chrome/browser/guestview/guestview.h"
 #include "chrome/browser/guestview/guestview_constants.h"
 #include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -133,7 +134,6 @@
 #include "extensions/common/switches.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
-#include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
@@ -765,26 +765,10 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
   partition_name->clear();
   *in_memory = false;
 
-  // For the webview tag, we create special guest processes, which host the
-  // tag content separately from the main application that embeds the tag.
-  // A webview tag can specify both the partition name and whether the storage
-  // for that partition should be persisted. Each tag gets a SiteInstance with
-  // a specially formatted URL, based on the application it is hosted by and
-  // the partition requested by it. The format for that URL is:
-  // chrome-guest://partition_domain/persist?partition_name
-  if (site.SchemeIs(content::kGuestScheme)) {
-    // Since guest URLs are only used for packaged apps, there must be an app
-    // id in the URL.
-    CHECK(site.has_host());
-    *partition_domain = site.host();
-    // Since persistence is optional, the path must either be empty or the
-    // literal string.
-    *in_memory = (site.path() != "/persist");
-    // The partition name is user supplied value, which we have encoded when the
-    // URL was created, so it needs to be decoded.
-    *partition_name = net::UnescapeURLComponent(site.query(),
-                                                net::UnescapeRule::NORMAL);
-  } else if (site.SchemeIs(extensions::kExtensionScheme)) {
+  bool success = GuestView::GetGuestPartitionConfigForSite(
+      site, partition_domain, partition_name, in_memory);
+
+  if (!success && site.SchemeIs(extensions::kExtensionScheme)) {
     // If |can_be_default| is false, the caller is stating that the |site|
     // should be parsed as if it had isolated storage. In particular it is
     // important to NOT check ExtensionService for the is_storage_isolated()
