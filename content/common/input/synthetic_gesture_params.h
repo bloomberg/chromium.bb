@@ -45,7 +45,8 @@ struct CONTENT_EXPORT SyntheticGestureParams {
 
   enum GestureType {
     SMOOTH_SCROLL_GESTURE,
-    SYNTHETIC_GESTURE_TYPE_MAX = SMOOTH_SCROLL_GESTURE
+    PINCH_GESTURE,
+    SYNTHETIC_GESTURE_TYPE_MAX = PINCH_GESTURE
   };
   virtual GestureType GetGestureType() const = 0;
 };

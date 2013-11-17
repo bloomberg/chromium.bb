@@ -10,17 +10,11 @@
 #include "ui/events/latency_info.h"
 
 namespace content {
-namespace {
-
-// TODO(dominikg): Calibrate or add as another parameter.
-const float kDeltaInPixelsPerMs = 0.5f;
-
-}
 
 SyntheticSmoothScrollGestureNew::SyntheticSmoothScrollGestureNew(
     const SyntheticSmoothScrollGestureParams& params)
     : params_(params),
-      current_y_(params_.anchor_y) {}
+      current_y_(params_.anchor.y()) {}
 
 SyntheticSmoothScrollGestureNew::~SyntheticSmoothScrollGestureNew() {}
 
@@ -32,19 +26,15 @@ SyntheticGestureNew::Result SyntheticSmoothScrollGestureNew::ForwardInputEvents(
   if (source == SyntheticGestureParams::DEFAULT_INPUT)
     source = target->GetDefaultSyntheticGestureSourceType();
 
-  if (!target->SupportsSyntheticGestureSourceType(source)) {
+  if (!target->SupportsSyntheticGestureSourceType(source))
     return SyntheticGestureNew::GESTURE_SOURCE_TYPE_NOT_SUPPORTED_BY_PLATFORM;
-  }
 
-  if (source == SyntheticGestureParams::TOUCH_INPUT) {
+  if (source == SyntheticGestureParams::TOUCH_INPUT)
     return ForwardTouchInputEvents(interval, target);
-  }
-  else if (source == SyntheticGestureParams::MOUSE_INPUT) {
+  else if (source == SyntheticGestureParams::MOUSE_INPUT)
     return ForwardMouseInputEvents(interval, target);
-  }
-  else {
+  else
     return SyntheticGestureNew::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
-  }
 }
 
 SyntheticGestureNew::Result
@@ -53,13 +43,13 @@ SyntheticSmoothScrollGestureNew::ForwardTouchInputEvents(
   if (HasFinished())
     return SyntheticGestureNew::GESTURE_FINISHED;
 
-  if (current_y_ == params_.anchor_y) {
-    touch_event_.PressPoint(params_.anchor_x, current_y_);
+  if (current_y_ == params_.anchor.y()) {
+    touch_event_.PressPoint(params_.anchor.x(), current_y_);
     ForwardTouchEvent(target);
   }
 
   current_y_ += GetPositionDelta(interval);
-  touch_event_.MovePoint(0, params_.anchor_x, current_y_);
+  touch_event_.MovePoint(0, params_.anchor.x(), current_y_);
   ForwardTouchEvent(target);
 
   if (HasFinished()) {
@@ -106,12 +96,15 @@ void SyntheticSmoothScrollGestureNew::ForwardMouseWheelEvent(
 
 float SyntheticSmoothScrollGestureNew::GetPositionDelta(
     const base::TimeDelta& interval) {
-  float delta = kDeltaInPixelsPerMs * interval.InMillisecondsF();
-  return (params_.distance > 0) ? delta : -delta;
+  float delta = params_.speed_in_pixels_s * interval.InSecondsF();
+  // A positive value indicates scrolling down, which means the touch pointer
+  // moves up or the scroll wheel moves down. In either case, the delta is
+  // negative when scrolling down and positive when scrolling up.
+  return (params_.distance > 0) ? -delta : delta;
 }
 
 bool SyntheticSmoothScrollGestureNew::HasFinished() {
-  return abs(current_y_ - params_.anchor_y) >= abs(params_.distance);
+  return abs(current_y_ - params_.anchor.y()) >= abs(params_.distance);
 }
 
 }  // namespace content

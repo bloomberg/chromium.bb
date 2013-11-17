@@ -852,6 +852,8 @@
     'browser/renderer_host/input/synthetic_gesture_target_aura.h',
     'browser/renderer_host/input/synthetic_gesture_target_base.cc',
     'browser/renderer_host/input/synthetic_gesture_target_base.h',
+    'browser/renderer_host/input/synthetic_pinch_gesture_new.cc',
+    'browser/renderer_host/input/synthetic_pinch_gesture_new.h',
     'browser/renderer_host/input/synthetic_smooth_scroll_gesture_new.cc',
     'browser/renderer_host/input/synthetic_smooth_scroll_gesture_new.h',
     'browser/renderer_host/input/synthetic_web_input_event_builders.cc',

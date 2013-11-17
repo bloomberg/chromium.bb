@@ -19,10 +19,6 @@ using blink::WebMouseWheelEvent;
 
 namespace content {
 
-namespace {
-
-}  // namespace
-
 SyntheticGestureTargetBase::SyntheticGestureTargetBase(
     RenderWidgetHostImpl* host)
     : host_(host) {

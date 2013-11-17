@@ -7,6 +7,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_controller_new.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_new.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
+#include "content/browser/renderer_host/input/synthetic_pinch_gesture_new.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture_new.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -16,6 +17,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/gfx/point_f.h"
 
 namespace content {
 
@@ -25,7 +27,7 @@ const int kFlushInputRateInMs = 16;
 
 class MockSyntheticGesture : public SyntheticGestureNew {
  public:
-  MockSyntheticGesture(bool *finished, int num_steps)
+  MockSyntheticGesture(bool* finished, int num_steps)
       : finished_(finished),
         num_steps_(num_steps),
         step_count_(0) {
@@ -39,14 +41,13 @@ class MockSyntheticGesture : public SyntheticGestureNew {
     if (step_count_ == num_steps_) {
       *finished_ = true;
       return SyntheticGestureNew::GESTURE_FINISHED;
-    }
-    else if (step_count_ > num_steps_) {
+    } else if (step_count_ > num_steps_) {
       *finished_ = true;
       // Return arbitrary failure.
       return SyntheticGestureNew::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
-    }
-    else
+    } else {
       return SyntheticGestureNew::GESTURE_RUNNING;
+    }
   }
 
  protected:
@@ -80,7 +81,7 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
   }
 
   virtual SyntheticGestureParams::GestureSourceType
-      GetDefaultSyntheticGestureSourceType() const OVERRIDE {
+  GetDefaultSyntheticGestureSourceType() const OVERRIDE {
     return SyntheticGestureParams::TOUCH_INPUT;
   }
   virtual bool SupportsSyntheticGestureSourceType(
@@ -113,7 +114,7 @@ class MockSyntheticSmoothScrollMouseTarget : public MockSyntheticGestureTarget {
     const blink::WebMouseWheelEvent* mouse_wheel_event =
         static_cast<const blink::WebMouseWheelEvent*>(web_event);
     DCHECK_EQ(mouse_wheel_event->deltaX, 0);
-    scroll_distance_ += mouse_wheel_event->deltaY;
+    scroll_distance_ -= mouse_wheel_event->deltaY;
   }
 
   float scroll_distance() const { return scroll_distance_; }
@@ -130,23 +131,22 @@ class MockSyntheticSmoothScrollTouchTarget : public MockSyntheticGestureTarget {
 
   virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE {
     const blink::WebInputEvent* web_event = event.web_event.get();
-    DCHECK(blink::WebInputEvent::isTouchEventType(web_event->type));
+    ASSERT_TRUE(blink::WebInputEvent::isTouchEventType(web_event->type));
     const blink::WebTouchEvent* touch_event =
         static_cast<const blink::WebTouchEvent*>(web_event);
-    DCHECK_EQ(touch_event->touchesLength, (unsigned int)1);
+    ASSERT_EQ(touch_event->touchesLength, (unsigned int)1);
 
     if (!started_) {
-      DCHECK_EQ(touch_event->type, blink::WebInputEvent::TouchStart);
+      ASSERT_EQ(touch_event->type, blink::WebInputEvent::TouchStart);
       anchor_y_ = touch_event->touches[0].position.y;
       started_ = true;
-    }
-    else {
-      DCHECK_NE(touch_event->type, blink::WebInputEvent::TouchStart);
-      DCHECK_NE(touch_event->type, blink::WebInputEvent::TouchCancel);
+    } else {
+      ASSERT_NE(touch_event->type, blink::WebInputEvent::TouchStart);
+      ASSERT_NE(touch_event->type, blink::WebInputEvent::TouchCancel);
       // Ignore move events.
 
       if (touch_event->type == blink::WebInputEvent::TouchEnd)
-        scroll_distance_ = touch_event->touches[0].position.y - anchor_y_;
+        scroll_distance_ = anchor_y_ - touch_event->touches[0].position.y;
     }
   }
 
@@ -155,6 +155,79 @@ class MockSyntheticSmoothScrollTouchTarget : public MockSyntheticGestureTarget {
  private:
   float scroll_distance_;
   float anchor_y_;
+  bool started_;
+};
+
+class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
+ public:
+  enum ZoomDirection {
+    ZOOM_DIRECTION_UNKNOWN,
+    ZOOM_IN,
+    ZOOM_OUT
+  };
+
+  MockSyntheticPinchTouchTarget()
+      : total_num_pixels_covered_(0),
+        last_pointer_distance_(0),
+        zoom_direction_(ZOOM_DIRECTION_UNKNOWN),
+        started_(false) {}
+  virtual ~MockSyntheticPinchTouchTarget() {}
+
+  virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE {
+    const blink::WebInputEvent* web_event = event.web_event.get();
+    ASSERT_TRUE(blink::WebInputEvent::isTouchEventType(web_event->type));
+    const blink::WebTouchEvent* touch_event =
+        static_cast<const blink::WebTouchEvent*>(web_event);
+    ASSERT_EQ(touch_event->touchesLength, (unsigned int)2);
+
+    if (!started_) {
+      ASSERT_EQ(touch_event->type, blink::WebInputEvent::TouchStart);
+
+      start_0_ = gfx::Point(touch_event->touches[0].position);
+      start_1_ = gfx::Point(touch_event->touches[1].position);
+      last_pointer_distance_ = (start_0_ - start_1_).Length();
+
+      started_ = true;
+    } else {
+      ASSERT_NE(touch_event->type, blink::WebInputEvent::TouchStart);
+      ASSERT_NE(touch_event->type, blink::WebInputEvent::TouchCancel);
+
+      gfx::PointF current_0 = gfx::Point(touch_event->touches[0].position);
+      gfx::PointF current_1 = gfx::Point(touch_event->touches[1].position);
+
+      total_num_pixels_covered_ =
+          (current_0 - start_0_).Length() + (current_1 - start_1_).Length();
+      float pointer_distance = (current_0 - current_1).Length();
+
+      if (last_pointer_distance_ != pointer_distance) {
+        if (zoom_direction_ == ZOOM_DIRECTION_UNKNOWN)
+          zoom_direction_ =
+              ComputeZoomDirection(last_pointer_distance_, pointer_distance);
+        else
+          EXPECT_EQ(
+              zoom_direction_,
+              ComputeZoomDirection(last_pointer_distance_, pointer_distance));
+      }
+
+      last_pointer_distance_ = pointer_distance;
+    }
+  }
+
+  float total_num_pixels_covered() const { return total_num_pixels_covered_; }
+  ZoomDirection zoom_direction() const { return zoom_direction_; }
+
+ private:
+  ZoomDirection ComputeZoomDirection(float last_pointer_distance,
+                                     float current_pointer_distance) {
+    DCHECK_NE(last_pointer_distance, current_pointer_distance);
+    return last_pointer_distance < current_pointer_distance ? ZOOM_IN
+                                                            : ZOOM_OUT;
+  }
+  float total_num_pixels_covered_;
+  float last_pointer_distance_;
+  ZoomDirection zoom_direction_;
+  gfx::PointF start_0_;
+  gfx::PointF start_1_;
   bool started_;
 };
 
@@ -303,6 +376,54 @@ TEST_F(SyntheticGestureControllerNewTest, SmoothScrollGestureMouse) {
   EXPECT_EQ(0, target_->num_failure());
   EXPECT_GE(params.distance, static_cast<MockSyntheticSmoothScrollTouchTarget*>(
                                  target_)->scroll_distance());
+}
+
+TEST_F(SyntheticGestureControllerNewTest, PinchGestureTouchZoomIn) {
+  CreateControllerAndTarget<MockSyntheticPinchTouchTarget>();
+
+  SyntheticPinchGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.zoom_in = true;
+  params.total_num_pixels_covered = 100;
+
+  scoped_ptr<SyntheticPinchGestureNew> gesture(
+      new SyntheticPinchGestureNew(params));
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGestureNew>());
+  FlushInputUntilComplete();
+
+  EXPECT_EQ(1, target_->num_success());
+  EXPECT_EQ(0, target_->num_failure());
+  EXPECT_EQ(
+      static_cast<MockSyntheticPinchTouchTarget*>(target_)->zoom_direction(),
+      MockSyntheticPinchTouchTarget::ZOOM_IN);
+  EXPECT_LE(
+      params.total_num_pixels_covered,
+      static_cast<MockSyntheticPinchTouchTarget*>(target_)
+          ->total_num_pixels_covered());
+}
+
+TEST_F(SyntheticGestureControllerNewTest, PinchGestureTouchZoomOut) {
+  CreateControllerAndTarget<MockSyntheticPinchTouchTarget>();
+
+  SyntheticPinchGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.zoom_in = false;
+  params.total_num_pixels_covered = 100;
+
+  scoped_ptr<SyntheticPinchGestureNew> gesture(
+      new SyntheticPinchGestureNew(params));
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGestureNew>());
+  FlushInputUntilComplete();
+
+  EXPECT_EQ(1, target_->num_success());
+  EXPECT_EQ(0, target_->num_failure());
+  EXPECT_EQ(
+      static_cast<MockSyntheticPinchTouchTarget*>(target_)->zoom_direction(),
+      MockSyntheticPinchTouchTarget::ZOOM_OUT);
+  EXPECT_LE(
+      params.total_num_pixels_covered,
+      static_cast<MockSyntheticPinchTouchTarget*>(target_)
+          ->total_num_pixels_covered());
 }
 
 }  // namespace

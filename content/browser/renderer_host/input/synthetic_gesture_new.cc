@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_new.h"
 
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
+#include "content/browser/renderer_host/input/synthetic_pinch_gesture_new.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture_new.h"
 
 namespace content {
@@ -29,6 +30,9 @@ scoped_ptr<SyntheticGestureNew> SyntheticGestureNew::Create(
     case SyntheticGestureParams::SMOOTH_SCROLL_GESTURE:
       return CreateGesture<SyntheticSmoothScrollGestureNew,
                            SyntheticSmoothScrollGestureParams>(gesture_params);
+    case SyntheticGestureParams::PINCH_GESTURE:
+      return CreateGesture<SyntheticPinchGestureNew,
+                           SyntheticPinchGestureParams>(gesture_params);
   }
   NOTREACHED() << "Invalid synthetic gesture type";
   return scoped_ptr<SyntheticGestureNew>();

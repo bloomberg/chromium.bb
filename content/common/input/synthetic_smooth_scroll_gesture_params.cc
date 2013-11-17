@@ -4,21 +4,19 @@
 
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 
-#include "base/pickle.h"
-#include "content/common/input_messages.h"
-#include "ipc/ipc_message_utils.h"
+#include "base/logging.h"
 
 namespace content {
 
 SyntheticSmoothScrollGestureParams::SyntheticSmoothScrollGestureParams()
-    : distance(100), anchor_x(0), anchor_y(0) {}
+    : distance(100), speed_in_pixels_s(500) {}
 
 SyntheticSmoothScrollGestureParams::SyntheticSmoothScrollGestureParams(
       const SyntheticSmoothScrollGestureParams& other)
     : SyntheticGestureParams(other),
       distance(other.distance),
-      anchor_x(other.anchor_x),
-      anchor_y(other.anchor_y) {}
+      anchor(other.anchor),
+      speed_in_pixels_s(other.speed_in_pixels_s) {}
 
 SyntheticSmoothScrollGestureParams::~SyntheticSmoothScrollGestureParams() {}
 
