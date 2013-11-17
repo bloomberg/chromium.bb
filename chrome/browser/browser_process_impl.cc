@@ -110,7 +110,6 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
-#include "chrome/browser/ui/options/options_util.h"
 #endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -1041,8 +1040,11 @@ void BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy() {
 
 void BrowserProcessImpl::ApplyMetricsReportingPolicy() {
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
-  OptionsUtil::ResolveMetricsReportingEnabled(
-      local_state()->GetBoolean(prefs::kMetricsReportingEnabled));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(&GoogleUpdateSettings::SetCollectStatsConsent),
+          local_state()->GetBoolean(prefs::kMetricsReportingEnabled)));
 #endif
 }
 
