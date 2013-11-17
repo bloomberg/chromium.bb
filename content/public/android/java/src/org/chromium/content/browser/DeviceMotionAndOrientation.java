@@ -46,12 +46,6 @@ class DeviceMotionAndOrientation implements SensorEventListener {
     // The lock to access the mNativePtr.
     private final Object mNativePtrLock = new Object();
 
-    // The acceleration vector including gravity expressed in the body frame.
-    private float[] mAccelerationIncludingGravityVector;
-
-    // The geomagnetic vector expressed in the body frame.
-    private float[] mMagneticFieldVector;
-
     // Lazily initialized when registering for notifications.
     private SensorManagerProxy mSensorManagerProxy;
 
@@ -67,8 +61,7 @@ class DeviceMotionAndOrientation implements SensorEventListener {
     static final int DEVICE_MOTION = 1;
 
     static final Set<Integer> DEVICE_ORIENTATION_SENSORS = CollectionUtil.newHashSet(
-            Sensor.TYPE_ACCELEROMETER,
-            Sensor.TYPE_MAGNETIC_FIELD);
+            Sensor.TYPE_ROTATION_VECTOR);
 
     static final Set<Integer> DEVICE_MOTION_SENSORS = CollectionUtil.newHashSet(
             Sensor.TYPE_ACCELEROMETER,
@@ -177,22 +170,10 @@ class DeviceMotionAndOrientation implements SensorEventListener {
 
     @VisibleForTesting
     void sensorChanged(int type, float[] values) {
-
         switch (type) {
             case Sensor.TYPE_ACCELEROMETER:
-                if (mAccelerationIncludingGravityVector == null) {
-                    mAccelerationIncludingGravityVector = new float[3];
-                }
-                System.arraycopy(values, 0, mAccelerationIncludingGravityVector,
-                        0, mAccelerationIncludingGravityVector.length);
                 if (mDeviceMotionIsActive) {
-                    gotAccelerationIncludingGravity(
-                            mAccelerationIncludingGravityVector[0],
-                            mAccelerationIncludingGravityVector[1],
-                            mAccelerationIncludingGravityVector[2]);
-                }
-                if (mDeviceOrientationIsActive) {
-                    getOrientationUsingGetRotationMatrix();
+                    gotAccelerationIncludingGravity(values[0], values[1], values[2]);
                 }
                 break;
             case Sensor.TYPE_LINEAR_ACCELERATION:
@@ -205,13 +186,9 @@ class DeviceMotionAndOrientation implements SensorEventListener {
                     gotRotationRate(values[0], values[1], values[2]);
                 }
                 break;
-            case Sensor.TYPE_MAGNETIC_FIELD:
-                if (mMagneticFieldVector == null) {
-                    mMagneticFieldVector = new float[3];
-                }
-                System.arraycopy(values, 0, mMagneticFieldVector, 0, mMagneticFieldVector.length);
+            case Sensor.TYPE_ROTATION_VECTOR:
                 if (mDeviceOrientationIsActive) {
-                    getOrientationUsingGetRotationMatrix();
+                    getOrientationFromRotationVector(values);
                 }
                 break;
             default:
@@ -303,16 +280,9 @@ class DeviceMotionAndOrientation implements SensorEventListener {
         return values;
     }
 
-    private void getOrientationUsingGetRotationMatrix() {
-        if (mAccelerationIncludingGravityVector == null || mMagneticFieldVector == null) {
-            return;
-        }
-
+    private void getOrientationFromRotationVector(float[] rotationVector) {
         float[] deviceRotationMatrix = new float[9];
-        if (!SensorManager.getRotationMatrix(deviceRotationMatrix, null,
-                mAccelerationIncludingGravityVector, mMagneticFieldVector)) {
-            return;
-        }
+        SensorManager.getRotationMatrixFromVector(deviceRotationMatrix, rotationVector);
 
         double[] rotationAngles = new double[3];
         computeDeviceOrientationFromRotationMatrix(deviceRotationMatrix, rotationAngles);
@@ -399,7 +369,7 @@ class DeviceMotionAndOrientation implements SensorEventListener {
     protected void gotOrientation(double alpha, double beta, double gamma) {
         synchronized (mNativePtrLock) {
             if (mNativePtr != 0) {
-              nativeGotOrientation(mNativePtr, alpha, beta, gamma);
+                nativeGotOrientation(mNativePtr, alpha, beta, gamma);
             }
         }
     }
@@ -407,7 +377,7 @@ class DeviceMotionAndOrientation implements SensorEventListener {
     protected void gotAcceleration(double x, double y, double z) {
         synchronized (mNativePtrLock) {
             if (mNativePtr != 0) {
-              nativeGotAcceleration(mNativePtr, x, y, z);
+                nativeGotAcceleration(mNativePtr, x, y, z);
             }
         }
     }
@@ -415,7 +385,7 @@ class DeviceMotionAndOrientation implements SensorEventListener {
     protected void gotAccelerationIncludingGravity(double x, double y, double z) {
         synchronized (mNativePtrLock) {
             if (mNativePtr != 0) {
-              nativeGotAccelerationIncludingGravity(mNativePtr, x, y, z);
+                nativeGotAccelerationIncludingGravity(mNativePtr, x, y, z);
             }
         }
     }
@@ -423,7 +393,7 @@ class DeviceMotionAndOrientation implements SensorEventListener {
     protected void gotRotationRate(double alpha, double beta, double gamma) {
         synchronized (mNativePtrLock) {
             if (mNativePtr != 0) {
-              nativeGotRotationRate(mNativePtr, alpha, beta, gamma);
+                nativeGotRotationRate(mNativePtr, alpha, beta, gamma);
             }
         }
     }

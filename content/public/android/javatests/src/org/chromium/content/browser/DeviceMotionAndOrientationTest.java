@@ -147,24 +147,18 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
     }
 
     @SmallTest
-    public void testSensorChangedgotAccelerationAndOrientation() {
+    public void testSensorChangedgotOrientation() {
         boolean startOrientation = mDeviceMotionAndOrientation.start(0,
                 DeviceMotionAndOrientation.DEVICE_ORIENTATION, 100);
-        boolean startMotion = mDeviceMotionAndOrientation.start(0,
-                DeviceMotionAndOrientation.DEVICE_MOTION, 100);
 
         assertTrue(startOrientation);
-        assertTrue(startMotion);
-        assertTrue(mDeviceMotionAndOrientation.mDeviceMotionIsActive);
         assertTrue(mDeviceMotionAndOrientation.mDeviceOrientationIsActive);
 
-        float[] values = {0.0f, 0.0f, 9.0f};
-        float[] values2 = {10.0f, 10.0f, 10.0f};
-        mDeviceMotionAndOrientation.sensorChanged(Sensor.TYPE_ACCELEROMETER, values);
-        mDeviceMotionAndOrientation.sensorChanged(Sensor.TYPE_MAGNETIC_FIELD, values2);
-        mDeviceMotionAndOrientation.verifyCalls("gotAccelerationIncludingGravity" +
-                "gotOrientation");
-        mDeviceMotionAndOrientation.verifyValuesEpsilon(45, 0, 0);
+        float alpha = (float)Math.PI / 4;
+        float[] values = {0, 0, (float)Math.sin(alpha / 2), (float)Math.cos(alpha / 2), -1};
+        mDeviceMotionAndOrientation.sensorChanged(Sensor.TYPE_ROTATION_VECTOR, values);
+        mDeviceMotionAndOrientation.verifyCalls("gotOrientation");
+        mDeviceMotionAndOrientation.verifyValuesEpsilon(Math.toDegrees(alpha), 0, 0);
     }
 
     @SmallTest
@@ -198,13 +192,30 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
     }
 
     @SmallTest
-    public void testSensorChangedmagneticField() {
-        mDeviceMotionAndOrientation.start(0, DeviceMotionAndOrientation.DEVICE_ORIENTATION, 100);
+    public void testSensorChangedgotOrientationAndAcceleration() {
+        boolean startOrientation = mDeviceMotionAndOrientation.start(0,
+                DeviceMotionAndOrientation.DEVICE_ORIENTATION, 100);
+        boolean startMotion = mDeviceMotionAndOrientation.start(0,
+                DeviceMotionAndOrientation.DEVICE_MOTION, 100);
 
-        float[] values = {1, 2, 3};
-        mDeviceMotionAndOrientation.sensorChanged(Sensor.TYPE_MAGNETIC_FIELD, values);
-        mDeviceMotionAndOrientation.verifyCalls("");
+        assertTrue(startOrientation);
+        assertTrue(startMotion);
+        assertTrue(mDeviceMotionAndOrientation.mDeviceMotionIsActive);
+        assertTrue(mDeviceMotionAndOrientation.mDeviceOrientationIsActive);
+
+        float alpha = (float)Math.PI / 4;
+        float[] values = {0, 0, (float)Math.sin(alpha / 2), (float)Math.cos(alpha / 2), -1};
+        mDeviceMotionAndOrientation.sensorChanged(Sensor.TYPE_ROTATION_VECTOR, values);
+        mDeviceMotionAndOrientation.verifyCalls("gotOrientation");
+        mDeviceMotionAndOrientation.verifyValuesEpsilon(Math.toDegrees(alpha), 0, 0);
+
+        float[] values2 = {1, 2, 3};
+        mDeviceMotionAndOrientation.sensorChanged(Sensor.TYPE_ACCELEROMETER, values2);
+        mDeviceMotionAndOrientation.verifyCalls("gotOrientation" +
+                "gotAccelerationIncludingGravity");
+        mDeviceMotionAndOrientation.verifyValues(1, 2, 3);
     }
+
 
     // Tests for correct Device Orientation angles.
 
