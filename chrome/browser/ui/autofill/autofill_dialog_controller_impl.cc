@@ -747,7 +747,8 @@ string16 AutofillDialogControllerImpl::LegalDocumentsText() {
 
 bool AutofillDialogControllerImpl::ShouldShowSpinner() const {
   return account_chooser_model_.WalletIsSelected() &&
-         SignedInState() == REQUIRES_RESPONSE;
+         (SignedInState() == REQUIRES_RESPONSE ||
+          SignedInState() == REQUIRES_PASSIVE_SIGN_IN);
 }
 
 bool AutofillDialogControllerImpl::ShouldShowSignInWebView() const {
