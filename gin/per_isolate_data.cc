@@ -9,6 +9,7 @@ using v8::Handle;
 using v8::Isolate;
 using v8::Local;
 using v8::Object;
+using v8::FunctionTemplate;
 using v8::ObjectTemplate;
 
 namespace gin {
@@ -30,11 +31,24 @@ void PerIsolateData::SetObjectTemplate(WrapperInfo* info,
   object_templates_[info] = Eternal<ObjectTemplate>(isolate_, templ);
 }
 
+void PerIsolateData::SetFunctionTemplate(WrapperInfo* info,
+                                         Local<FunctionTemplate> templ) {
+  function_templates_[info] = Eternal<FunctionTemplate>(isolate_, templ);
+}
+
 v8::Local<v8::ObjectTemplate> PerIsolateData::GetObjectTemplate(
     WrapperInfo* info) {
   ObjectTemplateMap::iterator it = object_templates_.find(info);
   if (it == object_templates_.end())
     return v8::Local<v8::ObjectTemplate>();
+  return it->second.Get(isolate_);
+}
+
+v8::Local<v8::FunctionTemplate> PerIsolateData::GetFunctionTemplate(
+    WrapperInfo* info) {
+  FunctionTemplateMap::iterator it = function_templates_.find(info);
+  if (it == function_templates_.end())
+    return v8::Local<v8::FunctionTemplate>();
   return it->second.Get(isolate_);
 }
 

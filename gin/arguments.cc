@@ -19,6 +19,12 @@ Arguments::Arguments(const v8::FunctionCallbackInfo<v8::Value>& info)
 Arguments::~Arguments() {
 }
 
+v8::Handle<v8::Value> Arguments::PeekNext() {
+  if (next_ >= info_.Length())
+    return v8::Handle<v8::Value>();
+  return info_[next_];
+}
+
 void Arguments::ThrowError() {
   if (insufficient_arguments_)
     return ThrowTypeError("Insufficient number of arguments.");

@@ -35,6 +35,8 @@ class Arguments {
     info_.GetReturnValue().Set(ConvertToV8(isolate_, val));
   }
 
+  v8::Handle<v8::Value> PeekNext();
+
   void ThrowError();
   void ThrowTypeError(const std::string& message);
 

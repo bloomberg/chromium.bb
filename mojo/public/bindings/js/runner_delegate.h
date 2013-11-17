@@ -16,8 +16,10 @@ class RunnerDelegate : public gin::RunnerDelegate {
   RunnerDelegate();
   virtual ~RunnerDelegate();
 
-  virtual v8::Handle<v8::Object> CreateRootObject(
+  virtual v8::Handle<v8::ObjectTemplate> GetGlobalTemplate(
       gin::Runner* runner) MOJO_OVERRIDE;
+
+  virtual void DidCreateContext(gin::Runner* runner) MOJO_OVERRIDE;
 
  private:
   MOJO_DISALLOW_COPY_AND_ASSIGN(RunnerDelegate);

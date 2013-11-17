@@ -2,56 +2,57 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function runWithPipe(mojo, test) {
-  var pipe = mojo.core.createMessagePipe();
+define(["gtest", "core"], function(gtest, core) {
+  runWithPipe(testNop);
+  runWithPipe(testReadAndWriteMessage);
+  this.result = "PASS";
 
-  test(mojo, pipe);
+  function runWithPipe(test) {
+    var pipe = core.createMessagePipe();
 
-  var result0 = mojo.core.close(pipe.handle0);
-  mojo.gtest.expectEqual(result0, mojo.core.RESULT_OK,
-      "result0 is " + result0);
+    test(pipe);
 
-  var result1 = mojo.core.close(pipe.handle1);
-  mojo.gtest.expectEqual(result1, mojo.core.RESULT_OK,
-      "result1 is " + result1);
-}
+    var result0 = core.close(pipe.handle0);
+    gtest.expectEqual(result0, core.RESULT_OK,
+        "result0 is " + result0);
 
-function testNop(mojo, pipe) {
-}
-
-function testReadAndWriteMessage(mojo, pipe) {
-  var senderData = new Uint8Array(42);
-  for (var i = 0; i < senderData.length; ++i) {
-    senderData[i] = i * i;
+    var result1 = core.close(pipe.handle1);
+    gtest.expectEqual(result1, core.RESULT_OK,
+        "result1 is " + result1);
   }
 
-  var result = mojo.core.writeMessage(
-    pipe.handle0, senderData, [],
-    mojo.core.WRITE_MESSAGE_FLAG_NONE);
-
-  mojo.gtest.expectEqual(result, mojo.core.RESULT_OK,
-    "writeMessage returned RESULT_OK: " + result);
-
-  var receiverData = new Uint8Array(50);
-
-  var mesage = mojo.core.readMessage(
-    pipe.handle1, receiverData, 10,
-    mojo.core.READ_MESSAGE_FLAG_NONE)
-
-  mojo.gtest.expectEqual(mesage.result, mojo.core.RESULT_OK,
-      "mesage.result is " + mesage.result);
-  mojo.gtest.expectEqual(mesage.bytesRead, 42,
-      "mesage.bytesRead is " + mesage.bytesRead);
-  mojo.gtest.expectEqual(mesage.handles.length, 0,
-      "mesage.handles.length is " + mesage.handles.length);
-
-  for (var i = 0; i < mesage.bytesRead; ++i) {
-    mojo.gtest.expectEqual(receiverData[i], (i * i) & 0xFF,
-        "receiverData[" + i + "] is " + receiverData[i]);
+  function testNop(pipe) {
   }
-}
 
-function main(mojo) {
-  runWithPipe(mojo, testNop);
-  runWithPipe(mojo, testReadAndWriteMessage);
-}
+  function testReadAndWriteMessage(pipe) {
+    var senderData = new Uint8Array(42);
+    for (var i = 0; i < senderData.length; ++i) {
+      senderData[i] = i * i;
+    }
+
+    var result = core.writeMessage(
+      pipe.handle0, senderData, [],
+      core.WRITE_MESSAGE_FLAG_NONE);
+
+    gtest.expectEqual(result, core.RESULT_OK,
+      "writeMessage returned RESULT_OK: " + result);
+
+    var receiverData = new Uint8Array(50);
+
+    var mesage = core.readMessage(
+      pipe.handle1, receiverData, 10,
+      core.READ_MESSAGE_FLAG_NONE)
+
+    gtest.expectEqual(mesage.result, core.RESULT_OK,
+        "mesage.result is " + mesage.result);
+    gtest.expectEqual(mesage.bytesRead, 42,
+        "mesage.bytesRead is " + mesage.bytesRead);
+    gtest.expectEqual(mesage.handles.length, 0,
+        "mesage.handles.length is " + mesage.handles.length);
+
+    for (var i = 0; i < mesage.bytesRead; ++i) {
+      gtest.expectEqual(receiverData[i], (i * i) & 0xFF,
+          "receiverData[" + i + "] is " + receiverData[i]);
+    }
+  }
+});

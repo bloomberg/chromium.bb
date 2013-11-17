@@ -7,6 +7,7 @@
 #include "v8/include/v8.h"
 
 using v8::Boolean;
+using v8::External;
 using v8::Function;
 using v8::Handle;
 using v8::Integer;
@@ -121,6 +122,30 @@ bool Converter<Handle<Object> >::FromV8(Handle<Value> val,
   if (!val->IsObject())
     return false;
   *out = Handle<Object>::Cast(val);
+  return true;
+}
+
+Handle<Value> Converter<Handle<External> >::ToV8(v8::Isolate* isolate,
+                                                 Handle<External> val) {
+  return val.As<Value>();
+}
+
+bool Converter<Handle<External> >::FromV8(Handle<Value> val,
+                                          Handle<External>* out) {
+  if (!val->IsExternal())
+    return false;
+  *out = Handle<External>::Cast(val);
+  return true;
+}
+
+Handle<Value> Converter<Handle<Value> >::ToV8(v8::Isolate* isolate,
+                                              Handle<Value> val) {
+  return val;
+}
+
+bool Converter<Handle<Value> >::FromV8(Handle<Value> val,
+                                       Handle<Value>* out) {
+  *out = val;
   return true;
 }
 

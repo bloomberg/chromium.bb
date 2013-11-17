@@ -15,35 +15,15 @@ using v8::Script;
 using v8::String;
 
 namespace gin {
-namespace {
-
-class TestRunnerDelegate : public RunnerDelegate {
- public:
-  virtual Handle<Object> CreateRootObject(Runner* runner) OVERRIDE {
-    Isolate* isolate = runner->isolate();
-    Handle<Object> root = Object::New();
-    root->Set(StringToV8(isolate, "foo"), StringToV8(isolate, "bar"));
-    return root;
-  }
-  virtual ~TestRunnerDelegate() {}
-};
-
-}
 
 TEST(RunnerTest, Run) {
-  std::string source =
-      "function main(root) {\n"
-      "  if (root.foo)\n"
-      "    this.result = 'PASS';\n"
-      "  else\n"
-      "    this.result = 'FAIL';\n"
-      "}\n";
+  std::string source = "this.result = 'PASS';\n";
 
-  TestRunnerDelegate delegate;
+  RunnerDelegate delegate;
   Isolate* isolate = Isolate::GetCurrent();
   Runner runner(&delegate, isolate);
   Runner::Scope scope(&runner);
-  runner.Run(Script::New(StringToV8(isolate, source)));
+  runner.Run(source);
 
   std::string result;
   EXPECT_TRUE(Converter<std::string>::FromV8(

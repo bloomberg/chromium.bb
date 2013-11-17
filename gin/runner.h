@@ -5,8 +5,8 @@
 #ifndef GIN_RUNNER_H_
 #define GIN_RUNNER_H_
 
-#include "base/basictypes.h"
-#include "v8/include/v8.h"
+#include <string>
+#include "gin/context_holder.h"
 
 namespace gin {
 
@@ -14,25 +14,22 @@ class Runner;
 
 class RunnerDelegate {
  public:
-  // Returns the object that is passed to the script's |main| function.
-  virtual v8::Handle<v8::Object> CreateRootObject(Runner* runner) = 0;
-
- protected:
+  RunnerDelegate();
   virtual ~RunnerDelegate();
+
+  // Returns the template for the global object.
+  virtual v8::Handle<v8::ObjectTemplate> GetGlobalTemplate(Runner* runner);
+
+  virtual void DidCreateContext(Runner* runner);
 };
 
-class Runner {
+class Runner : public ContextHolder {
  public:
   Runner(RunnerDelegate* delegate, v8::Isolate* isolate);
   ~Runner();
 
+  void Run(const std::string& script);
   void Run(v8::Handle<v8::Script> script);
-
-  v8::Isolate* isolate() const { return isolate_; }
-
-  v8::Handle<v8::Context> context() const {
-    return v8::Local<v8::Context>::New(isolate_, context_);
-  }
 
   v8::Handle<v8::Object> global() const {
     return context()->Global();
@@ -53,11 +50,7 @@ class Runner {
  private:
   friend class Scope;
 
-  v8::Handle<v8::Function> GetMain();
-
   RunnerDelegate* delegate_;
-  v8::Isolate* isolate_;
-  v8::Persistent<v8::Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(Runner);
 };

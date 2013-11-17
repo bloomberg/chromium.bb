@@ -10,7 +10,7 @@
 namespace mojo {
 namespace js {
 
-v8::Local<v8::ObjectTemplate> GetMojoTemplate(v8::Isolate* isolate);
+v8::Local<v8::ObjectTemplate> GetGlobalTemplate(v8::Isolate* isolate);
 
 }  // namespace js
 }  // namespace mojo

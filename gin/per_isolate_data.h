@@ -22,15 +22,21 @@ class PerIsolateData {
 
   void SetObjectTemplate(WrapperInfo* info,
                          v8::Local<v8::ObjectTemplate> object_template);
+  void SetFunctionTemplate(WrapperInfo* info,
+                           v8::Local<v8::FunctionTemplate> function_template);
 
   v8::Local<v8::ObjectTemplate> GetObjectTemplate(WrapperInfo* info);
+  v8::Local<v8::FunctionTemplate> GetFunctionTemplate(WrapperInfo* info);
 
  private:
   typedef std::map<
       WrapperInfo*, v8::Eternal<v8::ObjectTemplate> > ObjectTemplateMap;
+  typedef std::map<
+      WrapperInfo*, v8::Eternal<v8::FunctionTemplate> > FunctionTemplateMap;
 
   v8::Isolate* isolate_;
   ObjectTemplateMap object_templates_;
+  FunctionTemplateMap function_templates_;
 
   DISALLOW_COPY_AND_ASSIGN(PerIsolateData);
 };
