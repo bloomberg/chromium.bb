@@ -173,6 +173,9 @@ void BrowserAccessibilityManagerWin::RemoveNode(BrowserAccessibility* node) {
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     blink::WebAXEvent event_type,
     BrowserAccessibility* node) {
+  if (node->role() == blink::WebAXRoleInlineTextBox)
+    return;
+
   LONG event_id = EVENT_MIN;
   switch (event_type) {
     case blink::WebAXEventActiveDescendantChanged:

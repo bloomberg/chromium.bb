@@ -288,8 +288,8 @@ BrowserAccessibility* BrowserAccessibility::BrowserAccessibilityForPoint(
     const gfx::Point& point) {
   // Walk the children recursively looking for the BrowserAccessibility that
   // most tightly encloses the specified point.
-  for (int i = children_.size() - 1; i >= 0; --i) {
-    BrowserAccessibility* child = children_[i];
+  for (int i = static_cast<int>(PlatformChildCount()) - 1; i >= 0; --i) {
+    BrowserAccessibility* child = PlatformGetChild(i);
     if (child->GetGlobalBoundsRect().Contains(point))
       return child->BrowserAccessibilityForPoint(point);
   }
@@ -581,8 +581,8 @@ std::string BrowserAccessibility::GetTextRecursive() const {
   }
 
   std::string result;
-  for (size_t i = 0; i < children_.size(); ++i)
-    result += children_[i]->GetTextRecursive();
+  for (uint32 i = 0; i < PlatformChildCount(); ++i)
+    result += PlatformGetChild(i)->GetTextRecursive();
   return result;
 }
 

@@ -299,6 +299,8 @@ STDMETHODIMP BrowserAccessibilityWin::accNavigate(LONG nav_dir,
     return E_INVALIDARG;
   }
 
+  uint32 child_count = target->PlatformChildCount();
+
   BrowserAccessibility* result = NULL;
   switch (nav_dir) {
     case NAVDIR_DOWN:
@@ -308,12 +310,12 @@ STDMETHODIMP BrowserAccessibilityWin::accNavigate(LONG nav_dir,
       // These directions are not implemented, matching Mozilla and IE.
       return E_NOTIMPL;
     case NAVDIR_FIRSTCHILD:
-      if (!target->children_.empty())
-        result = target->children_.front();
+      if (child_count > 0)
+        result = target->PlatformGetChild(0);
       break;
     case NAVDIR_LASTCHILD:
-      if (!target->children_.empty())
-        result = target->children_.back();
+      if (child_count > 0)
+        result = target->PlatformGetChild(child_count - 1);
       break;
     case NAVDIR_NEXT:
       result = target->GetNextSibling();
@@ -2432,7 +2434,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nodeInfo(
 
   *name_space_id = 0;
   *node_value = SysAllocString(UTF8ToUTF16(value_).c_str());
-  *num_children = children_.size();
+  *num_children = PlatformChildCount();
   *unique_id = unique_id_win_;
 
   if (ia_role_ == ROLE_SYSTEM_DOCUMENT) {
@@ -2582,12 +2584,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_firstChild(ISimpleDOMNode** node)  {
   if (!node)
     return E_INVALIDARG;
 
-  if (children_.empty()) {
+  if (PlatformChildCount() == 0) {
     *node = NULL;
     return S_FALSE;
   }
 
-  *node = children_[0]->ToBrowserAccessibilityWin()->NewReference();
+  *node = PlatformGetChild(0)->ToBrowserAccessibilityWin()->NewReference();
   return S_OK;
 }
 
@@ -2598,12 +2600,13 @@ STDMETHODIMP BrowserAccessibilityWin::get_lastChild(ISimpleDOMNode** node) {
   if (!node)
     return E_INVALIDARG;
 
-  if (children_.empty()) {
+  if (PlatformChildCount() == 0) {
     *node = NULL;
     return S_FALSE;
   }
 
-  *node = (*children_.rbegin())->ToBrowserAccessibilityWin()->NewReference();
+  *node = PlatformGetChild(PlatformChildCount() - 1)
+      ->ToBrowserAccessibilityWin()->NewReference();
   return S_OK;
 }
 
@@ -2651,6 +2654,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_childAt(
     return E_FAIL;
 
   if (!node)
+    return E_INVALIDARG;
+
+  if (child_index >= PlatformChildCount())
     return E_INVALIDARG;
 
   BrowserAccessibility* child = PlatformGetChild(child_index);
