@@ -644,9 +644,26 @@ TEST(FilterOperationsTest, BlendEmptySequences) {
   EXPECT_EQ(blended, empty);
 }
 
-// Tests blending non-empty sequences that either have different lengths or
-// have non-matching operations.
+// Tests blending non-empty sequences that have non-matching operations.
 TEST(FilterOperationsTest, BlendNonMatchingSequences) {
+  FilterOperations from;
+  FilterOperations to;
+
+  from.Append(FilterOperation::CreateSaturateFilter(3.f));
+  from.Append(FilterOperation::CreateBlurFilter(2.f));
+  to.Append(FilterOperation::CreateSaturateFilter(4.f));
+  to.Append(FilterOperation::CreateHueRotateFilter(0.5f));
+
+  FilterOperations blended = to.Blend(from, -0.75);
+  EXPECT_EQ(to, blended);
+  blended = to.Blend(from, 0.75);
+  EXPECT_EQ(to, blended);
+  blended = to.Blend(from, 1.5);
+  EXPECT_EQ(to, blended);
+}
+
+// Tests blending non-empty sequences of different sizes.
+TEST(FilterOperationsTest, BlendRaggedSequences) {
   FilterOperations from;
   FilterOperations to;
 
@@ -655,13 +672,25 @@ TEST(FilterOperationsTest, BlendNonMatchingSequences) {
   to.Append(FilterOperation::CreateSaturateFilter(4.f));
 
   FilterOperations blended = to.Blend(from, -0.75);
-  EXPECT_EQ(to, blended);
-  blended = to.Blend(from, 0.75);
-  EXPECT_EQ(to, blended);
-  blended = to.Blend(from, 1.5);
-  EXPECT_EQ(to, blended);
+  FilterOperations expected;
+  expected.Append(FilterOperation::CreateSaturateFilter(2.25f));
+  expected.Append(FilterOperation::CreateBlurFilter(3.5f));
+  EXPECT_EQ(expected, blended);
 
-  to.Append(FilterOperation::CreateHueRotateFilter(0.5f));
+  blended = to.Blend(from, 0.75);
+  expected.Clear();
+  expected.Append(FilterOperation::CreateSaturateFilter(3.75f));
+  expected.Append(FilterOperation::CreateBlurFilter(0.5f));
+  EXPECT_EQ(expected, blended);
+
+  blended = to.Blend(from, 1.5);
+  expected.Clear();
+  expected.Append(FilterOperation::CreateSaturateFilter(4.5f));
+  expected.Append(FilterOperation::CreateBlurFilter(0.f));
+  EXPECT_EQ(expected, blended);
+
+  from.Append(FilterOperation::CreateOpacityFilter(1.f));
+  to.Append(FilterOperation::CreateOpacityFilter(1.f));
   blended = to.Blend(from, -0.75);
   EXPECT_EQ(to, blended);
   blended = to.Blend(from, 0.75);

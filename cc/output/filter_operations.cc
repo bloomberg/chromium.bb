@@ -154,32 +154,41 @@ bool FilterOperations::HasReferenceFilter() const {
 
 FilterOperations FilterOperations::Blend(const FilterOperations& from,
                                          double progress) const {
-  FilterOperations blended_filters;
-  if (from.size() == 0) {
-    for (size_t i = 0; i < size(); i++)
-      blended_filters.Append(FilterOperation::Blend(NULL, &at(i), progress));
-    return blended_filters;
-  }
-
-  if (size() == 0) {
-    for (size_t i = 0; i < from.size(); i++) {
-      blended_filters.Append(
-          FilterOperation::Blend(&from.at(i), NULL, progress));
-    }
-    return blended_filters;
-  }
-
-  if (from.size() != size())
+  if (HasReferenceFilter() || from.HasReferenceFilter())
     return *this;
 
-  for (size_t i = 0; i < size(); i++) {
+  bool from_is_longer = from.size() > size();
+
+  size_t shorter_size, longer_size;
+  if (size() == from.size()) {
+    shorter_size = longer_size = size();
+  } else if  (from_is_longer) {
+    longer_size = from.size();
+    shorter_size = size();
+  } else {
+    longer_size = size();
+    shorter_size = from.size();
+  }
+
+  for (size_t i = 0; i < shorter_size; i++) {
     if (from.at(i).type() != at(i).type())
       return *this;
   }
 
-  for (size_t i = 0; i < size(); i++) {
+  FilterOperations blended_filters;
+  for (size_t i = 0; i < shorter_size; i++) {
     blended_filters.Append(
         FilterOperation::Blend(&from.at(i), &at(i), progress));
+  }
+
+  if (from_is_longer) {
+    for (size_t i = shorter_size; i < longer_size; i++) {
+      blended_filters.Append(
+          FilterOperation::Blend(&from.at(i), NULL, progress));
+    }
+  } else {
+    for (size_t i = shorter_size; i < longer_size; i++)
+      blended_filters.Append(FilterOperation::Blend(NULL, &at(i), progress));
   }
 
   return blended_filters;
