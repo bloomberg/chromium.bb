@@ -49,6 +49,9 @@ ASH_EXPORT extern const char kAshEnableFullMultiProfileMode[];
 #if defined(OS_LINUX)
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif
+#if defined(OS_CHROMEOS)
+ASH_EXPORT extern const char kAshEnableMultiUserTray[];
+#endif
 ASH_EXPORT extern const char kAshEnableOak[];
 ASH_EXPORT extern const char kAshEnableSoftwareMirroring[];
 ASH_EXPORT extern const char kAshEnableStickyEdges[];
@@ -85,6 +88,9 @@ ASH_EXPORT bool ShowShelfAlignmentMenu();
 
 // Returns true if the full MultiProfile mode (M-31 version) is used.
 ASH_EXPORT bool UseFullMultiProfileMode();
+
+// Returns true if multiple user icons are allowed in the tray.
+ASH_EXPORT bool UseMultiUserTray();
 
 // Returns true if overview mode should be activated for window switching.
 ASH_EXPORT bool UseOverviewMode();

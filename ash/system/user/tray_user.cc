@@ -1222,6 +1222,8 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
   // Only the active user is represented in the tray.
   if (!layout_view_)
     return;
+  if (GetTrayIndex() > 0 && !ash::switches::UseMultiUserTray())
+    return;
   bool need_label = false;
   bool need_avatar = false;
   switch (status) {

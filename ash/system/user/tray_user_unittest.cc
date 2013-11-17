@@ -71,6 +71,24 @@ class TrayUserTest : public ash::test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(TrayUserTest);
 };
 
+#if defined(OS_CHROMEOS)
+// The tray user test which tests functionality where multiple tray items are
+// visible in the system tray.
+class MultiTrayUserTest : public TrayUserTest {
+ public:
+  MultiTrayUserTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(ash::switches::kAshEnableMultiUserTray);
+    TrayUserTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MultiTrayUserTest);
+};
+#endif
+
 TrayUserTest::TrayUserTest()
     : shelf_(NULL),
       tray_(NULL),
@@ -249,7 +267,7 @@ TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
 }
 
 // Make sure that we show items for all users in the tray accordingly.
-TEST_F(TrayUserTest, CheckTrayUserItems) {
+TEST_F(MultiTrayUserTest, CheckTrayUserItems) {
   InitializeParameters(1, true);
 
   int max_users = delegate()->GetMaximumNumberOfLoggedInUsers();

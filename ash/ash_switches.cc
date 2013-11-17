@@ -109,6 +109,12 @@ const char kAshEnableFullMultiProfileMode[] =
 // Enable memory monitoring.
 const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
 #endif
+
+#if defined(OS_CHROMEOS)
+// Enables the multi user icons in the system tray.
+const char kAshEnableMultiUserTray[] = "ash-enable-multi-user-tray";
+#endif
+
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 
@@ -215,6 +221,16 @@ bool UseFullMultiProfileMode() {
 #if defined(OS_CHROMEOS)
   return CommandLine::ForCurrentProcess()->
       HasSwitch(kAshEnableFullMultiProfileMode);
+#else
+  return false;
+#endif
+}
+
+bool UseMultiUserTray() {
+#if defined(OS_CHROMEOS)
+  // TODO(skuhne): If this gets removed for good, remove also
+  // |SystemTray::user_items_| and the use of it.
+  return CommandLine::ForCurrentProcess()->HasSwitch(kAshEnableMultiUserTray);
 #else
   return false;
 #endif
