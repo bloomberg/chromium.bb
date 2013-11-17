@@ -72,6 +72,9 @@ class EVENTS_BASE_EXPORT TouchFactory {
   // Whether any touch device is currently present and enabled.
   bool IsTouchDevicePresent();
 
+  // Return maximum simultaneous touch points supported by device.
+  int GetMaxTouchPoints() const;
+
   // Sets up the device id in the list |devices| as multi-touch capable
   // devices and enables touch events processing. This function is only
   // for test purpose, and it does not query from X server.
@@ -110,8 +113,11 @@ class EVENTS_BASE_EXPORT TouchFactory {
   // capable.
   std::map<int, bool> touch_device_list_;
 
-  // Maximum simultaneous touch points.
-  static const int kMaxTouchPoints = 32;
+  // Maximum simultaneous touch points supported by device. In the case of
+  // devices with multiple digitizers (e.g. multiple touchscreens), the value
+  // is the maximum of the set of maximum supported contacts by each individual
+  // digitizer.
+  int max_touch_points_;
 
   SequentialIDGenerator id_generator_;
 

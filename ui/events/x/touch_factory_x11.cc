@@ -29,6 +29,7 @@ TouchFactory::TouchFactory()
       touch_device_available_(false),
       touch_events_disabled_(false),
       touch_device_list_(),
+      max_touch_points_(-1),
       id_generator_(0) {
   if (!DeviceDataManager::GetInstance()->IsXInput2Available())
     return;
@@ -80,6 +81,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   touch_device_available_ = false;
   touch_device_lookup_.reset();
   touch_device_list_.clear();
+  max_touch_points_ = -1;
 
 #if !defined(USE_XI2_MT)
   // NOTE: The new API for retrieving the list of devices (XIQueryDevice) does
@@ -132,6 +134,8 @@ void TouchFactory::UpdateDeviceList(Display* display) {
             touch_device_lookup_[devinfo->deviceid] = true;
             touch_device_list_[devinfo->deviceid] = true;
             touch_device_available_ = true;
+            if (tci->num_touches > 0 && tci->num_touches > max_touch_points_)
+              max_touch_points_ = tci->num_touches;
           }
         }
       }
@@ -235,6 +239,10 @@ void TouchFactory::ReleaseSlotForTrackingID(uint32 tracking_id) {
 
 bool TouchFactory::IsTouchDevicePresent() {
   return !touch_events_disabled_ && touch_device_available_;
+}
+
+int TouchFactory::GetMaxTouchPoints() const {
+  return max_touch_points_;
 }
 
 void TouchFactory::SetTouchDeviceForTest(
