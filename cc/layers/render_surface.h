@@ -102,11 +102,11 @@ class CC_EXPORT RenderSurface {
   // RenderPasses so they can't contribute to a surface.
   void AddContributingDelegatedRenderPassLayer(Layer* layer) {}
 
-  void SetNearestAncestorThatMovesPixels(RenderSurface* surface) {
-    nearest_ancestor_that_moves_pixels_ = surface;
+  void SetNearestOcclusionImmuneAncestor(RenderSurface* surface) {
+    nearest_occlusion_immune_ancestor_ = surface;
   }
-  const RenderSurface* nearest_ancestor_that_moves_pixels() const {
-    return nearest_ancestor_that_moves_pixels_;
+  const RenderSurface* nearest_occlusion_immune_ancestor() const {
+    return nearest_occlusion_immune_ancestor_;
   }
 
  private:
@@ -135,9 +135,8 @@ class CC_EXPORT RenderSurface {
   RenderSurfaceLayerList layer_list_;
 
   // The nearest ancestor target surface that will contain the contents of this
-  // surface, and that is going to move pixels within the surface (such as with
-  // a blur). This can point to itself.
-  RenderSurface* nearest_ancestor_that_moves_pixels_;
+  // surface, and that ignores outside occlusion. This can point to itself.
+  RenderSurface* nearest_occlusion_immune_ancestor_;
 
   // For LayerIteratorActions
   int target_render_surface_layer_index_history_;

@@ -5,6 +5,8 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "cc/layers/layer.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/occlusion_tracker_test_common.h"
 
@@ -99,6 +101,10 @@ class LayerTreeHostOcclusionTest : public LayerTreeTest {
   }
 
  protected:
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->minimum_occlusion_tracking_size = gfx::Size();
+  }
+
   scoped_refptr<TestLayer> root_;
   scoped_refptr<TestLayer> child_;
   scoped_refptr<TestLayer> child2_;
@@ -425,6 +431,78 @@ class LayerTreeHostOcclusionTestOcclusionBlurFilter
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostOcclusionTestOcclusionBlurFilter);
+
+class LayerTreeHostOcclusionTestOcclusionCopyRequest
+    : public LayerTreeHostOcclusionTest {
+ public:
+  static void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {}
+
+  virtual void SetupTree() OVERRIDE {
+    // If the child layer has copy request, and is below child2,
+    // then child should not inherit occlusion from outside its subtree.
+    // The child layer will still receive occlusion from inside, and
+    // the root layer will recive occlusion from child.
+    SetLayerPropertiesForTesting(
+        root_.get(), NULL, identity_matrix_,
+        gfx::PointF(), gfx::Size(100, 100), true);
+    SetLayerPropertiesForTesting(
+        child_.get(), root_.get(), identity_matrix_,
+        gfx::PointF(), gfx::Size(75, 75), true);
+    SetLayerPropertiesForTesting(
+        grand_child_.get(), child_.get(), identity_matrix_,
+        gfx::PointF(), gfx::Size(75, 50), true);
+    SetLayerPropertiesForTesting(
+        child2_.get(), root_.get(), identity_matrix_,
+        gfx::PointF(0.f, 25.f), gfx::Size(75, 75), true);
+
+    child_->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+        base::Bind(&CopyOutputCallback)));
+    EXPECT_TRUE(child_->HasCopyRequest());
+
+    child_->set_expected_occlusion(gfx::Rect(0, 0, 75, 50));
+    root_->set_expected_occlusion(gfx::Rect(0, 0, 75, 100));
+
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeTest::SetupTree();
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionCopyRequest);
+
+class LayerTreeHostOcclusionTestOcclusionReplica
+    : public LayerTreeHostOcclusionTest {
+ public:
+  virtual void SetupTree() OVERRIDE {
+    // If the child layer has copy request, and is below child2,
+    // then child should not inherit occlusion from outside its subtree.
+    // The child layer will still receive occlusion from inside, and
+    // the root layer will recive occlusion from child.
+    SetLayerPropertiesForTesting(
+        root_.get(), NULL, identity_matrix_,
+        gfx::PointF(), gfx::Size(100, 100), true);
+    SetLayerPropertiesForTesting(
+        child_.get(), root_.get(), identity_matrix_,
+        gfx::PointF(), gfx::Size(75, 75), true);
+    SetLayerPropertiesForTesting(
+        grand_child_.get(), child_.get(), identity_matrix_,
+        gfx::PointF(), gfx::Size(75, 50), true);
+    SetLayerPropertiesForTesting(
+        child2_.get(), root_.get(), identity_matrix_,
+        gfx::PointF(0.f, 25.f), gfx::Size(75, 75), true);
+
+    scoped_refptr<Layer> replica_layer(Layer::Create());
+    child_->SetReplicaLayer(replica_layer.get());
+    EXPECT_TRUE(child_->has_replica());
+
+    child_->set_expected_occlusion(gfx::Rect(0, 0, 75, 50));
+    root_->set_expected_occlusion(gfx::Rect(0, 0, 75, 100));
+
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeTest::SetupTree();
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionReplica);
 
 class LayerTreeHostOcclusionTestManySurfaces
     : public LayerTreeHostOcclusionTest {

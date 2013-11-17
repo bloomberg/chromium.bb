@@ -46,11 +46,11 @@ class CC_EXPORT RenderSurfaceImpl {
   void SetDrawOpacity(float opacity) { draw_opacity_ = opacity; }
   float draw_opacity() const { return draw_opacity_; }
 
-  void SetNearestAncestorThatMovesPixels(RenderSurfaceImpl* surface) {
-    nearest_ancestor_that_moves_pixels_ = surface;
+  void SetNearestOcclusionImmuneAncestor(RenderSurfaceImpl* surface) {
+    nearest_occlusion_immune_ancestor_ = surface;
   }
-  const RenderSurfaceImpl* nearest_ancestor_that_moves_pixels() const {
-    return nearest_ancestor_that_moves_pixels_;
+  const RenderSurfaceImpl* nearest_occlusion_immune_ancestor() const {
+    return nearest_occlusion_immune_ancestor_;
   }
 
   void SetDrawOpacityIsAnimating(bool draw_opacity_is_animating) {
@@ -167,9 +167,8 @@ class CC_EXPORT RenderSurfaceImpl {
       contributing_delegated_render_pass_layer_list_;
 
   // The nearest ancestor target surface that will contain the contents of this
-  // surface, and that is going to move pixels within the surface (such as with
-  // a blur). This can point to itself.
-  RenderSurfaceImpl* nearest_ancestor_that_moves_pixels_;
+  // surface, and that ignores outside occlusion. This can point to itself.
+  RenderSurfaceImpl* nearest_occlusion_immune_ancestor_;
 
   scoped_ptr<DamageTracker> damage_tracker_;
 

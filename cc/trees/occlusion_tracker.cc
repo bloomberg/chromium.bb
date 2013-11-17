@@ -156,14 +156,14 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::EnterRenderTarget(
     return;
 
   const LayerType* old_target = NULL;
-  const RenderSurfaceType* old_ancestor_that_moves_pixels = NULL;
+  const RenderSurfaceType* old_occlusion_immune_ancestor = NULL;
   if (!stack_.empty()) {
     old_target = stack_.back().target;
-    old_ancestor_that_moves_pixels =
-        old_target->render_surface()->nearest_ancestor_that_moves_pixels();
+    old_occlusion_immune_ancestor =
+        old_target->render_surface()->nearest_occlusion_immune_ancestor();
   }
-  const RenderSurfaceType* new_ancestor_that_moves_pixels =
-      new_target->render_surface()->nearest_ancestor_that_moves_pixels();
+  const RenderSurfaceType* new_occlusion_immune_ancestor =
+      new_target->render_surface()->nearest_occlusion_immune_ancestor();
 
   stack_.push_back(StackObject(new_target));
 
@@ -171,14 +171,11 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::EnterRenderTarget(
   // never copy in the occlusion from inside the target, since we are looking
   // at a new RenderSurface target.
 
-  // If we are entering a subtree that is going to move pixels around, then the
-  // occlusion we've computed so far won't apply to the pixels we're drawing
-  // here in the same way. We discard the occlusion thus far to be safe, and
-  // ensure we don't cull any pixels that are moved such that they become
-  //  visible.
-  bool entering_subtree_that_moves_pixels =
-      new_ancestor_that_moves_pixels &&
-      new_ancestor_that_moves_pixels != old_ancestor_that_moves_pixels;
+  // If entering an unoccluded subtree, do not carry forward the outside
+  // occlusion calculated so far.
+  bool entering_unoccluded_subtree =
+      new_occlusion_immune_ancestor &&
+      new_occlusion_immune_ancestor != old_occlusion_immune_ancestor;
 
   bool have_transform_from_screen_to_new_target = false;
   gfx::Transform inverse_new_target_screen_space_transform(
@@ -194,7 +191,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::EnterRenderTarget(
 
   bool copy_outside_occlusion_forward =
       stack_.size() > 1 &&
-      !entering_subtree_that_moves_pixels &&
+      !entering_unoccluded_subtree &&
       have_transform_from_screen_to_new_target &&
       !entering_root_target;
   if (!copy_outside_occlusion_forward)

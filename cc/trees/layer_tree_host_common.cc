@@ -1138,7 +1138,7 @@ struct DataForRecursion {
 
   bool ancestor_clips_subtree;
   typename LayerType::RenderSurfaceType*
-      nearest_ancestor_surface_that_moves_pixels;
+      nearest_occlusion_immune_ancestor_surface;
   bool in_subtree_of_page_scale_application_layer;
   bool subtree_can_use_lcd_text;
   bool subtree_is_visible_from_ancestor;
@@ -1402,8 +1402,8 @@ static void CalculateDrawPropertiesInternal(
 
   DataForRecursion<LayerType> data_for_children;
   typename LayerType::RenderSurfaceType*
-      nearest_ancestor_surface_that_moves_pixels =
-          data_from_ancestor.nearest_ancestor_surface_that_moves_pixels;
+      nearest_occlusion_immune_ancestor_surface =
+          data_from_ancestor.nearest_occlusion_immune_ancestor_surface;
   data_for_children.in_subtree_of_page_scale_application_layer =
       data_from_ancestor.in_subtree_of_page_scale_application_layer;
   data_for_children.subtree_can_use_lcd_text =
@@ -1687,14 +1687,21 @@ static void CalculateDrawPropertiesInternal(
           gfx::Rect(layer->content_bounds());
     }
 
+    // Ignore occlusion from outside the surface when surface contents need to
+    // be fully drawn. Layers with copy-request need to be complete.
+    // We could be smarter about layers with replica and exclude regions
+    // where both layer and the replica are occluded, but this seems like an
+    // overkill. The same is true for layers with filters that move pixels.
     // TODO(senorblanco): make this smarter for the SkImageFilter case (check
     // for pixel-moving filters)
-    if (layer->filters().HasReferenceFilter() ||
-        layer->filters().HasFilterThatMovesPixels())
-      nearest_ancestor_surface_that_moves_pixels = render_surface;
-
-    render_surface->SetNearestAncestorThatMovesPixels(
-        nearest_ancestor_surface_that_moves_pixels);
+    if (layer->HasCopyRequest() ||
+        layer->has_replica() ||
+        layer->filters().HasReferenceFilter() ||
+        layer->filters().HasFilterThatMovesPixels()) {
+      nearest_occlusion_immune_ancestor_surface = render_surface;
+    }
+    render_surface->SetNearestOcclusionImmuneAncestor(
+        nearest_occlusion_immune_ancestor_surface);
 
     layer_or_ancestor_clips_descendants = false;
     bool subtree_is_clipped_by_surface_bounds = false;
@@ -1895,8 +1902,8 @@ static void CalculateDrawPropertiesInternal(
         clip_rect_of_target_surface_in_target_space;
     data_for_children.ancestor_clips_subtree =
         layer_or_ancestor_clips_descendants;
-    data_for_children.nearest_ancestor_surface_that_moves_pixels =
-        nearest_ancestor_surface_that_moves_pixels;
+    data_for_children.nearest_occlusion_immune_ancestor_surface =
+        nearest_occlusion_immune_ancestor_surface;
     data_for_children.subtree_is_visible_from_ancestor = layer_is_visible;
   }
 
@@ -2135,7 +2142,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   data_for_recursion.clip_rect_of_target_surface_in_target_space =
       device_viewport_rect;
   data_for_recursion.ancestor_clips_subtree = true;
-  data_for_recursion.nearest_ancestor_surface_that_moves_pixels = NULL;
+  data_for_recursion.nearest_occlusion_immune_ancestor_surface = NULL;
   data_for_recursion.in_subtree_of_page_scale_application_layer = false;
   data_for_recursion.subtree_can_use_lcd_text = inputs->can_use_lcd_text;
   data_for_recursion.subtree_is_visible_from_ancestor = true;
@@ -2193,7 +2200,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   data_for_recursion.clip_rect_of_target_surface_in_target_space =
       device_viewport_rect;
   data_for_recursion.ancestor_clips_subtree = true;
-  data_for_recursion.nearest_ancestor_surface_that_moves_pixels = NULL;
+  data_for_recursion.nearest_occlusion_immune_ancestor_surface = NULL;
   data_for_recursion.in_subtree_of_page_scale_application_layer = false;
   data_for_recursion.subtree_can_use_lcd_text = inputs->can_use_lcd_text;
   data_for_recursion.subtree_is_visible_from_ancestor = true;

@@ -18,7 +18,7 @@ RenderSurface::RenderSurface(Layer* owning_layer)
       screen_space_transforms_are_animating_(false),
       is_clipped_(false),
       contributes_to_drawn_surface_(false),
-      nearest_ancestor_that_moves_pixels_(NULL) {}
+      nearest_occlusion_immune_ancestor_(NULL) {}
 
 RenderSurface::~RenderSurface() {
   for (size_t i = 0; i < layer_list_.size(); ++i) {
