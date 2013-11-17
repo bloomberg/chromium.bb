@@ -90,6 +90,8 @@
         'views/notifier_settings_view.h',
         'views/notification_view.cc',
         'views/notification_view.h',
+        'views/padded_button.cc',
+        'views/padded_button.h',
         'views/toast_contents_view.cc',
         'views/toast_contents_view.h',
       ],

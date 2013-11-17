@@ -18,6 +18,7 @@ namespace message_center {
 
 class BoundedLabel;
 class MessageCenter;
+class PaddedButton;
 
 // View that displays all current types of notification (web, basic, image, and
 // list). Future notification types may be handled by other classes, in which
@@ -26,7 +27,7 @@ class MessageCenter;
 class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
  public:
   // Creates appropriate MessageViews for notifications. Those currently are
-  // always NotificationView or MessageSimpleView instances but in the future
+  // always NotificationView instances but in the future
   // may be instances of other classes, with the class depending on the
   // notification type. A notification is top level if it needs to be rendered
   // outside the browser window. No custom shadows are created for top level
@@ -67,6 +68,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
 
   // Describes whether the view should display a hand pointer or not.
   bool clickable_;
+  bool is_expanded_;
 
   // Weak references to NotificationView descendants owned by their parents.
   views::View* background_view_;
@@ -80,6 +82,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
   views::View* image_view_;
   views::ProgressBar* progress_bar_view_;
   std::vector<views::View*> action_buttons_;
+  PaddedButton* expand_button_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationView);
 };

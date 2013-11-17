@@ -16,6 +16,7 @@
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_util.h"
+#include "ui/message_center/views/padded_button.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -27,8 +28,6 @@ namespace {
 
 const int kCloseIconTopPadding = 5;
 const int kCloseIconRightPadding = 5;
-const int kExpandIconBottomPadding = 8;
-const int kExpandIconRightPadding = 11;
 
 const int kShadowOffset = 1;
 const int kShadowBlur = 4;
@@ -36,130 +35,6 @@ const int kShadowBlur = 4;
 // Menu constants
 const int kTogglePermissionCommand = 0;
 const int kShowSettingsCommand = 1;
-
-// ControlButtons are ImageButtons whose image can be padded within the button.
-// This allows the creation of buttons like the notification close and expand
-// buttons whose clickable areas extends beyond their image areas
-// (<http://crbug.com/168822>) without the need to create and maintain
-// corresponding resource images with alpha padding. In the future, this class
-// will also allow for buttons whose touch areas extend beyond their clickable
-// area (<http://crbug.com/168856>).
-class ControlButton : public views::ImageButton {
- public:
-  ControlButton(views::ButtonListener* listener);
-  virtual ~ControlButton();
-
-  // Overridden from views::ImageButton:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
-
-  // The SetPadding() method also sets the button's image alignment (positive
-  // values yield left/top alignments, negative values yield right/bottom ones,
-  // and zero values center/middle ones). ImageButton::SetImageAlignment() calls
-  // will not affect ControlButton image alignments.
-  void SetPadding(int horizontal_padding, int vertical_padding);
-
-  void SetNormalImage(int resource_id);
-  void SetHoveredImage(int resource_id);
-  void SetPressedImage(int resource_id);
-
- protected:
-  gfx::Point ComputePaddedImagePaintPosition(const gfx::ImageSkia& image);
-
- private:
-  gfx::Insets padding_;
-
-  DISALLOW_COPY_AND_ASSIGN(ControlButton);
-};
-
-ControlButton::ControlButton(views::ButtonListener* listener)
-  : views::ImageButton(listener) {
-  set_focusable(true);
-  set_request_focus_on_press(false);
-}
-
-ControlButton::~ControlButton() {
-}
-
-void ControlButton::SetPadding(int horizontal_padding, int vertical_padding) {
-  padding_.Set(std::max(vertical_padding, 0),
-               std::max(horizontal_padding, 0),
-               std::max(-vertical_padding, 0),
-               std::max(-horizontal_padding, 0));
-}
-
-void ControlButton::SetNormalImage(int resource_id) {
-  SetImage(views::CustomButton::STATE_NORMAL,
-           ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-               resource_id));
-}
-
-void ControlButton::SetHoveredImage(int resource_id) {
-  SetImage(views::CustomButton::STATE_HOVERED,
-           ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-               resource_id));
-}
-
-void ControlButton::SetPressedImage(int resource_id) {
-  SetImage(views::CustomButton::STATE_PRESSED,
-           ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-               resource_id));
-}
-
-gfx::Size ControlButton::GetPreferredSize() {
-  return gfx::Size(message_center::kControlButtonSize,
-                   message_center::kControlButtonSize);
-}
-
-void ControlButton::OnPaint(gfx::Canvas* canvas) {
-  // This is the same implementation as ImageButton::OnPaint except
-  // that it calls ComputePaddedImagePaintPosition() instead of
-  // ComputeImagePaintPosition(), in effect overriding that private method.
-  View::OnPaint(canvas);
-  gfx::ImageSkia image = GetImageToPaint();
-  if (!image.isNull()) {
-    gfx::Point position = ComputePaddedImagePaintPosition(image);
-    if (!background_image_.isNull())
-      canvas->DrawImageInt(background_image_, position.x(), position.y());
-    canvas->DrawImageInt(image, position.x(), position.y());
-    if (!overlay_image_.isNull())
-      canvas->DrawImageInt(overlay_image_, position.x(), position.y());
-  }
-  OnPaintFocusBorder(canvas);
-}
-
-void ControlButton::OnFocus() {
-  views::ImageButton::OnFocus();
-  ScrollRectToVisible(GetLocalBounds());
-}
-
-void ControlButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
-    canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
-                     message_center::kFocusBorderColor);
-  }
-}
-
-gfx::Point ControlButton::ComputePaddedImagePaintPosition(
-    const gfx::ImageSkia& image) {
-  gfx::Vector2d offset;
-  gfx::Rect bounds = GetContentsBounds();
-  bounds.Inset(padding_);
-
-  if (padding_.left() == 0 && padding_.right() == 0)
-    offset.set_x((bounds.width() - image.width()) / 2);  // Center align.
-  else if (padding_.right() > 0)
-    offset.set_x(bounds.width() - image.width());  // Right align.
-
-  if (padding_.top() == 0 && padding_.bottom() == 0)
-    offset.set_y((bounds.height() - image.height()) / 2);  // Middle align.
-  else if (padding_.bottom() > 0)
-    offset.set_y(bounds.height() - image.height());  // Bottom align.
-
-  return bounds.origin() + offset;
-}
 
 // A dropdown menu for notifications.
 class MenuModel : public ui::SimpleMenuModel,
@@ -307,18 +182,16 @@ void MessageViewContextMenuController::ShowContextMenuForView(
 
 MessageView::MessageView(const Notification& notification,
                          MessageCenter* message_center,
-                         MessageCenterTray* tray,
-                         bool expanded)
+                         MessageCenterTray* tray)
     : message_center_(message_center),
       notification_id_(notification.id()),
       context_menu_controller_(new MessageViewContextMenuController(
           message_center, tray, notification)),
-      scroller_(NULL),
-      is_expanded_(expanded) {
+      scroller_(NULL) {
   set_focusable(true);
   set_context_menu_controller(context_menu_controller_.get());
 
-  ControlButton *close = new ControlButton(this);
+  PaddedButton *close = new PaddedButton(this);
   close->SetPadding(-kCloseIconRightPadding, kCloseIconTopPadding);
   close->SetNormalImage(IDR_NOTIFICATION_CLOSE);
   close->SetHoveredImage(IDR_NOTIFICATION_CLOSE_HOVER);
@@ -328,17 +201,6 @@ MessageView::MessageView(const Notification& notification,
   close->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
   close_button_.reset(close);
-
-  ControlButton *expand = new ControlButton(this);
-  expand->SetPadding(-kExpandIconRightPadding, -kExpandIconBottomPadding);
-  expand->SetNormalImage(IDR_NOTIFICATION_EXPAND);
-  expand->SetHoveredImage(IDR_NOTIFICATION_EXPAND_HOVER);
-  expand->SetPressedImage(IDR_NOTIFICATION_EXPAND_PRESSED);
-  expand->set_owned_by_client();
-  expand->set_animate_on_state_change(false);
-  expand->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_CENTER_EXPAND_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
-  expand_button_.reset(expand);
 }
 
 MessageView::MessageView() {
@@ -441,9 +303,6 @@ void MessageView::ButtonPressed(views::Button* sender,
                                 const ui::Event& event) {
   if (sender == close_button()) {
     message_center_->RemoveNotification(notification_id_, true);  // By user.
-  } else if (sender == expand_button()) {
-    is_expanded_ = true;
-    message_center_->ExpandNotification(notification_id_);
   }
 }
 

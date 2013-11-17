@@ -35,8 +35,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
  public:
   MessageView(const Notification& notification,
               MessageCenter* message_center,
-              MessageCenterTray* tray,
-              bool expanded);
+              MessageCenterTray* tray);
   virtual ~MessageView();
 
   // Returns the insets for the shadow it will have for rich notification.
@@ -75,9 +74,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
 
   MessageCenter* message_center() { return message_center_; }
   views::ImageButton* close_button() { return close_button_.get(); }
-  views::ImageButton* expand_button() { return expand_button_.get(); }
   views::ScrollView* scroller() { return scroller_; }
-  const bool is_expanded() { return is_expanded_; }
 
  private:
   MessageCenter* message_center_;  // Weak reference.
@@ -85,12 +82,9 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
 
   scoped_ptr<MessageViewContextMenuController> context_menu_controller_;
   scoped_ptr<views::ImageButton> close_button_;
-  scoped_ptr<views::ImageButton> expand_button_;
   views::ScrollView* scroller_;
 
   string16 accessible_name_;
-
-  bool is_expanded_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
