@@ -1613,6 +1613,7 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 		if (!output)
 			goto err_outputs;
 
+		wayland_output_set_fullscreen(output, 0, 0, NULL);
 		return &c->base;
 	}
 
