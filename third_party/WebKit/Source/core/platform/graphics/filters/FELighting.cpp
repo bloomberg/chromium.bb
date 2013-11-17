@@ -416,7 +416,7 @@ void FELighting::applySoftware()
 
 PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkImageFilter::CropRect rect = getCropRect(builder->cropOffset());
+    SkImageFilter::CropRect rect = getCropRect(builder ? builder->cropOffset() : FloatSize());
     RefPtr<SkImageFilter> input(builder ? builder->build(inputEffect(0), operatingColorSpace()) : 0);
     switch (m_lightSource->type()) {
     case LS_DISTANT: {
