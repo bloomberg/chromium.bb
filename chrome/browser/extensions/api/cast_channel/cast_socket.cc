@@ -104,8 +104,9 @@ scoped_ptr<net::TCPClientSocket> CastSocket::CreateTcpSocket() {
   net::AddressList addresses(ip_endpoint_);
   scoped_ptr<net::TCPClientSocket> tcp_socket(
       new net::TCPClientSocket(addresses, net_log_, net_log_source_));
-  // Enable keepalive
-  tcp_socket->SetKeepAlive(true, kTcpKeepAliveDelaySecs);
+  // Options cannot be set on the TCPClientSocket yet, because the
+  // underlying platform socket will not be created until we Bind()
+  // or Connect() it.
   return tcp_socket.Pass();
 }
 
@@ -267,8 +268,12 @@ int CastSocket::DoTcpConnect() {
 
 int CastSocket::DoTcpConnectComplete(int result) {
   DVLOG(1) << "DoTcpConnectComplete: " << result;
-  if (result == net::OK)
+  if (result == net::OK) {
+    // Enable TCP protocol-level keep-alive.
+    bool result = tcp_socket_->SetKeepAlive(true, kTcpKeepAliveDelaySecs);
+    LOG_IF(WARNING, !result) << "Failed to SetKeepAlive.";
     next_state_ = CONN_STATE_SSL_CONNECT;
+  }
   return result;
 }
 
