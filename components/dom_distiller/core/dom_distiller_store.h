@@ -65,7 +65,7 @@ class DomDistillerStoreInterface {
 // to the other (i.e. non-source) two models.
 // TODO(cjhopman): Support deleting entries.
 class DomDistillerStore : public syncer::SyncableService,
-                          public DomDistillerStoreInterface {
+                          DomDistillerStoreInterface {
  public:
   // Creates storage using the given database for local storage. Initializes the
   // database with |database_dir|.
