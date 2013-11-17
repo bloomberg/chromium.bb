@@ -205,7 +205,10 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
     case XI_ButtonRelease:
       return ui::ET_TOUCH_RELEASED;
     case XI_Motion:
-      if (GetButtonMaskForX2Event(event))
+      // Should not convert any emulated Motion event from touch device to
+      // touch event.
+      if (!(event->flags & XIPointerEmulated) &&
+          GetButtonMaskForX2Event(event))
         return ui::ET_TOUCH_MOVED;
       return ui::ET_UNKNOWN;
     default:
