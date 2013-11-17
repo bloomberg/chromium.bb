@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "core/html/track/WebVTTParser.h"
+#include "core/html/track/vtt/VTTParser.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Text.h"
-#include "core/html/track/WebVTTElement.h"
+#include "core/html/track/vtt/VTTElement.h"
 #include "platform/text/SegmentedString.h"
 #include "wtf/text/WTFString.h"
 
@@ -405,11 +405,12 @@ void WebVTTParser::createNewRegion(const String& headerValue)
 
     // Step 12.5.10 If the text track list of regions regions contains a region
     // with the same region identifier value as region, remove that region.
-    for (size_t i = 0; i < m_regionList.size(); ++i)
+    for (size_t i = 0; i < m_regionList.size(); ++i) {
         if (m_regionList[i]->id() == region->id()) {
             m_regionList.remove(i);
             break;
         }
+    }
 
     // Step 12.5.11
     m_regionList.append(region);
@@ -419,8 +420,8 @@ double WebVTTParser::collectTimeStamp(const String& line, unsigned* position)
 {
     // Collect a WebVTT timestamp (5.3 WebVTT cue timings and settings parsing.)
     // Steps 1 - 4 - Initial checks, let most significant units be minutes.
-    enum Mode { minutes, hours };
-    Mode mode = minutes;
+    enum Mode { Minutes, Hours };
+    Mode mode = Minutes;
     if (*position >= line.length() || !isASCIIDigit(line[*position]))
         return malformedTime;
 
@@ -430,7 +431,7 @@ double WebVTTParser::collectTimeStamp(const String& line, unsigned* position)
 
     // Step 7 - If not 2 characters or value is greater than 59, interpret as hours.
     if (digits1.length() != 2 || value1 > 59)
-        mode = hours;
+        mode = Hours;
 
     // Steps 8 - 11 - Collect the next sequence of 0-9 after ':' (must be 2 chars).
     if (*position >= line.length() || line[(*position)++] != ':')
@@ -444,7 +445,7 @@ double WebVTTParser::collectTimeStamp(const String& line, unsigned* position)
 
     // Step 12 - Detect whether this timestamp includes hours.
     int value3;
-    if (mode == hours || (*position < line.length() && line[*position] == ':')) {
+    if (mode == Hours || (*position < line.length() && line[*position] == ':')) {
         if (*position >= line.length() || line[(*position)++] != ':')
             return malformedTime;
         if (*position >= line.length() || !isASCIIDigit(line[*position]))
@@ -526,9 +527,9 @@ void WebVTTTreeBuilder::constructTreeFromToken(Document& document)
             if (m_token.classes().size() > 0)
                 child->setAttribute(classAttr, AtomicString(m_token.classes()));
 
-            if (child->webVTTNodeType() == WebVTTNodeTypeVoice)
+            if (child->webVTTNodeType() == WebVTTNodeTypeVoice) {
                 child->setAttribute(WebVTTElement::voiceAttributeName(), AtomicString(m_token.annotation()));
-            else if (child->webVTTNodeType() == WebVTTNodeTypeLanguage) {
+            } else if (child->webVTTNodeType() == WebVTTNodeTypeLanguage) {
                 m_languageStack.append(AtomicString(m_token.annotation()));
                 child->setAttribute(WebVTTElement::langAttributeName(), m_languageStack.last());
             }

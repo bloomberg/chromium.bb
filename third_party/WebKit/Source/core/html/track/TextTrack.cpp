@@ -39,8 +39,8 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/TextTrackList.h"
-#include "core/html/track/VTTRegion.h"
-#include "core/html/track/VTTRegionList.h"
+#include "core/html/track/vtt/VTTRegion.h"
+#include "core/html/track/vtt/VTTRegionList.h"
 
 namespace WebCore {
 

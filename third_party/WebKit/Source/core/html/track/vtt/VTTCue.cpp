@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/html/track/VTTCue.h"
+#include "core/html/track/vtt/VTTCue.h"
 
 namespace WebCore {
 

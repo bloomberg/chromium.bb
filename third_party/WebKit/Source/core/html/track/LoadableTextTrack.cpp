@@ -28,7 +28,7 @@
 
 #include "core/html/HTMLTrackElement.h"
 #include "core/html/track/TextTrackCueList.h"
-#include "core/html/track/VTTRegionList.h"
+#include "core/html/track/vtt/VTTRegionList.h"
 
 namespace WebCore {
 

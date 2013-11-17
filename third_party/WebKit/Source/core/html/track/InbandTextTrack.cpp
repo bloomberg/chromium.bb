@@ -27,7 +27,7 @@
 #include "core/html/track/InbandTextTrack.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/html/track/VTTCue.h"
+#include "core/html/track/vtt/VTTCue.h"
 #include "platform/Logging.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "public/platform/WebString.h"

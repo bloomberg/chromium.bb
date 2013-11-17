@@ -28,7 +28,7 @@
 
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourcePtr.h"
-#include "core/html/track/WebVTTParser.h"
+#include "core/html/track/vtt/VTTParser.h"
 #include "platform/Timer.h"
 #include "wtf/OwnPtr.h"
 

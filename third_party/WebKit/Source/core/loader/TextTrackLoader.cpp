@@ -32,7 +32,7 @@
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/html/track/WebVTTParser.h"
+#include "core/html/track/vtt/VTTParser.h"
 #include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
 #include "platform/weborigin/SecurityOrigin.h"

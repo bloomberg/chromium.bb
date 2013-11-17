@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebVTTToken_h
-#define WebVTTToken_h
+#ifndef VTTToken_h
+#define VTTToken_h
 
 namespace WebCore {
 

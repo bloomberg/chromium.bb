@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebVTTParser_h
-#define WebVTTParser_h
+#ifndef VTTParser_h
+#define VTTParser_h
 
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/html/track/BufferedLineReader.h"
-#include "core/html/track/VTTCue.h"
-#include "core/html/track/VTTRegion.h"
-#include "core/html/track/WebVTTTokenizer.h"
+#include "core/html/track/vtt/VTTCue.h"
+#include "core/html/track/vtt/VTTRegion.h"
+#include "core/html/track/vtt/VTTTokenizer.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 

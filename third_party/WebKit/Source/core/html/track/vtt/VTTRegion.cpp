@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "core/html/track/VTTRegion.h"
+#include "core/html/track/vtt/VTTRegion.h"
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/html/HTMLDivElement.h"
-#include "core/html/track/WebVTTParser.h"
+#include "core/html/track/vtt/VTTParser.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/Logging.h"

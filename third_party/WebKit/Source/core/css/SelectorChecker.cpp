@@ -47,6 +47,7 @@
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/track/vtt/VTTElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/FocusController.h"
 #include "core/frame/Frame.h"
@@ -55,8 +56,6 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/style/RenderStyle.h"
-
-#include "core/html/track/WebVTTElement.h"
 
 namespace WebCore {
 

@@ -40,7 +40,7 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/shadow/MediaControls.h"
 #include "core/html/track/TextTrack.h"
-#include "core/html/track/VTTRegionList.h"
+#include "core/html/track/vtt/VTTRegionList.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"

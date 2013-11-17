@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/html/track/WebVTTElement.h"
+#include "core/html/track/vtt/VTTElement.h"
 
 #include "HTMLElementFactory.h"
 

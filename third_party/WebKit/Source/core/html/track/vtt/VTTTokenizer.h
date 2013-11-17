@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebVTTTokenizer_h
-#define WebVTTTokenizer_h
+#ifndef VTTTokenizer_h
+#define VTTTokenizer_h
 
 #include "core/html/parser/InputStreamPreprocessor.h"
-#include "core/html/track/WebVTTToken.h"
+#include "core/html/track/vtt/VTTToken.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
