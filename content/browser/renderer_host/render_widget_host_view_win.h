@@ -25,7 +25,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_bridge.h"
-#include "ui/base/win/extra_sdk_defines.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -581,12 +580,11 @@ class RenderWidgetHostViewWin
   // A cached latest caret rectangle sent from renderer.
   gfx::Rect caret_rect_;
 
-  // TODO(ananta)
-  // The WM_POINTERDOWN and touch related members should be moved to an
+  // TODO(ananta): The pointer and touch related members should be moved to an
   // independent class to reduce the clutter. This includes members
-  // pointer_down_context_ and last_touch_location_;
+  // pointer_down_context_ and last_touch_location_.
 
-  // Set to true if we are in the context of a WM_POINTERDOWN message
+  // Set to true if we are in the context of a pointer down message.
   bool pointer_down_context_;
 
   // The global x, y coordinates of the last point a touch event was

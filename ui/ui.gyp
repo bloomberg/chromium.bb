@@ -285,7 +285,6 @@
         'base/win/atl_module.h',
         'base/win/dpi_setup.cc',
         'base/win/dpi_setup.h',
-        'base/win/extra_sdk_defines.h',
         'base/win/foreground_helper.cc',
         'base/win/foreground_helper.h',
         'base/win/hidden_window.cc',
