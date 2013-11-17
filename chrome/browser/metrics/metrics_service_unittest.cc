@@ -139,7 +139,8 @@ TEST_F(MetricsServiceTest, PermutedEntropyCacheClearedWhenLowEntropyReset) {
   }
 }
 
-TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
+// Crashes on at least Mac and Linux.  http://crbug.com/320433
+TEST_F(MetricsServiceTest, DISABLED_RegisterSyntheticTrial) {
   MetricsService service;
 
   // Add two synthetic trials and confirm that they show up in the list.
