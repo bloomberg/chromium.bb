@@ -184,9 +184,11 @@ string16 BrowserAccessibilityAndroid::GetText() const {
   else if (!value().empty())
     text = base::UTF8ToUTF16(value());
 
+  // This is called from PlatformIsLeaf, so don't call PlatformChildCount
+  // from within this!
   if (text.empty() && HasOnlyStaticTextChildren()) {
-    for (uint32 i = 0; i < PlatformChildCount(); i++) {
-      BrowserAccessibility* child = PlatformGetChild(i);
+    for (uint32 i = 0; i < child_count(); i++) {
+      BrowserAccessibility* child = children()[i];
       text += static_cast<BrowserAccessibilityAndroid*>(child)->GetText();
     }
   }
@@ -352,8 +354,10 @@ bool BrowserAccessibilityAndroid::HasFocusableChild() const {
 }
 
 bool BrowserAccessibilityAndroid::HasOnlyStaticTextChildren() const {
-  for (uint32 i = 0; i < PlatformChildCount(); i++) {
-    BrowserAccessibility* child = PlatformGetChild(i);
+  // This is called from PlatformIsLeaf, so don't call PlatformChildCount
+  // from within this!
+  for (uint32 i = 0; i < child_count(); i++) {
+    BrowserAccessibility* child = children()[i];
     if (child->role() != blink::WebAXRoleStaticText)
       return false;
   }
