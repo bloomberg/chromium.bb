@@ -14,6 +14,7 @@
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NativeMessageBasic) {
   base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath manifest_path = temp_dir.path().AppendASCII(
       std::string(extensions::kTestNativeMessagingHostName) + ".json");
   ASSERT_NO_FATAL_FAILURE(
