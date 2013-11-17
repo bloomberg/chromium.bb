@@ -27,6 +27,12 @@ namespace content {
 
 namespace {
 
+// Maximum CPU time percentage of a single core that can be consumed for desktop
+// capturing. This means that on systems where screen scraping is slow we may
+// need to capture at frame rate lower than requested. This is necessary to keep
+// UI responsive.
+const int kMaximumCpuConsumptionPercentage = 50;
+
 webrtc::DesktopRect ComputeLetterboxRect(
     const webrtc::DesktopSize& max_size,
     const webrtc::DesktopSize& source_size) {
@@ -70,12 +76,12 @@ class DesktopCaptureDevice::Core
   // notifications.
   void RefreshCaptureFormat(const webrtc::DesktopSize& frame_size);
 
-  // Helper to schedule capture tasks.
-  void ScheduleCaptureTimer();
-
   // Method that is scheduled on |task_runner_| to be called on regular interval
   // to capture a frame.
   void OnCaptureTimer();
+
+  // Captures a frame and schedules timer for the next one.
+  void CaptureFrameAndScheduleNext();
 
   // Captures a single frame.
   void DoCapture();
@@ -246,9 +252,7 @@ void DesktopCaptureDevice::Core::DoAllocateAndStart(
 
   desktop_capturer_->Start(this);
 
-  DoCapture();
-  if (!capture_task_posted_)
-    ScheduleCaptureTimer();
+  CaptureFrameAndScheduleNext();
 }
 
 void DesktopCaptureDevice::Core::DoStopAndDeAllocate() {
@@ -297,14 +301,6 @@ void DesktopCaptureDevice::Core::RefreshCaptureFormat(
   previous_frame_size_ = frame_size;
 }
 
-void DesktopCaptureDevice::Core::ScheduleCaptureTimer() {
-  DCHECK(!capture_task_posted_);
-  capture_task_posted_ = true;
-  task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&Core::OnCaptureTimer, this),
-      base::TimeDelta::FromSeconds(1) / capture_format_.frame_rate);
-}
-
 void DesktopCaptureDevice::Core::OnCaptureTimer() {
   DCHECK(capture_task_posted_);
   capture_task_posted_ = false;
@@ -312,9 +308,27 @@ void DesktopCaptureDevice::Core::OnCaptureTimer() {
   if (!client_)
     return;
 
-  // Schedule a task for the next frame.
-  ScheduleCaptureTimer();
+  CaptureFrameAndScheduleNext();
+}
+
+void DesktopCaptureDevice::Core::CaptureFrameAndScheduleNext() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(!capture_task_posted_);
+
+  base::TimeTicks started_time = base::TimeTicks::Now();
   DoCapture();
+  base::TimeDelta last_capture_duration = base::TimeTicks::Now() - started_time;
+
+  // Limit frame-rate to reduce CPU consumption.
+  base::TimeDelta capture_period = std::max(
+    (last_capture_duration * 100) / kMaximumCpuConsumptionPercentage,
+    base::TimeDelta::FromSeconds(1) / capture_format_.frame_rate);
+
+  // Schedule a task for the next frame.
+  capture_task_posted_ = true;
+  task_runner_->PostDelayedTask(
+      FROM_HERE, base::Bind(&Core::OnCaptureTimer, this),
+      capture_period - last_capture_duration);
 }
 
 void DesktopCaptureDevice::Core::DoCapture() {
