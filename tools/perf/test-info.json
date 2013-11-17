@@ -7,6 +7,10 @@
       "third_party/WebKit/PerformanceTests/"
     ]
   },
+  "browsermark": {
+    "description": "Runs Browsermark CSS, DOM, WebGL, JS, resize and page load benchmarks.\n\nAdditionally Browsermark will test your browsers conformance, but conformance tests are not included in this suite. [Browsermark 2.0 by Rightware](http://browsermark.rightware.com/)",
+    "code": ["chrome/src/tools/perf/benchmarks/browsermark.py"]
+  },
   "canvasmark": {
     "description": "Runs Canvasmark HTML5, Canvas 2D rendering and javascript benchmark.\n\nCanvasMark tests the HTML5 <canvas> rendering performance for commonly used operations in HTML5 games: bitmaps, canvas drawing, alpha blending, polygon fills, shadows and text functions.[HTML5 Canvas demo by Kevin Roast](http://www.kevs3d.co.uk/dev/canvasmark/)",
     "code": ["chrome/src/tools/perf/benchmarks/canvasmark.py"]
