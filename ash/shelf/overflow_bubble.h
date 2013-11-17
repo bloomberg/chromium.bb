@@ -22,6 +22,8 @@ namespace ash {
 
 namespace internal {
 
+class OverflowBubbleView;
+class ShelfLayoutManager;
 class ShelfView;
 
 // OverflowBubble displays the overflown launcher items in a bubble.
@@ -43,6 +45,9 @@ class OverflowBubble : public ui::EventHandler,
   bool IsShowing() const { return !!bubble_; }
   ShelfView* shelf_view() { return shelf_view_; }
 
+  // Returns overflow bubble bounds in screen coordinate.
+  gfx::Rect GetBubbleBounds();
+
  private:
   void ProcessPressedEvent(ui::LocatedEvent* event);
 
@@ -53,7 +58,7 @@ class OverflowBubble : public ui::EventHandler,
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
-  views::View* bubble_;  // Owned by views hierarchy.
+  OverflowBubbleView* bubble_;  // Owned by views hierarchy.
   views::View* anchor_;  // Owned by ShelfView.
   ShelfView* shelf_view_;  // Owned by |bubble_|.
 
