@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_constants.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,10 +27,11 @@ namespace chromeos {
 
 namespace {
 
-std::string LoadSyncToken() {
+std::string LoadSyncToken(base::FilePath profile_dir) {
   std::string token;
   base::FilePath token_file =
-      file_util::GetHomeDir().Append(kManagedUserTokenFilename);
+      profile_dir.Append(kManagedUserTokenFilename);
+  LOG(INFO) << "Loading" << token_file.value();
   if (!base::ReadFileToString(token_file, &token)) {
     return std::string();
   }
@@ -89,18 +91,15 @@ void LocallyManagedUserLoginFlow::ConfigureSync(const std::string& token) {
 void LocallyManagedUserLoginFlow::LaunchExtraSteps(
     Profile* profile) {
   profile_ = profile;
-  const std::string token;
-  if (token.empty()) {
-    PostTaskAndReplyWithResult(
-        content::BrowserThread::GetBlockingPool(),
-        FROM_HERE,
-        base::Bind(&LoadSyncToken),
-        base::Bind(
-             &LocallyManagedUserLoginFlow::OnSyncSetupDataLoaded,
-             weak_factory_.GetWeakPtr()));
-  } else {
-    ConfigureSync(token);
-  }
+  base::FilePath profile_dir = ProfileHelper::GetProfilePathByUserIdHash(
+      UserManager::Get()->GetUserByProfile(profile)->username_hash());
+  PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&LoadSyncToken, profile_dir),
+      base::Bind(
+           &LocallyManagedUserLoginFlow::OnSyncSetupDataLoaded,
+           weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace chromeos

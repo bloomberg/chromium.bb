@@ -34,6 +34,8 @@ class LocallyManagedUserLoginFlow : public ExtendedUserFlow {
   virtual void ConfigureSync(const std::string& token);
 
  private:
+  void Launch();
+
   bool data_loaded_;
   Profile* profile_;
   base::WeakPtrFactory<LocallyManagedUserLoginFlow> weak_factory_;
