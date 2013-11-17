@@ -468,14 +468,13 @@ class MsvsSettings(object):
     ld('MapExports', map={'true': '/MAPINFO:EXPORTS'})
     ld('AdditionalOptions', prefix='')
 
-    xp_version = ''
-    # If we're targeting x86, make sure we're targeting XP.
-    if self._Setting(('VCLinkerTool', 'TargetMachine'),
-                     config, default='1') == '1':
-      xp_version = ',5.01'
+    minimum_required_version = self._Setting(
+        ('VCLinkerTool', 'MinimumRequiredVersion'), config, default='')
+    if minimum_required_version:
+      minimum_required_version = ',' + minimum_required_version
     ld('SubSystem',
-       map={'1': 'CONSOLE%s' % xp_version,
-            '2': 'WINDOWS%s' % xp_version},
+       map={'1': 'CONSOLE%s' % minimum_required_version,
+            '2': 'WINDOWS%s' % minimum_required_version},
        prefix='/SUBSYSTEM:')
 
     ld('TerminalServerAware', map={'1': ':NO', '2': ''}, prefix='/TSAWARE')

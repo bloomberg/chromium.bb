@@ -639,6 +639,7 @@ def FindVisualStudioInstallation():
                     for drive in range(ord('C'), ord('Z') + 1)
                     for suffix in ['', ' (x86)']]
   possible_paths = {
+      '2013': r'Microsoft Visual Studio 12.0\Common7\IDE\devenv.com',
       '2012': r'Microsoft Visual Studio 11.0\Common7\IDE\devenv.com',
       '2010': r'Microsoft Visual Studio 10.0\Common7\IDE\devenv.com',
       '2008': r'Microsoft Visual Studio 9.0\Common7\IDE\devenv.com',
