@@ -1,0 +1,7 @@
+{"name":"screenlockPrivate API test",
+"description":"screenlockPrivate API test",
+"key":"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgY+PzXrnxhllHDH+vqLw8KALKT8DewcI2UjVTlwLnwocQU//wtPOp8aXdGB5cnm5dN4Ow3kmnrvRvdithXlTcWgzi6wp/jvP/5uFPH6LkZzgKoU7o0B1yMGGl9p0Wyxr7UL/U4rA6MpflZdPAcvS5eiHxOXj1oV8m7A8fY7WL5Fte9evtLUyWqrQ6mXsSL759YQJy6TuQeZRGGyxMzSRhoFbTeWCA5x6NqIeeHq04z7ZIbfyscli9N+JetfGyEhPjsFZ9qOK1xN9QGr8MFbJvYIovBxmChkdhr2wkovOvHFMcJlHRO4Cvf4w9yJGmorz35wtyDzbEjmgNXEh2Sh77wIDAQAB",
+"version":"1",
+"manifest_version":2,
+"permissions":["screenlockPrivate"],
+"app":{"background":{"scripts":["test.js"]}}}

@@ -137,6 +137,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
+#include "chrome/browser/chromeos/extensions/screenlock_private_api.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_event_router_factory.h"
 #if defined(FILE_MANAGER_EXTENSION)
@@ -267,6 +268,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(OS_CHROMEOS)
   extensions::InputImeAPI::GetFactoryInstance();
   extensions::InputMethodAPI::GetFactoryInstance();
+  extensions::ScreenlockPrivateEventRouter::GetFactoryInstance();
 #endif
   extensions::LocationManager::GetFactoryInstance();
   extensions::ManagementAPI::GetFactoryInstance();

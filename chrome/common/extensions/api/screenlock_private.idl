@@ -1,0 +1,26 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Control and monitor the screen locker.
+[platforms=("chromeos"), implemented_in="chrome/browser/chromeos/extensions/screenlock_private_api.h", permissions=screenlockPrivate]
+namespace screenlockPrivate {
+  callback BooleanCallback = void(boolean locked);
+
+  interface Functions {
+    // Returns true if the screen is currently locked, false otherwise.
+    static void getLocked(BooleanCallback callback);
+
+    // Set <code>locked=true</code> to lock the screen,
+    // <code>locked=false</code> to unlock it.
+    static void setLocked(boolean locked);
+
+    // Show a message to the user on the unlock UI if the screen is locked.
+    static void showMessage(DOMString message);
+  };
+
+  interface Events {
+    // Fires whenever the screen is locked or unlocked.
+    static void onChanged(boolean locked);
+  };
+};

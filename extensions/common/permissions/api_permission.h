@@ -161,6 +161,7 @@ class APIPermission {
     kWebrtcLoggingPrivate,
     kWebstorePrivate,
     kWebView,
+    kScreenlockPrivate,
     kSystemCpu,
     kSystemMemory,
     kSystemInfoCpu,

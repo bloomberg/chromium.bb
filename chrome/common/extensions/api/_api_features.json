@@ -294,6 +294,12 @@
     "channel": "stable",
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
+  "screenlockPrivate": {
+    "platforms": ["chromeos"],
+    "dependencies": ["permission:screenlockPrivate"],
+    "extension_types": ["platform_app"],
+    "contexts": ["blessed_extension", "unblessed_extension"]
+  },
   "fileBrowserPrivate": {
     "platforms": ["chromeos"],
     "dependencies": ["permission:fileBrowserPrivate"],

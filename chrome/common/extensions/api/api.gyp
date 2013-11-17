@@ -156,6 +156,7 @@
               'diagnostics.idl',
               'file_browser_handler_internal.json',
               'log_private.idl',
+              'screenlock_private.idl',
               'wallpaper.json',
               'wallpaper_private.json',
             ],

@@ -163,6 +163,10 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagCannotBeOptional },
 
     // Register private permissions.
+    { APIPermission::kScreenlockPrivate, "screenlockPrivate",
+      APIPermissionInfo::kFlagCannotBeOptional,
+      IDS_EXTENSION_PROMPT_WARNING_SCREENLOCK_PRIVATE,
+      PermissionMessage::kScreenlockPrivate },
     { APIPermission::kActivityLogPrivate, "activityLogPrivate",
       APIPermissionInfo::kFlagCannotBeOptional,
       IDS_EXTENSION_PROMPT_WARNING_ACTIVITY_LOG_PRIVATE,
