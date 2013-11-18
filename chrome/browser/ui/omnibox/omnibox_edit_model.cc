@@ -1020,6 +1020,7 @@ void OmniboxEditModel::OnPopupDataChanged(
       has_temporary_text_ = true;
       original_url_ = *destination_for_temporary_text_change;
       inline_autocomplete_text_.clear();
+      view_->OnInlineAutocompleteTextCleared();
     }
     if (control_key_state_ == DOWN_WITHOUT_CHANGE) {
       // Arrowing around the popup cancels control-enter.
@@ -1038,6 +1039,8 @@ void OmniboxEditModel::OnPopupDataChanged(
 
   bool call_controller_onchanged = true;
   inline_autocomplete_text_ = text;
+  if (inline_autocomplete_text_.empty())
+    view_->OnInlineAutocompleteTextCleared();
 
   string16 user_text = user_input_in_progress_ ? user_text_ : permanent_text_;
   if (keyword_state_changed && KeywordIsSelected()) {
@@ -1218,6 +1221,7 @@ void OmniboxEditModel::InternalSetUserText(const string16& text) {
   user_text_ = text;
   just_deleted_text_ = false;
   inline_autocomplete_text_.clear();
+  view_->OnInlineAutocompleteTextCleared();
 }
 
 bool OmniboxEditModel::KeywordIsSelected() const {

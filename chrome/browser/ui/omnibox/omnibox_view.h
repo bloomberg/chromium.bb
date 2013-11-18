@@ -175,6 +175,9 @@ class OmniboxView {
   virtual bool OnInlineAutocompleteTextMaybeChanged(
       const string16& display_text, size_t user_text_length) = 0;
 
+  // Called when the inline autocomplete text in the model has been cleared.
+  virtual void OnInlineAutocompleteTextCleared() = 0;
+
   // Called when the temporary text has been reverted by the user.  This will
   // reset the user's original selection.
   virtual void OnRevertTemporaryText() = 0;

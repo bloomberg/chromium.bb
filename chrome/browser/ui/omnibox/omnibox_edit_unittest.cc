@@ -56,6 +56,7 @@ class TestingOmniboxView : public OmniboxView {
       const string16& display_text, size_t user_text_length) OVERRIDE {
     return false;
   }
+  virtual void OnInlineAutocompleteTextCleared() OVERRIDE {}
   virtual void OnRevertTemporaryText() OVERRIDE {}
   virtual void OnBeforePossibleChange() OVERRIDE {}
   virtual bool OnAfterPossibleChange() OVERRIDE { return false; }

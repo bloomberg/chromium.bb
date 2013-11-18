@@ -531,9 +531,6 @@ void OmniboxViewViews::UpdatePopup() {
   if (!model()->has_focus())
     return;
 
-  // Hide the inline autocompletion for IME users.
-  location_bar_view_->SetImeInlineAutocompletion(string16());
-
   // Prevent inline autocomplete when the caret isn't at the end of the text,
   // and during IME composition editing unless
   // |kEnableOmniboxAutoCompletionForIme| is enabled.
@@ -584,6 +581,11 @@ bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
   }
   TextChanged();
   return true;
+}
+
+void OmniboxViewViews::OnInlineAutocompleteTextCleared() {
+  // Hide the inline autocompletion for IME users.
+  location_bar_view_->SetImeInlineAutocompletion(string16());
 }
 
 void OmniboxViewViews::OnRevertTemporaryText() {

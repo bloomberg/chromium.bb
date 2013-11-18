@@ -514,6 +514,9 @@ bool OmniboxViewMac::OnInlineAutocompleteTextMaybeChanged(
   return true;
 }
 
+void OmniboxViewMac::OnInlineAutocompleteTextCleared() {
+}
+
 void OmniboxViewMac::OnRevertTemporaryText() {
   SetSelectedRange(saved_temporary_selection_);
   // We got here because the user hit the Escape key. We explicitly don't call

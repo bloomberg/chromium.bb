@@ -582,6 +582,9 @@ bool OmniboxViewGtk::OnInlineAutocompleteTextMaybeChanged(
   return true;
 }
 
+void OmniboxViewGtk::OnInlineAutocompleteTextCleared() {
+}
+
 void OmniboxViewGtk::OnRevertTemporaryText() {
   StartUpdatingHighlightedText();
   SetSelectedRange(saved_temporary_selection_);
