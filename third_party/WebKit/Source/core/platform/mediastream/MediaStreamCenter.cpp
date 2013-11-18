@@ -69,10 +69,13 @@ bool MediaStreamCenter::getMediaStreamTrackSources(PassRefPtr<MediaStreamTrackSo
 void MediaStreamCenter::didSetMediaStreamTrackEnabled(MediaStreamDescriptor* stream,  MediaStreamComponent* component)
 {
     if (m_private) {
-        if (component->enabled())
+        if (component->enabled()) {
             m_private->didEnableMediaStreamTrack(stream, component);
-        else
+            m_private->didEnableMediaStreamTrack(component);
+        } else {
             m_private->didDisableMediaStreamTrack(stream, component);
+            m_private->didDisableMediaStreamTrack(component);
+        }
     }
 }
 
@@ -103,6 +106,12 @@ void MediaStreamCenter::didCreateMediaStream(MediaStreamDescriptor* stream)
         blink::WebMediaStream webStream(stream);
         m_private->didCreateMediaStream(webStream);
     }
+}
+
+void MediaStreamCenter::didCreateMediaStreamTrack(MediaStreamComponent* track)
+{
+    if (m_private)
+        m_private->didCreateMediaStreamTrack(track);
 }
 
 void MediaStreamCenter::stopLocalMediaStream(const blink::WebMediaStream& webStream)

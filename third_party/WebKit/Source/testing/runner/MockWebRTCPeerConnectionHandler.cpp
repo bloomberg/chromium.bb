@@ -273,7 +273,6 @@ void MockWebRTCPeerConnectionHandler::getStats(const WebRTCStatsRequest& request
     WebRTCStatsResponse response = request.createResponse();
     double currentDate = m_interfaces->delegate()->getCurrentTimeInMillisecond();
     if (request.hasSelector()) {
-        WebMediaStream stream = request.stream();
         // FIXME: There is no check that the fetched values are valid.
         size_t reportIndex = response.addReport("Mock video", "ssrc", currentDate);
         response.addStatistic(reportIndex, "type", "video");

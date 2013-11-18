@@ -58,12 +58,15 @@ public:
     static MediaStreamCenter& instance();
 
     bool getMediaStreamTrackSources(PassRefPtr<MediaStreamTrackSourcesRequest>);
+
+    void didCreateMediaStreamTrack(MediaStreamComponent*);
     void didSetMediaStreamTrackEnabled(MediaStreamDescriptor*, MediaStreamComponent*);
+    bool didStopMediaStreamTrack(MediaStreamComponent*);
+
+    void didCreateMediaStream(MediaStreamDescriptor*);
     bool didAddMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);
     bool didRemoveMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);
     void didStopLocalMediaStream(MediaStreamDescriptor*);
-    bool didStopMediaStreamTrack(MediaStreamComponent*);
-    void didCreateMediaStream(MediaStreamDescriptor*);
 
     // blink::WebMediaStreamCenterClient
     virtual void stopLocalMediaStream(const blink::WebMediaStream&) OVERRIDE;
