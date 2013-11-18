@@ -32,6 +32,7 @@
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
+#include "platform/Task.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -68,12 +69,12 @@ private:
 #endif
 };
 
-class DatabaseTask {
+class DatabaseTask : public blink::WebThread::Task {
     WTF_MAKE_NONCOPYABLE(DatabaseTask); WTF_MAKE_FAST_ALLOCATED;
 public:
     virtual ~DatabaseTask();
 
-    void performTask();
+    virtual void run() OVERRIDE;
 
     DatabaseBackend* database() const { return m_database; }
 #ifndef NDEBUG

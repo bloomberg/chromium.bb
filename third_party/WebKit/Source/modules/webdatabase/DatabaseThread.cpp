@@ -107,7 +107,7 @@ void DatabaseThread::databaseThread()
 
     AutodrainedPool pool;
     while (OwnPtr<DatabaseTask> task = m_queue.waitForMessage()) {
-        task->performTask();
+        task->run();
         pool.cycle();
     }
 

@@ -73,7 +73,7 @@ DatabaseTask::~DatabaseTask()
 #endif
 }
 
-void DatabaseTask::performTask()
+void DatabaseTask::run()
 {
     // Database tasks are meant to be used only once, so make sure this one hasn't been performed before.
 #if !LOG_DISABLED
