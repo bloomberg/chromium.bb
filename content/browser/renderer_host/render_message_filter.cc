@@ -455,6 +455,18 @@ void RenderMessageFilter::OnCreateWindow(
     int* surface_id,
     int64* cloned_session_storage_namespace_id) {
   bool no_javascript_access;
+
+  // Merge the additional features into the WebWindowFeatures struct before we
+  // pass it on.
+  blink::WebVector<blink::WebString> additional_features(
+      params.additional_features.size());
+
+  for (size_t i = 0; i < params.additional_features.size(); ++i)
+    additional_features[i] = blink::WebString(params.additional_features[i]);
+
+  blink::WebWindowFeatures features = params.features;
+  features.additionalFeatures.swap(additional_features);
+
   bool can_create_window =
       GetContentClient()->browser()->CanCreateWindow(
           params.opener_url,
@@ -464,7 +476,7 @@ void RenderMessageFilter::OnCreateWindow(
           params.target_url,
           params.referrer,
           params.disposition,
-          params.features,
+          features,
           params.user_gesture,
           params.opener_suppressed,
           resource_context_,

@@ -2374,6 +2374,9 @@ WebView* RenderViewImpl::createView(
   }
   params.features = features;
 
+  for (size_t i = 0; i < features.additionalFeatures.size(); ++i)
+    params.additional_features.push_back(features.additionalFeatures[i]);
+
   int32 routing_id = MSG_ROUTING_NONE;
   int32 main_frame_routing_id = MSG_ROUTING_NONE;
   int32 surface_id = 0;

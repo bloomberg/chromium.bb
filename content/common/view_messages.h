@@ -363,6 +363,11 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
 
   // The window features to use for the new view.
   IPC_STRUCT_MEMBER(blink::WebWindowFeatures, features)
+
+  // The additional window features to use for the new view. We pass these
+  // separately from |features| above because we cannot serialize WebStrings
+  // over IPC.
+  IPC_STRUCT_MEMBER(std::vector<string16>, additional_features)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
