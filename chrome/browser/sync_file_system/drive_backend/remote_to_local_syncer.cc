@@ -312,11 +312,11 @@ void RemoteToLocalSyncer::HandleNewFile(
   DCHECK(!remote_metadata_->details().deleted());
   DCHECK_EQ(FILE_KIND_FILE, remote_metadata_->details().file_kind());
 
-  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForNewFile,
+  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile,
                      weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void RemoteToLocalSyncer::DidPrepareForNewFile(
+void RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
@@ -522,15 +522,8 @@ void RemoteToLocalSyncer::HandleContentUpdate(
   DCHECK_NE(dirty_tracker_->synced_details().md5(),
             remote_metadata_->details().md5());
 
-  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForContentUpdate,
+  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile,
                      weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
-void RemoteToLocalSyncer::DidPrepareForContentUpdate(
-    const SyncStatusCallback& callback,
-    SyncStatusCode status) {
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
 }
 
 void RemoteToLocalSyncer::HandleFolderContentListing(
@@ -547,13 +540,20 @@ void RemoteToLocalSyncer::HandleFolderContentListing(
   DCHECK(remote_metadata_->has_details());
   DCHECK(!remote_metadata_->details().deleted());
 
-  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForFolderListing,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+  // TODO(tzik): Replace this call with ChildList version.
+  drive_service()->GetResourceListInDirectory(
+      dirty_tracker_->file_id(),
+      base::Bind(&RemoteToLocalSyncer::DidListFolderContent,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 base::Passed(ScopedVector<google_apis::FileResource>())));
 }
 
-void RemoteToLocalSyncer::DidPrepareForFolderListing(
+void RemoteToLocalSyncer::DidListFolderContent(
     const SyncStatusCallback& callback,
-    SyncStatusCode status) {
+    ScopedVector<google_apis::FileResource> children,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::ResourceList> resource_list) {
   NOTIMPLEMENTED();
   callback.Run(SYNC_STATUS_FAILED);
 }

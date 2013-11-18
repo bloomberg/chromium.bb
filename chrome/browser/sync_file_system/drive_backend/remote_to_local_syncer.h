@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_REMOTE_TO_LOCAL_SYNCER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_REMOTE_TO_LOCAL_SYNCER_H_
 
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
@@ -19,7 +20,9 @@ class DriveServiceInterface;
 }
 
 namespace google_apis {
+class FileResource;
 class ResourceEntry;
+class ResourceList;
 }
 
 namespace webkit_blob {
@@ -109,10 +112,22 @@ class RemoteToLocalSyncer : public SyncTask {
   void HandleInactiveTracker(const SyncStatusCallback& callback);
 
   // Handles remotely added file.  Needs Prepare() call.
-  // TODO(tzik): Write details and implement this.
   void HandleNewFile(const SyncStatusCallback& callback);
-  void DidPrepareForNewFile(const SyncStatusCallback& callback,
-                            SyncStatusCode status);
+
+  // This implements the body of the HandleNewFile and HandleContentUpdate.
+  // If the file doesn't have corresponding local file:
+  //   - Dispatch to DownloadFile.
+  // Else, if the local file doesn't have local change:
+  //   - Dispatch to DownloadFile if the local file is a regular file.
+  //   - If the local file is a folder, handle this case as a conflict.  Lower
+  //     the priority of the tracker, and defer further handling to
+  //     local-to-remote change.
+  // Else:
+  //  # The file has local modification.
+  //  - Handle this case as a conflict.  Lower the priority of the tracker, and
+  //    defer further handling to local-to-remote change.
+  void DidPrepareForAddOrUpdateFile(const SyncStatusCallback& callback,
+                                    SyncStatusCode status);
 
   // Handles remotely added folder.  Needs Prepare() call.
   // TODO(tzik): Write details and implement this.
@@ -144,12 +159,13 @@ class RemoteToLocalSyncer : public SyncTask {
 
   // Handles new file.  Needs Prepare() call.
   void HandleContentUpdate(const SyncStatusCallback& callback);
-  void DidPrepareForContentUpdate(const SyncStatusCallback& callback,
-                                  SyncStatusCode status);
 
   void HandleFolderContentListing(const SyncStatusCallback& callback);
-  void DidPrepareForFolderListing(const SyncStatusCallback& callback,
-                                  SyncStatusCode status);
+  void DidListFolderContent(
+      const SyncStatusCallback& callback,
+      ScopedVector<google_apis::FileResource> children,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::ResourceList> resource_list);
 
   void HandleOfflineSolvable(const SyncStatusCallback& callback);
 
