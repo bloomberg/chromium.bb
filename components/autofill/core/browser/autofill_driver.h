@@ -83,6 +83,9 @@ class AutofillDriver {
 
   // Tells the renderer to clear the currently previewed Autofill results.
   virtual void RendererShouldClearPreviewedForm() = 0;
+
+  // Tells the renderer to set the node text.
+  virtual void RendererShouldSetNodeText(const base::string16& value) = 0;
 };
 
 }  // namespace autofill

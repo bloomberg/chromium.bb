@@ -8,14 +8,11 @@
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/common/autofill_messages.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/component_strings.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::RenderViewHost;
 using blink::WebAutofillClient;
 
 namespace autofill {
@@ -24,8 +21,7 @@ AutofillExternalDelegate::AutofillExternalDelegate(
     content::WebContents* web_contents,
     AutofillManager* autofill_manager,
     AutofillDriver* autofill_driver)
-    : web_contents_(web_contents),
-      autofill_manager_(autofill_manager),
+    : autofill_manager_(autofill_manager),
       autofill_driver_(autofill_driver),
       password_autofill_manager_(web_contents),
       autofill_query_id_(0),
@@ -180,8 +176,6 @@ void AutofillExternalDelegate::DidSelectSuggestion(int identifier) {
 
 void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
                                                    int identifier) {
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-
   if (identifier == WebAutofillClient::MenuItemIDAutofillOptions) {
     // User selected 'Autofill Options'.
     autofill_manager_->OnShowAutofillDialog();
@@ -196,7 +190,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     autofill_driver_->RendererShouldAcceptDataListSuggestion(value);
   } else if (identifier == WebAutofillClient::MenuItemIDAutocompleteEntry) {
     // User selected an Autocomplete, so we fill directly.
-    host->Send(new AutofillMsg_SetNodeText(host->GetRoutingID(), value));
+    autofill_driver_->RendererShouldSetNodeText(value);
   } else {
     FillAutofillFormData(identifier, false);
   }

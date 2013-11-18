@@ -50,7 +50,7 @@ void TestAutofillDriver::SendAutofillTypePredictionsToRenderer(
 }
 
 void TestAutofillDriver::RendererShouldAcceptDataListSuggestion(
-      const base::string16& value) {
+    const base::string16& value) {
 }
 
 void TestAutofillDriver::RendererShouldClearFilledForm() {
@@ -62,6 +62,10 @@ void TestAutofillDriver::RendererShouldClearPreviewedForm() {
 void TestAutofillDriver::SetURLRequestContext(
     net::URLRequestContextGetter* url_request_context) {
   url_request_context_ = url_request_context;
+}
+
+void TestAutofillDriver::RendererShouldSetNodeText(
+    const base::string16& value) {
 }
 
 }  // namespace autofill

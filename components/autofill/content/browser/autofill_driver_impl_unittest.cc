@@ -83,26 +83,6 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  // Searches for an |AutofillMsg_AcceptDataListSuggestion| message in the queue
-  // of sent IPC messages. If none is present, returns false. Otherwise,
-  // extracts the first |AutofillMsg_AcceptDataListSuggestion| message, fills
-  // the output parameter with the value of the message's parameter, and clears
-  // the queue of sent messages.
-  bool GetAcceptDataListSuggestion(
-      base::string16* value) {
-    const uint32 kMsgID = AutofillMsg_AcceptDataListSuggestion::ID;
-    const IPC::Message* message =
-        process()->sink().GetFirstMessageMatching(kMsgID);
-    if (!message)
-      return false;
-    Tuple1<base::string16> autofill_param;
-    AutofillMsg_AcceptDataListSuggestion::Read(message, &autofill_param);
-    if (value)
-      *value = autofill_param.a;
-    process()->sink().ClearMessages();
-    return true;
-  }
-
   // Searches for an |AutofillMsg_FormDataFilled| message in the queue of sent
   // IPC messages. If none is present, returns false. Otherwise, extracts the
   // first |AutofillMsg_FormDataFilled| message, fills the output parameters
@@ -141,6 +121,32 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
     if (predictions)
       *predictions = autofill_param.a;
 
+    process()->sink().ClearMessages();
+    return true;
+  }
+
+  // Searches for a message matching |messageID| in the queue of sent IPC
+  // messages. If none is present, returns false. Otherwise, extracts the first
+  // matching message, fills the output parameter with the string16 from the
+  // message's parameter, and clears the queue of sent messages.
+  bool GetString16FromMessageWithID(uint32 messageID, base::string16* value) {
+    const IPC::Message* message =
+        process()->sink().GetFirstMessageMatching(messageID);
+    if (!message)
+      return false;
+    Tuple1<base::string16> autofill_param;
+    switch (messageID) {
+      case AutofillMsg_SetNodeText::ID:
+        AutofillMsg_SetNodeText::Read(message, &autofill_param);
+        break;
+      case AutofillMsg_AcceptDataListSuggestion::ID:
+        AutofillMsg_AcceptDataListSuggestion::Read(message, &autofill_param);
+        break;
+      default:
+        NOTREACHED();
+    }
+    if (value)
+      *value = autofill_param.a;
     process()->sink().ClearMessages();
     return true;
   }
@@ -241,11 +247,13 @@ TEST_F(AutofillDriverImplTest, FillActionSentToRenderer) {
 }
 
 TEST_F(AutofillDriverImplTest, AcceptDataListSuggestion) {
-  base::string16 inputValue(UTF8ToUTF16("barfoo"));
-  base::string16 outputValue;
-  driver_->RendererShouldAcceptDataListSuggestion(inputValue);
-  EXPECT_TRUE(GetAcceptDataListSuggestion(&outputValue));
-  EXPECT_EQ(inputValue, outputValue);
+  base::string16 input_value(ASCIIToUTF16("barfoo"));
+  base::string16 output_value;
+  driver_->RendererShouldAcceptDataListSuggestion(input_value);
+  EXPECT_TRUE(GetString16FromMessageWithID(
+      AutofillMsg_AcceptDataListSuggestion::ID,
+      &output_value));
+  EXPECT_EQ(input_value, output_value);
 }
 
 TEST_F(AutofillDriverImplTest, ClearFilledFormSentToRenderer) {
@@ -256,6 +264,15 @@ TEST_F(AutofillDriverImplTest, ClearFilledFormSentToRenderer) {
 TEST_F(AutofillDriverImplTest, ClearPreviewedFormSentToRenderer) {
   driver_->RendererShouldClearPreviewedForm();
   EXPECT_TRUE(HasMessageMatchingID(AutofillMsg_ClearPreviewedForm::ID));
+}
+
+TEST_F(AutofillDriverImplTest, SetNodeText) {
+  base::string16 input_value(ASCIIToUTF16("barqux"));
+  base::string16 output_value;
+  driver_->RendererShouldSetNodeText(input_value);
+  EXPECT_TRUE(GetString16FromMessageWithID(AutofillMsg_SetNodeText::ID,
+                                           &output_value));
+  EXPECT_EQ(input_value, output_value);
 }
 
 }  // namespace autofill

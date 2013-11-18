@@ -153,6 +153,14 @@ void AutofillDriverImpl::RendererShouldClearPreviewedForm() {
   host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));
 }
 
+void AutofillDriverImpl::RendererShouldSetNodeText(
+    const base::string16& value) {
+  if (!RendererIsAvailable())
+    return;
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(new AutofillMsg_SetNodeText(host->GetRoutingID(), value));
+}
+
 bool AutofillDriverImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutofillDriverImpl, message)

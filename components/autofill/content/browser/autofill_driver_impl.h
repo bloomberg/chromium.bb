@@ -57,6 +57,7 @@ class AutofillDriverImpl : public AutofillDriver,
       const base::string16& value) OVERRIDE;
   virtual void RendererShouldClearFilledForm() OVERRIDE;
   virtual void RendererShouldClearPreviewedForm() OVERRIDE;
+  virtual void RendererShouldSetNodeText(const base::string16& value) OVERRIDE;
 
   AutofillExternalDelegate* autofill_external_delegate() {
     return &autofill_external_delegate_;

@@ -46,6 +46,7 @@ class MockAutofillDriver : public TestAutofillDriver {
                void(const base::string16&));
   MOCK_METHOD0(RendererShouldClearFilledForm, void());
   MOCK_METHOD0(RendererShouldClearPreviewedForm, void());
+  MOCK_METHOD1(RendererShouldSetNodeText, void(const base::string16&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDriver);
@@ -439,11 +440,11 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
 // that the user accepted the data list suggestion.
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateAcceptSuggestion) {
   EXPECT_CALL(manager_delegate_, HideAutofillPopup());
-  base::string16 dummyString(ASCIIToUTF16("baz qux"));
+  base::string16 dummy_string(ASCIIToUTF16("baz qux"));
   EXPECT_CALL(*autofill_driver_,
-              RendererShouldAcceptDataListSuggestion(dummyString));
+              RendererShouldAcceptDataListSuggestion(dummy_string));
   external_delegate_->DidAcceptSuggestion(
-      dummyString,
+      dummy_string,
       WebAutofillClient::MenuItemIDDataListEntry);
 }
 
@@ -482,6 +483,16 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateHideWarning) {
                                             autofill_items,
                                             autofill_items,
                                             autofill_ids);
+}
+
+TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateSetNodeText) {
+  EXPECT_CALL(manager_delegate_, HideAutofillPopup());
+  base::string16 dummy_string(ASCIIToUTF16("baz foo"));
+  EXPECT_CALL(*autofill_driver_,
+              RendererShouldSetNodeText(dummy_string));
+  external_delegate_->DidAcceptSuggestion(
+      dummy_string,
+      WebAutofillClient::MenuItemIDAutocompleteEntry);
 }
 
 }  // namespace autofill
