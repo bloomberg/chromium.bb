@@ -19,9 +19,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
@@ -29,9 +27,6 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace {
-
-const int kCookieInfoViewBorderSize = 1;
-const int kCookieInfoViewInsetSize = 3;
 
 // Adjustment to the spacing between subsequent label-field lines.
 const int kExtraLineHeightPadding = 3;
@@ -129,10 +124,7 @@ void CookieInfoView::AddLabelRow(int layout_id, views::GridLayout* layout,
   layout->AddView(label);
   layout->AddView(text_field, 2, 1, views::GridLayout::FILL,
                   views::GridLayout::CENTER);
-  layout->AddPaddingRow(0, views::DialogDelegate::UseNewStyle() ?
-                           kExtraLineHeightPadding :
-                           views::kRelatedControlSmallVerticalSpacing);
-
+  layout->AddPaddingRow(0, kExtraLineHeightPadding);
 
   // Now that the Textfield is in the view hierarchy, it can be initialized.
   text_field->SetReadOnly(true);
@@ -149,13 +141,6 @@ void CookieInfoView::AddLabelRow(int layout_id, views::GridLayout* layout,
 void CookieInfoView::Init() {
   // Ensure we don't run this more than once and leak memory.
   DCHECK(!name_label_);
-
-#if defined(USE_AURA) || !defined(OS_WIN)
-  SkColor border_color = SK_ColorGRAY;
-#else
-  SkColor border_color = color_utils::GetSysSkColor(COLOR_3DSHADOW);
-#endif
-
   name_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NAME_LABEL));
   name_value_field_ = new views::Textfield;
@@ -178,32 +163,20 @@ void CookieInfoView::Init() {
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_EXPIRES_LABEL));
   expires_value_field_ = new views::Textfield;
 
-  using views::GridLayout;
-  using views::ColumnSet;
-
-  GridLayout* layout = new GridLayout(this);
-  if (views::DialogDelegate::UseNewStyle()) {
-    layout->SetInsets(
-        0, views::kButtonHEdgeMarginNew, 0, views::kButtonHEdgeMarginNew);
-  } else {
-    set_border(views::Border::CreateSolidBorder(kCookieInfoViewBorderSize,
-                                                border_color));
-    layout->SetInsets(kCookieInfoViewInsetSize,
-                      kCookieInfoViewInsetSize,
-                      kCookieInfoViewInsetSize,
-                      kCookieInfoViewInsetSize);
-  }
+  views::GridLayout* layout = new views::GridLayout(this);
+  layout->SetInsets(0, views::kButtonHEdgeMarginNew,
+                    0, views::kButtonHEdgeMarginNew);
   SetLayoutManager(layout);
 
   int three_column_layout_id = 0;
-  ColumnSet* column_set = layout->AddColumnSet(three_column_layout_id);
-  column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
+  views::ColumnSet* column_set = layout->AddColumnSet(three_column_layout_id);
+  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+                        0, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
-                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+                        0, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+                        1, views::GridLayout::USE_PREF, 0, 0);
 
   AddLabelRow(three_column_layout_id, layout, name_label_, name_value_field_);
   AddLabelRow(three_column_layout_id, layout, content_label_,

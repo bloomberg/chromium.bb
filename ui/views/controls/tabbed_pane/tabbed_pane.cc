@@ -233,7 +233,7 @@ void TabStrip::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-TabbedPane::TabbedPane(bool draw_border)
+TabbedPane::TabbedPane()
   : listener_(NULL),
     tab_strip_(new TabStrip(this)),
     contents_(new View()),
@@ -241,13 +241,6 @@ TabbedPane::TabbedPane(bool draw_border)
   set_focusable(true);
   AddChildView(tab_strip_);
   AddChildView(contents_);
-  if (draw_border) {
-    contents_->set_border(Border::CreateSolidSidedBorder(0,
-                                                         kTabBorderThickness,
-                                                         kTabBorderThickness,
-                                                         kTabBorderThickness,
-                                                         kTabBorderColor));
-  }
 }
 
 TabbedPane::~TabbedPane() {}

@@ -204,9 +204,6 @@ TEST_F(DialogTest, RemoveDefaultButton) {
 }
 
 TEST_F(DialogTest, HitTest) {
-  if (!DialogDelegate::UseNewStyle())
-    return;
-
   // Ensure that the new style's BubbleFrameView hit-tests as expected.
   const NonClientView* view = dialog()->GetWidget()->non_client_view();
   BubbleFrameView* frame = static_cast<BubbleFrameView*>(view->frame_view());
@@ -232,9 +229,6 @@ TEST_F(DialogTest, HitTest) {
 }
 
 TEST_F(DialogTest, InitialBoundsAccommodateTitle) {
-  if (!DialogDelegate::UseNewStyle())
-    return;
-
   TestDialog* titled_dialog(new TestDialog());
   titled_dialog->set_title(ASCIIToUTF16("Title"));
   DialogDelegate::CreateDialogWidget(titled_dialog, GetContext(), NULL);

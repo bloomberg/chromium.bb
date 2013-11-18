@@ -68,7 +68,6 @@ void ErrorScreenHandler::FixCaptivePortal() {
             GetWebContents();
     captive_portal_window_proxy_.reset(
         new CaptivePortalWindowProxy(network_state_informer_.get(),
-                                     GetNativeWindow(),
                                      web_contents));
   }
   captive_portal_window_proxy_->ShowIfRedirected();

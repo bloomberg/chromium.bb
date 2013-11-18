@@ -678,12 +678,8 @@ GridLayout::~GridLayout() {
 // static
 GridLayout* GridLayout::CreatePanel(View* host) {
   GridLayout* layout = new GridLayout(host);
-
-  const int horizontal_margin = DialogDelegate::UseNewStyle() ?
-      kButtonHEdgeMarginNew : kPanelHorizMargin;
-
-  layout->SetInsets(kPanelVertMargin, horizontal_margin,
-                    kPanelVertMargin, horizontal_margin);
+  layout->SetInsets(kPanelVertMargin, kButtonHEdgeMarginNew,
+                    kPanelVertMargin, kButtonHEdgeMarginNew);
   return layout;
 }
 

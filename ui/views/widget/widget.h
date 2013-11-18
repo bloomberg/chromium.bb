@@ -256,22 +256,16 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                                                  gfx::NativeWindow parent,
                                                  const gfx::Rect& bounds);
 
-  // Creates a decorated window Widget in the same desktop context as
-  // |context|.
+  // Creates a decorated window Widget in the same desktop context as |context|.
   static Widget* CreateWindowWithContext(WidgetDelegate* delegate,
                                          gfx::NativeView context);
   static Widget* CreateWindowWithContextAndBounds(WidgetDelegate* delegate,
                                                   gfx::NativeView context,
                                                   const gfx::Rect& bounds);
 
-  // Creates an undecorated child window Widget. |new_style_parent| is the
-  // parent to use for new style dialogs, |parent| for currently-styled dialogs.
-  //
-  // TODO(wittman): use a single parent parameter once we move fully to
-  // new-style dialogs.
+  // Creates an undecorated child window Widget parented to |parent|.
   static Widget* CreateWindowAsFramelessChild(WidgetDelegate* widget_delegate,
-                                              gfx::NativeView parent,
-                                              gfx::NativeView new_style_parent);
+                                              gfx::NativeView parent);
 
   // Enumerates all windows pertaining to us and notifies their
   // view hierarchies that the locale has changed.

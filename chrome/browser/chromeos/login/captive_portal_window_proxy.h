@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace content {
@@ -38,7 +37,6 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   typedef CaptivePortalWindowProxyDelegate Delegate;
 
   CaptivePortalWindowProxy(Delegate* delegate,
-                           gfx::NativeWindow parent,
                            content::WebContents* web_contents);
   virtual ~CaptivePortalWindowProxy();
 
@@ -98,7 +96,6 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   // Not owned by this class.
   views::Widget* widget_;
   scoped_ptr<CaptivePortalView> captive_portal_view_;
-  gfx::NativeWindow parent_;
 
   // Not owned by this class.
   content::WebContents* web_contents_;

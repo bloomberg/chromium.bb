@@ -10,12 +10,10 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
@@ -90,9 +88,7 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       web_contents_modal_dialog_manager->delegate();
   DCHECK(modal_delegate);
   window_ = views::Widget::CreateWindowAsFramelessChild(
-      this,
-      controller->web_contents()->GetView()->GetNativeView(),
-      modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
+      this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
   web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
 }
 
@@ -114,16 +110,6 @@ void MediaGalleriesDialogViews::InitChildViews() {
                      views::GridLayout::FIXED,
                      dialog_content_width,
                      0);
-
-  if (!DialogDelegate::UseNewStyle()) {
-    // Header text.
-    views::Label* header = new views::Label(controller_->GetHeader());
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    header->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
-    header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    layout->StartRow(0, column_set_id);
-    layout->AddView(header);
-  }
 
   // Message text.
   views::Label* subtext = new views::Label(controller_->GetSubtext());
@@ -277,10 +263,6 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
 
 string16 MediaGalleriesDialogViews::GetWindowTitle() const {
   return controller_->GetHeader();
-}
-
-bool MediaGalleriesDialogViews::ShouldShowWindowTitle() const {
-  return DialogDelegate::UseNewStyle();
 }
 
 void MediaGalleriesDialogViews::DeleteDelegate() {

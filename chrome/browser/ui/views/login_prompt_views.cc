@@ -17,7 +17,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -159,9 +158,7 @@ class LoginHandlerViews : public LoginHandler,
         web_contents_modal_dialog_manager->delegate();
     CHECK(modal_delegate);
     dialog_ = views::Widget::CreateWindowAsFramelessChild(
-        this,
-        requesting_contents->GetView()->GetNativeView(),
-        modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
+        this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
     web_contents_modal_dialog_manager->ShowDialog(dialog_->GetNativeView());
     NotifyAuthNeeded();
   }

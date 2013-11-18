@@ -138,14 +138,6 @@
       <if expr="is_win">
         <structure type="chrome_scaled_image" name="IDR_CONFLICT_FAVICON" file="common/favicon_conflicts.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_BOTTOM_CENTER_V" file="constrained_bottom_center_vista.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_BOTTOM_LEFT_CORNER_V" file="constrained_bottom_left_corner_vista.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_BOTTOM_RIGHT_CORNER_V" file="constrained_bottom_right_corner_vista.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_LEFT_SIDE_V" file="constrained_left_side_vista.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_RIGHT_SIDE_V" file="constrained_right_side_vista.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_TOP_CENTER_V" file="constrained_top_center_vista.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_TOP_LEFT_CORNER_V" file="constrained_top_left_corner_vista.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_TOP_RIGHT_CORNER_V" file="constrained_top_right_corner_vista.png" />
       <!-- Ash doesn't draw rounded content area, so needs a special top
            image. -->
       <if expr="not pp_ifdef('use_ash')">

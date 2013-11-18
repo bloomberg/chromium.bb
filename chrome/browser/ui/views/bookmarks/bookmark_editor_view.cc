@@ -301,13 +301,8 @@ void BookmarkEditorView::Init() {
                         GridLayout::USE_PREF, 0, 0);
 
   column_set = layout->AddColumnSet(single_column_view_set_id);
-  if (views::DialogDelegate::UseNewStyle()) {
-    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                          GridLayout::USE_PREF, 0, 0);
-  } else {
-    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                          GridLayout::FIXED, 300, 0);
-  }
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
 
   column_set = layout->AddColumnSet(buttons_column_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,

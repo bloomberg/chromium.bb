@@ -31,11 +31,6 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
  public:
   virtual ~DialogDelegate();
 
-  // Returns whether to use the new dialog style in general.
-  // See UseNewStyleForThisDialog() for dialog-specific styling.
-  // TODO(msw): Remove this. The new dialog style is always on by default.
-  static bool UseNewStyle();
-
   // Create a |dialog| window Widget with the specified |context| or |parent|.
   static Widget* CreateDialogWidget(DialogDelegate* dialog,
                                     gfx::NativeWindow context,
@@ -95,15 +90,15 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget) OVERRIDE;
 
   // Create a frame view using the new dialog style.
-  static NonClientFrameView* CreateNewStyleFrameView(Widget* widget);
+  static NonClientFrameView* CreateDialogFrameView(Widget* widget);
   // The semi-transparent border and shadow of the new style frame view does not
   // work on child windows under Views/Win32. This is a kludge to get a
   // reasonable-looking opaque border for the dialog. Note that this does not
   // support arrows.
   //
   // TODO(wittman): Remove once WinAura is in place.
-  static NonClientFrameView* CreateNewStyleFrameView(Widget* widget,
-                                                     bool force_opaque_border);
+  static NonClientFrameView* CreateDialogFrameView(Widget* widget,
+                                                   bool force_opaque_border);
 
   // Returns whether this particular dialog should use the new dialog style.
   virtual bool UseNewStyleForThisDialog() const;

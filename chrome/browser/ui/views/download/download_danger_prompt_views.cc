@@ -12,7 +12,6 @@
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -212,8 +211,7 @@ bool DownloadDangerPromptViews::Close() {
 views::NonClientFrameView* DownloadDangerPromptViews::CreateNonClientFrameView(
     views::Widget* widget) {
   return CreateConstrainedStyleNonClientFrameView(
-      widget,
-      web_contents_->GetBrowserContext());
+      widget, web_contents_->GetBrowserContext());
 }
 
 views::View* DownloadDangerPromptViews::GetInitiallyFocusedView() {
@@ -369,7 +367,6 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
   CHECK(modal_delegate);
   views::Widget* dialog = views::Widget::CreateWindowAsFramelessChild(
       download_danger_prompt,
-      web_contents->GetView()->GetNativeView(),
       modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
   web_contents_modal_dialog_manager->ShowDialog(dialog->GetNativeView());
 

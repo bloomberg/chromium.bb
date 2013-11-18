@@ -19,7 +19,7 @@ TabbedPaneExample::~TabbedPaneExample() {
 }
 
 void TabbedPaneExample::CreateExampleView(View* container) {
-  tabbed_pane_ = new TabbedPane(false);
+  tabbed_pane_ = new TabbedPane();
   tabbed_pane_->set_listener(this);
   add_ = new LabelButton(this, ASCIIToUTF16("Add"));
   add_at_ = new LabelButton(this, ASCIIToUTF16("Add At 1"));

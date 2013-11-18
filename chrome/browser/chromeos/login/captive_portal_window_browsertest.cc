@@ -75,13 +75,11 @@ class CaptivePortalWindowTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     CHECK(LoginDisplayHostImpl::default_host());
-    gfx::NativeWindow native_window =
-        LoginDisplayHostImpl::default_host()->GetNativeWindow();
     content::WebContents* web_contents =
         LoginDisplayHostImpl::default_host()->GetWebUILoginView()->
             GetWebContents();
     captive_portal_window_proxy_.reset(
-        new CaptivePortalWindowProxy(&delegate_, native_window, web_contents));
+        new CaptivePortalWindowProxy(&delegate_, web_contents));
   }
 
  private:

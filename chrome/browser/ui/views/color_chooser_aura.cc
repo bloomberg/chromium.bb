@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "ui/views/color_chooser/color_chooser_view.h"
 #include "ui/views/widget/widget.h"
 

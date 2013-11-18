@@ -507,7 +507,7 @@ void FocusTraversalTest::InitContentView() {
   text_field->SetBounds(10, 50, 100, 20);
   text_field->set_id(kStyleTextEditID);
 
-  style_tab_ = new TabbedPane(false);
+  style_tab_ = new TabbedPane();
   style_tab_->set_id(kStyleContainerID);
   GetContentsView()->AddChildView(style_tab_);
   style_tab_->SetBounds(10, y, 210, 100);

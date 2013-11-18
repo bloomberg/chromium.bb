@@ -35,12 +35,6 @@ const int kIconSize = 69;
 
 class ExtensionUninstallDialogDelegateView;
 
-// TODO(estade): remove this when UseNewStyle() is the default.
-int HorizontalMargin() {
-  return views::DialogDelegate::UseNewStyle() ? views::kButtonHEdgeMarginNew :
-                                                views::kPanelHorizMargin;
-}
-
 // Returns parent window for extension uninstall dialog.
 gfx::NativeWindow GetParent(Browser* browser) {
   if (browser && browser->window())
@@ -205,7 +199,7 @@ string16 ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
 gfx::Size ExtensionUninstallDialogDelegateView::GetPreferredSize() {
   int width = kRightColumnWidth;
   width += kIconSize;
-  width += HorizontalMargin() * 2;
+  width += views::kButtonHEdgeMarginNew * 2;
   width += views::kRelatedControlHorizontalSpacing;
 
   int height = views::kPanelVertMargin * 2;
@@ -216,7 +210,7 @@ gfx::Size ExtensionUninstallDialogDelegateView::GetPreferredSize() {
 }
 
 void ExtensionUninstallDialogDelegateView::Layout() {
-  int x = HorizontalMargin();
+  int x = views::kButtonHEdgeMarginNew;
   int y = views::kPanelVertMargin;
 
   heading_->SizeToFit(kRightColumnWidth);

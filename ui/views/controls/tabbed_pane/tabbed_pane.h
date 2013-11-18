@@ -23,9 +23,7 @@ class VIEWS_EXPORT TabbedPane : public View {
   // Internal class name.
   static const char kViewClassName[];
 
-  // |draw_border| indicates whether the tabbed pane should draw a border
-  // around its boundary or not.
-  explicit TabbedPane(bool draw_border);
+  TabbedPane();
   virtual ~TabbedPane();
 
   TabbedPaneListener* listener() const { return listener_; }

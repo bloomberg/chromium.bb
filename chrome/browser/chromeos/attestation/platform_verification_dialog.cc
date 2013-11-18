@@ -13,7 +13,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -49,8 +48,7 @@ void PlatformVerificationDialog::ShowDialog(
   web_modal::WebContentsModalDialogManagerDelegate* modal_delegate =
       web_contents_modal_dialog_manager->delegate();
   views::Widget* widget = views::Widget::CreateWindowAsFramelessChild(
-      dialog, web_contents->GetView()->GetNativeView(),
-      modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
+      dialog, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
   web_contents_modal_dialog_manager->ShowDialog(widget->GetNativeView());
   widget->Show();
 }

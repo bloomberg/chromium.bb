@@ -256,9 +256,7 @@ void DialogClientView::ViewHierarchyChanged(
     // The old dialog style needs an explicit background color, while the new
     // dialog style simply inherits the bubble's frame view color.
     const DialogDelegate* dialog = GetDialogDelegate();
-    const bool use_new_style = dialog ?
-        dialog->UseNewStyleForThisDialog() : DialogDelegate::UseNewStyle();
-    if (!use_new_style)
+    if (dialog && !dialog->UseNewStyleForThisDialog())
       set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
           GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
 
@@ -400,15 +398,10 @@ int DialogClientView::GetButtonsAndExtraViewRowHeight() const {
 }
 
 gfx::Insets DialogClientView::GetButtonRowInsets() const {
-  if (GetButtonsAndExtraViewRowHeight() == 0)
-    return gfx::Insets();
-
   // NOTE: The insets only apply to the buttons, extra view, and footnote view.
-  return DialogDelegate::UseNewStyle() ?
+  return GetButtonsAndExtraViewRowHeight() == 0 ? gfx::Insets() :
       gfx::Insets(0, kButtonHEdgeMarginNew,
-                  kButtonVEdgeMarginNew, kButtonHEdgeMarginNew) :
-      gfx::Insets(0, kButtonHEdgeMargin,
-                  kButtonVEdgeMargin, kButtonHEdgeMargin);
+                  kButtonVEdgeMarginNew, kButtonHEdgeMarginNew);
 }
 
 void DialogClientView::Close() {

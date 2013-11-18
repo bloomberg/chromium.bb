@@ -1196,11 +1196,8 @@ void AutofillDialogViews::Show() {
   WebContentsModalDialogManagerDelegate* modal_delegate =
       web_contents_modal_dialog_manager->delegate();
   DCHECK(modal_delegate);
-
   window_ = views::Widget::CreateWindowAsFramelessChild(
-      this,
-      delegate_->GetWebContents()->GetView()->GetNativeView(),
-      modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
+      this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
   web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
   focus_manager_ = window_->GetFocusManager();
   focus_manager_->AddFocusChangeListener(this);

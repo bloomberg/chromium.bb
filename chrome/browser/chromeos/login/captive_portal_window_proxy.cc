@@ -19,11 +19,9 @@ namespace chromeos {
 
 CaptivePortalWindowProxy::CaptivePortalWindowProxy(
     Delegate* delegate,
-    gfx::NativeWindow parent,
     content::WebContents* web_contents)
     : delegate_(delegate),
       widget_(NULL),
-      parent_(parent),
       web_contents_(web_contents) {
   DCHECK(GetState() == STATE_IDLE);
 }
@@ -62,10 +60,8 @@ void CaptivePortalWindowProxy::Show() {
   WebContentsModalDialogManagerDelegate* delegate =
       web_contents_modal_dialog_manager->delegate();
   DCHECK(delegate);
-
   widget_ = views::Widget::CreateWindowAsFramelessChild(
       captive_portal_view,
-      parent_,
       delegate->GetWebContentsModalDialogHost()->GetHostView());
   captive_portal_view->Init();
 
