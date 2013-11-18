@@ -451,7 +451,14 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Real)) {
   TestPlugin("real.html");
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(FlashOctetStream)) {
+// http://crbug.com/320041
+#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || \
+    (defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN))
+#define MAYBE_FlashOctetStream DISABLED_FlashOctetStream
+#else
+#define MAYBE_FlashOctetStream FlashOctetStream
+#endif
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE_FlashOctetStream) {
   TestPlugin("flash-octet-stream.html");
 }
 
