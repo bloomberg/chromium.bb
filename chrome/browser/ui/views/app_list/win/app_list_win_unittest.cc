@@ -93,15 +93,15 @@ TEST_F(AppListWinUnitTest, FindAnchorPointMouseOnTaskbar) {
   EXPECT_EQ(gfx::Point(158, 133),
             FindAnchorPoint(view_size, display, cursor, taskbar_rect));
 
-  // Left taskbar. Expect the app list to be at the top centered on the
-  // mouse X coordinate.
+  // Left taskbar. Expect the app list to be at the left centered on the
+  // mouse Y coordinate.
   taskbar_rect = gfx::Rect(0, 0, 30, kScreenHeight);
   cursor = gfx::Point(80, 158);
   EXPECT_EQ(gfx::Point(83, 158),
             FindAnchorPoint(view_size, display, cursor, taskbar_rect));
 
-  // Right taskbar. Expect the app list to be at the bottom centered on the
-  // mouse X coordinate.
+  // Right taskbar. Expect the app list to be at the right centered on the
+  // mouse Y coordinate.
   taskbar_rect = gfx::Rect(kScreenWidth - 30, 0, 30, kScreenHeight);
   cursor = gfx::Point(kScreenWidth - 80, 158);
   EXPECT_EQ(gfx::Point(kScreenWidth - 83, 158),
