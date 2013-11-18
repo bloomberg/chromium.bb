@@ -9,8 +9,7 @@
 #include "chrome/utility/cloud_print/pwg_encoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using printing::BitmapImage;
-using printing::PwgEncoder;
+namespace cloud_print {
 
 namespace {
 
@@ -33,7 +32,7 @@ scoped_ptr<BitmapImage> MakeSampleBitmap() {
       BitmapImage::RGBA));
 
   uint32* bitmap_data = reinterpret_cast<uint32*>(
-      bitmap_image->mutable_pixel_data());
+      bitmap_image->pixel_data());
 
   for (int i = 0; i < kRasterWidth * kRasterHeight; i++) {
     bitmap_data[i] = 0xFFFFFF;
@@ -63,6 +62,8 @@ scoped_ptr<BitmapImage> MakeSampleBitmap() {
   return bitmap_image.Pass();
 }
 
+}  // namespace
+
 TEST(PwgRasterTest, CompareWithMaster) {
   std::string output;
   PwgEncoder encoder;
@@ -74,4 +75,5 @@ TEST(PwgRasterTest, CompareWithMaster) {
   EXPECT_EQ(kPWGFileSha1, base::SHA1HashString(output));
 }
 
-}  // namespace
+}  // namespace cloud_print
+

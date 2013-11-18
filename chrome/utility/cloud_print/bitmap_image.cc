@@ -4,7 +4,7 @@
 
 #include "chrome/utility/cloud_print/bitmap_image.h"
 
-namespace printing {
+namespace cloud_print {
 
 namespace {
 const uint8 kCurrentlySupportedNumberOfChannels = 4;
@@ -26,4 +26,4 @@ uint8 BitmapImage::channels() const {
   return kCurrentlySupportedNumberOfChannels;
 }
 
-}  // namespace printing
+}  // namespace cloud_print

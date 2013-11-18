@@ -7,7 +7,9 @@
 
 #include <string>
 
-namespace printing {
+#include "base/basictypes.h"
+
+namespace cloud_print {
 
 class BitmapImage;
 
@@ -27,6 +29,6 @@ class PwgEncoder {
   const uint8* GetRow(const BitmapImage& image, int row) const;
 };
 
-}  // namespace printing
+}  // namespace cloud_print
 
 #endif  // CHROME_UTILITY_CLOUD_PRINT_PWG_ENCODER_H_

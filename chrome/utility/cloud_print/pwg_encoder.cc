@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/utility/cloud_print/pwg_encoder.h"
+
 #include <algorithm>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/utility/cloud_print/bitmap_image.h"
-#include "chrome/utility/cloud_print/pwg_encoder.h"
 #include "net/base/big_endian.h"
 
-namespace printing {
+namespace cloud_print {
 
 namespace {
 
@@ -189,4 +190,4 @@ bool PwgEncoder::EncodePage(const BitmapImage& image,
   return true;
 }
 
-}  // namespace printing
+}  // namespace cloud_print

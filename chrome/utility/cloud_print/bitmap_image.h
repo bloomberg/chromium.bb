@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 
-namespace printing {
+namespace cloud_print {
 
 class BitmapImage {
  public:
@@ -28,7 +28,7 @@ class BitmapImage {
   Colorspace colorspace() const { return colorspace_; }
 
   const uint8* pixel_data() const { return data_.get(); }
-  uint8* mutable_pixel_data() { return data_.get(); }
+  uint8* pixel_data() { return data_.get(); }
 
  private:
   int32 width_;
@@ -39,6 +39,6 @@ class BitmapImage {
   DISALLOW_COPY_AND_ASSIGN(BitmapImage);
 };
 
-}  // namespace printing
+}  // namespace cloud_print
 
 #endif  // CHROME_UTILITY_CLOUD_PRINT_BITMAP_IMAGE_H_
