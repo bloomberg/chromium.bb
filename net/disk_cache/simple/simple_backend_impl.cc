@@ -258,13 +258,15 @@ void SimpleBackendImpl::OnDeactivated(const SimpleEntryImpl* entry) {
 }
 
 void SimpleBackendImpl::OnDoomStart(uint64 entry_hash) {
-  DCHECK_EQ(0u, entries_pending_doom_.count(entry_hash));
+  // TODO(ttuttle): Revert to DCHECK once http://crbug.com/317138 is fixed.
+  CHECK_EQ(0u, entries_pending_doom_.count(entry_hash));
   entries_pending_doom_.insert(
       std::make_pair(entry_hash, std::vector<Closure>()));
 }
 
 void SimpleBackendImpl::OnDoomComplete(uint64 entry_hash) {
-  DCHECK_EQ(1u, entries_pending_doom_.count(entry_hash));
+  // TODO(ttuttle): Revert to DCHECK once http://crbug.com/317138 is fixed.
+  CHECK_EQ(1u, entries_pending_doom_.count(entry_hash));
   base::hash_map<uint64, std::vector<Closure> >::iterator it =
       entries_pending_doom_.find(entry_hash);
   std::vector<Closure> to_run_closures;
@@ -290,8 +292,9 @@ void SimpleBackendImpl::DoomEntries(std::vector<uint64>* entry_hashes,
   //    SimpleSynchronousEntry::DoomEntrySet and delete the files en masse.
   for (int i = mass_doom_entry_hashes->size() - 1; i >= 0; --i) {
     const uint64 entry_hash = (*mass_doom_entry_hashes)[i];
-    DCHECK(active_entries_.count(entry_hash) == 0 ||
-           entries_pending_doom_.count(entry_hash) == 0)
+    // TODO(ttuttle): Revert to DCHECK once http://crbug.com/317138 is fixed.
+    CHECK(active_entries_.count(entry_hash) == 0 ||
+          entries_pending_doom_.count(entry_hash) == 0)
         << "The entry 0x" << std::hex << entry_hash
         << " is both active and pending doom.";
     if (!active_entries_.count(entry_hash) &&
@@ -312,7 +315,8 @@ void SimpleBackendImpl::DoomEntries(std::vector<uint64>* entry_hashes,
            it = to_doom_individually_hashes.begin(),
            end = to_doom_individually_hashes.end(); it != end; ++it) {
     const int doom_result = DoomEntryFromHash(*it, barrier_callback);
-    DCHECK_EQ(net::ERR_IO_PENDING, doom_result);
+    // TODO(ttuttle): Revert to DCHECK once http://crbug.com/317138 is fixed.
+    CHECK_EQ(net::ERR_IO_PENDING, doom_result);
     index_->Remove(*it);
   }
 
