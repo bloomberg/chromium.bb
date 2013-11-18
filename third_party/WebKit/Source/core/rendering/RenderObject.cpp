@@ -2951,6 +2951,11 @@ bool RenderObject::hasBlendMode() const
     return RuntimeEnabledFeatures::cssCompositingEnabled() && style() && style()->hasBlendMode();
 }
 
+bool RenderObject::hasIsolation() const
+{
+    return RuntimeEnabledFeatures::cssCompositingEnabled() && style() && style()->hasIsolation();
+}
+
 static Color decorationColor(const RenderObject* object, RenderStyle* style)
 {
     Color result;

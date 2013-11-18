@@ -274,6 +274,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         || style->boxReflect()
         || style->hasFilter()
         || style->hasBlendMode()
+        || style->hasIsolation()
         || style->position() == StickyPosition
         || (style->position() == FixedPosition && e && e->document().settings() && e->document().settings()->fixedPositionCreatesStackingContext())
         || isInTopLayer(e, style)

@@ -924,6 +924,7 @@ public:
 
     EIsolation isolation() const;
     void setIsolation(EIsolation v);
+    bool hasIsolation() const;
 
     bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const { return !isLeftToRightDirection() && isHorizontalWritingMode(); }
 

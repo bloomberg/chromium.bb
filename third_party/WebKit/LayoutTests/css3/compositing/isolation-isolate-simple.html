@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<style>
+    div {
+        width: 10px;
+        height: 10px;
+        background: green;
+        isolation:isolate;
+    }
+</style>
+<!-- Isolation should create a stacking context. Test if "isolation:isolate" sets the zIndex to 0, instead of the default "auto" value. -->
+<body>
+    <div id="isolator"></div>
+    <script src="../../resources/js-test.js"></script>
+    <script>
+        var zIndex = getComputedStyle(document.getElementById("isolator")).zIndex
+
+        shouldBeZero(zIndex);
+    </script>
+</body>
+</html>
