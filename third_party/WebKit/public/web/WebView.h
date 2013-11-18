@@ -479,6 +479,9 @@ public:
     // by the compositor) but must be completed by the WebView.
     virtual void transferActiveWheelFlingAnimation(const WebActiveWheelFlingParameters&) = 0;
 
+    // Cancels an active fling, returning true if a fling was active.
+    virtual bool endActiveFlingAnimation() = 0;
+
     virtual bool setEditableSelectionOffsets(int start, int end) = 0;
     virtual bool setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines) = 0;
     virtual void extendSelectionAndDelete(int before, int after) = 0;

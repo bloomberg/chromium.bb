@@ -306,6 +306,7 @@ public:
     virtual void addPageOverlay(WebPageOverlay*, int /* zOrder */);
     virtual void removePageOverlay(WebPageOverlay*);
     virtual void transferActiveWheelFlingAnimation(const WebActiveWheelFlingParameters&);
+    virtual bool endActiveFlingAnimation();
     virtual void setShowPaintRects(bool);
     virtual void setShowDebugBorders(bool);
     virtual void setShowFPSCounter(bool);

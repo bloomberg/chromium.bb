@@ -674,12 +674,8 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         return eventSwallowed;
     }
     case WebInputEvent::GestureFlingCancel:
-        if (m_gestureAnimation) {
-            m_gestureAnimation.clear();
-            if (m_layerTreeView)
-                m_layerTreeView->didStopFlinging();
+        if (endActiveFlingAnimation())
             eventSwallowed = true;
-        }
 
         m_client->didHandleGestureEvent(event, eventCancelled);
         return eventSwallowed;
@@ -820,6 +816,17 @@ void WebViewImpl::transferActiveWheelFlingAnimation(const WebActiveWheelFlingPar
     scheduleAnimation();
 }
 
+bool WebViewImpl::endActiveFlingAnimation()
+{
+    if (m_gestureAnimation) {
+        m_gestureAnimation.clear();
+        if (m_layerTreeView)
+            m_layerTreeView->didStopFlinging();
+        return true;
+    }
+    return false;
+}
+
 bool WebViewImpl::startPageScaleAnimation(const IntPoint& targetPosition, bool useAnchor, float newScale, double durationInSeconds)
 {
     WebPoint clampedPoint = targetPosition;
@@ -899,11 +906,7 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
         || (event.type == WebInputEvent::KeyUp));
 
     // Halt an in-progress fling on a key event.
-    if (m_gestureAnimation) {
-        m_gestureAnimation.clear();
-        if (m_layerTreeView)
-            m_layerTreeView->didStopFlinging();
-    }
+    endActiveFlingAnimation();
 
     // Please refer to the comments explaining the m_suppressNextKeypressEvent
     // member.
@@ -1779,9 +1782,7 @@ void WebViewImpl::animate(double monotonicFrameBeginTime)
         if (m_gestureAnimation->animate(monotonicFrameBeginTime))
             scheduleAnimation();
         else {
-            m_gestureAnimation.clear();
-            if (m_layerTreeView)
-                m_layerTreeView->didStopFlinging();
+            endActiveFlingAnimation();
 
             PlatformGestureEvent endScrollEvent(PlatformEvent::GestureScrollEnd,
                 m_positionOnFlingStart, m_globalPositionOnFlingStart,
@@ -3644,9 +3645,7 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPag
 
     // Make sure link highlight from previous page is cleared.
     m_linkHighlights.clear();
-    m_gestureAnimation.clear();
-    if (m_layerTreeView)
-        m_layerTreeView->didStopFlinging();
+    endActiveFlingAnimation();
     resetSavedScrollAndScaleState();
 }
 
