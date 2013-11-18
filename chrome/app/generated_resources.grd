@@ -12573,9 +12573,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Recovered files from Google Drive
       </message>
 
-      <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_TITLE" desc="Title of the conflict dialog shown when a file transfer operation is conflicted.">
-        Conflict
-      </message>
       <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_MESSAGE" desc="Message of the conflict dialog shown when a file transfer operation is conflicted.">
         A file named "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>" already exists. What do you want to do?
       </message>

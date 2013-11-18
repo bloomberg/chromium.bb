@@ -1921,13 +1921,18 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
   display: none;
 }
 
-#conflict-confirm-dialog .apply-all-line {
-  margin: 8px;
-  text-align: end;
+#conflict-confirm-dialog .cr-dialog-buttons {
+  align-items: baseline;
+  display: flex;
 }
 
-#conflict-confirm-dialog input {
+#conflict-confirm-dialog input[type=checkbox] {
+  -webkit-margin-start: -2px;
   width: auto;
+}
+
+#conflict-confirm-dialog label {
+  flex: 1 0 auto;
 }
 
 /* Progress center */

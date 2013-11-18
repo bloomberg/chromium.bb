@@ -37,10 +37,6 @@ function ConflictDialog(parentNode) {
   var applyAllLabel = parentNode.ownerDocument.createElement('label');
   applyAllLabel.textContent = str('CONFLICT_DIALOG_APPLY_TO_ALL');
   applyAllLabel.setAttribute('for', this.applyAllCheckbox_.id);
-  var applyAllLine = parentNode.ownerDocument.createElement('div');
-  applyAllLine.className = 'apply-all-line';
-  applyAllLine.appendChild(this.applyAllCheckbox_);
-  applyAllLine.appendChild(applyAllLabel);
 
   /**
    * Element of the keep both button.
@@ -66,12 +62,13 @@ function ConflictDialog(parentNode) {
 
   // Buttons line.
   var buttons = this.okButton_.parentNode;
+  buttons.insertBefore(this.applyAllCheckbox_, this.okButton_);
+  buttons.insertBefore(applyAllLabel, this.okButton_);
   buttons.replaceChild(this.keepBothButton_, this.okButton_);
   buttons.appendChild(this.replaceButton_);
 
   // Frame
   this.frame_.id = 'conflict-confirm-dialog';
-  this.frame_.insertBefore(applyAllLine, buttons);
 }
 
 /**
@@ -105,7 +102,7 @@ ConflictDialog.prototype.show = function(fileName, callback) {
   this.callback_ = callback;
   FileManagerDialogBase.prototype.showOkCancelDialog.call(
       this,
-      str('CONFLICT_DIALOG_TITLE'),
+      '', // We dont't show the title for the dialog.
       strf('CONFLICT_DIALOG_MESSAGE', fileName));
   return true;
 };
