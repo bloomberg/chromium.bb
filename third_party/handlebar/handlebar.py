@@ -155,6 +155,11 @@ class _Contexts(object):
       # [0] is the stack of nodes that |found_key| has been found in.
       self._value_info[found_key][0].pop()
 
+  def FirstLocal(self):
+    if len(self._nodes) == self._first_local:
+      return None
+    return self._nodes[-1]._value
+
   def Resolve(self, path):
     # This method is only efficient at finding |key|; if |tail| has a value (and
     # |key| evaluates to an indexable value) we'll need to descend into that.
@@ -643,6 +648,45 @@ class _JsonNode(_LeafNode):
   def __repr__(self):
     return '{{*%s}}' % self._id
 
+# TODO: Better common model of _PartialNodeWithArguments, _PartialNodeInContext,
+# and _PartialNode.
+class _PartialNodeWithArguments(_DecoratorNode):
+  def __init__(self, partial, args):
+    if isinstance(partial, Handlebar):
+      # Preserve any get() method that the caller has added.
+      if hasattr(partial, 'get'):
+        self.get = partial.get
+      partial = partial._top_node
+    _DecoratorNode.__init__(self, partial)
+    self._partial = partial
+    self._args = args
+
+  def Render(self, render_state):
+    render_state.contexts.Scope(self._args, self._partial.Render, render_state)
+
+class _PartialNodeInContext(_DecoratorNode):
+  def __init__(self, partial, context):
+    if isinstance(partial, Handlebar):
+      # Preserve any get() method that the caller has added.
+      if hasattr(partial, 'get'):
+        self.get = partial.get
+      partial = partial._top_node
+    _DecoratorNode.__init__(self, partial)
+    self._partial = partial
+    self._context = context
+
+  def Render(self, render_state):
+    original_contexts = render_state.contexts
+    try:
+      render_state.contexts = self._context
+      render_state.contexts.Scope(
+          # The first local context of |original_contexts| will be the
+          # arguments that were passed to the partial, if any.
+          original_contexts.FirstLocal() or {},
+          self._partial.Render, render_state)
+    finally:
+      render_state.contexts = original_contexts
+
 class _PartialNode(_LeafNode):
   '''{{+var:foo}} ... {{/foo}}
   '''
@@ -651,7 +695,6 @@ class _PartialNode(_LeafNode):
     self._bind_to = bind_to
     self._id = id_
     self._content = content
-    self._resolved_args = None
     self._args = None
     self._pass_through_id = None
 
@@ -680,20 +723,17 @@ class _PartialNode(_LeafNode):
       context = render_state.contexts.Resolve(self._pass_through_id.name)
       if context is not None:
         arg_context[self._pass_through_id.name] = context
-    if self._resolved_args is not None:
-      arg_context.update(self._resolved_args)
     if self._args is not None:
       def resolve_args(args):
         resolved = {}
         for key, value in args.iteritems():
           if isinstance(value, dict):
             assert len(value.keys()) == 1
-            inner_id, inner_args = value.items()[0]
-            inner_partial = render_state.contexts.Resolve(inner_id.name)
-            if inner_partial is not None:
-              context = _PartialNode(None, inner_id, inner_partial)
-              context.SetResolvedArguments(resolve_args(inner_args))
-              resolved[key] = context
+            id_of_partial, partial_args = value.items()[0]
+            partial = render_state.contexts.Resolve(id_of_partial.name)
+            if partial is not None:
+              resolved[key] = _PartialNodeWithArguments(
+                  partial, resolve_args(partial_args))
           else:
             context = render_state.contexts.Resolve(value.name)
             if context is not None:
@@ -701,7 +741,8 @@ class _PartialNode(_LeafNode):
         return resolved
       arg_context.update(resolve_args(self._args))
     if self._bind_to and self._content:
-      arg_context[self._bind_to.name] = self._content
+      arg_context[self._bind_to.name] = _PartialNodeInContext(
+          self._content, render_state.contexts)
     if arg_context:
       partial_render_state.contexts.Push(arg_context)
 
@@ -710,9 +751,6 @@ class _PartialNode(_LeafNode):
     render_state.Merge(
         partial_render_state,
         text_transform=lambda text: text[:-1] if text.endswith('\n') else text)
-
-  def SetResolvedArguments(self, args):
-    self._resolved_args = args
 
   def SetArguments(self, args):
     self._args = args
@@ -1092,10 +1130,14 @@ class Handlebar(object):
     '''Renders this template given a variable number of contexts to read out
     values from (such as those appearing in {{foo}}).
     '''
-    name = self._name or '<root>'
     internal_context = _InternalContext()
-    render_state = _RenderState(
-        name, _Contexts([{'_': internal_context}] + list(user_contexts)))
+    contexts = list(user_contexts)
+    contexts.append({
+      '_': internal_context,
+      'false': False,
+      'true': True,
+    })
+    render_state = _RenderState(self._name or '<root>', _Contexts(contexts))
     internal_context.SetRenderState(render_state)
     self._top_node.Render(render_state)
     return render_state.GetResult()

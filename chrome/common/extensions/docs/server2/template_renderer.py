@@ -25,10 +25,8 @@ class TemplateRenderer(object):
       'apps_samples_url': GITHUB_BASE,
       'base_path': server_instance.base_path,
       'extensions_samples_url': EXTENSIONS_SAMPLES,
-      'false': False,
       'samples': server_instance.samples_data_source_factory.Create(request),
       'static': server_instance.base_path + 'static',
-      'true': True,
     }
     render_context.update(CreateDataSources(server_instance, request=request))
     render_data = template.render(render_context)
