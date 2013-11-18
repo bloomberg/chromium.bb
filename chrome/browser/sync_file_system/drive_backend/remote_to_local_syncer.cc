@@ -132,7 +132,8 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
 
   if (!dirty_tracker_->active() ||
       HasDisabledAppRoot(metadata_database(), *dirty_tracker_)) {
-    HandleInactiveTracker(callback);
+    // Handle inactive tracker in SyncCompleted.
+    callback.Run(SYNC_STATUS_OK);
     return;
   }
   DCHECK(dirty_tracker_->active());
@@ -211,7 +212,9 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
          remote_details.file_kind() == FILE_KIND_FOLDER);
 
   if (synced_details.title() != remote_details.title()) {
-    HandleRename(callback);
+    // Handle rename as deletion + addition.
+    Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForDeletion,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
     return;
   }
   DCHECK_EQ(synced_details.title(), remote_details.title());
@@ -229,7 +232,9 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
     }
 
     if (!HasFolderAsParent(remote_details, parent_tracker.file_id())) {
-      HandleReorganize(callback);
+      // Handle reorganize as deletion + addition.
+      Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForDeletion,
+                         weak_ptr_factory_.GetWeakPtr(), callback));
       return;
     }
   }
@@ -285,21 +290,7 @@ void RemoteToLocalSyncer::DidUpdateDatabaseForRemoteMetadata(
   callback.Run(SYNC_STATUS_RETRY);  // Do not update |dirty_tracker_|.
 }
 
-void RemoteToLocalSyncer::HandleInactiveTracker(
-    const SyncStatusCallback& callback) {
-  DCHECK(dirty_tracker_);
-  DCHECK(!dirty_tracker_->active() ||
-         HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
-
-  DCHECK(remote_metadata_);
-  DCHECK(remote_metadata_->has_details());
-
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
-}
-
-void RemoteToLocalSyncer::HandleNewFile(
-    const SyncStatusCallback& callback) {
+void RemoteToLocalSyncer::HandleNewFile(const SyncStatusCallback& callback) {
   DCHECK(dirty_tracker_);
   DCHECK(dirty_tracker_->active());
   DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
@@ -351,10 +342,14 @@ void RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile(
     DCHECK_EQ(SYNC_FILE_TYPE_DIRECTORY, local_metadata_->file_type);
     // Got a remote regular file modification for existing local folder.
     // Our policy prioritize folders in this case.
-    // TODO(tzik): Inactivate the file and activate one of the folder at the
-    // path.
-    NOTIMPLEMENTED();
-    callback.Run(SYNC_STATUS_FAILED);
+    // Lower the priority of the tracker to prevent repeated remote sync to the
+    // same tracker, and let local-to-remote sync phase process this change.
+    metadata_database()->LowerTrackerPriority(dirty_tracker_->tracker_id());
+    remote_change_processor()->RecordFakeLocalChange(
+        url_,
+        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                   local_metadata_->file_type),
+        callback);
     return;
   }
 
@@ -466,43 +461,6 @@ void RemoteToLocalSyncer::DidPrepareForDeletion(
   // File is remotely deleted and locally updated.
   // Ignore the remote deletion and handle it as if applied successfully.
   callback.Run(SYNC_STATUS_OK);
-}
-
-void RemoteToLocalSyncer::HandleRename(
-    const SyncStatusCallback& callback) {
-  DCHECK(dirty_tracker_);
-  DCHECK(dirty_tracker_->active());
-  DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
-  DCHECK(dirty_tracker_->has_synced_details());
-  DCHECK(!dirty_tracker_->synced_details().deleted());
-
-  DCHECK(remote_metadata_);
-  DCHECK(remote_metadata_->has_details());
-  DCHECK(!remote_metadata_->details().deleted());
-
-  DCHECK_EQ(dirty_tracker_->synced_details().file_kind(),
-            remote_metadata_->details().file_kind());
-  DCHECK_NE(dirty_tracker_->synced_details().title(),
-            remote_metadata_->details().title());
-
-  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForDeletion,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
-void RemoteToLocalSyncer::HandleReorganize(
-    const SyncStatusCallback& callback) {
-  DCHECK(dirty_tracker_);
-  DCHECK(dirty_tracker_->active());
-  DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
-  DCHECK(dirty_tracker_->has_synced_details());
-  DCHECK(!dirty_tracker_->synced_details().deleted());
-
-  DCHECK(remote_metadata_);
-  DCHECK(remote_metadata_->has_details());
-  DCHECK(!remote_metadata_->details().deleted());
-
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
 }
 
 void RemoteToLocalSyncer::HandleContentUpdate(
@@ -618,8 +576,17 @@ void RemoteToLocalSyncer::SyncCompleted(const SyncStatusCallback& callback,
   DCHECK(remote_metadata_);
   DCHECK(remote_metadata_->has_details());
 
+  FileDetails updated_details = remote_metadata_->details();
+  if (!dirty_tracker_->active() ||
+      HasDisabledAppRoot(metadata_database(), *dirty_tracker_)) {
+    // Operations for an inactive tracker don't update file content.
+    if (dirty_tracker_->has_synced_details())
+      updated_details.set_md5(dirty_tracker_->synced_details().md5());
+    else
+      updated_details.clear_md5();
+  }
   metadata_database()->UpdateTracker(dirty_tracker_->tracker_id(),
-                                     remote_metadata_->details(),
+                                     updated_details,
                                      callback);
 }
 

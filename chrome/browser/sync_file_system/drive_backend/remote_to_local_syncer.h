@@ -112,10 +112,6 @@ class RemoteToLocalSyncer : public SyncTask {
   void DidUpdateDatabaseForRemoteMetadata(const SyncStatusCallback& callback,
                                           SyncStatusCode status);
 
-  // Handles modification to inactive or disabled-app tracker.
-  // TODO(tzik): Write details and implement this.
-  void HandleInactiveTracker(const SyncStatusCallback& callback);
-
   // Handles remotely added file.  Needs Prepare() call.
   void HandleNewFile(const SyncStatusCallback& callback);
 
@@ -155,12 +151,6 @@ class RemoteToLocalSyncer : public SyncTask {
   void HandleDeletion(const SyncStatusCallback& callback);
   void DidPrepareForDeletion(const SyncStatusCallback& callback,
                              SyncStatusCode status);
-
-  // TODO(tzik): Write details and implement this.
-  void HandleRename(const SyncStatusCallback& callback);
-
-  // TODO(tzik): Write details and implement this.
-  void HandleReorganize(const SyncStatusCallback& callback);
 
   // Handles new file.  Needs Prepare() call.
   void HandleContentUpdate(const SyncStatusCallback& callback);
