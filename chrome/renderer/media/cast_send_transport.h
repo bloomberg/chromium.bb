@@ -12,6 +12,10 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
+namespace blink {
+class WebMediaStreamTrack;
+}  // namespace blink
+
 class CastSession;
 class CastUdpTransport;
 
@@ -102,13 +106,8 @@ class CastSendTransport {
   void Stop();
 
  private:
-  // Return true if this track is an audio track. Return false if this
-  // track is a video track.
-  bool IsAudio() const;
-
   const scoped_refptr<CastSession> cast_session_;
   blink::WebMediaStreamTrack track_;
-  CastRtpParams params_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSendTransport);
 };
