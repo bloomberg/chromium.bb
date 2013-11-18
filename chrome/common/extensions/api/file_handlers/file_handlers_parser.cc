@@ -17,6 +17,8 @@ namespace extensions {
 namespace keys = manifest_keys;
 namespace errors = manifest_errors;
 
+const int kMaxTypeAndExtensionHandlers = 200;
+
 FileHandlerInfo::FileHandlerInfo() {}
 FileHandlerInfo::~FileHandlerInfo() {}
 
@@ -130,6 +132,21 @@ bool FileHandlersParser::Parse(Extension* extension, string16* error) {
       *error = ASCIIToUTF16(errors::kInvalidFileHandlers);
       return false;
     }
+  }
+
+  int filterCount = 0;
+  for (std::vector<FileHandlerInfo>::iterator iter =
+           info->file_handlers.begin();
+       iter < info->file_handlers.end();
+       iter++) {
+    filterCount += iter->types.size();
+    filterCount += iter->extensions.size();
+  }
+
+  if (filterCount > kMaxTypeAndExtensionHandlers) {
+    *error = ASCIIToUTF16(
+        errors::kInvalidFileHandlersTooManyTypesAndExtensions);
+    return false;
   }
 
   extension->SetManifestData(keys::kFileHandlers, info.release());

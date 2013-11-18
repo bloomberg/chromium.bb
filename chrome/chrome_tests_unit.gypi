@@ -1800,6 +1800,7 @@
         'common/extensions/api/extension_action/page_action_manifest_unittest.cc',
         'common/extensions/api/extension_action/script_badge_manifest_unittest.cc',
         'common/extensions/api/file_browser_handlers/file_browser_handler_manifest_unittest.cc',
+        'common/extensions/api/file_handlers/file_handlers_manifest_unittest.cc',
         'common/extensions/api/i18n/default_locale_manifest_unittest.cc',
         'common/extensions/api/identity/extension_manifests_auth_unittest.cc',
         'common/extensions/api/sockets/sockets_manifest_permission_unittest.cc',

@@ -1,0 +1,11 @@
+{
+  "name": "test",
+  "description": "App with file_handlers manifest.",
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "file_handlers": []
+}

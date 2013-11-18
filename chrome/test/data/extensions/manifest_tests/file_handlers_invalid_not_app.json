@@ -1,0 +1,23 @@
+{
+  "name": "test",
+  "description": "App with file_handlers manifest.",
+  "version": "1",
+  "file_handlers": {
+    "text": {
+      "types": [
+        "text/*"
+      ],
+      "title": "Text editor"
+    },
+    "image": {
+      "types": [
+        "image/*"
+      ],
+      "extensions": [
+        ".png",
+        ".gif"
+      ],
+      "title": "Image editor"
+    }
+  }
+}

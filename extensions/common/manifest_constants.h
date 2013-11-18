@@ -280,6 +280,7 @@ extern const char kInvalidMediaGalleriesHandler[];
 extern const char kInvalidFileFiltersList[];
 extern const char kInvalidFileFilterValue[];
 extern const char kInvalidFileHandlers[];
+extern const char kInvalidFileHandlersTooManyTypesAndExtensions[];
 extern const char kInvalidFileHandlerExtension[];
 extern const char kInvalidFileHandlerExtensionElement[];
 extern const char kInvalidFileHandlerNoTypeOrExtension[];
