@@ -157,7 +157,7 @@ function isSuccessfullyParsed()
     debug("\nTEST COMPLETE\n");
 }
 
-// It's possible for an async test to call finishJSTest() before js-test-post.js
+// It's possible for an async test to call finishJSTest() before standalone-post.js
 // has been parsed.
 function finishJSTest()
 {
