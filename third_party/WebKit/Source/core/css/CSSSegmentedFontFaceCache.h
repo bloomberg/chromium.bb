@@ -33,6 +33,7 @@
 
 namespace WebCore {
 
+class CSSFontFace;
 class CSSFontSelector;
 class CSSSegmentedFontFace;
 class FontData;
@@ -47,15 +48,21 @@ public:
     // FIXME: Remove CSSFontSelector as argument. Passing CSSFontSelector here is
     // a result of egregious spaghettification in CSSFontFace/FontFaceSet.
     void addFontFaceRule(CSSFontSelector*, const StyleRuleFontFace*);
+    void removeFontFaceRule(const StyleRuleFontFace*);
     PassRefPtr<FontData> getFontData(Settings*, const FontDescription&, const AtomicString&);
     CSSSegmentedFontFace* getFontFace(const FontDescription&, const AtomicString& family);
 
     unsigned version() const { return m_version; }
 
 private:
-    HashMap<String, OwnPtr<HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> m_fontFaces;
-    HashMap<String, OwnPtr<Vector<RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> m_locallyInstalledFontFaces;
-    HashMap<String, OwnPtr<HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> m_fonts;
+    typedef HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > TraitsMap;
+    typedef HashMap<String, OwnPtr<TraitsMap>, CaseFoldingHash> FamilyToTraitsMap;
+    typedef HashMap<String, OwnPtr<Vector<RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> FamilyToFontFaces;
+    typedef HashMap<const StyleRuleFontFace*, RefPtr<CSSFontFace> > StyleRuleToFontFace;
+    FamilyToTraitsMap m_fontFaces;
+    FamilyToFontFaces m_locallyInstalledFontFaces;
+    FamilyToTraitsMap m_fonts;
+    StyleRuleToFontFace m_styleRuleToFontFace;
 
     // FIXME: See if this could be ditched
     // Used to compare Font instances, and the usage seems suspect.

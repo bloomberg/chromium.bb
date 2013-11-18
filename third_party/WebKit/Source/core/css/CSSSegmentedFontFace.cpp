@@ -93,6 +93,16 @@ void CSSSegmentedFontFace::appendFontFace(PassRefPtr<CSSFontFace> fontFace)
     m_fontFaces.append(fontFace);
 }
 
+void CSSSegmentedFontFace::removeFontFace(PassRefPtr<CSSFontFace> fontFace)
+{
+    size_t index = m_fontFaces.find(fontFace);
+    if (index != kNotFound) {
+        pruneTable();
+        m_fontFaces.remove(index);
+        fontFace->clearSegmentedFontFace();
+    }
+}
+
 static void appendFontData(SegmentedFontData* newFontData, PassRefPtr<SimpleFontData> prpFaceFontData, const CSSFontFace::UnicodeRangeSet& ranges)
 {
     RefPtr<SimpleFontData> faceFontData = prpFaceFontData;

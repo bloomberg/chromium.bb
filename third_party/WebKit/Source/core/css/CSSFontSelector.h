@@ -78,6 +78,7 @@ public:
     void clearDocument();
 
     void addFontFaceRule(const StyleRuleFontFace*);
+    void removeFontFaceRule(const StyleRuleFontFace*);
 
     void fontLoaded();
     virtual void fontCacheInvalidated();

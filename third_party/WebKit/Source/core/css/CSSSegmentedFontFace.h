@@ -54,6 +54,8 @@ public:
     void fontLoaded(CSSFontFace*);
 
     void appendFontFace(PassRefPtr<CSSFontFace>);
+    void removeFontFace(PassRefPtr<CSSFontFace>);
+    bool isEmpty() const { return m_fontFaces.isEmpty(); }
 
     PassRefPtr<FontData> getFontData(const FontDescription&);
 

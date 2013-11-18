@@ -156,6 +156,11 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
     m_cssSegmentedFontFaceCache.addFontFaceRule(this, fontFaceRule);
 }
 
+void CSSFontSelector::removeFontFaceRule(const StyleRuleFontFace* fontFaceRule)
+{
+    m_cssSegmentedFontFaceCache.removeFontFaceRule(fontFaceRule);
+}
+
 PassRefPtr<FontData> CSSFontSelector::getFontData(const FontDescription& fontDescription, const AtomicString& familyName)
 {
     if (!m_document || !m_document->frame())
