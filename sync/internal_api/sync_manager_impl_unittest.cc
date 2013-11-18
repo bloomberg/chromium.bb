@@ -807,7 +807,8 @@ class SyncManagerTest : public testing::Test,
 
     sync_manager_.AddObserver(&manager_observer_);
     EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _, _)).
-        WillOnce(SaveArg<0>(&js_backend_));
+        WillOnce(DoAll(SaveArg<0>(&js_backend_),
+            SaveArg<2>(&initialization_succeeded_)));
 
     EXPECT_FALSE(js_backend_.IsInitialized());
 
@@ -841,10 +842,12 @@ class SyncManagerTest : public testing::Test,
 
     EXPECT_TRUE(js_backend_.IsInitialized());
 
-    for (ModelSafeRoutingInfo::iterator i = routing_info.begin();
-         i != routing_info.end(); ++i) {
-      type_roots_[i->first] = MakeServerNodeForType(
-          sync_manager_.GetUserShare(), i->first);
+    if (initialization_succeeded_) {
+      for (ModelSafeRoutingInfo::iterator i = routing_info.begin();
+           i != routing_info.end(); ++i) {
+        type_roots_[i->first] = MakeServerNodeForType(
+            sync_manager_.GetUserShare(), i->first);
+      }
     }
     PumpLoop();
   }
@@ -1018,6 +1021,7 @@ class SyncManagerTest : public testing::Test,
   SyncManagerImpl sync_manager_;
   CancelationSignal cancelation_signal_;
   WeakHandle<JsBackend> js_backend_;
+  bool initialization_succeeded_;
   StrictMock<SyncManagerObserverMock> manager_observer_;
   StrictMock<SyncEncryptionHandlerObserverMock> encryption_observer_;
   InternalComponentsFactory::Switches switches_;
@@ -3480,6 +3484,30 @@ TEST_F(SyncManagerChangeProcessingTest, DeletionsAndChanges) {
   // Deletes should appear before updates.
   EXPECT_LT(child_pos, folder_a_pos);
   EXPECT_LT(folder_b_pos, folder_a_pos);
+}
+
+// During initialization SyncManagerImpl loads sqlite database. If it fails to
+// do so it should fail initialization. This test verifies this behavior.
+// Test reuses SyncManagerImpl initialization from SyncManagerTest but overrides
+// InternalComponentsFactory to return DirectoryBackingStore that always fails
+// to load.
+class SyncManagerInitInvalidStorageTest : public SyncManagerTest {
+ public:
+  SyncManagerInitInvalidStorageTest() {
+  }
+
+  virtual InternalComponentsFactory* GetFactory() OVERRIDE {
+    return new TestInternalComponentsFactory(GetSwitches(), STORAGE_INVALID);
+  }
+};
+
+// SyncManagerInitInvalidStorageTest::GetFactory will return
+// DirectoryBackingStore that ensures that SyncManagerImpl::OpenDirectory fails.
+// SyncManagerImpl initialization is done in SyncManagerTest::SetUp. This test's
+// task is to ensure that SyncManagerImpl reported initialization failure in
+// OnInitializationComplete callback.
+TEST_F(SyncManagerInitInvalidStorageTest, FailToOpenDatabase) {
+  EXPECT_FALSE(initialization_succeeded_);
 }
 
 }  // namespace

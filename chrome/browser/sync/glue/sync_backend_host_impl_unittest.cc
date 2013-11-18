@@ -6,6 +6,7 @@
 
 #include <cstddef>
 
+#include "base/file_util.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -685,6 +686,21 @@ TEST_F(SyncBackendHostTest, DownloadControlTypesRestart) {
   InitializeBackend(true);
   EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE,
             fake_manager_->GetAndResetConfigureReason());
+}
+
+// It is SyncBackendHostCore responsibility to cleanup Sync Data folder if sync
+// setup hasn't been completed. This test ensures that cleanup happens.
+TEST_F(SyncBackendHostTest, TestStartupWithOldSyncData) {
+  const char* nonsense = "slon";
+  base::FilePath temp_directory =
+      profile_->GetPath().AppendASCII("Sync Data");
+  base::FilePath sync_file = temp_directory.AppendASCII("SyncData.sqlite3");
+  ASSERT_TRUE(file_util::CreateDirectory(temp_directory));
+  ASSERT_NE(-1, file_util::WriteFile(sync_file, nonsense, strlen(nonsense)));
+
+  InitializeBackend(true);
+
+  EXPECT_FALSE(base::PathExists(sync_file));
 }
 
 }  // namespace

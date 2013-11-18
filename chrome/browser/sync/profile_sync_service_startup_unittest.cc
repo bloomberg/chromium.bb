@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
-
+#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -32,6 +31,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::DataTypeManager;
 using browser_sync::DataTypeManagerMock;
