@@ -4,7 +4,7 @@
 
 #include "gin/per_context_data.h"
 
-#include <assert.h>
+#include "base/logging.h"
 #include "gin/wrapper_info.h"
 
 namespace gin {
@@ -20,11 +20,11 @@ PerContextData::PerContextData(v8::Handle<v8::Context> context) {
 }
 
 PerContextData::~PerContextData() {
-  assert(supplements_.empty());
+  DCHECK(supplements_.empty());
 }
 
 void PerContextData::Detach(v8::Handle<v8::Context> context) {
-  assert(From(context) == this);
+  DCHECK(From(context) == this);
   context->SetAlignedPointerInEmbedderData(kEncodedValueIndex, NULL);
 
   SuplementVector supplements;
@@ -33,7 +33,6 @@ void PerContextData::Detach(v8::Handle<v8::Context> context) {
   for (SuplementVector::iterator it = supplements.begin();
        it != supplements.end(); ++it) {
     (*it)->Detach(context);
-    delete *it;
   }
 }
 
@@ -42,8 +41,8 @@ PerContextData* PerContextData::From(v8::Handle<v8::Context> context) {
       context->GetAlignedPointerFromEmbedderData(kEncodedValueIndex));
 }
 
-void PerContextData::AddSupplement(ContextSupplement* supplement) {
-  supplements_.push_back(supplement);
+void PerContextData::AddSupplement(scoped_ptr<ContextSupplement> supplement) {
+  supplements_.push_back(supplement.release());
 }
 
 }  // namespace gin

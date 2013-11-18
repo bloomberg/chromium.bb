@@ -5,37 +5,36 @@
 #include "gin/test/file_runner.h"
 
 #include "base/file_util.h"
+#include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "gin/converter.h"
 #include "gin/modules/module_registry.h"
 #include "gin/test/gtest.h"
+#include "gin/try_catch.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gin {
 
 namespace {
 
-std::string GetExceptionInfo(const v8::TryCatch& try_catch) {
-  std::string info;
-  ConvertFromV8(try_catch.Message()->Get(), &info);
-  return info;
+base::FilePath GetModuleBase() {
+  base::FilePath path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  return path;
 }
 
 }  // namespace
 
-FileRunnerDelegate::FileRunnerDelegate() {
+FileRunnerDelegate::FileRunnerDelegate()
+    : ModuleRunnerDelegate(GetModuleBase()) {
 }
 
 FileRunnerDelegate::~FileRunnerDelegate() {
 }
 
-v8::Handle<v8::ObjectTemplate> FileRunnerDelegate::GetGlobalTemplate(
-    Runner* runner) {
-  v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
-  ModuleRegistry::RegisterGlobals(runner->isolate(), templ);
-  return templ;
-}
-
 void FileRunnerDelegate::DidCreateContext(Runner* runner) {
+  ModuleRunnerDelegate::DidCreateContext(runner);
+
   v8::Handle<v8::Context> context = runner->context();
   ModuleRegistry* registry = ModuleRegistry::From(context);
 
@@ -43,16 +42,24 @@ void FileRunnerDelegate::DidCreateContext(Runner* runner) {
                              GetGTestTemplate(runner->isolate()));
 }
 
+void FileRunnerDelegate::UnhandledException(Runner* runner,
+                                            TryCatch& try_catch) {
+  ModuleRunnerDelegate::UnhandledException(runner, try_catch);
+  EXPECT_FALSE(try_catch.HasCaught()) << try_catch.GetPrettyMessage();
+}
+
 void RunTestFromFile(const base::FilePath& path, RunnerDelegate* delegate) {
   ASSERT_TRUE(base::PathExists(path)) << path.LossyDisplayName();
   std::string source;
   ASSERT_TRUE(ReadFileToString(path, &source));
+
+  base::MessageLoop message_loop;
+
   gin::Runner runner(delegate, v8::Isolate::GetCurrent());
   gin::Runner::Scope scope(&runner);
-
-  v8::TryCatch try_catch;
   runner.Run(source);
-  EXPECT_FALSE(try_catch.HasCaught()) << GetExceptionInfo(try_catch);
+
+  message_loop.RunUntilIdle();
 
   v8::Handle<v8::Value> result = runner.context()->Global()->Get(
       StringToSymbol(runner.isolate(), "result"));

@@ -8,7 +8,6 @@
 #include "gin/converter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using v8::Handle;
 using v8::Isolate;
 using v8::Object;
 using v8::Script;

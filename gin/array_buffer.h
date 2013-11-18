@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"  // For scoped_refptr only!
+#include "base/memory/ref_counted.h"
 #include "gin/converter.h"
 #include "v8/include/v8.h"
 

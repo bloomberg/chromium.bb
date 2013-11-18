@@ -4,7 +4,7 @@
 
 #include "gin/arguments.h"
 
-#include <sstream>
+#include "base/strings/stringprintf.h"
 #include "gin/converter.h"
 
 namespace gin {
@@ -29,9 +29,8 @@ void Arguments::ThrowError() {
   if (insufficient_arguments_)
     return ThrowTypeError("Insufficient number of arguments.");
 
-  std::stringstream stream;
-  stream << "Error processing argument " << next_ - 1 << ".";
-  ThrowTypeError(stream.str());
+  ThrowTypeError(base::StringPrintf(
+      "Error processing argument %d.", next_ - 1));
 }
 
 void Arguments::ThrowTypeError(const std::string& message) {

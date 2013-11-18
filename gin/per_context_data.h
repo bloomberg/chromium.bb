@@ -5,8 +5,9 @@
 #ifndef GIN_PER_CONTEXT_DATA_H_
 #define GIN_PER_CONTEXT_DATA_H_
 
-#include <vector>
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "v8/include/v8.h"
 
 namespace gin {
@@ -31,13 +32,11 @@ class PerContextData {
   static PerContextData* From(v8::Handle<v8::Context>);
   void Detach(v8::Handle<v8::Context> context);
 
-  // Takes ownership of the supplement.
-  void AddSupplement(ContextSupplement* supplement);
+  void AddSupplement(scoped_ptr<ContextSupplement> supplement);
 
  private:
-  typedef std::vector<ContextSupplement*> SuplementVector;
+  typedef ScopedVector<ContextSupplement> SuplementVector;
 
-  // Owning reference.
   SuplementVector supplements_;
 
   DISALLOW_COPY_AND_ASSIGN(PerContextData);

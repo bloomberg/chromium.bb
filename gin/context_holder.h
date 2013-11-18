@@ -6,10 +6,14 @@
 #define GIN_CONTEXT_HOLDER_H_
 
 #include <list>
+
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "v8/include/v8.h"
 
 namespace gin {
+
+class PerContextData;
 
 class ContextHolder {
  public:
@@ -27,6 +31,7 @@ class ContextHolder {
  private:
   v8::Isolate* isolate_;
   v8::Persistent<v8::Context> context_;
+  scoped_ptr<PerContextData> data_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextHolder);
 };

@@ -7,19 +7,21 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "gin/modules/module_runner_delegate.h"
 #include "gin/runner.h"
 
 namespace gin {
 
-class FileRunnerDelegate : public RunnerDelegate {
+class FileRunnerDelegate : public ModuleRunnerDelegate {
  public:
   FileRunnerDelegate();
   virtual ~FileRunnerDelegate();
-  virtual v8::Handle<v8::ObjectTemplate> GetGlobalTemplate(
-      Runner* runner) OVERRIDE;
-  virtual void DidCreateContext(Runner* runner) OVERRIDE;
 
  private:
+  // From ModuleRunnerDelegate:
+  virtual void DidCreateContext(Runner* runner) OVERRIDE;
+  virtual void UnhandledException(Runner* runner, TryCatch& try_catch) OVERRIDE;
+
   DISALLOW_COPY_AND_ASSIGN(FileRunnerDelegate);
 };
 

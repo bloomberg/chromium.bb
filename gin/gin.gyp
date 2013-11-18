@@ -10,26 +10,29 @@
     {
       'target_name': 'gin',
       'type': 'static_library',
-      'include_dirs': [
-        '..'
-      ],
       'dependencies': [
+        '../base/base.gyp:base',
         '../v8/tools/gyp/v8.gyp:v8',
       ],
       'export_dependent_settings': [
+        '../base/base.gyp:base',
         '../v8/tools/gyp/v8.gyp:v8',
       ],
       'sources': [
+        'modules/file_module_provider.cc',
+        'modules/file_module_provider.h',
         'modules/module_registry.cc',
         'modules/module_registry.h',
+        'modules/module_runner_delegate.cc',
+        'modules/module_runner_delegate.h',
         'arguments.cc',
         'arguments.h',
         'array_buffer.cc',
         'array_buffer.h',
-        'converter.cc',
-        'converter.h',
         'context_holder.cc',
         'context_holder.h',
+        'converter.cc',
+        'converter.h',
         'dictionary.cc',
         'dictionary.h',
         'initialize.cc',
@@ -40,20 +43,35 @@
         'per_isolate_data.h',
         'runner.cc',
         'runner.h',
+        'try_catch.cc',
+        'try_catch.h',
         'wrapper_info.cc',
         'wrapper_info.h',
       ],
     },
     {
+      'target_name': 'gin_shell',
+      'type': 'executable',
+      'dependencies': [
+        'gin',
+      ],
+      'sources': [
+        'shell/gin_main.cc',
+      ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'SubSystem': '1', # /SUBSYSTEM:CONSOLE
+        },
+      },
+    },
+    {
       'target_name': 'gin_test',
       'type': 'static_library',
       'dependencies': [
-        '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
         'gin',
       ],
       'export_dependent_settings': [
-        '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
         'gin',
       ],

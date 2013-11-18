@@ -4,7 +4,7 @@
 
 #include "gin/context_holder.h"
 
-#include <assert.h>
+#include "base/logging.h"
 #include "gin/per_context_data.h"
 
 namespace gin {
@@ -17,18 +17,17 @@ ContextHolder::~ContextHolder() {
   v8::HandleScope handle_scope(isolate());
   v8::Handle<v8::Context> context = this->context();
 
-  PerContextData* data = PerContextData::From(context);
-  data->Detach(context);
-  delete data;
+  data_->Detach(context);
+  data_.reset();
 
   // TODO(abarth): Figure out how to set kResetInDestructor to true.
   context_.Reset();
 }
 
 void ContextHolder::SetContext(v8::Handle<v8::Context> context) {
-  assert(context_.IsEmpty());
+  DCHECK(context_.IsEmpty());
   context_.Reset(isolate_, context);
-  new PerContextData(context);  // Deleted in ~ContextHolder.
+  data_.reset(new PerContextData(context));
 }
 
 }  // namespace gin

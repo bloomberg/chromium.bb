@@ -53,26 +53,25 @@ ArrayBufferAllocator* ArrayBufferAllocator::SharedInstance() {
 // a pointer to the ArrayBuffer::Private object in an internal field of the
 // ArrayBuffer object.
 //
-class ArrayBuffer::Private {
+class ArrayBuffer::Private : public base::RefCounted<ArrayBuffer::Private> {
  public:
   static scoped_refptr<Private> From(v8::Isolate* isolate,
                                      v8::Handle<v8::ArrayBuffer> array);
-
-  void AddRef();
-  void Release();
 
   void* buffer() const { return buffer_; }
   size_t length() const { return length_; }
 
  private:
+  friend class base::RefCounted<Private>;
+
   Private(v8::Isolate* isolate, v8::Handle<v8::ArrayBuffer> array);
   ~Private();
 
   static void WeakCallback(
       const v8::WeakCallbackData<v8::ArrayBuffer, Private>& data);
 
-  size_t ref_count_;
   v8::Persistent<v8::ArrayBuffer> array_buffer_;
+  scoped_refptr<Private> self_reference_;
   void* buffer_;
   size_t length_;
 };
@@ -86,20 +85,9 @@ scoped_refptr<ArrayBuffer::Private> ArrayBuffer::Private::From(
   return make_scoped_refptr(new Private(isolate, array));
 }
 
-void ArrayBuffer::Private::AddRef() {
-  ++ref_count_;
-}
-
-void ArrayBuffer::Private::Release() {
-  if (--ref_count_)
-    return;
-  delete this;
-}
-
 ArrayBuffer::Private::Private(v8::Isolate* isolate,
                               v8::Handle<v8::ArrayBuffer> array)
-    : ref_count_(0),
-      array_buffer_(isolate, array) {
+    : array_buffer_(isolate, array) {
   // Take ownership of the array buffer.
   v8::ArrayBuffer::Contents contents = array->Externalize();
   buffer_ = contents.Data();
@@ -107,7 +95,7 @@ ArrayBuffer::Private::Private(v8::Isolate* isolate,
 
   array->SetAlignedPointerInInternalField(kBufferViewPrivateIndex, this);
 
-  AddRef();  // Balanced in WeakCallback.
+  self_reference_ = this;  // Cleared in WeakCallback.
   array_buffer_.SetWeak(this, WeakCallback);
 }
 
@@ -119,7 +107,7 @@ void ArrayBuffer::Private::WeakCallback(
     const v8::WeakCallbackData<v8::ArrayBuffer, Private>& data) {
   Private* parameter = data.GetParameter();
   parameter->array_buffer_.Reset();
-  parameter->Release();  // Balanced in ArrayBuffer::Private::Private.
+  // parameter->self_reference_.clear();
 }
 
 // ArrayBuffer ----------------------------------------------------------------
