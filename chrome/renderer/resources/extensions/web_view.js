@@ -204,11 +204,11 @@ WebViewInternal.prototype.createBrowserPluginNode_ = function() {
  */
 WebViewInternal.prototype.setupFocusPropagation_ = function() {
   if (!this.webviewNode_.hasAttribute('tabIndex')) {
-    // <webview> needs a tabIndex in order to respond to keyboard focus.
-    // TODO(fsamuel): This introduces unexpected tab ordering. We need to find
-    // a way to take keyboard focus without messing with tab ordering.
+    // <webview> needs a tabIndex in order to be focusable.
+    // TODO(fsamuel): It would be nice to avoid exposing a tabIndex attribute
+    // to allow <webview> to be focusable.
     // See http://crbug.com/231664.
-    this.webviewNode_.setAttribute('tabIndex', 0);
+    this.webviewNode_.setAttribute('tabIndex', -1);
   }
   var self = this;
   this.webviewNode_.addEventListener('focus', function(e) {
