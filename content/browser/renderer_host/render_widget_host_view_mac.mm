@@ -3082,10 +3082,8 @@ void RenderWidgetHostViewMac::FrameSwapped() {
 
 // Convert a web accessibility's location in web coordinates into a cocoa
 // screen coordinate.
-- (NSPoint)accessibilityPointInScreen:
-    (BrowserAccessibilityCocoa*)accessibility {
-  NSPoint origin = [accessibility origin];
-  NSSize size = [[accessibility size] sizeValue];
+- (NSPoint)accessibilityPointInScreen:(NSPoint)origin
+                                 size:(NSSize)size {
   origin.y = NSHeight([self bounds]) - origin.y;
   NSPoint originInWindow = [self convertPoint:origin toView:nil];
   NSPoint originInScreen = [[self window] convertBaseToScreen:originInWindow];
@@ -3112,8 +3110,9 @@ void RenderWidgetHostViewMac::FrameSwapped() {
 - (void)performShowMenuAction:(BrowserAccessibilityCocoa*)accessibility {
   // Performs a right click copying WebKit's
   // accessibilityPerformShowMenuAction.
-  NSPoint location = [self accessibilityPointInScreen:accessibility];
+  NSPoint origin = [accessibility origin];
   NSSize size = [[accessibility size] sizeValue];
+  NSPoint location = [self accessibilityPointInScreen:origin size:size];
   location = [[self window] convertScreenToBase:location];
   location.x += size.width/2;
   location.y += size.height/2;

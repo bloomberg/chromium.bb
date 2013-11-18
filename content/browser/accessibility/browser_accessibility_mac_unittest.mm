@@ -17,7 +17,8 @@
 @interface MockAccessibilityDelegate :
     NSView<BrowserAccessibilityDelegateCocoa>
 
-- (NSPoint)accessibilityPointInScreen:(BrowserAccessibilityCocoa*)accessibility;
+- (NSPoint)accessibilityPointInScreen:(NSPoint)origin
+                                 size:(NSSize)size;
 - (void)doDefaultAction:(int32)accessibilityObjectId;
 - (void)accessibilitySetTextSelection:(int32)accId
                           startOffset:(int32)startOffset
@@ -31,8 +32,8 @@
 
 @implementation MockAccessibilityDelegate
 
-- (NSPoint)accessibilityPointInScreen:
-    (BrowserAccessibilityCocoa*)accessibility {
+- (NSPoint)accessibilityPointInScreen:(NSPoint)origin
+                                 size:(NSSize)size {
   return NSZeroPoint;
 }
 - (void)doDefaultAction:(int32)accessibilityObjectId {

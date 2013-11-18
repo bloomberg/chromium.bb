@@ -12,7 +12,8 @@
 // to, or otherwise communicate with, their underlying WebAccessibility
 // objects over the IPC boundary.
 @protocol BrowserAccessibilityDelegateCocoa
-- (NSPoint)accessibilityPointInScreen:(BrowserAccessibilityCocoa*)accessibility;
+- (NSPoint)accessibilityPointInScreen:(NSPoint)origin
+                                 size:(NSSize)size;
 - (void)doDefaultAction:(int32)accessibilityObjectId;
 - (void)accessibilitySetTextSelection:(int32)accId
                           startOffset:(int32)startOffset

@@ -641,7 +641,11 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSValue*)position {
-  return [NSValue valueWithPoint:[delegate_ accessibilityPointInScreen:self]];
+  NSPoint origin = [self origin];
+  NSSize size = [[self size] sizeValue];
+  NSPoint pointInScreen =
+      [delegate_ accessibilityPointInScreen:origin size:size];
+  return [NSValue valueWithPoint:pointInScreen];
 }
 
 - (NSNumber*)required {
@@ -1085,13 +1089,27 @@ NSDictionary* attributeToMethodNameMap = nil;
     return nil;
   }
 
+  if ([attribute isEqualToString:
+      NSAccessibilityBoundsForRangeParameterizedAttribute]) {
+    if ([self internalRole] != blink::WebAXRoleStaticText)
+      return nil;
+    NSRange range = [(NSValue*)parameter rangeValue];
+    gfx::Rect rect = browserAccessibility_->GetGlobalBoundsForRange(
+        range.location, range.length);
+    NSPoint origin = NSMakePoint(rect.x(), rect.y());
+    NSSize size = NSMakeSize(rect.width(), rect.height());
+    NSPoint pointInScreen =
+        [delegate_ accessibilityPointInScreen:origin size:size];
+    NSRect nsrect = NSMakeRect(
+        pointInScreen.x, pointInScreen.y, rect.width(), rect.height());
+    return [NSValue valueWithRect:nsrect];
+  }
+
   // TODO(dtseng): support the following attributes.
   if ([attribute isEqualTo:
           NSAccessibilityRangeForPositionParameterizedAttribute] ||
       [attribute isEqualTo:
           NSAccessibilityRangeForIndexParameterizedAttribute] ||
-      [attribute isEqualTo:
-          NSAccessibilityBoundsForRangeParameterizedAttribute] ||
       [attribute isEqualTo:NSAccessibilityRTFForRangeParameterizedAttribute] ||
       [attribute isEqualTo:
           NSAccessibilityStyleRangeForIndexParameterizedAttribute]) {
@@ -1124,6 +1142,11 @@ NSDictionary* attributeToMethodNameMap = nil;
         NSAccessibilityRTFForRangeParameterizedAttribute,
         NSAccessibilityAttributedStringForRangeParameterizedAttribute,
         NSAccessibilityStyleRangeForIndexParameterizedAttribute,
+        nil];
+  }
+  if ([self internalRole] == blink::WebAXRoleStaticText) {
+    return [NSArray arrayWithObjects:
+        NSAccessibilityBoundsForRangeParameterizedAttribute,
         nil];
   }
   return nil;
