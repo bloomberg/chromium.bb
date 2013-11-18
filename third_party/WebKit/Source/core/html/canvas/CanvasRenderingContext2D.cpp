@@ -725,7 +725,7 @@ void CanvasRenderingContext2D::resetTransform()
     c->setCTM(canvas()->baseTransform());
 
     if (invertibleCTM)
-        m_path.transform(ctm.inverse());
+        m_path.transform(ctm);
     // When else, do nothing because all transform methods didn't update m_path when CTM became non-invertible.
     // It means that resetTransform() restores m_path just before CTM became non-invertible.
 }

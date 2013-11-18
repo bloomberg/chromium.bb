@@ -44,6 +44,28 @@ shouldBe("imgdata[0]", "255");
 shouldBe("imgdata[1]", "0");
 shouldBe("imgdata[2]", "0");
 
+debug("resetTransform should restore the path transform to identity.");
+/* This should draw a green rectangle on on top of a red one. The red should not be visible. */
+ctx.save();
+ctx.beginPath();
+ctx.moveTo(0, 0);
+ctx.lineTo(100, 0);
+ctx.lineTo(100, 100);
+ctx.lineTo(0, 100);
+ctx.fillStyle = 'red';
+ctx.fill();
+ctx.translate(200, 0);
+ctx.resetTransform();
+ctx.fillStyle = 'green';
+ctx.fill();
+ctx.restore();
+
+imageData = ctx.getImageData(50, 50, 1, 1);
+imgdata = imageData.data;
+shouldBe("imgdata[0]", "0");
+shouldBe("imgdata[1]", "128");
+shouldBe("imgdata[2]", "0");
+
 debug("resetTransform should resolve the non-invertible CTM state.");
 ctx.save();
 ctx.fillStyle = 'red';
