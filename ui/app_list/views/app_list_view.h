@@ -5,7 +5,6 @@
 #ifndef UI_APP_LIST_VIEWS_APP_LIST_VIEW_H_
 #define UI_APP_LIST_VIEWS_APP_LIST_VIEW_H_
 
-#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/app_list/app_list_export.h"
@@ -97,7 +96,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   void RemoveObserver(Observer* observer);
 
   // Set a callback to be called the next time any app list paints.
-  static void SetNextPaintCallback(const base::Closure& callback);
+  static void SetNextPaintCallback(void (*callback)());
 
 #if defined(OS_WIN)
   HWND GetHWND() const;

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/app_list/app_list_service.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -50,10 +48,24 @@ StartupType GetStartupType(const CommandLine& command_line) {
   return COLD_START;
 }
 
-void RecordFirstPaintTiming(StartupType startup_type,
-                            const base::Time& start_time) {
+// The time the process that caused the app list to be shown started. This isn't
+// necessarily the currently executing process as we may be processing a command
+// line given to a short-lived Chrome instance.
+int64 g_original_process_start_time;
+
+// The type of startup the the current app list show has gone through.
+StartupType g_app_show_startup_type;
+
+void RecordStartupInfo(StartupType startup_type, const base::Time& start_time) {
+  g_original_process_start_time = start_time.ToInternalValue();
+  g_app_show_startup_type = startup_type;
+}
+
+void RecordFirstPaintTiming() {
+  base::Time start_time(
+      base::Time::FromInternalValue(g_original_process_start_time));
   base::TimeDelta elapsed = base::Time::Now() - start_time;
-  switch (startup_type) {
+  switch (g_app_show_startup_type) {
     case COLD_START:
       UMA_HISTOGRAM_LONG_TIMES("Startup.AppListFirstPaintColdStart", elapsed);
       break;
@@ -110,6 +122,7 @@ void AppListService::RecordShowTimings(const CommandLine& command_line) {
       break;
   }
 
+  RecordStartupInfo(startup, start_time);
   Get(chrome::HOST_DESKTOP_TYPE_NATIVE)->SetAppListNextPaintCallback(
-      base::Bind(RecordFirstPaintTiming, startup, start_time));
+      RecordFirstPaintTiming);
 }

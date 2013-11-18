@@ -4,7 +4,6 @@
 
 #include "ui/app_list/views/app_list_view.h"
 
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "ui/app_list/app_list_constants.h"
@@ -41,7 +40,7 @@ namespace app_list {
 
 namespace {
 
-base::Closure g_next_paint_callback;
+void (*g_next_paint_callback)();
 
 // The distance between the arrow tip and edge of the anchor view.
 const int kArrowOffset = 10;
@@ -145,9 +144,9 @@ gfx::Size AppListView::GetPreferredSize() {
 
 void AppListView::Paint(gfx::Canvas* canvas) {
   views::BubbleDelegateView::Paint(canvas);
-  if (!g_next_paint_callback.is_null()) {
-    g_next_paint_callback.Run();
-    g_next_paint_callback.Reset();
+  if (g_next_paint_callback) {
+    g_next_paint_callback();
+    g_next_paint_callback = NULL;
   }
 }
 
@@ -178,7 +177,7 @@ void AppListView::RemoveObserver(Observer* observer) {
 }
 
 // static
-void AppListView::SetNextPaintCallback(const base::Closure& callback) {
+void AppListView::SetNextPaintCallback(void (*callback)()) {
   g_next_paint_callback = callback;
 }
 

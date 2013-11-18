@@ -29,8 +29,7 @@ class AppListServiceWin : public AppListServiceImpl {
   void OnAppListClosing();
 
   // AppListService overrides:
-  virtual void SetAppListNextPaintCallback(
-      const base::Closure& callback) OVERRIDE;
+  virtual void SetAppListNextPaintCallback(void (*callback)()) OVERRIDE;
   virtual void HandleFirstRun() OVERRIDE;
   virtual void Init(Profile* initial_profile) OVERRIDE;
   virtual void CreateForProfile(Profile* requested_profile) OVERRIDE;

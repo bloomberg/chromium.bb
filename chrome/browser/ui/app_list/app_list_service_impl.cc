@@ -195,8 +195,7 @@ AppListServiceImpl::AppListServiceImpl(
 
 AppListServiceImpl::~AppListServiceImpl() {}
 
-void AppListServiceImpl::SetAppListNextPaintCallback(
-    const base::Closure& callback) {}
+void AppListServiceImpl::SetAppListNextPaintCallback(void (*callback)()) {}
 
 void AppListServiceImpl::HandleFirstRun() {}
 

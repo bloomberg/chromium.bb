@@ -428,8 +428,7 @@ void AppListServiceWin::OnLoadProfileForWarmup(Profile* initial_profile) {
                       base::Time::Now() - before_warmup);
 }
 
-void AppListServiceWin::SetAppListNextPaintCallback(
-    const base::Closure& callback) {
+void AppListServiceWin::SetAppListNextPaintCallback(void (*callback)()) {
   app_list::AppListView::SetNextPaintCallback(callback);
 }
 

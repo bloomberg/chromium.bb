@@ -39,8 +39,7 @@ class AppListServiceImpl : public AppListService,
                      scoped_ptr<KeepAliveService> keep_alive_service);
 
   // AppListService overrides:
-  virtual void SetAppListNextPaintCallback(
-      const base::Closure& callback) OVERRIDE;
+  virtual void SetAppListNextPaintCallback(void (*callback)()) OVERRIDE;
   virtual void HandleFirstRun() OVERRIDE;
   virtual void Init(Profile* initial_profile) OVERRIDE;
   virtual base::FilePath GetProfilePath(
