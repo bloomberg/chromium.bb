@@ -48,7 +48,6 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThread.h"
-#include <v8-defaults.h>
 #include <v8.h>
 
 #include "public/platform/Platform.h"
@@ -63,13 +62,11 @@ WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalSc
     , m_executionScheduledToTerminate(false)
 {
     m_isolate->Enter();
-    v8::SetDefaultResourceConstraintsForCurrentPlatform();
+    V8Initializer::initializeWorker(m_isolate);
     v8::V8::Initialize();
     V8PerIsolateData* data = V8PerIsolateData::create(m_isolate);
     m_domDataStore = adoptPtr(new DOMDataStore(WorkerWorld));
     data->setWorkerDOMDataStore(m_domDataStore.get());
-
-    V8Initializer::initializeWorker(m_isolate);
 }
 
 WorkerScriptController::~WorkerScriptController()

@@ -187,8 +187,6 @@ bool V8WindowShell::initializeIfNeeded()
 
     v8::HandleScope handleScope(m_isolate);
 
-    V8Initializer::initializeMainThreadIfNeeded(m_isolate);
-
     createContext();
     if (m_context.isEmpty())
         return false;

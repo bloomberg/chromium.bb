@@ -36,6 +36,7 @@
 #include "WebMediaPlayerClientImpl.h"
 #include "WebWorkerClientImpl.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Initializer.h"
 #include "bindings/v8/V8RecursionScope.h"
 #include "core/Init.h"
 #include "core/dom/Microtask.h"
@@ -56,7 +57,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebThread.h"
-#include <v8-defaults.h>
 #include <v8.h>
 
 namespace blink {
@@ -100,11 +100,11 @@ void initialize(Platform* platform)
 {
     initializeWithoutV8(platform);
 
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    WebCore::V8Initializer::initializeMainThreadIfNeeded(isolate);
     v8::V8::SetEntropySource(&generateEntropy);
     v8::V8::SetArrayBufferAllocator(WebCore::v8ArrayBufferAllocator());
-    v8::SetDefaultResourceConstraintsForCurrentPlatform();
     v8::V8::Initialize();
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     WebCore::setMainThreadIsolate(isolate);
     WebCore::V8PerIsolateData::ensureInitialized(isolate);
 
