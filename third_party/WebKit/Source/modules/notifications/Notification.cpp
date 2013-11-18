@@ -147,7 +147,6 @@ void Notification::show()
         }
         if (m_notificationClient->show(this)) {
             m_state = Showing;
-            setPendingActivity(this);
         }
     }
 }
@@ -165,34 +164,21 @@ void Notification::close()
     }
 }
 
+bool Notification::hasPendingActivity() const
+{
+    return m_state == Showing || (m_asyncRunner && m_asyncRunner->isActive());
+}
+
 void Notification::stop()
 {
     if (m_notificationClient)
         m_notificationClient->notificationObjectDestroyed(this);
     m_notificationClient = 0;
 
-    finalize();
+    if (m_asyncRunner)
+        m_asyncRunner->stop();
 
-    // Ensure m_notificationClient == 0 only when in Closed state.
-    ASSERT(m_state == Closed);
-}
-
-void Notification::finalize()
-{
-    if (m_state == Closed)
-        return;
-
-    // To call unsetPendingActivity() at the end.
-    NotificationState lastState = m_state;
     m_state = Closed;
-
-    // setPendingActivity() is called only when show() was successful, and only
-    // in that case, m_state is set to Showing. So, if it's not Showing, do
-    // nothing here.
-    if (lastState != Showing)
-        return;
-
-    unsetPendingActivity(this);
 }
 
 void Notification::dispatchShowEvent()
@@ -213,7 +199,7 @@ void Notification::dispatchClickEvent()
 void Notification::dispatchCloseEvent()
 {
     dispatchEvent(Event::create(EventTypeNames::close));
-    finalize();
+    m_state = Closed;
 }
 
 void Notification::dispatchErrorEvent()

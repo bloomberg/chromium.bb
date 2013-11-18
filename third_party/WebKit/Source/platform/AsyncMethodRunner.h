@@ -110,6 +110,11 @@ public:
             m_timer.stop();
     }
 
+    bool isActive() const
+    {
+        return m_timer.isActive();
+    }
+
 private:
     void fired(Timer<AsyncMethodRunner<TargetClass> >*) { (m_object->*m_method)(); }
 
