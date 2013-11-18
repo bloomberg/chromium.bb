@@ -354,12 +354,6 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   if (border_->shadow() == BubbleBorder::NO_SHADOW_OPAQUE_BORDER)
     canvas->DrawColor(border_->background_color());
 
-  // Clip out the client bounds to prevent overlapping transparent widgets.
-  if (!border_->client_bounds().IsEmpty()) {
-    SkRect client_rect(gfx::RectToSkRect(border_->client_bounds()));
-    canvas->sk_canvas()->clipRect(client_rect, SkRegion::kDifference_Op);
-  }
-
   // Fill the contents with a round-rect region to match the border images.
   SkPaint paint;
   paint.setAntiAlias(true);

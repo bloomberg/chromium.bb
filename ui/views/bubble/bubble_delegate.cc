@@ -39,93 +39,12 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
   else if (bubble->anchor_widget())
     bubble_params.parent = bubble->anchor_widget()->GetNativeView();
   bubble_params.can_activate = bubble->CanActivate();
-#if defined(OS_WIN) && !defined(USE_AURA)
-  bubble_params.type = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-  bubble_params.opacity = Widget::InitParams::OPAQUE_WINDOW;
-#endif
   bubble->OnBeforeBubbleWidgetInit(&bubble_params, bubble_widget);
   bubble_widget->Init(bubble_params);
   return bubble_widget;
 }
 
 }  // namespace
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-// Windows uses two widgets and some extra complexity to host partially
-// transparent native controls and use per-pixel HWND alpha on the border.
-// TODO(msw): Clean these up when Windows native controls are no longer needed.
-class BubbleBorderDelegate : public WidgetDelegate,
-                             public WidgetObserver {
- public:
-  BubbleBorderDelegate(BubbleDelegateView* bubble, Widget* widget)
-      : bubble_(bubble),
-        widget_(widget) {
-    bubble_->GetWidget()->AddObserver(this);
-  }
-
-  virtual ~BubbleBorderDelegate() {
-    DetachFromBubble();
-  }
-
-  // WidgetDelegate overrides:
-  virtual bool CanActivate() const OVERRIDE { return false; }
-  virtual string16 GetWindowTitle() const OVERRIDE {
-    return bubble_->GetWindowTitle();
-  }
-  virtual bool ShouldShowCloseButton() const OVERRIDE {
-    return bubble_->ShouldShowCloseButton();
-  }
-  virtual void DeleteDelegate() OVERRIDE { delete this; }
-  virtual Widget* GetWidget() OVERRIDE { return widget_; }
-  virtual const Widget* GetWidget() const OVERRIDE { return widget_; }
-  virtual NonClientFrameView* CreateNonClientFrameView(
-      Widget* widget) OVERRIDE {
-    return bubble_->CreateNonClientFrameView(widget);
-  }
-
-  // WidgetObserver overrides:
-  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE {
-    DetachFromBubble();
-    widget_->Close();
-  }
-
- private:
-  // Removes state installed on |bubble_|, including references |bubble_| has to
-  // us.
-  void DetachFromBubble() {
-    if (!bubble_)
-      return;
-    if (bubble_->GetWidget())
-      bubble_->GetWidget()->RemoveObserver(this);
-    bubble_->border_widget_ = NULL;
-    bubble_ = NULL;
-  }
-
-  BubbleDelegateView* bubble_;
-  Widget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(BubbleBorderDelegate);
-};
-
-namespace {
-
-// Create a widget to host the bubble's border.
-Widget* CreateBorderWidget(BubbleDelegateView* bubble) {
-  Widget* border_widget = new Widget();
-  Widget::InitParams border_params(Widget::InitParams::TYPE_BUBBLE);
-  border_params.delegate = new BubbleBorderDelegate(bubble, border_widget);
-  border_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
-  border_params.parent = bubble->GetWidget()->GetNativeView();
-  border_params.can_activate = false;
-  border_params.accept_events = bubble->border_accepts_events();
-  border_widget->Init(border_params);
-  border_widget->set_focus_on_creation(false);
-  return border_widget;
-}
-
-}  // namespace
-
-#endif
 
 BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),
@@ -138,7 +57,6 @@ BubbleDelegateView::BubbleDelegateView()
       color_explicitly_set_(false),
       margins_(kDefaultMargin, kDefaultMargin, kDefaultMargin, kDefaultMargin),
       original_opacity_(255),
-      border_widget_(NULL),
       use_focusless_(false),
       accept_events_(true),
       border_accepts_events_(true),
@@ -161,7 +79,6 @@ BubbleDelegateView::BubbleDelegateView(
       color_explicitly_set_(false),
       margins_(kDefaultMargin, kDefaultMargin, kDefaultMargin, kDefaultMargin),
       original_opacity_(255),
-      border_widget_(NULL),
       use_focusless_(false),
       accept_events_(true),
       border_accepts_events_(true),
@@ -183,17 +100,11 @@ Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
   bubble_delegate->SetAnchorView(bubble_delegate->GetAnchorView());
   Widget* bubble_widget = CreateBubbleWidget(bubble_delegate);
 
-#if defined(OS_WIN)
-#if defined(USE_AURA)
+#if defined(OS_WIN) && defined(USE_AURA)
   // If glass is enabled, the bubble is allowed to extend outside the bounds of
   // the parent frame and let DWM handle compositing.  If not, then we don't
   // want to allow the bubble to extend the frame because it will be clipped.
   bubble_delegate->set_adjust_if_offscreen(ui::win::IsAeroGlassEnabled());
-#else
-  // First set the contents view to initialize view bounds for widget sizing.
-  bubble_widget->SetContentsView(bubble_delegate->GetContentsView());
-  bubble_delegate->border_widget_ = CreateBorderWidget(bubble_delegate);
-#endif
 #endif
 
   bubble_delegate->SizeToContents();
@@ -293,8 +204,6 @@ void BubbleDelegateView::StartFade(bool fade_in) {
   fade_animation_->Reset(fade_in ? 0.0 : 1.0);
   if (fade_in) {
     original_opacity_ = 0;
-    if (border_widget_)
-      border_widget_->SetOpacity(original_opacity_);
     GetWidget()->SetOpacity(original_opacity_);
     GetWidget()->Show();
     fade_animation_->Show();
@@ -307,8 +216,6 @@ void BubbleDelegateView::StartFade(bool fade_in) {
 
 void BubbleDelegateView::ResetFade() {
   fade_animation_.reset();
-  if (border_widget_)
-    border_widget_->SetOpacity(original_opacity_);
   GetWidget()->SetOpacity(original_opacity_);
 }
 
@@ -354,21 +261,7 @@ void BubbleDelegateView::AnimationProgressed(const gfx::Animation* animation) {
   if (animation != fade_animation_.get())
     return;
   DCHECK(fade_animation_->is_animating());
-  unsigned char opacity = fade_animation_->GetCurrentValue() * 255;
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // Explicitly set the content Widget's layered style and set transparency via
-  // SetLayeredWindowAttributes. This is done because initializing the Widget as
-  // transparent and setting opacity via UpdateLayeredWindow doesn't support
-  // hosting child native Windows controls.
-  const HWND hwnd = GetWidget()->GetNativeView();
-  const DWORD style = GetWindowLong(hwnd, GWL_EXSTYLE);
-  if ((opacity == 255) == !!(style & WS_EX_LAYERED))
-    SetWindowLong(hwnd, GWL_EXSTYLE, style ^ WS_EX_LAYERED);
-  SetLayeredWindowAttributes(hwnd, 0, opacity, LWA_ALPHA);
-  // Update the border widget's opacity.
-  border_widget_->SetOpacity(opacity);
-#endif
-  GetWidget()->SetOpacity(opacity);
+  GetWidget()->SetOpacity(fade_animation_->GetCurrentValue() * 255);
 }
 
 void BubbleDelegateView::Init() {}
@@ -402,22 +295,12 @@ void BubbleDelegateView::SetAnchorView(View* anchor_view) {
 }
 
 void BubbleDelegateView::SizeToContents() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  border_widget_->SetBounds(GetBubbleBounds());
-  GetWidget()->SetBounds(GetBubbleClientBounds());
-
-  // Update the local client bounds clipped out by the border widget background.
-  // Used to correctly display overlapping semi-transparent widgets on Windows.
-  GetBubbleFrameView()->bubble_border()->set_client_bounds(
-      GetBubbleFrameView()->GetBoundsForClientView());
-#else
   GetWidget()->SetBounds(GetBubbleBounds());
-#endif
 }
 
 BubbleFrameView* BubbleDelegateView::GetBubbleFrameView() const {
-  const Widget* widget = border_widget_ ? border_widget_ : GetWidget();
-  const NonClientView* view = widget ? widget->non_client_view() : NULL;
+  const NonClientView* view =
+      GetWidget() ? GetWidget()->non_client_view() : NULL;
   return view ? static_cast<BubbleFrameView*>(view->frame_view()) : NULL;
 }
 
@@ -443,28 +326,10 @@ void BubbleDelegateView::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
     frame_view->bubble_border()->set_background_color(color());
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-gfx::Rect BubbleDelegateView::GetBubbleClientBounds() const {
-  gfx::Rect client_bounds(GetBubbleFrameView()->GetBoundsForClientView());
-  client_bounds.Offset(
-      border_widget_->GetWindowBoundsInScreen().OffsetFromOrigin());
-  return client_bounds;
-}
-#endif
-
-void BubbleDelegateView::HandleVisibilityChanged(Widget* widget,
-                                                 bool visible) {
-  if (widget != GetWidget())
-    return;
-
-  if (visible) {
-    if (border_widget_)
-      border_widget_->ShowInactive();
-    if (anchor_widget() && anchor_widget()->GetTopLevelWidget())
-      anchor_widget()->GetTopLevelWidget()->DisableInactiveRendering();
-  } else {
-    if (border_widget_)
-      border_widget_->Hide();
+void BubbleDelegateView::HandleVisibilityChanged(Widget* widget, bool visible) {
+  if (widget == GetWidget() && visible && anchor_widget() &&
+      anchor_widget()->GetTopLevelWidget()) {
+    anchor_widget()->GetTopLevelWidget()->DisableInactiveRendering();
   }
 }
 

@@ -135,10 +135,6 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   void set_background_color(SkColor color) { background_color_ = color; }
   SkColor background_color() const { return background_color_; }
 
-  // Get or set the client_bounds, a Windows-only temporary hack.
-  void set_client_bounds(const gfx::Rect& bounds) { client_bounds_ = bounds; }
-  const gfx::Rect& client_bounds() const { return client_bounds_; }
-
   // Sets a desired pixel distance between the arrow tip and the outside edge of
   // the neighboring border image. For example:    |----offset----|
   // '(' represents shadow around the '{' edge:    ((({           ^   })))
@@ -179,10 +175,6 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   Shadow shadow_;
   internal::BorderImages* images_;
   SkColor background_color_;
-
-  // The client/content bounds; must be clipped from the background on Windows.
-  // TODO(msw): Clean this up when Windows native controls are no longer needed.
-  gfx::Rect client_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleBorder);
 };

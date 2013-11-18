@@ -19,13 +19,10 @@ class SlideAnimation;
 
 namespace views {
 
-class BubbleBorderDelegate;
 class BubbleFrameView;
 
 // BubbleDelegateView creates frame and client views for bubble Widgets.
 // BubbleDelegateView itself is the client's contents view.
-//
-///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
                                         public gfx::AnimationDelegate,
                                         public WidgetObserver {
@@ -169,11 +166,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   // Update the bubble color from |theme|, unless it was explicitly set.
   void UpdateColorsFromTheme(const ui::NativeTheme* theme);
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // Get bounds for the Windows-only widget that hosts the bubble's contents.
-  gfx::Rect GetBubbleClientBounds() const;
-#endif
 
   // Handles widget visibility changes.
   void HandleVisibilityChanged(Widget* widget, bool visible);
