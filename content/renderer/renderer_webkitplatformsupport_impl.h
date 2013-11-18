@@ -96,7 +96,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual double audioHardwareSampleRate();
   virtual size_t audioHardwareBufferSize();
   virtual unsigned audioHardwareOutputChannels();
-  virtual blink::WebPlatformDatabaseObserver* databaseObserver();
+  virtual blink::WebDatabaseObserver* databaseObserver();
 
   // TODO(crogers): remove deprecated API as soon as WebKit calls new API.
   virtual blink::WebAudioDevice* createAudioDevice(

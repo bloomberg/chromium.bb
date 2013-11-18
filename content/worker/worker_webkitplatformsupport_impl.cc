@@ -216,7 +216,7 @@ blink::WebIDBFactory* WorkerWebKitPlatformSupportImpl::idbFactory() {
   return web_idb_factory_.get();
 }
 
-blink::WebPlatformDatabaseObserver*
+blink::WebDatabaseObserver*
 WorkerWebKitPlatformSupportImpl::databaseObserver() {
   return web_database_observer_impl_.get();
 }

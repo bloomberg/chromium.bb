@@ -7,14 +7,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "third_party/WebKit/public/platform/WebPlatformDatabaseObserver.h"
+#include "third_party/WebKit/public/platform/WebDatabaseObserver.h"
 #include "webkit/common/database/database_connections.h"
 
 namespace content {
 
-// TODO(kinuko): WebPlatformDatabaseObserver should be renamed to
-// WebDatabaseObserver once non-platform one is deprecated.
-class WebDatabaseObserverImpl : public blink::WebPlatformDatabaseObserver {
+class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
  public:
   explicit WebDatabaseObserverImpl(IPC::SyncMessageFilter* sender);
   virtual ~WebDatabaseObserverImpl();

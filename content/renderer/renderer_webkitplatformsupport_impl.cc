@@ -104,19 +104,19 @@
 #include "content/renderer/media/android/audio_decoder_android.h"
 #endif
 
+using blink::Platform;
 using blink::WebAudioDevice;
 using blink::WebBlobRegistry;
+using blink::WebDatabaseObserver;
 using blink::WebFileInfo;
 using blink::WebFileSystem;
 using blink::WebFrame;
 using blink::WebGamepads;
 using blink::WebIDBFactory;
-using blink::Platform;
 using blink::WebMIDIAccessor;
 using blink::WebMediaStreamCenter;
 using blink::WebMediaStreamCenterClient;
 using blink::WebMimeRegistry;
-using blink::WebPlatformDatabaseObserver;
 using blink::WebRTCPeerConnectionHandler;
 using blink::WebRTCPeerConnectionHandlerClient;
 using blink::WebStorageNamespace;
@@ -640,8 +640,7 @@ unsigned RendererWebKitPlatformSupportImpl::audioHardwareOutputChannels() {
   return thread->GetAudioHardwareConfig()->GetOutputChannels();
 }
 
-WebPlatformDatabaseObserver*
-RendererWebKitPlatformSupportImpl::databaseObserver() {
+WebDatabaseObserver* RendererWebKitPlatformSupportImpl::databaseObserver() {
   return web_database_observer_impl_.get();
 }
 

@@ -73,7 +73,7 @@ class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
       const blink::WebString& origin_identifier);
   virtual blink::WebBlobRegistry* blobRegistry();
   virtual blink::WebIDBFactory* idbFactory();
-  virtual blink::WebPlatformDatabaseObserver* databaseObserver();
+  virtual blink::WebDatabaseObserver* databaseObserver();
 
   // WebMimeRegistry methods:
   virtual blink::WebMimeRegistry::SupportsType supportsMIMEType(
