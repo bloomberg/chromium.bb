@@ -325,8 +325,8 @@ def CreateResourceInputFile(
 # |insert_before|.
 def CopyAndAugmentManifest(build_dir, output_dir, manifest_name,
                            inserted_string, insert_before):
-  with open(os.path.join(build_dir, manifest_name), 'r') as manifest_file:
-    manifest_lines = manifest_file.readlines()
+  with open(os.path.join(build_dir, manifest_name), 'r') as f:
+    manifest_lines = f.readlines()
 
   insert_line = -1
   insert_pos = -1
@@ -342,9 +342,8 @@ def CopyAndAugmentManifest(build_dir, output_dir, manifest_name,
   manifest_lines[insert_line] = (old[:insert_pos] + '\n' + inserted_string +
                                  '\n' + old[insert_pos:])
 
-  with open(os.path.join(output_dir, manifest_name),
-            'w') as modified_manifest_file :
-    modified_manifest_file.write(''.join(manifest_lines))
+  with open(os.path.join(output_dir, manifest_name), 'w') as f :
+    f.write(''.join(manifest_lines))
 
 
 def CopyIfChanged(src, target_dir):
@@ -448,23 +447,26 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
   # chrome.release.
   build_dlls = glob.glob(os.path.join(build_dir, '*.dll'))
   staged_dll_basenames = [os.path.basename(staged_dll) for staged_dll in \
-                              glob.glob(os.path.join(version_dir, '*.dll'))]
+                          glob.glob(os.path.join(version_dir, '*.dll'))]
   component_dll_filenames = []
   for component_dll in [dll for dll in build_dlls if \
-                            os.path.basename(dll) not in staged_dll_basenames]:
+                        os.path.basename(dll) not in staged_dll_basenames]:
     # remoting_*.dll's don't belong in the archive (it doesn't depend on them
     # in gyp). Trying to copy them causes a build race when creating the
     # installer archive in component mode. See: crbug.com/180996
     if os.path.basename(component_dll).startswith('remoting_'):
       continue
     # Copy them to the version_dir (for the version assembly to be able to refer
-    # to them below and thus for chrome.exe to be able to load them at runtime).
+    # to them below and make sure chrome.exe can find them at runtime).
     shutil.copy(component_dll, version_dir)
     # Also copy them directly to the Installer directory for the installed
     # setup.exe to be able to run (as it doesn't statically link in component
     # DLLs).
-    # TODO(gab): This makes the archive ~278MB instead of ~185MB; consider
-    # copying the DLLs over from the installer.
+    # This makes the archive ~1.5X bigger (Release ~185MB => ~278MB;
+    # Debug ~520MB => ~875MB) this is however simpler than any other installer
+    # change and doesn't make archive generation itself slower so it only
+    # matters when copying the archive to other test machines. This approach
+    # can be revised if this is a problem.
     shutil.copy(component_dll, installer_dir)
     component_dll_filenames.append(os.path.basename(component_dll))
 
@@ -478,14 +480,13 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
   shutil.copy(os.path.join(build_dir, 'setup.exe.manifest'), installer_dir)
 
   # Augment {version}.manifest to include all component DLLs as part of the
-  # assembly it constitutes which will allow dependents of this assembly to
+  # assembly it constitutes, which will allow dependents of this assembly to
   # find these DLLs.
   version_assembly_dll_additions = []
   for dll_filename in component_dll_filenames:
-    version_assembly_dll_additions.append(
-        "  <file name='{dll_filename}'/>".format(dll_filename=dll_filename))
+    version_assembly_dll_additions.append("  <file name='%s'/>" % dll_filename)
   CopyAndAugmentManifest(build_dir, version_dir,
-                         '{version}.manifest'.format(version=current_version),
+                         '%s.manifest' % current_version,
                          '\n'.join(version_assembly_dll_additions),
                          '</assembly>')
 
