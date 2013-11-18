@@ -183,6 +183,22 @@ protected:
     }
 };
 
+TEST_F(AnimatedWebPTests, uniqueGenerationIDs)
+{
+    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+
+    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
+    ASSERT_TRUE(data.get());
+    decoder->setData(data.get(), true);
+
+    ImageFrame* frame = decoder->frameBufferAtIndex(0);
+    uint32_t generationID0 = frame->getSkBitmap().getGenerationID();
+    frame = decoder->frameBufferAtIndex(1);
+    uint32_t generationID1 = frame->getSkBitmap().getGenerationID();
+
+    EXPECT_TRUE(generationID0 != generationID1);
+}
+
 TEST_F(AnimatedWebPTests, verifyAnimationParametersTransparentImage)
 {
     OwnPtr<WEBPImageDecoder> decoder = createDecoder();
