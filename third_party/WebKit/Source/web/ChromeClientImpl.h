@@ -46,6 +46,8 @@ class ColorChooserClient;
 class Element;
 class FileChooser;
 class GraphicsLayerFactory;
+class HTMLInputElement;
+class KeyboardEvent;
 class PopupContainer;
 class PopupMenuClient;
 class RenderBox;
@@ -184,6 +186,9 @@ public:
     virtual bool isPointerLocked();
 
     virtual void didAssociateFormControls(const Vector<RefPtr<WebCore::Element> >&) OVERRIDE;
+    virtual void didChangeValueInTextField(WebCore::HTMLInputElement&) OVERRIDE;
+    virtual void didEndEditingOnTextField(WebCore::HTMLInputElement&) OVERRIDE;
+    virtual void handleKeyboardEventOnTextField(WebCore::HTMLInputElement&, WebCore::KeyboardEvent&) OVERRIDE;
 
     virtual void didCancelCompositionOnSelectionChange() OVERRIDE;
     virtual void willSetInputMethodState() OVERRIDE;

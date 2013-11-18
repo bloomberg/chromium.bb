@@ -261,6 +261,9 @@ public:
     virtual bool isChromeClientImpl() const { return false; }
 
     virtual void didAssociateFormControls(const Vector<RefPtr<Element> >&) { };
+    virtual void didChangeValueInTextField(HTMLInputElement&) { }
+    virtual void didEndEditingOnTextField(HTMLInputElement&) { }
+    virtual void handleKeyboardEventOnTextField(HTMLInputElement&, KeyboardEvent&) { }
 
     // Input mehtod editor related functions.
     virtual void didCancelCompositionOnSelectionChange() { }

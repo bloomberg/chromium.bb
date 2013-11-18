@@ -304,10 +304,6 @@ public:
     virtual void redo() OVERRIDE { }
 
     virtual void handleKeyboardEvent(KeyboardEvent*) OVERRIDE { }
-
-    virtual void textFieldDidEndEditing(Element*) OVERRIDE { }
-    virtual void textDidChangeInTextField(Element*) OVERRIDE { }
-    virtual bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*) OVERRIDE { return false; }
 };
 
 class EmptyContextMenuClient : public ContextMenuClient {

@@ -34,8 +34,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SpellChecker.h"
 #include "core/editing/TextIterator.h"
 #include "core/events/BeforeTextInsertedEvent.h"
 #include "core/events/Event.h"
@@ -264,7 +264,7 @@ void HTMLTextAreaElement::defaultEventHandler(Event* event)
 void HTMLTextAreaElement::handleFocusEvent(Element*, FocusDirection)
 {
     if (Frame* frame = document().frame())
-        frame->editor().textAreaOrTextFieldDidBeginEditing(this);
+        frame->spellChecker().didBeginEditing(this);
 }
 
 void HTMLTextAreaElement::subtreeHasChanged()

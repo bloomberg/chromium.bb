@@ -39,7 +39,6 @@
 #include "core/dom/NodeRenderStyle.h"
 #include "core/events/TextEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
 #include "core/html/FormDataList.h"
@@ -47,6 +46,8 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/frame/Frame.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/rendering/RenderLayer.h"
@@ -153,9 +154,10 @@ void TextFieldInputType::handleKeydownEvent(KeyboardEvent* event)
 {
     if (!element().focused())
         return;
-    Frame* frame = element().document().frame();
-    if (!frame || !frame->editor().doTextFieldCommandFromEvent(&element(), event))
+    if (Chrome* chrome = this->chrome()) {
+        chrome->client().handleKeyboardEventOnTextField(element(), *event);
         return;
+    }
     event->setDefaultHandled();
 }
 
@@ -442,8 +444,8 @@ void TextFieldInputType::didSetValueByUserEdit(ValueChangeState state)
 {
     if (!element().focused())
         return;
-    if (Frame* frame = element().document().frame())
-        frame->editor().textDidChangeInTextField(&element());
+    if (Chrome* chrome = this->chrome())
+        chrome->client().didChangeValueInTextField(element());
 }
 
 void TextFieldInputType::spinButtonStepDown()

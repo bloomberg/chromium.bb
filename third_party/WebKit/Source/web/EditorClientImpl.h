@@ -60,9 +60,6 @@ public:
     virtual void undo() OVERRIDE;
     virtual void redo() OVERRIDE;
     virtual void handleKeyboardEvent(WebCore::KeyboardEvent*) OVERRIDE;
-    virtual void textFieldDidEndEditing(WebCore::Element*) OVERRIDE;
-    virtual void textDidChangeInTextField(WebCore::Element*) OVERRIDE;
-    virtual bool doTextFieldCommandFromEvent(WebCore::Element*, WebCore::KeyboardEvent*) OVERRIDE;
 
     const char* interpretKeyEvent(const WebCore::KeyboardEvent*);
 

@@ -51,6 +51,7 @@
 #include "WebFrameImpl.h"
 #include "WebInputElement.h"
 #include "WebInputEvent.h"
+#include "WebInputEventConversion.h"
 #include "WebKit.h"
 #include "WebNode.h"
 #include "WebPasswordGeneratorClient.h"
@@ -993,6 +994,32 @@ void ChromeClientImpl::willSetInputMethodState()
 {
     if (m_webView->client())
         m_webView->client()->resetInputMethod();
+}
+
+void ChromeClientImpl::handleKeyboardEventOnTextField(HTMLInputElement& inputElement, KeyboardEvent& event)
+{
+    if (!m_webView->autofillClient())
+        return;
+    m_webView->autofillClient()->textFieldDidReceiveKeyDown(WebInputElement(&inputElement), WebKeyboardEventBuilder(event));
+}
+
+void ChromeClientImpl::didChangeValueInTextField(HTMLInputElement& inputElement)
+{
+    if (!m_webView->autofillClient())
+        return;
+    m_webView->autofillClient()->textFieldDidChange(WebInputElement(&inputElement));
+}
+
+void ChromeClientImpl::didEndEditingOnTextField(HTMLInputElement& inputElement)
+{
+    if (m_webView->autofillClient())
+        m_webView->autofillClient()->textFieldDidEndEditing(WebInputElement(&inputElement));
+
+    // Notification that focus was lost. Be careful with this, it's also sent
+    // when the page is being closed.
+
+    // Hide any showing popup.
+    m_webView->hideAutofillPopup();
 }
 
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)

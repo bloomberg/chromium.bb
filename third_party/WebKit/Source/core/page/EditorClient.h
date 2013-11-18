@@ -56,10 +56,6 @@ public:
     virtual void redo() = 0;
 
     virtual void handleKeyboardEvent(KeyboardEvent*) = 0;
-
-    virtual void textFieldDidEndEditing(Element*) = 0;
-    virtual void textDidChangeInTextField(Element*) = 0;
-    virtual bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*) = 0;
 };
 
 }

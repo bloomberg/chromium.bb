@@ -41,8 +41,8 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SpellChecker.h"
 #include "core/events/BeforeTextInsertedEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
@@ -65,6 +65,9 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/frame/UseCounter.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/DateTimeChooser.h"
@@ -352,7 +355,7 @@ void HTMLInputElement::beginEditing()
         return;
 
     if (Frame* frame = document().frame())
-        frame->editor().textAreaOrTextFieldDidBeginEditing(this);
+        frame->spellChecker().didBeginEditing(this);
 }
 
 void HTMLInputElement::endEditing()
@@ -360,8 +363,11 @@ void HTMLInputElement::endEditing()
     if (!isTextField())
         return;
 
-    if (Frame* frame = document().frame())
-        frame->editor().textFieldDidEndEditing(this);
+    if (Frame* frame = document().frame()) {
+        frame->spellChecker().didEndEditingOnTextField(this);
+        if (Page* page = frame->page())
+            page->chrome().client().didEndEditingOnTextField(*this);
+    }
 }
 
 bool HTMLInputElement::shouldUseInputMethod()

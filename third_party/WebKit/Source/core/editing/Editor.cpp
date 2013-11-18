@@ -1201,27 +1201,6 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
     m_frame.selection().setTypingStyle(typingStyle);
 }
 
-void Editor::textAreaOrTextFieldDidBeginEditing(Element* e)
-{
-    spellChecker().didBeginEditing(e);
-}
-
-void Editor::textFieldDidEndEditing(Element* e)
-{
-    spellChecker().didEndEditingOnTextField(e);
-    client().textFieldDidEndEditing(e);
-}
-
-void Editor::textDidChangeInTextField(Element* e)
-{
-    client().textDidChangeInTextField(e);
-}
-
-bool Editor::doTextFieldCommandFromEvent(Element* e, KeyboardEvent* ke)
-{
-    return client().doTextFieldCommandFromEvent(e, ke);
-}
-
 bool Editor::findString(const String& target, bool forward, bool caseFlag, bool wrapFlag, bool startInSelection)
 {
     FindOptions options = (forward ? 0 : Backwards) | (caseFlag ? 0 : CaseInsensitive) | (wrapFlag ? WrapAround : 0) | (startInSelection ? StartInSelection : 0);

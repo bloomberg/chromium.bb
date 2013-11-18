@@ -27,10 +27,7 @@
 #include "config.h"
 #include "EditorClientImpl.h"
 
-#include "WebAutofillClient.h"
 #include "WebFrameImpl.h"
-#include "WebInputElement.h"
-#include "WebInputEventConversion.h"
 #include "WebPermissionClient.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
@@ -38,7 +35,6 @@
 #include "core/editing/UndoStep.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/Frame.h"
-#include "core/html/HTMLInputElement.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
@@ -421,36 +417,6 @@ void EditorClientImpl::handleKeyboardEvent(KeyboardEvent* evt)
     // Give the embedder a chance to handle the keyboard event.
     if ((m_webView->client() && m_webView->client()->handleCurrentKeyboardEvent()) || handleEditingKeyboardEvent(evt))
         evt->setDefaultHandled();
-}
-
-void EditorClientImpl::textFieldDidEndEditing(Element* element)
-{
-    if (m_webView->autofillClient() && element->hasTagName(HTMLNames::inputTag))
-        m_webView->autofillClient()->textFieldDidEndEditing(WebInputElement(toHTMLInputElement(element)));
-
-    // Notification that focus was lost. Be careful with this, it's also sent
-    // when the page is being closed.
-
-    // Hide any showing popup.
-    m_webView->hideAutofillPopup();
-}
-
-void EditorClientImpl::textDidChangeInTextField(Element* element)
-{
-    HTMLInputElement* inputElement = toHTMLInputElement(element);
-    if (m_webView->autofillClient())
-        m_webView->autofillClient()->textFieldDidChange(WebInputElement(inputElement));
-}
-
-bool EditorClientImpl::doTextFieldCommandFromEvent(Element* element, KeyboardEvent* event)
-{
-    if (m_webView->autofillClient() && element->hasTagName(HTMLNames::inputTag))
-        m_webView->autofillClient()->textFieldDidReceiveKeyDown(WebInputElement(toHTMLInputElement(element)), WebKeyboardEventBuilder(*event));
-
-    // The Mac code appears to use this method as a hook to implement special
-    // keyboard commands specific to Safari's auto-fill implementation. We
-    // just return false to allow the default action.
-    return false;
 }
 
 } // namesace WebKit
