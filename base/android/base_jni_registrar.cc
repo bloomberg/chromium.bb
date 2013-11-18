@@ -6,7 +6,6 @@
 
 #include "base/android/activity_status.h"
 #include "base/android/build_info.h"
-#include "base/android/content_uri_utils.h"
 #include "base/android/cpu_features.h"
 #include "base/android/important_file_writer_android.h"
 #include "base/android/java_handler_thread.h"
@@ -35,7 +34,6 @@ static RegistrationMethod kBaseRegisteredMethods[] = {
 #if defined(GOOGLE_TV)
   { "ContextTypes", base::android::RegisterContextTypes },
 #endif
-  { "ContentUriUtils", base::RegisterContentUriUtils },
   { "CpuFeatures", base::android::RegisterCpuFeatures },
   { "ImportantFileWriterAndroid",
     base::android::RegisterImportantFileWriterAndroid },

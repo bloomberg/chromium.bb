@@ -1280,12 +1280,6 @@ FilePath FilePath::NormalizePathSeparators() const {
 #endif
 }
 
-#if defined(OS_ANDROID)
-bool FilePath::IsContentUri() const {
-  return StartsWithASCII(path_, "content://", false /*case_sensitive*/);
-}
-#endif
-
 }  // namespace base
 
 void PrintTo(const base::FilePath& path, std::ostream* out) {
