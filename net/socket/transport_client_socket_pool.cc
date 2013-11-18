@@ -96,7 +96,7 @@ TransportConnectJob::TransportConnectJob(
       client_socket_factory_(client_socket_factory),
       resolver_(host_resolver),
       next_state_(STATE_NONE),
-      less_than_20ms_since_connect_(true) {
+      interval_between_connects_(CONNECT_INTERVAL_GT_20MS) {
 }
 
 TransportConnectJob::~TransportConnectJob() {
@@ -204,11 +204,16 @@ int TransportConnectJob::DoTransportConnect() {
     last_connect_time = g_last_connect_time.Get();
     *g_last_connect_time.Pointer() = now;
   }
-  if (last_connect_time.is_null() ||
-      (now - last_connect_time).InMilliseconds() < 20) {
-    less_than_20ms_since_connect_ = true;
+  if (last_connect_time.is_null()) {
+    interval_between_connects_ = CONNECT_INTERVAL_GT_20MS;
   } else {
-    less_than_20ms_since_connect_ = false;
+    int64 interval = (now - last_connect_time).InMilliseconds();
+    if (interval <= 10)
+      interval_between_connects_ = CONNECT_INTERVAL_LE_10MS;
+    else if (interval <= 20)
+      interval_between_connects_ = CONNECT_INTERVAL_LE_20MS;
+    else
+      interval_between_connects_ = CONNECT_INTERVAL_GT_20MS;
   }
 
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
@@ -247,20 +252,34 @@ int TransportConnectJob::DoTransportConnectComplete(int result) {
         base::TimeDelta::FromMinutes(10),
         100);
 
-    if (less_than_20ms_since_connect_) {
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          "Net.TCP_Connection_Latency_Interval_20ms_Minus",
-          connect_duration,
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMinutes(10),
-          100);
-    } else {
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          "Net.TCP_Connection_Latency_Interval_20ms_Plus",
-          connect_duration,
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMinutes(10),
-          100);
+    switch (interval_between_connects_) {
+      case CONNECT_INTERVAL_LE_10MS:
+        UMA_HISTOGRAM_CUSTOM_TIMES(
+            "Net.TCP_Connection_Latency_Interval_LessThanOrEqual_10ms",
+            connect_duration,
+            base::TimeDelta::FromMilliseconds(1),
+            base::TimeDelta::FromMinutes(10),
+            100);
+        break;
+      case CONNECT_INTERVAL_LE_20MS:
+        UMA_HISTOGRAM_CUSTOM_TIMES(
+            "Net.TCP_Connection_Latency_Interval_LessThanOrEqual_20ms",
+            connect_duration,
+            base::TimeDelta::FromMilliseconds(1),
+            base::TimeDelta::FromMinutes(10),
+            100);
+        break;
+      case CONNECT_INTERVAL_GT_20MS:
+        UMA_HISTOGRAM_CUSTOM_TIMES(
+            "Net.TCP_Connection_Latency_Interval_GreaterThan_20ms",
+            connect_duration,
+            base::TimeDelta::FromMilliseconds(1),
+            base::TimeDelta::FromMinutes(10),
+            100);
+        break;
+      default:
+        NOTREACHED();
+        break;
     }
 
     if (is_ipv4) {

@@ -30280,6 +30280,11 @@ other types of suffix sets.
   <affected-histogram name="Instant.SessionsStorageNamespace"/>
 </fieldtrial>
 
+<fieldtrial name="Interval" separator="_">
+  <group name="Interval" label="Interval between two consecutive connects is"/>
+  <affected-histogram name="Net.TCP_Connection_Latency"/>
+</fieldtrial>
+
 <fieldtrial name="Interval_20ms_plus_and_minus" separator="_">
   <group name="Interval_20ms_Minus"
       label="Interval between two consecutive connects is less than 20ms."/>
@@ -30287,6 +30292,14 @@ other types of suffix sets.
       label="Interval between two consecutive connects is greater than or
              equal to 20ms."/>
   <affected-histogram name="Net.TCP_Connection_Latency"/>
+</fieldtrial>
+
+<fieldtrial name="Interval_lt_gt_20ms" separator="_">
+  <group name="LessThanOrEqual_10ms" label="less than or equal to 10ms."/>
+  <group name="LessThanOrEqual_20ms"
+      label="more than 10ms, and less than or equal to 20ms."/>
+  <group name="GreaterThan_20ms" label="greater than 20ms."/>
+  <affected-histogram name="Net.TCP_Connection_Latency_Interval"/>
 </fieldtrial>
 
 <fieldtrial name="IPv6_Probe">
