@@ -428,14 +428,14 @@ const ExtensionSet* ExtensionService::delayed_installs() const {
   return &delayed_installs_;
 }
 
-scoped_ptr<const ExtensionSet>
+scoped_ptr<ExtensionSet>
     ExtensionService::GenerateInstalledExtensionsSet() const {
   scoped_ptr<ExtensionSet> installed_extensions(new ExtensionSet());
   installed_extensions->InsertAll(extensions_);
   installed_extensions->InsertAll(disabled_extensions_);
   installed_extensions->InsertAll(terminated_extensions_);
   installed_extensions->InsertAll(blacklisted_extensions_);
-  return installed_extensions.PassAs<const ExtensionSet>();
+  return installed_extensions.PassAs<ExtensionSet>();
 }
 
 extensions::PendingExtensionManager*

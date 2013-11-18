@@ -95,10 +95,10 @@ ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(Profile* profile)
                  chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
 }
 
@@ -106,25 +106,23 @@ void ManagedValueStoreCache::ExtensionTracker::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  // All the extensions installed on this Profile will be loaded on startup,
-  // triggering multiple NOTIFICATION_EXTENSION_LOADED.
-  // Wait until all of them are ready before registering the schemas of managed
-  // extensions, so that the policy loaders only have to reload at most once.
-  if (!ExtensionSystem::Get(profile_)->ready().is_signaled())
-    return;
-
-  scoped_ptr<ExtensionSet> added(new ExtensionSet);
+  scoped_ptr<ExtensionSet> added;
   const Extension* removed = NULL;
+
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSIONS_READY:
-      added->InsertAll(
-          *ExtensionSystem::Get(profile_)->extension_service()->extensions());
+    case chrome::NOTIFICATION_EXTENSIONS_READY: {
+      ExtensionService* service =
+          ExtensionSystem::Get(profile_)->extension_service();
+      added = service->GenerateInstalledExtensionsSet();
       break;
-    case chrome::NOTIFICATION_EXTENSION_LOADED:
-      added->Insert(content::Details<const Extension>(details).ptr());
+    }
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+      added.reset(new ExtensionSet);
+      added->Insert(
+          content::Details<InstalledExtensionInfo>(details)->extension);
       break;
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
-      removed = content::Details<UnloadedExtensionInfo>(details)->extension;
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
+      removed = content::Details<const Extension>(details).ptr();
       break;
     default:
       NOTREACHED();
@@ -136,6 +134,11 @@ void ManagedValueStoreCache::ExtensionTracker::Observe(
       schema_registry_->UnregisterComponent(policy::PolicyNamespace(
           policy::POLICY_DOMAIN_EXTENSIONS, removed->id()));
     }
+    return;
+  }
+
+  if (!added) {
+    NOTREACHED();
     return;
   }
 
