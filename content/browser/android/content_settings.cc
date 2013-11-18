@@ -26,7 +26,7 @@ ContentSettings::~ContentSettings() {
   ScopedJavaLocalRef<jobject> obj = content_settings_.get(env);
   if (obj.obj()) {
     Java_ContentSettings_onNativeContentSettingsDestroyed(env, obj.obj(),
-        reinterpret_cast<jint>(this));
+        reinterpret_cast<intptr_t>(this));
   }
 }
 
@@ -46,13 +46,13 @@ void ContentSettings::WebContentsDestroyed(WebContents* web_contents) {
   delete this;
 }
 
-static jint Init(JNIEnv* env, jobject obj, jint nativeContentViewCore) {
+static jlong Init(JNIEnv* env, jobject obj, jlong nativeContentViewCore) {
   WebContents* web_contents =
       reinterpret_cast<ContentViewCoreImpl*>(nativeContentViewCore)
           ->GetWebContents();
   ContentSettings* content_settings =
       new ContentSettings(env, obj, web_contents);
-  return reinterpret_cast<jint>(content_settings);
+  return reinterpret_cast<intptr_t>(content_settings);
 }
 
 }  // namespace content

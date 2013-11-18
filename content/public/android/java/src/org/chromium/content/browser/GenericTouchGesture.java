@@ -30,7 +30,7 @@ public class GenericTouchGesture {
 
     private TimeAnimator mTimeAnimator;
 
-    private int mNativePtr;
+    private long mNativePtr;
     private long mDownTime;
     private long mStartTime;
 
@@ -172,7 +172,7 @@ public class GenericTouchGesture {
     }
 
     @CalledByNative
-    void start(int nativePtr) {
+    void start(long nativePtr) {
         assert mNativePtr == 0;
         mNativePtr = nativePtr;
         mStartTime = SystemClock.uptimeMillis();
@@ -291,6 +291,6 @@ public class GenericTouchGesture {
     }
 
     private native float nativeGetDelta(
-            int nativeGenericTouchGestureAndroid, float scale);
-    private native void nativeSetHasFinished(int nativeGenericTouchGestureAndroid);
+            long nativeGenericTouchGestureAndroid, float scale);
+    private native void nativeSetHasFinished(long nativeGenericTouchGestureAndroid);
 }

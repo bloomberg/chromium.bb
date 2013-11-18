@@ -80,7 +80,7 @@ public class ContentVideoView
     private boolean mCanSeekForward;
 
     // Native pointer to C++ ContentVideoView object.
-    private int mNativeContentVideoView;
+    private long mNativeContentVideoView;
 
     // webkit should have prepared the media
     private int mCurrentState = STATE_IDLE;
@@ -201,7 +201,7 @@ public class ContentVideoView
         }
     };
 
-    private ContentVideoView(Context context, int nativeContentVideoView,
+    private ContentVideoView(Context context, long nativeContentVideoView,
             ContentVideoViewClient client) {
         super(context);
         mNativeContentVideoView = nativeContentVideoView;
@@ -574,7 +574,7 @@ public class ContentVideoView
 
     @CalledByNative
     private static ContentVideoView createContentVideoView(
-            Context context, int nativeContentVideoView, ContentVideoViewClient client) {
+            Context context, long nativeContentVideoView, ContentVideoViewClient client) {
         ThreadUtils.assertOnUiThread();
         // The context needs be Activity to create the ContentVideoView correctly.
         if (!(context instanceof Activity)) {
@@ -645,15 +645,16 @@ public class ContentVideoView
     }
 
     private static native ContentVideoView nativeGetSingletonJavaContentVideoView();
-    private native void nativeExitFullscreen(int nativeContentVideoView, boolean relaseMediaPlayer);
-    private native int nativeGetCurrentPosition(int nativeContentVideoView);
-    private native int nativeGetDurationInMilliSeconds(int nativeContentVideoView);
-    private native void nativeUpdateMediaMetadata(int nativeContentVideoView);
-    private native int nativeGetVideoWidth(int nativeContentVideoView);
-    private native int nativeGetVideoHeight(int nativeContentVideoView);
-    private native boolean nativeIsPlaying(int nativeContentVideoView);
-    private native void nativePause(int nativeContentVideoView);
-    private native void nativePlay(int nativeContentVideoView);
-    private native void nativeSeekTo(int nativeContentVideoView, int msec);
-    private native void nativeSetSurface(int nativeContentVideoView, Surface surface);
+    private native void nativeExitFullscreen(long nativeContentVideoView,
+            boolean relaseMediaPlayer);
+    private native int nativeGetCurrentPosition(long nativeContentVideoView);
+    private native int nativeGetDurationInMilliSeconds(long nativeContentVideoView);
+    private native void nativeUpdateMediaMetadata(long nativeContentVideoView);
+    private native int nativeGetVideoWidth(long nativeContentVideoView);
+    private native int nativeGetVideoHeight(long nativeContentVideoView);
+    private native boolean nativeIsPlaying(long nativeContentVideoView);
+    private native void nativePause(long nativeContentVideoView);
+    private native void nativePlay(long nativeContentVideoView);
+    private native void nativeSeekTo(long nativeContentVideoView, int msec);
+    private native void nativeSetSurface(long nativeContentVideoView, Surface surface);
 }

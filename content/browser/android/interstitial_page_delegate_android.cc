@@ -84,11 +84,11 @@ bool InterstitialPageDelegateAndroid
   return RegisterNativesImpl(env);
 }
 
-static jint Init(JNIEnv* env, jobject obj, jstring html_content) {
+static jlong Init(JNIEnv* env, jobject obj, jstring html_content) {
   InterstitialPageDelegateAndroid* delegate =
       new InterstitialPageDelegateAndroid(
           env, obj, base::android::ConvertJavaStringToUTF8(env, html_content));
-  return reinterpret_cast<jint>(delegate);
+  return reinterpret_cast<intptr_t>(delegate);
 }
 
 }  // namespace content

@@ -48,7 +48,7 @@ ContentVideoView::ContentVideoView(
   JNIEnv *env = AttachCurrentThread();
   j_content_video_view_ = JavaObjectWeakGlobalRef(env,
       Java_ContentVideoView_createContentVideoView(env, context.obj(),
-          reinterpret_cast<int>(this), client.obj()).obj());
+          reinterpret_cast<intptr_t>(this), client.obj()).obj());
   g_content_video_view = this;
 }
 

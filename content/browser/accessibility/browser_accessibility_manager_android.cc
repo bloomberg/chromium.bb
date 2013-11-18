@@ -89,7 +89,8 @@ void BrowserAccessibilityManagerAndroid::SetContentViewCore(
   JNIEnv* env = AttachCurrentThread();
   java_ref_ = JavaObjectWeakGlobalRef(
       env, Java_BrowserAccessibilityManager_create(
-          env, reinterpret_cast<jint>(this), content_view_core.obj()).obj());
+          env, reinterpret_cast<intptr_t>(this),
+          content_view_core.obj()).obj());
 }
 
 void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(

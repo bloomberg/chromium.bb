@@ -41,7 +41,7 @@ class DeviceMotionAndOrientation implements SensorEventListener {
 
     // Non-zero if and only if we're listening for events.
     // To avoid race conditions on the C++ side, access must be synchronized.
-    private int mNativePtr;
+    private long mNativePtr;
 
     // The lock to access the mNativePtr.
     private final Object mNativePtrLock = new Object();
@@ -88,7 +88,7 @@ class DeviceMotionAndOrientation implements SensorEventListener {
      * @return True on success.
      */
     @CalledByNative
-    public boolean start(int nativePtr, int eventType, int rateInMilliseconds) {
+    public boolean start(long nativePtr, int eventType, int rateInMilliseconds) {
         boolean success = false;
         synchronized (mNativePtrLock) {
             switch (eventType) {
@@ -431,28 +431,28 @@ class DeviceMotionAndOrientation implements SensorEventListener {
      * Orientation of the device with respect to its reference frame.
      */
     private native void nativeGotOrientation(
-            int nativeDataFetcherImplAndroid,
+            long nativeDataFetcherImplAndroid,
             double alpha, double beta, double gamma);
 
     /**
      * Linear acceleration without gravity of the device with respect to its body frame.
      */
     private native void nativeGotAcceleration(
-            int nativeDataFetcherImplAndroid,
+            long nativeDataFetcherImplAndroid,
             double x, double y, double z);
 
     /**
      * Acceleration including gravity of the device with respect to its body frame.
      */
     private native void nativeGotAccelerationIncludingGravity(
-            int nativeDataFetcherImplAndroid,
+            long nativeDataFetcherImplAndroid,
             double x, double y, double z);
 
     /**
      * Rotation rate of the device with respect to its body frame.
      */
     private native void nativeGotRotationRate(
-            int nativeDataFetcherImplAndroid,
+            long nativeDataFetcherImplAndroid,
             double alpha, double beta, double gamma);
 
     /**

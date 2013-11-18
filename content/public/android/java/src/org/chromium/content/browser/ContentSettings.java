@@ -19,7 +19,7 @@ public class ContentSettings {
 
     // The native side of this object. Ownership is retained native-side by the WebContents
     // instance that backs the associated ContentViewCore.
-    private int mNativeContentSettings = 0;
+    private long mNativeContentSettings = 0;
 
     private ContentViewCore mContentViewCore;
 
@@ -27,7 +27,7 @@ public class ContentSettings {
      * Package constructor to prevent clients from creating a new settings
      * instance. Must be called on the UI thread.
      */
-    ContentSettings(ContentViewCore contentViewCore, int nativeContentView) {
+    ContentSettings(ContentViewCore contentViewCore, long nativeContentView) {
         ThreadUtils.assertOnUiThread();
         mContentViewCore = contentViewCore;
         mNativeContentSettings = nativeInit(nativeContentView);
@@ -56,7 +56,7 @@ public class ContentSettings {
     }
 
     // Initialize the ContentSettings native side.
-    private native int nativeInit(int contentViewPtr);
+    private native long nativeInit(long contentViewPtr);
 
-    private native boolean nativeGetJavaScriptEnabled(int nativeContentSettings);
+    private native boolean nativeGetJavaScriptEnabled(long nativeContentSettings);
 }

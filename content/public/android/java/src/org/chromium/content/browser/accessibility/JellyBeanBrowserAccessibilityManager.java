@@ -22,7 +22,7 @@ import java.util.List;
 public class JellyBeanBrowserAccessibilityManager extends BrowserAccessibilityManager {
     private AccessibilityNodeProvider mAccessibilityNodeProvider;
 
-    JellyBeanBrowserAccessibilityManager(int nativeBrowserAccessibilityManagerAndroid,
+    JellyBeanBrowserAccessibilityManager(long nativeBrowserAccessibilityManagerAndroid,
             ContentViewCore contentViewCore) {
         super(nativeBrowserAccessibilityManagerAndroid, contentViewCore);
 

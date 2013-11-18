@@ -39,7 +39,7 @@ public class BrowserAccessibilityManager {
     private ContentViewCore mContentViewCore;
     private AccessibilityManager mAccessibilityManager;
     private RenderCoordinates mRenderCoordinates;
-    private int mNativeObj;
+    private long mNativeObj;
     private int mAccessibilityFocusId;
     private int mCurrentHoverId;
     private final int[] mTempLocation = new int[2];
@@ -60,7 +60,7 @@ public class BrowserAccessibilityManager {
      * @param contentViewCore The content view that this object provides accessibility for.
      */
     @CalledByNative
-    private static BrowserAccessibilityManager create(int nativeBrowserAccessibilityManagerAndroid,
+    private static BrowserAccessibilityManager create(long nativeBrowserAccessibilityManagerAndroid,
             ContentViewCore contentViewCore) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             return new JellyBeanBrowserAccessibilityManager(
@@ -71,7 +71,7 @@ public class BrowserAccessibilityManager {
         }
     }
 
-    protected BrowserAccessibilityManager(int nativeBrowserAccessibilityManagerAndroid,
+    protected BrowserAccessibilityManager(long nativeBrowserAccessibilityManagerAndroid,
             ContentViewCore contentViewCore) {
         mNativeObj = nativeBrowserAccessibilityManagerAndroid;
         mContentViewCore = contentViewCore;
@@ -444,14 +444,14 @@ public class BrowserAccessibilityManager {
         event.getText().add(text);
     }
 
-    private native int nativeGetRootId(int nativeBrowserAccessibilityManagerAndroid);
-    private native int nativeHitTest(int nativeBrowserAccessibilityManagerAndroid, int x, int y);
+    private native int nativeGetRootId(long nativeBrowserAccessibilityManagerAndroid);
+    private native int nativeHitTest(long nativeBrowserAccessibilityManagerAndroid, int x, int y);
     private native boolean nativePopulateAccessibilityNodeInfo(
-        int nativeBrowserAccessibilityManagerAndroid, AccessibilityNodeInfo info, int id);
+        long nativeBrowserAccessibilityManagerAndroid, AccessibilityNodeInfo info, int id);
     private native boolean nativePopulateAccessibilityEvent(
-        int nativeBrowserAccessibilityManagerAndroid, AccessibilityEvent event, int id,
+        long nativeBrowserAccessibilityManagerAndroid, AccessibilityEvent event, int id,
         int eventType);
-    private native void nativeClick(int nativeBrowserAccessibilityManagerAndroid, int id);
-    private native void nativeFocus(int nativeBrowserAccessibilityManagerAndroid, int id);
-    private native void nativeBlur(int nativeBrowserAccessibilityManagerAndroid);
+    private native void nativeClick(long nativeBrowserAccessibilityManagerAndroid, int id);
+    private native void nativeFocus(long nativeBrowserAccessibilityManagerAndroid, int id);
+    private native void nativeBlur(long nativeBrowserAccessibilityManagerAndroid);
 }

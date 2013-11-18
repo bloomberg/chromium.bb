@@ -199,7 +199,7 @@ ContentViewCoreImpl::~ContentViewCoreImpl() {
   java_ref_.reset();
   if (!j_obj.is_null()) {
     Java_ContentViewCore_onNativeContentViewCoreDestroyed(
-        env, j_obj.obj(), reinterpret_cast<jint>(this));
+        env, j_obj.obj(), reinterpret_cast<intptr_t>(this));
   }
   // Make sure nobody calls back into this object while we are tearing things
   // down.
@@ -1649,17 +1649,17 @@ void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
 }
 
 // This is called for each ContentView.
-jint Init(JNIEnv* env, jobject obj,
-          jboolean hardware_accelerated,
-          jint native_web_contents,
-          jlong view_android,
-          jlong window_android) {
+jlong Init(JNIEnv* env, jobject obj,
+           jboolean hardware_accelerated,
+           jlong native_web_contents,
+           jlong view_android,
+           jlong window_android) {
   ContentViewCoreImpl* view = new ContentViewCoreImpl(
       env, obj, hardware_accelerated,
       reinterpret_cast<WebContents*>(native_web_contents),
       reinterpret_cast<ui::ViewAndroid*>(view_android),
       reinterpret_cast<ui::WindowAndroid*>(window_android));
-  return reinterpret_cast<jint>(view);
+  return reinterpret_cast<intptr_t>(view);
 }
 
 bool RegisterContentViewCore(JNIEnv* env) {

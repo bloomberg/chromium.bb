@@ -464,7 +464,7 @@ public class ChildProcessLauncher {
             int[] fileIds,
             int[] fileFds,
             boolean[] fileAutoClose,
-            final int clientContext) {
+            final long clientContext) {
         assert fileIds.length == fileFds.length && fileFds.length == fileAutoClose.length;
         FileDescriptorInfo[] filesToBeMapped = new FileDescriptorInfo[fileFds.length];
         for (int i = 0; i < fileFds.length; i++) {
@@ -587,7 +587,7 @@ public class ChildProcessLauncher {
         }
     }
 
-    private static native void nativeOnChildProcessStarted(int clientContext, int pid);
+    private static native void nativeOnChildProcessStarted(long clientContext, int pid);
     private static native Surface nativeGetViewSurface(int surfaceId);
     private static native void nativeEstablishSurfacePeer(
             int pid, Surface surface, int primaryID, int secondaryID);

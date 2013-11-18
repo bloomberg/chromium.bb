@@ -55,7 +55,7 @@ void SpeechRecognizerImplAndroid::StartRecognitionOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JNIEnv* env = AttachCurrentThread();
   j_recognition_.Reset(Java_SpeechRecognition_createSpeechRecognition(env,
-      GetApplicationContext(), reinterpret_cast<jint>(this)));
+      GetApplicationContext(), reinterpret_cast<intptr_t>(this)));
   Java_SpeechRecognition_startRecognition(env, j_recognition_.obj(),
       ConvertUTF8ToJavaString(env, language).obj(), continuous,
       interim_results);

@@ -36,12 +36,12 @@ WebContentsObserverAndroid::WebContentsObserverAndroid(
 WebContentsObserverAndroid::~WebContentsObserverAndroid() {
 }
 
-jint Init(JNIEnv* env, jobject obj, jint native_content_view_core) {
+jlong Init(JNIEnv* env, jobject obj, jlong native_content_view_core) {
   ContentViewCore* content_view_core =
       reinterpret_cast<ContentViewCore*>(native_content_view_core);
   WebContentsObserverAndroid* native_observer = new WebContentsObserverAndroid(
       env, obj, content_view_core->GetWebContents());
-  return reinterpret_cast<jint>(native_observer);
+  return reinterpret_cast<intptr_t>(native_observer);
 }
 
 void WebContentsObserverAndroid::Destroy(JNIEnv* env, jobject obj) {

@@ -40,10 +40,10 @@ ContentViewRenderView::~ContentViewRenderView() {
 }
 
 // static
-static jint Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, jobject obj) {
   ContentViewRenderView* content_view_render_view =
       new ContentViewRenderView(env, obj);
-  return reinterpret_cast<jint>(content_view_render_view);
+  return reinterpret_cast<intptr_t>(content_view_render_view);
 }
 
 void ContentViewRenderView::Destroy(JNIEnv* env, jobject obj) {

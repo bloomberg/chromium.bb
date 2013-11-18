@@ -55,7 +55,7 @@ public class SpeechRecognition {
     private SpeechRecognizer mRecognizer;
 
     // Native pointer to C++ SpeechRecognizerImplAndroid.
-    private int mNativeSpeechRecognizerImplAndroid;
+    private long mNativeSpeechRecognizerImplAndroid;
 
     // Remember if we are using continuous recognition.
     private boolean mContinuous;
@@ -204,7 +204,7 @@ public class SpeechRecognition {
         return false;
     }
 
-    private SpeechRecognition(final Context context, int nativeSpeechRecognizerImplAndroid) {
+    private SpeechRecognition(final Context context, long nativeSpeechRecognizerImplAndroid) {
         mContext = context;
         mContinuous = false;
         mNativeSpeechRecognizerImplAndroid = nativeSpeechRecognizerImplAndroid;
@@ -247,7 +247,7 @@ public class SpeechRecognition {
 
     @CalledByNative
     private static SpeechRecognition createSpeechRecognition(
-            Context context, int nativeSpeechRecognizerImplAndroid) {
+            Context context, long nativeSpeechRecognizerImplAndroid) {
         return new SpeechRecognition(context, nativeSpeechRecognizerImplAndroid);
     }
 
@@ -282,14 +282,14 @@ public class SpeechRecognition {
     }
 
     // Native JNI calls to content/browser/speech/speech_recognizer_impl_android.cc
-    private native void nativeOnAudioStart(int nativeSpeechRecognizerImplAndroid);
-    private native void nativeOnSoundStart(int nativeSpeechRecognizerImplAndroid);
-    private native void nativeOnSoundEnd(int nativeSpeechRecognizerImplAndroid);
-    private native void nativeOnAudioEnd(int nativeSpeechRecognizerImplAndroid);
-    private native void nativeOnRecognitionResults(int nativeSpeechRecognizerImplAndroid,
+    private native void nativeOnAudioStart(long nativeSpeechRecognizerImplAndroid);
+    private native void nativeOnSoundStart(long nativeSpeechRecognizerImplAndroid);
+    private native void nativeOnSoundEnd(long nativeSpeechRecognizerImplAndroid);
+    private native void nativeOnAudioEnd(long nativeSpeechRecognizerImplAndroid);
+    private native void nativeOnRecognitionResults(long nativeSpeechRecognizerImplAndroid,
                                                    String[] results,
                                                    float[] scores,
                                                    boolean provisional);
-    private native void nativeOnRecognitionError(int nativeSpeechRecognizerImplAndroid, int error);
-    private native void nativeOnRecognitionEnd(int nativeSpeechRecognizerImplAndroid);
+    private native void nativeOnRecognitionError(long nativeSpeechRecognizerImplAndroid, int error);
+    private native void nativeOnRecognitionEnd(long nativeSpeechRecognizerImplAndroid);
 }

@@ -70,7 +70,7 @@ static void SetSurfacePeer(
 // the ChildProcess could not be created.
 static void OnChildProcessStarted(JNIEnv*,
                                   jclass,
-                                  jint client_context,
+                                  jlong client_context,
                                   jint handle) {
   StartChildProcessCallback* callback =
       reinterpret_cast<StartChildProcessCallback*>(client_context);
@@ -122,7 +122,7 @@ void StartChildProcess(
       j_file_ids.obj(),
       j_file_fds.obj(),
       j_file_auto_close.obj(),
-      reinterpret_cast<jint>(new StartChildProcessCallback(callback)));
+      reinterpret_cast<intptr_t>(new StartChildProcessCallback(callback)));
 }
 
 void StopChildProcess(base::ProcessHandle handle) {

@@ -41,7 +41,8 @@
     'public/android/java/src/org/chromium/content/common/TraceEvent.java',
    ],
   'variables': {
-    'jni_gen_package': 'content'
+    'jni_gen_package': 'content',
+    'jni_generator_ptr_type': 'long',
   },
   'includes': [ '../build/jni_generator.gypi' ],
 }

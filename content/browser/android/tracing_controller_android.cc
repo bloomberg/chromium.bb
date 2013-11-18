@@ -16,9 +16,9 @@
 
 namespace content {
 
-static jint Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, jobject obj) {
   TracingControllerAndroid* profiler = new TracingControllerAndroid(env, obj);
-  return reinterpret_cast<jint>(profiler);
+  return reinterpret_cast<intptr_t>(profiler);
 }
 
 class TracingControllerAndroid::Subscriber

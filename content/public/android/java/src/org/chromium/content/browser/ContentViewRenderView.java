@@ -29,7 +29,7 @@ public class ContentViewRenderView extends FrameLayout {
     private static final int MAX_SWAP_BUFFER_COUNT = 2;
 
     // The native side of this object.
-    private int mNativeContentViewRenderView;
+    private long mNativeContentViewRenderView;
     private final SurfaceHolder.Callback mSurfaceCallback;
 
     private SurfaceView mSurfaceView;
@@ -290,14 +290,14 @@ public class ContentViewRenderView extends FrameLayout {
         }
     }
 
-    private native int nativeInit();
-    private native void nativeDestroy(int nativeContentViewRenderView);
-    private native void nativeSetCurrentContentView(int nativeContentViewRenderView,
-            int nativeContentView);
-    private native void nativeSurfaceCreated(int nativeContentViewRenderView, Surface surface);
-    private native void nativeSurfaceDestroyed(int nativeContentViewRenderView);
-    private native void nativeSurfaceSetSize(int nativeContentViewRenderView,
+    private native long nativeInit();
+    private native void nativeDestroy(long nativeContentViewRenderView);
+    private native void nativeSetCurrentContentView(long nativeContentViewRenderView,
+            long nativeContentView);
+    private native void nativeSurfaceCreated(long nativeContentViewRenderView, Surface surface);
+    private native void nativeSurfaceDestroyed(long nativeContentViewRenderView);
+    private native void nativeSurfaceSetSize(long nativeContentViewRenderView,
             int width, int height);
-    private native boolean nativeComposite(int nativeContentViewRenderView);
-    private native boolean nativeCompositeToBitmap(int nativeContentViewRenderView, Bitmap bitmap);
+    private native boolean nativeComposite(long nativeContentViewRenderView);
+    private native boolean nativeCompositeToBitmap(long nativeContentViewRenderView, Bitmap bitmap);
 }

@@ -128,7 +128,7 @@ bool DataFetcherImplAndroid::Start(DeviceData::Type event_type) {
   DCHECK(!device_orientation_.is_null());
   return Java_DeviceMotionAndOrientation_start(
       AttachCurrentThread(), device_orientation_.obj(),
-      reinterpret_cast<jint>(this), static_cast<jint>(event_type),
+      reinterpret_cast<intptr_t>(this), static_cast<jint>(event_type),
       kInertialSensorIntervalMillis);
 }
 

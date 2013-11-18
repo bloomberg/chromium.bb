@@ -16,11 +16,11 @@ import android.content.Context;
 @JNINamespace("content")
 class DateTimeChooserAndroid {
 
-    private final int mNativeDateTimeChooserAndroid;
+    private final long mNativeDateTimeChooserAndroid;
     private final InputDialogContainer mInputDialogContainer;
 
     private DateTimeChooserAndroid(Context context,
-            int nativeDateTimeChooserAndroid) {
+            long nativeDateTimeChooserAndroid) {
         mNativeDateTimeChooserAndroid = nativeDateTimeChooserAndroid;
         mInputDialogContainer = new InputDialogContainer(context,
                 new InputDialogContainer.InputActionDelegate() {
@@ -53,7 +53,7 @@ class DateTimeChooserAndroid {
     @CalledByNative
     private static DateTimeChooserAndroid createDateTimeChooser(
             ContentViewCore contentViewCore,
-            int nativeDateTimeChooserAndroid, int dialogType,
+            long nativeDateTimeChooserAndroid, int dialogType,
             int year, int month, int day,
             int hour, int minute, int second, int milli, int week,
             double min, double max, double step) {
@@ -78,9 +78,9 @@ class DateTimeChooserAndroid {
     }
 
     private native void nativeReplaceDateTime(
-            int nativeDateTimeChooserAndroid, int dialogType,
+            long nativeDateTimeChooserAndroid, int dialogType,
             int year, int month, int day, int hour, int minute,
             int second, int milli, int week);
 
-    private native void nativeCancelDialog(int nativeDateTimeChooserAndroid);
+    private native void nativeCancelDialog(long nativeDateTimeChooserAndroid);
 }
