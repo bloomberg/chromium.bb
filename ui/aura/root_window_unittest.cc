@@ -1181,8 +1181,15 @@ class ValidRootDuringDestructionWindowObserver : public aura::WindowObserver {
 
 }  // namespace
 
+#if defined(USE_OZONE)
+// Creating multiple RootWindowHostOzone instances is broken.
+#define MAYBE_ValidRootDuringDestruction DISABLED_ValidRootDuringDestruction
+#else
+#define MAYBE_ValidRootDuringDestruction ValidRootDuringDestruction
+#endif
+
 // Verifies GetRootWindow() from ~Window returns a valid root.
-TEST_F(RootWindowTest, ValidRootDuringDestruction) {
+TEST_F(RootWindowTest, MAYBE_ValidRootDuringDestruction) {
   bool got_destroying = false;
   bool has_valid_root = false;
   ValidRootDuringDestructionWindowObserver observer(&got_destroying,
@@ -1294,9 +1301,16 @@ class DeleteRootFromHeldMouseEventDelegate : public test::TestWindowDelegate {
 
 }  // namespace
 
+#if defined(USE_OZONE)
+// Creating multiple RootWindowHostOzone instances is broken.
+#define MAYBE_DeleteRootFromHeldMouseEvent DISABLED_DeleteRootFromHeldMouseEvent
+#else
+#define MAYBE_DeleteRootFromHeldMouseEvent DeleteRootFromHeldMouseEvent
+#endif
+
 // Verifies if a RootWindow is deleted from dispatching a held mouse event we
 // don't crash.
-TEST_F(RootWindowTest, DeleteRootFromHeldMouseEvent) {
+TEST_F(RootWindowTest, MAYBE_DeleteRootFromHeldMouseEvent) {
   // Should be deleted by |delegate|.
   RootWindow* r2 =
       new RootWindow(RootWindow::CreateParams(gfx::Rect(0, 0, 100, 100)));
