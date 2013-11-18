@@ -95,6 +95,7 @@ class ChromeTests(object):
       "courgette_unittests": self.TestCourgette,
       "crypto": self.TestCrypto,        "crypto_unittests": self.TestCrypto,
       "device": self.TestDevice,        "device_unittests": self.TestDevice,
+      "events": self.TestEvents,        "events_unittests": self.TestEvents,
       "gpu": self.TestGPU,              "gpu_unittests": self.TestGPU,
       "ipc": self.TestIpc,              "ipc_tests": self.TestIpc,
       "jingle": self.TestJingle,        "jingle_unittests": self.TestJingle,
@@ -294,6 +295,9 @@ class ChromeTests(object):
 
   def TestDevice(self):
     return self.SimpleTest("device", "device_unittests")
+
+  def TestEvents(self):
+    return self.SimpleTest("events", "events_unittests")
 
   def TestGPU(self):
     return self.SimpleTest("gpu", "gpu_unittests")
