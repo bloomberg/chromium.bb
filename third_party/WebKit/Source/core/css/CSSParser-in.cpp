@@ -11015,13 +11015,14 @@ StyleRuleBase* CSSParser::createImportRule(const CSSParserString& url, MediaQuer
 
 StyleRuleBase* CSSParser::createMediaRule(MediaQuerySet* media, RuleList* rules)
 {
+    ASSERT(media);
     m_allowImportRules = m_allowNamespaceDeclarations = false;
     RefPtr<StyleRuleMedia> rule;
-    if (rules)
-        rule = StyleRuleMedia::create(media ? media : MediaQuerySet::create(), *rules);
-    else {
+    if (rules) {
+        rule = StyleRuleMedia::create(media, *rules);
+    } else {
         RuleList emptyRules;
-        rule = StyleRuleMedia::create(media ? media : MediaQuerySet::create(), emptyRules);
+        rule = StyleRuleMedia::create(media, emptyRules);
     }
     StyleRuleMedia* result = rule.get();
     m_parsedRules.append(rule.release());
