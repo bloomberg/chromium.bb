@@ -19,6 +19,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/views/notification_view.h"
@@ -129,11 +130,14 @@ void MessagePopupCollection::UpdateWidgets() {
     if (FindToast((*iter)->id()))
       continue;
 
+    bool expanded = true;
+    if (IsExperimentalNotificationUIEnabled())
+      expanded = (*iter)->is_expanded();
     MessageView* view =
         NotificationView::Create(*(*iter),
                                  message_center_,
                                  tray_,
-                                 true,  // Create expanded.
+                                 expanded,
                                  true); // Create top-level notification.
     int view_height = ToastContentsView::GetToastSizeForView(view).height();
     int height_available = top_down ? work_area_.bottom() - base : base;
@@ -412,11 +416,14 @@ void MessagePopupCollection::OnNotificationUpdated(
     if ((*iter)->id() != notification_id)
       continue;
 
+    bool expanded = true;
+    if (IsExperimentalNotificationUIEnabled())
+      expanded = (*iter)->is_expanded();
     MessageView* view =
         NotificationView::Create(*(*iter),
                                  message_center_,
                                  tray_,
-                                 true,  // Create expanded.
+                                 expanded,
                                  true); // Create top-level notification.
     (*toast_iter)->SetContents(view);
     updated = true;

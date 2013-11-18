@@ -21,6 +21,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_types.h"
+#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/views/message_center_button_bar.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_view.h"
@@ -925,11 +926,14 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
        ++iter, ++index) {
     DCHECK((*iter)->id() == message_views_[index]->notification_id());
     if ((*iter)->id() == id) {
+      bool expanded = true;
+      if (IsExperimentalNotificationUIEnabled())
+        expanded = (*iter)->is_expanded();
       MessageView* view =
           NotificationView::Create(*(*iter),
                                    message_center_,
                                    tray_,
-                                   true,   // Create expanded.
+                                   expanded,
                                    false); // Not creating a top-level
                                            // notification.
       view->set_scroller(scroller_);
@@ -985,11 +989,14 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
                                           int index) {
   // NotificationViews are expanded by default here until
   // http://crbug.com/217902 is fixed. TODO(dharcourt): Fix.
+  bool expanded = true;
+  if (IsExperimentalNotificationUIEnabled())
+    expanded = notification.is_expanded();
   MessageView* view =
       NotificationView::Create(notification,
                                message_center_,
                                tray_,
-                               true,    // Create expanded.
+                               expanded,
                                false);  // Not creating a top-level
                                         // notification.
   view->set_scroller(scroller_);

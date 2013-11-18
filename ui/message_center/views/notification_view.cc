@@ -491,7 +491,9 @@ NotificationView::NotificationView(const Notification& notification,
         gfx::TruncateString(notification.title(), kTitleCharacterLimit),
         font_list);
     title_view_->SetLineHeight(kTitleLineHeight);
-    title_view_->SetLineLimit(message_center::kTitleLineLimit);
+    title_view_->SetLineLimit(IsExperimentalNotificationUIEnabled() ?
+                              message_center::kExperimentalTitleLineLimit :
+                              message_center::kTitleLineLimit);
     title_view_->SetColors(message_center::kRegularTextColor,
                            kRegularTextBackgroundColor);
     title_view_->set_border(MakeTextBorder(padding, 3, 0));
@@ -640,7 +642,6 @@ int NotificationView::GetHeightForWidth(int width) {
   int content_width = width - GetInsets().width();
   int top_height = top_view_->GetHeightForWidth(content_width);
   int bottom_height = bottom_view_->GetHeightForWidth(content_width);
-  int content_height = std::max(top_height, kIconSize) + bottom_height;
 
   // <http://crbug.com/230448> Fix: Adjust the height when the message_view's
   // line limit would be different for the specified width than it currently is.
@@ -649,10 +650,12 @@ int NotificationView::GetHeightForWidth(int width) {
     int used_limit = message_view_->GetLineLimit();
     int correct_limit = GetMessageLineLimit(width);
     if (used_limit != correct_limit) {
-      content_height -= GetMessageHeight(content_width, used_limit);
-      content_height += GetMessageHeight(content_width, correct_limit);
+      top_height -= GetMessageHeight(content_width, used_limit);
+      top_height += GetMessageHeight(content_width, correct_limit);
     }
   }
+
+  int content_height = std::max(top_height, kIconSize) + bottom_height;
 
   // Adjust the height to make sure there is at least 16px of space below the
   // icon if there is any space there (<http://crbug.com/232966>).
@@ -797,14 +800,17 @@ int NotificationView::GetMessageLineLimit(int width) {
   if (is_expanded_ && !image_view_)
     return message_center::kMessageExpandedLineLimit;
 
-  // If there's a title ensure title + message lines <= collapsed line limit.
-  if (title_view_) {
-    int title_lines = title_view_->GetLinesForWidthAndLimit(width, -1);
-    return std::max(message_center::kMessageCollapsedLineLimit - title_lines,
-                    0);
+  int message_line_limit = message_center::kMessageCollapsedLineLimit;
+
+  // Subtract any lines taken by the context message.
+  if (context_message_view_) {
+    message_line_limit -= context_message_view_->GetLinesForWidthAndLimit(
+        width,
+        message_center::kContextMessageLineLimit);
   }
 
-  return message_center::kMessageCollapsedLineLimit;
+  DCHECK_GT(message_line_limit, 0);
+  return message_line_limit;
 }
 
 int NotificationView::GetMessageLines(int width, int limit) {
