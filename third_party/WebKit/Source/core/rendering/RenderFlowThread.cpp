@@ -911,7 +911,7 @@ bool RenderFlowThread::addForcedRegionBreak(LayoutUnit offsetBreakInFlowThread, 
     RenderObjectToRegionMap::iterator iter = mapToUse.find(breakChild);
     if (iter != mapToUse.end()) {
         RenderRegionList::iterator regionIter = m_regionList.find(iter->value);
-        ASSERT(regionIter != m_regionList.end());
+        ASSERT_WITH_SECURITY_IMPLICATION(regionIter != m_regionList.end());
         ASSERT((*regionIter)->hasAutoLogicalHeight());
         initializeRegionsComputedAutoHeight(*regionIter);
 

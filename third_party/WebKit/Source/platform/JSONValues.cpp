@@ -326,7 +326,7 @@ void JSONObjectBase::writeJSON(StringBuilder* output) const
     output->append('{');
     for (size_t i = 0; i < m_order.size(); ++i) {
         Dictionary::const_iterator it = m_data.find(m_order[i]);
-        ASSERT(it != m_data.end());
+        ASSERT_WITH_SECURITY_IMPLICATION(it != m_data.end());
         if (i)
             output->append(',');
         doubleQuoteString(it->key, output);

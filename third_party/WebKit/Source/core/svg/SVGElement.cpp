@@ -100,7 +100,7 @@ SVGElement::cleanupAnimatedProperties()
     else {
         SVGElementRareData::SVGElementRareDataMap& rareDataMap = SVGElementRareData::rareDataMap();
         SVGElementRareData::SVGElementRareDataMap::iterator it = rareDataMap.find(this);
-        ASSERT(it != rareDataMap.end());
+        ASSERT_WITH_SECURITY_IMPLICATION(it != rareDataMap.end());
 
         SVGElementRareData* rareData = it->value;
         rareData->destroyAnimatedSMILStyleProperties();

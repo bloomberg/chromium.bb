@@ -93,7 +93,7 @@ HarfBuzzFace::HarfBuzzFace(FontPlatformData* platformData, uint64_t uniqueID)
 HarfBuzzFace::~HarfBuzzFace()
 {
     HarfBuzzFaceCache::iterator result = harfBuzzFaceCache()->find(m_uniqueID);
-    ASSERT(result != harfBuzzFaceCache()->end());
+    ASSERT_WITH_SECURITY_IMPLICATION(result != harfBuzzFaceCache()->end());
     ASSERT(result.get()->value->refCount() > 1);
     result.get()->value->deref();
     if (result.get()->value->refCount() == 1)

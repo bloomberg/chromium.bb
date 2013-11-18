@@ -77,7 +77,7 @@ void StyleCustomFilterProgramCache::add(StyleCustomFilterProgram* program)
 void StyleCustomFilterProgramCache::remove(StyleCustomFilterProgram* program)
 {
     CacheMap::iterator iter = m_cache.find(programCacheKey(program));
-    ASSERT(iter != m_cache.end());
+    ASSERT_WITH_SECURITY_IMPLICATION(iter != m_cache.end());
     m_cache.remove(iter);
 }
 

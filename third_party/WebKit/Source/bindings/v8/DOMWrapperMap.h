@@ -111,7 +111,7 @@ public:
     void removeAndDispose(KeyType* key)
     {
         typename MapType::iterator it = m_map.find(key);
-        ASSERT(it != m_map.end());
+        ASSERT_WITH_SECURITY_IMPLICATION(it != m_map.end());
         it->value.dispose();
         m_map.remove(it);
     }

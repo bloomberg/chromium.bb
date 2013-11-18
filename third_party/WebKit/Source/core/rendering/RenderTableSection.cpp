@@ -1788,7 +1788,7 @@ CollapsedBorderValue& RenderTableSection::cachedCollapsedBorder(const RenderTabl
 {
     ASSERT(table()->collapseBorders());
     HashMap<pair<const RenderTableCell*, int>, CollapsedBorderValue>::iterator it = m_cellsCollapsedBorders.find(make_pair(cell, side));
-    ASSERT(it != m_cellsCollapsedBorders.end());
+    ASSERT_WITH_SECURITY_IMPLICATION(it != m_cellsCollapsedBorders.end());
     return it->value;
 }
 

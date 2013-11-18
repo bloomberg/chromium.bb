@@ -70,10 +70,10 @@ void CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element)
 void CustomElementUpgradeCandidateMap::removeCommon(Element* element)
 {
     UpgradeCandidateMap::iterator candidate = m_upgradeCandidates.find(element);
-    ASSERT(candidate != m_upgradeCandidates.end());
+    ASSERT_WITH_SECURITY_IMPLICATION(candidate != m_upgradeCandidates.end());
 
     UnresolvedDefinitionMap::iterator elements = m_unresolvedDefinitions.find(candidate->value);
-    ASSERT(elements != m_unresolvedDefinitions.end());
+    ASSERT_WITH_SECURITY_IMPLICATION(elements != m_unresolvedDefinitions.end());
     elements->value.remove(element);
     m_upgradeCandidates.remove(candidate);
 }
@@ -88,10 +88,10 @@ void CustomElementUpgradeCandidateMap::elementDidFinishParsingChildren(Element* 
 void CustomElementUpgradeCandidateMap::moveToEnd(Element* element)
 {
     UpgradeCandidateMap::iterator candidate = m_upgradeCandidates.find(element);
-    ASSERT(candidate != m_upgradeCandidates.end());
+    ASSERT_WITH_SECURITY_IMPLICATION(candidate != m_upgradeCandidates.end());
 
     UnresolvedDefinitionMap::iterator elements = m_unresolvedDefinitions.find(candidate->value);
-    ASSERT(elements != m_unresolvedDefinitions.end());
+    ASSERT_WITH_SECURITY_IMPLICATION(elements != m_unresolvedDefinitions.end());
     elements->value.appendOrMoveToLast(element);
 }
 

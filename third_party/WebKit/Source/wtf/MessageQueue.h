@@ -162,7 +162,7 @@ namespace WTF {
             return nullptr;
         }
 
-        ASSERT(found != m_queue.end());
+        ASSERT_WITH_SECURITY_IMPLICATION(found != m_queue.end());
         OwnPtr<DataType> message = adoptPtr(*found);
         m_queue.remove(found);
         result = MessageQueueMessageReceived;

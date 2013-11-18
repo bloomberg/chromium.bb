@@ -63,7 +63,7 @@ void CSSImageGeneratorValue::removeClient(RenderObject* renderer)
 {
     ASSERT(renderer);
     RenderObjectSizeCountMap::iterator it = m_clients.find(renderer);
-    ASSERT(it != m_clients.end());
+    ASSERT_WITH_SECURITY_IMPLICATION(it != m_clients.end());
 
     IntSize removedImageSize;
     SizeAndCount& sizeCount = it->value;

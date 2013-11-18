@@ -100,7 +100,7 @@ PassRefPtr<CustomFilterValidatedProgram> CustomFilterGlobalContext::getValidated
 void CustomFilterGlobalContext::removeValidatedProgram(const CustomFilterValidatedProgram* program)
 {
     CustomFilterValidatedProgramsMap::iterator iter = m_programs.find(program->programInfo());
-    ASSERT(iter != m_programs.end());
+    ASSERT_WITH_SECURITY_IMPLICATION(iter != m_programs.end());
     m_programs.remove(iter);
 
 #ifndef NDEBUG

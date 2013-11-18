@@ -439,7 +439,8 @@ void TimelineTraceEventProcessor::processBackgroundEvents()
     for (size_t i = 0, size = events.size(); i < size; ++i) {
         const TraceEvent& event = events[i];
         HandlersMap::iterator it = m_handlersByType.find(std::make_pair(event.name(), event.phase()));
-        ASSERT(it != m_handlersByType.end() && it->value);
+        ASSERT_WITH_SECURITY_IMPLICATION(it != m_handlersByType.end());
+        ASSERT(it->value);
         (this->*(it->value))(event);
     }
 }

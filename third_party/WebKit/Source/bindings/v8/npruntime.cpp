@@ -408,7 +408,7 @@ void _NPN_RegisterObject(NPObject* npObject, NPObject* owner)
 void _NPN_UnregisterObject(NPObject* npObject)
 {
     ASSERT(npObject);
-    ASSERT(liveObjectMap().find(npObject) != liveObjectMap().end());
+    ASSERT_WITH_SECURITY_IMPLICATION(liveObjectMap().find(npObject) != liveObjectMap().end());
 
     NPObject* owner = 0;
     if (liveObjectMap().find(npObject) != liveObjectMap().end())
@@ -416,7 +416,7 @@ void _NPN_UnregisterObject(NPObject* npObject)
 
     if (!owner) {
         // Unregistering a owner object; also unregister it's descendants.
-        ASSERT(rootObjectMap().find(npObject) != rootObjectMap().end());
+        ASSERT_WITH_SECURITY_IMPLICATION(rootObjectMap().find(npObject) != rootObjectMap().end());
         NPObjectSet* set = rootObjectMap().get(npObject);
         while (set->size() > 0) {
 #ifndef NDEBUG

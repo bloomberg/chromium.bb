@@ -155,14 +155,14 @@ void V8PerContextData::addCustomElementBinding(CustomElementDefinition* definiti
 void V8PerContextData::clearCustomElementBinding(CustomElementDefinition* definition)
 {
     CustomElementBindingMap::iterator it = m_customElementBindings->find(definition);
-    ASSERT(it != m_customElementBindings->end());
+    ASSERT_WITH_SECURITY_IMPLICATION(it != m_customElementBindings->end());
     m_customElementBindings->remove(it);
 }
 
 CustomElementBinding* V8PerContextData::customElementBinding(CustomElementDefinition* definition)
 {
     CustomElementBindingMap::const_iterator it = m_customElementBindings->find(definition);
-    ASSERT(it != m_customElementBindings->end());
+    ASSERT_WITH_SECURITY_IMPLICATION(it != m_customElementBindings->end());
     return it->value.get();
 }
 
