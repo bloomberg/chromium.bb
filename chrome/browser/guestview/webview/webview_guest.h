@@ -122,20 +122,6 @@ class WebViewGuest : public GuestView,
  private:
   virtual ~WebViewGuest();
 
-  // A map to store the callback for a request keyed by the request's id.
-  struct PermissionResponseInfo {
-    PermissionResponseCallback callback;
-    BrowserPluginPermissionType permission_type;
-    bool allowed_by_default;
-    PermissionResponseInfo();
-    PermissionResponseInfo(const PermissionResponseCallback& callback,
-                           BrowserPluginPermissionType permission_type,
-                           bool allowed_by_default);
-    ~PermissionResponseInfo();
-  };
-
-  static void RecordUserInitiatedUMA(const PermissionResponseInfo& info,
-                                     bool allow);
   // WebContentsObserver implementation.
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
@@ -189,6 +175,15 @@ class WebViewGuest : public GuestView,
   // We only need the ids to be unique for a given WebViewGuest.
   int next_permission_request_id_;
 
+  // A map to store the callback for a request keyed by the request's id.
+  struct PermissionResponseInfo {
+    PermissionResponseCallback callback;
+    bool allowed_by_default;
+    PermissionResponseInfo();
+    PermissionResponseInfo(const PermissionResponseCallback& callback,
+                           bool allowed_by_default);
+    ~PermissionResponseInfo();
+  };
   typedef std::map<int, PermissionResponseInfo> RequestMap;
   RequestMap pending_permission_requests_;
 

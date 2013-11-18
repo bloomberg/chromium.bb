@@ -108,4 +108,8 @@ void PluginPermissionHelper::OnPermissionResponse(const std::string& identifier,
     host->Send(new ChromeViewMsg_LoadBlockedPlugins(
         host->GetRoutingID(), identifier));
   }
+
+  content::RecordAction(
+      allow ? content::UserMetricsAction("WebView.Guest.PluginLoadAllowed") :
+              content::UserMetricsAction("WebView.Guest.PluginLoadDenied"));
 }
