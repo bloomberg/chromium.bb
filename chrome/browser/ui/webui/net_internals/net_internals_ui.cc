@@ -95,6 +95,7 @@
 using base::PassPlatformFile;
 using base::PlatformFile;
 using base::PlatformFileError;
+using base::StringValue;
 using content::BrowserThread;
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -373,14 +374,14 @@ void WriteDebugLogToFile(const StoreDebugLogsCallback& callback,
           callback, PassPlatformFile(&platform_file), file_path));
 }
 
-// Stores debug logs in the .tgz archive on the fileshelf. The file is
-// created on the worker pool, then writing to it is triggered from
+// Stores debug logs in the .tgz archive on the |fileshelf|. The file
+// is created on the worker pool, then writing to it is triggered from
 // the UI thread, and finally it is closed (on success) or deleted (on
 // failure) on the worker pool, prior to calling |callback|.
-void StoreDebugLogs(const StoreDebugLogsCallback& callback) {
+void StoreDebugLogs(const base::FilePath& fileshelf,
+                    const StoreDebugLogsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  const base::FilePath fileshelf = DownloadPrefs::GetDefaultDownloadDirectory();
   DebugLogFileHelper* helper = new DebugLogFileHelper();
   bool posted = base::WorkerPool::PostTaskAndReply(FROM_HERE,
       base::Bind(&DebugLogFileHelper::DoWork,
@@ -838,7 +839,7 @@ void NetInternalsMessageHandler::RegisterMessages() {
 void NetInternalsMessageHandler::SendJavascriptCommand(
     const std::string& command,
     Value* arg) {
-  scoped_ptr<Value> command_value(Value::CreateStringValue(command));
+  scoped_ptr<Value> command_value(new StringValue(command));
   scoped_ptr<Value> value(arg);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (value.get()) {
@@ -1576,13 +1577,17 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
   }
 
   LOG_IF(ERROR, !error.empty()) << error;
-  SendJavascriptCommand("receivedONCFileParse",
-                        Value::CreateStringValue(error));
+  SendJavascriptCommand("receivedONCFileParse", new StringValue(error));
 }
 
 void NetInternalsMessageHandler::OnStoreDebugLogs(const ListValue* list) {
   DCHECK(list);
-  StoreDebugLogs(
+
+  SendJavascriptCommand("receivedStoreDebugLogs",
+                        new StringValue("Creating log file..."));
+  const DownloadPrefs* const prefs =
+      DownloadPrefs::FromBrowserContext(Profile::FromWebUI(web_ui()));
+  StoreDebugLogs(prefs->DownloadPath(),
       base::Bind(&NetInternalsMessageHandler::OnStoreDebugLogsCompleted,
                  AsWeakPtr()));
 }
@@ -1594,8 +1599,7 @@ void NetInternalsMessageHandler::OnStoreDebugLogsCompleted(
     status = "Created log file: " + log_path.BaseName().AsUTF8Unsafe();
   else
     status = "Failed to create log file";
-  SendJavascriptCommand("receivedStoreDebugLogs",
-                        Value::CreateStringValue(status));
+  SendJavascriptCommand("receivedStoreDebugLogs", new StringValue(status));
 }
 
 void NetInternalsMessageHandler::OnSetNetworkDebugMode(const ListValue* list) {
@@ -1619,8 +1623,7 @@ void NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted(
     status = "Debug mode is changed to " + subsystem;
   else
     status = "Failed to change debug mode to " + subsystem;
-  SendJavascriptCommand("receivedSetNetworkDebugMode",
-                        Value::CreateStringValue(status));
+  SendJavascriptCommand("receivedSetNetworkDebugMode", new StringValue(status));
 }
 #endif  // defined(OS_CHROMEOS)
 
