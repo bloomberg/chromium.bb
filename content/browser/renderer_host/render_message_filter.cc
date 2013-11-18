@@ -90,7 +90,9 @@ using net::CookieStore;
 namespace content {
 namespace {
 
+#if defined(ENABLE_PLUGINS)
 const int kPluginsRefreshThresholdInSeconds = 3;
+#endif
 
 // When two CPU usage queries arrive within this interval, we sample the CPU
 // usage only once and send it as a response for both queries.
@@ -648,6 +650,7 @@ void RenderMessageFilter::SendLoadFontReply(IPC::Message* reply,
 }
 #endif  // OS_MACOSX
 
+#if defined(ENABLE_PLUGINS)
 void RenderMessageFilter::OnGetPlugins(
     bool refresh,
     IPC::Message* reply_msg) {
@@ -788,6 +791,7 @@ void RenderMessageFilter::OnOpenChannelToPpapiBroker(
       path,
       new OpenChannelToPpapiBrokerCallback(this, routing_id));
 }
+#endif  // defined(ENABLE_PLUGINS)
 
 void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();

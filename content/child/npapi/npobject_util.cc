@@ -20,6 +20,7 @@ namespace content {
 static bool g_plugin_process;
 
 namespace {
+#if defined(ENABLE_PLUGINS)
 // The next 7 functions are called by the plugin code when it's using the
 // NPObject.  Plugins always ignore the functions in NPClass (except allocate
 // and deallocate), and instead just use the function pointers that were
@@ -123,13 +124,16 @@ NPNetscapeFuncs *GetHostFunctions() {
   return &host_funcs;
 }
 
+#endif  // defined(ENABLE_PLUGINS)
 }
 
+#if defined(ENABLE_PLUGINS)
 void PatchNPNFunctions() {
   g_plugin_process = true;
   NPNetscapeFuncs* funcs = GetHostFunctions();
   PluginHost::Singleton()->PatchNPNetscapeFuncs(funcs);
 }
+#endif
 
 bool IsPluginProcess() {
   return g_plugin_process;

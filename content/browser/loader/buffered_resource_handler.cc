@@ -434,6 +434,7 @@ bool BufferedResourceHandler::MustDownload() {
 }
 
 bool BufferedResourceHandler::HasSupportingPlugin(bool* stale) {
+#if defined(ENABLE_PLUGINS)
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
   bool allow_wildcard = false;
@@ -442,6 +443,11 @@ bool BufferedResourceHandler::HasSupportingPlugin(bool* stale) {
       info->GetChildID(), info->GetRouteID(), info->GetContext(),
       request()->url(), GURL(), response_->head.mime_type, allow_wildcard,
       stale, &plugin, NULL);
+#else
+  if (stale)
+    *stale = false;
+  return false;
+#endif
 }
 
 bool BufferedResourceHandler::CopyReadBufferToNextHandler(int request_id) {
