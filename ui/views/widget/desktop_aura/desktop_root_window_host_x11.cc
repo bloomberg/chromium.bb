@@ -72,10 +72,12 @@ const int k_NET_WM_STATE_ADD = 1;
 const int k_NET_WM_STATE_REMOVE = 0;
 
 const char* kAtomsToCache[] = {
+  "UTF8_STRING",
   "WM_DELETE_WINDOW",
   "WM_PROTOCOLS",
   "WM_S0",
   "_NET_WM_ICON",
+  "_NET_WM_NAME",
   "_NET_WM_PID",
   "_NET_WM_PING",
   "_NET_WM_STATE",
@@ -515,7 +517,22 @@ bool DesktopRootWindowHostX11::IsAlwaysOnTop() const {
 }
 
 void DesktopRootWindowHostX11::SetWindowTitle(const string16& title) {
-  XStoreName(xdisplay_, xwindow_, UTF16ToUTF8(title).c_str());
+  std::string utf8str = UTF16ToUTF8(title);
+
+  XChangeProperty(xdisplay_,
+                  xwindow_,
+                  atom_cache_.GetAtom("_NET_WM_NAME"),
+                  atom_cache_.GetAtom("UTF8_STRING"),
+                  8,
+                  PropModeReplace,
+                  reinterpret_cast<const unsigned char*>(utf8str.c_str()),
+                  utf8str.size());
+
+  // TODO(erg): This is technically wrong. So XStoreName and friends expect
+  // this in Host Portable Character Encoding instead of UTF-8, which I believe
+  // is Compound Text. This shouldn't matter 90% of the time since this is the
+  // fallback to the UTF8 property above.
+  XStoreName(xdisplay_, xwindow_, utf8str.c_str());
 }
 
 void DesktopRootWindowHostX11::ClearNativeFocus() {
