@@ -1236,7 +1236,13 @@ void WebContentsViewAura::CreateView(
   window_->layer()->SetMasksToBounds(true);
   window_->SetName("WebContentsViewAura");
 
-  window_observer_.reset(new WindowObserver(this));
+  // WindowObserver is not interesting and is problematic for Browser Plugin
+  // guests.
+  // The use cases for WindowObserver do not apply to Browser Plugins:
+  // 1) guests do not support NPAPI plugins.
+  // 2) guests' window bounds are supposed to come from its embedder.
+  if (!web_contents_->GetRenderProcessHost()->IsGuest())
+    window_observer_.reset(new WindowObserver(this));
 
   // delegate_->GetDragDestDelegate() creates a new delegate on every call.
   // Hence, we save a reference to it locally. Similar model is used on other
