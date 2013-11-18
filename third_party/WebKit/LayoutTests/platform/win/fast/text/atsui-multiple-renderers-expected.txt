@@ -80,8 +80,8 @@ layer at (0,0) size 800x600
               RenderText {#text} at (0,0) size 0x0
           RenderTableRow {TR} at (0,106) size 228x26
             RenderTableCell {TD} at (0,106) size 114x26 [border: (1px solid #008000)] [r=4 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 104x22
-                text run at (2,2) width 104: "Lore\x{300}m ipsu\x{308}m"
+              RenderText {#text} at (2,2) size 99x22
+                text run at (2,2) width 99: "Lore\x{300}m ipsu\x{308}m"
             RenderTableCell {TD} at (114,106) size 114x26 [border: (1px solid #008000)] [r=4 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 97x22
                 text run at (2,2) width 97: "Lorem ipsum"
