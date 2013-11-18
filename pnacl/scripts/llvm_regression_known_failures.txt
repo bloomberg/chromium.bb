@@ -9,13 +9,12 @@ Clang::CodeGenObjC/arc-captured-32bit-block-var-layout-2.m mac
 ###
 ### Windows-only failures
 ###
-Clang::Coverage/ast-printing.m win
-Clang::Coverage/ast-printing.c win
-Clang::PCH/objc_stmts.m win
+Clang::Driver/crash-report.c win
+Clang::Driver/output-file-cleanup.c win
 LLVM::Analysis/Profiling/load-branch-weights-switches.ll win
 LLVM::Analysis/Profiling/load-branch-weights-loops.ll win
 LLVM::Analysis/Profiling/load-branch-weights-ifs.ll win
-
+LLVM::ExecutionEngine/MCJIT/eh.ll win
 
 # Fixed in upstream r183033 (I cherry-picked the code change but not the
 # test because the test will cause a merge conflict).
