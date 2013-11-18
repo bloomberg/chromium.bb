@@ -108,9 +108,10 @@ bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* collec
             // We should not destroy StyleResolver when we find any stylesheet update in a shadow tree.
             // In this case, we will reset rulesets created from style elements in the shadow tree.
             resetAllRuleSetsInTreeScope(styleResolver);
-            styleResolver->appendAuthorStyleSheets(0, activeCSSStyleSheets);
+            styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
+            styleResolver->lazyAppendAuthorStyleSheets(0, activeCSSStyleSheets);
         } else {
-            styleResolver->appendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), activeCSSStyleSheets);
+            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), activeCSSStyleSheets);
         }
     }
     if (change.requiresFullStyleRecalc)

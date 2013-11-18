@@ -169,9 +169,10 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* collecti
             resetAllRuleSetsInTreeScope(styleResolver);
             if (change.styleResolverUpdateType == ResetStyleResolverAndFontSelector)
                 styleResolver->resetFontSelector();
-            styleResolver->appendAuthorStyleSheets(0, activeCSSStyleSheets);
+            styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
+            styleResolver->lazyAppendAuthorStyleSheets(0, activeCSSStyleSheets);
         } else {
-            styleResolver->appendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), activeCSSStyleSheets);
+            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), activeCSSStyleSheets);
         }
     }
     m_scopingNodesForStyleScoped.didRemoveScopingNodes();

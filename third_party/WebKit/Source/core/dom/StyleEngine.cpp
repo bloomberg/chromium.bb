@@ -33,7 +33,6 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleInvalidationAnalysis.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
@@ -356,12 +355,6 @@ bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
                 m_activeTreeScopes.remove(*it);
         m_dirtyTreeScopes.clear();
     }
-
-    if (StyleResolver* styleResolver = m_document.styleResolverIfExists()) {
-        styleResolver->finishAppendAuthorStyleSheets();
-        resetCSSFeatureFlags(styleResolver->ruleFeatureSet());
-    }
-
     m_needsUpdateActiveStylesheetsOnStyleRecalc = false;
     activeStyleSheetsUpdatedForInspector();
     m_usesRemUnits = m_documentStyleSheetCollection.usesRemUnits();
@@ -430,7 +423,7 @@ void StyleEngine::createResolver()
     ASSERT(m_document.frame());
 
     m_resolver = adoptPtr(new StyleResolver(m_document));
-    combineCSSFeatureFlags(m_resolver->ruleFeatureSet());
+    combineCSSFeatureFlags(m_resolver->ensureRuleFeatureSet());
 }
 
 void StyleEngine::clearResolver()

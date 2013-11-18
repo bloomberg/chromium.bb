@@ -365,7 +365,7 @@ void RuleSet::addRegionRule(StyleRuleRegion* regionRule, bool hasDocumentSecurit
     m_regionSelectorsAndRuleSets.append(RuleSetSelectorPair(regionRule->selectorList().first(), regionRuleSet.release()));
 }
 
-void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const MediaQueryEvaluator& medium, bool hasDocumentSecurityOrigin, AddRuleFlags addRuleFlags)
+void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const MediaQueryEvaluator& medium, AddRuleFlags addRuleFlags)
 {
     for (unsigned i = 0; i < rules.size(); ++i) {
         StyleRuleBase* rule = rules[i].get();
@@ -388,24 +388,24 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
         } else if (rule->isMediaRule()) {
             StyleRuleMedia* mediaRule = static_cast<StyleRuleMedia*>(rule);
             if ((!mediaRule->mediaQueries() || medium.eval(mediaRule->mediaQueries(), &m_viewportDependentMediaQueryResults)))
-                addChildRules(mediaRule->childRules(), medium, hasDocumentSecurityOrigin, addRuleFlags);
+                addChildRules(mediaRule->childRules(), medium, addRuleFlags);
         } else if (rule->isFontFaceRule()) {
             addFontFaceRule(static_cast<StyleRuleFontFace*>(rule));
         } else if (rule->isKeyframesRule()) {
             addKeyframesRule(static_cast<StyleRuleKeyframes*>(rule));
         } else if (rule->isRegionRule()) {
-            addRegionRule(static_cast<StyleRuleRegion*>(rule), hasDocumentSecurityOrigin);
+            addRegionRule(static_cast<StyleRuleRegion*>(rule), addRuleFlags & RuleHasDocumentSecurityOrigin);
         } else if (rule->isHostRule()) {
             addHostRule(static_cast<StyleRuleHost*>(rule));
-        } else if (rule->isViewportRule()) {
+        } else if (rule->isViewportRule() && !(addRuleFlags & ViewportRuleIsProcessed)) {
             addViewportRule(static_cast<StyleRuleViewport*>(rule));
         } else if (rule->isSupportsRule() && static_cast<StyleRuleSupports*>(rule)->conditionIsSupported()) {
-            addChildRules(static_cast<StyleRuleSupports*>(rule)->childRules(), medium, hasDocumentSecurityOrigin, addRuleFlags);
+            addChildRules(static_cast<StyleRuleSupports*>(rule)->childRules(), medium, addRuleFlags);
         }
     }
 }
 
-void RuleSet::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvaluator& medium, bool hasDocumentSecurityOrigin)
+void RuleSet::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvaluator& medium, AddRuleFlags addRuleFlags)
 {
     ASSERT(sheet);
 
@@ -413,11 +413,10 @@ void RuleSet::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvalu
     for (unsigned i = 0; i < importRules.size(); ++i) {
         StyleRuleImport* importRule = importRules[i].get();
         if (importRule->styleSheet() && (!importRule->mediaQueries() || medium.eval(importRule->mediaQueries(), &m_viewportDependentMediaQueryResults)))
-            addRulesFromSheet(importRule->styleSheet(), medium);
+            addRulesFromSheet(importRule->styleSheet(), medium, addRuleFlags);
     }
 
-    AddRuleFlags addRuleFlags = static_cast<AddRuleFlags>((hasDocumentSecurityOrigin ? RuleHasDocumentSecurityOrigin : 0) | RuleCanUseFastCheckSelector);
-    addChildRules(sheet->childRules(), medium, hasDocumentSecurityOrigin, addRuleFlags);
+    addChildRules(sheet->childRules(), medium, static_cast<AddRuleFlags>(addRuleFlags | RuleCanUseFastCheckSelector));
 }
 
 void RuleSet::addStyleRule(StyleRule* rule, AddRuleFlags addRuleFlags)

@@ -66,8 +66,9 @@ public:
     void matchAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles);
     void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope, CascadeOrder = ignoreCascadeOrder);
     void matchPageRules(PageRuleCollector&);
-    void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, StyleResolver*);
+    void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, StyleResolver*, bool viewportRuleIsProcessed);
     void addHostRule(StyleRuleHost*, bool hasDocumentSecurityOrigin, const ContainerNode* scopingNode);
+    void addViewportRule(StyleRuleViewport*);
     void collectFeaturesTo(RuleFeatureSet&);
     void resetAuthorStyle();
     void resetAtHostRules(const ShadowRoot*);
@@ -78,6 +79,7 @@ private:
 
     RuleSet* ensureAtHostRuleSetFor(const ShadowRoot*);
     RuleSet* atHostRuleSetFor(const ShadowRoot*) const;
+    RuleSet* ensureAuthorStyle();
 
     ContainerNode& m_scopingNode;
     ScopedStyleResolver* m_parent;

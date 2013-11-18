@@ -156,6 +156,12 @@ private:
     RefPtr<StylePropertySet> m_properties;
 };
 
+inline const StyleRuleFontFace* toStyleRuleFontFace(const StyleRuleBase* rule)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isFontFaceRule());
+    return static_cast<const StyleRuleFontFace*>(rule);
+}
+
 class StyleRulePage : public StyleRuleBase {
 public:
     static PassRefPtr<StyleRulePage> create() { return adoptRef(new StyleRulePage); }
@@ -290,6 +296,12 @@ inline const StyleRuleMedia* toStyleRuleMedia(const StyleRuleGroup* rule)
     return static_cast<const StyleRuleMedia*>(rule);
 }
 
+inline const StyleRuleMedia* toStyleRuleMedia(const StyleRuleBase* rule)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isMediaRule());
+    return static_cast<const StyleRuleMedia*>(rule);
+}
+
 inline const StyleRuleSupports* toStyleRuleSupports(const StyleRuleGroup* rule)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isSupportsRule());
@@ -300,6 +312,12 @@ inline const StyleRuleRegion* toStyleRuleRegion(const StyleRuleGroup* rule)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isRegionRule());
     return static_cast<const StyleRuleRegion*>(rule);
+}
+
+inline StyleRuleViewport* toStyleRuleViewport(StyleRuleBase* rule)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isViewportRule());
+    return static_cast<StyleRuleViewport*>(rule);
 }
 
 class StyleRuleFilter : public StyleRuleBase {

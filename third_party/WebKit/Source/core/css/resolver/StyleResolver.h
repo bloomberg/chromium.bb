@@ -41,6 +41,7 @@
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
+#include "wtf/ListHashSet.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -147,6 +148,11 @@ public:
     TreeBoundaryCrossingRules& treeBoundaryCrossingRules() { return m_treeBoundaryCrossingRules; }
     void processScopedRules(const RuleSet& authorRules, const KURL&, ContainerNode* scope = 0);
 
+    void lazyAppendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >&);
+    void removePendingAuthorStyleSheets(const Vector<RefPtr<CSSStyleSheet> >&);
+    void appendPendingAuthorStyleSheets();
+    bool hasPendingAuthorStyleSheets() const { return m_pendingStyleSheets.size() > 0 || m_needCollectFeatures; }
+
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
 
     void setBuildScopedStyleTreeInDocumentOrder(bool enabled) { m_styleTree.setBuildInDocumentOrder(enabled); }
@@ -200,7 +206,12 @@ public:
     // FIXME: StyleResolver should not have this member or method.
     InspectorCSSOMWrappers& inspectorCSSOMWrappers() { return m_inspectorCSSOMWrappers; }
 
-    const RuleFeatureSet& ruleFeatureSet() const { return m_features; }
+    const RuleFeatureSet& ensureRuleFeatureSet()
+    {
+        if (hasPendingAuthorStyleSheets())
+            appendPendingAuthorStyleSheets();
+        return m_features;
+    }
 
     StyleSharingList& styleSharingList() { return m_styleSharingList; }
 
@@ -231,6 +242,10 @@ private:
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont(StyleResolverState&);
 
+    bool filterViewportRules(const Vector<RefPtr<StyleRuleBase> >& rules);
+    bool filterViewportRulesFromSheet(StyleSheetContents*);
+    bool filterViewportRulesFromAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >& styleSheets);
+
     void collectPseudoRulesForElement(Element*, ElementRuleCollector&, PseudoId, unsigned rulesToInclude);
     void matchUARules(ElementRuleCollector&, RuleSet*);
     void matchAuthorRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
@@ -242,6 +257,7 @@ private:
     void matchWatchSelectorRules(ElementRuleCollector&);
     void collectFeatures();
     void collectTreeBoundaryCrossingRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
+    void resetRuleFeatures();
 
     bool fastRejectSelector(const RuleData&) const;
 
@@ -294,6 +310,8 @@ private:
 
     RefPtr<ViewportStyleResolver> m_viewportStyleResolver;
 
+    ListHashSet<CSSStyleSheet*, 16> m_pendingStyleSheets;
+
     ScopedStyleTree m_styleTree;
 
     // FIXME: The entire logic of collecting features on StyleResolver, as well astransferring them
@@ -301,9 +319,12 @@ private:
     RuleFeatureSet m_features;
     OwnPtr<RuleSet> m_siblingRuleSet;
     OwnPtr<RuleSet> m_uncommonAttributeRuleSet;
+
     // FIXME: watched selectors should be implemented using injected author stylesheets: http://crbug.com/316960
     OwnPtr<RuleSet> m_watchedSelectorsRules;
     TreeBoundaryCrossingRules m_treeBoundaryCrossingRules;
+
+    bool m_needCollectFeatures;
 
     InspectorCSSOMWrappers m_inspectorCSSOMWrappers;
 

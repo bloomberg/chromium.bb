@@ -28,6 +28,7 @@
 #ifndef StyleEngine_h
 #define StyleEngine_h
 
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
@@ -140,8 +141,11 @@ public:
 
     StyleResolver* resolver()
     {
-        if (!m_resolver)
+        if (!m_resolver) {
             createResolver();
+        } else if (m_resolver->hasPendingAuthorStyleSheets()) {
+            m_resolver->appendPendingAuthorStyleSheets();
+        }
         return m_resolver.get();
     }
 

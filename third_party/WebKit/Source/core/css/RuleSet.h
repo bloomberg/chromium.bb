@@ -38,6 +38,7 @@ enum AddRuleFlags {
     RuleHasDocumentSecurityOrigin = 1,
     RuleCanUseFastCheckSelector   = 1 << 1,
     RuleIsInRegionRule            = 1 << 2,
+    ViewportRuleIsProcessed       = 1 << 3
 };
 
 enum PropertyWhitelistType {
@@ -122,9 +123,10 @@ class RuleSet {
 public:
     static PassOwnPtr<RuleSet> create() { return adoptPtr(new RuleSet); }
 
-    void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, bool hasDocumentSecurityOrigin = false);
+    void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, AddRuleFlags = RuleHasNoSpecialState);
     void addStyleRule(StyleRule*, AddRuleFlags);
     void addRule(StyleRule*, unsigned selectorIndex, AddRuleFlags);
+    void addViewportRule(StyleRuleViewport*);
 
     const RuleFeatureSet& features() const { return m_features; }
 
@@ -175,13 +177,12 @@ private:
 
     void addToRuleSet(StringImpl* key, PendingRuleMap&, const RuleData&);
     void addPageRule(StyleRulePage*);
-    void addViewportRule(StyleRuleViewport*);
     void addFontFaceRule(StyleRuleFontFace*);
     void addKeyframesRule(StyleRuleKeyframes*);
     void addHostRule(StyleRuleHost*);
     void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin);
 
-    void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, bool hasDocumentSecurityOrigin, AddRuleFlags);
+    void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, AddRuleFlags);
     bool findBestRuleSetAndAdd(const CSSSelector*, RuleData&);
 
     void compactRules();

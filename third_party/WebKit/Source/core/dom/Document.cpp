@@ -1747,7 +1747,7 @@ void Document::recalcStyle(StyleRecalcChange change)
 
         if (m_styleEngine->hasResolver()) {
             // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
-            m_styleEngine->resetCSSFeatureFlags(m_styleEngine->resolver()->ruleFeatureSet());
+            m_styleEngine->resetCSSFeatureFlags(m_styleEngine->resolver()->ensureRuleFeatureSet());
             m_styleEngine->resolver()->clearStyleSharingList();
         }
     }
