@@ -511,10 +511,6 @@ private:
     // information. Is used by PrintPage().
     OwnPtr<ChromePrintContext> m_printContext;
 
-    // Ensure we don't overwrite valid history data during same document loads
-    // from HistoryItems
-    bool m_inSameDocumentHistoryLoad;
-
     // Stores the additional input events offset and scale when device metrics emulation is enabled.
     WebCore::IntSize m_inputEventsOffsetForEmulation;
     float m_inputEventsScaleFactorForEmulation;

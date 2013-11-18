@@ -237,6 +237,14 @@ WebVector<WebHistoryItem> WebHistoryItem::children() const
     return m_private->children();
 }
 
+void WebHistoryItem::setChildren(const WebVector<WebHistoryItem>& items)
+{
+    ensureMutable();
+    m_private->clearChildren();
+    for (size_t i = 0; i < items.size(); ++i)
+        m_private->addChildItem(items[i]);
+}
+
 void WebHistoryItem::appendToChildren(const WebHistoryItem& item)
 {
     ensureMutable();
