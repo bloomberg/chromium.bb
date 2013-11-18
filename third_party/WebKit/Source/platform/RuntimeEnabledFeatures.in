@@ -95,6 +95,11 @@ RepaintAfterLayout
 RequestAutocomplete status=test
 RowSpanLogicalHeightSpreading status=stable
 ScriptedSpeech status=stable
+
+// Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
+// as per the spec, matching other Web engines.
+ScrollTopLeftInterop status=experimental
+
 SeamlessIFrames status=experimental
 ServiceWorker status=experimental
 SessionStorage status=stable

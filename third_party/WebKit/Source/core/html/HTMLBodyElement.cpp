@@ -199,18 +199,21 @@ static int adjustForZoom(int value, Document* document)
     return static_cast<int>(value / zoomFactor);
 }
 
+// FIXME: There are cases where body.scrollLeft is allowed to return
+// non-zero values in both quirks and strict mode. It happens when
+// <body> has an overflow that is not the Frame overflow.
+// http://dev.w3.org/csswg/cssom-view/#dom-element-scrollleft
+// http://code.google.com/p/chromium/issues/detail?id=312435
 int HTMLBodyElement::scrollLeft()
 {
     Document& document = this->document();
-
-    // FIXME: There are cases where body.scrollLeft is allowed to return
-    // non-zero values in both quirks and strict mode. It happens when
-    // <body> has an overflow that is not the Frame overflow.
-    // http://dev.w3.org/csswg/cssom-view/#dom-element-scrollleft
-    if (!document.inQuirksMode())
-        UseCounter::countDeprecation(&document, UseCounter::ScrollLeftBodyNotQuirksMode);
-
     document.updateLayoutIgnorePendingStylesheets();
+
+    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+        if (!document.inQuirksMode())
+            return 0;
+    }
+
     FrameView* view = document.view();
     return view ? adjustForZoom(view->scrollX(), &document) : 0;
 }
@@ -218,11 +221,13 @@ int HTMLBodyElement::scrollLeft()
 void HTMLBodyElement::setScrollLeft(int scrollLeft)
 {
     Document& document = this->document();
-
-    if (!document.inQuirksMode())
-        UseCounter::countDeprecation(&document, UseCounter::ScrollLeftBodyNotQuirksMode);
-
     document.updateLayoutIgnorePendingStylesheets();
+
+    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+        if (!document.inQuirksMode())
+            return;
+    }
+
     Frame* frame = document.frame();
     if (!frame)
         return;
@@ -235,15 +240,13 @@ void HTMLBodyElement::setScrollLeft(int scrollLeft)
 int HTMLBodyElement::scrollTop()
 {
     Document& document = this->document();
-
-    // FIXME: There are cases where body.scrollTop is allowed to return
-    // non-zero values in both quirks and strict mode. It happens when
-    // body has a overflow that is not the Frame overflow.
-    // http://dev.w3.org/csswg/cssom-view/#dom-element-scrolltop
-    if (!document.inQuirksMode())
-        UseCounter::countDeprecation(&document, UseCounter::ScrollTopBodyNotQuirksMode);
-
     document.updateLayoutIgnorePendingStylesheets();
+
+    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+        if (!document.inQuirksMode())
+            return 0;
+    }
+
     FrameView* view = document.view();
     return view ? adjustForZoom(view->scrollY(), &document) : 0;
 }
@@ -251,11 +254,13 @@ int HTMLBodyElement::scrollTop()
 void HTMLBodyElement::setScrollTop(int scrollTop)
 {
     Document& document = this->document();
-
-    if (!document.inQuirksMode())
-        UseCounter::countDeprecation(&document, UseCounter::ScrollTopBodyNotQuirksMode);
-
     document.updateLayoutIgnorePendingStylesheets();
+
+    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+        if (!document.inQuirksMode())
+            return;
+    }
+
     Frame* frame = document.frame();
     if (!frame)
         return;

@@ -1,5 +1,3 @@
-CONSOLE WARNING: body.scrollTop is deprecated in strict mode. Please use 'documentElement.scrollTop' if in strict mode and 'body.scrollTop' only if in quirks mode.
-CONSOLE WARNING: body.scrollLeft is deprecated in strict mode. Please use 'documentElement.scrollLeft' if in strict mode and 'body.scrollLeft' only if in quirks mode.
 Test for scrollTop/Left values of document.body and document.documentElement in documents in quirks and strict modes
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -7,8 +5,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS iframeStrict.contentDocument.documentElement.scrollTop is 5000
 PASS iframeStrict.contentDocument.documentElement.scrollLeft is 4000
-FAIL iframeStrict.contentDocument.body.scrollTop should be 0. Was 5000.
-FAIL iframeStrict.contentDocument.body.scrollLeft should be 0. Was 4000.
+PASS iframeStrict.contentDocument.body.scrollTop is 0
+PASS iframeStrict.contentDocument.body.scrollLeft is 0
 PASS iframeStrict.contentWindow.pageYOffset is 5000
 PASS iframeStrict.contentWindow.pageXOffset is 4000
 PASS iframeQuirks.contentDocument.documentElement.scrollTop is 0
