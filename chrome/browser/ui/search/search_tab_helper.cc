@@ -37,8 +37,6 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_type.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -139,15 +137,6 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
   if (!is_search_enabled_)
     return;
 
-  // Observe NOTIFICATION_NAV_ENTRY_COMMITTED events so we can reset state
-  // associated with the WebContents  (such as mode, last known most visited
-  // items, instant support state etc).
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<content::NavigationController>(
-          &web_contents->GetController()));
-
   instant_service_ =
       InstantServiceFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
@@ -227,59 +216,6 @@ void SearchTabHelper::ToggleVoiceSearch() {
   ipc_router_.ToggleVoiceSearch();
 }
 
-void SearchTabHelper::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
-  content::LoadCommittedDetails* load_details =
-      content::Details<content::LoadCommittedDetails>(details).ptr();
-  if (!load_details->is_main_frame)
-    return;
-
-  // TODO(kmadhusu): Set the page initial states (such as omnibox margin, etc)
-  // from here. Please refer to crbug.com/247517 for more details.
-  if (chrome::ShouldAssignURLToInstantRenderer(web_contents_->GetURL(),
-                                               profile())) {
-    ipc_router_.SetDisplayInstantResults();
-  }
-
-  UpdateMode(true, false);
-
-  content::NavigationEntry* entry =
-      web_contents_->GetController().GetVisibleEntry();
-  DCHECK(entry);
-
-  // Already determined the instant support state for this page, do not reset
-  // the instant support state.
-  //
-  // When we get a navigation entry committed event, there seem to be two ways
-  // to tell whether the navigation was "in-page". Ideally, when
-  // LoadCommittedDetails::is_in_page is true, we should have
-  // LoadCommittedDetails::type to be NAVIGATION_TYPE_IN_PAGE. Unfortunately,
-  // they are different in some cases. To workaround this bug, we are checking
-  // (is_in_page || type == NAVIGATION_TYPE_IN_PAGE). Please refer to
-  // crbug.com/251330 for more details.
-  if (load_details->is_in_page ||
-      load_details->type == content::NAVIGATION_TYPE_IN_PAGE) {
-    // When an "in-page" navigation happens, we will not receive a
-    // DidFinishLoad() event. Therefore, we will not determine the Instant
-    // support for the navigated page. So, copy over the Instant support from
-    // the previous entry. If the page does not support Instant, update the
-    // location bar from here to turn off search terms replacement.
-    chrome::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
-                                                    entry);
-    if (model_.instant_support() == INSTANT_SUPPORT_NO)
-      UpdateLocationBar(web_contents_);
-    return;
-  }
-
-  model_.SetInstantSupportState(INSTANT_SUPPORT_UNKNOWN);
-  model_.SetVoiceSearchSupported(false);
-  chrome::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
-                                                  entry);
-}
-
 void SearchTabHelper::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   ipc_router_.SetPromoInformation(IsAppLauncherEnabled());
@@ -337,6 +273,57 @@ void SearchTabHelper::DidFinishLoad(
     content::RenderViewHost* /* render_view_host */) {
   if (is_main_frame)
     DetermineIfPageSupportsInstant();
+}
+
+void SearchTabHelper::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& load_details) {
+  if (!is_search_enabled_)
+    return;
+
+  if (!load_details.is_main_frame)
+    return;
+
+  // TODO(kmadhusu): Set the page initial states (such as omnibox margin, etc)
+  // from here. Please refer to crbug.com/247517 for more details.
+  if (chrome::ShouldAssignURLToInstantRenderer(web_contents_->GetURL(),
+                                               profile())) {
+    ipc_router_.SetDisplayInstantResults();
+  }
+
+  UpdateMode(true, false);
+
+  content::NavigationEntry* entry =
+      web_contents_->GetController().GetVisibleEntry();
+  DCHECK(entry);
+
+  // Already determined the instant support state for this page, do not reset
+  // the instant support state.
+  //
+  // When we get a navigation entry committed event, there seem to be two ways
+  // to tell whether the navigation was "in-page". Ideally, when
+  // LoadCommittedDetails::is_in_page is true, we should have
+  // LoadCommittedDetails::type to be NAVIGATION_TYPE_IN_PAGE. Unfortunately,
+  // they are different in some cases. To workaround this bug, we are checking
+  // (is_in_page || type == NAVIGATION_TYPE_IN_PAGE). Please refer to
+  // crbug.com/251330 for more details.
+  if (load_details.is_in_page ||
+      load_details.type == content::NAVIGATION_TYPE_IN_PAGE) {
+    // When an "in-page" navigation happens, we will not receive a
+    // DidFinishLoad() event. Therefore, we will not determine the Instant
+    // support for the navigated page. So, copy over the Instant support from
+    // the previous entry. If the page does not support Instant, update the
+    // location bar from here to turn off search terms replacement.
+    chrome::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
+                                                    entry);
+    if (model_.instant_support() == INSTANT_SUPPORT_NO)
+      UpdateLocationBar(web_contents_);
+    return;
+  }
+
+  model_.SetInstantSupportState(INSTANT_SUPPORT_UNKNOWN);
+  model_.SetVoiceSearchSupported(false);
+  chrome::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
+                                                  entry);
 }
 
 void SearchTabHelper::OnInstantSupportDetermined(bool supports_instant) {

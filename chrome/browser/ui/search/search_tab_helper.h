@@ -15,14 +15,13 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/ntp_logging_events.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace content {
 class WebContents;
+struct LoadCommittedDetails;
 }
 
 class GURL;
@@ -38,8 +37,7 @@ class SearchIPCRouterTest;
 // support for the page. When a navigation entry is committed (except for
 // in-page navigations), SearchTabHelper resets the instant support state to
 // INSTANT_SUPPORT_UNKNOWN and cause support to be determined again.
-class SearchTabHelper : public content::NotificationObserver,
-                        public content::WebContentsObserver,
+class SearchTabHelper : public content::WebContentsObserver,
                         public content::WebContentsUserData<SearchTabHelper>,
                         public InstantServiceObserver,
                         public SearchIPCRouter::Delegate {
@@ -119,11 +117,6 @@ class SearchTabHelper : public content::NotificationObserver,
 
   explicit SearchTabHelper(content::WebContents* web_contents);
 
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Overridden from contents::WebContentsObserver:
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
@@ -143,6 +136,8 @@ class SearchTabHelper : public content::NotificationObserver,
       const GURL& validated_url,
       bool is_main_frame,
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) OVERRIDE;
 
   // Overridden from SearchIPCRouter::Delegate:
   virtual void OnInstantSupportDetermined(bool supports_instant) OVERRIDE;
@@ -196,8 +191,6 @@ class SearchTabHelper : public content::NotificationObserver,
 
   // Model object for UI that cares about search state.
   SearchModel model_;
-
-  content::NotificationRegistrar registrar_;
 
   content::WebContents* web_contents_;
 
