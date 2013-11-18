@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <psapi.h>
 
+#include "base/logging.h"
+#include "base/debug/alias.h"
 #include "skia/ext/bitmap_platform_device_win.h"
 #include "skia/ext/bitmap_platform_device_data.h"
 #include "skia/ext/platform_canvas.h"
@@ -57,6 +59,62 @@ HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
 
   HBITMAP hbitmap = CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(&hdr),
                                      0, data, shared_section, 0);
+
+  // If this call fails, we're gonna crash hard. Try to get some useful
+  // information out before we crash for post-mortem analysis.
+  if (!hbitmap) {
+    // Make sure parameters are saved in the minidump.
+    base::debug::Alias(&width);
+    base::debug::Alias(&height);
+
+    int last_error = GetLastError();
+    base::debug::Alias(&last_error);
+
+    int num_gdi_handles = GetGuiResources(GetCurrentProcess(),
+                                          GR_GDIOBJECTS);
+    if (num_gdi_handles == 0) {
+      int get_gui_resources_error = GetLastError();
+      base::debug::Alias(&get_gui_resources_error);
+      CHECK(false);
+    }
+
+    base::debug::Alias(&num_gdi_handles);
+    const int kLotsOfHandles = 9990;
+    if (num_gdi_handles > kLotsOfHandles)
+      CHECK(false);
+
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    pmc.cb = sizeof(pmc);
+    if (!GetProcessMemoryInfo(GetCurrentProcess(),
+                              reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc),
+                              sizeof(pmc))) {
+      CHECK(false);
+    }
+    const size_t kLotsOfMemory = 1500 * 1024 * 1024; // 1.5GB
+    if (pmc.PagefileUsage > kLotsOfMemory)
+      CHECK(false);
+    if (pmc.PrivateUsage > kLotsOfMemory)
+      CHECK(false);
+
+    // Huh, that's weird.  We don't have crazy handle count, we don't have
+    // ridiculous memory usage.  Try to allocate a small bitmap and see if that
+    // fails too.
+    hdr.biWidth = 5;
+    hdr.biHeight = 5;
+    void* small_data;
+    HBITMAP small_bitmap = CreateDIBSection(
+        NULL, reinterpret_cast<BITMAPINFO*>(&hdr),
+        0, &small_data, shared_section, 0);
+    if (!small_bitmap)
+      CHECK(false);
+    BITMAP bitmap_data;
+    if (GetObject(small_bitmap, sizeof(BITMAP), &bitmap_data)) {
+      if (!DeleteObject(small_bitmap))
+        CHECK(false);
+    }
+    // No idea what's going on. Die!
+    CHECK(false);
+  }
   return hbitmap;
 }
 
