@@ -348,6 +348,15 @@
           '<(DEPTH)/build/linux/system.gyp:dridrm',
           ],
         }],
+        ['use_ozone==1 and use_pango==0', {
+          'sources!': [
+            'gfx/text_elider_unittest.cc',
+            'gfx/font_unittest.cc',
+            'gfx/font_list_unittest.cc',
+            'gfx/render_text_unittest.cc',
+            'gfx/canvas_unittest.cc',
+          ],
+        }],
         ['chromeos==1', {
           'sources!': [
             'base/dragdrop/os_exchange_data_provider_aurax11_unittest.cc',

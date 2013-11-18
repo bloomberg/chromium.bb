@@ -308,7 +308,13 @@ TEST_F(ResourceBundleTest, DelegateGetLocalizedString) {
   EXPECT_EQ(data, result);
 }
 
-TEST_F(ResourceBundleTest, DelegateGetFontList) {
+#if defined(USE_OZONE) && !defined(USE_PANGO)
+#define MAYBE_DelegateGetFontList DISABLED_DelegateGetFontList
+#else
+#define MAYBE_DelegateGetFontList DelegateGetFontList
+#endif
+
+TEST_F(ResourceBundleTest, MAYBE_DelegateGetFontList) {
   MockResourceBundleDelegate delegate;
   ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
