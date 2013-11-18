@@ -489,10 +489,16 @@ void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
   url_fetcher_= privet_client_->CreateURLFetcher(
       url, net::URLFetcher::POST, this);
 
-  DCHECK(!data_.empty());
-  url_fetcher_->SetUploadData(
-      use_pdf_ ? kPrivetContentTypePDF : kPrivetContentTypePWGRaster,
-      data_);
+  std::string content_type =
+      use_pdf_ ? kPrivetContentTypePDF : kPrivetContentTypePWGRaster;
+
+  DCHECK(!data_.empty() || !data_file_.empty());
+
+  if (!data_file_.empty()) {
+    url_fetcher_->SetUploadFilePath(content_type, data_file_);
+  } else {
+    url_fetcher_->SetUploadData(content_type, data_);
+  }
 
   url_fetcher_->Start();
 }
@@ -613,13 +619,19 @@ void PrivetLocalPrintOperationImpl::OnNeedPrivetToken(
 
 void PrivetLocalPrintOperationImpl::SendData(const std::string& data) {
   DCHECK(started_);
+  DCHECK(data_file_.empty());
   data_ = data;
 
-  if (has_extended_workflow_ && !ticket_.empty()) {
-    DoCreatejob();
-  } else {
-    DoSubmitdoc();
-  }
+  SendDataInternal();
+}
+
+void PrivetLocalPrintOperationImpl::SendDataFile(
+    const base::FilePath& data_file) {
+  DCHECK(started_);
+  DCHECK(data_.empty());
+  data_file_ = data_file;
+
+  SendDataInternal();
 }
 
 void PrivetLocalPrintOperationImpl::SetTicket(const std::string& ticket) {
@@ -640,6 +652,14 @@ void PrivetLocalPrintOperationImpl::SetJobname(const std::string& jobname) {
 void PrivetLocalPrintOperationImpl::SetOffline(bool offline) {
   DCHECK(!started_);
   offline_ = offline;
+}
+
+void PrivetLocalPrintOperationImpl::SendDataInternal() {
+  if (has_extended_workflow_ && !ticket_.empty()) {
+    DoCreatejob();
+  } else {
+    DoSubmitdoc();
+  }
 }
 
 PrivetHTTPClientImpl::PrivetHTTPClientImpl(

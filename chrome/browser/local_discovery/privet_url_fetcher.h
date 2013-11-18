@@ -7,12 +7,17 @@
 
 #include <string>
 
+#include "base/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace local_discovery {
 
@@ -65,6 +70,9 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   void SetUploadData(const std::string& upload_content_type,
                      const std::string& upload_data);
 
+  void SetUploadFilePath(const std::string& upload_content_type,
+                         const base::FilePath& upload_file_path);
+
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   const GURL& url() const { return url_fetcher_->GetOriginalURL(); }
@@ -89,6 +97,7 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   int tries_;
   std::string upload_data_;
   std::string upload_content_type_;
+  base::FilePath upload_file_path_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
 
   base::WeakPtrFactory<PrivetURLFetcher> weak_factory_;

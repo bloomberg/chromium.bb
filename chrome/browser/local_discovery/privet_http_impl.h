@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/local_discovery/privet_http.h"
 
@@ -156,6 +157,7 @@ class PrivetLocalPrintOperationImpl
   virtual void Start() OVERRIDE;
 
   virtual void SendData(const std::string& data) OVERRIDE;
+  virtual void SendDataFile(const base::FilePath& data) OVERRIDE;
 
   virtual void SetTicket(const std::string& ticket) OVERRIDE;
 
@@ -195,6 +197,8 @@ class PrivetLocalPrintOperationImpl
   void OnCreatejobResponse(bool has_error,
                            const base::DictionaryValue* value);
 
+  void SendDataInternal();
+
   PrivetHTTPClientImpl* privet_client_;
   PrivetLocalPrintOperation::Delegate* delegate_;
 
@@ -202,6 +206,7 @@ class PrivetLocalPrintOperationImpl
 
   std::string ticket_;
   std::string data_;
+  base::FilePath data_file_;
 
   bool use_pdf_;
   bool has_capabilities_;

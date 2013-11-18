@@ -12,6 +12,7 @@
 #include "base/rand_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 
@@ -67,8 +68,19 @@ void PrivetURLFetcher::Try() {
                                         token);
 
     // URLFetcher requires us to set upload data for POST requests.
-    if (request_type_ == net::URLFetcher::POST)
-      url_fetcher_->SetUploadData(upload_content_type_, upload_data_);
+    if (request_type_ == net::URLFetcher::POST) {
+      if (!upload_file_path_.empty()) {
+        url_fetcher_->SetUploadFilePath(
+            upload_content_type_,
+            upload_file_path_,
+            0 /*offset*/,
+            kuint64max /*length*/,
+            content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::FILE));
+      } else {
+        url_fetcher_->SetUploadData(upload_content_type_, upload_data_);
+      }
+    }
 
     url_fetcher_->Start();
   } else {
@@ -88,8 +100,17 @@ void PrivetURLFetcher::Start() {
 
 void PrivetURLFetcher::SetUploadData(const std::string& upload_content_type,
                                      const std::string& upload_data) {
+  DCHECK(upload_file_path_.empty());
   upload_content_type_ = upload_content_type;
   upload_data_ = upload_data;
+}
+
+void PrivetURLFetcher::SetUploadFilePath(
+    const std::string& upload_content_type,
+    const base::FilePath& upload_file_path) {
+  DCHECK(upload_data_.empty());
+  upload_content_type_ = upload_content_type;
+  upload_file_path_ = upload_file_path;
 }
 
 void PrivetURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {

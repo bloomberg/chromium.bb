@@ -210,22 +210,11 @@ class PrivetHTTPTest : public ::testing::Test {
 
   bool SuccessfulResponseToURL(const GURL& url,
                                const std::string& response) {
-    return SuccessfulResponseToURLAndData(url, "", response);
-  }
-
-  bool SuccessfulResponseToURLAndData(const GURL& url,
-                                      const std::string& data,
-                                      const std::string& response) {
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
     EXPECT_TRUE(fetcher);
     EXPECT_EQ(url, fetcher->GetOriginalURL());
 
-    if (!data.empty()) {
-      EXPECT_EQ(data, fetcher->upload_data());
-    }
-
-    if (!fetcher || url != fetcher->GetOriginalURL() ||
-        (!data.empty() && data != fetcher->upload_data()))
+    if (!fetcher || url != fetcher->GetOriginalURL())
       return false;
 
     fetcher->SetResponseString(response);
@@ -235,6 +224,37 @@ class PrivetHTTPTest : public ::testing::Test {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     return true;
   }
+
+  bool SuccessfulResponseToURLAndData(const GURL& url,
+                                      const std::string& data,
+                                      const std::string& response) {
+    net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+    EXPECT_TRUE(fetcher);
+    EXPECT_EQ(url, fetcher->GetOriginalURL());
+
+    if (!fetcher) return false;
+
+    EXPECT_EQ(data, fetcher->upload_data());
+    if (data != fetcher->upload_data()) return false;
+
+    return SuccessfulResponseToURL(url, response);
+  }
+
+  bool SuccessfulResponseToURLAndFilePath(const GURL& url,
+                                          const base::FilePath& file_path,
+                                          const std::string& response) {
+    net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+    EXPECT_TRUE(fetcher);
+    EXPECT_EQ(url, fetcher->GetOriginalURL());
+
+    if (!fetcher) return false;
+
+    EXPECT_EQ(file_path, fetcher->upload_file_path());
+    if (file_path != fetcher->upload_file_path()) return false;
+
+    return SuccessfulResponseToURL(url, response);
+  }
+
 
   void RunFor(base::TimeDelta time_period) {
     base::CancelableCallback<void()> callback(base::Bind(
@@ -835,15 +855,16 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
       GURL("http://10.0.0.8:6006/privet/capabilities"),
       kSampleCapabilitiesResponsePWGOnly));
 
-  local_print_operation_->SendData("Sample print data");
+  local_print_operation_->SendDataFile(
+      base::FilePath(FILE_PATH_LITERAL("sample/file/path")));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
   // TODO(noamsml): Is encoding spaces as pluses standard?
-  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+  EXPECT_TRUE(SuccessfulResponseToURLAndFilePath(
       GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
            "user=sample%40gmail.com&jobname=Sample+job+name"),
-      "Sample print data",
+      base::FilePath(FILE_PATH_LITERAL("sample/file/path")),
       kSampleLocalPrintResponse));
 };
 

@@ -130,11 +130,12 @@ class PrivetLocalPrintOperation {
 
   virtual void Start() = 0;
 
-  // Should be called ONLY after |OnPrivetPrintingRequestPDF| or
+  // One of thsese should be called ONLY after |OnPrivetPrintingRequestPDF| or
   // |OnPrivetPrintingRequestPWGRaster| are called on the delegate.  Data should
   // be in PDF or PWG format depending on what is requested by the local print
   // operation.
   virtual void SendData(const std::string& data) = 0;
+  virtual void SendDataFile(const base::FilePath& data) = 0;
 
   // Optional attributes for /submitdoc. Call before calling |Start()|
   // |ticket| should be in CJT format.
