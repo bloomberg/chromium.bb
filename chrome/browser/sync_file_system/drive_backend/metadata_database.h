@@ -247,11 +247,11 @@ class MetadataDatabase {
 
   // Returns true if there is a normal priority dirty tracker.
   // Assigns the dirty tracker if exists and |tracker| is non-NULL.
-  bool GetNormalPriorityDirtyTracker(FileTracker* tracker);
+  bool GetNormalPriorityDirtyTracker(FileTracker* tracker) const;
 
   // Returns true if there is a low priority dirty tracker.
   // Assigns the dirty tracker if exists and |tracker| is non-NULL.
-  bool GetLowPriorityDirtyTracker(FileTracker* tracker);
+  bool GetLowPriorityDirtyTracker(FileTracker* tracker) const;
 
   // Sets |app_ids| to a list of all registered app ids.
   void GetRegisteredAppIDs(std::vector<std::string>* app_ids);

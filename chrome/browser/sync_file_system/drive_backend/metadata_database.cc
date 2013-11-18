@@ -940,17 +940,24 @@ void MetadataDatabase::LowerTrackerPriority(int64 tracker_id) {
     low_priority_dirty_trackers_.insert(tracker);
 }
 
-bool MetadataDatabase::GetNormalPriorityDirtyTracker(FileTracker* tracker) {
-  // TODO(tzik): Split |dirty_trackers| to |normal_priority_dirty_trackers|
-  // and |low_priority_dirty_trackers|.
-  // Add a function to mark a dirty tracker low priority.
-  NOTIMPLEMENTED();
-  return false;
+bool MetadataDatabase::GetNormalPriorityDirtyTracker(
+    FileTracker* tracker) const {
+  DCHECK(tracker);
+  DirtyTrackers::const_iterator itr = dirty_trackers_.begin();
+  if (itr == dirty_trackers_.end())
+    return false;
+  *tracker = **itr;
+  return true;
 }
 
-bool MetadataDatabase::GetLowPriorityDirtyTracker(FileTracker* tracker) {
-  NOTIMPLEMENTED();
-  return false;
+bool MetadataDatabase::GetLowPriorityDirtyTracker(
+    FileTracker* tracker) const {
+  DCHECK(tracker);
+  DirtyTrackers::const_iterator itr = low_priority_dirty_trackers_.begin();
+  if (itr == low_priority_dirty_trackers_.end())
+    return false;
+  *tracker = **itr;
+  return true;
 }
 
 MetadataDatabase::MetadataDatabase(base::SequencedTaskRunner* task_runner)
@@ -1543,7 +1550,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpFiles(
     details->SetString("file_id", tracker->file_id());
     if (tracker->has_synced_details() &&
         tracker->synced_details().file_kind() == FILE_KIND_FILE)
-      details->SetString("md5",tracker->synced_details().md5());
+      details->SetString("md5", tracker->synced_details().md5());
     details->SetString("active", tracker->active() ? "true" : "false");
     details->SetString("dirty", tracker->dirty() ? "true" : "false");
 
