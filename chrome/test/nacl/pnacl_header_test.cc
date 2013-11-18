@@ -48,13 +48,13 @@ void PnaclHeaderTest::TearDown() {
 void PnaclHeaderTest::RunLoadTest(const std::string& url,
                                   int expected_noncors,
                                   int expected_cors) {
-  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(url));
-  // Wait until the NMF and pexe are also loaded, not just the HTML.
-  // Do this by waiting till the LoadTestMessageHandler responds.
   LoadTestMessageHandler handler;
   JavascriptTestObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
       &handler);
+  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(url));
+  // Wait until the NMF and pexe are also loaded, not just the HTML.
+  // Do this by waiting till the LoadTestMessageHandler responds.
   EXPECT_TRUE(observer.Run()) << handler.error_message();
   EXPECT_TRUE(handler.test_passed()) << "Test failed.";
   EXPECT_EQ(expected_noncors, noncors_loads_);
@@ -105,8 +105,7 @@ scoped_ptr<HttpResponse> PnaclHeaderTest::WatchForPexeFetch(
   return http_response.PassAs<HttpResponse>();
 }
 
-// Disabled: http://crbug.com/315328.
-IN_PROC_BROWSER_TEST_F(PnaclHeaderTest, DISABLED_TestHasPnaclHeader) {
+IN_PROC_BROWSER_TEST_F(PnaclHeaderTest, TestHasPnaclHeader) {
   // Load 2 pexes, one same origin and one cross orgin.
   RunLoadTest("/nacl/pnacl_request_header/pnacl_request_header.html", 1, 1);
 }
