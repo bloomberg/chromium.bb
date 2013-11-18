@@ -21,7 +21,7 @@ using base::android::ScopedJavaLocalRef;
 // ----------------------------------------------------------------------------
 // This method can not move to anonymous namespace as it has been declared as
 // 'static' in system_message_handler_jni.h.
-static void DoRunLoopOnce(JNIEnv* env, jobject obj, jint native_delegate) {
+static void DoRunLoopOnce(JNIEnv* env, jobject obj, jlong native_delegate) {
   base::MessagePump::Delegate* delegate =
       reinterpret_cast<base::MessagePump::Delegate*>(native_delegate);
   DCHECK(delegate);
@@ -81,7 +81,8 @@ void MessagePumpForUI::Start(Delegate* delegate) {
   DCHECK(env);
 
   system_message_handler_obj_.Reset(
-      Java_SystemMessageHandler_create(env, reinterpret_cast<jint>(delegate)));
+      Java_SystemMessageHandler_create(
+          env, reinterpret_cast<intptr_t>(delegate)));
 }
 
 void MessagePumpForUI::Quit() {

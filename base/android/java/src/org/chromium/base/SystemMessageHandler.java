@@ -16,9 +16,9 @@ class SystemMessageHandler extends Handler {
     private static final int DELAYED_TIMER_MESSAGE = 2;
 
     // Native class pointer set by the constructor of the SharedClient native class.
-    private int mMessagePumpDelegateNative = 0;
+    private long mMessagePumpDelegateNative = 0;
 
-    private SystemMessageHandler(int messagePumpDelegateNative) {
+    private SystemMessageHandler(long messagePumpDelegateNative) {
         mMessagePumpDelegateNative = messagePumpDelegateNative;
     }
 
@@ -47,9 +47,9 @@ class SystemMessageHandler extends Handler {
     }
 
     @CalledByNative
-    private static SystemMessageHandler create(int messagePumpDelegateNative) {
+    private static SystemMessageHandler create(long messagePumpDelegateNative) {
         return new SystemMessageHandler(messagePumpDelegateNative);
     }
 
-    private native void nativeDoRunLoopOnce(int messagePumpDelegateNative);
+    private native void nativeDoRunLoopOnce(long messagePumpDelegateNative);
 }
