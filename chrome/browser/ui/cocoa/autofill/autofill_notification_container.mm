@@ -76,6 +76,11 @@
                                     initWithNotification:&notification
                                                 delegate:delegate_]);
 
+    if (i == 0) {
+      [notificationController setHasArrow:notification.HasArrow()
+                           withAnchorView:anchorView_];
+    }
+
     [notificationControllers_ addObject:notificationController];
     [[self view] addSubview:[notificationController view]];
   }
