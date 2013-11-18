@@ -63,7 +63,6 @@ class SyncEngineTest : public testing::Test {
 };
 
 TEST_F(SyncEngineTest, EnableOrigin) {
-  base::RunLoop run_loop;
   FileTracker tracker;
   SyncStatusCode sync_status = SYNC_STATUS_UNKNOWN;
   MetadataDatabase* metadata_database = sync_engine()->GetMetadataDatabase();

@@ -332,10 +332,6 @@ class MetadataDatabase {
   bool HasActiveTrackerForPath(int64 parent_tracker,
                                const std::string& title) const;
 
-  void UpdateTrackerTitle(FileTracker* tracker,
-                          const std::string& new_title,
-                          leveldb::WriteBatch* batch);
-
   void WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
                        const SyncStatusCallback& callback);
 
