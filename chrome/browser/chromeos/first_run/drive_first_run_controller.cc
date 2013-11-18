@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,10 +37,10 @@ namespace chromeos {
 namespace {
 
 // The initial time to wait in seconds before starting the opt-in.
-const int kInitialDelaySeconds = 180;
+int kInitialDelaySeconds = 180;
 
 // Time to wait for Drive app background page to come up before giving up.
-const int kWebContentsTimeoutSeconds = 15;
+int kWebContentsTimeoutSeconds = 15;
 
 // Google Drive offline opt-in endpoint.
 const char kDriveOfflineEndpointUrl[] = "https://drive.google.com/#offline";
@@ -63,6 +64,8 @@ class DriveWebContentsManager : public content::WebContentsObserver,
   typedef base::Callback<void(bool)> CompletionCallback;
 
   DriveWebContentsManager(Profile* profile,
+                          const std::string& app_id,
+                          const std::string& endpoint_url,
                           const CompletionCallback& completion_callback);
   virtual ~DriveWebContentsManager();
 
@@ -114,6 +117,8 @@ class DriveWebContentsManager : public content::WebContentsObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   Profile* profile_;
+  const std::string app_id_;
+  const std::string endpoint_url_;
   scoped_ptr<content::WebContents> web_contents_;
   content::NotificationRegistrar registrar_;
   bool started_;
@@ -125,8 +130,12 @@ class DriveWebContentsManager : public content::WebContentsObserver,
 
 DriveWebContentsManager::DriveWebContentsManager(
     Profile* profile,
+    const std::string& app_id,
+    const std::string& endpoint_url,
     const CompletionCallback& completion_callback)
     : profile_(profile),
+      app_id_(app_id),
+      endpoint_url_(endpoint_url),
       started_(false),
       completion_callback_(completion_callback),
       weak_ptr_factory_(this) {
@@ -140,12 +149,14 @@ DriveWebContentsManager::~DriveWebContentsManager() {
 
 void DriveWebContentsManager::StartLoad() {
   started_ = true;
-  const GURL url(kDriveOfflineEndpointUrl);
+  const GURL url(endpoint_url_);
   content::WebContents::CreateParams create_params(
         profile_, content::SiteInstance::CreateForURL(profile_, url));
 
   web_contents_.reset(content::WebContents::Create(create_params));
   web_contents_->SetDelegate(this);
+  extensions::ExtensionWebContentsObserver::CreateForWebContents(
+      web_contents_.get());
 
   content::NavigationController::LoadURLParams load_params(url);
   load_params.transition_type = content::PAGE_TRANSITION_GENERATED;
@@ -183,7 +194,10 @@ void DriveWebContentsManager::DidFailProvisionalLoad(
     int error_code,
     const string16& error_description,
     content::RenderViewHost* render_view_host) {
-  OnOfflineInit(false);
+  if (is_main_frame) {
+    LOG(WARNING) << "Failed to load WebContents to enable offline mode.";
+    OnOfflineInit(false);
+  }
 }
 
 void DriveWebContentsManager::DidFailLoad(
@@ -193,7 +207,10 @@ void DriveWebContentsManager::DidFailLoad(
     int error_code,
     const string16& error_description,
     content::RenderViewHost* render_view_host) {
-  OnOfflineInit(false);
+  if (is_main_frame) {
+    LOG(WARNING) << "Failed to load WebContents to enable offline mode.";
+    OnOfflineInit(false);
+  }
 }
 
 bool DriveWebContentsManager::ShouldCreateWebContents(
@@ -213,7 +230,7 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   const extensions::Extension *extension =
       service->GetInstalledApp(target_url);
-  if (!extension || extension->id() != kDriveHostedAppId)
+  if (!extension || extension->id() != app_id_)
     return true;
 
   // The background contents creation is normally done in Browser, but
@@ -223,7 +240,7 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
 
   // Prevent redirection if background contents already exists.
   if (background_contents_service->GetAppBackgroundContents(
-      UTF8ToUTF16(kDriveHostedAppId))) {
+      UTF8ToUTF16(app_id_))) {
     return false;
   }
   BackgroundContents* contents = background_contents_service
@@ -231,7 +248,7 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
                                  route_id,
                                  profile_,
                                  frame_name,
-                                 ASCIIToUTF16(kDriveHostedAppId),
+                                 ASCIIToUTF16(app_id_),
                                  partition_id,
                                  session_storage_namespace);
 
@@ -253,7 +270,7 @@ void DriveWebContentsManager::Observe(
     const std::string app_id = UTF16ToUTF8(
         content::Details<BackgroundContentsOpenedDetails>(details)
             ->application_id);
-    if (app_id == kDriveHostedAppId)
+    if (app_id == app_id_)
       OnOfflineInit(true);
   }
 }
@@ -263,7 +280,11 @@ void DriveWebContentsManager::Observe(
 
 DriveFirstRunController::DriveFirstRunController()
     : profile_(ProfileManager::GetDefaultProfile()),
-      started_(false) {
+      started_(false),
+      initial_delay_secs_(kInitialDelaySeconds),
+      web_contents_timeout_secs_(kWebContentsTimeoutSeconds),
+      drive_offline_endpoint_url_(kDriveOfflineEndpointUrl),
+      drive_hosted_app_id_(kDriveHostedAppId) {
 }
 
 DriveFirstRunController::~DriveFirstRunController() {
@@ -274,7 +295,7 @@ void DriveFirstRunController::EnableOfflineMode() {
     started_ = true;
     initial_delay_timer_.Start(
       FROM_HERE,
-      base::TimeDelta::FromSeconds(kInitialDelaySeconds),
+      base::TimeDelta::FromSeconds(initial_delay_secs_),
       this,
       &DriveFirstRunController::EnableOfflineMode);
     return;
@@ -289,7 +310,7 @@ void DriveFirstRunController::EnableOfflineMode() {
 
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (!extension_service->GetExtensionById(kDriveHostedAppId, false)) {
+  if (!extension_service->GetExtensionById(drive_hosted_app_id_, false)) {
     LOG(WARNING) << "Drive app is not installed.";
     OnOfflineInit(false);
     return;
@@ -298,7 +319,7 @@ void DriveFirstRunController::EnableOfflineMode() {
   BackgroundContentsService* background_contents_service =
       BackgroundContentsServiceFactory::GetForProfile(profile_);
   if (background_contents_service->GetAppBackgroundContents(
-      UTF8ToUTF16(kDriveHostedAppId))) {
+      UTF8ToUTF16(drive_hosted_app_id_))) {
     LOG(WARNING) << "Background page for Drive app already exists";
     OnOfflineInit(false);
     return;
@@ -306,18 +327,44 @@ void DriveFirstRunController::EnableOfflineMode() {
 
   web_contents_manager_.reset(new DriveWebContentsManager(
       profile_,
+      drive_hosted_app_id_,
+      drive_offline_endpoint_url_,
       base::Bind(&DriveFirstRunController::OnOfflineInit,
                  base::Unretained(this))));
   web_contents_manager_->StartLoad();
   web_contents_timer_.Start(
       FROM_HERE,
-      base::TimeDelta::FromSeconds(kWebContentsTimeoutSeconds),
+      base::TimeDelta::FromSeconds(web_contents_timeout_secs_),
       this,
       &DriveFirstRunController::OnWebContentsTimedOut);
 }
 
+void DriveFirstRunController::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void DriveFirstRunController::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void DriveFirstRunController::SetDelaysForTest(int initial_delay_secs,
+                                               int timeout_secs) {
+  DCHECK(!started_);
+  initial_delay_secs_ = initial_delay_secs;
+  web_contents_timeout_secs_ = timeout_secs;
+}
+
+void DriveFirstRunController::SetAppInfoForTest(
+    const std::string& app_id,
+    const std::string& endpoint_url) {
+  DCHECK(!started_);
+  drive_hosted_app_id_ = app_id;
+  drive_offline_endpoint_url_ = endpoint_url;
+}
+
 void DriveFirstRunController::OnWebContentsTimedOut() {
   LOG(WARNING) << "Timed out waiting for web contents to opt-in";
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnTimedOut());
   OnOfflineInit(false);
 }
 
@@ -330,8 +377,11 @@ void DriveFirstRunController::CleanUp() {
 
 void DriveFirstRunController::OnOfflineInit(bool success) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  ash::Shell::GetInstance()->system_tray_notifier()
-      ->NotifyDriveOfflineEnabled();
+  if (success) {
+    ash::Shell::GetInstance()->system_tray_notifier()
+        ->NotifyDriveOfflineEnabled();
+  }
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnCompletion(success));
   CleanUp();
 }
 
