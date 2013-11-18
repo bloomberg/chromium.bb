@@ -882,6 +882,9 @@ class ChromiumAndroidDriver(driver.Driver):
     def _log_error(self, message):
         _log.error('[%s] %s' % (self._android_commands.get_serial(), message))
 
+    def _log_warning(self, message):
+        _log.warning('[%s] %s' % (self._android_commands.get_serial(), message))
+
     def _log_debug(self, message):
         if self._debug_logging:
             _log.debug('[%s] %s' % (self._android_commands.get_serial(), message))
@@ -950,6 +953,9 @@ class ChromiumAndroidDriver(driver.Driver):
         if not tombstones or tombstones.startswith('/data/tombstones/tombstone_*: No such file or directory'):
             self._log_error('The driver crashed, but no tombstone found!')
             return ''
+        if tombstones.startswith('/data/tombstones/tombstone_*: Permission denied'):
+            self._log_error('The driver crashed, but we could not read the tombstones!')
+            return ''
         tombstones = tombstones.rstrip().split('\n')
         last_tombstone = tombstones[0].split()
         for tombstone in tombstones[1:]:
@@ -958,6 +964,9 @@ class ChromiumAndroidDriver(driver.Driver):
             # permission uid    gid    size  date       time  filename
             # -rw------- 1000   1000   45859 2011-04-13 06:00 tombstone_00
             fields = tombstone.split()
+            if len(fields) != 7:
+                self._log_warning("unexpected line in tombstone output, skipping: '%s'" % tombstone)
+                continue
             if (fields[4] + fields[5] >= last_tombstone[4] + last_tombstone[5]):
                 last_tombstone = fields
             else:
