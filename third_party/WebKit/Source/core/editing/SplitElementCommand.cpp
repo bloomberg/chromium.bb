@@ -53,13 +53,13 @@ void SplitElementCommand::executeApply()
     for (Node* node = m_element2->firstChild(); node != m_atChild; node = node->nextSibling())
         children.append(node);
 
-    TrackExceptionState es;
+    TrackExceptionState exceptionState;
 
     ContainerNode* parent = m_element2->parentNode();
     if (!parent || !parent->rendererIsEditable())
         return;
-    parent->insertBefore(m_element1.get(), m_element2.get(), es);
-    if (es.hadException())
+    parent->insertBefore(m_element1.get(), m_element2.get(), exceptionState);
+    if (exceptionState.hadException())
         return;
 
     // Delete id attribute from the second element because the same id cannot be used for more than one element
@@ -67,7 +67,7 @@ void SplitElementCommand::executeApply()
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
-        m_element1->appendChild(children[i], es);
+        m_element1->appendChild(children[i], exceptionState);
 }
 
 void SplitElementCommand::doApply()

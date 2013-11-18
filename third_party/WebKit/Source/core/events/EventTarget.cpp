@@ -155,18 +155,18 @@ bool EventTarget::clearAttributeEventListener(const AtomicString& eventType, DOM
     return removeEventListener(eventType, listener, false);
 }
 
-bool EventTarget::dispatchEvent(PassRefPtr<Event> event, ExceptionState& es)
+bool EventTarget::dispatchEvent(PassRefPtr<Event> event, ExceptionState& exceptionState)
 {
     if (!event) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("dispatchEvent", "EventTarget", "The event provided is null."));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("dispatchEvent", "EventTarget", "The event provided is null."));
         return false;
     }
     if (event->type().isEmpty()) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("dispatchEvent", "EventTarget", "The event provided is uninitialized."));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("dispatchEvent", "EventTarget", "The event provided is uninitialized."));
         return false;
     }
     if (event->isBeingDispatched()) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("dispatchEvent", "EventTarget", "The event is already being dispatched."));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("dispatchEvent", "EventTarget", "The event is already being dispatched."));
         return false;
     }
 

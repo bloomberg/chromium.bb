@@ -30,7 +30,7 @@ namespace WebCore {
 template<typename CharType>
 void SVGLengthList::parseInternal(const CharType*& ptr, const CharType* end, SVGLengthMode mode)
 {
-    TrackExceptionState es;
+    TrackExceptionState exceptionState;
 
     while (ptr < end) {
         const CharType* start = ptr;
@@ -43,8 +43,8 @@ void SVGLengthList::parseInternal(const CharType*& ptr, const CharType* end, SVG
         String valueString(start, ptr - start);
         if (valueString.isEmpty())
             return;
-        length.setValueAsString(valueString, es);
-        if (es.hadException())
+        length.setValueAsString(valueString, exceptionState);
+        if (exceptionState.hadException())
             return;
         append(length);
         skipOptionalSVGSpacesOrDelimiter(ptr, end);

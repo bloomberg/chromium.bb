@@ -194,13 +194,13 @@ int DOMSelection::rangeCount() const
     return m_frame->selection().isNone() ? 0 : 1;
 }
 
-void DOMSelection::collapse(Node* node, int offset, ExceptionState& es)
+void DOMSelection::collapse(Node* node, int offset, ExceptionState& exceptionState)
 {
     if (!m_frame)
         return;
 
     if (offset < 0) {
-        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("collapse", "Selection", String::number(offset) + " is not a valid offset."));
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("collapse", "Selection", String::number(offset) + " is not a valid offset."));
         return;
     }
 
@@ -211,7 +211,7 @@ void DOMSelection::collapse(Node* node, int offset, ExceptionState& es)
     m_frame->selection().moveTo(VisiblePosition(createLegacyEditingPosition(node, offset), DOWNSTREAM));
 }
 
-void DOMSelection::collapseToEnd(ExceptionState& es)
+void DOMSelection::collapseToEnd(ExceptionState& exceptionState)
 {
     if (!m_frame)
         return;
@@ -219,14 +219,14 @@ void DOMSelection::collapseToEnd(ExceptionState& es)
     const VisibleSelection& selection = m_frame->selection().selection();
 
     if (selection.isNone()) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("collapseToEnd", "Selection", "there is no selection."));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("collapseToEnd", "Selection", "there is no selection."));
         return;
     }
 
     m_frame->selection().moveTo(VisiblePosition(selection.end(), DOWNSTREAM));
 }
 
-void DOMSelection::collapseToStart(ExceptionState& es)
+void DOMSelection::collapseToStart(ExceptionState& exceptionState)
 {
     if (!m_frame)
         return;
@@ -234,7 +234,7 @@ void DOMSelection::collapseToStart(ExceptionState& es)
     const VisibleSelection& selection = m_frame->selection().selection();
 
     if (selection.isNone()) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("collapseToStart", "Selection", "there is no selection."));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("collapseToStart", "Selection", "there is no selection."));
         return;
     }
 
@@ -248,18 +248,18 @@ void DOMSelection::empty()
     m_frame->selection().clear();
 }
 
-void DOMSelection::setBaseAndExtent(Node* baseNode, int baseOffset, Node* extentNode, int extentOffset, ExceptionState& es)
+void DOMSelection::setBaseAndExtent(Node* baseNode, int baseOffset, Node* extentNode, int extentOffset, ExceptionState& exceptionState)
 {
     if (!m_frame)
         return;
 
     if (baseOffset < 0) {
-        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("setBaseAndExtent", "Selection", String::number(baseOffset) + " is not a valid base offset."));
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("setBaseAndExtent", "Selection", String::number(baseOffset) + " is not a valid base offset."));
         return;
     }
 
     if (extentOffset < 0) {
-        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("setBaseAndExtent", "Selection", String::number(extentOffset) + " is not a valid extent offset."));
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("setBaseAndExtent", "Selection", String::number(extentOffset) + " is not a valid extent offset."));
         return;
     }
 
@@ -273,12 +273,12 @@ void DOMSelection::setBaseAndExtent(Node* baseNode, int baseOffset, Node* extent
     m_frame->selection().moveTo(visibleBase, visibleExtent);
 }
 
-void DOMSelection::setPosition(Node* node, int offset, ExceptionState& es)
+void DOMSelection::setPosition(Node* node, int offset, ExceptionState& exceptionState)
 {
     if (!m_frame)
         return;
     if (offset < 0) {
-        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("setPosition", "Selection", String::number(offset) + " is not a valid offset."));
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("setPosition", "Selection", String::number(offset) + " is not a valid offset."));
         return;
     }
 
@@ -339,22 +339,22 @@ void DOMSelection::modify(const String& alterString, const String& directionStri
     m_frame->selection().modify(alter, direction, granularity);
 }
 
-void DOMSelection::extend(Node* node, int offset, ExceptionState& es)
+void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState)
 {
     if (!m_frame)
         return;
 
     if (!node) {
-        es.throwDOMException(TypeMismatchError, ExceptionMessages::failedToExecute("extend", "Selection", "The node provided is invalid."));
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::failedToExecute("extend", "Selection", "The node provided is invalid."));
         return;
     }
 
     if (offset < 0) {
-        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("extend", "Selection", String::number(offset) + " is not a valid offset."));
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("extend", "Selection", String::number(offset) + " is not a valid offset."));
         return;
     }
     if (offset > (node->offsetInCharacters() ? caretMaxOffset(node) : (int)node->childNodeCount())) {
-        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("extend", "Selection", String::number(offset) + " is larger than the given node's length."));
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("extend", "Selection", String::number(offset) + " is larger than the given node's length."));
         return;
     }
 
@@ -365,13 +365,13 @@ void DOMSelection::extend(Node* node, int offset, ExceptionState& es)
     m_frame->selection().setExtent(VisiblePosition(createLegacyEditingPosition(node, offset), DOWNSTREAM));
 }
 
-PassRefPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& es)
+PassRefPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionState)
 {
     if (!m_frame)
         return 0;
 
     if (index < 0 || index >= rangeCount()) {
-        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("getRangeAt", "Selection", String::number(index) + " is not a valid index."));
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("getRangeAt", "Selection", String::number(index) + " is not a valid index."));
         return 0;
     }
 
@@ -423,8 +423,8 @@ void DOMSelection::addRange(Range* r)
         }
     } else {
         // We don't support discontiguous selection. We don't do anything if r and range don't intersect.
-        TrackExceptionState es;
-        if (r->compareBoundaryPoints(Range::END_TO_START, range.get(), es) < 1 && !es.hadException()) {
+        TrackExceptionState exceptionState;
+        if (r->compareBoundaryPoints(Range::END_TO_START, range.get(), exceptionState) < 1 && !exceptionState.hadException()) {
             if (r->compareBoundaryPoints(Range::END_TO_END, range.get(), IGNORE_EXCEPTION) == -1) {
                 // The original range contains r.
                 selection.setSelection(VisibleSelection(range.get()));
@@ -475,29 +475,29 @@ bool DOMSelection::containsNode(const Node* n, bool allowPartial) const
     if (!parentNode)
         return false;
 
-    TrackExceptionState es;
-    bool nodeFullySelected = Range::compareBoundaryPoints(parentNode, nodeIndex, selectedRange->startContainer(), selectedRange->startOffset(), es) >= 0 && !es.hadException()
-        && Range::compareBoundaryPoints(parentNode, nodeIndex + 1, selectedRange->endContainer(), selectedRange->endOffset(), es) <= 0 && !es.hadException();
-    ASSERT(!es.hadException());
+    TrackExceptionState exceptionState;
+    bool nodeFullySelected = Range::compareBoundaryPoints(parentNode, nodeIndex, selectedRange->startContainer(), selectedRange->startOffset(), exceptionState) >= 0 && !exceptionState.hadException()
+        && Range::compareBoundaryPoints(parentNode, nodeIndex + 1, selectedRange->endContainer(), selectedRange->endOffset(), exceptionState) <= 0 && !exceptionState.hadException();
+    ASSERT(!exceptionState.hadException());
     if (nodeFullySelected)
         return true;
 
-    bool nodeFullyUnselected = (Range::compareBoundaryPoints(parentNode, nodeIndex, selectedRange->endContainer(), selectedRange->endOffset(), es) > 0 && !es.hadException())
-        || (Range::compareBoundaryPoints(parentNode, nodeIndex + 1, selectedRange->startContainer(), selectedRange->startOffset(), es) < 0 && !es.hadException());
-    ASSERT(!es.hadException());
+    bool nodeFullyUnselected = (Range::compareBoundaryPoints(parentNode, nodeIndex, selectedRange->endContainer(), selectedRange->endOffset(), exceptionState) > 0 && !exceptionState.hadException())
+        || (Range::compareBoundaryPoints(parentNode, nodeIndex + 1, selectedRange->startContainer(), selectedRange->startOffset(), exceptionState) < 0 && !exceptionState.hadException());
+    ASSERT(!exceptionState.hadException());
     if (nodeFullyUnselected)
         return false;
 
     return allowPartial || n->isTextNode();
 }
 
-void DOMSelection::selectAllChildren(Node* n, ExceptionState& es)
+void DOMSelection::selectAllChildren(Node* n, ExceptionState& exceptionState)
 {
     if (!n)
         return;
 
     // This doesn't (and shouldn't) select text node characters.
-    setBaseAndExtent(n, 0, n, n->childNodeCount(), es);
+    setBaseAndExtent(n, 0, n, n->childNodeCount(), exceptionState);
 }
 
 String DOMSelection::toString()

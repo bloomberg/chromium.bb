@@ -50,14 +50,14 @@ SVGGraphicsElement::~SVGGraphicsElement()
 {
 }
 
-AffineTransform SVGGraphicsElement::getTransformToElement(SVGElement* target, ExceptionState& es)
+AffineTransform SVGGraphicsElement::getTransformToElement(SVGElement* target, ExceptionState& exceptionState)
 {
     AffineTransform ctm = getCTM(AllowStyleUpdate);
 
     if (target && target->isSVGGraphicsElement()) {
         AffineTransform targetCTM = toSVGGraphicsElement(target)->getCTM(AllowStyleUpdate);
         if (!targetCTM.isInvertible()) {
-            es.throwUninformativeAndGenericDOMException(InvalidStateError);
+            exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
             return ctm;
         }
         ctm = targetCTM.inverse() * ctm;

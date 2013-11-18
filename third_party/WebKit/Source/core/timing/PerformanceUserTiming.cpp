@@ -99,10 +99,10 @@ static void clearPeformanceEntries(PerformanceEntryMap& performanceEntryMap, con
         performanceEntryMap.remove(name);
 }
 
-void UserTiming::mark(const String& markName, ExceptionState& es)
+void UserTiming::mark(const String& markName, ExceptionState& exceptionState)
 {
     if (restrictedKeyMap().contains(markName)) {
-        es.throwDOMException(SyntaxError, "'" + markName + "' is part of the PerformanceTiming interface, and cannot be used as a mark name.");
+        exceptionState.throwDOMException(SyntaxError, "'" + markName + "' is part of the PerformanceTiming interface, and cannot be used as a mark name.");
         return;
     }
 
@@ -116,7 +116,7 @@ void UserTiming::clearMarks(const String& markName)
     clearPeformanceEntries(m_marksMap, markName);
 }
 
-double UserTiming::findExistingMarkStartTime(const String& markName, ExceptionState& es)
+double UserTiming::findExistingMarkStartTime(const String& markName, ExceptionState& exceptionState)
 {
     if (m_marksMap.contains(markName))
         return m_marksMap.get(markName).last()->startTime();
@@ -124,17 +124,17 @@ double UserTiming::findExistingMarkStartTime(const String& markName, ExceptionSt
     if (restrictedKeyMap().contains(markName)) {
         double value = static_cast<double>((m_performance->timing()->*(restrictedKeyMap().get(markName)))());
         if (!value) {
-            es.throwDOMException(InvalidAccessError, "'" + markName + "' is empty: either the event hasn't happened yet, or it would provide cross-origin timing information.");
+            exceptionState.throwDOMException(InvalidAccessError, "'" + markName + "' is empty: either the event hasn't happened yet, or it would provide cross-origin timing information.");
             return 0.0;
         }
         return value - m_performance->timing()->navigationStart();
     }
 
-    es.throwDOMException(SyntaxError, "The mark '" + markName + "' does not exist.");
+    exceptionState.throwDOMException(SyntaxError, "The mark '" + markName + "' does not exist.");
     return 0.0;
 }
 
-void UserTiming::measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState& es)
+void UserTiming::measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState& exceptionState)
 {
     double startTime = 0.0;
     double endTime = 0.0;
@@ -143,15 +143,15 @@ void UserTiming::measure(const String& measureName, const String& startMark, con
         endTime = m_performance->now();
     else if (endMark.isNull()) {
         endTime = m_performance->now();
-        startTime = findExistingMarkStartTime(startMark, es);
-        if (es.hadException())
+        startTime = findExistingMarkStartTime(startMark, exceptionState);
+        if (exceptionState.hadException())
             return;
     } else {
-        endTime = findExistingMarkStartTime(endMark, es);
-        if (es.hadException())
+        endTime = findExistingMarkStartTime(endMark, exceptionState);
+        if (exceptionState.hadException())
             return;
-        startTime = findExistingMarkStartTime(startMark, es);
-        if (es.hadException())
+        startTime = findExistingMarkStartTime(startMark, exceptionState);
+        if (exceptionState.hadException())
             return;
     }
 

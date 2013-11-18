@@ -39,9 +39,9 @@ namespace WebCore {
 
 using namespace XPath;
 
-PassRefPtr<XPathExpression> XPathEvaluator::createExpression(const String& expression, XPathNSResolver* resolver, ExceptionState& es)
+PassRefPtr<XPathExpression> XPathEvaluator::createExpression(const String& expression, XPathNSResolver* resolver, ExceptionState& exceptionState)
 {
-    return XPathExpression::createExpression(expression, resolver, es);
+    return XPathExpression::createExpression(expression, resolver, exceptionState);
 }
 
 PassRefPtr<XPathNSResolver> XPathEvaluator::createNSResolver(Node* nodeResolver)
@@ -50,18 +50,18 @@ PassRefPtr<XPathNSResolver> XPathEvaluator::createNSResolver(Node* nodeResolver)
 }
 
 PassRefPtr<XPathResult> XPathEvaluator::evaluate(const String& expression, Node* contextNode,
-    XPathNSResolver* resolver, unsigned short type, XPathResult* result, ExceptionState& es)
+    XPathNSResolver* resolver, unsigned short type, XPathResult* result, ExceptionState& exceptionState)
 {
     if (!isValidContextNode(contextNode)) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
-    RefPtr<XPathExpression> expr = createExpression(expression, resolver, es);
-    if (es.hadException())
+    RefPtr<XPathExpression> expr = createExpression(expression, resolver, exceptionState);
+    if (exceptionState.hadException())
         return 0;
 
-    return expr->evaluate(contextNode, type, result, es);
+    return expr->evaluate(contextNode, type, result, exceptionState);
 }
 
 }

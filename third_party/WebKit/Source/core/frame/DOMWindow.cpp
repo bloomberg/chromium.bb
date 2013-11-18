@@ -749,7 +749,7 @@ Location* DOMWindow::location() const
     return m_location.get();
 }
 
-Storage* DOMWindow::sessionStorage(ExceptionState& es) const
+Storage* DOMWindow::sessionStorage(ExceptionState& exceptionState) const
 {
     if (!isCurrentlyDisplayedInFrame())
         return 0;
@@ -761,17 +761,17 @@ Storage* DOMWindow::sessionStorage(ExceptionState& es) const
     String accessDeniedMessage = "Access to 'sessionStorage' is denied for this document.";
     if (!document->securityOrigin()->canAccessLocalStorage()) {
         if (document->isSandboxed(SandboxOrigin))
-            es.throwSecurityError(accessDeniedMessage + " The document is sandboxed and lacks the 'allow-same-origin' flag.");
+            exceptionState.throwSecurityError(accessDeniedMessage + " The document is sandboxed and lacks the 'allow-same-origin' flag.");
         else if (document->url().protocolIs("data"))
-            es.throwSecurityError(accessDeniedMessage + " Storage is disabled inside 'data:' URLs.");
+            exceptionState.throwSecurityError(accessDeniedMessage + " Storage is disabled inside 'data:' URLs.");
         else
-            es.throwSecurityError(accessDeniedMessage);
+            exceptionState.throwSecurityError(accessDeniedMessage);
         return 0;
     }
 
     if (m_sessionStorage) {
         if (!m_sessionStorage->area()->canAccessStorage(m_frame)) {
-            es.throwSecurityError(accessDeniedMessage);
+            exceptionState.throwSecurityError(accessDeniedMessage);
             return 0;
         }
         return m_sessionStorage.get();
@@ -783,7 +783,7 @@ Storage* DOMWindow::sessionStorage(ExceptionState& es) const
 
     OwnPtr<StorageArea> storageArea = page->sessionStorage()->storageArea(document->securityOrigin());
     if (!storageArea->canAccessStorage(m_frame)) {
-        es.throwSecurityError(accessDeniedMessage);
+        exceptionState.throwSecurityError(accessDeniedMessage);
         return 0;
     }
 
@@ -791,7 +791,7 @@ Storage* DOMWindow::sessionStorage(ExceptionState& es) const
     return m_sessionStorage.get();
 }
 
-Storage* DOMWindow::localStorage(ExceptionState& es) const
+Storage* DOMWindow::localStorage(ExceptionState& exceptionState) const
 {
     if (!isCurrentlyDisplayedInFrame())
         return 0;
@@ -803,17 +803,17 @@ Storage* DOMWindow::localStorage(ExceptionState& es) const
     String accessDeniedMessage = "Access to 'localStorage' is denied for this document.";
     if (!document->securityOrigin()->canAccessLocalStorage()) {
         if (document->isSandboxed(SandboxOrigin))
-            es.throwSecurityError(accessDeniedMessage + " The document is sandboxed and lacks the 'allow-same-origin' flag.");
+            exceptionState.throwSecurityError(accessDeniedMessage + " The document is sandboxed and lacks the 'allow-same-origin' flag.");
         else if (document->url().protocolIs("data"))
-            es.throwSecurityError(accessDeniedMessage + " Storage is disabled inside 'data:' URLs.");
+            exceptionState.throwSecurityError(accessDeniedMessage + " Storage is disabled inside 'data:' URLs.");
         else
-            es.throwSecurityError(accessDeniedMessage);
+            exceptionState.throwSecurityError(accessDeniedMessage);
         return 0;
     }
 
     if (m_localStorage) {
         if (!m_localStorage->area()->canAccessStorage(m_frame)) {
-            es.throwSecurityError(accessDeniedMessage);
+            exceptionState.throwSecurityError(accessDeniedMessage);
             return 0;
         }
         return m_localStorage.get();
@@ -828,7 +828,7 @@ Storage* DOMWindow::localStorage(ExceptionState& es) const
 
     OwnPtr<StorageArea> storageArea = StorageNamespace::localStorageArea(document->securityOrigin());
     if (!storageArea->canAccessStorage(m_frame)) {
-        es.throwSecurityError(accessDeniedMessage);
+        exceptionState.throwSecurityError(accessDeniedMessage);
         return 0;
     }
 
@@ -836,7 +836,7 @@ Storage* DOMWindow::localStorage(ExceptionState& es) const
     return m_localStorage.get();
 }
 
-void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, const String& targetOrigin, DOMWindow* source, ExceptionState& es)
+void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, const String& targetOrigin, DOMWindow* source, ExceptionState& exceptionState)
 {
     if (!isCurrentlyDisplayedInFrame())
         return;
@@ -855,13 +855,13 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
         // It doesn't make sense target a postMessage at a unique origin
         // because there's no way to represent a unique origin in a string.
         if (target->isUnique()) {
-            es.throwDOMException(SyntaxError, "Invalid target origin '" + targetOrigin + "' in a call to 'postMessage'.");
+            exceptionState.throwDOMException(SyntaxError, "Invalid target origin '" + targetOrigin + "' in a call to 'postMessage'.");
             return;
         }
     }
 
-    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, es);
-    if (es.hadException())
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, exceptionState);
+    if (exceptionState.hadException())
         return;
 
     // Capture the source of the message.  We need to do this synchronously

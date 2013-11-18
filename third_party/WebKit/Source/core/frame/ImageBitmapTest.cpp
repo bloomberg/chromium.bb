@@ -202,8 +202,8 @@ TEST_F(ImageBitmapTest, ImageResourceLifetime)
         imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas.get(), IntRect(0, 0, 20, 20));
     }
     CanvasRenderingContext* context = canvasElement->getContext("2d");
-    TrackExceptionState es;
-    static_cast<CanvasRenderingContext2D*>(context)->drawImage(imageBitmapDerived.get(), 0, 0, es);
+    TrackExceptionState exceptionState;
+    static_cast<CanvasRenderingContext2D*>(context)->drawImage(imageBitmapDerived.get(), 0, 0, exceptionState);
 }
 
 } // namespace

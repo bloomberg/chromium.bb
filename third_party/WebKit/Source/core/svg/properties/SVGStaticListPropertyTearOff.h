@@ -46,39 +46,39 @@ public:
     SVGElement* contextElement() const { return m_contextElement; }
 
     // SVGList API
-    void clear(ExceptionState& es)
+    void clear(ExceptionState& exceptionState)
     {
-        Base::clearValues(es);
+        Base::clearValues(exceptionState);
     }
 
-    ListItemType initialize(const ListItemType& newItem, ExceptionState& es)
+    ListItemType initialize(const ListItemType& newItem, ExceptionState& exceptionState)
     {
-        return Base::initializeValues(newItem, es);
+        return Base::initializeValues(newItem, exceptionState);
     }
 
-    ListItemType getItem(unsigned index, ExceptionState& es)
+    ListItemType getItem(unsigned index, ExceptionState& exceptionState)
     {
-        return Base::getItemValues(index, es);
+        return Base::getItemValues(index, exceptionState);
     }
 
-    ListItemType insertItemBefore(const ListItemType& newItem, unsigned index, ExceptionState& es)
+    ListItemType insertItemBefore(const ListItemType& newItem, unsigned index, ExceptionState& exceptionState)
     {
-        return Base::insertItemBeforeValues(newItem, index, es);
+        return Base::insertItemBeforeValues(newItem, index, exceptionState);
     }
 
-    ListItemType replaceItem(const ListItemType& newItem, unsigned index, ExceptionState& es)
+    ListItemType replaceItem(const ListItemType& newItem, unsigned index, ExceptionState& exceptionState)
     {
-        return Base::replaceItemValues(newItem, index, es);
+        return Base::replaceItemValues(newItem, index, exceptionState);
     }
 
-    ListItemType removeItem(unsigned index, ExceptionState& es)
+    ListItemType removeItem(unsigned index, ExceptionState& exceptionState)
     {
-        return Base::removeItemValues(index, es);
+        return Base::removeItemValues(index, exceptionState);
     }
 
-    ListItemType appendItem(const ListItemType& newItem, ExceptionState& es)
+    ListItemType appendItem(const ListItemType& newItem, ExceptionState& exceptionState)
     {
-        return Base::appendItemValues(newItem, es);
+        return Base::appendItemValues(newItem, exceptionState);
     }
 
 private:

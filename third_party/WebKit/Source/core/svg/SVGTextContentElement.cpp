@@ -113,13 +113,13 @@ float SVGTextContentElement::getComputedTextLength()
     return SVGTextQuery(renderer()).textLength();
 }
 
-float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchars, ExceptionState& es)
+float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchars, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     unsigned numberOfChars = getNumberOfChars();
     if (charnum >= numberOfChars) {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return 0.0f;
     }
 
@@ -129,48 +129,48 @@ float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchar
     return SVGTextQuery(renderer()).subStringLength(charnum, nchars);
 }
 
-SVGPoint SVGTextContentElement::getStartPositionOfChar(unsigned charnum, ExceptionState& es)
+SVGPoint SVGTextContentElement::getStartPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return FloatPoint();
     }
 
     return SVGTextQuery(renderer()).startPositionOfCharacter(charnum);
 }
 
-SVGPoint SVGTextContentElement::getEndPositionOfChar(unsigned charnum, ExceptionState& es)
+SVGPoint SVGTextContentElement::getEndPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return FloatPoint();
     }
 
     return SVGTextQuery(renderer()).endPositionOfCharacter(charnum);
 }
 
-SVGRect SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionState& es)
+SVGRect SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return SVGRect();
     }
 
     return SVGTextQuery(renderer()).extentOfCharacter(charnum);
 }
 
-float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState& es)
+float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return 0.0f;
     }
 
@@ -183,11 +183,11 @@ int SVGTextContentElement::getCharNumAtPosition(const SVGPoint& point)
     return SVGTextQuery(renderer()).characterNumberAtPosition(point);
 }
 
-void SVGTextContentElement::selectSubString(unsigned charnum, unsigned nchars, ExceptionState& es)
+void SVGTextContentElement::selectSubString(unsigned charnum, unsigned nchars, ExceptionState& exceptionState)
 {
     unsigned numberOfChars = getNumberOfChars();
     if (charnum >= numberOfChars) {
-        es.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 

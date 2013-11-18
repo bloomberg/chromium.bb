@@ -63,9 +63,9 @@ void SVGPaint::setUri(const String&)
     // The setters are the most problematic part so we remove the support for those first.
 }
 
-void SVGPaint::setPaint(unsigned short, const String&, const String&, const String&, ExceptionState& es)
+void SVGPaint::setPaint(unsigned short, const String&, const String&, const String&, ExceptionState& exceptionState)
 {
-    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 String SVGPaint::customCSSText() const

@@ -150,11 +150,11 @@ SVGLength::SVGLength(const SVGLength& other)
 {
 }
 
-void SVGLength::setValueAsString(const String& valueAsString, SVGLengthMode mode, ExceptionState& es)
+void SVGLength::setValueAsString(const String& valueAsString, SVGLengthMode mode, ExceptionState& exceptionState)
 {
     m_valueInSpecifiedUnits = 0;
     m_unit = storeUnit(mode, LengthTypeNumber);
-    setValueAsString(valueAsString, es);
+    setValueAsString(valueAsString, exceptionState);
 }
 
 bool SVGLength::operator==(const SVGLength& other) const
@@ -170,12 +170,12 @@ bool SVGLength::operator!=(const SVGLength& other) const
 
 SVGLength SVGLength::construct(SVGLengthMode mode, const String& valueAsString, SVGParsingError& parseError, SVGLengthNegativeValuesMode negativeValuesMode)
 {
-    TrackExceptionState es;
+    TrackExceptionState exceptionState;
     SVGLength length(mode);
 
-    length.setValueAsString(valueAsString, es);
+    length.setValueAsString(valueAsString, exceptionState);
 
-    if (es.hadException())
+    if (exceptionState.hadException())
         parseError = ParsingAttributeFailedError;
     else if (negativeValuesMode == ForbidNegativeLengths && length.valueInSpecifiedUnits() < 0)
         parseError = NegativeValueForbiddenError;
@@ -198,25 +198,25 @@ float SVGLength::value(const SVGLengthContext& context) const
     return value(context, IGNORE_EXCEPTION);
 }
 
-float SVGLength::value(const SVGLengthContext& context, ExceptionState& es) const
+float SVGLength::value(const SVGLengthContext& context, ExceptionState& exceptionState) const
 {
-    return context.convertValueToUserUnits(m_valueInSpecifiedUnits, extractMode(m_unit), extractType(m_unit), es);
+    return context.convertValueToUserUnits(m_valueInSpecifiedUnits, extractMode(m_unit), extractType(m_unit), exceptionState);
 }
 
-void SVGLength::setValue(const SVGLengthContext& context, float value, SVGLengthMode mode, SVGLengthType unitType, ExceptionState& es)
+void SVGLength::setValue(const SVGLengthContext& context, float value, SVGLengthMode mode, SVGLengthType unitType, ExceptionState& exceptionState)
 {
     m_unit = storeUnit(mode, unitType);
-    setValue(value, context, es);
+    setValue(value, context, exceptionState);
 }
 
-void SVGLength::setValue(float value, const SVGLengthContext& context, ExceptionState& es)
+void SVGLength::setValue(float value, const SVGLengthContext& context, ExceptionState& exceptionState)
 {
     // 100% = 100.0 instead of 1.0 for historical reasons, this could eventually be changed
     if (extractType(m_unit) == LengthTypePercentage)
         value = value / 100;
 
-    float convertedValue = context.convertValueFromUserUnits(value, extractMode(m_unit), extractType(m_unit), es);
-    if (!es.hadException())
+    float convertedValue = context.convertValueFromUserUnits(value, extractMode(m_unit), extractType(m_unit), exceptionState);
+    if (!exceptionState.hadException())
         m_valueInSpecifiedUnits = convertedValue;
 }
 float SVGLength::valueAsPercentage() const
@@ -245,7 +245,7 @@ static bool parseValueInternal(const String& string, float& convertedNumber, SVG
     return true;
 }
 
-void SVGLength::setValueAsString(const String& string, ExceptionState& es)
+void SVGLength::setValueAsString(const String& string, ExceptionState& exceptionState)
 {
     if (string.isEmpty())
         return;
@@ -258,7 +258,7 @@ void SVGLength::setValueAsString(const String& string, ExceptionState& es)
         parseValueInternal<UChar>(string, convertedNumber, type);
 
     if (!success) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 
@@ -271,10 +271,10 @@ String SVGLength::valueAsString() const
     return String::number(m_valueInSpecifiedUnits) + lengthTypeToString(extractType(m_unit));
 }
 
-void SVGLength::newValueSpecifiedUnits(unsigned short type, float value, ExceptionState& es)
+void SVGLength::newValueSpecifiedUnits(unsigned short type, float value, ExceptionState& exceptionState)
 {
     if (type == LengthTypeUnknown || type > LengthTypePC) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
 
@@ -282,21 +282,21 @@ void SVGLength::newValueSpecifiedUnits(unsigned short type, float value, Excepti
     m_valueInSpecifiedUnits = value;
 }
 
-void SVGLength::convertToSpecifiedUnits(unsigned short type, const SVGLengthContext& context, ExceptionState& es)
+void SVGLength::convertToSpecifiedUnits(unsigned short type, const SVGLengthContext& context, ExceptionState& exceptionState)
 {
     if (type == LengthTypeUnknown || type > LengthTypePC) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
 
-    float valueInUserUnits = value(context, es);
-    if (es.hadException())
+    float valueInUserUnits = value(context, exceptionState);
+    if (exceptionState.hadException())
         return;
 
     unsigned int originalUnitAndType = m_unit;
     m_unit = storeUnit(extractMode(m_unit), toSVGLengthType(type));
-    setValue(valueInUserUnits, context, es);
-    if (!es.hadException())
+    setValue(valueInUserUnits, context, exceptionState);
+    if (!exceptionState.hadException())
         return;
 
     // Eventually restore old unit and type
@@ -348,10 +348,10 @@ SVGLength SVGLength::fromCSSPrimitiveValue(CSSPrimitiveValue* value)
     if (svgType == LengthTypeUnknown)
         return SVGLength();
 
-    TrackExceptionState es;
+    TrackExceptionState exceptionState;
     SVGLength length;
-    length.newValueSpecifiedUnits(svgType, value->getFloatValue(), es);
-    if (es.hadException())
+    length.newValueSpecifiedUnits(svgType, value->getFloatValue(), exceptionState);
+    if (exceptionState.hadException())
         return SVGLength();
 
     return length;

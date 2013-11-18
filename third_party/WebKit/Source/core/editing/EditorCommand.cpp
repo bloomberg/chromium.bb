@@ -200,9 +200,9 @@ static bool executeInsertNode(Frame& frame, PassRefPtr<Node> content)
 {
     ASSERT(frame.document());
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(*frame.document());
-    TrackExceptionState es;
-    fragment->appendChild(content, es);
-    if (es.hadException())
+    TrackExceptionState exceptionState;
+    fragment->appendChild(content, exceptionState);
+    if (exceptionState.hadException())
         return false;
     return executeInsertFragment(frame, fragment.release());
 }

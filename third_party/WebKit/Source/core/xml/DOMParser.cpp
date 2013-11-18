@@ -25,7 +25,7 @@
 
 namespace WebCore {
 
-PassRefPtr<Document> DOMParser::parseFromString(const String& str, const String& contentType, ExceptionState& es)
+PassRefPtr<Document> DOMParser::parseFromString(const String& str, const String& contentType, ExceptionState& exceptionState)
 {
     // HTML5 is very explicit about which types we're allowed to support here:
     // http://domparsing.spec.whatwg.org/#the-domparser-interface
@@ -34,7 +34,7 @@ PassRefPtr<Document> DOMParser::parseFromString(const String& str, const String&
         && contentType != "application/xml"
         && contentType != "application/xhtml+xml"
         && contentType != "image/svg+xml") {
-        es.throwDOMException(TypeError, "Unsupported mime-type specified.");
+        exceptionState.throwDOMException(TypeError, "Unsupported mime-type specified.");
         return 0;
     }
 
