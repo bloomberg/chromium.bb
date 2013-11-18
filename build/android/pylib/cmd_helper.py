@@ -4,14 +4,13 @@
 
 """A wrapper for subprocess to make calling shell commands easier."""
 
-import os
 import logging
 import pipes
 import signal
 import subprocess
 import tempfile
 
-import constants
+from utils import timeout_retry
 
 
 def Popen(args, stdout=None, stderr=None, shell=None, cwd=None, env=None):
@@ -73,7 +72,7 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
     shell: Whether to execute args as a shell command.
 
   Returns:
-    The tuple (exit code, output).
+    The 2-tuple (exit code, output).
   """
   if isinstance(args, basestring):
     args_repr = args
@@ -104,3 +103,18 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
     logging.debug('Truncated output:')
   logging.debug(stdout[:4096])
   return (exit_code, stdout)
+
+
+def GetCmdStatusAndOutputWithTimeoutAndRetries(args, timeout, retries):
+  """Executes a subprocess with a timeout and retries.
+
+  Args:
+    args: List of arguments to the program, the program to execute is the first
+      element.
+    timeout: the timeout in seconds.
+    retries: the number of retries.
+
+  Returns:
+    The 2-tuple (exit code, output).
+  """
+  return timeout_retry.Run(GetCmdStatusAndOutput, timeout, retries, [args])
