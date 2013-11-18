@@ -59,6 +59,8 @@ const int kPrivetDefaultTimeout = 15;
 
 const double kPrivetMaximumTimeRandomAddition = 0.2;
 
+const int kPrivetMinimumTimeout = 2;
+
 const int kAccountIndexUseOAuth2 = -1;
 
 }  // namespace local_discovery

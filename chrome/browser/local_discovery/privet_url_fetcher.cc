@@ -4,6 +4,8 @@
 
 #include "chrome/browser/local_discovery/privet_url_fetcher.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
@@ -155,6 +157,9 @@ void PrivetURLFetcher::ScheduleRetry(int timeout_seconds) {
 
   int timeout_seconds_randomized =
       static_cast<int>(timeout_seconds * random_scaling_factor);
+
+  timeout_seconds_randomized =
+      std::max(timeout_seconds_randomized, kPrivetMinimumTimeout);
 
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,

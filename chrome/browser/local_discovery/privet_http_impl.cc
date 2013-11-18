@@ -4,6 +4,8 @@
 
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
@@ -550,6 +552,8 @@ void PrivetLocalPrintOperationImpl::OnSubmitdocResponse(
           1 + base::RandDouble() * kPrivetMaximumTimeRandomAddition;
 
       timeout = static_cast<int>(timeout * random_scaling_factor);
+
+      timeout = std::max(timeout, kPrivetMinimumTimeout);
 
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE, base::Bind(&PrivetLocalPrintOperationImpl::DoCreatejob,
