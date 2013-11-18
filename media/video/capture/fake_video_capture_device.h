@@ -23,6 +23,8 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   // Used for testing. This will make sure the next call to Create will
   // return NULL;
   static void SetFailNextCreate();
+  static void SetNumberOfFakeDevices(int num);
+  static int NumberOfFakeDevices();
 
   static void GetDeviceNames(Names* device_names);
   static void GetDeviceSupportedFormats(const Name& device,
@@ -63,6 +65,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   std::vector<VideoCaptureCapability> capabilities_roster_;
   int capabilities_roster_index_;
 
+  static int number_of_fake_devices_;
   static bool fail_next_create_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVideoCaptureDevice);
