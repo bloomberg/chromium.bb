@@ -277,8 +277,10 @@ WebContents* ChromeWebContentsDelegateAndroid::OpenURLFromTab(
     nav_params.target_contents = source;
     prerender::PrerenderManager* prerender_manager =
         prerender::PrerenderManagerFactory::GetForProfile(profile);
-    if (prerender_manager->MaybeUsePrerenderedPage(params.url, &nav_params))
+    if (prerender_manager &&
+        prerender_manager->MaybeUsePrerenderedPage(params.url, &nav_params)) {
       return nav_params.target_contents;
+    }
   }
 
   return WebContentsDelegateAndroid::OpenURLFromTab(source, params);
