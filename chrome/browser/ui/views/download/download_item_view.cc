@@ -870,6 +870,7 @@ void DownloadItemView::OpenDownload() {
 }
 
 bool DownloadItemView::BeginDownloadFeedback() {
+#if defined(FULL_SAFE_BROWSING)
   SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
   if (!sb_service)
     return false;
@@ -886,6 +887,10 @@ bool DownloadItemView::BeginDownloadFeedback() {
       download());
   // WARNING: we are deleted at this point.  Don't access 'this'.
   return true;
+#else
+  NOTREACHED();
+  return false;
+#endif
 }
 
 void DownloadItemView::LoadIcon() {
@@ -1095,10 +1100,12 @@ void DownloadItemView::ClearWarningDialog() {
 void DownloadItemView::ShowWarningDialog() {
   DCHECK(mode_ != DANGEROUS_MODE && mode_ != MALICIOUS_MODE);
   time_download_warning_shown_ = base::Time::Now();
+#if defined(FULL_SAFE_BROWSING)
   if (model_.ShouldAllowDownloadFeedback()) {
     safe_browsing::DownloadFeedbackService::RecordEligibleDownloadShown(
         download()->GetDangerType());
   }
+#endif
   mode_ = model_.MightBeMalicious() ? MALICIOUS_MODE : DANGEROUS_MODE;
 
   body_state_ = NORMAL;
