@@ -8,7 +8,8 @@ import os
 import re
 import sys
 
-from build_paths import SDK_SRC_DIR
+import build_version
+from build_paths import SDK_SRC_DIR, SCRIPT_DIR, OUT_DIR
 
 # Add SDK make tools scripts to the python path.
 sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
@@ -188,14 +189,18 @@ def main(args):
       help='Sort the file list in place, rather than verifying the contents.')
   options, args = parser.parse_args(args)
 
+  if not args:
+    args = [os.path.join(SCRIPT_DIR, 'sdk_files.list')]
+
   if options.sort:
     if not args:
       parser.error('Expected rule file.')
     SortFile(args[0])
     return 0
 
-  if len(args) != 2:
-    parser.error('Expected rule file and directory.')
+  if len(args) < 2:
+    version = build_version.ChromeMajorVersion()
+    args.append(os.path.join(OUT_DIR, 'pepper_%s' % version))
 
   rule_path, directory_path = args
   if options.platform:

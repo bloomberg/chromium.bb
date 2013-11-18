@@ -5,9 +5,9 @@
 #ifndef LIBRARIES_NACL_IO_OSSIGNAL_H_
 #define LIBRARIES_NACL_IO_OSSIGNAL_H_
 
-#ifdef __native_client__
+#if !defined(WIN23)
 #include <signal.h>
-#ifdef __GLIBC__
+#if defined(__GLIBC__)
 typedef __sighandler_t sighandler_t;
 #else
 typedef _sig_func_ptr sighandler_t;

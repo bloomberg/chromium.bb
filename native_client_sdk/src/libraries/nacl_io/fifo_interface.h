@@ -23,8 +23,8 @@ class FIFOInterface {
   virtual bool IsFull() = 0;
   virtual bool Resize(size_t len) = 0;
 
-  virtual uint32_t ReadAvailable() = 0;
-  virtual uint32_t WriteAvailable() = 0;
+  virtual size_t ReadAvailable() = 0;
+  virtual size_t WriteAvailable() = 0;
 };
 
 }  // namespace nacl_io

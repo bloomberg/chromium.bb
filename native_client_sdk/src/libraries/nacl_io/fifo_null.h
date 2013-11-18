@@ -20,8 +20,8 @@ class FIFONull : public FIFOInterface {
   virtual bool IsFull() { return false; }
   virtual bool Resize(size_t) { return false; }
 
-  virtual uint32_t ReadAvailable() { return 1; }
-  virtual uint32_t WriteAvailable() { return 1; }
+  virtual size_t ReadAvailable() { return 1; }
+  virtual size_t WriteAvailable() { return 1; }
 };
 
 }  // namespace nacl_io

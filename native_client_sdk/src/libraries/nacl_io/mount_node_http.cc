@@ -101,9 +101,9 @@ bool ParseContentRange(const StringMap_t& headers,
 
   // The key should look like "bytes ##-##/##" or "bytes ##-##/*". The last
   // value is the entity length, which can potentially be * (i.e. unknown).
-  int read_start_int;
-  int read_end_int;
-  int entity_length_int;
+  size_t read_start_int;
+  size_t read_end_int;
+  size_t entity_length_int;
   int result = sscanf(iter->second.c_str(),
                       "bytes %" SCNuS "-%" SCNuS "/%" SCNuS,
                       &read_start_int,

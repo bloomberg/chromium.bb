@@ -452,7 +452,7 @@ TEST_F(MountHtml5FsTest, GetDents) {
     EXPECT_EQ(sizeof(dirent) * num_dirents, bytes_read);
 
     std::multiset<std::string> dirnames;
-    for (int i = 0; i < num_dirents; ++i) {
+    for (size_t i = 0; i < num_dirents; ++i) {
       EXPECT_EQ(sizeof(dirent), dirents[i].d_off);
       EXPECT_EQ(sizeof(dirent), dirents[i].d_reclen);
       dirnames.insert(dirents[i].d_name);
@@ -476,7 +476,7 @@ TEST_F(MountHtml5FsTest, GetDents) {
     EXPECT_EQ(sizeof(dirent) * num_dirents, bytes_read);
 
     std::multiset<std::string> dirnames;
-    for (int i = 0; i < num_dirents; ++i) {
+    for (size_t i = 0; i < num_dirents; ++i) {
       EXPECT_EQ(sizeof(dirent), dirents[i].d_off);
       EXPECT_EQ(sizeof(dirent), dirents[i].d_reclen);
       dirnames.insert(dirents[i].d_name);

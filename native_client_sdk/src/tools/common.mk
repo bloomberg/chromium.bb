@@ -225,10 +225,13 @@ all:
 install:
 .PHONY: install
 
+ifdef SEL_LDR
+STANDALONE = 1
+endif
 
 OUTBASE ?= .
-ifdef SEL_LDR
-OUTDIR := $(OUTBASE)/$(TOOLCHAIN)/sel_ldr_$(CONFIG)
+ifdef STANDALONE
+OUTDIR := $(OUTBASE)/$(TOOLCHAIN)/standalone_$(CONFIG)
 else
 OUTDIR := $(OUTBASE)/$(TOOLCHAIN)/$(CONFIG)
 endif
@@ -288,11 +291,18 @@ $(STAMPDIR)/$(1).stamp:
 endif
 endef
 
-
 ifeq ($(TOOLCHAIN),win)
+ifdef STANDALONE
+HOST_EXT = .exe
+else
 HOST_EXT = .dll
+endif
+else
+ifdef STANDALONE
+HOST_EXT =
 else
 HOST_EXT = .so
+endif
 endif
 
 
@@ -310,13 +320,13 @@ else
 POSIX_FLAGS ?= -g -O0 -pthread -MMD -DNACL_SDK_DEBUG
 endif
 
-ifdef SEL_LDR
+ifdef STANDALONE
 POSIX_FLAGS += -DSEL_LDR=1
 endif
 
 NACL_CFLAGS ?= -Wno-long-long -Werror
 NACL_CXXFLAGS ?= -Wno-long-long -Werror
-NACL_LDFLAGS += -Wl,-as-needed
+NACL_LDFLAGS += -Wl,-as-needed -pthread
 
 #
 # Default Paths
@@ -421,23 +431,6 @@ else
 DEV_NULL = /dev/null
 endif
 
-#
-# Assign a sensible default to CHROME_PATH.
-#
-CHROME_PATH ?= $(shell $(GETOS) --chrome 2> $(DEV_NULL))
-
-#
-# Verify we can find the Chrome executable if we need to launch it.
-#
-.PHONY: check_for_chrome
-check_for_chrome:
-ifeq (,$(wildcard $(CHROME_PATH)))
-	$(warning No valid Chrome found at CHROME_PATH=$(CHROME_PATH))
-	$(error Set CHROME_PATH via an environment variable, or command-line.)
-else
-	$(warning Using chrome at: $(CHROME_PATH))
-endif
-
 
 #
 # Variables for running examples with Chrome.
@@ -471,19 +464,23 @@ ifeq ($(CONFIG),Debug)
 SEL_LDR_ARGS += --debug-libs
 endif
 
-ifdef SEL_LDR
-run: all
-ifndef NACL_ARCH
-	$(error Cannot run in sel_ldr unless $$NACL_ARCH is set)
-endif
-	$(SEL_LDR_PATH) $(SEL_LDR_ARGS) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe -- $(NEXE_ARGS)
+ifndef STANDALONE
+#
+# Assign a sensible default to CHROME_PATH.
+#
+CHROME_PATH ?= $(shell $(GETOS) --chrome 2> $(DEV_NULL))
 
-debug: all
-ifndef NACL_ARCH
-	$(error Cannot run in sel_ldr unless $$NACL_ARCH is set)
-endif
-	$(SEL_LDR_PATH) -d $(SEL_LDR_ARGS) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe -- $(NEXE_ARGS)
+#
+# Verify we can find the Chrome executable if we need to launch it.
+#
+.PHONY: check_for_chrome
+check_for_chrome:
+ifeq (,$(wildcard $(CHROME_PATH)))
+	$(warning No valid Chrome found at CHROME_PATH=$(CHROME_PATH))
+	$(error Set CHROME_PATH via an environment variable, or command-line.)
 else
+	$(warning Using chrome at: $(CHROME_PATH))
+endif
 PAGE ?= index.html
 PAGE_TC_CONFIG ?= "$(PAGE)?tc=$(TOOLCHAIN)&config=$(CONFIG)"
 
@@ -509,12 +506,11 @@ debug: check_for_chrome all $(PAGE)
 	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH) $(CHROME_ARGS) \
 	    --enable-nacl-debug \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
-endif
 
 .PHONY: serve
 serve: all
 	$(HTTPD_PY) -C $(CURDIR)
-
+endif
 
 # uppercase aliases (for backward compatibility)
 .PHONY: CHECK_FOR_CHROME DEBUG LAUNCH RUN

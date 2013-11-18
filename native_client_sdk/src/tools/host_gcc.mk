@@ -40,14 +40,14 @@ LINUX_CFLAGS = -fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(N
 define C_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1))
 $(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC  ,$$@,$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_CFLAGS))
+	$(call LOG,CC  ,$$@,$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(LINUX_CFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1))
 endef
 
 define CXX_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1))
 $(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX ,$$@,$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_CFLAGS))
+	$(call LOG,CXX ,$$@,$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(LINUX_CFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1))
 endef
 
@@ -108,11 +108,19 @@ endef
 # $5 = List of lib dirs
 # $6 = Other Linker Args
 #
+ifdef STANDALONE
+define LINKER_RULE
+all: $(1)
+$(1): $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(call LOG,LINK,$$@,$(HOST_LINK) -o $(1) $(2) $(NACL_LDFLAGS) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6))
+endef
+else
 define LINKER_RULE
 all: $(1)
 $(1): $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(call LOG,LINK,$$@,$(HOST_LINK) -shared -o $(1) $(2) $(NACL_LDFLAGS) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6))
 endef
+endif
 
 
 #
@@ -145,3 +153,12 @@ all: $(OUTDIR)/$(1)$(HOST_EXT)
 $(OUTDIR)/$(1)$(HOST_EXT): $(OUTDIR)/$(2)$(HOST_EXT)
 	$(call LOG,STRIP,$$@,$(HOST_STRIP) --strip-debug -o $$@ $$^)
 endef
+
+
+#
+# Run standalone builds (command line builds outside of chrome)
+#
+ifdef STANDALONE
+run: all
+	$(OUTDIR)/$(TARGET)$(HOST_EXT) $(EXE_ARGS)
+endif

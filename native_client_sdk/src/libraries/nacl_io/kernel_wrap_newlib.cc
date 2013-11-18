@@ -314,12 +314,6 @@ int _real_write(int fd, const void* buf, size_t count, size_t* nwrote) {
   return REAL(write)(fd, buf, count, nwrote);
 }
 
-uint64_t usec_since_epoch() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_usec + (tv.tv_sec * 1000000);
-}
-
 static bool s_wrapped = false;
 
 void kernel_wrap_init() {

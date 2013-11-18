@@ -96,7 +96,6 @@ int stat(const char* path, struct stat* buf) NOTHROW;
 int symlink(const char* oldpath, const char* newpath) NOTHROW;
 int umount(const char* path) NOTHROW;
 int NAME(unlink)(const char* path) NOTHROW;
-uint64_t usec_since_epoch();
 int utime(const char* filename, const struct utimbuf* times);
 read_ssize_t NAME(write)(int fd, const void* buf, size_t nbyte);
 

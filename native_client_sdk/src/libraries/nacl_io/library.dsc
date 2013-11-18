@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'linux'],
   'SEARCH': [
     '.',
     'pepper',
@@ -27,6 +27,7 @@
         "kernel_intercept.cc",
         "kernel_object.cc",
         "kernel_proxy.cc",
+        "kernel_wrap_dummy.cc",
         "kernel_wrap_glibc.cc",
         "kernel_wrap_newlib.cc",
         "kernel_wrap_win.cc",

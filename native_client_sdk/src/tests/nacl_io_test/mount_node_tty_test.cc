@@ -75,7 +75,7 @@ TEST_F(TtyTest, TtyInput) {
   // more than we ask for.
   HandleAttr attrs;
   EXPECT_EQ(0, dev_tty_->Read(attrs, buffer, 5, &bytes_read));
-  EXPECT_EQ(bytes_read, 5);
+  EXPECT_EQ(5, bytes_read);
   EXPECT_EQ(0, memcmp(message.data(), buffer, 5));
   EXPECT_EQ(0, memcmp(buffer + 5, backup_buffer + 5, 95));
 
@@ -172,7 +172,7 @@ TEST_F(TtyTest, TtySelect) {
   fd_set errorfds;
 
   int tty_fd = ki_open("/dev/tty", O_RDONLY);
-  ASSERT_TRUE(tty_fd >= 0) << "tty open failed: " << errno;
+  ASSERT_GT(tty_fd, 0) << "tty open failed: " << errno;
 
   FD_ZERO(&readfds);
   FD_ZERO(&errorfds);
@@ -183,7 +183,7 @@ TEST_F(TtyTest, TtySelect) {
   timeout.tv_usec = 10 * 1000;
   // Should timeout when no input is available.
   int rtn = ki_select(tty_fd + 1, &readfds, NULL, &errorfds, &timeout);
-  ASSERT_EQ(rtn, 0) << "select failed: " << rtn << " err=" << strerror(errno);
+  ASSERT_EQ(0, rtn) << "select failed: " << rtn << " err=" << strerror(errno);
   ASSERT_FALSE(FD_ISSET(tty_fd, &readfds));
   ASSERT_FALSE(FD_ISSET(tty_fd, &errorfds));
 
@@ -195,7 +195,7 @@ TEST_F(TtyTest, TtySelect) {
   FD_SET(tty_fd, &errorfds);
   // TTY should be writable on startup.
   rtn = ki_select(tty_fd + 1, &readfds, &writefds, &errorfds, NULL);
-  ASSERT_EQ(rtn, 1);
+  ASSERT_EQ(1, rtn);
   ASSERT_TRUE(FD_ISSET(tty_fd, &writefds));
   ASSERT_FALSE(FD_ISSET(tty_fd, &readfds));
   ASSERT_FALSE(FD_ISSET(tty_fd, &errorfds));
@@ -208,7 +208,7 @@ TEST_F(TtyTest, TtySelect) {
   ASSERT_EQ(0, TtyWrite(tty_fd, "input:\n"));
 
   // TTY should now be readable
-  ASSERT_EQ(IsReadable(tty_fd), 1);
+  ASSERT_EQ(1, IsReadable(tty_fd));
 
   ki_close(tty_fd);
 }
@@ -216,33 +216,33 @@ TEST_F(TtyTest, TtySelect) {
 TEST_F(TtyTest, TtyICANON) {
   int tty_fd = ki_open("/dev/tty", O_RDONLY);
 
-  ASSERT_EQ(IsReadable(tty_fd), 0);
+  ASSERT_EQ(0, IsReadable(tty_fd));
 
   struct termios tattr;
-  tcgetattr(tty_fd, &tattr);
+  ki_tcgetattr(tty_fd, &tattr);
   tattr.c_lflag &= ~(ICANON|ECHO); /* Clear ICANON and ECHO. */
-  tcsetattr(tty_fd, TCSAFLUSH, &tattr);
+  ki_tcsetattr(tty_fd, TCSAFLUSH, &tattr);
 
-  ASSERT_EQ(IsReadable(tty_fd), 0);
+  ASSERT_EQ(0, IsReadable(tty_fd));
 
   // Set some bytes to the TTY, not including newline
   ASSERT_EQ(0, TtyWrite(tty_fd, "a"));
 
   // Since we are not in canonical mode the bytes should be
   // immediately readable.
-  ASSERT_EQ(IsReadable(tty_fd), 1);
+  ASSERT_EQ(1, IsReadable(tty_fd));
 
   // Read byte from tty.
   char c;
-  ASSERT_EQ(1, read(tty_fd, &c, 1));
+  ASSERT_EQ(1, ki_read(tty_fd, &c, 1));
   ASSERT_EQ('a', c);
 
-  ASSERT_EQ(IsReadable(tty_fd), 0);
+  ASSERT_EQ(0, IsReadable(tty_fd));
 }
 
-int g_recieved_signal = 0;
+static int g_recieved_signal;
 
-void sighandler(int sig) {
+static void sighandler(int sig) {
   g_recieved_signal = sig;
 }
 
@@ -254,14 +254,16 @@ TEST_F(TtyTest, WindowSize) {
   // Install signal handler
   sighandler_t new_handler = sighandler;
   sighandler_t old_handler = ki_signal(SIGWINCH, new_handler);
-  ASSERT_NE(old_handler, SIG_ERR) << "signal return error: " << errno;
+  ASSERT_NE(SIG_ERR, old_handler) << "signal return error: " << errno;
+
+  g_recieved_signal = 0;
 
   // Set a new windows size
   struct winsize winsize;
   winsize.ws_col = 100;
   winsize.ws_row = 200;
   EXPECT_EQ(0, dev_tty_->Ioctl(TIOCSWINSZ, &winsize));
-  EXPECT_EQ(g_recieved_signal, SIGWINCH);
+  EXPECT_EQ(SIGWINCH, g_recieved_signal);
 
   // Restore old signal handler
   EXPECT_EQ(new_handler, ki_signal(SIGWINCH, old_handler));
@@ -270,8 +272,8 @@ TEST_F(TtyTest, WindowSize) {
   winsize.ws_col = 0;
   winsize.ws_row = 0;
   EXPECT_EQ(0, dev_tty_->Ioctl(TIOCGWINSZ, &winsize));
-  EXPECT_EQ(winsize.ws_col, 100);
-  EXPECT_EQ(winsize.ws_row, 200);
+  EXPECT_EQ(100, winsize.ws_col);
+  EXPECT_EQ(200, winsize.ws_row);
 
   // Restore original windows size.
   EXPECT_EQ(0, dev_tty_->Ioctl(TIOCSWINSZ, &old_winsize));
@@ -313,13 +315,13 @@ TEST_F(TtyTest, ResizeDuringSelect) {
 
   // TTY should not be readable either before or after the
   // call to select(3).
-  ASSERT_EQ(IsReadable(tty_fd), 0);
+  ASSERT_EQ(0, IsReadable(tty_fd));
 
   int rtn = ki_select(tty_fd + 1, &readfds, NULL, &errorfds, &timeout);
   pthread_join(resize_thread, NULL);
   ASSERT_EQ(-1, rtn);
   ASSERT_EQ(EINTR, errno);
-  ASSERT_EQ(IsReadable(tty_fd), 0);
+  ASSERT_EQ(0, IsReadable(tty_fd));
 }
 
 /*

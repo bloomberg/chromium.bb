@@ -452,3 +452,17 @@ GDB_DEBUG_TARGET = $(abspath $(OUTDIR))/$(TARGET)_$(SYSARCH).nexe
 else
 GDB_DEBUG_TARGET = $(abspath $(OUTDIR))/$(LIB_NAME)/runnable-ld.so
 endif
+
+ifdef STANDALONE
+run: all
+ifndef NACL_ARCH
+	$(error Cannot run in sel_ldr unless $$NACL_ARCH is set)
+endif
+	$(SEL_LDR_PATH) $(SEL_LDR_ARGS) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe -- $(EXE_ARGS)
+
+debug: all
+ifndef NACL_ARCH
+	$(error Cannot run in sel_ldr unless $$NACL_ARCH is set)
+endif
+	$(SEL_LDR_PATH) -d $(SEL_LDR_ARGS) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe -- $(EXE_ARGS)
+endif

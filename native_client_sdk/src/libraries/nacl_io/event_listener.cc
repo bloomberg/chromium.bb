@@ -1,21 +1,46 @@
-/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include <errno.h>
 #include <poll.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <sys/time.h>
 
 #include "nacl_io/error.h"
 #include "nacl_io/event_listener.h"
 #include "nacl_io/kernel_wrap.h"
 #include "nacl_io/osstat.h"
+#include "nacl_io/ostime.h"
 #include "nacl_io/osunistd.h"
 
 #include "sdk_util/auto_lock.h"
 
+#if defined(WIN32)
+
+#define USECS_FROM_WIN_TO_TO_UNIX_EPOCH 11644473600000LL
+static uint64_t usec_since_epoch() {
+  FILETIME ft;
+  ULARGE_INTEGER ularge;
+  GetSystemTimeAsFileTime(&ft);
+
+  ularge.LowPart = ft.dwLowDateTime;
+  ularge.HighPart = ft.dwHighDateTime;
+
+  // Truncate to usec resolution.
+  return ularge.QuadPart / 10;
+}
+
+#else
+
+static uint64_t usec_since_epoch() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return tv.tv_usec + (tv.tv_sec * 1000000);
+}
+
+#endif
 
 namespace nacl_io {
 

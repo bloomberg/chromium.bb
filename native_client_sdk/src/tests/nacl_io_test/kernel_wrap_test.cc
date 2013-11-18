@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// The linux host build of nacl_io can't do wrapping of syscalls so all
+// these tests must be disabled.
+#if !defined(__linux__)
+
 #include <unistd.h>
 
 #include <string>
@@ -714,3 +718,5 @@ TEST_F(KernelWrapTest, socketpair) {
 }
 
 #endif  // PROVIDES_SOCKET_API
+
+#endif  // __linux__

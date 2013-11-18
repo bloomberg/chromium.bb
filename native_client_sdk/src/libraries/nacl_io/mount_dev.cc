@@ -228,9 +228,6 @@ Error UrandomNode::Read(const HandleAttr& attr,
   int error = (*random_interface_.get_random_bytes)(buf, count, &nread);
   if (error)
     return error;
-
-  *out_bytes = count;
-  return 0;
 #elif defined(WIN32)
   char* out = static_cast<char*>(buf);
   size_t bytes_left = count;
@@ -247,10 +244,10 @@ Error UrandomNode::Read(const HandleAttr& attr,
     out += bytes_to_copy;
     bytes_left -= bytes_to_copy;
   }
+#endif
 
   *out_bytes = count;
   return 0;
-#endif
 }
 
 Error UrandomNode::Write(const HandleAttr& attr,

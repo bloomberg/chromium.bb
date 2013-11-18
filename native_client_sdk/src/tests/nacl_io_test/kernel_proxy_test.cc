@@ -117,12 +117,12 @@ TEST_F(KernelProxyTest, FileLeak) {
 
   for (int file_num = 0; file_num < 4096; file_num++) {
     sprintf(filename, "/foo%i.tmp", file_num++);
-    FILE* f = fopen(filename, "w");
-    ASSERT_NE((FILE*)NULL, f);
+    int fd = ki_open(filename, O_WRONLY | O_CREAT);
+    ASSERT_GT(fd, -1);
     ASSERT_EQ(1, root->ChildCount());
-    ASSERT_EQ(buffer_size, fwrite(garbage, 1, buffer_size, f));
-    fclose(f);
-    ASSERT_EQ(0, remove(filename));
+    ASSERT_EQ(buffer_size, ki_write(fd, garbage, buffer_size));
+    ki_close(fd);
+    ASSERT_EQ(0, ki_remove(filename));
   }
   ASSERT_EQ(0, root->ChildCount());
 }
@@ -358,21 +358,21 @@ TEST_F(KernelProxyTest, MemMountIO) {
 TEST_F(KernelProxyTest, MemMountLseek) {
   int fd = ki_open("/foo", O_CREAT | O_RDWR);
   ASSERT_GT(fd, -1);
-  EXPECT_EQ(9, ki_write(fd, "Some text", 9));
+  ASSERT_EQ(9, ki_write(fd, "Some text", 9));
 
-  EXPECT_EQ(9, ki_lseek(fd, 0, SEEK_CUR));
-  EXPECT_EQ(9, ki_lseek(fd, 0, SEEK_END));
-  EXPECT_EQ(-1, ki_lseek(fd, -1, SEEK_SET));
-  EXPECT_EQ(EINVAL, errno);
+  ASSERT_EQ(9, ki_lseek(fd, 0, SEEK_CUR));
+  ASSERT_EQ(9, ki_lseek(fd, 0, SEEK_END));
+  ASSERT_EQ(-1, ki_lseek(fd, -1, SEEK_SET));
+  ASSERT_EQ(EINVAL, errno);
 
   // Seek past end of file.
-  EXPECT_EQ(13, ki_lseek(fd, 13, SEEK_SET));
+  ASSERT_EQ(13, ki_lseek(fd, 13, SEEK_SET));
   char buffer[4];
   memset(&buffer[0], 0xfe, 4);
-  EXPECT_EQ(9, ki_lseek(fd, -4, SEEK_END));
-  EXPECT_EQ(9, ki_lseek(fd, 0, SEEK_CUR));
-  EXPECT_EQ(4, ki_read(fd, &buffer[0], 4));
-  EXPECT_EQ(0, memcmp("\0\0\0\0", buffer, 4));
+  ASSERT_EQ(9, ki_lseek(fd, -4, SEEK_END));
+  ASSERT_EQ(9, ki_lseek(fd, 0, SEEK_CUR));
+  ASSERT_EQ(4, ki_read(fd, &buffer[0], 4));
+  ASSERT_EQ(0, memcmp("\0\0\0\0", buffer, 4));
 }
 
 TEST_F(KernelProxyTest, CloseTwice) {

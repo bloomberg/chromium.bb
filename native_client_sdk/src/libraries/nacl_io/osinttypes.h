@@ -17,7 +17,7 @@
 #define SCNuS "Iu"
 #endif
 
-#elif defined(__native_client__)
+#else
 
 #include <inttypes.h>
 
@@ -29,6 +29,6 @@
 #define SCNuS "zu"
 #endif
 
-#endif  /* defined(__native_client__) */
+#endif
 
 #endif  /* NACL_IO_OSINTTYPES_H_ */

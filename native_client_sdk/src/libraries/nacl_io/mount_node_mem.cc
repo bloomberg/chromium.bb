@@ -61,7 +61,7 @@ Error MountNodeMem::Write(const HandleAttr& attr,
   if (count == 0)
     return 0;
 
-  if (count + attr.offs > stat_.st_size) {
+  if (count + attr.offs > static_cast<size_t>(stat_.st_size)) {
     Resize(count + attr.offs);
     count = stat_.st_size - attr.offs;
   }
@@ -78,7 +78,7 @@ Error MountNodeMem::FTruncate(off_t new_size) {
 }
 
 void MountNodeMem::Resize(off_t new_size) {
-  if (new_size > data_.capacity()) {
+  if (new_size > static_cast<off_t>(data_.capacity())) {
     // While the node size is small, grow exponentially. When it starts to get
     // larger, grow linearly.
     size_t extra = std::min<size_t>(new_size, kMaxResizeIncrement);

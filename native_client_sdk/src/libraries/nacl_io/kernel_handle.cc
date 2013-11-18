@@ -55,7 +55,7 @@ Error KernelHandle::Init(int open_flags) {
 Error KernelHandle::Seek(off_t offset, int whence, off_t* out_offset) {
   // By default, don't move the offset.
   *out_offset = offset;
-  size_t base;
+  ssize_t base;
   size_t node_size;
 
   AUTO_LOCK(handle_lock_);
@@ -64,8 +64,6 @@ Error KernelHandle::Seek(off_t offset, int whence, off_t* out_offset) {
     return error;
 
   switch (whence) {
-    default:
-      return -1;
     case SEEK_SET:
       base = 0;
       break;
@@ -75,12 +73,14 @@ Error KernelHandle::Seek(off_t offset, int whence, off_t* out_offset) {
     case SEEK_END:
       base = node_size;
       break;
+    default:
+      return -1;
   }
 
   if (base + offset < 0)
     return EINVAL;
 
-  off_t new_offset = base + offset;
+  size_t new_offset = base + offset;
 
   // Seeking past the end of the file will zero out the space between the old
   // end and the new end.
