@@ -683,11 +683,26 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIExistence) {
   TestHelper("testWebRequestAPIExistence", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestChromeExtensionURL) {
+// http://crbug.com/315920
+#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX))
+#define MAYBE_Shim_TestChromeExtensionURL DISABLED_Shim_TestChromeExtensionURL
+#else
+#define MAYBE_Shim_TestChromeExtensionURL Shim_TestChromeExtensionURL
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim_TestChromeExtensionURL) {
   TestHelper("testChromeExtensionURL", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestChromeExtensionRelativePath) {
+// http://crbug.com/315920
+#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX))
+#define MAYBE_Shim_TestChromeExtensionRelativePath \
+    DISABLED_Shim_TestChromeExtensionRelativePath
+#else
+#define MAYBE_Shim_TestChromeExtensionRelativePath \
+    Shim_TestChromeExtensionRelativePath
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       MAYBE_Shim_TestChromeExtensionRelativePath) {
   TestHelper("testChromeExtensionRelativePath",
              "web_view/shim",
              NO_TEST_SERVER);
