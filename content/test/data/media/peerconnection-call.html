@@ -9,7 +9,6 @@
   var gFirstConnection = null;
   var gSecondConnection = null;
   var gTestWithoutMsid = false;
-
   var gLocalStream = null;
   var gSentTones = '';
 
@@ -19,6 +18,7 @@
   var transformSdp = function(sdp) { return sdp; };
   var transformRemoteSdp = function(sdp) { return sdp; };
   var transformCandidate = function(candidate) { return candidate; };
+  var onLocalDescriptionError = function(error) { };
 
   // When using external SDES, the crypto key is chosen by javascript.
   var EXTERNAL_SDES_LINES = {
@@ -114,9 +114,41 @@
     transformRemoteSdp = removeMsid;
     gTestWithoutMsid = true;
     navigator.webkitGetUserMedia({audio: true, video: true},
-      addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
     waitForVideo('remote-view-1');
     waitForVideo('remote-view-2');
+  }
+
+  // Test that we can't setup a call with an unsupported video codec
+  function negotiateUnsupportedVideoCodec() {
+    createConnections(null);
+    transformSdp = removeVideoCodec;
+    navigator.webkitGetUserMedia({audio: true, video: true},
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+    onLocalDescriptionError = function(error) {
+      var expectedMsg = 'SetLocalDescription failed: Failed to' +
+          ' update session state: ERROR_CONTENT';
+      expectEquals(expectedMsg, error);
+
+      // Got the right message, test succeeded.
+      document.title = 'OK';
+    };
+  }
+
+  // Test that we can't setup a call if one peer does not support encryption
+  function negotiateNonCryptoCall() {
+    createConnections(null);
+    transformSdp = removeCrypto;
+    navigator.webkitGetUserMedia({audio: true, video: true},
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+    onLocalDescriptionError = function(error) {
+      var expectedMsg = 'SetLocalDescription failed: Called with a SDP without'
+                         + ' crypto enabled.';
+      expectEquals(expectedMsg, error);
+
+      // Got the right message, test succeeded.
+      document.title = 'OK';
+    };
   }
 
   // Test that we can setup call with legacy settings.
@@ -418,10 +450,10 @@
 
     gLocalStream = localStream;
   }
-
+  
   // Called if getUserMedia fails.
   function printGetUserMediaError(error) {
-    document.title = 'getUserMedia request failed with code ' + error.code;
+     document.title = 'getUserMedia request failed with code ' + error.code;
   }
 
   // Called if getUserMedia succeeds and we want to send from both connections.
@@ -510,7 +542,8 @@
 
   function onOfferCreated(offer, caller, callee) {
     offer.sdp = transformSdp(offer.sdp);
-    caller.setLocalDescription(offer);
+    caller.setLocalDescription(offer, null, onLocalDescriptionError);
+
     expectEquals('have-local-offer', caller.signalingState);
     receiveOffer(offer.sdp, caller, callee);
   }
@@ -532,6 +565,18 @@
     offerSdp = offerSdp.replace('a=mid:audio\r\n', '');
     offerSdp = offerSdp.replace('a=mid:video\r\n', '');
     offerSdp = offerSdp.replace(/a=ssrc.*\r\n/g, '');
+    return offerSdp;
+  }
+
+  function removeVideoCodec(offerSdp) {
+    offerSdp = offerSdp.replace('a=rtpmap:100 VP8/90000\r\n',
+                                'a=rtpmap:100 XVP8/90000\r\n');
+    return offerSdp;
+  }
+
+  function removeCrypto(offerSdp) {
+    offerSdp = offerSdp.replace(/a=crypto.*\r\n/g, 'a=Xcrypto\r\n');
+    offerSdp = offerSdp.replace(/a=fingerprint.*\r\n/g, '');
     return offerSdp;
   }
 

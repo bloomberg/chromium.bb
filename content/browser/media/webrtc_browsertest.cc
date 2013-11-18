@@ -233,6 +233,31 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   ExpectTitle("OK");
 }
 
+// This test will modify the SDP offer to an unsupported codec, which should
+// cause SetLocalDescription to fail.
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+                       NegotiateUnsupportedVideoCodec) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript("negotiateUnsupportedVideoCodec();"));
+  ExpectTitle("OK");
+}
+
+// This test will modify the SDP offer to use no encryption, which should
+// cause SetLocalDescription to fail.
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, NegotiateNonCryptoCall) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript("negotiateNonCryptoCall();"));
+  ExpectTitle("OK");
+}
+
 // This test will make a complete PeerConnection-based call using legacy SDP
 // settings: GIce, external SDES, and no BUNDLE.
 #if defined(OS_WIN) && defined(USE_AURA)

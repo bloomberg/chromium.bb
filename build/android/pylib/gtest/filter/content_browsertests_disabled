@@ -81,6 +81,8 @@ WebrtcBrowserTest.GetAudioAndVideoStreamAndClone
 WebrtcBrowserTest.GetAudioAndVideoStreamAndStop
 WebrtcBrowserTest.GetVideoStreamAndStop
 WebRTCInternalsBrowserTest.WithRealPeerConnectionCall
+WebRTCInternalsBrowserTest.NegotiateUnsupportedVideoCodec
+WebRTCInternalsBrowserTest.NegotiateNonCryptoCall
 
 # http://crbug.com/175683
 WebrtcBrowserTest.CallWithDataAndLaterAddMedia
