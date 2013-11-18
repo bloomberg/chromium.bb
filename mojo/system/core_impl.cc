@@ -322,7 +322,7 @@ MojoResult CoreImpl::ReadMessage(
 
   // Easy case: won't receive any handles.
   if (!num_handles || *num_handles == 0)
-    return dispatcher->ReadMessage(bytes, num_bytes, 0, NULL, flags);
+    return dispatcher->ReadMessage(bytes, num_bytes, NULL, num_handles, flags);
 
   std::vector<scoped_refptr<Dispatcher> > dispatchers;
   MojoResult rv = dispatcher->ReadMessage(bytes, num_bytes,
