@@ -98,11 +98,11 @@
     }
   ],
   "bluetooth": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"]
   },
   "bluetoothDevices": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"]
   },
   "bookmarkManagerPrivate": {
