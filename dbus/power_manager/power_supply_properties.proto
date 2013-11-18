@@ -22,10 +22,14 @@ message PowerSupplyProperties {
     // consumption and the negotiated current; see BatteryState.
     USB = 1;
 
+    // An original spring AC charger (as identified by an ID sampled by the EC)
+    // is connected.
+    ORIGINAL_SPRING_CHARGER = 3;
+
     // No external power source is connected.
     DISCONNECTED = 2;
 
-    // Next value to use: 3
+    // Next value to use: 4
   }
 
   enum BatteryState {
