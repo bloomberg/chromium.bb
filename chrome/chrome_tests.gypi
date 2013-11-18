@@ -1729,13 +1729,6 @@
             '../ash/ash.gyp:ash_test_support',
           ],
         }],
-        ['use_aura==1 and desktop_linux==1', {
-          'sources!': [
-            # TODO(erg): A large number of the PPAPI browsertests flakily
-            # timeout.
-            'test/ppapi/ppapi_browsertest.cc',
-          ],
-        }],
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],

@@ -206,9 +206,15 @@ TEST_PPAPI_IN_PROCESS(Console)
 TEST_PPAPI_OUT_OF_PROCESS(Console)
 TEST_PPAPI_NACL(Console)
 
-TEST_PPAPI_IN_PROCESS(Core)
-TEST_PPAPI_OUT_OF_PROCESS(Core)
-TEST_PPAPI_NACL(Core)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/318961
+#define MAYBE_Core DISABLED_Core
+#else
+#define MAYBE_Core Core
+#endif
+TEST_PPAPI_IN_PROCESS(MAYBE_Core)
+TEST_PPAPI_OUT_OF_PROCESS(MAYBE_Core)
+TEST_PPAPI_NACL(MAYBE_Core)
 
 TEST_PPAPI_IN_PROCESS(TraceEvent)
 TEST_PPAPI_OUT_OF_PROCESS(TraceEvent)
@@ -809,8 +815,15 @@ TEST_PPAPI_NACL(Memory)
 TEST_PPAPI_IN_PROCESS(VideoDecoder)
 TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/318961
+#define MAYBE_FileIO DISABLED_FileIO
+#else
+#define MAYBE_FileIO FileIO
+#endif
+
 // FileIO tests.
-IN_PROC_BROWSER_TEST_F(PPAPITest, FileIO) {
+IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_FileIO) {
   RunTestViaHTTP(
       LIST_TEST(FileIO_Open)
       LIST_TEST(FileIO_OpenDirectory)
@@ -826,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, FileIO) {
       LIST_TEST(FileIO_Mmap)
   );
 }
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileIO) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_FileIO) {
   RunTestViaHTTP(
       LIST_TEST(FileIO_Open)
       LIST_TEST(FileIO_AbortCalls)
@@ -843,11 +856,11 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileIO) {
 }
 // Flaky on XP; times out, http://crbug.com/313401
 #if defined(OS_WIN)
-#define MAYBE_FileIO DISABLED_FileIO
+#define MAYBE_Nacl_Newlib_FileIO DISABLED_FileIO
 #else
-#define MAYBE_FileIO FileIO
+#define MAYBE_Nacl_Newlib_FileIO FileIO
 #endif
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_FileIO) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_Nacl_Newlib_FileIO) {
   RunTestViaHTTP(
       LIST_TEST(FileIO_Open)
       LIST_TEST(FileIO_AbortCalls)
