@@ -407,3 +407,29 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   observer.Wait();
   EXPECT_TRUE(observer.infobar_shown());
 }
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DeleteFrameBeforeSubmit) {
+  NavigateToFile("/password/multi_frames.html");
+
+  NavigationObserver observer(WebContents());
+  // Make sure we save some password info from an iframe and then destroy it.
+  std::string save_and_remove =
+      "var first_frame = document.getElementById('first_frame');"
+      "var frame_doc = first_frame.contentDocument;"
+      "frame_doc.getElementById('username_field').value = 'temp';"
+      "frame_doc.getElementById('password_field').value = 'random';"
+      "frame_doc.getElementById('input_submit_button').click();"
+      "first_frame.parentNode.removeChild(first_frame);";
+  // Submit from the main frame, but without navigating through the onsubmit
+  // handler.
+  std::string navigate_frame =
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random';"
+      "document.getElementById('input_submit_button').click();"
+      "window.location.href = 'done.html';";
+
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), save_and_remove));
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), navigate_frame));
+  observer.Wait();
+  // The only thing we check here is that there is no use-after-free reported.
+}

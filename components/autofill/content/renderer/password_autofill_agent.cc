@@ -421,7 +421,9 @@ void PasswordAutofillAgent::WillSendSubmitEvent(
   // into a hidden field and then clear the password (http://crbug.com/28910).
   // This method gets called before any of those handlers run, so save away
   // a copy of the password in case it gets lost.
-  provisionally_saved_forms_[frame].reset(CreatePasswordForm(form).release());
+  scoped_ptr<PasswordForm> password_form(CreatePasswordForm(form));
+  if (password_form)
+    provisionally_saved_forms_[frame].reset(password_form.release());
 }
 
 void PasswordAutofillAgent::WillSubmitForm(blink::WebFrame* frame,
@@ -761,6 +763,14 @@ void PasswordAutofillAgent::FrameClosing(const blink::WebFrame* frame) {
        iter != login_to_password_info_.end();) {
     if (iter->first.document().frame() == frame)
       login_to_password_info_.erase(iter++);
+    else
+      ++iter;
+  }
+  for (FrameToPasswordFormMap::iterator iter =
+           provisionally_saved_forms_.begin();
+       iter != provisionally_saved_forms_.end();) {
+    if (iter->first == frame)
+      provisionally_saved_forms_.erase(iter++);
     else
       ++iter;
   }
