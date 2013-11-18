@@ -401,6 +401,10 @@ class MetadataDatabaseTest : public testing::Test {
     details->set_change_id(++current_change_id_);
   }
 
+  void ApplyNoopChangeToMetadata(FileMetadata* file) {
+    file->mutable_details()->set_change_id(++current_change_id_);
+  }
+
   void PushToChangeList(scoped_ptr<google_apis::ChangeResource> change,
                         ScopedVector<google_apis::ChangeResource>* changes) {
     changes->push_back(change.release());
@@ -748,6 +752,9 @@ TEST_F(MetadataDatabaseTest, UpdateByChangeListTest) {
   ApplyReorganizeChangeToMetadata(folder.metadata.file_id(),
                                   &reorganized_file.metadata);
   ApplyContentChangeToMetadata(&updated_file.metadata);
+
+  // Update change ID.
+  ApplyNoopChangeToMetadata(&noop_file.metadata);
 
   ScopedVector<google_apis::ChangeResource> changes;
   PushToChangeList(

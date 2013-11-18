@@ -338,10 +338,13 @@ class MetadataDatabase {
   void WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
                        const SyncStatusCallback& callback);
 
+  bool HasNewerFileMetadata(const std::string& file_id, int64 change_id);
+
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<leveldb::DB> db_;
 
   scoped_ptr<ServiceMetadata> service_metadata_;
+  int64 largest_known_change_id_;
 
   FileByID file_by_id_;  // Owned.
   TrackerByID tracker_by_id_;  // Owned.
