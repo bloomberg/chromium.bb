@@ -113,6 +113,11 @@ cr.define('omniboxDebug', function() {
         'The result score. Higher is more relevant.'),
     new PresentationInfoRecord('Contents', '', 'contents', true,
         'The text that is presented identifying the result.'),
+    new PresentationInfoRecord(
+        'Can Be Default', '', 'allowed_to_be_default_match', false,
+        'A green checkmark indicates that the result can be the default ' +
+        'match (i.e., can be the match that pressing enter in the omnibox ' +
+        'navigates to).'),
     new PresentationInfoRecord('Starred', '', 'starred', false,
         'A green checkmark indicates that the result has been bookmarked.'),
     new PresentationInfoRecord(
@@ -130,7 +135,7 @@ cr.define('omniboxDebug', function() {
         'The text shown in the omnibox as a blue highlight selection ' +
         'following the cursor, if this match is shown inline.'),
     new PresentationInfoRecord('Del', '', 'deletable', false,
-        'A green checkmark indicates that the results can be deleted from ' +
+        'A green checkmark indicates that the result can be deleted from ' +
         'the visit history.'),
     new PresentationInfoRecord('Prev', '', 'from_previous', false, ''),
     new PresentationInfoRecord(
