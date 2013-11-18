@@ -253,6 +253,9 @@ class MetadataDatabase {
   // Assigns the dirty tracker if exists and |tracker| is non-NULL.
   bool GetLowPriorityDirtyTracker(FileTracker* tracker);
 
+  // Sets |app_ids| to a list of all registered app ids.
+  void GetRegisteredAppIDs(std::vector<std::string>* app_ids);
+
  private:
   friend class ListChangesTaskTest;
   friend class MetadataDatabaseTest;

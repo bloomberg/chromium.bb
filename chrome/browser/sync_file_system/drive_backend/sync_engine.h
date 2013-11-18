@@ -16,7 +16,7 @@
 #include "chrome/browser/sync_file_system/sync_task_manager.h"
 #include "net/base/network_change_notifier.h"
 
-class ExtensionService;
+class ExtensionServiceInterface;
 
 namespace base {
 class SequencedTaskRunner;
@@ -49,7 +49,7 @@ class SyncEngine : public RemoteFileSyncService,
              base::SequencedTaskRunner* task_runner,
              scoped_ptr<drive::DriveServiceInterface> drive_service,
              drive::DriveNotificationManager* notification_manager,
-             ExtensionService* extension_service);
+             ExtensionServiceInterface* extension_service);
   virtual ~SyncEngine();
 
   void Initialize();
@@ -120,6 +120,7 @@ class SyncEngine : public RemoteFileSyncService,
   virtual RemoteChangeProcessor* GetRemoteChangeProcessor() OVERRIDE;
 
  private:
+  friend class SyncEngineTest;
   void DoDisableApp(const std::string& app_id,
                     const SyncStatusCallback& callback);
   void DoEnableApp(const std::string& app_id,
@@ -141,6 +142,7 @@ class SyncEngine : public RemoteFileSyncService,
       const std::string& description);
   void UpdateServiceState(RemoteServiceState state,
                           const std::string& description);
+  void UpdateRegisteredApps();
 
   base::FilePath base_dir_;
   base::FilePath temporary_file_dir_;
@@ -155,7 +157,7 @@ class SyncEngine : public RemoteFileSyncService,
   // I.e. the owner should declare the dependency explicitly by calling
   // BrowserContextKeyedService::DependsOn().
   drive::DriveNotificationManager* notification_manager_;
-  ExtensionService* extension_service_;
+  ExtensionServiceInterface* extension_service_;
 
   ObserverList<SyncServiceObserver> service_observers_;
   ObserverList<FileStatusObserver> file_status_observers_;

@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/drive/drive_api_service.h"
 #include "chrome/browser/drive/drive_notification_manager.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/local_to_remote_syncer.h"
@@ -18,16 +19,23 @@
 #include "chrome/browser/sync_file_system/drive_backend/uninstall_app_task.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/sync_task.h"
+#include "extensions/common/extension.h"
 
 namespace sync_file_system {
 namespace drive_backend {
+
+namespace {
+
+void EmptyStatusCallback(SyncStatusCode status) {}
+
+}  // namespace
 
 SyncEngine::SyncEngine(
     const base::FilePath& base_dir,
     base::SequencedTaskRunner* task_runner,
     scoped_ptr<drive::DriveServiceInterface> drive_service,
     drive::DriveNotificationManager* notification_manager,
-    ExtensionService* extension_service)
+    ExtensionServiceInterface* extension_service)
     : base_dir_(base_dir),
       task_runner_(task_runner),
       drive_service_(drive_service.Pass()),
@@ -288,6 +296,7 @@ void SyncEngine::DoEnableApp(const std::string& app_id,
 void SyncEngine::DidInitialize(SyncEngineInitializer* initializer,
                                SyncStatusCode status) {
   metadata_database_ = initializer->PassMetadataDatabase();
+  UpdateRegisteredApps();
 }
 
 void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
@@ -339,6 +348,43 @@ void SyncEngine::UpdateServiceState(RemoteServiceState state,
   FOR_EACH_OBSERVER(
       Observer, service_observers_,
       OnRemoteServiceStateUpdated(GetCurrentState(), description));
+}
+
+void SyncEngine::UpdateRegisteredApps() {
+  if (!extension_service_)
+    return;
+
+  std::vector<std::string> app_ids;
+  metadata_database_->GetRegisteredAppIDs(&app_ids);
+
+  // Update the status of every origin using status from ExtensionService.
+  for (std::vector<std::string>::const_iterator itr = app_ids.begin();
+       itr != app_ids.end(); ++itr) {
+    const std::string& app_id = *itr;
+    GURL origin =
+        extensions::Extension::GetBaseURLFromExtensionId(app_id);
+    if (!extension_service_->GetInstalledExtension(app_id)) {
+      // Extension has been uninstalled.
+      // (At this stage we can't know if it was unpacked extension or not,
+      // so just purge the remote folder.)
+      UninstallOrigin(origin,
+                      RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE,
+                      base::Bind(&EmptyStatusCallback));
+      continue;
+    }
+    FileTracker tracker;
+    if (!metadata_database_->FindAppRootTracker(app_id, &tracker)) {
+      // App will register itself on first run.
+      continue;
+    }
+    bool is_app_enabled = extension_service_->IsExtensionEnabled(app_id);
+    bool is_app_root_tracker_enabled =
+        tracker.tracker_kind() == TRACKER_KIND_APP_ROOT;
+    if (is_app_enabled && !is_app_root_tracker_enabled)
+      EnableOrigin(origin, base::Bind(&EmptyStatusCallback));
+    else if (!is_app_enabled && is_app_root_tracker_enabled)
+      DisableOrigin(origin, base::Bind(&EmptyStatusCallback));
+  }
 }
 
 }  // namespace drive_backend

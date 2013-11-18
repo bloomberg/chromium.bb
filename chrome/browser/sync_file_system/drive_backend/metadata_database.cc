@@ -1555,5 +1555,15 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpFiles(
   return files.Pass();
 }
 
+void MetadataDatabase::GetRegisteredAppIDs(std::vector<std::string>* app_ids) {
+  DCHECK(app_ids);
+  app_ids->clear();
+  app_ids->reserve(app_root_by_app_id_.size());
+  for (TrackerByAppID::iterator itr = app_root_by_app_id_.begin();
+       itr != app_root_by_app_id_.end(); ++itr) {
+    app_ids->push_back(itr->first);
+  }
+}
+
 }  // namespace drive_backend
 }  // namespace sync_file_system
