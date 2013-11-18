@@ -749,7 +749,6 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
   const DrawMode draw_mode = GetDrawMode(output_surface_.get());
 
-  const bool prevent_occlusion = false;
   LayerIteratorType end =
       LayerIteratorType::End(frame->render_surface_layer_list);
   for (LayerIteratorType it =
@@ -761,7 +760,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     RenderPass* target_render_pass =
         frame->render_passes_by_id[target_render_pass_id];
 
-    occlusion_tracker.EnterLayer(it, prevent_occlusion);
+    occlusion_tracker.EnterLayer(it);
 
     AppendQuadsData append_quads_data(target_render_pass_id);
 

@@ -1033,13 +1033,12 @@ void LayerTreeHost::PaintLayerContents(
 
   in_paint_layer_contents_ = true;
 
-  const bool prevent_occlusion = false;
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);
   for (LayerIteratorType it =
            LayerIteratorType::Begin(&render_surface_layer_list);
        it != end;
        ++it) {
-    occlusion_tracker.EnterLayer(it, prevent_occlusion);
+    occlusion_tracker.EnterLayer(it);
 
     if (it.represents_target_render_surface()) {
       PaintMasksForRenderSurface(

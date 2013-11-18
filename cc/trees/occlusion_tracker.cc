@@ -22,7 +22,6 @@ OcclusionTrackerBase<LayerType, RenderSurfaceType>::OcclusionTrackerBase(
     gfx::Rect screen_space_clip_rect, bool record_metrics_for_frame)
     : screen_space_clip_rect_(screen_space_clip_rect),
       overdraw_metrics_(OverdrawMetrics::Create(record_metrics_for_frame)),
-      prevent_occlusion_(false),
       occluding_screen_space_rects_(NULL),
       non_occluding_screen_space_rects_(NULL) {}
 
@@ -31,16 +30,13 @@ OcclusionTrackerBase<LayerType, RenderSurfaceType>::~OcclusionTrackerBase() {}
 
 template <typename LayerType, typename RenderSurfaceType>
 void OcclusionTrackerBase<LayerType, RenderSurfaceType>::EnterLayer(
-    const LayerIteratorPosition<LayerType>& layer_iterator,
-    bool prevent_occlusion) {
+    const LayerIteratorPosition<LayerType>& layer_iterator) {
   LayerType* render_target = layer_iterator.target_render_surface_layer;
 
   if (layer_iterator.represents_itself)
     EnterRenderTarget(render_target);
   else if (layer_iterator.represents_target_render_surface)
     FinishedRenderTarget(render_target);
-
-  prevent_occlusion_ = prevent_occlusion;
 }
 
 template <typename LayerType, typename RenderSurfaceType>
@@ -54,8 +50,6 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::LeaveLayer(
   // but in a way that the surface's own occlusion won't occlude itself.
   else if (layer_iterator.represents_contributing_render_surface)
     LeaveToRenderTarget(render_target);
-
-  prevent_occlusion_ = false;
 }
 
 template <typename RenderSurfaceType>
@@ -503,9 +497,6 @@ bool OcclusionTrackerBase<LayerType, RenderSurfaceType>::Occluded(
     gfx::Rect content_rect,
     const gfx::Transform& draw_transform,
     bool impl_draw_transform_is_unknown) const {
-  if (prevent_occlusion_)
-    return false;
-
   DCHECK(!stack_.empty());
   if (stack_.empty())
     return false;
@@ -555,9 +546,6 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
         gfx::Rect content_rect,
         const gfx::Transform& draw_transform,
         bool impl_draw_transform_is_unknown) const {
-  if (prevent_occlusion_)
-    return content_rect;
-
   DCHECK(!stack_.empty());
   if (stack_.empty())
     return content_rect;
@@ -618,9 +606,6 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
   // This should be called while the layer is still considered the current
   // target in the occlusion tracker.
   DCHECK_EQ(layer, stack_.back().target);
-
-  if (prevent_occlusion_)
-    return content_rect;
 
   if (content_rect.IsEmpty())
     return content_rect;

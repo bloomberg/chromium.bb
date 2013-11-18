@@ -37,10 +37,8 @@ class CC_EXPORT OcclusionTrackerBase {
   ~OcclusionTrackerBase();
 
   // Called at the beginning of each step in the LayerIterator's front-to-back
-  // traversal. If |prevent_occlusion| is true, the layer will be considered
-  // unoccluded.
-  void EnterLayer(const LayerIteratorPosition<LayerType>& layer_iterator,
-                  bool prevent_occlusion);
+  // traversal.
+  void EnterLayer(const LayerIteratorPosition<LayerType>& layer_iterator);
   // Called at the end of each step in the LayerIterator's front-to-back
   // traversal.
   void LeaveLayer(const LayerIteratorPosition<LayerType>& layer_iterator);
@@ -146,7 +144,6 @@ class CC_EXPORT OcclusionTrackerBase {
   gfx::Rect screen_space_clip_rect_;
   scoped_ptr<class OverdrawMetrics> overdraw_metrics_;
   gfx::Size minimum_tracking_size_;
-  bool prevent_occlusion_;
 
   // This is used for visualizing the occlusion tracking process.
   std::vector<gfx::Rect>* occluding_screen_space_rects_;
