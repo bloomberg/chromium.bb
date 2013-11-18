@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
@@ -148,6 +149,12 @@ class ChromeDownloadManagerDelegateTest :
   void DetermineDownloadTarget(DownloadItem* download,
                                DownloadTargetInfo* result);
 
+  // Invokes ChromeDownloadManagerDelegate::CheckForFileExistence and waits for
+  // the asynchronous callback. The result passed into
+  // content::CheckForFileExistenceCallback is the return value from this
+  // method.
+  bool CheckForFileExistence(DownloadItem* download);
+
   const base::FilePath& default_download_path() const;
   TestChromeDownloadManagerDelegate* delegate();
   content::MockDownloadManager* download_manager();
@@ -263,6 +270,24 @@ void ChromeDownloadManagerDelegateTest::DetermineDownloadTarget(
   loop_runner.Run();
 }
 
+void StoreBoolAndRunClosure(const base::Closure& closure,
+                            bool* result_storage,
+                            bool result) {
+  *result_storage = result;
+  closure.Run();
+}
+
+bool ChromeDownloadManagerDelegateTest::CheckForFileExistence(
+    DownloadItem* download_item) {
+  base::RunLoop loop_runner;
+  bool result = false;
+  delegate()->CheckForFileExistence(
+      download_item,
+      base::Bind(&StoreBoolAndRunClosure, loop_runner.QuitClosure(), &result));
+  loop_runner.Run();
+  return result;
+}
+
 const base::FilePath& ChromeDownloadManagerDelegateTest::default_download_path()
     const {
   return test_download_dir_.path();
@@ -355,4 +380,24 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_LastSavePath) {
     DetermineDownloadTarget(save_as_download.get(), &result);
     VerifyAndClearExpectations();
   }
+}
+
+TEST_F(ChromeDownloadManagerDelegateTest, CheckForFileExistence) {
+  const char kData[] = "helloworld";
+  const size_t kDataLength = sizeof(kData) - 1;
+  base::FilePath existing_path = default_download_path().AppendASCII("foo");
+  base::FilePath non_existent_path =
+      default_download_path().AppendASCII("bar");
+  file_util::WriteFile(existing_path, kData, kDataLength);
+
+  scoped_ptr<content::MockDownloadItem> download_item(
+      CreateActiveDownloadItem(1));
+  EXPECT_CALL(*download_item, GetTargetFilePath())
+      .WillRepeatedly(ReturnRef(existing_path));
+  EXPECT_TRUE(CheckForFileExistence(download_item.get()));
+
+  download_item.reset(CreateActiveDownloadItem(1));
+  EXPECT_CALL(*download_item, GetTargetFilePath())
+      .WillRepeatedly(ReturnRef(non_existent_path));
+  EXPECT_FALSE(CheckForFileExistence(download_item.get()));
 }

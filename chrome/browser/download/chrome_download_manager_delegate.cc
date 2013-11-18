@@ -16,6 +16,8 @@
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -473,8 +475,15 @@ void ChromeDownloadManagerDelegate::CheckForFileExistence(
     return;
   }
 #endif
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
+  static const char kSequenceToken[] = "ChromeDMD-FileExistenceChecker";
+  base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool->GetNamedSequenceToken(kSequenceToken),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  base::PostTaskAndReplyWithResult(
+      task_runner.get(),
+      FROM_HERE,
       base::Bind(&base::PathExists, download->GetTargetFilePath()),
       callback);
 }
