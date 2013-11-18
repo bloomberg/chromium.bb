@@ -42,7 +42,7 @@ public:
     }
 
     SVGPathElement* contextElement() const;
-    SVGAnimatedProperty* animatedProperty() const { return m_animatedProperty.get(); }
+    SVGAnimatedProperty* animatedProperty() const { return m_animatedProperty; }
 
     int findItem(const ListItemType& item) const
     {
@@ -155,7 +155,7 @@ private:
     }
 
 private:
-    RefPtr<AnimatedListPropertyTearOff> m_animatedProperty;
+    AnimatedListPropertyTearOff* m_animatedProperty;
     SVGPathSegRole m_pathSegRole;
 };
 

@@ -112,11 +112,6 @@ private:
     static void synchronizeD(SVGElement* contextElement);
     static PassRefPtr<SVGAnimatedProperty> lookupOrCreateDWrapper(SVGElement* contextElement);
 
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGPathElement)
-        DECLARE_ANIMATED_NUMBER(PathLength, pathLength)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
-    END_DECLARE_ANIMATED_PROPERTIES
-
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
     virtual Node::InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
@@ -124,10 +119,14 @@ private:
 
     void invalidateMPathDependencies();
 
-private:
     OwnPtr<SVGPathByteStream> m_pathByteStream;
     mutable SVGSynchronizableAnimatedProperty<SVGPathSegList> m_pathSegList;
     bool m_isAnimValObserved;
+
+    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGPathElement)
+        DECLARE_ANIMATED_NUMBER(PathLength, pathLength)
+        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
+    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGPathElement, hasTagName(SVGNames::pathTag));
