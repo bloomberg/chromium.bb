@@ -37,8 +37,6 @@ class CryptohomeClient;
 class DBusClient;
 class DebugDaemonClient;
 class GsmSMSClient;
-class IBusEngineFactoryService;
-class IBusEngineService;
 class ImageBurnerClient;
 class IntrospectableClient;
 class ModemMessagingClient;
