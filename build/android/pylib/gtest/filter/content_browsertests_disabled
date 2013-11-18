@@ -38,6 +38,9 @@ DomSerializerTests.*
 DumpAccessibilityTreeTest.AccessibilityCanvas
 RendererAccessibilityTest.DetachAccessibilityObject
 RendererAccessibilityTest.EditableTextModeFocusEvents
+DumpAccessibilityTreeTest.AccessibilityDialog
+DumpAccessibilityTreeTest.AccessibilityModalDialogClosed
+DumpAccessibilityTreeTest.AccessibilityModalDialogInIframeOpened
 
 # http://crbug.com/187500
 RenderViewImplTest.*
