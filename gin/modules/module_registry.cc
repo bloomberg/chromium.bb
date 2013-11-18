@@ -119,7 +119,8 @@ ModuleRegistry* ModuleRegistry::From(Handle<v8::Context> context) {
     if (!data)
       return NULL;
     ModuleRegistry* registry = new ModuleRegistry(isolate);
-    context->Global()->SetHiddenValue(key, v8::External::New(registry));
+    context->Global()->SetHiddenValue(key,
+                                      v8::External::New(isolate, registry));
     data->AddSupplement(registry);
     return registry;
   }

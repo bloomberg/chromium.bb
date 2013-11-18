@@ -77,12 +77,13 @@ void BoundLogMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   (*log_method)(v8::Context::GetCalling(), message);
 }
 
-void BindLogMethod(v8::Local<v8::Object> target,
+void BindLogMethod(v8::Isolate* isolate,
+                   v8::Local<v8::Object> target,
                    const std::string& name,
                    LogMethod log_method) {
   v8::Local<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New(
       &BoundLogMethodCallback,
-      v8::External::New(reinterpret_cast<void*>(log_method)));
+      v8::External::New(isolate, reinterpret_cast<void*>(log_method)));
   target->Set(v8::String::New(name.c_str()), tmpl->GetFunction());
 }
 
@@ -172,12 +173,13 @@ void AddMessage(v8::Handle<v8::Context> context,
 }
 
 v8::Local<v8::Object> AsV8Object() {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Object> console_object = v8::Object::New();
-  BindLogMethod(console_object, "debug", &Debug);
-  BindLogMethod(console_object, "log", &Log);
-  BindLogMethod(console_object, "warn", &Warn);
-  BindLogMethod(console_object, "error", &Error);
+  BindLogMethod(isolate, console_object, "debug", &Debug);
+  BindLogMethod(isolate, console_object, "log", &Log);
+  BindLogMethod(isolate, console_object, "warn", &Warn);
+  BindLogMethod(isolate, console_object, "error", &Error);
   return handle_scope.Close(console_object);
 }
 

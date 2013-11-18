@@ -132,7 +132,7 @@ ModuleSystem::ModuleSystem(ChromeV8Context* context, SourceMap* source_map)
   v8::Handle<v8::Object> global(context->v8_context()->Global());
   global->SetHiddenValue(v8::String::New(kModulesField), v8::Object::New());
   global->SetHiddenValue(v8::String::New(kModuleSystem),
-                         v8::External::New(this));
+                         v8::External::New(context->isolate(), this));
 }
 
 ModuleSystem::~ModuleSystem() {

@@ -411,7 +411,7 @@ class ProxyResolverV8::Context {
     v8::Isolate::Scope isolate_scope(isolate_);
     v8::HandleScope scope(isolate_);
 
-    v8_this_.Reset(isolate_, v8::External::New(this));
+    v8_this_.Reset(isolate_, v8::External::New(isolate_, this));
     v8::Local<v8::External> v8_this =
         v8::Local<v8::External>::New(isolate_, v8_this_);
     v8::Local<v8::ObjectTemplate> global_template = v8::ObjectTemplate::New();
