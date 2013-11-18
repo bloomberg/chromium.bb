@@ -259,7 +259,7 @@ class RepoRepository(object):
     if not self._referenced_repo:
       return
 
-    proj_root = os.path.join(self.directory, '.repo', 'projects')
+    proj_root = os.path.join(self.directory, '.repo', 'project-objects')
     if not os.path.exists(proj_root):
       # Not yet synced, nothing to be done.
       return

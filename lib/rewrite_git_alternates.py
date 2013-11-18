@@ -65,12 +65,11 @@ def _UpdateAlternatesDir(alternates_root, reference_maps, projects):
     alt_path = os.path.join(alternates_root, project)
     paths = []
     for k, v in reference_maps.iteritems():
-      k = os.path.join(k, '.repo', 'projects', project, 'objects')
-      if os.path.exists(k):
-        paths.append(os.path.join(v, '.repo', 'projects', project, 'objects'))
+      suffix = os.path.join('.repo', 'project-objects', project, 'objects')
+      if os.path.exists(os.path.join(k, suffix)):
+        paths.append(os.path.join(v, suffix))
 
     osutils.SafeMakedirs(os.path.dirname(alt_path))
-
     osutils.WriteFile(alt_path, '%s\n' % ('\n'.join(paths),), atomic=True)
 
 
@@ -135,7 +134,7 @@ def _GetProjects(repo_root):
   data = cros_build_lib.RunCommandCaptureOutput(
       ['find', './', '-type', 'd', '-name', '*.git', '-a',
        '!', '-wholename', '*/*.git/*', '-prune'],
-      cwd=os.path.join(repo_root, 'projects'))
+      cwd=os.path.join(repo_root, 'project-objects'))
 
   # Drop the leading ./ and the trailing .git
   data = [x[2:-4] for x in data.output.splitlines() if x]
@@ -155,7 +154,7 @@ class Failed(Exception):
 def _RebuildRepoCheckout(target_root, reference_map,
                          alternates_dir):
   repo_root = os.path.join(target_root, '.repo')
-  proj_root = os.path.join(repo_root, 'projects')
+  proj_root = os.path.join(repo_root, 'project-objects')
 
   manifest_path = os.path.join(repo_root, 'manifest.xml')
   if not os.path.exists(manifest_path):
