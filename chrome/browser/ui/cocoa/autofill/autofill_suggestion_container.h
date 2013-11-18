@@ -28,8 +28,8 @@ namespace autofill {
   // The second (and longer) line of text that describes the suggestion.
   base::scoped_nsobject<NSTextField> label2_;
 
-  // The icon that comes just before |label_|.
-  base::scoped_nsobject<NSImageView> iconImageView_;
+  // The icon that comes just before the first line of suggestion text.
+  base::scoped_nsobject<NSImage> iconImage_;
 
   // The input set by ShowTextfield.
   base::scoped_nsobject<AutofillTextField> inputField_;

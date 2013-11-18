@@ -292,9 +292,9 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   base::string16 line1;
   base::string16 line2;
   BreakSuggestionText(text, &line1, &line2);
+  [suggestContainer_ setIcon:suggestionState.icon.AsNSImage()];
   [suggestContainer_ setSuggestionText:base::SysUTF16ToNSString(line1)
                                  line2:base::SysUTF16ToNSString(line2)];
-  [suggestContainer_ setIcon:suggestionState.icon.AsNSImage()];
   if (!suggestionState.extra_text.empty()) {
     NSString* extraText =
         base::SysUTF16ToNSString(suggestionState.extra_text);

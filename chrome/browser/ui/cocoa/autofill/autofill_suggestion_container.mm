@@ -49,6 +49,47 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
 
 }
 
+// An attachment cell for a single icon - takes care of proper alignment of
+// text and icon.
+@interface IconAttachmentCell : NSTextAttachmentCell {
+  CGFloat baseline_;  // The cell's baseline adjustment.
+}
+
+// Adjust the cell's baseline so that the lower edge of the image aligns with
+// the longest descender, not the font baseline
+- (void)adjustBaselineForFont:(NSFont*)font;
+
+@end
+
+
+@implementation IconAttachmentCell
+
+- (NSPoint)cellBaselineOffset {
+  return NSMakePoint(0.0, baseline_);
+}
+
+// Ensure proper padding between text and icon.
+- (NSSize)cellSize {
+  NSSize size = [super cellSize];
+  size.width += kAroundTextPadding;
+  return size;
+}
+
+// drawWithFrame: needs to be overridden to left-align the image. Default
+// rendering centers images in the cell's frame.
+- (void)drawWithFrame:(NSRect)frame inView:(NSView*)view {
+  frame.size.width -= kAroundTextPadding;
+  [super drawWithFrame:frame inView:view];
+}
+
+- (void)adjustBaselineForFont:(NSFont*)font {
+  CGFloat lineHeight = [font ascender];
+  baseline_ = std::floor((lineHeight - [[self image] size].height) / 2.0);
+}
+
+@end
+
+
 @implementation AutofillSuggestionContainer
 
 - (AutofillTextField*)inputField {
@@ -76,10 +117,6 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
 
   label2_.reset([[self createLabelWithFrame:NSZeroRect] retain]);
 
-  iconImageView_.reset([[NSImageView alloc] initWithFrame:NSZeroRect]);
-  [iconImageView_ setImageFrameStyle:NSImageFrameNone];
-  [iconImageView_ setHidden:YES];
-
   inputField_.reset([[AutofillTextField alloc] initWithFrame:NSZeroRect]);
   [inputField_ setHidden:YES];
 
@@ -89,7 +126,7 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
 
   base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
   [view setSubviews:
-      @[ iconImageView_, label_, inputField_, label2_, spacer_ ]];
+      @[ label_, inputField_, label2_, spacer_ ]];
   [self setView:view];
 }
 
@@ -105,13 +142,25 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
 // TODO(groby): Can we make all the individual setters private and just
 // update state as a whole?
 - (void)setIcon:(NSImage*)iconImage {
-  [iconImageView_ setImage:iconImage];
-  [iconImageView_ setHidden:!iconImage];
-  [iconImageView_ setFrameSize:[[iconImageView_ image] size]];
+  iconImage_.reset([iconImage retain]);
 }
 
 - (void)setSuggestionText:(NSString*)line1
                     line2:(NSString*)line2 {
+  [label_ setString:@""];
+
+  if (iconImage_.get()) {
+    base::scoped_nsobject<IconAttachmentCell> cell(
+        [[IconAttachmentCell alloc] initImageCell:iconImage_]);
+    base::scoped_nsobject<NSTextAttachment> attachment(
+        [[NSTextAttachment alloc] init]);
+    [cell adjustBaselineForFont:[NSFont controlContentFontOfSize:0]];
+    [cell setAlignment:NSLeftTextAlignment];
+    [attachment setAttachmentCell:cell];
+    [[label_ textStorage] setAttributedString:
+        [NSAttributedString attributedStringWithAttachment:attachment]];
+  }
+
   NSDictionary* attributes = @{
     NSCursorAttributeName : [NSCursor arrowCursor],
       NSFontAttributeName : [NSFont controlContentFontOfSize:0]
@@ -119,7 +168,7 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   base::scoped_nsobject<NSAttributedString> str1(
       [[NSAttributedString alloc] initWithString:line1
                                       attributes:attributes]);
-  [[label_ textStorage] setAttributedString:str1];
+  [[label_ textStorage] appendAttributedString:str1];
 
   [label2_ setStringValue:line2];
   [label2_ setHidden:![line2 length]];
@@ -145,10 +194,7 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
 
 - (NSSize)preferredSizeForFirstLine {
   NSSize size = [label_ bounds].size;
-  if (![iconImageView_ isHidden]) {
-    size.height = std::max(size.height, NSHeight([iconImageView_ frame]));
-    size.width += NSWidth([iconImageView_ frame]) + kAroundTextPadding;
-  }
+
   // Final inputField_ sizing/spacing depends on a TODO(estade) in Views code.
   if (![inputField_ isHidden]) {
     size.height = std::max(size.height, NSHeight([inputField_ frame]));
@@ -191,8 +237,7 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   lineFrame.size.width = std::min(NSWidth(lineFrame), NSWidth(bounds));
 
   // Layout the controls - two lines on two rows, left-aligned. The optional
-  // textfield is on the first line, right-aligned. The icon is also on the
-  // first row, in front of the label.
+  // textfield is on the first line, right-aligned.
   NSRect labelFrame = lineFrame;
   NSLayoutManager* layoutManager = [label_ layoutManager];
   NSTextContainer* textContainer = [label_ textContainer];
@@ -201,16 +246,6 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
 
   labelFrame.size.height = textFrame.size.height;
   labelFrame = CenterVertically(lineFrame, labelFrame);
-
-  if (![iconImageView_ isHidden]) {
-    NSRect dummyFrame;
-    NSRect iconFrame = [iconImageView_ frame];
-    iconFrame.origin = bounds.origin;
-    iconFrame = CenterVertically(lineFrame, iconFrame);
-    [iconImageView_ setFrameOrigin:iconFrame.origin];
-    NSDivideRect(labelFrame, &dummyFrame, &labelFrame,
-                 NSWidth(iconFrame) + kAroundTextPadding, NSMinXEdge);
-  }
 
   if (![inputField_ isHidden]) {
     NSRect dummyFrame;
