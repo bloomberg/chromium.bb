@@ -218,10 +218,14 @@ Error MountNodeUDP::Bind(const struct sockaddr* addr, socklen_t len) {
   int err = UDPInterface()->Bind(socket_resource_,
                                  out_addr,
                                  PP_BlockUntilComplete());
-  if (err != 0) {
-    mount_->ppapi()->ReleaseResource(out_addr);
+  mount_->ppapi()->ReleaseResource(out_addr);
+  if (err != 0)
     return PPErrorToErrno(err);
-  }
+
+  // Get the address that was actually bound (in case addr was 0.0.0.0:0).
+  out_addr = UDPInterface()->GetBoundAddress(socket_resource_);
+  if (out_addr == 0)
+    return EINVAL;
 
   // Now that we are bound, we can start sending and receiving.
   SetStreamFlags(SSF_CAN_SEND | SSF_CAN_RECV);
@@ -282,6 +286,18 @@ Error MountNodeUDP::Send_Locked(const void* buf,
                                 size_t len,
                                 PP_Resource addr,
                                 int* out_len) {
+  if (!IsBound()) {
+    // Pepper requires a socket to be bound before it can send.
+    sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_port = 0;
+    memset(&addr.sin_addr, 0, sizeof(addr.sin_addr));
+    Error err =
+        Bind(reinterpret_cast<const struct sockaddr*>(&addr), sizeof(addr));
+    if (err != 0)
+      return err;
+  }
+
   *out_len = 0;
   int capped_len =
       static_cast<int32_t>(std::min<int>(len, kMaxPacketSize));

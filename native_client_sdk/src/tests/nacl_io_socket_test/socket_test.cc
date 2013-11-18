@@ -244,6 +244,55 @@ TEST_F(SocketTestUDP, SendRcv) {
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
 }
 
+TEST_F(SocketTestUDP, SendRcvUnbound) {
+  char outbuf[256];
+  char inbuf[512];
+
+  memset(outbuf, 1, sizeof(outbuf));
+  memset(inbuf, 0, sizeof(inbuf));
+
+  // Don't bind sock1_, this will automatically bind sock1_ to a random port
+  // at the time of the first send.
+  EXPECT_EQ(0, Bind(sock2_, LOCAL_HOST, PORT2));
+
+  sockaddr_in addr;
+  sockaddr_in addr2;
+  socklen_t addrlen = sizeof(addr2);
+  IP4ToSockAddr(LOCAL_HOST, PORT2, &addr2);
+
+  // The first send hasn't occurred, so the socket is not yet bound.
+  socklen_t out_addrlen = sizeof(addr);
+  ASSERT_EQ(0, getsockname(sock1_, (sockaddr*)&addr, &out_addrlen));
+  EXPECT_EQ(addrlen, out_addrlen);
+  EXPECT_EQ(0, htonl(addr.sin_addr.s_addr));
+  EXPECT_EQ(0, htons(addr.sin_port));
+
+  int len1 =
+     sendto(sock1_, outbuf, sizeof(outbuf), 0, (sockaddr*) &addr2, addrlen);
+  EXPECT_EQ(sizeof(outbuf), len1);
+
+  // After the first send, the socket should be bound; the port is set, but
+  // the address is still 0.
+  ASSERT_EQ(0, getsockname(sock1_, (sockaddr*)&addr, &out_addrlen));
+  EXPECT_EQ(addrlen, out_addrlen);
+  EXPECT_EQ(0, htonl(addr.sin_addr.s_addr));
+  EXPECT_NE(0, htons(addr.sin_port));
+
+  // Ensure the buffers are different
+  EXPECT_NE(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
+
+  // Try to receive the previously sent packet
+  int len2 =
+    recvfrom(sock2_, inbuf, sizeof(inbuf), 0, (sockaddr*) &addr, &addrlen);
+  EXPECT_EQ(sizeof(outbuf), len2);
+  EXPECT_EQ(sizeof(sockaddr_in), addrlen);
+  EXPECT_EQ(LOCAL_HOST, htonl(addr.sin_addr.s_addr));
+  EXPECT_NE(0, htons(addr.sin_port));
+
+  // Now they should be the same
+  EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
+}
+
 const size_t kQueueSize = 65536 * 8;
 TEST_F(SocketTestUDP, FullFifo) {
   char outbuf[16 * 1024];

@@ -462,12 +462,15 @@ Error MountNodeSocket::GetSockName(struct sockaddr* addr, socklen_t* len) {
     return EFAULT;
 
   AUTO_LOCK(node_lock_);
-  if (local_addr_ != 0) {
-    *len = ResourceToSockAddr(local_addr_, *len, addr);
+  if (local_addr_ == 0) {
+    // getsockname succeeds even if the socket is not bound. In this case,
+    // just return address 0, port 0.
+    memset(addr, 0, *len);
     return 0;
   }
 
-  return ENOTCONN;
+  *len = ResourceToSockAddr(local_addr_, *len, addr);
+  return 0;
 }
 
 }  // namespace nacl_io
