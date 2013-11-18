@@ -29,6 +29,8 @@ const char kNonFlagGroupName[] = "non_flag_group";
 const char kForcingFlag1[] = "flag_test1";
 const char kForcingFlag2[] = "flag_test2";
 
+const VariationID kExperimentId = 123;
+
 // Adds an experiment to |study| with the specified |name| and |probability|.
 Study_Experiment* AddExperiment(const std::string& name, int probability,
                                 Study* study) {
@@ -89,6 +91,47 @@ class VariationsSeedProcessorTest : public ::testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(VariationsSeedProcessorTest);
 };
+
+TEST_F(VariationsSeedProcessorTest, AllowForceGroupAndVariationId) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+
+  base::FieldTrialList field_trial_list(NULL);
+
+  Study study = CreateStudyWithFlagGroups(100, 0, 0);
+  study.mutable_experiment(1)->set_google_web_experiment_id(kExperimentId);
+  study.mutable_filter()->add_channel(Study_Channel_DEV);
+  study.mutable_filter()->add_channel(Study_Channel_CANARY);
+  study.mutable_filter()->add_platform(Study_Platform_PLATFORM_ANDROID);
+
+  VariationsSeedProcessor().CreateTrialFromStudy(
+      ProcessedStudy(&study, 100, false));
+
+  EXPECT_EQ(kFlagGroup1Name,
+            base::FieldTrialList::FindFullName(kFlagStudyName));
+
+  VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, kFlagStudyName,
+                                        kFlagGroup1Name);
+  EXPECT_EQ(kExperimentId, id);
+}
+
+TEST_F(VariationsSeedProcessorTest, AllowVariationIdWithForcingFlag) {
+  VariationsSeedProcessor seed_processor;
+  Study study = CreateStudyWithFlagGroups(100, 0, 0);
+  EXPECT_FALSE(seed_processor.AllowVariationIdWithForcingFlag(study));
+
+  study.mutable_filter()->add_channel(Study_Channel_DEV);
+  EXPECT_FALSE(seed_processor.AllowVariationIdWithForcingFlag(study));
+
+  study.mutable_filter()->add_platform(Study_Platform_PLATFORM_ANDROID);
+  EXPECT_TRUE(seed_processor.AllowVariationIdWithForcingFlag(study));
+
+  study.mutable_filter()->add_channel(Study_Channel_CANARY);
+  study.mutable_filter()->add_platform(Study_Platform_PLATFORM_IOS);
+  EXPECT_TRUE(seed_processor.AllowVariationIdWithForcingFlag(study));
+
+  study.mutable_filter()->add_platform(Study_Platform_PLATFORM_WINDOWS);
+  EXPECT_FALSE(seed_processor.AllowVariationIdWithForcingFlag(study));
+}
 
 TEST_F(VariationsSeedProcessorTest, CheckStudyChannel) {
   VariationsSeedProcessor seed_processor;
@@ -422,6 +465,26 @@ TEST_F(VariationsSeedProcessorTest, FilterAndValidateStudies) {
   EXPECT_EQ(kTrial1Name, processed_studies[0].study->name());
   EXPECT_EQ(kGroup1Name, processed_studies[0].study->experiment(0).name());
   EXPECT_EQ(kTrial3Name, processed_studies[1].study->name());
+}
+
+TEST_F(VariationsSeedProcessorTest, ForbidForceGroupWithVariationId) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+
+  base::FieldTrialList field_trial_list(NULL);
+
+  Study study = CreateStudyWithFlagGroups(100, 0, 0);
+  study.mutable_experiment(1)->set_google_web_experiment_id(kExperimentId);
+  // Adding windows platform makes forcing_flag and variation Id incompatible.
+  study.mutable_filter()->add_platform(Study_Platform_PLATFORM_WINDOWS);
+
+  VariationsSeedProcessor().CreateTrialFromStudy(
+      ProcessedStudy(&study, 100, false));
+
+  EXPECT_EQ(kFlagGroup1Name,
+            base::FieldTrialList::FindFullName(kFlagStudyName));
+  VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, kFlagStudyName,
+                                        kFlagGroup1Name);
+  EXPECT_EQ(EMPTY_ID, id);
 }
 
 // Test that the group for kForcingFlag1 is forced.

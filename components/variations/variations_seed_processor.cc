@@ -56,12 +56,56 @@ void RegisterExperimentParams(const Study& study,
     AssociateVariationParams(study.name(), experiment.name(), params);
 }
 
+// If there are variation ids associated with |experiment|, register the
+// variation ids.
+void RegisterVariationIds(const Study_Experiment& experiment,
+                          const std::string& trial_name) {
+  if (experiment.has_google_web_experiment_id()) {
+    const VariationID variation_id =
+        static_cast<VariationID>(experiment.google_web_experiment_id());
+    AssociateGoogleVariationIDForce(GOOGLE_WEB_PROPERTIES,
+                                    trial_name,
+                                    experiment.name(),
+                                    variation_id);
+  }
+  if (experiment.has_google_update_experiment_id()) {
+    const VariationID variation_id =
+        static_cast<VariationID>(experiment.google_update_experiment_id());
+    AssociateGoogleVariationIDForce(GOOGLE_UPDATE_SERVICE,
+                                    trial_name,
+                                    experiment.name(),
+                                    variation_id);
+  }
+}
+
 }  // namespace
 
 VariationsSeedProcessor::VariationsSeedProcessor() {
 }
 
 VariationsSeedProcessor::~VariationsSeedProcessor() {
+}
+
+bool VariationsSeedProcessor::AllowVariationIdWithForcingFlag(
+    const Study& study) {
+  if (!study.has_filter())
+    return false;
+  const Study_Filter& filter = study.filter();
+  if (filter.platform_size() == 0 || filter.channel_size() == 0)
+    return false;
+  for (int i = 0; i < filter.platform_size(); ++i) {
+    if (filter.platform(i) != Study_Platform_PLATFORM_ANDROID &&
+        filter.platform(i) != Study_Platform_PLATFORM_IOS) {
+      return false;
+    }
+  }
+  for (int i = 0; i < filter.channel_size(); ++i) {
+    if (filter.channel(i) != Study_Channel_CANARY &&
+        filter.channel(i) != Study_Channel_DEV) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void VariationsSeedProcessor::CreateTrialsFromSeed(
@@ -225,6 +269,8 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
       RegisterExperimentParams(study, experiment);
       DVLOG(1) << "Trial " << study.name() << " forced by flag: "
                << experiment.forcing_flag();
+      if (AllowVariationIdWithForcingFlag(study))
+        RegisterVariationIds(experiment, study.name());
       return;
     }
   }
@@ -253,30 +299,15 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
     const Study_Experiment& experiment = study.experiment(i);
     RegisterExperimentParams(study, experiment);
 
-    // Groups with flags can't be selected randomly, so we don't add them to
-    // the field trial.
+    // Groups with forcing flags have probability 0 and will never be selected.
+    // Therefore, there's no need to add them to the field trial.
     if (experiment.has_forcing_flag())
       continue;
 
     if (experiment.name() != study.default_experiment_name())
       trial->AppendGroup(experiment.name(), experiment.probability_weight());
 
-    if (experiment.has_google_web_experiment_id()) {
-      const VariationID variation_id =
-          static_cast<VariationID>(experiment.google_web_experiment_id());
-      AssociateGoogleVariationIDForce(GOOGLE_WEB_PROPERTIES,
-                                      study.name(),
-                                      experiment.name(),
-                                      variation_id);
-    }
-    if (experiment.has_google_update_experiment_id()) {
-      const VariationID variation_id =
-          static_cast<VariationID>(experiment.google_update_experiment_id());
-      AssociateGoogleVariationIDForce(GOOGLE_UPDATE_SERVICE,
-                                      study.name(),
-                                      experiment.name(),
-                                      variation_id);
-    }
+    RegisterVariationIds(experiment, study.name());
   }
 
   trial->SetForced();

@@ -36,6 +36,10 @@ class VariationsSeedProcessor {
                             Study_FormFactor form_factor);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest,
+                           AllowForceGroupAndVariationId);
+  FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest,
+                           AllowVariationIdWithForcingFlag);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, CheckStudyChannel);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, CheckStudyFormFactor);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, CheckStudyLocale);
@@ -44,6 +48,8 @@ class VariationsSeedProcessor {
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, CheckStudyVersion);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest,
                            FilterAndValidateStudies);
+  FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest,
+                           ForbidForceGroupWithVariationId);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, ForceGroupWithFlag1);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, ForceGroupWithFlag2);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest,
@@ -55,6 +61,11 @@ class VariationsSeedProcessor {
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, VariationParams);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest,
                            VariationParamsWithForcingFlag);
+
+  // Check if the |study| is only associated with platform Android/iOS and
+  // channel dev/canary. If so, forcing flag and variation id can both be set.
+  // (Otherwise, forcing_flag and variation_id are mutually exclusive.)
+  bool AllowVariationIdWithForcingFlag(const Study& study);
 
   // Filters the list of studies in |seed| and validates and pre-processes them,
   // adding any kept studies to |filtered_studies| list. Ensures that the
