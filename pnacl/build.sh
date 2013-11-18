@@ -459,11 +459,7 @@ libs() {
   compiler-rt-all
   libgcc_eh-all
   lib-cpp ${LIB_CXX_NAME} portable
-  # Note: The libc++ build with biased bitcode is disabled because
-  # biased bitcode builds of the C++ standard library are only used to
-  # build the IRT, and the default is currently libstdc++ so the biased
-  # version of libc++ isn't used.
-  # lib-cpp ${LIB_CXX_NAME} x86-64
+  lib-cpp ${LIB_CXX_NAME} x86-64
   lib-cpp ${LIB_STDCPP_NAME} portable
   lib-cpp ${LIB_STDCPP_NAME} x86-64
 }
