@@ -545,6 +545,13 @@ const User* UserManagerImpl::FindUser(const std::string& user_id) const {
   return FindUserInList(user_id);
 }
 
+User* UserManagerImpl::FindUserAndModify(const std::string& user_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (active_user_ && active_user_->email() == user_id)
+    return active_user_;
+  return FindUserInListAndModify(user_id);
+}
+
 const User* UserManagerImpl::GetLoggedInUser() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return active_user_;
@@ -1166,13 +1173,6 @@ bool UserManagerImpl::AreEphemeralUsersEnabled() const {
 UserList& UserManagerImpl::GetUsersAndModify() {
   EnsureUsersLoaded();
   return users_;
-}
-
-User* UserManagerImpl::FindUserAndModify(const std::string& user_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (active_user_ && active_user_->email() == user_id)
-    return active_user_;
-  return FindUserInListAndModify(user_id);
 }
 
 const User* UserManagerImpl::FindUserInList(const std::string& user_id) const {

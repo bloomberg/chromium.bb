@@ -151,6 +151,10 @@ const User* FakeUserManager::FindUser(const std::string& email) const {
   return NULL;
 }
 
+User* FakeUserManager::FindUserAndModify(const std::string& email) {
+  return NULL;
+}
+
 const User* FakeUserManager::GetLoggedInUser() const {
   return NULL;
 }

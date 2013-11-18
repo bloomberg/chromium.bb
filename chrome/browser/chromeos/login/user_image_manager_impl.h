@@ -5,14 +5,18 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_MANAGER_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_MANAGER_IMPL_H_
 
+#include <map>
 #include <set>
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
@@ -24,6 +28,7 @@ class UserImage;
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }
 
 namespace chromeos {
@@ -37,33 +42,41 @@ class UserImageManagerImpl : public UserImageManager,
  public:
   UserImageManagerImpl();
 
-  // UserImageManager implemenation:
+  // UserImageManager:
   virtual ~UserImageManagerImpl();
   virtual void LoadUserImages(const UserList& users) OVERRIDE;
-  virtual void UserLoggedIn(const std::string& email,
+  virtual void UserLoggedIn(const std::string& user_id,
                             bool user_is_new,
                             bool user_is_local) OVERRIDE;
-  virtual void SaveUserDefaultImageIndex(const std::string& username,
-                                         int image_index) OVERRIDE;
-  virtual void SaveUserImage(const std::string& username,
+  virtual void SaveUserDefaultImageIndex(const std::string& user_id,
+                                         int default_image_index) OVERRIDE;
+  virtual void SaveUserImage(const std::string& user_id,
                              const UserImage& user_image) OVERRIDE;
-  virtual void SaveUserImageFromFile(const std::string& username,
+  virtual void SaveUserImageFromFile(const std::string& user_id,
                                      const base::FilePath& path) OVERRIDE;
   virtual void SaveUserImageFromProfileImage(
-      const std::string& username) OVERRIDE;
-  virtual void DeleteUserImage(const std::string& username) OVERRIDE;
+      const std::string& user_id) OVERRIDE;
+  virtual void DeleteUserImage(const std::string& user_id) OVERRIDE;
   virtual void DownloadProfileImage(const std::string& reason) OVERRIDE;
   virtual const gfx::ImageSkia& DownloadedProfileImage() const OVERRIDE;
   virtual UserImageSyncObserver* GetSyncObserver() const OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
  private:
-  friend class UserImageManagerTest;
+  // Every image load or update is encapsulated by a Job. Whenever an image load
+  // or update is requested for a user, the Job currently running for that user
+  // (if any) is canceled. This ensures that at most one Job is running per user
+  // at any given time. There are two further guarantees:
+  //
+  // * Changes to User objects and local state are performed on the thread that
+  //   |this| runs on.
+  // * File writes and deletions are performed via |background_task_runner_|.
+  //
+  // With the above, it is guaranteed that any changes made by a canceled Job
+  // cannot race against against changes made by the superseding Job.
+  class Job;
 
-  // Non-const for testing purposes.
-  static int user_image_migration_delay_sec;
-
-  // ProfileDownloaderDelegate implementation:
+  // ProfileDownloaderDelegate:
   virtual bool NeedsProfilePicture() const OVERRIDE;
   virtual int GetDesiredImageSideLength() const OVERRIDE;
   virtual Profile* GetBrowserProfile() OVERRIDE;
@@ -73,72 +86,45 @@ class UserImageManagerImpl : public UserImageManager,
       ProfileDownloader* downloader,
       ProfileDownloaderDelegate::FailureReason reason) OVERRIDE;
 
-  // Returns image filepath for the given user.
-  base::FilePath GetImagePathForUser(const std::string& username);
+  // Randomly chooses one of the default images for the specified user, sends a
+  // LOGIN_USER_IMAGE_CHANGED notification and updates local state.
+  void SetInitialUserImage(const std::string& user_id);
 
-  // Sets one of the default images for the specified user and saves this
-  // setting in local state.
-  // Does not send LOGIN_USER_IMAGE_CHANGED notification.
-  void SetInitialUserImage(const std::string& username);
+  // Initializes the |downloaded_profile_image_| for the currently logged-in
+  // user to a profile image that had been downloaded and saved before if such
+  // a saved image is available and no updated image has been downloaded yet.
+  void TryToInitDownloadedProfileImage();
 
-  // Sets image for user |username| and sends LOGIN_USER_IMAGE_CHANGED
-  // notification unless this is a new user and image is set for the first time.
-  // If |image| is empty, sets a stub image for the user.
-  void SetUserImage(const std::string& username,
-                    int image_index,
-                    const GURL& image_url,
-                    const UserImage& user_image);
+  // Returns true if the profile image needs to be downloaded. This is the case
+  // when a GAIA user is logged in and at least one of the following applies:
+  // * The profile image has explicitly been requested by a call to
+  //   DownloadProfileImage() and has not been successfully downloaded since.
+  // * The user's user image is the profile image.
+  bool NeedProfileImage() const;
 
-  // Saves image to file, updates local state preferences to given image index
-  // and sends LOGIN_USER_IMAGE_CHANGED notification.
-  void SaveUserImageInternal(const std::string& username,
-                             int image_index,
-                             const GURL& image_url,
-                             const UserImage& user_image);
+  // Downloads the profile data for the currently logged-in user. The user's
+  // full name and, if NeedProfileImage() is true, the profile image are
+  // downloaded. |reason| is an arbitrary string (used to report UMA histograms
+  // with download times).
+  void DownloadProfileData(const std::string& reason);
 
-  // Saves image to file with specified path and sends LOGIN_USER_IMAGE_CHANGED
-  // notification. Runs on FILE thread. Posts task for saving image info to
-  // Local State on UI thread.
-  void SaveImageToFile(const std::string& username,
-                       const UserImage& user_image,
-                       const base::FilePath& image_path,
-                       int image_index,
-                       const GURL& image_url);
+  // Removes |user_id| from the dictionary |prefs_dict_root| in local state and
+  // deletes the image file that the dictionary referenced for that user.
+  void DeleteUserImageAndLocalStateEntry(const std::string& user_id,
+                                         const char* prefs_dict_root);
 
-  // Stores path to the image and its index in local state. Runs on UI thread.
-  // If |is_async| is true, it has been posted from the FILE thread after
-  // saving the image.
-  void SaveImageToLocalState(const std::string& username,
-                             const std::string& image_path,
-                             int image_index,
-                             const GURL& image_url,
-                             bool is_async);
+  // Called when a Job updates the copy of the user image held in memory by
+  // |user|. Allows |this| to update |downloaded_profile_image_| and send a
+  // NOTIFICATION_LOGIN_USER_IMAGE_CHANGED notification.
+  void OnJobChangedUserImage(const User* user);
 
-  // Saves |image| to the specified |image_path|. Runs on FILE thread.
-  bool SaveBitmapToFile(const UserImage& user_image,
-                        const base::FilePath& image_path);
+  // Called when a Job for |user_id| finishes. If a migration was required for
+  // the user, the migration is now complete and the old image file for that
+  // user, if any, is deleted.
+  void OnJobDone(const std::string& user_id);
 
-  // Initializes |downloaded_profile_image_| with the picture of the logged-in
-  // user.
-  void InitDownloadedProfileImage();
-
-  // Download user's profile data, including full name and picture, when
-  // |download_image| is true.
-  // |reason| is an arbitrary string (used to report UMA histograms with
-  // download times).
-  void DownloadProfileData(const std::string& reason, bool download_image);
-
-  // Scheduled call for downloading profile data.
-  void DownloadProfileDataScheduled();
-
-  // Delayed call to retry downloading profile data.
-  void DownloadProfileDataRetry(bool download_image);
-
-  // Migrates image info for the current user and deletes the old image, if any.
-  void MigrateUserImage();
-
-  // Deletes old user image and dictionary entry.
-  void DeleteOldUserImage(const std::string& username);
+  // Completes migration by removing |user_id| from the old prefs dictionary.
+  void UpdateLocalStateAfterMigration(const std::string& user_id);
 
   // Loader for JPEG user images.
   scoped_refptr<UserImageLoader> image_loader_;
@@ -146,44 +132,64 @@ class UserImageManagerImpl : public UserImageManager,
   // Unsafe loader instance for all user images formats.
   scoped_refptr<UserImageLoader> unsafe_image_loader_;
 
-  // Download user profile image on login to update it if it's changed.
-  scoped_ptr<ProfileDownloader> profile_image_downloader_;
-
-  // Arbitrary string passed to the last |DownloadProfileImage| call.
-  std::string profile_image_download_reason_;
-
-  // Time when the profile image download has started.
-  base::Time profile_image_load_start_time_;
-
-  // True if the last user image required async save operation (which may not
-  // have been completed yet). This flag is used to avoid races when user image
-  // is first set with |SaveUserImage| and then with |SaveUserImagePath|.
-  bool last_image_set_async_;
-
-  // Result of the last successful profile image download, if any.
-  gfx::ImageSkia downloaded_profile_image_;
-
-  // Data URL for |downloaded_profile_image_|.
-  std::string downloaded_profile_image_data_url_;
-
-  // Original URL of |downloaded_profile_image_|, from which it was downloaded.
-  GURL profile_image_url_;
-
-  // True when |profile_image_downloader_| is fetching profile picture (not
-  // just full name).
+  // Whether the |profile_downloader_| is downloading the profile image for the
+  // currently logged-in user (and not just the full name). Only valid when a
+  // download is currently in progress.
   bool downloading_profile_image_;
 
-  // Timer triggering DownloadProfileDataScheduled for refreshing profile data.
-  base::RepeatingTimer<UserImageManagerImpl> profile_download_timer_;
+  // Download reason given to DownloadProfileImage(), used for UMA histograms.
+  // Only valid when a download is currently in progress and
+  // |downloading_profile_image_| is true.
+  std::string profile_image_download_reason_;
 
-  // Users that need image migration to JPEG.
+  // Time when the profile image download started. Only valid when a download is
+  // currently in progress and |downloading_profile_image_| is true.
+  base::TimeTicks profile_image_load_start_time_;
+
+  // Downloader for the current user's profile data. NULL when no download is
+  // currently in progress.
+  scoped_ptr<ProfileDownloader> profile_downloader_;
+
+  // The currently logged-in user's downloaded profile image, if successfully
+  // downloaded or initialized from a previously downloaded and saved image.
+  gfx::ImageSkia downloaded_profile_image_;
+
+  // Data URL corresponding to |downloaded_profile_image_|. Empty if no
+  // |downloaded_profile_image_| is currently available.
+  std::string downloaded_profile_image_data_url_;
+
+  // URL from which |downloaded_profile_image_| was downloaded. Empty if no
+  // |downloaded_profile_image_| is currently available.
+  GURL profile_image_url_;
+
+  // Whether a download of the currently logged-in user's profile image has been
+  // explicitly requested by a call to DownloadProfileImage() and has not been
+  // satisfied by a successful download yet.
+  bool profile_image_requested_;
+
+  // Timer used to start a profile data download shortly after login and to
+  // restart the download after network errors.
+  base::OneShotTimer<UserImageManagerImpl> profile_download_one_shot_timer_;
+
+  // Timer used to periodically start a profile data, ensuring the profile data
+  // stays up to date.
+  base::RepeatingTimer<UserImageManagerImpl> profile_download_periodic_timer_;
+
+  // Users whose user images need to be migrated from the old dictionary pref to
+  // the new dictionary pref, converting any non-default images to JPEG format.
   std::set<std::string> users_to_migrate_;
 
-  // If |true|, current user image should be migrated right after it is loaded.
-  bool migrate_current_user_on_load_;
-
-  // Sync observer attached to current user.
+  // Sync observer for the currently logged-in user.
   scoped_ptr<UserImageSyncObserver> user_image_sync_observer_;
+
+  // Background task runner on which Jobs perform file I/O and the image
+  // decoders run.
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+
+  // The currently running jobs.
+  std::map<std::string, linked_ptr<Job> > jobs_;
+
+  base::WeakPtrFactory<UserImageManagerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageManagerImpl);
 };

@@ -66,7 +66,9 @@ void UserImageLoader::ReadAndDecodeImage(const std::string& filepath,
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   scoped_ptr<std::string> data(new std::string);
-  base::ReadFileToString(base::FilePath(filepath), data.get());
+  const bool success =
+      base::ReadFileToString(base::FilePath(filepath), data.get());
+  DCHECK(success);
 
   DecodeImage(data.Pass(), image_info);
 }

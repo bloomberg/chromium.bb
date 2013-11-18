@@ -75,6 +75,7 @@ class UserManagerImpl
   virtual void RemoveUserFromList(const std::string& user_id) OVERRIDE;
   virtual bool IsKnownUser(const std::string& user_id) const OVERRIDE;
   virtual const User* FindUser(const std::string& user_id) const OVERRIDE;
+  virtual User* FindUserAndModify(const std::string& user_id) OVERRIDE;
   virtual const User* GetLoggedInUser() const OVERRIDE;
   virtual User* GetLoggedInUser() OVERRIDE;
   virtual const User* GetActiveUser() const OVERRIDE;
@@ -177,11 +178,6 @@ class UserManagerImpl
   // Returns a list of users who have logged into this device previously.
   // Same as GetUsers but used if you need to modify User from that list.
   UserList& GetUsersAndModify();
-
-  // Returns the user with the given email address if found in the persistent
-  // list or currently logged in as ephemeral. Returns |NULL| otherwise.
-  // Same as FindUser but returns non-const pointer to User object.
-  User* FindUserAndModify(const std::string& user_id);
 
   // Returns the user with the given email address if found in the persistent
   // list. Returns |NULL| otherwise.

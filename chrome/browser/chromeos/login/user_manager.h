@@ -174,6 +174,11 @@ class UserManager {
   // list or currently logged in as ephemeral. Returns |NULL| otherwise.
   virtual const User* FindUser(const std::string& user_id) const = 0;
 
+  // Returns the user with the given user id if found in the persistent
+  // list or currently logged in as ephemeral. Returns |NULL| otherwise.
+  // Same as FindUser but returns non-const pointer to User object.
+  virtual User* FindUserAndModify(const std::string& user_id) = 0;
+
   // Returns the logged-in user.
   // TODO(nkostylev): Deprecate this call, move clients to GetActiveUser().
   // http://crbug.com/230852

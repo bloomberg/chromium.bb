@@ -65,6 +65,7 @@ class FakeUserManager : public UserManager {
   virtual void RemoveUserFromList(const std::string& email) OVERRIDE {}
   virtual bool IsKnownUser(const std::string& email) const OVERRIDE;
   virtual const User* FindUser(const std::string& email) const OVERRIDE;
+  virtual User* FindUserAndModify(const std::string& email) OVERRIDE;
   virtual const User* GetLoggedInUser() const OVERRIDE;
   virtual User* GetLoggedInUser() OVERRIDE;
   virtual const User* GetPrimaryUser() const OVERRIDE;

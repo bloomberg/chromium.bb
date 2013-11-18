@@ -35,35 +35,35 @@ class UserImageManager {
   // Loads user image data from Local State.
   virtual void LoadUserImages(const UserList& users) = 0;
 
-  // Indicates that a user with the given |email| has just logged in.
-  virtual void UserLoggedIn(const std::string& email,
+  // Indicates that a user with the given |user_id| has just logged in.
+  virtual void UserLoggedIn(const std::string& user_id,
                             bool user_is_new,
                             bool user_is_local) = 0;
 
   // Sets user image to the default image with index |image_index|, sends
   // LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
-  virtual void SaveUserDefaultImageIndex(const std::string& username,
+  virtual void SaveUserDefaultImageIndex(const std::string& user_id,
                                          int image_index) = 0;
 
   // Saves image to file, sends LOGIN_USER_IMAGE_CHANGED notification and
   // updates Local State.
-  virtual void SaveUserImage(const std::string& username,
+  virtual void SaveUserImage(const std::string& user_id,
                              const UserImage& user_image) = 0;
 
   // Tries to load user image from disk; if successful, sets it for the user,
   // sends LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
-  virtual void SaveUserImageFromFile(const std::string& username,
+  virtual void SaveUserImageFromFile(const std::string& user_id,
                                      const base::FilePath& path) = 0;
 
-  // Sets profile image as user image for |username|, sends
+  // Sets profile image as user image for |user_id|, sends
   // LOGIN_USER_IMAGE_CHANGED notification and updates Local State. If the user
   // is not logged-in or the last |DownloadProfileImage| call has failed, a
   // default grey avatar will be used until the user logs in and profile image
   // is downloaded successfully.
-  virtual void SaveUserImageFromProfileImage(const std::string& username) = 0;
+  virtual void SaveUserImageFromProfileImage(const std::string& user_id) = 0;
 
   // Deletes user image and the corresponding image file.
-  virtual void DeleteUserImage(const std::string& username) = 0;
+  virtual void DeleteUserImage(const std::string& user_id) = 0;
 
   // Starts downloading the profile image for the logged-in user.
   // If user's image index is |kProfileImageIndex|, newly downloaded image

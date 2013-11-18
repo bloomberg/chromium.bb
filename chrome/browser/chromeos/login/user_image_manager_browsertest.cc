@@ -5,24 +5,25 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,40 +35,19 @@ namespace chromeos {
 const char kTestUser1[] = "test-user@example.com";
 const char kTestUser2[] = "test-user2@example.com";
 
-class UserImageManagerTest : public InProcessBrowserTest,
-                             public content::NotificationObserver,
-                             public UserManager::Observer {
+class UserImageManagerTest : public InProcessBrowserTest {
  protected:
   UserImageManagerTest() {
   }
 
   // InProcessBrowserTest overrides:
   virtual void SetUpOnMainThread() OVERRIDE {
-    UserManager::Get()->AddObserver(this);
-    user_image_manager_ = UserManager::Get()->GetUserImageManager();
     local_state_ = g_browser_process->local_state();
-    // No migration delay for testing.
-    UserImageManagerImpl::user_image_migration_delay_sec = 0;
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
-  }
-
-  // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    DCHECK(type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED);
-    registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                      content::NotificationService::AllSources());
-    base::MessageLoopForUI::current()->Quit();
-  }
-
-  // UserManager::Observer overrides:
-  virtual void LocalStateChanged(UserManager* user_manager) OVERRIDE {
-    base::MessageLoopForUI::current()->Quit();
   }
 
   // Adds given user to Local State, if not there.
@@ -79,12 +59,6 @@ class UserImageManagerTest : public InProcessBrowserTest,
   // Logs in |username|.
   void LogIn(const std::string& username) {
     UserManager::Get()->UserLoggedIn(username, username, false);
-  }
-
-  // Subscribes for image change notification.
-  void ExpectImageChange() {
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                   content::NotificationService::AllSources());
   }
 
   // Stores old (pre-migration) user image info.
@@ -173,9 +147,7 @@ class UserImageManagerTest : public InProcessBrowserTest,
     return user_data_dir.Append(username).AddExtension(extension);
   }
 
-  UserImageManager* user_image_manager_;
   PrefService* local_state_;
-  content::NotificationRegistrar registrar_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserImageManagerTest);
@@ -192,8 +164,6 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, DefaultUserImagePreserved) {
   // Old info preserved.
   ExpectOldUserImageInfo(kTestUser1, kFirstDefaultImageIndex, base::FilePath());
   LogIn(kTestUser1);
-  // Wait for migration.
-  content::RunMessageLoop();
   // Image info is migrated now.
   ExpectNewUserImageInfo(kTestUser1, kFirstDefaultImageIndex, base::FilePath());
 }
@@ -213,8 +183,6 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, OtherUsersUnaffected) {
   ExpectOldUserImageInfo(kTestUser2, kFirstDefaultImageIndex + 1,
                          base::FilePath());
   LogIn(kTestUser1);
-  // Wait for migration.
-  content::RunMessageLoop();
   // Image info is migrated for the first user and unaffected for the rest.
   ExpectNewUserImageInfo(kTestUser1, kFirstDefaultImageIndex, base::FilePath());
   ExpectOldUserImageInfo(kTestUser2, kFirstDefaultImageIndex + 1,
@@ -235,9 +203,16 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_NonJPEGImageFromFile) {
                          GetUserImagePath(kTestUser1, "png"));
   const User* user = UserManager::Get()->FindUser(kTestUser1);
   EXPECT_TRUE(user->image_is_stub());
+
+  base::RunLoop run_loop;
+  PrefChangeRegistrar pref_change_registrar_;
+  pref_change_registrar_.Init(local_state_);
+  pref_change_registrar_.Add("UserImages", run_loop.QuitClosure());
   LogIn(kTestUser1);
+
   // Wait for migration.
-  content::RunMessageLoop();
+  run_loop.Run();
+
   // Image info is migrated and the image is converted to JPG.
   ExpectNewUserImageInfo(kTestUser1, User::kExternalImageIndex,
                          GetUserImagePath(kTestUser1, "jpg"));
@@ -250,15 +225,17 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_NonJPEGImageFromFile) {
   EXPECT_EQ(saved_image.height(), user->image().height());
 }
 
-// http://crbug.com/257009.
-IN_PROC_BROWSER_TEST_F(UserImageManagerTest, DISABLED_NonJPEGImageFromFile) {
-  ExpectImageChange();
+IN_PROC_BROWSER_TEST_F(UserImageManagerTest, NonJPEGImageFromFile) {
   UserManager::Get()->GetUsers();  // Load users.
-  // Wait for image load.
-  content::RunMessageLoop();
-  // Now the migrated image is used.
   const User* user = UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
+  // Wait for image load.
+  if (user->image_index() == User::kInvalidImageIndex) {
+    content::WindowedNotificationObserver(
+        chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
+        content::NotificationService::AllSources()).Wait();
+  }
+  // Now the migrated image is used.
   EXPECT_TRUE(user->image_is_safe_format());
   // Check image dimensions. Images can't be compared since JPEG is lossy.
   const gfx::ImageSkia& saved_image = GetDefaultImage(kFirstDefaultImageIndex);
