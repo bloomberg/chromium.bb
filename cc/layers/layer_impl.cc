@@ -694,6 +694,8 @@ void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
   SetTransform(transform);
 }
 
+void LayerImpl::OnAnimationWaitingForDeletion() {}
+
 bool LayerImpl::IsActive() const {
   return layer_tree_impl_->IsActiveTree();
 }

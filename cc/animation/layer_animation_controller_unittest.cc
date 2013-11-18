@@ -293,9 +293,14 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
   controller->Animate(1.0);
   controller->UpdateState(true, NULL);
 
+  EXPECT_FALSE(dummy.animation_waiting_for_deletion());
+  EXPECT_FALSE(dummy_impl.animation_waiting_for_deletion());
+
   events.reset(new AnimationEventsVector);
   controller_impl->Animate(2.0);
   controller_impl->UpdateState(true, events.get());
+
+  EXPECT_TRUE(dummy_impl.animation_waiting_for_deletion());
 
   // There should be a Finished event for the animation.
   EXPECT_EQ(1u, events->size());
@@ -309,6 +314,7 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
 
   controller->Animate(3.0);
   controller->UpdateState(true, NULL);
+  EXPECT_TRUE(dummy.animation_waiting_for_deletion());
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
 
@@ -1140,7 +1146,7 @@ TEST(LayerAnimationControllerTest, AbortAGroupedAnimation) {
   EXPECT_EQ(0.75f, dummy.opacity());
 }
 
-TEST(LayerAnimationControllerTest, ForceSyncWhenSynchronizedStartTimeNeeded) {
+TEST(LayerAnimationControllerTest, PushUpdatesWhenSynchronizedStartTimeNeeded) {
   FakeLayerAnimationValueObserver dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
@@ -1165,8 +1171,6 @@ TEST(LayerAnimationControllerTest, ForceSyncWhenSynchronizedStartTimeNeeded) {
   Animation* active_animation = controller->GetAnimation(0, Animation::Opacity);
   EXPECT_TRUE(active_animation);
   EXPECT_TRUE(active_animation->needs_synchronized_start_time());
-
-  controller->set_force_sync();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
 
@@ -1437,9 +1441,12 @@ TEST(LayerAnimationControllerTest, MainThreadAbortedAnimationGetsDeleted) {
   controller->AbortAnimations(Animation::Opacity);
   EXPECT_EQ(Animation::Aborted,
             controller->GetAnimation(Animation::Opacity)->run_state());
+  EXPECT_FALSE(dummy.animation_waiting_for_deletion());
+  EXPECT_FALSE(dummy_impl.animation_waiting_for_deletion());
 
   controller->Animate(1.0);
   controller->UpdateState(true, NULL);
+  EXPECT_TRUE(dummy.animation_waiting_for_deletion());
   EXPECT_EQ(Animation::WaitingForDeletion,
             controller->GetAnimation(Animation::Opacity)->run_state());
 
@@ -1468,10 +1475,13 @@ TEST(LayerAnimationControllerTest, ImplThreadAbortedAnimationGetsDeleted) {
   controller_impl->AbortAnimations(Animation::Opacity);
   EXPECT_EQ(Animation::Aborted,
             controller_impl->GetAnimation(Animation::Opacity)->run_state());
+  EXPECT_FALSE(dummy.animation_waiting_for_deletion());
+  EXPECT_FALSE(dummy_impl.animation_waiting_for_deletion());
 
   AnimationEventsVector events;
   controller_impl->Animate(1.0);
   controller_impl->UpdateState(true, &events);
+  EXPECT_TRUE(dummy_impl.animation_waiting_for_deletion());
   EXPECT_EQ(1u, events.size());
   EXPECT_EQ(AnimationEvent::Aborted, events[0].type);
   EXPECT_EQ(Animation::WaitingForDeletion,
@@ -1483,6 +1493,7 @@ TEST(LayerAnimationControllerTest, ImplThreadAbortedAnimationGetsDeleted) {
 
   controller->Animate(1.5);
   controller->UpdateState(true, NULL);
+  EXPECT_TRUE(dummy.animation_waiting_for_deletion());
   EXPECT_EQ(Animation::WaitingForDeletion,
             controller->GetAnimation(Animation::Opacity)->run_state());
 

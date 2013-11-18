@@ -186,7 +186,8 @@ float FakeFloatTransition::GetValue(double time) const {
 }
 
 FakeLayerAnimationValueObserver::FakeLayerAnimationValueObserver()
-    : opacity_(0.0f) {}
+    : opacity_(0.0f),
+      animation_waiting_for_deletion_(false) {}
 
 FakeLayerAnimationValueObserver::~FakeLayerAnimationValueObserver() {}
 
@@ -202,6 +203,10 @@ void FakeLayerAnimationValueObserver::OnOpacityAnimated(float opacity) {
 void FakeLayerAnimationValueObserver::OnTransformAnimated(
     const gfx::Transform& transform) {
   transform_ = transform;
+}
+
+void FakeLayerAnimationValueObserver::OnAnimationWaitingForDeletion() {
+  animation_waiting_for_deletion_ = true;
 }
 
 bool FakeLayerAnimationValueObserver::IsActive() const {

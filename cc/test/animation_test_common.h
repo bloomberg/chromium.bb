@@ -73,16 +73,22 @@ class FakeLayerAnimationValueObserver : public LayerAnimationValueObserver {
   virtual void OnFilterAnimated(const FilterOperations& filters) OVERRIDE;
   virtual void OnOpacityAnimated(float opacity) OVERRIDE;
   virtual void OnTransformAnimated(const gfx::Transform& transform) OVERRIDE;
+  virtual void OnAnimationWaitingForDeletion() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
 
   const FilterOperations& filters() const { return filters_; }
   float opacity() const  { return opacity_; }
   const gfx::Transform& transform() const { return transform_; }
 
+  bool animation_waiting_for_deletion() {
+    return animation_waiting_for_deletion_;
+  }
+
  private:
   FilterOperations filters_;
   float opacity_;
   gfx::Transform transform_;
+  bool animation_waiting_for_deletion_;
 };
 
 class FakeInactiveLayerAnimationValueObserver

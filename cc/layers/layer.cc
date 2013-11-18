@@ -927,9 +927,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   stacking_order_changed_ = false;
   update_rect_ = gfx::RectF();
 
-  // Animating layers require further push properties to clean up the animation.
-  // crbug.com/259088
-  needs_push_properties_ = layer_animation_controller_->has_any_animation();
+  needs_push_properties_ = false;
   num_dependents_need_push_properties_ = 0;
 }
 
@@ -998,6 +996,11 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
   transform_ = transform;
 }
 
+void Layer::OnAnimationWaitingForDeletion() {
+  // Animations are only deleted during PushProperties.
+  SetNeedsPushProperties();
+}
+
 bool Layer::IsActive() const {
   return true;
 }
@@ -1027,7 +1030,6 @@ void Layer::SetLayerAnimationControllerForTest(
     scoped_refptr<LayerAnimationController> controller) {
   layer_animation_controller_->RemoveValueObserver(this);
   layer_animation_controller_ = controller;
-  layer_animation_controller_->set_force_sync();
   layer_animation_controller_->AddValueObserver(this);
   SetNeedsCommit();
 }

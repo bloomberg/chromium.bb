@@ -19,8 +19,7 @@
 namespace cc {
 
 LayerAnimationController::LayerAnimationController(int id)
-    : force_sync_(false),
-      registrar_(0),
+    : registrar_(0),
       id_(id),
       is_active_(false),
       last_tick_time_(0),
@@ -106,20 +105,17 @@ void LayerAnimationController::AbortAnimations(
 void LayerAnimationController::PushAnimationUpdatesTo(
     LayerAnimationController* controller_impl) {
   DCHECK(this != controller_impl);
-  if (force_sync_) {
-    ReplaceImplThreadAnimations(controller_impl);
-    force_sync_ = false;
-  } else {
-    PurgeAnimationsMarkedForDeletion();
-    PushNewAnimationsToImplThread(controller_impl);
+  if (!has_any_animation() && !controller_impl->has_any_animation())
+    return;
+  PurgeAnimationsMarkedForDeletion();
+  PushNewAnimationsToImplThread(controller_impl);
 
-    // Remove finished impl side animations only after pushing,
-    // and only after the animations are deleted on the main thread
-    // this insures we will never push an animation twice.
-    RemoveAnimationsCompletedOnMainThread(controller_impl);
+  // Remove finished impl side animations only after pushing,
+  // and only after the animations are deleted on the main thread
+  // this insures we will never push an animation twice.
+  RemoveAnimationsCompletedOnMainThread(controller_impl);
 
-    PushPropertiesToImplThread(controller_impl);
-  }
+  PushPropertiesToImplThread(controller_impl);
   controller_impl->UpdateActivation(NormalActivation);
   UpdateActivation(NormalActivation);
 }
@@ -601,6 +597,8 @@ void LayerAnimationController::ResolveConflicts(double monotonic_time) {
 
 void LayerAnimationController::MarkAnimationsForDeletion(
     double monotonic_time, AnimationEventsVector* events) {
+  bool marked_animations_for_deletions = false;
+
   // Non-aborted animations are marked for deletion after a corresponding
   // AnimationEvent::Finished event is sent or received. This means that if
   // we don't have an events vector, we must ensure that non-aborted animations
@@ -619,6 +617,7 @@ void LayerAnimationController::MarkAnimationsForDeletion(
       }
       active_animations_[i]->SetRunState(Animation::WaitingForDeletion,
                                          monotonic_time);
+      marked_animations_for_deletions = true;
       continue;
     }
 
@@ -667,8 +666,11 @@ void LayerAnimationController::MarkAnimationsForDeletion(
                                              monotonic_time);
         }
       }
+      marked_animations_for_deletions = true;
     }
   }
+  if (marked_animations_for_deletions)
+    NotifyObserversAnimationWaitingForDeletion();
 }
 
 static bool IsWaitingForDeletion(Animation* animation) {
@@ -682,27 +684,6 @@ void LayerAnimationController::PurgeAnimationsMarkedForDeletion() {
                                  animations.end(),
                                  IsWaitingForDeletion),
                    animations.end());
-}
-
-void LayerAnimationController::ReplaceImplThreadAnimations(
-    LayerAnimationController* controller_impl) const {
-  controller_impl->active_animations_.clear();
-  for (size_t i = 0; i < active_animations_.size(); ++i) {
-    scoped_ptr<Animation> to_add;
-    if (active_animations_[i]->needs_synchronized_start_time()) {
-      // We haven't received an animation started notification yet, so it
-      // is important that we add it in a 'waiting' and not 'running' state.
-      Animation::RunState initial_run_state =
-          Animation::WaitingForTargetAvailability;
-      double start_time = 0;
-      to_add = active_animations_[i]->CloneAndInitialize(
-          initial_run_state, start_time).Pass();
-    } else {
-      to_add = active_animations_[i]->Clone().Pass();
-    }
-
-    controller_impl->AddAnimation(to_add.Pass());
-  }
 }
 
 void LayerAnimationController::TickAnimations(double monotonic_time) {
@@ -790,6 +771,12 @@ void LayerAnimationController::NotifyObserversFilterAnimated(
   FOR_EACH_OBSERVER(LayerAnimationValueObserver,
                     value_observers_,
                     OnFilterAnimated(filters));
+}
+
+void LayerAnimationController::NotifyObserversAnimationWaitingForDeletion() {
+  FOR_EACH_OBSERVER(LayerAnimationValueObserver,
+                    value_observers_,
+                    OnAnimationWaitingForDeletion());
 }
 
 bool LayerAnimationController::HasValueObserver() {
