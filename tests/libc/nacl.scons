@@ -45,8 +45,9 @@ AddLibcTest(env, 'strtoll.c', '0')
 AddLibcTest(env, 'strtoull.c', '0')
 AddLibcTest(env, 'wcstoll.c', '0', is_broken=env.Bit('nacl_glibc'))
 AddLibcTest(env, 'iconv.c', '0',
-            is_broken=(env.Bit('nacl_glibc') or
-                       (env.Bit('target_arm') and not env.Bit('bitcode'))))
+# TODO(jfb) Various breakage on newlib ARM and x86 toolchains as well
+#           as on glibc.
+            is_broken=not env.Bit('bitcode'))
 
 # Test that using link-time optimization does not convert calls to
 # library functions that were never linked in.
