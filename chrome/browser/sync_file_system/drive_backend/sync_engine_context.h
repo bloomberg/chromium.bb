@@ -9,6 +9,7 @@
 
 namespace drive {
 class DriveServiceInterface;
+class DriveUploaderInterface;
 }
 
 namespace sync_file_system {
@@ -25,6 +26,7 @@ class SyncEngineContext {
   ~SyncEngineContext() {}
 
   virtual drive::DriveServiceInterface* GetDriveService() = 0;
+  virtual drive::DriveUploaderInterface* GetDriveUploader() = 0;
   virtual MetadataDatabase* GetMetadataDatabase() = 0;
   virtual RemoteChangeProcessor* GetRemoteChangeProcessor() = 0;
 

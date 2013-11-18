@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/values.h"
-#include "chrome/browser/drive/drive_api_service.h"
 #include "chrome/browser/drive/drive_notification_manager.h"
+#include "chrome/browser/drive/drive_service_interface.h"
+#include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
@@ -34,11 +35,13 @@ SyncEngine::SyncEngine(
     const base::FilePath& base_dir,
     base::SequencedTaskRunner* task_runner,
     scoped_ptr<drive::DriveServiceInterface> drive_service,
+    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
     drive::DriveNotificationManager* notification_manager,
     ExtensionServiceInterface* extension_service)
     : base_dir_(base_dir),
       task_runner_(task_runner),
       drive_service_(drive_service.Pass()),
+      drive_uploader_(drive_uploader.Pass()),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
       remote_change_processor_(NULL),
@@ -273,6 +276,10 @@ void SyncEngine::OnNetworkChanged(
 
 drive::DriveServiceInterface* SyncEngine::GetDriveService() {
   return drive_service_.get();
+}
+
+drive::DriveUploaderInterface* SyncEngine::GetDriveUploader() {
+  return drive_uploader_.get();
 }
 
 MetadataDatabase* SyncEngine::GetMetadataDatabase() {

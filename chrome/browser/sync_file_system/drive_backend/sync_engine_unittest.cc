@@ -7,6 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -93,6 +94,7 @@ class SyncEngineTest : public testing::Test {
         profile_dir_.path(),
         base::MessageLoopProxy::current(),
         fake_drive_service.PassAs<drive::DriveServiceInterface>(),
+        scoped_ptr<drive::DriveUploaderInterface>(),
         NULL,
         extension_service_.get()));
     sync_engine_->Initialize();

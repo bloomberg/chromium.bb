@@ -64,6 +64,10 @@ class ListChangesTaskTest : public testing::Test,
     return fake_drive_service_.get();
   }
 
+  virtual drive::DriveUploader* GetDriveUploader() OVERRIDE {
+    return NULL;
+  }
+
   virtual MetadataDatabase* GetMetadataDatabase() OVERRIDE {
     return metadata_database_.get();
   }

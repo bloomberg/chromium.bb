@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -65,6 +66,10 @@ class RegisterAppTaskTest : public testing::Test,
 
   virtual drive::DriveServiceInterface* GetDriveService() OVERRIDE {
     return fake_drive_service_.get();
+  }
+
+  virtual drive::DriveUploaderInterface* GetDriveUploader() OVERRIDE {
+    return NULL;
   }
 
   virtual MetadataDatabase* GetMetadataDatabase() OVERRIDE {

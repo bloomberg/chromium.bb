@@ -8,6 +8,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/drive/drive_api_service.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
+#include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
@@ -81,18 +82,24 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
 
     scoped_refptr<base::SequencedWorkerPool> worker_pool(
         content::BrowserThread::GetBlockingPool());
+    scoped_refptr<base::SequencedTaskRunner> drive_task_runner(
+        worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+            worker_pool->GetSequenceToken(),
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-    scoped_ptr<drive::DriveAPIService> drive_service(
+    scoped_ptr<drive::DriveServiceInterface> drive_service(
         new drive::DriveAPIService(
             token_service,
             context->GetRequestContext(),
-            worker_pool->GetSequencedTaskRunner(
-                worker_pool->GetSequenceToken()).get(),
+            drive_task_runner.get(),
             base_drive_url, base_download_url, wapi_base_url,
             std::string() /* custom_user_agent */));
     drive_service->Initialize(token_service->GetPrimaryAccountId());
+
+    scoped_ptr<drive::DriveUploaderInterface> drive_uploader(
+        new drive::DriveUploader(drive_service.get(), drive_task_runner.get()));
 
     drive::DriveNotificationManager* notification_manager =
         drive::DriveNotificationManagerFactory::GetForBrowserContext(profile);
@@ -108,7 +115,8 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
         new drive_backend::SyncEngine(
             GetSyncFileSystemDir(context->GetPath()),
             task_runner.get(),
-            drive_service.PassAs<drive::DriveServiceInterface>(),
+            drive_service.Pass(),
+            drive_uploader.Pass(),
             notification_manager,
             extension_service));
 

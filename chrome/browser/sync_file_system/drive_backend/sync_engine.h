@@ -48,6 +48,7 @@ class SyncEngine : public RemoteFileSyncService,
   SyncEngine(const base::FilePath& base_dir,
              base::SequencedTaskRunner* task_runner,
              scoped_ptr<drive::DriveServiceInterface> drive_service,
+             scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
              drive::DriveNotificationManager* notification_manager,
              ExtensionServiceInterface* extension_service);
   virtual ~SyncEngine();
@@ -116,6 +117,7 @@ class SyncEngine : public RemoteFileSyncService,
 
   // SyncEngineContext overrides.
   virtual drive::DriveServiceInterface* GetDriveService() OVERRIDE;
+  virtual drive::DriveUploaderInterface* GetDriveUploader() OVERRIDE;
   virtual MetadataDatabase* GetMetadataDatabase() OVERRIDE;
   virtual RemoteChangeProcessor* GetRemoteChangeProcessor() OVERRIDE;
 
@@ -150,6 +152,7 @@ class SyncEngine : public RemoteFileSyncService,
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   scoped_ptr<drive::DriveServiceInterface> drive_service_;
+  scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
   scoped_ptr<MetadataDatabase> metadata_database_;
 
   // These external services are not owned by SyncEngine.
