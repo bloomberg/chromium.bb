@@ -106,11 +106,11 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
 
   if (!GetProfile()->IsOffTheRecord()) {
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
+    web_ui->AddMessageHandler(new MetricsHandler());
     web_ui->AddMessageHandler(new MostVisitedHandler());
     web_ui->AddMessageHandler(new RecentlyClosedTabsHandler());
 #if !defined(OS_ANDROID)
     web_ui->AddMessageHandler(new FaviconWebUIHandler());
-    web_ui->AddMessageHandler(new MetricsHandler());
     web_ui->AddMessageHandler(new NewTabPageHandler());
     web_ui->AddMessageHandler(new CoreAppLauncherHandler());
     if (NewTabUI::IsDiscoveryInNTPEnabled())
