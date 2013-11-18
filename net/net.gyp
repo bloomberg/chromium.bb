@@ -9,11 +9,11 @@
     'linux_link_kerberos%': 0,
     'use_tracing_cache_backend%': 0,
     'conditions': [
-      ['chromeos==1 or OS=="android" or OS=="ios"', {
+      ['chromeos==1 or embedded==1 or OS=="android" or OS=="ios"', {
         # Disable Kerberos on ChromeOS, Android and iOS, at least for now.
         # It needs configuration (krb5.conf and so on).
         'use_kerberos%': 0,
-      }, {  # chromeos == 0
+      }, {  # chromeos == 0 and embedded==0 and OS!="android" and OS!="ios"
         'use_kerberos%': 1,
       }],
       ['OS=="android" and target_arch != "ia32"', {
