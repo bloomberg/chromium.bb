@@ -29,6 +29,7 @@
       testElement = document.createElement(qsParams["type"]);
       if (qsParams["id"])
         testElement.id = qsParams["id"];
+      testElement.preload = "none";
       testElement.src = qsParams["src"];
       testElement.controls = true;
       document.body.appendChild(testElement);
