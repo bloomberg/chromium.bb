@@ -89,6 +89,19 @@ TEST_F(PriorityQueueTest, FirstMaxOrder) {
   CheckEmpty();
 }
 
+TEST_F(PriorityQueueTest, GetNextTowardsLastMinAndErase) {
+  PriorityQueue<int>::Pointer current = queue_.FirstMax();
+  for (size_t i = 0; i < kNumElements; ++i) {
+    EXPECT_FALSE(current.is_null());
+    EXPECT_EQ(kFirstMaxOrder[i], current.value());
+    PriorityQueue<int>::Pointer next = queue_.GetNextTowardsLastMin(current);
+    queue_.Erase(current);
+    current = next;
+  }
+  EXPECT_TRUE(current.is_null());
+  CheckEmpty();
+}
+
 TEST_F(PriorityQueueTest, FirstMaxOrderErase) {
   for (size_t i = 0; i < kNumElements; ++i) {
     EXPECT_EQ(kFirstMaxOrder[i], queue_.FirstMax().value());

@@ -17,6 +17,7 @@
 #include "net/base/request_priority.h"
 
 namespace net {
+class HostPortPair;
 class URLRequest;
 }
 
@@ -107,12 +108,22 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
 
   // Returns the number of requests with priority < LOW that are currently in
   // flight.
-  size_t GetNumDelayableRequestsInFlight(Client* client) const;
+  void GetNumDelayableRequestsInFlight(
+      Client* client,
+      const net::HostPortPair& active_request_host,
+      size_t* total_delayable,
+      size_t* total_for_active_host) const;
+
+  enum ShouldStartReqResult {
+    DO_NOT_START_REQUEST_AND_STOP_SEARCHING = -2,
+    DO_NOT_START_REQUEST_AND_KEEP_SEARCHING = -1,
+    START_REQUEST = 1,
+  };
 
   // Returns true if the request should start. This is the core scheduling
   // algorithm.
-  bool ShouldStartRequest(ScheduledResourceRequest* request,
-                          Client* client) const;
+  ShouldStartReqResult ShouldStartRequest(ScheduledResourceRequest* request,
+                                          Client* client) const;
 
   // Returns the client ID for the given |child_id| and |route_id| combo.
   ClientId MakeClientId(int child_id, int route_id);
