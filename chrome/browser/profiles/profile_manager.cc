@@ -397,19 +397,19 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles(
   DCHECK(local_state);
 
   std::vector<Profile*> to_return;
-  if (local_state->HasPrefPath(prefs::kProfilesLastActive)) {
-    const ListValue* profile_list =
-        local_state->GetList(prefs::kProfilesLastActive);
-    if (profile_list) {
-      ListValue::const_iterator it;
-      std::string profile;
-      for (it = profile_list->begin(); it != profile_list->end(); ++it) {
-        if (!(*it)->GetAsString(&profile) || profile.empty()) {
-          LOG(WARNING) << "Invalid entry in " << prefs::kProfilesLastActive;
-          continue;
-        }
-        to_return.push_back(GetProfile(user_data_dir.AppendASCII(profile)));
+  if (local_state->HasPrefPath(prefs::kProfilesLastActive) &&
+      local_state->GetList(prefs::kProfilesLastActive)) {
+    // Make a copy because the list might change in the calls to GetProfile.
+    scoped_ptr<base::ListValue> profile_list(
+        local_state->GetList(prefs::kProfilesLastActive)->DeepCopy());
+    base::ListValue::const_iterator it;
+    std::string profile;
+    for (it = profile_list->begin(); it != profile_list->end(); ++it) {
+      if (!(*it)->GetAsString(&profile) || profile.empty()) {
+        LOG(WARNING) << "Invalid entry in " << prefs::kProfilesLastActive;
+        continue;
       }
+      to_return.push_back(GetProfile(user_data_dir.AppendASCII(profile)));
     }
   }
   return to_return;
