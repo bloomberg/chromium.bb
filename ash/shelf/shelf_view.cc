@@ -1381,7 +1381,7 @@ gfx::Size ShelfView::GetPreferredSize() {
 
   const gfx::Rect last_button_bounds =
       last_button_index  >= first_visible_index_ ?
-          view_model_->view_at(last_button_index)->bounds() :
+          view_model_->ideal_bounds(last_button_index) :
           gfx::Rect(gfx::Size(preferred_size, preferred_size));
 
   if (layout_manager_->IsHorizontalAlignment()) {
