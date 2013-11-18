@@ -167,6 +167,9 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // Invoke the Syncer to perform a poll job.
   void DoPollSyncSessionJob();
 
+  // Helper function to calculate poll interval.
+  base::TimeDelta GetPollInterval();
+
   // Adjusts the poll timer to account for new poll interval, and possibly
   // resets the poll interval, depedning on the flag's value.
   void AdjustPolling(PollAdjustType type);
@@ -203,6 +206,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // Looks for pending work and, if it finds any, run this work at "canary"
   // priority.
   void TryCanaryJob();
+
+  void TrySyncSessionJob(JobPriority priority);
 
   // Transitions out of the THROTTLED WaitInterval then calls TryCanaryJob().
   void Unthrottle();
@@ -308,6 +313,11 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // The change is to remember that poll timer just fired and retry poll job
   // after credentials are updated.
   bool do_poll_after_credentials_updated_;
+
+  // TryJob might get called for multiple reasons. It should only call
+  // DoPollSyncSessionJob after some time since the last attempt.
+  // last_poll_reset_ keeps track of when was last attempt.
+  base::TimeTicks last_poll_reset_;
 
   base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_;
 

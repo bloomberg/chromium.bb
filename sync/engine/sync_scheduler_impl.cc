@@ -237,7 +237,7 @@ void SyncSchedulerImpl::Start(Mode mode) {
       CanRunNudgeJobNow(NORMAL_PRIORITY)) {
     // We just got back to normal mode.  Let's try to run the work that was
     // queued up while we were configuring.
-    DoNudgeSyncSessionJob(NORMAL_PRIORITY);
+    TrySyncSessionJob(NORMAL_PRIORITY);
   }
 }
 
@@ -299,7 +299,7 @@ void SyncSchedulerImpl::ScheduleConfiguration(
   // Only reconfigure if we have types to download.
   if (!params.types_to_download.Empty()) {
     pending_configure_params_.reset(new ConfigurationParams(params));
-    DoConfigurationSyncSessionJob(NORMAL_PRIORITY);
+    TrySyncSessionJob(NORMAL_PRIORITY);
   } else {
     SDVLOG(2) << "No change in routing info, calling ready task directly.";
     params.ready_task.Run();
@@ -572,7 +572,7 @@ void SyncSchedulerImpl::DoPollSyncSessionJob() {
       GetEnabledAndUnthrottledTypes(),
       session.get());
 
-  AdjustPolling(UPDATE_INTERVAL);
+  AdjustPolling(FORCE_RESET);
 
   if (IsCurrentlyThrottled()) {
     SDVLOG(2) << "Poll request got us throttled.";
@@ -599,18 +599,25 @@ void SyncSchedulerImpl::UpdateNudgeTimeRecords(ModelTypeSet types) {
   }
 }
 
+TimeDelta SyncSchedulerImpl::GetPollInterval() {
+  return (!session_context_->notifications_enabled() ||
+          !session_context_->ShouldFetchUpdatesBeforeCommit()) ?
+      syncer_short_poll_interval_seconds_ :
+      syncer_long_poll_interval_seconds_;
+}
+
 void SyncSchedulerImpl::AdjustPolling(PollAdjustType type) {
   DCHECK(CalledOnValidThread());
 
-  TimeDelta poll  = (!session_context_->notifications_enabled() ||
-                     !session_context_->ShouldFetchUpdatesBeforeCommit()) ?
-      syncer_short_poll_interval_seconds_ :
-      syncer_long_poll_interval_seconds_;
+  TimeDelta poll = GetPollInterval();
   bool rate_changed = !poll_timer_.IsRunning() ||
                        poll != poll_timer_.GetCurrentDelay();
 
-  if (type == FORCE_RESET && !rate_changed)
-    poll_timer_.Reset();
+  if (type == FORCE_RESET) {
+    last_poll_reset_ = base::TimeTicks::Now();
+    if (!rate_changed)
+      poll_timer_.Reset();
+  }
 
   if (!rate_changed)
     return;
@@ -660,25 +667,28 @@ void SyncSchedulerImpl::Stop() {
 // This is the only place where we invoke DoSyncSessionJob with canary
 // privileges.  Everyone else should use NORMAL_PRIORITY.
 void SyncSchedulerImpl::TryCanaryJob() {
-  DCHECK(CalledOnValidThread());
-
-  if (mode_ == CONFIGURATION_MODE && pending_configure_params_) {
-    SDVLOG(2) << "Found pending configure job; will run as canary";
-    DoConfigurationSyncSessionJob(CANARY_PRIORITY);
-  } else if (mode_ == NORMAL_MODE && nudge_tracker_.IsSyncRequired() &&
-             CanRunNudgeJobNow(CANARY_PRIORITY)) {
-    SDVLOG(2) << "Found pending nudge job; will run as canary";
-    DoNudgeSyncSessionJob(CANARY_PRIORITY);
-  } else if (mode_ == NORMAL_MODE && CanRunJobNow(CANARY_PRIORITY) &&
-             do_poll_after_credentials_updated_) {
-    // Retry poll if poll timer recently fired and ProfileSyncService received
-    // fresh access token.
-    DoPollSyncSessionJob();
-  } else {
-    SDVLOG(2) << "Found no work to do; will not run a canary";
-  }
+  TrySyncSessionJob(CANARY_PRIORITY);
   // Don't run poll job till the next time poll timer fires.
   do_poll_after_credentials_updated_ = false;
+}
+
+void SyncSchedulerImpl::TrySyncSessionJob(JobPriority priority) {
+  DCHECK(CalledOnValidThread());
+  if (mode_ == CONFIGURATION_MODE) {
+    if (pending_configure_params_) {
+      SDVLOG(2) << "Found pending configure job";
+      DoConfigurationSyncSessionJob(priority);
+    }
+  } else {
+    DCHECK(mode_ == NORMAL_MODE);
+    if (nudge_tracker_.IsSyncRequired() && CanRunNudgeJobNow(priority)) {
+      SDVLOG(2) << "Found pending nudge job";
+      DoNudgeSyncSessionJob(priority);
+    } else if (do_poll_after_credentials_updated_ ||
+        ((base::TimeTicks::Now() - last_poll_reset_) >= GetPollInterval())) {
+      DoPollSyncSessionJob();
+    }
+  }
 }
 
 void SyncSchedulerImpl::PollTimerCallback() {
@@ -694,7 +704,7 @@ void SyncSchedulerImpl::PollTimerCallback() {
     return;
   }
 
-  DoPollSyncSessionJob();
+  TrySyncSessionJob(NORMAL_PRIORITY);
   // Poll timer fires infrequently. Usually by this time access token is already
   // expired and poll job will fail with auth error. Set flag to retry poll once
   // ProfileSyncService gets new access token, TryCanaryJob will be called in
@@ -739,14 +749,14 @@ void SyncSchedulerImpl::TypeUnthrottle(base::TimeTicks unthrottle_time) {
 
   // Maybe this is a good time to run a nudge job.  Let's try it.
   if (nudge_tracker_.IsSyncRequired() && CanRunNudgeJobNow(NORMAL_PRIORITY))
-    DoNudgeSyncSessionJob(NORMAL_PRIORITY);
+    TrySyncSessionJob(NORMAL_PRIORITY);
 }
 
 void SyncSchedulerImpl::PerformDelayedNudge() {
   // Circumstances may have changed since we scheduled this delayed nudge.
   // We must check to see if it's OK to run the job before we do so.
   if (CanRunNudgeJobNow(NORMAL_PRIORITY))
-    DoNudgeSyncSessionJob(NORMAL_PRIORITY);
+    TrySyncSessionJob(NORMAL_PRIORITY);
 
   // We're not responsible for setting up any retries here.  The functions that
   // first put us into a state that prevents successful sync cycles (eg. global
