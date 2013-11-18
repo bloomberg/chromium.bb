@@ -261,7 +261,7 @@ class LayerTreeHostAnimationTestTickAnimationWhileBackgrounded
       : num_animates_(0) {}
 
   virtual void BeginTest() OVERRIDE {
-    PostAddAnimationToMainThread(layer_tree_host()->root_layer());
+    PostAddLongAnimationToMainThread(layer_tree_host()->root_layer());
   }
 
   // Use WillAnimateLayers to set visible false before the animation runs and
@@ -864,13 +864,6 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     finished_times_ = 0;
 
     PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void DispatchAddInstantAnimation(Layer* layer_to_receive_animation)
-      OVERRIDE {
-    LayerTreeHostAnimationTest::DispatchAddInstantAnimation(
-        layer_to_receive_animation);
-    added_animations_++;
   }
 
   virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,

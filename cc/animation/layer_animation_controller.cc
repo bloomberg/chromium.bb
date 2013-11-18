@@ -756,11 +756,19 @@ void LayerAnimationController::TickAnimations(double monotonic_time) {
 void LayerAnimationController::UpdateActivation(UpdateActivationType type) {
   bool force = type == ForceActivation;
   if (registrar_) {
-    if (!active_animations_.empty() && (!is_active_ || force))
+    bool was_active = is_active_;
+    is_active_ = false;
+    for (size_t i = 0; i < active_animations_.size(); ++i) {
+      if (active_animations_[i]->run_state() != Animation::WaitingForDeletion) {
+        is_active_ = true;
+        break;
+      }
+    }
+
+    if (is_active_ && (!was_active || force))
       registrar_->DidActivateAnimationController(this);
-    else if (active_animations_.empty() && (is_active_ || force))
+    else if (!is_active_ && (was_active || force))
       registrar_->DidDeactivateAnimationController(this);
-    is_active_ = !active_animations_.empty();
   }
 }
 

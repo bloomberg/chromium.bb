@@ -7,6 +7,7 @@
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_delegate.h"
+#include "cc/animation/animation_registrar.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/test/animation_test_common.h"
@@ -90,6 +91,87 @@ TEST(LayerAnimationControllerTest, DoNotClobberStartTimes) {
                                      Animation::Opacity)->start_time(),
             controller_impl->GetAnimation(group_id,
                                           Animation::Opacity)->start_time());
+}
+
+// Tests that controllers activate and deactivate as expected.
+TEST(LayerAnimationControllerTest, Activation) {
+  scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::Create();
+  scoped_ptr<AnimationRegistrar> registrar_impl = AnimationRegistrar::Create();
+
+  FakeLayerAnimationValueObserver dummy_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+  scoped_ptr<AnimationEventsVector> events(
+      make_scoped_ptr(new AnimationEventsVector));
+
+  controller->SetAnimationRegistrar(registrar.get());
+  controller_impl->SetAnimationRegistrar(registrar_impl.get());
+  EXPECT_EQ(1u, registrar->all_animation_controllers().size());
+  EXPECT_EQ(1u, registrar_impl->all_animation_controllers().size());
+
+  // Initially, both controllers should be inactive.
+  EXPECT_EQ(0u, registrar->active_animation_controllers().size());
+  EXPECT_EQ(0u, registrar_impl->active_animation_controllers().size());
+
+  AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
+  // The main thread controller should now be active.
+  EXPECT_EQ(1u, registrar->active_animation_controllers().size());
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  // Both controllers should now be active.
+  EXPECT_EQ(1u, registrar->active_animation_controllers().size());
+  EXPECT_EQ(1u, registrar_impl->active_animation_controllers().size());
+
+  controller_impl->Animate(1.0);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_EQ(1u, events->size());
+  controller->NotifyAnimationStarted((*events)[0], 0.0);
+
+  EXPECT_EQ(1u, registrar->active_animation_controllers().size());
+  EXPECT_EQ(1u, registrar_impl->active_animation_controllers().size());
+
+  controller->Animate(1.5);
+  controller->UpdateState(true, NULL);
+  EXPECT_EQ(1u, registrar->active_animation_controllers().size());
+
+  controller->Animate(2.0);
+  controller->UpdateState(true, NULL);
+  EXPECT_EQ(Animation::Finished,
+            controller->GetAnimation(Animation::Opacity)->run_state());
+  EXPECT_EQ(1u, registrar->active_animation_controllers().size());
+
+  events.reset(new AnimationEventsVector);
+  controller_impl->Animate(2.5);
+  controller_impl->UpdateState(true, events.get());
+
+  EXPECT_EQ(Animation::WaitingForDeletion,
+            controller_impl->GetAnimation(Animation::Opacity)->run_state());
+  // The impl thread controller should have de-activated.
+  EXPECT_EQ(0u, registrar_impl->active_animation_controllers().size());
+
+  EXPECT_EQ(1u, events->size());
+  controller->NotifyAnimationFinished((*events)[0], 0.0);
+  controller->Animate(2.5);
+  controller->UpdateState(true, NULL);
+
+  EXPECT_EQ(Animation::WaitingForDeletion,
+            controller->GetAnimation(Animation::Opacity)->run_state());
+  // The main thread controller should have de-activated.
+  EXPECT_EQ(0u, registrar->active_animation_controllers().size());
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_FALSE(controller->has_any_animation());
+  EXPECT_FALSE(controller_impl->has_any_animation());
+  EXPECT_EQ(0u, registrar->active_animation_controllers().size());
+  EXPECT_EQ(0u, registrar_impl->active_animation_controllers().size());
+
+  controller->SetAnimationRegistrar(NULL);
+  controller_impl->SetAnimationRegistrar(NULL);
 }
 
 TEST(LayerAnimationControllerTest, SyncPause) {

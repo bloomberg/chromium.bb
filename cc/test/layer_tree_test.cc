@@ -375,16 +375,28 @@ void LayerTreeTest::PostAddAnimationToMainThread(
       FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchAddAnimation,
                  main_thread_weak_ptr_,
-                 base::Unretained(layer_to_receive_animation)));
+                 base::Unretained(layer_to_receive_animation),
+                 0.000001));
 }
 
 void LayerTreeTest::PostAddInstantAnimationToMainThread(
     Layer* layer_to_receive_animation) {
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&LayerTreeTest::DispatchAddInstantAnimation,
+      base::Bind(&LayerTreeTest::DispatchAddAnimation,
                  main_thread_weak_ptr_,
-                 base::Unretained(layer_to_receive_animation)));
+                 base::Unretained(layer_to_receive_animation),
+                 0.0));
+}
+
+void LayerTreeTest::PostAddLongAnimationToMainThread(
+    Layer* layer_to_receive_animation) {
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LayerTreeTest::DispatchAddAnimation,
+                 main_thread_weak_ptr_,
+                 base::Unretained(layer_to_receive_animation),
+                 1.0));
 }
 
 void LayerTreeTest::PostSetNeedsCommitToMainThread() {
@@ -502,25 +514,13 @@ void LayerTreeTest::RealEndTest() {
   base::MessageLoop::current()->Quit();
 }
 
-void LayerTreeTest::DispatchAddInstantAnimation(
-    Layer* layer_to_receive_animation) {
+void LayerTreeTest::DispatchAddAnimation(Layer* layer_to_receive_animation,
+                                         double animation_duration) {
   DCHECK(!proxy() || proxy()->IsMainThread());
 
   if (layer_to_receive_animation) {
     AddOpacityTransitionToLayer(layer_to_receive_animation,
-                                0,
-                                0,
-                                0.5,
-                                false);
-  }
-}
-
-void LayerTreeTest::DispatchAddAnimation(Layer* layer_to_receive_animation) {
-  DCHECK(!proxy() || proxy()->IsMainThread());
-
-  if (layer_to_receive_animation) {
-    AddOpacityTransitionToLayer(layer_to_receive_animation,
-                                0.000001,
+                                animation_duration,
                                 0,
                                 0.5,
                                 true);
