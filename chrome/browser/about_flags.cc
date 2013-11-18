@@ -1278,13 +1278,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kPerformanceMonitorGathering)
   },
   {
-    "enable-experimental-form-filling",
-    IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_NAME,
-    IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_DESCRIPTION,
-    kOsWin | kOsCrOS,
-    SINGLE_VALUE_TYPE(autofill::switches::kEnableExperimentalFormFilling)
-  },
-  {
     "wallet-service-use-sandbox",
     IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_NAME,
     IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_DESCRIPTION,

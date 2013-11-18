@@ -19,10 +19,6 @@ const char kDisableInteractiveAutocomplete[] =
 // account creation.
 const char kDisablePasswordGeneration[]     = "disable-password-generation";
 
-// Enable autofill for new elements like checkboxes. crbug.com/157636
-const char kEnableExperimentalFormFilling[] =
-    "enable-experimental-form-filling";
-
 // Enables an interactive autocomplete UI and a way to invoke this UI from
 // WebKit by enabling HTMLFormElement#requestAutocomplete (and associated
 // autocomplete* events and logic).
