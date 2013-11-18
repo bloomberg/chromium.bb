@@ -95,8 +95,6 @@ bool MediaStreamDispatcherHost::OnMessageReceived(
                         OnStopStreamDevice)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_EnumerateDevices,
                         OnEnumerateDevices)
-    IPC_MESSAGE_HANDLER(MediaStreamHostMsg_CancelEnumerateDevices,
-                        OnCancelEnumerateDevices);
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_OpenDevice,
                         OnOpenDevice)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_CloseDevice,
