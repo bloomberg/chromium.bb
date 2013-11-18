@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
@@ -25,7 +27,9 @@ namespace test {
 // various windows and instantiates the chrome::MultiUserWindowManager.
 class MultiUserWindowManagerChromeOSTest : public AshTestBase {
  public:
-  MultiUserWindowManagerChromeOSTest() : multi_user_window_manager_(NULL) {}
+  MultiUserWindowManagerChromeOSTest()
+      : multi_user_window_manager_(NULL),
+        session_state_delegate_(NULL) {}
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
@@ -52,6 +56,18 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   // shown by A.
   std::string GetStatus();
 
+  TestSessionStateDelegate* session_state_delegate() {
+    return session_state_delegate_;
+  }
+
+  // Make a window system modal.
+  void MakeWindowSystemModal(aura::Window* window) {
+    aura::Window* system_modal_container =
+        window->GetRootWindow()->GetChildById(
+            ash::internal::kShellWindowId_SystemModalContainer);
+    system_modal_container->AddChild(window);
+  }
+
  private:
   // These get created for each session.
   std::vector<aura::Window*> window_;
@@ -59,12 +75,18 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   // The instance of the MultiUserWindowManager.
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager_;
 
+  // The session state delegate.
+  ash::test::TestSessionStateDelegate* session_state_delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerChromeOSTest);
 };
 
 void MultiUserWindowManagerChromeOSTest::SetUp() {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
   AshTestBase::SetUp();
+  session_state_delegate_ =
+      static_cast<TestSessionStateDelegate*> (
+          ash::Shell::GetInstance()->session_state_delegate());
 }
 
 void MultiUserWindowManagerChromeOSTest::SetUpForThisManyWindows(int windows) {
@@ -507,6 +529,68 @@ TEST_F(MultiUserWindowManagerChromeOSTest, PreserveInitialVisibility) {
   EXPECT_EQ("S[A,B], H[A,B], H[B,A], H[B,A]", GetStatus());
   multi_user_window_manager()->ActiveUserChanged("A");
   EXPECT_EQ("H[A,B], H[A,B], S[B,A], H[B,A]", GetStatus());
+}
+
+// Test that a system modal dialog will switch to the desktop of the owning
+// user.
+TEST_F(MultiUserWindowManagerChromeOSTest, SwitchUsersUponModalityChange) {
+  SetUpForThisManyWindows(1);
+  session_state_delegate()->SwitchActiveUser("a");
+
+  // Making the window system modal should not change anything.
+  MakeWindowSystemModal(window(0));
+  EXPECT_EQ("a", session_state_delegate()->get_activated_user());
+
+  // Making the window owned by user B should switch users.
+  multi_user_window_manager()->SetWindowOwner(window(0), "b");
+  EXPECT_EQ("b", session_state_delegate()->get_activated_user());
+}
+
+// Test that a system modal dialog will not switch desktop if active user has
+// shows window.
+TEST_F(MultiUserWindowManagerChromeOSTest, DontSwitchUsersUponModalityChange) {
+  SetUpForThisManyWindows(1);
+  session_state_delegate()->SwitchActiveUser("a");
+
+  // Making the window system modal should not change anything.
+  MakeWindowSystemModal(window(0));
+  EXPECT_EQ("a", session_state_delegate()->get_activated_user());
+
+  // Making the window owned by user a should not switch users.
+  multi_user_window_manager()->SetWindowOwner(window(0), "a");
+  EXPECT_EQ("a", session_state_delegate()->get_activated_user());
+}
+
+// Test that a system modal dialog will not switch if shown on correct desktop
+// but owned by another user.
+TEST_F(MultiUserWindowManagerChromeOSTest,
+       DontSwitchUsersUponModalityChangeWhenShownButNotOwned) {
+  SetUpForThisManyWindows(1);
+  session_state_delegate()->SwitchActiveUser("a");
+
+  window(0)->Hide();
+  multi_user_window_manager()->SetWindowOwner(window(0), "b");
+  multi_user_window_manager()->ShowWindowForUser(window(0), "a");
+  MakeWindowSystemModal(window(0));
+  // Showing the window should trigger no user switch.
+  window(0)->Show();
+  EXPECT_EQ("a", session_state_delegate()->get_activated_user());
+}
+
+// Test that a system modal dialog will switch if shown on incorrect desktop but
+// even if owned by current user.
+TEST_F(MultiUserWindowManagerChromeOSTest,
+       SwitchUsersUponModalityChangeWhenShownButNotOwned) {
+  SetUpForThisManyWindows(1);
+  session_state_delegate()->SwitchActiveUser("a");
+
+  window(0)->Hide();
+  multi_user_window_manager()->SetWindowOwner(window(0), "a");
+  multi_user_window_manager()->ShowWindowForUser(window(0), "b");
+  MakeWindowSystemModal(window(0));
+  // Showing the window should trigger a user switch.
+  window(0)->Show();
+  EXPECT_EQ("b", session_state_delegate()->get_activated_user());
 }
 
 }  // namespace test

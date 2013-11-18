@@ -11,6 +11,7 @@
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/shell_window_ids.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
@@ -466,6 +467,31 @@ void MultiUserWindowManagerChromeOS::SetWindowVisibility(
     aura::Window* window, bool visible) {
   if (window->IsVisible() == visible)
     return;
+
+  // Hiding a system modal dialog should not be allowed. Instead we switch to
+  // the user which is showing the system modal window.
+  // Note that in some cases (e.g. unit test) windows might not have a root
+  // window.
+  if (!visible && window->GetRootWindow()) {
+    // Get the system modal container for the window's root window.
+    aura::Window* system_modal_container =
+        window->GetRootWindow()->GetChildById(
+            ash::internal::kShellWindowId_SystemModalContainer);
+    if (window->parent() == system_modal_container) {
+      // The window is system modal and we need to find the parent which owns
+      // it so that we can switch to the desktop accordingly.
+      std::string user_id = GetUserPresentingWindow(window);
+      if (user_id.empty()) {
+        aura::Window* owning_window = GetOwningWindowInTransientChain(window);
+        DCHECK(owning_window);
+        user_id = GetUserPresentingWindow(owning_window);
+        DCHECK(!user_id.empty());
+      }
+      ash::Shell::GetInstance()->session_state_delegate()->SwitchActiveUser(
+          user_id);
+      return;
+    }
+  }
 
   // To avoid that these commands are recorded as any other commands, we are
   // suppressing any window entry changes while this is going on.

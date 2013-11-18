@@ -138,7 +138,8 @@ class MultiUserWindowManagerChromeOS : public MultiUserWindowManager,
   // Show / hide the given window. Note: By not doing this within the functions,
   // this allows to either switching to different ways to show/hide and / or to
   // distinguish state changes performed by this class vs. state changes
-  // performed by the others.
+  // performed by the others. Note furthermore that system modal dialogs will
+  // not get hidden. We will switch instead to the owners desktop.
   void SetWindowVisibility(aura::Window* window, bool visible);
 
   // Show the window and its transient children. However - if a transient child
