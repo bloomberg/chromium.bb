@@ -95,9 +95,8 @@ void URLRequestFilter::RemoveHostnameHandler(const std::string& scheme,
   delete iter->second;
   hostname_handler_map_.erase(iter);
   // Note that we don't unregister from the URLRequest ProtocolFactory as
-  // this would left no protocol factory for the scheme.
-  // URLRequestFilter::Factory will keep forwarding the requests to the
-  // URLRequestInetJob.
+  // this would leave no protocol factory for the remaining hostname and URL
+  // handlers.
 }
 
 bool URLRequestFilter::AddUrlHandler(
@@ -135,9 +134,8 @@ void URLRequestFilter::RemoveUrlHandler(const GURL& url) {
   delete iter->second;
   url_handler_map_.erase(iter);
   // Note that we don't unregister from the URLRequest ProtocolFactory as
-  // this would left no protocol factory for the scheme.
-  // URLRequestFilter::Factory will keep forwarding the requests to the
-  // URLRequestInetJob.
+  // this would leave no protocol factory for the remaining hostname and URL
+  // handlers.
 }
 
 void URLRequestFilter::ClearHandlers() {

@@ -12,9 +12,9 @@
 //     GURL("http://foo.com/"),
 //     &URLRequestCustomJob::Factory);
 //
-// If URLRequestFilter::Factory can't find a handle for the request, it passes
-// it through to URLRequestInetJob::Factory and lets the default network stack
-// handle it.
+// If URLRequestFilter::Factory can't find a handler for the request, it
+// returns null to URLRequestJobManager and lets a built-in protocol factory
+// handle the request.
 
 #ifndef NET_URL_REQUEST_URL_REQUEST_FILTER_H_
 #define NET_URL_REQUEST_URL_REQUEST_FILTER_H_
