@@ -6,7 +6,6 @@
 
 #include "ash/display/display_info.h"
 #include "chromeos/display/output_configurator.h"
-#include "chromeos/display/output_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chromeos::OutputConfigurator;
