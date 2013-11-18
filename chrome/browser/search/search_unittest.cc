@@ -918,15 +918,6 @@ TEST_F(SearchTest, ShouldUseCacheableNTP_EnabledViaFinch) {
   EXPECT_TRUE(ShouldUseCacheableNTP());
 }
 
-TEST_F(SearchTest, ShouldUseCacheableNTP_EnabledViaCommandLine) {
-  EnableInstantExtendedAPIForTesting();
-  CommandLine::ForCurrentProcess()->
-      AppendSwitch(switches::kUseCacheableNewTabPage);
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 use_cacheable_ntp:0"));
-  EXPECT_TRUE(ShouldUseCacheableNTP());
-}
-
 TEST_F(SearchTest, ShouldPrefetchSearchResults_Default) {
   EXPECT_FALSE(ShouldPrefetchSearchResults());
 }

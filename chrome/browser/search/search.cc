@@ -541,10 +541,6 @@ bool ShouldHideTopVerbatimMatch() {
 }
 
 bool ShouldUseCacheableNTP() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUseCacheableNewTabPage))
-    return true;
-
   FieldTrialFlags flags;
   return !GetFieldTrialInfo(&flags, NULL) || GetBoolValueForFlagWithDefault(
       kUseCacheableNTP, true, flags);

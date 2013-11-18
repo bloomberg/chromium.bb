@@ -5983,12 +5983,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_INSTANT_EXTENDED_API_DESCRIPTION" desc="Description for the flag to enable the Instant extended API.">
         Enables the Instant Extended API which provides a deeper integration with your default search provider, including a renovated New Tab Page, extracting search query terms in the omnibox, a spruced-up omnibox dropdown and Instant previews of search results as you type in the omnibox.
       </message>
-      <message name="IDS_FLAGS_ENABLE_INSTANT_EXTENDED_CACHEABLE_NTP" desc="Title for the flag to enable the cacheable New Tab page for Instant extended.">
-        Cacheable New Tab page for Instant Extended.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_INSTANT_EXTENDED_CACHEABLE_NTP_DESCRIPTION" desc="Description for the flag to enable the cacheable New Tab page for Instant extended.">
-        Use the cacheable New Tab page for Instant Extended.
-      </message>
       <message name="IDS_FLAGS_ENABLE_LOCAL_FIRST_LOAD_NTP" desc="Title for the flag to enable the local first load NTP.">
         Enable local first-load NTP in Instant Extended.
       </message>

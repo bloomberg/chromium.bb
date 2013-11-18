@@ -392,7 +392,6 @@ extern const char kTryChromeAgain[];
 extern const char kUninstallExtension[];
 extern const char kUninstall[];
 extern const char kUnlimitedStorage[];
-extern const char kUseCacheableNewTabPage[];
 extern const char kUseSimpleCacheBackend[];
 extern const char kUseSpdy[];
 extern const char kUseSpellingSuggestions[];

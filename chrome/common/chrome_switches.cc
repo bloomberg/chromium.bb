@@ -1468,9 +1468,6 @@ const char kUninstall[]                     = "uninstall";
 // apps/origins.  This should be used only for testing purpose.
 const char kUnlimitedStorage[]              = "unlimited-storage";
 
-// Use the cacheable New Tab page for Embedded Search.
-const char kUseCacheableNewTabPage[]        = "use-cacheable-new-tab-page";
-
 // Uses Spdy for the transport protocol instead of HTTP. This is a temporary
 // testing flag.
 const char kUseSpdy[]                       = "use-spdy";
