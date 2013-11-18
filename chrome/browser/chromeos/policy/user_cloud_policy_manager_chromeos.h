@@ -96,7 +96,6 @@ class UserCloudPolicyManagerChromeOS
   virtual void OnClientError(CloudPolicyClient* client) OVERRIDE;
 
   // ComponentCloudPolicyService::Delegate:
-  virtual void OnComponentCloudPolicyRefreshNeeded() OVERRIDE;
   virtual void OnComponentCloudPolicyUpdated() OVERRIDE;
 
  private:

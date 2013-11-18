@@ -589,10 +589,6 @@ const char kEnableClientHints[]             = "enable-client-hints";
 // Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 
-// Enables fetching and storing cloud policy for components. This currently
-// supports policy for extensions on Chrome OS.
-const char kEnableComponentCloudPolicy[]    = "enable-component-cloud-policy";
-
 // Enables fetching the user's contacts from Google and showing them in the
 // Chrome OS apps list.
 const char kEnableContacts[]                = "enable-contacts";

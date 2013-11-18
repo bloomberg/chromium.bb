@@ -20,8 +20,8 @@
 #include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chrome/browser/policy/policy_bundle.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "components/policy/core/common/policy_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -232,10 +232,6 @@ void UserCloudPolicyManagerChromeOS::OnClientError(
   CancelWaitForPolicyFetch();
 }
 
-void UserCloudPolicyManagerChromeOS::OnComponentCloudPolicyRefreshNeeded() {
-  core()->RefreshSoon();
-}
-
 void UserCloudPolicyManagerChromeOS::OnComponentCloudPolicyUpdated() {
   CheckAndPublishPolicy();
   StartRefreshSchedulerIfReady();
@@ -264,9 +260,8 @@ void UserCloudPolicyManagerChromeOS::CreateComponentCloudPolicyService(
   component_policy_service_.reset(new ComponentCloudPolicyService(
       this,
       schema_registry(),
-      store_.get(),
+      core(),
       resource_cache.Pass(),
-      client(),
       request_context,
       backend_task_runner,
       content::BrowserThread::GetMessageLoopProxyForThread(

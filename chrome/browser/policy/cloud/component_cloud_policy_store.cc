@@ -231,6 +231,19 @@ void ComponentCloudPolicyStore::Purge(
     delegate_->OnComponentCloudPolicyStoreUpdated();
 }
 
+void ComponentCloudPolicyStore::Clear() {
+  for (size_t i = 0; i < arraysize(kDomains); ++i) {
+    cache_->Clear(kDomains[i].proto_cache_key);
+    cache_->Clear(kDomains[i].data_cache_key);
+  }
+  cached_hashes_.clear();
+  const PolicyBundle empty_bundle;
+  if (!policy_bundle_.Equals(empty_bundle)) {
+    policy_bundle_.Clear();
+    delegate_->OnComponentCloudPolicyStoreUpdated();
+  }
+}
+
 bool ComponentCloudPolicyStore::ValidatePolicy(
     scoped_ptr<em::PolicyFetchResponse> proto,
     PolicyNamespace* ns,

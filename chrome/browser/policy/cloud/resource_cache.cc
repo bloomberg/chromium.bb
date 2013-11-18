@@ -137,6 +137,13 @@ void ResourceCache::Delete(const std::string& key, const std::string& subkey) {
   base::DeleteFile(subkey_path.DirName(), false);
 }
 
+void ResourceCache::Clear(const std::string& key) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  base::FilePath key_path;
+  if (VerifyKeyPath(key, false, &key_path))
+    base::DeleteFile(key_path, true);
+}
+
 void ResourceCache::FilterSubkeys(const std::string& key,
                                   const SubkeyFilter& test) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());

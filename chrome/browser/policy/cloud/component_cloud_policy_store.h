@@ -94,6 +94,9 @@ class ComponentCloudPolicyStore : public base::NonThreadSafe {
   void Purge(PolicyDomain domain,
              const ResourceCache::SubkeyFilter& filter);
 
+  // Deletes the storage of every component.
+  void Clear();
+
   // Validates |proto| and returns the corresponding policy namespace in |ns|,
   // and the parsed ExternalPolicyData in |payload|.
   // If |proto| validates successfully then its |payload| can be trusted, and

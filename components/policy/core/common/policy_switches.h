@@ -14,6 +14,7 @@ namespace switches {
 
 POLICY_EXPORT extern const char kCloudPolicyInvalidationDelay[];
 POLICY_EXPORT extern const char kDisableCloudPolicyPush[];
+POLICY_EXPORT extern const char kEnableComponentCloudPolicy[];
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 POLICY_EXPORT extern const char kFakeCloudPolicyType[];

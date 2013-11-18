@@ -52,6 +52,9 @@ class ResourceCache {
   // Deletes (key, subkey).
   void Delete(const std::string& key, const std::string& subkey);
 
+  // Deletes all the subkeys of |key|.
+  void Clear(const std::string& key);
+
   // Deletes the subkeys of |key| for which the |filter| returns true.
   typedef base::Callback<bool(const std::string&)> SubkeyFilter;
   void FilterSubkeys(const std::string& key, const SubkeyFilter& filter);
