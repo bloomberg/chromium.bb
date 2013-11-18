@@ -155,13 +155,15 @@ int CastSocket::SendAuthChallenge() {
   CastMessage challenge_message;
   CreateAuthChallengeMessage(&challenge_message);
   DVLOG(1) << "Sending challenge: " << CastMessageToString(challenge_message);
-  return SendMessageInternal(
+  int result = SendMessageInternal(
       challenge_message,
       base::Bind(&CastSocket::OnChallengeEvent, AsWeakPtr()));
+  return (result < 0) ? result : net::OK;
 }
 
 int CastSocket::ReadAuthChallengeReply() {
-  return ReadData();
+  int result = ReadData();
+  return (result < 0) ? result : net::OK;
 }
 
 void CastSocket::OnConnectComplete(int result) {
