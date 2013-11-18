@@ -678,7 +678,6 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
 
   enum {
     COLUMN_SET_ID_LANGUAGES,
-    COLUMN_SET_ID_ALWAYS_TRANSLATE,
     COLUMN_SET_ID_BUTTONS,
   };
 
@@ -689,13 +688,6 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   cs->AddColumn(GridLayout::FILL, GridLayout::CENTER,
                 0, GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(1, 0);
-
-  if (!is_in_incognito_window_) {
-    cs = layout->AddColumnSet(COLUMN_SET_ID_ALWAYS_TRANSLATE);
-    cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER,
-                  0, GridLayout::USE_PREF, 0, 0);
-    cs->AddPaddingColumn(1, 0);
-  }
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_BUTTONS);
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER,
@@ -718,9 +710,9 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   layout->AddView(target_language_combobox_);
 
   if (!is_in_incognito_window_) {
-    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
-
-    layout->StartRow(0, COLUMN_SET_ID_ALWAYS_TRANSLATE);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->StartRow(0, COLUMN_SET_ID_LANGUAGES);
+    layout->SkipColumns(1);
     layout->AddView(always_translate_checkbox_);
   }
 
@@ -762,13 +754,10 @@ void TranslateBubbleView::UpdateAdvancedView() {
   string16 target_language_name =
       model_->GetLanguageNameAt(model_->GetTargetLanguageIndex());
 
-  string16 message =
-      l10n_util::GetStringFUTF16(IDS_TRANSLATE_BUBBLE_ALWAYS,
-                                 source_language_name,
-                                 target_language_name);
   // "Always translate" checkbox doesn't exist in an incognito window.
   if (always_translate_checkbox_) {
-    always_translate_checkbox_->SetText(message);
+    always_translate_checkbox_->SetText(
+        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ALWAYS));
     always_translate_checkbox_->SetChecked(
         model_->ShouldAlwaysTranslate());
   }

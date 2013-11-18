@@ -13796,7 +13796,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Try again
       </message>
       <message name="IDS_TRANSLATE_BUBBLE_ALWAYS" desc="Text to show for the translate bubble checkbox to always translate from one language to another">
-        Always translate <ph name="original_language">$1<ex>French</ex></ph> to <ph name="target_language">$2<ex>German</ex></ph>
+        Always translate
       </message>
       <message name="IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE" desc="Text to show for the translate bubble label when the page could not be translated.">
         This page could not be translated.
