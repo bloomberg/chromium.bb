@@ -95,6 +95,8 @@ bool MediaStreamDispatcherHost::OnMessageReceived(
                         OnStopStreamDevice)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_EnumerateDevices,
                         OnEnumerateDevices)
+    IPC_MESSAGE_HANDLER(MediaStreamHostMsg_CancelEnumerateDevices,
+                        OnCancelEnumerateDevices)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_OpenDevice,
                         OnOpenDevice)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_CloseDevice,
@@ -192,6 +194,13 @@ void MediaStreamDispatcherHost::OnCancelEnumerateDevices(
            << render_view_id << ", "
            << label << ")";
 
+  if (streams_.find(label) == streams_.end()) {
+    // According to the comments in MediaStreamDispatcher::OnDevicesEnumerated,
+    // OnCancelEnumerateDevices can be called several times with the same label.
+    DVLOG(1) << "Enumeration request with label " << label
+             << "does not exist.";
+    return;
+  }
   media_stream_manager_->CancelRequest(label);
   PopRequest(label);
 }
