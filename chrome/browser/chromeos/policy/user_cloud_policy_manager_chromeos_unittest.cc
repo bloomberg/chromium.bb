@@ -21,7 +21,6 @@
 #include "chrome/browser/policy/cloud/mock_cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
-#include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
@@ -157,7 +156,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         scoped_ptr<CloudPolicyStore>(store_),
         scoped_ptr<CloudExternalDataManager>(external_data_manager_),
         task_runner_,
-        scoped_ptr<ResourceCache>(),
+        base::FilePath(),
         wait_for_fetch,
         base::TimeDelta::FromSeconds(fetch_timeout)));
     manager_->Init(&schema_registry_);

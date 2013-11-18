@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
-#include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/sha1.h"
 #include "base/single_thread_task_runner.h"
@@ -23,7 +22,7 @@
 #include "chrome/browser/policy/policy_types.h"
 #include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
-#include "chrome/browser/policy/schema_registry.h"
+#include "chrome/browser/policy/schema_map.h"
 #include "components/policy/core/common/schema.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -43,7 +42,6 @@ namespace {
 const char kTestExtension[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kTestExtension2[] = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const char kTestDownload[] = "http://example.com/getpolicy?id=123";
-const char kTestDownload2[] = "http://example.com/getpolicy?id=456";
 
 const char kTestPolicy[] =
     "{"
@@ -101,11 +99,17 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
     cache_ = new ResourceCache(temp_dir_.path(), loop_.message_loop_proxy());
+    request_context_ =
+        new TestURLRequestContextGetter(loop_.message_loop_proxy());
     service_.reset(new ComponentCloudPolicyService(
         &delegate_,
+        &registry_,
         &store_,
         make_scoped_ptr(cache_),
+        &client_,
+        request_context_,
         loop_.message_loop_proxy(),
         loop_.message_loop_proxy()));
 
@@ -120,15 +124,11 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     expected_policy_.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                          base::Value::CreateStringValue("maybe"), NULL);
 
-    // A NULL |request_context_| is enough to construct the updater, but
-    // ComponentCloudPolicyService::Backend::LoadStore() tests the pointer when
-    // Connect() is called before the store was loaded.
-    request_context_ =
-        new TestURLRequestContextGetter(loop_.message_loop_proxy());
+    EXPECT_EQ(0u, client_.namespaces_to_fetch_.size());
   }
 
   virtual void TearDown() OVERRIDE {
-    // The service cleans up its backend on the FILE thread.
+    // The service cleans up its backend on the background thread.
     service_.reset();
     RunUntilIdle();
   }
@@ -139,31 +139,26 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
 
   void LoadStore() {
     EXPECT_FALSE(store_.is_initialized());
-    EXPECT_FALSE(service_->is_initialized());
 
     em::PolicyData* data = new em::PolicyData();
     data->set_username(ComponentPolicyBuilder::kFakeUsername);
     data->set_request_token(ComponentPolicyBuilder::kFakeToken);
     store_.policy_.reset(data);
 
-    EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
     store_.NotifyStoreLoaded();
     RunUntilIdle();
-    Mock::VerifyAndClearExpectations(&delegate_);
-    EXPECT_TRUE(service_->is_initialized());
+    EXPECT_TRUE(store_.is_initialized());
+  }
+
+  void InitializeRegistry() {
+    registry_.RegisterComponent(
+        PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension),
+        CreateTestSchema());
+    registry_.SetReady(POLICY_DOMAIN_CHROME);
+    registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
   }
 
   void PopulateCache() {
-    Pickle pickle;
-    pickle.WriteString(kTestExtension);
-    pickle.WriteString(kTestExtension2);
-    std::string data(reinterpret_cast<const char*>(pickle.data()),
-                     pickle.size());
-    EXPECT_TRUE(
-        cache_->Store(ComponentCloudPolicyService::kComponentNamespaceCache,
-                      dm_protocol::kChromeExtensionPolicyType,
-                      data));
-
     EXPECT_TRUE(cache_->Store(
         "extension-policy", kTestExtension, CreateSerializedResponse()));
     EXPECT_TRUE(
@@ -174,8 +169,6 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
         "extension-policy", kTestExtension2, CreateSerializedResponse()));
     EXPECT_TRUE(
         cache_->Store("extension-policy-data", kTestExtension2, kTestPolicy));
-
-    EXPECT_TRUE(cache_->Store("unrelated", "stuff", "here"));
   }
 
   scoped_ptr<em::PolicyFetchResponse> CreateResponse() {
@@ -211,184 +204,110 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   PolicyMap expected_policy_;
 };
 
-TEST_F(ComponentCloudPolicyServiceTest, InitializeWithoutCredentials) {
-  EXPECT_FALSE(service_->is_initialized());
-  // Run the background task to initialize the backend.
-  RunUntilIdle();
-  // Still waiting for the |store_|.
+TEST_F(ComponentCloudPolicyServiceTest, InitializedAtConstructionTime) {
+  service_.reset();
+  LoadStore();
+  InitializeRegistry();
+
+  cache_ = new ResourceCache(temp_dir_.path(), loop_.message_loop_proxy());
+  service_.reset(new ComponentCloudPolicyService(&delegate_,
+                                                 &registry_,
+                                                 &store_,
+                                                 make_scoped_ptr(cache_),
+                                                 &client_,
+                                                 request_context_,
+                                                 loop_.message_loop_proxy(),
+                                                 loop_.message_loop_proxy()));
   EXPECT_FALSE(service_->is_initialized());
 
-  // Initialize with a store without credentials.
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyRefreshNeeded());
   EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
-  store_.NotifyStoreLoaded();
   RunUntilIdle();
-  EXPECT_TRUE(service_->is_initialized());
   Mock::VerifyAndClearExpectations(&delegate_);
+
+  EXPECT_TRUE(service_->is_initialized());
+  EXPECT_EQ(1u, client_.namespaces_to_fetch_.size());
   const PolicyBundle empty_bundle;
   EXPECT_TRUE(service_->policy().Equals(empty_bundle));
 }
 
-TEST_F(ComponentCloudPolicyServiceTest, InitializationWithCachedComponents) {
-  // Store a previous list of components.
-  Pickle pickle;
-  pickle.WriteString("aa");
-  pickle.WriteString("bb");
-  pickle.WriteString("cc");
-  std::string data(reinterpret_cast<const char*>(pickle.data()), pickle.size());
-  EXPECT_TRUE(
-      cache_->Store(ComponentCloudPolicyService::kComponentNamespaceCache,
-                    dm_protocol::kChromeExtensionPolicyType,
-                    data));
-  // Store some garbage in another domain; it won't be fetched.
-  EXPECT_TRUE(cache_->Store(
-      ComponentCloudPolicyService::kComponentNamespaceCache, "garbage", data));
-
-  // Connect a client before initialization is complete.
-  service_->Connect(&client_, request_context_);
-  EXPECT_TRUE(client_.namespaces_to_fetch_.empty());
-
-  // Now load the backend.
+TEST_F(ComponentCloudPolicyServiceTest, InitializeStoreThenRegistry) {
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyRefreshNeeded()).Times(0);
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated()).Times(0);
   LoadStore();
+  Mock::VerifyAndClearExpectations(&delegate_);
+  EXPECT_FALSE(service_->is_initialized());
 
-  // The cached namespaces were added to the client.
-  std::set<PolicyNamespaceKey> set;
-  set.insert(PolicyNamespaceKey(dm_protocol::kChromeExtensionPolicyType, "aa"));
-  set.insert(PolicyNamespaceKey(dm_protocol::kChromeExtensionPolicyType, "bb"));
-  set.insert(PolicyNamespaceKey(dm_protocol::kChromeExtensionPolicyType, "cc"));
-  EXPECT_EQ(set, client_.namespaces_to_fetch_);
-
-  // And the bad components were wiped from the cache.
-  std::map<std::string, std::string> contents;
-  cache_->LoadAllSubkeys(ComponentCloudPolicyService::kComponentNamespaceCache,
-                         &contents);
-  ASSERT_EQ(1u, contents.size());
-  EXPECT_EQ(std::string(dm_protocol::kChromeExtensionPolicyType),
-            contents.begin()->first);
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyRefreshNeeded());
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
+  InitializeRegistry();
+  RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&delegate_);
+  EXPECT_TRUE(service_->is_initialized());
+  EXPECT_EQ(1u, client_.namespaces_to_fetch_.size());
+  const PolicyBundle empty_bundle;
+  EXPECT_TRUE(service_->policy().Equals(empty_bundle));
 }
 
-TEST_F(ComponentCloudPolicyServiceTest, ConnectAfterRegister) {
-  // Add some components.
-  registry_.RegisterComponent(
-      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension),
-      CreateTestSchema());
-  registry_.RegisterComponent(
-      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension2),
-      CreateTestSchema());
-  service_->OnSchemasUpdated(registry_.schema_map());
+TEST_F(ComponentCloudPolicyServiceTest, InitializeRegistryThenStore) {
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyRefreshNeeded()).Times(0);
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated()).Times(0);
+  InitializeRegistry();
+  RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&delegate_);
+  EXPECT_FALSE(service_->is_initialized());
 
-  // Now connect the client.
-  EXPECT_TRUE(client_.namespaces_to_fetch_.empty());
-  service_->Connect(&client_, request_context_);
-  EXPECT_TRUE(client_.namespaces_to_fetch_.empty());
-
-  // It receives the namespaces once the backend is initialized.
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyRefreshNeeded());
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
   LoadStore();
-  std::set<PolicyNamespaceKey> set;
-  set.insert(PolicyNamespaceKey(dm_protocol::kChromeExtensionPolicyType,
-                                kTestExtension));
-  set.insert(PolicyNamespaceKey(dm_protocol::kChromeExtensionPolicyType,
-                                kTestExtension2));
-  EXPECT_EQ(set, client_.namespaces_to_fetch_);
-
-  // The current components were also persisted to the cache.
-  std::map<std::string, std::string> contents;
-  cache_->LoadAllSubkeys(ComponentCloudPolicyService::kComponentNamespaceCache,
-                         &contents);
-  ASSERT_EQ(1u, contents.size());
-  EXPECT_EQ(std::string(dm_protocol::kChromeExtensionPolicyType),
-            contents.begin()->first);
-  const std::string data(contents.begin()->second);
-  Pickle pickle(data.data(), data.size());
-  PickleIterator pickit(pickle);
-  std::string value0;
-  std::string value1;
-  std::string tmp;
-  ASSERT_TRUE(pickit.ReadString(&value0));
-  ASSERT_TRUE(pickit.ReadString(&value1));
-  EXPECT_FALSE(pickit.ReadString(&tmp));
-  std::set<std::string> unpickled;
-  unpickled.insert(value0);
-  unpickled.insert(value1);
-
-  std::set<std::string> expected_components;
-  expected_components.insert(kTestExtension);
-  expected_components.insert(kTestExtension2);
-
-  EXPECT_EQ(expected_components, unpickled);
+  Mock::VerifyAndClearExpectations(&delegate_);
+  EXPECT_TRUE(service_->is_initialized());
+  EXPECT_EQ(1u, client_.namespaces_to_fetch_.size());
+  const PolicyBundle empty_bundle;
+  EXPECT_TRUE(service_->policy().Equals(empty_bundle));
 }
 
-TEST_F(ComponentCloudPolicyServiceTest, StoreReadyAfterConnectAndRegister) {
-  // Add some previous data to the cache.
+TEST_F(ComponentCloudPolicyServiceTest, InitializeWithCachedPolicy) {
   PopulateCache();
 
-  // Add some components.
-  registry_.RegisterComponent(
-      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension),
-      CreateTestSchema());
-  service_->OnSchemasUpdated(registry_.schema_map());
-
-  // And connect the client. Make the client have some policies, with a new
-  // download_url.
-  builder_.payload().set_download_url(kTestDownload2);
-  client_.SetPolicy(PolicyNamespaceKey(dm_protocol::kChromeExtensionPolicyType,
-                                       kTestExtension),
-                    *CreateResponse());
-  service_->Connect(&client_, request_context_);
-
-  // Now make the store ready.
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyRefreshNeeded());
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
+  InitializeRegistry();
   LoadStore();
+  Mock::VerifyAndClearExpectations(&delegate_);
 
-  // The components that were registed before have their caches purged.
+  EXPECT_TRUE(service_->is_initialized());
+  EXPECT_EQ(1u, client_.namespaces_to_fetch_.size());
+
+  // kTestExtension2 is not in the registry so it was dropped.
   std::map<std::string, std::string> contents;
   cache_->LoadAllSubkeys("extension-policy", &contents);
-  EXPECT_EQ(1u, contents.size());  // kTestExtension2 was purged.
-  EXPECT_TRUE(ContainsKey(contents, kTestExtension));
-  cache_->LoadAllSubkeys("unrelated", &contents);
-  EXPECT_EQ(1u, contents.size());  // unrelated keys are not purged.
-  EXPECT_TRUE(ContainsKey(contents, "stuff"));
+  ASSERT_EQ(1u, contents.size());
+  EXPECT_EQ(kTestExtension, contents.begin()->first);
 
-  // The policy responses that the client already had start updating.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  // Expect the URL of the client's PolicyFetchResponse, not the cached URL.
-  EXPECT_EQ(GURL(kTestDownload2), fetcher->GetOriginalURL());
-}
-
-TEST_F(ComponentCloudPolicyServiceTest, ConnectThenRegisterThenStoreReady) {
-  // Connect right after creating the service.
-  service_->Connect(&client_, request_context_);
-
-  // Now register the current components, before the backend has been
-  // initialized.
-  EXPECT_TRUE(client_.namespaces_to_fetch_.empty());
-  registry_.RegisterComponent(
-      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension),
-      CreateTestSchema());
-  service_->OnSchemasUpdated(registry_.schema_map());
-  EXPECT_TRUE(client_.namespaces_to_fetch_.empty());
-
-  // Now load the store. The client gets the namespaces.
-  LoadStore();
-  std::set<PolicyNamespaceKey> set;
-  set.insert(PolicyNamespaceKey(dm_protocol::kChromeExtensionPolicyType,
-                                kTestExtension));
-  EXPECT_EQ(set, client_.namespaces_to_fetch_);
+  PolicyBundle expected_bundle;
+  const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
+  expected_bundle.Get(ns).CopyFrom(expected_policy_);
+  EXPECT_TRUE(service_->policy().Equals(expected_bundle));
 }
 
 TEST_F(ComponentCloudPolicyServiceTest, FetchPolicy) {
-  // Initialize the store and create the backend, and connect the client.
-  LoadStore();
-  // A refresh is not needed, because no components were found.
+  // Initialize the store and create the backend.
+  // A refresh is not needed, because no components are registered yet.
   EXPECT_CALL(delegate_, OnComponentCloudPolicyRefreshNeeded()).Times(0);
-  service_->Connect(&client_, request_context_);
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
+  registry_.SetReady(POLICY_DOMAIN_CHROME);
+  registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
+  LoadStore();
   Mock::VerifyAndClearExpectations(&delegate_);
+  EXPECT_TRUE(service_->is_initialized());
 
   // Register the components to fetch.
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyRefreshNeeded());
   registry_.RegisterComponent(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension),
       CreateTestSchema());
-  EXPECT_CALL(delegate_, OnComponentCloudPolicyRefreshNeeded());
-  service_->OnSchemasUpdated(registry_.schema_map());
+  RunUntilIdle();
   Mock::VerifyAndClearExpectations(&delegate_);
 
   // Send back a fake policy fetch response.
@@ -411,7 +330,7 @@ TEST_F(ComponentCloudPolicyServiceTest, FetchPolicy) {
   Mock::VerifyAndClearExpectations(&delegate_);
 
   // The policy is now being served.
-  PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
+  const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
   PolicyBundle expected_bundle;
   expected_bundle.Get(ns).CopyFrom(expected_policy_);
   EXPECT_TRUE(service_->policy().Equals(expected_bundle));
@@ -420,12 +339,15 @@ TEST_F(ComponentCloudPolicyServiceTest, FetchPolicy) {
 TEST_F(ComponentCloudPolicyServiceTest, LoadAndPurgeCache) {
   // Insert data in the cache.
   PopulateCache();
+  registry_.RegisterComponent(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension2),
+      CreateTestSchema());
+  InitializeRegistry();
 
   // Load the initial cache.
-  LoadStore();
-
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
   EXPECT_CALL(delegate_, OnComponentCloudPolicyRefreshNeeded());
-  service_->Connect(&client_, request_context_);
+  LoadStore();
   Mock::VerifyAndClearExpectations(&delegate_);
 
   PolicyBundle expected_bundle;
@@ -437,12 +359,8 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadAndPurgeCache) {
 
   // Now purge one of the extensions.
   EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
-  // The service will start updating the components that are registered, which
-  // starts by fetching policy for them.
-  registry_.RegisterComponent(
-      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension2),
-      CreateTestSchema());
-  service_->OnSchemasUpdated(registry_.schema_map());
+  registry_.UnregisterComponent(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension));
   RunUntilIdle();
   Mock::VerifyAndClearExpectations(&delegate_);
 
@@ -454,12 +372,12 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadAndPurgeCache) {
   cache_->LoadAllSubkeys("extension-policy", &contents);
   EXPECT_EQ(1u, contents.size());
   EXPECT_TRUE(ContainsKey(contents, kTestExtension2));
-  cache_->LoadAllSubkeys("unrelated", &contents);
-  EXPECT_EQ(1u, contents.size());
-  EXPECT_TRUE(ContainsKey(contents, "stuff"));
 }
 
-TEST_F(ComponentCloudPolicyServiceTest, UpdateCredentials) {
+TEST_F(ComponentCloudPolicyServiceTest, SignInAfterStartup) {
+  registry_.SetReady(POLICY_DOMAIN_CHROME);
+  registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
+
   // Do the same as LoadStore() but without the initial credentials.
   EXPECT_FALSE(store_.is_initialized());
   EXPECT_FALSE(service_->is_initialized());
@@ -470,16 +388,15 @@ TEST_F(ComponentCloudPolicyServiceTest, UpdateCredentials) {
   Mock::VerifyAndClearExpectations(&delegate_);
   EXPECT_TRUE(service_->is_initialized());
 
-  // Connect the client and register an extension.
-  service_->Connect(&client_, request_context_);
+  // Register an extension.
   EXPECT_CALL(delegate_, OnComponentCloudPolicyRefreshNeeded());
   registry_.RegisterComponent(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension),
       CreateTestSchema());
-  service_->OnSchemasUpdated(registry_.schema_map());
+  RunUntilIdle();
   Mock::VerifyAndClearExpectations(&delegate_);
 
-  // Send the response to the service. The response data will be rejected,
+  // Send the response to the service. The response data will be ignored,
   // because the store doesn't have the updated credentials yet.
   client_.SetPolicy(PolicyNamespaceKey(dm_protocol::kChromeExtensionPolicyType,
                                        kTestExtension),
@@ -487,7 +404,7 @@ TEST_F(ComponentCloudPolicyServiceTest, UpdateCredentials) {
   service_->OnPolicyFetched(&client_);
   RunUntilIdle();
 
-  // The policy was not verified, and no download is started.
+  // The policy was ignored, and no download is started.
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
   EXPECT_FALSE(fetcher);
 

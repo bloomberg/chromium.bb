@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -36,7 +37,6 @@ namespace policy {
 class CloudExternalDataManager;
 class DeviceManagementService;
 class PolicyOAuth2TokenFetcher;
-class ResourceCache;
 
 // UserCloudPolicyManagerChromeOS implements logic for initializing user policy
 // on Chrome OS.
@@ -54,7 +54,7 @@ class UserCloudPolicyManagerChromeOS
       scoped_ptr<CloudPolicyStore> store,
       scoped_ptr<CloudExternalDataManager> external_data_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      scoped_ptr<ResourceCache> resource_cache,
+      const base::FilePath& resource_cache_dir,
       bool wait_for_policy_fetch,
       base::TimeDelta initial_policy_fetch_timeout);
   virtual ~UserCloudPolicyManagerChromeOS();
@@ -83,7 +83,6 @@ class UserCloudPolicyManagerChromeOS
   // ConfigurationPolicyProvider:
   virtual void Shutdown() OVERRIDE;
   virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
-  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) OVERRIDE;
 
   // CloudPolicyManager:
   virtual scoped_ptr<PolicyBundle> CreatePolicyBundle() OVERRIDE;
@@ -101,6 +100,9 @@ class UserCloudPolicyManagerChromeOS
   virtual void OnComponentCloudPolicyUpdated() OVERRIDE;
 
  private:
+  void CreateComponentCloudPolicyService(
+      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+
   // Fetches a policy token using the authentication context of the signin
   // Profile, and calls back to OnOAuth2PolicyTokenFetched when done.
   void FetchPolicyOAuthTokenUsingSigninProfile();
@@ -131,6 +133,9 @@ class UserCloudPolicyManagerChromeOS
   // Handles fetching and storing cloud policy for components. It uses the
   // |store_|, so destroy it first.
   scoped_ptr<ComponentCloudPolicyService> component_policy_service_;
+
+  // Directory for the ResourceCache, if one is created.
+  base::FilePath resource_cache_dir_;
 
   // Whether to wait for a policy fetch to complete before reporting
   // IsInitializationComplete().

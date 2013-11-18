@@ -4,8 +4,6 @@
 
 #include "chrome/browser/policy/cloud/component_cloud_policy_updater.h"
 
-#include <string>
-
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
@@ -329,6 +327,23 @@ TEST_F(ComponentCloudPolicyUpdaterTest, NoPolicy) {
   task_runner_->RunUntilIdle();
 
   // Verify that the download is no longer running.
+  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+}
+
+TEST_F(ComponentCloudPolicyUpdaterTest, CancelUpdate) {
+  // Submit a policy fetch response with a valid download URL.
+  updater_->UpdateExternalPolicy(CreateResponse());
+  task_runner_->RunUntilIdle();
+
+  // Verify that the download has been started.
+  EXPECT_TRUE(fetcher_factory_.GetFetcherByID(0));
+
+  // Now cancel that update before the download completes.
+  EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated()).Times(0);
+  updater_->CancelUpdate(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension));
+  task_runner_->RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&store_delegate_);
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
 }
 

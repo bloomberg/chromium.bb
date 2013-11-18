@@ -66,7 +66,11 @@ ComponentCloudPolicyStore::ComponentCloudPolicyStore(
     Delegate* delegate,
     ResourceCache* cache)
     : delegate_(delegate),
-      cache_(cache) {}
+      cache_(cache) {
+  // Allow the store to be created on a different thread than the thread that
+  // will end up using it.
+  DetachFromThread();
+}
 
 ComponentCloudPolicyStore::~ComponentCloudPolicyStore() {
   DCHECK(CalledOnValidThread());

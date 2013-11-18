@@ -107,6 +107,10 @@ void ConfigurationPolicyProvider::UpdatePolicy(
                     OnUpdatePolicy(this));
 }
 
+SchemaRegistry* ConfigurationPolicyProvider::schema_registry() const {
+  return schema_registry_;
+}
+
 const scoped_refptr<SchemaMap>&
 ConfigurationPolicyProvider::schema_map() const {
   return schema_registry_->schema_map();

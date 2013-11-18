@@ -44,7 +44,7 @@ void CloudPolicyCore::Disconnect() {
 }
 
 void CloudPolicyCore::RefreshSoon() {
- if (refresh_scheduler_)
+  if (refresh_scheduler_)
     refresh_scheduler_->RefreshSoon();
 }
 

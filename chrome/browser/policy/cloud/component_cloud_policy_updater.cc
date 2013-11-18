@@ -4,8 +4,6 @@
 
 #include "chrome/browser/policy/cloud/component_cloud_policy_updater.h"
 
-#include <string>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -15,7 +13,6 @@
 #include "chrome/browser/policy/cloud/external_policy_data_fetcher.h"
 #include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
-#include "components/policy/core/common/policy_namespace.h"
 
 namespace em = enterprise_management;
 
@@ -67,18 +64,14 @@ void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
 
   // Maybe the data for this hash has already been downloaded and cached.
   const std::string& cached_hash = store_->GetCachedHash(ns);
-  if (!cached_hash.empty() && data.secure_hash() == cached_hash) {
+  if (!cached_hash.empty() && data.secure_hash() == cached_hash)
     return;
-  }
 
   // TODO(joaodasilva): implement the other two auth methods.
   if (data.download_auth_method() != em::ExternalPolicyData::NONE)
     return;
 
-  // Encode |ns| into a string |key|.
-  const std::string domain = base::IntToString(ns.domain);
-  const std::string key =
-      base::IntToString(domain.size()) + ":" + domain + ":" + ns.component_id;
+  const std::string key = NamespaceToKey(ns);
 
   if (data.download_url().empty() || !data.has_secure_hash()) {
     // If there is no policy for this component or the policy has been removed,
@@ -100,6 +93,17 @@ void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
                    serialized_response,
                    data.secure_hash()));
   }
+}
+
+void ComponentCloudPolicyUpdater::CancelUpdate(const PolicyNamespace& ns) {
+  external_policy_data_updater_.CancelExternalDataFetch(NamespaceToKey(ns));
+}
+
+std::string ComponentCloudPolicyUpdater::NamespaceToKey(
+    const PolicyNamespace& ns) {
+  const std::string domain = base::IntToString(ns.domain);
+  const std::string size = base::IntToString(domain.size());
+  return size + ":" + domain + ":" + ns.component_id;
 }
 
 }  // namespace policy

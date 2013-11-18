@@ -78,6 +78,8 @@ class ConfigurationPolicyProvider : public SchemaRegistry::Observer {
   // The observers are notified after the policies are updated.
   void UpdatePolicy(scoped_ptr<PolicyBundle> bundle);
 
+  SchemaRegistry* schema_registry() const;
+
   const scoped_refptr<SchemaMap>& schema_map() const;
 
  private:

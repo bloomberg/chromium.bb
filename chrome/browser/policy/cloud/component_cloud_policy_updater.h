@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_POLICY_CLOUD_COMPONENT_CLOUD_POLICY_UPDATER_H_
 #define CHROME_BROWSER_POLICY_CLOUD_COMPONENT_CLOUD_POLICY_UPDATER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/cloud/external_policy_data_updater.h"
+#include "components/policy/core/common/policy_namespace.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -46,7 +49,12 @@ class ComponentCloudPolicyUpdater {
   void UpdateExternalPolicy(
       scoped_ptr<enterprise_management::PolicyFetchResponse> response);
 
+  // Cancels any pending operations for the given namespace.
+  void CancelUpdate(const PolicyNamespace& ns);
+
  private:
+  std::string NamespaceToKey(const PolicyNamespace& ns);
+
   ComponentCloudPolicyStore* store_;
   ExternalPolicyDataUpdater external_policy_data_updater_;
 

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -53,7 +55,7 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
     scoped_ptr<CloudPolicyStore> store,
     scoped_ptr<CloudExternalDataManager> external_data_manager,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    scoped_ptr<ResourceCache> resource_cache,
+    const base::FilePath& resource_cache_dir,
     bool wait_for_policy_fetch,
     base::TimeDelta initial_policy_fetch_timeout)
     : CloudPolicyManager(
@@ -62,6 +64,7 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
           task_runner),
       store_(store.Pass()),
       external_data_manager_(external_data_manager.Pass()),
+      resource_cache_dir_(resource_cache_dir),
       wait_for_policy_fetch_(wait_for_policy_fetch),
       policy_fetch_timeout_(false, false) {
   time_init_started_ = base::Time::Now();
@@ -71,18 +74,6 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
         initial_policy_fetch_timeout,
         base::Bind(&UserCloudPolicyManagerChromeOS::CancelWaitForPolicyFetch,
                    base::Unretained(this)));
-  }
-  if (resource_cache) {
-    // TODO(joaodasilva): Move the backend from the FILE thread to the blocking
-    // pool.
-    component_policy_service_.reset(new ComponentCloudPolicyService(
-        this,
-        store_.get(),
-        resource_cache.Pass(),
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::FILE),
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::IO)));
   }
 }
 
@@ -104,8 +95,7 @@ void UserCloudPolicyManagerChromeOS::Connect(
 
   external_data_manager_->Connect(request_context);
 
-  if (component_policy_service_)
-    component_policy_service_->Connect(client(), request_context);
+  CreateComponentCloudPolicyService(request_context);
 
   // Determine the next step after the CloudPolicyService initializes.
   if (service()->IsInitializationComplete()) {
@@ -151,14 +141,6 @@ bool UserCloudPolicyManagerChromeOS::IsInitializationComplete(
     return component_policy_service_->is_initialized();
   }
   return true;
-}
-
-void UserCloudPolicyManagerChromeOS::OnSchemaRegistryUpdated(
-    bool has_new_schemas) {
-  // Send the new map even if |has_new_schemas| is false, so that policies for
-  // components that have been removed can be dropped from the cache.
-  if (component_policy_service_)
-    component_policy_service_->OnSchemasUpdated(schema_map());
 }
 
 scoped_ptr<PolicyBundle> UserCloudPolicyManagerChromeOS::CreatePolicyBundle() {
@@ -257,6 +239,38 @@ void UserCloudPolicyManagerChromeOS::OnComponentCloudPolicyRefreshNeeded() {
 void UserCloudPolicyManagerChromeOS::OnComponentCloudPolicyUpdated() {
   CheckAndPublishPolicy();
   StartRefreshSchedulerIfReady();
+}
+
+void UserCloudPolicyManagerChromeOS::CreateComponentCloudPolicyService(
+    const scoped_refptr<net::URLRequestContextGetter>& request_context) {
+  // Init() must have been called.
+  DCHECK(schema_registry());
+  // Called at most once.
+  DCHECK(!component_policy_service_);
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kEnableComponentCloudPolicy)) {
+    return;
+  }
+
+  // TODO(joaodasilva): Move the |backend_task_runner| to the blocking pool.
+  // Currently it's not possible because the ComponentCloudPolicyStore is
+  // NonThreadSafe and doesn't support getting calls from different threads.
+  scoped_refptr<base::SequencedTaskRunner> backend_task_runner =
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::FILE);
+  scoped_ptr<ResourceCache> resource_cache(
+      new ResourceCache(resource_cache_dir_, backend_task_runner));
+  component_policy_service_.reset(new ComponentCloudPolicyService(
+      this,
+      schema_registry(),
+      store_.get(),
+      resource_cache.Pass(),
+      client(),
+      request_context,
+      backend_task_runner,
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::IO)));
 }
 
 void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthTokenUsingSigninProfile() {

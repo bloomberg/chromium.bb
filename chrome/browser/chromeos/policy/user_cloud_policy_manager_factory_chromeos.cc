@@ -24,11 +24,9 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
-#include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -182,20 +180,12 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   if (force_immediate_load)
     store->LoadImmediately();
 
-  scoped_ptr<ResourceCache> resource_cache;
-  if (command_line->HasSwitch(switches::kEnableComponentCloudPolicy)) {
-    resource_cache.reset(new ResourceCache(
-        resource_cache_dir,
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::FILE)));
-  }
-
   scoped_ptr<UserCloudPolicyManagerChromeOS> manager(
       new UserCloudPolicyManagerChromeOS(
           store.PassAs<CloudPolicyStore>(),
           external_data_manager.Pass(),
           base::MessageLoopProxy::current(),
-          resource_cache.Pass(),
+          resource_cache_dir,
           wait_for_initial_policy,
           base::TimeDelta::FromSeconds(kInitialPolicyFetchTimeoutSeconds)));
   manager->Init(SchemaRegistryServiceFactory::GetForContext(profile));
