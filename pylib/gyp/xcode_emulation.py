@@ -31,6 +31,10 @@ class XcodeSettings(object):
   # cached at class-level for efficiency.
   _codesigning_key_cache = {}
 
+  # Populated lazily by _XcodeVersion.  Shared by all XcodeSettings, so cached
+  # at class-level for efficiency.
+  _xcode_version_cache = ()
+
   def __init__(self, spec):
     self.spec = spec
 
@@ -262,7 +266,7 @@ class XcodeSettings(object):
     """Returns the architectures this target should be built for."""
     # TODO: Look at VALID_ARCHS, ONLY_ACTIVE_ARCH; possibly set
     # CURRENT_ARCH / NATIVE_ARCH env vars?
-    return self.xcode_settings[configname].get('ARCHS', ['i386'])
+    return self.xcode_settings[configname].get('ARCHS', [self._DefaultArch()])
 
   def _GetStdout(self, cmdlist):
     job = subprocess.Popen(cmdlist, stdout=subprocess.PIPE)
@@ -377,7 +381,7 @@ class XcodeSettings(object):
     if arch is not None:
       archs = [arch]
     else:
-      archs = self._Settings().get('ARCHS', ['i386'])
+      archs = self._Settings().get('ARCHS', [self._DefaultArch()])
     if len(archs) != 1:
       # TODO: Supporting fat binaries will be annoying.
       self._WarnUnimplemented('ARCHS')
@@ -630,7 +634,7 @@ class XcodeSettings(object):
     if arch is not None:
       archs = [arch]
     else:
-      archs = self._Settings().get('ARCHS', ['i386'])
+      archs = self._Settings().get('ARCHS', [self._DefaultArch()])
     if len(archs) != 1:
       # TODO: Supporting fat binaries will be annoying.
       self._WarnUnimplemented('ARCHS')
@@ -848,14 +852,16 @@ class XcodeSettings(object):
     #    Component versions: DevToolsCore-1809.0; DevToolsSupport-1806.0
     #    BuildVersion: 10M2518
     # Convert that to '0463', '4H1503'.
-    version_list = self._GetStdout(['xcodebuild', '-version']).splitlines()
-    version = version_list[0]
-    build = version_list[-1]
-    # Be careful to convert "4.2" to "0420":
-    version = version.split()[-1].replace('.', '')
-    version = (version + '0' * (3 - len(version))).zfill(4)
-    build = build.split()[-1]
-    return version, build
+    if len(XcodeSettings._xcode_version_cache) == 0:
+      version_list = self._GetStdout(['xcodebuild', '-version']).splitlines()
+      version = version_list[0]
+      build = version_list[-1]
+      # Be careful to convert "4.2" to "0420":
+      version = version.split()[-1].replace('.', '')
+      version = (version + '0' * (3 - len(version))).zfill(4)
+      build = build.split()[-1]
+      XcodeSettings._xcode_version_cache = (version, build)
+    return XcodeSettings._xcode_version_cache
 
   def _XcodeIOSDeviceFamily(self, configname):
     family = self.xcode_settings[configname].get('TARGETED_DEVICE_FAMILY', '1')
@@ -896,6 +902,13 @@ class XcodeSettings(object):
       items['UIDeviceFamily'] = self._XcodeIOSDeviceFamily(configname)
     return items
 
+  def _DefaultArch(self):
+    # The default value for ARCHS changed from ['i386'] to ['x86_64'] in
+    # Xcode 5.
+    version, build = self._XcodeVersion()
+    if version >= '0500':
+      return 'x86_64'
+    return 'i386'
 
 class MacPrefixHeader(object):
   """A class that helps with emulating Xcode's GCC_PREFIX_HEADER feature.
