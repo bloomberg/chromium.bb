@@ -215,8 +215,6 @@
         'shelf/shelf_model.cc',
         'shelf/shelf_model.h',
         'shelf/shelf_model_observer.h',
-        'shelf/shelf_model_util.cc',
-        'shelf/shelf_model_util.h',
         'shelf/shelf_navigator.cc',
         'shelf/shelf_navigator.h',
         'shelf/shelf_tooltip_manager.cc',

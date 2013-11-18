@@ -14,7 +14,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
-#include "ash/shelf/shelf_model_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -1028,8 +1027,7 @@ ash::LauncherID ChromeLauncherController::GetLauncherIDForWebContents(
   ash::LauncherID id = GetLauncherIDForAppID(app_id);
 
   if (app_id.empty() || !id) {
-    int browser_index =
-        ash::GetShelfItemIndexForType(ash::TYPE_BROWSER_SHORTCUT, *model_);
+    int browser_index = model_->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
     return model_->items()[browser_index].id;
   }
 

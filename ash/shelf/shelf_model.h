@@ -47,6 +47,11 @@ class ASH_EXPORT ShelfModel {
   // Returns the index of the item by id.
   int ItemIndexByID(LauncherID id) const;
 
+  // Returns the |index| of the item matching |type| in |items_|.
+  // Returns -1 if the matching item is not found.
+  // Note: Requires a linear search.
+  int GetItemIndexForType(LauncherItemType type);
+
   // Returns the index of the first panel or the index where the first panel
   // would go if there are no panels.
   int FirstPanelIndex() const;

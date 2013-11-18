@@ -8,7 +8,6 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/shelf/shelf_model.h"
-#include "ash/shelf/shelf_model_util.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -61,8 +60,7 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
   ash::ShelfModel* model = launcher_controller()->model();
 
   // Determine the new browser's active state and change if necessary.
-  int browser_index =
-      ash::GetShelfItemIndexForType(ash::TYPE_BROWSER_SHORTCUT, *model);
+  int browser_index = model->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
   DCHECK_GE(browser_index, 0);
   ash::LauncherItem browser_item = model->items()[browser_index];
   ash::LauncherItemStatus browser_status = ash::STATUS_CLOSED;

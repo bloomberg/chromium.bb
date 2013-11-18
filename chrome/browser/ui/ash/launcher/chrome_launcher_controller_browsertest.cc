@@ -12,7 +12,6 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/shelf/shelf_model.h"
-#include "ash/shelf/shelf_model_util.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
@@ -269,7 +268,7 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
 
   // Get the index of an item which has the given type.
   int GetIndexOfShelfItemType(ash::LauncherItemType type) {
-    return ash::GetShelfItemIndexForType(type, *model_);
+    return model_->GetItemIndexForType(type);
   }
 
   // Try to rip off |item_index|.

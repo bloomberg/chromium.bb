@@ -131,6 +131,14 @@ int ShelfModel::ItemIndexByID(LauncherID id) const {
   return i == items_.end() ? -1 : static_cast<int>(i - items_.begin());
 }
 
+int ShelfModel::GetItemIndexForType(LauncherItemType type) {
+  for (size_t i = 0; i < items_.size(); ++i) {
+    if (items_[i].type == type)
+      return i;
+  }
+  return -1;
+}
+
 LauncherItems::const_iterator ShelfModel::ItemByID(int id) const {
   for (LauncherItems::const_iterator i = items_.begin();
        i != items_.end(); ++i) {
