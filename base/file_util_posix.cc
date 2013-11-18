@@ -48,6 +48,7 @@
 #include "base/time/time.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/content_uri_utils.h"
 #include "base/os_compat_android.h"
 #endif
 
@@ -79,6 +80,12 @@ static int CallLstat(const char *path, stat_wrapper_t *sb) {
   ThreadRestrictions::AssertIOAllowed();
   return lstat64(path, sb);
 }
+#if defined(OS_ANDROID)
+static int CallFstat(int fd, stat_wrapper_t *sb) {
+  ThreadRestrictions::AssertIOAllowed();
+  return fstat64(fd, sb);
+}
+#endif
 #endif
 
 // Helper for NormalizeFilePath(), defined below.
@@ -308,6 +315,11 @@ bool CopyDirectory(const FilePath& from_path,
 
 bool PathExists(const FilePath& path) {
   ThreadRestrictions::AssertIOAllowed();
+#if defined(OS_ANDROID)
+  if (path.IsContentUri()) {
+    return ContentUriExists(path);
+  }
+#endif
   return access(path.value().c_str(), F_OK) == 0;
 }
 
@@ -569,8 +581,21 @@ bool IsLink(const FilePath& file_path) {
 
 bool GetFileInfo(const FilePath& file_path, base::PlatformFileInfo* results) {
   stat_wrapper_t file_info;
-  if (CallStat(file_path.value().c_str(), &file_info) != 0)
-    return false;
+#if defined(OS_ANDROID)
+  if (file_path.IsContentUri()) {
+    int fd = OpenContentUriForRead(file_path);
+    if (fd < 0)
+      return false;
+    ScopedFD scoped_fd(&fd);
+    if (base::CallFstat(fd, &file_info) != 0)
+      return false;
+  } else {
+#endif  // defined(OS_ANDROID)
+    if (CallStat(file_path.value().c_str(), &file_info) != 0)
+      return false;
+#if defined(OS_ANDROID)
+  }
+#endif  // defined(OS_ANDROID)
   results->is_directory = S_ISDIR(file_info.st_mode);
   results->size = file_info.st_size;
 #if defined(OS_MACOSX)

@@ -33,6 +33,10 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/content_uri_utils.h"
+#endif
+
 // This macro helps avoid wrapped lines in the test structs.
 #define FPL(x) FILE_PATH_LITERAL(x)
 
@@ -2318,6 +2322,52 @@ TEST_F(VerifyPathControlledByUserTest, WriteBitChecks) {
       file_util::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, ok_gids_));
 }
+
+#if defined(OS_ANDROID)
+TEST_F(FileUtilTest, ValidContentUriTest) {
+  // Get the test image path.
+  FilePath data_dir;
+  ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &data_dir));
+  data_dir = data_dir.AppendASCII("file_util");
+  ASSERT_TRUE(base::PathExists(data_dir));
+  FilePath image_file = data_dir.Append(FILE_PATH_LITERAL("red.png"));
+  int64 image_size;
+  file_util::GetFileSize(image_file, &image_size);
+  EXPECT_LT(0, image_size);
+
+  // Insert the image into MediaStore. MediaStore will do some conversions, and
+  // return the content URI.
+  base::FilePath path = file_util::InsertImageIntoMediaStore(image_file);
+  EXPECT_TRUE(path.IsContentUri());
+  EXPECT_TRUE(base::PathExists(path));
+  // The file size may not equal to the input image as MediaStore may convert
+  // the image.
+  int64 content_uri_size;
+  file_util::GetFileSize(path, &content_uri_size);
+  EXPECT_EQ(image_size, content_uri_size);
+
+  // We should be able to read the file.
+  char* buffer = new char[image_size];
+  int fd = base::OpenContentUriForRead(path);
+  EXPECT_LT(0, fd);
+  EXPECT_TRUE(file_util::ReadFromFD(fd, buffer, image_size));
+  delete[] buffer;
+}
+
+TEST_F(FileUtilTest, NonExistentContentUriTest) {
+  base::FilePath path("content://foo.bar");
+  EXPECT_TRUE(path.IsContentUri());
+  EXPECT_FALSE(base::PathExists(path));
+  // Size should be smaller than 0.
+  int64 size;
+  file_util::GetFileSize(path, &size);
+  EXPECT_GT(0, size);
+
+  // We should not be able to read the file.
+  int fd = base::OpenContentUriForRead(path);
+  EXPECT_EQ(-1, fd);
+}
+#endif
 
 #endif  // defined(OS_POSIX)
 

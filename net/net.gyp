@@ -2993,6 +2993,7 @@
           'target_name': 'net_unittests_apk',
           'type': 'none',
           'dependencies': [
+            '../base/base.gyp:base_java_unittest_support',
             'net_java',
             'net_javatests',
             'net_unittests',
