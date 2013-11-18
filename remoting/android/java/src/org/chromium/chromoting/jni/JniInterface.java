@@ -38,14 +38,41 @@ public class JniInterface {
     /** The status code indicating successful connection. */
     private static final int SUCCESSFUL_CONNECTION = 3;
 
-    /** The application context. */
-    private static Activity sContext = null;
-
     /*
      * Library-loading state machine.
      */
     /** Whether we've already loaded the library. */
     private static boolean sLoaded = false;
+
+    /** The application context. */
+    private static Activity sContext = null;
+
+    /*
+     * Connection-initiating state machine.
+     */
+    /** Whether the native code is attempting a connection. */
+    private static boolean sConnected = false;
+
+    /** Callback to signal upon successful connection. */
+    private static Runnable sSuccessCallback = null;
+
+    /** Dialog for reporting connection progress. */
+    private static ProgressDialog sProgressIndicator = null;
+
+    /** Callback to signal whenever we need to redraw. */
+    private static Runnable sRedrawCallback = null;
+
+    /** Bitmap holding a copy of the latest video frame. */
+    private static Bitmap sFrameBitmap = null;
+
+    /** Lock to protect the frame bitmap reference. */
+    private static final Object sFrameLock = new Object();
+
+    /** Position of cursor hot-spot. */
+    private static Point sCursorHotspot = new Point();
+
+    /** Bitmap holding the cursor shape. */
+    private static Bitmap sCursorBitmap = null;
 
     /**
      * To be called once from the main Activity. Any subsequent calls will update the application
@@ -75,18 +102,6 @@ public class JniInterface {
     public static native String nativeGetClientId();
     public static native String nativeGetClientSecret();
 
-    /*
-     * Connection-initiating state machine.
-     */
-    /** Whether the native code is attempting a connection. */
-    private static boolean sConnected = false;
-
-    /** Callback to signal upon successful connection. */
-    private static Runnable sSuccessCallback = null;
-
-    /** Dialog for reporting connection progress. */
-    private static ProgressDialog sProgressIndicator = null;
-
     /** Attempts to form a connection to the user-selected host. */
     public static void connectToHost(String username, String authToken,
             String hostJid, String hostId, String hostPubkey, Runnable successCallback) {
@@ -104,6 +119,10 @@ public class JniInterface {
                 prefs.getString(hostId + "_id", ""), prefs.getString(hostId + "_secret", ""));
         sConnected = true;
     }
+
+    /** Performs the native portion of the connection. */
+    private static native void nativeConnect(String username, String authToken, String hostJid,
+            String hostId, String hostPubkey, String pairId, String pairSecret);
 
     /** Severs the connection and cleans up. */
     public static void disconnectFromHost() {
@@ -126,36 +145,8 @@ public class JniInterface {
         }
     }
 
-    /** Performs the native portion of the connection. */
-    private static native void nativeConnect(String username, String authToken, String hostJid,
-            String hostId, String hostPubkey, String pairId, String pairSecret);
-
     /** Performs the native portion of the cleanup. */
     private static native void nativeDisconnect();
-
-    /** Position of cursor hotspot within cursor image. */
-    public static Point getCursorHotspot() { return sCursorHotspot; }
-
-    /** Returns the current cursor shape. */
-    public static Bitmap getCursorBitmap() { return sCursorBitmap; }
-
-    /*
-     * Entry points *from* the native code.
-     */
-    /** Callback to signal whenever we need to redraw. */
-    private static Runnable sRedrawCallback = null;
-
-    /** Bitmap holding a copy of the latest video frame. */
-    private static Bitmap sFrameBitmap = null;
-
-    /** Lock to protect the frame bitmap reference. */
-    private static final Object sFrameLock = new Object();
-
-    /** Position of cursor hot-spot. */
-    private static Point sCursorHotspot = new Point();
-
-    /** Bitmap holding the cursor shape. */
-    private static Bitmap sCursorBitmap = null;
 
     /** Reports whenever the connection status changes. */
     @CalledByNative
@@ -271,6 +262,9 @@ public class JniInterface {
         pinDialog.show();
     }
 
+    /** Performs the native response to the user's PIN. */
+    private static native void nativeAuthenticationResponse(String pin, boolean createPair);
+
     /** Saves newly-received pairing credentials to permanent storage. */
     @CalledByNative
     private static void commitPairingCredentials(String host, byte[] id, byte[] secret) {
@@ -281,6 +275,30 @@ public class JniInterface {
                     apply();
         }
     }
+
+    /** Moves the mouse cursor, possibly while clicking the specified (nonnegative) button. */
+    public static void mouseAction(int x, int y, int whichButton, boolean buttonDown) {
+        if (!sConnected) {
+            return;
+        }
+
+        nativeMouseAction(x, y, whichButton, buttonDown);
+    }
+
+    /** Passes mouse information to the native handling code. */
+    private static native void nativeMouseAction(int x, int y, int whichButton, boolean buttonDown);
+
+    /** Presses and releases the specified (nonnegative) key. */
+    public static void keyboardAction(int keyCode, boolean keyDown) {
+        if (!sConnected) {
+            return;
+        }
+
+        nativeKeyboardAction(keyCode, keyDown);
+    }
+
+    /** Passes key press information to the native handling code. */
+    private static native void nativeKeyboardAction(int keyCode, boolean keyDown);
 
     /**
      * Sets the redraw callback to the provided functor. Provide a value of null whenever the
@@ -299,6 +317,9 @@ public class JniInterface {
         nativeScheduleRedraw();
         return true;
     }
+
+    /** Schedules a redraw on the native graphics thread. */
+    private static native void nativeScheduleRedraw();
 
     /** Performs the redrawing callback. This is a no-op if the window isn't visible. */
     @CalledByNative
@@ -364,33 +385,9 @@ public class JniInterface {
         sCursorBitmap = Bitmap.createBitmap(data, width, height, Bitmap.Config.ARGB_8888);
     }
 
-    /** Moves the mouse cursor, possibly while clicking the specified (nonnegative) button. */
-    public static void mouseAction(int x, int y, int whichButton, boolean buttonDown) {
-        if (!sConnected) {
-            return;
-        }
+    /** Position of cursor hotspot within cursor image. */
+    public static Point getCursorHotspot() { return sCursorHotspot; }
 
-        nativeMouseAction(x, y, whichButton, buttonDown);
-    }
-
-    /** Presses and releases the specified (nonnegative) key. */
-    public static void keyboardAction(int keyCode, boolean keyDown) {
-        if (!sConnected) {
-            return;
-        }
-
-        nativeKeyboardAction(keyCode, keyDown);
-    }
-
-    /** Performs the native response to the user's PIN. */
-    private static native void nativeAuthenticationResponse(String pin, boolean createPair);
-
-    /** Schedules a redraw on the native graphics thread. */
-    private static native void nativeScheduleRedraw();
-
-    /** Passes mouse information to the native handling code. */
-    private static native void nativeMouseAction(int x, int y, int whichButton, boolean buttonDown);
-
-    /** Passes key press information to the native handling code. */
-    private static native void nativeKeyboardAction(int keyCode, boolean keyDown);
+    /** Returns the current cursor shape. */
+    public static Bitmap getCursorBitmap() { return sCursorBitmap; }
 }
