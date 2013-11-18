@@ -84,7 +84,7 @@ class CPPGenerator(object):
   getter_template = \
       Template("  $TYPE $FIELD() const { return ${FIELD}_; }")
   ptr_getter_template = \
-      Template("  $TYPE $FIELD() const { return ${FIELD}_.ptr; }")
+      Template("  const $TYPE $FIELD() const { return ${FIELD}_.ptr; }")
   pad_template = Template("  uint8_t _pad${COUNT}_[$PAD];")
   templates  = {}
   HEADER_SIZE = 8
