@@ -24,6 +24,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/range/range.h"
 
+namespace {
+
+// Padding between buttons and the last suggestion or details view. The mock
+// has a total of 30px - but 10px are already provided by details/suggestions.
+const CGFloat kButtonVerticalPadding = 20.0;
+
+}  // namespace
+
 @interface AutofillMainContainer (Private)
 - (void)buildWindowButtons;
 - (void)layoutButtons;
@@ -120,7 +128,8 @@
   NSSize buttonStripSize =
       NSMakeSize(buttonSize.width + chrome_style::kHorizontalPadding +
                      buttonStripImageSize.width,
-                 std::max(buttonSize.height, buttonStripImageSize.height));
+                 std::max(buttonSize.height + kButtonVerticalPadding,
+                          buttonStripImageSize.height));
 
   NSSize detailsSize = [detailsContainer_ preferredSize];
 
@@ -153,7 +162,7 @@
   NSRect buttonFrame = [buttonContainer_ frame];
   buttonFrame.origin.y = currentY;
   [buttonContainer_ setFrameOrigin:buttonFrame.origin];
-  currentY = NSMaxY(buttonFrame) + autofill::kDetailVerticalPadding;
+  currentY = NSMaxY(buttonFrame) + kButtonVerticalPadding;
 
   NSPoint walletIconOrigin =
       NSMakePoint(chrome_style::kHorizontalPadding, buttonFrame.origin.y);
