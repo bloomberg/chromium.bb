@@ -849,13 +849,6 @@ void SyncSchedulerImpl::OnReceivedClientInvalidationHintBufferSize(int size) {
     NOTREACHED() << "Hint buffer size should be > 0.";
 }
 
-void SyncSchedulerImpl::OnShouldStopSyncingPermanently() {
-  DCHECK(CalledOnValidThread());
-  SDVLOG(2) << "OnShouldStopSyncingPermanently";
-  Stop();
-  Notify(SyncEngineEvent::STOP_SYNCING_PERMANENTLY);
-}
-
 void SyncSchedulerImpl::OnActionableError(
     const sessions::SyncSessionSnapshot& snap) {
   DCHECK(CalledOnValidThread());

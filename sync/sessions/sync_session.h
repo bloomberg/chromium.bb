@@ -77,17 +77,6 @@ class SYNC_EXPORT_PRIVATE SyncSession {
     virtual void OnReceivedSessionsCommitDelay(
         const base::TimeDelta& new_delay) = 0;
 
-    // The client needs to cease and desist syncing at once.  This occurs when
-    // the Syncer detects that the backend store has fundamentally changed or
-    // is a different instance altogether (e.g. swapping from a test instance
-    // to production, or a global stop syncing operation has wiped the store).
-    // TODO(lipalani) : Replace this function with the one below. This function
-    // stops the current sync cycle and purges the client. In the new model
-    // the former would be done by the |SyncProtocolError| and
-    // the latter(which is an action) would be done in ProfileSyncService
-    // along with the rest of the actions.
-    virtual void OnShouldStopSyncingPermanently() = 0;
-
     // Called for the syncer to respond to the error sent by the server.
     virtual void OnSyncProtocolError(
         const sessions::SyncSessionSnapshot& snapshot) = 0;

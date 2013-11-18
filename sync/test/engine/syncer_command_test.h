@@ -50,7 +50,6 @@ class SyncerCommandTestBase : public testing::Test,
   virtual void OnReceivedSessionsCommitDelay(
       const base::TimeDelta& new_delay) OVERRIDE;
   virtual void OnReceivedClientInvalidationHintBufferSize(int size) OVERRIDE;
-  virtual void OnShouldStopSyncingPermanently() OVERRIDE;
   virtual void OnSyncProtocolError(
       const sessions::SyncSessionSnapshot& session) OVERRIDE;
 

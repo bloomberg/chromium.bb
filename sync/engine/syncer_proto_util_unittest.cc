@@ -45,7 +45,6 @@ class MockDelegate : public sessions::SyncSession::Delegate {
   MOCK_METHOD1(OnReceivedSessionsCommitDelay, void(const base::TimeDelta&));
   MOCK_METHOD1(OnReceivedClientInvalidationHintBufferSize, void(int));
   MOCK_METHOD1(OnSyncProtocolError, void(const sessions::SyncSessionSnapshot&));
-  MOCK_METHOD0(OnShouldStopSyncingPermanently, void());
   MOCK_METHOD1(OnSilencedUntil, void(const base::TimeTicks&));
 };
 

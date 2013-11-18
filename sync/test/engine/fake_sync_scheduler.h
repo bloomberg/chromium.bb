@@ -55,7 +55,6 @@ class FakeSyncScheduler : public SyncScheduler {
   virtual void OnReceivedSessionsCommitDelay(
       const base::TimeDelta& new_delay) OVERRIDE;
   virtual void OnReceivedClientInvalidationHintBufferSize(int size) OVERRIDE;
-  virtual void OnShouldStopSyncingPermanently() OVERRIDE;
   virtual void OnSyncProtocolError(
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
 };

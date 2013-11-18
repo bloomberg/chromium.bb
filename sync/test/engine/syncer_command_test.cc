@@ -44,10 +44,6 @@ void SyncerCommandTestBase::OnReceivedClientInvalidationHintBufferSize(
   FAIL() << "Should not get hint buffer size.";
 }
 
-void SyncerCommandTestBase::OnShouldStopSyncingPermanently() {
-  FAIL() << "Shouldn't be called.";
-}
-
 void SyncerCommandTestBase::OnSyncProtocolError(
     const sessions::SyncSessionSnapshot& session) {
   return;

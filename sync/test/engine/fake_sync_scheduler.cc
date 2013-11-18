@@ -82,9 +82,6 @@ void FakeSyncScheduler::OnReceivedSessionsCommitDelay(
 void FakeSyncScheduler::OnReceivedClientInvalidationHintBufferSize(int size) {
 }
 
-void FakeSyncScheduler::OnShouldStopSyncingPermanently() {
-}
-
 void FakeSyncScheduler::OnSyncProtocolError(
      const sessions::SyncSessionSnapshot& snapshot) {
 }

@@ -148,8 +148,6 @@ class SyncerTest : public testing::Test,
       int size) OVERRIDE {
     last_client_invalidation_hint_buffer_size_ = size;
   }
-  virtual void OnShouldStopSyncingPermanently() OVERRIDE {
-  }
   virtual void OnSyncProtocolError(
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE {
   }

@@ -104,9 +104,6 @@ class SyncSessionTest : public testing::Test,
     FailControllerInvocationIfDisabled(
         "OnReceivedClientInvalidationHintBufferSize");
   }
-  virtual void OnShouldStopSyncingPermanently() OVERRIDE {
-    FailControllerInvocationIfDisabled("OnShouldStopSyncingPermanently");
-  }
   virtual void OnSyncProtocolError(
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE {
     FailControllerInvocationIfDisabled("SyncProtocolError");
