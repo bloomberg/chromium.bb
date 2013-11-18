@@ -18,6 +18,20 @@ from third_party.handlebar import Handlebar
 _H1_REGEX = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
 
 
+class _HandlebarWithContext(Handlebar):
+  '''Extends Handlebar with a get() method so that templates can not only
+  render intros with {{+intro}} but also access properties on them, like
+  {{intro.title}}, {{intro.toc}}, etc.
+  '''
+
+  def __init__(self, text, name, context):
+    Handlebar.__init__(self, text, name=name)
+    self._context = context
+
+  def get(self, key):
+    return self._context.get(key)
+
+
 # TODO(kalman): rename this HTMLDataSource or other, then have separate intro
 # article data sources created as instances of it.
 class _IntroParser(HTMLParser):
@@ -62,48 +76,49 @@ class _IntroParser(HTMLParser):
     elif self._recent_tag in ['h2', 'h3']:
       self._current_heading['title'] += data
 
+
 class IntroDataSource(DataSource):
   '''This class fetches the intros for a given API. From this intro, a table
   of contents dictionary is created, which contains the headings in the intro.
   '''
 
-  def __init__(self, server_instance, _):
+  def __init__(self, server_instance, request):
+    self._template_renderer = server_instance.template_renderer
+    self._request = request
     self._cache = server_instance.compiled_fs_factory.Create(
         server_instance.host_file_system_provider.GetTrunk(),
-        self._MakeIntroDict,
+        self._MakeIntro,
         IntroDataSource)
     self._ref_resolver = server_instance.ref_resolver_factory.Create()
 
-  def _MakeIntroDict(self, intro_path, intro):
+  def _MakeIntro(self, intro_path, intro):
     # Guess the name of the API from the path to the intro.
     api_name = os.path.splitext(intro_path.split('/')[-1])[0]
-    intro_with_links = self._ref_resolver.ResolveAllLinks(intro,
-                                                          namespace=api_name)
-    # TODO(kalman): Do $ref replacement after rendering the template, not
-    # before, so that (a) $ref links can contain template annotations, and (b)
-    # we can use CompiledFileSystem.ForTemplates to create the templates and
-    # save ourselves some effort.
-    apps_parser = _IntroParser()
-    apps_parser.feed(Handlebar(intro_with_links).render(
-        { 'is_apps': True }).text)
-    extensions_parser = _IntroParser()
-    extensions_parser.feed(Handlebar(intro_with_links).render(
-        { 'is_apps': False }).text)
-    # TODO(cduvall): Use the normal template rendering system, so we can check
-    # errors.
-    if extensions_parser.page_title != apps_parser.page_title:
-      logging.error(
-          'Title differs for apps and extensions: Apps: %s, Extensions: %s.' %
-              (extensions_parser.page_title, apps_parser.page_title))
+    intro_with_links = self._ref_resolver.ResolveAllLinks(
+            intro, namespace=api_name)
+
+    # TODO(kalman): In order to pick up every header tag, and therefore make a
+    # complete TOC, the render context of the Handlebar needs to be passed
+    # through to here. Even if there were a mechanism to do this it would
+    # break caching; we'd need to do the TOC parsing *after* rendering the full
+    # template, and that would probably be expensive.
+    intro_parser = _IntroParser()
+    intro_parser.feed(
+        self._template_renderer.Render(Handlebar(intro_with_links),
+                                       self._request,
+                                       # Avoid nasty surprises.
+                                       data_sources=('partials', 'strings'),
+                                       warn=False))
+
     # The templates will render the heading themselves, so remove it from the
     # HTML content.
     intro_with_links = re.sub(_H1_REGEX, '', intro_with_links, count=1)
-    return {
-      'intro': Handlebar(intro_with_links),
-      'title': apps_parser.page_title,
-      'apps_toc': apps_parser.toc,
-      'extensions_toc': extensions_parser.toc,
+
+    context = {
+      'title': intro_parser.page_title,
+      'toc': intro_parser.toc,
     }
+    return _HandlebarWithContext(intro_with_links, intro_path, context)
 
   def get(self, key):
     path = FormatKey(key)

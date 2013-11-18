@@ -17,16 +17,16 @@ class IntroDataSourceTest(unittest.TestCase):
   def testIntro(self):
     intro_data_source = IntroDataSource(self._server_instance, None)
     data = intro_data_source.get('test')
-    self.assertEqual('hi', data['title'])
+    self.assertEqual('hi', data.get('title'))
     # TODO(kalman): test links.
     expected_toc = [{'subheadings': [{'link': '', 'title': u'inner'}],
                      'link': '',
                      'title': u'first'},
                     {'subheadings': [], 'link': '', 'title': u'second'}]
-    self.assertEqual(expected_toc, data['apps_toc'])
-    self.assertEqual(expected_toc, data['extensions_toc'])
+    self.assertEqual(expected_toc, data.get('toc'))
     self.assertEqual('you<h2>first</h2><h3>inner</h3><h2>second</h2>',
-                     data['intro'].render().text)
+                     data.Render().text)
+
 
 if __name__ == '__main__':
   unittest.main()

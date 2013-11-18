@@ -13,21 +13,20 @@
         {{?api.channelWarning.trunk +partials.warning_trunk/}}
         {{?api.channelWarning.dev +partials.warning_dev/}}
         {{?api.channelWarning.beta +partials.warning_beta/}}
-        {{?intro.extensions_toc}}
-        {{+partials.table_of_contents toc_items:intro.extensions_toc
-                                      has_toc:true
+        {{?intro}}
+        {{+partials.table_of_contents toc_items:intro.toc
                                       api:api
                                       samples_list:api.samples.extensions
                                       title:strings.extensions_title/}}
-        {{:intro.extensions_toc}}
-        {{+partials.table_of_contents has_toc:false
+        {{:intro}}
+        {{+partials.table_of_contents toc_items:false
                                       api:api
                                       samples_list:api.samples.extensions
                                       title:strings.extensions_title/}}
-        {{/intro.extensions_toc}}
+        {{/intro}}
         {{+partials.intro_table api:api/}}
 {{- This is unindented because it contains <pre> tags -}}
-{{?intro +intro.intro is_apps:false/}}
+{{?intro +intro platform:strings.app is_apps:false/}}
         {{+partials.api_reference samples_list:api.samples.extensions
                                   title:strings.extensions_title
                                   api:api/}}

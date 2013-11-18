@@ -10,6 +10,7 @@ import traceback
 from urlparse import urlsplit
 
 from data_source_registry import CreateDataSources
+from environment import IsPreviewServer
 from file_system import FileNotFoundError
 from redirector import Redirector
 from servlet import Servlet, Response
@@ -47,6 +48,8 @@ class RenderServlet(Servlet):
     try:
       return self._GetSuccessResponse(path, server_instance)
     except FileNotFoundError:
+      if IsPreviewServer():
+        logging.error(traceback.format_exc())
       # Maybe it didn't find the file because its canonical location is
       # somewhere else; this is distinct from "redirects", which are typically
       # explicit. This is implicit.

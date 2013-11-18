@@ -4,9 +4,9 @@
    <tr>
      <td><a href="{{a.name}}.html">{{a.name}}</a></td>
      <td>{{{a.description}}}</td>
-     {{?a.is_stable}}
+     {{?is_stable}}
      <td>{{a.version}}</td>
-     {{/a.is_stable}}
+     {{/is_stable}}
    </tr>
   {{/apis}}
 </table>

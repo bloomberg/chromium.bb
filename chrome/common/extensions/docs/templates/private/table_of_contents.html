@@ -1,6 +1,6 @@
 <div id="toc">
   <ol>
-    {{?has_toc}}
+    {{?toc_items}}
     {{#i:toc_items}}
     <li>
       <a href="#{{i.link}}">{{{i.title}}}</a>
@@ -11,7 +11,7 @@
       {{/}}
     </li>
     {{/toc_items}}
-    {{/has_toc}}
+    {{/toc_items}}
     {{?api}}
     <div class="api-reference">
       <li>

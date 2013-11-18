@@ -10,21 +10,10 @@
       {{+partials.sidenav items:sidenavs.apps/}}
       <div id="gc-pagecontent">
         <h1 class="page_title">{{article.title}}</h1>
-        {{?article.apps_toc}}
-        {{+partials.table_of_contents toc_items:article.apps_toc
-                                      has_toc:true
+        {{+partials.table_of_contents toc_items:article.toc
                                       title:strings.apps_title/}}
-        {{/article.apps_toc}}
 {{- This may contain <pre> tags so it is not indented -}}
-{{+article.intro
-    apis:apis
-    beta_apis:beta_apis
-    dev_apis:dev_apis
-    manifest_source:manifest_source
-    permissions:permissions
-    platform:strings.app
-    stable_apis:stable_apis
-    is_apps:true/}}
+{{+article platform:strings.app is_apps:true/}}
       </div>
     </div>
   </body>

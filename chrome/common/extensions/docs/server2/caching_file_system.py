@@ -79,7 +79,8 @@ class CachingFileSystem(FileSystem):
     else:
       file_version = dir_stat.child_versions.get(file_path)
       if file_version is None:
-        raise FileNotFoundError('No stat found for %s in %s' % (path, dir_path))
+        raise FileNotFoundError('No stat found for %s in %s (found %s)' %
+                                (path, dir_path, dir_stat.child_versions))
       stat_info = StatInfo(file_version)
 
     return stat_info
