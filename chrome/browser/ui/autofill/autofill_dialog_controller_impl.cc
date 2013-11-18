@@ -548,18 +548,6 @@ void AutofillDialogController::RegisterPrefs(PrefRegistrySimple* registry) {
 // static
 void AutofillDialogController::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  // TODO(estade): this pref is no longer used, but may prove to be valuable.
-  // Remove it if we don't wind up using it at some point.
-  registry->RegisterIntegerPref(
-      ::prefs::kAutofillDialogShowCount,
-      0,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  // TODO(estade): this pref is no longer used, but may prove to be valuable.
-  // Remove it if we don't wind up using it at some point.
-  registry->RegisterBooleanPref(
-      ::prefs::kAutofillDialogHasPaidWithWallet,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       ::prefs::kAutofillDialogPayWithoutWallet,
       false,
@@ -642,12 +630,6 @@ void AutofillDialogControllerImpl::Show() {
       &form_structure_);
 
   SuggestionsUpdated();
-
-  int show_count =
-      profile_->GetPrefs()->GetInteger(::prefs::kAutofillDialogShowCount);
-  profile_->GetPrefs()->SetInteger(::prefs::kAutofillDialogShowCount,
-                                   show_count + 1);
-
   SubmitButtonDelayBegin();
 
   if (account_chooser_model_.WalletIsSelected())
@@ -3273,11 +3255,6 @@ void AutofillDialogControllerImpl::AnimationEnded(
 }
 
 void AutofillDialogControllerImpl::DoFinishSubmit() {
-  if (IsPayingWithWallet()) {
-    profile_->GetPrefs()->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet,
-                                     true);
-  }
-
   FillOutputForSection(SECTION_CC);
   FillOutputForSection(SECTION_BILLING);
   FillOutputForSection(SECTION_CC_BILLING);

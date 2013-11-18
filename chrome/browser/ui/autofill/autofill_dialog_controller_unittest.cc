@@ -386,9 +386,6 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     mock_new_card_bubble_controller_.reset(
         new MockNewCreditCardBubbleController);
 
-    // Don't get stuck on the first run wallet interstitial.
-    profile()->GetPrefs()->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet,
-                                      true);
     profile()->GetPrefs()->ClearPref(::prefs::kAutofillDialogSaveData);
 
     // We have to clear the old local state before creating a new one.
@@ -1883,26 +1880,18 @@ TEST_F(AutofillDialogControllerTest, SubmitWithSigninErrorDoesntSetPref) {
 }
 
 // Tests that there's an overlay shown while waiting for full wallet items.
-// TODO(estade): enable on other platforms when overlays are supported there.
 TEST_F(AutofillDialogControllerTest, WalletFirstRun) {
-  // Simulate fist run.
-  PrefService* prefs = profile()->GetPrefs();
-  prefs->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet, false);
-  SetUpControllerWithFormData(DefaultFormData());
-
   SwitchToWallet();
   EXPECT_TRUE(controller()->GetDialogOverlay().image.IsEmpty());
 
   SubmitWithWalletItems(CompleteAndValidWalletItems());
   EXPECT_FALSE(controller()->GetDialogOverlay().image.IsEmpty());
 
-  EXPECT_FALSE(prefs->GetBoolean(::prefs::kAutofillDialogHasPaidWithWallet));
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
-  EXPECT_FALSE(prefs->GetBoolean(::prefs::kAutofillDialogHasPaidWithWallet));
   EXPECT_FALSE(controller()->GetDialogOverlay().image.IsEmpty());
   EXPECT_FALSE(form_structure());
 
-  // Don't wait for 2 seconds.
+  // Don't make the test wait for 2 seconds.
   controller()->ForceFinishSubmit();
   EXPECT_TRUE(form_structure());
 }

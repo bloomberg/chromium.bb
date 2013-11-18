@@ -1069,9 +1069,6 @@ const char kPerHostZoomLevels[] = "profile.per_host_zoom_levels";
 // the dialog.
 const char kAutofillDialogAutofillDefault[] = "autofill.data_model_default";
 
-// Whether a user has ever paid with Wallet via the autofill dialog.
-const char kAutofillDialogHasPaidWithWallet[] = "autofill.has_paid_with_wallet";
-
 // Whether a user opted out of making purchases with Google Wallet; changed via
 // the autofill dialog's account chooser and set explicitly on dialog submission
 // (but not cancel). If this isn't set, the dialog assumes it's the first run.
@@ -1081,9 +1078,6 @@ const char kAutofillDialogPayWithoutWallet[] = "autofill.pay_without_wallet";
 // location will be shared with fraud protection services.
 const char kAutofillDialogWalletLocationAcceptance[] =
     "autofill.wallet_location_disclosure";
-
-// The number of times the dialog has been shown (all time).
-const char kAutofillDialogShowCount[] = "autofill.show_count";
 
 // Whether a user wants to save data locally in Autofill.
 const char kAutofillDialogSaveData[] = "autofill.save_data";
