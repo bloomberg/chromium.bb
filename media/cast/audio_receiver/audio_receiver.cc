@@ -19,7 +19,6 @@ static const int64 kMinSchedulingDelayMs = 1;
 namespace media {
 namespace cast {
 
-
 // Local implementation of RtpData (defined in rtp_rtcp_defines.h).
 // Used to pass payload data into the audio receiver.
 class LocalRtpAudioData : public RtpData {
@@ -118,17 +117,23 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                        audio_config.feedback_ssrc,
                        audio_config.rtcp_c_name));
   rtcp_->SetRemoteSSRC(audio_config.incoming_ssrc);
-  ScheduleNextRtcpReport();
-  ScheduleNextCastMessage();
 }
 
 AudioReceiver::~AudioReceiver() {}
+
+void AudioReceiver::InitializeTimers() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  ScheduleNextRtcpReport();
+  ScheduleNextCastMessage();
+}
 
 void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
                                             size_t payload_size,
                                             const RtpCastHeader& rtp_header) {
   // TODO(pwestin): update this as video to refresh over time.
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (time_first_incoming_packet_.is_null()) {
+    InitializeTimers();
     first_incoming_rtp_timestamp_ = rtp_header.webrtc.header.timestamp;
     time_first_incoming_packet_ =  cast_environment_->Clock()->NowTicks();
   }
@@ -155,6 +160,7 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
 
 void AudioReceiver::GetRawAudioFrame(int number_of_10ms_blocks,
       int desired_frequency, const AudioFrameDecodedCallback& callback) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_decoder_) << "Invalid function call in this configuration";
 
   cast_environment_->PostTask(CastEnvironment::AUDIO_DECODER, FROM_HERE,
@@ -191,6 +197,7 @@ void AudioReceiver::DecodeAudioFrameThread(
 }
 
 void AudioReceiver::PlayoutTimeout() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_buffer_) << "Invalid function call in this configuration";
   if (queued_encoded_callbacks_.empty()) {
     // Already released by incoming packet.
@@ -218,6 +225,7 @@ void AudioReceiver::PlayoutTimeout() {
 
 void AudioReceiver::GetEncodedAudioFrame(
     const AudioFrameEncodedCallback& callback) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_buffer_) << "Invalid function call in this configuration";
 
   uint32 rtp_timestamp = 0;
@@ -244,6 +252,7 @@ bool AudioReceiver::PostEncodedAudioFrame(
     uint32 rtp_timestamp,
     bool next_frame,
     scoped_ptr<EncodedAudioFrame>* encoded_frame) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_buffer_) << "Invalid function call in this configuration";
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   base::TimeTicks playout_time = GetPlayoutTime(now, rtp_timestamp);
@@ -270,6 +279,7 @@ bool AudioReceiver::PostEncodedAudioFrame(
 
 void AudioReceiver::IncomingPacket(const uint8* packet, size_t length,
                                    const base::Closure callback) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   bool rtcp_packet = Rtcp::IsRtcpPacket(packet, length);
   if (!rtcp_packet) {
     rtp_receiver_->ReceivedPacket(packet, length);
@@ -285,6 +295,7 @@ void AudioReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
 
 base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,
                                               uint32 rtp_timestamp) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   // Senders time in ms when this frame was recorded.
   // Note: the senders clock and our local clock might not be synced.
   base::TimeTicks rtp_timestamp_in_ticks;
@@ -315,6 +326,7 @@ base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,
 }
 
 void AudioReceiver::ScheduleNextRtcpReport() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   base::TimeDelta time_to_send = rtcp_->TimeToSendNextRtcpReport() -
       cast_environment_->Clock()->NowTicks();
 
@@ -327,6 +339,7 @@ void AudioReceiver::ScheduleNextRtcpReport() {
 }
 
 void AudioReceiver::SendNextRtcpReport() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   rtcp_->SendRtcpReport(incoming_ssrc_);
   ScheduleNextRtcpReport();
 }
@@ -334,6 +347,7 @@ void AudioReceiver::SendNextRtcpReport() {
 // Cast messages should be sent within a maximum interval. Schedule a call
 // if not triggered elsewhere, e.g. by the cast message_builder.
 void AudioReceiver::ScheduleNextCastMessage() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (audio_buffer_) {
     base::TimeTicks send_time;
     audio_buffer_->TimeToSendNextCastMessage(&send_time);
@@ -349,6 +363,7 @@ void AudioReceiver::ScheduleNextCastMessage() {
 }
 
 void AudioReceiver::SendNextCastMessage() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_buffer_) << "Invalid function call in this configuration";
   audio_buffer_->SendCastMessage();  // Will only send a message if it is time.
   ScheduleNextCastMessage();

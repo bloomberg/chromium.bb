@@ -100,6 +100,8 @@ class VideoSender : public base::NonThreadSafe,
       scoped_ptr<EncodedVideoFrame> video_frame,
       const base::TimeTicks& capture_time);
 
+  void InitializeTimers();
+
   const uint32 incoming_feedback_ssrc_;
   const base::TimeDelta rtp_max_delay_;
   const int max_frame_rate_;
@@ -114,13 +116,13 @@ class VideoSender : public base::NonThreadSafe,
   uint8 max_unacked_frames_;
   int last_acked_frame_id_;
   int last_sent_frame_id_;
-  int last_sent_key_frame_id_;
   int duplicate_ack_;
   base::TimeTicks last_send_time_;
   base::TimeTicks last_checked_skip_count_time_;
   int last_skip_count_;
   CongestionControl congestion_control_;
 
+  bool initialized_;
   base::WeakPtrFactory<VideoSender> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoSender);

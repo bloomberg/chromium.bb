@@ -23,6 +23,7 @@ static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 static const uint8 kPixelValue = 123;
 
 using testing::_;
+using testing::AtLeast;
 
 namespace {
 class PeerVideoSender : public VideoSender {
@@ -156,8 +157,23 @@ TEST_F(VideoSenderTest, ExternalEncoder) {
 }
 
 TEST_F(VideoSenderTest, RtcpTimer) {
+  EXPECT_CALL(mock_transport_, SendPackets(_)).Times(AtLeast(1));
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).Times(1);
-  InitEncoder(false);
+  EXPECT_CALL(mock_video_encoder_controller_,
+              SkipNextFrame(false)).Times(AtLeast(1));
+  InitEncoder(true);
+
+  EncodedVideoFrame video_frame;
+  base::TimeTicks capture_time;
+
+  video_frame.codec = kVp8;
+  video_frame.key_frame = true;
+  video_frame.frame_id = 0;
+  video_frame.last_referenced_frame_id = 0;
+  video_frame.data.insert(video_frame.data.begin(), 1000, kPixelValue);
+
+  video_sender_->InsertCodedVideoFrame(&video_frame, capture_time,
+    base::Bind(&ReleaseEncodedFrame, &video_frame));
 
   // Make sure that we send at least one RTCP packet.
   base::TimeDelta max_rtcp_timeout =

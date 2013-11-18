@@ -35,6 +35,7 @@ bool VideoEncoder::EncodeVideoFrame(
     const base::TimeTicks& capture_time,
     const FrameEncodedCallback& frame_encoded_callback,
     const base::Closure frame_release_callback) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (video_config_.codec != kVp8) return false;
 
   if (skip_next_frame_) {

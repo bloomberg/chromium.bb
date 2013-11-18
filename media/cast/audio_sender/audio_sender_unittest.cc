@@ -75,7 +75,20 @@ TEST_F(AudioSenderTest, Encode20ms) {
 }
 
 TEST_F(AudioSenderTest, RtcpTimer) {
+  EXPECT_CALL(mock_transport_, SendPackets(_)).Times(AtLeast(1));
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).Times(1);
+
+  const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(20);
+  scoped_ptr<AudioBus> bus(TestAudioBusFactory(
+      audio_config_.channels, audio_config_.frequency,
+      TestAudioBusFactory::kMiddleANoteFreq, 0.5f).NextAudioBus(kDuration));
+
+  base::TimeTicks recorded_time = base::TimeTicks::Now();
+  audio_sender_->InsertAudio(
+      bus.get(), recorded_time,
+      base::Bind(base::IgnoreResult(&scoped_ptr<AudioBus>::release),
+                 base::Unretained(&bus)));
+  task_runner_->RunTasks();
 
   // Make sure that we send at least one RTCP packet.
   base::TimeDelta max_rtcp_timeout =

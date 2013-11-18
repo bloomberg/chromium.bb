@@ -63,7 +63,6 @@ VideoSender::VideoSender(
                                 paced_packet_sender)),
       last_acked_frame_id_(-1),
       last_sent_frame_id_(-1),
-      last_sent_key_frame_id_(-1),
       duplicate_ack_(0),
       last_skip_count_(0),
       congestion_control_(cast_environment->Clock(),
@@ -71,6 +70,7 @@ VideoSender::VideoSender(
                           video_config.max_bitrate,
                           video_config.min_bitrate,
                           video_config.start_bitrate),
+      initialized_(false),
       weak_factory_(this) {
   max_unacked_frames_ = static_cast<uint8>(video_config.rtp_max_delay_ms *
       video_config.max_frame_rate / 1000) + 1;
@@ -101,17 +101,25 @@ VideoSender::VideoSender(
       video_config.rtcp_c_name));
 
   rtcp_->SetRemoteSSRC(video_config.incoming_feedback_ssrc);
-  ScheduleNextRtcpReport();
-  ScheduleNextResendCheck();
-  ScheduleNextSkippedFramesCheck();
 }
 
 VideoSender::~VideoSender() {}
+
+void VideoSender::InitializeTimers() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  if (!initialized_) {
+    initialized_ = true;
+    ScheduleNextRtcpReport();
+    ScheduleNextResendCheck();
+    ScheduleNextSkippedFramesCheck();
+  }
+}
 
 void VideoSender::InsertRawVideoFrame(
     const I420VideoFrame* video_frame,
     const base::TimeTicks& capture_time,
     const base::Closure callback) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(video_encoder_.get()) << "Invalid state";
 
   if (!video_encoder_->EncodeVideoFrame(video_frame, capture_time,
@@ -126,6 +134,7 @@ void VideoSender::InsertCodedVideoFrame(const EncodedVideoFrame* encoded_frame,
                                         const base::Closure callback) {
   DCHECK(!video_encoder_.get()) << "Invalid state";
   DCHECK(encoded_frame) << "Invalid argument";
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   SendEncodedVideoFrame(encoded_frame, capture_time);
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
@@ -139,24 +148,27 @@ void VideoSender::SendEncodedVideoFrameMainThread(
 
 void VideoSender::SendEncodedVideoFrame(const EncodedVideoFrame* encoded_frame,
                                         const base::TimeTicks& capture_time) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   last_send_time_ = cast_environment_->Clock()->NowTicks();
   rtp_sender_->IncomingEncodedVideoFrame(encoded_frame, capture_time);
   if (encoded_frame->key_frame) {
     VLOG(1) << "Send encoded key frame; frame_id:"
             << static_cast<int>(encoded_frame->frame_id);
-    last_sent_key_frame_id_ = encoded_frame->frame_id;
   }
-  last_sent_frame_id_ = encoded_frame->frame_id;
+  last_sent_frame_id_ = static_cast<int>(encoded_frame->frame_id);
   UpdateFramesInFlight();
+  InitializeTimers();
 }
 
 void VideoSender::IncomingRtcpPacket(const uint8* packet, size_t length,
                                      const base::Closure callback) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   rtcp_->IncomingRtcpPacket(packet, length);
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
 }
 
 void VideoSender::ScheduleNextRtcpReport() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   base::TimeDelta time_to_next = rtcp_->TimeToSendNextRtcpReport() -
      cast_environment_->Clock()->NowTicks();
 
@@ -169,11 +181,13 @@ void VideoSender::ScheduleNextRtcpReport() {
 }
 
 void VideoSender::SendRtcpReport() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   rtcp_->SendRtcpReport(incoming_feedback_ssrc_);
   ScheduleNextRtcpReport();
 }
 
 void VideoSender::ScheduleNextResendCheck() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   base::TimeDelta time_to_next;
   if (last_send_time_.is_null()) {
     time_to_next = rtp_max_delay_;
@@ -190,6 +204,7 @@ void VideoSender::ScheduleNextResendCheck() {
 }
 
 void VideoSender::ResendCheck() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (!last_send_time_.is_null() && last_sent_frame_id_ != -1) {
     base::TimeDelta time_since_last_send =
        cast_environment_->Clock()->NowTicks() - last_send_time_;
@@ -201,7 +216,6 @@ void VideoSender::ResendCheck() {
         last_sent_frame_id_ = -1;
         UpdateFramesInFlight();
       } else {
-        DCHECK_GE(255, last_acked_frame_id_);
         DCHECK_LE(0, last_acked_frame_id_);
 
         uint32 frame_id = static_cast<uint32>(last_acked_frame_id_ + 1);
@@ -214,6 +228,7 @@ void VideoSender::ResendCheck() {
 }
 
 void VideoSender::ScheduleNextSkippedFramesCheck() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   base::TimeDelta time_to_next;
   if (last_checked_skip_count_time_.is_null()) {
     time_to_next =
@@ -232,6 +247,7 @@ void VideoSender::ScheduleNextSkippedFramesCheck() {
 }
 
 void VideoSender::SkippedFramesCheck() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   int skip_count = video_encoder_controller_->NumberOfSkippedFrames();
   if (skip_count - last_skip_count_ >
       kSkippedFramesThreshold * max_frame_rate_) {
@@ -243,6 +259,7 @@ void VideoSender::SkippedFramesCheck() {
 }
 
 void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   base::TimeDelta rtt;
   base::TimeDelta avg_rtt;
   base::TimeDelta min_rtt;
@@ -270,9 +287,9 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
         video_encoder_controller_->SetBitRate(new_bitrate);
       }
     }
-    if (last_acked_frame_id_ == cast_feedback.ack_frame_id_ &&
+    if (static_cast<uint32>(last_acked_frame_id_) == cast_feedback.ack_frame_id_
         // We only count duplicate ACKs when we have sent newer frames.
-        IsNewerFrameId(last_sent_frame_id_, last_acked_frame_id_)) {
+        && IsNewerFrameId(last_sent_frame_id_, last_acked_frame_id_)) {
       duplicate_ack_++;
     } else {
       duplicate_ack_ = 0;
@@ -282,7 +299,6 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
       resend_frame = static_cast<uint32>(last_acked_frame_id_ + 1);
     }
     if (resend_frame != -1) {
-      DCHECK_GE(255, resend_frame);
       DCHECK_LE(0, resend_frame);
       VLOG(1) << "Received duplicate ACK for frame:"
               << static_cast<int>(resend_frame);
@@ -301,23 +317,23 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
 }
 
 void VideoSender::ReceivedAck(uint32 acked_frame_id) {
-  VLOG(1) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
-  last_acked_frame_id_ = acked_frame_id;
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  VLOG(1) << "ReceivedAck:" << acked_frame_id;
+  last_acked_frame_id_ = static_cast<int>(acked_frame_id);
   UpdateFramesInFlight();
 }
 
 void VideoSender::UpdateFramesInFlight() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (last_sent_frame_id_ != -1) {
-    DCHECK_GE(255, last_sent_frame_id_);
     DCHECK_LE(0, last_sent_frame_id_);
     uint32 frames_in_flight;
     if (last_acked_frame_id_ != -1) {
-      DCHECK_GE(255, last_acked_frame_id_);
       DCHECK_LE(0, last_acked_frame_id_);
       frames_in_flight = static_cast<uint32>(last_sent_frame_id_) -
                          static_cast<uint32>(last_acked_frame_id_);
     } else {
-      frames_in_flight = last_sent_frame_id_ + 1;
+      frames_in_flight = static_cast<uint32>(last_sent_frame_id_) + 1;
     }
     VLOG(1) << "Frames in flight; last sent: " << last_sent_frame_id_
             << " last acked:" << last_acked_frame_id_;
@@ -330,6 +346,7 @@ void VideoSender::UpdateFramesInFlight() {
 }
 
 void VideoSender::ResendFrame(uint32 resend_frame_id) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   MissingFramesAndPacketsMap missing_frames_and_packets;
   PacketIdSet missing;
   missing_frames_and_packets.insert(std::make_pair(resend_frame_id, missing));

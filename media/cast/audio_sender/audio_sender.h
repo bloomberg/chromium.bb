@@ -73,6 +73,8 @@ class AudioSender : public base::NonThreadSafe,
   void ScheduleNextRtcpReport();
   void SendRtcpReport();
 
+  void InitializeTimers();
+
   base::WeakPtrFactory<AudioSender> weak_factory_;
 
   const uint32 incoming_feedback_ssrc_;
@@ -82,6 +84,7 @@ class AudioSender : public base::NonThreadSafe,
   scoped_ptr<LocalRtpSenderStatistics> rtp_audio_sender_statistics_;
   scoped_ptr<LocalRtcpAudioSenderFeedback> rtcp_feedback_;
   Rtcp rtcp_;
+  bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioSender);
 };

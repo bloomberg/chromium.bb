@@ -32,7 +32,6 @@ class Rtcp;
 class RtpReceiverStatistics;
 class VideoDecoder;
 
-
 // Should only be called from the Main cast thread.
 class VideoReceiver : public base::NonThreadSafe,
                       public base::SupportsWeakPtr<VideoReceiver> {
@@ -54,9 +53,9 @@ class VideoReceiver : public base::NonThreadSafe,
                       const base::Closure callback);
 
  protected:
-  void IncomingRtpPacket(const uint8* payload_data,
-                         size_t payload_size,
-                         const RtpCastHeader& rtp_header);
+  void IncomingParsedRtpPacket(const uint8* payload_data,
+                               size_t payload_size,
+                               const RtpCastHeader& rtp_header);
 
   void DecodeVideoFrameThread(
       scoped_ptr<EncodedVideoFrame> encoded_frame,
@@ -83,6 +82,8 @@ class VideoReceiver : public base::NonThreadSafe,
   // Returns Render time based on current time and the rtp timestamp.
   base::TimeTicks GetRenderTime(base::TimeTicks now, uint32 rtp_timestamp);
 
+  void InitializeTimers();
+
   // Schedule timing for the next cast message.
   void ScheduleNextCastMessage();
 
@@ -108,10 +109,13 @@ class VideoReceiver : public base::NonThreadSafe,
   scoped_ptr<Rtcp> rtcp_;
   scoped_ptr<RtpReceiverStatistics> rtp_video_receiver_statistics_;
   base::TimeTicks time_last_sent_cast_message_;
-  // Sender-receiver offset estimation.
-  base::TimeDelta time_offset_;
+  base::TimeDelta time_offset_;  // Sender-receiver offset estimation.
 
   std::list<VideoFrameEncodedCallback> queued_encoded_callbacks_;
+
+  bool time_incoming_packet_updated_;
+  base::TimeTicks time_incoming_packet_;
+  uint32 incoming_rtp_timestamp_;
 
   base::WeakPtrFactory<VideoReceiver> weak_factory_;
 

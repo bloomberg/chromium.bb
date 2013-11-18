@@ -81,6 +81,8 @@ class AudioReceiver : public base::NonThreadSafe,
   // Return the playout time based on the current time and rtp timestamp.
   base::TimeTicks GetPlayoutTime(base::TimeTicks now, uint32 rtp_timestamp);
 
+  void InitializeTimers();
+
   // Schedule the next RTCP report.
   void ScheduleNextRtcpReport();
 
