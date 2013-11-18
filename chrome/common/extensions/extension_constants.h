@@ -76,15 +76,6 @@ namespace extension_misc {
   // The extension id of the Chrome component application.
   extern const char kChromeAppId[];
 
-  // The extension id of the Citrix Receiver application.
-  extern const char kCitrixReceiverAppId[];
-
-  // The extension id of the beta Citrix Receiver application.
-  extern const char kCitrixReceiverAppBetaId[];
-
-  // The extension id of the dev Citrix Receiver application.
-  extern const char kCitrixReceiverAppDevId[];
-
   // The extension id of the Cloud Print component application.
   extern const char kCloudPrintAppId[];
 

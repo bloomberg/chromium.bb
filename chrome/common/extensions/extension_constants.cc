@@ -98,9 +98,6 @@ namespace extension_misc {
 
 const char kBookmarkManagerId[] = "eemcgdkfndhakfknompkggombfjjjeno";
 const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
-const char kCitrixReceiverAppId[] = "haiffjcadagjlijoggckpgfnoeiflnem";
-const char kCitrixReceiverAppBetaId[] = "gnedhmakppccajfpfiihfcdlnpgomkcf";
-const char kCitrixReceiverAppDevId[] = "fjcibdnjlbfnbfdjneajpipnlcppleek";
 const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
 const char kEnterpriseWebStoreAppId[] = "afchcafgojfnemjkcbhfekplkmjaldaa";
 const char kGmailAppId[] = "pjkljhegncpnkpknbcohdijeoejaedia";
