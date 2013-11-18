@@ -14,10 +14,6 @@ PASS imgdata[2] is 0
 PASS imgdata[0] is 255
 PASS imgdata[1] is 0
 PASS imgdata[2] is 0
-resetTransform should restore the path transform to identity.
-PASS imgdata[0] is 0
-PASS imgdata[1] is 128
-PASS imgdata[2] is 0
 resetTransform should resolve the non-invertible CTM state.
 PASS imgdata[0] is 0
 PASS imgdata[1] is 128

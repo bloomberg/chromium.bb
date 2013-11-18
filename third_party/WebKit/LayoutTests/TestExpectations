@@ -71,8 +71,6 @@ crbug.com/258896 animations/transition-and-animation-3.html [ Failure ]
 
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
-crbug.com/319541 fast/canvas/canvas-resetTransform.html [ NeedsRebaseline ]
-crbug.com/319541 virtual/gpu/fast/canvas/canvas-resetTransform.html [ NeedsRebaseline ]
 
 # WebGL not yet supported by the software compositor.
 crbug.com/151713 virtual/softwarecompositing/draws-content/webgl-simple-background.html [ ImageOnlyFailure ]
