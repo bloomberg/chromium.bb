@@ -293,8 +293,9 @@ for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
     node = env_to_try.CommandSelLdrTestNacl(name + '.out',
                                             nexe,
                                             exit_status='55')
-    env_to_try.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                                  'run_' + name  +'_test', is_broken=is_broken)
+    env_to_try.AddNodeToTestSuite(
+        node, ['eh_tests', 'toolchain_tests', 'small_tests'],
+        'run_' + name  +'_test', is_broken=is_broken)
 
 
 # Test that Exception Handling works with the calling conventions that

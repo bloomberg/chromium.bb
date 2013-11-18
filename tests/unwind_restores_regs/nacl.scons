@@ -28,5 +28,5 @@ nexe = env.ComponentProgram(
     EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl('unwind_restores_regs.out', nexe)
 env.AddNodeToTestSuite(
-    node, ['small_tests', 'toolchain_tests', 'nonpexe_tests'],
+    node, ['small_tests', 'toolchain_tests', 'eh_tests', 'nonpexe_tests'],
     'run_unwind_restores_regs_test')

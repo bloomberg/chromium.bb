@@ -643,7 +643,8 @@ MAJOR_TEST_SUITES = set([
 ACCEPTABLE_TEST_SUITES = set([
   'barebones_tests',
   'dynamic_load_tests',
-  'exception_tests',
+  'eh_tests',  # Tests for C++ exception handling
+  'exception_tests',  # Tests for hardware exception handling
   'exit_status_tests',
   'gdb_tests',
   'mmap_race_tests',
