@@ -4,7 +4,6 @@
 
 #include "ppapi/cpp/dev/graphics_2d_dev.h"
 
-#include "ppapi/c/dev/ppb_graphics_2d_dev.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/point.h"
 
@@ -53,6 +52,13 @@ void Graphics2D_Dev::SetOffset(const pp::Point& offset) {
     return;
   get_interface<PPB_Graphics2D_Dev_0_2>()->SetOffset(pp_resource(),
                                                      &offset.pp_point());
+}
+
+void Graphics2D_Dev::SetResizeMode(PP_Graphics2D_Dev_ResizeMode resize_mode) {
+  if (!has_interface<PPB_Graphics2D_Dev_0_2>())
+    return;
+  get_interface<PPB_Graphics2D_Dev_0_2>()->SetResizeMode(pp_resource(),
+                                                         resize_mode);
 }
 
 }  // namespace pp

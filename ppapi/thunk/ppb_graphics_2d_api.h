@@ -6,6 +6,7 @@
 #define PPAPI_THUNK_PPB_GRAPHICS_2D_API_H_
 
 #include "base/memory/ref_counted.h"
+#include "ppapi/c/dev/ppb_graphics_2d_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_point.h"
@@ -37,6 +38,7 @@ class PPAPI_THUNK_EXPORT PPB_Graphics2D_API {
   virtual PP_Bool SetScale(float scale) = 0;
   virtual float GetScale() = 0;
   virtual void SetOffset(const PP_Point* offset) = 0;
+  virtual void SetResizeMode(PP_Graphics2D_Dev_ResizeMode resize_mode) = 0;
 
   // Test only
   virtual bool ReadImageData(PP_Resource image, const PP_Point* top_left) = 0;

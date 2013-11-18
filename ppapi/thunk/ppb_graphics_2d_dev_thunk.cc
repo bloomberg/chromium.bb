@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_graphics_2d_dev.idl modified Wed Oct  2 17:27:31 2013.
+// From dev/ppb_graphics_2d_dev.idl modified Fri Nov  8 13:58:50 2013.
 
 #include "ppapi/c/dev/ppb_graphics_2d_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -42,15 +42,26 @@ void SetOffset(PP_Resource resource, const struct PP_Point* offset) {
   enter.object()->SetOffset(offset);
 }
 
+void SetResizeMode(PP_Resource resource,
+                   PP_Graphics2D_Dev_ResizeMode resize_mode) {
+  VLOG(4) << "PPB_Graphics2D_Dev::SetResizeMode()";
+  EnterResource<PPB_Graphics2D_API> enter(resource, true);
+  if (enter.failed())
+    return;
+  enter.object()->SetResizeMode(resize_mode);
+}
+
 const PPB_Graphics2D_Dev_0_1 g_ppb_graphics2d_dev_thunk_0_1 = {
   &SetScale,
-  &GetScale
+  &GetScale,
+  &SetResizeMode
 };
 
 const PPB_Graphics2D_Dev_0_2 g_ppb_graphics2d_dev_thunk_0_2 = {
   &SetScale,
   &GetScale,
-  &SetOffset
+  &SetOffset,
+  &SetResizeMode
 };
 
 }  // namespace

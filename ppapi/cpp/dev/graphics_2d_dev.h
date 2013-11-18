@@ -7,6 +7,8 @@
 
 #include "ppapi/cpp/graphics_2d.h"
 
+#include "ppapi/c/dev/ppb_graphics_2d_dev.h"
+
 namespace pp {
 
 class Point;
@@ -58,6 +60,15 @@ class Graphics2D_Dev : public Graphics2D {
   /// @param[in] resource A <code>Graphics2D</code> context resource.
   /// @param[in] offset The offset at which the context should be painted.
   void SetOffset(const pp::Point& offset);
+
+  /// Sets the resize mode for the graphics context. When a plugin element is
+  /// resized in the DOM, it takes time for the plugin to update the graphics
+  /// context in the renderer. These options affect how the existing context is
+  /// displayed until the backing store is updated by the plugin.
+  ///
+  ///@param[in] resource A <code>Graphics2D</code> context resource.
+  ///@param[in] resize_mode The resize mode to change this context to.
+  void SetResizeMode(PP_Graphics2D_Dev_ResizeMode resize_mode);
 };
 
 }  // namespace pp

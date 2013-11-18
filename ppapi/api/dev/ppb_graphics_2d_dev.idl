@@ -12,6 +12,26 @@ label Chrome {
   M32 = 0.2
 };
 
+/**
+ * These options affect how the existing graphics context is displayed when a
+ * plugin is resized.
+ */
+[assert_size(4)]
+enum PP_Graphics2D_Dev_ResizeMode {
+  /**
+   * In this mode, the context does not change size or offset. If the backing
+   * store is the same size as the plugin element, this will result in the
+   * pixels on the right side of the plugin element being unavailable, revealing
+   * the contents underneath it.
+   */
+  PP_GRAPHICS2D_DEV_RESIZEMODE_DEFAULT,
+  /**
+   * In this mode, the context and its offset are scaled relative to how much
+   * the plugin element has been resized.
+   */
+  PP_GRAPHICS2D_DEV_RESIZEMODE_STRETCH
+};
+
 /* PPB_Graphics2D_Dev interface */
 interface PPB_Graphics2D_Dev {
   /**
@@ -25,7 +45,7 @@ interface PPB_Graphics2D_Dev {
    * SetScale with 0.5. One would then treat each pixel in the context as a
    * single device pixel.
    *
-   * @param[in] resource A <code>Graphics2D</code> context resource. 
+   * @param[in] resource A <code>Graphics2D</code> context resource.
    * @param[in] scale The scale to apply when painting.
    *
    * @return Returns <code>PP_TRUE</code> on success or <code>PP_FALSE</code> if
@@ -59,5 +79,18 @@ interface PPB_Graphics2D_Dev {
   void SetOffset(
       [in] PP_Resource resource,
       [in] PP_Point offset);
-}; 
+
+  /***
+   * Sets the resize mode for the graphics context. When a plugin element is
+   * resized in the DOM, it takes time for the plugin to update the graphics
+   * context in the renderer. These options affect how the existing context is
+   * displayed until the backing store is updated by the plugin.
+   *
+   * @param[in] resource A <code>Graphics2D</code> context resource.
+   * @param[in] resize_mode The resize mode to change this context to.
+   */
+   void SetResizeMode(
+       [in] PP_Resource resource,
+       [in] PP_Graphics2D_Dev_ResizeMode resize_mode);
+};
 

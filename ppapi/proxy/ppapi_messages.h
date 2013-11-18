@@ -21,6 +21,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/dev/pp_video_capture_dev.h"
 #include "ppapi/c/dev/pp_video_dev.h"
+#include "ppapi/c/dev/ppb_graphics_2d_dev.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
@@ -86,6 +87,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(PP_FileType, PP_FILETYPE_OTHER)
 IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_Permission)
 IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_SettingType)
 IPC_ENUM_TRAITS(PP_FlashSetting)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_Graphics2D_Dev_ResizeMode,
+                          PP_GRAPHICS2D_DEV_RESIZEMODE_STRETCH)
 IPC_ENUM_TRAITS(PP_ImageDataFormat)
 IPC_ENUM_TRAITS(PP_InputEvent_MouseButton)
 IPC_ENUM_TRAITS(PP_InputEvent_Type)
@@ -1365,9 +1368,12 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_Graphics2D_Dev_SetScale,
                      float /* scale */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_Graphics2D_SetOffset,
                      PP_Point /* offset */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_Graphics2D_SetResizeMode,
+                     PP_Graphics2D_Dev_ResizeMode /* resize_mode */)
 
 // Graphics2D, plugin -> host -> plugin
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_Graphics2D_Flush)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_Graphics2D_Flush,
+                     ppapi::ViewData /* view_data */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Graphics2D_FlushAck)
 
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_Graphics2D_ReadImageData,

@@ -23,6 +23,7 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/thunk/enter.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -195,7 +196,8 @@ PepperGraphics2DHost::PepperGraphics2DHost(RendererPpapiHost* host,
       is_always_opaque_(false),
       scale_(1.0f),
       is_running_in_process_(host->IsRunningInProcess()),
-      texture_mailbox_modified_(true) {}
+      texture_mailbox_modified_(true),
+      resize_mode_(PP_GRAPHICS2D_DEV_RESIZEMODE_DEFAULT) {}
 
 PepperGraphics2DHost::~PepperGraphics2DHost() {
   // Unbind from the instance when destroyed if we're still bound.
@@ -234,18 +236,21 @@ int32_t PepperGraphics2DHost::OnResourceMessageReceived(
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_Graphics2D_ReplaceContents,
         OnHostMsgReplaceContents)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_Graphics2D_Flush,
         OnHostMsgFlush)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_Graphics2D_Dev_SetScale,
         OnHostMsgSetScale)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_Graphics2D_ReadImageData,
-        OnHostMsgReadImageData)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_Graphics2D_SetOffset,
         OnHostMsgSetOffset)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_Graphics2D_SetResizeMode,
+        OnHostMsgSetResizeMode)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_Graphics2D_ReadImageData,
+        OnHostMsgReadImageData)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -391,10 +396,14 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
   origin.set(SkIntToScalar(plugin_rect.x()), SkIntToScalar(plugin_rect.y()));
 
   SkPoint pixel_origin = origin;
-  if (scale_ != 1.0f && scale_ > 0.0f) {
-    float inverse_scale = 1.0f / scale_;
-    pixel_origin.scale(inverse_scale);
-    canvas->scale(scale_, scale_);
+
+  gfx::PointF resize_scale(GetResizeScale());
+  gfx::PointF scale(ScalePoint(resize_scale, scale_));
+  if ((scale.x() != 1.0f || scale.y() != 1.0f) &&
+      scale.x() > 0.0f && scale.y() > 0.0f) {
+    canvas->scale(scale.x(), scale.y());
+    pixel_origin.set(pixel_origin.x() * (1.0f / scale.x()),
+                     pixel_origin.y() * (1.0f / scale.y()));
   }
   pixel_origin.offset(SkIntToScalar(plugin_offset_.x()),
                       SkIntToScalar(plugin_offset_.y()));
@@ -410,6 +419,13 @@ void PepperGraphics2DHost::ViewFlushedPaint() {
     SendFlushAck();
     need_flush_ack_ = false;
   }
+}
+
+void PepperGraphics2DHost::DidChangeView(const ppapi::ViewData& view_data) {
+  gfx::Size old_plugin_size = current_plugin_size_;
+  current_plugin_size_ = PP_ToGfxSize(view_data.rect.size);
+  if (bound_instance_)
+    bound_instance_->UpdateLayerTransform();
 }
 
 void PepperGraphics2DHost::SetScale(float scale) {
@@ -432,6 +448,21 @@ gfx::Size PepperGraphics2DHost::Size() const {
   if (!image_data_)
     return gfx::Size();
   return gfx::Size(image_data_->width(), image_data_->height());
+}
+
+gfx::PointF PepperGraphics2DHost::GetResizeScale() const {
+  switch (resize_mode_) {
+    case PP_GRAPHICS2D_DEV_RESIZEMODE_DEFAULT:
+      return gfx::PointF(1.0f, 1.0f);
+    case PP_GRAPHICS2D_DEV_RESIZEMODE_STRETCH:
+      if (flushed_plugin_size_.IsEmpty())
+        return gfx::PointF(1.0f, 1.0f);
+      return gfx::PointF(
+          1.0f * current_plugin_size_.width() / flushed_plugin_size_.width(),
+          1.0f * current_plugin_size_.height() / flushed_plugin_size_.height());
+  }
+  NOTREACHED();
+  return gfx::PointF(1.0f, 1.0f);
 }
 
 int32_t PepperGraphics2DHost::OnHostMsgPaintImageData(
@@ -526,7 +557,8 @@ int32_t PepperGraphics2DHost::OnHostMsgReplaceContents(
 }
 
 int32_t PepperGraphics2DHost::OnHostMsgFlush(
-    ppapi::host::HostMessageContext* context) {
+    ppapi::host::HostMessageContext* context,
+    const ppapi::ViewData& view_data) {
   // Don't allow more than one pending flush at a time.
   if (HasPendingFlush())
     return PP_ERROR_INPROGRESS;
@@ -534,10 +566,10 @@ int32_t PepperGraphics2DHost::OnHostMsgFlush(
   PP_Resource old_image_data = 0;
   flush_reply_context_ = context->MakeReplyMessageContext();
   if (is_running_in_process_)
-    return Flush(NULL);
+    return Flush(NULL, PP_ToGfxSize(view_data.rect.size));
 
   // Reuse image data when running out of process.
-  int32_t result = Flush(&old_image_data);
+  int32_t result = Flush(&old_image_data, PP_ToGfxSize(view_data.rect.size));
 
   if (old_image_data) {
     // If the Graphics2D has an old image data it's not using any more, send
@@ -569,6 +601,13 @@ int32_t PepperGraphics2DHost::OnHostMsgSetOffset(
   QueuedOperation operation(QueuedOperation::SET_OFFSET);
   operation.offset = PP_ToGfxPoint(offset);
   queued_operations_.push_back(operation);
+  return PP_OK;
+}
+
+int32_t PepperGraphics2DHost::OnHostMsgSetResizeMode(
+    ppapi::host::HostMessageContext* context,
+    PP_Graphics2D_Dev_ResizeMode resize_mode) {
+  resize_mode_ = resize_mode;
   return PP_OK;
 }
 
@@ -611,7 +650,8 @@ void PepperGraphics2DHost::AttachedToNewLayer() {
   texture_mailbox_modified_ = true;
 }
 
-int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
+int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data,
+                                    const gfx::Size& flushed_plugin_size) {
   bool done_replace_contents = false;
   bool no_update_visible = true;
   bool is_plugin_visible = true;
@@ -699,6 +739,7 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
   }
   queued_operations_.clear();
 
+  flushed_plugin_size_ = flushed_plugin_size;
   if (bound_instance_)
     bound_instance_->UpdateLayerTransform();
 

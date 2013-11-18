@@ -11,6 +11,7 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/proxy/dispatch_reply_message.h"
+#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource_tracker.h"
@@ -115,6 +116,11 @@ void Graphics2DResource::SetOffset(const PP_Point* offset) {
   Post(RENDERER, PpapiHostMsg_Graphics2D_SetOffset(*offset));
 }
 
+void Graphics2DResource::SetResizeMode(
+    PP_Graphics2D_Dev_ResizeMode resize_mode) {
+  Post(RENDERER, PpapiHostMsg_Graphics2D_SetResizeMode(resize_mode));
+}
+
 int32_t Graphics2DResource::Flush(scoped_refptr<TrackedCallback> callback) {
   // If host is not even created, return failure immediately.  This can happen
   // when failed to initialize (in constructor).
@@ -125,9 +131,20 @@ int32_t Graphics2DResource::Flush(scoped_refptr<TrackedCallback> callback) {
     return PP_ERROR_INPROGRESS;  // Can't have >1 flush pending.
   current_flush_callback_ = callback;
 
+  // Send the current view data with the Flush() message. This allows the
+  // renderer to know what the plugin's view of the renderer is at the time
+  // Flush was called.
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
+      pp_instance());
+  ppapi::ViewData view_data;
+  if (dispatcher) {
+    InstanceData* data = dispatcher->GetInstanceData(pp_instance());
+    if (data)
+      view_data = data->view;
+  }
   Call<PpapiPluginMsg_Graphics2D_FlushAck>(
       RENDERER,
-      PpapiHostMsg_Graphics2D_Flush(),
+      PpapiHostMsg_Graphics2D_Flush(view_data),
       base::Bind(&Graphics2DResource::OnPluginMsgFlushACK, this));
   return PP_OK_COMPLETIONPENDING;
 }
