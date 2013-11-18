@@ -593,7 +593,7 @@ class CookieMonster::DeleteAllTask : public DeleteTask<int> {
  public:
   DeleteAllTask(CookieMonster* cookie_monster,
                 const DeleteCallback& callback)
-      : DeleteTask(cookie_monster, callback) {
+      : DeleteTask<int>(cookie_monster, callback) {
   }
 
   // DeleteTask:
@@ -617,7 +617,7 @@ class CookieMonster::DeleteAllCreatedBetweenTask : public DeleteTask<int> {
                               const Time& delete_begin,
                               const Time& delete_end,
                               const DeleteCallback& callback)
-      : DeleteTask(cookie_monster, callback),
+      : DeleteTask<int>(cookie_monster, callback),
         delete_begin_(delete_begin),
         delete_end_(delete_end) {
   }
@@ -646,7 +646,7 @@ class CookieMonster::DeleteAllForHostTask : public DeleteTask<int> {
   DeleteAllForHostTask(CookieMonster* cookie_monster,
                        const GURL& url,
                        const DeleteCallback& callback)
-      : DeleteTask(cookie_monster, callback),
+      : DeleteTask<int>(cookie_monster, callback),
         url_(url) {
   }
 
@@ -676,7 +676,7 @@ class CookieMonster::DeleteAllCreatedBetweenForHostTask
       Time delete_end,
       const GURL& url,
       const DeleteCallback& callback)
-      : DeleteTask(cookie_monster, callback),
+      : DeleteTask<int>(cookie_monster, callback),
         delete_begin_(delete_begin),
         delete_end_(delete_end),
         url_(url) {
@@ -707,7 +707,7 @@ class CookieMonster::DeleteCanonicalCookieTask : public DeleteTask<bool> {
   DeleteCanonicalCookieTask(CookieMonster* cookie_monster,
                             const CanonicalCookie& cookie,
                             const DeleteCookieCallback& callback)
-      : DeleteTask(cookie_monster, callback),
+      : DeleteTask<bool>(cookie_monster, callback),
         cookie_(cookie) {
   }
 
@@ -809,7 +809,7 @@ class CookieMonster::DeleteCookieTask : public DeleteTask<void> {
                    const GURL& url,
                    const std::string& cookie_name,
                    const base::Closure& callback)
-      : DeleteTask(cookie_monster, callback),
+      : DeleteTask<void>(cookie_monster, callback),
         url_(url),
         cookie_name_(cookie_name) {
   }
@@ -836,7 +836,7 @@ class CookieMonster::DeleteSessionCookiesTask : public DeleteTask<int> {
  public:
   DeleteSessionCookiesTask(CookieMonster* cookie_monster,
                            const DeleteCallback& callback)
-      : DeleteTask(cookie_monster, callback) {
+      : DeleteTask<int>(cookie_monster, callback) {
   }
 
   // DeleteTask:
