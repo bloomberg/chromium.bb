@@ -23,39 +23,56 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBDatabaseCallbacksImpl_h
-#define IDBDatabaseCallbacksImpl_h
-
+#include "config.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
-#include "wtf/RefCounted.h"
-#include "wtf/text/WTFString.h"
+
+#include "modules/indexeddb/IDBDatabase.h"
 
 namespace WebCore {
 
-class DOMError;
-class IDBDatabase;
+PassRefPtr<IDBDatabaseCallbacks> IDBDatabaseCallbacks::create()
+{
+    return adoptRef(new IDBDatabaseCallbacks());
+}
 
-class IDBDatabaseCallbacksImpl : public IDBDatabaseCallbacks {
-public:
-    static PassRefPtr<IDBDatabaseCallbacksImpl> create();
-    virtual ~IDBDatabaseCallbacksImpl();
+IDBDatabaseCallbacks::IDBDatabaseCallbacks()
+    : m_database(0)
+{
+}
 
-    // IDBDatabaseCallbacks
-    virtual void onForcedClose();
-    virtual void onVersionChange(int64_t oldVersion, int64_t newVersion);
+IDBDatabaseCallbacks::~IDBDatabaseCallbacks()
+{
+}
 
-    virtual void onAbort(int64_t transactionId, PassRefPtr<DOMError>);
-    virtual void onComplete(int64_t transactionId);
+void IDBDatabaseCallbacks::onForcedClose()
+{
+    if (m_database)
+        m_database->forceClose();
+}
 
-    void connect(IDBDatabase*);
+void IDBDatabaseCallbacks::onVersionChange(int64_t oldVersion, int64_t newVersion)
+{
+    if (m_database)
+        m_database->onVersionChange(oldVersion, newVersion);
+}
 
-private:
-    IDBDatabaseCallbacksImpl();
+void IDBDatabaseCallbacks::connect(IDBDatabase* database)
+{
+    ASSERT(!m_database);
+    ASSERT(database);
+    m_database = database;
+}
 
-    // The initial IDBOpenDBRequest or final IDBDatabase maintains a RefPtr to this
-    IDBDatabase* m_database;
-};
+void IDBDatabaseCallbacks::onAbort(int64_t transactionId, PassRefPtr<DOMError> error)
+{
+    if (m_database)
+        m_database->onAbort(transactionId, error);
+}
+
+void IDBDatabaseCallbacks::onComplete(int64_t transactionId)
+{
+    if (m_database)
+        m_database->onComplete(transactionId);
+}
 
 } // namespace WebCore
-
-#endif // IDBDatabaseCallbacksImpl_h

@@ -26,22 +26,35 @@
 #ifndef IDBDatabaseCallbacks_h
 #define IDBDatabaseCallbacks_h
 
+#include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class DOMError;
+class IDBDatabase;
 
 class IDBDatabaseCallbacks : public RefCounted<IDBDatabaseCallbacks> {
 public:
-    virtual ~IDBDatabaseCallbacks() { }
+    static PassRefPtr<IDBDatabaseCallbacks> create();
+    virtual ~IDBDatabaseCallbacks();
 
-    virtual void onForcedClose() = 0;
-    virtual void onVersionChange(int64_t oldVersion, int64_t newVersion) = 0;
+    // IDBDatabaseCallbacks
+    virtual void onForcedClose();
+    virtual void onVersionChange(int64_t oldVersion, int64_t newVersion);
 
-    virtual void onAbort(int64_t transactionId, PassRefPtr<DOMError>) = 0;
-    virtual void onComplete(int64_t transactionId) = 0;
+    virtual void onAbort(int64_t transactionId, PassRefPtr<DOMError>);
+    virtual void onComplete(int64_t transactionId);
+
+    void connect(IDBDatabase*);
+
+protected:
+    // Exposed to subclasses for unit tests.
+    IDBDatabaseCallbacks();
+
+private:
+    // The initial IDBOpenDBRequest or final IDBDatabase maintains a RefPtr to this
+    IDBDatabase* m_database;
 };
 
 } // namespace WebCore

@@ -162,8 +162,6 @@
       'WebHistoryItem.cpp',
       'WebHitTestResult.cpp',
       'WebIDBCallbacks.cpp',
-      'WebIDBDatabaseCallbacksImpl.cpp',
-      'WebIDBDatabaseCallbacksImpl.h',
       'WebIDBDatabaseError.cpp',
       'WebIDBKey.cpp',
       'WebIDBKeyPath.cpp',

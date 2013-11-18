@@ -50,8 +50,8 @@ public:
 
     virtual void createObjectStore(int64_t transactionId, int64_t objectStoreId, const String& name, const IDBKeyPath&, bool autoIncrement) = 0;
     virtual void deleteObjectStore(int64_t transactionId, int64_t objectStoreId) = 0;
-    virtual void createTransaction(int64_t transactionId, PassRefPtr<IDBDatabaseCallbacks>, const Vector<int64_t>& objectStoreIds, unsigned short mode) = 0;
-    virtual void close(PassRefPtr<IDBDatabaseCallbacks>) = 0;
+    virtual void createTransaction(int64_t transactionId, const Vector<int64_t>& objectStoreIds, unsigned short mode) = 0;
+    virtual void close() = 0;
 
     // Transaction-specific operations.
     virtual void commit(int64_t transactionId) = 0;

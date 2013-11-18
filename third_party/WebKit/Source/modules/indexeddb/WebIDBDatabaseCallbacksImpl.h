@@ -23,56 +23,36 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
+#ifndef WebIDBDatabaseCallbacksImpl_h
+#define WebIDBDatabaseCallbacksImpl_h
 
-#include "modules/indexeddb/IDBDatabase.h"
+#include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "public/platform/WebIDBDatabaseCallbacks.h"
+#include "public/platform/WebIDBDatabaseError.h"
+#include "public/platform/WebString.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-PassRefPtr<IDBDatabaseCallbacksImpl> IDBDatabaseCallbacksImpl::create()
-{
-    return adoptRef(new IDBDatabaseCallbacksImpl());
-}
+class WebIDBDatabaseCallbacksImpl : public blink::WebIDBDatabaseCallbacks {
+public:
+    static PassOwnPtr<WebIDBDatabaseCallbacksImpl> create(PassRefPtr<IDBDatabaseCallbacks>);
 
-IDBDatabaseCallbacksImpl::IDBDatabaseCallbacksImpl()
-    : m_database(0)
-{
-}
+    virtual ~WebIDBDatabaseCallbacksImpl();
 
-IDBDatabaseCallbacksImpl::~IDBDatabaseCallbacksImpl()
-{
-}
+    virtual void onForcedClose();
+    virtual void onVersionChange(long long oldVersion, long long newVersion);
+    virtual void onAbort(long long transactionId, const blink::WebIDBDatabaseError&);
+    virtual void onComplete(long long transactionId);
 
-void IDBDatabaseCallbacksImpl::onForcedClose()
-{
-    if (m_database)
-        m_database->forceClose();
-}
+private:
+    WebIDBDatabaseCallbacksImpl(PassRefPtr<IDBDatabaseCallbacks>);
 
-void IDBDatabaseCallbacksImpl::onVersionChange(int64_t oldVersion, int64_t newVersion)
-{
-    if (m_database)
-        m_database->onVersionChange(oldVersion, newVersion);
-}
-
-void IDBDatabaseCallbacksImpl::connect(IDBDatabase* database)
-{
-    ASSERT(!m_database);
-    ASSERT(database);
-    m_database = database;
-}
-
-void IDBDatabaseCallbacksImpl::onAbort(int64_t transactionId, PassRefPtr<DOMError> error)
-{
-    if (m_database)
-        m_database->onAbort(transactionId, error);
-}
-
-void IDBDatabaseCallbacksImpl::onComplete(int64_t transactionId)
-{
-    if (m_database)
-        m_database->onComplete(transactionId);
-}
+    RefPtr<IDBDatabaseCallbacks> m_callbacks;
+};
 
 } // namespace WebCore
+
+#endif // WebIDBDatabaseCallbacksImpl_h

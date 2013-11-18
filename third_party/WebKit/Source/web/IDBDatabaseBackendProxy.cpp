@@ -27,10 +27,8 @@
 #include "IDBDatabaseBackendProxy.h"
 
 #include "WebFrameImpl.h"
-#include "WebIDBDatabaseCallbacksImpl.h"
 #include "core/dom/DOMError.h"
 #include "modules/indexeddb/IDBCallbacks.h"
-#include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "public/platform/WebData.h"
@@ -70,9 +68,8 @@ void IDBDatabaseBackendProxy::deleteObjectStore(int64_t transactionId, int64_t o
         m_webIDBDatabase->deleteObjectStore(transactionId, objectStoreId);
 }
 
-void IDBDatabaseBackendProxy::createTransaction(int64_t id, PassRefPtr<IDBDatabaseCallbacks>, const Vector<int64_t>& objectStoreIds, unsigned short mode)
+void IDBDatabaseBackendProxy::createTransaction(int64_t id, const Vector<int64_t>& objectStoreIds, unsigned short mode)
 {
-    // WebIDBDatabaseImpl holds on to the specific callbacks object for this connection.
     m_webIDBDatabase->createTransaction(id, 0, objectStoreIds, mode);
 }
 
@@ -146,7 +143,7 @@ void IDBDatabaseBackendProxy::deleteIndex(int64_t transactionId, int64_t objectS
         m_webIDBDatabase->deleteIndex(transactionId, objectStoreId, indexId);
 }
 
-void IDBDatabaseBackendProxy::close(PassRefPtr<IDBDatabaseCallbacks>)
+void IDBDatabaseBackendProxy::close()
 {
     m_webIDBDatabase->close();
 }

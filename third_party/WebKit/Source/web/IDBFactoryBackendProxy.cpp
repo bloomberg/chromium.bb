@@ -31,12 +31,12 @@
 
 #include "public/platform/WebIDBCallbacks.h"
 #include "public/platform/WebIDBDatabase.h"
+#include "public/platform/WebIDBDatabaseCallbacks.h"
 #include "public/platform/WebIDBDatabaseError.h"
 #include "public/platform/WebIDBFactory.h"
 #include "public/platform/WebVector.h"
 #include "IDBDatabaseBackendProxy.h"
 #include "WebFrameImpl.h"
-#include "WebIDBDatabaseCallbacksImpl.h"
 #include "WebKit.h"
 #include "WebPermissionClient.h"
 #include "WebSecurityOrigin.h"
@@ -48,7 +48,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 
@@ -101,15 +100,14 @@ void IDBFactoryBackendProxy::getDatabaseNames(PassRefPtr<IDBCallbacks> prpCallba
     m_webIDBFactory->getDatabaseNames(new WebIDBCallbacks(callbacks), databaseIdentifier);
 }
 
-void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBCallbacks> prpCallbacks, PassRefPtr<IDBDatabaseCallbacks> prpDatabaseCallbacks, const String& databaseIdentifier, ExecutionContext* context)
+void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBCallbacks> prpCallbacks, PassOwnPtr<WebIDBDatabaseCallbacks> databaseCallbacks, const String& databaseIdentifier, ExecutionContext* context)
 {
     RefPtr<IDBCallbacks> callbacks(prpCallbacks);
-    RefPtr<IDBDatabaseCallbacks> databaseCallbacks(prpDatabaseCallbacks);
     WebSecurityOrigin origin(context->securityOrigin());
     if (!allowIndexedDB(context, name, origin, callbacks))
         return;
 
-    m_webIDBFactory->open(name, version, transactionId, new WebIDBCallbacks(callbacks), new WebIDBDatabaseCallbacksImpl(databaseCallbacks), databaseIdentifier);
+    m_webIDBFactory->open(name, version, transactionId, new WebIDBCallbacks(callbacks), databaseCallbacks.leakPtr(), databaseIdentifier);
 }
 
 void IDBFactoryBackendProxy::deleteDatabase(const String& name, PassRefPtr<IDBCallbacks> prpCallbacks, const String& databaseIdentifier, ExecutionContext* context)

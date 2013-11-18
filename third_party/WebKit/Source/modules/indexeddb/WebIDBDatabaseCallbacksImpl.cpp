@@ -23,32 +23,47 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIDBDatabaseCallbacksImpl_h
-#define WebIDBDatabaseCallbacksImpl_h
+#include "config.h"
+#include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
 
-#include "public/platform/WebIDBDatabaseCallbacks.h"
-#include "public/platform/WebString.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "core/dom/DOMError.h"
+#include "modules/indexeddb/IDBDatabaseCallbacks.h"
 
-namespace WebCore { class IDBDatabaseCallbacks; }
+namespace WebCore {
 
-namespace blink {
+// static
+PassOwnPtr<WebIDBDatabaseCallbacksImpl> WebIDBDatabaseCallbacksImpl::create(PassRefPtr<IDBDatabaseCallbacks> callbacks)
+{
+    return adoptPtr(new WebIDBDatabaseCallbacksImpl(callbacks));
+}
 
-class WebIDBDatabaseCallbacksImpl : public WebIDBDatabaseCallbacks {
-public:
-    WebIDBDatabaseCallbacksImpl(PassRefPtr<WebCore::IDBDatabaseCallbacks>);
-    virtual ~WebIDBDatabaseCallbacksImpl();
+WebIDBDatabaseCallbacksImpl::WebIDBDatabaseCallbacksImpl(PassRefPtr<IDBDatabaseCallbacks> callbacks)
+    : m_callbacks(callbacks)
+{
+}
 
-    virtual void onForcedClose();
-    virtual void onVersionChange(long long oldVersion, long long newVersion);
-    virtual void onAbort(long long transactionId, const WebIDBDatabaseError&);
-    virtual void onComplete(long long transactionId);
+WebIDBDatabaseCallbacksImpl::~WebIDBDatabaseCallbacksImpl()
+{
+}
 
-private:
-    RefPtr<WebCore::IDBDatabaseCallbacks> m_callbacks;
-};
+void WebIDBDatabaseCallbacksImpl::onForcedClose()
+{
+    m_callbacks->onForcedClose();
+}
 
-} // namespace blink
+void WebIDBDatabaseCallbacksImpl::onVersionChange(long long oldVersion, long long newVersion)
+{
+    m_callbacks->onVersionChange(oldVersion, newVersion);
+}
 
-#endif // WebIDBDatabaseCallbacksImpl_h
+void WebIDBDatabaseCallbacksImpl::onAbort(long long transactionId, const blink::WebIDBDatabaseError& error)
+{
+    m_callbacks->onAbort(transactionId, error);
+}
+
+void WebIDBDatabaseCallbacksImpl::onComplete(long long transactionId)
+{
+    m_callbacks->onComplete(transactionId);
+}
+
+} // namespace WebCore

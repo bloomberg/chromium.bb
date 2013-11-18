@@ -42,8 +42,8 @@ public:
 
     virtual void createObjectStore(int64_t transactionId, int64_t objectStoreId, const String& name, const WebCore::IDBKeyPath&, bool autoIncrement);
     virtual void deleteObjectStore(int64_t transactionId, int64_t objectStoreId);
-    virtual void createTransaction(int64_t, PassRefPtr<WebCore::IDBDatabaseCallbacks>, const Vector<int64_t>&, unsigned short mode);
-    virtual void close(PassRefPtr<WebCore::IDBDatabaseCallbacks>);
+    virtual void createTransaction(int64_t, const Vector<int64_t>&, unsigned short mode);
+    virtual void close();
 
     virtual void commit(int64_t);
     virtual void abort(int64_t);

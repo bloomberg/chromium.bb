@@ -31,6 +31,7 @@
 
 #include "modules/indexeddb/chromium/IDBFactoryBackendInterfaceChromium.h"
 #include "modules/indexeddb/IDBCallbacks.h"
+#include "public/platform/WebIDBDatabaseCallbacks.h"
 
 namespace WebCore {
 class ExecutionContext;
@@ -47,7 +48,7 @@ public:
     virtual ~IDBFactoryBackendProxy();
 
     virtual void getDatabaseNames(PassRefPtr<WebCore::IDBCallbacks>, const String& databaseIdentifier, WebCore::ExecutionContext*) OVERRIDE;
-    virtual void open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<WebCore::IDBCallbacks>, PassRefPtr<WebCore::IDBDatabaseCallbacks>, const String& databaseIdentifier, WebCore::ExecutionContext*) OVERRIDE;
+    virtual void open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<WebCore::IDBCallbacks>, PassOwnPtr<WebIDBDatabaseCallbacks>, const String& databaseIdentifier, WebCore::ExecutionContext*) OVERRIDE;
     virtual void deleteDatabase(const String& name, PassRefPtr<WebCore::IDBCallbacks>, const String& databaseIdentifier, WebCore::ExecutionContext*) OVERRIDE;
 
 private:

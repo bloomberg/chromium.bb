@@ -66,8 +66,8 @@ public:
 
     virtual void createObjectStore(int64_t transactionId, int64_t objectStoreId, const String& name, const IDBKeyPath&, bool autoIncrement) OVERRIDE { }
     virtual void deleteObjectStore(int64_t transactionId, int64_t objectStoreId) OVERRIDE { }
-    virtual void createTransaction(int64_t transactionId, PassRefPtr<IDBDatabaseCallbacks>, const Vector<int64_t>& objectStoreIds, unsigned short mode) OVERRIDE { }
-    virtual void close(PassRefPtr<IDBDatabaseCallbacks>) OVERRIDE { }
+    virtual void createTransaction(int64_t transactionId, const Vector<int64_t>& objectStoreIds, unsigned short mode) OVERRIDE { }
+    virtual void close() OVERRIDE { }
 
     virtual void commit(int64_t transactionId) OVERRIDE { }
     virtual void abort(int64_t transactionId) OVERRIDE { }

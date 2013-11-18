@@ -285,7 +285,7 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, c
     }
 
     int64_t transactionId = nextTransactionId();
-    m_backend->createTransaction(transactionId, m_databaseCallbacks, objectStoreIds, mode);
+    m_backend->createTransaction(transactionId, objectStoreIds, mode);
 
     RefPtr<IDBTransaction> transaction = IDBTransaction::create(context, transactionId, scope, mode, this);
     return transaction.release();
@@ -323,7 +323,7 @@ void IDBDatabase::closeConnection()
     ASSERT(m_closePending);
     ASSERT(m_transactions.isEmpty());
 
-    m_backend->close(m_databaseCallbacks);
+    m_backend->close();
     m_backend.clear();
 
     if (m_contextStopped || !executionContext())

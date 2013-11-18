@@ -30,7 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/events/EventQueue.h"
 #include "modules/indexeddb/IDBDatabaseBackendInterface.h"
-#include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
+#include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 #include "wtf/PassOwnPtr.h"
@@ -135,8 +135,8 @@ public:
 
     virtual void createObjectStore(int64_t transactionId, int64_t objectStoreId, const String& name, const IDBKeyPath&, bool autoIncrement) OVERRIDE { }
     virtual void deleteObjectStore(int64_t transactionId, int64_t objectStoreId) OVERRIDE { }
-    virtual void createTransaction(int64_t transactionId, PassRefPtr<IDBDatabaseCallbacks>, const Vector<int64_t>& objectStoreIds, unsigned short mode) OVERRIDE { }
-    virtual void close(PassRefPtr<IDBDatabaseCallbacks>) OVERRIDE
+    virtual void createTransaction(int64_t transactionId, const Vector<int64_t>& objectStoreIds, unsigned short mode) OVERRIDE { }
+    virtual void close() OVERRIDE
     {
         m_closeCalled = true;
     }
@@ -171,7 +171,7 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
     const int64_t version = 1;
     const int64_t oldVersion = 0;
     const IDBDatabaseMetadata metadata;
-    RefPtr<IDBDatabaseCallbacksImpl> callbacks = IDBDatabaseCallbacksImpl::create();
+    RefPtr<IDBDatabaseCallbacks> callbacks = IDBDatabaseCallbacks::create();
 
     {
         RefPtr<MockIDBDatabaseBackendInterface> interface = MockIDBDatabaseBackendInterface::create();
