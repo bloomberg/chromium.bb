@@ -41,7 +41,6 @@ public:
         StartTag,
         EndTag,
         TimestampTag,
-        EndOfFile,
     };
 };
 
@@ -172,12 +171,6 @@ public:
     const DataVector& annotation() const
     {
         return m_annotation;
-    }
-
-    void makeEndOfFile()
-    {
-        ASSERT(m_type == Type::Uninitialized);
-        m_type = Type::EndOfFile;
     }
 
     void clear()

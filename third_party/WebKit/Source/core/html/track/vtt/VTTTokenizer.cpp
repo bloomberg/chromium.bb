@@ -60,7 +60,6 @@ inline bool vectorEqualsString(const Vector<CharacterType, 32>& vector, const St
 
 void WebVTTTokenizer::reset()
 {
-    m_state = WebVTTTokenizerState::DataState;
     m_token = 0;
     m_buffer.clear();
 }
@@ -77,6 +76,8 @@ bool WebVTTTokenizer::nextToken(SegmentedString& source, WebVTTToken& token)
 
     UChar cc = m_inputStreamPreprocessor.nextInputCharacter();
 
+    m_state = WebVTTTokenizerState::DataState;
+
     // 4.8.10.13.4 WebVTT cue text tokenizer
     switch (m_state) {
         WEBVTT_BEGIN_STATE(DataState) {
@@ -87,12 +88,15 @@ bool WebVTTTokenizer::nextToken(SegmentedString& source, WebVTTToken& token)
                 // FIXME: the explicit Vector conversion copies into a temporary
                 // and is wasteful.
                 if (m_token->type() == WebVTTTokenTypes::Uninitialized
-                    || vectorEqualsString<UChar>(Vector<UChar, 32>(m_token->characters()), emptyString()))
+                    || vectorEqualsString<UChar>(Vector<UChar, 32>(m_token->characters()), emptyString())) {
                     WEBVTT_ADVANCE_TO(TagState);
-                else
-                    return emitAndResumeIn(source, WebVTTTokenizerState::TagState);
+                } else {
+                    // We don't want to advance input or perform a state transition - just return a (new) token.
+                    // (On the next call to nextToken we will see '<' again, but take the other branch in this if instead.)
+                    return emitToken(WebVTTTokenTypes::Character);
+                }
             } else if (cc == kEndOfFileMarker) {
-                return emitEndOfFile(source);
+                return emitToken(WebVTTTokenTypes::Character);
             } else {
                 bufferCharacter(cc);
                 WEBVTT_ADVANCE_TO(DataState);
@@ -125,7 +129,7 @@ bool WebVTTTokenizer::nextToken(SegmentedString& source, WebVTTToken& token)
                 WEBVTT_ADVANCE_TO(EscapeState);
             } else if (cc == kEndOfFileMarker) {
                 m_token->appendToCharacter(m_buffer);
-                return emitEndOfFile(source);
+                return emitToken(WebVTTTokenTypes::Character);
             } else {
                 if (!vectorEqualsString(m_buffer, "&"))
                     m_token->appendToCharacter(m_buffer);
@@ -149,7 +153,7 @@ bool WebVTTTokenizer::nextToken(SegmentedString& source, WebVTTToken& token)
                 WEBVTT_ADVANCE_TO(TimestampTagState);
             } else if (cc == '>' || cc == kEndOfFileMarker) {
                 m_token->beginEmptyStartTag();
-                return emitAndResumeIn(source, WebVTTTokenizerState::DataState);
+                return advanceAndEmitToken(source, WebVTTTokenTypes::StartTag);
             } else {
                 m_token->beginStartTag(cc);
                 WEBVTT_ADVANCE_TO(StartTagState);
@@ -163,7 +167,7 @@ bool WebVTTTokenizer::nextToken(SegmentedString& source, WebVTTToken& token)
             } else if (cc == '.') {
                 WEBVTT_ADVANCE_TO(StartTagClassState);
             } else if (cc == '>' || cc == kEndOfFileMarker) {
-                return emitAndResumeIn(source, WebVTTTokenizerState::DataState);
+                return advanceAndEmitToken(source, WebVTTTokenTypes::StartTag);
             } else {
                 m_token->appendToName(cc);
                 WEBVTT_ADVANCE_TO(StartTagState);
@@ -180,7 +184,7 @@ bool WebVTTTokenizer::nextToken(SegmentedString& source, WebVTTToken& token)
                 WEBVTT_ADVANCE_TO(StartTagClassState);
             } else if (cc == '>' || cc == kEndOfFileMarker) {
                 m_token->addNewClass();
-                return emitAndResumeIn(source, WebVTTTokenizerState::DataState);
+                return advanceAndEmitToken(source, WebVTTTokenTypes::StartTag);
             } else {
                 m_token->appendToClass(cc);
                 WEBVTT_ADVANCE_TO(StartTagClassState);
@@ -192,7 +196,7 @@ bool WebVTTTokenizer::nextToken(SegmentedString& source, WebVTTToken& token)
         WEBVTT_BEGIN_STATE(StartTagAnnotationState) {
             if (cc == '>' || cc == kEndOfFileMarker) {
                 m_token->addNewAnnotation();
-                return emitAndResumeIn(source, WebVTTTokenizerState::DataState);
+                return advanceAndEmitToken(source, WebVTTTokenTypes::StartTag);
             }
             m_token->appendToAnnotation(cc);
             WEBVTT_ADVANCE_TO(StartTagAnnotationState);
@@ -202,7 +206,7 @@ bool WebVTTTokenizer::nextToken(SegmentedString& source, WebVTTToken& token)
         WEBVTT_BEGIN_STATE(EndTagOpenState) {
             if (cc == '>' || cc == kEndOfFileMarker) {
                 m_token->beginEndTag('\0');
-                return emitAndResumeIn(source, WebVTTTokenizerState::DataState);
+                return advanceAndEmitToken(source, WebVTTTokenTypes::EndTag);
             }
             m_token->beginEndTag(cc);
             WEBVTT_ADVANCE_TO(EndTagState);
@@ -211,7 +215,7 @@ bool WebVTTTokenizer::nextToken(SegmentedString& source, WebVTTToken& token)
 
         WEBVTT_BEGIN_STATE(EndTagState) {
             if (cc == '>' || cc == kEndOfFileMarker)
-                return emitAndResumeIn(source, WebVTTTokenizerState::DataState);
+                return advanceAndEmitToken(source, WebVTTTokenTypes::EndTag);
             m_token->appendToName(cc);
             WEBVTT_ADVANCE_TO(EndTagState);
         }
@@ -219,7 +223,7 @@ bool WebVTTTokenizer::nextToken(SegmentedString& source, WebVTTToken& token)
 
         WEBVTT_BEGIN_STATE(TimestampTagState) {
             if (cc == '>' || cc == kEndOfFileMarker)
-                return emitAndResumeIn(source, WebVTTTokenizerState::DataState);
+                return advanceAndEmitToken(source, WebVTTTokenTypes::TimestampTag);
             m_token->appendToTimestamp(cc);
             WEBVTT_ADVANCE_TO(TimestampTagState);
         }

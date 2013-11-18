@@ -76,21 +76,15 @@ public:
         m_token->appendToCharacter(character);
     }
 
-    inline bool emitAndResumeIn(SegmentedString& source, State::State state)
+    inline bool advanceAndEmitToken(SegmentedString& source, WebVTTTokenTypes::Type type)
     {
-        m_state = state;
         source.advanceAndUpdateLineNumber();
-        return true;
+        return emitToken(type);
     }
 
-    inline bool emitEndOfFile(SegmentedString& source)
+    inline bool emitToken(WebVTTTokenTypes::Type type)
     {
-        if (haveBufferedCharacterToken())
-            return true;
-        m_state = State::DataState;
-        source.advanceAndUpdateLineNumber();
-        m_token->clear();
-        m_token->makeEndOfFile();
+        ASSERT(m_token->type() == type);
         return true;
     }
 
@@ -102,6 +96,9 @@ private:
     // m_token is owned by the caller. If nextToken is not on the stack,
     // this member might be pointing to unallocated memory.
     WebVTTToken* m_token;
+
+    // This member does not really need to be an instance member - it's only used in nextToken.
+    // The reason it's stored here is because of the use of the ADVANCE_TO state helpers.
     WebVTTTokenizerState::State m_state;
 
     Vector<LChar, 32> m_buffer;
