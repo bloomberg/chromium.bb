@@ -28,7 +28,7 @@ shouldBe("window.callbacksCalled", "['a', 'b', 'c']");
 // Testing nested elements
 window.callbacksCalled = [];
 container.innerHTML = "<x-foo id='a'><div id='b' is='x-bar'><x-baz id='c'></x-baz></div></x-foo>";
-shouldBe("window.callbacksCalled", "['c', 'b', 'a']");
+shouldBe("window.callbacksCalled", "['a', 'b', 'c']");
 </script>
 </body>
 </html>

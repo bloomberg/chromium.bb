@@ -354,7 +354,7 @@ public:
     bool isInCanvasSubtree() const;
 
     bool isUpgradedCustomElement() { return customElementState() == Upgraded; }
-    bool isUnresolvedCustomElement() { return isCustomElement() && !isUpgradedCustomElement(); }
+    bool isUnresolvedCustomElement() { return customElementState() == WaitingForUpgrade; }
 
     void setIsInsideRegion(bool);
     bool isInsideRegion() const;

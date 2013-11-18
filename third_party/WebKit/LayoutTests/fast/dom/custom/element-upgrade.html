@@ -52,7 +52,7 @@ var upgradedOrder = [];
 var protoE = Object.create(HTMLElement.prototype);
 protoE.createdCallback = function() { upgradedOrder.push(this.id); };
 document.register('x-e', {prototype: protoE});
-shouldBe('upgradedOrder', '["e2","e1","e3","e4","e5"]');
+shouldBe('upgradedOrder', '["e1","e2","e3","e4","e5"]');
 
 successfullyParsed = true;
 </script>

@@ -58,7 +58,7 @@ void CustomElementRegistrationContext::registerElement(Document* document, Custo
         didResolveElement(definition, *it);
 }
 
-PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Document& document, const QualifiedName& tagName, CreationMode mode)
+PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Document& document, const QualifiedName& tagName)
 {
     ASSERT(CustomElement::isValidName(tagName.localName()));
 
@@ -73,7 +73,7 @@ PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Doc
         return Element::create(tagName, &document);
     }
 
-    element->setCustomElementState(mode == CreatedByParser ? Element::WaitingForParser : Element::WaitingForUpgrade);
+    element->setCustomElementState(Element::WaitingForUpgrade);
     resolve(element.get(), nullAtom);
     return element.release();
 }
@@ -107,7 +107,7 @@ void CustomElementRegistrationContext::didResolveElement(CustomElementDefinition
 
 void CustomElementRegistrationContext::didCreateUnresolvedElement(const CustomElementDescriptor& descriptor, Element* element)
 {
-    ASSERT(element->customElementState() == Element::WaitingForParser || element->customElementState() == Element::WaitingForUpgrade);
+    ASSERT(element->customElementState() == Element::WaitingForUpgrade);
     m_candidates.add(descriptor, element);
 }
 
@@ -124,7 +124,7 @@ void CustomElementRegistrationContext::setIsAttributeAndTypeExtension(Element* e
     setTypeExtension(element, type);
 }
 
-void CustomElementRegistrationContext::setTypeExtension(Element* element, const AtomicString& type, CreationMode mode)
+void CustomElementRegistrationContext::setTypeExtension(Element* element, const AtomicString& type)
 {
     if (!element->isHTMLElement() && !element->isSVGElement())
         return;
@@ -141,7 +141,7 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
     // Custom tags take precedence over type extensions
     ASSERT(!CustomElement::isValidName(element->localName()));
 
-    element->setCustomElementState(mode == CreatedByParser ? Element::WaitingForParser : Element::WaitingForUpgrade);
+    element->setCustomElementState(Element::WaitingForUpgrade);
 
     if (CustomElementRegistrationContext* context = element->document().registrationContext())
         context->didGiveTypeExtension(element, type);

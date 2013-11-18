@@ -231,14 +231,18 @@ public:
     bool isAfterPseudoElement() const { return pseudoId() == AFTER; }
     PseudoId pseudoId() const { return (isElementNode() && hasCustomStyleCallbacks()) ? customPseudoId() : NOPSEUDO; }
 
+    bool isCustomElement() const { return getFlag(CustomElement); }
     enum CustomElementState {
-        NotCustomElement,
-        WaitingForParser,
-        WaitingForUpgrade,
-        Upgraded
+        NotCustomElement  = 0,
+        WaitingForUpgrade = 1 << 0,
+        Upgraded          = 1 << 1
     };
-    bool isCustomElement() const { return customElementState() != NotCustomElement; }
-    CustomElementState customElementState() const { return CustomElementState((getFlag(CustomElementWaitingForParserOrIsUpgraded) ? 1 : 0) | (getFlag(CustomElementWaitingForUpgradeOrIsUpgraded) ? 2 : 0)); }
+    CustomElementState customElementState() const
+    {
+        return isCustomElement()
+            ? (getFlag(CustomElementUpgraded) ? Upgraded : WaitingForUpgrade)
+            : NotCustomElement;
+    }
     void setCustomElementState(CustomElementState newState);
 
     virtual bool isMediaControlElement() const { return false; }
@@ -738,8 +742,8 @@ private:
 
         NotifyRendererWithIdenticalStyles = 1 << 26,
 
-        CustomElementWaitingForParserOrIsUpgraded = 1 << 27,
-        CustomElementWaitingForUpgradeOrIsUpgraded = 1 << 28,
+        CustomElement = 1 << 27,
+        CustomElementUpgraded = 1 << 28,
 
         AlreadySpellCheckedFlag = 1 << 29,
 

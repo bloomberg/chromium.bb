@@ -56,15 +56,9 @@ public:
     // Definitions
     void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, CustomElement::NameSet validNames, ExceptionState&);
 
-    // Instance creation
-    enum CreationMode {
-        CreatedByParser,
-        NotCreatedByParser
-    };
-
-    PassRefPtr<Element> createCustomTagElement(Document&, const QualifiedName&, CreationMode = NotCreatedByParser);
+    PassRefPtr<Element> createCustomTagElement(Document&, const QualifiedName&);
     static void setIsAttributeAndTypeExtension(Element*, const AtomicString& type);
-    static void setTypeExtension(Element*, const AtomicString& type, CreationMode = NotCreatedByParser);
+    static void setTypeExtension(Element*, const AtomicString& type);
 
 protected:
     CustomElementRegistrationContext() { }
