@@ -83,7 +83,7 @@ def PrintTestOutput(test_name):
 
 class _HeartBeatLogger(object):
   # How often to print the heartbeat on flush().
-  _PRINT_INTERVAL = 600
+  _PRINT_INTERVAL = 30.0
 
   def __init__(self):
     """A file-like class for keeping the buildbot alive."""
