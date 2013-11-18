@@ -44,9 +44,13 @@ class ContentShellTestSuiteInitializer
   }
 
   virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
+#if !defined(OS_ANDROID)
+    // On Android, production code doesn't reset ContentClient during shutdown.
+    // We try to do the same thing as production. Refer to crbug.com/181069.
     browser_content_client_.reset();
     content_client_.reset();
     SetContentClient(NULL);
+#endif
   }
 
  private:
