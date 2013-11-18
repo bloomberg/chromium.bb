@@ -983,6 +983,18 @@ void ChromeClientImpl::didAssociateFormControls(const Vector<RefPtr<Element> >& 
     m_webView->autofillClient()->didAssociateFormControls(elementVector);
 }
 
+void ChromeClientImpl::didCancelCompositionOnSelectionChange()
+{
+    if (m_webView->client())
+        m_webView->client()->didCancelCompositionOnSelectionChange();
+}
+
+void ChromeClientImpl::willSetInputMethodState()
+{
+    if (m_webView->client())
+        m_webView->client()->resetInputMethod();
+}
+
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
 PassOwnPtr<NavigatorContentUtilsClientImpl> NavigatorContentUtilsClientImpl::create(WebViewImpl* webView)
 {

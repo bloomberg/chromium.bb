@@ -35,7 +35,8 @@
 #include "core/editing/Editor.h"
 #include "core/editing/TypingCommand.h"
 #include "core/html/HTMLTextAreaElement.h"
-#include "core/page/EditorClient.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
 #include "core/rendering/RenderObject.h"
@@ -79,11 +80,6 @@ bool InputMethodController::hasComposition() const
 inline Editor& InputMethodController::editor() const
 {
     return m_frame.editor();
-}
-
-inline EditorClient& InputMethodController::editorClient() const
-{
-    return editor().client();
 }
 
 void InputMethodController::clear()
@@ -148,8 +144,8 @@ void InputMethodController::confirmCompositionAndResetState()
     if (!hasComposition())
         return;
 
-    // EditorClient::willSetInputMethodState() resets input method and the composition string is committed.
-    editorClient().willSetInputMethodState();
+    // ChromeClient::willSetInputMethodState() resets input method and the composition string is committed.
+    m_frame.chromeClient().willSetInputMethodState();
 }
 
 void InputMethodController::cancelComposition()
@@ -172,7 +168,7 @@ void InputMethodController::cancelCompositionIfSelectionIsInvalid()
         return;
 
     cancelComposition();
-    editorClient().didCancelCompositionOnSelectionChange();
+    m_frame.chromeClient().didCancelCompositionOnSelectionChange();
 }
 
 bool InputMethodController::finishComposition(const String& text, FinishCompositionMode mode)

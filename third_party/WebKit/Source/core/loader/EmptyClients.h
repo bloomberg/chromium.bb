@@ -290,7 +290,6 @@ public:
 
     virtual void respondToChangedContents() OVERRIDE { }
     virtual void respondToChangedSelection(Frame*) OVERRIDE { }
-    virtual void didCancelCompositionOnSelectionChange() OVERRIDE { }
 
     virtual void registerUndoStep(PassRefPtr<UndoStep>) OVERRIDE;
     virtual void registerRedoStep(PassRefPtr<UndoStep>) OVERRIDE;
@@ -309,8 +308,6 @@ public:
     virtual void textFieldDidEndEditing(Element*) OVERRIDE { }
     virtual void textDidChangeInTextField(Element*) OVERRIDE { }
     virtual bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*) OVERRIDE { return false; }
-
-    virtual void willSetInputMethodState() OVERRIDE { }
 };
 
 class EmptyContextMenuClient : public ContextMenuClient {

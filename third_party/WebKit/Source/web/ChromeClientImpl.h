@@ -185,6 +185,9 @@ public:
 
     virtual void didAssociateFormControls(const Vector<RefPtr<WebCore::Element> >&) OVERRIDE;
 
+    virtual void didCancelCompositionOnSelectionChange() OVERRIDE;
+    virtual void willSetInputMethodState() OVERRIDE;
+
 private:
     virtual bool isChromeClientImpl() const OVERRIDE { return true; }
 

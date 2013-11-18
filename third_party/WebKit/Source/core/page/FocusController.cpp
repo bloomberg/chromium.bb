@@ -50,7 +50,7 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/shadow/HTMLShadowElement.h"
 #include "core/page/Chrome.h"
-#include "core/page/EditorClient.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
@@ -631,7 +631,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
     if (oldFocusedElement && oldFocusedElement->isRootEditableElement() && !relinquishesEditingFocus(oldFocusedElement))
         return false;
 
-    m_page->editorClient().willSetInputMethodState();
+    m_page->chrome().client().willSetInputMethodState();
 
     RefPtr<Document> newDocument;
     if (element)

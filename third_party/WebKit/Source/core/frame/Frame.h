@@ -40,6 +40,7 @@
 namespace WebCore {
 
     class AnimationController;
+    class ChromeClient;
     class Color;
     class DOMWindow;
     class Document;
@@ -131,6 +132,7 @@ namespace WebCore {
         Document* document() const;
         FrameView* view() const;
 
+        ChromeClient& chromeClient() const;
         Editor& editor() const;
         EventHandler& eventHandler() const;
         FrameLoader& loader() const;

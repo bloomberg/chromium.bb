@@ -42,7 +42,6 @@ public:
 
     virtual void respondToChangedContents() = 0;
     virtual void respondToChangedSelection(Frame*) = 0;
-    virtual void didCancelCompositionOnSelectionChange() = 0;
 
     virtual void registerUndoStep(PassRefPtr<UndoStep>) = 0;
     virtual void registerRedoStep(PassRefPtr<UndoStep>) = 0;
@@ -61,8 +60,6 @@ public:
     virtual void textFieldDidEndEditing(Element*) = 0;
     virtual void textDidChangeInTextField(Element*) = 0;
     virtual bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*) = 0;
-
-    virtual void willSetInputMethodState() = 0;
 };
 
 }

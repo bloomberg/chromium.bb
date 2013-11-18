@@ -50,7 +50,6 @@ public:
 
     virtual void respondToChangedContents() OVERRIDE;
     virtual void respondToChangedSelection(WebCore::Frame*) OVERRIDE;
-    virtual void didCancelCompositionOnSelectionChange() OVERRIDE;
     virtual void registerUndoStep(PassRefPtr<WebCore::UndoStep>) OVERRIDE;
     virtual void registerRedoStep(PassRefPtr<WebCore::UndoStep>) OVERRIDE;
     virtual void clearUndoRedoOperations() OVERRIDE;
@@ -64,7 +63,6 @@ public:
     virtual void textFieldDidEndEditing(WebCore::Element*) OVERRIDE;
     virtual void textDidChangeInTextField(WebCore::Element*) OVERRIDE;
     virtual bool doTextFieldCommandFromEvent(WebCore::Element*, WebCore::KeyboardEvent*) OVERRIDE;
-    virtual void willSetInputMethodState() OVERRIDE;
 
     const char* interpretKeyEvent(const WebCore::KeyboardEvent*);
 

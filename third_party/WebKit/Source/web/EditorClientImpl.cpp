@@ -77,12 +77,6 @@ void EditorClientImpl::respondToChangedContents()
         m_webView->client()->didChangeContents();
 }
 
-void EditorClientImpl::didCancelCompositionOnSelectionChange()
-{
-    if (m_webView->client())
-        m_webView->client()->didCancelCompositionOnSelectionChange();
-}
-
 void EditorClientImpl::registerUndoStep(PassRefPtr<UndoStep> step)
 {
     if (m_undoStack.size() == maximumUndoStackDepth)
@@ -457,12 +451,6 @@ bool EditorClientImpl::doTextFieldCommandFromEvent(Element* element, KeyboardEve
     // keyboard commands specific to Safari's auto-fill implementation. We
     // just return false to allow the default action.
     return false;
-}
-
-void EditorClientImpl::willSetInputMethodState()
-{
-    if (m_webView->client())
-        m_webView->client()->resetInputMethod();
 }
 
 } // namesace WebKit

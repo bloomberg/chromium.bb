@@ -44,6 +44,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
@@ -275,6 +276,19 @@ FloatSize Frame::resizePageRectsKeepingRatio(const FloatSize& originalSize, cons
 void Frame::setDOMWindow(PassRefPtr<DOMWindow> domWindow)
 {
     m_domWindow = domWindow;
+}
+
+static ChromeClient& emptyChromeClient()
+{
+    DEFINE_STATIC_LOCAL(EmptyChromeClient, client, ());
+    return client;
+}
+
+ChromeClient& Frame::chromeClient() const
+{
+    if (Page* page = this->page())
+        return page->chrome().client();
+    return emptyChromeClient();
 }
 
 Document* Frame::document() const

@@ -262,6 +262,10 @@ public:
 
     virtual void didAssociateFormControls(const Vector<RefPtr<Element> >&) { };
 
+    // Input mehtod editor related functions.
+    virtual void didCancelCompositionOnSelectionChange() { }
+    virtual void willSetInputMethodState() { }
+
     // Notifies the client of a new popup widget.  The client should place
     // and size the widget with the given bounds, relative to the screen.
     // If handleExternal is true, then drawing and input handling for the
