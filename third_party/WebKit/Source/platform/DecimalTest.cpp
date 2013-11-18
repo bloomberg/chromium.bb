@@ -225,6 +225,11 @@ TEST_F(DecimalTest, Ceiling)
     EXPECT_EQ(Decimal(2), encode(13, -1, Positive).ceiling());
     EXPECT_EQ(Decimal(2), encode(15, -1, Positive).ceiling());
     EXPECT_EQ(Decimal(2), encode(19, -1, Positive).ceiling());
+    EXPECT_EQ(Decimal(2), encode(151, -2, Positive).ceiling());
+    EXPECT_EQ(Decimal(2), encode(101, -2, Positive).ceiling());
+    EXPECT_EQ(Decimal(1), encode(199, -3, Positive).ceiling());
+    EXPECT_EQ(Decimal(2), encode(199, -2, Positive).ceiling());
+    EXPECT_EQ(Decimal(3), encode(209, -2, Positive).ceiling());
 
     EXPECT_EQ(Decimal(-1), Decimal(-1).ceiling());
     EXPECT_EQ(Decimal(0), encode(1, -10, Negative).ceiling());
@@ -232,6 +237,11 @@ TEST_F(DecimalTest, Ceiling)
     EXPECT_EQ(Decimal(-1), encode(13, -1, Negative).ceiling());
     EXPECT_EQ(Decimal(-1), encode(15, -1, Negative).ceiling());
     EXPECT_EQ(Decimal(-1), encode(19, -1, Negative).ceiling());
+    EXPECT_EQ(Decimal(-1), encode(151, -2, Negative).ceiling());
+    EXPECT_EQ(Decimal(-1), encode(101, -2, Negative).ceiling());
+    EXPECT_EQ(Decimal(0), encode(199, -3, Negative).ceiling());
+    EXPECT_EQ(Decimal(-1), encode(199, -2, Negative).ceiling());
+    EXPECT_EQ(Decimal(-2), encode(209, -2, Negative).ceiling());
 }
 
 TEST_F(DecimalTest, CeilingBigExponent)
@@ -563,6 +573,8 @@ TEST_F(DecimalTest, Floor)
     EXPECT_EQ(Decimal(1), encode(13, -1, Positive).floor());
     EXPECT_EQ(Decimal(1), encode(15, -1, Positive).floor());
     EXPECT_EQ(Decimal(1), encode(19, -1, Positive).floor());
+    EXPECT_EQ(Decimal(1), encode(193332, -5, Positive).floor());
+    EXPECT_EQ(Decimal(12), encode(12002, -3, Positive).floor());
 
     EXPECT_EQ(Decimal(-1), Decimal(-1).floor());
     EXPECT_EQ(Decimal(-1), encode(1, -10, Negative).floor());
@@ -570,6 +582,8 @@ TEST_F(DecimalTest, Floor)
     EXPECT_EQ(Decimal(-2), encode(13, -1, Negative).floor());
     EXPECT_EQ(Decimal(-2), encode(15, -1, Negative).floor());
     EXPECT_EQ(Decimal(-2), encode(19, -1, Negative).floor());
+    EXPECT_EQ(Decimal(-2), encode(193332, -5, Negative).floor());
+    EXPECT_EQ(Decimal(-13), encode(12002, -3, Negative).floor());
 }
 
 TEST_F(DecimalTest, FloorBigExponent)
@@ -959,6 +973,18 @@ TEST_F(DecimalTest, Round)
     EXPECT_EQ(Decimal(5), (Decimal(1) / fromString("0.2")).round());
     EXPECT_EQ(Decimal(10), (fromString("10.2") / 1).round());
     EXPECT_EQ(encode(1234, 100, Positive), encode(1234, 100, Positive).round());
+
+    EXPECT_EQ(Decimal(2), encode(190002, -5, Positive).round());
+    EXPECT_EQ(Decimal(2), encode(150002, -5, Positive).round());
+    EXPECT_EQ(Decimal(2), encode(150000, -5, Positive).round());
+    EXPECT_EQ(Decimal(12), encode(12492, -3, Positive).round());
+    EXPECT_EQ(Decimal(13), encode(12502, -3, Positive).round());
+
+    EXPECT_EQ(Decimal(-2), encode(190002, -5, Negative).round());
+    EXPECT_EQ(Decimal(-2), encode(150002, -5, Negative).round());
+    EXPECT_EQ(Decimal(-2), encode(150000, -5, Negative).round());
+    EXPECT_EQ(Decimal(-12), encode(12492, -3, Negative).round());
+    EXPECT_EQ(Decimal(-13), encode(12502, -3, Negative).round());
 }
 
 TEST_F(DecimalTest, RoundSpecialValues)
