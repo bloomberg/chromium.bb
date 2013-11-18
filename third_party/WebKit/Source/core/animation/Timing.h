@@ -61,7 +61,7 @@ struct Timing {
         , iterationDuration(0)
         , playbackRate(1)
         , direction(PlaybackDirectionNormal)
-        , timingFunction(LinearTimingFunction::create())
+        , timingFunction(0)
     {
     }
 
@@ -73,7 +73,6 @@ struct Timing {
         ASSERT(iterationCount >= 0);
         ASSERT(iterationDuration >= 0);
         ASSERT(std::isfinite(playbackRate));
-        ASSERT(timingFunction);
     }
 
     double startDelay;
