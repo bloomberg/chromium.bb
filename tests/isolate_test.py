@@ -952,7 +952,7 @@ class IsolateTest(IsolateBase):
       'foo.pyc',
       'bar.swp',
     ]
-    blacklist = isolate.trace_inputs.gen_blacklist(isolate.DEFAULT_BLACKLIST)
+    blacklist = tools.gen_blacklist(isolate.isolateserver.DEFAULT_BLACKLIST)
     for i in ok:
       self.assertFalse(blacklist(i), i)
     for i in blocked:
@@ -968,7 +968,7 @@ class IsolateTest(IsolateBase):
       'testserver.log',
       os.path.join('foo', 'testserver.log'),
     ]
-    blacklist = isolate.trace_inputs.gen_blacklist(isolate.DEFAULT_BLACKLIST)
+    blacklist = tools.gen_blacklist(isolate.isolateserver.DEFAULT_BLACKLIST)
     for i in ok:
       self.assertFalse(blacklist(i), i)
     for i in blocked:

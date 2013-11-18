@@ -658,6 +658,9 @@ class RunTestCases(unittest.TestCase):
       re.escape('OMG I crashed'),
       re.escape('Here\'s a stack trace'),
 
+      # TODO(maruel): This test has a race condition.
+      # It got '[2/4]   0.04s ' at index 29 when it expected the first retry.
+
       # Now resume normal retries.
       r'\[3/4\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d+s\) \- retry \#1',
       re.escape('Note: Google Test filter = Foo.Bar1'),

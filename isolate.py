@@ -63,21 +63,6 @@ class ExecutionError(Exception):
 ### Path handling code.
 
 
-DEFAULT_BLACKLIST = (
-  # Temporary vim or python files.
-  r'^.+\.(?:pyc|swp)$',
-  # .git or .svn directory.
-  r'^(?:.+' + re.escape(os.path.sep) + r'|)\.(?:git|svn)$',
-)
-
-
-# Chromium-specific.
-DEFAULT_BLACKLIST += (
-  r'^.+\.(?:run_test_cases)$',
-  r'^(?:.+' + re.escape(os.path.sep) + r'|)testserver\.log$',
-)
-
-
 def relpath(path, root):
   """os.path.relpath() that keeps trailing os.path.sep."""
   out = os.path.relpath(path, root)
@@ -2072,7 +2057,7 @@ def CMDmerge(parser, args):
     parser.error('Unsupported argument: %s' % args)
 
   complete_state = load_complete_state(options, os.getcwd(), None, False)
-  blacklist = trace_inputs.gen_blacklist(options.trace_blacklist)
+  blacklist = tools.gen_blacklist(options.trace_blacklist)
   merge(complete_state, blacklist)
   return 0
 
@@ -2097,7 +2082,7 @@ def CMDread(parser, args):
 
   complete_state = load_complete_state(
       options, os.getcwd(), None, options.skip_refresh)
-  blacklist = trace_inputs.gen_blacklist(options.trace_blacklist)
+  blacklist = tools.gen_blacklist(options.trace_blacklist)
   value, exceptions = read_trace_as_isolate_dict(complete_state, blacklist)
   if options.merge:
     merge(complete_state, blacklist)
@@ -2302,7 +2287,7 @@ def CMDtrace(parser, args):
   complete_state.save_files()
 
   if options.merge:
-    blacklist = trace_inputs.gen_blacklist(options.trace_blacklist)
+    blacklist = tools.gen_blacklist(options.trace_blacklist)
     merge(complete_state, blacklist)
 
   return result
@@ -2355,7 +2340,7 @@ def add_trace_option(parser):
   """Adds --trace-blacklist to the parser."""
   parser.add_option(
       '--trace-blacklist',
-      action='append', default=list(DEFAULT_BLACKLIST),
+      action='append', default=list(isolateserver.DEFAULT_BLACKLIST),
       help='List of regexp to use as blacklist filter for files to consider '
            'important, not to be confused with --blacklist which blacklists '
            'test case.')

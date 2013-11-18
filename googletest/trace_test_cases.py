@@ -198,7 +198,7 @@ def main():
       options.jobs,
       logname)
   print('Reading trace logs...')
-  blacklist = trace_inputs.gen_blacklist(options.trace_blacklist)
+  blacklist = tools.gen_blacklist(options.trace_blacklist)
   write_details(logname, options.out, options.root_dir, blacklist, results)
   return 0
 

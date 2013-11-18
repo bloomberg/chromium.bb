@@ -33,18 +33,31 @@ ALGO = hashlib.sha1
 
 
 class TestCase(auto_stub.TestCase):
+  """Mocks out url_open() calls and sys.stdout/stderr."""
   def setUp(self):
     super(TestCase, self).setUp()
     self.mock(isolateserver.net, 'url_open', self._url_open)
     self.mock(isolateserver.net, 'sleep_before_retry', lambda *_: None)
     self._lock = threading.Lock()
     self._requests = []
+    self.mock(sys, 'stdout', StringIO.StringIO())
+    self.mock(sys, 'stderr', StringIO.StringIO())
 
   def tearDown(self):
     try:
       self.assertEqual([], self._requests)
+      self.checkOutput('', '')
     finally:
       super(TestCase, self).tearDown()
+
+  def checkOutput(self, expected_out, expected_err):
+    try:
+      self.assertEqual(expected_err, sys.stderr.getvalue())
+      self.assertEqual(expected_out, sys.stdout.getvalue())
+    finally:
+      # Prevent double-fail.
+      self.mock(sys, 'stdout', StringIO.StringIO())
+      self.mock(sys, 'stderr', StringIO.StringIO())
 
   def _url_open(self, url, **kwargs):
     logging.warn('url_open(%s, %s)', url[:500], str(kwargs)[:500])
@@ -634,8 +647,6 @@ class IsolateServerDownloadTest(TestCase):
       actual[key] = ''.join(generator)
     self.mock(isolateserver, 'file_write', file_write_mock)
     self.mock(os, 'makedirs', lambda _: None)
-    stdout = StringIO.StringIO()
-    self.mock(sys, 'stdout', stdout)
     server = 'http://example.com'
 
     files = {
@@ -676,8 +687,7 @@ class IsolateServerDownloadTest(TestCase):
     expected_stdout = (
         'To run this test please run from the directory %s:\n  Absurb command\n'
         % os.path.join(self.tempdir, 'a'))
-    self.assertEqual(expected_stdout, stdout.getvalue())
-
+    self.checkOutput(expected_stdout, '')
 
 class TestIsolated(unittest.TestCase):
   def test_load_isolated_empty(self):

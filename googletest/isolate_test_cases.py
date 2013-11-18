@@ -41,7 +41,7 @@ def isolate_test_cases(
   results = trace_test_cases.trace_test_cases(
       cmd, cwd_dir, test_cases, jobs, logname)
   api = trace_inputs.get_api()
-  blacklist = trace_inputs.gen_blacklist(trace_blacklist)
+  blacklist = tools.gen_blacklist(trace_blacklist)
   logs = dict(
       (i.pop('trace'), i) for i in api.parse_log(logname, blacklist, None))
   exception = None

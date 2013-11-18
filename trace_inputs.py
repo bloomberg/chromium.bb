@@ -109,14 +109,6 @@ def can_trace():
   return bool(windll.shell32.IsUserAnAdmin())
 
 
-def gen_blacklist(regexes):
-  """Returns a lambda to be used as a blacklist."""
-  compiled = [re.compile(i) for i in regexes]
-  def match(f):
-    return any(j.match(f) for j in compiled)
-  return match
-
-
 def create_subprocess_thunk():
   """Creates a small temporary script to start the child process.
 
@@ -3297,7 +3289,7 @@ def CMDread(parser, args):
 
   variables = dict(options.variables)
   api = get_api()
-  blacklist = gen_blacklist(options.trace_blacklist)
+  blacklist = tools.gen_blacklist(options.trace_blacklist)
   data = api.parse_log(options.log, blacklist, options.trace_name)
   # Process each trace.
   output_as_json = []

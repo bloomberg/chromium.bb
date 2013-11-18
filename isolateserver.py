@@ -98,6 +98,21 @@ SUPPORTED_ALGOS = {
 SUPPORTED_ALGOS_REVERSE = dict((v, k) for k, v in SUPPORTED_ALGOS.iteritems())
 
 
+DEFAULT_BLACKLIST = (
+  # Temporary vim or python files.
+  r'^.+\.(?:pyc|swp)$',
+  # .git or .svn directory.
+  r'^(?:.+' + re.escape(os.path.sep) + r'|)\.(?:git|svn)$',
+)
+
+
+# Chromium-specific.
+DEFAULT_BLACKLIST += (
+  r'^.+\.(?:run_test_cases)$',
+  r'^(?:.+' + re.escape(os.path.sep) + r'|)testserver\.log$',
+)
+
+
 class ConfigError(ValueError):
   """Generic failure to load a .isolated file."""
   pass
@@ -1175,6 +1190,7 @@ def load_isolated(content, os_flavor, algo):
     raise ConfigError('Expected dict, got %r' % data)
 
   # Check 'version' first, since it could modify the parsing after.
+  # TODO(maruel): Drop support for unversioned .isolated file around Jan 2014.
   value = data.get('version', '1.0')
   if not isinstance(value, basestring):
     raise ConfigError('Expected string, got %r' % value)
@@ -1184,6 +1200,7 @@ def load_isolated(content, os_flavor, algo):
     raise ConfigError('Expected compatible \'1.x\' version, got %r' % value)
 
   if algo is None:
+    # TODO(maruel): Remove the default around Jan 2014.
     # Default the algorithm used in the .isolated file itself, falls back to
     # 'sha-1' if unspecified.
     algo = SUPPORTED_ALGOS_REVERSE[data.get('algo', 'sha-1')]
@@ -1630,7 +1647,11 @@ def CMDdownload(parser, args):
 
 class OptionParserIsolateServer(tools.OptionParserWithLogging):
   def __init__(self, **kwargs):
-    tools.OptionParserWithLogging.__init__(self, **kwargs)
+    tools.OptionParserWithLogging.__init__(
+        self,
+        version=__version__,
+        prog=os.path.basename(sys.modules[__name__].__file__),
+        **kwargs)
     self.add_option(
         '-I', '--isolate-server',
         metavar='URL', default='',
@@ -1651,8 +1672,7 @@ class OptionParserIsolateServer(tools.OptionParserWithLogging):
 def main(args):
   dispatcher = subcommand.CommandDispatcher(__name__)
   try:
-    return dispatcher.execute(
-        OptionParserIsolateServer(version=__version__), args)
+    return dispatcher.execute(OptionParserIsolateServer(), args)
   except Exception as e:
     tools.report_error(e)
     return 1

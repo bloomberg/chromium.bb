@@ -9,6 +9,7 @@ import logging
 import logging.handlers
 import optparse
 import os
+import re
 import sys
 import time
 import traceback
@@ -160,3 +161,9 @@ def report_error(error):
   if isinstance(error, Exception):
     print >> sys.stderr, traceback.format_exc(),
   print >> sys.stderr, '[----------------------------]'
+
+
+def gen_blacklist(regexes):
+  """Returns a lambda to be used as a blacklist."""
+  compiled = [re.compile(i) for i in regexes]
+  return lambda f: any(j.match(f) for j in compiled)
