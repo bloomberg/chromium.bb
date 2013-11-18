@@ -35,6 +35,9 @@ enum KeyboardControlEvent {
 // Returns true if the virtual keyboard is enabled.
 KEYBOARD_EXPORT bool IsKeyboardEnabled();
 
+// Returns true if the keyboard usability test is enabled.
+KEYBOARD_EXPORT bool IsKeyboardUsabilityExperimentEnabled();
+
 // Insert |text| into the active TextInputClient associated with |root_window|,
 // if there is one. Returns true if |text| was successfully inserted. Note
 // that this may convert |text| into ui::KeyEvents for injection in some

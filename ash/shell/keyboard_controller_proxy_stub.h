@@ -2,20 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_KEYBOARD_CONTROLLER_PROXY_STUB_H_
-#define ASH_KEYBOARD_CONTROLLER_PROXY_STUB_H_
+#ifndef ASH_SHELL_KEYBOARD_CONTROLLER_PROXY_STUB_H_
+#define ASH_SHELL_KEYBOARD_CONTROLLER_PROXY_STUB_H_
 
-#include "ash/ash_export.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
+
+namespace aura {
+class Window;
+}  // namespace aura
 
 namespace ash {
 
 // Stub implementation of KeyboardControllerProxy
-class ASH_EXPORT KeyboardControllerProxyStub
-    : public keyboard::KeyboardControllerProxy {
+class KeyboardControllerProxyStub : public keyboard::KeyboardControllerProxy {
  public:
   KeyboardControllerProxyStub();
   virtual ~KeyboardControllerProxyStub();
+
+  virtual aura::Window* GetKeyboardWindow() OVERRIDE;
 
  private:
   // Overridden from keyboard::KeyboardControllerProxy:
@@ -25,9 +30,10 @@ class ASH_EXPORT KeyboardControllerProxyStub
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
 
+  aura::test::TestWindowDelegate delegate_;
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerProxyStub);
 };
 
 }  // namespace ash
 
-#endif  // ASH_KEYBOARD_CONTROLLER_PROXY_STUB_H_
+#endif  // ASH_SHELL_KEYBOARD_CONTROLLER_PROXY_STUB_H_

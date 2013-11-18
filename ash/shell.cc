@@ -23,6 +23,7 @@
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_position_controller.h"
+#include "ash/display/virtual_keyboard_window_controller.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/first_run/first_run_helper_impl.h"
 #include "ash/focus_cycler.h"
@@ -336,14 +337,12 @@ void Shell::SetDisplayWorkAreaInsets(Window* contains,
 }
 
 void Shell::OnLoginStateChanged(user::LoginStatus status) {
-  if (status != user::LOGGED_IN_NONE) {
-    // TODO(bshe): Primary root window controller may not be the controller to
-    // attach virtual keyboard. See http://crbug.com/303429
-    InitKeyboard(GetPrimaryRootWindowController());
-    GetPrimaryRootWindowController()->ActivateKeyboard(
-        keyboard_controller_.get());
-  }
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnLoginStateChanged(status));
+}
+
+void Shell::OnLoginUserProfilePrepared() {
+  CreateLauncher();
+  CreateKeyboard();
 }
 
 void Shell::UpdateAfterLoginStatusChange(user::LoginStatus status) {
@@ -378,6 +377,19 @@ void Shell::CreateLauncher() {
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter)
     (*iter)->shelf()->CreateLauncher();
+}
+
+void Shell::CreateKeyboard() {
+  // TODO(bshe): Primary root window controller may not be the controller to
+  // attach virtual keyboard. See http://crbug.com/303429
+  InitKeyboard();
+  if (keyboard::IsKeyboardUsabilityExperimentEnabled()) {
+    display_controller()->virtual_keyboard_window_controller()->
+        ActivateKeyboard(keyboard_controller_.get());
+  } else {
+    GetPrimaryRootWindowController()->
+        ActivateKeyboard(keyboard_controller_.get());
+  }
 }
 
 void Shell::ShowLauncher() {
@@ -618,6 +630,7 @@ Shell::~Shell() {
 
   // Destroy all child windows including widgets.
   display_controller_->CloseChildWindows();
+  display_controller_->CloseNonDesktopDisplay();
 
   // Destroy SystemTrayNotifier after destroying SystemTray as TrayItems
   // needs to remove observers from it.
@@ -692,7 +705,7 @@ void Shell::Init() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   delegate_->PreInit();
-  if (command_line->HasSwitch(keyboard::switches::kKeyboardUsabilityTest)) {
+  if (keyboard::IsKeyboardUsabilityExperimentEnabled()) {
     display_manager_->SetSecondDisplayMode(
         internal::DisplayManager::VIRTUAL_KEYBOARD);
   }
@@ -915,7 +928,7 @@ void Shell::Init() {
                  weak_display_manager_factory_->GetWeakPtr()));
 }
 
-void Shell::InitKeyboard(internal::RootWindowController* root) {
+void Shell::InitKeyboard() {
   if (keyboard::IsKeyboardEnabled()) {
     if (keyboard_controller_.get()) {
       RootWindowControllerList controllers = GetAllRootWindowControllers();
