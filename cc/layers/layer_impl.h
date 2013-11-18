@@ -42,6 +42,7 @@ namespace cc {
 
 class LayerTreeHostImpl;
 class LayerTreeImpl;
+class MicroBenchmarkImpl;
 class QuadSink;
 class Renderer;
 class ScrollbarAnimationController;
@@ -489,6 +490,8 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   // TODO(danakj): Be true only if needed. crbug.com/259511
   bool needs_push_properties() const { return true; }
   bool descendant_needs_push_properties() const { return true; }
+
+  virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark);
 
  protected:
   LayerImpl(LayerTreeImpl* layer_impl, int id);

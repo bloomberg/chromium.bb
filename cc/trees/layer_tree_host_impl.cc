@@ -235,6 +235,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       external_stencil_test_enabled_(false),
       animation_registrar_(AnimationRegistrar::Create()),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
+      micro_benchmark_controller_(this),
       need_to_update_visible_tiles_before_draw_(false),
       shared_bitmap_manager_(manager) {
   DCHECK(proxy_->IsImplThread());
@@ -301,6 +302,8 @@ void LayerTreeHostImpl::CommitComplete() {
   }
 
   client_->SendManagedMemoryStats();
+
+  micro_benchmark_controller_.DidCompleteCommit();
 }
 
 bool LayerTreeHostImpl::CanDraw() const {
@@ -2839,6 +2842,11 @@ void LayerTreeHostImpl::MarkUIResourceNotEvicted(UIResourceId uid) {
   evicted_ui_resources_.erase(found_in_evicted);
   if (evicted_ui_resources_.empty())
     client_->OnCanDrawStateChanged(CanDraw());
+}
+
+void LayerTreeHostImpl::ScheduleMicroBenchmark(
+    scoped_ptr<MicroBenchmarkImpl> benchmark) {
+  micro_benchmark_controller_.ScheduleRun(benchmark.Pass());
 }
 
 }  // namespace cc

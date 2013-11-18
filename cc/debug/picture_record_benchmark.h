@@ -16,7 +16,7 @@ namespace cc {
 
 class LayerTreeHost;
 class Layer;
-class PictureRecordBenchmark : public MicroBenchmark {
+class CC_EXPORT PictureRecordBenchmark : public MicroBenchmark {
  public:
   explicit PictureRecordBenchmark(scoped_ptr<base::Value> value,
                                   const MicroBenchmark::DoneCallback& callback);

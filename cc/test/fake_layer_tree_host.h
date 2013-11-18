@@ -5,6 +5,7 @@
 #ifndef CC_TEST_FAKE_LAYER_TREE_HOST_H_
 #define CC_TEST_FAKE_LAYER_TREE_HOST_H_
 
+#include "cc/debug/micro_benchmark_controller.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -40,6 +41,10 @@ class FakeLayerTreeHost : public LayerTreeHost {
   using LayerTreeHost::InitializeForTesting;
   void UpdateLayers(ResourceUpdateQueue* queue) {
     LayerTreeHost::UpdateLayers(queue);
+  }
+
+  MicroBenchmarkController* GetMicroBenchmarkController() {
+    return &micro_benchmark_controller_;
   }
 
   bool needs_commit() { return needs_commit_; }

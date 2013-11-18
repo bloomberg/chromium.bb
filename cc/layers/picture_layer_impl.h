@@ -21,6 +21,7 @@ namespace cc {
 
 struct AppendQuadsData;
 class QuadSink;
+class MicroBenchmarkImpl;
 
 class CC_EXPORT PictureLayerImpl
     : public LayerImpl,
@@ -69,6 +70,8 @@ class CC_EXPORT PictureLayerImpl
   virtual ResourceProvider::ResourceId ContentsResourceId() const OVERRIDE;
 
   virtual size_t GPUMemoryUsageInBytes() const OVERRIDE;
+
+  virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark) OVERRIDE;
 
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id);

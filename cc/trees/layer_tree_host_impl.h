@@ -17,6 +17,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/base/cc_export.h"
+#include "cc/debug/micro_benchmark_controller_impl.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/layer_scroll_offset_delegate.h"
 #include "cc/input/top_controls_manager_client.h"
@@ -411,6 +412,8 @@ class CC_EXPORT LayerTreeHostImpl
     bool opaque;
   };
 
+  void ScheduleMicroBenchmark(scoped_ptr<MicroBenchmarkImpl> benchmark);
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -620,6 +623,7 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<AnimationRegistrar> animation_registrar_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
+  MicroBenchmarkControllerImpl micro_benchmark_controller_;
 
   bool need_to_update_visible_tiles_before_draw_;
 

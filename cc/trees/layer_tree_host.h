@@ -299,6 +299,8 @@ class CC_EXPORT LayerTreeHost {
     output_surface_lost_ = is_lost;
   }
 
+  MicroBenchmarkController micro_benchmark_controller_;
+
  private:
   bool InitializeProxy(scoped_ptr<Proxy> proxy);
 
@@ -353,8 +355,6 @@ class CC_EXPORT LayerTreeHost {
 
   int source_frame_number_;
   scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation_;
-  MicroBenchmarkController micro_benchmark_controller_;
-
 
   bool output_surface_can_be_initialized_;
   bool output_surface_lost_;

@@ -14,14 +14,14 @@
 
 namespace base {
 class Value;
+class MessageLoopProxy;
 }  // namespace base
 
 namespace cc {
 
 class LayerTreeHost;
-class Layer;
-class PictureLayer;
-class MicroBenchmarkController {
+class LayerTreeHostImpl;
+class CC_EXPORT MicroBenchmarkController {
  public:
   explicit MicroBenchmarkController(LayerTreeHost* host);
   ~MicroBenchmarkController();
@@ -32,11 +32,14 @@ class MicroBenchmarkController {
                    scoped_ptr<base::Value> value,
                    const MicroBenchmark::DoneCallback& callback);
 
+  void ScheduleImplBenchmarks(LayerTreeHostImpl* host_impl);
+
  private:
   void CleanUpFinishedBenchmarks();
 
   LayerTreeHost* host_;
   ScopedPtrVector<MicroBenchmark> benchmarks_;
+  scoped_refptr<base::MessageLoopProxy> main_controller_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MicroBenchmarkController);
 };

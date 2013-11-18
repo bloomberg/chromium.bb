@@ -100,14 +100,14 @@ LayerTreeHost::LayerTreeHost(
     LayerTreeHostClient* client,
     SharedBitmapManager* manager,
     const LayerTreeSettings& settings)
-    : next_ui_resource_id_(1),
+    : micro_benchmark_controller_(this),
+      next_ui_resource_id_(1),
       animating_(false),
       needs_full_tree_sync_(true),
       needs_filter_context_(false),
       client_(client),
       source_frame_number_(0),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
-      micro_benchmark_controller_(this),
       output_surface_can_be_initialized_(true),
       output_surface_lost_(true),
       num_failed_recreate_attempts_(0),
@@ -424,6 +424,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     // considered active.
     sync_tree->DidBecomeActive();
   }
+
+  micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
 
   source_frame_number_++;
 }
