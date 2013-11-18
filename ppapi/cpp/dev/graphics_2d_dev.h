@@ -9,6 +9,8 @@
 
 namespace pp {
 
+class Point;
+
 // Graphics2DDev is a version of Graphics2D that exposes under-development  APIs
 // for HiDPI
 class Graphics2D_Dev : public Graphics2D {
@@ -48,6 +50,14 @@ class Graphics2D_Dev : public Graphics2D {
   /// @return Returns the scale factor for the graphics context. If the resource
   /// is invalid, 0.0 will be returned.
   float GetScale();
+
+  /// Set the offset into the plugin element at which the graphics context is
+  /// painted. This allows a portion of the plugin element to be painted to.
+  /// The new offset will only be applied after Flush() has been called.
+  ///
+  /// @param[in] resource A <code>Graphics2D</code> context resource.
+  /// @param[in] offset The offset at which the context should be painted.
+  void SetOffset(const pp::Point& offset);
 };
 
 }  // namespace pp

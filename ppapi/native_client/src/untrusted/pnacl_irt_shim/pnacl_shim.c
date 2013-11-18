@@ -1901,6 +1901,8 @@ static int32_t Pnacl_M14_PPB_Font_Dev_PixelOffsetForCharacter(PP_Resource font, 
 
 /* Not generating wrapper methods for PPB_Graphics2D_Dev_0_1 */
 
+/* Not generating wrapper methods for PPB_Graphics2D_Dev_0_2 */
+
 /* Begin wrapper methods for PPB_IMEInputEvent_Dev_0_1 */
 
 static PP_Bool Pnacl_M16_PPB_IMEInputEvent_Dev_IsIMEInputEvent(PP_Resource resource) {
@@ -4614,6 +4616,8 @@ struct PPB_Font_Dev_0_6 Pnacl_Wrappers_PPB_Font_Dev_0_6 = {
 };
 
 /* Not generating wrapper interface for PPB_Graphics2D_Dev_0_1 */
+
+/* Not generating wrapper interface for PPB_Graphics2D_Dev_0_2 */
 
 struct PPB_IMEInputEvent_Dev_0_1 Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_1 = {
     .IsIMEInputEvent = (PP_Bool (*)(PP_Resource resource))&Pnacl_M16_PPB_IMEInputEvent_Dev_IsIMEInputEvent,

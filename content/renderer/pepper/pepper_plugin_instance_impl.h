@@ -503,6 +503,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
       scoped_ptr<cc::SingleReleaseCallback>* release_callback,
       bool use_shared_memory) OVERRIDE;
 
+  // Update any transforms that should be applied to the texture layer.
+  void UpdateLayerTransform();
+
  private:
   friend class base::RefCounted<PepperPluginInstanceImpl>;
   friend class PpapiUnittest;
@@ -596,8 +599,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // Updates the layer for compositing. This creates a layer and attaches to the
   // container if:
-  // - we have a bound Graphics3D
-  // - the Graphics3D has a texture
+  // - we have a bound Graphics3D and the Graphics3D has a texture, OR
+  //   we have a bound Graphics2D and are using software compositing
   // - we are not in Flash full-screen mode (or transitioning to it)
   // Otherwise it destroys the layer.
   // It does either operation lazily.

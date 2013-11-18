@@ -6,12 +6,14 @@
 #define CONTENT_RENDERER_PEPPER_MOCK_RENDERER_PPAPI_HOST_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/resource_message_test_sink.h"
 
 namespace content {
+class FakePepperPluginInstance;
 class PluginModule;
 
 // A mock RendererPpapiHost for testing resource hosts. Messages sent by
@@ -64,6 +66,8 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   PP_Instance pp_instance_;
 
   bool has_user_gesture_;
+
+  scoped_ptr<FakePepperPluginInstance> plugin_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRendererPpapiHost);
 };

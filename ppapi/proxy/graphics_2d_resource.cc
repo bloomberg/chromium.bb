@@ -111,6 +111,10 @@ float Graphics2DResource::GetScale() {
   return scale_;
 }
 
+void Graphics2DResource::SetOffset(const PP_Point* offset) {
+  Post(RENDERER, PpapiHostMsg_Graphics2D_SetOffset(*offset));
+}
+
 int32_t Graphics2DResource::Flush(scoped_refptr<TrackedCallback> callback) {
   // If host is not even created, return failure immediately.  This can happen
   // when failed to initialize (in constructor).

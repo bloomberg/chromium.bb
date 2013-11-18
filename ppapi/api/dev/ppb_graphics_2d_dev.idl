@@ -8,7 +8,8 @@
 [generate_thunk]
 
 label Chrome {
-  M22 = 0.1
+  M22 = 0.1,
+  M32 = 0.2
 };
 
 /* PPB_Graphics2D_Dev interface */
@@ -45,5 +46,18 @@ interface PPB_Graphics2D_Dev {
    */
   float_t GetScale(
       [in] PP_Resource resource);
+
+  /***
+   * Sets the offset into the plugin element at which the graphics context is
+   * painted. This allows a portion of the plugin element to be painted to.
+   * The new offset will only be applied after Flush() has been called.
+   *
+   * @param[in] resource A <code>Graphics2D</code> context resource.
+   * @param[in] offset The offset at which the context should be painted.
+   */
+  [version=0.2]
+  void SetOffset(
+      [in] PP_Resource resource,
+      [in] PP_Point offset);
 }; 
 

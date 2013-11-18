@@ -1363,6 +1363,8 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_Graphics2D_ReplaceContents,
                      ppapi::HostResource /* image_data */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_Graphics2D_Dev_SetScale,
                      float /* scale */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_Graphics2D_SetOffset,
+                     PP_Point /* offset */)
 
 // Graphics2D, plugin -> host -> plugin
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Graphics2D_Flush)
@@ -1385,7 +1387,6 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_NetworkMonitor_Create)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_NetworkMonitor_NetworkList,
                      ppapi::proxy::SerializedNetworkList /* network_list */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_NetworkMonitor_Forbidden)
-
 
 // NetworkProxy ----------------------------------------------------------------
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_NetworkProxy_Create)

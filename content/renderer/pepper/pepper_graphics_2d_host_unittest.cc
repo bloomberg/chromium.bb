@@ -5,9 +5,18 @@
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 
 #include "base/basictypes.h"
+#include "base/message_loop/message_loop.h"
+#include "content/renderer/pepper/mock_renderer_ppapi_host.h"
+#include "content/renderer/pepper/ppb_image_data_impl.h"
+#include "ppapi/shared_impl/proxy_lock.h"
+#include "ppapi/shared_impl/test_globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebCanvas.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+
+using blink::WebCanvas;
 
 namespace content {
 
@@ -18,6 +27,60 @@ class PepperGraphics2DHostTest : public testing::Test {
                                      gfx::Point* delta) {
     return PepperGraphics2DHost::ConvertToLogicalPixels(scale, op_rect, delta);
   }
+
+  PepperGraphics2DHostTest()
+      : message_loop_(base::MessageLoop::TYPE_DEFAULT),
+        renderer_ppapi_host_(NULL, 12345) {}
+
+  virtual ~PepperGraphics2DHostTest() {
+    ppapi::ProxyAutoLock proxy_lock;
+    host_.reset();
+  }
+
+  void Init(PP_Instance instance,
+            const PP_Size& backing_store_size,
+            const gfx::Rect& plugin_rect) {
+    test_globals_.GetResourceTracker()->DidCreateInstance(instance);
+    scoped_refptr<PPB_ImageData_Impl> backing_store(
+        new PPB_ImageData_Impl(instance, PPB_ImageData_Impl::ForTest()));
+    host_.reset(PepperGraphics2DHost::Create(
+        &renderer_ppapi_host_, instance, 12345, backing_store_size, PP_FALSE,
+        backing_store));
+    DCHECK(host_.get());
+    plugin_rect_ = plugin_rect;
+  }
+
+  void PaintImageData(PPB_ImageData_Impl* image_data) {
+    ppapi::HostResource image_data_resource;
+    image_data_resource.SetHostResource(image_data->pp_instance(),
+                                        image_data->pp_resource());
+    host_->OnHostMsgPaintImageData(NULL, image_data_resource,
+                                   PP_Point(), false, PP_Rect());
+  }
+
+  void SetOffset(const PP_Point& point) {
+    host_->OnHostMsgSetOffset(NULL, point);
+  }
+
+  void Flush() {
+    ppapi::host::HostMessageContext context(
+        ppapi::proxy::ResourceMessageCallParams(host_->pp_resource(), 0));
+    host_->OnHostMsgFlush(&context);
+    host_->ViewFlushedPaint();
+    host_->SendOffscreenFlushAck();
+  }
+
+  void PaintToWebCanvas(WebCanvas* canvas) {
+    host_->Paint(canvas, plugin_rect_,
+                 gfx::Rect(0, 0, plugin_rect_.width(), plugin_rect_.height()));
+  }
+
+ private:
+  gfx::Rect plugin_rect_;
+  scoped_ptr<PepperGraphics2DHost> host_;
+  base::MessageLoop message_loop_;
+  MockRendererPpapiHost renderer_ppapi_host_;
+  ppapi::TestGlobals test_globals_;
 };
 
 TEST_F(PepperGraphics2DHostTest, ConvertToLogicalPixels) {
@@ -87,6 +150,79 @@ TEST_F(PepperGraphics2DHostTest, ConvertToLogicalPixels) {
     ConvertToLogicalPixels(1.0f / tests[i].scale, &r1, NULL);
     EXPECT_TRUE(r1.Contains(orig));
   }
+}
+
+TEST_F(PepperGraphics2DHostTest, SetOffset) {
+  ppapi::ProxyAutoLock proxy_lock;
+
+  // Initialize the backing store.
+  PP_Instance instance = 12345;
+  PP_Size backing_store_size = { 300, 300 };
+  gfx::Rect plugin_rect(0, 0, 500, 500);
+  Init(instance, backing_store_size, plugin_rect);
+
+  // Paint the entire backing store red.
+  scoped_refptr<PPB_ImageData_Impl> image_data(
+      new PPB_ImageData_Impl(instance, PPB_ImageData_Impl::ForTest()));
+  image_data->Init(PPB_ImageData_Impl::GetNativeImageDataFormat(),
+                   backing_store_size.width,
+                   backing_store_size.height,
+                   true);
+  {
+    ImageDataAutoMapper auto_mapper(image_data.get());
+    image_data->GetMappedBitmap()->eraseColor(
+        SkColorSetARGBMacro(255, 255, 0, 0));
+  }
+  PaintImageData(image_data.get());
+  Flush();
+
+  // Set up the actual and expected bitmaps/canvas.
+  SkBitmap actual_bitmap;
+  actual_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                          plugin_rect.x() + plugin_rect.width(),
+                          plugin_rect.y() + plugin_rect.height());
+  actual_bitmap.allocPixels();
+  actual_bitmap.eraseColor(0);
+  WebCanvas actual_canvas(actual_bitmap);
+  SkBitmap expected_bitmap;
+  expected_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                            plugin_rect.x() + plugin_rect.width(),
+                            plugin_rect.y() + plugin_rect.height());
+  expected_bitmap.allocPixels();
+  expected_bitmap.eraseColor(0);
+
+  // Paint the backing store to the canvas.
+  PaintToWebCanvas(&actual_canvas);
+  expected_bitmap.eraseArea(
+      SkIRect::MakeWH(backing_store_size.width, backing_store_size.height),
+      SkColorSetARGBMacro(255, 255, 0, 0));
+  EXPECT_EQ(memcmp(expected_bitmap.getAddr(0, 0),
+                   actual_bitmap.getAddr(0, 0),
+                   expected_bitmap.getSize()), 0);
+
+  // Set the offset.
+  PP_Point offset = { 20, 20 };
+  SetOffset(offset);
+  actual_bitmap.eraseColor(0);
+  PaintToWebCanvas(&actual_canvas);
+  // No flush has occurred so the result should be the same.
+  EXPECT_EQ(memcmp(expected_bitmap.getAddr(0, 0),
+                   actual_bitmap.getAddr(0, 0),
+                   expected_bitmap.getSize()), 0);
+
+
+  // Flush the offset and the location of the rectangle should have shifted.
+  Flush();
+  actual_bitmap.eraseColor(0);
+  PaintToWebCanvas(&actual_canvas);
+  expected_bitmap.eraseColor(0);
+  expected_bitmap.eraseArea(
+      SkIRect::MakeXYWH(offset.x, offset.y,
+                        backing_store_size.width, backing_store_size.height),
+      SkColorSetARGBMacro(255, 255, 0, 0));
+  EXPECT_EQ(memcmp(expected_bitmap.getAddr(0, 0),
+                   actual_bitmap.getAddr(0, 0),
+                   expected_bitmap.getSize()), 0);
 }
 
 }  // namespace content

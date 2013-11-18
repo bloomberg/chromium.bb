@@ -36,6 +36,7 @@ class PPAPI_THUNK_EXPORT PPB_Graphics2D_API {
   // Dev interface.
   virtual PP_Bool SetScale(float scale) = 0;
   virtual float GetScale() = 0;
+  virtual void SetOffset(const PP_Point* offset) = 0;
 
   // Test only
   virtual bool ReadImageData(PP_Resource image, const PP_Point* top_left) = 0;

@@ -4,6 +4,7 @@
 
 #include "content/renderer/pepper/mock_renderer_ppapi_host.h"
 
+#include "content/renderer/pepper/fake_pepper_plugin_instance.h"
 #include "ui/gfx/point.h"
 
 namespace content {
@@ -14,7 +15,8 @@ MockRendererPpapiHost::MockRendererPpapiHost(RenderView* render_view,
       ppapi_host_(&sink_, ppapi::PpapiPermissions()),
       render_view_(render_view),
       pp_instance_(instance),
-      has_user_gesture_(false) {
+      has_user_gesture_(false),
+      plugin_instance_(new FakePepperPluginInstance) {
 }
 
 MockRendererPpapiHost::~MockRendererPpapiHost() {
@@ -30,8 +32,7 @@ bool MockRendererPpapiHost::IsValidInstance(PP_Instance instance) const {
 
 PepperPluginInstance* MockRendererPpapiHost::GetPluginInstance(
     PP_Instance instance) const {
-  NOTIMPLEMENTED();
-  return NULL;
+  return plugin_instance_.get();
 }
 
 RenderView* MockRendererPpapiHost::GetRenderViewForInstance(
@@ -74,7 +75,6 @@ IPC::PlatformFileForTransit MockRendererPpapiHost::ShareHandleWithRemote(
 }
 
 bool MockRendererPpapiHost::IsRunningInProcess() const {
-  NOTIMPLEMENTED();
   return false;
 }
 

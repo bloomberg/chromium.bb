@@ -27,7 +27,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/blit.h"
-#include "ui/gfx/point.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
@@ -136,7 +135,8 @@ struct PepperGraphics2DHost::QueuedOperation {
   enum Type {
     PAINT,
     SCROLL,
-    REPLACE
+    REPLACE,
+    SET_OFFSET
   };
 
   QueuedOperation(Type t)
@@ -160,6 +160,9 @@ struct PepperGraphics2DHost::QueuedOperation {
 
   // Valid when type == REPLACE.
   scoped_refptr<PPB_ImageData_Impl> replace_image;
+
+  // Valid when type == SET_OFFSET.
+  gfx::Point offset;
 };
 
 // static
@@ -240,6 +243,9 @@ int32_t PepperGraphics2DHost::OnResourceMessageReceived(
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_Graphics2D_ReadImageData,
         OnHostMsgReadImageData)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_Graphics2D_SetOffset,
+        OnHostMsgSetOffset)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -390,6 +396,8 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
     pixel_origin.scale(inverse_scale);
     canvas->scale(scale_, scale_);
   }
+  pixel_origin.offset(SkIntToScalar(plugin_offset_.x()),
+                      SkIntToScalar(plugin_offset_.y()));
   canvas->drawBitmap(image, pixel_origin.x(), pixel_origin.y(), &paint);
 }
 
@@ -418,6 +426,12 @@ bool PepperGraphics2DHost::IsAlwaysOpaque() const {
 
 PPB_ImageData_Impl* PepperGraphics2DHost::ImageData() {
   return image_data_.get();
+}
+
+gfx::Size PepperGraphics2DHost::Size() const {
+  if (!image_data_)
+    return gfx::Size();
+  return gfx::Size(image_data_->width(), image_data_->height());
 }
 
 int32_t PepperGraphics2DHost::OnHostMsgPaintImageData(
@@ -549,6 +563,15 @@ int32_t PepperGraphics2DHost::OnHostMsgSetScale(
   return PP_ERROR_BADARGUMENT;
 }
 
+int32_t PepperGraphics2DHost::OnHostMsgSetOffset(
+    ppapi::host::HostMessageContext* context,
+    const PP_Point& offset) {
+  QueuedOperation operation(QueuedOperation::SET_OFFSET);
+  operation.offset = PP_ToGfxPoint(offset);
+  queued_operations_.push_back(operation);
+  return PP_OK;
+}
+
 int32_t PepperGraphics2DHost::OnHostMsgReadImageData(
     ppapi::host::HostMessageContext* context,
     PP_Resource image,
@@ -595,6 +618,7 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
   for (size_t i = 0; i < queued_operations_.size(); i++) {
     QueuedOperation& operation = queued_operations_[i];
     gfx::Rect op_rect;
+    gfx::Rect old_op_rect;
     switch (operation.type) {
       case QueuedOperation::PAINT:
         ExecutePaintImageData(operation.paint_image.get(),
@@ -618,7 +642,16 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
                                done_replace_contents ? NULL : old_image_data);
         done_replace_contents = true;
         break;
+      case QueuedOperation::SET_OFFSET:
+        old_op_rect = gfx::Rect(plugin_offset_.x(), plugin_offset_.y(),
+            image_data_->width(), image_data_->height());
+        plugin_offset_ = operation.offset;
+        // The offset is applied below for |op_rect|.
+        op_rect = gfx::Rect(image_data_->width(), image_data_->height());
+        break;
     }
+
+    op_rect.Offset(plugin_offset_.x(), plugin_offset_.y());
 
     // For correctness with accelerated compositing, we must issue an invalidate
     // on the full op_rect even if it is partially or completely off-screen.
@@ -626,8 +659,11 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
     // do nothing and we won't get any ViewFlushedPaint calls, leaving our
     // callback stranded. So we still need to check whether the repainted area
     // is visible to determine how to deal with the callback.
-    if (bound_instance_ && !op_rect.IsEmpty()) {
+    if (bound_instance_ && (!op_rect.IsEmpty() || !old_op_rect.IsEmpty())) {
       gfx::Point scroll_delta(operation.scroll_dx, operation.scroll_dy);
+      if (!ConvertToLogicalPixels(scale_, &old_op_rect, NULL)) {
+        NOTREACHED();
+      }
       if (!ConvertToLogicalPixels(scale_,
                                   &op_rect,
                                   operation.type == QueuedOperation::SCROLL ?
@@ -641,22 +677,30 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
 
       // Set |no_update_visible| to false if the change overlaps the visible
       // area.
-      gfx::Rect visible_changed_rect = gfx::IntersectRects(clip, op_rect);
-      if (!visible_changed_rect.IsEmpty())
+      if (!gfx::IntersectRects(clip, op_rect).IsEmpty() ||
+          !gfx::IntersectRects(clip, old_op_rect).IsEmpty()) {
         no_update_visible = false;
+      }
 
       // Notify the plugin of the entire change (op_rect), even if it is
       // partially or completely off-screen.
       if (operation.type == QueuedOperation::SCROLL) {
         bound_instance_->ScrollRect(scroll_delta.x(), scroll_delta.y(),
                                     op_rect);
+        DCHECK(old_op_rect.IsEmpty());
       } else {
-        bound_instance_->InvalidateRect(op_rect);
+        if (!op_rect.IsEmpty())
+          bound_instance_->InvalidateRect(op_rect);
+        if (!old_op_rect.IsEmpty())
+          bound_instance_->InvalidateRect(old_op_rect);
       }
       texture_mailbox_modified_ = true;
     }
   }
   queued_operations_.clear();
+
+  if (bound_instance_)
+    bound_instance_->UpdateLayerTransform();
 
   if (!bound_instance_) {
     // As promised in the API, we always schedule callback when unbound.

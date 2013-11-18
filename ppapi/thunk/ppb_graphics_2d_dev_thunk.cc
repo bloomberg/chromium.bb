@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_graphics_2d_dev.idl modified Fri Apr 26 08:52:02 2013.
+// From dev/ppb_graphics_2d_dev.idl modified Wed Oct  2 17:27:31 2013.
 
 #include "ppapi/c/dev/ppb_graphics_2d_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -34,15 +34,33 @@ float GetScale(PP_Resource resource) {
   return enter.object()->GetScale();
 }
 
+void SetOffset(PP_Resource resource, const struct PP_Point* offset) {
+  VLOG(4) << "PPB_Graphics2D_Dev::SetOffset()";
+  EnterResource<PPB_Graphics2D_API> enter(resource, true);
+  if (enter.failed())
+    return;
+  enter.object()->SetOffset(offset);
+}
+
 const PPB_Graphics2D_Dev_0_1 g_ppb_graphics2d_dev_thunk_0_1 = {
   &SetScale,
   &GetScale
+};
+
+const PPB_Graphics2D_Dev_0_2 g_ppb_graphics2d_dev_thunk_0_2 = {
+  &SetScale,
+  &GetScale,
+  &SetOffset
 };
 
 }  // namespace
 
 const PPB_Graphics2D_Dev_0_1* GetPPB_Graphics2D_Dev_0_1_Thunk() {
   return &g_ppb_graphics2d_dev_thunk_0_1;
+}
+
+const PPB_Graphics2D_Dev_0_2* GetPPB_Graphics2D_Dev_0_2_Thunk() {
+  return &g_ppb_graphics2d_dev_thunk_0_2;
 }
 
 }  // namespace thunk
