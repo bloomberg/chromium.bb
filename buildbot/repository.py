@@ -15,6 +15,7 @@ import shutil
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import rewrite_git_alternates
 
 # File that marks a buildroot as being used by a trybot
 _TRYBOT_MARKER = '.trybot'
@@ -240,6 +241,49 @@ class RepoRepository(object):
   def _ManifestConfig(self):
     return os.path.join(self.directory, '.repo', 'manifests.git', 'config')
 
+  def _EnsureMirroring(self, post_sync=False):
+    """Ensure git is usable from w/in the chroot if --references is enabled
+
+    repo init --references hardcodes the abspath to parent; this pathway
+    however isn't usable from the chroot (it doesn't exist).  As such the
+    pathway is rewritten to use relative pathways pointing at the root of
+    the repo, which via I84988630 enter_chroot sets up a helper bind mount
+    allowing git/repo to access the actual referenced repo.
+
+    This has to be invoked prior to a repo sync of the target trybot to
+    fix any pathways that may have been broken by the parent repo moving
+    on disk, and needs to be invoked after the sync has completed to rewrite
+    any new project's abspath to relative.
+    """
+
+    if not self._referenced_repo:
+      return
+
+    proj_root = os.path.join(self.directory, '.repo', 'projects')
+    if not os.path.exists(proj_root):
+      # Not yet synced, nothing to be done.
+      return
+
+    rewrite_git_alternates.RebuildRepoCheckout(self.directory,
+                                               self._referenced_repo)
+
+    if post_sync:
+      chroot_path = os.path.join(self._referenced_repo, '.repo', 'chroot',
+                                 'external')
+      chroot_path = git.ReinterpretPathForChroot(chroot_path)
+      rewrite_git_alternates.RebuildRepoCheckout(
+          self.directory, self._referenced_repo, chroot_path)
+
+    # Finally, force the git config marker that enter_chroot looks for
+    # to know when to do bind mounting trickery; this normally will exist,
+    # but if we're converting a pre-existing repo checkout, it's possible
+    # that it was invoked w/out the reference arg.  Note this must be
+    # an absolute path to the source repo- enter_chroot uses that to know
+    # what to bind mount into the chroot.
+    cmd = ['config', '--file', self._ManifestConfig, 'repo.reference',
+           self._referenced_repo]
+    git.RunGit('.', cmd)
+
   def Detach(self):
     """Detach projects back to manifest versions.  Effectively a 'reset'."""
     cros_build_lib.RunCommand(['repo', '--time', 'sync', '-d'],
@@ -266,6 +310,8 @@ class RepoRepository(object):
     try:
       # Always re-initialize to the current branch.
       self.Initialize(local_manifest)
+      # Fix existing broken mirroring configurations.
+      self._EnsureMirroring()
 
       cmd = ['repo', '--time', 'sync']
       if jobs:
@@ -298,6 +344,10 @@ class RepoRepository(object):
         # Retry the sync now; if it fails, let the exception propagate.
         cros_build_lib.RunCommand(cmd + ['-l'], cwd=self.directory)
 
+      # We do a second run to fix any new repositories created by repo to
+      # use relative object pathways.  Note that cros_sdk also triggers the
+      # same cleanup- we however kick it erring on the side of caution.
+      self._EnsureMirroring(True)
       self._DoCleanup()
 
     except cros_build_lib.RunCommandError as e:
