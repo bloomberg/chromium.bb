@@ -6,6 +6,9 @@
 """Results object and results formatters for checkdeps tool."""
 
 
+import json
+
+
 class DependencyViolation(object):
   """A single dependency violation."""
 
@@ -96,6 +99,40 @@ class NormalResultsFormatter(ResultsFormatter):
       print result
     if self.results:
       print '\nFAILED\n'
+
+
+class JSONResultsFormatter(ResultsFormatter):
+  """A results formatter that outputs results to a file as JSON."""
+
+  def __init__(self, output_path, wrapped_formatter=None):
+    self.output_path = output_path
+    self.wrapped_formatter = wrapped_formatter
+
+    self.results = []
+
+  def AddError(self, dependee_status):
+    self.results.append({
+        'dependee_path': dependee_status.dependee_path,
+        'violations': [{
+            'include_path': violation.include_path,
+            'violated_rule': violation.violated_rule.AsDependencyTuple(),
+        } for violation in dependee_status.violations]
+    })
+
+    if self.wrapped_formatter:
+      self.wrapped_formatter.AddError(dependee_status)
+
+  def GetResults(self):
+    with open(self.output_path, 'w') as f:
+      f.write(json.dumps(self.results))
+
+
+  def PrintResults(self):
+    if self.wrapped_formatter:
+      self.wrapped_formatter.PrintResults()
+      return
+
+    print self.results
 
 
 class TemporaryRulesFormatter(ResultsFormatter):

@@ -186,6 +186,9 @@ def main():
       '-v', '--verbose',
       action='store_true', default=False,
       help='Print debug logging')
+  option_parser.add_option(
+      '', '--json',
+      help='Path to JSON output file')
   options, args = option_parser.parse_args()
 
   deps_checker = DepsChecker(options.base_directory,
@@ -213,6 +216,11 @@ def main():
     deps_checker.results_formatter = results.TemporaryRulesFormatter()
   elif options.count_violations:
     deps_checker.results_formatter = results.CountViolationsFormatter()
+
+  if options.json:
+    deps_checker.results_formatter = results.JSONResultsFormatter(
+        options.json, deps_checker.results_formatter)
+
   deps_checker.CheckDirectory(start_dir)
   return deps_checker.Report()
 
