@@ -55,10 +55,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // IndexedDBContext implementation:
   virtual base::TaskRunner* TaskRunner() const OVERRIDE;
-  virtual std::vector<GURL> GetAllOrigins() OVERRIDE;
   virtual std::vector<IndexedDBInfo> GetAllOriginsInfo() OVERRIDE;
   virtual int64 GetOriginDiskUsage(const GURL& origin_url) OVERRIDE;
-  virtual base::Time GetOriginLastModified(const GURL& origin_url) OVERRIDE;
   virtual void DeleteForOrigin(const GURL& origin_url) OVERRIDE;
   virtual base::FilePath GetFilePathForTesting(
       const std::string& origin_id) const OVERRIDE;
@@ -74,6 +72,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   quota::QuotaManagerProxy* quota_manager_proxy();
 
+  std::vector<GURL> GetAllOrigins();
+  base::Time GetOriginLastModified(const GURL& origin_url);
   base::ListValue* GetAllOriginsDetails();
   // ForceClose takes a value rather than a reference since it may release the
   // owning object.

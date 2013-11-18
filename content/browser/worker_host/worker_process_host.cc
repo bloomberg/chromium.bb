@@ -266,8 +266,8 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
   socket_stream_dispatcher_host_ = socket_stream_dispatcher_host;
   process_->AddFilter(socket_stream_dispatcher_host);
   process_->AddFilter(new WorkerDevToolsMessageFilter(process_->GetData().id));
-  process_->AddFilter(new IndexedDBDispatcherHost(
-      process_->GetData().id, partition_.indexed_db_context()));
+  process_->AddFilter(
+      new IndexedDBDispatcherHost(partition_.indexed_db_context()));
 }
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {

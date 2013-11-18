@@ -611,7 +611,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(),
       storage_partition_impl_->GetDOMStorageContext()));
   AddFilter(new IndexedDBDispatcherHost(
-      GetID(),
       storage_partition_impl_->GetIndexedDBContext()));
 
   scoped_refptr<ServiceWorkerDispatcherHost> service_worker_filter =

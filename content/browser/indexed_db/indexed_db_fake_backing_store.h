@@ -25,9 +25,6 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
                                          const string16& version,
                                          int64 int_version,
                                          int64* row_id) OVERRIDE;
-  virtual bool UpdateIDBDatabaseMetaData(Transaction*,
-                                         int64 row_id,
-                                         const string16& version) OVERRIDE;
   virtual bool UpdateIDBDatabaseIntVersion(Transaction*,
                                            int64 row_id,
                                            int64 version) OVERRIDE;

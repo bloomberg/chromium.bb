@@ -802,17 +802,6 @@ bool IndexedDBBackingStore::UpdateIDBDatabaseIntVersion(
   return true;
 }
 
-bool IndexedDBBackingStore::UpdateIDBDatabaseMetaData(
-    IndexedDBBackingStore::Transaction* transaction,
-    int64 row_id,
-    const string16& version) {
-  PutString(
-      transaction->transaction(),
-      DatabaseMetaDataKey::Encode(row_id, DatabaseMetaDataKey::USER_VERSION),
-      version);
-  return true;
-}
-
 static void DeleteRange(LevelDBTransaction* transaction,
                         const std::string& begin,
                         const std::string& end) {

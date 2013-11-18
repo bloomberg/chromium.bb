@@ -41,8 +41,7 @@ struct IndexedDBDatabaseMetadata;
 class IndexedDBDispatcherHost : public BrowserMessageFilter {
  public:
   // Only call the constructor from the UI thread.
-  IndexedDBDispatcherHost(int ipc_process_id,
-                          IndexedDBContextImpl* indexed_db_context);
+  explicit IndexedDBDispatcherHost(IndexedDBContextImpl* indexed_db_context);
 
   static ::IndexedDBDatabaseMetadata ConvertMetadata(
       const content::IndexedDBDatabaseMetadata& metadata);
@@ -155,7 +154,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
     void CloseAll();
     bool OnMessageReceived(const IPC::Message& message, bool* msg_is_ok);
-    void Send(IPC::Message* message);
 
     void OnCreateObjectStore(
         const IndexedDBHostMsg_DatabaseCreateObjectStore_Params& params);
@@ -164,9 +162,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                              int64 object_store_id);
     void OnCreateTransaction(
         const IndexedDBHostMsg_DatabaseCreateTransaction_Params&);
-    void OnOpen(int32 ipc_database_id,
-                int32 ipc_thread_id,
-                int32 ipc_callbacks_id);
     void OnClose(int32 ipc_database_id);
     void OnDestroyed(int32 ipc_database_id);
 
@@ -210,7 +205,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     ~CursorDispatcherHost();
 
     bool OnMessageReceived(const IPC::Message& message, bool* msg_is_ok);
-    void Send(IPC::Message* message);
 
     void OnAdvance(int32 ipc_object_store_id,
                    int32 ipc_thread_id,
@@ -239,9 +233,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   // Only access on IndexedDB thread.
   scoped_ptr<DatabaseDispatcherHost> database_dispatcher_host_;
   scoped_ptr<CursorDispatcherHost> cursor_dispatcher_host_;
-
-  // Used to dispatch messages to the correct view host.
-  int ipc_process_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBDispatcherHost);
 };

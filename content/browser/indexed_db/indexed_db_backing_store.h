@@ -77,10 +77,6 @@ class CONTENT_EXPORT IndexedDBBackingStore
                                          const string16& version,
                                          int64 int_version,
                                          int64* row_id);
-  virtual bool UpdateIDBDatabaseMetaData(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 row_id,
-      const string16& version);
   virtual bool UpdateIDBDatabaseIntVersion(
       IndexedDBBackingStore::Transaction* transaction,
       int64 row_id,

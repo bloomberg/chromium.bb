@@ -28,10 +28,8 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
   virtual base::TaskRunner* TaskRunner() const = 0;
 
   // Methods used in response to QuotaManager requests.
-  virtual std::vector<GURL> GetAllOrigins() = 0;
   virtual std::vector<IndexedDBInfo> GetAllOriginsInfo() = 0;
   virtual int64 GetOriginDiskUsage(const GURL& origin_url) = 0;
-  virtual base::Time GetOriginLastModified(const GURL& origin_url) = 0;
 
   // Deletes all indexed db files for the given origin.
   virtual void DeleteForOrigin(const GURL& origin_url) = 0;

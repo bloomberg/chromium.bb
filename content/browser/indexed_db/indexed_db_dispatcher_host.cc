@@ -32,12 +32,10 @@ using blink::WebIDBKey;
 namespace content {
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
-    int ipc_process_id,
     IndexedDBContextImpl* indexed_db_context)
     : indexed_db_context_(indexed_db_context),
       database_dispatcher_host_(new DatabaseDispatcherHost(this)),
-      cursor_dispatcher_host_(new CursorDispatcherHost(this)),
-      ipc_process_id_(ipc_process_id) {
+      cursor_dispatcher_host_(new CursorDispatcherHost(this)) {
   DCHECK(indexed_db_context_);
 }
 
@@ -416,11 +414,6 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
   return handled;
 }
 
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::Send(
-    IPC::Message* message) {
-  parent_->Send(message);
-}
-
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
     const IndexedDBHostMsg_DatabaseCreateObjectStore_Params& params) {
   DCHECK(
@@ -785,11 +778,6 @@ bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void IndexedDBDispatcherHost::CursorDispatcherHost::Send(
-    IPC::Message* message) {
-  parent_->Send(message);
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnAdvance(

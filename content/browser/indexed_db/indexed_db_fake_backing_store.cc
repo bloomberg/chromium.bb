@@ -27,12 +27,6 @@ bool IndexedDBFakeBackingStore::CreateIDBDatabaseMetaData(
     int64* row_id) {
   return true;
 }
-bool IndexedDBFakeBackingStore::UpdateIDBDatabaseMetaData(
-    Transaction*,
-    int64 row_id,
-    const string16& version) {
-  return false;
-}
 bool IndexedDBFakeBackingStore::UpdateIDBDatabaseIntVersion(Transaction*,
                                                             int64 row_id,
                                                             int64 version) {

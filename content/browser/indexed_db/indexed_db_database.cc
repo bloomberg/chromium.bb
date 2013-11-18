@@ -85,22 +85,16 @@ class IndexedDBDatabase::PendingSuccessCall {
  public:
   PendingSuccessCall(scoped_refptr<IndexedDBCallbacks> callbacks,
                      IndexedDBConnection* connection,
-                     int64 transaction_id,
                      int64 version)
-      : callbacks_(callbacks),
-        connection_(connection),
-        version_(version),
-        transaction_id_(transaction_id) {}
+      : callbacks_(callbacks), connection_(connection), version_(version) {}
   scoped_refptr<IndexedDBCallbacks> Callbacks() { return callbacks_; }
   IndexedDBConnection* Connection() { return connection_; }
   int64 Version() { return version_; }
-  int64 TransactionId() const { return transaction_id_; }
 
  private:
   scoped_refptr<IndexedDBCallbacks> callbacks_;
   IndexedDBConnection* connection_;
   int64 version_;
-  const int64 transaction_id_;
 };
 
 class IndexedDBDatabase::PendingDeleteCall {
@@ -1258,8 +1252,8 @@ void IndexedDBDatabase::VersionChangeOperation(
     return;
   }
   DCHECK(!pending_second_half_open_);
-  pending_second_half_open_.reset(new PendingSuccessCall(
-      callbacks, connection.get(), transaction->id(), version));
+  pending_second_half_open_.reset(
+      new PendingSuccessCall(callbacks, connection.get(), version));
   callbacks->OnUpgradeNeeded(
       old_version, connection.Pass(), metadata(), data_loss, data_loss_message);
 }
