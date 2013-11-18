@@ -572,6 +572,38 @@ TEST_F(AudioRendererImplTest, Underflow_SetPlaybackRate) {
   EXPECT_EQ(FakeAudioRendererSink::kPlaying, sink_->state());
 }
 
+TEST_F(AudioRendererImplTest, Underflow_PausePlay) {
+  Initialize();
+  Preroll();
+  Play();
+
+  // Drain internal buffer, we should have a pending read.
+  EXPECT_TRUE(ConsumeBufferedData(frames_buffered(), NULL));
+  WaitForPendingRead();
+
+  EXPECT_EQ(FakeAudioRendererSink::kPlaying, sink_->state());
+
+  // Verify the next FillBuffer() call triggers the underflow callback
+  // since the decoder hasn't delivered any data after it was drained.
+  const size_t kDataSize = 1024;
+  EXPECT_CALL(*this, OnUnderflow())
+      .WillOnce(Invoke(this, &AudioRendererImplTest::CallResumeAfterUnderflow));
+  EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
+  EXPECT_EQ(0u, frames_buffered());
+
+  EXPECT_EQ(FakeAudioRendererSink::kPlaying, sink_->state());
+
+  // Simulate playback being paused, and then played again.
+  renderer_->SetPlaybackRate(0.0);
+  renderer_->SetPlaybackRate(1.0);
+
+  // Deliver data to resolve the underflow.
+  DeliverRemainingAudio();
+
+  // We should have resumed playing now.
+  EXPECT_EQ(FakeAudioRendererSink::kPlaying, sink_->state());
+}
+
 TEST_F(AudioRendererImplTest, AbortPendingRead_Preroll) {
   Initialize();
 

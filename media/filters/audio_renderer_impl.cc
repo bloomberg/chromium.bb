@@ -87,7 +87,8 @@ void AudioRendererImpl::DoPlay_Locked() {
   lock_.AssertAcquired();
   earliest_end_time_ = now_cb_.Run();
 
-  if (state_ == kPlaying && !sink_playing_) {
+  if ((state_ == kPlaying || state_ == kRebuffering || state_ == kUnderflow) &&
+      !sink_playing_) {
     {
       base::AutoUnlock auto_unlock(lock_);
       sink_->Play();
