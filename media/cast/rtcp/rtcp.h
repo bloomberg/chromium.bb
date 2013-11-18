@@ -39,6 +39,17 @@ class RtcpSenderFeedback {
   virtual ~RtcpSenderFeedback() {}
 };
 
+class RtcpReceivedLog {
+ public:
+  virtual void OnReceivedReceiverLog(
+      const RtcpReceiverLogMessage& receiver_log) = 0;
+
+  virtual void OnReceivedSenderLog(
+      const RtcpSenderLogMessage& sender_log) = 0;
+
+  virtual ~RtcpReceivedLog() {}
+};
+
 class RtpSenderStatistics {
  public:
   virtual void GetStatistics(const base::TimeTicks& now,
@@ -66,8 +77,8 @@ class Rtcp {
        RtpReceiverStatistics* rtp_receiver_statistics,
        RtcpMode rtcp_mode,
        const base::TimeDelta& rtcp_interval,
-       bool sending_media,
        uint32 local_ssrc,
+       uint32 remote_ssrc,
        const std::string& c_name);
 
   virtual ~Rtcp();
@@ -77,10 +88,18 @@ class Rtcp {
   static uint32 GetSsrcOfSender(const uint8* rtcp_buffer, size_t length);
 
   base::TimeTicks TimeToSendNextRtcpReport();
-  void SendRtcpReport(uint32 media_ssrc);
-  void SendRtcpPli(uint32 media_ssrc);
-  void SendRtcpCast(const RtcpCastMessage& cast_message);
-  void SetRemoteSSRC(uint32 ssrc);
+  // |sender_log_message| is optional; without it no log messages will be
+  // attached to the RTCP report; instead a normal RTCP send report will be
+  // sent.
+  void SendRtcpFromRtpSender(const RtcpSenderLogMessage* sender_log_message);
+
+  // |cast_message| and |receiver_log| is optional; if |cast_message| is
+  // provided the RTCP receiver report will append a Cast message containing
+  // Acks and Nacks; if |receiver_log| is provided the RTCP receiver report will
+  // append the log messages. If no argument is set a normal RTCP receiver
+  // report will be sent.
+  void SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
+                               const RtcpReceiverLogMessage* receiver_log);
 
   void IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length);
   bool Rtt(base::TimeDelta* rtt, base::TimeDelta* avg_rtt,
@@ -125,8 +144,8 @@ class Rtcp {
   base::TickClock* const clock_;  // Not owned by this class.
   const base::TimeDelta rtcp_interval_;
   const RtcpMode rtcp_mode_;
-  const bool sending_media_;
   const uint32 local_ssrc_;
+  const uint32 remote_ssrc_;
 
   // Not owned by this class.
   RtpSenderStatistics* const rtp_sender_statistics_;

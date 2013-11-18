@@ -48,7 +48,7 @@ void TestRtcpPacketBuilder::AddRb(uint32 rtp_ssrc) {
   big_endian_writer_.WriteU32(rtp_ssrc);
   big_endian_writer_.WriteU32(kLoss);
   big_endian_writer_.WriteU32(kExtendedMax);
-  big_endian_writer_.WriteU32(kJitter);
+  big_endian_writer_.WriteU32(kTestJitter);
   big_endian_writer_.WriteU32(kLastSr);
   big_endian_writer_.WriteU32(kDelayLastSr);
 }

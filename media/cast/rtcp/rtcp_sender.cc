@@ -30,46 +30,74 @@ RtcpSender::RtcpSender(PacedPacketSender* outgoing_transport,
 
 RtcpSender::~RtcpSender() {}
 
-void RtcpSender::SendRtcp(uint32 packet_type_flags,
-                          const RtcpSenderInfo* sender_info,
-                          const RtcpReportBlock* report_block,
-                          uint32 pli_remote_ssrc,
-                          const RtcpDlrrReportBlock* dlrr,
-                          const RtcpReceiverReferenceTimeReport* rrtr,
-                          const RtcpCastMessage* cast_message) {
+void RtcpSender::SendRtcpFromRtpSender(uint32 packet_type_flags,
+                                       const RtcpSenderInfo* sender_info,
+                                       const RtcpDlrrReportBlock* dlrr,
+                                       const RtcpSenderLogMessage* sender_log) {
+  if (packet_type_flags & kRtcpRr ||
+      packet_type_flags & kRtcpPli ||
+      packet_type_flags & kRtcpRrtr ||
+      packet_type_flags & kRtcpCast ||
+      packet_type_flags & kRtcpReceiverLog ||
+      packet_type_flags & kRtcpRpsi ||
+      packet_type_flags & kRtcpRemb ||
+      packet_type_flags & kRtcpNack) {
+    NOTREACHED() << "Invalid argument";
+  }
+
   std::vector<uint8> packet;
   packet.reserve(kIpPacketSize);
   if (packet_type_flags & kRtcpSr) {
     DCHECK(sender_info) << "Invalid argument";
-    BuildSR(*sender_info, report_block, &packet);
+    BuildSR(*sender_info, NULL, &packet);
     BuildSdec(&packet);
-  } else if (packet_type_flags & kRtcpRr) {
+  }
+  if (packet_type_flags & kRtcpBye) {
+    BuildBye(&packet);
+  }
+  if (packet_type_flags & kRtcpDlrr) {
+    DCHECK(dlrr) << "Invalid argument";
+    BuildDlrrRb(dlrr, &packet);
+  }
+  if (packet_type_flags & kRtcpSenderLog) {
+    DCHECK(sender_log) << "Invalid argument";
+    BuildSenderLog(sender_log, &packet);
+  }
+  if (packet.empty())
+    return;  // Sanity don't send empty packets.
+
+  transport_->SendRtcpPacket(packet);
+}
+
+void RtcpSender::SendRtcpFromRtpReceiver(
+    uint32 packet_type_flags,
+    const RtcpReportBlock* report_block,
+    const RtcpReceiverReferenceTimeReport* rrtr,
+    const RtcpCastMessage* cast_message,
+    const RtcpReceiverLogMessage* receiver_log) {
+  if (packet_type_flags & kRtcpSr ||
+      packet_type_flags & kRtcpDlrr ||
+      packet_type_flags & kRtcpSenderLog) {
+    NOTREACHED() << "Invalid argument";
+  }
+  if (packet_type_flags & kRtcpPli ||
+      packet_type_flags & kRtcpRpsi ||
+      packet_type_flags & kRtcpRemb ||
+      packet_type_flags & kRtcpNack) {
+    // Implement these for webrtc interop.
+    NOTIMPLEMENTED();
+  }
+  std::vector<uint8> packet;
+  packet.reserve(kIpPacketSize);
+
+  if (packet_type_flags & kRtcpRr) {
     BuildRR(report_block, &packet);
     if (!c_name_.empty()) {
       BuildSdec(&packet);
     }
   }
-  if (packet_type_flags & kRtcpPli) {
-    BuildPli(pli_remote_ssrc, &packet);
-  }
   if (packet_type_flags & kRtcpBye) {
     BuildBye(&packet);
-  }
-  if (packet_type_flags & kRtcpRpsi) {
-    // Implement this for webrtc interop.
-    NOTIMPLEMENTED();
-  }
-  if (packet_type_flags & kRtcpRemb) {
-    // Implement this for webrtc interop.
-    NOTIMPLEMENTED();
-  }
-  if (packet_type_flags & kRtcpNack) {
-    // Implement this for webrtc interop.
-    NOTIMPLEMENTED();
-  }
-  if (packet_type_flags & kRtcpDlrr) {
-    DCHECK(dlrr) << "Invalid argument";
-    BuildDlrrRb(dlrr, &packet);
   }
   if (packet_type_flags & kRtcpRrtr) {
     DCHECK(rrtr) << "Invalid argument";
@@ -79,7 +107,10 @@ void RtcpSender::SendRtcp(uint32 packet_type_flags,
     DCHECK(cast_message) << "Invalid argument";
     BuildCast(cast_message, &packet);
   }
-
+  if (packet_type_flags & kRtcpReceiverLog) {
+    DCHECK(receiver_log) << "Invalid argument";
+    BuildReceiverLog(receiver_log, &packet);
+  }
   if (packet.empty()) return;  // Sanity don't send empty packets.
 
   transport_->SendRtcpPacket(packet);
@@ -540,6 +571,19 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
   // Frames with missing packets.
   TRACE_COUNTER_ID1("cast_rtcp", "RtcpSender::CastNACK", ssrc_,
                     cast->missing_frames_and_packets_.size());
+}
+
+void RtcpSender::BuildSenderLog(const RtcpSenderLogMessage* sender_log_message,
+                                std::vector<uint8>* packet) const {
+  // TODO(pwestin): Implement.
+  NOTIMPLEMENTED();
+}
+
+void RtcpSender::BuildReceiverLog(
+    const RtcpReceiverLogMessage* receiver_log_message,
+    std::vector<uint8>* packet) const {
+  // TODO(pwestin): Implement.
+  NOTIMPLEMENTED();
 }
 
 }  // namespace cast

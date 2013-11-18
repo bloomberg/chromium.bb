@@ -53,8 +53,7 @@ VideoSender::VideoSender(
     const VideoSenderConfig& video_config,
     VideoEncoderController* const video_encoder_controller,
     PacedPacketSender* const paced_packet_sender)
-    : incoming_feedback_ssrc_(video_config.incoming_feedback_ssrc),
-      rtp_max_delay_(
+    : rtp_max_delay_(
           base::TimeDelta::FromMilliseconds(video_config.rtp_max_delay_ms)),
       max_frame_rate_(video_config.max_frame_rate),
       cast_environment_(cast_environment),
@@ -96,11 +95,9 @@ VideoSender::VideoSender(
       NULL,
       video_config.rtcp_mode,
       base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
-      true,
       video_config.sender_ssrc,
+      video_config.incoming_feedback_ssrc,
       video_config.rtcp_c_name));
-
-  rtcp_->SetRemoteSSRC(video_config.incoming_feedback_ssrc);
 }
 
 VideoSender::~VideoSender() {}
@@ -182,7 +179,7 @@ void VideoSender::ScheduleNextRtcpReport() {
 
 void VideoSender::SendRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  rtcp_->SendRtcpReport(incoming_feedback_ssrc_);
+  rtcp_->SendRtcpFromRtpSender(NULL);  // TODO(pwestin): add logging.
   ScheduleNextRtcpReport();
 }
 

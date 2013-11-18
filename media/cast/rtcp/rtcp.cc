@@ -52,6 +52,8 @@ RtcpNackMessage::~RtcpNackMessage() {}
 RtcpRembMessage::RtcpRembMessage() {}
 RtcpRembMessage::~RtcpRembMessage() {}
 
+RtcpReceiverFrameLogMessage::RtcpReceiverFrameLogMessage() {}
+RtcpReceiverFrameLogMessage::~RtcpReceiverFrameLogMessage() {}
 
 class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
  public:
@@ -80,6 +82,20 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
     rtcp_->OnReceivedSendReportRequest();
   }
 
+  virtual void OnReceivedReceiverLog(
+      const RtcpReceiverLogMessage& receiver_log) OVERRIDE {
+    // TODO(pwestin): Implement.
+    // Add received log messages into our log system.
+    NOTIMPLEMENTED();
+  }
+
+  virtual void OnReceivedSenderLog(
+    const RtcpSenderLogMessage& sender_log)  OVERRIDE {
+    // TODO(pwestin): Implement.
+    // Add received log messages into our log system.
+    NOTIMPLEMENTED();
+  }
+
  private:
   Rtcp* rtcp_;
 };
@@ -91,13 +107,13 @@ Rtcp::Rtcp(base::TickClock* clock,
            RtpReceiverStatistics* rtp_receiver_statistics,
            RtcpMode rtcp_mode,
            const base::TimeDelta& rtcp_interval,
-           bool sending_media,
            uint32 local_ssrc,
+           uint32 remote_ssrc,
            const std::string& c_name)
     : rtcp_interval_(rtcp_interval),
       rtcp_mode_(rtcp_mode),
-      sending_media_(sending_media),
       local_ssrc_(local_ssrc),
+      remote_ssrc_(remote_ssrc),
       rtp_sender_statistics_(rtp_sender_statistics),
       rtp_receiver_statistics_(rtp_receiver_statistics),
       receiver_feedback_(new LocalRtcpReceiverFeedback(this)),
@@ -114,6 +130,7 @@ Rtcp::Rtcp(base::TickClock* clock,
                                         receiver_feedback_.get(),
                                         rtt_feedback_.get(),
                                         local_ssrc));
+  rtcp_receiver_->SetRemoteSSRC(remote_ssrc);
 }
 
 Rtcp::~Rtcp() {}
@@ -147,10 +164,6 @@ base::TimeTicks Rtcp::TimeToSendNextRtcpReport() {
   return next_time_to_send_rtcp_;
 }
 
-void Rtcp::SetRemoteSSRC(uint32 ssrc) {
-  rtcp_receiver_->SetRemoteSSRC(ssrc);
-}
-
 void Rtcp::IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length) {
   RtcpParser rtcp_parser(rtcp_buffer, length);
   if (!rtcp_parser.IsValid()) {
@@ -161,91 +174,25 @@ void Rtcp::IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length) {
   rtcp_receiver_->IncomingRtcpPacket(&rtcp_parser);
 }
 
-void Rtcp::SendRtcpCast(const RtcpCastMessage& cast_message) {
+void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
+                                   const RtcpReceiverLogMessage* receiver_log) {
   uint32 packet_type_flags = 0;
-  base::TimeTicks now = clock_->NowTicks();
 
+  base::TimeTicks now = clock_->NowTicks();
+  RtcpReportBlock report_block;
+  RtcpReceiverReferenceTimeReport rrtr;
+
+  if (cast_message) {
+    packet_type_flags |= RtcpSender::kRtcpCast;
+  }
+  if (receiver_log) {
+    packet_type_flags |= RtcpSender::kRtcpReceiverLog;
+  }
   if (rtcp_mode_ == kRtcpCompound || now >= next_time_to_send_rtcp_) {
-    if (sending_media_) {
-      packet_type_flags = RtcpSender::kRtcpSr;
-    } else {
-      packet_type_flags = RtcpSender::kRtcpRr;
-    }
-  }
-  packet_type_flags |= RtcpSender::kRtcpCast;
+    packet_type_flags |= RtcpSender::kRtcpRr;
 
-  SendRtcp(now, packet_type_flags, 0, &cast_message);
-}
-
-void Rtcp::SendRtcpPli(uint32 pli_remote_ssrc) {
-  uint32 packet_type_flags = 0;
-  base::TimeTicks now = clock_->NowTicks();
-
-  if (rtcp_mode_ == kRtcpCompound || now >= next_time_to_send_rtcp_) {
-    if (sending_media_) {
-      packet_type_flags = RtcpSender::kRtcpSr;
-    } else {
-      packet_type_flags = RtcpSender::kRtcpRr;
-    }
-  }
-  packet_type_flags |= RtcpSender::kRtcpPli;
-  SendRtcp(now, packet_type_flags, pli_remote_ssrc, NULL);
-}
-
-void Rtcp::SendRtcpReport(uint32 media_ssrc) {
-  uint32 packet_type_flags;
-  base::TimeTicks now = clock_->NowTicks();
-  if (sending_media_) {
-    packet_type_flags = RtcpSender::kRtcpSr;
-  } else {
-    packet_type_flags = RtcpSender::kRtcpRr;
-  }
-  SendRtcp(now, packet_type_flags, media_ssrc, NULL);
-}
-
-void Rtcp::SendRtcp(const base::TimeTicks& now,
-                    uint32 packet_type_flags,
-                    uint32 media_ssrc,
-                    const RtcpCastMessage* cast_message) {
-  if (packet_type_flags & RtcpSender::kRtcpSr ||
-      packet_type_flags & RtcpSender::kRtcpRr) {
-    UpdateNextTimeToSendRtcp();
-  }
-  if (packet_type_flags & RtcpSender::kRtcpSr) {
-    RtcpSenderInfo sender_info;
-
-    if (rtp_sender_statistics_) {
-      rtp_sender_statistics_->GetStatistics(now, &sender_info);
-    } else {
-      memset(&sender_info, 0, sizeof(sender_info));
-    }
-    SaveLastSentNtpTime(now, sender_info.ntp_seconds, sender_info.ntp_fraction);
-
-    RtcpDlrrReportBlock dlrr;
-    if (!time_last_report_received_.is_null()) {
-      packet_type_flags |= RtcpSender::kRtcpDlrr;
-      dlrr.last_rr = last_report_received_;
-      uint32 delay_seconds = 0;
-      uint32 delay_fraction = 0;
-      base::TimeDelta delta = now - time_last_report_received_;
-      ConvertTimeToFractions(delta.InMicroseconds(),
-                             &delay_seconds,
-                             &delay_fraction);
-
-      dlrr.delay_since_last_rr =
-         ConvertToNtpDiff(delay_seconds, delay_fraction);
-    }
-    rtcp_sender_->SendRtcp(packet_type_flags,
-                           &sender_info,
-                           NULL,
-                           media_ssrc,
-                           &dlrr,
-                           NULL,
-                           NULL);
-  } else {
-    RtcpReportBlock report_block;
     report_block.remote_ssrc = 0;  // Not needed to set send side.
-    report_block.media_ssrc = media_ssrc;  // SSRC of the RTP packet sender.
+    report_block.media_ssrc = remote_ssrc_;  // SSRC of the RTP packet sender.
     if (rtp_receiver_statistics_) {
       rtp_receiver_statistics_->GetStatistics(
           &report_block.fraction_lost,
@@ -269,18 +216,52 @@ void Rtcp::SendRtcp(const base::TimeTicks& now,
     }
 
     packet_type_flags |= RtcpSender::kRtcpRrtr;
-    RtcpReceiverReferenceTimeReport rrtr;
     ConvertTimeTicksToNtp(now, &rrtr.ntp_seconds, &rrtr.ntp_fraction);
     SaveLastSentNtpTime(now, rrtr.ntp_seconds, rrtr.ntp_fraction);
-
-    rtcp_sender_->SendRtcp(packet_type_flags,
-                           NULL,
-                           &report_block,
-                           media_ssrc,
-                           NULL,
-                           &rrtr,
-                           cast_message);
+    UpdateNextTimeToSendRtcp();
   }
+  rtcp_sender_->SendRtcpFromRtpReceiver(packet_type_flags,
+                                        &report_block,
+                                        &rrtr,
+                                        cast_message,
+                                        receiver_log);
+}
+
+void Rtcp::SendRtcpFromRtpSender(
+    const RtcpSenderLogMessage* sender_log_message) {
+  uint32 packet_type_flags = RtcpSender::kRtcpSr;
+  base::TimeTicks now = clock_->NowTicks();
+
+  RtcpSenderInfo sender_info;
+  RtcpDlrrReportBlock dlrr;
+
+  if (sender_log_message) packet_type_flags |= RtcpSender::kRtcpSenderLog;
+
+  if (rtp_sender_statistics_) {
+    rtp_sender_statistics_->GetStatistics(now, &sender_info);
+  } else {
+    memset(&sender_info, 0, sizeof(sender_info));
+  }
+  SaveLastSentNtpTime(now, sender_info.ntp_seconds, sender_info.ntp_fraction);
+
+  if (!time_last_report_received_.is_null()) {
+    packet_type_flags |= RtcpSender::kRtcpDlrr;
+    dlrr.last_rr = last_report_received_;
+    uint32 delay_seconds = 0;
+    uint32 delay_fraction = 0;
+    base::TimeDelta delta = now - time_last_report_received_;
+    ConvertTimeToFractions(delta.InMicroseconds(),
+                           &delay_seconds,
+                           &delay_fraction);
+
+    dlrr.delay_since_last_rr = ConvertToNtpDiff(delay_seconds, delay_fraction);
+  }
+
+  rtcp_sender_->SendRtcpFromRtpSender(packet_type_flags,
+                                      &sender_info,
+                                      &dlrr,
+                                      sender_log_message);
+  UpdateNextTimeToSendRtcp();
 }
 
 void Rtcp::OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction) {

@@ -15,7 +15,7 @@ RtcpReceiver::RtcpReceiver(RtcpSenderFeedback* sender_feedback,
                            RtcpReceiverFeedback* receiver_feedback,
                            RtcpRttFeedback* rtt_feedback,
                            uint32 local_ssrc)
-    :  ssrc_(local_ssrc),
+    : ssrc_(local_ssrc),
       remote_ssrc_(0),
       sender_feedback_(sender_feedback),
       receiver_feedback_(receiver_feedback),

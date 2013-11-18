@@ -90,7 +90,7 @@ class RtcpReceiverTest : public ::testing::Test {
     expected_report_block_.fraction_lost = kLoss >> 24;
     expected_report_block_.cumulative_lost = kLoss & 0xffffff;
     expected_report_block_.extended_high_sequence_number = kExtendedMax;
-    expected_report_block_.jitter = kJitter;
+    expected_report_block_.jitter = kTestJitter;
     expected_report_block_.last_sr = kLastSr;
     expected_report_block_.delay_since_last_sr = kDelayLastSr;
     expected_receiver_reference_report_.remote_ssrc = kSenderSsrc;

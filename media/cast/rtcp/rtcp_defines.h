@@ -11,10 +11,12 @@
 
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
+#include "media/cast/logging/logging_defines.h"
 
 namespace media {
 namespace cast {
 
+// Handle the per frame ACK and NACK messages.
 class RtcpCastMessage {
  public:
   explicit RtcpCastMessage(uint32 media_ssrc);
@@ -24,6 +26,40 @@ class RtcpCastMessage {
   uint32 ack_frame_id_;
   MissingFramesAndPacketsMap missing_frames_and_packets_;
 };
+
+// Log messages form sender to receiver.
+enum RtcpSenderFrameStatus {
+  kRtcpSenderFrameStatusUnknown = 0,
+  kRtcpSenderFrameStatusDroppedByEncoder = 1,
+  kRtcpSenderFrameStatusDroppedByFlowControl = 2,
+  kRtcpSenderFrameStatusSentToNetwork = 3,
+};
+
+struct RtcpSenderFrameLogMessage {
+  RtcpSenderFrameStatus frame_status;
+  uint32 rtp_timestamp;
+};
+
+typedef std::list<RtcpSenderFrameLogMessage> RtcpSenderLogMessage;
+
+// Log messages from receiver to sender.
+struct RtcpReceiverEventLogMessage {
+  CastLoggingEvent type;
+  base::TimeTicks event_timestamp;
+  base::TimeDelta delay_delta;
+  uint16 packet_id;
+};
+
+class RtcpReceiverFrameLogMessage {
+ public:
+  RtcpReceiverFrameLogMessage();
+  ~RtcpReceiverFrameLogMessage();
+
+  uint32 rtp_timestamp;
+  std::list<RtcpReceiverEventLogMessage> event_log_messages;
+};
+
+typedef std::list<RtcpReceiverFrameLogMessage> RtcpReceiverLogMessage;
 
 struct RtcpSenderInfo {
   // First three members are used for lipsync.

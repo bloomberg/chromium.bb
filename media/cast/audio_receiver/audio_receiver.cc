@@ -79,7 +79,6 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                              PacedPacketSender* const packet_sender)
     : cast_environment_(cast_environment),
       codec_(audio_config.codec),
-      incoming_ssrc_(audio_config.incoming_ssrc),
       frequency_(audio_config.frequency),
       audio_buffer_(),
       audio_decoder_(),
@@ -113,10 +112,9 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                        rtp_audio_receiver_statistics_.get(),
                        audio_config.rtcp_mode,
                        rtcp_interval_delta,
-                       false,
                        audio_config.feedback_ssrc,
+                       audio_config.incoming_ssrc,
                        audio_config.rtcp_c_name));
-  rtcp_->SetRemoteSSRC(audio_config.incoming_ssrc);
 }
 
 AudioReceiver::~AudioReceiver() {}
@@ -290,7 +288,8 @@ void AudioReceiver::IncomingPacket(const uint8* packet, size_t length,
 }
 
 void AudioReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
-  rtcp_->SendRtcpCast(cast_message);
+  // TODO(pwestin): add logging.
+  rtcp_->SendRtcpFromRtpReceiver(&cast_message, NULL);
 }
 
 base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,
@@ -340,7 +339,8 @@ void AudioReceiver::ScheduleNextRtcpReport() {
 
 void AudioReceiver::SendNextRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  rtcp_->SendRtcpReport(incoming_ssrc_);
+  // TODO(pwestin): add logging.
+  rtcp_->SendRtcpFromRtpReceiver(NULL, NULL);
   ScheduleNextRtcpReport();
 }
 

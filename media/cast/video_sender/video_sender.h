@@ -102,7 +102,6 @@ class VideoSender : public base::NonThreadSafe,
 
   void InitializeTimers();
 
-  const uint32 incoming_feedback_ssrc_;
   const base::TimeDelta rtp_max_delay_;
   const int max_frame_rate_;
 

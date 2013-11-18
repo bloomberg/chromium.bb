@@ -100,7 +100,6 @@ class VideoReceiver : public base::NonThreadSafe,
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<Framer> framer_;
   const VideoCodec codec_;
-  const uint32 incoming_ssrc_;
   base::TimeDelta target_delay_delta_;
   base::TimeDelta frame_delay_;
   scoped_ptr<LocalRtpVideoData> incoming_payload_callback_;

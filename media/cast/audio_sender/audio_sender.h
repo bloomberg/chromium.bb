@@ -77,7 +77,6 @@ class AudioSender : public base::NonThreadSafe,
 
   base::WeakPtrFactory<AudioSender> weak_factory_;
 
-  const uint32 incoming_feedback_ssrc_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_refptr<AudioEncoder> audio_encoder_;
   RtpSender rtp_sender_;

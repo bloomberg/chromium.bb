@@ -18,7 +18,6 @@ using testing::_;
 
 static const uint32 kSenderSsrc = 0x10203;
 static const uint32 kReceiverSsrc = 0x40506;
-static const uint32 kUnknownSsrc = 0xDEAD;
 static const std::string kCName("test@10.1.1.1");
 static const uint32 kRtcpIntervalMs = 500;
 static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
@@ -76,8 +75,8 @@ class RtcpPeer : public Rtcp {
            RtpReceiverStatistics* rtp_receiver_statistics,
            RtcpMode rtcp_mode,
            const base::TimeDelta& rtcp_interval,
-           bool sending_media,
            uint32 local_ssrc,
+           uint32 remote_ssrc,
            const std::string& c_name)
       : Rtcp(clock,
              sender_feedback,
@@ -86,8 +85,8 @@ class RtcpPeer : public Rtcp {
              rtp_receiver_statistics,
              rtcp_mode,
              rtcp_interval,
-             sending_media,
              local_ssrc,
+             remote_ssrc,
              c_name) {
   }
 
@@ -124,8 +123,8 @@ TEST_F(RtcpTest, TimeToSend) {
             NULL,
             kRtcpCompound,
             base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
-            true,  // Media sender.
             kSenderSsrc,
+            kReceiverSsrc,
             kCName);
   transport_.SetRtcpReceiver(&rtcp);
   EXPECT_LE(start_time, rtcp.TimeToSendNextRtcpReport());
@@ -145,11 +144,11 @@ TEST_F(RtcpTest, BasicSenderReport) {
             NULL,
             kRtcpCompound,
             base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
-            true,  // Media sender.
             kSenderSsrc,
+            kReceiverSsrc,
             kCName);
   transport_.SetRtcpReceiver(&rtcp);
-  rtcp.SendRtcpReport(kUnknownSsrc);
+  rtcp.SendRtcpFromRtpSender(NULL);
 }
 
 TEST_F(RtcpTest, BasicReceiverReport) {
@@ -160,12 +159,11 @@ TEST_F(RtcpTest, BasicReceiverReport) {
             NULL,
             kRtcpCompound,
             base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
-            false,  // Media receiver.
             kSenderSsrc,
+            kReceiverSsrc,
             kCName);
   transport_.SetRtcpReceiver(&rtcp);
-  rtcp.SetRemoteSSRC(kSenderSsrc);
-  rtcp.SendRtcpReport(kSenderSsrc);
+  rtcp.SendRtcpFromRtpReceiver(NULL, NULL);
 }
 
 TEST_F(RtcpTest, BasicCast) {
@@ -179,11 +177,10 @@ TEST_F(RtcpTest, BasicCast) {
             NULL,
             kRtcpReducedSize,
             base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
-            false,
+            kSenderSsrc,
             kSenderSsrc,
             kCName);
   transport_.SetRtcpReceiver(&rtcp);
-  rtcp.SetRemoteSSRC(kSenderSsrc);
   RtcpCastMessage cast_message(kSenderSsrc);
   cast_message.ack_frame_id_ = kAckFrameId;
   PacketIdSet missing_packets;
@@ -193,12 +190,12 @@ TEST_F(RtcpTest, BasicCast) {
   missing_packets.insert(kLostPacketId1);
   missing_packets.insert(kLostPacketId2);
   missing_packets.insert(kLostPacketId3);
-  cast_message.missing_frames_and_packets_[
-      kFrameIdWithLostPackets] = missing_packets;
-  rtcp.SendRtcpCast(cast_message);
+  cast_message.missing_frames_and_packets_[kFrameIdWithLostPackets] =
+      missing_packets;
+  rtcp.SendRtcpFromRtpReceiver(&cast_message, NULL);
 }
 
-TEST_F(RtcpTest, Rtt) {
+TEST_F(RtcpTest, RttReducedSizeRtcp) {
   // Media receiver.
   LocalRtcpTransport receiver_transport(&testing_clock_);
   Rtcp rtcp_receiver(&testing_clock_,
@@ -208,8 +205,8 @@ TEST_F(RtcpTest, Rtt) {
                      NULL,
                      kRtcpReducedSize,
                      base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
-                     false,
                      kReceiverSsrc,
+                     kSenderSsrc,
                      kCName);
 
   // Media sender.
@@ -221,15 +218,12 @@ TEST_F(RtcpTest, Rtt) {
                    NULL,
                    kRtcpReducedSize,
                    base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
-                   true,
                    kSenderSsrc,
+                   kReceiverSsrc,
                    kCName);
 
   receiver_transport.SetRtcpReceiver(&rtcp_sender);
   sender_transport.SetRtcpReceiver(&rtcp_receiver);
-
-  rtcp_sender.SetRemoteSSRC(kReceiverSsrc);
-  rtcp_receiver.SetRemoteSSRC(kSenderSsrc);
 
   base::TimeDelta rtt;
   base::TimeDelta avg_rtt;
@@ -238,17 +232,71 @@ TEST_F(RtcpTest, Rtt) {
   EXPECT_FALSE(rtcp_sender.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
   EXPECT_FALSE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
 
-  rtcp_sender.SendRtcpReport(kSenderSsrc);
-  rtcp_receiver.SendRtcpReport(kSenderSsrc);
+  rtcp_sender.SendRtcpFromRtpSender(NULL);
+  rtcp_receiver.SendRtcpFromRtpReceiver(NULL, NULL);
   EXPECT_TRUE(rtcp_sender.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
   EXPECT_FALSE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
   EXPECT_NEAR(2 * kAddedDelay, rtt.InMilliseconds(), 1);
   EXPECT_NEAR(2 * kAddedDelay, avg_rtt.InMilliseconds(), 1);
   EXPECT_NEAR(2 * kAddedDelay, min_rtt.InMilliseconds(), 1);
   EXPECT_NEAR(2 * kAddedDelay, max_rtt.InMilliseconds(), 1);
-  rtcp_sender.SendRtcpReport(kSenderSsrc);
+  rtcp_sender.SendRtcpFromRtpSender(NULL);
   EXPECT_TRUE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
 
+  EXPECT_NEAR(2 * kAddedDelay, rtt.InMilliseconds(), 1);
+  EXPECT_NEAR(2 * kAddedDelay, avg_rtt.InMilliseconds(), 1);
+  EXPECT_NEAR(2 * kAddedDelay, min_rtt.InMilliseconds(), 1);
+  EXPECT_NEAR(2 * kAddedDelay, max_rtt.InMilliseconds(), 1);
+}
+
+TEST_F(RtcpTest, Rtt) {
+  // Media receiver.
+  LocalRtcpTransport receiver_transport(&testing_clock_);
+  Rtcp rtcp_receiver(&testing_clock_,
+                     &mock_sender_feedback_,
+                     &receiver_transport,
+                     NULL,
+                     NULL,
+                     kRtcpCompound,
+                     base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
+                     kReceiverSsrc,
+                     kSenderSsrc,
+                     kCName);
+
+  // Media sender.
+  LocalRtcpTransport sender_transport(&testing_clock_);
+  Rtcp rtcp_sender(&testing_clock_,
+                   &mock_sender_feedback_,
+                   &sender_transport,
+                   NULL,
+                   NULL,
+                   kRtcpCompound,
+                   base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
+                   kSenderSsrc,
+                   kReceiverSsrc,
+                   kCName);
+
+  receiver_transport.SetRtcpReceiver(&rtcp_sender);
+  sender_transport.SetRtcpReceiver(&rtcp_receiver);
+
+  base::TimeDelta rtt;
+  base::TimeDelta avg_rtt;
+  base::TimeDelta min_rtt;
+  base::TimeDelta max_rtt;
+  EXPECT_FALSE(rtcp_sender.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
+  EXPECT_FALSE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
+
+  rtcp_sender.SendRtcpFromRtpSender(NULL);
+  rtcp_receiver.SendRtcpFromRtpReceiver(NULL, NULL);
+  EXPECT_TRUE(rtcp_sender.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
+  EXPECT_FALSE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
+  EXPECT_NEAR(2 * kAddedDelay, rtt.InMilliseconds(), 1);
+  EXPECT_NEAR(2 * kAddedDelay, avg_rtt.InMilliseconds(), 1);
+  EXPECT_NEAR(2 * kAddedDelay, min_rtt.InMilliseconds(), 1);
+  EXPECT_NEAR(2 * kAddedDelay, max_rtt.InMilliseconds(), 1);
+
+  rtcp_sender.SendRtcpFromRtpSender(NULL);
+  EXPECT_TRUE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
   EXPECT_NEAR(2 * kAddedDelay, rtt.InMilliseconds(), 1);
   EXPECT_NEAR(2 * kAddedDelay, avg_rtt.InMilliseconds(), 1);
   EXPECT_NEAR(2 * kAddedDelay, min_rtt.InMilliseconds(), 1);
@@ -256,22 +304,33 @@ TEST_F(RtcpTest, Rtt) {
 
   receiver_transport.SetShortDelay();
   sender_transport.SetShortDelay();
-  rtcp_receiver.SendRtcpReport(kSenderSsrc);
+  rtcp_receiver.SendRtcpFromRtpReceiver(NULL, NULL);
   EXPECT_TRUE(rtcp_sender.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
-
   EXPECT_NEAR(kAddedDelay + kAddedShortDelay, rtt.InMilliseconds(), 1);
   EXPECT_NEAR((kAddedShortDelay + 3 * kAddedDelay) / 2,
                avg_rtt.InMilliseconds(),
                1);
   EXPECT_NEAR(kAddedDelay + kAddedShortDelay, min_rtt.InMilliseconds(), 1);
   EXPECT_NEAR(2 * kAddedDelay, max_rtt.InMilliseconds(), 1);
-  rtcp_sender.SendRtcpReport(kSenderSsrc);
-  EXPECT_TRUE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
 
+  rtcp_sender.SendRtcpFromRtpSender(NULL);
+  EXPECT_TRUE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
   EXPECT_NEAR(2 * kAddedShortDelay, rtt.InMilliseconds(), 1);
   EXPECT_NEAR((2 * kAddedShortDelay + 2 * kAddedDelay) / 2,
                avg_rtt.InMilliseconds(),
                1);
+  EXPECT_NEAR(2 * kAddedShortDelay, min_rtt.InMilliseconds(), 1);
+  EXPECT_NEAR(2 * kAddedDelay, max_rtt.InMilliseconds(), 1);
+
+  rtcp_receiver.SendRtcpFromRtpReceiver(NULL, NULL);
+  EXPECT_TRUE(rtcp_sender.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
+  EXPECT_NEAR(2 * kAddedShortDelay, rtt.InMilliseconds(), 1);
+  EXPECT_NEAR(2 * kAddedShortDelay, min_rtt.InMilliseconds(), 1);
+  EXPECT_NEAR(2 * kAddedDelay, max_rtt.InMilliseconds(), 1);
+
+  rtcp_receiver.SendRtcpFromRtpReceiver(NULL, NULL);
+  EXPECT_TRUE(rtcp_sender.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
+  EXPECT_NEAR(2 * kAddedShortDelay, rtt.InMilliseconds(), 1);
   EXPECT_NEAR(2 * kAddedShortDelay, min_rtt.InMilliseconds(), 1);
   EXPECT_NEAR(2 * kAddedDelay, max_rtt.InMilliseconds(), 1);
 }
@@ -286,7 +345,7 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
                      NULL,
                      kRtcpReducedSize,
                      base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
-                     false,
+                     kSenderSsrc,
                      kReceiverSsrc,
                      kCName);
 
@@ -299,18 +358,15 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
                    NULL,
                    kRtcpReducedSize,
                    base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
-                   true,
+                   kReceiverSsrc,
                    kSenderSsrc,
                    kCName);
 
   receiver_transport.SetRtcpReceiver(&rtcp_sender);
   sender_transport.SetRtcpReceiver(&rtcp_receiver);
 
-  rtcp_sender.SetRemoteSSRC(kReceiverSsrc);
-  rtcp_receiver.SetRemoteSSRC(kSenderSsrc);
-
-  rtcp_receiver.SendRtcpReport(kSenderSsrc);
-  rtcp_sender.SendRtcpReport(kSenderSsrc);
+  rtcp_receiver.SendRtcpFromRtpReceiver(NULL, NULL);
+  rtcp_sender.SendRtcpFromRtpSender(NULL);
 
   base::TimeDelta rtt;
   base::TimeDelta avg_rtt;
@@ -327,8 +383,8 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
   sender_transport.SetShortDelay();
   receiver_transport.SetDropPackets(true);
 
-  rtcp_receiver.SendRtcpReport(kSenderSsrc);
-  rtcp_sender.SendRtcpReport(kSenderSsrc);
+  rtcp_receiver.SendRtcpFromRtpReceiver(NULL, NULL);
+  rtcp_sender.SendRtcpFromRtpSender(NULL);
 
   EXPECT_TRUE(rtcp_receiver.Rtt(&rtt, &avg_rtt, &min_rtt,  &max_rtt));
   EXPECT_NEAR(kAddedDelay + kAddedShortDelay, rtt.InMilliseconds(), 1);
@@ -374,8 +430,8 @@ TEST_F(RtcpTest, WrapAround) {
                      NULL,
                      kRtcpReducedSize,
                      base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
-                     false,
                      kReceiverSsrc,
+                     kSenderSsrc,
                      kCName);
   uint32 new_timestamp = 0;
   uint32 old_timestamp = 0;
@@ -402,8 +458,8 @@ TEST_F(RtcpTest, RtpTimestampInSenderTime) {
                      NULL,
                      kRtcpReducedSize,
                      base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
-                     false,
                      kReceiverSsrc,
+                     kSenderSsrc,
                      kCName);
   int frequency = 32000;
   uint32 rtp_timestamp = 64000;

@@ -53,8 +53,7 @@ class LocalRtpSenderStatistics : public RtpSenderStatistics {
 AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          const AudioSenderConfig& audio_config,
                          PacedPacketSender* const paced_packet_sender)
-      : incoming_feedback_ssrc_(audio_config.incoming_feedback_ssrc),
-        cast_environment_(cast_environment),
+      : cast_environment_(cast_environment),
         rtp_sender_(cast_environment->Clock(), &audio_config, NULL,
                     paced_packet_sender),
         rtcp_feedback_(new LocalRtcpAudioSenderFeedback(this)),
@@ -67,13 +66,11 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
               NULL,
               audio_config.rtcp_mode,
               base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval),
-              true,
               audio_config.sender_ssrc,
+              audio_config.incoming_feedback_ssrc,
               audio_config.rtcp_c_name),
         initialized_(false),
         weak_factory_(this) {
-  rtcp_.SetRemoteSSRC(audio_config.incoming_feedback_ssrc);
-
   if (!audio_config.use_external_encoder) {
     audio_encoder_ = new AudioEncoder(
         cast_environment, audio_config,
@@ -145,7 +142,7 @@ void AudioSender::ScheduleNextRtcpReport() {
 
 void AudioSender::SendRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  rtcp_.SendRtcpReport(incoming_feedback_ssrc_);
+  rtcp_.SendRtcpFromRtpSender(NULL);  // TODO(pwestin): add logging.
   ScheduleNextRtcpReport();
 }
 

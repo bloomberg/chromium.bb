@@ -24,13 +24,16 @@ class RtcpSender {
 
   virtual ~RtcpSender();
 
-  void SendRtcp(uint32 packet_type_flags,
-                const RtcpSenderInfo* sender_info,
-                const RtcpReportBlock* report_block,
-                uint32 pli_remote_ssrc,
-                const RtcpDlrrReportBlock* dlrr,
-                const RtcpReceiverReferenceTimeReport* rrtr,
-                const RtcpCastMessage* cast_message);
+  void SendRtcpFromRtpSender(uint32 packet_type_flags,
+                             const RtcpSenderInfo* sender_info,
+                             const RtcpDlrrReportBlock* dlrr,
+                             const RtcpSenderLogMessage* sender_log);
+
+  void SendRtcpFromRtpReceiver(uint32 packet_type_flags,
+                               const RtcpReportBlock* report_block,
+                               const RtcpReceiverReferenceTimeReport* rrtr,
+                               const RtcpCastMessage* cast_message,
+                               const RtcpReceiverLogMessage* receiver_log);
 
   enum RtcpPacketType {
     kRtcpSr     = 0x0002,
@@ -45,6 +48,8 @@ class RtcpSender {
     kRtcpRpsi   = 0x8000,
     kRtcpRemb   = 0x10000,
     kRtcpCast   = 0x20000,
+    kRtcpSenderLog = 0x40000,
+    kRtcpReceiverLog = 0x80000,
   };
 
  private:
@@ -82,6 +87,12 @@ class RtcpSender {
 
   void BuildCast(const RtcpCastMessage* cast_message,
                  std::vector<uint8>* packet) const;
+
+  void BuildSenderLog(const RtcpSenderLogMessage* sender_log_message,
+                      std::vector<uint8>* packet) const;
+
+  void BuildReceiverLog(const RtcpReceiverLogMessage* receiver_log_message,
+                        std::vector<uint8>* packet) const;
 
   inline void BitrateToRembExponentBitrate(uint32 bitrate,
                                            uint8* exponent,

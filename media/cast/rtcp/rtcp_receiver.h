@@ -22,6 +22,12 @@ class RtcpReceiverFeedback {
 
   virtual void OnReceivedSendReportRequest() = 0;
 
+  virtual void OnReceivedReceiverLog(
+      const RtcpReceiverLogMessage& receiver_log) = 0;
+
+  virtual void OnReceivedSenderLog(
+      const RtcpSenderLogMessage& sender_log) = 0;
+
   virtual ~RtcpReceiverFeedback() {}
 };
 

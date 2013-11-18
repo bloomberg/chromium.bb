@@ -25,7 +25,7 @@ static const int kSendOctetCount = 87654;
 // Report block.
 static const int kLoss = 0x01000123;
 static const int kExtendedMax = 0x15678;
-static const int kJitter = 0x10203;
+static const int kTestJitter = 0x10203;
 static const int kLastSr = 0x34561234;
 static const int kDelayLastSr = 1000;
 

@@ -85,7 +85,6 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                              PacedPacketSender* const packet_sender)
       : cast_environment_(cast_environment),
         codec_(video_config.codec),
-        incoming_ssrc_(video_config.incoming_ssrc),
         target_delay_delta_(
             base::TimeDelta::FromMilliseconds(video_config.rtp_max_delay_ms)),
         frame_delay_(base::TimeDelta::FromMilliseconds(
@@ -120,11 +119,9 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                rtp_video_receiver_statistics_.get(),
                video_config.rtcp_mode,
                base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
-               false,
                video_config.feedback_ssrc,
+               video_config.incoming_ssrc,
                video_config.rtcp_c_name));
-
-  rtcp_->SetRemoteSSRC(video_config.incoming_ssrc);
 }
 
 VideoReceiver::~VideoReceiver() {}
@@ -363,7 +360,8 @@ void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
 // message builder).
 void VideoReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  rtcp_->SendRtcpCast(cast_message);
+  // TODO(pwestin): wire up log messages.
+  rtcp_->SendRtcpFromRtpReceiver(&cast_message, NULL);
   time_last_sent_cast_message_= cast_environment_->Clock()->NowTicks();
 }
 
@@ -405,7 +403,7 @@ void VideoReceiver::ScheduleNextRtcpReport() {
 
 void VideoReceiver::SendNextRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  rtcp_->SendRtcpReport(incoming_ssrc_);
+  rtcp_->SendRtcpFromRtpReceiver(NULL, NULL);
   ScheduleNextRtcpReport();
 }
 

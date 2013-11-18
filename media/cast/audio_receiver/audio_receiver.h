@@ -99,7 +99,6 @@ class AudioReceiver : public base::NonThreadSafe,
   base::WeakPtrFactory<AudioReceiver> weak_factory_;
 
   const AudioCodec codec_;
-  const uint32 incoming_ssrc_;
   const int frequency_;
   base::TimeDelta target_delay_delta_;
   scoped_ptr<Framer> audio_buffer_;

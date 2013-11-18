@@ -25,6 +25,11 @@ class MockRtcpReceiverFeedback : public RtcpReceiverFeedback {
                void(const RtcpReceiverReferenceTimeReport& remote_time_report));
 
   MOCK_METHOD0(OnReceivedSendReportRequest, void());
+
+  MOCK_METHOD1(OnReceivedReceiverLog,
+               void(const RtcpReceiverLogMessage& receiver_log));
+  MOCK_METHOD1(OnReceivedSenderLog,
+               void(const RtcpSenderLogMessage& sender_log));
 };
 
 class MockRtcpRttFeedback : public RtcpRttFeedback {
