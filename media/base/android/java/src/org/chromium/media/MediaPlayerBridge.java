@@ -50,8 +50,14 @@ public class MediaPlayerBridge {
     }
 
     @CalledByNative
-    protected void prepareAsync() throws IllegalStateException {
-        getLocalPlayer().prepareAsync();
+    protected boolean prepareAsync() {
+        try {
+            getLocalPlayer().prepareAsync();
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "Unable to prepare MediaPlayer.", e);
+            return false;
+        }
+        return true;
     }
 
     @CalledByNative

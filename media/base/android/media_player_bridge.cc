@@ -118,8 +118,8 @@ void MediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
 }
 
 void MediaPlayerBridge::Prepare() {
-  if (j_media_player_bridge_.is_null())
-    CreateJavaMediaPlayerBridge();
+  DCHECK(j_media_player_bridge_.is_null());
+  CreateJavaMediaPlayerBridge();
   if (url_.SchemeIsFileSystem()) {
     manager()->GetMediaResourceGetter()->GetPlatformPathFromFileSystemURL(
             url_, base::Bind(&MediaPlayerBridge::SetDataSource,
@@ -144,15 +144,16 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
   jobject j_context = base::android::GetApplicationContext();
   DCHECK(j_context);
 
-  if (Java_MediaPlayerBridge_setDataSource(
+  if (!Java_MediaPlayerBridge_setDataSource(
       env, j_media_player_bridge_.obj(), j_context, j_url_string.obj(),
       j_cookies.obj(), hide_url_log_)) {
-    manager()->RequestMediaResources(player_id());
-    Java_MediaPlayerBridge_prepareAsync(
-        env, j_media_player_bridge_.obj());
-  } else {
     OnMediaError(MEDIA_ERROR_FORMAT);
+    return;
   }
+
+  manager()->RequestMediaResources(player_id());
+  if (!Java_MediaPlayerBridge_prepareAsync(env, j_media_player_bridge_.obj()))
+    OnMediaError(MEDIA_ERROR_FORMAT);
 }
 
 void MediaPlayerBridge::OnCookiesRetrieved(const std::string& cookies) {
