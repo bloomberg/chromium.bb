@@ -21,6 +21,6 @@ EXPECTED (cues[3].endTime == '180.5') OK
 EXPECTED (cues[3].text == 'Duplicate identifier') OK
 
 *** Testing text track 1
-EXPECTED (cues.length == '0') OK
+EXPECTED (cues.length == '0'), OBSERVED '3' FAIL
 END OF TEST
 

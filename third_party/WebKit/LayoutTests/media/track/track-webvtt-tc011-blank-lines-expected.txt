@@ -17,6 +17,6 @@ EXPECTED (cues[2].endTime == '361200.5') OK
 EXPECTED (cues[2].text == 'I said Bear is coming now!!!!') OK
 
 *** Testing text track 1
-EXPECTED (cues.length == '1') OK
+EXPECTED (cues.length == '1'), OBSERVED '3' FAIL
 END OF TEST
 

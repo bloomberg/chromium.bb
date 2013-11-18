@@ -1,4 +1,4 @@
  
 PASS VTTCue.vertical, script-created cue 
-FAIL VTTCue.vertical, parsed cue assert_equals: expected "rl" but got "lr"
+PASS VTTCue.vertical, parsed cue 
 

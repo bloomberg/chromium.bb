@@ -19,13 +19,13 @@ FAIL WebVTT parser tests, signature-formfeed.vtt assert_equals: number of cues e
 PASS WebVTT parser tests, signature-null.vtt 
 PASS WebVTT parser tests, signature-no-newline.vtt 
 PASS WebVTT parser tests, no-signature.vtt 
-FAIL WebVTT parser tests, nulls.vtt assert_equals: number of cues expected 7 but got 6
+PASS WebVTT parser tests, nulls.vtt 
 PASS WebVTT parser tests, header-garbage.vtt 
-FAIL WebVTT parser tests, header-timings.vtt assert_equals: number of cues expected 1 but got 0
-FAIL WebVTT parser tests, header-space.vtt assert_equals: number of cues expected 1 but got 0
-FAIL WebVTT parser tests, header-tab.vtt assert_equals: number of cues expected 1 but got 0
+PASS WebVTT parser tests, header-timings.vtt 
+PASS WebVTT parser tests, header-space.vtt 
+PASS WebVTT parser tests, header-tab.vtt 
 PASS WebVTT parser tests, ids.vtt 
-FAIL WebVTT parser tests, arrows.vtt assert_equals: number of cues expected 6 but got 0
+PASS WebVTT parser tests, arrows.vtt 
 PASS WebVTT parser tests, space-chars.vtt 
 PASS WebVTT parser tests, timings-garbage.vtt 
 PASS WebVTT parser tests, timings-too-short.vtt 
