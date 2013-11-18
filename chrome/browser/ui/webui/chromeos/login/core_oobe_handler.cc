@@ -140,6 +140,7 @@ void CoreOobeHandler::ShowSignInError(
     const std::string& error_text,
     const std::string& help_link_text,
     HelpAppLauncher::HelpTopic help_topic_id) {
+  LOG(ERROR) << "CoreOobeHandler::ShowSignInError: error_text=" << error_text;
   CallJS("showSignInError", login_attempts, error_text,
          help_link_text, static_cast<int>(help_topic_id));
 }
