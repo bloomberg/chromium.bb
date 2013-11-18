@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_VIEW_H_
 
 #include <set>
 #include <string>
@@ -14,7 +14,6 @@
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/reload_button.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -24,6 +23,7 @@
 class BrowserActionsContainer;
 class Browser;
 class HomeImageButton;
+class ReloadButton;
 class WrenchMenu;
 class WrenchMenuModel;
 class WrenchToolbarButton;
@@ -235,4 +235,4 @@ class ToolbarView : public views::AccessiblePaneView,
   DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_VIEW_H_

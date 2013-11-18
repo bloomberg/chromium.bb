@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_RELOAD_BUTTON_H__
-#define CHROME_BROWSER_UI_VIEWS_RELOAD_BUTTON_H__
+#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_RELOAD_BUTTON_H__
+#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_RELOAD_BUTTON_H__
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
@@ -118,4 +118,4 @@ class ReloadButton : public views::ButtonDropDown,
   DISALLOW_IMPLICIT_CONSTRUCTORS(ReloadButton);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_RELOAD_BUTTON_H__
+#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_RELOAD_BUTTON_H__
