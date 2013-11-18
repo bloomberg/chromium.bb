@@ -1116,7 +1116,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
 //        <path-to-your-src>/out/Debug/Chromium.app/*/*/*/*/"Internet Plug-Ins"
 //   4) Run browser_tests with the --enable-print-preview flag
 
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !defined(GOOGLE_CHROME_BUILD) || \
+    (defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX)))
 #define MAYBE_WindowDotPrintShouldBringUpPrintPreview \
     DISABLED_WindowDotPrintShouldBringUpPrintPreview
 #else
