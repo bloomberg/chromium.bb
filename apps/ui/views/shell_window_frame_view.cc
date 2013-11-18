@@ -210,8 +210,19 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
 
   // Then see if the point is within any of the window controls.
   if (close_button_ && close_button_->visible() &&
-      close_button_->GetMirroredBounds().Contains(point))
+      close_button_->GetMirroredBounds().Contains(point)) {
     return HTCLOSE;
+  }
+  if ((maximize_button_ && maximize_button_->visible() &&
+       maximize_button_->GetMirroredBounds().Contains(point)) ||
+      (restore_button_ && restore_button_->visible() &&
+       restore_button_->GetMirroredBounds().Contains(point))) {
+    return HTMAXBUTTON;
+  }
+  if (minimize_button_ && minimize_button_->visible() &&
+      minimize_button_->GetMirroredBounds().Contains(point)) {
+    return HTMINBUTTON;
+  }
 
   // Caption is a safe default.
   return HTCAPTION;
