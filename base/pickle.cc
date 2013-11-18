@@ -91,7 +91,15 @@ bool PickleIterator::ReadUInt64(uint64* result) {
 }
 
 bool PickleIterator::ReadFloat(float* result) {
-  return ReadBuiltinType(result);
+  // crbug.com/315213
+  // The source data may not be properly aligned, and unaligned float reads
+  // cause SIGBUS on some ARM platforms, so force using memcpy to copy the data
+  // into the result.
+  const char* read_from = GetReadPointerAndAdvance<float>();
+  if (!read_from)
+    return false;
+  memcpy(result, read_from, sizeof(*result));
+  return true;
 }
 
 bool PickleIterator::ReadString(std::string* result) {
