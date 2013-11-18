@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 # Changes all RPATHs in a given directory from XORIGIN to $ORIGIN
-# See the comment about XORIGIN in download_build_install.sh
+# See the comment about XORIGIN in download_build_install.py
 
 # Fixes rpath from XORIGIN to $ORIGIN in a single file $1.
 function fix_rpath {

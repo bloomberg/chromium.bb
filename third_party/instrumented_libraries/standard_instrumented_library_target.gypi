@@ -11,12 +11,12 @@
     {
       'action_name': '<(_target_name)',
       'inputs': [
-        'download_build_install.sh',
+        'download_build_install.py',
       ],
       'outputs': [
         '<(PRODUCT_DIR)/instrumented_libraries/asan/<(_target_name).txt',
       ],
-      'action': ['./download_build_install.sh', '-i', '<(PRODUCT_DIR)', '-l', '<(_target_name)', '-m', '<(INTERMEDIATE_DIR)', '-s', 'asan'],
+      'action': ['./download_build_install.py', '-i', '<(PRODUCT_DIR)', '-l', '<(_target_name)', '-m', '<(INTERMEDIATE_DIR)', '-s', 'asan'],
     },
   ],
 }
