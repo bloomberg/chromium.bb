@@ -438,11 +438,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_NetErrorInfo,
 // Misc messages
 // These are messages sent from the renderer to the browser process.
 
-// Provides the contents for the given page that was loaded recently.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_PageContents,
-                    GURL         /* URL of the page */,
-                    string16     /* page contents */)
-
 // Notification that the language for the tab has been determined.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_TranslateLanguageDetermined,
                     LanguageDetectionDetails /* details about lang detection */,

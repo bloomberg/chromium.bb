@@ -43,7 +43,6 @@ class HistoryTabHelper : public content::WebContentsObserver,
   friend class content::WebContentsUserData<HistoryTabHelper>;
 
   // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
@@ -53,8 +52,6 @@ class HistoryTabHelper : public content::WebContentsObserver,
   virtual void TitleWasSet(content::NavigationEntry* entry,
                            bool explicit_set) OVERRIDE;
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
-
-  void OnPageContents(const GURL& url, const string16& contents);
 
   // Helper function to return the history service.  May return NULL.
   HistoryService* GetHistoryService();

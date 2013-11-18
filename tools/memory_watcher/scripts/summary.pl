@@ -114,8 +114,6 @@ sub process_stdin() {
       $location_blame = "RegistryControlledDomainService";
     } elsif ($loc =~ m/URLRequestChromeJob::DataAvailable/) {
       $location_blame = "URLRequestChromeJob DataAvailable";
-    } elsif ($loc =~ m/history_publisher/) {
-      $location_blame = "history publisher";
     } else {
       $location_blame = "unknown";
     }

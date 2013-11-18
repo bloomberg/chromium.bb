@@ -30,9 +30,7 @@
 #include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_notifications.h"
-#include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
-#include "chrome/browser/history/page_collector.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/select_favicon_frames.h"
 #include "chrome/browser/history/top_sites.h"
@@ -547,9 +545,6 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
                       last_ids.second);
   }
 
-  if (page_collector_)
-    page_collector_->AddPageURL(request.url, request.time);
-
   ScheduleCommit();
 }
 
@@ -608,24 +603,6 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   else
     delete mem_backend;  // Error case, run without the in-memory DB.
   db_->BeginExclusiveMode();  // Must be after the mem backend read the data.
-
-  // Create the history publisher which needs to be passed on to the thumbnail
-  // database for publishing history.
-  // TODO(shess): HistoryPublisher is being deprecated.  I am still
-  // trying to track down who depends on it, meanwhile talk to me
-  // before removing interactions with it.  http://crbug.com/294306
-  history_publisher_.reset(new HistoryPublisher());
-  if (!history_publisher_->Init()) {
-    // The init may fail when there are no indexers wanting our history.
-    // Hence no need to log the failure.
-    history_publisher_.reset();
-  }
-
-  // Collects page data for history_publisher_.
-  if (history_publisher_.get()) {
-    page_collector_.reset(new PageCollector());
-    page_collector_->Init(history_publisher_.get());
-  }
 
   // Thumbnail database.
   // TODO(shess): "thumbnail database" these days only stores
@@ -859,12 +836,6 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
       }
     }
 
-    // TODO(shess): I'm not sure this case needs to exist anymore.
-    if (page_collector_) {
-      page_collector_->AddPageData(i->url(), i->last_visit(),
-                                   i->title(), string16());
-    }
-
     // Sync code manages the visits itself.
     if (visit_source != SOURCE_SYNCED) {
       // Make up a visit to correspond to the last visit to the page.
@@ -905,9 +876,6 @@ bool HistoryBackend::IsExpiredVisitTime(const base::Time& time) {
 void HistoryBackend::SetPageTitle(const GURL& url, const string16& title) {
   if (!db_)
     return;
-
-  if (page_collector_)
-    page_collector_->AddPageTitle(url, title);
 
   // Search for recent redirects which should get the same title. We make a
   // dummy list containing the exact URL visited if there are no redirects so
@@ -1688,12 +1656,6 @@ void HistoryBackend::DeleteFTSIndexDatabases() {
   }
   UMA_HISTOGRAM_COUNTS("History.DeleteFTSIndexDatabases",
                        num_databases_deleted);
-}
-
-void HistoryBackend::SetPageContents(const GURL& url,
-                                     const string16& contents) {
-  if (page_collector_)
-    page_collector_->AddPageContents(url, contents);
 }
 
 void HistoryBackend::GetFavicons(

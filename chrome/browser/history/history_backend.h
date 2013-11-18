@@ -37,8 +37,6 @@ class AndroidProviderBackend;
 #endif
 
 class CommitLaterTask;
-class HistoryPublisher;
-class PageCollector;
 class VisitFilter;
 struct DownloadRow;
 
@@ -158,11 +156,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                              int32 page_id,
                              const GURL& url,
                              base::Time end_ts);
-
-
-  // Indexing ------------------------------------------------------------------
-
-  void SetPageContents(const GURL& url, const string16& contents);
 
   // Querying ------------------------------------------------------------------
 
@@ -846,9 +839,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Stores old history in a larger, slower database.
   scoped_ptr<ArchivedDatabase> archived_db_;
 
-  // Helper to collect page data for vending to history_publisher_.
-  scoped_ptr<PageCollector> page_collector_;
-
   // Manages expiration between the various databases.
   ExpireHistoryBackend expirer_;
 
@@ -894,10 +884,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Use GetBookmarkService to access this, which makes sure the service is
   // loaded.
   BookmarkService* bookmark_service_;
-
-  // Publishes the history to all indexers which are registered to receive
-  // history data from us. Can be NULL if there are no listeners.
-  scoped_ptr<HistoryPublisher> history_publisher_;
 
 #if defined(OS_ANDROID)
   // Used to provide the Android ContentProvider APIs.

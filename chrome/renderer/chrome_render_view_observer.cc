@@ -911,6 +911,8 @@ void ChromeRenderViewObserver::CapturePageInfo(int page_id,
   if (translate_helper_)
     translate_helper_->PageCaptured(page_id, contents);
 
+  // TODO(shess): Is indexing "Full text search" indexing?  In that
+  // case more of this can go.
   // Skip indexing if this is not a new load.  Note that the case where
   // page_id == last_indexed_page_id_ is more complicated, since we need to
   // reindex if the toplevel URL has changed (such as from a redirect), even
@@ -943,12 +945,6 @@ void ChromeRenderViewObserver::CapturePageInfo(int page_id,
     last_indexed_url_ = stripped_url;
 
   TRACE_EVENT0("renderer", "ChromeRenderViewObserver::CapturePageInfo");
-
-  if (contents.size()) {
-    // Send the text to the browser for indexing (the browser might decide not
-    // to index, if the URL is HTTPS for instance).
-    Send(new ChromeViewHostMsg_PageContents(routing_id(), url, contents));
-  }
 
 #if defined(FULL_SAFE_BROWSING)
   // Will swap out the string.

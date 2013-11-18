@@ -220,9 +220,7 @@ class HistoryService : public CancelableRequestProvider,
   void AddPageNoVisitForBookmark(const GURL& url, const string16& title);
 
   // Sets the title for the given page. The page should be in history. If it
-  // is not, this operation is ignored. This call will not update the full
-  // text index. The last title set when the page is indexed will be the
-  // title in the full text index.
+  // is not, this operation is ignored.
   void SetPageTitle(const GURL& url, const string16& title);
 
   // Updates the history database with a page's ending time stamp information.
@@ -235,13 +233,6 @@ class HistoryService : public CancelableRequestProvider,
                              int32 page_id,
                              const GURL& url,
                              base::Time end_ts);
-
-  // Indexing ------------------------------------------------------------------
-
-  // Notifies history of the body text of the given recently-visited URL.
-  // If the URL was not visited "recently enough," the history system may
-  // discard it.
-  void SetPageContents(const GURL& url, const string16& contents);
 
   // Querying ------------------------------------------------------------------
 
@@ -274,12 +265,8 @@ class HistoryService : public CancelableRequestProvider,
       QueryHistoryCallback;
 
   // Queries all history with the given options (see QueryOptions in
-  // history_types.h). If non-empty, the full-text database will be queried with
-  // the given |text_query|. If empty, all results matching the given options
+  // history_types.h).  If empty, all results matching the given options
   // will be returned.
-  //
-  // This isn't totally hooked up yet, this will query the "new" full text
-  // database (see SetPageContents) which won't generally be set yet.
   Handle QueryHistory(const string16& text_query,
                       const history::QueryOptions& options,
                       CancelableRequestConsumerBase* consumer,
@@ -383,12 +370,12 @@ class HistoryService : public CancelableRequestProvider,
   // URLs one by one is slow as it has to flush to disk each time.)
   void DeleteURLsForTest(const std::vector<GURL>& urls);
 
-  // Removes all visits in the selected time range (including the start time),
-  // updating the URLs accordingly. This deletes the associated data, including
-  // the full text index. This function also deletes the associated favicons,
-  // if they are no longer referenced. |callback| runs when the expiration is
-  // complete. You may use null Time values to do an unbounded delete in
-  // either direction.
+  // Removes all visits in the selected time range (including the
+  // start time), updating the URLs accordingly. This deletes any
+  // associated data. This function also deletes the associated
+  // favicons, if they are no longer referenced. |callback| runs when
+  // the expiration is complete. You may use null Time values to do an
+  // unbounded delete in either direction.
   // If |restrict_urls| is not empty, only visits to the URLs in this set are
   // removed.
   void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,

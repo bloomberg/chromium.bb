@@ -784,10 +784,6 @@
         'browser/history/history_marshaling_android.h',
         'browser/history/history_notifications.cc',
         'browser/history/history_notifications.h',
-        'browser/history/history_publisher.cc',
-        'browser/history/history_publisher.h',
-        'browser/history/history_publisher_none.cc',
-        'browser/history/history_publisher_win.cc',
         'browser/history/history_service.cc',
         'browser/history/history_service.h',
         'browser/history/history_service_factory.cc',
@@ -806,8 +802,6 @@
         'browser/history/in_memory_url_index_types.h',
         'browser/history/most_visited_tiles_experiment.cc',
         'browser/history/most_visited_tiles_experiment.h',
-        'browser/history/page_collector.cc',
-        'browser/history/page_collector.h',
         'browser/history/page_usage_data.cc',
         'browser/history/page_usage_data.h',
         'browser/history/query_parser.cc',
@@ -3468,13 +3462,8 @@
             '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
           ],
-          'sources': [
-            # Using built-in rule in vstudio for midl.
-            'browser/history/history_indexer.idl',
-          ],
           'sources!': [
             'browser/first_run/first_run_dialog.h',
-            'browser/history/history_publisher_none.cc',
             'browser/lifetime/application_lifetime_stub.cc',
             'browser/profiles/profile_shortcut_manager_stub.cc',
             'browser/user_data_dir_extractor.cc',
