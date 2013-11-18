@@ -52,6 +52,8 @@ class CHROMEOS_EXPORT PowerPolicyController
     Action lid_closed_action;
     bool use_audio_activity;
     bool use_video_activity;
+    double ac_brightness_percent;
+    double battery_brightness_percent;
     bool allow_screen_wake_locks;
     bool enable_screen_lock;
     double presentation_screen_dim_delay_factor;

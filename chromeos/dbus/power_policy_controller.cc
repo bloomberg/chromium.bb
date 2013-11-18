@@ -81,6 +81,8 @@ PowerPolicyController::PrefValues::PrefValues()
       lid_closed_action(ACTION_SUSPEND),
       use_audio_activity(true),
       use_video_activity(true),
+      ac_brightness_percent(-1.0),
+      battery_brightness_percent(-1.0),
       allow_screen_wake_locks(true),
       enable_screen_lock(false),
       presentation_screen_dim_delay_factor(1.0),
@@ -105,6 +107,14 @@ std::string PowerPolicyController::GetPolicyDebugString(
     str += base::StringPrintf("use_audio=%d ", policy.use_audio_activity());
   if (policy.has_use_video_activity())
     str += base::StringPrintf("use_video=%d ", policy.use_audio_activity());
+  if (policy.has_ac_brightness_percent()) {
+    str += base::StringPrintf("ac_brightness_percent=%f ",
+        policy.ac_brightness_percent());
+  }
+  if (policy.has_battery_brightness_percent()) {
+    str += base::StringPrintf("battery_brightness_percent=%f ",
+        policy.battery_brightness_percent());
+  }
   if (policy.has_presentation_screen_dim_delay_factor()) {
     str += base::StringPrintf("presentation_screen_dim_delay_factor=%f ",
         policy.presentation_screen_dim_delay_factor());
@@ -191,6 +201,12 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   prefs_policy_.set_lid_closed_action(GetProtoAction(values.lid_closed_action));
   prefs_policy_.set_use_audio_activity(values.use_audio_activity);
   prefs_policy_.set_use_video_activity(values.use_video_activity);
+  if (values.ac_brightness_percent >= 0.0)
+    prefs_policy_.set_ac_brightness_percent(values.ac_brightness_percent);
+  if (values.battery_brightness_percent >= 0.0) {
+    prefs_policy_.set_battery_brightness_percent(
+        values.battery_brightness_percent);
+  }
   prefs_policy_.set_presentation_screen_dim_delay_factor(
       values.presentation_screen_dim_delay_factor);
   prefs_policy_.set_user_activity_screen_dim_delay_factor(

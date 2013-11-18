@@ -56,6 +56,8 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   prefs.lid_closed_action = PowerPolicyController::ACTION_SHUT_DOWN;
   prefs.use_audio_activity = true;
   prefs.use_video_activity = true;
+  prefs.ac_brightness_percent = 87.0;
+  prefs.battery_brightness_percent = 43.0;
   prefs.enable_screen_lock = false;
   prefs.presentation_screen_dim_delay_factor = 3.0;
   prefs.user_activity_screen_dim_delay_factor = 2.0;
@@ -81,6 +83,8 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
       power_manager::PowerManagementPolicy_Action_SHUT_DOWN);
   expected_policy.set_use_audio_activity(true);
   expected_policy.set_use_video_activity(true);
+  expected_policy.set_ac_brightness_percent(87.0);
+  expected_policy.set_battery_brightness_percent(43.0);
   expected_policy.set_presentation_screen_dim_delay_factor(3.0);
   expected_policy.set_user_activity_screen_dim_delay_factor(2.0);
   expected_policy.set_wait_for_initial_user_activity(true);
@@ -93,11 +97,13 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   prefs.ac_idle_warning_delay_ms = 700000;
   prefs.battery_idle_warning_delay_ms = 400000;
   prefs.lid_closed_action = PowerPolicyController::ACTION_SUSPEND;
+  prefs.ac_brightness_percent = -1.0;
   policy_controller_->ApplyPrefs(prefs);
   expected_policy.mutable_ac_delays()->set_idle_warning_ms(700000);
   expected_policy.mutable_battery_delays()->set_idle_warning_ms(400000);
   expected_policy.set_lid_closed_action(
       power_manager::PowerManagementPolicy_Action_SUSPEND);
+  expected_policy.clear_ac_brightness_percent();
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->get_policy()));
