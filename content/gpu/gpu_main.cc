@@ -361,7 +361,9 @@ bool WarmUpSandbox(const CommandLine& command_line) {
     }
   }
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
+  ExynosVideoDecodeAccelerator::PreSandboxInitialization();
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
   VaapiWrapper::PreSandboxInitialization();
 #endif
 

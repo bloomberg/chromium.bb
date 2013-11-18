@@ -82,6 +82,9 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
   // VideoDecodeAcceleratorImpl implementation.
   virtual bool CanDecodeOnIOThread() OVERRIDE;
 
+  // Do any necessary initialization before the sandbox is enabled.
+  static void PreSandboxInitialization();
+
  private:
   // These are rather subjectively tuned.
   enum {
