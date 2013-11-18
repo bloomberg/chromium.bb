@@ -278,7 +278,6 @@ inline static CSSParserValue makeOperatorValue(int value)
 %type <rule> font_face
 %type <rule> host
 %type <rule> keyframes
-%type <rule> invalid_rule
 %type <rule> rule
 %type <rule> valid_rule
 %type <ruleList> block_rule_body
@@ -287,6 +286,8 @@ inline static CSSParserValue makeOperatorValue(int value)
 %type <ruleList> region_block_rule_list
 %type <rule> block_rule
 %type <rule> block_valid_rule
+%type <rule> region_block_rule
+%type <rule> region_block_valid_rule
 %type <rule> region
 %type <rule> supports
 %type <rule> viewport
@@ -520,7 +521,9 @@ rule:
     valid_rule {
         parser->m_hadSyntacticallyValidCSSRule = true;
     }
-  | invalid_rule
+  | invalid_rule {
+        $$ = 0;
+    }
   ;
 
 block_rule_body:
@@ -551,7 +554,7 @@ region_block_rule_body:
 
 region_block_rule_list:
     /* empty */ { $$ = 0; }
-  | region_block_rule_list block_valid_rule maybe_sgml {
+  | region_block_rule_list region_block_rule maybe_sgml {
       $$ = $1;
       if ($2) {
           if (!$$)
@@ -559,6 +562,20 @@ region_block_rule_list:
           $$->append($2);
       }
   }
+  ;
+
+region_block_rule:
+    region_block_valid_rule;
+
+region_block_valid_rule:
+    ruleset
+  | page
+  | font_face
+  | media
+  | keyframes
+  | supports
+  | viewport
+  | filter
   ;
 
 block_valid_rule:
@@ -570,14 +587,16 @@ block_valid_rule:
   | supports
   | viewport
   | filter
+  | namespace
+  | import
+  | region
   ;
 
 block_rule:
     block_valid_rule
-  | invalid_rule
-  | namespace
-  | import
-  | region
+  | invalid_rule {
+        $$ = 0;
+    }
   ;
 
 before_import_rule:
@@ -1922,12 +1941,10 @@ at_rule_end:
 invalid_rule:
     error error_location rule_error_recovery at_invalid_rule_header_end invalid_block {
         parser->reportError($2, CSSParser::InvalidRuleError);
-        $$ = 0;
     }
   | error_location invalid_at rule_error_recovery at_invalid_rule_header_end at_rule_end {
         parser->resumeErrorLogging();
         parser->reportError($1, CSSParser::InvalidRuleError);
-        $$ = 0;
     }
     ;
 
