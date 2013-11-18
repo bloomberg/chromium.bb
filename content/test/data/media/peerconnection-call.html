@@ -102,8 +102,8 @@
     }
 
     // Do the forwarding after we have received video.
-    detectVideoIn('remote-view-1', onRemoteStream1);
-    detectVideoIn('remote-view-2', onRemoteStream2);
+    detectVideoPlaying('remote-view-1', onRemoteStream1);
+    detectVideoPlaying('remote-view-2', onRemoteStream2);
   }
 
   // Test that we can setup call with an audio and video track and
@@ -212,7 +212,7 @@
     }
 
     // Do the DTMF test after we have received video.
-    detectVideoIn('remote-view-2', onCallEstablished);
+    detectVideoPlaying('remote-view-2', onCallEstablished);
   }
 
   // Test call with a new Video MediaStream that has been created based on a

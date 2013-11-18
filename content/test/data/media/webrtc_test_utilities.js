@@ -24,27 +24,50 @@ function setAllEventsOccuredHandler(handler) {
   gAllEventsOccured = handler;
 }
 
-function detectVideoIn(videoElementName, callback) {
+function detectVideoPlaying(videoElementName, callback) {
+  detectVideo(videoElementName, isVideoPlaying, callback);
+}
+
+function detectVideoStopped(videoElementName, callback) {
+  detectVideo(videoElementName,
+              function (pixels, previous_pixels) {
+                return !isVideoPlaying(pixels, previous_pixels);
+              },
+              callback);
+}
+
+function detectVideo(videoElementName, predicate, callback) {
   var width = VIDEO_TAG_WIDTH;
   var height = VIDEO_TAG_HEIGHT;
   var videoElement = $(videoElementName);
   var canvas = $(videoElementName + '-canvas');
+  var old_pixels = [];
   var waitVideo = setInterval(function() {
     var context = canvas.getContext('2d');
     context.drawImage(videoElement, 0, 0, width, height);
-    var pixels = context.getImageData(0, 0, width, height).data;
-
-    if (isVideoPlaying(pixels, width, height)) {
+    var pixels = context.getImageData(0, 0 , width, height / 3).data;
+    // Check that there is an old and a new picture with the same size to
+    // compare and use the function |predicate| to detect the video state in
+    // that case.
+    if (old_pixels.length == pixels.length &&
+        predicate(pixels, old_pixels)) {
       clearInterval(waitVideo);
       callback();
     }
-  }, 100);
+    old_pixels = pixels;
+  }, 200);
 }
 
 function waitForVideo(videoElement) {
   document.title = 'Waiting for video...';
   addExpectedEvent();
-  detectVideoIn(videoElement, function () { eventOccured(); });
+  detectVideoPlaying(videoElement, function () { eventOccured(); });
+}
+
+function waitForVideoToStop(videoElement) {
+  document.title = 'Waiting for video to stop...';
+  addExpectedEvent();
+  detectVideoStopped(videoElement, function () { eventOccured(); });
 }
 
 function waitForConnectionToStabilize(peerConnection) {
@@ -69,13 +92,10 @@ function eventOccured() {
 }
 
 // This very basic video verification algorithm will be satisfied if any
-// pixels are nonzero in a small sample area in the middle. It relies on the
-// assumption that a video element with null source just presents zeroes.
-function isVideoPlaying(pixels, width, height) {
-  // Sample somewhere near the middle of the image.
-  var middle = width * height / 2;
-  for (var i = 0; i < 20; i++) {
-    if (pixels[middle + i] > 0) {
+// pixels are changed.
+function isVideoPlaying(pixels, previous_pixels) {
+  for (var i = 0; i < pixels.length; i++) {
+    if (pixels[i] != previous_pixels[i]) {
       return true;
     }
   }
