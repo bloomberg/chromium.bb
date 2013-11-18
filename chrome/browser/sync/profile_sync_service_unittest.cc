@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/fake_oauth2_token_service.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/chrome_version_info.h"
@@ -59,7 +60,9 @@ class ProfileSyncServiceTest : public testing::Test {
                        content::TestBrowserThreadBundle::REAL_IO_THREAD) {
    }
 
-   virtual void SetUp() OVERRIDE {
+  virtual ~ProfileSyncServiceTest() {}
+
+  virtual void SetUp() OVERRIDE {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               FakeOAuth2TokenService::BuildTokenService);
@@ -172,160 +175,279 @@ class TestProfileSyncServiceObserver : public ProfileSyncServiceObserver {
   bool first_setup_in_progress_;
 };
 
-TEST_F(ProfileSyncServiceTest, InitialState) {
-  SigninManagerBase* signin =
-      SigninManagerFactory::GetForProfile(profile_.get());
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
-  service_.reset(new TestProfileSyncService(
-      new ProfileSyncComponentsFactoryMock(),
-      profile_.get(),
-      signin,
-      oauth2_token_service,
-      ProfileSyncService::MANUAL_START,
-      true));
-  service_->Initialize();
-  EXPECT_TRUE(
-      service_->sync_service_url().spec() ==
-        ProfileSyncService::kSyncServerUrl ||
-      service_->sync_service_url().spec() ==
-        ProfileSyncService::kDevServerUrl);
+// A variant of the SyncBackendHostMock that won't automatically
+// call back when asked to initialized.  Allows us to test things
+// that could happen while backend init is in progress.
+class SyncBackendHostNoReturn : public SyncBackendHostMock {
+  virtual void Initialize(
+      SyncFrontend* frontend,
+      scoped_ptr<base::Thread> sync_thread,
+      const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
+      const GURL& service_url,
+      const syncer::SyncCredentials& credentials,
+      bool delete_sync_data_folder,
+      scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+      scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
+      syncer::ReportUnrecoverableErrorFunction
+      report_unrecoverable_error_function) OVERRIDE {}
+};
+
+ACTION(ReturnNewSyncBackendHostMock) {
+  return new browser_sync::SyncBackendHostMock();
 }
 
-// Tests that the sync service doesn't forget to notify observers about
-// setup state.
-TEST(ProfileSyncServiceTestBasic, SetupInProgress) {
-  scoped_ptr<TestingProfile> profile(new TestingProfile());
-  ProfileSyncService service(
-      NULL, profile.get(), NULL, NULL,
-      ProfileSyncService::MANUAL_START);
-  TestProfileSyncServiceObserver observer(&service);
-  service.AddObserver(&observer);
-  service.SetSetupInProgress(true);
+ACTION(ReturnNewSyncBackendHostNoReturn) {
+  return new browser_sync::SyncBackendHostNoReturn();
+}
+
+// A test harness that uses a real ProfileSyncService and in most cases a
+// MockSyncBackendHost.
+//
+// This is useful if we want to test the ProfileSyncService and don't care about
+// testing the SyncBackendHost.  It's easier to use than the other tests, since
+// it doesn't involve any threads.
+class ProfileSyncServiceSimpleTest : public ::testing::Test {
+ protected:
+  ProfileSyncServiceSimpleTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+  virtual ~ProfileSyncServiceSimpleTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    TestingProfile::Builder builder;
+
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              FakeOAuth2TokenService::BuildTokenService);
+    invalidation::InvalidationServiceFactory::GetInstance()->
+        SetBuildOnlyFakeInvalidatorsForTest(true);
+
+    profile_ = builder.Build().Pass();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // Kill the service before the profile.
+    if (service_)
+      service_->Shutdown();
+
+    service_.reset();
+    profile_.reset();
+  }
+
+  void IssueTestTokens() {
+    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
+        ->UpdateCredentials("test", "oauth2_login_token");
+  }
+
+  void CreateService(ProfileSyncService::StartBehavior behavior) {
+    SigninManagerBase* signin =
+        SigninManagerFactory::GetForProfile(profile_.get());
+    signin->SetAuthenticatedUsername("test");
+    ProfileOAuth2TokenService* oauth2_token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
+    components_factory_ = new StrictMock<ProfileSyncComponentsFactoryMock>();
+    service_.reset(new ProfileSyncService(
+        components_factory_,
+        profile_.get(),
+        signin,
+        oauth2_token_service,
+        behavior));
+  }
+
+  void ShutdownAndDeleteService() {
+    if (service_)
+      service_->Shutdown();
+    service_.reset();
+  }
+
+  void Initialize() {
+    service_->Initialize();
+  }
+
+  void ExpectDataTypeManagerCreation() {
+    EXPECT_CALL(*components_factory_, CreateDataTypeManager(_, _, _, _, _, _)).
+        WillOnce(ReturnNewDataTypeManager());
+  }
+
+  void ExpectSyncBackendHostCreation() {
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _)).
+        WillOnce(ReturnNewSyncBackendHostMock());
+  }
+
+  void PrepareDelayedInitSyncBackendHost() {
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _)).
+        WillOnce(ReturnNewSyncBackendHostNoReturn());
+  }
+
+  TestingProfile* profile() {
+    return profile_.get();
+  }
+
+  ProfileSyncService* service() {
+    return service_.get();
+  }
+
+  ProfileSyncComponentsFactoryMock* components_factory() {
+    return components_factory_;
+  }
+
+ private:
+  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<ProfileSyncService> service_;
+
+  // Pointer to the components factory.  Not owned.  May be null.
+  ProfileSyncComponentsFactoryMock* components_factory_;
+
+  content::TestBrowserThreadBundle thread_bundle_;
+};
+
+// Verify that the server URLs are sane.
+TEST_F(ProfileSyncServiceSimpleTest, InitialState) {
+  CreateService(ProfileSyncService::AUTO_START);
+  Initialize();
+  const std::string& url = service()->sync_service_url().spec();
+  EXPECT_TRUE(url == ProfileSyncService::kSyncServerUrl ||
+              url == ProfileSyncService::kDevServerUrl);
+}
+
+// Verify a successful initialization.
+TEST_F(ProfileSyncServiceSimpleTest, SuccessfulInitialization) {
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kSyncManaged,
+      Value::CreateBooleanValue(false));
+  IssueTestTokens();
+  CreateService(ProfileSyncService::AUTO_START);
+  ExpectDataTypeManagerCreation();
+  ExpectSyncBackendHostCreation();
+  Initialize();
+  EXPECT_FALSE(service()->IsManaged());
+  EXPECT_TRUE(service()->sync_initialized());
+}
+
+
+// Verify that the SetSetupInProgress function call updates state
+// and notifies observers.
+TEST_F(ProfileSyncServiceSimpleTest, SetupInProgress) {
+  CreateService(ProfileSyncService::MANUAL_START);
+  Initialize();
+
+  TestProfileSyncServiceObserver observer(service());
+  service()->AddObserver(&observer);
+
+  service()->SetSetupInProgress(true);
   EXPECT_TRUE(observer.first_setup_in_progress());
-  service.SetSetupInProgress(false);
+  service()->SetSetupInProgress(false);
   EXPECT_FALSE(observer.first_setup_in_progress());
-  service.RemoveObserver(&observer);
+
+  service()->RemoveObserver(&observer);
 }
 
-TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
-  profile_->GetTestingPrefService()->SetManagedPref(
+// Verify that disable by enterprise policy works.
+TEST_F(ProfileSyncServiceSimpleTest, DisabledByPolicyBeforeInit) {
+  profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged,
       Value::CreateBooleanValue(true));
-  SigninManagerBase* signin =
-      SigninManagerFactory::GetForProfile(profile_.get());
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
-  service_.reset(new TestProfileSyncService(
-      new ProfileSyncComponentsFactoryMock(),
-      profile_.get(),
-      signin,
-      oauth2_token_service,
-      ProfileSyncService::MANUAL_START,
-      true));
-  service_->Initialize();
-  EXPECT_TRUE(service_->IsManaged());
+  IssueTestTokens();
+  CreateService(ProfileSyncService::AUTO_START);
+  Initialize();
+  EXPECT_TRUE(service()->IsManaged());
+  EXPECT_FALSE(service()->sync_initialized());
 }
 
-TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
-  SigninManagerBase* signin =
-      SigninManagerFactory::GetForProfile(profile_.get());
-  signin->SetAuthenticatedUsername("test");
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
-  ProfileSyncComponentsFactoryMock* factory =
-      new ProfileSyncComponentsFactoryMock();
-  service_.reset(new TestProfileSyncService(
-      factory,
-      profile_.get(),
-      signin,
-      oauth2_token_service,
-      ProfileSyncService::AUTO_START,
-      true));
-  EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _, _, _)).Times(0);
-  EXPECT_CALL(*factory, CreateBookmarkSyncComponents(_, _)).
-      Times(0);
-  service_->RegisterDataTypeController(
-      new BookmarkDataTypeController(service_->factory(),
-                                     profile_.get(),
-                                     service_.get()));
+// Verify that disable by enterprise policy works even after the backend has
+// been initialized.
+TEST_F(ProfileSyncServiceSimpleTest, DisabledByPolicyAfterInit) {
+  IssueTestTokens();
+  CreateService(ProfileSyncService::AUTO_START);
+  ExpectDataTypeManagerCreation();
+  ExpectSyncBackendHostCreation();
+  Initialize();
 
-  service_->Initialize();
-  service_->Shutdown();
-  service_.reset();
+  EXPECT_FALSE(service()->IsManaged());
+  EXPECT_TRUE(service()->sync_initialized());
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kSyncManaged,
+      Value::CreateBooleanValue(true));
+
+  EXPECT_TRUE(service()->IsManaged());
+  EXPECT_FALSE(service()->sync_initialized());
 }
 
-TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
-  SigninManagerBase* signin =
-      SigninManagerFactory::GetForProfile(profile_.get());
-  signin->SetAuthenticatedUsername("test");
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
-  ProfileSyncComponentsFactoryMock* factory =
-      new ProfileSyncComponentsFactoryMock();
-  service_.reset(new TestProfileSyncService(
-      factory,
-      profile_.get(),
-      signin,
-      oauth2_token_service,
-      ProfileSyncService::AUTO_START,
-      true));
-  // Register the bookmark data type.
-  EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _, _, _)).
-      WillRepeatedly(ReturnNewDataTypeManager());
+// Exercies the ProfileSyncService's code paths related to getting shut down
+// before the backend initialize call returns.
+TEST_F(ProfileSyncServiceSimpleTest, AbortedByShutdown) {
+  CreateService(ProfileSyncService::AUTO_START);
+  PrepareDelayedInitSyncBackendHost();
 
   IssueTestTokens();
+  Initialize();
+  EXPECT_FALSE(service()->sync_initialized());
 
-  service_->Initialize();
-  EXPECT_TRUE(service_->sync_initialized());
-  EXPECT_TRUE(service_->GetBackendForTest() != NULL);
+  ShutdownAndDeleteService();
+}
+
+// Test StopAndSuppress() before we've initialized the backend.
+TEST_F(ProfileSyncServiceSimpleTest, EarlyStopAndSuppress) {
+  CreateService(ProfileSyncService::AUTO_START);
+  IssueTestTokens();
+
+  service()->StopAndSuppress();
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+
+  // Because of supression, this should fail.
+  Initialize();
+  EXPECT_FALSE(service()->sync_initialized());
+
+  // Remove suppression.  This should be enough to allow init to happen.
+  ExpectDataTypeManagerCreation();
+  ExpectSyncBackendHostCreation();
+  service()->UnsuppressAndStart();
+  EXPECT_TRUE(service()->sync_initialized());
   EXPECT_FALSE(
-      profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+      profile()->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+}
 
-  service_->StopAndSuppress();
-  EXPECT_FALSE(service_->sync_initialized());
-  EXPECT_TRUE(
-      profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+// Test StopAndSuppress() after we've initialized the backend.
+TEST_F(ProfileSyncServiceSimpleTest, DisableAndEnableSyncTemporarily) {
+  CreateService(ProfileSyncService::AUTO_START);
+  IssueTestTokens();
+  ExpectDataTypeManagerCreation();
+  ExpectSyncBackendHostCreation();
+  Initialize();
 
-  service_->UnsuppressAndStart();
-  EXPECT_TRUE(service_->sync_initialized());
+  EXPECT_TRUE(service()->sync_initialized());
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+
+  testing::Mock::VerifyAndClearExpectations(components_factory());
+
+  service()->StopAndSuppress();
+  EXPECT_FALSE(service()->sync_initialized());
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+
+  ExpectDataTypeManagerCreation();
+  ExpectSyncBackendHostCreation();
+
+  service()->UnsuppressAndStart();
+  EXPECT_TRUE(service()->sync_initialized());
   EXPECT_FALSE(
-      profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+      profile()->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
 }
 
 // Certain ProfileSyncService tests don't apply to Chrome OS, for example
 // things that deal with concepts like "signing out" and policy.
 #if !defined (OS_CHROMEOS)
 
-TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
-  SigninManager* signin =
-      SigninManagerFactory::GetForProfile(profile_.get());
-  signin->SetAuthenticatedUsername("test");
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
-  ProfileSyncComponentsFactoryMock* factory =
-      new ProfileSyncComponentsFactoryMock();
-  service_.reset(new TestProfileSyncService(
-      factory,
-      profile_.get(),
-      signin,
-      oauth2_token_service,
-      ProfileSyncService::AUTO_START,
-      true));
-  // Register the bookmark data type.
-  EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _, _, _)).
-      WillRepeatedly(ReturnNewDataTypeManager());
-
+TEST_F(ProfileSyncServiceSimpleTest, EnableSyncAndSignOut) {
+  CreateService(ProfileSyncService::AUTO_START);
+  ExpectDataTypeManagerCreation();
+  ExpectSyncBackendHostCreation();
   IssueTestTokens();
+  Initialize();
 
-  service_->Initialize();
-  EXPECT_TRUE(service_->sync_initialized());
-  EXPECT_TRUE(service_->GetBackendForTest() != NULL);
-  EXPECT_FALSE(
-      profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+  EXPECT_TRUE(service()->sync_initialized());
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
 
-  signin->SignOut();
-  EXPECT_FALSE(service_->sync_initialized());
+  SigninManagerFactory::GetForProfile(profile())->SignOut();
+  EXPECT_FALSE(service()->sync_initialized());
 }
 
 #endif  // !defined(OS_CHROMEOS)
