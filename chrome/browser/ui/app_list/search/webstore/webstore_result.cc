@@ -226,11 +226,7 @@ void WebstoreResult::StopObservingInstall() {
 }
 
 void WebstoreResult::OnBeginExtensionInstall(
-    const std::string& extension_id,
-    const std::string& extension_name,
-    const gfx::ImageSkia& installing_icon,
-    bool is_app,
-    bool is_platform_app) {}
+    const ExtensionInstallParams& params) {}
 
 void WebstoreResult::OnDownloadProgress(const std::string& extension_id,
                                         int percent_downloaded) {

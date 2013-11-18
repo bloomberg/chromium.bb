@@ -301,9 +301,13 @@ void WebstoreInstaller::Start() {
   }
   extensions::InstallTracker* tracker =
       extensions::InstallTrackerFactory::GetForProfile(profile_);
-  tracker->OnBeginExtensionInstall(
-      id_, name, approval_->installing_icon, approval_->manifest->is_app(),
+  extensions::InstallObserver::ExtensionInstallParams params(
+      id_,
+      name,
+      approval_->installing_icon,
+      approval_->manifest->is_app(),
       approval_->manifest->is_platform_app());
+  tracker->OnBeginExtensionInstall(params);
 }
 
 void WebstoreInstaller::Observe(int type,

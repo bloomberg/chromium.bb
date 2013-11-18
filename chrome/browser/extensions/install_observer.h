@@ -7,9 +7,7 @@
 
 #include <string>
 
-namespace gfx {
-class ImageSkia;
-}
+#include "ui/gfx/image/image_skia.h"
 
 namespace extensions {
 
@@ -17,12 +15,23 @@ class Extension;
 
 class InstallObserver {
  public:
+  struct ExtensionInstallParams {
+    ExtensionInstallParams(
+        std::string extension_id,
+        std::string extension_name,
+        gfx::ImageSkia installing_icon,
+        bool is_app,
+        bool is_platform_app);
+
+    std::string extension_id;
+    std::string extension_name;
+    gfx::ImageSkia installing_icon;
+    bool is_app;
+    bool is_platform_app;
+  };
+
   virtual void OnBeginExtensionInstall(
-      const std::string& extension_id,
-      const std::string& extension_name,
-      const gfx::ImageSkia& installing_icon,
-      bool is_app,
-      bool is_platform_app) = 0;
+      const ExtensionInstallParams& params) = 0;
 
   virtual void OnDownloadProgress(const std::string& extension_id,
                                   int percent_downloaded) = 0;

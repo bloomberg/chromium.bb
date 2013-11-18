@@ -73,11 +73,8 @@ class AppResult : public ChromeSearchResult,
   virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
 
   // extensions::InstallObserver overrides:
-  virtual void OnBeginExtensionInstall(const std::string& extension_id,
-                                       const std::string& extension_name,
-                                       const gfx::ImageSkia& installing_icon,
-                                       bool is_app,
-                                       bool is_platform_app) OVERRIDE;
+  virtual void OnBeginExtensionInstall(
+      const ExtensionInstallParams& params) OVERRIDE;
   virtual void OnDownloadProgress(const std::string& extension_id,
                                   int percent_downloaded) OVERRIDE;
   virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE;

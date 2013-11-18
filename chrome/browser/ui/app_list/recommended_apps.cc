@@ -98,11 +98,8 @@ void RecommendedApps::Update() {
   }
 }
 
-void RecommendedApps::OnBeginExtensionInstall(const std::string& extension_id,
-                                     const std::string& extension_name,
-                                     const gfx::ImageSkia& installing_icon,
-                                     bool is_app,
-                                     bool is_platform_app) {}
+void RecommendedApps::OnBeginExtensionInstall(
+    const ExtensionInstallParams& params) {}
 
 void RecommendedApps::OnDownloadProgress(const std::string& extension_id,
                                 int percent_downloaded) {}

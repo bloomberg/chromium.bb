@@ -807,6 +807,7 @@
         'browser/extensions/image_loader_factory.h',
         'browser/extensions/installed_loader.cc',
         'browser/extensions/installed_loader.h',
+        'browser/extensions/install_observer.cc',
         'browser/extensions/install_observer.h',
         'browser/extensions/install_signer.cc',
         'browser/extensions/install_signer.h',

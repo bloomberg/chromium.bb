@@ -47,17 +47,9 @@ void InstallTracker::RemoveObserver(InstallObserver* observer) {
 }
 
 void InstallTracker::OnBeginExtensionInstall(
-    const std::string& extension_id,
-    const std::string& extension_name,
-    const gfx::ImageSkia& installing_icon,
-    bool is_app,
-    bool is_platform_app) {
+    const InstallObserver::ExtensionInstallParams& params) {
   FOR_EACH_OBSERVER(InstallObserver, observers_,
-                    OnBeginExtensionInstall(extension_id,
-                                            extension_name,
-                                            installing_icon,
-                                            is_app,
-                                            is_platform_app));
+                    OnBeginExtensionInstall(params));
 }
 
 void InstallTracker::OnDownloadProgress(const std::string& extension_id,

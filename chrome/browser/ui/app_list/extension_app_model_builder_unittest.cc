@@ -191,8 +191,9 @@ TEST_F(ExtensionAppModelBuilderTest, Reinstall) {
   // Install kPackagedApp1Id again should not create a new entry.
   extensions::InstallTracker* tracker =
       extensions::InstallTrackerFactory::GetForProfile(profile_.get());
-  tracker->OnBeginExtensionInstall(
+  extensions::InstallObserver::ExtensionInstallParams params(
       kPackagedApp1Id, "", gfx::ImageSkia(), true, true);
+  tracker->OnBeginExtensionInstall(params);
 
   EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 }

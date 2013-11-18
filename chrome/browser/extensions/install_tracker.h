@@ -14,10 +14,6 @@
 
 class Profile;
 
-namespace gfx {
-class ImageSkia;
-}
-
 namespace extensions {
 
 class ExtensionPrefs;
@@ -33,11 +29,7 @@ class InstallTracker : public BrowserContextKeyedService,
   void RemoveObserver(InstallObserver* observer);
 
   void OnBeginExtensionInstall(
-      const std::string& extension_id,
-      const std::string& extension_name,
-      const gfx::ImageSkia& installing_icon,
-      bool is_app,
-      bool is_platform_app);
+      const InstallObserver::ExtensionInstallParams& params);
   void OnDownloadProgress(const std::string& extension_id,
                           int percent_downloaded);
   void OnInstallFailure(const std::string& extension_id);

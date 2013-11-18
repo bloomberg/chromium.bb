@@ -182,11 +182,8 @@ void AppResult::ExtensionEnableFlowAborted(bool user_initiated) {
   controller_->OnCloseExtensionPrompt();
 }
 
-void AppResult::OnBeginExtensionInstall(const std::string& extension_id,
-                                        const std::string& extension_name,
-                                        const gfx::ImageSkia& installing_icon,
-                                        bool is_app,
-                                        bool is_platform_app) {}
+void AppResult::OnBeginExtensionInstall(
+    const ExtensionInstallParams& params) {}
 
 void AppResult::OnDownloadProgress(const std::string& extension_id,
                                    int percent_downloaded) {}

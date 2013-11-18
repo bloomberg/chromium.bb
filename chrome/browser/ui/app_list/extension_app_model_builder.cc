@@ -57,27 +57,23 @@ ExtensionAppModelBuilder::~ExtensionAppModelBuilder() {
 }
 
 void ExtensionAppModelBuilder::OnBeginExtensionInstall(
-    const std::string& extension_id,
-    const std::string& extension_name,
-    const gfx::ImageSkia& installing_icon,
-    bool is_app,
-    bool is_platform_app) {
-  if (!is_app)
+    const ExtensionInstallParams& params) {
+  if (!params.is_app)
     return;
 
-  ExtensionAppItem* existing_item = GetExtensionAppItem(extension_id);
+  ExtensionAppItem* existing_item = GetExtensionAppItem(params.extension_id);
   if (existing_item) {
     existing_item->SetIsInstalling(true);
     return;
   }
 
   InsertApp(new ExtensionAppItem(profile_,
-                                 extension_id,
+                                 params.extension_id,
                                  controller_,
-                                 extension_name,
-                                 installing_icon,
-                                 is_platform_app));
-  SetHighlightedApp(extension_id);
+                                 params.extension_name,
+                                 params.installing_icon,
+                                 params.is_platform_app));
+  SetHighlightedApp(params.extension_id);
 }
 
 void ExtensionAppModelBuilder::OnDownloadProgress(

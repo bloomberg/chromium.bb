@@ -44,11 +44,8 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
   typedef std::vector<ExtensionAppItem*> ExtensionAppList;
 
   // extensions::InstallObserver
-  virtual void OnBeginExtensionInstall(const std::string& extension_id,
-                                       const std::string& extension_name,
-                                       const gfx::ImageSkia& installing_icon,
-                                       bool is_app,
-                                       bool is_platform_app) OVERRIDE;
+  virtual void OnBeginExtensionInstall(
+      const ExtensionInstallParams& params) OVERRIDE;
   virtual void OnDownloadProgress(const std::string& extension_id,
                                   int percent_downloaded) OVERRIDE;
   virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE;
