@@ -33,6 +33,7 @@ _ISOLATE_FILE_PATHS = {
     'components_unittests': 'components/components_unittests.isolate',
     'content_browsertests': 'content/content_browsertests.isolate',
     'content_unittests': 'content/content_unittests.isolate',
+    'media_perftests': 'media/media_perftests.isolate',
     'media_unittests': 'media/media_unittests.isolate',
     'net_unittests': 'net/net_unittests.isolate',
     'ui_unittests': 'ui/ui_unittests.isolate',
