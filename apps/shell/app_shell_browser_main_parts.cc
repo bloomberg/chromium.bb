@@ -11,7 +11,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_screen.h"
-#include "ui/wm/test/minimal_shell.h"
+#include "ui/wm/test/wm_test_helper.h"
 
 namespace apps {
 
@@ -42,15 +42,15 @@ void AppShellBrowserMainParts::PreMainMessageLoopRun() {
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
   // Set up basic pieces of views::corewm.
-  minimal_shell_.reset(new wm::MinimalShell(gfx::Size(800, 600)));
+  wm_test_helper_.reset(new wm::WMTestHelper(gfx::Size(800, 600)));
   // Ensure the X window gets mapped.
-  minimal_shell_->root_window()->host()->Show();
+  wm_test_helper_->root_window()->host()->Show();
 
   // TODO(jamescook): Create an apps::ShellWindow here. For now, create a
   // window with a WebView just to ensure that the content module is properly
   // initialized.
   ShowWebViewWindow(browser_context_.get(),
-                    minimal_shell_->root_window()->window());
+                    wm_test_helper_->root_window()->window());
 }
 
 bool AppShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
@@ -62,7 +62,7 @@ bool AppShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
 
 void AppShellBrowserMainParts::PostMainMessageLoopRun() {
   browser_context_.reset();
-  minimal_shell_.reset();
+  wm_test_helper_.reset();
   aura::Env::DeleteInstance();
 }
 

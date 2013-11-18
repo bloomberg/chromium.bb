@@ -28,7 +28,7 @@ typedef struct _GtkToolItem GtkToolItem;
 #elif defined(USE_AURA)
 #if defined(OS_CHROMEOS)
 namespace wm {
-class MinimalShell;
+class WMTestHelper;
 }
 #endif  // defined(OS_CHROMEOS)
 namespace views {
@@ -262,7 +262,7 @@ class Shell : public WebContentsDelegate,
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 #elif defined(USE_AURA)
 #if defined(OS_CHROMEOS)
-  static wm::MinimalShell* minimal_shell_;
+  static wm::WMTestHelper* wm_test_helper_;
 #endif
 #if defined(TOOLKIT_VIEWS)
   static views::ViewsDelegate* views_delegate_;

@@ -16,8 +16,8 @@
         '../views/views.gyp:views',
       ],
       'sources': [
-        'test/minimal_shell.cc',
-        'test/minimal_shell.h',
+        'test/wm_test_helper.cc',
+        'test/wm_test_helper.h',
       ],
     },
   ],

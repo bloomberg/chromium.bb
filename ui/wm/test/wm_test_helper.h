@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_WM_TEST_MINIMAL_SHELL_H_
-#define UI_WM_TEST_MINIMAL_SHELL_H_
+#ifndef UI_WM_TEST_WM_TEST_HELPER_H_
+#define UI_WM_TEST_WM_TEST_HELPER_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,30 +16,30 @@ namespace client {
 class DefaultActivationClient;
 class DefaultCaptureClient;
 class FocusClient;
-}  // class client
-}  // class aura
+}
+}
 
 namespace gfx {
 class Rect;
 class Size;
-}  // class gfx
+}
 
 namespace views {
 namespace corewm {
 class CompoundEventFilter;
 class InputMethodEventFilter;
-}  // corewm
-}  // views
+}
+}
 
 namespace wm {
 
 // Creates a minimal environment for running the shell. We can't pull in all of
 // ash here, but we can create attach several of the same things we'd find in
 // the ash parts of the code.
-class MinimalShell : public aura::client::WindowTreeClient {
+class WMTestHelper : public aura::client::WindowTreeClient {
  public:
-  explicit MinimalShell(const gfx::Size& default_window_size);
-  virtual ~MinimalShell();
+  explicit WMTestHelper(const gfx::Size& default_window_size);
+  virtual ~WMTestHelper();
 
   aura::RootWindow* root_window() { return root_window_.get(); }
 
@@ -59,9 +59,9 @@ class MinimalShell : public aura::client::WindowTreeClient {
   scoped_ptr<aura::client::DefaultActivationClient> activation_client_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(MinimalShell);
+  DISALLOW_COPY_AND_ASSIGN(WMTestHelper);
 };
 
 }  // namespace wm
 
-#endif  // UI_WM_TEST_MINIMAL_SHELL_H_
+#endif  // UI_WM_TEST_WM_TEST_HELPER_H_

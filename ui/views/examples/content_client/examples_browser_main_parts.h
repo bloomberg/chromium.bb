@@ -15,7 +15,7 @@ struct MainFunctionParams;
 }
 
 namespace wm {
-class MinimalShell;
+class WMTestHelper;
 }
 
 namespace views {
@@ -45,7 +45,7 @@ class ExamplesBrowserMainParts : public content::BrowserMainParts {
 
 #if defined(OS_CHROMEOS)
   // Enable a minimal set of views::corewm to be initialized.
-  scoped_ptr<wm::MinimalShell> minimal_shell_;
+  scoped_ptr<wm::WMTestHelper> wm_test_helper_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesBrowserMainParts);

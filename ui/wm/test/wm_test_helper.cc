@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/wm/test/minimal_shell.h"
+#include "ui/wm/test/wm_test_helper.h"
 
 #include "ui/aura/client/default_activation_client.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -14,7 +14,7 @@
 
 namespace wm {
 
-MinimalShell::MinimalShell(const gfx::Size& default_window_size) {
+WMTestHelper::WMTestHelper(const gfx::Size& default_window_size) {
   aura::Env::CreateInstance();
   root_window_.reset(new aura::RootWindow(
       aura::RootWindow::CreateParams(
@@ -42,14 +42,13 @@ MinimalShell::MinimalShell(const gfx::Size& default_window_size) {
       new aura::client::DefaultCaptureClient(root_window_->window()));
 }
 
-MinimalShell::~MinimalShell() {
+WMTestHelper::~WMTestHelper() {
   root_window_event_filter_->RemoveHandler(input_method_filter_.get());
 }
 
-aura::Window* MinimalShell::GetDefaultParent(
-    aura::Window* context,
-    aura::Window* window,
-    const gfx::Rect& bounds) {
+aura::Window* WMTestHelper::GetDefaultParent(aura::Window* context,
+                                             aura::Window* window,
+                                             const gfx::Rect& bounds) {
   return root_window_->window();
 }
 
