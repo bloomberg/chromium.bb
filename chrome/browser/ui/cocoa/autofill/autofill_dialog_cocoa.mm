@@ -455,7 +455,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   NSRect contentRect = NSZeroRect;
   contentRect.size = [self preferredSize];
   NSRect clientRect = contentRect;
-  clientRect.origin.y = chrome_style::kClientBottomPadding;
+  clientRect.origin.y = chrome_style::kTitleTopPadding;
   clientRect.size.height -= chrome_style::kTitleTopPadding +
                             chrome_style::kClientBottomPadding;
 
