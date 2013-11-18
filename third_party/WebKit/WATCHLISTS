@@ -124,7 +124,6 @@
                   '|Source/core/rendering/RenderMedia' \
                   '|Source/modules/(encryptedmedia|mediasource)' \
                   '|Source/web/.*Media' \
-                  '|LayoutTests/fast/media/' \
                   '|LayoutTests/media/' \
                   '|public/.*Media'
     },

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="../../media/media-file.js"></script>
-        <script src="../../media/video-test.js"></script>
+        <script src="../media/media-file.js"></script>
+        <script src="../media/video-test.js"></script>
         <script>
             var metaElement;
             var standaloneMediaDocument;
@@ -29,7 +29,7 @@
         </p>
         <iframe id="videoframe" onload="frameLoaded()"></iframe>
         <script>
-            document.getElementById("videoframe").src = "../../media/" + findMediaFile("video", "content/test");
+            document.getElementById("videoframe").src = findMediaFile("video", "content/test");
         </script>
     </body>
 </html>
