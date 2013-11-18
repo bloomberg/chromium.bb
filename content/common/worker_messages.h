@@ -81,7 +81,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(WorkerProcessHostMsg_AllowIndexedDB,
                             bool /* result */)
 
 // Sent by the worker process to request being killed.
-IPC_SYNC_MESSAGE_CONTROL0_0(WorkerProcessHostMsg_ForceKillWorker);
+IPC_SYNC_MESSAGE_CONTROL0_0(WorkerProcessHostMsg_ForceKillWorker)
 
 
 //-----------------------------------------------------------------------------
