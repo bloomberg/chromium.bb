@@ -580,48 +580,39 @@ block_rule:
   | region
   ;
 
-at_import_header_end_maybe_space:
-    maybe_space {
-        parser->endRuleHeader();
-        parser->startRuleBody();
-    }
-    ;
-
 before_import_rule:
     /* empty */ {
         parser->startRuleHeader(CSSRuleSourceData::IMPORT_RULE);
     }
     ;
 
-import:
-    before_import_rule IMPORT_SYM at_import_header_end_maybe_space string_or_uri maybe_space location_label maybe_media_list semi_or_eof {
-        $$ = parser->createImportRule($4, $7);
+import_rule_start:
+    before_import_rule IMPORT_SYM maybe_space {
+        parser->endRuleHeader();
+        parser->startRuleBody();
     }
-  | before_import_rule IMPORT_SYM at_import_header_end_maybe_space string_or_uri maybe_space location_label maybe_media_list invalid_block {
+  ;
+
+import:
+    import_rule_start string_or_uri maybe_space location_label maybe_media_list semi_or_eof {
+        $$ = parser->createImportRule($2, $5);
+    }
+  | import_rule_start string_or_uri maybe_space location_label maybe_media_list invalid_block {
         $$ = 0;
         parser->endRuleBody(true);
     }
-  | before_import_rule IMPORT_SYM at_rule_recovery {
+  | import_rule_start at_rule_recovery {
         $$ = 0;
         parser->endRuleBody(true);
     }
   ;
 
-before_namespace_rule:
-    /* empty */ {
-        // FIXME: There should be parser->startRuleHeader.
-    }
-    ;
-
 namespace:
-    before_namespace_rule NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space semi_or_eof {
-        parser->addNamespace($4, $5);
+    NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space semi_or_eof {
+        parser->addNamespace($3, $4);
         $$ = 0;
     }
-  | before_namespace_rule NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space invalid_block {
-        $$ = 0;
-    }
-  | before_namespace_rule NAMESPACE_SYM at_rule_recovery {
+  | NAMESPACE_SYM at_rule_recovery {
         $$ = 0;
     }
   ;
