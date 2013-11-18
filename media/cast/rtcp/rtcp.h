@@ -7,6 +7,7 @@
 
 #include <list>
 #include <map>
+#include <queue>
 #include <set>
 #include <string>
 
@@ -26,6 +27,10 @@ class LocalRtcpRttFeedback;
 class PacedPacketSender;
 class RtcpReceiver;
 class RtcpSender;
+
+typedef std::pair<uint32, base::TimeTicks> RtcpSendTimePair;
+typedef std::map<uint32, base::TimeTicks> RtcpSendTimeMap;
+typedef std::queue<RtcpSendTimePair> RtcpSendTimeQueue;
 
 class RtcpSenderFeedback {
  public:
@@ -114,6 +119,9 @@ class Rtcp {
 
   void UpdateNextTimeToSendRtcp();
 
+  void SaveLastSentNtpTime(const base::TimeTicks& now, uint32 last_ntp_seconds,
+                           uint32 last_ntp_fraction);
+
   base::TickClock* const clock_;  // Not owned by this class.
   const base::TimeDelta rtcp_interval_;
   const RtcpMode rtcp_mode_;
@@ -130,10 +138,8 @@ class Rtcp {
   scoped_ptr<RtcpReceiver> rtcp_receiver_;
 
   base::TimeTicks next_time_to_send_rtcp_;
-
-  base::TimeTicks time_last_report_sent_;
-  uint32 last_report_sent_;
-
+  RtcpSendTimeMap last_reports_sent_map_;
+  RtcpSendTimeQueue last_reports_sent_queue_;
   base::TimeTicks time_last_report_received_;
   uint32 last_report_received_;
 
