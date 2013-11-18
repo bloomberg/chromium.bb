@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/browser_command_controller.h"
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
@@ -655,6 +657,9 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_CREATE_SHORTCUTS:
       CreateApplicationShortcuts(browser_);
       break;
+    case IDC_CREATE_HOSTED_APP:
+      CreateHostedAppFromCurrentWebContents(browser_);
+      break;
     case IDC_DEV_TOOLS:
       ToggleDevToolsWindow(browser_, DevToolsToggleAction::Show());
       break;
@@ -1092,6 +1097,9 @@ void BrowserCommandController::UpdateCommandsForTabState() {
 #if !defined(OS_MACOSX)
   command_updater_.UpdateCommandEnabled(
       IDC_CREATE_SHORTCUTS,
+      CanCreateApplicationShortcuts(browser_));
+  command_updater_.UpdateCommandEnabled(
+      IDC_CREATE_HOSTED_APP,
       CanCreateApplicationShortcuts(browser_));
 #endif
 

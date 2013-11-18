@@ -49,9 +49,10 @@ class TabHelper : public content::WebContentsObserver,
   // Different types of action when web app info is available.
   // OnDidGetApplicationInfo uses this to dispatch calls.
   enum WebAppAction {
-    NONE,             // No action at all.
-    CREATE_SHORTCUT,  // Bring up create application shortcut dialog.
-    UPDATE_SHORTCUT   // Update icon for app shortcut.
+    NONE,              // No action at all.
+    CREATE_SHORTCUT,   // Bring up create application shortcut dialog.
+    CREATE_HOSTED_APP, // Create and install a hosted app.
+    UPDATE_SHORTCUT    // Update icon for app shortcut.
   };
 
   // Observer base class for classes that need to be notified when content
@@ -95,7 +96,10 @@ class TabHelper : public content::WebContentsObserver,
   }
 
   void CreateApplicationShortcuts();
+  void CreateHostedAppFromWebContents();
   bool CanCreateApplicationShortcuts() const;
+
+  void CreateHostedApp(const WebApplicationInfo& info);
 
   void set_pending_web_app_action(WebAppAction action) {
     pending_web_app_action_ = action;
