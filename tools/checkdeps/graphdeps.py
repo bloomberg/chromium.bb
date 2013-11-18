@@ -274,17 +274,17 @@ Examples:
   /content/browser/renderer_host. Limit potential candidates to /apps,
   /chrome/browser and content/browser, and descendants of those three.
   Generate both DOT and PNG output. The output will highlight the fanins
-  of /apps and /content/browser/renderer_host. Nodes belonging to both fanins
-  will be emphasized by a thicker outline. Those nodes are the ones that are
+  of /apps and /content/browser/renderer_host. Overlapping nodes in both fanins
+  will be emphasized by a thicker border. Those nodes are the ones that are
   allowed to depend on both targets, therefore they are all legal candidates
-  to place our new source in:
+  to place the new source in:
     graphdeps.py \
       --root=./src \
-      --dot=./DEPS.dot \
-      --png=./DEPS.png \
-      --incl='^(apps|chrome/browser|content/browser)' \
+      --out=./DEPS.svg \
+      --format=svg \
+      --incl='^(apps|chrome/browser|content/browser)->.*' \
+      --excl='.*->third_party' \
       --fanin='^(apps|content/browser/renderer_host)$' \
-      --excl='third_party' \
       --ignore-specific-rules \
       --ignore-temp-rules"""
 
@@ -323,14 +323,18 @@ def main():
   option_parser.add_option(
       "-i", "--incl",
       default="^.*$", dest="incl",
-      help="Include only dependent nodes that match the specified regexp. "
-           "Such nodes\" fanins and fanouts are also included, "
-           "unless filtered out by --excl.")
+      help="Include only edges of the graph that match the specified regexp. "
+           "The regexp is applied to edges of the graph formatted as "
+           "'source_node->target_node', where the '->' part is vebatim. "
+           "Therefore, a reliable regexp should look like "
+           "'^(chrome|chrome/browser|chrome/common)->content/public/browser$' "
+           "or similar, with both source and target node regexps present, "
+           "explicit ^ and $, and otherwise being as specific as possible.")
   option_parser.add_option(
       "-e", "--excl",
       default="^$", dest="excl",
       help="Exclude dependent nodes that match the specified regexp. "
-           "Such nodes\" fanins and fanouts are not directly affected.")
+           "See --incl for details on the format.")
   option_parser.add_option(
       "", "--fanin",
       default="", dest="hilite_fanins",
