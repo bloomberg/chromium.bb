@@ -21,46 +21,11 @@
 namespace content {
 
 static const size_t kMaxNumDelayableRequestsPerClient = 10;
-static const size_t kMaxNumDelayableRequestsPerHost = 6;
 
 // A thin wrapper around net::PriorityQueue that deals with
 // ScheduledResourceRequests instead of PriorityQueue::Pointers.
 class ResourceScheduler::RequestQueue {
- private:
-  typedef net::PriorityQueue<ScheduledResourceRequest*> NetQueue;
-
  public:
-  class Iterator {
-   public:
-    Iterator(NetQueue* queue) : queue_(queue) {
-      DCHECK(queue != NULL);
-      current_pointer_ = queue_->FirstMax();
-    }
-
-    Iterator& operator++() {
-      current_pointer_ = queue_->GetNextTowardsLastMin(current_pointer_);
-      return *this;
-    }
-
-    Iterator operator++(int) {
-      Iterator result(*this);
-      ++(*this);
-      return result;
-    }
-
-    ScheduledResourceRequest* value() {
-      return current_pointer_.value();
-    }
-
-    bool is_null() {
-      return current_pointer_.is_null();
-    }
-
-   private:
-    NetQueue* queue_;
-    NetQueue::Pointer current_pointer_;
-  };
-
   RequestQueue() : queue_(net::NUM_PRIORITIES) {}
   ~RequestQueue() {}
 
@@ -85,10 +50,6 @@ class ResourceScheduler::RequestQueue {
     return queue_.FirstMax().value();
   }
 
-  Iterator GetNextHighestIterator() {
-    return Iterator(&queue_);
-  }
-
   // Returns true if |request| is queued.
   bool IsQueued(ScheduledResourceRequest* request) const {
     return ContainsKey(pointers_, request);
@@ -98,6 +59,7 @@ class ResourceScheduler::RequestQueue {
   bool IsEmpty() const { return queue_.size() == 0; }
 
  private:
+  typedef net::PriorityQueue<ScheduledResourceRequest*> NetQueue;
   typedef std::map<ScheduledResourceRequest*, NetQueue::Pointer> PointerMap;
 
   NetQueue queue_;
@@ -209,7 +171,7 @@ scoped_ptr<ResourceThrottle> ResourceScheduler::ScheduleRequest(
   }
 
   Client* client = it->second;
-  if (ShouldStartRequest(request.get(), client) == START_REQUEST) {
+  if (ShouldStartRequest(request.get(), client)) {
     StartRequest(request.get(), client);
   } else {
     client->pending_requests.Insert(request.get(), url_request->priority());
@@ -344,69 +306,32 @@ void ResourceScheduler::ReprioritizeRequest(ScheduledResourceRequest* request,
 }
 
 void ResourceScheduler::LoadAnyStartablePendingRequests(Client* client) {
-  // We iterate through all the pending requests, starting with the highest
-  // priority one. For each entry, one of three things can happen:
-  // 1) We start the request, remove it from the list, and keep checking.
-  // 2) We do NOT start the request, but ShouldStartRequest() signals us that
-  //    there may be room for other requests, so we keep checking and leave
-  //    the previous request still in the list.
-  // 3) We do not start the request, same as above, but StartRequest() tells
-  //    us there's no point in checking any further requests.
-
-  RequestQueue::Iterator request_iter =
-      client->pending_requests.GetNextHighestIterator();
-
-  while (!request_iter.is_null()) {
-    ScheduledResourceRequest* request = request_iter.value();
-    ShouldStartReqResult query_result = ShouldStartRequest(request, client);
-
-    if (query_result == START_REQUEST) {
+  while (!client->pending_requests.IsEmpty()) {
+    ScheduledResourceRequest* request = client->pending_requests.FirstMax();
+    if (ShouldStartRequest(request, client)) {
       client->pending_requests.Erase(request);
       StartRequest(request, client);
-
-      // StartRequest can modify the pending list, so we (re)start evaluation
-      // from the currently highest priority request.
-      request_iter = client->pending_requests.GetNextHighestIterator();
-    } else if (query_result == DO_NOT_START_REQUEST_AND_KEEP_SEARCHING) {
-      ++request_iter;
-      continue;
     } else {
-      DCHECK(query_result == DO_NOT_START_REQUEST_AND_STOP_SEARCHING);
       break;
     }
   }
 }
 
-void ResourceScheduler::GetNumDelayableRequestsInFlight(
-    Client* client,
-    const net::HostPortPair& active_request_host,
-    size_t* total_delayable,
-    size_t* total_for_active_host) const {
-  DCHECK(client != NULL && total_delayable != NULL &&
-         total_for_active_host != NULL);
-
-  size_t total_delayable_count = 0;
-  size_t same_host_count = 0;
+size_t ResourceScheduler::GetNumDelayableRequestsInFlight(
+    Client* client) const {
+  size_t count = 0;
   for (RequestSet::iterator it = client->in_flight_requests.begin();
        it != client->in_flight_requests.end(); ++it) {
-    net::HostPortPair host_port_pair =
-        net::HostPortPair::FromURL((*it)->url_request()->url());
-
-    if (active_request_host.Equals(host_port_pair)) {
-      same_host_count++;
-    }
-
     if ((*it)->url_request()->priority() < net::LOW) {
       const net::HttpServerProperties& http_server_properties =
           *(*it)->url_request()->context()->http_server_properties();
-
-      if (!http_server_properties.SupportsSpdy(host_port_pair)) {
-        ++total_delayable_count;
+      if (!http_server_properties.SupportsSpdy(
+          net::HostPortPair::FromURL((*it)->url_request()->url()))) {
+        ++count;
       }
     }
   }
-  *total_delayable = total_delayable_count;
-  *total_for_active_host = same_host_count;
+  return count;
 }
 
 // ShouldStartRequest is the main scheduling algorithm.
@@ -426,60 +351,46 @@ void ResourceScheduler::GetNumDelayableRequestsInFlight(
 //     requests.
 //   * Once the renderer has a <body>, start loading delayable requests.
 //   * Never exceed 10 delayable requests in flight per client.
-//   * Never exceed 6 delayable requests for a given host.
 //   * Prior to <body>, allow one delayable request to load at a time.
-ResourceScheduler::ShouldStartReqResult ResourceScheduler::ShouldStartRequest(
-    ScheduledResourceRequest* request,
-    Client* client) const {
+bool ResourceScheduler::ShouldStartRequest(ScheduledResourceRequest* request,
+                                           Client* client) const {
   const net::URLRequest& url_request = *request->url_request();
 
   // TODO(simonjam): This may end up causing disk contention. We should
   // experiment with throttling if that happens.
   if (!url_request.url().SchemeIsHTTPOrHTTPS()) {
-    return START_REQUEST;
+    return true;
   }
 
   const net::HttpServerProperties& http_server_properties =
       *url_request.context()->http_server_properties();
 
-  if (url_request.priority() >= net::LOW ||
-      !ResourceRequestInfo::ForRequest(&url_request)->IsAsync()) {
-    return START_REQUEST;
-  }
-
-  net::HostPortPair host_port_pair =
-      net::HostPortPair::FromURL(url_request.url());
-
   // TODO(willchan): We should really improve this algorithm as described in
   // crbug.com/164101. Also, theoretically we should not count a SPDY request
   // against the delayable requests limit.
-  if (http_server_properties.SupportsSpdy(host_port_pair)) {
-    return START_REQUEST;
+  bool origin_supports_spdy = http_server_properties.SupportsSpdy(
+      net::HostPortPair::FromURL(url_request.url()));
+
+  if (url_request.priority() >= net::LOW ||
+      !ResourceRequestInfo::ForRequest(&url_request)->IsAsync() ||
+      origin_supports_spdy) {
+    return true;
   }
 
-  size_t num_delayable_requests_in_flight = 0;
-  size_t num_requests_in_flight_for_host = 0;
-  GetNumDelayableRequestsInFlight(client, host_port_pair,
-                                  &num_delayable_requests_in_flight,
-                                  &num_requests_in_flight_for_host);
-
+  size_t num_delayable_requests_in_flight =
+      GetNumDelayableRequestsInFlight(client);
   if (num_delayable_requests_in_flight >= kMaxNumDelayableRequestsPerClient) {
-    return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
-  }
-
-  if (num_requests_in_flight_for_host >= kMaxNumDelayableRequestsPerHost) {
-    // There may be other requests for other hosts we'd allow, so keep checking.
-    return DO_NOT_START_REQUEST_AND_KEEP_SEARCHING;
+    return false;
   }
 
   bool have_immediate_requests_in_flight =
       client->in_flight_requests.size() > num_delayable_requests_in_flight;
   if (have_immediate_requests_in_flight && !client->has_body &&
       num_delayable_requests_in_flight != 0) {
-    return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
+    return false;
   }
 
-  return START_REQUEST;
+  return true;
 }
 
 ResourceScheduler::ClientId ResourceScheduler::MakeClientId(

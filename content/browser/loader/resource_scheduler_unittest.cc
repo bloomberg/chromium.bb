@@ -318,41 +318,19 @@ TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
   EXPECT_TRUE(high->started());
 
   const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
-  const int kMaxNumDelayableRequestsPerHost = 6;
-  ScopedVector<TestRequest> lows_singlehost;
-  // Queue up to the per-host limit (we subtract the current high-pri request).
-  for (int i = 0; i < kMaxNumDelayableRequestsPerHost - 1; ++i) {
+  ScopedVector<TestRequest> lows;
+  for (int i = 0; i < kMaxNumDelayableRequestsPerClient; ++i) {
     string url = "http://host/low" + base::IntToString(i);
-    lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
-    EXPECT_TRUE(lows_singlehost[i]->started());
+    lows.push_back(NewRequest(url.c_str(), net::LOWEST));
+    EXPECT_TRUE(lows[i]->started());
   }
 
-  scoped_ptr<TestRequest> second_last_singlehost(NewRequest("http://host/last",
-                                                            net::LOWEST));
-  scoped_ptr<TestRequest> last_singlehost(NewRequest("http://host/s_last",
-                                                     net::LOWEST));
-
-  EXPECT_FALSE(second_last_singlehost->started());
+  scoped_ptr<TestRequest> last(NewRequest("http://host/last", net::LOWEST));
+  EXPECT_FALSE(last->started());
   high.reset();
-  EXPECT_TRUE(second_last_singlehost->started());
-  EXPECT_FALSE(last_singlehost->started());
-  lows_singlehost.erase(lows_singlehost.begin());
-  EXPECT_TRUE(last_singlehost->started());
-
-  // Queue more requests from different hosts until we reach the total limit.
-  int expected_slots_left =
-      kMaxNumDelayableRequestsPerClient - kMaxNumDelayableRequestsPerHost;
-  EXPECT_GT(expected_slots_left, 0);
-  ScopedVector<TestRequest> lows_differenthosts;
-  for (int i = 0; i < expected_slots_left; ++i) {
-    string url = "http://host" + base::IntToString(i) + "/low";
-    lows_differenthosts.push_back(NewRequest(url.c_str(), net::LOWEST));
-    EXPECT_TRUE(lows_differenthosts[i]->started());
-  }
-
-  scoped_ptr<TestRequest> last_differenthost(NewRequest("http://host_new/last",
-                                                        net::LOWEST));
-  EXPECT_FALSE(last_differenthost->started());
+  EXPECT_FALSE(last->started());
+  lows.erase(lows.begin());
+  EXPECT_TRUE(last->started());
 }
 
 TEST_F(ResourceSchedulerTest, RaisePriorityAndStart) {
@@ -413,7 +391,7 @@ TEST_F(ResourceSchedulerTest, LowerPriority) {
   const int kNumFillerRequests = kMaxNumDelayableRequestsPerClient - 2;
   ScopedVector<TestRequest> lows;
   for (int i = 0; i < kNumFillerRequests; ++i) {
-    string url = "http://host" + base::IntToString(i) + "/low";
+    string url = "http://host/low" + base::IntToString(i);
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
 
