@@ -27,35 +27,22 @@ function test()
 
     function step1()
     {
-        dumpBreadcrumb("Original breadcrumb");
+        InspectorTest.dumpBreadcrumb("Original breadcrumb");
         InspectorTest.addSniffer(WebInspector.panels.elements, "updateBreadcrumb", step2);
         InspectorTest.evaluateInPage("changeClass()");
     }
 
     function step2()
     {
-        dumpBreadcrumb("After class change");
+        InspectorTest.dumpBreadcrumb("After class change");
         InspectorTest.addSniffer(WebInspector.panels.elements, "updateBreadcrumb", step3);
         InspectorTest.evaluateInPage("deleteClass()");
     }
 
     function step3()
     {
-        dumpBreadcrumb("After class removal");
+        InspectorTest.dumpBreadcrumb("After class removal");
         InspectorTest.completeTest();
-    }
-
-    function dumpBreadcrumb(message)
-    {
-        InspectorTest.addResult(message + ":");
-        var result = [];
-        var crumbs = WebInspector.panel("elements").crumbsElement;
-        var crumb = crumbs.lastChild;
-        while (crumb) {
-            result.unshift(crumb.textContent);
-            crumb = crumb.previousSibling;
-        }
-        InspectorTest.addResult(result.join(" > "));
     }
 }
 

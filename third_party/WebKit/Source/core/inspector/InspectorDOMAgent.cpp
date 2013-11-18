@@ -1437,6 +1437,18 @@ static String documentBaseURLString(Document* document)
     return document->completeURL("").string();
 }
 
+static TypeBuilder::DOM::ShadowRootType::Enum shadowRootType(ShadowRoot* shadowRoot)
+{
+    switch (shadowRoot->type()) {
+    case ShadowRoot::UserAgentShadowRoot:
+        return TypeBuilder::DOM::ShadowRootType::User_agent;
+    case ShadowRoot::AuthorShadowRoot:
+        return TypeBuilder::DOM::ShadowRootType::Author;
+    }
+    ASSERT_NOT_REACHED();
+    return TypeBuilder::DOM::ShadowRootType::User_agent;
+}
+
 PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* node, int depth, NodeToIdMap* nodesMap)
 {
     int id = bind(node, nodesMap);
@@ -1529,6 +1541,8 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
         Attr* attribute = toAttr(node);
         value->setName(attribute->name());
         value->setValue(attribute->value());
+    } else if (node->isShadowRoot()) {
+        value->setShadowRootType(shadowRootType(toShadowRoot(node)));
     }
 
     if (node->isContainerNode()) {

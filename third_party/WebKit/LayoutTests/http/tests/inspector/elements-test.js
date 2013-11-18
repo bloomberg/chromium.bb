@@ -628,6 +628,20 @@ InspectorTest.dumpStyle = function(style, currentIndent)
     }
 }
 
+InspectorTest.dumpBreadcrumb = function(message)
+{
+    if (message)
+        InspectorTest.addResult(message + ":");
+    var result = [];
+    var crumbs = WebInspector.panel("elements").crumbsElement;
+    var crumb = crumbs.lastChild;
+    while (crumb) {
+        result.unshift(crumb.textContent);
+        crumb = crumb.previousSibling;
+    }
+    InspectorTest.addResult(result.join(" > "));
+}
+
 InspectorTest.matchingSelectors = function(rule)
 {
     var selectors = [];
