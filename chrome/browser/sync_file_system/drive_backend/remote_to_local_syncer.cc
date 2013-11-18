@@ -546,16 +546,39 @@ void RemoteToLocalSyncer::HandleFolderContentListing(
       base::Bind(&RemoteToLocalSyncer::DidListFolderContent,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
-                 base::Passed(ScopedVector<google_apis::FileResource>())));
+                 base::Passed(make_scoped_ptr(new FileIDList))));
 }
 
 void RemoteToLocalSyncer::DidListFolderContent(
     const SyncStatusCallback& callback,
-    ScopedVector<google_apis::FileResource> children,
+    scoped_ptr<FileIDList> children,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> resource_list) {
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
+  if (error != google_apis::HTTP_SUCCESS) {
+    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+    return;
+  }
+
+  children->reserve(children->size() + resource_list->entries().size());
+  for (ScopedVector<google_apis::ResourceEntry>::const_iterator itr =
+           resource_list->entries().begin();
+       itr != resource_list->entries().end();
+       ++itr) {
+    children->push_back((*itr)->resource_id());
+  }
+
+  GURL next_feed;
+  if (resource_list->GetNextFeedURL(&next_feed)) {
+    drive_service()->GetRemainingFileList(
+        next_feed,
+        base::Bind(&RemoteToLocalSyncer::DidListFolderContent,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback, base::Passed(&children)));
+    return;
+  }
+
+  metadata_database()->PopulateFolderByChildList(
+      dirty_tracker_->file_id(), *children, callback);
 }
 
 void RemoteToLocalSyncer::HandleOfflineSolvable(

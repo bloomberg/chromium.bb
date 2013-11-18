@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_REMOTE_TO_LOCAL_SYNCER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_REMOTE_TO_LOCAL_SYNCER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
@@ -52,6 +55,8 @@ class RemoteToLocalSyncer : public SyncTask {
   virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
 
  private:
+  typedef std::vector<std::string> FileIDList;
+
   // Dispatches remote change to handlers or to SyncCompleted() directly.
   // This function uses information only in MetadataDatabase.
   //
@@ -163,7 +168,7 @@ class RemoteToLocalSyncer : public SyncTask {
   void HandleFolderContentListing(const SyncStatusCallback& callback);
   void DidListFolderContent(
       const SyncStatusCallback& callback,
-      ScopedVector<google_apis::FileResource> children,
+      scoped_ptr<FileIDList> children,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> resource_list);
 
