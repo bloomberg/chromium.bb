@@ -128,7 +128,12 @@ cr.define('options', function() {
         chrome.send('requestHasProfileShortcuts', [profileInfo.filePath]);
       }
 
-      $('manage-profile-name').focus();
+      var manageNameField = $('manage-profile-name');
+      // Supervised users cannot edit their names.
+      if (manageNameField.disabled)
+        $('manage-profile-ok').focus();
+      else
+        manageNameField.focus();
     },
 
     /**

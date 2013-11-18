@@ -66,6 +66,8 @@ ManageProfileUITest.prototype = {
   },
 };
 
+// Receiving the new profile defaults in the manage-user overlay shouldn't mess
+// up the focus in a visible higher-level overlay.
 TEST_F('ManageProfileUITest', 'NewProfileDefaultsFocus', function() {
   var self = this;
 
@@ -150,17 +152,22 @@ TEST_F('ManageProfileUITest', 'CreateManagedUserText', function() {
   assertTrue($('create-profile-managed').disabled);
 });
 
-// Managed users should not be able to edit their profile names.
+// Managed users should not be able to edit their profile names, and the initial
+// focus should be adjusted accordingly.
 TEST_F('ManageProfileUITest', 'EditManagedUserNameAllowed', function() {
   var nameField = $('manage-profile-name');
 
   this.setProfileManaged_(false);
   ManageProfileOverlay.showManageDialog();
-  assertFalse(nameField.disabled);
+  expectFalse(nameField.disabled);
+  expectEquals(nameField, document.activeElement);
+
+  OptionsPage.closeOverlay();
 
   this.setProfileManaged_(true);
   ManageProfileOverlay.showManageDialog();
-  assertTrue(nameField.disabled);
+  expectTrue(nameField.disabled);
+  expectEquals($('manage-profile-ok'), document.activeElement);
 });
 
 // Setting profile information should allow the confirmation to be shown.
