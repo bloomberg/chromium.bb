@@ -500,17 +500,13 @@ int64 MetadataDatabase::GetSyncRootTrackerID() const {
 }
 
 int64 MetadataDatabase::GetLargestKnownChangeID() const {
-  // TODO(tzik): Implement:
-  //  - Add |largest_known_file_id| member to hold the value, that should
-  //    initially have the same value to |largest_change_id|.
-  //  - Change UpdateByFileResource and UpdateByChangeList not to overwrite
-  //    FileMetadata if the newer one.
-  //  - Change ListChangesTask to set UpdateLargestKnownChangeID.
-  return GetLargestFetchedChangeID();
+  DCHECK_LE(GetLargestFetchedChangeID(), largest_known_change_id_);
+  return largest_known_change_id_;
 }
 
 void MetadataDatabase::UpdateLargestKnownChangeID(int64 change_id) {
-  NOTIMPLEMENTED();
+  if (largest_known_change_id_ < change_id)
+    largest_known_change_id_ = change_id;
 }
 
 bool MetadataDatabase::HasSyncRoot() const {
@@ -528,6 +524,7 @@ void MetadataDatabase::PopulateInitialData(
 
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
   service_metadata_->set_largest_change_id(largest_change_id);
+  UpdateLargestKnownChangeID(largest_change_id);
 
   FileTracker* sync_root_tracker = NULL;
   int64 sync_root_tracker_id = 0;
@@ -761,6 +758,9 @@ void MetadataDatabase::UpdateByChangeList(
        itr != changes.end();
        ++itr) {
     const google_apis::ChangeResource& change = **itr;
+    if (HasNewerFileMetadata(change.file_id(), change.change_id()))
+      continue;
+
     scoped_ptr<FileMetadata> file(
         CreateFileMetadataFromChangeResource(change));
     std::string file_id = file->file_id();
@@ -779,6 +779,7 @@ void MetadataDatabase::UpdateByChangeList(
     }
   }
 
+  UpdateLargestKnownChangeID(largest_change_id);
   service_metadata_->set_largest_change_id(largest_change_id);
   PutServiceMetadataToBatch(*service_metadata_, batch.get());
   WriteToDatabase(batch.Pass(), callback);
@@ -793,6 +794,8 @@ void MetadataDatabase::UpdateByFileResource(
   scoped_ptr<FileMetadata> file(
       CreateFileMetadataFromFileResource(change_id, resource));
   std::string file_id = file->file_id();
+  if (HasNewerFileMetadata(file_id, change_id))
+    return;
 
   // TODO(tzik): Consolidate with UpdateByChangeList.
   MarkTrackersDirtyByFileID(file_id, batch.get());
@@ -954,7 +957,9 @@ bool MetadataDatabase::GetLowPriorityDirtyTracker(FileTracker* tracker) {
 }
 
 MetadataDatabase::MetadataDatabase(base::SequencedTaskRunner* task_runner)
-    : task_runner_(task_runner), weak_ptr_factory_(this) {
+    : task_runner_(task_runner),
+      largest_known_change_id_(0),
+      weak_ptr_factory_(this) {
   DCHECK(task_runner);
 }
 
@@ -1553,6 +1558,15 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpFiles(
   }
 
   return files.Pass();
+}
+
+bool MetadataDatabase::HasNewerFileMetadata(const std::string& file_id,
+                                            int64 change_id) {
+  FileByID::const_iterator found = file_by_id_.find(file_id);
+  if (found == file_by_id_.end())
+    return false;
+  DCHECK(found->second->has_details());
+  return found->second->details().change_id() >= change_id;
 }
 
 }  // namespace drive_backend
