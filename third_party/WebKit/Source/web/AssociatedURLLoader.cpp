@@ -310,6 +310,10 @@ COMPILE_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::CrossOriginRequestPolicyDeny, 
 COMPILE_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl, UseAccessControl);
 COMPILE_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::CrossOriginRequestPolicyAllow, AllowCrossOriginRequests);
 
+COMPILE_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::ConsiderPreflight, ConsiderPreflight);
+COMPILE_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::ForcePreflight, ForcePreflight);
+COMPILE_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::PreventPreflight, PreventPreflight);
+
 void AssociatedURLLoader::loadSynchronously(const WebURLRequest& request, WebURLResponse& response, WebURLError& error, WebData& data)
 {
     ASSERT(0); // Synchronous loading is not supported.
@@ -342,7 +346,7 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
         options.sendLoadCallbacks = SendCallbacks; // Always send callbacks.
         options.sniffContent = m_options.sniffContent ? SniffContent : DoNotSniffContent;
         options.allowCredentials = m_options.allowCredentials ? AllowStoredCredentials : DoNotAllowStoredCredentials;
-        options.preflightPolicy = m_options.forcePreflight ? ForcePreflight : ConsiderPreflight;
+        options.preflightPolicy = static_cast<WebCore::PreflightPolicy>(m_options.preflightPolicy);
         options.crossOriginRequestPolicy = static_cast<WebCore::CrossOriginRequestPolicy>(m_options.crossOriginRequestPolicy);
         options.dataBufferingPolicy = DoNotBufferData;
 
