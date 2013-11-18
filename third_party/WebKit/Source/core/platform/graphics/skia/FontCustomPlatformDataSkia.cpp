@@ -37,7 +37,6 @@
 #include "platform/SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
-#include "core/platform/graphics/skia/SkiaSharedBufferStream.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "wtf/PassOwnPtr.h"
@@ -69,7 +68,7 @@ PassOwnPtr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* 
         return nullptr; // validation failed.
     buffer = transcodeBuffer.get();
 
-    RefPtr<SkiaSharedBufferStream> stream = SkiaSharedBufferStream::create(buffer);
+    RefPtr<SkMemoryStream> stream = adoptRef(new SkMemoryStream(buffer->getAsSkData().get()));
     RefPtr<SkTypeface> typeface = adoptRef(SkTypeface::CreateFromStream(stream.get()));
     if (!typeface)
         return nullptr;

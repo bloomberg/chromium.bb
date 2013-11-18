@@ -2928,8 +2928,6 @@
             'platform/graphics/skia/SimpleFontDataSkia.cpp',
             'platform/graphics/skia/SkiaFontWin.cpp',
             'platform/graphics/skia/SkiaFontWin.h',
-            'platform/graphics/skia/SkiaSharedBufferStream.cpp',
-            'platform/graphics/skia/SkiaSharedBufferStream.h',
             'platform/graphics/skia/SkiaUtils.cpp',
             'platform/graphics/skia/SkiaUtils.h',
             'platform/graphics/win/FontCacheWin.cpp',

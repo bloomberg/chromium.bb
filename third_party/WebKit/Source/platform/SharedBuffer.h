@@ -28,6 +28,7 @@
 #define SharedBuffer_h
 
 #include "platform/PlatformExport.h"
+#include "third_party/skia/include/core/SkData.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -97,6 +98,10 @@ public:
     // Creates an ArrayBuffer and copies this SharedBuffer's contents to that
     // ArrayBuffer without merging segmented buffers into a flat buffer.
     PassRefPtr<ArrayBuffer> getAsArrayBuffer() const;
+
+    // Creates an SkData and copies this SharedBuffer's contents to that
+    // SkData without merging segmented buffers into a flat buffer.
+    PassRefPtr<SkData> getAsSkData() const;
 
 private:
     SharedBuffer();
