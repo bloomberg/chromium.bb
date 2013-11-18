@@ -1679,8 +1679,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     ld = 'link.exe'
     ld_host = '$ld'
   else:
-    cc = 'gcc'
-    cxx = 'g++'
+    cc = 'cc'
+    cxx = 'c++'
     ld = '$cc'
     ldxx = '$cxx'
     ld_host = '$cc_host'

@@ -31,9 +31,10 @@ if sys.platform == 'darwin':
   # clang doesn't warn on invalid offsetofs, it silently ignores
   # -Wno-invalid-offsetof.
   # TODO(thakis): This isn't really the right way to detect the compiler,
-  # `which cc` detects what make ends up using, and Xcode has some embedded
-  # compiler, but it's a reliable proxy at least on the bots.
-  if os.readlink('/usr/bin/cc') != 'clang':
+  # Xcode has some embedded compiler, but it's a reliable proxy at least on
+  # the bots. The compiler is forced to gcc/g++ in the gyp file in a
+  # make_global_settings section for ninja and make.
+  if test.format != 'xcode' or os.readlink('/usr/bin/cc') != 'clang':
     targets.append('warn_about_invalid_offsetof_macro')
 
   for target in targets:
