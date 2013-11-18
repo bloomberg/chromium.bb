@@ -38,7 +38,7 @@ using namespace WebCore;
 
 namespace {
 
-class CoreAnimationAnimationClockTest : public ::testing::Test {
+class AnimationAnimationClockTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
@@ -55,9 +55,9 @@ protected:
     OwnPtr<AnimationClock> animationClock;
 };
 
-double CoreAnimationAnimationClockTest::mockTime;
+double AnimationAnimationClockTest::mockTime;
 
-TEST_F(CoreAnimationAnimationClockTest, CurrentTime)
+TEST_F(AnimationAnimationClockTest, CurrentTime)
 {
     EXPECT_EQ(200, animationClock->currentTime());
     EXPECT_EQ(200, animationClock->currentTime());
@@ -66,7 +66,7 @@ TEST_F(CoreAnimationAnimationClockTest, CurrentTime)
     EXPECT_EQ(201, animationClock->currentTime());
 }
 
-TEST_F(CoreAnimationAnimationClockTest, UpdateTime)
+TEST_F(AnimationAnimationClockTest, UpdateTime)
 {
     animationClock->updateTime(100);
     EXPECT_EQ(100, animationClock->currentTime());

@@ -76,7 +76,7 @@ void expectDoubleValue(double expectedValue, PassRefPtr<AnimatableValue> value)
 }
 
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, BasicOperation)
+TEST(AnimationKeyframeAnimationEffectTest, BasicOperation)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes = keyframesAtZeroAndOne(unknownAnimatableValue(3.0), unknownAnimatableValue(5.0));
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(keyframes);
@@ -86,7 +86,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, BasicOperation)
     expectDoubleValue(5.0, values->begin()->value->compositeOnto(unknownAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, CompositeReplaceNonInterpolable)
+TEST(AnimationKeyframeAnimationEffectTest, CompositeReplaceNonInterpolable)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes = keyframesAtZeroAndOne(unknownAnimatableValue(3.0), unknownAnimatableValue(5.0));
     keyframes[0]->setComposite(AnimationEffect::CompositeReplace);
@@ -95,7 +95,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, CompositeReplaceNonInterpolable)
     expectDoubleValue(5.0, effect->sample(0, 0.6)->begin()->value->compositeOnto(unknownAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, CompositeReplace)
+TEST(AnimationKeyframeAnimationEffectTest, CompositeReplace)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
     keyframes[0]->setComposite(AnimationEffect::CompositeReplace);
@@ -104,7 +104,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, CompositeReplace)
     expectDoubleValue(3.0 * 0.4 + 5.0 * 0.6, effect->sample(0, 0.6)->begin()->value->compositeOnto(unknownAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, CompositeAdd)
+TEST(AnimationKeyframeAnimationEffectTest, CompositeAdd)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
     keyframes[0]->setComposite(AnimationEffect::CompositeAdd);
@@ -113,7 +113,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, CompositeAdd)
     expectDoubleValue((7.0 + 3.0) * 0.4 + (7.0 + 5.0) * 0.6, effect->sample(0, 0.6)->begin()->value->compositeOnto(pixelAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, ExtrapolateReplaceNonInterpolable)
+TEST(AnimationKeyframeAnimationEffectTest, ExtrapolateReplaceNonInterpolable)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes = keyframesAtZeroAndOne(unknownAnimatableValue(3.0), unknownAnimatableValue(5.0));
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(keyframes);
@@ -122,7 +122,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, ExtrapolateReplaceNonInterpolable
     expectDoubleValue(5.0, effect->sample(0, 1.6)->begin()->value->compositeOnto(unknownAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, ExtrapolateReplace)
+TEST(AnimationKeyframeAnimationEffectTest, ExtrapolateReplace)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(keyframes);
@@ -131,7 +131,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, ExtrapolateReplace)
     expectDoubleValue(3.0 * -0.6 + 5.0 * 1.6, effect->sample(0, 1.6)->begin()->value->compositeOnto(pixelAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, ExtrapolateAdd)
+TEST(AnimationKeyframeAnimationEffectTest, ExtrapolateAdd)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
     keyframes[0]->setComposite(AnimationEffect::CompositeAdd);
@@ -140,13 +140,13 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, ExtrapolateAdd)
     expectDoubleValue((7.0 + 3.0) * -0.6 + (7.0 + 5.0) * 1.6, effect->sample(0, 1.6)->begin()->value->compositeOnto(pixelAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, ZeroKeyframes)
+TEST(AnimationKeyframeAnimationEffectTest, ZeroKeyframes)
 {
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector());
     EXPECT_TRUE(effect->sample(0, 0.5)->isEmpty());
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, SingleKeyframeAtOffsetZero)
+TEST(AnimationKeyframeAnimationEffectTest, SingleKeyframeAtOffsetZero)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes(1);
     keyframes[0] = Keyframe::create();
@@ -157,7 +157,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, SingleKeyframeAtOffsetZero)
     expectDoubleValue(3.0, effect->sample(0, 0.6)->begin()->value->compositeOnto(unknownAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, SingleKeyframeAtOffsetOne)
+TEST(AnimationKeyframeAnimationEffectTest, SingleKeyframeAtOffsetOne)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes(1);
     keyframes[0] = Keyframe::create();
@@ -168,7 +168,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, SingleKeyframeAtOffsetOne)
     expectDoubleValue(7.0 * 0.4 + 5.0 * 0.6, effect->sample(0, 0.6)->begin()->value->compositeOnto(pixelAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, MoreThanTwoKeyframes)
+TEST(AnimationKeyframeAnimationEffectTest, MoreThanTwoKeyframes)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes(3);
     keyframes[0] = Keyframe::create();
@@ -186,7 +186,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, MoreThanTwoKeyframes)
     expectDoubleValue(5.0, effect->sample(0, 0.8)->begin()->value->compositeOnto(unknownAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, EndKeyframeOffsetsUnspecified)
+TEST(AnimationKeyframeAnimationEffectTest, EndKeyframeOffsetsUnspecified)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes(3);
     keyframes[0] = Keyframe::create();
@@ -203,7 +203,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, EndKeyframeOffsetsUnspecified)
     expectDoubleValue(5.0, effect->sample(0, 0.9)->begin()->value->compositeOnto(unknownAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, SampleOnKeyframe)
+TEST(AnimationKeyframeAnimationEffectTest, SampleOnKeyframe)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes(3);
     keyframes[0] = Keyframe::create();
@@ -223,7 +223,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, SampleOnKeyframe)
 }
 
 // Note that this tests an implementation detail, not behaviour defined by the spec.
-TEST(CoreAnimationKeyframeAnimationEffectTest, SampleReturnsSameAnimatableValueInstance)
+TEST(AnimationKeyframeAnimationEffectTest, SampleReturnsSameAnimatableValueInstance)
 {
     AnimatableValue* threePixelsValue = unknownAnimatableValue(3.0);
     AnimatableValue* fourPixelsValue = unknownAnimatableValue(4.0);
@@ -250,7 +250,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, SampleReturnsSameAnimatableValueI
     EXPECT_EQ(fivePixelsValue, effect->sample(0, 1.0)->begin()->value->compositeOnto(unknownAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, MultipleKeyframesWithSameOffset)
+TEST(AnimationKeyframeAnimationEffectTest, MultipleKeyframesWithSameOffset)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes(7);
     keyframes[0] = Keyframe::create();
@@ -285,7 +285,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, MultipleKeyframesWithSameOffset)
     expectDoubleValue(6.0, effect->sample(0, 1.0)->begin()->value->compositeOnto(unknownAnimatableValue(8.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, PerKeyframeComposite)
+TEST(AnimationKeyframeAnimationEffectTest, PerKeyframeComposite)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes(2);
     keyframes[0] = Keyframe::create();
@@ -300,7 +300,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, PerKeyframeComposite)
     expectDoubleValue(3.0 * 0.4 + (7.0 + 5.0) * 0.6, effect->sample(0, 0.6)->begin()->value->compositeOnto(pixelAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, MultipleProperties)
+TEST(AnimationKeyframeAnimationEffectTest, MultipleProperties)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes(2);
     keyframes[0] = Keyframe::create();
@@ -321,7 +321,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, MultipleProperties)
     expectDoubleValue(6.0, values->get(CSSPropertyRight)->compositeOnto(unknownAnimatableValue(7.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, RecompositeCompositableValue)
+TEST(AnimationKeyframeAnimationEffectTest, RecompositeCompositableValue)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
     keyframes[0]->setComposite(AnimationEffect::CompositeAdd);
@@ -332,7 +332,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, RecompositeCompositableValue)
     expectDoubleValue((9.0 + 3.0) * 0.4 + (9.0 + 5.0) * 0.6, values->begin()->value->compositeOnto(pixelAnimatableValue(9.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, MultipleIterations)
+TEST(AnimationKeyframeAnimationEffectTest, MultipleIterations)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(1.0), pixelAnimatableValue(3.0));
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(keyframes);
@@ -341,7 +341,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, MultipleIterations)
     expectDoubleValue(2.0, effect->sample(2, 0.5)->begin()->value->compositeOnto(unknownAnimatableValue(0.0)));
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, DependsOnUnderlyingValue)
+TEST(AnimationKeyframeAnimationEffectTest, DependsOnUnderlyingValue)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes(3);
     keyframes[0] = Keyframe::create();
@@ -367,7 +367,7 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, DependsOnUnderlyingValue)
     EXPECT_FALSE(effect->sample(0, 1)->begin()->value->dependsOnUnderlyingValue());
 }
 
-TEST(CoreAnimationKeyframeAnimationEffectTest, ToKeyframeAnimationEffect)
+TEST(AnimationKeyframeAnimationEffectTest, ToKeyframeAnimationEffect)
 {
     KeyframeAnimationEffect::KeyframeVector keyframes(0);
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(keyframes);

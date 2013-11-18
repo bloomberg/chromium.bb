@@ -37,7 +37,7 @@ using namespace WebCore;
 
 namespace {
 
-TEST(CoreAnimationTimedItemCalculationsTest, ActiveTime)
+TEST(AnimationTimedItemCalculationsTest, ActiveTime)
 {
     Timing timing;
 
@@ -85,7 +85,7 @@ TEST(CoreAnimationTimedItemCalculationsTest, ActiveTime)
     ASSERT_TRUE(isNull(calculateActiveTime(32, nullValue(), TimedItem::PhaseNone, TimedItem::PhaseNone, timing)));
 }
 
-TEST(CoreAnimationTimedItemCalculationsTest, ScaledActiveTime)
+TEST(AnimationTimedItemCalculationsTest, ScaledActiveTime)
 {
     Timing timing;
 
@@ -105,7 +105,7 @@ TEST(CoreAnimationTimedItemCalculationsTest, ScaledActiveTime)
     ASSERT_EQ(25, calculateScaledActiveTime(10, 20, 5, timing));
 }
 
-TEST(CoreAnimationTimedItemCalculationsTest, IterationTime)
+TEST(AnimationTimedItemCalculationsTest, IterationTime)
 {
     Timing timing;
 
@@ -128,7 +128,7 @@ TEST(CoreAnimationTimedItemCalculationsTest, IterationTime)
     ASSERT_EQ(8, calculateIterationTime(12, 120, 20, 7, timing));
 }
 
-TEST(CoreAnimationTimedItemCalculationsTest, CurrentIteration)
+TEST(AnimationTimedItemCalculationsTest, CurrentIteration)
 {
     Timing timing;
 
@@ -152,7 +152,7 @@ TEST(CoreAnimationTimedItemCalculationsTest, CurrentIteration)
     ASSERT_EQ(3, calculateCurrentIteration(3.2, 3.1, 10, timing));
 }
 
-TEST(CoreAnimationTimedItemCalculationsTest, DirectedTime)
+TEST(AnimationTimedItemCalculationsTest, DirectedTime)
 {
     Timing timing;
 
@@ -183,7 +183,7 @@ TEST(CoreAnimationTimedItemCalculationsTest, DirectedTime)
     ASSERT_EQ(3, calculateDirectedTime(2, 20, 17, timing));
 }
 
-TEST(CoreAnimationTimedItemCalculationsTest, TransformedTime)
+TEST(AnimationTimedItemCalculationsTest, TransformedTime)
 {
     Timing timing;
 

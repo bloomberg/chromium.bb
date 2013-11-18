@@ -39,7 +39,7 @@ using namespace WebCore;
 
 namespace {
 
-TEST(CoreAnimationAnimatableStrokeDasharrayListTest, EqualTo)
+TEST(AnimationAnimatableStrokeDasharrayListTest, EqualTo)
 {
     Vector<SVGLength> vectorA(4);
     Vector<SVGLength> vectorB(4);

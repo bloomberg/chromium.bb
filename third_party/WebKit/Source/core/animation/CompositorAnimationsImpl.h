@@ -69,7 +69,7 @@ private:
     static void addKeyframesToCurve(PlatformAnimationCurveType&, const CompositorAnimationsKeyframeEffectHelper::KeyframeValues&, const TimingFunction&, const IntSize& elementSize);
 
     friend class CompositorAnimations;
-    friend class CoreAnimationCompositorAnimationsTest;
+    friend class AnimationCompositorAnimationsTest;
 };
 
 } // WebCore

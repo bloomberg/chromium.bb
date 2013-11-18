@@ -127,7 +127,7 @@ private:
 
     };
 
-    friend class CoreAnimationDocumentTimelineTest;
+    friend class AnimationDocumentTimelineTest;
 };
 
 } // namespace

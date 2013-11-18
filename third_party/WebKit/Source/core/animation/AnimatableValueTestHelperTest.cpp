@@ -48,7 +48,7 @@ using namespace WebCore;
 
 namespace {
 
-class CoreAnimationAnimatableValueTestHelperTest : public ::testing::Test {
+class AnimationAnimatableValueTestHelperTest : public ::testing::Test {
 protected:
     ::std::string PrintToString(PassRefPtr<AnimatableValue> animValue)
     {
@@ -61,7 +61,7 @@ protected:
     }
 };
 
-TEST_F(CoreAnimationAnimatableValueTestHelperTest, PrintTo)
+TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
 {
     EXPECT_THAT(
         PrintToString(AnimatableClipPathOperation::create(ShapeClipPathOperation::create(BasicShapeCircle::create().get()).get())),

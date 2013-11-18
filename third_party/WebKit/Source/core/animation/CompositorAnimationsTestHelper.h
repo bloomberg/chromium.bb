@@ -113,9 +113,9 @@ typedef WebAnimationCurveMock<blink::WebFloatAnimationCurve, blink::WebAnimation
 
 namespace WebCore {
 
-class CoreAnimationCompositorAnimationsTestBase : public ::testing::Test {
+class AnimationCompositorAnimationsTestBase : public ::testing::Test {
 public:
-    CoreAnimationCompositorAnimationsTestBase() : m_proxyPlatform(&m_mockCompositor) { };
+    AnimationCompositorAnimationsTestBase() : m_proxyPlatform(&m_mockCompositor) { };
 
     class WebCompositorSupportMock : public blink::WebCompositorSupport {
     public:

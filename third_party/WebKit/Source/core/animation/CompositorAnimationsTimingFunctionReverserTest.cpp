@@ -48,7 +48,7 @@ namespace {
 
 using namespace WebCore;
 
-class CoreAnimationCompositorAnimationsTimingFunctionReverserTest : public ::testing::Test {
+class AnimationCompositorAnimationsTimingFunctionReverserTest : public ::testing::Test {
 protected:
     bool m_enabled;
 
@@ -71,13 +71,13 @@ public:
     }
 };
 
-TEST_F(CoreAnimationCompositorAnimationsTimingFunctionReverserTest, LinearReverse)
+TEST_F(AnimationCompositorAnimationsTimingFunctionReverserTest, LinearReverse)
 {
     RefPtr<TimingFunction> linearTiming = LinearTimingFunction::create();
     EXPECT_REFV_EQ(linearTiming, reverse(linearTiming));
 }
 
-TEST_F(CoreAnimationCompositorAnimationsTimingFunctionReverserTest, CubicReverse)
+TEST_F(AnimationCompositorAnimationsTimingFunctionReverserTest, CubicReverse)
 {
     RefPtr<TimingFunction> cubicEaseInTiming = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn);
     RefPtr<TimingFunction> cubicEaseOutTiming = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut);
@@ -97,7 +97,7 @@ TEST_F(CoreAnimationCompositorAnimationsTimingFunctionReverserTest, CubicReverse
     EXPECT_REFV_EQ(cubicEaseTimingReversed, reverse(cubicEaseTiming));
 }
 
-TEST_F(CoreAnimationCompositorAnimationsTimingFunctionReverserTest, ChainedReverse)
+TEST_F(AnimationCompositorAnimationsTimingFunctionReverserTest, ChainedReverse)
 {
     RefPtr<TimingFunction> linearTiming = LinearTimingFunction::create();
     RefPtr<ChainedTimingFunction> chainedLinearSingle = ChainedTimingFunction::create();

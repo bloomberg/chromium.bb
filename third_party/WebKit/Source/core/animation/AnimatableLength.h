@@ -151,7 +151,7 @@ private:
 
     mutable RefPtr<CSSPrimitiveValue> m_cachedCSSPrimitiveValue;
 
-    friend class CoreAnimationAnimatableLengthTest;
+    friend class AnimationAnimatableLengthTest;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLength, isLength());
