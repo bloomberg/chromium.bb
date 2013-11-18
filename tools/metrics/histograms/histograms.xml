@@ -18852,6 +18852,14 @@ other types of suffix sets.
   <summary>Errors truncating database for Raze().</summary>
 </histogram>
 
+<histogram name="Sqlite.RecoveryHandle" enum="SqliteErrorCode">
+  <summary>Error from sqlite3_backup_init() in sql::Recovery.</summary>
+</histogram>
+
+<histogram name="Sqlite.RecoveryStep" enum="SqliteErrorCode">
+  <summary>Error from sqlite3_backup_step() in sql::Recovery.</summary>
+</histogram>
+
 <histogram name="Sqlite.SizeKB" units="Kb">
   <summary>Size in kilobytes of pre-existing database at startup.</summary>
 </histogram>
@@ -24398,6 +24406,33 @@ other types of suffix sets.
   </int>
   <int value="17" label="RECOVERY_EVENT_FAILED_META_INIT">
     Failed sql::MetaTable::Init().
+  </int>
+  <int value="18" label="RECOVERY_EVENT_FAILED_META_VERSION">
+    Failed sql::Recovery::SetupMeta() or GetMetaVersionNumber().
+  </int>
+  <int value="19" label="RECOVERY_EVENT_DEPRECATED">
+    Recovery found deprecated version and razed.
+  </int>
+  <int value="20" label="RECOVERY_EVENT_FAILED_V5_INITSCHEMA">
+    Failed v5 recovery loading schema.
+  </int>
+  <int value="21" label="RECOVERY_EVENT_FAILED_V5_AUTORECOVER_FAVICONS">
+    Failed v5 recovery on favicons.
+  </int>
+  <int value="22" label="RECOVERY_EVENT_FAILED_V5_AUTORECOVER_ICON_MAPPING">
+    Failed v5 recovery on icon_mapping.
+  </int>
+  <int value="23" label="RECOVERY_EVENT_RECOVERED_VERSION5">
+    Successful recovery of version 6 database.
+  </int>
+  <int value="24" label="RECOVERY_EVENT_FAILED_AUTORECOVER_FAVICONS">
+    Failed v6/7 recovery on favicons.
+  </int>
+  <int value="25" label="RECOVERY_EVENT_FAILED_AUTORECOVER_FAVICON_BITMAPS">
+    Failed v6/7 recovery on favicon_bitmaps.
+  </int>
+  <int value="26" label="RECOVERY_EVENT_FAILED_AUTORECOVER_ICON_MAPPING">
+    Failed v6/7 recovery on icon_mapping.
   </int>
 </enum>
 

@@ -790,12 +790,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
   {
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
-    {
-      sql::Statement statement(
-          raw_db.GetUniqueStatement("PRAGMA integrity_check"));
-      EXPECT_TRUE(statement.Step());
-      ASSERT_EQ("ok", statement.ColumnString(0));
-    }
+    ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
 
     const char kIndexName[] = "icon_mapping_page_url_idx";
     const int idx_root_page = GetRootPage(&raw_db, kIndexName);
@@ -818,10 +813,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
   {
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
-    sql::Statement statement(
-        raw_db.GetUniqueStatement("PRAGMA integrity_check"));
-    EXPECT_TRUE(statement.Step());
-    ASSERT_NE("ok", statement.ColumnString(0));
+    ASSERT_NE("ok", sql::test::IntegrityCheck(&raw_db));
   }
 
   // Open the database and access the corrupt index.
@@ -844,10 +836,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
   {
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
-    sql::Statement statement(
-        raw_db.GetUniqueStatement("PRAGMA integrity_check"));
-    EXPECT_TRUE(statement.Step());
-    EXPECT_EQ("ok", statement.ColumnString(0));
+    ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
 
     // Check that the expected tables exist.
     VerifyTablesAndColumns(&raw_db);
@@ -867,21 +856,8 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
                          kIconUrl1, kLargeSize, sizeof(kBlob1), kBlob1));
   }
 
-  // Corrupt the database again by making the actual file shorter than
-  // the header expects.
-  {
-    int64 db_size = 0;
-    EXPECT_TRUE(file_util::GetFileSize(file_name_, &db_size));
-    {
-      sql::Connection raw_db;
-      EXPECT_TRUE(raw_db.Open(file_name_));
-      EXPECT_TRUE(raw_db.Execute("CREATE TABLE t(x)"));
-    }
-    file_util::ScopedFILE file(file_util::OpenFile(file_name_, "rb+"));
-    ASSERT_TRUE(file.get() != NULL);
-    EXPECT_EQ(0, fseek(file.get(), static_cast<long>(db_size), SEEK_SET));
-    EXPECT_TRUE(file_util::TruncateFile(file.get()));
-  }
+  // Corrupt the database again by adjusting the header.
+  EXPECT_TRUE(sql::test::CorruptSizeInHeader(file_name_));
 
   // Database is unusable at the SQLite level.
   {
@@ -918,23 +894,10 @@ TEST_F(ThumbnailDatabaseTest, Recovery6) {
   // (which would upgrade it).
   EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "Favicons.v6.sql"));
 
-  // Corrupt the database by making the actual file shorter than the
-  // SQLite header expects.  This form of corruption will cause
-  // immediate failures during Open(), before the migration code runs,
-  // so the version-6 recovery will occur.
-  {
-    int64 db_size = 0;
-    EXPECT_TRUE(file_util::GetFileSize(file_name_, &db_size));
-    {
-      sql::Connection raw_db;
-      EXPECT_TRUE(raw_db.Open(file_name_));
-      EXPECT_TRUE(raw_db.Execute("CREATE TABLE t(x)"));
-    }
-    file_util::ScopedFILE file(file_util::OpenFile(file_name_, "rb+"));
-    ASSERT_TRUE(file.get() != NULL);
-    EXPECT_EQ(0, fseek(file.get(), static_cast<long>(db_size), SEEK_SET));
-    EXPECT_TRUE(file_util::TruncateFile(file.get()));
-  }
+  // Corrupt the database again by adjusting the header.  This form of
+  // corruption will cause immediate failures during Open(), before
+  // the migration code runs, so the version-6 recovery will occur.
+  EXPECT_TRUE(sql::test::CorruptSizeInHeader(file_name_));
 
   // Database is unusable at the SQLite level.
   {
@@ -970,10 +933,58 @@ TEST_F(ThumbnailDatabaseTest, Recovery6) {
   {
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
-    sql::Statement statement(
-        raw_db.GetUniqueStatement("PRAGMA integrity_check"));
-    EXPECT_TRUE(statement.Step());
-    EXPECT_EQ("ok", statement.ColumnString(0));
+    ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
+
+    // Check that the expected tables exist.
+    VerifyTablesAndColumns(&raw_db);
+  }
+}
+
+TEST_F(ThumbnailDatabaseTest, Recovery5) {
+  // Create an example database without loading into ThumbnailDatabase
+  // (which would upgrade it).
+  EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "Favicons.v5.sql"));
+
+  // Corrupt the database again by adjusting the header.  This form of
+  // corruption will cause immediate failures during Open(), before
+  // the migration code runs, so the version-5 recovery will occur.
+  EXPECT_TRUE(sql::test::CorruptSizeInHeader(file_name_));
+
+  // Database is unusable at the SQLite level.
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::Connection raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+
+  // Database should be recovered during open.
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    ThumbnailDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+
+    // Test that some data is present, copied from
+    // ThumbnailDatabaseTest.Version5 .
+    EXPECT_TRUE(
+        CheckPageHasIcon(&db, kPageUrl3, chrome::FAVICON,
+                         kIconUrl1, gfx::Size(), sizeof(kBlob1), kBlob1));
+    EXPECT_TRUE(
+        CheckPageHasIcon(&db, kPageUrl3, chrome::TOUCH_ICON,
+                         kIconUrl3, gfx::Size(), sizeof(kBlob2), kBlob2));
+
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+
+  // Check that the database is recovered at a SQLite level, and that
+  // the current schema is in place.
+  {
+    sql::Connection raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
 
     // Check that the expected tables exist.
     VerifyTablesAndColumns(&raw_db);
