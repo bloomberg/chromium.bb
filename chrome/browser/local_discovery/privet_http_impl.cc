@@ -544,9 +544,8 @@ void PrivetLocalPrintOperationImpl::OnSubmitdocResponse(
   // This error is only relevant in the case of extended workflow:
   // If the print job ID is invalid, retry createjob and submitdoc,
   // rather than simply retrying the current request.
-  if (has_error) {
+  if (has_error && value->GetString(kPrivetKeyError, &error)) {
     if (has_extended_workflow_ &&
-        value->GetString(kPrivetKeyError, &error) &&
         error == kPrivetErrorInvalidPrintJob &&
         invalid_job_retries_ < kPrivetLocalPrintMaxRetries) {
       invalid_job_retries_++;
@@ -565,13 +564,15 @@ void PrivetLocalPrintOperationImpl::OnSubmitdocResponse(
           FROM_HERE, base::Bind(&PrivetLocalPrintOperationImpl::DoCreatejob,
                                 weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromSeconds(timeout));
+    } else if (use_pdf_ && error == kPrivetErrorInvalidDocumentType) {
+      use_pdf_ = false;
+      delegate_->OnPrivetPrintingRequestPWGRaster(this);
     } else {
       delegate_->OnPrivetPrintingError(this, 200);
     }
 
     return;
   }
-
 
   // If we've gotten this far, there are no errors, so we've effectively
   // succeeded.
@@ -655,7 +656,7 @@ void PrivetLocalPrintOperationImpl::SetOffline(bool offline) {
 }
 
 void PrivetLocalPrintOperationImpl::SendDataInternal() {
-  if (has_extended_workflow_ && !ticket_.empty()) {
+  if (has_extended_workflow_ && !ticket_.empty() && jobid_.empty()) {
     DoCreatejob();
   } else {
     DoSubmitdoc();

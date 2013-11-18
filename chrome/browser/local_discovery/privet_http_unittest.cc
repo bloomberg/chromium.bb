@@ -177,6 +177,10 @@ const char kSampleErrorResponsePrinterBusy[] = "{"
     "\"timeout\": 1 "
     "}";
 
+const char kSampleInvalidDocumentTypeResponse[] = "{"
+    "\"error\" : \"invalid_document_type\""
+    "}";
+
 const char kSampleCreatejobResponse[] = "{ \"job_id\": \"1234\" }";
 
 class MockTestURLFetcherFactoryDelegate
@@ -898,6 +902,50 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
       GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
            "user=sample%40gmail.com&jobname=Sample+job+name&job_id=1234"),
       "Sample print data",
+      kSampleLocalPrintResponse));
+};
+
+TEST_F(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
+  local_print_operation_->SetUsername("sample@gmail.com");
+  local_print_operation_->SetJobname("Sample job name");
+  local_print_operation_->SetTicket("Sample print ticket");
+  local_print_operation_->Start();
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/info"),
+      kSampleInfoResponseWithCreatejob));
+
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingRequestPDFInternal());
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/capabilities"),
+      kSampleCapabilitiesResponse));
+
+  local_print_operation_->SendData("Sample print data");
+
+  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+      GURL("http://10.0.0.8:6006/privet/printer/createjob"),
+      "Sample print ticket",
+      kSampleCreatejobResponse));
+
+  EXPECT_CALL(local_print_delegate_,
+              OnPrivetPrintingRequestPWGRasterInternal());
+
+  // TODO(noamsml): Is encoding spaces as pluses standard?
+  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+      GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
+           "user=sample%40gmail.com&jobname=Sample+job+name&job_id=1234"),
+      "Sample print data",
+      kSampleInvalidDocumentTypeResponse));
+
+  local_print_operation_->SendData("Sample print data2");
+
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+
+  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+      GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
+           "user=sample%40gmail.com&jobname=Sample+job+name&job_id=1234"),
+      "Sample print data2",
       kSampleLocalPrintResponse));
 };
 

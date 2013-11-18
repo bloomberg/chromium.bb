@@ -27,6 +27,7 @@ extern const char kPrivetCreatejobPath[];
 extern const char kPrivetErrorDeviceBusy[];
 extern const char kPrivetErrorPrinterBusy[];
 extern const char kPrivetErrorInvalidPrintJob[];
+extern const char kPrivetErrorInvalidDocumentType[];
 extern const char kPrivetErrorPendingUserAction[];
 extern const char kPrivetErrorInvalidXPrivetToken[];
 extern const char kPrivetErrorTimeout[];
