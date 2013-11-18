@@ -234,6 +234,8 @@ crbug.com/248938 virtual/threaded/transitions/transition-end-event-unprefixed-03
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-unprefixed-04.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
 
+crbug.com/320477 [ Debug ] inspector/debugger/debugger-pause-in-internal.html [ Pass Crash ]
+
 # HarfBuzz on Windows
 crbug.com/313423 [ Win ] fast/css/css2-system-fonts.html [ NeedsRebaseline ]
 crbug.com/313423 [ Win ] fast/css/text-rendering.html [ NeedsRebaseline ]
