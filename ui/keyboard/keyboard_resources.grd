@@ -47,6 +47,7 @@
       <include name="IDR_KEYBOARD_IMAGES_MUTE" file="resources/images/mute.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_RELOAD" file="resources/images/reload.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_RIGHT" file="resources/images/right.svg" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_SEARCH" file="resources/images/search.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_SHUTDOWN" file="resources/images/shutdown.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_UP" file="resources/images/up.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_VOLUME_DOWN" file="resources/images/volume-down.svg" type="BINDATA" />

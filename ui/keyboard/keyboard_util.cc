@@ -224,6 +224,7 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
     {"keyboard/images/mute.svg", IDR_KEYBOARD_IMAGES_MUTE},
     {"keyboard/images/reload.svg", IDR_KEYBOARD_IMAGES_RELOAD},
     {"keyboard/images/right.svg", IDR_KEYBOARD_IMAGES_RIGHT},
+    {"keyboard/images/search.svg", IDR_KEYBOARD_IMAGES_SEARCH},
     {"keyboard/images/shutdown.svg", IDR_KEYBOARD_IMAGES_SHUTDOWN},
     {"keyboard/images/up.svg", IDR_KEYBOARD_IMAGES_UP},
     {"keyboard/images/volume-down.svg", IDR_KEYBOARD_IMAGES_VOLUME_DOWN},

@@ -252,6 +252,10 @@ kb-key:-webkit-any(.backspace,
   background-image: url('images/right.svg');
 }
 
+.search{
+  background-image: url('images/search.svg');
+}
+
 .shutdown {
   background-image: url('images/shutdown.svg');
 }
@@ -282,6 +286,7 @@ kb-key:-webkit-any(.backspace,
 .mute,
 .reload,
 .right,
+.search,
 .shutdown,
 .up,
 .volume-down,

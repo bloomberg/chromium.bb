@@ -69,6 +69,8 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
                           IDR_KEYBOARD_IMAGES_RELOAD);
   source->AddResourcePath("images/right.svg",
                           IDR_KEYBOARD_IMAGES_RIGHT);
+  source->AddResourcePath("images/search.svg",
+                          IDR_KEYBOARD_IMAGES_SEARCH);
   source->AddResourcePath("images/shutdown.svg",
                           IDR_KEYBOARD_IMAGES_SHUTDOWN);
   source->AddResourcePath("images/up.svg",
