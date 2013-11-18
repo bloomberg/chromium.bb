@@ -128,19 +128,24 @@ void PicturePileBase::SetMinContentsScale(float min_contents_scale) {
   min_contents_scale_ = min_contents_scale;
 }
 
-void PicturePileBase::SetTileGridSize(gfx::Size tile_grid_size) {
-  tile_grid_info_.fTileInterval.set(
-      tile_grid_size.width() - 2 * kTileGridBorderPixels,
-      tile_grid_size.height() - 2 * kTileGridBorderPixels);
-  DCHECK_GT(tile_grid_info_.fTileInterval.width(), 0);
-  DCHECK_GT(tile_grid_info_.fTileInterval.height(), 0);
-  tile_grid_info_.fMargin.set(kTileGridBorderPixels,
-      kTileGridBorderPixels);
+// static
+void PicturePileBase::ComputeTileGridInfo(
+    gfx::Size tile_grid_size,
+    SkTileGridPicture::TileGridInfo* info) {
+  DCHECK(info);
+  info->fTileInterval.set(tile_grid_size.width() - 2 * kTileGridBorderPixels,
+                          tile_grid_size.height() - 2 * kTileGridBorderPixels);
+  DCHECK_GT(info->fTileInterval.width(), 0);
+  DCHECK_GT(info->fTileInterval.height(), 0);
+  info->fMargin.set(kTileGridBorderPixels, kTileGridBorderPixels);
   // Offset the tile grid coordinate space to take into account the fact
   // that the top-most and left-most tiles do not have top and left borders
   // respectively.
-  tile_grid_info_.fOffset.set(-kTileGridBorderPixels,
-      -kTileGridBorderPixels);
+  info->fOffset.set(-kTileGridBorderPixels, -kTileGridBorderPixels);
+}
+
+void PicturePileBase::SetTileGridSize(gfx::Size tile_grid_size) {
+  ComputeTileGridInfo(tile_grid_size, &tile_grid_info_);
 }
 
 void PicturePileBase::SetBufferPixels(int new_buffer_pixels) {

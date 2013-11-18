@@ -41,6 +41,9 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   bool HasRecordingAt(int x, int y);
   bool CanRaster(float contents_scale, gfx::Rect content_rect);
 
+  static void ComputeTileGridInfo(gfx::Size tile_grid_size,
+                                  SkTileGridPicture::TileGridInfo* info);
+
   void SetTileGridSize(gfx::Size tile_grid_size);
   TilingData& tiling() { return tiling_; }
 

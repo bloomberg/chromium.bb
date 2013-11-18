@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/values.h"
 #include "cc/debug/picture_record_benchmark.h"
+#include "cc/debug/rasterize_and_record_benchmark.h"
 #include "cc/debug/unittest_only_benchmark.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -25,6 +26,9 @@ scoped_ptr<MicroBenchmark> CreateBenchmark(
   if (name == "picture_record_benchmark") {
     return scoped_ptr<MicroBenchmark>(
         new PictureRecordBenchmark(value.Pass(), callback));
+  } else if (name == "rasterize_and_record_benchmark") {
+    return scoped_ptr<MicroBenchmark>(
+        new RasterizeAndRecordBenchmark(value.Pass(), callback));
   } else if (name == "unittest_only_benchmark") {
     return scoped_ptr<MicroBenchmark>(
         new UnittestOnlyBenchmark(value.Pass(), callback));
