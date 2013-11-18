@@ -379,20 +379,6 @@ class MockLocalPrintDelegate : public PrivetLocalPrintOperation::Delegate {
   MockLocalPrintDelegate() {}
   ~MockLocalPrintDelegate() {}
 
-  virtual void OnPrivetPrintingRequestPDF(
-      const PrivetLocalPrintOperation* print_operation) {
-    OnPrivetPrintingRequestPDFInternal();
-  }
-
-  MOCK_METHOD0(OnPrivetPrintingRequestPDFInternal, void());
-
-  virtual void OnPrivetPrintingRequestPWGRaster(
-      const PrivetLocalPrintOperation* print_operation) {
-    OnPrivetPrintingRequestPWGRasterInternal();
-  }
-
-  MOCK_METHOD0(OnPrivetPrintingRequestPWGRasterInternal, void());
-
   virtual void OnPrivetPrintingDone(
       const PrivetLocalPrintOperation* print_operation) {
     OnPrivetPrintingDoneInternal();
@@ -407,6 +393,26 @@ class MockLocalPrintDelegate : public PrivetLocalPrintOperation::Delegate {
 
   MOCK_METHOD1(OnPrivetPrintingErrorInternal, void(int http_code));
 };
+
+// A note on PWG raster conversion: The PWG raster converter used simply
+// converts strings to file paths based on them by appending "test.pdf", since
+// it's easier to test that way. Instead of using a mock, we simply check if the
+// request is uploading a file that is based on this pattern.
+class FakePWGRasterConverter : public PWGRasterConverter {
+ public:
+  FakePWGRasterConverter() {
+  }
+
+  virtual ~FakePWGRasterConverter() {
+  }
+
+  virtual void Start(base::RefCountedBytes* data,
+                     const ResultCallback& callback) OVERRIDE {
+    std::string data_str((const char*)data->front(), data->size());
+    callback.Run(true, base::FilePath().AppendASCII(data_str + "test.pdf"));
+  }
+};
+
 
 class PrivetInfoTest : public PrivetHTTPTest {
  public:
@@ -782,6 +788,17 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
   virtual void SetUp() OVERRIDE {
     local_print_operation_ = privet_client_->CreateLocalPrintOperation(
         &local_print_delegate_);
+
+    local_print_operation_->SetPWGRasterConverterForTesting(
+        scoped_ptr<PWGRasterConverter>(new FakePWGRasterConverter));
+  }
+
+  scoped_refptr<base::RefCountedBytes> RefCountedBytesFromString(
+      std::string str) {
+    std::vector<unsigned char> str_vec;
+    str_vec.insert(str_vec.begin(), str.begin(), str.end());
+    return scoped_refptr<base::RefCountedBytes>(
+        base::RefCountedBytes::TakeVector(&str_vec));
   }
 
  protected:
@@ -792,19 +809,17 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
 TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrint) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
+  local_print_operation_->SetData(RefCountedBytesFromString(
+      "Sample print data"));
   local_print_operation_->Start();
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/info"),
       kSampleInfoResponse));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingRequestPDFInternal());
-
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/capabilities"),
       kSampleCapabilitiesResponse));
-
-  local_print_operation_->SendData("Sample print data");
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
@@ -819,19 +834,17 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrint) {
 TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithAnyMimetype) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
+  local_print_operation_->SetData(
+      RefCountedBytesFromString("Sample print data"));
   local_print_operation_->Start();
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/info"),
       kSampleInfoResponse));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingRequestPDFInternal());
-
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/capabilities"),
       kSampleCapabilitiesResponseWithAnyMimetype));
-
-  local_print_operation_->SendData("Sample print data");
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
@@ -846,21 +859,17 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithAnyMimetype) {
 TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
+  local_print_operation_->SetData(
+      RefCountedBytesFromString("path/to/"));
   local_print_operation_->Start();
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/info"),
       kSampleInfoResponse));
 
-  EXPECT_CALL(local_print_delegate_,
-              OnPrivetPrintingRequestPWGRasterInternal());
-
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/capabilities"),
       kSampleCapabilitiesResponsePWGOnly));
-
-  local_print_operation_->SendDataFile(
-      base::FilePath(FILE_PATH_LITERAL("sample/file/path")));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
@@ -868,7 +877,7 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
   EXPECT_TRUE(SuccessfulResponseToURLAndFilePath(
       GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
            "user=sample%40gmail.com&jobname=Sample+job+name"),
-      base::FilePath(FILE_PATH_LITERAL("sample/file/path")),
+      base::FilePath(FILE_PATH_LITERAL("path/to/test.pdf")),
       kSampleLocalPrintResponse));
 };
 
@@ -876,19 +885,17 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetTicket("Sample print ticket");
+  local_print_operation_->SetData(
+      RefCountedBytesFromString("Sample print data"));
   local_print_operation_->Start();
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/info"),
       kSampleInfoResponseWithCreatejob));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingRequestPDFInternal());
-
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/capabilities"),
       kSampleCapabilitiesResponse));
-
-  local_print_operation_->SendData("Sample print data");
 
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GURL("http://10.0.0.8:6006/privet/printer/createjob"),
@@ -909,43 +916,36 @@ TEST_F(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetTicket("Sample print ticket");
+  local_print_operation_->SetData(
+      RefCountedBytesFromString("sample/path/"));
   local_print_operation_->Start();
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/info"),
       kSampleInfoResponseWithCreatejob));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingRequestPDFInternal());
-
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/capabilities"),
       kSampleCapabilitiesResponse));
-
-  local_print_operation_->SendData("Sample print data");
 
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GURL("http://10.0.0.8:6006/privet/printer/createjob"),
       "Sample print ticket",
       kSampleCreatejobResponse));
 
-  EXPECT_CALL(local_print_delegate_,
-              OnPrivetPrintingRequestPWGRasterInternal());
-
   // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
            "user=sample%40gmail.com&jobname=Sample+job+name&job_id=1234"),
-      "Sample print data",
+      "sample/path/",
       kSampleInvalidDocumentTypeResponse));
-
-  local_print_operation_->SendData("Sample print data2");
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
-  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+  EXPECT_TRUE(SuccessfulResponseToURLAndFilePath(
       GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
            "user=sample%40gmail.com&jobname=Sample+job+name&job_id=1234"),
-      "Sample print data2",
+      base::FilePath(FILE_PATH_LITERAL("sample/path/test.pdf")),
       kSampleLocalPrintResponse));
 };
 
@@ -953,19 +953,17 @@ TEST_F(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetTicket("Sample print ticket");
+  local_print_operation_->SetData(
+      RefCountedBytesFromString("Sample print data"));
   local_print_operation_->Start();
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/info"),
       kSampleInfoResponseWithCreatejob));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingRequestPDFInternal());
-
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/capabilities"),
       kSampleCapabilitiesResponse));
-
-  local_print_operation_->SendData("Sample print data");
 
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GURL("http://10.0.0.8:6006/privet/printer/createjob"),

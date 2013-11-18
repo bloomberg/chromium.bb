@@ -1422,10 +1422,19 @@ void PrintPreviewHandler::StartPrivetLocalPrint(
 
   privet_local_print_operation_->SetTicket(print_ticket);
 
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      web_ui()->GetController());
+  scoped_refptr<base::RefCountedBytes> data;
+  string16 title;
+
+  if (!GetPreviewDataAndTitle(&data, &title)) {
+    base::FundamentalValue http_code_value(-1);
+    web_ui()->CallJavascriptFunction("onPrivetPrintFailed", http_code_value);
+    return;
+  }
+
   privet_local_print_operation_->SetJobname(
-      base::UTF16ToUTF8(print_preview_ui->initiator_title()));
+      base::UTF16ToUTF8(title));
+
+  privet_local_print_operation_->SetData(data);
 
   Profile* profile = Profile::FromWebUI(web_ui());
   SigninManagerBase* signin_manager =
@@ -1511,28 +1520,6 @@ bool PrintPreviewHandler::CreatePrivetHTTP(
   privet_http_resolution_->Start();
 
   return true;
-}
-
-void PrintPreviewHandler::OnPrivetPrintingRequestPDF(
-    const local_discovery::PrivetLocalPrintOperation* print_operation) {
-  scoped_refptr<base::RefCountedBytes> data;
-  string16 title;
-
-  if (!GetPreviewDataAndTitle(&data, &title)) {
-    base::FundamentalValue http_code_value(-1);
-    web_ui()->CallJavascriptFunction("onPrivetPrintFailed", http_code_value);
-    return;
-  }
-
-  // TODO(noamsml): Move data into request without copying it?
-  std::string data_str((const char*)data->front(), data->size());
-
-  privet_local_print_operation_->SendData(data_str);
-}
-
-void PrintPreviewHandler::OnPrivetPrintingRequestPWGRaster(
-    const local_discovery::PrivetLocalPrintOperation* print_operation) {
-  NOTIMPLEMENTED();
 }
 
 void PrintPreviewHandler::OnPrivetPrintingDone(

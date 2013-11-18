@@ -9,7 +9,12 @@
 
 #include "base/callback.h"
 #include "chrome/browser/local_discovery/privet_url_fetcher.h"
+#include "chrome/browser/local_discovery/pwg_raster_converter.h"
 #include "net/base/host_port_pair.h"
+
+namespace base {
+class RefCountedBytes;
+}
 
 namespace local_discovery {
 
@@ -116,10 +121,6 @@ class PrivetLocalPrintOperation {
   class Delegate {
    public:
     virtual ~Delegate() {}
-    virtual void OnPrivetPrintingRequestPDF(
-        const PrivetLocalPrintOperation* print_operation) = 0;
-    virtual void OnPrivetPrintingRequestPWGRaster(
-        const PrivetLocalPrintOperation* print_operation) = 0;
     virtual void OnPrivetPrintingDone(
         const PrivetLocalPrintOperation* print_operation) = 0;
     virtual void OnPrivetPrintingError(
@@ -130,12 +131,9 @@ class PrivetLocalPrintOperation {
 
   virtual void Start() = 0;
 
-  // One of thsese should be called ONLY after |OnPrivetPrintingRequestPDF| or
-  // |OnPrivetPrintingRequestPWGRaster| are called on the delegate.  Data should
-  // be in PDF or PWG format depending on what is requested by the local print
-  // operation.
-  virtual void SendData(const std::string& data) = 0;
-  virtual void SendDataFile(const base::FilePath& data) = 0;
+
+  // Required print data. MUST be called before calling |Start()|.
+  virtual void SetData(base::RefCountedBytes* data) = 0;
 
   // Optional attributes for /submitdoc. Call before calling |Start()|
   // |ticket| should be in CJT format.
@@ -146,6 +144,10 @@ class PrivetLocalPrintOperation {
   // If |offline| is true, we will indicate to the printer not to post the job
   // to Google Cloud Print.
   virtual void SetOffline(bool offline) = 0;
+
+  // For testing, inject an alternative PWG raster converter.
+  virtual void SetPWGRasterConverterForTesting(
+      scoped_ptr<PWGRasterConverter> pwg_raster_converter) = 0;
 
   virtual PrivetHTTPClient* GetHTTPClient() = 0;
 };

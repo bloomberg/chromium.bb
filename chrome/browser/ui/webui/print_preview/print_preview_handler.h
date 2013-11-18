@@ -45,8 +45,7 @@ class PrintPreviewHandler
       public local_discovery::PrivetLocalPrintOperation::Delegate,
 #endif
       public ui::SelectFileDialog::Listener,
-      public printing::PrintViewManagerObserver
-{
+      public printing::PrintViewManagerObserver {
  public:
   PrintPreviewHandler();
   virtual ~PrintPreviewHandler();
@@ -94,12 +93,6 @@ class PrintPreviewHandler
       const base::DictionaryValue* capabilities) OVERRIDE;
 
   // PrivetLocalPrintOperation::Delegate implementation.
-  virtual void OnPrivetPrintingRequestPDF(
-      const local_discovery::PrivetLocalPrintOperation*
-      print_operation) OVERRIDE;
-  virtual void OnPrivetPrintingRequestPWGRaster(
-      const local_discovery::PrivetLocalPrintOperation*
-      print_operation) OVERRIDE;
   virtual void OnPrivetPrintingDone(
       const local_discovery::PrivetLocalPrintOperation*
       print_operation) OVERRIDE;

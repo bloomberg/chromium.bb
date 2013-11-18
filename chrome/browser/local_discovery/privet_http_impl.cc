@@ -5,6 +5,7 @@
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -368,6 +369,7 @@ PrivetLocalPrintOperationImpl::PrivetLocalPrintOperationImpl(
     : privet_client_(privet_client), delegate_(delegate),
       use_pdf_(false), has_capabilities_(false), has_extended_workflow_(false),
       started_(false), offline_(false), invalid_job_retries_(0),
+      pwg_raster_converter_(PWGRasterConverter::CreateDefault()),
       weak_factory_(this) {
 }
 
@@ -427,7 +429,7 @@ void PrivetLocalPrintOperationImpl::StartInitialRequest() {
     // Since we have no capabiltties, the only reasonable format we can
     // request is PWG Raster.
     use_pdf_ = false;
-    delegate_->OnPrivetPrintingRequestPWGRaster(this);
+    StartConvertToPWG();
   }
 }
 
@@ -489,18 +491,31 @@ void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
   url_fetcher_= privet_client_->CreateURLFetcher(
       url, net::URLFetcher::POST, this);
 
-  std::string content_type =
-      use_pdf_ ? kPrivetContentTypePDF : kPrivetContentTypePWGRaster;
-
-  DCHECK(!data_.empty() || !data_file_.empty());
-
-  if (!data_file_.empty()) {
-    url_fetcher_->SetUploadFilePath(content_type, data_file_);
+  if (!use_pdf_) {
+    url_fetcher_->SetUploadFilePath(kPrivetContentTypePWGRaster,
+                                    pwg_file_path_);
   } else {
-    url_fetcher_->SetUploadData(content_type, data_);
+    // TODO(noamsml): Move to file-based upload data?
+    std::string data_str((const char*)data_->front(), data_->size());
+    url_fetcher_->SetUploadData(kPrivetContentTypePDF, data_str);
   }
 
   url_fetcher_->Start();
+}
+
+void PrivetLocalPrintOperationImpl::StartPrinting() {
+  if (has_extended_workflow_ && !ticket_.empty() && jobid_.empty()) {
+    DoCreatejob();
+  } else {
+    DoSubmitdoc();
+  }
+}
+
+void PrivetLocalPrintOperationImpl::StartConvertToPWG() {
+  pwg_raster_converter_->Start(
+      data_,
+      base::Bind(&PrivetLocalPrintOperationImpl::OnPWGRasterConverted,
+                 base::Unretained(this)));
 }
 
 void PrivetLocalPrintOperationImpl::OnCapabilitiesResponse(
@@ -531,10 +546,11 @@ void PrivetLocalPrintOperationImpl::OnCapabilitiesResponse(
     }
   }
 
-  if (use_pdf_)
-    delegate_->OnPrivetPrintingRequestPDF(this);
-  else
-    delegate_->OnPrivetPrintingRequestPWGRaster(this);
+  if (use_pdf_) {
+    StartPrinting();
+  } else {
+    StartConvertToPWG();
+  }
 }
 
 void PrivetLocalPrintOperationImpl::OnSubmitdocResponse(
@@ -566,7 +582,7 @@ void PrivetLocalPrintOperationImpl::OnSubmitdocResponse(
           base::TimeDelta::FromSeconds(timeout));
     } else if (use_pdf_ && error == kPrivetErrorInvalidDocumentType) {
       use_pdf_ = false;
-      delegate_->OnPrivetPrintingRequestPWGRaster(this);
+      StartConvertToPWG();
     } else {
       delegate_->OnPrivetPrintingError(this, 200);
     }
@@ -594,6 +610,20 @@ void PrivetLocalPrintOperationImpl::OnCreatejobResponse(
   DoSubmitdoc();
 }
 
+void PrivetLocalPrintOperationImpl::OnPWGRasterConverted(
+    bool success,
+    const base::FilePath& pwg_file_path) {
+  if (!success) {
+    delegate_->OnPrivetPrintingError(this, -1);
+    return;
+  }
+
+  DCHECK(!pwg_file_path.empty());
+
+  pwg_file_path_ = pwg_file_path;
+  StartPrinting();
+}
+
 PrivetHTTPClient* PrivetLocalPrintOperationImpl::GetHTTPClient() {
   return privet_client_;
 }
@@ -618,21 +648,9 @@ void PrivetLocalPrintOperationImpl::OnNeedPrivetToken(
   privet_client_->RefreshPrivetToken(callback);
 }
 
-void PrivetLocalPrintOperationImpl::SendData(const std::string& data) {
-  DCHECK(started_);
-  DCHECK(data_file_.empty());
+void PrivetLocalPrintOperationImpl::SetData(base::RefCountedBytes* data) {
+  DCHECK(!started_);
   data_ = data;
-
-  SendDataInternal();
-}
-
-void PrivetLocalPrintOperationImpl::SendDataFile(
-    const base::FilePath& data_file) {
-  DCHECK(started_);
-  DCHECK(data_.empty());
-  data_file_ = data_file;
-
-  SendDataInternal();
 }
 
 void PrivetLocalPrintOperationImpl::SetTicket(const std::string& ticket) {
@@ -655,12 +673,9 @@ void PrivetLocalPrintOperationImpl::SetOffline(bool offline) {
   offline_ = offline;
 }
 
-void PrivetLocalPrintOperationImpl::SendDataInternal() {
-  if (has_extended_workflow_ && !ticket_.empty() && jobid_.empty()) {
-    DoCreatejob();
-  } else {
-    DoSubmitdoc();
-  }
+void PrivetLocalPrintOperationImpl::SetPWGRasterConverterForTesting(
+    scoped_ptr<PWGRasterConverter> pwg_raster_converter) {
+  pwg_raster_converter_ = pwg_raster_converter.Pass();
 }
 
 PrivetHTTPClientImpl::PrivetHTTPClientImpl(

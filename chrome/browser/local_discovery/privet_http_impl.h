@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/local_discovery/privet_http.h"
 
@@ -156,8 +157,7 @@ class PrivetLocalPrintOperationImpl
   virtual ~PrivetLocalPrintOperationImpl();
   virtual void Start() OVERRIDE;
 
-  virtual void SendData(const std::string& data) OVERRIDE;
-  virtual void SendDataFile(const base::FilePath& data) OVERRIDE;
+  virtual void SetData(base::RefCountedBytes* data) OVERRIDE;
 
   virtual void SetTicket(const std::string& ticket) OVERRIDE;
 
@@ -166,6 +166,9 @@ class PrivetLocalPrintOperationImpl
   virtual void SetJobname(const std::string& jobname) OVERRIDE;
 
   virtual  void SetOffline(bool offline) OVERRIDE;
+
+  virtual void SetPWGRasterConverterForTesting(
+      scoped_ptr<PWGRasterConverter> pwg_raster_converter) OVERRIDE;
 
   virtual PrivetHTTPClient* GetHTTPClient() OVERRIDE;
 
@@ -190,14 +193,16 @@ class PrivetLocalPrintOperationImpl
   void DoCreatejob();
   void DoSubmitdoc();
 
+  void StartConvertToPWG();
+  void StartPrinting();
+
   void OnCapabilitiesResponse(bool has_error,
                               const base::DictionaryValue* value);
   void OnSubmitdocResponse(bool has_error,
                            const base::DictionaryValue* value);
   void OnCreatejobResponse(bool has_error,
                            const base::DictionaryValue* value);
-
-  void SendDataInternal();
+  void OnPWGRasterConverted(bool success, const base::FilePath& pwg_file_path);
 
   PrivetHTTPClientImpl* privet_client_;
   PrivetLocalPrintOperation::Delegate* delegate_;
@@ -205,8 +210,8 @@ class PrivetLocalPrintOperationImpl
   ResponseCallback current_response_;
 
   std::string ticket_;
-  std::string data_;
-  base::FilePath data_file_;
+  scoped_refptr<base::RefCountedBytes> data_;
+  base::FilePath pwg_file_path_;
 
   bool use_pdf_;
   bool has_capabilities_;
@@ -223,6 +228,7 @@ class PrivetLocalPrintOperationImpl
 
   scoped_ptr<PrivetURLFetcher> url_fetcher_;
   scoped_ptr<PrivetInfoOperation> info_operation_;
+  scoped_ptr<PWGRasterConverter> pwg_raster_converter_;
 
   base::WeakPtrFactory<PrivetLocalPrintOperationImpl> weak_factory_;
 };

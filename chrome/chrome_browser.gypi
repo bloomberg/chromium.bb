@@ -982,6 +982,8 @@
         'browser/local_discovery/privet_local_printer_lister.cc',
         'browser/local_discovery/privet_url_fetcher.cc',
         'browser/local_discovery/privet_url_fetcher.h',
+        'browser/local_discovery/pwg_raster_converter.cc',
+        'browser/local_discovery/pwg_raster_converter.h',
         'browser/local_discovery/service_discovery_client_mac.h',
         'browser/local_discovery/service_discovery_client_mac.mm',
         'browser/local_discovery/service_discovery_client_mac_factory.h',
