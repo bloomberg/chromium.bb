@@ -99,7 +99,6 @@ public:
 
     void addCue(PassRefPtr<TextTrackCue>);
     void removeCue(TextTrackCue*, ExceptionState&);
-    bool hasCue(TextTrackCue*);
 
     VTTRegionList* regions();
     void addRegion(PassRefPtr<VTTRegion>);

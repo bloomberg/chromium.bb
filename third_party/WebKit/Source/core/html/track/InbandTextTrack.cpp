@@ -97,11 +97,7 @@ void InbandTextTrack::addWebVTTCue(double start, double end, const WebString& id
 {
     RefPtr<VTTCue> cue = VTTCue::create(document(), start, end, content);
     cue->setId(id);
-    cue->setCueSettings(settings);
-
-    if (hasCue(cue.get()))
-        return;
-
+    cue->parseSettings(settings);
     addCue(cue);
 }
 

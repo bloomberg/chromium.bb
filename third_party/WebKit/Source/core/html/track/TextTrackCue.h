@@ -116,8 +116,7 @@ public:
     const String& text() const { return m_content; }
     void setText(const String&);
 
-    const String& cueSettings() const { return m_settings; }
-    void setCueSettings(const String&);
+    void parseSettings(const String&);
 
     int cueIndex();
     void invalidateCueIndex();
@@ -173,12 +172,6 @@ public:
     };
     CueAlignment getAlignment() const { return m_cueAlignment; }
 
-    bool operator==(const TextTrackCue&) const;
-    bool operator!=(const TextTrackCue& cue) const
-    {
-        return !(*this == cue);
-    }
-
     DEFINE_ATTRIBUTE_EVENT_LISTENER(enter);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(exit);
 
@@ -194,7 +187,6 @@ private:
     void copyWebVTTNodeToDOMTree(ContainerNode* WebVTTNode, ContainerNode* root);
 
     std::pair<double, double> getPositionCoordinates() const;
-    void parseSettings(const String&);
 
     void determineTextDirection();
     void calculateDisplayParameters();
@@ -217,7 +209,6 @@ private:
     double m_startTime;
     double m_endTime;
     String m_content;
-    String m_settings;
     int m_linePosition;
     int m_computedLinePosition;
     int m_textPosition;

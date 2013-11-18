@@ -406,7 +406,7 @@ void WebVTTParser::createNewCue()
 {
     RefPtr<VTTCue> cue = VTTCue::create(*m_document, m_currentStartTime, m_currentEndTime, m_currentContent.toString());
     cue->setId(m_currentId);
-    cue->setCueSettings(m_currentSettings);
+    cue->parseSettings(m_currentSettings);
 
     m_cuelist.append(cue);
     if (m_client)

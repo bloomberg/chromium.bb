@@ -942,9 +942,8 @@ TextTrackCue::CueSetting TextTrackCue::settingName(const String& name)
     return None;
 }
 
-void TextTrackCue::setCueSettings(const String& input)
+void TextTrackCue::parseSettings(const String& input)
 {
-    m_settings = input;
     unsigned position = 0;
 
     while (position < input.length()) {
@@ -1203,30 +1202,6 @@ Document& TextTrackCue::document() const
 {
     ASSERT(m_cueBackgroundBox);
     return m_cueBackgroundBox->document();
-}
-
-bool TextTrackCue::operator==(const TextTrackCue& cue) const
-{
-    if (m_endTime != cue.endTime())
-        return false;
-    if (m_startTime != cue.startTime())
-        return false;
-    if (m_content != cue.text())
-        return false;
-    if (m_settings != cue.cueSettings())
-        return false;
-    if (m_id != cue.id())
-        return false;
-    if (m_textPosition != cue.position())
-        return false;
-    if (m_linePosition != cue.line())
-        return false;
-    if (m_cueSize != cue.size())
-        return false;
-    if (align() != cue.align())
-        return false;
-
-    return true;
 }
 
 } // namespace WebCore
