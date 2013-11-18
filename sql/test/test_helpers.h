@@ -5,8 +5,6 @@
 #ifndef SQL_TEST_TEST_HELPERS_H_
 #define SQL_TEST_TEST_HELPERS_H_
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
@@ -22,16 +20,6 @@ class Connection;
 
 namespace sql {
 namespace test {
-
-// SQLite stores the database size in the header, and if the actual
-// OS-derived size is smaller, the database is considered corrupt.
-// [This case is actually a common form of corruption in the wild.]
-// This helper sets the in-header size to one page larger than the
-// actual file size.  The resulting file will return SQLITE_CORRUPT
-// for most operations unless PRAGMA writable_schema is turned ON.
-//
-// Returns false if any error occurs accessing the file.
-bool CorruptSizeInHeader(const base::FilePath& db_path) WARN_UNUSED_RESULT;
 
 // Return the number of tables in sqlite_master.
 size_t CountSQLTables(sql::Connection* db) WARN_UNUSED_RESULT;
@@ -54,11 +42,6 @@ bool CountTableRows(sql::Connection* db, const char* table, size_t* count);
 // executing the statements.
 bool CreateDatabaseFromSQL(const base::FilePath& db_path,
                            const base::FilePath& sql_path) WARN_UNUSED_RESULT;
-
-// Return the results of running "PRAGMA integrity_check" on |db|.
-// TODO(shess): sql::Connection::IntegrityCheck() is basically the
-// same, but not as convenient for testing.  Maybe combine.
-std::string IntegrityCheck(sql::Connection* db) WARN_UNUSED_RESULT;
 
 }  // namespace test
 }  // namespace sql

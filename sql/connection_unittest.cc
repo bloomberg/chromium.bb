@@ -11,7 +11,6 @@
 #include "sql/statement.h"
 #include "sql/test/error_callback_support.h"
 #include "sql/test/scoped_error_ignorer.h"
-#include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -503,14 +502,32 @@ TEST_F(SQLConnectionTest, RazeNOTADB2) {
 // essential for cases where the Open() can fail entirely, so the
 // Raze() cannot happen later.  Additionally test that when the
 // callback does this during Open(), the open is retried and succeeds.
+//
+// Most corruptions seen in the wild seem to happen when two pages in
+// the database were not written transactionally (the transaction
+// changed both, but one wasn't successfully written for some reason).
+// A special case of that is when the header indicates that the
+// database contains more pages than are in the file.  This breaks
+// things at a very basic level, verify that Raze() can handle it.
 TEST_F(SQLConnectionTest, RazeCallbackReopen) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_EQ(1, SqliteMasterCount(&db()));
+  int page_size = 0;
+  {
+    sql::Statement s(db().GetUniqueStatement("PRAGMA page_size"));
+    ASSERT_TRUE(s.Step());
+    page_size = s.ColumnInt(0);
+  }
   db().Close();
 
-  // Corrupt the database so that nothing works, including PRAGMAs.
-  ASSERT_TRUE(sql::test::CorruptSizeInHeader(db_path()));
+  // Trim a single page from the end of the file.
+  {
+    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "rb+"));
+    ASSERT_TRUE(file.get() != NULL);
+    ASSERT_EQ(0, fseek(file.get(), -page_size, SEEK_END));
+    ASSERT_TRUE(file_util::TruncateFile(file.get()));
+  }
 
   // Open() will succeed, even though the PRAGMA calls within will
   // fail with SQLITE_CORRUPT, as will this PRAGMA.

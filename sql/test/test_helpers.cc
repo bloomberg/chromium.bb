@@ -21,72 +21,10 @@ size_t CountSQLItemsOfType(sql::Connection* db, const char* type) {
   return s.ColumnInt(0);
 }
 
-// Helper for reading a number from the SQLite header.
-// See net/base/big_endian.h.
-unsigned ReadBigEndian(unsigned char* buf, size_t bytes) {
-  unsigned r = buf[0];
-  for (size_t i = 1; i < bytes; i++) {
-    r <<= 8;
-    r |= buf[i];
-  }
-  return r;
-}
-
-// Helper for writing a number to the SQLite header.
-void WriteBigEndian(unsigned val, unsigned char* buf, size_t bytes) {
-  for (size_t i = 0; i < bytes; i++) {
-    buf[bytes - i - 1] = (val & 0xFF);
-    val >>= 8;
-  }
-}
-
 }  // namespace
 
 namespace sql {
 namespace test {
-
-bool CorruptSizeInHeader(const base::FilePath& db_path) {
-  // See http://www.sqlite.org/fileformat.html#database_header
-  const size_t kHeaderSize = 100;
-  const size_t kPageSizeOffset = 16;
-  const size_t kFileChangeCountOffset = 24;
-  const size_t kPageCountOffset = 28;
-  const size_t kVersionValidForOffset = 92;  // duplicate kFileChangeCountOffset
-
-  unsigned char header[kHeaderSize];
-
-  file_util::ScopedFILE file(file_util::OpenFile(db_path, "rb+"));
-  if (!file.get())
-    return false;
-
-  if (0 != fseek(file.get(), 0, SEEK_SET))
-    return false;
-  if (1u != fread(header, sizeof(header), 1, file.get()))
-    return false;
-
-  int64 db_size = 0;
-  if (!file_util::GetFileSize(db_path, &db_size))
-    return false;
-
-  const unsigned page_size = ReadBigEndian(header + kPageSizeOffset, 2);
-
-  // One larger than the expected size.
-  const unsigned page_count = (db_size + page_size) / page_size;
-  WriteBigEndian(page_count, header + kPageCountOffset, 4);
-
-  // Update change count so outstanding readers know the info changed.
-  // Both spots must match for the page count to be considered valid.
-  unsigned change_count = ReadBigEndian(header + kFileChangeCountOffset, 4);
-  WriteBigEndian(change_count + 1, header + kFileChangeCountOffset, 4);
-  WriteBigEndian(change_count + 1, header + kVersionValidForOffset, 4);
-
-  if (0 != fseek(file.get(), 0, SEEK_SET))
-    return false;
-  if (1u != fwrite(header, sizeof(header), 1, file.get()))
-    return false;
-
-  return true;
-}
 
 size_t CountSQLTables(sql::Connection* db) {
   return CountSQLItemsOfType(db, "table");
@@ -151,15 +89,6 @@ bool CreateDatabaseFromSQL(const base::FilePath& db_path,
   ignore_result(db.Execute("PRAGMA auto_vacuum = 0"));
 
   return db.Execute(sql.c_str());
-}
-
-std::string IntegrityCheck(sql::Connection* db) {
-  sql::Statement statement(db->GetUniqueStatement("PRAGMA integrity_check"));
-
-  // SQLite should always return a row of data.
-  EXPECT_TRUE(statement.Step());
-
-  return statement.ColumnString(0);
 }
 
 }  // namespace test
