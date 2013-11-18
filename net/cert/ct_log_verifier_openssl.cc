@@ -45,10 +45,10 @@ CTLogVerifier::~CTLogVerifier() {
     EVP_PKEY_free(public_key_);
 }
 
-CTLogVerifier::CTLogVerifier() :
-  hash_algorithm_(ct::DigitallySigned::HASH_ALGO_NONE),
-  signature_algorithm_(ct::DigitallySigned::SIG_ALGO_ANONYMOUS),
-  public_key_(NULL) {}
+CTLogVerifier::CTLogVerifier()
+    : hash_algorithm_(ct::DigitallySigned::HASH_ALGO_NONE),
+      signature_algorithm_(ct::DigitallySigned::SIG_ALGO_ANONYMOUS),
+      public_key_(NULL) {}
 
 bool CTLogVerifier::Init(const base::StringPiece& public_key,
                          const base::StringPiece& description) {

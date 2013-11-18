@@ -63,10 +63,10 @@ CTLogVerifier::~CTLogVerifier() {
     SECKEY_DestroyPublicKey(public_key_);
 }
 
-CTLogVerifier::CTLogVerifier() :
-  hash_algorithm_(ct::DigitallySigned::HASH_ALGO_NONE),
-  signature_algorithm_(ct::DigitallySigned::SIG_ALGO_ANONYMOUS),
-  public_key_(NULL) {}
+CTLogVerifier::CTLogVerifier()
+    : hash_algorithm_(ct::DigitallySigned::HASH_ALGO_NONE),
+      signature_algorithm_(ct::DigitallySigned::SIG_ALGO_ANONYMOUS),
+      public_key_(NULL) {}
 
 bool CTLogVerifier::Init(const base::StringPiece& public_key,
                          const base::StringPiece& description) {
@@ -108,8 +108,8 @@ bool CTLogVerifier::Init(const base::StringPiece& public_key,
       signature_algorithm_ = ct::DigitallySigned::SIG_ALGO_ECDSA;
       break;
     default:
-      DVLOG(1) << "Unsupported key type: " <<
-               SECKEY_GetPublicKeyType(public_key_);
+      DVLOG(1) << "Unsupported key type: "
+               << SECKEY_GetPublicKeyType(public_key_);
       return false;
   }
 
