@@ -74,10 +74,6 @@ class BrowserFrame
   // Returns the NonClientFrameView of this frame.
   views::View* GetFrameView() const;
 
-  // Notifies the frame that the tab strip display mode changed so it can update
-  // its frame treatment if necessary.
-  void TabStripDisplayModeChanged();
-
   // Overridden from views::Widget:
   virtual views::internal::RootView* CreateRootView() OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;

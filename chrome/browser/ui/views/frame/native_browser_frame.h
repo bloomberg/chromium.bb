@@ -29,8 +29,6 @@ class NativeBrowserFrame {
   // BrowserFrame pass-thrus ---------------------------------------------------
   // See browser_frame.h for documentation:
   virtual int GetMinimizeButtonOffset() const = 0;
-  // TODO(beng): replace with some kind of "framechanged" signal to Window.
-  virtual void TabStripDisplayModeChanged() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_NATIVE_BROWSER_FRAME_H_

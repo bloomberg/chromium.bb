@@ -162,15 +162,6 @@ views::View* BrowserFrame::GetFrameView() const {
   return browser_frame_view_;
 }
 
-void BrowserFrame::TabStripDisplayModeChanged() {
-  if (GetRootView()->has_children()) {
-    // Make sure the child of the root view gets Layout again.
-    GetRootView()->child_at(0)->InvalidateLayout();
-  }
-  GetRootView()->Layout();
-  native_browser_frame_->TabStripDisplayModeChanged();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, views::Widget overrides:
 

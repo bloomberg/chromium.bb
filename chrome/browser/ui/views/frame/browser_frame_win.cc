@@ -377,10 +377,6 @@ int BrowserFrameWin::GetMinimizeButtonOffset() const {
   return minimize_button_metrics_.GetMinimizeButtonOffsetX();
 }
 
-void BrowserFrameWin::TabStripDisplayModeChanged() {
-  UpdateDWMFrame();
-}
-
 void BrowserFrameWin::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
   HMODULE metro = base::win::GetMetroModule();

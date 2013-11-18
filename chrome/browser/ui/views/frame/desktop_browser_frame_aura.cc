@@ -93,6 +93,3 @@ bool DesktopBrowserFrameAura::UsesNativeSystemMenu() const {
 int DesktopBrowserFrameAura::GetMinimizeButtonOffset() const {
   return browser_desktop_root_window_host_->GetMinimizeButtonOffset();
 }
-
-void DesktopBrowserFrameAura::TabStripDisplayModeChanged() {
-}

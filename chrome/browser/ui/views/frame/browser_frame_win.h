@@ -68,7 +68,6 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   virtual const views::NativeWidget* AsNativeWidget() const OVERRIDE;
   virtual bool UsesNativeSystemMenu() const OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
-  virtual void TabStripDisplayModeChanged() OVERRIDE;
 
   // Overriden from views::ImageButton override:
   virtual void ButtonPressed(views::Button* sender,

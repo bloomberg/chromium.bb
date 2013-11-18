@@ -54,7 +54,6 @@ class DesktopBrowserFrameAura : public views::DesktopNativeWidgetAura,
   virtual const views::NativeWidget* AsNativeWidget() const OVERRIDE;
   virtual bool UsesNativeSystemMenu() const OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
-  virtual void TabStripDisplayModeChanged() OVERRIDE;
 
  private:
   // The BrowserView is our ClientView. This is a pointer to it.

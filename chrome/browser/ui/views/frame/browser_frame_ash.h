@@ -38,7 +38,6 @@ class BrowserFrameAsh : public views::NativeWidgetAura,
   virtual const views::NativeWidget* AsNativeWidget() const OVERRIDE;
   virtual bool UsesNativeSystemMenu() const OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
-  virtual void TabStripDisplayModeChanged() OVERRIDE;
 
  private:
   class WindowPropertyWatcher;

@@ -197,9 +197,6 @@ int BrowserFrameAsh::GetMinimizeButtonOffset() const {
   return 0;
 }
 
-void BrowserFrameAsh::TabStripDisplayModeChanged() {
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAsh, private:
 
