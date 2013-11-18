@@ -36,6 +36,7 @@
 #endif
 
 using content::WebContents;
+using content::UserMetricsAction;
 
 namespace {
 
@@ -144,6 +145,98 @@ WebViewGuest* WebViewGuest::From(int embedder_process_id,
 WebViewGuest* WebViewGuest::FromWebContents(WebContents* contents) {
   GuestView* guest = GuestView::FromWebContents(contents);
   return guest ? guest->AsWebView() : NULL;
+}
+
+// static
+void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
+                                          bool allow) {
+  if (allow) {
+    // Note that |allow| == true means the embedder explicitly allowed the
+    // request. For some requests they might still fail. An example of such
+    // scenario would be: an embedder allows geolocation request but doesn't
+    // have geolocation access on its own.
+    switch (info.permission_type) {
+      case BROWSER_PLUGIN_PERMISSION_TYPE_DOWNLOAD:
+        RecordAction(
+            UserMetricsAction("BrowserPlugin.PermissionAllow.Download"));
+        break;
+      case BROWSER_PLUGIN_PERMISSION_TYPE_GEOLOCATION:
+        RecordAction(
+            UserMetricsAction("BrowserPlugin.PermissionAllow.Geolocation"));
+        break;
+      case BROWSER_PLUGIN_PERMISSION_TYPE_MEDIA:
+        RecordAction(
+            UserMetricsAction("BrowserPlugin.PermissionAllow.Media"));
+        break;
+      case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
+        RecordAction(
+            UserMetricsAction("BrowserPlugin.PermissionAllow.PointerLock"));
+        break;
+      case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
+        RecordAction(
+            UserMetricsAction("BrowserPlugin.PermissionAllow.NewWindow"));
+        break;
+      case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
+        RecordAction(
+            UserMetricsAction("BrowserPlugin.PermissionAllow.JSDialog"));
+        break;
+      case BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN:
+        break;
+      default: {
+        WebViewPermissionType webview_permission_type =
+            static_cast<WebViewPermissionType>(info.permission_type);
+        switch (webview_permission_type) {
+          case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
+            RecordAction(
+                UserMetricsAction("WebView.Guest.PermissionAllow.PluginLoad"));
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  } else {
+    switch (info.permission_type) {
+      case BROWSER_PLUGIN_PERMISSION_TYPE_DOWNLOAD:
+        RecordAction(
+            UserMetricsAction("BrowserPlugin.PermissionDeny.Download"));
+        break;
+      case BROWSER_PLUGIN_PERMISSION_TYPE_GEOLOCATION:
+        RecordAction(
+            UserMetricsAction("BrowserPlugin.PermissionDeny.Geolocation"));
+        break;
+      case BROWSER_PLUGIN_PERMISSION_TYPE_MEDIA:
+        RecordAction(
+            UserMetricsAction("BrowserPlugin.PermissionDeny.Media"));
+        break;
+      case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
+        RecordAction(
+            UserMetricsAction("BrowserPlugin.PermissionDeny.PointerLock"));
+        break;
+      case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
+        RecordAction(
+            UserMetricsAction("BrowserPlugin.PermissionDeny.NewWindow"));
+        break;
+      case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
+        RecordAction(
+            UserMetricsAction("BrowserPlugin.PermissionDeny.JSDialog"));
+        break;
+      case BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN:
+        break;
+      default: {
+        WebViewPermissionType webview_permission_type =
+            static_cast<WebViewPermissionType>(info.permission_type);
+        switch (webview_permission_type) {
+          case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
+            RecordAction(
+                UserMetricsAction("WebView.Guest.PermissionDeny.PluginLoad"));
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  }
 }
 
 void WebViewGuest::Attach(WebContents* embedder_web_contents,
@@ -318,7 +411,7 @@ bool WebViewGuest::RequestPermission(
 
   int request_id = next_permission_request_id_++;
   pending_permission_requests_[request_id] =
-      PermissionResponseInfo(callback, allowed_by_default);
+      PermissionResponseInfo(callback, permission_type, allowed_by_default);
   scoped_ptr<base::DictionaryValue> args(request_info.DeepCopy());
   args->SetInteger(webview::kRequestId, request_id);
   switch (permission_type) {
@@ -406,6 +499,10 @@ WebViewGuest::SetPermissionResult WebViewGuest::SetPermission(
   info.callback.Run(allow, user_input);
   pending_permission_requests_.erase(request_itr);
 
+  // Only record user initiated (i.e. non-default) actions.
+  if (action != DEFAULT)
+    RecordUserInitiatedUMA(info, allow);
+
   return allow ? SET_PERMISSION_ALLOWED : SET_PERMISSION_DENIED;
 }
 
@@ -413,8 +510,7 @@ void WebViewGuest::SetUserAgentOverride(
     const std::string& user_agent_override) {
   is_overriding_user_agent_ = !user_agent_override.empty();
   if (is_overriding_user_agent_) {
-    content::RecordAction(content::UserMetricsAction(
-                              "WebView.Guest.OverrideUA"));
+    content::RecordAction(UserMetricsAction("WebView.Guest.OverrideUA"));
   }
   guest_web_contents()->SetUserAgentOverride(user_agent_override);
 }
@@ -424,7 +520,7 @@ void WebViewGuest::Stop() {
 }
 
 void WebViewGuest::Terminate() {
-  content::RecordAction(content::UserMetricsAction("WebView.Guest.Terminate"));
+  content::RecordAction(UserMetricsAction("WebView.Guest.Terminate"));
   base::ProcessHandle process_handle =
       guest_web_contents()->GetRenderProcessHost()->GetHandle();
   if (process_handle)
@@ -434,6 +530,7 @@ void WebViewGuest::Terminate() {
 bool WebViewGuest::ClearData(const base::Time remove_since,
                              uint32 removal_mask,
                              const base::Closure& callback) {
+  content::RecordAction(UserMetricsAction("WebView.Guest.ClearData"));
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartition(
           web_contents()->GetBrowserContext(),
@@ -596,13 +693,16 @@ void WebViewGuest::SizeChanged(const gfx::Size& old_size,
 }
 
 WebViewGuest::PermissionResponseInfo::PermissionResponseInfo()
-    : allowed_by_default(false) {
+    : permission_type(BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN),
+      allowed_by_default(false) {
 }
 
 WebViewGuest::PermissionResponseInfo::PermissionResponseInfo(
     const PermissionResponseCallback& callback,
+    BrowserPluginPermissionType permission_type,
     bool allowed_by_default)
     : callback(callback),
+      permission_type(permission_type),
       allowed_by_default(allowed_by_default) {
 }
 

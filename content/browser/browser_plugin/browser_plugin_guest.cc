@@ -436,7 +436,7 @@ int BrowserPluginGuest::RequestPermission(
                   AsWeakPtr(),
                   request_id);
   // If BrowserPluginGuestDelegate hasn't handled the permission then we simply
-  // reject it immediately.
+  // perform the default action (which is one of allow or reject) immediately.
   if (!delegate_->RequestPermission(
       permission_type, request_info, callback, request->AllowedByDefault())) {
     callback.Run(request->AllowedByDefault(), "");
