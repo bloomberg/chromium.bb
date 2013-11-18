@@ -57,6 +57,7 @@ Patches:
 
   * Add support for TLS Channel IDs
     patches/channelid.patch
+    patches/channelid2.patch
 
   * Add support for extracting the tls-unique channel binding value
     patches/tlsunique.patch

@@ -705,6 +705,14 @@ struct sslSessionIDStr {
 	     */
 	    NewSessionTicket  sessionTicket;
             SECItem           srvName;
+
+            /* originalHandshakeHash contains the hash of the original, full
+             * handshake prior to the server's final flow. This is either a
+             * SHA-1/MD5 combination (for TLS < 1.2) or the TLS PRF hash (for
+             * TLS 1.2). This is recorded and used only when ChannelID is
+             * negotiated as it's used to bind the ChannelID signature on the
+             * resumption handshake to the original handshake. */
+	    SECItem           originalHandshakeHash;
 	} ssl3;
     } u;
 };

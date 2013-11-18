@@ -7594,6 +7594,33 @@ ssl3_SendClientSecondRound(sslSocket *ss)
 
     ssl_ReleaseXmitBufLock(ss);		/*******************************/
 
+    if (!ss->ssl3.hs.isResuming &&
+        ssl3_ExtensionNegotiated(ss, ssl_channel_id_xtn)) {
+        /* If we are negotiating ChannelID on a full handshake then we record
+         * the handshake hashes in |sid| at this point. They will be needed in
+         * the event that we resume this session and use ChannelID on the
+         * resumption handshake. */
+        SSL3Hashes hashes;
+        SECItem *originalHandshakeHash =
+            &ss->sec.ci.sid->u.ssl3.originalHandshakeHash;
+        PORT_Assert(ss->sec.ci.sid->cached == never_cached);
+
+        ssl_GetSpecReadLock(ss);
+        PORT_Assert(ss->version > SSL_LIBRARY_VERSION_3_0);
+        rv = ssl3_ComputeHandshakeHashes(ss, ss->ssl3.cwSpec, &hashes, 0);
+        ssl_ReleaseSpecReadLock(ss);
+        if (rv != SECSuccess) {
+            return rv;
+        }
+
+        PORT_Assert(originalHandshakeHash->len == 0);
+        originalHandshakeHash->data = PORT_Alloc(hashes.len);
+        if (!originalHandshakeHash->data)
+            return SECFailure;
+        originalHandshakeHash->len = hashes.len;
+        memcpy(originalHandshakeHash->data, hashes.u.raw, hashes.len);
+    }
+
     if (ssl3_ExtensionNegotiated(ss, ssl_session_ticket_xtn))
 	ss->ssl3.hs.ws = wait_new_session_ticket;
     else
@@ -10590,6 +10617,7 @@ static SECStatus
 ssl3_SendEncryptedExtensions(sslSocket *ss)
 {
     static const char CHANNEL_ID_MAGIC[] = "TLS Channel ID signature";
+    static const char CHANNEL_ID_RESUMPTION_MAGIC[] = "Resumption";
     /* This is the ASN.1 prefix for a P-256 public key. Specifically it's:
      * SEQUENCE
      *   SEQUENCE
@@ -10615,7 +10643,10 @@ ssl3_SendEncryptedExtensions(sslSocket *ss)
     SECItem *spki = NULL;
     SSL3Hashes hashes;
     const unsigned char *pub_bytes;
-    unsigned char signed_data[sizeof(CHANNEL_ID_MAGIC) + sizeof(SSL3Hashes)];
+    unsigned char signed_data[sizeof(CHANNEL_ID_MAGIC) +
+                              sizeof(CHANNEL_ID_RESUMPTION_MAGIC) +
+                              sizeof(SSL3Hashes)*2];
+    size_t signed_data_len;
     unsigned char digest[SHA256_LENGTH];
     SECItem digest_item;
     unsigned char signature[64];
@@ -10665,11 +10696,26 @@ ssl3_SendEncryptedExtensions(sslSocket *ss)
 
     pub_bytes = spki->data + sizeof(P256_SPKI_PREFIX);
 
-    memcpy(signed_data, CHANNEL_ID_MAGIC, sizeof(CHANNEL_ID_MAGIC));
-    memcpy(signed_data + sizeof(CHANNEL_ID_MAGIC), hashes.u.raw, hashes.len);
+    signed_data_len = 0;
+    memcpy(signed_data + signed_data_len, CHANNEL_ID_MAGIC,
+           sizeof(CHANNEL_ID_MAGIC));
+    signed_data_len += sizeof(CHANNEL_ID_MAGIC);
+    if (ss->ssl3.hs.isResuming) {
+        SECItem *originalHandshakeHash =
+            &ss->sec.ci.sid->u.ssl3.originalHandshakeHash;
+        PORT_Assert(originalHandshakeHash->len > 0);
 
-    rv = PK11_HashBuf(SEC_OID_SHA256, digest, signed_data,
-		      sizeof(CHANNEL_ID_MAGIC) + hashes.len);
+        memcpy(signed_data + signed_data_len, CHANNEL_ID_RESUMPTION_MAGIC,
+               sizeof(CHANNEL_ID_RESUMPTION_MAGIC));
+        signed_data_len += sizeof(CHANNEL_ID_RESUMPTION_MAGIC);
+        memcpy(signed_data + signed_data_len, originalHandshakeHash->data,
+               originalHandshakeHash->len);
+        signed_data_len += originalHandshakeHash->len;
+    }
+    memcpy(signed_data + signed_data_len, hashes.u.raw, hashes.len);
+    signed_data_len += hashes.len;
+
+    rv = PK11_HashBuf(SEC_OID_SHA256, digest, signed_data, signed_data_len);
     if (rv != SECSuccess)
 	goto loser;
 

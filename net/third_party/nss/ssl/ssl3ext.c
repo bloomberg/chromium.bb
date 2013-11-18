@@ -812,6 +812,16 @@ ssl3_ClientSendChannelIDXtn(sslSocket * ss, PRBool append,
 	return 0;
     }
 
+    if (ss->ssl3.hs.isResuming &&
+        ss->sec.ci.sid->u.ssl3.originalHandshakeHash.len == 0) {
+        /* We can't do ChannelID on a connection if we're resuming and didn't
+         * do ChannelID on the original connection: without ChannelID on the
+         * original connection we didn't record the handshake hashes needed for
+         * the signature. */
+	PORT_Assert(0);
+	return 0;
+    }
+
     if (append) {
 	SECStatus rv;
 	rv = ssl3_AppendHandshakeNumber(ss, ssl_channel_id_xtn, 2);
