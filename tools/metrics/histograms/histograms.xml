@@ -4357,6 +4357,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ExtensionServiceInitTime">
+  <summary>
+    Time taken for the ExtensionService to initialize, including the time it
+    takes to load the extensions for the service's profile and parse their
+    manifests. This happens during startup and also any time a new profile is
+    loaded.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ExtensionUninstalled">
   <summary>An extension has been uninstalled.</summary>
 </histogram>

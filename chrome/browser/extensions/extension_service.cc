@@ -507,6 +507,8 @@ const Extension* ExtensionService::GetExtensionById(
 void ExtensionService::Init() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  base::Time begin_time = base::Time::Now();
+
   DCHECK(!is_ready());  // Can't redo init.
   DCHECK_EQ(extensions_.size(), 0u);
 
@@ -586,6 +588,9 @@ void ExtensionService::Init() {
     system_->management_policy()->RegisterProvider(
         shared_module_policy_provider_.get());
   }
+
+  UMA_HISTOGRAM_TIMES("Extensions.ExtensionServiceInitTime",
+                      base::Time::Now() - begin_time);
 }
 
 bool ExtensionService::UpdateExtension(const std::string& id,
