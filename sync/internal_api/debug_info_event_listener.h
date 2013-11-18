@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/data_type_debug_info_listener.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
@@ -22,8 +23,9 @@
 namespace syncer {
 
 // In order to track datatype association results, we need at least as many
-// entries as datatypes.
-const unsigned int kMaxEntries = 25;
+// entries as datatypes. Reserve additional space for other kinds of events that
+// are likely to happen during first sync or startup.
+const unsigned int kMaxEntries = MODEL_TYPE_COUNT + 10;
 
 // Listens to events and records them in a queue. And passes the events to
 // syncer when requested.
