@@ -223,12 +223,8 @@ public class AwViewportTest extends AwTestBase {
         assertEquals(pageWidth, width);
     }
 
-    /*
-     * @MediumTest
-     * @Feature({"AndroidWebView"})
-     * http://crbug.com/319353
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"AndroidWebView"})
     public void testInitialScaleClobberQuirk() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -237,30 +233,28 @@ public class AwViewportTest extends AwTestBase {
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
 
-        final String pageScale4 = "<html><head>" +
-                "<meta name='viewport' content='initial-scale=4' />" +
+        final String pageTemplate = "<html><head>" +
+                "<meta name='viewport' content='initial-scale=%d' />" +
                 "</head><body>" +
                 "<div style='width:10000px;height:200px'>A big div</div>" +
                 "</body></html>";
-        final String page = "<html><head>" +
-                "<meta name='viewport' content='initial-scale=1' />" +
-                "</head><body>" +
-                "<div style='width:10000px;height:200px'>A big div</div>" +
-                "</body></html>";
+        final String pageScale4 = String.format(pageTemplate, 4);
+        final String page = String.format(pageTemplate, 1);
 
         // Page scale updates are asynchronous. There is an issue that we can't
         // reliably check, whether the scale as NOT changed (i.e. remains to be 1.0).
         // So we first change the scale to some non-default value, and then wait
         // until it gets back to 1.0.
-        float previousScale = getPixelScaleOnUiThread(awContents);
+        int onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
         loadDataSync(awContents, onPageFinishedHelper, pageScale4, "text/html", false);
-        assertTrue(waitForScaleChange(previousScale, awContents));
-        previousScale = getPixelScaleOnUiThread(awContents);
-        // The following call to set initial scale will be ignored.
+        contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
+        assertEquals(4.0f, getScaleOnUiThread(awContents));
+        // The following call to set initial scale will be ignored. However, a temporary
+        // page scale change may occur, and this makes the usual onScaleChanged-based workflow
+        // flaky. So instead, we are just polling the scale until it becomes 1.0.
         settings.setInitialPageScale(50);
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
-        assertTrue(waitForScaleChange(previousScale, awContents));
-        assertEquals(1.0f, getScaleOnUiThread(awContents));
+        assertTrue(waitUntilScaleBecomes(1.0f, awContents));
     }
 
     @MediumTest
@@ -288,25 +282,26 @@ public class AwViewportTest extends AwTestBase {
         // reliably check, whether the scale as NOT changed (i.e. remains to be 1.0).
         // So we first change the scale to some non-default value, and then wait
         // until it gets back to 1.0.
-        float previousScale = getPixelScaleOnUiThread(awContents);
+        int onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
         loadDataSync(awContents, onPageFinishedHelper, pageScale4, "text/html", false);
-        assertTrue(waitForScaleChange(previousScale, awContents));
-        previousScale = getPixelScaleOnUiThread(awContents);
+        contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
+        assertEquals(4.0f, getScaleOnUiThread(awContents));
+        onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
-        assertTrue(waitForScaleChange(previousScale, awContents));
+        contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
         assertEquals(1.0f, getScaleOnUiThread(awContents));
     }
 
-    private boolean waitForScaleChange(final float previousScale, final AwContents awContents)
+    private boolean waitUntilScaleBecomes(final float targetScale, final AwContents awContents)
             throws Throwable {
         return CriteriaHelper.pollForCriteria(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     try {
-                        return previousScale != getPixelScaleOnUiThread(awContents);
+                        return targetScale == getScaleOnUiThread(awContents);
                     } catch (Throwable t) {
                         t.printStackTrace();
-                        fail("Failed to getPixelScaleOnUiThread: " + t.toString());
+                        fail("Failed to getScaleOnUiThread: " + t.toString());
                         return false;
                     }
                 }
