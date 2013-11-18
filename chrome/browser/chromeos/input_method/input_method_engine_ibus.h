@@ -17,8 +17,6 @@ namespace chromeos {
 
 class IBusText;
 
-class IBusEngineService;
-
 namespace input_method {
 class CandidateWindow;
 struct KeyEventHandle;
@@ -113,10 +111,6 @@ class InputMethodEngineIBus : public InputMethodEngine,
   // corresponding engine id.
   void CreateEngineHandler();
 
-  // Returns current IBusEngineService, if there is no available service, this
-  // function returns NULL.
-  IBusEngineService* GetCurrentService();
-
   // True if the current context has focus.
   bool focused_;
 
@@ -134,9 +128,6 @@ class InputMethodEngineIBus : public InputMethodEngine,
 
   // This IME ID in ibus.
   std::string ibus_id_;
-
-  // Flag whether CreateEngineHandler is called or not.
-  bool is_create_engine_handler_called_;
 
   // The current auxialy text and it's visiblity.
   scoped_ptr<IBusText> aux_text_;
@@ -163,8 +154,6 @@ class InputMethodEngineIBus : public InputMethodEngine,
 
   // Mapping of candidate id to index.
   std::map<int, int> candidate_indexes_;
-
-  scoped_ptr<IBusEngineService> ibus_engine_service_;
 
   // Used for making callbacks.
   base::WeakPtrFactory<InputMethodEngineIBus> weak_ptr_factory_;
