@@ -442,6 +442,8 @@
         'browser/extensions/api/push_messaging/push_messaging_invalidation_mapper.h',
         'browser/extensions/api/runtime/runtime_api.cc',
         'browser/extensions/api/runtime/runtime_api.h',
+        'browser/extensions/api/runtime/runtime_api_factory.cc',
+        'browser/extensions/api/runtime/runtime_api_factory.h',
         'browser/extensions/api/serial/serial_api.cc',
         'browser/extensions/api/serial/serial_api.h',
         'browser/extensions/api/serial/serial_connection.cc',

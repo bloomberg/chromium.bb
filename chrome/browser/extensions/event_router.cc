@@ -11,10 +11,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "base/version.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
-#include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -49,19 +47,6 @@ void NotifyEventListenerRemovedOnIOThread(
     const std::string& sub_event_name) {
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
       browser_context, extension_id, sub_event_name);
-}
-
-// TODO(jamescook): Move this to RuntimeEventRouter.
-void DispatchOnInstalledEvent(
-    BrowserContext* browser_context,
-    const std::string& extension_id,
-    const Version& old_version,
-    bool chrome_updated) {
-  if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
-    return;
-
-  RuntimeEventRouter::DispatchOnInstalledEvent(browser_context, extension_id,
-                                               old_version, chrome_updated);
 }
 
 void DoNothing(ExtensionHost* host) {}
@@ -174,27 +159,17 @@ EventRouter::EventRouter(BrowserContext* browser_context,
                          ExtensionPrefs* extension_prefs)
     : browser_context_(browser_context),
       extension_prefs_(extension_prefs),
-      listeners_(this),
-      dispatch_chrome_updated_event_(false) {
+      listeners_(this) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                 content::Source<BrowserContext>(browser_context_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_ENABLED,
                  content::Source<BrowserContext>(browser_context_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<BrowserContext>(browser_context_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<BrowserContext>(browser_context_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
-                 content::Source<BrowserContext>(browser_context_));
-
-  // Check if registered events are up-to-date. We can only do this once
-  // per browser context, since it updates internal state when called.
-  dispatch_chrome_updated_event_ =
-      ExtensionsBrowserClient::Get()->DidVersionUpdate(extension_prefs_);
 }
 
 EventRouter::~EventRouter() {}
@@ -722,11 +697,6 @@ void EventRouter::Observe(int type,
       listeners_.RemoveListenersForProcess(renderer);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSIONS_READY: {
-      // We're done restarting Chrome after an update.
-      dispatch_chrome_updated_event_ = false;
-      break;
-    }
     case chrome::NOTIFICATION_EXTENSION_ENABLED: {
       // If the extension has a lazy background page, make sure it gets loaded
       // to register the events the extension is interested in.
@@ -752,16 +722,6 @@ void EventRouter::Observe(int type,
           GetFilteredEvents(extension->id());
       if (filtered_events)
         listeners_.LoadFilteredLazyListeners(extension->id(), *filtered_events);
-
-      if (dispatch_chrome_updated_event_) {
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&DispatchOnInstalledEvent,
-                       browser_context_,
-                       extension->id(),
-                       Version(),
-                       true));
-      }
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
@@ -769,28 +729,6 @@ void EventRouter::Observe(int type,
       UnloadedExtensionInfo* unloaded =
           content::Details<UnloadedExtensionInfo>(details).ptr();
       listeners_.RemoveLazyListenersForExtension(unloaded->extension->id());
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
-      // Dispatch the onInstalled event.
-      const Extension* extension =
-          content::Details<const InstalledExtensionInfo>(details)->extension;
-
-      // Get the previous version, if this is an upgrade.
-      ExtensionService* service = ExtensionSystem::GetForBrowserContext(
-          browser_context_)->extension_service();
-      const Extension* old = service->GetExtensionById(extension->id(), true);
-      Version old_version;
-      if (old)
-        old_version = *old->version();
-
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&DispatchOnInstalledEvent,
-                     browser_context_,
-                     extension->id(),
-                     old_version,
-                     false));
       break;
     }
     default:

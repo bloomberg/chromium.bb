@@ -24,7 +24,6 @@
 
 class GURL;
 class PrefService;
-class Profile;
 
 namespace content {
 class BrowserContext;
@@ -68,7 +67,7 @@ class EventRouter : public content::NotificationObserver,
   // Sends an event via ipc_sender to the given extension. Can be called on any
   // thread.
   static void DispatchEvent(IPC::Sender* ipc_sender,
-                            void* profile_id,
+                            void* browser_context_id,
                             const std::string& extension_id,
                             const std::string& event_name,
                             scoped_ptr<base::ListValue> event_args,
@@ -174,7 +173,7 @@ class EventRouter : public content::NotificationObserver,
 
   // Records an event notification in the extension activity log.  Can be
   // called from any thread.
-  static void LogExtensionEventMessage(void* profile_id,
+  static void LogExtensionEventMessage(void* browser_context_id,
                                        const std::string& extension_id,
                                        const std::string& event_name,
                                        scoped_ptr<base::ListValue> event_args);
@@ -182,7 +181,7 @@ class EventRouter : public content::NotificationObserver,
   // TODO(gdk): Document this.
   static void DispatchExtensionMessage(
       IPC::Sender* ipc_sender,
-      void* profile_id,
+      void* browser_context_id,
       const std::string& extension_id,
       const std::string& event_name,
       base::ListValue* event_args,
@@ -257,7 +256,7 @@ class EventRouter : public content::NotificationObserver,
 
   // static
   static void IncrementInFlightEventsOnUI(
-      void* profile_id,
+      void* browser_context_id,
       const std::string& extension_id);
 
   void DispatchPendingEvent(const linked_ptr<Event>& event,
@@ -269,7 +268,8 @@ class EventRouter : public content::NotificationObserver,
 
   content::BrowserContext* browser_context_;
 
-  // The ExtensionPrefs associated with |profile_|. May be NULL in tests.
+  // The ExtensionPrefs associated with |browser_context_|. May be NULL in
+  // tests.
   ExtensionPrefs* extension_prefs_;
 
   content::NotificationRegistrar registrar_;
@@ -278,11 +278,6 @@ class EventRouter : public content::NotificationObserver,
 
   typedef base::hash_map<std::string, Observer*> ObserverMap;
   ObserverMap observers_;
-
-  // True if we should dispatch the chrome.runtime.onInstalled event with
-  // reason "chrome_update" upon loading each extension.
-  // TODO(jamescook): Move this to RuntimeEventRouter.
-  bool dispatch_chrome_updated_event_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRouter);
 };

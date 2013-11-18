@@ -8,6 +8,8 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
+class Profile;
+
 // Profile-keyed class that loads a built-in TTS component extension
 // into a given profile on Chrome OS.
 class TtsExtensionLoaderChromeOs

@@ -81,8 +81,11 @@ bool ChromeExtensionsBrowserClient::DeferLoadingBackgroundHosts(
 }
 
 bool ChromeExtensionsBrowserClient::DidVersionUpdate(
-    ExtensionPrefs* extension_prefs) {
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+
   // Unit tests may not provide prefs; assume everything is up-to-date.
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile);
   if (!extension_prefs)
     return false;
 
