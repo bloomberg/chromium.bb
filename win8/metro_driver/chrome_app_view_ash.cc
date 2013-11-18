@@ -56,6 +56,10 @@ typedef winfoundtn::ITypedEventHandler<
     winui::Core::CoreWindow*,
     winui::Core::WindowSizeChangedEventArgs*> SizeChangedHandler;
 
+typedef winfoundtn::ITypedEventHandler<
+    winui::Input::EdgeGesture*,
+    winui::Input::EdgeGestureEventArgs*> EdgeEventHandler;
+
 // This function is exported by chrome.exe.
 typedef int (__cdecl *BreakpadExceptionHandler)(EXCEPTION_POINTERS* info);
 
@@ -528,6 +532,22 @@ ChromeAppViewAsh::SetWindow(winui::Core::ICoreWindow* window) {
   hr = window_->add_Activated(mswr::Callback<WindowActivatedHandler>(
       this, &ChromeAppViewAsh::OnWindowActivated).Get(),
       &window_activated_token_);
+  CheckHR(hr);
+
+  // Register for edge gesture notifications.
+  mswr::ComPtr<winui::Input::IEdgeGestureStatics> edge_gesture_statics;
+  hr = winrt_utils::CreateActivationFactory(
+      RuntimeClass_Windows_UI_Input_EdgeGesture,
+      edge_gesture_statics.GetAddressOf());
+  CheckHR(hr);
+
+  mswr::ComPtr<winui::Input::IEdgeGesture> edge_gesture;
+  hr = edge_gesture_statics->GetForCurrentView(&edge_gesture);
+  CheckHR(hr);
+
+  hr = edge_gesture->add_Completed(mswr::Callback<EdgeEventHandler>(
+      this, &ChromeAppViewAsh::OnEdgeGestureCompleted).Get(),
+      &edgeevent_token_);
   CheckHR(hr);
 
   // By initializing the direct 3D swap chain with the corewindow
@@ -1063,6 +1083,17 @@ HRESULT ChromeAppViewAsh::HandleProtocolRequest(
                     base::Bind(&ChromeAppViewAsh::OnNavigateToUrl,
                                base::Unretained(this),
                                actual_url));
+  return S_OK;
+}
+
+HRESULT ChromeAppViewAsh::OnEdgeGestureCompleted(
+    winui::Input::IEdgeGesture* gesture,
+    winui::Input::IEdgeGestureEventArgs* args) {
+  // Swipe from edge gesture (and win+z) is equivalent to pressing F11.
+  // TODO(cpu): Make this cleaner for m33.
+  ui_channel_->Send(new MetroViewerHostMsg_KeyDown(VK_F11, 1, 0, 0));
+  ::Sleep(15);
+  ui_channel_->Send(new MetroViewerHostMsg_KeyUp(VK_F11, 1, 0, 0));
   return S_OK;
 }
 
