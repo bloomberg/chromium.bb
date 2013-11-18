@@ -22,7 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"
-#include "chromeos/dbus/ibus/ibus_text.h"
+#include "chromeos/ime/ibus_text.h"
 #include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "ui/base/ime/text_input_client.h"

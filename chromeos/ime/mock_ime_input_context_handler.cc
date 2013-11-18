@@ -4,7 +4,7 @@
 
 #include "chromeos/ime/mock_ime_input_context_handler.h"
 
-#include "chromeos/dbus/ibus/ibus_text.h"
+#include "chromeos/ime/ibus_text.h"
 
 namespace chromeos {
 

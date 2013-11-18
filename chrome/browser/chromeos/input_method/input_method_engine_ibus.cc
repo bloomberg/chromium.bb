@@ -15,11 +15,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/ibus/ibus_text.h"
 #include "chromeos/ime/candidate_window.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/ibus_keymap.h"
+#include "chromeos/ime/ibus_text.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "dbus/object_path.h"
 
