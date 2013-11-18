@@ -281,14 +281,14 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   IntSyncStat notifications_received(section_counters,
                                      "Notifications Received");
   IntSyncStat empty_get_updates(section_counters, "Cycles Without Updates");
-  IntSyncStat non_empty_get_updates(section_counters, "Cycles With Updated");
+  IntSyncStat non_empty_get_updates(section_counters, "Cycles With Updates");
   IntSyncStat sync_cycles_without_commits(section_counters,
                                           "Cycles Without Commits");
   IntSyncStat sync_cycles_with_commits(section_counters, "Cycles With Commits");
   IntSyncStat useless_sync_cycles(section_counters,
                            "Cycles Without Commits or Updates");
   IntSyncStat useful_sync_cycles(section_counters,
-                                 "Cycles With Commit or Update");
+                                 "Cycles With Commits or Updates");
   IntSyncStat updates_received(section_counters, "Updates Downloaded");
   IntSyncStat tombstone_updates(section_counters, "Tombstone Updates");
   IntSyncStat reflected_updates(section_counters, "Reflected Updates");
