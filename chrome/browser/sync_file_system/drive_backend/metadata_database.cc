@@ -846,6 +846,7 @@ void MetadataDatabase::PopulateFolderByChildList(
   if (folder_tracker->dirty() && !ShouldKeepDirty(*folder_tracker)) {
     folder_tracker->set_dirty(false);
     dirty_trackers_.erase(folder_tracker);
+    low_priority_dirty_trackers_.erase(folder_tracker);
   }
   PutTrackerToBatch(*folder_tracker, batch.get());
 
@@ -922,6 +923,7 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
   if (tracker->dirty() && !ShouldKeepDirty(*tracker)) {
     tracker->set_dirty(false);
     dirty_trackers_.erase(tracker);
+    low_priority_dirty_trackers_.erase(tracker);
   }
   PutTrackerToBatch(*tracker, batch.get());
 
@@ -929,9 +931,13 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
 }
 
 void MetadataDatabase::LowerTrackerPriority(int64 tracker_id) {
-  // TODO(tzik): Move the tracker from |normal_priority_dirty_trackers_| to
-  // |low_priority_dirty_trackers|.
-  NOTIMPLEMENTED();
+  TrackerByID::const_iterator found = tracker_by_id_.find(tracker_id);
+  if (found == tracker_by_id_.end())
+    return;
+
+  FileTracker* tracker = found->second;
+  if (dirty_trackers_.erase(tracker))
+    low_priority_dirty_trackers_.insert(tracker);
 }
 
 bool MetadataDatabase::GetNormalPriorityDirtyTracker(FileTracker* tracker) {
@@ -1117,6 +1123,10 @@ void MetadataDatabase::MakeTrackerActive(int64 tracker_id,
   tracker->set_active(true);
   tracker->set_needs_folder_listing(
       tracker->synced_details().file_kind() == FILE_KIND_FOLDER);
+
+  // Make |tracker| a normal priority dirty tracker.
+  if (tracker->dirty())
+    low_priority_dirty_trackers_.erase(tracker);
   tracker->set_dirty(true);
   dirty_trackers_.insert(tracker);
 
@@ -1345,6 +1355,7 @@ void MetadataDatabase::MarkTrackerSetDirty(
     tracker->set_dirty(true);
     PutTrackerToBatch(*tracker, batch);
     dirty_trackers_.insert(tracker);
+    low_priority_dirty_trackers_.erase(tracker);
   }
 }
 
@@ -1392,6 +1403,7 @@ void MetadataDatabase::RecursiveMarkTrackerAsDirty(int64 root_tracker_id,
       tracker->set_dirty(true);
       PutTrackerToBatch(*tracker, batch);
       dirty_trackers_.insert(tracker);
+      low_priority_dirty_trackers_.erase(tracker);
     }
   }
 }

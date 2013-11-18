@@ -363,6 +363,7 @@ class MetadataDatabase {
   // Holds all trackers which marked as dirty.
   // This must be updated when updating |dirty| field of a tracker.
   DirtyTrackers dirty_trackers_;  // Not owned.
+  DirtyTrackers low_priority_dirty_trackers_;  // Not owned.
 
   base::WeakPtrFactory<MetadataDatabase> weak_ptr_factory_;
 

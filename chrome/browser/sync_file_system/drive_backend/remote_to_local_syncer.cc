@@ -81,7 +81,6 @@ RemoteToLocalSyncer::RemoteToLocalSyncer(SyncEngineContext* sync_context,
 }
 
 RemoteToLocalSyncer::~RemoteToLocalSyncer() {
-  NOTIMPLEMENTED();
 }
 
 void RemoteToLocalSyncer::Run(const SyncStatusCallback& callback) {
