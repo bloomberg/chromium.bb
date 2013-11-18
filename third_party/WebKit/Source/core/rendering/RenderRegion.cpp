@@ -32,6 +32,7 @@
 
 #include "core/css/resolver/StyleResolver.h"
 #include "core/rendering/FlowThreadController.h"
+#include "core/rendering/HitTestLocation.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBoxRegionInfo.h"
 #include "core/rendering/RenderNamedFlowThread.h"

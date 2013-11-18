@@ -912,6 +912,16 @@ inline bool shouldRecalcStyle(StyleRecalcChange change, const Node* node)
     return change >= Inherit || node->childNeedsStyleRecalc() || node->needsStyleRecalc();
 }
 
+inline bool isTreeScopeRoot(const Node* node)
+{
+    return !node || node->isDocumentNode() || node->isShadowRoot();
+}
+
+inline bool isTreeScopeRoot(const Node& node)
+{
+    return node.isDocumentNode() || node.isShadowRoot();
+}
+
 // Allow equality comparisons of Nodes by reference or pointer, interchangeably.
 inline bool operator==(const Node& a, const Node& b) { return &a == &b; }
 inline bool operator==(const Node& a, const Node* b) { return &a == b; }
