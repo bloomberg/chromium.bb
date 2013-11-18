@@ -2870,8 +2870,6 @@
             'platform/graphics/filters/custom/CustomFilterGlobalContext.h',
             'platform/graphics/filters/custom/CustomFilterMesh.cpp',
             'platform/graphics/filters/custom/CustomFilterMesh.h',
-            'platform/graphics/filters/custom/CustomFilterMeshGenerator.cpp',
-            'platform/graphics/filters/custom/CustomFilterMeshGenerator.h',
             'platform/graphics/filters/custom/CustomFilterOperation.cpp',
             'platform/graphics/filters/custom/CustomFilterOperation.h',
             'platform/graphics/filters/custom/CustomFilterProgram.cpp',

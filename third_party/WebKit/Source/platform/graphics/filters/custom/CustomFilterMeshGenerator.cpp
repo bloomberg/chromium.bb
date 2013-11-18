@@ -28,8 +28,7 @@
  */
 
 #include "config.h"
-
-#include "core/platform/graphics/filters/custom/CustomFilterMeshGenerator.h"
+#include "platform/graphics/filters/custom/CustomFilterMeshGenerator.h"
 
 #ifndef NDEBUG
 #include <stdio.h> // Needed for printf used in dumpBuffers.

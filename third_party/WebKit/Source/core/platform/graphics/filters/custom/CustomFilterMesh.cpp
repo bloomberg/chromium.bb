@@ -31,7 +31,7 @@
 
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/filters/custom/CustomFilterMesh.h"
-#include "core/platform/graphics/filters/custom/CustomFilterMeshGenerator.h"
+#include "platform/graphics/filters/custom/CustomFilterMeshGenerator.h"
 
 namespace WebCore {
 

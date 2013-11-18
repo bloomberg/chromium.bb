@@ -30,13 +30,13 @@
 #ifndef CustomFilterMeshGenerator_h
 #define CustomFilterMeshGenerator_h
 
-#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/filters/custom/CustomFilterConstants.h"
 
 namespace WebCore {
 
-class CustomFilterMeshGenerator {
+class PLATFORM_EXPORT CustomFilterMeshGenerator {
 public:
     // Lines and columns are the values passed in CSS. The result is vertex mesh that has 'rows' numbers of rows
     // and 'columns' number of columns with a total of 'rows + 1' * 'columns + 1' vertices.

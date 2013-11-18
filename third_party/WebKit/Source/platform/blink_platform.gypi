@@ -337,6 +337,8 @@
       'graphics/filters/custom/CustomFilterArrayParameter.cpp',
       'graphics/filters/custom/CustomFilterArrayParameter.h',
       'graphics/filters/custom/CustomFilterConstants.h',
+      'graphics/filters/custom/CustomFilterMeshGenerator.cpp',
+      'graphics/filters/custom/CustomFilterMeshGenerator.h',
       'graphics/filters/custom/CustomFilterNumberParameter.cpp',
       'graphics/filters/custom/CustomFilterNumberParameter.h',
       'graphics/filters/custom/CustomFilterParameter.h',
