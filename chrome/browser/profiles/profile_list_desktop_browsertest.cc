@@ -7,7 +7,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -68,7 +67,8 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, SignOut) {
       content::Source<Browser>(browser()));
 
   EXPECT_FALSE(cache.ProfileIsSigninRequiredAtIndex(index));
-  profiles::LockProfile(current_profile);
+  menu->SetLogoutURL("about:blank");
+  menu->BeginSignOut();
   EXPECT_TRUE(cache.ProfileIsSigninRequiredAtIndex(index));
 
   window_close_observer.Wait();  // rely on test time-out for failure indication

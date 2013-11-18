@@ -230,3 +230,11 @@ void AvatarMenu::Observe(int type,
   if (observer_)
     observer_->OnAvatarMenuChanged(this);
 }
+
+content::WebContents* AvatarMenu::BeginSignOut() {
+  return menu_actions_->BeginSignOut();
+}
+
+void AvatarMenu::SetLogoutURL(const std::string& logout_url) {
+  menu_actions_->SetLogoutURL(logout_url);
+}

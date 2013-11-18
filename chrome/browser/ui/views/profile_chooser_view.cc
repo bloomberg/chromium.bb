@@ -440,7 +440,7 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
     // ShowView() will DCHECK if this view is displayed for non signed-in users.
     ShowView(ACCOUNT_MANAGEMENT_VIEW, avatar_menu_.get());
   } else if (sender == signout_current_profile_link_) {
-    profiles::LockProfile(browser_->profile());
+    avatar_menu_->BeginSignOut();
   } else if (sender == signin_current_profile_link_) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableInlineSignin)) {

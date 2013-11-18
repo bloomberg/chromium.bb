@@ -110,6 +110,9 @@ IN_PROC_BROWSER_TEST_F(NewAvatarMenuButtonTest, SignOut) {
       menu->GetItemAt(menu->GetActiveProfileIndex());
   EXPECT_FALSE(menu_item_before.signin_required);
 
+  ui::MouseEvent mouse_ev(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), 0);
+  menu->SetLogoutURL("about:blank");
+
   ProfileChooserView::profile_bubble_->LinkClicked(
       static_cast<views::Link*>(
           ProfileChooserView::profile_bubble_->signout_current_profile_link_),

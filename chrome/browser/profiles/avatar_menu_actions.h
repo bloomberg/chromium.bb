@@ -31,6 +31,12 @@ class AvatarMenuActions {
   // Returns true if the edit profile link should be shown.
   virtual bool ShouldShowEditProfileLink() const = 0;
 
+  // Starts the sign-out process for this profile.
+  virtual content::WebContents* BeginSignOut() = 0;
+
+  // Sets a different URL to use for logout (for testing only).
+  virtual void SetLogoutURL(const std::string& logout_url) = 0;
+
   // Updates the browser.
   // TODO: Delegate browser actions to remove dependency on Browser class.
   virtual void ActiveBrowserChanged(Browser* browser) = 0;

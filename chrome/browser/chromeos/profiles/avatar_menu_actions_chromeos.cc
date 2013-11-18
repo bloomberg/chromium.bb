@@ -45,6 +45,15 @@ bool AvatarMenuActionsChromeOS::ShouldShowEditProfileLink() const {
   return false;
 }
 
+content::WebContents* AvatarMenuActionsChromeOS::BeginSignOut() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+void AvatarMenuActionsChromeOS::SetLogoutURL(const std::string& logout_url) {
+  NOTIMPLEMENTED();
+}
+
 void AvatarMenuActionsChromeOS::ActiveBrowserChanged(Browser* browser) {
   browser_ = browser;
 }

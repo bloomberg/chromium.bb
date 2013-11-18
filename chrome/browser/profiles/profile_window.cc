@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -175,17 +174,6 @@ void CloseGuestProfileWindows() {
   if (profile) {
     BrowserList::CloseAllBrowsersWithProfile(profile);
   }
-}
-
-void LockProfile(Profile* profile) {
-  DCHECK(profile);
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-
-  size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  cache.SetProfileSigninRequiredAtIndex(index, true);
-  chrome::ShowUserManager(profile->GetPath());
-  BrowserList::CloseAllBrowsersWithProfile(profile);
 }
 
 }  // namespace profiles

@@ -22,6 +22,58 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 
+namespace {
+
+class SignoutTracker : public content::WebContentsObserver {
+ public:
+  SignoutTracker(Profile* profile,
+                 const GURL& signout_landing_url,
+                 content::WebContents* contents,
+                 Browser* browser);
+
+  virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
+  virtual void DidStopLoading(content::RenderViewHost* render_view_host)
+      OVERRIDE;
+
+ private:
+  scoped_ptr<content::WebContents> contents_;
+  GURL signout_landing_url_;
+  Profile* profile_;
+  Browser* browser_;
+
+  DISALLOW_COPY_AND_ASSIGN(SignoutTracker);
+};
+
+SignoutTracker::SignoutTracker(Profile* profile,
+                               const GURL& signout_landing_url,
+                               content::WebContents* contents,
+                               Browser* browser)
+  : WebContentsObserver(contents),
+    contents_(contents),
+    signout_landing_url_(signout_landing_url),
+    profile_(profile),
+    browser_(browser) {
+}
+
+void SignoutTracker::DidStopLoading(content::RenderViewHost* render_view_host) {
+  // Only close when we reach the final landing; ignore redirects until then.
+  if (web_contents()->GetURL() == signout_landing_url_) {
+    if (profiles::IsNewProfileManagementEnabled()) {
+      DCHECK(profile_);
+      chrome::ShowUserManager(profile_->GetPath());
+    }
+    Observe(NULL);
+    BrowserList::CloseAllBrowsersWithProfile(profile_);
+    delete this;  /* success */
+  }
+}
+
+void SignoutTracker::WebContentsDestroyed(content::WebContents* contents) {
+  delete this;  /* failure */
+}
+
+}  // namespace
+
 AvatarMenuActionsDesktop::AvatarMenuActionsDesktop() {
 }
 
@@ -66,6 +118,44 @@ bool AvatarMenuActionsDesktop::ShouldShowAddNewProfileLink() const {
 
 bool AvatarMenuActionsDesktop::ShouldShowEditProfileLink() const {
   return true;
+}
+
+content::WebContents* AvatarMenuActionsDesktop::BeginSignOut() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* current_profile = browser_->profile();
+
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(current_profile->GetPath());
+  cache.SetProfileSigninRequiredAtIndex(index, true);
+
+  std::string landing_url = signin::GetLandingURL("close", 1).spec();
+  GURL logout_url(GaiaUrls::GetInstance()->service_logout_url());
+  logout_url = net::AppendQueryParameter(logout_url, "continue", landing_url);
+  if (!logout_override_.empty()) {
+    // We're testing...
+    landing_url = logout_override_;
+    logout_url = GURL(logout_override_);
+  }
+
+  content::WebContents::CreateParams create_params(current_profile);
+  create_params.site_instance =
+      content::SiteInstance::CreateForURL(current_profile, logout_url);
+  content::WebContents* contents = content::WebContents::Create(create_params);
+  // This object may be destructed when the menu closes but we need something
+  // around to finish the sign-out process and close the profile windows.
+  new SignoutTracker(current_profile,
+                     GURL(landing_url),
+                     contents,
+                     browser_);
+  contents->GetController().LoadURL(
+    logout_url, content::Referrer(),
+    content::PAGE_TRANSITION_GENERATED, std::string());
+
+  return contents;  // returned for testing purposes
+}
+
+void AvatarMenuActionsDesktop::SetLogoutURL(const std::string& logout_url) {
+  logout_override_ = logout_url;
 }
 
 void AvatarMenuActionsDesktop::ActiveBrowserChanged(Browser* browser) {

@@ -54,9 +54,6 @@ void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type,
 // Closes all browser windows that belong to the guest profile.
 void CloseGuestProfileWindows();
 
-// Closes all the browser windows for |profile| and opens the user manager.
-void LockProfile(Profile* profile);
-
 }  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_WINDOW_H_
