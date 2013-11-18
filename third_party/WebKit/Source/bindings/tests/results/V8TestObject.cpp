@@ -68,7 +68,6 @@
 #include "bindings/v8/custom/V8Float32ArrayCustom.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/UseCounter.h"
@@ -1879,7 +1878,7 @@ static void mutablePointAttributeSetter(v8::Local<v8::Value> jsValue, const v8::
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, cppValue, V8SVGPoint::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     if (!WTF::getPtr(cppValue)) {
-        throwUninformativeAndGenericTypeError(info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToSet("mutablePoint", "TestObject", "The provided value is not of type 'SVGPoint'."), info.GetIsolate());
         return;
     }
     imp->setMutablePoint(WTF::getPtr(cppValue)->propertyReference());
@@ -1910,7 +1909,7 @@ static void immutablePointAttributeSetter(v8::Local<v8::Value> jsValue, const v8
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, cppValue, V8SVGPoint::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     if (!WTF::getPtr(cppValue)) {
-        throwUninformativeAndGenericTypeError(info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToSet("immutablePoint", "TestObject", "The provided value is not of type 'SVGPoint'."), info.GetIsolate());
         return;
     }
     imp->setImmutablePoint(WTF::getPtr(cppValue)->propertyReference());
@@ -3939,7 +3938,7 @@ static void overloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& in
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3991,7 +3990,7 @@ static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedMethodAMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4037,7 +4036,7 @@ static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedMethodBMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4300,7 +4299,7 @@ static void svgPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info
     V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, item, V8SVGPoint::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     V8TRYCATCH_VOID(unsigned, index, toUInt32(info[1]));
     if (!item) {
-        throwUninformativeAndGenericTypeError(info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("svgPointMethod", "TestObject", "parameter 1 is not of type 'SVGPoint'."), info.GetIsolate());
         return;
     }
     v8SetReturnValue(info, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->svgPointMethod(item->propertyReference(), index))));
@@ -4328,7 +4327,7 @@ static void strictSVGPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
     V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, item, V8SVGPoint::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     V8TRYCATCH_VOID(unsigned, index, toUInt32(info[1]));
     if (!item) {
-        throwUninformativeAndGenericTypeError(info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("strictSVGPointMethod", "TestObject", "parameter 1 is not of type 'SVGPoint'."), info.GetIsolate());
         return;
     }
     SVGPoint result = imp->strictSVGPointMethod(item->propertyReference(), index, exceptionState);
@@ -4548,7 +4547,7 @@ static void overloadedPerWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Va
         throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedPerWorldMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4584,7 +4583,7 @@ static void overloadedPerWorldMethodMethodForMainWorld(const v8::FunctionCallbac
         throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedPerWorldMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4752,7 +4751,7 @@ static void overloadedActivityLoggedMethodMethod(const v8::FunctionCallbackInfo<
         throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedActivityLoggedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4793,7 +4792,7 @@ static void overloadedActivityLoggedMethodMethodForMainWorld(const v8::FunctionC
         throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedActivityLoggedMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)

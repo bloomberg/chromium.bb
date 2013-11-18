@@ -143,7 +143,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwTypeError(ExceptionMessages::failedToConstruct("TestOverloadedConstructors", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToConstruct("TestOverloadedConstructors", "No matching constructor signature."), info.GetIsolate());
     return;
 }
 

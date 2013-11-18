@@ -35,11 +35,12 @@ rootSVGElement.appendChild(pathElement);
 shouldBe("markerElement.orientType.baseVal", "SVGMarkerElement.SVG_MARKER_ORIENT_AUTO");
 shouldBe("markerElement.orientAngle.baseVal.value", "0");
 
-shouldThrow("markerElement.setOrientToAngle()", "'TypeError: Type error'");
-shouldThrow("markerElement.setOrientToAngle(true)", "'TypeError: Type error'");
-shouldThrow("markerElement.setOrientToAngle(2)", "'TypeError: Type error'");
-shouldThrow("markerElement.setOrientToAngle('aString')", "'TypeError: Type error'");
-shouldThrow("markerElement.setOrientToAngle(markerElement)", "'TypeError: Type error'");
+var typeError = '"TypeError: Failed to execute \'setOrientToAngle\' on \'SVGMarkerElement\': parameter 1 is not of type \'SVGAngle\'."';
+shouldThrow("markerElement.setOrientToAngle()", typeError);
+shouldThrow("markerElement.setOrientToAngle(true)", typeError);
+shouldThrow("markerElement.setOrientToAngle(2)", typeError);
+shouldThrow("markerElement.setOrientToAngle('aString')", typeError);
+shouldThrow("markerElement.setOrientToAngle(markerElement)", typeError);
 
 function repaintTest() {
     markerElement.setOrientToAngle(rootSVGElement.createSVGAngle());

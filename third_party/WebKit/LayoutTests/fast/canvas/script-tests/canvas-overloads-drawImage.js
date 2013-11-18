@@ -6,7 +6,7 @@ function ExpectedNotEnoughArgumentsMessage(num) {
     return "\"TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only " + num + " present.\"";
 }
 
-var TypeError = "TypeError: Type error";
+var TypeError = '"TypeError: Failed to execute \'drawImage\' on \'CanvasRenderingContext2D\': No function was found that matched the signature provided."';
 
 var imageElement = document.createElement("img");
 shouldThrow("ctx.drawImage()", ExpectedNotEnoughArgumentsMessage(0));

@@ -29,7 +29,7 @@ function itemListDragStart(dataTransfer)
 {
     testDataTransfer = dataTransfer;
     shouldThrow('testDataTransfer.items.add()', '"TypeError: Failed to execute \'add\' on \'DataTransferItemList\': 1 argument required, but only 0 present."');
-    shouldThrow('testDataTransfer.items.add("sample")', '"TypeError: Type error"');
+    shouldThrow('testDataTransfer.items.add("sample")', '"TypeError: Failed to execute \'add\' on \'DataTransferItemList\': No function was found that matched the signature provided."');
     testItem = dataTransfer.items.add('sample', 'text/plain');
     shouldBeEqualToString('testItem.kind', 'string');
     shouldBeEqualToString('testItem.type', 'text/plain');

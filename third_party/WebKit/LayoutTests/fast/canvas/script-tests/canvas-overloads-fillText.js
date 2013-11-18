@@ -6,8 +6,6 @@ function ExpectedNotEnoughArgumentsMessage(num) {
     return "\"TypeError: Failed to execute 'fillText' on 'CanvasRenderingContext2D': 3 arguments required, but only " + num + " present.\"";
 }
 
-var TypeError = "TypeError: Type error";
-
 shouldThrow("ctx.fillText()", ExpectedNotEnoughArgumentsMessage(0));
 shouldThrow("ctx.fillText('moo')", ExpectedNotEnoughArgumentsMessage(1));
 shouldThrow("ctx.fillText('moo',0)", ExpectedNotEnoughArgumentsMessage(2));

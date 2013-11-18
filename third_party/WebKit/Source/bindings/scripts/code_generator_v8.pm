@@ -2016,7 +2016,7 @@ END
     if ($returnSvgNativeType) {
         $code .= <<END;
     if (!$expression) {
-        throwUninformativeAndGenericTypeError(info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToSet(\"${attrName}\", \"${interfaceName}\", \"The provided value is not of type '$returnType'.\"), info.GetIsolate());
         return;
     }
 END
@@ -2246,7 +2246,7 @@ END
         $code .= "    }\n";
     }
     $code .= <<END;
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute(\"$name\", \"$interfaceName\", \"No function was found that matched the signature provided.\"), info.GetIsolate());
 END
     $code .= "}\n\n";
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
@@ -2689,7 +2689,7 @@ END
         $code .= "    }\n";
     }
     $code .= <<END;
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToConstruct(\"$interfaceName\", \"No matching constructor signature.\"), info.GetIsolate());
     return;
 END
     $code .= "}\n\n";
@@ -5135,6 +5135,7 @@ sub GenerateFunctionCallString
     $nativeReturnType = GetSVGWrappedTypeNeedingTearOff($returnType) if $isSVGTearOffType;
 
     my $index = 0;
+    my $humanFriendlyIndex = $index + 1;
 
     my @arguments;
     my $functionName;
@@ -5155,6 +5156,8 @@ sub GenerateFunctionCallString
     $code .= $subCode;
     unshift(@arguments, @$callWithArgs);
     $index += @$callWithArgs;
+    $humanFriendlyIndex = $index + 1;
+
     $numberOfParameters += @$callWithArgs;
 
     foreach my $parameter (@{$function->parameters}) {
@@ -5169,11 +5172,11 @@ sub GenerateFunctionCallString
         } elsif ($parameter->type eq "NodeFilter" || $parameter->type eq "XPathNSResolver") {
             push @arguments, "$paramName.get()";
         } elsif (IsSVGTypeNeedingTearOff($parameter->type) and not $interfaceName =~ /List$/) {
-            AddToImplIncludes("core/dom/ExceptionCode.h");
+            AddToImplIncludes("bindings/v8/ExceptionMessages.h");
             push @arguments, "$paramName->propertyReference()";
             $code .= <<END;
     if (!$paramName) {
-        throwUninformativeAndGenericTypeError(info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute(\"$name\", \"$interfaceName\", \"parameter $humanFriendlyIndex is not of type '${ \$parameter->type }'.\"), info.GetIsolate());
         return;
     }
 END
@@ -5185,6 +5188,7 @@ END
             push @arguments, $paramName;
         }
         $index++;
+        $humanFriendlyIndex = $index + 1;
     }
 
     if ($function->extendedAttributes->{"RaisesException"}) {

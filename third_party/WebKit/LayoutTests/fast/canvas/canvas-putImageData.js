@@ -201,7 +201,7 @@ pixelShouldBe(1, 1, [0, 128,0,255]);
 pixelShouldBe(9, 9, [0, 128,0,255]);
 
 
-shouldThrow("context.putImageData({}, 0, 0)", "'TypeError: Type error'");
+shouldThrow("context.putImageData({}, 0, 0)", '"TypeError: Failed to execute \'putImageData\' on \'CanvasRenderingContext2D\': No function was found that matched the signature provided."');
 shouldThrow("context.putImageData(buffer, NaN, 0, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
 shouldThrow("context.putImageData(buffer, 0, NaN, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
 shouldThrow("context.putImageData(buffer, 0, 0, NaN, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");

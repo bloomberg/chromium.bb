@@ -4825,7 +4825,7 @@ static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedMethodAMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4876,7 +4876,7 @@ static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedMethodBMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4923,7 +4923,7 @@ static void overloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodC", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodC", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedMethodCMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4969,7 +4969,7 @@ static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodD", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodD", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedMethodDMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -5015,7 +5015,7 @@ static void overloadedMethodEMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodE", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodE", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedMethodEMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -5061,7 +5061,7 @@ static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodF", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodF", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedMethodFMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -5098,7 +5098,7 @@ static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         overloadedMethodG2Method(info);
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodG", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedMethodGMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -5141,7 +5141,7 @@ static void overloadedPerWorldBindingsMethodMethod(const v8::FunctionCallbackInf
         overloadedPerWorldBindingsMethod2Method(info);
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldBindingsMethod", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedPerWorldBindingsMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -5172,7 +5172,7 @@ static void overloadedPerWorldBindingsMethodMethodForMainWorld(const v8::Functio
         overloadedPerWorldBindingsMethod2MethodForMainWorld(info);
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldBindingsMethod", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedPerWorldBindingsMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -5217,7 +5217,7 @@ static void overloadedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Valu
         throwTypeError(ExceptionMessages::failedToExecute("overloadedStaticMethod", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedStaticMethod", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

@@ -6,7 +6,7 @@ function ExpectedNotEnoughArgumentsMessage(num) {
     return "\"TypeError: Failed to execute 'setStrokeColor' on 'CanvasRenderingContext2D': 1 argument required, but only " + num + " present.\"";
 }
 
-var TypeError = "TypeError: Type error";
+var TypeError = '"TypeError: Failed to execute \'setStrokeColor\' on \'CanvasRenderingContext2D\': No function was found that matched the signature provided."';
 
 shouldThrow("ctx.setStrokeColor()", ExpectedNotEnoughArgumentsMessage(0));
 shouldBe("ctx.setStrokeColor('red')", "undefined");
