@@ -458,6 +458,7 @@
         'browser/renderer_host/websocket_dispatcher_host_unittest.cc',
         'browser/resolve_proxy_msg_helper_unittest.cc',
         'browser/service_worker/service_worker_dispatcher_host_unittest.cc',
+        'browser/service_worker/service_worker_registration_unittest.cc',
         'browser/site_instance_impl_unittest.cc',
         'browser/speech/chunked_byte_buffer_unittest.cc',
         'browser/speech/endpointer/endpointer_unittest.cc',
