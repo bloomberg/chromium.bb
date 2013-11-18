@@ -34,9 +34,9 @@ void HttpNetworkSessionPeer::SetHttpStreamFactory(
   session_->http_stream_factory_.swap(http_stream_factory);
 }
 
-void HttpNetworkSessionPeer::SetWebSocketHandshakeStreamFactory(
+void HttpNetworkSessionPeer::SetHttpStreamFactoryForWebSocket(
     scoped_ptr<HttpStreamFactory> http_stream_factory) {
-  session_->websocket_handshake_stream_factory_.swap(http_stream_factory);
+  session_->http_stream_factory_for_websocket_.swap(http_stream_factory);
 }
 
 }  // namespace net

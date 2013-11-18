@@ -12096,7 +12096,7 @@ TEST_P(HttpNetworkTransactionTest, CreateWebSocketHandshakeStream) {
     HttpNetworkSessionPeer peer(session);
     FakeStreamFactory* fake_factory = new FakeStreamFactory();
     FakeWebSocketStreamCreateHelper websocket_stream_create_helper;
-    peer.SetWebSocketHandshakeStreamFactory(
+    peer.SetHttpStreamFactoryForWebSocket(
         scoped_ptr<HttpStreamFactory>(fake_factory));
 
     HttpNetworkTransaction trans(LOW, session);

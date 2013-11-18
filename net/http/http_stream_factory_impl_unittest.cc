@@ -938,7 +938,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStream) {
   StreamRequestWaiter waiter;
   WebSocketStreamCreateHelper create_helper;
   scoped_ptr<HttpStreamRequest> request(
-      session->websocket_handshake_stream_factory()
+      session->http_stream_factory_for_websocket()
           ->RequestWebSocketHandshakeStream(request_info,
                                             DEFAULT_PRIORITY,
                                             ssl_config,
@@ -989,7 +989,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverSSL) {
   StreamRequestWaiter waiter;
   WebSocketStreamCreateHelper create_helper;
   scoped_ptr<HttpStreamRequest> request(
-      session->websocket_handshake_stream_factory()
+      session->http_stream_factory_for_websocket()
           ->RequestWebSocketHandshakeStream(request_info,
                                             DEFAULT_PRIORITY,
                                             ssl_config,
@@ -1037,7 +1037,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverProxy) {
   StreamRequestWaiter waiter;
   WebSocketStreamCreateHelper create_helper;
   scoped_ptr<HttpStreamRequest> request(
-      session->websocket_handshake_stream_factory()
+      session->http_stream_factory_for_websocket()
           ->RequestWebSocketHandshakeStream(request_info,
                                             DEFAULT_PRIORITY,
                                             ssl_config,
@@ -1151,7 +1151,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStream) {
   StreamRequestWaiter waiter1;
   WebSocketStreamCreateHelper create_helper;
   scoped_ptr<HttpStreamRequest> request1(
-      session->websocket_handshake_stream_factory()
+      session->http_stream_factory_for_websocket()
           ->RequestWebSocketHandshakeStream(request_info,
                                             DEFAULT_PRIORITY,
                                             ssl_config,
@@ -1168,7 +1168,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStream) {
 
   StreamRequestWaiter waiter2;
   scoped_ptr<HttpStreamRequest> request2(
-      session->websocket_handshake_stream_factory()
+      session->http_stream_factory_for_websocket()
           ->RequestWebSocketHandshakeStream(request_info,
                                             DEFAULT_PRIORITY,
                                             ssl_config,
@@ -1241,7 +1241,7 @@ TEST_P(HttpStreamFactoryTest, OrphanedWebSocketStream) {
   StreamRequestWaiter waiter;
   WebSocketStreamCreateHelper create_helper;
   scoped_ptr<HttpStreamRequest> request(
-      session->websocket_handshake_stream_factory()
+      session->http_stream_factory_for_websocket()
           ->RequestWebSocketHandshakeStream(request_info,
                                             DEFAULT_PRIORITY,
                                             ssl_config,
@@ -1271,7 +1271,7 @@ TEST_P(HttpStreamFactoryTest, OrphanedWebSocketStream) {
 
   // Make sure there is no orphaned job. it is already canceled.
   ASSERT_EQ(0u, static_cast<HttpStreamFactoryImpl*>(
-      session->websocket_handshake_stream_factory())->num_orphaned_jobs());
+      session->http_stream_factory_for_websocket())->num_orphaned_jobs());
 }
 
 }  // namespace

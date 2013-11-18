@@ -28,8 +28,8 @@ class NET_EXPORT_PRIVATE HttpNetworkSessionPeer {
   void SetProxyService(ProxyService* proxy_service);
 
   void SetHttpStreamFactory(scoped_ptr<HttpStreamFactory> http_stream_factory);
-  void SetWebSocketHandshakeStreamFactory(
-      scoped_ptr<HttpStreamFactory> websocket_handshake_stream_factory);
+  void SetHttpStreamFactoryForWebSocket(
+      scoped_ptr<HttpStreamFactory> http_stream_factory_for_websocket);
 
  private:
   const scoped_refptr<HttpNetworkSession> session_;

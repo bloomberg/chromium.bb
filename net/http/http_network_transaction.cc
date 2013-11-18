@@ -665,7 +665,7 @@ int HttpNetworkTransaction::DoCreateStream() {
 
   if (ForWebSocketHandshake()) {
     stream_request_.reset(
-        session_->websocket_handshake_stream_factory()
+        session_->http_stream_factory_for_websocket()
             ->RequestWebSocketHandshakeStream(
                   *request_,
                   priority_,
