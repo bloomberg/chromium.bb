@@ -253,6 +253,7 @@ class ThreadPool(object):
     while True:
       # Check for pending results.
       result = None
+      self._on_iter_results_step()
       with self._outputs_exceptions_cond:
         if self._exceptions:
           e = self._exceptions.pop(0)
@@ -267,7 +268,7 @@ class ThreadPool(object):
           # Some task is queued, wait for its result to appear.
           # Use non-None timeout so that process reacts to Ctrl+C and other
           # signals, see http://bugs.python.org/issue8844.
-          self._outputs_exceptions_cond.wait(timeout=5)
+          self._outputs_exceptions_cond.wait(timeout=0.1)
           continue
       yield result
 
@@ -304,6 +305,9 @@ class ThreadPool(object):
         index += 1
       except Queue.Empty:
         return index
+
+  def _on_iter_results_step(self):
+    pass
 
   def __enter__(self):
     """Enables 'with' statement."""
@@ -556,6 +560,9 @@ class ThreadPoolWithProgress(ThreadPool):
     """Also wakes up the listener on new completed test_case."""
     super(ThreadPoolWithProgress, self)._output_append(out)
     self.tasks.wake_up()
+
+  def _on_iter_results_step(self):
+    self.tasks.progress.print_update()
 
 
 class DeadlockDetector(object):
