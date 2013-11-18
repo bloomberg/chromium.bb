@@ -317,9 +317,9 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
     if (timing.iterationStart)
         return false;
 
-    // FIXME: Compositor only supports finite, non-zero, integer iteration
-    // counts.
-    if (!std::isfinite(timing.iterationCount) || (std::floor(timing.iterationCount) != timing.iterationCount) || !timing.iterationCount)
+    // FIXME: Compositor only supports positive, integer iteration counts.
+    // Zero iterations could be converted, but silly.
+    if ((std::floor(timing.iterationCount) != timing.iterationCount) || timing.iterationCount <= 0)
         return false;
 
     if (!timing.iterationDuration)
@@ -350,8 +350,12 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
     if (out.alternate && (skippedIterations % 2))
         out.reverse = !out.reverse;
 
-    out.adjustedIterationCount = std::floor(timing.iterationCount) - skippedIterations;
-    ASSERT(out.adjustedIterationCount > 0);
+    if (!std::isfinite(timing.iterationCount)) {
+        out.adjustedIterationCount = -1;
+    } else {
+        out.adjustedIterationCount = std::floor(timing.iterationCount) - skippedIterations;
+        ASSERT(out.adjustedIterationCount > 0);
+    }
 
     out.scaledTimeOffset = scaledStartDelay + skippedIterations * out.scaledDuration;
     ASSERT(out.scaledTimeOffset <= 0);
@@ -472,7 +476,6 @@ void CompositorAnimationsImpl::addKeyframesToCurve(PlatformAnimationCurveType& c
                 // ChainedTimingFunction criteria was checked in isCandidate,
                 // assert it is valid.
                 ASSERT(values.size() == chained->m_segments.size() + 1);
-                ASSERT(values[i].first == chained->m_segments[i].m_min);
 
                 keyframeTimingFunction = chained->m_segments[i].m_timingFunction.get();
                 break;

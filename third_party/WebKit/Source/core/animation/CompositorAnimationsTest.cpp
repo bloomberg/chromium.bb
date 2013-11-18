@@ -475,6 +475,20 @@ TEST_F(CoreAnimationCompositorAnimationsTest, ConvertTimingForCompositorDirectio
     EXPECT_TRUE(m_compositorTiming.reverse);
 }
 
+TEST_F(CoreAnimationCompositorAnimationsTest, ConvertTimingForCompositorInfinite)
+{
+    m_timing.iterationCount = std::numeric_limits<double>::infinity();
+    EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
+    EXPECT_EQ(-1, m_compositorTiming.adjustedIterationCount);
+
+    m_timing.iterationCount = std::numeric_limits<double>::infinity();
+    m_timing.iterationDuration = 5.0;
+    m_timing.startDelay = -6.0;
+    EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
+    EXPECT_DOUBLE_EQ(-1.0, m_compositorTiming.scaledTimeOffset);
+    EXPECT_EQ(-1, m_compositorTiming.adjustedIterationCount);
+}
+
 TEST_F(CoreAnimationCompositorAnimationsTest, isCandidateForCompositorTiming)
 {
     EXPECT_TRUE(isCandidateForCompositor(m_timing, m_keyframeVector2));
@@ -925,6 +939,7 @@ TEST_F(CoreAnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnima
     chainedTimingFunction->appendSegment(1.0, m_cubicCustomTimingFunction.get());
 
     m_timing.timingFunction = chainedTimingFunction;
+    m_timing.iterationDuration = 2.0;
     m_timing.iterationCount = 10;
     m_timing.direction = Timing::PlaybackDirectionAlternate;
     // --
@@ -939,9 +954,9 @@ TEST_F(CoreAnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnima
         .WillOnce(Return(mockCurvePtr));
 
     usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.0, 2.0), blink::WebAnimationCurve::TimingFunctionTypeEase));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.25, -1.0), blink::WebAnimationCurve::TimingFunctionTypeLinear));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.5, 20.0), 1.0, 2.0, 3.0, 4.0));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(1.0, 5.0)));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.5, -1.0), blink::WebAnimationCurve::TimingFunctionTypeLinear));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(1.0, 20.0), 1.0, 2.0, 3.0, 4.0));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(2.0, 5.0)));
 
     // Animation is created
     blink::WebAnimationMock* mockAnimationPtr = new blink::WebAnimationMock(blink::WebAnimation::TargetPropertyOpacity);
