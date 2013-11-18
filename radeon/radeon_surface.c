@@ -1436,16 +1436,17 @@ static void si_surf_minify(struct radeon_surface *surf,
      */
     if (level == 0 && surf->last_level == 0)
         /* Non-mipmap pitch padded to slice alignment */
+        /* Using just bpe here breaks stencil blitting; surf->bpe works. */
         xalign = MAX2(xalign, slice_align / surf->bpe);
     else if (surflevel->mode == RADEON_SURF_MODE_LINEAR_ALIGNED)
         /* Small rows evenly distributed across slice */
-        xalign = MAX2(xalign, slice_align / surf->bpe / surflevel->nblk_y);
+        xalign = MAX2(xalign, slice_align / bpe / surflevel->nblk_y);
 
     surflevel->nblk_x  = ALIGN(surflevel->nblk_x, xalign);
     surflevel->nblk_z  = ALIGN(surflevel->nblk_z, zalign);
 
     surflevel->offset = offset;
-    surflevel->pitch_bytes = surflevel->nblk_x * surf->bpe * surf->nsamples;
+    surflevel->pitch_bytes = surflevel->nblk_x * bpe * surf->nsamples;
     surflevel->slice_size = ALIGN(surflevel->pitch_bytes * surflevel->nblk_y, slice_align);
 
     surf->bo_size = offset + surflevel->slice_size * surflevel->nblk_z * surf->array_size;
