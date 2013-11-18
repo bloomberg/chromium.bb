@@ -58,8 +58,8 @@ PassRefPtr<ImmutableStylePropertySet> ImmutableStylePropertySet::create(const CS
 PassRefPtr<ImmutableStylePropertySet> StylePropertySet::immutableCopyIfNeeded() const
 {
     if (!isMutable())
-        return static_cast<ImmutableStylePropertySet*>(const_cast<StylePropertySet*>(this));
-    const MutableStylePropertySet* mutableThis = static_cast<const MutableStylePropertySet*>(this);
+        return toImmutableStylePropertySet(const_cast<StylePropertySet*>(this));
+    const MutableStylePropertySet* mutableThis = toMutableStylePropertySet(this);
     return ImmutableStylePropertySet::create(mutableThis->m_propertyVector.data(), mutableThis->m_propertyVector.size(), cssParserMode());
 }
 
@@ -98,9 +98,9 @@ ImmutableStylePropertySet::~ImmutableStylePropertySet()
 MutableStylePropertySet::MutableStylePropertySet(const StylePropertySet& other)
     : StylePropertySet(other.cssParserMode())
 {
-    if (other.isMutable())
-        m_propertyVector = static_cast<const MutableStylePropertySet&>(other).m_propertyVector;
-    else {
+    if (other.isMutable()) {
+        m_propertyVector = toMutableStylePropertySet(other).m_propertyVector;
+    } else {
         m_propertyVector.reserveInitialCapacity(other.propertyCount());
         for (unsigned i = 0; i < other.propertyCount(); ++i)
             m_propertyVector.uncheckedAppend(other.propertyAt(i).toCSSProperty());
@@ -367,7 +367,7 @@ String StylePropertySet::asText() const
 
 bool StylePropertySet::hasCSSOMWrapper() const
 {
-    return m_isMutable && static_cast<const MutableStylePropertySet*>(this)->m_cssomWrapper;
+    return m_isMutable && toMutableStylePropertySet(this)->m_cssomWrapper;
 }
 
 void MutableStylePropertySet::mergeAndOverrideOnConflict(const StylePropertySet* other)

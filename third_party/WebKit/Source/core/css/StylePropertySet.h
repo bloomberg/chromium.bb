@@ -173,6 +173,13 @@ inline const StylePropertyMetadata* ImmutableStylePropertySet::metadataArray() c
     return reinterpret_cast<const StylePropertyMetadata*>(&reinterpret_cast<const char*>(&(this->m_storage))[m_arraySize * sizeof(CSSValue*)]);
 }
 
+DEFINE_TYPE_CASTS(ImmutableStylePropertySet, StylePropertySet, set, !set->isMutable(), !set.isMutable());
+
+inline ImmutableStylePropertySet* toImmutableStylePropertySet(const RefPtr<StylePropertySet>& set)
+{
+    return toImmutableStylePropertySet(set.get());
+}
+
 class MutableStylePropertySet : public StylePropertySet {
 public:
     ~MutableStylePropertySet() { }
@@ -250,24 +257,31 @@ private:
     friend class StylePropertySet;
 };
 
+DEFINE_TYPE_CASTS(MutableStylePropertySet, StylePropertySet, set, set->isMutable(), set.isMutable());
+
+inline MutableStylePropertySet* toMutableStylePropertySet(const RefPtr<StylePropertySet>& set)
+{
+    return toMutableStylePropertySet(set.get());
+}
+
 inline const StylePropertyMetadata& StylePropertySet::PropertyReference::propertyMetadata() const
 {
     if (m_propertySet.isMutable())
-        return static_cast<const MutableStylePropertySet&>(m_propertySet).m_propertyVector.at(m_index).metadata();
-    return static_cast<const ImmutableStylePropertySet&>(m_propertySet).metadataArray()[m_index];
+        return toMutableStylePropertySet(m_propertySet).m_propertyVector.at(m_index).metadata();
+    return toImmutableStylePropertySet(m_propertySet).metadataArray()[m_index];
 }
 
 inline const CSSValue* StylePropertySet::PropertyReference::propertyValue() const
 {
     if (m_propertySet.isMutable())
-        return static_cast<const MutableStylePropertySet&>(m_propertySet).m_propertyVector.at(m_index).value();
-    return static_cast<const ImmutableStylePropertySet&>(m_propertySet).valueArray()[m_index];
+        return toMutableStylePropertySet(m_propertySet).m_propertyVector.at(m_index).value();
+    return toImmutableStylePropertySet(m_propertySet).valueArray()[m_index];
 }
 
 inline unsigned StylePropertySet::propertyCount() const
 {
     if (m_isMutable)
-        return static_cast<const MutableStylePropertySet*>(this)->m_propertyVector.size();
+        return toMutableStylePropertySet(this)->m_propertyVector.size();
     return m_arraySize;
 }
 
@@ -282,9 +296,9 @@ inline void StylePropertySet::deref()
         return;
 
     if (m_isMutable)
-        delete static_cast<MutableStylePropertySet*>(this);
+        delete toMutableStylePropertySet(this);
     else
-        delete static_cast<ImmutableStylePropertySet*>(this);
+        delete toImmutableStylePropertySet(this);
 }
 
 } // namespace WebCore

@@ -95,7 +95,7 @@ MutableStylePropertySet* StyleKeyframe::mutableProperties()
 {
     if (!m_properties->isMutable())
         m_properties = m_properties->mutableCopy();
-    return static_cast<MutableStylePropertySet*>(m_properties.get());
+    return toMutableStylePropertySet(m_properties);
 }
 
 void StyleKeyframe::setProperties(PassRefPtr<StylePropertySet> properties)

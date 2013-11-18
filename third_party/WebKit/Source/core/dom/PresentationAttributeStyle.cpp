@@ -181,7 +181,7 @@ PassRefPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
         unsigned size = element.attributeCount();
         for (unsigned i = 0; i < size; ++i) {
             const Attribute* attribute = element.attributeItem(i);
-            element.collectStyleForPresentationAttribute(attribute->name(), attribute->value(), static_cast<MutableStylePropertySet*>(style.get()));
+            element.collectStyleForPresentationAttribute(attribute->name(), attribute->value(), toMutableStylePropertySet(style));
         }
     }
 

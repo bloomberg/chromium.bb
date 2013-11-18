@@ -3317,11 +3317,10 @@ MutableStylePropertySet* Element::ensureMutableInlineStyle()
     if (!inlineStyle) {
         CSSParserMode mode = (!isHTMLElement() || document().inQuirksMode()) ? HTMLQuirksMode : HTMLStandardMode;
         inlineStyle = MutableStylePropertySet::create(mode);
-    }
-    else if (!inlineStyle->isMutable())
+    } else if (!inlineStyle->isMutable()) {
         inlineStyle = inlineStyle->mutableCopy();
-    ASSERT(inlineStyle->isMutable());
-    return static_cast<MutableStylePropertySet*>(inlineStyle.get());
+    }
+    return toMutableStylePropertySet(inlineStyle);
 }
 
 PropertySetCSSStyleDeclaration* Element::inlineStyleCSSOMWrapper()
