@@ -630,8 +630,6 @@ Node* Editor::findEventTargetFrom(const VisibleSelection& selection) const
     Node* target = selection.start().element();
     if (!target)
         target = m_frame.document()->body();
-    if (!target)
-        return 0;
 
     return target;
 }

@@ -436,7 +436,6 @@ void ApplyStyleCommand::cleanupUnstyledAppleStyleSpans(Node* dummySpanAncestor)
         next = node->nextSibling();
         if (isSpanWithoutAttributesOrUnstyledStyleSpan(node))
             removeNodePreservingChildren(node);
-        node = next;
     }
 }
 
