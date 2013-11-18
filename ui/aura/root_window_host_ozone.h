@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/events/ozone/event_factory_ozone.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 
@@ -51,11 +50,6 @@ class RootWindowHostOzone : public RootWindowHost,
 
   gfx::AcceleratedWidget widget_;
   gfx::Rect bounds_;
-
-  // EventFactoryOzone creates converters that obtain input events from the
-  // underlying input system and dispatch them as |ui::Event| instances into
-  // Aura.
-  scoped_ptr<ui::EventFactoryOzone> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowHostOzone);
 };

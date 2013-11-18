@@ -5,6 +5,7 @@
 #include "ui/aura/root_window_host_ozone.h"
 
 #include "ui/aura/root_window.h"
+#include "ui/events/ozone/event_factory_ozone.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/ozone/ozone_platform.h"
 
@@ -14,8 +15,12 @@ RootWindowHostOzone::RootWindowHostOzone(const gfx::Rect& bounds)
     : widget_(0),
       bounds_(bounds) {
   ui::OzonePlatform::Initialize();
-  factory_.reset(ui::EventFactoryOzone::GetInstance());
-  factory_->StartProcessingEvents();
+
+  // EventFactoryOzone creates converters that obtain input events from the
+  // underlying input system and dispatch them as |ui::Event| instances into
+  // Aura.
+  ui::EventFactoryOzone::GetInstance()->StartProcessingEvents();
+
   gfx::SurfaceFactoryOzone* surface_factory =
       gfx::SurfaceFactoryOzone::GetInstance();
   widget_ = surface_factory->GetAcceleratedWidget();
