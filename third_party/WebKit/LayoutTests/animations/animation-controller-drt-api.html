@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-   "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 
 <html lang="en">
 <head>
@@ -18,11 +17,11 @@
       height: 200px;
       background-color: red;
       -webkit-animation-name: anim1, anim2;
-      -webkit-animation-duration: 2s, 2s;
-      -webkit-animation-delay: 0s, 1s;
+      -webkit-animation-duration: 300ms, 300ms;
+      -webkit-animation-delay: 0s, 100ms;
       -webkit-transition-property: top, width;
-      -webkit-transition-duration: 2s, 2s;
-      -webkit-transition-delay: 0s, 1s;
+      -webkit-transition-duration: 300ms, 300ms;
+      -webkit-transition-delay: 0s, 100ms;
     }
 
     @-webkit-keyframes anim1 {
@@ -48,24 +47,14 @@
    </style>
    <script type="text/javascript" charset="utf-8">
    
-    function sample0() {
-      var expected = 4;
+    function sample(time, expected, isLast) {
       var current = internals.numberOfActiveAnimations();
       if (current == expected)
-        document.getElementById('result0').innerHTML = "Number of active animations at 0s is (" + current + ") as expected";
+        document.getElementById('result').innerHTML += "PASS: Number of active animations at " + time + "ms is (" + current + ") as expected<br>";
       else
-        document.getElementById('result0').innerHTML = "Number of active animations at 0s is (" + current + ") but was expecting (" + expected + ")";
-    }
-    
-    function sample1() {
-      var expected = 4;
-      var current = internals.numberOfActiveAnimations();
-      if (current == expected)
-        document.getElementById('result1').innerHTML = "Number of active animations at 1s is (" + current + ") as expected";
-      else
-        document.getElementById('result1').innerHTML = "Number of active animations at 1s is (" + current + ") but was expecting (" + expected + ")";
-      
-      testRunner.notifyDone();
+        document.getElementById('result').innerHTML += "FAIL: Number of active animations at " + time + "ms is (" + current + ") but was expecting (" + expected + ")<br>";
+      if (isLast)
+        testRunner.notifyDone();
     }
     
     function startTest() {
@@ -77,8 +66,9 @@
         target.style.top = '200px';
         target.style.width = '100px';
         
-        window.setTimeout(sample0, 0);
-        window.setTimeout(sample1, 1100);
+        setTimeout(sample.bind(null, 0, 4, false), 0);
+        setTimeout(sample.bind(null, 200, 4, false), 200);
+        setTimeout(sample.bind(null, 500, 0, true), 500);
       }
     }
     
@@ -87,14 +77,7 @@
 <body onload="startTest()">
   <h1>Test for DRT numberOfActiveAnimations() API</h1>
 
-  <div id="target">
-  </div>
-  
-  <div id="result0">
-  </div>
-  
-  <div id="result1">
-  </div>
-
+  <div id="target"></div>
+  <div id="result"></div>
 </body>
 </html>
