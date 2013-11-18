@@ -138,6 +138,7 @@ PrintingContext::Result PrintingContextAndroid::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
   ResetSettings();
+  settings_.set_dpi(kDefaultPdfDpi);
   gfx::Size physical_size = GetPdfPaperSizeDeviceUnits();
   SetSizes(&settings_, kDefaultPdfDpi, physical_size.width(),
            physical_size.height());
