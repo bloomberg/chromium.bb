@@ -10,6 +10,7 @@
       # Since app_shim and browser depend on each other, we omit the dependency
       # on browser here.
       'dependencies': [
+        '../chrome/chrome_resources.gyp:chrome_strings',
         '../skia/skia.gyp:skia',
       ],
       'include_dirs': [
