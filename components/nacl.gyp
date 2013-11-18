@@ -107,6 +107,8 @@
             'nacl/browser/nacl_browser.h',
             'nacl/browser/nacl_validation_cache.cc',
             'nacl/browser/nacl_validation_cache.h',
+            'nacl/browser/pnacl_translation_cache.cc',
+            'nacl/browser/pnacl_translation_cache.h',
           ],
           'include_dirs': [
             '..',

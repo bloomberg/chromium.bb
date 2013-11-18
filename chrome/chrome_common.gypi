@@ -401,8 +401,6 @@
         '../components/nacl/common/nacl_host_messages.h',
         '../components/nacl/common/nacl_process_type.h',
         '../components/nacl/common/nacl_sandbox_type_mac.h',
-        '../components/nacl/common/pnacl_types.cc',
-        '../components/nacl/common/pnacl_types.h',
       ],
       'conditions': [
         ['enable_extensions==1', {

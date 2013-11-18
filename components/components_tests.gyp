@@ -135,9 +135,11 @@
             ['disable_nacl==0', {
               'sources': [
                 'nacl/browser/nacl_validation_cache_unittest.cc',
+                'nacl/browser/pnacl_translation_cache_unittest.cc',
               ],
               'dependencies': [
                 'nacl.gyp:nacl_browser',
+                'nacl_common.gyp:nacl_common',
               ],
             }],
             ['OS == "android"', {

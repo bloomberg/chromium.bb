@@ -25,6 +25,8 @@
         'nacl/common/nacl_messages.h',
         'nacl/common/nacl_types.cc',
         'nacl/common/nacl_types.h',
+        'nacl/common/pnacl_types.cc',
+        'nacl/common/pnacl_types.h',
       ],
       'include_dirs': [
         '..',

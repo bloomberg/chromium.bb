@@ -1036,7 +1036,6 @@
         'browser/metrics/variations/variations_request_scheduler_unittest.cc',
         'browser/nacl_host/nacl_file_host_unittest.cc',
         'browser/nacl_host/nacl_process_host_unittest.cc',
-        'browser/nacl_host/pnacl_translation_cache_unittest.cc',
         'browser/nacl_host/pnacl_host_unittest.cc',
         'browser/net/chrome_fraudulent_certificate_reporter_unittest.cc',
         'browser/net/chrome_network_data_saving_metrics_unittest.cc',
@@ -2126,7 +2125,6 @@
             'browser/nacl_host/nacl_file_host_unittest.cc',
             'browser/nacl_host/nacl_process_host_unittest.cc',
             'browser/nacl_host/pnacl_host_unittest.cc',
-            'browser/nacl_host/pnacl_translation_cache_unittest.cc',
             # TODO(yael): Move to //components/components_tests.gypi once
             # nacl_defines is moved out of chrome.gyp into a common place.
             '../components/nacl/loader/nacl_ipc_adapter_unittest.cc',
