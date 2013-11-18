@@ -244,13 +244,17 @@ void WebVTTParser::collectMetadataHeader(const String& line)
     // WebVTT header parsing (WebVTT parser algorithm step 12)
     DEFINE_STATIC_LOCAL(const AtomicString, regionHeaderName, ("Region", AtomicString::ConstructFromLiteral));
 
+    // The only currently supported header is the "Region" header.
+    if (!RuntimeEnabledFeatures::webVTTRegionsEnabled())
+        return;
+
     // Step 12.4 If line contains the character ":" (A U+003A COLON), then set metadata's
     // name to the substring of line before the first ":" character and
     // metadata's value to the substring after this character.
-    if (!RuntimeEnabledFeatures::webVTTRegionsEnabled() || !line.contains(":"))
+    unsigned colonPosition = line.find(':');
+    if (colonPosition == kNotFound)
         return;
 
-    unsigned colonPosition = line.find(":");
     String headerName = line.substring(0, colonPosition);
 
     // Steps 12.5 If metadata's name equals "Region":
