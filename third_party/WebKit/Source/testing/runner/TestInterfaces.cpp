@@ -196,7 +196,7 @@ const vector<WebTestProxyBase*>& TestInterfaces::windowList()
 
 WebThemeEngine* TestInterfaces::themeEngine()
 {
-#if defined(USE_DEFAULT_RENDER_THEME) || !(defined(WIN32) || defined(__APPLE__))
+#if defined(USE_DEFAULT_RENDER_THEME) || !(defined(WIN32) || defined(__APPLE__) || defined(ANDROID))
     if (!m_themeEngine.get())
         m_themeEngine.reset(new WebTestThemeEngineMock());
     return m_themeEngine.get();
@@ -208,6 +208,8 @@ WebThemeEngine* TestInterfaces::themeEngine()
     if (!m_themeEngine.get())
         m_themeEngine.reset(new WebTestThemeEngineMac());
     return m_themeEngine.get();
+#else
+    return 0;
 #endif
 }
 
