@@ -10,6 +10,7 @@
 #include "base/platform_file.h"
 #include "content/child/webkitplatformsupport_impl.h"
 #include "content/common/content_export.h"
+#include "content/renderer/webpublicsuffixlist_impl.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebIDBFactory.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
@@ -88,6 +89,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       const blink::WebURL& url);
   virtual void getPluginList(bool refresh,
                              blink::WebPluginListBuilder* builder);
+  virtual blink::WebPublicSuffixList* publicSuffixList();
   virtual void screenColorProfile(blink::WebVector<char>* to_profile);
   virtual blink::WebIDBFactory* idbFactory();
   virtual blink::WebFileSystem* fileSystem();
@@ -202,6 +204,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_ptr<blink::WebIDBFactory> web_idb_factory_;
 
   scoped_ptr<blink::WebBlobRegistry> blob_registry_;
+
+  WebPublicSuffixListImpl public_suffix_list_;
 
   scoped_ptr<DeviceMotionEventPump> device_motion_event_pump_;
   scoped_ptr<DeviceOrientationEventPump> device_orientation_event_pump_;

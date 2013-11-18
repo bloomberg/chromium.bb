@@ -48,6 +48,7 @@
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webcrypto/webcrypto_impl.h"
+#include "content/renderer/webpublicsuffixlist_impl.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
@@ -802,6 +803,13 @@ void RendererWebKitPlatformSupportImpl::getPluginList(
     }
   }
 #endif
+}
+
+//------------------------------------------------------------------------------
+
+blink::WebPublicSuffixList*
+RendererWebKitPlatformSupportImpl::publicSuffixList() {
+  return &public_suffix_list_;
 }
 
 //------------------------------------------------------------------------------
