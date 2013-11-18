@@ -124,6 +124,7 @@ interface TestObjectPython {
     [DoNotCheckSecurity=Getter] attribute long doNotCheckSecurityOnGetterLongAttribute;
     [DoNotCheckSecurity=Setter] attribute long doNotCheckSecurityOnSetterLongAttribute;
     [EnforceRange] attribute long enforceRangeLongAttribute;
+    [ExposeJSAccessors] attribute long exposeJSAccessorsLongAttribute;
     [RaisesException=Getter] attribute long getterRaisesExceptionLongAttribute;
     [ImplementedAs=implementedAsName] attribute long implementedAsLongAttribute;
     [Custom, ImplementedAs=implementedAsNameWithCustom] attribute long customImplementedAsLongAttribute;

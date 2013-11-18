@@ -1,7 +1,12 @@
 {##############################################################################}
 {% macro attribute_getter(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
-static void {{attribute.name}}AttributeGetter{{world_suffix}}(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void {{attribute.name}}AttributeGetter{{world_suffix}}(
+{%- if attribute.is_expose_js_accessors %}
+const v8::FunctionCallbackInfo<v8::Value>& info
+{%- else %}
+const v8::PropertyCallbackInfo<v8::Value>& info
+{%- endif %})
 {
     {% if attribute.is_unforgeable %}
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class_name}}::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
@@ -77,7 +82,12 @@ static void {{attribute.name}}AttributeGetter{{world_suffix}}(const v8::Property
 {##############################################################################}
 {% macro attribute_getter_callback(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
-static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(
+{%- if attribute.is_expose_js_accessors %}
+const v8::FunctionCallbackInfo<v8::Value>& info
+{%- else %}
+v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
+{%- endif %})
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     {% if attribute.deprecate_as %}
@@ -105,7 +115,12 @@ static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(v8::Local<
 {##############################################################################}
 {% macro attribute_setter(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
-static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void {{attribute.name}}AttributeSetter{{world_suffix}}(
+{%- if attribute.is_expose_js_accessors %}
+v8::Local<v8::Value> jsValue, const v8::FunctionCallbackInfo<v8::Value>& info
+{%- else %}
+v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
+{%- endif %})
 {
     {% if attribute.has_strict_type_checking %}
     {# Type checking for interface types (if interface not implemented, throw
@@ -157,8 +172,16 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Valu
 {##############################################################################}
 {% macro attribute_setter_callback(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
-static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(
+{%- if attribute.is_expose_js_accessors %}
+const v8::FunctionCallbackInfo<v8::Value>& info
+{%- else %}
+v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
+{%- endif %})
 {
+    {% if attribute.is_expose_js_accessors %}
+    v8::Local<v8::Value> jsValue = info[0];
+    {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     {% if attribute.deprecate_as %}
     UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{attribute.deprecate_as}});

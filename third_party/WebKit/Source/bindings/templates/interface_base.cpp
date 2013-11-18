@@ -110,6 +110,7 @@ template <typename T> void V8_USE(T) { }
 } // namespace {{cpp_class_name}}V8Internal
 
 {% block class_attributes %}{% endblock %}
+{% block class_accessors %}{% endblock %}
 {% block class_methods %}{% endblock %}
 {% block configure_class_template %}{% endblock %}
 {% block get_template %}{% endblock %}

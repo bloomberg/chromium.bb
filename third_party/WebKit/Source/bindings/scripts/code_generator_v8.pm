@@ -1832,7 +1832,7 @@ sub GenerateNormalAttributeSetterCallback
     if ($exposeJSAccessors) {
         $code .= "static void ${attrName}AttributeSetterCallback${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& info)\n";
         $code .= "{\n";
-        $code .= "    v8::Local<v8::Value> jsValue = info[0]\n";
+        $code .= "    v8::Local<v8::Value> jsValue = info[0];\n";
     } else {
         $code .= "static void ${attrName}AttributeSetterCallback${forMainWorldSuffix}(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)\n";
         $code .= "{\n";

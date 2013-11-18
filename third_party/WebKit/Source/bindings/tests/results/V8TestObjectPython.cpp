@@ -1919,6 +1919,34 @@ static void enforceRangeLongAttributeAttributeSetterCallback(v8::Local<v8::Strin
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void exposeJSAccessorsLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueInt(info, imp->exposeJSAccessorsLongAttribute());
+}
+
+static void exposeJSAccessorsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::exposeJSAccessorsLongAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void exposeJSAccessorsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    imp->setExposeJSAccessorsLongAttribute(cppValue);
+}
+
+static void exposeJSAccessorsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> jsValue = info[0];
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::exposeJSAccessorsLongAttributeAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void getterRaisesExceptionLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -6191,6 +6219,10 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"unforgeableLongAttribute", TestObjectPythonV8Internal::unforgeableLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::unforgeableLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::PROHIBITS_OVERWRITING), static_cast<v8::PropertyAttribute>(v8::DontDelete), 0 /* on instance */},
 };
 
+static const V8DOMConfiguration::AccessorConfiguration V8TestObjectPythonAccessors[] = {
+    {"exposeJSAccessorsLongAttribute", TestObjectPythonV8Internal::exposeJSAccessorsLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::exposeJSAccessorsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None)},
+};
+
 static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[] = {
     {"voidMethod", TestObjectPythonV8Internal::voidMethodMethodCallback, 0, 0},
     {"dateMethod", TestObjectPythonV8Internal::dateMethodMethodCallback, 0, 0},
@@ -6328,7 +6360,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestObjectPython", v8::Local<v8::FunctionTemplate>(), V8TestObjectPython::internalFieldCount,
         V8TestObjectPythonAttributes, WTF_ARRAY_LENGTH(V8TestObjectPythonAttributes),
-        0, 0,
+        V8TestObjectPythonAccessors, WTF_ARRAY_LENGTH(V8TestObjectPythonAccessors),
         V8TestObjectPythonMethods, WTF_ARRAY_LENGTH(V8TestObjectPythonMethods),
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);

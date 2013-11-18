@@ -25,7 +25,9 @@
                         ' | '.join(attribute.access_control_list) %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
-{"{{attribute.name}}", {{getter_callback_name}}, {{setter_callback_name}}, {{getter_callback_name_for_main_world}}, {{setter_callback_name_for_main_world}}, {{wrapper_type_info}}, {{access_control}}, {{property_attribute}}, 0 /* on instance */}
+{% set on_prototype = ', 0 /* on instance */'
+       if not attribute.is_expose_js_accessors else '' %}
+{"{{attribute.name}}", {{getter_callback_name}}, {{setter_callback_name}}, {{getter_callback_name_for_main_world}}, {{setter_callback_name_for_main_world}}, {{wrapper_type_info}}, {{access_control}}, {{property_attribute}}{{on_prototype}}}
 {%- endmacro %}
 
 
@@ -82,12 +84,27 @@ static void {{interface_name}}ReplaceableAttributeSetterCallback(v8::Local<v8::S
 {% if attributes %}
 static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attributes[] = {
     {% for attribute in attributes
-       if not (attribute.runtime_enabled_function_name or
-               attribute.per_context_enabled_function_name or
-               attribute.is_static) %}
+       if not (attribute.is_expose_js_accessors or
+               attribute.is_static or
+               attribute.runtime_enabled_function_name or
+               attribute.per_context_enabled_function_name) %}
     {% filter conditional(attribute.conditional_string) %}
     {{attribute_configuration(attribute)}},
     {% endfilter %}
+    {% endfor %}
+};
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block class_accessors %}
+{# FIXME: rename install_accessors and put into configure_class_template #}
+{% if has_accessors %}
+static const V8DOMConfiguration::AccessorConfiguration {{v8_class_name}}Accessors[] = {
+    {% for attribute in attributes if attribute.is_expose_js_accessors %}
+    {{attribute_configuration(attribute)}},
     {% endfor %}
 };
 
@@ -125,8 +142,21 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "{{interface_name}}", v8::Local<v8::FunctionTemplate>(), {{v8_class_name}}::internalFieldCount,
         {# Test needed as size 0 constant arrays are not allowed in VC++ #}
-        {%+ if attributes %}{{v8_class_name}}Attributes, WTF_ARRAY_LENGTH({{v8_class_name}}Attributes){% else %}0, 0{% endif %},
-        {%+ if methods %}{{v8_class_name}}Methods, WTF_ARRAY_LENGTH({{v8_class_name}}Methods){% else %}0, 0{% endif %},
+        {% set attributes_name, attributes_length =
+               ('%sAttributes' % v8_class_name,
+                'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class_name)
+           if attributes else (0, 0) %}
+        {% set accessors_name, accessors_length =
+               ('%sAccessors' % v8_class_name,
+                'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class_name)
+           if has_accessors else (0, 0) %}
+        {% set methods_name, methods_length =
+               ('%sMethods' % v8_class_name,
+                'WTF_ARRAY_LENGTH(%sMethods)' % v8_class_name)
+           if methods else (0, 0) %}
+        {{attributes_name}}, {{attributes_length}},
+        {{accessors_name}}, {{accessors_length}},
+        {{methods_name}}, {{methods_length}},
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();

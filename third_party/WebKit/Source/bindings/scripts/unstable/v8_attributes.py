@@ -93,6 +93,7 @@ def generate_attribute(interface, attribute):
         'idl_type': idl_type,
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_check_security_for_node': is_check_security_for_node,
+        'is_expose_js_accessors': 'ExposeJSAccessors' in extended_attributes,
         'is_getter_raises_exception': (
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in [None, 'Getter']),
