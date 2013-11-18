@@ -182,9 +182,10 @@ pseudoxml:
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
 
 devsite-prod:
-	$(SPHINXBUILD) -b devsite -D devsite_production_mode=1 $(ALLSPHINXOPTS) $(BUILDDIR)/devsite-prod
+	$(SPHINXBUILD) -b devsite -D devsite_production_mode=1 -D devsite_foldername=dev $(ALLSPHINXOPTS) $(BUILDDIR)/devsite-prod
 	rm -rf $(BUILDDIR)/devsite-prod/images
 	cp -r $(BUILDDIR)/devsite-prod/_images $(BUILDDIR)/devsite-prod/images
+	rm -rf $(BUILDDIR)/devsite-prod/{_images,peppercpp,searchindex.js}
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/devsite-prod."
 
