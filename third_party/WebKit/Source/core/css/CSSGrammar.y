@@ -544,7 +544,7 @@ block_rule_list:
 
 region_block_rule_body:
     region_block_rule_list
-  | region_block_rule_list error error_location rule_error_recovery {
+  | region_block_rule_list error error_location error_recovery {
         parser->reportError($3, CSSParser::InvalidRuleError);
     }
     ;

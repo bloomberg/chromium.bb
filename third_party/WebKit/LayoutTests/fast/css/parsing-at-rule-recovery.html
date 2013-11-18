@@ -77,6 +77,18 @@ Tests error recovery in @-rules.
 <style>@namespace url("") {} #test24{display: none}</style>
 <div id="test24"></div>
 
+<style>@-webkit-region x{div::-moz-{}} #test25{display: none}</style>
+<div id="test25"></div>
+
+<style>@-webkit-region x{@{}} #test26{display: none}</style>
+<div id="test26"></div>
+
+<style>@host {div::-moz-{}} #test27{display: none}</style>
+<div id="test27"></div>
+
+<style>@host {@{}} #test28{display: none}</style>
+<div id="test28"></div>
+
 </div>
 
 <script type="text/javascript">
