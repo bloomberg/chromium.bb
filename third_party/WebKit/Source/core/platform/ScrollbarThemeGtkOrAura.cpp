@@ -45,10 +45,7 @@ namespace WebCore {
 
 static bool useMockTheme()
 {
-#if defined(USE_AURA)
     return isRunningLayoutTest();
-#endif
-    return false;
 }
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()

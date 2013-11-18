@@ -43,7 +43,7 @@ crbug.com/319001 inspector/profiler/heap-snapshot-summary-search-by-id.html [ Pa
 # Plugin tests
 # -----------------------------------------------------------------
 
-crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ ImageOnlyFailure Pass ]
+# crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ ImageOnlyFailure Pass ]
 
 # -----------------------------------------------------------------
 # SVG TESTS
@@ -174,6 +174,43 @@ crbug.com/229207 [ Win ] fast/forms/basic-selects.html [ NeedsManualRebaseline ]
 crbug.com/229207 [ Win ] virtual/deferred/fast/images/2-dht.html [ ImageOnlyFailure ]
 crbug.com/229207 [ Win ] virtual/gpu/compositedscrolling/overflow/theme-affects-visual-overflow.html [ ImageOnlyFailure ]
 crbug.com/229207 [ Win ] virtual/softwarecompositing/overflow/theme-affects-visual-overflow.html [ ImageOnlyFailure ]
+
+# Linux Aura doesn't support NPAPI plugins (yet?)
+crbug.com/318978 [ Linux ] compositing/plugins/invalidate_rect.html [ Skip ]
+crbug.com/318978 [ Linux ] fast/dom/Window/Plug-ins.html [ Skip ]
+crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-about-blank.html [ Skip ]
+crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-navigation-allowed.html [ Skip ]
+crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-plugins.html [ Skip ]
+crbug.com/318978 [ Linux ] fast/replaced/invalid-object-with-fallback.html [ Skip ]
+crbug.com/318978 [ Linux ] fast/replaced/object-with-embed-url-param.html [ Skip ]
+crbug.com/318978 [ Linux ] http/tests/plugins/cross-frame-object-access.html [ Skip ]
+crbug.com/318978 [ Linux ] http/tests/plugins/ [ Skip ]
+crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Skip ]
+crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-notype-url.html [ Skip ]
+crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-url-01.html [ Skip ]
+crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-url-02.html [ Skip ]
+crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/object-in-svg-foreignobject.html [ Skip ]
+crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/object-src-none-allowed.html [ Skip ]
+crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/object-src-url-blocked.html [ Skip ]
+crbug.com/318978 [ Linux ] http/tests/security/frameNavigation/xss-DENIED-plugin-navigation.html [ Skip ]
+crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
+crbug.com/318978 [ Linux ] plugins/ [ Skip ]
+crbug.com/318978 [ Linux ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Skip ]
+
+# Flaky tests under Linux Aura
+crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring.html [ ImageOnlyFailure Pass ]
+crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure Pass ]
+crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ ImageOnlyFailure Pass ]
+crbug.com/318980 [ Linux ] editing/input/reveal-caret-of-multiline-input.html [ ImageOnlyFailure Pass ]
+
+# Tests that have new baselines but are probably still failing on Linux Aura.
+crbug.com/318980 [ Linux ] editing/selection/7152-1.html [ Pass ]
+crbug.com/318980 [ Linux ] editing/selection/linux_selection_color.html [ Pass ]
+crbug.com/318980 [ Linux ] fast/forms/input-disabled-color.html [ Pass ]
+crbug.com/318980 [ Linux ] fast/replaced/width100percent-menulist.html [ Pass ]
+crbug.com/318980 [ Linux ] fast/ruby/select-ruby.html [ Pass ]
+crbug.com/318980 [ Linux ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ Pass ]
+crbug.com/318980 [ Linux ] svg/W3C-SVG-1.1/text-tselect-02-f.svg [ Pass ]
 
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
 crbug.com/14885 [ Mac Debug ] fast/js/JSON-stringify.html [ Failure ]
@@ -375,9 +412,9 @@ crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-co
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 
 # crbug.com/277110 also makes this test fail.
-crbug.com/130260 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
+crbug.com/130260 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure Timeout ]
 
-crbug.com/278497 [ Linux SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
+crbug.com/278497 [ SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
 crbug.com/280658  [ Win7 ] inspector-protocol/layers/get-layers.html [ Pass Failure ]
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]

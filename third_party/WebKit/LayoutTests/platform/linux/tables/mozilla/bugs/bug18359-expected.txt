@@ -18,7 +18,7 @@ layer at (0,0) size 800x600
               RenderTableCell {TD} at (111,2) size 400x28 [r=0 c=1 rs=1 cs=1]
                 RenderTextControl {INPUT} at (3,3) size 394x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               RenderTableCell {TD} at (513,2) size 93x28 [r=0 c=2 rs=1 cs=1]
-                RenderButton {INPUT} at (3,3) size 55x22 [bgcolor=#DDDDDD] [border: (2px outset #DDDDDD)]
+                RenderButton {INPUT} at (3,3) size 55x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   RenderBlock (anonymous) at (8,3) size 39x16
                     RenderText {#text} at (0,0) size 39x16
                       text run at (0,0) width 39: "Trigger"
@@ -28,13 +28,13 @@ layer at (0,0) size 800x600
                   RenderText {#text} at (1,1) size 105x19
                     text run at (1,1) width 105: "Run Test Case:"
               RenderTableCell {TD} at (111,33) size 400x26 [r=1 c=1 rs=1 cs=1]
-                RenderMenuList {SELECT} at (3,3) size 270x20 [bgcolor=#DDDDDD] [border: (1px solid #000000)]
+                RenderMenuList {SELECT} at (3,3) size 270x20 [bgcolor=#C0C0C0] [border: (1px solid #000000)]
                   RenderBlock (anonymous) at (1,1) size 268x18
                     RenderText at (4,1) size 77x16
                       text run at (4,1) width 77: "a_abortinstall"
                 RenderText {#text} at (0,0) size 0x0
               RenderTableCell {TD} at (513,32) size 93x28 [r=1 c=2 rs=1 cs=1]
-                RenderButton {INPUT} at (3,3) size 87x22 [bgcolor=#DDDDDD] [border: (2px outset #DDDDDD)]
+                RenderButton {INPUT} at (3,3) size 87x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   RenderBlock (anonymous) at (8,3) size 71x16
                     RenderText {#text} at (0,0) size 71x16
                       text run at (0,0) width 71: "Trigger case"
