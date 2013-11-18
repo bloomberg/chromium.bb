@@ -514,7 +514,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         setShouldOverrideUrlLoadingReturnValueOnUiThread(shouldOverrideUrlLoadingHelper, true);
 
         int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
-        int onPageFinishedCallCount = contentsClient.getOnPageFinishedHelper().getCallCount();
         clickOnLinkUsingJs(awContents, contentsClient);
         // Some time around here true should be returned from the shouldOverrideUrlLoading
         // callback causing the navigation caused by calling clickOnLinkUsingJs to be ignored.
@@ -523,8 +522,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
         setShouldOverrideUrlLoadingReturnValueOnUiThread(shouldOverrideUrlLoadingHelper, false);
 
-        // We need to wait for the navigation to complete before we can initiate another load.
-        contentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), synchronizationUrl);
 
         assertEquals(1, mWebServer.getRequestCount(pageWithLinkToIgnorePath));

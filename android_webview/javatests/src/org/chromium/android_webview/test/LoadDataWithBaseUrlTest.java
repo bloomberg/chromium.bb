@@ -214,6 +214,18 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    public void testOnPageFinishedUrlIsBaseUrl() throws Throwable {
+        final String pageHtml = "<html><body>Hello, world!</body></html>";
+        final String baseUrl = "http://example.com/";
+        loadDataWithBaseUrlSync(pageHtml, "text/html", false, baseUrl, baseUrl);
+        loadDataWithBaseUrlSync(pageHtml, "text/html", false, baseUrl, baseUrl);
+        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                mContentsClient.getOnPageFinishedHelper();
+        assertEquals(baseUrl, onPageFinishedHelper.getUrl());
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testHistoryUrlIgnoredWithDataSchemeBaseUrl() throws Throwable {
         final String pageHtml = "<html><body>bar</body></html>";
         final String historyUrl = "http://history.com/";

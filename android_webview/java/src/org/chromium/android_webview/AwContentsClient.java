@@ -58,8 +58,9 @@ public abstract class AwContentsClient {
         }
 
         @Override
-        public void didStopLoading(String url) {
-            AwContentsClient.this.onPageFinished(url);
+        public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
+            if (isMainFrame)
+                AwContentsClient.this.onPageFinished(validatedUrl);
         }
 
         @Override
