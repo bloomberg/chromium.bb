@@ -1596,8 +1596,10 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
     // status -- it has no effect beyond this, since the request hasn't started.
     request->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
 
-    if (!handler->OnResponseCompleted(info->GetRequestID(), request->status(),
-                                      std::string())) {
+    bool defer = false;
+    handler->OnResponseCompleted(info->GetRequestID(), request->status(),
+                                 std::string(), &defer);
+    if (defer) {
       // TODO(darin): The handler is not ready for us to kill the request. Oops!
       NOTREACHED();
     }

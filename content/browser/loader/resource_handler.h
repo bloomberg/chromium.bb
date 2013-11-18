@@ -92,12 +92,13 @@ class CONTENT_EXPORT ResourceHandler
   virtual bool OnReadCompleted(int request_id, int bytes_read,
                                bool* defer) = 0;
 
-  // The response is complete.  The final response status is given.  Returns
-  // false if the handler is deferring the call to a later time.  Otherwise,
-  // the request will be destroyed upon return.
-  virtual bool OnResponseCompleted(int request_id,
+  // The response is complete.  The final response status is given.  Set
+  // |*defer| to true to defer destruction to a later time.  Otherwise, the
+  // request will be destroyed upon return.
+  virtual void OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
-                                   const std::string& security_info) = 0;
+                                   const std::string& security_info,
+                                   bool* defer) = 0;
 
   // This notification is synthesized by the RedirectToFileResourceHandler
   // to indicate progress of 'download_to_file' requests. OnReadCompleted

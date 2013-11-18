@@ -106,10 +106,10 @@ class ResourceHandlerStub : public ResourceHandler {
     return true;
   }
 
-  virtual bool OnResponseCompleted(int request_id,
+  virtual void OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
-                                   const std::string& security_info) OVERRIDE {
-    return true;
+                                   const std::string& security_info,
+                                   bool* defer) OVERRIDE {
   }
 
   virtual void OnDataDownloaded(int request_id,

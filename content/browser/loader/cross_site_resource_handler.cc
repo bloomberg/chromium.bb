@@ -130,10 +130,11 @@ bool CrossSiteResourceHandler::OnReadCompleted(int request_id,
   return next_handler_->OnReadCompleted(request_id, bytes_read, defer);
 }
 
-bool CrossSiteResourceHandler::OnResponseCompleted(
+void CrossSiteResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
-    const std::string& security_info) {
+    const std::string& security_info,
+    bool* defer) {
   if (!in_cross_site_transition_) {
     ResourceRequestInfoImpl* info = GetRequestInfo();
     // If we've already completed the transition, or we're canceling the
@@ -143,8 +144,9 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
         status.status() != net::URLRequestStatus::FAILED ||
         !CrossSiteRequestManager::GetInstance()->HasPendingCrossSiteRequest(
             info->GetChildID(), info->GetRouteID())) {
-      return next_handler_->OnResponseCompleted(request_id, status,
-                                                security_info);
+      next_handler_->OnResponseCompleted(request_id, status,
+                                         security_info, defer);
+      return;
     }
 
     // An error occurred. We should wait now for the cross-process transition,
@@ -159,10 +161,10 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
   completed_status_ = status;
   completed_security_info_ = security_info;
 
-  // Return false to tell RDH not to notify the world or clean up the
-  // pending request.  We will do so in ResumeResponse.
+  // Defer to tell RDH not to notify the world or clean up the pending request.
+  // We will do so in ResumeResponse.
   did_defer_ = true;
-  return false;
+  *defer = true;
 }
 
 // We can now send the response to the new renderer, which will cause
@@ -193,11 +195,13 @@ void CrossSiteResourceHandler::ResumeResponse() {
   // If the response completed during the transition, notify the next
   // event handler.
   if (completed_during_transition_) {
-    if (next_handler_->OnResponseCompleted(info->GetRequestID(),
-                                           completed_status_,
-                                           completed_security_info_)) {
+    bool defer = false;
+    next_handler_->OnResponseCompleted(info->GetRequestID(),
+                                       completed_status_,
+                                       completed_security_info_,
+                                       &defer);
+    if (!defer)
       ResumeIfDeferred();
-    }
   }
 }
 

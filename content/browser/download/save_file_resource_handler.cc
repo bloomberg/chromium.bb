@@ -100,16 +100,16 @@ bool SaveFileResourceHandler::OnReadCompleted(int request_id, int bytes_read,
   return true;
 }
 
-bool SaveFileResourceHandler::OnResponseCompleted(
+void SaveFileResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
-    const std::string& security_info) {
+    const std::string& security_info,
+    bool* defer) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&SaveFileManager::SaveFinished, save_manager_, save_id_, url_,
           render_process_id_, status.is_success() && !status.is_io_pending()));
   read_buffer_ = NULL;
-  return true;
 }
 
 void SaveFileResourceHandler::OnDataDownloaded(

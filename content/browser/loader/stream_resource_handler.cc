@@ -93,12 +93,12 @@ bool StreamResourceHandler::OnReadCompleted(int request_id,
   return true;
 }
 
-bool StreamResourceHandler::OnResponseCompleted(
+void StreamResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
-    const std::string& sec_info) {
+    const std::string& sec_info,
+    bool* defer) {
   stream_->Finalize();
-  return status.status() == net::URLRequestStatus::SUCCESS;
 }
 
 void StreamResourceHandler::OnDataDownloaded(

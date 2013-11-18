@@ -93,12 +93,13 @@ bool CertificateResourceHandler::OnReadCompleted(int request_id,
   return true;
 }
 
-bool CertificateResourceHandler::OnResponseCompleted(
+void CertificateResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& urs,
-    const std::string& sec_info) {
+    const std::string& sec_info,
+    bool* defer) {
   if (urs.status() != net::URLRequestStatus::SUCCESS)
-    return true;
+    return;
 
   AssembleResource();
 
@@ -112,8 +113,6 @@ bool CertificateResourceHandler::OnResponseCompleted(
   GetContentClient()->browser()->AddCertificate(
       request(), cert_type_, content_bytes, content_length_,
       info->GetChildID(), info->GetRouteID());
-
-  return true;
 }
 
 void CertificateResourceHandler::AssembleResource() {

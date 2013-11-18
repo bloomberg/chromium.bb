@@ -304,13 +304,14 @@ void AsyncResourceHandler::OnDataDownloaded(
   }
 }
 
-bool AsyncResourceHandler::OnResponseCompleted(
+void AsyncResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
-    const std::string& security_info) {
+    const std::string& security_info,
+    bool* defer) {
   const ResourceRequestInfoImpl* info = GetRequestInfo();
   if (!info->filter())
-    return true;
+    return;
 
   // If we crash here, figure out what URL the renderer was requesting.
   // http://crbug.com/107692
@@ -353,7 +354,6 @@ bool AsyncResourceHandler::OnResponseCompleted(
                                       was_ignored_by_handler,
                                       security_info,
                                       completion_time));
-  return true;
 }
 
 bool AsyncResourceHandler::EnsureResourceBufferIsInitialized() {

@@ -70,12 +70,13 @@ bool LayeredResourceHandler::OnReadCompleted(int request_id, int bytes_read,
   return next_handler_->OnReadCompleted(request_id, bytes_read, defer);
 }
 
-bool LayeredResourceHandler::OnResponseCompleted(
+void LayeredResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
-    const std::string& security_info) {
+    const std::string& security_info,
+    bool* defer) {
   DCHECK(next_handler_.get());
-  return next_handler_->OnResponseCompleted(request_id, status, security_info);
+  next_handler_->OnResponseCompleted(request_id, status, security_info, defer);
 }
 
 void LayeredResourceHandler::OnDataDownloaded(int request_id,

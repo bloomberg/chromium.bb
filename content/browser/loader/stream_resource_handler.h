@@ -60,9 +60,10 @@ class StreamResourceHandler : public StreamWriteObserver,
                                int bytes_read,
                                bool* defer) OVERRIDE;
 
-  virtual bool OnResponseCompleted(int request_id,
+  virtual void OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
-                                   const std::string& sec_info) OVERRIDE;
+                                   const std::string& sec_info,
+                                   bool* defer) OVERRIDE;
 
   virtual void OnDataDownloaded(int request_id, int bytes_downloaded) OVERRIDE;
 

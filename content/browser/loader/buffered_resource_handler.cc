@@ -185,15 +185,16 @@ bool BufferedResourceHandler::OnReadCompleted(int request_id, int bytes_read,
   return ProcessResponse(defer);
 }
 
-bool BufferedResourceHandler::OnResponseCompleted(
+void BufferedResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
-    const std::string& security_info) {
+    const std::string& security_info,
+    bool* defer) {
   // Upon completion, act like a pass-through handler in case the downstream
   // handler defers OnResponseCompleted.
   state_ = STATE_STREAMING;
 
-  return next_handler_->OnResponseCompleted(request_id, status, security_info);
+  next_handler_->OnResponseCompleted(request_id, status, security_info, defer);
 }
 
 void BufferedResourceHandler::Resume() {
@@ -371,12 +372,15 @@ bool BufferedResourceHandler::UseAlternateNextHandler(
   // Inform the original ResourceHandler that this will be handled entirely by
   // the new ResourceHandler.
   // TODO(darin): We should probably check the return values of these.
+  // TODO(davidben): These DCHECKs do actually trigger.
   bool defer_ignored = false;
   next_handler_->OnResponseStarted(request_id, response_.get(), &defer_ignored);
   DCHECK(!defer_ignored);
   net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
                                net::ERR_ABORTED);
-  next_handler_->OnResponseCompleted(request_id, status, std::string());
+  next_handler_->OnResponseCompleted(request_id, status, std::string(),
+                                     &defer_ignored);
+  DCHECK(!defer_ignored);
 
   // This is handled entirely within the new ResourceHandler, so just reset the
   // original ResourceHandler.

@@ -287,10 +287,11 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int bytes_read,
   return true;
 }
 
-bool DownloadResourceHandler::OnResponseCompleted(
+void DownloadResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
-    const std::string& security_info) {
+    const std::string& security_info,
+    bool* defer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   int response_code = status.is_success() ? request()->GetResponseCode() : 0;
   VLOG(20) << __FUNCTION__ << "()" << DebugString()
@@ -393,8 +394,6 @@ bool DownloadResourceHandler::OnResponseCompleted(
 
   stream_writer_.reset();  // We no longer need the stream.
   read_buffer_ = NULL;
-
-  return true;
 }
 
 void DownloadResourceHandler::OnDataDownloaded(

@@ -587,14 +587,16 @@ void ResourceLoader::ResponseCompleted() {
         ssl_info.connection_status);
   }
 
-  if (handler_->OnResponseCompleted(info->GetRequestID(), request_->status(),
-                                    security_info)) {
-    // This will result in our destruction.
-    CallDidFinishLoading();
-  } else {
+  bool defer = false;
+  handler_->OnResponseCompleted(info->GetRequestID(), request_->status(),
+                                security_info, &defer);
+  if (defer) {
     // The handler is not ready to die yet.  We will call DidFinishLoading when
     // we resume.
     deferred_stage_ = DEFERRED_FINISH;
+  } else {
+    // This will result in our destruction.
+    CallDidFinishLoading();
   }
 }
 

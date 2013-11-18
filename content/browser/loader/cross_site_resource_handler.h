@@ -36,9 +36,10 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   virtual bool OnReadCompleted(int request_id,
                                int bytes_read,
                                bool* defer) OVERRIDE;
-  virtual bool OnResponseCompleted(int request_id,
+  virtual void OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
-                                   const std::string& security_info) OVERRIDE;
+                                   const std::string& security_info,
+                                   bool* defer) OVERRIDE;
 
   // We can now send the response to the new renderer, which will cause
   // WebContentsImpl to swap in the new renderer and destroy the old one.
