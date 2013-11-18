@@ -165,6 +165,13 @@ void AccessibilityEventRouterViews::DispatchAccessibilityEvent(
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
 
+  if (type == ui::AccessibilityTypes::EVENT_ALERT &&
+      !(state.role == ui::AccessibilityTypes::ROLE_ALERT ||
+        state.role == ui::AccessibilityTypes::ROLE_WINDOW)) {
+    SendAlertControlNotification(view, type, profile);
+    return;
+  }
+
   switch (state.role) {
   case ui::AccessibilityTypes::ROLE_ALERT:
   case ui::AccessibilityTypes::ROLE_WINDOW:
@@ -352,6 +359,21 @@ void AccessibilityEventRouterViews::SendSliderNotification(
       name,
       context,
       value);
+  SendControlAccessibilityNotification(event, &info);
+}
+
+// static
+void AccessibilityEventRouterViews::SendAlertControlNotification(
+    views::View* view,
+    ui::AccessibilityTypes::Event event,
+    Profile* profile) {
+  ui::AccessibleViewState state;
+  view->GetAccessibleState(&state);
+
+  std::string name = UTF16ToUTF8(state.name);
+  AccessibilityAlertInfo info(
+      profile,
+      name);
   SendControlAccessibilityNotification(event, &info);
 }
 

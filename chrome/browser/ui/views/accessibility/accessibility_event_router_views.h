@@ -118,6 +118,10 @@ class AccessibilityEventRouterViews : public content::NotificationObserver {
       views::View* view,
       ui::AccessibilityTypes::Event event,
       Profile* profile);
+  static void SendAlertControlNotification(
+      views::View* view,
+      ui::AccessibilityTypes::Event event,
+      Profile* profile);
 
   // Return the name of a view.
   static std::string GetViewName(views::View* view);

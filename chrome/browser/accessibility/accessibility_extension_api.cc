@@ -75,6 +75,9 @@ void ExtensionAccessibilityEventRouter::ClearControlEventCallback() {
 void ExtensionAccessibilityEventRouter::HandleWindowEvent(
     ui::AccessibilityTypes::Event event,
     const AccessibilityWindowInfo* info) {
+  if (!control_event_callback_.is_null())
+    control_event_callback_.Run(event, info);
+
   if (event == ui::AccessibilityTypes::EVENT_ALERT)
     OnWindowOpened(info);
 }
@@ -111,6 +114,7 @@ void ExtensionAccessibilityEventRouter::HandleControlEvent(
       OnTextChanged(info);
       break;
     case ui::AccessibilityTypes::EVENT_VALUE_CHANGED:
+    case ui::AccessibilityTypes::EVENT_ALERT:
       OnControlAction(info);
       break;
     case ui::AccessibilityTypes::EVENT_FOCUS:
