@@ -298,6 +298,8 @@ def RunTestsOnce(url, options):
         else:
           err += '\nThe test probably did not get a callback that it expected.'
         listener.ServerError(err)
+        if not server.received_request:
+          raise RetryTest('Chrome hung before running the test.')
         break
       elif not options.interactive and HardTimeout(options.hard_timeout):
         listener.ServerError('The test took over %.1f seconds.  This is '
@@ -356,6 +358,17 @@ def Run(url, options):
   while True:
     try:
       result = RunTestsOnce(url, options)
+      if result:
+        # Currently (2013/11/15) nacl_integration is fairly flaky and there is
+        # not enough time to look into it.  Retry if the test fails for any
+        # reason.  Note that in general this test runner tries to only retry
+        # when a known flake is encountered.  (See the other raise
+        # RetryTest(..)s in this file.)  This blanket retry means that those
+        # other cases could be removed without changing the behavior of the test
+        # runner, but it is hoped that this blanket retry will eventually be
+        # unnecessary and subsequently removed.  The more precise retries have
+        # been left in place to preserve the knowledge.
+        raise RetryTest('HACK retrying failed test.')
       break
     except RetryTest:
       # Only retry once.
