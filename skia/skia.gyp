@@ -133,5 +133,16 @@
         'ext/image_operations_bench.cc',
       ],
     },
+    {
+      'target_name': 'filter_fuzz_stub',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'skia.gyp:skia',
+      ],
+      'sources': [
+        'tools/filter_fuzz_stub/filter_fuzz_stub.cc',
+      ],
+    },
   ],
 }

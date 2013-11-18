@@ -608,6 +608,7 @@
             ['OS!="win"', {
               'dependencies': [
                 '../net/net.gyp:dns_fuzz_stub',
+                '../skia/skia.gyp:filter_fuzz_stub',
               ],
             }],
             ['OS=="win" and fastbuild==0 and target_arch=="ia32"', {
