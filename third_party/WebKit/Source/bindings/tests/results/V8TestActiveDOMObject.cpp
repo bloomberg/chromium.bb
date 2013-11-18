@@ -336,7 +336,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestActiveDOMObjectTemplate(v
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     UNUSED_PARAM(instanceTemplate);
     UNUSED_PARAM(prototypeTemplate);
-    instanceTemplate->SetAccessCheckCallbacks(TestActiveDOMObjectV8Internal::namedSecurityCheck, TestActiveDOMObjectV8Internal::indexedSecurityCheck, v8::External::New(const_cast<WrapperTypeInfo*>(&V8TestActiveDOMObject::wrapperTypeInfo)));
+    instanceTemplate->SetAccessCheckCallbacks(TestActiveDOMObjectV8Internal::namedSecurityCheck, TestActiveDOMObjectV8Internal::indexedSecurityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8TestActiveDOMObject::wrapperTypeInfo)));
 
     // Custom Signature 'excitingFunction'
     const int excitingFunctionArgc = 1;

@@ -53,12 +53,12 @@ void V8DOMConfiguration::installAccessors(v8::Handle<v8::ObjectTemplate> prototy
 
         v8::Local<v8::FunctionTemplate> getter;
         if (getterCallback) {
-            getter = v8::FunctionTemplate::New(getterCallback, v8::External::New(const_cast<WrapperTypeInfo*>(accessors[i].data)), signature, 0);
+            getter = v8::FunctionTemplate::New(getterCallback, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(accessors[i].data)), signature, 0);
             getter->RemovePrototype();
         }
         v8::Local<v8::FunctionTemplate> setter;
         if (setterCallback) {
-            setter = v8::FunctionTemplate::New(setterCallback, v8::External::New(const_cast<WrapperTypeInfo*>(accessors[i].data)), signature, 1);
+            setter = v8::FunctionTemplate::New(setterCallback, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(accessors[i].data)), signature, 1);
             setter->RemovePrototype();
         }
         prototype->SetAccessorProperty(v8::String::NewSymbol(accessors[i].name), getter, setter, accessors[i].attribute, accessors[i].settings);

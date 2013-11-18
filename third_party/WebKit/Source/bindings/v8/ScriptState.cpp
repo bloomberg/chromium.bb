@@ -77,7 +77,7 @@ ScriptState* ScriptState::forContext(v8::Handle<v8::Context> context)
         return static_cast<ScriptState*>(v8::External::Cast(*scriptStateWrapper)->Value());
 
     ScriptState* scriptState = new ScriptState(context);
-    innerGlobal->SetHiddenValue(V8HiddenPropertyName::scriptState(context->GetIsolate()), v8::External::New(scriptState));
+    innerGlobal->SetHiddenValue(V8HiddenPropertyName::scriptState(context->GetIsolate()), v8::External::New(context->GetIsolate(), scriptState));
     return scriptState;
 }
 
