@@ -17,16 +17,19 @@ ImageView::ImageView()
     : image_size_set_(false),
       horiz_alignment_(CENTER),
       vert_alignment_(CENTER),
-      interactive_(true) {
+      interactive_(true),
+      last_paint_scale_(0.f),
+      last_painted_bitmap_pixels_(NULL) {
 }
 
 ImageView::~ImageView() {
 }
 
 void ImageView::SetImage(const gfx::ImageSkia& img) {
-  if (image_.BackedBySameObjectAs(img))
+  if (IsImageEqual(img))
     return;
 
+  last_painted_bitmap_pixels_ = NULL;
   gfx::Size pref_size(GetPreferredSize());
   image_ = img;
   if (pref_size != GetPreferredSize())
@@ -82,6 +85,18 @@ gfx::Size ImageView::GetPreferredSize() {
                    image_.height() + insets.height());
 }
 
+bool ImageView::IsImageEqual(const gfx::ImageSkia& img) const {
+  // Even though we copy ImageSkia in SetImage() the backing store
+  // (ImageSkiaStorage) is not copied and may have changed since the last call
+  // to SetImage(). The expectation is that SetImage() with different pixels is
+  // treated as though the image changed. For this reason we compare not only
+  // the backing store but also the pixels of the last image we painted.
+  return image_.BackedBySameObjectAs(img) &&
+      last_paint_scale_ != 0.0f &&
+      last_painted_bitmap_pixels_ ==
+      img.GetRepresentation(last_paint_scale_).sk_bitmap().getPixels();
+}
+
 gfx::Point ImageView::ComputeImageOrigin(const gfx::Size& image_size) const {
   gfx::Insets insets = GetInsets();
 
@@ -114,6 +129,9 @@ gfx::Point ImageView::ComputeImageOrigin(const gfx::Size& image_size) const {
 void ImageView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
+  last_paint_scale_ = canvas->image_scale();
+  last_painted_bitmap_pixels_ = NULL;
+
   if (image_.isNull())
     return;
 
@@ -131,6 +149,8 @@ void ImageView::OnPaint(gfx::Canvas* canvas) {
   } else {
     canvas->DrawImageInt(image_, image_bounds.x(), image_bounds.y());
   }
+  last_painted_bitmap_pixels_ =
+      image_.GetRepresentation(last_paint_scale_).sk_bitmap().getPixels();
 }
 
 void ImageView::GetAccessibleState(ui::AccessibleViewState* state) {

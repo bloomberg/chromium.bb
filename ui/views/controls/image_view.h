@@ -84,6 +84,11 @@ class VIEWS_EXPORT ImageView : public View {
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
  private:
+  // Returns true if |img| is the same as the last image we painted. This is
+  // intended to be a quick check, not exhaustive. In other words it's possible
+  // for this to return false even though the images are in fact equal.
+  bool IsImageEqual(const gfx::ImageSkia& img) const;
+
   // Compute the image origin given the desired size and the receiver alignment
   // properties.
   gfx::Point ComputeImageOrigin(const gfx::Size& image_size) const;
@@ -108,6 +113,13 @@ class VIEWS_EXPORT ImageView : public View {
 
   // A flag controlling hit test handling for interactivity.
   bool interactive_;
+
+  // Scale last painted at.
+  float last_paint_scale_;
+
+  // Address of bytes we last painted. This is used only for comparison, so its
+  // safe to cache.
+  void* last_painted_bitmap_pixels_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageView);
 };
