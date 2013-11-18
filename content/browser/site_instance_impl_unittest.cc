@@ -94,6 +94,8 @@ class SiteInstanceTest : public testing::Test {
     old_browser_client_ = SetBrowserClientForTesting(&browser_client_);
     url_util::AddStandardScheme(kPrivilegedScheme);
     url_util::AddStandardScheme(chrome::kChromeUIScheme);
+
+    SiteInstanceImpl::set_render_process_host_factory(&rph_factory_);
   }
 
   virtual void TearDown() {
@@ -135,6 +137,7 @@ class SiteInstanceTest : public testing::Test {
 
   SiteInstanceTestBrowserClient browser_client_;
   ContentBrowserClient* old_browser_client_;
+  MockRenderProcessHostFactory rph_factory_;
 };
 
 // Subclass of BrowsingInstance that updates a counter when deleted and
@@ -551,8 +554,6 @@ static SiteInstanceImpl* CreateSiteInstance(BrowserContext* browser_context,
 // Test to ensure that pages that require certain privileges are grouped
 // in processes with similar pages.
 TEST_F(SiteInstanceTest, ProcessSharingByType) {
-  MockRenderProcessHostFactory rph_factory;
-  SiteInstanceImpl::set_render_process_host_factory(&rph_factory);
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
