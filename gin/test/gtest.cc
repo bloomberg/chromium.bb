@@ -54,9 +54,11 @@ void ExpectEqual(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 WrapperInfo g_gtest_wrapper_info = {};
 
-}
+}  // namespace
 
-v8::Local<v8::ObjectTemplate> GetGTestTemplate(v8::Isolate* isolate) {
+const char GTest::kModuleName[] = "gtest";
+
+v8::Local<v8::ObjectTemplate> GTest::GetTemplate(v8::Isolate* isolate) {
   PerIsolateData* data = PerIsolateData::From(isolate);
   v8::Local<v8::ObjectTemplate> templ = data->GetObjectTemplate(
       &g_gtest_wrapper_info);

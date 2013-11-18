@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-define(["gtest", "core"], function(gtest, core) {
+define([
+    "gtest",
+    "mojo/public/bindings/js/core",
+  ], function(gtest, core) {
   runWithPipe(testNop);
   runWithPipe(testReadAndWriteMessage);
   this.result = "PASS";

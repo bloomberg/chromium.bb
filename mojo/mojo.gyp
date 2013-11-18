@@ -435,12 +435,8 @@
       'sources': [
         'public/bindings/js/core.cc',
         'public/bindings/js/core.h',
-        'public/bindings/js/global.cc',
-        'public/bindings/js/global.h',
         'public/bindings/js/handle.cc',
         'public/bindings/js/handle.h',
-        'public/bindings/js/runner_delegate.cc',
-        'public/bindings/js/runner_delegate.h',
       ],
     },
     {

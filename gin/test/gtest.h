@@ -9,7 +9,11 @@
 
 namespace gin {
 
-v8::Local<v8::ObjectTemplate> GetGTestTemplate(v8::Isolate* isolate);
+class GTest {
+ public:
+  static const char kModuleName[];
+  static v8::Local<v8::ObjectTemplate> GetTemplate(v8::Isolate* isolate);
+};
 
 }  // namespace gin
 

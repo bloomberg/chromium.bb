@@ -27,19 +27,10 @@ base::FilePath GetModuleBase() {
 
 FileRunnerDelegate::FileRunnerDelegate()
     : ModuleRunnerDelegate(GetModuleBase()) {
+  AddBuiltinModule(GTest::kModuleName, GTest::GetTemplate);
 }
 
 FileRunnerDelegate::~FileRunnerDelegate() {
-}
-
-void FileRunnerDelegate::DidCreateContext(Runner* runner) {
-  ModuleRunnerDelegate::DidCreateContext(runner);
-
-  v8::Handle<v8::Context> context = runner->context();
-  ModuleRegistry* registry = ModuleRegistry::From(context);
-
-  registry->AddBuiltinModule(runner->isolate(), "gtest",
-                             GetGTestTemplate(runner->isolate()));
 }
 
 void FileRunnerDelegate::UnhandledException(Runner* runner,
@@ -48,7 +39,7 @@ void FileRunnerDelegate::UnhandledException(Runner* runner,
   EXPECT_FALSE(try_catch.HasCaught()) << try_catch.GetPrettyMessage();
 }
 
-void RunTestFromFile(const base::FilePath& path, RunnerDelegate* delegate) {
+void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate) {
   ASSERT_TRUE(base::PathExists(path)) << path.LossyDisplayName();
   std::string source;
   ASSERT_TRUE(ReadFileToString(path, &source));

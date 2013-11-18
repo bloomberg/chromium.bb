@@ -19,13 +19,12 @@ class FileRunnerDelegate : public ModuleRunnerDelegate {
 
  private:
   // From ModuleRunnerDelegate:
-  virtual void DidCreateContext(Runner* runner) OVERRIDE;
   virtual void UnhandledException(Runner* runner, TryCatch& try_catch) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(FileRunnerDelegate);
 };
 
-void RunTestFromFile(const base::FilePath& path, RunnerDelegate* delegate);
+void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate);
 
 }  // namespace gin
 

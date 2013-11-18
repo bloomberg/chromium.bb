@@ -96,6 +96,8 @@ std::string GetImplicitModuleName(const std::string& explicit_name) {
     return explicit_name;
   std::string implicit_name;
   Handle<StackTrace> trace = StackTrace::CurrentStackTrace(1);
+  if (!trace->GetFrameCount())
+    return implicit_name;
   Handle<String> script_name = trace->GetFrame(0)->GetScriptName();
   if (!script_name.IsEmpty())
     ConvertFromV8(script_name, &implicit_name);

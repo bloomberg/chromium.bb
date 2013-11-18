@@ -15,11 +15,29 @@ ModuleRunnerDelegate::ModuleRunnerDelegate(const base::FilePath& module_base)
 ModuleRunnerDelegate::~ModuleRunnerDelegate() {
 }
 
+void ModuleRunnerDelegate::AddBuiltinModule(const std::string& id,
+                                            ModuleTemplateGetter templ) {
+  builtin_modules_[id] = templ;
+}
+
 v8::Handle<v8::ObjectTemplate> ModuleRunnerDelegate::GetGlobalTemplate(
     Runner* runner) {
   v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
   ModuleRegistry::RegisterGlobals(runner->isolate(), templ);
   return templ;
+}
+
+void ModuleRunnerDelegate::DidCreateContext(Runner* runner) {
+  RunnerDelegate::DidCreateContext(runner);
+
+  v8::Handle<v8::Context> context = runner->context();
+  ModuleRegistry* registry = ModuleRegistry::From(context);
+
+  for (BuiltinModuleMap::const_iterator it = builtin_modules_.begin();
+       it != builtin_modules_.end(); ++it) {
+    registry->AddBuiltinModule(runner->isolate(), it->first,
+                               it->second(runner->isolate()));
+  }
 }
 
 void ModuleRunnerDelegate::DidRunScript(Runner* runner,

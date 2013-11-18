@@ -7,24 +7,21 @@
 #include "gin/modules/module_registry.h"
 #include "gin/test/file_runner.h"
 #include "gin/test/gtest.h"
-#include "mojo/public/bindings/js/runner_delegate.h"
+#include "mojo/public/bindings/js/core.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace js {
 namespace {
 
-class TestRunnerDelegate : public RunnerDelegate {
-  virtual void DidCreateContext(gin::Runner* runner) MOJO_OVERRIDE {
-    RunnerDelegate::DidCreateContext(runner);
-
-    v8::Handle<v8::Context> context = runner->context();
-    gin::ModuleRegistry* registry =
-        gin::ModuleRegistry::From(context);
-
-    registry->AddBuiltinModule(runner->isolate(), "gtest",
-                               gin::GetGTestTemplate(runner->isolate()));
+class TestRunnerDelegate : public gin::FileRunnerDelegate {
+ public:
+  TestRunnerDelegate() {
+    AddBuiltinModule(Core::kModuleName, Core::GetTemplate);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestRunnerDelegate);
 };
 
 void RunTest(std::string test) {
@@ -42,6 +39,10 @@ void RunTest(std::string test) {
 // TODO(abarth): Should we autogenerate these stubs from GYP?
 TEST(JSTest, core) {
   RunTest("core_unittests.js");
+}
+
+TEST(JSTest, codec) {
+  RunTest("codec_unittests.js");
 }
 
 }  // namespace

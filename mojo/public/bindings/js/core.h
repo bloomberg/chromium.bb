@@ -10,7 +10,11 @@
 namespace mojo {
 namespace js {
 
-v8::Local<v8::ObjectTemplate> GetCoreTemplate(v8::Isolate* isolate);
+class Core {
+ public:
+  static const char kModuleName[];
+  static v8::Local<v8::ObjectTemplate> GetTemplate(v8::Isolate* isolate);
+};
 
 }  // namespace js
 }  // namespace mojo

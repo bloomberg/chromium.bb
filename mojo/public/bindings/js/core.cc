@@ -131,9 +131,11 @@ void ReadMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 gin::WrapperInfo g_core_wrapper_info = {};
 
-}
+}  // namespace
 
-v8::Local<v8::ObjectTemplate> GetCoreTemplate(v8::Isolate* isolate) {
+const char Core::kModuleName[] = "mojo/public/bindings/js/core";
+
+v8::Local<v8::ObjectTemplate> Core::GetTemplate(v8::Isolate* isolate) {
   gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);
   v8::Local<v8::ObjectTemplate> templ = data->GetObjectTemplate(
       &g_core_wrapper_info);
