@@ -267,8 +267,8 @@ bool CSSFontFaceSource::isLocalFontAvailable(const FontDescription& fontDescript
 
 void CSSFontFaceSource::willUseFontData()
 {
-    if (m_font)
-        m_font->willUseFontData();
+    if (m_face && m_font && m_font->stillNeedsLoad())
+        beginLoadingFontSoon();
 }
 
 void CSSFontFaceSource::beginLoadingFontSoon()

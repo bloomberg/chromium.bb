@@ -50,7 +50,6 @@ public:
     virtual void didAddClient(ResourceClient*);
 
     virtual void allClientsRemoved();
-    void willUseFontData();
     void beginLoadIfNeeded(ResourceFetcher* dl);
     bool stillNeedsLoad() const { return !m_loadInitiated; }
 
@@ -70,22 +69,6 @@ private:
 #if ENABLE(SVG_FONTS)
     RefPtr<WebCore::SVGDocument> m_externalSVGDocument;
 #endif
-    class FontResourceHistograms {
-    public:
-        enum UsageType {
-            StyledAndUsed,
-            StyledButNotUsed,
-            NotStyledButUsed,
-            UsageTypeMax
-        };
-        FontResourceHistograms() : m_styledTime(0) { }
-        ~FontResourceHistograms();
-        void willUseFontData();
-        void loadStarted();
-    private:
-        double m_styledTime;
-    };
-    FontResourceHistograms m_histograms;
 
     friend class MemoryCache;
 };
