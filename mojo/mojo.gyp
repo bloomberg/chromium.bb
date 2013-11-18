@@ -126,11 +126,10 @@
       'sources': [
         'public/tests/bindings_connector_unittest.cc',
         'public/tests/bindings_remote_ptr_unittest.cc',
-        'public/tests/mojom/math_calculator.cc',
-        'public/tests/mojom/math_calculator.h',
-        'public/tests/mojom/math_calculator_internal.h',
+        'public/tests/math_calculator.mojom',
         'public/tests/system_core_unittest.cc',
       ],
+      'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
     },
     {
       'target_name': 'mojo_public_perftests',

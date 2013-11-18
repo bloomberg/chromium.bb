@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "mojo/public/bindings/lib/remote_ptr.h"
-#include "mojo/public/tests/mojom/math_calculator.h"
 #include "mojo/public/tests/simple_bindings_support.h"
+#include "mojom/math_calculator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
