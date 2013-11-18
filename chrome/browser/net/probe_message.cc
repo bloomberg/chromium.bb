@@ -13,7 +13,7 @@ namespace chrome_browser_net {
 const uint32 ProbeMessage::kVersion = 2;
 const uint32 ProbeMessage::kMaxNumberProbePackets = 21;
 const uint32 ProbeMessage::kMaxProbePacketBytes = 1500;
-  // Maximum pacing interval is 300 seconds (for testing NAT binding).
+// Maximum pacing interval is 300 seconds (for testing NAT binding).
 const uint32 ProbeMessage::kMaxPacingIntervalMicros = 300000000;
 const char ProbeMessage::kEncodingString[] =
     "T\xd3?\xa5h2\x9c\x8en\xf1Q6\xbc{\xc6-4\xfa$f\xb9[\xa6\xcd@6,\xdf\xb3i-\xe6"

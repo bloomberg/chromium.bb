@@ -28,7 +28,7 @@ using content::BrowserThread;
 namespace chrome_browser_net {
 
 // static
-uint32 NetworkStats::maximum_tests_ = 6;
+uint32 NetworkStats::maximum_tests_ = 8;
 // static
 uint32 NetworkStats::maximum_sequential_packets_ = 21;
 // static
@@ -51,7 +51,7 @@ const uint16 kPorts[] = {443, 80};
 const uint32 kCorrelatedLossPacketCount = 6;
 
 // This specifies the maximum message (payload) size of one packet.
-const uint32 kMaxMessageSize = 1300;
+const uint32 kMaxMessageSize = 1600;
 
 // This specifies the maximum udp receiver buffer size.
 const uint32 kMaxUdpReceiveBufferSize = 63000;
@@ -61,7 +61,7 @@ const uint32 kMaxUdpSendBufferSize = 4096;
 
 // This should match TestType except for the last one.
 const char* kTestName[] = {"TokenRequest", "StartPacket", "NonPacedPacket",
-                           "PacedPacket", "NATBind"};
+                           "PacedPacket", "NATBind", "PacketSizeTest"};
 
 // Perform Pacing/Non-pacing test only if at least 2 packets are received
 // in the StartPacketTest.
@@ -80,6 +80,10 @@ const uint32 kReadDataTimeoutSeconds = 30;
 // This is the timeout for NAT without Idle periods.
 // For NAT test with idle periods, the timeout is the Idle period + this value.
 const uint32 kReadNATTimeoutSeconds = 10;
+// This is the timeout for PACKET_SIZE_TEST.
+const uint32 kReadPacketSizeTimeoutSeconds = 10;
+// This is the maxmium number of packets we would send for PACKET_SIZE_TEST.
+uint32 kMaximumPacketSizeTestPackets = 1;
 
 // These helper functions are similar to UMA_HISTOGRAM_XXX except that they do
 // not create a static histogram_pointer.
@@ -122,6 +126,7 @@ NetworkStats::NetworkStats(net::ClientSocketFactory* socket_factory)
       histogram_port_(0),
       has_proxy_server_(false),
       probe_packet_bytes_(0),
+      bytes_for_packet_size_test_(0),
       current_test_index_(0),
       weak_factory_(this) {
   ResetData();
@@ -134,11 +139,13 @@ bool NetworkStats::Start(net::HostResolver* host_resolver,
                          uint16 histogram_port,
                          bool has_proxy_server,
                          uint32 probe_bytes,
+                         uint32 bytes_for_packet_size_test,
                          const net::CompletionCallback& finished_callback) {
   DCHECK(host_resolver);
   histogram_port_ = histogram_port;
   has_proxy_server_ = has_proxy_server;
   probe_packet_bytes_ = probe_bytes;
+  bytes_for_packet_size_test_ = bytes_for_packet_size_test;
   finished_callback_ = finished_callback;
   test_sequence_.clear();
   test_sequence_.push_back(TOKEN_REQUEST);
@@ -250,6 +257,7 @@ void NetworkStats::SendProbeRequest() {
   // Use default timeout except for the NAT bind test.
   uint32 timeout_seconds = kReadDataTimeoutSeconds;
   uint32 number_packets = maximum_sequential_packets_;
+  uint32 probe_bytes = probe_packet_bytes_;
   pacing_interval_ = base::TimeDelta();
   switch (test_sequence_[current_test_index_]) {
     case START_PACKET_TEST:
@@ -272,6 +280,12 @@ void NetworkStats::SendProbeRequest() {
       number_packets = maximum_NAT_packets_;
       break;
     }
+    case PACKET_SIZE_TEST: {
+      number_packets = kMaximumPacketSizeTestPackets;
+      probe_bytes = bytes_for_packet_size_test_;
+      timeout_seconds = kReadPacketSizeTimeoutSeconds;
+      break;
+    }
     default:
       NOTREACHED();
       return;
@@ -281,7 +295,7 @@ void NetworkStats::SendProbeRequest() {
   ProbePacket probe_packet;
   probe_message_.GenerateProbeRequest(token_,
                                       current_test_index_,
-                                      probe_packet_bytes_,
+                                      probe_bytes,
                                       pacing_interval_.InMicroseconds(),
                                       number_packets,
                                       &probe_packet);
@@ -390,9 +404,12 @@ bool NetworkStats::UpdateReception(const ProbePacket& probe_packet) {
     first_arrival_time_ = current_time;
 
   // Need to do this after updating the last_arrival_time_ since NAT_BIND_TEST
-  // records the SendToLastRecvDelay.
+  // and PACKET_SIZE_TEST record the SendToLastRecvDelay.
   if (test_type == NAT_BIND_TEST) {
     return received_packets >= maximum_NAT_packets_;
+  }
+  if (test_type == PACKET_SIZE_TEST) {
+    return received_packets >= kMaximumPacketSizeTestPackets;
   }
 
   base::TimeDelta rtt =
@@ -408,6 +425,8 @@ bool NetworkStats::UpdateReception(const ProbePacket& probe_packet) {
   inter_arrival_time_ = (last_arrival_time_ - first_arrival_time_) /
       std::max(1U, (received_packets - 1));
   if (test_type == START_PACKET_TEST) {
+    test_sequence_.push_back(PACKET_SIZE_TEST);
+    test_sequence_.push_back(TOKEN_REQUEST);
     // No need to add TOKEN_REQUEST here when all packets are received.
     test_sequence_.push_back(base::RandInt(0, 1) ? PACED_PACKET_TEST
                                                  : NON_PACED_PACKET_TEST);
@@ -477,6 +496,8 @@ void NetworkStats::OnReadDataTimeout(uint32 test_index) {
   if (test_type == START_PACKET_TEST) {
     if (received_packets >= kMinimumReceivedPacketsForPacingTest) {
       test_sequence_.push_back(TOKEN_REQUEST);
+      test_sequence_.push_back(PACKET_SIZE_TEST);
+      test_sequence_.push_back(TOKEN_REQUEST);
       test_sequence_.push_back(base::RandInt(0, 1) ? PACED_PACKET_TEST
                                                    : NON_PACED_PACKET_TEST);
     }
@@ -496,13 +517,18 @@ void NetworkStats::TestPhaseComplete(Status status, int result) {
       (status == SUCCESS || status == READ_TIMED_OUT)) {
     TestType current_test = test_sequence_[current_test_index_];
     DCHECK_LT(current_test, TEST_TYPE_MAX);
-    if (current_test != TOKEN_REQUEST)
+    if (current_test != TOKEN_REQUEST) {
       RecordHistograms(current_test);
-    else if (current_test_index_ > 0 &&
-             test_sequence_[current_test_index_ - 1] == NAT_BIND_TEST) {
-      // We record the NATTestReceivedHistograms after the succeeding
-      // TokenRequest.
-      RecordNATTestReceivedHistograms(status);
+    } else if (current_test_index_ > 0) {
+      if (test_sequence_[current_test_index_ - 1] == NAT_BIND_TEST) {
+        // We record the NATTestReceivedHistograms after the succeeding
+        // TokenRequest.
+        RecordNATTestReceivedHistograms(status);
+      } else if (test_sequence_[current_test_index_ - 1] == PACKET_SIZE_TEST) {
+        // We record the PacketSizeTestReceivedHistograms after the succeeding
+        // TokenRequest.
+        RecordPacketSizeTestReceivedHistograms(status);
+      }
     }
 
     // Move to the next test.
@@ -563,6 +589,9 @@ void NetworkStats::RecordHistograms(TestType test_type) {
     case NAT_BIND_TEST:
       RecordSendToLastRecvDelayHistograms(test_type);
       return;
+    case PACKET_SIZE_TEST:
+      // No need to record RTT for PacketSizeTest.
+      return;
     default:
       DVLOG(1) << "Unexpected test type " << test_type
                << " in RecordHistograms.";
@@ -570,6 +599,7 @@ void NetworkStats::RecordHistograms(TestType test_type) {
 }
 
 void NetworkStats::RecordInterArrivalHistograms(TestType test_type) {
+  DCHECK_NE(test_type, PACKET_SIZE_TEST);
   std::string histogram_name =
       base::StringPrintf("NetConnectivity4.%s.Sent%d.PacketDelay.%d.%dB",
                          kTestName[test_type],
@@ -581,6 +611,7 @@ void NetworkStats::RecordInterArrivalHistograms(TestType test_type) {
 }
 
 void NetworkStats::RecordPacketsReceivedHistograms(TestType test_type) {
+  DCHECK_NE(test_type, PACKET_SIZE_TEST);
   const char* test_name = kTestName[test_type];
   std::string histogram_prefix = base::StringPrintf(
       "NetConnectivity4.%s.Sent%d.", test_name, maximum_sequential_packets_);
@@ -663,7 +694,26 @@ void NetworkStats::RecordNATTestReceivedHistograms(Status status) {
                          bucket_count);
 }
 
+void NetworkStats::RecordPacketSizeTestReceivedHistograms(Status status) {
+  const char* test_name = kTestName[PACKET_SIZE_TEST];
+  bool test_result = (status == SUCCESS && packets_received_mask_.test(0));
+  std::string middle_name = test_result ? "Connectivity.Success"
+                                        : "Connectivity.Failure";
+  // Record whether the HelloRequest got reply successfully.
+  std::string histogram_name =
+      base::StringPrintf("NetConnectivity4.%s.%s.%d",
+                         test_name,
+                         middle_name.c_str(),
+                         histogram_port_);
+  base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
+      histogram_name, kProbePacketBytes[kPacketSizeChoices - 1],
+      ProbeMessage::kMaxProbePacketBytes, 60,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram_pointer->Add(bytes_for_packet_size_test_);
+}
+
 void NetworkStats::RecordPacketLossSeriesHistograms(TestType test_type) {
+  DCHECK_NE(test_type, PACKET_SIZE_TEST);
   const char* test_name = kTestName[test_type];
   // Build "NetConnectivity4.<TestName>.First6.SeriesRecv.<port>.<probe_size>"
   // histogram name. Total 3(tests) x 12 histograms.
@@ -689,6 +739,7 @@ void NetworkStats::RecordPacketLossSeriesHistograms(TestType test_type) {
 }
 
 void NetworkStats::RecordRTTHistograms(TestType test_type, uint32 index) {
+  DCHECK_NE(test_type, PACKET_SIZE_TEST);
   DCHECK_LT(index, packet_rtt_.size());
 
   if (!packets_received_mask_.test(index))
@@ -705,6 +756,7 @@ void NetworkStats::RecordRTTHistograms(TestType test_type, uint32 index) {
 }
 
 void NetworkStats::RecordSendToLastRecvDelayHistograms(TestType test_type) {
+  DCHECK_NE(test_type, PACKET_SIZE_TEST);
   if (packets_received_mask_.count() < 2)
     return;  // Too few packets are received.
   uint32 packets_sent = test_type == NAT_BIND_TEST
@@ -859,6 +911,12 @@ void StartNetworkStatsTest(net::HostResolver* host_resolver,
                            bool has_proxy_server) {
   int probe_choice = base::RandInt(0, kPacketSizeChoices - 1);
 
+  DCHECK_LE(ProbeMessage::kMaxProbePacketBytes, kMaxMessageSize);
+  // Pick a packet size between 1200 and kMaxProbePacketBytes bytes.
+  uint32 bytes_for_packet_size_test =
+      base::RandInt(kProbePacketBytes[kPacketSizeChoices - 1],
+                    ProbeMessage::kMaxProbePacketBytes);
+
   // |udp_stats_client| is owned and deleted in the class NetworkStats.
   NetworkStats* udp_stats_client =
       new NetworkStats(net::ClientSocketFactory::GetDefaultFactory());
@@ -867,6 +925,7 @@ void StartNetworkStatsTest(net::HostResolver* host_resolver,
                           histogram_port,
                           has_proxy_server,
                           kProbePacketBytes[probe_choice],
+                          bytes_for_packet_size_test,
                           net::CompletionCallback());
 }
 

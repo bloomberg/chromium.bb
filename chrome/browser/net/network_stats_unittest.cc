@@ -125,6 +125,7 @@ class NetworkStatsTest : public PlatformTest {
                                         9999,
                                         has_proxy,
                                         bytes,
+                                        bytes,
                                         cb.callback()));
     int num_packets_run = (max_tests + 1) * 2 + max_probe_packets - 1;
     test_data.RunFor(num_packets_run);
@@ -146,6 +147,7 @@ class NetworkStatsTest : public PlatformTest {
     ProbePacket_Token token;
     CreateToken(2L, "2a2b", &token);
     switch (test_type) {
+      case NetworkStats::PACKET_SIZE_TEST:
       case NetworkStats::NON_PACED_PACKET_TEST:
         pacing_interval_micros = 0;
         break;
@@ -223,6 +225,7 @@ class NetworkStatsTest : public PlatformTest {
                                         host_port_pair,
                                         9999,
                                         has_proxy,
+                                        bytes,
                                         bytes,
                                         cb.callback()));
     // Test need to be added after Start() because Start() will reset
@@ -386,6 +389,21 @@ TEST_F(NetworkStatsTest, StartNATBindTest500BHasNoProxy) {
 TEST_F(NetworkStatsTest, StartNATBindTest1200BHasProxySync) {
   TestStartOneTest(
       true, NetworkStats::NAT_BIND_TEST, 1200, 3, 2, net::SYNCHRONOUS);
+}
+
+TEST_F(NetworkStatsTest, StartPacketSizeTest1500BHasProxy) {
+  TestStartOneTest(
+      true, NetworkStats::PACKET_SIZE_TEST, 1500, 0, 1, net::ASYNC);
+}
+
+TEST_F(NetworkStatsTest, StartPacketSizeTest1500HasNoProxySync) {
+  TestStartOneTest(
+      false, NetworkStats::PACKET_SIZE_TEST, 1500, 0, 1, net::SYNCHRONOUS);
+}
+
+TEST_F(NetworkStatsTest, StartPacketSizeTest1500BHasNoProxy) {
+  TestStartOneTest(
+      false, NetworkStats::PACKET_SIZE_TEST, 1500, 0, 1, net::ASYNC);
 }
 
 }  // namespace chrome_browser_net

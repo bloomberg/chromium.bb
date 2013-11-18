@@ -34,6 +34,8 @@ class ProbeMessage {
   // packet. Return true if there is no error and false otherwise.
   bool ParseInput(const std::string& input, ProbePacket* packet) const;
 
+  static const uint32 kMaxProbePacketBytes;
+
  private:
   // For unittest.
   friend class ProbeMessageTest;
@@ -50,7 +52,6 @@ class ProbeMessage {
 
   static const uint32 kVersion;
   static const uint32 kMaxNumberProbePackets;
-  static const uint32 kMaxProbePacketBytes;
   static const uint32 kMaxPacingIntervalMicros;
   static const char kEncodingString[];
 

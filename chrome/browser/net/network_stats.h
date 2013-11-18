@@ -78,6 +78,7 @@ class NetworkStats {
     PACED_PACKET_TEST,      // Packet loss test with pacing.
     // Test whether NAT binding expires after some idle period.
     NAT_BIND_TEST,
+    PACKET_SIZE_TEST,
     TEST_TYPE_MAX,
   };
 
@@ -97,6 +98,7 @@ class NetworkStats {
              uint16 histogram_port,
              bool has_proxy_server,
              uint32 probe_bytes,
+             uint32 bytes_for_packet_size_test,
              const net::CompletionCallback& callback);
 
  private:
@@ -213,6 +215,10 @@ class NetworkStats {
   // given idle time.
   void RecordNATTestReceivedHistograms(Status status);
 
+  // Collect whether we have the requested packet size was received or not in
+  // the PACKET_SIZE_TEST test.
+  void RecordPacketSizeTestReceivedHistograms(Status status);
+
   // Record the time duration between sending the probe request and receiving
   // the last probe packet excluding the pacing time requested by the client.
   // This applies to both NAT bind test and paced/non-paced packet test.
@@ -268,8 +274,12 @@ class NetworkStats {
   // Time when sending probe_request, used for computing RTT.
   base::TimeTicks probe_request_time_;
 
-  // Size of the probe packets requested to be sent from servers.
+  // Size of the probe packets requested to be sent from servers. We don't use
+  // |probe_packet_bytes_| during PACKET_SIZE_TEST.
   uint32 probe_packet_bytes_;
+
+  // Size of the packet requested to be sent from servers for PACKET_SIZE_TEST.
+  uint32 bytes_for_packet_size_test_;
 
   // bitmask indicating which packets are received.
   std::bitset<21> packets_received_mask_;
