@@ -95,7 +95,7 @@ void Connector::ReadMore() {
     rv = ReadMessage(message_pipe_,
                      message.data,
                      &num_bytes,
-                     &message.handles[0],
+                     message.handles.empty() ? NULL : &message.handles[0],
                      &num_handles,
                      MOJO_READ_MESSAGE_FLAG_NONE);
     if (rv != MOJO_RESULT_OK) {
@@ -127,12 +127,13 @@ void Connector::WriteOne(Message* message, bool* wait_to_write) {
   // in that case.
   *wait_to_write = false;
 
-  MojoResult rv = WriteMessage(message_pipe_,
-                               message->data,
-                               message->data->header.num_bytes,
-                               &message->handles[0],
-                               static_cast<uint32_t>(message->handles.size()),
-                               MOJO_WRITE_MESSAGE_FLAG_NONE);
+  MojoResult rv = WriteMessage(
+      message_pipe_,
+      message->data,
+      message->data->header.num_bytes,
+      message->handles.empty() ? NULL : &message->handles[0],
+      static_cast<uint32_t>(message->handles.size()),
+      MOJO_WRITE_MESSAGE_FLAG_NONE);
   if (rv == MOJO_RESULT_OK) {
     // The handles were successfully transferred, so we don't need the message
     // to track their lifetime any longer.
