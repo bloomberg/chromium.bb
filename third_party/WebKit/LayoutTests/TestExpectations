@@ -477,8 +477,6 @@ crbug.com/298188 [ Linux Win ] virtual/implsidepainting/inspector/timeline [ Ski
 
 crbug.com/304993 fast/regions/auto-size/autoheight-regions-mark.html [ Failure Pass ]
 
-crbug.com/318805 tables/mozilla/bugs/bug113235-3.html [ NeedsRebaseline ]
-
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)
 crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ ImageOnlyFailure Pass ]
