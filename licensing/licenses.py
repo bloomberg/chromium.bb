@@ -75,6 +75,7 @@ import re
 from chromite.buildbot import portage_utilities
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
 
 
 debug = False
@@ -127,6 +128,8 @@ SKIPPED_PACKAGES = [
     'app-i18n/ibus-mozc-pinyin',
 
     # Those have License: Proprietary in the ebuild.
+    # FIXME? Should the code detect 'Proprietary' and exclude the packages, or
+    # list them with a license that says 'Proprietary'?
     'app-i18n/GoogleChineseInput-cangjie',
     'app-i18n/GoogleChineseInput-pinyin',
     'app-i18n/GoogleChineseInput-wubi',
@@ -295,6 +298,8 @@ LOOK_IN_SOURCE_LICENSES = [
     'UoI-NCSA',  # Only used by NSCA, might as well show their custom copyright.
 ]
 
+# This used to provide overrides. I can't find a valid reason to add any more
+# here, though.
 PACKAGE_HOMEPAGES = {
     # Example:
     # 'x11-proto/glproto': ['http://www.x.org/'],
@@ -522,7 +527,7 @@ LICENSE="BSD-Google"
 If not, go investigate the unpacked source in %s,
 and find which license to assign.  Once you found it, you should copy that
 license to a file under %s
-(unless you can modify LICENSE_FILENAMES to pickup a license file that isn't
+(or you can modify LICENSE_FILENAMES to pickup a license file that isn't
 being scraped currently).""",
                       self.fullnamerev, workdir, COPYRIGHT_ATTRIBUTION_DIR)
         raise PackageLicenseError()
@@ -782,8 +787,7 @@ class Licensing(object):
     self.incomplete_packages = []
 
     self.package_text = {}
-    with codecs.open(entry_template_file, mode='rb', encoding="utf-8") as c:
-      self.entry_template = c.read()
+    self.entry_template = ReadUnknownEncodedFile(entry_template_file)
 
     # We need to have a dict for the list of packages objects, index by package
     # fullnamerev, so that when we scan our licenses at the end, and find out
@@ -850,10 +854,20 @@ class Licensing(object):
       if os.path.exists(path):
         return "Custom"
 
-    raise AssertionError("license %s could not be found in %s"
-                         % (license_name,
+    raise AssertionError("""
+license %s could not be found in %s
+If the license in the ebuild is correct,
+a) a stock license should be added to portage-stable/licenses :
+running `cros_portage_upgrade` inside of the chroot should clone this repo
+to /tmp/portage/:
+https://chromium.googlesource.com/chromiumos/overlays/portage/+/gentoo
+find the new licenses under licenses, and add them to portage-stable/licenses
+
+b) if it's a non gentoo package with a custom license, you can copy that license
+to third_party/chromiumos-overlay/licenses/""" %
+                           (license_name,
                             '\n'.join(STOCK_LICENSE_DIRS + CUSTOM_LICENSE_DIRS))
-                        )
+                         )
 
   @staticmethod
   def _ReadSharedLicense(license_name):
@@ -869,19 +883,10 @@ class Licensing(object):
     if license_path:
       return ReadUnknownEncodedFile(license_path, "read license")
     else:
-      raise AssertionError("""
-license %s could not be found in %s
-If the license in the ebuild is correct,
-a) a stock license should be be added to portage-stable/licenses :
-running `cros_portage_upgrade` inside of the chroot should clone this repo
-to /tmp/portage/:
-http://git.chromium.org/gitweb/?p=chromiumos/overlays/portage.git;a=summary
-find the new licenses under licenses, and add them to portage-stable/licenses
-
-b) if it's a non gentoo package with a custom license, you can copy that license
-to third_party/chromiumos-overlay/licenses/""" %
-                           (license_name,
-                            '\n'.join(STOCK_LICENSE_DIRS + CUSTOM_LICENSE_DIRS))
+      raise AssertionError("license %s could not be found in %s"
+                           % (license_name,
+                              '\n'.join(STOCK_LICENSE_DIRS +
+                                        CUSTOM_LICENSE_DIRS))
                           )
 
   @staticmethod
@@ -972,8 +977,8 @@ to third_party/chromiumos-overlay/licenses/""" %
 
     # Now generate the bottom of the page that will contain all the shared
     # licenses and a list of who is pointing to them.
-    with codecs.open(license_template, mode='rb', encoding="utf-8") as c:
-      license_template = c.read()
+    license_template = ReadUnknownEncodedFile(license_template)
+
     licenses_txt = []
     for license_name in self.sorted_licenses:
       env = {
@@ -984,14 +989,13 @@ to third_party/chromiumos-overlay/licenses/""" %
       }
       licenses_txt += [self.EvaluateTemplate(license_template, env)]
 
-    with codecs.open(output_template, mode='rb', encoding="utf-8") as c:
-      file_template = c.read()
+    file_template = ReadUnknownEncodedFile(output_template)
     env = {
         'entries': '\n'.join(sorted_license_txt),
         'licenses': '\n'.join(licenses_txt),
     }
-    with codecs.open(output_file, mode='w', encoding="utf-8") as c:
-      c.write(self.EvaluateTemplate(file_template, env))
+    osutils.WriteFile(output_file,
+                      self.EvaluateTemplate(file_template, env).encode('UTF-8'))
 
 
 def ListInstalledPackages(board):
@@ -1065,7 +1069,7 @@ def _HandleIllegalXMLChars(text):
   return (text, illegal_chars_re.findall(text))
 
 
-def ReadUnknownEncodedFile(file_path, logging_text):
+def ReadUnknownEncodedFile(file_path, logging_text=None):
   """Read a file of unknown encoding (UTF-8 or latin) by trying in sequence.
 
   Args:
@@ -1082,11 +1086,13 @@ def ReadUnknownEncodedFile(file_path, logging_text):
   try:
     with codecs.open(file_path, encoding="utf-8") as c:
       file_txt = c.read()
-      logging.info("%s %s (UTF-8)", logging_text, file_path)
+      if logging_text:
+        logging.info("%s %s (UTF-8)", logging_text, file_path)
   except UnicodeDecodeError:
     with codecs.open(file_path, encoding="latin1") as c:
       file_txt = c.read()
-      logging.info("%s %s (latin1)", logging_text, file_path)
+      if logging_text:
+        logging.info("%s %s (latin1)", logging_text, file_path)
 
   file_txt, char_list = _HandleIllegalXMLChars(file_txt)
 
