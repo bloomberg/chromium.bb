@@ -37,10 +37,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/loader/EmptyClients.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
-#include "core/page/Page.h"
+#include "core/testing/DummyPageHolder.h"
 #include "core/testing/UnitTestHelpers.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/Platform.h"
@@ -108,15 +105,9 @@ TEST(ImageResourceTest, CancelOnDetach)
     blink::Platform::current()->unitTestSupport()->registerMockedURL(testURL, response, localPath);
 
     // Create enough of a mocked world to get a functioning ResourceLoader.
-    Page::PageClients pageClients;
-    fillWithEmptyClients(pageClients);
-    EmptyFrameLoaderClient frameLoaderClient;
-    Page page(pageClients);
-    RefPtr<Frame> frame = Frame::create(FrameInit::create(0, &page, &frameLoaderClient));
-    frame->setView(FrameView::create(frame.get()));
-    frame->init();
+    OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create();
     RefPtr<DocumentLoader> documentLoader = DocumentLoader::create(ResourceRequest(testURL), SubstituteData());
-    documentLoader->setFrame(frame.get());
+    documentLoader->setFrame(&dummyPageHolder->frame());
 
     // Emulate starting a real load.
     ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL));
