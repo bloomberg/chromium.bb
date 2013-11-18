@@ -208,17 +208,10 @@ bool VideoCaptureDeviceMac::Init() {
   DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
   DCHECK_EQ(state_, kNotInitialized);
 
-  // TODO(mcasas): The following check might not be necessary; if the device has
-  // disappeared after enumeration and before coming here, opening would just
-  // fail but not necessarily produce a crash.
   Names device_names;
   GetDeviceNames(&device_names);
-  Names::iterator it = device_names.begin();
-  for (; it != device_names.end(); ++it) {
-    if (it->id() == device_name_.id())
-      break;
-  }
-  if (it == device_names.end())
+  Name* found = device_names.FindById(device_name_.id());
+  if (!found)
     return false;
 
   capture_device_ =

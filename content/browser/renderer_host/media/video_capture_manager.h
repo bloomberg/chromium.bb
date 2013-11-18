@@ -59,8 +59,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // Called by VideoCaptureHost to locate a capture device for |capture_params|,
   // adding the Host as a client of the device's controller if successful. The
   // value of |capture_params.session_id| controls which device is selected;
-  // this value should be a session id previously returned by Open(). The device
-  // capabilities are reduced to |capture_params|.
+  // this value should be a session id previously returned by Open().
   //
   // If the device is not already started (i.e., no other client is currently
   // capturing from this device), this call will cause a VideoCaptureController
@@ -83,27 +82,9 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
                             VideoCaptureControllerID client_id,
                             VideoCaptureControllerEventHandler* client_handler);
 
-  // Retrieves the available capture capabilities for a particular device. The
-  // capabilities are cached during device(s) enumeration.
-  void GetDeviceCapabilities(int capture_session_id,
-                             media::VideoCaptureCapabilities* capabilities);
-
  private:
   virtual ~VideoCaptureManager();
   struct DeviceEntry;
-
-  // This data structure is a convenient wrap of a devices' name and associated
-  // video capture capabilities, and a flag that indicates if in use.
-  struct DeviceInfo {
-    DeviceInfo();
-    DeviceInfo(const media::VideoCaptureDevice::Name& name,
-               const media::VideoCaptureCapabilities& capabilities);
-    ~DeviceInfo();
-
-    media::VideoCaptureDevice::Name name;
-    media::VideoCaptureCapabilities capabilities;
-  };
-  typedef std::vector<DeviceInfo> DevicesInfo;
 
   // Check to see if |entry| has no clients left on its controller. If so,
   // remove it from the list of devices, and delete it asynchronously. |entry|
@@ -113,9 +94,8 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // Helpers to report an event to our Listener.
   void OnOpened(MediaStreamType type, int capture_session_id);
   void OnClosed(MediaStreamType type, int capture_session_id);
-  void OnDeviceNamesAndCapabilitiesEnumerated(
-      MediaStreamType stream_type,
-      const DevicesInfo& new_devices_info_cache);
+  void OnDevicesEnumerated(MediaStreamType stream_type,
+                           const media::VideoCaptureDevice::Names& names);
 
   // Find a DeviceEntry by its device ID and type, if it is already opened.
   DeviceEntry* GetDeviceEntryForMediaStreamDevice(
@@ -131,13 +111,9 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 
   bool IsOnDeviceThread() const;
 
-  // Queries the Names of the devices in the system; the capabilities of the new
-  // devices are also queried, and consolidated with the copy of the local
-  // device info cache passed. The consolidated list of devices+capabilities is
-  // returned.
-  DevicesInfo GetAvailableDevicesAndCapabilitiesOnDeviceThread(
-      MediaStreamType stream_type,
-      const DevicesInfo& old_device_info_cache);
+  // Queries and returns the available device IDs.
+  media::VideoCaptureDevice::Names GetAvailableDevicesOnDeviceThread(
+      MediaStreamType stream_type);
 
   // Create and Start a new VideoCaptureDevice, storing the result in
   // |entry->video_capture_device|. Ownership of |client| passes to
@@ -150,9 +126,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // Stop and destroy the VideoCaptureDevice held in
   // |entry->video_capture_device|.
   void DoStopDeviceOnDeviceThread(DeviceEntry* entry);
-
-  DeviceInfo* FindDeviceInfoById(const std::string& id,
-                                 DevicesInfo& device_vector);
 
   // The message loop of media stream device thread, where VCD's live.
   scoped_refptr<base::MessageLoopProxy> device_loop_;
@@ -194,18 +167,15 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   typedef std::set<DeviceEntry*> DeviceEntries;
   DeviceEntries devices_;
 
-  // Local cache of the enumerated video capture devices' names and capture
-  // capabilities. A snapshot of the current devices and their capabilities is
-  // composed in GetAvailableDevicesAndCapabilitiesOnDeviceThread() --coming
-  // from EnumerateDevices()--, and this snapshot is used to update this list in
-  // OnDeviceNamesAndCapabilitiesEnumerated(). GetDeviceCapabilities() will
-  // use this list if the device is not started, otherwise it will retrieve the
-  // active device capture format from the VideoCaptureController associated.
-  DevicesInfo devices_info_cache_;
-
   // Set to true if using fake video capture devices for testing, false by
   // default. This is only used for the MEDIA_DEVICE_VIDEO_CAPTURE device type.
   bool use_fake_device_;
+
+  // We cache the enumerated video capture devices in
+  // GetAvailableDevicesOnDeviceThread() and then later look up the requested ID
+  // when a device is created in DoStartDeviceOnDeviceThread(). Used only on the
+  // device thread.
+  media::VideoCaptureDevice::Names video_capture_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureManager);
 };
