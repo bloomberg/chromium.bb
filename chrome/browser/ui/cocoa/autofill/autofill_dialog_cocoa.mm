@@ -197,14 +197,14 @@ string16 AutofillDialogCocoa::GetTextContentsOfInput(const DetailInput& input) {
 void AutofillDialogCocoa::SetTextContentsOfInput(const DetailInput& input,
                                                  const string16& contents) {
   [sheet_delegate_ setTextContents:base::SysUTF16ToNSString(contents)
-                            forInput:input];
+                          forInput:input];
 }
 
 void AutofillDialogCocoa::SetTextContentsOfSuggestionInput(
     DialogSection section,
     const base::string16& text) {
   [sheet_delegate_ setTextContents:base::SysUTF16ToNSString(text)
-              ofSuggestionForSection:section];
+            ofSuggestionForSection:section];
 }
 
 void AutofillDialogCocoa::ActivateInput(const DetailInput& input) {
@@ -341,7 +341,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
     accountChooser_.reset([[AutofillAccountChooser alloc]
                               initWithFrame:NSZeroRect
-                                 delegate:autofillDialog->delegate()]);
+                                   delegate:autofillDialog->delegate()]);
 
     loadingShieldTextField_.reset(
         [[NSTextField alloc] initWithFrame:NSZeroRect]);
@@ -468,8 +468,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
                kAccountChooserHeight, NSMinYEdge);
   NSDivideRect(mainRect, &dummyRect, &mainRect,
                autofill::kDetailVerticalPadding, NSMinYEdge);
-  headerRect = NSInsetRect(
-      headerRect, chrome_style::kHorizontalPadding, 0);
+  headerRect = NSInsetRect(headerRect, chrome_style::kHorizontalPadding, 0);
   NSDivideRect(headerRect, &titleRect, &headerRect,
                NSWidth([titleTextField_ frame]), NSMinXEdge);
 
