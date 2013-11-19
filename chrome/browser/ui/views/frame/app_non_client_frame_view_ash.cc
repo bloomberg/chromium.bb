@@ -198,7 +198,7 @@ gfx::Rect AppNonClientFrameViewAsh::GetBoundsForTabStrip(
 }
 
 BrowserNonClientFrameView::TabStripInsets
-AppNonClientFrameViewAsh::GetTabStripInsets(bool restored) const {
+AppNonClientFrameViewAsh::GetTabStripInsets() const {
   return TabStripInsets();
 }
 

@@ -35,7 +35,7 @@ class BrowserNonClientFrameViewAsh
 
   // BrowserNonClientFrameView overrides:
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
-  virtual TabStripInsets GetTabStripInsets(bool force_restored) const OVERRIDE;
+  virtual TabStripInsets GetTabStripInsets() const OVERRIDE;
   virtual int GetThemeBackgroundXInset() const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
 

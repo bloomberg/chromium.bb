@@ -184,7 +184,7 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
       browser()->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ?
       tab_strip_->GetMinimumSize() : gfx::Size());
   BrowserNonClientFrameView::TabStripInsets tab_strip_insets(
-      browser_view_->frame()->GetTabStripInsets(false));
+      browser_view_->frame()->GetTabStripInsets());
   gfx::Size toolbar_size(
       (browser()->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
        browser()->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR)) ?
@@ -346,7 +346,7 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
         browser_view_->GetMirroredX() +
         browser_view_->frame()->GetThemeBackgroundXInset();
     tab_strip_->SetBackgroundOffset(
-        gfx::Point(x, browser_view_->frame()->GetTabStripInsets(false).top));
+        gfx::Point(x, browser_view_->frame()->GetTabStripInsets().top));
   }
   top = LayoutToolbar(top);
 

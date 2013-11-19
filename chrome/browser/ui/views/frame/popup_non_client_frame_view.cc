@@ -47,7 +47,7 @@ gfx::Rect PopupNonClientFrameView::GetBoundsForTabStrip(
 }
 
 BrowserNonClientFrameView::TabStripInsets
-PopupNonClientFrameView::GetTabStripInsets(bool restored) const {
+PopupNonClientFrameView::GetTabStripInsets() const {
   return TabStripInsets();
 }
 

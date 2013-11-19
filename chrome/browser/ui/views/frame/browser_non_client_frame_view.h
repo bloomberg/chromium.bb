@@ -43,10 +43,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   // Returns the bounds within which the TabStrip should be laid out.
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const = 0;
 
-  // Returns the TabStripInsets within the window at which the tab strip is
-  // positioned. If |as_restored| is true, this is calculated as if we were in
-  // restored mode regardless of the current mode.
-  virtual TabStripInsets GetTabStripInsets(bool force_restored) const = 0;
+  // Returns the amount that the tab strip is inset from the edges of the
+  // window.
+  virtual TabStripInsets GetTabStripInsets() const = 0;
 
   // Returns the amount that the theme background should be inset.
   virtual int GetThemeBackgroundXInset() const = 0;

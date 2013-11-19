@@ -59,11 +59,9 @@ class BrowserFrame
   // TabStrip view.
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const;
 
-  // Returns the y coordinate within the window at which the horizontal TabStrip
-  // begins (or would begin).  If |force_restored| is true, this is calculated
-  // as if we were in restored mode regardless of the current mode.
-  BrowserNonClientFrameView::TabStripInsets GetTabStripInsets(
-      bool force_restored) const;
+  // Returns the amount that the tab strip is inset from the edges of the
+  // window.
+  BrowserNonClientFrameView::TabStripInsets GetTabStripInsets() const;
 
   // Returns the amount that the theme background should be inset.
   int GetThemeBackgroundXInset() const;

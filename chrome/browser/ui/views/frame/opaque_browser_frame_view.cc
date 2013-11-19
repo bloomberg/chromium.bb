@@ -171,11 +171,11 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
 }
 
 BrowserNonClientFrameView::TabStripInsets
-OpaqueBrowserFrameView::GetTabStripInsets(bool restored) const {
+OpaqueBrowserFrameView::GetTabStripInsets() const {
   if (!browser_view()->IsTabStripVisible())
     return TabStripInsets();
   // TODO: include OTR and caption.
-  return TabStripInsets(layout_->GetTabStripInsetsTop(restored), 0, 0);
+  return TabStripInsets(layout_->GetTabStripInsetsTop(false), 0, 0);
 }
 
 int OpaqueBrowserFrameView::GetThemeBackgroundXInset() const {
@@ -597,9 +597,11 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // Theme frame must be aligned with the tabstrip as if we were
   // in restored mode.  Note that the top of the tabstrip is
   // kTabstripTopShadowThickness px off the top of the screen.
-  int theme_background_y = -(GetTabStripInsets(true).top +
-      kTabstripTopShadowThickness);
-  frame_background_->set_theme_background_y(theme_background_y);
+  int restored_tabstrip_top_inset = 0;
+  if (browser_view()->IsTabStripVisible())
+    restored_tabstrip_top_inset = layout_->GetTabStripInsetsTop(true);
+  frame_background_->set_theme_background_y(
+      -restored_tabstrip_top_inset - kTabstripTopShadowThickness);
 
   frame_background_->PaintMaximized(canvas, this);
 
@@ -655,7 +657,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
   canvas->TileImageInt(*theme_toolbar,
                        x + GetThemeBackgroundXInset(),
-                       bottom_y - GetTabStripInsets(false).top,
+                       bottom_y - GetTabStripInsets().top,
                        x, bottom_y, w, theme_toolbar->height());
 
   // Draw rounded corners for the tab.

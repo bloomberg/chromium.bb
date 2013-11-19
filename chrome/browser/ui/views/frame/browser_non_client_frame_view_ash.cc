@@ -125,14 +125,14 @@ gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStrip(
   // bounds are still used to compute the tab strip bounds so that the tabs have
   // the same horizontal position when the tab strip is painted in the immersive
   // light bar style as when the top-of-window views are revealed.
-  TabStripInsets insets(GetTabStripInsets(false));
+  TabStripInsets insets(GetTabStripInsets());
   return gfx::Rect(insets.left, insets.top,
                    std::max(0, width() - insets.left - insets.right),
                    tabstrip->GetPreferredSize().height());
 }
 
 BrowserNonClientFrameView::TabStripInsets
-BrowserNonClientFrameViewAsh::GetTabStripInsets(bool force_restored) const {
+BrowserNonClientFrameViewAsh::GetTabStripInsets() const {
   int left = avatar_button() ? kAvatarSideSpacing +
       browser_view()->GetOTRAvatarIcon().width() + kAvatarSideSpacing :
       kTabstripLeftSpacing;
@@ -142,12 +142,8 @@ BrowserNonClientFrameViewAsh::GetTabStripInsets(bool force_restored) const {
   int right = header_painter_->GetRightInset() + extra_right;
 
   int top = NonClientTopBorderHeight();
-  if (force_restored)
-    top = kTabstripTopSpacingTall;
-
   if (browser_view()->IsTabStripVisible() &&
-      !UseImmersiveLightbarHeaderStyle() &&
-      !force_restored) {
+      !UseImmersiveLightbarHeaderStyle()) {
     if (UseShortHeader()) {
       if (ash::switches::UseAlternateFrameCaptionButtonStyle())
         top += kTabstripTopSpacingShortAlternateCaptionButtonStyle;
@@ -282,7 +278,7 @@ void BrowserNonClientFrameViewAsh::Layout() {
   header_painter_->LayoutHeader(UseShortHeader());
   int header_height = 0;
   if (browser_view()->IsTabStripVisible()) {
-    header_height = GetTabStripInsets(false).top +
+    header_height = GetTabStripInsets().top +
         browser_view()->GetTabStripHeight();
   } else if (browser_view()->IsToolbarVisible()) {
     // Set the header's height so that it overlaps with the toolbar because the
@@ -413,11 +409,11 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   DCHECK(avatar_button());
   gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
 
-  int avatar_bottom = GetTabStripInsets(false).top +
+  int avatar_bottom = GetTabStripInsets().top +
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
   int avatar_restored_y = avatar_bottom - incognito_icon.height();
   int avatar_y = (frame()->IsMaximized() || frame()->IsFullscreen()) ?
-      GetTabStripInsets(false).top + kContentShadowHeight :
+      GetTabStripInsets().top + kContentShadowHeight :
       avatar_restored_y;
 
   // Hide the incognito icon in immersive fullscreen when the tab light bar is
@@ -490,7 +486,7 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
   canvas->TileImageInt(
       *theme_toolbar,
       x + GetThemeBackgroundXInset(),
-      bottom_y - GetTabStripInsets(false).top,
+      bottom_y - GetTabStripInsets().top,
       x, bottom_y,
       w, theme_toolbar->height());
 
