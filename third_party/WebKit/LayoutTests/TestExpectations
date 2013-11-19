@@ -45,10 +45,6 @@ crbug.com/319001 inspector/profiler/heap-snapshot-summary-search-by-id.html [ Pa
 
 # crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ ImageOnlyFailure Pass ]
 
-# -----------------------------------------------------------------
-# SVG TESTS
-# -----------------------------------------------------------------
-
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
@@ -323,6 +319,9 @@ crbug.com/316148 [ Win ] http/tests/w3c/webperf/approved/UserTiming/idlharness.h
 crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure Pass ]
 
 crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-column-span-all.html [ Crash Pass ]
+
+# This test has no relevance to Windows XP. Maybe WontFix it?
+crbug.com/261277 [ XP ] fast/events/touch/gesture/pad-gesture-fling.html [ Failure ]
 
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 crbug.com/320732 [ Mac Linux Debug ] http/tests/misc/acid3.html [ Timeout Pass ]
