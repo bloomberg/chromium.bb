@@ -79,6 +79,25 @@ static void {{interface_name}}ReplaceableAttributeSetterCallback(v8::Local<v8::S
 
 
 {##############################################################################}
+{% block security_check_functions %}
+{% if is_check_security and interface_name != 'Window' %}
+bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
+{
+    {{cpp_class_name}}* imp =  {{v8_class_name}}::toNative(host);
+    return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
+}
+
+bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
+{
+    {{cpp_class_name}}* imp =  {{v8_class_name}}::toNative(host);
+    return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block class_attributes %}
 {# FIXME: rename to install_attributes and put into configure_class_template #}
 {% if attributes %}
@@ -115,13 +134,9 @@ static const V8DOMConfiguration::AccessorConfiguration {{v8_class_name}}Accessor
 {##############################################################################}
 {% block class_methods %}
 {# FIXME: rename to install_methods and put into configure_class_template #}
-{% if methods %}
+{% if has_method_configuration %}
 static const V8DOMConfiguration::MethodConfiguration {{v8_class_name}}Methods[] = {
-    {% for method in methods
-       if method.do_not_check_signature and
-          not method.per_context_enabled_function_name and
-          (not method.overload_index or method.overload_index == 1) %}
-    {# For overloaded methods, only generate one accessor #}
+    {% for method in methods if method.do_generate_method_configuration %}
     {% filter conditional(method.conditional_string) %}
     {{method_configuration(method)}},
     {% endfilter %}
@@ -153,7 +168,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
         {% set methods_name, methods_length =
                ('%sMethods' % v8_class_name,
                 'WTF_ARRAY_LENGTH(%sMethods)' % v8_class_name)
-           if methods else (0, 0) %}
+           if has_method_configuration else (0, 0) %}
         {{attributes_name}}, {{attributes_length}},
         {{accessors_name}}, {{accessors_length}},
         {{methods_name}}, {{methods_length}},
@@ -163,6 +178,9 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     UNUSED_PARAM(instanceTemplate);
     UNUSED_PARAM(prototypeTemplate);
+    {% if is_check_security and interface_name != 'Window' %}
+    instanceTemplate->SetAccessCheckCallbacks({{cpp_class_name}}V8Internal::namedSecurityCheck, {{cpp_class_name}}V8Internal::indexedSecurityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class_name}}::wrapperTypeInfo)));
+    {% endif %}
     {% for attribute in attributes if attribute.runtime_enabled_function_name %}
     {% filter conditional(attribute.conditional_string) %}
     if ({{attribute.runtime_enabled_function_name}}()) {

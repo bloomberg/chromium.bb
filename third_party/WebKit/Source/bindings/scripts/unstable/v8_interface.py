@@ -67,11 +67,18 @@ def generate_interface(interface):
     extended_attributes = interface.extended_attributes
     v8_class_name = v8_utilities.v8_class_name(interface)
 
+    is_check_security = 'CheckSecurity' in extended_attributes
+    if is_check_security:
+        includes.update(['bindings/v8/BindingSecurity.h',
+                         'bindings/v8/ExceptionMessages.h',
+                         'bindings/v8/ExceptionState.h'])
+
     template_contents = {
         'cpp_class_name': cpp_name(interface),
         'header_includes': INTERFACE_H_INCLUDES,
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,
+        'is_check_security': is_check_security,
         'v8_class_name': v8_class_name,
     }
 
@@ -93,7 +100,15 @@ def generate_interface(interface):
     methods = [v8_methods.generate_method(interface, method)
                for method in interface.operations]
     generate_overloads(methods)
+    for method in methods:
+        method['do_generate_method_configuration'] = (
+            method['do_not_check_signature'] and
+            not method['per_context_enabled_function_name'] and
+            # For overloaded methods, only generate one accessor
+            ('overload_index' not in method or method['overload_index'] == 1))
+
     template_contents.update({
+        'has_method_configuration': any(method['do_generate_method_configuration'] for method in methods),
         'has_per_context_enabled_methods': any(method['per_context_enabled_function_name'] for method in methods),
         'methods': methods,
     })

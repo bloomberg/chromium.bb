@@ -18,8 +18,14 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% if method.is_custom_element_callbacks %}
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
-    {% if method.is_raises_exception %}
+    {% if method.is_raises_exception or method.is_check_security_for_frame %}
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    {% endif %}
+    {% if method.is_check_security_for_frame %}
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
     {% endif %}
     {% if method.is_check_security_for_node %}
     if (!BindingSecurity::shouldAllowAccessToNode(imp->{{method.name}}(exceptionState), exceptionState)) {

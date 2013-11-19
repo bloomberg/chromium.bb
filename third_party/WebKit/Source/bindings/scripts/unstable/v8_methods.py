@@ -101,6 +101,9 @@ def generate_method(interface, method):
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
+        'is_check_security_for_frame': (
+            'CheckSecurity' in interface.extended_attributes and
+            'DoNotCheckSecurity' not in extended_attributes),
         'is_check_security_for_node': is_check_security_for_node,
         'is_custom': 'Custom' in extended_attributes,
         'is_custom_element_callbacks': is_custom_element_callbacks,

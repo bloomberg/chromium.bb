@@ -4114,6 +4114,11 @@ sub GenerateImplementation
     AddToImplIncludes("platform/TraceEvent.h");
 
     AddIncludesForType($interfaceName);
+    if ($interface->extendedAttributes->{"CheckSecurity"}) {
+        AddToImplIncludes("bindings/v8/BindingSecurity.h");
+        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
+        AddToImplIncludes("bindings/v8/ExceptionState.h");
+    }
 
     my $toActiveDOMObject = InheritsExtendedAttribute($interface, "ActiveDOMObject") ? "${v8ClassName}::toActiveDOMObject" : "0";
     my $toEventTarget = InheritsInterface($interface, "EventTarget") ? "${v8ClassName}::toEventTarget" : "0";

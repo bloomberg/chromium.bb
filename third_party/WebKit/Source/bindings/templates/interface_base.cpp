@@ -92,6 +92,7 @@ template <typename T> void V8_USE(T) { }
 {% endfor %}
 {% block constructor_getter %}{% endblock %}
 {% block replaceable_attribute_setter_and_callback %}{% endblock %}
+{% block security_check_functions %}{% endblock %}
 {# Methods #}
 {% from 'methods.cpp' import generate_method, overload_resolution_method,
        method_callback with context %}
