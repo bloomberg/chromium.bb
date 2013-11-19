@@ -109,6 +109,31 @@ function test_serializer(element) {
   return lines.join("\n");
 }
 
+function mark_diffs(expected, actual) {
+  var expected_lines = expected.split("\n");
+  var actual_lines = actual.split("\n");
+
+  var max_length = Math.max(expected_lines.length, actual_lines.length);
+
+  var expected_diff = ["code", {}];
+  var actual_diff = ["code", {}];
+
+  for (var i=0; i<max_length; i++) {
+    if (expected_lines[i] === actual_lines[i]) {
+      expected_diff.push(expected_lines[i] + "\n");
+      actual_diff.push(actual_lines[i] + "\n");
+    } else {
+      if (expected_lines[i]) {
+        expected_diff.push(["span", {style:"color:red"}, expected_lines[i] + "\n"]);
+      }
+    if (actual_lines[i]) {
+      actual_diff.push(["span", {style:"color:red"}, actual_lines[i] + "\n"]);
+      }
+    }
+  }
+  return [expected_diff, actual_diff];
+}
+
 function print_diffs(test_id, uri_encoded_input, expected, actual, container) {
   container = container ? container : null;
   if (actual) {
@@ -171,8 +196,10 @@ function trackLoaded(e) {
     var cue = track.track.cues[0];
     var frag = cue.getCueAsHTML();
     var got = test_serializer(frag);
-    if (got !== this.expected) {
-        print_diffs(this.test_id, this.url_encoded_input, this.expected, got);
+    // For friendlier output on failures, set window.prettyPrintDiffs.
+    if ('prettyPrintDiffs' in window) {
+        if (got !== this.expected)
+            print_diffs(this.test_id, this.url_encoded_input, this.expected, got);
     }
     assert_equals(got, this.expected);
     this.done();

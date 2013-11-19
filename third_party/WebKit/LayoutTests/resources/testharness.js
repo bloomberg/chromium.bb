@@ -1634,6 +1634,7 @@ policies and contribution forms [3].
     {
         return make_dom(substitute(template, substitutions), output_document);
     }
+    expose(render, "template.render");
 
     /*
      * Utility funcions

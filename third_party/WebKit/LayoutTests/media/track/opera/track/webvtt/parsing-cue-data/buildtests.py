@@ -5,17 +5,16 @@ import urllib
 import hashlib
 
 doctmpl = """<!doctype html>
-<title>WebVTT cue data parser test %s</title>
-<style>video { display:none }</style>
-<script src=/../../../resources/testharness.js></script>
-<script src=/../../../resources/testharnessreport.js></script>
-<script src=/core/standards/html-parsing/html5lib_harness/template.js></script>
-<script src=/core/standards/html-parsing/html5lib_harness/common.js></script>
+<title>WebVTT cue data parser test {testname}</title>
+<style>video {{ display:none }}</style>
+<script src=../../../../../../../resources/testharness.js></script>
+<script src=../../../../../../../resources/testharnessreport.js></script>
 <script src=../common.js></script>
+<p>WebVTT cue data parser test {testname}</p>
 <div id=log></div>
 <script>
 runTests([
-%s
+{testlist}
 ]);
 </script>"""
 
@@ -63,5 +62,5 @@ for file in files:
     f.close()
     barename = file.replace(".dat", "")
     out = open('tests/'+barename+".html", "w")
-    out.write(doctmpl % (barename, ",\n".join(tests)))
+    out.write(doctmpl.format(testname=barename, testlist=",\n".join(tests)))
     out.close()
