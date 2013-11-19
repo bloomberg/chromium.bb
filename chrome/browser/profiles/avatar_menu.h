@@ -128,12 +128,6 @@ class AvatarMenu : public content::NotificationObserver {
   // last active browser changes, the menu will need to reference that browser.
   void ActiveBrowserChanged(Browser* browser);
 
-  // Start the sign-out process for this profile.
-  content::WebContents* BeginSignOut();
-
-  // Use a different URL for logout (for testing only).
-  void SetLogoutURL(const std::string& logout_url);
-
   // Returns true if the add profile link should be shown.
   bool ShouldShowAddNewProfileLink() const;
 

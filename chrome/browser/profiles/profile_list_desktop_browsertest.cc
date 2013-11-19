@@ -7,8 +7,10 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -67,12 +69,14 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, SignOut) {
       content::Source<Browser>(browser()));
 
   EXPECT_FALSE(cache.ProfileIsSigninRequiredAtIndex(index));
-  menu->SetLogoutURL("about:blank");
-  menu->BeginSignOut();
-  EXPECT_TRUE(cache.ProfileIsSigninRequiredAtIndex(index));
-
+  profiles::LockProfile(current_profile);
   window_close_observer.Wait();  // rely on test time-out for failure indication
+
+  EXPECT_TRUE(cache.ProfileIsSigninRequiredAtIndex(index));
   EXPECT_EQ(0U, browser_list->size());
+
+  // Signing out brings up the User Manager which we should close before exit.
+  chrome::HideUserManager();
 }
 
 IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, SwitchToProfile) {

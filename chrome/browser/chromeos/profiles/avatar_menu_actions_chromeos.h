@@ -24,8 +24,6 @@ class AvatarMenuActionsChromeOS : public AvatarMenuActions {
   virtual void EditProfile(Profile* profile, size_t index) OVERRIDE;
   virtual bool ShouldShowAddNewProfileLink() const OVERRIDE;
   virtual bool ShouldShowEditProfileLink() const OVERRIDE;
-  virtual content::WebContents* BeginSignOut() OVERRIDE;
-  virtual void SetLogoutURL(const std::string& logout_url) OVERRIDE;
   virtual void ActiveBrowserChanged(Browser* browser) OVERRIDE;
 
  private:
