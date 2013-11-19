@@ -7,12 +7,21 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/external_data_manager.h"
-#include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
 
 namespace {
+
+// Dummy policy names.
+const char kTestPolicyName1[] = "policy.test.1";
+const char kTestPolicyName2[] = "policy.test.2";
+const char kTestPolicyName3[] = "policy.test.3";
+const char kTestPolicyName4[] = "policy.test.4";
+const char kTestPolicyName5[] = "policy.test.5";
+const char kTestPolicyName6[] = "policy.test.6";
+const char kTestPolicyName7[] = "policy.test.7";
+const char kTestPolicyName8[] = "policy.test.8";
 
 // Utility functions for the tests.
 void SetPolicy(PolicyMap* map, const char* name, Value* value) {
@@ -42,25 +51,25 @@ scoped_ptr<ExternalDataFetcher> PolicyMapTest::CreateExternalDataFetcher(
 
 TEST_F(PolicyMapTest, SetAndGet) {
   PolicyMap map;
-  SetPolicy(&map, key::kHomepageLocation, Value::CreateStringValue("aaa"));
+  SetPolicy(&map, kTestPolicyName1, Value::CreateStringValue("aaa"));
   StringValue expected("aaa");
-  EXPECT_TRUE(expected.Equals(map.GetValue(key::kHomepageLocation)));
-  SetPolicy(&map, key::kHomepageLocation, Value::CreateStringValue("bbb"));
+  EXPECT_TRUE(expected.Equals(map.GetValue(kTestPolicyName1)));
+  SetPolicy(&map, kTestPolicyName1, Value::CreateStringValue("bbb"));
   StringValue expected_b("bbb");
-  EXPECT_TRUE(expected_b.Equals(map.GetValue(key::kHomepageLocation)));
-  SetPolicy(&map, key::kHomepageLocation,
+  EXPECT_TRUE(expected_b.Equals(map.GetValue(kTestPolicyName1)));
+  SetPolicy(&map, kTestPolicyName1,
             CreateExternalDataFetcher("dummy").release());
-  EXPECT_FALSE(map.GetValue(key::kHomepageLocation));
-  const PolicyMap::Entry* entry = map.Get(key::kHomepageLocation);
+  EXPECT_FALSE(map.GetValue(kTestPolicyName1));
+  const PolicyMap::Entry* entry = map.Get(kTestPolicyName1);
   ASSERT_TRUE(entry != NULL);
   EXPECT_EQ(POLICY_LEVEL_MANDATORY, entry->level);
   EXPECT_EQ(POLICY_SCOPE_USER, entry->scope);
   EXPECT_TRUE(ExternalDataFetcher::Equals(
       entry->external_data_fetcher, CreateExternalDataFetcher("dummy").get()));
-  map.Set(key::kHomepageLocation, POLICY_LEVEL_RECOMMENDED,
+  map.Set(kTestPolicyName1, POLICY_LEVEL_RECOMMENDED,
           POLICY_SCOPE_MACHINE, NULL, NULL);
-  EXPECT_FALSE(map.GetValue(key::kHomepageLocation));
-  entry = map.Get(key::kHomepageLocation);
+  EXPECT_FALSE(map.GetValue(kTestPolicyName1));
+  entry = map.Get(kTestPolicyName1);
   ASSERT_TRUE(entry != NULL);
   EXPECT_EQ(POLICY_LEVEL_RECOMMENDED, entry->level);
   EXPECT_EQ(POLICY_SCOPE_MACHINE, entry->scope);
@@ -69,22 +78,22 @@ TEST_F(PolicyMapTest, SetAndGet) {
 
 TEST_F(PolicyMapTest, Equals) {
   PolicyMap a;
-  SetPolicy(&a, key::kHomepageLocation, Value::CreateStringValue("aaa"));
+  SetPolicy(&a, kTestPolicyName1, Value::CreateStringValue("aaa"));
   PolicyMap a2;
-  SetPolicy(&a2, key::kHomepageLocation, Value::CreateStringValue("aaa"));
+  SetPolicy(&a2, kTestPolicyName1, Value::CreateStringValue("aaa"));
   PolicyMap b;
-  SetPolicy(&b, key::kHomepageLocation, Value::CreateStringValue("bbb"));
+  SetPolicy(&b, kTestPolicyName1, Value::CreateStringValue("bbb"));
   PolicyMap c;
-  SetPolicy(&c, key::kHomepageLocation, Value::CreateStringValue("aaa"));
-  SetPolicy(&c, key::kHomepageIsNewTabPage, Value::CreateBooleanValue(true));
+  SetPolicy(&c, kTestPolicyName1, Value::CreateStringValue("aaa"));
+  SetPolicy(&c, kTestPolicyName2, Value::CreateBooleanValue(true));
   PolicyMap d;
-  SetPolicy(&d, key::kHomepageLocation,
+  SetPolicy(&d, kTestPolicyName1,
             CreateExternalDataFetcher("ddd").release());
   PolicyMap d2;
-  SetPolicy(&d2, key::kHomepageLocation,
+  SetPolicy(&d2, kTestPolicyName1,
             CreateExternalDataFetcher("ddd").release());
   PolicyMap e;
-  SetPolicy(&e, key::kHomepageLocation,
+  SetPolicy(&e, kTestPolicyName1,
             CreateExternalDataFetcher("eee").release());
   EXPECT_FALSE(a.Equals(b));
   EXPECT_FALSE(a.Equals(c));
@@ -120,25 +129,25 @@ TEST_F(PolicyMapTest, Equals) {
 
 TEST_F(PolicyMapTest, Swap) {
   PolicyMap a;
-  SetPolicy(&a, key::kHomepageLocation, Value::CreateStringValue("aaa"));
-  SetPolicy(&a, key::kAlternateErrorPagesEnabled,
+  SetPolicy(&a, kTestPolicyName1, Value::CreateStringValue("aaa"));
+  SetPolicy(&a, kTestPolicyName2,
             CreateExternalDataFetcher("dummy").release());
   PolicyMap b;
-  SetPolicy(&b, key::kHomepageLocation, Value::CreateStringValue("bbb"));
-  SetPolicy(&b, key::kHomepageIsNewTabPage, Value::CreateBooleanValue(true));
+  SetPolicy(&b, kTestPolicyName1, Value::CreateStringValue("bbb"));
+  SetPolicy(&b, kTestPolicyName3, Value::CreateBooleanValue(true));
 
   a.Swap(&b);
   base::StringValue expected("bbb");
-  EXPECT_TRUE(expected.Equals(a.GetValue(key::kHomepageLocation)));
+  EXPECT_TRUE(expected.Equals(a.GetValue(kTestPolicyName1)));
   base::FundamentalValue expected_bool(true);
-  EXPECT_TRUE(expected_bool.Equals(a.GetValue(key::kHomepageIsNewTabPage)));
-  EXPECT_FALSE(a.GetValue(key::kAlternateErrorPagesEnabled));
-  EXPECT_FALSE(a.Get(key::kAlternateErrorPagesEnabled));
+  EXPECT_TRUE(expected_bool.Equals(a.GetValue(kTestPolicyName3)));
+  EXPECT_FALSE(a.GetValue(kTestPolicyName2));
+  EXPECT_FALSE(a.Get(kTestPolicyName2));
   StringValue expected_a("aaa");
-  EXPECT_TRUE(expected_a.Equals(b.GetValue(key::kHomepageLocation)));
-  EXPECT_FALSE(b.GetValue(key::kHomepageIsNewTabPage));
-  EXPECT_FALSE(a.GetValue(key::kAlternateErrorPagesEnabled));
-  const PolicyMap::Entry* entry = b.Get(key::kAlternateErrorPagesEnabled);
+  EXPECT_TRUE(expected_a.Equals(b.GetValue(kTestPolicyName1)));
+  EXPECT_FALSE(b.GetValue(kTestPolicyName3));
+  EXPECT_FALSE(a.GetValue(kTestPolicyName2));
+  const PolicyMap::Entry* entry = b.Get(kTestPolicyName2);
   ASSERT_TRUE(entry);
   EXPECT_TRUE(ExternalDataFetcher::Equals(
       CreateExternalDataFetcher("dummy").get(), entry->external_data_fetcher));
@@ -152,35 +161,35 @@ TEST_F(PolicyMapTest, Swap) {
 
 TEST_F(PolicyMapTest, MergeFrom) {
   PolicyMap a;
-  a.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+  a.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         Value::CreateStringValue("google.com"), NULL);
-  a.Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+  a.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         Value::CreateBooleanValue(true), NULL);
-  a.Set(key::kAlternateErrorPagesEnabled,
+  a.Set(kTestPolicyName3,
         POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         NULL, CreateExternalDataFetcher("a").release());
-  a.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+  a.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
         Value::CreateBooleanValue(false), NULL);
-  a.Set(key::kDefaultSearchProviderSearchURL,
+  a.Set(kTestPolicyName5,
         POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
         Value::CreateStringValue("google.com/q={x}"), NULL);
 
   PolicyMap b;
-  b.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+  b.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         Value::CreateStringValue("chromium.org"), NULL);
-  b.Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+  b.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         Value::CreateBooleanValue(false), NULL);
-  b.Set(key::kAlternateErrorPagesEnabled,
+  b.Set(kTestPolicyName3,
         POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         NULL, CreateExternalDataFetcher("b").release());
-  b.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_RECOMMENDED,
+  b.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_MACHINE, Value::CreateBooleanValue(true), NULL);
-  b.Set(key::kDefaultSearchProviderSearchURL,
+  b.Set(kTestPolicyName5,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
         Value::CreateStringValue(std::string()),
         NULL);
-  b.Set(key::kDisableSpdy,
+  b.Set(kTestPolicyName6,
         POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_USER,
         Value::CreateBooleanValue(true),
@@ -190,25 +199,25 @@ TEST_F(PolicyMapTest, MergeFrom) {
 
   PolicyMap c;
   // POLICY_SCOPE_MACHINE over POLICY_SCOPE_USER.
-  c.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+  c.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         Value::CreateStringValue("chromium.org"), NULL);
   // |a| has precedence over |b|.
-  c.Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+  c.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         Value::CreateBooleanValue(true), NULL);
-  c.Set(key::kAlternateErrorPagesEnabled,
+  c.Set(kTestPolicyName3,
         POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         NULL, CreateExternalDataFetcher("a").release());
   // POLICY_SCOPE_MACHINE over POLICY_SCOPE_USER for POLICY_LEVEL_RECOMMENDED.
-  c.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_RECOMMENDED,
+  c.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_MACHINE, Value::CreateBooleanValue(true), NULL);
   // POLICY_LEVEL_MANDATORY over POLICY_LEVEL_RECOMMENDED.
-  c.Set(key::kDefaultSearchProviderSearchURL,
+  c.Set(kTestPolicyName5,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
         Value::CreateStringValue(std::string()),
         NULL);
   // Merge new ones.
-  c.Set(key::kDisableSpdy, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+  c.Set(kTestPolicyName6, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
         Value::CreateBooleanValue(true), NULL);
 
   EXPECT_TRUE(a.Equals(c));
@@ -216,40 +225,40 @@ TEST_F(PolicyMapTest, MergeFrom) {
 
 TEST_F(PolicyMapTest, GetDifferingKeys) {
   PolicyMap a;
-  a.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+  a.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         Value::CreateStringValue("google.com"), NULL);
-  a.Set(key::kSearchSuggestEnabled,
+  a.Set(kTestPolicyName2,
         POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         NULL, CreateExternalDataFetcher("dummy").release());
-  a.Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+  a.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         Value::CreateBooleanValue(true), NULL);
-  a.Set(key::kAlternateErrorPagesEnabled,
+  a.Set(kTestPolicyName4,
         POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         NULL, CreateExternalDataFetcher("a").release());
-  a.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+  a.Set(kTestPolicyName5, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
         Value::CreateBooleanValue(false), NULL);
-  a.Set(key::kDefaultSearchProviderSearchURL,
+  a.Set(kTestPolicyName6,
         POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
         Value::CreateStringValue("google.com/q={x}"), NULL);
-  a.Set(key::kDisable3DAPIs, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+  a.Set(kTestPolicyName7, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         Value::CreateBooleanValue(true), NULL);
 
   PolicyMap b;
-  b.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+  b.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         Value::CreateStringValue("google.com"), NULL);
-  b.Set(key::kSearchSuggestEnabled,
+  b.Set(kTestPolicyName2,
         POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         NULL, CreateExternalDataFetcher("dummy").release());
-  b.Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+  b.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         Value::CreateBooleanValue(false), NULL);
-  b.Set(key::kAlternateErrorPagesEnabled,
+  b.Set(kTestPolicyName4,
         POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         NULL, CreateExternalDataFetcher("b").release());
-  b.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+  b.Set(kTestPolicyName5, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         Value::CreateBooleanValue(false), NULL);
-  b.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_RECOMMENDED,
+  b.Set(kTestPolicyName6, POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_USER, Value::CreateStringValue("google.com/q={x}"), NULL);
-  b.Set(key::kDisableSpdy, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+  b.Set(kTestPolicyName8, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
         Value::CreateBooleanValue(true), NULL);
 
   std::set<std::string> diff;
@@ -259,20 +268,20 @@ TEST_F(PolicyMapTest, GetDifferingKeys) {
   // Order shouldn't matter.
   EXPECT_EQ(diff, diff2);
   // No change.
-  EXPECT_TRUE(diff.find(key::kHomepageLocation) == diff.end());
-  EXPECT_TRUE(diff.find(key::kSearchSuggestEnabled) == diff.end());
+  EXPECT_TRUE(diff.find(kTestPolicyName1) == diff.end());
+  EXPECT_TRUE(diff.find(kTestPolicyName2) == diff.end());
   // Different values.
-  EXPECT_TRUE(diff.find(key::kShowHomeButton) != diff.end());
+  EXPECT_TRUE(diff.find(kTestPolicyName3) != diff.end());
   // Different external data references.
-  EXPECT_TRUE(diff.find(key::kAlternateErrorPagesEnabled) != diff.end());
+  EXPECT_TRUE(diff.find(kTestPolicyName4) != diff.end());
   // Different levels.
-  EXPECT_TRUE(diff.find(key::kBookmarkBarEnabled) != diff.end());
+  EXPECT_TRUE(diff.find(kTestPolicyName5) != diff.end());
   // Different scopes.
-  EXPECT_TRUE(diff.find(key::kDefaultSearchProviderSearchURL) != diff.end());
+  EXPECT_TRUE(diff.find(kTestPolicyName6) != diff.end());
   // Not in |a|.
-  EXPECT_TRUE(diff.find(key::kDisableSpdy) != diff.end());
+  EXPECT_TRUE(diff.find(kTestPolicyName8) != diff.end());
   // Not in |b|.
-  EXPECT_TRUE(diff.find(key::kDisable3DAPIs) != diff.end());
+  EXPECT_TRUE(diff.find(kTestPolicyName7) != diff.end());
   // No surprises.
   EXPECT_EQ(6u, diff.size());
 }

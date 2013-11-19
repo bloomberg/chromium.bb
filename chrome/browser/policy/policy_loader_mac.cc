@@ -22,7 +22,6 @@
 #include "chrome/browser/policy/preferences_mac.h"
 #include "chrome/browser/policy/schema_map.h"
 #include "components/policy/core/common/schema.h"
-#include "policy/policy_constants.h"
 
 using base::mac::CFCast;
 using base::ScopedCFTypeRef;
