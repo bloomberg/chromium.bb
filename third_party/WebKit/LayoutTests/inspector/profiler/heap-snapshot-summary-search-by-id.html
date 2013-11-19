@@ -67,7 +67,8 @@ function test()
                 view.performSearch("@401", checkNodeIsHighlighted.bind(this, "A", "401", next));
             }
 
-            function checkNodeIsHighlighted(constructorName, nodeId, onSuccess, view, resultCount) {
+            function checkNodeIsHighlighted(constructorName, nodeId, onSuccess, view, resultCount)
+            {
                 if (resultCount !== 1) {
                     InspectorTest.addResult("FAIL: node @" + nodeId + " not found");
                     return next();
@@ -96,6 +97,7 @@ function test()
                                         onSuccess();
                                     }
                                     InspectorTest.addSniffer(WebInspector.HeapSnapshotSortableDataGrid.prototype, "highlightNode", afterScroll);
+                                    return;
                                 } else {
                                     InspectorTest.addResult("FAIL: node is not highlighted");
                                     return next();
