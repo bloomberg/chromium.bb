@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/extensions/suspicious_extension_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
@@ -163,6 +164,8 @@ ToolbarView::~ToolbarView() {
 }
 
 void ToolbarView::Init() {
+  GetWidget()->AddObserver(this);
+
   back_ = new views::ButtonDropDown(this, new BackForwardMenuModel(
       browser_, BackForwardMenuModel::BACKWARD_MENU));
   back_->set_triggerable_event_flags(
@@ -251,6 +254,14 @@ void ToolbarView::Init() {
         l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_BACK));
     forward_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_FORWARD));
+  }
+}
+
+void ToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
+                                            bool visible) {
+  if (visible) {
+    extensions::SuspiciousExtensionBubbleView::MaybeShow(browser_, app_menu_);
+    GetWidget()->RemoveObserver(this);
   }
 }
 

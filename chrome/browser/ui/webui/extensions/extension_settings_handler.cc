@@ -420,10 +420,6 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_USE_APPS_DEV_TOOLS));
   source->AddString("extensionSettingsOpenAppsDevTools",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPEN_APPS_DEV_TOOLS));
-  source->AddString("sideloadWipeoutUrl",
-      chrome::kSideloadWipeoutHelpURL);
-  source->AddString("sideloadWipoutLearnMore",
-      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   source->AddString("extensionSettingsShowButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_BUTTON));
   source->AddString("extensionSettingsLoadUnpackedButton",

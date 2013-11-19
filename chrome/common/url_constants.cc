@@ -502,9 +502,6 @@ const char kSyncEncryptionHelpURL[] =
 const char kSyncErrorsHelpURL[] =
     "https://support.google.com/chrome/?p=settings_sync_error";
 
-const char kSideloadWipeoutHelpURL[] =
-    "https://support.google.com/chrome/?p=ui_remove_non_cws_extensions";
-
 #if defined(OS_CHROMEOS)
 const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromeos/?p=simple_scrolling";
