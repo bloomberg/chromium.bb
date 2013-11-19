@@ -128,6 +128,8 @@ extern "C" {
 #define DRM_MODE_ENCODER_TMDS   2
 #define DRM_MODE_ENCODER_LVDS   3
 #define DRM_MODE_ENCODER_TVDAC  4
+#define DRM_MODE_ENCODER_VIRTUAL 5
+#define DRM_MODE_ENCODER_DSI	6
 
 #define DRM_MODE_SUBCONNECTOR_Automatic 0
 #define DRM_MODE_SUBCONNECTOR_Unknown   0
@@ -136,6 +138,7 @@ extern "C" {
 #define DRM_MODE_SUBCONNECTOR_Composite 5
 #define DRM_MODE_SUBCONNECTOR_SVIDEO    6
 #define DRM_MODE_SUBCONNECTOR_Component 8
+#define DRM_MODE_SUBCONNECTOR_SCART     9
 
 #define DRM_MODE_CONNECTOR_Unknown      0
 #define DRM_MODE_CONNECTOR_VGA          1
@@ -152,6 +155,8 @@ extern "C" {
 #define DRM_MODE_CONNECTOR_HDMIB        12
 #define DRM_MODE_CONNECTOR_TV		13
 #define DRM_MODE_CONNECTOR_eDP		14
+#define DRM_MODE_CONNECTOR_VIRTUAL      15
+#define DRM_MODE_CONNECTOR_DSI          16
 
 #define DRM_MODE_PROP_PENDING   (1<<0)
 #define DRM_MODE_PROP_RANGE     (1<<1)
