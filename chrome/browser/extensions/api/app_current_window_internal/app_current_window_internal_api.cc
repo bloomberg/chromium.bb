@@ -8,6 +8,7 @@
 #include "apps/shell_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
+#include "chrome/browser/extensions/api/app_window/app_window_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/app_current_window_internal.h"
 #include "chrome/common/extensions/api/app_window.h"
@@ -277,7 +278,7 @@ bool AppCurrentWindowInternalSetInputRegionFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetAlwaysOnTopFunction::RunWithWindow(
     ShellWindow* window) {
-  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
+  if (!AppWindowCreateFunction::AllowAlwaysOnTopWindows(GetExtension()->id())) {
     error_ = kDevChannelOnly;
     return false;
   }
