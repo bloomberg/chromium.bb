@@ -11,6 +11,7 @@ namespace chrome {
 void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
                             CryptoModulePasswordReason reason,
                             const std::string& host,
+                            gfx::NativeWindow parent,
                             const base::Closure& callback) {
   // TODO(bulach): implement me.
   NOTREACHED();
@@ -19,6 +20,7 @@ void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
 void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
                                CryptoModulePasswordReason reason,
                                const std::string& host,
+                               gfx::NativeWindow parent,
                                const base::Closure& callback) {
   // TODO(bulach): implement me.
   NOTREACHED();
