@@ -1503,6 +1503,9 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
       (new PPB_View_Shared(ppapi::OBJECT_IS_IMPL,
                            pp_instance(), view_data_))->GetReference());
 
+  if (bound_graphics_2d_platform_)
+    bound_graphics_2d_platform_->DidChangeView(view_data_);
+
   // It's possible that Delete() has been called but the renderer hasn't
   // released its reference to this object yet.
   if (instance_interface_) {
@@ -1510,13 +1513,6 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
                                        &view_data_.rect,
                                        &view_data_.clip_rect);
   }
-
-  if (bound_graphics_2d_platform_)
-    bound_graphics_2d_platform_->DidChangeView(view_data_);
-
-  instance_interface_->DidChangeView(pp_instance(), resource,
-                                     &view_data_.rect,
-                                     &view_data_.clip_rect);
 }
 
 void PepperPluginInstanceImpl::ReportGeometry() {

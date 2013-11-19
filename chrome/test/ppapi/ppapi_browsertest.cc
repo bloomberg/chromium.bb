@@ -276,14 +276,6 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest,
   RunTest("Instance_ExecuteScriptAtInstanceShutdown");
 }
 
-#if defined(OS_WIN)
-// Flaky on Win7. http://crbug.com/320548
-#define MAYBE_Graphics2D_FlushOffscreenUpdate \
-    DISABLED_Graphics2D_FlushOffscreenUpdate
-#else
-#define MAYBE_Graphics2D_FlushOffscreenUpdate Graphics2D_FlushOffscreenUpdate
-#endif
-
 TEST_PPAPI_IN_PROCESS(Graphics2D)
 TEST_PPAPI_OUT_OF_PROCESS(Graphics2D)
 // Graphics2D_Dev isn't supported in NaCl, only test the other interfaces
@@ -297,7 +289,7 @@ TEST_PPAPI_NACL(Graphics2D_Paint)
 TEST_PPAPI_NACL(Graphics2D_Scroll)
 TEST_PPAPI_NACL(Graphics2D_Replace)
 TEST_PPAPI_NACL(Graphics2D_Flush)
-TEST_PPAPI_NACL(MAYBE_Graphics2D_FlushOffscreenUpdate)
+TEST_PPAPI_NACL(Graphics2D_FlushOffscreenUpdate)
 TEST_PPAPI_NACL(Graphics2D_BindNull)
 
 #if defined(OS_WIN)
