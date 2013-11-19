@@ -40,7 +40,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/insets.h"
@@ -50,6 +50,7 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/button/button.h"
@@ -508,9 +509,9 @@ void PublicAccountUserDetails::Layout() {
     return;
 
   // Word-wrap the label text.
-  const gfx::Font font;
+  const gfx::FontList font_list;
   std::vector<base::string16> lines;
-  gfx::ElideRectangleText(text_, font, contents_area.width(),
+  gfx::ElideRectangleText(text_, font_list, contents_area.width(),
                           contents_area.height(), gfx::ELIDE_LONG_WORDS,
                           &lines);
   // Loop through the lines, creating a renderer for each.
@@ -551,7 +552,7 @@ void PublicAccountUserDetails::Layout() {
   // Position the link after the label text, separated by a space. If it does
   // not fit onto the last line of the text, wrap the link onto its own line.
   const gfx::Size last_line_size = lines_.back()->GetStringSize();
-  const int space_width = font.GetStringWidth(ASCIIToUTF16(" "));
+  const int space_width = gfx::GetStringWidth(ASCIIToUTF16(" "), font_list);
   const gfx::Size link_size = learn_more_->GetPreferredSize();
   if (contents_area.width() - last_line_size.width() >=
       space_width + link_size.width()) {
@@ -588,9 +589,9 @@ void PublicAccountUserDetails::LinkClicked(views::Link* source,
 
 void PublicAccountUserDetails::CalculatePreferredSize(SystemTrayItem* owner,
                                                       int used_width) {
-  const gfx::Font font;
+  const gfx::FontList font_list;
   const gfx::Size link_size = learn_more_->GetPreferredSize();
-  const int space_width = font.GetStringWidth(ASCIIToUTF16(" "));
+  const int space_width = gfx::GetStringWidth(ASCIIToUTF16(" "), font_list);
   const gfx::Insets insets = GetInsets();
   views::TrayBubbleView* bubble_view =
       owner->system_tray()->GetSystemBubble()->bubble_view();
@@ -598,7 +599,7 @@ void PublicAccountUserDetails::CalculatePreferredSize(SystemTrayItem* owner,
       link_size.width(),
       bubble_view->GetPreferredSize().width() - (used_width + insets.width()));
   int max_width = std::min(
-      font.GetStringWidth(text_) + space_width + link_size.width(),
+      gfx::GetStringWidth(text_, font_list) + space_width + link_size.width(),
       bubble_view->GetMaximumSize().width() - (used_width + insets.width()));
   // Do a binary search for the minimum width that ensures no more than three
   // lines are needed. The lower bound is the minimum of the current bubble
@@ -609,14 +610,14 @@ void PublicAccountUserDetails::CalculatePreferredSize(SystemTrayItem* owner,
   while (min_width < max_width) {
     lines.clear();
     const int width = (min_width + max_width) / 2;
-    const bool too_narrow = gfx::ElideRectangleText(
-        text_, font, width, INT_MAX, gfx::TRUNCATE_LONG_WORDS, &lines) != 0;
+    const bool too_narrow =
+        gfx::ElideRectangleText(text_, font_list, width, INT_MAX,
+                                gfx::TRUNCATE_LONG_WORDS, &lines) != 0;
     int line_count = lines.size();
     if (!too_narrow && line_count == 3 &&
-            width - font.GetStringWidth(lines.back()) <=
-            space_width + link_size.width()) {
+        width - gfx::GetStringWidth(lines.back(), font_list) <=
+            space_width + link_size.width())
       ++line_count;
-    }
     if (too_narrow || line_count > 3)
       min_width = width + 1;
     else
@@ -626,13 +627,13 @@ void PublicAccountUserDetails::CalculatePreferredSize(SystemTrayItem* owner,
   // Calculate the corresponding height and set the preferred size.
   lines.clear();
   gfx::ElideRectangleText(
-      text_, font, min_width, INT_MAX, gfx::TRUNCATE_LONG_WORDS, &lines);
+      text_, font_list, min_width, INT_MAX, gfx::TRUNCATE_LONG_WORDS, &lines);
   int line_count = lines.size();
-  if (min_width - font.GetStringWidth(lines.back()) <=
-      space_width + link_size.width()) {
+  if (min_width - gfx::GetStringWidth(lines.back(), font_list) <=
+          space_width + link_size.width()) {
     ++line_count;
   }
-  const int line_height = font.GetHeight();
+  const int line_height = font_list.GetHeight();
   const int link_extra_height = std::max(
       link_size.height() - learn_more_->GetInsets().top() - line_height, 0);
   preferred_size_ = gfx::Size(
@@ -911,7 +912,8 @@ void UserView::AddUserCard(SystemTrayItem* owner, user::LoginStatus login) {
             UTF8ToUTF16(delegate->GetUserEmail(multiprofile_index_));
     if (!user_email_string.empty()) {
       additional = new views::Label(user_email_string);
-      additional->SetFont(bundle.GetFont(ui::ResourceBundle::SmallFont));
+      additional->SetFontList(
+          bundle.GetFontList(ui::ResourceBundle::SmallFont));
       additional->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     }
   }

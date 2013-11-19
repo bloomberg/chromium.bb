@@ -160,7 +160,8 @@ class InstalledBubbleContent : public views::View,
     }
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const gfx::Font& font = rb.GetFont(ui::ResourceBundle::BaseFont);
+    const gfx::FontList& font_list =
+        rb.GetFontList(ui::ResourceBundle::BaseFont);
 
     // Add the icon (for all flavors).
     // Scale down to 43x43, but allow smaller icons (don't scale up).
@@ -177,14 +178,14 @@ class InstalledBubbleContent : public views::View,
     base::i18n::AdjustStringForLocaleDirection(&extension_name);
     heading_ = new views::Label(l10n_util::GetStringFUTF16(
         IDS_EXTENSION_INSTALLED_HEADING, extension_name));
-    heading_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+    heading_->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
     heading_->SetMultiLine(true);
     heading_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(heading_);
 
     if (flavors_ & HOW_TO_USE) {
       how_to_use_ = new views::Label(GetHowToUseDescription(key));
-      how_to_use_->SetFont(font);
+      how_to_use_->SetFontList(font_list);
       how_to_use_->SetMultiLine(true);
       how_to_use_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       AddChildView(how_to_use_);
@@ -204,7 +205,7 @@ class InstalledBubbleContent : public views::View,
 #else
           IDS_EXTENSION_INSTALLED_MANAGE_INFO));
 #endif
-      manage_->SetFont(font);
+      manage_->SetFontList(font_list);
       manage_->SetMultiLine(true);
       manage_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       AddChildView(manage_);
@@ -219,7 +220,7 @@ class InstalledBubbleContent : public views::View,
                 IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK,
                 l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
       sign_in_link_ = new views::Link(signin_promo_link_text_);
-      sign_in_link_->SetFont(font);
+      sign_in_link_->SetFontList(font_list);
       sign_in_link_->set_listener(this);
       AddChildView(sign_in_link_);
     }
@@ -341,11 +342,11 @@ class InstalledBubbleContent : public views::View,
         offset_x, offset_y, link_size.width(), link_size.height());
 
     // Word-wrap the full label text.
-    const gfx::Font font;
+    const gfx::FontList font_list;
     std::vector<string16> lines;
-    gfx::ElideRectangleText(full_text, font, contents_area.width(),
-                           contents_area.height(), gfx::ELIDE_LONG_WORDS,
-                           &lines);
+    gfx::ElideRectangleText(full_text, font_list, contents_area.width(),
+                            contents_area.height(), gfx::ELIDE_LONG_WORDS,
+                            &lines);
 
     gfx::Point position = gfx::Point(
         contents_area.origin().x() + offset_x,

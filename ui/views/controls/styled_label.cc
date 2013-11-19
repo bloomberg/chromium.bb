@@ -181,20 +181,20 @@ int StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
 
     const gfx::Rect chunk_bounds(x, 0, width - x, 2 * line_height);
     std::vector<string16> substrings;
-    gfx::Font text_font;
+    gfx::FontList text_font_list;
     // If the start of the remaining text is inside a styled range, the font
     // style may differ from the base font. The font specified by the range
     // should be used when eliding text.
     if (position >= range.start()) {
-      text_font =
-          text_font.DeriveFont(0, style_ranges.top().style_info.font_style);
+      text_font_list = text_font_list.DeriveFontListWithSizeDeltaAndStyle(
+          0, style_ranges.top().style_info.font_style);
     }
     gfx::ElideRectangleText(remaining_string,
-                           text_font,
-                           chunk_bounds.width(),
-                           chunk_bounds.height(),
-                           gfx::IGNORE_LONG_WORDS,
-                           &substrings);
+                            text_font_list,
+                            chunk_bounds.width(),
+                            chunk_bounds.height(),
+                            gfx::IGNORE_LONG_WORDS,
+                            &substrings);
 
     DCHECK(!substrings.empty());
     string16 chunk = substrings[0];

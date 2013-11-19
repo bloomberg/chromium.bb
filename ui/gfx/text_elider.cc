@@ -450,12 +450,6 @@ string16 ElideFilename(const base::FilePath& filename,
   return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
 }
 
-string16 ElideFilename(const base::FilePath& filename,
-                       const Font& font,
-                       float available_pixel_width) {
-  return ElideFilename(filename, FontList(font), available_pixel_width);
-}
-
 string16 ElideText(const string16& text,
                    const FontList& font_list,
                    float available_pixel_width,
@@ -1080,17 +1074,6 @@ int ElideRectangleText(const string16& input,
   rect.Init();
   rect.AddString(input);
   return rect.Finalize();
-}
-
-int ElideRectangleText(const string16& input,
-                       const Font& font,
-                       float available_pixel_width,
-                       int available_pixel_height,
-                       WordWrapBehavior wrap_behavior,
-                       std::vector<string16>* lines) {
-  return ElideRectangleText(input, FontList(font),
-                            available_pixel_width, available_pixel_height,
-                            wrap_behavior, lines);
 }
 
 string16 TruncateString(const string16& string, size_t length) {

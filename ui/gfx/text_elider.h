@@ -92,10 +92,6 @@ GFX_EXPORT string16 ElideText(const string16& text,
 GFX_EXPORT string16 ElideFilename(const base::FilePath& filename,
                                   const gfx::FontList& font_list,
                                   float available_pixel_width);
-// Obsolete version.  Use the above version which takes gfx::FontList.
-GFX_EXPORT string16 ElideFilename(const base::FilePath& filename,
-                                  const gfx::Font& font,
-                                  float available_pixel_width);
 
 // SortedDisplayURL maintains a string from a URL suitable for display to the
 // use. SortedDisplayURL also provides a function used for comparing two
@@ -199,13 +195,6 @@ enum ReformattingResultFlags {
 // leading to elision or truncation (and not just reformatting).
 GFX_EXPORT int ElideRectangleText(const string16& text,
                                   const gfx::FontList& font_list,
-                                  float available_pixel_width,
-                                  int available_pixel_height,
-                                  WordWrapBehavior wrap_behavior,
-                                  std::vector<string16>* lines);
-// Obsolete version.  Use the above version which takes gfx::FontList.
-GFX_EXPORT int ElideRectangleText(const string16& text,
-                                  const gfx::Font& font,
                                   float available_pixel_width,
                                   int available_pixel_height,
                                   WordWrapBehavior wrap_behavior,
