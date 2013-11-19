@@ -172,7 +172,6 @@ TEST_F(BindingsConnectorTest, WriteToClosedPipe) {
   EXPECT_TRUE(connector0.EncounteredError());
 }
 
-#if 0
 // Enable this test once MojoWriteMessage supports passing handles.
 TEST_F(BindingsConnectorTest, MessageWithHandles) {
   Connector connector0(handle0_);
@@ -186,12 +185,10 @@ TEST_F(BindingsConnectorTest, MessageWithHandles) {
   Handle handles[2];
   CreateMessagePipe(&handles[0], &handles[1]);
   message.handles.push_back(handles[0]);
-  message.handles.push_back(handles[1]);
 
   connector0.Accept(&message);
 
-  // The message should have been transferred.
-  EXPECT_TRUE(message.data == NULL);
+  // The message should have been transferred, releasing the handles.
   EXPECT_TRUE(message.handles.empty());
 
   MessageAccumulator accumulator;
@@ -207,11 +204,27 @@ TEST_F(BindingsConnectorTest, MessageWithHandles) {
   EXPECT_EQ(std::string(kText),
             std::string(
                 reinterpret_cast<char*>(message_received.data->payload)));
-  ASSERT_EQ(2U, message_received.handles.size());
-  EXPECT_EQ(handles[0].value, message_received.handles[0].value);
-  EXPECT_EQ(handles[1].value, message_received.handles[1].value);
+  ASSERT_EQ(1U, message_received.handles.size());
+
+  // Now send a message to the transferred handle and confirm it's sent through
+  // to the orginal pipe.
+  Connector connector_received(message_received.handles[0]);
+  Connector connector_original(handles[1]);
+
+  AllocMessage(kText, &message);
+
+  connector_received.Accept(&message);
+  connector_original.SetIncomingReceiver(&accumulator);
+  PumpMessages();
+
+  ASSERT_FALSE(accumulator.IsEmpty());
+
+  accumulator.Pop(&message_received);
+
+  EXPECT_EQ(std::string(kText),
+            std::string(
+                reinterpret_cast<char*>(message_received.data->payload)));
 }
-#endif
 
 }  // namespace test
 }  // namespace mojo
