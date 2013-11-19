@@ -183,9 +183,9 @@ void ModuleRegistry::Load(Isolate* isolate, scoped_ptr<PendingModule> pending) {
     return;  // We've already loaded this module.
 
   Handle<Object> modules = Local<Object>::New(isolate, modules_);
-  size_t argc = pending->dependencies.size();
+  uint32_t argc = static_cast<uint32_t>(pending->dependencies.size());
   std::vector<Handle<Value> > argv(argc);
-  for (size_t i = 0; i < argc; ++i) {
+  for (uint32_t i = 0; i < argc; ++i) {
     Handle<String> key = StringToSymbol(isolate, pending->dependencies[i]);
     DCHECK(modules->HasOwnProperty(key));
     argv[i] = modules->Get(key);
