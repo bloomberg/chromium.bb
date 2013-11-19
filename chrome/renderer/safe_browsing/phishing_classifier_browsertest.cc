@@ -28,10 +28,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
-
 using ::testing::AllOf;
 using ::testing::Contains;
 using ::testing::Not;
@@ -272,15 +268,14 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, TestClassification) {
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 }
 
-IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, DisableDetection) {
+// This test flakes on Mac with force compositing mode for an unknown reason.
+// http://crbug.com/316709
 #if defined(OS_MACOSX)
-  if (base::mac::IsOSMountainLionOrLater()) {
-    // This test flakes on 10.8 only for an unknown reason.
-    // http://crbug.com/316709
-    return;
-  }
+#define MAYBE_DisableDetection DISABLED_DisableDetection
+#else
+#define MAYBE_DisableDetection DisableDetection
 #endif
-
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_DisableDetection) {
   // No scorer yet, so the classifier is not ready.
   EXPECT_FALSE(classifier_->is_ready());
 

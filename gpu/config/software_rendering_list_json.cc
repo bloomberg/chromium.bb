@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.14",
+  "version": "6.15",
   "entries": [
     {
       "id": 1,
@@ -789,21 +789,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       ]
     },
     {
-      "id": 66,
-      "description": "Force compositing mode is unstable in MacOSX earlier than 10.8.",
-      "cr_bugs": [174101],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.8"
-        }
-      },
-      "features": [
-        "force_compositing_mode"
-      ]
-    },
-    {
       "id": 68,
       "description": "VMware Fusion 4 has corrupt rendering with Win Vista+.",
       "cr_bugs": [169470],
@@ -997,6 +982,22 @@ LONG_STRING_CONST(
       },
       "features": [
         "texture_sharing"
+      ]
+    },
+    {
+      "id": 81,
+      "description": "Apple software renderer used under VMWare hangs on Mac OS 10.7.",
+      "cr_bugs": [230931],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "=",
+          "value": "10.7"
+        }
+      },
+      "vendor_id": "0x15ad",
+      "features": [
+        "force_compositing_mode"
       ]
     }
   ]
