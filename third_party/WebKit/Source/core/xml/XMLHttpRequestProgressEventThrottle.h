@@ -38,6 +38,7 @@ class EventTarget;
 
 enum ProgressEventAction {
     DoNotFlushProgressEvent,
+    FlushDeferredProgressEvent,
     FlushProgressEvent
 };
 
@@ -61,7 +62,8 @@ private:
 
     virtual void fired();
     void dispatchDeferredEvents(Timer<XMLHttpRequestProgressEventThrottle>*);
-    void flushProgressEvent();
+    bool flushDeferredProgressEvent();
+    void deliverProgressEvent();
 
     bool hasEventToDispatch() const;
 
