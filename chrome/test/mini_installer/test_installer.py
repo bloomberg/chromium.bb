@@ -62,7 +62,7 @@ class InstallerTest(unittest.TestCase):
       A string created by joining state names and action names together with
       ' -> ', for example, 'Test: clean -> install chrome -> chrome_installed'.
     """
-    return 'Test: %s' % (' -> '.join(self._test))
+    return 'Test: %s\n' % (' -> '.join(self._test))
 
   def runTest(self):
     """Run the test case."""
