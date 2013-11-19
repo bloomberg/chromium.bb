@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/autofill/autofill_error_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_bubble_controller.h"
 
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
@@ -19,7 +19,7 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
 }  // namespace
 
 
-@implementation AutofillErrorBubbleController
+@implementation AutofillBubbleController
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    message:(NSString*)message {

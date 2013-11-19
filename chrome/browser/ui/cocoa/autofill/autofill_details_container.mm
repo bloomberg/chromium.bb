@@ -8,7 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
-#import "chrome/browser/ui/cocoa/autofill/autofill_error_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 
 @implementation AutofillDetailsContainer
@@ -182,7 +182,7 @@
   NSWindow* parentWindow = [field window];
   DCHECK(parentWindow);
   errorBubbleController_ =
-        [[AutofillErrorBubbleController alloc]
+        [[AutofillBubbleController alloc]
             initWithParentWindow:parentWindow
                          message:[field validityMessage]];
 

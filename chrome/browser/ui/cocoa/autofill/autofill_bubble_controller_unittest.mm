@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/autofill/autofill_error_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_bubble_controller.h"
 
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 
-class AutofillErrorBubbleControllerTest : public CocoaTest {
+class AutofillBubbleControllerTest : public CocoaTest {
 };
 
-TEST_F(AutofillErrorBubbleControllerTest, ShowAndClose) {
-  AutofillErrorBubbleController* controller =
-      [[AutofillErrorBubbleController alloc] initWithParentWindow:test_window()
+TEST_F(AutofillBubbleControllerTest, ShowAndClose) {
+  AutofillBubbleController* controller =
+      [[AutofillBubbleController alloc] initWithParentWindow:test_window()
                                                           message:@"test msg"];
   EXPECT_FALSE([[controller window] isVisible]);
 

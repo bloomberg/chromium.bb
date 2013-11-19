@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_ERROR_BUBBLE_CONTROLLER_H_
-#define CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_ERROR_BUBBLE_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_BUBBLE_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_BUBBLE_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -11,7 +11,7 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
 // Bubble controller for field validation error bubbles.
-@interface AutofillErrorBubbleController : BaseBubbleController {
+@interface AutofillBubbleController : BaseBubbleController {
    base::scoped_nsobject<NSTextField> label_;
 }
 
@@ -24,4 +24,4 @@
 @end
 
 
-#endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_ERROR_BUBBLE_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_BUBBLE_CONTROLLER_H_

@@ -18,7 +18,7 @@ class AutofillDialogViewDelegate;
 }
 
 @class InfoBubbleView;
-@class AutofillErrorBubbleController;
+@class AutofillBubbleController;
 
 // UI controller for details for current payment instrument.
 @interface AutofillDetailsContainer
@@ -34,7 +34,7 @@ class AutofillDialogViewDelegate;
   // An info bubble to display validation errors.
   base::scoped_nsobject<InfoBubbleView> errorBubble_;
 
-  AutofillErrorBubbleController* errorBubbleController_;
+  AutofillBubbleController* errorBubbleController_;
 
   autofill::AutofillDialogViewDelegate* delegate_;  // Not owned.
 }
