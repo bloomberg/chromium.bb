@@ -632,10 +632,10 @@ void RenderWidgetHostViewAura::MaybeCreateResizeLock() {
   if (!ShouldCreateResizeLock())
     return;
   DCHECK(window_->GetDispatcher());
-  DCHECK(window_->GetDispatcher()->compositor());
+  DCHECK(window_->GetDispatcher()->host()->compositor());
 
   // Listen to changes in the compositor lock state.
-  ui::Compositor* compositor = window_->GetDispatcher()->compositor();
+  ui::Compositor* compositor = window_->GetDispatcher()->host()->compositor();
   if (!compositor->HasObserver(this))
     compositor->AddObserver(this);
 
@@ -677,7 +677,7 @@ bool RenderWidgetHostViewAura::ShouldCreateResizeLock() {
   if (!dispatcher)
     return false;
 
-  ui::Compositor* compositor = dispatcher->compositor();
+  ui::Compositor* compositor = dispatcher->host()->compositor();
   if (!compositor)
     return false;
 
@@ -3347,7 +3347,7 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
 
 ui::Compositor* RenderWidgetHostViewAura::GetCompositor() const {
   aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-  return dispatcher ? dispatcher->compositor() : NULL;
+  return dispatcher ? dispatcher->host()->compositor() : NULL;
 }
 
 void RenderWidgetHostViewAura::DetachFromInputMethod() {

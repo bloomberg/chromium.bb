@@ -384,11 +384,11 @@ TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
   UpdateDisplay("1000x600");
   aura::WindowEventDispatcher* dispatcher =
       Shell::GetPrimaryRootWindow()->GetDispatcher();
-  EXPECT_EQ(1, dispatcher->compositor()->device_scale_factor());
+  EXPECT_EQ(1, dispatcher->host()->compositor()->device_scale_factor());
   EXPECT_EQ("1000x600",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
   UpdateDisplay("1000x600*2");
-  EXPECT_EQ(2, dispatcher->compositor()->device_scale_factor());
+  EXPECT_EQ(2, dispatcher->host()->compositor()->device_scale_factor());
   EXPECT_EQ("500x300",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
 }

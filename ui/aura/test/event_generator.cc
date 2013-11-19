@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -161,7 +162,7 @@ void EventGenerator::MoveMouseToInHost(const gfx::Point& point_in_host) {
   Dispatch(&mouseev);
 
   current_location_ = point_in_host;
-  current_root_window_->ConvertPointFromHost(&current_location_);
+  current_root_window_->host()->ConvertPointFromHost(&current_location_);
 }
 
 void EventGenerator::MoveMouseTo(const gfx::Point& point_in_screen,

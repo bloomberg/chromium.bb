@@ -50,14 +50,8 @@ class TestRootWindowHostDelegate : public aura::RootWindowHostDelegate {
   // window move on our behalf, but we should still paint as if we're active.
   virtual void OnHostLostMouseGrab() OVERRIDE {}
 
-  virtual void OnHostPaint(const gfx::Rect& damage_rect) OVERRIDE {}
-
   virtual void OnHostMoved(const gfx::Point& origin) OVERRIDE {}
   virtual void OnHostResized(const gfx::Size& size) OVERRIDE {}
-
-  virtual float GetDeviceScaleFactor() OVERRIDE {
-    return 1.0f;
-  }
 
   virtual aura::RootWindow* AsRootWindow() OVERRIDE {
     return NULL;

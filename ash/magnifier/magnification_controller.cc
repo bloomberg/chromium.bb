@@ -44,7 +44,7 @@ const int kPanningMergin = 100;
 void MoveCursorTo(aura::RootWindow* root_window,
                   const gfx::Point& root_location) {
   gfx::Point3F host_location_3f(root_location);
-  root_window->GetRootTransform().TransformPoint(&host_location_3f);
+  root_window->host()->GetRootTransform().TransformPoint(&host_location_3f);
   root_window->MoveCursorToHostLocation(
       gfx::ToCeiledPoint(host_location_3f.AsPointF()));
 }
@@ -273,7 +273,8 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
       Shell::GetScreen()->GetDisplayNearestWindow(root_window_);
   scoped_ptr<aura::RootWindowTransformer> transformer(
       internal::CreateRootWindowTransformerForDisplay(root_window_, display));
-  root_window_->GetDispatcher()->SetRootWindowTransformer(transformer.Pass());
+  root_window_->GetDispatcher()->host()->SetRootWindowTransformer(
+      transformer.Pass());
 
   if (animate)
     is_on_animation_ = true;

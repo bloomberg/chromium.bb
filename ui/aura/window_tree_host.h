@@ -17,12 +17,18 @@ class Insets;
 class Point;
 class Rect;
 class Size;
+class Transform;
+}
+
+namespace ui {
+class Compositor;
 }
 
 namespace aura {
 
 class RootWindow;
 class RootWindowHostDelegate;
+class RootWindowTransformer;
 
 // RootWindowHost bridges between a native window and the embedded RootWindow.
 // It provides the accelerated widget and maps events from the native os to
@@ -34,6 +40,25 @@ class AURA_EXPORT RootWindowHost {
   // Creates a new RootWindowHost. The caller owns the returned value.
   static RootWindowHost* Create(const gfx::Rect& bounds);
 
+  void InitHost();
+
+  // TODO(beng): these will become trivial accessors in a future CL.
+  aura::Window* window();
+  const aura::Window* window() const;
+
+  ui::Compositor* compositor() { return compositor_.get(); }
+
+  void SetRootWindowTransformer(scoped_ptr<RootWindowTransformer> transformer);
+  gfx::Transform GetRootTransform() const;
+
+  void SetTransform(const gfx::Transform& transform);
+
+  gfx::Transform GetInverseRootTransform() const;
+
+  // Updates the root window's size using |host_size|, current
+  // transform and insets.
+  void UpdateRootWindowSize(const gfx::Size& host_size);
+
   // Returns the actual size of the screen.
   // (gfx::Screen only reports on the virtual desktop exposed by Aura.)
   static gfx::Size GetNativeScreenSize();
@@ -41,6 +66,21 @@ class AURA_EXPORT RootWindowHost {
   void set_delegate(RootWindowHostDelegate* delegate) {
     delegate_ = delegate;
   }
+
+  // Converts |point| from the root window's coordinate system to native
+  // screen's.
+  void ConvertPointToNativeScreen(gfx::Point* point) const;
+
+  // Converts |point| from native screen coordinate system to the root window's.
+  void ConvertPointFromNativeScreen(gfx::Point* point) const;
+
+  // Converts |point| from the root window's coordinate system to the
+  // host window's.
+  void ConvertPointToHost(gfx::Point* point) const;
+
+  // Converts |point| from the host window's coordinate system to the
+  // root window's.
+  void ConvertPointFromHost(gfx::Point* point) const;
 
   virtual RootWindow* GetRootWindow() = 0;
 
@@ -64,13 +104,6 @@ class AURA_EXPORT RootWindowHost {
   // in the host window.
   virtual gfx::Insets GetInsets() const = 0;
   virtual void SetInsets(const gfx::Insets& insets) = 0;
-
-  // Converts |point| from the root window's coordinate system to native
-  // screen's.
-  void ConvertPointToNativeScreen(gfx::Point* point) const;
-
-  // Converts |point| from native screen coordinate system to the root window's.
-  void ConvertPointFromNativeScreen(gfx::Point* point) const;
 
   // Sets the OS capture to the root window.
   virtual void SetCapture() = 0;
@@ -113,14 +146,24 @@ class AURA_EXPORT RootWindowHost {
   virtual void PrepareForShutdown() = 0;
 
  protected:
+  friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
+
   RootWindowHost();
+
+  void CreateCompositor(gfx::AcceleratedWidget accelerated_widget);
 
   // Returns the location of the RootWindow on native screen.
   virtual gfx::Point GetLocationOnNativeScreen() const = 0;
 
+  void NotifyHostResized(const gfx::Size& new_size);
+
   RootWindowHostDelegate* delegate_;
 
  private:
+  scoped_ptr<ui::Compositor> compositor_;
+
+  scoped_ptr<RootWindowTransformer> transformer_;
+
   DISALLOW_COPY_AND_ASSIGN(RootWindowHost);
 };
 

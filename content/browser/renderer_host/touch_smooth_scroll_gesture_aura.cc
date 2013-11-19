@@ -22,7 +22,7 @@ void InjectTouchEvent(const gfx::Point& location,
   aura::Window::ConvertPointToTarget(window, root_window, &screen_location);
   // Then convert the location from RootWindow to screen.
   aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
-  dispatcher->ConvertPointToHost(&screen_location);
+  dispatcher->host()->ConvertPointToHost(&screen_location);
   ui::TouchEvent touch(type, screen_location, 0, 0, ui::EventTimeForNow(),
                        1.0f, 1.0f, 1.0f, 1.0f);
   dispatcher->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch);

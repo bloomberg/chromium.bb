@@ -42,7 +42,7 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
       window->GetBoundsInRootWindow().origin().OffsetFromOrigin());
   aura::WindowEventDispatcher* dispatcher = window->GetDispatcher();
   if (dispatcher)
-    dispatcher->GetRootTransform().TransformRect(&read_pixels_bounds);
+    dispatcher->host()->GetRootTransform().TransformRect(&read_pixels_bounds);
 
   gfx::Rect read_pixels_bounds_in_pixel =
       gfx::ToEnclosingRect(read_pixels_bounds);

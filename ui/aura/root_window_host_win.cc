@@ -48,6 +48,7 @@ RootWindowHostWin::RootWindowHostWin(const gfx::Rect& bounds)
     set_window_style(WS_POPUP);
   Init(NULL, bounds);
   SetWindowText(hwnd(), L"aura::RootWindow!");
+  CreateCompositor(GetAcceleratedWidget());
 }
 
 RootWindowHostWin::~RootWindowHostWin() {
@@ -132,14 +133,14 @@ void RootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
       window_rect.bottom - window_rect.top,
       SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_NOREPOSITION);
 
-  // Explicity call OnHostResized when the scale has changed because
+  // Explicity call NotifyHostResized when the scale has changed because
   // the window size may not have changed.
-  float current_scale = delegate_->GetDeviceScaleFactor();
+  float current_scale = compositor()->device_scale_factor();
   float new_scale = gfx::Screen::GetScreenFor(
       delegate_->AsRootWindow()->window())->GetDisplayNearestWindow(
           delegate_->AsRootWindow()->window()).device_scale_factor();
   if (current_scale != new_scale)
-    delegate_->OnHostResized(bounds.size());
+    NotifyHostResized(bounds.size());
 }
 
 gfx::Insets RootWindowHostWin::GetInsets() const {
@@ -286,7 +287,7 @@ void RootWindowHostWin::OnPaint(HDC dc) {
   RECT update_rect = {0};
   if (GetUpdateRect(hwnd(), &update_rect, FALSE))
     damage_rect = gfx::Rect(update_rect);
-  delegate_->OnHostPaint(damage_rect);
+  compositor()->ScheduleRedrawRect(damage_rect);
   ValidateRect(hwnd(), NULL);
 }
 
@@ -294,7 +295,7 @@ void RootWindowHostWin::OnSize(UINT param, const CSize& size) {
   // Minimizing resizes the window to 0x0 which causes our layout to go all
   // screwy, so we just ignore it.
   if (delegate_ && param != SIZE_MINIMIZED)
-    delegate_->OnHostResized(gfx::Size(size.cx, size.cy));
+    NotifyHostResized(gfx::Size(size.cx, size.cy));
 }
 
 namespace test {
