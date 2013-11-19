@@ -156,6 +156,9 @@ v8::Local<v8::ObjectTemplate> Core::GetTemplate(v8::Isolate* isolate) {
     templ->Set(gin::StringToSymbol(isolate, "readMessage"),
                v8::FunctionTemplate::New(ReadMessage));
 
+    templ->Set(gin::StringToSymbol(isolate, "kInvalidHandle"),
+               gin::ConvertToV8(isolate, mojo::kInvalidHandle));
+
     templ->Set(gin::StringToSymbol(isolate, "RESULT_OK"),
                gin::ConvertToV8(isolate, MOJO_RESULT_OK));
     templ->Set(gin::StringToSymbol(isolate, "RESULT_CANCELLED"),

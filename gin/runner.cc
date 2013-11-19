@@ -57,14 +57,12 @@ void Runner::Run(const std::string& script) {
 }
 
 void Runner::Run(v8::Handle<Script> script) {
+  TryCatch try_catch;
   delegate_->WillRunScript(this, script);
-  {
-    TryCatch try_catch;
-    script->Run();
-    if (try_catch.HasCaught())
-      delegate_->UnhandledException(this, try_catch);
-  }
+  script->Run();
   delegate_->DidRunScript(this, script);
+  if (try_catch.HasCaught())
+    delegate_->UnhandledException(this, try_catch);
 }
 
 Runner::Scope::Scope(Runner* runner)

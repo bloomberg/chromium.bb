@@ -50,6 +50,12 @@ define(function() {
     return low + high * 0x10000;
   }
 
+  var kAlignment = 8;
+
+  function align(size) {
+    return size + (kAlignment - (size % kAlignment)) % kAlignment;
+  }
+
   // Buffer -------------------------------------------------------------------
 
   function Buffer(size) {
@@ -391,7 +397,7 @@ define(function() {
   };
 
   var exports = {};
-  exports.load32 = load32;
+  exports.align = align;
   exports.MessageBuilder = MessageBuilder;
   exports.MessageReader = MessageReader;
   exports.kArrayHeaderSize = kArrayHeaderSize;

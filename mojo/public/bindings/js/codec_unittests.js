@@ -5,10 +5,11 @@
 define([
     "gtest",
     "mojo/public/bindings/js/codec",
-    "mojo/public/bindings/js/test/sample_service"
+    "mojo/public/bindings/sample/mojom/sample_service"
   ], function(gtest, codec, sample) {
   testBar();
   testFoo();
+  testAlign();
   this.result = "PASS";
 
   function barMatches(bar, expected) {
@@ -160,5 +161,35 @@ define([
         "foo2.name is " + foo2.name);
 
     equalsArray(foo2.files, foo.files, "foo2.files");
+  }
+
+  function testAlign() {
+    var aligned = [
+      0, // 0
+      8, // 1
+      8, // 2
+      8, // 3
+      8, // 4
+      8, // 5
+      8, // 6
+      8, // 7
+      8, // 8
+      16, // 9
+      16, // 10
+      16, // 11
+      16, // 12
+      16, // 13
+      16, // 14
+      16, // 15
+      16, // 16
+      24, // 17
+      24, // 18
+      24, // 19
+      24, // 20
+    ];
+    for (var i = 0; i < aligned.length; ++i) {
+      gtest.expectEqual(codec.align(i), aligned[i],
+          "codec.align(" + i + ") is " + codec.align(i));
+    }
   }
 });

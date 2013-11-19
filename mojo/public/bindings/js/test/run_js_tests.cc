@@ -45,6 +45,18 @@ TEST(JSTest, codec) {
   RunTest("codec_unittests.js");
 }
 
+TEST(JSTest, sample_test) {
+  base::FilePath path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  path = path.AppendASCII("mojo")
+             .AppendASCII("public")
+             .AppendASCII("bindings")
+             .AppendASCII("sample")
+             .AppendASCII("sample_test.js");
+  TestRunnerDelegate delegate;
+  gin::RunTestFromFile(path, &delegate);
+}
+
 }  // namespace
 }  // namespace js
 }  // namespace mojo
