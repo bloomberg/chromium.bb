@@ -66,9 +66,6 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
       dynamic_config.latest_frame_id_to_reference);
   vp8_encoder_->UpdateRates(dynamic_config.bit_rate);
 
-  uint32 rtp_timestamp = GetVideoRtpTimestamp(capture_time);
-  cast_environment_->Logging()->InsertFrameEvent(kVideoFrameSentToEncoder,
-      rtp_timestamp, kFrameIdUnknown);
   scoped_ptr<EncodedVideoFrame> encoded_frame(new EncodedVideoFrame());
   bool retval = vp8_encoder_->Encode(*video_frame, encoded_frame.get());
 
@@ -84,8 +81,6 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
     VLOG(1) << "Encoding resulted in an empty frame";
     return;
   }
-  cast_environment_->Logging()->InsertFrameEvent(kVideoFrameEncoded,
-      rtp_timestamp, kFrameIdUnknown);
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(frame_encoded_callback,
           base::Passed(&encoded_frame), capture_time));

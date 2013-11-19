@@ -34,9 +34,6 @@ class LocalFrameInput : public FrameInput {
   virtual void InsertRawVideoFrame(const I420VideoFrame* video_frame,
                                    const base::TimeTicks& capture_time,
                                    const base::Closure callback) OVERRIDE {
-  cast_environment_->Logging()->InsertFrameEvent(kVideoFrameReceived,
-      GetVideoRtpTimestamp(capture_time), kFrameIdUnknown);
-
     cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&VideoSender::InsertRawVideoFrame, video_sender_,
             video_frame, capture_time, callback));
@@ -53,8 +50,6 @@ class LocalFrameInput : public FrameInput {
   virtual void InsertAudio(const AudioBus* audio_bus,
                            const base::TimeTicks& recorded_time,
                            const base::Closure& done_callback) OVERRIDE {
-    cast_environment_->Logging()->InsertFrameEvent(kAudioFrameReceived,
-        GetVideoRtpTimestamp(recorded_time), kFrameIdUnknown);
     cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&AudioSender::InsertAudio, audio_sender_,
             audio_bus, recorded_time, done_callback));

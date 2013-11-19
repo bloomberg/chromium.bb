@@ -84,10 +84,8 @@ bool Vp8Decoder::Decode(const EncodedVideoFrame* encoded_frame,
   memcpy(decoded_frame->v_plane.data, img->planes[VPX_PLANE_V],
          decoded_frame->v_plane.length);
 
-  cast_environment_->Logging()->InsertFrameEvent(kVideoFrameDecoded,
-      kFrameIdUnknown, encoded_frame->frame_id);
+  // Return frame.
   VLOG(1) << "Decoded frame " << frame_id_int;
-
   // Frame decoded - return frame to the user via callback.
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(frame_decoded_cb, base::Passed(&decoded_frame), render_time));

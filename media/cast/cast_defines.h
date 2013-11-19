@@ -186,13 +186,6 @@ inline std::string GetAesNonce(uint32 frame_id, const std::string& iv_mask) {
   return aes_nonce;
 }
 
-inline uint32 GetVideoRtpTimestamp(const base::TimeTicks& time_ticks) {
-  base::TimeTicks zero_time;
-  base::TimeDelta recorded_delta = time_ticks - zero_time;
-  // Timestamp is in 90 KHz for video.
-  return static_cast<uint32>(recorded_delta.InMilliseconds() * 90);
-}
-
 }  // namespace cast
 }  // namespace media
 

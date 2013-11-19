@@ -119,7 +119,7 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
       new LocalRtpReceiverStatistics(rtp_receiver_.get()));
   base::TimeDelta rtcp_interval_delta =
       base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval);
-  rtcp_.reset(new Rtcp(cast_environment,
+  rtcp_.reset(new Rtcp(cast_environment->Clock(),
                        NULL,
                        packet_sender,
                        NULL,
@@ -142,10 +142,6 @@ void AudioReceiver::InitializeTimers() {
 void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
                                             size_t payload_size,
                                             const RtpCastHeader& rtp_header) {
-  cast_environment_->Logging()->InsertPacketEvent(kPacketReceived,
-      rtp_header.webrtc.header.timestamp, rtp_header.frame_id,
-      rtp_header.packet_id, rtp_header.max_packet_id, payload_size);
-
   // TODO(pwestin): update this as video to refresh over time.
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (time_first_incoming_packet_.is_null()) {
@@ -220,10 +216,6 @@ void AudioReceiver::DecodeAudioFrameThread(
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   base::TimeTicks playout_time;
   playout_time = GetPlayoutTime(now, rtp_timestamp);
-  base::TimeDelta diff = playout_time - now;
-
-  cast_environment_->Logging()->InsertFrameEvent(kAudioPlayoutDelay,
-      rtp_timestamp, diff.InMilliseconds());
 
   // Frame is ready - Send back to the main thread.
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,

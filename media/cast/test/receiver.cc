@@ -18,7 +18,6 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
-#include "media/cast/logging/logging_defines.h"
 #include "media/cast/test/transport/transport.h"
 #include "media/cast/test/utility/input_helper.h"
 
@@ -202,11 +201,9 @@ int main(int argc, char** argv) {
   base::DefaultTickClock clock;
   scoped_refptr<base::SequencedTaskRunner>
       task_runner(main_message_loop.message_loop_proxy());
-  // Enable receiver side threads, and disable logging.
   scoped_refptr<media::cast::CastEnvironment> cast_environment(new
       media::cast::CastEnvironment(&clock,
-      task_runner, NULL, task_runner, NULL, task_runner,
-      media::cast::GetDefaultCastLoggingConfig()));
+      task_runner, NULL, task_runner, NULL, task_runner));
 
   media::cast::AudioReceiverConfig audio_config =
       media::cast::GetAudioReceiverConfig();

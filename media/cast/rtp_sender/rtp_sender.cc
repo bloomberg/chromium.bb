@@ -9,31 +9,28 @@
 #include "media/cast/cast_defines.h"
 #include "media/cast/pacing/paced_sender.h"
 #include "media/cast/rtcp/rtcp_defines.h"
-#include "net/base/big_endian.h"
 
 namespace media {
 namespace cast {
 
-RtpSender::RtpSender(scoped_refptr<CastEnvironment> cast_environment,
+RtpSender::RtpSender(base::TickClock* clock,
                      const AudioSenderConfig* audio_config,
                      const VideoSenderConfig* video_config,
                      PacedPacketSender* transport)
-    : cast_environment_(cast_environment),
-      config_(),
-      transport_(transport) {
+    : config_(),
+      transport_(transport),
+      clock_(clock) {
   // Store generic cast config and create packetizer config.
   DCHECK(audio_config || video_config) << "Invalid argument";
   if (audio_config) {
-    storage_.reset(new PacketStorage(cast_environment->Clock(),
-                                     audio_config->rtp_history_ms));
+    storage_.reset(new PacketStorage(clock, audio_config->rtp_history_ms));
     config_.audio = true;
     config_.ssrc = audio_config->sender_ssrc;
     config_.payload_type = audio_config->rtp_payload_type;
     config_.frequency = audio_config->frequency;
     config_.audio_codec = audio_config->codec;
   } else {
-    storage_.reset(new PacketStorage(cast_environment->Clock(),
-                                     video_config->rtp_history_ms));
+    storage_.reset(new PacketStorage(clock, video_config->rtp_history_ms));
     config_.audio = false;
     config_.ssrc = video_config->sender_ssrc;
     config_.payload_type = video_config->rtp_payload_type;
@@ -61,52 +58,15 @@ void RtpSender::IncomingEncodedAudioFrame(const EncodedAudioFrame* audio_frame,
 
 void RtpSender::ResendPackets(
     const MissingFramesAndPacketsMap& missing_frames_and_packets) {
-  // Iterate over all frames in the list.
-  for (MissingFramesAndPacketsMap::const_iterator it =
-       missing_frames_and_packets.begin();
-       it != missing_frames_and_packets.end(); ++it) {
-    PacketList packets_to_resend;
-    uint8 frame_id = it->first;
-    const PacketIdSet& packets_set = it->second;
-    bool success = false;
+  PacketList packets_to_resend =
+      storage_->GetPackets(missing_frames_and_packets);
 
-    if (packets_set.empty()) {
-      VLOG(1) << "Missing all packets in frame " << static_cast<int>(frame_id);
-
-      uint16 packet_id = 0;
-      do {
-        // Get packet from storage.
-        success = storage_->GetPacket(frame_id, packet_id, &packets_to_resend);
-
-        // Resend packet to the network.
-        if (success) {
-          VLOG(1) << "Resend " << static_cast<int>(frame_id)
-                  << ":" << packet_id;
-          // Set a unique incremental sequence number for every packet.
-          Packet& packet = packets_to_resend.back();
-          UpdateSequenceNumber(&packet);
-          // Set the size as correspond to each frame.
-          ++packet_id;
-        }
-      } while (success);
-    } else {
-      // Iterate over all of the packets in the frame.
-      for (PacketIdSet::const_iterator set_it = packets_set.begin();
-          set_it != packets_set.end(); ++set_it) {
-        uint16 packet_id = *set_it;
-        success = storage_->GetPacket(frame_id, packet_id, &packets_to_resend);
-
-        // Resend packet to the network.
-        if (success) {
-          VLOG(1) << "Resend " << static_cast<int>(frame_id)
-                  << ":" << packet_id;
-          Packet& packet = packets_to_resend.back();
-          UpdateSequenceNumber(&packet);
-        }
-      }
-    }
-    transport_->ResendPackets(packets_to_resend);
+  PacketList::iterator it = packets_to_resend.begin();
+  for (; it != packets_to_resend.end(); ++it) {
+    Packet& packet = *it;
+    UpdateSequenceNumber(&packet);
   }
+  transport_->ResendPackets(packets_to_resend);
 }
 
 void RtpSender::UpdateSequenceNumber(Packet* packet) {

@@ -51,7 +51,7 @@ class LoggingRaw : public base::NonThreadSafe,
                          uint32 frame_id,
                          uint16 packet_id,
                          uint16 max_packet_id,
-                         size_t size);
+                         int size);
 
   void InsertGenericEvent(CastLoggingEvent event, int value);
 
@@ -69,11 +69,11 @@ class LoggingRaw : public base::NonThreadSafe,
                             uint32 frame_id,
                             uint32 rtp_timestamp);
 
+  base::WeakPtrFactory<LoggingRaw> weak_factory_;
   base::TickClock* const clock_;  // Not owned by this class.
   FrameRawMap frame_map_;
   PacketRawMap packet_map_;
   GenericRawMap generic_map_;
-  base::WeakPtrFactory<LoggingRaw> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoggingRaw);
 };

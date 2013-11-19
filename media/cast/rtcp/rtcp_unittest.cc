@@ -4,13 +4,11 @@
 
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/cast_environment.h"
 #include "media/cast/pacing/paced_sender.h"
 #include "media/cast/rtcp/mock_rtcp_receiver_feedback.h"
 #include "media/cast/rtcp/mock_rtcp_sender_feedback.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
-#include "media/cast/test/fake_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -28,8 +26,7 @@ static const int64 kAddedShortDelay= 100;
 
 class LocalRtcpTransport : public PacedPacketSender {
  public:
-  explicit LocalRtcpTransport(scoped_refptr<CastEnvironment> cast_environment,
-                              base::SimpleTestTickClock* testing_clock)
+  explicit LocalRtcpTransport(base::SimpleTestTickClock* testing_clock)
       : drop_packets_(false),
         short_delay_(false),
         testing_clock_(testing_clock) {}
@@ -67,12 +64,11 @@ class LocalRtcpTransport : public PacedPacketSender {
   bool short_delay_;
   Rtcp* rtcp_;
   base::SimpleTestTickClock* testing_clock_;
-  scoped_refptr<CastEnvironment> cast_environment_;
 };
 
 class RtcpPeer : public Rtcp {
  public:
-  RtcpPeer(scoped_refptr<CastEnvironment> cast_environment,
+  RtcpPeer(base::TickClock* clock,
            RtcpSenderFeedback* sender_feedback,
            PacedPacketSender* const paced_packet_sender,
            RtpSenderStatistics* rtp_sender_statistics,
@@ -82,7 +78,7 @@ class RtcpPeer : public Rtcp {
            uint32 local_ssrc,
            uint32 remote_ssrc,
            const std::string& c_name)
-      : Rtcp(cast_environment,
+      : Rtcp(clock,
              sender_feedback,
              paced_packet_sender,
              rtp_sender_statistics,
@@ -101,11 +97,7 @@ class RtcpPeer : public Rtcp {
 class RtcpTest : public ::testing::Test {
  protected:
   RtcpTest()
-      : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
-        cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
-            task_runner_, task_runner_, task_runner_, task_runner_,
-            GetDefaultCastLoggingConfig())),
-        transport_(cast_environment_, &testing_clock_) {
+      : transport_(&testing_clock_) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
   }
@@ -117,8 +109,6 @@ class RtcpTest : public ::testing::Test {
   }
 
   base::SimpleTestTickClock testing_clock_;
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
-  scoped_refptr<CastEnvironment> cast_environment_;
   LocalRtcpTransport transport_;
   MockRtcpSenderFeedback mock_sender_feedback_;
 };
@@ -126,7 +116,7 @@ class RtcpTest : public ::testing::Test {
 TEST_F(RtcpTest, TimeToSend) {
   base::TimeTicks start_time;
   start_time += base::TimeDelta::FromMilliseconds(kStartMillisecond);
-  Rtcp rtcp(cast_environment_,
+  Rtcp rtcp(&testing_clock_,
             &mock_sender_feedback_,
             &transport_,
             NULL,
@@ -147,7 +137,7 @@ TEST_F(RtcpTest, TimeToSend) {
 }
 
 TEST_F(RtcpTest, BasicSenderReport) {
-  Rtcp rtcp(cast_environment_,
+  Rtcp rtcp(&testing_clock_,
             &mock_sender_feedback_,
             &transport_,
             NULL,
@@ -162,7 +152,7 @@ TEST_F(RtcpTest, BasicSenderReport) {
 }
 
 TEST_F(RtcpTest, BasicReceiverReport) {
-  Rtcp rtcp(cast_environment_,
+  Rtcp rtcp(&testing_clock_,
             &mock_sender_feedback_,
             &transport_,
             NULL,
@@ -180,7 +170,7 @@ TEST_F(RtcpTest, BasicCast) {
   EXPECT_CALL(mock_sender_feedback_, OnReceivedCastFeedback(_)).Times(1);
 
   // Media receiver.
-  Rtcp rtcp(cast_environment_,
+  Rtcp rtcp(&testing_clock_,
             &mock_sender_feedback_,
             &transport_,
             NULL,
@@ -207,8 +197,8 @@ TEST_F(RtcpTest, BasicCast) {
 
 TEST_F(RtcpTest, RttReducedSizeRtcp) {
   // Media receiver.
-  LocalRtcpTransport receiver_transport(cast_environment_, &testing_clock_);
-  Rtcp rtcp_receiver(cast_environment_,
+  LocalRtcpTransport receiver_transport(&testing_clock_);
+  Rtcp rtcp_receiver(&testing_clock_,
                      &mock_sender_feedback_,
                      &receiver_transport,
                      NULL,
@@ -220,8 +210,8 @@ TEST_F(RtcpTest, RttReducedSizeRtcp) {
                      kCName);
 
   // Media sender.
-  LocalRtcpTransport sender_transport(cast_environment_, &testing_clock_);
-  Rtcp rtcp_sender(cast_environment_,
+  LocalRtcpTransport sender_transport(&testing_clock_);
+  Rtcp rtcp_sender(&testing_clock_,
                    &mock_sender_feedback_,
                    &sender_transport,
                    NULL,
@@ -261,8 +251,8 @@ TEST_F(RtcpTest, RttReducedSizeRtcp) {
 
 TEST_F(RtcpTest, Rtt) {
   // Media receiver.
-  LocalRtcpTransport receiver_transport(cast_environment_, &testing_clock_);
-  Rtcp rtcp_receiver(cast_environment_,
+  LocalRtcpTransport receiver_transport(&testing_clock_);
+  Rtcp rtcp_receiver(&testing_clock_,
                      &mock_sender_feedback_,
                      &receiver_transport,
                      NULL,
@@ -274,8 +264,8 @@ TEST_F(RtcpTest, Rtt) {
                      kCName);
 
   // Media sender.
-  LocalRtcpTransport sender_transport(cast_environment_, &testing_clock_);
-  Rtcp rtcp_sender(cast_environment_,
+  LocalRtcpTransport sender_transport(&testing_clock_);
+  Rtcp rtcp_sender(&testing_clock_,
                    &mock_sender_feedback_,
                    &sender_transport,
                    NULL,
@@ -347,8 +337,8 @@ TEST_F(RtcpTest, Rtt) {
 
 TEST_F(RtcpTest, RttWithPacketLoss) {
   // Media receiver.
-  LocalRtcpTransport receiver_transport(cast_environment_, &testing_clock_);
-  Rtcp rtcp_receiver(cast_environment_,
+  LocalRtcpTransport receiver_transport(&testing_clock_);
+  Rtcp rtcp_receiver(&testing_clock_,
                      &mock_sender_feedback_,
                      &receiver_transport,
                      NULL,
@@ -360,8 +350,8 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
                      kCName);
 
   // Media sender.
-  LocalRtcpTransport sender_transport(cast_environment_, &testing_clock_);
-  Rtcp rtcp_sender(cast_environment_,
+  LocalRtcpTransport sender_transport(&testing_clock_);
+  Rtcp rtcp_sender(&testing_clock_,
                    &mock_sender_feedback_,
                    &sender_transport,
                    NULL,
@@ -447,7 +437,7 @@ TEST_F(RtcpTest, NtpAndTime) {
 }
 
 TEST_F(RtcpTest, WrapAround) {
-  RtcpPeer rtcp_peer(cast_environment_,
+  RtcpPeer rtcp_peer(&testing_clock_,
                      &mock_sender_feedback_,
                      NULL,
                      NULL,
@@ -475,7 +465,7 @@ TEST_F(RtcpTest, WrapAround) {
 }
 
 TEST_F(RtcpTest, RtpTimestampInSenderTime) {
-  RtcpPeer rtcp_peer(cast_environment_,
+  RtcpPeer rtcp_peer(&testing_clock_,
                      &mock_sender_feedback_,
                      NULL,
                      NULL,

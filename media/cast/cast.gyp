@@ -14,23 +14,11 @@
       'include_dirs': [
         '<(DEPTH)/',
       ],
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-      #  '<(DEPTH)/base/base.gyp:test_support_base',
-      ],
       'sources': [
         'cast_config.cc',
         'cast_config.h',
         'cast_environment.cc',
         'cast_environment.h',
-        'logging/logging_defines.cc',
-        'logging/logging_defines.h',
-        'logging/logging_impl.cc',
-        'logging/logging_impl.h',
-        'logging/logging_raw.cc',
-        'logging/logging_raw.h',
-        'logging/logging_stats.cc',
-        'logging/logging_stats.h',
       ], # source
     },
   ],  # targets,
@@ -44,6 +32,7 @@
             'cast_config',
             'cast_receiver.gyp:cast_receiver',
             'cast_sender.gyp:cast_sender',
+            'logging/logging.gyp:cast_logging',
             'test/utility/utility.gyp:cast_test_utility',
             '<(DEPTH)/base/base.gyp:run_all_unittests',
             '<(DEPTH)/crypto/crypto.gyp:crypto',

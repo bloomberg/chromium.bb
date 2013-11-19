@@ -97,8 +97,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
-        task_runner_, task_runner_, task_runner_, task_runner_,
-        GetDefaultCastLoggingConfig());
+        task_runner_, task_runner_, task_runner_, task_runner_);
   }
 
   virtual ~AudioEncoderTest() {}

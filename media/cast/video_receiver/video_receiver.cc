@@ -127,7 +127,7 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
   }
 
   rtcp_.reset(
-      new Rtcp(cast_environment_,
+      new Rtcp(cast_environment_->Clock(),
                NULL,
                packet_sender,
                NULL,
@@ -249,10 +249,6 @@ bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   *render_time = GetRenderTime(now, rtp_timestamp);
-  base::TimeDelta diff = now - *render_time;
-
-  cast_environment_->Logging()->InsertFrameEvent(kVideoRenderDelay,
-      rtp_timestamp, diff.InMilliseconds());
 
   // Minimum time before a frame is due to be rendered before we pull it for
   // decode.
@@ -394,10 +390,6 @@ void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
     time_incoming_packet_ = now;
     time_incoming_packet_updated_ = true;
   }
-
-  cast_environment_->Logging()->InsertPacketEvent(kPacketReceived,
-      rtp_header.webrtc.header.timestamp, rtp_header.frame_id,
-      rtp_header.packet_id, rtp_header.max_packet_id, payload_size);
 
   bool complete = framer_->InsertPacket(payload_data, payload_size, rtp_header);
 

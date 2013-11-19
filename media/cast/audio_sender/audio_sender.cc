@@ -10,7 +10,6 @@
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "media/cast/audio_sender/audio_encoder.h"
-#include "media/cast/cast_environment.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtp_sender/rtp_sender.h"
 
@@ -57,12 +56,12 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          const AudioSenderConfig& audio_config,
                          PacedPacketSender* const paced_packet_sender)
       : cast_environment_(cast_environment),
-        rtp_sender_(cast_environment, &audio_config, NULL,
+        rtp_sender_(cast_environment->Clock(), &audio_config, NULL,
                     paced_packet_sender),
         rtcp_feedback_(new LocalRtcpAudioSenderFeedback(this)),
         rtp_audio_sender_statistics_(
             new LocalRtpSenderStatistics(&rtp_sender_)),
-        rtcp_(cast_environment,
+        rtcp_(cast_environment->Clock(),
               rtcp_feedback_.get(),
               paced_packet_sender,
               rtp_audio_sender_statistics_.get(),

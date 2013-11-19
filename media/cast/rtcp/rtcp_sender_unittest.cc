@@ -3,23 +3,18 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/cast_environment.h"
 #include "media/cast/pacing/paced_sender.h"
 #include "media/cast/rtcp/rtcp_sender.h"
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
-#include "media/cast/test/fake_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
 namespace cast {
 
-namespace {
 static const uint32 kSendingSsrc = 0x12345678;
 static const uint32 kMediaSsrc = 0x87654321;
 static const std::string kCName("test@10.1.1.1");
-}  // namespace
 
 class TestRtcpTransport : public PacedPacketSender {
  public:
@@ -59,20 +54,12 @@ class TestRtcpTransport : public PacedPacketSender {
 class RtcpSenderTest : public ::testing::Test {
  protected:
   RtcpSenderTest()
-      : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
-        cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
-            task_runner_, task_runner_, task_runner_, task_runner_,
-            GetDefaultCastLoggingConfig())),
-        rtcp_sender_(new RtcpSender(cast_environment_,
-                                    &test_transport_,
+      : rtcp_sender_(new RtcpSender(&test_transport_,
                                     kSendingSsrc,
                                     kCName)) {
   }
 
-  base::SimpleTestTickClock testing_clock_;
   TestRtcpTransport test_transport_;
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
-  scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<RtcpSender> rtcp_sender_;
 };
 

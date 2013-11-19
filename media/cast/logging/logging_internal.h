@@ -27,7 +27,7 @@ struct FrameEvent {
 struct PacketEvent {
   uint32 frame_id;
   int max_packet_id;
-  size_t size;
+  int size;
   base::TimeTicks timestamp;
 };
 

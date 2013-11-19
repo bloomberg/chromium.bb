@@ -43,8 +43,7 @@ class VideoDecoderTest : public ::testing::Test {
   VideoDecoderTest()
     : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
       cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
-          task_runner_, task_runner_, task_runner_, task_runner_,
-          GetDefaultCastLoggingConfig())),
+          task_runner_, task_runner_, task_runner_, task_runner_)),
       test_callback_(new DecodeTestFrameCallback()) {
     // Configure to vp8.
     config_.codec = kVp8;

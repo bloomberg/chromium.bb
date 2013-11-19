@@ -14,7 +14,6 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_environment.h"
 #include "media/cast/rtp_sender/packet_storage/packet_storage.h"
 #include "media/cast/rtp_sender/rtp_packetizer/rtp_packetizer.h"
 #include "media/cast/rtp_sender/rtp_packetizer/rtp_packetizer_config.h"
@@ -31,7 +30,7 @@ struct RtcpSenderInfo;
 // acknowledged by the remote peer or timed out.
 class RtpSender {
  public:
-  RtpSender(scoped_refptr<CastEnvironment> cast_environment,
+  RtpSender(base::TickClock* clock,
             const AudioSenderConfig* audio_config,
             const VideoSenderConfig* video_config,
             PacedPacketSender* transport);
@@ -53,7 +52,7 @@ class RtpSender {
  private:
   void UpdateSequenceNumber(std::vector<uint8>* packet);
 
-  scoped_refptr<CastEnvironment> cast_environment_;
+  base::TickClock* const clock_;  // Not owned by this class.
   RtpPacketizerConfig config_;
   scoped_ptr<RtpPacketizer> packetizer_;
   scoped_ptr<PacketStorage> storage_;

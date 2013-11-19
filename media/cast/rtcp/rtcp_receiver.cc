@@ -4,14 +4,14 @@
 
 #include "media/cast/rtcp/rtcp_receiver.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "media/cast/rtcp/rtcp_utility.h"
 
 namespace media {
 namespace cast {
 
-RtcpReceiver::RtcpReceiver(scoped_refptr<CastEnvironment> cast_environment,
-                           RtcpSenderFeedback* sender_feedback,
+RtcpReceiver::RtcpReceiver(RtcpSenderFeedback* sender_feedback,
                            RtcpReceiverFeedback* receiver_feedback,
                            RtcpRttFeedback* rtt_feedback,
                            uint32 local_ssrc)
@@ -19,8 +19,8 @@ RtcpReceiver::RtcpReceiver(scoped_refptr<CastEnvironment> cast_environment,
       remote_ssrc_(0),
       sender_feedback_(sender_feedback),
       receiver_feedback_(receiver_feedback),
-      rtt_feedback_(rtt_feedback),
-      cast_environment_(cast_environment) {}
+      rtt_feedback_(rtt_feedback) {
+}
 
 RtcpReceiver::~RtcpReceiver() {}
 
@@ -162,10 +162,13 @@ void RtcpReceiver::HandleReportBlock(const RtcpField* rtcp_field,
     return;
   }
   VLOG(1) << "Cast RTCP received RB from SSRC " << remote_ssrc;
-  cast_environment_->Logging()->InsertGenericEvent(kPacketLoss,
-                                                   rb.fraction_lost);
-  cast_environment_->Logging()->InsertGenericEvent(kJitterMs,
-                                                   rb.jitter);
+
+  TRACE_COUNTER_ID1("cast_rtcp", "RtcpReceiver::FractionLost",
+                    rb.ssrc, rb.fraction_lost);
+  TRACE_COUNTER_ID1("cast_rtcp", "RtcpReceiver::CumulativeNumberOfPacketsLost",
+                    rb.ssrc, rb.cumulative_number_of_packets_lost);
+  TRACE_COUNTER_ID1("cast_rtcp", "RtcpReceiver::Jitter",
+                    rb.ssrc, rb.jitter);
 
   RtcpReportBlock report_block;
   report_block.remote_ssrc = remote_ssrc;

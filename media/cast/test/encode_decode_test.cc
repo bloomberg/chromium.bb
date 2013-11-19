@@ -74,7 +74,7 @@ class EncodeDecodeTest : public ::testing::Test {
         // CastEnvironment will only be used by the vp8 decoder; Enable only the
         // video decoder and main threads.
         cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
-            NULL, NULL, NULL, task_runner_, GetDefaultCastLoggingConfig())),
+            NULL, NULL, NULL, task_runner_)),
         test_callback_(new EncodeDecodeTestFrameCallback()) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));

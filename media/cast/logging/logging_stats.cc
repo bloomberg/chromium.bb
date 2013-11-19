@@ -16,7 +16,6 @@ LoggingStats::LoggingStats(base::TickClock* clock)
       start_time_(),
       clock_(clock) {
   memset(counts_, 0, sizeof(counts_));
-  memset(start_time_, 0, sizeof(start_time_));
 }
 
 LoggingStats::~LoggingStats() {}
@@ -83,7 +82,7 @@ void LoggingStats::InsertPacketEvent(CastLoggingEvent event,
                                      uint32 frame_id,
                                      uint16 packet_id,
                                      uint16 max_packet_id,
-                                     size_t size) {
+                                     int size) {
   // Does this packet belong to an existing event?
   PacketStatsMap::iterator it = packet_stats_.find(event);
   if (it == packet_stats_.end()) {

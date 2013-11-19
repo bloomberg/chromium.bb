@@ -9,36 +9,20 @@
 namespace media {
 namespace cast {
 
-CastLoggingConfig::CastLoggingConfig()
-    : enable_data_collection(false),
-      enable_uma_stats(false),
-      enable_tracing(false) {}
-
-CastLoggingConfig::~CastLoggingConfig() {}
-
-CastLoggingConfig GetDefaultCastLoggingConfig() {
-  CastLoggingConfig config;
-  return config;
-}
-
 std::string CastLoggingToString(CastLoggingEvent event) {
   switch (event) {
-    case(kRttMs):
-      return "RttMs";
+    case(kRtt):
+      return "Rtt";
     case(kPacketLoss):
       return "PacketLoss";
-    case(kJitterMs):
-      return "JitterMs";
+    case(kJitter):
+      return "Jitter";
     case(kAckReceived):
       return "AckReceived";
-    case(kRembBitrate):
-      return "RembBitrate";
     case(kAckSent):
       return "AckSent";
     case(kLastEvent):
       return "LastEvent";
-    case(kAudioFrameReceived):
-      return "AudioFrameReceived";
     case(kAudioFrameCaptured):
       return "AudioFrameCaptured";
     case(kAudioFrameEncoded):
@@ -49,8 +33,6 @@ std::string CastLoggingToString(CastLoggingEvent event) {
       return "AudioFrameDecoded";
     case(kVideoFrameCaptured):
       return "VideoFrameCaptured";
-    case(kVideoFrameReceived):
-      return "VideoFrameReceived";
     case(kVideoFrameSentToEncoder):
       return "VideoFrameSentToEncoder";
     case(kVideoFrameEncoded):

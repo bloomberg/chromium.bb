@@ -3,14 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/test/simple_test_tick_clock.h"
-#include "media/cast/cast_environment.h"
 #include "media/cast/rtcp/mock_rtcp_receiver_feedback.h"
 #include "media/cast/rtcp/mock_rtcp_sender_feedback.h"
 #include "media/cast/rtcp/rtcp_receiver.h"
 #include "media/cast/rtcp/rtcp_utility.h"
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
-#include "media/cast/test/fake_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -64,12 +61,7 @@ class SenderFeedbackCastVerification : public RtcpSenderFeedback {
 class RtcpReceiverTest : public ::testing::Test {
  protected:
   RtcpReceiverTest()
-      : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
-        cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
-            task_runner_, task_runner_, task_runner_, task_runner_,
-            GetDefaultCastLoggingConfig())),
-        rtcp_receiver_(new RtcpReceiver(cast_environment_,
-                                        &mock_sender_feedback_,
+      : rtcp_receiver_(new RtcpReceiver(&mock_sender_feedback_,
                                         &mock_receiver_feedback_,
                                         &mock_rtt_feedback_,
                                         kSourceSsrc)) {
@@ -112,9 +104,6 @@ class RtcpReceiverTest : public ::testing::Test {
     rtcp_receiver_->IncomingRtcpPacket(&rtcp_parser);
   }
 
-  base::SimpleTestTickClock testing_clock_;
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
-  scoped_refptr<CastEnvironment> cast_environment_;
   MockRtcpReceiverFeedback mock_receiver_feedback_;
   MockRtcpRttFeedback mock_rtt_feedback_;
   MockRtcpSenderFeedback mock_sender_feedback_;
@@ -334,8 +323,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithCastFeedback) {
 
 TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithCastVerification) {
   SenderFeedbackCastVerification sender_feedback_cast_verification;
-  RtcpReceiver rtcp_receiver(cast_environment_,
-                             &sender_feedback_cast_verification,
+  RtcpReceiver rtcp_receiver(&sender_feedback_cast_verification,
                              &mock_receiver_feedback_,
                              &mock_rtt_feedback_,
                              kSourceSsrc);

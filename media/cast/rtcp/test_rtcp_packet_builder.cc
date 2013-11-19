@@ -185,7 +185,7 @@ void TestRtcpPacketBuilder::AddRemb(uint32 sender_ssrc, uint32 media_ssrc) {
   big_endian_writer_.WriteU8(1);  // Number of SSRCs.
   big_endian_writer_.WriteU8(1);  // BR Exp.
   //  BR Mantissa.
-  big_endian_writer_.WriteU16(static_cast<uint16>(kTestRembBitrate / 2));
+  big_endian_writer_.WriteU16(static_cast<uint16>(kRembBitrate / 2));
   big_endian_writer_.WriteU32(media_ssrc);
 }
 
