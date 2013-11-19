@@ -436,9 +436,12 @@ enum QuicErrorCode {
   QUIC_CRYPTO_SERVER_CONFIG_EXPIRED = 45,
   // We failed to setup the symmetric keys for a connection.
   QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED = 53,
+  // A handshake message arrived, but we are still validating the
+  // previous handshake message.
+  QUIC_CRYPTO_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO = 54,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 54,
+  QUIC_LAST_ERROR = 55,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {

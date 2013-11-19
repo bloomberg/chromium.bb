@@ -688,11 +688,10 @@ TEST_P(EndToEndTest, LimitMaxPacketSizeAndCongestionWindowAndRTT) {
   QuicSession* session = dispatcher->session_map().begin()->second;
   QuicConfig* client_negotiated_config = client_->client()->session()->config();
   QuicConfig* server_negotiated_config = session->config();
-  QuicCongestionManager* client_congestion_manager =
-      QuicConnectionPeer::GetCongestionManager(
-          client_->client()->session()->connection());
-  QuicCongestionManager* server_congestion_manager =
-      QuicConnectionPeer::GetCongestionManager(session->connection());
+  const QuicCongestionManager& client_congestion_manager =
+      client_->client()->session()->connection()->congestion_manager();
+  const QuicCongestionManager& server_congestion_manager =
+      session->connection()->congestion_manager();
 
   EXPECT_EQ(kMaxPacketSize, client_negotiated_config->server_max_packet_size());
   EXPECT_EQ(kDefaultMaxPacketSize,
@@ -710,9 +709,9 @@ TEST_P(EndToEndTest, LimitMaxPacketSizeAndCongestionWindowAndRTT) {
             server_negotiated_config->server_initial_congestion_window());
   // The client shouldn't set it's initial window based on the negotiated value.
   EXPECT_EQ(kDefaultInitialWindow * kDefaultTCPMSS,
-            client_congestion_manager->GetCongestionWindow());
+            client_congestion_manager.GetCongestionWindow());
   EXPECT_EQ(kMaxInitialWindow * kDefaultTCPMSS,
-            server_congestion_manager->GetCongestionWindow());
+            server_congestion_manager.GetCongestionWindow());
 
   EXPECT_EQ(1u, client_negotiated_config->initial_round_trip_time_us());
   EXPECT_EQ(1u, server_negotiated_config->initial_round_trip_time_us());
@@ -751,11 +750,10 @@ TEST_P(EndToEndTest, InitialRTT) {
   QuicSession* session = dispatcher->session_map().begin()->second;
   QuicConfig* client_negotiated_config = client_->client()->session()->config();
   QuicConfig* server_negotiated_config = session->config();
-  QuicCongestionManager* client_congestion_manager =
-      QuicConnectionPeer::GetCongestionManager(
-          client_->client()->session()->connection());
-  QuicCongestionManager* server_congestion_manager =
-      QuicConnectionPeer::GetCongestionManager(session->connection());
+  const QuicCongestionManager& client_congestion_manager =
+      client_->client()->session()->connection()->congestion_manager();
+  const QuicCongestionManager& server_congestion_manager =
+      session->connection()->congestion_manager();
 
   EXPECT_EQ(kMaxInitialRoundTripTimeUs,
             client_negotiated_config->initial_round_trip_time_us());
@@ -763,9 +761,9 @@ TEST_P(EndToEndTest, InitialRTT) {
             server_negotiated_config->initial_round_trip_time_us());
   // Now that acks have been exchanged, the RTT estimate has decreased on the
   // server and is not infinite on the client.
-  EXPECT_FALSE(client_congestion_manager->SmoothedRtt().IsInfinite());
+  EXPECT_FALSE(client_congestion_manager.SmoothedRtt().IsInfinite());
   EXPECT_GE(static_cast<int64>(kMaxInitialRoundTripTimeUs),
-            server_congestion_manager->SmoothedRtt().ToMicroseconds());
+            server_congestion_manager.SmoothedRtt().ToMicroseconds());
 }
 
 TEST_P(EndToEndTest, ResetConnection) {

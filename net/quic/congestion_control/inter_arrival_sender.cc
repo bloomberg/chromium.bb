@@ -317,18 +317,18 @@ void InterArrivalSender::EstimateDelayBandwidth(QuicTime feedback_receive_time,
   bandwidth_usage_state_ = new_bandwidth_usage_state;
 }
 
-QuicBandwidth InterArrivalSender::BandwidthEstimate() {
+QuicBandwidth InterArrivalSender::BandwidthEstimate() const {
   return current_bandwidth_;
 }
 
-QuicTime::Delta InterArrivalSender::SmoothedRtt() {
+QuicTime::Delta InterArrivalSender::SmoothedRtt() const {
   if (smoothed_rtt_.IsZero()) {
     return QuicTime::Delta::FromMilliseconds(kInitialRttMs);
   }
   return smoothed_rtt_;
 }
 
-QuicTime::Delta InterArrivalSender::RetransmissionDelay() {
+QuicTime::Delta InterArrivalSender::RetransmissionDelay() const {
   // TODO(pwestin): Calculate and return retransmission delay.
   // Use 2 * the smoothed RTT for now.
   return smoothed_rtt_.Add(smoothed_rtt_);

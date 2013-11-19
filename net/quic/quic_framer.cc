@@ -501,6 +501,7 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   QuicPacketPublicHeader public_header;
   if (!ProcessPublicHeader(&public_header)) {
     DLOG(WARNING) << "Unable to process public header.";
+    DCHECK_NE("", detailed_error_);
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
 
@@ -1900,6 +1901,13 @@ bool QuicFramer::AppendStreamFramePayload(
   return true;
 }
 
+// static
+bool QuicFramer::HasVersionFlag(const QuicEncryptedPacket& packet) {
+  return packet.length() > 0 &&
+      (packet.data()[0] & PACKET_PUBLIC_FLAGS_VERSION) != 0;
+}
+
+// static
 QuicPacketSequenceNumber QuicFramer::CalculateLargestObserved(
     const SequenceNumberSet& missing_packets,
     SequenceNumberSet::const_iterator largest_written) {

@@ -22,6 +22,7 @@
 #include "net/quic/crypto/curve25519_key_exchange.h"
 #include "net/quic/crypto/ephemeral_key_source.h"
 #include "net/quic/crypto/key_exchange.h"
+#include "net/quic/crypto/local_strike_register_client.h"
 #include "net/quic/crypto/p256_key_exchange.h"
 #include "net/quic/crypto/proof_source.h"
 #include "net/quic/crypto/quic_decrypter.h"
@@ -29,6 +30,7 @@
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/crypto/source_address_token.h"
 #include "net/quic/crypto/strike_register.h"
+#include "net/quic/crypto/strike_register_client.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
@@ -41,8 +43,121 @@ using std::vector;
 
 namespace net {
 
+// ClientHelloInfo contains information about a client hello message that is
+// only kept for as long as it's being processed.
+struct ClientHelloInfo {
+  ClientHelloInfo(const IPEndPoint& in_client_ip, QuicWallTime in_now)
+      : client_ip(in_client_ip),
+        now(in_now),
+        valid_source_address_token(false),
+        client_nonce_well_formed(false),
+        unique(false) {}
+
+  // Inputs to EvaluateClientHello.
+  const IPEndPoint client_ip;
+  const QuicWallTime now;
+
+  // Outputs from EvaluateClientHello.
+  bool valid_source_address_token;
+  bool client_nonce_well_formed;
+  bool unique;
+  StringPiece sni;
+  StringPiece client_nonce;
+  StringPiece server_nonce;
+};
+
+struct ValidateClientHelloResultCallback::Result {
+  Result(const CryptoHandshakeMessage& in_client_hello,
+         IPEndPoint in_client_ip,
+         QuicWallTime in_now)
+      : client_hello(in_client_hello),
+        info(in_client_ip, in_now),
+        error_code(QUIC_NO_ERROR) {
+  }
+
+  CryptoHandshakeMessage client_hello;
+  ClientHelloInfo info;
+  QuicErrorCode error_code;
+  string error_details;
+};
+
+class ValidateClientHelloHelper {
+ public:
+  ValidateClientHelloHelper(ValidateClientHelloResultCallback::Result* result,
+                            ValidateClientHelloResultCallback* done_cb)
+      : result_(result), done_cb_(done_cb) {
+  }
+
+  ~ValidateClientHelloHelper() {
+    if (done_cb_ != NULL) {
+      LOG(DFATAL) <<
+          "Deleting ValidateClientHelloHelper with a pending callback.";
+    }
+  }
+
+  void ValidationComplete(QuicErrorCode error_code, const char* error_details) {
+    result_->error_code = error_code;
+    result_->error_details = error_details;
+    done_cb_->Run(result_);
+    DetachCallback();
+  }
+
+  void StartedAsyncCallback() {
+    DetachCallback();
+  }
+
+ private:
+  void DetachCallback() {
+    if (done_cb_ == NULL) {
+      LOG(DFATAL) << "Callback already detached.";
+    }
+    done_cb_ = NULL;
+  }
+
+  ValidateClientHelloResultCallback::Result* result_;
+  ValidateClientHelloResultCallback* done_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(ValidateClientHelloHelper);
+};
+
+class VerifyNonceIsValidAndUniqueCallback
+    : public StrikeRegisterClient::ResultCallback {
+ public:
+  VerifyNonceIsValidAndUniqueCallback(
+      ValidateClientHelloResultCallback::Result* result,
+      ValidateClientHelloResultCallback* done_cb)
+      : result_(result), done_cb_(done_cb) {
+  }
+
+ protected:
+  virtual void RunImpl(bool nonce_is_valid_and_unique) OVERRIDE {
+    DLOG(INFO) << "Using client nonce, unique: " << nonce_is_valid_and_unique;
+    result_->info.unique = nonce_is_valid_and_unique;
+    done_cb_->Run(result_);
+  }
+
+ private:
+  ValidateClientHelloResultCallback::Result* result_;
+  ValidateClientHelloResultCallback* done_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(VerifyNonceIsValidAndUniqueCallback);
+};
+
 // static
 const char QuicCryptoServerConfig::TESTING[] = "secret string for testing";
+
+
+ValidateClientHelloResultCallback::ValidateClientHelloResultCallback() {
+}
+
+ValidateClientHelloResultCallback::~ValidateClientHelloResultCallback() {
+}
+
+void ValidateClientHelloResultCallback::Run(const Result* result) {
+  RunImpl(result->client_hello, *result);
+  delete result;
+  delete this;
+}
 
 QuicCryptoServerConfig::ConfigOptions::ConfigOptions()
     : expiry_time(QuicWallTime::Zero()),
@@ -56,7 +171,6 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
       configs_lock_(),
       primary_config_(NULL),
       next_config_promotion_time_(QuicWallTime::Zero()),
-      strike_register_lock_(),
       server_nonce_strike_register_lock_(),
       strike_register_no_startup_period_(false),
       strike_register_max_entries_(1 << 10),
@@ -303,39 +417,54 @@ bool QuicCryptoServerConfig::SetConfigs(
   return ok;
 }
 
-// ClientHelloInfo contains information about a client hello message that is
-// only kept for as long as it's being processed.
-struct ClientHelloInfo {
-  ClientHelloInfo(const IPEndPoint& in_client_ip, QuicWallTime in_now)
-      : client_ip(in_client_ip),
-        now(in_now),
-        valid_source_address_token(false),
-        client_nonce_well_formed(false),
-        unique(false) {}
+void QuicCryptoServerConfig::ValidateClientHello(
+    const CryptoHandshakeMessage& client_hello,
+    IPEndPoint client_ip,
+    const QuicClock* clock,
+    ValidateClientHelloResultCallback* done_cb) const {
+  const QuicWallTime now(clock->WallNow());
+  ValidateClientHelloResultCallback::Result* result =
+      new ValidateClientHelloResultCallback::Result(
+          client_hello, client_ip, now);
 
-  // Inputs to EvaluateClientHello.
-  const IPEndPoint client_ip;
-  const QuicWallTime now;
+  uint8 primary_orbit[kOrbitSize];
+  {
+    base::AutoLock locked(configs_lock_);
 
-  // Outputs from EvaluateClientHello.
-  bool valid_source_address_token;
-  bool client_nonce_well_formed;
-  bool unique;
-  StringPiece sni;
-  StringPiece client_nonce;
-  StringPiece server_nonce;
-};
+    if (!primary_config_) {
+      result->error_code = QUIC_CRYPTO_INTERNAL_ERROR;
+      result->error_details = "No configurations loaded";
+    } else {
+      if (!next_config_promotion_time_.IsZero() &&
+          next_config_promotion_time_.IsAfter(now)) {
+        SelectNewPrimaryConfig(now);
+      }
+
+      memcpy(primary_orbit, primary_config_->orbit, sizeof(primary_orbit));
+    }
+  }
+
+  if (result->error_code == QUIC_NO_ERROR) {
+    EvaluateClientHello(primary_orbit, result, done_cb);
+  } else {
+    done_cb->Run(result);
+  }
+}
 
 QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
-    const CryptoHandshakeMessage& client_hello,
+    const ValidateClientHelloResultCallback::Result& validate_chlo_result,
     QuicGuid guid,
-    const IPEndPoint& client_ip,
+    IPEndPoint client_ip,
     const QuicClock* clock,
     QuicRandom* rand,
     QuicCryptoNegotiatedParameters *params,
     CryptoHandshakeMessage* out,
     string* error_details) const {
   DCHECK(error_details);
+
+  const CryptoHandshakeMessage& client_hello =
+      validate_chlo_result.client_hello;
+  const ClientHelloInfo& info = validate_chlo_result.info;
 
   StringPiece requested_scid;
   client_hello.GetStringPiece(kSCID, &requested_scid);
@@ -369,11 +498,9 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     }
   }
 
-  ClientHelloInfo info(client_ip, now);
-  QuicErrorCode error = EvaluateClientHello(
-      client_hello, primary_config->orbit, &info, error_details);
-  if (error != QUIC_NO_ERROR) {
-    return error;
+  if (validate_chlo_result.error_code != QUIC_NO_ERROR) {
+    *error_details = validate_chlo_result.error_details;
+    return validate_chlo_result.error_code;
   }
 
   out->Clear();
@@ -631,20 +758,27 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
   next_config_promotion_time_ = QuicWallTime::Zero();
 }
 
-QuicErrorCode QuicCryptoServerConfig::EvaluateClientHello(
-    const CryptoHandshakeMessage& client_hello,
-    const uint8* orbit,
-    ClientHelloInfo* info,
-    string* error_details) const {
+void QuicCryptoServerConfig::EvaluateClientHello(
+    const uint8* primary_orbit,
+    ValidateClientHelloResultCallback::Result* client_hello_state,
+    ValidateClientHelloResultCallback* done_cb) const {
+  ValidateClientHelloHelper helper(client_hello_state, done_cb);
+
+  const CryptoHandshakeMessage& client_hello =
+      client_hello_state->client_hello;
+  ClientHelloInfo* info = &(client_hello_state->info);
+
   if (client_hello.size() < kClientHelloMinimumSizeOld) {
-    *error_details = "Client hello too small";
-    return QUIC_CRYPTO_INVALID_VALUE_LENGTH;
+    helper.ValidationComplete(QUIC_CRYPTO_INVALID_VALUE_LENGTH,
+                              "Client hello too small");
+    return;
   }
 
   if (client_hello.GetStringPiece(kSNI, &info->sni) &&
       !CryptoUtils::IsValidSNI(info->sni)) {
-    *error_details = "Invalid SNI name";
-    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+    helper.ValidationComplete(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER,
+                              "Invalid SNI name");
+    return;
   }
 
   StringPiece srct;
@@ -653,7 +787,8 @@ QuicErrorCode QuicCryptoServerConfig::EvaluateClientHello(
     info->valid_source_address_token = true;
   } else {
     // No valid source address token.
-    return QUIC_NO_ERROR;
+    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    return;
   }
 
   if (client_hello.GetStringPiece(kNONC, &info->client_nonce) &&
@@ -662,13 +797,15 @@ QuicErrorCode QuicCryptoServerConfig::EvaluateClientHello(
   } else {
     // Invalid client nonce.
     DLOG(INFO) << "Invalid client nonce.";
-    return QUIC_NO_ERROR;
+    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    return;
   }
 
   if (!replay_protection_) {
     info->unique = true;
     DLOG(INFO) << "No replay protection.";
-    return QUIC_NO_ERROR;
+    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    return;
   }
 
   client_hello.GetStringPiece(kServerNonceTag, &info->server_nonce);
@@ -676,28 +813,29 @@ QuicErrorCode QuicCryptoServerConfig::EvaluateClientHello(
     // If the server nonce is present, use it establish uniqueness.
     info->unique = ValidateServerNonce(info->server_nonce, info->now);
     DLOG(INFO) << "Using server nonce, unique: " << info->unique;
-    return QUIC_NO_ERROR;
-  } else {
-    // Use the client nonce to establish uniqueness.
-    base::AutoLock auto_lock(strike_register_lock_);
-
-    if (strike_register_.get() == NULL) {
-      strike_register_.reset(new StrikeRegister(
-          strike_register_max_entries_,
-          static_cast<uint32>(info->now.ToUNIXSeconds()),
-          strike_register_window_secs_,
-          orbit,
-          strike_register_no_startup_period_ ?
-          StrikeRegister::NO_STARTUP_PERIOD_NEEDED :
-          StrikeRegister::DENY_REQUESTS_AT_STARTUP));
-    }
-
-    info->unique = strike_register_->Insert(
-        reinterpret_cast<const uint8*>(info->client_nonce.data()),
-        static_cast<uint32>(info->now.ToUNIXSeconds()));
-    DLOG(INFO) << "Using client nonce, unique: " << info->unique;
-    return QUIC_NO_ERROR;
+    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    return;
   }
+
+  // Use the client nonce to establish uniqueness.
+  base::AutoLock locked(strike_register_client_lock_);
+
+  if (strike_register_client_.get() == NULL) {
+    strike_register_client_.reset(new LocalStrikeRegisterClient(
+        strike_register_max_entries_,
+        static_cast<uint32>(info->now.ToUNIXSeconds()),
+        strike_register_window_secs_,
+        primary_orbit,
+        strike_register_no_startup_period_ ?
+        StrikeRegister::NO_STARTUP_PERIOD_NEEDED :
+        StrikeRegister::DENY_REQUESTS_AT_STARTUP));
+  }
+
+  strike_register_client_->VerifyNonceIsValidAndUnique(
+      info->client_nonce,
+      info->now,
+      new VerifyNonceIsValidAndUniqueCallback(client_hello_state, done_cb));
+  helper.StartedAsyncCallback();
 }
 
 void QuicCryptoServerConfig::BuildRejection(
@@ -841,10 +979,10 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
   memcpy(config->orbit, orbit.data(), sizeof(config->orbit));
 
   {
-    base::AutoLock locked(strike_register_lock_);
-    if (strike_register_.get()) {
-      const uint8* orbit = strike_register_->orbit();
-      if (0 != memcmp(orbit, config->orbit, kOrbitSize)) {
+    base::AutoLock locked(strike_register_client_lock_);
+    if (strike_register_client_.get()) {
+      const string& orbit = strike_register_client_->orbit();
+      if (0 != memcmp(orbit.data(), config->orbit, kOrbitSize)) {
         LOG(WARNING)
             << "Server config has different orbit than current config. "
                "Switching orbits at run-time is not supported.";
@@ -949,27 +1087,34 @@ void QuicCryptoServerConfig::SetEphemeralKeySource(
   ephemeral_key_source_.reset(ephemeral_key_source);
 }
 
+void QuicCryptoServerConfig::SetStrikeRegisterClient(
+    StrikeRegisterClient* strike_register_client) {
+  base::AutoLock locker(strike_register_client_lock_);
+  DCHECK(!strike_register_client_.get());
+  strike_register_client_.reset(strike_register_client);
+}
+
 void QuicCryptoServerConfig::set_replay_protection(bool on) {
   replay_protection_ = on;
 }
 
 void QuicCryptoServerConfig::set_strike_register_no_startup_period() {
-  base::AutoLock auto_lock(strike_register_lock_);
-  DCHECK(!strike_register_.get());
+  base::AutoLock locker(strike_register_client_lock_);
+  DCHECK(!strike_register_client_.get());
   strike_register_no_startup_period_ = true;
 }
 
 void QuicCryptoServerConfig::set_strike_register_max_entries(
     uint32 max_entries) {
-  base::AutoLock locker(strike_register_lock_);
-  DCHECK(!strike_register_.get());
+  base::AutoLock locker(strike_register_client_lock_);
+  DCHECK(!strike_register_client_.get());
   strike_register_max_entries_ = max_entries;
 }
 
 void QuicCryptoServerConfig::set_strike_register_window_secs(
     uint32 window_secs) {
-  base::AutoLock locker(strike_register_lock_);
-  DCHECK(!strike_register_.get());
+  base::AutoLock locker(strike_register_client_lock_);
+  DCHECK(!strike_register_client_.get());
   strike_register_window_secs_ = window_secs;
 }
 

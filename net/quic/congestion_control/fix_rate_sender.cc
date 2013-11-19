@@ -116,16 +116,16 @@ QuicByteCount FixRateSender::CongestionWindow() {
   return std::max(kDefaultMaxPacketSize, window_size_bytes);
 }
 
-QuicBandwidth FixRateSender::BandwidthEstimate() {
+QuicBandwidth FixRateSender::BandwidthEstimate() const {
   return bitrate_;
 }
 
-QuicTime::Delta FixRateSender::SmoothedRtt() {
+QuicTime::Delta FixRateSender::SmoothedRtt() const {
   // TODO(satyamshekhar): Calculate and return smoothed rtt.
   return latest_rtt_;
 }
 
-QuicTime::Delta FixRateSender::RetransmissionDelay() {
+QuicTime::Delta FixRateSender::RetransmissionDelay() const {
   // TODO(pwestin): Calculate and return retransmission delay.
   // Use 2 * the latest RTT for now.
   return latest_rtt_.Add(latest_rtt_);

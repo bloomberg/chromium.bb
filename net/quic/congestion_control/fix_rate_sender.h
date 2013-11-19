@@ -48,9 +48,9 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
       TransmissionType transmission_type,
       HasRetransmittableData has_retransmittable_data,
       IsHandshake handshake) OVERRIDE;
-  virtual QuicBandwidth BandwidthEstimate() OVERRIDE;
-  virtual QuicTime::Delta SmoothedRtt() OVERRIDE;
-  virtual QuicTime::Delta RetransmissionDelay() OVERRIDE;
+  virtual QuicBandwidth BandwidthEstimate() const OVERRIDE;
+  virtual QuicTime::Delta SmoothedRtt() const OVERRIDE;
+  virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
   virtual void SetCongestionWindow(QuicByteCount window) OVERRIDE;
   // End implementation of SendAlgorithmInterface.

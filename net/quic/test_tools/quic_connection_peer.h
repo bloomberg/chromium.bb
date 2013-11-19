@@ -48,9 +48,6 @@ class QuicConnectionPeer {
 
   static QuicPacketCreator* GetPacketCreator(QuicConnection* connection);
 
-  static QuicCongestionManager* GetCongestionManager(
-      QuicConnection* connection);
-
   static bool GetReceivedTruncatedAck(QuicConnection* connection);
 
   static QuicTime::Delta GetNetworkTimeout(QuicConnection* connection);

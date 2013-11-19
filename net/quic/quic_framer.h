@@ -169,6 +169,9 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Returns true if |version| is a supported protocol version.
   bool IsSupportedVersion(const QuicVersion version) const;
 
+  // Returns true if the version flag is set in the public flags.
+  static bool HasVersionFlag(const QuicEncryptedPacket& packet);
+
   // Calculates the largest observed packet to advertise in the case an Ack
   // Frame was truncated.  last_written in this case is the iterator for the
   // last missing packet which fit in the outgoing ack.

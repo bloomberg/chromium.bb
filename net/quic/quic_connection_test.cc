@@ -2245,8 +2245,8 @@ TEST_P(QuicConnectionTest, DelayRTOWithAckReceipt) {
   // than previously.
   EXPECT_TRUE(retransmission_alarm->IsSet());
   QuicTime next_rto_time = retransmission_alarm->deadline();
-  QuicTime::Delta expected_rto = QuicConnectionPeer::GetCongestionManager(
-      &connection_)->GetRetransmissionDelay(1, 1);
+  QuicTime::Delta expected_rto =
+      connection_.congestion_manager().GetRetransmissionDelay(1, 1);
   EXPECT_EQ(next_rto_time, clock_.ApproximateNow().Add(expected_rto));
 }
 

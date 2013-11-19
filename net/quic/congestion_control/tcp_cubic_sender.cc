@@ -190,19 +190,19 @@ QuicByteCount TcpCubicSender::SendWindow() {
   return std::min(receive_window_, GetCongestionWindow());
 }
 
-QuicBandwidth TcpCubicSender::BandwidthEstimate() {
+QuicBandwidth TcpCubicSender::BandwidthEstimate() const {
   return QuicBandwidth::FromBytesAndTimeDelta(GetCongestionWindow(),
                                               SmoothedRtt());
 }
 
-QuicTime::Delta TcpCubicSender::SmoothedRtt() {
+QuicTime::Delta TcpCubicSender::SmoothedRtt() const {
   if (smoothed_rtt_.IsZero()) {
     return QuicTime::Delta::FromMilliseconds(kInitialRttMs);
   }
   return smoothed_rtt_;
 }
 
-QuicTime::Delta TcpCubicSender::RetransmissionDelay() {
+QuicTime::Delta TcpCubicSender::RetransmissionDelay() const {
   return QuicTime::Delta::FromMicroseconds(
       smoothed_rtt_.ToMicroseconds() + 4 * mean_deviation_.ToMicroseconds());
 }

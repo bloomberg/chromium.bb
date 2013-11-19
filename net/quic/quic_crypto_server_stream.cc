@@ -19,10 +19,15 @@ QuicCryptoServerStream::QuicCryptoServerStream(
     const QuicCryptoServerConfig& crypto_config,
     QuicSession* session)
     : QuicCryptoStream(session),
-      crypto_config_(crypto_config) {
+      crypto_config_(crypto_config),
+      validate_client_hello_cb_(NULL) {
 }
 
 QuicCryptoServerStream::~QuicCryptoServerStream() {
+  // Detach from the validation callback.
+  if (validate_client_hello_cb_ != NULL) {
+    validate_client_hello_cb_->Cancel();
+  }
 }
 
 void QuicCryptoServerStream::OnHandshakeMessage(
@@ -40,10 +45,33 @@ void QuicCryptoServerStream::OnHandshakeMessage(
     return;
   }
 
+  if (validate_client_hello_cb_ != NULL) {
+    // Already processing some other handshake message.  The protocol
+    // does not allow for clients to send multiple handshake messages
+    // before the server has a chance to respond.
+    CloseConnection(QUIC_CRYPTO_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO);
+    return;
+  }
+
+  validate_client_hello_cb_ = new ValidateCallback(this);
+  return crypto_config_.ValidateClientHello(
+      message,
+      session()->connection()->peer_address(),
+      session()->connection()->clock(),
+      validate_client_hello_cb_);
+}
+
+void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
+    const CryptoHandshakeMessage& message,
+    const ValidateClientHelloResultCallback::Result& result) {
+  // Clear the callback that got us here.
+  DCHECK(validate_client_hello_cb_ != NULL);
+  validate_client_hello_cb_ = NULL;
+
   string error_details;
   CryptoHandshakeMessage reply;
-
-  QuicErrorCode error = ProcessClientHello(message, &reply, &error_details);
+  QuicErrorCode error = ProcessClientHello(
+      message, result, &reply, &error_details);
 
   if (error != QUIC_NO_ERROR) {
     CloseConnectionWithDetails(error, error_details);
@@ -128,15 +156,32 @@ bool QuicCryptoServerStream::GetBase64SHA256ClientChannelID(
 
 QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
     const CryptoHandshakeMessage& message,
+    const ValidateClientHelloResultCallback::Result& result,
     CryptoHandshakeMessage* reply,
     string* error_details) {
   return crypto_config_.ProcessClientHello(
-      message,
+      result,
       session()->connection()->guid(),
       session()->connection()->peer_address(),
       session()->connection()->clock(),
       session()->connection()->random_generator(),
       &crypto_negotiated_params_, reply, error_details);
+}
+
+QuicCryptoServerStream::ValidateCallback::ValidateCallback(
+    QuicCryptoServerStream* parent) : parent_(parent) {
+}
+
+void QuicCryptoServerStream::ValidateCallback::Cancel() {
+  parent_ = NULL;
+}
+
+void QuicCryptoServerStream::ValidateCallback::RunImpl(
+    const CryptoHandshakeMessage& client_hello,
+    const Result& result) {
+  if (parent_ != NULL) {
+    parent_->FinishProcessingHandshakeMessage(client_hello, result);
+  }
 }
 
 }  // namespace net

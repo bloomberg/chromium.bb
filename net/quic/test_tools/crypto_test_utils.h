@@ -7,6 +7,7 @@
 
 #include <stdarg.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -73,6 +74,16 @@ class CryptoTestUtils {
                                            QuicCryptoStream* a,
                                            PacketSavingConnection* b_conn,
                                            QuicCryptoStream* b);
+
+  // AdvanceHandshake attempts to moves messages from |a| to |b| and |b| to |a|.
+  // Returns the number of messages moved.
+  static std::pair<size_t, size_t> AdvanceHandshake(
+      PacketSavingConnection* a_conn,
+      QuicCryptoStream* a,
+      size_t a_i,
+      PacketSavingConnection* b_conn,
+      QuicCryptoStream* b,
+      size_t b_i);
 
   // Returns the value for the tag |tag| in the tag value map of |message|.
   static std::string GetValueForTag(const CryptoHandshakeMessage& message,

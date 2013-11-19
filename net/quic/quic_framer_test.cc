@@ -25,6 +25,7 @@ using base::StringPiece;
 using std::make_pair;
 using std::map;
 using std::numeric_limits;
+using std::pair;
 using std::string;
 using std::vector;
 using testing::Return;

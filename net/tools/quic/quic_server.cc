@@ -198,7 +198,10 @@ void QuicServer::MaybeDispatchPacket(QuicDispatcher* dispatcher,
     return;
   }
 
-  dispatcher->ProcessPacket(server_address, client_address, guid, packet);
+  bool has_version_flag = QuicFramer::HasVersionFlag(packet);
+
+  dispatcher->ProcessPacket(
+      server_address, client_address, guid, has_version_flag, packet);
 }
 
 bool QuicServer::ReadAndDispatchSinglePacket(int fd,

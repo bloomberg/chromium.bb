@@ -52,12 +52,6 @@ QuicPacketCreator* QuicConnectionPeer::GetPacketCreator(
   return &connection->packet_creator_;
 }
 
-// static
-QuicCongestionManager* QuicConnectionPeer::GetCongestionManager(
-    QuicConnection* connection) {
-  return &connection->congestion_manager_;
-}
-
 bool QuicConnectionPeer::GetReceivedTruncatedAck(QuicConnection* connection) {
     return connection->received_truncated_ack_;
 }

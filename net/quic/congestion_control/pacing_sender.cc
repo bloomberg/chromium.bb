@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,15 +94,15 @@ QuicTime::Delta PacingSender::TimeUntilSend(
   return QuicTime::Delta::Zero();
 }
 
-QuicBandwidth PacingSender::BandwidthEstimate() {
+QuicBandwidth PacingSender::BandwidthEstimate() const {
   return sender_->BandwidthEstimate();
 }
 
-QuicTime::Delta PacingSender::SmoothedRtt() {
+QuicTime::Delta PacingSender::SmoothedRtt() const {
   return sender_->SmoothedRtt();
 }
 
-QuicTime::Delta PacingSender::RetransmissionDelay() {
+QuicTime::Delta PacingSender::RetransmissionDelay() const {
   return sender_->RetransmissionDelay();
 }
 

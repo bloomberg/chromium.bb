@@ -89,13 +89,13 @@ class NET_EXPORT_PRIVATE QuicCongestionManager {
 
   const QuicTime::Delta GetRetransmissionDelay(
       size_t unacked_packets_count,
-      size_t number_retransmissions);
+      size_t number_retransmissions) const;
 
   // Returns the estimated smoothed RTT calculated by the congestion algorithm.
-  const QuicTime::Delta SmoothedRtt();
+  const QuicTime::Delta SmoothedRtt() const;
 
   // Returns the estimated bandwidth calculated by the congestion algorithm.
-  QuicBandwidth BandwidthEstimate();
+  QuicBandwidth BandwidthEstimate() const;
 
   // Returns the size of the current congestion window in bytes.  Note, this is
   // not the *available* window.  Some send algorithms may not use a congestion

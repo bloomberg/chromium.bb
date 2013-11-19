@@ -84,15 +84,15 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
 
   // What's the current estimated bandwidth in bytes per second.
   // Returns 0 when it does not have an estimate.
-  virtual QuicBandwidth BandwidthEstimate() = 0;
+  virtual QuicBandwidth BandwidthEstimate() const = 0;
 
   // TODO(satyamshekhar): Monitor MinRtt.
-  virtual QuicTime::Delta SmoothedRtt() = 0;
+  virtual QuicTime::Delta SmoothedRtt() const = 0;
 
   // Get the send algorithm specific retransmission delay, called RTO in TCP,
   // Note 1: the caller is responsible for sanity checking this value.
   // Note 2: this will return zero if we don't have enough data for an estimate.
-  virtual QuicTime::Delta RetransmissionDelay() = 0;
+  virtual QuicTime::Delta RetransmissionDelay() const = 0;
 
   // Returns the size of the current congestion window in bytes.  Note, this is
   // not the *available* window.  Some send algorithms may not use a congestion

@@ -31,12 +31,32 @@ class QuicEncrypter;
 class QuicRandom;
 class QuicServerConfigProtobuf;
 class StrikeRegister;
+class StrikeRegisterClient;
 
 struct ClientHelloInfo;
 
 namespace test {
 class QuicCryptoServerConfigPeer;
 }  // namespace test
+
+// Callback used to accept the result of the |client_hello| validation step.
+class NET_EXPORT_PRIVATE ValidateClientHelloResultCallback {
+ public:
+  // Opaque token that holds information about the client_hello and
+  // its validity.  Can be interpreted by calling ProcessClientHello.
+  struct Result;
+
+  ValidateClientHelloResultCallback();
+  virtual ~ValidateClientHelloResultCallback();
+  void Run(const Result* result);
+
+ protected:
+  virtual void RunImpl(const CryptoHandshakeMessage& client_hello,
+                       const Result& result) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ValidateClientHelloResultCallback);
+};
 
 // QuicCryptoServerConfig contains the crypto configuration of a QUIC server.
 // Unlike a client, a QUIC server can have multiple configurations active in
@@ -114,13 +134,39 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   bool SetConfigs(const std::vector<QuicServerConfigProtobuf*>& protobufs,
                   QuicWallTime now);
 
+  // Checks |client_hello| for gross errors and determines whether it
+  // can be shown to be fresh (i.e. not a replay).  The result of the
+  // validation step must be interpreted by calling
+  // QuicCryptoServerConfig::ProcessClientHello from the done_cb.
+  //
+  // ValidateClientHello may invoke the done_cb before unrolling the
+  // stack if it is able to assess the validity of the client_nonce
+  // without asynchronous operations.
+  //
+  // client_hello: the incoming client hello message.
+  // client_ip: the IP address of the client, which is used to generate and
+  //     validate source-address tokens.
+  // clock: used to validate client nonces and ephemeral keys.
+  // done_cb: single-use callback that accepts an opaque
+  //     ValidatedClientHelloMsg token that holds information about
+  //     the client hello.  The callback will always be called exactly
+  //     once, either under the current call stack, or after the
+  //     completion of an asynchronous operation.
+  void ValidateClientHello(
+      const CryptoHandshakeMessage& client_hello,
+      IPEndPoint client_ip,
+      const QuicClock* clock,
+      ValidateClientHelloResultCallback* done_cb) const;
+
   // ProcessClientHello processes |client_hello| and decides whether to accept
   // or reject the connection. If the connection is to be accepted, |out| is
   // set to the contents of the ServerHello, |out_params| is completed and
   // QUIC_NO_ERROR is returned. Otherwise |out| is set to be a REJ message and
   // an error code is returned.
   //
-  // client_hello: the incoming client hello message.
+  // validate_chlo_result: Output from the asynchronous call to
+  //     ValidateClientHello.  Contains the client hello message and
+  //     information about it.
   // guid: the GUID for the connection, which is used in key derivation.
   // client_ip: the IP address of the client, which is used to generate and
   //     validate source-address tokens.
@@ -131,14 +177,15 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   //     contain the state of the connection.
   // out: the resulting handshake message (either REJ or SHLO)
   // error_details: used to store a string describing any error.
-  QuicErrorCode ProcessClientHello(const CryptoHandshakeMessage& client_hello,
-                                   QuicGuid guid,
-                                   const IPEndPoint& client_ip,
-                                   const QuicClock* clock,
-                                   QuicRandom* rand,
-                                   QuicCryptoNegotiatedParameters* params,
-                                   CryptoHandshakeMessage* out,
-                                   std::string* error_details) const;
+  QuicErrorCode ProcessClientHello(
+      const ValidateClientHelloResultCallback::Result& validate_chlo_result,
+      QuicGuid guid,
+      IPEndPoint client_ip,
+      const QuicClock* clock,
+      QuicRandom* rand,
+      QuicCryptoNegotiatedParameters* params,
+      CryptoHandshakeMessage* out,
+      std::string* error_details) const;
 
   // SetProofSource installs |proof_source| as the ProofSource for handshakes.
   // This object takes ownership of |proof_source|.
@@ -149,6 +196,11 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // |ephemeral_key_source|. If not set then ephemeral keys will be generated
   // per-connection.
   void SetEphemeralKeySource(EphemeralKeySource* ephemeral_key_source);
+
+  // Install an externall created StrikeRegisterClient for use to
+  // interact with the strike register.  This object takes ownership
+  // of the |strike_register_client|.
+  void SetStrikeRegisterClient(StrikeRegisterClient* strike_register_client);
 
   // set_replay_protection controls whether replay protection is enabled. If
   // replay protection is disabled then no strike registers are needed and
@@ -260,11 +312,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // EvaluateClientHello checks |client_hello| for gross errors and determines
   // whether it can be shown to be fresh (i.e. not a replay). The results are
   // written to |info|.
-  QuicErrorCode EvaluateClientHello(
-      const CryptoHandshakeMessage& client_hello,
-      const uint8* orbit,
-      ClientHelloInfo* info,
-      std::string* error_details) const;
+  void EvaluateClientHello(
+      const uint8* primary_orbit,
+      ValidateClientHelloResultCallback::Result* client_hello_state,
+      ValidateClientHelloResultCallback* done_cb) const;
 
   // BuildRejection sets |out| to be a REJ message in reply to |client_hello|.
   void BuildRejection(
@@ -322,10 +373,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // active config will be promoted to primary.
   mutable QuicWallTime next_config_promotion_time_;
 
-  mutable base::Lock strike_register_lock_;
+  mutable base::Lock strike_register_client_lock_;
   // strike_register_ contains a data structure that keeps track of previously
   // observed client nonces in order to prevent replay attacks.
-  mutable scoped_ptr<StrikeRegister> strike_register_;
+  mutable scoped_ptr<StrikeRegisterClient> strike_register_client_;
 
   // source_address_token_boxer_ is used to protect the source-address tokens
   // that are given to clients.

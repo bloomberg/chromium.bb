@@ -88,8 +88,9 @@ bool QuicDispatcher::IsWriteBlockedDataBuffered() const {
 void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
                                    const IPEndPoint& client_address,
                                    QuicGuid guid,
+                                   bool has_version_flag,
                                    const QuicEncryptedPacket& packet) {
-  QuicSession* session;
+  QuicSession* session = NULL;
 
   SessionMap::iterator it = session_map_.find(guid);
   if (it == session_map_.end()) {
@@ -100,7 +101,13 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
                                              packet);
       return;
     }
-    session = CreateQuicSession(guid, client_address);
+
+    // Ensure the packet has a version negotiation bit set before creating a new
+    // session for it.  All initial packets for a new connection are required to
+    // have the flag set.  Otherwise it may be a stray packet.
+    if (has_version_flag) {
+      session = CreateQuicSession(guid, client_address);
+    }
 
     if (session == NULL) {
       DLOG(INFO) << "Failed to create session for " << guid;

@@ -45,7 +45,7 @@ TEST_F(QuicServerDispatchPacketTest, DoNotDispatchPacketWithoutGUID) {
 
   // We expect the invalid packet to be dropped, and ProcessPacket should never
   // be called.
-  EXPECT_CALL(dispatcher_, ProcessPacket(_, _, _, _)).Times(0);
+  EXPECT_CALL(dispatcher_, ProcessPacket(_, _, _, _, _)).Times(0);
   MaybeDispatchPacket(encrypted_invalid_packet);
 }
 
@@ -64,7 +64,7 @@ TEST_F(QuicServerDispatchPacketTest, DispatchValidPacket) {
   QuicEncryptedPacket encrypted_valid_packet(QuicUtils::AsChars(valid_packet),
                                              arraysize(valid_packet), false);
 
-  EXPECT_CALL(dispatcher_, ProcessPacket(_, _, _, _)).Times(1);
+  EXPECT_CALL(dispatcher_, ProcessPacket(_, _, _, _, _)).Times(1);
   MaybeDispatchPacket(encrypted_valid_packet);
 }
 

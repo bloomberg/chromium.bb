@@ -25,9 +25,10 @@ class MockQuicDispatcher : public QuicDispatcher {
                      EpollServer* eps);
   virtual ~MockQuicDispatcher();
 
-  MOCK_METHOD4(ProcessPacket, void(const IPEndPoint& server_address,
+  MOCK_METHOD5(ProcessPacket, void(const IPEndPoint& server_address,
                                    const IPEndPoint& client_address,
                                    QuicGuid guid,
+                                   bool has_version_flag,
                                    const QuicEncryptedPacket& packet));
 };
 

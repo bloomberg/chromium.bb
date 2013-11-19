@@ -361,9 +361,9 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD4(TimeUntilSend, QuicTime::Delta(QuicTime now, TransmissionType,
                                               HasRetransmittableData,
                                               IsHandshake));
-  MOCK_METHOD0(BandwidthEstimate, QuicBandwidth(void));
-  MOCK_METHOD0(SmoothedRtt, QuicTime::Delta(void));
-  MOCK_METHOD0(RetransmissionDelay, QuicTime::Delta(void));
+  MOCK_CONST_METHOD0(BandwidthEstimate, QuicBandwidth(void));
+  MOCK_CONST_METHOD0(SmoothedRtt, QuicTime::Delta(void));
+  MOCK_CONST_METHOD0(RetransmissionDelay, QuicTime::Delta(void));
   MOCK_CONST_METHOD0(GetCongestionWindow, QuicByteCount());
   MOCK_METHOD1(SetCongestionWindow, void(QuicByteCount));
 

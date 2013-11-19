@@ -198,7 +198,7 @@ const QuicTime::Delta QuicCongestionManager::DelayedAckTime() {
 
 const QuicTime::Delta QuicCongestionManager::GetRetransmissionDelay(
     size_t unacked_packets_count,
-    size_t number_retransmissions) {
+    size_t number_retransmissions) const {
   QuicTime::Delta retransmission_delay = send_algorithm_->RetransmissionDelay();
   if (retransmission_delay.IsZero()) {
     // We are in the initial state, use default timeout values.
@@ -226,11 +226,11 @@ const QuicTime::Delta QuicCongestionManager::GetRetransmissionDelay(
   return retransmission_delay;
 }
 
-const QuicTime::Delta QuicCongestionManager::SmoothedRtt() {
+const QuicTime::Delta QuicCongestionManager::SmoothedRtt() const {
   return send_algorithm_->SmoothedRtt();
 }
 
-QuicBandwidth QuicCongestionManager::BandwidthEstimate() {
+QuicBandwidth QuicCongestionManager::BandwidthEstimate() const {
   return send_algorithm_->BandwidthEstimate();
 }
 
