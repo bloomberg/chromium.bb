@@ -697,10 +697,13 @@ public abstract class TabBase implements NavigationClient {
     @CalledByNative
     private void swapWebContents(final int newWebContents) {
         destroyContentView(false);
+        NativePage previousNativePage = mNativePage;
+        mNativePage = null;
         initContentView(newWebContents);
         mContentViewCore.onShow();
         mContentViewCore.attachImeAdapter();
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
+        destroyNativePageInternal(previousNativePage);
     }
 
     @CalledByNative
