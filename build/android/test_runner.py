@@ -11,7 +11,10 @@ import logging
 import optparse
 import os
 import shutil
+import signal
 import sys
+import threading
+import traceback
 
 from pylib import android_commands
 from pylib import constants
@@ -793,7 +796,23 @@ VALID_COMMANDS = {
     }
 
 
+def DumpThreadStacks(signal, frame):
+  thread_names_map = dict(
+      [(thread.ident, thread.name) for thread in threading.enumerate()])
+  lines = []
+  for thread_id, stack in sys._current_frames().items():
+    lines.append(
+        '\n# Thread: %s (%d)' % (
+            thread_names_map.get(thread_id, ''), thread_id))
+    for filename, lineno, name, line in traceback.extract_stack(stack):
+      lines.append('File: "%s", line %d, in %s' % (filename, lineno, name))
+      if line:
+        lines.append('  %s' % (line.strip()))
+    print '\n'.join(lines)
+
+
 def main(argv):
+  signal.signal(signal.SIGUSR1, DumpThreadStacks)
   option_parser = command_option_parser.CommandOptionParser(
       commands_dict=VALID_COMMANDS)
   return command_option_parser.ParseAndExecute(option_parser)
