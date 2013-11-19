@@ -16,6 +16,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/layout.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
@@ -31,14 +32,35 @@ namespace {
 // in |Dispatch()|.
 const int64 kConfigureDelayMs = 500;
 
+float GetDeviceScaleFactor(int screen_pixels, int screen_mm) {
+  const int kCSSDefaultDPI = 96;
+  const float kInchInMm = 25.4f;
+
+  float screen_inches = screen_mm / kInchInMm;
+  float screen_dpi = screen_pixels / screen_inches;
+  float scale = screen_dpi / kCSSDefaultDPI;
+
+  return ui::GetImageScale(ui::GetSupportedScaleFactor(scale));
+}
+
 std::vector<gfx::Display> GetFallbackDisplayList() {
   ::XDisplay* display = gfx::GetXDisplay();
   ::Screen* screen = DefaultScreenOfDisplay(display);
   int width = WidthOfScreen(screen);
   int height = HeightOfScreen(screen);
+  int mm_width = WidthMMOfScreen(screen);
+  int mm_height = HeightMMOfScreen(screen);
 
-  return std::vector<gfx::Display>(
-      1, gfx::Display(0, gfx::Rect(0, 0, width, height)));
+  gfx::Rect bounds_in_pixels(0, 0, width, height);
+  gfx::Display gfx_display(0, bounds_in_pixels);
+  if (!gfx::Display::HasForceDeviceScaleFactor() &&
+      !ui::IsXDisplaySizeBlackListed(mm_width, mm_height)) {
+    float device_scale_factor = GetDeviceScaleFactor(width, mm_width);
+    DCHECK_LE(1.0f, device_scale_factor);
+    gfx_display.SetScaleAndBounds(device_scale_factor, bounds_in_pixels);
+  }
+
+  return std::vector<gfx::Display>(1, gfx_display);
 }
 
 }  // namespace
@@ -130,7 +152,7 @@ void DesktopScreenX11::ProcessDisplayChange(
 // DesktopScreenX11, gfx::Screen implementation:
 
 bool DesktopScreenX11::IsDIPEnabled() {
-  return false;
+  return true;
 }
 
 gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
@@ -296,6 +318,7 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
     has_work_area = true;
   }
 
+  float device_scale_factor = 1.0f;
   for (int i = 0; i < resources->noutput; ++i) {
     RROutput output_id = resources->outputs[i];
     XRROutputInfo* output_info =
@@ -321,6 +344,19 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
 
       gfx::Rect crtc_bounds(crtc->x, crtc->y, crtc->width, crtc->height);
       gfx::Display display(display_id, crtc_bounds);
+
+      if (!gfx::Display::HasForceDeviceScaleFactor()) {
+        if (i == 0 && !ui::IsXDisplaySizeBlackListed(output_info->mm_width,
+                                                     output_info->mm_height)) {
+          // As per display scale factor is not supported right now,
+          // the primary display's scale factor is always used.
+          device_scale_factor = GetDeviceScaleFactor(crtc->width,
+                                                     output_info->mm_width);
+          DCHECK_LE(1.0f, device_scale_factor);
+        }
+        display.SetScaleAndBounds(device_scale_factor, crtc_bounds);
+      }
+
       if (has_work_area) {
         gfx::Rect intersection = crtc_bounds;
         intersection.Intersect(work_area);

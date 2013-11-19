@@ -170,6 +170,7 @@
         'base/text/bytes_formatting_unittest.cc',
         'base/view_prop_unittest.cc',
         'base/webui/web_ui_util_unittest.cc',
+        'base/x/x11_util_unittest.cc',
         'events/event_dispatcher_unittest.cc',
         'events/event_unittest.cc',
         'events/latency_info_unittest.cc',

@@ -22,12 +22,6 @@ class DisplayChangeObserver
       public chromeos::OutputConfigurator::Observer,
       public ShellObserver {
  public:
-  // Returns true if the size info in the output_info isn't valid
-  // and should be ignored. This is exposed for testing.
-  // |mm_width| and |mm_height| are given in millimeters.
-  ASH_EXPORT static bool ShouldIgnoreSize(unsigned long mm_width,
-                                          unsigned long mm_height);
-
   // Returns the resolution list.
   ASH_EXPORT static std::vector<Resolution> GetResolutionList(
       const chromeos::OutputConfigurator::OutputSnapshot& output);

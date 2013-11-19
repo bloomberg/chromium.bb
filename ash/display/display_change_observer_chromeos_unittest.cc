@@ -15,18 +15,6 @@ typedef testing::Test DisplayChangeObserverTest;
 namespace ash {
 namespace internal {
 
-TEST_F(DisplayChangeObserverTest, TestBlackListedDisplay) {
-  EXPECT_TRUE(DisplayChangeObserver::ShouldIgnoreSize(10, 10));
-  EXPECT_TRUE(DisplayChangeObserver::ShouldIgnoreSize(40, 30));
-  EXPECT_TRUE(DisplayChangeObserver::ShouldIgnoreSize(50, 40));
-  EXPECT_TRUE(DisplayChangeObserver::ShouldIgnoreSize(160, 90));
-  EXPECT_TRUE(DisplayChangeObserver::ShouldIgnoreSize(160, 100));
-
-  EXPECT_FALSE(DisplayChangeObserver::ShouldIgnoreSize(50, 60));
-  EXPECT_FALSE(DisplayChangeObserver::ShouldIgnoreSize(100, 70));
-  EXPECT_FALSE(DisplayChangeObserver::ShouldIgnoreSize(272, 181));
-}
-
 TEST_F(DisplayChangeObserverTest, GetResolutionList) {
   OutputConfigurator::OutputSnapshot output;
   output.mode_infos[11] = OutputConfigurator::ModeInfo(1920, 1200, false, 60);

@@ -19,6 +19,7 @@
 #include "chromeos/display/output_util.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 
@@ -36,16 +37,6 @@ const unsigned int kHighDensityDPIThreshold = 160;
 // 1 inch in mm.
 const float kInchInMm = 25.4f;
 
-// A list of bogus sizes in mm that X detects that should be ignored.
-// See crbug.com/136533. The first element maintains the minimum
-// size required to be valid size.
-const unsigned long kInvalidDisplaySizeList[][2] = {
-  {40, 30},
-  {50, 40},
-  {160, 90},
-  {160, 100},
-};
-
 // Resolution list are sorted by the area in pixels and the larger
 // one comes first.
 struct ResolutionSorter {
@@ -55,26 +46,6 @@ struct ResolutionSorter {
 };
 
 }  // namespace
-
-// static
-bool DisplayChangeObserver::ShouldIgnoreSize(unsigned long mm_width,
-                                             unsigned long mm_height) {
-  // Ignore if the reported display is smaller than minimum size.
-  if (mm_width <= kInvalidDisplaySizeList[0][0] ||
-      mm_height <= kInvalidDisplaySizeList[0][1]) {
-    LOG(WARNING) << "Smaller than minimum display size";
-    return true;
-  }
-  for (unsigned long i = 1 ; i < arraysize(kInvalidDisplaySizeList); ++i) {
-    const unsigned long* size = kInvalidDisplaySizeList[i];
-    if (mm_width == size[0] && mm_height == size[1]) {
-      LOG(WARNING) << "Black listed display size detected:"
-                   << size[0] << "x" << size[1];
-      return true;
-    }
-  }
-  return false;
-}
 
 // static
 std::vector<Resolution> DisplayChangeObserver::GetResolutionList(
@@ -166,7 +137,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
       continue;
 
     float device_scale_factor = 1.0f;
-    if (!ShouldIgnoreSize(output.width_mm, output.height_mm) &&
+    if (!ui::IsXDisplaySizeBlackListed(output.width_mm, output.height_mm) &&
         (kInchInMm * mode_info->width / output.width_mm) >
         kHighDensityDPIThreshold) {
       device_scale_factor = 2.0f;
