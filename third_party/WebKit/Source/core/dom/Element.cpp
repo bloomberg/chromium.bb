@@ -1439,9 +1439,15 @@ void Element::detach(const AttachContext& context)
             data->resetDynamicRestyleObservations();
         }
 
-        if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && !context.performingReattach) {
-            if (ActiveAnimations* activeAnimations = data->activeAnimations())
-                activeAnimations->cssAnimations().cancel();
+        if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
+            if (ActiveAnimations* activeAnimations = data->activeAnimations()) {
+                if (context.performingReattach) {
+                    // FIXME: restart compositor animations rather than pull back to the main thread
+                    activeAnimations->cancelAnimationOnCompositor();
+                } else {
+                    activeAnimations->cssAnimations().cancel();
+                }
+            }
         }
     }
     if (ElementShadow* shadow = this->shadow())

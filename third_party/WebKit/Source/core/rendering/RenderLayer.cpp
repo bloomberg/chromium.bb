@@ -48,6 +48,7 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
+#include "core/animation/ActiveAnimations.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/dom/Document.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -575,7 +576,8 @@ TransformationMatrix RenderLayer::currentTransform(RenderStyle::ApplyTransformOr
     if (!m_transform)
         return TransformationMatrix();
 
-    if (renderer()->style()->isRunningAcceleratedAnimation()) {
+    // FIXME: handle this under web-animations
+    if (!RuntimeEnabledFeatures::webAnimationsEnabled() && renderer()->style()->isRunningAcceleratedAnimation()) {
         TransformationMatrix currTransform;
         RefPtr<RenderStyle> style = renderer()->animation().getAnimatedStyleForRenderer(renderer());
         style->applyTransform(currTransform, renderBox()->pixelSnappedBorderBoxRect().size(), applyOrigin);
@@ -3919,7 +3921,10 @@ inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderSty
     if (!hasOrHadFilters(oldStyle, newStyle))
         return false;
 
-    if (renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitFilter)) {
+    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()
+        ? hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyWebkitFilter)
+        : renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitFilter)) {
+
         // When the compositor is performing the filter animation, we shouldn't touch the compositing layers.
         // All of the layers above us should have been promoted to compositing layers already.
         return false;
@@ -3955,8 +3960,9 @@ void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* 
     updateOrRemoveFilterClients();
     // During an accelerated animation, both WebKit and the compositor animate properties.
     // However, WebKit shouldn't ask the compositor to update its filters if the compositor is performing the animation.
-    bool shouldUpdateFilters = hasCompositedLayerMapping() && !renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitFilter);
-    if (shouldUpdateFilters)
+    if (hasCompositedLayerMapping() && (RuntimeEnabledFeatures::webAnimationsCSSEnabled()
+        ? !hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyWebkitFilter)
+        : !renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitFilter)))
         compositedLayerMapping()->updateFilters(renderer()->style());
     updateOrRemoveFilterEffectRenderer();
 }

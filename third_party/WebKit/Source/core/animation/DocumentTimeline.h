@@ -71,6 +71,7 @@ public:
     // performance.timing.domInteractive
     void setZeroTime(double);
     bool hasStarted() const { return !isNull(m_zeroTime); }
+    double zeroTime() const { return m_zeroTime; }
     double currentTime();
     void pauseAnimationsForTesting(double);
     size_t numberOfActiveAnimationsForTesting() const;

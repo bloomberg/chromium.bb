@@ -28,42 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationEffect_h
-#define AnimationEffect_h
+#ifndef CSSPendingAnimations_h
+#define CSSPendingAnimations_h
 
-#include "CSSPropertyNames.h"
-#include "wtf/HashMap.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
+#include "core/animation/Player.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class AnimatableValue;
-
-class AnimationEffect : public RefCounted<AnimationEffect> {
+// Used to synchronize the start of main-thread animations with compositor
+// animations when both classes of CSS Animations are triggered by the same recalc
+class CSSPendingAnimations FINAL {
 public:
-    enum CompositeOperation {
-        CompositeReplace,
-        CompositeAdd,
-    };
-    // Encapsulates the value which results from applying a set of composition operations onto an
-    // underlying value. It is used to represent the output of the effect phase of the Web
-    // Animations model.
-    class CompositableValue : public RefCounted<CompositableValue> {
-    public:
-        virtual ~CompositableValue() { }
-        virtual bool dependsOnUnderlyingValue() const = 0;
-        virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue*) const = 0;
-    };
+    void add(Player* player) { m_pending.append(player); };
+    void startPendingAnimations();
+    void notifyCompositorAnimationStarted(double monotonicAnimationStartTime);
 
-    virtual ~AnimationEffect() { }
-    typedef HashMap<CSSPropertyID, RefPtr<CompositableValue> > CompositableValueMap;
-    virtual PassOwnPtr<CompositableValueMap> sample(int iteration, double fraction) const = 0;
-
-    virtual bool affects(CSSPropertyID) { return false; };
-    virtual bool isKeyframeAnimationEffect() const { return false; }
+private:
+    Vector<RefPtr<Player> > m_pending;
+    Vector<RefPtr<Player> > m_waitingForCompositorAnimationStart;
 };
 
 } // namespace WebCore
 
-#endif // AnimationEffect_h
+#endif

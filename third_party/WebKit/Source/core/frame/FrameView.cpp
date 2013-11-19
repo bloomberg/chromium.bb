@@ -2050,6 +2050,11 @@ void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
         if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
             frame->animation().serviceAnimations();
 
+        // FIXME: Animation events for newly started CSS Animations should be fired
+        // asynchronously after the style recalc that triggered them. For now we fire
+        // them here (a frame late) so that they at least apply against the correct
+        // animation state.
+        frame->document()->dispatchAnimationEvents();
         frame->document()->serviceAnimations(monotonicAnimationStartTime);
         frame->document()->dispatchAnimationEvents();
     }

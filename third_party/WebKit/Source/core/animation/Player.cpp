@@ -32,6 +32,7 @@
 #include "config.h"
 #include "core/animation/Player.h"
 
+#include "core/animation/Animation.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/TimedItem.h"
 
@@ -80,6 +81,30 @@ double Player::currentTimeBeforeDrift() const
     if (isNull(m_startTime))
         return 0;
     return (effectiveTime(m_timeline.currentTime()) - startTime()) * m_playbackRate;
+}
+
+bool Player::maybeStartAnimationOnCompositor()
+{
+    // FIXME: Support starting compositor animations that have a fixed
+    // start time.
+    ASSERT(!hasStartTime());
+    if (!m_content || !m_content->isAnimation())
+        return false;
+
+    return toAnimation(m_content.get())->maybeStartAnimationOnCompositor();
+}
+
+bool Player::hasActiveAnimationsOnCompositor()
+{
+    if (!m_content || !m_content->isAnimation())
+        return false;
+    return toAnimation(m_content.get())->hasActiveAnimationsOnCompositor();
+}
+
+void Player::cancelAnimationOnCompositor()
+{
+    if (hasActiveAnimationsOnCompositor())
+        toAnimation(m_content.get())->cancelAnimationOnCompositor();
 }
 
 double Player::pausedTimeDrift() const
@@ -139,7 +164,9 @@ void Player::setCurrentTime(double seekTime)
 
 void Player::pauseForTesting()
 {
-    ASSERT(!paused());
+    // FIXME: Need to support pausing compositor animations to pass virtual/threaded tests.
+    RELEASE_ASSERT(!hasActiveAnimationsOnCompositor());
+    RELEASE_ASSERT(!paused());
     m_isPausedForTesting = true;
     setPausedImpl(true);
 }
@@ -155,9 +182,11 @@ void Player::setPausedImpl(bool newValue)
     if (pausedInternal() == newValue)
         return;
 
-    if (newValue)
+    if (newValue) {
+        // FIXME: resume compositor animation rather than pull back to main-thread
+        cancelAnimationOnCompositor();
         m_pauseStartTime = currentTime();
-    else {
+    } else {
         m_timeDrift = pausedTimeDrift();
         m_pauseStartTime = nullValue();
     }

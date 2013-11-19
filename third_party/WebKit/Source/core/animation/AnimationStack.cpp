@@ -47,6 +47,24 @@ void copyToCompositableValueMap(const AnimationEffect::CompositableValueMap* sou
 
 } // namespace
 
+bool AnimationStack::affects(CSSPropertyID property) const
+{
+    for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
+        if (m_activeAnimations[i]->affects(property))
+            return true;
+    }
+    return false;
+}
+
+bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) const
+{
+    for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
+        if (m_activeAnimations[i]->hasActiveAnimationsOnCompositor(property))
+            return true;
+    }
+    return false;
+}
+
 AnimationEffect::CompositableValueMap AnimationStack::compositableValues(const AnimationStack* animationStack, const Vector<InertAnimation*>* newAnimations, const HashSet<const Player*>* cancelledPlayers, Animation::Priority priority)
 {
     AnimationEffect::CompositableValueMap result;

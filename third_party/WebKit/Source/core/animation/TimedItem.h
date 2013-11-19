@@ -70,20 +70,20 @@ public:
 
     virtual ~TimedItem() { }
 
+    virtual bool isAnimation() const { return false; }
+
     Phase phase() const { return ensureCalculated().phase; }
     bool isCurrent() const { return ensureCalculated().isCurrent; }
     bool isInEffect() const { return ensureCalculated().isInEffect; }
     bool isInPlay() const { return ensureCalculated().isInPlay; }
     double timeToEffectChange() const { return ensureCalculated().timeToEffectChange; }
 
-    double startTime() const { return m_startTime; }
-
     double currentIteration() const { return ensureCalculated().currentIteration; }
     double activeDuration() const { return ensureCalculated().activeDuration; }
     double timeFraction() const { return ensureCalculated().timeFraction; }
+    double startTime() const { return m_startTime; }
     const Player* player() const { return m_player; }
     Player* player() { return m_player; }
-
     const Timing& specified() const { return m_specified; }
 
 protected:

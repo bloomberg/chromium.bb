@@ -81,6 +81,12 @@ public:
         return adoptRef(new KeyframeAnimationEffect(keyframes));
     }
 
+    virtual bool affects(CSSPropertyID property) OVERRIDE
+    {
+        ensureKeyframeGroups();
+        return m_keyframeGroups->contains(property);
+    }
+
     // AnimationEffect implementation.
     virtual PassOwnPtr<CompositableValueMap> sample(int iteration, double fraction) const OVERRIDE;
 

@@ -45,6 +45,7 @@ public:
     enum Priority { DefaultPriority, TransitionPriority };
 
     static PassRefPtr<Animation> create(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, Priority = DefaultPriority, PassOwnPtr<EventDelegate> = nullptr);
+    virtual bool isAnimation() const OVERRIDE FINAL { return true; }
 
     const AnimationEffect::CompositableValueMap* compositableValues() const
     {
@@ -52,8 +53,16 @@ public:
         return m_compositableValues.get();
     }
 
+    bool affects(CSSPropertyID) const;
     const AnimationEffect* effect() const { return m_effect.get(); }
     Priority priority() const { return m_priority; }
+
+    bool isCandidateForAnimationOnCompositor() const;
+    // Must only be called once and assumes to be part of a player without a start time.
+    bool maybeStartAnimationOnCompositor();
+    bool hasActiveAnimationsOnCompositor() const;
+    bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
+    void cancelAnimationOnCompositor();
 
 protected:
     // Returns whether style recalc was triggered.
@@ -74,7 +83,11 @@ private:
     OwnPtr<AnimationEffect::CompositableValueMap> m_compositableValues;
 
     Priority m_priority;
+
+    Vector<int> m_compositorAnimationIds;
 };
+
+DEFINE_TYPE_CASTS(Animation, TimedItem, timedItem, timedItem->isAnimation(), timedItem.isAnimation());
 
 } // namespace WebCore
 

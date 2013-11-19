@@ -123,7 +123,7 @@ PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(c
 // CompositorAnimations public API
 // -----------------------------------------------------------------------
 
-bool CompositorAnimations::isCandidateForCompositorAnimation(const Timing& timing, const AnimationEffect& effect)
+bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& timing, const AnimationEffect& effect)
 {
     const KeyframeAnimationEffect& keyframeEffect = *toKeyframeAnimationEffect(&effect);
 
@@ -131,15 +131,16 @@ bool CompositorAnimations::isCandidateForCompositorAnimation(const Timing& timin
         && CompositorAnimationsImpl::isCandidateForCompositor(timing, keyframeEffect.getFrames());
 }
 
-bool CompositorAnimations::canStartCompositorAnimation(const Element& element)
+bool CompositorAnimations::canStartAnimationOnCompositor(const Element& element)
 {
     return element.renderer() && element.renderer()->compositingState() == PaintsIntoOwnBacking;
 }
 
-void CompositorAnimations::startCompositorAnimation(const Element& element, const Timing& timing, const AnimationEffect& effect, Vector<int>& startedAnimationIds)
+bool CompositorAnimations::startAnimationOnCompositor(const Element& element, const Timing& timing, const AnimationEffect& effect, Vector<int>& startedAnimationIds)
 {
-    ASSERT(isCandidateForCompositorAnimation(timing, effect));
-    ASSERT(canStartCompositorAnimation(element));
+    ASSERT(startedAnimationIds.isEmpty());
+    ASSERT(isCandidateForAnimationOnCompositor(timing, effect));
+    ASSERT(canStartAnimationOnCompositor(element));
 
     const KeyframeAnimationEffect& keyframeEffect = *toKeyframeAnimationEffect(&effect);
 
@@ -147,19 +148,27 @@ void CompositorAnimations::startCompositorAnimation(const Element& element, cons
     ASSERT(layer);
     ASSERT(layer->renderBox());
 
-    // FIXME: Should we check in some way if there is an animation already created?
     Vector<OwnPtr<blink::WebAnimation> > animations;
-    CompositorAnimationsImpl::getCompositorAnimations(timing, keyframeEffect, animations, layer->renderBox()->pixelSnappedBorderBoxRect().size());
+    CompositorAnimationsImpl::getAnimationOnCompositor(timing, keyframeEffect, animations, layer->renderBox()->pixelSnappedBorderBoxRect().size());
     for (size_t i = 0; i < animations.size(); ++i) {
-        startedAnimationIds.append(animations[i]->id());
-        layer->compositedLayerMapping()->mainGraphicsLayer()->addAnimation(animations[i].release());
+        int id = animations[i]->id();
+        if (!layer->compositedLayerMapping()->mainGraphicsLayer()->addAnimation(animations[i].release())) {
+            // FIXME: We should know ahead of time whether these animations can be started.
+            for (size_t j = 0; j < startedAnimationIds.size(); ++j)
+                cancelAnimationOnCompositor(element, startedAnimationIds[j]);
+            startedAnimationIds.clear();
+            return false;
+        }
+        startedAnimationIds.append(id);
     }
+    return true;
 }
 
-void CompositorAnimations::cancelCompositorAnimation(const Element& element, int id)
+void CompositorAnimations::cancelAnimationOnCompositor(const Element& element, int id)
 {
-    // FIXME: Implement.
-    ASSERT_NOT_REACHED();
+    if (!element.renderer() || element.renderer()->compositingState() != PaintsIntoOwnBacking)
+        return;
+    toRenderBoxModelObject(element.renderer())->layer()->compositedLayerMapping()->mainGraphicsLayer()->removeAnimation(id);
 }
 
 // -----------------------------------------------------------------------
@@ -246,7 +255,6 @@ bool CompositorAnimationsImpl::isCandidateForCompositor(const KeyframeAnimationE
 
 bool CompositorAnimationsImpl::isCandidateForCompositor(const Timing& timing, const KeyframeAnimationEffect::KeyframeVector& frames)
 {
-
     CompositorTiming out;
     if (!convertTimingForCompositor(timing, out))
         return false;
@@ -493,7 +501,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(PlatformAnimationCurveType& c
     }
 }
 
-void CompositorAnimationsImpl::getCompositorAnimations(
+void CompositorAnimationsImpl::getAnimationOnCompositor(
     const Timing& timing, const KeyframeAnimationEffect& effect, Vector<OwnPtr<blink::WebAnimation> >& animations, const IntSize& elementSize)
 {
     CompositorTiming compositorTiming;

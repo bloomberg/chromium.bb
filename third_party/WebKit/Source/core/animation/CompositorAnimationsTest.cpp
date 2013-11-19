@@ -115,9 +115,9 @@ public:
     {
         return CompositorAnimationsImpl::isCandidateForCompositor(k);
     }
-    void getCompositorAnimations(Timing& timing, KeyframeAnimationEffect& effect, Vector<OwnPtr<blink::WebAnimation> >& animations, const IntSize& size = empty)
+    void getAnimationOnCompositor(Timing& timing, KeyframeAnimationEffect& effect, Vector<OwnPtr<blink::WebAnimation> >& animations, const IntSize& size = empty)
     {
-        return CompositorAnimationsImpl::getCompositorAnimations(timing, effect, animations, size);
+        return CompositorAnimationsImpl::getAnimationOnCompositor(timing, effect, animations, size);
     }
 
     static IntSize empty;
@@ -711,10 +711,10 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositor)
     basicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 1.0).get());
     RefPtr<KeyframeAnimationEffect> basicFrames = KeyframeAnimationEffect::create(basicFramesVector).get();
 
-    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForCompositorAnimation(linearTiming, *basicFrames.get()));
-    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForCompositorAnimation(cubicTiming, *basicFrames.get()));
+    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(linearTiming, *basicFrames.get()));
+    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(cubicTiming, *basicFrames.get()));
     // number of timing function and keyframes don't match
-    EXPECT_FALSE(CompositorAnimations::instance()->isCandidateForCompositorAnimation(chainedTiming, *basicFrames.get()));
+    EXPECT_FALSE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(chainedTiming, *basicFrames.get()));
 
     KeyframeAnimationEffect::KeyframeVector nonBasicFramesVector;
     nonBasicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
@@ -722,9 +722,9 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositor)
     nonBasicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 1.0).get());
     RefPtr<KeyframeAnimationEffect> nonBasicFrames = KeyframeAnimationEffect::create(nonBasicFramesVector).get();
 
-    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForCompositorAnimation(linearTiming, *nonBasicFrames.get()));
-    EXPECT_FALSE(CompositorAnimations::instance()->isCandidateForCompositorAnimation(cubicTiming, *nonBasicFrames.get()));
-    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForCompositorAnimation(chainedTiming, *nonBasicFrames.get()));
+    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(linearTiming, *nonBasicFrames.get()));
+    EXPECT_FALSE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(cubicTiming, *nonBasicFrames.get()));
+    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(chainedTiming, *nonBasicFrames.get()));
 }
 
 // -----------------------------------------------------------------------
@@ -770,7 +770,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<blink::WebAnimation> > result;
-    getCompositorAnimations(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -817,7 +817,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<blink::WebAnimation> > result;
-    getCompositorAnimations(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -870,7 +870,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<blink::WebAnimation> > result;
-    getCompositorAnimations(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -919,7 +919,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationNegativeSt
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<blink::WebAnimation> > result;
-    getCompositorAnimations(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -979,7 +979,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<blink::WebAnimation> > result;
-    getCompositorAnimations(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -1039,7 +1039,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<blink::WebAnimation> > result;
-    getCompositorAnimations(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }
@@ -1089,7 +1089,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
     // Go!
     setCompositorForTesting(mockCompositor);
     Vector<OwnPtr<blink::WebAnimation> > result;
-    getCompositorAnimations(m_timing, *effect.get(), result);
+    getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
 }

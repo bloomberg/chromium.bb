@@ -33,6 +33,7 @@
 
 #include "StylePropertyShorthand.h"
 #include "core/animation/ActiveAnimations.h"
+#include "core/animation/CompositorAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeAnimationEffect.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
@@ -521,8 +522,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             // The event delegate is set on the the first animation only. We
             // rely on the behavior of OwnPtr::release() to achieve this.
             RefPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specified(), Animation::DefaultPriority, eventDelegate.release());
-            Player* player = element->document().timeline()->play(animation.get());
+            Player* player = element->document().timeline()->createPlayer(animation.get());
             player->setPaused(inertAnimation->paused());
+            element->document().cssPendingAnimations().add(player);
             players.add(player);
         }
         m_animations.set(iter->name, players);
@@ -544,7 +546,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         InertAnimation* inertAnimation = newTransition.animation.get();
         OwnPtr<TransitionEventDelegate> eventDelegate = adoptPtr(new TransitionEventDelegate(element, id));
         RefPtr<Animation> transition = Animation::create(element, inertAnimation->effect(), inertAnimation->specified(), Animation::TransitionPriority, eventDelegate.release());
-        element->document().transitionTimeline()->play(transition.get());
+        RefPtr<Player> player = element->document().transitionTimeline()->createPlayer(transition.get());
+        element->document().cssPendingAnimations().add(player.get());
         runningTransition.transition = transition.get();
         m_transitions.set(id, runningTransition);
         ASSERT(id != CSSPropertyInvalid);
@@ -686,6 +689,35 @@ void CSSAnimations::calculateTransitionCompositableValues(CSSAnimationUpdate* up
             compositableValuesForTransitions.remove(iter->key);
     }
     update->adoptCompositableValuesForTransitions(compositableValuesForTransitions);
+}
+
+bool CSSAnimations::shouldCompositeForPendingAnimations(bool renderViewInCompositingMode) const
+{
+    if (!m_pendingUpdate)
+        return false;
+
+    for (size_t i = 0; i < m_pendingUpdate->newAnimations().size(); ++i) {
+        HashSet<RefPtr<InertAnimation> > animations = m_pendingUpdate->newAnimations()[i].animations;
+        for (HashSet<RefPtr<InertAnimation> >::const_iterator it = animations.begin(); it != animations.end(); ++it) {
+            ASSERT((*it)->effect());
+            AnimationEffect* effect = (*it)->effect();
+            // FIXME: Perhaps pass a predicate function so that we can remove the explicit checks from this file?
+            if ((effect->affects(CSSPropertyOpacity) && renderViewInCompositingMode)
+                || effect->affects(CSSPropertyWebkitTransform)
+                || effect->affects(CSSPropertyWebkitFilter))
+                return true;
+        }
+    }
+
+    for (size_t i = 0; i < m_pendingUpdate->newTransitions().size(); ++i) {
+        AnimationEffect* effect = m_pendingUpdate->newTransitions()[i].animation->effect();
+        if ((effect->affects(CSSPropertyOpacity) && renderViewInCompositingMode)
+            || effect->affects(CSSPropertyWebkitTransform)
+            || effect->affects(CSSPropertyWebkitFilter))
+            return true;
+    }
+
+    return false;
 }
 
 void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType listenerType, const AtomicString& eventName, double elapsedTime)

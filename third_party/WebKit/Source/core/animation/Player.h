@@ -75,10 +75,15 @@ public:
     // Reflects all pausing, including via pauseForTesting().
     bool pausedInternal() const { return !isNull(m_pauseStartTime); }
 
+    bool maybeStartAnimationOnCompositor();
+    void cancelAnimationOnCompositor();
+
 private:
     Player(DocumentTimeline&, TimedItem*);
     inline double pausedTimeDrift() const;
     inline double currentTimeBeforeDrift() const;
+
+    bool hasActiveAnimationsOnCompositor();
 
     void setPausedImpl(bool);
 

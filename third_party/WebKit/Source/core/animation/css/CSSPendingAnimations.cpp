@@ -28,42 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationEffect_h
-#define AnimationEffect_h
+#include "config.h"
+#include "core/animation/css/CSSPendingAnimations.h"
 
-#include "CSSPropertyNames.h"
-#include "wtf/HashMap.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
+#include "core/animation/DocumentTimeline.h"
 
 namespace WebCore {
 
-class AnimatableValue;
+void CSSPendingAnimations::startPendingAnimations()
+{
+    Vector<RefPtr<Player> > unstarted;
+    for (size_t i = 0; i < m_pending.size(); i++) {
+        if (m_pending[i]->maybeStartAnimationOnCompositor())
+            m_waitingForCompositorAnimationStart.append(m_pending[i]);
+        else
+            unstarted.append(m_pending[i]);
+    }
 
-class AnimationEffect : public RefCounted<AnimationEffect> {
-public:
-    enum CompositeOperation {
-        CompositeReplace,
-        CompositeAdd,
-    };
-    // Encapsulates the value which results from applying a set of composition operations onto an
-    // underlying value. It is used to represent the output of the effect phase of the Web
-    // Animations model.
-    class CompositableValue : public RefCounted<CompositableValue> {
-    public:
-        virtual ~CompositableValue() { }
-        virtual bool dependsOnUnderlyingValue() const = 0;
-        virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue*) const = 0;
-    };
+    // If any animations were started on the compositor, all remaining
+    // need to wait for a start time.
+    if (unstarted.size() < m_pending.size()) {
+        // FIXME: handle case where timeline has not yet started
+        m_waitingForCompositorAnimationStart.append(unstarted);
+    } else {
+        // Otherwise, all players can start immediately.
+        for (size_t i = 0; i < unstarted.size(); i++) {
+            Player* player = unstarted[i].get();
+            // FIXME: ASSERT that the clock backing the timeline is frozen.
+            player->setStartTime(player->timeline().currentTime());
+        }
+    }
+    m_pending.clear();
+}
 
-    virtual ~AnimationEffect() { }
-    typedef HashMap<CSSPropertyID, RefPtr<CompositableValue> > CompositableValueMap;
-    virtual PassOwnPtr<CompositableValueMap> sample(int iteration, double fraction) const = 0;
+void CSSPendingAnimations::notifyCompositorAnimationStarted(double monotonicAnimationStartTime)
+{
+    for (size_t i = 0; i < m_waitingForCompositorAnimationStart.size(); i++) {
+        Player* player = m_waitingForCompositorAnimationStart[i].get();
+        player->setStartTime(monotonicAnimationStartTime - player->timeline().zeroTime());
+    }
 
-    virtual bool affects(CSSPropertyID) { return false; };
-    virtual bool isKeyframeAnimationEffect() const { return false; }
-};
+    m_waitingForCompositorAnimationStart.clear();
+}
 
-} // namespace WebCore
-
-#endif // AnimationEffect_h
+} // namespace

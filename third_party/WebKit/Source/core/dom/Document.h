@@ -29,6 +29,7 @@
 #define Document_h
 
 #include "bindings/v8/ScriptValue.h"
+#include "core/animation/css/CSSPendingAnimations.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/dom/DocumentEncodingData.h"
@@ -977,6 +978,7 @@ public:
     AnimationClock& animationClock() { return *m_animationClock; }
     DocumentTimeline* timeline() const { return m_timeline.get(); }
     DocumentTimeline* transitionTimeline() const { return m_transitionTimeline.get(); }
+    CSSPendingAnimations& cssPendingAnimations() { return m_cssPendingAnimations; }
 
     void addToTopLayer(Element*, const Element* before = 0);
     void removeFromTopLayer(Element*);
@@ -1298,6 +1300,7 @@ private:
     OwnPtr<AnimationClock> m_animationClock;
     RefPtr<DocumentTimeline> m_timeline;
     RefPtr<DocumentTimeline> m_transitionTimeline;
+    CSSPendingAnimations m_cssPendingAnimations;
 
     RefPtr<Document> m_templateDocument;
     Document* m_templateDocumentHost; // Manually managed weakref (backpointer from m_templateDocument).

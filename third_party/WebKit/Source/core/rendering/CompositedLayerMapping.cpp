@@ -30,6 +30,7 @@
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
+#include "core/animation/ActiveAnimations.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -520,11 +521,15 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
 
     // Set transform property, if it is not animating. We have to do this here because the transform
     // is affected by the layer dimensions.
-    if (!renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitTransform))
+    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()
+        ? !hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyWebkitTransform)
+        : !renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitTransform))
         updateTransform(renderer()->style());
 
     // Set opacity, if it is not animating.
-    if (!renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyOpacity))
+    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()
+        ? !hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyOpacity)
+        : !renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyOpacity))
         updateOpacity(renderer()->style());
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled())
@@ -1926,7 +1931,10 @@ void CompositedLayerMapping::transitionFinished(CSSPropertyID property)
 
 void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double time)
 {
-    renderer()->animation().notifyAnimationStarted(renderer(), time);
+    if (RuntimeEnabledFeatures::webAnimationsEnabled())
+        renderer()->node()->document().cssPendingAnimations().notifyCompositorAnimationStarted(monotonicallyIncreasingTime() - (currentTime() - time));
+    else
+        renderer()->animation().notifyAnimationStarted(renderer(), time);
 }
 
 IntRect CompositedLayerMapping::compositedBounds() const

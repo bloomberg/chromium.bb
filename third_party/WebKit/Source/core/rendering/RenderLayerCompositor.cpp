@@ -30,6 +30,7 @@
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
+#include "core/animation/ActiveAnimations.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeList.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -1678,9 +1679,13 @@ bool RenderLayerCompositor::requiresCompositingForAnimation(RenderObject* render
     if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
         return false;
 
-    // FIXME: Remove this condition once force-compositing-mode is enabled on all platforms.
-    bool shouldAccelerateOpacity = inCompositingMode();
-    return renderer->animation().isRunningAcceleratableAnimationOnRenderer(renderer, shouldAccelerateOpacity);
+    if (!RuntimeEnabledFeatures::webAnimationsEnabled()) {
+        // FIXME: Remove this condition once force-compositing-mode is enabled on all platforms.
+        bool shouldAccelerateOpacity = inCompositingMode();
+        return renderer->animation().isRunningAcceleratableAnimationOnRenderer(renderer, shouldAccelerateOpacity);
+    }
+
+    return shouldCompositeForActiveAnimations(*renderer, inCompositingMode());
 }
 
 bool RenderLayerCompositor::requiresCompositingForTransition(RenderObject* renderer) const
@@ -1871,7 +1876,9 @@ bool RenderLayerCompositor::isRunningAcceleratedTransformAnimation(RenderObject*
 {
     if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
         return false;
-    return renderer->animation().isRunningAnimationOnRenderer(renderer, CSSPropertyWebkitTransform);
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
+        return renderer->animation().isRunningAnimationOnRenderer(renderer, CSSPropertyWebkitTransform);
+    return hasActiveAnimations(*renderer, CSSPropertyWebkitTransform);
 }
 
 // If an element has negative z-index children, those children render in front of the

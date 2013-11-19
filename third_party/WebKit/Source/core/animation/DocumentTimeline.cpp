@@ -157,6 +157,8 @@ void DocumentTimeline::dispatchEvents()
 
 size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
 {
+    if (isNull(m_zeroTime))
+        return 0;
     // Includes all players whose directly associated timed items
     // are current or in effect.
     if (isNull(m_zeroTime))
@@ -164,7 +166,8 @@ size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
     size_t count = 0;
     for (size_t i = 0; i < m_players.size(); ++i) {
         const TimedItem* timedItem = m_players[i]->source();
-        count += (timedItem && (timedItem->isCurrent() || timedItem->isInEffect()));
+        if (m_players[i]->hasStartTime())
+            count += (timedItem && (timedItem->isCurrent() || timedItem->isInEffect()));
     }
     return count;
 }

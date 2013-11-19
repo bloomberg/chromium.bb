@@ -51,6 +51,8 @@ public:
         m_activeAnimations.remove(position);
     }
     bool isEmpty() const { return m_activeAnimations.isEmpty(); }
+    bool affects(CSSPropertyID) const;
+    bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
     static AnimationEffect::CompositableValueMap compositableValues(const AnimationStack*, const Vector<InertAnimation*>* newAnimations, const HashSet<const Player*>* cancelledPlayers, Animation::Priority);
 
 private:

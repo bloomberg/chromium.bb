@@ -58,10 +58,11 @@ public:
     static CompositorAnimations* instance() { return instance(0); }
     static void setInstanceForTesting(CompositorAnimations* newInstance) { instance(newInstance); }
 
-    virtual bool isCandidateForCompositorAnimation(const Timing&, const AnimationEffect&);
-    virtual bool canStartCompositorAnimation(const Element&);
-    virtual void startCompositorAnimation(const Element&, const Timing&, const AnimationEffect&, Vector<int>& startedAnimationIds);
-    virtual void cancelCompositorAnimation(const Element&, int id);
+    virtual bool isCandidateForAnimationOnCompositor(const Timing&, const AnimationEffect&);
+    virtual bool canStartAnimationOnCompositor(const Element&);
+    // FIXME: This should return void. We should know ahead of time whether these animations can be started.
+    virtual bool startAnimationOnCompositor(const Element&, const Timing&, const AnimationEffect&, Vector<int>& startedAnimationIds);
+    virtual void cancelAnimationOnCompositor(const Element&, int id);
 
 protected:
     CompositorAnimations() { }
