@@ -49,8 +49,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
 
   virtual void Initialize() = 0;
 
-  // Returns an themed image per theme_provider.h
-  virtual bool UseNativeTheme() const = 0;
+  // Returns a themed image per theme_provider.h
   virtual gfx::Image GetThemeImageNamed(int id) const = 0;
   virtual bool GetColor(int id, SkColor* color) const = 0;
   virtual bool HasCustomImage(int id) const = 0;
@@ -69,6 +68,8 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // Returns a NativeTheme that will provide system colors and draw system
   // style widgets.
   virtual ui::NativeTheme* GetNativeTheme() const = 0;
+
+  virtual void SetUseSystemTheme(bool use_system_theme) = 0;
 
   // Returns whether we should be using the native theme provided by this
   // object by default.

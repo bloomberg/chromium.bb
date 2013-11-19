@@ -310,7 +310,7 @@ color_utils::HSL GetDefaultTint(int id) {
 
 namespace libgtk2ui {
 
-Gtk2UI::Gtk2UI() {
+Gtk2UI::Gtk2UI() : use_gtk_(false) {
   GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 }
 
@@ -348,10 +348,6 @@ Gtk2UI::~Gtk2UI() {
   fake_entry_.Destroy();
 
   ClearAllThemeData();
-}
-
-bool Gtk2UI::UseNativeTheme() const {
-  return true;
 }
 
 gfx::Image Gtk2UI::GetThemeImageNamed(int id) const {
@@ -437,7 +433,12 @@ double Gtk2UI::GetCursorBlinkInterval() const {
 }
 
 ui::NativeTheme* Gtk2UI::GetNativeTheme() const {
-  return NativeThemeGtk2::instance();
+  return use_gtk_ ? NativeThemeGtk2::instance() :
+                    ui::NativeTheme::instance();
+}
+
+void Gtk2UI::SetUseSystemTheme(bool use_system_theme) {
+  use_gtk_ = use_system_theme;
 }
 
 bool Gtk2UI::GetDefaultUsesSystemTheme() const {
