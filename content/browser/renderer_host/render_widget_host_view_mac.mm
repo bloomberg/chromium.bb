@@ -1688,6 +1688,13 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
   software_frame_manager_->SwapToNewFrameComplete(
       !render_widget_host_->is_hidden());
 
+  cc::CompositorFrameAck ack;
+  RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+      render_widget_host_->GetRoutingID(),
+      output_surface_id,
+      render_widget_host_->GetProcess()->GetID(),
+      ack);
+
   [cocoa_view_ setNeedsDisplay:YES];
 }
 
