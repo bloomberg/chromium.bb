@@ -31,6 +31,7 @@ class LoginScreenContext;
 class NativeWindowDelegate;
 class NetworkDropdownHandler;
 class NetworkStateInformer;
+class GaiaScreenHandler;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
 class UpdateScreenHandler;
@@ -172,8 +173,12 @@ class OobeUI : public OobeDisplay,
   // requests and forward calls from native code to JS side.
   ErrorScreenHandler* error_screen_handler_;
 
+  // Reference to GaiaScreenHandler that handles gaia screen requests and
+  // forwards calls from native code to JS side.
+  GaiaScreenHandler* gaia_screen_handler_;
+
   // Reference to SigninScreenHandler that handles sign-in screen requests and
-  // forward calls from native code to JS side.
+  // forwards calls from native code to JS side.
   SigninScreenHandler* signin_screen_handler_;
 
   TermsOfServiceScreenActor* terms_of_service_screen_actor_;

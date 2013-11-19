@@ -21,6 +21,12 @@ namespace chromeos {
 
 namespace {
 
+const char kNetworkStateOffline[] = "offline";
+const char kNetworkStateOnline[] = "online";
+const char kNetworkStateCaptivePortal[] = "behind captive portal";
+const char kNetworkStateConnecting[] = "connecting";
+const char kNetworkStateProxyAuthRequired[] = "proxy auth required";
+
 bool HasDefaultNetworkProxyConfigured() {
   const FavoriteState* favorite =
       NetworkHandler::Get()->network_state_handler()->DefaultFavoriteNetwork();
@@ -141,6 +147,25 @@ void NetworkStateInformer::Observe(
 
 void NetworkStateInformer::OnPortalDetected() {
   UpdateStateAndNotify();
+}
+
+// static
+const char* NetworkStateInformer::StatusString(State state) {
+  switch (state) {
+    case OFFLINE:
+      return kNetworkStateOffline;
+    case ONLINE:
+      return kNetworkStateOnline;
+    case CAPTIVE_PORTAL:
+      return kNetworkStateCaptivePortal;
+    case CONNECTING:
+      return kNetworkStateConnecting;
+    case PROXY_AUTH_REQUIRED:
+      return kNetworkStateProxyAuthRequired;
+    default:
+      NOTREACHED();
+      return NULL;
+  }
 }
 
 bool NetworkStateInformer::UpdateState() {

@@ -81,6 +81,8 @@ class NetworkStateInformer
   std::string network_path() const { return network_path_; }
   std::string network_type() const { return network_type_; }
 
+  static const char* StatusString(State state);
+
  private:
   friend class base::RefCounted<NetworkStateInformer>;
 

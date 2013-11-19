@@ -39,13 +39,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     gaiaAuthParams_: null,
 
     /**
-     * Whether extension should be loaded silently.
-     * @type {boolean}
-     * @private
-     */
-    silentLoad_: false,
-
-    /**
      * Whether local version of Gaia page is used.
      * @type {boolean}
      * @private
@@ -221,7 +214,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     loadAuthExtension: function(data) {
-      this.silentLoad_ = data.silentLoad;
       this.isLocal = data.isLocal;
       this.email = '';
       this.classList.toggle('saml', false);

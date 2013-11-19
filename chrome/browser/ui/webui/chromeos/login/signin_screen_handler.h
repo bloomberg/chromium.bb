@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/public/browser/notification_observer.h"
@@ -199,7 +200,8 @@ class SigninScreenHandler
   SigninScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       ErrorScreenActor* error_screen_actor,
-      CoreOobeActor* core_oobe_actor);
+      CoreOobeActor* core_oobe_actor,
+      GaiaScreenHandler* gaia_screen_handler);
   virtual ~SigninScreenHandler();
 
   // Shows the sign in screen.
@@ -234,13 +236,6 @@ class SigninScreenHandler
     UI_STATE_UNKNOWN = 0,
     UI_STATE_GAIA_SIGNIN,
     UI_STATE_ACCOUNT_PICKER,
-  };
-
-  enum FrameState {
-    FRAME_STATE_UNKNOWN = 0,
-    FRAME_STATE_LOADING,
-    FRAME_STATE_LOADED,
-    FRAME_STATE_ERROR
   };
 
   typedef base::hash_set<std::string> WebUIObservers;
@@ -311,11 +306,7 @@ class SigninScreenHandler
   // Updates authentication extension. Called when device settings that affect
   // sign-in (allow BWSI and allow whitelist) are changed.
   void UserSettingsChanged();
-  void UpdateAuthExtension();
   void UpdateAddButtonStatus();
-
-  // Fill |params| that are passed to JS..
-  void UpdateAuthParams(DictionaryValue* params);
 
   // Restore input focus to current user pod.
   void RefocusCurrentPod();
@@ -358,7 +349,6 @@ class SigninScreenHandler
   void HandleLoginUIStateChanged(const std::string& source, bool new_value);
   void HandleUnlockOnLoginSuccess();
   void HandleLoginScreenUpdate();
-  void HandleFrameLoadingCompleted(int status);
   void HandleShowLoadingTimeoutError();
   void HandleUpdateOfflineLogin(bool offline_login_active);
   void HandleShowLocallyManagedUserCreationScreen();
@@ -428,14 +418,11 @@ class SigninScreenHandler
   // Shows signin screen for |email|.
   void OnShowAddUser(const std::string& email);
 
+  GaiaScreenHandler::FrameState FrameState() const;
+  net::Error FrameError() const;
+
   // Current UI state of the signin screen.
   UIState ui_state_;
-
-  // Current state of Gaia frame.
-  FrameState frame_state_;
-
-  // Latest Gaia frame error.
-  net::Error frame_error_;
 
   // A delegate that glues this handler with backend LoginDisplay.
   SigninScreenHandlerDelegate* delegate_;
@@ -515,6 +502,10 @@ class SigninScreenHandler
   bool wait_for_auto_enrollment_check_;
 
   base::Closure kiosk_enable_flow_aborted_callback_for_test_;
+
+  // Non-owning ptr.
+  // TODO (ygorshenin@): remove this dependency.
+  GaiaScreenHandler* gaia_screen_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };

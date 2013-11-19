@@ -68,6 +68,8 @@ class ErrorScreenActor {
   virtual void AllowGuestSignin(bool allowed) = 0;
   virtual void AllowOfflineLogin(bool allowed) = 0;
 
+  static const char* ErrorReasonString(ErrorReason reason);
+
  protected:
   ErrorScreen::UIState ui_state_;
   ErrorScreen::ErrorState error_state_;
