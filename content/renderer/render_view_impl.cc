@@ -2234,7 +2234,19 @@ void RenderViewImpl::OpenURL(WebFrame* frame,
   params.frame_id = frame->identifier();
   WebDataSource* ds = frame->provisionalDataSource();
   if (ds) {
-    params.should_replace_current_entry = ds->replacesCurrentHistoryItem();
+    DocumentState* document_state = DocumentState::FromDataSource(ds);
+    NavigationState* navigation_state = document_state->navigation_state();
+    if (navigation_state->is_content_initiated()) {
+      params.should_replace_current_entry = ds->replacesCurrentHistoryItem();
+    } else {
+      // This is necessary to preserve the should_replace_current_entry value on
+      // cross-process redirects, in the event it was set by a previous process.
+      //
+      // TODO(davidben): Avoid this awkward duplication of state. See comment on
+      // NavigationState::should_replace_current_entry().
+      params.should_replace_current_entry =
+          navigation_state->should_replace_current_entry();
+    }
   } else {
     params.should_replace_current_entry = false;
   }
@@ -3566,6 +3578,8 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
         params.pending_history_list_offset,
         params.should_clear_history_list,
         params.transition);
+    navigation_state->set_should_replace_current_entry(
+        params.should_replace_current_entry);
     navigation_state->set_transferred_request_child_id(
         params.transferred_request_child_id);
     navigation_state->set_transferred_request_request_id(
@@ -3692,6 +3706,8 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
   // AUTO_SUBFRAME loads should always be treated as loads that do not advance
   // the page id.
   //
+  // TODO(davidben): This should also take the failed navigation's replacement
+  // state into account, if a location.replace() failed.
   bool replace =
       navigation_state->pending_page_id() != -1 ||
       PageTransitionCoreTypeIs(navigation_state->transition_type(),
@@ -3711,6 +3727,7 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
         navigation_state->transition_type();
     pending_navigation_params_->request_time =
         document_state->request_time();
+    pending_navigation_params_->should_replace_current_entry = replace;
   }
 
   // Provide the user with a more helpful error page?

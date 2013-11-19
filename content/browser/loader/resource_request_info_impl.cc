@@ -43,6 +43,7 @@ void ResourceRequestInfo::AllocateForTesting(
           0,                                 // parent_frame_id
           resource_type,                     // resource_type
           PAGE_TRANSITION_LINK,              // transition_type
+          false,                             // should_replace_current_entry
           false,                             // is_download
           false,                             // is_stream
           true,                              // allow_download
@@ -95,6 +96,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     int64 parent_frame_id,
     ResourceType::Type resource_type,
     PageTransition transition_type,
+    bool should_replace_current_entry,
     bool is_download,
     bool is_stream,
     bool allow_download,
@@ -113,6 +115,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       frame_id_(frame_id),
       parent_is_main_frame_(parent_is_main_frame),
       parent_frame_id_(parent_frame_id),
+      should_replace_current_entry_(should_replace_current_entry),
       is_download_(is_download),
       is_stream_(is_stream),
       allow_download_(allow_download),

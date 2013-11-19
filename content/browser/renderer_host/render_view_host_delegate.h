@@ -104,7 +104,8 @@ class CONTENT_EXPORT RenderViewHostDelegate {
         const std::vector<GURL>& transfer_url_chain,
         const Referrer& referrer,
         PageTransition page_transition,
-        int64 frame_id) = 0;
+        int64 frame_id,
+        bool should_replace_current_entry) = 0;
 
    protected:
     virtual ~RendererManagement() {}

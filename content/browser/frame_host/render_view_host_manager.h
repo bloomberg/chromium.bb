@@ -224,7 +224,8 @@ class CONTENT_EXPORT RenderViewHostManager
       const std::vector<GURL>& transfer_url_chain,
       const Referrer& referrer,
       PageTransition page_transition,
-      int64 frame_id) OVERRIDE;
+      int64 frame_id,
+      bool should_replace_current_entry) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -259,7 +260,8 @@ class CONTENT_EXPORT RenderViewHostManager
                             const std::vector<GURL>& transfer_url,
                             Referrer referrer,
                             PageTransition page_transition,
-                            int64 frame_id);
+                            int64 frame_id,
+                            bool should_replace_current_entry);
     ~PendingNavigationParams();
 
     // The child ID and request ID for the pending navigation.  Present whether
@@ -286,6 +288,10 @@ class CONTENT_EXPORT RenderViewHostManager
 
     // If |is_transfer|, this is the frame ID to use in RequestTransferURL.
     int64 frame_id;
+
+    // If |is_transfer|, this is whether the navigation should replace the
+    // current history entry.
+    bool should_replace_current_entry;
   };
 
   // Returns whether this tab should transition to a new renderer for

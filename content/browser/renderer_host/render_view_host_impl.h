@@ -301,7 +301,8 @@ class CONTENT_EXPORT RenderViewHostImpl
       const std::vector<GURL>& transfer_url_chain,
       const Referrer& referrer,
       PageTransition page_transition,
-      int64 frame_id);
+      int64 frame_id,
+      bool should_replace_current_entry);
 
   // Tells the renderer that this RenderView will soon be swapped out, and thus
   // not to create any new modal dialogs until it happens.  This must be done

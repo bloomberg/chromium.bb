@@ -51,6 +51,23 @@ class CONTENT_EXPORT NavigationState {
     return history_list_was_cleared_;
   }
 
+  // If is_content_initiated() is false, whether this navigation should replace
+  // the current entry in the back/forward history list. Otherwise, use
+  // replacesCurrentHistoryItem() on the WebDataSource.
+  //
+  // TODO(davidben): It would be good to unify these and have only one source
+  // for the two cases. We can plumb this through WebFrame::loadRequest to set
+  // lockBackForwardList on the FrameLoadRequest. However, this breaks process
+  // swaps because FrameLoader::loadWithNavigationAction treats loads before a
+  // FrameLoader has committedFirstRealDocumentLoad as a replacement. (Added for
+  // http://crbug.com/178380).
+  bool should_replace_current_entry() const {
+    return should_replace_current_entry_;
+  }
+  void set_should_replace_current_entry(bool value) {
+    should_replace_current_entry_ = value;
+  }
+
   // Contains the transition type that the browser specified when it
   // initiated the load.
   content::PageTransition transition_type() const { return transition_type_; }
@@ -111,6 +128,7 @@ class CONTENT_EXPORT NavigationState {
   int32 pending_page_id_;
   int pending_history_list_offset_;
   bool history_list_was_cleared_;
+  bool should_replace_current_entry_;
 
   bool was_within_same_page_;
   int transferred_request_child_id_;

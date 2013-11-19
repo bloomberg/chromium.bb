@@ -658,6 +658,21 @@ void RenderFrameImpl::willSendRequest(
     }
   }
 
+  // Attach |should_replace_current_entry| state to requests so that, should
+  // this navigation later require a request transfer, all state is preserved
+  // when it is re-created in the new process.
+  bool should_replace_current_entry = false;
+  if (navigation_state->is_content_initiated()) {
+    should_replace_current_entry = data_source->replacesCurrentHistoryItem();
+  } else {
+    // If the navigation is browser-initiated, the NavigationState contains the
+    // correct value instead of the WebDataSource.
+    //
+    // TODO(davidben): Avoid this awkward duplication of state. See comment on
+    // NavigationState::should_replace_current_entry().
+    should_replace_current_entry =
+        navigation_state->should_replace_current_entry();
+  }
   request.setExtraData(
       new RequestExtraData(referrer_policy,
                            custom_user_agent,
@@ -669,6 +684,7 @@ void RenderFrameImpl::willSendRequest(
                            frame->parent() ? frame->parent()->identifier() : -1,
                            navigation_state->allow_download(),
                            transition_type,
+                           should_replace_current_entry,
                            navigation_state->transferred_request_child_id(),
                            navigation_state->transferred_request_request_id()));
 

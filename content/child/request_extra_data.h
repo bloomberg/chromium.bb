@@ -27,6 +27,7 @@ class CONTENT_EXPORT RequestExtraData
                    int64 parent_frame_id,
                    bool allow_download,
                    PageTransition transition_type,
+                   bool should_replace_current_entry,
                    int transferred_request_child_id,
                    int transferred_request_request_id);
   virtual ~RequestExtraData();
@@ -38,6 +39,9 @@ class CONTENT_EXPORT RequestExtraData
   int64 parent_frame_id() const { return parent_frame_id_; }
   bool allow_download() const { return allow_download_; }
   PageTransition transition_type() const { return transition_type_; }
+  bool should_replace_current_entry() const {
+    return should_replace_current_entry_;
+  }
   int transferred_request_child_id() const {
     return transferred_request_child_id_;
   }
@@ -53,6 +57,7 @@ class CONTENT_EXPORT RequestExtraData
   int64 parent_frame_id_;
   bool allow_download_;
   PageTransition transition_type_;
+  bool should_replace_current_entry_;
   int transferred_request_child_id_;
   int transferred_request_request_id_;
 

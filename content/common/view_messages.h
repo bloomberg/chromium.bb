@@ -661,6 +661,11 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
   // The type of transition.
   IPC_STRUCT_MEMBER(content::PageTransition, transition)
 
+  // Informs the RenderView the pending navigation should replace the current
+  // history entry when it commits. This is used for cross-process redirects so
+  // the transferred navigation can recover the navigation state.
+  IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
+
   // Opaque history state (received by ViewHostMsg_UpdateState).
   IPC_STRUCT_MEMBER(content::PageState, page_state)
 

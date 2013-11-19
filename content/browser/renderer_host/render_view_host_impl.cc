@@ -669,13 +669,14 @@ void RenderViewHostImpl::OnCrossSiteResponse(
     const std::vector<GURL>& transfer_url_chain,
     const Referrer& referrer,
     PageTransition page_transition,
-    int64 frame_id) {
+    int64 frame_id,
+    bool should_replace_current_entry) {
   RenderViewHostDelegate::RendererManagement* manager =
       delegate_->GetRendererManagementDelegate();
   if (manager) {
     manager->OnCrossSiteResponse(this, global_request_id, is_transfer,
                                  transfer_url_chain, referrer, page_transition,
-                                 frame_id);
+                                 frame_id, should_replace_current_entry);
   }
 }
 

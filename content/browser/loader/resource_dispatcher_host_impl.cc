@@ -1083,6 +1083,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
           request_data.parent_frame_id,
           request_data.resource_type,
           request_data.transition_type,
+          request_data.should_replace_current_entry,
           false,  // is download
           false,  // is stream
           allow_download,
@@ -1230,6 +1231,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       -1,        // parent_frame_id
       ResourceType::SUB_RESOURCE,
       PAGE_TRANSITION_LINK,
+      false,     // should_replace_current_entry
       download,  // is_download
       false,  // is_stream
       download,  // allow_download

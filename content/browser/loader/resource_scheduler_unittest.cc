@@ -153,6 +153,7 @@ class ResourceSchedulerTest : public testing::Test {
         0,                                 // parent_frame_id
         ResourceType::SUB_RESOURCE,        // resource_type
         PAGE_TRANSITION_LINK,              // transition_type
+        false,                             // should_replace_current_entry
         false,                             // is_download
         false,                             // is_stream
         true,                              // allow_download

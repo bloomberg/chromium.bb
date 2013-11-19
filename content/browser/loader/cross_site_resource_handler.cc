@@ -25,19 +25,47 @@ namespace content {
 
 namespace {
 
-void OnCrossSiteResponseHelper(int render_view_id,
-                               const GlobalRequestID& global_request_id,
-                               bool is_transfer,
-                               const std::vector<GURL>& transfer_url_chain,
-                               const Referrer& referrer,
-                               PageTransition page_transition,
-                               int64 frame_id) {
+// The parameters to OnCrossSiteResponseHelper exceed the number of arguments
+// base::Bind supports.
+struct CrossSiteResponseParams {
+  CrossSiteResponseParams(int render_view_id,
+                          const GlobalRequestID& global_request_id,
+                          bool is_transfer,
+                          const std::vector<GURL>& transfer_url_chain,
+                          const Referrer& referrer,
+                          PageTransition page_transition,
+                          int64 frame_id,
+                          bool should_replace_current_entry)
+      : render_view_id(render_view_id),
+        global_request_id(global_request_id),
+        is_transfer(is_transfer),
+        transfer_url_chain(transfer_url_chain),
+        referrer(referrer),
+        page_transition(page_transition),
+        frame_id(frame_id),
+        should_replace_current_entry(should_replace_current_entry) {
+  }
+
+  int render_view_id;
+  GlobalRequestID global_request_id;
+  bool is_transfer;
+  std::vector<GURL> transfer_url_chain;
+  Referrer referrer;
+  PageTransition page_transition;
+  int64 frame_id;
+  bool should_replace_current_entry;
+};
+
+void OnCrossSiteResponseHelper(const CrossSiteResponseParams& params) {
   RenderViewHostImpl* rvh =
-      RenderViewHostImpl::FromID(global_request_id.child_id, render_view_id);
+      RenderViewHostImpl::FromID(params.global_request_id.child_id,
+                                 params.render_view_id);
   if (rvh) {
     rvh->OnCrossSiteResponse(
-        global_request_id, is_transfer, transfer_url_chain, referrer,
-        page_transition, frame_id);
+        params.global_request_id, params.is_transfer,
+        params.transfer_url_chain, params.referrer,
+        params.page_transition, params.frame_id,
+        params.should_replace_current_entry);
   }
 }
 
@@ -244,13 +272,14 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
       FROM_HERE,
       base::Bind(
           &OnCrossSiteResponseHelper,
-          info->GetRouteID(),
-          global_id,
-          should_transfer,
-          transfer_url_chain,
-          referrer,
-          info->GetPageTransition(),
-          frame_id));
+          CrossSiteResponseParams(info->GetRouteID(),
+                                  global_id,
+                                  should_transfer,
+                                  transfer_url_chain,
+                                  referrer,
+                                  info->GetPageTransition(),
+                                  frame_id,
+                                  info->should_replace_current_entry())));
 }
 
 void CrossSiteResourceHandler::ResumeIfDeferred() {

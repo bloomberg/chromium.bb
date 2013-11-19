@@ -8,16 +8,20 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
+#include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
 
 namespace content {
@@ -158,6 +162,20 @@ class SitePerProcessBrowserTest : public ContentBrowserTest {
     bool result = ExecuteScript(window->web_contents(), script);
     load_observer.Wait();
     return result;
+  }
+
+  void NavigateToURLContentInitiated(Shell* window,
+                                     const GURL& url,
+                                     bool should_replace_current_entry) {
+    std::string script;
+    if (should_replace_current_entry)
+      script = base::StringPrintf("location.replace('%s')", url.spec().c_str());
+    else
+      script = base::StringPrintf("location.href = '%s'", url.spec().c_str());
+    TestNavigationObserver load_observer(shell()->web_contents(), 1);
+    bool result = ExecuteScript(window->web_contents(), script);
+    EXPECT_TRUE(result);
+    load_observer.Wait();
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -477,6 +495,162 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(0UL, root->child_count());
   EXPECT_EQ(std::string(), root->frame_name());
   EXPECT_EQ(rvh->main_frame_id(), root->frame_id());
+}
+
+// Tests that the |should_replace_current_entry| flag persists correctly across
+// request transfers that began with a cross-process navigation.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ReplaceEntryCrossProcessThenTranfers) {
+  const NavigationController& controller =
+      shell()->web_contents()->GetController();
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  // These must all stay in scope with replace_host.
+  GURL::Replacements replace_host;
+  std::string a_com("A.com");
+  std::string b_com("B.com");
+
+  // Navigate to a starting URL, so there is a history entry to replace.
+  GURL url1 = test_server()->GetURL("files/site_isolation/blank.html?1");
+  NavigateToURL(shell(), url1);
+
+  // Force all future navigations to transfer. Note that this includes same-site
+  // navigiations which may cause double process swaps (via OpenURL and then via
+  // transfer). This test intentionally exercises that case.
+  ShellContentBrowserClient::SetSwapProcessesForRedirect(true);
+
+  // Navigate to a page on A.com with entry replacement. This navigation is
+  // cross-site, so the renderer will send it to the browser via OpenURL to give
+  // to a new process. It will then be transferred into yet another process due
+  // to the call above.
+  GURL url2 = test_server()->GetURL("files/site_isolation/blank.html?2");
+  replace_host.SetHostStr(a_com);
+  url2 = url2.ReplaceComponents(replace_host);
+  NavigateToURLContentInitiated(shell(), url2, true);
+
+  // There should be one history entry. url2 should have replaced url1.
+  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(url2, controller.GetEntryAtIndex(0)->GetURL());
+
+  // Now navigate as before to a page on B.com, but normally (without
+  // replacement). This will still perform a double process-swap as above, via
+  // OpenURL and then transfer.
+  GURL url3 = test_server()->GetURL("files/site_isolation/blank.html?3");
+  replace_host.SetHostStr(b_com);
+  url3 = url3.ReplaceComponents(replace_host);
+  NavigateToURLContentInitiated(shell(), url3, false);
+
+  // There should be two history entries. url2 should have replaced url1. url2
+  // should not have replaced url3.
+  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(url2, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url3, controller.GetEntryAtIndex(1)->GetURL());
+}
+
+// Tests that the |should_replace_current_entry| flag persists correctly across
+// request transfers that began with a content-initiated in-process
+// navigation. This test is the same as the test above, except transfering from
+// in-process.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ReplaceEntryInProcessThenTranfers) {
+  const NavigationController& controller =
+      shell()->web_contents()->GetController();
+  ASSERT_TRUE(test_server()->Start());
+
+  // Navigate to a starting URL, so there is a history entry to replace.
+  GURL url = test_server()->GetURL("files/site_isolation/blank.html?1");
+  NavigateToURL(shell(), url);
+
+  // Force all future navigations to transfer. Note that this includes same-site
+  // navigiations which may cause double process swaps (via OpenURL and then via
+  // transfer). All navigations in this test are same-site, so it only swaps
+  // processes via request transfer.
+  ShellContentBrowserClient::SetSwapProcessesForRedirect(true);
+
+  // Navigate in-process with entry replacement. It will then be transferred
+  // into a new one due to the call above.
+  GURL url2 = test_server()->GetURL("files/site_isolation/blank.html?2");
+  NavigateToURLContentInitiated(shell(), url2, true);
+
+  // There should be one history entry. url2 should have replaced url1.
+  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(url2, controller.GetEntryAtIndex(0)->GetURL());
+
+  // Now navigate as before, but without replacement.
+  GURL url3 = test_server()->GetURL("files/site_isolation/blank.html?3");
+  NavigateToURLContentInitiated(shell(), url3, false);
+
+  // There should be two history entries. url2 should have replaced url1. url2
+  // should not have replaced url3.
+  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(url2, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url3, controller.GetEntryAtIndex(1)->GetURL());
+}
+
+// Tests that the |should_replace_current_entry| flag persists correctly across
+// request transfers that cross processes twice from renderer policy.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ReplaceEntryCrossProcessTwice) {
+  const NavigationController& controller =
+      shell()->web_contents()->GetController();
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  // These must all stay in scope with replace_host.
+  GURL::Replacements replace_host;
+  std::string a_com("A.com");
+  std::string b_com("B.com");
+
+  // Navigate to a starting URL, so there is a history entry to replace.
+  GURL url1 = test_server()->GetURL("files/site_isolation/blank.html?1");
+  NavigateToURL(shell(), url1);
+
+  // Navigate to a page on A.com which redirects to B.com with entry
+  // replacement. This will switch processes via OpenURL twice. First to A.com,
+  // and second in response to the server redirect to B.com. The second swap is
+  // also renderer-initiated via OpenURL because decidePolicyForNavigation is
+  // currently applied on redirects.
+  GURL url2b = test_server()->GetURL("files/site_isolation/blank.html?2");
+  replace_host.SetHostStr(b_com);
+  url2b = url2b.ReplaceComponents(replace_host);
+  GURL url2a = test_server()->GetURL(
+      "server-redirect?" + net::EscapeQueryParamValue(url2b.spec(), false));
+  replace_host.SetHostStr(a_com);
+  url2a = url2a.ReplaceComponents(replace_host);
+  NavigateToURLContentInitiated(shell(), url2a, true);
+
+  // There should be one history entry. url2b should have replaced url1.
+  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(url2b, controller.GetEntryAtIndex(0)->GetURL());
+
+  // Now repeat without replacement.
+  GURL url3b = test_server()->GetURL("files/site_isolation/blank.html?3");
+  replace_host.SetHostStr(b_com);
+  url3b = url3b.ReplaceComponents(replace_host);
+  GURL url3a = test_server()->GetURL(
+      "server-redirect?" + net::EscapeQueryParamValue(url3b.spec(), false));
+  replace_host.SetHostStr(a_com);
+  url3a = url3a.ReplaceComponents(replace_host);
+  NavigateToURLContentInitiated(shell(), url3a, false);
+
+  // There should be two history entries. url2b should have replaced url1. url2b
+  // should not have replaced url3b.
+  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(url2b, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url3b, controller.GetEntryAtIndex(1)->GetURL());
 }
 
 }  // namespace content

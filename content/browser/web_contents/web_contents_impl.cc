@@ -203,6 +203,7 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
                         ViewMsg_Navigate_Params* params) {
   params->page_id = entry.GetPageID();
   params->should_clear_history_list = entry.should_clear_history_list();
+  params->should_replace_current_entry = entry.should_replace_entry();
   if (entry.should_clear_history_list()) {
     // Set the history list related parameters to the same values a
     // NavigationController would return before its first navigation. This will

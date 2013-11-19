@@ -177,7 +177,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
                                 blink::WebString(),
                                 false, true, 0, GURL(),
                                 false, -1, true,
-                                PAGE_TRANSITION_LINK, -1, -1);
+                                PAGE_TRANSITION_LINK, false, -1, -1);
     request_info.extra_data = &extra_data;
 
     return dispatcher_->CreateBridge(request_info);

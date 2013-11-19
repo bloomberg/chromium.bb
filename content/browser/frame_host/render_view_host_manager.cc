@@ -33,7 +33,7 @@
 namespace content {
 
 RenderViewHostManager::PendingNavigationParams::PendingNavigationParams()
-    : is_transfer(false), frame_id(-1) {
+    : is_transfer(false), frame_id(-1), should_replace_current_entry(false) {
 }
 
 RenderViewHostManager::PendingNavigationParams::PendingNavigationParams(
@@ -42,13 +42,15 @@ RenderViewHostManager::PendingNavigationParams::PendingNavigationParams(
     const std::vector<GURL>& transfer_url_chain,
     Referrer referrer,
     PageTransition page_transition,
-    int64 frame_id)
+    int64 frame_id,
+    bool should_replace_current_entry)
     : global_request_id(global_request_id),
       is_transfer(is_transfer),
       transfer_url_chain(transfer_url_chain),
       referrer(referrer),
       page_transition(page_transition),
-      frame_id(frame_id) {
+      frame_id(frame_id),
+      should_replace_current_entry(should_replace_current_entry) {
 }
 
 RenderViewHostManager::PendingNavigationParams::~PendingNavigationParams() {}
@@ -268,7 +270,7 @@ void RenderViewHostManager::SwappedOut(RenderViewHost* render_view_host) {
         CURRENT_TAB,
         pending_nav_params_->frame_id,
         pending_nav_params_->global_request_id,
-        false,
+        pending_nav_params_->should_replace_current_entry,
         true);
   } else if (pending_render_view_host_) {
     RenderProcessHostImpl* pending_process =
@@ -413,7 +415,8 @@ void RenderViewHostManager::OnCrossSiteResponse(
     const std::vector<GURL>& transfer_url_chain,
     const Referrer& referrer,
     PageTransition page_transition,
-    int64 frame_id) {
+    int64 frame_id,
+    bool should_replace_current_entry) {
   // This should be called either when the pending RVH is ready to commit or
   // when we realize that the current RVH's request requires a transfer.
   DCHECK(
@@ -427,7 +430,7 @@ void RenderViewHostManager::OnCrossSiteResponse(
   // If is_transfer is false, we will just run the unload handler and resume.
   pending_nav_params_.reset(new PendingNavigationParams(
       global_request_id, is_transfer, transfer_url_chain, referrer,
-      page_transition, frame_id));
+      page_transition, frame_id, should_replace_current_entry));
 
   // Run the unload handler of the current page.
   SwapOutOldPage();

@@ -19,6 +19,7 @@ RequestExtraData::RequestExtraData(WebReferrerPolicy referrer_policy,
                                    int64 parent_frame_id,
                                    bool allow_download,
                                    PageTransition transition_type,
+                                   bool should_replace_current_entry,
                                    int transferred_request_child_id,
                                    int transferred_request_request_id)
     : webkit_glue::WebURLRequestExtraDataImpl(referrer_policy,
@@ -31,6 +32,7 @@ RequestExtraData::RequestExtraData(WebReferrerPolicy referrer_policy,
       parent_frame_id_(parent_frame_id),
       allow_download_(allow_download),
       transition_type_(transition_type),
+      should_replace_current_entry_(should_replace_current_entry),
       transferred_request_child_id_(transferred_request_child_id),
       transferred_request_request_id_(transferred_request_request_id) {
 }
