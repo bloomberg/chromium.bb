@@ -62,6 +62,26 @@ std::vector<GURL> ParseStartupPage(const ChromeSettingsOverrides& overrides,
   return urls;
 }
 
+scoped_ptr<ChromeSettingsOverrides::Search_provider> ParseSearchEngine(
+    ChromeSettingsOverrides* overrides,
+    string16* error) {
+  if (!overrides->search_provider)
+    return scoped_ptr<ChromeSettingsOverrides::Search_provider>();
+  if (!CreateManifestURL(overrides->search_provider->favicon_url)) {
+    *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
+        manifest_errors::kInvalidSearchEngineURL,
+        overrides->search_provider->favicon_url);
+    return scoped_ptr<ChromeSettingsOverrides::Search_provider>();
+  }
+  if (!CreateManifestURL(overrides->search_provider->search_url)) {
+    *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
+        manifest_errors::kInvalidSearchEngineURL,
+        overrides->search_provider->search_url);
+    return scoped_ptr<ChromeSettingsOverrides::Search_provider>();
+  }
+  return overrides->search_provider.Pass();
+}
+
 // A www. prefix is not informative and thus not worth the limited real estate
 // in the permissions UI.
 std::string RemoveWwwPrefix(const std::string& url) {
@@ -96,7 +116,7 @@ bool SettingsOverridesHandler::Parse(Extension* extension, string16* error) {
 
   scoped_ptr<SettingsOverrides> info(new SettingsOverrides);
   info->homepage = ParseHomepage(*settings, error);
-  info->search_engine = settings->search_provider.Pass();
+  info->search_engine = ParseSearchEngine(settings.get(), error);
   info->startup_pages = ParseStartupPage(*settings, error);
   if (!info->homepage && !info->search_engine && info->startup_pages.empty()) {
     *error = ASCIIToUTF16(manifest_errors::kInvalidEmptySettingsOverrides);

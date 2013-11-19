@@ -48,7 +48,8 @@ class SettingsOverridePermissionTest : public ExtensionManifestTest {
       search_provider->SetString("keyword", "lock");
       search_provider->SetString("encoding", "UTF-8");
       search_provider->SetBoolean("is_default", true);
-      search_provider->SetString("favicon_url", "wikipedia.org/wiki/Favicon");
+      search_provider->SetString("favicon_url",
+                                 "http://wikipedia.org/wiki/Favicon");
       settings_override->Set("search_provider", search_provider.release());
     }
     ext_manifest.Set(

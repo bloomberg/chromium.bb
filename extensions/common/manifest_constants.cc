@@ -539,6 +539,8 @@ const char kInvalidSandboxedPagesCSP[] =
     "Invalid value for 'sandbox.content_security_policy'.";
 const char kInvalidScriptBadge[] =
     "Invalid value for 'script_badge'.";
+const char kInvalidSearchEngineURL[] =
+    "Invalid URL [*] for 'chrome_settings_overrides.search_provider'.";
 const char kInvalidEmptySettingsOverrides[] =
     "Empty dictionary for 'chrome_settings_overrides'.";
 const char kInvalidShortName[] =

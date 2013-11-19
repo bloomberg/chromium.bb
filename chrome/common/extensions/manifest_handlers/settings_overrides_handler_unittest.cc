@@ -32,17 +32,34 @@ const char kManifest[] = "{"
     "  }"
     "}";
 
+const char kBrokenManifest[] = "{"
+    " \"version\" : \"1.0.0.0\","
+    " \"name\" : \"Test\","
+    " \"chrome_settings_overrides\" : {"
+    "   \"homepage\" : \"{invalid}\","
+    "   \"search_provider\" : {"
+    "        \"name\" : \"first\","
+    "        \"keyword\" : \"firstkey\","
+    "        \"search_url\" : \"{invalid}/s?q={searchTerms}\","
+    "        \"favicon_url\" : \"{invalid}/favicon.ico\","
+    "        \"encoding\" : \"UTF-8\","
+    "        \"is_default\" : true"
+    "    },"
+    "   \"startup_pages\" : [\"{invalid}\"]"
+    "  }"
+    "}";
+
 using extensions::api::manifest_types::ChromeSettingsOverrides;
 using extensions::Extension;
 using extensions::Manifest;
 using extensions::SettingsOverrides;
 namespace manifest_keys = extensions::manifest_keys;
 
-class DeclarativeSettingsTest : public testing::Test {
+class OverrideSettingsTest : public testing::Test {
 };
 
 
-TEST_F(DeclarativeSettingsTest, ParseManifest) {
+TEST_F(OverrideSettingsTest, ParseManifest) {
   extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
   std::string manifest(kManifest);
   JSONStringValueSerializer json(&manifest);
@@ -60,7 +77,7 @@ TEST_F(DeclarativeSettingsTest, ParseManifest) {
   ASSERT_TRUE(extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
 
   SettingsOverrides* settings_override = static_cast<SettingsOverrides*>(
-        extension->GetManifestData(manifest_keys::kSettingsOverride));
+      extension->GetManifestData(manifest_keys::kSettingsOverride));
   ASSERT_TRUE(settings_override);
   ASSERT_TRUE(settings_override->search_engine);
   EXPECT_TRUE(settings_override->search_engine->is_default);
@@ -79,6 +96,26 @@ TEST_F(DeclarativeSettingsTest, ParseManifest) {
 
   ASSERT_TRUE(settings_override->homepage);
   EXPECT_EQ(GURL("http://www.homepage.com"), *settings_override->homepage);
+}
+
+TEST_F(OverrideSettingsTest, ParseBrokenManifest) {
+  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+  std::string manifest(kBrokenManifest);
+  JSONStringValueSerializer json(&manifest);
+  std::string error;
+  scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
+  ASSERT_TRUE(root);
+  ASSERT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY));
+  scoped_refptr<Extension> extension = Extension::Create(
+      base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
+      Manifest::INVALID_LOCATION,
+      *static_cast<base::DictionaryValue*>(root.get()),
+      Extension::NO_FLAGS,
+      &error);
+  EXPECT_FALSE(extension);
+  EXPECT_EQ(
+      std::string(extensions::manifest_errors::kInvalidEmptySettingsOverrides),
+      error);
 }
 
 }  // namespace
