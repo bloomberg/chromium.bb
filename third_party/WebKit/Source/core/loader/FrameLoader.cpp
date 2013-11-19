@@ -317,8 +317,8 @@ void FrameLoader::didBeginDocument(bool dispatch)
     m_isComplete = false;
     m_frame->document()->setReadyState(Document::Loading);
 
-    if (history()->currentItem(m_frame) && m_loadType == FrameLoadTypeBackForward)
-        m_frame->domWindow()->statePopped(history()->currentItem(m_frame)->stateObject());
+    if (m_currentItem && m_loadType == FrameLoadTypeBackForward)
+        m_frame->domWindow()->statePopped(m_currentItem->stateObject());
 
     if (dispatch)
         dispatchDidClearWindowObjectsInAllWorlds();
@@ -1404,10 +1404,9 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
 
 bool FrameLoader::shouldTreatURLAsSameAsCurrent(const KURL& url) const
 {
-    HistoryItem* item = history()->currentItem(m_frame);
-    if (!item)
+    if (!m_currentItem)
         return false;
-    return url == item->url() || url == item->originalURL();
+    return url == m_currentItem->url() || url == m_currentItem->originalURL();
 }
 
 bool FrameLoader::shouldTreatURLAsSrcdocDocument(const KURL& url) const
@@ -1454,6 +1453,7 @@ Frame* FrameLoader::findFrameForNavigation(const AtomicString& name, Document* a
 void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoadType)
 {
     if (historyLoadType == HistorySameDocumentLoad) {
+        m_currentItem = item;
         loadInSameDocument(item->url(), item->stateObject(), false, NotClientRedirect);
         return;
     }

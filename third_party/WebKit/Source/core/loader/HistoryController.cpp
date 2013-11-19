@@ -310,14 +310,17 @@ void HistoryController::updateForCommit(Frame* frame)
         LOG(History, "WebCoreHistory: Updating History for commit in frame %s", frame->document()->title().utf8().data());
 #endif
     FrameLoadType type = frame->loader().loadType();
-    if (isBackForwardLoadType(type) && m_provisionalEntry) {
+    if (isBackForwardLoadType(type)) {
         // Once committed, we want to use current item for saving DocState, and
         // the provisional item for restoring state.
         // Note previousItem must be set before we close the URL, which will
         // happen when the data source is made non-provisional below
-        m_previousEntry = m_currentEntry.release();
-        ASSERT(m_provisionalEntry);
-        m_currentEntry = m_provisionalEntry.release();
+        if (m_provisionalEntry) {
+            m_previousEntry = m_currentEntry.release();
+            ASSERT(m_provisionalEntry);
+            m_currentEntry = m_provisionalEntry.release();
+        }
+        frame->loader().setCurrentItem(m_currentEntry->itemForFrame(frame));
     } else if (type != FrameLoadTypeRedirectWithLockedBackForwardList) {
         m_provisionalEntry.clear();
     }
@@ -438,6 +441,7 @@ PassRefPtr<HistoryItem> HistoryController::createItem(Frame* frame)
 {
     RefPtr<HistoryItem> item = HistoryItem::create();
     initializeItem(item.get(), frame);
+    frame->loader().setCurrentItem(item.get());
     return item.release();
 }
 

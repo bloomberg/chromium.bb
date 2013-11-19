@@ -205,6 +205,8 @@ public:
     };
     void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, UpdateBackForwardListPolicy);
 
+    void setCurrentItem(HistoryItem* item) { m_currentItem = item; }
+
 private:
     HistoryController* history() const;
 
@@ -266,6 +268,8 @@ private:
     RefPtr<DocumentLoader> m_provisionalDocumentLoader;
     RefPtr<DocumentLoader> m_policyDocumentLoader;
     OwnPtr<FetchContext> m_fetchContext;
+
+    RefPtr<HistoryItem> m_currentItem;
 
     bool m_inStopAllLoaders;
 
