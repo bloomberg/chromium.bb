@@ -883,7 +883,8 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	if (!texture_used)
 		return;
 
-	if (!pixman_region32_not_empty(&gs->texture_damage))
+	if (!pixman_region32_not_empty(&gs->texture_damage) &&
+	    !gs->needs_full_upload)
 		goto done;
 
 	switch (wl_shm_buffer_get_format(buffer->shm_buffer)) {
@@ -1239,6 +1240,11 @@ gl_renderer_create_surface(struct weston_surface *surface)
 		surface_state_handle_renderer_destroy;
 	wl_signal_add(&gr->destroy_signal,
 		      &gs->renderer_destroy_listener);
+
+	if (surface->buffer_ref.buffer) {
+		gl_renderer_attach(surface, surface->buffer_ref.buffer);
+		gl_renderer_flush_damage(surface);
+	}
 
 	return 0;
 }

@@ -1056,18 +1056,24 @@ drm_assign_planes(struct weston_output *output)
 	pixman_region32_init(&overlap);
 	primary = &c->base.primary_plane;
 
-	/* Flag all visible surfaces as keep_buffer = 1 */
-	wl_list_for_each(ev, &c->base.view_list, link)
-		ev->surface->keep_buffer = 1;
-
 	wl_list_for_each_safe(ev, next, &c->base.view_list, link) {
-		/* test whether this buffer can ever go into a plane:
-		 * non-shm, or small enough to be a cursor
+		struct weston_surface *es = ev->surface;
+
+		/* Test whether this buffer can ever go into a plane:
+		 * non-shm, or small enough to be a cursor.
+		 *
+		 * Also, keep a reference when using the pixman renderer.
+		 * That makes it possible to do a seamless switch to the GL
+		 * renderer and since the pixman renderer keeps a reference
+		 * to the buffer anyway, there is no side effects.
 		 */
-		if (!ev->surface->buffer_ref.buffer ||
-		    (wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource) &&
-		    (ev->geometry.width > 64 || ev->geometry.height > 64)))
-			ev->surface->keep_buffer = 0;
+		if (c->use_pixman ||
+		    (es->buffer_ref.buffer &&
+		    (!wl_shm_buffer_get(es->buffer_ref.buffer->resource) ||
+		     (ev->geometry.width <= 64 && ev->geometry.height <= 64))))
+			es->keep_buffer = 1;
+		else
+			es->keep_buffer = 0;
 
 		pixman_region32_init(&surface_overlap);
 		pixman_region32_intersect(&surface_overlap, &overlap,
