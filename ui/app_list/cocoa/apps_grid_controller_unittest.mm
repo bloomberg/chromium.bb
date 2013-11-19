@@ -304,7 +304,8 @@ TEST_F(AppsGridControllerTest, SelectionChangesTextColor) {
 }
 
 // Tests basic keyboard navigation on the first page.
-TEST_F(AppsGridControllerTest, FirstPageKeyboardNavigation) {
+// TODO(stevenjb): Flaky. crbug.com/321284
+TEST_F(AppsGridControllerTest, DISABLED_FirstPageKeyboardNavigation) {
   model()->PopulateApps(kItemsPerPage - 2);
   EXPECT_EQ(kItemsPerPage - 2, [[GetPageAt(0) content] count]);
 
