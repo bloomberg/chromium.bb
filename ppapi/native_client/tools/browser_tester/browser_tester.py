@@ -14,9 +14,9 @@ import urllib
 
 # Allow the import of third party modules
 script_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(script_dir, '../../../../third_party/'))
-sys.path.insert(0, os.path.join(script_dir, '../../../../tools/valgrind/'))
-sys.path.insert(0, os.path.join(script_dir, '../../../../testing/'))
+sys.path.append(os.path.join(script_dir, '../../../../third_party/'))
+sys.path.append(os.path.join(script_dir, '../../../../tools/valgrind/'))
+sys.path.append(os.path.join(script_dir, '../../../../testing/'))
 
 import browsertester.browserlauncher
 import browsertester.rpclistener
