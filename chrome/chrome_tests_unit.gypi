@@ -2916,6 +2916,7 @@
             'browser_ui',
           ],
           'sources': [
+            'browser/ui/app_list/app_list_positioner_unittest.cc',
             'browser/ui/app_list/app_list_service_unittest.cc',
             'browser/ui/app_list/profile_loader_unittest.cc',
             'browser/ui/app_list/test/app_list_shower_unittest.cc',

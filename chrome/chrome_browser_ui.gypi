@@ -131,6 +131,8 @@
         'browser/ui/app_list/app_list_controller_delegate_impl.cc',
         'browser/ui/app_list/app_list_controller_delegate_impl.h',
         'browser/ui/app_list/app_list_factory.h',
+        'browser/ui/app_list/app_list_positioner.cc',
+        'browser/ui/app_list/app_list_positioner.h',
         'browser/ui/app_list/app_list_service.cc',
         'browser/ui/app_list/app_list_service.h',
         'browser/ui/app_list/app_list_service_ash.h',
