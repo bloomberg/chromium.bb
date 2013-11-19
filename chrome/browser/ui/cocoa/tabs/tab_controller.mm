@@ -144,6 +144,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }
 
 - (void)dealloc {
+  [mediaIndicatorView_ setAnimationDoneCallbackObject:nil withSelector:nil];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [[self tabView] setController:nil];
   [super dealloc];
