@@ -53,7 +53,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
-#include "core/html/ImageDocument.h"
 #include "core/html/parser/HTMLMetaCharsetParser.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
@@ -106,11 +105,12 @@ public:
     virtual ~SerializerMarkupAccumulator();
 
 protected:
-    virtual void appendText(StringBuilder&, Text*) OVERRIDE;
-    virtual void appendElement(StringBuilder&, Element*, Namespaces*) OVERRIDE;
-    virtual void appendCustomAttributes(StringBuilder&, Element*, Namespaces*) OVERRIDE;
-    virtual void appendEndTag(Node*) OVERRIDE;
+    virtual void appendText(StringBuilder& out, Text*);
+    virtual void appendElement(StringBuilder& out, Element*, Namespaces*);
+    virtual void appendCustomAttributes(StringBuilder& out, Element*, Namespaces*);
+    virtual void appendEndTag(Node*);
 
+private:
     PageSerializer* m_serializer;
     Document* m_document;
 };
@@ -126,32 +126,28 @@ SerializerMarkupAccumulator::~SerializerMarkupAccumulator()
 {
 }
 
-void SerializerMarkupAccumulator::appendText(StringBuilder& result, Text* text)
+void SerializerMarkupAccumulator::appendText(StringBuilder& out, Text* text)
 {
     Element* parent = text->parentElement();
     if (parent && !shouldIgnoreElement(parent))
-        MarkupAccumulator::appendText(result, text);
+        MarkupAccumulator::appendText(out, text);
 }
 
-void SerializerMarkupAccumulator::appendElement(StringBuilder& result, Element* element, Namespaces* namespaces)
+void SerializerMarkupAccumulator::appendElement(StringBuilder& out, Element* element, Namespaces* namespaces)
 {
     if (!shouldIgnoreElement(element))
-        MarkupAccumulator::appendElement(result, element, namespaces);
+        MarkupAccumulator::appendElement(out, element, namespaces);
 
-    // FIXME: Refactor MarkupAccumulator so it is easier to append an element like this, without special cases for XHTML
     if (element->hasTagName(HTMLNames::headTag)) {
-        result.appendLiteral("<meta charset=\"");
-        result.append(m_document->charset());
-        if (m_document->isXHTMLDocument())
-            result.appendLiteral("\" />");
-        else
-            result.appendLiteral("\">");
+        out.append("<meta charset=\"");
+        out.append(m_document->charset());
+        out.append("\">");
     }
 
     // FIXME: For object (plugins) tags and video tag we could replace them by an image of their current contents.
 }
 
-void SerializerMarkupAccumulator::appendCustomAttributes(StringBuilder& result, Element* element, Namespaces* namespaces)
+void SerializerMarkupAccumulator::appendCustomAttributes(StringBuilder& out, Element* element, Namespaces* namespaces)
 {
     if (!element->isFrameOwnerElement())
         return;
@@ -167,7 +163,7 @@ void SerializerMarkupAccumulator::appendCustomAttributes(StringBuilder& result, 
 
     // We need to give a fake location to blank frames so they can be referenced by the serialized frame.
     url = m_serializer->urlForBlankFrame(frame);
-    appendAttribute(result, element, Attribute(frameOwnerURLAttributeName(*frameOwner), url.string()), namespaces);
+    appendAttribute(out, element, Attribute(frameOwnerURLAttributeName(*frameOwner), url.string()), namespaces);
 }
 
 void SerializerMarkupAccumulator::appendEndTag(Node* node)
@@ -176,89 +172,8 @@ void SerializerMarkupAccumulator::appendEndTag(Node* node)
         MarkupAccumulator::appendEndTag(node);
 }
 
-class LinkChangeSerializerMarkupAccumulator : public SerializerMarkupAccumulator {
-public:
-    LinkChangeSerializerMarkupAccumulator(PageSerializer*, Document*, Vector<Node*>*, LinkLocalPathMap*, String);
-
-protected:
-    virtual void appendElement(StringBuilder&, Element*, Namespaces*) OVERRIDE;
-    virtual void appendAttribute(StringBuilder&, Element*, const Attribute&, Namespaces*) OVERRIDE;
-
-private:
-    // m_replaceLinks include all pair of local resource path and corresponding original link.
-    LinkLocalPathMap* m_replaceLinks;
-    String m_directoryName;
-};
-
-LinkChangeSerializerMarkupAccumulator::LinkChangeSerializerMarkupAccumulator(PageSerializer* serializer, Document* document, Vector<Node*>* nodes, LinkLocalPathMap* links, String directoryName)
-    : SerializerMarkupAccumulator(serializer, document, nodes)
-    , m_replaceLinks(links)
-    , m_directoryName(directoryName)
-{
-}
-
-void LinkChangeSerializerMarkupAccumulator::appendElement(StringBuilder& result, Element* element, Namespaces* namespaces)
-{
-    // FIXME: We could move the uncommenting to appendOpenTag and appendCloseTag, or just remove it
-    if (element->hasTagName(HTMLNames::baseTag)) {
-        // Comment the BASE tag when serializing dom.
-        result.append("<!--");
-    } else if (element->hasTagName(HTMLNames::htmlTag)) {
-        // Add MOTW (Mark of the Web) declaration before html tag.
-        // See http://msdn2.microsoft.com/en-us/library/ms537628(VS.85).aspx.
-        result.append(String::format("\n<!-- saved from url=(%04d)%s -->\n",
-            static_cast<int>(m_document->url().string().utf8().length()),
-            m_document->url().string().utf8().data()));
-    }
-
-    SerializerMarkupAccumulator::appendElement(result, element, namespaces);
-
-    if (element->hasTagName(HTMLNames::baseTag)) {
-        // Comment the BASE tag when serializing dom.
-        result.appendLiteral("-->");
-
-        // FIXME: Refactor MarkupAccumulator so it is easier to append an element like this, without special cases for XHTML
-        // Append a new base tag declaration.
-        result.appendLiteral("<base href=\".\"");
-        if (!m_document->baseTarget().isEmpty()) {
-            result.appendLiteral(" target=\"");
-            result.append(m_document->baseTarget());
-            result.append('"');
-        }
-        if (m_document->isXHTMLDocument())
-            result.appendLiteral(" />");
-        else
-            result.appendLiteral(">");
-    }
-}
-void LinkChangeSerializerMarkupAccumulator::appendAttribute(StringBuilder& result, Element* element, const Attribute& attribute, Namespaces* namespaces)
-{
-    if (m_replaceLinks && element->isURLAttribute(attribute) && !element->isJavaScriptURLAttribute(attribute)) {
-
-        String completeURL = m_document->completeURL(attribute.value());
-
-        if (m_replaceLinks->contains(completeURL)) {
-            // FIXME: Refactor MarkupAccumulator so it is easier to append an attribute like this.
-            result.append(' ');
-            result.append(attribute.name().toString());
-            result.appendLiteral("=\"");
-            if (!m_directoryName.isEmpty()) {
-                result.appendLiteral("./");
-                result.append(m_directoryName);
-                result.append('/');
-            }
-            result.append(m_replaceLinks->get(completeURL));
-            result.appendLiteral("\"");
-            return;
-        }
-    }
-    MarkupAccumulator::appendAttribute(result, element, attribute, namespaces);
-}
-
-PageSerializer::PageSerializer(Vector<SerializedResource>* resources, LinkLocalPathMap* urls, String directory)
+PageSerializer::PageSerializer(Vector<SerializedResource>* resources)
     : m_resources(resources)
-    , m_URLs(urls)
-    , m_directory(directory)
     , m_blankFrameCounter(0)
 {
 }
@@ -284,21 +199,15 @@ void PageSerializer::serializeFrame(Frame* frame)
         return;
     }
 
-    // If frame is an image document, add the image and don't continue
-    if (document->isImageDocument()) {
-        ImageDocument* imageDocument = toImageDocument(document);
-        addImageToResources(imageDocument->cachedImage(), imageDocument->imageElement()->renderer(), url);
+    Vector<Node*> nodes;
+    SerializerMarkupAccumulator accumulator(this, document, &nodes);
+    WTF::TextEncoding textEncoding(document->charset());
+    CString data;
+    if (!textEncoding.isValid()) {
+        // FIXME: iframes used as images trigger this. We should deal with them correctly.
         return;
     }
-
-    Vector<Node*> nodes;
-    OwnPtr<SerializerMarkupAccumulator> accumulator;
-    if (m_URLs)
-        accumulator = adoptPtr(new LinkChangeSerializerMarkupAccumulator(this, document, &nodes, m_URLs, m_directory));
-    else
-        accumulator = adoptPtr(new SerializerMarkupAccumulator(this, document, &nodes));
-    String text = accumulator->serializeNodes(document, IncludeNode);
-    WTF::TextEncoding textEncoding(document->charset());
+    String text = accumulator.serializeNodes(document, IncludeNode);
     CString frameHTML = textEncoding.normalizeAndEncode(text, WTF::EntitiesForUnencodables);
     m_resources->append(SerializedResource(url, document->suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
     m_resourceURLs.add(url);
@@ -310,10 +219,8 @@ void PageSerializer::serializeFrame(Frame* frame)
 
         Element* element = toElement(node);
         // We have to process in-line style as it might contain some resources (typically background images).
-        if (element->isStyledElement()) {
+        if (element->isStyledElement())
             retrieveResourcesForProperties(element->inlineStyle(), document);
-            retrieveResourcesForProperties(element->presentationAttributeStyle(), document);
-        }
 
         if (element->hasTagName(HTMLNames::imgTag)) {
             HTMLImageElement* imageElement = toHTMLImageElement(element);
@@ -404,7 +311,7 @@ void PageSerializer::addImageToResources(ImageResource* image, RenderObject* ima
     if (!shouldAddURL(url))
         return;
 
-    if (!image || !image->hasImage() || image->image() == Image::nullImage())
+    if (!image || image->image() == Image::nullImage())
         return;
 
     RefPtr<SharedBuffer> data = imageRenderer ? image->imageForRenderer(imageRenderer)->data() : 0;

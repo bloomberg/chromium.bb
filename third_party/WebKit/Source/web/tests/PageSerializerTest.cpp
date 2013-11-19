@@ -105,19 +105,9 @@ protected:
         m_folder = WebString::fromUTF8(folder);
     }
 
-    void setRewriteURLFolder(const char* folder)
-    {
-        m_rewriteFolder = folder;
-    }
-
-    void registerURL(const char* url, const char* file, const char* mimeType)
-    {
-        registerMockedURLLoad(KURL(m_baseUrl, url), WebString::fromUTF8(file), m_folder, WebString::fromUTF8(mimeType));
-    }
-
     void registerURL(const char* file, const char* mimeType)
     {
-        registerURL(file, file, mimeType);
+        registerMockedURLLoad(KURL(m_baseUrl, file), WebString::fromUTF8(file), m_folder, WebString::fromUTF8(mimeType));
     }
 
     void registerErrorURL(const char* file, int statusCode)
@@ -134,11 +124,6 @@ protected:
         Platform::current()->unitTestSupport()->registerMockedErrorURL(KURL(m_baseUrl, file), response, error);
     }
 
-    void registerRewriteURL(const char* fromURL, const char* toURL)
-    {
-        m_rewriteURLs.add(fromURL, toURL);
-    }
-
     void serialize(const char* url)
     {
         WebURLRequest urlRequest;
@@ -152,8 +137,7 @@ protected:
         // Server the delayed resources.
         Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
-        PageSerializer serializer(&m_resources,
-            m_rewriteURLs.isEmpty() ? 0: &m_rewriteURLs, m_rewriteFolder);
+        PageSerializer serializer(&m_resources);
         serializer.serialize(m_webViewImpl->mainFrameImpl()->frame()->page());
     }
 
@@ -189,16 +173,6 @@ protected:
         return String();
     }
 
-    // For debugging
-    void printResources()
-    {
-        printf("Printing resources (%zu resources in total)\n", m_resources.size());
-        for (size_t i = 0; i < m_resources.size(); ++i) {
-            printf("%zu. '%s', '%s'\n", i, m_resources[i].url.string().utf8().data(),
-                m_resources[i].mimeType.utf8().data());
-        }
-    }
-
     WebViewImpl* m_webViewImpl;
 
 private:
@@ -207,170 +181,26 @@ private:
     WebString m_folder;
     KURL m_baseUrl;
     Vector<SerializedResource> m_resources;
-    LinkLocalPathMap m_rewriteURLs;
-    String m_rewriteFolder;
 };
 
-TEST_F(PageSerializerTest, HTMLElements)
+
+TEST_F(PageSerializerTest, InputImage)
 {
-    setBaseFolder("pageserializer/elements/");
+    setBaseFolder("pageserializer/input-image/");
 
-    registerURL("elements.html", "text/html");
-    registerURL("style.css", "style.css", "text/css");
-    registerURL("copyright.html", "text.txt", "text/html");
-    registerURL("script.js", "text.txt", "text/javascript");
+    registerURL("input-image.html", "text/html");
+    registerURL("button.png", "image/png");
+    registerErrorURL("non-existing-button.png", 404);
 
-    registerURL("bodyBackground.png", "image.png", "image/png");
+    serialize("input-image.html");
 
-    registerURL("imageSrc.png", "image.png", "image/png");
-
-    registerURL("inputImage.png", "image.png", "image/png");
-
-    registerURL("tableBackground.png", "image.png", "image/png");
-    registerURL("trBackground.png", "image.png", "image/png");
-    registerURL("tdBackground.png", "image.png", "image/png");
-
-    registerURL("blockquoteCite.html", "text.txt", "text/html");
-    registerURL("qCite.html", "text.txt", "text/html");
-    registerURL("delCite.html", "text.txt", "text/html");
-    registerURL("insCite.html", "text.txt", "text/html");
-
-    registerErrorURL("nonExisting.png", 404);
-
-    serialize("elements.html");
-
-    EXPECT_EQ(8U, getResources().size());
-
-    EXPECT_TRUE(isSerialized("elements.html", "text/html"));
-    EXPECT_TRUE(isSerialized("style.css", "text/css"));
-    EXPECT_TRUE(isSerialized("bodyBackground.png", "image/png"));
-    EXPECT_TRUE(isSerialized("imageSrc.png", "image/png"));
-    EXPECT_TRUE(isSerialized("inputImage.png", "image/png"));
-    EXPECT_TRUE(isSerialized("tableBackground.png", "image/png"));
-    EXPECT_TRUE(isSerialized("trBackground.png", "image/png"));
-    EXPECT_TRUE(isSerialized("tdBackground.png", "image/png"));
-    EXPECT_FALSE(isSerialized("nonExisting.png", "image/png"));
-}
-
-TEST_F(PageSerializerTest, Frames)
-{
-    setBaseFolder("pageserializer/frames/");
-
-    registerURL("simple_frames.html", "text/html");
-    registerURL("simple_frames_top.html", "text/html");
-    registerURL("simple_frames_1.html", "text/html");
-    registerURL("simple_frames_3.html", "text/html");
-
-    registerURL("frame_1.png", "image.png", "image/png");
-    registerURL("frame_2.png", "image.png", "image/png");
-    registerURL("frame_3.png", "image.png", "image/png");
-    registerURL("frame_4.png", "image.png", "image/png");
-
-    serialize("simple_frames.html");
-
-    EXPECT_EQ(8U, getResources().size());
-
-    EXPECT_TRUE(isSerialized("simple_frames.html", "text/html"));
-    EXPECT_TRUE(isSerialized("simple_frames_top.html", "text/html"));
-    EXPECT_TRUE(isSerialized("simple_frames_1.html", "text/html"));
-    EXPECT_TRUE(isSerialized("simple_frames_3.html", "text/html"));
-
-    EXPECT_TRUE(isSerialized("frame_1.png", "image/png"));
-    EXPECT_TRUE(isSerialized("frame_2.png", "image/png"));
-    EXPECT_TRUE(isSerialized("frame_3.png", "image/png"));
-    EXPECT_TRUE(isSerialized("frame_4.png", "image/png"));
-}
-
-TEST_F(PageSerializerTest, IFrames)
-{
-    setBaseFolder("pageserializer/frames/");
-
-    registerURL("top_frame.html", "text/html");
-    registerURL("simple_iframe.html", "text/html");
-    registerURL("object_iframe.html", "text/html");
-    registerURL("embed_iframe.html", "text/html");
-
-    registerURL("top.png", "image.png", "image/png");
-    registerURL("simple.png", "image.png", "image/png");
-    registerURL("object.png", "image.png", "image/png");
-    registerURL("embed.png", "image.png", "image/png");
-
-    serialize("top_frame.html");
-
-    EXPECT_EQ(8U, getResources().size());
-
-    EXPECT_TRUE(isSerialized("top_frame.html", "text/html"));
-    EXPECT_TRUE(isSerialized("simple_iframe.html", "text/html"));
-    EXPECT_TRUE(isSerialized("object_iframe.html", "text/html"));
-    EXPECT_TRUE(isSerialized("embed_iframe.html", "text/html"));
-
-    EXPECT_TRUE(isSerialized("top.png", "image/png"));
-    EXPECT_TRUE(isSerialized("simple.png", "image/png"));
-    EXPECT_TRUE(isSerialized("object.png", "image/png"));
-    EXPECT_TRUE(isSerialized("embed.png", "image/png"));
-}
-
-// Tests that when serializing a page with blank frames these are reported with their resources.
-TEST_F(PageSerializerTest, BlankFrames)
-{
-    setBaseFolder("pageserializer/frames/");
-
-    registerURL("blank_frames.html", "text/html");
-    registerURL("red_background.png", "image.png", "image/png");
-    registerURL("orange_background.png", "image.png", "image/png");
-    registerURL("blue_background.png", "image.png", "image/png");
-
-    serialize("blank_frames.html");
-
-    EXPECT_EQ(7U, getResources().size());
-
-    EXPECT_TRUE(isSerialized("http://www.test.com/red_background.png", "image/png"));
-    EXPECT_TRUE(isSerialized("http://www.test.com/orange_background.png", "image/png"));
-    EXPECT_TRUE(isSerialized("http://www.test.com/blue_background.png", "image/png"));
-    // The blank frames should have got a magic URL.
-    EXPECT_TRUE(isSerialized("wyciwyg://frame/0", "text/html"));
-    EXPECT_TRUE(isSerialized("wyciwyg://frame/1", "text/html"));
-    EXPECT_TRUE(isSerialized("wyciwyg://frame/2", "text/html"));
-}
-
-TEST_F(PageSerializerTest, CSS)
-{
-    setBaseFolder("pageserializer/css/");
-
-    registerURL("css_test_page.html", "text/html");
-    registerURL("link_styles.css", "text/css");
-    registerURL("import_style_from_link.css", "text/css");
-    registerURL("import_styles.css", "text/css");
-    registerURL("red_background.png", "image.png", "image/png");
-    registerURL("orange_background.png", "image.png", "image/png");
-    registerURL("yellow_background.png", "image.png", "image/png");
-    registerURL("green_background.png", "image.png", "image/png");
-    registerURL("blue_background.png", "image.png", "image/png");
-    registerURL("purple_background.png", "image.png", "image/png");
-    registerURL("ul-dot.png", "image.png", "image/png");
-    registerURL("ol-dot.png", "image.png", "image/png");
-
-    serialize("css_test_page.html");
-
-    EXPECT_EQ(12U, getResources().size());
-
-    EXPECT_TRUE(isSerialized("css_test_page.html", "text/html"));
-    EXPECT_TRUE(isSerialized("link_styles.css", "text/css"));
-    EXPECT_TRUE(isSerialized("import_styles.css", "text/css"));
-    EXPECT_TRUE(isSerialized("import_style_from_link.css", "text/css"));
-    EXPECT_TRUE(isSerialized("red_background.png", "image/png"));
-    EXPECT_TRUE(isSerialized("orange_background.png", "image/png"));
-    EXPECT_TRUE(isSerialized("yellow_background.png", "image/png"));
-    EXPECT_TRUE(isSerialized("green_background.png", "image/png"));
-    EXPECT_TRUE(isSerialized("blue_background.png", "image/png"));
-    EXPECT_TRUE(isSerialized("purple_background.png", "image/png"));
-    EXPECT_TRUE(isSerialized("ul-dot.png", "image/png"));
-    EXPECT_TRUE(isSerialized("ol-dot.png", "image/png"));
+    EXPECT_TRUE(isSerialized("button.png", "image/png"));
+    EXPECT_FALSE(isSerialized("non-existing-button.png", "image/png"));
 }
 
 TEST_F(PageSerializerTest, XMLDeclaration)
 {
-    setBaseFolder("pageserializer/xml/");
+    setBaseFolder("pageserializer/xmldecl/");
 
     registerURL("xmldecl.xml", "text/xml");
     serialize("xmldecl.xml");
@@ -383,11 +213,11 @@ TEST_F(PageSerializerTest, DTD)
 {
     setBaseFolder("pageserializer/dtd/");
 
-    registerURL("html5.html", "text/html");
-    serialize("html5.html");
+    registerURL("dtd.html", "text/html");
+    serialize("dtd.html");
 
     String expectedStart("<!DOCTYPE html>");
-    EXPECT_TRUE(getSerializedData("html5.html").startsWith(expectedStart));
+    EXPECT_TRUE(getSerializedData("dtd.html").startsWith(expectedStart));
 }
 
 TEST_F(PageSerializerTest, Font)
@@ -400,98 +230,6 @@ TEST_F(PageSerializerTest, Font)
     serialize("font.html");
 
     EXPECT_TRUE(isSerialized("font.ttf", "application/octet-stream"));
-}
-
-TEST_F(PageSerializerTest, DataURI)
-{
-    setBaseFolder("pageserializer/datauri/");
-
-    registerURL("page_with_data.html", "text/html");
-
-    serialize("page_with_data.html");
-
-    EXPECT_EQ(1U, getResources().size());
-    EXPECT_TRUE(isSerialized("page_with_data.html", "text/html"));
-}
-
-TEST_F(PageSerializerTest, DataURIMorphing)
-{
-    setBaseFolder("pageserializer/datauri/");
-
-    registerURL("page_with_morphing_data.html", "text/html");
-
-    serialize("page_with_morphing_data.html");
-
-    EXPECT_EQ(2U, getResources().size());
-    EXPECT_TRUE(isSerialized("page_with_morphing_data.html", "text/html"));
-}
-
-TEST_F(PageSerializerTest, RewriteLinksSimple)
-{
-    setBaseFolder("pageserializer/rewritelinks/");
-    setRewriteURLFolder("folder");
-
-    registerURL("rewritelinks_simple.html", "text/html");
-    registerURL("absolute.png", "image.png", "image/png");
-    registerURL("relative.png", "image.png", "image/png");
-    registerRewriteURL("http://www.test.com/absolute.png", "a.png");
-    registerRewriteURL("http://www.test.com/relative.png", "b.png");
-
-    serialize("rewritelinks_simple.html");
-
-    EXPECT_EQ(3U, getResources().size());
-    EXPECT_NE(getSerializedData("rewritelinks_simple.html", "text/html").find("./folder/a.png"), kNotFound);
-    EXPECT_NE(getSerializedData("rewritelinks_simple.html", "text/html").find("./folder/b.png"), kNotFound);
-}
-
-TEST_F(PageSerializerTest, RewriteLinksBase)
-{
-    setBaseFolder("pageserializer/rewritelinks/");
-    setRewriteURLFolder("folder");
-
-    registerURL("rewritelinks_base.html", "text/html");
-    registerURL("images/here/image.png", "image.png", "image/png");
-    registerURL("images/here/or/in/here/image.png", "image.png", "image/png");
-    registerURL("or/absolute.png", "image.png", "image/png");
-    registerRewriteURL("http://www.test.com/images/here/image.png", "a.png");
-    registerRewriteURL("http://www.test.com/images/here/or/in/here/image.png", "b.png");
-    registerRewriteURL("http://www.test.com/or/absolute.png", "c.png");
-
-    serialize("rewritelinks_base.html");
-
-    EXPECT_EQ(4U, getResources().size());
-    EXPECT_NE(getSerializedData("rewritelinks_base.html", "text/html").find("./folder/a.png"), kNotFound);
-    EXPECT_NE(getSerializedData("rewritelinks_base.html", "text/html").find("./folder/b.png"), kNotFound);
-    EXPECT_NE(getSerializedData("rewritelinks_base.html", "text/html").find("./folder/c.png"), kNotFound);
-}
-
-// Test that we don't regress https://bugs.webkit.org/show_bug.cgi?id=99105
-TEST_F(PageSerializerTest, SVGImageDontCrash)
-{
-    setBaseFolder("pageserializer/svg/");
-
-    registerURL("page_with_svg_image.html", "text/html");
-    registerURL("green_rectangle.svg", "image/svg+xml");
-
-    serialize("page_with_svg_image.html");
-
-    EXPECT_EQ(2U, getResources().size());
-
-    EXPECT_TRUE(isSerialized("green_rectangle.svg", "image/svg+xml"));
-    EXPECT_GT(getSerializedData("green_rectangle.svg", "image/svg+xml").length(), 250U);
-}
-
-TEST_F(PageSerializerTest, NamespaceElementsDontCrash)
-{
-    setBaseFolder("pageserializer/namespace/");
-
-    registerURL("namespace_element.html", "text/html");
-
-    serialize("namespace_element.html");
-
-    EXPECT_EQ(1U, getResources().size());
-    EXPECT_TRUE(isSerialized("namespace_element.html", "text/html"));
-    EXPECT_GT(getSerializedData("namespace_element.html", "text/html").length(), 0U);
 }
 
 }
