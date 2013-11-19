@@ -517,7 +517,8 @@ void RenderWidgetHostViewAura::InitAsPopup(
   window_->SetName("RenderWidgetHostViewAura");
 
   aura::Window* root = popup_parent_host_view_->window_->GetRootWindow();
-  aura::client::ParentWindowWithContext(window_, root, bounds_in_screen);
+  if (root)
+    aura::client::ParentWindowWithContext(window_, root, bounds_in_screen);
 
   SetBounds(bounds_in_screen);
   Show();
