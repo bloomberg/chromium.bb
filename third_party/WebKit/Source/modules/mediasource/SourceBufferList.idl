@@ -31,7 +31,6 @@
 [
     NoInterfaceObject,
     RuntimeEnabled=MediaSource,
-    CallWith=ExecutionContext
 ] interface SourceBufferList : EventTarget {
     readonly attribute unsigned long length;
     getter SourceBuffer item(unsigned long index);
