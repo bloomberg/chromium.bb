@@ -581,7 +581,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that BeforeUnload event gets called on devtools that are opened
 // on another devtools.
-IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestDevToolsOnDevTools) {
+// Test is flaky; http://crbug.com/321359
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
+                       DISABLED_TestDevToolsOnDevTools) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL(kDebuggerTestPage);
   ui_test_utils::NavigateToURL(browser(), url);
