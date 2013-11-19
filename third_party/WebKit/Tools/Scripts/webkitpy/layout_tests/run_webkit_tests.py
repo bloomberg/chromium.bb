@@ -251,6 +251,8 @@ def parse_args(args):
             help="Output per-test profile information, using the specified profiler."),
         optparse.make_option("--driver-logging", action="store_true",
             help="Print detailed logging of the driver/content_shell"),
+        optparse.make_option("--disable-breakpad", action="store_true",
+            help="Don't use breakpad to symbolize unexpected crashes."),
     ]))
 
     option_group_definitions.append(("Miscellaneous Options", [

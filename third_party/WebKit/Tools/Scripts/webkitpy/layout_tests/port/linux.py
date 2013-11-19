@@ -100,11 +100,13 @@ class LinuxPort(base.Port):
         assert port_name in ('linux', 'linux-x86', 'linux-x86_64')
         self._version = 'lucid'  # We only support lucid right now.
         self._architecture = arch
-        self._dump_reader = DumpReaderLinux(host, self._build_path())
+        if not self.get_option('disable_breakpad'):
+            self._dump_reader = DumpReaderLinux(host, self._build_path())
 
     def additional_drt_flag(self):
         flags = super(LinuxPort, self).additional_drt_flag()
-        flags += ['--enable-crash-reporter', '--crash-dumps-dir=%s' % self._dump_reader.crash_dumps_directory()]
+        if not self.get_option('disable_breakpad'):
+            flags += ['--enable-crash-reporter', '--crash-dumps-dir=%s' % self._dump_reader.crash_dumps_directory()]
         return flags
 
     def default_baseline_search_path(self):
@@ -124,10 +126,13 @@ class LinuxPort(base.Port):
         return result
 
     def look_for_new_crash_logs(self, crashed_processes, start_time):
+        if self.get_option('disable_breakpad'):
+            return None
         return self._dump_reader.look_for_new_crash_logs(crashed_processes, start_time)
 
     def clobber_old_port_specific_results(self):
-        self._dump_reader.clobber_old_results()
+        if not self.get_option('disable_breakpad'):
+            self._dump_reader.clobber_old_results()
 
     def operating_system(self):
         return 'linux'

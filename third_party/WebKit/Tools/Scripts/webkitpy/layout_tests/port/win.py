@@ -67,26 +67,29 @@ class WinPort(base.Port):
         super(WinPort, self).__init__(host, port_name, **kwargs)
         self._version = port_name[port_name.index('win-') + len('win-'):]
         assert self._version in self.SUPPORTED_VERSIONS, "%s is not in %s" % (self._version, self.SUPPORTED_VERSIONS)
-        self._dump_reader = DumpReaderWin(host, self._build_path())
-        self._crash_service = None
-        self._crash_service_available = None
+        if not self.get_option('disable_breakpad'):
+            self._dump_reader = DumpReaderWin(host, self._build_path())
+            self._crash_service = None
+            self._crash_service_available = None
 
     def additional_drt_flag(self):
         flags = super(WinPort, self).additional_drt_flag()
-        flags += ['--enable-crash-reporter', '--crash-dumps-dir=%s' % self._dump_reader.crash_dumps_directory()]
+        if not self.get_option('disable_breakpad'):
+            flags += ['--enable-crash-reporter', '--crash-dumps-dir=%s' % self._dump_reader.crash_dumps_directory()]
         return flags
 
     def setup_test_run(self):
         super(WinPort, self).setup_test_run()
 
-        assert not self._crash_service, 'Already running a crash service'
-        if self._crash_service_available == None:
-            self._crash_service_available = self._check_crash_service_available()
-        if not self._crash_service_available:
-            return
-        service = crash_service.CrashService(self, self._dump_reader.crash_dumps_directory())
-        service.start()
-        self._crash_service = service
+        if not self.get_option('disable_breakpad'):
+            assert not self._crash_service, 'Already running a crash service'
+            if self._crash_service_available == None:
+                self._crash_service_available = self._check_crash_service_available()
+            if not self._crash_service_available:
+                return
+            service = crash_service.CrashService(self, self._dump_reader.crash_dumps_directory())
+            service.start()
+            self._crash_service = service
 
     def clean_up_test_run(self):
         super(WinPort, self).clean_up_test_run()
@@ -195,7 +198,10 @@ class WinPort(base.Port):
         return result
 
     def look_for_new_crash_logs(self, crashed_processes, start_time):
+        if self.get_option('disable_breakpad'):
+            return None
         return self._dump_reader.look_for_new_crash_logs(crashed_processes, start_time)
 
     def clobber_old_port_specific_results(self):
-        self._dump_reader.clobber_old_results()
+        if not self.get_option('disable_breakpad'):
+            self._dump_reader.clobber_old_results()

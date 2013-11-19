@@ -178,8 +178,11 @@ class ContentShellDriverDetails():
     def device_crash_dumps_directory(self):
         return '/data/local/tmp/content-shell-crash-dumps'
 
-    def additional_command_line_flags(self):
-        return ['--dump-render-tree', '--encode-binary', '--enable-crash-reporter', '--crash-dumps-dir=%s' % self.device_crash_dumps_directory()]
+    def additional_command_line_flags(self, use_breakpad):
+        flags = ['--dump-render-tree', '--encode-binary']
+        if use_breakpad:
+            flags.extend(['--enable-crash-reporter', '--crash-dumps-dir=%s' % self.device_crash_dumps_directory()])
+        return flags
 
     def device_directory(self):
         return DEVICE_SOURCE_ROOT_DIR + 'content_shell/'
@@ -396,7 +399,8 @@ class AndroidPort(base.Port):
         self._host_port = factory.PortFactory(host).get('chromium', **kwargs)
         self._server_process_constructor = self._android_server_process_constructor
 
-        self._dump_reader = DumpReaderAndroid(host, self._build_path())
+        if not self.get_option('disable_breakpad'):
+            self._dump_reader = DumpReaderAndroid(host, self._build_path())
 
         if self.driver_name() != self.CONTENT_SHELL_NAME:
             raise AssertionError('Layout tests on Android only support content_shell as the driver.')
@@ -433,7 +437,7 @@ class AndroidPort(base.Port):
         return self._build_path(MD5SUM_HOST_FILE_NAME)
 
     def additional_drt_flag(self):
-        return self._driver_details.additional_command_line_flags()
+        return self._driver_details.additional_command_line_flags(use_breakpad=not self.get_option('disable_breakpad'))
 
     def default_timeout_ms(self):
         # Android platform has less computing power than desktop platforms.
@@ -591,7 +595,8 @@ class AndroidPort(base.Port):
         return self.create_driver(0)._android_driver_cmd_line(self.get_option('pixel_tests'), [])
 
     def clobber_old_port_specific_results(self):
-        self._dump_reader.clobber_old_results()
+        if not self.get_option('disable_breakpad'):
+            self._dump_reader.clobber_old_results()
 
     # Overridden protected methods.
 
@@ -1003,9 +1008,10 @@ class ChromiumAndroidDriver(driver.Driver):
             stderr = ''
         stderr += '********* [%s] Tombstone file:\n%s' % (self._android_commands.get_serial(), self._get_last_stacktrace())
 
-        crashes = self._pull_crash_dumps_from_device()
-        for crash in crashes:
-            stderr += '********* [%s] breakpad minidump %s:\n%s' % (self._port.host.filesystem.basename(crash), self._android_commands.get_serial(), self._port._dump_reader._get_stack_from_dump(crash))
+        if not self._port.get_option('disable_breakpad'):
+            crashes = self._pull_crash_dumps_from_device()
+            for crash in crashes:
+                stderr += '********* [%s] breakpad minidump %s:\n%s' % (self._port.host.filesystem.basename(crash), self._android_commands.get_serial(), self._port._dump_reader._get_stack_from_dump(crash))
 
         return super(ChromiumAndroidDriver, self)._get_crash_log(stdout, stderr, newer_than)
 
