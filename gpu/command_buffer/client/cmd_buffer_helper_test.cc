@@ -240,7 +240,7 @@ TEST_F(CommandBufferHelperTest, TestAvailableEntries) {
   AddCommandWithExpect(error::kNoError, kUnusedCommandId + 4, 2, args);
 
   // Ask for 5 entries.
-  EXPECT_TRUE(helper_->WaitForAvailableEntries(5));
+  helper_->WaitForAvailableEntries(5);
 
   CommandBufferOffset put = get_helper_put();
   CheckFreeSpace(put, 5);
@@ -248,7 +248,7 @@ TEST_F(CommandBufferHelperTest, TestAvailableEntries) {
   // Add more commands.
   AddCommandWithExpect(error::kNoError, kUnusedCommandId + 5, 2, args);
 
-  // Wait until everything is done.
+  // Wait until everything is done done.
   helper_->Finish();
 
   // Check that the commands did happen.
