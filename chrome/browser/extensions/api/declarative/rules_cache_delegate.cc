@@ -119,7 +119,7 @@ void RulesCacheDelegate::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED);
+  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_LOADED, type);
 
   const extensions::Extension* extension =
       content::Details<const extensions::Extension>(details).ptr();

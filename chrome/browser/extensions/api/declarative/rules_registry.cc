@@ -188,7 +188,7 @@ std::string RulesRegistry::RemoveAllRules(const std::string& extension_id) {
 std::string RulesRegistry::GetRules(
     const std::string& extension_id,
     const std::vector<std::string>& rule_identifiers,
-    std::vector<linked_ptr<RulesRegistry::Rule> >* out) {
+    std::vector<linked_ptr<Rule> >* out) {
   DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
 
   for (std::vector<std::string>::const_iterator i = rule_identifiers.begin();
@@ -201,9 +201,8 @@ std::string RulesRegistry::GetRules(
   return kSuccess;
 }
 
-std::string RulesRegistry::GetAllRules(
-    const std::string& extension_id,
-    std::vector<linked_ptr<RulesRegistry::Rule> >* out) {
+std::string RulesRegistry::GetAllRules(const std::string& extension_id,
+                                       std::vector<linked_ptr<Rule> >* out) {
   DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
 
   for (RulesDictionary::const_iterator i = rules_.begin();
@@ -263,7 +262,7 @@ void RulesRegistry::ProcessChangedRules(const std::string& extension_id) {
 
   process_changed_rules_requested_ = NOT_SCHEDULED_FOR_PROCESSING;
 
-  std::vector<linked_ptr<RulesRegistry::Rule> > new_rules;
+  std::vector<linked_ptr<Rule> > new_rules;
   std::string error = GetAllRules(extension_id, &new_rules);
   DCHECK_EQ(std::string(), error);
   content::BrowserThread::PostTask(
@@ -303,15 +302,16 @@ std::string RulesRegistry::GenerateUniqueId(const std::string& extension_id) {
 
 std::string RulesRegistry::CheckAndFillInOptionalRules(
     const std::string& extension_id,
-    const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) {
+    const std::vector<linked_ptr<Rule> >& rules) {
   // IDs we have inserted, in case we need to rollback this operation.
   std::vector<std::string> rollback_log;
 
   // First we insert all rules with existing identifier, so that generated
   // identifiers cannot collide with identifiers passed by the caller.
-  for (std::vector<linked_ptr<RulesRegistry::Rule> >::const_iterator i =
-      rules.begin(); i != rules.end(); ++i) {
-    RulesRegistry::Rule* rule = i->get();
+  for (std::vector<linked_ptr<Rule> >::const_iterator i = rules.begin();
+       i != rules.end();
+       ++i) {
+    Rule* rule = i->get();
     if (rule->id.get()) {
       std::string id = *(rule->id);
       if (!IsUniqueId(extension_id, id)) {
@@ -323,9 +323,10 @@ std::string RulesRegistry::CheckAndFillInOptionalRules(
   }
   // Now we generate IDs in case they were not specified in the rules. This
   // cannot fail so we do not need to keep track of a rollback log.
-  for (std::vector<linked_ptr<RulesRegistry::Rule> >::const_iterator i =
-      rules.begin(); i != rules.end(); ++i) {
-    RulesRegistry::Rule* rule = i->get();
+  for (std::vector<linked_ptr<Rule> >::const_iterator i = rules.begin();
+       i != rules.end();
+       ++i) {
+    Rule* rule = i->get();
     if (!rule->id.get()) {
       rule->id.reset(new std::string(GenerateUniqueId(extension_id)));
       used_rule_identifiers_[extension_id].insert(*(rule->id));
@@ -335,8 +336,8 @@ std::string RulesRegistry::CheckAndFillInOptionalRules(
 }
 
 void RulesRegistry::FillInOptionalPriorities(
-    const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) {
-  std::vector<linked_ptr<RulesRegistry::Rule> >::const_iterator i;
+    const std::vector<linked_ptr<Rule> >& rules) {
+  std::vector<linked_ptr<Rule> >::const_iterator i;
   for (i = rules.begin(); i != rules.end(); ++i) {
     if (!(*i)->priority.get())
       (*i)->priority.reset(new int(DEFAULT_PRIORITY));
