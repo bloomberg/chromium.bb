@@ -43,20 +43,25 @@ void MaybeAddTouchPoint(JNIEnv* env,
   wtp.screenPosition = wtp.position;
   wtp.force = Java_TouchPoint_getPressure(env, pt);
 
-  // TODO(djsollen): WebKit stores touch point size as a pair of radii, which
-  // are integers.  We receive touch point size from Android as a float
-  // between 0 and 1 and interpret 'size' as an elliptical area.  We convert
-  // size to a radius and then scale up to avoid truncating away all of the
-  // data. W3C spec is for the radii to be in units of screen pixels. Need to
-  // change.
-  const static double PI = 3.1415926;
-  const static double SCALE_FACTOR = 1024.0;
-  const int radius = static_cast<int>(
-      (sqrt(Java_TouchPoint_getSize(env, pt)) / PI) * SCALE_FACTOR);
-  wtp.radiusX = radius / dpi_scale;
-  wtp.radiusY = radius / dpi_scale;
-  // Since our radii are equal, a rotation angle doesn't mean anything.
-  wtp.rotationAngle = 0.0;
+  const int radiusMajor = static_cast<int>(
+      Java_TouchPoint_getTouchMajor(env, pt) * 0.5f / dpi_scale);
+  const int radiusMinor = static_cast<int>(
+      Java_TouchPoint_getTouchMinor(env, pt) * 0.5f / dpi_scale);
+  const float majorAngleInDegreesClockwiseFromVertical =
+      (Java_TouchPoint_getOrientation(env, pt) * 180.f) / M_PI;
+  // Android provides a major axis orientation clockwise with respect to the
+  // vertical of [-90, 90], while the W3C specifies a range of [0, 90].
+  if (majorAngleInDegreesClockwiseFromVertical >= 0) {
+    wtp.radiusX = radiusMinor;
+    wtp.radiusY = radiusMajor;
+    wtp.rotationAngle = majorAngleInDegreesClockwiseFromVertical;
+  } else {
+    wtp.radiusX = radiusMajor;
+    wtp.radiusY = radiusMinor;
+    wtp.rotationAngle = majorAngleInDegreesClockwiseFromVertical + 90.f;
+  }
+  DCHECK_GE(wtp.rotationAngle, 0.f);
+  DCHECK_LE(wtp.rotationAngle, 90.f);
 
   // Add the newly created WebTouchPoint to the event
   event.touches[idx] = wtp;
