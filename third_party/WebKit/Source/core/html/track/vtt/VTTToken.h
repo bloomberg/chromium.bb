@@ -31,6 +31,8 @@
 #ifndef VTTToken_h
 #define VTTToken_h
 
+#include "wtf/text/StringBuilder.h"
+
 namespace WebCore {
 
 class VTTTokenTypes {
@@ -49,7 +51,6 @@ class VTTToken {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     typedef VTTTokenTypes Type;
-    typedef WTF::Vector<UChar, 1024> DataVector; // FIXME: Is this too large for WebVTT?
 
     VTTToken() { clear(); }
 
@@ -62,12 +63,12 @@ public:
 
     Type::Type type() const { return m_type; }
 
-    const DataVector& name() const
+    StringBuilder& name()
     {
         return m_data;
     }
 
-    const DataVector& characters() const
+    StringBuilder& characters()
     {
         ASSERT(m_type == Type::Character || m_type == Type::TimestampTag);
         return m_data;
@@ -93,10 +94,10 @@ public:
         m_data.append(character);
     }
 
-    void appendToCharacter(const Vector<LChar, 32>& characters)
+    void appendToCharacter(const StringBuilder& characters)
     {
         ASSERT(m_type == Type::Character);
-        m_data.appendVector(characters);
+        m_data.append(characters);
     }
 
     void beginEmptyStartTag()
@@ -150,7 +151,7 @@ public:
         m_currentBuffer.clear();
     }
 
-    const DataVector& classes() const
+    StringBuilder& classes()
     {
         return m_classes;
     }
@@ -168,7 +169,7 @@ public:
         m_currentBuffer.clear();
     }
 
-    const DataVector& annotation() const
+    StringBuilder& annotation()
     {
         return m_annotation;
     }
@@ -191,10 +192,10 @@ private:
     }
 
     Type::Type m_type;
-    DataVector m_data;
-    DataVector m_annotation;
-    DataVector m_classes;
-    DataVector m_currentBuffer;
+    StringBuilder m_data;
+    StringBuilder m_annotation;
+    StringBuilder m_classes;
+    StringBuilder m_currentBuffer;
 };
 
 }

@@ -40,22 +40,16 @@ namespace WebCore {
 #define WEBVTT_BEGIN_STATE(stateName) BEGIN_STATE(VTTTokenizerState, stateName)
 #define WEBVTT_ADVANCE_TO(stateName) ADVANCE_TO(VTTTokenizerState, stateName)
 
+template<unsigned charactersCount>
+ALWAYS_INLINE bool equalLiteral(const StringBuilder& s, const char (&characters)[charactersCount])
+{
+    return WTF::equal(s, reinterpret_cast<const LChar*>(characters), charactersCount - 1);
+}
+
 VTTTokenizer::VTTTokenizer()
     : m_inputStreamPreprocessor(this)
 {
     reset();
-}
-
-template <typename CharacterType>
-inline bool vectorEqualsString(const Vector<CharacterType, 32>& vector, const String& string)
-{
-    if (vector.size() != string.length())
-        return false;
-
-    if (!string.length())
-        return true;
-
-    return equal(string.impl(), vector.data(), vector.size());
 }
 
 void VTTTokenizer::reset()
@@ -85,10 +79,7 @@ bool VTTTokenizer::nextToken(SegmentedString& source, VTTToken& token)
                 m_buffer.append(static_cast<LChar>(cc));
                 WEBVTT_ADVANCE_TO(EscapeState);
             } else if (cc == '<') {
-                // FIXME: the explicit Vector conversion copies into a temporary
-                // and is wasteful.
-                if (m_token->type() == VTTTokenTypes::Uninitialized
-                    || vectorEqualsString<UChar>(Vector<UChar, 32>(m_token->characters()), emptyString())) {
+                if (m_token->type() == VTTTokenTypes::Uninitialized || m_token->characters().isEmpty()) {
                     WEBVTT_ADVANCE_TO(TagState);
                 } else {
                     // We don't want to advance input or perform a state transition - just return a (new) token.
@@ -106,17 +97,17 @@ bool VTTTokenizer::nextToken(SegmentedString& source, VTTToken& token)
 
         WEBVTT_BEGIN_STATE(EscapeState) {
             if (cc == ';') {
-                if (vectorEqualsString(m_buffer, "&amp")) {
+                if (equalLiteral(m_buffer, "&amp")) {
                     bufferCharacter('&');
-                } else if (vectorEqualsString(m_buffer, "&lt")) {
+                } else if (equalLiteral(m_buffer, "&lt")) {
                     bufferCharacter('<');
-                } else if (vectorEqualsString(m_buffer, "&gt")) {
+                } else if (equalLiteral(m_buffer, "&gt")) {
                     bufferCharacter('>');
-                } else if (vectorEqualsString(m_buffer, "&lrm")) {
+                } else if (equalLiteral(m_buffer, "&lrm")) {
                     bufferCharacter(leftToRightMark);
-                } else if (vectorEqualsString(m_buffer, "&rlm")) {
+                } else if (equalLiteral(m_buffer, "&rlm")) {
                     bufferCharacter(rightToLeftMark);
-                } else if (vectorEqualsString(m_buffer, "&nbsp")) {
+                } else if (equalLiteral(m_buffer, "&nbsp")) {
                     bufferCharacter(noBreakSpace);
                 } else {
                     m_buffer.append(static_cast<LChar>(cc));
@@ -131,7 +122,7 @@ bool VTTTokenizer::nextToken(SegmentedString& source, VTTToken& token)
                 m_token->appendToCharacter(m_buffer);
                 return emitToken(VTTTokenTypes::Character);
             } else {
-                if (!vectorEqualsString(m_buffer, "&"))
+                if (!equalLiteral(m_buffer, "&"))
                     m_token->appendToCharacter(m_buffer);
                 m_buffer.clear();
                 WEBVTT_ADVANCE_TO(DataState);

@@ -34,6 +34,7 @@
 #include "core/html/parser/InputStreamPreprocessor.h"
 #include "core/html/track/vtt/VTTToken.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -101,7 +102,7 @@ private:
     // The reason it's stored here is because of the use of the ADVANCE_TO state helpers.
     VTTTokenizerState::State m_state;
 
-    Vector<LChar, 32> m_buffer;
+    StringBuilder m_buffer;
 
     // ://www.whatwg.org/specs/web-apps/current-work/#preprocessing-the-input-stream
     InputStreamPreprocessor<VTTTokenizer> m_inputStreamPreprocessor;
