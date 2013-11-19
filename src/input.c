@@ -395,8 +395,9 @@ weston_pointer_create(struct weston_seat *seat)
 					seat->compositor->default_pointer_grab);
 	pointer->default_grab.pointer = pointer;
 	pointer->grab = &pointer->default_grab;
-	wl_signal_init(&pointer->focus_signal);
 	wl_signal_init(&pointer->motion_signal);
+	wl_signal_init(&pointer->focus_signal);
+	wl_list_init(&pointer->focus_listener.link);
 
 	pointer->sprite_destroy_listener.notify = pointer_handle_sprite_destroy;
 
@@ -503,6 +504,23 @@ seat_send_updated_caps(struct weston_seat *seat)
 	}
 }
 
+static void
+destroy_pointer_focus(struct wl_listener *listener, void *data)
+{
+	struct weston_pointer *pointer;
+
+	pointer = container_of(listener, struct weston_pointer,
+			       focus_listener);
+
+	pointer->focus = NULL;
+	move_resources(&pointer->resource_list, &pointer->focus_resource_list);
+
+	wl_list_remove(&pointer->focus_listener.link);
+	wl_list_init(&pointer->focus_listener.link);
+
+	wl_signal_emit(&pointer->focus_signal, pointer);
+}
+
 WL_EXPORT void
 weston_pointer_set_focus(struct weston_pointer *pointer,
 			 struct weston_view *view,
@@ -559,7 +577,14 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 		pointer->focus_serial = serial;
 	}
 
+	if (!wl_list_empty(&pointer->focus_listener.link)) {
+		wl_list_remove(&pointer->focus_listener.link);
+		wl_list_init(&pointer->focus_listener.link);
+	}
 	pointer->focus = view;
+	pointer->focus_listener.notify = destroy_pointer_focus;
+	if (view)
+		wl_signal_add(&view->destroy_signal, &pointer->focus_listener);
 	wl_signal_emit(&pointer->focus_signal, pointer);
 }
 
