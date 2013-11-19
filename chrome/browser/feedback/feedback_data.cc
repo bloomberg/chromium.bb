@@ -39,15 +39,17 @@ const char kZipExt[] = ".zip";
 
 const base::FilePath::CharType kLogsFilename[] =
     FILE_PATH_LITERAL("system_logs.txt");
+const base::FilePath::CharType kHistogramsFilename[] =
+    FILE_PATH_LITERAL("histograms.txt");
 
 // Converts the system logs into a string that we can compress and send
 // with the report. This method only converts those logs that we want in
 // the compressed zip file sent with the report, hence it ignores any logs
 // below the size threshold of what we want compressed.
-std::string LogsToString(FeedbackData::SystemLogsMap* sys_info) {
+std::string LogsToString(const FeedbackData::SystemLogsMap& sys_info) {
   std::string syslogs_string;
-  for (FeedbackData::SystemLogsMap::const_iterator it = sys_info->begin();
-      it != sys_info->end(); ++it) {
+  for (FeedbackData::SystemLogsMap::const_iterator it = sys_info.begin();
+      it != sys_info.end(); ++it) {
     std::string key = it->first;
     std::string value = it->second;
 
@@ -76,7 +78,7 @@ void ZipFile(const base::FilePath& filename,
     compressed_data->clear();
 }
 
-void ZipLogs(FeedbackData::SystemLogsMap* sys_info,
+void ZipLogs(const FeedbackData::SystemLogsMap& sys_info,
              std::string* compressed_logs) {
   DCHECK(compressed_logs);
   std::string logs_string = LogsToString(sys_info);
@@ -84,6 +86,18 @@ void ZipLogs(FeedbackData::SystemLogsMap* sys_info,
       !feedback_util::ZipString(
           base::FilePath(kLogsFilename), logs_string, compressed_logs)) {
     compressed_logs->clear();
+  }
+}
+
+void ZipHistograms(const std::string& histograms,
+                   std::string* compressed_histograms) {
+  DCHECK(compressed_histograms);
+  if (histograms.empty() ||
+      !feedback_util::ZipString(
+          base::FilePath(kHistogramsFilename),
+          histograms,
+          compressed_histograms)) {
+    compressed_histograms->clear();
   }
 }
 
@@ -103,6 +117,7 @@ FeedbackData::FeedbackData() : profile_(NULL),
                                trace_id_(0),
                                feedback_page_data_complete_(false),
                                syslogs_compression_complete_(false),
+                               histograms_compression_complete_(false),
                                attached_file_compression_complete_(false),
                                report_sent_(false) {
 }
@@ -136,11 +151,30 @@ void FeedbackData::SetAndCompressSystemInfo(
     BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(&ZipLogs,
-                   sys_info_.get(),
+                   *sys_info_,
                    compressed_logs_ptr),
         base::Bind(&FeedbackData::OnCompressLogsComplete,
                    this,
                    base::Passed(&compressed_logs)));
+  }
+}
+
+void FeedbackData::SetAndCompressHistograms(
+    scoped_ptr<std::string> histograms) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  histograms_ = histograms.Pass();
+  if (histograms_.get()) {
+    std::string* compressed_histograms_ptr = new std::string;
+    scoped_ptr<std::string> compressed_histograms(compressed_histograms_ptr);
+    BrowserThread::PostBlockingPoolTaskAndReply(
+        FROM_HERE,
+        base::Bind(&ZipHistograms,
+                   *histograms_,
+                   compressed_histograms_ptr),
+        base::Bind(&FeedbackData::OnCompressHistogramsComplete,
+                   this,
+                   base::Passed(&compressed_histograms)));
   }
 }
 
@@ -201,6 +235,16 @@ void FeedbackData::OnCompressLogsComplete(
   SendReport();
 }
 
+void FeedbackData::OnCompressHistogramsComplete(
+    scoped_ptr<std::string> compressed_histograms) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  compressed_histograms_ = compressed_histograms.Pass();
+  histograms_compression_complete_ = true;
+
+  SendReport();
+}
+
 void FeedbackData::OnCompressFileComplete(
     scoped_ptr<std::string> compressed_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -219,6 +263,7 @@ void FeedbackData::OnCompressFileComplete(
 
 bool FeedbackData::IsDataComplete() {
   return (!sys_info_.get() || syslogs_compression_complete_) &&
+      (!histograms_.get() || histograms_compression_complete_) &&
       (!attached_filedata_.get() || attached_file_compression_complete_) &&
       !trace_id_ &&
       feedback_page_data_complete_;

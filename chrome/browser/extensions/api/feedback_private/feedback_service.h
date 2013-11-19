@@ -44,13 +44,16 @@ class FeedbackService {
                             const SendFeedbackCallback& callback);
 
   // Platform specific methods:
-  // Get's the email address of the logged in user.
+  // Gets the email address of the logged in user.
   virtual std::string GetUserEmail() = 0;
 
   // Start to gather system information.
   // The |callback| will be invoked once the query is completed.
   virtual void GetSystemInformation(
       const GetSystemInformationCallback& callback) = 0;
+
+  // Gets the histograms in JSON.
+  virtual void GetHistograms(std::string* histograms) = 0;
 
  protected:
   FeedbackService();

@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system_logs/scrubbed_system_logs_fetcher.h"
@@ -24,6 +25,7 @@ class FeedbackServiceImpl
   virtual std::string GetUserEmail() OVERRIDE;
   virtual void GetSystemInformation(
       const GetSystemInformationCallback& callback) OVERRIDE;
+  virtual void GetHistograms(std::string* histograms) OVERRIDE;
 
  private:
   void ProcessSystemLogs(scoped_ptr<chromeos::SystemLogsResponse> sys_info);
@@ -60,6 +62,10 @@ void FeedbackServiceImpl::GetSystemInformation(
       new chromeos::ScrubbedSystemLogsFetcher();
   fetcher->Fetch(base::Bind(&FeedbackServiceImpl::ProcessSystemLogs,
                             AsWeakPtr()));
+}
+
+void FeedbackServiceImpl::GetHistograms(std::string* histograms) {
+  *histograms = base::StatisticsRecorder::ToJSON(std::string());
 }
 
 void FeedbackServiceImpl::ProcessSystemLogs(

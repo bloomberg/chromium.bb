@@ -47,6 +47,9 @@ namespace feedbackPrivate {
     // feedback report.
     SystemInformation[]? systemInformation;
 
+    // True if we have permission to add histograms to this feedback report.
+    boolean sendHistograms;
+
     // TODO(rkc): Remove these once we have bindings to send blobs to Chrome.
     // Used internally to store the blob uuid after parameter customization.
     DOMString? attachedFileBlobUuid;

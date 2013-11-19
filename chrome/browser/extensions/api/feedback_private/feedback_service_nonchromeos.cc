@@ -34,6 +34,7 @@ class FeedbackServiceImpl
   virtual std::string GetUserEmail() OVERRIDE;
   virtual void GetSystemInformation(
       const GetSystemInformationCallback& callback) OVERRIDE;
+  virtual void GetHistograms(std::string* histograms) OVERRIDE;
 
  private:
   // Overridden from FeedbackService:
@@ -80,6 +81,9 @@ void FeedbackServiceImpl::GetSystemInformation(
       &sys_info_list, kOsVersionTag, os_version);
 
   system_information_callback_.Run(sys_info_list);
+}
+
+void FeedbackServiceImpl::GetHistograms(std::string* histograms) {
 }
 
 base::WeakPtr<FeedbackService> FeedbackServiceImpl::GetWeakPtr() {

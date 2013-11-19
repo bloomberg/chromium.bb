@@ -36,12 +36,19 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   // compression.
   void SetAndCompressSystemInfo(scoped_ptr<SystemLogsMap> sys_info);
 
-  // Sets the system information for this instance and kicks off its
+  // Sets the histograms for this instance and kicks off its
   // compression.
+  void SetAndCompressHistograms(scoped_ptr<std::string> histograms);
+
+  // Sets the attached file data and kicks off its compression.
   void AttachAndCompressFileData(scoped_ptr<std::string> attached_filedata);
 
   // Called once we have compressed our system logs.
   void OnCompressLogsComplete(scoped_ptr<std::string> compressed_logs);
+
+  // Called once we have compressed our histograms.
+  void OnCompressHistogramsComplete(
+      scoped_ptr<std::string> compressed_histograms);
 
   // Called once we have compressed our attached file.
   void OnCompressFileComplete(scoped_ptr<std::string> compressed_file);
@@ -68,6 +75,10 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   int trace_id() const { return trace_id_; }
   SystemLogsMap* sys_info() const { return sys_info_.get(); }
   std::string* compressed_logs() const { return compressed_logs_.get(); }
+  std::string* histograms() const { return histograms_.get(); }
+  std::string* compressed_histograms() const {
+    return compressed_histograms_.get();
+  }
 
   // Setters
   void set_profile(Profile* profile) { profile_ = profile; }
@@ -119,8 +130,13 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   scoped_ptr<SystemLogsMap> sys_info_;
   scoped_ptr<std::string> compressed_logs_;
 
+  scoped_ptr<std::string> histograms_;
+  scoped_ptr<std::string> compressed_histograms_;
+
+  // TODO(rkc): Refactor compressing logic into a simpler common implementation.
   bool feedback_page_data_complete_;
   bool syslogs_compression_complete_;
+  bool histograms_compression_complete_;
   bool attached_file_compression_complete_;
   bool report_sent_;
 
