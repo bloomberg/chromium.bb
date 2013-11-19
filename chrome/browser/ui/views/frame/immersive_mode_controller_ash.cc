@@ -208,7 +208,7 @@ void ImmersiveModeControllerAsh::SetVisibleFraction(double visible_fraction) {
 }
 
 std::vector<gfx::Rect>
-ImmersiveModeControllerAsh::GetVisibleBoundsInScreen() {
+ImmersiveModeControllerAsh::GetVisibleBoundsInScreen() const {
   views::View* top_container_view = browser_view_->top_container();
   gfx::Rect top_container_view_bounds = top_container_view->GetVisibleBounds();
   // TODO(tdanderson): Implement View::ConvertRectToScreen().

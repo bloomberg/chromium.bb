@@ -426,6 +426,7 @@
         'wm/caption_buttons/frame_caption_button_container_view.h',
         'wm/caption_buttons/frame_maximize_button.cc',
         'wm/caption_buttons/frame_maximize_button.h',
+        'wm/caption_buttons/frame_maximize_button_observer.h',
         'wm/caption_buttons/maximize_bubble_controller.cc',
         'wm/caption_buttons/maximize_bubble_controller.h',
         'wm/caption_buttons/maximize_bubble_frame_state.h',

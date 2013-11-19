@@ -67,7 +67,7 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
 
  private:
   // NativeAppWindow implementation.
-  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
+  virtual void SetFullscreen(int fullscreen_types) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
   virtual bool IsDetached() const OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;

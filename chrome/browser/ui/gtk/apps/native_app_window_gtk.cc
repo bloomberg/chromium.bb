@@ -593,9 +593,10 @@ gboolean NativeAppWindowGtk::OnButtonPress(GtkWidget* widget,
 
 // NativeAppWindow implementation:
 
-void NativeAppWindowGtk::SetFullscreen(bool fullscreen) {
+void NativeAppWindowGtk::SetFullscreen(int fullscreen_types) {
+  bool fullscreen = (fullscreen_types != ShellWindow::FULLSCREEN_TYPE_NONE);
   content_thinks_its_fullscreen_ = fullscreen;
-  if (fullscreen){
+  if (fullscreen) {
     if (resizable_) {
       gtk_window_fullscreen(window_);
     } else {

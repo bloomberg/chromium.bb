@@ -92,6 +92,21 @@ class ShellWindow : public content::NotificationObserver,
     FRAME_NONE,  // Frameless window.
   };
 
+  enum FullscreenType {
+    // Not fullscreen.
+    FULLSCREEN_TYPE_NONE = 0,
+
+    // Fullscreen entered by the app.window api.
+    FULLSCREEN_TYPE_WINDOW_API = 1 << 0,
+
+    // Fullscreen entered by HTML requestFullscreen().
+    FULLSCREEN_TYPE_HTML_API = 1 << 1,
+
+    // Fullscreen entered by the OS. ChromeOS uses this type of fullscreen to
+    // enter immersive fullscreen when the user hits the <F4> key.
+    FULLSCREEN_TYPE_OS = 1 << 2
+  };
+
   class SizeConstraints {
    public:
     // The value SizeConstraints uses to represent an unbounded width or height.
@@ -284,6 +299,9 @@ class ShellWindow : public content::NotificationObserver,
   void Minimize();
   void Restore();
 
+  // Transitions to OS fullscreen. See FULLSCREEN_TYPE_OS for more details.
+  void OSFullscreen();
+
   // Set the minimum and maximum size that this window is allowed to be.
   void SetMinimumSize(const gfx::Size& min_size);
   void SetMaximumSize(const gfx::Size& max_size);
@@ -444,10 +462,8 @@ class ShellWindow : public content::NotificationObserver,
 
   base::WeakPtrFactory<ShellWindow> image_loader_ptr_factory_;
 
-  // Fullscreen entered by app.window api.
-  bool fullscreen_for_window_api_;
-  // Fullscreen entered by HTML requestFullscreen.
-  bool fullscreen_for_tab_;
+  // Bit field of FullscreenType.
+  int fullscreen_types_;
 
   // Size constraints on the window.
   SizeConstraints size_constraints_;

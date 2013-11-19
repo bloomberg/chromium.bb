@@ -6556,6 +6556,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DOCKED_WINDOWS_DESCRIPTION" desc="Description for the flag to disable docked windows feature.">
         Turns off docking of windows near screen edges, a feature that provides an easier way to interact with panel and other small windows.
       </message>
+      <message name="IDS_FLAGS_IMMERSIVE_FULLSCREEN_FOR_ALL_WINDOWS_NAME" desc="Name for the flag to enable immersive fullscreen for all windows.">
+        Enable immersive fullscreen for non browser windows.
+      </message>
+      <message name="IDS_FLAGS_IMMERSIVE_FULLSCREEN_FOR_ALL_WINDOWS_DESCRIPTION" desc="Description for the flag enable immersive fullscreen for all windows.">
+        Sets non-browser windows (apps, task manager) to use immersive fullscreen when fullscreened via the F4 key.
+      </message>
       <message name="IDS_FLAGS_SHOW_SHELF_ALIGNMENT_MENU_NAME" desc="Name for the flag to show a menu that lets you change the alignment of the shelf.">
         Show shelf alignment menu.
       </message>

@@ -141,8 +141,7 @@ ShellWindow::ShellWindow(Profile* profile,
       window_type_(WINDOW_TYPE_DEFAULT),
       delegate_(delegate),
       image_loader_ptr_factory_(this),
-      fullscreen_for_window_api_(false),
-      fullscreen_for_tab_(false),
+      fullscreen_types_(FULLSCREEN_TYPE_NONE),
       show_on_first_paint_(false),
       first_paint_complete_(false) {
 }
@@ -404,8 +403,8 @@ void ShellWindow::Fullscreen() {
   if (!profile()->GetPrefs()->GetBoolean(prefs::kAppFullscreenAllowed))
     return;
 #endif
-  fullscreen_for_window_api_ = true;
-  GetBaseWindow()->SetFullscreen(true);
+  fullscreen_types_ |= FULLSCREEN_TYPE_WINDOW_API;
+  GetBaseWindow()->SetFullscreen(fullscreen_types_);
 }
 
 void ShellWindow::Maximize() {
@@ -417,13 +416,22 @@ void ShellWindow::Minimize() {
 }
 
 void ShellWindow::Restore() {
-  fullscreen_for_window_api_ = false;
-  fullscreen_for_tab_ = false;
-  if (GetBaseWindow()->IsFullscreenOrPending()) {
-    GetBaseWindow()->SetFullscreen(false);
+  if (fullscreen_types_ != FULLSCREEN_TYPE_NONE) {
+    fullscreen_types_ = FULLSCREEN_TYPE_NONE;
+    GetBaseWindow()->SetFullscreen(fullscreen_types_);
   } else {
     GetBaseWindow()->Restore();
   }
+}
+
+void ShellWindow::OSFullscreen() {
+#if !defined(OS_MACOSX)
+  // Do not enter fullscreen mode if disallowed by pref.
+  if (!profile()->GetPrefs()->GetBoolean(prefs::kAppFullscreenAllowed))
+    return;
+#endif
+  fullscreen_types_ |= FULLSCREEN_TYPE_OS;
+  GetBaseWindow()->SetFullscreen(fullscreen_types_);
 }
 
 void ShellWindow::SetMinimumSize(const gfx::Size& min_size) {
@@ -585,18 +593,16 @@ void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,
     return;
   }
 
-  fullscreen_for_tab_ = enter_fullscreen;
-
-  if (enter_fullscreen) {
-    native_app_window_->SetFullscreen(true);
-  } else if (!fullscreen_for_window_api_) {
-    native_app_window_->SetFullscreen(false);
-  }
+  if (enter_fullscreen)
+    fullscreen_types_ |= FULLSCREEN_TYPE_HTML_API;
+  else
+    fullscreen_types_ &= ~FULLSCREEN_TYPE_HTML_API;
+  GetBaseWindow()->SetFullscreen(fullscreen_types_);
 }
 
 bool ShellWindow::IsFullscreenForTabOrPending(
     const content::WebContents* source) const {
-  return fullscreen_for_tab_;
+  return ((fullscreen_types_ & FULLSCREEN_TYPE_HTML_API) != 0);
 }
 
 void ShellWindow::Observe(int type,

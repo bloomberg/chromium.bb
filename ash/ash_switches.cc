@@ -99,6 +99,10 @@ const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
 // Disable dragging items off the shelf to unpin them.
 const char kAshDisableDragOffShelf[] = "ash-disable-drag-off-shelf";
 
+// Enables putting all windows into immersive fullscreen via <F4>.
+const char kAshEnableImmersiveFullscreenForAllWindows[] =
+    "ash-enable-immersive-all-windows";
+
 #if defined(OS_CHROMEOS)
 // Enables the "full multi profile mode" - as it was in M-31.
 const char kAshEnableFullMultiProfileMode[] =

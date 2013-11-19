@@ -995,6 +995,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableDockedWindows)
   },
+  {
+    "ash-enable-immersive-fullscreen-all-windows",
+    IDS_FLAGS_IMMERSIVE_FULLSCREEN_FOR_ALL_WINDOWS_NAME,
+    IDS_FLAGS_IMMERSIVE_FULLSCREEN_FOR_ALL_WINDOWS_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableImmersiveFullscreenForAllWindows)
+  },
 #endif
   {
     "enable-download-resumption",

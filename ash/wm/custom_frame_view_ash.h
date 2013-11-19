@@ -12,6 +12,7 @@
 namespace ash {
 class FrameBorderHitTestController;
 class HeaderPainter;
+class ImmersiveFullscreenController;
 }
 namespace gfx {
 class Font;
@@ -22,10 +23,12 @@ class Widget;
 
 namespace ash {
 
-class FrameCaptionButtonContainerView;
-
-// A NonClientFrameView used for dialogs and other non-browser windows.
-// See also views::CustomFrameView and BrowserNonClientFrameViewAsh.
+// A NonClientFrameView used for packaged apps, dialogs and other non-browser
+// windows. It supports immersive fullscreen. When in immersive fullscreen, the
+// client view takes up the entire widget and the window header is an overlay.
+// The window header overlay slides onscreen when the user hovers the mouse at
+// the top of the screen. See also views::CustomFrameView and
+// BrowserNonClientFrameViewAsh.
 class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
  public:
   // Internal class name.
@@ -33,6 +36,13 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
 
   explicit CustomFrameViewAsh(views::Widget* frame);
   virtual ~CustomFrameViewAsh();
+
+  // Inits |immersive_fullscreen_controller| so that the controller reveals
+  // and hides |header_view_| in immersive fullscreen.
+  // CustomFrameViewAsh does not take ownership of
+  // |immersive_fullscreen_controller|.
+  void InitImmersiveFullscreenControllerForView(
+      ImmersiveFullscreenController* immersive_fullscreen_controller);
 
   // views::NonClientFrameView overrides:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
@@ -47,24 +57,24 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
 
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
+  virtual void SchedulePaintInRect(const gfx::Rect& r) OVERRIDE;
+  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
  private:
+  class OverlayView;
+
   // Height from top of window to top of client area.
   int NonClientTopBorderHeight() const;
 
   // Not owned.
   views::Widget* frame_;
 
-  // View which contains the window controls.
-  FrameCaptionButtonContainerView* caption_button_container_;
-
-  // Helper class for painting the header.
-  scoped_ptr<HeaderPainter> header_painter_;
+  // View which contains the title and window controls.
+  class HeaderView;
+  HeaderView* header_view_;
 
   // Updates the hittest bounds overrides based on the window show type.
   scoped_ptr<FrameBorderHitTestController> frame_border_hit_test_controller_;

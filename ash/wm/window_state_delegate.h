@@ -17,9 +17,12 @@ class ASH_EXPORT WindowStateDelegate {
   WindowStateDelegate();
   virtual ~WindowStateDelegate();
 
-  // Invoked when the user uses Shift+F4/F4 to toggle the window
-  // fullscreen state.  The caller (ash::wm::WindowState) falls backs
-  // to the default implementation if this returns false.
+  // Invoked when the user uses Shift+F4/F4 to toggle the window fullscreen
+  // state. If the window is not fullscreen and the window supports immersive
+  // fullscreen ToggleFullscreen() should put the window into immersive
+  // fullscreen instead of the default fullscreen type. The caller
+  // (ash::wm::WindowState) falls backs to the default implementation if this
+  // returns false.
   virtual bool ToggleFullscreen(WindowState* window_state);
 
  private:

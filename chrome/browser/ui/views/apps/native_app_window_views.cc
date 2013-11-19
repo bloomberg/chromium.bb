@@ -43,12 +43,15 @@
 
 #if defined(USE_ASH)
 #include "ash/ash_constants.h"
+#include "ash/ash_switches.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
+#include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/panels/panel_frame_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
+#include "ash/wm/window_state_observer.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -129,14 +132,26 @@ void CreateIconAndSetRelaunchDetails(
 
 #if defined(USE_ASH)
 // This class handles a user's fullscreen request (Shift+F4/F4).
-class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate {
+class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
+                                     public ash::wm::WindowStateObserver {
  public:
-  explicit NativeAppWindowStateDelegate(ShellWindow* shell_window)
-      : shell_window_(shell_window) {
-    DCHECK(shell_window_);
+  NativeAppWindowStateDelegate(ShellWindow* shell_window,
+                               apps::NativeAppWindow* native_app_window)
+      : shell_window_(shell_window),
+        window_state_(
+            ash::wm::GetWindowState(native_app_window->GetNativeWindow())) {
+    // Add a window state observer to exit fullscreen properly in case
+    // fullscreen is exited without going through ShellWindow::Restore(). This
+    // is the case when exiting immersive fullscreen via the "Restore" window
+    // control.
+    // TODO(pkotwicz): This is a hack. Remove ASAP. http://crbug.com/319048
+    window_state_->AddObserver(this);
   }
-  virtual ~NativeAppWindowStateDelegate(){}
+  virtual ~NativeAppWindowStateDelegate(){
+    window_state_->RemoveObserver(this);
+  }
 
+ private:
   // Overridden from ash::wm::WindowStateDelegate.
   virtual bool ToggleFullscreen(ash::wm::WindowState* window_state) OVERRIDE {
     // Windows which cannot be maximized should not be fullscreened.
@@ -144,12 +159,24 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate {
     if (window_state->IsFullscreen())
       shell_window_->Restore();
     else if (window_state->CanMaximize())
-      shell_window_->Fullscreen();
+      shell_window_->OSFullscreen();
     return true;
   }
 
- private:
-  ShellWindow* shell_window_;  // not owned.
+  // Overridden from ash::wm::WindowStateObserver:
+  virtual void OnWindowShowTypeChanged(
+      ash::wm::WindowState* window_state,
+      ash::wm::WindowShowType old_type) OVERRIDE {
+    if (!window_state->IsFullscreen() &&
+        !window_state->IsMinimized() &&
+        shell_window_->GetBaseWindow()->IsFullscreenOrPending()) {
+      shell_window_->Restore();
+    }
+  }
+
+  // Not owned.
+  ShellWindow* shell_window_;
+  ash::wm::WindowState* window_state_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowStateDelegate);
 };
@@ -191,7 +218,7 @@ NativeAppWindowViews::NativeAppWindowViews(
       chrome::HOST_DESKTOP_TYPE_ASH) {
     ash::wm::GetWindowState(GetNativeWindow())->SetDelegate(
         scoped_ptr<ash::wm::WindowStateDelegate>(
-            new NativeAppWindowStateDelegate(shell_window)).Pass());
+            new NativeAppWindowStateDelegate(shell_window, this)).Pass());
   }
 #endif
 }
@@ -676,7 +703,21 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
       return new ash::PanelFrameView(widget, frame_type);
     }
     if (!frameless_) {
-      return new ash::CustomFrameViewAsh(widget);
+      ash::CustomFrameViewAsh* custom_frame_view =
+          new ash::CustomFrameViewAsh(widget);
+#if defined(OS_CHROMEOS)
+      // Non-frameless app windows can be put into immersive fullscreen.
+      // TODO(pkotwicz): Investigate if immersive fullscreen can be enabled for
+      // Windows Ash.
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              ash::switches::kAshEnableImmersiveFullscreenForAllWindows)) {
+        immersive_fullscreen_controller_.reset(
+            new ash::ImmersiveFullscreenController());
+        custom_frame_view->InitImmersiveFullscreenControllerForView(
+            immersive_fullscreen_controller_.get());
+      }
+#endif
+      return custom_frame_view;
     }
   }
 #endif
@@ -800,12 +841,30 @@ bool NativeAppWindowViews::AcceleratorPressed(
 
 // NativeAppWindow implementation.
 
-void NativeAppWindowViews::SetFullscreen(bool fullscreen) {
+void NativeAppWindowViews::SetFullscreen(int fullscreen_types) {
   // Fullscreen not supported by panels.
   if (shell_window_->window_type_is_panel())
     return;
-  is_fullscreen_ = fullscreen;
-  window_->SetFullscreen(fullscreen);
+  is_fullscreen_ = (fullscreen_types != ShellWindow::FULLSCREEN_TYPE_NONE);
+  window_->SetFullscreen(is_fullscreen_);
+
+#if defined(USE_ASH)
+  if (immersive_fullscreen_controller_.get()) {
+    // |immersive_fullscreen_controller_| should only be set if immersive
+    // fullscreen is the fullscreen type used by the OS.
+    immersive_fullscreen_controller_->SetEnabled(
+        (fullscreen_types & ShellWindow::FULLSCREEN_TYPE_OS) != 0);
+    // Autohide the shelf instead of hiding the shelf completely when only in
+    // OS fullscreen.
+    ash::wm::WindowState* window_state =
+        ash::wm::GetWindowState(window_->GetNativeWindow());
+    window_state->set_hide_shelf_when_fullscreen(
+        fullscreen_types != ShellWindow::FULLSCREEN_TYPE_OS);
+    DCHECK(ash::Shell::HasInstance());
+    ash::Shell::GetInstance()->UpdateShelfVisibility();
+  }
+#endif
+
   // TODO(jeremya) we need to call RenderViewHost::ExitFullscreen() if we
   // ever drop the window out of fullscreen in response to something that
   // wasn't the app calling webkitCancelFullScreen().

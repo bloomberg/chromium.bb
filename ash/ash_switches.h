@@ -43,6 +43,7 @@ ASH_EXPORT extern const char kAshEnableAudioDeviceMenu[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableAlternateFrameCaptionButtonStyle[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
+ASH_EXPORT extern const char kAshEnableImmersiveFullscreenForAllWindows[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshEnableFullMultiProfileMode[];
 #endif

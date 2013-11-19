@@ -18,8 +18,11 @@ namespace apps {
 class NativeAppWindow : public ui::BaseWindow,
                         public web_modal::WebContentsModalDialogHost {
  public:
-  // Fullscreen changes may be asynchronous on some platforms.
-  virtual void SetFullscreen(bool fullscreen) = 0;
+  // Sets whether the window is fullscreen and the type of fullscreen.
+  // |fullscreen_types| is a bit field of ShellWindow::FullscreenType.
+  virtual void SetFullscreen(int fullscreen_types) = 0;
+
+  // Returns whether the window is fullscreen or about to enter fullscreen.
   virtual bool IsFullscreenOrPending() const = 0;
 
   // Returns true if the window is a panel that has been detached.
