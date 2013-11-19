@@ -16,14 +16,35 @@
 namespace ppapi {
 namespace host {
 
+namespace internal {
+
+// static
+void ResourceMessageFilterDeleteTraits::Destruct(
+    const ResourceMessageFilter* filter) {
+  if (!filter->deletion_message_loop_proxy_->BelongsToCurrentThread()) {
+    // During shutdown the object may not be deleted, but it should be okay to
+    // leak in that case.
+    filter->deletion_message_loop_proxy_->DeleteSoon(FROM_HERE, filter);
+  } else {
+    delete filter;
+  }
+}
+
+}  // namespace internal
+
 ResourceMessageFilter::ResourceMessageFilter()
-    : reply_thread_message_loop_proxy_(
+    : deletion_message_loop_proxy_(
           base::MessageLoop::current()->message_loop_proxy()),
-      resource_host_(NULL) {}
+      reply_thread_message_loop_proxy_(
+          base::MessageLoop::current()->message_loop_proxy()),
+      resource_host_(NULL) {
+}
 
 ResourceMessageFilter::ResourceMessageFilter(
     scoped_refptr<base::MessageLoopProxy> reply_thread_message_loop_proxy)
-    : reply_thread_message_loop_proxy_(reply_thread_message_loop_proxy),
+    : deletion_message_loop_proxy_(
+          base::MessageLoop::current()->message_loop_proxy()),
+      reply_thread_message_loop_proxy_(reply_thread_message_loop_proxy),
       resource_host_(NULL) {
 }
 
