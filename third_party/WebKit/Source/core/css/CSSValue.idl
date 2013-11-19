@@ -20,8 +20,7 @@
 
 [
     CustomToV8,
-
-    DependentLifetime
+    DependentLifetime,
 ] interface CSSValue {
 
     // UnitTypes
