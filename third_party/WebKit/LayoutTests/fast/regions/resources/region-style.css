@@ -110,8 +110,12 @@
     background-color: lightgrey;
 }
 
-.float {
+.floatLeft {
     float: left;
+}
+
+.floatRight {
+    float: right;
 }
 
 .clear {
@@ -122,4 +126,35 @@
 .forcedStackingContext {
     position: relative;
     z-index: 1;
+}
+
+/* overflow tests styles */
+.overflowContentFlow {
+    -webkit-flow-into: flow1;
+    padding: 5px;
+}
+
+.overflowContent {
+    padding: 5px;
+}
+
+.overflowBox {
+    width: 30px;
+    height: 50px;
+    background-color: lime;
+}
+
+.overflowBox2 {
+    width: 50px;
+    height: 50px;
+    background-color: lime;
+}
+
+.overflowFirstBox {
+    border: 1px solid blue;
+}
+
+.overflowSecondBox {
+    border: 1px solid green;
+    overflow: hidden;
 }
