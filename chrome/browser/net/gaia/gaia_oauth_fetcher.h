@@ -89,7 +89,7 @@ class GaiaOAuthFetcher : public net::URLFetcherDelegate {
   //
   // service_scope will be used as a service name.  For example, Chromium Sync
   // uses https://www.googleapis.com/auth/chromesync for its OAuth2 service
-  // scope here as well as for its service name in TokenService.
+  // scope.
   virtual void StartOAuthWrapBridge(
       const std::string& oauth1_access_token,
       const std::string& oauth1_access_token_secret,

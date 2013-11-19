@@ -21,7 +21,6 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/fake_oauth2_token_service.h"
 #include "chrome/browser/sync/glue/device_info.h"

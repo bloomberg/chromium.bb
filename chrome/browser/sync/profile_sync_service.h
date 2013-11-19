@@ -690,7 +690,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // to claim ownership of sync thread from backend.
   void ShutdownImpl(browser_sync::SyncBackendHost::ShutdownOption option);
 
-  // Return SyncCredentials from the TokenService.
+  // Return SyncCredentials from the OAuth2TokenService.
   syncer::SyncCredentials GetCredentials();
 
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
@@ -782,7 +782,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   void ConsumeCachedPassphraseIfPossible();
 
   // RequestAccessToken initiates RPC to request downscoped access token from
-  // refresh token. This happens when TokenService loads OAuth2 login token and
+  // refresh token. This happens when a new OAuth2 login token is loaded and
   // when sync server returns AUTH_ERROR which indicates it is time to refresh
   // token.
   virtual void RequestAccessToken();

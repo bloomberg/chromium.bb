@@ -106,6 +106,7 @@ class TestProfileSyncService : public ProfileSyncService {
  public:
   // TODO(tim): Remove |synchronous_backend_initialization|, and add ability to
   // inject TokenService alongside SigninManager.
+  // TODO(rogerta): what does above comment mean?
   TestProfileSyncService(
       ProfileSyncComponentsFactory* factory,
       Profile* profile,

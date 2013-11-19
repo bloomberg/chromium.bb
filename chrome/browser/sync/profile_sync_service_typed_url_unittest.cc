@@ -25,7 +25,6 @@
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/fake_oauth2_token_service.h"
 #include "chrome/browser/sync/glue/data_type_error_handler_mock.h"
@@ -214,9 +213,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       SigninManagerBase* signin =
           SigninManagerFactory::GetForProfile(profile_.get());
       signin->SetAuthenticatedUsername("test");
-      token_service_ = static_cast<TokenService*>(
-          TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-              profile_.get(), BuildTokenService));
       sync_service_ = static_cast<TestProfileSyncService*>(
           ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
               profile_.get(),

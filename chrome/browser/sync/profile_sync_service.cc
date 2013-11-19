@@ -34,8 +34,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/chrome_encryptor.h"
@@ -280,19 +278,12 @@ void ProfileSyncService::TrySyncDatatypePrefRecovery() {
 void ProfileSyncService::TryStart() {
   if (!IsSyncEnabledAndLoggedIn())
     return;
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  if (!token_service)
+
+  // Don't start sync until tokens are loaded, because the user can be
+  // "signed in" long before the tokens get loaded, and we don't want to
+  // generate spurious auth errors.
+  if (!IsOAuthRefreshTokenAvailable())
     return;
-  // Don't start the backend if the token service hasn't finished loading tokens
-  // yet. Note if the backend is started before the sync token has been loaded,
-  // GetCredentials() will return bogus credentials. On auto_start platforms
-  // (like ChromeOS) we don't start sync until tokens are loaded, because the
-  // user can be "signed in" on those platforms long before the tokens get
-  // loaded, and we don't want to generate spurious auth errors.
-  if (!IsOAuthRefreshTokenAvailable() &&
-      !(!auto_start_enabled_ && token_service->TokensLoadedFromDB())) {
-    return;
-  }
 
   // If we got here then tokens are loaded and user logged in and sync is
   // enabled. If OAuth refresh token is not available then something is wrong.
@@ -731,7 +722,7 @@ void ProfileSyncService::OnRefreshTokenRevoked(
     access_token_.clear();
     // The additional check around IsOAuthRefreshTokenAvailable() above
     // prevents us sounding the alarm if we actually have a valid token but
-    // a refresh attempt by TokenService failed for any variety of reasons
+    // a refresh attempt failed for any variety of reasons
     // (e.g. flaky network). It's possible the token we do have is also
     // invalid, but in that case we should already have (or can expect) an
     // auth error sent from the sync backend.
@@ -741,7 +732,7 @@ void ProfileSyncService::OnRefreshTokenRevoked(
 }
 
 void ProfileSyncService::OnRefreshTokensLoaded() {
-  // This notification gets fired when TokenService loads the tokens
+  // This notification gets fired when OAuth2TokenService loads the tokens
   // from storage.
   // Initialize the backend if sync is enabled. If the sync token was
   // not loaded, GetCredentials() will generate invalid credentials to

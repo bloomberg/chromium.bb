@@ -320,7 +320,8 @@ bool TiclInvalidationService::IsReadyToStart() {
 
   if (!oauth2_token_service_) {
     DVLOG(2)
-        << "Not starting TiclInvalidationService: TokenService unavailable.";
+        << "Not starting TiclInvalidationService: "
+        << "OAuth2TokenService unavailable.";
     return false;
   }
 

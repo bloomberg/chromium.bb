@@ -25,9 +25,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/p2p_invalidation_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_base.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -38,6 +38,10 @@
 #include "sync/internal_api/public/base/progress_marker_map.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
+
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_constants.h"
+#endif
 
 using syncer::sessions::SyncSessionSnapshot;
 using invalidation::P2PInvalidationService;
@@ -209,9 +213,16 @@ bool ProfileSyncServiceHarness::SetupSync(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceSigninSuccessDetails>(&details));
-  TokenServiceFactory::GetForProfile(profile_)->IssueAuthTokenForTest(
-      GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-      GenerateFakeOAuth2RefreshTokenString());
+
+#if defined(ENABLE_MANAGED_USERS)
+  std::string account_id = profile_->IsManaged() ?
+      managed_users::kManagedUserPseudoEmail : username_;
+#else
+  std::string account_id = username_;
+#endif
+  DCHECK(!account_id.empty());
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
+      UpdateCredentials(account_id, GenerateFakeOAuth2RefreshTokenString());
 
   // Wait for the OnBackendInitialized() callback.
   if (!AwaitBackendInitialized()) {

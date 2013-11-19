@@ -58,25 +58,6 @@ ACTION_P2(InvokeOnConfigureDone, pss, result) {
   service->OnConfigureDone(configure_result);
 }
 
-class FakeTokenService : public TokenService {
- public:
-  FakeTokenService() {}
-  virtual ~FakeTokenService() {}
-
-  virtual void LoadTokensFromDB() OVERRIDE {
-    set_tokens_loaded(true);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
-        content::Source<TokenService>(this),
-        content::NotificationService::NoDetails());
-  }
-
-  static BrowserContextKeyedService* BuildFakeTokenService(
-      content::BrowserContext* profile) {
-    return new FakeTokenService();
-  }
-};
-
 class ProfileSyncServiceStartupTest : public testing::Test {
  public:
   ProfileSyncServiceStartupTest()
@@ -104,9 +85,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               FakeOAuth2TokenService::BuildTokenService);
     builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
-                              ProfileSyncServiceStartupTest::BuildService);
-    builder.AddTestingFactory(TokenServiceFactory::GetInstance(),
-                              FakeTokenService::BuildFakeTokenService);
+                              BuildService);
     return builder.Build();
   }
 
@@ -250,8 +229,6 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
   SigninManagerFactory::GetForProfile(
       profile_.get())->Initialize(profile_.get(), NULL);
-  TokenService* token_service = static_cast<TokenService*>(
-      TokenServiceFactory::GetForProfile(profile_.get()));
   CreateSyncService();
 
   // Should not actually start, rather just clean things up and wait
@@ -277,12 +254,13 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
       chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
       content::Source<Profile>(profile_.get()),
       content::Details<const GoogleServiceSigninSuccessDetails>(&details));
-  // NOTE: Unlike StartFirstTime, this test does not issue any auth tokens.
-  token_service->LoadTokensFromDB();
+  ProfileOAuth2TokenService* token_service =
+    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
+  token_service->LoadCredentials();
 
   sync_->SetSetupInProgress(false);
   // ProfileSyncService should try to start by requesting access token.
-  // This request should fail as login token was not issued to TokenService.
+  // This request should fail as login token was not issued.
   EXPECT_FALSE(sync_->ShouldPushChanges());
   EXPECT_EQ(GoogleServiceAuthError::USER_NOT_SIGNED_UP,
       sync_->GetAuthError().state());
@@ -303,9 +281,6 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
 
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(0);
-  // Issue login token so that ProfileSyncServer tries to initialize backend.
-  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
 
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   sync_->Initialize();
@@ -328,8 +303,6 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
         content::Source<Profile>(profile_.get()),
         content::Details<const GoogleServiceSigninSuccessDetails>(&details));
 
-  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
   sync_->SetSetupInProgress(false);
 
   // Verify we successfully finish startup and configuration.
@@ -343,13 +316,13 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
               CreateSyncBackendHost(_, _, _)).Times(0);
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
-  TokenService* token_service = static_cast<TokenService*>(
-      TokenServiceFactory::GetForProfile(profile_.get()));
+  ProfileOAuth2TokenService* token_service =
+    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
 
   sync_->Initialize();
   // Sync should not start because there are no tokens yet.
   EXPECT_FALSE(sync_->ShouldPushChanges());
-  token_service->LoadTokensFromDB();
+  token_service->LoadCredentials();
   sync_->SetSetupInProgress(false);
 
   // Sync should not start because there are still no tokens.
@@ -469,8 +442,6 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
               CreateDataTypeManager(_, _, _, _, _, _)).Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
-  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
   sync_->Initialize();
 }
 

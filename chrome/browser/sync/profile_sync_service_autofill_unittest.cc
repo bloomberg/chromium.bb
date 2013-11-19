@@ -23,7 +23,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/fake_oauth2_token_service.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
@@ -202,12 +201,12 @@ class TokenWebDataServiceFake : public TokenWebData {
   virtual WebDataService::Handle GetAllTokens(
       WebDataServiceConsumer* consumer) OVERRIDE {
     // TODO(tim): It would be nice if WebDataService was injected on
-    // construction of TokenService rather than fetched by Initialize so that
-    // this isn't necessary (we could pass a NULL service). We currently do
-    // return it via EXPECT_CALLs, but without depending on order-of-
-    // initialization (which seems way more fragile) we can't tell which
-    // component is asking at what time, and some components in these Autofill
-    // tests require a WebDataService.
+    // construction of ProfileOAuth2TokenService rather than fetched by
+    // Initialize so that this isn't necessary (we could pass a NULL service).
+    // We currently do return it via EXPECT_CALLs, but without depending on
+    // order-of-initialization (which seems way more fragile) we can't tell
+    // which component is asking at what time, and some components in these
+    // Autofill tests require a WebDataService.
     return 0;
   }
 
@@ -526,9 +525,6 @@ class ProfileSyncServiceAutofillTest
     personal_data_manager_ =
         personal_data_manager_service->GetPersonalDataManager();
 
-    token_service_ = static_cast<TokenService*>(
-        TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), BuildTokenService));
     EXPECT_CALL(*personal_data_manager_, LoadProfiles()).Times(1);
     EXPECT_CALL(*personal_data_manager_, LoadCreditCards()).Times(1);
 

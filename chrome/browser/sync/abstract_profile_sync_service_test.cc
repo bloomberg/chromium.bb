@@ -45,7 +45,6 @@ AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()
     : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
                      content::TestBrowserThreadBundle::REAL_FILE_THREAD |
                      content::TestBrowserThreadBundle::REAL_IO_THREAD),
-      token_service_(NULL),
       sync_service_(NULL) {
 }
 
@@ -65,12 +64,6 @@ void AbstractProfileSyncServiceTest::TearDown() {
 bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {
   return syncer::TestUserShare::CreateRoot(model_type,
                                            sync_service_->GetUserShare());
-}
-
-// static
-BrowserContextKeyedService* AbstractProfileSyncServiceTest::BuildTokenService(
-    content::BrowserContext* profile) {
-  return new TokenService;
 }
 
 CreateRootHelper::CreateRootHelper(AbstractProfileSyncServiceTest* test,
