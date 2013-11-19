@@ -1361,7 +1361,10 @@ HistoryView.prototype.setTimeColumnWidth_ = function() {
   // Find the maximum width of all the time elements on the page.
   var times = this.resultDiv_.querySelectorAll('.entry .time');
   var widths = Array.prototype.map.call(times, function(el) {
-    return el.clientWidth;
+    el.style.minWidth = '-webkit-min-content';
+    var width = el.clientWidth;
+    el.style.minWidth = '';
+    return width;
   });
   var maxWidth = widths.length ? Math.max.apply(null, widths) : 0;
 
