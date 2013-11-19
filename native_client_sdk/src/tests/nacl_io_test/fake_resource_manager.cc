@@ -21,6 +21,7 @@ FakeResourceManager::~FakeResourceManager() {
                                                 << resource_tracker->file()
                                                 << ":"
                                                 << resource_tracker->line();
+    delete resource_tracker;
   }
 }
 

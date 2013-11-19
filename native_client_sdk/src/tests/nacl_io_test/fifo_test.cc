@@ -129,10 +129,10 @@ TEST(FIFOPacket, Packets) {
   char temp_wr[kTestSize];
   FIFOPacket fifo(kTestSize);
 
-  Packet* pkt0 = new Packet(NULL);
-  Packet* pkt1 = new Packet(NULL);
-  pkt0->Copy(temp_wr, kHalfSize, 0);
-  pkt1->Copy(temp_wr, kTestSize, 0);
+  Packet pkt0(NULL);
+  Packet pkt1(NULL);
+  pkt0.Copy(temp_wr, kHalfSize, 0);
+  pkt1.Copy(temp_wr, kTestSize, 0);
 
   EXPECT_TRUE(fifo.IsEmpty());
   EXPECT_FALSE(fifo.IsFull());
@@ -140,33 +140,32 @@ TEST(FIFOPacket, Packets) {
   EXPECT_EQ(0, fifo.ReadAvailable());
   EXPECT_EQ(kTestSize, fifo.WriteAvailable());
 
-  fifo.WritePacket(pkt0);
+  fifo.WritePacket(&pkt0);
   EXPECT_FALSE(fifo.IsEmpty());
   EXPECT_FALSE(fifo.IsFull());
 
   EXPECT_EQ(kHalfSize, fifo.ReadAvailable());
   EXPECT_EQ(kHalfSize, fifo.WriteAvailable());
 
-  fifo.WritePacket(pkt1);
+  fifo.WritePacket(&pkt1);
   EXPECT_FALSE(fifo.IsEmpty());
   EXPECT_TRUE(fifo.IsFull());
 
   EXPECT_EQ(kHalfSize + kTestSize, fifo.ReadAvailable());
   EXPECT_EQ(0, fifo.WriteAvailable());
 
-  EXPECT_EQ(pkt0, fifo.ReadPacket());
+  EXPECT_EQ(&pkt0, fifo.ReadPacket());
   EXPECT_FALSE(fifo.IsEmpty());
   EXPECT_TRUE(fifo.IsFull());
 
   EXPECT_EQ(kTestSize, fifo.ReadAvailable());
   EXPECT_EQ(0, fifo.WriteAvailable());
 
-  EXPECT_EQ(pkt1, fifo.ReadPacket());
+  EXPECT_EQ(&pkt1, fifo.ReadPacket());
 
   EXPECT_TRUE(fifo.IsEmpty());
   EXPECT_FALSE(fifo.IsFull());
 
   EXPECT_EQ(0, fifo.ReadAvailable());
   EXPECT_EQ(kTestSize, fifo.WriteAvailable());
-
 }
