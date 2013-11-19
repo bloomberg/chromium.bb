@@ -50,12 +50,7 @@ _NEGATIVE_FILTER = [
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
-_VERSION_SPECIFIC_FILTER['HEAD'] = [
-    # These tests rely on the reference chromedriver which is currently broken.
-    # Re-enable once we have uploaded a new reference chromedriver (see
-    # https://code.google.com/p/chromedriver/issues/detail?id=602).
-    'PerfTest.*',
-]
+_VERSION_SPECIFIC_FILTER['HEAD'] = []
 
 _OS_SPECIFIC_FILTER = {}
 _OS_SPECIFIC_FILTER['win'] = [
