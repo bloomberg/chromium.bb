@@ -141,6 +141,14 @@ base::string16 Address::GetInfo(const AutofillType& type,
   if (storable_type == ADDRESS_HOME_COUNTRY && !country_code_.empty())
     return AutofillCountry(country_code_, app_locale).name();
 
+  if (storable_type == ADDRESS_HOME_STREET_ADDRESS) {
+    // TODO(isherman): Remove this special-case.
+    base::string16 address = line1_;
+    if (!line2_.empty())
+      address += ASCIIToUTF16(", ") + line2_;
+    return address;
+  }
+
   return GetRawInfo(storable_type);
 }
 
