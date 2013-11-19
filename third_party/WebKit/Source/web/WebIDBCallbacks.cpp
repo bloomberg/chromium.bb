@@ -31,9 +31,10 @@
 
 #include "IDBDatabaseBackendProxy.h"
 #include "core/dom/DOMError.h"
-#include "modules/indexeddb/IDBCallbacks.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBMetadata.h"
+#include "modules/indexeddb/IDBRequest.h"
+#include "platform/SharedBuffer.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebIDBCursor.h"
 #include "public/platform/WebIDBDatabase.h"
@@ -44,7 +45,7 @@ using namespace WebCore;
 
 namespace blink {
 
-WebIDBCallbacks::WebIDBCallbacks(PassRefPtr<WebCore::IDBCallbacks> callbacks)
+WebIDBCallbacks::WebIDBCallbacks(PassRefPtr<WebCore::IDBRequest> callbacks)
     : m_private(callbacks)
 {
 }

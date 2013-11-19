@@ -30,6 +30,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "modules/indexeddb/IDBCursor.h"
+#include "modules/indexeddb/IDBDatabaseBackendInterface.h"
 #include "modules/indexeddb/IDBIndex.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyRange.h"

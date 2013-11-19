@@ -42,7 +42,6 @@ namespace WebCore {
 class DOMRequestState;
 class ExceptionState;
 class IDBAny;
-class IDBCallbacks;
 class ExecutionContext;
 class SharedBuffer;
 

@@ -28,7 +28,7 @@
 
 #include "core/events/Event.h"
 #include "modules/indexeddb/IDBAny.h"
-#include "modules/indexeddb/IDBCallbacks.h"
+#include "modules/indexeddb/IDBRequest.h"
 #include "public/platform/WebIDBTypes.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

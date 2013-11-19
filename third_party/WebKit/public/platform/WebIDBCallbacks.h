@@ -37,7 +37,7 @@
 #endif
 
 namespace WebCore {
-class IDBCallbacks;
+class IDBRequest;
 class IDBDatabaseBackendInterface;
 }
 
@@ -55,7 +55,7 @@ struct WebIDBMetadata;
 class BLINK_EXPORT WebIDBCallbacks {
 public:
 #if BLINK_IMPLEMENTATION
-    explicit WebIDBCallbacks(PassRefPtr<WebCore::IDBCallbacks>);
+    explicit WebIDBCallbacks(PassRefPtr<WebCore::IDBRequest>);
 #endif
 
     WebIDBCallbacks() { }
@@ -83,7 +83,7 @@ public:
     virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, unsigned short dataLoss, WebString dataLossMessage);
 
 private:
-    WebPrivatePtr<WebCore::IDBCallbacks> m_private;
+    WebPrivatePtr<WebCore::IDBRequest> m_private;
     WebPrivatePtr<WebCore::IDBDatabaseBackendInterface> m_databaseProxy;
 };
 

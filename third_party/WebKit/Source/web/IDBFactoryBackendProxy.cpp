@@ -69,7 +69,7 @@ IDBFactoryBackendProxy::~IDBFactoryBackendProxy()
 {
 }
 
-bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const String& name, const WebSecurityOrigin& origin, PassRefPtr<IDBCallbacks> callbacks)
+bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const String& name, const WebSecurityOrigin& origin, PassRefPtr<IDBRequest> callbacks)
 {
     bool allowed;
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument() || context->isWorkerGlobalScope());
@@ -90,9 +90,9 @@ bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const Str
     return allowed;
 }
 
-void IDBFactoryBackendProxy::getDatabaseNames(PassRefPtr<IDBCallbacks> prpCallbacks, const String& databaseIdentifier, ExecutionContext* context)
+void IDBFactoryBackendProxy::getDatabaseNames(PassRefPtr<IDBRequest> prpCallbacks, const String& databaseIdentifier, ExecutionContext* context)
 {
-    RefPtr<IDBCallbacks> callbacks(prpCallbacks);
+    RefPtr<IDBRequest> callbacks(prpCallbacks);
     WebSecurityOrigin origin(context->securityOrigin());
     if (!allowIndexedDB(context, "Database Listing", origin, callbacks))
         return;
@@ -100,9 +100,9 @@ void IDBFactoryBackendProxy::getDatabaseNames(PassRefPtr<IDBCallbacks> prpCallba
     m_webIDBFactory->getDatabaseNames(new WebIDBCallbacks(callbacks), databaseIdentifier);
 }
 
-void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBCallbacks> prpCallbacks, PassOwnPtr<WebIDBDatabaseCallbacks> databaseCallbacks, const String& databaseIdentifier, ExecutionContext* context)
+void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBRequest> prpCallbacks,  PassOwnPtr<WebIDBDatabaseCallbacks> databaseCallbacks, const String& databaseIdentifier, ExecutionContext* context)
 {
-    RefPtr<IDBCallbacks> callbacks(prpCallbacks);
+    RefPtr<IDBRequest> callbacks(prpCallbacks);
     WebSecurityOrigin origin(context->securityOrigin());
     if (!allowIndexedDB(context, name, origin, callbacks))
         return;
@@ -110,9 +110,9 @@ void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t t
     m_webIDBFactory->open(name, version, transactionId, new WebIDBCallbacks(callbacks), databaseCallbacks.leakPtr(), databaseIdentifier);
 }
 
-void IDBFactoryBackendProxy::deleteDatabase(const String& name, PassRefPtr<IDBCallbacks> prpCallbacks, const String& databaseIdentifier, ExecutionContext* context)
+void IDBFactoryBackendProxy::deleteDatabase(const String& name, PassRefPtr<IDBRequest> prpCallbacks, const String& databaseIdentifier, ExecutionContext* context)
 {
-    RefPtr<IDBCallbacks> callbacks(prpCallbacks);
+    RefPtr<IDBRequest> callbacks(prpCallbacks);
     WebSecurityOrigin origin(context->securityOrigin());
     if (!allowIndexedDB(context, name, origin, callbacks))
         return;

@@ -354,7 +354,6 @@
       'indexeddb/DOMWindowIndexedDatabase.h',
       'indexeddb/IDBAny.cpp',
       'indexeddb/IDBAny.h',
-      'indexeddb/IDBCallbacks.h',
       'indexeddb/IDBCursor.cpp',
       'indexeddb/IDBCursor.h',
       'indexeddb/IDBCursorWithValue.cpp',

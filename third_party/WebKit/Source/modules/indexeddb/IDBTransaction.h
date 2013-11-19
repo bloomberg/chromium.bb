@@ -33,6 +33,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "modules/indexeddb/IDBDatabaseBackendInterface.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IndexedDB.h"
 #include "wtf/HashSet.h"
@@ -44,7 +45,6 @@ class DOMError;
 class ExceptionState;
 class IDBCursor;
 class IDBDatabase;
-class IDBDatabaseBackendInterface;
 class IDBObjectStore;
 class IDBOpenDBRequest;
 struct IDBObjectStoreMetadata;

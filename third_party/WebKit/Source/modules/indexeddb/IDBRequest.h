@@ -39,20 +39,29 @@
 #include "core/events/EventTarget.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "modules/indexeddb/IDBAny.h"
-#include "modules/indexeddb/IDBCallbacks.h"
 #include "modules/indexeddb/IDBCursor.h"
+#include "modules/indexeddb/IndexedDB.h"
 #include "public/platform/WebIDBCursor.h"
 
 namespace WebCore {
 
 class ExceptionState;
+struct IDBDatabaseMetadata;
 class IDBTransaction;
 class ScriptValue;
 class SerializedScriptValue;
 class SharedBuffer;
 
-class IDBRequest : public ScriptWrappable, public IDBCallbacks, public EventTargetWithInlineData, public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING(IDBCallbacks);
+// Base class to simplify usage of event target refcounting.
+class IDBRequestBase : public WTF::RefCountedBase {
+public:
+    virtual void deref() = 0;
+protected:
+    virtual ~IDBRequestBase() { }
+};
+
+class IDBRequest : public IDBRequestBase, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject {
+    DEFINE_EVENT_TARGET_REFCOUNTING(IDBRequestBase);
 public:
     static PassRefPtr<IDBRequest> create(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
     virtual ~IDBRequest();
@@ -83,7 +92,6 @@ public:
     void setPendingCursor(PassRefPtr<IDBCursor>);
     void abort();
 
-    // IDBCallbacks
     virtual void onError(PassRefPtr<DOMError>);
     virtual void onSuccess(const Vector<String>&);
     virtual void onSuccess(PassOwnPtr<blink::WebIDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer>);
@@ -93,6 +101,11 @@ public:
     virtual void onSuccess(int64_t);
     virtual void onSuccess();
     virtual void onSuccess(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer>);
+
+    // Only IDBOpenDBRequest instances should receive these:
+    virtual void onBlocked(int64_t oldVersion) { ASSERT_NOT_REACHED(); }
+    virtual void onUpgradeNeeded(int64_t oldVersion, PassRefPtr<IDBDatabaseBackendInterface>, const IDBDatabaseMetadata&, blink::WebIDBDataLoss, String dataLossMessage)  { ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(PassRefPtr<IDBDatabaseBackendInterface>, const IDBDatabaseMetadata&)  { ASSERT_NOT_REACHED(); }
 
     // ActiveDOMObject
     virtual bool hasPendingActivity() const OVERRIDE;
