@@ -106,6 +106,7 @@ class _HeartBeatLogger(object):
     if now - self._tick >= _HeartBeatLogger._PRINT_INTERVAL:
       self._tick = now
       print '--single-step output length %d' % self._len
+      sys.stdout.flush()
 
   def stop(self):
     self._stopped.set()
