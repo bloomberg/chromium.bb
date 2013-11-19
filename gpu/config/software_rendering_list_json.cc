@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.14",
+  "version": "6.15",
   "entries": [
     {
       "id": 1,
@@ -37,8 +37,8 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 3,
-      "description": "GL driver is software rendered. Accelerated compositing is disabled.",
-      "cr_bugs": [59302],
+      "description": "GL driver is software rendered. GPU acceleration is disabled.",
+      "cr_bugs": [59302, 315217],
       "os": {
         "type": "linux"
       },
@@ -47,7 +47,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "value": "software"
       },
       "features": [
-        "accelerated_compositing"
+        "all"
       ]
     },
     {
@@ -464,22 +464,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "device_id": ["0x6760", "0x6720"],
       "features": [
         "webgl"
-      ]
-    },
-    {
-      "id": 43,
-      "description": "Intel driver version 8.15.10.1749 has problems sharing textures.",
-      "cr_bugs": [133924],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x8086",
-      "driver_version": {
-        "op": "=",
-        "value": "8.15.10.1749"
-      },
-      "features": [
-        "texture_sharing"
       ]
     },
     {
@@ -919,18 +903,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 )  // String split to avoid MSVC char limit.
 LONG_STRING_CONST(
     {
-      "id": 75,
-      "description": "Texture sharing not supported on AMD Switchable GPUs due to driver issues",
-      "cr_bugs": [117371],
-      "os": {
-        "type": "win"
-      },
-      "multi_gpu_style": "amd_switchable",
-      "features": [
-        "texture_sharing"
-      ]
-    },
-    {
       "id": 76,
       "description": "WebGL is disabled on Android unless GPU reset notification is supported",
       "os": {
@@ -991,7 +963,7 @@ LONG_STRING_CONST(
     {
       "id": 80,
       "description": "Texture sharing should be disabled on all Windows machines",
-      "cr_bugs": [304369],
+      "cr_bugs": [304369, 315215],
       "os": {
         "type": "win"
       },
