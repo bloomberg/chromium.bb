@@ -210,6 +210,18 @@ void ChromeShellDelegate::RecordUserMetricsAction(
     case ash::UMA_MOUSE_DOWN:
       content::RecordAction(content::UserMetricsAction("Mouse_Down"));
       break;
+    case ash::UMA_SHELF_ALIGNMENT_SET_BOTTOM:
+      content::RecordAction(
+          content::UserMetricsAction("Shelf_AlignmentSetBottom"));
+      break;
+    case ash::UMA_SHELF_ALIGNMENT_SET_LEFT:
+      content::RecordAction(
+          content::UserMetricsAction("Shelf_AlignmentSetLeft"));
+      break;
+    case ash::UMA_SHELF_ALIGNMENT_SET_RIGHT:
+      content::RecordAction(
+          content::UserMetricsAction("Shelf_AlignmentSetRight"));
+      break;
     case ash::UMA_TOGGLE_MAXIMIZE_CAPTION_CLICK:
       content::RecordAction(
           content::UserMetricsAction("Caption_ClickTogglesMaximize"));

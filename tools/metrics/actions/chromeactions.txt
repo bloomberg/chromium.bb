@@ -1574,6 +1574,9 @@
 0x8fa9d8e88271c82d	SelectTab6
 0xdaa611aa645914e5	SelectTab7
 0x7eb3241cff786567	SettingsResetBubble.Show
+0x9ab81dfe74af9e92	Shelf_AlignmentSetBottom
+0x10ae2fefd987bcfa	Shelf_AlignmentSetLeft
+0x8f0d98403b8aafbd	Shelf_AlignmentSetRight
 0xbc7eb334ae9f29d0	ShowAccessibilitySettings
 0x1da022468e27685c	ShowAppLauncherPage
 0x0d1d6961dd313b79	ShowAppMenu

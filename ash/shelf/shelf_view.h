@@ -47,6 +47,11 @@ class OverflowButton;
 class ShelfLayoutManager;
 class ShelfTooltipManager;
 
+extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM;
+extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT;
+extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT;
+extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT;
+
 class ASH_EXPORT ShelfView : public views::View,
                              public ShelfModelObserver,
                              public views::ButtonListener,

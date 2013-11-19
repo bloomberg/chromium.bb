@@ -573,6 +573,7 @@ Shell::Shell(ShellDelegate* delegate)
           gpu::GPU_FEATURE_TYPE_PANEL_FITTING);
 
   output_configurator_->Init(!is_panel_fitting_disabled);
+  periodic_metrics_recorder_.reset(new PeriodicMetricsRecorder);
 
   base::MessagePumpX11::Current()->AddDispatcherForRootWindow(
       output_configurator());

@@ -287,6 +287,24 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Ash.ShelfAlignmentOverTime" enum="ShelfAlignmentValue">
+  <summary>
+    The current state of the shelf (alignment) tracked over time by logging on a
+    regular basis (30 minutes), this is used instead of log in or shelf usage to
+    track users that do not lock/unlock or log in frequently and use a small
+    number of browser instances or otherwise infrequently interact with the
+    shelf launcher.
+  </summary>
+</histogram>
+
+<histogram name="Ash.ShelfAlignmentUsage" enum="ShelfAlignmentValue">
+  <summary>
+    The current state of the shelf (alignment) when the shelf launcher is used
+    to launch an app/window/etc, this is used instead of log in to give data on
+    users that do not lock/unlock or log in frequently.
+  </summary>
+</histogram>
+
 <histogram name="Ash.TouchDuration" units="milliseconds">
   <summary>The duration of a touch-sequence.</summary>
 </histogram>
@@ -28319,6 +28337,15 @@ other types of suffix sets.
   <int value="1" label="Homepage (DEPRECATED)"/>
   <int value="2" label="Last session"/>
   <int value="3" label="Specified URLs"/>
+</enum>
+
+<enum name="ShelfAlignmentValue" type="int">
+  <summary>
+    The alignment of the shelf area (see ash/launcher/launcher_view.cc).
+  </summary>
+  <int value="0" label="Bottom"/>
+  <int value="1" label="Left"/>
+  <int value="2" label="Right"/>
 </enum>
 
 <enum name="ShillTerminationActionResult" type="int">

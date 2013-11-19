@@ -27,6 +27,7 @@
 #include "ash/shell_delegate.h"
 #include "base/auto_reset.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -57,6 +58,11 @@ using views::View;
 
 namespace ash {
 namespace internal {
+
+const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM = 0;
+const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT = 1;
+const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT = 2;
+const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT = 3;
 
 // Default amount content is inset on the left edge.
 const int kDefaultLeadingInset = 8;
@@ -1575,6 +1581,13 @@ void ShelfView::PointerPressedOnButton(views::View* view,
 
   drag_view_ = view;
   drag_offset_ = layout_manager_->PrimaryAxisValue(event.x(), event.y());
+  UMA_HISTOGRAM_ENUMERATION("Ash.ShelfAlignmentUsage",
+      layout_manager_->SelectValueForShelfAlignment(
+          SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
+          SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
+          SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT,
+          -1),
+      SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
 }
 
 void ShelfView::PointerDraggedOnButton(views::View* view,

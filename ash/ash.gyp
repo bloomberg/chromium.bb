@@ -171,6 +171,8 @@
         'magnifier/partial_magnification_controller.h',
         'multi_profile_uma.cc',
         'multi_profile_uma.h',
+        'periodic_metrics_recorder.cc',
+        'periodic_metrics_recorder.h',
         'popup_message.cc',
         'popup_message.h',
         'root_window_controller.cc',
