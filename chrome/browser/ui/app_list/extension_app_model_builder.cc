@@ -87,7 +87,7 @@ void ExtensionAppModelBuilder::OnDownloadProgress(
 
 void ExtensionAppModelBuilder::OnInstallFailure(
     const std::string& extension_id) {
-  // Do nothing, item will be disabled
+  model_->item_list()->DeleteItem(extension_id);
 }
 
 void ExtensionAppModelBuilder::OnExtensionLoaded(const Extension* extension) {
