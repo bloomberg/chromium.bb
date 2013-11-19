@@ -1143,17 +1143,19 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   // window. If we return this window to plugins like Flash then it causes the
   // coordinate translations done by these plugins to break.
   if (!plugin_parent_window_ && GetNativeViewIdHelper()) {
-    plugin_parent_window_ = CreateWindowEx(
+    plugin_parent_window_ = ::CreateWindowEx(
         0, L"Static", NULL, WS_CHILDWINDOW, 0, 0, 0, 0,
         GetNativeViewIdHelper(), NULL, NULL, NULL);
-    DCHECK(plugin_parent_window_);
-    ::SetProp(plugin_parent_window_, content::kPluginDummyParentProperty,
-              reinterpret_cast<HANDLE>(true));
+    if (::IsWindow(plugin_parent_window_))
+      ::SetProp(plugin_parent_window_, content::kPluginDummyParentProperty,
+                reinterpret_cast<HANDLE>(true));
   }
-  gfx::Rect window_bounds = window_->GetBoundsInRootWindow();
-  ::SetWindowPos(plugin_parent_window_, NULL, window_bounds.x(),
-                 window_bounds.y(), window_bounds.width(),
-                 window_bounds.height(), 0);
+  if (::IsWindow(plugin_parent_window_)) {
+    gfx::Rect window_bounds = window_->GetBoundsInRootWindow();
+    ::SetWindowPos(plugin_parent_window_, NULL, window_bounds.x(),
+                   window_bounds.y(), window_bounds.width(),
+                   window_bounds.height(), 0);
+  }
 #endif
 }
 
