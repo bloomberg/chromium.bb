@@ -570,3 +570,6 @@ crbug.com/320099 webaudio/oscillator-sawtooth.html [ NeedsManualRebaseline ]
 crbug.com/320099 webaudio/oscillator-triangle.html [ NeedsManualRebaseline ]
 
 crbug.com/320334 media/media-can-play-ogg.html [ Failure ]
+
+crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
+crbug.com/245556 virtual/softwarecompositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
