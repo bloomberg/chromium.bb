@@ -73,9 +73,11 @@ BOT_ASSIGNMENT = {
 
     # Valgrind bots.
     'precise-64-newlib-dbg-valgrind':
-        'bash buildbot/buildbot_valgrind.sh newlib',
+        'echo "Valgrind bots are disabled: see '
+            'https://code.google.com/p/nativeclient/issues/detail?id=3158"',
     'precise-64-glibc-dbg-valgrind':
-        'bash buildbot/buildbot_valgrind.sh glibc',
+        'echo "Valgrind bots are disabled: see '
+            'https://code.google.com/p/nativeclient/issues/detail?id=3158"',
     # Coverage.
     'mac10.6-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
