@@ -97,6 +97,7 @@ public:
         , m_script(USCRIPT_COMMON)
         , m_syntheticBold(false)
         , m_syntheticItalic(false)
+        , m_subpixelTextPosition(s_useSubpixelTextPositioning)
     {
     }
 
@@ -128,6 +129,7 @@ public:
     UScriptCode script() const { return static_cast<UScriptCode>(m_script); }
     bool isSyntheticBold() const { return m_syntheticBold; }
     bool isSyntheticItalic() const { return m_syntheticItalic; }
+    bool useSubpixelPositioning() const { return m_subpixelTextPosition; }
 
     FontTraitsMask traitsMask() const;
     bool isSpecifiedFont() const { return m_isSpecifiedFont; }
@@ -171,6 +173,9 @@ public:
     void setSyntheticItalic(bool syntheticItalic) { m_syntheticItalic = syntheticItalic; }
     void setFeatureSettings(PassRefPtr<FontFeatureSettings> settings) { m_featureSettings = settings; }
 
+    static void setSubpixelPositioning(bool b) { s_useSubpixelTextPositioning = b; }
+    static bool subpixelPositioning() { return s_useSubpixelTextPositioning; }
+
 private:
     FontFamily m_familyList; // The list of font families to be used.
     RefPtr<FontFeatureSettings> m_featureSettings;
@@ -208,6 +213,9 @@ private:
     unsigned m_script : 7; // Used to help choose an appropriate font for generic font families.
     unsigned m_syntheticBold : 1;
     unsigned m_syntheticItalic : 1;
+    unsigned m_subpixelTextPosition : 1;
+
+    static bool s_useSubpixelTextPositioning;
 };
 
 inline bool FontDescription::operator==(const FontDescription& other) const
@@ -235,7 +243,8 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_script == other.m_script
         && m_syntheticBold == other.m_syntheticBold
         && m_syntheticItalic == other.m_syntheticItalic
-        && m_featureSettings == other.m_featureSettings;
+        && m_featureSettings == other.m_featureSettings
+        && m_subpixelTextPosition == other.m_subpixelTextPosition;
 }
 
 }

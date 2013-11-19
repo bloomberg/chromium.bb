@@ -34,6 +34,7 @@
 #include "SkPaint.h"
 #include "platform/SharedBuffer.h"
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
+#include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/FontRenderStyle.h"
 #include "wtf/Forward.h"
@@ -47,7 +48,6 @@ typedef uint32_t SkFontID;
 
 namespace WebCore {
 
-class FontDescription;
 class GraphicsContext;
 class HarfBuzzFace;
 
@@ -67,7 +67,7 @@ public:
     FontPlatformData();
     FontPlatformData(float textSize, bool fakeBold, bool fakeItalic);
     FontPlatformData(const FontPlatformData&);
-    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool fakeBold, bool fakeItalic, FontOrientation = Horizontal);
+    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool fakeBold, bool fakeItalic, FontOrientation = Horizontal, bool subpixelTextPosition = FontDescription::subpixelPositioning());
     FontPlatformData(const FontPlatformData& src, float textSize);
     ~FontPlatformData();
 
@@ -125,11 +125,10 @@ public:
     static void setUseBitmaps(bool);
     static void setAntiAlias(bool);
     static void setSubpixelRendering(bool);
-    static void setSubpixelPositioning(bool);
 
 private:
     void getRenderStyleForStrike(const char*, int);
-    void querySystemForRenderStyle();
+    void querySystemForRenderStyle(bool useSkiaSubpixelPositioning);
 
     RefPtr<SkTypeface> m_typeface;
     CString m_family;

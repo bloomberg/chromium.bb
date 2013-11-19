@@ -170,7 +170,8 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         fontSize,
         fontDescription.weight() >= FontWeightBold && !tf->isBold(),
         fontDescription.italic() && !tf->isItalic(),
-        fontDescription.orientation());
+        fontDescription.orientation(),
+        fontDescription.useSubpixelPositioning());
     return result;
 }
 #endif // !OS(WINDOWNS)

@@ -47,6 +47,8 @@ struct SameSizeAsFontDescription {
 
 COMPILE_ASSERT(sizeof(FontDescription) == sizeof(SameSizeAsFontDescription), FontDescription_should_stay_small);
 
+bool FontDescription::s_useSubpixelTextPositioning = false;
+
 FontWeight FontDescription::lighterWeight(void) const
 {
     switch (m_weight) {
@@ -120,13 +122,14 @@ FontCacheKey FontDescription::cacheKey(const AtomicString& familyName, FontTrait
         : traitsMask();
 
     unsigned options =
-        // synthetic bold, italics - bits 7-8
-        static_cast<unsigned>(m_fontSmoothing) << 4 | // bits 5-6
-        static_cast<unsigned>(m_textRendering) << 2 | // bits 3-4
-        static_cast<unsigned>(m_orientation) << 1 | // bit 2
-        static_cast<unsigned>(m_usePrinterFont); // bit 1
+        // synthetic bold, italics - bits 8-9
+        static_cast<unsigned>(m_fontSmoothing) << 5 | // bits 6-7
+        static_cast<unsigned>(m_textRendering) << 3 | // bits 4-5
+        static_cast<unsigned>(m_orientation) << 2 | // bit 3
+        static_cast<unsigned>(m_usePrinterFont) << 1 | // bit 2
+        static_cast<unsigned>(m_subpixelTextPosition); // bit 1
 
-    return FontCacheKey(familyName, effectiveFontSize(), options | traits << 8);
+    return FontCacheKey(familyName, effectiveFontSize(), options | traits << 9);
 }
 
 } // namespace WebCore

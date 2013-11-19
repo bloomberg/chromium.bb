@@ -34,6 +34,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "SkPaint.h"
 #include "SkTypeface.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/NotImplemented.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/harfbuzz/HarfBuzzFace.h"
@@ -52,7 +53,6 @@ static bool useSkiaAutoHint = true;
 static bool useSkiaBitmaps = true;
 static bool useSkiaAntiAlias = true;
 static bool useSkiaSubpixelRendering = false;
-static bool useSkiaSubpixelPositioning = false;
 
 void FontPlatformData::setHinting(SkPaint::Hinting hinting)
 {
@@ -77,11 +77,6 @@ void FontPlatformData::setAntiAlias(bool useAntiAlias)
 void FontPlatformData::setSubpixelRendering(bool useSubpixelRendering)
 {
     useSkiaSubpixelRendering = useSubpixelRendering;
-}
-
-void FontPlatformData::setSubpixelPositioning(bool useSubpixelPositioning)
-{
-    useSkiaSubpixelPositioning = useSubpixelPositioning;
 }
 
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
@@ -128,7 +123,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src)
 {
 }
 
-FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family, float textSize, bool fakeBold, bool fakeItalic, FontOrientation orientation)
+FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family, float textSize, bool fakeBold, bool fakeItalic, FontOrientation orientation, bool subpixelTextPosition)
     : m_typeface(tf)
     , m_family(family)
     , m_textSize(textSize)
@@ -138,7 +133,7 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family
     , m_orientation(orientation)
     , m_isHashTableDeletedValue(false)
 {
-    querySystemForRenderStyle();
+    querySystemForRenderStyle(subpixelTextPosition);
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
@@ -152,7 +147,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
     , m_harfBuzzFace(0)
     , m_isHashTableDeletedValue(false)
 {
-    querySystemForRenderStyle();
+    querySystemForRenderStyle(FontDescription::subpixelPositioning());
 }
 
 FontPlatformData::~FontPlatformData()
@@ -197,7 +192,7 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
     paint->setHinting(static_cast<SkPaint::Hinting>(m_style.hintStyle));
     paint->setEmbeddedBitmapText(m_style.useBitmaps);
     paint->setAutohinted(m_style.useAutoHint);
-    paint->setSubpixelText(m_style.useSubpixelPositioning || RuntimeEnabledFeatures::subpixelFontScalingEnabled());
+    paint->setSubpixelText(m_style.useSubpixelPositioning);
     if (m_style.useAntiAlias)
         paint->setLCDRenderText(m_style.useSubpixelRendering);
 
@@ -273,7 +268,7 @@ void FontPlatformData::getRenderStyleForStrike(const char* font, int sizeAndStyl
     style.toFontRenderStyle(&m_style);
 }
 
-void FontPlatformData::querySystemForRenderStyle()
+void FontPlatformData::querySystemForRenderStyle(bool useSkiaSubpixelPositioning)
 {
     getRenderStyleForStrike(m_family.data(), (((int)m_textSize) << 2) | (m_typeface->style() & 3));
 
@@ -290,12 +285,15 @@ void FontPlatformData::querySystemForRenderStyle()
         m_style.useBitmaps = useSkiaBitmaps;
     if (m_style.useAutoHint == FontRenderStyle::NoPreference)
         m_style.useAutoHint = useSkiaAutoHint;
-    if (m_style.useSubpixelPositioning == FontRenderStyle::NoPreference)
-        m_style.useSubpixelPositioning = useSkiaSubpixelPositioning;
     if (m_style.useAntiAlias == FontRenderStyle::NoPreference)
         m_style.useAntiAlias = useSkiaAntiAlias;
     if (m_style.useSubpixelRendering == FontRenderStyle::NoPreference)
         m_style.useSubpixelRendering = useSkiaSubpixelRendering;
+
+    // TestRunner specifically toggles the subpixel positioning flag.
+    if (m_style.useSubpixelPositioning == FontRenderStyle::NoPreference
+        || isRunningLayoutTest())
+        m_style.useSubpixelPositioning = useSkiaSubpixelPositioning;
 }
 
 } // namespace WebCore
