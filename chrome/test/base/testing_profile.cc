@@ -164,7 +164,7 @@ BrowserContextKeyedService* CreateTestDesktopNotificationService(
 #if defined(OS_CHROMEOS)
 // Must be kept in sync with
 // ChromeBrowserMainPartsChromeos::PreEarlyInitialization.
-const char TestingProfile::kTestUserProfileDir[] = "test-user";
+const char TestingProfile::kTestUserProfileDir[] = "u-test-user";
 #else
 const char TestingProfile::kTestUserProfileDir[] = "Default";
 #endif

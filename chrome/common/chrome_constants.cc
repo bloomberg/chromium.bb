@@ -257,7 +257,7 @@ const char kSafeModeEnvVar[] = "CHROME_SAFE_MODE";
 #if defined(OS_CHROMEOS)
 const char kProfileDirPrefix[] = "u-";
 const char kLegacyProfileDir[] = "user";
-const char kTestUserProfileDir[] = "test-user";
+const char kTestUserProfileDir[] = "u-test-user";
 #endif
 
 // This GUID is associated with any 'don't ask me again' settings that the
