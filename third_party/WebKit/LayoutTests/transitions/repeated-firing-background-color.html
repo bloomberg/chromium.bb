@@ -39,7 +39,7 @@
     document.body.offsetHeight;
 
     document.getElementById('foo').addEventListener('webkitTransitionEnd', function() {
-        checkRunning()
+        setTimeout(checkRunning, 0);
     });
 
     document.getElementById("foo").className="trans";
