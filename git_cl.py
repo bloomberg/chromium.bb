@@ -46,7 +46,7 @@ __version__ = '1.0'
 DEFAULT_SERVER = 'https://codereview.appspot.com'
 POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
-GIT_INSTRUCTIONS_URL = 'http://code.google.com/p/chromium/wiki/UsingNewGit'
+GIT_INSTRUCTIONS_URL = 'http://code.google.com/p/chromium/wiki/UsingGit'
 CHANGE_ID = 'Change-Id:'
 
 # Shortcut since it quickly becomes redundant.
@@ -473,7 +473,7 @@ class Changelist(object):
 
   @staticmethod
   def FetchUpstreamTuple(branch):
-    """Returns a tuple containg remote and remote ref,
+    """Returns a tuple containing remote and remote ref,
        e.g. 'origin', 'refs/heads/master'
     """
     remote = '.'
@@ -728,7 +728,7 @@ or verify this branch is set up to track another (via the --track argument to
       files = scm.GIT.CaptureStatus([root], '.', upstream_branch)
     except subprocess2.CalledProcessError:
       DieWithError(
-          ('\nFailed to diff against upstream branch %s!\n\n'
+          ('\nFailed to diff against upstream branch %s\n\n'
            'This branch probably doesn\'t exist anymore. To reset the\n'
            'tracking branch, please run\n'
            '    git branch --set-upstream %s trunk\n'
