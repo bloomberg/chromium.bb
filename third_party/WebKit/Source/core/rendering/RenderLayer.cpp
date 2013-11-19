@@ -2143,7 +2143,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
                 localPaintingInfo, paintBehavior, paintingRootForRenderer);
 
     if (shouldPaintNegZOrderList)
-        paintList(m_stackingNode->negZOrderList(), context, localPaintingInfo, paintFlags);
+        paintChildren(NegativeZOrderChildren, context, localPaintingInfo, paintFlags);
 
     if (shouldPaintOwnContents)
         paintForegroundForFragments(layerFragments, context, transparencyLayerContext, paintingInfo.paintDirtyRect, haveTransparency,
@@ -2152,10 +2152,8 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     if (shouldPaintOutline)
         paintOutlineForFragments(layerFragments, context, localPaintingInfo, paintBehavior, paintingRootForRenderer);
 
-    if (shouldPaintNormalFlowAndPosZOrderLists) {
-        paintList(m_stackingNode->normalFlowList(), context, localPaintingInfo, paintFlags);
-        paintList(m_stackingNode->posZOrderList(), context, localPaintingInfo, paintFlags);
-    }
+    if (shouldPaintNormalFlowAndPosZOrderLists)
+        paintChildren(NormalFlowChildren | PositiveZOrderChildren, context, localPaintingInfo, paintFlags);
 
     if (shouldPaintOverlayScrollbars)
         paintOverflowControlsForFragments(layerFragments, context, localPaintingInfo);
@@ -2216,11 +2214,8 @@ void RenderLayer::paintLayerByApplyingTransform(GraphicsContext* context, const 
     paintLayerContentsAndReflection(context, transformedPaintingInfo, paintFlags);
 }
 
-void RenderLayer::paintList(Vector<RenderLayerStackingNode*>* list, GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
+void RenderLayer::paintChildren(unsigned childrenToVisit, GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
-    if (!list)
-        return;
-
     if (!hasSelfPaintingLayerDescendant())
         return;
 
@@ -2228,8 +2223,9 @@ void RenderLayer::paintList(Vector<RenderLayerStackingNode*>* list, GraphicsCont
     LayerListMutationDetector mutationChecker(m_stackingNode.get());
 #endif
 
-    for (size_t i = 0; i < list->size(); ++i) {
-        RenderLayer* childLayer = list->at(i)->layer();
+    RenderLayerStackingNodeIterator iterator(*m_stackingNode, childrenToVisit);
+    while (RenderLayerStackingNode* child = iterator.next()) {
+        RenderLayer* childLayer = child->layer();
         if (!childLayer->isPaginated())
             childLayer->paintLayer(context, paintingInfo, paintFlags);
         else
