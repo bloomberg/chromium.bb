@@ -2347,3 +2347,16 @@
    fun:_ZN7WebCore*TerminatedArrayBuilder*
    fun:_ZN7WebCore7RuleSet19compactPendingRules*
 }
+{
+   bug_320918
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF11LinkedStackIN7WebCore8RuleDataEEnwEm
+   fun:_ZN7WebCore7RuleSet12addToRuleSet*
+   fun:_ZN7WebCore7RuleSet21findBestRuleSetAndAdd*
+   fun:_ZN7WebCore7RuleSet7addRule*
+   fun:_ZN7WebCore7RuleSet13addChildRules*
+   fun:_ZN7WebCore7RuleSet17addRulesFromSheet*
+   fun:_ZN7WebCore21CSSDefaultStyleSheets16loadDefaultStyle*
+}
