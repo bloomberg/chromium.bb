@@ -63,7 +63,7 @@ private:
     {
     }
 
-    virtual size_t appendBytes(const char*, size_t) OVERRIDE;
+    virtual void appendBytes(const char*, size_t) OVERRIDE;
 
     void createDocumentStructure();
 
@@ -108,14 +108,13 @@ void MediaDocumentParser::createDocumentStructure()
     m_didBuildDocumentStructure = true;
 }
 
-size_t MediaDocumentParser::appendBytes(const char*, size_t)
+void MediaDocumentParser::appendBytes(const char*, size_t)
 {
     if (m_didBuildDocumentStructure)
-        return 0;
+        return;
 
     createDocumentStructure();
     finish();
-    return 0;
 }
 
 MediaDocument::MediaDocument(const DocumentInit& initializer)

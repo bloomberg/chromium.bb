@@ -58,7 +58,7 @@ private:
     {
     }
 
-    virtual size_t appendBytes(const char*, size_t) OVERRIDE;
+    virtual void appendBytes(const char*, size_t) OVERRIDE;
 
     virtual void finish() OVERRIDE;
 
@@ -115,17 +115,15 @@ void PluginDocumentParser::createDocumentStructure()
         view->didReceiveResponse(document()->loader()->response());
 }
 
-size_t PluginDocumentParser::appendBytes(const char* data, size_t length)
+void PluginDocumentParser::appendBytes(const char* data, size_t length)
 {
     if (!m_embedElement)
         createDocumentStructure();
 
     if (!length)
-        return 0;
+        return;
     if (PluginView* view = pluginView())
         view->didReceiveData(data, length);
-
-    return 0;
 }
 
 void PluginDocumentParser::finish()

@@ -51,7 +51,6 @@ PassRefPtr<DocumentWriter> DocumentWriter::create(Document* document, const Stri
 
 DocumentWriter::DocumentWriter(Document* document, const String& mimeType, const String& encoding, bool encodingUserChoosen)
     : m_document(document)
-    , m_hasReceivedSomeData(false)
     , m_decoderBuilder(mimeType, encoding, encodingUserChoosen)
     // We grab a reference to the parser so that we'll always send data to the
     // original parser, even if the document acquires a new parser (e.g., via
@@ -70,8 +69,6 @@ DocumentWriter::~DocumentWriter()
 
 void DocumentWriter::appendReplacingData(const String& source)
 {
-    ASSERT(!m_hasReceivedSomeData);
-    m_hasReceivedSomeData = true;
     m_document->setCompatibilityMode(Document::NoQuirksMode);
 
     // FIXME: This should call DocumentParser::appendBytes instead of append
@@ -81,17 +78,8 @@ void DocumentWriter::appendReplacingData(const String& source)
         // Because we're pinned to the main thread we don't need to worry about
         // passing ownership of the source string.
         parser->append(source.impl());
+        parser->setHasAppendedData();
     }
-}
-
-void DocumentWriter::reportDataReceived()
-{
-    if (m_hasReceivedSomeData)
-        return;
-    m_hasReceivedSomeData = true;
-    RefPtr<TextResourceDecoder> decoder = m_parser->decoder();
-    if (decoder && decoder->encoding().usesVisualOrdering())
-        m_document->setVisuallyOrdered();
 }
 
 void DocumentWriter::addData(const char* bytes, size_t length)
@@ -103,9 +91,7 @@ void DocumentWriter::addData(const char* bytes, size_t length)
     }
     // appendBytes() can result replacing DocumentLoader::m_writer.
     RefPtr<DocumentWriter> protectingThis(this);
-    size_t consumedChars = m_parser->appendBytes(bytes, length);
-    if (consumedChars)
-        reportDataReceived();
+    m_parser->appendBytes(bytes, length);
 }
 
 void DocumentWriter::end()
@@ -126,9 +112,8 @@ void DocumentWriter::end()
     }
     // flush() can result replacing DocumentLoader::m_writer.
     RefPtr<DocumentWriter> protectingThis(this);
-    size_t consumedChars = m_parser->flush();
-    if (consumedChars)
-        reportDataReceived();
+    m_parser->flush();
+
     if (!m_parser)
         return;
 

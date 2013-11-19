@@ -49,11 +49,12 @@ public:
     virtual void insert(const SegmentedString&) = 0;
 
     // The below functions are used by DocumentWriter (the loader).
-    virtual size_t appendBytes(const char* bytes, size_t length) = 0;
-    virtual size_t flush() = 0;
+    virtual void appendBytes(const char* bytes, size_t length) = 0;
+    virtual void flush() = 0;
     virtual bool needsDecoder() const { return false; }
     virtual void setDecoder(PassRefPtr<TextResourceDecoder>);
     virtual PassRefPtr<TextResourceDecoder> decoder();
+    virtual void setHasAppendedData() { }
 
     // pinToMainThread also makes append() not yield before completion of that chunk.
     virtual void pinToMainThread() { }

@@ -45,11 +45,10 @@ protected:
     }
 
 private:
-    virtual size_t flush() OVERRIDE
+    virtual void flush() OVERRIDE
     {
         // Make sure appendBytes is called at least once.
         appendBytes(0, 0);
-        return 0;
     }
 
     virtual void insert(const SegmentedString&)

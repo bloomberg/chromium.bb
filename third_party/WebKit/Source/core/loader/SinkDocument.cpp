@@ -44,7 +44,7 @@ private:
     }
 
     // Ignore all data.
-    virtual size_t appendBytes(const char*, size_t) OVERRIDE { return 0; }
+    virtual void appendBytes(const char*, size_t) OVERRIDE { }
 };
 
 SinkDocument::SinkDocument(const DocumentInit& initializer)

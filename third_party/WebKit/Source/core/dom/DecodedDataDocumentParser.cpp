@@ -34,6 +34,7 @@ namespace WebCore {
 
 DecodedDataDocumentParser::DecodedDataDocumentParser(Document* document)
     : DocumentParser(document)
+    , m_hasAppendedData(false)
 {
 }
 
@@ -51,60 +52,61 @@ PassRefPtr<TextResourceDecoder> DecodedDataDocumentParser::decoder()
     return m_decoder;
 }
 
-size_t DecodedDataDocumentParser::appendBytes(const char* data, size_t length)
+void DecodedDataDocumentParser::setHasAppendedData()
 {
-    if (!length)
-        return 0;
-
-    // This should be checking isStopped(), but XMLDocumentParser prematurely
-    // stops parsing when handling an XSLT processing instruction and still
-    // needs to receive decoded bytes.
-    if (isDetached())
-        return 0;
-
-    String decoded = m_decoder->decode(data, length);
-    updateDocumentEncoding();
-
-    if (decoded.isEmpty())
-        return 0;
-
-    size_t consumedChars = decoded.length();
-    append(decoded.releaseImpl());
-
-    return consumedChars;
+    m_hasAppendedData = true;
 }
 
-size_t DecodedDataDocumentParser::flush()
+void DecodedDataDocumentParser::appendBytes(const char* data, size_t length)
+{
+    if (!length)
+        return;
+
+    // This should be checking isStopped(), but XMLDocumentParser prematurely
+    // stops parsing when handling an XSLT processing instruction and still
+    // needs to receive decoded bytes.
+    if (isDetached())
+        return;
+
+    String decoded = m_decoder->decode(data, length);
+    updateDocument(decoded);
+}
+
+void DecodedDataDocumentParser::flush()
 {
     // This should be checking isStopped(), but XMLDocumentParser prematurely
     // stops parsing when handling an XSLT processing instruction and still
     // needs to receive decoded bytes.
     if (isDetached())
-        return 0;
+        return;
 
     // null decoder indicates there is no data received.
     // We have nothing to do in that case.
     if (!m_decoder)
-        return 0;
+        return;
+
     String remainingData = m_decoder->flush();
-    updateDocumentEncoding();
-
-    if (remainingData.isEmpty())
-        return 0;
-
-    size_t consumedChars = remainingData.length();
-    append(remainingData.releaseImpl());
-
-    return consumedChars;
+    updateDocument(remainingData);
 }
 
-void DecodedDataDocumentParser::updateDocumentEncoding()
+void DecodedDataDocumentParser::updateDocument(String& decodedData)
 {
     DocumentEncodingData encodingData;
     encodingData.encoding = m_decoder->encoding();
     encodingData.wasDetectedHeuristically = m_decoder->encodingWasDetectedHeuristically();
     encodingData.sawDecodingError = m_decoder->sawError();
     document()->setEncodingData(encodingData);
+
+    if (decodedData.isEmpty())
+        return;
+
+    append(decodedData.releaseImpl());
+    // FIXME: Should be removed as part of https://code.google.com/p/chromium/issues/detail?id=319643
+    if (!m_hasAppendedData) {
+        m_hasAppendedData = true;
+        if (m_decoder->encoding().usesVisualOrdering())
+            document()->setVisuallyOrdered();
+    }
 }
 
 };
