@@ -48,6 +48,4 @@ void SetChromeSpecificCommandLineFlags() {
 #if defined(GOOGLE_TV)
   SetCommandLineSwitch(switches::kPpapiInProcess);
 #endif
-  // Disable <canvas> path antialiasing.
-  SetCommandLineSwitch(switches::kDisable2dCanvasAntialiasing);
 }
