@@ -458,9 +458,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   cs->AddPaddingColumn(1, 0);
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_CONTENT);
-  cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER,
-                0, GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
+  cs->AddPaddingColumn(1, 0);
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER,
                 0, GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
@@ -476,9 +474,6 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
-  layout->AddView(CreateLink(this,
-                             IDS_TRANSLATE_BUBBLE_LEARN_MORE,
-                             LINK_ID_LEARN_MORE));
   layout->AddView(denial_combobox_);
   layout->AddView(CreateLabelButton(
       this,
@@ -511,9 +506,7 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
   cs->AddPaddingColumn(1, 0);
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_CONTENT);
-  cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER,
-                0, GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
+  cs->AddPaddingColumn(1, 0);
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER,
                 0, GridLayout::USE_PREF, 0, 0);
 
@@ -523,9 +516,6 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
-  layout->AddView(CreateLink(this,
-                             IDS_TRANSLATE_BUBBLE_LEARN_MORE,
-                             LINK_ID_LEARN_MORE));
   views::LabelButton* revert_button = CreateLabelButton(
       this,
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT),
@@ -560,9 +550,7 @@ views::View* TranslateBubbleView::CreateViewAfterTranslate() {
   cs->AddPaddingColumn(1, 0);
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_CONTENT);
-  cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER,
-                0, GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
+  cs->AddPaddingColumn(1, 0);
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER,
                 0, GridLayout::USE_PREF, 0, 0);
 
@@ -575,9 +563,6 @@ views::View* TranslateBubbleView::CreateViewAfterTranslate() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
-  layout->AddView(CreateLink(this,
-                             IDS_TRANSLATE_BUBBLE_LEARN_MORE,
-                             LINK_ID_LEARN_MORE));
   layout->AddView(CreateLabelButton(
       this,
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT),
@@ -610,9 +595,7 @@ views::View* TranslateBubbleView::CreateViewError() {
   cs->AddPaddingColumn(1, 0);
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_CONTENT);
-  cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER,
-                0, GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
+  cs->AddPaddingColumn(1, 0);
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER,
                 0, GridLayout::USE_PREF, 0, 0);
 
@@ -625,9 +608,6 @@ views::View* TranslateBubbleView::CreateViewError() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
-  layout->AddView(CreateLink(this,
-                             IDS_TRANSLATE_BUBBLE_LEARN_MORE,
-                             LINK_ID_LEARN_MORE));
   layout->AddView(CreateLabelButton(
       this,
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRY_AGAIN),
