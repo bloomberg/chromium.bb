@@ -2014,7 +2014,7 @@
         ['branding=="Chrome"', {
           'sources!': [
             # crbug.com/230471
-            'test/data/webui/accessibility_audit_browsertest.js'
+            'test/data/webui/accessibility_audit_browsertest.js',
             # These tests depend on single process mode, which is disabled in
             # official builds.
             'renderer/safe_browsing/phishing_classifier_browsertest.cc',
