@@ -5232,10 +5232,13 @@ exposay_layout(struct desktop_shell *shell)
 }
 
 static void
-exposay_motion(struct weston_pointer_grab *grab, uint32_t time)
+exposay_motion(struct weston_pointer_grab *grab, uint32_t time,
+	       wl_fixed_t x, wl_fixed_t y)
 {
 	struct desktop_shell *shell =
 		container_of(grab, struct desktop_shell, exposay.grab_ptr);
+
+	weston_pointer_move(grab->pointer, x, y);
 
 	exposay_pick(shell,
 	             wl_fixed_to_int(grab->pointer->x),
