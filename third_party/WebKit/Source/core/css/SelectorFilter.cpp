@@ -148,16 +148,18 @@ void SelectorFilter::collectIdentifierHashes(const CSSSelector* selector, unsign
         case CSSSelector::DirectAdjacent:
         case CSSSelector::IndirectAdjacent:
         case CSSSelector::ShadowPseudo:
-        case CSSSelector::ChildTree:
-        case CSSSelector::DescendantTree:
             skipOverSubselectors = true;
             break;
         case CSSSelector::Descendant:
         case CSSSelector::Child:
             if (relationIsAffectedByPseudoContent) {
-                skipOverSubselectors = true;
-                break;
+                // Disable fastRejectSelector.
+                *identifierHashes = 0;
+                return;
             }
+            // Fall through.
+        case CSSSelector::ChildTree:
+        case CSSSelector::DescendantTree:
             skipOverSubselectors = false;
             collectDescendantSelectorIdentifierHashes(selector, hash);
             break;

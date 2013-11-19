@@ -85,9 +85,6 @@ public:
     ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, RenderStyle* = 0, ShouldIncludeStyleSheetInCSSOMWrapper = IncludeStyleSheetInCSSOMWrapper);
     ~ElementRuleCollector();
 
-    void setCanUseFastReject(bool canUseFastReject) { m_canUseFastReject = canUseFastReject; }
-    bool canUseFastReject() const { return m_canUseFastReject; }
-
     void setMode(SelectorChecker::Mode mode) { m_mode = mode; }
     void setPseudoStyleRequest(const PseudoStyleRequest& request) { m_pseudoStyleRequest = request; }
     void setSameOriginOnly(bool f) { m_sameOriginOnly = f; }

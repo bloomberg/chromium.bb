@@ -537,9 +537,6 @@ inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, El
     if (m_treeBoundaryCrossingRules.isEmpty())
         return;
 
-    bool previousCanUseFastReject = collector.canUseFastReject();
-    collector.setCanUseFastReject(false);
-
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
 
     CascadeOrder cascadeOrder = 0;
@@ -560,7 +557,6 @@ inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, El
         }
         collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, scopingNode), ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(boundaryBehavior), ignoreCascadeScope, cascadeOrder++);
     }
-    collector.setCanUseFastReject(previousCanUseFastReject);
 }
 
 void StyleResolver::matchHostRules(Element* element, ScopedStyleResolver* resolver, ElementRuleCollector& collector, bool includeEmptyRules)
