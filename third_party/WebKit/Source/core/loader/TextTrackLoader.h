@@ -46,7 +46,7 @@ public:
     virtual void newRegionsAvailable(TextTrackLoader*) = 0;
 };
 
-class TextTrackLoader : public RawResourceClient, private WebVTTParserClient {
+class TextTrackLoader : public RawResourceClient, private VTTParserClient {
     WTF_MAKE_NONCOPYABLE(TextTrackLoader);
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -70,7 +70,7 @@ private:
     virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE;
     virtual void notifyFinished(Resource*) OVERRIDE;
 
-    // WebVTTParserClient
+    // VTTParserClient
     virtual void newCuesParsed() OVERRIDE;
     virtual void newRegionsParsed() OVERRIDE;
     virtual void fileFailedToParse() OVERRIDE;
@@ -81,7 +81,7 @@ private:
     void corsPolicyPreventedLoad();
 
     TextTrackLoaderClient& m_client;
-    OwnPtr<WebVTTParser> m_cueParser;
+    OwnPtr<VTTParser> m_cueParser;
     ResourcePtr<RawResource> m_resource;
     // FIXME: Remove this pointer and get the Document from m_client.
     Document& m_document;

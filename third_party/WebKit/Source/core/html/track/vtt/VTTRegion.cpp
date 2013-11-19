@@ -218,7 +218,7 @@ void VTTRegion::setRegionSettings(const String& input)
     unsigned position = 0;
 
     while (position < input.length()) {
-        while (position < input.length() && WebVTTParser::isValidSettingDelimiter(input[position]))
+        while (position < input.length() && VTTParser::isValidSettingDelimiter(input[position]))
             position++;
 
         if (position >= input.length())
@@ -269,7 +269,7 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
             m_id = value;
         break;
     case Width:
-        number = WebVTTParser::parseFloatPercentageValue(value, isValidSetting);
+        number = VTTParser::parseFloatPercentageValue(value, isValidSetting);
         if (isValidSetting)
             m_width = number;
         else
@@ -278,7 +278,7 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
     case Height:
         position = 0;
 
-        numberAsString = WebVTTParser::collectDigits(value, &position);
+        numberAsString = VTTParser::collectDigits(value, &position);
         number = value.toInt(&isValidSetting);
 
         if (isValidSetting && number >= 0)
@@ -287,14 +287,14 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
             LOG(Media, "VTTRegion::parseSettingValue, invalid Height");
         break;
     case RegionAnchor:
-        anchorPosition = WebVTTParser::parseFloatPercentageValuePair(value, ',', isValidSetting);
+        anchorPosition = VTTParser::parseFloatPercentageValuePair(value, ',', isValidSetting);
         if (isValidSetting)
             m_regionAnchor = anchorPosition;
         else
             LOG(Media, "VTTRegion::parseSettingValue, invalid RegionAnchor");
         break;
     case ViewportAnchor:
-        anchorPosition = WebVTTParser::parseFloatPercentageValuePair(value, ',', isValidSetting);
+        anchorPosition = VTTParser::parseFloatPercentageValuePair(value, ',', isValidSetting);
         if (isValidSetting)
             m_viewportAnchor = anchorPosition;
         else
@@ -313,7 +313,7 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
 
 void VTTRegion::parseSetting(const String& input, unsigned* position)
 {
-    String setting = WebVTTParser::collectWord(input, position);
+    String setting = VTTParser::collectWord(input, position);
 
     size_t equalOffset = setting.find('=', 1);
     if (equalOffset == kNotFound || !equalOffset || equalOffset == setting.length() - 1)

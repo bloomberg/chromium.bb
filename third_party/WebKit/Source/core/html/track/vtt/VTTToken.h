@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class WebVTTTokenTypes {
+class VTTTokenTypes {
 public:
     enum Type {
         Uninitialized,
@@ -44,18 +44,18 @@ public:
     };
 };
 
-class WebVTTToken {
-    WTF_MAKE_NONCOPYABLE(WebVTTToken);
+class VTTToken {
+    WTF_MAKE_NONCOPYABLE(VTTToken);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    typedef WebVTTTokenTypes Type;
+    typedef VTTTokenTypes Type;
     typedef WTF::Vector<UChar, 1024> DataVector; // FIXME: Is this too large for WebVTT?
 
-    WebVTTToken() { clear(); }
+    VTTToken() { clear(); }
 
     void appendToName(UChar character)
     {
-        ASSERT(m_type == WebVTTTokenTypes::StartTag || m_type == WebVTTTokenTypes::EndTag);
+        ASSERT(m_type == VTTTokenTypes::StartTag || m_type == VTTTokenTypes::EndTag);
         ASSERT(character);
         m_data.append(character);
     }

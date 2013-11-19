@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class WebVTTTokenizerState {
+class VTTTokenizerState {
 public:
     enum State {
         DataState,
@@ -52,21 +52,21 @@ public:
     };
 };
 
-class WebVTTTokenizer {
-    WTF_MAKE_NONCOPYABLE(WebVTTTokenizer);
+class VTTTokenizer {
+    WTF_MAKE_NONCOPYABLE(VTTTokenizer);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<WebVTTTokenizer> create() { return adoptPtr(new WebVTTTokenizer); }
+    static PassOwnPtr<VTTTokenizer> create() { return adoptPtr(new VTTTokenizer); }
 
-    typedef WebVTTTokenizerState State;
+    typedef VTTTokenizerState State;
 
     void reset();
 
-    bool nextToken(SegmentedString&, WebVTTToken&);
+    bool nextToken(SegmentedString&, VTTToken&);
 
     inline bool haveBufferedCharacterToken()
     {
-        return m_token->type() == WebVTTToken::Type::Character;
+        return m_token->type() == VTTToken::Type::Character;
     }
 
     inline void bufferCharacter(UChar character)
@@ -76,13 +76,13 @@ public:
         m_token->appendToCharacter(character);
     }
 
-    inline bool advanceAndEmitToken(SegmentedString& source, WebVTTTokenTypes::Type type)
+    inline bool advanceAndEmitToken(SegmentedString& source, VTTTokenTypes::Type type)
     {
         source.advanceAndUpdateLineNumber();
         return emitToken(type);
     }
 
-    inline bool emitToken(WebVTTTokenTypes::Type type)
+    inline bool emitToken(VTTTokenTypes::Type type)
     {
         ASSERT(m_token->type() == type);
         return true;
@@ -91,20 +91,20 @@ public:
     bool shouldSkipNullCharacters() const { return true; }
 
 private:
-    WebVTTTokenizer();
+    VTTTokenizer();
 
     // m_token is owned by the caller. If nextToken is not on the stack,
     // this member might be pointing to unallocated memory.
-    WebVTTToken* m_token;
+    VTTToken* m_token;
 
     // This member does not really need to be an instance member - it's only used in nextToken.
     // The reason it's stored here is because of the use of the ADVANCE_TO state helpers.
-    WebVTTTokenizerState::State m_state;
+    VTTTokenizerState::State m_state;
 
     Vector<LChar, 32> m_buffer;
 
     // ://www.whatwg.org/specs/web-apps/current-work/#preprocessing-the-input-stream
-    InputStreamPreprocessor<WebVTTTokenizer> m_inputStreamPreprocessor;
+    InputStreamPreprocessor<VTTTokenizer> m_inputStreamPreprocessor;
 };
 
 }

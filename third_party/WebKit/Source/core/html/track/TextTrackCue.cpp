@@ -500,38 +500,38 @@ void TextTrackCue::invalidateCueIndex()
     m_cueIndex = invalidCueIndex;
 }
 
-void TextTrackCue::createWebVTTNodeTree()
+void TextTrackCue::createVTTNodeTree()
 {
     if (!m_webVTTNodeTree)
-        m_webVTTNodeTree = WebVTTParser::createDocumentFragmentFromCueText(document(), m_content);
+        m_webVTTNodeTree = VTTParser::createDocumentFragmentFromCueText(document(), m_content);
 }
 
-void TextTrackCue::copyWebVTTNodeToDOMTree(ContainerNode* webVTTNode, ContainerNode* parent)
+void TextTrackCue::copyVTTNodeToDOMTree(ContainerNode* webVTTNode, ContainerNode* parent)
 {
     for (Node* node = webVTTNode->firstChild(); node; node = node->nextSibling()) {
         RefPtr<Node> clonedNode;
-        if (node->isWebVTTElement())
-            clonedNode = toWebVTTElement(node)->createEquivalentHTMLElement(document());
+        if (node->isVTTElement())
+            clonedNode = toVTTElement(node)->createEquivalentHTMLElement(document());
         else
             clonedNode = node->cloneNode(false);
         parent->appendChild(clonedNode);
         if (node->isContainerNode())
-            copyWebVTTNodeToDOMTree(toContainerNode(node), toContainerNode(clonedNode));
+            copyVTTNodeToDOMTree(toContainerNode(node), toContainerNode(clonedNode));
     }
 }
 
 PassRefPtr<DocumentFragment> TextTrackCue::getCueAsHTML()
 {
-    createWebVTTNodeTree();
+    createVTTNodeTree();
     RefPtr<DocumentFragment> clonedFragment = DocumentFragment::create(document());
-    copyWebVTTNodeToDOMTree(m_webVTTNodeTree.get(), clonedFragment.get());
+    copyVTTNodeToDOMTree(m_webVTTNodeTree.get(), clonedFragment.get());
     return clonedFragment.release();
 }
 
 PassRefPtr<DocumentFragment> TextTrackCue::createCueRenderingTree()
 {
     RefPtr<DocumentFragment> clonedFragment;
-    createWebVTTNodeTree();
+    createVTTNodeTree();
     clonedFragment = DocumentFragment::create(document());
     m_webVTTNodeTree->cloneChildNodes(clonedFragment.get());
     return clonedFragment.release();
@@ -620,7 +620,7 @@ static bool isCueParagraphSeparator(UChar character)
 void TextTrackCue::determineTextDirection()
 {
     DEFINE_STATIC_LOCAL(const String, rtTag, ("rt"));
-    createWebVTTNodeTree();
+    createVTTNodeTree();
 
     // Apply the Unicode Bidirectional Algorithm's Paragraph Level steps to the
     // concatenation of the values of each WebVTT Text Object in nodes, in a
@@ -790,15 +790,15 @@ void TextTrackCue::markFutureAndPastNodes(ContainerNode* root, double previousTi
         if (child->nodeName() == timestampTag) {
             unsigned position = 0;
             String timestamp = child->nodeValue();
-            double currentTimestamp = WebVTTParser::collectTimeStamp(timestamp, &position);
+            double currentTimestamp = VTTParser::collectTimeStamp(timestamp, &position);
             ASSERT(currentTimestamp != -1);
 
             if (currentTimestamp > movieTime)
                 isPastNode = false;
         }
 
-        if (child->isWebVTTElement()) {
-            toWebVTTElement(child)->setIsPastNode(isPastNode);
+        if (child->isVTTElement()) {
+            toVTTElement(child)->setIsPastNode(isPastNode);
             // Make an elemenet id match a cue id for style matching purposes.
             if (!m_id.isEmpty())
                 toElement(child)->setIdAttribute(m_id);
@@ -950,7 +950,7 @@ void TextTrackCue::parseSettings(const String& input)
 
         // The WebVTT cue settings part of a WebVTT cue consists of zero or more of the following components, in any order,
         // separated from each other by one or more U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
-        while (position < input.length() && WebVTTParser::isValidSettingDelimiter(input[position]))
+        while (position < input.length() && VTTParser::isValidSettingDelimiter(input[position]))
             position++;
         if (position >= input.length())
             break;
@@ -962,7 +962,7 @@ void TextTrackCue::parseSettings(const String& input)
         //    1. If setting does not contain a U+003A COLON character (:), or if the first U+003A COLON character (:)
         //       in setting is either the first or last character of setting, then jump to the step labeled next setting.
         unsigned endOfSetting = position;
-        String setting = WebVTTParser::collectWord(input, &endOfSetting);
+        String setting = VTTParser::collectWord(input, &endOfSetting);
         CueSetting name;
         size_t colonOffset = setting.find(':', 1);
         if (colonOffset == kNotFound || !colonOffset || colonOffset == setting.length() - 1)
@@ -983,7 +983,7 @@ void TextTrackCue::parseSettings(const String& input)
             // If name is a case-sensitive match for "vertical"
             // 1. If value is a case-sensitive match for the string "rl", then let cue's text track cue writing direction
             //    be vertical growing left.
-            String writingDirection = WebVTTParser::collectWord(input, &position);
+            String writingDirection = VTTParser::collectWord(input, &position);
             if (writingDirection == verticalGrowingLeftKeyword())
                 m_writingDirection = VerticalGrowingLeft;
 
@@ -1002,7 +1002,7 @@ void TextTrackCue::parseSettings(const String& input)
             StringBuilder linePositionBuilder;
             while (position < input.length() && (input[position] == '-' || input[position] == '%' || isASCIIDigit(input[position])))
                 linePositionBuilder.append(input[position++]);
-            if (position < input.length() && !WebVTTParser::isValidSettingDelimiter(input[position]))
+            if (position < input.length() && !VTTParser::isValidSettingDelimiter(input[position]))
                 break;
 
             // 2. If value does not contain at least one character in the range U+0030 DIGIT ZERO (0) to U+0039 DIGIT
@@ -1050,7 +1050,7 @@ void TextTrackCue::parseSettings(const String& input)
             //    U+0030 DIGIT ZERO (0) to U+0039 DIGIT NINE (9), then jump to the step labeled next setting.
             // 2. If value does not contain at least one character in the range U+0030 DIGIT ZERO (0) to U+0039 DIGIT NINE (9),
             //    then jump to the step labeled next setting.
-            String textPosition = WebVTTParser::collectDigits(input, &position);
+            String textPosition = VTTParser::collectDigits(input, &position);
             if (textPosition.isEmpty())
                 break;
             if (position >= input.length())
@@ -1062,7 +1062,7 @@ void TextTrackCue::parseSettings(const String& input)
             //    next setting.
             if (input[position++] != '%')
                 break;
-            if (position < input.length() && !WebVTTParser::isValidSettingDelimiter(input[position]))
+            if (position < input.length() && !VTTParser::isValidSettingDelimiter(input[position]))
                 break;
 
             // 5. Ignoring the trailing percent sign, interpret value as an integer, and let number be that number.
@@ -1085,7 +1085,7 @@ void TextTrackCue::parseSettings(const String& input)
             //    range U+0030 DIGIT ZERO (0) to U+0039 DIGIT NINE (9), then jump to the step labeled next setting.
             // 2. If value does not contain at least one character in the range U+0030 DIGIT ZERO (0) to U+0039 DIGIT
             //    NINE (9), then jump to the step labeled next setting.
-            String cueSize = WebVTTParser::collectDigits(input, &position);
+            String cueSize = VTTParser::collectDigits(input, &position);
             if (cueSize.isEmpty())
                 break;
             if (position >= input.length())
@@ -1097,7 +1097,7 @@ void TextTrackCue::parseSettings(const String& input)
             //    labeled next setting.
             if (input[position++] != '%')
                 break;
-            if (position < input.length() && !WebVTTParser::isValidSettingDelimiter(input[position]))
+            if (position < input.length() && !VTTParser::isValidSettingDelimiter(input[position]))
                 break;
 
             // 5. Ignoring the trailing percent sign, interpret value as an integer, and let number be that number.
@@ -1115,7 +1115,7 @@ void TextTrackCue::parseSettings(const String& input)
             break;
         case Align:
             {
-            String cueAlignment = WebVTTParser::collectWord(input, &position);
+            String cueAlignment = VTTParser::collectWord(input, &position);
 
             // 1. If value is a case-sensitive match for the string "start", then let cue's text track cue alignment be start alignment.
             if (cueAlignment == startKeyword())
@@ -1139,7 +1139,7 @@ void TextTrackCue::parseSettings(const String& input)
             }
             break;
         case RegionId:
-            m_regionId = WebVTTParser::collectWord(input, &position);
+            m_regionId = VTTParser::collectWord(input, &position);
             break;
         case None:
             break;

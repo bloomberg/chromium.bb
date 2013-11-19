@@ -83,7 +83,7 @@ void TextTrackLoader::dataReceived(Resource* resource, const char* data, int len
         return;
 
     if (!m_cueParser)
-        m_cueParser = WebVTTParser::create(this, m_document);
+        m_cueParser = VTTParser::create(this, m_document);
 
     m_cueParser->parseBytes(data, length);
 }

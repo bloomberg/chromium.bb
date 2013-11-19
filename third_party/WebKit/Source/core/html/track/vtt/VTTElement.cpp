@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-static const QualifiedName& nodeTypeToTagName(WebVTTNodeType nodeType)
+static const QualifiedName& nodeTypeToTagName(VTTNodeType nodeType)
 {
     DEFINE_STATIC_LOCAL(QualifiedName, cTag, (nullAtom, "c", nullAtom));
     DEFINE_STATIC_LOCAL(QualifiedName, vTag, (nullAtom, "v", nullAtom));
@@ -41,72 +41,72 @@ static const QualifiedName& nodeTypeToTagName(WebVTTNodeType nodeType)
     DEFINE_STATIC_LOCAL(QualifiedName, rubyTag, (nullAtom, "ruby", nullAtom));
     DEFINE_STATIC_LOCAL(QualifiedName, rtTag, (nullAtom, "rt", nullAtom));
     switch (nodeType) {
-    case WebVTTNodeTypeClass:
+    case VTTNodeTypeClass:
         return cTag;
-    case WebVTTNodeTypeItalic:
+    case VTTNodeTypeItalic:
         return iTag;
-    case WebVTTNodeTypeLanguage:
+    case VTTNodeTypeLanguage:
         return langTag;
-    case WebVTTNodeTypeBold:
+    case VTTNodeTypeBold:
         return bTag;
-    case WebVTTNodeTypeUnderline:
+    case VTTNodeTypeUnderline:
         return uTag;
-    case WebVTTNodeTypeRuby:
+    case VTTNodeTypeRuby:
         return rubyTag;
-    case WebVTTNodeTypeRubyText:
+    case VTTNodeTypeRubyText:
         return rtTag;
-    case WebVTTNodeTypeVoice:
+    case VTTNodeTypeVoice:
         return vTag;
-    case WebVTTNodeTypeNone:
+    case VTTNodeTypeNone:
     default:
         ASSERT_NOT_REACHED();
         return cTag; // Make the compiler happy.
     }
 }
 
-WebVTTElement::WebVTTElement(WebVTTNodeType nodeType, Document* document)
+VTTElement::VTTElement(VTTNodeType nodeType, Document* document)
     : Element(nodeTypeToTagName(nodeType), document, CreateElement)
     , m_isPastNode(0)
     , m_webVTTNodeType(nodeType)
 {
 }
 
-PassRefPtr<WebVTTElement> WebVTTElement::create(WebVTTNodeType nodeType, Document* document)
+PassRefPtr<VTTElement> VTTElement::create(VTTNodeType nodeType, Document* document)
 {
-    return adoptRef(new WebVTTElement(nodeType, document));
+    return adoptRef(new VTTElement(nodeType, document));
 }
 
-PassRefPtr<Element> WebVTTElement::cloneElementWithoutAttributesAndChildren()
+PassRefPtr<Element> VTTElement::cloneElementWithoutAttributesAndChildren()
 {
-    RefPtr<WebVTTElement> clone = create(static_cast<WebVTTNodeType>(m_webVTTNodeType), &document());
+    RefPtr<VTTElement> clone = create(static_cast<VTTNodeType>(m_webVTTNodeType), &document());
     clone->setLanguage(m_language);
     return clone;
 }
 
-PassRefPtr<HTMLElement> WebVTTElement::createEquivalentHTMLElement(Document& document)
+PassRefPtr<HTMLElement> VTTElement::createEquivalentHTMLElement(Document& document)
 {
     RefPtr<HTMLElement> htmlElement;
     switch (m_webVTTNodeType) {
-    case WebVTTNodeTypeClass:
-    case WebVTTNodeTypeLanguage:
-    case WebVTTNodeTypeVoice:
+    case VTTNodeTypeClass:
+    case VTTNodeTypeLanguage:
+    case VTTNodeTypeVoice:
         htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::spanTag.localName(), document);
         htmlElement.get()->setAttribute(HTMLNames::titleAttr, getAttribute(voiceAttributeName()));
         htmlElement.get()->setAttribute(HTMLNames::langAttr, getAttribute(langAttributeName()));
         break;
-    case WebVTTNodeTypeItalic:
+    case VTTNodeTypeItalic:
         htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::iTag.localName(), document);
         break;
-    case WebVTTNodeTypeBold:
+    case VTTNodeTypeBold:
         htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::bTag.localName(), document);
         break;
-    case WebVTTNodeTypeUnderline:
+    case VTTNodeTypeUnderline:
         htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::uTag.localName(), document);
         break;
-    case WebVTTNodeTypeRuby:
+    case VTTNodeTypeRuby:
         htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::rubyTag.localName(), document);
         break;
-    case WebVTTNodeTypeRubyText:
+    case VTTNodeTypeRubyText:
         htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::rtTag.localName(), document);
         break;
     default:

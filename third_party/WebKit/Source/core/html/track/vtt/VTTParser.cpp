@@ -46,7 +46,7 @@ const double secondsPerMillisecond = 0.001;
 const double malformedTime = -1;
 const unsigned fileIdentifierLength = 6;
 
-String WebVTTParser::collectDigits(const String& input, unsigned* position)
+String VTTParser::collectDigits(const String& input, unsigned* position)
 {
     StringBuilder digits;
     while (*position < input.length() && isASCIIDigit(input[*position]))
@@ -54,7 +54,7 @@ String WebVTTParser::collectDigits(const String& input, unsigned* position)
     return digits.toString();
 }
 
-String WebVTTParser::collectWord(const String& input, unsigned* position)
+String VTTParser::collectWord(const String& input, unsigned* position)
 {
     StringBuilder string;
     while (*position < input.length() && !isASpace(input[*position]))
@@ -62,7 +62,7 @@ String WebVTTParser::collectWord(const String& input, unsigned* position)
     return string.toString();
 }
 
-float WebVTTParser::parseFloatPercentageValue(const String& value, bool& isValidSetting)
+float VTTParser::parseFloatPercentageValue(const String& value, bool& isValidSetting)
 {
     // '%' must be present and at the end of the setting value.
     if (value.find('%', 1) != value.length() - 1) {
@@ -73,13 +73,13 @@ float WebVTTParser::parseFloatPercentageValue(const String& value, bool& isValid
     unsigned position = 0;
 
     StringBuilder floatNumberAsString;
-    floatNumberAsString.append(WebVTTParser::collectDigits(value, &position));
+    floatNumberAsString.append(VTTParser::collectDigits(value, &position));
 
     if (value[position] == '.') {
         floatNumberAsString.append(".");
         position++;
 
-        floatNumberAsString.append(WebVTTParser::collectDigits(value, &position));
+        floatNumberAsString.append(VTTParser::collectDigits(value, &position));
     }
     float number = floatNumberAsString.toString().toFloat(&isValidSetting);
 
@@ -89,7 +89,7 @@ float WebVTTParser::parseFloatPercentageValue(const String& value, bool& isValid
     return number;
 }
 
-FloatPoint WebVTTParser::parseFloatPercentageValuePair(const String& value, char delimiter, bool& isValidSetting)
+FloatPoint VTTParser::parseFloatPercentageValuePair(const String& value, char delimiter, bool& isValidSetting)
 {
     // The delimiter can't be the first or second value because a pair of
     // percentages (x%,y%) implies that at least the first two characters
@@ -110,7 +110,7 @@ FloatPoint WebVTTParser::parseFloatPercentageValuePair(const String& value, char
     return FloatPoint(firstCoord, secondCoord);
 }
 
-WebVTTParser::WebVTTParser(WebVTTParserClient* client, Document& document)
+VTTParser::VTTParser(VTTParserClient* client, Document& document)
     : m_document(&document)
     , m_state(Initial)
     , m_decoder(TextResourceDecoder::create("text/plain", UTF8Encoding()))
@@ -120,26 +120,26 @@ WebVTTParser::WebVTTParser(WebVTTParserClient* client, Document& document)
 {
 }
 
-void WebVTTParser::getNewCues(Vector<RefPtr<VTTCue> >& outputCues)
+void VTTParser::getNewCues(Vector<RefPtr<VTTCue> >& outputCues)
 {
     outputCues = m_cuelist;
     m_cuelist.clear();
 }
 
-void WebVTTParser::getNewRegions(Vector<RefPtr<VTTRegion> >& outputRegions)
+void VTTParser::getNewRegions(Vector<RefPtr<VTTRegion> >& outputRegions)
 {
     outputRegions = m_regionList;
     m_regionList.clear();
 }
 
-void WebVTTParser::parseBytes(const char* data, unsigned length)
+void VTTParser::parseBytes(const char* data, unsigned length)
 {
     String textData = m_decoder->decode(data, length);
     m_lineReader.append(textData);
     parse();
 }
 
-void WebVTTParser::flush()
+void VTTParser::flush()
 {
     String textData = m_decoder->flush();
     m_lineReader.append(textData);
@@ -148,7 +148,7 @@ void WebVTTParser::flush()
     flushPendingCue();
 }
 
-void WebVTTParser::parse()
+void VTTParser::parse()
 {
     // WebVTT parser algorithm. (5.1 WebVTT file parsing.)
     // Steps 1 - 3 - Initial setup.
@@ -222,7 +222,7 @@ void WebVTTParser::parse()
     }
 }
 
-void WebVTTParser::flushPendingCue()
+void VTTParser::flushPendingCue()
 {
     ASSERT(m_lineReader.isAtEndOfStream());
     // If we're in the CueText state when we run out of data, we emit the pending cue.
@@ -230,7 +230,7 @@ void WebVTTParser::flushPendingCue()
         createNewCue();
 }
 
-bool WebVTTParser::hasRequiredFileIdentifier(const String& line)
+bool VTTParser::hasRequiredFileIdentifier(const String& line)
 {
     // A WebVTT file identifier consists of an optional BOM character,
     // the string "WEBVTT" followed by an optional space or tab character,
@@ -243,7 +243,7 @@ bool WebVTTParser::hasRequiredFileIdentifier(const String& line)
     return true;
 }
 
-void WebVTTParser::collectMetadataHeader(const String& line)
+void VTTParser::collectMetadataHeader(const String& line)
 {
     // WebVTT header parsing (WebVTT parser algorithm step 12)
     DEFINE_STATIC_LOCAL(const AtomicString, regionHeaderName, ("Region", AtomicString::ConstructFromLiteral));
@@ -269,7 +269,7 @@ void WebVTTParser::collectMetadataHeader(const String& line)
     }
 }
 
-WebVTTParser::ParseState WebVTTParser::collectCueId(const String& line)
+VTTParser::ParseState VTTParser::collectCueId(const String& line)
 {
     if (line.contains("-->"))
         return collectTimingsAndSettings(line);
@@ -277,7 +277,7 @@ WebVTTParser::ParseState WebVTTParser::collectCueId(const String& line)
     return TimingsAndSettings;
 }
 
-WebVTTParser::ParseState WebVTTParser::collectTimingsAndSettings(const String& line)
+VTTParser::ParseState VTTParser::collectTimingsAndSettings(const String& line)
 {
     // Collect WebVTT cue timings and settings. (5.3 WebVTT cue timings and settings parsing.)
     // Steps 1 - 3 - Let input be the string being parsed and position be a pointer into input.
@@ -313,7 +313,7 @@ WebVTTParser::ParseState WebVTTParser::collectTimingsAndSettings(const String& l
     return CueText;
 }
 
-WebVTTParser::ParseState WebVTTParser::collectCueText(const String& line)
+VTTParser::ParseState VTTParser::collectCueText(const String& line)
 {
     // Step 34.
     if (line.isEmpty()) {
@@ -335,7 +335,7 @@ WebVTTParser::ParseState WebVTTParser::collectCueText(const String& line)
     return CueText;
 }
 
-WebVTTParser::ParseState WebVTTParser::recoverCue(const String& line)
+VTTParser::ParseState VTTParser::recoverCue(const String& line)
 {
     // Step 17 and 21.
     resetCueValues();
@@ -344,7 +344,7 @@ WebVTTParser::ParseState WebVTTParser::recoverCue(const String& line)
     return collectTimingsAndSettings(line);
 }
 
-WebVTTParser::ParseState WebVTTParser::ignoreBadCue(const String& line)
+VTTParser::ParseState VTTParser::ignoreBadCue(const String& line)
 {
     if (line.isEmpty())
         return Id;
@@ -354,9 +354,9 @@ WebVTTParser::ParseState WebVTTParser::ignoreBadCue(const String& line)
 }
 
 // A helper class for the construction of a "cue fragment" from the cue text.
-class WebVTTTreeBuilder {
+class VTTTreeBuilder {
 public:
-    WebVTTTreeBuilder(Document& document)
+    VTTTreeBuilder(Document& document)
         : m_document(document) { }
 
     PassRefPtr<DocumentFragment> buildFromString(const String& cueText);
@@ -364,13 +364,13 @@ public:
 private:
     void constructTreeFromToken(Document&);
 
-    WebVTTToken m_token;
+    VTTToken m_token;
     RefPtr<ContainerNode> m_currentNode;
     Vector<AtomicString> m_languageStack;
     Document& m_document;
 };
 
-PassRefPtr<DocumentFragment> WebVTTTreeBuilder::buildFromString(const String& cueText)
+PassRefPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const String& cueText)
 {
     // Cue text processing based on
     // 5.4 WebVTT cue text parsing rules, and
@@ -385,7 +385,7 @@ PassRefPtr<DocumentFragment> WebVTTTreeBuilder::buildFromString(const String& cu
 
     m_currentNode = fragment;
 
-    OwnPtr<WebVTTTokenizer> tokenizer(WebVTTTokenizer::create());
+    OwnPtr<VTTTokenizer> tokenizer(VTTTokenizer::create());
     m_token.clear();
     m_languageStack.clear();
 
@@ -396,13 +396,13 @@ PassRefPtr<DocumentFragment> WebVTTTreeBuilder::buildFromString(const String& cu
     return fragment.release();
 }
 
-PassRefPtr<DocumentFragment> WebVTTParser::createDocumentFragmentFromCueText(Document& document, const String& cueText)
+PassRefPtr<DocumentFragment> VTTParser::createDocumentFragmentFromCueText(Document& document, const String& cueText)
 {
-    WebVTTTreeBuilder treeBuilder(document);
+    VTTTreeBuilder treeBuilder(document);
     return treeBuilder.buildFromString(cueText);
 }
 
-void WebVTTParser::createNewCue()
+void VTTParser::createNewCue()
 {
     RefPtr<VTTCue> cue = VTTCue::create(*m_document, m_currentStartTime, m_currentEndTime, m_currentContent.toString());
     cue->setId(m_currentId);
@@ -413,7 +413,7 @@ void WebVTTParser::createNewCue()
         m_client->newCuesParsed();
 }
 
-void WebVTTParser::resetCueValues()
+void VTTParser::resetCueValues()
 {
     m_currentId = emptyString();
     m_currentSettings = emptyString();
@@ -422,7 +422,7 @@ void WebVTTParser::resetCueValues()
     m_currentContent.clear();
 }
 
-void WebVTTParser::createNewRegion(const String& headerValue)
+void VTTParser::createNewRegion(const String& headerValue)
 {
     if (headerValue.isEmpty())
         return;
@@ -444,7 +444,7 @@ void WebVTTParser::createNewRegion(const String& headerValue)
     m_regionList.append(region);
 }
 
-double WebVTTParser::collectTimeStamp(const String& line, unsigned* position)
+double VTTParser::collectTimeStamp(const String& line, unsigned* position)
 {
     // Collect a WebVTT timestamp (5.3 WebVTT cue timings and settings parsing.)
     // Steps 1 - 4 - Initial checks, let most significant units be minutes.
@@ -504,62 +504,62 @@ double WebVTTParser::collectTimeStamp(const String& line, unsigned* position)
     return (value1 * secondsPerHour) + (value2 * secondsPerMinute) + value3 + (value4 * secondsPerMillisecond);
 }
 
-static WebVTTNodeType tokenToNodeType(WebVTTToken& token)
+static VTTNodeType tokenToNodeType(VTTToken& token)
 {
     switch (token.name().size()) {
     case 1:
         if (token.name()[0] == 'c')
-            return WebVTTNodeTypeClass;
+            return VTTNodeTypeClass;
         if (token.name()[0] == 'v')
-            return WebVTTNodeTypeVoice;
+            return VTTNodeTypeVoice;
         if (token.name()[0] == 'b')
-            return WebVTTNodeTypeBold;
+            return VTTNodeTypeBold;
         if (token.name()[0] == 'i')
-            return WebVTTNodeTypeItalic;
+            return VTTNodeTypeItalic;
         if (token.name()[0] == 'u')
-            return WebVTTNodeTypeUnderline;
+            return VTTNodeTypeUnderline;
         break;
     case 2:
         if (token.name()[0] == 'r' && token.name()[1] == 't')
-            return WebVTTNodeTypeRubyText;
+            return VTTNodeTypeRubyText;
         break;
     case 4:
         if (token.name()[0] == 'r' && token.name()[1] == 'u' && token.name()[2] == 'b' && token.name()[3] == 'y')
-            return WebVTTNodeTypeRuby;
+            return VTTNodeTypeRuby;
         if (token.name()[0] == 'l' && token.name()[1] == 'a' && token.name()[2] == 'n' && token.name()[3] == 'g')
-            return WebVTTNodeTypeLanguage;
+            return VTTNodeTypeLanguage;
         break;
     }
-    return WebVTTNodeTypeNone;
+    return VTTNodeTypeNone;
 }
 
-void WebVTTTreeBuilder::constructTreeFromToken(Document& document)
+void VTTTreeBuilder::constructTreeFromToken(Document& document)
 {
     QualifiedName tagName(nullAtom, AtomicString(m_token.name()), xhtmlNamespaceURI);
 
     // http://dev.w3.org/html5/webvtt/#webvtt-cue-text-dom-construction-rules
 
     switch (m_token.type()) {
-    case WebVTTTokenTypes::Character: {
+    case VTTTokenTypes::Character: {
         String content(m_token.characters()); // FIXME: This should be 8bit if possible.
         RefPtr<Text> child = Text::create(document, content);
         m_currentNode->parserAppendChild(child);
         break;
     }
-    case WebVTTTokenTypes::StartTag: {
-        RefPtr<WebVTTElement> child;
-        WebVTTNodeType nodeType = tokenToNodeType(m_token);
-        if (nodeType != WebVTTNodeTypeNone)
-            child = WebVTTElement::create(nodeType, &document);
+    case VTTTokenTypes::StartTag: {
+        RefPtr<VTTElement> child;
+        VTTNodeType nodeType = tokenToNodeType(m_token);
+        if (nodeType != VTTNodeTypeNone)
+            child = VTTElement::create(nodeType, &document);
         if (child) {
             if (m_token.classes().size() > 0)
                 child->setAttribute(classAttr, AtomicString(m_token.classes()));
 
-            if (child->webVTTNodeType() == WebVTTNodeTypeVoice) {
-                child->setAttribute(WebVTTElement::voiceAttributeName(), AtomicString(m_token.annotation()));
-            } else if (child->webVTTNodeType() == WebVTTNodeTypeLanguage) {
+            if (child->webVTTNodeType() == VTTNodeTypeVoice) {
+                child->setAttribute(VTTElement::voiceAttributeName(), AtomicString(m_token.annotation()));
+            } else if (child->webVTTNodeType() == VTTNodeTypeLanguage) {
                 m_languageStack.append(AtomicString(m_token.annotation()));
-                child->setAttribute(WebVTTElement::langAttributeName(), m_languageStack.last());
+                child->setAttribute(VTTElement::langAttributeName(), m_languageStack.last());
             }
             if (!m_languageStack.isEmpty())
                 child->setLanguage(m_languageStack.last());
@@ -568,20 +568,20 @@ void WebVTTTreeBuilder::constructTreeFromToken(Document& document)
         }
         break;
     }
-    case WebVTTTokenTypes::EndTag: {
-        WebVTTNodeType nodeType = tokenToNodeType(m_token);
-        if (nodeType != WebVTTNodeTypeNone) {
-            if (nodeType == WebVTTNodeTypeLanguage && m_currentNode->isWebVTTElement() && toWebVTTElement(m_currentNode.get())->webVTTNodeType() == WebVTTNodeTypeLanguage)
+    case VTTTokenTypes::EndTag: {
+        VTTNodeType nodeType = tokenToNodeType(m_token);
+        if (nodeType != VTTNodeTypeNone) {
+            if (nodeType == VTTNodeTypeLanguage && m_currentNode->isVTTElement() && toVTTElement(m_currentNode.get())->webVTTNodeType() == VTTNodeTypeLanguage)
                 m_languageStack.removeLast();
             if (m_currentNode->parentNode())
                 m_currentNode = m_currentNode->parentNode();
         }
         break;
     }
-    case WebVTTTokenTypes::TimestampTag: {
+    case VTTTokenTypes::TimestampTag: {
         unsigned position = 0;
         String charactersString(StringImpl::create8BitIfPossible(m_token.characters()));
-        double time = WebVTTParser::collectTimeStamp(charactersString, &position);
+        double time = VTTParser::collectTimeStamp(charactersString, &position);
         if (time != malformedTime)
             m_currentNode->parserAppendChild(ProcessingInstruction::create(document, "timestamp", charactersString));
         break;
@@ -592,7 +592,7 @@ void WebVTTTreeBuilder::constructTreeFromToken(Document& document)
     m_token.clear();
 }
 
-void WebVTTParser::skipWhiteSpace(const String& line, unsigned* position)
+void VTTParser::skipWhiteSpace(const String& line, unsigned* position)
 {
     while (*position < line.length() && isASpace(line[*position]))
         (*position)++;

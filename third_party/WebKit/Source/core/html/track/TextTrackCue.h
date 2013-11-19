@@ -183,8 +183,8 @@ private:
 
     PassRefPtr<TextTrackCueBox> displayTreeInternal();
 
-    void createWebVTTNodeTree();
-    void copyWebVTTNodeToDOMTree(ContainerNode* WebVTTNode, ContainerNode* root);
+    void createVTTNodeTree();
+    void copyVTTNodeToDOMTree(ContainerNode* VTTNode, ContainerNode* root);
 
     std::pair<double, double> getPositionCoordinates() const;
 

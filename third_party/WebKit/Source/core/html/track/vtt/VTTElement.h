@@ -27,33 +27,33 @@
 
 namespace WebCore {
 
-enum WebVTTNodeType {
-    WebVTTNodeTypeNone = 0,
-    WebVTTNodeTypeClass,
-    WebVTTNodeTypeItalic,
-    WebVTTNodeTypeLanguage,
-    WebVTTNodeTypeBold,
-    WebVTTNodeTypeUnderline,
-    WebVTTNodeTypeRuby,
-    WebVTTNodeTypeRubyText,
-    WebVTTNodeTypeVoice
+enum VTTNodeType {
+    VTTNodeTypeNone = 0,
+    VTTNodeTypeClass,
+    VTTNodeTypeItalic,
+    VTTNodeTypeLanguage,
+    VTTNodeTypeBold,
+    VTTNodeTypeUnderline,
+    VTTNodeTypeRuby,
+    VTTNodeTypeRubyText,
+    VTTNodeTypeVoice
 };
 
-class WebVTTElement FINAL : public Element {
+class VTTElement FINAL : public Element {
 public:
-    static PassRefPtr<WebVTTElement> create(const WebVTTNodeType, Document*);
-    static PassRefPtr<WebVTTElement> create(const QualifiedName&, Document*);
+    static PassRefPtr<VTTElement> create(const VTTNodeType, Document*);
+    static PassRefPtr<VTTElement> create(const QualifiedName&, Document*);
     PassRefPtr<HTMLElement> createEquivalentHTMLElement(Document&);
 
     virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren() OVERRIDE;
 
-    void setWebVTTNodeType(WebVTTNodeType type) { m_webVTTNodeType = static_cast<unsigned>(type); }
-    WebVTTNodeType webVTTNodeType() const { return static_cast<WebVTTNodeType>(m_webVTTNodeType); }
+    void setVTTNodeType(VTTNodeType type) { m_webVTTNodeType = static_cast<unsigned>(type); }
+    VTTNodeType webVTTNodeType() const { return static_cast<VTTNodeType>(m_webVTTNodeType); }
 
     bool isPastNode() const { return m_isPastNode; }
     void setIsPastNode(bool value) { m_isPastNode = value; }
 
-    virtual bool isWebVTTElement() const OVERRIDE { return true; }
+    virtual bool isVTTElement() const OVERRIDE { return true; }
     AtomicString language() const { return m_language; }
     void setLanguage(AtomicString value) { m_language = value; }
 
@@ -70,8 +70,8 @@ public:
     }
 
 private:
-    WebVTTElement(const QualifiedName&, Document*);
-    WebVTTElement(WebVTTNodeType, Document*);
+    VTTElement(const QualifiedName&, Document*);
+    VTTElement(VTTNodeType, Document*);
 
     unsigned m_isPastNode : 1;
     unsigned m_webVTTNodeType : 4;
@@ -79,7 +79,7 @@ private:
     AtomicString m_language;
 };
 
-DEFINE_NODE_TYPE_CASTS(WebVTTElement, isWebVTTElement());
+DEFINE_NODE_TYPE_CASTS(VTTElement, isVTTElement());
 
 } // namespace WebCore
 

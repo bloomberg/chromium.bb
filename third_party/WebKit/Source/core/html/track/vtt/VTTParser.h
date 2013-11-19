@@ -48,16 +48,16 @@ using namespace HTMLNames;
 
 class Document;
 
-class WebVTTParserClient {
+class VTTParserClient {
 public:
-    virtual ~WebVTTParserClient() { }
+    virtual ~VTTParserClient() { }
 
     virtual void newCuesParsed() = 0;
     virtual void newRegionsParsed() = 0;
     virtual void fileFailedToParse() = 0;
 };
 
-class WebVTTParser FINAL {
+class VTTParser FINAL {
 public:
     enum ParseState {
         Initial,
@@ -68,9 +68,9 @@ public:
         BadCue
     };
 
-    static PassOwnPtr<WebVTTParser> create(WebVTTParserClient* client, Document& document)
+    static PassOwnPtr<VTTParser> create(VTTParserClient* client, Document& document)
     {
-        return adoptPtr(new WebVTTParser(client, document));
+        return adoptPtr(new VTTParser(client, document));
     }
 
     static inline bool isRecognizedTag(const AtomicString& tagName)
@@ -113,7 +113,7 @@ public:
     void getNewRegions(Vector<RefPtr<VTTRegion> >&);
 
 private:
-    WebVTTParser(WebVTTParserClient*, Document&);
+    VTTParser(VTTParserClient*, Document&);
 
     Document* m_document;
     ParseState m_state;
@@ -143,7 +143,7 @@ private:
     StringBuilder m_currentContent;
     String m_currentSettings;
 
-    WebVTTParserClient* m_client;
+    VTTParserClient* m_client;
 
     Vector<RefPtr<VTTCue> > m_cuelist;
 

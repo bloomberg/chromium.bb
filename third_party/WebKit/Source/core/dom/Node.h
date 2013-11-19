@@ -247,7 +247,7 @@ public:
 
     virtual bool isMediaControlElement() const { return false; }
     virtual bool isMediaControls() const { return false; }
-    virtual bool isWebVTTElement() const { return false; }
+    virtual bool isVTTElement() const { return false; }
     virtual bool isAttributeNode() const { return false; }
     virtual bool isCharacterDataNode() const { return false; }
     virtual bool isFrameOwnerElement() const { return false; }
@@ -258,7 +258,7 @@ public:
     // if this element can participate in style sharing.
     //
     // FIXME: The only things that ever go through StyleResolver that aren't StyledElements are
-    // PseudoElements and WebVTTElements. It's possible we can just eliminate all the checks
+    // PseudoElements and VTTElements. It's possible we can just eliminate all the checks
     // since those elements will never have class names, inline style, or other things that
     // this apparently guards against.
     bool isStyledElement() const { return isHTMLElement() || isSVGElement(); }

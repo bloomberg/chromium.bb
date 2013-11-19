@@ -747,8 +747,8 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoLang:
             {
                 AtomicString value;
-                if (element.isWebVTTElement())
-                    value = toWebVTTElement(element).language();
+                if (element.isVTTElement())
+                    value = toVTTElement(element).language();
                 else
                     value = element.computeInheritedLanguage();
                 const AtomicString& argument = selector->argument();
@@ -790,9 +790,9 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             element.document().setContainsValidityStyleRules();
             return element.isOutOfRange();
         case CSSSelector::PseudoFutureCue:
-            return (element.isWebVTTElement() && !toWebVTTElement(element).isPastNode());
+            return (element.isVTTElement() && !toVTTElement(element).isPastNode());
         case CSSSelector::PseudoPastCue:
-            return (element.isWebVTTElement() && toWebVTTElement(element).isPastNode());
+            return (element.isVTTElement() && toVTTElement(element).isPastNode());
 
         case CSSSelector::PseudoScope:
             {
