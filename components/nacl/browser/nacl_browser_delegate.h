@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NACL_COMMON_NACL_BROWSER_DELEGATE_H_
-#define COMPONENTS_NACL_COMMON_NACL_BROWSER_DELEGATE_H_
+#ifndef COMPONENTS_NACL_BROWSER_NACL_BROWSER_DELEGATE_H_
+#define COMPONENTS_NACL_BROWSER_NACL_BROWSER_DELEGATE_H_
 
 #include <string>
 
@@ -75,4 +75,4 @@ class NaClBrowserDelegate {
   virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) = 0;
 };
 
-#endif  // COMPONENTS_NACL_COMMON_NACL_BROWSER_DELEGATE_H_
+#endif  // COMPONENTS_NACL_BROWSER_NACL_BROWSER_DELEGATE_H_

@@ -13,7 +13,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
 #include "components/nacl/browser/nacl_browser.h"
-#include "components/nacl/common/nacl_browser_delegate.h"
+#include "components/nacl/browser/nacl_browser_delegate.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"

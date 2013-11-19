@@ -9,8 +9,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_path_override.h"
 #include "components/nacl/browser/nacl_browser.h"
-#include "components/nacl/common/nacl_browser_delegate.h"
-#include "components/nacl/common/test_nacl_browser_delegate.h"
+#include "components/nacl/browser/nacl_browser_delegate.h"
+#include "components/nacl/browser/test_nacl_browser_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using nacl_file_host::PnaclCanOpenFile;

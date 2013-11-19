@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_NACL_HOST_NACL_BROWSER_DELEGATE_IMPL_H_
 
 #include "base/compiler_specific.h"
-#include "components/nacl/common/nacl_browser_delegate.h"
+#include "components/nacl/browser/nacl_browser_delegate.h"
 #include "extensions/browser/info_map.h"
 
 class NaClBrowserDelegateImpl : public NaClBrowserDelegate {

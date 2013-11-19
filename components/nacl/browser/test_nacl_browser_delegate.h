@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NACL_COMMON_TEST_NACL_BROWSER_DELEGATE_H_
-#define COMPONENTS_NACL_COMMON_TEST_NACL_BROWSER_DELEGATE_H_
+#ifndef COMPONENTS_NACL_BROWSER_TEST_NACL_BROWSER_DELEGATE_H_
+#define COMPONENTS_NACL_BROWSER_TEST_NACL_BROWSER_DELEGATE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "components/nacl/common/nacl_browser_delegate.h"
+#include "components/nacl/browser/nacl_browser_delegate.h"
 
 // This is a base test implementation of NaClBrowserDelegate which
 // does nothing. Individual tests can override the methods further.
@@ -43,4 +43,4 @@ class TestNaClBrowserDelegate : public NaClBrowserDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestNaClBrowserDelegate);
 };
 
-#endif  // COMPONENTS_NACL_COMMON_TEST_NACL_BROWSER_DELEGATE_H_
+#endif  // COMPONENTS_NACL_BROWSER_TEST_NACL_BROWSER_DELEGATE_H_

@@ -14,8 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/time/time.h"
+#include "components/nacl/browser/nacl_browser_delegate.h"
 #include "components/nacl/browser/nacl_validation_cache.h"
-#include "components/nacl/common/nacl_browser_delegate.h"
 
 class URLPattern;
 class GURL;
