@@ -751,6 +751,19 @@ bool MetadataDatabase::BuildPathForTracker(int64 tracker_id,
   return true;
 }
 
+bool MetadataDatabase::FindNearestActiveAncestor(
+    const std::string& app_id,
+    const base::FilePath& full_path,
+    FileTracker* tracker,
+    base::FilePath* path) const {
+  // TODO(tzik):
+  //  - Call FindAppTracker() for |app_id|.
+  //  - Call base::FilePath::GetComponent() to decompose |full_path|.
+  //  - Follow folder tree for the components, and return the tracker if found.
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void MetadataDatabase::UpdateByChangeList(
     int64 largest_change_id,
     ScopedVector<google_apis::ChangeResource> changes,

@@ -219,6 +219,15 @@ class MetadataDatabase {
   // The file path is relative to app-root and have a leading path separator.
   bool BuildPathForTracker(int64 tracker_id, base::FilePath* path) const;
 
+  // Returns false if no registered app exists associated to |app_id|.
+  // If |full_path| is active, assigns the tracker of |full_path| to |tracker|.
+  // Otherwise, assigns the nearest active ancestor to |full_path| to |tracker|.
+  // Also, assigns the full path of |tracker| to |path|.
+  bool FindNearestActiveAncestor(const std::string& app_id,
+                                 const base::FilePath& full_path,
+                                 FileTracker* tracker,
+                                 base::FilePath* path) const;
+
   // Updates database by |changes|.
   // Marks each tracker for modified file as dirty and adds new trackers if
   // needed.

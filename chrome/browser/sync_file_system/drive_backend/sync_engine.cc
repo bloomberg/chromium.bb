@@ -223,12 +223,14 @@ void SyncEngine::DownloadRemoteVersion(
 }
 
 void SyncEngine::ApplyLocalChange(
-    const FileChange& local_file_change,
-    const base::FilePath& local_file_path,
-    const SyncFileMetadata& local_file_metadata,
+    const FileChange& local_change,
+    const base::FilePath& local_path,
+    const SyncFileMetadata& local_metadata,
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
-  LocalToRemoteSyncer* syncer = new LocalToRemoteSyncer(this);
+  LocalToRemoteSyncer* syncer = new LocalToRemoteSyncer(
+      this, local_change, local_path, local_metadata, url);
+
   task_manager_->ScheduleSyncTask(
       scoped_ptr<SyncTask>(syncer),
       base::Bind(&SyncEngine::DidApplyLocalChange,

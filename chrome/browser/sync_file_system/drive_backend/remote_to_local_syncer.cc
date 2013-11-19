@@ -84,6 +84,12 @@ RemoteToLocalSyncer::~RemoteToLocalSyncer() {
 }
 
 void RemoteToLocalSyncer::Run(const SyncStatusCallback& callback) {
+  if (!drive_service() || !metadata_database() || !remote_change_processor()) {
+    NOTREACHED();
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+
   SyncStatusCallback wrapped_callback = base::Bind(
       &RemoteToLocalSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
       callback);

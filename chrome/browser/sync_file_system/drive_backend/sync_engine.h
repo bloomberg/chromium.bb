@@ -93,9 +93,9 @@ class SyncEngine : public RemoteFileSyncService,
 
   // LocalChangeProcessor overrides.
   virtual void ApplyLocalChange(
-      const FileChange& change,
-      const base::FilePath& local_file_path,
-      const SyncFileMetadata& local_file_metadata,
+      const FileChange& local_change,
+      const base::FilePath& local_path,
+      const SyncFileMetadata& local_metadata,
       const fileapi::FileSystemURL& url,
       const SyncStatusCallback& callback) OVERRIDE;
 
