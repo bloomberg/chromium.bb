@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 
 namespace keys = extension_management_api_constants;
@@ -31,18 +32,12 @@ namespace extensions {
 class ExtensionManagementApiBrowserTest : public ExtensionBrowserTest {
  protected:
   bool CrashEnabledExtension(const std::string& extension_id) {
-    content::WindowedNotificationObserver extension_crash_observer(
-        chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-        content::NotificationService::AllSources());
     ExtensionHost* background_host =
         ExtensionSystem::Get(browser()->profile())->
             process_manager()->GetBackgroundHostForExtension(extension_id);
     if (!background_host)
       return false;
-    background_host->host_contents()->GetController().LoadURL(
-        GURL(content::kChromeUICrashURL), content::Referrer(),
-        content::PAGE_TRANSITION_LINK, std::string());
-    extension_crash_observer.Wait();
+    content::CrashTab(background_host->host_contents());
     return true;
   }
 };
@@ -265,10 +260,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
   SetEnabled(true, true, keys::kUserDidNotReEnableError);
 
-  // This should succeed when user accepts dialog.
+  // This should succeed when user accepts dialog.  We must wait for the process
+  // to connect *and* for the channel to finish initializing before trying to
+  // crash it.  (NOTIFICATION_RENDERER_PROCESS_CREATED does not wait for the
+  // latter and can cause KillProcess to fail on Windows.)
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
+      content::NotificationService::AllSources());
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
   SetEnabled(true, true, std::string());
+  observer.Wait();
 
   // Crash the extension. Mock a reload by disabling and then enabling. The
   // extension should be reloaded and enabled.

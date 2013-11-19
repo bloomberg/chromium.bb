@@ -1092,6 +1092,7 @@ TEST_F(RenderViewHostManagerTest, CreateSwappedOutOpenerRVHs) {
 // those associated RenderViews crashes. http://crbug.com/258993
 TEST_F(RenderViewHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://www.chromium.org/");
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
@@ -1104,9 +1105,13 @@ TEST_F(RenderViewHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
       opener1->GetRenderManagerForTesting();
   contents()->SetOpener(opener1.get());
 
+  // Make sure the new opener RVH is considered live.
+  opener1_manager->current_host()->CreateRenderView(string16(), -1, -1);
+
+  // Use a cross-process navigation in the opener to swap out the old RVH.
   EXPECT_FALSE(opener1_manager->GetSwappedOutRenderViewHost(
       rvh1->GetSiteInstance()));
-  opener1->CreateSwappedOutRenderView(rvh1->GetSiteInstance());
+  opener1->NavigateAndCommit(kUrl2);
   EXPECT_TRUE(opener1_manager->GetSwappedOutRenderViewHost(
       rvh1->GetSiteInstance()));
 
@@ -1125,10 +1130,11 @@ TEST_F(RenderViewHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   EXPECT_FALSE(opener1_manager->GetSwappedOutRenderViewHost(
       rvh1->GetSiteInstance()));
 
-  // Reload the initial tab. This should recreate the opener.
+  // Reload the initial tab. This should recreate the opener's swapped out RVH
+  // in the original SiteInstance.
   contents()->GetController().Reload(true);
-
-  EXPECT_EQ(opener1_manager->current_host()->GetRoutingID(),
+  EXPECT_EQ(opener1_manager->GetSwappedOutRenderViewHost(
+                rvh1->GetSiteInstance())->GetRoutingID(),
             test_rvh()->opener_route_id());
 }
 

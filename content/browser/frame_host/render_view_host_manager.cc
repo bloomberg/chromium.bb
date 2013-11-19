@@ -496,36 +496,47 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
     const NavigationEntryImpl* new_entry) const {
   DCHECK(new_entry);
 
+  // If new_entry already has a SiteInstance, assume it is correct and use it.
+  if (new_entry->site_instance())
+    return false;
+
   // Check for reasons to swap processes even if we are in a process model that
   // doesn't usually swap (e.g., process-per-tab).
 
-  // For security, we should transition between processes when one is a Web UI
-  // page and one isn't.  If there's no curr_entry, check the current RVH's
-  // site, which might already be committed to a Web UI URL (such as the NTP).
-  const GURL& current_url = (curr_entry) ? curr_entry->GetURL() :
-      render_view_host_->GetSiteInstance()->GetSiteURL();
+  // We use the effective URL here, since that's what is used in the
+  // SiteInstance's site and when we later call IsSameWebSite.  If there is no
+  // curr_entry, check the current SiteInstance's site, which might already be
+  // committed to a Web UI URL (such as the NTP).
   BrowserContext* browser_context =
       delegate_->GetControllerForRenderManager().GetBrowserContext();
+  const GURL& current_url = (curr_entry) ?
+      SiteInstanceImpl::GetEffectiveURL(browser_context, curr_entry->GetURL()) :
+      render_view_host_->GetSiteInstance()->GetSiteURL();
+  const GURL& new_url = SiteInstanceImpl::GetEffectiveURL(browser_context,
+                                                          new_entry->GetURL());
+
+  // For security, we should transition between processes when one is a Web UI
+  // page and one isn't.
   if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
           browser_context, current_url)) {
     // Force swap if it's not an acceptable URL for Web UI.
     // Here, data URLs are never allowed.
     if (!WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
-            browser_context, new_entry->GetURL(), false)) {
+            browser_context, new_url, false)) {
       return true;
     }
   } else {
     // Force swap if it's a Web UI URL.
     if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
-            browser_context, new_entry->GetURL())) {
+            browser_context, new_url)) {
       return true;
     }
   }
 
+  // Check with the content client as well.  Important to pass current_url here,
+  // which uses the SiteInstance's site if there is no curr_entry.
   if (GetContentClient()->browser()->ShouldSwapProcessesForNavigation(
-          render_view_host_->GetSiteInstance(),
-          curr_entry ? curr_entry->GetURL() : GURL(),
-          new_entry->GetURL())) {
+          render_view_host_->GetSiteInstance(), current_url, new_url)) {
     return true;
   }
 
@@ -556,13 +567,21 @@ bool RenderViewHostManager::ShouldReuseWebUI(
 
 SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     const NavigationEntryImpl& entry,
-    SiteInstance* curr_instance) {
-  // NOTE: This is only called when ShouldTransitionCrossSite is true.
-
+    SiteInstance* curr_instance,
+    bool force_browsing_instance_swap) {
+  // Determine which SiteInstance to use for navigating to |entry|.
   const GURL& dest_url = entry.GetURL();
   NavigationControllerImpl& controller =
       delegate_->GetControllerForRenderManager();
   BrowserContext* browser_context = controller.GetBrowserContext();
+
+  // If a swap is required, we need to force the SiteInstance AND
+  // BrowsingInstance to be different ones, using CreateForURL.
+  if (force_browsing_instance_swap) {
+    // We shouldn't be forcing a swap if an entry already has a SiteInstance.
+    CHECK(!entry.site_instance());
+    return SiteInstance::CreateForURL(browser_context, dest_url);
+  }
 
   // If the entry has an instance already we should use it.
   if (entry.site_instance())
@@ -690,22 +709,14 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
       !static_cast<SiteInstanceImpl*>(curr_instance)->HasWrongProcessForURL(
           dest_url)) {
     return curr_instance;
-  } else if (ShouldSwapProcessesForNavigation(curr_entry, &entry)) {
-    // When we're swapping, we need to force the site instance AND browsing
-    // instance to be different ones. This addresses special cases where we use
-    // a single BrowsingInstance for all pages of a certain type (e.g., New Tab
-    // Pages), keeping them in the same process. When you navigate away from
-    // that page, we want to explicity ignore that BrowsingInstance and group
-    // this page into the appropriate SiteInstance for its URL.
-    return SiteInstance::CreateForURL(browser_context, dest_url);
-  } else {
-    // Start the new renderer in a new SiteInstance, but in the current
-    // BrowsingInstance.  It is important to immediately give this new
-    // SiteInstance to a RenderViewHost (if it is different than our current
-    // SiteInstance), so that it is ref counted.  This will happen in
-    // CreateRenderView.
-    return curr_instance->GetRelatedSiteInstance(dest_url);
   }
+
+  // Start the new renderer in a new SiteInstance, but in the current
+  // BrowsingInstance.  It is important to immediately give this new
+  // SiteInstance to a RenderViewHost (if it is different than our current
+  // SiteInstance), so that it is ref counted.  This will happen in
+  // CreateRenderView.
+  return curr_instance->GetRelatedSiteInstance(dest_url);
 }
 
 int RenderViewHostManager::CreateRenderView(
@@ -715,6 +726,10 @@ int RenderViewHostManager::CreateRenderView(
     bool hidden) {
   CHECK(instance);
   DCHECK(!swapped_out || hidden); // Swapped out views should always be hidden.
+
+  // We are creating a pending or swapped out RVH here.  We should never create
+  // it in the same SiteInstance as our current RVH.
+  CHECK_NE(render_view_host_->GetSiteInstance(), instance);
 
   // Check if we've already created an RVH for this SiteInstance.  If so, try
   // to re-use the existing one, which has already been initialized.  We'll
@@ -915,11 +930,18 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
   const NavigationEntry* curr_entry =
       delegate_->GetLastCommittedNavigationEntryForRenderManager();
   bool is_guest_scheme = curr_instance->GetSiteURL().SchemeIs(kGuestScheme);
-  bool force_swap = ShouldSwapProcessesForNavigation(curr_entry, &entry);
+  bool force_swap = !is_guest_scheme &&
+      ShouldSwapProcessesForNavigation(curr_entry, &entry);
   if (!is_guest_scheme && (ShouldTransitionCrossSite() || force_swap))
-    new_instance = GetSiteInstanceForEntry(entry, curr_instance);
+    new_instance = GetSiteInstanceForEntry(entry, curr_instance, force_swap);
 
-  if (!is_guest_scheme && (new_instance != curr_instance || force_swap)) {
+  // If force_swap is true, we must use a different SiteInstance.  If we didn't,
+  // we would have two RenderViewHosts in the same SiteInstance and the same
+  // tab, resulting in page_id conflicts for their NavigationEntries.
+  if (force_swap)
+    CHECK_NE(new_instance, curr_instance);
+
+  if (new_instance != curr_instance) {
     // New SiteInstance.
     DCHECK(!cross_navigation_pending_);
 

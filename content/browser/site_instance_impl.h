@@ -66,6 +66,15 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   static void set_render_process_host_factory(
       const RenderProcessHostFactory* rph_factory);
 
+  // Get the effective URL for the given actual URL.  This allows the
+  // ContentBrowserClient to override the SiteInstance's site for certain URLs.
+  // For example, Chrome uses this to replace hosted app URLs with extension
+  // hosts.
+  // Only public so that we can make a consistent process swap decision in
+  // RenderViewHostManager.
+  static GURL GetEffectiveURL(BrowserContext* browser_context,
+                              const GURL& url);
+
  protected:
   friend class BrowsingInstance;
   friend class SiteInstance;
@@ -79,10 +88,6 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   explicit SiteInstanceImpl(BrowsingInstance* browsing_instance);
 
  private:
-  // Get the effective URL for the given actual URL.
-  static GURL GetEffectiveURL(BrowserContext* browser_context,
-                              const GURL& url);
-
   // RenderProcessHostObserver implementation.
   virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE;
 

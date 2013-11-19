@@ -28,34 +28,37 @@ class AppWindowAPI : public extensions::PlatformAppBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, TestCreate) {
+// These tests are flaky after https://codereview.chromium.org/57433010/.
+// See http://crbug.com/319613.
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestCreate) {
   ASSERT_TRUE(RunAppWindowAPITest("testCreate")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, TestSingleton) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestSingleton) {
   ASSERT_TRUE(RunAppWindowAPITest("testSingleton")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, TestBounds) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestBounds) {
   ASSERT_TRUE(RunAppWindowAPITest("testBounds")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, TestCloseEvent) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestCloseEvent) {
   ASSERT_TRUE(RunAppWindowAPITest("testCloseEvent")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, TestMaximize) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestMaximize) {
   ASSERT_TRUE(RunAppWindowAPITest("testMaximize")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, TestRestore) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestRestore) {
   ASSERT_TRUE(RunAppWindowAPITest("testRestore")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, TestRestoreAfterClose) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestRestoreAfterClose) {
   ASSERT_TRUE(RunAppWindowAPITest("testRestoreAfterClose")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, TestSizeConstraints) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestSizeConstraints) {
   ASSERT_TRUE(RunAppWindowAPITest("testSizeConstraints")) << message_;
 }

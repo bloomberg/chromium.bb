@@ -305,6 +305,7 @@ class CONTENT_EXPORT RenderViewHostManager
   // RenderProcessHosts) even if the site instance would otherwise be the same.
   // As part of this, we'll also force new SiteInstances and BrowsingInstances.
   // Either of the entries may be NULL.
+  // TODO(creis): Rename to ShouldSwapBrowsingInstancesForNavigation.
   bool ShouldSwapProcessesForNavigation(
       const NavigationEntry* curr_entry,
       const NavigationEntryImpl* new_entry) const;
@@ -314,11 +315,12 @@ class CONTENT_EXPORT RenderViewHostManager
       const NavigationEntryImpl* new_entry) const;
 
   // Returns an appropriate SiteInstance object for the given NavigationEntry,
-  // possibly reusing the current SiteInstance.
-  // Never called if --process-per-tab is used.
+  // possibly reusing the current SiteInstance.  If --process-per-tab is used,
+  // this is only called when ShouldSwapProcessesForNavigation returns true.
   SiteInstance* GetSiteInstanceForEntry(
       const NavigationEntryImpl& entry,
-      SiteInstance* curr_instance);
+      SiteInstance* curr_instance,
+      bool force_browsing_instance_swap);
 
   // Sets up the necessary state for a new RenderViewHost with the given opener.
   bool InitRenderView(RenderViewHost* render_view_host, int opener_route_id);
