@@ -784,6 +784,7 @@
     'browser/profiler_message_filter.h',
     'browser/quota_dispatcher_host.cc',
     'browser/quota_dispatcher_host.h',
+    'browser/renderer_data_memoizing_store.h',
     'browser/renderer_host/backing_store.cc',
     'browser/renderer_host/backing_store.h',
     'browser/renderer_host/backing_store_aura.cc',
