@@ -84,7 +84,7 @@ namespace WebCore {
         WorkerScriptLoaderClient* m_client;
         RefPtr<ThreadableLoader> m_threadableLoader;
         String m_responseEncoding;
-        RefPtr<TextResourceDecoder> m_decoder;
+        OwnPtr<TextResourceDecoder> m_decoder;
         StringBuilder m_script;
         KURL m_url;
         KURL m_responseURL;

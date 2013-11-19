@@ -136,7 +136,7 @@ private:
     void skipWhiteSpace(const String&, unsigned*);
 
     BufferedLineReader m_lineReader;
-    RefPtr<TextResourceDecoder> m_decoder;
+    OwnPtr<TextResourceDecoder> m_decoder;
     String m_currentId;
     double m_currentStartTime;
     double m_currentEndTime;

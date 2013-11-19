@@ -42,14 +42,14 @@ DecodedDataDocumentParser::~DecodedDataDocumentParser()
 {
 }
 
-void DecodedDataDocumentParser::setDecoder(PassRefPtr<TextResourceDecoder> decoder)
+void DecodedDataDocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
 {
     m_decoder = decoder;
 }
 
-PassRefPtr<TextResourceDecoder> DecodedDataDocumentParser::decoder()
+TextResourceDecoder* DecodedDataDocumentParser::decoder()
 {
-    return m_decoder;
+    return m_decoder.get();
 }
 
 void DecodedDataDocumentParser::setHasAppendedData()

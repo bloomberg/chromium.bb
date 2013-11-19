@@ -27,6 +27,7 @@
 #define DecodedDataDocumentParser_h
 
 #include "core/dom/DocumentParser.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -42,8 +43,8 @@ public:
     virtual void appendBytes(const char* bytes, size_t length) OVERRIDE;
     virtual void flush() OVERRIDE;
     virtual bool needsDecoder() const OVERRIDE { return !m_decoder; }
-    virtual void setDecoder(PassRefPtr<TextResourceDecoder>) OVERRIDE;
-    virtual PassRefPtr<TextResourceDecoder> decoder() OVERRIDE;
+    virtual void setDecoder(PassOwnPtr<TextResourceDecoder>) OVERRIDE;
+    virtual TextResourceDecoder* decoder() OVERRIDE;
     virtual void setHasAppendedData() OVERRIDE;
 
 protected:
@@ -57,7 +58,7 @@ private:
     void updateDocument(String& decodedData);
 
     bool m_hasAppendedData;
-    RefPtr<TextResourceDecoder> m_decoder;
+    OwnPtr<TextResourceDecoder> m_decoder;
 };
 
 }

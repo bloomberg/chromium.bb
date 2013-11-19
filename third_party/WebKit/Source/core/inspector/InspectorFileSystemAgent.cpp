@@ -489,7 +489,7 @@ void FileContentRequest::didRead()
         return;
     }
 
-    RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create(m_mimeType, m_charset, true);
+    OwnPtr<TextResourceDecoder> decoder = TextResourceDecoder::create(m_mimeType, m_charset, true);
     String result = decoder->decode(static_cast<char*>(buffer->data()), buffer->byteLength());
     result.append(decoder->flush());
     m_charset = decoder->encoding().name();

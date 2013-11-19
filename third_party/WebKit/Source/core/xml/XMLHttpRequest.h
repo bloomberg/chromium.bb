@@ -218,7 +218,7 @@ private:
     ResourceResponse m_response;
     String m_responseEncoding;
 
-    RefPtr<TextResourceDecoder> m_decoder;
+    OwnPtr<TextResourceDecoder> m_decoder;
 
     ScriptString m_responseText;
     // Used to skip m_responseDocument creation if it's done previously. We need

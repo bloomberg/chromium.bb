@@ -52,8 +52,8 @@ public:
     virtual void appendBytes(const char* bytes, size_t length) = 0;
     virtual void flush() = 0;
     virtual bool needsDecoder() const { return false; }
-    virtual void setDecoder(PassRefPtr<TextResourceDecoder>);
-    virtual PassRefPtr<TextResourceDecoder> decoder();
+    virtual void setDecoder(PassOwnPtr<TextResourceDecoder>);
+    virtual TextResourceDecoder* decoder();
     virtual void setHasAppendedData() { }
 
     // pinToMainThread also makes append() not yield before completion of that chunk.

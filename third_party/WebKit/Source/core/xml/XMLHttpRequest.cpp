@@ -878,7 +878,7 @@ void XMLHttpRequest::clearVariablesForLoading()
 {
     // FIXME: when we add the support for multi-part XHR, we will have to think be careful with this initialization.
     m_receivedLength = 0;
-    m_decoder = 0;
+    m_decoder.clear();
 
     m_responseEncoding = String();
 }

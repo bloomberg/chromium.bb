@@ -163,7 +163,7 @@ void FileReaderLoader::cleanup()
         m_rawData.clear();
         m_stringResult = "";
         m_isRawDataConverted = true;
-        m_decoder = 0;
+        m_decoder.clear();
     }
 }
 

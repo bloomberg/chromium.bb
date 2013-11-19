@@ -107,8 +107,8 @@ public:
         String textEncodingName() const { return m_textEncodingName; }
         void setTextEncodingName(const String& textEncodingName) { m_textEncodingName = textEncodingName; }
 
-        PassRefPtr<TextResourceDecoder> decoder() const { return m_decoder; }
-        void setDecoder(PassRefPtr<TextResourceDecoder> decoder) { m_decoder = decoder; }
+        TextResourceDecoder* decoder() const { return m_decoder.get(); }
+        void setDecoder(PassOwnPtr<TextResourceDecoder> decoder) { m_decoder = decoder; }
 
         PassRefPtr<SharedBuffer> buffer() const { return m_buffer; }
         void setBuffer(PassRefPtr<SharedBuffer> buffer) { m_buffer = buffer; }
@@ -138,7 +138,7 @@ public:
         int m_httpStatusCode;
 
         String m_textEncodingName;
-        RefPtr<TextResourceDecoder> m_decoder;
+        OwnPtr<TextResourceDecoder> m_decoder;
 
         RefPtr<SharedBuffer> m_buffer;
         Resource* m_cachedResource;

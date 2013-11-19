@@ -45,7 +45,7 @@ public:
     TextResourceDecoderBuilder(const String& mimeType, const String& encoding, bool encodingUserChoosen);
     ~TextResourceDecoderBuilder();
 
-    PassRefPtr<TextResourceDecoder> buildFor(Document*);
+    PassOwnPtr<TextResourceDecoder> buildFor(Document*);
 
     const String& mimeType() const { return m_mimeType; }
     const String& encoding() const { return m_encoding; }
@@ -54,7 +54,7 @@ public:
     void clear();
 
 private:
-    PassRefPtr<TextResourceDecoder> createDecoderInstance(Document*);
+    PassOwnPtr<TextResourceDecoder> createDecoderInstance(Document*);
     void setupEncoding(TextResourceDecoder*, Document*);
 
     String m_mimeType;

@@ -109,7 +109,7 @@ bool FontResource::ensureSVGFontData()
     if (!m_externalSVGDocument && !errorOccurred() && !isLoading() && m_data) {
         m_externalSVGDocument = SVGDocument::create();
 
-        RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
+        OwnPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
         String svgSource = decoder->decode(m_data->data(), m_data->size());
         svgSource.append(decoder->flush());
 

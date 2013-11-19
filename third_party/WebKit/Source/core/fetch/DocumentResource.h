@@ -47,7 +47,7 @@ private:
     PassRefPtr<Document> createDocument(const KURL&);
 
     RefPtr<Document> m_document;
-    RefPtr<TextResourceDecoder> m_decoder;
+    OwnPtr<TextResourceDecoder> m_decoder;
 };
 
 class DocumentResourceClient : public ResourceClient {

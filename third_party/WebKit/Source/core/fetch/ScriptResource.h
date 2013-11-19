@@ -48,7 +48,7 @@ public:
 
 private:
     AtomicString m_script;
-    RefPtr<TextResourceDecoder> m_decoder;
+    OwnPtr<TextResourceDecoder> m_decoder;
 };
 }
 

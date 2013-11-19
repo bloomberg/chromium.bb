@@ -47,7 +47,7 @@ protected:
     virtual void checkNotify();
 
     String m_sheet;
-    RefPtr<TextResourceDecoder> m_decoder;
+    OwnPtr<TextResourceDecoder> m_decoder;
 };
 
 } // namespace WebCore

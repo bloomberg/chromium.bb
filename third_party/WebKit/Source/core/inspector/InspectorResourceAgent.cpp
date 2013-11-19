@@ -165,7 +165,7 @@ private:
 
     RefPtr<LoadResourceForFrontendCallback> m_callback;
     RefPtr<ThreadableLoader> m_loader;
-    RefPtr<TextResourceDecoder> m_decoder;
+    OwnPtr<TextResourceDecoder> m_decoder;
     ScriptString m_responseText;
     int m_statusCode;
     HTTPHeaderMap m_responseHeaders;

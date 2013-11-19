@@ -56,7 +56,7 @@ TextResourceDecoderBuilder::~TextResourceDecoderBuilder()
 }
 
 
-inline PassRefPtr<TextResourceDecoder> TextResourceDecoderBuilder::createDecoderInstance(Document* document)
+inline PassOwnPtr<TextResourceDecoder> TextResourceDecoderBuilder::createDecoderInstance(Document* document)
 {
     if (Frame* frame = document->frame()) {
         if (Settings* settings = frame->settings())
@@ -92,9 +92,9 @@ inline void TextResourceDecoderBuilder::setupEncoding(TextResourceDecoder* decod
     }
 }
 
-PassRefPtr<TextResourceDecoder> TextResourceDecoderBuilder::buildFor(Document* document)
+PassOwnPtr<TextResourceDecoder> TextResourceDecoderBuilder::buildFor(Document* document)
 {
-    RefPtr<TextResourceDecoder> decoder = createDecoderInstance(document);
+    OwnPtr<TextResourceDecoder> decoder = createDecoderInstance(document);
     setupEncoding(decoder.get(), document);
     return decoder.release();
 }

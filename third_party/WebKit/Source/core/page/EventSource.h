@@ -110,7 +110,7 @@ private:
     bool m_withCredentials;
     State m_state;
 
-    RefPtr<TextResourceDecoder> m_decoder;
+    OwnPtr<TextResourceDecoder> m_decoder;
     RefPtr<ThreadableLoader> m_loader;
     Timer<EventSource> m_connectTimer;
     Vector<UChar> m_receiveBuf;

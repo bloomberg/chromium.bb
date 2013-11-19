@@ -56,7 +56,7 @@ private:
 protected:
     virtual void checkNotify();
 
-    RefPtr<TextResourceDecoder> m_decoder;
+    OwnPtr<TextResourceDecoder> m_decoder;
     String m_decodedSheetText;
 
     RefPtr<StyleSheetContents> m_parsedStyleSheetCache;

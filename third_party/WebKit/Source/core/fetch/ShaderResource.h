@@ -44,7 +44,7 @@ public:
     const String& shaderString();
 
 private:
-    RefPtr<TextResourceDecoder> m_decoder;
+    OwnPtr<TextResourceDecoder> m_decoder;
     String m_shaderString;
 };
 

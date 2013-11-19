@@ -158,14 +158,14 @@ static bool hasTextContent(Resource* cachedResource)
     return type == InspectorPageAgent::DocumentResource || type == InspectorPageAgent::StylesheetResource || type == InspectorPageAgent::ScriptResource || type == InspectorPageAgent::XHRResource;
 }
 
-static PassRefPtr<TextResourceDecoder> createXHRTextDecoder(const String& mimeType, const String& textEncodingName)
+static PassOwnPtr<TextResourceDecoder> createXHRTextDecoder(const String& mimeType, const String& textEncodingName)
 {
     if (!textEncodingName.isEmpty())
         return TextResourceDecoder::create("text/plain", textEncodingName);
     if (DOMImplementation::isXMLMIMEType(mimeType.lower())) {
-        RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
+        OwnPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
         decoder->useLenientXMLDecoding();
-        return decoder;
+        return decoder.release();
     }
     if (equalIgnoringCase(mimeType, "text/html"))
         return TextResourceDecoder::create("text/html", "UTF-8");
@@ -209,7 +209,7 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
             SharedBuffer* buffer = cachedResource->resourceBuffer();
             if (!buffer)
                 return false;
-            RefPtr<TextResourceDecoder> decoder = createXHRTextDecoder(cachedResource->response().mimeType(), cachedResource->response().textEncodingName());
+            OwnPtr<TextResourceDecoder> decoder = createXHRTextDecoder(cachedResource->response().mimeType(), cachedResource->response().textEncodingName());
             String content = decoder->decode(buffer->data(), buffer->size());
             *result = content + decoder->flush();
             return true;

@@ -47,12 +47,12 @@ DocumentParser::~DocumentParser()
     ASSERT(!m_document);
 }
 
-void DocumentParser::setDecoder(PassRefPtr<TextResourceDecoder>)
+void DocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder>)
 {
     ASSERT_NOT_REACHED();
 }
 
-PassRefPtr<TextResourceDecoder> DocumentParser::decoder()
+TextResourceDecoder* DocumentParser::decoder()
 {
     return 0;
 }

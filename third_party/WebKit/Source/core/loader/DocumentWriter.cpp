@@ -86,8 +86,8 @@ void DocumentWriter::addData(const char* bytes, size_t length)
 {
     ASSERT(m_parser);
     if (m_parser->needsDecoder() && 0 < length) {
-        RefPtr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
-        m_parser->setDecoder(decoder);
+        OwnPtr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
+        m_parser->setDecoder(decoder.release());
     }
     // appendBytes() can result replacing DocumentLoader::m_writer.
     RefPtr<DocumentWriter> protectingThis(this);
@@ -107,8 +107,8 @@ void DocumentWriter::end()
         return;
 
     if (m_parser->needsDecoder()) {
-        RefPtr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
-        m_parser->setDecoder(decoder);
+        OwnPtr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
+        m_parser->setDecoder(decoder.release());
     }
     // flush() can result replacing DocumentLoader::m_writer.
     RefPtr<DocumentWriter> protectingThis(this);
@@ -124,7 +124,7 @@ void DocumentWriter::end()
 
 void DocumentWriter::setUserChosenEncoding(const String& charset)
 {
-    RefPtr<TextResourceDecoder> decoder = m_parser->decoder();
+    TextResourceDecoder* decoder = m_parser->decoder();
     if (decoder)
         decoder->setEncoding(charset, TextResourceDecoder::UserChosenEncoding);
 }

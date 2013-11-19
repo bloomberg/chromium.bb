@@ -30,7 +30,7 @@ namespace WebCore {
 
 class HTMLMetaCharsetParser;
 
-class TextResourceDecoder : public RefCounted<TextResourceDecoder> {
+class TextResourceDecoder {
 public:
     enum EncodingSource {
         DefaultEncoding,
@@ -44,9 +44,9 @@ public:
         EncodingFromParentFrame
     };
 
-    static PassRefPtr<TextResourceDecoder> create(const String& mimeType, const WTF::TextEncoding& defaultEncoding = WTF::TextEncoding(), bool usesEncodingDetector = false)
+    static PassOwnPtr<TextResourceDecoder> create(const String& mimeType, const WTF::TextEncoding& defaultEncoding = WTF::TextEncoding(), bool usesEncodingDetector = false)
     {
-        return adoptRef(new TextResourceDecoder(mimeType, defaultEncoding, usesEncodingDetector));
+        return adoptPtr(new TextResourceDecoder(mimeType, defaultEncoding, usesEncodingDetector));
     }
     ~TextResourceDecoder();
 
