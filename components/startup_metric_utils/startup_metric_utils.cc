@@ -5,10 +5,13 @@
 #include "components/startup_metric_utils/startup_metric_utils.h"
 
 #include "base/containers/hash_tables.h"
+#include "base/environment.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/process/process_info.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
@@ -41,6 +44,10 @@ bool g_main_entry_time_was_recorded = false;
 bool g_startup_stats_collection_finished = false;
 bool g_was_slow_startup = false;
 
+// Environment variable that stores the timestamp when the executable's main()
+// function was entered.
+const char kChromeMainTimeEnvVar[] = "CHROME_MAIN_TIME";
+
 }  // namespace
 
 namespace startup_metric_utils {
@@ -57,6 +64,13 @@ void RecordMainEntryPointTime() {
   DCHECK(!g_main_entry_time_was_recorded);
   g_main_entry_time_was_recorded = true;
   MainEntryPointTimeInternal();
+}
+
+void RecordExeMainEntryTime() {
+  std::string exe_load_time =
+      base::Int64ToString(base::Time::Now().ToInternalValue());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  env->SetVar(kChromeMainTimeEnvVar, exe_load_time);
 }
 
 #if defined(OS_ANDROID)
@@ -102,6 +116,38 @@ void OnBrowserStartupComplete(bool is_first_run) {
         "Startup.BrowserMessageLoopStartTimeFromMainEntry",
         startup_time_from_main_entry);
   }
+
+// CurrentProcessInfo::CreationTime() is currently only implemented on some
+// platforms.
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+  // Record timings between process creation, the main() in the executable being
+  // reached and the main() in the shared library being reached.
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::string chrome_main_entry_time_string;
+  if (env->GetVar(kChromeMainTimeEnvVar, &chrome_main_entry_time_string)) {
+    // The time that the Chrome executable's main() function was entered.
+    int64 chrome_main_entry_time_int = 0;
+    if (base::StringToInt64(chrome_main_entry_time_string,
+                            &chrome_main_entry_time_int)) {
+      base::Time process_create_time = base::CurrentProcessInfo::CreationTime();
+      base::Time exe_main_time =
+          base::Time::FromInternalValue(chrome_main_entry_time_int);
+      base::Time dll_main_time = MainEntryStartTime();
+
+      // Process create to chrome.exe:main().
+      UMA_HISTOGRAM_LONG_TIMES("Startup.LoadTime.ProcessCreateToExeMain",
+                               exe_main_time - process_create_time);
+
+      // chrome.exe:main() to chrome.dll:main().
+      UMA_HISTOGRAM_LONG_TIMES("Startup.LoadTime.ExeMainToDllMain",
+                               dll_main_time - exe_main_time);
+
+      // Process create to chrome.dll:main().
+      UMA_HISTOGRAM_LONG_TIMES("Startup.LoadTime.ProcessCreateToDllMain",
+                               dll_main_time - process_create_time);
+    }
+  }
+#endif
 
   // Record histograms for the subsystem times for startups > 10 seconds.
   const base::TimeDelta kTenSeconds = base::TimeDelta::FromSeconds(10);

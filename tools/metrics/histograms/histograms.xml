@@ -18993,6 +18993,23 @@ other types of suffix sets.
   <summary>Whether a startup is a resume (vs a cold start).</summary>
 </histogram>
 
+<histogram name="Startup.LoadTime.ExeMainToDllMain">
+  <summary>
+    Time from the main() function in chrome.exe to chrome.dll's main().
+  </summary>
+</histogram>
+
+<histogram name="Startup.LoadTime.ProcessCreateToDllMain">
+  <summary>Time from the process creation to chrome.dll's main().</summary>
+</histogram>
+
+<histogram name="Startup.LoadTime.ProcessCreateToExeMain">
+  <summary>
+    Time from the process creation to executing the main() function in
+    chrome.exe.
+  </summary>
+</histogram>
+
 <histogram name="Startup.MobileSessionStartAction"
     enum="MobileSessionStartAction">
   <summary>

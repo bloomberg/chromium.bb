@@ -22,6 +22,7 @@
 #include "chrome_elf/chrome_elf_main.h"
 #include "components/breakpad/app/breakpad_client.h"
 #include "components/breakpad/app/breakpad_win.h"
+#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/common/result_codes.h"
 #include "sandbox/win/src/sandbox_factory.h"
@@ -112,6 +113,7 @@ bool AttemptFastNotify(const CommandLine& command_line) {
 }  // namespace
 
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
+  startup_metric_utils::RecordExeMainEntryTime();
   // Initialize the commandline singleton from the environment.
   CommandLine::Init(0, NULL);
   // The exit manager is in charge of calling the dtors of singletons.

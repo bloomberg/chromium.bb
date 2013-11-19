@@ -31,6 +31,11 @@ void SetNonBrowserUIDisplayed();
 // timestamp.
 void RecordMainEntryPointTime();
 
+// Call this when the executable is loaded and main() is entered. Can be
+// different from |RecordMainEntryPointTime| when the startup process is
+// contained in a separate dll, such as with chrome.exe / chrome.dll on Windows.
+void RecordExeMainEntryTime();
+
 #if defined(OS_ANDROID)
 // On Android the entry point time is the time at which the Java code starts.
 // This is recorded on the Java side, and then passed to the C++ side once the

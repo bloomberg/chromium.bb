@@ -418,6 +418,7 @@
             }], # internal_pdf
           ],
           'dependencies': [
+            '../components/components.gyp:startup_metric_utils',
             'chrome_resources.gyp:packed_extra_resources',
             'chrome_resources.gyp:packed_resources',
             # Copy Flash Player files to PRODUCT_DIR if applicable. Let the .gyp
