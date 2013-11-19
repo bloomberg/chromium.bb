@@ -76,6 +76,24 @@ weston_compositor_add_key_binding(struct weston_compositor *compositor,
 }
 
 WL_EXPORT struct weston_binding *
+weston_compositor_add_modifier_binding(struct weston_compositor *compositor,
+				       uint32_t modifier,
+				       weston_modifier_binding_handler_t handler,
+				       void *data)
+{
+	struct weston_binding *binding;
+
+	binding = weston_compositor_add_binding(compositor, 0, 0, 0,
+						modifier, handler, data);
+	if (binding == NULL)
+		return NULL;
+
+	wl_list_insert(compositor->modifier_binding_list.prev, &binding->link);
+
+	return binding;
+}
+
+WL_EXPORT struct weston_binding *
 weston_compositor_add_button_binding(struct weston_compositor *compositor,
 				     uint32_t button, uint32_t modifier,
 				     weston_button_binding_handler_t handler,
@@ -248,6 +266,10 @@ weston_compositor_run_key_binding(struct weston_compositor *compositor,
 	if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
 		return;
 
+	/* Invalidate all active modifier bindings. */
+	wl_list_for_each(b, &compositor->modifier_binding_list, link)
+		b->key = key;
+
 	wl_list_for_each(b, &compositor->key_binding_list, link) {
 		if (b->key == key && b->modifier == seat->modifier_state) {
 			weston_key_binding_handler_t handler = b->handler;
@@ -264,6 +286,34 @@ weston_compositor_run_key_binding(struct weston_compositor *compositor,
 }
 
 WL_EXPORT void
+weston_compositor_run_modifier_binding(struct weston_compositor *compositor,
+				       struct weston_seat *seat,
+				       enum weston_keyboard_modifier modifier,
+				       enum wl_keyboard_key_state state)
+{
+	struct weston_binding *b;
+
+	wl_list_for_each(b, &compositor->modifier_binding_list, link) {
+		weston_modifier_binding_handler_t handler = b->handler;
+
+		if (b->modifier != modifier)
+			continue;
+
+		/* Prime the modifier binding. */
+		if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+			b->key = 0;
+			continue;
+		}
+		/* Ignore the binding if a key was pressed in between. */
+		else if (b->key != 0) {
+			return;
+		}
+
+		handler(seat, modifier, b->data);
+	}
+}
+
+WL_EXPORT void
 weston_compositor_run_button_binding(struct weston_compositor *compositor,
 				     struct weston_seat *seat,
 				     uint32_t time, uint32_t button,
@@ -273,6 +323,10 @@ weston_compositor_run_button_binding(struct weston_compositor *compositor,
 
 	if (state == WL_POINTER_BUTTON_STATE_RELEASED)
 		return;
+
+	/* Invalidate all active modifier bindings. */
+	wl_list_for_each(b, &compositor->modifier_binding_list, link)
+		b->key = button;
 
 	wl_list_for_each(b, &compositor->button_binding_list, link) {
 		if (b->button == button && b->modifier == seat->modifier_state) {
@@ -307,6 +361,10 @@ weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 				   wl_fixed_t value)
 {
 	struct weston_binding *b;
+
+	/* Invalidate all active modifier bindings. */
+	wl_list_for_each(b, &compositor->modifier_binding_list, link)
+		b->key = axis;
 
 	wl_list_for_each(b, &compositor->axis_binding_list, link) {
 		if (b->axis == axis && b->modifier == seat->modifier_state) {

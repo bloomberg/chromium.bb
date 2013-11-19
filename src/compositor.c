@@ -3331,6 +3331,7 @@ weston_compositor_init(struct weston_compositor *ec,
 	wl_list_init(&ec->seat_list);
 	wl_list_init(&ec->output_list);
 	wl_list_init(&ec->key_binding_list);
+	wl_list_init(&ec->modifier_binding_list);
 	wl_list_init(&ec->button_binding_list);
 	wl_list_init(&ec->touch_binding_list);
 	wl_list_init(&ec->axis_binding_list);

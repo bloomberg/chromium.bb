@@ -759,6 +759,41 @@ notify_motion(struct weston_seat *seat,
 	pointer->grab->interface->motion(pointer->grab, time, pointer->x + dx, pointer->y + dy);
 }
 
+static void
+run_modifier_bindings(struct weston_seat *seat, uint32_t old, uint32_t new)
+{
+	struct weston_compositor *compositor = seat->compositor;
+	uint32_t diff;
+	unsigned int i;
+	struct {
+		uint32_t xkb;
+		enum weston_keyboard_modifier weston;
+	} mods[] = {
+		{ seat->xkb_info->ctrl_mod, MODIFIER_CTRL },
+		{ seat->xkb_info->alt_mod, MODIFIER_ALT },
+		{ seat->xkb_info->super_mod, MODIFIER_SUPER },
+		{ seat->xkb_info->shift_mod, MODIFIER_SHIFT },
+	};
+
+	diff = new & ~old;
+	for (i = 0; i < ARRAY_LENGTH(mods); i++) {
+		if (diff & (1 << mods[i].xkb))
+			weston_compositor_run_modifier_binding(compositor,
+			                                       seat,
+			                                       mods[i].weston,
+			                                       WL_KEYBOARD_KEY_STATE_PRESSED);
+	}
+
+	diff = old & ~new;
+	for (i = 0; i < ARRAY_LENGTH(mods); i++) {
+		if (diff & (1 << mods[i].xkb))
+			weston_compositor_run_modifier_binding(compositor,
+			                                       seat,
+			                                       mods[i].weston,
+			                                       WL_KEYBOARD_KEY_STATE_RELEASED);
+	}
+}
+
 WL_EXPORT void
 notify_motion_absolute(struct weston_seat *seat,
 		       uint32_t time, wl_fixed_t x, wl_fixed_t y)
@@ -877,6 +912,9 @@ notify_modifiers(struct weston_seat *seat, uint32_t serial)
 	    mods_locked != seat->keyboard->modifiers.mods_locked ||
 	    group != seat->keyboard->modifiers.group)
 		changed = 1;
+
+	run_modifier_bindings(seat, seat->keyboard->modifiers.mods_depressed,
+	                      mods_depressed);
 
 	seat->keyboard->modifiers.mods_depressed = mods_depressed;
 	seat->keyboard->modifiers.mods_latched = mods_latched;
