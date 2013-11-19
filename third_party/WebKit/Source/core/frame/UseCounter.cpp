@@ -682,6 +682,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case ShowModalDialog:
         return "Chromium is considering deprecating showModalDialog. Please use window.open and postMessage instead.";
 
+    case CSSStyleSheetInsertRuleOptionalArg:
+        return "Calling CSSStyleSheet.insertRule() with one argument is deprecated. Please pass the index argument as well: insertRule(x, 0).";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
