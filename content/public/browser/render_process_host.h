@@ -26,6 +26,7 @@ class TimeDelta;
 namespace content {
 class BrowserContext;
 class BrowserMessageFilter;
+class RenderProcessHostObserver;
 class RenderWidgetHost;
 class StoragePartition;
 
@@ -55,6 +56,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
     int exit_code;
   };
 
+  // General functions ---------------------------------------------------------
+
   virtual ~RenderProcessHost() {}
 
   // Initialize the new renderer process, returning true on success. This must
@@ -72,6 +75,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // listeners own it any more, it will delete itself.
   virtual void AddRoute(int32 routing_id, IPC::Listener* listener) = 0;
   virtual void RemoveRoute(int32 routing_id) = 0;
+
+  // Add and remove observers for lifecycle events. The order in which
+  // notifications are sent to observers is undefined. Observers must be sure to
+  // remove the observer before they go away.
+  virtual void AddObserver(RenderProcessHostObserver* observer) = 0;
+  virtual void RemoveObserver(RenderProcessHostObserver* observer) = 0;
 
   // Called to wait for the next UpdateRect message for the specified render
   // widget.  Returns true if successful, and the msg out-param will contain a

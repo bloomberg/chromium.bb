@@ -38,6 +38,7 @@
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/media/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/startup_task_runner.h"
 #include "content/browser/tracing/trace_controller_impl.h"
@@ -740,10 +741,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
 
-  if (RenderProcessHost::run_renderer_in_process() &&
-      !RenderProcessHost::AllHostsIterator().IsAtEnd()) {
-    delete RenderProcessHost::AllHostsIterator().GetCurrentValue();
-  }
+  if (RenderProcessHost::run_renderer_in_process())
+    RenderProcessHostImpl::ShutDownInProcessRenderer();
 
   if (parts_) {
     TRACE_EVENT0("shutdown",

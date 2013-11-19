@@ -117,6 +117,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host_factory.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/resource_context.h"
@@ -359,6 +360,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
     bool is_guest)
         : fast_shutdown_started_(false),
           deleting_soon_(false),
+#ifndef NDEBUG
+          is_self_deleted_(false),
+#endif
           pending_views_(0),
           visible_widgets_(0),
           backgrounded_(true),
@@ -399,7 +403,37 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   //       creation.
 }
 
+// static
+void RenderProcessHostImpl::ShutDownInProcessRenderer() {
+  DCHECK(g_run_renderer_in_process_);
+
+  switch (g_all_hosts.Pointer()->size()) {
+    case 0:
+      return;
+    case 1: {
+      RenderProcessHostImpl* host = static_cast<RenderProcessHostImpl*>(
+          AllHostsIterator().GetCurrentValue());
+      FOR_EACH_OBSERVER(RenderProcessHostObserver,
+                        host->observers_,
+                        RenderProcessHostDestroyed(host));
+#ifndef NDEBUG
+      host->is_self_deleted_ = true;
+#endif
+      delete host;
+      return;
+    }
+    default:
+      NOTREACHED() << "There should be only one RenderProcessHost when running "
+                   << "in-process.";
+  }
+}
+
 RenderProcessHostImpl::~RenderProcessHostImpl() {
+#ifndef NDEBUG
+  DCHECK(is_self_deleted_)
+      << "RenderProcessHostImpl is destroyed by something other than itself";
+#endif
+
   ChildProcessSecurityPolicyImpl::GetInstance()->Remove(GetID());
 
   if (gpu_observer_registered_) {
@@ -769,6 +803,15 @@ void RenderProcessHostImpl::RemoveRoute(int32 routing_id) {
   // Keep the one renderer thread around forever in single process mode.
   if (!run_renderer_in_process())
     Cleanup();
+}
+
+void RenderProcessHostImpl::AddObserver(RenderProcessHostObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void RenderProcessHostImpl::RemoveObserver(
+    RenderProcessHostObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool RenderProcessHostImpl::WaitForBackingStoreMsg(
@@ -1358,14 +1401,20 @@ bool RenderProcessHostImpl::IgnoreInputEvents() const {
 }
 
 void RenderProcessHostImpl::Cleanup() {
-  // When no other owners of this object, we can delete ourselves
+  // When there are no other owners of this object, we can delete ourselves.
   if (listeners_.IsEmpty()) {
     DCHECK_EQ(0, pending_views_);
+    FOR_EACH_OBSERVER(RenderProcessHostObserver,
+                      observers_,
+                      RenderProcessHostDestroyed(this));
     NotificationService::current()->Notify(
         NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         Source<RenderProcessHost>(this),
         NotificationService::NoDetails());
 
+#ifndef NDEBUG
+    is_self_deleted_ = true;
+#endif
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     deleting_soon_ = true;
     // It's important not to wait for the DeleteTask to delete the channel
@@ -1514,6 +1563,7 @@ void RenderProcessHost::SetRunRendererInProcess(bool value) {
   }
 }
 
+// static
 RenderProcessHost::iterator RenderProcessHost::AllHostsIterator() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return iterator(g_all_hosts.Pointer());

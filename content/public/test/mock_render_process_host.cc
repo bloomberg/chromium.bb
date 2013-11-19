@@ -19,15 +19,15 @@
 
 namespace content {
 
-MockRenderProcessHost::MockRenderProcessHost(
-    BrowserContext* browser_context)
-        : transport_dib_(NULL),
-          bad_msg_count_(0),
-          factory_(NULL),
-          id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
-          browser_context_(browser_context),
-          prev_routing_id_(0),
-          fast_shutdown_started_(false) {
+MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
+    : transport_dib_(NULL),
+      bad_msg_count_(0),
+      factory_(NULL),
+      id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
+      browser_context_(browser_context),
+      prev_routing_id_(0),
+      fast_shutdown_started_(false),
+      deletion_callback_called_(false) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
@@ -40,8 +40,14 @@ MockRenderProcessHost::~MockRenderProcessHost() {
   delete transport_dib_;
   if (factory_)
     factory_->Remove(this);
-  // In unit tests, Release() might not have been called.
-  RenderProcessHostImpl::UnregisterHost(GetID());
+
+  // In unit tests, Cleanup() might not have been called.
+  if (!deletion_callback_called_) {
+    FOR_EACH_OBSERVER(RenderProcessHostObserver,
+                      observers_,
+                      RenderProcessHostDestroyed(this));
+    RenderProcessHostImpl::UnregisterHost(GetID());
+  }
 }
 
 void MockRenderProcessHost::EnableSendQueue() {
@@ -65,6 +71,15 @@ void MockRenderProcessHost::RemoveRoute(int32 routing_id) {
   DCHECK(listeners_.Lookup(routing_id) != NULL);
   listeners_.Remove(routing_id);
   Cleanup();
+}
+
+void MockRenderProcessHost::AddObserver(RenderProcessHostObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MockRenderProcessHost::RemoveObserver(
+    RenderProcessHostObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool MockRenderProcessHost::WaitForBackingStoreMsg(
@@ -169,12 +184,16 @@ bool MockRenderProcessHost::IgnoreInputEvents() const {
 
 void MockRenderProcessHost::Cleanup() {
   if (listeners_.IsEmpty()) {
+    FOR_EACH_OBSERVER(RenderProcessHostObserver,
+                      observers_,
+                      RenderProcessHostDestroyed(this));
     NotificationService::current()->Notify(
         NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         Source<RenderProcessHost>(this),
         NotificationService::NoDetails());
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     RenderProcessHostImpl::UnregisterHost(GetID());
+    deletion_callback_called_ = true;
   }
 }
 

@@ -148,6 +148,7 @@
     'public/browser/render_frame_host.h',
     'public/browser/render_process_host.h',
     'public/browser/render_process_host_factory.h',
+    'public/browser/render_process_host_observer.h',
     'public/browser/render_view_host.h',
     'public/browser/render_widget_host.h',
     'public/browser/render_widget_host_view.h',

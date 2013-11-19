@@ -10,8 +10,6 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/content_switches.h"
@@ -46,13 +44,13 @@ SiteInstanceImpl::SiteInstanceImpl(BrowsingInstance* browsing_instance)
       process_(NULL),
       has_site_(false) {
   DCHECK(browsing_instance);
-
-  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllBrowserContextsAndSources());
 }
 
 SiteInstanceImpl::~SiteInstanceImpl() {
   GetContentClient()->browser()->SiteInstanceDeleting(this);
+
+  if (process_)
+    process_->RemoveObserver(this);
 
   // Now that no one is referencing us, we can safely remove ourselves from
   // the BrowsingInstance.  Any future visits to a page from this site
@@ -129,6 +127,7 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
       }
     }
     CHECK(process_);
+    process_->AddObserver(this);
 
     // If we are using process-per-site, we need to register this process
     // for the current site so that we can find it again.  (If no site is set
@@ -326,13 +325,10 @@ GURL SiteInstanceImpl::GetEffectiveURL(BrowserContext* browser_context,
       GetEffectiveURL(browser_context, url);
 }
 
-void SiteInstanceImpl::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
-  DCHECK(type == NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-  RenderProcessHost* rph = Source<RenderProcessHost>(source).ptr();
-  if (rph == process_)
-    process_ = NULL;
+void SiteInstanceImpl::RenderProcessHostDestroyed(RenderProcessHost* host) {
+  DCHECK_EQ(process_, host);
+  process_->RemoveObserver(this);
+  process_ = NULL;
 }
 
 void SiteInstanceImpl::LockToOrigin() {

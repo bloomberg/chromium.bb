@@ -7,8 +7,7 @@
 
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/site_instance.h"
 #include "url/gurl.h"
 
@@ -16,12 +15,12 @@ namespace content {
 class RenderProcessHostFactory;
 
 class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
-                                        public NotificationObserver {
+                                        public RenderProcessHostObserver {
  public:
   // SiteInstance interface overrides.
   virtual int32 GetId() OVERRIDE;
   virtual bool HasProcess() const OVERRIDE;
-  virtual  RenderProcessHost* GetProcess() OVERRIDE;
+  virtual RenderProcessHost* GetProcess() OVERRIDE;
   virtual const GURL& GetSiteURL() const OVERRIDE;
   virtual SiteInstance* GetRelatedSiteInstance(const GURL& url) OVERRIDE;
   virtual bool IsRelatedSiteInstance(const SiteInstance* instance) OVERRIDE;
@@ -84,10 +83,8 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   static GURL GetEffectiveURL(BrowserContext* browser_context,
                               const GURL& url);
 
-  // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+  // RenderProcessHostObserver implementation.
+  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE;
 
   // Used to restrict a process' origin access rights.
   void LockToOrigin();
@@ -103,8 +100,6 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
 
   // The number of active views under this SiteInstance.
   size_t active_view_count_;
-
-  NotificationRegistrar registrar_;
 
   // BrowsingInstance to which this SiteInstance belongs.
   scoped_refptr<BrowsingInstance> browsing_instance_;

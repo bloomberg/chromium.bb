@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
+#include "base/observer_list.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "ipc/ipc_test_sink.h"
@@ -38,6 +39,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual int GetNextRoutingID() OVERRIDE;
   virtual void AddRoute(int32 routing_id, IPC::Listener* listener) OVERRIDE;
   virtual void RemoveRoute(int32 routing_id) OVERRIDE;
+  virtual void AddObserver(RenderProcessHostObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(RenderProcessHostObserver* observer) OVERRIDE;
   virtual bool WaitForBackingStoreMsg(int render_widget_id,
                                       const base::TimeDelta& max_delay,
                                       IPC::Message* msg) OVERRIDE;
@@ -96,11 +99,13 @@ class MockRenderProcessHost : public RenderProcessHost {
   const MockRenderProcessHostFactory* factory_;
   int id_;
   BrowserContext* browser_context_;
+  ObserverList<RenderProcessHostObserver> observers_;
 
   IDMap<RenderWidgetHost> render_widget_hosts_;
   int prev_routing_id_;
   IDMap<IPC::Listener> listeners_;
   bool fast_shutdown_started_;
+  bool deletion_callback_called_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };
