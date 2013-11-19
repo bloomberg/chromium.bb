@@ -2346,8 +2346,7 @@ void Document::implicitClose()
     // onLoad event handler, as in Radar 3206524.
     detachParser();
 
-    Frame* f = frame();
-    if (f && f->script().canExecuteScripts(NotAboutToExecuteScript)) {
+    if (frame() && frame()->script().canExecuteScripts(NotAboutToExecuteScript)) {
         ImageLoader::dispatchPendingBeforeLoadEvents();
         ImageLoader::dispatchPendingLoadEvents();
         ImageLoader::dispatchPendingErrorEvents();
@@ -2355,6 +2354,9 @@ void Document::implicitClose()
         HTMLLinkElement::dispatchPendingLoadEvents();
         HTMLStyleElement::dispatchPendingLoadEvents();
     }
+
+    // JS running below could remove the frame or destroy the RenderView so we call
+    // those two functions repeatedly and don't save them on the stack.
 
     // To align the HTML load event and the SVGLoad event for the outermost <svg> element, fire it from
     // here, instead of doing it from SVGElement::finishedParsingChildren (if externalResourcesRequired="false",
@@ -2370,7 +2372,6 @@ void Document::implicitClose()
         loader()->applicationCacheHost()->stopDeferringEvents();
     }
 
-    // An event handler may have removed the frame
     if (!frame()) {
         m_loadEventProgress = LoadEventCompleted;
         return;
@@ -2388,8 +2389,6 @@ void Document::implicitClose()
         return;
     }
 
-    RenderView* renderView = this->renderView();
-
     // We used to force a synchronous display and flush here.  This really isn't
     // necessary and can in fact be actively harmful if pages are loading at a rate of > 60fps
     // (if your platform is syncing flushes and limiting them to 60fps).
@@ -2398,25 +2397,25 @@ void Document::implicitClose()
         updateStyleIfNeeded();
 
         // Always do a layout after loading if needed.
-        if (view() && renderView && (!renderView->firstChild() || renderView->needsLayout()))
+        if (view() && renderView() && (!renderView()->firstChild() || renderView()->needsLayout()))
             view()->layout();
     }
 
     m_loadEventProgress = LoadEventCompleted;
 
-    if (f && renderView && AXObjectCache::accessibilityEnabled()) {
+    if (frame() && renderView() && AXObjectCache::accessibilityEnabled()) {
         // The AX cache may have been cleared at this point, but we need to make sure it contains an
         // AX object to send the notification to. getOrCreate will make sure that an valid AX object
         // exists in the cache (we ignore the return value because we don't need it here). This is
         // only safe to call when a layout is not in progress, so it can not be used in postNotification.
         if (AXObjectCache* cache = axObjectCache()) {
-            cache->getOrCreate(renderView);
+            cache->getOrCreate(renderView());
             if (this == topDocument()) {
-                cache->postNotification(renderView, AXObjectCache::AXLoadComplete, true);
+                cache->postNotification(renderView(), AXObjectCache::AXLoadComplete, true);
             } else {
                 // AXLoadComplete can only be posted on the top document, so if it's a document
                 // in an iframe that just finished loading, post AXLayoutComplete instead.
-                cache->postNotification(renderView, AXObjectCache::AXLayoutComplete, true);
+                cache->postNotification(renderView(), AXObjectCache::AXLayoutComplete, true);
             }
         }
     }
