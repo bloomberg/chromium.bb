@@ -27,6 +27,7 @@ public class SQLiteCursor extends AbstractCursor {
     private int[] mColumnTypes;
 
     private final Object mColumnTypeLock = new Object();
+    private final Object mDestoryNativeLock = new Object();
 
     // The belows are the locks for those methods that need wait for
     // the callback result in native side.
@@ -94,8 +95,12 @@ public class SQLiteCursor extends AbstractCursor {
     @Override
     public void close() {
         super.close();
-        nativeDestroy(mNativeSQLiteCursor);
-        mNativeSQLiteCursor = 0;
+        synchronized (mDestoryNativeLock) {
+            if (mNativeSQLiteCursor != 0) {
+                nativeDestroy(mNativeSQLiteCursor);
+                mNativeSQLiteCursor = 0;
+            }
+        }
     }
 
     @Override
