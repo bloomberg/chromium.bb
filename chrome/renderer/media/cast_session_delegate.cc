@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/public/renderer/render_thread.h"
-#include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
 
@@ -19,6 +18,8 @@ using media::cast::VideoSenderConfig;
 CastSessionDelegate::CastSessionDelegate()
     : audio_encode_thread_("CastAudioEncodeThread"),
       video_encode_thread_("CastVideoEncodeThread"),
+      audio_configured_(false),
+      video_configured_(false),
       io_message_loop_proxy_(
           content::RenderThread::Get()->GetIOMessageLoopProxy()) {
 }
@@ -27,8 +28,24 @@ CastSessionDelegate::~CastSessionDelegate() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 }
 
-void CastSessionDelegate::PrepareForSending() {
-  DCHECK(base::MessageLoopProxy::current() == io_message_loop_proxy_);
+void CastSessionDelegate::StartAudio(const AudioSenderConfig& config) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  audio_configured_ = true;
+  audio_config_ = config;
+  MaybeStartSending();
+}
+
+void CastSessionDelegate::StartVideo(const VideoSenderConfig& config) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  video_configured_ = true;
+  video_config_ = config;
+  MaybeStartSending();
+}
+
+void CastSessionDelegate::StartSending() {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (cast_environment_)
     return;
@@ -48,13 +65,18 @@ void CastSessionDelegate::PrepareForSending() {
       NULL);
 
   // TODO(hclam): A couple things need to be done here:
-  // 1. Pass audio and video configuration to CastSender.
-  // 2. Connect media::cast::PacketSender to net::Socket interface.
-  // 3. Implement VideoEncoderController to configure hardware encoder.
+  // 1. Connect media::cast::PacketSender to net::Socket interface.
+  // 2. Implement VideoEncoderController to configure hardware encoder.
   cast_sender_.reset(CastSender::CreateCastSender(
       cast_environment_,
-      AudioSenderConfig(),
-      VideoSenderConfig(),
+      audio_config_,
+      video_config_,
       NULL,
       NULL));
+}
+
+void CastSessionDelegate::MaybeStartSending() {
+  if (!audio_configured_ || !video_configured_)
+    return;
+  StartSending();
 }
