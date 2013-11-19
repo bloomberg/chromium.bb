@@ -296,7 +296,7 @@ def _CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
       continue
 
     for line_num, line in f.ChangedContents():
-      if 'UNIT_TEST' in line:
+      if 'UNIT_TEST ' in line or line.endswith('UNIT_TEST'):
         problems.append('    %s:%d' % (f.LocalPath(), line_num))
 
   if not problems:
