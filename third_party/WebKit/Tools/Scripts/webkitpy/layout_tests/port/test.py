@@ -31,7 +31,7 @@ import copy
 import sys
 import time
 
-from webkitpy.layout_tests.port import Port, Driver, DriverOutput
+from webkitpy.layout_tests.port import DeviceFailure, Driver, DriverOutput, Port
 from webkitpy.layout_tests.port.base import VirtualTestSuite
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
 from webkitpy.layout_tests.models import test_run_results
@@ -52,7 +52,7 @@ class TestInstance(object):
         self.error = ''
         self.timeout = False
         self.is_reftest = False
-        self.device_offline = False
+        self.device_failure = False
 
         # The values of each field are treated as raw byte strings. They
         # will be converted to unicode strings where appropriate using
@@ -112,7 +112,7 @@ def unit_test_list():
     tests = TestList()
     tests.add('failures/expected/crash.html', crash=True)
     tests.add('failures/expected/exception.html', exception=True)
-    tests.add('failures/expected/device_offline.html', device_offline=True)
+    tests.add('failures/expected/device_failure.html', device_failure=True)
     tests.add('failures/expected/timeout.html', timeout=True)
     tests.add('failures/expected/missing_text.html', expected_text=None)
     tests.add('failures/expected/needsrebaseline.html', actual_text='needsrebaseline text')
@@ -296,7 +296,7 @@ Bug(test) failures/expected/text.html [ Failure ]
 Bug(test) failures/expected/timeout.html [ Timeout ]
 Bug(test) failures/expected/keyboard.html [ WontFix ]
 Bug(test) failures/expected/exception.html [ WontFix ]
-Bug(test) failures/expected/device_offline.html [ WontFix ]
+Bug(test) failures/expected/device_failure.html [ WontFix ]
 Bug(test) failures/unexpected/pass.html [ Failure ]
 Bug(test) passes/skipped/skip.html [ Skip ]
 Bug(test) passes/text.html [ Pass ]
@@ -588,6 +588,8 @@ class TestDriver(Driver):
             raise KeyboardInterrupt
         if test.exception:
             raise ValueError('exception from ' + test_name)
+        if test.device_failure:
+            raise DeviceFailure('device failure in ' + test_name)
 
         audio = None
         actual_text = test.actual_text
@@ -645,8 +647,7 @@ class TestDriver(Driver):
         return DriverOutput(actual_text, image, test.actual_checksum, audio,
             crash=(crash or web_process_crash), crashed_process_name=crashed_process_name,
             crashed_pid=crashed_pid, crash_log=crash_log,
-            test_time=time.time() - start_time, timeout=test.timeout, error=test.error, pid=self.pid,
-            device_offline=test.device_offline)
+            test_time=time.time() - start_time, timeout=test.timeout, error=test.error, pid=self.pid)
 
     def stop(self):
         self.started = False

@@ -519,7 +519,7 @@ class AndroidPort(base.Port):
             try:
                 d._setup_test(log_safely)
                 log_safely("device prepared", throttled=False)
-            except ScriptError as e:
+            except (ScriptError, driver.DeviceFailure) as e:
                 lock.acquire()
                 _log.warning("[%s] failed to prepare_device: %s" % (serial, str(e)))
                 lock.release()
@@ -851,7 +851,7 @@ class ChromiumAndroidDriver(driver.Driver):
         self._md5sum_path = self._port.path_to_md5sum()
         if not self._android_commands.file_exists(MD5SUM_DEVICE_PATH):
             if not self._android_commands.push(self._md5sum_path, MD5SUM_DEVICE_PATH):
-                raise AssertionError('Could not push md5sum to device')
+                raise driver.DeviceFailure('Could not push md5sum to device')
 
         self._push_executable(log_callback)
         self._push_fonts(log_callback)
@@ -895,7 +895,7 @@ class ChromiumAndroidDriver(driver.Driver):
             _log.debug('[%s] %s' % (self._android_commands.get_serial(), message))
 
     def _abort(self, message):
-        raise AssertionError('[%s] %s' % (self._android_commands.get_serial(), message))
+        raise driver.DeviceFailure('[%s] %s' % (self._android_commands.get_serial(), message))
 
     @staticmethod
     def _extract_hashes_from_md5sum_output(md5sum_output):
@@ -1068,7 +1068,8 @@ class ChromiumAndroidDriver(driver.Driver):
         super(ChromiumAndroidDriver, self).start(pixel_tests, per_test_args)
 
     def _start(self, pixel_tests, per_test_args):
-        assert self._android_devices.is_device_prepared(self._android_commands.get_serial())
+        if not self._android_devices.is_device_prepared(self._android_commands.get_serial()):
+            raise driver.DeviceFailure("%s is not prepared in _start()" % self._android_commands.get_serial())
 
         for retries in range(3):
             if self._start_once(pixel_tests, per_test_args):
@@ -1195,7 +1196,7 @@ class ChromiumAndroidDriver(driver.Driver):
 
         if self._android_devices.is_device_prepared(self._android_commands.get_serial()):
             if not ChromiumAndroidDriver._loop_with_timeout(self._remove_all_pipes, DRIVER_START_STOP_TIMEOUT_SECS):
-                raise AssertionError('Failed to remove fifo files. May be locked.')
+                raise driver.DeviceFailure('Failed to remove fifo files. May be locked.')
 
         self._clean_up_cmd_line()
 

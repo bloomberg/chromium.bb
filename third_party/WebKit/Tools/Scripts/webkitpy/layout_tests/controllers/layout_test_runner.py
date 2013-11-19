@@ -178,10 +178,12 @@ class LayoutTestRunner(object):
         exp_str = self._expectations.get_expectations_string(result.test_name)
         got_str = self._expectations.expectation_to_string(result.type)
 
+        if result.device_failed:
+            self._printer.print_finished_test(result, False, exp_str, "Aborted")
+            return
+
         run_results.add(result, expected, self._test_is_slow(result.test_name))
-
         self._printer.print_finished_test(result, expected, exp_str, got_str)
-
         self._interrupt_if_at_failure_limits(run_results)
 
     def handle(self, name, source, *args):
@@ -199,8 +201,8 @@ class LayoutTestRunner(object):
     def _handle_finished_test(self, worker_name, result, log_messages=[]):
         self._update_summary_with_result(self._current_run_results, result)
 
-    def _handle_device_offline(self, worker_name, list_name, remaining_tests):
-        _log.warning("%s has gone offline" % worker_name)
+    def _handle_device_failed(self, worker_name, list_name, remaining_tests):
+        _log.warning("%s has failed" % worker_name)
         if remaining_tests:
             self._shards_to_redo.append(TestShard(list_name, remaining_tests))
 
@@ -238,9 +240,9 @@ class Worker(object):
     def handle(self, name, source, test_list_name, test_inputs):
         assert name == 'test_list'
         for i, test_input in enumerate(test_inputs):
-            device_offline = self._run_test(test_input, test_list_name)
-            if device_offline:
-                self._caller.post('device_offline', test_list_name, test_inputs[i + 1:])
+            device_failed = self._run_test(test_input, test_list_name)
+            if device_failed:
+                self._caller.post('device_failed', test_list_name, test_inputs[i:])
                 self._caller.stop_running()
                 return
 
@@ -266,7 +268,7 @@ class Worker(object):
         self._update_test_input(test_input)
         test_timeout_sec = self._timeout(test_input)
         start = time.time()
-        device_offline = False
+        device_failed = False
 
         if self._driver and self._driver.has_crashed():
             self._kill_driver()
@@ -276,8 +278,8 @@ class Worker(object):
         if not self._driver:
             # FIXME: Is this the best way to handle a device crashing in the middle of the test, or should we create
             # a new failure type?
-            device_offline = True
-            return
+            device_failed = True
+            return device_failed
 
         self._caller.post('started_test', test_input, test_timeout_sec)
         result = single_test_runner.run_single_test(self._port, self._options, self._results_directory,
@@ -290,8 +292,7 @@ class Worker(object):
         self._num_tests += 1
         self._caller.post('finished_test', result)
         self._clean_up_after_test(test_input, result)
-
-        return result.device_offline
+        return result.device_failed
 
     def stop(self):
         _log.debug("%s cleaning up" % self._name)

@@ -60,7 +60,7 @@ class DriverOutput(object):
 
     def __init__(self, text, image, image_hash, audio, crash=False,
             test_time=0, measurements=None, timeout=False, error='', crashed_process_name='??',
-            crashed_pid=None, crash_log=None, pid=None, device_offline=False):
+            crashed_pid=None, crash_log=None, pid=None):
         # FIXME: Args could be renamed to better clarify what they do.
         self.text = text
         self.image = image  # May be empty-string if the test crashes.
@@ -76,10 +76,13 @@ class DriverOutput(object):
         self.timeout = timeout
         self.error = error  # stderr output
         self.pid = pid
-        self.device_offline = device_offline
 
     def has_stderr(self):
         return bool(self.error)
+
+
+class DeviceFailure(Exception):
+    pass
 
 
 class Driver(object):

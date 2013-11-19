@@ -283,11 +283,11 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             self.assertRaises(BaseException, logging_run,
                 ['--child-processes', '2', '--skipped=ignore', 'failures/expected/exception.html', 'passes/text.html'], tests_included=True, shared_port=False)
 
-    def test_device_offline(self):
+    def test_device_failure(self):
         # Test that we handle a device going offline during a test properly.
-        details, regular_output, _ = logging_run(['failures/expected/device_offline.html'], tests_included=True)
+        details, regular_output, _ = logging_run(['failures/expected/device_failure.html'], tests_included=True)
         self.assertEqual(details.exit_code, 0)
-        self.assertTrue('worker/0 has gone offline' in regular_output.getvalue())
+        self.assertTrue('worker/0 has failed' in regular_output.getvalue())
 
     def test_full_results_html(self):
         host = MockHost()

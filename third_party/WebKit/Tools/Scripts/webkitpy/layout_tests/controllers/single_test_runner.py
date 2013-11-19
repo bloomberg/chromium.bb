@@ -32,7 +32,7 @@ import re
 import time
 
 from webkitpy.layout_tests.controllers import test_result_writer
-from webkitpy.layout_tests.port.driver import DriverInput, DriverOutput
+from webkitpy.layout_tests.port.driver import DeviceFailure, DriverInput, DriverOutput
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models.test_results import TestResult
@@ -43,7 +43,11 @@ _log = logging.getLogger(__name__)
 
 def run_single_test(port, options, results_directory, worker_name, driver, test_input, stop_when_done):
     runner = SingleTestRunner(port, options, results_directory, worker_name, driver, test_input, stop_when_done)
-    return runner.run()
+    try:
+        return runner.run()
+    except DeviceFailure as e:
+        _log.error("device failed: %s", str(e))
+        return TestResult(test_input.test_name, device_failed=True)
 
 
 class SingleTestRunner(object):
@@ -123,7 +127,7 @@ class SingleTestRunner(object):
         # to write new baselines.
         self._overwrite_baselines(driver_output)
         return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
-                          pid=driver_output.pid, device_offline=driver_output.device_offline)
+                          pid=driver_output.pid)
 
     _render_tree_dump_pattern = re.compile(r"^layer at \(\d+,\d+\) size \d+x\d+\n")
 
@@ -217,14 +221,14 @@ class SingleTestRunner(object):
             # Don't continue any more if we already have a crash.
             # In case of timeouts, we continue since we still want to see the text and image output.
             return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
-                              pid=driver_output.pid, device_offline=driver_output.device_offline)
+                              pid=driver_output.pid)
 
         failures.extend(self._compare_text(expected_driver_output.text, driver_output.text))
         failures.extend(self._compare_audio(expected_driver_output.audio, driver_output.audio))
         if self._should_run_pixel_test:
             failures.extend(self._compare_image(expected_driver_output, driver_output))
         return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
-                          pid=driver_output.pid, device_offline=driver_output.device_offline)
+                          pid=driver_output.pid)
 
     def _compare_text(self, expected_text, actual_text):
         failures = []
@@ -318,21 +322,19 @@ class SingleTestRunner(object):
         reftest_type = list(set([reference_file[0] for reference_file in self._reference_files]))
         return TestResult(self._test_name, test_result.failures, total_test_time + test_result.test_run_time,
                           test_result.has_stderr, reftest_type=reftest_type, pid=test_result.pid,
-                          references=reference_test_names, device_offline=reference_output.device_offline)
+                          references=reference_test_names)
 
     def _compare_output_with_reference(self, reference_driver_output, actual_driver_output, reference_filename, mismatch):
         total_test_time = reference_driver_output.test_time + actual_driver_output.test_time
         has_stderr = reference_driver_output.has_stderr() or actual_driver_output.has_stderr()
         failures = []
         failures.extend(self._handle_error(actual_driver_output))
-        if failures or actual_driver_output.device_offline:
+        if failures:
             # Don't continue any more if we already have crash or timeout.
-            return TestResult(self._test_name, failures, total_test_time, has_stderr,
-                              device_offline=actual_driver_output.device_offline)
+            return TestResult(self._test_name, failures, total_test_time, has_stderr)
         failures.extend(self._handle_error(reference_driver_output, reference_filename=reference_filename))
-        if failures or reference_driver_output.device_offline:
-            return TestResult(self._test_name, failures, total_test_time, has_stderr, pid=actual_driver_output.pid,
-                              device_offline=reference_driver_output.device_offline)
+        if failures:
+            return TestResult(self._test_name, failures, total_test_time, has_stderr, pid=actual_driver_output.pid)
 
         if not reference_driver_output.image_hash and not actual_driver_output.image_hash:
             failures.append(test_failures.FailureReftestNoImagesGenerated(reference_filename))
@@ -355,5 +357,4 @@ class SingleTestRunner(object):
             else:
                 _log.warning("  %s -> ref test hashes didn't match but diff passed" % self._test_name)
 
-        return TestResult(self._test_name, failures, total_test_time, has_stderr, pid=actual_driver_output.pid,
-                          device_offline=actual_driver_output.device_offline)
+        return TestResult(self._test_name, failures, total_test_time, has_stderr, pid=actual_driver_output.pid)
