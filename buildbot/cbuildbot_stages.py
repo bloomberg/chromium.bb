@@ -1917,7 +1917,7 @@ class BranchUtilStage(bs.BuilderStage):
     repo_manifest = git.ManifestCheckout.Cached(self._build_root)
     checkouts = repo_manifest.ListCheckouts()
     args = [[repo_manifest, x] for x in checkouts]
-    parallel.RunTasksInProcessPool(self.ProcessCheckout, args, processes=4)
+    parallel.RunTasksInProcessPool(self.ProcessCheckout, args, processes=16)
 
     if not self._options.delete_branch:
       self.FixUpManifests(repo_manifest)
