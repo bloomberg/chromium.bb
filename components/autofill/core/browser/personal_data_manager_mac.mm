@@ -177,8 +177,8 @@ void AuxiliaryProfilesImpl::GetAddressBookAddress(const std::string& app_locale,
           [NSCharacterSet newlineCharacterSet]];
       DCHECK([chunks count] > 1);
 
-      NSString* separator = l10n_util::GetNSString(
-            IDS_AUTOFILL_MAC_ADDRESS_LINE_SEPARATOR);
+      NSString* separator =
+          l10n_util::GetNSString(IDS_AUTOFILL_ADDRESS_LINE_SEPARATOR);
 
       NSString* addressField1 = [chunks objectAtIndex:0];
       NSString* addressField2 =

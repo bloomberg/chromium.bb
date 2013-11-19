@@ -172,7 +172,8 @@ TEST(AddressTest, GetStreetAddress) {
   EXPECT_EQ(ASCIIToUTF16("123 Example Ave.\n"
                          "Apt. 42"),
             address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
-  EXPECT_EQ(ASCIIToUTF16("123 Example Ave., Apt. 42"),
+  EXPECT_EQ(ASCIIToUTF16("123 Example Ave.\n"
+                         "Apt. 42"),
             address.GetInfo(type, "en-US"));
 }
 

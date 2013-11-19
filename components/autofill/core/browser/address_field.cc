@@ -72,11 +72,15 @@ FormField* AddressField::Parse(AutofillScanner* scanner) {
 
   // If we have identified any address fields in this field then it should be
   // added to the list of fields.
-  if (address_field->company_ != NULL ||
-      address_field->address1_ != NULL || address_field->address2_ != NULL ||
-      address_field->city_ != NULL || address_field->state_ != NULL ||
-      address_field->zip_ != NULL || address_field->zip4_ ||
-      address_field->country_ != NULL) {
+  if (address_field->company_ ||
+      address_field->address1_ ||
+      address_field->address2_ ||
+      address_field->street_address_ ||
+      address_field->city_ ||
+      address_field->state_ ||
+      address_field->zip_ ||
+      address_field->zip4_ ||
+      address_field->country_) {
     // Don't slurp non-labeled fields at the end into the address.
     if (has_trailing_non_labeled_fields)
       scanner->RewindTo(begin_trailing_non_labeled_fields);
@@ -92,6 +96,7 @@ AddressField::AddressField()
     : company_(NULL),
       address1_(NULL),
       address2_(NULL),
+      street_address_(NULL),
       city_(NULL),
       state_(NULL),
       zip_(NULL),
@@ -100,9 +105,16 @@ AddressField::AddressField()
 }
 
 bool AddressField::ClassifyField(ServerFieldTypeMap* map) const {
+  // The page can request the address lines as a single textarea input or as
+  // multiple text fields (or not at all), but it shouldn't be possible to
+  // request both.
+  DCHECK(!(address1_ && street_address_));
+  DCHECK(!(address2_ && street_address_));
+
   return AddClassification(company_, COMPANY_NAME, map) &&
          AddClassification(address1_, ADDRESS_HOME_LINE1, map) &&
          AddClassification(address2_, ADDRESS_HOME_LINE2, map) &&
+         AddClassification(street_address_, ADDRESS_HOME_STREET_ADDRESS, map) &&
          AddClassification(city_, ADDRESS_HOME_CITY, map) &&
          AddClassification(state_, ADDRESS_HOME_STATE, map) &&
          AddClassification(zip_, ADDRESS_HOME_ZIP, map) &&
@@ -125,34 +137,36 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner) {
   // such as "address1", which appear as element names on various pages (eg
   // AmericanGirl-Registration.html, BloomingdalesBilling.html,
   // EBay Registration Enter Information.html).
-  if (address1_)
+  if (address1_ || street_address_)
     return false;
 
   base::string16 pattern = UTF8ToUTF16(autofill::kAddressLine1Re);
   base::string16 label_pattern = UTF8ToUTF16(autofill::kAddressLine1LabelRe);
-
-  // TODO(isherman): Fill full address into textarea field...
-  if (!ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_TEXT_AREA,
+  if (!ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT, &address1_) &&
+      !ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
                            &address1_) &&
+      !ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_TEXT_AREA,
+                           &street_address_) &&
       !ParseFieldSpecifics(scanner, label_pattern,
-                           MATCH_LABEL | MATCH_TEXT | MATCH_TEXT_AREA,
-                           &address1_)) {
+                           MATCH_LABEL | MATCH_TEXT_AREA,
+                           &street_address_)) {
     return false;
   }
 
   // Optionally parse more address lines, which may have empty labels.
-  // Some pages have 3 address lines (eg SharperImageModifyAccount.html)
-  // Some pages even have 4 address lines (e.g. uk/ShoesDirect2.html)!
   pattern = UTF8ToUTF16(autofill::kAddressLine2Re);
   label_pattern = UTF8ToUTF16(autofill::kAddressLine2LabelRe);
-  if (!ParseEmptyLabel(scanner, &address2_) &&
+  if (!street_address_ &&
+      !ParseEmptyLabel(scanner, &address2_) &&
       !ParseField(scanner, pattern, &address2_)) {
     ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
                         &address2_);
   }
 
   // Try for surplus lines, which we will promptly discard.
-  if (address2_ != NULL) {
+  // Some pages have 3 address lines (eg SharperImageModifyAccount.html)
+  // Some pages even have 4 address lines (e.g. uk/ShoesDirect2.html)!
+  if (address2_) {
     pattern = UTF8ToUTF16(autofill::kAddressLinesExtraRe);
     while (ParseField(scanner, pattern, NULL)) {
       // Consumed a surplus line, try for another.

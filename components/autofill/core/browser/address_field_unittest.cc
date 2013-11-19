@@ -130,9 +130,7 @@ TEST_F(AddressFieldTest, ParseStreetAddressFromTextArea) {
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr")) != field_type_map_.end());
-  // TODO(isherman): This should really be a field type that includes all the
-  // lines of the address.
-  EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr")]);
+  EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS, field_type_map_[ASCIIToUTF16("addr")]);
 }
 
 TEST_F(AddressFieldTest, ParseCity) {

@@ -31,7 +31,7 @@
   <message name="IDS_AUTOFILL_CC_VISA" desc="Visa credit card name.">
     Visa
   </message>
-  <message name="IDS_AUTOFILL_MAC_ADDRESS_LINE_SEPARATOR" desc="The separator character used to join multi-line addresses on the Mac.">
+  <message name="IDS_AUTOFILL_ADDRESS_LINE_SEPARATOR" desc="The separator character used to join multi-line addresses.">
     , '''
   </message>
   <message name="IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR" desc="The separator character used in the summary of an address.">
