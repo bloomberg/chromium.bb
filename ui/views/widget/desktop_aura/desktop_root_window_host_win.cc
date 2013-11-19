@@ -18,6 +18,7 @@
 #include "ui/base/win/shell.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/path.h"
 #include "ui/gfx/path_win.h"
 #include "ui/gfx/vector2d.h"
 #include "ui/gfx/win/dpi.h"
@@ -639,8 +640,15 @@ int DesktopRootWindowHostWin::GetNonClientComponent(
 
 void DesktopRootWindowHostWin::GetWindowMask(const gfx::Size& size,
                                              gfx::Path* path) {
-  if (GetWidget()->non_client_view())
+  if (GetWidget()->non_client_view()) {
     GetWidget()->non_client_view()->GetWindowMask(size, path);
+  } else if (!window_enlargement_.IsZero()) {
+    gfx::Rect bounds(WidgetSizeIsClientSize()
+                         ? message_handler_->GetClientAreaBoundsInScreen()
+                         : message_handler_->GetWindowBoundsInScreen());
+    InsetBottomRight(&bounds, window_enlargement_);
+    path->addRect(SkRect::MakeXYWH(0, 0, bounds.width(), bounds.height()));
+  }
 }
 
 bool DesktopRootWindowHostWin::GetClientAreaInsets(gfx::Insets* insets) const {
