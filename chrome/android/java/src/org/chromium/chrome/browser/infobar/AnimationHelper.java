@@ -37,8 +37,6 @@ import java.util.ArrayList;
  *    right places.
  */
 public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener {
-    private static final String TAG = "AnimationHelper";
-
     private static final long ANIMATION_DURATION_MS = 250;
 
     public static final int ANIMATION_TYPE_SHOW = 0;
@@ -63,7 +61,7 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
      * @param infoBar InfoBar that goes with the specified ContentWrapperView.
      * @param toShow If non-null, this View will replace whatever child View the ContentWrapperView
      *               is currently displaying.
-     * @param aniamtionType Type of animation being performed.
+     * @param animationType Type of animation being performed.
      */
     public AnimationHelper(InfoBarContainer container, ContentWrapperView target, InfoBar infoBar,
             View toShow, int animationType) {
@@ -238,8 +236,8 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && mToShow != null &&
                         (mAnimationType == ANIMATION_TYPE_SHOW ||
                                 mAnimationType == ANIMATION_TYPE_SWAP)) {
-                        mToShow.announceForAccessibility(
-                                mInfoBar.getMessageText(mContainer.getContext()));
+                    mToShow.announceForAccessibility(
+                            mInfoBar.getMessageText(mContainer.getContext()));
                 }
             }
         });

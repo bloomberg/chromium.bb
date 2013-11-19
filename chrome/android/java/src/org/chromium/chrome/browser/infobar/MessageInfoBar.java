@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
-import android.widget.TextView;
 
 import org.chromium.chrome.R;
 
@@ -15,7 +14,7 @@ import org.chromium.chrome.R;
  * InfoBarDelegate.
  */
 public class MessageInfoBar extends InfoBar {
-    private CharSequence mTitle;
+    private final CharSequence mTitle;
 
     /**
      * Creates and returns an infobar with a white background and a close button on the right.

@@ -4,10 +4,7 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import org.chromium.chrome.browser.infobar.InfoBarLayout;
-
 import android.content.Context;
-
 
 /**
  * Interface to group the different sub panels of the translate infobar.

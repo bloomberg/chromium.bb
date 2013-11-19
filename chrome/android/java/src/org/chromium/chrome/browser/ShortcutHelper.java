@@ -8,13 +8,11 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.chrome.browser.BookmarkUtils;
 
 import java.util.UUID;
 

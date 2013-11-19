@@ -12,8 +12,6 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 
-import org.chromium.content.common.CommandLine;
-import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
 /**
@@ -27,7 +25,7 @@ public class AutoLoginAccountDelegate implements AccountManagerCallback<Bundle> 
     private final AccountManager mAccountManager;
     private final Account mAccount;
     private boolean mLogInRequested;
-    private String mAuthTokenType;
+    private final String mAuthTokenType;
 
     public AutoLoginAccountDelegate(Activity activity, AutoLoginProcessor autoLoginProcessor,
             String realm, String account, String accountArgs) {

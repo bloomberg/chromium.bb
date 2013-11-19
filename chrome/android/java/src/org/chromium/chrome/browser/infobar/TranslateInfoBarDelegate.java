@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.infobar;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.chrome.browser.infobar.InfoBar;
 
 /**
  * Translate JNI methods

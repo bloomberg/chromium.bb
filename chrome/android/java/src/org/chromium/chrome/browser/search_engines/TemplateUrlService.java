@@ -40,9 +40,9 @@ public class TemplateUrlService {
         }
 
         public TemplateUrl(int index, String shortName, String keyword) {
-          mIndex = index;
-          mShortName = shortName;
-          mKeyword = keyword;
+            mIndex = index;
+            mShortName = shortName;
+            mKeyword = keyword;
         }
 
         public int getIndex() {
@@ -98,7 +98,7 @@ public class TemplateUrlService {
             TemplateUrl templateUrl = nativeGetPrepopulatedTemplateUrlAt(
                     mNativeTemplateUrlServiceAndroid, i);
             if (templateUrl != null) {
-              templateUrls.add(templateUrl);
+                templateUrls.add(templateUrl);
             }
         }
         return templateUrls;

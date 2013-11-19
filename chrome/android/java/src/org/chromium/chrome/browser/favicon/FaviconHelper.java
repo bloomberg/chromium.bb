@@ -92,8 +92,8 @@ public class FaviconHelper {
 
     /**
      * Get 16x16 Favicon bitmap for the requested arguments. Only retrives favicons in synced
-     * session storage. (e.g. favicons synced from other devices). TODO (apiccion) provide a way
-     * to obtain higher resolution favicons.
+     * session storage. (e.g. favicons synced from other devices).
+     * TODO(apiccion): provide a way to obtain higher resolution favicons.
      * @param profile   Profile used for the FaviconService construction.
      * @param pageUrl   The target Page URL to get the favicon.
      *

@@ -7,9 +7,6 @@ import android.content.Context;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 
-
-import org.chromium.chrome.browser.infobar.InfoBar;
-import org.chromium.chrome.browser.infobar.InfoBarLayout;
 import org.chromium.chrome.R;
 
 /**
@@ -34,7 +31,7 @@ public class TranslateCheckBox {
             @Override
             public void onCheckedChanged(CompoundButton view, boolean isChecked) {
                 mOptions.toggleAlwaysTranslateLanguageState(isChecked);
-                if (isChecked){
+                if (isChecked) {
                     mListener.onPanelClosed(InfoBar.ACTION_TYPE_NONE);
                 } else {
                     mListener.onOptionsChanged();

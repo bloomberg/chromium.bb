@@ -16,9 +16,8 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 
-import org.chromium.chrome.R;
-
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 
 import java.util.ArrayList;
 
@@ -33,8 +32,6 @@ import java.util.ArrayList;
  * because the main panel is discarded after the hiding animation.
  */
 public class ContentWrapperView extends FrameLayout {
-    private static final String TAG = "ContentWrapperView";
-
     // Index of the child View that will get swapped out during transitions.
     private static final int CONTENT_INDEX = 0;
 
@@ -230,11 +227,11 @@ public class ContentWrapperView extends FrameLayout {
     public void getAnimationsForTransition(ArrayList<Animator> animators) {
         if (mViewToHide != null && mViewToShow != null) {
             ObjectAnimator hideAnimator;
-            hideAnimator = ObjectAnimator.ofFloat((Object)mViewToHide, "alpha", 1.0f, 0.0f);
+            hideAnimator = ObjectAnimator.ofFloat(mViewToHide, "alpha", 1.0f, 0.0f);
             animators.add(hideAnimator);
 
             ObjectAnimator showAnimator;
-            showAnimator = ObjectAnimator.ofFloat((Object)mViewToShow, "alpha", 0.0f, 1.0f);
+            showAnimator = ObjectAnimator.ofFloat(mViewToShow, "alpha", 0.0f, 1.0f);
             animators.add(showAnimator);
         }
     }

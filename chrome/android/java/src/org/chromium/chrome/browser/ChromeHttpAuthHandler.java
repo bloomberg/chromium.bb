@@ -28,7 +28,7 @@ public class ChromeHttpAuthHandler {
 
     @CalledByNative
     private static ChromeHttpAuthHandler create(int nativeChromeHttpAuthHandler) {
-      return new ChromeHttpAuthHandler(nativeChromeHttpAuthHandler);
+        return new ChromeHttpAuthHandler(nativeChromeHttpAuthHandler);
     }
 
     // ---------------------------------------------

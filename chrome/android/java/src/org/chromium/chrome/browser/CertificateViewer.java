@@ -196,13 +196,13 @@ class CertificateViewer implements OnItemSelectedListener {
     }
 
     private static byte[] getDigest(byte[] bytes, String algorithm) {
-      try {
-        MessageDigest md = MessageDigest.getInstance(algorithm);
-        md.update(bytes);
-        return md.digest();
-      } catch (java.security.NoSuchAlgorithmException e) {
-        return null;
-      }
+        try {
+            MessageDigest md = MessageDigest.getInstance(algorithm);
+            md.update(bytes);
+            return md.digest();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            return null;
+        }
     }
 
     @Override

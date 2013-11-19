@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -25,9 +24,9 @@ import org.chromium.ui.base.WindowAndroid;
 public class JavascriptAppModalDialog implements DialogInterface.OnClickListener {
     private static final String TAG = "JavascriptAppModalDialog";
 
-    private String mTitle;
-    private String mMessage;
-    private boolean mShouldShowSuppressCheckBox;
+    private final String mTitle;
+    private final String mMessage;
+    private final boolean mShouldShowSuppressCheckBox;
     private int mNativeDialogPointer;
     private AlertDialog mDialog;
     private CheckBox mSuppressCheckBox;
@@ -105,19 +104,19 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
         mDialog.show();
     }
 
-   @Override
-   public void onClick(DialogInterface dialog, int which) {
-       switch (which) {
-           case DialogInterface.BUTTON_POSITIVE:
-               onPositiveButtonClicked();
-               break;
-           case DialogInterface.BUTTON_NEGATIVE:
-               onNegativeButtonClicked();
-               break;
-           default:
-               Log.e(TAG, "Unexpected button pressed in dialog: " + which);
-       }
-   }
+    @Override
+    public void onClick(DialogInterface dialog, int which) {
+        switch (which) {
+            case DialogInterface.BUTTON_POSITIVE:
+                onPositiveButtonClicked();
+                break;
+            case DialogInterface.BUTTON_NEGATIVE:
+                onNegativeButtonClicked();
+                break;
+            default:
+                Log.e(TAG, "Unexpected button pressed in dialog: " + which);
+        }
+    }
 
     @CalledByNative
     void dismiss() {
@@ -222,7 +221,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     }
 
     private static class JavascriptAppBeforeUnloadDialog extends JavascriptAppConfirmDialog {
-        private boolean mIsReload;
+        private final boolean mIsReload;
 
         public JavascriptAppBeforeUnloadDialog(String title, String message,
                 boolean isReload, boolean shouldShowSuppressCheckBox) {
@@ -252,7 +251,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     }
 
     private static class JavascriptAppPromptDialog extends JavascriptAppConfirmDialog {
-        private String mDefaultPromptText;
+        private final String mDefaultPromptText;
 
         public JavascriptAppPromptDialog(String title, String message,
                 boolean shouldShowSuppressCheckBox, String defaultPromptText) {

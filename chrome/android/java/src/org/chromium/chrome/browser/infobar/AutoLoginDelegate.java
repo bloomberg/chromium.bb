@@ -4,12 +4,8 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.accounts.Account;
 import android.app.Activity;
-import android.util.Log;
 import android.util.Pair;
-
-import org.chromium.chrome.R;
 
 import org.chromium.base.CalledByNative;
 

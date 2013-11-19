@@ -39,7 +39,7 @@ class ChromeBrowserProviderSuggestionsCursor extends AbstractCursor {
     private static final int COLUMN_SUGGEST_ICON_1 = 6;
     private static final int COLUMN_SUGGEST_LAST_ACCESS_HINT = 7;
 
-    private Cursor mCursor;
+    private final Cursor mCursor;
 
     public ChromeBrowserProviderSuggestionsCursor(Cursor c) {
         mCursor = c;
@@ -58,31 +58,30 @@ class ChromeBrowserProviderSuggestionsCursor extends AbstractCursor {
     @Override
     public String getString(int column) {
         switch (column) {
-        case COLUMN_ID:
-            return mCursor.getString(mCursor.getColumnIndex(BookmarkColumns._ID));
-        case COLUMN_SUGGEST_INTENT_ACTION:
-            return Intent.ACTION_VIEW;
-        case COLUMN_SUGGEST_INTENT_DATA:
-            return mCursor.getString(mCursor.getColumnIndex(BookmarkColumns.URL));
-        case COLUMN_SUGGEST_TEXT_1:
-            return mCursor.getString(mCursor.getColumnIndex(BookmarkColumns.TITLE));
-        case COLUMN_SUGGEST_TEXT_2:
-        case COLUMN_SUGGEST_TEXT_2_URL:
-            return mCursor.getString(mCursor.getColumnIndex(BookmarkColumns.URL));
-        case COLUMN_SUGGEST_ICON_1:
-            // This is the icon displayed to the left of the result in QSB.
-            return Integer.toString(R.mipmap.app_icon);
-        case COLUMN_SUGGEST_LAST_ACCESS_HINT:
-            // After clearing history, the Chrome bookmarks database will have a last
-            // access time of 0 for all bookmarks. In the Android provider, this will
-            // yield a negative last access time. A negative last access time will
-            // cause global search to discard the result, so fix it up before
-            // we return it.
-            long lastAccess = mCursor.getLong(
-                    mCursor.getColumnIndex(BookmarkColumns.DATE));
-            return lastAccess < 0 ? "0" : "" + lastAccess;
-        default:
-            throw new UnsupportedOperationException();
+            case COLUMN_ID:
+                return mCursor.getString(mCursor.getColumnIndex(BookmarkColumns._ID));
+            case COLUMN_SUGGEST_INTENT_ACTION:
+                return Intent.ACTION_VIEW;
+            case COLUMN_SUGGEST_INTENT_DATA:
+                return mCursor.getString(mCursor.getColumnIndex(BookmarkColumns.URL));
+            case COLUMN_SUGGEST_TEXT_1:
+                return mCursor.getString(mCursor.getColumnIndex(BookmarkColumns.TITLE));
+            case COLUMN_SUGGEST_TEXT_2:
+            case COLUMN_SUGGEST_TEXT_2_URL:
+                return mCursor.getString(mCursor.getColumnIndex(BookmarkColumns.URL));
+            case COLUMN_SUGGEST_ICON_1:
+                // This is the icon displayed to the left of the result in QSB.
+                return Integer.toString(R.mipmap.app_icon);
+            case COLUMN_SUGGEST_LAST_ACCESS_HINT:
+                // After clearing history, the Chrome bookmarks database will have a last access
+                // time of 0 for all bookmarks. In the Android provider, this will yield a negative
+                // last access time. A negative last access time will cause global search to discard
+                // the result, so fix it up before we return it.
+                long lastAccess = mCursor.getLong(
+                        mCursor.getColumnIndex(BookmarkColumns.DATE));
+                return lastAccess < 0 ? "0" : "" + lastAccess;
+            default:
+                throw new UnsupportedOperationException();
         }
     }
 

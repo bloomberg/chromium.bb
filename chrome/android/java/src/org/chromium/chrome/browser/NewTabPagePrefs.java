@@ -4,14 +4,14 @@
 
 package org.chromium.chrome.browser;
 
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ForeignSessionHelper.ForeignSession;
+import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * This class allows Java code to read and modify preferences related to the NTP
  */
 public class NewTabPagePrefs {
-    private int mNativeNewTabPagePrefs;
+    private final int mNativeNewTabPagePrefs;
 
     /**
      * Initialize this class with the given profile.

@@ -4,12 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.security.Principal;
-import java.security.PrivateKey;
-import javax.security.auth.x500.X500Principal;
-
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -22,6 +16,13 @@ import org.chromium.base.ActivityStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+
+import javax.security.auth.x500.X500Principal;
 
 @JNINamespace("chrome::android")
 class SSLClientCertificateRequest extends AsyncTask<Void, Void, Void>
@@ -97,17 +98,17 @@ class SSLClientCertificateRequest extends AsyncTask<Void, Void, Void>
         }
 
         // Get the encoded certificate chain.
-        byte[][] encoded_chain = new byte[chain.length][];
+        byte[][] encodedChain = new byte[chain.length][];
         try {
             for (int i = 0; i < chain.length; ++i) {
-                encoded_chain[i] = chain[i].getEncoded();
+                encodedChain[i] = chain[i].getEncoded();
             }
         } catch (CertificateEncodingException e) {
             Log.w(TAG, "Could not retrieve encoded certificate chain: " + e);
             return null;
         }
 
-        mEncodedChain = encoded_chain;
+        mEncodedChain = encodedChain;
         mPrivateKey = key;
         return null;
     }
@@ -125,15 +126,14 @@ class SSLClientCertificateRequest extends AsyncTask<Void, Void, Void>
      * @param nativePtr The native object responsible for this request.
      * @param keyTypes The list of supported key exchange types.
      * @param encodedPrincipals The list of CA DistinguishedNames.
-     * @param host_name The server host name is available (empty otherwise).
+     * @param hostName The server host name is available (empty otherwise).
      * @param port The server port if available (0 otherwise).
      * @return true on success.
      * Note that nativeOnSystemRequestComplete will be called iff this method returns true.
      */
     @CalledByNative
-    static private boolean selectClientCertificate(
-            int nativePtr, String[] keyTypes, byte[][] encodedPrincipals, String hostName,
-            int port) {
+    private static boolean selectClientCertificate(int nativePtr, String[] keyTypes,
+            byte[][] encodedPrincipals, String hostName, int port) {
         ThreadUtils.assertOnUiThread();
 
         Activity activity = ActivityStatus.getActivity();

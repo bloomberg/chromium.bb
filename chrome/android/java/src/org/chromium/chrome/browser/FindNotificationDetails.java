@@ -29,8 +29,7 @@ public class FindNotificationDetails {
     /** Whether this is the last Find Result update for the request. */
     public final boolean finalUpdate;
 
-    public FindNotificationDetails(
-            int numberOfMatches, Rect rendererSelectionRect,
+    public FindNotificationDetails(int numberOfMatches, Rect rendererSelectionRect,
             int activeMatchOrdinal, boolean finalUpdate) {
         this.numberOfMatches = numberOfMatches;
         this.rendererSelectionRect = rendererSelectionRect;

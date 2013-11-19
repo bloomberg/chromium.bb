@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import java.lang.Runnable;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -35,12 +33,14 @@ class RepostFormWarningDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
                 .setMessage(R.string.http_post_warning)
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int id) {
                         mCancelCallback.run();
                     }
                 })
                 .setPositiveButton(R.string.http_post_warning_resend,
                         new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int id) {
                         mContinueCallback.run();
                     }

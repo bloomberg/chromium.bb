@@ -88,9 +88,9 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
     private final boolean mLayoutRTL;
     private final InfoBarView mInfoBarView;
 
-    private ImageView mIconView;
-    private TextView mMessageView;
-    private ImageButton mCloseButton;
+    private final ImageView mIconView;
+    private final TextView mMessageView;
+    private final ImageButton mCloseButton;
 
     /** Background resource IDs to use for the buttons. */
     private final int mBackgroundFloating;
@@ -102,7 +102,7 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
      * The last entry is the number of child Views, allowing calculation of the size of each row by
      * taking the difference between subsequent indices.
      */
-    private ArrayList<Integer> mIndicesOfRows;
+    private final ArrayList<Integer> mIndicesOfRows;
 
     /**
      * Constructs the layout for the specified InfoBar.
@@ -110,7 +110,6 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
      * @param infoBarView InfoBarView that listens to events.
      * @param backgroundType Type of InfoBar background being shown.
      * @param iconResourceId ID of the icon to use for the InfoBar.
-     * @param message Message to display.
      */
     public InfoBarLayout(Context context, InfoBarView infoBarView, int backgroundType,
             int iconResourceId) {

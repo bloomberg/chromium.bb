@@ -24,7 +24,6 @@ import org.chromium.content.browser.PageInfo;
 import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.ui.base.WindowAndroid;
 
-import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -125,7 +124,7 @@ public abstract class TabBase implements NavigationClient {
                             contentViewCore.continuePendingReload();
                         }
                     });
-            Activity activity = (Activity)mContext;
+            Activity activity = (Activity) mContext;
             warningDialog.show(activity.getFragmentManager(), null);
         }
 

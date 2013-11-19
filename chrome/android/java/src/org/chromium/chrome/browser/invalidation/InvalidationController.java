@@ -14,8 +14,8 @@ import com.google.common.base.Preconditions;
 
 import org.chromium.base.ActivityStatus;
 import org.chromium.base.CalledByNative;
-import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
+import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.notifier.InvalidationPreferences;
@@ -158,7 +158,7 @@ public class InvalidationController implements ActivityStatus.StateListener {
 
     @CalledByNative
     public byte[] getInvalidatorClientId() {
-        synchronized(mLock) {
+        synchronized (mLock) {
             if (mUniqueId != null) {
                 return mUniqueId;
             }

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.RectF;
 import android.text.TextUtils;
@@ -14,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;

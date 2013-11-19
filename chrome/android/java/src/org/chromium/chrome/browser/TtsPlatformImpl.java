@@ -7,13 +7,13 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
-import java.lang.Double;
-import java.lang.Integer;
+
+import org.chromium.base.CalledByNative;
+import org.chromium.base.ThreadUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
-import org.chromium.base.CalledByNative;
-import org.chromium.base.ThreadUtils;
 
 /**
  * This class is the Java counterpart to the C++ TtsPlatformImplAndroid class.
@@ -32,7 +32,7 @@ class TtsPlatformImpl {
         }
         private final String mName;
         private final String mLanguage;
-    };
+    }
 
     private int mNativeTtsPlatformImplAndroid;
     private final TextToSpeech mTextToSpeech;
@@ -44,6 +44,7 @@ class TtsPlatformImpl {
         mInitialized = false;
         mNativeTtsPlatformImplAndroid = nativeTtsPlatformImplAndroid;
         mTextToSpeech = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
+                @Override
                 public void onInit(int status) {
                     if (status == TextToSpeech.SUCCESS) {
                         ThreadUtils.runOnUiThread(new Runnable() {
@@ -56,6 +57,7 @@ class TtsPlatformImpl {
                 }
             });
         mTextToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                @Override
                 public void onDone(final String utteranceId) {
                     ThreadUtils.runOnUiThread(new Runnable() {
                         @Override
@@ -68,6 +70,7 @@ class TtsPlatformImpl {
                     });
                 }
 
+                @Override
                 public void onError(final String utteranceId) {
                     ThreadUtils.runOnUiThread(new Runnable() {
                         @Override
@@ -80,6 +83,7 @@ class TtsPlatformImpl {
                     });
                 }
 
+                @Override
                 public void onStart(final String utteranceId) {
                     ThreadUtils.runOnUiThread(new Runnable() {
                         @Override

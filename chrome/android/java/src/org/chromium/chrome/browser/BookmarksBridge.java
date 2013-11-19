@@ -31,10 +31,10 @@ public class BookmarksBridge {
     private final Profile mProfile;
     private int mNativeBookmarksBridge;
     private boolean mIsNativeBookmarkModelLoaded;
-    private final List<DelayedBookmarkCallback> mDelayedBookmarkCallbacks
-            = new ArrayList<DelayedBookmarkCallback>();
-    private final ObserverList<BookmarkModelObserver> mObservers
-            = new ObserverList<BookmarkModelObserver>();
+    private final List<DelayedBookmarkCallback> mDelayedBookmarkCallbacks =
+            new ArrayList<DelayedBookmarkCallback>();
+    private final ObserverList<BookmarkModelObserver> mObservers =
+            new ObserverList<BookmarkModelObserver>();
 
     /**
      * Interface for callback object for fetching bookmarks and folder hierarchy.

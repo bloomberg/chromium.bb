@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -140,9 +139,10 @@ public class ChromeBrowserProvider extends ContentProvider {
     // TODO : Using Android.provider.Browser.HISTORY_PROJECTION once THUMBNAIL,
     // TOUCH_ICON, and USER_ENTERED fields are supported.
     private static final String[] BOOKMARK_DEFAULT_PROJECTION = new String[] {
-            BookmarkColumns._ID, BookmarkColumns.URL, BookmarkColumns.VISITS,
-            BookmarkColumns.DATE, BookmarkColumns.BOOKMARK, BookmarkColumns.TITLE,
-            BookmarkColumns.FAVICON, BookmarkColumns.CREATED};
+        BookmarkColumns._ID, BookmarkColumns.URL, BookmarkColumns.VISITS,
+        BookmarkColumns.DATE, BookmarkColumns.BOOKMARK, BookmarkColumns.TITLE,
+        BookmarkColumns.FAVICON, BookmarkColumns.CREATED
+    };
 
     private static final String[] SUGGEST_PROJECTION = new String[] {
         BookmarkColumns._ID,
@@ -722,7 +722,7 @@ public class ChromeBrowserProvider extends ContentProvider {
         } else if (CLIENT_API_IS_BOOKMARK_IN_MOBILE_BOOKMARKS_BRANCH.equals(method)) {
             result.putBoolean(CLIENT_API_RESULT_KEY,
                     isBookmarkInMobileBookmarksBranch(extras.getLong(argKey(0))));
-        } else if(CLIENT_API_DELETE_ALL_BOOKMARKS.equals(method)) {
+        } else if (CLIENT_API_DELETE_ALL_BOOKMARKS.equals(method)) {
             nativeRemoveAllBookmarks(mNativeChromeBrowserProvider);
         } else {
             Log.w(TAG, "Received invalid method " + method);
@@ -1131,10 +1131,10 @@ public class ChromeBrowserProvider extends ContentProvider {
     /**
      * @return a SQL where class which is inserted the bookmark condition.
      */
-    private static String buildBookmarkWhereClause(String selection, boolean is_bookmark) {
+    private static String buildBookmarkWhereClause(String selection, boolean isBookmark) {
         StringBuffer sb = new StringBuffer();
         sb.append(BookmarkColumns.BOOKMARK);
-        sb.append(is_bookmark ? " = 1 " : " = 0");
+        sb.append(isBookmark ? " = 1 " : " = 0");
         if (!TextUtils.isEmpty(selection)) {
             sb.append(" AND (");
             sb.append(selection);
@@ -1228,7 +1228,7 @@ public class ChromeBrowserProvider extends ContentProvider {
     private boolean ensureNativeChromeLoaded() {
         ensureUriMatcherInitialized();
 
-        synchronized(mLoadNativeLock) {
+        synchronized (mLoadNativeLock) {
             if (mNativeChromeBrowserProvider != 0) return true;
 
             final AtomicBoolean retVal = new AtomicBoolean(true);

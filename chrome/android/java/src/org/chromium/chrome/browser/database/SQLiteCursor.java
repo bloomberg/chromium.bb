@@ -78,7 +78,7 @@ public class SQLiteCursor extends AbstractCursor {
 
     @Override
     public float getFloat(int column) {
-        return (float)nativeGetDouble(mNativeSQLiteCursor, column);
+        return (float) nativeGetDouble(mNativeSQLiteCursor, column);
     }
 
     @Override

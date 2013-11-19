@@ -344,46 +344,46 @@ public class ProfileSyncService {
      */
     public Set<ModelType> getPreferredDataTypes() {
         long modelTypeSelection =
-            nativeGetEnabledDataTypes(mNativeProfileSyncServiceAndroid);
+                nativeGetEnabledDataTypes(mNativeProfileSyncServiceAndroid);
         Set<ModelType> syncTypes = new HashSet<ModelType>();
         if ((modelTypeSelection & ModelTypeSelection.AUTOFILL) != 0) {
-          syncTypes.add(ModelType.AUTOFILL);
+            syncTypes.add(ModelType.AUTOFILL);
         }
         if ((modelTypeSelection & ModelTypeSelection.AUTOFILL_PROFILE) != 0) {
-          syncTypes.add(ModelType.AUTOFILL_PROFILE);
+            syncTypes.add(ModelType.AUTOFILL_PROFILE);
         }
         if ((modelTypeSelection & ModelTypeSelection.BOOKMARK) != 0) {
-          syncTypes.add(ModelType.BOOKMARK);
+            syncTypes.add(ModelType.BOOKMARK);
         }
         if ((modelTypeSelection & ModelTypeSelection.EXPERIMENTS) != 0) {
-          syncTypes.add(ModelType.EXPERIMENTS);
+            syncTypes.add(ModelType.EXPERIMENTS);
         }
         if ((modelTypeSelection & ModelTypeSelection.NIGORI) != 0) {
-          syncTypes.add(ModelType.NIGORI);
+            syncTypes.add(ModelType.NIGORI);
         }
         if ((modelTypeSelection & ModelTypeSelection.PASSWORD) != 0) {
-          syncTypes.add(ModelType.PASSWORD);
+            syncTypes.add(ModelType.PASSWORD);
         }
         if ((modelTypeSelection & ModelTypeSelection.SESSION) != 0) {
-          syncTypes.add(ModelType.SESSION);
+            syncTypes.add(ModelType.SESSION);
         }
         if ((modelTypeSelection & ModelTypeSelection.TYPED_URL) != 0) {
-          syncTypes.add(ModelType.TYPED_URL);
+            syncTypes.add(ModelType.TYPED_URL);
         }
         if ((modelTypeSelection & ModelTypeSelection.HISTORY_DELETE_DIRECTIVE) != 0) {
-          syncTypes.add(ModelType.HISTORY_DELETE_DIRECTIVE);
+            syncTypes.add(ModelType.HISTORY_DELETE_DIRECTIVE);
         }
         if ((modelTypeSelection & ModelTypeSelection.DEVICE_INFO) != 0) {
-          syncTypes.add(ModelType.DEVICE_INFO);
+            syncTypes.add(ModelType.DEVICE_INFO);
         }
         if ((modelTypeSelection & ModelTypeSelection.PROXY_TABS) != 0) {
-          syncTypes.add(ModelType.PROXY_TABS);
+            syncTypes.add(ModelType.PROXY_TABS);
         }
         if ((modelTypeSelection & ModelTypeSelection.FAVICON_IMAGE) != 0) {
-          syncTypes.add(ModelType.FAVICON_IMAGE);
+            syncTypes.add(ModelType.FAVICON_IMAGE);
         }
         if ((modelTypeSelection & ModelTypeSelection.FAVICON_TRACKING) != 0) {
-          syncTypes.add(ModelType.FAVICON_TRACKING);
+            syncTypes.add(ModelType.FAVICON_TRACKING);
         }
         return syncTypes;
     }

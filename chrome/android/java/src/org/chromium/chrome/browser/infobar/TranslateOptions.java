@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +28,7 @@ public class TranslateOptions {
     private final int mOriginalSourceLanguageIndex;
     private final int mOriginalTargetLanguageIndex;
 
-    private boolean[] mOptions;
+    private final boolean[] mOptions;
     private int mSourceLanguageIndex;
     private int mTargetLanguageIndex;
 

@@ -196,21 +196,21 @@ public class BookmarkUtils {
     private static void drawWidgetBackgroundToCanvas(
             Context context, Canvas canvas, int iconDensity, int color) {
         Rect iconBounds = new Rect(0, 0, canvas.getWidth(), canvas.getHeight());
-        Bitmap bookmark_widget_bg =
+        Bitmap bookmarkWidgetBg =
                 getBitmapFromResourceId(context, R.mipmap.bookmark_widget_bg, iconDensity);
-        Bitmap bookmark_widget_bg_highlights = getBitmapFromResourceId(context,
+        Bitmap bookmarkWidgetBgHighlights = getBitmapFromResourceId(context,
                 R.mipmap.bookmark_widget_bg_highlights, iconDensity);
-        if (bookmark_widget_bg == null || bookmark_widget_bg_highlights == null) {
+        if (bookmarkWidgetBg == null || bookmarkWidgetBgHighlights == null) {
             Log.w(TAG, "Can't load R.mipmap.bookmark_widget_bg or " +
                     "R.mipmap.bookmark_widget_bg_highlights.");
             return;
         }
         Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
-        canvas.drawBitmap(bookmark_widget_bg, null, iconBounds, paint);
+        canvas.drawBitmap(bookmarkWidgetBg, null, iconBounds, paint);
 
         // The following color filter will convert bookmark_widget_bg_highlights' white color to
         // the 'color' variable when it is painted to 'canvas'.
         paint.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
-        canvas.drawBitmap(bookmark_widget_bg_highlights, null, iconBounds, paint);
+        canvas.drawBitmap(bookmarkWidgetBgHighlights, null, iconBounds, paint);
     }
 }
