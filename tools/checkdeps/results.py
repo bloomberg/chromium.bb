@@ -126,6 +126,7 @@ class JSONResultsFormatter(ResultsFormatter):
     with open(self.output_path, 'w') as f:
       f.write(json.dumps(self.results))
 
+    return self.results
 
   def PrintResults(self):
     if self.wrapped_formatter:
