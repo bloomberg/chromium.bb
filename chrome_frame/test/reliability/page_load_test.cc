@@ -38,7 +38,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/prefs/pref_service_mock_builder.h"
+#include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -434,12 +434,12 @@ class PageLoadTest : public testing::Test {
   PrefService* GetLocalState(PrefRegistry* registry) {
     base::FilePath path;
     chrome::GetChromeFrameUserDataDirectory(&path);
-    PrefServiceMockBuilder builder;
-    builder.WithUserFilePrefs(
+    PrefServiceMockFactory factory;
+    factory.SetUserPrefsFile(
         path,
         JsonPrefStore::GetTaskRunnerForFile(
             path, content::BrowserThread::GetBlockingPool()));
-    return builder.Create(registry);
+    return factory.Create(registry).release();
   }
 
   void GetStabilityMetrics(NavigationMetrics* metrics) {

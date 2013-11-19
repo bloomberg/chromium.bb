@@ -8,7 +8,7 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/pref_service_builder.h"
+#include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -458,10 +458,9 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    PrefServiceBuilder builder;
-    local_state_.reset(builder
-                       .WithUserPrefs(new PrefStoreStub())
-                       .Create(new PrefRegistrySimple()));
+    base::PrefServiceFactory factory;
+    factory.set_user_prefs(make_scoped_refptr(new PrefStoreStub()));
+    local_state_ = factory.Create(new PrefRegistrySimple()).Pass();
     WizardController::set_local_state_for_testing(local_state_.get());
 
     WizardControllerTest::SetUpOnMainThread();

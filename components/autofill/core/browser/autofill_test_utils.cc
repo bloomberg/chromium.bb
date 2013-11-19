@@ -6,7 +6,7 @@
 
 #include "base/guid.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/pref_service_builder.h"
+#include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -34,9 +34,9 @@ scoped_ptr<PrefService> PrefServiceForTesting() {
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable());
   AutofillManager::RegisterProfilePrefs(registry.get());
-  PrefServiceBuilder builder;
-  builder.WithUserPrefs(new TestingPrefStore());
-  return scoped_ptr<PrefService>(builder.Create(registry.get()));
+  base::PrefServiceFactory factory;
+  factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore()));
+  return factory.Create(registry.get());
 }
 
 void CreateTestFormField(const char* label,

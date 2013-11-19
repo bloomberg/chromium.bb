@@ -11,7 +11,7 @@
 #include "base/prefs/testing_pref_store.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/prefs/pref_service_mock_builder.h"
+#include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
@@ -153,10 +153,10 @@ TEST_F(SSLConfigServiceManagerPrefTest, BadDisabledCipherSuites) {
 TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
   scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
 
-  PrefServiceMockBuilder builder;
-  builder.WithUserPrefs(local_state_store.get());
+  PrefServiceMockFactory factory;
+  factory.set_user_prefs(local_state_store);
   scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
-  scoped_ptr<PrefService> local_state(builder.Create(registry.get()));
+  scoped_ptr<PrefService> local_state(factory.Create(registry.get()));
 
   SSLConfigServiceManager::RegisterPrefs(registry.get());
 
@@ -204,11 +204,11 @@ TEST_F(SSLConfigServiceManagerPrefTest, CommandLinePrefs) {
   command_line.AppendSwitchASCII(switches::kSSLVersionMax, "ssl3");
   command_line.AppendSwitch(switches::kEnableUnrestrictedSSL3Fallback);
 
-  PrefServiceMockBuilder builder;
-  builder.WithUserPrefs(local_state_store.get());
-  builder.WithCommandLine(&command_line);
+  PrefServiceMockFactory factory;
+  factory.set_user_prefs(local_state_store);
+  factory.SetCommandLine(&command_line);
   scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
-  scoped_ptr<PrefService> local_state(builder.Create(registry.get()));
+  scoped_ptr<PrefService> local_state(factory.Create(registry.get()));
 
   SSLConfigServiceManager::RegisterPrefs(registry.get());
 

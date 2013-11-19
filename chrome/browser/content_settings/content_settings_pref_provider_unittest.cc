@@ -19,7 +19,7 @@
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/prefs/pref_service_mock_builder.h"
+#include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -134,18 +134,21 @@ TEST_F(PrefProviderTest, Incognito) {
   OverlayUserPrefStore* otr_user_prefs =
       new OverlayUserPrefStore(user_prefs);
 
-  PrefServiceMockBuilder builder;
-  builder.WithUserPrefs(user_prefs);
+  PrefServiceMockFactory factory;
+  factory.set_user_prefs(make_scoped_refptr(user_prefs));
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable);
-  PrefServiceSyncable* regular_prefs = builder.CreateSyncable(registry.get());
+  PrefServiceSyncable* regular_prefs =
+      factory.CreateSyncable(registry.get()).release();
 
   chrome::RegisterUserProfilePrefs(registry.get());
 
-  builder.WithUserPrefs(otr_user_prefs);
+  PrefServiceMockFactory otr_factory;
+  otr_factory.set_user_prefs(make_scoped_refptr(otr_user_prefs));
   scoped_refptr<user_prefs::PrefRegistrySyncable> otr_registry(
       new user_prefs::PrefRegistrySyncable);
-  PrefServiceSyncable* otr_prefs = builder.CreateSyncable(otr_registry.get());
+  PrefServiceSyncable* otr_prefs =
+      otr_factory.CreateSyncable(otr_registry.get()).release();
 
   chrome::RegisterUserProfilePrefs(otr_registry.get());
 

@@ -19,7 +19,7 @@
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/prefs/pref_service_mock_builder.h"
+#include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
@@ -103,11 +103,11 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
   }
 
   extension_pref_value_map_.reset(new ExtensionPrefValueMap);
-  PrefServiceMockBuilder builder;
-  builder.WithUserFilePrefs(preferences_file_, task_runner_.get());
-  builder.WithExtensionPrefs(
+  PrefServiceMockFactory factory;
+  factory.SetUserPrefsFile(preferences_file_, task_runner_.get());
+  factory.set_extension_prefs(
       new ExtensionPrefStore(extension_pref_value_map_.get(), false));
-  pref_service_.reset(builder.CreateSyncable(pref_registry_.get()));
+  pref_service_ = factory.CreateSyncable(pref_registry_.get()).Pass();
 
   prefs_.reset(ExtensionPrefs::Create(
       pref_service_.get(),

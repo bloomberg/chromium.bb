@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/pref_service_builder.h"
+#include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -92,9 +92,9 @@ class AppListServiceUnitTest : public testing::Test {
     AppListService::RegisterPrefs(pref_registry);
     profiles::RegisterPrefs(pref_registry);
 
-    PrefServiceBuilder builder;
-    builder.WithUserPrefs(new TestingPrefStore);
-    local_state_.reset(builder.Create(pref_registry));
+    base::PrefServiceFactory factory;
+    factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore));
+    local_state_ = factory.Create(pref_registry).Pass();
 
     keep_alive_service_ = new FakeKeepAliveService;
     profile_store_ = new FakeProfileStore(user_data_dir_);

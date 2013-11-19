@@ -20,6 +20,7 @@
 #include "net/url_request/url_request_job_factory.h"
 
 class GURL;
+class PrefService;
 
 namespace content {
 class ResourceContext;
@@ -126,7 +127,7 @@ class AwBrowserContext : public content::BrowserContext,
   scoped_ptr<visitedlink::VisitedLinkMaster> visitedlink_master_;
   scoped_ptr<content::ResourceContext> resource_context_;
 
-  bool user_pref_service_ready_;
+  scoped_ptr<PrefService> user_pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);
 };

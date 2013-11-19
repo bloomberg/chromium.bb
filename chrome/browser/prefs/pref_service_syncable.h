@@ -34,7 +34,7 @@ class PrefServiceSyncable : public PrefService {
   static PrefServiceSyncable* FromProfile(Profile* profile);
   static PrefServiceSyncable* IncognitoFromProfile(Profile* profile);
 
-  // You may wish to use PrefServiceBuilder or one of its subclasses
+  // You may wish to use PrefServiceFactory or one of its subclasses
   // for simplified construction.
   PrefServiceSyncable(
       PrefNotifierImpl* pref_notifier,

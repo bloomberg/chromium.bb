@@ -863,12 +863,12 @@ void BrowserProcessImpl::CreateLocalState() {
   // Register local state preferences.
   chrome::RegisterLocalState(pref_registry.get());
 
-  local_state_.reset(
+  local_state_ =
       chrome_prefs::CreateLocalState(local_state_path,
                                      local_state_task_runner_.get(),
                                      policy_service(),
                                      pref_registry,
-                                     false));
+                                     false).Pass();
 
   pref_change_registrar_.Init(local_state_.get());
 

@@ -90,7 +90,7 @@ class TestingPrefServiceSimple
   // an existing TestingPrefServiceSimple instance. On a production
   // PrefService you would do all registrations before constructing
   // it, passing it a PrefRegistry via its constructor (or via
-  // e.g. PrefServiceBuilder).
+  // e.g. PrefServiceFactory).
   PrefRegistrySimple* registry();
 
  private:

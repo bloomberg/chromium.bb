@@ -138,7 +138,7 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
     const PrefService* pref_service_;
   };
 
-  // You may wish to use PrefServiceBuilder or one of its subclasses
+  // You may wish to use PrefServiceFactory or one of its subclasses
   // for simplified construction.
   PrefService(
       PrefNotifierImpl* pref_notifier,

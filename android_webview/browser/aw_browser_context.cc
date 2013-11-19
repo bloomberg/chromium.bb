@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/pref_service_builder.h"
+#include "base/prefs/pref_service_factory.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -98,8 +98,7 @@ AwBrowserContext::AwBrowserContext(
     const FilePath path,
     JniDependencyFactory* native_factory)
     : context_storage_path_(path),
-      native_factory_(native_factory),
-      user_pref_service_ready_(false) {
+      native_factory_(native_factory) {
   DCHECK(g_browser_context == NULL);
   g_browser_context = this;
 
@@ -199,10 +198,9 @@ AwFormDatabaseService* AwBrowserContext::GetFormDatabaseService() {
 
 // Create user pref service for autofill functionality.
 void AwBrowserContext::CreateUserPrefServiceIfNecessary() {
-  if (user_pref_service_ready_)
+  if (user_pref_service_)
     return;
 
-  user_pref_service_ready_ = true;
   PrefRegistrySimple* pref_registry = new PrefRegistrySimple();
   // We only use the autocomplete feature of the Autofill, which is
   // controlled via the manager_delegate. We don't use the rest
@@ -214,12 +212,12 @@ void AwBrowserContext::CreateUserPrefServiceIfNecessary() {
   pref_registry->RegisterDoublePref(
       autofill::prefs::kAutofillNegativeUploadRate, 0.0);
 
-  PrefServiceBuilder pref_service_builder;
-  pref_service_builder.WithUserPrefs(new AwPrefStore());
-  pref_service_builder.WithReadErrorCallback(base::Bind(&HandleReadError));
+  base::PrefServiceFactory pref_service_factory;
+  pref_service_factory.set_user_prefs(make_scoped_refptr(new AwPrefStore()));
+  pref_service_factory.set_read_error_callback(base::Bind(&HandleReadError));
+  user_pref_service_ = pref_service_factory.Create(pref_registry).Pass();
 
-  user_prefs::UserPrefs::Set(this,
-                             pref_service_builder.Create(pref_registry));
+  user_prefs::UserPrefs::Set(this, user_pref_service_.get());
 }
 
 base::FilePath AwBrowserContext::GetPath() const {

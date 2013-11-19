@@ -18,7 +18,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
-#include "chrome/browser/prefs/pref_service_syncable_builder.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable_factory.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
@@ -72,7 +73,7 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
 }
 
 void PrepareBuilder(
-    PrefServiceSyncableBuilder* builder,
+    PrefServiceSyncableFactory* factory,
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
@@ -94,53 +95,57 @@ void PrepareBuilder(
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   using policy::ConfigurationPolicyPrefStore;
-  builder->WithManagedPrefs(new ConfigurationPolicyPrefStore(
-      policy_service,
-      g_browser_process->browser_policy_connector()->GetHandlerList(),
-      policy::POLICY_LEVEL_MANDATORY));
-  builder->WithRecommendedPrefs(new ConfigurationPolicyPrefStore(
-      policy_service,
-      g_browser_process->browser_policy_connector()->GetHandlerList(),
-      policy::POLICY_LEVEL_RECOMMENDED));
+  factory->set_managed_prefs(
+      make_scoped_refptr(new ConfigurationPolicyPrefStore(
+          policy_service,
+          g_browser_process->browser_policy_connector()->GetHandlerList(),
+          policy::POLICY_LEVEL_MANDATORY)));
+  factory->set_recommended_prefs(
+      make_scoped_refptr(new ConfigurationPolicyPrefStore(
+          policy_service,
+          g_browser_process->browser_policy_connector()->GetHandlerList(),
+          policy::POLICY_LEVEL_RECOMMENDED)));
 #endif  // ENABLE_CONFIGURATION_POLICY
 
 #if defined(ENABLE_MANAGED_USERS)
   if (managed_user_settings) {
-    builder->WithSupervisedUserPrefs(
-        new SupervisedUserPrefStore(managed_user_settings));
+    factory->set_supervised_user_prefs(
+        make_scoped_refptr(new SupervisedUserPrefStore(managed_user_settings)));
   }
 #endif
 
-  builder->WithAsync(async);
-  builder->WithExtensionPrefs(extension_prefs.get());
-  builder->WithCommandLinePrefs(
-      new CommandLinePrefStore(CommandLine::ForCurrentProcess()));
-  builder->WithReadErrorCallback(base::Bind(&HandleReadError));
-  builder->WithUserPrefs(new JsonPrefStore(pref_filename, pref_io_task_runner));
+  factory->set_async(async);
+  factory->set_extension_prefs(extension_prefs);
+  factory->set_command_line_prefs(
+      make_scoped_refptr(
+          new CommandLinePrefStore(CommandLine::ForCurrentProcess())));
+  factory->set_read_error_callback(base::Bind(&HandleReadError));
+  factory->set_user_prefs(
+      new JsonPrefStore(pref_filename, pref_io_task_runner));
 }
 
 }  // namespace
 
 namespace chrome_prefs {
 
-PrefService* CreateLocalState(
+scoped_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
     const scoped_refptr<PrefRegistry>& pref_registry,
     bool async) {
-  PrefServiceSyncableBuilder builder;
-  PrepareBuilder(&builder,
+  PrefServiceSyncableFactory factory;
+  PrepareBuilder(&factory,
                  pref_filename,
                  pref_io_task_runner,
                  policy_service,
                  NULL,
                  NULL,
                  async);
-  return builder.Create(pref_registry.get());
+  return factory.Create(pref_registry.get());
 }
 
-PrefServiceSyncable* CreateProfilePrefs(
+scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
@@ -149,15 +154,15 @@ PrefServiceSyncable* CreateProfilePrefs(
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async) {
   TRACE_EVENT0("browser", "chrome_prefs::CreateProfilePrefs");
-  PrefServiceSyncableBuilder builder;
-  PrepareBuilder(&builder,
+  PrefServiceSyncableFactory factory;
+  PrepareBuilder(&factory,
                  pref_filename,
                  pref_io_task_runner,
                  policy_service,
                  managed_user_settings,
                  extension_prefs,
                  async);
-  return builder.CreateSyncable(pref_registry.get());
+  return factory.CreateSyncable(pref_registry.get());
 }
 
 }  // namespace chrome_prefs

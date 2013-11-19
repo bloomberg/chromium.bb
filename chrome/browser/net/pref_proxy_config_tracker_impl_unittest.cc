@@ -10,7 +10,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/prefs/pref_service_mock_builder.h"
+#include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -341,8 +341,9 @@ class PrefProxyConfigTrackerImplCommandLineTest
         command_line_.AppendSwitch(name);
     }
     scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
-    pref_service_.reset(PrefServiceMockBuilder().WithCommandLine(&command_line_)
-                            .Create(registry.get()));
+    PrefServiceMockFactory factory;
+    factory.SetCommandLine(&command_line_);
+    pref_service_ = factory.Create(registry.get()).Pass();
     Init(pref_service_.get(), registry.get());
   }
 

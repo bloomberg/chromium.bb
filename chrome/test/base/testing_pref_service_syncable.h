@@ -28,7 +28,7 @@ class TestingPrefServiceSyncable
 
   // This is provided as a convenience; on a production PrefService
   // you would do all registrations before constructing it, passing it
-  // a PrefRegistry via its constructor (or via e.g. PrefServiceBuilder).
+  // a PrefRegistry via its constructor (or via e.g. PrefServiceFactory).
   user_prefs::PrefRegistrySyncable* registry();
 
  private:

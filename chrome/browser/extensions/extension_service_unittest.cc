@@ -65,7 +65,7 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/prefs/pref_service_mock_builder.h"
+#include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -480,16 +480,16 @@ void ExtensionServiceTestBase::InitializeExtensionService(
     const ExtensionServiceTestBase::ExtensionServiceInitParams& params) {
   TestingProfile::Builder profile_builder;
   // Create a PrefService that only contains user defined preference values.
-  PrefServiceMockBuilder builder;
+  PrefServiceMockFactory factory;
   // If pref_file is empty, TestingProfile automatically creates
   // TestingPrefServiceSyncable instance.
   if (!params.pref_file.empty()) {
-    builder.WithUserFilePrefs(params.pref_file,
-                              base::MessageLoopProxy::current().get());
+    factory.SetUserPrefsFile(params.pref_file,
+                             base::MessageLoopProxy::current().get());
     scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
         new user_prefs::PrefRegistrySyncable);
     scoped_ptr<PrefServiceSyncable> prefs(
-        builder.CreateSyncable(registry.get()));
+        factory.CreateSyncable(registry.get()));
     chrome::RegisterUserProfilePrefs(registry.get());
     profile_builder.SetPrefService(prefs.Pass());
   }

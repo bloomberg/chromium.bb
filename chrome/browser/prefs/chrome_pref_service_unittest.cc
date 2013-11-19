@@ -15,7 +15,7 @@
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
-#include "chrome/browser/prefs/pref_service_mock_builder.h"
+#include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -97,12 +97,12 @@ TEST_F(ChromePrefServiceUserFilePrefsTest, PreserveEmptyValue) {
       data_dir_.AppendASCII("read.need_empty_value.json"),
       pref_file));
 
-  PrefServiceMockBuilder builder;
-  builder.WithUserFilePrefs(pref_file,
-                            message_loop_.message_loop_proxy().get());
+  PrefServiceMockFactory factory;
+  factory.SetUserPrefsFile(pref_file,
+                          message_loop_.message_loop_proxy().get());
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable);
-  scoped_ptr<PrefServiceSyncable> prefs(builder.CreateSyncable(registry.get()));
+  scoped_ptr<PrefServiceSyncable> prefs(factory.CreateSyncable(registry.get()));
 
   // Register testing prefs.
   registry->RegisterListPref("list",

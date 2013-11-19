@@ -447,7 +447,7 @@ ProfileImpl::ProfileImpl(
     // will work here.
     startup_metric_utils::ScopedSlowStartupUMA
         scoped_timer("Startup.SlowStartupPreferenceLoading");
-    prefs_.reset(chrome_prefs::CreateProfilePrefs(
+    prefs_ = chrome_prefs::CreateProfilePrefs(
         GetPrefFilePath(),
         sequenced_task_runner,
         profile_policy_connector_->policy_service(),
@@ -455,7 +455,7 @@ ProfileImpl::ProfileImpl(
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForBrowserContext(this), false),
         pref_registry_,
-        async_prefs));
+        async_prefs).Pass();
     // Register on BrowserContext.
     user_prefs::UserPrefs::Set(this, prefs_.get());
   }
