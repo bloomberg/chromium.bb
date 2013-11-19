@@ -54,6 +54,9 @@ int NaClDebugBindSocket() {
               addr);
       return 0;
     }
+    NaClLog(LOG_WARNING,
+            "nacl_debug(%d) : Connect GDB with 'target remote %s'.\n",
+            __LINE__, addr);
   }
   return 1;
 }
@@ -77,6 +80,9 @@ void WINAPI NaClStubThread(void *thread_arg) {
     // Create a new session for this connection
     Session ses(trans.get());
     ses.SetFlags(Session::DEBUG_MASK);
+
+    NaClLog(LOG_WARNING, "nacl_debug(%d) : Connected, happy debugging!\n",
+            __LINE__);
 
     // Run this session for as long as it lasts
     g_target->Run(&ses);
