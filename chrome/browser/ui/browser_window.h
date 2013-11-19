@@ -348,6 +348,12 @@ class BrowserWindow : public ui::BaseWindow {
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);
 
+  // Returns a HostDesktopType that is compatible with the current Chrome window
+  // configuration. On Windows with Ash, this is always HOST_DESKTOP_TYPE_ASH
+  // while Chrome is running in Metro mode. Otherwise returns |desktop_type|.
+  static chrome::HostDesktopType AdjustHostDesktopType(
+      chrome::HostDesktopType desktop_type);
+
   // Shows the avatar bubble inside |web_contents|. The bubble is positioned
   // relative to |rect|. |rect| should be in the |web_contents| coordinate
   // system.

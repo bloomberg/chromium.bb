@@ -294,6 +294,10 @@ void RemoteRootWindowHostWin::HandleSelectFolder(
   host_->Send(new MetroViewerHostMsg_DisplaySelectFolder(title));
 }
 
+bool RemoteRootWindowHostWin::IsForegroundWindow() {
+  return ::GetForegroundWindow() == remote_window_;
+}
+
 Window* RemoteRootWindowHostWin::GetAshWindow() {
   return GetRootWindow()->window();
 }

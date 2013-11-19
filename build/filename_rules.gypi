@@ -100,6 +100,9 @@
                     ['exclude', '(^|/)ash/'],
       ]
     }],
+    ['<(use_ash)==0 or OS!="win" or >(nacl_untrusted_build)==1', {
+      'sources/': [ ['exclude', '_ashwin\\.(h|cc)$'] ]
+    }],
     ['<(use_ozone)==0 or >(nacl_untrusted_build)==1', {
       'sources/': [ ['exclude', '_ozone(_browsertest|_unittest)?\\.(h|cc)$'],
                     ['exclude', '(^|/)ozone/'],

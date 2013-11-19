@@ -142,6 +142,10 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   // Returns the active ASH root window.
   Window* GetAshWindow();
 
+  // Returns true if the remote window is the foreground window according to the
+  // OS.
+  bool IsForegroundWindow();
+
  private:
   explicit RemoteRootWindowHostWin(const gfx::Rect& bounds);
   virtual ~RemoteRootWindowHostWin();

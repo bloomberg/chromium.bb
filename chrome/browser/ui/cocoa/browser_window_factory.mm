@@ -15,3 +15,9 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
       [[BrowserWindowController alloc] initWithBrowser:browser];
   return [controller browserWindow];
 }
+
+// static
+chrome::HostDesktopType BrowserWindow::AdjustHostDesktopType(
+    chrome::HostDesktopType desktop_type) {
+  return desktop_type;
+}

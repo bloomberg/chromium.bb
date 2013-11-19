@@ -39,10 +39,10 @@ class BrowserFrameAsh : public views::NativeWidgetAura,
   virtual bool UsesNativeSystemMenu() const OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
 
+  virtual ~BrowserFrameAsh();
+
  private:
   class WindowPropertyWatcher;
-
-  virtual ~BrowserFrameAsh();
 
   // Set the window into the auto managed mode.
   void SetWindowAutoManaged();

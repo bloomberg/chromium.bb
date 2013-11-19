@@ -197,11 +197,11 @@ int BrowserFrameAsh::GetMinimizeButtonOffset() const {
   return 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// BrowserFrameAsh, private:
-
 BrowserFrameAsh::~BrowserFrameAsh() {
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserFrameAsh, private:
 
 void BrowserFrameAsh::SetWindowAutoManaged() {
   if (browser_view_->browser()->type() != Browser::TYPE_POPUP ||

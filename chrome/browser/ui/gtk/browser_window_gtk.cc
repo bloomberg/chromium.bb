@@ -2418,3 +2418,9 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   browser_window_gtk->Init();
   return browser_window_gtk;
 }
+
+// static
+chrome::HostDesktopType BrowserWindow::AdjustHostDesktopType(
+    chrome::HostDesktopType desktop_type) {
+  return desktop_type;
+}
