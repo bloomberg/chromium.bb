@@ -5078,8 +5078,7 @@ exposay_highlight_surface(struct desktop_shell *shell,
 		view = esurface->view;
 	}
 
-	animate_focus_change(shell, shell->exposay.workspace,
-	                     shell->exposay.focus_current, view);
+	activate(shell, view->surface, shell->exposay.seat);
 	shell->exposay.focus_current = view;
 }
 
