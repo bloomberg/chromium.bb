@@ -29,13 +29,11 @@
 #define SelectorChecker_h
 
 #include "core/css/CSSSelector.h"
-#include "core/dom/Element.h"
-#include "platform/scroll/ScrollTypes.h"
+#include "core/inspector/InspectorInstrumentation.h"
 
 namespace WebCore {
 
 class CSSSelector;
-class ContainerNode;
 class Element;
 class RenderScrollbar;
 class RenderStyle;

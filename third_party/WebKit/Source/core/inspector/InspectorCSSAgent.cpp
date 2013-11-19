@@ -63,8 +63,6 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/frame/ContentSecurityPolicy.h"
-#include "core/frame/Frame.h"
-#include "core/page/Page.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/WidthIterator.h"
 #include "core/rendering/InlineTextBox.h"
