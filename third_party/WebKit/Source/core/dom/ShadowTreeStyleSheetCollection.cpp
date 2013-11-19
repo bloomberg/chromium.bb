@@ -30,7 +30,6 @@
 #include "HTMLNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -46,7 +45,7 @@ ShadowTreeStyleSheetCollection::ShadowTreeStyleSheetCollection(ShadowRoot& shado
 {
 }
 
-void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
+void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
 {
     DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
     DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
@@ -71,13 +70,13 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* collections
         // use the name in document?
         AtomicString rel = element->getAttribute(relAttr);
         if (!enabledViaScript && sheet && !title.isEmpty()) {
-            if (collections->preferredStylesheetSetName().isEmpty()) {
+            if (engine->preferredStylesheetSetName().isEmpty()) {
                 if (element->hasLocalName(styleTag) || !rel.contains("alternate")) {
-                    collections->setPreferredStylesheetSetName(title);
-                    collections->setSelectedStylesheetSetName(title);
+                    engine->setPreferredStylesheetSetName(title);
+                    engine->setSelectedStylesheetSetName(title);
                 }
             }
-            if (title != collections->preferredStylesheetSetName())
+            if (title != engine->preferredStylesheetSetName())
                 activeSheet = 0;
         }
 
@@ -91,16 +90,16 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* collections
     }
 }
 
-bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* collections, StyleResolverUpdateMode updateMode)
+bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
 {
     Vector<RefPtr<StyleSheet> > styleSheets;
     Vector<RefPtr<CSSStyleSheet> > activeCSSStyleSheets;
-    collectStyleSheets(collections, styleSheets, activeCSSStyleSheets);
+    collectStyleSheets(engine, styleSheets, activeCSSStyleSheets);
 
     StyleSheetChange change;
     analyzeStyleSheetChange(updateMode, activeAuthorStyleSheets(), activeCSSStyleSheets, change);
 
-    if (StyleResolver* styleResolver = document()->styleResolverIfExists()) {
+    if (StyleResolver* styleResolver = engine->resolverIfExists()) {
         // FIXME: We might have already had styles in child treescope. In this case, we cannot use buildScopedStyleTreeInDocumentOrder.
         // Need to change "false" to some valid condition.
         styleResolver->setBuildScopedStyleTreeInDocumentOrder(false);

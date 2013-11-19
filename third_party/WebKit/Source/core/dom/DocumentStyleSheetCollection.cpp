@@ -52,7 +52,7 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
     ASSERT(treeScope.rootNode() == treeScope.rootNode()->document());
 }
 
-void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
+void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
 {
     DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
     DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
@@ -84,11 +84,11 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* collections, 
                 enabledViaScript = linkElement->isEnabledViaScript();
                 if (!linkElement->isDisabled() && linkElement->styleSheetIsLoading()) {
                     // it is loading but we should still decide which style sheet set to use
-                    if (!enabledViaScript && !title.isEmpty() && collections->preferredStylesheetSetName().isEmpty()) {
+                    if (!enabledViaScript && !title.isEmpty() && engine->preferredStylesheetSetName().isEmpty()) {
                         const AtomicString& rel = e->getAttribute(relAttr);
                         if (!rel.contains("alternate")) {
-                            collections->setPreferredStylesheetSetName(title);
-                            collections->setSelectedStylesheetSetName(title);
+                            engine->setPreferredStylesheetSetName(title);
+                            engine->setSelectedStylesheetSetName(title);
                         }
                     }
 
@@ -112,17 +112,17 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* collections, 
             AtomicString rel = e->getAttribute(relAttr);
             if (!enabledViaScript && sheet && !title.isEmpty()) {
                 // Yes, we have a title.
-                if (collections->preferredStylesheetSetName().isEmpty()) {
+                if (engine->preferredStylesheetSetName().isEmpty()) {
                     // No preferred set has been established. If
                     // we are NOT an alternate sheet, then establish
                     // us as the preferred set. Otherwise, just ignore
                     // this sheet.
                     if (e->hasLocalName(styleTag) || !rel.contains("alternate")) {
-                        collections->setPreferredStylesheetSetName(title);
-                        collections->setSelectedStylesheetSetName(title);
+                        engine->setPreferredStylesheetSetName(title);
+                        engine->setSelectedStylesheetSetName(title);
                     }
                 }
-                if (title != collections->preferredStylesheetSetName())
+                if (title != engine->preferredStylesheetSetName())
                     activeSheet = 0;
             }
 
@@ -144,22 +144,22 @@ static void collectActiveCSSStyleSheetsFromSeamlessParents(Vector<RefPtr<CSSStyl
     sheets.append(seamlessParentIFrame->document().styleEngine()->activeAuthorStyleSheets());
 }
 
-bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* collections, StyleResolverUpdateMode updateMode)
+bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
 {
     Vector<RefPtr<StyleSheet> > styleSheets;
     Vector<RefPtr<CSSStyleSheet> > activeCSSStyleSheets;
-    activeCSSStyleSheets.append(collections->injectedAuthorStyleSheets());
-    activeCSSStyleSheets.append(collections->documentAuthorStyleSheets());
+    activeCSSStyleSheets.append(engine->injectedAuthorStyleSheets());
+    activeCSSStyleSheets.append(engine->documentAuthorStyleSheets());
     collectActiveCSSStyleSheetsFromSeamlessParents(activeCSSStyleSheets, document());
-    collectStyleSheets(collections, styleSheets, activeCSSStyleSheets);
+    collectStyleSheets(engine, styleSheets, activeCSSStyleSheets);
 
     StyleSheetChange change;
     analyzeStyleSheetChange(updateMode, activeAuthorStyleSheets(), activeCSSStyleSheets, change);
 
     if (change.styleResolverUpdateType == Reconstruct) {
-        document()->clearStyleResolver();
+        engine->clearResolver();
     } else {
-        StyleResolver* styleResolver = document()->styleResolverIfExists();
+        StyleResolver* styleResolver = engine->resolverIfExists();
         ASSERT(styleResolver);
         // FIXME: We might have already had styles in child treescope. In this case, we cannot use buildScopedStyleTreeInDocumentOrder.
         // Need to change "false" to some valid condition.
