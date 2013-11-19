@@ -264,29 +264,28 @@ public class ContentViewRenderView extends FrameLayout {
         if (mPendingSwapBuffers > 0) mPendingSwapBuffers--;
     }
 
-    private void didCompositeAndDraw() {
-        if (mCurrentContentView == null) return;
-        ContentViewCore contentViewCore = mCurrentContentView.getContentViewCore();
-        if (contentViewCore == null || !contentViewCore.isReady() || getBackground() == null) {
-            return;
-        }
-        if (getBackground() != null) {
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    setBackgroundResource(0);
-                }
-            });
-        }
-    }
-
     private void render() {
         if (mPendingRenders > 0) mPendingRenders--;
+
+        // Waiting for the content view contents to be ready avoids compositing
+        // when the surface texture is still empty.
+        if (mCurrentContentView == null) return;
+        ContentViewCore contentViewCore = mCurrentContentView.getContentViewCore();
+        if (contentViewCore == null || !contentViewCore.isReady()) {
+            return;
+        }
 
         boolean didDraw = nativeComposite(mNativeContentViewRenderView);
         if (didDraw) {
             mPendingSwapBuffers++;
-            didCompositeAndDraw();
+            if (getBackground() != null) {
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        setBackgroundResource(0);
+                    }
+                });
+            }
         }
     }
 
