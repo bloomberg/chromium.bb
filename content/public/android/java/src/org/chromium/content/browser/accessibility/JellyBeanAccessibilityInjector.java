@@ -245,7 +245,7 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
         @SuppressWarnings("unused")
         public void onResult(String id, String result) {
             final long resultId;
-             try {
+            try {
                 resultId = Long.parseLong(id);
             } catch (NumberFormatException e) {
                 return;

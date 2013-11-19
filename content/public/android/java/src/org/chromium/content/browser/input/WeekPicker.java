@@ -6,9 +6,9 @@ package org.chromium.content.browser.input;
 
 import android.content.Context;
 
-import java.util.Calendar;
-
 import org.chromium.content.R;
+
+import java.util.Calendar;
 
 // This class is heavily based on android.widget.DatePicker.
 public class WeekPicker extends TwoFieldDatePicker {

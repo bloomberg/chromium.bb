@@ -54,11 +54,11 @@ class LongPressDetector {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-            case LONG_PRESS:
-                dispatchLongPress();
-                break;
-            default:
-                throw new RuntimeException("Unknown message " + msg); //never
+                case LONG_PRESS:
+                    dispatchLongPress();
+                    break;
+                default:
+                    throw new RuntimeException("Unknown message " + msg); // never
             }
         }
     }

@@ -87,8 +87,10 @@ public class ContentViewClient {
         return false;
     }
 
-    // Called when an ImeEvent is sent to the page. Can be used to know when some text is entered
-    // in a page.
+    /**
+     * Called when an ImeEvent is sent to the page. Can be used to know when some text is entered
+     * in a page.
+     */
     public void onImeEvent() {
     }
 
@@ -101,7 +103,7 @@ public class ContentViewClient {
     public void onImeStateChangeRequested(boolean requestShow) {
     }
 
-    // TODO (dtrainor): Should expose getScrollX/Y from ContentView or make
+    // TODO(dtrainor): Should expose getScrollX/Y from ContentView or make
     // computeHorizontalScrollOffset()/computeVerticalScrollOffset() public.
     /**
      * Gives the UI the chance to override each scroll event.

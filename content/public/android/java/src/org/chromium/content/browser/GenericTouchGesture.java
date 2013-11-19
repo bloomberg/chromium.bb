@@ -10,8 +10,8 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.view.MotionEvent;
-import android.view.MotionEvent.PointerProperties;
 import android.view.MotionEvent.PointerCoords;
+import android.view.MotionEvent.PointerProperties;
 import android.view.ViewConfiguration;
 
 import org.chromium.base.CalledByNative;
@@ -34,11 +34,11 @@ public class GenericTouchGesture {
     private long mDownTime;
     private long mStartTime;
 
-    private final byte STATE_INITIAL = 0;
-    private final byte STATE_MOVING = 1;
-    private final byte STATE_PENDING_UP = 2;
-    private final byte STATE_FINAL = 3;
-    private byte state = STATE_INITIAL;
+    private static final byte STATE_INITIAL = 0;
+    private static final byte STATE_MOVING = 1;
+    private static final byte STATE_PENDING_UP = 2;
+    private static final byte STATE_FINAL = 3;
+    private byte mState = STATE_INITIAL;
 
     private static class TouchPointer {
         private final float mStartX;
@@ -48,8 +48,8 @@ public class GenericTouchGesture {
         private final float mStepX;
         private final float mStepY;
 
-        private PointerProperties mProperties;
-        private PointerCoords mCoords;
+        private final PointerProperties mProperties;
+        private final PointerCoords mCoords;
 
 
         // Class representing a single pointer being moved over the screen.
@@ -66,12 +66,11 @@ public class GenericTouchGesture {
                 // it's been moved by more than scaledTouchSlop pixels. We
                 // thus increase the delta distance so the move is actually
                 // registered as covering the specified distance.
-                float distance = (float)Math.sqrt(scaledDeltaX * scaledDeltaX +
+                float distance = (float) Math.sqrt(scaledDeltaX * scaledDeltaX +
                         scaledDeltaY * scaledDeltaY);
                 mDeltaX = scaledDeltaX * (1 + scaledTouchSlop / distance);
                 mDeltaY = scaledDeltaY * (1 + scaledTouchSlop / distance);
-            }
-            else {
+            } else {
                 mDeltaX = scaledDeltaX;
                 mDeltaY = scaledDeltaY;
             }
@@ -121,7 +120,7 @@ public class GenericTouchGesture {
         }
     }
 
-    private TouchPointer[] mPointers;
+    private final TouchPointer[] mPointers;
     private final PointerProperties[] mPointerProperties;
     private final PointerCoords[] mPointerCoords;
 
@@ -183,7 +182,7 @@ public class GenericTouchGesture {
     }
 
     boolean sendEvent(long time) {
-        switch (state) {
+        switch (mState) {
             case STATE_INITIAL: {
                 mDownTime = time;
 
@@ -203,7 +202,7 @@ public class GenericTouchGesture {
                     mContentViewCore.onTouchEvent(event);
                     event.recycle();
                 }
-                state = STATE_MOVING;
+                mState = STATE_MOVING;
                 break;
             }
             case STATE_MOVING: {
@@ -211,7 +210,7 @@ public class GenericTouchGesture {
                     mNativePtr, mContentViewCore.getRenderCoordinates().getDeviceScaleFactor());
                 if (delta != 0) {
                     for (TouchPointer pointer : mPointers) {
-                        pointer.moveBy((float)delta);
+                        pointer.moveBy(delta);
                     }
                     MotionEvent event = MotionEvent.obtain(mDownTime, time,
                             MotionEvent.ACTION_MOVE,
@@ -221,7 +220,7 @@ public class GenericTouchGesture {
                     event.recycle();
                 }
                 if (havePointersArrived())
-                    state = STATE_PENDING_UP;
+                    mState = STATE_PENDING_UP;
                 break;
             }
             case STATE_PENDING_UP: {
@@ -243,11 +242,11 @@ public class GenericTouchGesture {
                 event.recycle();
 
                 nativeSetHasFinished(mNativePtr);
-                state = STATE_FINAL;
+                mState = STATE_FINAL;
                 break;
             }
         }
-        return state != STATE_FINAL;
+        return mState != STATE_FINAL;
     }
 
     private boolean havePointersArrived() {

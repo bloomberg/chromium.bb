@@ -4,9 +4,6 @@
 
 package org.chromium.content.browser;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
-
 class FileDescriptorInfo {
     public int mId;
     public int mFd;

@@ -6,8 +6,8 @@ package org.chromium.content.browser;
 
 import android.os.SystemClock;
 import android.view.MotionEvent;
-import android.view.MotionEvent.PointerProperties;
 import android.view.MotionEvent.PointerCoords;
+import android.view.MotionEvent.PointerProperties;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;

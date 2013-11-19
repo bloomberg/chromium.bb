@@ -13,11 +13,11 @@ import java.util.ArrayList;
  */
 public class NavigationHistory {
 
-    private ArrayList<NavigationEntry> entries = new ArrayList<NavigationEntry>();
+    private ArrayList<NavigationEntry> mEntries = new ArrayList<NavigationEntry>();
     private int mCurrentEntryIndex;
 
     protected void addEntry(NavigationEntry entry) {
-        entries.add(entry);
+        mEntries.add(entry);
     }
 
     /* package */ void setCurrentEntryIndex(int currentEntryIndex) {
@@ -28,14 +28,14 @@ public class NavigationHistory {
      * @return The number of entries in the history.
      */
     public int getEntryCount() {
-        return entries.size();
+        return mEntries.size();
     }
 
     /**
      * Returns the {@link NavigationEntry} for the given index.
      */
     public NavigationEntry getEntryAtIndex(int index) {
-        return entries.get(index);
+        return mEntries.get(index);
     }
 
     /**

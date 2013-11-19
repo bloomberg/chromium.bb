@@ -21,8 +21,6 @@ import org.chromium.content.common.TraceEvent;
  * approximation of a vertical sync starting point; see also http://crbug.com/156397.
  */
 public class VSyncMonitor {
-    private static final String TAG = "VSyncMonitor";
-
     private static final long NANOSECONDS_PER_SECOND = 1000000000;
     private static final long NANOSECONDS_PER_MILLISECOND = 1000000;
     private static final long NANOSECONDS_PER_MICROSECOND = 1000;

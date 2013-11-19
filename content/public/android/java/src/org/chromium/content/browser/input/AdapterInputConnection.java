@@ -4,8 +4,6 @@
 
 package org.chromium.content.browser.input;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import android.text.Editable;
 import android.text.InputType;
 import android.text.Selection;
@@ -16,6 +14,8 @@ import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * InputConnection is created by ContentView.onCreateInputConnection.
@@ -336,7 +336,7 @@ public class AdapterInputConnection extends BaseInputConnection {
                         selectionEnd = temp;
                     }
                     editable.replace(selectionStart, selectionEnd,
-                            Character.toString((char)unicodeChar));
+                            Character.toString((char) unicodeChar));
                 }
             }
         } else if (event.getAction() == KeyEvent.ACTION_DOWN) {

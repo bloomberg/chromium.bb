@@ -4,10 +4,10 @@
 
 package org.chromium.content.browser;
 
+import android.content.Context;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-
-import android.content.Context;
 
 /**
  * Java counterpart of android DownloadController.

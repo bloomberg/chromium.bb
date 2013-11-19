@@ -4,14 +4,8 @@
 
 package org.chromium.content.browser;
 
-import android.app.Activity;
-import android.app.SearchManager;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.provider.Browser;
-import android.text.TextUtils;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -79,8 +73,8 @@ public class SelectActionModeCallback implements ActionMode.Callback {
         boolean isWebSearchAvailable();
     }
 
-    private Context mContext;
-    private ActionHandler mActionHandler;
+    private final Context mContext;
+    private final ActionHandler mActionHandler;
     private final boolean mIncognito;
     private boolean mEditable;
 

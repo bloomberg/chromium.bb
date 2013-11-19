@@ -29,7 +29,7 @@ public abstract class InsertionHandleController implements CursorController {
     private HandleView mHandle;
 
     /** The view over which the insertion handle should be shown */
-    private View mParent;
+    private final View mParent;
 
     /** True iff the insertion handle is currently showing */
     private boolean mIsShowing;
@@ -37,9 +37,9 @@ public abstract class InsertionHandleController implements CursorController {
     /** True iff the insertion handle can be shown automatically when selection changes */
     private boolean mAllowAutomaticShowing;
 
-    private Context mContext;
+    private final Context mContext;
 
-    private PositionObserver mPositionObserver;
+    private final PositionObserver mPositionObserver;
 
     public InsertionHandleController(View parent, PositionObserver positionObserver) {
         mParent = parent;
@@ -175,7 +175,7 @@ public abstract class InsertionHandleController implements CursorController {
     public void onDetached() {}
 
     boolean canPaste() {
-        return ((ClipboardManager)mContext.getSystemService(
+        return ((ClipboardManager) mContext.getSystemService(
                 Context.CLIPBOARD_SERVICE)).hasPrimaryClip();
     }
 
@@ -200,8 +200,8 @@ public abstract class InsertionHandleController implements CursorController {
         private final PopupWindow mContainer;
         private int mPositionX;
         private int mPositionY;
-        private View[] mPasteViews;
-        private int[] mPasteViewLayouts;
+        private final View[] mPasteViews;
+        private final int[] mPasteViewLayouts;
 
         public PastePopupMenu() {
             mContainer = new PopupWindow(mContext, null,
@@ -230,7 +230,7 @@ public abstract class InsertionHandleController implements CursorController {
         }
 
         private int viewIndex(boolean onTop) {
-            return (onTop ? 0 : 1<<1) + (canPaste() ? 0 : 1 << 0);
+            return (onTop ? 0 : 1 << 1) + (canPaste() ? 0 : 1 << 0);
         }
 
         private void updateContent(boolean onTop) {
@@ -239,7 +239,7 @@ public abstract class InsertionHandleController implements CursorController {
 
             if (view == null) {
                 final int layout = mPasteViewLayouts[viewIndex];
-                LayoutInflater inflater = (LayoutInflater)mContext.
+                LayoutInflater inflater = (LayoutInflater) mContext.
                     getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 if (inflater != null) {
                     view = inflater.inflate(layout, null);

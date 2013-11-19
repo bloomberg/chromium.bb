@@ -21,14 +21,6 @@ import org.chromium.content.R;
 
 class DateTimePickerDialog extends AlertDialog implements OnClickListener,
         OnDateChangedListener, OnTimeChangedListener {
-
-    private static final String YEAR = "year";
-    private static final String MONTH = "month";
-    private static final String DAY = "day";
-    private static final String HOUR = "hour";
-    private static final String MINUTE = "minute";
-    private static final String IS_24_HOUR = "is24hour";
-
     private final DatePicker mDatePicker;
     private final TimePicker mTimePicker;
     private final OnDateTimeSetListener mCallBack;

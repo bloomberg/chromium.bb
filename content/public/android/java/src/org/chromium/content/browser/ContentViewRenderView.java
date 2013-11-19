@@ -11,8 +11,8 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
 import android.view.Surface;
-import android.view.SurfaceView;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.widget.FrameLayout;
 
 import org.chromium.base.CalledByNative;
@@ -32,8 +32,8 @@ public class ContentViewRenderView extends FrameLayout {
     private long mNativeContentViewRenderView;
     private final SurfaceHolder.Callback mSurfaceCallback;
 
-    private SurfaceView mSurfaceView;
-    private VSyncAdapter mVSyncAdapter;
+    private final SurfaceView mSurfaceView;
+    private final VSyncAdapter mVSyncAdapter;
 
     private int mPendingRenders;
     private int mPendingSwapBuffers;

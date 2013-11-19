@@ -15,15 +15,14 @@ import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content.app.LibraryLoader;
-import org.chromium.content.common.TraceEvent;
 import org.chromium.content.R;
+import org.chromium.content.common.TraceEvent;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.text.SimpleDateFormat;
 
 /**
  * Controller for Chrome's tracing feature.

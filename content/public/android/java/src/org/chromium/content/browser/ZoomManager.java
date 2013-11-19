@@ -16,7 +16,7 @@ import android.view.ScaleGestureDetector;
 class ZoomManager {
     private static final String TAG = "ContentViewZoom";
 
-    private ContentViewCore mContentViewCore;
+    private final ContentViewCore mContentViewCore;
 
     private class ScaleGestureListener implements ScaleGestureDetector.OnScaleGestureListener {
         // Completely silence scaling events. Used in WebView when zoom support
@@ -87,8 +87,8 @@ class ZoomManager {
         }
     }
 
-    private ScaleGestureDetector mMultiTouchDetector;
-    private ScaleGestureListener mMultiTouchListener;
+    private final ScaleGestureDetector mMultiTouchDetector;
+    private final ScaleGestureListener mMultiTouchListener;
 
     ZoomManager(final Context context, ContentViewCore contentViewCore) {
         mContentViewCore = contentViewCore;
@@ -110,7 +110,7 @@ class ZoomManager {
             mMultiTouchDetector.onTouchEvent(event);
         } catch (Exception e) {
             Log.e(TAG, "ScaleGestureDetector got into a bad state!", e);
-            assert(false);
+            assert false;
         }
     }
 
@@ -130,7 +130,7 @@ class ZoomManager {
             return retVal;
         } catch (Exception e) {
             Log.e(TAG, "ScaleGestureDetector got into a bad state!", e);
-            assert(false);
+            assert false;
         }
         return false;
     }

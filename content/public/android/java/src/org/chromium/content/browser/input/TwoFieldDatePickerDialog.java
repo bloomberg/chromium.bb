@@ -9,11 +9,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Build;
-import android.os.Bundle;
-import android.view.View;
 
-import org.chromium.content.browser.input.TwoFieldDatePicker.OnMonthOrWeekChangedListener;
 import org.chromium.content.R;
+import org.chromium.content.browser.input.TwoFieldDatePicker.OnMonthOrWeekChangedListener;
 
 public abstract class TwoFieldDatePickerDialog extends AlertDialog implements OnClickListener,
         OnMonthOrWeekChangedListener {
@@ -35,7 +33,7 @@ public abstract class TwoFieldDatePickerDialog extends AlertDialog implements On
          *  with {@link java.util.Calendar}.
          */
         void onValueSet(int year, int positionInYear);
-     }
+    }
 
     /**
      * @param context The context the dialog is to run in.

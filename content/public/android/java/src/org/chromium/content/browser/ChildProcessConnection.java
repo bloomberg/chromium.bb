@@ -8,28 +8,21 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.chromium.base.CalledByNative;
 import org.chromium.base.CpuFeatures;
-import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.app.Linker;
 import org.chromium.content.app.LinkerParams;
-import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 import org.chromium.content.common.TraceEvent;
+
+import java.io.IOException;
 
 /**
  * Manages a connection between the browser activity and a child service. The class is responsible
@@ -169,7 +162,7 @@ public class ChildProcessConnection {
 
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
-            synchronized(mLock) {
+            synchronized (mLock) {
                 // A flag from the parent class ensures we run the post-connection logic only once
                 // (instead of once per each ChildServiceConnection).
                 if (mServiceConnectComplete) {
@@ -237,7 +230,7 @@ public class ChildProcessConnection {
     }
 
     IChildProcessService getService() {
-        synchronized(mLock) {
+        synchronized (mLock) {
             return mService;
         }
     }
@@ -258,7 +251,7 @@ public class ChildProcessConnection {
      *                    the command line parameters must instead be passed to setupConnection().
      */
     void start(String[] commandLine) {
-        synchronized(mLock) {
+        synchronized (mLock) {
             TraceEvent.begin();
             assert !ThreadUtils.runningOnUiThread();
 
@@ -275,8 +268,8 @@ public class ChildProcessConnection {
      * Setups the connection after it was started with start(). This method should be called by the
      * consumer of the class to set up additional connection parameters.
      * @param commandLine (Optional) will be ignored if the command line was already sent in bind()
-     * @param fileToBeMapped a list of file descriptors that should be registered
-     * @param callback Used for status updates regarding this process connection.
+     * @param filesToBeMapped a list of file descriptors that should be registered
+     * @param processCallback Used for status updates regarding this process connection.
      * @param connectionCallbacks will notify the consumer about the connection being established
      * and the status of the out-of-memory bindings being bound for the connection.
      */
@@ -286,7 +279,7 @@ public class ChildProcessConnection {
             IChildProcessCallback processCallback,
             ConnectionCallback connectionCallbacks,
             Bundle sharedRelros) {
-        synchronized(mLock) {
+        synchronized (mLock) {
             TraceEvent.begin();
             assert mConnectionParams == null;
             mConnectionCallback = connectionCallbacks;
@@ -306,7 +299,7 @@ public class ChildProcessConnection {
      * this multiple times.
      */
     void stop() {
-        synchronized(mLock) {
+        synchronized (mLock) {
             mInitialBinding.unbind();
             mStrongBinding.unbind();
             mWaivedBinding.unbind();
@@ -359,7 +352,7 @@ public class ChildProcessConnection {
                 } else {
                     try {
                         parcelFiles[i] = ParcelFileDescriptor.fromFd(fileInfos[i].mFd);
-                    } catch(IOException e) {
+                    } catch (IOException e) {
                         Log.e(TAG,
                               "Invalid FD provided for process connection, aborting connection.",
                               e);
@@ -401,14 +394,14 @@ public class ChildProcessConnection {
 
     /** @return true iff the initial oom binding is currently bound. */
     boolean isInitialBindingBound() {
-        synchronized(mLock) {
+        synchronized (mLock) {
             return mInitialBinding.isBound();
         }
     }
 
     /** @return true iff the strong oom binding is currently bound. */
     boolean isStrongBindingBound() {
-        synchronized(mLock) {
+        synchronized (mLock) {
             return mStrongBinding.isBound();
         }
     }
@@ -418,7 +411,7 @@ public class ChildProcessConnection {
      * to call this multiple times.
      */
     void removeInitialBinding() {
-        synchronized(mLock) {
+        synchronized (mLock) {
             mInitialBinding.unbind();
         }
     }
@@ -428,7 +421,7 @@ public class ChildProcessConnection {
      * multiple times, before as well as after stop().
      */
     void dropOomBindings() {
-        synchronized(mLock) {
+        synchronized (mLock) {
             mInitialBinding.unbind();
 
             mAttachAsActiveCount = 0;
@@ -443,7 +436,7 @@ public class ChildProcessConnection {
      * multiple bindings, we count the requests and unbind when the count drops to zero.
      */
     void attachAsActive() {
-        synchronized(mLock) {
+        synchronized (mLock) {
             if (mService == null) {
                 Log.w(TAG, "The connection is not bound for " + mPID);
                 return;
@@ -459,7 +452,7 @@ public class ChildProcessConnection {
      * Called when the service is no longer considered active.
      */
     void detachAsActive() {
-        synchronized(mLock) {
+        synchronized (mLock) {
             if (mService == null) {
                 Log.w(TAG, "The connection is not bound for " + mPID);
                 return;
@@ -476,7 +469,7 @@ public class ChildProcessConnection {
      * @return The connection PID, or 0 if not yet connected.
      */
     int getPid() {
-        synchronized(mLock) {
+        synchronized (mLock) {
             return mPID;
         }
     }

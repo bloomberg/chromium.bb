@@ -9,9 +9,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
-import android.os.Handler;
-import android.os.Message;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -27,13 +24,9 @@ import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.lang.ref.WeakReference;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.common.IChildProcessService;
-import org.chromium.content.R;
 
 @JNINamespace("content")
 public class ContentVideoView
@@ -100,7 +93,7 @@ public class ContentVideoView
 
     private Surface mSurface;
 
-    private ContentVideoViewClient mClient;
+    private final ContentVideoViewClient mClient;
 
     private class VideoSurfaceView extends SurfaceView {
 
@@ -113,9 +106,9 @@ public class ContentVideoView
             int width = getDefaultSize(mVideoWidth, widthMeasureSpec);
             int height = getDefaultSize(mVideoHeight, heightMeasureSpec);
             if (mVideoWidth > 0 && mVideoHeight > 0) {
-                if ( mVideoWidth * height  > width * mVideoHeight ) {
+                if (mVideoWidth * height  > width * mVideoHeight) {
                     height = width * mVideoHeight / mVideoWidth;
-                } else if ( mVideoWidth * height  < width * mVideoHeight ) {
+                } else if (mVideoWidth * height  < width * mVideoHeight) {
                     width = height * mVideoWidth / mVideoHeight;
                 }
             }
@@ -125,8 +118,8 @@ public class ContentVideoView
 
     private static class ProgressView extends LinearLayout {
 
-        private ProgressBar mProgressBar;
-        private TextView mTextView;
+        private final ProgressBar mProgressBar;
+        private final TextView mTextView;
 
         public ProgressView(Context context, String videoLoadingText) {
             super(context);
@@ -161,8 +154,8 @@ public class ContentVideoView
         }
 
         @Override
-        public void show(int timeout_ms) {
-            mMediaController.show(timeout_ms);
+        public void show(int timeoutMs) {
+            mMediaController.show(timeoutMs);
         }
 
         @Override
@@ -194,7 +187,7 @@ public class ContentVideoView
         }
     }
 
-    private Runnable mExitFullscreenRunnable = new Runnable() {
+    private final Runnable mExitFullscreenRunnable = new Runnable() {
         @Override
         public void run() {
             exitFullscreen(true);
@@ -293,6 +286,7 @@ public class ContentVideoView
                 .setMessage(message)
                 .setPositiveButton(mErrorButton,
                         new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int whichButton) {
                         /* Inform that the video is over.
                          */
@@ -568,6 +562,7 @@ public class ContentVideoView
         return mCanSeekForward;
     }
 
+    @Override
     public int getAudioSessionId() {
         return 0;
     }

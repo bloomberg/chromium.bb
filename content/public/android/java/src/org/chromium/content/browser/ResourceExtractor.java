@@ -221,9 +221,9 @@ public class ResourceExtractor {
         }
     }
 
-    private Context mContext;
+    private final Context mContext;
     private ExtractTask mExtractTask;
-    private File mOutputDir;
+    private final File mOutputDir;
 
     private static ResourceExtractor sInstance;
 
@@ -288,9 +288,11 @@ public class ResourceExtractor {
         }
     }
 
-    // This will extract the application pak resources in an
-    // AsyncTask. Call waitForCompletion() at the point resources
-    // are needed to block until the task completes.
+    /**
+     * This will extract the application pak resources in an
+     * AsyncTask. Call waitForCompletion() at the point resources
+     * are needed to block until the task completes.
+     */
     public void startExtractingResources() {
         if (mExtractTask != null) {
             return;

@@ -11,18 +11,11 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.view.WindowManager;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.PopupWindow;
-import android.widget.TextView;
 
 import org.chromium.content.browser.PositionObserver;
 
@@ -56,14 +49,14 @@ public class HandleView extends View {
     private float mTouchToWindowOffsetX;
     private float mTouchToWindowOffsetY;
 
-    private int mLineOffsetY;
+    private final int mLineOffsetY;
     private float mDownPositionX, mDownPositionY;
     private long mTouchTimer;
     private boolean mIsInsertionHandle = false;
     private float mAlpha;
     private long mFadeStartTime;
 
-    private View mParent;
+    private final View mParent;
     private InsertionHandleController.PastePopupMenu mPastePopupWindow;
 
     private final int mTextSelectHandleLeftRes;
@@ -80,8 +73,8 @@ public class HandleView extends View {
     static final int CENTER = 1;
     static final int RIGHT = 2;
 
-    private PositionObserver mParentPositionObserver;
-    private PositionObserver.Listener mParentPositionListener;
+    private final PositionObserver mParentPositionObserver;
+    private final PositionObserver.Listener mParentPositionListener;
 
     // Number of dips to subtract from the handle's y position to give a suitable
     // y coordinate for the corresponding text position. This is to compensate for the fact
@@ -130,40 +123,40 @@ public class HandleView extends View {
     void setOrientation(int pos) {
         int handleWidth;
         switch (pos) {
-        case LEFT: {
-            if (mSelectHandleLeft == null) {
-                mSelectHandleLeft = getContext().getResources().getDrawable(
-                        mTextSelectHandleLeftRes);
+            case LEFT: {
+                if (mSelectHandleLeft == null) {
+                    mSelectHandleLeft = getContext().getResources().getDrawable(
+                            mTextSelectHandleLeftRes);
+                }
+                mDrawable = mSelectHandleLeft;
+                handleWidth = mDrawable.getIntrinsicWidth();
+                mHotspotX = (handleWidth * 3) / 4f;
+                break;
             }
-            mDrawable = mSelectHandleLeft;
-            handleWidth = mDrawable.getIntrinsicWidth();
-            mHotspotX = (handleWidth * 3) / 4f;
-            break;
-        }
 
-        case RIGHT: {
-            if (mSelectHandleRight == null) {
-                mSelectHandleRight = getContext().getResources().getDrawable(
-                        mTextSelectHandleRightRes);
+            case RIGHT: {
+                if (mSelectHandleRight == null) {
+                    mSelectHandleRight = getContext().getResources().getDrawable(
+                            mTextSelectHandleRightRes);
+                }
+                mDrawable = mSelectHandleRight;
+                handleWidth = mDrawable.getIntrinsicWidth();
+                mHotspotX = handleWidth / 4f;
+                break;
             }
-            mDrawable = mSelectHandleRight;
-            handleWidth = mDrawable.getIntrinsicWidth();
-            mHotspotX = handleWidth / 4f;
-            break;
-        }
 
-        case CENTER:
-        default: {
-            if (mSelectHandleCenter == null) {
-                mSelectHandleCenter = getContext().getResources().getDrawable(
-                        mTextSelectHandleRes);
+            case CENTER:
+            default: {
+                if (mSelectHandleCenter == null) {
+                    mSelectHandleCenter = getContext().getResources().getDrawable(
+                            mTextSelectHandleRes);
+                }
+                mDrawable = mSelectHandleCenter;
+                handleWidth = mDrawable.getIntrinsicWidth();
+                mHotspotX = handleWidth / 2f;
+                mIsInsertionHandle = true;
+                break;
             }
-            mDrawable = mSelectHandleCenter;
-            handleWidth = mDrawable.getIntrinsicWidth();
-            mHotspotX = handleWidth / 2f;
-            mIsInsertionHandle = true;
-            break;
-        }
         }
 
         mHotspotY = 0;

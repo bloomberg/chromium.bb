@@ -4,8 +4,6 @@
 
 package org.chromium.content.browser.input;
 
-import org.chromium.content.browser.ContentViewCore;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
@@ -19,6 +17,7 @@ import android.widget.CheckedTextView;
 import android.widget.ListView;
 
 import org.chromium.content.R;
+import org.chromium.content.browser.ContentViewCore;
 
 /**
  * Handles the popup dialog for the <select> HTML tag support.
@@ -35,7 +34,7 @@ public class SelectPopupDialog {
     // The dialog hosting the popup list view.
     private AlertDialog mListBoxPopup = null;
 
-    private ContentViewCore mContentViewCore;
+    private final ContentViewCore mContentViewCore;
 
     /**
      * Subclass ArrayAdapter so we can disable OPTION_GROUP items.
@@ -45,12 +44,12 @@ public class SelectPopupDialog {
          * Possible values for mItemEnabled.
          * Keep in sync with the value passed from content_view_core_impl.cc
          */
-        final static int POPUP_ITEM_TYPE_GROUP = 0;
-        final static int POPUP_ITEM_TYPE_DISABLED = 1;
-        final static int POPUP_ITEM_TYPE_ENABLED = 2;
+        static final int POPUP_ITEM_TYPE_GROUP = 0;
+        static final int POPUP_ITEM_TYPE_DISABLED = 1;
+        static final int POPUP_ITEM_TYPE_ENABLED = 2;
 
         // Indicates the POPUP_ITEM_TYPE of each item.
-        private int[] mItemEnabled;
+        private final int[] mItemEnabled;
 
         // True if all items are POPUP_ITEM_TYPE_ENABLED.
         private boolean mAreAllItemsEnabled;
@@ -130,13 +129,15 @@ public class SelectPopupDialog {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     mContentViewCore.selectPopupMenuItems(getSelectedIndices(listView));
-                }});
+                }
+            });
             b.setNegativeButton(android.R.string.cancel,
                     new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    mContentViewCore.selectPopupMenuItems(null);
-            }});
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mContentViewCore.selectPopupMenuItems(null);
+                        }
+                    });
         }
         mListBoxPopup = b.create();
         final SelectPopupArrayAdapter adapter = new SelectPopupArrayAdapter(labels, enabled,

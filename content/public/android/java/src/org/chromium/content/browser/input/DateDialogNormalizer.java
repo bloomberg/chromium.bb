@@ -15,31 +15,31 @@ import java.util.TimeZone;
  */
 class DateDialogNormalizer {
 
- private static void setLimits(DatePicker picker, long min, long max) {
-     // DatePicker intervals are non inclusive, the DatePicker will throw an
-     // exception when setting the min/max attribute to the current date
-     // so make sure this never happens
-     if (max <= min) {
-         return;
-     }
-     Calendar minCal = trimToDate(min);
-     Calendar maxCal = trimToDate(max);
-     int currentYear = picker.getYear();
-     int currentMonth = picker.getMonth();
-     int currentDayOfMonth =  picker.getDayOfMonth();
-     picker.updateDate(maxCal.get(Calendar.YEAR),
-             maxCal.get(Calendar.MONTH),
-             maxCal.get(Calendar.DAY_OF_MONTH));
-     picker.setMinDate(minCal.getTimeInMillis());
-     picker.updateDate(minCal.get(Calendar.YEAR),
-             minCal.get(Calendar.MONTH),
-             minCal.get(Calendar.DAY_OF_MONTH));
-     picker.setMaxDate(maxCal.getTimeInMillis());
+    private static void setLimits(DatePicker picker, long min, long max) {
+        // DatePicker intervals are non inclusive, the DatePicker will throw an
+        // exception when setting the min/max attribute to the current date
+        // so make sure this never happens
+        if (max <= min) {
+            return;
+        }
+        Calendar minCal = trimToDate(min);
+        Calendar maxCal = trimToDate(max);
+        int currentYear = picker.getYear();
+        int currentMonth = picker.getMonth();
+        int currentDayOfMonth = picker.getDayOfMonth();
+        picker.updateDate(maxCal.get(Calendar.YEAR),
+                maxCal.get(Calendar.MONTH),
+                maxCal.get(Calendar.DAY_OF_MONTH));
+        picker.setMinDate(minCal.getTimeInMillis());
+        picker.updateDate(minCal.get(Calendar.YEAR),
+                minCal.get(Calendar.MONTH),
+                minCal.get(Calendar.DAY_OF_MONTH));
+        picker.setMaxDate(maxCal.getTimeInMillis());
 
-     // Restore the current date, this will keep the min/max settings
-     // previously set into account.
-     picker.updateDate(currentYear, currentMonth, currentDayOfMonth);
- }
+        // Restore the current date, this will keep the min/max settings
+        // previously set into account.
+        picker.updateDate(currentYear, currentMonth, currentDayOfMonth);
+    }
 
     private static Calendar trimToDate(long time) {
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));

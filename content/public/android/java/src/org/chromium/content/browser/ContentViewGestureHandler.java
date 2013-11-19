@@ -13,11 +13,10 @@ import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
+import org.chromium.content.browser.LongPressDetector.LongPressDelegate;
 import org.chromium.content.browser.third_party.GestureDetector;
 import org.chromium.content.browser.third_party.GestureDetector.OnDoubleTapListener;
 import org.chromium.content.browser.third_party.GestureDetector.OnGestureListener;
-import org.chromium.content.browser.LongPressDetector.LongPressDelegate;
-import org.chromium.content.browser.SnapScrollController;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.TraceEvent;
 
@@ -149,7 +148,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
     private int mScaledTouchSlopSquare;
 
     // Object that keeps track of and updates scroll snapping behavior.
-    private SnapScrollController mSnapScrollController;
+    private final SnapScrollController mSnapScrollController;
 
     // Used to track the accumulated scroll error over time. This is used to remove the
     // rounding error we introduced by passing integers to webkit.
@@ -231,7 +230,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
         private long mEventTime;
         private TouchPoint[] mTouchPoints;
-        private Handler mHandler = new Handler();
+        private final Handler mHandler = new Handler();
         private int mPendingAckState;
 
         public void start(long eventTime, TouchPoint[] pts) {
@@ -306,7 +305,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
         }
     }
 
-    private TouchEventTimeoutHandler mTouchEventTimeoutHandler = new TouchEventTimeoutHandler();
+    private final TouchEventTimeoutHandler mTouchEventTimeoutHandler =
+            new TouchEventTimeoutHandler();
 
     /**
      * This is an interface to handle MotionEvent related communication with the native side also
@@ -510,7 +510,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                             }
                         }
 
-                        fling(e2.getEventTime(),(int) e1.getX(0), (int) e1.getY(0),
+                        fling(e2.getEventTime(), (int) e1.getX(0), (int) e1.getY(0),
                                         (int) velocityX, (int) velocityY);
                         return true;
                     }
@@ -679,10 +679,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         return deltaX * deltaX + deltaY * deltaY > mScaledTouchSlopSquare;
                     }
                 };
-                mListener = listener;
-                mDoubleTapListener = listener;
-                mGestureDetector = new GestureDetector(context, listener);
-                mGestureDetector.setIsLongpressEnabled(false);
+            mListener = listener;
+            mDoubleTapListener = listener;
+            mGestureDetector = new GestureDetector(context, listener);
+            mGestureDetector.setIsLongpressEnabled(false);
         } finally {
             TraceEvent.end();
         }
@@ -1119,7 +1119,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
             switch (ackResult) {
                 case INPUT_EVENT_ACK_STATE_UNKNOWN:
                     // This should never get sent.
-                    assert(false);
+                    assert (false);
                     break;
                 case INPUT_EVENT_ACK_STATE_CONSUMED:
                 case INPUT_EVENT_ACK_STATE_IGNORED:

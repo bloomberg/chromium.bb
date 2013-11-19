@@ -13,18 +13,20 @@ import android.util.Log;
 
 import org.chromium.content.common.CommandLine;
 
-// Logs Heap stats, such as gc count, alloc count, etc.
-// It's enabled by CommandLine.ENABLE_TEST_INTENTS, and logs whenever broadcast
-// intent ACTION_LOG is received, e.g.:
-// adb shell am broadcast -a com.google.android.apps.chrome.LOG_HEAP_STATS
+/**
+ * Logs Heap stats, such as gc count, alloc count, etc.
+ * It's enabled by CommandLine.ENABLE_TEST_INTENTS, and logs whenever broadcast
+ * intent ACTION_LOG is received, e.g.:
+ * adb shell am broadcast -a com.google.android.apps.chrome.LOG_HEAP_STATS
+ */
 public class HeapStatsLogger {
     private static final String TAG = "HeapStatsLogger";
     private static final String ACTION_LOG = "com.google.android.apps.chrome.LOG_HEAP_STATS";
 
     private static HeapStatsLogger sHeapStats;
 
-    private HeapStatsLoggerReceiver mBroadcastReceiver;
-    private HeapStatsLoggerIntentFilter mIntentFilter;
+    private final HeapStatsLoggerReceiver mBroadcastReceiver;
+    private final HeapStatsLoggerIntentFilter mIntentFilter;
 
     public static void init(Context context) {
         if (CommandLine.getInstance().hasSwitch(CommandLine.ENABLE_TEST_INTENTS)) {

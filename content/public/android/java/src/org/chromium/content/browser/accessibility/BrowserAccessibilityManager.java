@@ -6,15 +6,14 @@ package org.chromium.content.browser.accessibility;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.os.Bundle;
 import android.os.Build;
+import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
-import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -37,13 +36,13 @@ public class BrowserAccessibilityManager {
     private static final String TAG = "BrowserAccessibilityManager";
 
     private ContentViewCore mContentViewCore;
-    private AccessibilityManager mAccessibilityManager;
-    private RenderCoordinates mRenderCoordinates;
+    private final AccessibilityManager mAccessibilityManager;
+    private final RenderCoordinates mRenderCoordinates;
     private long mNativeObj;
     private int mAccessibilityFocusId;
     private int mCurrentHoverId;
     private final int[] mTempLocation = new int[2];
-    private View mView;
+    private final View mView;
     private boolean mUserHasTouchExplored;
     private boolean mFrameInfoInitialized;
 

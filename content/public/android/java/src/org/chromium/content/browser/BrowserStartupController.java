@@ -185,7 +185,7 @@ public class BrowserStartupController {
      * <p/>
      * Note that this can only be called on the UI thread.
      *
-     * @param max_renderers The maximum number of renderer processes the browser may
+     * @param maxRenderers The maximum number of renderer processes the browser may
      *                      create. Zero for single process mode.
      * @return true if successfully started, false otherwise.
      */

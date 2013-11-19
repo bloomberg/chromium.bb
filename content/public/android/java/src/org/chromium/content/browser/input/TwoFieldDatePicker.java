@@ -5,24 +5,25 @@
 package org.chromium.content.browser.input;
 
 import android.content.Context;
-import android.view.LayoutInflater;
-import android.widget.NumberPicker;
-import android.widget.NumberPicker.OnValueChangeListener;
 import android.text.format.DateUtils;
+import android.view.LayoutInflater;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 import android.widget.NumberPicker;
-
-import java.util.Calendar;
+import android.widget.NumberPicker.OnValueChangeListener;
 
 import org.chromium.content.R;
 
-// This class is heavily based on android.widget.DatePicker.
+import java.util.Calendar;
+
+/**
+ * This class is heavily based on android.widget.DatePicker.
+ */
 public abstract class TwoFieldDatePicker extends FrameLayout {
 
-    private NumberPicker mPositionInYearSpinner;
+    private final NumberPicker mPositionInYearSpinner;
 
-    private NumberPicker mYearSpinner;
+    private final NumberPicker mYearSpinner;
 
     private OnMonthOrWeekChangedListener mMonthOrWeekChangedListener;
 
@@ -74,7 +75,7 @@ public abstract class TwoFieldDatePicker extends FrameLayout {
                     }
                 } else if (picker == mYearSpinner) {
                     year = newVal;
-                 } else {
+                } else {
                     throw new IllegalArgumentException();
                 }
 

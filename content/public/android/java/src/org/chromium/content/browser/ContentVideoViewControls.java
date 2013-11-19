@@ -29,10 +29,10 @@ public interface ContentVideoViewControls {
     /**
      * Show the controls on screen. It will go away
      * automatically after 'timeout' milliseconds of inactivity.
-     * @param timeout_ms The timeout in milliseconds. Use 0 to show
+     * @param timeoutMs The timeout in milliseconds. Use 0 to show
      * the controls until hide() is called.
      */
-    public void show(int timeout_ms);
+    public void show(int timeoutMs);
 
     /**
      * Remove the controls from the screen.

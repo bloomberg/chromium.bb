@@ -9,10 +9,6 @@ import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.Surface;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.SysUtils;
@@ -25,12 +21,16 @@ import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * This class provides the method to start/stop ChildProcess called by native.
  */
 @JNINamespace("content")
 public class ChildProcessLauncher {
-    private static String TAG = "ChildProcessLauncher";
+    private static final String TAG = "ChildProcessLauncher";
 
     private static final int CALLBACK_FOR_UNKNOWN_PROCESS = 0;
     private static final int CALLBACK_FOR_GPU_PROCESS = 1;
@@ -51,7 +51,7 @@ public class ChildProcessLauncher {
 
     private static class ChildConnectionAllocator {
         // Connections to services. Indices of the array correspond to the service numbers.
-        private ChildProcessConnection[] mChildProcessConnections;
+        private final ChildProcessConnection[] mChildProcessConnections;
 
         // The list of free (not bound) service indices. When looking for a free service, the first
         // index in that list should be used. When a service is unbound, its index is added to the
@@ -61,7 +61,7 @@ public class ChildProcessLauncher {
         // the process is reused and bad things happen (mostly static variables are set when we
         // don't expect them to).
         // SHOULD BE ACCESSED WITH mConnectionLock.
-        private ArrayList<Integer> mFreeConnectionIndices;
+        private final ArrayList<Integer> mFreeConnectionIndices;
         private final Object mConnectionLock = new Object();
 
         private Class<? extends ChildProcessService> mChildClass;
@@ -87,9 +87,9 @@ public class ChildProcessLauncher {
         public ChildProcessConnection allocate(
                 Context context, ChildProcessConnection.DeathCallback deathCallback,
                 LinkerParams linkerParams) {
-            synchronized(mConnectionLock) {
+            synchronized (mConnectionLock) {
                 if (mFreeConnectionIndices.isEmpty()) {
-                    Log.w(TAG, "Ran out of service." );
+                    Log.w(TAG, "Ran out of service.");
                     return null;
                 }
                 int slot = mFreeConnectionIndices.remove(0);
@@ -101,7 +101,7 @@ public class ChildProcessLauncher {
         }
 
         public void free(ChildProcessConnection connection) {
-            synchronized(mConnectionLock) {
+            synchronized (mConnectionLock) {
                 int slot = connection.getServiceNumber();
                 if (mChildProcessConnections[slot] != connection) {
                     int occupier = mChildProcessConnections[slot] == null ?
@@ -127,7 +127,9 @@ public class ChildProcessLauncher {
 
     private static boolean sConnectionAllocated = false;
 
-    // Sets service class for sandboxed service and privileged service.
+    /**
+     * Sets service class for sandboxed service and privileged service.
+     */
     public static void setChildProcessClass(
             Class<? extends SandboxedProcessService> sandboxedServiceClass,
             Class<? extends PrivilegedProcessService> privilegedServiceClass) {
@@ -267,7 +269,7 @@ public class ChildProcessLauncher {
         private void dropOomBindings(int pid) {
             ChildProcessConnection connection = sServiceMap.get(pid);
             if (connection == null) {
-                LogPidWarning(pid, "Tried to drop oom bindings for a non-existent connection");
+                logPidWarning(pid, "Tried to drop oom bindings for a non-existent connection");
                 return;
             }
             synchronized (mCountLock) {
@@ -305,7 +307,7 @@ public class ChildProcessLauncher {
         void removeInitialBinding(final int pid) {
             final ChildProcessConnection connection = sServiceMap.get(pid);
             if (connection == null) {
-                LogPidWarning(pid, "Tried to remove a binding for a non-existent connection");
+                logPidWarning(pid, "Tried to remove a binding for a non-existent connection");
                 return;
             }
             if (!connection.isInitialBindingBound()) return;
@@ -331,7 +333,7 @@ public class ChildProcessLauncher {
         void bindAsHighPriority(final int pid) {
             ChildProcessConnection connection = sServiceMap.get(pid);
             if (connection == null) {
-                LogPidWarning(pid, "Tried to bind a non-existent connection");
+                logPidWarning(pid, "Tried to bind a non-existent connection");
                 return;
             }
             synchronized (mCountLock) {
@@ -347,7 +349,7 @@ public class ChildProcessLauncher {
         void unbindAsHighPriority(final int pid) {
             final ChildProcessConnection connection = sServiceMap.get(pid);
             if (connection == null) {
-                LogPidWarning(pid, "Tried to unbind non-existent connection");
+                logPidWarning(pid, "Tried to unbind non-existent connection");
                 return;
             }
             if (!connection.isStrongBindingBound()) return;
@@ -451,9 +453,9 @@ public class ChildProcessLauncher {
      *
      * @param context Context used to obtain the application context.
      * @param commandLine The child process command line argv.
-     * @param file_ids The ID that should be used when mapping files in the created process.
-     * @param file_fds The file descriptors that should be mapped in the created process.
-     * @param file_auto_close Whether the file descriptors should be closed once they were passed to
+     * @param fileIds The ID that should be used when mapping files in the created process.
+     * @param fileFds The file descriptors that should be mapped in the created process.
+     * @param fileAutoClose Whether the file descriptors should be closed once they were passed to
      * the created process.
      * @param clientContext Arbitrary parameter used by the client to distinguish this connection.
      */
@@ -504,6 +506,7 @@ public class ChildProcessLauncher {
 
         ChildProcessConnection.ConnectionCallback connectionCallback =
                 new ChildProcessConnection.ConnectionCallback() {
+            @Override
             public void onConnected(int pid) {
                 Log.d(TAG, "on connect callback, pid=" + pid + " context=" + clientContext);
                 if (pid != NULL_PROCESS_HANDLE) {
@@ -536,7 +539,7 @@ public class ChildProcessLauncher {
         Log.d(TAG, "stopping child connection: pid=" + pid);
         ChildProcessConnection connection = sServiceMap.remove(pid);
         if (connection == null) {
-            LogPidWarning(pid, "Tried to stop non-existent connection");
+            logPidWarning(pid, "Tried to stop non-existent connection");
             return;
         }
         connection.stop();
@@ -578,9 +581,9 @@ public class ChildProcessLauncher {
                 return nativeGetViewSurface(surfaceId);
             }
         };
-    };
+    }
 
-    private static void LogPidWarning(int pid, String message) {
+    private static void logPidWarning(int pid, String message) {
         // This class is effectively a no-op in single process mode, so don't log warnings there.
         if (pid > 0 && !nativeIsSingleProcess()) {
             Log.w(TAG, message + ", pid=" + pid);

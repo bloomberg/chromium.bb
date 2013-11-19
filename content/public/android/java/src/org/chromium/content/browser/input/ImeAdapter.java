@@ -178,19 +178,19 @@ public class ImeAdapter {
     private static int getModifiers(int metaState) {
         int modifiers = 0;
         if ((metaState & KeyEvent.META_SHIFT_ON) != 0) {
-          modifiers |= sModifierShift;
+            modifiers |= sModifierShift;
         }
         if ((metaState & KeyEvent.META_ALT_ON) != 0) {
-          modifiers |= sModifierAlt;
+            modifiers |= sModifierAlt;
         }
         if ((metaState & KeyEvent.META_CTRL_ON) != 0) {
-          modifiers |= sModifierCtrl;
+            modifiers |= sModifierCtrl;
         }
         if ((metaState & KeyEvent.META_CAPS_LOCK_ON) != 0) {
-          modifiers |= sModifierCapsLockOn;
+            modifiers |= sModifierCapsLockOn;
         }
         if ((metaState & KeyEvent.META_NUM_LOCK_ON) != 0) {
-          modifiers |= sModifierNumLockOn;
+            modifiers |= sModifierNumLockOn;
         }
         return modifiers;
     }

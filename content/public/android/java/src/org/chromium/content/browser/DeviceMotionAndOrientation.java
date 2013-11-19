@@ -296,7 +296,7 @@ class DeviceMotionAndOrientation implements SensorEventListener {
         if (mSensorManagerProxy != null) {
             return mSensorManagerProxy;
         }
-        SensorManager sensorManager = (SensorManager)WeakContext.getSystemService(
+        SensorManager sensorManager = (SensorManager) WeakContext.getSystemService(
                 Context.SENSOR_SERVICE);
         if (sensorManager != null) {
             mSensorManagerProxy = new SensorManagerProxyImpl(sensorManager);
