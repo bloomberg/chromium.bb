@@ -521,9 +521,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             // The event delegate is set on the the first animation only. We
             // rely on the behavior of OwnPtr::release() to achieve this.
             RefPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specified(), Animation::DefaultPriority, eventDelegate.release());
-            RefPtr<Player> player = element->document().timeline()->play(animation.get());
+            Player* player = element->document().timeline()->play(animation.get());
             player->setPaused(inertAnimation->paused());
-            players.add(player.release());
+            players.add(player);
         }
         m_animations.set(iter->name, players);
     }

@@ -205,8 +205,8 @@ TEST_F(AnimationDocumentTimelineTest, PauseForTesting)
     float seekTime = 1;
     RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timing);
     RefPtr<Animation> anim2  = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timing);
-    RefPtr<Player> player1 = timeline->play(anim1.get());
-    RefPtr<Player> player2 = timeline->play(anim2.get());
+    Player* player1 = timeline->play(anim1.get());
+    Player* player2 = timeline->play(anim2.get());
     timeline->pauseAnimationsForTesting(seekTime);
 
     EXPECT_FLOAT_EQ(seekTime, player1->currentTime());
@@ -241,10 +241,10 @@ TEST_F(AnimationDocumentTimelineTest, NumberOfActiveAnimations)
     RefPtr<Animation> anim3 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timingBackwardFillDelay);
     RefPtr<Animation> anim4 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timingNoFillDelay);
 
-    RefPtr<Player> player1 = timeline->play(anim1.get());
-    RefPtr<Player> player2 = timeline->play(anim2.get());
-    RefPtr<Player> player3 = timeline->play(anim3.get());
-    RefPtr<Player> player4 = timeline->play(anim4.get());
+    timeline->play(anim1.get());
+    timeline->play(anim2.get());
+    timeline->play(anim3.get());
+    timeline->play(anim4.get());
 
     platformTiming->expectNextFrameAction();
     updateClockAndService(0);
@@ -268,7 +268,7 @@ TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart)
 
     RefPtr<Animation> anim = Animation::create(element.get(), 0, timing);
 
-    RefPtr<Player> player = timeline->play(anim.get());
+    timeline->play(anim.get());
 
     // TODO: Put the player startTime in the future when we add the capability to change player startTime
     platformTiming->expectDelayedAction(timing.startDelay - minimumDelay());

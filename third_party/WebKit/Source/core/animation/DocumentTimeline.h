@@ -63,7 +63,9 @@ public:
     // Returns whether style recalc was triggered.
     bool serviceAnimations();
 
-    PassRefPtr<Player> play(TimedItem*);
+    // Creates a player attached to this timeline, but without a start time.
+    Player* createPlayer(TimedItem*);
+    Player* play(TimedItem*);
 
     // Called from setReadyState() in Document.cpp to set m_zeroTime to
     // performance.timing.domInteractive
@@ -88,7 +90,6 @@ private:
     Document* m_document;
     Vector<RefPtr<Player> > m_players;
 
-    void add(Player*);
     void wake();
 
     struct EventToDispatch {
