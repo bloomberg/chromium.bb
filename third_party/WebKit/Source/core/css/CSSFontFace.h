@@ -84,11 +84,10 @@ public:
     public:
         void add(UChar32 from, UChar32 to) { m_ranges.append(UnicodeRange(from, to)); }
         bool intersectsWith(const String&) const;
-        bool isEntireRange() const { return m_ranges.isEmpty(); }
         size_t size() const { return m_ranges.size(); }
         const UnicodeRange& rangeAt(size_t i) const { return m_ranges[i]; }
     private:
-        Vector<UnicodeRange> m_ranges; // If empty, represents the whole code space.
+        Vector<UnicodeRange> m_ranges;
     };
 
     FontFace::LoadStatus loadStatus() const { return m_fontFace ? m_fontFace->loadStatus() : FontFace::Loaded; }

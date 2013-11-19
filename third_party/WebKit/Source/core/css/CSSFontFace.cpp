@@ -84,7 +84,6 @@ void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
 {
     if (source != m_activeSource)
         return;
-    m_activeSource = 0;
 
     // FIXME: Can we assert that m_segmentedFontFace is non-null? That may
     // require stopping in-progress font loading when the last
@@ -138,16 +137,7 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
 
 void CSSFontFace::willUseFontData(const FontDescription& fontDescription)
 {
-    if (loadStatus() != FontFace::Unloaded || m_activeSource)
-        return;
-
-    // Kicks off font load here only if the @font-face has no unicode-range.
-    // @font-faces with unicode-range will be loaded when a GlyphPage for the
-    // font is created.
-    // FIXME: Pass around the text to render from RenderText, and kick download
-    // if m_ranges intersects with the text. Make sure this does not cause
-    // performance regression.
-    if (!m_ranges.isEntireRange())
+    if (loadStatus() != FontFace::Unloaded)
         return;
 
     ASSERT(m_segmentedFontFace);
@@ -156,10 +146,8 @@ void CSSFontFace::willUseFontData(const FontDescription& fontDescription)
     for (size_t i = 0; i < size; ++i) {
         if (!m_sources[i]->isValid() || (m_sources[i]->isLocal() && !m_sources[i]->isLocalFontAvailable(fontDescription)))
             continue;
-        if (!m_sources[i]->isLocal()) {
-            m_activeSource = m_sources[i].get();
+        if (!m_sources[i]->isLocal())
             m_sources[i]->willUseFontData();
-        }
         break;
     }
 }
@@ -192,8 +180,8 @@ bool CSSFontFace::UnicodeRangeSet::intersectsWith(const String& text) const
 {
     if (text.isEmpty())
         return false;
-    if (isEntireRange())
-        return true;
+    if (m_ranges.isEmpty())
+        return true; // Empty UnicodeRangeSet represents the whole code space.
 
     // FIXME: This takes O(text.length() * m_ranges.size()) time. It would be
     // better to make m_ranges sorted and use binary search.

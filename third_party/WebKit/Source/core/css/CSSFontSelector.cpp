@@ -70,11 +70,6 @@ void FontLoader::addFontToBeginLoading(FontResource* fontResource)
 
 void FontLoader::beginLoadTimerFired(Timer<WebCore::FontLoader>*)
 {
-    loadPendingFonts();
-}
-
-void FontLoader::loadPendingFonts()
-{
     ASSERT(m_resourceFetcher);
 
     Vector<ResourcePtr<FontResource> > fontsToBeginLoading;
@@ -190,11 +185,6 @@ void CSSFontSelector::clearDocument()
 void CSSFontSelector::beginLoadingFontSoon(FontResource* font)
 {
     m_fontLoader.addFontToBeginLoading(font);
-}
-
-void CSSFontSelector::loadPendingFonts()
-{
-    m_fontLoader.loadPendingFonts();
 }
 
 }
