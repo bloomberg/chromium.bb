@@ -129,6 +129,14 @@
         }
       },
       {
+        "id": "SocketHostPatterns",
+        "description": "<p>A single string or a list of strings representing host:port patterns.</p>",
+        "choices": [
+          { "type": "string" },
+          { "type": "array", "items": { "type": "string" } }
+        ]
+      },
+      {
         "id": "sockets",
         "type": "object",
         "description": "The <code>sockets</code> manifest property declares which sockets operations an app can issue.",
@@ -141,17 +149,17 @@
               "bind": {
                 "description": "<p>The host:port pattern for <code>bind</code> operations.</p>",
                 "optional": true,
-                "type": "string"
+                "$ref": "SocketHostPatterns"
               },
               "send": {
                 "description": "<p>The host:port pattern for <code>send</code> operations.</p>",
                 "optional": true,
-                "type": "string"
+                "$ref": "SocketHostPatterns"
               },
               "multicastMembership": {
                 "description": "<p>The host:port pattern for <code>joinGroup</code> operations.</p>",
                 "optional": true,
-                "type": "string"
+                "$ref": "SocketHostPatterns"
               }
             }
           },
@@ -163,7 +171,7 @@
               "connect": {
                 "description": "<p>The host:port pattern for <code>connect</code> operations.</p>",
                 "optional": true,
-                "type": "string"
+                "$ref": "SocketHostPatterns"
               }
             }
           },
@@ -175,7 +183,7 @@
               "listen": {
                 "description": "<p>The host:port pattern for <code>listen</code> operations.</p>",
                 "optional": true,
-                "type": "string"
+                "$ref": "SocketHostPatterns"
               }
             }
           }

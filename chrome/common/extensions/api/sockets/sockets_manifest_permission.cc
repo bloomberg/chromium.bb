@@ -24,7 +24,79 @@ const char kErrorInvalidHostPattern[] = "Invalid host:port pattern '*'";
 
 namespace errors = sockets_errors;
 using api::manifest_types::Sockets;
+using api::manifest_types::SocketHostPatterns;
 using content::SocketPermissionRequest;
+
+namespace  {
+
+static bool ParseHostPattern(
+    SocketsManifestPermission* permission,
+    content::SocketPermissionRequest::OperationType operation_type,
+    const std::string& host_pattern,
+    string16* error) {
+  SocketPermissionEntry entry;
+  if (!SocketPermissionEntry::ParseHostPattern(
+        operation_type, host_pattern, &entry)) {
+    *error = ErrorUtils::FormatErrorMessageUTF16(
+        errors::kErrorInvalidHostPattern, host_pattern);
+    return false;
+  }
+  permission->AddPermission(entry);
+  return true;
+}
+
+static bool ParseHostPatterns(
+    SocketsManifestPermission* permission,
+    content::SocketPermissionRequest::OperationType operation_type,
+    const scoped_ptr<SocketHostPatterns>& host_patterns,
+    string16* error) {
+  if (!host_patterns)
+    return true;
+
+  if (host_patterns->as_string) {
+    return ParseHostPattern(permission, operation_type,
+                            *host_patterns->as_string, error);
+  }
+
+  CHECK(host_patterns->as_strings);
+  for (std::vector<std::string>::const_iterator it =
+      host_patterns->as_strings->begin();
+      it != host_patterns->as_strings->end(); ++it) {
+    if (!ParseHostPattern(permission, operation_type, *it, error)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+static void SetHostPatterns(
+    scoped_ptr<SocketHostPatterns>& host_patterns,
+    const SocketsManifestPermission* permission,
+    content::SocketPermissionRequest::OperationType operation_type) {
+  host_patterns.reset(new SocketHostPatterns());
+  host_patterns->as_strings.reset(new std::vector<std::string>());
+  for (SocketsManifestPermission::SocketPermissionEntrySet::const_iterator it =
+      permission->entries().begin(); it != permission->entries().end() ; ++it) {
+    if (it->pattern().type == operation_type) {
+      host_patterns->as_strings->push_back(it->GetHostPatternAsString());
+      break;
+    }
+  }
+}
+
+static SocketsManifestPermission::PermissionKind HasOperationType(
+    const SocketsManifestPermission::SocketPermissionEntrySet& set,
+    SocketPermissionRequest::OperationType operation_type,
+    SocketsManifestPermission::PermissionKind kind) {
+  for (SocketsManifestPermission::SocketPermissionEntrySet::const_iterator
+      it = set.begin(); it != set.end() ; ++it) {
+    if (it->pattern().type == operation_type)
+      return kind;
+  }
+  return SocketsManifestPermission::kNone;
+}
+
+}  // namespace
 
 SocketsManifestPermission::SocketsManifestPermission()
     : kinds_(kNone) {
@@ -43,40 +115,40 @@ scoped_ptr<SocketsManifestPermission> SocketsManifestPermission::FromValue(
   scoped_ptr<SocketsManifestPermission> result(new SocketsManifestPermission());
   if (sockets->udp) {
     result->kinds_ |= kUdpPermission;
-    if (!ParseHostPattern(result.get(),
-                          SocketPermissionRequest::UDP_BIND,
-                          sockets->udp->bind,
-                          error)) {
+    if (!ParseHostPatterns(result.get(),
+                           SocketPermissionRequest::UDP_BIND,
+                           sockets->udp->bind,
+                           error)) {
       return scoped_ptr<SocketsManifestPermission>();
     }
-    if (!ParseHostPattern(result.get(),
-                          SocketPermissionRequest::UDP_SEND_TO,
-                          sockets->udp->send,
-                          error)) {
+    if (!ParseHostPatterns(result.get(),
+                           SocketPermissionRequest::UDP_SEND_TO,
+                           sockets->udp->send,
+                           error)) {
       return scoped_ptr<SocketsManifestPermission>();
     }
-    if (!ParseHostPattern(result.get(),
-                          SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
-                          sockets->udp->multicast_membership,
-                          error)) {
+    if (!ParseHostPatterns(result.get(),
+                           SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
+                           sockets->udp->multicast_membership,
+                           error)) {
       return scoped_ptr<SocketsManifestPermission>();
     }
   }
   if (sockets->tcp) {
     result->kinds_ |= kTcpPermission;
-    if (!ParseHostPattern(result.get(),
-                          SocketPermissionRequest::TCP_CONNECT,
-                          sockets->tcp->connect,
-                          error)) {
+    if (!ParseHostPatterns(result.get(),
+                           SocketPermissionRequest::TCP_CONNECT,
+                           sockets->tcp->connect,
+                           error)) {
       return scoped_ptr<SocketsManifestPermission>();
     }
   }
   if (sockets->tcp_server) {
     result->kinds_ |= kTcpServerPermission;
-    if (!ParseHostPattern(result.get(),
-                          SocketPermissionRequest::TCP_LISTEN,
-                          sockets->tcp_server->listen,
-                          error)) {
+    if (!ParseHostPatterns(result.get(),
+                           SocketPermissionRequest::TCP_LISTEN,
+                           sockets->tcp_server->listen,
+                           error)) {
       return scoped_ptr<SocketsManifestPermission>();
     }
   }
@@ -138,20 +210,22 @@ scoped_ptr<base::Value> SocketsManifestPermission::ToValue() const {
   Sockets sockets;
   if (has_udp()) {
     sockets.udp.reset(new Sockets::Udp());
-    sockets.udp->bind = CreateHostPattern(SocketPermissionRequest::UDP_BIND);
-    sockets.udp->send = CreateHostPattern(SocketPermissionRequest::UDP_SEND_TO);
-    sockets.udp->multicast_membership =
-        CreateHostPattern(SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP);
+    SetHostPatterns(sockets.udp->bind, this,
+                    SocketPermissionRequest::UDP_BIND);
+    SetHostPatterns(sockets.udp->send, this,
+                    SocketPermissionRequest::UDP_SEND_TO);
+    SetHostPatterns(sockets.udp->multicast_membership, this,
+                    SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP);
   }
   if (has_tcp()) {
     sockets.tcp.reset(new Sockets::Tcp());
-    sockets.tcp->connect =
-        CreateHostPattern(SocketPermissionRequest::TCP_CONNECT);
+    SetHostPatterns(sockets.tcp->connect, this,
+                    SocketPermissionRequest::TCP_CONNECT);
   }
   if (has_tcp_server()) {
     sockets.tcp_server.reset(new Sockets::TcpServer());
-    sockets.tcp_server->listen =
-        CreateHostPattern(SocketPermissionRequest::TCP_LISTEN);
+    SetHostPatterns(sockets.tcp_server->listen, this,
+                    SocketPermissionRequest::TCP_LISTEN);
   }
 
   return scoped_ptr<base::Value>(sockets.ToValue().release()).Pass();
@@ -257,52 +331,6 @@ bool SocketsManifestPermission::Read(const IPC::Message* m,
 void SocketsManifestPermission::Log(std::string* log) const {
   IPC::LogParam(permissions_, log);
   IPC::LogParam(kinds_, log);
-}
-
-// static
-bool SocketsManifestPermission::ParseHostPattern(
-    SocketsManifestPermission* manifest_data,
-    SocketPermissionRequest::OperationType operation_type,
-    const scoped_ptr<std::string>& value,
-    string16* error) {
-  if (value) {
-    SocketPermissionEntry entry;
-    if (!SocketPermissionEntry::ParseHostPattern(
-          operation_type, *value, &entry)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kErrorInvalidHostPattern, *value);
-      return false;
-    }
-    manifest_data->AddPermission(entry);
-  }
-  return true;
-}
-
-// static
-SocketsManifestPermission::PermissionKind SocketsManifestPermission::
-    HasOperationType(const SocketPermissionEntrySet& set,
-                     SocketPermissionRequest::OperationType operation_type,
-                     PermissionKind kind) {
-  for (SocketPermissionEntrySet::const_iterator it = set.begin();
-      it != set.end() ; ++it) {
-    if (it->pattern().type == operation_type)
-      return kind;
-  }
-  return kNone;
-}
-
-
-scoped_ptr<std::string> SocketsManifestPermission::CreateHostPattern(
-    SocketPermissionRequest::OperationType operation_type) const {
-  scoped_ptr<std::string> result;
-  for (SocketPermissionEntrySet::const_iterator it =
-        entries().begin(); it != entries().end() ; ++it) {
-    if (it->pattern().type == operation_type) {
-      result.reset(new std::string(it->GetHostPatternAsString()));
-      break;
-    }
-  }
-  return result.Pass();
 }
 
 void SocketsManifestPermission::AddPermission(

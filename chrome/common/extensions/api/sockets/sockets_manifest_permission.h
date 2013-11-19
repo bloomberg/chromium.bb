@@ -44,6 +44,8 @@ class SocketsManifestPermission : public ManifestPermission {
   bool CheckRequest(const Extension* extension,
                     const content::SocketPermissionRequest& request) const;
 
+  void AddPermission(const SocketPermissionEntry& entry);
+
   // extensions::ManifestPermission overrides.
   virtual std::string name() const OVERRIDE;
   virtual std::string id() const OVERRIDE;
@@ -70,22 +72,6 @@ class SocketsManifestPermission : public ManifestPermission {
   const SocketPermissionEntrySet& entries() const { return permissions_; }
 
  private:
-  static bool ParseHostPattern(
-      SocketsManifestPermission* manifest_data,
-      content::SocketPermissionRequest::OperationType operation_type,
-      const scoped_ptr<std::string>& value,
-      string16* error);
-
-  static PermissionKind HasOperationType(
-      const SocketPermissionEntrySet& set,
-      content::SocketPermissionRequest::OperationType operation_type,
-      PermissionKind kind);
-
-  scoped_ptr<std::string> CreateHostPattern(
-    content::SocketPermissionRequest::OperationType operation_type) const;
-
-  void AddPermission(const SocketPermissionEntry& entry);
-
   bool AddAnyHostMessage(PermissionMessages& messages) const;
   void AddSubdomainHostMessage(PermissionMessages& messages) const;
   void AddSpecificHostMessage(PermissionMessages& messages) const;
