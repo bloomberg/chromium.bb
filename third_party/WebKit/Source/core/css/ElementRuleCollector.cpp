@@ -353,11 +353,15 @@ void ElementRuleCollector::collectMatchingRulesForList(const Vector<RuleData>* r
 
 static inline bool compareRules(const MatchedRule& matchedRule1, const MatchedRule& matchedRule2)
 {
+    if (matchedRule1.cascadeScope() != matchedRule2.cascadeScope())
+        return matchedRule1.cascadeScope() > matchedRule2.cascadeScope();
+
     unsigned specificity1 = matchedRule1.ruleData()->specificity();
     unsigned specificity2 = matchedRule2.ruleData()->specificity();
-    return matchedRule1.cascadeScope() == matchedRule2.cascadeScope() ?
-        ((specificity1 == specificity2) ? matchedRule1.position() < matchedRule2.position() : specificity1 < specificity2) :
-        matchedRule1.cascadeScope() > matchedRule2.cascadeScope();
+    if (specificity1 != specificity2)
+        return specificity1 < specificity2;
+
+    return matchedRule1.position() < matchedRule2.position();
 }
 
 void ElementRuleCollector::sortMatchedRules()
