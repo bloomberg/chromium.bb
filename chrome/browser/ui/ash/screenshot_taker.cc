@@ -45,6 +45,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -90,7 +91,7 @@ void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
   content::RecordAction(content::UserMetricsAction("Screenshot_CopyClipboard"));
 }
 
-void ReadFileAndCopyToClipboard(const base::FilePath& screenshot_path) {
+void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   scoped_refptr<base::RefCountedString> png_data(new base::RefCountedString());
@@ -105,14 +106,31 @@ void ReadFileAndCopyToClipboard(const base::FilePath& screenshot_path) {
       base::Bind(CopyScreenshotToClipboard, png_data));
 }
 
+#if defined(OS_CHROMEOS)
+void ReadFileAndCopyToClipboardDrive(drive::FileError error,
+                                     const base::FilePath& file_path,
+                                     scoped_ptr<drive::ResourceEntry> entry) {
+  if (error != drive::FILE_ERROR_OK) {
+    LOG(ERROR) << "Failed to read the screenshot path on drive: "
+               << drive::FileErrorToString(error);
+    return;
+  }
+  content::BrowserThread::GetBlockingPool()->PostTask(
+      FROM_HERE,
+      base::Bind(&ReadFileAndCopyToClipboardLocal, file_path));
+}
+#endif
+
 // Delegate for a notification. This class has two roles: to implement callback
 // methods for notification, and to provide an identity of the associated
 // notification.
 class ScreenshotTakerNotificationDelegate : public NotificationDelegate {
  public:
   ScreenshotTakerNotificationDelegate(bool success,
+                                      Profile* profile,
                                       const base::FilePath& screenshot_path)
       : success_(success),
+        profile_(profile),
         screenshot_path_(screenshot_path) {
   }
 
@@ -134,8 +152,19 @@ class ScreenshotTakerNotificationDelegate : public NotificationDelegate {
 
     // To avoid keeping the screenshot image on memory, it will re-read the
     // screenshot file and copy it to the clipboard.
+#if defined(OS_CHROMEOS)
+  if (drive::util::IsUnderDriveMountPoint(screenshot_path_)) {
+    drive::FileSystemInterface* file_system =
+        drive::util::GetFileSystemByProfile(profile_);
+    file_system->GetFile(
+        drive::util::ExtractDrivePath(screenshot_path_),
+        base::Bind(&ReadFileAndCopyToClipboardDrive));
+    return;
+  }
+#endif
     content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE, base::Bind(&ReadFileAndCopyToClipboard, screenshot_path_));
+        FROM_HERE, base::Bind(
+            &ReadFileAndCopyToClipboardLocal, screenshot_path_));
   }
   virtual bool HasClickedListener() OVERRIDE { return success_; }
   virtual std::string id() const OVERRIDE {
@@ -149,6 +178,7 @@ class ScreenshotTakerNotificationDelegate : public NotificationDelegate {
   virtual ~ScreenshotTakerNotificationDelegate() {}
 
   const bool success_;
+  Profile* profile_;
   const base::FilePath screenshot_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTakerNotificationDelegate);
@@ -507,7 +537,8 @@ Notification* ScreenshotTaker::CreateNotification(
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME),
       replace_id,
       optional_field,
-      new ScreenshotTakerNotificationDelegate(success, screenshot_path));
+      new ScreenshotTakerNotificationDelegate(
+          success, GetProfile(), screenshot_path));
 }
 
 void ScreenshotTaker::ShowNotification(
