@@ -511,6 +511,12 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 	GLint filter;
 	int i;
 
+	/* In case of a runtime switch of renderers, we may not have received
+	 * an attach for this surface since the switch. In that case we don't
+	 * have a valid buffer or a proper shader set up so skip rendering. */
+	if (!gs->shader)
+		return;
+
 	pixman_region32_init(&repaint);
 	pixman_region32_intersect(&repaint,
 				  &ev->transform.boundingbox, damage);

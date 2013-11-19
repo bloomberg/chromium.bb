@@ -596,7 +596,8 @@ drm_output_repaint(struct weston_output *output_base,
 		return -1;
 
 	mode = container_of(output->base.current_mode, struct drm_mode, base);
-	if (!output->current) {
+	if (!output->current ||
+	    output->current->stride != output->next->stride) {
 		ret = drmModeSetCrtc(compositor->drm.fd, output->crtc_id,
 				     output->next->fb_id, 0, 0,
 				     &output->connector_id, 1,
@@ -1286,15 +1287,15 @@ init_drm(struct drm_compositor *ec, struct udev_device *device)
 	return 0;
 }
 
-static int
-init_egl(struct drm_compositor *ec)
+static struct gbm_device *
+create_gbm_device(int fd)
 {
-	EGLint format;
+	struct gbm_device *gbm;
 
 	gl_renderer = weston_load_module("gl-renderer.so",
 					 "gl_renderer_interface");
 	if (!gl_renderer)
-		return -1;
+		return NULL;
 
 	/* GBM will load a dri driver, but even though they need symbols from
 	 * libglapi, in some version of Mesa they are not linked to it. Since
@@ -1303,14 +1304,34 @@ init_egl(struct drm_compositor *ec)
 	 * Workaround this by dlopen()'ing libglapi with RTLD_GLOBAL. */
 	dlopen("libglapi.so.0", RTLD_LAZY | RTLD_GLOBAL);
 
-	ec->gbm = gbm_create_device(ec->drm.fd);
+	gbm = gbm_create_device(fd);
 
-	if (!ec->gbm)
-		return -1;
+	return gbm;
+}
+
+static int
+drm_compositor_create_gl_renderer(struct drm_compositor *ec)
+{
+	EGLint format;
 
 	format = ec->format;
 	if (gl_renderer->create(&ec->base, ec->gbm,
 			       gl_renderer->opaque_attribs, &format) < 0) {
+		return -1;
+	}
+
+	return 0;
+}
+
+static int
+init_egl(struct drm_compositor *ec)
+{
+	ec->gbm = create_gbm_device(ec->drm.fd);
+
+	if (!ec->gbm)
+		return -1;
+
+	if (drm_compositor_create_gl_renderer(ec) < 0) {
 		gbm_device_destroy(ec->gbm);
 		return -1;
 	}
@@ -2585,6 +2606,50 @@ recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 }
 #endif
 
+static void
+switch_to_gl_renderer(struct drm_compositor *c)
+{
+	struct drm_output *output;
+
+	if (!c->use_pixman)
+		return;
+
+	weston_log("Switching to GL renderer\n");
+
+	c->gbm = create_gbm_device(c->drm.fd);
+	if (!c->gbm) {
+		weston_log("Failed to create gbm device. "
+			   "Aborting renderer switch\n");
+		return;
+	}
+
+	wl_list_for_each(output, &c->base.output_list, base.link)
+		pixman_renderer_output_destroy(&output->base);
+
+	c->base.renderer->destroy(&c->base);
+
+	if (drm_compositor_create_gl_renderer(c) < 0) {
+		gbm_device_destroy(c->gbm);
+		weston_log("Failed to create GL renderer. Quitting.\n");
+		/* FIXME: we need a function to shutdown cleanly */
+		assert(0);
+	}
+
+	wl_list_for_each(output, &c->base.output_list, base.link)
+		drm_output_init_egl(output, c);
+
+	c->use_pixman = 0;
+}
+
+static void
+renderer_switch_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
+			void *data)
+{
+	struct drm_compositor *c = (struct drm_compositor *) seat->compositor;
+
+	switch_to_gl_renderer(c);
+}
+
 static struct weston_compositor *
 drm_compositor_create(struct wl_display *display,
 		      struct drm_parameters *param,
@@ -2734,6 +2799,8 @@ drm_compositor_create(struct wl_display *display,
 					    planes_binding, ec);
 	weston_compositor_add_debug_binding(&ec->base, KEY_Q,
 					    recorder_binding, ec);
+	weston_compositor_add_debug_binding(&ec->base, KEY_W,
+					    renderer_switch_binding, ec);
 
 	return &ec->base;
 
