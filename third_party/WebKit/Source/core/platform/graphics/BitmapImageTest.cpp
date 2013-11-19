@@ -109,6 +109,11 @@ protected:
     RefPtr<BitmapImage> m_image;
 };
 
+// Fails on certain XP bots, but passes on others
+// crbug.com/321184
+#if OS(WIN)
+#define destroyDecodedDataExceptCurrentFrame DISABLED_destroyDecodedDataExceptCurrentFrame
+#endif
 TEST_F(BitmapImageTest, destroyDecodedDataExceptCurrentFrame)
 {
     loadImage("/LayoutTests/fast/images/resources/animated-10color.gif");
@@ -121,6 +126,11 @@ TEST_F(BitmapImageTest, destroyDecodedDataExceptCurrentFrame)
     EXPECT_GE(m_imageObserver.m_lastDecodedSizeChangedDelta, -static_cast<int>(totalSize - size));
 }
 
+// Fails on certain XP bots, but passes on others
+// crbug.com/321184
+#if OS(WIN)
+#define destroyAllDecodedData DISABLED_destroyAllDecodedData
+#endif
 TEST_F(BitmapImageTest, destroyAllDecodedData)
 {
     loadImage("/LayoutTests/fast/images/resources/animated-10color.gif");
