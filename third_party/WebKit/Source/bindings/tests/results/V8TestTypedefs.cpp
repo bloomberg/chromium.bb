@@ -359,35 +359,6 @@ static void nullableArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Va
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void funcWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("funcWithClamp", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    unsigned long long arg1 = 0;
-    V8TRYCATCH_VOID(double, arg1NativeValue, info[0]->NumberValue());
-    if (!std::isnan(arg1NativeValue))
-        arg1 = clampTo<unsigned long long>(arg1NativeValue);
-    if (UNLIKELY(info.Length() <= 1)) {
-        imp->funcWithClamp(arg1);
-        return;
-    }
-    unsigned long long arg2 = 0;
-    V8TRYCATCH_VOID(double, arg2NativeValue, info[1]->NumberValue());
-    if (!std::isnan(arg2NativeValue))
-        arg2 = clampTo<unsigned long long>(arg2NativeValue);
-    imp->funcWithClamp(arg1, arg2);
-}
-
-static void funcWithClampMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::funcWithClampMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
 static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
@@ -497,7 +468,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
     {"setShadow", TestTypedefsV8Internal::setShadowMethodCallback, 0, 3},
     {"methodWithSequenceArg", TestTypedefsV8Internal::methodWithSequenceArgMethodCallback, 0, 1},
     {"nullableArrayArg", TestTypedefsV8Internal::nullableArrayArgMethodCallback, 0, 1},
-    {"funcWithClamp", TestTypedefsV8Internal::funcWithClampMethodCallback, 0, 1},
     {"immutablePointFunction", TestTypedefsV8Internal::immutablePointFunctionMethodCallback, 0, 0},
     {"stringArrayFunction", TestTypedefsV8Internal::stringArrayFunctionMethodCallback, 0, 1},
     {"stringArrayFunction2", TestTypedefsV8Internal::stringArrayFunction2MethodCallback, 0, 1},

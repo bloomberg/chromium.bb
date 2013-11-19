@@ -48,8 +48,6 @@
 
     void nullableArrayArg(ARRAY_OF_STRINGS? arrayArg);
 
-    void funcWithClamp(ULONGLONG_CLAMP arg1, optional ULONGLONG_CLAMP arg2);
-
     [Immutable] SVGPOINT immutablePointFunction();
 
     [RaisesException] ARRAY_OF_STRINGS stringArrayFunction(ARRAY_OF_STRINGS values);
@@ -65,7 +63,6 @@
 
 typedef float                      DOUBLE;
 typedef unsigned long long         ULONGLONG;
-typedef [Clamp] unsigned long long ULONGLONG_CLAMP;
 typedef SerializedScriptValue      SCRIPT_VALUE;
 typedef long[]                     ARRAY_OF_LONGS;
 typedef SVGPoint                   SVGPOINT;

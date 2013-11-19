@@ -75,17 +75,13 @@ class TypedObject:
 
     def resolve_typedefs(self, typedefs):
         """Resolve typedefs to actual types in the object."""
-        additional_extended_attributes = {}
         # Convert string representation to and from an IdlType object
-        # to handle parsing
+        # to handle parsing of composite types (arrays and sequences)
         idl_type_object = IdlType.from_string(self.idl_type)
         base_type = idl_type_object.base_type
         if base_type in typedefs:
-            replacement_type = typedefs[base_type]
-            idl_type_object.base_type = replacement_type.idl_type
-            additional_extended_attributes = replacement_type.extended_attributes
-        self.idl_type = str(idl_type_object)
-        self.extended_attributes.update(additional_extended_attributes)
+            idl_type_object.base_type = typedefs[base_type]
+            self.idl_type = str(idl_type_object)
 
 
 # IDL classes
@@ -382,14 +378,6 @@ class IdlType:
             base_type = sequence_match.group(1)
             return cls(base_type, is_sequence=True)
         return cls(type_string)
-
-
-class IdlTypedef:
-    # Internal to IDL parsing: typedefs are all translated during IdlObject
-    # construction, and the typedefs themselves not stored in the object.
-    def __init__(self, extended_attributes=None, idl_type=None):
-        self.extended_attributes = extended_attributes or {}
-        self.idl_type = idl_type
 
 
 class IdlUnionType(BaseIdl):

@@ -114,16 +114,11 @@ struct( Token => {
     value => '$' # value of token
 });
 
-struct( Typedef => {
-    extendedAttributes => '$', # Extended attributes
-    type => '$', # Type of data
-});
-
 struct( UnionType => {
     unionMemberTypes => '@', # (UnionType or string)[]
 });
 
-# Maps 'typedef name' -> Typedef
+# Maps 'typedef name' -> 'type'
 my %typedefs = ();
 
 sub new {
@@ -175,19 +170,6 @@ sub assertUnexpectedToken
         $msg .= " idl_parser.pm:" . $line;
     }
     die $msg;
-}
-
-sub assertNoExtendedAttributesInTypedef
-{
-    my $self = shift;
-    my $name = shift;
-    my $line = shift;
-    my $typedef = $typedefs{$name};
-    my $msg = "Unexpected extendedAttributeList in typedef \"$name\" at " . $self->{Line};
-    if (defined ($line)) {
-        $msg .= " idl_parser.pm:" . $line;
-    }
-    die $msg if %{$typedef->extendedAttributes};
 }
 
 sub Parse
@@ -394,11 +376,7 @@ sub applyTypedefs
     foreach my $definition (@$definitions) {
         if (ref($definition) eq "domInterface") {
             foreach my $constant (@{$definition->constants}) {
-                if (exists $typedefs{$constant->type}) {
-                    my $typedef = $typedefs{$constant->type};
-                    $self->assertNoExtendedAttributesInTypedef($constant->type, __LINE__);
-                    $constant->type($typedef->type);
-                }
+                $self->applyTypedefsForTypedObject($constant);
             }
             foreach my $attribute (@{$definition->attributes}) {
                 $self->applyTypedefsForTypedObject($attribute);
@@ -427,9 +405,7 @@ sub applyTypedefsForTypedObject
     my $typeSuffix = $typedObject->type;
     $typeSuffix =~ s/^[^\?\[\]]+//g;
     if (exists $typedefs{$type}) {
-        my $typedef = $typedefs{$type};
-        $typedObject->type($typedef->type . $typeSuffix);
-        copyExtendedAttributes($typedObject->extendedAttributes, $typedef->extendedAttributes);
+        $typedObject->type($typedefs{$type} . $typeSuffix);
     }
 
     # Handle union types, sequences and etc.
@@ -437,9 +413,8 @@ sub applyTypedefsForTypedObject
         if (!exists $typedefs{$name}) {
             next;
         }
-        my $typedef = $typedefs{$name};
         my $regex = '\\b' . $name . '\\b';
-        my $replacement = $typedef->type;
+        my $replacement = $typedefs{$name};
         my $type = $typedObject->type;
         $type =~ s/($regex)/$replacement/g;
         $typedObject->type($type);
@@ -851,14 +826,12 @@ sub parseTypedef
     my $next = $self->nextToken();
     if ($next->value() eq "typedef") {
         $self->assertTokenValue($self->getToken(), "typedef", __LINE__);
-        my $typedef = Typedef->new();
-        $typedef->extendedAttributes($self->parseExtendedAttributeListAllowEmpty());
-        $typedef->type($self->parseType());
+        my $typedef = $self->parseType();
         my $nameToken = $self->getToken();
         $self->assertTokenType($nameToken, IdentifierToken);
         $self->assertTokenValue($self->getToken(), ";", __LINE__);
         my $name = $nameToken->value();
-        die "typedef redefinition for " . $name . " at " . $self->{Line} if (exists $typedefs{$name} && $typedef->type ne $typedefs{$name}->type);
+        die "typedef redefinition for " . $name . " at " . $self->{Line} if (exists $typedefs{$name} && $typedef ne $typedefs{$name});
         $typedefs{$name} = $typedef;
         return;
     }

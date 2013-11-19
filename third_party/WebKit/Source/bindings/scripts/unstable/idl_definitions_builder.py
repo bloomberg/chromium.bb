@@ -30,12 +30,12 @@
 
 import os
 
-from idl_definitions import IdlDefinitions, IdlInterface, IdlException, IdlOperation, IdlCallbackFunction, IdlArgument, IdlAttribute, IdlConstant, IdlEnum, IdlTypedef, IdlUnionType
+from idl_definitions import IdlDefinitions, IdlInterface, IdlException, IdlOperation, IdlCallbackFunction, IdlArgument, IdlAttribute, IdlConstant, IdlEnum, IdlUnionType
 
 SPECIAL_KEYWORD_LIST = ['GETTER', 'SETTER', 'DELETER']
 STANDARD_TYPEDEFS = {
     # http://www.w3.org/TR/WebIDL/#common-DOMTimeStamp
-    'DOMTimeStamp': IdlTypedef(idl_type='unsigned long long'),
+    'DOMTimeStamp': 'unsigned long long',
 }
 
 def build_idl_definitions_from_ast(node):
@@ -68,7 +68,7 @@ def file_node_to_idl_definitions(node):
             exceptions[exception.name] = exception
         elif child_class == 'Typedef':
             type_name = child.GetName()
-            typedefs[type_name] = typedef_node_to_idl_typedef(child)
+            typedefs[type_name] = typedef_node_to_type(child)
         elif child_class == 'Enum':
             enumeration = enum_node_to_idl_enum(child)
             enumerations[enumeration.name] = enumeration
@@ -325,22 +325,15 @@ def exception_node_to_idl_exception(node):
     return IdlException(name=name, attributes=attributes, constants=constants, extended_attributes=extended_attributes, operations=operations)
 
 
-def typedef_node_to_idl_typedef(node):
-    idl_type = None
-    extended_attributes = None
-
+def typedef_node_to_type(node):
     children = node.GetChildren()
-    for child in children:
-        child_class = child.GetClass()
-        if child_class == 'Type':
-            idl_type = type_node_to_type(child)
-        elif child_class == 'ExtAttributes':
-            extended_attributes = ext_attributes_node_to_extended_attributes(child)
-            raise ValueError('Extended attributes in a typedef are untested!')
-        else:
-            raise ValueError('Unrecognized node class: %s' % child_class)
-
-    return IdlTypedef(idl_type=idl_type, extended_attributes=extended_attributes)
+    if len(children) != 1:
+        raise ValueError('Typedef node with %s children, expected 1' % len(children))
+    child = children[0]
+    child_class = child.GetClass()
+    if child_class != 'Type':
+        raise ValueError('Unrecognized node class: %s' % child_class)
+    return type_node_to_type(child)
 
 # Extended attributes
 
