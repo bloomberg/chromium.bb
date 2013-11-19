@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SKIA_EXT_BITMAP_PLATFORM_DEVICE_ANDROID_H_
-#define SKIA_EXT_BITMAP_PLATFORM_DEVICE_ANDROID_H_
+#ifndef SKIA_EXT_BITMAP_PLATFORM_DEVICE_SKIA_H_
+#define SKIA_EXT_BITMAP_PLATFORM_DEVICE_SKIA_H_
 
-#include "base/memory/ref_counted.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "skia/ext/platform_device.h"
 
 namespace skia {
@@ -57,4 +57,4 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
 
 }  // namespace skia
 
-#endif  // SKIA_EXT_BITMAP_PLATFORM_DEVICE_ANDROID_H_
+#endif  // SKIA_EXT_BITMAP_PLATFORM_DEVICE_SKIA_H_

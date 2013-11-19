@@ -12,10 +12,10 @@
 #include "skia/ext/bitmap_platform_device_win.h"
 #elif defined(__APPLE__)
 #include "skia/ext/bitmap_platform_device_mac.h"
-#elif defined(ANDROID)
-#include "skia/ext/bitmap_platform_device_android.h"
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun)
-#include "skia/ext/bitmap_platform_device_linux.h"
+#elif defined(USE_CAIRO)
+#include "skia/ext/bitmap_platform_device_cairo.h"
+#else
+#include "skia/ext/bitmap_platform_device_skia.h"
 #endif
 
 namespace skia {

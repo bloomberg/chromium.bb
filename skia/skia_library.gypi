@@ -273,12 +273,16 @@
       'dependencies': [
         '../build/linux/system.gyp:fontconfig',
         '../build/linux/system.gyp:freetype2',
-        '../build/linux/system.gyp:pangocairo',
         '../third_party/icu/icu.gyp:icuuc',
       ],
       'cflags': [
         '-Wno-unused',
         '-Wno-unused-function',
+      ],
+    }],
+    [ 'use_cairo == 1', {
+      'dependencies': [
+        '../build/linux/system.gyp:pangocairo',
       ],
     }],
     [ 'OS=="win" or OS=="mac" or OS=="ios" or OS=="android"', {

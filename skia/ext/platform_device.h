@@ -21,8 +21,7 @@ class SkMetaData;
 class SkPath;
 class SkRegion;
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_FREEBSD) \
-    || defined(OS_SOLARIS)
+#if defined(USE_CAIRO)
 typedef struct _cairo cairo_t;
 typedef struct _cairo_rectangle cairo_rectangle_t;
 #elif defined(OS_MACOSX)
@@ -37,16 +36,15 @@ class PlatformDevice;
 #if defined(OS_WIN)
 typedef HDC PlatformSurface;
 typedef RECT PlatformRect;
-#elif defined(ANDROID)
-typedef void* PlatformSurface;
-typedef SkIRect* PlatformRect;
-#elif defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_FREEBSD) \
-    || defined(OS_SOLARIS)
+#elif defined(USE_CAIRO)
 typedef cairo_t* PlatformSurface;
 typedef cairo_rectangle_t PlatformRect;
 #elif defined(OS_MACOSX)
 typedef CGContextRef PlatformSurface;
 typedef CGRect PlatformRect;
+#else
+typedef void* PlatformSurface;
+typedef SkIRect* PlatformRect;
 #endif
 
 // The following routines provide accessor points for the functionality

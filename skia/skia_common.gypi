@@ -37,6 +37,9 @@
     [ 'desktop_linux == 0 and chromeos == 0', {
       'sources/': [ ['exclude', '_linux\\.(cc|cpp)$'] ],
     }],
+    [ 'use_cairo == 0', {
+      'sources/': [ ['exclude', '_cairo\\.(cc|cpp)$'] ],
+    }],
   ],
 
   # We would prefer this to be direct_dependent_settings,

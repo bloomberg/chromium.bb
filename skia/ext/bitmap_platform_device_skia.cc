@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "skia/ext/bitmap_platform_device_android.h"
+#include "skia/ext/bitmap_platform_device_skia.h"
 #include "skia/ext/platform_canvas.h"
 
 namespace skia {

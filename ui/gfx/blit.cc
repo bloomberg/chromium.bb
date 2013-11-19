@@ -11,10 +11,12 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
 
+#if defined(USE_CAIRO)
 #if defined(OS_OPENBSD)
 #include <cairo.h>
 #elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include <cairo/cairo.h>
+#endif
 #endif
 
 #if defined(OS_MACOSX)
@@ -76,9 +78,7 @@ void BlitContextToContext(NativeDrawingContext dst_context,
   base::ScopedCFTypeRef<CGImageRef> src_sub_image(
       CGImageCreateWithImageInRect(src_image, src_rect.ToCGRect()));
   CGContextDrawImage(dst_context, dst_rect.ToCGRect(), src_sub_image);
-#elif defined(OS_ANDROID)
-  NOTIMPLEMENTED();
-#else  // Linux, BSD, others
+#elif defined(USE_CAIRO)
   // Only translations in the source context are supported; more complex
   // source context transforms will be ignored.
   cairo_save(dst_context);
@@ -92,6 +92,8 @@ void BlitContextToContext(NativeDrawingContext dst_context,
   cairo_clip(dst_context);
   cairo_paint(dst_context);
   cairo_restore(dst_context);
+#else
+  NOTIMPLEMENTED();
 #endif
 }
 

@@ -23,7 +23,8 @@
 
 namespace {
 
-#if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
+#if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID) || \
+    (defined(OS_LINUX) && !defined(USE_CAIRO))
 const bool kUsesSkiaNatively = true;
 #else
 const bool kUsesSkiaNatively = false;

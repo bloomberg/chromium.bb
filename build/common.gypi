@@ -520,11 +520,13 @@
           'use_glib%': 1,
         }],
 
-        # Flags to use pango.
+        # Flags to use pango and cairo.
         ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android" or embedded==1', {
           'use_pango%': 0,
+          'use_cairo%': 0,
         }, {
           'use_pango%': 1,
+          'use_cairo%': 1,
         }],
 
         # DBus usage.
@@ -853,6 +855,7 @@
     'use_dbus%': '<(use_dbus)',
     'use_glib%': '<(use_glib)',
     'use_pango%': '<(use_pango)',
+    'use_cairo%': '<(use_cairo)',
     'use_ozone%': '<(use_ozone)',
     'use_ozone_evdev%': '<(use_ozone_evdev)',
     'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
@@ -2052,6 +2055,9 @@
       }],
       ['use_ash==1', {
         'defines': ['USE_ASH=1'],
+      }],
+      ['use_cairo==1', {
+        'defines': ['USE_CAIRO=1'],
       }],
       ['use_cras==1', {
         'defines': ['USE_CRAS=1'],

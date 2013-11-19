@@ -171,12 +171,12 @@ typedef PangoFontDescription* NativeFont;
 typedef GtkWidget* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
 typedef void* NativeViewAccessible;
-#elif defined(USE_AURA)
+#elif defined(USE_CAIRO)
 typedef PangoFontDescription* NativeFont;
 typedef void* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
 typedef void* NativeViewAccessible;
-#elif defined(OS_ANDROID)
+#else
 typedef void* NativeFont;
 typedef void* NativeEditView;
 typedef void* NativeDrawingContext;
