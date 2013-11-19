@@ -75,6 +75,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
     PLUGIN_QUIRK_WINDOWLESS_NO_RIGHT_CLICK = 32768,  // Linux
     PLUGIN_QUIRK_IGNORE_FIRST_SETWINDOW_CALL = 65536,  // Windows.
     PLUGIN_QUIRK_EMULATE_IME = 131072,  // Windows.
+    PLUGIN_QUIRK_FAKE_WINDOW_FROM_POINT = 262144,  // Windows.
   };
 
   static WebPluginDelegateImpl* Create(WebPlugin* plugin,
@@ -384,6 +385,14 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
 
   // GetProcAddress intercepter for windowless plugins.
   static FARPROC WINAPI GetProcAddressPatch(HMODULE module, LPCSTR name);
+
+#if defined(USE_AURA)
+  // WindowFromPoint patch for Flash windowless plugins. When flash receives
+  // mouse move messages it calls the WindowFromPoint API to eventually convert
+  // the mouse coordinates to screen. We need to return the dummy plugin parent
+  // window for Aura to ensure that these conversions occur correctly.
+  static HWND WINAPI WindowFromPointPatch(POINT point);
+#endif
 
   // The mouse hook proc which handles mouse capture in windowed plugins.
   static LRESULT CALLBACK MouseHookProc(int code, WPARAM wParam,

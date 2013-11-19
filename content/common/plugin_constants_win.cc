@@ -25,5 +25,6 @@ const char16 kSilverlightPlugin[] = L"npctrl.dll";
 const char16 kJavaPlugin1[] = L"npjp2.dll";
 const char16 kJavaPlugin2[] = L"npdeploytk.dll";
 const char kGPUPluginMimeType[] = "application/vnd.google.chrome.gpu-plugin";
+const char16 kPluginDummyParentProperty[] = L"NPAPIPluginDummyParent";
 
 }  // namespace content

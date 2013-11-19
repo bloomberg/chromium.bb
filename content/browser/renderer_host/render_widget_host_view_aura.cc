@@ -81,6 +81,7 @@
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
+#include "content/common/plugin_constants_win.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/win/dpi.h"
@@ -481,6 +482,9 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
   gfx::Screen::GetScreenFor(window_)->AddObserver(this);
   software_frame_manager_.reset(new SoftwareFrameManager(
       weak_ptr_factory_.GetWeakPtr()));
+#if defined(OS_WIN)
+  plugin_parent_window_ = NULL;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -696,11 +700,7 @@ gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
 
 gfx::NativeViewId RenderWidgetHostViewAura::GetNativeViewId() const {
 #if defined(OS_WIN)
-  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-  if (dispatcher) {
-    HWND window = dispatcher->host()->GetAcceleratedWidget();
-    return reinterpret_cast<gfx::NativeViewId>(window);
-  }
+  return reinterpret_cast<gfx::NativeViewId>(plugin_parent_window_);
 #endif
   return static_cast<gfx::NativeViewId>(NULL);
 }
@@ -1134,6 +1134,27 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
     touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_rect_,
       selection_focus_rect_);
   }
+#if defined(OS_WIN)
+  // Create the dummy plugin parent window which will be passed as the
+  // container window to windowless plugins.
+  // Plugins like Flash assume the container window which is returned via the
+  // NPNVnetscapeWindow property corresponds to the bounds of the webpage.
+  // This is not true in Aura where we have only HWND which is the main Aura
+  // window. If we return this window to plugins like Flash then it causes the
+  // coordinate translations done by these plugins to break.
+  if (!plugin_parent_window_ && GetNativeViewIdHelper()) {
+    plugin_parent_window_ = CreateWindowEx(
+        0, L"Static", NULL, WS_CHILDWINDOW, 0, 0, 0, 0,
+        GetNativeViewIdHelper(), NULL, NULL, NULL);
+    DCHECK(plugin_parent_window_);
+    ::SetProp(plugin_parent_window_, content::kPluginDummyParentProperty,
+              reinterpret_cast<HANDLE>(true));
+  }
+  gfx::Rect window_bounds = window_->GetBoundsInRootWindow();
+  ::SetWindowPos(plugin_parent_window_, NULL, window_bounds.x(),
+                 window_bounds.y(), window_bounds.width(),
+                 window_bounds.height(), 0);
+#endif
 }
 
 void RenderWidgetHostViewAura::CheckResizeLock() {
@@ -1271,6 +1292,13 @@ void RenderWidgetHostViewAura::UpdateCutoutRects() {
   params.geometry = &plugin_window_moves_;
   LPARAM lparam = reinterpret_cast<LPARAM>(&params);
   EnumChildWindows(parent, SetCutoutRectsCallback, lparam);
+}
+
+HWND RenderWidgetHostViewAura::GetNativeViewIdHelper() const {
+  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
+  if (dispatcher)
+    return dispatcher->host()->GetAcceleratedWidget();
+  return NULL;
 }
 #endif
 

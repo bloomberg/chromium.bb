@@ -46,6 +46,8 @@ extern const char16 kJavaPlugin2[];
 
 extern const char kGPUPluginMimeType[];
 
+extern const char16 kPluginDummyParentProperty[];
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_PLUGIN_CONSTANTS_WIN_H_

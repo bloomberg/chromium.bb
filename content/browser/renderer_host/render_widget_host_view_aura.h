@@ -559,6 +559,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Updates the total list of cutout rects, which is the union of transient
   // windows and constrained windows.
   void UpdateCutoutRects();
+
+  // Returns the dummy HWND which corresponds to the bounds of the web page.
+  // This is passed to windowless plugins like Flash/Silverlight, etc as the
+  // container window.
+  HWND GetNativeViewIdHelper() const;
 #endif
 
   // The model object.
@@ -764,6 +769,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   scoped_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
+
+#if defined(OS_WIN)
+  // The dummy HWND which corresponds to the bounds of the web page. This is
+  // passed to windowless plugins like Flash/Silverlight, etc as the
+  // container window.
+  HWND plugin_parent_window_;
+#endif
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };
 
