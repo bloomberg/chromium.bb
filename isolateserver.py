@@ -3,9 +3,9 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
-"""Archives a set of files to a server."""
+"""Archives a set of files or directories to a server."""
 
-__version__ = '0.2'
+__version__ = '0.3'
 
 import functools
 import hashlib
@@ -13,7 +13,10 @@ import json
 import logging
 import os
 import re
+import shutil
+import stat
 import sys
+import tempfile
 import threading
 import time
 import urllib
@@ -112,6 +115,11 @@ DEFAULT_BLACKLIST += (
   r'^.+\.(?:run_test_cases)$',
   r'^(?:.+' + re.escape(os.path.sep) + r'|)testserver\.log$',
 )
+
+
+class Error(Exception):
+  """Generic runtime error."""
+  pass
 
 
 class ConfigError(ValueError):
@@ -1156,6 +1164,267 @@ def get_storage(file_or_url, namespace):
       is_namespace_with_compression(namespace))
 
 
+def expand_symlinks(indir, relfile):
+  """Follows symlinks in |relfile|, but treating symlinks that point outside the
+  build tree as if they were ordinary directories/files. Returns the final
+  symlink-free target and a list of paths to symlinks encountered in the
+  process.
+
+  The rule about symlinks outside the build tree is for the benefit of the
+  Chromium OS ebuild, which symlinks the output directory to an unrelated path
+  in the chroot.
+
+  Fails when a directory loop is detected, although in theory we could support
+  that case.
+  """
+  is_directory = relfile.endswith(os.path.sep)
+  done = indir
+  todo = relfile.strip(os.path.sep)
+  symlinks = []
+
+  while todo:
+    pre_symlink, symlink, post_symlink = file_path.split_at_symlink(
+        done, todo)
+    if not symlink:
+      todo = file_path.fix_native_path_case(done, todo)
+      done = os.path.join(done, todo)
+      break
+    symlink_path = os.path.join(done, pre_symlink, symlink)
+    post_symlink = post_symlink.lstrip(os.path.sep)
+    # readlink doesn't exist on Windows.
+    # pylint: disable=E1101
+    target = os.path.normpath(os.path.join(done, pre_symlink))
+    symlink_target = os.readlink(symlink_path)
+    if os.path.isabs(symlink_target):
+      # Absolute path are considered a normal directories. The use case is
+      # generally someone who puts the output directory on a separate drive.
+      target = symlink_target
+    else:
+      # The symlink itself could be using the wrong path case.
+      target = file_path.fix_native_path_case(target, symlink_target)
+
+    if not os.path.exists(target):
+      raise MappingError(
+          'Symlink target doesn\'t exist: %s -> %s' % (symlink_path, target))
+    target = file_path.get_native_path_case(target)
+    if not file_path.path_starts_with(indir, target):
+      done = symlink_path
+      todo = post_symlink
+      continue
+    if file_path.path_starts_with(target, symlink_path):
+      raise MappingError(
+          'Can\'t map recursive symlink reference %s -> %s' %
+          (symlink_path, target))
+    logging.info('Found symlink: %s -> %s', symlink_path, target)
+    symlinks.append(os.path.relpath(symlink_path, indir))
+    # Treat the common prefix of the old and new paths as done, and start
+    # scanning again.
+    target = target.split(os.path.sep)
+    symlink_path = symlink_path.split(os.path.sep)
+    prefix_length = 0
+    for target_piece, symlink_path_piece in zip(target, symlink_path):
+      if target_piece == symlink_path_piece:
+        prefix_length += 1
+      else:
+        break
+    done = os.path.sep.join(target[:prefix_length])
+    todo = os.path.join(
+        os.path.sep.join(target[prefix_length:]), post_symlink)
+
+  relfile = os.path.relpath(done, indir)
+  relfile = relfile.rstrip(os.path.sep) + is_directory * os.path.sep
+  return relfile, symlinks
+
+
+def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
+  """Expands a single input. It can result in multiple outputs.
+
+  This function is recursive when relfile is a directory.
+
+  Note: this code doesn't properly handle recursive symlink like one created
+  with:
+    ln -s .. foo
+  """
+  if os.path.isabs(relfile):
+    raise MappingError('Can\'t map absolute path %s' % relfile)
+
+  infile = file_path.normpath(os.path.join(indir, relfile))
+  if not infile.startswith(indir):
+    raise MappingError('Can\'t map file %s outside %s' % (infile, indir))
+
+  filepath = os.path.join(indir, relfile)
+  native_filepath = file_path.get_native_path_case(filepath)
+  if filepath != native_filepath:
+    # Special case './'.
+    if filepath != native_filepath + '.' + os.path.sep:
+      # Give up enforcing strict path case on OSX. Really, it's that sad. The
+      # case where it happens is very specific and hard to reproduce:
+      # get_native_path_case(
+      #    u'Foo.framework/Versions/A/Resources/Something.nib') will return
+      # u'Foo.framework/Versions/A/resources/Something.nib', e.g. lowercase 'r'.
+      #
+      # Note that this is really something deep in OSX because running
+      # ls Foo.framework/Versions/A
+      # will print out 'Resources', while file_path.get_native_path_case()
+      # returns a lower case 'r'.
+      #
+      # So *something* is happening under the hood resulting in the command 'ls'
+      # and Carbon.File.FSPathMakeRef('path').FSRefMakePath() to disagree.  We
+      # have no idea why.
+      if sys.platform != 'darwin':
+        raise MappingError(
+            'File path doesn\'t equal native file path\n%s != %s' %
+            (filepath, native_filepath))
+
+  symlinks = []
+  if follow_symlinks:
+    relfile, symlinks = expand_symlinks(indir, relfile)
+
+  if relfile.endswith(os.path.sep):
+    if not os.path.isdir(infile):
+      raise MappingError(
+          '%s is not a directory but ends with "%s"' % (infile, os.path.sep))
+
+    # Special case './'.
+    if relfile.startswith('.' + os.path.sep):
+      relfile = relfile[2:]
+    outfiles = symlinks
+    try:
+      for filename in os.listdir(infile):
+        inner_relfile = os.path.join(relfile, filename)
+        if blacklist and blacklist(inner_relfile):
+          continue
+        if os.path.isdir(os.path.join(indir, inner_relfile)):
+          inner_relfile += os.path.sep
+        outfiles.extend(
+            expand_directory_and_symlink(indir, inner_relfile, blacklist,
+                                         follow_symlinks))
+      return outfiles
+    except OSError as e:
+      raise MappingError(
+          'Unable to iterate over directory %s.\n%s' % (infile, e))
+  else:
+    # Always add individual files even if they were blacklisted.
+    if os.path.isdir(infile):
+      raise MappingError(
+          'Input directory %s must have a trailing slash' % infile)
+
+    if not os.path.isfile(infile):
+      raise MappingError('Input file %s doesn\'t exist' % infile)
+
+    return symlinks + [relfile]
+
+
+def process_input(filepath, prevdict, read_only, flavor, algo):
+  """Processes an input file, a dependency, and return meta data about it.
+
+  Behaviors:
+  - Retrieves the file mode, file size, file timestamp, file link
+    destination if it is a file link and calcultate the SHA-1 of the file's
+    content if the path points to a file and not a symlink.
+
+  Arguments:
+    filepath: File to act on.
+    prevdict: the previous dictionary. It is used to retrieve the cached sha-1
+              to skip recalculating the hash. Optional.
+    read_only: If True, the file mode is manipulated. In practice, only save
+               one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r). On
+               windows, mode is not set since all files are 'executable' by
+               default.
+    flavor:    One isolated flavor, like 'linux', 'mac' or 'win'.
+    algo:      Hashing algorithm used.
+
+  Returns:
+    The necessary data to create a entry in the 'files' section of an .isolated
+    file.
+  """
+  out = {}
+  # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
+  # if prevdict.get('T') == True:
+  #   # The file's content is ignored. Skip the time and hard code mode.
+  #   if get_flavor() != 'win':
+  #     out['m'] = stat.S_IRUSR | stat.S_IRGRP
+  #   out['s'] = 0
+  #   out['h'] = algo().hexdigest()
+  #   out['T'] = True
+  #   return out
+
+  # Always check the file stat and check if it is a link. The timestamp is used
+  # to know if the file's content/symlink destination should be looked into.
+  # E.g. only reuse from prevdict if the timestamp hasn't changed.
+  # There is the risk of the file's timestamp being reset to its last value
+  # manually while its content changed. We don't protect against that use case.
+  try:
+    filestats = os.lstat(filepath)
+  except OSError:
+    # The file is not present.
+    raise MappingError('%s is missing' % filepath)
+  is_link = stat.S_ISLNK(filestats.st_mode)
+
+  if flavor != 'win':
+    # Ignore file mode on Windows since it's not really useful there.
+    filemode = stat.S_IMODE(filestats.st_mode)
+    # Remove write access for group and all access to 'others'.
+    filemode &= ~(stat.S_IWGRP | stat.S_IRWXO)
+    if read_only:
+      filemode &= ~stat.S_IWUSR
+    if filemode & stat.S_IXUSR:
+      filemode |= stat.S_IXGRP
+    else:
+      filemode &= ~stat.S_IXGRP
+    if not is_link:
+      out['m'] = filemode
+
+  # Used to skip recalculating the hash or link destination. Use the most recent
+  # update time.
+  # TODO(maruel): Save it in the .state file instead of .isolated so the
+  # .isolated file is deterministic.
+  out['t'] = int(round(filestats.st_mtime))
+
+  if not is_link:
+    out['s'] = filestats.st_size
+    # If the timestamp wasn't updated and the file size is still the same, carry
+    # on the sha-1.
+    if (prevdict.get('t') == out['t'] and
+        prevdict.get('s') == out['s']):
+      # Reuse the previous hash if available.
+      out['h'] = prevdict.get('h')
+    if not out.get('h'):
+      out['h'] = hash_file(filepath, algo)
+  else:
+    # If the timestamp wasn't updated, carry on the link destination.
+    if prevdict.get('t') == out['t']:
+      # Reuse the previous link destination if available.
+      out['l'] = prevdict.get('l')
+    if out.get('l') is None:
+      # The link could be in an incorrect path case. In practice, this only
+      # happen on OSX on case insensitive HFS.
+      # TODO(maruel): It'd be better if it was only done once, in
+      # expand_directory_and_symlink(), so it would not be necessary to do again
+      # here.
+      symlink_value = os.readlink(filepath)  # pylint: disable=E1101
+      filedir = file_path.get_native_path_case(os.path.dirname(filepath))
+      native_dest = file_path.fix_native_path_case(filedir, symlink_value)
+      out['l'] = os.path.relpath(native_dest, filedir)
+  return out
+
+
+def save_isolated(isolated, data):
+  """Writes one or multiple .isolated files.
+
+  Note: this reference implementation does not create child .isolated file so it
+  always returns an empty list.
+
+  Returns the list of child isolated files that are included by |isolated|.
+  """
+  # Make sure the data is valid .isolated data by 'reloading' it.
+  algo = SUPPORTED_ALGOS[data['algo']]
+  load_isolated(json.dumps(data), data.get('flavor'), algo)
+  tools.write_json(isolated, data, True)
+  return []
+
+
+
 def upload_tree(base_url, indir, infiles, namespace):
   """Uploads the given tree to the given url.
 
@@ -1550,9 +1819,107 @@ def fetch_isolated(
   return settings
 
 
+def directory_to_metadata(root, algo, blacklist):
+  """Returns the FileItem list and .isolated metadata for a directory."""
+  root = file_path.get_native_path_case(root)
+  metadata = dict(
+      (relpath, process_input(
+        os.path.join(root, relpath), {}, False, sys.platform, algo))
+      for relpath in expand_directory_and_symlink(
+        root, './', blacklist, True)
+  )
+  for v in metadata.itervalues():
+    v.pop('t')
+  items = [
+      FileItem(
+          path=os.path.join(root, relpath),
+          digest=meta['h'],
+          size=meta['s'],
+          is_isolated=relpath.endswith('.isolated'))
+      for relpath, meta in metadata.iteritems() if 'h' in meta
+  ]
+  return items, metadata
+
+
+def archive(storage, algo, files, blacklist):
+  """Stores every entries and returns the relevant data."""
+  assert all(isinstance(i, unicode) for i in files), files
+  if len(files) != len(set(map(os.path.abspath, files))):
+    raise Error('Duplicate entries found.')
+
+  results = []
+  # The temporary directory is only created as needed.
+  tempdir = None
+  try:
+    # TODO(maruel): Yield the files to a worker thread.
+    items_to_upload = []
+    for f in files:
+      try:
+        filepath = os.path.abspath(f)
+        if os.path.isdir(filepath):
+          # Uploading a whole directory.
+          items, metadata = directory_to_metadata(filepath, algo, blacklist)
+
+          # Create the .isolated file.
+          if not tempdir:
+            tempdir = tempfile.mkdtemp(prefix='isolateserver')
+          handle, isolated = tempfile.mkstemp(dir=tempdir, suffix='.isolated')
+          os.close(handle)
+          data = {
+              'algo': SUPPORTED_ALGOS_REVERSE[algo],
+              'files': metadata,
+              'version': '1.0',
+          }
+          save_isolated(isolated, data)
+          h = hash_file(isolated, algo)
+          items_to_upload.extend(items)
+          items_to_upload.append(
+              FileItem(
+                  path=isolated,
+                  digest=h,
+                  size=os.stat(isolated).st_size,
+                  is_isolated=True))
+          results.append((h, f))
+
+        elif os.path.isfile(filepath):
+          h = hash_file(filepath, algo)
+          items_to_upload.append(
+            FileItem(
+                path=filepath,
+                digest=h,
+                size=os.stat(filepath).st_size,
+                is_isolated=f.endswith('.isolated')))
+          results.append((h, f))
+        else:
+          raise Error('%s is neither a file or directory.' % f)
+      except OSError:
+        raise Error('Failed to process %s.' % f)
+    # Technically we would care about the uploaded files but we don't much in
+    # practice.
+    _uploaded_files = storage.upload_items(items_to_upload)
+    return results
+  finally:
+    if tempdir:
+      shutil.rmtree(tempdir)
+
+
 @subcommand.usage('<file1..fileN> or - to read from stdin')
 def CMDarchive(parser, args):
-  """Archives data to the server."""
+  """Archives data to the server.
+
+  If a directory is specified, a .isolated file is created the whole directory
+  is uploaded. Then this .isolated file can be included in another one to run
+  commands.
+
+  The commands output each file that was processed with its content hash. For
+  directories, the .isolated generated for the directory is listed as the
+  directory entry itself.
+  """
+  parser.add_option(
+      '--blacklist',
+      action='append', default=list(DEFAULT_BLACKLIST),
+      help='List of regexp to use as blacklist filter when uploading '
+           'directories')
   options, files = parser.parse_args(args)
 
   if files == ['-']:
@@ -1561,27 +1928,16 @@ def CMDarchive(parser, args):
   if not files:
     parser.error('Nothing to upload')
 
-  # Load the necessary metadata.
-  # TODO(maruel): Use a worker pool to upload as the hashing is being done.
-  infiles = dict(
-      (
-        f,
-        {
-          's': os.stat(f).st_size,
-          'h': hash_file(f, get_hash_algo(options.namespace)),
-        }
-      )
-      for f in files)
-
-  with tools.Profiler('Archive'):
-    ret = upload_tree(
-        base_url=options.isolate_server,
-        indir=os.getcwd(),
-        infiles=infiles,
-        namespace=options.namespace)
-  if not ret:
-    print '\n'.join('%s  %s' % (infiles[f]['h'], f) for f in sorted(infiles))
-  return ret
+  files = [f.decode('utf-8') for f in files]
+  algo = get_hash_algo(options.namespace)
+  blacklist = tools.gen_blacklist(options.blacklist)
+  try:
+    with get_storage(options.isolate_server, options.namespace) as storage:
+      results = archive(storage, algo, files, blacklist)
+  except Error as e:
+    parser.error(e.args[0])
+  print('\n'.join('%s %s' % (r[0], r[1]) for r in results))
+  return 0
 
 
 def CMDdownload(parser, args):

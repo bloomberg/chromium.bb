@@ -3,12 +3,19 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
-"""Runs the whole set unit tests on swarm."""
+"""Runs the whole set unit tests on swarm.
+
+This is done in a few steps:
+  - Archive the whole directory as a single .isolated file.
+  - Create one test-specific .isolated for each test to run. The file is created
+    directly and archived manually with isolateserver.py.
+  - Trigger each of these test-specific .isolated file per OS.
+  - Get all results out of order.
+"""
 
 import datetime
 import glob
 import getpass
-import hashlib
 import logging
 import optparse
 import os
@@ -24,150 +31,197 @@ ROOT_DIR = os.path.dirname(BASE_DIR)
 sys.path.insert(0, ROOT_DIR)
 
 from utils import threading_utils
+from utils import tools
 
 
 # Mapping of the sys.platform value into Swarm OS value.
 OSES = {'win32': 'win', 'linux2': 'linux', 'darwin': 'mac'}
 
 
+def check_output(cmd, cwd):
+  return subprocess.check_output([sys.executable] + cmd, cwd=cwd)
+
+
+def capture(cmd, cwd):
+  start = time.time()
+  p = subprocess.Popen([sys.executable] + cmd, cwd=cwd, stdout=subprocess.PIPE)
+  out = p.communicate()[0]
+  return p.returncode, out, time.time() - start
+
+
+def archive_tree(root, isolate_server):
+  """Archives a whole tree and return the sha1 of the .isolated file.
+
+  Manually creates a temporary isolated file and archives it.
+  """
+  logging.info('archive_tree(%s)', root)
+  cmd = [
+      'isolateserver.py', 'archive', '--isolate-server', isolate_server, root,
+  ]
+  if logging.getLogger().isEnabledFor(logging.INFO):
+    cmd.append('--verbose')
+  out = check_output(cmd, root)
+  return out.split()[0]
+
+
+def archive_isolated_triggers(cwd, isolate_server, tree_isolated, tests):
+  """Creates and archives all the .isolated files for the tests at once.
+
+  Archiving them in one batch is faster than archiving each file individually.
+  Also the .isolated files can be reused across OSes, reducing the amount of
+  I/O.
+
+  Returns:
+    list of (test, sha1) tuples.
+  """
+  logging.info(
+      'archive_isolated_triggers(%s, %s, %s)', cwd, tree_isolated, tests)
+  tempdir = tempfile.mkdtemp(prefix='run_swarm_tests_on_swarm_')
+  try:
+    isolateds = []
+    for test in tests:
+      test_name = os.path.basename(test)
+      # Creates a manual .isolated file. See
+      # https://code.google.com/p/swarming/wiki/IsolatedDesign for more details.
+      isolated = {
+        'algo': 'sha-1',
+        'command': ['python', test],
+        'includes': [tree_isolated],
+        'version': '1.0',
+      }
+      v = os.path.join(tempdir, test_name + '.isolated')
+      tools.write_json(v, isolated, True)
+      isolateds.append(v)
+    cmd = [
+        'isolateserver.py', 'archive', '--isolate-server', isolate_server,
+    ] + isolateds
+    if logging.getLogger().isEnabledFor(logging.INFO):
+      cmd.append('--verbose')
+    items = [i.split() for i in check_output(cmd, cwd).splitlines()]
+    assert len(items) == len(tests)
+    assert all(
+        items[i][1].endswith(os.path.basename(tests[i]) + '.isolated')
+        for i in xrange(len(tests)))
+    return zip(tests, [i[0] for i in items])
+  finally:
+    shutil.rmtree(tempdir)
+
+
+def trigger(
+    cwd, swarm_server, isolate_server, prefix, test_name, platform,
+    isolated_hash):
+  """Triggers a specified .isolated file."""
+  cmd = [
+      'swarming.py',
+      'trigger',
+      '--swarming', swarm_server,
+      '--isolate-server', isolate_server,
+      '--task-prefix', prefix,
+      '--os', platform,
+      '--task',
+      isolated_hash,
+      # Test name.
+      'swarm_client_tests_%s_%s' % (platform, test_name),
+      # Number of shards.
+      '1',
+      # test filter.
+      '*',
+  ]
+  return capture(cmd, cwd)
+
+
+def collect(cwd, swarm_server, test_name):
+  cmd = [
+      'swarming.py',
+      'collect',
+      '--swarming', swarm_server,
+      test_name,
+  ]
+  return capture(cmd, cwd)
+
+
 class Runner(object):
-  def __init__(self, isolate_server, swarm_server, add_task, progress, tempdir):
+  def __init__(self, isolate_server, swarm_server, add_task, progress):
     self.isolate_server = isolate_server
     self.swarm_server = swarm_server
     self.add_task = add_task
     self.progress = progress
-    self.tempdir = tempdir
     self.prefix = (
         getpass.getuser() + '-' + datetime.datetime.now().isoformat() + '-')
 
-  @staticmethod
-  def _call(args):
-    start = time.time()
-    proc = subprocess.Popen(
-        [sys.executable] + args,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        cwd=ROOT_DIR)
-    stdout = proc.communicate()[0]
-    return proc.returncode, stdout, time.time() - start
-
-  def archive(self, test, platform):
-    # Put the .isolated files in a temporary directory. This is simply done so
-    # the current directory doesn't have the following files created:
-    # - swarm_client_tests.isolated
-    # - swarm_client_tests.isolated.state
-    test_name = os.path.basename(test)
-    handle, isolated = tempfile.mkstemp(
-        dir=self.tempdir, prefix='run_swarm_tests_on_swarm_',
-        suffix='.isolated')
-    os.close(handle)
-    try:
-      returncode, stdout, duration = self._call(
-          [
-            'isolate.py',
-            'archive',
-            '--isolate', os.path.join(BASE_DIR, 'run_a_test.isolate'),
-            '--isolated', isolated,
-            '--outdir', self.isolate_server,
-            '--variable', 'TEST_EXECUTABLE', test,
-            '--variable', 'OS', OSES[platform],
-          ])
-      step_name = '%s/%s (%3.2fs)' % (platform, test_name, duration)
-      if returncode:
-        self.progress.update_item(
-            'Failed to archive %s\n%s' % (step_name, stdout), index=1)
-      else:
-        hash_value = hashlib.sha1(open(isolated, 'rb').read()).hexdigest()
-        logging.info('%s: %s', step_name, hash_value)
-        self.progress.update_item('Archived %s' % step_name, index=1)
-        self.add_task(0, self.trigger, test, platform, hash_value)
-    finally:
-      try:
-        os.remove(isolated)
-      except OSError:
-        logging.debug('%s was already deleted', isolated)
-    return None
-
-  def trigger(self, test, platform, hash_value):
-    test_name = os.path.basename(test)
-    returncode, stdout, duration = self._call(
-        [
-          'swarming.py',
-          'trigger',
-          '--os', platform,
-          '--swarming', self.swarm_server,
-          '--task-prefix', self.prefix,
-          '--isolate-server', self.isolate_server,
-          '--task',
-          # Isolated hash.
-          hash_value,
-          # Test name.
-          'swarm_client_tests_%s_%s' % (platform, test_name),
-          # Number of shards.
-          '1',
-          # test filter.
-          '*',
-        ])
+  def trigger(self, test_name, platform, isolated_hash):
+    returncode, stdout, duration = trigger(
+        ROOT_DIR,
+        self.swarm_server,
+        self.isolate_server,
+        self.prefix,
+        test_name,
+        platform,
+        isolated_hash)
     step_name = '%s/%s (%3.2fs)' % (platform, test_name, duration)
     if returncode:
-      self.progress.update_item(
-          'Failed to trigger %s\n%s' % (step_name, stdout), index=1)
-    else:
-      self.progress.update_item('Triggered %s' % step_name, index=1)
-      self.add_task(0, self.get_result, test, platform)
-    return None
+      line = 'Failed to trigger %s\n%s' % (step_name, stdout)
+      self.progress.update_item(line, index=1)
+      return
+    self.progress.update_item('Triggered %s' % step_name, index=1)
+    self.add_task(0, self.collect, test_name, platform)
 
-  def get_result(self, test, platform):
-    test_name = os.path.basename(test)
-    name = '%s_%s' % (platform, test_name)
-    returncode, stdout, duration = self._call(
-        [
-          'swarming.py',
-          'collect',
-          '--swarming', self.swarm_server,
-          self.prefix + 'swarm_client_tests_' + name,
-        ])
+  def collect(self, test_name, platform):
+    returncode, stdout, duration = collect(
+        ROOT_DIR, self.swarm_server,
+        '%sswarm_client_tests_%s_%s' % (self.prefix, platform, test_name))
     step_name = '%s/%s (%3.2fs)' % (platform, test_name, duration)
-    # Only print the output for failures, successes are unexciting.
     if returncode:
+      # Only print the output for failures, successes are unexciting.
       self.progress.update_item(
           'Failed %s:\n%s' % (step_name, stdout), index=1)
       return (test_name, platform, stdout)
     self.progress.update_item('Passed %s' % step_name, index=1)
-    return None
 
 
-def run_swarm_tests_on_swarm(oses, tests, logs, isolate_server, swarm_server):
-  runs = len(tests) * len(oses)
-  total = 3 * runs
+def run_swarm_tests_on_swarm(swarm_server, isolate_server, oses, tests, logs):
+  """Archives, triggers swarming jobs and gets results."""
+  start = time.time()
+  # First, archive the whole tree.
+  tree_isolated = archive_tree(ROOT_DIR, isolate_server)
+
+  # Create and archive all the .isolated files.
+  isolateds = archive_isolated_triggers(
+      ROOT_DIR, isolate_server, tree_isolated, tests)
+  logging.debug('%s', isolateds)
+  print('Archival took %3.2fs' % (time.time() - start))
+
+  # Trigger all the jobs and get results. This is parallelized in worker
+  # threads.
+  runs = len(isolateds) * len(oses)
+  # triger + collect
+  total = 2 * runs
   columns = [('index', 0), ('size', total)]
   progress = threading_utils.Progress(columns)
   progress.use_cr_only = False
-  tempdir = tempfile.mkdtemp(prefix='swarm_client_tests')
-  try:
-    with threading_utils.ThreadPoolWithProgress(
-        progress, runs, runs, total) as pool:
-      start = time.time()
-      runner = Runner(
-          isolate_server, swarm_server, pool.add_task, progress, tempdir)
-      for test in tests:
-        for platform in oses:
-          pool.add_task(0, runner.archive, test, platform)
+  failed_tests = []
+  with threading_utils.ThreadPoolWithProgress(
+      progress, runs, runs, total) as pool:
+    start = time.time()
+    runner = Runner(isolate_server, swarm_server, pool.add_task, progress)
+    for test_path, isolated in isolateds:
+      test_name = os.path.basename(test_path).split('.')[0]
+      for platform in oses:
+        pool.add_task(0, runner.trigger, test_name, platform, isolated)
 
-      failed_tests = pool.join()
-      duration = time.time() - start
-      print('')
-  finally:
-    shutil.rmtree(tempdir)
-
-  if logs:
-    os.makedirs(logs)
-    for test, platform, stdout in failed_tests:
-      name = '%s_%s' % (platform, os.path.basename(test))
-      with open(os.path.join(logs, name + '.log'), 'wb') as f:
-        f.write(stdout)
-
-  print('Completed in %3.2fs' % duration)
+    for failed_test in pool.iter_results():
+      # collect() only return test case failures.
+      failed_tests.append(failed_test)
+      if logs:
+        # Write the logs are they are retrieved.
+        if not os.path.isdir(logs):
+          os.makedirs(logs)
+        test, platform, stdout = failed_test
+        name = '%s_%s' % (platform, os.path.basename(test))
+        with open(os.path.join(logs, name + '.log'), 'wb') as f:
+          f.write(stdout)
+  duration = time.time() - start
+  print('\nCompleted in %3.2fs' % duration)
   if failed_tests:
     failed_tests_per_os = {}
     for test, platform, _ in failed_tests:
@@ -192,7 +246,9 @@ def main():
       '-l', '--logs',
       help='Destination where to store the failure logs (recommended)')
   parser.add_option('-o', '--os', help='Run tests only on this OS')
-  parser.add_option('-t', '--test', help='Run only this test')
+  parser.add_option(
+      '-t', '--test', action='append',
+      help='Run only these test, can be specified multiple times')
   parser.add_option('-v', '--verbose', action='store_true')
   options, args = parser.parse_args()
   if args:
@@ -207,21 +263,28 @@ def main():
 
   logging.basicConfig(level=logging.DEBUG if options.verbose else logging.ERROR)
 
-  # Note that the swarm and the isolate code use different strings for the
+  # Note that the swarming and the isolate code use different strings for the
   # different oses.
+  # TODO(maruel): Fix this inconsistency.
   oses = OSES.keys()
   tests = [
-    os.path.relpath(i, BASE_DIR)
-    for i in glob.iglob(os.path.join(ROOT_DIR, 'tests', '*_test.py'))
+      os.path.relpath(i, ROOT_DIR)
+      for i in (
+      glob.glob(os.path.join(ROOT_DIR, 'tests', '*_test.py')) +
+      glob.glob(os.path.join(ROOT_DIR, 'googletest', 'tests', '*_test.py')))
   ]
+  valid_tests = sorted(map(os.path.basename, tests))
+  assert len(valid_tests) == len(set(valid_tests)), (
+      'Can\'t have 2 tests with the same base name')
 
   if options.test:
-    valid_tests = sorted(map(os.path.basename, tests))
-    if not options.test in valid_tests:
-      parser.error(
-          '--test %s is unknown. Valid values are:\n%s' % (
-            options.test, '\n'.join('  ' + i for i in valid_tests)))
-    tests = [t for t in tests if t.endswith(os.path.sep + options.test)]
+    for t in options.test:
+      if not t in valid_tests:
+        parser.error(
+            '--test %s is unknown. Valid values are:\n%s' % (
+              t, '\n'.join('  ' + i for i in valid_tests)))
+    filters = tuple(os.path.sep + t for t in options.test)
+    tests = [t for t in tests if t.endswith(filters)]
 
   if options.os:
     if options.os not in oses:
@@ -238,11 +301,11 @@ def main():
       print('Linux and Mac tests skipped since running on Windows.')
 
   return run_swarm_tests_on_swarm(
+      options.swarming,
+      options.isolate_server,
       oses,
       tests,
-      options.logs,
-      options.isolate_server,
-      options.swarming)
+      options.logs)
 
 
 if __name__ == '__main__':

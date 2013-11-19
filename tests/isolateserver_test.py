@@ -20,7 +20,8 @@ import unittest
 import urllib
 import zlib
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(TEST_DIR)
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
@@ -766,6 +767,188 @@ class TestIsolated(unittest.TestCase):
     actual = isolateserver.load_isolated(json.dumps(data), None, ALGO)
     expected = gen_data(os.path.sep)
     self.assertEqual(expected, actual)
+
+
+class SymlinkTest(unittest.TestCase):
+  def setUp(self):
+    super(SymlinkTest, self).setUp()
+    self.old_cwd = os.getcwd()
+    self.cwd = tempfile.mkdtemp(prefix='isolate_')
+    # Everything should work even from another directory.
+    os.chdir(self.cwd)
+
+  def tearDown(self):
+    try:
+      os.chdir(self.old_cwd)
+      shutil.rmtree(self.cwd)
+    finally:
+      super(SymlinkTest, self).tearDown()
+
+  if sys.platform == 'darwin':
+    def test_expand_symlinks_path_case(self):
+      # Ensures that the resulting path case is fixed on case insensitive file
+      # system.
+      os.symlink('dest', os.path.join(self.cwd, 'link'))
+      os.mkdir(os.path.join(self.cwd, 'Dest'))
+      open(os.path.join(self.cwd, 'Dest', 'file.txt'), 'w').close()
+
+      result = isolateserver.expand_symlinks(unicode(self.cwd), 'link')
+      self.assertEqual((u'Dest', [u'link']), result)
+      result = isolateserver.expand_symlinks(unicode(self.cwd), 'link/File.txt')
+      self.assertEqual((u'Dest/file.txt', [u'link']), result)
+
+    def test_expand_directories_and_symlinks_path_case(self):
+      # Ensures that the resulting path case is fixed on case insensitive file
+      # system. A superset of test_expand_symlinks_path_case.
+      # Create *all* the paths with the wrong path case.
+      basedir = os.path.join(self.cwd, 'baseDir')
+      os.mkdir(basedir.lower())
+      subdir = os.path.join(basedir, 'subDir')
+      os.mkdir(subdir.lower())
+      open(os.path.join(subdir, 'Foo.txt'), 'w').close()
+      os.symlink('subDir', os.path.join(basedir, 'linkdir'))
+      actual = isolateserver.expand_directories_and_symlinks(
+          unicode(self.cwd), [u'baseDir/'], lambda _: None, True, False)
+      expected = [
+        u'basedir/linkdir',
+        u'basedir/subdir/Foo.txt',
+        u'basedir/subdir/Foo.txt',
+      ]
+      self.assertEqual(expected, actual)
+
+    def test_process_input_path_case_simple(self):
+      # Ensure the symlink dest is saved in the right path case.
+      subdir = os.path.join(self.cwd, 'subdir')
+      os.mkdir(subdir)
+      linkdir = os.path.join(self.cwd, 'linkdir')
+      os.symlink('subDir', linkdir)
+      actual = isolateserver.process_input(
+          unicode(linkdir.upper()), {}, True, 'mac', ALGO)
+      expected = {'l': u'subdir', 'm': 360, 't': int(os.stat(linkdir).st_mtime)}
+      self.assertEqual(expected, actual)
+
+    def test_process_input_path_case_complex(self):
+      # Ensure the symlink dest is saved in the right path case. This includes 2
+      # layers of symlinks.
+      basedir = os.path.join(self.cwd, 'basebir')
+      os.mkdir(basedir)
+
+      linkeddir2 = os.path.join(self.cwd, 'linkeddir2')
+      os.mkdir(linkeddir2)
+
+      linkeddir1 = os.path.join(basedir, 'linkeddir1')
+      os.symlink('../linkedDir2', linkeddir1)
+
+      subsymlinkdir = os.path.join(basedir, 'symlinkdir')
+      os.symlink('linkedDir1', subsymlinkdir)
+
+      actual = isolateserver.process_input(
+          unicode(subsymlinkdir.upper()), {}, True, 'mac', ALGO)
+      expected = {
+        'l': u'linkeddir1', 'm': 360, 't': int(os.stat(subsymlinkdir).st_mtime),
+      }
+      self.assertEqual(expected, actual)
+
+      actual = isolateserver.process_input(
+          unicode(linkeddir1.upper()), {}, True, 'mac', ALGO)
+      expected = {
+        'l': u'../linkeddir2', 'm': 360, 't': int(os.stat(linkeddir1).st_mtime),
+      }
+      self.assertEqual(expected, actual)
+
+  if sys.platform != 'win32':
+    def test_symlink_input_absolute_path(self):
+      # A symlink is outside of the checkout, it should be treated as a normal
+      # directory.
+      # .../src
+      # .../src/out -> .../tmp/foo
+      # .../tmp
+      # .../tmp/foo
+      src = os.path.join(self.cwd, u'src')
+      src_out = os.path.join(src, 'out')
+      tmp = os.path.join(self.cwd, 'tmp')
+      tmp_foo = os.path.join(tmp, 'foo')
+      os.mkdir(src)
+      os.mkdir(tmp)
+      os.mkdir(tmp_foo)
+      # The problem was that it's an absolute path, so it must be considered a
+      # normal directory.
+      os.symlink(tmp, src_out)
+      open(os.path.join(tmp_foo, 'bar.txt'), 'w').close()
+      actual = isolateserver.expand_symlinks(src, u'out/foo/bar.txt')
+      self.assertEqual((u'out/foo/bar.txt', []), actual)
+
+
+def get_storage(_isolate_server, _namespace):
+  class StorageFake(object):
+    def __enter__(self, *_):
+      return self
+
+    def __exit__(self, *_):
+      pass
+
+    @staticmethod
+    def upload_items(items):
+      # Always returns the second item as not present.
+      return [items[1]]
+  return StorageFake()
+
+
+class TestArchive(TestCase):
+  def test_archive_no_server(self):
+    with self.assertRaises(SystemExit):
+      isolateserver.main(['archive', '.'])
+    self.checkOutput(
+        '',
+        'Usage: isolateserver.py archive [options] <file1..fileN> or - to read '
+        'from stdin\n\n'
+        'isolateserver.py: error: --isolate-server is required.\n')
+
+  def test_archive_duplicates(self):
+    with self.assertRaises(SystemExit):
+      isolateserver.main(
+          [
+            'archive', '--isolate-server', 'https://localhost:1',
+            # Effective dupes.
+            '.', os.getcwd(),
+          ])
+    self.checkOutput(
+        '',
+        'Usage: isolateserver.py archive [options] <file1..fileN> or - to read '
+        'from stdin\n\n'
+        'isolateserver.py: error: Duplicate entries found.\n')
+
+  def test_archive_files(self):
+    old_cwd = os.getcwd()
+    try:
+      os.chdir(os.path.join(TEST_DIR, 'isolateserver'))
+      self.mock(isolateserver, 'get_storage', get_storage)
+      f = ['empty_file.txt', 'small_file.txt']
+      isolateserver.main(
+          ['archive', '--isolate-server', 'https://localhost:1'] + f)
+      self.checkOutput(
+          'da39a3ee5e6b4b0d3255bfef95601890afd80709 empty_file.txt\n'
+          '0491bd1da8087ad10fcdd7c9634e308804b72158 small_file.txt\n',
+          '')
+    finally:
+      os.chdir(old_cwd)
+
+  def test_archive_directory(self):
+    old_cwd = os.getcwd()
+    try:
+      os.chdir(ROOT_DIR)
+      self.mock(isolateserver, 'get_storage', get_storage)
+      p = os.path.join(TEST_DIR, 'isolateserver')
+      isolateserver.main(
+          ['archive', '--isolate-server', 'https://localhost:1', p])
+      # TODO(maruel): The problem here is that the test depends on the file mode
+      # of the files in this directory.
+      # Fix is to copy the files in a temporary directory with known file modes.
+      self.checkOutput(
+          '4af1176e75f910520c9e9185e140642fe1648177 %s\n' % p,
+          '')
+    finally:
+      os.chdir(old_cwd)
 
 
 if __name__ == '__main__':
