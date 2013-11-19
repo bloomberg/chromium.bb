@@ -1108,7 +1108,7 @@ static PassRefPtr<CSSValue> createTimingFunctionValue(const TimingFunction* timi
     switch (timingFunction->type()) {
     case TimingFunction::CubicBezierFunction:
         {
-            const CubicBezierTimingFunction* bezierTimingFunction = static_cast<const CubicBezierTimingFunction*>(timingFunction);
+            const CubicBezierTimingFunction* bezierTimingFunction = toCubicBezierTimingFunction(timingFunction);
             if (bezierTimingFunction->subType() != CubicBezierTimingFunction::Custom) {
                 CSSValueID valueId = CSSValueInvalid;
                 switch (bezierTimingFunction->subType()) {
@@ -1135,7 +1135,7 @@ static PassRefPtr<CSSValue> createTimingFunctionValue(const TimingFunction* timi
 
     case TimingFunction::StepsFunction:
         {
-            const StepsTimingFunction* stepsTimingFunction = static_cast<const StepsTimingFunction*>(timingFunction);
+            const StepsTimingFunction* stepsTimingFunction = toStepsTimingFunction(timingFunction);
             if (stepsTimingFunction->subType() == StepsTimingFunction::Custom)
                 return CSSStepsTimingFunctionValue::create(stepsTimingFunction->numberOfSteps(), stepsTimingFunction->stepAtStart());
             CSSValueID valueId;

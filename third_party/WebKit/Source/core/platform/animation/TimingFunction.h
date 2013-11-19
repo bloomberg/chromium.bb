@@ -311,6 +311,17 @@ private:
     friend class ChainedTimingFunctionTestHelper;
 };
 
+#define DEFINE_TIMING_FUNCTION_TYPE_CASTS(typeName) \
+    DEFINE_TYPE_CASTS( \
+        typeName##TimingFunction, TimingFunction, value, \
+        value->type() == TimingFunction::typeName##Function, \
+        value.type() == TimingFunction::typeName##Function)
+
+DEFINE_TIMING_FUNCTION_TYPE_CASTS(Linear);
+DEFINE_TIMING_FUNCTION_TYPE_CASTS(CubicBezier);
+DEFINE_TIMING_FUNCTION_TYPE_CASTS(Steps);
+DEFINE_TIMING_FUNCTION_TYPE_CASTS(Chained);
+
 } // namespace WebCore
 
 #endif // TimingFunction_h

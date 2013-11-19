@@ -277,7 +277,7 @@ PassOwnPtr<blink::WebAnimation> createWebAnimation(const KeyframeValueList& valu
                 break;
             case TimingFunction::CubicBezierFunction:
                 {
-                    const CubicBezierTimingFunction* originalBezierTimingFunction = static_cast<const CubicBezierTimingFunction*>(originalTimingFunction);
+                    const CubicBezierTimingFunction* originalBezierTimingFunction = toCubicBezierTimingFunction(originalTimingFunction);
                     isUsingCustomBezierTimingFunction = true;
                     x1 = originalBezierTimingFunction->x1();
                     y1 = originalBezierTimingFunction->y1();

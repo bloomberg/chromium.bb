@@ -62,12 +62,12 @@ class ChainedTimingFunctionTestHelper {
         if (&lhs == &rhs)
             return true;
 
-        const ChainedTimingFunction* ctf = static_cast<const ChainedTimingFunction*>(&rhs);
-        if (lhs.m_segments.size() != ctf->m_segments.size())
+        const ChainedTimingFunction& ctf = toChainedTimingFunction(rhs);
+        if (lhs.m_segments.size() != ctf.m_segments.size())
             return false;
 
         for (size_t i = 0; i < lhs.m_segments.size(); i++) {
-            if (!equals(lhs.m_segments[i], ctf->m_segments[i]))
+            if (!equals(lhs.m_segments[i], ctf.m_segments[i]))
                 return false;
         }
         return true;
@@ -160,23 +160,23 @@ void PrintTo(const TimingFunction& timingFunction, ::std::ostream* os)
 {
     switch (timingFunction.type()) {
     case TimingFunction::LinearFunction: {
-        const LinearTimingFunction* linear = static_cast<const LinearTimingFunction*>(&timingFunction);
-        PrintTo(*linear, os);
+        const LinearTimingFunction& linear = toLinearTimingFunction(timingFunction);
+        PrintTo(linear, os);
         return;
     }
     case TimingFunction::CubicBezierFunction: {
-        const CubicBezierTimingFunction* cubic = static_cast<const CubicBezierTimingFunction*>(&timingFunction);
-        PrintTo(*cubic, os);
+        const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(timingFunction);
+        PrintTo(cubic, os);
         return;
     }
     case TimingFunction::StepsFunction: {
-        const StepsTimingFunction* step = static_cast<const StepsTimingFunction*>(&timingFunction);
-        PrintTo(*step, os);
+        const StepsTimingFunction& step = toStepsTimingFunction(timingFunction);
+        PrintTo(step, os);
         return;
     }
     case TimingFunction::ChainedFunction: {
-        const ChainedTimingFunction* chained = static_cast<const ChainedTimingFunction*>(&timingFunction);
-        PrintTo(*chained, os);
+        const ChainedTimingFunction& chained = toChainedTimingFunction(timingFunction);
+        PrintTo(chained, os);
         return;
     }
     default:
@@ -194,11 +194,11 @@ bool operator==(const CubicBezierTimingFunction& lhs, const TimingFunction& rhs)
     if (rhs.type() != TimingFunction::CubicBezierFunction)
         return false;
 
-    const CubicBezierTimingFunction* ctf = static_cast<const CubicBezierTimingFunction*>(&rhs);
-    if ((lhs.subType() == CubicBezierTimingFunction::Custom) && (ctf->subType() == CubicBezierTimingFunction::Custom))
-        return (lhs.x1() == ctf->x1()) && (lhs.y1() == ctf->y1()) && (lhs.x2() == ctf->x2()) && (lhs.y2() == ctf->y2());
+    const CubicBezierTimingFunction& ctf = toCubicBezierTimingFunction(rhs);
+    if ((lhs.subType() == CubicBezierTimingFunction::Custom) && (ctf.subType() == CubicBezierTimingFunction::Custom))
+        return (lhs.x1() == ctf.x1()) && (lhs.y1() == ctf.y1()) && (lhs.x2() == ctf.x2()) && (lhs.y2() == ctf.y2());
 
-    return lhs.subType() == ctf->subType();
+    return lhs.subType() == ctf.subType();
 }
 
 bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs)
@@ -206,11 +206,11 @@ bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs)
     if (rhs.type() != TimingFunction::StepsFunction)
         return false;
 
-    const StepsTimingFunction* stf = static_cast<const StepsTimingFunction*>(&rhs);
-    if ((lhs.subType() == StepsTimingFunction::Custom) && (stf->subType() == StepsTimingFunction::Custom))
-        return (lhs.numberOfSteps() == stf->numberOfSteps()) && (lhs.stepAtStart() == stf->stepAtStart());
+    const StepsTimingFunction& stf = toStepsTimingFunction(rhs);
+    if ((lhs.subType() == StepsTimingFunction::Custom) && (stf.subType() == StepsTimingFunction::Custom))
+        return (lhs.numberOfSteps() == stf.numberOfSteps()) && (lhs.stepAtStart() == stf.stepAtStart());
 
-    return lhs.subType() == stf->subType();
+    return lhs.subType() == stf.subType();
 }
 
 bool operator==(const ChainedTimingFunction& lhs, const TimingFunction& rhs)
@@ -224,20 +224,20 @@ bool operator==(const TimingFunction& lhs, const TimingFunction& rhs)
 {
     switch (lhs.type()) {
     case TimingFunction::LinearFunction: {
-        const LinearTimingFunction* linear = static_cast<const LinearTimingFunction*>(&lhs);
-        return (*linear == rhs);
+        const LinearTimingFunction& linear = toLinearTimingFunction(lhs);
+        return (linear == rhs);
     }
     case TimingFunction::CubicBezierFunction: {
-        const CubicBezierTimingFunction* cubic = static_cast<const CubicBezierTimingFunction*>(&lhs);
-        return (*cubic == rhs);
+        const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(lhs);
+        return (cubic == rhs);
     }
     case TimingFunction::StepsFunction: {
-        const StepsTimingFunction* step = static_cast<const StepsTimingFunction*>(&lhs);
-        return (*step == rhs);
+        const StepsTimingFunction& step = toStepsTimingFunction(lhs);
+        return (step == rhs);
     }
     case TimingFunction::ChainedFunction: {
-        const ChainedTimingFunction* chained = static_cast<const ChainedTimingFunction*>(&lhs);
-        return (*chained == rhs);
+        const ChainedTimingFunction& chained = toChainedTimingFunction(lhs);
+        return (chained == rhs);
     }
     default:
         ASSERT_NOT_REACHED();

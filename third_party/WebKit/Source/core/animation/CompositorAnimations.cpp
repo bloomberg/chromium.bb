@@ -99,15 +99,15 @@ PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(c
 {
     switch (timefunc->type()) {
     case TimingFunction::LinearFunction: {
-        const LinearTimingFunction* linear = static_cast<const LinearTimingFunction*>(timefunc);
+        const LinearTimingFunction* linear = toLinearTimingFunction(timefunc);
         return reverse(linear);
     }
     case TimingFunction::CubicBezierFunction: {
-        const CubicBezierTimingFunction* cubic = static_cast<const CubicBezierTimingFunction*>(timefunc);
+        const CubicBezierTimingFunction* cubic = toCubicBezierTimingFunction(timefunc);
         return reverse(cubic);
     }
     case TimingFunction::ChainedFunction: {
-        const ChainedTimingFunction* chained = static_cast<const ChainedTimingFunction*>(timefunc);
+        const ChainedTimingFunction* chained = toChainedTimingFunction(timefunc);
         return reverse(chained);
     }
 
@@ -284,18 +284,18 @@ bool CompositorAnimationsImpl::isCandidateForCompositor(const TimingFunction& ti
         // Currently we only support chained segments in the form the CSS code
         // generates. These chained segments are only one level deep and have
         // one timing function per frame.
-        const ChainedTimingFunction* chained = static_cast<const ChainedTimingFunction*>(&timingFunction);
+        const ChainedTimingFunction& chained = toChainedTimingFunction(timingFunction);
         if (isNestedCall)
             return false;
 
-        if (!chained->m_segments.size())
+        if (!chained.m_segments.size())
             return false;
 
-        if (frames->size() != chained->m_segments.size() + 1)
+        if (frames->size() != chained.m_segments.size() + 1)
             return false;
 
-        for (size_t timeIndex = 0; timeIndex < chained->m_segments.size(); timeIndex++) {
-            const ChainedTimingFunction::Segment& segment = chained->m_segments[timeIndex];
+        for (size_t timeIndex = 0; timeIndex < chained.m_segments.size(); timeIndex++) {
+            const ChainedTimingFunction::Segment& segment = chained.m_segments[timeIndex];
 
             if (frames->at(timeIndex)->offset() != segment.m_min || frames->at(timeIndex + 1)->offset() != segment.m_max)
                 return false;
@@ -424,7 +424,7 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
         return;
 
     case TimingFunction::CubicBezierFunction: {
-        const CubicBezierTimingFunction* cubic = static_cast<const CubicBezierTimingFunction*>(timingFunction);
+        const CubicBezierTimingFunction* cubic = toCubicBezierTimingFunction(timingFunction);
 
         if (cubic->subType() == CubicBezierTimingFunction::Custom) {
             curve.add(keyframe, cubic->x1(), cubic->y1(), cubic->x2(), cubic->y2());
@@ -480,12 +480,12 @@ void CompositorAnimationsImpl::addKeyframesToCurve(PlatformAnimationCurveType& c
                 break;
 
             case TimingFunction::ChainedFunction: {
-                const ChainedTimingFunction* chained = static_cast<const ChainedTimingFunction*>(&timingFunction);
+                const ChainedTimingFunction& chained = toChainedTimingFunction(timingFunction);
                 // ChainedTimingFunction criteria was checked in isCandidate,
                 // assert it is valid.
-                ASSERT(values.size() == chained->m_segments.size() + 1);
+                ASSERT(values.size() == chained.m_segments.size() + 1);
 
-                keyframeTimingFunction = chained->m_segments[i].m_timingFunction.get();
+                keyframeTimingFunction = chained.m_segments[i].m_timingFunction.get();
                 break;
             }
             case TimingFunction::StepsFunction:
