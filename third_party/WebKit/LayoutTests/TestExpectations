@@ -571,3 +571,8 @@ crbug.com/320334 media/media-can-play-ogg.html [ Failure ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 crbug.com/245556 virtual/softwarecompositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
+
+crbug.com/321358 compositing/layer-creation/fixed-position-no-content-scroll-reason.html [ Failure Pass ]
+crbug.com/321358 compositing/layer-creation/fixed-position-out-of-view-scroll-reason.html [ Failure Pass ]
+crbug.com/321358 [ Linux Win ] virtual/softwarecompositing/layer-creation/fixed-position-no-content-scroll-reason.html [ Failure Pass ]
+crbug.com/321358 [ Linux Win ] virtual/softwarecompositing/layer-creation/fixed-position-out-of-view-scroll-reason.html [ Failure Pass ]
