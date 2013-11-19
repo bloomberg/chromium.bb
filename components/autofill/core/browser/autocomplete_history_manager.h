@@ -12,11 +12,6 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
-namespace content {
-class BrowserContext;
-class WebContents;
-}
-
 namespace autofill {
 
 class AutofillDriver;
@@ -70,10 +65,9 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
   // Cancels the currently pending WebDataService query, if there is one.
   void CancelPendingQuery();
 
-  content::BrowserContext* browser_context_;
   // Provides driver-level context. Must outlive this object.
   AutofillDriver* driver_;
-  scoped_refptr<AutofillWebDataService> autofill_data_;
+  scoped_refptr<AutofillWebDataService> database_;
 
   // When the manager makes a request from WebDataServiceBase, the database is
   // queried on another thread, we record the query handle until we get called

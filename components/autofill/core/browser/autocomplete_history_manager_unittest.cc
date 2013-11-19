@@ -40,56 +40,29 @@ class MockWebDataService : public AutofillWebDataService {
  public:
   MockWebDataService()
       : AutofillWebDataService(base::MessageLoopProxy::current(),
-                               base::MessageLoopProxy::current()) {
-    current_mock_web_data_service_ = this;
-  }
+                               base::MessageLoopProxy::current()) {}
 
   MOCK_METHOD1(AddFormFields, void(const std::vector<FormFieldData>&));
 
-  static scoped_refptr<MockWebDataService> GetCurrent() {
-    if (!current_mock_web_data_service_) {
-      return new MockWebDataService();
-    }
-    return current_mock_web_data_service_;
-  }
-
  protected:
   virtual ~MockWebDataService() {}
-
- private:
-  // Keep track of the most recently created instance, so that it can be
-  // associated with the current profile when Build() is called.
-  static MockWebDataService* current_mock_web_data_service_;
-};
-
-MockWebDataService* MockWebDataService::current_mock_web_data_service_ = NULL;
-
-class MockWebDataServiceWrapperCurrent : public MockWebDataServiceWrapperBase {
- public:
-  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
-    return new MockWebDataServiceWrapperCurrent();
-  }
-
-  MockWebDataServiceWrapperCurrent() {}
-
-  virtual scoped_refptr<AutofillWebDataService> GetAutofillWebData() OVERRIDE {
-    return MockWebDataService::GetCurrent();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockWebDataServiceWrapperCurrent);
 };
 
 class MockAutofillManagerDelegate
     : public autofill::TestAutofillManagerDelegate {
  public:
-  MockAutofillManagerDelegate()
-      : prefs_(test::PrefServiceForTesting()) {
+  MockAutofillManagerDelegate(
+      scoped_refptr<MockWebDataService> web_data_service)
+      : web_data_service_(web_data_service),
+        prefs_(test::PrefServiceForTesting()) {
   }
   virtual ~MockAutofillManagerDelegate() {}
+  virtual scoped_refptr<AutofillWebDataService>
+      GetDatabase() OVERRIDE { return web_data_service_; }
   virtual PrefService* GetPrefs() OVERRIDE { return prefs_.get(); }
 
  private:
+  scoped_refptr<MockWebDataService> web_data_service_;
   scoped_ptr<PrefService> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
@@ -102,24 +75,22 @@ class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     web_data_service_ = new MockWebDataService();
-    WebDataServiceFactory::GetInstance()->SetTestingFactory(
-        profile(), MockWebDataServiceWrapperCurrent::Build);
+    manager_delegate_.reset(new MockAutofillManagerDelegate(web_data_service_));
     autofill_driver_.reset(new TestAutofillDriver(web_contents()));
     autocomplete_manager_.reset(
         new AutocompleteHistoryManager(autofill_driver_.get(),
-                                       &manager_delegate));
+                                       manager_delegate_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
     autocomplete_manager_.reset();
-    web_data_service_ = NULL;
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
   scoped_refptr<MockWebDataService> web_data_service_;
   scoped_ptr<AutocompleteHistoryManager> autocomplete_manager_;
   scoped_ptr<AutofillDriver> autofill_driver_;
-  MockAutofillManagerDelegate manager_delegate;
+  scoped_ptr<MockAutofillManagerDelegate> manager_delegate_;
 };
 
 // Tests that credit card numbers are not sent to the WebDatabase to be saved.
@@ -246,11 +217,11 @@ class AutocompleteHistoryManagerNoIPC : public AutocompleteHistoryManager {
 // Make sure our external delegate is called at the right time.
 TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
   AutocompleteHistoryManagerNoIPC autocomplete_history_manager(
-      autofill_driver_.get(), &manager_delegate);
+      autofill_driver_.get(), manager_delegate_.get());
 
   scoped_ptr<AutofillManager> autofill_manager(new AutofillManager(
       autofill_driver_.get(),
-      &manager_delegate,
+      manager_delegate_.get(),
       "en-US",
       AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER));
 

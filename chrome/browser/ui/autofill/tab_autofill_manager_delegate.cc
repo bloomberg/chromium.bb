@@ -60,6 +60,12 @@ PersonalDataManager* TabAutofillManagerDelegate::GetPersonalDataManager() {
       profile->GetOriginalProfile());
 }
 
+scoped_refptr<AutofillWebDataService>
+    TabAutofillManagerDelegate::GetDatabase() {
+  return AutofillWebDataService::FromBrowserContext(
+      web_contents_->GetBrowserContext());
+}
+
 PrefService* TabAutofillManagerDelegate::GetPrefs() {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext())->
       GetPrefs();

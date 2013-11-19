@@ -35,6 +35,7 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
 #include "components/autofill/core/browser/test_autofill_manager_delegate.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
@@ -75,13 +76,8 @@ class TestPersonalDataManager : public PersonalDataManager {
     CreateTestCreditCards(&credit_cards_);
   }
 
-  void SetBrowserContext(content::BrowserContext* context) {
-    set_browser_context(context);
-  }
-
-  void SetPrefService(PrefService* pref_service) {
-    set_pref_service(pref_service);
-  }
+  using PersonalDataManager::set_database;
+  using PersonalDataManager::set_pref_service;
 
   // Factory method for keyed service.  PersonalDataManager is NULL for testing.
   static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
@@ -637,16 +633,15 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     autofill::PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
         profile(), TestPersonalDataManager::Build);
 
-
     autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents());
 
-    personal_data_.SetBrowserContext(profile());
-    personal_data_.SetPrefService(profile()->GetPrefs());
+    autofill::TabAutofillManagerDelegate* manager_delegate =
+        autofill::TabAutofillManagerDelegate::FromWebContents(web_contents());
+    personal_data_.set_database(manager_delegate->GetDatabase());
+    personal_data_.set_pref_service(profile()->GetPrefs());
     autofill_driver_.reset(new MockAutofillDriver(web_contents()));
     autofill_manager_.reset(new TestAutofillManager(
-        autofill_driver_.get(),
-        autofill::TabAutofillManagerDelegate::FromWebContents(web_contents()),
-        &personal_data_));
+        autofill_driver_.get(), manager_delegate, &personal_data_));
 
     external_delegate_.reset(new TestAutofillExternalDelegate(
         web_contents(),
@@ -664,9 +659,9 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     autofill_driver_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
 
-    // Remove the BrowserContext so TestPersonalDataManager does not need to
-    // care about removing self as an observer in destruction.
-    personal_data_.SetBrowserContext(NULL);
+    // Remove the AutofillWebDataService so TestPersonalDataManager does not
+    // need to care about removing self as an observer in destruction.
+    personal_data_.set_database(scoped_refptr<AutofillWebDataService>(NULL));
   }
 
   void GetAutofillSuggestions(int query_id,

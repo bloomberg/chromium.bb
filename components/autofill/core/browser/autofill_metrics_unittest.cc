@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/forms_seen_state.h"
@@ -94,13 +95,8 @@ class TestPersonalDataManager : public PersonalDataManager {
     CreateTestAutofillProfiles(&web_profiles_);
   }
 
-  void SetBrowserContext(content::BrowserContext* context) {
-    set_browser_context(context);
-  }
-
-  void SetPrefService(PrefService* pref_service) {
-    set_pref_service(pref_service);
-  }
+  using PersonalDataManager::set_database;
+  using PersonalDataManager::set_pref_service;
 
   // Overridden to avoid a trip to the database. This should be a no-op except
   // for the side-effect of logging the profile count.
@@ -288,15 +284,15 @@ void AutofillMetricsTest::SetUp() {
   PersonalDataManagerFactory::GetInstance()->SetTestingFactory(profile(), NULL);
 
   TabAutofillManagerDelegate::CreateForWebContents(web_contents());
+  autofill::TabAutofillManagerDelegate* manager_delegate =
+      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents());
 
   personal_data_.reset(new TestPersonalDataManager());
-  personal_data_->SetBrowserContext(profile());
-  personal_data_->SetPrefService(profile()->GetPrefs());
+  personal_data_->set_database(manager_delegate->GetDatabase());
+  personal_data_->set_pref_service(profile()->GetPrefs());
   autofill_driver_.reset(new TestAutofillDriver(web_contents()));
   autofill_manager_.reset(new TestAutofillManager(
-      autofill_driver_.get(),
-      TabAutofillManagerDelegate::FromWebContents(web_contents()),
-      personal_data_.get()));
+      autofill_driver_.get(), manager_delegate, personal_data_.get()));
 
   external_delegate_.reset(new AutofillExternalDelegate(
       web_contents(),
@@ -1009,7 +1005,9 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   personal_data_->set_autofill_enabled(true);
   EXPECT_CALL(*personal_data_->metric_logger(),
               LogIsAutofillEnabledAtStartup(true)).Times(1);
-  personal_data_->Init(profile(),
+  autofill::TabAutofillManagerDelegate* manager_delegate =
+      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents());
+  personal_data_->Init(manager_delegate->GetDatabase(),
                        profile()->GetPrefs(),
                        profile()->IsOffTheRecord());
 }
@@ -1019,7 +1017,9 @@ TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
   personal_data_->set_autofill_enabled(false);
   EXPECT_CALL(*personal_data_->metric_logger(),
               LogIsAutofillEnabledAtStartup(false)).Times(1);
-  personal_data_->Init(profile(),
+  autofill::TabAutofillManagerDelegate* manager_delegate =
+      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents());
+  personal_data_->Init(manager_delegate->GetDatabase(),
                        profile()->GetPrefs(),
                        profile()->IsOffTheRecord());
 }

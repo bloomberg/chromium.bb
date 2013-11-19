@@ -58,6 +58,8 @@ class AwAutofillManagerDelegate
 
   // AutofillManagerDelegate implementation.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() OVERRIDE;
+  virtual scoped_refptr<autofill::AutofillWebDataService>
+      GetDatabase() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual void HideRequestAutocompleteDialog() OVERRIDE;
   virtual void ShowAutofillSettings() OVERRIDE;

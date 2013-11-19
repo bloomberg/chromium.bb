@@ -17,8 +17,11 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/webdata/common/web_data_service_base.h"
+#include "components/webdata/common/web_database_service.h"
 #include "components/webdata/encryptor/encryptor.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -63,6 +66,22 @@ class PersonalDataManagerTest : public testing::Test {
   virtual void SetUp() {
     db_thread_.Start();
 
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
+    web_database_ = new WebDatabaseService(
+        path,
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
+    web_database_->AddTable(
+        scoped_ptr<WebDatabaseTable>(new AutofillTable("en-US")));
+    web_database_->LoadDatabase();
+    autofill_database_service_ = new AutofillWebDataService(
+        web_database_,
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+        WebDataServiceBase::ProfileErrorCallback());
+    autofill_database_service_->Init();
+
     profile_.reset(new TestingProfile);
     profile_->CreateWebDataService();
 
@@ -74,6 +93,11 @@ class PersonalDataManagerTest : public testing::Test {
     // Destruction order is imposed explicitly here.
     personal_data_.reset(NULL);
     profile_.reset(NULL);
+
+    autofill_database_service_->ShutdownOnUIThread();
+    web_database_->ShutdownDatabase();
+    autofill_database_service_ = NULL;
+    web_database_ = NULL;
 
     // Schedule another task on the DB thread to notify us that it's safe to
     // stop the thread.
@@ -89,9 +113,10 @@ class PersonalDataManagerTest : public testing::Test {
 
   void ResetPersonalDataManager() {
     personal_data_.reset(new PersonalDataManager("en-US"));
-    personal_data_->Init(profile_.get(),
-                         profile_->GetPrefs(),
-                         profile_->IsOffTheRecord());
+    personal_data_->Init(
+        scoped_refptr<AutofillWebDataService>(autofill_database_service_),
+        profile_->GetPrefs(),
+        profile_->IsOffTheRecord());
     personal_data_->AddObserver(&personal_data_observer_);
 
     // Verify that the web database has been updated and the notification sent.
@@ -110,6 +135,9 @@ class PersonalDataManagerTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   scoped_ptr<TestingProfile> profile_;
+  scoped_refptr<AutofillWebDataService> autofill_database_service_;
+  scoped_refptr<WebDatabaseService> web_database_;
+  base::ScopedTempDir temp_dir_;
   scoped_ptr<PersonalDataManager> personal_data_;
   PersonalDataLoadedObserverMock personal_data_observer_;
 };
@@ -535,10 +563,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   profile_pointers.push_back(&profile2);
   AutofillProfile::AdjustInferredLabels(&profile_pointers);
 
-  scoped_refptr<AutofillWebDataService> wds =
-      AutofillWebDataService::FromBrowserContext(profile_.get());
-  ASSERT_TRUE(wds.get());
-  wds->AddAutofillProfile(profile2);
+  autofill_database_service_->AddAutofillProfile(profile2);
 
   personal_data_->Refresh();
 
@@ -553,8 +578,8 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   EXPECT_EQ(profile1, *results2[1]);
   EXPECT_EQ(profile2, *results2[2]);
 
-  wds->RemoveAutofillProfile(profile1.guid());
-  wds->RemoveAutofillProfile(profile2.guid());
+  autofill_database_service_->RemoveAutofillProfile(profile1.guid());
+  autofill_database_service_->RemoveAutofillProfile(profile2.guid());
 
   // Before telling the PDM to refresh, simulate an edit to one of the deleted
   // profiles via a SetProfile update (this would happen if the Autofill window

@@ -13,22 +13,19 @@
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
 class PrefService;
 class RemoveAutofillTester;
 
-namespace content {
-class BrowserContext;
-}
-
 namespace autofill {
 class AutofillInteractiveTest;
-class AutofillMetrics;
 class AutofillTest;
 class FormStructure;
 class PersonalDataManagerObserver;
@@ -55,11 +52,11 @@ class PersonalDataManager : public WebDataServiceConsumer,
   explicit PersonalDataManager(const std::string& app_locale);
   virtual ~PersonalDataManager();
 
-  // Kicks off asynchronous loading of profiles and credit cards. |context| and
-  // |pref_service| must outlive this instance. |is_off_the_record| informs
+  // Kicks off asynchronous loading of profiles and credit cards.
+  // |pref_service| must outlive this instance.  |is_off_the_record| informs
   // this instance whether the user is currently operating in an off-the-record
   // context.
-  void Init(content::BrowserContext* context,
+  void Init(scoped_refptr<AutofillWebDataService> database,
             PrefService* pref_service,
             bool is_off_the_record);
 
@@ -259,13 +256,22 @@ class PersonalDataManager : public WebDataServiceConsumer,
   virtual bool IsAutofillEnabled() const;
 
   // For tests.
-  const AutofillMetrics* metric_logger() const;
-  void set_metric_logger(const AutofillMetrics* metric_logger);
-  void set_browser_context(content::BrowserContext* context);
-  void set_pref_service(PrefService* pref_service);
+  const AutofillMetrics* metric_logger() const { return metric_logger_.get(); }
 
-  // The browser context this PersonalDataManager is in.
-  content::BrowserContext* browser_context_;
+  void set_database(scoped_refptr<AutofillWebDataService> database) {
+    database_ = database;
+  }
+
+  void set_metric_logger(const AutofillMetrics* metric_logger) {
+    metric_logger_.reset(metric_logger);
+  }
+
+  void set_pref_service(PrefService* pref_service) {
+    pref_service_ = pref_service;
+  }
+
+  // The backing database that this PersonalDataManager uses.
+  scoped_refptr<AutofillWebDataService> database_;
 
   // True if personal data has been loaded from the web database.
   bool is_data_loaded_;

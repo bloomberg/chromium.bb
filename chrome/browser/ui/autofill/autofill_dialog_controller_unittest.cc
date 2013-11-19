@@ -36,6 +36,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/user_prefs/user_prefs.h"
@@ -256,9 +257,10 @@ class TestAutofillDialogController
   }
 
   void Init(content::BrowserContext* browser_context) {
-    test_manager_.Init(browser_context,
-                       user_prefs::UserPrefs::Get(browser_context),
-                       browser_context->IsOffTheRecord());
+    test_manager_.Init(
+        AutofillWebDataService::FromBrowserContext(browser_context),
+        user_prefs::UserPrefs::Get(browser_context),
+        browser_context->IsOffTheRecord());
   }
 
   TestAutofillDialogView* GetView() {

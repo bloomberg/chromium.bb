@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 namespace autofill {
@@ -33,9 +34,10 @@ PersonalDataManagerServiceImpl::PersonalDataManagerServiceImpl(
     Profile* profile) {
   personal_data_manager_.reset(new PersonalDataManager(
       g_browser_process->GetApplicationLocale()));
-  personal_data_manager_->Init(profile,
-                               profile->GetPrefs(),
-                               profile->IsOffTheRecord());
+  personal_data_manager_->Init(
+      AutofillWebDataService::FromBrowserContext(profile),
+      profile->GetPrefs(),
+      profile->IsOffTheRecord());
 }
 
 PersonalDataManagerServiceImpl::~PersonalDataManagerServiceImpl() {}

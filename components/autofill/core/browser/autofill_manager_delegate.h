@@ -25,6 +25,7 @@ namespace autofill {
 
 class AutofillMetrics;
 class AutofillPopupDelegate;
+class AutofillWebDataService;
 class CreditCard;
 class FormStructure;
 class PasswordGenerator;
@@ -46,6 +47,9 @@ class AutofillManagerDelegate {
 
   // Gets the PersonalDataManager instance associated with the delegate.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
+
+  // Gets the AutofillWebDataService instance associated with the delegate.
+  virtual scoped_refptr<AutofillWebDataService> GetDatabase() = 0;
 
   // Gets the preferences associated with the delegate.
   virtual PrefService* GetPrefs() = 0;
