@@ -121,9 +121,9 @@ bool V8TestActiveDOMObjectInterface::hasInstanceInAnyWorld(v8::Handle<v8::Value>
         || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, WorkerWorld);
 }
 
-ActiveDOMObject* V8TestActiveDOMObjectInterface::toActiveDOMObject(v8::Handle<v8::Object> object)
+ActiveDOMObject* V8TestActiveDOMObjectInterface::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
 {
-    return toNative(object);
+    return toNative(wrapper);
 }
 
 v8::Handle<v8::Object> V8TestActiveDOMObjectInterface::createWrapper(PassRefPtr<TestActiveDOMObjectInterface> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

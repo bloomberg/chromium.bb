@@ -339,9 +339,9 @@ void {{v8_class_name}}::installPerContextEnabledMethods(v8::Handle<v8::Object> p
 {##############################################################################}
 {% block to_active_dom_object %}
 {% if is_active_dom_object %}
-ActiveDOMObject* {{v8_class_name}}::toActiveDOMObject(v8::Handle<v8::Object> object)
+ActiveDOMObject* {{v8_class_name}}::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
 {
-    return toNative(object);
+    return toNative(wrapper);
 }
 
 {% endif %}

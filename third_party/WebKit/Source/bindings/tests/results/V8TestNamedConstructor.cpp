@@ -186,9 +186,9 @@ bool V8TestNamedConstructor::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue
         || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, WorkerWorld);
 }
 
-ActiveDOMObject* V8TestNamedConstructor::toActiveDOMObject(v8::Handle<v8::Object> object)
+ActiveDOMObject* V8TestNamedConstructor::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
 {
-    return toNative(object);
+    return toNative(wrapper);
 }
 
 v8::Handle<v8::Object> V8TestNamedConstructor::createWrapper(PassRefPtr<TestNamedConstructor> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

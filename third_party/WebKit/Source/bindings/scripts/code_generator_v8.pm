@@ -4671,9 +4671,9 @@ END
 
     if (InheritsExtendedAttribute($interface, "ActiveDOMObject")) {
         $implementation{nameSpaceWebCore}->add(<<END);
-ActiveDOMObject* ${v8ClassName}::toActiveDOMObject(v8::Handle<v8::Object> object)
+ActiveDOMObject* ${v8ClassName}::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
 {
-    return toNative(object);
+    return toNative(wrapper);
 }
 
 END
