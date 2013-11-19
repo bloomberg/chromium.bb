@@ -375,7 +375,7 @@ class SortHelper {
 }
 
 // Table view delegate method.
-- (void)tableViewSelectionIsChanging:(NSNotification*)aNotification {
+- (void)tableViewSelectionDidChange:(NSNotification*)aNotification {
   [self adjustSelectionAndEndProcessButton];
 }
 
