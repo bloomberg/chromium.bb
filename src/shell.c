@@ -615,6 +615,7 @@ create_focus_surface(struct weston_compositor *ec,
 	surface->configure_private = fsurf;
 
 	fsurf->view = weston_view_create (surface);
+	fsurf->view->output = output;
 
 	weston_view_configure(fsurf->view, output->x, output->y,
 				 output->width, output->height);
