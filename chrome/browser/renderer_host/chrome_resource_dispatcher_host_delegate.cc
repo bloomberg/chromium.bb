@@ -53,7 +53,6 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
-#include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request.h"
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -575,22 +574,6 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     content::ResourceResponse* response,
     IPC::Sender* sender) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-
-  if (request->url().SchemeIsSecure()) {
-    const net::URLRequestContext* context = request->context();
-    net::TransportSecurityState* state = context->transport_security_state();
-    if (state) {
-      net::TransportSecurityState::DomainState domain_state;
-      bool has_sni = net::SSLConfigService::IsSNIAvailable(
-          context->ssl_config_service());
-      if (state->GetDomainState(request->url().host(), has_sni,
-                                &domain_state) &&
-          domain_state.ShouldUpgradeToSSL()) {
-        sender->Send(new ChromeViewMsg_AddStrictSecurityHost(
-            info->GetRouteID(), request->url().host()));
-      }
-    }
-  }
 
   // See if the response contains the X-Auto-Login header.  If so, this was
   // a request for a login page, and the server is allowing the browser to

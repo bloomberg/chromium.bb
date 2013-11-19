@@ -311,8 +311,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_RequestThumbnailForContextNode,
                         OnRequestThumbnailForContextNode)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_GetFPS, OnGetFPS)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_AddStrictSecurityHost,
-                        OnAddStrictSecurityHost)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_NPAPINotSupported, OnNPAPINotSupported)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_UpdateTopControlsState,
@@ -373,11 +371,6 @@ void ChromeRenderViewObserver::OnSetAllowDisplayingInsecureContent(bool allow) {
 void ChromeRenderViewObserver::OnSetAllowRunningInsecureContent(bool allow) {
   allow_running_insecure_content_ = allow;
   OnSetAllowDisplayingInsecureContent(allow);
-}
-
-void ChromeRenderViewObserver::OnAddStrictSecurityHost(
-    const std::string& host) {
-  strict_security_hosts_.insert(host);
 }
 
 void ChromeRenderViewObserver::OnNPAPINotSupported() {
@@ -991,10 +984,6 @@ ExternalHostBindings* ChromeRenderViewObserver::GetExternalHostBindings() {
         render_view(), routing_id()));
   }
   return external_host_bindings_.get();
-}
-
-bool ChromeRenderViewObserver::IsStrictSecurityHost(const std::string& host) {
-  return (strict_security_hosts_.find(host) != strict_security_hosts_.end());
 }
 
 const extensions::Extension* ChromeRenderViewObserver::GetExtension(

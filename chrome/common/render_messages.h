@@ -372,10 +372,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowDisplayingInsecureContent,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowRunningInsecureContent,
                     bool /* allowed */)
 
-// Tells renderer to always enforce mixed content blocking for this host.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_AddStrictSecurityHost,
-                    std::string /* host */)
-
 // Sent when the profile changes the kSafeBrowsingEnabled preference.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetClientSidePhishingDetection,
                     bool /* enable_phishing_detection */)

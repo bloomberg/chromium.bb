@@ -141,7 +141,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   void OnRequestThumbnailForContextNode(int thumbnail_min_area_pixels,
                                         gfx::Size thumbnail_max_size_pixels);
   void OnGetFPS();
-  void OnAddStrictSecurityHost(const std::string& host);
   void OnNPAPINotSupported();
 #if defined(OS_ANDROID)
   void OnUpdateTopControlsState(content::TopControlsState constraints,
@@ -199,7 +198,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // Insecure content may be permitted for the duration of this render view.
   bool allow_displaying_insecure_content_;
   bool allow_running_insecure_content_;
-  std::set<std::string> strict_security_hosts_;
 
   // External host exposed through automation controller.
   scoped_ptr<ExternalHostBindings> external_host_bindings_;
