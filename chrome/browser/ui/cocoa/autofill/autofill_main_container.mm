@@ -35,6 +35,7 @@ const CGFloat kButtonVerticalPadding = 20.0;
 @interface AutofillMainContainer (Private)
 - (void)buildWindowButtons;
 - (void)layoutButtons;
+- (void)updateButtons;
 - (NSSize)preferredLegalDocumentSizeForWidth:(CGFloat)width;
 @end
 
@@ -57,8 +58,6 @@ const CGFloat kButtonVerticalPadding = 20.0;
   [view setAutoresizesSubviews:YES];
   [view setSubviews:@[buttonContainer_]];
   [self setView:view];
-
-  [self layoutButtons];
 
   // Set up Wallet icon.
   buttonStripImage_.reset([[NSImageView alloc] initWithFrame:NSZeroRect]);
@@ -210,7 +209,6 @@ const CGFloat kButtonVerticalPadding = 20.0;
 
   base::scoped_nsobject<NSButton> button(
       [[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
-  [button setTitle:l10n_util::GetNSStringWithFixup(IDS_CANCEL)];
   [button setKeyEquivalent:kKeyEquivalentEscape];
   [button setTarget:target_];
   [button setAction:@selector(cancel:)];
@@ -220,13 +218,11 @@ const CGFloat kButtonVerticalPadding = 20.0;
   CGFloat nextX = NSMaxX([button frame]) + autofill::kButtonGap;
   button.reset([[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
   [button setFrameOrigin:NSMakePoint(nextX, 0)];
-  [button  setTitle:l10n_util::GetNSStringWithFixup(
-       IDS_AUTOFILL_DIALOG_SUBMIT_BUTTON)];
   [button setKeyEquivalent:kKeyEquivalentReturn];
   [button setTarget:target_];
   [button setAction:@selector(accept:)];
-  [button sizeToFit];
   [buttonContainer_ addSubview:button];
+  [self updateButtons];
 
   NSRect frame = NSMakeRect(
       -NSMaxX([button frame]) - chrome_style::kHorizontalPadding, 0,
@@ -238,6 +234,16 @@ const CGFloat kButtonVerticalPadding = 20.0;
   base::scoped_nsobject<GTMUILocalizerAndLayoutTweaker> layoutTweaker(
       [[GTMUILocalizerAndLayoutTweaker alloc] init]);
   [layoutTweaker tweakUI:buttonContainer_];
+}
+
+- (void)updateButtons {
+  NSButton* button = base::mac::ObjCCastStrict<NSButton>(
+      [[buttonContainer_ subviews] objectAtIndex:0]);
+  [button setTitle:base::SysUTF16ToNSString(delegate_->CancelButtonText())];
+  button = base::mac::ObjCCastStrict<NSButton>(
+    [[buttonContainer_ subviews] objectAtIndex:1]);
+  [button setTitle:base::SysUTF16ToNSString(delegate_->ConfirmButtonText())];
+  [self layoutButtons];
 }
 
 // Compute the preferred size for the legal documents text, given a width.
@@ -273,6 +279,7 @@ const CGFloat kButtonVerticalPadding = 20.0;
 - (void)modelChanged {
   [self updateSaveInChrome];
   [self updateWalletIcon];
+  [self updateButtons];
   [detailsContainer_ modelChanged];
 }
 
