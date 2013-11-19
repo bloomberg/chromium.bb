@@ -174,7 +174,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
         return;
     }
     {% endif %}
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
+    throwTypeError(ExceptionMessages::failedToExecute("{{overloads.name}}", "{{interface_name}}", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 {% endmacro %}
 
