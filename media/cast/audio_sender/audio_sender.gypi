@@ -18,6 +18,7 @@
         'audio_sender.cc',
       ], # source
       'dependencies': [
+        '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/media/media.gyp:shared_memory_support',
         '<(DEPTH)/media/cast/rtcp/rtcp.gyp:cast_rtcp',

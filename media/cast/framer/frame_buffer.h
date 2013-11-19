@@ -32,6 +32,7 @@ class FrameBuffer {
                             uint32* rtp_timestamp) const;
 
   bool is_key_frame() const { return is_key_frame_; }
+
   uint32 last_referenced_frame_id() const { return last_referenced_frame_id_; }
 
  private:

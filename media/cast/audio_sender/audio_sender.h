@@ -17,6 +17,10 @@
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtp_sender/rtp_sender.h"
 
+namespace crypto {
+  class Encryptor;
+}
+
 namespace media {
 class AudioBus;
 }
@@ -70,6 +74,11 @@ class AudioSender : public base::NonThreadSafe,
   void ResendPackets(
       const MissingFramesAndPacketsMap& missing_frames_and_packets);
 
+  // Caller must allocate the destination |encrypted_frame|. The data member
+  // will be resized to hold the encrypted size.
+  bool EncryptAudioFrame(const EncodedAudioFrame& audio_frame,
+                         EncodedAudioFrame* encrypted_frame);
+
   void ScheduleNextRtcpReport();
   void SendRtcpReport();
 
@@ -84,6 +93,8 @@ class AudioSender : public base::NonThreadSafe,
   scoped_ptr<LocalRtcpAudioSenderFeedback> rtcp_feedback_;
   Rtcp rtcp_;
   bool initialized_;
+  scoped_ptr<crypto::Encryptor> encryptor_;
+  std::string iv_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioSender);
 };

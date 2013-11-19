@@ -82,7 +82,7 @@ void RtpPacketizer::Cast(bool is_key,
                          uint32 frame_id,
                          uint32 reference_frame_id,
                          uint32 timestamp,
-                         Packet data) {
+                         const std::string& data) {
   uint16 rtp_header_length = kCommonRtpHeaderLength + kCastRtpHeaderLength;
   uint16 max_length = config_.max_payload_length - rtp_header_length - 1;
 
@@ -94,7 +94,7 @@ void RtpPacketizer::Cast(bool is_key,
   PacketList packets;
 
   size_t remaining_size = data.size();
-  Packet::iterator data_iter = data.begin();
+  std::string::const_iterator data_iter = data.begin();
   while (remaining_size > 0) {
     Packet packet;
 

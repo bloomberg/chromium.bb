@@ -48,6 +48,9 @@ const size_t kMinLengthOfRtcp = 8;
 // Basic RTP header + cast header.
 const size_t kMinLengthOfRtp = 12 + 6;
 
+const size_t kAesBlockSize = 16;
+const size_t kAesKeySize = 16;
+
 // Each uint16 represents one packet id within a cast frame.
 typedef std::set<uint16> PacketIdSet;
 // Each uint8 represents one cast frame.
@@ -166,6 +169,22 @@ class FrameIdWrapHelper {
   bool can_we_wrap_;
   uint32 frame_id_wrap_count_;
 };
+
+inline std::string GetAesNonce(uint32 frame_id, const std::string& iv_mask) {
+  std::string aes_nonce(kAesBlockSize, 0);
+
+  // Serializing frame_id in big-endian order (aes_nonce[8] is the most
+  // significant byte of frame_id).
+  aes_nonce[11] = frame_id & 0xff;
+  aes_nonce[10] = (frame_id >> 8) & 0xff;
+  aes_nonce[9] = (frame_id >> 16) & 0xff;
+  aes_nonce[8] = (frame_id >> 24) & 0xff;
+
+  for (size_t i = 0; i < kAesBlockSize; ++i) {
+    aes_nonce[i] ^= iv_mask[i];
+  }
+  return aes_nonce;
+}
 
 }  // namespace cast
 }  // namespace media

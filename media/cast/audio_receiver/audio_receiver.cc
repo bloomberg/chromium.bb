@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "crypto/encryptor.h"
+#include "crypto/symmetric_key.h"
 #include "media/cast/audio_receiver/audio_decoder.h"
 #include "media/cast/framer/framer.h"
 #include "media/cast/rtcp/rtcp.h"
@@ -97,6 +99,18 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
   } else {
     audio_decoder_ = new AudioDecoder(audio_config);
   }
+  if (audio_config.aes_iv_mask.size() == kAesKeySize &&
+      audio_config.aes_key.size() == kAesKeySize) {
+    iv_mask_ = audio_config.aes_iv_mask;
+    crypto::SymmetricKey* key = crypto::SymmetricKey::Import(
+        crypto::SymmetricKey::AES, audio_config.aes_key);
+    decryptor_.reset(new crypto::Encryptor());
+    decryptor_->Init(key, crypto::Encryptor::CTR, std::string());
+  } else if (audio_config.aes_iv_mask.size() != 0 ||
+             audio_config.aes_key.size() != 0) {
+    DCHECK(false) << "Invalid crypto configuration";
+  }
+
   rtp_receiver_.reset(new RtpReceiver(cast_environment->Clock(),
                                       &audio_config,
                                       NULL,
@@ -138,8 +152,23 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
 
   if (audio_decoder_) {
     DCHECK(!audio_buffer_) << "Invalid internal state";
-    audio_decoder_->IncomingParsedRtpPacket(payload_data, payload_size,
-                                            rtp_header);
+    std::string plaintext(reinterpret_cast<const char*>(payload_data),
+                          payload_size);
+    if (decryptor_) {
+      plaintext.clear();
+      if (!decryptor_->SetCounter(GetAesNonce(rtp_header.frame_id, iv_mask_))) {
+        NOTREACHED() << "Failed to set counter";
+        return;
+      }
+      if (!decryptor_->Decrypt(base::StringPiece(reinterpret_cast<const char*>(
+          payload_data), payload_size), &plaintext)) {
+        VLOG(0) << "Decryption error";
+        return;
+      }
+    }
+    audio_decoder_->IncomingParsedRtpPacket(
+        reinterpret_cast<const uint8*>(plaintext.data()), plaintext.size(),
+        rtp_header);
     return;
   }
   DCHECK(audio_buffer_) << "Invalid internal state";
@@ -214,6 +243,12 @@ void AudioReceiver::PlayoutTimeout() {
     VLOG(1) << "Failed to retrieved a complete frame at this point in time";
     return;
   }
+
+  if (decryptor_ && !DecryptAudioFrame(&encoded_frame)) {
+    // Logging already done.
+    return;
+  }
+
   if (PostEncodedAudioFrame(queued_encoded_callbacks_.front(), rtp_timestamp,
                             next_frame, &encoded_frame)) {
     // Call succeed remove callback from list.
@@ -234,6 +269,11 @@ void AudioReceiver::GetEncodedAudioFrame(
                                            &rtp_timestamp, &next_frame)) {
     // We have no audio frames. Wait for new packet(s).
     VLOG(1) << "Wait for more audio packets in frame";
+    queued_encoded_callbacks_.push_back(callback);
+    return;
+  }
+  if (decryptor_ && !DecryptAudioFrame(&encoded_frame)) {
+    // Logging already done.
     queued_encoded_callbacks_.push_back(callback);
     return;
   }
@@ -322,6 +362,26 @@ base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,
                                          &rtp_timestamp_in_ticks) ?
     rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_ :
     now;
+}
+
+bool AudioReceiver::DecryptAudioFrame(
+    scoped_ptr<EncodedAudioFrame>* audio_frame) {
+  DCHECK(decryptor_) << "Invalid state";
+
+  if (!decryptor_->SetCounter(GetAesNonce((*audio_frame)->frame_id,
+                                          iv_mask_))) {
+    NOTREACHED() << "Failed to set counter";
+    return false;
+  }
+  std::string decrypted_audio_data;
+  if (!decryptor_->Decrypt((*audio_frame)->data, &decrypted_audio_data)) {
+    VLOG(0) << "Decryption error";
+    // Give up on this frame, release it from jitter buffer.
+    audio_buffer_->ReleaseFrame((*audio_frame)->frame_id);
+    return false;
+  }
+  (*audio_frame)->data.swap(decrypted_audio_data);
+  return true;
 }
 
 void AudioReceiver::ScheduleNextRtcpReport() {

@@ -53,6 +53,9 @@ struct AudioSenderConfig {
   int channels;
   int bitrate;  // Set to <= 0 for "auto variable bitrate" (libopus knows best).
   AudioCodec codec;
+
+  std::string aes_key;  // Binary string of size kAesKeySize.
+  std::string aes_iv_mask;  // Binary string of size kAesKeySize.
 };
 
 struct VideoSenderConfig {
@@ -83,6 +86,9 @@ struct VideoSenderConfig {
   int max_number_of_video_buffers_used;  // Max value depend on codec.
   VideoCodec codec;
   int number_of_cores;
+
+  std::string aes_key;  // Binary string of size kAesKeySize.
+  std::string aes_iv_mask;  // Binary string of size kAesKeySize.
 };
 
 struct AudioReceiverConfig {
@@ -103,6 +109,9 @@ struct AudioReceiverConfig {
   int frequency;
   int channels;
   AudioCodec codec;
+
+  std::string aes_key;  // Binary string of size kAesKeySize.
+  std::string aes_iv_mask;  // Binary string of size kAesKeySize.
 };
 
 struct VideoReceiverConfig {
@@ -126,6 +135,9 @@ struct VideoReceiverConfig {
   // from catching up after a glitch.
   bool decoder_faster_than_max_frame_rate;
   VideoCodec codec;
+
+  std::string aes_key;  // Binary string of size kAesKeySize.
+  std::string aes_iv_mask;  // Binary string of size kAesKeySize.
 };
 
 // DEPRECATED: Do not use in new code.  Please migrate existing code to use
@@ -154,7 +166,7 @@ struct EncodedVideoFrame {
   bool key_frame;
   uint32 frame_id;
   uint32 last_referenced_frame_id;
-  std::vector<uint8> data;
+  std::string data;
 };
 
 // DEPRECATED: Do not use in new code.  Please migrate existing code to use
@@ -176,10 +188,9 @@ struct EncodedAudioFrame {
   uint32 frame_id;  // Needed to release the frame.
   int samples;  // Needed send side to advance the RTP timestamp.
                 // Not used receive side.
-  std::vector<uint8> data;
-
   // Support for max sampling rate of 48KHz, 2 channels, 100 ms duration.
   static const int kMaxNumberOfSamples = 48 * 2 * 100;
+  std::string data;
 };
 
 typedef std::vector<uint8> Packet;

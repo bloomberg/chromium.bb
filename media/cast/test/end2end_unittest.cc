@@ -22,6 +22,7 @@
 #include "media/cast/cast_receiver.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/test/audio_utility.h"
+#include "media/cast/test/crypto_utility.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "media/cast/test/video_utility.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -226,8 +227,9 @@ class TestReceiverAudioCallback :
     size_t number_of_samples = audio_frame->data.size() / 2;
 
     for (size_t i = 0; i < number_of_samples; ++i) {
-      uint16 sample = (audio_frame->data[1 + i * sizeof(uint16)]) +
-            (static_cast<uint16>(audio_frame->data[i * sizeof(uint16)]) << 8);
+      uint16 sample =
+          static_cast<uint8>(audio_frame->data[1 + i * sizeof(uint16)]) +
+          (static_cast<uint16>(audio_frame->data[i * sizeof(uint16)]) << 8);
       output_audio_samples.push_back(static_cast<int16>(sample));
     }
 
@@ -781,6 +783,93 @@ TEST_F(End2EndTest, ResetReferenceFrameId) {
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
   EXPECT_EQ(frames_counter,
             test_receiver_video_callback_->number_times_called());
+}
+
+TEST_F(End2EndTest, CryptoVideo) {
+  SetupConfig(kPcm16, 32000, false, 1);
+
+  video_sender_config_.aes_iv_mask =
+      ConvertFromBase16String("1234567890abcdeffedcba0987654321");
+  video_sender_config_.aes_key =
+      ConvertFromBase16String("deadbeefcafeb0b0b0b0cafedeadbeef");
+
+  video_receiver_config_.aes_iv_mask = video_sender_config_.aes_iv_mask;
+  video_receiver_config_.aes_key = video_sender_config_.aes_key;
+
+  Create();
+
+  int frames_counter = 0;
+  for (; frames_counter < 20; ++frames_counter) {
+    const base::TimeTicks send_time = testing_clock_.NowTicks();
+
+    SendVideoFrame(frames_counter, send_time);
+
+    test_receiver_video_callback_->AddExpectedResult(frames_counter,
+        video_sender_config_.width, video_sender_config_.height, send_time);
+
+    // GetRawVideoFrame will not return the frame until we are close to the
+    // time in which we should render the frame.
+    frame_receiver_->GetRawVideoFrame(
+        base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
+                   test_receiver_video_callback_));
+    RunTasks(kFrameTimerMs);
+  }
+  RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
+  EXPECT_EQ(frames_counter,
+            test_receiver_video_callback_->number_times_called());
+}
+
+TEST_F(End2EndTest, CryptoAudio) {
+  SetupConfig(kPcm16, 32000, false, 1);
+
+  audio_sender_config_.aes_iv_mask =
+     ConvertFromBase16String("abcdeffedcba12345678900987654321");
+  audio_sender_config_.aes_key =
+     ConvertFromBase16String("deadbeefcafecafedeadbeefb0b0b0b0");
+
+  audio_receiver_config_.aes_iv_mask = audio_sender_config_.aes_iv_mask;
+  audio_receiver_config_.aes_key = audio_sender_config_.aes_key;
+
+  Create();
+
+  int frames_counter = 0;
+  for (; frames_counter < 20; ++frames_counter) {
+    int num_10ms_blocks = 2;
+
+    const base::TimeTicks send_time = testing_clock_.NowTicks();
+
+    scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
+        base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
+
+    if (frames_counter != 0) {
+      // Due to the re-sampler and NetEq in the webrtc AudioCodingModule the
+      // first samples will be 0 and then slowly ramp up to its real amplitude;
+      // ignore the first frame.
+      test_receiver_audio_callback_->AddExpectedResult(
+          ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
+          num_10ms_blocks, send_time);
+    }
+    AudioBus* const audio_bus_ptr = audio_bus.get();
+    frame_input_->InsertAudio(audio_bus_ptr, send_time,
+        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+
+    RunTasks(num_10ms_blocks * 10);
+
+    if (frames_counter == 0) {
+      frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
+          32000,
+          base::Bind(&TestReceiverAudioCallback::IgnoreAudioFrame,
+              test_receiver_audio_callback_));
+    } else {
+      frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
+          32000,
+          base::Bind(&TestReceiverAudioCallback::CheckPcmAudioFrame,
+              test_receiver_audio_callback_));
+    }
+  }
+  RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
+  EXPECT_EQ(frames_counter - 1,
+            test_receiver_audio_callback_->number_times_called());
 }
 
 // TODO(pwestin): Add repeatable packet loss test.

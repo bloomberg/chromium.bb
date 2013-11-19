@@ -8,8 +8,8 @@
       'target_name': 'cast_audio_receiver',
       'type': 'static_library',
       'include_dirs': [
-         '<(DEPTH)/',
-         '<(DEPTH)/third_party/',
+        '<(DEPTH)/',
+        '<(DEPTH)/third_party/',
         '<(DEPTH)/third_party/webrtc/',
       ],
       'sources': [
@@ -19,6 +19,7 @@
         'audio_receiver.cc',
       ], # source
       'dependencies': [
+        '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/media/cast/rtcp/rtcp.gyp:cast_rtcp',
         '<(DEPTH)/media/cast/rtp_receiver/rtp_receiver.gyp:*',
         '<(DEPTH)/third_party/webrtc/webrtc.gyp:webrtc',

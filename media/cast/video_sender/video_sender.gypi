@@ -21,6 +21,7 @@
         'video_sender.cc',
       ], # source
       'dependencies': [
+        '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/media/cast/rtcp/rtcp.gyp:*',
         '<(DEPTH)/media/cast/rtp_sender/rtp_sender.gyp:*',
         'congestion_control',

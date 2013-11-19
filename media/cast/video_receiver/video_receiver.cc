@@ -5,9 +5,12 @@
 #include "media/cast/video_receiver/video_receiver.h"
 
 #include <algorithm>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "crypto/encryptor.h"
+#include "crypto/symmetric_key.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/framer/framer.h"
 #include "media/cast/video_receiver/video_decoder.h"
@@ -102,6 +105,18 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
       video_config.max_frame_rate / 1000;
   DCHECK(max_unacked_frames) << "Invalid argument";
 
+  if (video_config.aes_iv_mask.size() == kAesKeySize &&
+      video_config.aes_key.size() == kAesKeySize) {
+    iv_mask_ = video_config.aes_iv_mask;
+    crypto::SymmetricKey* key = crypto::SymmetricKey::Import(
+        crypto::SymmetricKey::AES, video_config.aes_key);
+    decryptor_.reset(new crypto::Encryptor());
+    decryptor_->Init(key, crypto::Encryptor::CTR, std::string());
+  } else if (video_config.aes_iv_mask.size() != 0 ||
+             video_config.aes_key.size() != 0) {
+    DCHECK(false) << "Invalid crypto configuration";
+  }
+
   framer_.reset(new Framer(cast_environment->Clock(),
                            incoming_payload_feedback_.get(),
                            video_config.incoming_ssrc,
@@ -170,6 +185,26 @@ void VideoReceiver::DecodeVideoFrameThread(
   }
 }
 
+bool VideoReceiver::DecryptVideoFrame(
+    scoped_ptr<EncodedVideoFrame>* video_frame) {
+  DCHECK(decryptor_) << "Invalid state";
+
+  if (!decryptor_->SetCounter(GetAesNonce((*video_frame)->frame_id,
+                                          iv_mask_))) {
+    NOTREACHED() << "Failed to set counter";
+    return false;
+  }
+  std::string decrypted_video_data;
+  if (!decryptor_->Decrypt((*video_frame)->data, &decrypted_video_data)) {
+    VLOG(0) << "Decryption error";
+    // Give up on this frame, release it from jitter buffer.
+    framer_->ReleaseFrame((*video_frame)->frame_id);
+    return false;
+  }
+  (*video_frame)->data.swap(decrypted_video_data);
+  return true;
+}
+
 // Called from the main cast thread.
 void VideoReceiver::GetEncodedVideoFrame(
     const VideoFrameEncodedCallback& callback) {
@@ -184,6 +219,13 @@ void VideoReceiver::GetEncodedVideoFrame(
     queued_encoded_callbacks_.push_back(callback);
     return;
   }
+
+  if (decryptor_ && !DecryptVideoFrame(&encoded_frame)) {
+    // Logging already done.
+    queued_encoded_callbacks_.push_back(callback);
+    return;
+  }
+
   base::TimeTicks render_time;
   if (PullEncodedVideoFrame(rtp_timestamp, next_frame, &encoded_frame,
                             &render_time)) {
@@ -265,6 +307,11 @@ void VideoReceiver::PlayoutTimeout() {
   }
   VLOG(1) << "PlayoutTimeout retrieved frame "
           << static_cast<int>(encoded_frame->frame_id);
+
+  if (decryptor_ && !DecryptVideoFrame(&encoded_frame)) {
+    // Logging already done.
+    return;
+  }
 
   base::TimeTicks render_time;
   if (PullEncodedVideoFrame(rtp_timestamp, next_frame, &encoded_frame,

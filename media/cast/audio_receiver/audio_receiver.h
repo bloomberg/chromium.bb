@@ -19,6 +19,10 @@
 #include "media/cast/rtcp/rtcp.h"  // RtcpCastMessage
 #include "media/cast/rtp_common/rtp_defines.h"  // RtpCastHeader
 
+namespace crypto {
+  class Encryptor;
+}
+
 namespace media {
 namespace cast {
 
@@ -83,6 +87,10 @@ class AudioReceiver : public base::NonThreadSafe,
 
   void InitializeTimers();
 
+  // Decrypts the data within the |audio_frame| and replaces the data with the
+  // decrypted string.
+  bool DecryptAudioFrame(scoped_ptr<EncodedAudioFrame>* audio_frame);
+
   // Schedule the next RTCP report.
   void ScheduleNextRtcpReport();
 
@@ -111,6 +119,8 @@ class AudioReceiver : public base::NonThreadSafe,
   base::TimeDelta time_offset_;
   base::TimeTicks time_first_incoming_packet_;
   uint32 first_incoming_rtp_timestamp_;
+  scoped_ptr<crypto::Encryptor> decryptor_;
+  std::string iv_mask_;
 
   std::list<AudioFrameEncodedCallback> queued_encoded_callbacks_;
 };

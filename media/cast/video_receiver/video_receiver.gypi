@@ -19,6 +19,7 @@
         'video_receiver.cc',
       ], # source
       'dependencies': [
+        '<(DEPTH)/crypto/crypto.gyp:crypto',
         'framer/framer.gyp:cast_framer',
         'video_receiver/codecs/vp8/vp8_decoder.gyp:cast_vp8_decoder',
         'rtp_receiver/rtp_receiver.gyp:cast_rtp_receiver',

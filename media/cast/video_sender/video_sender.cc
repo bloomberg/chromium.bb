@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "crypto/encryptor.h"
+#include "crypto/symmetric_key.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/pacing/paced_sender.h"
 #include "media/cast/video_sender/video_encoder.h"
@@ -87,6 +89,19 @@ VideoSender::VideoSender(
         max_unacked_frames_);
     video_encoder_controller_ = video_encoder_.get();
   }
+
+  if (video_config.aes_iv_mask.size() == kAesKeySize &&
+      video_config.aes_key.size() == kAesKeySize) {
+    iv_mask_ = video_config.aes_iv_mask;
+    crypto::SymmetricKey* key = crypto::SymmetricKey::Import(
+        crypto::SymmetricKey::AES, video_config.aes_key);
+    encryptor_.reset(new crypto::Encryptor());
+    encryptor_->Init(key, crypto::Encryptor::CTR, std::string());
+  } else if (video_config.aes_iv_mask.size() != 0 ||
+             video_config.aes_key.size() != 0) {
+    DCHECK(false) << "Invalid crypto configuration";
+  }
+
   rtcp_.reset(new Rtcp(
       cast_environment_->Clock(),
       rtcp_feedback_.get(),
@@ -143,11 +158,44 @@ void VideoSender::SendEncodedVideoFrameMainThread(
   SendEncodedVideoFrame(video_frame.get(), capture_time);
 }
 
+bool VideoSender::EncryptVideoFrame(const EncodedVideoFrame& video_frame,
+                                    EncodedVideoFrame* encrypted_frame) {
+  DCHECK(encryptor_) << "Invalid state";
+
+  if (!encryptor_->SetCounter(GetAesNonce(video_frame.frame_id, iv_mask_))) {
+    NOTREACHED() << "Failed to set counter";
+    return false;
+  }
+
+  if (!encryptor_->Encrypt(video_frame.data, &encrypted_frame->data)) {
+    NOTREACHED() << "Encrypt error";
+    return false;
+  }
+  encrypted_frame->codec = video_frame.codec;
+  encrypted_frame->key_frame = video_frame.key_frame;
+  encrypted_frame->frame_id = video_frame.frame_id;
+  encrypted_frame->last_referenced_frame_id =
+      video_frame.last_referenced_frame_id;
+  return true;
+}
+
 void VideoSender::SendEncodedVideoFrame(const EncodedVideoFrame* encoded_frame,
                                         const base::TimeTicks& capture_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   last_send_time_ = cast_environment_->Clock()->NowTicks();
-  rtp_sender_->IncomingEncodedVideoFrame(encoded_frame, capture_time);
+
+  if (encryptor_) {
+    EncodedVideoFrame encrypted_video_frame;
+
+    if (!EncryptVideoFrame(*encoded_frame, &encrypted_video_frame)) {
+      // Logging already done.
+      return;
+    }
+    rtp_sender_->IncomingEncodedVideoFrame(&encrypted_video_frame,
+                                           capture_time);
+  } else {
+    rtp_sender_->IncomingEncodedVideoFrame(encoded_frame, capture_time);
+  }
   if (encoded_frame->key_frame) {
     VLOG(1) << "Send encoded key frame; frame_id:"
             << static_cast<int>(encoded_frame->frame_id);

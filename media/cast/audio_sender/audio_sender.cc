@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "crypto/encryptor.h"
+#include "crypto/symmetric_key.h"
 #include "media/cast/audio_sender/audio_encoder.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtp_sender/rtp_sender.h"
@@ -71,6 +73,17 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
               audio_config.rtcp_c_name),
         initialized_(false),
         weak_factory_(this) {
+  if (audio_config.aes_iv_mask.size() == kAesKeySize &&
+      audio_config.aes_key.size() == kAesKeySize) {
+    iv_mask_ = audio_config.aes_iv_mask;
+    crypto::SymmetricKey* key = crypto::SymmetricKey::Import(
+        crypto::SymmetricKey::AES, audio_config.aes_key);
+    encryptor_.reset(new crypto::Encryptor());
+    encryptor_->Init(key, crypto::Encryptor::CTR, std::string());
+  } else if (audio_config.aes_iv_mask.size() != 0 ||
+             audio_config.aes_key.size() != 0) {
+    DCHECK(false) << "Invalid crypto configuration";
+  }
   if (!audio_config.use_external_encoder) {
     audio_encoder_ = new AudioEncoder(
         cast_environment, audio_config,
@@ -102,7 +115,17 @@ void AudioSender::InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
                                         const base::Closure callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_encoder_.get() == NULL) << "Invalid internal state";
-  rtp_sender_.IncomingEncodedAudioFrame(audio_frame, recorded_time);
+
+  if (encryptor_) {
+    EncodedAudioFrame encrypted_frame;
+    if (!EncryptAudioFrame(*audio_frame, &encrypted_frame)) {
+      // Logging already done.
+      return;
+    }
+    rtp_sender_.IncomingEncodedAudioFrame(&encrypted_frame, recorded_time);
+  } else {
+    rtp_sender_.IncomingEncodedAudioFrame(audio_frame, recorded_time);
+  }
   callback.Run();
 }
 
@@ -111,7 +134,34 @@ void AudioSender::SendEncodedAudioFrame(
     const base::TimeTicks& recorded_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   InitializeTimers();
-  rtp_sender_.IncomingEncodedAudioFrame(audio_frame.get(), recorded_time);
+  if (encryptor_) {
+    EncodedAudioFrame encrypted_frame;
+    if (!EncryptAudioFrame(*audio_frame.get(), &encrypted_frame)) {
+      // Logging already done.
+      return;
+    }
+    rtp_sender_.IncomingEncodedAudioFrame(&encrypted_frame, recorded_time);
+  } else {
+    rtp_sender_.IncomingEncodedAudioFrame(audio_frame.get(), recorded_time);
+  }
+}
+
+bool AudioSender::EncryptAudioFrame(const EncodedAudioFrame& audio_frame,
+                                    EncodedAudioFrame* encrypted_frame) {
+  DCHECK(encryptor_) << "Invalid state";
+
+  if (!encryptor_->SetCounter(GetAesNonce(audio_frame.frame_id, iv_mask_))) {
+    NOTREACHED() << "Failed to set counter";
+    return false;
+  }
+  if (!encryptor_->Encrypt(audio_frame.data, &encrypted_frame->data)) {
+    NOTREACHED() << "Encrypt error";
+    return false;
+  }
+  encrypted_frame->codec = audio_frame.codec;
+  encrypted_frame->frame_id = audio_frame.frame_id;
+  encrypted_frame->samples = audio_frame.samples;
+  return true;
 }
 
 void AudioSender::ResendPackets(

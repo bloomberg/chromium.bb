@@ -94,7 +94,7 @@ class AudioEncoder::ImplBase {
                                          int source_offset,
                                          int buffer_fill_offset,
                                          int num_samples) = 0;
-  virtual bool EncodeFromFilledBuffer(std::vector<uint8>* out) = 0;
+  virtual bool EncodeFromFilledBuffer(std::string* out) = 0;
 
   CastEnvironment* const cast_environment_;
   const AudioCodec codec_;
@@ -156,11 +156,11 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
     }
   }
 
-  virtual bool EncodeFromFilledBuffer(std::vector<uint8>* out) OVERRIDE {
+  virtual bool EncodeFromFilledBuffer(std::string* out) OVERRIDE {
     out->resize(kOpusMaxPayloadSize);
     const opus_int32 result = opus_encode_float(
-        opus_encoder_, buffer_.get(), samples_per_10ms_, &out->front(),
-        kOpusMaxPayloadSize);
+        opus_encoder_, buffer_.get(), samples_per_10ms_,
+        reinterpret_cast<uint8*>(&out->at(0)), kOpusMaxPayloadSize);
     if (result > 1) {
       out->resize(result);
       return true;
@@ -210,12 +210,12 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
         buffer_.get() + buffer_fill_offset * num_channels_);
   }
 
-  virtual bool EncodeFromFilledBuffer(std::vector<uint8>* out) OVERRIDE {
+  virtual bool EncodeFromFilledBuffer(std::string* out) OVERRIDE {
     // Output 16-bit PCM integers in big-endian byte order.
     out->resize(num_channels_ * samples_per_10ms_ * sizeof(int16));
     const int16* src = buffer_.get();
     const int16* const src_end = src + num_channels_ * samples_per_10ms_;
-    uint16* dest = reinterpret_cast<uint16*>(&out->front());
+    uint16* dest = reinterpret_cast<uint16*>(&out->at(0));
     for (; src < src_end; ++src, ++dest)
       *dest = base::HostToNet16(*src);
     return true;

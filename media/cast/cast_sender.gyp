@@ -23,6 +23,7 @@
         'cast_sender_impl.h',
       ], # source
       'dependencies': [
+        '<(DEPTH)/crypto/crypto.gyp:crypto',
         'audio_sender',
         'congestion_control',
         'pacing/paced_sender.gyp:cast_paced_sender',

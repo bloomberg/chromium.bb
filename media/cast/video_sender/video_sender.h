@@ -18,6 +18,10 @@
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtp_sender/rtp_sender.h"
 
+namespace crypto {
+  class Encryptor;
+}
+
 namespace media {
 namespace cast {
 
@@ -102,6 +106,11 @@ class VideoSender : public base::NonThreadSafe,
 
   void InitializeTimers();
 
+  // Caller must allocate the destination |encrypted_video_frame| the data
+  // member will be resized to hold the encrypted size.
+  bool EncryptVideoFrame(const EncodedVideoFrame& encoded_frame,
+                         EncodedVideoFrame* encrypted_video_frame);
+
   const base::TimeDelta rtp_max_delay_;
   const int max_frame_rate_;
 
@@ -113,6 +122,8 @@ class VideoSender : public base::NonThreadSafe,
   scoped_ptr<RtpSender> rtp_sender_;
   VideoEncoderController* video_encoder_controller_;
   uint8 max_unacked_frames_;
+  scoped_ptr<crypto::Encryptor> encryptor_;
+  std::string iv_mask_;
   int last_acked_frame_id_;
   int last_sent_frame_id_;
   int duplicate_ack_;

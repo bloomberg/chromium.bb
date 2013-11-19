@@ -20,6 +20,10 @@
 #include "media/cast/rtp_common/rtp_defines.h"
 #include "media/cast/rtp_receiver/rtp_receiver.h"
 
+namespace crypto {
+  class Encryptor;
+}
+
 namespace media {
 namespace cast {
 
@@ -72,6 +76,8 @@ class VideoReceiver : public base::NonThreadSafe,
                         scoped_ptr<EncodedVideoFrame> encoded_frame,
                         const base::TimeTicks& render_time);
 
+  bool DecryptVideoFrame(scoped_ptr<EncodedVideoFrame>* video_frame);
+
   bool PullEncodedVideoFrame(uint32 rtp_timestamp,
                              bool next_frame,
                              scoped_ptr<EncodedVideoFrame>* encoded_frame,
@@ -109,9 +115,9 @@ class VideoReceiver : public base::NonThreadSafe,
   scoped_ptr<RtpReceiverStatistics> rtp_video_receiver_statistics_;
   base::TimeTicks time_last_sent_cast_message_;
   base::TimeDelta time_offset_;  // Sender-receiver offset estimation.
-
+  scoped_ptr<crypto::Encryptor> decryptor_;
+  std::string iv_mask_;
   std::list<VideoFrameEncodedCallback> queued_encoded_callbacks_;
-
   bool time_incoming_packet_updated_;
   base::TimeTicks time_incoming_packet_;
   uint32 incoming_rtp_timestamp_;

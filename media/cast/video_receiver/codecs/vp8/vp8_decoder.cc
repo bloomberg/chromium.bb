@@ -42,11 +42,12 @@ bool Vp8Decoder::Decode(const EncodedVideoFrame* encoded_frame,
 
   vpx_codec_iter_t iter = NULL;
   vpx_image_t* img;
-  if (vpx_codec_decode(decoder_.get(),
-                       encoded_frame->data.data(),
-                       static_cast<unsigned int>(encoded_frame->data.size()),
-                       0,
-                       1 /* real time*/)) {
+  if (vpx_codec_decode(
+      decoder_.get(),
+      reinterpret_cast<const uint8*>(encoded_frame->data.data()),
+      static_cast<unsigned int>(encoded_frame->data.size()),
+      0,
+      1 /* real time*/)) {
     VLOG(1) << "Failed to decode VP8 frame.";
     return false;
   }
