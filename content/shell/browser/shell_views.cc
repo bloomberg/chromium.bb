@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/aura/env.h"
@@ -337,9 +336,6 @@ void Shell::PlatformCleanUp() {
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
-  if (headless_)
-    return;
-
   ShellWindowDelegateView* delegate_view =
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   if (control == BACK_BUTTON) {
@@ -355,9 +351,6 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
 }
 
 void Shell::PlatformSetAddressBarURL(const GURL& url) {
-  if (headless_)
-    return;
-
   ShellWindowDelegateView* delegate_view =
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   delegate_view->SetAddressBarURL(url);
@@ -373,12 +366,6 @@ void Shell::PlatformCreateWindow(int width, int height) {
       wm_test_helper_->GetDefaultParent(NULL, NULL, gfx::Rect()),
       gfx::Rect(0, 0, width, height));
 #else
-  if (headless_) {
-    content_width_ = width;
-    content_height_ = height;
-    return;
-  }
-
   window_widget_ = views::Widget::CreateWindowWithBounds(
       new ShellWindowDelegateView(this), gfx::Rect(0, 0, width, height));
 #endif
@@ -393,16 +380,6 @@ void Shell::PlatformCreateWindow(int width, int height) {
 }
 
 void Shell::PlatformSetContents() {
-  if (headless_) {
-    if (web_contents_) {
-      RenderWidgetHostView* rwhv =
-          web_contents_->GetRenderWidgetHostView();
-      if (rwhv)
-        rwhv->SetSize(gfx::Size(content_width_, content_height_));
-    }
-    return;
-  }
-
   ShellWindowDelegateView* delegate_view =
       static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   delegate_view->SetWebContents(web_contents_.get(), content_size_);
@@ -412,18 +389,10 @@ void Shell::PlatformResizeSubViews() {
 }
 
 void Shell::Close() {
-  if (headless_) {
-    delete this;
-    return;
-  }
-
   window_widget_->CloseNow();
 }
 
 void Shell::PlatformSetTitle(const string16& title) {
-  if (headless_)
-    return;
-
   ShellWindowDelegateView* delegate_view =
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   delegate_view->SetWindowTitle(title);

@@ -268,8 +268,6 @@ class Shell : public WebContentsDelegate,
   static views::ViewsDelegate* views_delegate_;
 
   views::Widget* window_widget_;
-  int content_width_;
-  int content_height_;
 #else // defined(TOOLKIT_VIEWS)
   static ShellAuraPlatformData* platform_;
 #endif // defined(TOOLKIT_VIEWS)
