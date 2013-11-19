@@ -26,6 +26,7 @@ class MapsMeasurement(page_measurement.PageMeasurement):
 class MapsBenchmark(test.Test):
   """Basic Google Maps benchmarks."""
   test = MapsMeasurement
+  enabled = False
 
   def CreatePageSet(self, options):
     page_set_path = os.path.join(
