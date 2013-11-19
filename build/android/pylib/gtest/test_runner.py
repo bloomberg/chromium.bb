@@ -52,7 +52,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
       timeout = timeout * 2
 
     self._timeout = timeout * self.tool.GetTimeoutScale()
-    self._perf_controller = perf_control.PerfControl(self.adb)
+    if _TestSuiteRequiresHighPerfMode(self.test_package.suite_name):
+      self._perf_controller = perf_control.PerfControl(self.adb)
 
   #override
   def InstallTestPackage(self):
