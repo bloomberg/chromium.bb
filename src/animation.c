@@ -377,3 +377,65 @@ weston_slide_run(struct weston_view *view, float start, float stop,
 
 	return animation;
 }
+
+struct weston_move_animation {
+	int dx;
+	int dy;
+	int reverse;
+	weston_view_animation_done_func_t done;
+};
+
+static void
+move_frame(struct weston_view_animation *animation)
+{
+	struct weston_move_animation *move = animation->private;
+	float scale;
+	float progress = animation->spring.current;
+
+	if (move->reverse)
+		progress = 1.0 - progress;
+
+	scale = animation->start +
+                (animation->stop - animation->start) *
+                progress;
+	weston_matrix_init(&animation->transform.matrix);
+	weston_matrix_scale(&animation->transform.matrix, scale, scale, 1.0f);
+	weston_matrix_translate(&animation->transform.matrix,
+                                move->dx * progress, move->dy * progress,
+				0);
+}
+
+static void
+move_done(struct weston_view_animation *animation, void *data)
+{
+	struct weston_move_animation *move = animation->private;
+
+	if (move->done)
+		move->done(animation, data);
+
+	free(move);
+}
+
+WL_EXPORT struct weston_view_animation *
+weston_move_scale_run(struct weston_view *view, int dx, int dy,
+		      float start, float end, int reverse,
+		      weston_view_animation_done_func_t done, void *data)
+{
+	struct weston_move_animation *move;
+	struct weston_view_animation *animation;
+
+	move = malloc(sizeof(*move));
+	if (!move)
+		return NULL;
+	move->dx = dx;
+	move->dy = dy;
+	move->reverse = reverse;
+	move->done = done;
+
+	animation = weston_view_animation_run(view, start, end, move_frame,
+	                                      NULL, move_done, data, move);
+	animation->spring.k = 400;
+	animation->spring.friction = 1150;
+
+	return animation;
+}
