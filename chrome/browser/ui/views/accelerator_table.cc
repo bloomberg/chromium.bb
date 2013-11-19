@@ -59,6 +59,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   { ui::VKEY_9, ui::EF_ALT_DOWN, IDC_SELECT_LAST_TAB },
   { ui::VKEY_NUMPAD9, ui::EF_ALT_DOWN, IDC_SELECT_LAST_TAB },
+  { ui::VKEY_NEXT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, IDC_MOVE_TAB_NEXT },
+  { ui::VKEY_PRIOR, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+    IDC_MOVE_TAB_PREVIOUS },
 #endif
   { ui::VKEY_TAB, ui::EF_CONTROL_DOWN, IDC_SELECT_NEXT_TAB },
   { ui::VKEY_NEXT, ui::EF_CONTROL_DOWN, IDC_SELECT_NEXT_TAB },
