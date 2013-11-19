@@ -4,16 +4,11 @@
 
 #include "content/child/indexed_db/indexed_db_message_filter.h"
 
-#include "base/bind.h"
-#include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/pickle.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/child/worker_thread_task_runner.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
-#include "webkit/child/worker_task_runner.h"
-
-using webkit_glue::WorkerTaskRunner;
 
 namespace content {
 
@@ -23,31 +18,26 @@ IndexedDBMessageFilter::IndexedDBMessageFilter(
       thread_safe_sender_(thread_safe_sender) {
 }
 
+IndexedDBMessageFilter::~IndexedDBMessageFilter() {}
+
+base::TaskRunner* IndexedDBMessageFilter::OverrideTaskRunnerForMessage(
+    const IPC::Message& msg) {
+  if (IPC_MESSAGE_CLASS(msg) != IndexedDBMsgStart)
+    return NULL;
+  int ipc_thread_id = 0;
+  const bool success = PickleIterator(msg).ReadInt(&ipc_thread_id);
+  DCHECK(success);
+  if (!ipc_thread_id)
+    return main_thread_loop_proxy_.get();
+  return new WorkerThreadTaskRunner(ipc_thread_id);
+}
+
 bool IndexedDBMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   if (IPC_MESSAGE_CLASS(msg) != IndexedDBMsgStart)
     return false;
-  int ipc_thread_id = -1;
-  bool result = PickleIterator(msg).ReadInt(&ipc_thread_id);
-  DCHECK(result);
-  base::Closure closure = base::Bind(
-      &IndexedDBMessageFilter::DispatchMessage, this, msg);
-  if (!ipc_thread_id) {
-    main_thread_loop_proxy_->PostTask(FROM_HERE, closure);
-    return true;
-  }
-  if (WorkerTaskRunner::Instance()->PostTask(ipc_thread_id, closure))
-    return true;
-
-  // Message for a terminated worker - perform necessary cleanup
-  OnStaleMessageReceived(msg);
-  return true;
-}
-
-IndexedDBMessageFilter::~IndexedDBMessageFilter() {}
-
-void IndexedDBMessageFilter::DispatchMessage(const IPC::Message& msg) {
   IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get())
       ->OnMessageReceived(msg);
+  return true;
 }
 
 void IndexedDBMessageFilter::OnStaleMessageReceived(const IPC::Message& msg) {

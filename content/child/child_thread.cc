@@ -201,8 +201,8 @@ void ChildThread::Init() {
   channel_->AddFilter(new tracing::ChildTraceMessageFilter(
       ChildProcess::current()->io_message_loop_proxy()));
   channel_->AddFilter(resource_message_filter_.get());
-  channel_->AddFilter(quota_message_filter_.get());
-  channel_->AddFilter(service_worker_message_filter_.get());
+  channel_->AddFilter(quota_message_filter_->GetFilter());
+  channel_->AddFilter(service_worker_message_filter_->GetFilter());
 
   // In single process mode we may already have a power monitor
   if (!base::PowerMonitor::Get()) {
@@ -264,8 +264,6 @@ ChildThread::~ChildThread() {
   IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif
 
-  channel_->RemoveFilter(service_worker_message_filter_.get());
-  channel_->RemoveFilter(quota_message_filter_.get());
   channel_->RemoveFilter(histogram_message_filter_.get());
   channel_->RemoveFilter(sync_message_filter_.get());
 

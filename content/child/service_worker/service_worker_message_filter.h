@@ -5,29 +5,30 @@
 #ifndef CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_MESSAGE_FILTER_H_
 #define CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_MESSAGE_FILTER_H_
 
-#include <map>
-
+#include "content/child/child_message_filter.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_channel_proxy.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace content {
 
 class ThreadSafeSender;
-class MessageLoopProxy;
 
 class CONTENT_EXPORT ServiceWorkerMessageFilter
-    : public IPC::ChannelProxy::MessageFilter {
+    : public NON_EXPORTED_BASE(ChildMessageFilter) {
  public:
   explicit ServiceWorkerMessageFilter(ThreadSafeSender* thread_safe_sender);
-
-  // IPC::Listener implementation
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  protected:
   virtual ~ServiceWorkerMessageFilter();
 
  private:
-  void DispatchMessage(const IPC::Message& msg);
+  // ChildMessageFilter implementation:
+  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+      const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

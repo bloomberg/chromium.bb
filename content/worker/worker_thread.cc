@@ -56,7 +56,7 @@ WorkerThread::WorkerThread() {
 
   indexed_db_message_filter_ = new IndexedDBMessageFilter(
       thread_safe_sender());
-  channel()->AddFilter(indexed_db_message_filter_.get());
+  channel()->AddFilter(indexed_db_message_filter_->GetFilter());
 
 }
 
@@ -79,7 +79,6 @@ void WorkerThread::Shutdown() {
   }
 
   // Shutdown in reverse of the initialization order.
-  channel()->RemoveFilter(indexed_db_message_filter_.get());
   indexed_db_message_filter_ = NULL;
 
   channel()->RemoveFilter(db_message_filter_.get());

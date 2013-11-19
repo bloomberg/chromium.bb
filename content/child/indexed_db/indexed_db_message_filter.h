@@ -5,7 +5,7 @@
 #ifndef CONTENT_CHILD_INDEXED_DB_INDEXED_DB_MESSAGE_FILTER_H_
 #define CONTENT_CHILD_INDEXED_DB_INDEXED_DB_MESSAGE_FILTER_H_
 
-#include "ipc/ipc_channel_proxy.h"
+#include "content/child/child_message_filter.h"
 
 struct IndexedDBDatabaseMetadata;
 struct IndexedDBMsg_CallbacksUpgradeNeeded_Params;
@@ -15,22 +15,23 @@ class MessageLoopProxy;
 }  // namespace base
 
 namespace content {
-class IndexedDBDispatcher;
+
 class ThreadSafeSender;
 
-class IndexedDBMessageFilter : public IPC::ChannelProxy::MessageFilter {
+class IndexedDBMessageFilter : public ChildMessageFilter {
  public:
   explicit IndexedDBMessageFilter(ThreadSafeSender* thread_safe_sender);
-
-  // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  protected:
   virtual ~IndexedDBMessageFilter();
 
  private:
-  void DispatchMessage(const IPC::Message& msg);
-  void OnStaleMessageReceived(const IPC::Message& msg);
+  // ChildMessageFilter implementation:
+  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+      const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void OnStaleMessageReceived(const IPC::Message& msg) OVERRIDE;
+
   void OnStaleSuccessIDBDatabase(int32 ipc_thread_id,
                                  int32 ipc_callbacks_id,
                                  int32 ipc_database_callbacks_id,

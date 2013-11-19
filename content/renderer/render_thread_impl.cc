@@ -374,7 +374,7 @@ void RenderThreadImpl::Init() {
   midi_message_filter_ = new MIDIMessageFilter(GetIOMessageLoopProxy());
   AddFilter(midi_message_filter_.get());
 
-  AddFilter(new IndexedDBMessageFilter(thread_safe_sender()));
+  AddFilter((new IndexedDBMessageFilter(thread_safe_sender()))->GetFilter());
 
   GetContentClient()->renderer()->RenderThreadStarted();
 
