@@ -50,6 +50,8 @@ SSL_ExportKeyingMaterial
 SSL_VersionRangeSet
 SSL_GetSRTPCipher
 SSL_SetSRTPCiphers
+SSL_RecommendedCanFalseStart
+SSL_SetCanFalseStartCallback
 
 ; Chromium patches
 SSL_PeerCertificateChain

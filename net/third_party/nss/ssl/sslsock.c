@@ -366,6 +366,8 @@ ssl_DupSocket(sslSocket *os)
 	    ss->badCertArg            = os->badCertArg;
 	    ss->handshakeCallback     = os->handshakeCallback;
 	    ss->handshakeCallbackData = os->handshakeCallbackData;
+	    ss->canFalseStartCallback = os->canFalseStartCallback;
+	    ss->canFalseStartCallbackData = os->canFalseStartCallbackData;
 	    ss->pkcs11PinArg          = os->pkcs11PinArg;
 	    ss->getChannelID          = os->getChannelID;
 	    ss->getChannelIDArg       = os->getChannelIDArg;

@@ -7374,40 +7374,69 @@ ssl3_RestartHandshakeAfterCertReq(sslSocket *         ss,
 static SECStatus
 ssl3_CheckFalseStart(sslSocket *ss)
 {
-    SECStatus rv;
-    PRBool maybeFalseStart = PR_TRUE;
-
     PORT_Assert( ss->opt.noLocks || ssl_HaveSSL3HandshakeLock(ss) );
     PORT_Assert( !ss->ssl3.hs.authCertificatePending );
-
-    /* An attacker can control the selected ciphersuite so we only wish to
-     * do False Start in the case that the selected ciphersuite is
-     * sufficiently strong that the attack can gain no advantage.
-     * Therefore we always require an 80-bit cipher. */
-
-    ssl_GetSpecReadLock(ss);
-    if (ss->ssl3.cwSpec->cipher_def->secret_key_size < 10) {
-	ss->ssl3.hs.canFalseStart = PR_FALSE;
-	maybeFalseStart = PR_FALSE;
-    }
-    ssl_ReleaseSpecReadLock(ss);
-    if (!maybeFalseStart) {
-	return SECSuccess;
-    }
+    PORT_Assert( !ss->ssl3.hs.canFalseStart );
 
     if (!ss->canFalseStartCallback) {
-	rv = SSL_DefaultCanFalseStart(ss->fd, &ss->ssl3.hs.canFalseStart);
+	SSL_TRC(3, ("%d: SSL[%d]: no false start callback so no false start",
+		    SSL_GETPID(), ss->fd));
     } else {
-	rv = (ss->canFalseStartCallback)(ss->fd,
- 					 ss->canFalseStartCallbackData,
-					 &ss->ssl3.hs.canFalseStart);
+	PRBool maybeFalseStart;
+	SECStatus rv;
+
+	/* An attacker can control the selected ciphersuite so we only wish to
+	 * do False Start in the case that the selected ciphersuite is
+	 * sufficiently strong that the attack can gain no advantage.
+	 * Therefore we always require an 80-bit cipher. */
+        ssl_GetSpecReadLock(ss);
+        maybeFalseStart = ss->ssl3.cwSpec->cipher_def->secret_key_size >= 10;
+        ssl_ReleaseSpecReadLock(ss);
+
+	if (!maybeFalseStart) {
+	    SSL_TRC(3, ("%d: SSL[%d]: no false start due to weak cipher",
+			SSL_GETPID(), ss->fd));
+	} else {
+	    rv = (ss->canFalseStartCallback)(ss->fd,
+					     ss->canFalseStartCallbackData,
+					     &ss->ssl3.hs.canFalseStart);
+	    if (rv == SECSuccess) {
+		SSL_TRC(3, ("%d: SSL[%d]: false start callback returned %s",
+			    SSL_GETPID(), ss->fd,
+			    ss->ssl3.hs.canFalseStart ? "TRUE" : "FALSE"));
+	    } else {
+		SSL_TRC(3, ("%d: SSL[%d]: false start callback failed (%s)",
+			    SSL_GETPID(), ss->fd,
+			    PR_ErrorToName(PR_GetError())));
+	    }
+	    return rv;
+	}
     }
 
-    if (rv != SECSuccess) {
-	ss->ssl3.hs.canFalseStart = PR_FALSE;
+    ss->ssl3.hs.canFalseStart = PR_FALSE;
+    return SECSuccess;
+}
+
+PRBool
+ssl3_WaitingForStartOfServerSecondRound(sslSocket *ss)
+{
+    PRBool result;
+
+    PORT_Assert( ss->opt.noLocks || ssl_HaveSSL3HandshakeLock(ss) );
+
+    switch (ss->ssl3.hs.ws) {
+    case wait_new_session_ticket:
+        result = PR_TRUE;
+        break;
+    case wait_change_cipher:
+        result = !ssl3_ExtensionNegotiated(ss, ssl_session_ticket_xtn);
+        break;
+    default:
+        result = PR_FALSE;
+        break;
     }
 
-    return rv;
+    return result;
 }
 
 static SECStatus ssl3_SendClientSecondRound(sslSocket *ss);
@@ -7497,6 +7526,9 @@ ssl3_SendClientSecondRound(sslSocket *ss)
     }
     if (ss->ssl3.hs.authCertificatePending &&
 	(sendClientCert || ss->ssl3.sendEmptyCert || ss->firstHsDone)) {
+	SSL_TRC(3, ("%d: SSL3[%p]: deferring ssl3_SendClientSecondRound because"
+		    " certificate authentication is still pending.",
+		    SSL_GETPID(), ss->fd));
 	ss->ssl3.hs.restartTarget = ssl3_SendClientSecondRound;
 	return SECWouldBlock;
     }
@@ -7566,7 +7598,7 @@ ssl3_SendClientSecondRound(sslSocket *ss)
 		 * call ssl3_CheckFalseStart before calling ssl3_SendFinished,
 		 * which includes a call to ssl3_FlushHandshake, so that
 		 * no application develops a reliance on such flushing being
-                 * done before its false start callback is called.
+		 * done before its false start callback is called.
 		 */
 		ssl_ReleaseXmitBufLock(ss);
 		rv = ssl3_CheckFalseStart(ss);
@@ -7626,18 +7658,7 @@ ssl3_SendClientSecondRound(sslSocket *ss)
     else
 	ss->ssl3.hs.ws = wait_change_cipher;
 
-    if (ss->handshakeCallback &&
-	(ss->ssl3.hs.canFalseStart && !ss->canFalseStartCallback)) {
-	/* Call the handshake callback here for backwards compatibility with
-	 * applications that were using false start before
-	 * canFalseStartCallback was added. Note that we do this after calling
-	 * ssl3_SendFinished, which includes a call to ssl3_FlushHandshake,
-	 * just in case the application is relying on having the handshake
-	 * messages flushed to the network before its handshake callback is
-	 * called.
-	 */
-	(ss->handshakeCallback)(ss->fd, ss->handshakeCallbackData);
-    }
+    PORT_Assert(ssl3_WaitingForStartOfServerSecondRound(ss));
 
     return SECSuccess;
 
@@ -10394,36 +10415,24 @@ ssl3_AuthCertificateComplete(sslSocket *ss, PRErrorCode error)
 	    rv = SECSuccess;
 	}
     } else {
-	SSL_TRC(3, ("%d: SSL3[%p]: certificate authentication won the race"
-        	    " with peer's finished message", SSL_GETPID(), ss->fd));
+	SSL_TRC(3, ("%d: SSL3[%p]: certificate authentication won the race with"
+        	    " peer's finished message", SSL_GETPID(), ss->fd));
 
 	PORT_Assert(!ss->firstHsDone);
 	PORT_Assert(!ss->sec.isServer);
 	PORT_Assert(!ss->ssl3.hs.isResuming);
-	PORT_Assert(ss->ssl3.hs.ws == wait_change_cipher ||
-		    ss->ssl3.hs.ws == wait_finished ||		
-		    ss->ssl3.hs.ws == wait_new_session_ticket);
+	PORT_Assert(ss->ssl3.hs.ws != idle_handshake);
 
-	/* ssl3_SendClientSecondRound deferred the false start check because
-	 * certificate authentication was pending, so we have to do it now.
-	 */
 	if (ss->opt.enableFalseStart &&
 	    !ss->firstHsDone &&
 	    !ss->sec.isServer &&
 	    !ss->ssl3.hs.isResuming &&
-	    (ss->ssl3.hs.ws == wait_change_cipher ||
-	     ss->ssl3.hs.ws == wait_finished ||		
-	     ss->ssl3.hs.ws == wait_new_session_ticket)) {
+	    ssl3_WaitingForStartOfServerSecondRound(ss)) {
+	    /* ssl3_SendClientSecondRound deferred the false start check because
+	     * certificate authentication was pending, so we do it now if we still
+	     * haven't received any of the server's second round yet.
+	     */
 	    rv = ssl3_CheckFalseStart(ss);
-	    if (rv == SECSuccess &&
-		ss->handshakeCallback &&
-		(ss->ssl3.hs.canFalseStart && !ss->canFalseStartCallback)) {
-		/* Call the handshake callback here for backwards compatibility
-		 * with applications that were using false start before
-		 * canFalseStartCallback was added.
-		 */
-		(ss->handshakeCallback)(ss->fd, ss->handshakeCallbackData);
-	    }
 	} else {
 	    rv = SECSuccess;
 	}
@@ -11071,9 +11080,6 @@ xmit_loser:
         return rv;
     }
 
-    ss->gs.writeOffset = 0;
-    ss->gs.readOffset  = 0;
-
     if (ss->ssl3.hs.kea_def->kea == kea_ecdhe_rsa) {
 	effectiveExchKeyType = kt_rsa;
     } else {
@@ -11138,36 +11144,28 @@ xmit_loser:
     return rv;
 }
 
+/* The return type is SECStatus instead of void because this function needs
+ * to have type sslRestartTarget.
+ */
 SECStatus
 ssl3_FinishHandshake(sslSocket * ss)
 {
-    PRBool falseStarted;
-
     PORT_Assert( ss->opt.noLocks || ssl_HaveRecvBufLock(ss) );
     PORT_Assert( ss->opt.noLocks || ssl_HaveSSL3HandshakeLock(ss) );
     PORT_Assert( ss->ssl3.hs.restartTarget == NULL );
 
     /* The first handshake is now completed. */
     ss->handshake           = NULL;
-    ss->firstHsDone         = PR_TRUE;
-    ss->enoughFirstHsDone   = PR_TRUE;
 
     if (ss->ssl3.hs.cacheSID) {
 	(*ss->sec.cache)(ss->sec.ci.sid);
 	ss->ssl3.hs.cacheSID = PR_FALSE;
     }
 
-    ss->ssl3.hs.ws = idle_handshake;
-    falseStarted = ss->ssl3.hs.canFalseStart;
     ss->ssl3.hs.canFalseStart = PR_FALSE; /* False Start phase is complete */
+    ss->ssl3.hs.ws = idle_handshake;
 
-    /* Call the handshake callback for sslv3 here, unless we called it already
-     * for the case where false start was done without a canFalseStartCallback.
-     */
-    if (ss->handshakeCallback &&
-	!(falseStarted && !ss->canFalseStartCallback)) {
-	(ss->handshakeCallback)(ss->fd, ss->handshakeCallbackData);
-    }
+    ssl_FinishHandshake(ss);
 
     return SECSuccess;
 }
@@ -12132,7 +12130,6 @@ process_it:
 
     ssl_ReleaseSSL3HandshakeLock(ss);
     return rv;
-
 }
 
 /*
