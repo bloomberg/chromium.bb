@@ -69,9 +69,6 @@ SuspiciousExtensionBubbleView::SuspiciousExtensionBubbleView(
 void SuspiciousExtensionBubbleView::MaybeShow(
     Browser* browser,
     views::View* anchor_view) {
-#if !defined(OS_WIN)
-  return;
-#endif
   SuspiciousExtensionBubbleController* controller =
       extensions::SuspiciousExtensionBubbleController::Get(
           browser->profile());
