@@ -18,8 +18,6 @@ crbug.com/305303 http/tests/security/mixedContent/insecure-xhr-in-main-frame.htm
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 
-Bug(mkwst) svg/dynamic-updates/SVGMarkerElement-svgdom-setOrientToAngle-call.html [ NeedsRebaseline ]
-
 crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
 
 # -----------------------------------------------------------------
