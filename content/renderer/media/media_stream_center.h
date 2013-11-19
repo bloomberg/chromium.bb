@@ -36,19 +36,20 @@ class CONTENT_EXPORT MediaStreamCenter
   virtual bool getMediaStreamTrackSources(
       const blink::WebMediaStreamTrackSourcesRequest& request) OVERRIDE;
 
+  virtual void didCreateMediaStreamTrack(
+      const blink::WebMediaStreamTrack& track) OVERRIDE;
+
   virtual void didEnableMediaStreamTrack(
-      const blink::WebMediaStream& stream,
-      const blink::WebMediaStreamTrack& component) OVERRIDE;
+      const blink::WebMediaStreamTrack& track) OVERRIDE;
 
   virtual void didDisableMediaStreamTrack(
-      const blink::WebMediaStream& stream,
-      const blink::WebMediaStreamTrack& component) OVERRIDE;
+      const blink::WebMediaStreamTrack& track) OVERRIDE;
 
   virtual void didStopLocalMediaStream(
       const blink::WebMediaStream& stream) OVERRIDE;
 
   virtual bool didStopMediaStreamTrack(
-      const blink::WebMediaStreamTrack& web_track) OVERRIDE;
+      const blink::WebMediaStreamTrack& track) OVERRIDE;
 
   virtual void didCreateMediaStream(
       blink::WebMediaStream& stream) OVERRIDE;

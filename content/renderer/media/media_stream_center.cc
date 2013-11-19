@@ -17,6 +17,7 @@
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
+#include "content/renderer/media/media_stream_track_extra_data.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
@@ -52,30 +53,35 @@ bool MediaStreamCenter::getMediaStreamTrackSources(
   return false;
 }
 
+void MediaStreamCenter::didCreateMediaStreamTrack(
+    const blink::WebMediaStreamTrack& track) {
+  if (!rtc_factory_)
+    return;
+  rtc_factory_->CreateNativeMediaStreamTrack(track);
+}
+
 void MediaStreamCenter::didEnableMediaStreamTrack(
-    const blink::WebMediaStream& stream,
-    const blink::WebMediaStreamTrack& component) {
-  webrtc::MediaStreamTrackInterface* track =
-      MediaStreamDependencyFactory::GetNativeMediaStreamTrack(component);
-  if (track)
-    track->set_enabled(true);
+    const blink::WebMediaStreamTrack& track) {
+  webrtc::MediaStreamTrackInterface* native_track =
+      MediaStreamDependencyFactory::GetNativeMediaStreamTrack(track);
+  if (native_track)
+    native_track->set_enabled(true);
 }
 
 void MediaStreamCenter::didDisableMediaStreamTrack(
-    const blink::WebMediaStream& stream,
-    const blink::WebMediaStreamTrack& component) {
-  webrtc::MediaStreamTrackInterface* track =
-      MediaStreamDependencyFactory::GetNativeMediaStreamTrack(component);
-  if (track)
-    track->set_enabled(false);
+    const blink::WebMediaStreamTrack& track) {
+  webrtc::MediaStreamTrackInterface* native_track =
+      MediaStreamDependencyFactory::GetNativeMediaStreamTrack(track);
+  if (native_track)
+    native_track->set_enabled(false);
 }
 
 bool MediaStreamCenter::didStopMediaStreamTrack(
-    const blink::WebMediaStreamTrack& web_track) {
+    const blink::WebMediaStreamTrack& track) {
   DVLOG(1) << "MediaStreamCenter::didStopMediaStreamTrack";
-  blink::WebMediaStreamSource web_source = web_track.source();
+  blink::WebMediaStreamSource source = track.source();
   MediaStreamSourceExtraData* extra_data =
-      static_cast<MediaStreamSourceExtraData*>(web_source.extraData());
+      static_cast<MediaStreamSourceExtraData*>(source.extraData());
   if (!extra_data) {
     DVLOG(1) << "didStopMediaStreamTrack called on a remote track.";
     return false;
@@ -104,12 +110,12 @@ void MediaStreamCenter::didStopLocalMediaStream(
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   stream.audioTracks(audio_tracks);
   for (size_t i = 0; i < audio_tracks.size(); ++i)
-    didDisableMediaStreamTrack(stream, audio_tracks[i]);
+    didDisableMediaStreamTrack(audio_tracks[i]);
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   stream.videoTracks(video_tracks);
   for (size_t i = 0; i < video_tracks.size(); ++i)
-    didDisableMediaStreamTrack(stream, video_tracks[i]);
+    didDisableMediaStreamTrack(video_tracks[i]);
 
   extra_data->OnLocalStreamStop();
 }

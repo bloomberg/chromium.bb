@@ -99,6 +99,10 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       blink::WebMediaStream* web_stream,
       const MediaStreamExtraData::StreamStopCallback& stream_stop);
 
+  // Creates a libjingle representation of a MediaStreamTrack and stores
+  // it in the extra data field of |track|.
+  void CreateNativeMediaStreamTrack(const blink::WebMediaStreamTrack& track);
+
   // Adds a libjingle representation of a MediaStreamTrack to |stream| based
   // on the source of |track|.
   bool AddNativeMediaStreamTrack(const blink::WebMediaStream& stream,
@@ -218,6 +222,12 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   void CreateIpcNetworkManagerOnWorkerThread(base::WaitableEvent* event);
   void DeleteIpcNetworkManager();
   void CleanupPeerConnectionFactory();
+
+  scoped_refptr<webrtc::AudioTrackInterface>
+  CreateNativeAudioMediaStreamTrack(const blink::WebMediaStreamTrack& track);
+
+  scoped_refptr<webrtc::VideoTrackInterface>
+  CreateNativeVideoMediaStreamTrack(const blink::WebMediaStreamTrack& track);
 
   // We own network_manager_, must be deleted on the worker thread.
   // The network manager uses |p2p_socket_dispatcher_|.

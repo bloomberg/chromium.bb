@@ -383,15 +383,11 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
   extra_data->SetLocalStreamStopCallback(stream_stop);
 }
 
-bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
-    const blink::WebMediaStream& stream,
+scoped_refptr<webrtc::AudioTrackInterface>
+MediaStreamDependencyFactory::CreateNativeAudioMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  MediaStreamExtraData* extra_data =
-     static_cast<MediaStreamExtraData*>(stream.extraData());
-  webrtc::MediaStreamInterface* native_stream = extra_data->stream().get();
-  DCHECK(native_stream);
-
   blink::WebMediaStreamSource source = track.source();
+  DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
   MediaStreamSourceExtraData* source_data =
       static_cast<MediaStreamSourceExtraData*>(source.extraData());
 
@@ -399,15 +395,9 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
   // right now they're on the source, so we fetch them from there.
   RTCMediaConstraints track_constraints(source.constraints());
 
-  blink::WebMediaStreamSource::Type type = track.source().type();
-  DCHECK(type == blink::WebMediaStreamSource::TypeAudio ||
-         type == blink::WebMediaStreamSource::TypeVideo);
-
-  if (type == blink::WebMediaStreamSource::TypeAudio) {
-    // Apply default audio constraints that enable echo cancellation,
-    // automatic gain control, noise suppression and high-pass filter.
-    ApplyFixedAudioConstraints(&track_constraints);
-  }
+  // Apply default audio constraints that enable echo cancellation,
+  // automatic gain control, noise suppression and high-pass filter.
+  ApplyFixedAudioConstraints(&track_constraints);
 
   scoped_refptr<WebAudioCapturerSource> webaudio_source;
   if (!source_data) {
@@ -421,38 +411,106 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
       // TODO(perkj): Implement support for sources from
       // remote MediaStreams.
       NOTIMPLEMENTED();
-      return false;
+      return NULL;
     }
   }
 
   std::string track_id = UTF16ToUTF8(track.id());
-  if (source.type() == blink::WebMediaStreamSource::TypeAudio) {
-    scoped_refptr<WebRtcAudioCapturer> capturer;
-    if (GetWebRtcAudioDevice())
-      capturer = GetWebRtcAudioDevice()->GetDefaultCapturer();
+  scoped_refptr<WebRtcAudioCapturer> capturer;
+  if (GetWebRtcAudioDevice())
+    capturer = GetWebRtcAudioDevice()->GetDefaultCapturer();
 
-    scoped_refptr<webrtc::AudioTrackInterface> audio_track(
-        CreateLocalAudioTrack(track_id,
-                              capturer,
-                              webaudio_source.get(),
-                              source_data->local_audio_source(),
-                              &track_constraints));
-    AddNativeTrackToBlinkTrack(audio_track.get(), track);
+  scoped_refptr<webrtc::AudioTrackInterface> audio_track(
+      CreateLocalAudioTrack(track_id,
+                            capturer,
+                            webaudio_source.get(),
+                            source_data->local_audio_source(),
+                            &track_constraints));
+  AddNativeTrackToBlinkTrack(audio_track.get(), track);
 
-    // Pass the pointer of the source provider to the blink audio track.
-    blink::WebMediaStreamTrack writable_track = track;
-    writable_track.setSourceProvider(static_cast<WebRtcLocalAudioTrack*>(
-        audio_track.get())->audio_source_provider());
-    audio_track->set_enabled(track.isEnabled());
-    return native_stream->AddTrack(audio_track.get());
-  } else {
-    DCHECK(source.type() == blink::WebMediaStreamSource::TypeVideo);
-    scoped_refptr<webrtc::VideoTrackInterface> video_track(
-        CreateLocalVideoTrack(track_id, source_data->video_source()));
-    AddNativeTrackToBlinkTrack(video_track.get(), track);
-    video_track->set_enabled(track.isEnabled());
-    return native_stream->AddTrack(video_track.get());
+  audio_track->set_enabled(track.isEnabled());
+
+  // Pass the pointer of the source provider to the blink audio track.
+  blink::WebMediaStreamTrack writable_track = track;
+  writable_track.setSourceProvider(static_cast<WebRtcLocalAudioTrack*>(
+      audio_track.get())->audio_source_provider());
+
+  return audio_track;
+}
+
+scoped_refptr<webrtc::VideoTrackInterface>
+MediaStreamDependencyFactory::CreateNativeVideoMediaStreamTrack(
+    const blink::WebMediaStreamTrack& track) {
+  blink::WebMediaStreamSource source = track.source();
+  DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeVideo);
+  MediaStreamSourceExtraData* source_data =
+      static_cast<MediaStreamSourceExtraData*>(source.extraData());
+
+  if (!source_data) {
+    // TODO(perkj): Implement support for sources from
+    // remote MediaStreams.
+    NOTIMPLEMENTED();
+    return NULL;
   }
+
+  std::string track_id = UTF16ToUTF8(track.id());
+  scoped_refptr<webrtc::VideoTrackInterface> video_track(
+      CreateLocalVideoTrack(track_id, source_data->video_source()));
+  AddNativeTrackToBlinkTrack(video_track.get(), track);
+
+  video_track->set_enabled(track.isEnabled());
+
+  return video_track;
+}
+
+void MediaStreamDependencyFactory::CreateNativeMediaStreamTrack(
+    const blink::WebMediaStreamTrack& track) {
+  DCHECK(!track.isNull() && !track.extraData());
+  DCHECK(!track.source().isNull());
+
+  switch (track.source().type()) {
+    case blink::WebMediaStreamSource::TypeAudio:
+      CreateNativeAudioMediaStreamTrack(track);
+      break;
+    case blink::WebMediaStreamSource::TypeVideo:
+      CreateNativeVideoMediaStreamTrack(track);
+      break;
+  }
+}
+
+bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
+    const blink::WebMediaStream& stream,
+    const blink::WebMediaStreamTrack& track) {
+  webrtc::MediaStreamInterface* native_stream = GetNativeMediaStream(stream);
+  DCHECK(native_stream);
+
+  switch (track.source().type()) {
+    case blink::WebMediaStreamSource::TypeAudio: {
+      scoped_refptr<webrtc::AudioTrackInterface> native_audio_track;
+      if (!track.extraData()) {
+        native_audio_track = CreateNativeAudioMediaStreamTrack(track);
+      } else {
+        native_audio_track = static_cast<webrtc::AudioTrackInterface*>(
+            GetNativeMediaStreamTrack(track));
+      }
+
+      return native_audio_track.get() &&
+          native_stream->AddTrack(native_audio_track);
+    }
+    case blink::WebMediaStreamSource::TypeVideo: {
+      scoped_refptr<webrtc::VideoTrackInterface> native_video_track;
+      if (!track.extraData()) {
+        native_video_track = CreateNativeVideoMediaStreamTrack(track);
+      } else {
+        native_video_track = static_cast<webrtc::VideoTrackInterface*>(
+            GetNativeMediaStreamTrack(track));
+      }
+
+      return native_video_track.get() &&
+          native_stream->AddTrack(native_video_track);
+    }
+  }
+  return false;
 }
 
 bool MediaStreamDependencyFactory::AddNativeVideoMediaTrack(
@@ -469,10 +527,9 @@ bool MediaStreamDependencyFactory::AddNativeVideoMediaTrack(
       CreateLocalVideoTrack(track_id, capturer);
 
   // Add the native track to native stream
-  MediaStreamExtraData* extra_data =
-      static_cast<MediaStreamExtraData*>(stream->extraData());
-  DCHECK(extra_data);
-  webrtc::MediaStreamInterface* native_stream = extra_data->stream().get();
+  webrtc::MediaStreamInterface* native_stream =
+      GetNativeMediaStream(*stream);
+  DCHECK(native_stream);
   native_stream->AddTrack(native_track.get());
 
   // Create a new webkit video track.
@@ -498,23 +555,16 @@ bool MediaStreamDependencyFactory::RemoveNativeMediaStreamTrack(
       static_cast<MediaStreamExtraData*>(stream.extraData());
   webrtc::MediaStreamInterface* native_stream = extra_data->stream().get();
   DCHECK(native_stream);
-
-  blink::WebMediaStreamSource::Type type = track.source().type();
-  DCHECK(type == blink::WebMediaStreamSource::TypeAudio ||
-         type == blink::WebMediaStreamSource::TypeVideo);
-
-  blink::WebMediaStreamTrack writable_track = track;
-  writable_track.setExtraData(NULL);
-
   std::string track_id = UTF16ToUTF8(track.id());
-  if (type == blink::WebMediaStreamSource::TypeAudio) {
-    // Remove the source provider as the track is going away.
-    writable_track.setSourceProvider(NULL);
-    return native_stream->RemoveTrack(native_stream->FindAudioTrack(track_id));
+  switch (track.source().type()) {
+    case blink::WebMediaStreamSource::TypeAudio:
+      return native_stream->RemoveTrack(
+          native_stream->FindAudioTrack(track_id));
+    case blink::WebMediaStreamSource::TypeVideo:
+      return native_stream->RemoveTrack(
+          native_stream->FindVideoTrack(track_id));
   }
-
-  CHECK_EQ(type, blink::WebMediaStreamSource::TypeVideo);
-  return native_stream->RemoveTrack(native_stream->FindVideoTrack(track_id));
+  return false;
 }
 
 bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
