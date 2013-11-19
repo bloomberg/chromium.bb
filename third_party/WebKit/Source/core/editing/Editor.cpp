@@ -1110,13 +1110,13 @@ void Editor::transpose()
 void Editor::addToKillRing(Range* range, bool prepend)
 {
     if (m_shouldStartNewKillRingSequence)
-        killRing()->startNewSequence();
+        killRing().startNewSequence();
 
     String text = plainText(range);
     if (prepend)
-        killRing()->prepend(text);
+        killRing().prepend(text);
     else
-        killRing()->append(text);
+        killRing().append(text);
     m_shouldStartNewKillRingSequence = false;
 }
 

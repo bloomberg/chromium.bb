@@ -200,7 +200,7 @@ public:
 
     VisibleSelection selectionForCommand(Event*);
 
-    KillRing* killRing() const { return m_killRing.get(); }
+    KillRing& killRing() const { return *m_killRing; }
 
     EditingBehavior behavior() const;
 
@@ -257,7 +257,7 @@ private:
     int m_preventRevealSelection;
     bool m_shouldStartNewKillRingSequence;
     bool m_shouldStyleWithCSS;
-    OwnPtr<KillRing> m_killRing;
+    const OwnPtr<KillRing> m_killRing;
     VisibleSelection m_mark;
     bool m_areMarkedTextMatchesHighlighted;
     EditorParagraphSeparator m_defaultParagraphSeparator;
