@@ -1536,6 +1536,24 @@ static inline bool isForwardSlashOperator(CSSParserValue* value)
     return value->unit == CSSParserValue::Operator && value->iValue == '/';
 }
 
+static bool isGeneratedImageValue(CSSParserValue* val)
+{
+    if (val->unit != CSSParserValue::Function)
+        return false;
+
+    return equalIgnoringCase(val->function->name, "-webkit-gradient(")
+        || equalIgnoringCase(val->function->name, "-webkit-linear-gradient(")
+        || equalIgnoringCase(val->function->name, "linear-gradient(")
+        || equalIgnoringCase(val->function->name, "-webkit-repeating-linear-gradient(")
+        || equalIgnoringCase(val->function->name, "repeating-linear-gradient(")
+        || equalIgnoringCase(val->function->name, "-webkit-radial-gradient(")
+        || equalIgnoringCase(val->function->name, "radial-gradient(")
+        || equalIgnoringCase(val->function->name, "-webkit-repeating-radial-gradient(")
+        || equalIgnoringCase(val->function->name, "repeating-radial-gradient(")
+        || equalIgnoringCase(val->function->name, "-webkit-canvas(")
+        || equalIgnoringCase(val->function->name, "-webkit-cross-fade(");
+}
+
 bool CSSParser::validWidthOrHeight(CSSParserValue* value)
 {
     int id = value->id;
@@ -2096,19 +2114,17 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
 
     /* CSS3 properties */
 
-    case CSSPropertyBorderImage: {
-        RefPtr<CSSValue> result;
-        return parseBorderImage(propId, result, important);
-    }
-    case CSSPropertyWebkitBorderImage:
-    case CSSPropertyWebkitMaskBoxImage: {
-        RefPtr<CSSValue> result;
-        if (parseBorderImage(propId, result)) {
+    case CSSPropertyBorderImage:
+    case CSSPropertyWebkitMaskBoxImage:
+        return parseBorderImageShorthand(propId, important);
+    case CSSPropertyWebkitBorderImage: {
+        if (RefPtr<CSSValue> result = parseBorderImage(propId)) {
             addProperty(propId, result, important);
             return true;
         }
-        break;
+        return false;
     }
+
     case CSSPropertyBorderImageOutset:
     case CSSPropertyWebkitMaskBoxImageOutset: {
         RefPtr<CSSPrimitiveValue> result;
@@ -6478,7 +6494,8 @@ bool CSSParser::parseReflect(CSSPropertyID propId, bool important)
     RefPtr<CSSValue> mask;
     val = m_valueList->next();
     if (val) {
-        if (!parseBorderImage(propId, mask))
+        mask = parseBorderImage(propId);
+        if (!mask)
             return false;
     }
 
@@ -6628,9 +6645,18 @@ struct BorderImageParseContext {
         m_allowImage = !m_image;
     }
 
-    PassRefPtr<CSSValue> commitWebKitBorderImage()
+    PassRefPtr<CSSValue> commitCSSValue()
     {
         return createBorderImageValue(m_image, m_imageSlice, m_borderSlice, m_outset, m_repeat);
+    }
+
+    void commitMaskBoxImage(CSSParser* parser, bool important)
+    {
+        commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageSource, parser, m_image, important);
+        commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageSlice, parser, m_imageSlice, important);
+        commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageWidth, parser, m_borderSlice, important);
+        commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageOutset, parser, m_outset, important);
+        commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageRepeat, parser, m_repeat, important);
     }
 
     void commitBorderImage(CSSParser* parser, bool important)
@@ -6669,27 +6695,26 @@ struct BorderImageParseContext {
     RefPtr<CSSValue> m_repeat;
 };
 
-bool CSSParser::parseBorderImage(CSSPropertyID propId, RefPtr<CSSValue>& result, bool important)
+static bool buildBorderImageParseContext(CSSParser& parser, CSSPropertyID propId, BorderImageParseContext& context)
 {
-    ShorthandScope scope(this, propId);
-    BorderImageParseContext context;
-    while (CSSParserValue* val = m_valueList->current()) {
+    ShorthandScope scope(&parser, propId);
+    while (CSSParserValue* val = parser.m_valueList->current()) {
         context.setCanAdvance(false);
 
         if (!context.canAdvance() && context.allowForwardSlashOperator() && isForwardSlashOperator(val))
             context.commitForwardSlashOperator();
 
         if (!context.canAdvance() && context.allowImage()) {
-            if (val->unit == CSSPrimitiveValue::CSS_URI)
-                context.commitImage(CSSImageValue::create(completeURL(val->string)));
-            else if (isGeneratedImageValue(val)) {
+            if (val->unit == CSSPrimitiveValue::CSS_URI) {
+                context.commitImage(CSSImageValue::create(parser.completeURL(parser.m_context, val->string)));
+            } else if (isGeneratedImageValue(val)) {
                 RefPtr<CSSValue> value;
-                if (parseGeneratedImage(m_valueList.get(), value))
+                if (parser.parseGeneratedImage(parser.m_valueList.get(), value))
                     context.commitImage(value.release());
                 else
                     return false;
             } else if (val->unit == CSSParserValue::Function && equalIgnoringCase(val->function->name, "-webkit-image-set(")) {
-                RefPtr<CSSValue> value = parseImageSet(m_valueList.get());
+                RefPtr<CSSValue> value = parser.parseImageSet(parser.m_valueList.get());
                 if (value)
                     context.commitImage(value.release());
                 else
@@ -6700,44 +6725,63 @@ bool CSSParser::parseBorderImage(CSSPropertyID propId, RefPtr<CSSValue>& result,
 
         if (!context.canAdvance() && context.allowImageSlice()) {
             RefPtr<CSSBorderImageSliceValue> imageSlice;
-            if (parseBorderImageSlice(propId, imageSlice))
+            if (parser.parseBorderImageSlice(propId, imageSlice))
                 context.commitImageSlice(imageSlice.release());
         }
 
         if (!context.canAdvance() && context.allowRepeat()) {
             RefPtr<CSSValue> repeat;
-            if (parseBorderImageRepeat(repeat))
+            if (parser.parseBorderImageRepeat(repeat))
                 context.commitRepeat(repeat.release());
         }
 
         if (!context.canAdvance() && context.requireWidth()) {
             RefPtr<CSSPrimitiveValue> borderSlice;
-            if (parseBorderImageWidth(borderSlice))
+            if (parser.parseBorderImageWidth(borderSlice))
                 context.commitBorderWidth(borderSlice.release());
         }
 
         if (!context.canAdvance() && context.requireOutset()) {
             RefPtr<CSSPrimitiveValue> borderOutset;
-            if (parseBorderImageOutset(borderOutset))
+            if (parser.parseBorderImageOutset(borderOutset))
                 context.commitBorderOutset(borderOutset.release());
         }
 
         if (!context.canAdvance())
             return false;
 
-        m_valueList->next();
+        parser.m_valueList->next();
     }
 
-    if (context.allowCommit()) {
-        if (propId == CSSPropertyBorderImage)
+    return context.allowCommit();
+}
+
+bool CSSParser::parseBorderImageShorthand(CSSPropertyID propId, bool important)
+{
+    BorderImageParseContext context;
+    if (buildBorderImageParseContext(*this, propId, context)) {
+        switch (propId) {
+        case CSSPropertyWebkitMaskBoxImage:
+            context.commitMaskBoxImage(this, important);
+            return true;
+        case CSSPropertyBorderImage:
             context.commitBorderImage(this, important);
-        else
-            // Need to fully commit as a single value.
-            result = context.commitWebKitBorderImage();
-        return true;
+            return true;
+        default:
+            ASSERT_NOT_REACHED();
+            return false;
+        }
     }
-
     return false;
+}
+
+PassRefPtr<CSSValue> CSSParser::parseBorderImage(CSSPropertyID propId)
+{
+    BorderImageParseContext context;
+    if (buildBorderImageParseContext(*this, propId, context)) {
+        return context.commitCSSValue();
+    }
+    return 0;
 }
 
 static bool isBorderImageRepeatKeyword(int id)
@@ -7807,24 +7851,6 @@ bool CSSParser::parseGradientColorStops(CSSParserValueList* valueList, CSSGradie
 
     // Must have 2 or more stops to be valid.
     return gradient->stopCount() >= 2;
-}
-
-bool CSSParser::isGeneratedImageValue(CSSParserValue* val) const
-{
-    if (val->unit != CSSParserValue::Function)
-        return false;
-
-    return equalIgnoringCase(val->function->name, "-webkit-gradient(")
-        || equalIgnoringCase(val->function->name, "-webkit-linear-gradient(")
-        || equalIgnoringCase(val->function->name, "linear-gradient(")
-        || equalIgnoringCase(val->function->name, "-webkit-repeating-linear-gradient(")
-        || equalIgnoringCase(val->function->name, "repeating-linear-gradient(")
-        || equalIgnoringCase(val->function->name, "-webkit-radial-gradient(")
-        || equalIgnoringCase(val->function->name, "radial-gradient(")
-        || equalIgnoringCase(val->function->name, "-webkit-repeating-radial-gradient(")
-        || equalIgnoringCase(val->function->name, "repeating-radial-gradient(")
-        || equalIgnoringCase(val->function->name, "-webkit-canvas(")
-        || equalIgnoringCase(val->function->name, "-webkit-cross-fade(");
 }
 
 bool CSSParser::parseGeneratedImage(CSSParserValueList* valueList, RefPtr<CSSValue>& value)

@@ -207,7 +207,6 @@ column-fill type_name=ColumnFill
 -internal-marquee-repetition type_name=int, name_for_methods=MarqueeLoopCount, custom_value
 -internal-marquee-speed custom_value, name_for_methods=MarqueeSpeed
 -internal-marquee-style name_for_methods=MarqueeBehavior
--webkit-mask-box-image initial=initialNinePieceImage, custom_value
 -webkit-mask-box-image-outset custom_all
 -webkit-mask-box-image-repeat custom_all
 -webkit-mask-box-image-slice custom_all

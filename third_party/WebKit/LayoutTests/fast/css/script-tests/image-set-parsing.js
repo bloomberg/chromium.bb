@@ -97,13 +97,13 @@ testImageSetRule("Multiple values for border-image",
                 "url('#a') 1x, url('#b') 2x", 4,
                 ["a", "1", "b", "2"]);
 
-testImageSetRule("Single value for -webkit-mask-box-image",
-                "-webkit-mask-box-image",
+testImageSetRule("Single value for -webkit-mask-box-image-source",
+                "-webkit-mask-box-image-source",
                 "url('#a') 1x", 2,
                 ["a", "1"]);
 
-testImageSetRule("Multiple values for -webkit-mask-box-image",
-                "-webkit-mask-box-image",
+testImageSetRule("Multiple values for -webkit-mask-box-image-source",
+                "-webkit-mask-box-image-source",
                 "url('#a') 1x, url('#b') 2x", 4,
                 ["a", "1", "b", "2"]);
 

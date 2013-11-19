@@ -261,24 +261,6 @@ static inline PassRefPtr<StyleImage> blendFunc(const AnimationBase* anim, StyleI
     return to;
 }
 
-static inline NinePieceImage blendFunc(const AnimationBase* anim, const NinePieceImage& from, const NinePieceImage& to, double progress)
-{
-    if (!from.hasImage() || !to.hasImage())
-        return to;
-
-    // FIXME (74112): Support transitioning between NinePieceImages that differ by more than image content.
-
-    if (from.imageSlices() != to.imageSlices() || from.borderSlices() != to.borderSlices() || from.outset() != to.outset() || from.fill() != to.fill() || from.horizontalRule() != to.horizontalRule() || from.verticalRule() != to.verticalRule())
-        return to;
-
-    if (from.image()->imageSize(anim->renderer(), 1.0) != to.image()->imageSize(anim->renderer(), 1.0))
-        return to;
-
-    RefPtr<StyleImage> newContentImage = blendFunc(anim, from.image(), to.image(), progress);
-
-    return NinePieceImage(newContentImage, from.imageSlices(), from.fill(), from.borderSlices(), from.outset(), from.horizontalRule(), from.verticalRule());
-}
-
 class AnimationPropertyWrapperBase {
     WTF_MAKE_NONCOPYABLE(AnimationPropertyWrapperBase);
     WTF_MAKE_FAST_ALLOCATED;
@@ -987,7 +969,9 @@ void CSSPropertyAnimation::ensurePropertyMap()
     gPropertyWrappers->append(new PropertyWrapper<const BorderImageLengthBox&>(CSSPropertyBorderImageOutset, &RenderStyle::borderImageOutset, &RenderStyle::setBorderImageOutset));
 
     gPropertyWrappers->append(new StyleImagePropertyWrapper(CSSPropertyWebkitMaskBoxImageSource, &RenderStyle::maskBoxImageSource, &RenderStyle::setMaskBoxImageSource));
-    gPropertyWrappers->append(new PropertyWrapper<const NinePieceImage&>(CSSPropertyWebkitMaskBoxImage, &RenderStyle::maskBoxImage, &RenderStyle::setMaskBoxImage));
+    gPropertyWrappers->append(new PropertyWrapper<LengthBox>(CSSPropertyWebkitMaskBoxImageSlice, &RenderStyle::maskBoxImageSlices, &RenderStyle::setMaskBoxImageSlices));
+    gPropertyWrappers->append(new PropertyWrapper<const BorderImageLengthBox&>(CSSPropertyWebkitMaskBoxImageWidth, &RenderStyle::maskBoxImageWidth, &RenderStyle::setMaskBoxImageWidth));
+    gPropertyWrappers->append(new PropertyWrapper<const BorderImageLengthBox&>(CSSPropertyWebkitMaskBoxImageOutset, &RenderStyle::maskBoxImageOutset, &RenderStyle::setMaskBoxImageOutset));
 
     gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundPositionX, &RenderStyle::backgroundLayers, &RenderStyle::accessBackgroundLayers));
     gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundPositionY, &RenderStyle::backgroundLayers, &RenderStyle::accessBackgroundLayers));

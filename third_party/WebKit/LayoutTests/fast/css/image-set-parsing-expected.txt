@@ -70,7 +70,7 @@ PASS subRule.cssText is '1'
 PASS subRule is 'b'
 PASS subRule.cssText is '2'
 
-Single value for -webkit-mask-box-image : url('#a') 1x
+Single value for -webkit-mask-box-image-source : url('#a') 1x
 PASS jsWrapperClass(imageSetRule) is 'CSSValueList'
 FAIL jsWrapperClass(imageSetRule.__proto__) should be CSSValueListPrototype. Was Object.
 FAIL jsWrapperClass(imageSetRule.constructor) should be CSSValueListConstructor. Was Function.
@@ -78,7 +78,7 @@ PASS imageSetRule.length is 2
 PASS subRule is 'a'
 PASS subRule.cssText is '1'
 
-Multiple values for -webkit-mask-box-image : url('#a') 1x, url('#b') 2x
+Multiple values for -webkit-mask-box-image-source : url('#a') 1x, url('#b') 2x
 PASS jsWrapperClass(imageSetRule) is 'CSSValueList'
 FAIL jsWrapperClass(imageSetRule.__proto__) should be CSSValueListPrototype. Was Object.
 FAIL jsWrapperClass(imageSetRule.constructor) should be CSSValueListConstructor. Was Function.

@@ -893,7 +893,6 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     // CSSPropertyAnimation implements animation of these shorthands
     // directly and makes use of this method.
     case CSSPropertyFlex:
-    case CSSPropertyWebkitMaskBoxImage:
         return !RuntimeEnabledFeatures::webAnimationsCSSEnabled();
     default:
         return false;

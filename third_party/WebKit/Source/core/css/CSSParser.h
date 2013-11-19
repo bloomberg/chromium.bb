@@ -229,7 +229,8 @@ public:
 
     // CSS3 Parsing Routines (for properties specific to CSS3)
     PassRefPtr<CSSValueList> parseShadow(CSSParserValueList*, CSSPropertyID);
-    bool parseBorderImage(CSSPropertyID, RefPtr<CSSValue>&, bool important = false);
+    bool parseBorderImageShorthand(CSSPropertyID, bool important);
+    PassRefPtr<CSSValue> parseBorderImage(CSSPropertyID);
     bool parseBorderImageRepeat(RefPtr<CSSValue>&);
     bool parseBorderImageSlice(CSSPropertyID, RefPtr<CSSBorderImageSliceValue>&);
     bool parseBorderImageWidth(RefPtr<CSSPrimitiveValue>&);
@@ -297,6 +298,8 @@ public:
     bool parseRegionThread(CSSPropertyID, bool important);
 
     bool parseFontVariantLigatures(bool important);
+
+    bool parseGeneratedImage(CSSParserValueList*, RefPtr<CSSValue>&);
 
     CSSParserSelector* createFloatingSelector();
     CSSParserSelector* createFloatingSelectorWithTagName(const QualifiedName&);
@@ -503,9 +506,6 @@ private:
     bool validWidthOrHeight(CSSParserValue*);
 
     void deleteFontFaceOnlyValues();
-
-    bool isGeneratedImageValue(CSSParserValue*) const;
-    bool parseGeneratedImage(CSSParserValueList*, RefPtr<CSSValue>&);
 
     bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, StyleSheetContents* contextStyleSheet);
     PassRefPtr<ImmutableStylePropertySet> parseDeclaration(const String&, StyleSheetContents* contextStyleSheet);
