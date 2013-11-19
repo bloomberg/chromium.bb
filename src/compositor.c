@@ -1612,11 +1612,18 @@ view_list_add_subsurface_view(struct weston_compositor *compositor,
 	}
 
 	weston_view_update_transform(view);
-	wl_list_insert(compositor->view_list.next, &view->link);
 
-	wl_list_for_each(child, &sub->surface->subsurface_list, parent_link)
-		if (child->surface != sub->surface)
+	if (wl_list_empty(&sub->surface->subsurface_list)) {
+		wl_list_insert(compositor->view_list.prev, &view->link);
+		return;
+	}
+
+	wl_list_for_each(child, &sub->surface->subsurface_list, parent_link) {
+		if (child->surface == sub->surface)
+			wl_list_insert(compositor->view_list.prev, &view->link);
+		else
 			view_list_add_subsurface_view(compositor, child, view);
+	}
 }
 
 static void
@@ -1626,11 +1633,18 @@ view_list_add(struct weston_compositor *compositor,
 	struct weston_subsurface *sub;
 
 	weston_view_update_transform(view);
-	wl_list_insert(compositor->view_list.prev, &view->link);
 
-	wl_list_for_each(sub, &view->surface->subsurface_list, parent_link)
-		if (sub->surface != view->surface)
+	if (wl_list_empty(&view->surface->subsurface_list)) {
+		wl_list_insert(compositor->view_list.prev, &view->link);
+		return;
+	}
+
+	wl_list_for_each(sub, &view->surface->subsurface_list, parent_link) {
+		if (sub->surface == view->surface)
+			wl_list_insert(compositor->view_list.prev, &view->link);
+		else
 			view_list_add_subsurface_view(compositor, sub, view);
+	}
 }
 
 static void
