@@ -105,7 +105,6 @@
         'ppb_printing_dev.h',
         'ppb_resource_array_dev.h',
         'ppb_scrollbar_dev.h',
-        'ppb_testing_dev.h',
         'ppb_text_input_dev.h',
         'ppb_trace_event_dev.h',
         'ppb_truetype_font_dev.h',
