@@ -187,6 +187,9 @@ private:
     // Dispatches an event of the specified type to m_upload and
     // m_progressEventThrottle.
     void dispatchEventAndLoadEnd(const AtomicString&);
+
+    void dispatchThrottledProgressEvent();
+
     // Does clean up common for all kind of didFail() call.
     void handleDidFailGeneric();
     // Handles didFail() call not caused by cancellation or timeout.

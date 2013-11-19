@@ -965,6 +965,15 @@ void XMLHttpRequest::dispatchEventAndLoadEnd(const AtomicString& type)
     m_progressEventThrottle.dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(type));
 }
 
+void XMLHttpRequest::dispatchThrottledProgressEvent()
+{
+    long long expectedLength = m_response.expectedContentLength();
+    bool lengthComputable = expectedLength > 0 && m_receivedLength <= expectedLength;
+    unsigned long long total = lengthComputable ? expectedLength : 0;
+
+    m_progressEventThrottle.dispatchProgressEvent(lengthComputable, m_receivedLength, total);
+}
+
 void XMLHttpRequest::handleNetworkError()
 {
     LOG(Network, "XMLHttpRequest %p handleNetworkError()", this);
@@ -1298,13 +1307,8 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
 
     m_receivedLength += len;
 
-    if (m_async) {
-        long long expectedLength = m_response.expectedContentLength();
-        bool lengthComputable = expectedLength > 0 && m_receivedLength <= expectedLength;
-        unsigned long long total = lengthComputable ? expectedLength : 0;
-
-        m_progressEventThrottle.dispatchProgressEvent(lengthComputable, m_receivedLength, total);
-    }
+    if (m_async)
+        dispatchThrottledProgressEvent();
 
     if (m_state != LOADING) {
         changeState(LOADING);
