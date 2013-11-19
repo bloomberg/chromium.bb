@@ -69,9 +69,7 @@ class NET_EXPORT URLRequestContextBuilder {
   URLRequestContextBuilder();
   ~URLRequestContextBuilder();
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
   void set_proxy_config_service(ProxyConfigService* proxy_config_service);
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
   // Call these functions to specify hard-coded Accept-Language
   // or User-Agent header values for all requests that don't
@@ -138,9 +136,7 @@ class NET_EXPORT URLRequestContextBuilder {
   bool http_cache_enabled_;
   HttpCacheParams http_cache_params_;
   HttpNetworkSessionParams http_network_session_params_;
-#if defined(OS_LINUX) || defined(OS_ANDROID)
   scoped_ptr<ProxyConfigService> proxy_config_service_;
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
   scoped_ptr<NetworkDelegate> network_delegate_;
   scoped_ptr<FtpTransactionFactory> ftp_transaction_factory_;
 
