@@ -63,92 +63,6 @@ class ExecutionError(Exception):
 ### Path handling code.
 
 
-def relpath(path, root):
-  """os.path.relpath() that keeps trailing os.path.sep."""
-  out = os.path.relpath(path, root)
-  if path.endswith(os.path.sep):
-    out += os.path.sep
-  return out
-
-
-def safe_relpath(filepath, basepath):
-  """Do not throw on Windows when filepath and basepath are on different drives.
-
-  Different than relpath() above since this one doesn't keep the trailing
-  os.path.sep and it swallows exceptions on Windows and return the original
-  absolute path in the case of different drives.
-  """
-  try:
-    return os.path.relpath(filepath, basepath)
-  except ValueError:
-    assert sys.platform == 'win32'
-    return filepath
-
-
-def normpath(path):
-  """os.path.normpath() that keeps trailing os.path.sep."""
-  out = os.path.normpath(path)
-  if path.endswith(os.path.sep):
-    out += os.path.sep
-  return out
-
-
-def posix_relpath(path, root):
-  """posix.relpath() that keeps trailing slash."""
-  out = posixpath.relpath(path, root)
-  if path.endswith('/'):
-    out += '/'
-  return out
-
-
-def cleanup_path(x):
-  """Cleans up a relative path. Converts any os.path.sep to '/' on Windows."""
-  if x:
-    x = x.rstrip(os.path.sep).replace(os.path.sep, '/')
-  if x == '.':
-    x = ''
-  if x:
-    x += '/'
-  return x
-
-
-def is_url(path):
-  return bool(re.match(r'^https?://.+$', path))
-
-
-def path_starts_with(prefix, path):
-  """Returns true if the components of the path |prefix| are the same as the
-  initial components of |path| (or all of the components of |path|). The paths
-  must be absolute.
-  """
-  assert os.path.isabs(prefix) and os.path.isabs(path)
-  prefix = os.path.normpath(prefix)
-  path = os.path.normpath(path)
-  assert prefix == file_path.get_native_path_case(prefix), prefix
-  assert path == file_path.get_native_path_case(path), path
-  prefix = prefix.rstrip(os.path.sep) + os.path.sep
-  path = path.rstrip(os.path.sep) + os.path.sep
-  return path.startswith(prefix)
-
-
-def fix_native_path_case(root, path):
-  """Ensures that each component of |path| has the proper native case by
-     iterating slowly over the directory elements of |path|."""
-  native_case_path = root
-  for raw_part in path.split(os.sep):
-    if not raw_part or raw_part == '.':
-      break
-
-    part = file_path.find_item_native_case(native_case_path, raw_part)
-    if not part:
-      raise isolateserver.MappingError(
-          'Input file %s doesn\'t exist' %
-          os.path.join(native_case_path, raw_part))
-    native_case_path = os.path.join(native_case_path, part)
-
-  return os.path.normpath(native_case_path)
-
-
 def expand_symlinks(indir, relfile):
   """Follows symlinks in |relfile|, but treating symlinks that point outside the
   build tree as if they were ordinary directories/files. Returns the final
@@ -171,7 +85,7 @@ def expand_symlinks(indir, relfile):
     pre_symlink, symlink, post_symlink = file_path.split_at_symlink(
         done, todo)
     if not symlink:
-      todo = fix_native_path_case(done, todo)
+      todo = file_path.fix_native_path_case(done, todo)
       done = os.path.join(done, todo)
       break
     symlink_path = os.path.join(done, pre_symlink, symlink)
@@ -186,17 +100,17 @@ def expand_symlinks(indir, relfile):
       target = symlink_target
     else:
       # The symlink itself could be using the wrong path case.
-      target = fix_native_path_case(target, symlink_target)
+      target = file_path.fix_native_path_case(target, symlink_target)
 
     if not os.path.exists(target):
       raise isolateserver.MappingError(
           'Symlink target doesn\'t exist: %s -> %s' % (symlink_path, target))
     target = file_path.get_native_path_case(target)
-    if not path_starts_with(indir, target):
+    if not file_path.path_starts_with(indir, target):
       done = symlink_path
       todo = post_symlink
       continue
-    if path_starts_with(target, symlink_path):
+    if file_path.path_starts_with(target, symlink_path):
       raise isolateserver.MappingError(
           'Can\'t map recursive symlink reference %s -> %s' %
           (symlink_path, target))
@@ -234,7 +148,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
     raise isolateserver.MappingError(
         'Can\'t map absolute path %s' % relfile)
 
-  infile = normpath(os.path.join(indir, relfile))
+  infile = file_path.normpath(os.path.join(indir, relfile))
   if not infile.startswith(indir):
     raise isolateserver.MappingError(
         'Can\'t map file %s outside %s' % (infile, indir))
@@ -463,7 +377,7 @@ def process_input(filepath, prevdict, read_only, flavor, algo):
       # here.
       symlink_value = os.readlink(filepath)  # pylint: disable=E1101
       filedir = file_path.get_native_path_case(os.path.dirname(filepath))
-      native_dest = fix_native_path_case(filedir, symlink_value)
+      native_dest = file_path.fix_native_path_case(filedir, symlink_value)
       out['l'] = os.path.relpath(native_dest, filedir)
   return out
 
@@ -660,7 +574,7 @@ def generate_simplified(
         root_dir, variables, relative_cwd))
 
   # Preparation work.
-  relative_cwd = cleanup_path(relative_cwd)
+  relative_cwd = file_path.cleanup_path(relative_cwd)
   assert not os.path.isabs(relative_cwd), relative_cwd
   # Creates the right set of variables here. We only care about PATH_VARIABLES.
   path_variables = dict(
@@ -692,7 +606,7 @@ def generate_simplified(
       # empty if the whole directory containing the gyp file is needed.
       # Use absolute paths in case cwd_dir is outside of root_dir.
       # Convert the whole thing to / since it's isolate's speak.
-      f = posix_relpath(
+      f = file_path.posix_relpath(
           posixpath.join(root_dir_posix, f),
           posixpath.join(root_dir_posix, relative_cwd)) or './'
 
@@ -1530,7 +1444,7 @@ class SavedState(Flattenable):
     # Convert back to a relative path. On Windows, if the isolate and
     # isolated files are on different drives, isolate_file will stay an absolute
     # path.
-    isolate_file = safe_relpath(isolate_file, self.isolated_basedir)
+    isolate_file = file_path.safe_relpath(isolate_file, self.isolated_basedir)
 
     # The same .isolate file should always be used to generate the .isolated and
     # .isolated.state.
@@ -1701,7 +1615,7 @@ class CompleteState(object):
     # inside it.
     for i in PATH_VARIABLES:
       if i in variables:
-        if not path_starts_with(
+        if not file_path.path_starts_with(
             root_dir, os.path.join(relative_base_dir, variables[i])):
           raise isolateserver.MappingError(
               'Path variable %s=%r points outside the inferred root directory'
@@ -1709,11 +1623,13 @@ class CompleteState(object):
     # Normalize the files based to root_dir. It is important to keep the
     # trailing os.path.sep at that step.
     infiles = [
-      relpath(normpath(os.path.join(relative_base_dir, f)), root_dir)
+      file_path.relpath(
+          file_path.normpath(os.path.join(relative_base_dir, f)), root_dir)
       for f in infiles
     ]
     touched = [
-      relpath(normpath(os.path.join(relative_base_dir, f)), root_dir)
+      file_path.relpath(
+          file_path.normpath(os.path.join(relative_base_dir, f)), root_dir)
       for f in touched
     ]
     follow_symlinks = variables['OS'] != 'win'
@@ -1861,7 +1777,7 @@ def load_complete_state(options, cwd, subdir, skip_update):
   else:
     isolate = options.isolate
     if complete_state.saved_state.isolate_file:
-      rel_isolate = safe_relpath(
+      rel_isolate = file_path.safe_relpath(
           options.isolate, complete_state.saved_state.isolated_basedir)
       if rel_isolate != complete_state.saved_state.isolate_file:
         raise ExecutionError(
@@ -2004,7 +1920,7 @@ def CMDarchive(parser, args):
       logging.info('Creating content addressed object store with %d item',
                    len(infiles))
 
-      if is_url(options.outdir):
+      if file_path.is_url(options.outdir):
         isolateserver.upload_tree(
             base_url=options.outdir,
             indir=complete_state.root_dir,
@@ -2114,7 +2030,7 @@ def CMDremap(parser, args):
     options.outdir = run_isolated.make_temp_dir(
         'isolate', complete_state.root_dir)
   else:
-    if is_url(options.outdir):
+    if file_path.is_url(options.outdir):
       parser.error('Can\'t use url for --outdir with mode remap.')
     if not os.path.isdir(options.outdir):
       os.makedirs(options.outdir)
@@ -2182,7 +2098,7 @@ def CMDrun(parser, args):
       help='Skip reading .isolate file and do not refresh the hash of '
            'dependencies')
   options, args = parser.parse_args(args)
-  if options.outdir and is_url(options.outdir):
+  if options.outdir and file_path.is_url(options.outdir):
     parser.error('Can\'t use url for --outdir with mode run.')
 
   complete_state = load_complete_state(
@@ -2421,7 +2337,7 @@ class OptionParserIsolate(tools.OptionParserWithLogging):
       options.isolate = os.path.normpath(os.path.join(cwd, options.isolate))
       options.isolate = file_path.get_native_path_case(options.isolate)
 
-    if options.outdir and not is_url(options.outdir):
+    if options.outdir and not file_path.is_url(options.outdir):
       options.outdir = unicode(options.outdir).replace('/', os.path.sep)
       # outdir doesn't need native path case since tracing is never done from
       # there.

@@ -266,7 +266,7 @@ class IsolateModeBase(IsolateBase):
       u'child_isolated_files': [],
       u'command': [],
       u'files': self._gen_files(read_only, empty_file, True),
-      u'isolate_file': isolate.safe_relpath(
+      u'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(unicode(self.filename())),
           unicode(os.path.dirname(self.isolated))),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
@@ -793,7 +793,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
   def _check_merge(self, filename):
     filepath = file_path.get_native_path_case(
             os.path.join(unicode(ROOT_DIR), 'tests', 'isolate', filename))
-    expected = 'Updating %s\n' % isolate.safe_relpath(filepath, self.tempdir)
+    expected = 'Updating %s\n' % file_path.safe_relpath(filepath, self.tempdir)
     with open(filepath, 'rb') as f:
       old_content = f.read()
     out = self._execute('merge', filename, [], True) or ''

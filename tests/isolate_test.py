@@ -1176,7 +1176,7 @@ class IsolateLoad(IsolateBase):
           's': _size('isolate.py'),
         },
       },
-      'isolate_file': isolate.safe_relpath(
+      'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
       'relative_cwd': os.path.join(u'tests', 'isolate'),
@@ -1232,7 +1232,7 @@ class IsolateLoad(IsolateBase):
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
-      'isolate_file': isolate.safe_relpath(
+      'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
       'relative_cwd': os.path.join(u'tests', 'isolate'),
@@ -1289,7 +1289,7 @@ class IsolateLoad(IsolateBase):
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
-      'isolate_file': isolate.safe_relpath(
+      'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
       'relative_cwd': os.path.join(u'tests', 'isolate'),
@@ -1369,7 +1369,7 @@ class IsolateLoad(IsolateBase):
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
-      'isolate_file': isolate.safe_relpath(
+      'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
       'relative_cwd': os.path.join(u'tests', 'isolate'),
@@ -1464,7 +1464,7 @@ class IsolateLoad(IsolateBase):
           's': _size('tests', 'isolate', 'no_run.isolate'),
         },
       },
-      'isolate_file': isolate.safe_relpath(
+      'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
       'relative_cwd': os.path.join(u'tests', 'isolate'),
@@ -1584,7 +1584,7 @@ class IsolateLoad(IsolateBase):
           u's': _size('tests', 'isolate', 'test', 'data', 'foo.txt'),
         },
       },
-      u'isolate_file': isolate.safe_relpath(
+      u'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(isolate_file),
           unicode(os.path.dirname(options.isolated))),
       u'relative_cwd': u'.',

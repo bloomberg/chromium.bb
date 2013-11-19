@@ -23,6 +23,7 @@ from third_party import colorama
 from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
+from utils import file_path
 from utils import net
 from utils import threading_utils
 from utils import tools
@@ -1142,7 +1143,7 @@ def is_namespace_with_compression(namespace):
 
 def get_storage_api(file_or_url, namespace):
   """Returns an object that implements StorageApi interface."""
-  if re.match(r'^https?://.+$', file_or_url):
+  if file_path.is_url(file_or_url):
     return IsolateServer(file_or_url, namespace)
   else:
     return FileSystem(file_or_url)

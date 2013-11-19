@@ -6,6 +6,7 @@
 
 import logging
 import os
+import posixpath
 import re
 import sys
 import unicodedata
@@ -390,3 +391,96 @@ if sys.platform != 'win32':  # All non-Windows OSes.
         break
       index += 1
     return relfile, None, None
+
+
+def relpath(path, root):
+  """os.path.relpath() that keeps trailing os.path.sep."""
+  out = os.path.relpath(path, root)
+  if path.endswith(os.path.sep):
+    out += os.path.sep
+  return out
+
+
+def safe_relpath(filepath, basepath):
+  """Do not throw on Windows when filepath and basepath are on different drives.
+
+  Different than relpath() above since this one doesn't keep the trailing
+  os.path.sep and it swallows exceptions on Windows and return the original
+  absolute path in the case of different drives.
+  """
+  try:
+    return os.path.relpath(filepath, basepath)
+  except ValueError:
+    assert sys.platform == 'win32'
+    return filepath
+
+
+def normpath(path):
+  """os.path.normpath() that keeps trailing os.path.sep."""
+  out = os.path.normpath(path)
+  if path.endswith(os.path.sep):
+    out += os.path.sep
+  return out
+
+
+def posix_relpath(path, root):
+  """posix.relpath() that keeps trailing slash.
+
+  It is different from relpath() since it can be used on Windows.
+  """
+  out = posixpath.relpath(path, root)
+  if path.endswith('/'):
+    out += '/'
+  return out
+
+
+def cleanup_path(x):
+  """Cleans up a relative path. Converts any os.path.sep to '/' on Windows."""
+  if x:
+    x = x.rstrip(os.path.sep).replace(os.path.sep, '/')
+  if x == '.':
+    x = ''
+  if x:
+    x += '/'
+  return x
+
+
+def is_url(path):
+  """Returns True if it looks like an HTTP url instead of a file path."""
+  return bool(re.match(r'^https?://.+$', path))
+
+
+def path_starts_with(prefix, path):
+  """Returns true if the components of the path |prefix| are the same as the
+  initial components of |path| (or all of the components of |path|). The paths
+  must be absolute.
+  """
+  assert os.path.isabs(prefix) and os.path.isabs(path)
+  prefix = os.path.normpath(prefix)
+  path = os.path.normpath(path)
+  assert prefix == get_native_path_case(prefix), prefix
+  assert path == get_native_path_case(path), path
+  prefix = prefix.rstrip(os.path.sep) + os.path.sep
+  path = path.rstrip(os.path.sep) + os.path.sep
+  return path.startswith(prefix)
+
+
+def fix_native_path_case(root, path):
+  """Ensures that each component of |path| has the proper native case.
+
+  It does so by iterating slowly over the directory elements of |path|. The file
+  must exist.
+  """
+  native_case_path = root
+  for raw_part in path.split(os.sep):
+    if not raw_part or raw_part == '.':
+      break
+
+    part = find_item_native_case(native_case_path, raw_part)
+    if not part:
+      raise OSError(
+          'File %s doesn\'t exist' %
+          os.path.join(native_case_path, raw_part))
+    native_case_path = os.path.join(native_case_path, part)
+
+  return os.path.normpath(native_case_path)
