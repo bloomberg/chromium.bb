@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -745,6 +746,9 @@ void OmniboxViewViews::OnAfterCutOrCopy() {
   bool write_url;
   model()->AdjustTextForCopy(GetSelectedRange().GetMin(), IsSelectAll(),
                              &selected_text, &url, &write_url);
+  if (IsSelectAll())
+    UMA_HISTOGRAM_COUNTS(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
+
   if (write_url) {
     BookmarkNodeData data;
     data.ReadFromTuple(url, selected_text);
@@ -966,7 +970,7 @@ void OmniboxViewViews::OnPaste() {
   const string16 text(GetClipboardText());
   if (!text.empty()) {
     // Record this paste, so we can do different behavior.
-    model()->on_paste();
+    model()->OnPaste();
     // Force a Paste operation to trigger the text_changed code in
     // OnAfterPossibleChange(), even if identical contents are pasted.
     text_before_change_.clear();

@@ -898,7 +898,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   ASSERT_TRUE(omnibox_view->model()->keyword().empty());
 
   omnibox_view->OnBeforePossibleChange();
-  omnibox_view->model()->on_paste();
+  omnibox_view->model()->OnPaste();
   omnibox_view->SetWindowTextAndCaretPos(search_keyword +
       ASCIIToUTF16(" bar"), search_keyword.length() + 4, false, false);
   omnibox_view->OnAfterPossibleChange();

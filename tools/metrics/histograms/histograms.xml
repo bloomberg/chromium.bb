@@ -11419,6 +11419,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.CutOrCopyAllText" units="count">
+  <summary>
+    The number of cut or copy commands on all selected text in the omnibox.
+    Gathered on desktop platforms (Win, Mac, Linux, ChromeOS).
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.EnteredKeywordMode" enum="OmniboxEnteredKeywordMode">
   <summary>
     The number of times users enter keyword hint mode &quot;Search ___
@@ -11437,6 +11444,20 @@ other types of suffix sets.
   <summary>
     The length of time between when a user focused on the omnibox and opened an
     omnibox match (which could be what they typed or a suggestion).
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.Paste" units="count">
+  <summary>
+    The number of paste commands on the text in the omnibox. Reported every time
+    a paste command is done.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.PasteAndGo" units="count">
+  <summary>
+    The number of paste-and-go commands on the text in the omnibox. Reported
+    every time a paste-and-go command is done.
   </summary>
 </histogram>
 

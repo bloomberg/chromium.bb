@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
@@ -599,7 +600,7 @@ void OmniboxViewGtk::OnBeforePossibleChange() {
   // Record this paste, so we can do different behavior.
   if (paste_clipboard_requested_) {
     paste_clipboard_requested_ = false;
-    model()->on_paste();
+    model()->OnPaste();
   }
 
   // This method will be called in HandleKeyPress() method just before
@@ -1566,6 +1567,9 @@ void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
   bool write_url;
   model()->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
                             &url, &write_url);
+
+  if (IsSelectAll())
+    UMA_HISTOGRAM_COUNTS(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
 
   // On other platforms we write |text| to the clipboard regardless of
   // |write_url|.  We don't need to do that here because we fall through to

@@ -495,7 +495,7 @@ void SearchTabHelper::PasteIntoOmnibox(const string16& text) {
     omnibox_view->SetFocus();
 
   omnibox_view->OnBeforePossibleChange();
-  omnibox_view->model()->on_paste();
+  omnibox_view->model()->OnPaste();
   omnibox_view->SetUserText(text_to_paste);
   omnibox_view->OnAfterPossibleChange();
 #endif

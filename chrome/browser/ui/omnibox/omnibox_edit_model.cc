@@ -557,6 +557,8 @@ bool OmniboxEditModel::CanPasteAndGo(const string16& text) const {
 
 void OmniboxEditModel::PasteAndGo(const string16& text) {
   DCHECK(CanPasteAndGo(text));
+  UMA_HISTOGRAM_COUNTS("Omnibox.PasteAndGo", 1);
+
   view_->RevertAll();
   AutocompleteMatch match;
   GURL alternate_nav_url;
@@ -965,6 +967,11 @@ void OmniboxEditModel::OnControlKeyChanged(bool pressed) {
     control_key_state_ = pressed ? DOWN_WITHOUT_CHANGE : UP;
 }
 
+void OmniboxEditModel::OnPaste() {
+  UMA_HISTOGRAM_COUNTS("Omnibox.Paste", 1);
+  paste_state_ = PASTING;
+}
+
 void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
   // NOTE: This purposefully doesn't trigger any code that resets paste_state_.
   if (popup_model()->IsOpen()) {
@@ -1212,6 +1219,10 @@ string16 OmniboxEditModel::GetViewText() const {
 InstantController* OmniboxEditModel::GetInstantController() const {
   return controller_->GetInstant();
 }
+
+// static
+const char OmniboxEditModel::kCutOrCopyAllTextHistogram[] =
+    "Omnibox.CutOrCopyAllText";
 
 bool OmniboxEditModel::query_in_progress() const {
   return !autocomplete_controller()->done();

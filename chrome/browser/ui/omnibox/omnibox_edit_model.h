@@ -268,7 +268,7 @@ class OmniboxEditModel {
   void OnControlKeyChanged(bool pressed);
 
   // Called when the user pastes in text.
-  void on_paste() { paste_state_ = PASTING; }
+  void OnPaste();
 
   // Returns true if pasting is in progress.
   bool is_pasting() const { return paste_state_ == PASTING; }
@@ -327,6 +327,9 @@ class OmniboxEditModel {
   // to InstantController is kept in Browser. We should try to get rid of this,
   // maybe by ensuring InstantController lives as long as Browser.
   InstantController* GetInstantController() const;
+
+  // Name of the histogram tracking cut or copy omnibox commands.
+  static const char kCutOrCopyAllTextHistogram[];
 
  private:
   friend class OmniboxControllerTest;
