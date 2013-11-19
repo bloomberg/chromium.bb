@@ -882,24 +882,12 @@ class PatchSeries(object):
     # to the original repo state.
     project_state = set(
         map(functools.partial(self.GetGitRepoForChange, strict=True), commits))
-    resets, checkouts = [], []
+    resets = []
     for project_dir in project_state:
       current_sha1 = git.RunGit(
           project_dir, ['rev-list', '-n1', 'HEAD']).output.strip()
+      resets.append((project_dir, current_sha1))
       assert current_sha1
-
-      result = git.RunGit(
-          project_dir, ['symbolic-ref', 'HEAD'], error_code_ok=True)
-      if result.returncode == 128: # Detached HEAD.
-        checkouts.append((project_dir, current_sha1))
-      elif result.returncode == 0:
-        checkouts.append((project_dir, result.output.strip()))
-        resets.append((project_dir, current_sha1))
-      else:
-        raise Exception(
-            'Unexpected state from git symbolic-ref HEAD: exit %i\n'
-            'stdout: %s\nstderr: %s'
-            % (result.returncode, result.output, result.error))
 
     committed_cache = self._committed_cache.copy()
 
@@ -916,8 +904,6 @@ class PatchSeries(object):
       # pylint: disable=W0702
       logging.info("Rewinding transaction: failed changes: %s .",
                    ', '.join(map(str, commits)))
-      for project_dir, ref in checkouts:
-        git.RunGit(project_dir, ['checkout', ref])
 
       for project_dir, sha1 in resets:
         git.RunGit(project_dir, ['reset', '--hard', sha1])
