@@ -392,9 +392,6 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   DISALLOW_COPY_AND_ASSIGN(BackendImpl);
 };
 
-// Returns the preferred max cache size given the available disk space.
-NET_EXPORT_PRIVATE int PreferedCacheSize(int64 available);
-
 }  // namespace disk_cache
 
 #endif  // NET_DISK_CACHE_BACKEND_IMPL_H_

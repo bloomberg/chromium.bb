@@ -48,9 +48,36 @@ base::FilePath GetTempCacheName(const base::FilePath& path,
   return base::FilePath();
 }
 
+int64 PreferredCacheSizeInternal(int64 available) {
+  using disk_cache::kDefaultCacheSize;
+  // Return 80% of the available space if there is not enough space to use
+  // kDefaultCacheSize.
+  if (available < kDefaultCacheSize * 10 / 8)
+    return available * 8 / 10;
+
+  // Return kDefaultCacheSize if it uses 10% to 80% of the available space.
+  if (available < kDefaultCacheSize * 10)
+    return kDefaultCacheSize;
+
+  // Return 10% of the available space if the target size
+  // (2.5 * kDefaultCacheSize) is more than 10%.
+  if (available < static_cast<int64>(kDefaultCacheSize) * 25)
+    return available / 10;
+
+  // Return the target size (2.5 * kDefaultCacheSize) if it uses 10% to 1%
+  // of the available space.
+  if (available < static_cast<int64>(kDefaultCacheSize) * 250)
+    return kDefaultCacheSize * 5 / 2;
+
+  // Return 1% of the available space.
+  return available / 100;
+}
+
 }  // namespace
 
 namespace disk_cache {
+
+const int kDefaultCacheSize = 80 * 1024 * 1024;
 
 void DeleteCache(const base::FilePath& path, bool remove_folder) {
   if (remove_folder) {
@@ -109,6 +136,23 @@ bool DelayedCacheCleanup(const base::FilePath& full_path) {
   base::WorkerPool::PostTask(
       FROM_HERE, base::Bind(&CleanupCallback, path, name_str), true);
   return true;
+}
+
+// Returns the preferred maximum number of bytes for the cache given the
+// number of available bytes.
+int PreferredCacheSize(int64 available) {
+  if (available < 0)
+    return kDefaultCacheSize;
+
+  int64 max_size = PreferredCacheSizeInternal(available);
+
+  // Limit cache size to somewhat less than kint32max to avoid potential
+  // integer overflows in cache backend implementations.
+  DCHECK(kDefaultCacheSize * 4 < kint32max);
+  if (max_size > kDefaultCacheSize * 4)
+    max_size = kDefaultCacheSize * 4;
+
+  return implicit_cast<int32>(max_size);
 }
 
 }  // namespace disk_cache

@@ -36,6 +36,13 @@ NET_EXPORT_PRIVATE bool DeleteCacheFile(const base::FilePath& name);
 // task. Used by cache creator itself or by backends for self-restart on error.
 bool DelayedCacheCleanup(const base::FilePath& full_path);
 
+// Returns the preferred max cache size given the available disk space.
+NET_EXPORT_PRIVATE int PreferredCacheSize(int64 available);
+
+// The default cache size should not ideally be exposed, but the blockfile
+// backend uses it for reasons that include testing.
+NET_EXPORT_PRIVATE extern const int kDefaultCacheSize;
+
 }  // namespace disk_cache
 
 #endif  // NET_DISK_CACHE_CACHE_UTIL_H_

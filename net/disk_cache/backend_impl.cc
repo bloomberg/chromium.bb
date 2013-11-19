@@ -45,7 +45,6 @@ const char* kIndexName = "index";
 // for most users.
 const int k64kEntriesStore = 240 * 1000 * 1000;
 const int kBaseTableLen = 64 * 1024;
-const int kDefaultCacheSize = 80 * 1024 * 1024;
 
 // Avoid trimming the cache for the first 5 minutes (10 timer ticks).
 const int kTrimDelay = 10;
@@ -107,37 +106,6 @@ void FinalCleanupCallback(disk_cache::BackendImpl* backend) {
 // ------------------------------------------------------------------------
 
 namespace disk_cache {
-
-// Returns the preferred maximum number of bytes for the cache given the
-// number of available bytes.
-int PreferedCacheSize(int64 available) {
-  // Return 80% of the available space if there is not enough space to use
-  // kDefaultCacheSize.
-  if (available < kDefaultCacheSize * 10 / 8)
-    return static_cast<int32>(available * 8 / 10);
-
-  // Return kDefaultCacheSize if it uses 80% to 10% of the available space.
-  if (available < kDefaultCacheSize * 10)
-    return kDefaultCacheSize;
-
-  // Return 10% of the available space if the target size
-  // (2.5 * kDefaultCacheSize) is more than 10%.
-  if (available < static_cast<int64>(kDefaultCacheSize) * 25)
-    return static_cast<int32>(available / 10);
-
-  // Return the target size (2.5 * kDefaultCacheSize) if it uses 10% to 1%
-  // of the available space.
-  if (available < static_cast<int64>(kDefaultCacheSize) * 250)
-    return kDefaultCacheSize * 5 / 2;
-
-  // Return 1% of the available space if it does not exceed kint32max.
-  if (available < static_cast<int64>(kint32max) * 100)
-    return static_cast<int32>(available / 100);
-
-  return kint32max;
-}
-
-// ------------------------------------------------------------------------
 
 BackendImpl::BackendImpl(const base::FilePath& path,
                          base::MessageLoopProxy* cache_thread,
@@ -1338,12 +1306,7 @@ void BackendImpl::AdjustMaxCacheSize(int table_len) {
   if (table_len)
     available += data_->header.num_bytes;
 
-  max_size_ = PreferedCacheSize(available);
-
-  // Let's not use more than the default size while we tune-up the performance
-  // of bigger caches. TODO(rvargas): remove this limit.
-  if (max_size_ > kDefaultCacheSize * 4)
-    max_size_ = kDefaultCacheSize * 4;
+  max_size_ = PreferredCacheSize(available);
 
   if (!table_len)
     return;

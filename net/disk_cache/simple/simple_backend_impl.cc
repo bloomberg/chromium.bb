@@ -26,7 +26,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "net/base/net_errors.h"
-#include "net/disk_cache/backend_impl.h"
+#include "net/disk_cache/cache_util.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
 #include "net/disk_cache/simple/simple_histogram_macros.h"
@@ -55,9 +55,6 @@ namespace {
 const int kDefaultMaxWorkerThreads = 50;
 
 const char kThreadNamePrefix[] = "SimpleCache";
-
-// Cache size when all other size heuristics failed.
-const uint64 kDefaultCacheSize = 80 * 1024 * 1024;
 
 // Maximum fraction of the cache that one entry can consume.
 const int kMaxFileRatio = 8;
@@ -502,12 +499,7 @@ SimpleBackendImpl::DiskStatResult SimpleBackendImpl::InitCacheStructureOnDisk(
     DCHECK(mtime_result);
     if (!result.max_size) {
       int64 available = base::SysInfo::AmountOfFreeDiskSpace(path);
-      if (available < 0)
-        result.max_size = kDefaultCacheSize;
-      else
-        // TODO(pasko): Move PreferedCacheSize() to cache_util.h. Also fix the
-        // spelling.
-        result.max_size = disk_cache::PreferedCacheSize(available);
+      result.max_size = disk_cache::PreferredCacheSize(available);
     }
     DCHECK(result.max_size);
   }
