@@ -66,23 +66,6 @@ testRegisterInAInstantiateInB_shouldActivateDefinition = function () {
 
 (function () {
 
-var t = async_test('registration context is shared with the template document');
-
-withFrame(t.step_func(function (frame) {
-    var documentA = frame.contentDocument;
-    documentA.body.innerHTML = '<template>foo</template>';
-    var documentB = documentA.body.firstChild.content.ownerDocument;
-    var tester = new TestRegistrationContextSharing(
-        frame.contentWindow, documentA, documentB);
-    tester.testRegistrationContextIsShared();
-    frame.remove();
-    t.done();
-}));
-
-})();
-
-(function () {
-
 var t = async_test('registration context is shared with DOMImplementation-' +
                    'created documents');
 

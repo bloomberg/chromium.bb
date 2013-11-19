@@ -8,7 +8,7 @@
 <script>
 description('Custom element wrappers in templates should be retained');
 
-document.register('x-custom', {
+document.querySelector('template').content.ownerDocument.register('x-custom', {
   prototype: {
     createdCallback: function() {
       this.expando = 'present';

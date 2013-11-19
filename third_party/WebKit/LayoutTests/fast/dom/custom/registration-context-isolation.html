@@ -31,7 +31,9 @@ testRegisterInAInstantiateInB_shouldNotActivateDefinition = function () {
                          'not invoke a callback in this context');
     };
     this.documentA.register('x-u', {prototype: protoU});
-    this.documentB.body.innerHTML = '<x-u></x-u>';
+
+    var container = this.documentB.createElement('div');
+    container.innerHTML = '<x-u></x-u>';
     // if protoU.createdCallback is not invoked; this passed
 };
 
@@ -55,9 +57,10 @@ testRegisterSameName_definitionsShouldNotConflict = function () {
     protoBV.createdCallback = created('document B\'s element V');
     this.documentB.register('x-v', {prototype: protoBV});
 
-    this.documentB.body.innerHTML = '<x-v data-doc="document B"></x-v>';
-    var div = this.documentA.createElement('div');
-    div.innerHTML = '<x-v data-doc="document A"></x-v>';
+    var containerB = this.documentB.createElement('div');
+    containerB.innerHTML = '<x-v data-doc="document B"></x-v>';
+    var containerA = this.documentA.createElement('div');
+    containerA.innerHTML = '<x-v data-doc="document A"></x-v>';
 
     assert_array_equals(
         invocations,
@@ -66,13 +69,13 @@ testRegisterSameName_definitionsShouldNotConflict = function () {
         'should have invoked the created callbacks in reverse creation order');
 
     assert_equals(
-        Object.getPrototypeOf(div.firstChild),
+        Object.getPrototypeOf(containerA.firstChild),
         protoAV,
         'the prototype of element V in document A should be the prototype ' +
         'registered in document A');
 
     assert_equals(
-        Object.getPrototypeOf(this.documentB.body.firstChild),
+        Object.getPrototypeOf(containerB.firstChild),
         protoBV,
         'the prototype of element V in document B should be the prototype ' +
         'registered in document B');
@@ -125,4 +128,24 @@ withFrame(t.step_func(function (frameA) {
 }));
 
 })();
+
+(function () {
+
+var t = async_test('registration context should not be shared with the ' +
+                   'template document');
+
+withFrame(t.step_func(function (frame) {
+    var documentA = frame.contentDocument;
+    documentA.body.innerHTML = '<template>foo</template>';
+    var documentB = documentA.body.firstChild.content.ownerDocument;
+    var tester = new TestRegistrationContextIsolation(
+        frame.contentWindow, documentA,
+        frame.contentWindow, documentB);
+    tester.testRegistrationContextIsNotShared();
+    frame.remove();
+    t.done();
+}));
+
+})();
+
 </script>
