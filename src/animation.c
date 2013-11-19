@@ -127,9 +127,10 @@ struct weston_view_animation {
 	weston_view_animation_frame_func_t reset;
 	weston_view_animation_done_func_t done;
 	void *data;
+	void *private;
 };
 
-static void
+WL_EXPORT void
 weston_view_animation_destroy(struct weston_view_animation *animation)
 {
 	wl_list_remove(&animation->animation.link);
@@ -185,7 +186,8 @@ weston_view_animation_run(struct weston_view *view,
 			  weston_view_animation_frame_func_t frame,
 			  weston_view_animation_frame_func_t reset,
 			  weston_view_animation_done_func_t done,
-			  void *data)
+			  void *data,
+			  void *private)
 {
 	struct weston_view_animation *animation;
 
@@ -200,6 +202,7 @@ weston_view_animation_run(struct weston_view *view,
 	animation->data = data;
 	animation->start = start;
 	animation->stop = stop;
+	animation->private = private;
 	weston_matrix_init(&animation->transform.matrix);
 	wl_list_insert(&view->geometry.transformation_list,
 		       &animation->transform.link);
@@ -257,7 +260,7 @@ weston_zoom_run(struct weston_view *view, float start, float stop,
 
 	zoom = weston_view_animation_run(view, start, stop,
 					 zoom_frame, reset_alpha,
-					 done, data);
+					 done, data, NULL);
 
 	weston_spring_init(&zoom->spring, 300.0, start, stop);
 	zoom->spring.friction = 1400;
@@ -286,7 +289,7 @@ weston_fade_run(struct weston_view *view,
 
 	fade = weston_view_animation_run(view, 0, end,
 					 fade_frame, reset_alpha,
-					 done, data);
+					 done, data, NULL);
 
 	weston_spring_init(&fade->spring, k, start, end);
 
@@ -302,6 +305,46 @@ WL_EXPORT void
 weston_fade_update(struct weston_view_animation *fade, float target)
 {
 	fade->spring.target = target;
+}
+
+static void
+stable_fade_frame(struct weston_view_animation *animation)
+{
+	struct weston_view *back_view;
+
+	if (animation->spring.current > 0.999)
+		animation->view->alpha = 1;
+	else if (animation->spring.current < 0.001 )
+		animation->view->alpha = 0;
+	else
+		animation->view->alpha = animation->spring.current;
+
+	back_view = (struct weston_view *) animation->private;
+	back_view->alpha =
+		(animation->spring.target - animation->view->alpha) /
+		(1.0 - animation->view->alpha);
+	weston_view_geometry_dirty(back_view);
+}
+
+WL_EXPORT struct weston_view_animation *
+weston_stable_fade_run(struct weston_view *front_view, float start,
+		struct weston_view *back_view, float end,
+		weston_view_animation_done_func_t done, void *data)
+{
+	struct weston_view_animation *fade;
+
+	fade = weston_view_animation_run(front_view, 0, 0,
+					    stable_fade_frame, NULL,
+					    done, data, back_view);
+
+
+	weston_spring_init(&fade->spring, 400, start, end);
+	fade->spring.friction = 1150;
+
+	front_view->alpha = start;
+	back_view->alpha = end;
+
+	return fade;
 }
 
 static void
@@ -324,7 +367,7 @@ weston_slide_run(struct weston_view *view, float start, float stop,
 
 	animation = weston_view_animation_run(view, start, stop,
 					      slide_frame, NULL, done,
-					      data);
+					      data, NULL);
 	if (!animation)
 		return NULL;
 

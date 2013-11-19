@@ -1271,6 +1271,9 @@ weston_watch_process(struct weston_process *process);
 struct weston_view_animation;
 typedef	void (*weston_view_animation_done_func_t)(struct weston_view_animation *animation, void *data);
 
+void
+weston_view_animation_destroy(struct weston_view_animation *animation);
+
 struct weston_view_animation *
 weston_zoom_run(struct weston_view *view, float start, float stop,
 		weston_view_animation_done_func_t done, void *data);
@@ -1281,6 +1284,11 @@ weston_fade_run(struct weston_view *view,
 		weston_view_animation_done_func_t done, void *data);
 void
 weston_fade_update(struct weston_view_animation *fade, float target);
+
+struct weston_view_animation *
+weston_stable_fade_run(struct weston_view *front_view, float start,
+		       struct weston_view *back_view, float end,
+		       weston_view_animation_done_func_t done, void *data);
 
 struct weston_view_animation *
 weston_slide_run(struct weston_view *view, float start, float stop,
