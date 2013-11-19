@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "gin/gin.h"
 #include "gin/test/v8_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
@@ -30,11 +31,11 @@ namespace gin {
 typedef V8Test ConverterTest;
 
 TEST_F(ConverterTest, Bool) {
-  HandleScope handle_scope(isolate_);
+  HandleScope handle_scope(instance_->isolate());
 
-  EXPECT_TRUE(Converter<bool>::ToV8(isolate_, true)->StrictEquals(
+  EXPECT_TRUE(Converter<bool>::ToV8(instance_->isolate(), true)->StrictEquals(
       Boolean::New(true)));
-  EXPECT_TRUE(Converter<bool>::ToV8(isolate_, false)->StrictEquals(
+  EXPECT_TRUE(Converter<bool>::ToV8(instance_->isolate(), false)->StrictEquals(
       Boolean::New(false)));
 
   struct {
@@ -66,11 +67,11 @@ TEST_F(ConverterTest, Bool) {
 }
 
 TEST_F(ConverterTest, Int32) {
-  HandleScope handle_scope(isolate_);
+  HandleScope handle_scope(instance_->isolate());
 
   int test_data_to[] = {-1, 0, 1};
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data_to); ++i) {
-    EXPECT_TRUE(Converter<int32_t>::ToV8(isolate_,
+    EXPECT_TRUE(Converter<int32_t>::ToV8(instance_->isolate(),
         test_data_to[i])->StrictEquals(Integer::New(test_data_to[i])));
   }
 
@@ -104,7 +105,7 @@ TEST_F(ConverterTest, Int32) {
 }
 
 TEST_F(ConverterTest, Vector) {
-  HandleScope handle_scope(isolate_);
+  HandleScope handle_scope(instance_->isolate());
 
   std::vector<int> expected;
   expected.push_back(-1);
@@ -112,7 +113,7 @@ TEST_F(ConverterTest, Vector) {
   expected.push_back(1);
 
   Handle<Array> js_array = Handle<Array>::Cast(
-      Converter<std::vector<int> >::ToV8(isolate_, expected));
+      Converter<std::vector<int> >::ToV8(instance_->isolate(), expected));
   ASSERT_FALSE(js_array.IsEmpty());
   EXPECT_EQ(3u, js_array->Length());
   for (size_t i = 0; i < expected.size(); ++i) {

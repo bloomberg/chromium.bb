@@ -42,6 +42,7 @@ Runner::Runner(RunnerDelegate* delegate, Isolate* isolate)
     : ContextHolder(isolate),
       delegate_(delegate),
       weak_factory_(this) {
+  v8::Isolate::Scope isolate_scope(isolate);
   HandleScope handle_scope(isolate);
   SetContext(Context::New(isolate, NULL, delegate_->GetGlobalTemplate(this)));
 
@@ -66,7 +67,8 @@ void Runner::Run(v8::Handle<Script> script) {
 }
 
 Runner::Scope::Scope(Runner* runner)
-    : handle_scope_(runner->isolate()),
+    : isolate_scope_(runner->isolate()),
+      handle_scope_(runner->isolate()),
       scope_(runner->context()) {
 }
 

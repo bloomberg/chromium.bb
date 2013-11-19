@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "gin/converter.h"
+#include "gin/gin.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using v8::Isolate;
@@ -18,8 +19,10 @@ namespace gin {
 TEST(RunnerTest, Run) {
   std::string source = "this.result = 'PASS';\n";
 
+  gin::Gin instance;
+
   RunnerDelegate delegate;
-  Isolate* isolate = Isolate::GetCurrent();
+  Isolate* isolate = instance.isolate();
   Runner runner(&delegate, isolate);
   Runner::Scope scope(&runner);
   runner.Run(source);

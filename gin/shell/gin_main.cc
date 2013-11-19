@@ -6,8 +6,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/i18n/icu_util.h"
 #include "base/message_loop/message_loop.h"
-#include "gin/initialize.h"
+#include "gin/gin.h"
 #include "gin/modules/console.h"
 #include "gin/modules/module_runner_delegate.h"
 #include "gin/test/file_runner.h"
@@ -58,12 +59,14 @@ class ShellRunnerDelegate : public ModuleRunnerDelegate {
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   CommandLine::Init(argc, argv);
-  gin::Initialize();
+  base::i18n::InitializeICU();
+
+  gin::Gin instance;
 
   base::MessageLoop message_loop;
 
   gin::ShellRunnerDelegate delegate;
-  gin::Runner runner(&delegate, v8::Isolate::GetCurrent());
+  gin::Runner runner(&delegate, instance.isolate());
 
   CommandLine::StringVector args = CommandLine::ForCurrentProcess()->GetArgs();
   for (CommandLine::StringVector::const_iterator it = args.begin();

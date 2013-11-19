@@ -37,8 +37,8 @@
         'converter.h',
         'dictionary.cc',
         'dictionary.h',
-        'initialize.cc',
-        'initialize.h',
+        'gin.cc',
+        'gin.h',
         'per_context_data.cc',
         'per_context_data.h',
         'per_isolate_data.cc',
@@ -55,6 +55,7 @@
       'target_name': 'gin_shell',
       'type': 'executable',
       'dependencies': [
+        '../base/base.gyp:base_i18n',
         'gin',
       ],
       'sources': [

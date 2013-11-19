@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "gin/converter.h"
+#include "gin/gin.h"
 #include "gin/modules/module_registry.h"
 #include "gin/test/gtest.h"
 #include "gin/try_catch.h"
@@ -46,17 +47,20 @@ void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate) {
 
   base::MessageLoop message_loop;
 
-  gin::Runner runner(delegate, v8::Isolate::GetCurrent());
-  gin::Runner::Scope scope(&runner);
-  runner.Run(source);
+  gin::Gin instance;
+  gin::Runner runner(delegate, instance.isolate());
+  {
+    gin::Runner::Scope scope(&runner);
+    runner.Run(source);
 
-  message_loop.RunUntilIdle();
+    message_loop.RunUntilIdle();
 
-  v8::Handle<v8::Value> result = runner.context()->Global()->Get(
-      StringToSymbol(runner.isolate(), "result"));
-  std::string result_string;
-  ASSERT_TRUE(ConvertFromV8(result, &result_string));
-  EXPECT_EQ("PASS", result_string);
+    v8::Handle<v8::Value> result = runner.context()->Global()->Get(
+        StringToSymbol(runner.isolate(), "result"));
+    std::string result_string;
+    ASSERT_TRUE(ConvertFromV8(result, &result_string));
+    EXPECT_EQ("PASS", result_string);
+  }
 }
 
 }  // namespace gin
