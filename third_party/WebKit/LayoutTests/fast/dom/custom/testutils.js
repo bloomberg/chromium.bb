@@ -48,7 +48,7 @@ withFrame = function (f) {
             testFailed(e);
         }
     };
-    frame.src = 'data:text/html,';
+    frame.src = 'about:blank';
     document.body.appendChild(frame);
 };
 
