@@ -59,6 +59,7 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
     void dispatchEventAndLoadEnd(PassRefPtr<Event>);
+    void dispatchProgressEvent(unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
 
 private:
     explicit XMLHttpRequestUpload(XMLHttpRequest*);
@@ -68,6 +69,11 @@ private:
 
     XMLHttpRequest* m_xmlHttpRequest;
     EventTargetData m_eventTargetData;
+
+    // Last progress event values; used when issuing the
+    // required 'progress' event on a request error or abort.
+    unsigned long long m_lastBytesSent;
+    unsigned long long m_lastTotalBytesToBeSent;
 };
 
 } // namespace WebCore

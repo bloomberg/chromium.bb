@@ -37,6 +37,8 @@ namespace WebCore {
 
 XMLHttpRequestUpload::XMLHttpRequestUpload(XMLHttpRequest* xmlHttpRequest)
     : m_xmlHttpRequest(xmlHttpRequest)
+    , m_lastBytesSent(0)
+    , m_lastTotalBytesToBeSent(0)
 {
     ScriptWrappable::init(this);
 }
@@ -49,6 +51,13 @@ const AtomicString& XMLHttpRequestUpload::interfaceName() const
 ExecutionContext* XMLHttpRequestUpload::executionContext() const
 {
     return m_xmlHttpRequest->executionContext();
+}
+
+void XMLHttpRequestUpload::dispatchProgressEvent(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
+{
+    m_lastBytesSent = bytesSent;
+    m_lastTotalBytesToBeSent = totalBytesToBeSent;
+    dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::progress, true, bytesSent, totalBytesToBeSent));
 }
 
 void XMLHttpRequestUpload::dispatchEventAndLoadEnd(PassRefPtr<Event> event)
