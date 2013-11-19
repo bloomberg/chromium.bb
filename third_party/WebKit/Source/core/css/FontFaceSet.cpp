@@ -40,6 +40,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
+#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "public/platform/Platform.h"
 

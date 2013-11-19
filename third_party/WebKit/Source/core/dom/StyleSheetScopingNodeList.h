@@ -34,16 +34,6 @@
 
 namespace WebCore {
 
-inline bool isTreeScopeRoot(const Node* node)
-{
-    return !node || node->isDocumentNode() || node->isShadowRoot();
-}
-
-inline bool isTreeScopeRoot(const Node& node)
-{
-    return node.isDocumentNode() || node.isShadowRoot();
-}
-
 class StyleSheetScopingNodeList {
     WTF_MAKE_NONCOPYABLE(StyleSheetScopingNodeList); WTF_MAKE_FAST_ALLOCATED;
 public:

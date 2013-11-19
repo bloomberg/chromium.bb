@@ -29,6 +29,7 @@
 #include "core/dom/StyleSheetScopingNodeList.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 

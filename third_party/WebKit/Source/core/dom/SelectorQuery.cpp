@@ -34,6 +34,7 @@
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/Node.h"
 #include "core/dom/StaticNodeList.h"
 
 namespace WebCore {
@@ -179,12 +180,6 @@ PassRefPtr<Element> SelectorDataList::queryFirst(Node& rootNode) const
     return executeQueryFirst(rootNode);
 }
 
-static inline bool isTreeScopeRoot(Node* node)
-{
-    ASSERT(node);
-    return node->isDocumentNode() || node->isShadowRoot();
-}
-
 void SelectorDataList::collectElementsByClassName(Node& rootNode, const AtomicString& className, Vector<RefPtr<Node> >& traversalRoots) const
 {
     for (Element* element = ElementTraversal::firstWithin(rootNode); element; element = ElementTraversal::next(*element, &rootNode)) {
@@ -258,7 +253,7 @@ PassOwnPtr<SimpleNodeList> SelectorDataList::findTraverseRoots(Node& rootNode, b
         if (selector->m_match == CSSSelector::Id && !rootNode.document().containsMultipleElementsWithId(selector->value())) {
             Element* element = rootNode.treeScope().getElementById(selector->value());
             Node* adjustedNode = &rootNode;
-            if (element && (isTreeScopeRoot(&rootNode) || element->isDescendantOf(&rootNode)))
+            if (element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)))
                 adjustedNode = element;
             else if (!element || isRightmostSelector)
                 adjustedNode = 0;
