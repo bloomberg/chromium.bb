@@ -63,10 +63,15 @@ review="chromium-review.googlesource.com"/>
 
   <project groups="minilayout,buildtools" name="chromiumos/chromite" \
 path="chromite" revision="refs/heads/special-branch"/>
-  <project name="chromiumos/special" path="src/special" \
-revision="special-branch2"/>
+  <project name="chromiumos/special" path="src/special-new" \
+revision="new-special-branch"/>
+  <project name="chromiumos/special" path="src/special-old" \
+revision="old-special-branch"/>
 </manifest>"""
 
+CHROMITE_REVISION = "fb46d34d7cd4b9c167b74f494f2a99b68df50b18"
+SPECIAL_REVISION1 = "7bc42f093d644eeaf1c77fab60883881843c3c65"
+SPECIAL_REVISION2 = "6270eb3b4f78d9bffec77df50f374f5aae72b370"
 
 VERSIONED_MANIFEST_CONTENTS = """\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -85,11 +90,8 @@ review="https://special.googlesource.com/"/>
   <project name="chromeos/manifest-internal" path="manifest-internal" \
 remote="cros-internal" revision="fe72f0912776fa4596505e236e39286fb217961b" \
 upstream="refs/heads/master"/>
-  <project name="chromium/deps/libmtp" path="chromium/src/third_party/libmtp" \
-revision="7bc42f093d644eeaf1c77fab60883881843c3c65" \
-upstream="refs/heads/master"/>
   <project groups="minilayout,buildtools" name="chromiumos/chromite" \
-path="chromite" revision="fb46d34d7cd4b9c167b74f494f2a99b68df50b18" \
+path="chromite" revision="%(chromite_revision)s" \
 upstream="refs/heads/master"/>
   <project name="chromiumos/manifest" path="manifest" \
 revision="f24b69176b16bf9153f53883c0cc752df8e07d8b" \
@@ -98,10 +100,15 @@ upstream="refs/heads/master"/>
 path="src/third_party/chromiumos-overlay" \
 revision="3ac713c65b5d18585e606a0ee740385c8ec83e44" \
 upstream="refs/heads/master"/>
-  <project name="chromiumos/special" path="src/special" remote="special" \
-revision="6270eb3b4f78d9bffec77df50f374f5aae72b370" \
-upstream="special-upstream"/>
-</manifest>"""
+  <project name="chromiumos/special" path="src/special-new" \
+revision="%(special_revision1)s" \
+upstream="new-special-branch"/>
+  <project name="chromiumos/special" path="src/special-old" \
+revision="%(special_revision2)s" \
+upstream="old-special-branch"/>
+</manifest>""" % dict(chromite_revision=CHROMITE_REVISION,
+                      special_revision1=SPECIAL_REVISION1,
+                      special_revision2=SPECIAL_REVISION2)
 
 
 # pylint: disable=E1111,E1120,W0212,R0901,R0904
@@ -2014,6 +2021,32 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
   def ConstructStage(self):
     return stages.BranchUtilStage(self.options, self.build_config)
 
+  def _VerifyPush(self, new_branch, rename_from=None, delete=False):
+    """Verify that |new_branch| has been created.
+
+    Args:
+      new_branch: The new branch to create (or delete).
+      rename_from: If set, |rename_from| is being renamed to |new_branch|.
+      delete: If set, |new_branch| is being deleted.
+    """
+    # Calculate source and destination revisions.
+    suffixes = ['', '-new-special-branch', '-old-special-branch']
+    if delete:
+      src_revs = [''] * len(suffixes)
+    elif rename_from is not None:
+      src_revs = ['%s%s' % (rename_from, suffix) for suffix in suffixes]
+    else:
+      src_revs = [CHROMITE_REVISION, SPECIAL_REVISION1, SPECIAL_REVISION2]
+    dest_revs = ['%s%s' % (new_branch, suffix) for suffix in suffixes]
+
+    # Verify pushes happened correctly.
+    for src_rev, dest_rev in zip(src_revs, dest_revs):
+      cmd = ['push', '%s:%s' % (src_rev, dest_rev)]
+      self.rc_mock.assertCommandContains(cmd)
+      if rename_from is not None:
+        cmd = ['push', ':%s' % (src_rev,)]
+        self.rc_mock.assertCommandContains(cmd)
+
   def testRelease(self):
     """Run-through of branch creation."""
     before = manifest_version.VersionInfo.from_repo(self.build_root)
@@ -2024,10 +2057,21 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
     self.assertEquals(int(after.build_number) - int(before.build_number), 1)
 
     # Verify that manifests were branched properly.
+    branch_names = {
+      'chromite': self.norm_name,
+      'src/special-new': self.norm_name + '-new-special-branch',
+      'src/special-old': self.norm_name + '-old-special-branch',
+    }
     for m in ['manifest/full.xml', 'manifest-internal/full.xml']:
       manifest = git.Manifest(os.path.join(self.build_root, m))
       for project_data in manifest.checkouts_by_path.itervalues():
-        self.assertEquals(project_data['revision'], self.norm_name)
+        branch_name = branch_names[project_data['path']]
+        msg = (
+            'Branch name for %s should be %r, but got %r' %
+                (project_data['path'], branch_name, project_data['revision'])
+        )
+        self.assertEquals(project_data['revision'], branch_name, msg)
+    self._VerifyPush(self.norm_name)
 
   def testNonRelease(self):
     """Non-release branch creation."""
@@ -2042,24 +2086,26 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
     # Verify only branch number is bumped.
     self.assertEquals(after.chrome_branch, before.chrome_branch)
     self.assertEquals(int(after.build_number) - int(before.build_number), 1)
+    self._VerifyPush(self.options.branch_name)
 
   def testDeletion(self):
     """Branch deletion."""
     self.options.delete_branch = True
     self.rc_mock.AddCmdResult(
-        partial_mock.ListRegex('git ls-remote .*'), output='remote')
+        partial_mock.ListRegex('git ls-remote .*release-test-branch.*'),
+        output='remote'
+    )
     self.RunStage()
+    self._VerifyPush(self.norm_name, delete=True)
 
   def testRename(self):
     """Branch rename."""
     self.options.rename_to = 'refs/heads/release-rename'
     self.rc_mock.AddCmdResult(
-        partial_mock.ListRegex('git ls-remote .*'), output='remote')
+        partial_mock.ListRegex('git ls-remote .*release-test-branch.*'),
+        output='remote')
     self.RunStage()
-    self.rc_mock.assertCommandContains(
-        ['push', '%s:%s' % (self.norm_name, self.options.rename_to)])
-    self.rc_mock.assertCommandContains(
-        ['push', ':%s' % self.norm_name])
+    self._VerifyPush(self.options.rename_to, rename_from=self.norm_name)
 
   def testDryRun(self):
     """Verify all pushes are done with --dryrun when --debug is set."""

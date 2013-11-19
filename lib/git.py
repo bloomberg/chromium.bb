@@ -269,6 +269,10 @@ class ProjectCheckout(dict):
       remote = self['remote']
       raise AssertionError('Remote %s is not pushable.' % (remote,))
 
+  def IsCrosProject(self):
+    """Return whether this project is hosted on ChromeOS git servers."""
+    return self['remote'] in constants.CROS_REMOTES
+
   def GetPath(self, absolute=False):
     """Get the path to the checkout.
 
@@ -753,7 +757,7 @@ class ManifestCheckout(Manifest):
         obj = None
         break
     if obj is None:
-      obj = cls(manifest_path)
+      obj = cls(root, manifest_path=manifest_path)
       sources = tuple((abspath, cls._GetManifestHash(abspath))
                       for (target, abspath) in obj.includes)
       cls._instance_cache[(root, md5)] = (obj, sources)
