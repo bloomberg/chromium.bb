@@ -2170,9 +2170,6 @@ TEST_F(ViewTest, OnVisibleBoundsChanged) {
   widget->CloseNow();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// BoundsChanged()
-
 TEST_F(ViewTest, SetBoundsPaint) {
   TestView top_view;
   TestView* child_view = new TestView;
@@ -2190,6 +2187,17 @@ TEST_F(ViewTest, SetBoundsPaint) {
   gfx::Rect paint_rect = top_view.scheduled_paint_rects_[0];
   paint_rect.Union(top_view.scheduled_paint_rects_[1]);
   EXPECT_EQ(gfx::Rect(10, 10, 40, 40), paint_rect);
+}
+
+// Verifies SetBounds(same bounds) doesn't trigger a SchedulePaint().
+TEST_F(ViewTest, SetBoundsSameBoundsDoesntSchedulePaint) {
+  TestView view;
+
+  view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  view.InvalidateLayout();
+  view.scheduled_paint_rects_.clear();
+  view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  EXPECT_TRUE(view.scheduled_paint_rects_.empty());
 }
 
 // Tests conversion methods with a transform.

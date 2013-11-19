@@ -54,8 +54,6 @@ void SingleSplitView::Layout() {
     }
   }
 
-  SchedulePaint();
-
   // Invoke super's implementation so that the children are layed out.
   View::Layout();
 }

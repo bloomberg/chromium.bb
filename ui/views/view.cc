@@ -323,7 +323,6 @@ void View::SetBoundsRect(const gfx::Rect& bounds) {
     if (needs_layout_) {
       needs_layout_ = false;
       Layout();
-      SchedulePaint();
     }
     return;
   }
