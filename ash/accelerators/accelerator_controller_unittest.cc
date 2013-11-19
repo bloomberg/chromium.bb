@@ -615,17 +615,17 @@ TEST_F(AcceleratorControllerTest, MAYBE_ProcessOnce) {
 #if defined(OS_WIN)
   MSG msg1 = { NULL, WM_KEYDOWN, ui::VKEY_A, 0 };
   ui::TranslatedKeyEvent key_event1(msg1, false);
-  EXPECT_TRUE(dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(
+  EXPECT_TRUE(dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(
       &key_event1));
 
   MSG msg2 = { NULL, WM_CHAR, L'A', 0 };
   ui::TranslatedKeyEvent key_event2(msg2, true);
-  EXPECT_FALSE(dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(
+  EXPECT_FALSE(dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(
       &key_event2));
 
   MSG msg3 = { NULL, WM_KEYUP, ui::VKEY_A, 0 };
   ui::TranslatedKeyEvent key_event3(msg3, false);
-  EXPECT_FALSE(dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(
+  EXPECT_FALSE(dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(
       &key_event3));
 #elif defined(USE_X11)
   XEvent key_event;
@@ -634,11 +634,11 @@ TEST_F(AcceleratorControllerTest, MAYBE_ProcessOnce) {
                               0,
                               &key_event);
   ui::TranslatedKeyEvent key_event1(&key_event, false);
-  EXPECT_TRUE(dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(
+  EXPECT_TRUE(dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(
       &key_event1));
 
   ui::TranslatedKeyEvent key_event2(&key_event, true);
-  EXPECT_FALSE(dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(
+  EXPECT_FALSE(dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(
       &key_event2));
 
   ui::InitXKeyEventForTesting(ui::ET_KEY_RELEASED,
@@ -646,7 +646,7 @@ TEST_F(AcceleratorControllerTest, MAYBE_ProcessOnce) {
                               0,
                               &key_event);
   ui::TranslatedKeyEvent key_event3(&key_event, false);
-  EXPECT_FALSE(dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(
+  EXPECT_FALSE(dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(
       &key_event3));
 #endif
   EXPECT_EQ(1, target.accelerator_pressed_count());

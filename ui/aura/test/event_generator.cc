@@ -586,8 +586,8 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
     }
     pending_events_.push_back(pending_event);
   } else {
-    RootWindowHostDelegate* root_window_host_delegate =
-        current_root_window_->AsRootWindowHostDelegate();
+    WindowTreeHostDelegate* root_window_host_delegate =
+        current_root_window_->AsWindowTreeHostDelegate();
     if (event->IsKeyEvent()) {
       root_window_host_delegate->OnHostKeyEvent(
           static_cast<ui::KeyEvent*>(event));

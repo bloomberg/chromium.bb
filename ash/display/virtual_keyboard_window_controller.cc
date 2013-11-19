@@ -41,7 +41,7 @@ void VirtualKeyboardWindowController::UpdateWindow(
     const gfx::Rect& bounds_in_native = display_info.bounds_in_native();
     aura::RootWindow::CreateParams params(bounds_in_native);
     params.host = Shell::GetInstance()->root_window_host_factory()->
-        CreateRootWindowHost(bounds_in_native);
+        CreateWindowTreeHost(bounds_in_native);
     aura::RootWindow* root_window = new aura::RootWindow(params);
 
     root_window->window()->SetName(

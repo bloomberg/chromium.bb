@@ -674,7 +674,7 @@ void NativeWidgetAura::SetVisibilityChangedAnimationsEnabled(bool value) {
 
 ui::NativeTheme* NativeWidgetAura::GetNativeTheme() const {
 #if !defined(OS_CHROMEOS)
-  return DesktopRootWindowHost::GetNativeTheme(window_);
+  return DesktopWindowTreeHost::GetNativeTheme(window_);
 #else
   return ui::NativeThemeAura::instance();
 #endif
@@ -990,7 +990,7 @@ void CloseWindow(aura::Window* window) {
 #if defined(OS_WIN)
 BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
   aura::Window* root_window =
-      DesktopRootWindowHostWin::GetContentWindowForHWND(hwnd);
+      DesktopWindowTreeHostWin::GetContentWindowForHWND(hwnd);
   CloseWindow(root_window);
   return TRUE;
 }
@@ -1005,9 +1005,9 @@ void Widget::CloseAllSecondaryWidgets() {
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
   std::vector<aura::Window*> open_windows =
-      DesktopRootWindowHostX11::GetAllOpenWindows();
+      DesktopWindowTreeHostX11::GetAllOpenWindows();
   std::for_each(open_windows.begin(), open_windows.end(), CloseWindow);
-  DesktopRootWindowHostX11::CleanUpWindowList();
+  DesktopWindowTreeHostX11::CleanUpWindowList();
 #endif
 }
 

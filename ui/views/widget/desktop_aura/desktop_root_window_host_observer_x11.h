@@ -10,9 +10,9 @@
 namespace views {
 
 // Allows for the observation of lower level window events.
-class VIEWS_EXPORT DesktopRootWindowHostObserverX11 {
+class VIEWS_EXPORT DesktopWindowTreeHostObserverX11 {
  public:
-  virtual ~DesktopRootWindowHostObserverX11() {}
+  virtual ~DesktopWindowTreeHostObserverX11() {}
 
   // Called after we receive a MapNotify event (the X11 server has allocated
   // resources for it).

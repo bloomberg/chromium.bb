@@ -27,18 +27,18 @@ class Compositor;
 namespace aura {
 
 class RootWindow;
-class RootWindowHostDelegate;
+class WindowTreeHostDelegate;
 class RootWindowTransformer;
 
-// RootWindowHost bridges between a native window and the embedded RootWindow.
+// WindowTreeHost bridges between a native window and the embedded RootWindow.
 // It provides the accelerated widget and maps events from the native os to
 // aura.
-class AURA_EXPORT RootWindowHost {
+class AURA_EXPORT WindowTreeHost {
  public:
-  virtual ~RootWindowHost();
+  virtual ~WindowTreeHost();
 
-  // Creates a new RootWindowHost. The caller owns the returned value.
-  static RootWindowHost* Create(const gfx::Rect& bounds);
+  // Creates a new WindowTreeHost. The caller owns the returned value.
+  static WindowTreeHost* Create(const gfx::Rect& bounds);
 
   void InitHost();
 
@@ -63,7 +63,7 @@ class AURA_EXPORT RootWindowHost {
   // (gfx::Screen only reports on the virtual desktop exposed by Aura.)
   static gfx::Size GetNativeScreenSize();
 
-  void set_delegate(RootWindowHostDelegate* delegate) {
+  void set_delegate(WindowTreeHostDelegate* delegate) {
     delegate_ = delegate;
   }
 
@@ -87,16 +87,16 @@ class AURA_EXPORT RootWindowHost {
   // Returns the accelerated widget.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;
 
-  // Shows the RootWindowHost.
+  // Shows the WindowTreeHost.
   virtual void Show() = 0;
 
-  // Hides the RootWindowHost.
+  // Hides the WindowTreeHost.
   virtual void Hide() = 0;
 
   // Toggles the host's full screen state.
   virtual void ToggleFullScreen() = 0;
 
-  // Gets/Sets the size of the RootWindowHost.
+  // Gets/Sets the size of the WindowTreeHost.
   virtual gfx::Rect GetBounds() const = 0;
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
 
@@ -148,7 +148,7 @@ class AURA_EXPORT RootWindowHost {
  protected:
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
 
-  RootWindowHost();
+  WindowTreeHost();
 
   void CreateCompositor(gfx::AcceleratedWidget accelerated_widget);
 
@@ -157,14 +157,14 @@ class AURA_EXPORT RootWindowHost {
 
   void NotifyHostResized(const gfx::Size& new_size);
 
-  RootWindowHostDelegate* delegate_;
+  WindowTreeHostDelegate* delegate_;
 
  private:
   scoped_ptr<ui::Compositor> compositor_;
 
   scoped_ptr<RootWindowTransformer> transformer_;
 
-  DISALLOW_COPY_AND_ASSIGN(RootWindowHost);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeHost);
 };
 
 }  // namespace aura

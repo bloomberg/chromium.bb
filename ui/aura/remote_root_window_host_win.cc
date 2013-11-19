@@ -24,7 +24,7 @@ namespace aura {
 
 namespace {
 
-const char* kRootWindowHostWinKey = "__AURA_REMOTE_ROOT_WINDOW_HOST_WIN__";
+const char* kWindowTreeHostWinKey = "__AURA_REMOTE_ROOT_WINDOW_HOST_WIN__";
 
 // Sets the keystate for the virtual key passed in to down or up.
 void SetKeyState(uint8* key_states, bool key_down, uint32 virtual_key_code) {
@@ -61,8 +61,8 @@ void HandleOpenFile(const base::string16& title,
                     const base::string16& filter,
                     const OpenFileCompletion& on_success,
                     const FileSelectionCanceled& on_failure) {
-  DCHECK(aura::RemoteRootWindowHostWin::Instance());
-  aura::RemoteRootWindowHostWin::Instance()->HandleOpenFile(title,
+  DCHECK(aura::RemoteWindowTreeHostWin::Instance());
+  aura::RemoteWindowTreeHostWin::Instance()->HandleOpenFile(title,
                                                             default_path,
                                                             filter,
                                                             on_success,
@@ -74,8 +74,8 @@ void HandleOpenMultipleFiles(const base::string16& title,
                              const base::string16& filter,
                              const OpenMultipleFilesCompletion& on_success,
                              const FileSelectionCanceled& on_failure) {
-  DCHECK(aura::RemoteRootWindowHostWin::Instance());
-  aura::RemoteRootWindowHostWin::Instance()->HandleOpenMultipleFiles(
+  DCHECK(aura::RemoteWindowTreeHostWin::Instance());
+  aura::RemoteWindowTreeHostWin::Instance()->HandleOpenMultipleFiles(
       title,
       default_path,
       filter,
@@ -90,8 +90,8 @@ void HandleSaveFile(const base::string16& title,
                     const base::string16& default_extension,
                     const SaveFileCompletion& on_success,
                     const FileSelectionCanceled& on_failure) {
-  DCHECK(aura::RemoteRootWindowHostWin::Instance());
-  aura::RemoteRootWindowHostWin::Instance()->HandleSaveFile(title,
+  DCHECK(aura::RemoteWindowTreeHostWin::Instance());
+  aura::RemoteWindowTreeHostWin::Instance()->HandleSaveFile(title,
                                                             default_path,
                                                             filter,
                                                             filter_index,
@@ -103,62 +103,62 @@ void HandleSaveFile(const base::string16& title,
 void HandleSelectFolder(const base::string16& title,
                         const SelectFolderCompletion& on_success,
                         const FileSelectionCanceled& on_failure) {
-  DCHECK(aura::RemoteRootWindowHostWin::Instance());
-  aura::RemoteRootWindowHostWin::Instance()->HandleSelectFolder(title,
+  DCHECK(aura::RemoteWindowTreeHostWin::Instance());
+  aura::RemoteWindowTreeHostWin::Instance()->HandleSelectFolder(title,
                                                                 on_success,
                                                                 on_failure);
 }
 
 void HandleActivateDesktop(const base::FilePath& shortcut,
                            const ActivateDesktopCompleted& on_success) {
-  DCHECK(aura::RemoteRootWindowHostWin::Instance());
-  aura::RemoteRootWindowHostWin::Instance()->HandleActivateDesktop(shortcut,
+  DCHECK(aura::RemoteWindowTreeHostWin::Instance());
+  aura::RemoteWindowTreeHostWin::Instance()->HandleActivateDesktop(shortcut,
                                                                    on_success);
 }
 
-RemoteRootWindowHostWin* g_instance = NULL;
+RemoteWindowTreeHostWin* g_instance = NULL;
 
-RemoteRootWindowHostWin* RemoteRootWindowHostWin::Instance() {
+RemoteWindowTreeHostWin* RemoteWindowTreeHostWin::Instance() {
   if (g_instance)
     return g_instance;
   return Create(gfx::Rect());
 }
 
-RemoteRootWindowHostWin* RemoteRootWindowHostWin::Create(
+RemoteWindowTreeHostWin* RemoteWindowTreeHostWin::Create(
     const gfx::Rect& bounds) {
-  g_instance = g_instance ? g_instance : new RemoteRootWindowHostWin(bounds);
+  g_instance = g_instance ? g_instance : new RemoteWindowTreeHostWin(bounds);
   return g_instance;
 }
 
-RemoteRootWindowHostWin::RemoteRootWindowHostWin(const gfx::Rect& bounds)
+RemoteWindowTreeHostWin::RemoteWindowTreeHostWin(const gfx::Rect& bounds)
     : remote_window_(NULL),
       host_(NULL),
       ignore_mouse_moves_until_set_cursor_ack_(false),
       event_flags_(0) {
-  prop_.reset(new ui::ViewProp(NULL, kRootWindowHostWinKey, this));
+  prop_.reset(new ui::ViewProp(NULL, kWindowTreeHostWinKey, this));
   CreateCompositor(GetAcceleratedWidget());
 }
 
-RemoteRootWindowHostWin::~RemoteRootWindowHostWin() {
+RemoteWindowTreeHostWin::~RemoteWindowTreeHostWin() {
   g_instance = NULL;
 }
 
-void RemoteRootWindowHostWin::Connected(IPC::Sender* host, HWND remote_window) {
+void RemoteWindowTreeHostWin::Connected(IPC::Sender* host, HWND remote_window) {
   CHECK(host_ == NULL);
   host_ = host;
   remote_window_ = remote_window;
 }
 
-void RemoteRootWindowHostWin::Disconnected() {
+void RemoteWindowTreeHostWin::Disconnected() {
   // Don't CHECK here, Disconnected is called on a channel error which can
   // happen before we're successfully Connected.
   host_ = NULL;
   remote_window_ = NULL;
 }
 
-bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
+bool RemoteWindowTreeHostWin::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RemoteRootWindowHostWin, message)
+  IPC_BEGIN_MESSAGE_MAP(RemoteWindowTreeHostWin, message)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_MouseMoved, OnMouseMoved)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_MouseButton, OnMouseButton)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_KeyDown, OnKeyDown)
@@ -191,7 +191,7 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void RemoteRootWindowHostWin::HandleOpenURLOnDesktop(
+void RemoteWindowTreeHostWin::HandleOpenURLOnDesktop(
     const base::FilePath& shortcut,
     const base::string16& url) {
   if (!host_)
@@ -199,7 +199,7 @@ void RemoteRootWindowHostWin::HandleOpenURLOnDesktop(
   host_->Send(new MetroViewerHostMsg_OpenURLOnDesktop(shortcut, url));
 }
 
-void RemoteRootWindowHostWin::HandleActivateDesktop(
+void RemoteWindowTreeHostWin::HandleActivateDesktop(
     const base::FilePath& shortcut,
     const ActivateDesktopCompleted& on_success) {
   if (!host_)
@@ -209,7 +209,7 @@ void RemoteRootWindowHostWin::HandleActivateDesktop(
   host_->Send(new MetroViewerHostMsg_ActivateDesktop(shortcut));
 }
 
-void RemoteRootWindowHostWin::HandleOpenFile(
+void RemoteWindowTreeHostWin::HandleOpenFile(
     const base::string16& title,
     const base::FilePath& default_path,
     const base::string16& filter,
@@ -231,7 +231,7 @@ void RemoteRootWindowHostWin::HandleOpenFile(
                                                      false));
 }
 
-void RemoteRootWindowHostWin::HandleOpenMultipleFiles(
+void RemoteWindowTreeHostWin::HandleOpenMultipleFiles(
     const base::string16& title,
     const base::FilePath& default_path,
     const base::string16& filter,
@@ -252,7 +252,7 @@ void RemoteRootWindowHostWin::HandleOpenMultipleFiles(
                                                      true));
 }
 
-void RemoteRootWindowHostWin::HandleSaveFile(
+void RemoteWindowTreeHostWin::HandleSaveFile(
     const base::string16& title,
     const base::FilePath& default_path,
     const base::string16& filter,
@@ -279,7 +279,7 @@ void RemoteRootWindowHostWin::HandleSaveFile(
   host_->Send(new MetroViewerHostMsg_DisplayFileSaveAs(params));
 }
 
-void RemoteRootWindowHostWin::HandleSelectFolder(
+void RemoteWindowTreeHostWin::HandleSelectFolder(
     const base::string16& title,
     const SelectFolderCompletion& on_success,
     const FileSelectionCanceled& on_failure) {
@@ -295,69 +295,69 @@ void RemoteRootWindowHostWin::HandleSelectFolder(
   host_->Send(new MetroViewerHostMsg_DisplaySelectFolder(title));
 }
 
-bool RemoteRootWindowHostWin::IsForegroundWindow() {
+bool RemoteWindowTreeHostWin::IsForegroundWindow() {
   return ::GetForegroundWindow() == remote_window_;
 }
 
-Window* RemoteRootWindowHostWin::GetAshWindow() {
+Window* RemoteWindowTreeHostWin::GetAshWindow() {
   return GetRootWindow()->window();
 }
 
-RootWindow* RemoteRootWindowHostWin::GetRootWindow() {
+RootWindow* RemoteWindowTreeHostWin::GetRootWindow() {
   return delegate_->AsRootWindow();
 }
 
-gfx::AcceleratedWidget RemoteRootWindowHostWin::GetAcceleratedWidget() {
+gfx::AcceleratedWidget RemoteWindowTreeHostWin::GetAcceleratedWidget() {
   if (remote_window_)
     return remote_window_;
   // Getting here should only happen for ash_unittests.exe and related code.
   return ::GetDesktopWindow();
 }
 
-void RemoteRootWindowHostWin::Show() {
+void RemoteWindowTreeHostWin::Show() {
 }
 
-void RemoteRootWindowHostWin::Hide() {
+void RemoteWindowTreeHostWin::Hide() {
   NOTIMPLEMENTED();
 }
 
-void RemoteRootWindowHostWin::ToggleFullScreen() {
+void RemoteWindowTreeHostWin::ToggleFullScreen() {
 }
 
-gfx::Rect RemoteRootWindowHostWin::GetBounds() const {
-  gfx::Rect r(gfx::Point(0, 0), aura::RootWindowHost::GetNativeScreenSize());
+gfx::Rect RemoteWindowTreeHostWin::GetBounds() const {
+  gfx::Rect r(gfx::Point(0, 0), aura::WindowTreeHost::GetNativeScreenSize());
   return r;
 }
 
-void RemoteRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
+void RemoteWindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
   NotifyHostResized(bounds.size());
 }
 
-gfx::Insets RemoteRootWindowHostWin::GetInsets() const {
+gfx::Insets RemoteWindowTreeHostWin::GetInsets() const {
   return gfx::Insets();
 }
 
-void RemoteRootWindowHostWin::SetInsets(const gfx::Insets& insets) {
+void RemoteWindowTreeHostWin::SetInsets(const gfx::Insets& insets) {
 }
 
-gfx::Point RemoteRootWindowHostWin::GetLocationOnNativeScreen() const {
+gfx::Point RemoteWindowTreeHostWin::GetLocationOnNativeScreen() const {
   return gfx::Point(0, 0);
 }
 
-void RemoteRootWindowHostWin::SetCursor(gfx::NativeCursor native_cursor) {
+void RemoteWindowTreeHostWin::SetCursor(gfx::NativeCursor native_cursor) {
   if (!host_)
     return;
   host_->Send(
       new MetroViewerHostMsg_SetCursor(uint64(native_cursor.platform())));
 }
 
-void RemoteRootWindowHostWin::SetCapture() {
+void RemoteWindowTreeHostWin::SetCapture() {
 }
 
-void RemoteRootWindowHostWin::ReleaseCapture() {
+void RemoteWindowTreeHostWin::ReleaseCapture() {
 }
 
-bool RemoteRootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
+bool RemoteWindowTreeHostWin::QueryMouseLocation(gfx::Point* location_return) {
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(GetRootWindow()->window());
   if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
@@ -371,18 +371,18 @@ bool RemoteRootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
   return true;
 }
 
-bool RemoteRootWindowHostWin::ConfineCursorToRootWindow() {
+bool RemoteWindowTreeHostWin::ConfineCursorToRootWindow() {
   return true;
 }
 
-void RemoteRootWindowHostWin::UnConfineCursor() {
+void RemoteWindowTreeHostWin::UnConfineCursor() {
 }
 
-void RemoteRootWindowHostWin::OnCursorVisibilityChanged(bool show) {
+void RemoteWindowTreeHostWin::OnCursorVisibilityChanged(bool show) {
   NOTIMPLEMENTED();
 }
 
-void RemoteRootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
+void RemoteWindowTreeHostWin::MoveCursorTo(const gfx::Point& location) {
   VLOG(1) << "In MoveCursorTo: " << location.x() << ", " << location.y();
   if (!host_)
     return;
@@ -407,19 +407,19 @@ void RemoteRootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
   host_->Send(new MetroViewerHostMsg_SetCursorPos(location.x(), location.y()));
 }
 
-void RemoteRootWindowHostWin::PostNativeEvent(
+void RemoteWindowTreeHostWin::PostNativeEvent(
     const base::NativeEvent& native_event) {
 }
 
-void RemoteRootWindowHostWin::OnDeviceScaleFactorChanged(
+void RemoteWindowTreeHostWin::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
   NOTIMPLEMENTED();
 }
 
-void RemoteRootWindowHostWin::PrepareForShutdown() {
+void RemoteWindowTreeHostWin::PrepareForShutdown() {
 }
 
-void RemoteRootWindowHostWin::OnMouseMoved(int32 x, int32 y, int32 flags) {
+void RemoteWindowTreeHostWin::OnMouseMoved(int32 x, int32 y, int32 flags) {
   if (ignore_mouse_moves_until_set_cursor_ack_)
     return;
 
@@ -428,7 +428,7 @@ void RemoteRootWindowHostWin::OnMouseMoved(int32 x, int32 y, int32 flags) {
   delegate_->OnHostMouseEvent(&event);
 }
 
-void RemoteRootWindowHostWin::OnMouseButton(
+void RemoteWindowTreeHostWin::OnMouseButton(
     int32 x,
     int32 y,
     int32 extra,
@@ -462,7 +462,7 @@ void RemoteRootWindowHostWin::OnMouseButton(
   }
 }
 
-void RemoteRootWindowHostWin::OnKeyDown(uint32 vkey,
+void RemoteWindowTreeHostWin::OnKeyDown(uint32 vkey,
                                         uint32 repeat_count,
                                         uint32 scan_code,
                                         uint32 flags) {
@@ -470,7 +470,7 @@ void RemoteRootWindowHostWin::OnKeyDown(uint32 vkey,
                           flags, false);
 }
 
-void RemoteRootWindowHostWin::OnKeyUp(uint32 vkey,
+void RemoteWindowTreeHostWin::OnKeyUp(uint32 vkey,
                                       uint32 repeat_count,
                                       uint32 scan_code,
                                       uint32 flags) {
@@ -478,7 +478,7 @@ void RemoteRootWindowHostWin::OnKeyUp(uint32 vkey,
                           flags, false);
 }
 
-void RemoteRootWindowHostWin::OnChar(uint32 key_code,
+void RemoteWindowTreeHostWin::OnChar(uint32 key_code,
                                      uint32 repeat_count,
                                      uint32 scan_code,
                                      uint32 flags) {
@@ -486,11 +486,11 @@ void RemoteRootWindowHostWin::OnChar(uint32 key_code,
                           scan_code, flags, true);
 }
 
-void RemoteRootWindowHostWin::OnWindowActivated() {
+void RemoteWindowTreeHostWin::OnWindowActivated() {
   delegate_->OnHostActivated();
 }
 
-void RemoteRootWindowHostWin::OnTouchDown(int32 x,
+void RemoteWindowTreeHostWin::OnTouchDown(int32 x,
                                           int32 y,
                                           uint64 timestamp,
                                           uint32 pointer_id) {
@@ -501,7 +501,7 @@ void RemoteRootWindowHostWin::OnTouchDown(int32 x,
   delegate_->OnHostTouchEvent(&event);
 }
 
-void RemoteRootWindowHostWin::OnTouchUp(int32 x,
+void RemoteWindowTreeHostWin::OnTouchUp(int32 x,
                                         int32 y,
                                         uint64 timestamp,
                                         uint32 pointer_id) {
@@ -512,7 +512,7 @@ void RemoteRootWindowHostWin::OnTouchUp(int32 x,
   delegate_->OnHostTouchEvent(&event);
 }
 
-void RemoteRootWindowHostWin::OnTouchMoved(int32 x,
+void RemoteWindowTreeHostWin::OnTouchMoved(int32 x,
                                            int32 y,
                                            uint64 timestamp,
                                            uint32 pointer_id) {
@@ -523,7 +523,7 @@ void RemoteRootWindowHostWin::OnTouchMoved(int32 x,
   delegate_->OnHostTouchEvent(&event);
 }
 
-void RemoteRootWindowHostWin::OnFileSaveAsDone(bool success,
+void RemoteWindowTreeHostWin::OnFileSaveAsDone(bool success,
                                                const base::FilePath& filename,
                                                int filter_index) {
   if (success)
@@ -535,7 +535,7 @@ void RemoteRootWindowHostWin::OnFileSaveAsDone(bool success,
 }
 
 
-void RemoteRootWindowHostWin::OnFileOpenDone(bool success,
+void RemoteWindowTreeHostWin::OnFileOpenDone(bool success,
                                              const base::FilePath& filename) {
   if (success)
     file_open_completion_callback_.Run(base::FilePath(filename), 0, NULL);
@@ -545,7 +545,7 @@ void RemoteRootWindowHostWin::OnFileOpenDone(bool success,
   failure_callback_.Reset();
 }
 
-void RemoteRootWindowHostWin::OnMultiFileOpenDone(
+void RemoteWindowTreeHostWin::OnMultiFileOpenDone(
     bool success,
     const std::vector<base::FilePath>& files) {
   if (success)
@@ -556,7 +556,7 @@ void RemoteRootWindowHostWin::OnMultiFileOpenDone(
   failure_callback_.Reset();
 }
 
-void RemoteRootWindowHostWin::OnSelectFolderDone(
+void RemoteWindowTreeHostWin::OnSelectFolderDone(
     bool success,
     const base::FilePath& folder) {
   if (success)
@@ -567,22 +567,22 @@ void RemoteRootWindowHostWin::OnSelectFolderDone(
   failure_callback_.Reset();
 }
 
-void RemoteRootWindowHostWin::OnSetCursorPosAck() {
+void RemoteWindowTreeHostWin::OnSetCursorPosAck() {
   DCHECK(ignore_mouse_moves_until_set_cursor_ack_);
   ignore_mouse_moves_until_set_cursor_ack_ = false;
 }
 
-void RemoteRootWindowHostWin::OnWindowSizeChanged(uint32 width, uint32 height) {
+void RemoteWindowTreeHostWin::OnWindowSizeChanged(uint32 width, uint32 height) {
   SetBounds(gfx::Rect(0, 0, width, height));
 }
 
-void RemoteRootWindowHostWin::OnDesktopActivated() {
+void RemoteWindowTreeHostWin::OnDesktopActivated() {
   ActivateDesktopCompleted temp = activate_completed_callback_;
   activate_completed_callback_.Reset();
   temp.Run();
 }
 
-void RemoteRootWindowHostWin::DispatchKeyboardMessage(ui::EventType type,
+void RemoteWindowTreeHostWin::DispatchKeyboardMessage(ui::EventType type,
                                                       uint32 vkey,
                                                       uint32 repeat_count,
                                                       uint32 scan_code,
@@ -605,7 +605,7 @@ void RemoteRootWindowHostWin::DispatchKeyboardMessage(ui::EventType type,
   }
 }
 
-void RemoteRootWindowHostWin::SetEventFlags(uint32 flags) {
+void RemoteWindowTreeHostWin::SetEventFlags(uint32 flags) {
   if (flags == event_flags_)
     return;
   event_flags_ = flags;

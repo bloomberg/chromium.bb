@@ -146,8 +146,8 @@ ui::MenuModel* TestShellDelegate::CreateContextMenu(aura::Window* root) {
   return NULL;
 }
 
-RootWindowHostFactory* TestShellDelegate::CreateRootWindowHostFactory() {
-  return RootWindowHostFactory::Create();
+WindowTreeHostFactory* TestShellDelegate::CreateWindowTreeHostFactory() {
+  return WindowTreeHostFactory::Create();
 }
 
 base::string16 TestShellDelegate::GetProductName() const {

@@ -27,22 +27,22 @@ namespace corewm {
 class TooltipWin;
 }
 
-class VIEWS_EXPORT DesktopRootWindowHostWin
-    : public DesktopRootWindowHost,
+class VIEWS_EXPORT DesktopWindowTreeHostWin
+    : public DesktopWindowTreeHost,
       public aura::client::AnimationHost,
-      public aura::RootWindowHost,
+      public aura::WindowTreeHost,
       public HWNDMessageHandlerDelegate {
  public:
-  DesktopRootWindowHostWin(
+  DesktopWindowTreeHostWin(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura);
-  virtual ~DesktopRootWindowHostWin();
+  virtual ~DesktopWindowTreeHostWin();
 
   // A way of converting an HWND into a content window.
   static aura::Window* GetContentWindowForHWND(HWND hwnd);
 
  protected:
-  // Overridden from DesktopRootWindowHost:
+  // Overridden from DesktopWindowTreeHost:
   virtual void Init(aura::Window* content_window,
                     const Widget::InitParams& params,
                     aura::RootWindow::CreateParams* rw_create_params) OVERRIDE;
@@ -53,7 +53,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
       CreateDragDropClient(DesktopNativeCursorManager* cursor_manager) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;
-  virtual aura::RootWindowHost* AsRootWindowHost() OVERRIDE;
+  virtual aura::WindowTreeHost* AsWindowTreeHost() OVERRIDE;
   virtual void ShowWindowWithState(ui::WindowShowState show_state) OVERRIDE;
   virtual void ShowMaximizedWithBounds(
       const gfx::Rect& restored_bounds) OVERRIDE;
@@ -102,7 +102,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   virtual void OnNativeWidgetBlur() OVERRIDE;
   virtual bool IsAnimatingClosed() const OVERRIDE;
 
-  // Overridden from aura::RootWindowHost:
+  // Overridden from aura::WindowTreeHost:
   virtual aura::RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -268,7 +268,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   // State of the cursor.
   bool is_cursor_visible_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostWin);
+  DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostWin);
 };
 
 }  // namespace views

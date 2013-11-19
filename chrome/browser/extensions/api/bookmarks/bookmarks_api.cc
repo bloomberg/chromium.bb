@@ -924,7 +924,7 @@ void BookmarksIOFunction::ShowSelectFileDialog(
 #if defined(OS_WIN) && defined(USE_AURA)
   if (!owning_window &&
       chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
-    owning_window = aura::RemoteRootWindowHostWin::Instance()->GetAshWindow();
+    owning_window = aura::RemoteWindowTreeHostWin::Instance()->GetAshWindow();
 #endif
   // |web_contents| can be NULL (for background pages), which is fine. In such
   // a case if file-selection dialogs are forbidden by policy, we will not

@@ -2959,10 +2959,10 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, aura::RootWindowObserver implementation:
 
-void RenderWidgetHostViewAura::OnRootWindowHostMoved(
+void RenderWidgetHostViewAura::OnWindowTreeHostMoved(
     const aura::RootWindow* root,
     const gfx::Point& new_origin) {
-  TRACE_EVENT1("ui", "RenderWidgetHostViewAura::OnRootWindowHostMoved",
+  TRACE_EVENT1("ui", "RenderWidgetHostViewAura::OnWindowTreeHostMoved",
                "new_origin", new_origin.ToString());
 
   UpdateScreenInfo(window_);

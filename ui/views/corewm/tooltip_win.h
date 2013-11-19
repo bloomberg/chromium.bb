@@ -24,7 +24,7 @@ class VIEWS_EXPORT TooltipWin : public Tooltip {
   explicit TooltipWin(HWND parent);
   virtual ~TooltipWin();
 
-  // HandleNotify() is forwarded from DesktopRootWindowHostWin to keep the
+  // HandleNotify() is forwarded from DesktopWindowTreeHostWin to keep the
   // native tooltip in sync.
   bool HandleNotify(int w_param, NMHDR* l_param, LRESULT* l_result);
 

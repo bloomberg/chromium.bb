@@ -70,9 +70,9 @@ class SimpleRootWindowTransformer : public RootWindowTransformer {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootWindowHost, public:
+// WindowTreeHost, public:
 
-RootWindowHost::~RootWindowHost() {
+WindowTreeHost::~WindowTreeHost() {
   // TODO(beng): this represents an ordering change. In the old code, the
   //             compositor was reset before the window hierarchy was destroyed.
   //             verify that this has no adverse effects.
@@ -81,7 +81,7 @@ RootWindowHost::~RootWindowHost() {
   compositor_.reset();
 }
 
-void RootWindowHost::InitHost() {
+void WindowTreeHost::InitHost() {
   compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
                                GetBounds().size());
   window()->Init(ui::LAYER_NOT_DRAWN);
@@ -93,15 +93,15 @@ void RootWindowHost::InitHost() {
   window()->Show();
 }
 
-aura::Window* RootWindowHost::window() {
-  return const_cast<Window*>(const_cast<const RootWindowHost*>(this)->window());
+aura::Window* WindowTreeHost::window() {
+  return const_cast<Window*>(const_cast<const WindowTreeHost*>(this)->window());
 }
 
-const aura::Window* RootWindowHost::window() const {
+const aura::Window* WindowTreeHost::window() const {
   return delegate_->AsRootWindow()->window();
 }
 
-void RootWindowHost::SetRootWindowTransformer(
+void WindowTreeHost::SetRootWindowTransformer(
     scoped_ptr<RootWindowTransformer> transformer) {
   transformer_ = transformer.Pass();
   SetInsets(transformer_->GetHostInsets());
@@ -112,7 +112,7 @@ void RootWindowHost::SetRootWindowTransformer(
     UpdateRootWindowSize(GetBounds().size());
 }
 
-gfx::Transform RootWindowHost::GetRootTransform() const {
+gfx::Transform WindowTreeHost::GetRootTransform() const {
   float scale = ui::GetDeviceScaleFactor(window()->layer());
   gfx::Transform transform;
   transform.Scale(scale, scale);
@@ -120,61 +120,61 @@ gfx::Transform RootWindowHost::GetRootTransform() const {
   return transform;
 }
 
-void RootWindowHost::SetTransform(const gfx::Transform& transform) {
+void WindowTreeHost::SetTransform(const gfx::Transform& transform) {
   scoped_ptr<RootWindowTransformer> transformer(
       new SimpleRootWindowTransformer(window(), transform));
   SetRootWindowTransformer(transformer.Pass());
 }
 
-gfx::Transform RootWindowHost::GetInverseRootTransform() const {
+gfx::Transform WindowTreeHost::GetInverseRootTransform() const {
   float scale = ui::GetDeviceScaleFactor(window()->layer());
   gfx::Transform transform;
   transform.Scale(1.0f / scale, 1.0f / scale);
   return transformer_->GetInverseTransform() * transform;
 }
 
-void RootWindowHost::UpdateRootWindowSize(const gfx::Size& host_size) {
+void WindowTreeHost::UpdateRootWindowSize(const gfx::Size& host_size) {
   window()->SetBounds(transformer_->GetRootWindowBounds(host_size));
 }
 
-void RootWindowHost::ConvertPointToNativeScreen(gfx::Point* point) const {
+void WindowTreeHost::ConvertPointToNativeScreen(gfx::Point* point) const {
   ConvertPointToHost(point);
   gfx::Point location = GetLocationOnNativeScreen();
   point->Offset(location.x(), location.y());
 }
 
-void RootWindowHost::ConvertPointFromNativeScreen(gfx::Point* point) const {
+void WindowTreeHost::ConvertPointFromNativeScreen(gfx::Point* point) const {
   gfx::Point location = GetLocationOnNativeScreen();
   point->Offset(-location.x(), -location.y());
   ConvertPointFromHost(point);
 }
 
-void RootWindowHost::ConvertPointToHost(gfx::Point* point) const {
+void WindowTreeHost::ConvertPointToHost(gfx::Point* point) const {
   gfx::Point3F point_3f(*point);
   GetRootTransform().TransformPoint(&point_3f);
   *point = gfx::ToFlooredPoint(point_3f.AsPointF());
 }
 
-void RootWindowHost::ConvertPointFromHost(gfx::Point* point) const {
+void WindowTreeHost::ConvertPointFromHost(gfx::Point* point) const {
   gfx::Point3F point_3f(*point);
   GetInverseRootTransform().TransformPoint(&point_3f);
   *point = gfx::ToFlooredPoint(point_3f.AsPointF());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootWindowHost, protected:
+// WindowTreeHost, protected:
 
-RootWindowHost::RootWindowHost()
+WindowTreeHost::WindowTreeHost()
     : delegate_(NULL) {
 }
 
-void RootWindowHost::CreateCompositor(
+void WindowTreeHost::CreateCompositor(
     gfx::AcceleratedWidget accelerated_widget) {
   compositor_.reset(new ui::Compositor(GetAcceleratedWidget()));
   DCHECK(compositor_.get());
 }
 
-void RootWindowHost::NotifyHostResized(const gfx::Size& new_size) {
+void WindowTreeHost::NotifyHostResized(const gfx::Size& new_size) {
   // The compositor should have the same size as the native root window host.
   // Get the latest scale from display because it might have been changed.
   compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),

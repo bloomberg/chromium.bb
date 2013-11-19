@@ -76,7 +76,7 @@ void ChromeMetroViewerProcessHost::OnChannelError() {
   // connected.
   ::SetEnvironmentVariableA(env_vars::kMetroConnected, NULL);
 
-  aura::RemoteRootWindowHostWin::Instance()->Disconnected();
+  aura::RemoteWindowTreeHostWin::Instance()->Disconnected();
   g_browser_process->ReleaseModule();
   CloseOpenAshBrowsers();
   chrome::CloseAsh();
@@ -107,7 +107,7 @@ void ChromeMetroViewerProcessHost::OnSetTargetSurface(
     gfx::NativeViewId target_surface) {
   HWND hwnd = reinterpret_cast<HWND>(target_surface);
   // Tell our root window host that the viewer has connected.
-  aura::RemoteRootWindowHostWin::Instance()->Connected(this, hwnd);
+  aura::RemoteWindowTreeHostWin::Instance()->Connected(this, hwnd);
   // Now start the Ash shell environment.
   chrome::OpenAsh();
   ash::Shell::GetInstance()->CreateLauncher();

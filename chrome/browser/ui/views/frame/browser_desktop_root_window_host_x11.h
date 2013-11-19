@@ -16,23 +16,23 @@ namespace views {
 class DesktopNativeWidgetAura;
 }
 
-class BrowserDesktopRootWindowHostX11
-    : public BrowserDesktopRootWindowHost,
-      public views::DesktopRootWindowHostX11 {
+class BrowserDesktopWindowTreeHostX11
+    : public BrowserDesktopWindowTreeHost,
+      public views::DesktopWindowTreeHostX11 {
  public:
-  BrowserDesktopRootWindowHostX11(
+  BrowserDesktopWindowTreeHostX11(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
       views::DesktopNativeWidgetAura* desktop_native_widget_aura,
       BrowserView* browser_view);
-  virtual ~BrowserDesktopRootWindowHostX11();
+  virtual ~BrowserDesktopWindowTreeHostX11();
 
  private:
-  // Overridden from BrowserDesktopRootWindowHost:
-  virtual DesktopRootWindowHost* AsDesktopRootWindowHost() OVERRIDE;
+  // Overridden from BrowserDesktopWindowTreeHost:
+  virtual DesktopWindowTreeHost* AsDesktopWindowTreeHost() OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual bool UsesNativeSystemMenu() const OVERRIDE;
 
-  // Overridden from views::DesktopRootWindowHostX11:
+  // Overridden from views::DesktopWindowTreeHostX11:
   virtual void Init(
       aura::Window* content_window,
       const views::Widget::InitParams& params,
@@ -46,7 +46,7 @@ class BrowserDesktopRootWindowHostX11
   // xids to the same menu bar.
   scoped_ptr<GlobalMenuBarX11> global_menu_bar_x11_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserDesktopRootWindowHostX11);
+  DISALLOW_COPY_AND_ASSIGN(BrowserDesktopWindowTreeHostX11);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_X11_H_

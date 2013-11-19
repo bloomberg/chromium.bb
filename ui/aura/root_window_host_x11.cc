@@ -276,7 +276,7 @@ class TouchEventCalibrate : public base::MessagePumpObserver {
 }  // namespace internal
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootWindowHostX11::MouseMoveFilter filters out the move events that
+// WindowTreeHostX11::MouseMoveFilter filters out the move events that
 // jump back and forth between two points. This happens when sub pixel mouse
 // move is enabled and mouse move events could be jumping between two neighbor
 // pixels, e.g. move(0,0), move(1,0), move(0,0), move(1,0) and on and on.
@@ -284,7 +284,7 @@ class TouchEventCalibrate : public base::MessagePumpObserver {
 // provides a Filter method to find out whether a mouse event is in a different
 // location and should be processed.
 
-class RootWindowHostX11::MouseMoveFilter {
+class WindowTreeHostX11::MouseMoveFilter {
  public:
   MouseMoveFilter() : insert_index_(0) {
     for (size_t i = 0; i < kMaxEvents; ++i) {
@@ -317,9 +317,9 @@ class RootWindowHostX11::MouseMoveFilter {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootWindowHostX11
+// WindowTreeHostX11
 
-RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
+WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
     : xdisplay_(gfx::GetXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
@@ -398,7 +398,7 @@ RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
   CreateCompositor(GetAcceleratedWidget());
 }
 
-RootWindowHostX11::~RootWindowHostX11() {
+WindowTreeHostX11::~WindowTreeHostX11() {
   Env::GetInstance()->RemoveObserver(this);
   base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(this);
   base::MessagePumpX11::Current()->RemoveDispatcherForWindow(xwindow_);
@@ -408,7 +408,7 @@ RootWindowHostX11::~RootWindowHostX11() {
   XDestroyWindow(xdisplay_, xwindow_);
 }
 
-bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
+bool WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
 
   if (FindEventTarget(event) == x_root_window_)
@@ -529,7 +529,7 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
       Atom message_type = static_cast<Atom>(xev->xclient.data.l[0]);
       if (message_type == atom_cache_.GetAtom("WM_DELETE_WINDOW")) {
         // We have received a close message from the window manager.
-        delegate_->AsRootWindow()->OnRootWindowHostCloseRequested();
+        delegate_->AsRootWindow()->OnWindowTreeHostCloseRequested();
       } else if (message_type == atom_cache_.GetAtom("_NET_WM_PING")) {
         XEvent reply_event = *xev;
         reply_event.xclient.window = x_root_window_;
@@ -584,15 +584,15 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
   return true;
 }
 
-RootWindow* RootWindowHostX11::GetRootWindow() {
+RootWindow* WindowTreeHostX11::GetRootWindow() {
   return delegate_->AsRootWindow();
 }
 
-gfx::AcceleratedWidget RootWindowHostX11::GetAcceleratedWidget() {
+gfx::AcceleratedWidget WindowTreeHostX11::GetAcceleratedWidget() {
   return xwindow_;
 }
 
-void RootWindowHostX11::Show() {
+void WindowTreeHostX11::Show() {
   if (!window_mapped_) {
     // Before we map the window, set size hints. Otherwise, some window managers
     // will ignore toplevel XMoveWindow commands.
@@ -615,22 +615,22 @@ void RootWindowHostX11::Show() {
   }
 }
 
-void RootWindowHostX11::Hide() {
+void WindowTreeHostX11::Hide() {
   if (window_mapped_) {
     XWithdrawWindow(xdisplay_, xwindow_, 0);
     window_mapped_ = false;
   }
 }
 
-void RootWindowHostX11::ToggleFullScreen() {
+void WindowTreeHostX11::ToggleFullScreen() {
   NOTIMPLEMENTED();
 }
 
-gfx::Rect RootWindowHostX11::GetBounds() const {
+gfx::Rect WindowTreeHostX11::GetBounds() const {
   return bounds_;
 }
 
-void RootWindowHostX11::SetBounds(const gfx::Rect& bounds) {
+void WindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
   // Even if the host window's size doesn't change, aura's root window
   // size, which is in DIP, changes when the scale changes.
   float current_scale = compositor()->device_scale_factor();
@@ -673,11 +673,11 @@ void RootWindowHostX11::SetBounds(const gfx::Rect& bounds) {
   }
 }
 
-gfx::Insets RootWindowHostX11::GetInsets() const {
+gfx::Insets WindowTreeHostX11::GetInsets() const {
   return insets_;
 }
 
-void RootWindowHostX11::SetInsets(const gfx::Insets& insets) {
+void WindowTreeHostX11::SetInsets(const gfx::Insets& insets) {
   insets_ = insets;
   if (pointer_barriers_) {
     UnConfineCursor();
@@ -685,26 +685,26 @@ void RootWindowHostX11::SetInsets(const gfx::Insets& insets) {
   }
 }
 
-gfx::Point RootWindowHostX11::GetLocationOnNativeScreen() const {
+gfx::Point WindowTreeHostX11::GetLocationOnNativeScreen() const {
   return bounds_.origin();
 }
 
-void RootWindowHostX11::SetCapture() {
+void WindowTreeHostX11::SetCapture() {
   // TODO(oshima): Grab x input.
 }
 
-void RootWindowHostX11::ReleaseCapture() {
+void WindowTreeHostX11::ReleaseCapture() {
   // TODO(oshima): Release x input.
 }
 
-void RootWindowHostX11::SetCursor(gfx::NativeCursor cursor) {
+void WindowTreeHostX11::SetCursor(gfx::NativeCursor cursor) {
   if (cursor == current_cursor_)
     return;
   current_cursor_ = cursor;
   SetCursorInternal(cursor);
 }
 
-bool RootWindowHostX11::QueryMouseLocation(gfx::Point* location_return) {
+bool WindowTreeHostX11::QueryMouseLocation(gfx::Point* location_return) {
   client::CursorClient* cursor_client =
       client::GetCursorClient(GetRootWindow()->window());
   if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
@@ -728,7 +728,7 @@ bool RootWindowHostX11::QueryMouseLocation(gfx::Point* location_return) {
           win_y_return >= 0 && win_y_return < bounds_.height());
 }
 
-bool RootWindowHostX11::ConfineCursorToRootWindow() {
+bool WindowTreeHostX11::ConfineCursorToRootWindow() {
 #if XFIXES_MAJOR >= 5
   DCHECK(!pointer_barriers_.get());
   if (pointer_barriers_)
@@ -764,7 +764,7 @@ bool RootWindowHostX11::ConfineCursorToRootWindow() {
   return true;
 }
 
-void RootWindowHostX11::UnConfineCursor() {
+void WindowTreeHostX11::UnConfineCursor() {
 #if XFIXES_MAJOR >= 5
   if (pointer_barriers_) {
     XFixesDestroyPointerBarrier(xdisplay_, pointer_barriers_[0]);
@@ -776,17 +776,17 @@ void RootWindowHostX11::UnConfineCursor() {
 #endif
 }
 
-void RootWindowHostX11::OnCursorVisibilityChanged(bool show) {
+void WindowTreeHostX11::OnCursorVisibilityChanged(bool show) {
   SetCrOSTapPaused(!show);
 }
 
-void RootWindowHostX11::MoveCursorTo(const gfx::Point& location) {
+void WindowTreeHostX11::MoveCursorTo(const gfx::Point& location) {
   XWarpPointer(xdisplay_, None, x_root_window_, 0, 0, 0, 0,
                bounds_.x() + location.x(),
                bounds_.y() + location.y());
 }
 
-void RootWindowHostX11::PostNativeEvent(
+void WindowTreeHostX11::PostNativeEvent(
     const base::NativeEvent& native_event) {
   DCHECK(xwindow_);
   DCHECK(xdisplay_);
@@ -819,18 +819,18 @@ void RootWindowHostX11::PostNativeEvent(
   XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
 }
 
-void RootWindowHostX11::OnDeviceScaleFactorChanged(
+void WindowTreeHostX11::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
 }
 
-void RootWindowHostX11::PrepareForShutdown() {
+void WindowTreeHostX11::PrepareForShutdown() {
   base::MessagePumpX11::Current()->RemoveDispatcherForWindow(xwindow_);
 }
 
-void RootWindowHostX11::OnWindowInitialized(Window* window) {
+void WindowTreeHostX11::OnWindowInitialized(Window* window) {
 }
 
-void RootWindowHostX11::OnRootWindowInitialized(RootWindow* root_window) {
+void WindowTreeHostX11::OnRootWindowInitialized(RootWindow* root_window) {
   // UpdateIsInternalDisplay relies on:
   // 1. delegate_ pointing to RootWindow - available after SetDelegate.
   // 2. RootWindow's kDisplayIdKey property set - available by the time
@@ -846,7 +846,7 @@ void RootWindowHostX11::OnRootWindowInitialized(RootWindow* root_window) {
   SetCrOSTapPaused(false);
 }
 
-bool RootWindowHostX11::DispatchEventForRootWindow(
+bool WindowTreeHostX11::DispatchEventForRootWindow(
     const base::NativeEvent& event) {
   switch (event->type) {
     case ConfigureNotify:
@@ -863,13 +863,13 @@ bool RootWindowHostX11::DispatchEventForRootWindow(
   return true;
 }
 
-void RootWindowHostX11::DispatchXI2Event(const base::NativeEvent& event) {
+void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
   ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
   XEvent* xev = event;
   if (!factory->ShouldProcessXI2Event(xev))
     return;
 
-  TRACE_EVENT1("input", "RootWindowHostX11::DispatchXI2Event",
+  TRACE_EVENT1("input", "WindowTreeHostX11::DispatchXI2Event",
                "event_latency_us",
                (ui::EventTimeForNow() - ui::EventTimeFromNative(event)).
                  InMicroseconds());
@@ -995,18 +995,18 @@ void RootWindowHostX11::DispatchXI2Event(const base::NativeEvent& event) {
     XFreeEventData(xev->xgeneric.display, &last_event.xcookie);
 }
 
-bool RootWindowHostX11::IsWindowManagerPresent() {
+bool WindowTreeHostX11::IsWindowManagerPresent() {
   // Per ICCCM 2.8, "Manager Selections", window managers should take ownership
   // of WM_Sn selections (where n is a screen number).
   return XGetSelectionOwner(
       xdisplay_, atom_cache_.GetAtom("WM_S0")) != None;
 }
 
-void RootWindowHostX11::SetCursorInternal(gfx::NativeCursor cursor) {
+void WindowTreeHostX11::SetCursorInternal(gfx::NativeCursor cursor) {
   XDefineCursor(xdisplay_, xwindow_, cursor.platform());
 }
 
-void RootWindowHostX11::TranslateAndDispatchMouseEvent(
+void WindowTreeHostX11::TranslateAndDispatchMouseEvent(
     ui::MouseEvent* event) {
   Window* root_window = GetRootWindow()->window();
   client::ScreenPositionClient* screen_position_client =
@@ -1028,14 +1028,14 @@ void RootWindowHostX11::TranslateAndDispatchMouseEvent(
   delegate_->OnHostMouseEvent(event);
 }
 
-void RootWindowHostX11::UpdateIsInternalDisplay() {
+void WindowTreeHostX11::UpdateIsInternalDisplay() {
   Window* root_window = GetRootWindow()->window();
   gfx::Screen* screen = gfx::Screen::GetScreenFor(root_window);
   gfx::Display display = screen->GetDisplayNearestWindow(root_window);
   is_internal_display_ = display.IsInternal();
 }
 
-void RootWindowHostX11::SetCrOSTapPaused(bool state) {
+void WindowTreeHostX11::SetCrOSTapPaused(bool state) {
 #if defined(OS_CHROMEOS)
   if (!ui::IsXInput2Available())
     return;
@@ -1066,12 +1066,12 @@ void RootWindowHostX11::SetCrOSTapPaused(bool state) {
 }
 
 // static
-RootWindowHost* RootWindowHost::Create(const gfx::Rect& bounds) {
-  return new RootWindowHostX11(bounds);
+WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
+  return new WindowTreeHostX11(bounds);
 }
 
 // static
-gfx::Size RootWindowHost::GetNativeScreenSize() {
+gfx::Size WindowTreeHost::GetNativeScreenSize() {
   ::XDisplay* xdisplay = gfx::GetXDisplay();
   return gfx::Size(DisplayWidth(xdisplay, 0), DisplayHeight(xdisplay, 0));
 }

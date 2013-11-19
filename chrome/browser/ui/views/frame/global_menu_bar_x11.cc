@@ -312,7 +312,7 @@ struct GlobalMenuBarX11::HistoryItem {
 };
 
 GlobalMenuBarX11::GlobalMenuBarX11(BrowserView* browser_view,
-                                   BrowserDesktopRootWindowHostX11* host)
+                                   BrowserDesktopWindowTreeHostX11* host)
     : browser_(browser_view->browser()),
       profile_(browser_->profile()),
       browser_view_(browser_view),

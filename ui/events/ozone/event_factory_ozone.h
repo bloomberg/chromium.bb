@@ -24,7 +24,7 @@ class EVENTS_EXPORT EventFactoryOzone {
   EventFactoryOzone();
   virtual ~EventFactoryOzone();
 
-  // Called from RootWindowHostOzone to initialize and start processing events.
+  // Called from WindowTreeHostOzone to initialize and start processing events.
   // This should create the initial set of converters, and potentially arrange
   // for more converters to be created as new event sources become available.
   // No events processing should happen until this is called. All processes have

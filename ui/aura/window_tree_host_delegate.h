@@ -25,9 +25,9 @@ namespace aura {
 
 class RootWindow;
 
-// A private interface used by RootWindowHost implementations to communicate
+// A private interface used by WindowTreeHost implementations to communicate
 // with their owning RootWindow.
-class AURA_EXPORT RootWindowHostDelegate {
+class AURA_EXPORT WindowTreeHostDelegate {
  public:
   virtual bool OnHostKeyEvent(ui::KeyEvent* event) = 0;
   virtual bool OnHostMouseEvent(ui::MouseEvent* event) = 0;
@@ -52,7 +52,7 @@ class AURA_EXPORT RootWindowHostDelegate {
   virtual const RootWindow* AsRootWindow() const = 0;
 
  protected:
-  virtual ~RootWindowHostDelegate() {}
+  virtual ~WindowTreeHostDelegate() {}
 };
 
 }  // namespace aura

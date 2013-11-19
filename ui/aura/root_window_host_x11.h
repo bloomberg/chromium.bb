@@ -32,17 +32,17 @@ namespace internal {
 class TouchEventCalibrate;
 }
 
-class AURA_EXPORT RootWindowHostX11 : public RootWindowHost,
+class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
                                       public base::MessageLoop::Dispatcher,
                                       public EnvObserver {
  public:
-  explicit RootWindowHostX11(const gfx::Rect& bounds);
-  virtual ~RootWindowHostX11();
+  explicit WindowTreeHostX11(const gfx::Rect& bounds);
+  virtual ~WindowTreeHostX11();
 
   // Overridden from Dispatcher overrides:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
-  // RootWindowHost Overrides.
+  // WindowTreeHost Overrides.
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -88,7 +88,7 @@ class AURA_EXPORT RootWindowHostX11 : public RootWindowHost,
   void SetCursorInternal(gfx::NativeCursor cursor);
 
   // Translates the native mouse location into screen coordinates and and
-  // dispatches the event to RootWindowHostDelegate.
+  // dispatches the event to WindowTreeHostDelegate.
   void TranslateAndDispatchMouseEvent(ui::MouseEvent* event);
 
   // Update is_internal_display_ based on delegate_ state
@@ -137,13 +137,13 @@ class AURA_EXPORT RootWindowHostX11 : public RootWindowHost,
   // Touch ids of which the touch press happens at side bezel region.
   uint32 bezel_tracking_ids_;
 
-  DISALLOW_COPY_AND_ASSIGN(RootWindowHostX11);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostX11);
 };
 
 namespace test {
 
 // Set the default value of the override redirect flag used to
-// create a X window for RootWindowHostX11.
+// create a X window for WindowTreeHostX11.
 AURA_EXPORT void SetUseOverrideRedirectWindowByDefault(bool override_redirect);
 
 }  // namespace test

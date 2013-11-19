@@ -183,7 +183,7 @@ gfx::NativeWindow DesktopScreenX11::GetWindowUnderCursor() {
 gfx::NativeWindow DesktopScreenX11::GetWindowAtScreenPoint(
     const gfx::Point& point) {
   std::vector<aura::Window*> windows =
-      DesktopRootWindowHostX11::GetAllOpenWindows();
+      DesktopWindowTreeHostX11::GetAllOpenWindows();
 
   for (std::vector<aura::Window*>::const_iterator it = windows.begin();
        it != windows.end(); ++it) {
@@ -215,7 +215,7 @@ gfx::Display DesktopScreenX11::GetDisplayNearestWindow(
   // bounds.
   aura::WindowEventDispatcher* dispatcher = window->GetDispatcher();
   if (dispatcher) {
-    DesktopRootWindowHostX11* rwh = DesktopRootWindowHostX11::GetHostForXID(
+    DesktopWindowTreeHostX11* rwh = DesktopWindowTreeHostX11::GetHostForXID(
         dispatcher->host()->GetAcceleratedWidget());
     if (rwh)
       return GetDisplayMatching(rwh->GetX11RootWindowBounds());

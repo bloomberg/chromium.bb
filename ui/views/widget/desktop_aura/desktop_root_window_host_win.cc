@@ -63,14 +63,14 @@ void InsetBottomRight(gfx::Rect* rect, gfx::Vector2d vector) {
 
 DEFINE_WINDOW_PROPERTY_KEY(aura::Window*, kContentWindowForRootWindow, NULL);
 
-// Identifies the DesktopRootWindowHostWin associated with the RootWindow.
-DEFINE_WINDOW_PROPERTY_KEY(DesktopRootWindowHostWin*, kDesktopRootWindowHostKey,
+// Identifies the DesktopWindowTreeHostWin associated with the RootWindow.
+DEFINE_WINDOW_PROPERTY_KEY(DesktopWindowTreeHostWin*, kDesktopWindowTreeHostKey,
                            NULL);
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostWin, public:
+// DesktopWindowTreeHostWin, public:
 
-DesktopRootWindowHostWin::DesktopRootWindowHostWin(
+DesktopWindowTreeHostWin::DesktopWindowTreeHostWin(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura)
     : root_window_(NULL),
@@ -86,20 +86,20 @@ DesktopRootWindowHostWin::DesktopRootWindowHostWin(
       is_cursor_visible_(true) {
 }
 
-DesktopRootWindowHostWin::~DesktopRootWindowHostWin() {
+DesktopWindowTreeHostWin::~DesktopWindowTreeHostWin() {
   // WARNING: |content_window_| has been destroyed by the time we get here.
-  desktop_native_widget_aura_->OnDesktopRootWindowHostDestroyed(
+  desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(
       root_window_);
 }
 
 // static
-aura::Window* DesktopRootWindowHostWin::GetContentWindowForHWND(HWND hwnd) {
+aura::Window* DesktopWindowTreeHostWin::GetContentWindowForHWND(HWND hwnd) {
   aura::RootWindow* root = aura::RootWindow::GetForAcceleratedWidget(hwnd);
   return root ? root->window()->GetProperty(kContentWindowForRootWindow) : NULL;
 }
 
 // static
-ui::NativeTheme* DesktopRootWindowHost::GetNativeTheme(aura::Window* window) {
+ui::NativeTheme* DesktopWindowTreeHost::GetNativeTheme(aura::Window* window) {
   // Use NativeThemeWin for windows shown on the desktop, those not on the
   // desktop come from Ash and get NativeThemeAura.
   aura::WindowEventDispatcher* dispatcher =
@@ -107,7 +107,7 @@ ui::NativeTheme* DesktopRootWindowHost::GetNativeTheme(aura::Window* window) {
   if (dispatcher) {
     HWND host_hwnd = dispatcher->host()->GetAcceleratedWidget();
     if (host_hwnd &&
-        DesktopRootWindowHostWin::GetContentWindowForHWND(host_hwnd)) {
+        DesktopWindowTreeHostWin::GetContentWindowForHWND(host_hwnd)) {
       return ui::NativeThemeWin::instance();
     }
   }
@@ -115,9 +115,9 @@ ui::NativeTheme* DesktopRootWindowHost::GetNativeTheme(aura::Window* window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostWin, DesktopRootWindowHost implementation:
+// DesktopWindowTreeHostWin, DesktopWindowTreeHost implementation:
 
-void DesktopRootWindowHostWin::Init(
+void DesktopWindowTreeHostWin::Init(
     aura::Window* content_window,
     const Widget::InitParams& params,
     aura::RootWindow::CreateParams* rw_create_params) {
@@ -147,14 +147,14 @@ void DesktopRootWindowHostWin::Init(
   rw_create_params->host = this;
 }
 
-void DesktopRootWindowHostWin::OnRootWindowCreated(
+void DesktopWindowTreeHostWin::OnRootWindowCreated(
     aura::RootWindow* root,
     const Widget::InitParams& params) {
   root_window_ = root;
 
   root_window_->window()->SetProperty(kContentWindowForRootWindow,
                                       content_window_);
-  root_window_->window()->SetProperty(kDesktopRootWindowHostKey, this);
+  root_window_->window()->SetProperty(kDesktopWindowTreeHostKey, this);
 
   should_animate_window_close_ =
       content_window_->type() != aura::client::WINDOW_TYPE_NORMAL &&
@@ -164,21 +164,21 @@ void DesktopRootWindowHostWin::OnRootWindowCreated(
   SetWindowTransparency();
 }
 
-scoped_ptr<corewm::Tooltip> DesktopRootWindowHostWin::CreateTooltip() {
+scoped_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {
   DCHECK(!tooltip_);
   tooltip_ = new corewm::TooltipWin(GetAcceleratedWidget());
   return scoped_ptr<corewm::Tooltip>(tooltip_);
 }
 
 scoped_ptr<aura::client::DragDropClient>
-DesktopRootWindowHostWin::CreateDragDropClient(
+DesktopWindowTreeHostWin::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
   drag_drop_client_ = new DesktopDragDropClientWin(root_window_->window(),
                                                    GetHWND());
   return scoped_ptr<aura::client::DragDropClient>(drag_drop_client_).Pass();
 }
 
-void DesktopRootWindowHostWin::Close() {
+void DesktopWindowTreeHostWin::Close() {
   // TODO(beng): Move this entire branch to DNWA so it can be shared with X11.
   if (should_animate_window_close_) {
     pending_close_ = true;
@@ -194,30 +194,30 @@ void DesktopRootWindowHostWin::Close() {
   }
 }
 
-void DesktopRootWindowHostWin::CloseNow() {
+void DesktopWindowTreeHostWin::CloseNow() {
   message_handler_->CloseNow();
 }
 
-aura::RootWindowHost* DesktopRootWindowHostWin::AsRootWindowHost() {
+aura::WindowTreeHost* DesktopWindowTreeHostWin::AsWindowTreeHost() {
   return this;
 }
 
-void DesktopRootWindowHostWin::ShowWindowWithState(
+void DesktopWindowTreeHostWin::ShowWindowWithState(
     ui::WindowShowState show_state) {
   message_handler_->ShowWindowWithState(show_state);
 }
 
-void DesktopRootWindowHostWin::ShowMaximizedWithBounds(
+void DesktopWindowTreeHostWin::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
   gfx::Rect pixel_bounds = gfx::win::DIPToScreenRect(restored_bounds);
   message_handler_->ShowMaximizedWithBounds(pixel_bounds);
 }
 
-bool DesktopRootWindowHostWin::IsVisible() const {
+bool DesktopWindowTreeHostWin::IsVisible() const {
   return message_handler_->IsVisible();
 }
 
-void DesktopRootWindowHostWin::SetSize(const gfx::Size& size) {
+void DesktopWindowTreeHostWin::SetSize(const gfx::Size& size) {
   gfx::Size size_in_pixels = gfx::win::DIPToScreenSize(size);
   gfx::Size expanded = GetExpandedWindowSize(
       message_handler_->window_ex_style(), size_in_pixels);
@@ -227,12 +227,12 @@ void DesktopRootWindowHostWin::SetSize(const gfx::Size& size) {
   message_handler_->SetSize(expanded);
 }
 
-void DesktopRootWindowHostWin::CenterWindow(const gfx::Size& size) {
+void DesktopWindowTreeHostWin::CenterWindow(const gfx::Size& size) {
   gfx::Size size_in_pixels = gfx::win::DIPToScreenSize(size);
   message_handler_->CenterWindow(size_in_pixels);
 }
 
-void DesktopRootWindowHostWin::GetWindowPlacement(
+void DesktopWindowTreeHostWin::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   message_handler_->GetWindowPlacement(bounds, show_state);
@@ -240,25 +240,25 @@ void DesktopRootWindowHostWin::GetWindowPlacement(
   *bounds = gfx::win::ScreenToDIPRect(*bounds);
 }
 
-gfx::Rect DesktopRootWindowHostWin::GetWindowBoundsInScreen() const {
+gfx::Rect DesktopWindowTreeHostWin::GetWindowBoundsInScreen() const {
   gfx::Rect pixel_bounds = message_handler_->GetWindowBoundsInScreen();
   InsetBottomRight(&pixel_bounds, window_enlargement_);
   return gfx::win::ScreenToDIPRect(pixel_bounds);
 }
 
-gfx::Rect DesktopRootWindowHostWin::GetClientAreaBoundsInScreen() const {
+gfx::Rect DesktopWindowTreeHostWin::GetClientAreaBoundsInScreen() const {
   gfx::Rect pixel_bounds = message_handler_->GetClientAreaBoundsInScreen();
   InsetBottomRight(&pixel_bounds, window_enlargement_);
   return gfx::win::ScreenToDIPRect(pixel_bounds);
 }
 
-gfx::Rect DesktopRootWindowHostWin::GetRestoredBounds() const {
+gfx::Rect DesktopWindowTreeHostWin::GetRestoredBounds() const {
   gfx::Rect pixel_bounds = message_handler_->GetRestoredBounds();
   InsetBottomRight(&pixel_bounds, window_enlargement_);
   return gfx::win::ScreenToDIPRect(pixel_bounds);
 }
 
-gfx::Rect DesktopRootWindowHostWin::GetWorkAreaBoundsInScreen() const {
+gfx::Rect DesktopWindowTreeHostWin::GetWorkAreaBoundsInScreen() const {
   MONITORINFO monitor_info;
   monitor_info.cbSize = sizeof(monitor_info);
   GetMonitorInfo(MonitorFromWindow(message_handler_->hwnd(),
@@ -268,7 +268,7 @@ gfx::Rect DesktopRootWindowHostWin::GetWorkAreaBoundsInScreen() const {
   return gfx::win::ScreenToDIPRect(pixel_bounds);
 }
 
-void DesktopRootWindowHostWin::SetShape(gfx::NativeRegion native_region) {
+void DesktopWindowTreeHostWin::SetShape(gfx::NativeRegion native_region) {
   if (native_region) {
     message_handler_->SetRegion(gfx::CreateHRGNFromSkRegion(*native_region));
   } else {
@@ -278,59 +278,59 @@ void DesktopRootWindowHostWin::SetShape(gfx::NativeRegion native_region) {
   delete native_region;
 }
 
-void DesktopRootWindowHostWin::Activate() {
+void DesktopWindowTreeHostWin::Activate() {
   message_handler_->Activate();
 }
 
-void DesktopRootWindowHostWin::Deactivate() {
+void DesktopWindowTreeHostWin::Deactivate() {
   message_handler_->Deactivate();
 }
 
-bool DesktopRootWindowHostWin::IsActive() const {
+bool DesktopWindowTreeHostWin::IsActive() const {
   return message_handler_->IsActive();
 }
 
-void DesktopRootWindowHostWin::Maximize() {
+void DesktopWindowTreeHostWin::Maximize() {
   message_handler_->Maximize();
 }
 
-void DesktopRootWindowHostWin::Minimize() {
+void DesktopWindowTreeHostWin::Minimize() {
   message_handler_->Minimize();
 }
 
-void DesktopRootWindowHostWin::Restore() {
+void DesktopWindowTreeHostWin::Restore() {
   message_handler_->Restore();
 }
 
-bool DesktopRootWindowHostWin::IsMaximized() const {
+bool DesktopWindowTreeHostWin::IsMaximized() const {
   return message_handler_->IsMaximized();
 }
 
-bool DesktopRootWindowHostWin::IsMinimized() const {
+bool DesktopWindowTreeHostWin::IsMinimized() const {
   return message_handler_->IsMinimized();
 }
 
-bool DesktopRootWindowHostWin::HasCapture() const {
+bool DesktopWindowTreeHostWin::HasCapture() const {
   return message_handler_->HasCapture();
 }
 
-void DesktopRootWindowHostWin::SetAlwaysOnTop(bool always_on_top) {
+void DesktopWindowTreeHostWin::SetAlwaysOnTop(bool always_on_top) {
   message_handler_->SetAlwaysOnTop(always_on_top);
 }
 
-bool DesktopRootWindowHostWin::IsAlwaysOnTop() const {
+bool DesktopWindowTreeHostWin::IsAlwaysOnTop() const {
   return message_handler_->IsAlwaysOnTop();
 }
 
-void DesktopRootWindowHostWin::SetWindowTitle(const string16& title) {
+void DesktopWindowTreeHostWin::SetWindowTitle(const string16& title) {
   message_handler_->SetTitle(title);
 }
 
-void DesktopRootWindowHostWin::ClearNativeFocus() {
+void DesktopWindowTreeHostWin::ClearNativeFocus() {
   message_handler_->ClearNativeFocus();
 }
 
-Widget::MoveLoopResult DesktopRootWindowHostWin::RunMoveLoop(
+Widget::MoveLoopResult DesktopWindowTreeHostWin::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
@@ -340,99 +340,99 @@ Widget::MoveLoopResult DesktopRootWindowHostWin::RunMoveLoop(
       Widget::MOVE_LOOP_SUCCESSFUL : Widget::MOVE_LOOP_CANCELED;
 }
 
-void DesktopRootWindowHostWin::EndMoveLoop() {
+void DesktopWindowTreeHostWin::EndMoveLoop() {
   message_handler_->EndMoveLoop();
 }
 
-void DesktopRootWindowHostWin::SetVisibilityChangedAnimationsEnabled(
+void DesktopWindowTreeHostWin::SetVisibilityChangedAnimationsEnabled(
     bool value) {
   message_handler_->SetVisibilityChangedAnimationsEnabled(value);
   content_window_->SetProperty(aura::client::kAnimationsDisabledKey, !value);
 }
 
-bool DesktopRootWindowHostWin::ShouldUseNativeFrame() {
+bool DesktopWindowTreeHostWin::ShouldUseNativeFrame() {
   return ui::win::IsAeroGlassEnabled();
 }
 
-void DesktopRootWindowHostWin::FrameTypeChanged() {
+void DesktopWindowTreeHostWin::FrameTypeChanged() {
   message_handler_->FrameTypeChanged();
   SetWindowTransparency();
 }
 
-NonClientFrameView* DesktopRootWindowHostWin::CreateNonClientFrameView() {
+NonClientFrameView* DesktopWindowTreeHostWin::CreateNonClientFrameView() {
   return GetWidget()->ShouldUseNativeFrame() ?
       new NativeFrameView(GetWidget()) : NULL;
 }
 
-void DesktopRootWindowHostWin::SetFullscreen(bool fullscreen) {
+void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {
   message_handler_->fullscreen_handler()->SetFullscreen(fullscreen);
   SetWindowTransparency();
 }
 
-bool DesktopRootWindowHostWin::IsFullscreen() const {
+bool DesktopWindowTreeHostWin::IsFullscreen() const {
   return message_handler_->fullscreen_handler()->fullscreen();
 }
 
-void DesktopRootWindowHostWin::SetOpacity(unsigned char opacity) {
+void DesktopWindowTreeHostWin::SetOpacity(unsigned char opacity) {
   message_handler_->SetOpacity(static_cast<BYTE>(opacity));
   content_window_->layer()->SetOpacity(opacity / 255.0);
 }
 
-void DesktopRootWindowHostWin::SetWindowIcons(
+void DesktopWindowTreeHostWin::SetWindowIcons(
     const gfx::ImageSkia& window_icon, const gfx::ImageSkia& app_icon) {
   message_handler_->SetWindowIcons(window_icon, app_icon);
 }
 
-void DesktopRootWindowHostWin::InitModalType(ui::ModalType modal_type) {
+void DesktopWindowTreeHostWin::InitModalType(ui::ModalType modal_type) {
   message_handler_->InitModalType(modal_type);
 }
 
-void DesktopRootWindowHostWin::FlashFrame(bool flash_frame) {
+void DesktopWindowTreeHostWin::FlashFrame(bool flash_frame) {
   message_handler_->FlashFrame(flash_frame);
 }
 
-void DesktopRootWindowHostWin::OnRootViewLayout() const {
+void DesktopWindowTreeHostWin::OnRootViewLayout() const {
 }
 
-void DesktopRootWindowHostWin::OnNativeWidgetFocus() {
+void DesktopWindowTreeHostWin::OnNativeWidgetFocus() {
   // HWNDMessageHandler will perform the proper updating on its own.
 }
 
-void DesktopRootWindowHostWin::OnNativeWidgetBlur() {
+void DesktopWindowTreeHostWin::OnNativeWidgetBlur() {
 }
 
-bool DesktopRootWindowHostWin::IsAnimatingClosed() const {
+bool DesktopWindowTreeHostWin::IsAnimatingClosed() const {
   return pending_close_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostWin, RootWindowHost implementation:
+// DesktopWindowTreeHostWin, WindowTreeHost implementation:
 
-aura::RootWindow* DesktopRootWindowHostWin::GetRootWindow() {
+aura::RootWindow* DesktopWindowTreeHostWin::GetRootWindow() {
   return root_window_;
 }
 
-gfx::AcceleratedWidget DesktopRootWindowHostWin::GetAcceleratedWidget() {
+gfx::AcceleratedWidget DesktopWindowTreeHostWin::GetAcceleratedWidget() {
   return message_handler_->hwnd();
 }
 
-void DesktopRootWindowHostWin::Show() {
+void DesktopWindowTreeHostWin::Show() {
   message_handler_->Show();
 }
 
-void DesktopRootWindowHostWin::Hide() {
+void DesktopWindowTreeHostWin::Hide() {
   if (!pending_close_)
     message_handler_->Hide();
 }
 
-void DesktopRootWindowHostWin::ToggleFullScreen() {
+void DesktopWindowTreeHostWin::ToggleFullScreen() {
   SetWindowTransparency();
 }
 
 // GetBounds and SetBounds work in pixel coordinates, whereas other get/set
 // methods work in DIP.
 
-gfx::Rect DesktopRootWindowHostWin::GetBounds() const {
+gfx::Rect DesktopWindowTreeHostWin::GetBounds() const {
   // Match the logic in HWNDMessageHandler::ClientAreaSizeChanged().
   gfx::Rect bounds(WidgetSizeIsClientSize() ?
       message_handler_->GetClientAreaBoundsInScreen() :
@@ -452,7 +452,7 @@ gfx::Rect DesktopRootWindowHostWin::GetBounds() const {
   return without_expansion;
 }
 
-void DesktopRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
+void DesktopWindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
   // If the window bounds have to be expanded we need to subtract the
   // window_expansion_top_left_delta_ from the origin and add the
   // window_expansion_bottom_right_delta_ to the width and height
@@ -472,33 +472,33 @@ void DesktopRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
   message_handler_->SetBounds(new_expanded);
 }
 
-gfx::Insets DesktopRootWindowHostWin::GetInsets() const {
+gfx::Insets DesktopWindowTreeHostWin::GetInsets() const {
   return gfx::Insets();
 }
 
-void DesktopRootWindowHostWin::SetInsets(const gfx::Insets& insets) {
+void DesktopWindowTreeHostWin::SetInsets(const gfx::Insets& insets) {
 }
 
-gfx::Point DesktopRootWindowHostWin::GetLocationOnNativeScreen() const {
+gfx::Point DesktopWindowTreeHostWin::GetLocationOnNativeScreen() const {
   return GetBounds().origin();
 }
 
-void DesktopRootWindowHostWin::SetCapture() {
+void DesktopWindowTreeHostWin::SetCapture() {
   message_handler_->SetCapture();
 }
 
-void DesktopRootWindowHostWin::ReleaseCapture() {
+void DesktopWindowTreeHostWin::ReleaseCapture() {
   message_handler_->ReleaseCapture();
 }
 
-void DesktopRootWindowHostWin::SetCursor(gfx::NativeCursor cursor) {
+void DesktopWindowTreeHostWin::SetCursor(gfx::NativeCursor cursor) {
   ui::CursorLoaderWin cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor);
 
   message_handler_->SetCursor(cursor.platform());
 }
 
-bool DesktopRootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
+bool DesktopWindowTreeHostWin::QueryMouseLocation(gfx::Point* location_return) {
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window_->window());
   if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
@@ -512,44 +512,44 @@ bool DesktopRootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
   return true;
 }
 
-bool DesktopRootWindowHostWin::ConfineCursorToRootWindow() {
+bool DesktopWindowTreeHostWin::ConfineCursorToRootWindow() {
   RECT window_rect = root_window_->window()->GetBoundsInScreen().ToRECT();
   ::ClipCursor(&window_rect);
   return true;
 }
 
-void DesktopRootWindowHostWin::UnConfineCursor() {
+void DesktopWindowTreeHostWin::UnConfineCursor() {
   ::ClipCursor(NULL);
 }
 
-void DesktopRootWindowHostWin::OnCursorVisibilityChanged(bool show) {
+void DesktopWindowTreeHostWin::OnCursorVisibilityChanged(bool show) {
   if (is_cursor_visible_ == show)
     return;
   is_cursor_visible_ = show;
   ::ShowCursor(!!show);
 }
 
-void DesktopRootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
+void DesktopWindowTreeHostWin::MoveCursorTo(const gfx::Point& location) {
   POINT cursor_location = location.ToPOINT();
   ::ClientToScreen(GetHWND(), &cursor_location);
   ::SetCursorPos(cursor_location.x, cursor_location.y);
 }
 
-void DesktopRootWindowHostWin::PostNativeEvent(
+void DesktopWindowTreeHostWin::PostNativeEvent(
     const base::NativeEvent& native_event) {
 }
 
-void DesktopRootWindowHostWin::OnDeviceScaleFactorChanged(
+void DesktopWindowTreeHostWin::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
 }
 
-void DesktopRootWindowHostWin::PrepareForShutdown() {
+void DesktopWindowTreeHostWin::PrepareForShutdown() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostWin, aura::AnimationHost implementation:
+// DesktopWindowTreeHostWin, aura::AnimationHost implementation:
 
-void DesktopRootWindowHostWin::SetHostTransitionOffsets(
+void DesktopWindowTreeHostWin::SetHostTransitionOffsets(
     const gfx::Vector2d& top_left_delta,
     const gfx::Vector2d& bottom_right_delta) {
   gfx::Rect bounds_without_expansion = GetBounds();
@@ -558,88 +558,88 @@ void DesktopRootWindowHostWin::SetHostTransitionOffsets(
   SetBounds(bounds_without_expansion);
 }
 
-void DesktopRootWindowHostWin::OnWindowHidingAnimationCompleted() {
+void DesktopWindowTreeHostWin::OnWindowHidingAnimationCompleted() {
   if (pending_close_)
     message_handler_->Close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostWin, HWNDMessageHandlerDelegate implementation:
+// DesktopWindowTreeHostWin, HWNDMessageHandlerDelegate implementation:
 
-bool DesktopRootWindowHostWin::IsWidgetWindow() const {
+bool DesktopWindowTreeHostWin::IsWidgetWindow() const {
   return has_non_client_view_;
 }
 
-bool DesktopRootWindowHostWin::IsUsingCustomFrame() const {
+bool DesktopWindowTreeHostWin::IsUsingCustomFrame() const {
   return !GetWidget()->ShouldUseNativeFrame();
 }
 
-void DesktopRootWindowHostWin::SchedulePaint() {
+void DesktopWindowTreeHostWin::SchedulePaint() {
   GetWidget()->GetRootView()->SchedulePaint();
 }
 
-void DesktopRootWindowHostWin::EnableInactiveRendering() {
+void DesktopWindowTreeHostWin::EnableInactiveRendering() {
   native_widget_delegate_->EnableInactiveRendering();
 }
 
-bool DesktopRootWindowHostWin::IsInactiveRenderingDisabled() {
+bool DesktopWindowTreeHostWin::IsInactiveRenderingDisabled() {
   return native_widget_delegate_->IsInactiveRenderingDisabled();
 }
 
-bool DesktopRootWindowHostWin::CanResize() const {
+bool DesktopWindowTreeHostWin::CanResize() const {
   return GetWidget()->widget_delegate()->CanResize();
 }
 
-bool DesktopRootWindowHostWin::CanMaximize() const {
+bool DesktopWindowTreeHostWin::CanMaximize() const {
   return GetWidget()->widget_delegate()->CanMaximize();
 }
 
-bool DesktopRootWindowHostWin::CanActivate() const {
+bool DesktopWindowTreeHostWin::CanActivate() const {
   if (IsModalWindowActive())
     return true;
   return native_widget_delegate_->CanActivate();
 }
 
-bool DesktopRootWindowHostWin::WidgetSizeIsClientSize() const {
+bool DesktopWindowTreeHostWin::WidgetSizeIsClientSize() const {
   const Widget* widget = GetWidget()->GetTopLevelWidget();
   return IsMaximized() || (widget && widget->ShouldUseNativeFrame());
 }
 
-bool DesktopRootWindowHostWin::CanSaveFocus() const {
+bool DesktopWindowTreeHostWin::CanSaveFocus() const {
   return GetWidget()->is_top_level();
 }
 
-void DesktopRootWindowHostWin::SaveFocusOnDeactivate() {
+void DesktopWindowTreeHostWin::SaveFocusOnDeactivate() {
   GetWidget()->GetFocusManager()->StoreFocusedView(true);
 }
 
-void DesktopRootWindowHostWin::RestoreFocusOnActivate() {
+void DesktopWindowTreeHostWin::RestoreFocusOnActivate() {
   RestoreFocusOnEnable();
 }
 
-void DesktopRootWindowHostWin::RestoreFocusOnEnable() {
+void DesktopWindowTreeHostWin::RestoreFocusOnEnable() {
   GetWidget()->GetFocusManager()->RestoreFocusedView();
 }
 
-bool DesktopRootWindowHostWin::IsModal() const {
+bool DesktopWindowTreeHostWin::IsModal() const {
   return native_widget_delegate_->IsModal();
 }
 
-int DesktopRootWindowHostWin::GetInitialShowState() const {
+int DesktopWindowTreeHostWin::GetInitialShowState() const {
   return SW_SHOWNORMAL;
 }
 
-bool DesktopRootWindowHostWin::WillProcessWorkAreaChange() const {
+bool DesktopWindowTreeHostWin::WillProcessWorkAreaChange() const {
   return GetWidget()->widget_delegate()->WillProcessWorkAreaChange();
 }
 
-int DesktopRootWindowHostWin::GetNonClientComponent(
+int DesktopWindowTreeHostWin::GetNonClientComponent(
     const gfx::Point& point) const {
   gfx::Point dip_position = gfx::win::ScreenToDIPPoint(point);
   return native_widget_delegate_->GetNonClientComponent(dip_position);
 }
 
-void DesktopRootWindowHostWin::GetWindowMask(const gfx::Size& size,
+void DesktopWindowTreeHostWin::GetWindowMask(const gfx::Size& size,
                                              gfx::Path* path) {
   if (GetWidget()->non_client_view()) {
     GetWidget()->non_client_view()->GetWindowMask(size, path);
@@ -652,45 +652,45 @@ void DesktopRootWindowHostWin::GetWindowMask(const gfx::Size& size,
   }
 }
 
-bool DesktopRootWindowHostWin::GetClientAreaInsets(gfx::Insets* insets) const {
+bool DesktopWindowTreeHostWin::GetClientAreaInsets(gfx::Insets* insets) const {
   return false;
 }
 
-void DesktopRootWindowHostWin::GetMinMaxSize(gfx::Size* min_size,
+void DesktopWindowTreeHostWin::GetMinMaxSize(gfx::Size* min_size,
                                              gfx::Size* max_size) const {
   *min_size = native_widget_delegate_->GetMinimumSize();
   *max_size = native_widget_delegate_->GetMaximumSize();
 }
 
-gfx::Size DesktopRootWindowHostWin::GetRootViewSize() const {
+gfx::Size DesktopWindowTreeHostWin::GetRootViewSize() const {
   return GetWidget()->GetRootView()->size();
 }
 
-void DesktopRootWindowHostWin::ResetWindowControls() {
+void DesktopWindowTreeHostWin::ResetWindowControls() {
   GetWidget()->non_client_view()->ResetWindowControls();
 }
 
-void DesktopRootWindowHostWin::PaintLayeredWindow(gfx::Canvas* canvas) {
+void DesktopWindowTreeHostWin::PaintLayeredWindow(gfx::Canvas* canvas) {
   GetWidget()->GetRootView()->Paint(canvas);
 }
 
-gfx::NativeViewAccessible DesktopRootWindowHostWin::GetNativeViewAccessible() {
+gfx::NativeViewAccessible DesktopWindowTreeHostWin::GetNativeViewAccessible() {
   return GetWidget()->GetRootView()->GetNativeViewAccessible();
 }
 
-InputMethod* DesktopRootWindowHostWin::GetInputMethod() {
+InputMethod* DesktopWindowTreeHostWin::GetInputMethod() {
   return GetWidget()->GetInputMethodDirect();
 }
 
-bool DesktopRootWindowHostWin::ShouldHandleSystemCommands() const {
+bool DesktopWindowTreeHostWin::ShouldHandleSystemCommands() const {
   return GetWidget()->widget_delegate()->ShouldHandleSystemCommands();
 }
 
-void DesktopRootWindowHostWin::HandleAppDeactivated() {
+void DesktopWindowTreeHostWin::HandleAppDeactivated() {
   native_widget_delegate_->EnableInactiveRendering();
 }
 
-void DesktopRootWindowHostWin::HandleActivationChanged(bool active) {
+void DesktopWindowTreeHostWin::HandleActivationChanged(bool active) {
   // This can be invoked from HWNDMessageHandler::Init(), at which point we're
   // not in a good state and need to ignore it.
   if (!delegate_)
@@ -701,36 +701,36 @@ void DesktopRootWindowHostWin::HandleActivationChanged(bool active) {
   desktop_native_widget_aura_->HandleActivationChanged(active);
 }
 
-bool DesktopRootWindowHostWin::HandleAppCommand(short command) {
+bool DesktopWindowTreeHostWin::HandleAppCommand(short command) {
   // We treat APPCOMMAND ids as an extension of our command namespace, and just
   // let the delegate figure out what to do...
   return GetWidget()->widget_delegate() &&
       GetWidget()->widget_delegate()->ExecuteWindowsCommand(command);
 }
 
-void DesktopRootWindowHostWin::HandleCancelMode() {
+void DesktopWindowTreeHostWin::HandleCancelMode() {
   delegate_->OnHostCancelMode();
 }
 
-void DesktopRootWindowHostWin::HandleCaptureLost() {
+void DesktopWindowTreeHostWin::HandleCaptureLost() {
   delegate_->OnHostLostWindowCapture();
   native_widget_delegate_->OnMouseCaptureLost();
 }
 
-void DesktopRootWindowHostWin::HandleClose() {
+void DesktopWindowTreeHostWin::HandleClose() {
   GetWidget()->Close();
 }
 
-bool DesktopRootWindowHostWin::HandleCommand(int command) {
+bool DesktopWindowTreeHostWin::HandleCommand(int command) {
   return GetWidget()->widget_delegate()->ExecuteWindowsCommand(command);
 }
 
-void DesktopRootWindowHostWin::HandleAccelerator(
+void DesktopWindowTreeHostWin::HandleAccelerator(
     const ui::Accelerator& accelerator) {
   GetWidget()->GetFocusManager()->ProcessAccelerator(accelerator);
 }
 
-void DesktopRootWindowHostWin::HandleCreate() {
+void DesktopWindowTreeHostWin::HandleCreate() {
   // TODO(beng): moar
   NOTIMPLEMENTED();
 
@@ -740,92 +740,92 @@ void DesktopRootWindowHostWin::HandleCreate() {
   // 2. MouseWheel.
 }
 
-void DesktopRootWindowHostWin::HandleDestroying() {
+void DesktopWindowTreeHostWin::HandleDestroying() {
   drag_drop_client_->OnNativeWidgetDestroying(GetHWND());
   native_widget_delegate_->OnNativeWidgetDestroying();
 }
 
-void DesktopRootWindowHostWin::HandleDestroyed() {
+void DesktopWindowTreeHostWin::HandleDestroyed() {
   desktop_native_widget_aura_->OnHostClosed();
 }
 
-bool DesktopRootWindowHostWin::HandleInitialFocus() {
+bool DesktopWindowTreeHostWin::HandleInitialFocus() {
   return GetWidget()->SetInitialFocus();
 }
 
-void DesktopRootWindowHostWin::HandleDisplayChange() {
+void DesktopWindowTreeHostWin::HandleDisplayChange() {
   GetWidget()->widget_delegate()->OnDisplayChanged();
 }
 
-void DesktopRootWindowHostWin::HandleBeginWMSizeMove() {
+void DesktopWindowTreeHostWin::HandleBeginWMSizeMove() {
   native_widget_delegate_->OnNativeWidgetBeginUserBoundsChange();
 }
 
-void DesktopRootWindowHostWin::HandleEndWMSizeMove() {
+void DesktopWindowTreeHostWin::HandleEndWMSizeMove() {
   native_widget_delegate_->OnNativeWidgetEndUserBoundsChange();
 }
 
-void DesktopRootWindowHostWin::HandleMove() {
+void DesktopWindowTreeHostWin::HandleMove() {
   native_widget_delegate_->OnNativeWidgetMove();
   if (delegate_)
     delegate_->OnHostMoved(GetBounds().origin());
 }
 
-void DesktopRootWindowHostWin::HandleWorkAreaChanged() {
+void DesktopWindowTreeHostWin::HandleWorkAreaChanged() {
   GetWidget()->widget_delegate()->OnWorkAreaChanged();
 }
 
-void DesktopRootWindowHostWin::HandleVisibilityChanging(bool visible) {
+void DesktopWindowTreeHostWin::HandleVisibilityChanging(bool visible) {
   native_widget_delegate_->OnNativeWidgetVisibilityChanging(visible);
 }
 
-void DesktopRootWindowHostWin::HandleVisibilityChanged(bool visible) {
+void DesktopWindowTreeHostWin::HandleVisibilityChanged(bool visible) {
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(visible);
 }
 
-void DesktopRootWindowHostWin::HandleClientSizeChanged(
+void DesktopWindowTreeHostWin::HandleClientSizeChanged(
     const gfx::Size& new_size) {
   if (delegate_)
     NotifyHostResized(new_size);
 }
 
-void DesktopRootWindowHostWin::HandleFrameChanged() {
+void DesktopWindowTreeHostWin::HandleFrameChanged() {
   SetWindowTransparency();
   // Replace the frame and layout the contents.
   GetWidget()->non_client_view()->UpdateFrame(true);
 }
 
-void DesktopRootWindowHostWin::HandleNativeFocus(HWND last_focused_window) {
+void DesktopWindowTreeHostWin::HandleNativeFocus(HWND last_focused_window) {
   // TODO(beng): inform the native_widget_delegate_.
   InputMethod* input_method = GetInputMethod();
   if (input_method)
     input_method->OnFocus();
 }
 
-void DesktopRootWindowHostWin::HandleNativeBlur(HWND focused_window) {
+void DesktopWindowTreeHostWin::HandleNativeBlur(HWND focused_window) {
   // TODO(beng): inform the native_widget_delegate_.
   InputMethod* input_method = GetInputMethod();
   if (input_method)
     input_method->OnBlur();
 }
 
-bool DesktopRootWindowHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
+bool DesktopWindowTreeHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
   if (base::win::IsTSFAwareRequired() && event.IsAnyButton())
     ui::TSFBridge::GetInstance()->CancelComposition();
   return delegate_->OnHostMouseEvent(const_cast<ui::MouseEvent*>(&event));
 }
 
-bool DesktopRootWindowHostWin::HandleKeyEvent(const ui::KeyEvent& event) {
+bool DesktopWindowTreeHostWin::HandleKeyEvent(const ui::KeyEvent& event) {
   return false;
 }
 
-bool DesktopRootWindowHostWin::HandleUntranslatedKeyEvent(
+bool DesktopWindowTreeHostWin::HandleUntranslatedKeyEvent(
     const ui::KeyEvent& event) {
   scoped_ptr<ui::KeyEvent> duplicate_event(event.Copy());
   return delegate_->OnHostKeyEvent(duplicate_event.get());
 }
 
-void DesktopRootWindowHostWin::HandleTouchEvent(
+void DesktopWindowTreeHostWin::HandleTouchEvent(
     const ui::TouchEvent& event) {
   // HWNDMessageHandler asynchronously processes touch events. Because of this
   // it's possible for the aura::RootWindow to have been destroyed by the time
@@ -837,8 +837,8 @@ void DesktopRootWindowHostWin::HandleTouchEvent(
   aura::RootWindow* root =
       aura::RootWindow::GetForAcceleratedWidget(GetCapture());
   if (root) {
-    DesktopRootWindowHostWin* target =
-        root->window()->GetProperty(kDesktopRootWindowHostKey);
+    DesktopWindowTreeHostWin* target =
+        root->window()->GetProperty(kDesktopWindowTreeHostKey);
     if (target && target->HasCapture() && target != this) {
       POINT target_location(event.location().ToPOINT());
       ClientToScreen(GetHWND(), &target_location);
@@ -855,7 +855,7 @@ void DesktopRootWindowHostWin::HandleTouchEvent(
       const_cast<ui::TouchEvent*>(&event));
 }
 
-bool DesktopRootWindowHostWin::HandleIMEMessage(UINT message,
+bool DesktopWindowTreeHostWin::HandleIMEMessage(UINT message,
                                                 WPARAM w_param,
                                                 LPARAM l_param,
                                                 LRESULT* result) {
@@ -868,63 +868,63 @@ bool DesktopRootWindowHostWin::HandleIMEMessage(UINT message,
       input_method()->OnUntranslatedIMEMessage(msg, result);
 }
 
-void DesktopRootWindowHostWin::HandleInputLanguageChange(
+void DesktopWindowTreeHostWin::HandleInputLanguageChange(
     DWORD character_set,
     HKL input_language_id) {
   desktop_native_widget_aura_->input_method_event_filter()->
       input_method()->OnInputLocaleChanged();
 }
 
-bool DesktopRootWindowHostWin::HandlePaintAccelerated(
+bool DesktopWindowTreeHostWin::HandlePaintAccelerated(
     const gfx::Rect& invalid_rect) {
   return native_widget_delegate_->OnNativeWidgetPaintAccelerated(invalid_rect);
 }
 
-void DesktopRootWindowHostWin::HandlePaint(gfx::Canvas* canvas) {
+void DesktopWindowTreeHostWin::HandlePaint(gfx::Canvas* canvas) {
   compositor()->ScheduleRedrawRect(gfx::Rect());
 }
 
-bool DesktopRootWindowHostWin::HandleTooltipNotify(int w_param,
+bool DesktopWindowTreeHostWin::HandleTooltipNotify(int w_param,
                                                    NMHDR* l_param,
                                                    LRESULT* l_result) {
   return tooltip_ && tooltip_->HandleNotify(w_param, l_param, l_result);
 }
 
-void DesktopRootWindowHostWin::HandleTooltipMouseMove(UINT message,
+void DesktopWindowTreeHostWin::HandleTooltipMouseMove(UINT message,
                                                       WPARAM w_param,
                                                       LPARAM l_param) {
   // TooltipWin implementation doesn't need this.
   // TODO(sky): remove from HWNDMessageHandler once non-aura path nuked.
 }
 
-bool DesktopRootWindowHostWin::PreHandleMSG(UINT message,
+bool DesktopWindowTreeHostWin::PreHandleMSG(UINT message,
                                             WPARAM w_param,
                                             LPARAM l_param,
                                             LRESULT* result) {
   return false;
 }
 
-void DesktopRootWindowHostWin::PostHandleMSG(UINT message,
+void DesktopWindowTreeHostWin::PostHandleMSG(UINT message,
                                              WPARAM w_param,
                                              LPARAM l_param) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostWin, private:
+// DesktopWindowTreeHostWin, private:
 
-Widget* DesktopRootWindowHostWin::GetWidget() {
+Widget* DesktopWindowTreeHostWin::GetWidget() {
   return native_widget_delegate_->AsWidget();
 }
 
-const Widget* DesktopRootWindowHostWin::GetWidget() const {
+const Widget* DesktopWindowTreeHostWin::GetWidget() const {
   return native_widget_delegate_->AsWidget();
 }
 
-HWND DesktopRootWindowHostWin::GetHWND() const {
+HWND DesktopWindowTreeHostWin::GetHWND() const {
   return message_handler_->hwnd();
 }
 
-void DesktopRootWindowHostWin::SetWindowTransparency() {
+void DesktopWindowTreeHostWin::SetWindowTransparency() {
   bool transparent = ShouldUseNativeFrame() && !IsFullscreen();
   root_window_->host()->compositor()->SetHostHasTransparentBackground(
       transparent);
@@ -932,7 +932,7 @@ void DesktopRootWindowHostWin::SetWindowTransparency() {
   content_window_->SetTransparent(transparent);
 }
 
-bool DesktopRootWindowHostWin::IsModalWindowActive() const {
+bool DesktopWindowTreeHostWin::IsModalWindowActive() const {
   // This function can get called during window creation which occurs before
   // root_window_ has been created.
   if (!root_window_)
@@ -950,13 +950,13 @@ bool DesktopRootWindowHostWin::IsModalWindowActive() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHost, public:
+// DesktopWindowTreeHost, public:
 
 // static
-DesktopRootWindowHost* DesktopRootWindowHost::Create(
+DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura) {
-  return new DesktopRootWindowHostWin(native_widget_delegate,
+  return new DesktopWindowTreeHostWin(native_widget_delegate,
                                       desktop_native_widget_aura);
 }
 

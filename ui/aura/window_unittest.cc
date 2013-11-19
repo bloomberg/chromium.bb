@@ -488,13 +488,13 @@ TEST_F(WindowTest, HitTest) {
 
   ui::TouchEvent pressed(
       ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 0, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&pressed);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&pressed);
   EXPECT_TRUE(w1.HitTest(gfx::Point(-2, -2)));
   EXPECT_TRUE(w1.HitTest(gfx::Point(-5, -5)));
   EXPECT_FALSE(w1.HitTest(gfx::Point(-5, -6)));
   ui::TouchEvent released(
       ui::ET_TOUCH_RELEASED, gfx::Point(50, 50), 0, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&released);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&released);
   EXPECT_FALSE(w1.HitTest(gfx::Point(-2, -2)));
 
   // TODO(beng): clip Window to parent.
@@ -845,7 +845,7 @@ TEST_F(WindowTest, CaptureTests) {
 
   ui::TouchEvent touchev(
       ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 0, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&touchev);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&touchev);
   EXPECT_EQ(1, delegate.touch_event_count());
   delegate.ResetCounts();
 
@@ -861,7 +861,7 @@ TEST_F(WindowTest, CaptureTests) {
 
   ui::TouchEvent touchev2(
       ui::ET_TOUCH_PRESSED, gfx::Point(250, 250), 1, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&touchev2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&touchev2);
   EXPECT_EQ(0, delegate.touch_event_count());
 
   // Removing the capture window from parent should reset the capture window
@@ -884,7 +884,7 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
   // Press on w1.
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
   EXPECT_EQ(2, delegate1.gesture_event_count());
   delegate1.ResetCounts();
@@ -898,7 +898,7 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
 
   // Events now go to w2.
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 20), 0, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
   EXPECT_EQ(0, delegate1.gesture_event_count());
   EXPECT_EQ(0, delegate1.touch_event_count());
   EXPECT_EQ(0, delegate2.gesture_event_count());
@@ -906,14 +906,14 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
 
   ui::TouchEvent release(
       ui::ET_TOUCH_RELEASED, gfx::Point(10, 20), 0, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_EQ(0, delegate1.gesture_event_count());
   EXPECT_EQ(0, delegate2.gesture_event_count());
 
   // A new press is captured by w2.
   ui::TouchEvent press2(
       ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   EXPECT_EQ(0, delegate1.gesture_event_count());
   // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
   EXPECT_EQ(2, delegate2.gesture_event_count());
@@ -935,7 +935,7 @@ TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
 
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
 
   // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
   EXPECT_EQ(2, delegate.gesture_event_count());
@@ -950,7 +950,7 @@ TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
   // On move We will get TOUCH_MOVED, GESTURE_TAP_CANCEL,
   // GESTURE_SCROLL_START and GESTURE_SCROLL_UPDATE.
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 20), 0, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
   EXPECT_EQ(1, delegate.touch_event_count());
   EXPECT_EQ(3, delegate.gesture_event_count());
   delegate.ResetCounts();
@@ -963,7 +963,7 @@ TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
 
   // On move we still get TOUCH_MOVED and GESTURE_SCROLL_UPDATE.
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(10, 30), 0, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
   EXPECT_EQ(1, delegate.touch_event_count());
   EXPECT_EQ(1, delegate.gesture_event_count());
   delegate.ResetCounts();
@@ -971,7 +971,7 @@ TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
   // And on release we get TOUCH_RELEASED, GESTURE_SCROLL_END, GESTURE_END
   ui::TouchEvent release(
       ui::ET_TOUCH_RELEASED, gfx::Point(10, 20), 0, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_EQ(1, delegate.touch_event_count());
   EXPECT_EQ(2, delegate.gesture_event_count());
 }
@@ -984,7 +984,7 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
   scoped_ptr<Window> w1(CreateTestWindowWithDelegate(
       &d1, 0, gfx::Rect(0, 0, 20, 20), root_window()));
   ui::TouchEvent p1(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&p1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&p1);
   // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
   EXPECT_EQ(1, d1.touch_event_count());
   EXPECT_EQ(2, d1.gesture_event_count());
@@ -995,7 +995,7 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
   scoped_ptr<Window> w2(CreateTestWindowWithDelegate(
       &d2, 0, gfx::Rect(40, 0, 40, 20), root_window()));
   ui::TouchEvent p2(ui::ET_TOUCH_PRESSED, gfx::Point(41, 10), 1, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&p2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&p2);
   EXPECT_EQ(0, d1.touch_event_count());
   EXPECT_EQ(0, d1.gesture_event_count());
   // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN for new target window.
@@ -1031,7 +1031,7 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
   // Move touch id originally associated with |w2|. Since capture was transfered
   // from 2 to 3 only |w3| should get the event.
   ui::TouchEvent m3(ui::ET_TOUCH_MOVED, gfx::Point(110, 105), 1, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&m3);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&m3);
   EXPECT_EQ(0, d1.touch_event_count());
   EXPECT_EQ(0, d1.gesture_event_count());
   EXPECT_EQ(0, d2.touch_event_count());
@@ -1054,7 +1054,7 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
 
   // And when we move the touch again, |w3| still gets the events.
   ui::TouchEvent m4(ui::ET_TOUCH_MOVED, gfx::Point(120, 105), 1, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&m4);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&m4);
   EXPECT_EQ(0, d1.touch_event_count());
   EXPECT_EQ(0, d1.gesture_event_count());
   EXPECT_EQ(0, d2.touch_event_count());
@@ -1205,7 +1205,7 @@ TEST_F(WindowTest, MouseEnterExit) {
 }
 
 // Verifies that the WindowDelegate receives MouseExit from ET_MOUSE_EXITED.
-TEST_F(WindowTest, RootWindowHostExit) {
+TEST_F(WindowTest, WindowTreeHostExit) {
   MouseEnterExitWindowDelegate d1;
   scoped_ptr<Window> w1(
       CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50),
@@ -1219,7 +1219,7 @@ TEST_F(WindowTest, RootWindowHostExit) {
 
   ui::MouseEvent exit_event(
       ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(), 0);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&exit_event);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&exit_event);
   EXPECT_FALSE(d1.entered());
   EXPECT_TRUE(d1.exited());
 }
@@ -1576,7 +1576,7 @@ TEST_F(WindowTest, TransformGesture) {
 
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(size.height() - 10, 10), 0, getTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_EQ(gfx::Point(10, 10).ToString(), delegate->position().ToString());
 }
 

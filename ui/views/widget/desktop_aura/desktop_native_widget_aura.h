@@ -41,7 +41,7 @@ class WindowModalityController;
 class DesktopCaptureClient;
 class DesktopDispatcherClient;
 class DesktopEventClient;
-class DesktopRootWindowHost;
+class DesktopWindowTreeHost;
 class DropHelper;
 class FocusManagerEventHandler;
 class TooltipManagerAura;
@@ -63,13 +63,13 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // Maps from window to DesktopNativeWidgetAura.
   static DesktopNativeWidgetAura* ForWindow(aura::Window* window);
 
-  // Called by our DesktopRootWindowHost after it has deleted native resources;
+  // Called by our DesktopWindowTreeHost after it has deleted native resources;
   // this is the signal that we should start our shutdown.
   virtual void OnHostClosed();
 
-  // Called from ~DesktopRootWindowHost. This takes the RootWindow as by the
+  // Called from ~DesktopWindowTreeHost. This takes the RootWindow as by the
   // time we get here |root_window_| is NULL.
-  virtual void OnDesktopRootWindowHostDestroyed(aura::RootWindow* root);
+  virtual void OnDesktopWindowTreeHostDestroyed(aura::RootWindow* root);
 
   corewm::InputMethodEventFilter* input_method_event_filter() {
     return input_method_event_filter_.get();
@@ -218,10 +218,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
 
   // Overridden from aura::RootWindowObserver:
-  virtual void OnRootWindowHostCloseRequested(
+  virtual void OnWindowTreeHostCloseRequested(
       const aura::RootWindow* root) OVERRIDE;
-  virtual void OnRootWindowHostResized(const aura::RootWindow* root) OVERRIDE;
-  virtual void OnRootWindowHostMoved(const aura::RootWindow* root,
+  virtual void OnWindowTreeHostResized(const aura::RootWindow* root) OVERRIDE;
+  virtual void OnWindowTreeHostMoved(const aura::RootWindow* root,
                                      const gfx::Point& new_origin) OVERRIDE;
 
  private:
@@ -240,7 +240,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   scoped_ptr<DesktopCaptureClient> capture_client_;
 
   // The NativeWidget owns the RootWindow. Required because the RootWindow owns
-  // its RootWindowHost, so DesktopRootWindowHost can't own it.
+  // its WindowTreeHost, so DesktopWindowTreeHost can't own it.
   scoped_ptr<aura::RootWindow> root_window_;
 
   // The following factory is used for calls to close the NativeWidgetAura
@@ -251,7 +251,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   bool can_activate_;
 
   // Ownership passed to RootWindow on Init.
-  DesktopRootWindowHost* desktop_root_window_host_;
+  DesktopWindowTreeHost* desktop_root_window_host_;
 
   // Child of the root, contains |content_window_|.
   aura::Window* content_window_container_;

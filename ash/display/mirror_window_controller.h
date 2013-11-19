@@ -60,7 +60,7 @@ class ASH_EXPORT MirrorWindowController : public aura::RootWindowObserver {
   void SetMirroredCursorVisibility(bool visible);
 
   // aura::RootWindowObserver overrides:
-  virtual void OnRootWindowHostResized(const aura::RootWindow* root) OVERRIDE;
+  virtual void OnWindowTreeHostResized(const aura::RootWindow* root) OVERRIDE;
 
  private:
   friend class test::MirrorWindowTestApi;

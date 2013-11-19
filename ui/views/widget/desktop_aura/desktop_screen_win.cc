@@ -60,7 +60,7 @@ HWND DesktopScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
 
 gfx::NativeWindow DesktopScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {
   return (::IsWindow(hwnd)) ?
-      DesktopRootWindowHostWin::GetContentWindowForHWND(hwnd) : NULL;
+      DesktopWindowTreeHostWin::GetContentWindowForHWND(hwnd) : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

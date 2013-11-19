@@ -21,8 +21,8 @@ void DispatchEventDuringScrollCallback(aura::WindowEventDispatcher* dispatcher,
                                        const gfx::Vector2dF& delta) {
   if (type != ui::ET_GESTURE_SCROLL_UPDATE)
     return;
-  aura::RootWindowHostDelegate* delegate =
-      dispatcher->AsRootWindowHostDelegate();
+  aura::WindowTreeHostDelegate* delegate =
+      dispatcher->AsWindowTreeHostDelegate();
   if (event->IsMouseEvent())
     delegate->OnHostMouseEvent(static_cast<ui::MouseEvent*>(event));
   else if (event->IsKeyEvent())

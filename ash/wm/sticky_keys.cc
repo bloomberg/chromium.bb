@@ -54,7 +54,7 @@ StickyKeysHandlerDelegateImpl::~StickyKeysHandlerDelegateImpl() {
 void StickyKeysHandlerDelegateImpl::DispatchKeyEvent(ui::KeyEvent* event,
                                                      aura::Window* target) {
   DCHECK(target);
-  target->GetDispatcher()->AsRootWindowHostDelegate()->OnHostKeyEvent(event);
+  target->GetDispatcher()->AsWindowTreeHostDelegate()->OnHostKeyEvent(event);
 }
 
 void StickyKeysHandlerDelegateImpl::DispatchMouseEvent(ui::MouseEvent* event,
@@ -62,7 +62,7 @@ void StickyKeysHandlerDelegateImpl::DispatchMouseEvent(ui::MouseEvent* event,
   DCHECK(target);
   // We need to send a new, untransformed mouse event to the host.
   ui::MouseEvent release_event(*event, target, target->GetRootWindow());
-  target->GetDispatcher()->AsRootWindowHostDelegate()
+  target->GetDispatcher()->AsWindowTreeHostDelegate()
       ->OnHostMouseEvent(&release_event);
 }
 

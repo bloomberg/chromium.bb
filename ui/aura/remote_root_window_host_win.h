@@ -89,15 +89,15 @@ AURA_EXPORT void HandleActivateDesktop(
     const base::FilePath& shortcut,
     const ActivateDesktopCompleted& on_success);
 
-// RootWindowHost implementaton that receives events from a different
+// WindowTreeHost implementaton that receives events from a different
 // process. In the case of Windows this is the Windows 8 (aka Metro)
 // frontend process, which forwards input events to this class.
-class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
+class AURA_EXPORT RemoteWindowTreeHostWin : public WindowTreeHost {
  public:
-  // Returns the only RemoteRootWindowHostWin, if this is the first time
+  // Returns the only RemoteWindowTreeHostWin, if this is the first time
   // this function is called, it will call Create() wiht empty bounds.
-  static RemoteRootWindowHostWin* Instance();
-  static RemoteRootWindowHostWin* Create(const gfx::Rect& bounds);
+  static RemoteWindowTreeHostWin* Instance();
+  static RemoteWindowTreeHostWin* Create(const gfx::Rect& bounds);
 
   // Called when the remote process has established its IPC connection.
   // The |host| can be used when we need to send a message to it and
@@ -147,8 +147,8 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   bool IsForegroundWindow();
 
  private:
-  explicit RemoteRootWindowHostWin(const gfx::Rect& bounds);
-  virtual ~RemoteRootWindowHostWin();
+  explicit RemoteWindowTreeHostWin(const gfx::Rect& bounds);
+  virtual ~RemoteWindowTreeHostWin();
 
   // IPC message handing methods:
   void OnMouseMoved(int32 x, int32 y, int32 flags);
@@ -184,7 +184,7 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   void OnWindowSizeChanged(uint32 width, uint32 height);
   void OnDesktopActivated();
 
-  // RootWindowHost overrides:
+  // WindowTreeHost overrides:
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -208,7 +208,7 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   virtual void PrepareForShutdown() OVERRIDE;
 
   // Helper function to dispatch a keyboard message to the desired target.
-  // The default target is the RootWindowHostDelegate. For nested message loop
+  // The default target is the WindowTreeHostDelegate. For nested message loop
   // invocations we post a synthetic keyboard message directly into the message
   // loop. The dispatcher for the nested loop would then decide how this
   // message is routed.
@@ -262,7 +262,7 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   // description of SetEventFlags().
   uint32 event_flags_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemoteRootWindowHostWin);
+  DISALLOW_COPY_AND_ASSIGN(RemoteWindowTreeHostWin);
 };
 
 }  // namespace aura

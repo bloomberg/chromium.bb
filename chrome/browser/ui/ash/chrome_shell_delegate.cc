@@ -305,8 +305,8 @@ ui::MenuModel* ChromeShellDelegate::CreateContextMenu(aura::Window* root) {
   return new LauncherContextMenu(launcher_delegate_, root);
 }
 
-ash::RootWindowHostFactory* ChromeShellDelegate::CreateRootWindowHostFactory() {
-  return ash::RootWindowHostFactory::Create();
+ash::WindowTreeHostFactory* ChromeShellDelegate::CreateWindowTreeHostFactory() {
+  return ash::WindowTreeHostFactory::Create();
 }
 
 string16 ChromeShellDelegate::GetProductName() const {

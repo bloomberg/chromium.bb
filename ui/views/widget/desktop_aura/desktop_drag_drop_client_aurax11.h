@@ -42,7 +42,7 @@ namespace views {
 class DesktopNativeCursorManager;
 
 // Implements drag and drop on X11 for aura. On one side, this class takes raw
-// X11 events forwarded from DesktopRootWindowHostLinux, while on the other, it
+// X11 events forwarded from DesktopWindowTreeHostLinux, while on the other, it
 // handles the views drag events.
 class VIEWS_EXPORT DesktopDragDropClientAuraX11
     : public aura::client::DragDropClient,
