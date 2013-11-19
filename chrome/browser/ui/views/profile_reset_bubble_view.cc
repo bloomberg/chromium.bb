@@ -113,8 +113,10 @@ class FeedbackView : public views::View {
       if (!dictionary->GetString("value", &value))
         continue;
 
-      // The key is shown on the left, single line, right-aligned.
+      // The key is shown on the left, multi-line (required to allow wrapping in
+      // case the key name does not fit), and right-aligned.
       views::Label* left_text_label = new views::Label(key);
+      left_text_label->SetMultiLine(true);
       left_text_label->SetEnabledColor(SK_ColorGRAY);
       left_text_label->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
 
