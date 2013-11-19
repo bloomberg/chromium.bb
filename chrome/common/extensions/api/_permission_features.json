@@ -277,7 +277,7 @@
   "screenlockPrivate": {
     "channel": "dev",
     "extension_types":["platform_app"],
-    "whitelist": ["begdogjjbmiahnbahpidlnbgpbjbpajl"]
+    "whitelist": ["4C91771D9DB6DCCEE66373DB165A5DE8A0B9B603"]
   },
   "downloads": {
     "channel": "stable",
