@@ -8,6 +8,7 @@
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_view.h"
+#include "base/auto_reset.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/view_model.h"
@@ -54,6 +55,10 @@ internal::LauncherButton* ShelfViewTestAPI::GetButton(int index) {
 
   return static_cast<internal::LauncherButton*>(
       shelf_view_->view_model_->view_at(index));
+}
+
+int ShelfViewTestAPI::GetFirstVisibleIndex() {
+  return shelf_view_->first_visible_index_;
 }
 
 int ShelfViewTestAPI::GetLastVisibleIndex() {
@@ -118,6 +123,11 @@ bool ShelfViewTestAPI::SameDragType(LauncherItemType typea,
 
 void ShelfViewTestAPI::SetLauncherDelegate(LauncherDelegate* delegate) {
   shelf_view_->delegate_ = delegate;
+}
+
+gfx::Rect ShelfViewTestAPI::GetBoundsForDragInsertInScreen() {
+  base::AutoReset<bool> drag_off_shelf(&shelf_view_->dragged_off_shelf_, true);
+  return shelf_view_->GetBoundsForDragInsertInScreen();
 }
 
 }  // namespace test
