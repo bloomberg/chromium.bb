@@ -18,6 +18,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
 using ::testing::A;
 using ::testing::DoAll;
 using ::testing::Return;
@@ -229,6 +230,8 @@ class CastSocketTest : public testing::Test {
     EXPECT_CALL(mock_tcp_socket(), Connect(A<const net::CompletionCallback&>()))
         .Times(1)
         .WillOnce(DoAll(SaveArg<0>(callback), Return(result)));
+    EXPECT_CALL(mock_tcp_socket(), SetKeepAlive(_, _))
+        .WillOnce(Return(true));
   }
 
   // Same as ExpectTcpConnect but to return net::ERR_IO_PENDING.
@@ -658,14 +661,9 @@ TEST_F(CastSocketTest, TestRead) {
   std::string message_data;
   ASSERT_TRUE(CastSocket::Serialize(test_proto_, &message_data));
 
-  EXPECT_CALL(mock_tcp_socket(), Connect(A<const net::CompletionCallback&>()))
-      .Times(1)
-      .WillOnce(DoAll(SaveArg<0>(&connect_callback1),
-                      Return(net::ERR_IO_PENDING)));
-  EXPECT_CALL(mock_ssl_socket(), Connect(A<const net::CompletionCallback&>()))
-      .Times(1)
-      .WillOnce(DoAll(SaveArg<0>(&connect_callback2),
-                        Return(net::ERR_IO_PENDING)));
+  ExpectTcpConnect(&connect_callback1, net::ERR_IO_PENDING);
+  ExpectSslConnect(&connect_callback2, net::ERR_IO_PENDING);
+
   EXPECT_CALL(handler_, OnConnectComplete(net::OK));
   EXPECT_CALL(mock_ssl_socket(), Read(A<net::IOBuffer*>(),
                                       A<int>(),
@@ -719,14 +717,9 @@ TEST_F(CastSocketTest, TestReadMany) {
     ASSERT_TRUE(CastSocket::Serialize(test_proto_, &message_data[i]));
   }
 
-  EXPECT_CALL(mock_tcp_socket(), Connect(A<const net::CompletionCallback&>()))
-      .Times(1)
-      .WillOnce(DoAll(SaveArg<0>(&connect_callback1),
-                      Return(net::ERR_IO_PENDING)));
-  EXPECT_CALL(mock_ssl_socket(), Connect(A<const net::CompletionCallback&>()))
-      .Times(1)
-      .WillOnce(DoAll(SaveArg<0>(&connect_callback2),
-                        Return(net::ERR_IO_PENDING)));
+  ExpectTcpConnect(&connect_callback1, net::ERR_IO_PENDING);
+  ExpectSslConnect(&connect_callback2, net::ERR_IO_PENDING);
+
   EXPECT_CALL(handler_, OnConnectComplete(net::OK));
   EXPECT_CALL(mock_ssl_socket(), Read(A<net::IOBuffer*>(),
                                       A<int>(),
@@ -769,14 +762,9 @@ TEST_F(CastSocketTest, TestReadError) {
   net::CompletionCallback connect_callback2;
   net::CompletionCallback read_callback;
 
-  EXPECT_CALL(mock_tcp_socket(), Connect(A<const net::CompletionCallback&>()))
-      .Times(1)
-      .WillOnce(DoAll(SaveArg<0>(&connect_callback1),
-                      Return(net::ERR_IO_PENDING)));
-  EXPECT_CALL(mock_ssl_socket(), Connect(A<const net::CompletionCallback&>()))
-      .Times(1)
-      .WillOnce(DoAll(SaveArg<0>(&connect_callback2),
-                        Return(net::ERR_IO_PENDING)));
+  ExpectTcpConnect(&connect_callback1, net::ERR_IO_PENDING);
+  ExpectSslConnect(&connect_callback2, net::ERR_IO_PENDING);
+
   EXPECT_CALL(handler_, OnConnectComplete(net::OK));
   EXPECT_CALL(mock_ssl_socket(), Read(A<net::IOBuffer*>(),
                                       A<int>(),
