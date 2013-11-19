@@ -33,6 +33,7 @@
 #include "core/css/CSSProperty.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSSelector.h"
+#include "core/css/CSSTokenizer.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/StylePropertySet.h"
 #include "core/frame/UseCounter.h"
@@ -68,6 +69,7 @@ class StyleRuleKeyframes;
 class StyleKeyframe;
 class StyleSheetContents;
 
+// FIXME: This class is shared with CSSTokenizer so should we rename it to CSSSourceLocation?
 struct CSSParserLocation {
     unsigned offset;
     unsigned lineNumber;
@@ -76,6 +78,7 @@ struct CSSParserLocation {
 
 class CSSParser {
     friend inline int cssyylex(void*, CSSParser*);
+    friend class CSSTokenizer;
 
 public:
     class SourceDataHandler;
@@ -398,8 +401,6 @@ public:
     AtomicString m_defaultNamespace;
 
     // tokenizer methods and data
-    size_t m_parsedTextPrefixLength;
-    size_t m_parsedTextSuffixLength;
     SourceDataHandler* m_sourceDataHandler;
 
     void startRuleHeader(CSSRuleSourceData::Type);
@@ -418,10 +419,6 @@ public:
     void setLocationLabel(const CSSParserLocation& location) { m_locationLabel = location; }
     const CSSParserLocation& lastLocationLabel() const { return m_locationLabel; }
 
-    inline int lex(void* yylval) { return (this->*m_lexFunc)(yylval); }
-
-    int token() { return m_token; }
-
     void tokenToLowerCase(const CSSParserString& token);
 
     void markViewportRuleBodyStart() { m_inViewport = true; }
@@ -434,7 +431,7 @@ public:
 
     static KURL completeURL(const CSSParserContext&, const String& url);
 
-    CSSParserLocation currentLocation();
+    CSSParserLocation currentLocation() { return m_tokenizer.currentLocation(); }
 
 private:
     enum PropertyType {
@@ -484,80 +481,7 @@ private:
         CSSParserMode m_mode;
     };
 
-    bool is8BitSource() const { return m_is8BitSource; }
-
-    template <typename SourceCharacterType>
-    int realLex(void* yylval);
-
-    UChar*& currentCharacter16();
-
-    template <typename CharacterType>
-    inline CharacterType*& currentCharacter();
-
-    template <typename CharacterType>
-    inline CharacterType* tokenStart();
-
-    template <typename CharacterType>
-    inline CharacterType* dataStart();
-
-    template <typename CharacterType>
-    inline void setTokenStart(CharacterType*);
-
-    inline unsigned tokenStartOffset();
-    inline UChar tokenStartChar();
-
-    template <typename CharacterType>
-    inline bool isIdentifierStart();
-
     inline void ensureLineEndings();
-
-    template <typename CharacterType>
-    inline CSSParserLocation tokenLocation();
-
-    template <typename CharacterType>
-    unsigned parseEscape(CharacterType*&);
-    template <typename DestCharacterType>
-    inline void UnicodeToChars(DestCharacterType*&, unsigned);
-    template <typename SrcCharacterType, typename DestCharacterType>
-    inline bool parseIdentifierInternal(SrcCharacterType*&, DestCharacterType*&, bool&);
-
-    template <typename CharacterType>
-    inline void parseIdentifier(CharacterType*&, CSSParserString&, bool&);
-
-    template <typename SrcCharacterType, typename DestCharacterType>
-    inline bool parseStringInternal(SrcCharacterType*&, DestCharacterType*&, UChar);
-
-    template <typename CharacterType>
-    inline void parseString(CharacterType*&, CSSParserString& resultString, UChar);
-
-    template <typename CharacterType>
-    inline bool findURI(CharacterType*& start, CharacterType*& end, UChar& quote);
-
-    template <typename SrcCharacterType, typename DestCharacterType>
-    inline bool parseURIInternal(SrcCharacterType*&, DestCharacterType*&, UChar quote);
-
-    template <typename CharacterType>
-    inline void parseURI(CSSParserString&);
-    template <typename CharacterType>
-    inline bool parseUnicodeRange();
-    template <typename CharacterType>
-    bool parseNthChild();
-    template <typename CharacterType>
-    bool parseNthChildExtra();
-    template <typename CharacterType>
-    inline bool detectFunctionTypeToken(int);
-    template <typename CharacterType>
-    inline void detectMediaQueryToken(int);
-    template <typename CharacterType>
-    inline void detectNumberToken(CharacterType*, int);
-    template <typename CharacterType>
-    inline void detectDashToken(int);
-    template <typename CharacterType>
-    inline void detectAtToken(int, bool);
-    template <typename CharacterType>
-    inline void detectSupportsToken(int);
-    template <typename CharacterType>
-    inline void detectCSSVariableDefinitionToken(int);
 
     void setStyleSheet(StyleSheetContents* styleSheet) { m_styleSheet = styleSheet; }
 
@@ -603,29 +527,8 @@ private:
 
     bool parseColor(const String&);
 
-    enum ParsingMode {
-        NormalMode,
-        MediaQueryMode,
-        SupportsMode,
-        NthChildMode
-    };
-
-    ParsingMode m_parsingMode;
-    bool m_is8BitSource;
-    OwnPtr<LChar[]> m_dataStart8;
-    OwnPtr<UChar[]> m_dataStart16;
-    LChar* m_currentCharacter8;
-    UChar* m_currentCharacter16;
     const String* m_source;
-    union {
-        LChar* ptr8;
-        UChar* ptr16;
-    } m_tokenStart;
-    unsigned m_length;
-    int m_token;
     TextPosition m_startPosition;
-    int m_lineNumber;
-    int m_tokenStartLineNumber;
     CSSRuleSourceData::Type m_ruleHeaderType;
     unsigned m_ruleHeaderStartOffset;
     int m_ruleHeaderStartLineNumber;
@@ -644,8 +547,6 @@ private:
     CSSParserLocation m_locationLabel;
 
     bool useLegacyBackgroundSizeShorthandBehavior() const;
-
-    int (CSSParser::*m_lexFunc)(void*);
 
     Vector<RefPtr<StyleRuleBase> > m_parsedRules;
     Vector<RefPtr<StyleKeyframe> > m_parsedKeyframes;
@@ -710,9 +611,9 @@ private:
     double parsedDouble(CSSParserValue*, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue);
     bool isCalculation(CSSParserValue*);
 
-    inline unsigned safeUserStringTokenOffset();
-
     UseCounter* m_useCounter;
+
+    CSSTokenizer m_tokenizer;
 
     friend class TransformOperationInfo;
     friend class FilterOperationInfo;
@@ -761,35 +662,9 @@ String quoteCSSURLIfNeeded(const String&);
 
 bool isValidNthToken(const CSSParserString&);
 
-template <>
-inline void CSSParser::setTokenStart<LChar>(LChar* tokenStart)
-{
-    m_tokenStart.ptr8 = tokenStart;
-}
-
-template <>
-inline void CSSParser::setTokenStart<UChar>(UChar* tokenStart)
-{
-    m_tokenStart.ptr16 = tokenStart;
-}
-
-inline unsigned CSSParser::tokenStartOffset()
-{
-    if (is8BitSource())
-        return m_tokenStart.ptr8 - m_dataStart8.get();
-    return m_tokenStart.ptr16 - m_dataStart16.get();
-}
-
-inline UChar CSSParser::tokenStartChar()
-{
-    if (is8BitSource())
-        return *m_tokenStart.ptr8;
-    return *m_tokenStart.ptr16;
-}
-
 inline int cssyylex(void* yylval, CSSParser* parser)
 {
-    return parser->lex(yylval);
+    return parser->m_tokenizer.lex(yylval);
 }
 
 } // namespace WebCore

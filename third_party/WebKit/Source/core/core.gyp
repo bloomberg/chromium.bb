@@ -288,6 +288,9 @@
         # Generated from HTMLEntityNames.in
         '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLEntityTable.cpp',
 
+        # Generated from CSSTokenizer-in.cpp
+        '<(SHARED_INTERMEDIATE_DIR)/blink/CSSTokenizer.cpp',
+
         # Generated from CSSParser-in.cpp
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSParser.cpp',
 

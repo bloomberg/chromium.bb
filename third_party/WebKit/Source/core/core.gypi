@@ -717,6 +717,7 @@
             'css/CSSSVGDocumentValue.h',
             'css/CSSTimingFunctionValue.cpp',
             'css/CSSTimingFunctionValue.h',
+            'css/CSSTokenizer.h',
             'css/CSSToStyleMap.cpp',
             'css/CSSToStyleMap.h',
             'css/CSSTransformValue.cpp',

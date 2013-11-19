@@ -571,6 +571,23 @@
           'inputs': [
             '<@(scripts_for_in_files)',
             '../build/scripts/make_token_matcher.py',
+            '../core/css/CSSTokenizer-in.cpp',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/CSSTokenizer.cpp',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_token_matcher.py',
+            '../core/css/CSSTokenizer-in.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/CSSTokenizer.cpp',
+          ],
+        },
+        {
+          'action_name': 'MakeParser',
+          'inputs': [
+            '<@(scripts_for_in_files)',
+            '../build/scripts/make_token_matcher.py',
             '../core/css/CSSParser-in.cpp',
           ],
           'outputs': [
