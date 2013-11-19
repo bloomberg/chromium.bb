@@ -37,9 +37,13 @@ OBJDUMP_ARCH_MAP = {
     'elf32-i386': 'x86-32',
     'elf32-little': 'arm',
     'elf32-littlearm': 'arm',
-    # Names returned by x86_64-nacl-objdump:
+    # Names returned by old x86_64-nacl-objdump:
     'elf64-nacl': 'x86-64',
     'elf32-nacl': 'x86-32',
+    # Names returned by new x86_64-nacl-objdump:
+    'elf64-x86-64-nacl': 'x86-64',
+    'elf32-x86-64-nacl': 'x86-64',
+    'elf32-i386-nacl': 'x86-32',
 }
 
 ARCH_LOCATION = {
