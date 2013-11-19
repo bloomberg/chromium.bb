@@ -29,3 +29,5 @@ Cherry-picks:
   92d47e4 improve VP8L signature detection by checking the version bits too
   dde91fd Demux: Correct the extended format validation
   96ad0e0 VPLBitReader: Catch error if bit_pos > LBITS.
+  e18e667 demux: strictly enforce the animation flag
+  61cb884 demux: (non-exp) fail if the fragmented flag is set
