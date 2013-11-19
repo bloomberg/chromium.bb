@@ -274,6 +274,9 @@
         'cert/ct_log_verifier.h',
         'cert/ct_log_verifier_nss.cc',
         'cert/ct_log_verifier_openssl.cc',
+        'cert/ct_objects_extractor.h',
+        'cert/ct_objects_extractor_nss.cc',
+        'cert/ct_objects_extractor_openssl.cc',
         'cert/ct_serialization.cc',
         'cert/ct_serialization.h',
         'cert/ev_root_ca_metadata.cc',
@@ -1264,6 +1267,7 @@
               'cert/cert_verify_proc_nss.cc',
               'cert/cert_verify_proc_nss.h',
               'cert/ct_log_verifier_nss.cc',
+              'cert/ct_objects_extractor_nss.cc',
               'cert/jwk_serializer_nss.cc',
               'cert/nss_cert_database.cc',
               'cert/nss_cert_database.h',
@@ -1303,6 +1307,7 @@
               'cert/cert_verify_proc_openssl.cc',
               'cert/cert_verify_proc_openssl.h',
               'cert/ct_log_verifier_openssl.cc',
+              'cert/ct_objects_extractor_openssl.cc',
               'cert/jwk_serializer_openssl.cc',
               'cert/test_root_certs_openssl.cc',
               'cert/x509_certificate_openssl.cc',
@@ -1592,6 +1597,7 @@
         'cert/cert_verify_proc_unittest.cc',
         'cert/crl_set_unittest.cc',
         'cert/ct_log_verifier_unittest.cc',
+        'cert/ct_objects_extractor_unittest.cc',
         'cert/ct_serialization_unittest.cc',
         'cert/ev_root_ca_metadata_unittest.cc',
         'cert/jwk_serializer_unittest.cc',
@@ -2053,10 +2059,12 @@
           ],
         }],
         [ 'use_openssl==1', {
-            # When building for OpenSSL, we need to exclude NSS specific tests.
+            # When building for OpenSSL, we need to exclude NSS specific tests
+            # or functionality not supported by OpenSSL yet.
             # TODO(bulach): Add equivalent tests when the underlying
             #               functionality is ported to OpenSSL.
             'sources!': [
+              'cert/ct_objects_extractor_unittest.cc',
               'cert/nss_cert_database_unittest.cc',
               'cert/x509_util_nss_unittest.cc',
               'quic/test_tools/crypto_test_utils_nss.cc',

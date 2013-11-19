@@ -22,6 +22,10 @@ struct SignedCertificateTimestamp;
 // Fills |entry| with test data for an X.509 entry.
 void GetX509CertLogEntry(LogEntry* entry);
 
+// Returns a DER-encoded X509 cert. The SCT provided by
+// GetX509CertSCT is signed over this certificate.
+std::string GetDerEncodedX509Cert();
+
 // Fills |entry| with test data for a Precertificate entry.
 void GetPrecertLogEntry(LogEntry* entry);
 
@@ -42,6 +46,9 @@ void GetX509CertSCT(SignedCertificateTimestamp* sct);
 
 // SCT for the Precertificate log entry provided above.
 void GetPrecertSCT(SignedCertificateTimestamp* sct);
+
+// Issuer key hash
+std::string GetDefaultIssuerKeyHash();
 
 }  // namespace ct
 

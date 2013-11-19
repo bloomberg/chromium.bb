@@ -108,6 +108,8 @@ void GetX509CertLogEntry(LogEntry* entry) {
   entry->leaf_certificate = HexToBytes(kDefaultDerCert);
 }
 
+std::string GetDerEncodedX509Cert() { return HexToBytes(kDefaultDerCert); }
+
 void GetPrecertLogEntry(LogEntry* entry) {
   entry->type = ct::LogEntry::LOG_ENTRY_TYPE_PRECERT;
   std::string issuer_hash(HexToBytes(kDefaultIssuerKeyHash));
@@ -151,6 +153,10 @@ void GetPrecertSCT(SignedCertificateTimestamp* sct) {
   sct->signature.hash_algorithm = ct::DigitallySigned::HASH_ALGO_SHA256;
   sct->signature.signature_algorithm = ct::DigitallySigned::SIG_ALGO_ECDSA;
   sct->signature.signature_data = HexToBytes(kTestSCTPrecertSignatureData);
+}
+
+std::string GetDefaultIssuerKeyHash() {
+  return HexToBytes(kDefaultIssuerKeyHash);
 }
 
 }  // namespace ct
