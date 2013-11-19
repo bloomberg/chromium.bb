@@ -9,7 +9,6 @@
 #include "ash/wm/caption_buttons/maximize_bubble_frame_state.h"
 #include "ash/wm/workspace/snap_types.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/controls/button/image_button.h"
@@ -20,7 +19,6 @@ class Widget;
 }
 
 namespace ash {
-class FrameMaximizeButtonObserver;
 
 namespace internal {
 class PhantomWindowController;
@@ -38,9 +36,6 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
                       views::Widget* frame);
   virtual ~FrameMaximizeButton();
 
-  void AddObserver(FrameMaximizeButtonObserver* observer);
-  void RemoveObserver(FrameMaximizeButtonObserver* observer);
-
   // Updates |snap_type_| based on a a given snap type. This is used by
   // external hover events from the button menu.
   void SnapButtonHovered(SnapType type);
@@ -48,9 +43,6 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
   // The user clicked the |type| button and the action needs to be performed,
   // which will at the same time close the window.
   void ExecuteSnapAndCloseMenu(SnapType type);
-
-  // Called by the MaximizeBubbleController when the maximize bubble is shown.
-  void OnMaximizeBubbleShown(views::Widget* bubble);
 
   // Remove the maximize menu from the screen (and destroy it).
   void DestroyMaximizeMenu();
@@ -182,8 +174,6 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
 
   // The delay of the bubble appearance.
   int bubble_appearance_delay_ms_;
-
-  ObserverList<FrameMaximizeButtonObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameMaximizeButton);
 };

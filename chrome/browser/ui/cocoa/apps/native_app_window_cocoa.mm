@@ -427,8 +427,7 @@ bool NativeAppWindowCocoa::IsFullscreen() const {
   return is_fullscreen_;
 }
 
-void NativeAppWindowCocoa::SetFullscreen(int fullscreen_types) {
-  bool fullscreen = (fullscreen_types != ShellWindow::FULLSCREEN_TYPE_NONE);
+void NativeAppWindowCocoa::SetFullscreen(bool fullscreen) {
   if (fullscreen == is_fullscreen_)
     return;
   is_fullscreen_ = fullscreen;
