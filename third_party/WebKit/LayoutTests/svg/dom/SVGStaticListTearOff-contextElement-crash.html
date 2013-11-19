@@ -1,0 +1,21 @@
+<html>
+<body>
+<script src="../../resources/js-test.js"></script>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+var cursor = document.createElementNS("http://www.w3.org/2000/svg", "cursor");
+var cursorObservation = internals.observeGC(cursor);
+var staticList = cursor.requiredExtensions;
+cursor = null;
+gc();
+
+staticList.clear(); // This should not cause crash in ASAN.
+
+// cursor should be kept alive from "staticList"
+shouldBeFalse('cursorObservation.wasCollected');
+</script>
+This test passes if it doesn't crash in ASAN.
+</body>
+</html>

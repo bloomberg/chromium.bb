@@ -86,6 +86,7 @@ private:
         : SVGListProperty<PropertyType>(UndefinedRole, values, 0)
         , m_contextElement(contextElement)
     {
+        m_contextElement->setContextElement();
     }
 
     virtual bool isReadOnly() const

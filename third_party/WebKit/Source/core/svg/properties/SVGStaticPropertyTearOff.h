@@ -51,6 +51,7 @@ private:
         , m_update(update)
         , m_contextElement(contextElement)
     {
+        m_contextElement->setContextElement();
     }
 
     UpdateMethod m_update;
