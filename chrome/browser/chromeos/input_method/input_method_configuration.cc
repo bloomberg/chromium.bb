@@ -31,9 +31,7 @@ void OnSessionStateChange(InputMethodManagerImpl* input_method_manager_impl,
 void Initialize(
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
-  IBusDaemonController::Initialize(ui_task_runner, file_task_runner);
   IBusBridge::Initialize();
-  IBusDaemonController::GetInstance()->Start();
 
   InputMethodManagerImpl* impl = new InputMethodManagerImpl(
       scoped_ptr<InputMethodDelegate>(new InputMethodDelegateImpl));
@@ -61,7 +59,6 @@ void Shutdown() {
   InputMethodManager::Shutdown();
 
   IBusBridge::Shutdown();
-  IBusDaemonController::Shutdown();
 
   DVLOG(1) << "InputMethodManager shutdown";
 }

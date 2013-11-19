@@ -569,13 +569,6 @@ void InputMethodEngineIBus::MenuItemToProperty(
   // TODO(nona): Support item.children.
 }
 
-void InputMethodEngineIBus::OnConnected() {
-  RegisterComponent();
-}
-
-void InputMethodEngineIBus::OnDisconnected() {
-}
-
 void InputMethodEngineIBus::RegisterComponent() {
   IBusBridge::Get()->SetCreateEngineHandler(
       ibus_id_,

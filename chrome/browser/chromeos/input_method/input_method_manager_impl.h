@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chromeos/ime/ibus_daemon_controller.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/input_method_whitelist.h"
 
@@ -30,8 +29,7 @@ class XKeyboard;
 // The implementation of InputMethodManager.
 class InputMethodManagerImpl : public InputMethodManager,
                                public CandidateWindowController::Observer,
-                               public IBusController::Observer,
-                               public IBusDaemonController::Observer {
+                               public IBusController::Observer {
  public:
   // Constructs an InputMethodManager instance. The client is responsible for
   // calling |SetState| in response to relevant changes in browser state.
@@ -109,11 +107,6 @@ class InputMethodManagerImpl : public InputMethodManager,
  private:
   // IBusController overrides:
   virtual void PropertyChanged() OVERRIDE;
-
-  // IBusDaemonController overrides:
-  virtual void OnConnected() OVERRIDE;
-  virtual void OnDisconnected() OVERRIDE;
-
 
   // CandidateWindowController::Observer overrides:
   virtual void CandidateWindowOpened() OVERRIDE;

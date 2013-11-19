@@ -56,13 +56,11 @@ InputMethodManagerImpl::InputMethodManagerImpl(
       util_(delegate_.get(), GetSupportedInputMethods()),
       component_extension_ime_manager_(new ComponentExtensionIMEManager()),
       weak_ptr_factory_(this) {
-  IBusDaemonController::GetInstance()->AddObserver(this);
 }
 
 InputMethodManagerImpl::~InputMethodManagerImpl() {
   if (ibus_controller_.get())
     ibus_controller_->RemoveObserver(this);
-  IBusDaemonController::GetInstance()->RemoveObserver(this);
   if (candidate_window_controller_.get()) {
     candidate_window_controller_->RemoveObserver(this);
     candidate_window_controller_->Shutdown();
@@ -222,9 +220,6 @@ void InputMethodManagerImpl::ReconfigureIMFramework() {
   // indicator is used by only keyboard layout input methods.
   if (need_engine || active_input_method_ids_.size() > 1)
     MaybeInitializeCandidateWindowController();
-
-  if (need_engine)
-    IBusDaemonController::GetInstance()->Start();
 }
 
 bool InputMethodManagerImpl::EnableInputMethod(
@@ -454,7 +449,6 @@ void InputMethodManagerImpl::AddInputMethodExtension(
 
     // Ensure that the input method daemon is running.
     MaybeInitializeCandidateWindowController();
-    IBusDaemonController::GetInstance()->Start();
   }
 
   extra_input_method_instances_[id] =
@@ -539,7 +533,6 @@ void InputMethodManagerImpl::SetEnabledExtensionImes(
 
   if (active_imes_changed) {
     MaybeInitializeCandidateWindowController();
-    IBusDaemonController::GetInstance()->Start();
 
     // If |current_input_method| is no longer in |active_input_method_ids_|,
     // switch to the first one in |active_input_method_ids_|.
@@ -712,32 +705,6 @@ ComponentExtensionIMEManager*
     InputMethodManagerImpl::GetComponentExtensionIMEManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return component_extension_ime_manager_.get();
-}
-
-void InputMethodManagerImpl::OnConnected() {
-  for (std::map<std::string, InputMethodEngineIBus*>::iterator ite =
-          extra_input_method_instances_.begin();
-       ite != extra_input_method_instances_.end();
-       ite++) {
-    if (Contains(enabled_extension_imes_, ite->first) ||
-        (component_extension_ime_manager_->IsInitialized() &&
-         component_extension_ime_manager_->IsWhitelisted(ite->first))) {
-      ite->second->OnConnected();
-    }
-  }
-
-  if (!pending_input_method_.empty())
-    ChangeInputMethodInternal(pending_input_method_, false);
-}
-
-void InputMethodManagerImpl::OnDisconnected() {
-  for (std::map<std::string, InputMethodEngineIBus*>::iterator ite =
-          extra_input_method_instances_.begin();
-       ite != extra_input_method_instances_.end();
-       ite++) {
-    if (Contains(enabled_extension_imes_, ite->first))
-      ite->second->OnDisconnected();
-  }
 }
 
 void InputMethodManagerImpl::InitializeComponentExtension() {

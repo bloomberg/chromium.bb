@@ -93,12 +93,6 @@ class InputMethodEngineIBus : public InputMethodEngine,
   virtual void SetSurroundingText(const std::string& text, uint32 cursor_pos,
                                   uint32 anchor_pos) OVERRIDE;
 
-  // Called when the connection with ibus-daemon is connected.
-  void OnConnected();
-
-  // Called whtn the connection with ibus-daemon is disconnected.
-  void OnDisconnected();
-
  private:
   // Converts MenuItem to InputMethodProperty.
   void MenuItemToProperty(const MenuItem& item,
