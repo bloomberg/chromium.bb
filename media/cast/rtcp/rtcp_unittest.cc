@@ -406,7 +406,7 @@ TEST_F(RtcpTest, NtpAndTime) {
   base::TimeTicks out_1 = ConvertNtpToTimeTicks(ntp_seconds_1, ntp_fractions_1);
   EXPECT_EQ(input_time, out_1);  // Verify inverse.
 
-  base::TimeDelta time_delta = base::TimeDelta::FromMilliseconds(1100);
+  base::TimeDelta time_delta = base::TimeDelta::FromMilliseconds(1000);
   input_time += time_delta;
 
   uint32 ntp_seconds_2 = 0;
@@ -419,7 +419,21 @@ TEST_F(RtcpTest, NtpAndTime) {
   // Verify delta.
   EXPECT_EQ((out_2 - out_1), time_delta);
   EXPECT_EQ((ntp_seconds_2 - ntp_seconds_1), GG_UINT32_C(1));
-  EXPECT_NEAR((ntp_fractions_2 - ntp_fractions_1), 0xffffffff / 10, 1);
+  EXPECT_NEAR(ntp_fractions_2, ntp_fractions_1, 1);
+
+  time_delta = base::TimeDelta::FromMilliseconds(500);
+  input_time += time_delta;
+
+  uint32 ntp_seconds_3 = 0;
+  uint32 ntp_fractions_3 = 0;
+
+  ConvertTimeTicksToNtp(input_time, &ntp_seconds_3, &ntp_fractions_3);
+  base::TimeTicks out_3 = ConvertNtpToTimeTicks(ntp_seconds_3, ntp_fractions_3);
+  EXPECT_EQ(input_time, out_3);  // Verify inverse.
+
+  // Verify delta.
+  EXPECT_EQ((out_3 - out_2), time_delta);
+  EXPECT_NEAR((ntp_fractions_3 - ntp_fractions_2), 0xffffffff / 2, 1);
 }
 
 TEST_F(RtcpTest, WrapAround) {
