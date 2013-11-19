@@ -36,6 +36,7 @@
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/LineWidth.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderNamedFlowFragment.h"
 #include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
@@ -162,6 +163,9 @@ void RenderBlockFlow::willBeDestroyed()
     if (lineGridBox())
         lineGridBox()->destroy();
 
+    if (renderNamedFlowFragment())
+        setRenderNamedFlowFragment(0);
+
     RenderBlock::willBeDestroyed();
 }
 
@@ -200,6 +204,8 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalH
     if (logicalWidthChangedInRegions(flowThread))
         relayoutChildren = true;
     if (updateRegionsAndShapesLogicalSize(flowThread))
+        relayoutChildren = true;
+    if (!relayoutChildren && isRenderNamedFlowFragmentContainer())
         relayoutChildren = true;
 
     // We use four values, maxTopPos, maxTopNeg, maxBottomPos, and maxBottomNeg, to track
@@ -1652,6 +1658,9 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const RenderStyle* ol
         parentBlockFlow->markAllDescendantsWithFloatsForLayout();
         parentBlockFlow->markSiblingsWithFloatsForLayout();
     }
+
+    if (renderNamedFlowFragment())
+        renderNamedFlowFragment()->setStyleForNamedFlowFragment(style());
 }
 
 void RenderBlockFlow::updateStaticInlinePositionForChild(RenderBox* child, LayoutUnit logicalTop)
@@ -2458,6 +2467,64 @@ TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& fon
 RootInlineBox* RenderBlockFlow::createRootInlineBox()
 {
     return new RootInlineBox(this);
+}
+
+void RenderBlockFlow::createRenderNamedFlowFragmentIfNeeded()
+{
+    if (!RuntimeEnabledFeatures::cssRegionsEnabled()
+        || renderNamedFlowFragment()
+        || isRenderNamedFlowFragment())
+        return;
+
+    RenderStyle* styleToUse = style();
+    if (styleToUse->isDisplayRegionType() && styleToUse->hasFlowFrom() && document().renderView()) {
+        RenderNamedFlowFragment* flowFragment = RenderNamedFlowFragment::createAnonymous(&document());
+        flowFragment->setStyleForNamedFlowFragment(styleToUse);
+        setRenderNamedFlowFragment(flowFragment);
+        addChild(flowFragment);
+    }
+}
+
+void RenderBlockFlow::insertedIntoTree()
+{
+    RenderBlock::insertedIntoTree();
+
+    createRenderNamedFlowFragmentIfNeeded();
+}
+
+bool RenderBlockFlow::canHaveChildren() const
+{
+    return !renderNamedFlowFragment() ? RenderBlock::canHaveChildren() : renderNamedFlowFragment()->canHaveChildren();
+}
+
+bool RenderBlockFlow::canHaveGeneratedChildren() const
+{
+    return !renderNamedFlowFragment() ? RenderBlock::canHaveGeneratedChildren() : renderNamedFlowFragment()->canHaveGeneratedChildren();
+}
+
+void RenderBlockFlow::updateLogicalHeight()
+{
+    RenderBlock::updateLogicalHeight();
+
+    if (renderNamedFlowFragment())
+        renderNamedFlowFragment()->setLogicalHeight(max<LayoutUnit>(0, logicalHeight() - borderAndPaddingLogicalHeight()));
+}
+
+void RenderBlockFlow::setRenderNamedFlowFragment(RenderNamedFlowFragment* flowFragment)
+{
+    RenderBlockFlow::RenderBlockFlowRareData& rareData = ensureRareData();
+    if (rareData.m_renderNamedFlowFragment)
+        rareData.m_renderNamedFlowFragment->destroy();
+    rareData.m_renderNamedFlowFragment = flowFragment;
+}
+
+RenderBlockFlow::RenderBlockFlowRareData& RenderBlockFlow::ensureRareData()
+{
+    if (m_rareData)
+        return *m_rareData;
+
+    m_rareData = adoptPtr(new RenderBlockFlowRareData(this));
+    return *m_rareData;
 }
 
 } // namespace WebCore

@@ -46,11 +46,11 @@ class RenderRegion : public RenderBlockFlow {
 public:
     explicit RenderRegion(Element*, RenderFlowThread*);
 
-    virtual bool isRenderRegion() const { return true; }
+    virtual bool isRenderRegion() const OVERRIDE { return true; }
 
     bool hitTestFlowThreadContents(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
     void setFlowThreadPortionRect(const LayoutRect& rect) { m_flowThreadPortionRect = rect; }
     LayoutRect flowThreadPortionRect() const { return m_flowThreadPortionRect; }
@@ -85,14 +85,12 @@ public:
     RegionOversetState regionOversetState() const;
     void setRegionOversetState(RegionOversetState);
 
-    Element* element() const;
-
     // These methods represent the width and height of a "page" and for a RenderRegion they are just the
     // content width and content height of a region. For RenderRegionSets, however, they will be the width and
     // height of a single column or page in the set.
     virtual LayoutUnit pageLogicalWidth() const;
     virtual LayoutUnit pageLogicalHeight() const;
-    LayoutUnit maxPageLogicalHeight() const;
+    virtual LayoutUnit maxPageLogicalHeight() const;
 
     LayoutUnit logicalTopOfFlowThreadContentRect(const LayoutRect&) const;
     LayoutUnit logicalBottomOfFlowThreadContentRect(const LayoutRect&) const;
@@ -127,8 +125,6 @@ public:
 
     bool hasComputedAutoHeight() const { return (m_computedAutoHeight >= 0); }
 
-    virtual void updateLogicalHeight() OVERRIDE;
-
     // The top of the nearest page inside the region. For RenderRegions, this is just the logical top of the
     // flow thread portion we contain. For sets, we have to figure out the top of the nearest column or
     // page.
@@ -143,6 +139,14 @@ public:
 
     virtual void collectLayerFragments(LayerFragments&, const LayoutRect&, const LayoutRect&) { }
 
+    virtual bool canHaveChildren() const OVERRIDE { return false; }
+    virtual bool canHaveGeneratedChildren() const OVERRIDE { return true; }
+
+    bool isElementBasedRegion() const;
+
+    Node* nodeForRegion() const;
+    Node* generatingNodeForRegion() const;
+
 protected:
     void setRegionObjectsRegionStyle();
     void restoreRegionObjectsOriginalStyle();
@@ -156,9 +160,7 @@ protected:
     virtual bool shouldHaveAutoLogicalHeight() const;
 
 private:
-    virtual const char* renderName() const { return "RenderRegion"; }
-
-    virtual bool canHaveChildren() const OVERRIDE { return false; }
+    virtual const char* renderName() const OVERRIDE { return "RenderRegion"; }
 
     virtual void insertedIntoTree() OVERRIDE;
     virtual void willBeRemovedFromTree() OVERRIDE;
@@ -166,6 +168,8 @@ private:
     virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE;
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
     virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
+
+    virtual void updateLogicalHeight() OVERRIDE;
 
     virtual void installFlowThread();
 
@@ -178,6 +182,8 @@ private:
 
     void incrementAutoLogicalHeightCount();
     void decrementAutoLogicalHeightCount();
+
+    Element* element() const;
 
 protected:
     RenderFlowThread* m_flowThread;

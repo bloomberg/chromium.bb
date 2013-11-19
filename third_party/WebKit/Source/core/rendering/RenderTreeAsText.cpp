@@ -478,10 +478,13 @@ void write(TextStream& ts, const RenderObject& o, int indent, RenderAsTextBehavi
         }
     }
 
-    for (RenderObject* child = o.firstChild(); child; child = child->nextSibling()) {
-        if (child->hasLayer())
-            continue;
-        write(ts, *child, indent + 1, behavior);
+    // FIXME: temporary hack to avoid rebase of regions tests
+    if (!o.isRenderNamedFlowFragmentContainer()) {
+        for (RenderObject* child = o.firstChild(); child; child = child->nextSibling()) {
+            if (child->hasLayer())
+                continue;
+            write(ts, *child, indent + 1, behavior);
+        }
     }
 
     if (o.isWidget()) {
@@ -574,12 +577,13 @@ static void writeRenderRegionList(const RenderRegionList& flowThreadRegionList, 
         RenderRegion* renderRegion = *itRR;
         writeIndent(ts, indent + 2);
         ts << "RenderRegion";
-        if (renderRegion->generatingNode()) {
-            String tagName = getTagName(renderRegion->generatingNode());
+        Node* generatingNodeForRegion = renderRegion->generatingNodeForRegion();
+        if (generatingNodeForRegion) {
+            String tagName = getTagName(generatingNodeForRegion);
             if (!tagName.isEmpty())
                 ts << " {" << tagName << "}";
-            if (renderRegion->generatingNode()->isElementNode() && renderRegion->generatingNode()->hasID()) {
-                Element* element = toElement(renderRegion->generatingNode());
+            if (generatingNodeForRegion->isElementNode() && generatingNodeForRegion->hasID()) {
+                Element* element = toElement(generatingNodeForRegion);
                 ts << " #" << element->idForStyleResolution();
             }
             if (renderRegion->hasCustomRegionStyle())

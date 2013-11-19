@@ -351,6 +351,7 @@ public:
     virtual bool isRenderInline() const { return false; }
     virtual bool isRenderPart() const { return false; }
     virtual bool isRenderRegion() const { return false; }
+    virtual bool isRenderNamedFlowFragment() const { return false; }
     virtual bool isRenderView() const { return false; }
     virtual bool isReplica() const { return false; }
 
@@ -382,6 +383,7 @@ public:
     virtual bool isRenderNamedFlowThread() const { return false; }
     bool isInFlowRenderFlowThread() const { return isRenderFlowThread() && !isOutOfFlowPositioned(); }
     bool isOutOfFlowRenderFlowThread() const { return isRenderFlowThread() && isOutOfFlowPositioned(); }
+    bool isRenderNamedFlowFragmentContainer() const;
 
     virtual bool isRenderMultiColumnBlock() const { return false; }
     virtual bool isRenderMultiColumnSet() const { return false; }
@@ -590,7 +592,11 @@ public:
     // Returns true if this renderer is rooted, and optionally returns the hosting view (the root of the hierarchy).
     bool isRooted(RenderView** = 0) const;
 
-    Node* node() const { return isAnonymous() ? 0 : m_node; }
+    Node* node() const
+    {
+        return isAnonymous() ? 0 : m_node;
+    }
+
     Node* nonPseudoNode() const
     {
         ASSERT(!LayoutIndicator::inLayout());

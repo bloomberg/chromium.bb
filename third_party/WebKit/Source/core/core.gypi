@@ -1481,6 +1481,8 @@
             'rendering/RenderMultiColumnFlowThread.h',
             'rendering/RenderMultiColumnSet.cpp',
             'rendering/RenderMultiColumnSet.h',
+            'rendering/RenderNamedFlowFragment.cpp',
+            'rendering/RenderNamedFlowFragment.h',
             'rendering/RenderNamedFlowThread.cpp',
             'rendering/RenderNamedFlowThread.h',
             'rendering/RenderObject.cpp',

@@ -1368,7 +1368,7 @@ bool RenderBlock::updateRegionsAndShapesLogicalSize(RenderFlowThread* flowThread
 
     // Compute the maximum logical height content may cause this block to expand to
     // FIXME: These should eventually use the const computeLogicalHeight rather than updateLogicalHeight
-    setLogicalHeight(LayoutUnit::max() / 2);
+    setLogicalHeight(RenderFlowThread::maxLogicalHeight());
     updateLogicalHeight();
 
     computeShapeSize();
@@ -1386,7 +1386,14 @@ bool RenderBlock::updateRegionsAndShapesLogicalSize(RenderFlowThread* flowThread
 void RenderBlock::computeShapeSize()
 {
     ShapeInsideInfo* shapeInsideInfo = this->shapeInsideInfo();
-    if (shapeInsideInfo) {
+    if (!shapeInsideInfo)
+        return;
+
+    if (isRenderNamedFlowFragment()) {
+        ShapeInsideInfo* parentShapeInsideInfo = toRenderBlock(parent())->shapeInsideInfo();
+        ASSERT(parentShapeInsideInfo);
+        shapeInsideInfo->setShapeSize(parentShapeInsideInfo->shapeSize().width(), parentShapeInsideInfo->shapeSize().height());
+    } else {
         bool percentageLogicalHeightResolvable = percentageLogicalHeightIsResolvableFromBlock(this, false);
         shapeInsideInfo->setShapeSize(logicalWidth(), percentageLogicalHeightResolvable ? logicalHeight() : LayoutUnit());
     }
@@ -5692,6 +5699,8 @@ const char* RenderBlock::renderName() const
     if (isBody())
         return "RenderBody"; // FIXME: Temporary hack until we know that the regression tests pass.
 
+    if (isRenderNamedFlowFragmentContainer())
+        return "RenderRegion";
     if (isFloating())
         return "RenderBlock (floating)";
     if (isOutOfFlowPositioned())

@@ -93,7 +93,7 @@
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "core/rendering/FlowThreadController.h"
-#include "core/rendering/RenderRegion.h"
+#include "core/rendering/RenderNamedFlowFragment.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -2860,8 +2860,8 @@ bool Element::isSpellCheckingEnabled() const
 
 RenderRegion* Element::renderRegion() const
 {
-    if (renderer() && renderer()->isRenderRegion())
-        return toRenderRegion(renderer());
+    if (renderer() && renderer()->isRenderNamedFlowFragmentContainer())
+        return toRenderBlockFlow(renderer())->renderNamedFlowFragment();
 
     return 0;
 }
@@ -2884,10 +2884,13 @@ bool Element::shouldMoveToFlowThread(RenderStyle* styleToUse) const
 
 const AtomicString& Element::webkitRegionOverset() const
 {
+    DEFINE_STATIC_LOCAL(AtomicString, undefinedState, ("undefined", AtomicString::ConstructFromLiteral));
+    if (!RuntimeEnabledFeatures::cssRegionsEnabled())
+        return undefinedState;
+
     document().updateLayoutIgnorePendingStylesheets();
 
-    DEFINE_STATIC_LOCAL(AtomicString, undefinedState, ("undefined", AtomicString::ConstructFromLiteral));
-    if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !renderRegion())
+    if (!renderRegion())
         return undefinedState;
 
     switch (renderRegion()->regionOversetState()) {
@@ -2913,11 +2916,14 @@ const AtomicString& Element::webkitRegionOverset() const
 
 Vector<RefPtr<Range> > Element::webkitGetRegionFlowRanges() const
 {
+    Vector<RefPtr<Range> > rangeObjects;
+    if (!RuntimeEnabledFeatures::cssRegionsEnabled())
+        return rangeObjects;
+
     document().updateLayoutIgnorePendingStylesheets();
 
-    Vector<RefPtr<Range> > rangeObjects;
-    if (RuntimeEnabledFeatures::cssRegionsEnabled() && renderer() && renderer()->isRenderRegion()) {
-        RenderRegion* region = toRenderRegion(renderer());
+    if (renderer() && renderer()->isRenderNamedFlowFragmentContainer()) {
+        RenderNamedFlowFragment* region = toRenderBlockFlow(renderer())->renderNamedFlowFragment();
         if (region->isValid())
             region->getRanges(rangeObjects);
     }

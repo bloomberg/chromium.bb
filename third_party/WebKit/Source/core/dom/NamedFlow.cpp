@@ -35,8 +35,8 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/events/UIEvent.h"
+#include "core/rendering/RenderNamedFlowFragment.h"
 #include "core/rendering/RenderNamedFlowThread.h"
-#include "core/rendering/RenderRegion.h"
 
 namespace WebCore {
 
@@ -104,11 +104,11 @@ int NamedFlow::firstEmptyRegionIndex() const
     int countNonPseudoRegions = -1;
     RenderRegionList::const_iterator iter = regionList.begin();
     for (int index = 0; iter != regionList.end(); ++index, ++iter) {
-        const RenderRegion* renderRegion = *iter;
+        const RenderNamedFlowFragment* renderRegion = toRenderNamedFlowFragment(*iter);
         // FIXME: Pseudo-elements are not included in the list.
         // They will be included when we will properly support the Region interface
         // http://dev.w3.org/csswg/css-regions/#the-region-interface
-        if (renderRegion->isPseudoElement())
+        if (!renderRegion->isElementBasedRegion())
             continue;
         countNonPseudoRegions++;
         if (renderRegion->regionOversetState() == RegionEmpty)
@@ -135,13 +135,13 @@ PassRefPtr<NodeList> NamedFlow::getRegionsByContent(Node* contentNode)
     if (inFlowThread(contentNode->renderer(), m_parentFlowThread)) {
         const RenderRegionList& regionList = m_parentFlowThread->renderRegionList();
         for (RenderRegionList::const_iterator iter = regionList.begin(); iter != regionList.end(); ++iter) {
-            const RenderRegion* renderRegion = *iter;
+            const RenderNamedFlowFragment* renderRegion = toRenderNamedFlowFragment(*iter);
             // They will be included when we will properly support the Region interface
             // http://dev.w3.org/csswg/css-regions/#the-region-interface
-            if (renderRegion->isPseudoElement())
+            if (!renderRegion->isElementBasedRegion())
                 continue;
             if (m_parentFlowThread->objectInFlowRegion(contentNode->renderer(), renderRegion))
-                regionNodes.append(renderRegion->node());
+                regionNodes.append(renderRegion->nodeForRegion());
         }
     }
 
@@ -162,12 +162,12 @@ PassRefPtr<NodeList> NamedFlow::getRegions()
 
     const RenderRegionList& regionList = m_parentFlowThread->renderRegionList();
     for (RenderRegionList::const_iterator iter = regionList.begin(); iter != regionList.end(); ++iter) {
-        const RenderRegion* renderRegion = *iter;
+        const RenderNamedFlowFragment* renderRegion = toRenderNamedFlowFragment(*iter);
         // They will be included when we will properly support the Region interface
         // http://dev.w3.org/csswg/css-regions/#the-region-interface
-        if (renderRegion->isPseudoElement())
+        if (!renderRegion->isElementBasedRegion())
             continue;
-        regionNodes.append(renderRegion->node());
+        regionNodes.append(renderRegion->nodeForRegion());
     }
 
     return StaticNodeList::adopt(regionNodes);

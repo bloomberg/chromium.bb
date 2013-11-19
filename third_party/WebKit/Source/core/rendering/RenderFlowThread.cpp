@@ -405,8 +405,9 @@ LayoutPoint RenderFlowThread::adjustedPositionRelativeToOffsetParent(const Rende
     // FIXME: This needs to be adapted for different writing modes inside the flow thread.
     RenderRegion* startRegion = regionAtBlockOffset(referencePoint.y());
     if (startRegion) {
+        RenderBoxModelObject* startRegionBox = startRegion->isRenderNamedFlowFragment() ? toRenderBoxModelObject(startRegion->parent()) : startRegion;
         // Take into account the offset coordinates of the region.
-        RenderObject* currObject = startRegion;
+        RenderObject* currObject = startRegionBox;
         RenderObject* currOffsetParentRenderer;
         Element* currOffsetParentElement;
         while ((currOffsetParentElement = currObject->offsetParent()) && (currOffsetParentRenderer = currOffsetParentElement->renderer())) {
@@ -463,7 +464,7 @@ LayoutPoint RenderFlowThread::adjustedPositionRelativeToOffsetParent(const Rende
             // and compute the object's top, relative to the region's top.
             LayoutUnit regionLogicalTop = startRegion->pageLogicalTopForOffset(top);
             LayoutUnit topRelativeToRegion = top - regionLogicalTop;
-            referencePoint.setY(startRegion->offsetTop() + topRelativeToRegion);
+            referencePoint.setY(startRegionBox->offsetTop() + topRelativeToRegion);
 
             // Since the top has been overriden, check if the
             // relative/sticky positioning must be reconsidered.
@@ -475,7 +476,7 @@ LayoutPoint RenderFlowThread::adjustedPositionRelativeToOffsetParent(const Rende
 
         // Since we're looking for the offset relative to the body, we must also
         // take into consideration the borders of the region.
-        referencePoint.move(startRegion->borderLeft(), startRegion->borderTop());
+        referencePoint.move(startRegionBox->borderLeft(), startRegionBox->borderTop());
     }
 
     return referencePoint;
@@ -874,7 +875,7 @@ void RenderFlowThread::updateRegionsFlowThreadPortionRect(const RenderRegion* la
             region->clearComputedAutoHeight();
 
         LayoutUnit regionLogicalWidth = region->pageLogicalWidth();
-        LayoutUnit regionLogicalHeight = std::min<LayoutUnit>(LayoutUnit::max() / 2 - logicalHeight, region->logicalHeightOfAllFlowThreadContent());
+        LayoutUnit regionLogicalHeight = std::min<LayoutUnit>(RenderFlowThread::maxLogicalHeight() - logicalHeight, region->logicalHeightOfAllFlowThreadContent());
 
         LayoutRect regionRect(style()->direction() == LTR ? LayoutUnit() : logicalWidth() - regionLogicalWidth, logicalHeight, regionLogicalWidth, regionLogicalHeight);
 

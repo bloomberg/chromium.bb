@@ -163,7 +163,7 @@ bool NodeRenderingContext::elementInsideRegionNeedsRenderer()
     Element* element = toElement(m_node);
     bool elementInsideRegionNeedsRenderer = false;
     RenderObject* parentRenderer = this->parentRenderer();
-    if ((parentRenderer && !parentRenderer->canHaveChildren() && parentRenderer->isRenderRegion())
+    if ((parentRenderer && !parentRenderer->canHaveChildren() && parentRenderer->isRenderNamedFlowFragmentContainer())
         || (!parentRenderer && element->parentElement() && element->parentElement()->isInsideRegion())) {
 
         if (!m_style)

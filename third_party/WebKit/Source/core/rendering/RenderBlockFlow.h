@@ -44,6 +44,7 @@ namespace WebCore {
 class MarginInfo;
 class LineBreaker;
 class LineWidth;
+class RenderNamedFlowFragment;
 
 class RenderBlockFlow : public RenderBlock {
 public:
@@ -140,11 +141,10 @@ public:
     RootInlineBox* lineGridBox() const { return m_rareData ? m_rareData->m_lineGridBox : 0; }
     void setLineGridBox(RootInlineBox* box)
     {
-        if (!m_rareData)
-            m_rareData = adoptPtr(new RenderBlockFlowRareData(this));
-        if (m_rareData->m_lineGridBox)
-            m_rareData->m_lineGridBox->destroy();
-        m_rareData->m_lineGridBox = box;
+        RenderBlockFlow::RenderBlockFlowRareData& rareData = ensureRareData();
+        if (rareData.m_lineGridBox)
+            rareData.m_lineGridBox->destroy();
+        rareData.m_lineGridBox = box;
     }
     void layoutLineGridBox();
 
@@ -166,6 +166,8 @@ protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
     void addOverflowFromFloats();
+
+    virtual void insertedIntoTree() OVERRIDE;
     virtual void willBeDestroyed() OVERRIDE;
 private:
     void layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloatLogicalBottom, SubtreeLayoutScope&);
@@ -275,6 +277,8 @@ public:
     };
     MarginValues marginValuesForChild(RenderBox* child) const;
 
+    virtual void updateLogicalHeight() OVERRIDE;
+
     // Allocated only when some of these fields have non-default values
     struct RenderBlockFlowRareData {
         WTF_MAKE_NONCOPYABLE(RenderBlockFlowRareData); WTF_MAKE_FAST_ALLOCATED;
@@ -284,6 +288,7 @@ public:
             , m_lineGridBox(0)
             , m_discardMarginBefore(false)
             , m_discardMarginAfter(false)
+            , m_renderNamedFlowFragment(0)
         {
         }
 
@@ -310,7 +315,11 @@ public:
 
         bool m_discardMarginBefore : 1;
         bool m_discardMarginAfter : 1;
+        RenderNamedFlowFragment* m_renderNamedFlowFragment;
     };
+
+    RenderNamedFlowFragment* renderNamedFlowFragment() const { return m_rareData ? m_rareData->m_renderNamedFlowFragment : 0; }
+    void setRenderNamedFlowFragment(RenderNamedFlowFragment*);
 
 protected:
     LayoutUnit maxPositiveMarginBefore() const { return m_rareData ? m_rareData->m_margins.positiveMarginBefore() : RenderBlockFlowRareData::positiveMarginBeforeDefault(this); }
@@ -362,6 +371,13 @@ private:
 
     // Used to store state between styleWillChange and styleDidChange
     static bool s_canPropagateFloatIntoSibling;
+
+    virtual bool canHaveChildren() const OVERRIDE;
+    virtual bool canHaveGeneratedChildren() const OVERRIDE;
+
+    void createRenderNamedFlowFragmentIfNeeded();
+
+    RenderBlockFlowRareData& ensureRareData();
 
 protected:
     OwnPtr<RenderBlockFlowRareData> m_rareData;

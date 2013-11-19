@@ -75,7 +75,7 @@ LayoutUnit RenderRegion::maxPageLogicalHeight() const
 {
     ASSERT(m_flowThread);
     ASSERT(hasAutoLogicalHeight() && !m_flowThread->inConstrainedLayoutPhase());
-    return style()->logicalMaxHeight().isUndefined() ? LayoutUnit::max() / 2 : computeReplacedLogicalHeightUsing(style()->logicalMaxHeight());
+    return style()->logicalMaxHeight().isUndefined() ? RenderFlowThread::maxLogicalHeight() : computeReplacedLogicalHeightUsing(style()->logicalMaxHeight());
 }
 
 LayoutUnit RenderRegion::logicalHeightOfAllFlowThreadContent() const
@@ -143,8 +143,8 @@ void RenderRegion::setRegionOversetState(RegionOversetState state)
 
 Element* RenderRegion::element() const
 {
-    ASSERT(node() && node()->isElementNode());
-    return toElement(node());
+    ASSERT(nodeForRegion() && nodeForRegion()->isElementNode());
+    return toElement(nodeForRegion());
 }
 
 LayoutUnit RenderRegion::pageLogicalTopForOffset(LayoutUnit /* offset */) const
@@ -218,10 +218,9 @@ void RenderRegion::checkRegionStyle()
     bool customRegionStyle = false;
 
     // FIXME: Region styling doesn't work for pseudo elements.
-    if (node()) {
-        Element* regionElement = toElement(node());
-        customRegionStyle = view()->document().styleResolver()->checkRegionStyle(regionElement);
-    }
+    if (isElementBasedRegion())
+        customRegionStyle = view()->document().styleResolver()->checkRegionStyle(this->element());
+
     setHasCustomRegionStyle(customRegionStyle);
     m_flowThread->checkRegionsWithStyling();
 }
@@ -659,13 +658,33 @@ void RenderRegion::updateLogicalHeight()
     LayoutUnit autoHeight = hasOverrideHeight() ? overrideLogicalContentHeight() : computedAutoHeight();
 
     LayoutUnit newLogicalHeight = autoHeight + borderAndPaddingLogicalHeight();
-    ASSERT(newLogicalHeight < LayoutUnit::max() / 2);
+    ASSERT(newLogicalHeight < RenderFlowThread::maxLogicalHeight());
     if (newLogicalHeight > logicalHeight()) {
         setLogicalHeight(newLogicalHeight);
         // Recalculate position of the render block after new logical height is set.
         // (needed in absolute positioning case with bottom alignment for example)
         RenderBlock::updateLogicalHeight();
     }
+}
+
+Node* RenderRegion::nodeForRegion() const
+{
+    if (parent() && isRenderNamedFlowFragment())
+        return parent()->node();
+    return node();
+}
+
+Node* RenderRegion::generatingNodeForRegion() const
+{
+    if (parent() && isRenderNamedFlowFragment())
+        return parent()->generatingNode();
+    return generatingNode();
+}
+
+bool RenderRegion::isElementBasedRegion() const
+{
+    Node* node = nodeForRegion();
+    return node && node->isElementNode() && !node->isPseudoElement();
 }
 
 } // namespace WebCore
