@@ -15,7 +15,8 @@
 
 // Messages sent from the renderer to the browser.
 // Request a WebRTC identity.
-IPC_MESSAGE_CONTROL3(WebRTCIdentityMsg_RequestIdentity,
+IPC_MESSAGE_CONTROL4(WebRTCIdentityMsg_RequestIdentity,
+                     int /* sequence_number */,
                      GURL /* origin */,
                      std::string /* identity_name */,
                      std::string /* common_name */)
@@ -24,8 +25,11 @@ IPC_MESSAGE_CONTROL0(WebRTCIdentityMsg_CancelRequest)
 
 // Messages sent from the browser to the renderer.
 // Return a WebRTC identity.
-IPC_MESSAGE_CONTROL2(WebRTCIdentityHostMsg_IdentityReady,
+IPC_MESSAGE_CONTROL3(WebRTCIdentityHostMsg_IdentityReady,
+                     int /* sequence_number */,
                      std::string /* certificate */,
                      std::string /* private_key */)
 // Notifies an error from the identity request.
-IPC_MESSAGE_CONTROL1(WebRTCIdentityHostMsg_RequestFailed, int /* error */)
+IPC_MESSAGE_CONTROL2(WebRTCIdentityHostMsg_RequestFailed,
+                     int /* sequence_number */,
+                     int /* error */)

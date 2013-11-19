@@ -97,27 +97,42 @@ bool WebRTCIdentityService::OnControlMessageReceived(
   return handled;
 }
 
-void WebRTCIdentityService::OnIdentityReady(const std::string& certificate,
+void WebRTCIdentityService::OnIdentityReady(int request_id,
+                                            const std::string& certificate,
                                             const std::string& private_key) {
-  DCHECK(!pending_requests_.empty());
+  // The browser process may have sent the response before it receives the
+  // message to cancel the request. So we need to check if the returned response
+  // matches the request on the top of the queue.
+  if (pending_requests_.empty() ||
+      pending_requests_.front().request_id != request_id)
+    return;
+
   pending_requests_.front().success_callback.Run(certificate, private_key);
   OnOutstandingRequestReturned();
 }
 
-void WebRTCIdentityService::OnRequestFailed(int error) {
-  DCHECK(!pending_requests_.empty());
+void WebRTCIdentityService::OnRequestFailed(int request_id, int error) {
+  // The browser process may have sent the response before it receives the
+  // message to cancel the request. So we need to check if the returned response
+  // matches the request on the top of the queue.
+  if (pending_requests_.empty() ||
+      pending_requests_.front().request_id != request_id)
+    return;
+
   pending_requests_.front().failure_callback.Run(error);
   OnOutstandingRequestReturned();
 }
 
 void WebRTCIdentityService::SendRequest(const RequestInfo& request_info) {
-  if (!Send(new WebRTCIdentityMsg_RequestIdentity(request_info.origin,
+  if (!Send(new WebRTCIdentityMsg_RequestIdentity(request_info.request_id,
+                                                  request_info.origin,
                                                   request_info.identity_name,
                                                   request_info.common_name))) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&WebRTCIdentityService::OnRequestFailed,
                    base::Unretained(this),
+                   request_info.request_id,
                    net::ERR_UNEXPECTED));
   }
 }

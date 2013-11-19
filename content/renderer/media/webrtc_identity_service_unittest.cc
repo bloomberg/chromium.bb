@@ -88,19 +88,19 @@ TEST_F(WebRTCIdentityServiceTest, TestSendRequest) {
 }
 
 TEST_F(WebRTCIdentityServiceTest, TestSuccessCallback) {
-  RequestIdentity();
+  int id = RequestIdentity();
 
-  service_->OnControlMessageReceived(
-      WebRTCIdentityHostMsg_IdentityReady(FAKE_CERTIFICATE, FAKE_PRIVATE_KEY));
+  service_->OnControlMessageReceived(WebRTCIdentityHostMsg_IdentityReady(
+      id, FAKE_CERTIFICATE, FAKE_PRIVATE_KEY));
   EXPECT_EQ(FAKE_CERTIFICATE, last_certificate_);
   EXPECT_EQ(FAKE_PRIVATE_KEY, last_private_key_);
 }
 
 TEST_F(WebRTCIdentityServiceTest, TestFailureCallback) {
-  RequestIdentity();
+  int id = RequestIdentity();
 
   service_->OnControlMessageReceived(
-      WebRTCIdentityHostMsg_RequestFailed(FAKE_ERROR));
+      WebRTCIdentityHostMsg_RequestFailed(id, FAKE_ERROR));
   EXPECT_EQ(FAKE_ERROR, last_error_);
 }
 
@@ -115,26 +115,26 @@ TEST_F(WebRTCIdentityServiceTest, TestCancelRequest) {
 }
 
 TEST_F(WebRTCIdentityServiceTest, TestQueuedRequestSentAfterSuccess) {
-  RequestIdentity();
+  int id = RequestIdentity();
   RequestIdentity();
   EXPECT_EQ(1, service_->GetNumberOfMessages());
   service_->ClearMessages();
 
-  service_->OnControlMessageReceived(
-      WebRTCIdentityHostMsg_IdentityReady(FAKE_CERTIFICATE, FAKE_PRIVATE_KEY));
+  service_->OnControlMessageReceived(WebRTCIdentityHostMsg_IdentityReady(
+      id, FAKE_CERTIFICATE, FAKE_PRIVATE_KEY));
 
   IPC::Message ipc = service_->GetLastMessage();
   EXPECT_EQ(ipc.type(), WebRTCIdentityMsg_RequestIdentity::ID);
 }
 
 TEST_F(WebRTCIdentityServiceTest, TestQueuedRequestSentAfterFailure) {
-  RequestIdentity();
+  int id = RequestIdentity();
   RequestIdentity();
   EXPECT_EQ(1, service_->GetNumberOfMessages());
   service_->ClearMessages();
 
   service_->OnControlMessageReceived(
-      WebRTCIdentityHostMsg_RequestFailed(FAKE_ERROR));
+      WebRTCIdentityHostMsg_RequestFailed(id, FAKE_ERROR));
 
   IPC::Message ipc = service_->GetLastMessage();
   EXPECT_EQ(ipc.type(), WebRTCIdentityMsg_RequestIdentity::ID);
@@ -157,7 +157,7 @@ TEST_F(WebRTCIdentityServiceTest, TestQueuedRequestSentAfterCancelOutstanding) {
 }
 
 TEST_F(WebRTCIdentityServiceTest, TestCancelQueuedRequest) {
-  RequestIdentity();
+  int sent_id = RequestIdentity();
   int queued_request_id = RequestIdentity();
   EXPECT_EQ(1, service_->GetNumberOfMessages());
   service_->ClearMessages();
@@ -166,45 +166,63 @@ TEST_F(WebRTCIdentityServiceTest, TestCancelQueuedRequest) {
 
   // Verifies that the queued request is not sent after the outstanding request
   // returns.
-  service_->OnControlMessageReceived(
-      WebRTCIdentityHostMsg_IdentityReady(FAKE_CERTIFICATE, FAKE_PRIVATE_KEY));
+  service_->OnControlMessageReceived(WebRTCIdentityHostMsg_IdentityReady(
+      sent_id, FAKE_CERTIFICATE, FAKE_PRIVATE_KEY));
 
   EXPECT_EQ(0, service_->GetNumberOfMessages());
 }
 
 TEST_F(WebRTCIdentityServiceTest, TestQueuedRequestSuccessCallback) {
-  RequestIdentity();
-  RequestIdentity();
+  int id1 = RequestIdentity();
+  int id2 = RequestIdentity();
 
   // Completes the outstanding request.
-  service_->OnControlMessageReceived(
-      WebRTCIdentityHostMsg_IdentityReady(FAKE_CERTIFICATE, FAKE_PRIVATE_KEY));
+  service_->OnControlMessageReceived(WebRTCIdentityHostMsg_IdentityReady(
+      id1, FAKE_CERTIFICATE, FAKE_PRIVATE_KEY));
   EXPECT_EQ(FAKE_CERTIFICATE, last_certificate_);
   EXPECT_EQ(FAKE_PRIVATE_KEY, last_private_key_);
 
   ResetRequestResult();
 
-  service_->OnControlMessageReceived(
-      WebRTCIdentityHostMsg_IdentityReady(FAKE_CERTIFICATE, FAKE_PRIVATE_KEY));
+  service_->OnControlMessageReceived(WebRTCIdentityHostMsg_IdentityReady(
+      id2, FAKE_CERTIFICATE, FAKE_PRIVATE_KEY));
   EXPECT_EQ(FAKE_CERTIFICATE, last_certificate_);
   EXPECT_EQ(FAKE_PRIVATE_KEY, last_private_key_);
 }
 
 TEST_F(WebRTCIdentityServiceTest, TestQueuedRequestFailureCallback) {
-  RequestIdentity();
-  RequestIdentity();
+  int id1 = RequestIdentity();
+  int id2 = RequestIdentity();
 
   // Completes the outstanding request.
-  service_->OnControlMessageReceived(
-      WebRTCIdentityHostMsg_IdentityReady(FAKE_CERTIFICATE, FAKE_PRIVATE_KEY));
+  service_->OnControlMessageReceived(WebRTCIdentityHostMsg_IdentityReady(
+      id1, FAKE_CERTIFICATE, FAKE_PRIVATE_KEY));
   EXPECT_EQ(FAKE_CERTIFICATE, last_certificate_);
   EXPECT_EQ(FAKE_PRIVATE_KEY, last_private_key_);
 
   ResetRequestResult();
 
   service_->OnControlMessageReceived(
-      WebRTCIdentityHostMsg_RequestFailed(FAKE_ERROR));
+      WebRTCIdentityHostMsg_RequestFailed(id2, FAKE_ERROR));
   EXPECT_EQ(FAKE_ERROR, last_error_);
+}
+
+// Verifies that receiving a response for a cancelled request does not incur the
+// callbacks.
+TEST_F(WebRTCIdentityServiceTest, TestRequestCompletedAfterCancelled) {
+  int id1 = RequestIdentity();
+  RequestIdentity();
+  service_->CancelRequest(id1);
+
+  service_->OnControlMessageReceived(WebRTCIdentityHostMsg_IdentityReady(
+      id1, FAKE_CERTIFICATE, FAKE_PRIVATE_KEY));
+
+  EXPECT_NE(FAKE_CERTIFICATE, last_certificate_);
+  EXPECT_NE(FAKE_PRIVATE_KEY, last_private_key_);
+
+  service_->OnControlMessageReceived(
+      WebRTCIdentityHostMsg_RequestFailed(id1, FAKE_ERROR));
+  EXPECT_NE(FAKE_ERROR, last_error_);
 }
 
 }  // namespace content

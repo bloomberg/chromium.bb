@@ -36,13 +36,14 @@ bool WebRTCIdentityServiceHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void WebRTCIdentityServiceHost::OnRequestIdentity(
+    int sequence_number,
     const GURL& origin,
     const std::string& identity_name,
     const std::string& common_name) {
   if (!cancel_callback_.is_null()) {
     DLOG(WARNING)
         << "Request rejected because the previous request has not finished.";
-    SendErrorMessage(net::ERR_INSUFFICIENT_RESOURCES);
+    SendErrorMessage(sequence_number, net::ERR_INSUFFICIENT_RESOURCES);
     return;
   }
 
@@ -50,7 +51,7 @@ void WebRTCIdentityServiceHost::OnRequestIdentity(
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessCookiesForOrigin(renderer_process_id_, origin)) {
     DLOG(WARNING) << "Request rejected because origin access is denied.";
-    SendErrorMessage(net::ERR_ACCESS_DENIED);
+    SendErrorMessage(sequence_number, net::ERR_ACCESS_DENIED);
     return;
   }
 
@@ -59,9 +60,10 @@ void WebRTCIdentityServiceHost::OnRequestIdentity(
       identity_name,
       common_name,
       base::Bind(&WebRTCIdentityServiceHost::OnComplete,
-                 base::Unretained(this)));
+                 base::Unretained(this),
+                 sequence_number));
   if (cancel_callback_.is_null()) {
-    SendErrorMessage(net::ERR_UNEXPECTED);
+    SendErrorMessage(sequence_number, net::ERR_UNEXPECTED);
   }
 }
 
@@ -72,19 +74,22 @@ void WebRTCIdentityServiceHost::OnCancelRequest() {
     base::ResetAndReturn(&cancel_callback_).Run();
 }
 
-void WebRTCIdentityServiceHost::OnComplete(int status,
-                                         const std::string& certificate,
-                                         const std::string& private_key) {
+void WebRTCIdentityServiceHost::OnComplete(int sequence_number,
+                                           int status,
+                                           const std::string& certificate,
+                                           const std::string& private_key) {
   cancel_callback_.Reset();
   if (status == net::OK) {
-    Send(new WebRTCIdentityHostMsg_IdentityReady(certificate, private_key));
+    Send(new WebRTCIdentityHostMsg_IdentityReady(
+        sequence_number, certificate, private_key));
   } else {
-    SendErrorMessage(status);
+    SendErrorMessage(sequence_number, status);
   }
 }
 
-void WebRTCIdentityServiceHost::SendErrorMessage(int error) {
-  Send(new WebRTCIdentityHostMsg_RequestFailed(error));
+void WebRTCIdentityServiceHost::SendErrorMessage(int sequence_number,
+                                                 int error) {
+  Send(new WebRTCIdentityHostMsg_RequestFailed(sequence_number, error));
 }
 
 }  // namespace content

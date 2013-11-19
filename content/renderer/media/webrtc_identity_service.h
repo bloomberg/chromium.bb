@@ -79,11 +79,12 @@ class CONTENT_EXPORT WebRTCIdentityService : public RenderProcessObserver {
   };
 
   // IPC message handlers.
-  void OnIdentityReady(const std::string& certificate,
+  void OnIdentityReady(int request_id,
+                       const std::string& certificate,
                        const std::string& private_key);
-  void OnRequestFailed(int error);
+  void OnRequestFailed(int request_id, int error);
 
-  void SendRequest(const RequestInfo& request_id);
+  void SendRequest(const RequestInfo& request_info);
   void OnOutstandingRequestReturned();
 
   std::deque<RequestInfo> pending_requests_;
