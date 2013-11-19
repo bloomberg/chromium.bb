@@ -306,7 +306,7 @@ crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnly
 
 crbug.com/256506 [ Win7 Debug ] crypto/worker-random-values-limits.html [ Pass Crash ]
 
-crbug.com/244266 [ Win Debug ] virtual/threaded/animations/animation-controller-drt-api.html [ Failure Pass ]
+crbug.com/244266 virtual/threaded/animations/animation-controller-drt-api.html [ Failure Pass ]
 
 crbug.com/265650 [ SnowLeopard Debug ] compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
 
@@ -572,6 +572,8 @@ crbug.com/316380 fast/frames/seamless/seamless-form-post.html [ Failure Pass ]
 crbug.com/316460 [ Mac ] svg/as-object/nested-embedded-svg-size-changes.html [ Failure Pass ]
 
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]
+
+crbug.com/258896 animations/animation-controller-drt-api.html [ Pass Failure ]
 
 crbug.com/318632 webaudio/audiobuffersource-multi-channels.html [ NeedsManualRebaseline ]
 crbug.com/318632 webaudio/test-basic.html [ NeedsManualRebaseline ]

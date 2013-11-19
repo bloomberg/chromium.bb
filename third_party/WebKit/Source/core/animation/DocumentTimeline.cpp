@@ -159,7 +159,14 @@ size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
 {
     // Includes all players whose directly associated timed items
     // are current or in effect.
-    return isNull(m_zeroTime) ? 0 : m_players.size();
+    if (isNull(m_zeroTime))
+        return 0;
+    size_t count = 0;
+    for (size_t i = 0; i < m_players.size(); ++i) {
+        const TimedItem* timedItem = m_players[i]->source();
+        count += (timedItem && (timedItem->isCurrent() || timedItem->isInEffect()));
+    }
+    return count;
 }
 
 } // namespace
