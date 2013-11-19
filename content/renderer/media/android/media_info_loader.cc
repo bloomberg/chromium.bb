@@ -58,6 +58,8 @@ void MediaInfoLoader::Start(blink::WebFrame* frame) {
           WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
     } else {
       options.exposeAllResponseHeaders = true;
+      // The author header set is empty, no preflight should go ahead.
+      options.preflightPolicy = WebURLLoaderOptions::PreventPreflight;
       options.crossOriginRequestPolicy =
           WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
       if (cors_mode_ == blink::WebMediaPlayer::CORSModeUseCredentials)
