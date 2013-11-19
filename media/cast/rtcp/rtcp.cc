@@ -4,10 +4,10 @@
 
 #include "media/cast/rtcp/rtcp.h"
 
-#include "base/debug/trace_event.h"
 #include "base/rand_util.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/rtcp/rtcp_receiver.h"
 #include "media/cast/rtcp/rtcp_sender.h"
@@ -100,7 +100,7 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
   Rtcp* rtcp_;
 };
 
-Rtcp::Rtcp(base::TickClock* clock,
+Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
            RtcpSenderFeedback* sender_feedback,
            PacedPacketSender* paced_packet_sender,
            RtpSenderStatistics* rtp_sender_statistics,
@@ -118,15 +118,17 @@ Rtcp::Rtcp(base::TickClock* clock,
       rtp_receiver_statistics_(rtp_receiver_statistics),
       receiver_feedback_(new LocalRtcpReceiverFeedback(this)),
       rtt_feedback_(new LocalRtcpRttFeedback(this)),
-      rtcp_sender_(new RtcpSender(paced_packet_sender, local_ssrc, c_name)),
+      rtcp_sender_(new RtcpSender(cast_environment, paced_packet_sender,
+                                  local_ssrc, c_name)),
       last_report_received_(0),
       last_received_rtp_timestamp_(0),
       last_received_ntp_seconds_(0),
       last_received_ntp_fraction_(0),
       min_rtt_(base::TimeDelta::FromMilliseconds(kMaxRttMs)),
       number_of_rtt_in_avg_(0),
-      clock_(clock) {
-  rtcp_receiver_.reset(new RtcpReceiver(sender_feedback,
+      cast_environment_(cast_environment) {
+  rtcp_receiver_.reset(new RtcpReceiver(cast_environment,
+                                        sender_feedback,
                                         receiver_feedback_.get(),
                                         rtt_feedback_.get(),
                                         local_ssrc));
@@ -178,7 +180,7 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
                                    const RtcpReceiverLogMessage* receiver_log) {
   uint32 packet_type_flags = 0;
 
-  base::TimeTicks now = clock_->NowTicks();
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   RtcpReportBlock report_block;
   RtcpReceiverReferenceTimeReport rrtr;
 
@@ -199,6 +201,11 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
           &report_block.cumulative_lost,
           &report_block.extended_high_sequence_number,
           &report_block.jitter);
+      cast_environment_->Logging()->InsertGenericEvent(kJitterMs,
+          report_block.jitter);
+      cast_environment_->Logging()->InsertGenericEvent(kPacketLoss,
+          report_block.fraction_lost);
+
     }
 
     report_block.last_sr = last_report_received_;
@@ -230,7 +237,7 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
 void Rtcp::SendRtcpFromRtpSender(
     const RtcpSenderLogMessage* sender_log_message) {
   uint32 packet_type_flags = RtcpSender::kRtcpSr;
-  base::TimeTicks now = clock_->NowTicks();
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
   RtcpSenderInfo sender_info;
   RtcpDlrrReportBlock dlrr;
@@ -267,7 +274,7 @@ void Rtcp::SendRtcpFromRtpSender(
 void Rtcp::OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction) {
   last_report_received_ = (ntp_seconds << 16) + (ntp_fraction >> 16);
 
-  base::TimeTicks now = clock_->NowTicks();
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   time_last_report_received_ = now;
 }
 
@@ -280,7 +287,7 @@ void Rtcp::OnReceivedLipSyncInfo(uint32 rtp_timestamp,
 }
 
 void Rtcp::OnReceivedSendReportRequest() {
-  base::TimeTicks now = clock_->NowTicks();
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
   // Trigger a new RTCP report at next timer.
   next_time_to_send_rtcp_ = now;
@@ -324,7 +331,9 @@ void Rtcp::OnReceivedDelaySinceLastReport(uint32 receivers_ssrc,
   if (it == last_reports_sent_map_.end()) {
     return;  // Feedback on another report.
   }
-  base::TimeDelta sender_delay = clock_->NowTicks() - it->second;
+
+  base::TimeDelta sender_delay = cast_environment_->Clock()->NowTicks()
+      - it->second;
   UpdateRtt(sender_delay, ConvertFromNtpDiff(delay_since_last_report));
 }
 
@@ -371,7 +380,6 @@ void Rtcp::UpdateRtt(const base::TimeDelta& sender_delay,
     avg_rtt_ms_ = rtt.InMilliseconds();
   }
   number_of_rtt_in_avg_++;
-  TRACE_COUNTER_ID1("cast_rtcp", "RTT", local_ssrc_, rtt.InMilliseconds());
 }
 
 bool Rtcp::Rtt(base::TimeDelta* rtt,
@@ -383,7 +391,9 @@ bool Rtcp::Rtt(base::TimeDelta* rtt,
   DCHECK(min_rtt) << "Invalid argument";
   DCHECK(max_rtt) << "Invalid argument";
 
-  if (number_of_rtt_in_avg_ == 0)  return false;
+  if (number_of_rtt_in_avg_ == 0) return false;
+  cast_environment_->Logging()->InsertGenericEvent(kRttMs,
+                                                   rtt->InMilliseconds());
 
   *rtt = rtt_;
   *avg_rtt = base::TimeDelta::FromMilliseconds(avg_rtt_ms_);
@@ -414,7 +424,7 @@ void Rtcp::UpdateNextTimeToSendRtcp() {
   base::TimeDelta time_to_next = (rtcp_interval_ / 2) +
       (rtcp_interval_ * random / 1000);
 
-  base::TimeTicks now = clock_->NowTicks();
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   next_time_to_send_rtcp_ = now + time_to_next;
 }
 

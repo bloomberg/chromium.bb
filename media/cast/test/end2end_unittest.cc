@@ -329,7 +329,8 @@ class End2EndTest : public ::testing::Test {
   End2EndTest()
       : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
         cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
-            task_runner_, task_runner_, task_runner_, task_runner_)),
+            task_runner_, task_runner_, task_runner_, task_runner_,
+            GetDefaultCastLoggingConfig())),
         sender_to_receiver_(cast_environment_),
         receiver_to_sender_(cast_environment_),
         test_receiver_audio_callback_(new TestReceiverAudioCallback()),

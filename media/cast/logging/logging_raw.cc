@@ -4,7 +4,6 @@
 
 #include "media/cast/logging/logging_raw.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
@@ -64,6 +63,12 @@ void LoggingRaw::InsertBaseFrameEvent(CastLoggingEvent event,
     // Insert to an existing entry.
     it->second.timestamp.push_back(clock_->NowTicks());
     it->second.type.push_back(event);
+    // Do we have a valid frame_id?
+    // We don't always have it to begin with.
+    // TODO(mikhal): Switch frame_id to int when the fix gets in.
+    // This is currently illegal, as frame_id is uint8, so commenting it out.
+    // if (it->second.frame_id == -1 && frame_id != -1)
+    //   it->second.frame_id = frame_id;
   }
 }
 
@@ -72,7 +77,7 @@ void LoggingRaw::InsertPacketEvent(CastLoggingEvent event,
                                    uint32 frame_id,
                                    uint16 packet_id,
                                    uint16 max_packet_id,
-                                   int size) {
+                                   size_t size) {
   // Is this packet belonging to a new frame?
   PacketRawMap::iterator it = packet_map_.find(rtp_timestamp);
   if (it == packet_map_.end()) {

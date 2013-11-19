@@ -18,7 +18,8 @@ namespace cast {
 
 class RtcpSender {
  public:
-  RtcpSender(PacedPacketSender* const paced_packet_sender,
+  RtcpSender(scoped_refptr<CastEnvironment> cast_environment,
+             PacedPacketSender* const paced_packet_sender,
              uint32 sending_ssrc,
              const std::string& c_name);
 
@@ -113,6 +114,7 @@ class RtcpSender {
 
   // Not owned by this class.
   PacedPacketSender* transport_;
+  scoped_refptr<CastEnvironment> cast_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpSender);
 };

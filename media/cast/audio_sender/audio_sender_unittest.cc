@@ -34,7 +34,8 @@ class AudioSenderTest : public ::testing::Test {
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
-        task_runner_, task_runner_, task_runner_, task_runner_);
+        task_runner_, task_runner_, task_runner_, task_runner_,
+        GetDefaultCastLoggingConfig());
     audio_config_.codec = kOpus;
     audio_config_.use_external_encoder = false;
     audio_config_.frequency = kDefaultAudioSamplingRate;

@@ -16,6 +16,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
+#include "media/cast/logging/logging_defines.h"
 #include "media/cast/test/audio_utility.h"
 #include "media/cast/test/transport/transport.h"
 #include "media/cast/test/utility/input_helper.h"
@@ -284,10 +285,11 @@ int main(int argc, char** argv) {
   scoped_refptr<base::SequencedTaskRunner>
       task_runner(main_message_loop.message_loop_proxy());
 
-  // Enable main and send side threads only.
+  // Enable main and send side threads only. Disable logging.
+  media::cast::CastLoggingConfig logging_config;
   scoped_refptr<media::cast::CastEnvironment> cast_environment(new
       media::cast::CastEnvironment(&clock, task_runner, task_runner, NULL,
-      task_runner, NULL));
+      task_runner, NULL, media::cast::GetDefaultCastLoggingConfig()));
 
   media::cast::AudioSenderConfig audio_config =
       media::cast::GetAudioSenderConfig();

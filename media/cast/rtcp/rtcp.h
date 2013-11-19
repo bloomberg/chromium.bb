@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 
 namespace media {
@@ -70,7 +71,7 @@ class RtpReceiverStatistics {
 
 class Rtcp {
  public:
-  Rtcp(base::TickClock* clock,
+  Rtcp(scoped_refptr<CastEnvironment> cast_environment,
        RtcpSenderFeedback* sender_feedback,
        PacedPacketSender* paced_packet_sender,
        RtpSenderStatistics* rtp_sender_statistics,
@@ -141,7 +142,7 @@ class Rtcp {
   void SaveLastSentNtpTime(const base::TimeTicks& now, uint32 last_ntp_seconds,
                            uint32 last_ntp_fraction);
 
-  base::TickClock* const clock_;  // Not owned by this class.
+  scoped_refptr<CastEnvironment> cast_environment_;
   const base::TimeDelta rtcp_interval_;
   const RtcpMode rtcp_mode_;
   const uint32 local_ssrc_;

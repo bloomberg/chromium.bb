@@ -47,7 +47,6 @@ class MEDIA_EXPORT AudioBus {
   static scoped_ptr<AudioBus> WrapMemory(int channels, int frames, void* data);
   static scoped_ptr<AudioBus> WrapMemory(const AudioParameters& params,
                                          void* data);
-  // Returns the required memory size to use the WrapMemory() method.
   static int CalculateMemorySize(const AudioParameters& params);
 
   // Calculates the required size for an AudioBus given the number of channels
