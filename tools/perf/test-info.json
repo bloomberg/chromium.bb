@@ -81,6 +81,12 @@
   "image_decoding.image_decoding_measurement ":{
     "description":"Milliseconds to decode a large image of various formats (gif, jpg, png, webp)."
   },
+  "indexed_db":{
+    "description":"Benchmarks for a variety of IndexedDB operations.",
+    "code":[
+      "chrome/src/chrome/test/data/indexeddb/perf_test.html"
+    ]
+  },
   "jsgamebench":{
     "description":"Score on [Facebook's JSGameBench benchmark](https://github.com/facebook/jsgamebench).\n\nThe focus is sprite performance a player is likely to see. Scoring is how many sprites are drawn, so large scores are better.\n\nFor each render path, JSGameBench draws as many moving, animating sprites as possible at 30fps against a background with both axis-aligned and rotated sprites. We try both because significant performance differences between the two indicate flaws or oversights in current rendering techniques. More importantly, while animation can be used instead of sprite rotations, it is often an unacceptable trade off that game developers should not be forced to make.\n\nThe final score is the geometric mean of the axis aligned and rotated scores. Geometric mean is used to prevent a high axis aligned score from hiding the poor rotated performance."
   },
