@@ -80,6 +80,10 @@ class RegisterAppTaskTest : public testing::Test,
     return NULL;
   }
 
+  virtual base::SequencedTaskRunner* GetBlockingTaskRunner() OVERRIDE {
+    return base::MessageLoopProxy::current();
+  }
+
  protected:
   scoped_ptr<leveldb::DB> OpenLevelDB() {
     leveldb::DB* db = NULL;

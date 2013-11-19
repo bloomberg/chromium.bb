@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
 
 namespace sync_file_system {
@@ -641,8 +641,8 @@ void RemoteToLocalSyncer::DeleteLocalFile(const SyncStatusCallback& callback) {
 }
 
 void RemoteToLocalSyncer::DownloadFile(const SyncStatusCallback& callback) {
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE, FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      sync_context_->GetBlockingTaskRunner(), FROM_HERE,
       base::Bind(&sync_file_system::drive_backend::CreateTemporaryFile),
       base::Bind(&RemoteToLocalSyncer::DidCreateTemporaryFileForDownload,
                  weak_ptr_factory_.GetWeakPtr(), callback));
@@ -671,8 +671,8 @@ void RemoteToLocalSyncer::DidDownloadFile(const SyncStatusCallback& callback,
   }
 
   base::FilePath path = file.path();
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE, FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      sync_context_->GetBlockingTaskRunner(), FROM_HERE,
       base::Bind(&drive::util::GetMd5Digest, path),
       base::Bind(&RemoteToLocalSyncer::DidCalculateMD5ForDownload,
                  weak_ptr_factory_.GetWeakPtr(),

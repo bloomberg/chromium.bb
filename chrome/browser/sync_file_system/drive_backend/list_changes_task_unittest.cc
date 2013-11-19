@@ -76,6 +76,10 @@ class ListChangesTaskTest : public testing::Test,
     return NULL;
   }
 
+  virtual base::SequencedTaskRunner* GetBlockingTaskRunner() OVERRIDE {
+    return base::MessageLoopProxy::current();
+  }
+
   int64 GetRemoteLargestChangeID() {
     scoped_ptr<google_apis::AboutResource> about_resource;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,

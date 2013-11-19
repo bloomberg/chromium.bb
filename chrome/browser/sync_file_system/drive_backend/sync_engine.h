@@ -120,6 +120,7 @@ class SyncEngine : public RemoteFileSyncService,
   virtual drive::DriveUploaderInterface* GetDriveUploader() OVERRIDE;
   virtual MetadataDatabase* GetMetadataDatabase() OVERRIDE;
   virtual RemoteChangeProcessor* GetRemoteChangeProcessor() OVERRIDE;
+  virtual base::SequencedTaskRunner* GetBlockingTaskRunner() OVERRIDE;
 
  private:
   friend class SyncEngineTest;

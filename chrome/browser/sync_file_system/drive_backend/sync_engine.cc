@@ -290,6 +290,10 @@ RemoteChangeProcessor* SyncEngine::GetRemoteChangeProcessor() {
   return remote_change_processor_;
 }
 
+base::SequencedTaskRunner* SyncEngine::GetBlockingTaskRunner() {
+  return task_runner_.get();
+}
+
 void SyncEngine::DoDisableApp(const std::string& app_id,
                               const SyncStatusCallback& callback) {
   metadata_database_->DisableApp(app_id, callback);
