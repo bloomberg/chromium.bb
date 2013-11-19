@@ -863,12 +863,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_Nacl_Newlib_FileIO) {
   );
 }
 // Flaky on 32-bit linux bot; http://crbug.com/308905
-#if defined(OS_LINUX) && defined(ARCH_CPU_X86)
-#define MAYBE_NaCl_Glibc_FileIO DISABLED_FileIO
-#else
-#define MAYBE_NaCl_Glibc_FileIO FileIO
-#endif
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_NaCl_Glibc_FileIO) {
+// Flaky on Windows too; http://crbug.com/321300
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, DISABLED_NaCl_Glibc_FileIO) {
   RunTestViaHTTP(
       LIST_TEST(FileIO_Open)
       LIST_TEST(FileIO_AbortCalls)
