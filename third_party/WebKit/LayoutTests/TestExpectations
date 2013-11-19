@@ -55,7 +55,6 @@ crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Fai
 # The implementation of CSS Animations on the Web Animations model is still in progress
 # This test fails due to -webkit-mask-box-image not being implemented as a shorthand property
 crbug.com/309962 virtual/web-animations-css/animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure ]
-crbug.com/298211 virtual/web-animations-css/animations/keyframe-multiple-timing-functions-transform.html [ NeedsRebaseline ]
 
 crbug.com/305070 [ Debug ] animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash Pass ]
 crbug.com/305070 [ Debug ] virtual/threaded/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash Pass ]
