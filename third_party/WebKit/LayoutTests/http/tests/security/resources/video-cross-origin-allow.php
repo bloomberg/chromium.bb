@@ -1,5 +1,10 @@
 <?php
 
+if (isset($_GET['no-preflight']) && $_SERVER['REQUEST_METHOD'] == "OPTIONS") {
+    echo "FAIL";
+    exit;
+}
+
 header("Access-Control-Allow-Origin: *");
 
 if ($_SERVER['REQUEST_METHOD'] == "OPTIONS") {

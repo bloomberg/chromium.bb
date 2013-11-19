@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <body onload="start()">
+    <script src=../../media-resources/video-test.js></script>
+    <script src=../../media-resources/media-file.js></script>
+    <script>
+        waitForEvent('error', function() {
+            failTest("error: " + JSON.stringify(video.error));
+        });
+
+        waitForEvent('playing', function() {
+          try {
+              var ctx = document.getElementsByTagName('canvas')[0].getContext("2d");
+              ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+              ctx.getImageData(0, 0, video.videoWidth, video.videoHeight);
+          } catch (e) {
+              failTest("Caught error: " + e);
+          }
+          endTest();
+        });
+
+        function start() {
+            mediaElement = video = document.createElement("video");
+            mediaElement.crossOrigin = "anonymous";
+            document.body.appendChild(mediaElement);
+            var mediaFile = findMediaFile("video", "../../media/resources/test");
+            var type = mimeTypeForExtension(mediaFile.split('.').pop());
+            video.src = "http://localhost:8080/security/resources/video-cross-origin-allow.php?no-preflight&name=" + mediaFile + "&type=" + type;
+            video.play();
+        }
+    </script>
+    <canvas></canvas>
+  </body>
+</head>
