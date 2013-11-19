@@ -5,17 +5,23 @@
 import os
 import sys
 import unittest
+from collections import namedtuple
 
-from availability_finder import AvailabilityFinder
+import availability_finder
 from api_schema_graph import LookupResult
 from branch_utility import BranchUtility, ChannelInfo
 from compiled_file_system import CompiledFileSystem
 from fake_url_fetcher import FakeUrlFetcher
 from host_file_system_iterator import HostFileSystemIterator
+from mock_function import MockFunction
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
 from test_data.canned_data import (CANNED_API_FILE_SYSTEM_DATA, CANNED_BRANCHES)
 from test_data.object_level_availability.tabs import TABS_SCHEMA_BRANCHES
+from third_party.json_schema_compiler.memoize import memoize
+
+
+TABS_UNMODIFIED_VERSIONS = (16, 20, 23, 24)
 
 
 class FakeHostFileSystemProvider(object):
@@ -26,6 +32,7 @@ class FakeHostFileSystemProvider(object):
   def GetTrunk(self):
     return self.GetBranch('trunk')
 
+  @memoize
   def GetBranch(self, branch):
     return TestFileSystem(self._file_system_data[str(branch)])
 
@@ -38,19 +45,60 @@ class AvailabilityFinderTest(unittest.TestCase):
         os.path.join('branch_utility', 'second.json'),
         FakeUrlFetcher(os.path.join(sys.path[0], 'test_data')),
         ObjectStoreCreator.ForTest())
+    api_fs_creator = FakeHostFileSystemProvider(CANNED_API_FILE_SYSTEM_DATA)
+    self._node_fs_creator = FakeHostFileSystemProvider(TABS_SCHEMA_BRANCHES)
 
-    def create_availability_finder(file_system_data):
-      fake_host_fs_creator = FakeHostFileSystemProvider(file_system_data)
+    def create_availability_finder(host_fs_creator):
       test_object_store = ObjectStoreCreator.ForTest()
-      return AvailabilityFinder(self._branch_utility,
-                                CompiledFileSystem.Factory(test_object_store),
-                                HostFileSystemIterator(fake_host_fs_creator,
-                                                       self._branch_utility),
-                                fake_host_fs_creator.GetTrunk(),
-                                test_object_store)
+      return availability_finder.AvailabilityFinder(
+          self._branch_utility,
+          CompiledFileSystem.Factory(test_object_store),
+          HostFileSystemIterator(host_fs_creator,
+                                 self._branch_utility),
+          host_fs_creator.GetTrunk(),
+          test_object_store)
 
-    self._avail_finder = create_availability_finder(CANNED_API_FILE_SYSTEM_DATA)
-    self._node_avail_finder = create_availability_finder(TABS_SCHEMA_BRANCHES)
+    self._avail_finder = create_availability_finder(api_fs_creator)
+    self._node_avail_finder = create_availability_finder(self._node_fs_creator)
+
+    # Imitate the actual SVN file system by incrementing the stats for paths
+    # where an API schema has changed.
+    last_stat = type('last_stat', (object,), {'val': 0})
+
+    def stat_paths(file_system, channel_info):
+      if channel_info.version not in TABS_UNMODIFIED_VERSIONS:
+        last_stat.val += 1
+      file_system.IncrementStat(by=last_stat.val)
+      # Continue looping. The iterator will stop after 'trunk' automatically.
+      return True
+
+    # Use the HostFileSystemIterator created above to change global stat values
+    # for the TestFileSystems that it creates.
+    self._node_avail_finder._file_system_iterator.Ascending(
+        self._node_avail_finder.GetApiAvailability('tabs'),
+        stat_paths)
+
+  def testGraphOptimization(self):
+    # Whenever an APISchemaGraph is created, _GetApiSchema() is called and its
+    # result is passed to the APISchemaGraph constructor.
+    # Use this function to determine how many APISchemaGraphs are created.
+    availability_finder._GetApiSchema = MockFunction(
+        availability_finder._GetApiSchema)
+
+    # The test data includes an extra branch where the API does not exist.
+    num_versions = len(TABS_SCHEMA_BRANCHES) - 1
+    # We expect an APISchemaGraph to be created only when an API schema file
+    # has different stat data from the previous version's schema file.
+    num_graphs_created = num_versions - len(TABS_UNMODIFIED_VERSIONS)
+
+    # Run the logic for object-level availability for an API.
+    self._node_avail_finder.GetApiNodeAvailability('tabs')
+
+    self.assertTrue(*availability_finder._GetApiSchema.CheckAndReset(
+        num_graphs_created))
+
+    # Let _GetApiSchema() be the original, unmodified function again.
+    availability_finder._GetApiSchema = availability_finder._GetApiSchema._fn
 
   def testGetApiAvailability(self):
     # Key: Using 'channel' (i.e. 'beta') to represent an availability listing

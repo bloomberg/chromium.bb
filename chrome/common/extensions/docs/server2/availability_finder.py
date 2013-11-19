@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from collections import Mapping, namedtuple
 import os
-from collections import Mapping
 
 from api_schema_graph import APISchemaGraph
 from branch_utility import BranchUtility
@@ -220,25 +220,47 @@ class AvailabilityFinder(object):
     if availability_graph is not None:
       return availability_graph
 
-    def get_schema(api_name, file_system):
-      return _GetApiSchema(api_name,
-                           self._compiled_fs_factory.ForApiSchema(file_system))
+    def assert_not_none(value):
+      assert value is not None
+      return value
 
     availability_graph = APISchemaGraph()
-    trunk_graph = APISchemaGraph(get_schema(api_name, self._host_file_system))
+
+    host_fs = self._host_file_system
+    trunk_stat = assert_not_none(host_fs.Stat(_GetApiSchemaFilename(
+        api_name, self._compiled_fs_factory.ForApiSchema(host_fs))))
+
+    # Weird object thing here because nonlocal is Python 3.
+    previous = type('previous', (object,), {'stat': None, 'graph': None})
+
     def update_availability_graph(file_system, channel_info):
-      version_graph = APISchemaGraph(get_schema(api_name, file_system))
-      # Keep track of any new schema elements from this version by adding
-      # them to |availability_graph|.
-      #
-      # Calling |availability_graph|.Lookup() on the nodes being updated
-      # will return the |annotation| object.
-      availability_graph.Update(version_graph.Subtract(availability_graph),
-                                annotation=channel_info)
+      schema_fs = self._compiled_fs_factory.ForApiSchema(file_system)
+      version_filename = assert_not_none(
+          _GetApiSchemaFilename(api_name, schema_fs))
+      version_stat = assert_not_none(
+          file_system.Stat(version_filename))
+
+      # Important optimisation: only re-parse the graph if the file changed in
+      # the last revision. Parsing the same schema and forming a graph on every
+      # iteration is really expensive.
+      if version_stat == previous.stat:
+        version_graph = previous.graph
+      else:
+        # Keep track of any new schema elements from this version by adding
+        # them to |availability_graph|.
+        #
+        # Calling |availability_graph|.Lookup() on the nodes being updated
+        # will return the |annotation| object -- the current |channel_info|.
+        version_graph = APISchemaGraph(_GetApiSchema(api_name, schema_fs))
+        availability_graph.Update(version_graph.Subtract(availability_graph),
+                                  annotation=channel_info)
+
+      previous.stat = version_stat
+      previous.graph = version_graph
 
       # Continue looping until there are no longer differences between this
       # version and trunk.
-      return trunk_graph != version_graph
+      return version_stat != trunk_stat
 
     self._file_system_iterator.Ascending(self.GetApiAvailability(api_name),
                                          update_availability_graph)
