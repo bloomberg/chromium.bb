@@ -1785,8 +1785,6 @@
         'browser/ui/views/extensions/media_galleries_dialog_views.h',
         'browser/ui/views/external_protocol_dialog.cc',
         'browser/ui/views/external_protocol_dialog.h',
-        'browser/ui/views/extensions/suspicious_extension_bubble_view.h',
-        'browser/ui/views/extensions/suspicious_extension_bubble_view.cc',
         'browser/ui/views/external_tab_container_win.cc',
         'browser/ui/views/external_tab_container_win.h',
         'browser/ui/views/find_bar_host.cc',
