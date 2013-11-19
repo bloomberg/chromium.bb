@@ -5,20 +5,19 @@
 #ifndef UI_BASE_IME_INPUT_METHOD_FACTORY_H_
 #define UI_BASE_IME_INPUT_METHOD_FACTORY_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
-
-class InputMethod;
-
 namespace internal {
 class InputMethodDelegate;
 }  // namespace internal
 
-// Creates and returns an input method implementation for the platform. Caller
-// must delete the object. The object does not own |delegate|.
-UI_EXPORT InputMethod* CreateInputMethod(
+class InputMethod;
+
+// Creates and returns an input method implementation for the platform.
+UI_EXPORT scoped_ptr<InputMethod> CreateInputMethod(
     internal::InputMethodDelegate* delegate,
     gfx::AcceleratedWidget widget);
 
