@@ -867,6 +867,26 @@
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_48" file="settings_app_icon_48.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="common/favicon_settings.png" />
+      <if expr="pp_ifdef('toolkit_views')">
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_HOVER_TOP_LEFT" file="common/toolbar_button_hover_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_HOVER_TOP" file="common/toolbar_button_hover_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_HOVER_TOP_RIGHT" file="common/toolbar_button_hover_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_HOVER_LEFT" file="common/toolbar_button_hover_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_HOVER_CENTER" file="common/toolbar_button_hover_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_HOVER_RIGHT" file="common/toolbar_button_hover_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_HOVER_BOTTOM_LEFT" file="common/toolbar_button_hover_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_HOVER_BOTTOM" file="common/toolbar_button_hover_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_HOVER_BOTTOM_RIGHT" file="common/toolbar_button_hover_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_PRESSED_TOP_LEFT" file="common/toolbar_button_pressed_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_PRESSED_TOP" file="common/toolbar_button_pressed_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_PRESSED_TOP_RIGHT" file="common/toolbar_button_pressed_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_PRESSED_LEFT" file="common/toolbar_button_pressed_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_PRESSED_CENTER" file="common/toolbar_button_pressed_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_PRESSED_RIGHT" file="common/toolbar_button_pressed_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_PRESSED_BOTTOM_LEFT" file="common/toolbar_button_pressed_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_PRESSED_BOTTOM" file="common/toolbar_button_pressed_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_PRESSED_BOTTOM_RIGHT" file="common/toolbar_button_pressed_bottom_right.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_EMPTY" file="common/speech_input_mic_empty.png" />
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_FULL" file="common/speech_input_mic_full.png" />
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_MASK" file="common/speech_input_mic_mask.png" />
