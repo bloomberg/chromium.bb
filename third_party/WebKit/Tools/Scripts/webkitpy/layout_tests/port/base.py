@@ -1036,6 +1036,7 @@ class Port(object):
         if self.host.platform.is_win():
             variables_to_copy += [
                 'PATH',
+                'GYP_DEFINES',  # Required to locate win sdk.
             ]
         if self.host.platform.is_cygwin():
             variables_to_copy += [
