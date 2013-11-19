@@ -10,6 +10,8 @@
 #include "gin/wrapper_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using v8::ObjectTemplate;
+
 namespace gin {
 
 namespace {
@@ -52,25 +54,24 @@ void ExpectEqual(const v8::FunctionCallbackInfo<v8::Value>& info) {
   EXPECT_TRUE(info[0]->StrictEquals(info[1])) << description;
 }
 
-WrapperInfo g_gtest_wrapper_info = {};
+WrapperInfo g_wrapper_info = {};
 
 }  // namespace
 
 const char GTest::kModuleName[] = "gtest";
 
-v8::Local<v8::ObjectTemplate> GTest::GetTemplate(v8::Isolate* isolate) {
+v8::Local<ObjectTemplate> GTest::GetTemplate(v8::Isolate* isolate) {
   PerIsolateData* data = PerIsolateData::From(isolate);
-  v8::Local<v8::ObjectTemplate> templ = data->GetObjectTemplate(
-      &g_gtest_wrapper_info);
+  v8::Local<ObjectTemplate> templ = data->GetObjectTemplate(&g_wrapper_info);
   if (templ.IsEmpty()) {
-    templ = v8::ObjectTemplate::New();
+    templ = ObjectTemplate::New();
     templ->Set(StringToSymbol(isolate, "expectTrue"),
                v8::FunctionTemplate::New(ExpectTrue));
     templ->Set(StringToSymbol(isolate, "expectFalse"),
                v8::FunctionTemplate::New(ExpectFalse));
     templ->Set(StringToSymbol(isolate, "expectEqual"),
                v8::FunctionTemplate::New(ExpectEqual));
-    data->SetObjectTemplate(&g_gtest_wrapper_info, templ);
+    data->SetObjectTemplate(&g_wrapper_info, templ);
   }
   return templ;
 }

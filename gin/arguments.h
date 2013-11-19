@@ -31,6 +31,22 @@ class Arguments {
   }
 
   template<typename T>
+  bool GetRemaining(std::vector<T>* out) {
+    if (next_ >= info_.Length()) {
+      insufficient_arguments_ = true;
+      return false;
+    }
+    int remaining = info_.Length() - next_;
+    out->resize(remaining);
+    for (int i = 0; i < remaining; ++i) {
+      v8::Handle<v8::Value> val = info_[next_++];
+      if (!ConvertFromV8(val, &out->at(i)))
+        return false;
+    }
+    return true;
+  }
+
+  template<typename T>
   void Return(T val) {
     info_.GetReturnValue().Set(ConvertToV8(isolate_, val));
   }

@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "gin/initialize.h"
+#include "gin/modules/console.h"
 #include "gin/modules/module_runner_delegate.h"
 #include "gin/test/file_runner.h"
 #include "gin/try_catch.h"
@@ -37,7 +38,9 @@ base::FilePath GetModuleBase() {
 
 class ShellRunnerDelegate : public ModuleRunnerDelegate {
  public:
-  ShellRunnerDelegate() : ModuleRunnerDelegate(GetModuleBase()) {}
+  ShellRunnerDelegate() : ModuleRunnerDelegate(GetModuleBase()) {
+    AddBuiltinModule(Console::kModuleName, Console::GetTemplate);
+  }
 
   virtual void UnhandledException(Runner* runner,
                                   TryCatch& try_catch) OVERRIDE {

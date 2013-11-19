@@ -19,6 +19,8 @@
         '../v8/tools/gyp/v8.gyp:v8',
       ],
       'sources': [
+        'modules/console.cc',
+        'modules/console.h',
         'modules/file_module_provider.cc',
         'modules/file_module_provider.h',
         'modules/module_registry.cc',
