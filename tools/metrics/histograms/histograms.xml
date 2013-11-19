@@ -18829,6 +18829,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Sqlite.AppCache.Error" enum="SqliteErrorCode">
+  <obsolete>
+    Moved to Sqlite.Error.AppCache in M-27.
+  </obsolete>
   <summary>Error codes returned by sqlite for the appcache db.</summary>
 </histogram>
 
@@ -18837,10 +18840,16 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Sqlite.Cookie.Error" enum="SqliteErrorCode">
+  <obsolete>
+    Moved to Sqlite.Error.Cookie in M-27.
+  </obsolete>
   <summary>Error codes returned by sqlite the cookie db.</summary>
 </histogram>
 
 <histogram name="Sqlite.DatabaseTracker.Error" enum="SqliteErrorCode">
+  <obsolete>
+    Moved to Sqlite.Error.DatabaseTracker in M-27.
+  </obsolete>
   <summary>Error codes returned by sqlite the websqldb tracker db.</summary>
 </histogram>
 
@@ -18852,12 +18861,18 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Sqlite.DomainBoundCerts.Error" enum="SqliteErrorCode">
+  <obsolete>
+    Moved to Sqlite.Error.DomainBoundCerts in M-27.
+  </obsolete>
   <summary>
     Error codes returned by sqlite for the domain-bound certs db.
   </summary>
 </histogram>
 
 <histogram name="Sqlite.DomStorageDatabase.Error" enum="SqliteErrorCode">
+  <obsolete>
+    Moved to Sqlite.Error.DomStorageDatabase in M-27.
+  </obsolete>
   <summary>Error codes returned by sqlite for the domstorage db.</summary>
 </histogram>
 
@@ -18873,6 +18888,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Sqlite.History.Error" enum="SqliteErrorCode">
+  <obsolete>
+    Moved to Sqlite.Error.History in M-27.
+  </obsolete>
   <summary>Error codes returned by sqlite for the history db.</summary>
 </histogram>
 
@@ -18885,6 +18903,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Sqlite.Quota.Error" enum="SqliteErrorCode">
+  <obsolete>
+    Moved to Sqlite.Error.Quota in M-27.
+  </obsolete>
   <summary>Error codes returned by sqlite for the quota db.</summary>
 </histogram>
 
@@ -18913,10 +18934,16 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Sqlite.Text.Error" enum="SqliteErrorCode">
+  <obsolete>
+    Moved to Sqlite.Error.Text in M-27.
+  </obsolete>
   <summary>Error codes returned by sqlite the full text db.</summary>
 </histogram>
 
 <histogram name="Sqlite.Thumbnail.Error" enum="SqliteErrorCode">
+  <obsolete>
+    Moved to Sqlite.Error.Thumbnail in M-27.
+  </obsolete>
   <summary>Error codes returned by sqlite for the thumbnail db.</summary>
 </histogram>
 
@@ -18925,6 +18952,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Sqlite.Web.Error" enum="SqliteErrorCode">
+  <obsolete>
+    Moved to Sqlite.Error.Web in M-27.
+  </obsolete>
   <summary>Error codes returned by sqlite the web db.</summary>
 </histogram>
 
