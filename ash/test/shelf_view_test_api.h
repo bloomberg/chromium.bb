@@ -37,9 +37,6 @@ class ShelfViewTestAPI {
   // Retrieve the button at |index|.
   internal::LauncherButton* GetButton(int index);
 
-  // First visible button index.
-  int GetFirstVisibleIndex();
-
   // Last visible button index.
   int GetLastVisibleIndex();
 
@@ -79,9 +76,6 @@ class ShelfViewTestAPI {
 
   // Sets LauncherDelegate.
   void SetLauncherDelegate(LauncherDelegate* delegate);
-
-  // Returns re-insertable bounds in screen.
-  gfx::Rect GetBoundsForDragInsertInScreen();
 
  private:
   internal::ShelfView* shelf_view_;
