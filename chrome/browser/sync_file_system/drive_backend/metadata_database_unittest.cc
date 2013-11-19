@@ -10,7 +10,9 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -227,7 +229,9 @@ class MetadataDatabaseTest : public testing::Test {
         leveldb::DB::Open(options, database_dir_.path().AsUTF8Unsafe(), &db);
     EXPECT_TRUE(status.ok());
 
-    db->Put(leveldb::WriteOptions(), "VERSION", base::Int64ToString(3));
+    db->Put(leveldb::WriteOptions(),
+            kDatabaseVersionKey,
+            base::Int64ToString(3));
     SetUpServiceMetadata(db);
 
     return make_scoped_ptr(db);
@@ -238,16 +242,16 @@ class MetadataDatabaseTest : public testing::Test {
     service_metadata.set_largest_change_id(kInitialChangeID);
     service_metadata.set_sync_root_tracker_id(kSyncRootTrackerID);
     service_metadata.set_next_tracker_id(next_tracker_id_);
-    std::string value;
-    ASSERT_TRUE(service_metadata.SerializeToString(&value));
-    db->Put(leveldb::WriteOptions(), "SERVICE", value);
+    leveldb::WriteBatch batch;
+    PutServiceMetadataToBatch(service_metadata, &batch);
+    EXPECT_TRUE(db->Write(leveldb::WriteOptions(), &batch).ok());
   }
 
   FileMetadata CreateSyncRootMetadata() {
     FileMetadata sync_root;
     sync_root.set_file_id(kSyncRootFolderID);
     FileDetails* details = sync_root.mutable_details();
-    details->set_title("Chrome Syncable FileSystem");
+    details->set_title(kSyncRootFolderTitle);
     details->set_file_kind(FILE_KIND_FOLDER);
     return sync_root;
   }
@@ -411,18 +415,16 @@ class MetadataDatabaseTest : public testing::Test {
   }
 
   leveldb::Status PutFileToDB(leveldb::DB* db, const FileMetadata& file) {
-    std::string key = "FILE: " + file.file_id();
-    std::string value;
-    file.SerializeToString(&value);
-    return db->Put(leveldb::WriteOptions(), key, value);
+    leveldb::WriteBatch batch;
+    PutFileToBatch(file, &batch);
+    return db->Write(leveldb::WriteOptions(), &batch);
   }
 
   leveldb::Status PutTrackerToDB(leveldb::DB* db,
                                  const FileTracker& tracker) {
-    std::string key = "TRACKER: " + base::Int64ToString(tracker.tracker_id());
-    std::string value;
-    tracker.SerializeToString(&value);
-    return db->Put(leveldb::WriteOptions(), key, value);
+    leveldb::WriteBatch batch;
+    PutTrackerToBatch(tracker, &batch);
+    return db->Write(leveldb::WriteOptions(), &batch);
   }
 
   void VerifyReloadConsistency() {
