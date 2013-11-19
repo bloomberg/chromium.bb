@@ -286,7 +286,7 @@ def main(_argv):
         PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
                    options.dryrun, cwd=overlay)
       elif command == 'commit':
-        existing_branch = git.GetCurrentBranch(overlay)
+        existing_commit = git.GetGitRepoRevision(overlay)
         work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch,
                                 cwd=overlay)
         work_branch.CreateBranch()
@@ -296,8 +296,7 @@ def main(_argv):
 
         # In the case of uprevving overlays that have patches applied to them,
         # include the patched changes in the stabilizing branch.
-        if existing_branch:
-          git.RunGit(overlay, ['rebase', existing_branch])
+        git.RunGit(overlay, ['rebase', existing_commit])
 
         messages = []
         for ebuild in ebuilds:
