@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate_impl.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
@@ -286,7 +285,8 @@ void GetAppListWindowOrigins(
 }  // namespace
 
 AppListServiceMac::AppListServiceMac()
-    : profile_(NULL) {
+    : profile_(NULL),
+      controller_delegate_(new AppListControllerDelegateImpl(this)) {
   animation_controller_.reset([[AppListAnimationController alloc] init]);
 }
 
@@ -347,9 +347,7 @@ void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
   }
 
   scoped_ptr<app_list::AppListViewDelegate> delegate(
-      new AppListViewDelegate(
-          scoped_ptr<AppListControllerDelegate>(
-              new AppListControllerDelegateImpl(this)), profile_));
+      new AppListViewDelegate(profile_, GetControllerDelegate()));
   [[window_controller_ appListViewController] setDelegate:delegate.Pass()];
 }
 
@@ -414,8 +412,8 @@ NSWindow* AppListServiceMac::GetAppListWindow() {
   return [window_controller_ window];
 }
 
-AppListControllerDelegate* AppListServiceMac::CreateControllerDelegate() {
-  return new AppListControllerDelegateImpl(this);
+AppListControllerDelegate* AppListServiceMac::GetControllerDelegate() {
+  return controller_delegate_.get();
 }
 
 void AppListServiceMac::OnShimLaunch(apps::AppShimHandler::Host* host,

@@ -64,11 +64,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // only used by non-Ash Windows.
   virtual void SetProfileByPath(const base::FilePath& profile_path) = 0;
 
-  // Invoked to initialize the model that AppListView uses. This binds the given
-  // model to this AppListViewDelegate and makes the AppListViewDelegate
-  // responsible for updating the model.
-  // Note that AppListView owns the model.
-  virtual void InitModel(AppListModel* model) = 0;
+  // Gets the model associated with the view delegate. The model may be owned
+  // by the delegate, or owned elsewhere (e.g. a profile keyed service).
+  virtual AppListModel* GetModel() = 0;
 
   // Gets the SigninDelegate for the app list. Owned by the AppListViewDelegate.
   virtual SigninDelegate* GetSigninDelegate() = 0;

@@ -40,7 +40,7 @@ class AppListServiceDisabled : public AppListService {
   virtual bool IsAppListVisible() const OVERRIDE { return false; }
   virtual void EnableAppList(Profile* initial_profile) OVERRIDE {}
 
-  virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE {
+  virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE {
     return NULL;
   }
 

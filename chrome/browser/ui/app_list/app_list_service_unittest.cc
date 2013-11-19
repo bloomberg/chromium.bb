@@ -67,7 +67,7 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
     return NULL;
   }
 
-  virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE {
+  virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE {
     return NULL;
   }
 

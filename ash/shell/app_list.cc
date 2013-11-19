@@ -194,7 +194,11 @@ class ExampleSearchResult : public app_list::SearchResult {
 
 class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
  public:
-  ExampleAppListViewDelegate() : model_(NULL) {}
+  ExampleAppListViewDelegate()
+      : model_(new app_list::AppListModel) {
+    PopulateApps(model_->item_list());
+    DecorateSearchBox(model_->search_box());
+  }
 
  private:
   void PopulateApps(app_list::AppListItemList* item_list) {
@@ -241,11 +245,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return users_;
   }
 
-  virtual void InitModel(app_list::AppListModel* model) OVERRIDE {
-    model_ = model;
-    PopulateApps(model_->item_list());
-    DecorateSearchBox(model_->search_box());
-  }
+  virtual app_list::AppListModel* GetModel() OVERRIDE { return model_.get(); }
 
   virtual app_list::SigninDelegate* GetSigninDelegate() OVERRIDE {
     return NULL;
@@ -254,6 +254,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
       const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE {
+    callback.Run(base::FilePath());
   }
 
   virtual void OpenSearchResult(app_list::SearchResult* result,
@@ -336,7 +337,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return NULL;
   }
 
-  app_list::AppListModel* model_;
+  scoped_ptr<app_list::AppListModel> model_;
   Users users_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleAppListViewDelegate);

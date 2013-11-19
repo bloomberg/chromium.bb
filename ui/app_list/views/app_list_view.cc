@@ -67,18 +67,16 @@ bool SupportsShadow() {
 // AppListView:
 
 AppListView::AppListView(AppListViewDelegate* delegate)
-    : model_(new AppListModel),
-      delegate_(delegate),
+    : delegate_(delegate),
       app_list_main_view_(NULL),
       signin_view_(NULL) {
-  if (delegate_)
-    delegate_->InitModel(model_.get());
-  model_->AddObserver(this);
+  CHECK(delegate);
+  delegate_->GetModel()->AddObserver(this);
 }
 
 AppListView::~AppListView() {
-  model_->RemoveObserver(this);
-  // Models are going away, ensure their references are cleared.
+  delegate_->GetModel()->RemoveObserver(this);
+  // Remove child views first to ensure no remaining dependencies on delegate_.
   RemoveAllChildViews(true);
 }
 
@@ -128,10 +126,7 @@ void AppListView::ShowWhenReady() {
 
 void AppListView::Close() {
   app_list_main_view_->Close();
-  if (delegate_)
-    delegate_->Dismiss();
-  else
-    GetWidget()->Close();
+  delegate_->Dismiss();
 }
 
 void AppListView::UpdateBounds() {
@@ -159,8 +154,9 @@ void AppListView::Prerender() {
 }
 
 void AppListView::OnSigninStatusChanged() {
-  signin_view_->SetVisible(!model_->signed_in());
-  app_list_main_view_->SetVisible(model_->signed_in());
+  AppListModel* model = delegate_->GetModel();
+  signin_view_->SetVisible(!model->signed_in());
+  app_list_main_view_->SetVisible(model->signed_in());
   app_list_main_view_->search_box_view()->InvalidateMenu();
 }
 
@@ -199,7 +195,6 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
                                        bool border_accepts_events,
                                        const gfx::Vector2d& anchor_offset) {
   app_list_main_view_ = new AppListMainView(delegate_.get(),
-                                            model_.get(),
                                             pagination_model,
                                             parent);
   AddChildView(app_list_main_view_);
@@ -209,10 +204,9 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   app_list_main_view_->layer()->SetMasksToBounds(true);
 #endif
 
-  signin_view_ = new SigninView(
-      delegate_ ? delegate_->GetSigninDelegate()
-                : NULL,
-      app_list_main_view_->GetPreferredSize().width());
+  signin_view_ =
+      new SigninView(delegate_->GetSigninDelegate(),
+                     app_list_main_view_->GetPreferredSize().width());
   AddChildView(signin_view_);
 
   OnSigninStatusChanged();

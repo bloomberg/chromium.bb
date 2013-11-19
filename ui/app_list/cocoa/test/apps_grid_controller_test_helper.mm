@@ -9,7 +9,6 @@
 #include "ui/app_list/app_list_item_model.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/app_list/cocoa/apps_grid_view_item.h"
-#include "ui/app_list/test/app_list_test_model.h"
 #import "ui/base/test/cocoa_test_event_utils.h"
 
 namespace app_list {
@@ -28,7 +27,6 @@ void AppsGridControllerTestHelper::SetUpWithGridController(
     AppsGridController* grid_controller) {
   ui::CocoaTest::SetUp();
   apps_grid_controller_ = grid_controller;
-  ReplaceTestModel(0);
 }
 
 void AppsGridControllerTestHelper::SimulateClick(NSView* view) {
@@ -50,17 +48,6 @@ void AppsGridControllerTestHelper::SimulateMouseEnterItemAt(size_t index) {
 void AppsGridControllerTestHelper::SimulateMouseExitItemAt(size_t index) {
   [[apps_grid_controller_ itemAtIndex:index] mouseExited:
       cocoa_test_event_utils::EnterExitEventWithType(NSMouseExited)];
-}
-
-void AppsGridControllerTestHelper::ReplaceTestModel(int item_count) {
-  scoped_ptr<AppListTestModel> new_model(new AppListTestModel);
-  new_model->PopulateApps(item_count);
-  ResetModel(new_model.PassAs<AppListModel>());
-}
-
-void AppsGridControllerTestHelper::ResetModel(
-    scoped_ptr<AppListModel> new_model) {
-  [apps_grid_controller_ setModel:new_model.Pass()];
 }
 
 std::string AppsGridControllerTestHelper::GetViewContent() const {
@@ -126,10 +113,6 @@ NSCollectionView* AppsGridControllerTestHelper::GetPageAt(size_t index) {
 
 NSView* AppsGridControllerTestHelper::GetSelectedView() {
   return GetItemViewAt([apps_grid_controller_ selectedItemIndex]);
-}
-
-AppListTestModel* AppsGridControllerTestHelper::model() {
-  return static_cast<AppListTestModel*>([apps_grid_controller_ model]);
 }
 
 }  // namespace test

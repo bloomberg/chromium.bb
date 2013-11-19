@@ -45,10 +45,6 @@ class AppListWin : public AppList {
   virtual gfx::NativeWindow GetWindow() OVERRIDE;
   virtual void SetProfile(Profile* profile) OVERRIDE;
 
-  app_list::AppListModel* model() {
-    return view_->model();
-  }
-
  private:
   // Weak pointer. The view manages its own lifetime.
   app_list::AppListView* view_;

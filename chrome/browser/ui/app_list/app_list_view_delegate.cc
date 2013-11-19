@@ -16,7 +16,9 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/extension_app_model_builder.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -77,15 +79,15 @@ void PopulateUsers(const ProfileInfoCache& profile_info,
 
 }  // namespace
 
-AppListViewDelegate::AppListViewDelegate(
-    scoped_ptr<AppListControllerDelegate> controller,
-    Profile* profile)
-    : controller_(controller.Pass()),
+AppListViewDelegate::AppListViewDelegate(Profile* profile,
+                                         AppListControllerDelegate* controller)
+    : controller_(controller),
       profile_(profile),
       model_(NULL) {
   CHECK(controller_);
   RegisterForNotifications();
   g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
+  OnProfileChanged();  // sets model_
   app_list::StartPageService* service =
       app_list::StartPageService::Get(profile_);
   if (service)
@@ -114,9 +116,11 @@ void AppListViewDelegate::RegisterForNotifications() {
 }
 
 void AppListViewDelegate::OnProfileChanged() {
-  CHECK(controller_);
+  model_ = app_list::AppListSyncableServiceFactory::GetForProfile(
+      profile_)->model();
+
   search_controller_.reset(new app_list::SearchController(
-      profile_, model_->search_box(), model_->results(), controller_.get()));
+      profile_, model_->search_box(), model_->results(), controller_));
 
   signin_delegate_.SetProfile(profile_);
 
@@ -151,26 +155,14 @@ void AppListViewDelegate::SetProfileByPath(const base::FilePath& profile_path) {
 
   RegisterForNotifications();
 
-  apps_builder_->SwitchProfile(profile_);
-
   OnProfileChanged();
 
   // Clear search query.
   model_->search_box()->SetText(base::string16());
 }
 
-void AppListViewDelegate::InitModel(app_list::AppListModel* model) {
-  DCHECK(!model_);
-  DCHECK(model);
-  model_ = model;
-
-  // Initialize apps model.
-  apps_builder_.reset(new ExtensionAppModelBuilder(profile_,
-                                                   model,
-                                                   controller_.get()));
-
-  // Initialize the profile information in the app list menu.
-  OnProfileChanged();
+app_list::AppListModel* AppListViewDelegate::GetModel() {
+  return model_;
 }
 
 app_list::SigninDelegate* AppListViewDelegate::GetSigninDelegate() {

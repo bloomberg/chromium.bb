@@ -15,7 +15,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
-#include "chrome/browser/ui/app_list/test/app_list_service_test_api.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -31,6 +32,18 @@
 #include "ui/base/models/list_model_observer.h"
 
 namespace {
+
+app_list::AppListModel* GetAppListModel(AppListService* service) {
+  return app_list::AppListSyncableServiceFactory::GetForProfile(
+      service->GetCurrentAppListProfile())->model();
+}
+
+AppListService* GetAppListService() {
+  // TODO(tapted): Consider testing ash explicitly on the win-ash trybot.
+  return AppListService::Get(chrome::GetActiveDesktop());
+}
+
+}  // namespace
 
 // Browser Test for AppListController that runs on all platforms supporting
 // app_list.
@@ -65,19 +78,18 @@ class AppListControllerBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AppListControllerBrowserTest);
 };
 
-#if !defined(OS_LINUX)
-AppListService* GetAppListService() {
-  // TODO(tapted): Consider testing ash explicitly on the win-ash trybot.
-  return AppListService::Get(chrome::GetActiveDesktop());
-}
+// TODO(mgiuca): Enable on Linux when supported.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_CreateNewWindow DISABLED_CreateNewWindow
+#else
+#define MAYBE_CreateNewWindow CreateNewWindow
+#endif
 
 // Test the CreateNewWindow function of the controller delegate.
-// TODO(mgiuca): Enable on Linux when supported.
-IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
+IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, MAYBE_CreateNewWindow) {
   const chrome::HostDesktopType desktop = chrome::GetActiveDesktop();
   AppListService* service = GetAppListService();
-  scoped_ptr<AppListControllerDelegate> controller(
-      service->CreateControllerDelegate());
+  AppListControllerDelegate* controller(service->GetControllerDelegate());
   ASSERT_TRUE(controller);
 
   EXPECT_EQ(1U, chrome::GetBrowserCount(browser()->profile(), desktop));
@@ -91,12 +103,22 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
   EXPECT_EQ(1U, chrome::GetBrowserCount(
       browser()->profile()->GetOffTheRecordProfile(), desktop));
 }
-#endif  // !defined(OS_LINUX)
 
-// TODO(mgiuca): Enable on Linux when supported.
-#if !defined(OS_CHROMEOS) && !defined(OS_LINUX)
+// TODO(mgiuca): Enable on Linux/ChromeOS when supported.
+#if defined(OS_LINUX)
+#define MAYBE_ShowAndDismiss DISABLED_ShowAndDismiss
+#define MAYBE_SwitchAppListProfiles DISABLED_SwitchAppListProfiles
+#define MAYBE_SwitchAppListProfilesDuringSearch \
+  DISABLED_SwitchAppListProfilesDuringSearch
+#else
+#define MAYBE_ShowAndDismiss ShowAndDismiss
+#define MAYBE_SwitchAppListProfiles SwitchAppListProfiles
+#define MAYBE_SwitchAppListProfilesDuringSearch \
+  SwitchAppListProfilesDuringSearch
+#endif
+
 // Show the app list, then dismiss it.
-IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, ShowAndDismiss) {
+IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, MAYBE_ShowAndDismiss) {
   AppListService* service = GetAppListService();
   ASSERT_FALSE(service->IsAppListVisible());
   service->ShowForProfile(browser()->profile());
@@ -105,23 +127,20 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, ShowAndDismiss) {
   ASSERT_FALSE(service->IsAppListVisible());
 }
 
-IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, SwitchAppListProfiles) {
+IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest,
+                       MAYBE_SwitchAppListProfiles) {
   InitSecondProfile();
 
   AppListService* service = GetAppListService();
-  scoped_ptr<test::AppListServiceTestApi> test_api(
-      test::AppListServiceTestApi::Create(chrome::HOST_DESKTOP_TYPE_NATIVE));
   ASSERT_TRUE(service);
-  ASSERT_TRUE(test_api);
 
-  scoped_ptr<AppListControllerDelegate> controller(
-      service->CreateControllerDelegate());
+  AppListControllerDelegate* controller(service->GetControllerDelegate());
   ASSERT_TRUE(controller);
 
   // Open the app list with the browser's profile.
   ASSERT_FALSE(service->IsAppListVisible());
   controller->ShowForProfileByPath(browser()->profile()->GetPath());
-  app_list::AppListModel* model = test_api->GetAppListModel();
+  app_list::AppListModel* model = GetAppListModel(service);
   ASSERT_TRUE(model);
   model->SetSignedIn(true);
   base::RunLoop().RunUntilIdle();
@@ -131,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, SwitchAppListProfiles) {
 
   // Open the app list with the second profile.
   controller->ShowForProfileByPath(profile2_->GetPath());
-  model = test_api->GetAppListModel();
+  model = GetAppListModel(service);
   ASSERT_TRUE(model);
   model->SetSignedIn(true);
   base::RunLoop().RunUntilIdle();
@@ -143,22 +162,18 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, SwitchAppListProfiles) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest,
-                       SwitchAppListProfilesDuringSearch) {
+                       MAYBE_SwitchAppListProfilesDuringSearch) {
   InitSecondProfile();
 
   AppListService* service = GetAppListService();
-  scoped_ptr<test::AppListServiceTestApi> test_api(
-      test::AppListServiceTestApi::Create(chrome::HOST_DESKTOP_TYPE_NATIVE));
   ASSERT_TRUE(service);
-  ASSERT_TRUE(test_api);
 
-  scoped_ptr<AppListControllerDelegate> controller(
-      service->CreateControllerDelegate());
+  AppListControllerDelegate* controller(service->GetControllerDelegate());
   ASSERT_TRUE(controller);
 
   // Set a search with original profile.
   controller->ShowForProfileByPath(browser()->profile()->GetPath());
-  app_list::AppListModel* model = test_api->GetAppListModel();
+  app_list::AppListModel* model = GetAppListModel(service);
   ASSERT_TRUE(model);
   model->SetSignedIn(true);
   model->search_box()->SetText(ASCIIToUTF16("minimal"));
@@ -166,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest,
 
   // Switch to the second profile.
   controller->ShowForProfileByPath(profile2_->GetPath());
-  model = test_api->GetAppListModel();
+  model = GetAppListModel(service);
   ASSERT_TRUE(model);
   model->SetSignedIn(true);
   base::RunLoop().RunUntilIdle();
@@ -210,7 +225,6 @@ IN_PROC_BROWSER_TEST_F(ShowAppListBrowserTest, MAYBE_ShowAppListFlag) {
   CreateBrowser(service->GetCurrentAppListProfile());
   service->DismissAppList();
 }
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_LINUX)
 
 // Browser Test for AppListController that observes search result changes.
 class AppListControllerSearchResultsBrowserTest
@@ -288,9 +302,14 @@ class AppListControllerSearchResultsBrowserTest
   DISALLOW_COPY_AND_ASSIGN(AppListControllerSearchResultsBrowserTest);
 };
 
-// Test showing search results, and uninstalling one of them while displayed.
 // TODO(mgiuca): Enable on Linux when supported.
-#if !defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_UninstallSearchResult DISABLED_UninstallSearchResult
+#else
+#define MAYBE_UninstallSearchResult UninstallSearchResult
+#endif
+
+// Test showing search results, and uninstalling one of them while displayed.
 IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
                        UninstallSearchResult) {
   base::FilePath test_extension_path;
@@ -304,13 +323,10 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   ASSERT_TRUE(extension);
 
   AppListService* service = GetAppListService();
-  scoped_ptr<test::AppListServiceTestApi> test_api(
-      test::AppListServiceTestApi::Create(chrome::HOST_DESKTOP_TYPE_NATIVE));
   ASSERT_TRUE(service);
-  ASSERT_TRUE(test_api);
   service->ShowForProfile(browser()->profile());
 
-  app_list::AppListModel* model = test_api->GetAppListModel();
+  app_list::AppListModel* model = GetAppListModel(service);
   ASSERT_TRUE(model);
   model->SetSignedIn(true);
   WatchResultsLookingForItem(model->results(), extension->name());
@@ -336,6 +352,3 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   StopWatchingResults();
   service->DismissAppList();
 }
-#endif  // !defined(OS_LINUX)
-
-}  // namespace

@@ -114,11 +114,10 @@ void StartPageHandler::HandleLaunchApp(const base::ListValue* args) {
     return;
   }
 
-  AppListService* app_list_service = AppListService::Get(
+  AppListControllerDelegate* controller = AppListService::Get(
       chrome::GetHostDesktopTypeForNativeView(
-          web_ui()->GetWebContents()->GetView()->GetNativeView()));
-  scoped_ptr<AppListControllerDelegate> controller(
-      app_list_service->CreateControllerDelegate());
+          web_ui()->GetWebContents()->GetView()->GetNativeView()))
+      ->GetControllerDelegate();
   controller->ActivateApp(profile,
                           app,
                           AppListControllerDelegate::LAUNCH_FROM_APP_LIST,

@@ -164,7 +164,6 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [self setModel:scoped_ptr<app_list::AppListModel>()];
   [super dealloc];
 }
 
@@ -181,43 +180,41 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
 }
 
 - (app_list::AppListModel*)model {
-  return model_.get();
+  return delegate_ ? delegate_->GetModel() : NULL;
 }
 
-- (void)setModel:(scoped_ptr<app_list::AppListModel>)newModel {
-  if (model_) {
-    model_->item_list()->RemoveObserver(bridge_.get());
-
-    // Since the model is about to be deleted, and the AppKit objects might be
-    // sitting in an NSAutoreleasePool, ensure there are no references to the
-    // model.
-    for (size_t i = 0; i < [items_ count]; ++i)
-      [[self itemAtIndex:i] setModel:NULL];
-
-    [items_ removeAllObjects];
-    [self updatePages:0];
-    [self scrollToPage:0];
+- (void)setDelegate:(app_list::AppListViewDelegate*)newDelegate {
+  if (delegate_) {
+    app_list::AppListModel* oldModel = delegate_->GetModel();
+    if (oldModel)
+      oldModel->item_list()->RemoveObserver(bridge_.get());
   }
 
-  model_.reset(newModel.release());
-  if (!model_)
+  // Since the old model may be getting deleted, and the AppKit objects might
+  // be sitting in an NSAutoreleasePool, ensure there are no references to
+  // the model.
+  for (size_t i = 0; i < [items_ count]; ++i)
+    [[self itemAtIndex:i] setModel:NULL];
+
+  [items_ removeAllObjects];
+  [self updatePages:0];
+  [self scrollToPage:0];
+
+  delegate_ = newDelegate;
+  if (!delegate_)
     return;
 
-  model_->item_list()->AddObserver(bridge_.get());
-  for (size_t i = 0; i < model_->item_list()->item_count(); ++i) {
-    app_list::AppListItemModel* itemModel = model_->item_list()->item_at(i);
+  app_list::AppListModel* newModel = delegate_->GetModel();
+  if (!newModel)
+    return;
+
+  newModel->item_list()->AddObserver(bridge_.get());
+  for (size_t i = 0; i < newModel->item_list()->item_count(); ++i) {
+    app_list::AppListItemModel* itemModel = newModel->item_list()->item_at(i);
     [items_ insertObject:[NSValue valueWithPointer:itemModel]
                  atIndex:i];
   }
   [self updatePages:0];
-}
-
-- (void)setDelegate:(app_list::AppListViewDelegate*)newDelegate {
-  scoped_ptr<app_list::AppListModel> newModel(new app_list::AppListModel);
-  delegate_ = newDelegate;
-  if (delegate_)
-    delegate_->InitModel(newModel.get());  // Populates items.
-  [self setModel:newModel.Pass()];
 }
 
 - (size_t)visiblePage {
@@ -524,9 +521,10 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
   if (itemIndex == modelIndex)
     return;
 
-  model_->item_list()->RemoveObserver(bridge_.get());
-  model_->item_list()->MoveItem(itemIndex, modelIndex);
-  model_->item_list()->AddObserver(bridge_.get());
+  app_list::AppListItemList* itemList = [self model]->item_list();
+  itemList->RemoveObserver(bridge_.get());
+  itemList->MoveItem(itemIndex, modelIndex);
+  itemList->AddObserver(bridge_.get());
 }
 
 - (AppsCollectionViewDragManager*)dragManager {

@@ -63,9 +63,6 @@ APP_LIST_EXPORT
 - (NSSegmentedControl*)pagerControl;
 - (NSView*)backgroundView;
 
-- (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate
-      withTestModel:(scoped_ptr<app_list::AppListModel>)newModel;
-
 @end
 
 #endif  // UI_APP_LIST_COCOA_APP_LIST_VIEW_CONTROLLER_H_

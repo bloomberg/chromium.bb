@@ -69,7 +69,6 @@ void ExtensionAppModelBuilder::OnBeginExtensionInstall(
 
   InsertApp(new ExtensionAppItem(profile_,
                                  params.extension_id,
-                                 controller_,
                                  params.extension_name,
                                  params.installing_icon,
                                  params.is_platform_app));
@@ -102,7 +101,6 @@ void ExtensionAppModelBuilder::OnExtensionLoaded(const Extension* extension) {
 
   InsertApp(new ExtensionAppItem(profile_,
                                  extension->id(),
-                                 controller_,
                                  "",
                                  gfx::ImageSkia(),
                                  extension->is_platform_app()));
@@ -144,7 +142,6 @@ void ExtensionAppModelBuilder::AddApps(const ExtensionSet* extensions,
     if (ShouldDisplayInAppLauncher(profile_, *app))
       apps->push_back(new ExtensionAppItem(profile_,
                                            (*app)->id(),
-                                           controller_,
                                            "",
                                            gfx::ImageSkia(),
                                            (*app)->is_platform_app()));

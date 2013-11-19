@@ -19,7 +19,6 @@
 #include "ui/app_list/app_list_view_delegate.h"
 
 class AppListControllerDelegate;
-class ExtensionAppModelBuilder;
 class Profile;
 
 namespace app_list {
@@ -48,9 +47,8 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
                             public content::NotificationObserver,
                             public ProfileInfoCacheObserver {
  public:
-  // The delegate will take ownership of the controller.
-  AppListViewDelegate(scoped_ptr<AppListControllerDelegate> controller,
-                      Profile* profile);
+  AppListViewDelegate(Profile* profile,
+                      AppListControllerDelegate* controller);
   virtual ~AppListViewDelegate();
 
  private:
@@ -62,7 +60,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // Overridden from app_list::AppListViewDelegate:
   virtual bool ForceNativeDesktop() const OVERRIDE;
   virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE;
-  virtual void InitModel(app_list::AppListModel* model) OVERRIDE;
+  virtual app_list::AppListModel* GetModel() OVERRIDE;
   virtual app_list::SigninDelegate* GetSigninDelegate() OVERRIDE;
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
@@ -103,12 +101,17 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
       const base::FilePath& profile_path,
       const base::string16& old_profile_name) OVERRIDE;
 
-  scoped_ptr<ExtensionAppModelBuilder> apps_builder_;
   scoped_ptr<app_list::SearchController> search_controller_;
-  scoped_ptr<AppListControllerDelegate> controller_;
+  // Unowned pointer to the controller.
+  AppListControllerDelegate* controller_;
+  // Unowned pointer to the associated profile. May change if SetProfileByPath
+  // is called.
   Profile* profile_;
+  // Unowned pointer to the model owned by AppListSyncableService. Will change
+  // if |profile_| changes.
+  app_list::AppListModel* model_;
+
   Users users_;
-  app_list::AppListModel* model_;  // Weak. Owned by AppListView.
 
   content::NotificationRegistrar registrar_;
   ChromeSigninDelegate signin_delegate_;

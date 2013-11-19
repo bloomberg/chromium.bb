@@ -1396,10 +1396,6 @@
         'browser/ui/app_list/app_list_service_mac_browsertest.mm',
         'browser/ui/app_list/search/people/people_provider_browsertest.cc',
         'browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc',
-        'browser/ui/app_list/test/app_list_service_test_api.h',
-        'browser/ui/app_list/test/app_list_service_test_api_ash.cc',
-        'browser/ui/app_list/test/app_list_service_test_api_ash.h',
-        'browser/ui/app_list/test/app_list_service_test_api_mac.mm',
         'browser/ui/ash/accelerator_commands_browsertest.cc',
         'browser/ui/ash/caps_lock_delegate_chromeos_browsertest.cc',
         'browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc',
@@ -1462,8 +1458,6 @@
         'browser/ui/tab_modal_confirm_dialog_browsertest.h',
         'browser/ui/toolbar/test_toolbar_model.cc',
         'browser/ui/toolbar/test_toolbar_model.h',
-        'browser/ui/views/app_list/linux/test/app_list_service_test_api_linux.cc',
-        'browser/ui/views/app_list/win/test/app_list_service_test_api_win.cc',
         'browser/ui/views/avatar_menu_button_browsertest.cc',
         'browser/ui/views/frame/app_non_client_frame_view_ash_browsertest.cc',
         'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
@@ -1754,7 +1748,6 @@
             'browser/signin/signin_browsertest.cc',
             # chromeos does not use cross-platform panels
             'browser/ui/panels/panel_extension_browsertest.cc',
-            'browser/ui/views/app_list/linux/test/app_list_service_test_api_linux.cc',
             # chromeos does not use the desktop user manager
             'browser/ui/webui/signin/user_manager_ui_browsertest.cc',
           ],

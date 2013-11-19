@@ -23,6 +23,9 @@
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "content/public/test/test_browser_context.h"
+#include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/aura/window.h"
 
 namespace ash {
@@ -95,7 +98,7 @@ content::BrowserContext* TestShellDelegate::GetCurrentBrowserContext() {
 }
 
 app_list::AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
-  return NULL;
+  return new app_list::test::AppListTestViewDelegate;
 }
 
 LauncherDelegate* TestShellDelegate::CreateLauncherDelegate(ShelfModel* model) {

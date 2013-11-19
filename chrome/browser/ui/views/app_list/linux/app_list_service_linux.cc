@@ -25,13 +25,12 @@ class AppListFactoryLinux : public AppListFactory {
 
   virtual AppList* CreateAppList(
       Profile* profile,
+      AppListService* service,
       const base::Closure& on_should_dismiss) OVERRIDE {
-    // The controller will be owned by the view delegate, and the delegate is
-    // owned by the app list view. The app list view manages it's own lifetime.
-    scoped_ptr<AppListControllerDelegate> controller_delegate(
-        new AppListControllerDelegateLinux(service_));
+    // The view delegate will be owned by the app list view. The app list view
+    // manages it's own lifetime.
     AppListViewDelegate* view_delegate = new AppListViewDelegate(
-        controller_delegate.Pass(), profile);
+        profile, service->GetControllerDelegate());
     app_list::AppListView* view = new app_list::AppListView(view_delegate);
     gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
     view->InitAsBubbleAtFixedLocation(NULL,
@@ -106,12 +105,11 @@ gfx::NativeWindow AppListServiceLinux::GetAppListWindow() {
 }
 
 Profile* AppListServiceLinux::GetCurrentAppListProfile() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return shower_->profile();
 }
 
-AppListControllerDelegate* AppListServiceLinux::CreateControllerDelegate() {
-  return new AppListControllerDelegateLinux(this);
+AppListControllerDelegate* AppListServiceLinux::GetControllerDelegate() {
+  return controller_delegate_.get();
 }
 
 void AppListServiceLinux::CreateShortcut() {
@@ -120,9 +118,11 @@ void AppListServiceLinux::CreateShortcut() {
 
 AppListServiceLinux::AppListServiceLinux()
     : shower_(new AppListShower(
-          scoped_ptr<AppListFactory>(
-              new AppListFactoryLinux(this)),
-          scoped_ptr<KeepAliveService>(new KeepAliveServiceImpl))) {}
+          scoped_ptr<AppListFactory>(new AppListFactoryLinux(this)),
+          scoped_ptr<KeepAliveService>(new KeepAliveServiceImpl),
+          this)),
+      controller_delegate_(new AppListControllerDelegateLinux(this)) {
+}
 
 // static
 AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {

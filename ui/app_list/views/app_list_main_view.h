@@ -38,7 +38,6 @@ class AppListMainView : public views::View,
  public:
   // Takes ownership of |delegate|.
   explicit AppListMainView(AppListViewDelegate* delegate,
-                           AppListModel* model,
                            PaginationModel* pagination_model,
                            gfx::NativeView parent);
   virtual ~AppListMainView();
@@ -90,8 +89,8 @@ class AppListMainView : public views::View,
   virtual void OnResultInstalled(SearchResult* result) OVERRIDE;
   virtual void OnResultUninstalled(SearchResult* result) OVERRIDE;
 
-  AppListViewDelegate* delegate_;
-  AppListModel* model_;
+  AppListViewDelegate* delegate_;  // Owned by parent (AppListView)
+  AppListModel* model_;  // Unowned; ownership is handled by |delegate_|.
 
   SearchBoxView* search_box_view_;  // Owned by views hierarchy.
   ContentsView* contents_view_;  // Owned by views hierarchy.

@@ -102,7 +102,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   HWND GetHWND() const;
 #endif
 
-  AppListModel* model() { return model_.get(); }
   AppListMainView* app_list_main_view() { return app_list_main_view_; }
 
  private:
@@ -139,10 +138,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   SigninDelegate* GetSigninDelegate();
 
-  scoped_ptr<AppListModel> model_;
   scoped_ptr<AppListViewDelegate> delegate_;
 
-  AppListMainView*  app_list_main_view_;
+  AppListMainView* app_list_main_view_;
   SigninView* signin_view_;
 
   ObserverList<Observer> observers_;

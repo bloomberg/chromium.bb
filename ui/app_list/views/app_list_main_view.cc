@@ -78,11 +78,10 @@ class AppListMainView::IconLoader : public AppListItemModelObserver {
 // AppListMainView:
 
 AppListMainView::AppListMainView(AppListViewDelegate* delegate,
-                                 AppListModel* model,
                                  PaginationModel* pagination_model,
                                  gfx::NativeView parent)
     : delegate_(delegate),
-      model_(model),
+      model_(delegate->GetModel()),
       search_box_view_(NULL),
       contents_view_(NULL),
       weak_ptr_factory_(this) {
@@ -201,11 +200,7 @@ void AppListMainView::ActivateApp(AppListItemModel* item, int event_flags) {
 void AppListMainView::GetShortcutPathForApp(
     const std::string& app_id,
     const base::Callback<void(const base::FilePath&)>& callback) {
-  if (delegate_) {
-    delegate_->GetShortcutPathForApp(app_id, callback);
-    return;
-  }
-  callback.Run(base::FilePath());
+  delegate_->GetShortcutPathForApp(app_id, callback);
 }
 
 void AppListMainView::QueryChanged(SearchBoxView* sender) {
@@ -214,24 +209,20 @@ void AppListMainView::QueryChanged(SearchBoxView* sender) {
   bool should_show_search = !query.empty();
   contents_view_->ShowSearchResults(should_show_search);
 
-  if (delegate_) {
-    if (should_show_search)
-      delegate_->StartSearch();
-    else
-      delegate_->StopSearch();
-  }
+  if (should_show_search)
+    delegate_->StartSearch();
+  else
+    delegate_->StopSearch();
 }
 
 void AppListMainView::OpenResult(SearchResult* result, int event_flags) {
-  if (delegate_)
-    delegate_->OpenSearchResult(result, event_flags);
+  delegate_->OpenSearchResult(result, event_flags);
 }
 
 void AppListMainView::InvokeResultAction(SearchResult* result,
                                          int action_index,
                                          int event_flags) {
-  if (delegate_)
-    delegate_->InvokeSearchResultAction(result, action_index, event_flags);
+  delegate_->InvokeSearchResultAction(result, action_index, event_flags);
 }
 
 void AppListMainView::OnResultInstalled(SearchResult* result) {

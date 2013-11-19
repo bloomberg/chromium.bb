@@ -29,7 +29,6 @@ APP_LIST_EXPORT
                                                  AppListPagerDelegate,
                                                  NSCollectionViewDelegate> {
  @private
-  scoped_ptr<app_list::AppListModel> model_;
   app_list::AppListViewDelegate* delegate_;  // Weak. Owned by view controller.
   scoped_ptr<app_list::AppsGridDelegateBridge> bridge_;
 
@@ -65,8 +64,6 @@ APP_LIST_EXPORT
 - (AppsGridViewItem*)itemAtIndex:(size_t)itemIndex;
 
 - (app_list::AppListModel*)model;
-
-- (void)setModel:(scoped_ptr<app_list::AppListModel>)newModel;
 
 - (void)setDelegate:(app_list::AppListViewDelegate*)newDelegate;
 

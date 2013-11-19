@@ -45,7 +45,7 @@ std::string AppListTestModel::GetItemName(int id) {
 }
 
 void AppListTestModel::PopulateApps(int n) {
-  int start_index = item_list()->item_count();
+  int start_index = static_cast<int>(item_list()->item_count());
   for (int i = 0; i < n; ++i)
     CreateAndAddItem(GetItemName(start_index + i));
 }

@@ -21,6 +21,10 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper,
 
   virtual void SetUp() OVERRIDE {
     app_list_view_controller_.reset([[AppListViewController alloc] init]);
+    scoped_ptr<AppListTestViewDelegate> delegate(new AppListTestViewDelegate);
+    delegate->set_test_signin_delegate(this);
+    [app_list_view_controller_
+        setDelegate:delegate.PassAs<app_list::AppListViewDelegate>()];
     SetUpWithGridController([app_list_view_controller_ appsGridController]);
     [[test_window() contentView] addSubview:[app_list_view_controller_ view]];
   }
@@ -32,12 +36,13 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper,
     AppsGridControllerTestHelper::TearDown();
   }
 
-  virtual void ResetModel(scoped_ptr<AppListModel> new_model) OVERRIDE {
-    scoped_ptr<AppListTestViewDelegate> delegate(new AppListTestViewDelegate);
-    delegate->set_test_signin_delegate(this);
+  void ReplaceTestModel(int item_count) {
     [app_list_view_controller_
-          setDelegate:delegate.PassAs<AppListViewDelegate>()
-        withTestModel:new_model.Pass()];
+        setDelegate:scoped_ptr<app_list::AppListViewDelegate>()];
+    scoped_ptr<AppListTestViewDelegate> delegate(new AppListTestViewDelegate);
+    delegate->ReplaceTestModel(item_count);
+    [app_list_view_controller_
+        setDelegate:delegate.PassAs<app_list::AppListViewDelegate>()];
   }
 
   // SigninDelegate overrides:
@@ -58,6 +63,15 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper,
   }
   virtual base::string16 GetSettingsLinkText() OVERRIDE {
     return base::string16();
+  }
+
+  AppListTestViewDelegate* delegate() {
+    return static_cast<AppListTestViewDelegate*>(
+        [app_list_view_controller_ delegate]);
+  }
+
+  AppListTestModel* model() {
+    return delegate()->GetTestModel();
   }
 
  protected:
@@ -122,9 +136,7 @@ TEST_F(AppListViewControllerTest, SignedIn) {
 // Test the view when signin is required.
 TEST_F(AppListViewControllerTest, NeedsSignin) {
   // Begin the test with a signed out app list.
-  scoped_ptr<AppListModel> new_model(new AppListModel);
-  new_model->SetSignedIn(false);
-  ResetModel(new_model.Pass());
+  model()->SetSignedIn(false);
   EXPECT_EQ(2u, [[[app_list_view_controller_ view] subviews] count]);
   EXPECT_TRUE([[app_list_view_controller_ backgroundView] isHidden]);
 

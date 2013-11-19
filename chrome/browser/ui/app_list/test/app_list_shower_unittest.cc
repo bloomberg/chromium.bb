@@ -66,6 +66,7 @@ class FakeFactory : public AppListFactory {
 
   virtual AppList* CreateAppList(
       Profile* profile,
+      AppListService* service,
       const base::Closure& on_should_dismiss) OVERRIDE {
     views_created_++;
     return new FakeAppList(profile);
@@ -81,7 +82,8 @@ class AppListShowerUnitTest : public testing::Test {
     factory_ = new FakeFactory;
     shower_.reset(
         new AppListShower(scoped_ptr<AppListFactory>(factory_),
-                          scoped_ptr<KeepAliveService>(keep_alive_service_)));
+                          scoped_ptr<KeepAliveService>(keep_alive_service_),
+                          NULL /* service */));
     profile1_ = CreateProfile("p1").Pass();
     profile2_ = CreateProfile("p2").Pass();
   }

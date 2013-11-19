@@ -12,7 +12,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -69,14 +71,13 @@ const color_utils::HSL shift = {-1, 0, 0.6};
 
 ExtensionAppItem::ExtensionAppItem(Profile* profile,
                                    const std::string& extension_id,
-                                   AppListControllerDelegate* controller,
                                    const std::string& extension_name,
                                    const gfx::ImageSkia& installing_icon,
                                    bool is_platform_app)
     : app_list::AppListItemModel(extension_id),
       profile_(profile),
       extension_id_(extension_id),
-      controller_(controller),
+      extension_enable_flow_controller_(NULL),
       extension_name_(extension_name),
       installing_icon_(
           gfx::ImageSkiaOperations::CreateHSLShiftedImage(installing_icon,
@@ -191,12 +192,13 @@ bool ExtensionAppItem::RunExtensionEnableFlow() {
     return false;
 
   if (!extension_enable_flow_) {
-    controller_->OnShowExtensionPrompt();
+    extension_enable_flow_controller_ = GetController();
+    extension_enable_flow_controller_->OnShowExtensionPrompt();
 
     extension_enable_flow_.reset(new ExtensionEnableFlow(
         profile_, extension_id_, this));
     extension_enable_flow_->StartForNativeWindow(
-        controller_->GetAppListWindow());
+        extension_enable_flow_controller_->GetAppListWindow());
   }
   return true;
 }
@@ -210,10 +212,10 @@ void ExtensionAppItem::Launch(int event_flags) {
   if (RunExtensionEnableFlow())
     return;
 
-  controller_->LaunchApp(profile_,
-                         extension,
-                         AppListControllerDelegate::LAUNCH_FROM_APP_LIST,
-                         event_flags);
+  GetController()->LaunchApp(profile_,
+                             extension,
+                             AppListControllerDelegate::LAUNCH_FROM_APP_LIST,
+                             event_flags);
 }
 
 void ExtensionAppItem::OnExtensionIconImageChanged(
@@ -224,7 +226,8 @@ void ExtensionAppItem::OnExtensionIconImageChanged(
 
 void ExtensionAppItem::ExtensionEnableFlowFinished() {
   extension_enable_flow_.reset();
-  controller_->OnCloseExtensionPrompt();
+  extension_enable_flow_controller_->OnCloseExtensionPrompt();
+  extension_enable_flow_controller_ = NULL;
 
   // Automatically launch app after enabling.
   Launch(ui::EF_NONE);
@@ -232,7 +235,8 @@ void ExtensionAppItem::ExtensionEnableFlowFinished() {
 
 void ExtensionAppItem::ExtensionEnableFlowAborted(bool user_initiated) {
   extension_enable_flow_.reset();
-  controller_->OnCloseExtensionPrompt();
+  extension_enable_flow_controller_->OnCloseExtensionPrompt();
+  extension_enable_flow_controller_ = NULL;
 }
 
 void ExtensionAppItem::Activate(int event_flags) {
@@ -246,16 +250,17 @@ void ExtensionAppItem::Activate(int event_flags) {
 
   content::RecordAction(content::UserMetricsAction("AppList_ClickOnApp"));
   CoreAppLauncherHandler::RecordAppListMainLaunch(extension);
-  controller_->ActivateApp(profile_,
-                           extension,
-                           AppListControllerDelegate::LAUNCH_FROM_APP_LIST,
-                           event_flags);
+  GetController()->ActivateApp(profile_,
+                               extension,
+                               AppListControllerDelegate::LAUNCH_FROM_APP_LIST,
+                               event_flags);
 }
 
 ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
   if (!context_menu_) {
     context_menu_.reset(new app_list::AppContextMenu(
-        this, profile_, extension_id_, controller_, is_platform_app_, false));
+        this, profile_, extension_id_, GetController(),
+        is_platform_app_, false));
   }
 
   return context_menu_->GetMenuModel();
@@ -279,4 +284,9 @@ void ExtensionAppItem::UpdatePositionFromExtensionOrdering() {
      GetExtensionSorting(profile_)->GetAppLaunchOrdinal(extension_id_);
   set_position(syncer::StringOrdinal(
       page.ToInternalValue() + launch.ToInternalValue()));
+}
+
+AppListControllerDelegate* ExtensionAppItem::GetController() {
+  return AppListService::Get(chrome::GetActiveDesktop())->
+      GetControllerDelegate();
 }

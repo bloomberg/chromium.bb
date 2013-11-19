@@ -18,12 +18,13 @@ namespace app_list {
 class AppListModel;
 }
 
-// Creates and shows AppLists as needed. This class is created and destroyed
-// with the AppListController, meaning it has a lifetime equivalent to Chrome's.
+// Creates and shows an AppList as needed for non-Ash desktops. It is owned
+// by AppListService.
 class AppListShower {
  public:
   AppListShower(scoped_ptr<AppListFactory> factory,
-                scoped_ptr<KeepAliveService> keep_alive);
+                scoped_ptr<KeepAliveService> keep_alive,
+                AppListService* service);
   ~AppListShower();
 
   void set_can_close(bool can_close) {
@@ -34,10 +35,7 @@ class AppListShower {
   void ShowForProfile(Profile* requested_profile);
   gfx::NativeWindow GetWindow();
 
-  AppList* app_list() {
-    return app_list_.get();
-  }
-
+  AppList* app_list() { return app_list_.get(); }
   Profile* profile() const { return profile_; }
 
   // Create or recreate, and initialize |app_list_| from |requested_profile|.
@@ -53,6 +51,7 @@ class AppListShower {
   scoped_ptr<AppListFactory> factory_;
   scoped_ptr<KeepAliveService> keep_alive_service_;
   scoped_ptr<AppList> app_list_;
+  AppListService* service_;  // Weak ptr, owns this.
   Profile* profile_;
   bool can_close_app_list_;
 

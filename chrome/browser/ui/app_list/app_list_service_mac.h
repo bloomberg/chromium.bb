@@ -9,15 +9,14 @@
 
 #include "apps/app_shim/app_shim_handler_mac.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
+
+class AppListControllerDelegateImpl;
 
 @class AppListAnimationController;
 @class AppListWindowController;
 template <typename T> struct DefaultSingletonTraits;
-
-namespace test {
-class AppListServiceTestApiMac;
-}
 
 // AppListServiceMac manages global resources needed for the app list to
 // operate, and controls when the app list is opened and closed.
@@ -38,9 +37,8 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual bool IsAppListVisible() const OVERRIDE;
   virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
-  virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
+  virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE;
   virtual Profile* GetCurrentAppListProfile() OVERRIDE;
-
 
   // AppListServiceImpl overrides:
   virtual void CreateShortcut() OVERRIDE;
@@ -59,7 +57,6 @@ class AppListServiceMac : public AppListServiceImpl,
 
  private:
   friend struct DefaultSingletonTraits<AppListServiceMac>;
-  friend class test::AppListServiceTestApiMac;
 
   AppListServiceMac();
 
@@ -68,6 +65,7 @@ class AppListServiceMac : public AppListServiceImpl,
   base::scoped_nsobject<NSRunningApplication> previously_active_application_;
   NSPoint last_start_origin_;
   Profile* profile_;
+  scoped_ptr<AppListControllerDelegateImpl> controller_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceMac);
 };

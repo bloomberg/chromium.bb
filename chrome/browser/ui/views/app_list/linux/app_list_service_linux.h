@@ -30,7 +30,7 @@ class AppListServiceLinux : public AppListServiceImpl {
   virtual bool IsAppListVisible() const OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual Profile* GetCurrentAppListProfile() OVERRIDE;
-  virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
+  virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE;
 
   // AppListServiceImpl overrides:
   virtual void CreateShortcut() OVERRIDE;
@@ -42,6 +42,7 @@ class AppListServiceLinux : public AppListServiceImpl {
 
   // Responsible for putting views on the screen.
   scoped_ptr<AppListShower> shower_;
+  scoped_ptr<AppListControllerDelegate> controller_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceLinux);
 };

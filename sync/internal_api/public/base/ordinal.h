@@ -401,7 +401,7 @@ int Ordinal<Traits>::AddDigitValue(std::string* bytes,
   DCHECK_GE(i, 0U);
   DCHECK_LT(i, bytes->length());
 
-  for (int j = i; j >= 0 && digit_value > 0; --j) {
+  for (int j = static_cast<int>(i); j >= 0 && digit_value > 0; --j) {
     int byte_j_value = GetDigitValue(*bytes, j) + digit_value;
     digit_value = byte_j_value / kRadix;
     DCHECK_LE(digit_value, 1);

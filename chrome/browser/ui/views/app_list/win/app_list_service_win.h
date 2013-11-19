@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_SERVICE_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_SERVICE_WIN_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
@@ -12,17 +13,13 @@ namespace app_list{
 class AppListModel;
 }
 
+class AppListControllerDelegateWin;
 class AppListShower;
 
-// Exposes methods required by the AppListServiceTestApi on Windows.
-// TODO(tapted): Remove testing methods once they can access the implementation
-// from the test api.
 class AppListServiceWin : public AppListServiceImpl {
  public:
   AppListServiceWin();
   virtual ~AppListServiceWin();
-
-  app_list::AppListModel* GetAppListModelForTesting();
 
   static AppListServiceWin* GetInstance();
   void set_can_close(bool can_close);
@@ -38,7 +35,7 @@ class AppListServiceWin : public AppListServiceImpl {
   virtual bool IsAppListVisible() const OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual Profile* GetCurrentAppListProfile() OVERRIDE;
-  virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
+  virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE;
 
   // AppListServiceImpl overrides:
   virtual void CreateShortcut() OVERRIDE;
@@ -56,10 +53,12 @@ class AppListServiceWin : public AppListServiceImpl {
   void LoadProfileForWarmup();
   void OnLoadProfileForWarmup(Profile* initial_profile);
 
+  bool enable_app_list_on_next_init_;
+
   // Responsible for putting views on the screen.
   scoped_ptr<AppListShower> shower_;
 
-  bool enable_app_list_on_next_init_;
+  scoped_ptr<AppListControllerDelegateWin> controller_delegate_;
 
   base::WeakPtrFactory<AppListServiceWin> weak_factory_;
 

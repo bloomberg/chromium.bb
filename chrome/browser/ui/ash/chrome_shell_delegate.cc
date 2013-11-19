@@ -14,6 +14,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 #include "chrome/browser/ui/ash/ash_keyboard_controller_proxy.h"
@@ -95,18 +96,18 @@ void ChromeShellDelegate::Exit() {
 }
 
 content::BrowserContext* ChromeShellDelegate::GetCurrentBrowserContext() {
-  return ProfileManager::GetDefaultProfile();
+  return ProfileManager::GetDefaultProfileOrOffTheRecord();
 }
 
 app_list::AppListViewDelegate*
-    ChromeShellDelegate::CreateAppListViewDelegate() {
+ChromeShellDelegate::CreateAppListViewDelegate() {
   DCHECK(ash::Shell::HasInstance());
   // Shell will own the created delegate, and the delegate will own
   // the controller.
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   return new AppListViewDelegate(
-      scoped_ptr<AppListControllerDelegate>(new AppListControllerDelegateAsh()),
-      profile);
+      Profile::FromBrowserContext(GetCurrentBrowserContext()),
+      AppListService::Get(chrome::HOST_DESKTOP_TYPE_ASH)->
+      GetControllerDelegate());
 }
 
 ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate(

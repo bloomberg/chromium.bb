@@ -321,13 +321,13 @@ class AppListFactoryWin : public AppListFactory {
 
   virtual AppList* CreateAppList(
       Profile* profile,
+      AppListService* service,
       const base::Closure& on_should_dismiss) OVERRIDE {
-    // The controller will be owned by the view delegate, and the delegate is
-    // owned by the app list view. The app list view manages it's own lifetime.
-    scoped_ptr<AppListControllerDelegate> controller_delegate(
-        new AppListControllerDelegateWin(service_));
-    AppListViewDelegate* view_delegate = new AppListViewDelegate(
-        controller_delegate.Pass(), profile);
+    // The view delegate will be owned by the app list view. The app list view
+    // manages it's own lifetime.
+    AppListViewDelegate* view_delegate =
+        new AppListViewDelegate(profile,
+                                service->GetControllerDelegate());
     app_list::AppListView* view = new app_list::AppListView(view_delegate);
     gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
     view->InitAsBubbleAtFixedLocation(NULL,
@@ -359,8 +359,11 @@ AppListServiceWin::AppListServiceWin()
     : enable_app_list_on_next_init_(false),
       shower_(new AppListShower(
           scoped_ptr<AppListFactory>(new AppListFactoryWin(this)),
-          scoped_ptr<KeepAliveService>(new KeepAliveServiceImpl))),
-      weak_factory_(this) {}
+          scoped_ptr<KeepAliveService>(new KeepAliveServiceImpl),
+          this)),
+      controller_delegate_(new AppListControllerDelegateWin(this)),
+      weak_factory_(this) {
+}
 
 AppListServiceWin::~AppListServiceWin() {
 }
@@ -377,12 +380,8 @@ Profile* AppListServiceWin::GetCurrentAppListProfile() {
   return shower_->profile();
 }
 
-AppListControllerDelegate* AppListServiceWin::CreateControllerDelegate() {
-  return new AppListControllerDelegateWin(this);
-}
-
-app_list::AppListModel* AppListServiceWin::GetAppListModelForTesting() {
-  return static_cast<AppListWin*>(shower_->app_list())->model();
+AppListControllerDelegate* AppListServiceWin::GetControllerDelegate() {
+  return controller_delegate_.get();
 }
 
 void AppListServiceWin::ShowForProfile(Profile* requested_profile) {

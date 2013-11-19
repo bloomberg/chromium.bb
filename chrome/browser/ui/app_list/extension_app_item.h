@@ -35,7 +35,6 @@ class ExtensionAppItem : public app_list::AppListItemModel,
  public:
   ExtensionAppItem(Profile* profile,
                    const std::string& extension_id,
-                   AppListControllerDelegate* controller,
                    const std::string& extension_name,
                    const gfx::ImageSkia& installing_icon,
                    bool is_platform_app);
@@ -95,13 +94,16 @@ class ExtensionAppItem : public app_list::AppListItemModel,
   // Set the position from the extension ordering.
   void UpdatePositionFromExtensionOrdering();
 
+  // Return the controller for the active desktop type.
+  AppListControllerDelegate* GetController();
+
   Profile* profile_;
   const std::string extension_id_;
-  AppListControllerDelegate* controller_;
 
   scoped_ptr<extensions::IconImage> icon_;
   scoped_ptr<app_list::AppContextMenu> context_menu_;
   scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
+  AppListControllerDelegate* extension_enable_flow_controller_;
 
   // Name to use for the extension if we can't access it.
   std::string extension_name_;

@@ -150,28 +150,23 @@ void AppListModelObserverBridge::OnAppListModelSigninStatusChanged() {
   return delegate_.get();
 }
 
-- (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate
-      withTestModel:(scoped_ptr<app_list::AppListModel>)newModel {
+- (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate {
   if (delegate_) {
     // First clean up, in reverse order.
     app_list_model_observer_bridge_.reset();
     [appsSearchResultsController_ setDelegate:nil];
     [appsSearchBoxController_ setDelegate:nil];
+    [appsGridController_ setDelegate:nil];
   }
   delegate_.reset(newDelegate.release());
+  if (!delegate_)
+    return;
   [appsGridController_ setDelegate:delegate_.get()];
-  if (newModel.get())
-    [appsGridController_ setModel:newModel.Pass()];
   [appsSearchBoxController_ setDelegate:self];
   [appsSearchResultsController_ setDelegate:self];
   app_list_model_observer_bridge_.reset(
       new app_list::AppListModelObserverBridge(self));
   [self onSigninStatusChanged];
-}
-
-- (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate {
-  [self setDelegate:newDelegate.Pass()
-      withTestModel:scoped_ptr<app_list::AppListModel>()];
 }
 
 -(void)loadAndSetView {

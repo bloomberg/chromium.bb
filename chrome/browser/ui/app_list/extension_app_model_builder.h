@@ -94,7 +94,7 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
 
   Profile* profile_;
 
-  // Unowned pointer to the app list controller (passed to created items).
+  // Unowned pointer to the app list controller.
   AppListControllerDelegate* controller_;
 
   // Unowned pointer to the app list model.

@@ -113,6 +113,16 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
     AppsGridControllerTestHelper::TearDown();
   }
 
+  void ReplaceTestModel(int item_count) {
+    // Clear the delegate before reseting and destroying the model.
+    [owned_apps_grid_controller_ setDelegate:NULL];
+
+    owned_delegate_->ReplaceTestModel(item_count);
+    [owned_apps_grid_controller_ setDelegate:owned_delegate_.get()];
+  }
+
+  AppListTestModel* model() { return owned_delegate_->GetTestModel(); }
+
  private:
   base::scoped_nsobject<AppsGridController> owned_apps_grid_controller_;
   scoped_ptr<AppListTestViewDelegate> owned_delegate_;
