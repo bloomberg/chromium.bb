@@ -89,6 +89,10 @@ class CONTENT_EXPORT GestureEventFilter {
 
   void ForwardGestureEvent(const GestureEventWithLatencyInfo& gesture_event);
 
+  void set_debounce_enabled_for_testing(bool enabled) {
+    debounce_enabled_ = enabled;
+  }
+
  private:
   friend class MockRenderWidgetHost;
   friend class GestureEventFilterTest;

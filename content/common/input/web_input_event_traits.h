@@ -12,7 +12,7 @@
 namespace content {
 
 // Utility class for performing operations on and with WebInputEvents.
-class WebInputEventTraits {
+class CONTENT_EXPORT WebInputEventTraits {
  public:
   static const char* GetName(blink::WebInputEvent::Type type);
   static size_t GetSize(blink::WebInputEvent::Type type);

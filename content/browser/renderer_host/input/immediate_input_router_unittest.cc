@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/input/mock_input_router_client.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -113,8 +114,10 @@ class ImmediateInputRouterTest : public InputRouterTest {
                                                     InputRouterClient* client,
                                                     InputAckHandler* handler,
                                                     int routing_id) OVERRIDE {
-    return scoped_ptr<InputRouter>(
-        new ImmediateInputRouter(process, client, handler, routing_id));
+    ImmediateInputRouter* ir =
+        new ImmediateInputRouter(process, client, handler, routing_id);
+    ir->gesture_event_filter_->set_debounce_enabled_for_testing(false);
+    return scoped_ptr<InputRouter>(ir);
   }
 
   void SendInputEventACK(blink::WebInputEvent::Type type,
@@ -558,31 +561,30 @@ TEST_F(ImmediateInputRouterTest, UnhandledWheelEvent) {
   EXPECT_EQ(ack_handler_->acked_wheel_event().deltaY, -5);
 }
 
+TEST_F(ImmediateInputRouterTest, GestureTypesIgnoringAck) {
+  int start_type = static_cast<int>(WebInputEvent::GestureScrollBegin);
+  int end_type = static_cast<int>(WebInputEvent::GesturePinchUpdate);
+  for (int i = start_type; i <= end_type; ++i) {
+    WebInputEvent::Type type = static_cast<WebInputEvent::Type>(i);
+    if (WebInputEventTraits::IgnoresAckDisposition(type)) {
+      SimulateGestureEvent(type, WebGestureEvent::Touchscreen);
+      EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+      EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+      SendInputEventACK(type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+      EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+    }
+  }
+}
+
 // Test that GestureShowPress, GestureTapDown and GestureTapCancel events don't
 // wait for ACKs.
-TEST_F(ImmediateInputRouterTest, GestureTypesIgnoringAck) {
-  // The show press, tap down and tap cancel events will be acked immediately,
-  // since they ignore ack disposition.
-  SimulateGestureEvent(WebInputEvent::GestureShowPress,
-                       WebGestureEvent::Touchscreen);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
-
-  SimulateGestureEvent(WebInputEvent::GestureTapDown,
-                       WebGestureEvent::Touchscreen);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
-
-  SimulateGestureEvent(WebInputEvent::GestureTapCancel,
-                       WebGestureEvent::Touchscreen);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
-
+TEST_F(ImmediateInputRouterTest, GestureTypesIgnoringAckInterleaved) {
   // Interleave a few events that do and do not ignore acks, ensuring that
   // ack-ignoring events aren't dispatched until all prior events which observe
   // their ack disposition have been dispatched.
-  SimulateGestureEvent(WebInputEvent::GesturePinchBegin,
-                       WebGestureEvent::Touchpad);
+  SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
+                       WebGestureEvent::Touchscreen);
   ASSERT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 
@@ -592,7 +594,7 @@ TEST_F(ImmediateInputRouterTest, GestureTypesIgnoringAck) {
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 
   SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
-                       WebGestureEvent::Touchpad);
+                       WebGestureEvent::Touchscreen);
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 
@@ -601,8 +603,8 @@ TEST_F(ImmediateInputRouterTest, GestureTypesIgnoringAck) {
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 
-  SimulateGestureEvent(WebInputEvent::GesturePinchEnd,
-                       WebGestureEvent::Touchpad);
+  SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
+                       WebGestureEvent::Touchscreen);
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 
@@ -614,7 +616,7 @@ TEST_F(ImmediateInputRouterTest, GestureTypesIgnoringAck) {
   // Now ack each event. Ack-ignoring events should not be dispatched until all
   // prior events which observe ack disposition have been fired, at which
   // point they should be sent immediately.
-  SendInputEventACK(WebInputEvent::GesturePinchBegin,
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
@@ -636,7 +638,7 @@ TEST_F(ImmediateInputRouterTest, GestureTypesIgnoringAck) {
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 
-  SendInputEventACK(WebInputEvent::GesturePinchEnd,
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());

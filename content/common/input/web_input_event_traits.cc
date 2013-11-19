@@ -287,7 +287,9 @@ bool WebInputEventTraits::IgnoresAckDisposition(
     blink::WebInputEvent::Type type) {
   return type == WebInputEvent::GestureTapDown ||
       type == WebInputEvent::GestureShowPress ||
-      type == WebInputEvent::GestureTapCancel;
+      type == WebInputEvent::GestureTapCancel ||
+      type == WebInputEvent::GesturePinchBegin ||
+      type == WebInputEvent::GesturePinchEnd;
 }
 
 }  // namespace content

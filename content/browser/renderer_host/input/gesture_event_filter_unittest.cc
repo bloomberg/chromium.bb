@@ -138,7 +138,7 @@ class GestureEventFilterTest : public testing::Test,
   }
 
   void DisableDebounce() {
-    filter()->debounce_enabled_ = false;
+    filter()->set_debounce_enabled_for_testing(false);
   }
 
   void set_debounce_interval_time_ms(int ms) {
@@ -627,7 +627,7 @@ TEST_F(GestureEventFilterTest, SyncAckQueuesEvent) {
 // Tests an event with an async ack followed by an event with a sync ack.
 TEST_F(GestureEventFilterTest, AsyncThenSyncAck) {
   // Turn off debounce handling for test isolation.
-  set_debounce_interval_time_ms(0);
+  DisableDebounce();
 
   SimulateGestureEvent(WebInputEvent::GestureTapDown,
                        WebGestureEvent::Touchscreen);
