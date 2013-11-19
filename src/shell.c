@@ -3344,6 +3344,251 @@ terminate_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 }
 
 static void
+lower_fullscreen_layer(struct desktop_shell *shell);
+
+struct alt_tab {
+	struct desktop_shell *shell;
+	struct weston_keyboard_grab grab;
+
+	struct wl_list *current;
+
+	struct wl_list preview_list;
+};
+
+struct alt_tab_preview {
+	struct alt_tab *alt_tab;
+
+	struct weston_view *view;
+	struct weston_transform transform;
+
+	struct wl_listener listener;
+
+	struct wl_list link;
+};
+
+static void
+alt_tab_next(struct alt_tab *alt_tab)
+{
+	alt_tab->current = alt_tab->current->next;
+
+	/* Make sure we're not pointing to the list header e.g. after
+	 * cycling through the whole list. */
+	if (alt_tab->current->next == alt_tab->preview_list.next)
+		alt_tab->current = alt_tab->current->next;
+}
+
+static void
+alt_tab_destroy(struct alt_tab *alt_tab)
+{
+	struct alt_tab_preview *preview, *next;
+	struct weston_keyboard *keyboard = alt_tab->grab.keyboard;
+
+	if (alt_tab->current && alt_tab->current != &alt_tab->preview_list) {
+		preview = wl_container_of(alt_tab->current, preview, link);
+
+		activate(alt_tab->shell, preview->view->surface,
+			 (struct weston_seat *) keyboard->seat);
+	}
+
+	wl_list_for_each_safe(preview, next, &alt_tab->preview_list, link) {
+		wl_list_remove(&preview->link);
+		wl_list_remove(&preview->listener.link);
+		weston_view_destroy(preview->view);
+		free(preview);
+	}
+
+	weston_keyboard_end_grab(keyboard);
+	if (keyboard->input_method_resource)
+		keyboard->grab = &keyboard->input_method_grab;
+
+	free(alt_tab);
+}
+
+static void
+alt_tab_handle_surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct alt_tab_preview *preview =
+		container_of(listener, struct alt_tab_preview, listener);
+	struct alt_tab *alt_tab = preview->alt_tab;
+	int advance = 0;
+
+	/* If the preview that we're removing is the currently selected one,
+	 * we want to move to the next one. So we move to ->prev and then
+	 * call _next() after removing the preview. */
+	if (alt_tab->current == &preview->link) {
+		alt_tab->current = alt_tab->current->prev;
+		advance = 1;
+	}
+
+	wl_list_remove(&preview->listener.link);
+	wl_list_remove(&preview->link);
+
+	free(preview);
+
+	if (advance)
+		alt_tab_next(alt_tab);
+
+	/* If the last preview goes away, stop the alt-tab */
+	if (wl_list_empty(alt_tab->current))
+		alt_tab_destroy(alt_tab);
+}
+
+static void
+alt_tab_key(struct weston_keyboard_grab *grab,
+	    uint32_t time, uint32_t key, uint32_t state_w)
+{
+	struct alt_tab *alt_tab = container_of(grab, struct alt_tab, grab);
+	enum wl_keyboard_key_state state = state_w;
+
+	if (key == KEY_TAB && state == WL_KEYBOARD_KEY_STATE_PRESSED)
+		alt_tab_next(alt_tab);
+}
+
+static void
+alt_tab_modifier(struct weston_keyboard_grab *grab, uint32_t serial,
+		 uint32_t mods_depressed, uint32_t mods_latched,
+		 uint32_t mods_locked, uint32_t group)
+{
+	struct alt_tab *alt_tab = container_of(grab, struct alt_tab, grab);
+	struct weston_seat *seat = (struct weston_seat *) grab->keyboard->seat;
+
+	if ((seat->modifier_state & MODIFIER_ALT) == 0)
+		alt_tab_destroy(alt_tab);
+}
+
+static void
+alt_tab_cancel(struct weston_keyboard_grab *grab)
+{
+	struct alt_tab *alt_tab = container_of(grab, struct alt_tab, grab);
+
+	alt_tab_destroy(alt_tab);
+}
+
+static const struct weston_keyboard_grab_interface alt_tab_grab = {
+	alt_tab_key,
+	alt_tab_modifier,
+	alt_tab_cancel,
+};
+
+static int
+view_for_alt_tab(struct weston_view *view)
+{
+	if (!get_shell_surface(view->surface))
+		return 0;
+
+	if (get_shell_surface_type(view->surface) == SHELL_SURFACE_TRANSIENT)
+		return 0;
+
+	if (view != get_default_view(view->surface))
+		return 0;
+
+	return 1;
+}
+
+static void
+alt_tab_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
+		void *data)
+{
+	struct alt_tab *alt_tab;
+	struct desktop_shell *shell = data;
+	struct weston_output *output = get_default_output(shell->compositor);
+	struct workspace *ws;
+	struct weston_view *view;
+	int num_surfaces = 0;
+	int x, y, side, margin;
+
+	wl_list_for_each(view, &shell->compositor->view_list, link) {
+
+		if (view_for_alt_tab(view))
+			num_surfaces++;
+	}
+
+	if (!num_surfaces)
+		return;
+
+	alt_tab = malloc(sizeof *alt_tab);
+	if (!alt_tab)
+		return;
+
+	alt_tab->shell = shell;
+	wl_list_init(&alt_tab->preview_list);
+	alt_tab->current = &alt_tab->preview_list;
+
+	restore_all_output_modes(shell->compositor);
+	lower_fullscreen_layer(alt_tab->shell);
+
+	alt_tab->grab.interface = &alt_tab_grab;
+	weston_keyboard_start_grab(seat->keyboard, &alt_tab->grab);
+	weston_keyboard_set_focus(seat->keyboard, NULL);
+
+	ws = get_current_workspace(shell);
+
+	/* FIXME: add some visual candy e.g. prelight the selected view
+	 * and/or add a black surrounding background à la gnome-shell */
+
+	/* Determine the size for each preview */
+	side = output->width / num_surfaces;
+	if (side > 200)
+		side = 200;
+	margin = side / 4;
+	side -= margin;
+
+	x = margin;
+	y = (output->height - side) / 2;
+
+	/* Create a view for each surface */
+	wl_list_for_each(view, &shell->compositor->view_list, link) {
+		struct alt_tab_preview *preview;
+		struct weston_view *v;
+		float scale;
+
+		if (!view_for_alt_tab(view))
+			continue;
+
+		preview = malloc(sizeof *preview);
+		if (!preview) {
+			alt_tab_destroy(alt_tab);
+			return;
+		}
+
+		preview->alt_tab = alt_tab;
+
+		preview->view = v = weston_view_create(view->surface);
+		v->output = view->output;
+		weston_view_restack(v, &ws->layer.view_list);
+		weston_view_configure(v, x, y, view->geometry.width, view->geometry.height);
+
+		preview->listener.notify = alt_tab_handle_surface_destroy;
+		wl_signal_add(&v->destroy_signal, &preview->listener);
+
+		if (view->geometry.width > view->geometry.height)
+			scale = side / (float) view->geometry.width;
+		else
+			scale = side / (float) view->geometry.height;
+
+		wl_list_insert(&v->geometry.transformation_list,
+			       &preview->transform.link);
+		weston_matrix_init(&preview->transform.matrix);
+		weston_matrix_scale(&preview->transform.matrix,
+				    scale, scale, 1.0f);
+
+		weston_view_geometry_dirty(v);
+		weston_compositor_schedule_repaint(v->surface->compositor);
+
+		/* Insert at the end of the list */
+		wl_list_insert(alt_tab->preview_list.prev, &preview->link);
+
+		x += side + margin;
+	}
+
+	/* Start at the second preview so a simple <alt>tab changes window.
+	 * We set `current' to the first preview and not the second because
+	 * we're going to receive a key press callback for the initial
+	 * <alt>tab which will make `current' point to the second element. */
+	alt_tab_next(alt_tab);
+}
+
+static void
 rotate_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 		   wl_fixed_t x, wl_fixed_t y)
 {
@@ -5606,6 +5851,9 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	weston_compositor_add_key_binding(ec, KEY_BACKSPACE,
 				          MODIFIER_CTRL | MODIFIER_ALT,
 				          terminate_binding, ec);
+	weston_compositor_add_key_binding(ec, KEY_TAB,
+					  MODIFIER_ALT,
+					  alt_tab_binding, shell);
 	weston_compositor_add_button_binding(ec, BTN_LEFT, 0,
 					     click_to_activate_binding,
 					     shell);
