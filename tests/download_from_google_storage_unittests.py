@@ -82,7 +82,7 @@ class GstoolsUnitTests(unittest.TestCase):
     self.assertEqual(err_lines[0], 'gsutil version 3.25')
     self.assertEqual(
         err_lines[1],
-        'checksum 010822c61d38d70ac23600bc955fccf5 (OK)')
+        'checksum c9cffb512f467c0aa54880788b9ee6ca (OK)')
 
   def test_get_sha1(self):
     lorem_ipsum = os.path.join(self.base_path, 'lorem_ipsum.txt')
@@ -179,6 +179,12 @@ class DownloadTests(unittest.TestCase):
             ('ls', input_filename)),
         ('check_call',
             ('cp', '-q', input_filename, output_filename))]
+    if sys.platform != 'win32':
+      expected_calls.append(
+          ('check_call',
+           ('ls',
+            '-L',
+            'gs://sometesturl/7871c8e24da15bad8b0be2c36edc9dc77e37727f')))
     expected_output = [
         '0> Downloading %s...' % output_filename]
     expected_ret_codes = []
@@ -251,6 +257,12 @@ class DownloadTests(unittest.TestCase):
         ('check_call',
             ('cp', '-q', input_filename, output_filename))
     ]
+    if sys.platform != 'win32':
+      expected_calls.append(
+          ('check_call',
+           ('ls',
+            '-L',
+            'gs://sometesturl/7871c8e24da15bad8b0be2c36edc9dc77e37727f')))
     self.assertEqual(self.gsutil.history, expected_calls)
     self.assertEqual(code, 101)
 
@@ -274,6 +286,12 @@ class DownloadTests(unittest.TestCase):
             ('ls', input_filename)),
         ('check_call',
             ('cp', '-q', input_filename, output_filename))]
+    if sys.platform != 'win32':
+      expected_calls.append(
+          ('check_call',
+           ('ls',
+            '-L',
+            'gs://sometesturl/7871c8e24da15bad8b0be2c36edc9dc77e37727f')))
     self.assertEqual(self.gsutil.history, expected_calls)
     self.assertEqual(code, 0)
 

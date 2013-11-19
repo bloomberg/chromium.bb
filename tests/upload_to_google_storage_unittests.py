@@ -29,7 +29,7 @@ TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class UploadTests(unittest.TestCase):
   def setUp(self):
-    self.gsutil = GsutilMock(GSUTIL_DEFAULT_PATH)
+    self.gsutil = GsutilMock(GSUTIL_DEFAULT_PATH, None)
     self.temp_dir = tempfile.mkdtemp(prefix='gstools_test')
     self.base_path = os.path.join(self.temp_dir, 'gstools')
     shutil.copytree(os.path.join(TEST_DIR, 'gstools'), self.base_path)

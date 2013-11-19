@@ -45,8 +45,12 @@ class Gsutil(object):
 
   def get_sub_env(self):
     env = os.environ.copy()
-    if self.boto_path:
+    if self.boto_path == os.devnull:
+      env['AWS_CREDENTIAL_FILE'] = ''
+      env['BOTO_CONFIG'] = ''
+    elif self.boto_path:
       env['AWS_CREDENTIAL_FILE'] = self.boto_path
+      env['BOTO_CONFIG'] = self.boto_path
     else:
       custompath = env.get('AWS_CREDENTIAL_FILE', '~/.boto') + '.depot_tools'
       custompath = os.path.expanduser(custompath)
@@ -297,7 +301,10 @@ def main(args):
                     help='Alias for "gsutil config".  Run this if you want '
                          'to initialize your saved Google Storage '
                          'credentials.')
-  parser.add_option('-p', '--platform', 
+  parser.add_option('-n', '--no_auth', action='store_true',
+                    help='Skip auth checking.  Use if it\'s known that the '
+                         'target bucket is a public bucket.')
+  parser.add_option('-p', '--platform',
                     help='A regular expression that is compared against '
                          'Python\'s sys.platform. If this option is specified, '
                          'the download will happen only if there is a match.')
@@ -310,6 +317,10 @@ def main(args):
       print('The current platform doesn\'t match "%s", skipping.' %
             options.platform)
       return 0
+
+  # Set the boto file to /dev/null if we don't need auth.
+  if options.no_auth:
+    options.boto = os.devnull
 
   # Make sure we can find a working instance of gsutil.
   if os.path.exists(GSUTIL_DEFAULT_PATH):
