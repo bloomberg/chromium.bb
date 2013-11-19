@@ -613,6 +613,11 @@
                 '../skia/skia.gyp:filter_fuzz_stub',
               ],
             }],
+            ['internal_filter_fuzzer==1', {
+              'dependencies': [
+                '../skia/tools/filter_fuzzer/filter_fuzzer.gyp:filter_fuzzer',
+              ],
+            }], # internal_filter_fuzzer
             ['OS=="win" and fastbuild==0 and target_arch=="ia32"', {
               'dependencies': [
                 '../chrome/chrome_syzygy.gyp:chrome_dll_syzygy',
