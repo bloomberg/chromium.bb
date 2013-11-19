@@ -5351,9 +5351,19 @@ exposay_modifier(struct weston_keyboard_grab *grab, uint32_t serial,
 {
 }
 
+static void
+exposay_cancel(struct weston_keyboard_grab *grab)
+{
+	struct desktop_shell *shell =
+		container_of(grab, struct desktop_shell, exposay.grab_kbd);
+
+	exposay_set_state(shell, EXPOSAY_TARGET_CANCEL, shell->exposay.seat);
+}
+
 static const struct weston_keyboard_grab_interface exposay_kbd_grab = {
 	exposay_key,
 	exposay_modifier,
+	exposay_cancel,
 };
 
 /**
