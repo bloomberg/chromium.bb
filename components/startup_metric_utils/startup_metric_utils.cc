@@ -40,6 +40,34 @@ base::Lock* GetSubsystemStartupTimeHashLock() {
   return slow_startup_time_hash_lock;
 }
 
+// Record time of main entry so it can be read from Telemetry performance
+// tests.
+// TODO(jeremy): Remove once crbug.com/317481 is fixed.
+void RecordMainEntryTimeHistogram() {
+  const int kLowWordMask = 0xFFFFFFFF;
+  const int kLower31BitsMask = 0x7FFFFFFF;
+  base::TimeDelta browser_main_entry_time_absolute =
+      base::TimeDelta::FromMilliseconds(
+          MainEntryPointTimeInternal()->ToInternalValue() / 1000.0);
+
+  uint64 browser_main_entry_time_raw_ms =
+      browser_main_entry_time_absolute.InMilliseconds();
+
+  base::TimeDelta browser_main_entry_time_raw_ms_high_word =
+      base::TimeDelta::FromMilliseconds(
+          (browser_main_entry_time_raw_ms >> 32) & kLowWordMask);
+  // Shift by one because histograms only support non-negative values.
+  base::TimeDelta browser_main_entry_time_raw_ms_low_word =
+      base::TimeDelta::FromMilliseconds(
+          (browser_main_entry_time_raw_ms >> 1) & kLower31BitsMask);
+
+  // A timestamp is a 64 bit value, yet histograms can only store 32 bits.
+  HISTOGRAM_TIMES("Startup.BrowserMainEntryTimeAbsoluteHighWord",
+      browser_main_entry_time_raw_ms_high_word);
+  HISTOGRAM_TIMES("Startup.BrowserMainEntryTimeAbsoluteLowWord",
+      browser_main_entry_time_raw_ms_low_word);
+}
+
 bool g_main_entry_time_was_recorded = false;
 bool g_startup_stats_collection_finished = false;
 bool g_was_slow_startup = false;
@@ -88,6 +116,8 @@ const base::Time MainEntryStartTime() {
 }
 
 void OnBrowserStartupComplete(bool is_first_run) {
+  RecordMainEntryTimeHistogram();
+
   // Bail if uptime < 7 minutes, to filter out cases where Chrome may have been
   // autostarted and the machine is under io pressure.
   const int64 kSevenMinutesInMilliseconds =

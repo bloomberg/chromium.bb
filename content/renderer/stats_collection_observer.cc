@@ -18,12 +18,12 @@ StatsCollectionObserver::~StatsCollectionObserver() {
 
 void StatsCollectionObserver::DidStartLoading() {
   DCHECK(start_time_.is_null());
-  start_time_ = base::TimeTicks::Now();
+  start_time_ = base::Time::Now();
 }
 
 void StatsCollectionObserver::DidStopLoading() {
   DCHECK(stop_time_.is_null());
-  stop_time_ = base::TimeTicks::Now();
+  stop_time_ = base::Time::Now();
 
   // Stop observing so we don't get called again.
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());

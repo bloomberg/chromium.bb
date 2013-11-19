@@ -50,25 +50,21 @@ bool CurrentRenderViewImpl(RenderViewImpl** out) {
 // either value may be null if a web contents hasn't fully loaded.
 // load_start_ms is represented as milliseconds since system boot.
 void ConvertLoadTimeToJSON(
-    const base::TimeTicks& load_start_time,
-    const base::TimeTicks& load_stop_time,
+    const base::Time& load_start_time,
+    const base::Time& load_stop_time,
     std::string *result) {
   base::DictionaryValue item;
 
   if (load_start_time.is_null()) {
-     item.Set("load_start_ms", base::Value::CreateNullValue());
+    item.Set("load_start_ms", base::Value::CreateNullValue());
   } else {
-    // This code relies on an implementation detail of TimeTicks::Now() - that
-    // its return value happens to coincide with the system uptime value in
-    // microseconds, on Win/Mac/iOS/Linux/ChromeOS and Android.  See comments
-    // in base::SysInfo::Uptime().
     item.SetDouble("load_start_ms", load_start_time.ToInternalValue() / 1000);
   }
   if (load_start_time.is_null() || load_stop_time.is_null()) {
     item.Set("load_duration_ms", base::Value::CreateNullValue());
   } else {
     item.SetDouble("load_duration_ms",
-        (load_stop_time - load_start_time).InMilliseconds());
+        (load_stop_time - load_start_time).InMillisecondsF());
   }
   base::JSONWriter::Write(&item, result);
 }

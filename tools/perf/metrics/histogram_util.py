@@ -81,3 +81,12 @@ def GetHistogramCount(histogram_type, histogram_name, tab):
     return histogram['count']
   else:
     return 0
+
+def GetHistogramSum(histogram_type, histogram_name, tab):
+  """Get the sum of events for the given histograms."""
+  histogram_json = GetHistogram(histogram_type, histogram_name, tab)
+  histogram = json.loads(histogram_json)
+  if 'sum' in histogram:
+    return histogram['sum']
+  else:
+    return 0

@@ -25,12 +25,12 @@ class StatsCollectionObserver : public RenderViewObserver {
 
   // Timing for the page load start and stop.  These functions may return
   // a null time value under various circumstances.
-  const base::TimeTicks& load_start_time() { return start_time_; }
-  const base::TimeTicks& load_stop_time() { return stop_time_; }
+  const base::Time& load_start_time() { return start_time_; }
+  const base::Time& load_stop_time() { return stop_time_; }
 
  private:
-  base::TimeTicks start_time_;
-  base::TimeTicks stop_time_;
+  base::Time start_time_;
+  base::Time stop_time_;
 
    DISALLOW_COPY_AND_ASSIGN(StatsCollectionObserver);
 };
