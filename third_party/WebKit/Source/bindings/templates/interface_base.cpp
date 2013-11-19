@@ -64,7 +64,9 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::{{cpp_class_name}}* o
 }
 
 namespace WebCore {
-const WrapperTypeInfo {{v8_class_name}}::wrapperTypeInfo = { {{v8_class_name}}::GetTemplate, {{v8_class_name}}::derefObject, 0, 0, 0, {{v8_class_name}}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+{% set to_active_dom_object = '%s::toActiveDOMObject' % v8_class_name
+                              if is_active_dom_object else '0' %}
+const WrapperTypeInfo {{v8_class_name}}::wrapperTypeInfo = { {{v8_class_name}}::GetTemplate, {{v8_class_name}}::derefObject, {{to_active_dom_object}}, 0, 0, {{v8_class_name}}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace {{cpp_class_name}}V8Internal {
 
@@ -117,6 +119,7 @@ template <typename T> void V8_USE(T) { }
 {% block has_instance_and_has_instance_in_any_world %}{% endblock %}
 {% block install_per_context_attributes %}{% endblock %}
 {% block install_per_context_methods %}{% endblock %}
+{% block to_active_dom_object %}{% endblock %}
 {% block create_wrapper_and_deref_object %}{% endblock %}
 } // namespace WebCore
 {% if conditional_string %}

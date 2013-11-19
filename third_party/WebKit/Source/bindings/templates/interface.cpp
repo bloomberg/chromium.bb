@@ -337,6 +337,18 @@ void {{v8_class_name}}::installPerContextEnabledMethods(v8::Handle<v8::Object> p
 
 
 {##############################################################################}
+{% block to_active_dom_object %}
+{% if is_active_dom_object %}
+ActiveDOMObject* {{v8_class_name}}::toActiveDOMObject(v8::Handle<v8::Object> object)
+{
+    return toNative(object);
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block create_wrapper_and_deref_object %}
 v8::Handle<v8::Object> {{v8_class_name}}::createWrapper(PassRefPtr<{{cpp_class_name}}> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -354,7 +366,10 @@ v8::Handle<v8::Object> {{v8_class_name}}::createWrapper(PassRefPtr<{{cpp_class_n
         return wrapper;
 
     installPerContextEnabledProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper<{{v8_class_name}}>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    {% set wrapper_configuration = 'WrapperConfiguration::Dependent'
+                                   if is_active_dom_object else
+                                   'WrapperConfiguration::Independent' %}
+    V8DOMWrapper::associateObjectWithWrapper<{{v8_class_name}}>(impl, &wrapperTypeInfo, wrapper, isolate, {{wrapper_configuration}});
     return wrapper;
 }
 

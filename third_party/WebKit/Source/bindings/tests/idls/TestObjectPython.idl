@@ -117,8 +117,7 @@ interface TestObjectPython {
     [Conditional=Condition, Custom] attribute long customLongAttribute;
     [CustomElementCallbacks] readonly attribute long customElementsCallbacksReadonlyLongAttribute;
     [DeprecateAs=LongAttribute] attribute long deprecatedLongAttribute;
-    // FIXME: move to TestActiveDOMObject.idl (=> TestCheckSecurity) once
-    // methods are implemented
+    // FIXME: move to TestCheckSecurityInterface when implement [CheckSecurity]
     [DoNotCheckSecurity] attribute long doNotCheckSecurityLongAttribute;
     [DoNotCheckSecurity] readonly attribute long doNotCheckSecurityReadonlyLongAttribute;  // Separate read only attribute to check attribute configuration
     [DoNotCheckSecurity=Getter] attribute long doNotCheckSecurityOnGetterLongAttribute;

@@ -64,18 +64,20 @@ INTERFACE_CPP_INCLUDES = set([
 def generate_interface(interface):
     includes.clear()
     includes.update(INTERFACE_CPP_INCLUDES)
+    extended_attributes = interface.extended_attributes
     v8_class_name = v8_utilities.v8_class_name(interface)
 
     template_contents = {
         'cpp_class_name': cpp_name(interface),
         'header_includes': INTERFACE_H_INCLUDES,
         'interface_name': interface.name,
+        'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,
         'v8_class_name': v8_class_name,
     }
 
     template_contents.update({
         'constants': [generate_constant(constant) for constant in interface.constants],
-        'do_not_check_constants': 'DoNotCheckConstants' in interface.extended_attributes,
+        'do_not_check_constants': 'DoNotCheckConstants' in extended_attributes,
     })
 
     attributes = [v8_attributes.generate_attribute(interface, attribute)
