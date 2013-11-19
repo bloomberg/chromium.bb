@@ -162,7 +162,21 @@ RemoteServiceState SyncEngine::GetCurrentState() const {
 void SyncEngine::GetOriginStatusMap(OriginStatusMap* status_map) {
   DCHECK(status_map);
   status_map->clear();
-  NOTIMPLEMENTED();
+
+  if (!extension_service_)
+    return;
+
+  std::vector<std::string> app_ids;
+  metadata_database_->GetRegisteredAppIDs(&app_ids);
+
+  for (std::vector<std::string>::const_iterator itr = app_ids.begin();
+       itr != app_ids.end(); ++itr) {
+    const std::string& app_id = *itr;
+    GURL origin =
+        extensions::Extension::GetBaseURLFromExtensionId(app_id);
+    (*status_map)[origin] =
+        metadata_database_->IsAppEnabled(app_id) ? "Enabled" : "Disabled";
+  }
 }
 
 scoped_ptr<base::ListValue> SyncEngine::DumpFiles(const GURL& origin) {

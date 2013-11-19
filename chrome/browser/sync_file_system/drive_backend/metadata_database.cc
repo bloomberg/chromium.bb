@@ -581,6 +581,12 @@ void MetadataDatabase::PopulateInitialData(
   WriteToDatabase(batch.Pass(), callback);
 }
 
+bool MetadataDatabase::IsAppEnabled(const std::string& app_id) const {
+  FileTracker tracker;
+  if (!FindAppRootTracker(app_id, &tracker))
+    return false;
+  return tracker.tracker_kind() == TRACKER_KIND_APP_ROOT;
+}
 
 void MetadataDatabase::RegisterApp(const std::string& app_id,
                                    const std::string& folder_id,

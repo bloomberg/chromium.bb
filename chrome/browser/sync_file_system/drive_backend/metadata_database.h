@@ -157,6 +157,9 @@ class MetadataDatabase {
       const ScopedVector<google_apis::FileResource>& app_root_folders,
       const SyncStatusCallback& callback);
 
+  // Returns true if the folder associated to |app_id| is enabled.
+  bool IsAppEnabled(const std::string& app_id) const;
+
   // Registers existing folder as the app-root for |app_id|.  The folder
   // must be an inactive folder that does not yet associated to any App.
   // This method associates the folder with |app_id| and activates it.
