@@ -69,6 +69,11 @@ public:
         return m_isolate;
     }
 
+    static ScriptValue createUndefined(v8::Isolate* isolate)
+    {
+        return ScriptValue(v8::Undefined(isolate), isolate);
+    }
+
     static ScriptValue createNull()
     {
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
