@@ -88,14 +88,15 @@ public:
     void setTextAutosizingEnabled(bool);
     bool textAutosizingEnabled() const;
 
-    void setTextAutosizingFontScaleFactor(float);
-    float textAutosizingFontScaleFactor() const;
+    // Font scale factor for accessibility, applied as part of text autosizing.
+    void setAccessibilityFontScaleFactor(float);
+    float accessibilityFontScaleFactor() const { return m_accessibilityFontScaleFactor; }
 
     // Compensates for poor text legibility on mobile devices. This value is
     // multiplied by the font scale factor when performing text autosizing of
     // websites that do not set an explicit viewport description.
     void setDeviceScaleAdjustment(float);
-    float deviceScaleAdjustment() const { return m_deviceScaleAdjustment; }
+    float deviceScaleAdjustment() const;
 
     // Only set by Layout Tests, and only used if textAutosizingEnabled() returns true.
     void setTextAutosizingWindowSizeOverride(const IntSize&);
@@ -177,7 +178,7 @@ private:
     ScriptFontFamilyMap m_cursiveFontFamilyMap;
     ScriptFontFamilyMap m_fantasyFontFamilyMap;
     ScriptFontFamilyMap m_pictographFontFamilyMap;
-    float m_textAutosizingFontScaleFactor;
+    float m_accessibilityFontScaleFactor;
     float m_deviceScaleAdjustment;
     IntSize m_textAutosizingWindowSizeOverride;
     bool m_textAutosizingEnabled : 1;

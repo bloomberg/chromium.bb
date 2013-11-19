@@ -155,9 +155,9 @@ void WebSettingsImpl::setTextAutosizingEnabled(bool enabled)
     m_settings->setTextAutosizingEnabled(enabled);
 }
 
-void WebSettingsImpl::setTextAutosizingFontScaleFactor(float fontScaleFactor)
+void WebSettingsImpl::setAccessibilityFontScaleFactor(float fontScaleFactor)
 {
-    m_settings->setTextAutosizingFontScaleFactor(fontScaleFactor);
+    m_settings->setAccessibilityFontScaleFactor(fontScaleFactor);
 }
 
 void WebSettingsImpl::setDeviceScaleAdjustment(float deviceScaleAdjustment)

@@ -125,9 +125,10 @@ public:
     // Geolocation override helper.
     GeolocationPosition* overrideGeolocationPosition(GeolocationPosition*);
 
-    // Text autosizing helpers.
+    // Text autosizing override helpers.
     bool overrideTextAutosizing(bool);
-    float overrideTextAutosizingFontScaleFactor(float);
+    // Note: This is used by Settings::deviceScaleAdjustment to calculate the overridden device scale adjustment.
+    float overrideFontScaleFactor(float);
 
     // InspectorInstrumentation API
     void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);

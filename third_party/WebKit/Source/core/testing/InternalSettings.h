@@ -57,7 +57,7 @@ public:
         EditingBehaviorType m_originalEditingBehavior;
         bool m_originalTextAutosizingEnabled;
         IntSize m_originalTextAutosizingWindowSizeOverride;
-        float m_originalTextAutosizingFontScaleFactor;
+        float m_originalAccessibilityFontScaleFactor;
         String m_originalMediaTypeOverride;
         bool m_originalMockScrollbarsEnabled;
         bool m_langAttributeAwareFormControlUIEnabled;
@@ -95,7 +95,7 @@ public:
     void setMockScrollbarsEnabled(bool, ExceptionState&);
     void setPasswordGenerationDecorationEnabled(bool, ExceptionState&);
     void setTextAutosizingEnabled(bool, ExceptionState&);
-    void setTextAutosizingFontScaleFactor(float fontScaleFactor, ExceptionState&);
+    void setAccessibilityFontScaleFactor(float fontScaleFactor, ExceptionState&);
     void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionState&);
     void setTouchEventEmulationEnabled(bool, ExceptionState&);
     void setViewportEnabled(bool, ExceptionState&);

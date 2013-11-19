@@ -65,7 +65,7 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalEditingBehavior(settings->editingBehaviorType())
     , m_originalTextAutosizingEnabled(settings->textAutosizingEnabled())
     , m_originalTextAutosizingWindowSizeOverride(settings->textAutosizingWindowSizeOverride())
-    , m_originalTextAutosizingFontScaleFactor(settings->textAutosizingFontScaleFactor())
+    , m_originalAccessibilityFontScaleFactor(settings->accessibilityFontScaleFactor())
     , m_originalMediaTypeOverride(settings->mediaTypeOverride())
     , m_originalMockScrollbarsEnabled(settings->mockScrollbarsEnabled())
     , m_langAttributeAwareFormControlUIEnabled(RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
@@ -89,7 +89,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setEditingBehaviorType(m_originalEditingBehavior);
     settings->setTextAutosizingEnabled(m_originalTextAutosizingEnabled);
     settings->setTextAutosizingWindowSizeOverride(m_originalTextAutosizingWindowSizeOverride);
-    settings->setTextAutosizingFontScaleFactor(m_originalTextAutosizingFontScaleFactor);
+    settings->setAccessibilityFontScaleFactor(m_originalAccessibilityFontScaleFactor);
     settings->setMediaTypeOverride(m_originalMediaTypeOverride);
     settings->setMockScrollbarsEnabled(m_originalMockScrollbarsEnabled);
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(m_langAttributeAwareFormControlUIEnabled);
@@ -274,10 +274,10 @@ void InternalSettings::setMediaTypeOverride(const String& mediaType, ExceptionSt
     settings()->setMediaTypeOverride(mediaType);
 }
 
-void InternalSettings::setTextAutosizingFontScaleFactor(float fontScaleFactor, ExceptionState& exceptionState)
+void InternalSettings::setAccessibilityFontScaleFactor(float fontScaleFactor, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
-    settings()->setTextAutosizingFontScaleFactor(fontScaleFactor);
+    settings()->setAccessibilityFontScaleFactor(fontScaleFactor);
 }
 
 void InternalSettings::setCSSExclusionsEnabled(bool enabled)

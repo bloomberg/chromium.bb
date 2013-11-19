@@ -172,7 +172,9 @@ public:
     virtual void setSyncXHRInDocumentsEnabled(bool) = 0;
     virtual void setTextAreasAreResizable(bool) = 0;
     virtual void setTextAutosizingEnabled(bool) = 0;
-    virtual void setTextAutosizingFontScaleFactor(float) = 0;
+    // FIXME(crbug.com/320193): Remove this after callers are updated to call setAccessibilityFontScaleFactor.
+    void setTextAutosizingFontScaleFactor(float fontScaleFactor) { setAccessibilityFontScaleFactor(fontScaleFactor); }
+    virtual void setAccessibilityFontScaleFactor(float) = 0;
     virtual void setThreadedHTMLParser(bool) = 0;
     virtual void setTouchDragDropEnabled(bool) = 0;
     virtual void setTouchEditingEnabled(bool) = 0;

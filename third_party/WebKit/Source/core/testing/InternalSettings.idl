@@ -38,7 +38,7 @@
     [RaisesException] void setPictographFontFamily(DOMString family, DOMString script);
     [RaisesException] void setTextAutosizingEnabled(boolean enabled);
     [RaisesException] void setTextAutosizingWindowSizeOverride(long width, long height);
-    [RaisesException] void setTextAutosizingFontScaleFactor(float fontScaleFactor);
+    [RaisesException] void setAccessibilityFontScaleFactor(float fontScaleFactor);
     [RaisesException] void setMediaTypeOverride(DOMString mediaTypeOverride);
     [RaisesException] void setEditingBehavior(DOMString behavior);
     [RaisesException] void setPasswordGenerationDecorationEnabled(boolean enabled);

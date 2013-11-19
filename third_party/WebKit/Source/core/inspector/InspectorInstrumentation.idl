@@ -510,7 +510,7 @@ interface InspectorOverrides {
     GeolocationPosition* overrideGeolocationPosition(Page* page, [DefaultReturn] GeolocationPosition* position);
 
     [Page, Inline=FastReturn]
-    float overrideTextAutosizingFontScaleFactor(Page* page, [DefaultReturn] float fontScaleFactor);
+    float overrideFontScaleFactor(Page* page, [DefaultReturn] float fontScaleFactor);
 
     [Page, Inline=FastReturn]
     bool overrideTextAutosizing(Page* page, [DefaultReturn] bool textAutosizing);

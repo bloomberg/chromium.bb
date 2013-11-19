@@ -2369,7 +2369,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
     int viewportWidth = 320;
     int viewportHeight = 480;
     float doubleTapZoomAlreadyLegibleRatio = 1.2f;
-    float textAutosizingFontScaleFactor = 1.13f;
+    float accessibilityFontScaleFactor = 1.13f;
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "get_scale_bounds_check_for_auto_zoom_test.html");
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
@@ -2377,15 +2377,15 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
 
     webViewHelper.webViewImpl()->enableFakePageScaleAnimationForTesting(true);
     webViewHelper.webViewImpl()->page()->settings().setTextAutosizingEnabled(true);
-    webViewHelper.webViewImpl()->page()->settings().setTextAutosizingFontScaleFactor(textAutosizingFontScaleFactor);
+    webViewHelper.webViewImpl()->page()->settings().setAccessibilityFontScaleFactor(accessibilityFontScaleFactor);
 
     WebRect div(200, 100, 200, 150);
     WebPoint doubleTapPoint(div.x + 50, div.y + 50);
     float scale;
 
     // Test double tap scale bounds.
-    // minimumPageScale < doubleTapZoomAlreadyLegibleScale < 1 < textAutosizingFontScaleFactor
-    float legibleScale = textAutosizingFontScaleFactor;
+    // minimumPageScale < doubleTapZoomAlreadyLegibleScale < 1 < accessibilityFontScaleFactor
+    float legibleScale = accessibilityFontScaleFactor;
     setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), (webViewHelper.webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
     float doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
     webViewHelper.webView()->setPageScaleFactorLimits(0.5f, 4);
@@ -2399,7 +2399,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
 
     // Zoom in to reset double_tap_zoom_in_effect flag.
     webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
-    // 1 < textAutosizingFontScaleFactor < minimumPageScale < doubleTapZoomAlreadyLegibleScale
+    // 1 < accessibilityFontScaleFactor < minimumPageScale < doubleTapZoomAlreadyLegibleScale
     webViewHelper.webView()->setPageScaleFactorLimits(1.0f, 4);
     webViewHelper.webView()->layout();
     doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
@@ -2413,7 +2413,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
 
     // Zoom in to reset double_tap_zoom_in_effect flag.
     webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
-    // minimumPageScale < 1 < textAutosizingFontScaleFactor < doubleTapZoomAlreadyLegibleScale
+    // minimumPageScale < 1 < accessibilityFontScaleFactor < doubleTapZoomAlreadyLegibleScale
     webViewHelper.webView()->setPageScaleFactorLimits(0.95f, 4);
     webViewHelper.webView()->layout();
     doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
@@ -2427,7 +2427,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
 
     // Zoom in to reset double_tap_zoom_in_effect flag.
     webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
-    // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale < textAutosizingFontScaleFactor
+    // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale < accessibilityFontScaleFactor
     webViewHelper.webView()->setPageScaleFactorLimits(0.9f, 4);
     webViewHelper.webView()->layout();
     doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;

@@ -89,7 +89,7 @@ static const char pageAgentScreenHeightOverride[] = "pageAgentScreenHeightOverri
 static const char pageAgentDeviceScaleFactorOverride[] = "pageAgentDeviceScaleFactorOverride";
 static const char pageAgentEmulateViewport[] = "pageAgentEmulateViewport";
 static const char pageAgentFitWindow[] = "pageAgentFitWindow";
-static const char textAutosizingFontScaleFactorOverride[] = "textAutosizingFontScaleFactorOverride";
+static const char fontScaleFactor[] = "fontScaleFactor";
 static const char pageAgentShowFPSCounter[] = "pageAgentShowFPSCounter";
 static const char pageAgentTextAutosizingOverride[] = "pageAgentTextAutosizingOverride";
 static const char pageAgentContinuousPaintingEnabled[] = "pageAgentContinuousPaintingEnabled";
@@ -415,7 +415,7 @@ void InspectorPageAgent::disable(ErrorString*)
     m_state->setDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, 1);
     m_state->setBoolean(PageAgentState::pageAgentEmulateViewport, false);
     m_state->setBoolean(PageAgentState::pageAgentFitWindow, false);
-    m_state->setDouble(PageAgentState::textAutosizingFontScaleFactorOverride, 1);
+    m_state->setDouble(PageAgentState::fontScaleFactor, 1);
     m_state->setBoolean(PageAgentState::pageAgentTextAutosizingOverride, false);
 }
 
@@ -679,7 +679,7 @@ void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int 
     m_state->setDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, deviceScaleFactor);
     m_state->setBoolean(PageAgentState::pageAgentEmulateViewport, emulateViewport);
     m_state->setBoolean(PageAgentState::pageAgentFitWindow, fitWindow);
-    m_state->setDouble(PageAgentState::textAutosizingFontScaleFactorOverride, fontScaleFactor);
+    m_state->setDouble(PageAgentState::fontScaleFactor, fontScaleFactor);
     m_state->setBoolean(PageAgentState::pageAgentTextAutosizingOverride, textAutosizing);
 
     updateViewMetrics(width, height, deviceScaleFactor, emulateViewport, fitWindow);
@@ -693,7 +693,7 @@ bool InspectorPageAgent::deviceMetricsChanged(int width, int height, double devi
     double currentDeviceScaleFactor = m_state->getDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, 1);
     bool currentEmulateViewport = m_state->getBoolean(PageAgentState::pageAgentEmulateViewport);
     bool currentFitWindow = m_state->getBoolean(PageAgentState::pageAgentFitWindow);
-    double currentFontScaleFactor = m_state->getDouble(PageAgentState::textAutosizingFontScaleFactorOverride, 1);
+    double currentFontScaleFactor = m_state->getDouble(PageAgentState::fontScaleFactor, 1);
     bool currentTextAutosizing = m_state->getBoolean(PageAgentState::pageAgentTextAutosizingOverride);
 
     return width != currentWidth || height != currentHeight || deviceScaleFactor != currentDeviceScaleFactor || emulateViewport != currentEmulateViewport || fitWindow != currentFitWindow || fontScaleFactor != currentFontScaleFactor || textAutosizing != currentTextAutosizing;
@@ -1165,11 +1165,11 @@ bool InspectorPageAgent::overrideTextAutosizing(bool textAutosizing)
     return m_state->getBoolean(PageAgentState::pageAgentTextAutosizingOverride);
 }
 
-float InspectorPageAgent::overrideTextAutosizingFontScaleFactor(float fontScaleFactor)
+float InspectorPageAgent::overrideFontScaleFactor(float fontScaleFactor)
 {
     if (!m_deviceMetricsOverridden)
         return fontScaleFactor;
-    return static_cast<float>(m_state->getDouble(PageAgentState::textAutosizingFontScaleFactorOverride));
+    return static_cast<float>(m_state->getDouble(PageAgentState::fontScaleFactor));
 }
 
 void InspectorPageAgent::setTouchEmulationEnabled(ErrorString*, bool enabled)

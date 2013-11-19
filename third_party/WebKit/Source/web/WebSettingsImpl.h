@@ -161,7 +161,7 @@ public:
     virtual void setSyncXHRInDocumentsEnabled(bool);
     virtual void setTextAreasAreResizable(bool);
     virtual void setTextAutosizingEnabled(bool);
-    virtual void setTextAutosizingFontScaleFactor(float);
+    virtual void setAccessibilityFontScaleFactor(float);
     virtual void setTouchDragDropEnabled(bool);
     virtual void setTouchEditingEnabled(bool);
     virtual void setThreadedHTMLParser(bool);

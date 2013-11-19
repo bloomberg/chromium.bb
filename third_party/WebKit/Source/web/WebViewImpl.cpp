@@ -1132,7 +1132,7 @@ float WebViewImpl::legibleScale() const
     // be allowed to manually pinch zoom in further if they desire.
     float legibleScale = 1;
     if (page())
-        legibleScale *= page()->settings().textAutosizingFontScaleFactor();
+        legibleScale *= page()->settings().accessibilityFontScaleFactor();
     return legibleScale;
 }
 

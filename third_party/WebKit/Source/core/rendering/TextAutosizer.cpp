@@ -169,7 +169,7 @@ float TextAutosizer::clusterMultiplier(WritingMode writingMode, const TextAutosi
     float logicalClusterWidth = std::min<float>(textWidth, logicalLayoutWidth);
 
     float multiplier = logicalClusterWidth / logicalWindowWidth;
-    multiplier *= m_document->settings()->textAutosizingFontScaleFactor();
+    multiplier *= m_document->settings()->accessibilityFontScaleFactor();
 
     // If the page has a meta viewport or @viewport, don't apply the device scale adjustment.
     const ViewportDescription& viewportDescription = m_document->page()->mainFrame()->document()->viewportDescription();
