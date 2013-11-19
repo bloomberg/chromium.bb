@@ -32,7 +32,6 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   UserPolicySigninService(
       Profile* profile,
       PrefService* local_state,
-      scoped_refptr<net::URLRequestContextGetter> request_context,
       DeviceManagementService* device_management_service,
       ProfileOAuth2TokenService* token_service);
   virtual ~UserPolicySigninService();
@@ -40,10 +39,10 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   // Registers a CloudPolicyClient for fetching policy for |username|.
   // This requests an OAuth2 token for the services involved, and contacts
   // the policy service if the account has management enabled.
-  // |callback| is invoked once the CloudPolicyClient is ready to fetch policy,
+  // |callback| is invoked once we have registered this device to fetch policy,
   // or once it is determined that |username| is not a managed account.
-  void RegisterPolicyClient(const std::string& username,
-                            const PolicyRegistrationCallback& callback);
+  void RegisterForPolicy(const std::string& username,
+                         const PolicyRegistrationCallback& callback);
 
  private:
   void CallPolicyRegistrationCallback(scoped_ptr<CloudPolicyClient> client,

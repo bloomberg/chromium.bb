@@ -25,10 +25,6 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-namespace policy {
-class CloudPolicyClient;
-}
-
 // Waits for successful singin notification from the signin manager and then
 // starts the sync machine.  Instances of this class delete themselves once
 // the job is done.
@@ -134,8 +130,9 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   friend class SigninDialogDelegate;
 
   // Callback invoked once policy registration is complete. If registration
-  // fails, |client| will be null.
-  void OnRegisteredForPolicy(scoped_ptr<policy::CloudPolicyClient> client);
+  // fails, |dm_token| and |client_id| will be empty.
+  void OnRegisteredForPolicy(const std::string& dm_token,
+                             const std::string& client_id);
 
   // Callback invoked when a policy fetch request has completed. |success| is
   // true if policy was successfully fetched.
@@ -145,9 +142,9 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // in-progress auth credentials currently stored in this object.
   void CreateNewSignedInProfile();
 
-  // Helper function that loads policy with the passed CloudPolicyClient, then
-  // completes the signin process.
-  void LoadPolicyWithCachedClient();
+  // Helper function that loads policy with the cached |dm_token_| and
+  // |client_id|, then completes the signin process.
+  void LoadPolicyWithCachedCredentials();
 
   // Callback invoked once a profile is created, so we can complete the
   // credentials transfer, load policy, and open the first window.
@@ -214,9 +211,10 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   Callback sync_setup_completed_callback_;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  // CloudPolicyClient reference we keep while determining whether to create
+  // Policy credentials we keep while determining whether to create
   // a new profile for an enterprise user or not.
-  scoped_ptr<policy::CloudPolicyClient> policy_client_;
+  std::string dm_token_;
+  std::string client_id_;
 #endif
 
   base::WeakPtrFactory<OneClickSigninSyncStarter> weak_pointer_factory_;

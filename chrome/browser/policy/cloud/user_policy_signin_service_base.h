@@ -50,8 +50,10 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
                                     public content::NotificationObserver {
  public:
   // The callback invoked once policy registration is complete. Passed
-  // CloudPolicyClient parameter is null if DMToken fetch failed.
-  typedef base::Callback<void(scoped_ptr<CloudPolicyClient>)>
+  // |dm_token| and |client_id| parameters are empty if policy registration
+  // failed.
+  typedef base::Callback<void(const std::string& dm_token,
+                              const std::string& client_id)>
       PolicyRegistrationCallback;
 
   // The callback invoked once policy fetch is complete. Passed boolean
@@ -62,16 +64,16 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   UserPolicySigninServiceBase(
       Profile* profile,
       PrefService* local_state,
-      scoped_refptr<net::URLRequestContextGetter> request_context,
       DeviceManagementService* device_management_service);
   virtual ~UserPolicySigninServiceBase();
 
-  // Initiates a policy fetch as part of user signin, using a CloudPolicyClient
-  // previously initialized via RegisterPolicyClient. |callback| is invoked
+  // Initiates a policy fetch as part of user signin, using a |dm_token| and
+  // |client_id| fetched via RegisterForPolicy(). |callback| is invoked
   // once the policy fetch is complete, passing true if the policy fetch
   // succeeded.
   void FetchPolicyForSignedInUser(const std::string& username,
-                                  scoped_ptr<CloudPolicyClient> client,
+                                  const std::string& dm_token,
+                                  const std::string& client_id,
                                   const PolicyFetchCallback& callback);
 
   // content::NotificationObserver implementation:
@@ -90,7 +92,12 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   // BrowserContextKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
+  void SetRequestContext(
+      scoped_refptr<net::URLRequestContextGetter> request_context);
+
  protected:
+  net::URLRequestContextGetter* request_context() { return request_context_; }
+
   // Returns true if policy should be loaded even when Gaia reports that the
   // account doesn't have management enabled.
   static bool ShouldForceLoadPolicy();

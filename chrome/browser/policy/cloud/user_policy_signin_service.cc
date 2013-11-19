@@ -26,12 +26,10 @@ namespace policy {
 UserPolicySigninService::UserPolicySigninService(
     Profile* profile,
     PrefService* local_state,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
     DeviceManagementService* device_management_service,
     ProfileOAuth2TokenService* token_service)
     : UserPolicySigninServiceBase(profile,
                                   local_state,
-                                  request_context,
                                   device_management_service),
       oauth2_token_service_(token_service) {
   // ProfileOAuth2TokenService should not yet have loaded its tokens since this
@@ -63,7 +61,7 @@ void UserPolicySigninService::Shutdown() {
   oauth2_token_service_->RemoveObserver(this);
 }
 
-void UserPolicySigninService::RegisterPolicyClient(
+void UserPolicySigninService::RegisterForPolicy(
     const std::string& username,
     const std::string& oauth2_refresh_token,
     const PolicyRegistrationCallback& callback) {
@@ -72,14 +70,14 @@ void UserPolicySigninService::RegisterPolicyClient(
   // Create a new CloudPolicyClient for fetching the DMToken.
   scoped_ptr<CloudPolicyClient> policy_client = PrepareToRegister(username);
   if (!policy_client) {
-    callback.Run(policy_client.Pass());
+    callback.Run(std::string(), std::string());
     return;
   }
 
   // Fire off the registration process. Callback keeps the CloudPolicyClient
   // alive for the length of the registration process.
   registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
-      profile()->GetRequestContext(),
+      request_context(),
       policy_client.get(),
       ShouldForceLoadPolicy(),
       enterprise_management::DeviceRegisterRequest::BROWSER));
@@ -95,11 +93,7 @@ void UserPolicySigninService::CallPolicyRegistrationCallback(
     scoped_ptr<CloudPolicyClient> client,
     PolicyRegistrationCallback callback) {
   registration_helper_.reset();
-  if (!client->is_registered()) {
-    // Registration failed, so free the client and pass NULL to the callback.
-    client.reset();
-  }
-  callback.Run(client.Pass());
+  callback.Run(client->dm_token(), client->client_id());
 }
 
 void UserPolicySigninService::OnRefreshTokenAvailable(
@@ -170,7 +164,7 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
   // Start the process of registering the CloudPolicyClient. Once it completes,
   // policy fetch will automatically happen.
   registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
-      profile()->GetRequestContext(),
+      request_context(),
       GetManager()->core()->client(),
       ShouldForceLoadPolicy(),
       enterprise_management::DeviceRegisterRequest::BROWSER));

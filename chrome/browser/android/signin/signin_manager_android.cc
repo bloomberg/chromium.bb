@@ -25,7 +25,6 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_core.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
@@ -86,7 +85,7 @@ void SigninManagerAndroid::CheckPolicyBeforeSignIn(JNIEnv* env,
   username_ = base::android::ConvertJavaStringToUTF8(env, username);
   policy::UserPolicySigninService* service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
-  service->RegisterPolicyClient(
+  service->RegisterForPolicy(
       base::android::ConvertJavaStringToUTF8(env, username),
       base::Bind(&SigninManagerAndroid::OnPolicyRegisterDone,
                  weak_factory_.GetWeakPtr()));
@@ -102,14 +101,17 @@ void SigninManagerAndroid::CheckPolicyBeforeSignIn(JNIEnv* env,
 
 void SigninManagerAndroid::FetchPolicyBeforeSignIn(JNIEnv* env, jobject obj) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  if (cloud_policy_client_) {
+  if (!dm_token_.empty()) {
     policy::UserPolicySigninService* service =
         policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
     service->FetchPolicyForSignedInUser(
         username_,
-        cloud_policy_client_.Pass(),
+        dm_token_,
+        client_id_,
         base::Bind(&SigninManagerAndroid::OnPolicyFetchDone,
                    weak_factory_.GetWeakPtr()));
+    dm_token_.clear();
+    client_id_.clear();
     return;
   }
 #endif
@@ -161,12 +163,14 @@ void SigninManagerAndroid::WipeProfileData(JNIEnv* env, jobject obj) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
 
 void SigninManagerAndroid::OnPolicyRegisterDone(
-    scoped_ptr<policy::CloudPolicyClient> client) {
-  cloud_policy_client_ = client.Pass();
+    const std::string& dm_token,
+    const std::string& client_id) {
+  dm_token_ = dm_token;
+  client_id_ = client_id_;
 
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> domain;
-  if (cloud_policy_client_) {
+  if (!dm_token_.empty()) {
     DCHECK(!username_.empty());
     domain.Reset(
         base::android::ConvertUTF8ToJavaString(

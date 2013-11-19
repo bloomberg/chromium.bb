@@ -54,7 +54,8 @@ class SigninManagerAndroid {
   virtual ~SigninManagerAndroid();
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  void OnPolicyRegisterDone(scoped_ptr<policy::CloudPolicyClient> client);
+  void OnPolicyRegisterDone(const std::string& dm_token,
+                            const std::string& client_id);
   void OnPolicyFetchDone(bool success);
 #endif
 
@@ -66,9 +67,10 @@ class SigninManagerAndroid {
   base::android::ScopedJavaGlobalRef<jobject> java_signin_manager_;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  // CloudPolicyClient stored during a pending sign-in, awaiting user
+  // CloudPolicy credentials stored during a pending sign-in, awaiting user
   // confirmation before starting to fetch policies.
-  scoped_ptr<policy::CloudPolicyClient> cloud_policy_client_;
+  std::string dm_token_;
+  std::string client_id_;
 
   // Username that is pending sign-in. This is used to extract the domain name
   // for the policy dialog, when |username_| corresponds to a managed account.

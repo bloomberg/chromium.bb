@@ -125,7 +125,7 @@ void OneClickSigninSyncStarter::ConfirmSignin(const std::string& oauth_token) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
     policy::UserPolicySigninService* policy_service =
         policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
-    policy_service->RegisterPolicyClient(
+    policy_service->RegisterForPolicy(
         signin->GetUsernameForAuthInProgress(),
         oauth_token,
         base::Bind(&OneClickSigninSyncStarter::OnRegisteredForPolicy,
@@ -157,7 +157,7 @@ void OneClickSigninSyncStarter::SigninDialogDelegate::OnCancelSignin() {
 
 void OneClickSigninSyncStarter::SigninDialogDelegate::OnContinueSignin() {
   if (sync_starter_ != NULL)
-    sync_starter_->LoadPolicyWithCachedClient();
+    sync_starter_->LoadPolicyWithCachedCredentials();
 }
 
 void OneClickSigninSyncStarter::SigninDialogDelegate::OnSigninWithNewProfile() {
@@ -166,22 +166,23 @@ void OneClickSigninSyncStarter::SigninDialogDelegate::OnSigninWithNewProfile() {
 }
 
 void OneClickSigninSyncStarter::OnRegisteredForPolicy(
-    scoped_ptr<policy::CloudPolicyClient> client) {
+    const std::string& dm_token, const std::string& client_id) {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   // If there's no token for the user (policy registration did not succeed) just
   // finish signing in.
-  if (!client.get()) {
+  if (dm_token.empty()) {
     DVLOG(1) << "Policy registration failed";
     ConfirmAndSignin();
     return;
   }
 
-  DCHECK(client->is_registered());
-  DVLOG(1) << "Policy registration succeeded: dm_token=" << client->dm_token();
+  DVLOG(1) << "Policy registration succeeded: dm_token=" << dm_token;
 
   // Stash away a copy of our CloudPolicyClient (should not already have one).
-  DCHECK(!policy_client_);
-  policy_client_.swap(client);
+  DCHECK(dm_token_.empty());
+  DCHECK(client_id_.empty());
+  dm_token_ = dm_token;
+  client_id_ = client_id;
 
   // Allow user to create a new profile before continuing with sign-in.
   EnsureBrowser();
@@ -199,14 +200,16 @@ void OneClickSigninSyncStarter::OnRegisteredForPolicy(
       new SigninDialogDelegate(weak_pointer_factory_.GetWeakPtr()));
 }
 
-void OneClickSigninSyncStarter::LoadPolicyWithCachedClient() {
-  DCHECK(policy_client_);
+void OneClickSigninSyncStarter::LoadPolicyWithCachedCredentials() {
+  DCHECK(!dm_token_.empty());
+  DCHECK(!client_id_.empty());
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   policy::UserPolicySigninService* policy_service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
   policy_service->FetchPolicyForSignedInUser(
       signin->GetUsernameForAuthInProgress(),
-      policy_client_.Pass(),
+      dm_token_,
+      client_id_,
       base::Bind(&OneClickSigninSyncStarter::OnPolicyFetchComplete,
                  weak_pointer_factory_.GetWeakPtr()));
 }
@@ -223,7 +226,8 @@ void OneClickSigninSyncStarter::OnPolicyFetchComplete(bool success) {
 void OneClickSigninSyncStarter::CreateNewSignedInProfile() {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   DCHECK(!signin->GetUsernameForAuthInProgress().empty());
-  DCHECK(policy_client_);
+  DCHECK(!dm_token_.empty());
+  DCHECK(!client_id_.empty());
   // Create a new profile and have it call back when done so we can inject our
   // signin credentials.
   size_t icon_index = g_browser_process->profile_manager()->
@@ -262,7 +266,8 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       DCHECK(!old_signin_manager->GetUsernameForAuthInProgress().empty());
       DCHECK(old_signin_manager->GetAuthenticatedUsername().empty());
       DCHECK(new_signin_manager->GetAuthenticatedUsername().empty());
-      DCHECK(policy_client_);
+      DCHECK(!dm_token_.empty());
+      DCHECK(!client_id_.empty());
 
       // Copy credentials from the old profile to the just-created profile,
       // and switch over to tracking that profile.
@@ -279,7 +284,7 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
 
       // Load policy for the just-created profile - once policy has finished
       // loading the signin process will complete.
-      LoadPolicyWithCachedClient();
+      LoadPolicyWithCachedCredentials();
 
       // Open the profile's first window, after all initialization.
       profiles::FindOrCreateNewWindowForProfile(

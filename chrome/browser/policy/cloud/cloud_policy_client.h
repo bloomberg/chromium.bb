@@ -166,6 +166,7 @@ class CloudPolicyClient {
   bool is_registered() const { return !dm_token_.empty(); }
 
   const std::string& dm_token() const { return dm_token_; }
+  const std::string& client_id() const { return client_id_; }
 
   // The device mode as received in the registration request.
   DeviceMode device_mode() const { return device_mode_; }
