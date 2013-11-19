@@ -136,8 +136,6 @@ def GetPreferredTrySlaves(_, change):
       'nacl-precise64_newlib_dbg',
       'nacl-precise64_newlib_opt',
       'nacl-precise64_glibc_opt',
-      'nacl-precise64_newlib_dbg_valgrind',
-      'nacl-precise64_glibc_dbg_valgrind',
       'nacl-mac10.6_newlib_opt',
       'nacl-mac10.6_glibc_opt',
       'nacl-mac10.6_64_newlib_dbg',
