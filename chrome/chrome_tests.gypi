@@ -1180,6 +1180,7 @@
         'browser/extensions/api/system_cpu/system_cpu_apitest.cc',
         'browser/extensions/api/system_display/system_display_apitest.cc',
         'browser/extensions/api/system_memory/system_memory_apitest.cc',
+        'browser/extensions/api/system_network/system_network_apitest.cc',
         'browser/extensions/api/system_private/system_private_apitest.cc',
         'browser/extensions/api/system_storage/storage_api_test_util.cc',
         'browser/extensions/api/system_storage/storage_api_test_util.h',

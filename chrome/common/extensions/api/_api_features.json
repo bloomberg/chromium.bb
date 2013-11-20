@@ -595,6 +595,11 @@
     "dependencies": ["permission:system.memory"],
     "contexts": ["blessed_extension"]
   },
+  "system.network": {
+    "dependencies": ["permission:system.network"],
+    "channel": "dev",
+    "contexts": ["blessed_extension"]
+  },
   "system.storage": {
     "dependencies": ["permission:system.storage"],
     "contexts": ["blessed_extension"]

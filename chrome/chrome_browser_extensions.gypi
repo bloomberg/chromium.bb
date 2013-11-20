@@ -556,6 +556,8 @@
         'browser/extensions/api/system_memory/memory_info_provider.h',
         'browser/extensions/api/system_memory/system_memory_api.cc',
         'browser/extensions/api/system_memory/system_memory_api.h',
+        'browser/extensions/api/system_network/system_network_api.cc',
+        'browser/extensions/api/system_network/system_network_api.h',
         'browser/extensions/api/system_private/system_private_api.cc',
         'browser/extensions/api/system_private/system_private_api.h',
         'browser/extensions/api/system_storage/storage_info_provider.cc',

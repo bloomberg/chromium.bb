@@ -164,6 +164,7 @@ class APIPermission {
     kScreenlockPrivate,
     kSystemCpu,
     kSystemMemory,
+    kSystemNetwork,
     kSystemInfoCpu,
     kSystemInfoMemory,
     kEnumBoundary

@@ -108,6 +108,7 @@
               'system_display.idl',
               'system_indicator.idl',
               'system_memory.idl',
+              'system_network.idl',
               'system_private.json',
               'system_storage.idl',
               'tab_capture.idl',

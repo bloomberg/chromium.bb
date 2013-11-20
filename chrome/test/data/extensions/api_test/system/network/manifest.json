@@ -1,0 +1,11 @@
+{
+  "name": "chrome.system.network extension",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.system.network API",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": ["system.network"]
+}
