@@ -386,6 +386,10 @@ ActivityLog::ActivityLog(Profile* profile)
       FROM_HERE,
       base::Bind(&ActivityLog::InitInstallTracker, base::Unretained(this)));
 
+  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  if (event_router)
+    event_router->SetEventDispatchObserver(this);
+
 // None of this should run on Android since the AL is behind ENABLE_EXTENSION
 // checks. However, UmaPolicy can't even compile on Android because it uses
 // BrowserList and related classes that aren't compiled for Android.
@@ -604,6 +608,15 @@ void ActivityLog::OnScriptsExecuted(
       LogAction(action);
     }
   }
+}
+
+void ActivityLog::OnWillDispatchEvent(scoped_ptr<EventDispatchInfo> details) {
+  scoped_refptr<Action> action = new Action(details->extension_id,
+                                            base::Time::Now(),
+                                            Action::ACTION_API_EVENT,
+                                            details->event_name);
+  action->set_args(details->event_args.Pass());
+  LogAction(action);
 }
 
 // LOOKUP ACTIONS. -------------------------------------------------------------

@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -77,27 +76,29 @@ struct EventRouter::ListenerProcess {
 };
 
 // static
-void EventRouter::LogExtensionEventMessage(void* browser_context_id,
-                                           const std::string& extension_id,
-                                           const std::string& event_name,
-                                           scoped_ptr<ListValue> event_args) {
+void EventRouter::NotifyExtensionDispatchObserverOnUIThread(
+    void* browser_context_id,
+    scoped_ptr<EventDispatchInfo> details) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(&LogExtensionEventMessage,
-                                       browser_context_id,
-                                       extension_id,
-                                       event_name,
-                                       base::Passed(&event_args)));
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&NotifyExtensionDispatchObserverOnUIThread,
+                   browser_context_id, base::Passed(&details)));
   } else {
     BrowserContext* context =
         reinterpret_cast<BrowserContext*>(browser_context_id);
     if (!ExtensionsBrowserClient::Get()->IsValidContext(context))
       return;
-    scoped_refptr<Action> action = new Action(
-        extension_id, base::Time::Now(), Action::ACTION_API_EVENT, event_name);
-    action->set_args(event_args.Pass());
-    ActivityLog::GetInstance(context)->LogAction(action);
+    ExtensionSystem* extension_system =
+        ExtensionSystem::GetForBrowserContext(context);
+    EventRouter* event_router = extension_system->event_router();
+    if (!event_router)
+      return;
+    if (event_router->event_dispatch_observer_) {
+      event_router->event_dispatch_observer_->OnWillDispatchEvent(
+          details.Pass());
+    }
   }
 }
 
@@ -109,8 +110,12 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
                                            ListValue* event_args,
                                            UserGestureState user_gesture,
                                            const EventFilteringInfo& info) {
-  LogExtensionEventMessage(browser_context_id, extension_id, event_name,
-                           scoped_ptr<ListValue>(event_args->DeepCopy()));
+  NotifyExtensionDispatchObserverOnUIThread(
+      browser_context_id,
+      make_scoped_ptr(new EventDispatchInfo(
+          extension_id,
+          event_name,
+          make_scoped_ptr(event_args->DeepCopy()))));
 
   ListValue args;
   args.Set(0, new base::StringValue(event_name));
@@ -159,7 +164,8 @@ EventRouter::EventRouter(BrowserContext* browser_context,
                          ExtensionPrefs* extension_prefs)
     : browser_context_(browser_context),
       extension_prefs_(extension_prefs),
-      listeners_(this) {
+      listeners_(this),
+      event_dispatch_observer_(NULL) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
@@ -205,28 +211,17 @@ void EventRouter::UnregisterObserver(Observer* observer) {
     observers_.erase(iters_to_remove[i]);
 }
 
+void EventRouter::SetEventDispatchObserver(EventDispatchObserver* observer) {
+  CHECK(!event_dispatch_observer_);
+  event_dispatch_observer_ = observer;
+}
+
 void EventRouter::OnListenerAdded(const EventListener* listener) {
   const std::string& event_name = listener->event_name;
   const EventListenerInfo details(event_name, listener->extension_id);
   ObserverMap::iterator observer = observers_.find(event_name);
   if (observer != observers_.end())
     observer->second->OnListenerAdded(details);
-
-#if 0
-  // TODO(felt): Experimentally determine if these are needed, or if they
-  // can be permanently removed. Temporarily removing for now to reduce log
-  // size while under investigation.
-  const Extension* extension = ExtensionSystem::GetForBrowserContext(
-      browser_context_)->extension_service()->GetExtensionById(
-          listener->extension_id, ExtensionService::INCLUDE_ENABLED);
-  if (extension) {
-    scoped_ptr<ListValue> args(new ListValue());
-    if (listener->filter)
-      args->Append(listener->filter->DeepCopy());
-    ActivityLog::GetInstance(profile)->LogAPIAction(
-        extension, event_name + ".addListener", args.get(), std::string());
-  }
-#endif
 }
 
 void EventRouter::OnListenerRemoved(const EventListener* listener) {
@@ -242,19 +237,6 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NotifyEventListenerRemovedOnIOThread,
                  browser_context, listener->extension_id, event_name));
-#if 0
-  // TODO(felt): Experimentally determine if these are needed, or if they
-  // can be permanently removed. Temporarily removing for now to reduce log
-  // size while under investigation.
-  const Extension* extension = ExtensionSystem::GetForBrowserContext(
-      browser_context_)->extension_service()->GetExtensionById(
-          listener->extension_id, ExtensionService::INCLUDE_ENABLED);
-  if (extension) {
-    scoped_ptr<ListValue> args(new ListValue());
-    ActivityLog::GetInstance(profile)->LogAPIAction(
-        extension, event_name + ".removeListener", args.get(), std::string());
-  }
-#endif
 }
 
 void EventRouter::AddLazyEventListener(const std::string& event_name,
@@ -634,7 +616,7 @@ void EventRouter::IncrementInFlightEventsOnUI(
     return;
   ExtensionSystem* extension_system =
       ExtensionSystem::GetForBrowserContext(browser_context);
-  extensions::EventRouter* event_router = extension_system->event_router();
+  EventRouter* event_router = extension_system->event_router();
   if (!event_router)
     return;
   ExtensionService* extension_service = extension_system->extension_service();
@@ -650,7 +632,7 @@ void EventRouter::IncrementInFlightEvents(BrowserContext* context,
   // Only increment in-flight events if the lazy background page is active,
   // because that's the only time we'll get an ACK.
   if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
-    extensions::ProcessManager* pm =
+    ProcessManager* pm =
         ExtensionSystem::GetForBrowserContext(context)->process_manager();
     ExtensionHost* host = pm->GetBackgroundHostForExtension(extension->id());
     if (host)
@@ -660,7 +642,7 @@ void EventRouter::IncrementInFlightEvents(BrowserContext* context,
 
 void EventRouter::OnEventAck(BrowserContext* context,
                              const std::string& extension_id) {
-  extensions::ProcessManager* pm =
+  ProcessManager* pm =
       ExtensionSystem::GetForBrowserContext(context)->process_manager();
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id);
   // The event ACK is routed to the background host, so this should never be
@@ -788,5 +770,14 @@ EventListenerInfo::EventListenerInfo(const std::string& event_name,
                                      const std::string& extension_id)
     : event_name(event_name),
       extension_id(extension_id) {}
+
+EventDispatchInfo::EventDispatchInfo(const std::string& extension_id,
+                                     const std::string& event_name,
+                                     scoped_ptr<ListValue> event_args)
+    : extension_id(extension_id),
+      event_name(event_name),
+      event_args(event_args.Pass()) {}
+
+EventDispatchInfo::~EventDispatchInfo() {}
 
 }  // namespace extensions

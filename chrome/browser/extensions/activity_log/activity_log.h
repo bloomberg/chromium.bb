@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -44,6 +45,7 @@ class ActivityLogPolicy;
 // A utility for tracing interesting activity for each extension.
 // It writes to an ActivityDatabase on a separate thread to record the activity.
 class ActivityLog : public BrowserContextKeyedService,
+                    public EventRouter::EventDispatchObserver,
                     public TabHelper::ScriptExecutionObserver,
                     public InstallObserver {
  public:
@@ -99,6 +101,10 @@ class ActivityLog : public BrowserContextKeyedService,
   virtual void OnAppInstalledToAppList(
       const std::string& extension_id) OVERRIDE {}
   virtual void OnShutdown() OVERRIDE {}
+
+  // EventRouter::EventDispatchObserver
+  virtual void OnWillDispatchEvent(scoped_ptr<EventDispatchInfo> details)
+      OVERRIDE;
 
   // BrowserContextKeyedService
   virtual void Shutdown() OVERRIDE;

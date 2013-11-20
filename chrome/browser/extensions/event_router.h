@@ -37,6 +37,7 @@ class ExtensionHost;
 class ExtensionPrefs;
 
 struct Event;
+struct EventDispatchInfo;
 struct EventListenerInfo;
 
 class EventRouter : public content::NotificationObserver,
@@ -62,6 +63,13 @@ class EventRouter : public content::NotificationObserver,
     virtual void OnListenerAdded(const EventListenerInfo& details) {}
     // Called when a listener is removed.
     virtual void OnListenerRemoved(const EventListenerInfo& details) {}
+  };
+
+  // The EventDispatchObserver is notified on the UI thread whenever
+  // an event is dispatched. There can be only one EventDispatchObserver.
+  class EventDispatchObserver {
+   public:
+    virtual void OnWillDispatchEvent(scoped_ptr<EventDispatchInfo> details) = 0;
   };
 
   // Sends an event via ipc_sender to the given extension. Can be called on any
@@ -101,6 +109,10 @@ class EventRouter : public content::NotificationObserver,
 
   // Unregisters an observer from all events.
   void UnregisterObserver(Observer* observer);
+
+  // Sets the observer to be notified whenever an event is dispatched to an
+  // extension.
+  void SetEventDispatchObserver(EventDispatchObserver* observer);
 
   // Add or remove the extension as having a lazy background page that listens
   // to the event. The difference from the above methods is that these will be
@@ -171,12 +183,11 @@ class EventRouter : public content::NotificationObserver,
   typedef std::pair<const content::BrowserContext*, std::string>
       EventDispatchIdentifier;
 
-  // Records an event notification in the extension activity log.  Can be
-  // called from any thread.
-  static void LogExtensionEventMessage(void* browser_context_id,
-                                       const std::string& extension_id,
-                                       const std::string& event_name,
-                                       scoped_ptr<base::ListValue> event_args);
+  // Sends a notification about an event to the event dispatch observer on the
+  // UI thread. Can be called from any thread.
+  static void NotifyExtensionDispatchObserverOnUIThread(
+      void* browser_context_id,
+      scoped_ptr<EventDispatchInfo> details);
 
   // TODO(gdk): Document this.
   static void DispatchExtensionMessage(
@@ -279,6 +290,8 @@ class EventRouter : public content::NotificationObserver,
   typedef base::hash_map<std::string, Observer*> ObserverMap;
   ObserverMap observers_;
 
+  EventDispatchObserver* event_dispatch_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(EventRouter);
 };
 
@@ -342,6 +355,17 @@ struct EventListenerInfo {
 
   const std::string event_name;
   const std::string extension_id;
+};
+
+struct EventDispatchInfo {
+  EventDispatchInfo(const std::string& extension_id,
+                    const std::string& event_name,
+                    scoped_ptr<ListValue> event_args);
+  ~EventDispatchInfo();
+
+  const std::string extension_id;
+  const std::string event_name;
+  scoped_ptr<ListValue> event_args;
 };
 
 }  // namespace extensions
