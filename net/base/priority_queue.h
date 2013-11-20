@@ -50,9 +50,16 @@ class PriorityQueue : public base::NonThreadSafe {
 #if !defined(NDEBUG)
       id_ = static_cast<unsigned>(-1);
 #endif
+      // TODO(syzm)
+      // An uninitialized iterator behaves like an uninitialized pointer as per
+      // the STL docs. The fix below is ugly and should possibly be replaced
+      // with a better approach.
+      iterator_ = dummy_empty_list_.end();
     }
 
-    Pointer(const Pointer& p) : priority_(p.priority_), iterator_(p.iterator_) {
+    Pointer(const Pointer& p)
+        : priority_(p.priority_),
+          iterator_(p.iterator_) {
 #if !defined(NDEBUG)
       id_ = p.id_;
 #endif
@@ -109,6 +116,10 @@ class PriorityQueue : public base::NonThreadSafe {
 
     Priority priority_;
     ListIterator iterator_;
+    // The STL iterators when uninitialized are like uninitialized pointers
+    // which cause crashes when assigned to other iterators. We need to
+    // initialize a NULL iterator to the end of a valid list.
+    List dummy_empty_list_;
 
 #if !defined(NDEBUG)
     // Used by the queue to check if a Pointer is valid.
