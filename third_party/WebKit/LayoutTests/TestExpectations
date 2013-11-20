@@ -43,6 +43,8 @@ crbug.com/313922 [ Mac XP ] inspector-protocol/layers/get-layers.html [ Failure 
 
 # crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ ImageOnlyFailure Pass ]
 
+crbug.com/321606 plugins/layout-in-beforeload-listener-affects-plugin-loading.html [ Failure Pass ]
+
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
@@ -143,6 +145,8 @@ crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-
 
 # Untriaged Aura-specific failure.
 crbug.com/229207 [ Win ] fast/forms/select/popup-closes-on-blur.html [ Failure ]
+
+crbug.com/321607 [ Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 
 # ThemePainter-related diffs, could rebaseline them or implement the clipping/transform code.
 crbug.com/229207 [ Win ] fast/forms/placeholder-position.html [ ImageOnlyFailure ]
