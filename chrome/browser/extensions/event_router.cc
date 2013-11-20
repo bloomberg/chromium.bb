@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -39,14 +38,6 @@ using content::BrowserThread;
 namespace extensions {
 
 namespace {
-
-void NotifyEventListenerRemovedOnIOThread(
-    void* browser_context,
-    const std::string& extension_id,
-    const std::string& sub_event_name) {
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      browser_context, extension_id, sub_event_name);
-}
 
 void DoNothing(ExtensionHost* host) {}
 
@@ -137,6 +128,12 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
 }
 
 // static
+std::string EventRouter::GetBaseEventName(const std::string& full_event_name) {
+  size_t slash_sep = full_event_name.find('/');
+  return full_event_name.substr(0, slash_sep);
+}
+
+// static
 void EventRouter::DispatchEvent(IPC::Sender* ipc_sender,
                                 void* browser_context_id,
                                 const std::string& extension_id,
@@ -197,6 +194,8 @@ void EventRouter::RemoveEventListener(const std::string& event_name,
 
 void EventRouter::RegisterObserver(Observer* observer,
                                    const std::string& event_name) {
+  // Observing sub-event names like "foo.onBar/123" is not allowed.
+  DCHECK(event_name.find('/') == std::string::npos);
   observers_[event_name] = observer;
 }
 
@@ -217,26 +216,25 @@ void EventRouter::SetEventDispatchObserver(EventDispatchObserver* observer) {
 }
 
 void EventRouter::OnListenerAdded(const EventListener* listener) {
-  const std::string& event_name = listener->event_name;
-  const EventListenerInfo details(event_name, listener->extension_id);
-  ObserverMap::iterator observer = observers_.find(event_name);
+  const EventListenerInfo details(
+      listener->event_name,
+      listener->extension_id,
+      listener->process ? listener->process->GetBrowserContext() : NULL);
+  std::string base_event_name = GetBaseEventName(listener->event_name);
+  ObserverMap::iterator observer = observers_.find(base_event_name);
   if (observer != observers_.end())
     observer->second->OnListenerAdded(details);
 }
 
 void EventRouter::OnListenerRemoved(const EventListener* listener) {
-  const std::string& event_name = listener->event_name;
-  const EventListenerInfo details(event_name, listener->extension_id);
-  ObserverMap::iterator observer = observers_.find(event_name);
+  const EventListenerInfo details(
+      listener->event_name,
+      listener->extension_id,
+      listener->process ? listener->process->GetBrowserContext() : NULL);
+  std::string base_event_name = GetBaseEventName(listener->event_name);
+  ObserverMap::iterator observer = observers_.find(base_event_name);
   if (observer != observers_.end())
     observer->second->OnListenerRemoved(details);
-
-  void* browser_context =
-      listener->process ? listener->process->GetBrowserContext() : NULL;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&NotifyEventListenerRemovedOnIOThread,
-                 browser_context, listener->extension_id, event_name));
 }
 
 void EventRouter::AddLazyEventListener(const std::string& event_name,
@@ -767,9 +765,11 @@ Event* Event::DeepCopy() {
 }
 
 EventListenerInfo::EventListenerInfo(const std::string& event_name,
-                                     const std::string& extension_id)
+                                     const std::string& extension_id,
+                                     content::BrowserContext* browser_context)
     : event_name(event_name),
-      extension_id(extension_id) {}
+      extension_id(extension_id),
+      browser_context(browser_context) {}
 
 EventDispatchInfo::EventDispatchInfo(const std::string& extension_id,
                                      const std::string& event_name,

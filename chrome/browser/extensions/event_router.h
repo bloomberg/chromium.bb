@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
@@ -56,7 +57,9 @@ class EventRouter : public content::NotificationObserver,
   static const char kRegisteredEvents[];
 
   // Observers register interest in events with a particular name and are
-  // notified when a listener is added or removed for that |event_name|.
+  // notified when a listener is added or removed. Observers are matched by
+  // the base name of the event (e.g. adding an event listener for event name
+  // "foo.onBar/123" will trigger observers registered for "foo.onBar").
   class Observer {
    public:
     // Called when a listener is added.
@@ -71,6 +74,10 @@ class EventRouter : public content::NotificationObserver,
    public:
     virtual void OnWillDispatchEvent(scoped_ptr<EventDispatchInfo> details) = 0;
   };
+
+  // Converts event names like "foo.onBar/123" into "foo.onBar". Event names
+  // without a "/" are returned unchanged.
+  static std::string GetBaseEventName(const std::string& full_event_name);
 
   // Sends an event via ipc_sender to the given extension. Can be called on any
   // thread.
@@ -170,6 +177,8 @@ class EventRouter : public content::NotificationObserver,
                   const std::string& extension_id);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(EventRouterTest, EventRouterObserver);
+
   // The extension and process that contains the event listener for a given
   // event.
   struct ListenerProcess;
@@ -287,6 +296,7 @@ class EventRouter : public content::NotificationObserver,
 
   EventListenerMap listeners_;
 
+  // Map from base event name to observer.
   typedef base::hash_map<std::string, Observer*> ObserverMap;
   ObserverMap observers_;
 
@@ -351,10 +361,14 @@ struct Event {
 
 struct EventListenerInfo {
   EventListenerInfo(const std::string& event_name,
-                    const std::string& extension_id);
-
+                    const std::string& extension_id,
+                    content::BrowserContext* browser_context);
+  // The event name including any sub-event, e.g. "runtime.onStartup" or
+  // "webRequest.onCompleted/123".
   const std::string event_name;
+
   const std::string extension_id;
+  content::BrowserContext* browser_context;
 };
 
 struct EventDispatchInfo {

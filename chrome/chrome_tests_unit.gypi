@@ -882,6 +882,7 @@
         'browser/extensions/error_console/error_console_unittest.cc',
         'browser/extensions/event_listener_map_unittest.cc',
         'browser/extensions/event_router_forwarder_unittest.cc',
+        'browser/extensions/event_router_unittest.cc',
         'browser/extensions/extension_action_icon_factory_unittest.cc',
         'browser/extensions/extension_action_unittest.cc',
         'browser/extensions/extension_context_menu_model_unittest.cc',

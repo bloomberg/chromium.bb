@@ -31,9 +31,9 @@ TEST(SignedInDevicesManager, UpdateListener) {
       profile.get(), CreateProfileSyncServiceMock);
   SignedInDevicesManager manager(profile.get());
 
-  EventListenerInfo info(
-      api::signed_in_devices::OnDeviceInfoChange::kEventName,
-      "extension1");
+  EventListenerInfo info(api::signed_in_devices::OnDeviceInfoChange::kEventName,
+                         "extension1",
+                         profile.get());
 
   // Add a listener.
   manager.OnListenerAdded(info);

@@ -63,7 +63,6 @@ using base::StringValue;
 using base::Time;
 using base::TimeDelta;
 using base::Value;
-using chrome::VersionInfo;
 using helpers::CalculateOnAuthRequiredDelta;
 using helpers::CalculateOnBeforeRequestDelta;
 using helpers::CalculateOnBeforeSendHeadersDelta;

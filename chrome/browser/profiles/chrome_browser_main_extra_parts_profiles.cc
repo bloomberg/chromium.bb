@@ -100,6 +100,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/api/usb/usb_device_resource.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
 #include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
@@ -300,6 +301,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::TabsWindowsAPI::GetFactoryInstance();
   extensions::TtsAPI::GetFactoryInstance();
   extensions::WebNavigationAPI::GetFactoryInstance();
+  extensions::WebRequestAPI::GetFactoryInstance();
   extensions::WebrtcAudioPrivateEventService::GetFactoryInstance();
   ExtensionToolbarModelFactory::GetInstance();
 #endif  // defined(ENABLE_EXTENSIONS)

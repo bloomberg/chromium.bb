@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -67,7 +68,6 @@
 using base::DictionaryValue;
 using base::ListValue;
 using base::StringValue;
-using chrome::VersionInfo;
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ResourceRequestInfo;
@@ -384,7 +384,59 @@ void SendOnMessageEventOnUI(
   event_router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
+void RemoveEventListenerOnIOThread(
+    content::BrowserContext* browser_context,
+    const std::string& extension_id,
+    const std::string& sub_event_name) {
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      browser_context, extension_id, sub_event_name);
+}
+
 }  // namespace
+
+namespace extensions {
+
+WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
+    : browser_context_(context) {
+  EventRouter* event_router =
+      ExtensionSystem::GetForBrowserContext(browser_context_)->event_router();
+  for (size_t i = 0; i < arraysize(kWebRequestEvents); ++i) {
+    // Observe the webRequest event.
+    std::string event_name = kWebRequestEvents[i];
+    event_router->RegisterObserver(this, event_name);
+
+    // Also observe the corresponding webview event.
+    event_name.replace(0, sizeof(kWebRequest) - 1, kWebView);
+    event_router->RegisterObserver(this, event_name);
+  }
+}
+
+WebRequestAPI::~WebRequestAPI() {
+  ExtensionSystem::GetForBrowserContext(browser_context_)
+      ->event_router()
+      ->UnregisterObserver(this);
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<WebRequestAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<WebRequestAPI>* WebRequestAPI::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
+void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Note that details.event_name includes the sub-event details (e.g. "/123").
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&RemoveEventListenerOnIOThread,
+                                     details.browser_context,
+                                     details.extension_id,
+                                     details.event_name));
+}
+
+}  // namespace extensions
 
 // Represents a single unique listener to an event, along with whatever filter
 // parameters and extra_info_spec were specified at the time the listener was
@@ -1211,11 +1263,9 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
     void* profile,
     const std::string& extension_id,
     const std::string& sub_event_name) {
-  size_t slash_sep = sub_event_name.find('/');
-  std::string event_name = sub_event_name.substr(0, slash_sep);
-
-  if (!IsWebRequestEvent(event_name))
-    return;
+  std::string event_name =
+      extensions::EventRouter::GetBaseEventName(sub_event_name);
+  DCHECK(IsWebRequestEvent(event_name));
 
   EventListener listener;
   listener.extension_id = extension_id;
