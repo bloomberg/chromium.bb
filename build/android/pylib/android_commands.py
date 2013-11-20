@@ -750,8 +750,9 @@ class AndroidCommands(object):
       (constants.PACKAGE_INFO['chrome'].package,
        package,
        constants.PACKAGE_INFO['chrome'].package))
-    am_output = self.RunShellCommand(cmd)
-    assert am_output and 'Starting' in am_output[-1], 'Service failed to start'
+    am_output = self.RunShellCommandWithSU(cmd)
+    assert am_output and 'Starting' in am_output[-1], (
+        'Service failed to start: %s' % am_output)
     time.sleep(15)
 
   def BroadcastIntent(self, package, intent, *args):
