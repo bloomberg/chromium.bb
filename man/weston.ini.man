@@ -188,6 +188,12 @@ sets the effect used for opening new windows (string). Can be
 .B none.
 By default, the fade animation is used.
 .TP 7
+.BI "focus-animation=" dim-layer
+sets the effect used with the focused and unfocused windows. Can be
+.B dim-layer,
+.B none.
+By default, no animation is used.
+.TP 7
 .BI "binding-modifier=" ctrl
 sets the modifier key used for common bindings (string), such as moving
 surfaces, resizing, rotating, switching, closing and setting the transparency
