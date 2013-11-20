@@ -111,12 +111,12 @@ TEST_F(VectorMathPerfTest, FMUL) {
   ASSERT_NE((kVectorSize - 1) % (vector_math::kRequiredAlignment /
                                  sizeof(float)), 0U);
   RunBenchmark(
-      vector_math::FMUL_FUNC, false, "vector_math_fmac", "optimized_unaligned");
+      vector_math::FMUL_FUNC, false, "vector_math_fmul", "optimized_unaligned");
   // Benchmark FMUL_FUNC() with aligned size.
   ASSERT_EQ(kVectorSize % (vector_math::kRequiredAlignment / sizeof(float)),
             0U);
   RunBenchmark(
-      vector_math::FMUL_FUNC, true, "vector_math_fmac", "optimized_aligned");
+      vector_math::FMUL_FUNC, true, "vector_math_fmul", "optimized_aligned");
 #endif
 }
 
