@@ -18,6 +18,7 @@
 #include "content/common/browser_rendering_stats.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/common/input/synthetic_gesture_params.h"
 #include "content/renderer/paint_aggregator.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -178,25 +179,11 @@ class CONTENT_EXPORT RenderWidget
   // Callback for use with synthetic gestures (e.g. BeginSmoothScroll).
   typedef base::Callback<void()> SyntheticGestureCompletionCallback;
 
-  // Directs the host to begin a smooth scroll. This scroll should have the same
-  // performance characteristics as a user-initiated scroll. Returns an ID of
-  // the scroll gesture. |mouse_event_x| and |mouse_event_y| are expected to be
-  // in local DIP coordinates.
-  void BeginSmoothScroll(bool scroll_down,
-                         const SyntheticGestureCompletionCallback& callback,
-                         int pixels_to_scroll,
-                         int mouse_event_x,
-                         int mouse_event_y);
-
-  // Directs the host to begin a pinch gesture. This gesture should have the
-  // same performance characteristics as a user-initiated pinch.
-  // |pixels_to_move|, |anchor_x| and |anchor_y| are expected to be in local
-  // DIP coordinates.
-  void BeginPinch(bool zoom_in,
-                  int pixels_to_move,
-                  int anchor_x,
-                  int anchor_y,
-                  const SyntheticGestureCompletionCallback& callback);
+  // Send a synthetic gesture to the browser to be queued to the synthetic
+  // gesture controller.
+  void QueueSyntheticGesture(
+      scoped_ptr<SyntheticGestureParams> gesture_params,
+      const SyntheticGestureCompletionCallback& callback);
 
   // Close the underlying WebWidget.
   virtual void Close();
@@ -756,9 +743,11 @@ class CONTENT_EXPORT RenderWidget
   // |screen_info_| on some platforms, and defaults to 1 on other platforms.
   float device_scale_factor_;
 
-  // State associated with the synthetic gestures function
-  // (e.g. BeginSmoothScroll).
-  SyntheticGestureCompletionCallback pending_synthetic_gesture_;
+  // State associated with synthetic gestures. Synthetic gestures are processed
+  // in-order, so a queue is sufficient to identify the correct state for a
+  // completed gesture.
+  std::queue<SyntheticGestureCompletionCallback>
+      pending_synthetic_gesture_callbacks_;
 
   // Specified whether the compositor will run in its own thread.
   bool is_threaded_compositing_enabled_;

@@ -25,8 +25,8 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
-#include "content/browser/renderer_host/synthetic_gesture_controller.h"
 #include "content/common/browser_rendering_stats.h"
+#include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/view_message_enums.h"
 #include "content/port/browser/event_with_latency_info.h"
 #include "content/port/common/input_event_ack_state.h"
@@ -511,8 +511,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
     return overscroll_controller_.get();
   }
 
-  base::TimeDelta GetSyntheticGestureMessageInterval() const;
-
   // Sets whether the overscroll controller should be enabled for this page.
   void SetOverscrollControllerEnabled(bool enabled);
 
@@ -660,10 +658,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                       gfx::Vector2dF current_fling_velocity);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnUpdateIsDelayed();
-  void OnBeginSmoothScroll(
-      const ViewHostMsg_BeginSmoothScroll_Params& params);
-  void OnBeginPinch(
-      const ViewHostMsg_BeginPinch_Params& params);
+  void OnQueueSyntheticGesture(const SyntheticGesturePacket& gesture_packet);
   virtual void OnFocus();
   virtual void OnBlur();
   void OnSetCursor(const WebCursor& cursor);
@@ -903,7 +898,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
-  SyntheticGestureController synthetic_gesture_controller_;
+  scoped_ptr<SyntheticGestureController> synthetic_gesture_controller_;
 
   // Receives and handles all input events.
   scoped_ptr<InputRouter> input_router_;

@@ -12,6 +12,7 @@
 #include "content/common/edit_command.h"
 #include "content/common/input/input_event.h"
 #include "content/common/input/input_param_traits.h"
+#include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
@@ -159,6 +160,8 @@ IPC_MESSAGE_ROUTED3(InputMsg_ActivateNearestFindResult,
                     float /* y */)
 #endif
 
+IPC_MESSAGE_ROUTED0(InputMsg_SyntheticGestureCompleted);
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -167,6 +170,9 @@ IPC_MESSAGE_ROUTED3(InputHostMsg_HandleInputEvent_ACK,
                     blink::WebInputEvent::Type,
                     content::InputEventAckState /* ack_result */,
                     ui::LatencyInfo /* latency_info */)
+
+IPC_MESSAGE_ROUTED1(InputHostMsg_QueueSyntheticGesture,
+                    content::SyntheticGesturePacket)
 
 
 // Adding a new message? Stick to the sort order above: first platform

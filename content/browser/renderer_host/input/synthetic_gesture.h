@@ -26,12 +26,12 @@ class SyntheticGestureTarget;
 //      mouse, etc) to SyntheticGestureController unit tests. The unit tests
 //      only checks basic functionality and termination. If the gesture is
 //      hooked up to Telemetry its correctness can additionally be tested there.
-class CONTENT_EXPORT SyntheticGestureNew {
+class CONTENT_EXPORT SyntheticGesture {
  public:
-  SyntheticGestureNew();
-  virtual ~SyntheticGestureNew();
+  SyntheticGesture();
+  virtual ~SyntheticGesture();
 
-  static scoped_ptr<SyntheticGestureNew> Create(
+  static scoped_ptr<SyntheticGesture> Create(
       const SyntheticGestureParams& gesture_params);
 
   enum Result {
@@ -41,6 +41,7 @@ class CONTENT_EXPORT SyntheticGestureNew {
     GESTURE_SOURCE_TYPE_NOT_SUPPORTED_BY_PLATFORM,
     GESTURE_RESULT_MAX = GESTURE_SOURCE_TYPE_NOT_SUPPORTED_BY_PLATFORM
   };
+
   // Update the state of the gesture and forward the appropriate events to the
   // platform. This function is called repeatedly by the synthetic gesture
   // controller until it stops returning GESTURE_RUNNING.
@@ -48,7 +49,7 @@ class CONTENT_EXPORT SyntheticGestureNew {
       const base::TimeDelta& interval, SyntheticGestureTarget* target) = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SyntheticGestureNew);
+  DISALLOW_COPY_AND_ASSIGN(SyntheticGesture);
 };
 
 }  // namespace content

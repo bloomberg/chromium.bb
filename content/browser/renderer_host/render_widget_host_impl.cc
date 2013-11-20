@@ -31,6 +31,9 @@
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/immediate_input_router.h"
+#include "content/browser/renderer_host/input/synthetic_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -316,6 +319,8 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostView* view) {
     GpuSurfaceTracker::Get()->SetSurfaceHandle(
         surface_id_, gfx::GLSurfaceHandle());
   }
+
+  synthetic_gesture_controller_.reset();
 }
 
 RenderProcessHost* RenderWidgetHostImpl::GetProcess() const {
@@ -384,11 +389,6 @@ void RenderWidgetHostImpl::SendScreenRects() {
   waiting_for_screen_rects_ack_ = true;
 }
 
-base::TimeDelta
-    RenderWidgetHostImpl::GetSyntheticGestureMessageInterval() const {
-  return synthetic_gesture_controller_.GetSyntheticGestureMessageInterval();
-}
-
 void RenderWidgetHostImpl::SetOverscrollControllerEnabled(bool enabled) {
   if (!enabled)
     overscroll_controller_.reset();
@@ -402,6 +402,8 @@ void RenderWidgetHostImpl::SuppressNextCharEvents() {
 
 void RenderWidgetHostImpl::FlushInput() {
   input_router_->Flush();
+  if (synthetic_gesture_controller_)
+    synthetic_gesture_controller_->Flush(base::TimeTicks::Now());
 }
 
 void RenderWidgetHostImpl::SetNeedsFlush() {
@@ -448,6 +450,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   bool handled = true;
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderWidgetHostImpl, msg, msg_is_ok)
+    IPC_MESSAGE_HANDLER(InputHostMsg_QueueSyntheticGesture,
+                        OnQueueSyntheticGesture)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
@@ -465,8 +469,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidOverscroll, OnOverscrolled)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnUpdateIsDelayed)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_BeginSmoothScroll, OnBeginSmoothScroll)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_BeginPinch, OnBeginPinch)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnBlur)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
@@ -1280,6 +1282,8 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   }
 
   BackingStoreManager::RemoveBackingStore(this);
+
+  synthetic_gesture_controller_.reset();
 }
 
 void RenderWidgetHostImpl::UpdateTextDirection(WebTextDirection direction) {
@@ -1712,18 +1716,18 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
   UMA_HISTOGRAM_TIMES("MPArch.RWH_TotalPaintTime", delta);
 }
 
-void RenderWidgetHostImpl::OnBeginSmoothScroll(
-    const ViewHostMsg_BeginSmoothScroll_Params& params) {
-  if (!view_)
-    return;
-  synthetic_gesture_controller_.BeginSmoothScroll(view_, params);
-}
+void RenderWidgetHostImpl::OnQueueSyntheticGesture(
+    const SyntheticGesturePacket& gesture_packet) {
+  if (!synthetic_gesture_controller_) {
+    if (!view_)
+      return;
+    synthetic_gesture_controller_.reset(
+        new SyntheticGestureController(
+            view_->CreateSyntheticGestureTarget().Pass()));
+  }
 
-void RenderWidgetHostImpl::OnBeginPinch(
-    const ViewHostMsg_BeginPinch_Params& params) {
-  if (!view_)
-    return;
-  synthetic_gesture_controller_.BeginPinch(view_, params);
+  synthetic_gesture_controller_->QueueSyntheticGesture(
+      SyntheticGesture::Create(*gesture_packet.gesture_params()));
 }
 
 void RenderWidgetHostImpl::OnFocus() {
