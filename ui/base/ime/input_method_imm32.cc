@@ -144,6 +144,7 @@ void InputMethodIMM32::OnDidChangeFocusedClient(TextInputClient* focused_before,
     // bounds has not changed.
     OnCaretBoundsChanged(focused);
   }
+  InputMethodWin::OnDidChangeFocusedClient(focused_before, focused);
 }
 
 LRESULT InputMethodIMM32::OnImeSetContext(HWND window_handle,
