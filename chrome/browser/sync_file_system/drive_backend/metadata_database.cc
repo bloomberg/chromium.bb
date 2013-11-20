@@ -982,6 +982,29 @@ bool MetadataDatabase::GetLowPriorityDirtyTracker(
   return true;
 }
 
+void MetadataDatabase::GetRegisteredAppIDs(std::vector<std::string>* app_ids) {
+  DCHECK(app_ids);
+  app_ids->clear();
+  app_ids->reserve(app_root_by_app_id_.size());
+  for (TrackerByAppID::iterator itr = app_root_by_app_id_.begin();
+       itr != app_root_by_app_id_.end(); ++itr) {
+    app_ids->push_back(itr->first);
+  }
+}
+
+void MetadataDatabase::MarkTrackerDirty(int64 tracker_id,
+                                        const SyncStatusCallback& callback) {
+  TrackerByID::iterator found = tracker_by_id_.find(tracker_id);
+  if (found == tracker_by_id_.end()) {
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    return;
+  }
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  MarkSingleTrackerDirty(found->second, batch.get());
+  WriteToDatabase(batch.Pass(), callback);
+}
+
 MetadataDatabase::MetadataDatabase(base::SequencedTaskRunner* task_runner)
     : task_runner_(task_runner),
       largest_known_change_id_(0),
@@ -1376,18 +1399,22 @@ void MetadataDatabase::EraseTrackerFromPathIndex(FileTracker* tracker) {
   }
 }
 
+void MetadataDatabase::MarkSingleTrackerDirty(FileTracker* tracker,
+                                              leveldb::WriteBatch* batch) {
+  if (!tracker->dirty()) {
+    tracker->set_dirty(true);
+    PutTrackerToBatch(*tracker, batch);
+  }
+  dirty_trackers_.insert(tracker);
+  low_priority_dirty_trackers_.erase(tracker);
+}
+
 void MetadataDatabase::MarkTrackerSetDirty(
     TrackerSet* trackers,
     leveldb::WriteBatch* batch) {
   for (TrackerSet::iterator itr = trackers->begin();
        itr != trackers->end(); ++itr) {
-    FileTracker* tracker = *itr;
-    if (tracker->dirty())
-      continue;
-    tracker->set_dirty(true);
-    PutTrackerToBatch(*tracker, batch);
-    dirty_trackers_.insert(tracker);
-    low_priority_dirty_trackers_.erase(tracker);
+    MarkSingleTrackerDirty(*itr, batch);
   }
 }
 
@@ -1585,16 +1612,6 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpFiles(
   }
 
   return files.Pass();
-}
-
-void MetadataDatabase::GetRegisteredAppIDs(std::vector<std::string>* app_ids) {
-  DCHECK(app_ids);
-  app_ids->clear();
-  app_ids->reserve(app_root_by_app_id_.size());
-  for (TrackerByAppID::iterator itr = app_root_by_app_id_.begin();
-       itr != app_root_by_app_id_.end(); ++itr) {
-    app_ids->push_back(itr->first);
-  }
 }
 
 bool MetadataDatabase::HasNewerFileMetadata(const std::string& file_id,

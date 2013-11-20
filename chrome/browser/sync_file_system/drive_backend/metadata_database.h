@@ -268,6 +268,10 @@ class MetadataDatabase {
   // Sets |app_ids| to a list of all registered app ids.
   void GetRegisteredAppIDs(std::vector<std::string>* app_ids);
 
+  // Marks |tracker_id| dirty.
+  void MarkTrackerDirty(int64 tracker_id,
+                        const SyncStatusCallback& callback);
+
  private:
   friend class ListChangesTaskTest;
   friend class MetadataDatabaseTest;
@@ -321,6 +325,8 @@ class MetadataDatabase {
   void MaybeAddTrackersForNewFile(const FileMetadata& file,
                                   leveldb::WriteBatch* batch);
 
+  void MarkSingleTrackerDirty(FileTracker* tracker,
+                              leveldb::WriteBatch* batch);
   void MarkTrackerSetDirty(TrackerSet* trackers,
                            leveldb::WriteBatch* batch);
   void MarkTrackersDirtyByFileID(const std::string& file_id,

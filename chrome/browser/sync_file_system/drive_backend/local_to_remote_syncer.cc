@@ -167,13 +167,40 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
   DCHECK(local_change_.IsAddOrUpdate());
   DCHECK(local_change_.file_type() == SYNC_FILE_TYPE_FILE ||
          local_change_.file_type() == SYNC_FILE_TYPE_DIRECTORY);
+
+  const FileDetails& synced_details = remote_file_tracker_->synced_details();
+  DCHECK(synced_details.file_kind() == FILE_KIND_FILE ||
+         synced_details.file_kind() == FILE_KIND_FOLDER);
   if (local_change_.file_type() == SYNC_FILE_TYPE_FILE) {
-    UploadExistingFile(callback);
+    if (synced_details.file_kind() == FILE_KIND_FILE) {
+      // Non-conflicting local file update to existing remote regular file.
+      UploadExistingFile(callback);
+      return;
+    }
+
+    DCHECK_EQ(FILE_KIND_FOLDER, synced_details.file_kind());
+    // Non-conflicting local file update to existing remote *folder*.
+    // Our policy prioritize the folder on this case.
+    // Do nothing to remote folder and mark the tracker dirty to defer it to
+    // next remote-to-local sync phase.
+    metadata_database()->MarkTrackerDirty(remote_file_tracker_->tracker_id(),
+                                          callback);
     return;
   }
 
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
+  DCHECK_EQ(SYNC_FILE_TYPE_DIRECTORY, local_change_.file_type());
+  if (synced_details.file_kind() == FILE_KIND_FILE) {
+    // Non-conflicting local folder creation to existing remote *file*.
+    // Our policy prioritize the folder on this case.
+    // TODO(tzik): Delete remote file and create a folder at the path.
+    NOTIMPLEMENTED();
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+
+  // Non-conflicting local folder creation to existing remote folder.
+  DCHECK_EQ(FILE_KIND_FOLDER, synced_details.file_kind());
+  callback.Run(SYNC_STATUS_OK);
 }
 
 void LocalToRemoteSyncer::DidDeleteRemoteFile(
