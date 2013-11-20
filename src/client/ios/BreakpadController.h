@@ -108,6 +108,9 @@
 // Check if there is currently a crash report to upload.
 - (void)hasReportToUpload:(void(^)(BOOL))callback;
 
+// Get the number of crash reports waiting to upload.
+- (void)getCrashReportCount:(void(^)(int))callback;
+
 @end
 
 #endif  // CLIENT_IOS_HANDLER_IOS_BREAKPAD_CONTROLLER_H_

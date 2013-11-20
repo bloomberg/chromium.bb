@@ -232,7 +232,15 @@ NSString* GetPlatform() {
   NSAssert(started_, @"The controller must be started before "
                      "hasReportToUpload is called");
   dispatch_async(queue_, ^{
-      callback(breakpadRef_ && BreakpadHasCrashReportToUpload(breakpadRef_));
+      callback(breakpadRef_ && (BreakpadGetCrashReportCount(breakpadRef_) > 0));
+  });
+}
+
+- (void)getCrashReportCount:(void(^)(int))callback {
+  NSAssert(started_, @"The controller must be started before "
+                     "getCrashReportCount is called");
+  dispatch_async(queue_, ^{
+      callback(breakpadRef_ ? BreakpadGetCrashReportCount(breakpadRef_) : 0);
   });
 }
 
@@ -264,7 +272,7 @@ NSString* GetPlatform() {
 
 - (void)sendStoredCrashReports {
   dispatch_async(queue_, ^{
-      if (!BreakpadHasCrashReportToUpload(breakpadRef_))
+      if (BreakpadGetCrashReportCount(breakpadRef_) == 0)
         return;
 
       int timeToWait = [self sendDelay];
@@ -279,7 +287,7 @@ NSString* GetPlatform() {
         BreakpadUploadNextReport(breakpadRef_);
 
         // If more reports must be sent, make sure this method is called again.
-        if (BreakpadHasCrashReportToUpload(breakpadRef_))
+        if (BreakpadGetCrashReportCount(breakpadRef_) > 0)
           timeToWait = uploadIntervalInSeconds_;
       }
 

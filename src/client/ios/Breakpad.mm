@@ -162,6 +162,7 @@ class Breakpad {
   void SetKeyValue(NSString *key, NSString *value);
   NSString *KeyValue(NSString *key);
   void RemoveKeyValue(NSString *key);
+  NSArray *CrashReportsToUpload();
   NSString *NextCrashReportToUpload();
   void UploadNextReport();
   void UploadData(NSData *data, NSString *name,
@@ -440,7 +441,7 @@ void Breakpad::RemoveKeyValue(NSString *key) {
 }
 
 //=============================================================================
-NSString *Breakpad::NextCrashReportToUpload() {
+NSArray *Breakpad::CrashReportsToUpload() {
   NSString *directory = KeyValue(@BREAKPAD_DUMP_DIRECTORY);
   if (!directory)
     return nil;
@@ -448,7 +449,15 @@ NSString *Breakpad::NextCrashReportToUpload() {
       contentsOfDirectoryAtPath:directory error:nil];
   NSArray *configs = [dirContents filteredArrayUsingPredicate:[NSPredicate
       predicateWithFormat:@"self BEGINSWITH 'Config-'"]];
-  NSString *config = [configs lastObject];
+  return configs;
+}
+
+//=============================================================================
+NSString *Breakpad::NextCrashReportToUpload() {
+  NSString *directory = KeyValue(@BREAKPAD_DUMP_DIRECTORY);
+  if (!directory)
+    return nil;
+  NSString *config = [CrashReportsToUpload() lastObject];
   if (!config)
     return nil;
   return [NSString stringWithFormat:@"%@/%@", directory, config];
@@ -779,16 +788,16 @@ void BreakpadRemoveKeyValue(BreakpadRef ref, NSString *key) {
 }
 
 //=============================================================================
-bool BreakpadHasCrashReportToUpload(BreakpadRef ref) {
+int BreakpadGetCrashReportCount(BreakpadRef ref) {
   try {
     // Not called at exception time
     Breakpad *breakpad = (Breakpad *)ref;
 
     if (breakpad) {
-       return breakpad->NextCrashReportToUpload() != 0;
+       return [breakpad->CrashReportsToUpload() count];
     }
   } catch(...) {    // don't let exceptions leave this C API
-    fprintf(stderr, "BreakpadHasCrashReportToUpload() : error\n");
+    fprintf(stderr, "BreakpadGetCrashReportCount() : error\n");
   }
   return false;
 }
