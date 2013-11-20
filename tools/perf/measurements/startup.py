@@ -38,5 +38,9 @@ class Startup(page_measurement.PageMeasurement):
         '--enable-stats-collection-bindings'
     ])
 
+  def RunNavigateSteps(self, page, tab):
+    # Overriden so that no page navigation occurs - startup to the NTP.
+    pass
+
   def MeasurePage(self, page, tab, results):
     startup_metric.StartupMetric().AddResults(tab, results)
