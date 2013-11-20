@@ -348,12 +348,12 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
         }
     }
 
-#if OS(MACOSX)
+#if OS(MACOSX) || OS(LINUX)
     if (selectedFrame->editor().selectionHasStyle(CSSPropertyDirection, "ltr") != FalseTriState)
         data.writingDirectionLeftToRight |= WebContextMenuData::CheckableMenuItemChecked;
     if (selectedFrame->editor().selectionHasStyle(CSSPropertyDirection, "rtl") != FalseTriState)
         data.writingDirectionRightToLeft |= WebContextMenuData::CheckableMenuItemChecked;
-#endif // OS(MACOSX)
+#endif // OS(MACOSX) || OS(LINUX)
 
     // Now retrieve the security info.
     DocumentLoader* dl = selectedFrame->loader().documentLoader();

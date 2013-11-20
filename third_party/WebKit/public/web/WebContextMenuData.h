@@ -137,7 +137,7 @@ struct WebContextMenuData {
 
     // Writing direction menu items - values are unions of
     // CheckableMenuItemFlags.
-    // Currently only used on OS X.
+    // Currently only used on OS X and Linux.
     int writingDirectionDefault;
     int writingDirectionLeftToRight;
     int writingDirectionRightToLeft;
