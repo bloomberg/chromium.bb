@@ -1438,40 +1438,40 @@ bool ExtensionService::IsUnacknowledgedExternalExtension(
 }
 
 void ExtensionService::ReconcileKnownDisabled() {
-  ExtensionIdSet known_disabled_ids = extension_prefs_->GetKnownDisabled();
-  if (known_disabled_ids.empty()) {
-    if (!disabled_extensions_.is_empty()) {
-      extension_prefs_->SetKnownDisabled(disabled_extensions_.GetIDs());
-      UMA_HISTOGRAM_BOOLEAN("Extensions.KnownDisabledInitialized", true);
-    }
-  } else {
-    // Both |known_disabled_ids| and |extensions_| are ordered (by definition
-    // of std::map and std::set). Iterate forward over both sets in parallel
-    // to find matching IDs and disable the corresponding extensions.
-    ExtensionSet::const_iterator extensions_it = extensions_.begin();
-    ExtensionIdSet::const_iterator known_disabled_ids_it =
-        known_disabled_ids.begin();
-    int known_disabled_count = 0;
-    while (extensions_it != extensions_.end() &&
-           known_disabled_ids_it != known_disabled_ids.end()) {
-      const std::string& extension_id = extensions_it->get()->id();
-      const int comparison = extension_id.compare(*known_disabled_ids_it);
-      if (comparison < 0) {
-        ++extensions_it;
-      } else if (comparison > 0) {
-        ++known_disabled_ids_it;
-      } else {
-        ++known_disabled_count;
-        // Advance |extensions_it| immediately as it will be invalidated upon
-        // disabling the extension it points to.
-        ++extensions_it;
-        ++known_disabled_ids_it;
-        DisableExtension(extension_id, Extension::DISABLE_KNOWN_DISABLED);
-      }
-    }
-    UMA_HISTOGRAM_COUNTS_100("Extensions.KnownDisabledReDisabled",
-                             known_disabled_count);
+  const ExtensionIdSet known_disabled_ids =
+      extension_prefs_->GetKnownDisabled();
+  if (known_disabled_ids.empty() && !disabled_extensions_.is_empty()) {
+    extension_prefs_->SetKnownDisabled(disabled_extensions_.GetIDs());
+    UMA_HISTOGRAM_BOOLEAN("Extensions.KnownDisabledInitialized", true);
+    return;
   }
+
+  // Both |known_disabled_ids| and |extensions_| are ordered (by definition
+  // of std::map and std::set). Iterate forward over both sets in parallel
+  // to find matching IDs and disable the corresponding extensions.
+  ExtensionSet::const_iterator extensions_it = extensions_.begin();
+  ExtensionIdSet::const_iterator known_disabled_ids_it =
+      known_disabled_ids.begin();
+  int known_disabled_count = 0;
+  while (extensions_it != extensions_.end() &&
+         known_disabled_ids_it != known_disabled_ids.end()) {
+    const std::string& extension_id = extensions_it->get()->id();
+    const int comparison = extension_id.compare(*known_disabled_ids_it);
+    if (comparison < 0) {
+      ++extensions_it;
+    } else if (comparison > 0) {
+      ++known_disabled_ids_it;
+    } else {
+      ++known_disabled_count;
+      // Advance |extensions_it| immediately as it will be invalidated upon
+      // disabling the extension it points to.
+      ++extensions_it;
+      ++known_disabled_ids_it;
+      DisableExtension(extension_id, Extension::DISABLE_KNOWN_DISABLED);
+    }
+  }
+  UMA_HISTOGRAM_COUNTS_100("Extensions.KnownDisabledReDisabled",
+                           known_disabled_count);
 
   // Update the list of known disabled to reflect every change to
   // |disabled_extensions_| from this point forward.
