@@ -74,7 +74,7 @@ HTMLCanvasElement::HTMLCanvasElement(Document& document)
     , m_externallyAllocatedMemory(0)
     , m_deviceScaleFactor(1)
     , m_originClean(true)
-    , m_hasCreatedImageBuffer(false)
+    , m_didFailToCreateImageBuffer(false)
     , m_didClearImageBuffer(false)
 {
     ScriptWrappable::init(this);
@@ -231,7 +231,7 @@ void HTMLCanvasElement::reset()
         return;
 
     bool ok;
-    bool hadImageBuffer = hasCreatedImageBuffer();
+    bool hadImageBuffer = hasImageBuffer();
 
     int w = getAttribute(widthAttr).toInt(&ok);
     if (!ok || w < 0)
@@ -258,7 +258,7 @@ void HTMLCanvasElement::reset()
 
     // If the size of an existing buffer matches, we can just clear it instead of reallocating.
     // This optimization is only done for 2D canvases for now.
-    if (m_hasCreatedImageBuffer && oldSize == newSize && m_deviceScaleFactor == newDeviceScaleFactor && m_context && m_context->is2d()) {
+    if (hadImageBuffer && oldSize == newSize && m_deviceScaleFactor == newDeviceScaleFactor && m_context && m_context->is2d()) {
         if (!m_didClearImageBuffer)
             clearImageBuffer();
         return;
@@ -316,7 +316,7 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r, boo
         m_context->paintRenderingResultsToCanvas();
     }
 
-    if (hasCreatedImageBuffer()) {
+    if (hasImageBuffer()) {
         ImageBuffer* imageBuffer = buffer();
         if (imageBuffer) {
             CompositeOperator compositeOperator = !m_context || m_context->hasAlpha() ? CompositeSourceOver : CompositeCopy;
@@ -352,7 +352,7 @@ void HTMLCanvasElement::clearPresentationCopy()
 void HTMLCanvasElement::setSurfaceSize(const IntSize& size)
 {
     m_size = size;
-    m_hasCreatedImageBuffer = false;
+    m_didFailToCreateImageBuffer = false;
     m_contextStateSaver.clear();
     m_imageBuffer.clear();
     setExternallyAllocatedMemory(0);
@@ -406,9 +406,8 @@ PassRefPtr<ImageData> HTMLCanvasElement::getImageData()
 
 IntSize HTMLCanvasElement::convertLogicalToDevice(const IntSize& logicalSize) const
 {
-    float width = ceilf(logicalSize.width() * m_deviceScaleFactor);
-    float height = ceilf(logicalSize.height() * m_deviceScaleFactor);
-    return IntSize(width, height);
+    FloatSize deviceSize = logicalSize * m_deviceScaleFactor;
+    return expandedIntSize(deviceSize);
 }
 
 SecurityOrigin* HTMLCanvasElement::securityOrigin() const
@@ -447,7 +446,7 @@ void HTMLCanvasElement::createImageBuffer()
 {
     ASSERT(!m_imageBuffer);
 
-    m_hasCreatedImageBuffer = true;
+    m_didFailToCreateImageBuffer = true;
     m_didClearImageBuffer = true;
 
     IntSize deviceSize = convertLogicalToDevice(size());
@@ -468,6 +467,7 @@ void HTMLCanvasElement::createImageBuffer()
     m_imageBuffer = ImageBuffer::create(size(), m_deviceScaleFactor, renderingMode, opacityMode, msaaSampleCount);
     if (!m_imageBuffer)
         return;
+    m_didFailToCreateImageBuffer = false;
     setExternallyAllocatedMemory(4 * width() * height());
     m_imageBuffer->context()->setShouldClampToSourceRect(false);
     m_imageBuffer->context()->setImageInterpolationQuality(DefaultInterpolationQuality);
@@ -500,15 +500,17 @@ GraphicsContext* HTMLCanvasElement::drawingContext() const
 
 GraphicsContext* HTMLCanvasElement::existingDrawingContext() const
 {
-    if (!m_hasCreatedImageBuffer)
+    if (m_didFailToCreateImageBuffer) {
+        ASSERT(!hasImageBuffer());
         return 0;
+    }
 
     return drawingContext();
 }
 
 ImageBuffer* HTMLCanvasElement::buffer() const
 {
-    if (!m_hasCreatedImageBuffer)
+    if (!hasImageBuffer() && !m_didFailToCreateImageBuffer)
         const_cast<HTMLCanvasElement*>(this)->createImageBuffer();
     return m_imageBuffer.get();
 }
@@ -525,7 +527,7 @@ Image* HTMLCanvasElement::copiedImage() const
 
 void HTMLCanvasElement::clearImageBuffer()
 {
-    ASSERT(m_hasCreatedImageBuffer);
+    ASSERT(hasImageBuffer() && !m_didFailToCreateImageBuffer);
     ASSERT(!m_didClearImageBuffer);
     ASSERT(m_context);
 
@@ -546,7 +548,7 @@ void HTMLCanvasElement::clearCopiedImage()
 
 AffineTransform HTMLCanvasElement::baseTransform() const
 {
-    ASSERT(m_hasCreatedImageBuffer);
+    ASSERT(hasImageBuffer() && !m_didFailToCreateImageBuffer);
     IntSize unscaledSize = size();
     IntSize size = convertLogicalToDevice(unscaledSize);
     AffineTransform transform;

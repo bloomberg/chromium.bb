@@ -1,0 +1,33 @@
+Series of tests to ensure correct behaviour when canvas size is extremely large.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+check for crash on extremely large canvas size.
+PASS imgdata[4] is 0
+PASS imgdata[5] is 0
+PASS imgdata[6] is 0
+check for crash after resetting to the same size.
+PASS imgdata[4] is 0
+PASS imgdata[5] is 0
+PASS imgdata[6] is 0
+check for crash after resizing to googol.
+PASS imgdata[4] is 0
+PASS imgdata[5] is 0
+PASS imgdata[6] is 0
+check for crash after resetting to the same size.
+PASS imgdata[4] is 0
+PASS imgdata[5] is 0
+PASS imgdata[6] is 0
+check again for crash on extremely large canvas size.
+PASS imgdata[4] is 0
+PASS imgdata[5] is 0
+PASS imgdata[6] is 0
+after resizing to normal size, the canvas must be in a valid state.
+PASS imgdata[4] is 0
+PASS imgdata[5] is 0
+PASS imgdata[6] is 255
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

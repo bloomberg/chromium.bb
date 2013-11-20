@@ -112,7 +112,7 @@ CanvasRenderingContext2D::~CanvasRenderingContext2D()
 
 bool CanvasRenderingContext2D::isAccelerated() const
 {
-    if (!canvas()->hasCreatedImageBuffer())
+    if (!canvas()->hasImageBuffer())
         return false;
     GraphicsContext* context = drawingContext();
     return context && context->isAccelerated();

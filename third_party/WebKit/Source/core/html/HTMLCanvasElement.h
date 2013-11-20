@@ -120,7 +120,7 @@ public:
 
     bool is3D() const;
 
-    bool hasCreatedImageBuffer() const { return m_hasCreatedImageBuffer; }
+    bool hasImageBuffer() const { return m_imageBuffer.get(); }
 
     bool shouldAccelerate(const IntSize&) const;
 
@@ -164,8 +164,9 @@ private:
     float m_deviceScaleFactor; // FIXME: This is always 1 and should probable be deleted
     bool m_originClean;
 
-    // m_createdImageBuffer means we tried to malloc the buffer.  We didn't necessarily get it.
-    mutable bool m_hasCreatedImageBuffer;
+    // It prevents HTMLCanvasElement::buffer() from continuously re-attempting to allocate an imageBuffer
+    // after the first attempt failed.
+    mutable bool m_didFailToCreateImageBuffer;
     mutable bool m_didClearImageBuffer;
     OwnPtr<ImageBuffer> m_imageBuffer;
     mutable OwnPtr<GraphicsContextStateSaver> m_contextStateSaver;
