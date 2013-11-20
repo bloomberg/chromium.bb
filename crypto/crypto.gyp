@@ -75,6 +75,9 @@
               ['exclude', 'signature_verifier_nss\.cc$'],
               ['exclude', 'symmetric_key_nss\.cc$'],
             ],
+            'includes': [
+              '../build/android/cpufeatures.gypi',
+            ],
         }],
         [ 'os_bsd==1', {
           'link_settings': {
