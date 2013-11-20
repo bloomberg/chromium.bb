@@ -19,6 +19,11 @@
       }, {
         'compile_seccomp_bpf': 0,
       }],
+      ['OS=="linux" and (target_arch=="ia32" or target_arch=="x64")', {
+        'compile_seccomp_bpf_demo': 1,
+      }, {
+        'compile_seccomp_bpf_demo': 0,
+      }],
     ],
   },
   'target_defaults': {
@@ -124,12 +129,18 @@
     {
       # A demonstration program for the seccomp-bpf sandbox.
       'target_name': 'seccomp_bpf_demo',
-      'type': 'executable',
-      'sources': [
-        'seccomp-bpf/demo.cc',
-      ],
-      'dependencies': [
-        'seccomp_bpf',
+      'conditions': [
+        ['compile_seccomp_bpf_demo==1', {
+          'type': 'executable',
+          'sources': [
+            'seccomp-bpf/demo.cc',
+          ],
+          'dependencies': [
+            'seccomp_bpf',
+          ],
+        }, {
+          'type': 'none',
+        }],
       ],
       'include_dirs': [
         '../../',

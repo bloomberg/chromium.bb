@@ -28,6 +28,7 @@
 
 #include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/services/linux_syscalls.h"
 
 using playground2::arch_seccomp_data;
 using playground2::ErrorCode;
