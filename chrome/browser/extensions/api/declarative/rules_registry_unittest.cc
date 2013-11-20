@@ -33,11 +33,10 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
   add_rules.push_back(make_linked_ptr(new RulesRegistry::Rule));
   add_rules.push_back(make_linked_ptr(new RulesRegistry::Rule));
   error = registry->AddRules(kExtensionId, add_rules);
-  EXPECT_TRUE(error.empty());
+  EXPECT_TRUE(error.empty()) << error;
 
   std::vector<linked_ptr<RulesRegistry::Rule> > get_rules;
-  error = registry->GetAllRules(kExtensionId, &get_rules);
-  EXPECT_TRUE(error.empty());
+  registry->GetAllRules(kExtensionId, &get_rules);
 
   ASSERT_EQ(2u, get_rules.size());
 
@@ -61,8 +60,7 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
   EXPECT_FALSE(error.empty());
 
   std::vector<linked_ptr<RulesRegistry::Rule> > get_rules_2;
-  error = registry->GetAllRules(kExtensionId, &get_rules_2);
-  EXPECT_TRUE(error.empty());
+  registry->GetAllRules(kExtensionId, &get_rules_2);
   ASSERT_EQ(2u, get_rules_2.size());
   EXPECT_EQ(1u /*extensions*/ + 2u /*rules*/,
             registry->GetNumberOfUsedRuleIdentifiersForTesting());
@@ -72,53 +70,49 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
   std::vector<std::string> remove_rules_3;
   remove_rules_3.push_back(*get_rules[0]->id);
   error = registry->RemoveRules(kExtensionId, remove_rules_3);
-  EXPECT_TRUE(error.empty());
+  EXPECT_TRUE(error.empty()) << error;
 
   EXPECT_EQ(1u /*extensions*/ + 1u /*rules*/,
             registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
   std::vector<linked_ptr<RulesRegistry::Rule> > get_rules_3a;
-  error = registry->GetAllRules(kExtensionId, &get_rules_3a);
-  EXPECT_TRUE(error.empty());
+  registry->GetAllRules(kExtensionId, &get_rules_3a);
   ASSERT_EQ(1u, get_rules_3a.size());
 
   std::vector<linked_ptr<RulesRegistry::Rule> > add_rules_3;
   add_rules_3.push_back(make_linked_ptr(new RulesRegistry::Rule));
   add_rules_3[0]->id.reset(new std::string(*get_rules[0]->id));
   error = registry->AddRules(kExtensionId, add_rules_3);
-  EXPECT_TRUE(error.empty());
+  EXPECT_TRUE(error.empty()) << error;
   EXPECT_EQ(1u /*extensions*/ + 2u /*rules*/,
             registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
   std::vector<linked_ptr<RulesRegistry::Rule> > get_rules_3b;
-  error = registry->GetAllRules(kExtensionId, &get_rules_3b);
-  EXPECT_TRUE(error.empty());
+  registry->GetAllRules(kExtensionId, &get_rules_3b);
   ASSERT_EQ(2u, get_rules_3b.size());
 
   // Check that we can register a rule with an ID that is not modified.
 
   error = registry->RemoveAllRules(kExtensionId);
-  EXPECT_TRUE(error.empty());
+  EXPECT_TRUE(error.empty()) << error;
   EXPECT_EQ(0u /*extensions*/ + 0u /*rules*/,
             registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
   std::vector<linked_ptr<RulesRegistry::Rule> > get_rules_4a;
-  error = registry->GetAllRules(kExtensionId, &get_rules_4a);
-  EXPECT_TRUE(error.empty());
+  registry->GetAllRules(kExtensionId, &get_rules_4a);
   ASSERT_TRUE(get_rules_4a.empty());
 
   std::vector<linked_ptr<RulesRegistry::Rule> > add_rules_4;
   add_rules_4.push_back(make_linked_ptr(new RulesRegistry::Rule));
   add_rules_4[0]->id.reset(new std::string(kRuleId));
   error = registry->AddRules(kExtensionId, add_rules_4);
-  EXPECT_TRUE(error.empty());
+  EXPECT_TRUE(error.empty()) << error;
 
   EXPECT_EQ(1u /*extensions*/ + 1u /*rules*/,
             registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
   std::vector<linked_ptr<RulesRegistry::Rule> > get_rules_4b;
-  error = registry->GetAllRules(kExtensionId, &get_rules_4b);
-  EXPECT_TRUE(error.empty());
+  registry->GetAllRules(kExtensionId, &get_rules_4b);
 
   ASSERT_EQ(1u, get_rules_4b.size());
 
@@ -150,11 +144,10 @@ TEST(RulesRegistryTest, FillOptionalPriority) {
   add_rules[0]->priority.reset(new int(2));
   add_rules.push_back(make_linked_ptr(new RulesRegistry::Rule));
   error = registry->AddRules(kExtensionId, add_rules);
-  EXPECT_TRUE(error.empty());
+  EXPECT_TRUE(error.empty()) << error;
 
   std::vector<linked_ptr<RulesRegistry::Rule> > get_rules;
-  error = registry->GetAllRules(kExtensionId, &get_rules);
-  EXPECT_TRUE(error.empty());
+  registry->GetAllRules(kExtensionId, &get_rules);
 
   ASSERT_EQ(2u, get_rules.size());
 

@@ -185,10 +185,9 @@ std::string RulesRegistry::RemoveAllRules(const std::string& extension_id) {
   return kSuccess;
 }
 
-std::string RulesRegistry::GetRules(
-    const std::string& extension_id,
-    const std::vector<std::string>& rule_identifiers,
-    std::vector<linked_ptr<Rule> >* out) {
+void RulesRegistry::GetRules(const std::string& extension_id,
+                             const std::vector<std::string>& rule_identifiers,
+                             std::vector<linked_ptr<Rule> >* out) {
   DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
 
   for (std::vector<std::string>::const_iterator i = rule_identifiers.begin();
@@ -198,11 +197,10 @@ std::string RulesRegistry::GetRules(
     if (entry != rules_.end())
       out->push_back(entry->second);
   }
-  return kSuccess;
 }
 
-std::string RulesRegistry::GetAllRules(const std::string& extension_id,
-                                       std::vector<linked_ptr<Rule> >* out) {
+void RulesRegistry::GetAllRules(const std::string& extension_id,
+                                std::vector<linked_ptr<Rule> >* out) {
   DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
 
   for (RulesDictionary::const_iterator i = rules_.begin();
@@ -211,7 +209,6 @@ std::string RulesRegistry::GetAllRules(const std::string& extension_id,
     if (key.first == extension_id)
       out->push_back(i->second);
   }
-  return kSuccess;
 }
 
 void RulesRegistry::OnExtensionUnloaded(const std::string& extension_id) {
@@ -263,8 +260,7 @@ void RulesRegistry::ProcessChangedRules(const std::string& extension_id) {
   process_changed_rules_requested_ = NOT_SCHEDULED_FOR_PROCESSING;
 
   std::vector<linked_ptr<Rule> > new_rules;
-  std::string error = GetAllRules(extension_id, &new_rules);
-  DCHECK_EQ(std::string(), error);
+  GetAllRules(extension_id, &new_rules);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,

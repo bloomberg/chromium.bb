@@ -112,18 +112,13 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // are unknown are ignored.
   //
   // The returned rules are stored in |out|. Ownership is passed to the caller.
-  //
-  // Returns an empty string if the function is successful or an error
-  // message otherwise.
-  std::string GetRules(
-      const std::string& extension_id,
-      const std::vector<std::string>& rule_identifiers,
-      std::vector<linked_ptr<RulesRegistry::Rule> >* out);
+  void GetRules(const std::string& extension_id,
+                const std::vector<std::string>& rule_identifiers,
+                std::vector<linked_ptr<RulesRegistry::Rule> >* out);
 
   // Same as GetRules but returns all rules owned by |extension_id|.
-  std::string GetAllRules(
-      const std::string& extension_id,
-      std::vector<linked_ptr<RulesRegistry::Rule> >* out);
+  void GetAllRules(const std::string& extension_id,
+                   std::vector<linked_ptr<RulesRegistry::Rule> >* out);
 
   // Called to notify the RulesRegistry that an extension has been unloaded
   // and all rules of this extension need to be removed.

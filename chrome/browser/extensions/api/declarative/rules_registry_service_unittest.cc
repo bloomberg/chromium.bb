@@ -27,7 +27,7 @@ void InsertRule(scoped_refptr<extensions::RulesRegistry> registry,
 void VerifyNumberOfRules(scoped_refptr<extensions::RulesRegistry> registry,
                          size_t expected_number_of_rules) {
   std::vector<linked_ptr<extensions::RulesRegistry::Rule> > get_rules;
-  std::string error = registry->GetAllRules(kExtensionId, &get_rules);
+  registry->GetAllRules(kExtensionId, &get_rules);
   EXPECT_EQ(expected_number_of_rules, get_rules.size());
 }
 

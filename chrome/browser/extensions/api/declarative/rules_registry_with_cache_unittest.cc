@@ -81,8 +81,7 @@ class RulesRegistryWithCacheTest : public testing::Test {
   int GetNumberOfRules(const std::string& extension_id,
                        TestRulesRegistry* registry) {
     std::vector<linked_ptr<extensions::RulesRegistry::Rule> > get_rules;
-    std::string error = registry->GetAllRules(extension_id, &get_rules);
-    EXPECT_EQ("", error);
+    registry->GetAllRules(extension_id, &get_rules);
     return get_rules.size();
   }
 
@@ -180,7 +179,7 @@ TEST_F(RulesRegistryWithCacheTest, GetRules) {
   rules_to_get.push_back(kRuleId);
   rules_to_get.push_back("unknown_rule");
   std::vector<linked_ptr<extensions::RulesRegistry::Rule> > gotten_rules;
-  EXPECT_EQ("", registry_->GetRules(kExtensionId, rules_to_get, &gotten_rules));
+  registry_->GetRules(kExtensionId, rules_to_get, &gotten_rules);
   ASSERT_EQ(1u, gotten_rules.size());
   ASSERT_TRUE(gotten_rules[0]->id.get());
   EXPECT_EQ(kRuleId, *(gotten_rules[0]->id));
@@ -194,7 +193,7 @@ TEST_F(RulesRegistryWithCacheTest, GetAllRules) {
 
   // Check that we get the correct rules.
   std::vector<linked_ptr<extensions::RulesRegistry::Rule> > gotten_rules;
-  EXPECT_EQ("", registry_->GetAllRules(kExtensionId, &gotten_rules));
+  registry_->GetAllRules(kExtensionId, &gotten_rules);
   EXPECT_EQ(2u, gotten_rules.size());
   ASSERT_TRUE(gotten_rules[0]->id.get());
   ASSERT_TRUE(gotten_rules[1]->id.get());

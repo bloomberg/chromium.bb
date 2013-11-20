@@ -141,17 +141,15 @@ bool EventsEventGetRulesFunction::RunImplOnCorrectThread() {
 
   std::vector<linked_ptr<Rule> > rules;
   if (params->rule_identifiers.get()) {
-    error_ = rules_registry_->GetRules(extension_id(),
-                                       *params->rule_identifiers,
-                                       &rules);
+    rules_registry_->GetRules(
+        extension_id(), *params->rule_identifiers, &rules);
   } else {
-    error_ = rules_registry_->GetAllRules(extension_id(), &rules);
+    rules_registry_->GetAllRules(extension_id(), &rules);
   }
 
-  if (error_.empty())
-    results_ = GetRules::Results::Create(rules);
+  results_ = GetRules::Results::Create(rules);
 
-  return error_.empty();
+  return true;
 }
 
 }  // namespace extensions
