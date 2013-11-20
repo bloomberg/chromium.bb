@@ -257,6 +257,7 @@ for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
               'eh_catch_many.cc',
               'eh_loop_break.cc',
               'eh_floating_point.cc',
+              'eh_uncaught_exception.cc',
               ]:
 
     if not env.Bit('bitcode') and src in ['eh_return.c']:
@@ -285,6 +286,11 @@ for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
         ]
     if tag == 'sjlj' and src in non_abi_stable_tests:
       continue
+
+    if (src == 'eh_uncaught_exception.cc' and
+        '--pnacl-exceptions=sjlj' in env_to_try['LINKFLAGS'] and
+        env_to_try['TOOLCHAIN_FEATURE_VERSION'] < 2):
+      is_broken = True
 
     name = src.split('.')[0] + '_' + tag
     nobj = env_to_try.ComponentObject(name + '.o', src)
