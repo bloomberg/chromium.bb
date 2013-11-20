@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info_internal.h"
 
 namespace {
 
@@ -47,25 +48,11 @@ size_t MaxSharedMemorySize() {
   return static_cast<size_t>(limit);
 }
 
-template<typename T, T (*F)(void)>
-class LazySysInfoValue {
- public:
-  LazySysInfoValue()
-      : value_(F()) { }
-
-  ~LazySysInfoValue() { }
-
-  T value() { return value_; }
-
- private:
-  const T value_;
-
-  DISALLOW_COPY_AND_ASSIGN(LazySysInfoValue);
-};
-
-base::LazyInstance<LazySysInfoValue<int64, AmountOfPhysicalMemory> >::Leaky
+base::LazyInstance<
+    base::internal::LazySysInfoValue<int64, AmountOfPhysicalMemory> >::Leaky
     g_lazy_physical_memory = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<LazySysInfoValue<size_t, MaxSharedMemorySize> >::Leaky
+base::LazyInstance<
+    base::internal::LazySysInfoValue<size_t, MaxSharedMemorySize> >::Leaky
     g_lazy_max_shared_memory = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

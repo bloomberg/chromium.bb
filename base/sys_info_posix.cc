@@ -12,8 +12,10 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info_internal.h"
 #include "base/threading/thread_restrictions.h"
 
 #if defined(OS_ANDROID)
@@ -23,10 +25,10 @@
 #include <sys/statvfs.h>
 #endif
 
-namespace base {
+namespace {
 
 #if !defined(OS_OPENBSD)
-int SysInfo::NumberOfProcessors() {
+int NumberOfProcessors() {
   // It seems that sysconf returns the number of "logical" processors on both
   // Mac and Linux.  So we get the number of "online logical" processors.
   long res = sysconf(_SC_NPROCESSORS_ONLN);
@@ -36,6 +38,20 @@ int SysInfo::NumberOfProcessors() {
   }
 
   return static_cast<int>(res);
+}
+
+base::LazyInstance<
+    base::internal::LazySysInfoValue<int, NumberOfProcessors> >::Leaky
+    g_lazy_number_of_processors = LAZY_INSTANCE_INITIALIZER;
+#endif
+
+}  // namespace
+
+namespace base {
+
+#if !defined(OS_OPENBSD)
+int SysInfo::NumberOfProcessors() {
+  return g_lazy_number_of_processors.Get().value();
 }
 #endif
 

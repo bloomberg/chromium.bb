@@ -50,6 +50,7 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportImpl :
   virtual size_t memoryUsageMB();
   virtual size_t actualMemoryUsageMB();
   virtual size_t physicalMemoryMB();
+  virtual size_t numberOfProcessors();
 
   virtual void startHeapProfiling(const blink::WebString& prefix);
   virtual void stopHeapProfiling() OVERRIDE;

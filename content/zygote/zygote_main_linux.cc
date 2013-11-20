@@ -276,6 +276,7 @@ static void PreSandboxInit() {
 
   base::SysInfo::AmountOfPhysicalMemory();
   base::SysInfo::MaxSharedMemorySize();
+  base::SysInfo::NumberOfProcessors();
 
   // ICU DateFormat class (used in base/time_format.cc) needs to get the
   // Olson timezone ID by accessing the zoneinfo files on disk. After

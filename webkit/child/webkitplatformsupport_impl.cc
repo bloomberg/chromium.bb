@@ -871,6 +871,10 @@ size_t WebKitPlatformSupportImpl::physicalMemoryMB() {
   return static_cast<size_t>(base::SysInfo::AmountOfPhysicalMemoryMB());
 }
 
+size_t WebKitPlatformSupportImpl::numberOfProcessors() {
+  return static_cast<size_t>(base::SysInfo::NumberOfProcessors());
+}
+
 void WebKitPlatformSupportImpl::startHeapProfiling(
   const blink::WebString& prefix) {
   // FIXME(morrita): Make this built on windows.
