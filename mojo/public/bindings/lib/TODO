@@ -1,7 +1,6 @@
 TODOs:
  - Ensure validation checks are solid
  - Add tests of validation logic
- - Add tests of Buffer classes
  - Optimize Buffer classes?
  - Make "Clone" method public?
  - Add compile-time asserts to verify object packing and padding.
