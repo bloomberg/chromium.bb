@@ -463,6 +463,11 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   notification_bubble_.reset();
   if (system_bubble_.get() && creation_type == BUBBLE_USE_EXISTING) {
     system_bubble_->bubble()->UpdateView(items, bubble_type);
+    // If ChromeVox is enabled, focus the default item.
+    AccessibilityDelegate* delegate =
+        Shell::GetInstance()->accessibility_delegate();
+    if (delegate->IsSpokenFeedbackEnabled())
+      system_bubble_->bubble()->FocusDefault();
   } else {
     // Remember if the menu is a single property (like e.g. volume) or the
     // full tray menu. Note that in case of the |BUBBLE_USE_EXISTING| case
