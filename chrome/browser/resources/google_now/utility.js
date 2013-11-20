@@ -251,7 +251,8 @@ var wrapper = (function() {
    * @return {string} Diagnostic string.
    */
   function debugGetStateString() {
-    return 'pendingCallbacks = ' + JSON.stringify(pendingCallbacks);
+    return 'pendingCallbacks @' + Date.now() + ' = ' +
+        JSON.stringify(pendingCallbacks);
   }
 
   /**
@@ -276,7 +277,7 @@ var wrapper = (function() {
 
     if (!opt_isEventListener) {
       checkInWrappedCallback();
-      pendingCallbacks[callbackId] = new Error().stack;
+      pendingCallbacks[callbackId] = new Error().stack + ' @' + Date.now();
     }
 
     // wrapperPluginFactory may be null before task manager is built, and in
@@ -389,7 +390,7 @@ var wrapper = (function() {
     var stringifiedPendingCallbacks = JSON.stringify(pendingCallbacks);
     verify(
         stringifiedPendingCallbacks == '{}',
-        'Pending callbacks when unloading event page:' +
+        'Pending callbacks when unloading event page @' + Date.now() + ':' +
         stringifiedPendingCallbacks);
   });
 
