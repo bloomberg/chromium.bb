@@ -4,6 +4,7 @@
 
 #include "skia/ext/skia_utils_mac.mm"
 
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -102,17 +103,15 @@ void SkiaUtilsMacTest::TestSkBitmap(const SkBitmap& bitmap, bool isred) {
   int y = bitmap.height() > 17 ? 17 : 0;
   SkColor color = bitmap.getColor(x, y);
 
-  // Be tolerant of lossy color space conversions.
-  // TODO(sail): Fix color space conversion issues, http://crbug.com/79946
   if (isred) {
-    EXPECT_GT(SkColorGetR(color), 245u);
-    EXPECT_LT(SkColorGetB(color), 10u);
+    EXPECT_EQ(255u, SkColorGetR(color));
+    EXPECT_EQ(0u, SkColorGetB(color));
   } else {
-    EXPECT_LT(SkColorGetR(color), 10u);
-    EXPECT_GT(SkColorGetB(color), 245u);
+    EXPECT_EQ(0u, SkColorGetR(color));
+    EXPECT_EQ(255u, SkColorGetB(color));
   }
-  EXPECT_LT(SkColorGetG(color), 10u);
-  EXPECT_GT(SkColorGetA(color), 245u);
+  EXPECT_EQ(0u, SkColorGetG(color));
+  EXPECT_EQ(255u, SkColorGetA(color));
 }
 
 // setBitmapDevice has been deprecated/removed. Is this test still useful?
@@ -206,7 +205,9 @@ TEST_F(SkiaUtilsMacTest, NSImageRepToSkBitmap) {
   NSImage* image = CreateNSImage(width, height, isred);
   EXPECT_EQ(1u, [[image representations] count]);
   NSBitmapImageRep* imageRep = [[image representations] lastObject];
-  SkBitmap bitmap(gfx::NSImageRepToSkBitmap(imageRep, [image size], false));
+  NSColorSpace* colorSpace = [NSColorSpace deviceRGBColorSpace];
+  SkBitmap bitmap(gfx::NSImageRepToSkBitmapWithColorSpace(
+      imageRep, [image size], false, [colorSpace CGColorSpace]));
   TestSkBitmap(bitmap, isred);
 }
 

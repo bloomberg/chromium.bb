@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -157,41 +158,8 @@ void Clipboard::WriteBookmark(const char* title_data,
 }
 
 void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
-  // TODO(dcheng): Just use gfx::SkBitmapToNSImageWithColorspace().
-  // Safe because the image goes away before the call returns.
-  base::ScopedCFTypeRef<CFDataRef> data(
-      CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
-                                  static_cast<const UInt8*>(bitmap.getPixels()),
-                                  bitmap.getSize(),
-                                  kCFAllocatorNull));
-
-  base::ScopedCFTypeRef<CGDataProviderRef> data_provider(
-      CGDataProviderCreateWithCFData(data));
-
-  base::ScopedCFTypeRef<CGImageRef> cgimage(
-      CGImageCreate(bitmap.width(),
-                    bitmap.height(),
-                    8,
-                    32,
-                    bitmap.rowBytes(),
-                    base::mac::GetSystemColorSpace(),  // TODO(avi): do better
-                    kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
-                    data_provider,
-                    NULL,
-                    false,
-                    kCGRenderingIntentDefault));
-  // Aggressively free storage since image buffers can potentially be very
-  // large.
-  data_provider.reset();
-  data.reset();
-
-  base::scoped_nsobject<NSBitmapImageRep> bitmap_rep(
-      [[NSBitmapImageRep alloc] initWithCGImage:cgimage]);
-  cgimage.reset();
-
-  base::scoped_nsobject<NSImage> image([[NSImage alloc] init]);
-  [image addRepresentation:bitmap_rep];
-
+  NSImage* image = gfx::SkBitmapToNSImageWithColorSpace(
+      bitmap, base::mac::GetSystemColorSpace());
   // An API to ask the NSImage to write itself to the clipboard comes in 10.6 :(
   // For now, spit out the image as a TIFF.
   NSPasteboard* pb = GetPasteboard();
@@ -350,28 +318,12 @@ SkBitmap Clipboard::ReadImage(ClipboardType type) const {
   base::scoped_nsobject<NSImage> image(base::mac::RunBlockIgnoringExceptions(^{
       return [[NSImage alloc] initWithPasteboard:GetPasteboard()];
   }));
-  if (!image.get())
-    return SkBitmap();
-
-  // TODO(dcheng): Just use gfx::NSImageToSkBitmap().
-  gfx::ScopedNSGraphicsContextSaveGState scoped_state;
-  [image setFlipped:YES];
-  int width = [image size].width;
-  int height = [image size].height;
-
-  gfx::Canvas canvas(gfx::Size(width, height), 1.0f, false);
-  {
-    skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
-    CGContextRef gc = scoped_platform_paint.GetPlatformSurface();
-    NSGraphicsContext* cocoa_gc =
-        [NSGraphicsContext graphicsContextWithGraphicsPort:gc flipped:NO];
-    [NSGraphicsContext setCurrentContext:cocoa_gc];
-    [image drawInRect:NSMakeRect(0, 0, width, height)
-             fromRect:NSZeroRect
-            operation:NSCompositeCopy
-             fraction:1.0];
+  SkBitmap bitmap;
+  if (image.get()) {
+    bitmap = gfx::NSImageToSkBitmapWithColorSpace(
+        image.get(), /*is_opaque=*/ false, base::mac::GetSystemColorSpace());
   }
-  return canvas.ExtractImageRep().sk_bitmap();
+  return bitmap;
 }
 
 void Clipboard::ReadCustomData(ClipboardType clipboard_type,

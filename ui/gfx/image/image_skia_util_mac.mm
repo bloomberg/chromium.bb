@@ -67,8 +67,9 @@ gfx::ImageSkia ImageSkiaFromResizedNSImage(NSImage* image,
     NSImageRep* ns_image_rep = GetNSImageRepWithPixelSize(image,
         desired_size_for_scale);
 
-    SkBitmap bitmap(gfx::NSImageRepToSkBitmap(ns_image_rep,
-        desired_size_for_scale, false));
+    // TODO(dcheng): Should this function take a color space argument?
+    SkBitmap bitmap(gfx::NSImageRepToSkBitmapWithColorSpace(ns_image_rep,
+        desired_size_for_scale, false, base::mac::GetGenericRGBColorSpace()));
     if (bitmap.isNull())
       continue;
 
