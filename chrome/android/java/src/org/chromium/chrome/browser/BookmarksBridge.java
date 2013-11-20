@@ -29,7 +29,7 @@ public class BookmarksBridge {
     public static final int ROOT_FOLDER_ID = -1;
 
     private final Profile mProfile;
-    private long mNativeBookmarksBridge;
+    private int mNativeBookmarksBridge;
     private boolean mIsNativeBookmarkModelLoaded;
     private final List<DelayedBookmarkCallback> mDelayedBookmarkCallbacks =
             new ArrayList<DelayedBookmarkCallback>();
@@ -295,15 +295,15 @@ public class BookmarksBridge {
         return new BookmarkId(id, type);
     }
 
-    private native void nativeGetBookmarksForFolder(long nativeBookmarksBridge,
+    private native void nativeGetBookmarksForFolder(int nativeBookmarksBridge,
             BookmarkId folderId, BookmarksCallback callback,
             List<BookmarkItem> bookmarksList);
-    private native void nativeGetCurrentFolderHierarchy(long nativeBookmarksBridge,
+    private native void nativeGetCurrentFolderHierarchy(int nativeBookmarksBridge,
             BookmarkId folderId, BookmarksCallback callback,
             List<BookmarkItem> bookmarksList);
-    private native void nativeDeleteBookmark(long nativeBookmarksBridge, BookmarkId bookmarkId);
-    private native long nativeInit(Profile profile);
-    private native void nativeDestroy(long nativeBookmarksBridge);
+    private native void nativeDeleteBookmark(int nativeBookmarksBridge, BookmarkId bookmarkId);
+    private native int nativeInit(Profile profile);
+    private native void nativeDestroy(int nativeBookmarksBridge);
     private static native boolean nativeIsEditBookmarksEnabled();
 
     /**

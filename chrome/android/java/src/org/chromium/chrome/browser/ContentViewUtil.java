@@ -17,17 +17,17 @@ public abstract class ContentViewUtil {
      * @return pointer to native WebContents instance, suitable for using with a
      *         (java) ContentViewCore instance.
      */
-    public static long createNativeWebContents(boolean incognito) {
+    public static int createNativeWebContents(boolean incognito) {
         return nativeCreateNativeWebContents(incognito);
     }
 
     /**
      * @param webContentsPtr The WebContents reference to be deleted.
      */
-    public static void destroyNativeWebContents(long webContentsPtr) {
+    public static void destroyNativeWebContents(int webContentsPtr) {
         nativeDestroyNativeWebContents(webContentsPtr);
     }
 
-    private static native long nativeCreateNativeWebContents(boolean incognito);
-    private static native void nativeDestroyNativeWebContents(long webContentsPtr);
+    private static native int nativeCreateNativeWebContents(boolean incognito);
+    private static native void nativeDestroyNativeWebContents(int webContentsPtr);
 }

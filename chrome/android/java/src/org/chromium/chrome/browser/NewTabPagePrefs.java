@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.profiles.Profile;
  * This class allows Java code to read and modify preferences related to the NTP
  */
 public class NewTabPagePrefs {
-    private final long mNativeNewTabPagePrefs;
+    private final int mNativeNewTabPagePrefs;
 
     /**
      * Initialize this class with the given profile.
@@ -96,21 +96,21 @@ public class NewTabPagePrefs {
         return nativeGetForeignSessionCollapsed(mNativeNewTabPagePrefs, session.tag);
     }
 
-    private static native long nativeInit(Profile profile);
-    private static native void nativeDestroy(long nativeNewTabPagePrefs);
+    private static native int nativeInit(Profile profile);
+    private static native void nativeDestroy(int nativeNewTabPagePrefs);
     private static native void nativeSetSnapshotDocumentCollapsed(
-            long nativeNewTabPagePrefs, boolean isCollapsed);
+            int nativeNewTabPagePrefs, boolean isCollapsed);
     private static native boolean nativeGetSnapshotDocumentCollapsed(
-            long nativeNewTabPagePrefs);
+            int nativeNewTabPagePrefs);
     private static native void nativeSetRecentlyClosedTabsCollapsed(
-            long nativeNewTabPagePrefs, boolean isCollapsed);
+            int nativeNewTabPagePrefs, boolean isCollapsed);
     private static native boolean nativeGetRecentlyClosedTabsCollapsed(
-            long nativeNewTabPagePrefs);
-    private static native void nativeSetSyncPromoCollapsed(long nativeNewTabPagePrefs,
+            int nativeNewTabPagePrefs);
+    private static native void nativeSetSyncPromoCollapsed(int nativeNewTabPagePrefs,
             boolean isCollapsed);
-    private static native boolean nativeGetSyncPromoCollapsed(long nativeNewTabPagePrefs);
+    private static native boolean nativeGetSyncPromoCollapsed(int nativeNewTabPagePrefs);
     private static native void nativeSetForeignSessionCollapsed(
-            long nativeNewTabPagePrefs, String sessionTag, boolean isCollapsed);
+            int nativeNewTabPagePrefs, String sessionTag, boolean isCollapsed);
     private static native boolean nativeGetForeignSessionCollapsed(
-            long nativeNewTabPagePrefs, String sessionTag);
+            int nativeNewTabPagePrefs, String sessionTag);
 }

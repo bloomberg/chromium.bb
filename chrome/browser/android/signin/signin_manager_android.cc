@@ -210,10 +210,10 @@ void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
   autoLogin->LogIn();
 }
 
-static jlong Init(JNIEnv* env, jobject obj) {
+static int Init(JNIEnv* env, jobject obj) {
   SigninManagerAndroid* signin_manager_android =
       new SigninManagerAndroid(env, obj);
-  return reinterpret_cast<intptr_t>(signin_manager_android);
+  return reinterpret_cast<jint>(signin_manager_android);
 }
 
 static jboolean ShouldLoadPolicyForUser(JNIEnv* env,

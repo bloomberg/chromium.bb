@@ -53,7 +53,7 @@ typedef base::Callback<void(
 AndroidProfileOAuth2TokenService::AndroidProfileOAuth2TokenService() {
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> local_java_ref =
-      Java_OAuth2TokenService_create(env, reinterpret_cast<intptr_t>(this));
+      Java_OAuth2TokenService_create(env, reinterpret_cast<int>(this));
   java_ref_.Reset(env, local_java_ref.obj());
 }
 
@@ -129,7 +129,7 @@ void AndroidProfileOAuth2TokenService::FetchOAuth2Token(
       env, base::android::GetApplicationContext(),
       j_username.obj(),
       j_scope.obj(),
-      reinterpret_cast<intptr_t>(heap_callback.release()));
+      reinterpret_cast<int>(heap_callback.release()));
 }
 
 void AndroidProfileOAuth2TokenService::InvalidateOAuth2Token(
@@ -235,7 +235,7 @@ void AndroidProfileOAuth2TokenService::FireRefreshTokensLoaded() {
 void OAuth2TokenFetched(JNIEnv* env, jclass clazz,
     jstring authToken,
     jboolean result,
-    jlong nativeCallback) {
+    jint nativeCallback) {
   std::string token = ConvertJavaStringToUTF8(env, authToken);
   scoped_ptr<FetchOAuth2TokenCallback> heap_callback(
       reinterpret_cast<FetchOAuth2TokenCallback*>(nativeCallback));

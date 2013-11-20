@@ -44,7 +44,7 @@ ScopedJavaLocalRef<jobject> TranslateInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   return Java_TranslateInfoBarDelegate_showTranslateInfoBar(
       env,
       java_translate_delegate_.obj(),
-      reinterpret_cast<intptr_t>(this),
+      reinterpret_cast<jint>(this),
       delegate_->infobar_type(),
       delegate_->original_language_index(),
       delegate_->target_language_index(),
@@ -109,7 +109,7 @@ void TranslateInfoBar::TransferOwnership(
   JNIEnv* env = base::android::AttachCurrentThread();
   if (Java_TranslateInfoBarDelegate_changeTranslateInfoBarTypeAndPointer(
       env, java_translate_delegate_.obj(),
-      reinterpret_cast<intptr_t>(destination), new_type)) {
+      reinterpret_cast<jint>(destination), new_type)) {
     ReassignJavaInfoBar(destination);
     destination->SetJavaDelegate(java_translate_delegate_.Release());
   }

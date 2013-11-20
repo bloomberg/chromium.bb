@@ -42,7 +42,7 @@ public class SigninManager {
     private static SigninManager sSigninManager;
 
     private final Context mContext;
-    private final long mNativeSigninManagerAndroid;
+    private final int mNativeSigninManagerAndroid;
 
     /** Tracks whether the First Run check has been completed.
      *
@@ -378,14 +378,14 @@ public class SigninManager {
     }
 
     // Native methods.
-    private native long nativeInit();
+    private native int nativeInit();
     private native boolean nativeShouldLoadPolicyForUser(String username);
     private native void nativeCheckPolicyBeforeSignIn(
-            long nativeSigninManagerAndroid, String username);
-    private native void nativeFetchPolicyBeforeSignIn(long nativeSigninManagerAndroid);
-    private native void nativeOnSignInCompleted(long nativeSigninManagerAndroid, String username);
-    private native void nativeSignOut(long nativeSigninManagerAndroid);
-    private native String nativeGetManagementDomain(long nativeSigninManagerAndroid);
-    private native void nativeWipeProfileData(long nativeSigninManagerAndroid);
-    private native void nativeLogInSignedInUser(long nativeSigninManagerAndroid);
+            int nativeSigninManagerAndroid, String username);
+    private native void nativeFetchPolicyBeforeSignIn(int nativeSigninManagerAndroid);
+    private native void nativeOnSignInCompleted(int nativeSigninManagerAndroid, String username);
+    private native void nativeSignOut(int nativeSigninManagerAndroid);
+    private native String nativeGetManagementDomain(int nativeSigninManagerAndroid);
+    private native void nativeWipeProfileData(int nativeSigninManagerAndroid);
+    private native void nativeLogInSignedInUser(int nativeSigninManagerAndroid);
 }

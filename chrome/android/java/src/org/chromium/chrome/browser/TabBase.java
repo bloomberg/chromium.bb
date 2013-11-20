@@ -43,7 +43,7 @@ public abstract class TabBase implements NavigationClient {
     /** Used for automatically generating tab ids. */
     private static final AtomicInteger sIdCounter = new AtomicInteger();
 
-    private long mNativeTabAndroid;
+    private int mNativeTabAndroid;
 
     /** Unique id of this tab (within its container). */
     private final int mId;
@@ -551,7 +551,7 @@ public abstract class TabBase implements NavigationClient {
      *
      * @param nativeWebContents The native web contents pointer.
      */
-    protected void initContentView(long nativeWebContents) {
+    protected void initContentView(int nativeWebContents) {
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
         destroyNativePageInternal(previousNativePage);
@@ -697,13 +697,13 @@ public abstract class TabBase implements NavigationClient {
      * @return The native pointer representing the native side of this {@link TabBase} object.
      */
     @CalledByNative
-    protected long getNativePtr() {
+    protected int getNativePtr() {
         return mNativeTabAndroid;
     }
 
     /** This is currently called when committing a pre-rendered page. */
     @CalledByNative
-    private void swapWebContents(final long newWebContents) {
+    private void swapWebContents(final int newWebContents) {
         destroyContentView(false);
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
@@ -721,13 +721,13 @@ public abstract class TabBase implements NavigationClient {
     }
 
     @CalledByNative
-    private void setNativePtr(long nativePtr) {
+    private void setNativePtr(int nativePtr) {
         assert mNativeTabAndroid == 0;
         mNativeTabAndroid = nativePtr;
     }
 
     @CalledByNative
-    private long getNativeInfoBarContainer() {
+    private int getNativeInfoBarContainer() {
         return getInfoBarContainer().getNative();
     }
 
@@ -773,12 +773,12 @@ public abstract class TabBase implements NavigationClient {
         sIdCounter.addAndGet(diff);
     }
 
-    private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
+    private native void nativeInitWebContents(int nativeTabAndroid, boolean incognito,
             ContentViewCore contentViewCore, ChromeWebContentsDelegateAndroid delegate);
-    private native void nativeDestroyWebContents(long nativeTabAndroid, boolean deleteNative);
-    private native Profile nativeGetProfileAndroid(long nativeTabAndroid);
-    private native int nativeGetSecurityLevel(long nativeTabAndroid);
-    private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,
+    private native void nativeDestroyWebContents(int nativeTabAndroid, boolean deleteNative);
+    private native Profile nativeGetProfileAndroid(int nativeTabAndroid);
+    private native int nativeGetSecurityLevel(int nativeTabAndroid);
+    private native void nativeSetActiveNavigationEntryTitleForUrl(int nativeTabAndroid, String url,
             String title);
     private native boolean nativePrint(int nativeTabAndroid);
 }

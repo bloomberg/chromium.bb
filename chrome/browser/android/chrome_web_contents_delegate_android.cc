@@ -307,8 +307,8 @@ void ChromeWebContentsDelegateAndroid::AddNewContents(
     handled = Java_ChromeWebContentsDelegateAndroid_addNewContents(
         env,
         obj.obj(),
-        reinterpret_cast<intptr_t>(source),
-        reinterpret_cast<intptr_t>(new_contents),
+        reinterpret_cast<jint>(source),
+        reinterpret_cast<jint>(new_contents),
         static_cast<jint>(disposition),
         NULL,
         user_gesture);

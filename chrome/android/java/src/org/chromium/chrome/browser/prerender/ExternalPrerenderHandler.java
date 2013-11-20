@@ -14,14 +14,14 @@ import org.chromium.chrome.browser.profiles.Profile;
 @JNINamespace("prerender")
 public class ExternalPrerenderHandler {
 
-    private long mNativeExternalPrerenderHandler;
+    private int mNativeExternalPrerenderHandler;
 
     public ExternalPrerenderHandler() {
         mNativeExternalPrerenderHandler = nativeInit();
     }
 
-    public long addPrerender(Profile profile, String url, String referrer, int width, int height) {
-        long webContentsPtr = ContentViewUtil.createNativeWebContents(false);
+    public int addPrerender(Profile profile, String url, String referrer, int width, int height) {
+        int webContentsPtr = ContentViewUtil.createNativeWebContents(false);
         if (nativeAddPrerender(mNativeExternalPrerenderHandler, profile, webContentsPtr,
                 url, referrer, width, height)) {
             return webContentsPtr;
@@ -34,16 +34,16 @@ public class ExternalPrerenderHandler {
         nativeCancelCurrentPrerender(mNativeExternalPrerenderHandler);
     }
 
-    public static boolean hasPrerenderedUrl(Profile profile, String url, long webContentsPtr)  {
+    public static boolean hasPrerenderedUrl(Profile profile, String url, int webContentsPtr)  {
         return nativeHasPrerenderedUrl(profile, url, webContentsPtr);
     }
 
-    private static native long nativeInit();
+    private static native int nativeInit();
     private static native boolean nativeAddPrerender(
-            long nativeExternalPrerenderHandlerAndroid, Profile profile,
-            long webContentsPtr, String url, String referrer, int width, int height);
+            int nativeExternalPrerenderHandlerAndroid, Profile profile,
+            int webContentsPtr, String url, String referrer, int width, int height);
     private static native boolean nativeHasPrerenderedUrl(
-            Profile profile, String url, long webContentsPtr);
+            Profile profile, String url, int webContentsPtr);
     private static native void nativeCancelCurrentPrerender(
-            long nativeExternalPrerenderHandlerAndroid);
+            int nativeExternalPrerenderHandlerAndroid);
 }

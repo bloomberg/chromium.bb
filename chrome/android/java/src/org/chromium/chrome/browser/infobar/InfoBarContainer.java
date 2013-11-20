@@ -67,7 +67,7 @@ public class InfoBarContainer extends LinearLayout {
     private InfoBarAnimationListener mAnimationListener;
 
     // Native InfoBarContainer pointer which will be set by nativeInit()
-    private long mNativeInfoBarContainer;
+    private int mNativeInfoBarContainer;
 
     private final Activity mActivity;
 
@@ -96,7 +96,7 @@ public class InfoBarContainer extends LinearLayout {
     private ViewGroup mParentView;
 
     public InfoBarContainer(Activity activity, AutoLoginProcessor autoLoginProcessor,
-            int tabId, ViewGroup parentView, long nativeWebContents) {
+            int tabId, ViewGroup parentView, int nativeWebContents) {
         super(activity);
         setOrientation(LinearLayout.VERTICAL);
         mAnimationListener = null;
@@ -512,11 +512,11 @@ public class InfoBarContainer extends LinearLayout {
         return null;
     }
 
-    public long getNative() {
+    public int getNative() {
         return mNativeInfoBarContainer;
     }
 
-    private native long nativeInit(long webContentsPtr, AutoLoginDelegate autoLoginDelegate);
+    private native int nativeInit(int webContentsPtr, AutoLoginDelegate autoLoginDelegate);
 
-    private native void nativeDestroy(long nativeInfoBarContainerAndroid);
+    private native void nativeDestroy(int nativeInfoBarContainerAndroid);
 }

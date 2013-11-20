@@ -280,7 +280,7 @@ public class PersonalDataManager {
         return sManager;
     }
 
-    private final long mPersonalDataManagerAndroid;
+    private final int mPersonalDataManagerAndroid;
     private final List<PersonalDataManagerObserver> mDataObservers =
             new ArrayList<PersonalDataManagerObserver>();
 
@@ -392,22 +392,22 @@ public class PersonalDataManager {
         return nativeIsAutofillManaged();
     }
 
-    private native long nativeInit();
-    private native int nativeGetProfileCount(long nativePersonalDataManagerAndroid);
-    private native AutofillProfile nativeGetProfileByIndex(long nativePersonalDataManagerAndroid,
+    private native int nativeInit();
+    private native int nativeGetProfileCount(int nativePersonalDataManagerAndroid);
+    private native AutofillProfile nativeGetProfileByIndex(int nativePersonalDataManagerAndroid,
             int index);
-    private native AutofillProfile nativeGetProfileByGUID(long nativePersonalDataManagerAndroid,
+    private native AutofillProfile nativeGetProfileByGUID(int nativePersonalDataManagerAndroid,
             String guid);
-    private native String nativeSetProfile(long nativePersonalDataManagerAndroid,
+    private native String nativeSetProfile(int nativePersonalDataManagerAndroid,
             AutofillProfile profile);
-    private native int nativeGetCreditCardCount(long nativePersonalDataManagerAndroid);
-    private native CreditCard nativeGetCreditCardByIndex(long nativePersonalDataManagerAndroid,
+    private native int nativeGetCreditCardCount(int nativePersonalDataManagerAndroid);
+    private native CreditCard nativeGetCreditCardByIndex(int nativePersonalDataManagerAndroid,
             int index);
-    private native CreditCard nativeGetCreditCardByGUID(long nativePersonalDataManagerAndroid,
+    private native CreditCard nativeGetCreditCardByGUID(int nativePersonalDataManagerAndroid,
             String guid);
-    private native String nativeSetCreditCard(long nativePersonalDataManagerAndroid,
+    private native String nativeSetCreditCard(int nativePersonalDataManagerAndroid,
             CreditCard card);
-    private native void nativeRemoveByGUID(long nativePersonalDataManagerAndroid, String guid);
+    private native void nativeRemoveByGUID(int nativePersonalDataManagerAndroid, String guid);
     private static native boolean nativeIsAutofillEnabled();
     private static native void nativeSetAutofillEnabled(boolean enable);
     private static native boolean nativeIsAutofillManaged();

@@ -58,8 +58,8 @@ void OnLocalFaviconAvailable(
 
 }  // namespace
 
-static jlong Init(JNIEnv* env, jclass clazz) {
-  return reinterpret_cast<intptr_t>(new FaviconHelper());
+static jint Init(JNIEnv* env, jclass clazz) {
+  return reinterpret_cast<jint>(new FaviconHelper());
 }
 
 FaviconHelper::FaviconHelper() {

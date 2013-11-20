@@ -18,17 +18,17 @@ import org.chromium.ui.base.WindowAndroid;
 */
 @JNINamespace("autofill")
 public class AutofillPopupGlue implements AutofillPopupDelegate{
-    private final long mNativeAutofillPopup;
+    private final int mNativeAutofillPopup;
     private final AutofillPopup mAutofillPopup;
 
-    public AutofillPopupGlue(long nativeAutofillPopupViewAndroid, WindowAndroid windowAndroid,
+    public AutofillPopupGlue(int nativeAutofillPopupViewAndroid, WindowAndroid windowAndroid,
             ViewAndroidDelegate containerViewDelegate) {
         mNativeAutofillPopup = nativeAutofillPopupViewAndroid;
         mAutofillPopup = new AutofillPopup(windowAndroid.getContext(), containerViewDelegate, this);
     }
 
     @CalledByNative
-    private static AutofillPopupGlue create(long nativeAutofillPopupViewAndroid,
+    private static AutofillPopupGlue create(int nativeAutofillPopupViewAndroid,
             WindowAndroid windowAndroid, ViewAndroid viewAndroid) {
         return new AutofillPopupGlue(nativeAutofillPopupViewAndroid, windowAndroid,
                 viewAndroid.getViewAndroidDelegate());
@@ -93,7 +93,7 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
         array[index] = new AutofillSuggestion(label, sublabel, uniqueId);
     }
 
-    private native void nativeRequestHide(long nativeAutofillPopupViewAndroid);
-    private native void nativeSuggestionSelected(long nativeAutofillPopupViewAndroid,
+    private native void nativeRequestHide(int nativeAutofillPopupViewAndroid);
+    private native void nativeSuggestionSelected(int nativeAutofillPopupViewAndroid,
             int listIndex);
 }

@@ -175,10 +175,10 @@ TemplateUrlServiceAndroid::ReplaceSearchTermsInUrl(JNIEnv* env,
   return base::android::ScopedJavaLocalRef<jstring>(env, NULL);
 }
 
-static jlong Init(JNIEnv* env, jobject obj) {
+static jint Init(JNIEnv* env, jobject obj) {
   TemplateUrlServiceAndroid* template_url_service_android =
       new TemplateUrlServiceAndroid(env, obj);
-  return reinterpret_cast<intptr_t>(template_url_service_android);
+  return reinterpret_cast<jint>(template_url_service_android);
 }
 
 // static

@@ -19,7 +19,7 @@ import java.sql.Types;
 public class SQLiteCursor extends AbstractCursor {
     private static final String TAG = "SQLiteCursor";
     // Used by JNI.
-    private long mNativeSQLiteCursor;
+    private int mNativeSQLiteCursor;
 
     // The count of result rows.
     private int mCount = -1;
@@ -34,12 +34,12 @@ public class SQLiteCursor extends AbstractCursor {
     private final Object mMoveLock = new Object();
     private final Object mGetBlobLock = new Object();
 
-    private SQLiteCursor(long nativeSQLiteCursor) {
+    private SQLiteCursor(int nativeSQLiteCursor) {
         mNativeSQLiteCursor = nativeSQLiteCursor;
     }
 
     @CalledByNative
-    private static SQLiteCursor create(long nativeSQLiteCursor) {
+    private static SQLiteCursor create(int nativeSQLiteCursor) {
         return new SQLiteCursor(nativeSQLiteCursor);
     }
 
@@ -232,15 +232,15 @@ public class SQLiteCursor extends AbstractCursor {
         return mColumnTypes[index];
     }
 
-    private native void nativeDestroy(long nativeSQLiteCursor);
-    private native int nativeGetCount(long nativeSQLiteCursor);
-    private native String[] nativeGetColumnNames(long nativeSQLiteCursor);
-    private native int nativeGetColumnType(long nativeSQLiteCursor, int column);
-    private native String nativeGetString(long nativeSQLiteCursor, int column);
-    private native byte[] nativeGetBlob(long nativeSQLiteCursor, int column);
-    private native boolean nativeIsNull(long nativeSQLiteCursor, int column);
-    private native long nativeGetLong(long nativeSQLiteCursor, int column);
-    private native int nativeGetInt(long nativeSQLiteCursor, int column);
-    private native double nativeGetDouble(long nativeSQLiteCursor, int column);
-    private native int nativeMoveTo(long nativeSQLiteCursor, int newPosition);
+    private native void nativeDestroy(int nativeSQLiteCursor);
+    private native int nativeGetCount(int nativeSQLiteCursor);
+    private native String[] nativeGetColumnNames(int nativeSQLiteCursor);
+    private native int nativeGetColumnType(int nativeSQLiteCursor, int column);
+    private native String nativeGetString(int nativeSQLiteCursor, int column);
+    private native byte[] nativeGetBlob(int nativeSQLiteCursor, int column);
+    private native boolean nativeIsNull(int nativeSQLiteCursor, int column);
+    private native long nativeGetLong(int nativeSQLiteCursor, int column);
+    private native int nativeGetInt(int nativeSQLiteCursor, int column);
+    private native double nativeGetDouble(int nativeSQLiteCursor, int column);
+    private native int nativeMoveTo(int nativeSQLiteCursor, int newPosition);
 }

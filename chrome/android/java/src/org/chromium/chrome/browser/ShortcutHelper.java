@@ -93,6 +93,6 @@ public class ShortcutHelper {
         context.startActivity(homeIntent);
     }
 
-    private static native void nativeAddShortcut(long tabAndroidPtr, String userRequestedTitle,
+    private static native void nativeAddShortcut(int tabAndroidPtr, String userRequestedTitle,
             int launcherLargeIconSize);
 }

@@ -43,7 +43,7 @@ class WebsiteSettingsPopup implements OnClickListener {
     private String mLinkUrl;
 
     private WebsiteSettingsPopup(Context context, ContentViewCore contentViewCore,
-            final long nativeWebsiteSettingsPopup) {
+            final int nativeWebsiteSettingsPopup) {
         mContext = context;
         mDialog = new Dialog(mContext);
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -145,10 +145,10 @@ class WebsiteSettingsPopup implements OnClickListener {
 
     @CalledByNative
     private static WebsiteSettingsPopup create(Context context, ContentViewCore contentViewCore,
-            long nativeWebsiteSettingsPopup) {
+            int nativeWebsiteSettingsPopup) {
         return new WebsiteSettingsPopup(context, contentViewCore, nativeWebsiteSettingsPopup);
     }
 
-    private native void nativeDestroy(long nativeWebsiteSettingsPopupAndroid);
+    private native void nativeDestroy(int nativeWebsiteSettingsPopupAndroid);
     private native byte[][] nativeGetCertificateChain(ContentViewCore contentViewCore);
 }

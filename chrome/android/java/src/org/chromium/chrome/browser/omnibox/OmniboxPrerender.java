@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.profiles.Profile;
  *
  */
 public class OmniboxPrerender {
-    private long mNativeOmniboxPrerender = 0;
+    private int mNativeOmniboxPrerender = 0;
 
     /**
      * Constructor for creating a OmniboxPrerender instanace.
@@ -63,12 +63,12 @@ public class OmniboxPrerender {
                 profile, nativeWebContents);
     }
 
-    private native long nativeInit();
-    private native void nativeClear(long nativeOmniboxPrerender, Profile profile);
+    private native int nativeInit();
+    private native void nativeClear(int nativeOmniboxPrerender, Profile profile);
     private native void nativeInitializeForProfile(
-            long nativeOmniboxPrerender,
+            int nativeOmniboxPrerender,
             Profile profile);
-    private native void nativePrerenderMaybe(long nativeOmniboxPrerender, String url,
+    private native void nativePrerenderMaybe(int nativeOmniboxPrerender, String url,
             String currentUrl, int nativeAutocompleteResult, Profile profile,
             int nativeWebContents);
 }

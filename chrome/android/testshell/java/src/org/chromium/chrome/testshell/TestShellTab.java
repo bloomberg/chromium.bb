@@ -19,7 +19,7 @@ import org.chromium.ui.base.WindowAndroid;
  * and extends {@link TabBase}.
  */
 public class TestShellTab extends TabBase {
-    private long mNativeTestShellTab;
+    private int mNativeTestShellTab;
 
     private CleanupReference mCleanupReference;
 
@@ -103,8 +103,8 @@ public class TestShellTab extends TabBase {
     }
 
     private static final class DestroyRunnable implements Runnable {
-        private final long mNativeTestShellTab;
-        private DestroyRunnable(long nativeTestShellTab) {
+        private final int mNativeTestShellTab;
+        private DestroyRunnable(int nativeTestShellTab) {
             mNativeTestShellTab = nativeTestShellTab;
         }
         @Override
@@ -139,7 +139,7 @@ public class TestShellTab extends TabBase {
         }
     }
 
-    private native long nativeInit();
-    private static native void nativeDestroy(long nativeTestShellTab);
-    private native String nativeFixupUrl(long nativeTestShellTab, String url);
+    private native int nativeInit();
+    private static native void nativeDestroy(int nativeTestShellTab);
+    private native String nativeFixupUrl(int nativeTestShellTab, String url);
 }

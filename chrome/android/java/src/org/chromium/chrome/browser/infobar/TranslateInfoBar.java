@@ -41,7 +41,7 @@ public class TranslateInfoBar extends TwoButtonInfoBar implements SubPanelListen
     private final boolean mShouldShowNeverBar;
     private final TranslateInfoBarDelegate mTranslateDelegate;
 
-    public TranslateInfoBar(long nativeInfoBarPtr, TranslateInfoBarDelegate delegate,
+    public TranslateInfoBar(int nativeInfoBarPtr, TranslateInfoBarDelegate delegate,
             int infoBarType, int sourceLanguageIndex, int targetLanguageIndex,
             boolean autoTranslatePair, boolean shouldShowNeverBar, String[] languages) {
         super(null, BACKGROUND_TYPE_INFO,
@@ -330,7 +330,7 @@ public class TranslateInfoBar extends TwoButtonInfoBar implements SubPanelListen
         return mInfoBarType;
     }
 
-    void changeInfoBarTypeAndNativePointer(int infoBarType, long newNativePointer) {
+    void changeInfoBarTypeAndNativePointer(int infoBarType, int newNativePointer) {
         if (infoBarType >= 0 && infoBarType < MAX_INFOBAR_INDEX) {
             mInfoBarType = infoBarType;
             replaceNativePointer(newNativePointer);

@@ -16,18 +16,18 @@ import org.chromium.base.CalledByNative;
  * constructor.
  */
 public class ChromeHttpAuthHandler {
-    private final long mNativeChromeHttpAuthHandler;
+    private final int mNativeChromeHttpAuthHandler;
     private AutofillObserver mAutofillObserver;
     private String mAutofillUsername;
     private String mAutofillPassword;
 
-    private ChromeHttpAuthHandler(long nativeChromeHttpAuthHandler) {
+    private ChromeHttpAuthHandler(int nativeChromeHttpAuthHandler) {
         assert nativeChromeHttpAuthHandler != 0;
         mNativeChromeHttpAuthHandler = nativeChromeHttpAuthHandler;
     }
 
     @CalledByNative
-    private static ChromeHttpAuthHandler create(long nativeChromeHttpAuthHandler) {
+    private static ChromeHttpAuthHandler create(int nativeChromeHttpAuthHandler) {
         return new ChromeHttpAuthHandler(nativeChromeHttpAuthHandler);
     }
 
@@ -122,13 +122,13 @@ public class ChromeHttpAuthHandler {
     // Native side calls
     // ---------------------------------------------
 
-    private native void nativeSetAuth(long nativeChromeHttpAuthHandler,
+    private native void nativeSetAuth(int nativeChromeHttpAuthHandler,
             String username, String password);
-    private native void nativeCancelAuth(long nativeChromeHttpAuthHandler);
-    private native String nativeGetCancelButtonText(long nativeChromeHttpAuthHandler);
-    private native String nativeGetMessageTitle(long nativeChromeHttpAuthHandler);
-    private native String nativeGetMessageBody(long nativeChromeHttpAuthHandler);
-    private native String nativeGetPasswordLabelText(long nativeChromeHttpAuthHandler);
-    private native String nativeGetOkButtonText(long nativeChromeHttpAuthHandler);
-    private native String nativeGetUsernameLabelText(long nativeChromeHttpAuthHandler);
+    private native void nativeCancelAuth(int nativeChromeHttpAuthHandler);
+    private native String nativeGetCancelButtonText(int nativeChromeHttpAuthHandler);
+    private native String nativeGetMessageTitle(int nativeChromeHttpAuthHandler);
+    private native String nativeGetMessageBody(int nativeChromeHttpAuthHandler);
+    private native String nativeGetPasswordLabelText(int nativeChromeHttpAuthHandler);
+    private native String nativeGetOkButtonText(int nativeChromeHttpAuthHandler);
+    private native String nativeGetUsernameLabelText(int nativeChromeHttpAuthHandler);
 }

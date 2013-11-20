@@ -17,7 +17,7 @@ import java.util.List;
  * devices.
  */
 public class ForeignSessionHelper {
-    private long mNativeForeignSessionHelper;
+    private int mNativeForeignSessionHelper;
 
     /**
      * Callback interface for getting notified when foreign session sync is updated.
@@ -214,20 +214,20 @@ public class ForeignSessionHelper {
         nativeDeleteForeignSession(mNativeForeignSessionHelper, session.tag);
     }
 
-    private static native long nativeInit(Profile profile);
-    private static native void nativeDestroy(long nativeForeignSessionHelper);
-    private static native boolean nativeIsTabSyncEnabled(long nativeForeignSessionHelper);
+    private static native int nativeInit(Profile profile);
+    private static native void nativeDestroy(int nativeForeignSessionHelper);
+    private static native boolean nativeIsTabSyncEnabled(int nativeForeignSessionHelper);
     private static native void nativeSetOnForeignSessionCallback(
-            long nativeForeignSessionHelper, ForeignSessionCallback callback);
-    private static native boolean nativeGetForeignSessions(long nativeForeignSessionHelper,
+            int nativeForeignSessionHelper, ForeignSessionCallback callback);
+    private static native boolean nativeGetForeignSessions(int nativeForeignSessionHelper,
             List<ForeignSession> resultSessions);
     // TODO(apiccion): Remvoe this method once downstream CL Lands.
     // See: http://crbug.com/257102
     private static native boolean nativeOpenForeignSessionTabOld(
-            long nativeForeignSessionHelper, String sessionTag, int tabId);
+            int nativeForeignSessionHelper, String sessionTag, int tabId);
     private static native boolean nativeOpenForeignSessionTab(
-            long nativeForeignSessionHelper, TabBase tab, String sessionTag, int tabId,
+            int nativeForeignSessionHelper, TabBase tab, String sessionTag, int tabId,
             int disposition);
     private static native void nativeDeleteForeignSession(
-            long nativeForeignSessionHelper, String sessionTag);
+            int nativeForeignSessionHelper, String sessionTag);
 }

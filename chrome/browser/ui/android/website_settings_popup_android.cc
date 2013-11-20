@@ -85,7 +85,7 @@ WebsiteSettingsPopupAndroid::WebsiteSettingsPopupAndroid(
 
   popup_jobject_.Reset(
       Java_WebsiteSettingsPopup_create(env, context, java_content_view,
-                                       reinterpret_cast<intptr_t>(this)));
+                                       reinterpret_cast<jint>(this)));
 
   presenter_.reset(new WebsiteSettings(
       this,

@@ -307,7 +307,7 @@ void AutofillDialogControllerAndroid::Show() {
           env, source_url_.GetOrigin().spec());
   java_object_.Reset(Java_AutofillDialogControllerAndroid_create(
       env,
-      reinterpret_cast<intptr_t>(this),
+      reinterpret_cast<jint>(this),
       WindowAndroidHelper::FromWebContents(contents_)->
           GetWindowAndroid()->GetJavaObject().obj(),
       request_full_billing_address, request_shipping_address,
