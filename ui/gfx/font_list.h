@@ -55,6 +55,16 @@ class GFX_EXPORT FontList {
 
   ~FontList();
 
+  // Sets the description string for default FontList construction. If it's
+  // empty, FontList will initialize using the default Font constructor.
+  //
+  // The client code must call this function before any call of the default
+  // constructor. This should be done on the UI thread.
+  //
+  // ui::ResourceBundle may call this function more than once when UI language
+  // is changed.
+  static void SetDefaultFontDescription(const std::string& font_description);
+
   // Returns a new FontList with the given |font_style| flags.
   FontList DeriveFontList(int font_style) const;
 
