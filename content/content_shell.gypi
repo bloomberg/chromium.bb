@@ -319,7 +319,7 @@
         'content_shell_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
-        '<(DEPTH)/ui/ui.gyp:ui_resources',
+        '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
         '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
         '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
       ],

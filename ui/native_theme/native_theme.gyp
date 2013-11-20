@@ -15,8 +15,8 @@
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx',
+        '../resources/ui_resources.gyp:ui_resources',
         '../ui.gyp:ui',
-        '../ui.gyp:ui_resources',
       ],
       'defines': [
         'NATIVE_THEME_IMPLEMENTATION',

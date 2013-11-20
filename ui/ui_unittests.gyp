@@ -93,11 +93,11 @@
         '../url/url.gyp:url_lib',
         'base/strings/ui_strings.gyp:ui_strings',
         'events/events.gyp:events_base',
+        'resources/ui_resources.gyp:ui_resources',
         'run_ui_unittests',
         'shell_dialogs/shell_dialogs.gyp:shell_dialogs',
         'ui.gyp:keycode_converter',
         'ui.gyp:ui',
-        'ui.gyp:ui_resources',
         'ui_test_support',
       ],
       # iOS uses a small subset of ui. common_sources are the only files that

@@ -303,7 +303,7 @@
       'dependencies': [
         'chrome_unscaled_resources',
         'theme_resources_gen',
-        '<(DEPTH)/ui/ui.gyp:ui_resources',
+        '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
       ],
     },
     {
@@ -352,7 +352,7 @@
         '<(DEPTH)/components/component_strings.gyp:component_strings',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
-        '<(DEPTH)/ui/ui.gyp:ui_resources',
+        '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
       ],
       'actions': [
         {

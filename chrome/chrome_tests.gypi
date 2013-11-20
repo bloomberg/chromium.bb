@@ -470,9 +470,9 @@
             '../third_party/wtl/include',
           ],
           'dependencies': [
-            'chrome.gyp:chrome_version_resources',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
-            '../ui/ui.gyp:ui_resources',
+            '../ui/resources/ui_resources.gyp:ui_resources',
+            'chrome.gyp:chrome_version_resources',
           ],
           'sources': [
             '../ui/resources/cursors/aliasb.cur',

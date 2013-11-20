@@ -64,9 +64,9 @@
         '../ui/events/events.gyp:events_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/message_center/message_center.gyp:message_center',
+        '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
         '../ui/ui.gyp:ui',
-        '../ui/ui.gyp:ui_resources',
         '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
       ],
       'include_dirs': [

@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,26 +14,26 @@
         {
           'action_name': 'ui_resources',
           'variables': {
-            'grit_grd_file': 'resources/ui_resources.grd',
+            'grit_grd_file': 'ui_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ '../../build/grit_action.gypi' ],
         },
         {
           'action_name': 'webui_resources',
           'variables': {
-            'grit_grd_file': 'webui/resources/webui_resources.grd',
+            'grit_grd_file': '../webui/resources/webui_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ '../../build/grit_action.gypi' ],
         },
         {
           'action_name': 'ui_unscaled_resources',
           'variables': {
-            'grit_grd_file': 'resources/ui_unscaled_resources.grd',
+            'grit_grd_file': 'ui_unscaled_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ '../../build/grit_action.gypi' ],
         },
       ],
-      'includes': [ '../build/grit_target.gypi' ],
+      'includes': [ '../../build/grit_target.gypi' ],
     },
     {
       # We build a minimal set of resources so WebKit in content_shell has
@@ -41,11 +41,11 @@
       'target_name': 'ui_test_pak',
       'type': 'none',
       'dependencies': [
-        'base/strings/ui_strings.gyp:ui_strings',
+        '../base/strings/ui_strings.gyp:ui_strings',
         'ui_resources',
       ],
       'variables': {
-        'repack_path': '../tools/grit/grit/format/repack.py',
+        'repack_path': '../../tools/grit/grit/format/repack.py',
       },
       'actions': [
         {

@@ -49,7 +49,7 @@
         '../ui/native_theme/native_theme.gyp:native_theme',
         '../ui/snapshot/snapshot.gyp:snapshot',
         '../ui/ui.gyp:ui',
-        '../ui/ui.gyp:ui_resources',
+        '../ui/resources/ui_resources.gyp:ui_resources',
         '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
       ],
       'include_dirs': [

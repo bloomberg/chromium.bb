@@ -409,7 +409,7 @@
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../ui/ui.gyp:ui_resources',
+        '../ui/resources/ui_resources.gyp:ui_resources',
         'chrome_frame_ie',
         'chrome_tab_idl',
         'npchrome_frame',
