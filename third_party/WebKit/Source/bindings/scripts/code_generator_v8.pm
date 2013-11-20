@@ -1210,7 +1210,7 @@ sub GenerateDomainSafeFunctionGetter
 
     AddToImplIncludes("bindings/v8/BindingSecurity.h");
     $implementation{nameSpaceInternal}->add(<<END);
-static void ${funcName}AttributeGetter${forMainWorldSuffix}(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void ${funcName}OriginSafeMethodGetter${forMainWorldSuffix}(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey;
@@ -1244,10 +1244,10 @@ static void ${funcName}AttributeGetter${forMainWorldSuffix}(const v8::PropertyCa
 
 END
     $implementation{nameSpaceInternal}->add(<<END);
-static void ${funcName}AttributeGetterCallback${forMainWorldSuffix}(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void ${funcName}OriginSafeMethodGetterCallback${forMainWorldSuffix}(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    ${implClassName}V8Internal::${funcName}AttributeGetter${forMainWorldSuffix}(info);
+    ${implClassName}V8Internal::${funcName}OriginSafeMethodGetter${forMainWorldSuffix}(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -1264,7 +1264,7 @@ sub GenerateDomainSafeFunctionSetter
     AddToImplIncludes("bindings/v8/BindingSecurity.h");
     AddToImplIncludes("bindings/v8/ExceptionState.h");
     $implementation{nameSpaceInternal}->add(<<END);
-static void ${implClassName}DomainSafeFunctionSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void ${implClassName}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(${v8ClassName}::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
     if (holder.IsEmpty())
@@ -3330,7 +3330,7 @@ sub GenerateNonStandardFunction
     $conditional8 = $conditional4 . "    " if $conditional4 ne "";
 
     if ($interface->extendedAttributes->{"CheckSecurity"} && $attrExt->{"DoNotCheckSecurity"}) {
-        my $setter = $attrExt->{"ReadOnly"} ? "0" : "${implClassName}V8Internal::${implClassName}DomainSafeFunctionSetter";
+        my $setter = $attrExt->{"ReadOnly"} ? "0" : "${implClassName}V8Internal::${implClassName}OriginSafeMethodSetter";
         # Functions that are marked DoNotCheckSecurity are always readable but if they are changed
         # and then accessed on a different domain we do not return the underlying value but instead
         # return a new copy of the original function. This is achieved by storing the changed value
@@ -3342,13 +3342,13 @@ END
         if ($function->extendedAttributes->{"PerWorldBindings"}) {
             $code .= <<END;
     if (currentWorldType == MainWorld) {
-        ${conditional8}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}AttributeGetterCallbackForMainWorld, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
+        ${conditional8}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallbackForMainWorld, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
     } else {
-        ${conditional8}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}AttributeGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
+        ${conditional8}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
     }
 END
         } else {
-            $code .= "    ${conditional4}$template->SetAccessor(v8::String::NewSymbol(\"$name\"), ${implClassName}V8Internal::${name}AttributeGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));\n";
+            $code .= "    ${conditional4}$template->SetAccessor(v8::String::NewSymbol(\"$name\"), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));\n";
         }
 
         return $code;

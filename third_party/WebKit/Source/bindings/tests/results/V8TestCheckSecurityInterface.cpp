@@ -142,7 +142,7 @@ static void postMessageMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void postMessageAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void postMessageOriginSafeMethodGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey;
@@ -174,10 +174,10 @@ static void postMessageAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>
     v8SetReturnValue(info, privateTemplate->GetFunction());
 }
 
-static void postMessageAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void postMessageOriginSafeMethodGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestCheckSecurityInterfaceV8Internal::postMessageAttributeGetter(info);
+    TestCheckSecurityInterfaceV8Internal::postMessageOriginSafeMethodGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -204,7 +204,7 @@ static void perWorldBindingsMethodWithDoNotCheckSecurityMethodCallback(const v8:
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void perWorldBindingsMethodWithDoNotCheckSecurityOriginSafeMethodGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey;
@@ -236,10 +236,10 @@ static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetter(const v8
     v8SetReturnValue(info, privateTemplate->GetFunction());
 }
 
-static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void perWorldBindingsMethodWithDoNotCheckSecurityOriginSafeMethodGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestCheckSecurityInterfaceV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetter(info);
+    TestCheckSecurityInterfaceV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityOriginSafeMethodGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -261,7 +261,7 @@ static void perWorldBindingsMethodWithDoNotCheckSecurityMethodCallbackForMainWor
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void perWorldBindingsMethodWithDoNotCheckSecurityOriginSafeMethodGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey;
@@ -293,14 +293,14 @@ static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterForMainWo
     v8SetReturnValue(info, privateTemplate->GetFunction());
 }
 
-static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterCallbackForMainWorld(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void perWorldBindingsMethodWithDoNotCheckSecurityOriginSafeMethodGetterCallbackForMainWorld(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestCheckSecurityInterfaceV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterForMainWorld(info);
+    TestCheckSecurityInterfaceV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityOriginSafeMethodGetterForMainWorld(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void TestCheckSecurityInterfaceDomainSafeFunctionSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void TestCheckSecurityInterfaceOriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestCheckSecurityInterface::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
     if (holder.IsEmpty())
@@ -345,13 +345,13 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestCheckSecurityInterfaceTem
     prototypeTemplate->Set(v8::String::NewSymbol("excitingFunction"), v8::FunctionTemplate::New(TestCheckSecurityInterfaceV8Internal::excitingFunctionMethodCallback, v8Undefined(), excitingFunctionSignature, 1));
 
     // Function 'postMessage' (Extended Attributes: 'DoNotCheckSecurity')
-    prototypeTemplate->SetAccessor(v8::String::NewSymbol("postMessage"), TestCheckSecurityInterfaceV8Internal::postMessageAttributeGetterCallback, TestCheckSecurityInterfaceV8Internal::TestCheckSecurityInterfaceDomainSafeFunctionSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
+    prototypeTemplate->SetAccessor(v8::String::NewSymbol("postMessage"), TestCheckSecurityInterfaceV8Internal::postMessageOriginSafeMethodGetterCallback, TestCheckSecurityInterfaceV8Internal::TestCheckSecurityInterfaceOriginSafeMethodSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
 
     // Function 'perWorldBindingsMethodWithDoNotCheckSecurity' (Extended Attributes: 'DoNotCheckSecurity PerWorldBindings ActivityLogging')
     if (currentWorldType == MainWorld) {
-        prototypeTemplate->SetAccessor(v8::String::NewSymbol("perWorldBindingsMethodWithDoNotCheckSecurity"), TestCheckSecurityInterfaceV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterCallbackForMainWorld, TestCheckSecurityInterfaceV8Internal::TestCheckSecurityInterfaceDomainSafeFunctionSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
+        prototypeTemplate->SetAccessor(v8::String::NewSymbol("perWorldBindingsMethodWithDoNotCheckSecurity"), TestCheckSecurityInterfaceV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityOriginSafeMethodGetterCallbackForMainWorld, TestCheckSecurityInterfaceV8Internal::TestCheckSecurityInterfaceOriginSafeMethodSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
     } else {
-        prototypeTemplate->SetAccessor(v8::String::NewSymbol("perWorldBindingsMethodWithDoNotCheckSecurity"), TestCheckSecurityInterfaceV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterCallback, TestCheckSecurityInterfaceV8Internal::TestCheckSecurityInterfaceDomainSafeFunctionSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
+        prototypeTemplate->SetAccessor(v8::String::NewSymbol("perWorldBindingsMethodWithDoNotCheckSecurity"), TestCheckSecurityInterfaceV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityOriginSafeMethodGetterCallback, TestCheckSecurityInterfaceV8Internal::TestCheckSecurityInterfaceOriginSafeMethodSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
     }
 
     // Custom toString template
