@@ -39,8 +39,8 @@ DEFINE_RESOURCE_ID(IDR_INFOBAR_TRANSLATE, R.drawable.infobar_translate)
 DEFINE_RESOURCE_ID(IDR_BLOCKED_POPUPS, R.drawable.infobar_blocked_popups)
 
 // WebsiteSettingsUI images.
-DEFINE_RESOURCE_ID(IDR_CONTROLLED_SETTING_MANDATORY_LARGE,\
-                   R.drawable.controlled_setting_mandatory_large)
+DEFINE_RESOURCE_ID(IDR_PAGEINFO_ENTERPRISE_MANAGED,\
+                   R.drawable.pageinfo_enterprise_managed)
 DEFINE_RESOURCE_ID(IDR_PAGEINFO_BAD, R.drawable.pageinfo_bad)
 DEFINE_RESOURCE_ID(IDR_PAGEINFO_GOOD, R.drawable.pageinfo_good)
 DEFINE_RESOURCE_ID(IDR_PAGEINFO_INFO, R.drawable.pageinfo_info)

@@ -357,7 +357,7 @@ html[oobe=old] .pod.focused .action-box-area {
 
 .learn-more,
 .side-pane-learn-more {
-  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_GRAY');
+  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
   height: 16px;
   position: absolute;
   width: 16px;

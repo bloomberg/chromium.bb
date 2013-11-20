@@ -327,25 +327,13 @@ void ControlledSettingIndicatorView::Layout() {
   image_view_->SetBounds(0, 0, width(), height());
 }
 
-void ControlledSettingIndicatorView::OnMouseEntered(
-    const ui::MouseEvent& event) {
-  image_view_->SetImage(color_image_);
-}
-
-void ControlledSettingIndicatorView::OnMouseExited(
-    const ui::MouseEvent& event) {
-  image_view_->SetImage(gray_image_);
-}
-
 void ControlledSettingIndicatorView::Init() {
-  color_image_ = ResourceBundle::GetSharedInstance().GetImageNamed(
+  image_ = ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_CONTROLLED_SETTING_MANDATORY).ToImageSkia();
-  gray_image_ = ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_CONTROLLED_SETTING_MANDATORY_GRAY).ToImageSkia();
   image_view_ = new views::ImageView();
   // Disable |image_view_| so mouse events propagate to the parent.
   image_view_->SetEnabled(false);
-  image_view_->SetImage(gray_image_);
+  image_view_->SetImage(image_);
   image_view_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY));
   AddChildView(image_view_);

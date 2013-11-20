@@ -153,15 +153,8 @@
       <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="content_top_left_corner_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_RIGHT_CORNER" file="content_top_right_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="content_top_right_corner_mask.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_EXTENSION" file="controlled_setting_extension.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_EXTENSION_GRAY" file="controlled_setting_extension_gray.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_EXTENSION_LARGE" file="controlled_setting_extension_large.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_MANDATORY" file="controlled_setting_mandatory.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_MANDATORY_GRAY" file="controlled_setting_mandatory_gray.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_MANDATORY_LARGE" file="controlled_setting_mandatory_large.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_RECOMMENDED" file="controlled_setting_recommended.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_RECOMMENDED_GRAY" file="controlled_setting_recommended_gray.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_RECOMMENDED_LARGE" file="controlled_setting_recommended_large.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_EXTENSION" file="common/controlled_setting_extension.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_MANDATORY" file="common/controlled_setting_mandatory.png" />
       <structure type="chrome_scaled_image" name="IDR_COOKIE_ICON" file="cookie.png" />
       <structure type="chrome_scaled_image" name="IDR_COOKIE_STORAGE_ICON" file="cookie_storage.png" />
       <structure type="chrome_scaled_image" name="IDR_CREDIT_CARD_CVC_HINT" file="common/credit_card_cvc_hint.png" />
@@ -657,6 +650,7 @@
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_INFO" file="pageinfo_info.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_WARNING_MAJOR" file="pageinfo_warning_major.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_WARNING_MINOR" file="pageinfo_warning_minor.png" />
+      <structure type="chrome_scaled_image" name="IDR_PAGEINFO_ENTERPRISE_MANAGED" file="common/pageinfo_enterprise_managed.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_CLOSE" file="panel_close.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_CLOSE_C" file="panel_close_click.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_CLOSE_H" file="panel_close_hover.png" />

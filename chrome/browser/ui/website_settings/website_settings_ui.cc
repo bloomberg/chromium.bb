@@ -266,7 +266,7 @@ int WebsiteSettingsUI::GetIdentityIconID(
       resource_id = IDR_PAGEINFO_BAD;
       break;
     case WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
-      resource_id = IDR_CONTROLLED_SETTING_MANDATORY_LARGE;
+      resource_id = IDR_PAGEINFO_ENTERPRISE_MANAGED;
       break;
     default:
       NOTREACHED();

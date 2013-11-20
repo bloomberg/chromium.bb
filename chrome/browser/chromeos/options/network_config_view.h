@@ -166,8 +166,6 @@ class ControlledSettingIndicatorView : public views::View {
   // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
  private:
   // Initializes the view.
@@ -175,8 +173,7 @@ class ControlledSettingIndicatorView : public views::View {
 
   bool managed_;
   views::ImageView* image_view_;
-  const gfx::ImageSkia* gray_image_;
-  const gfx::ImageSkia* color_image_;
+  const gfx::ImageSkia* image_;
 
   DISALLOW_COPY_AND_ASSIGN(ControlledSettingIndicatorView);
 };

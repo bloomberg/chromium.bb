@@ -121,7 +121,7 @@ body {
 
 #channel-change-disallowed-icon {
   -webkit-margin-start: 4px;
-  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_GRAY');
+  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
   background-size: 17px;
   vertical-align: middle;
 }
@@ -132,8 +132,7 @@ body {
 
 .channel-change-error-icon {
   -webkit-margin-start: 4px;
-  background-image:
-      url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_LARGE');
+  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
   background-size: 22px;
   vertical-align: top;
 }
