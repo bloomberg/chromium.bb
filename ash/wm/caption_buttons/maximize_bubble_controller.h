@@ -25,6 +25,7 @@ class CustomButton;
 namespace ash {
 
 class FrameMaximizeButton;
+class MaximizeBubbleControllerBubble;
 
 // A class which shows a helper UI for the maximize button after a delay.
 class ASH_EXPORT MaximizeBubbleController {
@@ -68,7 +69,6 @@ class ASH_EXPORT MaximizeBubbleController {
   // either SNAP_LEFT, SNAP_RIGHT or SNAP_MINIMIZE.
   views::CustomButton* GetButtonForUnitTest(SnapType state);
 
- protected:
   // Called from the the Bubble class to destroy itself: It tells the owning
   // object that it will destroy itself asynchronously. The owner will then
   // destroy |this|.
@@ -82,7 +82,7 @@ class ASH_EXPORT MaximizeBubbleController {
   FrameMaximizeButton* frame_maximize_button_;
 
   // The bubble menu.
-  Bubble* bubble_;
+  MaximizeBubbleControllerBubble* bubble_;
 
   // The current maximize state of the owning window.
   const MaximizeBubbleFrameState maximize_type_;
