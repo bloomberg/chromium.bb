@@ -2,278 +2,170 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/posix/eintr_wrapper.h"
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 
 #include <sys/ioctl.h>
 #include <termios.h>
 
-#if defined(OS_MACOSX)
-#include <IOKit/serial/ioss.h>
-#endif
-
-#if defined(OS_LINUX)
-#include <linux/serial.h>
-#endif
-
 namespace extensions {
 
 namespace {
-
-// Convert an integral bit rate to a nominal one. Returns |true|
-// if the conversion was successful and |false| otherwise.
-bool BitrateToSpeedConstant(int bitrate, speed_t* speed) {
-#define BITRATE_TO_SPEED_CASE(x) case x: *speed = B ## x; return true;
-  switch (bitrate) {
-    BITRATE_TO_SPEED_CASE(0)
-    BITRATE_TO_SPEED_CASE(50)
-    BITRATE_TO_SPEED_CASE(75)
-    BITRATE_TO_SPEED_CASE(110)
-    BITRATE_TO_SPEED_CASE(134)
-    BITRATE_TO_SPEED_CASE(150)
-    BITRATE_TO_SPEED_CASE(200)
-    BITRATE_TO_SPEED_CASE(300)
-    BITRATE_TO_SPEED_CASE(600)
-    BITRATE_TO_SPEED_CASE(1200)
-    BITRATE_TO_SPEED_CASE(1800)
-    BITRATE_TO_SPEED_CASE(2400)
-    BITRATE_TO_SPEED_CASE(4800)
-    BITRATE_TO_SPEED_CASE(9600)
-    BITRATE_TO_SPEED_CASE(19200)
-    BITRATE_TO_SPEED_CASE(38400)
+  int getBaudRate(int bitrate_) {
+    switch (bitrate_) {
+      case 0:
+        return B0;
+      case 50:
+        return B50;
+      case 75:
+        return B75;
+      case 110:
+        return B110;
+      case 134:
+        return B134;
+      case 150:
+        return B150;
+      case 200:
+        return B200;
+      case 300:
+        return B300;
+      case 600:
+        return B600;
+      case 1200:
+        return B1200;
+      case 1800:
+        return B1800;
+      case 2400:
+        return B2400;
+      case 4800:
+        return B4800;
+      case 9600:
+        return B9600;
+      case 19200:
+        return B19200;
+      case 38400:
+        return B38400;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-    BITRATE_TO_SPEED_CASE(57600)
-    BITRATE_TO_SPEED_CASE(115200)
-    BITRATE_TO_SPEED_CASE(230400)
-    BITRATE_TO_SPEED_CASE(460800)
-    BITRATE_TO_SPEED_CASE(576000)
-    BITRATE_TO_SPEED_CASE(921600)
-#endif
-    default:
-      return false;
-  }
-#undef BITRATE_TO_SPEED_CASE
-}
-
-// Convert a known nominal speed into an integral bitrate. Returns |true|
-// if the conversion was successful and |false| otherwise.
-bool SpeedConstantToBitrate(speed_t speed, int* bitrate) {
-#define SPEED_TO_BITRATE_CASE(x) case B ## x: *bitrate = x; return true;
-  switch (speed) {
-    SPEED_TO_BITRATE_CASE(0)
-    SPEED_TO_BITRATE_CASE(50)
-    SPEED_TO_BITRATE_CASE(75)
-    SPEED_TO_BITRATE_CASE(110)
-    SPEED_TO_BITRATE_CASE(134)
-    SPEED_TO_BITRATE_CASE(150)
-    SPEED_TO_BITRATE_CASE(200)
-    SPEED_TO_BITRATE_CASE(300)
-    SPEED_TO_BITRATE_CASE(600)
-    SPEED_TO_BITRATE_CASE(1200)
-    SPEED_TO_BITRATE_CASE(1800)
-    SPEED_TO_BITRATE_CASE(2400)
-    SPEED_TO_BITRATE_CASE(4800)
-    SPEED_TO_BITRATE_CASE(9600)
-    SPEED_TO_BITRATE_CASE(19200)
-    SPEED_TO_BITRATE_CASE(38400)
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-    SPEED_TO_BITRATE_CASE(57600)
-    SPEED_TO_BITRATE_CASE(115200)
-    SPEED_TO_BITRATE_CASE(230400)
-    SPEED_TO_BITRATE_CASE(460800)
-    SPEED_TO_BITRATE_CASE(576000)
-    SPEED_TO_BITRATE_CASE(921600)
-#endif
-    default:
-      return false;
-  }
-#undef SPEED_TO_BITRATE_CASE
-}
-
-bool SetCustomBitrate(base::PlatformFile file,
-                      struct termios* config,
-                      int bitrate) {
-#if defined(OS_MACOSX)
-  speed_t speed = static_cast<speed_t>(bitrate);
-  return ioctl(file, IOSSIOSPEED, &speed) != -1;
-#elif defined(OS_LINUX)
-  struct serial_struct serial;
-  if (ioctl(file, TIOCGSERIAL, &serial) < 0) {
-    return false;
-  }
-  serial.flags = (serial.flags & ~ASYNC_SPD_MASK) | ASYNC_SPD_CUST;
-  serial.custom_divisor = serial.baud_base / bitrate;
-  if (serial.custom_divisor < 1) {
-    serial.custom_divisor = 1;
-  }
-  cfsetispeed(config, B38400);
-  cfsetospeed(config, B38400);
-  return ioctl(file, TIOCSSERIAL, &serial) >= 0;
+      case 57600:
+        return B57600;
+      case 115200:
+        return B115200;
+      case 230400:
+        return B230400;
+      case 460800:
+        return B460800;
+      case 576000:
+        return B576000;
+      case 921600:
+        return B921600;
+      default:
+        return B9600;
 #else
-  return false;
+// MACOSX doesn't define constants bigger than 38400.
+// So if it is MACOSX and the value doesn't fit any of the defined constants
+// It will setup the bitrate with 'bitrate_' (just forwarding the value)
+      default:
+        return bitrate_;
 #endif
-}
-
+    }
+  }
 }  // namespace
 
-bool SerialConnection::ConfigurePort(
-    const api::serial::ConnectionOptions& options) {
-  struct termios config;
-  tcgetattr(file_, &config);
-  if (options.bitrate.get()) {
-    if (*options.bitrate >= 0) {
-      speed_t bitrate_opt = B0;
-      if (BitrateToSpeedConstant(*options.bitrate, &bitrate_opt)) {
-        cfsetispeed(&config, bitrate_opt);
-        cfsetospeed(&config, bitrate_opt);
-      } else {
-        // Attempt to set a custom speed.
-        if (!SetCustomBitrate(file_, &config, *options.bitrate)) {
-          return false;
-        }
-      }
-    }
-  }
-  if (options.data_bits != api::serial::DATA_BITS_NONE) {
-    config.c_cflag &= ~CSIZE;
-    switch (options.data_bits) {
-      case api::serial::DATA_BITS_SEVEN:
-        config.c_cflag |= CS7;
-        break;
-      case api::serial::DATA_BITS_EIGHT:
-      default:
-        config.c_cflag |= CS8;
-        break;
-    }
-  }
-  if (options.parity_bit != api::serial::PARITY_BIT_NONE) {
-    switch (options.parity_bit) {
-      case api::serial::PARITY_BIT_EVEN:
-        config.c_cflag |= PARENB;
-        config.c_cflag &= ~PARODD;
-        break;
-      case api::serial::PARITY_BIT_ODD:
-        config.c_cflag |= (PARODD | PARENB);
-        break;
-      case api::serial::PARITY_BIT_NO:
-      default:
-        config.c_cflag &= ~(PARODD | PARENB);
-        break;
-    }
-  }
-  if (options.stop_bits != api::serial::STOP_BITS_NONE) {
-    switch (options.stop_bits) {
-      case api::serial::STOP_BITS_TWO:
-        config.c_cflag |= CSTOPB;
-        break;
-      case api::serial::STOP_BITS_ONE:
-      default:
-        config.c_cflag &= ~CSTOPB;
-        break;
-    }
-  }
-  if (options.cts_flow_control.get()) {
-    if (*options.cts_flow_control){
-      config.c_cflag |= CRTSCTS;
-    } else {
-      config.c_cflag &= ~CRTSCTS;
-    }
-  }
-  return tcsetattr(file_, TCSANOW, &config) == 0;
-}
-
 bool SerialConnection::PostOpen() {
-  struct termios config;
-  tcgetattr(file_, &config);
+  struct termios options;
+
+  // Start with existing options and modify.
+  tcgetattr(file_, &options);
+
+  // Bitrate (sometimes erroneously referred to as baud rate).
+  if (bitrate_ >= 0) {
+    int bitrate_opt_ = getBaudRate(bitrate_);
+
+    cfsetispeed(&options, bitrate_opt_);
+    cfsetospeed(&options, bitrate_opt_);
+  }
+
+  options.c_cflag &= ~CSIZE;
+  switch (databit_) {
+    case serial::DATA_BIT_SEVENBIT:
+      options.c_cflag |= CS7;
+      break;
+    case serial::DATA_BIT_EIGHTBIT:
+    default:
+      options.c_cflag |= CS8;
+      break;
+  }
+  switch (stopbit_) {
+    case serial::STOP_BIT_TWOSTOPBIT:
+      options.c_cflag |= CSTOPB;
+      break;
+    case serial::STOP_BIT_ONESTOPBIT:
+    default:
+      options.c_cflag &= ~CSTOPB;
+      break;
+  }
+  switch (parity_) {
+    case serial::PARITY_BIT_EVENPARITY:
+      options.c_cflag |= PARENB;
+      options.c_cflag &= ~PARODD;
+      break;
+    case serial::PARITY_BIT_ODDPARITY:
+      options.c_cflag |= (PARENB | PARODD);
+      break;
+    case serial::PARITY_BIT_NOPARITY:
+    default:
+      options.c_cflag &= ~(PARENB | PARODD);
+      break;
+  }
 
   // Set flags for 'raw' operation
-  config.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL | ISIG);
-  config.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR |
-                      ICRNL | IXON);
-  config.c_oflag &= ~OPOST;
+  // At least on Linux the flags are persistent and thus we cannot trust
+  // the default values.
+  options.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL | ISIG);
+  options.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR |
+                       ICRNL | IXON);
+  options.c_oflag &= ~OPOST;
 
-  // CLOCAL causes the system to disregard the DCD signal state.
-  // CREAD enables reading from the port.
-  config.c_cflag |= (CLOCAL | CREAD);
+  // Enable receiver and set local mode
+  // See http://www.easysw.com/~mike/serial/serial.html to understand.
+  options.c_cflag |= (CLOCAL | CREAD);
 
-  return tcsetattr(file_, TCSANOW, &config) == 0;
-}
+  // Write the options.
+  tcsetattr(file_, TCSANOW, &options);
 
-bool SerialConnection::Flush() const {
-  return tcflush(file_, TCIOFLUSH) == 0;
-}
-
-bool SerialConnection::GetControlSignals(api::serial::ControlSignals* signals)
-    const {
-  int status;
-  if (ioctl(file_, TIOCMGET, &status) == -1) {
-    return false;
-  }
-
-  signals->dcd.reset(new bool(status & TIOCM_CAR));
-  signals->cts.reset(new bool(status & TIOCM_CTS));
-  signals->dsr.reset(new bool(status & TIOCM_DSR));
-  signals->ri.reset(new bool(status & TIOCM_RI));
   return true;
+}
+
+bool SerialConnection::GetControlSignals(ControlSignals &control_signals) {
+  int status;
+  if (ioctl(file_, TIOCMGET, &status) == 0) {
+    control_signals.dcd = (status & TIOCM_CAR) != 0;
+    control_signals.cts = (status & TIOCM_CTS) != 0;
+    return true;
+  }
+  return false;
 }
 
 bool SerialConnection::SetControlSignals(
-    const api::serial::ControlSignals& signals) {
+    const ControlSignals &control_signals) {
   int status;
 
-  if (ioctl(file_, TIOCMGET, &status) == -1) {
+  if (ioctl(file_, TIOCMGET, &status) != 0)
     return false;
-  }
 
-  if (signals.dtr.get()) {
-    if (*signals.dtr) {
+  if (control_signals.should_set_dtr) {
+    if (control_signals.dtr)
       status |= TIOCM_DTR;
-    } else {
+    else
       status &= ~TIOCM_DTR;
-    }
   }
-
-  if (signals.rts.get()) {
-    if (*signals.rts){
+  if (control_signals.should_set_rts) {
+    if (control_signals.rts)
       status |= TIOCM_RTS;
-    } else{
+    else
       status &= ~TIOCM_RTS;
-    }
   }
 
   return ioctl(file_, TIOCMSET, &status) == 0;
-}
-
-bool SerialConnection::GetPortInfo(api::serial::ConnectionInfo* info) const {
-  struct termios config;
-  if (tcgetattr(file_, &config) == -1) {
-    return false;
-  }
-  speed_t ispeed = cfgetispeed(&config);
-  speed_t ospeed = cfgetospeed(&config);
-  if (ispeed == ospeed) {
-    int bitrate = 0;
-    if (SpeedConstantToBitrate(ispeed, &bitrate)) {
-      info->bitrate.reset(new int(bitrate));
-    }
-  }
-  if ((config.c_cflag & CSIZE) == CS7) {
-    info->data_bits = api::serial::DATA_BITS_SEVEN;
-  } else if ((config.c_cflag & CSIZE) == CS8) {
-    info->data_bits = api::serial::DATA_BITS_EIGHT;
-  } else {
-    info->data_bits = api::serial::DATA_BITS_NONE;
-  }
-  if (config.c_cflag & PARENB) {
-    info->parity_bit = (config.c_cflag & PARODD) ? api::serial::PARITY_BIT_ODD
-                                                 : api::serial::PARITY_BIT_EVEN;
-  } else {
-    info->parity_bit = api::serial::PARITY_BIT_NO;
-  }
-  info->stop_bits = (config.c_cflag & CSTOPB) ? api::serial::STOP_BITS_TWO
-                                              : api::serial::STOP_BITS_ONE;
-  info->cts_flow_control.reset(new bool((config.c_cflag & CRTSCTS) != 0));
-  return true;
 }
 
 std::string SerialConnection::MaybeFixUpPortName(

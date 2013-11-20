@@ -24,7 +24,6 @@
 
 namespace extensions {
 namespace api {
-class SerialEventDispatcher;
 class TCPServerSocketEventDispatcher;
 class TCPSocketEventDispatcher;
 class UDPSocketEventDispatcher;
@@ -155,7 +154,6 @@ class ApiResourceManager : public ProfileKeyedAPI,
   }
 
  private:
-  friend class api::SerialEventDispatcher;
   friend class api::TCPServerSocketEventDispatcher;
   friend class api::TCPSocketEventDispatcher;
   friend class api::UDPSocketEventDispatcher;
