@@ -64,6 +64,7 @@ class HoverHighlightView : public ActionableView {
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
   // Overridden from views::View.
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual int GetHeightForWidth(int width) OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
@@ -80,6 +81,8 @@ class HoverHighlightView : public ActionableView {
   SkColor text_default_color_;
   bool hover_;
   bool expandable_;
+  bool checkable_;
+  bool checked_;
 
   DISALLOW_COPY_AND_ASSIGN(HoverHighlightView);
 };
