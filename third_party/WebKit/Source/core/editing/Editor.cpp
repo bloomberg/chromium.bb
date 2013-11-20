@@ -466,7 +466,7 @@ void Editor::replaceSelectionWithFragment(PassRefPtr<DocumentFragment> fragment,
     ReplaceSelectionCommand::create(*m_frame.document(), fragment, options, EditActionPaste)->apply();
     revealSelectionAfterEditingOperation();
 
-    if (m_frame.selection().isInPasswordField() || !isContinuousSpellCheckingEnabled())
+    if (m_frame.selection().isInPasswordField() || !spellChecker().isContinuousSpellCheckingEnabled())
         return;
     spellChecker().chunkAndMarkAllMisspellingsAndBadGrammar(m_frame.selection().rootEditableElement());
 }
@@ -970,25 +970,6 @@ void Editor::performDelete()
     setStartNewKillRingSequence(false);
 }
 
-void Editor::simplifyMarkup(Node* startNode, Node* endNode)
-{
-    if (!startNode)
-        return;
-    if (endNode) {
-        if (startNode->document() != endNode->document())
-            return;
-        // check if start node is before endNode
-        Node* node = startNode;
-        while (node && node != endNode)
-            node = NodeTraversal::next(*node);
-        if (!node)
-            return;
-    }
-
-    ASSERT(m_frame.document());
-    SimplifyMarkupCommand::create(*m_frame.document(), startNode, endNode ? NodeTraversal::next(*endNode) : 0)->apply();
-}
-
 void Editor::copyImage(const HitTestResult& result)
 {
     KURL url = result.absoluteLinkURL();
@@ -1043,23 +1024,6 @@ void Editor::setBaseWritingDirection(WritingDirection direction)
     RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     style->setProperty(CSSPropertyDirection, direction == LeftToRightWritingDirection ? "ltr" : direction == RightToLeftWritingDirection ? "rtl" : "inherit", false);
     applyParagraphStyleToSelection(style.get(), EditActionSetWritingDirection);
-}
-
-PassRefPtr<Range> Editor::rangeForPoint(const IntPoint& windowPoint)
-{
-    Document* document = m_frame.documentAtPoint(windowPoint);
-    if (!document)
-        return 0;
-
-    Frame* frame = document->frame();
-    ASSERT(frame);
-    FrameView* frameView = frame->view();
-    if (!frameView)
-        return 0;
-    IntPoint framePoint = frameView->windowToContents(windowPoint);
-    VisibleSelection selection(frame->visiblePositionForPoint(framePoint));
-
-    return selection.toNormalizedRange().get();
 }
 
 void Editor::revealSelectionAfterEditingOperation(const ScrollAlignment& alignment, RevealExtentOption revealExtentOption)
@@ -1321,11 +1285,6 @@ void Editor::respondToChangedSelection(const VisibleSelection& oldSelection, Fra
 SpellChecker& Editor::spellChecker() const
 {
     return m_frame.spellChecker();
-}
-
-bool Editor::isContinuousSpellCheckingEnabled() const
-{
-    return spellChecker().isContinuousSpellCheckingEnabled();
 }
 
 void Editor::toggleOverwriteModeEnabled()

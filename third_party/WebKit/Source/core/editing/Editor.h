@@ -127,9 +127,6 @@ public:
     bool deleteWithDirection(SelectionDirection, TextGranularity, bool killRing, bool isTypingAction);
     void deleteSelectionWithSmartDelete(bool smartDelete);
 
-    Node* removedAnchor() const { return m_removedAnchor.get(); }
-    void setRemovedAnchor(PassRefPtr<Node> n) { m_removedAnchor = n; }
-
     void applyStyle(StylePropertySet*, EditAction = EditActionUnspecified);
     void applyParagraphStyle(StylePropertySet*, EditAction = EditActionUnspecified);
     void applyStyleToSelection(StylePropertySet*, EditAction);
@@ -194,8 +191,6 @@ public:
 
     void setStartNewKillRingSequence(bool);
 
-    PassRefPtr<Range> rangeForPoint(const IntPoint& windowPoint);
-
     void clear();
 
     VisibleSelection selectionForCommand(Event*);
@@ -217,7 +212,6 @@ public:
     // FIXME: Switch callers over to the FindOptions version and retire this one.
     bool findString(const String&, bool forward, bool caseFlag, bool wrapFlag, bool startInSelection);
 
-    PassRefPtr<Range> rangeOfString(const String&, Range*, FindOptions);
     PassRefPtr<Range> findStringAndScrollToVisible(const String&, Range*, FindOptions);
 
     const VisibleSelection& mark() const; // Mark, to be used as emacs uses it.
@@ -235,8 +229,6 @@ public:
     void replaceSelectionWithFragment(PassRefPtr<DocumentFragment>, bool selectReplacement, bool smartReplace, bool matchStyle);
     void replaceSelectionWithText(const String&, bool selectReplacement, bool smartReplace);
 
-    void simplifyMarkup(Node* startNode, Node* endNode);
-
     EditorParagraphSeparator defaultParagraphSeparator() const { return m_defaultParagraphSeparator; }
     void setDefaultParagraphSeparator(EditorParagraphSeparator separator) { m_defaultParagraphSeparator = separator; }
 
@@ -253,7 +245,6 @@ public:
 private:
     Frame& m_frame;
     RefPtr<CompositeEditCommand> m_lastEditCommand;
-    RefPtr<Node> m_removedAnchor;
     int m_preventRevealSelection;
     bool m_shouldStartNewKillRingSequence;
     bool m_shouldStyleWithCSS;
@@ -283,8 +274,9 @@ private:
 
     Node* findEventTargetFromSelection() const;
 
+    PassRefPtr<Range> rangeOfString(const String&, Range*, FindOptions);
+
     SpellChecker& spellChecker() const;
-    bool isContinuousSpellCheckingEnabled() const;
 };
 
 inline void Editor::setStartNewKillRingSequence(bool flag)
