@@ -71,6 +71,11 @@ public:
     bool preserveDrawingBuffer() const;
     void setPreserveDrawingBuffer(bool);
 
+    // Whether or not to fail context creation if performance will be
+    // significantly degraded compared to a native GL context; default=false
+    bool failIfMajorPerformanceCaveat() const;
+    void setFailIfMajorPerformanceCaveat(bool);
+
     // Fetches a copy of the attributes stored in this object in a
     // form that can be used to initialize a GraphicsContext3D.
     GraphicsContext3D::Attributes attributes() const;

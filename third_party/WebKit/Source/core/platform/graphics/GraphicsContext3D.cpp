@@ -263,6 +263,7 @@ PassRefPtr<GraphicsContext3D> GraphicsContext3D::create(GraphicsContext3D::Attri
     webAttributes.noExtensions = attrs.noExtensions;
     webAttributes.shareResources = attrs.shareResources;
     webAttributes.preferDiscreteGPU = attrs.preferDiscreteGPU;
+    webAttributes.failIfMajorPerformanceCaveat = attrs.failIfMajorPerformanceCaveat;
     webAttributes.topDocumentURL = attrs.topDocumentURL.string();
 
     OwnPtr<blink::WebGraphicsContext3D> webContext = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(webAttributes));

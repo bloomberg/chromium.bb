@@ -117,6 +117,16 @@ void WebGLContextAttributes::setPreserveDrawingBuffer(bool preserveDrawingBuffer
     m_attrs.preserveDrawingBuffer = preserveDrawingBuffer;
 }
 
+bool WebGLContextAttributes::failIfMajorPerformanceCaveat() const
+{
+    return m_attrs.failIfMajorPerformanceCaveat;
+}
+
+void WebGLContextAttributes::setFailIfMajorPerformanceCaveat(bool failIfMajorPerformanceCaveat)
+{
+    m_attrs.failIfMajorPerformanceCaveat = failIfMajorPerformanceCaveat;
+}
+
 GraphicsContext3D::Attributes WebGLContextAttributes::attributes() const
 {
     return m_attrs;

@@ -77,6 +77,9 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
             v8::Handle<v8::String> preserveDrawingBuffer = v8::String::NewSymbol("preserveDrawingBuffer");
             if (jsAttributes->Has(preserveDrawingBuffer))
                 webGLAttributes->setPreserveDrawingBuffer(jsAttributes->Get(preserveDrawingBuffer)->BooleanValue());
+            v8::Handle<v8::String> failIfMajorPerformanceCaveat = v8::String::NewSymbol("failIfMajorPerformanceCaveat");
+            if (jsAttributes->Has(failIfMajorPerformanceCaveat))
+                webGLAttributes->setFailIfMajorPerformanceCaveat(jsAttributes->Get(failIfMajorPerformanceCaveat)->BooleanValue());
         }
         attributes = webGLAttributes;
     } else {

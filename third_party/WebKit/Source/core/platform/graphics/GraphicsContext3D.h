@@ -397,6 +397,7 @@ public:
             , noExtensions(false)
             , shareResources(true)
             , preferDiscreteGPU(false)
+            , failIfMajorPerformanceCaveat(false)
         {
         }
 
@@ -409,6 +410,7 @@ public:
         bool noExtensions;
         bool shareResources;
         bool preferDiscreteGPU;
+        bool failIfMajorPerformanceCaveat;
         KURL topDocumentURL;
     };
 
