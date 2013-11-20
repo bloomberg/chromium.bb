@@ -67,7 +67,7 @@ void RecordCacheableNTPLoadHistogram(bool succeeded) {
 
 bool IsCacheableNTP(const content::WebContents* contents) {
   const content::NavigationEntry* entry =
-      contents->GetController().GetActiveEntry();
+      contents->GetController().GetLastCommittedEntry();
   return chrome::ShouldUseCacheableNTP() &&
       chrome::NavEntryIsInstantNTP(contents, entry) &&
       entry->GetURL() != GURL(chrome::kChromeSearchLocalNtpUrl);
@@ -244,7 +244,7 @@ void SearchTabHelper::DidNavigateMainFrame(
   // also a race condition between this code and the page's SetTitle call which
   // this rule avoids.
   content::NavigationEntry* entry =
-      web_contents_->GetController().GetActiveEntry();
+      web_contents_->GetController().GetLastCommittedEntry();
   if (entry && entry->GetTitle().empty() &&
       (entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL) ||
        chrome::NavEntryIsInstantNTP(web_contents_, entry))) {

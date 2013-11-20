@@ -148,7 +148,7 @@ TEST_F(InstantPageTest, PageSupportsInstant) {
   // Assume the page supports instant. Invoke the message reply handler to make
   // sure the InstantPage is notified about the instant support state.
   const content::NavigationEntry* entry =
-      web_contents()->GetController().GetActiveEntry();
+      web_contents()->GetController().GetLastCommittedEntry();
   EXPECT_TRUE(entry);
   SearchTabHelper::FromWebContents(web_contents())->InstantSupportChanged(true);
   EXPECT_TRUE(page->supports_instant());

@@ -49,7 +49,7 @@ SuggestionsHandler::~SuggestionsHandler() {
     const GURL ntp_url = GURL(chrome::kChromeUINewTabURL);
     int action_id = NTP_FOLLOW_ACTION_OTHER;
     content::NavigationEntry* entry =
-        web_ui()->GetWebContents()->GetController().GetActiveEntry();
+        web_ui()->GetWebContents()->GetController().GetLastCommittedEntry();
     if (entry && (entry->GetURL() != ntp_url)) {
       action_id =
           content::PageTransitionStripQualifier(entry->GetTransitionType());

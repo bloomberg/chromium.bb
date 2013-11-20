@@ -65,7 +65,8 @@ void InstantLoader::Load() {
   // page, preventing a potential flicker of the URL, and also ensures that
   // (unless overridden by the page) the new tab title matches the browser UI
   // locale.
-  content::NavigationEntry* entry = contents_->GetController().GetActiveEntry();
+  content::NavigationEntry* entry =
+      contents_->GetController().GetVisibleEntry();
   if (entry)
     entry->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
 

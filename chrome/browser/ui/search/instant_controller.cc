@@ -61,11 +61,11 @@ void EnsureSearchTermsAreSet(content::WebContents* contents,
       controller->GetTransientEntry())
     return;
 
-  const content::NavigationEntry* active_entry = controller->GetActiveEntry();
+  const content::NavigationEntry* entry = controller->GetLastCommittedEntry();
   content::NavigationEntry* transient = controller->CreateNavigationEntry(
-      active_entry->GetURL(),
-      active_entry->GetReferrer(),
-      active_entry->GetTransitionType(),
+      entry->GetURL(),
+      entry->GetReferrer(),
+      entry->GetTransitionType(),
       false,
       std::string(),
       contents->GetBrowserContext());
