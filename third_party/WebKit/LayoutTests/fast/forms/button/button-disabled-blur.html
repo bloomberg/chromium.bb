@@ -24,6 +24,7 @@ window.onload = function() {
     // Need to wait until CheckFocusedElementTask is unqueued.
     setTimeout(function() {
         button.click();
+        document.body.offsetTop;
     }, 20);
     setTimeout(function() {
         testFailed('No blur event.');

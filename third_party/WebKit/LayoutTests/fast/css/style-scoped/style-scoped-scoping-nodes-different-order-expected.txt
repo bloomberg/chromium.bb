@@ -7,7 +7,7 @@ PASS document.styleSheets.length is 4
 PASS document.styleSheets[1].cssRules[0].cssText is "span { color: green; }"
 PASS document.styleSheets[2].cssRules[0].cssText is "span { color: grey; }"
 PASS document.styleSheets[3].cssRules[0].cssText is "span { border: 1px solid green; }"
-PASS borderColor("target") is "rgb(0, 128, 0)"
+FAIL borderColor("target") should be rgb(0, 128, 0). Was rgb(128, 128, 128).
 PASS successfullyParsed is true
 
 TEST COMPLETE

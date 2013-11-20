@@ -79,24 +79,25 @@ void StyleSheetCollection::removeStyleSheetCandidateNode(Node* node, ContainerNo
 
 StyleSheetCollection::StyleResolverUpdateType StyleSheetCollection::compareStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, Vector<StyleSheetContents*>& addedSheets)
 {
-    unsigned newStylesheetCount = newStylesheets.size();
-    unsigned oldStylesheetCount = oldStyleSheets.size();
-    ASSERT(newStylesheetCount >= oldStylesheetCount);
+    unsigned newStyleSheetCount = newStylesheets.size();
+    unsigned oldStyleSheetCount = oldStyleSheets.size();
+    ASSERT(newStyleSheetCount >= oldStyleSheetCount);
+
+    if (!newStyleSheetCount)
+        return Reconstruct;
 
     unsigned newIndex = 0;
-    for (unsigned oldIndex = 0; oldIndex < oldStylesheetCount; ++oldIndex) {
-        if (newIndex >= newStylesheetCount)
-            return Reconstruct;
+    for (unsigned oldIndex = 0; oldIndex < oldStyleSheetCount; ++oldIndex) {
         while (oldStyleSheets[oldIndex] != newStylesheets[newIndex]) {
             addedSheets.append(newStylesheets[newIndex]->contents());
-            ++newIndex;
-            if (newIndex == newStylesheetCount)
+            if (++newIndex == newStyleSheetCount)
                 return Reconstruct;
         }
-        ++newIndex;
+        if (++newIndex == newStyleSheetCount)
+            return Reconstruct;
     }
     bool hasInsertions = !addedSheets.isEmpty();
-    while (newIndex < newStylesheetCount) {
+    while (newIndex < newStyleSheetCount) {
         addedSheets.append(newStylesheets[newIndex]->contents());
         ++newIndex;
     }
