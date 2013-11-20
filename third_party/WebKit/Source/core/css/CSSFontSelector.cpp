@@ -56,7 +56,7 @@ FontLoader::FontLoader(ResourceFetcher* resourceFetcher)
 
 void FontLoader::addFontToBeginLoading(FontResource* fontResource)
 {
-    if (!m_resourceFetcher)
+    if (!m_resourceFetcher || !fontResource->stillNeedsLoad())
         return;
 
     m_fontsToBeginLoading.append(fontResource);
