@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "content/public/browser/trace_subscriber.h"
 #include "content/public/browser/tracing_controller.h"
@@ -17,8 +18,7 @@ namespace content {
 
 class TraceMessageFilter;
 
-class TracingControllerImpl :
-   public TracingController, public TraceSubscriber {
+class TracingControllerImpl : public TracingController {
  public:
   static TracingControllerImpl* GetInstance();
 
@@ -30,6 +30,7 @@ class TracingControllerImpl :
       TracingController::Options options,
       const EnableRecordingDoneCallback& callback) OVERRIDE;
   virtual bool DisableRecording(
+      const base::FilePath& result_file_path,
       const TracingFileResultCallback& callback) OVERRIDE;
   virtual bool EnableMonitoring(const base::debug::CategoryFilter& filter,
       TracingController::Options options,
@@ -41,10 +42,12 @@ class TracingControllerImpl :
       base::debug::CategoryFilter* out_filter,
       TracingController::Options* out_options) OVERRIDE;
   virtual void CaptureMonitoringSnapshot(
+      const base::FilePath& result_file_path,
       const TracingFileResultCallback& callback) OVERRIDE;
 
  private:
   typedef std::set<scoped_refptr<TraceMessageFilter> > FilterMap;
+  class ResultFile;
 
   friend struct base::DefaultLazyInstanceTraits<TracingControllerImpl>;
   friend class TraceMessageFilter;
@@ -52,16 +55,12 @@ class TracingControllerImpl :
   TracingControllerImpl();
   virtual ~TracingControllerImpl();
 
-  // TraceSubscriber implementation.
-  virtual void OnTraceDataCollected(
-      const scoped_refptr<base::RefCountedString>& events_str_ptr) OVERRIDE;
-
   bool can_enable_recording() const {
     return !is_recording_;
   }
 
   bool can_disable_recording() const {
-    return is_recording_ && pending_disable_recording_ack_count_ == 0;
+    return is_recording_ && !result_file_;
   }
 
   bool can_enable_monitoring() const {
@@ -69,13 +68,17 @@ class TracingControllerImpl :
   }
 
   bool can_disable_monitoring() const {
-    return is_monitoring_ &&
-        pending_capture_monitoring_snapshot_ack_count_ == 0;
+    return is_monitoring_ && !monitoring_snapshot_file_;
   }
 
   // Methods for use by TraceMessageFilter.
   void AddFilter(TraceMessageFilter* filter);
   void RemoveFilter(TraceMessageFilter* filter);
+
+  void OnTraceDataCollected(
+      const scoped_refptr<base::RefCountedString>& events_str_ptr);
+  void OnMonitoringTraceDataCollected(
+      const scoped_refptr<base::RefCountedString>& events_str_ptr);
 
   // Callback of TraceLog::Flush() for the local trace.
   void OnLocalTraceDataCollected(
@@ -88,7 +91,10 @@ class TracingControllerImpl :
 
   void OnDisableRecordingAcked(
       const std::vector<std::string>& known_category_groups);
+  void OnResultFileClosed();
+
   void OnCaptureMonitoringSnapshotAcked();
+  void OnMonitoringSnapshotFileClosed();
 
   FilterMap filters_;
   // Pending acks for DisableRecording.
@@ -103,10 +109,8 @@ class TracingControllerImpl :
   std::set<std::string> known_category_groups_;
   base::debug::TraceLog::Options trace_options_;
   base::debug::CategoryFilter category_filter_;
-  FILE* result_file_;
-  scoped_ptr<base::FilePath> result_file_path_;
-  bool result_file_has_at_least_one_result_;
-
+  scoped_ptr<ResultFile> result_file_;
+  scoped_ptr<ResultFile> monitoring_snapshot_file_;
   DISALLOW_COPY_AND_ASSIGN(TracingControllerImpl);
 };
 
