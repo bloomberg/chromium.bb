@@ -52,19 +52,16 @@ HTMLImportsController* HTMLImport::controller()
 
 void HTMLImport::appendChild(HTMLImport* child)
 {
-    ASSERT(child->parent() == this);
-    ASSERT(!child->hasChildren());
-
     if (isBlocked())
         child->block();
-    m_children.append(child);
+    TreeNode<HTMLImport>::appendChild(child);
     blockAfter(child);
 }
 
 bool HTMLImport::areChilrenLoaded() const
 {
-    for (size_t i = 0; i < m_children.size(); ++i) {
-        if (!m_children[i]->isLoaded())
+    for (HTMLImport* child = firstChild(); child; child = child->next()) {
+        if (!child->isLoaded())
             return false;
     }
 
@@ -77,8 +74,7 @@ bool HTMLImport::arePredecessorsLoaded() const
     if (!parent)
         return true;
 
-    for (size_t i = 0; i < parent->m_children.size(); ++i) {
-        HTMLImport* sibling = parent->m_children[i];
+    for (HTMLImport* sibling = parent->firstChild(); sibling; sibling = sibling->next()) {
         if (sibling == this)
             break;
         if (!sibling->isLoaded())
@@ -117,8 +113,8 @@ bool HTMLImport::unblock(HTMLImport* import)
     ASSERT(import->isBlocked() || import->areChilrenLoaded());
 
     if (import->isBlocked()) {
-        for (size_t i = 0; i < import->m_children.size(); ++i) {
-            if (!unblock(import->m_children[i]))
+        for (HTMLImport* child = import->firstChild(); child; child = child->next()) {
+            if (!unblock(child))
                 return false;
         }
     }
@@ -129,17 +125,15 @@ bool HTMLImport::unblock(HTMLImport* import)
 
 void HTMLImport::block(HTMLImport* import)
 {
-    import->block();
-    for (size_t i = 0; i < import->m_children.size(); ++i)
-        block(import->m_children[i]);
+    for (HTMLImport* child = import; child; child = traverseNext(child, import))
+        child->block();
 }
 
 void HTMLImport::blockAfter(HTMLImport* child)
 {
     ASSERT(child->parent() == this);
 
-    for (size_t i = 0; i < m_children.size(); ++i) {
-        HTMLImport* sibling = m_children[m_children.size() - i - 1];
+    for (HTMLImport* sibling = lastChild(); sibling; sibling = sibling->previous()) {
         if (sibling == child)
             break;
         HTMLImport::block(sibling);

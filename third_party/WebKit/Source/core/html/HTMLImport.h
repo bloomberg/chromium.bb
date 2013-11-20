@@ -31,6 +31,7 @@
 #ifndef HTMLImport_h
 #define HTMLImport_h
 
+#include "wtf/TreeNode.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -41,7 +42,7 @@ class Frame;
 class HTMLImportRoot;
 class HTMLImportsController;
 
-class HTMLImport {
+class HTMLImport : public TreeNode<HTMLImport> {
 public:
     static bool unblock(HTMLImport*);
 
@@ -56,7 +57,6 @@ public:
     void appendChild(HTMLImport*);
 
     virtual HTMLImportRoot* root() = 0;
-    virtual HTMLImport* parent() const = 0;
     virtual Document* document() const = 0;
     virtual void wasDetachedFromDocument() = 0;
     virtual void didFinishParsing() = 0;
@@ -77,9 +77,7 @@ private:
 
     bool arePredecessorsLoaded() const;
     bool areChilrenLoaded() const;
-    bool hasChildren() const { return !m_children.isEmpty(); }
 
-    Vector<HTMLImport*> m_children;
     bool m_blocked; // If any of decendants or predecessors is in processing, it is blocked.
 };
 

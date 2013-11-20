@@ -58,7 +58,6 @@ public:
 
     // HTMLImport
     virtual HTMLImportRoot* root() OVERRIDE;
-    virtual HTMLImport* parent() const OVERRIDE;
     virtual Document* document() const OVERRIDE;
     virtual void wasDetachedFromDocument() OVERRIDE;
     virtual void didFinishParsing() OVERRIDE;

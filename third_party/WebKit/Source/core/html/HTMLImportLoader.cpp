@@ -41,9 +41,8 @@
 
 namespace WebCore {
 
-HTMLImportLoader::HTMLImportLoader(HTMLImport* parent, const KURL& url)
-    : m_parent(parent)
-    , m_state(StateLoading)
+HTMLImportLoader::HTMLImportLoader(const KURL& url)
+    : m_state(StateLoading)
     , m_url(url)
 {
 }
@@ -51,7 +50,6 @@ HTMLImportLoader::HTMLImportLoader(HTMLImport* parent, const KURL& url)
 HTMLImportLoader::~HTMLImportLoader()
 {
     // importDestroyed() should be called before the destruction.
-    ASSERT(!m_parent);
     ASSERT(!m_importedDocument);
     if (m_resource)
         m_resource->removeClient(this);
@@ -113,7 +111,7 @@ void HTMLImportLoader::didFinish()
 HTMLImportLoader::State HTMLImportLoader::startWritingAndParsing(const ResourceResponse& response)
 {
     // Current canAccess() implementation isn't sufficient for catching cross-domain redirects: http://crbug.com/256976
-    if (!m_parent->document()->fetcher()->canAccess(m_resource.get()))
+    if (!parent()->document()->fetcher()->canAccess(m_resource.get()))
         return StateError;
 
     DocumentInit init = DocumentInit(response.url(), 0, root()->document()->contextDocument(), this)
@@ -127,7 +125,7 @@ HTMLImportLoader::State HTMLImportLoader::startWritingAndParsing(const ResourceR
 
 HTMLImportLoader::State HTMLImportLoader::finishWriting()
 {
-    if (!m_parent)
+    if (!parent())
         return StateError;
     // The writer instance indicates that a part of the document can be already loaded.
     // We don't take such a case as an error because the partially-loaded document has been visible from script at this point.
@@ -139,7 +137,7 @@ HTMLImportLoader::State HTMLImportLoader::finishWriting()
 
 HTMLImportLoader::State HTMLImportLoader::finishParsing()
 {
-    if (!m_parent)
+    if (!parent())
         return StateError;
     return StateReady;
 }
@@ -167,19 +165,15 @@ void HTMLImportLoader::removeClient(HTMLImportLoaderClient* client)
 
 void HTMLImportLoader::importDestroyed()
 {
-    m_parent = 0;
+    if (parent())
+        parent()->removeChild(this);
     if (RefPtr<Document> document = m_importedDocument.release())
         document->setImport(0);
 }
 
 HTMLImportRoot* HTMLImportLoader::root()
 {
-    return m_parent ? m_parent->root() : 0;
-}
-
-HTMLImport* HTMLImportLoader::parent() const
-{
-    return m_parent;
+    return parent() ? parent()->root() : 0;
 }
 
 Document* HTMLImportLoader::document() const
