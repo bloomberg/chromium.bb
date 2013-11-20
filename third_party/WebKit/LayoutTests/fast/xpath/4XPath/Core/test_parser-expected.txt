@@ -38,7 +38,7 @@ PASS DOM.evaluate("/.. * 0", ROOT, null, XPathResult.NUMBER_TYPE, null).numberVa
 PASS CHILD2/@CODE
 PASS DOM.evaluate("CHILD2/@CODE * 0", ROOT, null, XPathResult.NUMBER_TYPE, null).numberValue is 0
 PASS föø
-PASS DOM.evaluate("\\", ROOT, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null) threw exception SyntaxError: An invalid or illegal string was specified..
+PASS DOM.evaluate("\\", ROOT, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null) threw exception SyntaxError: Failed to execute 'createExpression' on 'XPathExpression': The string '\' is not a valid XPath expression..
 PASS successfullyParsed is true
 
 TEST COMPLETE
