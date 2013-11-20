@@ -164,10 +164,11 @@ class ThreadSafeCaptureOracle
   virtual ~ThreadSafeCaptureOracle() {}
 
   // Callback invoked on completion of all captures.
-  void DidCaptureFrame(const scoped_refptr<media::VideoFrame>& frame,
-                       int frame_number,
-                       base::Time timestamp,
-                       bool success);
+  void DidCaptureFrame(
+      scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+      int frame_number,
+      base::Time timestamp,
+      bool success);
   // Protects everything below it.
   base::Lock lock_;
 
@@ -421,8 +422,8 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   if (!client_)
     return false;  // Capture is stopped.
 
-  scoped_refptr<media::VideoFrame> output_buffer =
-      client_->ReserveOutputBuffer(capture_size_);
+  scoped_refptr<media::VideoCaptureDevice::Client::Buffer> output_buffer =
+      client_->ReserveOutputBuffer(media::VideoFrame::I420, capture_size_);
   const bool should_capture =
       oracle_->ObserveEventAndDecideCapture(event, event_time);
   const bool content_is_dirty =
@@ -434,14 +435,14 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
        "paint"));
 
   // Consider the various reasons not to initiate a capture.
-  if (should_capture && !output_buffer.get()) {
+  if (should_capture && !output_buffer) {
     TRACE_EVENT_INSTANT1("mirroring",
                          "EncodeLimited",
                          TRACE_EVENT_SCOPE_THREAD,
                          "trigger",
                          event_name);
     return false;
-  } else if (!should_capture && output_buffer.get()) {
+  } else if (!should_capture && output_buffer) {
     if (content_is_dirty) {
       // This is a normal and acceptable way to drop a frame. We've hit our
       // capture rate limit: for example, the content is animating at 60fps but
@@ -451,7 +452,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                            "trigger", event_name);
     }
     return false;
-  } else if (!should_capture && !output_buffer.get()) {
+  } else if (!should_capture && !output_buffer) {
     // We decided not to capture, but we wouldn't have been able to if we wanted
     // to because no output buffer was available.
     TRACE_EVENT_INSTANT1("mirroring", "NearlyEncodeLimited",
@@ -463,9 +464,21 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   TRACE_EVENT_ASYNC_BEGIN2("mirroring", "Capture", output_buffer.get(),
                            "frame_number", frame_number,
                            "trigger", event_name);
-  *storage = output_buffer;
+
   *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame,
-                         this, output_buffer, frame_number);
+                         this,
+                         output_buffer,
+                         frame_number);
+  *storage = media::VideoFrame::WrapExternalPackedMemory(
+      media::VideoFrame::I420,
+      capture_size_,
+      gfx::Rect(capture_size_),
+      capture_size_,
+      static_cast<uint8*>(output_buffer->data()),
+      output_buffer->size(),
+      base::SharedMemory::NULLHandle(),
+      base::TimeDelta(),
+      base::Closure());
   return true;
 }
 
@@ -481,12 +494,12 @@ void ThreadSafeCaptureOracle::ReportError() {
 }
 
 void ThreadSafeCaptureOracle::DidCaptureFrame(
-    const scoped_refptr<media::VideoFrame>& frame,
+    scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer,
     int frame_number,
     base::Time timestamp,
     bool success) {
   base::AutoLock guard(lock_);
-  TRACE_EVENT_ASYNC_END2("mirroring", "Capture", frame.get(),
+  TRACE_EVENT_ASYNC_END2("mirroring", "Capture", buffer.get(),
                          "success", success,
                          "timestamp", timestamp.ToInternalValue());
 
@@ -494,9 +507,13 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
     return;  // Capture is stopped.
 
   if (success) {
-    if (oracle_->CompleteCapture(frame_number, timestamp))
-      client_->OnIncomingCapturedVideoFrame(
-          frame, timestamp, frame_rate_);
+    if (oracle_->CompleteCapture(frame_number, timestamp)) {
+      client_->OnIncomingCapturedBuffer(buffer,
+                                        media::VideoFrame::I420,
+                                        capture_size_,
+                                        timestamp,
+                                        frame_rate_);
+    }
   }
 }
 

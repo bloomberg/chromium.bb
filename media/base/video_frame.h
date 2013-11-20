@@ -135,12 +135,13 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // least as large as 4*visible_rect().width()*visible_rect().height().
   void ReadPixelsFromNativeTexture(const SkBitmap& pixels);
 
-  // Wraps image data in a buffer backed by a base::SharedMemoryHandle with a
-  // VideoFrame.  The image data resides in |data| and is assumed to be packed
-  // tightly in a buffer of logical dimensions |coded_size| with the appropriate
-  // bit depth and plane count as given by |format|.  When the frame is
-  // destroyed |no_longer_needed_cb.Run()| will be called.
-  static scoped_refptr<VideoFrame> WrapExternalSharedMemory(
+  // Wraps packed image data residing in a memory buffer with a VideoFrame.
+  // The image data resides in |data| and is assumed to be packed tightly in a
+  // buffer of logical dimensions |coded_size| with the appropriate bit depth
+  // and plane count as given by |format|.  The shared memory handle of the
+  // backing allocation, if present, can be passed in with |handle|.  When the
+  // frame is destroyed, |no_longer_needed_cb.Run()| will be called.
+  static scoped_refptr<VideoFrame> WrapExternalPackedMemory(
       Format format,
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
@@ -193,6 +194,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns the required allocation size for a (tightly packed) frame of the
   // given coded size and format.
   static size_t AllocationSize(Format format, const gfx::Size& coded_size);
+
+  // Returns the required allocation size for a (tightly packed) plane of the
+  // given coded size and format.
+  static size_t PlaneAllocationSize(Format format,
+                                    size_t plane,
+                                    const gfx::Size& coded_size);
 
   Format format() const { return format_; }
 

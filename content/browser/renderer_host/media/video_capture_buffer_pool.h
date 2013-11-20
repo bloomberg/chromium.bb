@@ -56,6 +56,10 @@ class CONTENT_EXPORT VideoCaptureBufferPool
                                           base::ProcessHandle process_handle,
                                           size_t* memory_size);
 
+  // Query the memory parameters of |buffer_id|. Fills in parameters in the
+  // pointer arguments, and returns true iff the buffer exists.
+  bool GetBufferInfo(int buffer_id, void** memory, size_t* size);
+
   // Reserve or allocate a buffer of at least |size| bytes and return its id.
   // This will fail (returning kInvalidId) if the pool already is at its |count|
   // limit of the number of allocations, and all allocated buffers are in use by
@@ -86,20 +90,6 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   // done, a buffer is returned to the pool for reuse.
   void RelinquishConsumerHold(int buffer_id, int num_clients);
 
-  // Detect whether a particular SharedMemoryHandle is exported by a buffer that
-  // belongs to this pool -- that is, whether it was reserved by an earlier call
-  // to ReserveForProducer(). If so, return its buffer_id. If not, return
-  // kInvalidId, indicating the buffer is not recognized (it may be a valid
-  // frame, but we didn't allocate it).
-  int RecognizeReservedBuffer(base::SharedMemoryHandle maybe_belongs_to_pool);
-
-  // Return a buffer wrapped in a useful type. If a reallocation occurred, the
-  // ID of the destroyed buffer is returned via |buffer_id_to_drop|.
-  scoped_refptr<media::VideoFrame> ReserveI420VideoFrame(
-      const gfx::Size& size,
-      int rotation,
-      int* buffer_id_to_drop);
-
   int count() const { return count_; }
 
  private:
@@ -111,12 +101,6 @@ class CONTENT_EXPORT VideoCaptureBufferPool
 
     // The memory created to be shared with renderer processes.
     base::SharedMemory shared_memory;
-
-    // Rotation in degrees of the buffer.
-    //
-    // TODO(jiayl): Move this out of this class. Clients can track rotation
-    // state themselves by means of a map keyed by buffer_id.
-    int rotation;
 
     // Tracks whether this buffer is currently referenced by the producer.
     bool held_by_producer;

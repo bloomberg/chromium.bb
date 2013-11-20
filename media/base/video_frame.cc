@@ -117,7 +117,7 @@ void VideoFrame::ReadPixelsFromNativeTexture(const SkBitmap& pixels) {
 }
 
 // static
-scoped_refptr<VideoFrame> VideoFrame::WrapExternalSharedMemory(
+scoped_refptr<VideoFrame> VideoFrame::WrapExternalPackedMemory(
     Format format,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
@@ -255,22 +255,53 @@ static inline size_t RoundUp(size_t value, size_t alignment) {
 
 // static
 size_t VideoFrame::AllocationSize(Format format, const gfx::Size& coded_size) {
+  size_t total = 0;
+  for (size_t i = 0; i < NumPlanes(format); ++i)
+    total += PlaneAllocationSize(format, i, coded_size);
+  return total;
+}
+
+// static
+size_t VideoFrame::PlaneAllocationSize(Format format,
+                                       size_t plane,
+                                       const gfx::Size& coded_size) {
+  const size_t area =
+      RoundUp(coded_size.width(), 2) * RoundUp(coded_size.height(), 2);
   switch (format) {
     case VideoFrame::YV12:
     case VideoFrame::I420: {
-      const size_t rounded_size =
-          RoundUp(coded_size.width(), 2) * RoundUp(coded_size.height(), 2);
-      return rounded_size * 3 / 2;
+      switch (plane) {
+        case VideoFrame::kYPlane:
+          return area;
+        case VideoFrame::kUPlane:
+        case VideoFrame::kVPlane:
+          return area / 4;
+        default:
+          break;
+      }
     }
     case VideoFrame::YV12A: {
-      const size_t rounded_size =
-          RoundUp(coded_size.width(), 2) * RoundUp(coded_size.height(), 2);
-      return rounded_size * 5 / 2;
+      switch (plane) {
+        case VideoFrame::kYPlane:
+        case VideoFrame::kAPlane:
+          return area;
+        case VideoFrame::kUPlane:
+        case VideoFrame::kVPlane:
+          return area / 4;
+        default:
+          break;
+      }
     }
     case VideoFrame::YV16: {
-      const size_t rounded_size =
-          RoundUp(coded_size.width(), 2) * RoundUp(coded_size.height(), 2);
-      return rounded_size * 2;
+      switch (plane) {
+        case VideoFrame::kYPlane:
+          return area;
+        case VideoFrame::kUPlane:
+        case VideoFrame::kVPlane:
+          return area / 2;
+        default:
+          break;
+      }
     }
     case VideoFrame::UNKNOWN:
     case VideoFrame::NATIVE_TEXTURE:
@@ -280,7 +311,8 @@ size_t VideoFrame::AllocationSize(Format format, const gfx::Size& coded_size) {
 #endif
       break;
   }
-  NOTREACHED() << "Unsupported video frame format: " << format;
+  NOTREACHED() << "Unsupported video frame format/plane: "
+               << format << "/" << plane;
   return 0;
 }
 

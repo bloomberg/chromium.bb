@@ -16,6 +16,8 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/video/capture/video_capture_types.h"
@@ -120,22 +122,40 @@ class MEDIA_EXPORT VideoCaptureDevice {
 
   class MEDIA_EXPORT Client {
    public:
+    // Memory buffer returned by Client::ReserveOutputBuffer().
+    class Buffer : public base::RefCountedThreadSafe<Buffer> {
+     public:
+      int id() const { return id_; }
+      void* data() const { return data_; }
+      size_t size() const { return size_; }
+
+     protected:
+      friend class base::RefCountedThreadSafe<Buffer>;
+
+      Buffer(int id, void* data, size_t size)
+          : id_(id), data_(data), size_(size) {}
+      virtual ~Buffer() {}
+
+      const int id_;
+      void* const data_;
+      const size_t size_;
+    };
+
     virtual ~Client() {}
 
-    // Reserve an output buffer into which a video frame can be captured
-    // directly. If all buffers are currently busy, returns NULL.
+    // Reserve an output buffer into which contents can be captured directly.
+    // The returned Buffer will always be allocated with a memory size suitable
+    // for holding a packed video frame of |format| format, of |dimensions|
+    // dimensions. It is permissible for |dimensions| to be zero; in which
+    // case the returned Buffer does not guarantee memory backing, but functions
+    // as a reservation for external input for the purposes of buffer
+    // throttling.
     //
-    // The returned VideoFrames will always be allocated with a YV12 format and
-    // have dimensions matching |size|. It is the VideoCaptureDevice's
-    // responsibility to obey whatever stride and memory layout are indicated on
-    // the returned VideoFrame object.
-    //
-    // The output buffer stays reserved for use by the calling
-    // VideoCaptureDevice until either the last reference to the VideoFrame is
-    // released, or until the buffer is passed back to the Client's
-    // OnIncomingCapturedFrame() method.
-    virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer(
-        const gfx::Size& size) = 0;
+    // The output buffer stays reserved for use until the Buffer object is
+    // destroyed.
+    virtual scoped_refptr<Buffer> ReserveOutputBuffer(
+        media::VideoFrame::Format format,
+        const gfx::Size& dimensions) = 0;
 
     // Captured a new video frame as a raw buffer. The size, color format, and
     // layout are taken from the parameters specified by an earlier call to
@@ -154,25 +174,18 @@ class MEDIA_EXPORT VideoCaptureDevice {
         bool flip_horiz,
         const VideoCaptureCapability& frame_info) = 0;
 
-    // Captured a new video frame, held in a VideoFrame container.
+    // Captured a new video frame, held in |buffer|.
     //
-    // If |frame| was created via the ReserveOutputBuffer() mechanism, then the
-    // frame delivery is guaranteed (it will not be silently dropped), and
-    // delivery will require no additional copies in the browser process. For
-    // such frames, the VideoCaptureDevice's reservation on the output buffer
-    // ends immediately. The VideoCaptureDevice may not read or write the
-    // underlying memory afterwards, and it should release its references to
-    // |frame| as soon as possible, to allow buffer reuse.
-    //
-    // If |frame| was NOT created via ReserveOutputBuffer(), then this method
-    // will try to reserve an output buffer and copy from |frame| into the
-    // output buffer. If no output buffer is available, the frame will be
-    // silently dropped. |frame| must be allocated as RGB32, YV12 or I420, and
-    // the size must match that specified by an earlier call to OnFrameInfo().
-    virtual void OnIncomingCapturedVideoFrame(
-        const scoped_refptr<media::VideoFrame>& frame,
-        base::Time timestamp,
-        int frame_rate) = 0;
+    // As the frame is backed by a reservation returned by
+    // ReserveOutputBuffer(), delivery is guaranteed and will require no
+    // additional copies in the browser process. |dimensions| indicates the
+    // frame width and height of the buffer contents; this is assumed to be of
+    // |format| format and tightly packed.
+    virtual void OnIncomingCapturedBuffer(const scoped_refptr<Buffer>& buffer,
+                                          media::VideoFrame::Format format,
+                                          const gfx::Size& dimensions,
+                                          base::Time timestamp,
+                                          int frame_rate) = 0;
 
     // An error has occurred that cannot be handled and VideoCaptureDevice must
     // be StopAndDeAllocate()-ed.

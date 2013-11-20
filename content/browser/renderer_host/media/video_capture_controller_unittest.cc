@@ -242,13 +242,14 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                          base::kNullProcessHandle, session_200);
   ASSERT_EQ(3, controller_->GetClientCount());
 
-  // Now, simulate an incoming captured frame from the capture device. As a side
-  // effect this will cause the first buffer to be shared with clients.
-  uint8 frame_no = 1;
-  scoped_refptr<media::VideoFrame> frame;
-  frame = device_->ReserveOutputBuffer(capture_resolution);
-  ASSERT_TRUE(frame);
-  media::FillYUV(frame, frame_no++, 0x22, 0x44);
+  // Now, simulate an incoming captured buffer from the capture device. As a
+  // side effect this will cause the first buffer to be shared with clients.
+  uint8 buffer_no = 1;
+  scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer;
+  buffer =
+      device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
+  ASSERT_TRUE(buffer);
+  memset(buffer->data(), buffer_no++, buffer->size());
   {
     InSequence s;
     EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_1)).Times(1);
@@ -264,22 +265,30 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_2)).Times(1);
     EXPECT_CALL(*client_a_, DoBufferReady(client_a_route_2)).Times(1);
   }
-  device_->OnIncomingCapturedVideoFrame(
-      frame, base::Time(), device_format.frame_rate);
-  frame = NULL;
+  device_->OnIncomingCapturedBuffer(buffer,
+                                    media::VideoFrame::I420,
+                                    capture_resolution,
+                                    base::Time(),
+                                    device_format.frame_rate);
+  buffer = NULL;
 
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
 
-  // Second frame which ought to use the same shared memory buffer. In this case
-  // pretend that the VideoFrame pointer is held by the device for a long delay.
-  // This shouldn't affect anything.
-  frame = device_->ReserveOutputBuffer(capture_resolution);
-  ASSERT_TRUE(frame);
-  media::FillYUV(frame, frame_no++, 0x22, 0x44);
-  device_->OnIncomingCapturedVideoFrame(
-      frame, base::Time(), device_format.frame_rate);
+  // Second buffer which ought to use the same shared memory buffer. In this
+  // case pretend that the Buffer pointer is held by the device for a long
+  // delay. This shouldn't affect anything.
+  buffer =
+      device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
+  ASSERT_TRUE(buffer);
+  memset(buffer->data(), buffer_no++, buffer->size());
+  device_->OnIncomingCapturedBuffer(buffer,
+                                    media::VideoFrame::I420,
+                                    capture_resolution,
+                                    base::Time(),
+                                    device_format.frame_rate);
+  buffer = NULL;
 
   // The buffer should be delivered to the clients in any order.
   EXPECT_CALL(*client_a_, DoBufferReady(client_a_route_1)).Times(1);
@@ -288,24 +297,28 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
-  frame = NULL;
 
-  // Add a fourth client now that some frames have come through.
+  // Add a fourth client now that some buffers have come through.
   controller_->AddClient(client_b_route_2, client_b_.get(),
                          base::kNullProcessHandle, session_1);
   Mock::VerifyAndClearExpectations(client_b_.get());
 
-  // Third, fourth, and fifth frames. Pretend they all arrive at the same time.
+  // Third, fourth, and fifth buffers. Pretend they all arrive at the same time.
   for (int i = 0; i < kPoolSize; i++) {
-    frame = device_->ReserveOutputBuffer(capture_resolution);
-    ASSERT_TRUE(frame);
-    ASSERT_EQ(media::VideoFrame::I420, frame->format());
-    media::FillYUV(frame, frame_no++, 0x22, 0x44);
-    device_->OnIncomingCapturedVideoFrame(
-        frame, base::Time(), device_format.frame_rate);
+    buffer = device_->ReserveOutputBuffer(media::VideoFrame::I420,
+                                          capture_resolution);
+    ASSERT_TRUE(buffer);
+    memset(buffer->data(), buffer_no++, buffer->size());
+    device_->OnIncomingCapturedBuffer(buffer,
+                                      media::VideoFrame::I420,
+                                      capture_resolution,
+                                      base::Time(),
+                                      device_format.frame_rate);
+    buffer = NULL;
   }
   // ReserveOutputBuffer ought to fail now, because the pool is depleted.
-  ASSERT_FALSE(device_->ReserveOutputBuffer(capture_resolution));
+  ASSERT_FALSE(device_->ReserveOutputBuffer(media::VideoFrame::I420,
+                                            capture_resolution));
 
   // The new client needs to be told of 3 buffers; the old clients only 2.
   EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_2)).Times(kPoolSize);
@@ -323,31 +336,41 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
 
-  // Now test the interaction of client shutdown and frame delivery.
+  // Now test the interaction of client shutdown and buffer delivery.
   // Kill A1 via renderer disconnect (synchronous).
   controller_->RemoveClient(client_a_route_1, client_a_.get());
   // Kill B1 via session close (posts a task to disconnect).
   EXPECT_CALL(*client_b_, DoEnded(client_b_route_1)).Times(1);
   controller_->StopSession(300);
-  // Queue up another frame.
-  frame = device_->ReserveOutputBuffer(capture_resolution);
-  ASSERT_TRUE(frame);
-  media::FillYUV(frame, frame_no++, 0x22, 0x44);
-  device_->OnIncomingCapturedVideoFrame(
-      frame, base::Time(), device_format.frame_rate);
-  frame = device_->ReserveOutputBuffer(capture_resolution);
+  // Queue up another buffer.
+  buffer =
+      device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
+  ASSERT_TRUE(buffer);
+  memset(buffer->data(), buffer_no++, buffer->size());
+  device_->OnIncomingCapturedBuffer(buffer,
+                                    media::VideoFrame::I420,
+                                    capture_resolution,
+                                    base::Time(),
+                                    device_format.frame_rate);
+  buffer = NULL;
+  buffer =
+      device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
   {
     // Kill A2 via session close (posts a task to disconnect, but A2 must not
-    // be sent either of these two frames)..
+    // be sent either of these two buffers).
     EXPECT_CALL(*client_a_, DoEnded(client_a_route_2)).Times(1);
     controller_->StopSession(200);
   }
-  ASSERT_TRUE(frame);
-  media::FillYUV(frame, frame_no++, 0x22, 0x44);
-  device_->OnIncomingCapturedVideoFrame(
-      frame, base::Time(), device_format.frame_rate);
+  ASSERT_TRUE(buffer);
+  memset(buffer->data(), buffer_no++, buffer->size());
+  device_->OnIncomingCapturedBuffer(buffer,
+                                    media::VideoFrame::I420,
+                                    capture_resolution,
+                                    base::Time(),
+                                    device_format.frame_rate);
+  buffer = NULL;
   // B2 is the only client left, and is the only one that should
-  // get the frame.
+  // get the buffer.
   EXPECT_CALL(*client_b_, DoBufferReady(client_b_route_2)).Times(2);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
@@ -364,6 +387,8 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
 
   media::VideoCaptureParams session_200 = session_100;
   session_200.session_id = 200;
+
+  const gfx::Size capture_resolution(320, 240);
 
   const VideoCaptureControllerID route_id(0x99);
 
@@ -383,11 +408,13 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_b_.get());
 
-  scoped_refptr<media::VideoFrame> frame =
-      device_->ReserveOutputBuffer(gfx::Size(320, 240));
-  ASSERT_TRUE(frame);
+  scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer =
+      device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
+  ASSERT_TRUE(buffer);
 
-  device_->OnIncomingCapturedVideoFrame(frame, base::Time(), 30);
+  device_->OnIncomingCapturedBuffer(
+      buffer, media::VideoFrame::I420, capture_resolution, base::Time(), 30);
+  buffer = NULL;
 
   base::RunLoop().RunUntilIdle();
 }
@@ -413,20 +440,24 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
       10, 10, 25, media::PIXEL_FORMAT_ARGB,
       media::ConstantResolutionVideoCaptureDevice);
 
-  // Start the device. Then, before the first frame, signal an error and deliver
-  // the frame. The error should be propagated to clients; the frame should not
-  // be.
+  // Start the device. Then, before the first buffer, signal an error and
+  // deliver the buffer. The error should be propagated to clients; the buffer
+  // should not be.
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
 
-  scoped_refptr<media::VideoFrame> frame =
-      device_->ReserveOutputBuffer(gfx::Size(320, 240));
-  ASSERT_TRUE(frame);
+  const gfx::Size dims(320, 240);
+  scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer =
+      device_->ReserveOutputBuffer(media::VideoFrame::I420, dims);
+  ASSERT_TRUE(buffer);
 
   device_->OnError();
-  device_->OnIncomingCapturedVideoFrame(
-      frame, base::Time(), device_format.frame_rate);
-  frame = NULL;
+  device_->OnIncomingCapturedBuffer(buffer,
+                                    media::VideoFrame::I420,
+                                    dims,
+                                    base::Time(),
+                                    device_format.frame_rate);
+  buffer = NULL;
 
   EXPECT_CALL(*client_a_, DoError(route_id)).Times(1);
   base::RunLoop().RunUntilIdle();

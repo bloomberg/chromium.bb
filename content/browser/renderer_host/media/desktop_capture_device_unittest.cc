@@ -40,8 +40,9 @@ const int kFrameRate = 30;
 
 class MockDeviceClient : public media::VideoCaptureDevice::Client {
  public:
-  MOCK_METHOD1(ReserveOutputBuffer,
-               scoped_refptr<media::VideoFrame>(const gfx::Size& size));
+  MOCK_METHOD2(ReserveOutputBuffer,
+               scoped_refptr<Buffer>(media::VideoFrame::Format format,
+                                     const gfx::Size& dimensions));
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD7(OnIncomingCapturedFrame,
                void(const uint8* data,
@@ -51,10 +52,12 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                     bool flip_vert,
                     bool flip_horiz,
                     const media::VideoCaptureCapability& frame_info));
-  MOCK_METHOD3(OnIncomingCapturedVideoFrame,
-      void(const scoped_refptr<media::VideoFrame>& frame,
-           base::Time timestamp,
-           int frame_rate));
+  MOCK_METHOD5(OnIncomingCapturedBuffer,
+               void(const scoped_refptr<Buffer>& buffer,
+                    media::VideoFrame::Format format,
+                    const gfx::Size& dimensions,
+                    base::Time timestamp,
+                    int frame_rate));
 };
 
 // TODO(sergeyu): Move this to a separate file where it can be reused.
@@ -209,9 +212,9 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError()).Times(0);
   EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _, _, _))
-      .WillRepeatedly(DoAll(
-           SaveArg<6>(&caps),
-           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
+      .WillRepeatedly(
+           DoAll(SaveArg<6>(&caps),
+                 InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureCapability capture_format(
       kTestFrameWidth2,

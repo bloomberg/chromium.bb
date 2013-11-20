@@ -64,34 +64,35 @@ namespace media {
 
 class MockClient : public media::VideoCaptureDevice::Client {
  public:
-  MOCK_METHOD1(ReserveOutputBuffer,
-      scoped_refptr<media::VideoFrame>(const gfx::Size&));
+  MOCK_METHOD2(ReserveOutputBuffer,
+               scoped_refptr<Buffer>(media::VideoFrame::Format format,
+                                     const gfx::Size& dimensions));
   MOCK_METHOD0(OnErr, void());
 
   explicit MockClient(
       base::Callback<void(const VideoCaptureCapability&)> frame_cb)
-      : main_thread_(base::MessageLoopProxy::current()),
-        frame_cb_(frame_cb) {}
+      : main_thread_(base::MessageLoopProxy::current()), frame_cb_(frame_cb) {}
 
   virtual void OnError() OVERRIDE {
     OnErr();
   }
 
-  virtual void OnIncomingCapturedFrame(
-      const uint8* data,
-      int length,
-      base::Time timestamp,
-      int rotation,
-      bool flip_vert,
-      bool flip_horiz,
-      const VideoCaptureCapability& frame_info) OVERRIDE {
+  virtual void OnIncomingCapturedFrame(const uint8* data,
+                                       int length,
+                                       base::Time timestamp,
+                                       int rotation,
+                                       bool flip_vert,
+                                       bool flip_horiz,
+                                       const VideoCaptureCapability& frame_info)
+      OVERRIDE {
     main_thread_->PostTask(FROM_HERE, base::Bind(frame_cb_, frame_info));
   }
 
-  virtual void OnIncomingCapturedVideoFrame(
-      const scoped_refptr<media::VideoFrame>& frame,
-      base::Time timestamp,
-      int frame_rate) OVERRIDE {
+  virtual void OnIncomingCapturedBuffer(const scoped_refptr<Buffer>& buffer,
+                                        media::VideoFrame::Format format,
+                                        const gfx::Size& dimensions,
+                                        base::Time timestamp,
+                                        int frame_rate) OVERRIDE {
     NOTREACHED();
   }
 
@@ -106,9 +107,9 @@ class VideoCaptureDeviceTest : public testing::Test {
 
   VideoCaptureDeviceTest()
       : loop_(new base::MessageLoop()),
-        client_(new MockClient(base::Bind(
-            &VideoCaptureDeviceTest::OnFrameCaptured,
-            base::Unretained(this)))) {}
+        client_(
+            new MockClient(base::Bind(&VideoCaptureDeviceTest::OnFrameCaptured,
+                                      base::Unretained(this)))) {}
 
   virtual void SetUp() {
 #if defined(OS_ANDROID)
@@ -266,8 +267,7 @@ TEST_F(VideoCaptureDeviceTest, ReAllocateCamera) {
         PIXEL_FORMAT_I420,
         ConstantResolutionVideoCaptureDevice);
 
-    device->AllocateAndStart(requested_format,
-                             client_.PassAs<Client>());
+    device->AllocateAndStart(requested_format, client_.PassAs<Client>());
     device->StopAndDeAllocate();
   }
 
@@ -284,8 +284,7 @@ TEST_F(VideoCaptureDeviceTest, ReAllocateCamera) {
   scoped_ptr<VideoCaptureDevice> device(
       VideoCaptureDevice::Create(names_.front()));
 
-  device->AllocateAndStart(requested_format,
-                           client_.PassAs<Client>());
+  device->AllocateAndStart(requested_format, client_.PassAs<Client>());
   WaitForCapturedFrame();
   device->StopAndDeAllocate();
   device.reset();

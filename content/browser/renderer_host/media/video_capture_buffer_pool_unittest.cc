@@ -18,6 +18,24 @@ namespace content {
 
 class VideoCaptureBufferPoolTest : public testing::Test {
  protected:
+  class Buffer {
+   public:
+    Buffer(const scoped_refptr<VideoCaptureBufferPool> pool,
+           int id,
+           void* data,
+           size_t size)
+        : pool_(pool), id_(id), data_(data), size_(size) {}
+    ~Buffer() { pool_->RelinquishProducerReservation(id()); }
+    int id() const { return id_; }
+    void* data() const { return data_; }
+    size_t size() const { return size_; }
+
+   private:
+    const scoped_refptr<VideoCaptureBufferPool> pool_;
+    const int id_;
+    void* const data_;
+    const size_t size_;
+  };
   VideoCaptureBufferPoolTest()
       : expected_dropped_id_(0),
         pool_(new VideoCaptureBufferPool(3)) {}
@@ -26,16 +44,21 @@ class VideoCaptureBufferPoolTest : public testing::Test {
     expected_dropped_id_ = expected_dropped_id;
   }
 
-  scoped_refptr<media::VideoFrame> ReserveI420VideoFrame(
-      const gfx::Size& size) {
-    // To verify that ReserveI420VideoFrame always sets |buffer_id_to_drop|,
+  scoped_ptr<Buffer> ReserveI420Buffer(const gfx::Size& dimensions) {
+    const size_t frame_bytes =
+        media::VideoFrame::AllocationSize(media::VideoFrame::I420, dimensions);
+    // To verify that ReserveI420Buffer always sets |buffer_id_to_drop|,
     // initialize it to something different than the expected value.
     int buffer_id_to_drop = ~expected_dropped_id_;
-    scoped_refptr<media::VideoFrame> frame =
-        pool_->ReserveI420VideoFrame(size, 0, &buffer_id_to_drop);
-    EXPECT_EQ(expected_dropped_id_, buffer_id_to_drop)
-        << "Unexpected buffer reallocation result.";
-    return frame;
+    int buffer_id = pool_->ReserveForProducer(frame_bytes, &buffer_id_to_drop);
+    if (buffer_id == VideoCaptureBufferPool::kInvalidId)
+      return scoped_ptr<Buffer>();
+
+    void* memory;
+    size_t size;
+    pool_->GetBufferInfo(buffer_id, &memory, &size);
+    EXPECT_EQ(expected_dropped_id_, buffer_id_to_drop);
+    return scoped_ptr<Buffer>(new Buffer(pool_, buffer_id, memory, size));
   }
 
   int expected_dropped_id_;
@@ -56,128 +79,124 @@ TEST_F(VideoCaptureBufferPoolTest, BufferPool) {
   // Reallocation won't happen for the first part of the test.
   ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
 
-  scoped_refptr<media::VideoFrame> frame1 = ReserveI420VideoFrame(size_lo);
-  ASSERT_TRUE(NULL != frame1.get());
-  ASSERT_EQ(size_lo, frame1->coded_size());
-  scoped_refptr<media::VideoFrame> frame2 = ReserveI420VideoFrame(size_lo);
-  ASSERT_TRUE(NULL != frame2.get());
-  ASSERT_EQ(size_lo, frame2->coded_size());
-  scoped_refptr<media::VideoFrame> frame3 = ReserveI420VideoFrame(size_lo);
-  ASSERT_TRUE(NULL != frame3.get());
+  scoped_ptr<Buffer> buffer1 = ReserveI420Buffer(size_lo);
+  ASSERT_TRUE(NULL != buffer1.get());
+  ASSERT_LE(media::VideoFrame::AllocationSize(media::VideoFrame::I420, size_lo),
+            buffer1->size());
+  scoped_ptr<Buffer> buffer2 = ReserveI420Buffer(size_lo);
+  ASSERT_TRUE(NULL != buffer2.get());
+  ASSERT_LE(media::VideoFrame::AllocationSize(media::VideoFrame::I420, size_lo),
+            buffer2->size());
+  scoped_ptr<Buffer> buffer3 = ReserveI420Buffer(size_lo);
+  ASSERT_TRUE(NULL != buffer3.get());
+  ASSERT_LE(media::VideoFrame::AllocationSize(media::VideoFrame::I420, size_lo),
+            buffer3->size());
 
   // Touch the memory.
-  media::FillYUV(frame1.get(), 0x11, 0x22, 0x33);
-  media::FillYUV(frame2.get(), 0x44, 0x55, 0x66);
-  media::FillYUV(frame3.get(), 0x77, 0x88, 0x99);
+  memset(buffer1->data(), 0x11, buffer1->size());
+  memset(buffer2->data(), 0x44, buffer2->size());
+  memset(buffer3->data(), 0x77, buffer3->size());
 
-  // Fourth frame should fail.
-  ASSERT_FALSE(ReserveI420VideoFrame(size_lo)) << "Pool should be empty";
+  // Fourth buffer should fail.
+  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
 
-  // Release 1st frame and retry; this should succeed.
-  frame1 = NULL;
-  scoped_refptr<media::VideoFrame> frame4 = ReserveI420VideoFrame(size_lo);
-  ASSERT_TRUE(NULL != frame4.get());
+  // Release 1st buffer and retry; this should succeed.
+  buffer1.reset();
+  scoped_ptr<Buffer> buffer4 = ReserveI420Buffer(size_lo);
+  ASSERT_TRUE(NULL != buffer4.get());
 
-  ASSERT_FALSE(ReserveI420VideoFrame(size_lo)) << "Pool should be empty";
-  ASSERT_FALSE(ReserveI420VideoFrame(size_hi)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveI420Buffer(size_hi)) << "Pool should be empty";
 
   // Validate the IDs
-  int buffer_id2 =
-      pool_->RecognizeReservedBuffer(frame2->shared_memory_handle());
+  int buffer_id2 = buffer2->id();
   ASSERT_EQ(1, buffer_id2);
-  int buffer_id3 =
-      pool_->RecognizeReservedBuffer(frame3->shared_memory_handle());
-  base::SharedMemoryHandle memory_handle3 = frame3->shared_memory_handle();
+  int buffer_id3 = buffer3->id();
   ASSERT_EQ(2, buffer_id3);
-  int buffer_id4 =
-      pool_->RecognizeReservedBuffer(frame4->shared_memory_handle());
+  void* const memory_pointer3 = buffer3->data();
+  int buffer_id4 = buffer4->id();
   ASSERT_EQ(0, buffer_id4);
-  int buffer_id_non_pool =
-      pool_->RecognizeReservedBuffer(non_pool_frame->shared_memory_handle());
-  ASSERT_EQ(VideoCaptureBufferPool::kInvalidId, buffer_id_non_pool);
 
-  // Deliver a frame.
+  // Deliver a buffer.
   pool_->HoldForConsumers(buffer_id3, 2);
 
-  ASSERT_FALSE(ReserveI420VideoFrame(size_lo)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
 
-  frame3 = NULL;   // Old producer releases frame. Should be a noop.
-  ASSERT_FALSE(ReserveI420VideoFrame(size_lo)) << "Pool should be empty";
-  ASSERT_FALSE(ReserveI420VideoFrame(size_hi)) << "Pool should be empty";
+  buffer3.reset();  // Old producer releases buffer. Should be a noop.
+  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveI420Buffer(size_hi)) << "Pool should be empty";
 
-  frame2 = NULL;  // Active producer releases frame. Should free a frame.
+  buffer2.reset();  // Active producer releases buffer. Should free a buffer.
 
-  frame1 = ReserveI420VideoFrame(size_lo);
-  ASSERT_TRUE(NULL != frame1.get());
-  ASSERT_FALSE(ReserveI420VideoFrame(size_lo)) << "Pool should be empty";
+  buffer1 = ReserveI420Buffer(size_lo);
+  ASSERT_TRUE(NULL != buffer1.get());
+  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
 
   // First consumer finishes.
   pool_->RelinquishConsumerHold(buffer_id3, 1);
-  ASSERT_FALSE(ReserveI420VideoFrame(size_lo)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
 
-  // Second consumer finishes. This should free that frame.
+  // Second consumer finishes. This should free that buffer.
   pool_->RelinquishConsumerHold(buffer_id3, 1);
-  frame3 = ReserveI420VideoFrame(size_lo);
-  ASSERT_TRUE(NULL != frame3.get());
-  ASSERT_EQ(buffer_id3,
-            pool_->RecognizeReservedBuffer(frame3->shared_memory_handle()))
-      << "Buffer ID should be reused.";
-  ASSERT_EQ(memory_handle3, frame3->shared_memory_handle());
-  ASSERT_FALSE(ReserveI420VideoFrame(size_lo)) << "Pool should be empty";
+  buffer3 = ReserveI420Buffer(size_lo);
+  ASSERT_TRUE(NULL != buffer3.get());
+  ASSERT_EQ(buffer_id3, buffer3->id()) << "Buffer ID should be reused.";
+  ASSERT_EQ(memory_pointer3, buffer3->data());
+  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
 
-  // Now deliver & consume frame1, but don't release the VideoFrame.
-  int buffer_id1 =
-      pool_->RecognizeReservedBuffer(frame1->shared_memory_handle());
+  // Now deliver & consume buffer1, but don't release the buffer.
+  int buffer_id1 = buffer1->id();
   ASSERT_EQ(1, buffer_id1);
   pool_->HoldForConsumers(buffer_id1, 5);
   pool_->RelinquishConsumerHold(buffer_id1, 5);
 
   // Even though the consumer is done with the buffer at |buffer_id1|, it cannot
-  // be re-allocated to the producer, because |frame1| still references it. But
-  // when |frame1| goes away, we should be able to re-reserve the buffer (and
+  // be re-allocated to the producer, because |buffer1| still references it. But
+  // when |buffer1| goes away, we should be able to re-reserve the buffer (and
   // the ID ought to be the same).
-  ASSERT_FALSE(ReserveI420VideoFrame(size_lo)) << "Pool should be empty";
-  frame1 = NULL;  // Should free the frame.
-  frame2 = ReserveI420VideoFrame(size_lo);
-  ASSERT_TRUE(NULL != frame2.get());
-  ASSERT_EQ(buffer_id1,
-            pool_->RecognizeReservedBuffer(frame2->shared_memory_handle()));
+  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
+  buffer1.reset();  // Should free the buffer.
+  buffer2 = ReserveI420Buffer(size_lo);
+  ASSERT_TRUE(NULL != buffer2.get());
+  ASSERT_EQ(buffer_id1, buffer2->id());
   buffer_id2 = buffer_id1;
-  ASSERT_FALSE(ReserveI420VideoFrame(size_lo)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
 
   // Now try reallocation with different resolutions. We expect reallocation
   // to occur only when the old buffer is too small.
-  frame2 = NULL;
+  buffer2.reset();
   ExpectDroppedId(buffer_id2);
-  frame2 = ReserveI420VideoFrame(size_hi);
-  ASSERT_TRUE(NULL != frame2.get());
-  ASSERT_TRUE(frame2->coded_size() == size_hi);
-  ASSERT_EQ(3, pool_->RecognizeReservedBuffer(frame2->shared_memory_handle()));
-  base::SharedMemoryHandle memory_handle_hi = frame2->shared_memory_handle();
-  frame2 = NULL;  // Frees it.
+  buffer2 = ReserveI420Buffer(size_hi);
+  ASSERT_TRUE(NULL != buffer2.get());
+  ASSERT_LE(media::VideoFrame::AllocationSize(media::VideoFrame::I420, size_hi),
+            buffer2->size());
+  ASSERT_EQ(3, buffer2->id());
+  void* const memory_pointer_hi = buffer2->data();
+  buffer2.reset();  // Frees it.
   ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
-  frame2 = ReserveI420VideoFrame(size_lo);
-  base::SharedMemoryHandle memory_handle_lo = frame2->shared_memory_handle();
-  ASSERT_EQ(memory_handle_hi, memory_handle_lo)
+  buffer2 = ReserveI420Buffer(size_lo);
+  void* const memory_pointer_lo = buffer2->data();
+  ASSERT_EQ(memory_pointer_hi, memory_pointer_lo)
       << "Decrease in resolution should not reallocate buffer";
-  ASSERT_TRUE(NULL != frame2.get());
-  ASSERT_TRUE(frame2->coded_size() == size_lo);
-  ASSERT_EQ(3, pool_->RecognizeReservedBuffer(frame2->shared_memory_handle()));
-  ASSERT_FALSE(ReserveI420VideoFrame(size_lo)) << "Pool should be empty";
+  ASSERT_TRUE(NULL != buffer2.get());
+  ASSERT_EQ(3, buffer2->id());
+  ASSERT_LE(media::VideoFrame::AllocationSize(media::VideoFrame::I420, size_lo),
+            buffer2->size());
+  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
 
-  // Tear down the pool_, writing into the frames. The VideoFrame should
-  // preserve the lifetime of the underlying memory.
-  frame3 = NULL;
+  // Tear down the pool_, writing into the buffers. The buffer should preserve
+  // the lifetime of the underlying memory.
+  buffer3.reset();
   pool_ = NULL;
 
   // Touch the memory.
-  media::FillYUV(frame2.get(), 0x11, 0x22, 0x33);
-  media::FillYUV(frame4.get(), 0x44, 0x55, 0x66);
+  memset(buffer2->data(), 0x22, buffer2->size());
+  memset(buffer4->data(), 0x55, buffer4->size());
 
-  frame2 = NULL;
+  buffer2.reset();
 
-  media::FillYUV(frame4.get(), 0x44, 0x55, 0x66);
-  frame4 = NULL;
+  memset(buffer4->data(), 0x77, buffer4->size());
+  buffer4.reset();
 }
 
 } // namespace content

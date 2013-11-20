@@ -478,8 +478,8 @@ void VideoCaptureDeviceWin::StopAndDeAllocate() {
 // Implements SinkFilterObserver::SinkFilterObserver.
 void VideoCaptureDeviceWin::FrameReceived(const uint8* buffer,
                                           int length) {
-  client_->OnIncomingCapturedFrame(buffer, length, base::Time::Now(),
-                                   0, false, false, current_setting_);
+  client_->OnIncomingCapturedFrame(
+      buffer, length, base::Time::Now(), 0, false, false, current_setting_);
 }
 
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {

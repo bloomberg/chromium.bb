@@ -48,7 +48,6 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_H_
 
 #include <list>
-#include <map>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -111,8 +110,9 @@ class CONTENT_EXPORT VideoCaptureController {
   typedef std::list<ControllerClient*> ControllerClients;
 
   // Worker functions on IO thread. Called by the VideoCaptureDeviceClient.
-  void DoIncomingCapturedFrameOnIOThread(
-      const scoped_refptr<media::VideoFrame>& captured_frame,
+  void DoIncomingCapturedI420BufferOnIOThread(
+      scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+      const gfx::Size& dimensions,
       int frame_rate,
       base::Time timestamp);
   void DoErrorOnIOThread();

@@ -258,9 +258,11 @@ void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
   DCHECK(iter != client_buffers_.end());
   scoped_refptr<ClientBuffer> buffer = iter->second;
   scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalSharedMemory(
+      media::VideoFrame::WrapExternalPackedMemory(
           media::VideoFrame::I420,
-          size, gfx::Rect(size), size,
+          size,
+          gfx::Rect(size),
+          size,
           reinterpret_cast<uint8*>(buffer->buffer->memory()),
           buffer->buffer_size,
           buffer->buffer->handle(),

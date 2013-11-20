@@ -228,9 +228,13 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
   if (expected_next_frame_time_ <= current_time) {
     expected_next_frame_time_ += frame_interval_;
 
-    client_->OnIncomingCapturedFrame(
-        reinterpret_cast<uint8*>(buffer), length, base::Time::Now(),
-        rotation, flip_vert, flip_horiz, current_settings_);
+    client_->OnIncomingCapturedFrame(reinterpret_cast<uint8*>(buffer),
+                                     length,
+                                     base::Time::Now(),
+                                     rotation,
+                                     flip_vert,
+                                     flip_horiz,
+                                     current_settings_);
   }
 
   env->ReleaseByteArrayElements(data, buffer, JNI_ABORT);

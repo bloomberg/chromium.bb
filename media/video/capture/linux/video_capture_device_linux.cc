@@ -409,9 +409,9 @@ void VideoCaptureDeviceLinux::OnAllocateAndStart(int width,
   // framerate configuration, or the actual one is different from the desired?
 
   // Store our current width and height.
-  frame_info_.color = V4l2ColorToVideoCaptureColorFormat(
-      video_fmt.fmt.pix.pixelformat);
-  frame_info_.width  = video_fmt.fmt.pix.width;
+  frame_info_.color =
+      V4l2ColorToVideoCaptureColorFormat(video_fmt.fmt.pix.pixelformat);
+  frame_info_.width = video_fmt.fmt.pix.width;
   frame_info_.height = video_fmt.fmt.pix.height;
   frame_info_.frame_rate = frame_rate;
   frame_info_.frame_size_type = VariableResolutionVideoCaptureDevice;
@@ -513,8 +513,13 @@ void VideoCaptureDeviceLinux::OnCaptureTask() {
     // Dequeue a buffer.
     if (ioctl(device_fd_, VIDIOC_DQBUF, &buffer) == 0) {
       client_->OnIncomingCapturedFrame(
-          static_cast<uint8*> (buffer_pool_[buffer.index].start),
-          buffer.bytesused, base::Time::Now(), 0, false, false, frame_info_);
+          static_cast<uint8*>(buffer_pool_[buffer.index].start),
+          buffer.bytesused,
+          base::Time::Now(),
+          0,
+          false,
+          false,
+          frame_info_);
 
       // Enqueue the buffer again.
       if (ioctl(device_fd_, VIDIOC_QBUF, &buffer) == -1) {

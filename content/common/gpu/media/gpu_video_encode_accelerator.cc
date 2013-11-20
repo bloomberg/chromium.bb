@@ -161,7 +161,7 @@ void GpuVideoEncodeAccelerator::OnEncode(int32 frame_id,
   }
 
   scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalSharedMemory(
+      media::VideoFrame::WrapExternalPackedMemory(
           input_format_,
           input_coded_size_,
           gfx::Rect(input_visible_size_),

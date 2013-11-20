@@ -315,10 +315,21 @@ class StubClient : public media::VideoCaptureDevice::Client {
   }
   virtual ~StubClient() {}
 
-  virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer(
-      const gfx::Size& size) OVERRIDE {
+  virtual scoped_refptr<media::VideoCaptureDevice::Client::Buffer>
+  ReserveOutputBuffer(media::VideoFrame::Format format,
+                      const gfx::Size& dimensions) OVERRIDE {
+    const size_t frame_bytes =
+        media::VideoFrame::AllocationSize(format, dimensions);
     int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;  // Ignored.
-    return buffer_pool_->ReserveI420VideoFrame(size, 0, &buffer_id_to_drop);
+    int buffer_id =
+        buffer_pool_->ReserveForProducer(frame_bytes, &buffer_id_to_drop);
+    if (buffer_id == VideoCaptureBufferPool::kInvalidId)
+      return NULL;
+    void* data;
+    size_t size;
+    buffer_pool_->GetBufferInfo(buffer_id, &data, &size);
+    return scoped_refptr<media::VideoCaptureDevice::Client::Buffer>(
+        new PoolBuffer(buffer_pool_, buffer_id, data, size));
   }
 
   virtual void OnIncomingCapturedFrame(
@@ -332,19 +343,19 @@ class StubClient : public media::VideoCaptureDevice::Client {
     FAIL();
   }
 
-  virtual void OnIncomingCapturedVideoFrame(
-      const scoped_refptr<media::VideoFrame>& frame,
-      base::Time timestamp,
-      int frame_rate) OVERRIDE {
-    EXPECT_EQ(kTestFramesPerSecond, frame_rate);
-    EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), frame->coded_size());
-    EXPECT_EQ(media::VideoFrame::I420, frame->format());
-    EXPECT_LE(
-        0,
-        buffer_pool_->RecognizeReservedBuffer(frame->shared_memory_handle()));
+  virtual void OnIncomingCapturedBuffer(const scoped_refptr<Buffer>& buffer,
+                                        media::VideoFrame::Format format,
+                                        const gfx::Size& dimensions,
+                                        base::Time timestamp,
+                                        int frame_rate) OVERRIDE {
+    EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), dimensions);
+    EXPECT_EQ(media::VideoFrame::I420, format);
     uint8 yuv[3];
+    size_t offset = 0;
     for (int plane = 0; plane < 3; ++plane) {
-      yuv[plane] = frame->data(plane)[0];
+      yuv[plane] = reinterpret_cast<uint8*>(buffer->data())[offset];
+      offset += media::VideoFrame::PlaneAllocationSize(
+          media::VideoFrame::I420, plane, dimensions);
     }
     // TODO(nick): We just look at the first pixel presently, because if
     // the analysis is too slow, the backlog of frames will grow without bound
@@ -357,6 +368,19 @@ class StubClient : public media::VideoCaptureDevice::Client {
   }
 
  private:
+  class PoolBuffer : public media::VideoCaptureDevice::Client::Buffer {
+   public:
+    PoolBuffer(const scoped_refptr<VideoCaptureBufferPool>& pool,
+               int buffer_id,
+               void* data,
+               size_t size)
+        : Buffer(buffer_id, data, size), pool_(pool) {}
+
+   private:
+    virtual ~PoolBuffer() { pool_->RelinquishProducerReservation(id()); }
+    const scoped_refptr<VideoCaptureBufferPool> pool_;
+  };
+
   scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
   base::Callback<void(SkColor)> color_callback_;
   base::Closure error_callback_;

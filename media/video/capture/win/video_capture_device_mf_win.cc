@@ -418,8 +418,12 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedFrame(
     bool flip_horiz) {
   base::AutoLock lock(lock_);
   if (data && client_.get())
-    client_->OnIncomingCapturedFrame(data, length, time_stamp,
-                                     rotation, flip_vert, flip_horiz,
+    client_->OnIncomingCapturedFrame(data,
+                                     length,
+                                     time_stamp,
+                                     rotation,
+                                     flip_vert,
+                                     flip_horiz,
                                      current_setting_);
 
   if (capture_) {
