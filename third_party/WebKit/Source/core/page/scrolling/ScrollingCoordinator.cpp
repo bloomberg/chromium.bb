@@ -90,8 +90,6 @@ ScrollingCoordinator::ScrollingCoordinator(Page* page)
     : m_page(page)
     , m_scrollGestureRegionIsDirty(false)
     , m_touchEventTargetRectsAreDirty(false)
-    , m_wasFrameScrollable(false)
-    , m_lastMainThreadScrollingReasons(0)
 {
 }
 
@@ -152,12 +150,6 @@ void ScrollingCoordinator::updateAfterCompositingChange()
         updateTouchEventTargetRectsIfNeeded();
         m_touchEventTargetRectsAreDirty = false;
     }
-
-    FrameView* frameView = m_page->mainFrame()->view();
-    bool frameIsScrollable = frameView && frameView->isScrollable();
-    if (m_wasFrameScrollable != frameIsScrollable)
-        updateShouldUpdateScrollLayerPositionOnMainThread();
-    m_wasFrameScrollable = frameIsScrollable;
 
     const FrameTree& tree = m_page->mainFrame()->tree();
     for (const Frame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
@@ -601,10 +593,8 @@ void ScrollingCoordinator::recomputeWheelEventHandlerCountForFrameView(FrameView
 
 void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainThreadScrollingReasons reasons)
 {
-    if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(m_page->mainFrame()->view())) {
-        m_lastMainThreadScrollingReasons = reasons;
+    if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(m_page->mainFrame()->view()))
         scrollLayer->setShouldScrollOnMainThread(reasons);
-    }
 }
 
 void ScrollingCoordinator::pageDestroyed()
@@ -869,11 +859,8 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
 
 MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() const
 {
-    // The main thread scrolling reasons are applicable to scrolls of the main
-    // frame. If it does not exist or if it is not scrollable, there is no
-    // reason to force main thread scrolling.
     FrameView* frameView = m_page->mainFrame()->view();
-    if (!frameView || !frameView->isScrollable())
+    if (!frameView)
         return static_cast<MainThreadScrollingReasons>(0);
 
     MainThreadScrollingReasons mainThreadScrollingReasons = (MainThreadScrollingReasons)0;
@@ -909,7 +896,7 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollin
 
 String ScrollingCoordinator::mainThreadScrollingReasonsAsText() const
 {
-    return mainThreadScrollingReasonsAsText(m_lastMainThreadScrollingReasons);
+    return mainThreadScrollingReasonsAsText(mainThreadScrollingReasons());
 }
 
 } // namespace WebCore
