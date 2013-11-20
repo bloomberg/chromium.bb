@@ -69,6 +69,16 @@ cr.define('options', function() {
     },
 
     /**
+    * Specifically catch the situations in which the overlay is cancelled
+    * externally (e.g. by pressing <Esc>), so that the input fields and
+    * GUID can be properly cleared.
+    * @override
+    */
+    handleCancel: function() {
+      this.dismissOverlay_();
+    },
+
+    /**
      * Creates, decorates and initializes the multi-value lists for full name,
      * phone, and email.
      * @private
@@ -269,10 +279,6 @@ cr.define('options', function() {
 
       this.countryChanged_();
     },
-  };
-
-  AutofillEditAddressOverlay.clearInputFields = function() {
-    AutofillEditAddressOverlay.getInstance().clearInputFields_();
   };
 
   AutofillEditAddressOverlay.loadAddress = function(address) {

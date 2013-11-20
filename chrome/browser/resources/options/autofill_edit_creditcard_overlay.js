@@ -37,10 +37,19 @@ cr.define('options', function() {
       };
 
       self.guid_ = '';
-      self.hasEditedNumber_ = false;
       self.clearInputFields_();
       self.connectInputEvents_();
       self.setDefaultSelectOptions_();
+    },
+
+    /**
+    * Specifically catch the situations in which the overlay is cancelled
+    * externally (e.g. by pressing <Esc>), so that the input fields and
+    * GUID can be properly cleared.
+    * @override
+    */
+    handleCancel: function() {
+      this.dismissOverlay_();
     },
 
     /**
@@ -50,7 +59,6 @@ cr.define('options', function() {
     dismissOverlay_: function() {
       this.clearInputFields_();
       this.guid_ = '';
-      this.hasEditedNumber_ = false;
       OptionsPage.closeOverlay();
     },
 
@@ -181,10 +189,6 @@ cr.define('options', function() {
       this.inputFieldChanged_();
       this.guid_ = creditCard.guid;
     },
-  };
-
-  AutofillEditCreditCardOverlay.clearInputFields = function(title) {
-    AutofillEditCreditCardOverlay.getInstance().clearInputFields_();
   };
 
   AutofillEditCreditCardOverlay.loadCreditCard = function(creditCard) {

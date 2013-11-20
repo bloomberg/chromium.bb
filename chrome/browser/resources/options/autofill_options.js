@@ -83,27 +83,23 @@ cr.define('options', function() {
 
     /**
      * Shows the 'Add address' overlay, specifically by loading the
-     * 'Edit address' overlay, emptying the input fields and modifying the
-     * overlay title.
+     * 'Edit address' overlay and modifying the overlay title.
      * @private
      */
     showAddAddressOverlay_: function() {
       var title = loadTimeData.getString('addAddressTitle');
       AutofillEditAddressOverlay.setTitle(title);
-      AutofillEditAddressOverlay.clearInputFields();
       OptionsPage.navigateToPage('autofillEditAddress');
     },
 
     /**
      * Shows the 'Add credit card' overlay, specifically by loading the
-     * 'Edit credit card' overlay, emptying the input fields and modifying the
-     * overlay title.
+     * 'Edit credit card' overlay and modifying the overlay title.
      * @private
      */
     showAddCreditCardOverlay_: function() {
       var title = loadTimeData.getString('addCreditCardTitle');
       AutofillEditCreditCardOverlay.setTitle(title);
-      AutofillEditCreditCardOverlay.clearInputFields();
       OptionsPage.navigateToPage('autofillEditCreditCard');
     },
 
