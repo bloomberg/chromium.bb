@@ -73,7 +73,7 @@ PassRefPtr<HTMLImportLoader> HTMLImportsController::createLoader(HTMLImport* par
     if (RefPtr<HTMLImportLoader> found = findLinkFor(request.url()))
         return found.release();
 
-    request.setPotentiallyCrossOriginEnabled(securityOrigin(), DoNotAllowStoredCredentials);
+    request.setCrossOriginAccessControl(securityOrigin(), DoNotAllowStoredCredentials);
     ResourcePtr<RawResource> resource = parent->document()->fetcher()->fetchImport(request);
     if (!resource)
         return 0;

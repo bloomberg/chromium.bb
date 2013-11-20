@@ -474,8 +474,8 @@ void XMLDocumentParser::notifyFinished(Resource* unusedResource)
     if (errorOccurred)
         scriptLoader->dispatchErrorEvent();
     else if (!wasCanceled) {
-        scriptLoader->executeScript(sourceCode);
-        scriptLoader->dispatchLoadEvent();
+        if (scriptLoader->executePotentiallyCrossOriginScript(sourceCode))
+            scriptLoader->dispatchLoadEvent();
     }
 
     m_scriptElement = 0;

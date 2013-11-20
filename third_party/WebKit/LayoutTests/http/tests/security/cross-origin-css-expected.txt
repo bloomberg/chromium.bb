@@ -5,3 +5,4 @@ LINK Same-origin, HTML, invalid: rgb(255, 255, 0)
 IMPORT Cross-origin, HTML, valid: rgb(255, 255, 0)
 IMPORT Cross-origin, CSS, invalid: rgb(255, 255, 0)
 IMPORT Same-origin, HTML, invalid: rgb(255, 255, 0)
+PASS background image loaded

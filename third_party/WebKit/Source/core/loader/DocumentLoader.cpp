@@ -842,7 +842,7 @@ void DocumentLoader::startLoadingMainResource()
 
     ResourceRequest request(m_request);
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, mainResourceLoadOptions,
-        (SendCallbacks, SniffContent, DoNotBufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy, UseDefaultOriginRestrictionsForType, DocumentContext));
+        (SendCallbacks, SniffContent, DoNotBufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy, DocumentContext));
     FetchRequest cachedResourceRequest(request, FetchInitiatorTypeNames::document, mainResourceLoadOptions);
     m_mainResource = m_fetcher->fetchMainResource(cachedResourceRequest);
     if (!m_mainResource) {

@@ -102,8 +102,8 @@ static xmlDocPtr docLoaderFunc(const xmlChar* uri,
         xmlFree(base);
 
         ResourceLoaderOptions fetchOptions(ResourceFetcher::defaultResourceOptions());
-        fetchOptions.requestOriginPolicy = RestrictToSameOrigin;
         FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, fetchOptions);
+        request.setOriginRestriction(FetchRequest::RestrictToSameOrigin);
         ResourcePtr<Resource> resource = globalResourceFetcher->fetchSynchronously(request);
         if (!resource || !globalProcessor)
             return 0;

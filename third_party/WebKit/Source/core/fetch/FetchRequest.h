@@ -39,6 +39,7 @@ class SecurityOrigin;
 class FetchRequest {
 public:
     enum DeferOption { NoDefer, DeferredByClient };
+    enum OriginRestriction { UseDefaultOriginRestrictionForType, RestrictToSameOrigin };
 
     explicit FetchRequest(const ResourceRequest&, const AtomicString& initiator, const String& charset = String(), ResourceLoadPriority = ResourceLoadPriorityUnresolved);
     FetchRequest(const ResourceRequest&, const AtomicString& initiator, const ResourceLoaderOptions&);
@@ -58,7 +59,9 @@ public:
     DeferOption defer() const { return m_defer; }
     void setDefer(DeferOption defer) { m_defer = defer; }
     void setContentSecurityCheck(ContentSecurityPolicyCheck contentSecurityPolicyOption) { m_options.contentSecurityPolicyOption = contentSecurityPolicyOption; }
-    void setPotentiallyCrossOriginEnabled(SecurityOrigin*, StoredCredentials);
+    void setCrossOriginAccessControl(SecurityOrigin*, StoredCredentials);
+    OriginRestriction originRestriction() const { return m_originRestriction; }
+    void setOriginRestriction(OriginRestriction restriction) { m_originRestriction = restriction; }
 
 private:
     ResourceRequest m_resourceRequest;
@@ -67,6 +70,7 @@ private:
     ResourceLoadPriority m_priority;
     bool m_forPreload;
     DeferOption m_defer;
+    OriginRestriction m_originRestriction;
 };
 
 } // namespace WebCore

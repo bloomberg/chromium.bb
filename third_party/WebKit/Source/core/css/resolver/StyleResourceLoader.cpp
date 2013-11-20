@@ -116,10 +116,9 @@ void StyleResourceLoader::loadPendingShapeImage(RenderStyle* renderStyle, ShapeV
     CSSImageValue* cssImageValue =  pendingImage->cssImageValue();
 
     ResourceLoaderOptions options = ResourceFetcher::defaultResourceOptions();
-    options.requestOriginPolicy = PotentiallyCrossOriginEnabled;
     options.allowCredentials = DoNotAllowStoredCredentials;
 
-    shapeValue->setImage(cssImageValue->cachedImage(m_fetcher, options));
+    shapeValue->setImage(cssImageValue->cachedImage(m_fetcher, options, PotentiallyCORSEnabled));
 }
 
 void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementStyleResources& elementStyleResources)

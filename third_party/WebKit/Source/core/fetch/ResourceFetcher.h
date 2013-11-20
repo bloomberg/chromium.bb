@@ -60,6 +60,11 @@ class KURL;
 class ResourceTimingInfo;
 class ResourceLoaderSet;
 
+enum CORSEnabled {
+    NotCORSEnabled,
+    PotentiallyCORSEnabled // Indicates "potentially CORS-enabled fetch" in HTML standard.
+};
+
 // The ResourceFetcher provides a per-context interface to the MemoryCache
 // and enforces a bunch of security checks and rules for resource revalidation.
 // Its lifetime is roughly per-DocumentLoader, in that it is generally created
@@ -128,7 +133,7 @@ public:
     void preload(Resource::Type, FetchRequest&, const String& charset);
     void checkForPendingPreloads();
     void printPreloadStats();
-    bool canAccess(Resource*);
+    bool canAccess(Resource*, CORSEnabled, FetchRequest::OriginRestriction = FetchRequest::UseDefaultOriginRestrictionForType);
 
     void setDefersLoading(bool);
     void stopFetching();
@@ -176,7 +181,7 @@ private:
     ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type);
     void addAdditionalRequestHeaders(ResourceRequest&, Resource::Type);
 
-    bool canRequest(Resource::Type, const KURL&, const ResourceLoaderOptions&, bool forPreload = false);
+    bool canRequest(Resource::Type, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction);
     bool checkInsecureContent(Resource::Type, const KURL&, MixedContentBlockingTreatment) const;
 
     static bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);

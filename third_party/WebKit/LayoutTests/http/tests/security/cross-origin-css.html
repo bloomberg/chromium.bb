@@ -41,7 +41,13 @@ window.onload = function() {
 @import "resources/redir.php?url=http://localhost:8000/security/resources/xorigincss4.html";
 @import "resources/redir.php?url=http://localhost:8000/security/resources/xorigincss2.css";
 @import "resources/xorigincss5.html";
+
+/* Check that data: is still allowed for non-CORS cross-origin image fetches. */
+#data-background-url {
+    content: "PASS (image loaded)";
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='0px' height='0px'></svg>");
+}
 </style>
 </head>
-<body><div id="id1" class="id1"></div><div id="id2" class="id2"></div><div id="id3" class="id3"></div><div id="id4" class="id4"></div><div id="id5" class="id5"></div><div id="id6" class="id6"></div><div id="id7" class="id7"></div></body>
+<body><div id="id1" class="id1"></div><div id="id2" class="id2"></div><div id="id3" class="id3"></div><div id="id4" class="id4"></div><div id="id5" class="id5"></div><div id="id6" class="id6"></div><div id="id7" class="id7"></div><div id="data-background-url">PASS background image loaded</div></body>
 </html>

@@ -66,6 +66,7 @@ ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadySt
     , m_willExecuteWhenDocumentFinishedParsing(false)
     , m_forceAsync(!parserInserted)
     , m_willExecuteInOrder(false)
+    , m_isPotentiallyCORSEnabled(false)
 {
     ASSERT(m_element);
     if (parserInserted && element->document().scriptableDocumentParser() && !element->document().isInDocumentWrite())
@@ -241,7 +242,8 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         // Reset line numbering for nested writes.
         TextPosition position = elementDocument.isInDocumentWrite() ? TextPosition() : scriptStartPosition;
         KURL scriptURL = (!elementDocument.isInDocumentWrite() && m_parserInserted) ? elementDocument.url() : KURL();
-        executeScript(ScriptSourceCode(scriptContent(), scriptURL, position));
+        if (!executePotentiallyCrossOriginScript(ScriptSourceCode(scriptContent(), scriptURL, position)))
+            return false;
     }
 
     return true;
@@ -264,7 +266,8 @@ bool ScriptLoader::fetchScript(const String& sourceUrl)
         String crossOriginMode = m_element->fastGetAttribute(HTMLNames::crossoriginAttr);
         if (!crossOriginMode.isNull()) {
             StoredCredentials allowCredentials = equalIgnoringCase(crossOriginMode, "use-credentials") ? AllowStoredCredentials : DoNotAllowStoredCredentials;
-            request.setPotentiallyCrossOriginEnabled(elementDocument->securityOrigin(), allowCredentials);
+            request.setCrossOriginAccessControl(elementDocument->securityOrigin(), allowCredentials);
+            m_isPotentiallyCORSEnabled = true;
         }
         request.setCharset(scriptCharset());
 
@@ -276,9 +279,8 @@ bool ScriptLoader::fetchScript(const String& sourceUrl)
         m_isExternalScript = true;
     }
 
-    if (m_resource) {
+    if (m_resource)
         return true;
-    }
 
     dispatchErrorEvent();
     return false;
@@ -362,6 +364,18 @@ void ScriptLoader::execute(ScriptResource* resource)
     resource->removeClient(this);
 }
 
+bool ScriptLoader::executePotentiallyCrossOriginScript(const ScriptSourceCode& sourceCode)
+{
+    if (sourceCode.resource()
+        && isPotentiallyCORSEnabled()
+        && !m_element->document().fetcher()->canAccess(sourceCode.resource(), PotentiallyCORSEnabled)) {
+        dispatchErrorEvent();
+        return false;
+    }
+    executeScript(sourceCode);
+    return true;
+}
+
 void ScriptLoader::notifyFinished(Resource* resource)
 {
     ASSERT(!m_willBeParserExecuted);
@@ -378,7 +392,8 @@ void ScriptLoader::notifyFinished(Resource* resource)
     ASSERT_UNUSED(resource, resource == m_resource);
     if (!m_resource)
         return;
-    if (!elementDocument->fetcher()->canAccess(m_resource.get())) {
+    CORSEnabled corsEnabled = isPotentiallyCORSEnabled() ? PotentiallyCORSEnabled : NotCORSEnabled;
+    if (!elementDocument->fetcher()->canAccess(m_resource.get(), corsEnabled)) {
         dispatchErrorEvent();
         return;
     }

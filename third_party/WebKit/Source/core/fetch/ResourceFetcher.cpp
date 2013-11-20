@@ -278,7 +278,7 @@ ResourcePtr<ImageResource> ResourceFetcher::fetchImage(FetchRequest& request)
     if (Frame* f = frame()) {
         if (f->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal) {
             KURL requestURL = request.resourceRequest().url();
-            if (requestURL.isValid() && canRequest(Resource::Image, requestURL, request.options(), request.forPreload()))
+            if (requestURL.isValid() && canRequest(Resource::Image, requestURL, request.options(), request.forPreload(), request.originRestriction()))
                 PingLoader::loadImage(f, requestURL);
             return 0;
         }
@@ -333,7 +333,7 @@ ResourcePtr<CSSStyleSheetResource> ResourceFetcher::fetchUserCSSStyleSheet(Fetch
         memoryCache()->remove(existing);
     }
 
-    request.setOptions(ResourceLoaderOptions(DoNotSendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy, UseDefaultOriginRestrictionsForType, DocumentContext));
+    request.setOptions(ResourceLoaderOptions(DoNotSendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy, DocumentContext));
     return static_cast<CSSStyleSheetResource*>(requestResource(Resource::CSSStyleSheet, request).get());
 }
 
@@ -422,7 +422,7 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
     return true;
 }
 
-bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const ResourceLoaderOptions& options, bool forPreload)
+bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction)
 {
     if (document() && !document()->securityOrigin()->canDisplay(url)) {
         if (!forPreload)
@@ -451,7 +451,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     case Resource::ImportResource:
         // By default these types of resources can be loaded from any origin.
         // FIXME: Are we sure about Resource::Font?
-        if (options.requestOriginPolicy == RestrictToSameOrigin && !m_document->securityOrigin()->canRequest(url)) {
+        if (originRestriction == FetchRequest::RestrictToSameOrigin && !m_document->securityOrigin()->canRequest(url)) {
             printAccessDeniedMessage(url);
             return false;
         }
@@ -523,17 +523,17 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     return true;
 }
 
-bool ResourceFetcher::canAccess(Resource* resource)
+bool ResourceFetcher::canAccess(Resource* resource, CORSEnabled corsEnabled, FetchRequest::OriginRestriction originRestriction)
 {
     // Redirects can change the response URL different from one of request.
-    if (!canRequest(resource->type(), resource->response().url(), resource->options(), false))
+    if (!canRequest(resource->type(), resource->response().url(), resource->options(), false, originRestriction))
         return false;
 
     String error;
     switch (resource->type()) {
     case Resource::Script:
     case Resource::ImportResource:
-        if (resource->options().requestOriginPolicy == PotentiallyCrossOriginEnabled
+        if (corsEnabled == PotentiallyCORSEnabled
             && !m_document->securityOrigin()->canRequest(resource->response().url())
             && !resource->passesAccessControlCheck(m_document->securityOrigin(), error)) {
             if (frame() && frame()->document())
@@ -584,7 +584,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     if (!url.isValid())
         return 0;
 
-    if (!canRequest(type, url, request.options(), request.forPreload()))
+    if (!canRequest(type, url, request.options(), request.forPreload(), request.originRestriction()))
         return 0;
 
     if (Frame* f = frame())
@@ -1255,7 +1255,7 @@ bool ResourceFetcher::isLoadedBy(ResourceLoaderHost* possibleOwner) const
 
 bool ResourceFetcher::shouldRequest(Resource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
 {
-    if (!canRequest(resource->type(), request.url(), options))
+    if (!canRequest(resource->type(), request.url(), options, false, FetchRequest::UseDefaultOriginRestrictionForType))
         return false;
     if (resource->type() == Resource::Image && shouldDeferImageLoad(request.url()))
         return false;
@@ -1323,7 +1323,7 @@ void ResourceFetcher::printPreloadStats()
 
 const ResourceLoaderOptions& ResourceFetcher::defaultResourceOptions()
 {
-    DEFINE_STATIC_LOCAL(ResourceLoaderOptions, options, (SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, DoSecurityCheck, CheckContentSecurityPolicy, UseDefaultOriginRestrictionsForType, DocumentContext));
+    DEFINE_STATIC_LOCAL(ResourceLoaderOptions, options, (SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, DoSecurityCheck, CheckContentSecurityPolicy, DocumentContext));
     return options;
 }
 

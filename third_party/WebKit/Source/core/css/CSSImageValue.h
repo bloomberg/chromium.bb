@@ -38,8 +38,8 @@ public:
     static PassRefPtr<CSSImageValue> create(const String& url, StyleImage* image) { return adoptRef(new CSSImageValue(url, image)); }
     ~CSSImageValue();
 
-    StyleFetchedImage* cachedImage(ResourceFetcher*, const ResourceLoaderOptions&);
-    StyleFetchedImage* cachedImage(ResourceFetcher* loader) { return cachedImage(loader, ResourceFetcher::defaultResourceOptions()); }
+    StyleFetchedImage* cachedImage(ResourceFetcher*, const ResourceLoaderOptions&, CORSEnabled);
+    StyleFetchedImage* cachedImage(ResourceFetcher* fetcher) { return cachedImage(fetcher, ResourceFetcher::defaultResourceOptions(), NotCORSEnabled); }
     // Returns a StyleFetchedImage if the image is cached already, otherwise a StylePendingImage.
     StyleImage* cachedOrPendingImage();
 

@@ -111,7 +111,7 @@ void HTMLImportLoader::didFinish()
 HTMLImportLoader::State HTMLImportLoader::startWritingAndParsing(const ResourceResponse& response)
 {
     // Current canAccess() implementation isn't sufficient for catching cross-domain redirects: http://crbug.com/256976
-    if (!parent()->document()->fetcher()->canAccess(m_resource.get()))
+    if (!parent()->document()->fetcher()->canAccess(m_resource.get(), PotentiallyCORSEnabled))
         return StateError;
 
     DocumentInit init = DocumentInit(response.url(), 0, root()->document()->contextDocument(), this)
