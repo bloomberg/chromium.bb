@@ -479,6 +479,7 @@ class MsvsSettings(object):
 
     ld('TerminalServerAware', map={'1': ':NO', '2': ''}, prefix='/TSAWARE')
     ld('LinkIncremental', map={'1': ':NO', '2': ''}, prefix='/INCREMENTAL')
+    ld('BaseAddress', prefix='/BASE:')
     ld('FixedBaseAddress', map={'1': ':NO', '2': ''}, prefix='/FIXED')
     ld('RandomizedBaseAddress',
         map={'1': ':NO', '2': ''}, prefix='/DYNAMICBASE')
