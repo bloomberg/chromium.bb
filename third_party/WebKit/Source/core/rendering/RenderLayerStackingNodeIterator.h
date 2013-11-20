@@ -45,6 +45,8 @@ enum ChildrenIteration {
 class RenderLayer;
 class RenderLayerStackingNode;
 
+// This iterator walks the RenderLayerStackingNode lists in the following order:
+// NegativeZOrderChildren -> NormalFlowChildren -> PositiveZOrderChildren.
 class RenderLayerStackingNodeIterator {
     WTF_MAKE_NONCOPYABLE(RenderLayerStackingNodeIterator);
 public:
@@ -61,6 +63,28 @@ private:
     const RenderLayerStackingNode& m_root;
     unsigned m_remainingChildren;
     unsigned m_index;
+};
+
+// This iterator is similar to RenderLayerStackingNodeIterator but it walks the lists in reverse order
+// (from the last item to the first one).
+class RenderLayerStackingNodeReverseIterator {
+    WTF_MAKE_NONCOPYABLE(RenderLayerStackingNodeReverseIterator);
+public:
+    RenderLayerStackingNodeReverseIterator(const RenderLayerStackingNode& root, unsigned whichChildren)
+        : m_root(root)
+        , m_remainingChildren(whichChildren)
+    {
+        setIndexToLastItem();
+    }
+
+    RenderLayerStackingNode* next();
+
+private:
+    void setIndexToLastItem();
+
+    const RenderLayerStackingNode& m_root;
+    unsigned m_remainingChildren;
+    int m_index;
 };
 
 } // namespace WebCore

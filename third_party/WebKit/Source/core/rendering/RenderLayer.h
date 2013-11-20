@@ -56,6 +56,7 @@
 #include "core/rendering/RenderLayerRepainter.h"
 #include "core/rendering/RenderLayerScrollableArea.h"
 #include "core/rendering/RenderLayerStackingNode.h"
+#include "core/rendering/RenderLayerStackingNodeIterator.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
@@ -529,7 +530,7 @@ private:
     RenderLayer* hitTestLayerByApplyingTransform(RenderLayer* rootLayer, RenderLayer* containerLayer, const HitTestRequest&, HitTestResult&,
         const LayoutRect& hitTestRect, const HitTestLocation&, const HitTestingTransformState* = 0, double* zOffset = 0,
         const LayoutPoint& translationOffset = LayoutPoint());
-    RenderLayer* hitTestList(Vector<RenderLayerStackingNode*>*, RenderLayer* rootLayer, const HitTestRequest&, HitTestResult&,
+    RenderLayer* hitTestChildren(ChildrenIteration, RenderLayer* rootLayer, const HitTestRequest&, HitTestResult&,
                              const LayoutRect& hitTestRect, const HitTestLocation&,
                              const HitTestingTransformState* transformState, double* zOffsetForDescendants, double* zOffset,
                              const HitTestingTransformState* unflattenedTransformState, bool depthSortDescendants);
@@ -551,7 +552,7 @@ private:
     RenderLayer* hitTestTransformedLayerInFragments(RenderLayer* rootLayer, RenderLayer* containerLayer, const HitTestRequest&, HitTestResult&,
         const LayoutRect& hitTestRect, const HitTestLocation&, const HitTestingTransformState* = 0, double* zOffset = 0);
 
-    bool listBackgroundIsKnownToBeOpaqueInRect(const Vector<RenderLayerStackingNode*>*, const LayoutRect&) const;
+    bool childBackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const;
 
     bool shouldBeSelfPaintingLayer() const;
 

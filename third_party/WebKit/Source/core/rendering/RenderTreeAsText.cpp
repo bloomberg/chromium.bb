@@ -67,8 +67,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static void writeLayers(TextStream&, const RenderLayer* rootLayer, RenderLayer*, const LayoutRect& paintDirtyRect, int indent = 0, RenderAsTextBehavior = RenderAsTextBehaviorNormal);
-
 static void printBorderStyle(TextStream& ts, const EBorderStyle borderStyle)
 {
     switch (borderStyle) {
@@ -496,7 +494,7 @@ void write(TextStream& ts, const RenderObject& o, int indent, RenderAsTextBehavi
                 view->layout();
                 RenderLayer* l = root->layer();
                 if (l)
-                    writeLayers(ts, l, l, l->rect(), indent + 1, behavior);
+                    RenderTreeAsText::writeLayers(ts, l, l, l->rect(), indent + 1, behavior);
             }
         }
     }
@@ -613,7 +611,7 @@ static void writeRenderNamedFlowThreads(TextStream& ts, RenderView* renderView, 
         ts << "Thread with flow-name '" << renderFlowThread->flowThreadName() << "'\n";
 
         RenderLayer* layer = renderFlowThread->layer();
-        writeLayers(ts, rootLayer, layer, paintRect, indent + 2, behavior);
+        RenderTreeAsText::writeLayers(ts, rootLayer, layer, paintRect, indent + 2, behavior);
 
         // Display the valid and invalid render regions attached to this flow thread.
         const RenderRegionList& validRegionsList = renderFlowThread->renderRegionList();
@@ -627,31 +625,31 @@ static void writeRenderNamedFlowThreads(TextStream& ts, RenderView* renderView, 
     }
 }
 
-static void writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLayer* l,
+void RenderTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLayer* layer,
                         const LayoutRect& paintRect, int indent, RenderAsTextBehavior behavior)
 {
     // FIXME: Apply overflow to the root layer to not break every test.  Complete hack.  Sigh.
     LayoutRect paintDirtyRect(paintRect);
-    if (rootLayer == l) {
+    if (rootLayer == layer) {
         paintDirtyRect.setWidth(max<LayoutUnit>(paintDirtyRect.width(), rootLayer->renderBox()->layoutOverflowRect().maxX()));
         paintDirtyRect.setHeight(max<LayoutUnit>(paintDirtyRect.height(), rootLayer->renderBox()->layoutOverflowRect().maxY()));
-        l->setSize(l->size().expandedTo(pixelSnappedIntSize(l->renderBox()->maxLayoutOverflow(), LayoutPoint(0, 0))));
+        layer->setSize(layer->size().expandedTo(pixelSnappedIntSize(layer->renderBox()->maxLayoutOverflow(), LayoutPoint(0, 0))));
     }
 
     // Calculate the clip rects we should use.
     LayoutRect layerBounds;
     ClipRect damageRect, clipRectToApply, outlineRect;
-    l->calculateRects(ClipRectsContext(rootLayer, 0, TemporaryClipRects), paintDirtyRect, layerBounds, damageRect, clipRectToApply, outlineRect);
+    layer->calculateRects(ClipRectsContext(rootLayer, 0, TemporaryClipRects), paintDirtyRect, layerBounds, damageRect, clipRectToApply, outlineRect);
 
     // Ensure our lists are up-to-date.
-    l->stackingNode()->updateLayerListsIfNeeded();
+    layer->stackingNode()->updateLayerListsIfNeeded();
 
-    bool shouldPaint = (behavior & RenderAsTextShowAllLayers) ? true : l->intersectsDamageRect(layerBounds, damageRect.rect(), rootLayer);
+    bool shouldPaint = (behavior & RenderAsTextShowAllLayers) ? true : layer->intersectsDamageRect(layerBounds, damageRect.rect(), rootLayer);
 
-    Vector<RenderLayerStackingNode*>* negList = l->stackingNode()->negZOrderList();
+    Vector<RenderLayerStackingNode*>* negList = layer->stackingNode()->negZOrderList();
     bool paintsBackgroundSeparately = negList && negList->size() > 0;
     if (shouldPaint && paintsBackgroundSeparately)
-        write(ts, *l, layerBounds, damageRect.rect(), clipRectToApply.rect(), outlineRect.rect(), LayerPaintPhaseBackground, indent, behavior);
+        write(ts, *layer, layerBounds, damageRect.rect(), clipRectToApply.rect(), outlineRect.rect(), LayerPaintPhaseBackground, indent, behavior);
 
     if (negList) {
         int currIndent = indent;
@@ -665,9 +663,9 @@ static void writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLaye
     }
 
     if (shouldPaint)
-        write(ts, *l, layerBounds, damageRect.rect(), clipRectToApply.rect(), outlineRect.rect(), paintsBackgroundSeparately ? LayerPaintPhaseForeground : LayerPaintPhaseAll, indent, behavior);
+        write(ts, *layer, layerBounds, damageRect.rect(), clipRectToApply.rect(), outlineRect.rect(), paintsBackgroundSeparately ? LayerPaintPhaseForeground : LayerPaintPhaseAll, indent, behavior);
 
-    if (Vector<RenderLayerStackingNode*>* normalFlowList = l->stackingNode()->normalFlowList()) {
+    if (Vector<RenderLayerStackingNode*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
         int currIndent = indent;
         if (behavior & RenderAsTextShowLayerNesting) {
             writeIndent(ts, indent);
@@ -678,7 +676,7 @@ static void writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLaye
             writeLayers(ts, rootLayer, normalFlowList->at(i)->layer(), paintDirtyRect, currIndent, behavior);
     }
 
-    if (Vector<RenderLayerStackingNode*>* posList = l->stackingNode()->posZOrderList()) {
+    if (Vector<RenderLayerStackingNode*>* posList = layer->stackingNode()->posZOrderList()) {
         int currIndent = indent;
         if (behavior & RenderAsTextShowLayerNesting) {
             writeIndent(ts, indent);
@@ -691,8 +689,8 @@ static void writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLaye
 
     // Altough the RenderFlowThread requires a layer, it is not collected by its parent,
     // so we have to treat it as a special case.
-    if (l->renderer()->isRenderView()) {
-        RenderView* renderView = toRenderView(l->renderer());
+    if (layer->renderer()->isRenderView()) {
+        RenderView* renderView = toRenderView(layer->renderer());
         writeRenderNamedFlowThreads(ts, renderView, rootLayer, paintDirtyRect, indent, behavior);
     }
 }
@@ -760,7 +758,7 @@ static String externalRepresentation(RenderBox* renderer, RenderAsTextBehavior b
         return ts.release();
 
     RenderLayer* layer = renderer->layer();
-    writeLayers(ts, layer, layer, layer->rect(), 0, behavior);
+    RenderTreeAsText::writeLayers(ts, layer, layer, layer->rect(), 0, behavior);
     writeSelection(ts, renderer);
     return ts.release();
 }

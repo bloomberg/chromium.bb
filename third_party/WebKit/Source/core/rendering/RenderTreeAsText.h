@@ -33,6 +33,8 @@ namespace WebCore {
 
 class Element;
 class Frame;
+class LayoutRect;
+class RenderLayer;
 class RenderObject;
 class TextStream;
 
@@ -60,6 +62,7 @@ class RenderTreeAsText {
 // not being done).
 public:
 static void writeRenderObject(TextStream& ts, const RenderObject& o, RenderAsTextBehavior behavior);
+static void writeLayers(TextStream&, const RenderLayer* rootLayer, RenderLayer*, const LayoutRect& paintDirtyRect, int indent = 0, RenderAsTextBehavior = RenderAsTextBehaviorNormal);
 };
 
 // Helper function shared with SVGRenderTreeAsText

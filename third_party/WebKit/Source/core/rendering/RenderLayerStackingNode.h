@@ -46,7 +46,6 @@
 #define RenderLayerStackingNode_h
 
 #include "core/rendering/RenderLayerModelObject.h"
-
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
@@ -90,32 +89,13 @@ public:
     void clearZOrderLists();
     void dirtyStackingContainerZOrderLists();
 
-    // FIXME: These accessors should be made private and callers moved to RenderLayerStackingNodeIterator.
-    Vector<RenderLayerStackingNode*>* posZOrderList() const
-    {
-        ASSERT(!m_zOrderListsDirty);
-        ASSERT(isStackingContainer() || !m_posZOrderList);
-        return m_posZOrderList.get();
-    }
-
+    bool hasPositiveZOrderList() const { return posZOrderList() && posZOrderList()->size(); }
     bool hasNegativeZOrderList() const { return negZOrderList() && negZOrderList()->size(); }
-
-    Vector<RenderLayerStackingNode*>* negZOrderList() const
-    {
-        ASSERT(!m_zOrderListsDirty);
-        ASSERT(isStackingContainer() || !m_negZOrderList);
-        return m_negZOrderList.get();
-    }
 
     bool isNormalFlowOnly() const { return m_isNormalFlowOnly; }
     void updateIsNormalFlowOnly();
     bool normalFlowListDirty() const { return m_normalFlowListDirty; }
     void dirtyNormalFlowList();
-    Vector<RenderLayerStackingNode*>* normalFlowList() const
-    {
-        ASSERT(!m_normalFlowListDirty);
-        return m_normalFlowList.get();
-    }
 
     enum PaintOrderListType {BeforePromote, AfterPromote};
     void computePaintOrderList(PaintOrderListType, Vector<RefPtr<Node> >&);
@@ -137,6 +117,30 @@ public:
 #endif
 
 private:
+    friend class RenderLayerStackingNodeIterator;
+    friend class RenderLayerStackingNodeReverseIterator;
+    friend class RenderTreeAsText;
+
+    Vector<RenderLayerStackingNode*>* posZOrderList() const
+    {
+        ASSERT(!m_zOrderListsDirty);
+        ASSERT(isStackingContainer() || !m_posZOrderList);
+        return m_posZOrderList.get();
+    }
+
+    Vector<RenderLayerStackingNode*>* normalFlowList() const
+    {
+        ASSERT(!m_normalFlowListDirty);
+        return m_normalFlowList.get();
+    }
+
+    Vector<RenderLayerStackingNode*>* negZOrderList() const
+    {
+        ASSERT(!m_zOrderListsDirty);
+        ASSERT(isStackingContainer() || !m_negZOrderList);
+        return m_negZOrderList.get();
+    }
+
     enum CollectLayersBehavior {
         ForceLayerToStackingContainer,
         OverflowScrollCanBeStackingContainers,

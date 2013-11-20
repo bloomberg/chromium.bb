@@ -68,4 +68,73 @@ RenderLayerStackingNode* RenderLayerStackingNodeIterator::next()
     return 0;
 }
 
+RenderLayerStackingNode* RenderLayerStackingNodeReverseIterator::next()
+{
+    if (m_remainingChildren & NegativeZOrderChildren) {
+        Vector<RenderLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
+        if (negZOrderList && m_index >= 0)
+            return negZOrderList->at(m_index--);
+
+        m_remainingChildren &= ~NegativeZOrderChildren;
+        setIndexToLastItem();
+    }
+
+    if (m_remainingChildren & NormalFlowChildren) {
+        Vector<RenderLayerStackingNode*>* normalFlowList = m_root.normalFlowList();
+        if (normalFlowList && m_index >= 0)
+            return normalFlowList->at(m_index--);
+
+        m_remainingChildren &= ~NormalFlowChildren;
+        setIndexToLastItem();
+    }
+
+    if (m_remainingChildren & PositiveZOrderChildren) {
+        Vector<RenderLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
+        if (posZOrderList && m_index >= 0)
+            return posZOrderList->at(m_index--);
+
+        m_remainingChildren &= ~PositiveZOrderChildren;
+        setIndexToLastItem();
+    }
+
+    return 0;
+}
+
+void RenderLayerStackingNodeReverseIterator::setIndexToLastItem()
+{
+    if (m_remainingChildren & NegativeZOrderChildren) {
+        Vector<RenderLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
+        if (negZOrderList) {
+            m_index  = negZOrderList->size() - 1;
+            return;
+        }
+
+        m_remainingChildren &= ~NegativeZOrderChildren;
+    }
+
+    if (m_remainingChildren & NormalFlowChildren) {
+        Vector<RenderLayerStackingNode*>* normalFlowList = m_root.normalFlowList();
+        if (normalFlowList) {
+            m_index = normalFlowList->size() - 1;
+            return;
+        }
+
+        m_remainingChildren &= ~NormalFlowChildren;
+    }
+
+    if (m_remainingChildren & PositiveZOrderChildren) {
+        Vector<RenderLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
+        if (posZOrderList) {
+            m_index = posZOrderList->size() - 1;
+            return;
+        }
+
+        m_remainingChildren &= ~PositiveZOrderChildren;
+    }
+
+    // No more list to visit.
+    ASSERT(!m_remainingChildren);
+    m_index = -1;
+}
+
 } // namespace WebCore
