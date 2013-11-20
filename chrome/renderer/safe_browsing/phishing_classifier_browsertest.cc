@@ -28,10 +28,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
-
 using ::testing::AllOf;
 using ::testing::Contains;
 using ::testing::Not;
@@ -201,8 +197,14 @@ class PhishingClassifierTest : public InProcessBrowserTest {
   const std::string page_term_login_;
 };
 
-// Flaky on Mac Blink bots: crbug.com/316709
-IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, TestClassification) {
+// This test flakes on Mac with force compositing mode.
+// http://crbug.com/316709
+#if defined(OS_MACOSX)
+#define MAYBE_TestClassification DISABLED_TestClassification
+#else
+#define MAYBE_TestClassification TestClassification
+#endif
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
   host_resolver()->AddRule("*", "127.0.0.1");
 
   // No scorer yet, so the classifier is not ready.
@@ -272,15 +274,14 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, TestClassification) {
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 }
 
-IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, DisableDetection) {
+// This test flakes on Mac with force compositing mode.
+// http://crbug.com/316709
 #if defined(OS_MACOSX)
-  if (base::mac::IsOSMountainLionOrLater()) {
-    // This test flakes on 10.8 only for an unknown reason.
-    // http://crbug.com/316709
-    return;
-  }
+#define MAYBE_DisableDetection DISABLED_DisableDetection
+#else
+#define MAYBE_DisableDetection DisableDetection
 #endif
-
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_DisableDetection) {
   // No scorer yet, so the classifier is not ready.
   EXPECT_FALSE(classifier_->is_ready());
 
