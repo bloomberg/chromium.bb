@@ -189,6 +189,9 @@ int FFmpegAudioDecoder::GetAudioBuffer(AVCodecContext* codec,
                                  frame->nb_samples,
                                  format,
                                  AudioBuffer::kChannelAlignment);
+  // Check for errors from av_samples_get_buffer_size().
+  if (buffer_size_in_bytes < 0)
+    return buffer_size_in_bytes;
   int frames_required = buffer_size_in_bytes / bytes_per_channel / channels;
   DCHECK_GE(frames_required, frame->nb_samples);
   scoped_refptr<AudioBuffer> buffer =
