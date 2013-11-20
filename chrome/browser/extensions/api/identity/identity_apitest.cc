@@ -710,9 +710,12 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
         new MockGetAuthTokenFunction());
     func->set_extension(extension.get());
     EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
+    // Make sure we don't get a cached issue_advice result, which would cause
+    // flow to be leaked.
+    id_api()->EraseAllCachedTokens();
     TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
         TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
-    ON_CALL(*func.get(), CreateMintTokenFlow(_)).WillByDefault(Return(flow));
+    EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
     func->set_scope_ui_oauth_error(it->first);
     std::string error = utils::RunFunctionAndReturnError(
         func.get(), "[{\"interactive\": true}]", browser());
