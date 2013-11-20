@@ -23,19 +23,19 @@ var createTestArrayBuffer = function() {
 var testSerial = function() {
   var serialPort = null;
   var connectionId = -1;
-  var readTries = 10;
-  var writeBuffer = createTestArrayBuffer();
-  var writeBufferUint8View = new Uint8Array(writeBuffer);
-  var bufferLength = writeBufferUint8View.length;
-  var readBuffer = new ArrayBuffer(bufferLength);
-  var readBufferUint8View = new Uint8Array(readBuffer);
-  var bytesToRead = bufferLength;
+  var receiveTries = 10;
+  var sendBuffer = createTestArrayBuffer();
+  var sendBufferUint8View = new Uint8Array(sendBuffer);
+  var bufferLength = sendBufferUint8View.length;
+  var receiveBuffer = new ArrayBuffer(bufferLength);
+  var receiveBufferUint8View = new Uint8Array(receiveBuffer);
+  var bytesToReceive = bufferLength;
 
   var operation = 0;
   var doNextOperation = function() {
     switch (operation++) {
       case 0:
-      serial.getPorts(onGetPorts);
+      serial.getDevices(onGetDevices);
       break;
       case 1:
       var bitrate = 57600;
@@ -50,13 +50,9 @@ var testSerial = function() {
       serial.getControlSignals(connectionId,onGetControlSignals);
       break;
       case 4:
-      serial.write(connectionId, writeBuffer, onWrite);
-      break;
-      case 5:
-      serial.read(connectionId, bytesToRead, onRead);
-      break;
-      case 6:
-      serial.flush(connectionId, onFlush);
+      serial.onReceive.addListener(onReceive);
+      serial.onReceiveError.addListener(onReceiveError);
+      serial.send(connectionId, sendBuffer, onSend);
       break;
       case 50:  // GOTO 4 EVER
       serial.close(connectionId, onClose);
@@ -84,40 +80,35 @@ var testSerial = function() {
     doNextOperation();
   };
 
-  var onFlush = function(result) {
-    chrome.test.assertTrue(result);
-    doNextOperation();
-  }
-
-  var onRead = function(readInfo) {
-    bytesToRead -= readInfo.bytesRead;
-    var readBufferIndex = bufferLength - readInfo.bytesRead;
-    var messageUint8View = new Uint8Array(readInfo.data);
-    for (var i = 0; i < readInfo.bytesRead; i++)
-      readBufferUint8View[i + readBufferIndex] = messageUint8View[i];
-    if (bytesToRead == 0) {
-      chrome.test.assertEq(writeBufferUint8View, readBufferUint8View,
-                           'Buffer read was not equal to buffer written.');
+  var onReceive = function(receiveInfo) {
+    var data = new Uint8Array(receiveInfo.data);
+    bytesToReceive -= data.length;
+    var receiveBufferIndex = bufferLength - data.length;
+    for (var i = 0; i < data.length; i++)
+      receiveBufferUint8View[i + receiveBufferIndex] = data[i];
+    if (bytesToReceive == 0) {
+      chrome.test.assertEq(sendBufferUint8View, receiveBufferUint8View,
+                           'Buffer received was not equal to buffer sent.');
       doNextOperation();
-    } else {
-      if (--readTries > 0)
-        setTimeout(repeatOperation, 100);
-      else
-        chrome.test.assertTrue(
-            false,
-            'read() failed to return requested number of bytes.');
+    } else if (--receiveTries <= 0) {
+      chrome.test.fail('receive() failed to return requested number of bytes.');
     }
   };
 
-  var onWrite = function(writeInfo) {
-    chrome.test.assertEq(bufferLength, writeInfo.bytesWritten,
-                         'Failed to write byte.');
-    doNextOperation();
+  var onReceiveError = function(errorInfo) {
+    chrome.test.fail('Failed to receive serial data');
+  };
+
+  var onSend = function(sendInfo) {
+    chrome.test.assertEq(bufferLength, sendInfo.bytesSent,
+                         'Failed to send byte.');
   };
 
   var onGetControlSignals = function(options) {
-    chrome.test.assertTrue(typeof options.dcd != 'undefined');
-    chrome.test.assertTrue(typeof options.cts != 'undefined');
+    chrome.test.assertTrue(typeof options.dcd != 'undefined', "No DCD set");
+    chrome.test.assertTrue(typeof options.cts != 'undefined', "No CTS set");
+    chrome.test.assertTrue(typeof options.dtr != 'undefined', "No DTR set");
+    chrome.test.assertTrue(typeof options.ri != 'undefined', "No RI set");
     doNextOperation();
   };
 
@@ -132,18 +123,18 @@ var testSerial = function() {
     doNextOperation();
   };
 
-  var onGetPorts = function(ports) {
-    if (ports.length > 0) {
+  var onGetDevices = function(devices) {
+    if (devices.length > 0) {
       var portNumber = 0;
-      while (portNumber < ports.length) {
-        if (shouldSkipPort(ports[portNumber])) {
+      while (portNumber < devices.length) {
+        if (shouldSkipPort(devices[portNumber].path)) {
           portNumber++;
           continue;
         } else
           break;
       }
-      if (portNumber < ports.length) {
-        serialPort = ports[portNumber];
+      if (portNumber < devices.length) {
+        serialPort = devices[portNumber].path;
         doNextOperation();
       } else {
         // We didn't find a port that we think we should try.
