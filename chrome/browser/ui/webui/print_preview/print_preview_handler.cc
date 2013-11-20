@@ -653,7 +653,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
                         initiator->GetTitle());
     std::string url;
     content::NavigationEntry* entry =
-        initiator->GetController().GetActiveEntry();
+        initiator->GetController().GetLastCommittedEntry();
     if (entry)
       url = entry->GetVirtualURL().spec();
     settings->SetString(printing::kSettingHeaderFooterURL, url);

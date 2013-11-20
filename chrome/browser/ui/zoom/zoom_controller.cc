@@ -71,12 +71,12 @@ void ZoomController::OnZoomLevelChanged(
 void ZoomController::UpdateState(const std::string& host) {
   // If |host| is empty, all observers should be updated.
   if (!host.empty()) {
-    // Use the active navigation entry's URL instead of the WebContents' so
-    // virtual URLs work (e.g. chrome://settings). http://crbug.com/153950
-    content::NavigationEntry* active_entry =
-        web_contents()->GetController().GetActiveEntry();
-    if (!active_entry ||
-        host != net::GetHostOrSpecFromURL(active_entry->GetURL())) {
+    // Use the navigation entry's URL instead of the WebContents' so virtual
+    // URLs work (e.g. chrome://settings). http://crbug.com/153950
+    content::NavigationEntry* entry =
+        web_contents()->GetController().GetLastCommittedEntry();
+    if (!entry ||
+        host != net::GetHostOrSpecFromURL(entry->GetURL())) {
       return;
     }
   }
