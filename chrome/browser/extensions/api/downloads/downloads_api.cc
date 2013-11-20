@@ -1198,7 +1198,9 @@ bool DownloadsEraseFunction::RunImpl() {
   return true;
 }
 
-DownloadsRemoveFileFunction::DownloadsRemoveFileFunction() {}
+DownloadsRemoveFileFunction::DownloadsRemoveFileFunction()
+    : item_(NULL) {
+}
 
 DownloadsRemoveFileFunction::~DownloadsRemoveFileFunction() {
   if (item_) {
