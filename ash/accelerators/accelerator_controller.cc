@@ -54,6 +54,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/user_metrics.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -94,7 +95,7 @@ void HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {
   Shell* shell = Shell::GetInstance();
 
   if (accelerator.key_code() == ui::VKEY_TAB)
-    shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_TAB);
+    content::RecordAction(content::UserMetricsAction("Accel_PrevWindow_Tab"));
 
   if (switches::UseOverviewMode()) {
     shell->window_selector_controller()->HandleCycleWindow(
@@ -109,7 +110,7 @@ void HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
   Shell* shell = Shell::GetInstance();
 
   if (accelerator.key_code() == ui::VKEY_TAB)
-    shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_TAB);
+    content::RecordAction(content::UserMetricsAction("Accel_NextWindow_Tab"));
 
   if (switches::UseOverviewMode()) {
     shell->window_selector_controller()->HandleCycleWindow(
@@ -126,12 +127,12 @@ void HandleCycleLinear(const ui::Accelerator& accelerator) {
   // TODO(jamescook): When overview becomes the default the AcceleratorAction
   // should be renamed from CYCLE_LINEAR to TOGGLE_OVERVIEW.
   if (switches::UseOverviewMode()) {
-    shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_OVERVIEW_F5);
+    content::RecordAction(content::UserMetricsAction("Accel_Overview_F5"));
     shell->window_selector_controller()->ToggleOverview();
     return;
   }
   if (accelerator.key_code() == ui::VKEY_MEDIA_LAUNCH_APP1)
-    shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_F5);
+    content::RecordAction(content::UserMetricsAction("Accel_NextWindow_F5"));
   shell->window_cycle_controller()->HandleLinearCycleWindow();
 }
 
@@ -572,7 +573,7 @@ bool AcceleratorController::PerformAction(int action,
       return true;
     case LOCK_SCREEN:
       if (key_code == ui::VKEY_L)
-        shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_LOCK_SCREEN_L);
+        content::RecordAction(content::UserMetricsAction("Accel_LockScreen_L"));
       return HandleLock();
     case OPEN_FILE_MANAGER:
       return HandleFileManager();
@@ -635,7 +636,7 @@ bool AcceleratorController::PerformAction(int action,
     }
     case NEW_TAB:
       if (key_code == ui::VKEY_T)
-        shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEWTAB_T);
+        content::RecordAction(content::UserMetricsAction("Accel_NewTab_T"));
       Shell::GetInstance()->new_window_delegate()->NewTab();
       return true;
     case NEW_WINDOW:
@@ -669,7 +670,7 @@ bool AcceleratorController::PerformAction(int action,
            previous_key_code != ui::VKEY_LWIN))
         return false;
       if (key_code == ui::VKEY_LWIN)
-        shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_SEARCH_LWIN);
+        content::RecordAction(content::UserMetricsAction("Accel_Search_LWin"));
       // When spoken feedback is enabled, we should neither toggle the list nor
       // consume the key since Search+Shift is one of the shortcuts the a11y
       // feature uses. crbug.com/132296
@@ -858,8 +859,8 @@ bool AcceleratorController::PerformAction(int action,
       return accelerators::ToggleMinimized();
     case TOGGLE_FULLSCREEN: {
       if (key_code == ui::VKEY_MEDIA_LAUNCH_APP2) {
-        shell->delegate()->RecordUserMetricsAction(
-            UMA_ACCEL_FULLSCREEN_F4);
+        content::RecordAction(
+            content::UserMetricsAction("Accel_Fullscreen_F4"));
       }
       accelerators::ToggleFullscreen();
       return true;

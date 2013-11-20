@@ -138,10 +138,6 @@ void ChromeShellDelegate::RecordUserMetricsAction(
       content::RecordAction(
           content::UserMetricsAction("Accel_KeyboardBrightnessUp_F7"));
       break;
-    case ash::UMA_ACCEL_LOCK_SCREEN_L:
-      content::RecordAction(
-          content::UserMetricsAction("Accel_LockScreen_L"));
-      break;
     case ash::UMA_ACCEL_LOCK_SCREEN_LOCK_BUTTON:
       content::RecordAction(
           content::UserMetricsAction("Accel_LockScreen_LockButton"));
@@ -150,39 +146,18 @@ void ChromeShellDelegate::RecordUserMetricsAction(
       content::RecordAction(
           content::UserMetricsAction("Accel_LockScreen_PowerButton"));
       break;
-    case ash::UMA_ACCEL_FULLSCREEN_F4:
-      content::RecordAction(content::UserMetricsAction("Accel_Fullscreen_F4"));
-      break;
     case ash::UMA_ACCEL_MAXIMIZE_RESTORE_F4:
       content::RecordAction(
           content::UserMetricsAction("Accel_Maximize_Restore_F4"));
       break;
-    case ash::UMA_ACCEL_NEWTAB_T:
-      content::RecordAction(content::UserMetricsAction("Accel_NewTab_T"));
-      break;
-    case ash::UMA_ACCEL_NEXTWINDOW_F5:
-      content::RecordAction(content::UserMetricsAction("Accel_NextWindow_F5"));
-      break;
-    case ash::UMA_ACCEL_NEXTWINDOW_TAB:
-      content::RecordAction(content::UserMetricsAction("Accel_NextWindow_Tab"));
-      break;
-    case ash::UMA_ACCEL_OVERVIEW_F5:
-      content::RecordAction(content::UserMetricsAction("Accel_Overview_F5"));
-      break;
     case ash::UMA_ACCEL_PREVWINDOW_F5:
       content::RecordAction(content::UserMetricsAction("Accel_PrevWindow_F5"));
-      break;
-    case ash::UMA_ACCEL_PREVWINDOW_TAB:
-      content::RecordAction(content::UserMetricsAction("Accel_PrevWindow_Tab"));
       break;
     case ash::UMA_ACCEL_EXIT_FIRST_Q:
       content::RecordAction(content::UserMetricsAction("Accel_Exit_First_Q"));
       break;
     case ash::UMA_ACCEL_EXIT_SECOND_Q:
       content::RecordAction(content::UserMetricsAction("Accel_Exit_Second_Q"));
-      break;
-    case ash::UMA_ACCEL_SEARCH_LWIN:
-      content::RecordAction(content::UserMetricsAction("Accel_Search_LWin"));
       break;
     case ash::UMA_ACCEL_SHUT_DOWN_POWER_BUTTON:
       content::RecordAction(
