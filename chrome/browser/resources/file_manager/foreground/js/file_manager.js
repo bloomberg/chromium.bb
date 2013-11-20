@@ -117,6 +117,15 @@ DialogType.isOpenDialog = function(type) {
 };
 
 /**
+ * @param {string} type Dialog type.
+ * @return {boolean} Whether the type is folder selection dialog.
+ */
+DialogType.isFolderDialog = function(type) {
+  return type == DialogType.SELECT_FOLDER ||
+         type == DialogType.SELECT_UPLOAD_FOLDER;
+};
+
+/**
  * Bottom margin of the list and tree for transparent preview panel.
  * @const
  */
@@ -617,9 +626,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.initVolumeManager_ = function(callback) {
     // Auto resolving to local path does not work for folders (e.g., dialog for
     // loading unpacked extensions).
-    var noLocalPathResolution =
-      this.params_.type == DialogType.SELECT_FOLDER ||
-      this.params_.type == DialogType.SELECT_UPLOAD_FOLDER;
+    var noLocalPathResolution = DialogType.isFolderDialog(this.params_.type);
 
     // If this condition is false, VolumeManagerWrapper hides all drive
     // related event and data, even if Drive is enabled on preference.
@@ -2770,8 +2777,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         var selection = this.getSelection();
         if (selection.totalCount == 1 &&
             selection.entries[0].isDirectory &&
-            this.dialogType != DialogType.SELECT_FOLDER &&
-            this.dialogType != DialogType.SELECT_UPLOAD_FOLDER) {
+            !DialogType.isFolderDialog(this.dialogType)) {
           event.preventDefault();
           this.onDirectoryAction_(selection.entries[0]);
         } else if (this.dispatchSelectionAction_()) {
@@ -3098,8 +3104,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var files = [];
     var selectedIndexes = this.currentList_.selectionModel.selectedIndexes;
 
-    if ((this.dialogType == DialogType.SELECT_FOLDER ||
-         this.dialogType == DialogType.SELECT_UPLOAD_FOLDER) &&
+    if (DialogType.isFolderDialog(this.dialogType) &&
         selectedIndexes.length == 0) {
       var url = this.getCurrentDirectoryURL();
       var singleSelection = {
@@ -3144,8 +3149,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var selectedEntry = dm.item(selectedIndexes[0]);
 
-    if (this.dialogType == DialogType.SELECT_FOLDER ||
-        this.dialogType == DialogType.SELECT_UPLOAD_FOLDER) {
+    if (DialogType.isFolderDialog(this.dialogType)) {
       if (!selectedEntry.isDirectory)
         throw new Error('Selected entry is not a folder!');
     } else if (this.dialogType == DialogType.SELECT_OPEN_FILE) {
