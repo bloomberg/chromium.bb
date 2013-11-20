@@ -18,10 +18,13 @@ into a single parent menu.
 </p>
 
 <h2 id="manifest">Manifest</h2>
-<p>You must declare the "contextMenus" permission
-in your extension's manifest to use the API.
+<p>
+You must declare the "contextMenus" permission
+in your {{platform}}'s manifest to use the API.
+{{^is_apps}}
 Also, you should specify a 16x16-pixel icon
 for display next to your menu item.
+{{/is_apps}}
 For example:
 </p>
 
@@ -32,11 +35,13 @@ For example:
   "permissions": [
     <b>"contextMenus"</b>
   ],
+{{^is_apps}}
   "icons": {
     <b>"16": "icon-bitty.png",</b>
     "48": "icon-small.png",
     "128": "icon-large.png"
   },
+{{/is_apps}}
   ...
 }
 </pre>
