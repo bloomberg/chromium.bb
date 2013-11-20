@@ -259,6 +259,11 @@
         55
       </message>
 
+      <!-- The width of the Extension Wipeout bubble in characters (See above). -->
+      <message name="IDS_EXTENSION_WIPEOUT_BUBBLE_WIDTH_CHARS" use_name_for_id="true">
+        55
+      </message>
+
       <!-- The width of the ash/ChromeOS system tray menu in pixels. -->
       <message name="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS" use_name_for_id="true">
         300

@@ -917,6 +917,7 @@
         'browser/extensions/sandboxed_unpacker_unittest.cc',
         'browser/extensions/script_badge_controller_unittest.cc',
         'browser/extensions/script_bubble_controller_unittest.cc',
+        'browser/extensions/suspicious_extension_bubble_controller_unittest.cc',
         'browser/extensions/token_cache/token_cache_service_unittest.cc',
         'browser/extensions/standard_management_policy_provider_unittest.cc',
         'browser/extensions/updater/extension_updater_unittest.cc',
@@ -2587,6 +2588,7 @@
 
             'browser/browser_commands_unittest.cc',
             'browser/download/download_shelf_unittest.cc',
+            'browser/extensions/suspicious_extension_bubble_controller_unittest.cc',
             'browser/storage_monitor/media_storage_util_unittest.cc',
             'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
             'browser/policy/async_policy_provider_unittest.cc',
