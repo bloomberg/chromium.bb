@@ -72,6 +72,7 @@ import logging
 import os
 import re
 
+from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -81,19 +82,22 @@ from chromite.lib import osutils
 debug = False
 
 STOCK_LICENSE_DIRS = [
-    os.path.expanduser('~/trunk/src/third_party/portage/licenses'),
-    os.path.expanduser('~/trunk/src/third_party/portage-stable/licenses'),
+    os.path.join(constants.SOURCE_ROOT, 'src/third_party/portage/licenses'),
+    os.path.join(constants.SOURCE_ROOT,
+                 'src/third_party/portage-stable/licenses'),
 ]
 
 # There are licenses for custom software we got and isn't part of
 # upstream gentoo.
 CUSTOM_LICENSE_DIRS = [
-    os.path.expanduser('~/trunk/src/third_party/chromiumos-overlay/licenses'),
+    os.path.join(constants.SOURCE_ROOT,
+                 'src/third_party/chromiumos-overlay/licenses'),
 ]
 
-COPYRIGHT_ATTRIBUTION_DIR = \
-    os.path.expanduser(
-    '~/trunk/src/third_party/chromiumos-overlay/licenses/copyright-attribution')
+COPYRIGHT_ATTRIBUTION_DIR = (
+    os.path.join(
+        constants.SOURCE_ROOT,
+        'src/third_party/chromiumos-overlay/licenses/copyright-attribution'))
 
 # Virtual packages don't need to have a license and often don't, so we skip them
 # chromeos-base contains google platform packages that are covered by the
@@ -841,7 +845,7 @@ class Licensing(object):
     self.packages[pkg.fullnamerev] = pkg
 
   @staticmethod
-  def _FindLicenseType(license_name):
+  def FindLicenseType(license_name):
     """Says if a license is stock Gentoo, custom, or doesn't exist."""
 
     for directory in STOCK_LICENSE_DIRS:
@@ -870,7 +874,7 @@ to third_party/chromiumos-overlay/licenses/""" %
                          )
 
   @staticmethod
-  def _ReadSharedLicense(license_name):
+  def ReadSharedLicense(license_name):
     """Read and return stock or cust license file specified in an ebuild."""
 
     license_path = None
@@ -919,7 +923,7 @@ to third_party/chromiumos-overlay/licenses/""" %
     # sln: shared license name.
     for sln in package.license_names:
       # Says whether it's a stock gentoo or custom license.
-      license_type = self._FindLicenseType(sln)
+      license_type = self.FindLicenseType(sln)
       license_pointers.append(
           "<li><a href='#%s'>%s License %s</a></li>" % (
               sln, license_type, sln))
@@ -961,8 +965,8 @@ to third_party/chromiumos-overlay/licenses/""" %
         pkg_fullnamerev = self.licenses[sln][0]
         logging.info("Collapsing shared license %s into single use license "
                      "(only used by %s)", sln, pkg_fullnamerev)
-        license_type = self._FindLicenseType(sln)
-        license_txt = self._ReadSharedLicense(sln)
+        license_type = self.FindLicenseType(sln)
+        license_txt = self.ReadSharedLicense(sln)
         single_license = "%s License %s:\n\n%s" % (license_type, sln,
                                                    license_txt)
         pkg = self.packages[pkg_fullnamerev]
@@ -983,8 +987,8 @@ to third_party/chromiumos-overlay/licenses/""" %
     for license_name in self.sorted_licenses:
       env = {
           'license_name': license_name,
-          'license': cgi.escape(self._ReadSharedLicense(license_name)),
-          'license_type': self._FindLicenseType(license_name),
+          'license': cgi.escape(self.ReadSharedLicense(license_name)),
+          'license_type': self.FindLicenseType(license_name),
           'license_packages': ' '.join(self.LicensedPackages(license_name)),
       }
       licenses_txt += [self.EvaluateTemplate(license_template, env)]
