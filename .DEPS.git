@@ -12,11 +12,11 @@ vars = {
 
 deps = {
     'breakpad':
-        Var('git_url') + '/external/google-breakpad.git@6fa386bfc61097b84f64f1bc9496dfef3ed487d4',
+        Var('git_url') + '/external/google-breakpad.git@46821f78b1871b65471ae36ba6f91e02e94ec33c',
     'native_client/tools/perf_expectations':
-        Var('git_url') + '/chromium/src/tools/perf_expectations.git@a330ff70bc11a2e511dbe159c62506252e06740e',
+        Var('git_url') + '/chromium/src/tools/perf_expectations.git@e0ddd4a4c1d3ac67517e6004af1c6a3d0c317f1a',
     'testing/gtest':
-        Var('git_url') + '/external/googletest.git@a6772271f71672e889776bfe49ec4efd9da036df',
+        Var('git_url') + '/external/googletest.git@74de57c951aedebc5dfe26a27604353432392b98',
     'third_party':
         Var('git_url') + '/native_client/src/third_party.git@ed4bd728e861132ae9a4be7e1005188ddf2cad43',
     'third_party/lcov':
@@ -24,13 +24,13 @@ deps = {
     'third_party/lss':
         Var('git_url') + '/external/linux-syscall-support/lss.git@e6c7682c40c27527894fbb8bcba38f77edbbb6b7',
     'third_party/valgrind':
-        Var('git_url') + '/chromium/deps/valgrind.git@684ce00f66fdc9ac9d560068c3e69a9ecc3a2bf5',
+        Var('git_url') + '/chromium/deps/valgrind.git@59886873b4b8258a8e0f098c23e1958e0d0c0a26',
     'tools/clang':
-        Var('git_url') + '/chromium/src/tools/clang.git@642555b8abff58e0e400553ce92d3a6f5d6c1146',
+        Var('git_url') + '/chromium/src/tools/clang.git@3bcbf96457d417a0cdd5f5000fe102ced24ee3e1',
     'tools/gyp':
-        Var('git_url') + '/external/gyp.git@0635a6e266eb4cdd01e942331997f76b3737be79',
+        Var('git_url') + '/external/gyp.git@54d9e6594e2578b0382321bbdf311a7390514039',
     'tools/valgrind':
-        Var('git_url') + '/chromium/src/tools/valgrind.git@44cffc489daa4a3a97104924fb2bf8cbfd7ae451',
+        Var('git_url') + '/chromium/src/tools/valgrind.git@791380e2aac706675114ddd5c8dc8afe0ed80f86',
     'validator_snapshots':
         Var('git_url') + '/native_client/src/validator_snapshots.git@4c1ea6b6ebe020993b0a091fd4e38a6487704b60',
 }
