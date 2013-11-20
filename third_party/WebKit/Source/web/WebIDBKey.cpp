@@ -41,6 +41,13 @@ WebIDBKey WebIDBKey::createArray(const WebVector<WebIDBKey>& array)
     return key;
 }
 
+WebIDBKey WebIDBKey::createBinary(const WebData& binary)
+{
+    WebIDBKey key;
+    key.assignBinary(binary);
+    return key;
+}
+
 WebIDBKey WebIDBKey::createString(const WebString& string)
 {
     WebIDBKey key;
@@ -90,6 +97,9 @@ static PassRefPtr<IDBKey> convertFromWebIDBKeyArray(const WebVector<WebIDBKey>& 
         case WebIDBKeyTypeArray:
             keys.append(convertFromWebIDBKeyArray(array[i].array()));
             break;
+        case WebIDBKeyTypeBinary:
+            keys.append(IDBKey::createBinary(array[i].binary()));
+            break;
         case WebIDBKeyTypeString:
             keys.append(IDBKey::createString(array[i].string()));
             break;
@@ -122,6 +132,9 @@ static void convertToWebIDBKeyArray(const IDBKey::KeyArray& array, WebVector<Web
             convertToWebIDBKeyArray(key->array(), subkeys);
             keys[i] = WebIDBKey::createArray(subkeys);
             break;
+        case IDBKey::BinaryType:
+            keys[i] = WebIDBKey::createBinary(key->binary());
+            break;
         case IDBKey::StringType:
             keys[i] = WebIDBKey::createString(key->string());
             break;
@@ -145,6 +158,11 @@ static void convertToWebIDBKeyArray(const IDBKey::KeyArray& array, WebVector<Web
 void WebIDBKey::assignArray(const WebVector<WebIDBKey>& array)
 {
     m_private = convertFromWebIDBKeyArray(array);
+}
+
+void WebIDBKey::assignBinary(const WebData& binary)
+{
+    m_private = IDBKey::createBinary(binary);
 }
 
 void WebIDBKey::assignString(const WebString& string)
@@ -196,6 +214,11 @@ WebVector<WebIDBKey> WebIDBKey::array() const
     WebVector<WebIDBKey> keys;
     convertToWebIDBKeyArray(m_private->array(), keys);
     return keys;
+}
+
+WebData WebIDBKey::binary() const
+{
+    return m_private->binary();
 }
 
 WebString WebIDBKey::string() const

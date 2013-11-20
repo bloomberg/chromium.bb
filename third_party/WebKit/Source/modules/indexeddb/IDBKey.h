@@ -26,6 +26,7 @@
 #ifndef IDBKey_h
 #define IDBKey_h
 
+#include "platform/SharedBuffer.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -45,6 +46,11 @@ public:
     static PassRefPtr<IDBKey> createNumber(double number)
     {
         return adoptRef(new IDBKey(NumberType, number));
+    }
+
+    static PassRefPtr<IDBKey> createBinary(PassRefPtr<SharedBuffer> binary)
+    {
+        return adoptRef(new IDBKey(binary));
     }
 
     static PassRefPtr<IDBKey> createString(const String& string)
@@ -92,6 +98,7 @@ public:
     enum Type {
         InvalidType = 0,
         ArrayType,
+        BinaryType,
         StringType,
         DateType,
         NumberType,
@@ -105,6 +112,12 @@ public:
     {
         ASSERT(m_type == ArrayType);
         return m_array;
+    }
+
+    PassRefPtr<SharedBuffer> binary() const
+    {
+        ASSERT(m_type == BinaryType);
+        return m_binary;
     }
 
     const String& string() const
@@ -136,10 +149,12 @@ private:
     IDBKey() : m_type(InvalidType), m_number(0) { }
     IDBKey(Type type, double number) : m_type(type), m_number(number) { }
     explicit IDBKey(const String& value) : m_type(StringType), m_string(value), m_number(0) { }
+    explicit IDBKey(PassRefPtr<SharedBuffer> value) : m_type(BinaryType), m_binary(value), m_number(0) { }
     explicit IDBKey(const KeyArray& keyArray) : m_type(ArrayType), m_array(keyArray), m_number(0) { }
 
     const Type m_type;
     const KeyArray m_array;
+    RefPtr<SharedBuffer> m_binary;
     const String m_string;
     const double m_number;
 };

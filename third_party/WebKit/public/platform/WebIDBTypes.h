@@ -31,6 +31,7 @@ namespace blink {
 enum WebIDBKeyType {
     WebIDBKeyTypeInvalid = 0,
     WebIDBKeyTypeArray,
+    WebIDBKeyTypeBinary,
     WebIDBKeyTypeString,
     WebIDBKeyTypeDate,
     WebIDBKeyTypeNumber,

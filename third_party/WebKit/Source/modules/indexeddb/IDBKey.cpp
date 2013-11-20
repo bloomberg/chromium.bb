@@ -47,6 +47,15 @@ bool IDBKey::isValid() const
     return true;
 }
 
+static int compareSizes(size_t a, size_t b)
+{
+    if (a < b)
+        return -1;
+    if (b < a)
+        return 1;
+    return 0;
+}
+
 int IDBKey::compare(const IDBKey* other) const
 {
     ASSERT(other);
@@ -59,13 +68,13 @@ int IDBKey::compare(const IDBKey* other) const
             if (int result = m_array[i]->compare(other->m_array[i].get()))
                 return result;
         }
-        if (m_array.size() < other->m_array.size())
-            return -1;
-        if (m_array.size() > other->m_array.size())
-            return 1;
-        return 0;
+        return compareSizes(m_array.size(), other->m_array.size());
+    case BinaryType:
+        if (int result = memcmp(m_binary->data(), other->m_binary->data(), std::min(m_binary->size(), other->m_binary->size())))
+            return result < 0 ? -1 : 1;
+        return compareSizes(m_binary->size(), other->m_binary->size());
     case StringType:
-        return -codePointCompare(other->m_string, m_string);
+        return codePointCompare(m_string, other->m_string);
     case DateType:
     case NumberType:
         return (m_number < other->m_number) ? -1 :

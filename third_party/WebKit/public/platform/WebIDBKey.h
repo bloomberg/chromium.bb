@@ -27,6 +27,7 @@
 #define WebIDBKey_h
 
 #include "WebCommon.h"
+#include "WebData.h"
 #include "WebIDBTypes.h"
 #include "WebPrivatePtr.h"
 #include "WebString.h"
@@ -43,6 +44,7 @@ public:
     ~WebIDBKey() { reset(); }
 
     BLINK_EXPORT static WebIDBKey createArray(const WebVector<WebIDBKey>&);
+    BLINK_EXPORT static WebIDBKey createBinary(const WebData&);
     BLINK_EXPORT static WebIDBKey createString(const WebString&);
     BLINK_EXPORT static WebIDBKey createDate(double);
     BLINK_EXPORT static WebIDBKey createNumber(double);
@@ -58,6 +60,7 @@ public:
 
     BLINK_EXPORT void assign(const WebIDBKey&);
     BLINK_EXPORT void assignArray(const WebVector<WebIDBKey>&);
+    BLINK_EXPORT void assignBinary(const WebData&);
     BLINK_EXPORT void assignString(const WebString&);
     BLINK_EXPORT void assignDate(double);
     BLINK_EXPORT void assignNumber(double);
@@ -68,6 +71,7 @@ public:
     BLINK_EXPORT WebIDBKeyType keyType() const;
     BLINK_EXPORT bool isValid() const;
     BLINK_EXPORT WebVector<WebIDBKey> array() const; // Only valid for ArrayType.
+    BLINK_EXPORT WebData binary() const; // Only valid for BinaryType.
     BLINK_EXPORT WebString string() const; // Only valid for StringType.
     BLINK_EXPORT double date() const; // Only valid for DateType.
     BLINK_EXPORT double number() const; // Only valid for NumberType.
