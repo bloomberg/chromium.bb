@@ -151,7 +151,6 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
 #endif
     { "aboutProductDescription", IDS_ABOUT_PRODUCT_DESCRIPTION },
     { "relaunch", IDS_RELAUNCH_BUTTON },
-    { "relaunch", IDS_RELAUNCH_BUTTON },
 #if defined(OS_CHROMEOS)
     { "relaunchAndPowerwash", IDS_RELAUNCH_AND_POWERWASH_BUTTON },
 #endif
