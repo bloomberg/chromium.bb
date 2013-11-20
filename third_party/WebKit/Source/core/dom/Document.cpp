@@ -5048,6 +5048,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
 
     // Locate the common ancestor render object for the two renderers.
     RenderObject* ancestor = nearestCommonHoverAncestor(oldHoverObj, newHoverObj);
+    RefPtr<Node> ancestorNode(ancestor ? ancestor->node() : 0);
 
     Vector<RefPtr<Node>, 32> nodesToRemoveFromChain;
     Vector<RefPtr<Node>, 32> nodesToAddToChain;
@@ -5114,7 +5115,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     size_t addCount = nodesToAddToChain.size();
     for (size_t i = 0; i < addCount; ++i) {
         // Elements past the common ancestor do not change hover state, but might change active state.
-        if (ancestor && nodesToAddToChain[i] == ancestor->node())
+        if (ancestorNode && nodesToAddToChain[i] == ancestorNode)
             sawCommonAncestor = true;
         if (allowActiveChanges)
             nodesToAddToChain[i]->setActive(true);
