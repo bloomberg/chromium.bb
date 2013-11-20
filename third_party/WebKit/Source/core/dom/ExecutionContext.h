@@ -38,6 +38,7 @@
 #include "core/frame/DOMTimer.h"
 #include "platform/LifecycleContext.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -77,6 +78,7 @@ public:
     DOMWindow* executingWindow() const;
     String userAgent(const KURL&) const;
     void postTask(PassOwnPtr<ExecutionContextTask>);
+    void postTask(const Closure&);
     double timerAlignmentInterval() const;
 
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);

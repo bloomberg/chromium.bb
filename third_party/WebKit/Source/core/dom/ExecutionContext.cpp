@@ -43,6 +43,28 @@
 
 namespace WebCore {
 
+namespace {
+
+class CallClosureTask : public ExecutionContextTask {
+public:
+    static PassOwnPtr<ExecutionContextTask> create(const Closure& closure)
+    {
+        return adoptPtr(static_cast<ExecutionContextTask*>(new CallClosureTask(closure)));
+    }
+
+    virtual void performTask(ExecutionContext*)
+    {
+        m_closure();
+    }
+
+private:
+    explicit CallClosureTask(const Closure& closure) : m_closure(closure) { }
+
+    Closure m_closure;
+};
+
+} // namespace
+
 class ExecutionContext::PendingException {
     WTF_MAKE_NONCOPYABLE(PendingException);
 public:
@@ -300,6 +322,13 @@ void ExecutionContext::postTask(PassOwnPtr<ExecutionContextTask> task)
     if (!m_client)
         return;
     m_client->postTask(task);
+}
+
+void ExecutionContext::postTask(const Closure& closure)
+{
+    if (!m_client)
+        return;
+    m_client->postTask(CallClosureTask::create(closure));
 }
 
 PassOwnPtr<LifecycleNotifier<ExecutionContext> > ExecutionContext::createLifecycleNotifier()
