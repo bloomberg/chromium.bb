@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_LOCAL_TO_REMOTE_SYNCER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
@@ -40,6 +41,9 @@ class LocalToRemoteSyncer : public SyncTask {
   void HandleMissingRemoteFile(const SyncStatusCallback& callback);
   void HandleConflict(const SyncStatusCallback& callback);
   void HandleExistingRemoteFile(const SyncStatusCallback& callback);
+
+  void DidDeleteRemoteFile(const SyncStatusCallback& callback,
+                           google_apis::GDataErrorCode error);
 
   bool PopulateRemoteParentFolder();
 

@@ -6,9 +6,11 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
+#include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -58,35 +60,42 @@ void LocalToRemoteSyncer::Run(const SyncStatusCallback& callback) {
 
   remote_file_tracker_ = FindTracker(metadata_database(),
                                      url_.origin().host(), url_.path());
-  if (remote_file_tracker_) {
-    // An active tracker is found at the path.
-    // Check if the local change conflicts a remote change, and resolve it if
-    // needed.
-    if (remote_file_tracker_->dirty()) {
-      HandleConflict(callback);
-      return;
-    }
+  DCHECK(!remote_file_tracker_ || remote_file_tracker_->active());
 
-    DCHECK(!remote_file_tracker_->dirty());
-    HandleExistingRemoteFile(callback);
+  if (!remote_file_tracker_ ||
+      !remote_file_tracker_->has_synced_details() ||
+      remote_file_tracker_->synced_details().deleted()) {
+    // Remote file is missing, deleted or not yet synced.
+    HandleMissingRemoteFile(callback);
     return;
   }
 
-  // No active tracker is found at the path.
-  HandleMissingRemoteFile(callback);
+  DCHECK(remote_file_tracker_);
+  DCHECK(remote_file_tracker_->active());
+  DCHECK(remote_file_tracker_->has_synced_details());
+  DCHECK(!remote_file_tracker_->synced_details().deleted());
+
+  // An active tracker is found at the path.
+  // Check if the local change conflicts a remote change, and resolve it if
+  // needed.
+  if (remote_file_tracker_->dirty()) {
+    HandleConflict(callback);
+    return;
+  }
+
+  DCHECK(!remote_file_tracker_->dirty());
+  HandleExistingRemoteFile(callback);
 }
 
 void LocalToRemoteSyncer::HandleMissingRemoteFile(
     const SyncStatusCallback& callback) {
-  DCHECK(!remote_file_tracker_);
-
   if (local_change_.IsDelete() ||
       local_change_.file_type() == SYNC_FILE_TYPE_UNKNOWN) {
     // !IsDelete() case is an error, handle the case as a local deletion case.
     DCHECK(local_change_.IsDelete());
 
-    // Local file is deleted and remote file is missing.  There is nothing to do
-    // for the file.
+    // Local file is deleted and remote file is missing, already deleted or not
+    // yet synced.  There is nothing to do for the file.
     callback.Run(SYNC_STATUS_OK);
     return;
   }
@@ -132,6 +141,8 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     const SyncStatusCallback& callback) {
   DCHECK(remote_file_tracker_);
   DCHECK(!remote_file_tracker_->dirty());
+  DCHECK(remote_file_tracker_->active());
+  DCHECK(remote_file_tracker_->has_synced_details());
 
   if (local_change_.IsDelete() ||
       local_change_.file_type() == SYNC_FILE_TYPE_UNKNOWN) {
@@ -139,10 +150,12 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     DCHECK(local_change_.IsDelete());
 
     // Local file deletion for existing remote file.
-    // TODO(tzik): Check remote modification, delete if there's no remote
-    // modification.
-    NOTIMPLEMENTED();
-    callback.Run(SYNC_STATUS_FAILED);
+    drive_service()->DeleteResource(
+        remote_file_tracker_->file_id(),
+        remote_file_tracker_->synced_details().etag(),
+        base::Bind(&LocalToRemoteSyncer::DidDeleteRemoteFile,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
     return;
   }
 
@@ -157,6 +170,23 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
 
   NOTIMPLEMENTED();
   callback.Run(SYNC_STATUS_FAILED);
+}
+
+void LocalToRemoteSyncer::DidDeleteRemoteFile(
+    const SyncStatusCallback& callback,
+    google_apis::GDataErrorCode error) {
+  if (error != google_apis::HTTP_SUCCESS &&
+      error != google_apis::HTTP_NOT_FOUND &&
+      error != google_apis::HTTP_PRECONDITION) {
+    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+    return;
+  }
+
+  // Handle NOT_FOUND case as SUCCESS case.
+  // For PRECONDITION case, the remote file is modified since the last sync
+  // completed.  As our policy for deletion-modification conflict resolution,
+  // ignore the local deletion.
+  callback.Run(SYNC_STATUS_OK);
 }
 
 bool LocalToRemoteSyncer::PopulateRemoteParentFolder() {
