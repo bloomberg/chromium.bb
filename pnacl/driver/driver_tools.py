@@ -612,7 +612,10 @@ def IsWindowsPython():
 
 def SetupCygwinLibs():
   bindir = env.getone('DRIVER_BIN')
-  os.environ['PATH'] += os.pathsep + pathtools.tosys(bindir)
+  # Prepend the directory containing cygwin1.dll etc. to the PATH to ensure we
+  # get the right one.
+  os.environ['PATH'] = os.pathsep.join(
+      [pathtools.tosys(bindir)] + os.environ['PATH'].split(os.pathsep))
 
 
 def HelpNotAvailable():
