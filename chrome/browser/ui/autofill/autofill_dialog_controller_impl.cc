@@ -576,10 +576,14 @@ base::WeakPtr<AutofillDialogController> AutofillDialogController::Create(
 void AutofillDialogControllerImpl::Show() {
   dialog_shown_timestamp_ = base::Time::Now();
 
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetActiveEntry();
-  const GURL& active_url = entry ? entry->GetURL() : web_contents()->GetURL();
-  invoked_from_same_origin_ = active_url.GetOrigin() == source_url_.GetOrigin();
+  // The Autofill dialog is shown in response to a message from the renderer and
+  // as such, it can only be made in the context of the current document. A call
+  // to GetActiveEntry would return a pending entry, if there was one, which
+  // would be a security bug. Therefore, we use the last committed URL for the
+  // access checks.
+  const GURL& current_url = web_contents()->GetLastCommittedURL();
+  invoked_from_same_origin_ =
+      current_url.GetOrigin() == source_url_.GetOrigin();
 
   // Log any relevant UI metrics and security exceptions.
   GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SHOWN);
