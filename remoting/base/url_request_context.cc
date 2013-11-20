@@ -46,6 +46,9 @@ net::ProxyConfigService* CreateSystemProxyConfigService(
     base::SingleThreadTaskRunner* io_thread_task_runner) {
 #if defined(OS_WIN)
   return new net::ProxyConfigServiceWin();
+#elif defined(OS_IOS)
+  NOTREACHED() << "iOS is not a supported target for Chromoting host";
+  return NULL;
 #elif defined(OS_MACOSX)
   return new net::ProxyConfigServiceMac(io_thread_task_runner);
 #elif defined(OS_CHROMEOS)
