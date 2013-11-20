@@ -29,7 +29,6 @@
 #include "testing/multiprocess_func_list.h"
 
 #if defined(OS_LINUX)
-#include <glib.h>
 #include <malloc.h>
 #include <sched.h>
 #endif

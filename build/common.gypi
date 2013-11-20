@@ -2065,6 +2065,9 @@
       ['use_cras==1', {
         'defines': ['USE_CRAS=1'],
       }],
+      ['use_glib==1', {
+        'defines': ['USE_GLIB=1'],
+      }],
       ['use_ozone==1', {
         'defines': ['USE_OZONE=1'],
       }],

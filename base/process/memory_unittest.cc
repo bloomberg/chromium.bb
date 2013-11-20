@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -23,7 +24,6 @@
 #include "base/process/memory_unittest_mac.h"
 #endif
 #if defined(OS_LINUX)
-#include <glib.h>
 #include <malloc.h>
 #endif
 
@@ -260,14 +260,13 @@ TEST_F(OutOfMemoryDeathTest, Memalign) {
 }
 
 TEST_F(OutOfMemoryDeathTest, ViaSharedLibraries) {
-  // g_try_malloc is documented to return NULL on failure. (g_malloc is the
-  // 'safe' default that crashes if allocation fails). However, since we have
-  // hopefully overridden malloc, even g_try_malloc should fail. This tests
-  // that the run-time symbol resolution is overriding malloc for shared
-  // libraries as well as for our code.
+  // This tests that the run-time symbol resolution is overriding malloc for
+  // shared libraries (including libc itself) as well as for our code.
+  std::string format = base::StringPrintf("%%%zud", test_size_);
+  char *value = NULL;
   ASSERT_DEATH({
       SetUpInDeathAssert();
-      value_ = g_try_malloc(test_size_);
+      EXPECT_EQ(-1, asprintf(&value, format.c_str(), 0));
     }, "");
 }
 #endif  // OS_LINUX

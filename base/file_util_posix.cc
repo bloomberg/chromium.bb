@@ -24,7 +24,7 @@
 #if defined(OS_MACOSX)
 #include <AvailabilityMacros.h>
 #include "base/mac/foundation_util.h"
-#elif !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#elif !defined(OS_CHROMEOS) && defined(USE_GLIB)
 #include <glib.h>  // for g_get_home_dir()
 #endif
 
@@ -778,7 +778,7 @@ FilePath GetHomeDir() {
 
 #if defined(OS_ANDROID)
   DLOG(WARNING) << "OS_ANDROID: Home directory lookup not yet implemented.";
-#elif !defined(OS_CHROMEOS)
+#elif defined(USE_GLIB) && !defined(OS_CHROMEOS)
   // g_get_home_dir calls getpwent, which can fall through to LDAP calls.
   base::ThreadRestrictions::AssertIOAllowed();
 
