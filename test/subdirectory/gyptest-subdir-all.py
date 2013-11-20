@@ -14,7 +14,8 @@ import TestGyp
 
 # Android doesn't support running from subdirectories.
 # Ninja doesn't support relocation.
-test = TestGyp.TestGyp(formats=['!ninja', '!android'])
+# CMake produces a single CMakeLists.txt in the output directory.
+test = TestGyp.TestGyp(formats=['!ninja', '!android', '!cmake'])
 
 test.run_gyp('prog1.gyp', chdir='src')
 

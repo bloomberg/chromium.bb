@@ -33,7 +33,7 @@ test.built_file_must_not_exist('foolib1',
                                chdir=chdir)
 
 # TODO(mmoss) Make consistent with msvs, with 'dir1' before 'out/Default'?
-if test.format in ('make', 'ninja', 'android'):
+if test.format in ('make', 'ninja', 'android', 'cmake'):
   chdir='relocate/src'
 else:
   chdir='relocate/src/dir1'

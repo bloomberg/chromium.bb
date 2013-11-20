@@ -44,7 +44,8 @@ expect = 'hello from mylib.c\n'
 test.run_built_executable('prog', stdout=expect)
 
 # Verify that libmylib.a contains symbols.  "ar -x" fails on a 'thin' archive.
-if test.format in ('make', 'ninja') and sys.platform.startswith('linux'):
+supports_thick = ('make', 'ninja', 'cmake')
+if test.format in supports_thick and sys.platform.startswith('linux'):
   retcode = subprocess.call(['ar', '-x', path])
   assert retcode == 0
 

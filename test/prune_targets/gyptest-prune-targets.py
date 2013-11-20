@@ -14,6 +14,7 @@ test = TestGyp.TestGyp()
 
 build_error_code = {
   'android': 2,
+  'cmake': 1,
   'make': 2,
   'msvs': 1,
   'ninja': 1,

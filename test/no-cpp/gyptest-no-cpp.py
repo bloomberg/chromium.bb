@@ -41,6 +41,7 @@ if sys.platform != 'win32' and test.format not in ('make', 'android'):
     'xcode': [1, 65],  # 1 for xcode 3, 65 for xcode 4 (see `man sysexits`)
     'make': 2,
     'ninja': 1,
+    'cmake': 0,  # CMake picks the compiler driver based on transitive checks.
   }[test.format]
 
   test.build('test.gyp', 'no_cpp_dep_on_cc_lib', chdir=CHDIR,
