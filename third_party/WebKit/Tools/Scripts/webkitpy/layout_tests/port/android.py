@@ -1072,8 +1072,12 @@ class ChromiumAndroidDriver(driver.Driver):
             raise driver.DeviceFailure("%s is not prepared in _start()" % self._android_commands.get_serial())
 
         for retries in range(3):
-            if self._start_once(pixel_tests, per_test_args):
-                return
+            try:
+                if self._start_once(pixel_tests, per_test_args):
+                    return
+            except ScriptError as e:
+                self._abort('ScriptError("%s") in _start()' % str(e))
+
             self._log_error('Failed to start the content_shell application. Retries=%d. Log:%s' % (retries, self._get_logcat()))
             self.stop()
             time.sleep(2)
