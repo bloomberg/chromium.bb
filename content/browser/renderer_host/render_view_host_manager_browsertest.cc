@@ -1167,7 +1167,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       rvh,
       "window.domAutomationController.send("
-      "    document.webkitVisibilityState == 'visible');",
+      "    document.visibilityState == 'visible');",
       &success));
   EXPECT_TRUE(success);
 
@@ -1178,7 +1178,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       rvh,
       "window.domAutomationController.send("
-      "    document.webkitVisibilityState == 'hidden');",
+      "    document.visibilityState == 'hidden');",
       &success));
   EXPECT_TRUE(success);
 
@@ -1198,7 +1198,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       rvh,
       "window.domAutomationController.send("
-      "    document.webkitVisibilityState == 'visible');",
+      "    document.visibilityState == 'visible');",
       &success));
   EXPECT_TRUE(success);
 }

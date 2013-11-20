@@ -57,7 +57,8 @@ remoting.onResize = function() {
  */
 remoting.onVisibilityChanged = function() {
   if (remoting.clientSession) {
-    remoting.clientSession.pauseVideo(document.webkitHidden);
+    remoting.clientSession.pauseVideo(
+      ('hidden' in document) ? document.hidden : document.webkitHidden);
   }
 }
 

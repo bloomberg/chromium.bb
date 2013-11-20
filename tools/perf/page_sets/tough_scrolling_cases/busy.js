@@ -7,6 +7,9 @@ function busyLoop(millis) {
 }
 
 function visible() {
+    if ("visibilityState" in document
+        && document.visibilityState == "hidden")
+        return false;
     if ("webkitVisibilityState" in document
         && document.webkitVisibilityState == "hidden")
         return false;
@@ -33,8 +36,14 @@ function handler() {
         timerId = window.setTimeout(loop, 50);
 }
 
-document.addEventListener("webkitvisibilitychange", handler, false);
-document.addEventListener("mozvisibilitychange", handler, false);
-document.addEventListener("msvisibilitychange", handler, false);
+if ("visibilityState" in document) {
+    document.addEventListener("visibilitychange", handler, false);
+} else if ("webkitVisibilityState" in document) {
+    document.addEventListener("webkitvisibilitychange", handler, false);
+} else if ("mozVisibilityState" in document) {
+    document.addEventListener("mozvisibilitychange", handler, false);
+} else if ("msVisibilityState" in document) {
+    document.addEventListener("msvisibilitychange", handler, false);
+}
 
 loop();

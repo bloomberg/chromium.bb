@@ -160,8 +160,8 @@ void NativeViewHost::ViewHierarchyChanged(
   // is being reparented.  If the previous and new parents belong to the same
   // widget, don't remove |this| from the widget.  This saves resources from
   // removing from widget and immediately followed by adding to widget; in
-  // particular, there wouldn't be spurious webkitvisibilitychange events for
-  // web contents of |WebView|.
+  // particular, there wouldn't be spurious visibilitychange events for web
+  // contents of |WebView|.
   if (details.move_view && this_widget &&
       details.move_view->GetWidget() == this_widget) {
     return;

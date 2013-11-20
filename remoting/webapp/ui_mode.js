@@ -122,11 +122,18 @@ remoting.setMode = function(mode) {
   if (mode == remoting.AppMode.IN_SESSION) {
     document.removeEventListener('keydown', remoting.ConnectionStats.onKeydown,
                                  false);
-    document.addEventListener('webkitvisibilitychange',
-                              remoting.onVisibilityChanged, false);
+    if ('hidden' in document) {
+      document.addEventListener('visibilitychange',
+                                remoting.onVisibilityChanged, false);
+    } else {
+      document.addEventListener('webkitvisibilitychange',
+                                remoting.onVisibilityChanged, false);
+    }
   } else {
     document.addEventListener('keydown', remoting.ConnectionStats.onKeydown,
                               false);
+    document.removeEventListener('visibilitychange',
+                                 remoting.onVisibilityChanged, false);
     document.removeEventListener('webkitvisibilitychange',
                                  remoting.onVisibilityChanged, false);
     // TODO(jamiewalch): crbug.com/252796: Remove this once crbug.com/240772

@@ -397,7 +397,7 @@ cr.define('local_discovery', function() {
    * Update visibility status for page.
    */
   function updateVisibility() {
-    chrome.send('isVisible', [!document.webkitHidden]);
+    chrome.send('isVisible', [!document.hidden]);
   }
 
   /**
@@ -570,8 +570,7 @@ cr.define('local_discovery', function() {
       registerLoginButtonClicked);
 
     updateVisibility();
-    document.addEventListener('webkitvisibilitychange', updateVisibility,
-                              false);
+    document.addEventListener('visibilitychange', updateVisibility, false);
 
 
     focusManager = new LocalDiscoveryFocusManager();

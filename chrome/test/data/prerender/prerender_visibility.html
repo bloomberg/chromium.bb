@@ -16,8 +16,8 @@ function DidPrerenderPass() {
          hiddenValues.length == 1 &&
          visibilityStates[0] == 'prerender' &&
          hiddenValues[0] == true &&
-         document.webkitVisibilityState == 'prerender' &&
-         document.webkitHidden == true;
+         document.visibilityState == 'prerender' &&
+         document.hidden == true;
 }
 
 // Checks that we've only had three visibility states:
@@ -30,8 +30,8 @@ function DidDisplayPass() {
          hiddenValues[1] == true &&
          visibilityStates[2] == 'visible' &&
          hiddenValues[2] == false &&
-         document.webkitVisibilityState == 'visible' &&
-         document.webkitHidden == false;
+         document.visibilityState == 'visible' &&
+         document.hidden == false;
 }
 </script>
 

@@ -12,6 +12,9 @@ Document.prototype.activeElement;
 /** @type {Array.<HTMLElement>} */
 Document.prototype.all;
 
+/** @type {boolean} */
+Document.prototype.hidden;
+
 /** @type {function(string): void} */
 Document.prototype.execCommand = function(command) {};
 

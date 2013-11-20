@@ -171,7 +171,7 @@ bool InstantTestBase::CheckVisibilityIs(content::WebContents* contents,
   bool actual = !expected;  // Purposely start with a mis-match.
   // We can only use ASSERT_*() in a method that returns void, hence this
   // convoluted check.
-  return GetBoolFromJS(contents, "!document.webkitHidden", &actual) &&
+  return GetBoolFromJS(contents, "!document.hidden", &actual) &&
       actual == expected;
 }
 
