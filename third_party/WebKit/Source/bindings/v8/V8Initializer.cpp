@@ -152,7 +152,7 @@ static bool codeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> conte
 static void initializeV8Common(v8::Isolate* isolate)
 {
     v8::ResourceConstraints constraints;
-    constraints.ConfigureDefaults(static_cast<uint64_t>(blink::Platform::current()->physicalMemoryMB()) << 20);
+    constraints.ConfigureDefaults(static_cast<uint64_t>(blink::Platform::current()->physicalMemoryMB()) << 20, static_cast<uint32_t>(blink::Platform::current()->numberOfProcessors()));
     v8::SetResourceConstraints(isolate, &constraints);
 
     v8::V8::AddGCPrologueCallback(V8GCController::gcPrologue);
