@@ -18,6 +18,23 @@ class TimeoutError(Exception):
   pass
 
 
+def LogThreadStack(thread):
+  """Log the stack for the given thread.
+
+  Args:
+    thread: a threading.Thread instance.
+  """
+  stack = sys._current_frames()[thread.ident]
+  logging.critical('*' * 80)
+  logging.critical('Stack dump for thread \'%s\'', thread.name)
+  logging.critical('*' * 80)
+  for filename, lineno, name, line in traceback.extract_stack(stack):
+    logging.critical('File: "%s", line %d, in %s', filename, lineno, name)
+    if line:
+      logging.critical('  %s', line.strip())
+  logging.critical('*' * 80)
+
+
 class ReraiserThread(threading.Thread):
   """Thread class that can reraise exceptions."""
 
@@ -113,13 +130,5 @@ class ReraiserThreadGroup(object):
       self._JoinAll(watcher)
     except TimeoutError:
       for thread in (t for t in self._threads if t.isAlive()):
-        stack = sys._current_frames()[thread.ident]
-        logging.critical('*' * 80)
-        logging.critical('Stack dump for timed out thread \'%s\'', thread.name)
-        logging.critical('*' * 80)
-        for filename, lineno, name, line in traceback.extract_stack(stack):
-          logging.critical('File: "%s", line %d, in %s', filename, lineno, name)
-          if line:
-            logging.critical('  %s', line.strip())
-        logging.critical('*' * 80)
+        LogThreadStack(thread)
       raise

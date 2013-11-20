@@ -38,6 +38,7 @@ from pylib.uiautomator import setup as uiautomator_setup
 from pylib.uiautomator import test_options as uiautomator_test_options
 from pylib.utils import command_option_parser
 from pylib.utils import report_results
+from pylib.utils import reraiser_thread
 from pylib.utils import run_tests_helper
 
 
@@ -797,18 +798,8 @@ VALID_COMMANDS = {
 
 
 def DumpThreadStacks(signal, frame):
-  thread_names_map = dict(
-      [(thread.ident, thread.name) for thread in threading.enumerate()])
-  lines = []
-  for thread_id, stack in sys._current_frames().items():
-    lines.append(
-        '\n# Thread: %s (%d)' % (
-            thread_names_map.get(thread_id, ''), thread_id))
-    for filename, lineno, name, line in traceback.extract_stack(stack):
-      lines.append('File: "%s", line %d, in %s' % (filename, lineno, name))
-      if line:
-        lines.append('  %s' % (line.strip()))
-    print '\n'.join(lines)
+  for thread in threading.enumerate():
+    reraiser_thread.LogThreadStack(thread)
 
 
 def main(argv):
