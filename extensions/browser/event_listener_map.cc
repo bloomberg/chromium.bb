@@ -1,13 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/event_listener_map.h"
+#include "extensions/browser/event_listener_map.h"
 
 #include "base/values.h"
-
 #include "chrome/browser/extensions/event_router.h"
 #include "ipc/ipc_message.h"
+
+using base::DictionaryValue;
 
 namespace extensions {
 

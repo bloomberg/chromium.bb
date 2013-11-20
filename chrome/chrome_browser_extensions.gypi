@@ -659,8 +659,6 @@
         'browser/extensions/devtools_util.cc',
         'browser/extensions/error_console/error_console.cc',
         'browser/extensions/error_console/error_console.h',
-        'browser/extensions/event_listener_map.cc',
-        'browser/extensions/event_listener_map.h',
         'browser/extensions/event_names.cc',
         'browser/extensions/event_names.h',
         'browser/extensions/event_router.cc',

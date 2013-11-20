@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/event_listener_map.h"
+#include "extensions/browser/event_listener_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

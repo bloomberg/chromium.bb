@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EVENT_LISTENER_MAP_H_
-#define CHROME_BROWSER_EXTENSIONS_EVENT_LISTENER_MAP_H_
+#ifndef EXTENSIONS_BROWSER_EVENT_LISTENER_MAP_H_
+#define EXTENSIONS_BROWSER_EVENT_LISTENER_MAP_H_
 
 #include <map>
 #include <set>
@@ -22,8 +22,6 @@ class RenderProcessHost;
 }
 
 class ListenerRemovalListener;
-
-using base::DictionaryValue;
 
 namespace extensions {
 struct Event;
@@ -48,7 +46,7 @@ struct EventListener {
   EventListener(const std::string& event_name,
                 const std::string& extension_id,
                 content::RenderProcessHost* process,
-                scoped_ptr<DictionaryValue> filter);
+                scoped_ptr<base::DictionaryValue> filter);
   ~EventListener();
 
   bool Equals(const EventListener* other) const;
@@ -58,7 +56,7 @@ struct EventListener {
   const std::string event_name;
   const std::string extension_id;
   content::RenderProcessHost* process;
-  scoped_ptr<DictionaryValue> filter;
+  scoped_ptr<base::DictionaryValue> filter;
   EventFilter::MatcherID matcher_id;
 
  private:
@@ -133,7 +131,7 @@ class EventListenerMap {
   // defining a lazy filtered listener.
   void LoadFilteredLazyListeners(
       const std::string& extension_id,
-      const DictionaryValue& filtered);
+      const base::DictionaryValue& filtered);
 
  private:
   // The key here is an event name.
@@ -141,7 +139,8 @@ class EventListenerMap {
 
   void CleanupListener(EventListener* listener);
   bool IsFilteredEvent(const Event& event) const;
-  scoped_ptr<EventMatcher> ParseEventMatcher(DictionaryValue* filter_dict);
+  scoped_ptr<EventMatcher> ParseEventMatcher(
+      base::DictionaryValue* filter_dict);
 
   // Listens for removals from this map.
   Delegate* delegate_;
@@ -158,4 +157,4 @@ class EventListenerMap {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EVENT_LISTENER_MAP_H_
+#endif  // EXTENSIONS_BROWSER_EVENT_LISTENER_MAP_H_
