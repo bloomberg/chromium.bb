@@ -17,6 +17,10 @@ class DriveServiceInterface;
 class DriveUploaderInterface;
 }
 
+namespace google_apis {
+class ResourceEntry;
+}
+
 namespace sync_file_system {
 
 class RemoteChangeProcessor;
@@ -46,6 +50,19 @@ class LocalToRemoteSyncer : public SyncTask {
                            google_apis::GDataErrorCode error);
 
   bool PopulateRemoteParentFolder();
+
+  void UploadExistingFile(const SyncStatusCallback& callback);
+  void DidGetMD5ForUpload(const SyncStatusCallback& callback,
+                          const std::string& local_file_md5);
+  void DidUploadExistingFile(const SyncStatusCallback& callback,
+                             google_apis::GDataErrorCode error,
+                             const GURL&,
+                             scoped_ptr<google_apis::ResourceEntry>);
+  void UpdateRemoteMetadata(const SyncStatusCallback& callback);
+  void DidGetRemoteMetadata(const SyncStatusCallback& callback,
+                            int64 change_id,
+                            google_apis::GDataErrorCode error,
+                            scoped_ptr<google_apis::ResourceEntry> entry);
 
   drive::DriveServiceInterface* drive_service();
   drive::DriveUploaderInterface* drive_uploader();

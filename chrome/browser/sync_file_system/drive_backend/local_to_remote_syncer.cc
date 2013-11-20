@@ -5,8 +5,14 @@
 #include "chrome/browser/sync_file_system/drive_backend/local_to_remote_syncer.h"
 
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task_runner_util.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
+#include "chrome/browser/drive/drive_uploader.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
@@ -48,7 +54,6 @@ LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
 }
 
 LocalToRemoteSyncer::~LocalToRemoteSyncer() {
-  NOTIMPLEMENTED();
 }
 
 void LocalToRemoteSyncer::Run(const SyncStatusCallback& callback) {
@@ -162,10 +167,9 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
   DCHECK(local_change_.IsAddOrUpdate());
   DCHECK(local_change_.file_type() == SYNC_FILE_TYPE_FILE ||
          local_change_.file_type() == SYNC_FILE_TYPE_DIRECTORY);
-
   if (local_change_.file_type() == SYNC_FILE_TYPE_FILE) {
-    NOTIMPLEMENTED();
-    callback.Run(SYNC_STATUS_FAILED);
+    UploadExistingFile(callback);
+    return;
   }
 
   NOTIMPLEMENTED();
@@ -192,6 +196,78 @@ void LocalToRemoteSyncer::DidDeleteRemoteFile(
 bool LocalToRemoteSyncer::PopulateRemoteParentFolder() {
   NOTIMPLEMENTED();
   return false;
+}
+
+void LocalToRemoteSyncer::UploadExistingFile(
+    const SyncStatusCallback& callback)  {
+  DCHECK(remote_file_tracker_);
+  DCHECK(remote_file_tracker_->has_synced_details());
+
+  base::PostTaskAndReplyWithResult(
+      sync_context_->GetBlockingTaskRunner(), FROM_HERE,
+      base::Bind(&drive::util::GetMd5Digest, local_path_),
+      base::Bind(&LocalToRemoteSyncer::DidGetMD5ForUpload,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void LocalToRemoteSyncer::DidGetMD5ForUpload(
+    const SyncStatusCallback& callback,
+    const std::string& local_file_md5) {
+  if (local_file_md5 == remote_file_tracker_->synced_details().md5()) {
+    // Local file is not changed.
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
+  drive_uploader()->UploadExistingFile(
+      remote_file_tracker_->file_id(),
+      local_path_,
+      "application/octet_stream",
+      remote_file_tracker_->synced_details().etag(),
+      base::Bind(&LocalToRemoteSyncer::DidUploadExistingFile,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback),
+      google_apis::ProgressCallback());
+}
+
+void LocalToRemoteSyncer::DidUploadExistingFile(
+    const SyncStatusCallback& callback,
+    google_apis::GDataErrorCode error,
+    const GURL&,
+    scoped_ptr<google_apis::ResourceEntry>) {
+  if (error == google_apis::HTTP_PRECONDITION) {
+    // The remote file has unfetched remote change.  Fetch latest metadata and
+    // update database with it.
+    // TODO(tzik): Consider adding local side low-priority dirtiness handling to
+    // handle this as ListChangesTask.
+    UpdateRemoteMetadata(callback);
+    return;
+  }
+
+  callback.Run(GDataErrorCodeToSyncStatusCode(error));
+}
+
+void LocalToRemoteSyncer::UpdateRemoteMetadata(
+    const SyncStatusCallback& callback) {
+  DCHECK(remote_file_tracker_);
+  drive_service()->GetResourceEntry(
+      remote_file_tracker_->file_id(),
+      base::Bind(&LocalToRemoteSyncer::DidGetRemoteMetadata,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 metadata_database()->GetLargestKnownChangeID()));
+}
+
+void LocalToRemoteSyncer::DidGetRemoteMetadata(
+    const SyncStatusCallback& callback,
+    int64 change_id,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::ResourceEntry> entry) {
+  metadata_database()->UpdateByFileResource(
+      change_id,
+      *drive::util::ConvertResourceEntryToFileResource(*entry),
+      callback);
 }
 
 drive::DriveServiceInterface* LocalToRemoteSyncer::drive_service() {
