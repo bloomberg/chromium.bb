@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error recovery in @-webkit-region body</title>
+    <script src="../../../resources/testharness.js"></script>
+    <script src="../../../resources/testharnessreport.js"></script>
+    <style>@-webkit-region #flow { ?{} #id {} }</style>
+    <style>@-webkit-region #flow { @font-face ?; #id {} }</style>
+    <style>@-webkit-region #flow { @import ?; #id {} }</style>
+</head>
+<body>
+    <div id="log"></div>
+    <script>
+        test(function(){
+            assert_equals(document.styleSheets[0].cssRules.length, 1, "Rule valid and in CSSOM.");
+        }, "One invalid and one valid rule");
+        test(function(){
+            assert_equals(document.styleSheets[1].cssRules.length, 1, "Rule valid and in CSSOM.");
+        }, "One invalid @-rule of allowed type and one valid rule");
+        test(function(){
+            assert_equals(document.styleSheets[2].cssRules.length, 1, "Rule valid and in CSSOM.");
+        }, "One invalid @-rule of disallowed type and one valid rule");
+    </script>
+</body>
+</html>

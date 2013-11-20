@@ -557,7 +557,7 @@ block_rule_list:
 
 region_block_rule_body:
     region_block_rule_list
-  | region_block_rule_list before_rule error error_location error_recovery {
+  | region_block_rule_list before_rule error error_location rule_error_recovery {
         parser->reportError($4, CSSParser::InvalidRuleError);
         parser->endRule(false);
     }
@@ -580,8 +580,9 @@ region_block_rule:
         $$ = $2;
         parser->endRule(!!$$);
     }
-  | before_rule invalid_at_rule {
+  | before_rule invalid_rule {
         $$ = 0;
+        parser->endRule(false);
     }
   ;
 
