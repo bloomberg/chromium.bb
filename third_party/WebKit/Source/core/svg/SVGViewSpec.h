@@ -24,13 +24,14 @@
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGFitToViewBox.h"
+#include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/SVGZoomAndPan.h"
+#include "wtf/WeakPtr.h"
 
 namespace WebCore {
 
 class ExceptionState;
-class SVGElement;
 class SVGTransformListPropertyTearOff;
 
 class SVGViewSpec FINAL : public RefCounted<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
@@ -38,7 +39,7 @@ public:
     using RefCounted<SVGViewSpec>::ref;
     using RefCounted<SVGViewSpec>::deref;
 
-    static PassRefPtr<SVGViewSpec> create(SVGElement* contextElement)
+    static PassRefPtr<SVGViewSpec> create(WeakPtr<SVGSVGElement> contextElement)
     {
         return adoptRef(new SVGViewSpec(contextElement));
     }
@@ -62,8 +63,7 @@ public:
     void setZoomAndPan(unsigned short, ExceptionState&);
     void setZoomAndPanBaseValue(unsigned short zoomAndPan) { m_zoomAndPan = SVGZoomAndPan::parseFromNumber(zoomAndPan); }
 
-    SVGElement* contextElement() const { return m_contextElement; }
-    void resetContextElement() { m_contextElement = 0; }
+    SVGElement* contextElement() const { return m_contextElement.get(); }
 
     // Custom non-animated 'transform' property.
     SVGTransformListPropertyTearOff* transform();
@@ -82,7 +82,7 @@ public:
     void setPreserveAspectRatioBaseValue(const SVGPreserveAspectRatio& preserveAspectRatio) { m_preserveAspectRatio = preserveAspectRatio; }
 
 private:
-    explicit SVGViewSpec(SVGElement*);
+    explicit SVGViewSpec(WeakPtr<SVGSVGElement>);
 
     static const SVGPropertyInfo* transformPropertyInfo();
     static const SVGPropertyInfo* viewBoxPropertyInfo();
@@ -99,9 +99,9 @@ private:
     template<typename CharType>
     bool parseViewSpecInternal(const CharType* ptr, const CharType* end);
 
-    SVGElement* m_contextElement;
-    SVGZoomAndPanType m_zoomAndPan;
+    WeakPtr<SVGSVGElement> m_contextElement;
 
+    SVGZoomAndPanType m_zoomAndPan;
     SVGTransformList m_transform;
     SVGRect m_viewBox;
     SVGPreserveAspectRatio m_preserveAspectRatio;

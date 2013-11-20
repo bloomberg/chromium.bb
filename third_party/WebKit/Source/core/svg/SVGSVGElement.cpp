@@ -90,6 +90,7 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
     , m_useCurrentView(false)
     , m_zoomAndPan(SVGZoomAndPanMagnify)
     , m_timeContainer(SMILTimeContainer::create(this))
+    , m_weakFactory(this)
 {
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGSVGElement();
@@ -104,8 +105,6 @@ PassRefPtr<SVGSVGElement> SVGSVGElement::create(Document& document)
 
 SVGSVGElement::~SVGSVGElement()
 {
-    if (m_viewSpec)
-        m_viewSpec->resetContextElement();
     // There are cases where removedFromDocument() is not called.
     // see ContainerNode::removeAllChildren, called by its destructor.
     document().accessSVGExtensions()->removeTimeContainer(this);
@@ -169,7 +168,7 @@ float SVGSVGElement::screenPixelToMillimeterY() const
 SVGViewSpec* SVGSVGElement::currentView()
 {
     if (!m_viewSpec)
-        m_viewSpec = SVGViewSpec::create(this);
+        m_viewSpec = SVGViewSpec::create(m_weakFactory.createWeakPtr());
     return m_viewSpec.get();
 }
 

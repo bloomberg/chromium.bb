@@ -76,7 +76,7 @@ const SVGPropertyInfo* SVGViewSpec::transformPropertyInfo()
     return s_propertyInfo;
 }
 
-SVGViewSpec::SVGViewSpec(SVGElement* contextElement)
+SVGViewSpec::SVGViewSpec(WeakPtr<SVGSVGElement> contextElement)
     : m_contextElement(contextElement)
     , m_zoomAndPan(SVGZoomAndPanMagnify)
 {
@@ -116,7 +116,7 @@ void SVGViewSpec::setTransformString(const String& transform)
     SVGTransformList newList;
     newList.parse(transform);
 
-    if (SVGAnimatedProperty* wrapper = SVGAnimatedProperty::lookupWrapper<SVGElement, SVGAnimatedTransformList>(m_contextElement, transformPropertyInfo()))
+    if (SVGAnimatedProperty* wrapper = SVGAnimatedProperty::lookupWrapper<SVGElement, SVGAnimatedTransformList>(m_contextElement.get(), transformPropertyInfo()))
         static_cast<SVGAnimatedTransformList*>(wrapper)->detachListWrappers(newList.size());
 
     m_transform = newList;
@@ -141,7 +141,7 @@ SVGElement* SVGViewSpec::viewTarget() const
 {
     if (!m_contextElement)
         return 0;
-    Element* element = m_contextElement->treeScope().getElementById(m_viewTargetString);
+    Element* element = m_contextElement.get()->treeScope().getElementById(m_viewTargetString);
     if (!element || !element->isSVGElement())
         return 0;
     return toSVGElement(element);
@@ -223,7 +223,7 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
                     return false;
                 ptr++;
                 SVGRect viewBox;
-                if (!SVGFitToViewBox::parseViewBox(&m_contextElement->document(), ptr, end, viewBox, false))
+                if (!SVGFitToViewBox::parseViewBox(&m_contextElement.get()->document(), ptr, end, viewBox, false))
                     return false;
                 setViewBoxBaseValue(viewBox);
                 if (ptr >= end || *ptr != ')')
