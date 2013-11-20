@@ -189,7 +189,7 @@ void UserManager::RegisterPrefs(PrefRegistrySimple* registry) {
 UserManagerImpl::UserManagerImpl()
     : cros_settings_(CrosSettings::Get()),
       device_local_account_policy_service_(NULL),
-      users_loaded_(false),
+      user_loading_stage_(STAGE_NOT_LOADED),
       active_user_(NULL),
       primary_user_(NULL),
       session_started_(false),
@@ -518,10 +518,10 @@ void UserManagerImpl::RemoveNonOwnerUserInternal(const std::string& user_email,
 void UserManagerImpl::RemoveUserFromList(const std::string& user_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RemoveNonCryptohomeData(user_id);
-  if (users_loaded_) {
+  if (user_loading_stage_ == STAGE_LOADED) {
     User* user = RemoveRegularOrLocallyManagedUserFromList(user_id);
     delete user;
-  } else {
+  } else if (user_loading_stage_ == STAGE_LOADING) {
     DCHECK(gaia::ExtractDomainName(user_id) ==
         UserManager::kLocallyManagedUserDomain);
     // Special case, removing partially-constructed supervised user during user
@@ -529,6 +529,9 @@ void UserManagerImpl::RemoveUserFromList(const std::string& user_id) {
     ListPrefUpdate users_update(g_browser_process->local_state(),
                                 kRegularUsers);
     users_update->Remove(base::StringValue(user_id), NULL);
+  } else {
+    NOTREACHED() << "Users are not loaded yet.";
+    return;
   }
   // Make sure that new data is persisted to Local State.
   g_browser_process->local_state()->CommitPendingWrite();
@@ -1057,8 +1060,9 @@ void UserManagerImpl::EnsureUsersLoaded() {
   if (!g_browser_process || !g_browser_process->local_state())
     return;
 
-  if (users_loaded_)
+  if (user_loading_stage_ != STAGE_NOT_LOADED)
     return;
+  user_loading_stage_ = STAGE_LOADING;
   // Clean up user list first. All code down the path should be synchronous,
   // so that local state after transaction rollback is in consistent state.
   // This process also should not trigger EnsureUsersLoaded again.
@@ -1113,7 +1117,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
     users_.push_back(User::CreatePublicAccountUser(*it));
     UpdatePublicAccountDisplayName(*it);
   }
-  users_loaded_ = true;
+  user_loading_stage_ = STAGE_LOADED;
 
   user_image_manager_->LoadUserImages(users_);
 }

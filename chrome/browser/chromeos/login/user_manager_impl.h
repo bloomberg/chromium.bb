@@ -157,6 +157,14 @@ class UserManagerImpl
   friend class UserManagerTest;
   friend class WallpaperManagerTest;
 
+  // Stages of loading user list from preferences. Some methods can have
+  // different behavior depending on stage.
+  enum UserLoadStage {
+    STAGE_NOT_LOADED = 0,
+    STAGE_LOADING,
+    STAGE_LOADED
+  };
+
   UserManagerImpl();
 
   // LoginUtils::Delegate implementation:
@@ -337,8 +345,8 @@ class UserManagerImpl
   // Interface to device-local account definitions and associated policy.
   policy::DeviceLocalAccountPolicyService* device_local_account_policy_service_;
 
-  // True if users have been loaded from prefs already.
-  bool users_loaded_;
+  // Indicates stage of loading user from prefs.
+  UserLoadStage user_loading_stage_;
 
   // List of all known users. User instances are owned by |this|. Regular users
   // are removed by |RemoveUserFromList|, public accounts by
