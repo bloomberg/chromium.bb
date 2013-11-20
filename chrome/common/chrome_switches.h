@@ -110,7 +110,6 @@ extern const char kDisableGoogleNowIntegration[];
 extern const char kDisableImprovedDownloadProtection[];
 extern const char kDisableIPv6[];
 extern const char kDisableIPPooling[];
-extern const char kDisableLocalFirstLoadNTP[];
 extern const char kDisableMinimizeOnSecondLauncherItemClick[];
 extern const char kDisableNTPOtherSessionsMenu[];
 extern const char kDisableOmniboxAutoCompletionForIme[];

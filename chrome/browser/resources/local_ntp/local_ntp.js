@@ -64,7 +64,6 @@ var IDS = {
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
   NTP_CONTENTS: 'ntp-contents',
-  RECENT_TABS: 'recent-tabs',
   RESTORE_ALL_LINK: 'mv-restore',
   TILES: 'mv-tiles',
   UNDO_LINK: 'mv-undo'
@@ -946,21 +945,6 @@ function init() {
     ntpContents.insertBefore(logo, ntpContents.firstChild);
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
-  }
-
-  var recentTabsText = configData.translatedStrings.recentTabs;
-  if (recentTabsText) {
-    var recentTabsLink = document.createElement('span');
-    recentTabsLink.id = IDS.RECENT_TABS;
-    recentTabsLink.addEventListener('click', function(event) {
-      event.preventDefault();
-      ntpApiHandle.navigateContentWindow(
-          'chrome://history', getDispositionFromEvent(event));
-    });
-    recentTabsLink.textContent = recentTabsText;
-    ntpContents.appendChild(recentTabsLink);
-    // Move the attribution up to prevent it from overlapping.
-    attribution.style.bottom = '28px';
   }
 
   var notificationMessage = $(IDS.NOTIFICATION_MESSAGE);

@@ -146,20 +146,12 @@ GURL GetLocalInstantURL(Profile* profile);
 // match.  See comments on ShouldHideTopMatch in autocomplete_result.h.
 bool ShouldHideTopVerbatimMatch();
 
-// Returns true if 'use_remote_ntp_on_startup' flag is enabled in field trials
-// to always show the remote NTP on browser startup.
-bool ShouldPreferRemoteNTPOnStartup();
-
 // Returns true if the cacheable NTP should be shown and false if not.
 // Exposed for testing.
 bool ShouldUseCacheableNTP();
 
 // Returns true if the Instant NTP should be shown and false if not.
 bool ShouldShowInstantNTP();
-
-// Returns true if the recent tabs link should be shown on the local NTP in
-// field trials.
-bool ShouldShowRecentTabsOnNTP();
 
 // Returns when we should show a search button in the omnibox.  This may be any
 // of several values, some of which depend on whether the underlying state of
@@ -230,17 +222,14 @@ void EnableQueryExtractionForTesting();
 // Type for a collection of experiment configuration parameters.
 typedef std::vector<std::pair<std::string, std::string> > FieldTrialFlags;
 
-// Finds the active field trial group name and parses out the group number and
-// configuration flags. On success, |flags| will be filled with the field trial
-// flags. |flags| must not be NULL. If not NULL, |group_number| will receive the
-// experiment group number.
-// Returns true iff the active field trial is successfully parsed and not
-// disabled.
+// Finds the active field trial group name and parses out the configuration
+// flags. On success, |flags| will be filled with the field trial flags. |flags|
+// must not be NULL. Returns true iff the active field trial is successfully
+// parsed and not disabled.
 // Note that |flags| may be successfully populated in some cases when false is
 // returned - in these cases it should not be used.
 // Exposed for testing only.
-bool GetFieldTrialInfo(FieldTrialFlags* flags,
-                       uint64* group_number);
+bool GetFieldTrialInfo(FieldTrialFlags* flags);
 
 // Given a FieldTrialFlags object, returns the string value of the provided
 // flag.
@@ -264,10 +253,6 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
 
 // Returns the Cacheable New Tab Page URL for the given |profile|.
 GURL GetNewTabPageURL(Profile* profile);
-
-// Let tests reset the gate that prevents metrics from being sent more than
-// once.
-void ResetInstantExtendedOptInStateGateForTest();
 
 }  // namespace chrome
 

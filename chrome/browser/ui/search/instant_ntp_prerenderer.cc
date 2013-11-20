@@ -256,9 +256,8 @@ bool InstantNTPPrerenderer::ShouldSwitchToLocalNTP() const {
     return false;
 
   // The preloaded NTP does not support instant yet. If we're not in startup,
-  // always fall back to the local NTP. If we are in startup, use the local NTP
-  // (unless the finch flag to use the remote NTP is set).
-  return !(InStartup() && chrome::ShouldPreferRemoteNTPOnStartup());
+  // always fall back to the local NTP. If we are in startup, use the local NTP.
+  return !InStartup();
 }
 
 void InstantNTPPrerenderer::DefaultSearchProviderChanged() {

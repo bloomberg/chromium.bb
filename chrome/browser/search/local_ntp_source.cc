@@ -85,9 +85,6 @@ scoped_ptr<DictionaryValue> GetTranslatedStrings() {
   scoped_ptr<base::DictionaryValue> translated_strings(
       new base::DictionaryValue());
 
-  if (chrome::ShouldShowRecentTabsOnNTP())
-    AddString(translated_strings.get(), "recentTabs", IDS_RECENT_TABS_MENU);
-
   AddString(translated_strings.get(), "thumbnailRemovedNotification",
             IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION);
   AddString(translated_strings.get(), "removeThumbnailTooltip",

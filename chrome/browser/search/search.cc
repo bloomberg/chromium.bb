@@ -63,9 +63,7 @@ const char kStalePageTimeoutFlagName[] = "stale";
 const int kStalePageTimeoutDefault = 3 * 3600;  // 3 hours.
 
 const char kHideVerbatimFlagName[] = "hide_verbatim";
-const char kUseRemoteNTPOnStartupFlagName[] = "use_remote_ntp_on_startup";
 const char kShowNtpFlagName[] = "show_ntp";
-const char kRecentTabsOnNTPFlagName[] = "show_recent_tabs";
 const char kUseCacheableNTP[] = "use_cacheable_ntp";
 const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
 const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
@@ -84,14 +82,10 @@ const char kEnableQueryExtractionFlagName[] = "query_extraction";
 // channel.
 const char kInstantExtendedFieldTrialName[] = "InstantExtended";
 const char kEmbeddedSearchFieldTrialName[] = "EmbeddedSearch";
-const char kGroupNumberPrefix[] = "Group";
 
 // If the field trial's group name ends with this string its configuration will
 // be ignored and Instant Extended will not be enabled by default.
 const char kDisablingSuffix[] = "DISABLED";
-
-// Remember if we reported metrics about opt-in/out state.
-bool instant_extended_opt_in_state_gate = false;
 
 // Used to set the Instant support state of the Navigation entry.
 const char kInstantSupportStateKey[] = "instant_support_state";
@@ -283,7 +277,7 @@ bool IsInstantExtendedAPIEnabled() {
 // default search provider. If 0, the embedded search UI should not be enabled.
 uint64 EmbeddedSearchPageVersion() {
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(&flags, NULL)) {
+  if (GetFieldTrialInfo(&flags)) {
     return GetUInt64ValueForFlagWithDefault(kEmbeddedPageVersionFlagName,
                                             kEmbeddedPageVersionDefault,
                                             flags);
@@ -303,7 +297,7 @@ bool IsQueryExtractionEnabled() {
     return true;
 
   FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kEnableQueryExtractionFlagName, false, flags);
 #endif  // defined(OS_IOS) || defined(OS_ANDROID)
 }
@@ -488,7 +482,7 @@ bool ShouldPrefetchSearchResults() {
     return false;
 
   FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kPrefetchSearchResultsFlagName, false, flags);
 }
 
@@ -496,25 +490,15 @@ GURL GetLocalInstantURL(Profile* profile) {
   return GURL(chrome::kChromeSearchLocalNtpUrl);
 }
 
-bool ShouldPreferRemoteNTPOnStartup() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableLocalFirstLoadNTP))
-    return true;
-
-  FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
-      kUseRemoteNTPOnStartupFlagName, true, flags);
-}
-
 bool ShouldHideTopVerbatimMatch() {
   FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kHideVerbatimFlagName, false, flags);
 }
 
 bool ShouldUseCacheableNTP() {
   FieldTrialFlags flags;
-  return !GetFieldTrialInfo(&flags, NULL) || GetBoolValueForFlagWithDefault(
+  return !GetFieldTrialInfo(&flags) || GetBoolValueForFlagWithDefault(
       kUseCacheableNTP, true, flags);
 }
 
@@ -525,19 +509,13 @@ bool ShouldShowInstantNTP() {
     return false;
 
   FieldTrialFlags flags;
-  return !GetFieldTrialInfo(&flags, NULL) ||
+  return !GetFieldTrialInfo(&flags) ||
       GetBoolValueForFlagWithDefault(kShowNtpFlagName, true, flags);
-}
-
-bool ShouldShowRecentTabsOnNTP() {
-  FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
-      kRecentTabsOnNTPFlagName, false, flags);
 }
 
 DisplaySearchButtonConditions GetDisplaySearchButtonConditions() {
   FieldTrialFlags flags;
-  if (!GetFieldTrialInfo(&flags, NULL))
+  if (!GetFieldTrialInfo(&flags))
     return DISPLAY_SEARCH_BUTTON_NEVER;
   uint64 value =
       GetUInt64ValueForFlagWithDefault(kDisplaySearchButtonFlagName, 0, flags);
@@ -548,7 +526,7 @@ DisplaySearchButtonConditions GetDisplaySearchButtonConditions() {
 
 bool ShouldDisplayOriginChip() {
   FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kEnableOriginChipFlagName, false, flags);
 }
 
@@ -588,7 +566,7 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
 int GetInstantLoaderStalenessTimeoutSec() {
   int timeout_sec = kStalePageTimeoutDefault;
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(&flags, NULL)) {
+  if (GetFieldTrialInfo(&flags)) {
     timeout_sec = GetUInt64ValueForFlagWithDefault(kStalePageTimeoutFlagName,
                                                    kStalePageTimeoutDefault,
                                                    flags);
@@ -675,7 +653,7 @@ InstantSupportState GetInstantSupportStateFromNavigationEntry(
 
 bool ShouldPrefetchSearchResultsOnSRP() {
   FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kPrefetchSearchResultsOnSRP, false, flags);
 }
 
@@ -684,8 +662,7 @@ void EnableQueryExtractionForTesting() {
   cl->AppendSwitch(switches::kEnableQueryExtraction);
 }
 
-bool GetFieldTrialInfo(FieldTrialFlags* flags,
-                       uint64* group_number) {
+bool GetFieldTrialInfo(FieldTrialFlags* flags) {
   // Get the group name.  If the EmbeddedSearch trial doesn't exist, look for
   // the older InstantExtended name.
   std::string group_name = base::FieldTrialList::FindFullName(
@@ -698,10 +675,8 @@ bool GetFieldTrialInfo(FieldTrialFlags* flags,
   if (EndsWith(group_name, kDisablingSuffix, true))
     return false;
 
-  // We have a valid trial that isn't disabled.
-  // First extract the flags.
+  // We have a valid trial that isn't disabled. Extract the flags.
   std::string group_prefix(group_name);
-
   size_t first_space = group_name.find(" ");
   if (first_space != std::string::npos) {
     // There is a flags section of the group name. Split that out and parse it.
@@ -713,21 +688,6 @@ bool GetFieldTrialInfo(FieldTrialFlags* flags,
       return false;
     }
   }
-
-  // Now extract the group number, making sure we get a non-zero value.
-  uint64 temp_group_number = 0;
-  if (StartsWithASCII(group_name, kGroupNumberPrefix, true)) {
-    std::string group_suffix = group_prefix.substr(strlen(kGroupNumberPrefix));
-    if (!base::StringToUint64(group_suffix, &temp_group_number))
-      return false;
-    if (group_number)
-      *group_number = temp_group_number;
-  } else {
-    // Instant Extended is not enabled.
-    if (group_number)
-      *group_number = 0;
-  }
-
   return true;
 }
 
@@ -763,10 +723,6 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     bool default_value,
                                     const FieldTrialFlags& flags) {
   return !!GetUInt64ValueForFlagWithDefault(flag, default_value ? 1 : 0, flags);
-}
-
-void ResetInstantExtendedOptInStateGateForTest() {
-  instant_extended_opt_in_state_gate = false;
 }
 
 }  // namespace chrome

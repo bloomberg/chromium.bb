@@ -105,14 +105,6 @@ void InstantController::SetSuggestionToPrefetch(
 }
 
 void InstantController::InstantPageLoadFailed(content::WebContents* contents) {
-  if (!chrome::ShouldPreferRemoteNTPOnStartup()) {
-    // We only need to fall back on errors if we're showing the online page
-    // at startup, as otherwise we fall back correctly when trying to show
-    // a page that hasn't yet indicated that it supports the InstantExtended
-    // API.
-    return;
-  }
-
   DCHECK(IsContentsFrom(instant_tab(), contents));
 
   // Verify we're not already on a local page and that the URL precisely

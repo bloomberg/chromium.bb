@@ -39,7 +39,6 @@ class EmbeddedSearchFieldTrialTest : public testing::Test {
     field_trial_list_.reset(new base::FieldTrialList(
         new metrics::SHA1EntropyProvider("42")));
     base::StatisticsRecorder::Initialize();
-    ResetInstantExtendedOptInStateGateForTest();
   }
 
  private:
@@ -48,101 +47,84 @@ class EmbeddedSearchFieldTrialTest : public testing::Test {
 
 TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoEmptyAndValid) {
   FieldTrialFlags flags;
-  uint64 group_number = 0;
 
-  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
-  EXPECT_EQ(0ul, group_number);
+  EXPECT_TRUE(GetFieldTrialInfo(&flags));
   EXPECT_EQ(0ul, flags.size());
 
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                      "Group77"));
-  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
-  EXPECT_EQ(77ul, group_number);
+  EXPECT_TRUE(GetFieldTrialInfo(&flags));
   EXPECT_EQ(0ul, flags.size());
 }
 
 TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoInvalidNumber) {
   FieldTrialFlags flags;
-  uint64 group_number = 0;
 
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                      "Group77.2"));
-  EXPECT_FALSE(GetFieldTrialInfo(&flags, &group_number));
-  EXPECT_EQ(0ul, group_number);
+  EXPECT_TRUE(GetFieldTrialInfo(&flags));
   EXPECT_EQ(0ul, flags.size());
 }
 
 TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoInvalidName) {
   FieldTrialFlags flags;
-  uint64 group_number = 0;
 
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                      "Invalid77"));
-  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
-  EXPECT_EQ(0ul, group_number);
+  EXPECT_TRUE(GetFieldTrialInfo(&flags));
   EXPECT_EQ(0ul, flags.size());
 }
 
 TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoValidGroup) {
   FieldTrialFlags flags;
-  uint64 group_number = 0;
 
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                      "Group77"));
-  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
-  EXPECT_EQ(77ul, group_number);
+  EXPECT_TRUE(GetFieldTrialInfo(&flags));
   EXPECT_EQ(0ul, flags.size());
 }
 
 TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoValidFlag) {
   FieldTrialFlags flags;
-  uint64 group_number = 0;
 
   EXPECT_EQ(9999ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                      "Group77 foo:6"));
-  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
-  EXPECT_EQ(77ul, group_number);
+  EXPECT_TRUE(GetFieldTrialInfo(&flags));
   EXPECT_EQ(1ul, flags.size());
   EXPECT_EQ(6ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
 }
 
 TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoNewName) {
   FieldTrialFlags flags;
-  uint64 group_number = 0;
 
   EXPECT_EQ(9999ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                      "Group77 foo:6"));
-  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
-  EXPECT_EQ(77ul, group_number);
+  EXPECT_TRUE(GetFieldTrialInfo(&flags));
   EXPECT_EQ(1ul, flags.size());
   EXPECT_EQ(6ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
 }
 
 TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoNewNameOverridesOld) {
   FieldTrialFlags flags;
-  uint64 group_number = 0;
 
   EXPECT_EQ(9999ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                      "Group77 foo:6"));
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
                                                      "Group78 foo:5"));
-  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
-  EXPECT_EQ(77ul, group_number);
+  EXPECT_TRUE(GetFieldTrialInfo(&flags));
   EXPECT_EQ(1ul, flags.size());
   EXPECT_EQ(6ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
 }
 
 TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoLotsOfFlags) {
   FieldTrialFlags flags;
-  uint64 group_number = 0;
 
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group77 bar:1 baz:7 cat:dogs"));
-  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
-  EXPECT_EQ(77ul, group_number);
+  EXPECT_TRUE(GetFieldTrialInfo(&flags));
   EXPECT_EQ(3ul, flags.size());
   EXPECT_EQ(true, GetBoolValueForFlagWithDefault("bar", false, flags));
   EXPECT_EQ(7ul, GetUInt64ValueForFlagWithDefault("baz", 0, flags));
@@ -154,181 +136,20 @@ TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoLotsOfFlags) {
 
 TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoDisabled) {
   FieldTrialFlags flags;
-  uint64 group_number = 0;
 
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group77 bar:1 baz:7 cat:dogs DISABLED"));
-  EXPECT_FALSE(GetFieldTrialInfo(&flags, &group_number));
-  EXPECT_EQ(0ul, group_number);
+  EXPECT_FALSE(GetFieldTrialInfo(&flags));
   EXPECT_EQ(0ul, flags.size());
 }
 
 TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoControlFlags) {
   FieldTrialFlags flags;
-  uint64 group_number = 0;
 
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Control77 bar:1 baz:7 cat:dogs"));
-  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
-  EXPECT_EQ(0ul, group_number);
+  EXPECT_TRUE(GetFieldTrialInfo(&flags));
   EXPECT_EQ(3ul, flags.size());
-}
-
-class InstantExtendedAPIEnabledTest : public testing::Test {
- public:
-  InstantExtendedAPIEnabledTest() : histogram_(NULL) {
-  }
- protected:
-  virtual void SetUp() {
-    field_trial_list_.reset(new base::FieldTrialList(
-        new metrics::SHA1EntropyProvider("42")));
-    base::StatisticsRecorder::Initialize();
-    ResetInstantExtendedOptInStateGateForTest();
-    previous_metrics_count_.resize(INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT, 0);
-    base::HistogramBase* histogram = GetHistogram();
-    if (histogram) {
-      scoped_ptr<base::HistogramSamples> samples(histogram->SnapshotSamples());
-      if (samples.get()) {
-        for (int state = INSTANT_EXTENDED_NOT_SET;
-             state < INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT; ++state) {
-          previous_metrics_count_[state] = samples->GetCount(state);
-        }
-      }
-    }
-  }
-
-  virtual CommandLine* GetCommandLine() const {
-    return CommandLine::ForCurrentProcess();
-  }
-
-  void ValidateMetrics(base::HistogramBase::Sample value) {
-    base::HistogramBase* histogram = GetHistogram();
-    if (histogram) {
-      scoped_ptr<base::HistogramSamples> samples(histogram->SnapshotSamples());
-      if (samples.get()) {
-        for (int state = INSTANT_EXTENDED_NOT_SET;
-             state < INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT; ++state) {
-          if (state == value) {
-            EXPECT_EQ(previous_metrics_count_[state] + 1,
-                      samples->GetCount(state));
-          } else {
-            EXPECT_EQ(previous_metrics_count_[state], samples->GetCount(state));
-          }
-        }
-      }
-    }
-  }
-
- private:
-  base::HistogramBase* GetHistogram() {
-    if (!histogram_) {
-      histogram_ = base::StatisticsRecorder::FindHistogram(
-          "InstantExtended.OptInState");
-    }
-    return histogram_;
-  }
-  base::HistogramBase* histogram_;
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
-  std::vector<int> previous_metrics_count_;
-};
-
-TEST_F(InstantExtendedAPIEnabledTest, EnabledViaFinchFlag) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
-                                                     "Group1 espv:42"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_EQ(42ul, EmbeddedSearchPageVersion());
-  ValidateMetrics(INSTANT_EXTENDED_NOT_SET);
-}
-
-typedef InstantExtendedAPIEnabledTest ShouldHideTopVerbatimTest;
-
-TEST_F(ShouldHideTopVerbatimTest, DoNotHideByDefault) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
-                                                     "Control"));
-  EXPECT_FALSE(ShouldHideTopVerbatimMatch());
-}
-
-TEST_F(ShouldHideTopVerbatimTest, DoNotHideInInstantExtended) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
-                                                     "Group1"));
-  EXPECT_FALSE(ShouldHideTopVerbatimMatch());
-}
-
-TEST_F(ShouldHideTopVerbatimTest, EnableByFlagInInstantExtended) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
-                                                     "Group1 hide_verbatim:1"));
-  EXPECT_TRUE(ShouldHideTopVerbatimMatch());
-}
-
-TEST_F(ShouldHideTopVerbatimTest, EnableByFlagOutsideInstantExtended) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Controll1 hide_verbatim:1"));
-  EXPECT_TRUE(ShouldHideTopVerbatimMatch());
-}
-
-TEST_F(ShouldHideTopVerbatimTest, DisableByFlag) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
-                                                     "Group1 hide_verbatim:0"));
-  EXPECT_FALSE(ShouldHideTopVerbatimMatch());
-}
-
-typedef InstantExtendedAPIEnabledTest DisplaySearchButtonTest;
-
-TEST_F(DisplaySearchButtonTest, NotSet) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2"));
-  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
-}
-
-TEST_F(DisplaySearchButtonTest, Never) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 display_search_button:0"));
-  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
-}
-
-TEST_F(DisplaySearchButtonTest, ForSearchTermReplacement) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 display_search_button:1"));
-  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_FOR_STR, GetDisplaySearchButtonConditions());
-}
-
-TEST_F(DisplaySearchButtonTest, ForSearchTermReplacementOrInputInProgress) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 display_search_button:2"));
-  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_FOR_STR_OR_IIP,
-            GetDisplaySearchButtonConditions());
-}
-
-TEST_F(DisplaySearchButtonTest, Always) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 display_search_button:3"));
-  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_ALWAYS, GetDisplaySearchButtonConditions());
-}
-
-TEST_F(DisplaySearchButtonTest, InvalidValue) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 display_search_button:4"));
-  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
-}
-
-typedef InstantExtendedAPIEnabledTest OriginChipTest;
-
-TEST_F(OriginChipTest, NotSet) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2"));
-  EXPECT_FALSE(ShouldDisplayOriginChip());
-}
-
-TEST_F(OriginChipTest, NoOriginChip) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 origin_chip:0"));
-  EXPECT_FALSE(ShouldDisplayOriginChip());
-}
-
-TEST_F(OriginChipTest, OriginChip) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 origin_chip:1"));
-  EXPECT_TRUE(ShouldDisplayOriginChip());
 }
 
 class SearchTest : public BrowserWithTestWindowTest {
@@ -965,6 +786,97 @@ TEST_F(IsQueryExtractionEnabledTest, EnabledViaCommandLine) {
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_TRUE(IsQueryExtractionEnabled());
   EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
+}
+
+typedef SearchTest ShouldHideTopVerbatimTest;
+
+TEST_F(ShouldHideTopVerbatimTest, DoNotHideByDefault) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
+                                                     "Control"));
+  EXPECT_FALSE(ShouldHideTopVerbatimMatch());
+}
+
+TEST_F(ShouldHideTopVerbatimTest, DoNotHideInInstantExtended) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
+                                                     "Group1"));
+  EXPECT_FALSE(ShouldHideTopVerbatimMatch());
+}
+
+TEST_F(ShouldHideTopVerbatimTest, EnableByFlagInInstantExtended) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
+                                                     "Group1 hide_verbatim:1"));
+  EXPECT_TRUE(ShouldHideTopVerbatimMatch());
+}
+
+TEST_F(ShouldHideTopVerbatimTest, EnableByFlagOutsideInstantExtended) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Controll1 hide_verbatim:1"));
+  EXPECT_TRUE(ShouldHideTopVerbatimMatch());
+}
+
+TEST_F(ShouldHideTopVerbatimTest, DisableByFlag) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
+                                                     "Group1 hide_verbatim:0"));
+  EXPECT_FALSE(ShouldHideTopVerbatimMatch());
+}
+
+typedef SearchTest DisplaySearchButtonTest;
+
+TEST_F(DisplaySearchButtonTest, NotSet) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
+}
+
+TEST_F(DisplaySearchButtonTest, Never) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 display_search_button:0"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
+}
+
+TEST_F(DisplaySearchButtonTest, ForSearchTermReplacement) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 display_search_button:1"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_FOR_STR, GetDisplaySearchButtonConditions());
+}
+
+TEST_F(DisplaySearchButtonTest, ForSearchTermReplacementOrInputInProgress) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 display_search_button:2"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_FOR_STR_OR_IIP,
+            GetDisplaySearchButtonConditions());
+}
+
+TEST_F(DisplaySearchButtonTest, Always) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 display_search_button:3"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_ALWAYS, GetDisplaySearchButtonConditions());
+}
+
+TEST_F(DisplaySearchButtonTest, InvalidValue) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 display_search_button:4"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
+}
+
+typedef SearchTest OriginChipTest;
+
+TEST_F(OriginChipTest, NotSet) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2"));
+  EXPECT_FALSE(ShouldDisplayOriginChip());
+}
+
+TEST_F(OriginChipTest, NoOriginChip) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip:0"));
+  EXPECT_FALSE(ShouldDisplayOriginChip());
+}
+
+TEST_F(OriginChipTest, OriginChip) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip:1"));
+  EXPECT_TRUE(ShouldDisplayOriginChip());
 }
 
 }  // namespace chrome

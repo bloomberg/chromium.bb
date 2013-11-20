@@ -366,9 +366,6 @@ const char kDisableIPv6[]                   = "disable-ipv6";
 // attempt to use the existing connection.
 const char kDisableIPPooling[]              = "disable-ip-pooling";
 
-// Disable always using the local NTP for the first NTP load of a new window.
-const char kDisableLocalFirstLoadNTP[] = "disable-local-first-load-ntp";
-
 // Disable the behavior that the second click on a launcher item (the click when
 // the item is already active) minimizes the item.
 const char kDisableMinimizeOnSecondLauncherItemClick[] =
