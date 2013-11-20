@@ -1144,19 +1144,6 @@ void TabStrip::MaybeStartDrag(
   }
 
   views::Widget* widget = GetWidget();
-
-  // Don't allow detaching from maximized or fullscreen windows (in ash) when
-  // all the tabs are selected and there is only one display. Since the window
-  // is maximized or fullscreen, we know there are no other tabbed browsers the
-  // user can drag to.
-  const chrome::HostDesktopType host_desktop_type =
-      chrome::GetHostDesktopTypeForNativeView(widget->GetNativeView());
-  if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH &&
-      (widget->IsMaximized() || widget->IsFullscreen()) &&
-      static_cast<int>(tabs.size()) == tab_count() &&
-      gfx::Screen::GetScreenFor(widget->GetNativeView())->GetNumDisplays() == 1)
-    detach_behavior = TabDragController::NOT_DETACHABLE;
-
 #if defined(OS_WIN)
   // It doesn't make sense to drag tabs out on Win8's single window Metro mode.
   if (win8::IsSingleWindowMetroMode())
