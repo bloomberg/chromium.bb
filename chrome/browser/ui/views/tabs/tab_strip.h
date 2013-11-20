@@ -204,7 +204,7 @@ class TabStrip : public views::View,
                             const ui::LocatedEvent& event) OVERRIDE;
   virtual bool EndDrag(EndDragReason reason) OVERRIDE;
   virtual Tab* GetTabAt(Tab* tab,
-                            const gfx::Point& tab_in_tab_coordinates) OVERRIDE;
+                        const gfx::Point& tab_in_tab_coordinates) OVERRIDE;
   virtual void OnMouseEventInTab(views::View* source,
                                  const ui::MouseEvent& event) OVERRIDE;
   virtual bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) OVERRIDE;

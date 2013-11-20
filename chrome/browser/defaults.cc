@@ -57,6 +57,12 @@ const bool kShowCancelButtonInTaskManager = true;
 const bool kShowCancelButtonInTaskManager = false;
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+const bool kScrollEventChangesTab = true;
+#else
+const bool kScrollEventChangesTab = false;
+#endif
+
 const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle =
     ui::ResourceBundle::BoldFont;
 

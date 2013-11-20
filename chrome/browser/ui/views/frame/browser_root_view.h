@@ -38,6 +38,7 @@ class BrowserRootView : public views::internal::RootView {
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 
   // Overridden from internal::RootView:
   virtual void DispatchGestureEvent(ui::GestureEvent* event) OVERRIDE;

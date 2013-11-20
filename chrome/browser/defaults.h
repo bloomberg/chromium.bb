@@ -74,6 +74,9 @@ extern const bool kShowOtherBrowsersInAboutMemory;
 // Should the close button be shown in the Task Manager dialog?
 extern const bool kShowCancelButtonInTaskManager;
 
+// Should scroll events on the tabstrip change tabs?
+extern const bool kScrollEventChangesTab;
+
 // ChromiumOS network menu font
 extern const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle;
 
