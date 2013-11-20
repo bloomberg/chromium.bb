@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/xml/XPathEvaluator.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
@@ -52,8 +53,13 @@ PassRefPtr<XPathNSResolver> XPathEvaluator::createNSResolver(Node* nodeResolver)
 PassRefPtr<XPathResult> XPathEvaluator::evaluate(const String& expression, Node* contextNode,
     XPathNSResolver* resolver, unsigned short type, XPathResult* result, ExceptionState& exceptionState)
 {
+    if (!contextNode) {
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("evaluate", "XPathEvaluator", "The context node provided is null."));
+        return 0;
+    }
+
     if (!isValidContextNode(contextNode)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("evaluate", "XPathEvaluator", "The node provided is '" + contextNode->nodeName() + "', which is not a valid context node type."));
         return 0;
     }
 
