@@ -105,8 +105,9 @@ PP_Var CopyPPVar(const PP_Var& var) {
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
     case PP_VARTYPE_RESOURCE:
-      // These types are not supported by PostMessage in-process.
-      NOTREACHED();
+      // These types are not supported by PostMessage in-process. In some rare
+      // cases with the NaCl plugin, they may be sent but they will be dropped
+      // anyway (see crbug.com/318837 for details).
       return PP_MakeUndefined();
   }
   NOTREACHED();
