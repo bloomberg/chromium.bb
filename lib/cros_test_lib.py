@@ -875,8 +875,6 @@ class GerritTestCase(TempDirTestCase):
     cros_build_lib.RunCommandQuietly(['bash', gerrit_exe, 'start'])
     gerrit_pid = int(osutils.ReadFile(
         os.path.join(gerrit_dir, 'logs', 'gerrit.pid')).rstrip())
-    with open(os.path.join(gerrit_dir, 'logs', 'gerrit.pid')) as fh:
-      gerrit_pid = int(fh.read().rstrip())
     return cls.GerritInstance(
         credential_file=os.path.join(gerrit_dir, 'tmp', '.git-credentials'),
         gerrit_dir=gerrit_dir,
