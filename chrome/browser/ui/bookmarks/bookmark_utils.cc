@@ -273,23 +273,24 @@ string16 FormatBookmarkURLForDisplay(const GURL& url,
       net::UnescapeRule::SPACES, NULL, NULL, NULL);
 }
 
-bool IsAppsShortcutEnabled(const Profile* profile) {
-#if defined(USE_ASH)
-  // Don't show the apps shortcut in ash when the app launcher is enabled.
-  if (IsAppLauncherEnabled())
-    return false;
-#endif
-
-  return chrome::IsInstantExtendedAPIEnabled() && !profile->IsOffTheRecord();
-}
-
-bool ShouldShowAppsShortcutInBookmarkBar(Profile* profile) {
+bool IsAppsShortcutEnabled(Profile* profile,
+                           chrome::HostDesktopType host_desktop_type) {
   // Managed users can not have apps installed currently so there's no need to
   // show the apps shortcut.
   if (profile->IsManaged())
     return false;
 
-  return IsAppsShortcutEnabled(profile) &&
+  // Don't show the apps shortcut in ash since the app launcher is enabled.
+  if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
+    return false;
+
+  return chrome::IsInstantExtendedAPIEnabled() && !profile->IsOffTheRecord();
+}
+
+bool ShouldShowAppsShortcutInBookmarkBar(
+  Profile* profile,
+  chrome::HostDesktopType host_desktop_type) {
+  return IsAppsShortcutEnabled(profile, host_desktop_type) &&
       profile->GetPrefs()->GetBoolean(prefs::kShowAppsShortcutInBookmarkBar);
 }
 

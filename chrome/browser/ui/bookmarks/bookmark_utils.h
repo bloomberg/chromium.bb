@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -92,10 +93,13 @@ string16 FormatBookmarkURLForDisplay(const GURL& url,
 // Returns whether the Apps shortcut is enabled. If true, then the visibility
 // of the Apps shortcut should be controllable via an item in the bookmark
 // context menu.
-bool IsAppsShortcutEnabled(const Profile* profile);
+bool IsAppsShortcutEnabled(Profile* profile,
+                           chrome::HostDesktopType host_desktop_type);
 
 // Returns true if the Apps shortcut should be displayed in the bookmark bar.
-bool ShouldShowAppsShortcutInBookmarkBar(Profile* profile);
+bool ShouldShowAppsShortcutInBookmarkBar(
+    Profile* profile,
+    chrome::HostDesktopType host_desktop_type);
 
 }  // namespace chrome
 

@@ -1500,7 +1500,8 @@ void BookmarkBarGtk::ShowImportDialog() {
 
 void BookmarkBarGtk::OnAppsPageShortcutVisibilityChanged() {
   const bool visible =
-      chrome::ShouldShowAppsShortcutInBookmarkBar(browser_->profile());
+      chrome::ShouldShowAppsShortcutInBookmarkBar(
+          browser_->profile(), browser_->host_desktop_type());
   gtk_widget_set_visible(apps_shortcut_button_, visible);
   gtk_widget_set_no_show_all(apps_shortcut_button_, !visible);
 }

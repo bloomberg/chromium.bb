@@ -92,7 +92,11 @@ void BookmarkContextMenuController::BuildMenu() {
 
   AddSeparator();
   AddItem(IDC_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
-  if (chrome::IsAppsShortcutEnabled(profile_)) {
+  // Use the native host desktop type in tests.
+  if (chrome::IsAppsShortcutEnabled(
+          profile_,
+          browser_ ? browser_->host_desktop_type()
+                   : chrome::HOST_DESKTOP_TYPE_NATIVE)) {
     AddCheckboxItem(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT,
                     IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT);
   }

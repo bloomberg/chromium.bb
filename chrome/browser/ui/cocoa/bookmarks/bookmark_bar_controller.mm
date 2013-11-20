@@ -1156,7 +1156,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return NO;
 
   BOOL visible = bookmarkModel_->loaded() &&
-      chrome::ShouldShowAppsShortcutInBookmarkBar(browser_->profile());
+      chrome::ShouldShowAppsShortcutInBookmarkBar(
+          browser_->profile(), browser_->host_desktop_type());
   [appsPageShortcutButton_ setHidden:!visible];
   return visible;
 }
