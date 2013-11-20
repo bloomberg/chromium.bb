@@ -274,14 +274,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 }
 
-// This test flakes on Mac with force compositing mode.
-// http://crbug.com/316709
-#if defined(OS_MACOSX)
-#define MAYBE_DisableDetection DISABLED_DisableDetection
-#else
-#define MAYBE_DisableDetection DisableDetection
-#endif
-IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_DisableDetection) {
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, DisableDetection) {
   // No scorer yet, so the classifier is not ready.
   EXPECT_FALSE(classifier_->is_ready());
 

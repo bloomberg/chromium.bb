@@ -1920,6 +1920,11 @@
             # This test depends on GetCommandLineForRelaunch, which is not
             # available on Mac.
             'browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc',
+            # single-process mode hangs on Mac sometimes because of multiple UI
+            # message loops. See 306348
+            'renderer/safe_browsing/phishing_classifier_browsertest.cc',
+            'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
+            'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
           ],
         }],
         ['OS=="mac" or OS=="win"', {
@@ -2012,6 +2017,8 @@
             # These tests depend on single process mode, which is disabled in
             # official builds.
             'renderer/safe_browsing/phishing_classifier_browsertest.cc',
+            'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
+            'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
           ]
         }],
       ],  # conditions
