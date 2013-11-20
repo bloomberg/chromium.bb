@@ -87,7 +87,12 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportImpl :
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
       unsigned char flags);
+  // TODO(wangxianzhu): Remove this function after transition to the new one.
   virtual void updateTraceEventDuration(TraceEventHandle);
+  virtual void updateTraceEventDuration(
+      const unsigned char* category_group_enabled,
+      const char* name,
+      TraceEventHandle);
   virtual blink::WebData loadResource(const char* name);
   virtual blink::WebString queryLocalizedString(
       blink::WebLocalizedString::Name name);

@@ -807,6 +807,8 @@
 
 // Set the duration field of a COMPLETE trace event.
 // void TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(
+//     const unsigned char* category_group_enabled,
+//     const char* name,
 //     base::debug::TraceEventHandle id)
 #define TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION \
     base::debug::TraceLog::GetInstance()->UpdateTraceEventDuration
@@ -888,7 +890,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
           name, trace_event_internal::kNoEventId, \
           TRACE_EVENT_FLAG_NONE, ##__VA_ARGS__); \
       INTERNAL_TRACE_EVENT_UID(tracer).Initialize( \
-          INTERNAL_TRACE_EVENT_UID(category_group_enabled), h); \
+          INTERNAL_TRACE_EVENT_UID(category_group_enabled), name, h); \
     }
 
 // Implementation detail: internal macro to create static category and add
@@ -1378,12 +1380,15 @@ class TRACE_EVENT_API_CLASS_EXPORT ScopedTracer {
 
   ~ScopedTracer() {
     if (p_data_ && *data_.category_group_enabled)
-      TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(data_.event_handle);
+      TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(
+          data_.category_group_enabled, data_.name, data_.event_handle);
   }
 
   void Initialize(const unsigned char* category_group_enabled,
+                  const char* name,
                   base::debug::TraceEventHandle event_handle) {
     data_.category_group_enabled = category_group_enabled;
+    data_.name = name;
     data_.event_handle = event_handle;
     p_data_ = &data_;
   }
@@ -1396,6 +1401,7 @@ class TRACE_EVENT_API_CLASS_EXPORT ScopedTracer {
   // uninitialized accesses.
   struct Data {
     const unsigned char* category_group_enabled;
+    const char* name;
     base::debug::TraceEventHandle event_handle;
   };
   Data* p_data_;
@@ -1410,6 +1416,7 @@ class TRACE_EVENT_API_CLASS_EXPORT ScopedTraceBinaryEfficient {
 
  private:
   const unsigned char* category_group_enabled_;
+  const char* name_;
   base::debug::TraceEventHandle event_handle_;
 };
 

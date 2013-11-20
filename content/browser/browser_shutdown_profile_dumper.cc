@@ -65,8 +65,7 @@ void BrowserShutdownProfileDumper::WriteTracesToDisc(
 
 void BrowserShutdownProfileDumper::EndTraceAndFlush(
     base::WaitableEvent* flush_complete_event) {
-  while (base::debug::TraceLog::GetInstance()->IsEnabled())
-    base::debug::TraceLog::GetInstance()->SetDisabled();
+  base::debug::TraceLog::GetInstance()->SetDisabled();
   base::debug::TraceLog::GetInstance()->Flush(
       base::Bind(&BrowserShutdownProfileDumper::WriteTraceDataCollected,
                  base::Unretained(this),

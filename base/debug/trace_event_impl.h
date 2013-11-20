@@ -381,6 +381,16 @@ class BASE_EXPORT TraceLog {
     ECHO_TO_CONSOLE = 1 << 4,
   };
 
+  // The pointer returned from GetCategoryGroupEnabledInternal() points to a
+  // value with zero or more of the following bits. Used in this class only.
+  // The TRACE_EVENT macros should only use the value as a bool.
+  enum CategoryGroupEnabledFlags {
+    // Normal enabled flag for category groups enabled by SetEnabled().
+    ENABLED_FOR_RECORDING = 1 << 0,
+    // Category group enabled by SetEventCallbackEnabled().
+    ENABLED_FOR_EVENT_CALLBACK = 1 << 1,
+  };
+
   static TraceLog* GetInstance();
 
   // Convert the given string to trace options. Defaults to RECORD_UNTIL_FULL if
@@ -391,20 +401,23 @@ class BASE_EXPORT TraceLog {
   // reached. The known category groups are inserted into |category_groups|.
   void GetKnownCategoryGroups(std::vector<std::string>* category_groups);
 
-  // Retrieves the current CategoryFilter.
-  const CategoryFilter& GetCurrentCategoryFilter();
+  // Retrieves a copy (for thread-safety) of the current CategoryFilter.
+  CategoryFilter GetCurrentCategoryFilter();
 
   Options trace_options() const {
     return static_cast<Options>(subtle::NoBarrier_Load(&trace_options_));
   }
 
-  // Enables tracing. See CategoryFilter comments for details
-  // on how to control what categories will be traced.
+  // Enables normal tracing (recording trace events in the trace buffer).
+  // See CategoryFilter comments for details on how to control what categories
+  // will be traced. If tracing has already been enabled, |category_filter| will
+  // be merged into the current category filter.
   void SetEnabled(const CategoryFilter& category_filter, Options options);
 
-  // Disables tracing for all categories.
+  // Disables normal tracing for all categories.
   void SetDisabled();
-  bool IsEnabled() { return !!enable_count_; }
+
+  bool IsEnabled() { return enabled_; }
 
   // The number of times we have begun recording traces. If tracing is off,
   // returns -1. If tracing is on, then it returns the number of times we have
@@ -449,12 +462,12 @@ class BASE_EXPORT TraceLog {
   // Not using base::Callback because of its limited by 7 parameters.
   // Also, using primitive type allows directly passing callback from WebCore.
   // WARNING: It is possible for the previously set callback to be called
-  // after a call to SetEventCallback() that replaces or clears the callback.
+  // after a call to SetEventCallbackEnabled() that replaces or a call to
+  // SetEventCallbackDisabled() that disables the callback.
   // This callback may be invoked on any thread.
-  // TODO(wangxianzhu): For now for TRACE_EVENT_PHASE_COMPLETE events, the
-  // client will still receive pairs of TRACE_EVENT_PHASE_BEGIN and
-  // TRACE_EVENT_PHASE_END events. Should send TRACE_EVENT_PHASE_COMPLETE
-  // directly to clients if it is beneficial and feasible.
+  // For TRACE_EVENT_PHASE_COMPLETE events, the client will still receive pairs
+  // of TRACE_EVENT_PHASE_BEGIN and TRACE_EVENT_PHASE_END events to keep the
+  // interface simple.
   typedef void (*EventCallback)(TimeTicks timestamp,
                                 char phase,
                                 const unsigned char* category_group_enabled,
@@ -465,7 +478,11 @@ class BASE_EXPORT TraceLog {
                                 const unsigned char arg_types[],
                                 const unsigned long long arg_values[],
                                 unsigned char flags);
-  void SetEventCallback(EventCallback cb);
+
+  // Enable tracing for EventCallback.
+  void SetEventCallbackEnabled(const CategoryFilter& category_filter,
+                               EventCallback cb);
+  void SetEventCallbackDisabled();
 
   // Flush all collected events to the given output callback. The callback will
   // be called one or more times either synchronously or asynchronously from
@@ -524,7 +541,9 @@ class BASE_EXPORT TraceLog {
                                const void* id,
                                const std::string& extra);
 
-  void UpdateTraceEventDuration(TraceEventHandle handle);
+  void UpdateTraceEventDuration(const unsigned char* category_group_enabled,
+                                const char* name,
+                                TraceEventHandle handle);
 
   // For every matching event, a notification will be fired. NOTE: the
   // notification will fire for each matching event that has already occurred
@@ -592,11 +611,11 @@ class BASE_EXPORT TraceLog {
   // by the Singleton class.
   friend struct DefaultSingletonTraits<TraceLog>;
 
-  // Enable/disable each category group based on the current enable_count_
-  // and category_filter_. Disable the category group if enabled_count_ is 0, or
-  // if the category group contains a category that matches an included category
-  // pattern, that category group will be enabled.
-  // On Android, ATRACE_ENABLED flag will be applied if atrace is started.
+  // Enable/disable each category group based on the current enabled_,
+  // category_filter_, event_callback_ and event_callback_category_filter_.
+  // Enable the category group if enabled_ is true and category_filter_ matches
+  // the category group, or event_callback_ is not null and
+  // event_callback_category_filter_ matches the category group.
   void UpdateCategoryGroupEnabledFlags();
   void UpdateCategoryGroupEnabledFlag(int category_index);
 
@@ -673,7 +692,7 @@ class BASE_EXPORT TraceLog {
   // This lock protects TraceLog member accesses from arbitrary threads.
   Lock lock_;
   int locked_line_;
-  int enable_count_;
+  bool enabled_;
   int num_traces_recorded_;
   subtle::AtomicWord /* bool */ buffer_is_full_;
   NotificationCallback notification_callback_;
@@ -710,6 +729,7 @@ class BASE_EXPORT TraceLog {
   PlatformThreadHandle sampling_thread_handle_;
 
   CategoryFilter category_filter_;
+  CategoryFilter event_callback_category_filter_;
 
   ThreadLocalPointer<ThreadLocalEventBuffer> thread_local_event_buffer_;
   ThreadLocalBoolean thread_blocks_message_loop_;
