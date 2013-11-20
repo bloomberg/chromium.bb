@@ -11564,6 +11564,10 @@ other types of suffix sets.
   <summary>The cat's flavor and how many bits there are in it.</summary>
 </histogram>
 
+<histogram name="OSX.ExceptionHandlerEvents" enum="OSXExceptionHandlerEvents">
+  <summary>Events seen by the OSX NSException swizzle.</summary>
+</histogram>
+
 <histogram name="OutdatedUpgradeBubble.NumLaterPerReinstall">
   <summary>
     Counts the number of times the user clicked on the later button of the
@@ -26920,6 +26924,26 @@ other types of suffix sets.
   <int value="32" label="EPIPE">Broken pipe</int>
   <int value="33" label="EDOM">Numerical argument out of domain</int>
   <int value="34" label="ERANGE">Numerical result out of range</int>
+</enum>
+
+<enum name="OSXExceptionHandlerEvents" type="int">
+  <int value="0" label="EXCEPTION_ACCESSIBILITY">
+    Object does not support accessibility attributes
+  </int>
+  <int value="1" label="EXCEPTION_MENU_ITEM_BOUNDS_CHECK">
+    Forced crash due to menu item bounds checking failure
+  </int>
+  <int value="2" label="EXCEPTION_VIEW_NOT_IN_WINDOW">
+    Forced crash due to view not in a window requiring a window
+  </int>
+  <int value="3" label="EXCEPTION_NSURL_INIT_NIL">
+    Whitelisted exception for bug 85463.  Suspect ImageKit conversions for media
+    browser in open or save panel.
+  </int>
+  <int value="4" label="EXCEPTION_NSDATADETECTOR_NIL_STRING">
+    Whitelisted exception for bug 316759.  Suspect background address detection,
+    field unknown.
+  </int>
 </enum>
 
 <enum name="OtherPossibleUsernamesUsage" type="int">

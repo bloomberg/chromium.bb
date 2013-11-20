@@ -22,6 +22,27 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
+namespace {
+
+// Tracking for cases being hit by -crInitWithName:reason:userInfo:.
+enum ExceptionEventType {
+  EXCEPTION_ACCESSIBILITY = 0,
+  EXCEPTION_MENU_ITEM_BOUNDS_CHECK,
+  EXCEPTION_VIEW_NOT_IN_WINDOW,
+  EXCEPTION_NSURL_INIT_NIL,
+  EXCEPTION_NSDATADETECTOR_NIL_STRING,
+
+  // Always keep this at the end.
+  EXCEPTION_MAX,
+};
+
+void RecordExceptionEvent(ExceptionEventType event_type) {
+  UMA_HISTOGRAM_ENUMERATION("OSX.ExceptionHandlerEvents",
+                            event_type, EXCEPTION_MAX);
+}
+
+}  // namespace
+
 // The implementation of NSExceptions break various assumptions in the
 // Chrome code.  This category defines a replacement for
 // -initWithName:reason:userInfo: for purposes of forcing a break in
@@ -51,14 +72,14 @@ static IMP gOriginalInitIMP = NULL;
     // If an object does not support an accessibility attribute, this will
     // get thrown.
     NSAccessibilityException,
-
-    nil
   };
 
   BOOL found = NO;
-  for (int i = 0; kAcceptableNSExceptionNames[i]; ++i) {
+  for (size_t i = 0; i < arraysize(kAcceptableNSExceptionNames); ++i) {
     if (aName == kAcceptableNSExceptionNames[i]) {
       found = YES;
+      RecordExceptionEvent(EXCEPTION_ACCESSIBILITY);
+      break;
     }
   }
 
@@ -77,11 +98,13 @@ static IMP gOriginalInitIMP = NULL;
           @"Invalid parameter not satisfying: (index >= 0) && "
           @"(index < [_itemArray count])";
       if ([aReason isEqualToString:kNSMenuItemArrayBoundsCheck]) {
+        RecordExceptionEvent(EXCEPTION_MENU_ITEM_BOUNDS_CHECK);
         fatal = YES;
       }
 
       NSString* const kNoWindowCheck = @"View is not in any window";
       if ([aReason isEqualToString:kNoWindowCheck]) {
+        RecordExceptionEvent(EXCEPTION_VIEW_NOT_IN_WINDOW);
         fatal = YES;
       }
     }
@@ -98,6 +121,17 @@ static IMP gOriginalInitIMP = NULL;
           @"*** -[NSURL initFileURLWithPath:isDirectory:]: "
           @"nil string parameter";
       if ([aReason isEqualToString:kNSURLInitNilCheck]) {
+        RecordExceptionEvent(EXCEPTION_NSURL_INIT_NIL);
+        fatal = NO;
+      }
+
+      // TODO(shess): <http://crbug.com/316759> OSX 10.9 is failing
+      // trying to extract structure from a string.
+      NSString* const kNSDataDetectorNilCheck =
+          @"*** -[NSDataDetector enumerateMatchesInString:"
+          @"options:range:usingBlock:]: nil argument";
+      if ([aReason isEqualToString:kNSDataDetectorNilCheck]) {
+        RecordExceptionEvent(EXCEPTION_NSDATADETECTOR_NIL_STRING);
         fatal = NO;
       }
     }
