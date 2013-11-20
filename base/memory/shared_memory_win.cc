@@ -189,13 +189,14 @@ bool SharedMemory::Unmap() {
 
 bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
                                         SharedMemoryHandle *new_handle,
-                                        bool close_self) {
+                                        bool close_self,
+                                        ShareMode share_mode) {
   *new_handle = 0;
   DWORD access = FILE_MAP_READ;
   DWORD options = 0;
   HANDLE mapped_file = mapped_file_;
   HANDLE result;
-  if (!read_only_)
+  if (share_mode == SHARE_CURRENT_MODE && !read_only_)
     access |= FILE_MAP_WRITE;
   if (close_self) {
     // DUPLICATE_CLOSE_SOURCE causes DuplicateHandle to close mapped_file.

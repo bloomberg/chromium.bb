@@ -21,6 +21,7 @@
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
+#include "base/file_util.h"
 #endif
 
 namespace base {
@@ -80,6 +81,11 @@ class BASE_EXPORT SharedMemory {
 
   // Create a new SharedMemory object from an existing, open
   // shared memory file.
+  //
+  // WARNING: This does not reduce the OS-level permissions on the handle; it
+  // only affects how the SharedMemory will be mmapped.  Use
+  // ShareReadOnlyToProcess to drop permissions.  TODO(jln,jyasskin): DCHECK
+  // that |read_only| matches the permissions of the handle.
   SharedMemory(SharedMemoryHandle handle, bool read_only);
 
   // Create a new SharedMemory object from an existing, open
@@ -189,15 +195,41 @@ class BASE_EXPORT SharedMemory {
   // It is safe to call Close repeatedly.
   void Close();
 
+  // Shares the shared memory to another process.  Attempts to create a
+  // platform-specific new_handle which can be used in a remote process to read
+  // the shared memory file.  new_handle is an output parameter to receive the
+  // handle for use in the remote process.
+  //
+  // |*this| must have been initialized using one of the Create*() or Open()
+  // methods.  If it was constructed from a SharedMemoryHandle, this call will
+  // CHECK-fail.
+  //
+  // Returns true on success, false otherwise.
+  bool ShareReadOnlyToProcess(ProcessHandle process,
+                              SharedMemoryHandle* new_handle) {
+    return ShareToProcessCommon(process, new_handle, false, SHARE_READONLY);
+  }
+
+  // Logically equivalent to:
+  //   bool ok = ShareReadOnlyToProcess(process, new_handle);
+  //   Close();
+  //   return ok;
+  // Note that the memory is unmapped by calling this method, regardless of the
+  // return value.
+  bool GiveReadOnlyToProcess(ProcessHandle process,
+                             SharedMemoryHandle* new_handle) {
+    return ShareToProcessCommon(process, new_handle, true, SHARE_READONLY);
+  }
+
   // Shares the shared memory to another process.  Attempts
   // to create a platform-specific new_handle which can be
   // used in a remote process to access the shared memory
-  // file.  new_handle is an ouput parameter to receive
+  // file.  new_handle is an output parameter to receive
   // the handle for use in the remote process.
   // Returns true on success, false otherwise.
   bool ShareToProcess(ProcessHandle process,
                       SharedMemoryHandle* new_handle) {
-    return ShareToProcessCommon(process, new_handle, false);
+    return ShareToProcessCommon(process, new_handle, false, SHARE_CURRENT_MODE);
   }
 
   // Logically equivalent to:
@@ -208,7 +240,7 @@ class BASE_EXPORT SharedMemory {
   // return value.
   bool GiveToProcess(ProcessHandle process,
                      SharedMemoryHandle* new_handle) {
-    return ShareToProcessCommon(process, new_handle, true);
+    return ShareToProcessCommon(process, new_handle, true, SHARE_CURRENT_MODE);
   }
 
   // Locks the shared memory.
@@ -232,19 +264,25 @@ class BASE_EXPORT SharedMemory {
 
  private:
 #if defined(OS_POSIX) && !defined(OS_NACL)
-  bool PrepareMapFile(FILE *fp);
+  bool PrepareMapFile(file_util::ScopedFILE fp, file_util::ScopedFD readonly);
   bool FilePathForMemoryName(const std::string& mem_name, FilePath* path);
   void LockOrUnlockCommon(int function);
 #endif
+  enum ShareMode {
+    SHARE_READONLY,
+    SHARE_CURRENT_MODE,
+  };
   bool ShareToProcessCommon(ProcessHandle process,
                             SharedMemoryHandle* new_handle,
-                            bool close_self);
+                            bool close_self,
+                            ShareMode);
 
 #if defined(OS_WIN)
   std::wstring       name_;
   HANDLE             mapped_file_;
 #elif defined(OS_POSIX)
   int                mapped_file_;
+  int                readonly_mapped_file_;
   ino_t              inode_;
 #endif
   size_t             mapped_size_;

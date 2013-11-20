@@ -20,10 +20,16 @@
 #endif
 
 #if defined(OS_POSIX)
+#include <errno.h>
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#endif
+
+#if defined(OS_WIN)
+#include "base/win/scoped_handle.h"
 #endif
 
 static const int kNumThreads = 5;
@@ -361,6 +367,79 @@ TEST(SharedMemoryTest, AnonymousPrivate) {
   }
 }
 
+TEST(SharedMemoryTest, ShareReadOnly) {
+  StringPiece contents = "Hello World";
+
+  SharedMemory writable_shmem;
+  ASSERT_TRUE(writable_shmem.CreateAndMapAnonymous(contents.size()));
+  memcpy(writable_shmem.memory(), contents.data(), contents.size());
+  EXPECT_TRUE(writable_shmem.Unmap());
+
+  SharedMemoryHandle readonly_handle;
+  ASSERT_TRUE(writable_shmem.ShareReadOnlyToProcess(GetCurrentProcessHandle(),
+                                                    &readonly_handle));
+  SharedMemory readonly_shmem(readonly_handle, /*readonly=*/true);
+
+  ASSERT_TRUE(readonly_shmem.Map(contents.size()));
+  EXPECT_EQ(contents,
+            StringPiece(static_cast<const char*>(readonly_shmem.memory()),
+                        contents.size()));
+  EXPECT_TRUE(readonly_shmem.Unmap());
+
+  // Make sure the writable instance is still writable.
+  ASSERT_TRUE(writable_shmem.Map(contents.size()));
+  StringPiece new_contents = "Goodbye";
+  memcpy(writable_shmem.memory(), new_contents.data(), new_contents.size());
+  EXPECT_EQ(new_contents,
+            StringPiece(static_cast<const char*>(writable_shmem.memory()),
+                        new_contents.size()));
+
+  // We'd like to check that if we send the read-only segment to another
+  // process, then that other process can't reopen it read/write.  (Since that
+  // would be a security hole.)  Setting up multiple processes is hard in a
+  // unittest, so this test checks that the *current* process can't reopen the
+  // segment read/write.  I think the test here is stronger than we actually
+  // care about, but there's a remote possibility that sending a file over a
+  // pipe would transform it into read/write.
+  SharedMemoryHandle handle = readonly_shmem.handle();
+
+#if defined(OS_ANDROID)
+  // The "read-only" handle is still writable on Android:
+  // http://crbug.com/320865
+  (void)handle;
+#elif defined(OS_POSIX)
+  EXPECT_EQ(O_RDONLY, fcntl(handle.fd, F_GETFL) & O_ACCMODE)
+      << "The descriptor itself should be read-only.";
+
+  errno = 0;
+  void* writable = mmap(
+      NULL, contents.size(), PROT_READ | PROT_WRITE, MAP_SHARED, handle.fd, 0);
+  int mmap_errno = errno;
+  EXPECT_EQ(MAP_FAILED, writable)
+      << "It shouldn't be possible to re-mmap the descriptor writable.";
+  EXPECT_EQ(EACCES, mmap_errno) << strerror(mmap_errno);
+  if (writable != MAP_FAILED)
+    EXPECT_EQ(0, munmap(writable, readonly_shmem.mapped_size()));
+
+#elif defined(OS_WIN)
+  EXPECT_EQ(NULL, MapViewOfFile(handle, FILE_MAP_WRITE, 0, 0, 0))
+      << "Shouldn't be able to map memory writable.";
+
+  base::win::ScopedHandle writable_handle;
+  EXPECT_EQ(0,
+            ::DuplicateHandle(GetCurrentProcess(),
+                              handle,
+                              GetCurrentProcess,
+                              writable_handle.Receive(),
+                              FILE_MAP_ALL_ACCESS,
+                              false,
+                              0))
+      << "Shouldn't be able to duplicate the handle into a writable one.";
+#else
+#error Unexpected platform; write a test that tries to make 'handle' writable.
+#endif  // defined(OS_POSIX) || defined(OS_WIN)
+}
+
 TEST(SharedMemoryTest, ShareToSelf) {
   StringPiece contents = "Hello World";
 
@@ -377,6 +456,14 @@ TEST(SharedMemoryTest, ShareToSelf) {
   EXPECT_EQ(
       contents,
       StringPiece(static_cast<const char*>(shared.memory()), contents.size()));
+
+  ASSERT_TRUE(shmem.ShareToProcess(GetCurrentProcessHandle(), &shared_handle));
+  SharedMemory readonly(shared_handle, /*readonly=*/true);
+
+  ASSERT_TRUE(readonly.Map(contents.size()));
+  EXPECT_EQ(contents,
+            StringPiece(static_cast<const char*>(readonly.memory()),
+                        contents.size()));
 }
 
 TEST(SharedMemoryTest, MapAt) {

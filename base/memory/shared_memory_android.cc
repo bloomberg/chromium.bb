@@ -37,6 +37,15 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     DLOG(ERROR) << "Error " << err << " when setting protection of ashmem";
     return false;
   }
+
+  // Android doesn't appear to have a way to drop write access on an ashmem
+  // segment for a single descriptor.  http://crbug.com/320865
+  readonly_mapped_file_ = dup(mapped_file_);
+  if (-1 == readonly_mapped_file_) {
+    DPLOG(ERROR) << "dup() failed";
+    return false;
+  }
+
   requested_size_ = options.size;
 
   return true;

@@ -140,7 +140,13 @@ void SharedMemory::Unlock() {
 
 bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
                                         SharedMemoryHandle *new_handle,
-                                        bool close_self) {
+                                        bool close_self,
+                                        ShareMode share_mode) {
+  if (share_mode == SHARE_READONLY) {
+    // Untrusted code can't create descriptors or handles, which is needed to
+    // drop permissions.
+    return false;
+  }
   const int new_fd = dup(mapped_file_);
   if (new_fd < 0) {
     DPLOG(ERROR) << "dup() failed.";

@@ -285,15 +285,20 @@ static base::SharedMemory* Serialize(const UserScriptList& scripts) {
   }
 
   // Create the shared memory object.
-  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+  base::SharedMemory shared_memory;
 
-  if (!shared_memory->CreateAndMapAnonymous(pickle.size()))
+  if (!shared_memory.CreateAndMapAnonymous(pickle.size()))
     return NULL;
 
   // Copy the pickle to shared memory.
-  memcpy(shared_memory->memory(), pickle.data(), pickle.size());
+  memcpy(shared_memory.memory(), pickle.data(), pickle.size());
 
-  return shared_memory.release();
+  base::SharedMemoryHandle readonly_handle;
+  if (!shared_memory.ShareReadOnlyToProcess(base::GetCurrentProcessHandle(),
+                                            &readonly_handle))
+    return NULL;
+
+  return new base::SharedMemory(readonly_handle, /*read_only=*/true);
 }
 
 // This method will be called on the file thread.
