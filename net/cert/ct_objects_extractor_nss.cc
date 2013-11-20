@@ -13,6 +13,7 @@
 #include "crypto/scoped_nss_types.h"
 #include "crypto/sha2.h"
 #include "net/cert/asn1_util.h"
+#include "net/cert/scoped_nss_types.h"
 #include "net/cert/signed_certificate_timestamp.h"
 
 namespace net {
@@ -20,16 +21,6 @@ namespace net {
 namespace ct {
 
 namespace {
-
-struct FreeCERTCertificate {
- public:
-  inline void operator()(CERTCertificate* x) const {
-    CERT_DestroyCertificate(x);
-  }
-};
-
-typedef scoped_ptr_malloc<CERTCertificate, FreeCERTCertificate>
-    ScopedCERTCertificate;
 
 // Wrapper class to convert a X509Certificate::OSCertHandle directly
 // into a CERTCertificate* usable with other NSS functions. This is used for
@@ -65,9 +56,9 @@ NSSCertWrapper::NSSCertWrapper(X509Certificate::OSCertHandle cert_handle) {
 
 // The wire form of the OID 1.3.6.1.4.1.11129.2.4.2. See Section 3.3 of
 // RFC6962.
-static const unsigned char kEmbeddedSCTOid[] = {0x2B, 0x06, 0x01, 0x04, 0x01,
-                                                0xD6, 0x79, 0x02, 0x04, 0x02};
-static const char kEmbeddedSCTDescription[] =
+const unsigned char kEmbeddedSCTOid[] = {0x2B, 0x06, 0x01, 0x04, 0x01,
+                                         0xD6, 0x79, 0x02, 0x04, 0x02};
+const char kEmbeddedSCTDescription[] =
     "X.509v3 Certificate Transparency Embedded Signed Certificate Timestamp "
     "List";
 
@@ -131,11 +122,10 @@ bool GetOctetStringExtension(CERTCertificate* cert,
   base::StringPiece raw_data(reinterpret_cast<char*>(extension.data),
                              extension.len);
   base::StringPiece parsed_data;
-  if (!asn1::GetElement(&raw_data, asn1::kOCTETSTRING, &parsed_data)) {
+  if (!asn1::GetElement(&raw_data, asn1::kOCTETSTRING, &parsed_data) ||
+      raw_data.size() > 0) { // Decoding failure or raw data left
     rv = SECFailure;
   } else {
-    if (raw_data.size() > 0)
-      return false; // leftover data
     parsed_data.CopyToString(extension_data);
   }
 
@@ -144,7 +134,7 @@ bool GetOctetStringExtension(CERTCertificate* cert,
 }
 
 // Given a |cert|, extract the TBSCertificate from this certificate, also
-// removing X.509 extensions with OID 1.3.6.1.4.1.11129.2.4.2 (that is,
+// removing the X.509 extension with OID 1.3.6.1.4.1.11129.2.4.2 (that is,
 // the embedded SCT)
 bool ExtractTBSCertWithoutSCTs(CERTCertificate* cert,
                                std::string* to_be_signed) {

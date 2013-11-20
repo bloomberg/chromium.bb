@@ -93,6 +93,7 @@
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/scoped_nss_types.h"
 #include "net/cert/single_request_cert_verifier.h"
 #include "net/cert/x509_certificate_net_log_param.h"
 #include "net/cert/x509_util.h"
@@ -220,15 +221,6 @@ bool IsOCSPStaplingSupported() {
   return false;
 }
 #endif
-
-class FreeCERTCertificate {
- public:
-  inline void operator()(CERTCertificate* x) const {
-    CERT_DestroyCertificate(x);
-  }
-};
-typedef scoped_ptr_malloc<CERTCertificate, FreeCERTCertificate>
-    ScopedCERTCertificate;
 
 #if defined(OS_WIN)
 
