@@ -152,7 +152,11 @@ def _SetupWorkDirectoryForPatch(work_dir, patch, branch, manifest, email):
   # ManifestCheckout object.
   reference = None
   if manifest:
-    path = patch.GetCheckout(manifest)['path']
+    # Get the path to the first checkout associated with this change. Since
+    # all of the checkouts share git objects, it doesn't matter which checkout
+    # we pick.
+    path = manifest.FindCheckouts(patch.project)[0]['path']
+
     reference = os.path.join(constants.SOURCE_ROOT, path)
     if not os.path.isdir(reference):
       logging.error('Unable to locate git checkout: %s', reference)
@@ -191,7 +195,7 @@ def _ManifestContainsAllPatches(manifest, patches):
     patches - a collection GerritPatch objects.
   """
   for patch in patches:
-    if not patch.GetCheckout(manifest, strict=False):
+    if not manifest.FindCheckouts(patch.project):
       logging.error('Your manifest does not have the repository %s for '
                     'change %s. Please re-run with --nomirror and '
                     '--email set', patch.project, patch.gerrit_number)
