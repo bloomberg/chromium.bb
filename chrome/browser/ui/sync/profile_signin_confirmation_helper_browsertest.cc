@@ -28,15 +28,27 @@ class ProfileSigninConfirmationHelperBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ProfileSigninConfirmationHelperBrowserTest);
 };
 
+// http://crbug.com/321302
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+#define MAYBE_HasNotBeenShutdown DISABLED_HasNotBeenShutdown
+#else
+#define MAYBE_HasNotBeenShutdown HasNotBeenShutdown
+#endif
 IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationHelperBrowserTest,
-                       HasNotBeenShutdown) {
+                       MAYBE_HasNotBeenShutdown) {
 #if !defined(OS_CHROMEOS)
   EXPECT_TRUE(first_run::auto_import_state() & first_run::AUTO_IMPORT_CALLED);
 #endif
   EXPECT_FALSE(ui::HasBeenShutdown(browser()->profile()));
 }
 
+// http://crbug.com/321302
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+#define MAYBE_HasNoSyncedExtensions DISABLED_HasNoSyncedExtensions
+#else
+#define MAYBE_HasNoSyncedExtensions HasNoSyncedExtensions
+#endif
 IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationHelperBrowserTest,
-                       HasNoSyncedExtensions) {
+                       MAYBE_HasNoSyncedExtensions) {
   EXPECT_FALSE(ui::HasSyncedExtensions(browser()->profile()));
 }
