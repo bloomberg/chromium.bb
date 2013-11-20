@@ -52,11 +52,11 @@ void ModeIndicatorController::InputMethodPropertyChanged(
 }
 
 void ModeIndicatorController::ShowModeIndicator(InputMethodManager* manager) {
-  // Need the flag, --enable-ime-mode-indicator at this moment.
-  // TODO(komatsu): When this is enabled by defalut, delete command_line.h
-  // and chromeos_switches.h from the header files.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableIMEModeIndicator))
+  // TODO(komatsu): When this is permanently enabled by defalut,
+  // delete command_line.h and chromeos_switches.h from the header
+  // files.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableIMEModeIndicator))
     return;
 
   // TODO(komatsu): Show the mode indicator in the right bottom of the

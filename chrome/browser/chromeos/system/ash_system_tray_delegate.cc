@@ -1115,11 +1115,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from InputMethodManager::Observer.
   virtual void InputMethodChanged(
       input_method::InputMethodManager* manager, bool show_message) OVERRIDE {
-    // |show_message| in ash means the message_center notifications which should
-    // not be shown when kEnableIMEModeIndicator is on, since the mode indicator
-    // already notifies the user.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableIMEModeIndicator)) {
+    // |show_message| in ash means the message_center notifications
+    // which should not be shown unless kDisableIMEModeIndicator is
+    // on, since the mode indicator already notifies the user.
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableIMEModeIndicator)) {
       show_message = false;
     }
     GetSystemTrayNotifier()->NotifyRefreshIME(show_message);

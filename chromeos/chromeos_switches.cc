@@ -37,6 +37,10 @@ const char kDisableEnterpriseUserReporting[] =
 // Disable Genius App and use the original Help App instead.
 const char kDisableGeniusApp[]              = "disable-genius-app";
 
+// Disable to show the indicator about the IME (input method editor) mode
+// on Chrome OS.
+const char kDisableIMEModeIndicator[] = "disable-ime-mode-indicator";
+
 // Disable policy-configured local accounts.
 const char kDisableLocalAccounts[]          = "disable-local-accounts";
 
@@ -78,10 +82,6 @@ const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
 
 // Enables automatically initializing Google Drive offline mode on first run.
 const char kEnableDriveOfflineFirstRun[] = "enable-drive-offline-first-run";
-
-// Enable to show the indicator about the IME (input method editor) mode
-// on Chrome OS.
-const char kEnableIMEModeIndicator[] = "enable-ime-mode-indicator";
 
 // Enable "interactive" mode for stub implemenations (e.g. NetworkStateHandler)
 const char kEnableStubInteractive[] = "enable-stub-interactive";
