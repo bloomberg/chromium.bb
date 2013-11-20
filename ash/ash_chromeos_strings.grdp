@@ -10,6 +10,9 @@
   <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE" desc="The message body of a notification indicating that a low-current USB charger has been connected.">
     Your Chromebook may not charge while it is turned on. Consider using the official charger.
   </message>
+  <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT" desc="The message body of a notification indicating that a low-current USB charger has been connected, short version.">
+    Your Chromebook may not charge while it is turned on.
+  </message>
   
   <!-- Status Tray Network strings -->
   <message name="IDS_ASH_STATUS_TRAY_NETWORK" desc="The label used in the network dialog header.">
