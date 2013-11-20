@@ -61,10 +61,15 @@ shouldBeTrue("(new Blob([], [])) instanceof window.Blob");
 shouldBeTrue("(new Blob([], /abc/)) instanceof window.Blob");
 shouldBeTrue("(new Blob([], function () {})) instanceof window.Blob");
 
-// Test that the type/size is correctly added to the Blob
+// Test that the type/size is correctly added to the Blob.
 shouldBe("(new Blob([], {type:'text/html'})).type", "'text/html'");
 shouldBe("(new Blob([], {type:'text/html'})).size", "0");
 shouldBe("(new Blob([], {type:'text/plain;charset=UTF-8'})).type", "'text/plain;charset=utf-8'");
+
+// Test that the File-specific lastModified is not set by the Blob constructor.
+shouldBe("(new Blob([])).lastModified", "undefined");
+shouldBe("(new Blob([], {})).lastModified", "undefined");
+shouldBe("(new Blob([], {lastModified: new Date()})).lastModified", "undefined");
 
 // Test the number of expected arguments in the Blob constructor.
 shouldBe("window.Blob.length", "0");

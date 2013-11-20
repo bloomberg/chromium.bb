@@ -40,12 +40,42 @@ class BlobBuilder;
 // Shared code between the custom constructor bindings for Blob and File.
 namespace V8BlobCustomHelpers {
 
-// Extracts the "type" and "endings" properties out of the BlobPropertyBag passed to a Blob constructor.
-// http://www.w3.org/TR/FileAPI/#constructorParams
-// Returns true if everything went well, false if a JS exception was thrown.
-bool processBlobPropertyBag(v8::Local<v8::Value> propertyBag, const char* blobClassName, String& contentType, String& endings, v8::Isolate*);
+// Parsed properties from a BlobPropertyBag or a FilePropertyBag.
+//
+// Instances are stack-allocated by the File and Blob constructor.
+//
+// parseBlobPropertyBag is only called when constructors receive a value for
+// the optional BlobPropertyBag / FilePropertyBag argument. The defaults set in
+// the constructor are used otherwise.
+class ParsedProperties {
+public:
+    explicit ParsedProperties(bool hasFileProperties);
 
-// Appends the blobParts passed to a Blob constructor into a BlobBuilder.
+    const String& contentType() const { return m_contentType; }
+    const String& endings() const { return m_endings; }
+    void setLastModified(double);
+    void setDefaultLastModified();
+    double lastModified() const { ASSERT(m_hasFileProperties); ASSERT(m_hasLastModified); return m_lastModified; }
+
+    // Extracts the "type" and "endings" properties out of the BlobPropertyBag passed to a Blob constructor.
+    // http://www.w3.org/TR/FileAPI/#constructorParams
+    // Returns true if everything went well, false if a JS exception was thrown.
+    bool parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, const char* blobClassName, v8::Isolate*);
+
+private:
+    String m_contentType;
+    String m_endings;
+
+    // False if this contains the properties of a BlobPropertyBag.
+    bool m_hasFileProperties;
+
+    double m_lastModified;
+#ifndef NDEBUG
+    bool m_hasLastModified;
+#endif // NDEBUG
+};
+
+// Appends the blobParts passed to a Blob or File constructor into a BlobBuilder.
 // http://www.w3.org/TR/FileAPI/#constructorParams
 // Returns true if everything went well, false if a JS exception was thrown.
 bool processBlobParts(v8::Local<v8::Object> blobParts, uint32_t blobPartsLength, const String& endings, BlobBuilder&, v8::Isolate*);

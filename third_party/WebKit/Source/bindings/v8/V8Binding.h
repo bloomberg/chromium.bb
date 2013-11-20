@@ -646,7 +646,11 @@ namespace WebCore {
 
     inline double toWebCoreDate(v8::Handle<v8::Value> object)
     {
-        return (object->IsDate() || object->IsNumber()) ? object->NumberValue() : std::numeric_limits<double>::quiet_NaN();
+        if (object->IsDate())
+            return v8::Handle<v8::Date>::Cast(object)->ValueOf();
+        if (object->IsNumber())
+            return object->NumberValue();
+        return std::numeric_limits<double>::quiet_NaN();
     }
 
     inline v8::Handle<v8::Value> v8DateOrNull(double value, v8::Isolate* isolate)

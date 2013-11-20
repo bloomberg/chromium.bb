@@ -55,24 +55,23 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         }
     }
 
-    String contentType;
-    String endings = "transparent"; // default if no BlobPropertyBag is passed
+    V8BlobCustomHelpers::ParsedProperties properties(false);
     if (info.Length() > 1) {
         if (!info[1]->IsObject()) {
             throwTypeError(ExceptionMessages::failedToConstruct("Blob", "The 2nd argument is not of type Object."), info.GetIsolate());
             return;
         }
 
-        if (!V8BlobCustomHelpers::processBlobPropertyBag(info[1], "Blob", contentType, endings, info.GetIsolate()))
+        if (!properties.parseBlobPropertyBag(info[1], "Blob", info.GetIsolate()))
             return;
     }
 
     BlobBuilder blobBuilder;
     v8::Local<v8::Object> blobParts = v8::Local<v8::Object>::Cast(info[0]);
-    if (!V8BlobCustomHelpers::processBlobParts(blobParts, length, endings, blobBuilder, info.GetIsolate()))
+    if (!V8BlobCustomHelpers::processBlobParts(blobParts, length, properties.endings(), blobBuilder, info.GetIsolate()))
         return;
 
-    RefPtr<Blob> blob = blobBuilder.createBlob(contentType);
+    RefPtr<Blob> blob = blobBuilder.createBlob(properties.contentType());
     v8SetReturnValue(info, blob.release());
 }
 

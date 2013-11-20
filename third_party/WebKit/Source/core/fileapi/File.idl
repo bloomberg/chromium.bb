@@ -28,7 +28,7 @@
     CustomConstructor(sequence<any> blobParts, DOMString fileName, optional BlobPropertyBag options)
 ] interface File : Blob {
     readonly attribute DOMString name;
-    readonly attribute Date lastModifiedDate;
+    [Custom=Getter] readonly attribute Date lastModifiedDate;
+    [Custom=Getter, RuntimeEnabled=FileConstructor] readonly attribute long long lastModified;
     [RuntimeEnabled=DirectoryUpload] readonly attribute DOMString webkitRelativePath;
 };
-
