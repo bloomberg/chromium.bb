@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/display.h"
 
 namespace keyboard {
 class KeyboardController;
@@ -41,6 +42,9 @@ class ASH_EXPORT VirtualKeyboardWindowController {
 
  private:
   friend class test::VirtualKeyboardWindowControllerTest;
+
+  // Rotates virtual keyboard display by 180 degrees.
+  void FlipDisplay();
 
   RootWindowController* root_window_controller_for_test() {
     return root_window_controller_.get();
