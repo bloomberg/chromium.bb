@@ -919,6 +919,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const Render
 
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
+    m_fontSelector->loadPendingFonts();
 
     didAccess();
 
@@ -1081,6 +1082,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
+    m_fontSelector->loadPendingFonts();
 
     didAccess();
 
@@ -1470,6 +1472,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
+    m_fontSelector->loadPendingFonts();
 
     if (!cachedMatchedProperties && cacheHash && MatchedPropertiesCache::isCacheable(element, state.style(), state.parentStyle())) {
         INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheAdded);
