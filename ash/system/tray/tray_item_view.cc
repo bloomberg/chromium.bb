@@ -93,8 +93,14 @@ gfx::Size TrayItemView::GetPreferredSize() {
     size.set_width(kTrayIconWidth);
   if (!animation_.get() || !animation_->is_animating())
     return size;
-  size.set_width(std::max(1,
-      static_cast<int>(size.width() * animation_->GetCurrentValue())));
+  if (owner()->system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM ||
+      owner()->system_tray()->shelf_alignment() == SHELF_ALIGNMENT_TOP) {
+    size.set_width(std::max(1,
+        static_cast<int>(size.width() * animation_->GetCurrentValue())));
+  } else {
+    size.set_height(std::max(1,
+        static_cast<int>(size.height() * animation_->GetCurrentValue())));
+  }
   return size;
 }
 
@@ -108,8 +114,14 @@ void TrayItemView::ChildPreferredSizeChanged(views::View* child) {
 
 void TrayItemView::AnimationProgressed(const gfx::Animation* animation) {
   gfx::Transform transform;
-  transform.Translate(0, animation->CurrentValueBetween(
-      static_cast<double>(height()) / 2, 0.));
+  if (owner()->system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM ||
+      owner()->system_tray()->shelf_alignment() == SHELF_ALIGNMENT_TOP) {
+    transform.Translate(0, animation->CurrentValueBetween(
+        static_cast<double>(height()) / 2, 0.));
+  } else {
+    transform.Translate(animation->CurrentValueBetween(
+        static_cast<double>(width() / 2), 0.), 0);
+  }
   transform.Scale(animation->GetCurrentValue(),
                   animation->GetCurrentValue());
   layer()->SetTransform(transform);
