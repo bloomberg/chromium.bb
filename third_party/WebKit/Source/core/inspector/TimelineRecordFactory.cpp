@@ -222,10 +222,10 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createAnimationFrameData(int callb
     return data.release();
 }
 
-PassRefPtr<JSONObject> TimelineRecordFactory::createGPUTaskData(unsigned ownerPID)
+PassRefPtr<JSONObject> TimelineRecordFactory::createGPUTaskData(bool foreign)
 {
     RefPtr<JSONObject> data = JSONObject::create();
-    data->setNumber("ownerPID", ownerPID);
+    data->setBoolean("foreign", foreign);
     return data.release();
 }
 

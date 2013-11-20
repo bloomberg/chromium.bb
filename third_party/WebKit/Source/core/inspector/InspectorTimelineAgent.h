@@ -112,13 +112,13 @@ public:
     class GPUEvent {
     public:
         enum Phase { PhaseBegin, PhaseEnd };
-        GPUEvent(double timestamp, int phase, unsigned ownerPID) :
+        GPUEvent(double timestamp, int phase, bool foreign) :
             timestamp(timestamp),
             phase(static_cast<Phase>(phase)),
-            ownerPID(ownerPID) { }
+            foreign(foreign) { }
         double timestamp;
         Phase phase;
-        unsigned ownerPID;
+        bool foreign;
     };
 
     static PassOwnPtr<InspectorTimelineAgent> create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorMemoryAgent* memoryAgent, InspectorDOMAgent* domAgent, InspectorCompositeState* state, InspectorType type, InspectorClient* client)

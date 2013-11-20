@@ -74,7 +74,9 @@ public:
     virtual void willComposite() = 0;
     virtual void didComposite() = 0;
 
+    // FIXME: remove it once the client side stops firing these.
     virtual void processGPUEvent(double timestamp, int phase, unsigned ownerPID) = 0;
+    virtual void processGPUEvent(double timestamp, int phase, bool foreign) = 0;
 
     // Exposed for TestRunner.
     virtual void evaluateInWebInspector(long callId, const WebString& script) = 0;

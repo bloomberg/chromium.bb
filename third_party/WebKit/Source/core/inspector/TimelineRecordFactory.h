@@ -98,7 +98,7 @@ namespace WebCore {
 
         static PassRefPtr<JSONObject> createFrameData(int frameId);
 
-        static PassRefPtr<JSONObject> createGPUTaskData(unsigned ownerPID);
+        static PassRefPtr<JSONObject> createGPUTaskData(bool foreign);
 
         static void appendLayoutRoot(JSONObject* data, const FloatQuad&, long long rootNodeId);
 

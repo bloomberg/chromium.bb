@@ -272,8 +272,10 @@ void InspectorTimelineAgent::innerStart()
     ScriptGCEvent::addEventListener(this);
     if (m_client && m_pageAgent) {
         m_traceEventProcessor = adoptRef(new TimelineTraceEventProcessor(m_weakFactory.createWeakPtr(), m_client));
-        if (m_state->getBoolean(TimelineAgentState::includeGPUEvents))
+        if (m_state->getBoolean(TimelineAgentState::includeGPUEvents)) {
+            m_pendingGPURecord.clear();
             m_client->startGPUEventsRecording();
+        }
     }
 }
 
@@ -780,7 +782,7 @@ void InspectorTimelineAgent::processGPUEvent(const GPUEvent& event)
 {
     double timelineTimestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp);
     if (event.phase == GPUEvent::PhaseBegin) {
-        m_pendingGPURecord = TimelineRecordFactory::createBackgroundRecord(timelineTimestamp, "gpu", TimelineRecordType::GPUTask, TimelineRecordFactory::createGPUTaskData(event.ownerPID));
+        m_pendingGPURecord = TimelineRecordFactory::createBackgroundRecord(timelineTimestamp, "gpu", TimelineRecordType::GPUTask, TimelineRecordFactory::createGPUTaskData(event.foreign));
     } else if (m_pendingGPURecord) {
         m_pendingGPURecord->setNumber("endTime", timelineTimestamp);
         sendEvent(m_pendingGPURecord.release());

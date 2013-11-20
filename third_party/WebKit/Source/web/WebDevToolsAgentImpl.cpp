@@ -479,10 +479,16 @@ void WebDevToolsAgentImpl::stopGPUEventsRecording()
     m_client->stopGPUEventsRecording();
 }
 
-void WebDevToolsAgentImpl::processGPUEvent(double timestamp, int phase, unsigned ownerPID)
+void WebDevToolsAgentImpl::processGPUEvent(double timestamp, int phase, unsigned)
 {
     if (InspectorController* ic = inspectorController())
-        ic->processGPUEvent(timestamp, phase, ownerPID);
+        ic->processGPUEvent(timestamp, phase, false);
+}
+
+void WebDevToolsAgentImpl::processGPUEvent(double timestamp, int phase, bool foreign)
+{
+    if (InspectorController* ic = inspectorController())
+        ic->processGPUEvent(timestamp, phase, foreign);
 }
 
 void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
