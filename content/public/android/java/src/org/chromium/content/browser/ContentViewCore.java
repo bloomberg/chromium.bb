@@ -2546,6 +2546,22 @@ public class ContentViewCore
 
     @SuppressWarnings("unused")
     @CalledByNative
+    private GenericTouchGesture createOnePointTouchGesture(int startX,
+            int startY, int deltaX, int deltaY) {
+        return new GenericTouchGesture(this, startX, startY, deltaX, deltaY);
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private GenericTouchGesture createTwoPointTouchGesture(
+            int startX0, int startY0, int deltaX0, int deltaY0,
+            int startX1, int startY1, int deltaX1, int deltaY1) {
+        return new GenericTouchGesture(this, startX0, startY0, deltaX0, deltaY0,
+                startX1, startY1, deltaX1, deltaY1);
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
     private TouchEventSynthesizer createTouchEventSynthesizer() {
         return new TouchEventSynthesizer(this);
     }

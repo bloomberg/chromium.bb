@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_SMOOTH_SCROLL_GESTURE_H_
 
 #include "base/time/time.h"
-#include "content/browser/renderer_host/input/synthetic_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_new.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/synthetic_web_input_event_builders.h"
 #include "content/common/content_export.h"
@@ -15,23 +15,24 @@
 
 namespace content {
 
-class CONTENT_EXPORT SyntheticSmoothScrollGesture : public SyntheticGesture {
+class CONTENT_EXPORT SyntheticSmoothScrollGestureNew :
+    public SyntheticGestureNew {
  public:
-  explicit SyntheticSmoothScrollGesture(
+  explicit SyntheticSmoothScrollGestureNew(
       const SyntheticSmoothScrollGestureParams& params);
-  virtual ~SyntheticSmoothScrollGesture();
+  virtual ~SyntheticSmoothScrollGestureNew();
 
-  virtual SyntheticGesture::Result ForwardInputEvents(
-      const base::TimeDelta& interval, SyntheticGestureTarget* target) OVERRIDE;
+  virtual Result ForwardInputEvents(const base::TimeDelta& interval,
+                                    SyntheticGestureTarget* target) OVERRIDE;
 
  private:
   SyntheticSmoothScrollGestureParams params_;
   float current_y_;
   SyntheticWebTouchEvent touch_event_;
 
-  SyntheticGesture::Result ForwardTouchInputEvents(
+  SyntheticGestureNew::Result ForwardTouchInputEvents(
       const base::TimeDelta& interval, SyntheticGestureTarget* target);
-  SyntheticGesture::Result ForwardMouseInputEvents(
+  SyntheticGestureNew::Result ForwardMouseInputEvents(
       const base::TimeDelta& interval, SyntheticGestureTarget* target);
 
   void ForwardTouchEvent(SyntheticGestureTarget* target);
@@ -42,7 +43,7 @@ class CONTENT_EXPORT SyntheticSmoothScrollGesture : public SyntheticGesture {
 
   bool HasFinished();
 
-  DISALLOW_COPY_AND_ASSIGN(SyntheticSmoothScrollGesture);
+  DISALLOW_COPY_AND_ASSIGN(SyntheticSmoothScrollGestureNew);
 };
 
 }  // namespace content

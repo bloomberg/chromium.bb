@@ -8,7 +8,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/input/input_event.h"
-#include "content/common/input_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/event.h"
 #include "ui/events/latency_info.h"
@@ -23,7 +22,6 @@ namespace content {
 SyntheticGestureTargetBase::SyntheticGestureTargetBase(
     RenderWidgetHostImpl* host)
     : host_(host) {
-  DCHECK(host);
 }
 
 SyntheticGestureTargetBase::~SyntheticGestureTargetBase() {
@@ -79,8 +77,7 @@ void SyntheticGestureTargetBase::DispatchWebMouseEventToPlatform(
 }
 
 void SyntheticGestureTargetBase::OnSyntheticGestureCompleted(
-    SyntheticGesture::Result result) {
-  host_->Send(new InputMsg_SyntheticGestureCompleted(host_->GetRoutingID()));
+    SyntheticGestureNew::Result result) {
 }
 
 void SyntheticGestureTargetBase::SetNeedsFlush() {

@@ -4,11 +4,11 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "content/browser/renderer_host/input/synthetic_gesture.h"
-#include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_controller_new.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_new.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
-#include "content/browser/renderer_host/input/synthetic_pinch_gesture.h"
-#include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_pinch_gesture_new.h"
+#include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture_new.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/input/input_event.h"
@@ -25,7 +25,7 @@ namespace {
 
 const int kFlushInputRateInMs = 16;
 
-class MockSyntheticGesture : public SyntheticGesture {
+class MockSyntheticGesture : public SyntheticGestureNew {
  public:
   MockSyntheticGesture(bool* finished, int num_steps)
       : finished_(finished),
@@ -40,14 +40,14 @@ class MockSyntheticGesture : public SyntheticGesture {
     step_count_++;
     if (step_count_ == num_steps_) {
       *finished_ = true;
-      return SyntheticGesture::GESTURE_FINISHED;
+      return SyntheticGestureNew::GESTURE_FINISHED;
     } else if (step_count_ > num_steps_) {
       *finished_ = true;
       // Return arbitrary failure.
-      return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
+      return SyntheticGestureNew::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
+    } else {
+      return SyntheticGestureNew::GESTURE_RUNNING;
     }
-
-    return SyntheticGesture::GESTURE_RUNNING;
   }
 
  protected:
@@ -68,9 +68,9 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
   virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE {}
 
   virtual void OnSyntheticGestureCompleted(
-      SyntheticGesture::Result result) OVERRIDE {
-    DCHECK_NE(result, SyntheticGesture::GESTURE_RUNNING);
-    if (result == SyntheticGesture::GESTURE_FINISHED)
+      SyntheticGestureNew::Result result) OVERRIDE {
+    DCHECK_NE(result, SyntheticGestureNew::GESTURE_RUNNING);
+    if (result == SyntheticGestureNew::GESTURE_FINISHED)
       num_success_++;
     else
       num_failure_++;
@@ -110,10 +110,10 @@ class MockSyntheticSmoothScrollMouseTarget : public MockSyntheticGestureTarget {
 
   virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE {
     const blink::WebInputEvent* web_event = event.web_event.get();
-    ASSERT_EQ(web_event->type, blink::WebInputEvent::MouseWheel);
+    DCHECK_EQ(web_event->type, blink::WebInputEvent::MouseWheel);
     const blink::WebMouseWheelEvent* mouse_wheel_event =
         static_cast<const blink::WebMouseWheelEvent*>(web_event);
-    ASSERT_EQ(mouse_wheel_event->deltaX, 0);
+    DCHECK_EQ(mouse_wheel_event->deltaX, 0);
     scroll_distance_ -= mouse_wheel_event->deltaY;
   }
 
@@ -223,7 +223,6 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
     return last_pointer_distance < current_pointer_distance ? ZOOM_IN
                                                             : ZOOM_OUT;
   }
-
   float total_num_pixels_covered_;
   float last_pointer_distance_;
   ZoomDirection zoom_direction_;
@@ -232,17 +231,17 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
   bool started_;
 };
 
-class SyntheticGestureControllerTest : public testing::Test {
+class SyntheticGestureControllerNewTest : public testing::Test {
  public:
-  SyntheticGestureControllerTest() {}
-  virtual ~SyntheticGestureControllerTest() {}
+  SyntheticGestureControllerNewTest() {}
+  virtual ~SyntheticGestureControllerNewTest() {}
 
  protected:
   template<typename MockGestureTarget>
   void CreateControllerAndTarget() {
     target_ = new MockGestureTarget();
 
-    controller_.reset(new SyntheticGestureController(
+    controller_.reset(new SyntheticGestureControllerNew(
         scoped_ptr<SyntheticGestureTarget>(target_)));
   }
 
@@ -265,17 +264,17 @@ class SyntheticGestureControllerTest : public testing::Test {
   }
 
   MockSyntheticGestureTarget* target_;
-  scoped_ptr<SyntheticGestureController> controller_;
+  scoped_ptr<SyntheticGestureControllerNew> controller_;
   base::TimeTicks time_;
 };
 
-TEST_F(SyntheticGestureControllerTest, SingleGesture) {
+TEST_F(SyntheticGestureControllerNewTest, SingleGesture) {
   CreateControllerAndTarget<MockSyntheticGestureTarget>();
 
   bool finished;
   scoped_ptr<MockSyntheticGesture> gesture(
       new MockSyntheticGesture(&finished, 3));
-  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGestureNew>());
   FlushInputUntilComplete();
 
   EXPECT_TRUE(finished);
@@ -283,13 +282,13 @@ TEST_F(SyntheticGestureControllerTest, SingleGesture) {
   EXPECT_EQ(0, target_->num_failure());
 }
 
-TEST_F(SyntheticGestureControllerTest, GestureFailed) {
+TEST_F(SyntheticGestureControllerNewTest, GestureFailed) {
   CreateControllerAndTarget<MockSyntheticGestureTarget>();
 
   bool finished;
   scoped_ptr<MockSyntheticGesture> gesture(
       new MockSyntheticGesture(&finished, 0));
-  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGestureNew>());
   FlushInputUntilComplete();
 
   EXPECT_TRUE(finished);
@@ -297,7 +296,7 @@ TEST_F(SyntheticGestureControllerTest, GestureFailed) {
   EXPECT_EQ(0, target_->num_success());
 }
 
-TEST_F(SyntheticGestureControllerTest, SuccessiveGestures) {
+TEST_F(SyntheticGestureControllerNewTest, SuccessiveGestures) {
   CreateControllerAndTarget<MockSyntheticGestureTarget>();
 
   bool finished_1, finished_2;
@@ -307,7 +306,7 @@ TEST_F(SyntheticGestureControllerTest, SuccessiveGestures) {
       new MockSyntheticGesture(&finished_2, 4));
 
   // Queue first gesture and wait for it to finish
-  controller_->QueueSyntheticGesture(gesture_1.PassAs<SyntheticGesture>());
+  controller_->QueueSyntheticGesture(gesture_1.PassAs<SyntheticGestureNew>());
   FlushInputUntilComplete();
 
   EXPECT_TRUE(finished_1);
@@ -315,7 +314,7 @@ TEST_F(SyntheticGestureControllerTest, SuccessiveGestures) {
   EXPECT_EQ(0, target_->num_failure());
 
   // Queue second gesture.
-  controller_->QueueSyntheticGesture(gesture_2.PassAs<SyntheticGesture>());
+  controller_->QueueSyntheticGesture(gesture_2.PassAs<SyntheticGestureNew>());
   FlushInputUntilComplete();
 
   EXPECT_TRUE(finished_2);
@@ -323,7 +322,7 @@ TEST_F(SyntheticGestureControllerTest, SuccessiveGestures) {
   EXPECT_EQ(0, target_->num_failure());
 }
 
-TEST_F(SyntheticGestureControllerTest, TwoGesturesInFlight) {
+TEST_F(SyntheticGestureControllerNewTest, TwoGesturesInFlight) {
   CreateControllerAndTarget<MockSyntheticGestureTarget>();
 
   bool finished_1, finished_2;
@@ -332,8 +331,8 @@ TEST_F(SyntheticGestureControllerTest, TwoGesturesInFlight) {
   scoped_ptr<MockSyntheticGesture> gesture_2(
       new MockSyntheticGesture(&finished_2, 4));
 
-  controller_->QueueSyntheticGesture(gesture_1.PassAs<SyntheticGesture>());
-  controller_->QueueSyntheticGesture(gesture_2.PassAs<SyntheticGesture>());
+  controller_->QueueSyntheticGesture(gesture_1.PassAs<SyntheticGestureNew>());
+  controller_->QueueSyntheticGesture(gesture_2.PassAs<SyntheticGestureNew>());
   FlushInputUntilComplete();
 
   EXPECT_TRUE(finished_1);
@@ -343,16 +342,16 @@ TEST_F(SyntheticGestureControllerTest, TwoGesturesInFlight) {
   EXPECT_EQ(0, target_->num_failure());
 }
 
-TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureTouch) {
+TEST_F(SyntheticGestureControllerNewTest, SmoothScrollGestureTouch) {
   CreateControllerAndTarget<MockSyntheticSmoothScrollTouchTarget>();
 
   SyntheticSmoothScrollGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
   params.distance = 100;
 
-  scoped_ptr<SyntheticSmoothScrollGesture> gesture(
-      new SyntheticSmoothScrollGesture(params));
-  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  scoped_ptr<SyntheticSmoothScrollGestureNew> gesture(
+      new SyntheticSmoothScrollGestureNew(params));
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGestureNew>());
   FlushInputUntilComplete();
 
   EXPECT_EQ(1, target_->num_success());
@@ -361,16 +360,16 @@ TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureTouch) {
                                  target_)->scroll_distance());
 }
 
-TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureMouse) {
+TEST_F(SyntheticGestureControllerNewTest, SmoothScrollGestureMouse) {
   CreateControllerAndTarget<MockSyntheticSmoothScrollMouseTarget>();
 
   SyntheticSmoothScrollGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
   params.distance = -100;
 
-  scoped_ptr<SyntheticSmoothScrollGesture> gesture(
-      new SyntheticSmoothScrollGesture(params));
-  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  scoped_ptr<SyntheticSmoothScrollGestureNew> gesture(
+      new SyntheticSmoothScrollGestureNew(params));
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGestureNew>());
   FlushInputUntilComplete();
 
   EXPECT_EQ(1, target_->num_success());
@@ -379,7 +378,7 @@ TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureMouse) {
                                  target_)->scroll_distance());
 }
 
-TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomIn) {
+TEST_F(SyntheticGestureControllerNewTest, PinchGestureTouchZoomIn) {
   CreateControllerAndTarget<MockSyntheticPinchTouchTarget>();
 
   SyntheticPinchGestureParams params;
@@ -387,9 +386,9 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomIn) {
   params.zoom_in = true;
   params.total_num_pixels_covered = 100;
 
-  scoped_ptr<SyntheticPinchGesture> gesture(
-      new SyntheticPinchGesture(params));
-  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  scoped_ptr<SyntheticPinchGestureNew> gesture(
+      new SyntheticPinchGestureNew(params));
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGestureNew>());
   FlushInputUntilComplete();
 
   EXPECT_EQ(1, target_->num_success());
@@ -403,7 +402,7 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomIn) {
           ->total_num_pixels_covered());
 }
 
-TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomOut) {
+TEST_F(SyntheticGestureControllerNewTest, PinchGestureTouchZoomOut) {
   CreateControllerAndTarget<MockSyntheticPinchTouchTarget>();
 
   SyntheticPinchGestureParams params;
@@ -411,9 +410,9 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomOut) {
   params.zoom_in = false;
   params.total_num_pixels_covered = 100;
 
-  scoped_ptr<SyntheticPinchGesture> gesture(
-      new SyntheticPinchGesture(params));
-  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  scoped_ptr<SyntheticPinchGestureNew> gesture(
+      new SyntheticPinchGestureNew(params));
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGestureNew>());
   FlushInputUntilComplete();
 
   EXPECT_EQ(1, target_->num_success());

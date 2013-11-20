@@ -14,9 +14,6 @@
 #include "cc/layers/layer.h"
 #include "content/common/browser_rendering_stats.h"
 #include "content/common/gpu/gpu_rendering_stats.h"
-#include "content/common/input/synthetic_gesture_params.h"
-#include "content/common/input/synthetic_pinch_gesture_params.h"
-#include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
@@ -270,28 +267,20 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "  native function PrintToSkPicture();"
           "  return PrintToSkPicture(dirname);"
           "};"
-          "chrome.gpuBenchmarking.DEFAULT_INPUT = 0;"
-          "chrome.gpuBenchmarking.TOUCH_INPUT = 1;"
-          "chrome.gpuBenchmarking.MOUSE_INPUT = 2;"
           "chrome.gpuBenchmarking.smoothScrollBy = "
-          "    function(pixels_to_scroll, opt_callback, opt_start_x,"
-          "             opt_start_y, opt_gesture_source_type,"
-          "             opt_speed_in_pixels_s) {"
+          "    function(pixels_to_scroll, opt_callback, opt_mouse_event_x,"
+          "             opt_mouse_event_y) {"
           "  pixels_to_scroll = pixels_to_scroll || 0;"
           "  callback = opt_callback || function() { };"
-          "  gesture_source_type = opt_gesture_source_type ||"
-          "      chrome.gpuBenchmarking.DEFAULT_INPUT;"
-          "  speed_in_pixels_s = opt_speed_in_pixels_s || 800;"
           "  native function BeginSmoothScroll();"
           "  if (typeof opt_mouse_event_x !== 'undefined' &&"
           "      typeof opt_mouse_event_y !== 'undefined') {"
-          "    return BeginSmoothScroll(pixels_to_scroll, callback,"
-          "                             gesture_source_type, speed_in_pixels_s,"
+          "    return BeginSmoothScroll(pixels_to_scroll >= 0, callback,"
+          "                             Math.abs(pixels_to_scroll),"
           "                             opt_mouse_event_x, opt_mouse_event_y);"
           "  } else {"
-          "    return BeginSmoothScroll(pixels_to_scroll, callback,"
-          "                             gesture_source_type,"
-          "                             speed_in_pixels_s);"
+          "    return BeginSmoothScroll(pixels_to_scroll >= 0, callback,"
+          "                             Math.abs(pixels_to_scroll));"
           "  }"
           "};"
           "chrome.gpuBenchmarking.smoothScrollBySendsTouch = function() {"
@@ -299,15 +288,12 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "  return SmoothScrollSendsTouch();"
           "};"
           "chrome.gpuBenchmarking.pinchBy = "
-          "    function(zoom_in, pixels_to_cover, anchor_x, anchor_y,"
-          "             opt_callback, opt_relative_pointer_speed_in_pixels_s) {"
+          "    function(zoom_in, pixels_to_move, anchor_x, anchor_y,"
+          "             opt_callback) {"
           "  callback = opt_callback || function() { };"
-          "  relative_pointer_speed_in_pixels_s ="
-          "      opt_relative_pointer_speed_in_pixels_s || 800;"
           "  native function BeginPinch();"
-          "  return BeginPinch(zoom_in, pixels_to_cover,"
-          "                    anchor_x, anchor_y, callback,"
-          "                    relative_pointer_speed_in_pixels_s);"
+          "  return BeginPinch(zoom_in, pixels_to_move,"
+          "                    anchor_x, anchor_y, callback);"
           "};"
           "chrome.gpuBenchmarking.beginWindowSnapshotPNG = function(callback) {"
           "  native function BeginWindowSnapshotPNG();"
@@ -449,7 +435,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     serializer.Serialize(root_layer);
   }
 
-  static void OnSyntheticGestureCompleted(
+  static void OnSmoothScrollCompleted(
       CallbackAndContext* callback_and_context) {
     v8::HandleScope scope(callback_and_context->isolate());
     v8::Handle<v8::Context> context = callback_and_context->GetContext();
@@ -479,15 +465,15 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
     // Account for the 2 optional arguments, mouse_event_x and mouse_event_y.
     int arglen = args.Length();
-    if (arglen < 4 ||
-        !args[0]->IsNumber() ||
+    if (arglen < 3 ||
+        !args[0]->IsBoolean() ||
         !args[1]->IsFunction() ||
-        !args[2]->IsNumber() ||
-        !args[3]->IsNumber()) {
+        !args[2]->IsNumber()) {
       args.GetReturnValue().Set(false);
       return;
     }
 
+    bool scroll_down = args[0]->BooleanValue();
     v8::Local<v8::Function> callback_local =
         v8::Local<v8::Function>::Cast(args[1]);
 
@@ -496,48 +482,40 @@ class GpuBenchmarkingWrapper : public v8::Extension {
                                callback_local,
                                context.web_frame()->mainWorldScriptContext());
 
-    scoped_ptr<SyntheticSmoothScrollGestureParams> gesture_params(
-        new SyntheticSmoothScrollGestureParams);
-
     // Convert coordinates from CSS pixels to density independent pixels (DIPs).
     float page_scale_factor = context.web_view()->pageScaleFactor();
 
-    gesture_params->distance = args[0]->IntegerValue() * page_scale_factor;
-    int gesture_source_type = args[2]->IntegerValue();
-    if (gesture_source_type < 0 ||
-        gesture_source_type > SyntheticGestureParams::GESTURE_SOURCE_TYPE_MAX) {
-      args.GetReturnValue().Set(false);
-      return;
-    }
-    gesture_params->gesture_source_type =
-        static_cast<SyntheticGestureParams::GestureSourceType>(
-            gesture_source_type);
-    gesture_params->speed_in_pixels_s = args[3]->IntegerValue();
+    int pixels_to_scroll = args[2]->IntegerValue() * page_scale_factor;
 
-    if (arglen == 4) {
+    int mouse_event_x = 0;
+    int mouse_event_y = 0;
+
+    if (arglen == 3) {
       blink::WebRect rect = context.render_view_impl()->windowRect();
-      gesture_params->anchor.SetPoint(rect.x + rect.width / 2,
-                                      rect.y + rect.height / 2);
+      mouse_event_x = rect.x + rect.width / 2;
+      mouse_event_y = rect.y + rect.height / 2;
     } else {
-      if (arglen != 6 ||
-          !args[4]->IsNumber() ||
-          !args[5]->IsNumber()) {
+      if (arglen != 5 ||
+          !args[3]->IsNumber() ||
+          !args[4]->IsNumber()) {
         args.GetReturnValue().Set(false);
         return;
       }
 
-      gesture_params->anchor.SetPoint(
-          args[4]->IntegerValue() * page_scale_factor,
-          args[5]->IntegerValue() * page_scale_factor);
+      mouse_event_x = args[3]->IntegerValue() * page_scale_factor;
+      mouse_event_y = args[4]->IntegerValue() * page_scale_factor;
     }
 
     // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
     // progress, we will leak the callback and context. This needs to be fixed,
     // somehow.
-    context.render_view_impl()->QueueSyntheticGesture(
-        gesture_params.PassAs<SyntheticGestureParams>(),
-        base::Bind(&OnSyntheticGestureCompleted,
-                   callback_and_context));
+    context.render_view_impl()->BeginSmoothScroll(
+        scroll_down,
+        base::Bind(&OnSmoothScrollCompleted,
+                   callback_and_context),
+        pixels_to_scroll,
+        mouse_event_x,
+        mouse_event_y);
 
     args.GetReturnValue().Set(true);
   }
@@ -549,31 +527,23 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return;
 
     int arglen = args.Length();
-    if (arglen < 6 ||
+    if (arglen < 5 ||
         !args[0]->IsBoolean() ||
         !args[1]->IsNumber() ||
         !args[2]->IsNumber() ||
         !args[3]->IsNumber() ||
-        !args[4]->IsFunction() ||
-        !args[5]->IsNumber()) {
+        !args[4]->IsFunction()) {
       args.GetReturnValue().Set(false);
       return;
     }
 
-    scoped_ptr<SyntheticPinchGestureParams> gesture_params(
-        new SyntheticPinchGestureParams);
-
     // Convert coordinates from CSS pixels to density independent pixels (DIPs).
     float page_scale_factor = context.web_view()->pageScaleFactor();
 
-    gesture_params->zoom_in = args[0]->BooleanValue();
-    gesture_params->total_num_pixels_covered =
-        args[1]->IntegerValue() * page_scale_factor;
-    gesture_params->anchor.SetPoint(
-        args[2]->IntegerValue() * page_scale_factor,
-        args[3]->IntegerValue() * page_scale_factor);
-    gesture_params->relative_pointer_speed_in_pixels_s =
-        args[5]->IntegerValue();
+    bool zoom_in = args[0]->BooleanValue();
+    int pixels_to_move = args[1]->IntegerValue() * page_scale_factor;
+    int anchor_x = args[2]->IntegerValue() * page_scale_factor;
+    int anchor_y = args[3]->IntegerValue() * page_scale_factor;
 
     v8::Local<v8::Function> callback_local =
         v8::Local<v8::Function>::Cast(args[4]);
@@ -587,9 +557,12 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
     // progress, we will leak the callback and context. This needs to be fixed,
     // somehow.
-    context.render_view_impl()->QueueSyntheticGesture(
-        gesture_params.PassAs<SyntheticGestureParams>(),
-        base::Bind(&OnSyntheticGestureCompleted,
+    context.render_view_impl()->BeginPinch(
+        zoom_in,
+        pixels_to_move,
+        anchor_x,
+        anchor_y,
+        base::Bind(&OnSmoothScrollCompleted,
                    callback_and_context));
 
     args.GetReturnValue().Set(true);

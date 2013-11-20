@@ -282,6 +282,17 @@ class ContentViewCoreImpl : public ContentViewCore,
   // testing/benchmarking purposes
   base::android::ScopedJavaLocalRef<jobject> CreateTouchEventSynthesizer();
 
+  // Creates a java-side touch gesture, e.g. used by
+  // chrome.gpuBenchmarking.smoothScrollBy.
+  base::android::ScopedJavaLocalRef<jobject> CreateOnePointTouchGesture(
+      int start_x, int start_y, int delta_x, int delta_y);
+
+  // Creates a java-side touch gesture with two pointers, e.g. used by
+  // chrome.gpuBenchmarking.pinchBy.
+  base::android::ScopedJavaLocalRef<jobject> CreateTwoPointTouchGesture(
+      int start_x0, int start_y0, int delta_x0, int delta_y0,
+      int start_x1, int start_y1, int delta_x1, int delta_y1);
+
   // Notifies the java object about the external surface, requesting for one if
   // necessary.
   void NotifyExternalSurface(

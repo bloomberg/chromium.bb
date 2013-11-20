@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/synthetic_pinch_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_pinch_gesture_new.h"
 
 #include "content/common/input/input_event.h"
 #include "ui/events/latency_info.h"
@@ -15,7 +15,7 @@ const float kMinPointerDistance = 40.0f;
 
 }
 
-SyntheticPinchGesture::SyntheticPinchGesture(
+SyntheticPinchGestureNew::SyntheticPinchGestureNew(
     const SyntheticPinchGestureParams& params)
     : params_(params), started_(false) {
   DCHECK_GE(params_.total_num_pixels_covered, 0);
@@ -39,9 +39,9 @@ SyntheticPinchGesture::SyntheticPinchGesture(
   }
 }
 
-SyntheticPinchGesture::~SyntheticPinchGesture() {}
+SyntheticPinchGestureNew::~SyntheticPinchGestureNew() {}
 
-SyntheticGesture::Result SyntheticPinchGesture::ForwardInputEvents(
+SyntheticGestureNew::Result SyntheticPinchGestureNew::ForwardInputEvents(
     const base::TimeDelta& interval, SyntheticGestureTarget* target) {
 
   SyntheticGestureParams::GestureSourceType source =
@@ -50,18 +50,18 @@ SyntheticGesture::Result SyntheticPinchGesture::ForwardInputEvents(
     source = target->GetDefaultSyntheticGestureSourceType();
 
   if (!target->SupportsSyntheticGestureSourceType(source))
-    return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_SUPPORTED_BY_PLATFORM;
+    return SyntheticGestureNew::GESTURE_SOURCE_TYPE_NOT_SUPPORTED_BY_PLATFORM;
 
   if (source == SyntheticGestureParams::TOUCH_INPUT)
     return ForwardTouchInputEvents(interval, target);
   else
-    return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
+    return SyntheticGestureNew::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
 }
 
-SyntheticGesture::Result SyntheticPinchGesture::ForwardTouchInputEvents(
+SyntheticGestureNew::Result SyntheticPinchGestureNew::ForwardTouchInputEvents(
     const base::TimeDelta& interval, SyntheticGestureTarget* target) {
   if (HasFinished())
-    return SyntheticGesture::GESTURE_FINISHED;
+    return SyntheticGestureNew::GESTURE_FINISHED;
 
   if (!started_) {
     touch_event_.PressPoint(params_.anchor.x(), current_y_0_);
@@ -86,22 +86,24 @@ SyntheticGesture::Result SyntheticPinchGesture::ForwardTouchInputEvents(
     touch_event_.ReleasePoint(0);
     touch_event_.ReleasePoint(1);
     ForwardTouchEvent(target);
-    return SyntheticGesture::GESTURE_FINISHED;
+    return SyntheticGestureNew::GESTURE_FINISHED;
   }
 
-  return SyntheticGesture::GESTURE_RUNNING;
+  return SyntheticGestureNew::GESTURE_RUNNING;
 }
 
-void SyntheticPinchGesture::ForwardTouchEvent(SyntheticGestureTarget* target) {
+void SyntheticPinchGestureNew::ForwardTouchEvent(
+    SyntheticGestureTarget* target) {
   target->DispatchInputEventToPlatform(
       InputEvent(touch_event_, ui::LatencyInfo(), false));
 }
 
-float SyntheticPinchGesture::GetPositionDelta(const base::TimeDelta& interval) {
+float SyntheticPinchGestureNew::GetPositionDelta(
+    const base::TimeDelta& interval) {
   return params_.relative_pointer_speed_in_pixels_s * interval.InSecondsF();
 }
 
-bool SyntheticPinchGesture::HasFinished() {
+bool SyntheticPinchGestureNew::HasFinished() {
   return params_.zoom_in ? (current_y_0_ <= target_y_0_)
                          : (current_y_0_ >= target_y_0_);
 }

@@ -7,10 +7,12 @@
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/renderer_host/basic_mouse_wheel_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
+#include "content/port/browser/synthetic_gesture.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -520,6 +522,21 @@ bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
   current_display_area_ = display.work_area();
   current_device_scale_factor_ = display.device_scale_factor();
   return true;
+}
+
+SyntheticGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(
+    bool scroll_down, int pixels_to_scroll, int mouse_event_x,
+    int mouse_event_y) {
+  return new BasicMouseWheelSmoothScrollGesture(scroll_down, pixels_to_scroll,
+                                                mouse_event_x, mouse_event_y);
+}
+
+SyntheticGesture* RenderWidgetHostViewBase::CreatePinchGesture(
+    bool zoom_in, int pixels_to_move, int anchor_x,
+    int anchor_y) {
+  // There is no generic implementation for pinch gestures.
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 void RenderWidgetHostViewBase::ProcessAckedTouchEvent(

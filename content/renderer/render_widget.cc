@@ -23,7 +23,6 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
-#include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/swapped_out_messages.h"
@@ -596,8 +595,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
                         OnCursorVisibilityChange)
     IPC_MESSAGE_HANDLER(InputMsg_MouseCaptureLost, OnMouseCaptureLost)
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetFocus)
-    IPC_MESSAGE_HANDLER(InputMsg_SyntheticGestureCompleted,
-                        OnSyntheticGestureCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewMsg_CreatingNew_ACK, OnCreatingNewAck)
     IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
@@ -612,6 +609,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ImeConfirmComposition, OnImeConfirmComposition)
     IPC_MESSAGE_HANDLER(ViewMsg_PaintAtSize, OnPaintAtSize)
     IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnRepaint)
+    IPC_MESSAGE_HANDLER(ViewMsg_SyntheticGestureCompleted,
+                        OnSyntheticGestureCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
@@ -2003,19 +2002,6 @@ void RenderWidget::closeWidgetSoon() {
       FROM_HERE, base::Bind(&RenderWidget::DoDeferredClose, this));
 }
 
-void RenderWidget::QueueSyntheticGesture(
-    scoped_ptr<SyntheticGestureParams> gesture_params,
-    const SyntheticGestureCompletionCallback& callback) {
-  DCHECK(!callback.is_null());
-
-  pending_synthetic_gesture_callbacks_.push(callback);
-
-  SyntheticGesturePacket gesture_packet;
-  gesture_packet.set_gesture_params(gesture_params.Pass());
-
-  Send(new InputHostMsg_QueueSyntheticGesture(routing_id_, gesture_packet));
-}
-
 void RenderWidget::Close() {
   if (webwidget_) {
     webwidget_->willCloseLayerTreeView();
@@ -2272,10 +2258,7 @@ void RenderWidget::OnRepaint(gfx::Size size_to_paint) {
 }
 
 void RenderWidget::OnSyntheticGestureCompleted() {
-  DCHECK(!pending_synthetic_gesture_callbacks_.empty());
-
-  pending_synthetic_gesture_callbacks_.front().Run();
-  pending_synthetic_gesture_callbacks_.pop();
+  pending_synthetic_gesture_.Run();
 }
 
 void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
@@ -2745,6 +2728,42 @@ void RenderWidget::OnSetBrowserRenderingStats(
 
 void RenderWidget::GetBrowserRenderingStats(BrowserRenderingStats* stats) {
   *stats = browser_rendering_stats_;
+}
+
+void RenderWidget::BeginSmoothScroll(
+    bool down,
+    const SyntheticGestureCompletionCallback& callback,
+    int pixels_to_scroll,
+    int mouse_event_x,
+    int mouse_event_y) {
+  DCHECK(!callback.is_null());
+
+  ViewHostMsg_BeginSmoothScroll_Params params;
+  params.scroll_down = down;
+  params.pixels_to_scroll = pixels_to_scroll;
+  params.mouse_event_x = mouse_event_x;
+  params.mouse_event_y = mouse_event_y;
+
+  Send(new ViewHostMsg_BeginSmoothScroll(routing_id_, params));
+  pending_synthetic_gesture_ = callback;
+}
+
+void RenderWidget::BeginPinch(
+    bool zoom_in,
+    int pixels_to_move,
+    int anchor_x,
+    int anchor_y,
+    const SyntheticGestureCompletionCallback& callback) {
+  DCHECK(!callback.is_null());
+
+  ViewHostMsg_BeginPinch_Params params;
+  params.zoom_in = zoom_in;
+  params.pixels_to_move = pixels_to_move;
+  params.anchor_x = anchor_x;
+  params.anchor_y = anchor_y;
+
+  Send(new ViewHostMsg_BeginPinch(routing_id_, params));
+  pending_synthetic_gesture_ = callback;
 }
 
 bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {

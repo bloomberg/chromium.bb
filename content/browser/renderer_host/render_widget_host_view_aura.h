@@ -234,6 +234,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       InputEventAckState ack_result) OVERRIDE;
   virtual scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       OVERRIDE;
+  virtual SyntheticGesture* CreateSmoothScrollGesture(
+      bool scroll_down,
+      int pixels_to_scroll,
+      int mouse_event_x,
+      int mouse_event_y) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(

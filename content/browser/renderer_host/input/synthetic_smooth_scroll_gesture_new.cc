@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture_new.h"
 
 #include <cmath>
 
@@ -11,13 +11,14 @@
 
 namespace content {
 
-SyntheticSmoothScrollGesture::SyntheticSmoothScrollGesture(
+SyntheticSmoothScrollGestureNew::SyntheticSmoothScrollGestureNew(
     const SyntheticSmoothScrollGestureParams& params)
-    : params_(params), current_y_(params_.anchor.y()) {}
+    : params_(params),
+      current_y_(params_.anchor.y()) {}
 
-SyntheticSmoothScrollGesture::~SyntheticSmoothScrollGesture() {}
+SyntheticSmoothScrollGestureNew::~SyntheticSmoothScrollGestureNew() {}
 
-SyntheticGesture::Result SyntheticSmoothScrollGesture::ForwardInputEvents(
+SyntheticGestureNew::Result SyntheticSmoothScrollGestureNew::ForwardInputEvents(
     const base::TimeDelta& interval, SyntheticGestureTarget* target) {
 
   SyntheticGestureParams::GestureSourceType source =
@@ -26,20 +27,21 @@ SyntheticGesture::Result SyntheticSmoothScrollGesture::ForwardInputEvents(
     source = target->GetDefaultSyntheticGestureSourceType();
 
   if (!target->SupportsSyntheticGestureSourceType(source))
-    return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_SUPPORTED_BY_PLATFORM;
+    return SyntheticGestureNew::GESTURE_SOURCE_TYPE_NOT_SUPPORTED_BY_PLATFORM;
 
   if (source == SyntheticGestureParams::TOUCH_INPUT)
     return ForwardTouchInputEvents(interval, target);
   else if (source == SyntheticGestureParams::MOUSE_INPUT)
     return ForwardMouseInputEvents(interval, target);
   else
-    return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
+    return SyntheticGestureNew::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
 }
 
-SyntheticGesture::Result SyntheticSmoothScrollGesture::ForwardTouchInputEvents(
+SyntheticGestureNew::Result
+SyntheticSmoothScrollGestureNew::ForwardTouchInputEvents(
     const base::TimeDelta& interval, SyntheticGestureTarget* target) {
   if (HasFinished())
-    return SyntheticGesture::GESTURE_FINISHED;
+    return SyntheticGestureNew::GESTURE_FINISHED;
 
   if (current_y_ == params_.anchor.y()) {
     touch_event_.PressPoint(params_.anchor.x(), current_y_);
@@ -53,46 +55,46 @@ SyntheticGesture::Result SyntheticSmoothScrollGesture::ForwardTouchInputEvents(
   if (HasFinished()) {
     touch_event_.ReleasePoint(0);
     ForwardTouchEvent(target);
-    return SyntheticGesture::GESTURE_FINISHED;
+    return SyntheticGestureNew::GESTURE_FINISHED;
   }
-
-  return SyntheticGesture::GESTURE_RUNNING;
+  else {
+    return SyntheticGestureNew::GESTURE_RUNNING;
+  }
 }
 
-SyntheticGesture::Result SyntheticSmoothScrollGesture::ForwardMouseInputEvents(
+SyntheticGestureNew::Result
+SyntheticSmoothScrollGestureNew::ForwardMouseInputEvents(
     const base::TimeDelta& interval, SyntheticGestureTarget* target) {
   if (HasFinished())
-    return SyntheticGesture::GESTURE_FINISHED;
+    return SyntheticGestureNew::GESTURE_FINISHED;
 
   float delta = GetPositionDelta(interval);
   current_y_ += delta;
   ForwardMouseWheelEvent(target, delta);
 
   if (HasFinished())
-    return SyntheticGesture::GESTURE_FINISHED;
-
-  return SyntheticGesture::GESTURE_RUNNING;
+    return SyntheticGestureNew::GESTURE_FINISHED;
+  else
+    return SyntheticGestureNew::GESTURE_RUNNING;
 }
 
-void SyntheticSmoothScrollGesture::ForwardTouchEvent(
+void SyntheticSmoothScrollGestureNew::ForwardTouchEvent(
     SyntheticGestureTarget* target) {
   target->DispatchInputEventToPlatform(
       InputEvent(touch_event_, ui::LatencyInfo(), false));
 }
 
-void SyntheticSmoothScrollGesture::ForwardMouseWheelEvent(
-    SyntheticGestureTarget* target, float delta) {
+void SyntheticSmoothScrollGestureNew::ForwardMouseWheelEvent(
+    SyntheticGestureTarget* target,
+    float delta) {
   blink::WebMouseWheelEvent mouse_wheel_event =
       SyntheticWebMouseWheelEventBuilder::Build(0, delta, 0, false);
-
-  mouse_wheel_event.x = params_.anchor.x();
-  mouse_wheel_event.y = params_.anchor.y();
 
   target->DispatchInputEventToPlatform(
       InputEvent(mouse_wheel_event, ui::LatencyInfo(), false));
 }
 
-float SyntheticSmoothScrollGesture::GetPositionDelta(
+float SyntheticSmoothScrollGestureNew::GetPositionDelta(
     const base::TimeDelta& interval) {
   float delta = params_.speed_in_pixels_s * interval.InSecondsF();
   // A positive value indicates scrolling down, which means the touch pointer
@@ -101,7 +103,7 @@ float SyntheticSmoothScrollGesture::GetPositionDelta(
   return (params_.distance > 0) ? -delta : delta;
 }
 
-bool SyntheticSmoothScrollGesture::HasFinished() {
+bool SyntheticSmoothScrollGestureNew::HasFinished() {
   return abs(current_y_ - params_.anchor.y()) >= abs(params_.distance);
 }
 

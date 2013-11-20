@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_controller_new.h"
 
 #include "base/debug/trace_event.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
@@ -12,14 +12,14 @@
 
 namespace content {
 
-SyntheticGestureController::SyntheticGestureController(
+SyntheticGestureControllerNew::SyntheticGestureControllerNew(
     scoped_ptr<SyntheticGestureTarget> gesture_target)
     : gesture_target_(gesture_target.Pass()) {}
 
-SyntheticGestureController::~SyntheticGestureController() {}
+SyntheticGestureControllerNew::~SyntheticGestureControllerNew() {}
 
-void SyntheticGestureController::QueueSyntheticGesture(
-    scoped_ptr<SyntheticGesture> synthetic_gesture) {
+void SyntheticGestureControllerNew::QueueSyntheticGesture(
+    scoped_ptr<SyntheticGestureNew> synthetic_gesture) {
   DCHECK(synthetic_gesture);
 
   pending_gesture_queue_.push_back(synthetic_gesture.release());
@@ -29,7 +29,7 @@ void SyntheticGestureController::QueueSyntheticGesture(
     StartGesture(*pending_gesture_queue_.front());
 }
 
-void SyntheticGestureController::Flush(base::TimeTicks timestamp) {
+void SyntheticGestureControllerNew::Flush(base::TimeTicks timestamp) {
   if (pending_gesture_queue_.empty())
     return;
 
@@ -41,11 +41,11 @@ void SyntheticGestureController::Flush(base::TimeTicks timestamp) {
 
   base::TimeDelta interval = timestamp - last_tick_time_;
   last_tick_time_ = timestamp;
-  SyntheticGesture::Result result =
+  SyntheticGestureNew::Result result =
       pending_gesture_queue_.front()->ForwardInputEvents(interval,
                                                          gesture_target_.get());
 
-  if (result == SyntheticGesture::GESTURE_RUNNING) {
+  if (result == SyntheticGestureNew::GESTURE_RUNNING) {
     gesture_target_->SetNeedsFlush();
     return;
   }
@@ -62,15 +62,16 @@ void SyntheticGestureController::Flush(base::TimeTicks timestamp) {
   }
 }
 
-void SyntheticGestureController::StartGesture(const SyntheticGesture& gesture) {
+void SyntheticGestureControllerNew::StartGesture(
+    const SyntheticGestureNew& gesture) {
   TRACE_EVENT_ASYNC_BEGIN0("benchmark", "SyntheticGestureController::running",
                            &gesture);
   gesture_target_->SetNeedsFlush();
 }
 
-void SyntheticGestureController::StopGesture(
-    const SyntheticGesture& gesture, SyntheticGesture::Result result) {
-  DCHECK_NE(result, SyntheticGesture::GESTURE_RUNNING);
+void SyntheticGestureControllerNew::StopGesture(
+    const SyntheticGestureNew& gesture, SyntheticGestureNew::Result result) {
+  DCHECK_NE(result, SyntheticGestureNew::GESTURE_RUNNING);
   TRACE_EVENT_ASYNC_END0("benchmark", "SyntheticGestureController::running",
                          &gesture);
 
