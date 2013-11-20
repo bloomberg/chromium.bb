@@ -91,8 +91,8 @@
 #include <glib-object.h>
 #endif
 
-#if defined(OS_LINUX)
-#include "content/browser/device_monitor_linux.h"
+#if defined(OS_LINUX) && defined(USE_UDEV)
+#include "content/browser/device_monitor_udev.h"
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include "content/browser/device_monitor_mac.h"
 #endif
@@ -959,7 +959,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && defined(USE_UDEV)
   device_monitor_linux_.reset(new DeviceMonitorLinux());
 #elif defined(OS_MACOSX)
   device_monitor_mac_.reset(new DeviceMonitorMac());

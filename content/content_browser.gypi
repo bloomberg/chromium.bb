@@ -393,10 +393,10 @@
     'browser/devtools/worker_devtools_manager.h',
     'browser/devtools/worker_devtools_message_filter.cc',
     'browser/devtools/worker_devtools_message_filter.h',
-    'browser/device_monitor_linux.cc',
-    'browser/device_monitor_linux.h',
     'browser/device_monitor_mac.h',
     'browser/device_monitor_mac.mm',
+    'browser/device_monitor_udev.cc',
+    'browser/device_monitor_udev.h',
     'browser/device_orientation/data_fetcher_impl_android.cc',
     'browser/device_orientation/data_fetcher_impl_android.h',
     'browser/device_orientation/data_fetcher_shared_memory.h',
@@ -1265,7 +1265,7 @@
         '../ui/events/events.gyp:events',
       ],
     }],
-    ['OS!="win" and OS!="mac" and OS!="linux"', {
+    ['OS!="win" and OS!="mac" and (OS!="linux" or use_udev==0)', {
       'sources': [
         'browser/gamepad/gamepad_platform_data_fetcher.cc',
       ]
@@ -1418,8 +1418,20 @@
     }],
     ['OS=="linux"', {
       'dependencies': [
-        '../build/linux/system.gyp:udev',
         '../sandbox/sandbox.gyp:libc_urandom_override',
+      ],
+    }],
+    ['use_udev == 1', {
+      'dependencies': [
+        '../build/linux/system.gyp:udev',
+      ],
+    }, {
+      'sources!': [
+        'browser/device_monitor_udev.cc',
+        'browser/device_monitor_udev.h',
+        'browser/gamepad/gamepad_platform_data_fetcher_linux.cc',
+        'browser/udev_linux.cc',
+        'browser/udev_linux.h',
       ],
     }],
     ['OS=="linux" and use_aura==1', {

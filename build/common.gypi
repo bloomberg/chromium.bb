@@ -506,6 +506,13 @@
           'use_nss%': 0,
         }],
 
+        # libudev usage.  This currently only affects the content layer.
+        ['OS=="linux"', {
+          'use_udev%': 1,
+        }, {
+          'use_udev%': 0,
+        }],
+
         # Flags to use X11 on non-Mac POSIX platforms.
         ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android" or use_ozone==1', {
           'use_x11%': 0,
@@ -850,6 +857,7 @@
     'use_cras%': '<(use_cras)',
     'use_openssl%': '<(use_openssl)',
     'use_nss%': '<(use_nss)',
+    'use_udev%': '<(use_udev)',
     'os_bsd%': '<(os_bsd)',
     'os_posix%': '<(os_posix)',
     'use_dbus%': '<(use_dbus)',
@@ -2145,6 +2153,9 @@
       }],
       ['native_memory_pressure_signals==1', {
         'defines': ['SYSTEM_NATIVELY_SIGNALS_MEMORY_PRESSURE'],
+      }],
+      ['use_udev==1', {
+        'defines': ['USE_UDEV'],
       }],
       ['fastbuild!=0', {
         'xcode_settings': {

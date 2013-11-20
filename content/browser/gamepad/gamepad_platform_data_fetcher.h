@@ -30,7 +30,7 @@ typedef GamepadPlatformDataFetcherWin GamepadPlatformDataFetcher;
 
 typedef GamepadPlatformDataFetcherMac GamepadPlatformDataFetcher;
 
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) && defined(USE_UDEV)
 
 typedef GamepadPlatformDataFetcherLinux GamepadPlatformDataFetcher;
 

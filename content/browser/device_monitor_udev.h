@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This class is used to detect device change and notify base::SystemMonitor
 // on Linux.
 
-#ifndef CONTENT_BROWSER_DEVICE_MONITOR_LINUX_H_
-#define CONTENT_BROWSER_DEVICE_MONITOR_LINUX_H_
+#ifndef CONTENT_BROWSER_DEVICE_MONITOR_UDEV_H_
+#define CONTENT_BROWSER_DEVICE_MONITOR_UDEV_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -41,4 +41,4 @@ class DeviceMonitorLinux : public base::MessageLoop::DestructionObserver {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DEVICE_MONITOR_LINUX_H_
+#endif  // CONTENT_BROWSER_DEVICE_MONITOR_UDEV_H_

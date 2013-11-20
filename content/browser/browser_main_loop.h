@@ -141,7 +141,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;
 #if defined(OS_WIN)
   scoped_ptr<SystemMessageWindowWin> system_message_window_;
-#elif defined(OS_LINUX)
+#elif defined(USE_UDEV)
   scoped_ptr<DeviceMonitorLinux> device_monitor_linux_;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   scoped_ptr<DeviceMonitorMac> device_monitor_mac_;
