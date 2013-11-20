@@ -451,6 +451,10 @@ void PrintPreviewUI::OnInitiatorClosed() {
 }
 
 void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
+  if (!initial_preview_start_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("PrintPreview.InitializationTime",
+                        base::TimeTicks::Now() - initial_preview_start_time_);
+  }
   g_print_preview_request_id_map.Get().Set(id_, request_id);
 }
 
