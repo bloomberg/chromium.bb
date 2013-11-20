@@ -523,6 +523,8 @@
         'browser/ui/cocoa/autofill/autofill_notification_container.mm',
         'browser/ui/cocoa/autofill/autofill_notification_controller.h',
         'browser/ui/cocoa/autofill/autofill_notification_controller.mm',
+        'browser/ui/cocoa/autofill/autofill_loading_shield_controller.h',
+        'browser/ui/cocoa/autofill/autofill_loading_shield_controller.mm',
         'browser/ui/cocoa/autofill/autofill_main_container.h',
         'browser/ui/cocoa/autofill/autofill_main_container.mm',
         'browser/ui/cocoa/autofill/autofill_overlay_controller.h',

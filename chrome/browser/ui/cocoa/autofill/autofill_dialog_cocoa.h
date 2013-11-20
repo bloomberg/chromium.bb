@@ -25,6 +25,7 @@ namespace autofill {
 
 @class AutofillAccountChooser;
 @class AutofillDialogWindowController;
+@class AutofillLoadingShieldController;
 @class AutofillMainContainer;
 @class AutofillOverlayController;
 @class AutofillSignInContainer;
@@ -116,7 +117,8 @@ class AutofillDialogCocoa : public AutofillDialogView,
   base::scoped_nsobject<AutofillSignInContainer> signInContainer_;
   base::scoped_nsobject<AutofillAccountChooser> accountChooser_;
   base::scoped_nsobject<AutofillOverlayController> overlayController_;
-  base::scoped_nsobject<NSTextField> loadingShieldTextField_;
+  base::scoped_nsobject<AutofillLoadingShieldController>
+      loadingShieldController_;
   base::scoped_nsobject<NSTextField> titleTextField_;
   base::scoped_nsobject<NSTextView> fieldEditor_;
 }

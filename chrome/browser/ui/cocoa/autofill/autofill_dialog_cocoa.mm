@@ -16,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_input_field.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_loading_shield_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_overlay_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
@@ -233,25 +234,6 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 }  // autofill
 
-#pragma mark "Loading" Shield
-
-@interface AutofillOpaqueView : NSView
-@end
-
-@implementation AutofillOpaqueView
-
-- (BOOL)isOpaque {
-  return YES;
-}
-
-- (void)drawRect:(NSRect)dirtyRect {
-  [[[self window] backgroundColor] setFill];
-  [NSBezierPath fillRect:[self bounds]];
-}
-
-@end
-
-
 #pragma mark Field Editor
 
 @interface AutofillDialogFieldEditor : NSTextView
@@ -343,20 +325,10 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
                               initWithFrame:NSZeroRect
                                    delegate:autofillDialog->delegate()]);
 
-    loadingShieldTextField_.reset(
-        [[NSTextField alloc] initWithFrame:NSZeroRect]);
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    NSFont* loadingFont = rb.GetFont(
-        ui::ResourceBundle::BaseFont).DeriveFont(15).GetNativeFont();
-    [loadingShieldTextField_ setFont:loadingFont];
-    [loadingShieldTextField_ setEditable:NO];
-    [loadingShieldTextField_ setBordered:NO];
-    [loadingShieldTextField_ setDrawsBackground:NO];
-
-    base::scoped_nsobject<AutofillOpaqueView> loadingShieldView(
-        [[AutofillOpaqueView alloc] initWithFrame:NSZeroRect]);
-    [loadingShieldView setHidden:YES];
-    [loadingShieldView addSubview:loadingShieldTextField_];
+    loadingShieldController_.reset(
+        [[AutofillLoadingShieldController alloc]
+            initWithDelegate:autofillDialog->delegate()]);
+    [[loadingShieldController_ view] setHidden:YES];
 
     overlayController_.reset(
         [[AutofillOverlayController alloc] initWithDelegate:
@@ -374,7 +346,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
           titleTextField_,
           [mainContainer_ view],
           [signInContainer_ view],
-          loadingShieldView,
+          [loadingShieldController_ view],
           [overlayController_ view]]];
     [flippedContentView setAutoresizingMask:
         (NSViewWidthSizable | NSViewHeightSizable)];
@@ -489,14 +461,8 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     [[signInContainer_ view] setFrame:mainRect];
   }
 
-  // Loading shield has text centered in the content rect.
-  NSRect textFrame = [loadingShieldTextField_ frame];
-  textFrame.origin.x =
-      std::ceil((NSWidth(contentRect) - NSWidth(textFrame)) / 2.0);
-  textFrame.origin.y =
-    std::ceil((NSHeight(contentRect) - NSHeight(textFrame)) / 2.0);
-  [loadingShieldTextField_ setFrame:textFrame];
-  [[loadingShieldTextField_ superview] setFrame:contentRect];
+  [[loadingShieldController_ view] setFrame:contentRect];
+  [loadingShieldController_ performLayout];
 
   [[overlayController_ view] setFrame:contentRect];
   [overlayController_ performLayout];
@@ -548,25 +514,12 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   [accountChooser_ update];
   [mainContainer_ updateLegalDocuments];
 
-  NSString* newLoadingMessage = @"";
-  if (autofillDialog_->delegate()->ShouldShowSpinner())
-    newLoadingMessage = l10n_util::GetNSStringWithFixup(IDS_TAB_LOADING_TITLE);
-  if (![newLoadingMessage isEqualToString:
-       [loadingShieldTextField_ stringValue]]) {
-    NSView* loadingShieldView = [loadingShieldTextField_ superview];
-    [loadingShieldTextField_ setStringValue:newLoadingMessage];
-    [loadingShieldTextField_ sizeToFit];
-
-    BOOL showShield = ([newLoadingMessage length] != 0);
-
-    // For the duration of the loading shield, hide the main contents.
-    // This prevents the currently focused text field "shining through".
-    // No need to remember previous state, because the loading shield
-    // always flows through to the main container.
-    [[mainContainer_ view] setHidden:showShield];
-    [loadingShieldView setHidden:!showShield];
-    [self requestRelayout];
-  }
+  // For the duration of the loading shield, hide the main contents.
+  // This prevents the currently focused text field "shining through".
+  // No need to remember previous state, because the loading shield
+  // always flows through to the main container.
+  [loadingShieldController_ update];
+  [[mainContainer_ view] setHidden:![[loadingShieldController_ view] isHidden]];
 }
 
 - (void)updateButtonStrip {

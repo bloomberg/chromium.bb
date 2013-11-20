@@ -15,9 +15,11 @@ static const int kDurationMs = 1800;
 // The frame rate of the animation.
 static const int kHertz = 60;
 
-LoadingAnimation::LoadingAnimation(gfx::AnimationDelegate* delegate)
+LoadingAnimation::LoadingAnimation(gfx::AnimationDelegate* delegate,
+                                   int font_height)
     : LinearAnimation(kDurationMs, kHertz, delegate),
-      first_cycle_(true) {}
+      first_cycle_(true),
+      font_height_(font_height) {}
 
 LoadingAnimation::~LoadingAnimation() {}
 
@@ -30,7 +32,7 @@ void LoadingAnimation::Step(base::TimeTicks time_now) {
   }
 }
 
-double LoadingAnimation::GetCurrentValueForDot(size_t dot_i) {
+double LoadingAnimation::GetCurrentValueForDot(size_t dot_i) const {
   double base_value = gfx::LinearAnimation::GetCurrentValue();
 
   const double kSecondDotDelayMs = 100.0;
@@ -45,7 +47,7 @@ double LoadingAnimation::GetCurrentValueForDot(size_t dot_i) {
 
   double value = gfx::Tween::CalculateValue(gfx::Tween::EASE_OUT, base_value);
 
-  static AnimationFrame animation_frames[] = {
+  static AnimationFrame kAnimationFrames[] = {
     { 0.0, 0.0 },
     { 0.55, 0.0 },
     { 0.6, -1.0 },
@@ -55,16 +57,22 @@ double LoadingAnimation::GetCurrentValueForDot(size_t dot_i) {
     { 1.0, 0.0 },
   };
 
-  for (size_t i = 0; i < arraysize(animation_frames); ++i) {
-    if (value > animation_frames[i].value)
+  for (size_t i = 0; i < arraysize(kAnimationFrames); ++i) {
+    if (value > kAnimationFrames[i].value)
       continue;
-    else if (i == 0)
-      return animation_frames[i].position;
 
-    return animation_frames[i - 1].position +
-        (animation_frames[i].position - animation_frames[i - 1].position) *
-            (value - animation_frames[i - 1].value) /
-                (animation_frames[i].value - animation_frames[i - 1].value);
+    double position;
+    if (i == 0) {
+      position = kAnimationFrames[i].position;
+    } else {
+      double inter_frame_value =
+          (value - kAnimationFrames[i - 1].value) /
+          (kAnimationFrames[i].value - kAnimationFrames[i - 1].value);
+      position = gfx::Tween::FloatValueBetween(inter_frame_value,
+                                               kAnimationFrames[i - 1].position,
+                                               kAnimationFrames[i].position);
+    }
+    return position * font_height_ / 2.0;
   }
 
   NOTREACHED();

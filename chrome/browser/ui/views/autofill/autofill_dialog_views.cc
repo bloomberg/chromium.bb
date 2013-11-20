@@ -391,9 +391,7 @@ class LoadingAnimationView : public views::View,
                              public gfx::AnimationDelegate {
  public:
   explicit LoadingAnimationView(const base::string16& text) :
-      container_(new views::View()),
-      animation_(this) {
-
+      container_(new views::View()) {
     set_background(views::Background::CreateSolidBackground(
         GetNativeTheme()->GetSystemColor(
             ui::NativeTheme::kColorId_DialogBackground)));
@@ -404,6 +402,7 @@ class LoadingAnimationView : public views::View,
 
     gfx::Font font = ui::ResourceBundle::GetSharedInstance().GetFont(
         ui::ResourceBundle::BaseFont).DeriveFont(8);
+    animation_.reset(new LoadingAnimation(this, font.GetHeight()));
 
     views::Label* label = new views::Label();
     label->SetText(text);
@@ -423,9 +422,9 @@ class LoadingAnimationView : public views::View,
   // views::View implementation.
   virtual void SetVisible(bool visible) OVERRIDE {
     if (visible)
-      animation_.Start();
+      animation_->Start();
     else
-      animation_.Reset();
+      animation_->Reset();
 
     views::View::SetVisible(visible);
   }
@@ -441,13 +440,13 @@ class LoadingAnimationView : public views::View,
 
     for (size_t i = 0; i < 3; ++i) {
       views::View* dot = container_->child_at(i + 1);
-      dot->SetY(dot->y() + animation_.GetCurrentValueForDot(i) * 10.0);
+      dot->SetY(dot->y() + animation_->GetCurrentValueForDot(i));
     }
   }
 
   // gfx::AnimationDelegate implementation.
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
-    DCHECK_EQ(animation, &animation_);
+    DCHECK_EQ(animation, animation_.get());
     Layout();
   }
 
@@ -455,7 +454,7 @@ class LoadingAnimationView : public views::View,
   // Contains the "Loading" label and the dots.
   views::View* container_;
 
-  LoadingAnimation animation_;
+  scoped_ptr<LoadingAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadingAnimationView);
 };
