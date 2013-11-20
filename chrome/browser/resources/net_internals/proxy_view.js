@@ -44,6 +44,8 @@ var ProxyView = (function() {
   ProxyView.MAIN_BOX_ID = 'proxy-view-tab-content';
   ProxyView.ORIGINAL_SETTINGS_DIV_ID = 'proxy-view-original-settings';
   ProxyView.EFFECTIVE_SETTINGS_DIV_ID = 'proxy-view-effective-settings';
+  ProxyView.ORIGINAL_CONTENT_DIV_ID = 'proxy-view-original-content';
+  ProxyView.EFFECTIVE_CONTENT_DIV_ID = 'proxy-view-effective-content';
   ProxyView.RELOAD_SETTINGS_BUTTON_ID = 'proxy-view-reload-settings';
   ProxyView.BAD_PROXIES_DIV_ID = 'proxy-view-bad-proxies-div';
   ProxyView.BAD_PROXIES_TBODY_ID = 'proxy-view-bad-proxies-tbody';
@@ -75,10 +77,14 @@ var ProxyView = (function() {
       var original = proxySettings.original;
       var effective = proxySettings.effective;
 
-      $(ProxyView.ORIGINAL_SETTINGS_DIV_ID).innerText =
-          proxySettingsToString(original);
-      $(ProxyView.EFFECTIVE_SETTINGS_DIV_ID).innerText =
-          proxySettingsToString(effective);
+      var originalStr = proxySettingsToString(original);
+      var effectiveStr = proxySettingsToString(effective);
+
+      setNodeDisplay($(ProxyView.ORIGINAL_CONTENT_DIV_ID),
+                     originalStr != effectiveStr);
+
+      $(ProxyView.ORIGINAL_SETTINGS_DIV_ID).innerText = originalStr;
+      $(ProxyView.EFFECTIVE_SETTINGS_DIV_ID).innerText = effectiveStr;
 
       this.updateSocksHints_(effective);
 
