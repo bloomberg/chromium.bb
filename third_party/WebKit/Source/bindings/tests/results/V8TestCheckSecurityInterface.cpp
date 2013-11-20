@@ -315,6 +315,13 @@ static void TestCheckSecurityInterfaceOriginSafeMethodSetter(v8::Local<v8::Strin
     info.This()->SetHiddenValue(name, jsValue);
 }
 
+static void TestCheckSecurityInterfaceOriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestCheckSecurityInterfaceV8Internal::TestCheckSecurityInterfaceOriginSafeMethodSetter(name, jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestCheckSecurityInterfaceV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestCheckSecurityInterfaceAttributes[] = {
@@ -345,13 +352,13 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestCheckSecurityInterfaceTem
     prototypeTemplate->Set(v8::String::NewSymbol("excitingFunction"), v8::FunctionTemplate::New(TestCheckSecurityInterfaceV8Internal::excitingFunctionMethodCallback, v8Undefined(), excitingFunctionSignature, 1));
 
     // Function 'postMessage' (Extended Attributes: 'DoNotCheckSecurity')
-    prototypeTemplate->SetAccessor(v8::String::NewSymbol("postMessage"), TestCheckSecurityInterfaceV8Internal::postMessageOriginSafeMethodGetterCallback, TestCheckSecurityInterfaceV8Internal::TestCheckSecurityInterfaceOriginSafeMethodSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
+    prototypeTemplate->SetAccessor(v8::String::NewSymbol("postMessage"), TestCheckSecurityInterfaceV8Internal::postMessageOriginSafeMethodGetterCallback, TestCheckSecurityInterfaceV8Internal::TestCheckSecurityInterfaceOriginSafeMethodSetterCallback, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
 
     // Function 'perWorldBindingsMethodWithDoNotCheckSecurity' (Extended Attributes: 'DoNotCheckSecurity PerWorldBindings ActivityLogging')
     if (currentWorldType == MainWorld) {
-        prototypeTemplate->SetAccessor(v8::String::NewSymbol("perWorldBindingsMethodWithDoNotCheckSecurity"), TestCheckSecurityInterfaceV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityOriginSafeMethodGetterCallbackForMainWorld, TestCheckSecurityInterfaceV8Internal::TestCheckSecurityInterfaceOriginSafeMethodSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
+        prototypeTemplate->SetAccessor(v8::String::NewSymbol("perWorldBindingsMethodWithDoNotCheckSecurity"), TestCheckSecurityInterfaceV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityOriginSafeMethodGetterCallbackForMainWorld, TestCheckSecurityInterfaceV8Internal::TestCheckSecurityInterfaceOriginSafeMethodSetterCallback, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
     } else {
-        prototypeTemplate->SetAccessor(v8::String::NewSymbol("perWorldBindingsMethodWithDoNotCheckSecurity"), TestCheckSecurityInterfaceV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityOriginSafeMethodGetterCallback, TestCheckSecurityInterfaceV8Internal::TestCheckSecurityInterfaceOriginSafeMethodSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
+        prototypeTemplate->SetAccessor(v8::String::NewSymbol("perWorldBindingsMethodWithDoNotCheckSecurity"), TestCheckSecurityInterfaceV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityOriginSafeMethodGetterCallback, TestCheckSecurityInterfaceV8Internal::TestCheckSecurityInterfaceOriginSafeMethodSetterCallback, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
     }
 
     // Custom toString template

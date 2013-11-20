@@ -1291,6 +1291,13 @@ static void ${implClassName}OriginSafeMethodSetter(v8::Local<v8::String> name, v
     info.This()->SetHiddenValue(name, jsValue);
 }
 
+static void ${implClassName}OriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    ${implClassName}V8Internal::${implClassName}OriginSafeMethodSetter(name, jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 END
 }
 
@@ -3342,7 +3349,7 @@ sub GenerateNonStandardFunction
     $conditional8 = $conditional4 . "    " if $conditional4 ne "";
 
     if ($interface->extendedAttributes->{"CheckSecurity"} && $attrExt->{"DoNotCheckSecurity"}) {
-        my $setter = $attrExt->{"ReadOnly"} ? "0" : "${implClassName}V8Internal::${implClassName}OriginSafeMethodSetter";
+        my $setter = $attrExt->{"ReadOnly"} ? "0" : "${implClassName}V8Internal::${implClassName}OriginSafeMethodSetterCallback";
         # Functions that are marked DoNotCheckSecurity are always readable but if they are changed
         # and then accessed on a different domain we do not return the underlying value but instead
         # return a new copy of the original function. This is achieved by storing the changed value
