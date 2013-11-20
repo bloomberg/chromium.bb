@@ -18,7 +18,7 @@
 
 namespace chrome_variations {
 
-struct ProcessedStudy;
+class ProcessedStudy;
 
 // Helper class to instantiate field trials from a variations seed.
 class VariationsSeedProcessor {
@@ -36,6 +36,7 @@ class VariationsSeedProcessor {
                             Study_FormFactor form_factor);
 
  private:
+  friend class VariationsSeedProcessorTest;
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest,
                            AllowForceGroupAndVariationId);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest,

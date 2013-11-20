@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VARIATIONS_PROCESSED_STUDY_H_
 #define COMPONENTS_VARIATIONS_PROCESSED_STUDY_H_
 
+#include <vector>
+
 #include "base/metrics/field_trial.h"
 
 namespace chrome_variations {
@@ -13,20 +15,35 @@ class Study;
 
 // Wrapper over Study with extra information computed during pre-processing,
 // such as whether the study is expired and its total probability.
-struct ProcessedStudy {
-  ProcessedStudy(const Study* study,
-                 base::FieldTrial::Probability total_probability,
-                 bool is_expired);
+class ProcessedStudy {
+ public:
+  ProcessedStudy();
   ~ProcessedStudy();
 
+  bool Init(const Study* study, bool is_expired);
+
+  const Study* study() const { return study_; }
+
+  base::FieldTrial::Probability total_probability() const {
+    return total_probability_;
+  }
+
+  bool is_expired() const { return is_expired_; }
+
+  static bool ValidateAndAppendStudy(
+      const Study* study,
+      bool is_expired,
+      std::vector<ProcessedStudy>* processed_studies);
+
+ private:
   // Corresponding Study object. Weak reference.
-  const Study* study;
+  const Study* study_;
 
   // Computed total group probability for the study.
-  base::FieldTrial::Probability total_probability;
+  base::FieldTrial::Probability total_probability_;
 
   // Whether the study is expired.
-  bool is_expired;
+  bool is_expired_;
 };
 
 }  // namespace chrome_variations

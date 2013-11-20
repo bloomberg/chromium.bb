@@ -88,6 +88,15 @@ class VariationsSeedProcessorTest : public ::testing::Test {
     testing::ClearAllVariationParams();
   }
 
+  bool CreateTrialFromStudy(const Study* study) {
+    ProcessedStudy processed_study;
+    if (processed_study.Init(study, false)) {
+      VariationsSeedProcessor().CreateTrialFromStudy(processed_study);
+      return true;
+    }
+    return false;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(VariationsSeedProcessorTest);
 };
@@ -103,9 +112,7 @@ TEST_F(VariationsSeedProcessorTest, AllowForceGroupAndVariationId) {
   study.mutable_filter()->add_channel(Study_Channel_CANARY);
   study.mutable_filter()->add_platform(Study_Platform_PLATFORM_ANDROID);
 
-  VariationsSeedProcessor().CreateTrialFromStudy(
-      ProcessedStudy(&study, 100, false));
-
+  EXPECT_TRUE(CreateTrialFromStudy(&study));
   EXPECT_EQ(kFlagGroup1Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
 
@@ -462,9 +469,9 @@ TEST_F(VariationsSeedProcessorTest, FilterAndValidateStudies) {
 
   // Check that only the first kTrial1Name study was kept.
   ASSERT_EQ(2U, processed_studies.size());
-  EXPECT_EQ(kTrial1Name, processed_studies[0].study->name());
-  EXPECT_EQ(kGroup1Name, processed_studies[0].study->experiment(0).name());
-  EXPECT_EQ(kTrial3Name, processed_studies[1].study->name());
+  EXPECT_EQ(kTrial1Name, processed_studies[0].study()->name());
+  EXPECT_EQ(kGroup1Name, processed_studies[0].study()->experiment(0).name());
+  EXPECT_EQ(kTrial3Name, processed_studies[1].study()->name());
 }
 
 TEST_F(VariationsSeedProcessorTest, ForbidForceGroupWithVariationId) {
@@ -477,9 +484,7 @@ TEST_F(VariationsSeedProcessorTest, ForbidForceGroupWithVariationId) {
   // Adding windows platform makes forcing_flag and variation Id incompatible.
   study.mutable_filter()->add_platform(Study_Platform_PLATFORM_WINDOWS);
 
-  VariationsSeedProcessor().CreateTrialFromStudy(
-      ProcessedStudy(&study, 100, false));
-
+  EXPECT_TRUE(CreateTrialFromStudy(&study));
   EXPECT_EQ(kFlagGroup1Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
   VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, kFlagStudyName,
@@ -494,9 +499,7 @@ TEST_F(VariationsSeedProcessorTest, ForceGroupWithFlag1) {
   base::FieldTrialList field_trial_list(NULL);
 
   Study study = CreateStudyWithFlagGroups(100, 0, 0);
-  VariationsSeedProcessor().CreateTrialFromStudy(
-      ProcessedStudy(&study, 100, false));
-
+  EXPECT_TRUE(CreateTrialFromStudy(&study));
   EXPECT_EQ(kFlagGroup1Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
 }
@@ -508,9 +511,7 @@ TEST_F(VariationsSeedProcessorTest, ForceGroupWithFlag2) {
   base::FieldTrialList field_trial_list(NULL);
 
   Study study = CreateStudyWithFlagGroups(100, 0, 0);
-  VariationsSeedProcessor().CreateTrialFromStudy(
-      ProcessedStudy(&study, 100, false));
-
+  EXPECT_TRUE(CreateTrialFromStudy(&study));
   EXPECT_EQ(kFlagGroup2Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
 }
@@ -523,9 +524,7 @@ TEST_F(VariationsSeedProcessorTest, ForceGroup_ChooseFirstGroupWithFlag) {
   base::FieldTrialList field_trial_list(NULL);
 
   Study study = CreateStudyWithFlagGroups(100, 0, 0);
-  VariationsSeedProcessor().CreateTrialFromStudy(
-      ProcessedStudy(&study, 100, false));
-
+  EXPECT_TRUE(CreateTrialFromStudy(&study));
   EXPECT_EQ(kFlagGroup1Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
 }
@@ -537,8 +536,7 @@ TEST_F(VariationsSeedProcessorTest, ForceGroup_DontChooseGroupWithFlag) {
   // them very likely to be chosen. They won't be chosen since flag groups are
   // never chosen when their flag isn't present.
   Study study = CreateStudyWithFlagGroups(1, 999, 999);
-  VariationsSeedProcessor().CreateTrialFromStudy(
-      ProcessedStudy(&study, 1 + 999 + 999, false));
+  EXPECT_TRUE(CreateTrialFromStudy(&study));
   EXPECT_EQ(kNonFlagGroupName,
             base::FieldTrialList::FindFullName(kFlagStudyName));
 }
@@ -617,78 +615,51 @@ TEST_F(VariationsSeedProcessorTest,
 }
 
 TEST_F(VariationsSeedProcessorTest, ValidateStudy) {
-  VariationsSeedProcessor seed_processor;
-
   Study study;
   study.set_default_experiment_name("def");
   AddExperiment("abc", 100, &study);
   Study_Experiment* default_group = AddExperiment("def", 200, &study);
 
-  base::FieldTrial::Probability total_probability = 0;
-  bool valid = seed_processor.ValidateStudyAndComputeTotalProbability(
-      study, &total_probability);
-  EXPECT_TRUE(valid);
-  EXPECT_EQ(300, total_probability);
+  ProcessedStudy processed_study;
+  EXPECT_TRUE(processed_study.Init(&study, false));
+  EXPECT_EQ(300, processed_study.total_probability());
 
   // Min version checks.
   study.mutable_filter()->set_min_version("1.2.3.*");
-  valid = seed_processor.ValidateStudyAndComputeTotalProbability(
-      study, &total_probability);
-  EXPECT_TRUE(valid);
+  EXPECT_TRUE(processed_study.Init(&study, false));
   study.mutable_filter()->set_min_version("1.*.3");
-  valid = seed_processor.ValidateStudyAndComputeTotalProbability(
-      study, &total_probability);
-  EXPECT_FALSE(valid);
+  EXPECT_FALSE(processed_study.Init(&study, false));
   study.mutable_filter()->set_min_version("1.2.3");
-  valid = seed_processor.ValidateStudyAndComputeTotalProbability(
-      study, &total_probability);
-  EXPECT_TRUE(valid);
+  EXPECT_TRUE(processed_study.Init(&study, false));
 
   // Max version checks.
   study.mutable_filter()->set_max_version("2.3.4.*");
-  valid = seed_processor.ValidateStudyAndComputeTotalProbability(
-      study, &total_probability);
-  EXPECT_TRUE(valid);
+  EXPECT_TRUE(processed_study.Init(&study, false));
   study.mutable_filter()->set_max_version("*.3");
-  valid = seed_processor.ValidateStudyAndComputeTotalProbability(
-      study, &total_probability);
-  EXPECT_FALSE(valid);
+  EXPECT_FALSE(processed_study.Init(&study, false));
   study.mutable_filter()->set_max_version("2.3.4");
-  valid = seed_processor.ValidateStudyAndComputeTotalProbability(
-      study, &total_probability);
-  EXPECT_TRUE(valid);
+  EXPECT_TRUE(processed_study.Init(&study, false));
 
   study.clear_default_experiment_name();
-  valid = seed_processor.ValidateStudyAndComputeTotalProbability(study,
-      &total_probability);
-  EXPECT_FALSE(valid);
+  EXPECT_FALSE(processed_study.Init(&study, false));
 
   study.set_default_experiment_name("xyz");
-  valid = seed_processor.ValidateStudyAndComputeTotalProbability(study,
-      &total_probability);
-  EXPECT_FALSE(valid);
+  EXPECT_FALSE(processed_study.Init(&study, false));
 
   study.set_default_experiment_name("def");
   default_group->clear_name();
-  valid = seed_processor.ValidateStudyAndComputeTotalProbability(study,
-      &total_probability);
-  EXPECT_FALSE(valid);
+  EXPECT_FALSE(processed_study.Init(&study, false));
 
   default_group->set_name("def");
-  valid = seed_processor.ValidateStudyAndComputeTotalProbability(study,
-      &total_probability);
-  ASSERT_TRUE(valid);
+  EXPECT_TRUE(processed_study.Init(&study, false));
   Study_Experiment* repeated_group = study.add_experiment();
   repeated_group->set_name("abc");
   repeated_group->set_probability_weight(1);
-  valid = seed_processor.ValidateStudyAndComputeTotalProbability(study,
-      &total_probability);
-  EXPECT_FALSE(valid);
+  EXPECT_FALSE(processed_study.Init(&study, false));
 }
 
 TEST_F(VariationsSeedProcessorTest, VariationParams) {
   base::FieldTrialList field_trial_list(NULL);
-  VariationsSeedProcessor seed_processor;
 
   Study study;
   study.set_name("Study1");
@@ -701,13 +672,13 @@ TEST_F(VariationsSeedProcessorTest, VariationParams) {
 
   Study_Experiment* experiment2 = AddExperiment("B", 0, &study);
 
-  seed_processor.CreateTrialFromStudy(ProcessedStudy(&study, 1, false));
+  EXPECT_TRUE(CreateTrialFromStudy(&study));
   EXPECT_EQ("y", GetVariationParamValue("Study1", "x"));
 
   study.set_name("Study2");
   experiment1->set_probability_weight(0);
   experiment2->set_probability_weight(1);
-  seed_processor.CreateTrialFromStudy(ProcessedStudy(&study, 1, false));
+  EXPECT_TRUE(CreateTrialFromStudy(&study));
   EXPECT_EQ(std::string(), GetVariationParamValue("Study2", "x"));
 }
 
@@ -720,8 +691,7 @@ TEST_F(VariationsSeedProcessorTest, VariationParamsWithForcingFlag) {
 
   CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
   base::FieldTrialList field_trial_list(NULL);
-  VariationsSeedProcessor().CreateTrialFromStudy(
-      ProcessedStudy(&study, 100, false));
+  EXPECT_TRUE(CreateTrialFromStudy(&study));
   EXPECT_EQ(kFlagGroup1Name, base::FieldTrialList::FindFullName(study.name()));
   EXPECT_EQ("y", GetVariationParamValue(study.name(), "x"));
 }

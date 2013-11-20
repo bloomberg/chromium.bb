@@ -149,26 +149,17 @@ void VariationsSeedProcessor::FilterAndValidateStudies(
     if (IsStudyExpired(study, reference_date)) {
       expired_studies.push_back(&study);
     } else if (!ContainsKey(created_studies, study.name())) {
-      ValidateAndAddStudy(study, false, filtered_studies);
+      ProcessedStudy::ValidateAndAppendStudy(&study, false, filtered_studies);
       created_studies.insert(study.name());
     }
   }
 
   for (size_t i = 0; i < expired_studies.size(); ++i) {
-    if (!ContainsKey(created_studies, expired_studies[i]->name()))
-      ValidateAndAddStudy(*expired_studies[i], true, filtered_studies);
+    if (!ContainsKey(created_studies, expired_studies[i]->name())) {
+      ProcessedStudy::ValidateAndAppendStudy(expired_studies[i], true,
+                                             filtered_studies);
+    }
   }
-}
-
-void VariationsSeedProcessor::ValidateAndAddStudy(
-    const Study& study,
-    bool is_expired,
-    std::vector<ProcessedStudy>* filtered_studies) {
-  base::FieldTrial::Probability total_probability = 0;
-  if (!ValidateStudyAndComputeTotalProbability(study, &total_probability))
-    return;
-  filtered_studies->push_back(ProcessedStudy(&study, total_probability,
-                                              is_expired));
 }
 
 bool VariationsSeedProcessor::CheckStudyChannel(const Study_Filter& filter,
@@ -256,7 +247,7 @@ bool VariationsSeedProcessor::CheckStudyVersion(
 
 void VariationsSeedProcessor::CreateTrialFromStudy(
     const ProcessedStudy& processed_study) {
-  const Study& study = *processed_study.study;
+  const Study& study = *processed_study.study();
 
   // Check if any experiments need to be forced due to a command line
   // flag. Force the first experiment with an existing flag.
@@ -290,7 +281,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
   // the expiration check using |reference_date| is done explicitly below.
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
-          study.name(), processed_study.total_probability,
+          study.name(), processed_study.total_probability(),
           study.default_experiment_name(),
           base::FieldTrialList::kNoExpirationYear, 1, 1, randomization_type,
           randomization_seed, NULL));
@@ -311,7 +302,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
   }
 
   trial->SetForced();
-  if (processed_study.is_expired)
+  if (processed_study.is_expired())
     trial->Disable();
   else if (study.activation_type() == Study_ActivationType_ACTIVATION_AUTO)
     trial->group();
@@ -370,61 +361,6 @@ bool VariationsSeedProcessor::ShouldAddStudy(
   }
 
   DVLOG(1) << "Kept study " << study.name() << ".";
-  return true;
-}
-
-bool VariationsSeedProcessor::ValidateStudyAndComputeTotalProbability(
-    const Study& study,
-    base::FieldTrial::Probability* total_probability) {
-  // At the moment, a missing default_experiment_name makes the study invalid.
-  if (study.default_experiment_name().empty()) {
-    DVLOG(1) << study.name() << " has no default experiment defined.";
-    return false;
-  }
-  if (study.filter().has_min_version() &&
-      !Version::IsValidWildcardString(study.filter().min_version())) {
-    DVLOG(1) << study.name() << " has invalid min version: "
-             << study.filter().min_version();
-    return false;
-  }
-  if (study.filter().has_max_version() &&
-      !Version::IsValidWildcardString(study.filter().max_version())) {
-    DVLOG(1) << study.name() << " has invalid max version: "
-             << study.filter().max_version();
-    return false;
-  }
-
-  const std::string& default_group_name = study.default_experiment_name();
-  base::FieldTrial::Probability divisor = 0;
-
-  bool found_default_group = false;
-  std::set<std::string> experiment_names;
-  for (int i = 0; i < study.experiment_size(); ++i) {
-    if (study.experiment(i).name().empty()) {
-      DVLOG(1) << study.name() << " is missing experiment " << i << " name";
-      return false;
-    }
-    if (!experiment_names.insert(study.experiment(i).name()).second) {
-      DVLOG(1) << study.name() << " has a repeated experiment name "
-               << study.experiment(i).name();
-      return false;
-    }
-
-    if (!study.experiment(i).has_forcing_flag())
-      divisor += study.experiment(i).probability_weight();
-    if (study.experiment(i).name() == default_group_name)
-      found_default_group = true;
-  }
-
-  if (!found_default_group) {
-    DVLOG(1) << study.name() << " is missing default experiment in its "
-             << "experiment list";
-    // The default group was not found in the list of groups. This study is not
-    // valid.
-    return false;
-  }
-
-  *total_probability = divisor;
   return true;
 }
 
