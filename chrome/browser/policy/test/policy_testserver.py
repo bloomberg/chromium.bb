@@ -671,8 +671,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     logging.debug('%s\n%s' % (label, str(msg)))
 
 
-class PolicyTestServer(testserver_base.ClientRestrictingServerMixIn,
-                       testserver_base.BrokenPipeHandlerMixIn,
+class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
                        testserver_base.StoppableHTTPServer):
   """Handles requests and keeps global service state."""
 
