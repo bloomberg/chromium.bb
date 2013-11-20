@@ -26,10 +26,9 @@ const int kRasterHeight = 792;
 const int kRasterDPI = 72;
 
 scoped_ptr<BitmapImage> MakeSampleBitmap() {
-  scoped_ptr<BitmapImage> bitmap_image(new BitmapImage(
-      kRasterWidth,
-      kRasterHeight,
-      BitmapImage::RGBA));
+  scoped_ptr<BitmapImage> bitmap_image(
+      new BitmapImage(gfx::Size(kRasterWidth, kRasterHeight),
+                      BitmapImage::RGBA));
 
   uint32* bitmap_data = reinterpret_cast<uint32*>(
       bitmap_image->pixel_data());

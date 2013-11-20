@@ -68,12 +68,13 @@ void PwgEncoder::EncodePageHeader(const BitmapImage& image, const uint32 dpi,
   memset(header, 0, kHeaderSize);
   net::WriteBigEndian<uint32>(header + kHeaderHwResolutionHorizontal, dpi);
   net::WriteBigEndian<uint32>(header + kHeaderHwResolutionVertical, dpi);
-  net::WriteBigEndian<uint32>(header + kHeaderCupsWidth, image.width());
-  net::WriteBigEndian<uint32>(header + kHeaderCupsHeight, image.height());
+  net::WriteBigEndian<uint32>(header + kHeaderCupsWidth, image.size().width());
+  net::WriteBigEndian<uint32>(header + kHeaderCupsHeight,
+                              image.size().height());
   net::WriteBigEndian<uint32>(header + kHeaderCupsBitsPerColor, kBitsPerColor);
   net::WriteBigEndian<uint32>(header + kHeaderCupsBitsPerPixel, kBitsPerPixel);
   net::WriteBigEndian<uint32>(header + kHeaderCupsBytesPerLine,
-                              (kBitsPerPixel * image.width() + 7) / 8);
+                              (kBitsPerPixel * image.size().width() + 7) / 8);
   net::WriteBigEndian<uint32>(header + kHeaderCupsColorOrder, kColorOrder);
   net::WriteBigEndian<uint32>(header + kHeaderCupsColorSpace, kColorSpace);
   net::WriteBigEndian<uint32>(header + kHeaderCupsNumColors, kNumColors);
@@ -148,7 +149,7 @@ bool PwgEncoder::EncodeRowFrom32Bit(const uint8* row, const int width,
 
 inline const uint8* PwgEncoder::GetRow(const BitmapImage& image,
                                        int row) const {
-  return image.pixel_data() + row * image.width() * image.channels();
+  return image.pixel_data() + row * image.size().width() * image.channels();
 }
 
 // Given a pointer to a struct Image, create a PWG of the image and
@@ -166,15 +167,15 @@ bool PwgEncoder::EncodePage(const BitmapImage& image,
 
   EncodePageHeader(image, dpi, total_pages, output);
 
-  int row_size = image.width() * image.channels();
+  int row_size = image.size().width() * image.channels();
 
   int row_number = 0;
-  while (row_number < image.height()) {
+  while (row_number < image.size().height()) {
     const uint8* current_row = GetRow(image, row_number++);
     int num_identical_rows = 1;
     // We count how many times the current row is repeated.
     while (num_identical_rows < kPwgMaxPackedRows
-           && row_number < image.height()
+           && row_number < image.size().height()
            && !memcmp(current_row, GetRow(image, row_number), row_size)) {
       num_identical_rows++;
       row_number++;
@@ -183,7 +184,7 @@ bool PwgEncoder::EncodePage(const BitmapImage& image,
 
     // Both supported colorspaces have a 32-bit pixels information.
     if (!EncodeRowFrom32Bit(
-            current_row, image.width(), image.colorspace(), output)) {
+            current_row, image.size().width(), image.colorspace(), output)) {
       return false;
     }
   }

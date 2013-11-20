@@ -10,13 +10,11 @@ namespace {
 const uint8 kCurrentlySupportedNumberOfChannels = 4;
 }
 
-BitmapImage::BitmapImage(int32 width,
-                         int32 height,
+BitmapImage::BitmapImage(const gfx::Size& size,
                          Colorspace colorspace)
-    : width_(width),
-      height_(height),
+    : size_(size),
       colorspace_(colorspace),
-      data_(new uint8[width * height * channels()]) {
+      data_(new uint8[size.GetArea() * channels()]) {
 }
 
 BitmapImage::~BitmapImage() {

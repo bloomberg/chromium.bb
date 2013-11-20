@@ -6,6 +6,7 @@
 #define CHROME_UTILITY_CLOUD_PRINT_BITMAP_IMAGE_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/size.h"
 
 namespace cloud_print {
 
@@ -17,22 +18,18 @@ class BitmapImage {
     BGRA
   };
 
-  BitmapImage(int32 width,
-              int32 height,
-              Colorspace colorspace);
+  BitmapImage(const gfx::Size& size, Colorspace colorspace);
   ~BitmapImage();
 
   uint8 channels() const;
-  int32 width() const { return width_; }
-  int32 height() const { return height_; }
+  const gfx::Size& size() const { return size_; }
   Colorspace colorspace() const { return colorspace_; }
 
   const uint8* pixel_data() const { return data_.get(); }
   uint8* pixel_data() { return data_.get(); }
 
  private:
-  int32 width_;
-  int32 height_;
+  gfx::Size size_;
   Colorspace colorspace_;
   scoped_ptr<uint8[]> data_;
 
