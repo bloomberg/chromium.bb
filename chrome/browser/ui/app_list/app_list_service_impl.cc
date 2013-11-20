@@ -262,8 +262,10 @@ void AppListServiceImpl::EnableAppList(Profile* initial_profile) {
 
   local_state_->SetBoolean(prefs::kAppLauncherHasBeenEnabled, true);
   CreateShortcut();
-  AppShortcutManagerFactory::GetForProfile(initial_profile)->
-      OnceOffCreateShortcuts();
+  AppShortcutManager* shortcut_manager =
+      AppShortcutManagerFactory::GetForProfile(initial_profile);
+  if (shortcut_manager)
+    shortcut_manager->OnceOffCreateShortcuts();
 }
 
 void AppListServiceImpl::InvalidatePendingProfileLoads() {

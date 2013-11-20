@@ -33,6 +33,7 @@ class AppShortcutManagerFactory : public BrowserContextKeyedServiceFactory {
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
+  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_APPS_SHORTCUT_MANAGER_FACTORY_H_

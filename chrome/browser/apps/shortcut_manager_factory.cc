@@ -11,7 +11,8 @@
 // static
 AppShortcutManager* AppShortcutManagerFactory::GetForProfile(Profile* profile) {
   return static_cast<AppShortcutManager*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile,
+                                                 false /* don't create */));
 }
 
 AppShortcutManagerFactory* AppShortcutManagerFactory::GetInstance() {
@@ -33,5 +34,9 @@ BrowserContextKeyedService* AppShortcutManagerFactory::BuildServiceInstanceFor(
 }
 
 bool AppShortcutManagerFactory::ServiceIsCreatedWithBrowserContext() const {
+  return true;
+}
+
+bool AppShortcutManagerFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
