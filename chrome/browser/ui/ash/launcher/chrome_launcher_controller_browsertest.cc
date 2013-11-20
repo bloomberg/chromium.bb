@@ -1719,6 +1719,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
   while (!test.IsOverflowButtonVisible()) {
     std::string fake_app_id = base::StringPrintf("fake_app_%d", items_added);
     PinFakeApp(fake_app_id);
+    test.RunMessageLoopUntilAnimationsDone();
 
     ++items_added;
     ASSERT_LT(items_added, 10000);
