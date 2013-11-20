@@ -593,6 +593,12 @@ User* UserManagerImpl::GetUserByProfile(Profile* profile) const {
   return active_user_;
 }
 
+Profile* UserManagerImpl::GetProfileByUser(const User* user) const {
+  if (IsMultipleProfilesAllowed())
+    return ProfileHelper::GetProfileByUserIdHash(user->username_hash());
+  return g_browser_process->profile_manager()->GetDefaultProfile();
+}
+
 void UserManagerImpl::SaveUserOAuthStatus(
     const std::string& user_id,
     User::OAuthTokenStatus oauth_token_status) {
@@ -817,12 +823,6 @@ bool UserManagerImpl::RespectLocalePreference(
   locale_util::SwitchLanguage(pref_locale, false, callback.Pass());
 
   return true;
-}
-
-Profile* UserManagerImpl::GetProfileByUser(const User* user) const {
-  if (IsMultipleProfilesAllowed())
-    return ProfileHelper::GetProfileByUserIdHash(user->username_hash());
-  return g_browser_process->profile_manager()->GetDefaultProfile();
 }
 
 void UserManagerImpl::Observe(int type,

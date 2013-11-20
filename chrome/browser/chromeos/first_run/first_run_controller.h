@@ -14,6 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_actor.h"
 
+class Profile;
+
 namespace ash {
 class FirstRunHelper;
 }
@@ -31,19 +33,24 @@ class FirstRunController : public FirstRunActor::Delegate {
   typedef std::vector<linked_ptr<first_run::Step> > Steps;
 
  public:
-  FirstRunController();
   virtual ~FirstRunController();
 
   // Creates first-run UI and starts tutorial.
-  void Start();
+  static void Start();
 
   // Finalizes first-run tutorial and destroys UI.
-  void Stop();
+  static void Stop();
 
  private:
+  FirstRunController();
+  void Init();
+  void Finalize();
+
   // Overriden from FirstRunActor::Delegate.
   virtual void OnActorInitialized() OVERRIDE;
   virtual void OnNextButtonClicked(const std::string& step_name) OVERRIDE;
+  virtual void OnHelpButtonClicked() OVERRIDE;
+  virtual void OnCloseButtonClicked() OVERRIDE;
   virtual void OnActorDestroyed() OVERRIDE;
 
   void RegisterSteps();
@@ -63,6 +70,9 @@ class FirstRunController : public FirstRunActor::Delegate {
 
   // Index of step that is currently shown.
   size_t current_step_index_;
+
+  // Profile used for webui and help app.
+  Profile* user_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunController);
 };

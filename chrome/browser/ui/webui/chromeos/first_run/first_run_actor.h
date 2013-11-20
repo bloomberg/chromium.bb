@@ -27,6 +27,12 @@ class FirstRunActor {
     // Called when user clicked "Next" button in step with name |step_name|.
     virtual void OnNextButtonClicked(const std::string& step_name) = 0;
 
+    // Called when user clicked "Keep exploring" button.
+    virtual void OnHelpButtonClicked() = 0;
+
+    // Called when user clicked "X" button.
+    virtual void OnCloseButtonClicked() = 0;
+
     // Notifies about about actor destruction.
     virtual void OnActorDestroyed() = 0;
   };

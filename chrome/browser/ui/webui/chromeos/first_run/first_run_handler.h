@@ -39,6 +39,8 @@ class FirstRunHandler : public FirstRunActor,
   // Handlers for calls from JS.
   void HandleInitialized(const base::ListValue* args);
   void HandleNextButtonClicked(const base::ListValue* args);
+  void HandleHelpButtonClicked(const base::ListValue* args);
+  void HandleCloseButtonClicked(const base::ListValue* args);
 
   bool is_initialized_;
 

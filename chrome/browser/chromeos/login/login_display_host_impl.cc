@@ -370,7 +370,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
       chromeos::UserManager::Get()->IsCurrentUserNew()) {
     // FirstRunController manages its lifetime and destructs after tutorial
     // completion.
-    (new FirstRunController())->Start();
+    FirstRunController::Start();
   }
 
   // TODO(tengs): This should be refactored together with the first run UI.

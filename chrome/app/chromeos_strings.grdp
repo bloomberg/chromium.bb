@@ -3868,7 +3868,7 @@ Battery full
     Enjoy your Chromebook. Question? You can always get help by clicking the "?" in the Status tray.
   </message>
   <message name="IDS_FIRST_RUN_HELP_STEP_TEXT_2" desc="Second part of text shown on the first-run tutorial bubble pointing to help button in system tray. Part of the phrase &quot;Want to discover more awesome features? It's just one click away.&quot;">
-    Want to discover more awsome features?
+    Want to discover more awesome features?
   </message>
   <message name="IDS_FIRST_RUN_HELP_STEP_TEXT_3" desc="Third part of text shown on the first-run tutorial bubble pointing to help button in system tray. Part of the phrase &quot;Want to discover more awesome features? It's just one click away.&quot;">
     It's just one click away.

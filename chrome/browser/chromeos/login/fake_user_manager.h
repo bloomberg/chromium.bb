@@ -69,6 +69,7 @@ class FakeUserManager : public UserManager {
   virtual const User* GetLoggedInUser() const OVERRIDE;
   virtual User* GetLoggedInUser() OVERRIDE;
   virtual const User* GetPrimaryUser() const OVERRIDE;
+  virtual Profile* GetProfileByUser(const User* profile) const OVERRIDE;
   virtual User* GetUserByProfile(Profile* profile) const OVERRIDE;
   virtual void SaveUserOAuthStatus(
       const std::string& username,

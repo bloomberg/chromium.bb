@@ -13,31 +13,59 @@
 #include "chrome/browser/chromeos/first_run/steps/greeting_step.h"
 #include "chrome/browser/chromeos/first_run/steps/help_step.h"
 #include "chrome/browser/chromeos/first_run/steps/tray_step.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 
 size_t NONE_STEP_INDEX = std::numeric_limits<size_t>::max();
 
+// Instance of currently running controller, or NULL if controller is not
+// running now.
+chromeos::FirstRunController* g_instance;
+
 }  // namespace
 
 namespace chromeos {
 
+FirstRunController::~FirstRunController() {}
+
+// static
+void FirstRunController::Start() {
+  if (g_instance) {
+    LOG(WARNING) << "First-run tutorial is running already.";
+    return;
+  }
+  g_instance = new FirstRunController();
+  g_instance->Init();
+}
+
+// static
+void FirstRunController::Stop() {
+  if (!g_instance) {
+    LOG(WARNING) << "First-run tutorial is not running.";
+    return;
+  }
+  g_instance->Finalize();
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, g_instance);
+  g_instance = NULL;
+}
+
 FirstRunController::FirstRunController()
     : actor_(NULL),
-      current_step_index_(NONE_STEP_INDEX) {
+      current_step_index_(NONE_STEP_INDEX),
+      user_profile_(NULL) {
 }
 
-FirstRunController::~FirstRunController() {
-  if (shell_helper_.get())
-    Stop();
-}
+void FirstRunController::Init() {
+  UserManager* user_manager = UserManager::Get();
+  user_profile_ = user_manager->GetProfileByUser(user_manager->GetActiveUser());
 
-void FirstRunController::Start() {
   shell_helper_.reset(ash::Shell::GetInstance()->CreateFirstRunHelper());
+
   FirstRunView* view = new FirstRunView();
-  view->Init(ProfileManager::GetDefaultProfile());
+  view->Init(user_profile_);
   shell_helper_->GetOverlayWidget()->SetContentsView(view);
   actor_ = view->GetActor();
   actor_->set_delegate(this);
@@ -45,7 +73,7 @@ void FirstRunController::Start() {
     OnActorInitialized();
 }
 
-void FirstRunController::Stop() {
+void FirstRunController::Finalize() {
   if (GetCurrentStep())
     GetCurrentStep()->OnBeforeHide();
   steps_.clear();
@@ -66,9 +94,23 @@ void FirstRunController::OnNextButtonClicked(const std::string& step_name) {
   ShowNextStep();
 }
 
+void FirstRunController::OnHelpButtonClicked() {
+  Stop();
+  chrome::ShowHelpForProfile(
+      user_profile_,
+      chrome::HOST_DESKTOP_TYPE_ASH,
+      chrome::HELP_SOURCE_MENU);
+}
+
+void FirstRunController::OnCloseButtonClicked() {
+  Stop();
+}
+
 void FirstRunController::OnActorDestroyed() {
-  // Called when overlay window was destroyed not by us.
-  NOTIMPLEMENTED();
+  // Normally this shouldn't happen because we are implicitly controlling
+  // actor's lifetime.
+  NOTREACHED() <<
+    "FirstRunActor destroyed before FirstRunController::Finalize.";
 }
 
 void FirstRunController::RegisterSteps() {

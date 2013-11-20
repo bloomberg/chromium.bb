@@ -70,6 +70,12 @@ void FirstRunHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("nextButtonClicked",
       base::Bind(&FirstRunHandler::HandleNextButtonClicked,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("helpButtonClicked",
+      base::Bind(&FirstRunHandler::HandleHelpButtonClicked,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("closeButtonClicked",
+      base::Bind(&FirstRunHandler::HandleCloseButtonClicked,
+                 base::Unretained(this)));
 }
 
 void FirstRunHandler::HandleInitialized(const base::ListValue* args) {
@@ -83,6 +89,16 @@ void FirstRunHandler::HandleNextButtonClicked(const base::ListValue* args) {
   CHECK(args->GetString(0, &step_name));
   if (delegate())
     delegate()->OnNextButtonClicked(step_name);
+}
+
+void FirstRunHandler::HandleHelpButtonClicked(const base::ListValue* args) {
+  if (delegate())
+    delegate()->OnHelpButtonClicked();
+}
+
+void FirstRunHandler::HandleCloseButtonClicked(const base::ListValue* args) {
+  if (delegate())
+    delegate()->OnCloseButtonClicked();
 }
 
 }  // namespace chromeos

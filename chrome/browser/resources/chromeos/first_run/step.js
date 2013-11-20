@@ -30,13 +30,17 @@ cr.define('cr.FirstRun', function() {
         chrome.send('nextButtonClicked', [this.getName()]);
         e.stopPropagation();
       }).bind(this));
-      // Make close unfocusable by mouse.
       var topBar = this.getElementsByClassName('topbutton-bar')[0];
       if (topBar) {
         var closeButton = topBar.getElementsByClassName('close-button')[0];
         if (closeButton) {
-          closeButton.addEventListener('mousedown', function(event) {
-            event.preventDefault();
+          // Make close unfocusable by mouse.
+          closeButton.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+          });
+          closeButton.addEventListener('click', function(e) {
+            chrome.send('closeButtonClicked');
+            e.stopPropagation();
           });
         }
       }
@@ -199,8 +203,25 @@ cr.define('cr.FirstRun', function() {
     }
   };
 
+  var HelpStep = cr.ui.define('div');
+
+  HelpStep.prototype = {
+    __proto__: Bubble.prototype,
+
+    decorate: function() {
+      Bubble.prototype.decorate.call(this);
+      var helpButton = this.getElementsByClassName('help-button')[0];
+      helpButton.addEventListener('click', function(e) {
+        chrome.send('helpButtonClicked');
+        e.stopPropagation();
+      });
+    },
+  };
+
   var DecorateStep = function(el) {
-    if (el.classList.contains('bubble'))
+    if (el.id == 'help')
+      HelpStep.decorate(el);
+    else if (el.classList.contains('bubble'))
       Bubble.decorate(el);
     else
       Step.decorate(el);

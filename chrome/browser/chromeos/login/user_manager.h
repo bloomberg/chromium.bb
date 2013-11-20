@@ -198,6 +198,9 @@ class UserManager {
   // Returns NULL if User is not created.
   virtual User* GetUserByProfile(Profile* profile) const = 0;
 
+  /// Returns NULL if profile for user was not found.
+  virtual Profile* GetProfileByUser(const User* user) const = 0;
+
   // Saves user's oauth token status in local state preferences.
   virtual void SaveUserOAuthStatus(
       const std::string& user_id,
