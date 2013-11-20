@@ -129,7 +129,7 @@ void ReadMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
   args.Return(dictionary);
 }
 
-gin::WrapperInfo g_core_wrapper_info = {};
+gin::WrapperInfo g_core_wrapper_info = { gin::kEmbedderNativeGin };
 
 }  // namespace
 

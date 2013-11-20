@@ -9,8 +9,9 @@ namespace gin {
 WrapperInfo* WrapperInfo::From(v8::Handle<v8::Object> object) {
   if (object->InternalFieldCount() != kNumberOfInternalFields)
     return NULL;
-  return static_cast<WrapperInfo*>(
+  WrapperInfo* info = static_cast<WrapperInfo*>(
       object->GetAlignedPointerFromInternalField(kWrapperInfoIndex));
+  return info->embedder == kEmbedderNativeGin ? info : NULL;
 }
 
 }  // namespace gin

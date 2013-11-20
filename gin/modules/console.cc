@@ -28,7 +28,7 @@ void Log(const v8::FunctionCallbackInfo<v8::Value>& info) {
   std::cout << JoinString(messages, ' ') << std::endl;
 }
 
-WrapperInfo g_wrapper_info = {};
+WrapperInfo g_wrapper_info = { kEmbedderNativeGin };
 
 }  // namespace
 

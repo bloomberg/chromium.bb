@@ -54,7 +54,7 @@ void ExpectEqual(const v8::FunctionCallbackInfo<v8::Value>& info) {
   EXPECT_TRUE(info[0]->StrictEquals(info[1])) << description;
 }
 
-WrapperInfo g_wrapper_info = {};
+WrapperInfo g_wrapper_info = { kEmbedderNativeGin };
 
 }  // namespace
 

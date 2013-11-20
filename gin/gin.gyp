@@ -48,6 +48,7 @@
         'try_catch.cc',
         'try_catch.h',
         'wrapper_info.cc',
+        'public/gin_embedders.h',
         'public/wrapper_info.h',
       ],
     },

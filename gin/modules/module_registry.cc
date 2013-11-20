@@ -74,7 +74,7 @@ void Define(const v8::FunctionCallbackInfo<Value>& info) {
   registry->AddPendingModule(args.isolate(), pending.Pass());
 }
 
-WrapperInfo g_wrapper_info = {};
+WrapperInfo g_wrapper_info = { kEmbedderNativeGin };
 
 Local<FunctionTemplate> GetDefineTemplate(Isolate* isolate) {
   PerIsolateData* data = PerIsolateData::From(isolate);

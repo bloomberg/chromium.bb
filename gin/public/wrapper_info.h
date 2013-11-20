@@ -5,9 +5,15 @@
 #ifndef GIN_PUBLIC_WRAPPER_INFO_H_
 #define GIN_PUBLIC_WRAPPER_INFO_H_
 
+#include "gin/public/gin_embedders.h"
 #include "v8/include/v8.h"
 
 namespace gin {
+
+// Gin embedder that use their own WrapperInfo-like structs must ensure that
+// the first field is of type GinEmbedderId and has the correct id set. They
+// also should use kWrapperInfoIndex to start their WrapperInfo-like struct
+// and ensure that all objects have kNumberOfInternalFields internal fields.
 
 enum InternalFields {
   kWrapperInfoIndex,
@@ -17,7 +23,7 @@ enum InternalFields {
 
 struct WrapperInfo {
   static WrapperInfo* From(v8::Handle<v8::Object> object);
-  // Currently we just use the address of this struct for identity.
+  const GinEmbedder embedder;
 };
 
 }  // namespace gin
