@@ -525,6 +525,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             Player* player = element->document().timeline()->createPlayer(animation.get());
             player->setPaused(inertAnimation->paused());
             element->document().cssPendingAnimations().add(player);
+            player->update();
             players.add(player);
         }
         m_animations.set(iter->name, players);
@@ -547,6 +548,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         OwnPtr<TransitionEventDelegate> eventDelegate = adoptPtr(new TransitionEventDelegate(element, id));
         RefPtr<Animation> transition = Animation::create(element, inertAnimation->effect(), inertAnimation->specified(), Animation::TransitionPriority, eventDelegate.release());
         RefPtr<Player> player = element->document().transitionTimeline()->createPlayer(transition.get());
+        player->update();
         element->document().cssPendingAnimations().add(player.get());
         runningTransition.transition = transition.get();
         m_transitions.set(id, runningTransition);
@@ -689,35 +691,6 @@ void CSSAnimations::calculateTransitionCompositableValues(CSSAnimationUpdate* up
             compositableValuesForTransitions.remove(iter->key);
     }
     update->adoptCompositableValuesForTransitions(compositableValuesForTransitions);
-}
-
-bool CSSAnimations::shouldCompositeForPendingAnimations(bool renderViewInCompositingMode) const
-{
-    if (!m_pendingUpdate)
-        return false;
-
-    for (size_t i = 0; i < m_pendingUpdate->newAnimations().size(); ++i) {
-        HashSet<RefPtr<InertAnimation> > animations = m_pendingUpdate->newAnimations()[i].animations;
-        for (HashSet<RefPtr<InertAnimation> >::const_iterator it = animations.begin(); it != animations.end(); ++it) {
-            ASSERT((*it)->effect());
-            AnimationEffect* effect = (*it)->effect();
-            // FIXME: Perhaps pass a predicate function so that we can remove the explicit checks from this file?
-            if ((effect->affects(CSSPropertyOpacity) && renderViewInCompositingMode)
-                || effect->affects(CSSPropertyWebkitTransform)
-                || effect->affects(CSSPropertyWebkitFilter))
-                return true;
-        }
-    }
-
-    for (size_t i = 0; i < m_pendingUpdate->newTransitions().size(); ++i) {
-        AnimationEffect* effect = m_pendingUpdate->newTransitions()[i].animation->effect();
-        if ((effect->affects(CSSPropertyOpacity) && renderViewInCompositingMode)
-            || effect->affects(CSSPropertyWebkitTransform)
-            || effect->affects(CSSPropertyWebkitFilter))
-            return true;
-    }
-
-    return false;
 }
 
 void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType listenerType, const AtomicString& eventName, double elapsedTime)

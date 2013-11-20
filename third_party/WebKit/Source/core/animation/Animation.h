@@ -56,6 +56,7 @@ public:
     bool affects(CSSPropertyID) const;
     const AnimationEffect* effect() const { return m_effect.get(); }
     Priority priority() const { return m_priority; }
+    Element* target() { return m_target.get(); }
 
     bool isCandidateForAnimationOnCompositor() const;
     // Must only be called once and assumes to be part of a player without a start time.

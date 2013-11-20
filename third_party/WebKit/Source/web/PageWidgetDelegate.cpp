@@ -34,6 +34,7 @@
 #include "PageOverlayList.h"
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
+#include "core/animation/DocumentAnimations.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
@@ -87,6 +88,8 @@ void PageWidgetDelegate::layout(Page* page)
     // actually asked for Blink to update the composited layer tree. So finally
     // do all the deferred work for updateCompositingLayers() here.
     view->renderView()->compositor()->updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
+
+    DocumentAnimations::serviceAfterCompositingUpdate(*view);
 }
 
 void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas* canvas, const WebRect& rect, CanvasBackground background)

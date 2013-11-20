@@ -165,8 +165,6 @@ public:
     bool isEmpty() const { return m_animations.isEmpty() && m_transitions.isEmpty() && !m_pendingUpdate; }
     void cancel();
 
-    bool shouldCompositeForPendingAnimations(bool renderViewInCompositingMode) const;
-
 private:
     // Note that a single animation name may map to multiple players due to
     // the way in which we split up animations with incomplete keyframes.

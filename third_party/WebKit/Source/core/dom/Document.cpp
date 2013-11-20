@@ -43,6 +43,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/AnimationClock.h"
+#include "core/animation/DocumentAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/css/TransitionTimeline.h"
 #include "core/css/CSSDefaultStyleSheets.h"
@@ -1508,27 +1509,6 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
     return TreeWalker::create(root, whatToShow, filter);
 }
 
-void Document::serviceAnimations(double monotonicAnimationStartTime)
-{
-    if (!RuntimeEnabledFeatures::webAnimationsEnabled())
-        return;
-
-    animationClock().updateTime(monotonicAnimationStartTime);
-    bool didTriggerStyleRecalc = timeline()->serviceAnimations();
-    didTriggerStyleRecalc |= transitionTimeline()->serviceAnimations();
-    if (!didTriggerStyleRecalc)
-        animationClock().unfreeze();
-}
-
-void Document::dispatchAnimationEvents()
-{
-    if (!RuntimeEnabledFeatures::webAnimationsEnabled())
-        return;
-
-    timeline()->dispatchEvents();
-    transitionTimeline()->dispatchEvents();
-}
-
 void Document::scheduleStyleRecalc()
 {
     if (shouldDisplaySeamlesslyWithParent()) {
@@ -1772,9 +1752,7 @@ void Document::updateStyleIfNeeded()
     AnimationUpdateBlock animationUpdateBlock(m_frame ? &m_frame->animation() : 0);
     recalcStyle(NoChange);
 
-    if (RuntimeEnabledFeatures::webAnimationsEnabled())
-        cssPendingAnimations().startPendingAnimations();
-    m_animationClock->unfreeze();
+    DocumentAnimations::serviceAfterStyleRecalc(*this);
 }
 
 void Document::updateStyleForNodeIfNeeded(Node* node)

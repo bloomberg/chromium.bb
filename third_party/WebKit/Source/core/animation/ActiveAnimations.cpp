@@ -46,10 +46,10 @@ bool shouldCompositeForActiveAnimations(const RenderObject& renderer, bool rende
     const Element* element = toElement(renderer.node());
     if (const ActiveAnimations* activeAnimations = element->activeAnimations()) {
         // FIXME: remove compositing mode check once compositing is forced on all platforms
-        bool shouldCompositeForActiveAnimation = (activeAnimations->hasActiveAnimations(CSSPropertyOpacity) && renderViewInCompositingMode)
+        if ((renderViewInCompositingMode && activeAnimations->hasActiveAnimations(CSSPropertyOpacity))
             || activeAnimations->hasActiveAnimations(CSSPropertyWebkitTransform)
-            || activeAnimations->hasActiveAnimations(CSSPropertyWebkitFilter);
-        return shouldCompositeForActiveAnimation || activeAnimations->cssAnimations().shouldCompositeForPendingAnimations(renderViewInCompositingMode);
+            || activeAnimations->hasActiveAnimations(CSSPropertyWebkitFilter))
+            return true;
     }
 
     return false;

@@ -583,6 +583,8 @@
             'animation/CompositorAnimations.cpp',
             'animation/CompositorAnimations.h',
             'animation/CompositorAnimationsImpl.h',
+            'animation/DocumentAnimations.cpp',
+            'animation/DocumentAnimations.h',
             'animation/DocumentTimeline.cpp',
             'animation/DocumentTimeline.h',
             'animation/InertAnimation.cpp',

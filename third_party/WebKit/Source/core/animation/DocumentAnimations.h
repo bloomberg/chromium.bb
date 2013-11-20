@@ -28,28 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSPendingAnimations_h
-#define CSSPendingAnimations_h
+#ifndef DocumentAnimations_h
+#define DocumentAnimations_h
 
-#include "core/animation/Player.h"
-#include "wtf/Vector.h"
+#include "CSSPropertyNames.h"
 
 namespace WebCore {
 
-// Used to synchronize the start of main-thread animations with compositor
-// animations when both classes of CSS Animations are triggered by the same recalc
-class CSSPendingAnimations FINAL {
+class Document;
+class FrameView;
+class Node;
+
+class DocumentAnimations  {
 public:
-    void add(Player*);
-    void startPendingAnimationsAfterStyleRecalc();
-    void startPendingAnimationsAfterCompositingUpdate();
-    void notifyCompositorAnimationStarted(double monotonicAnimationStartTime);
+    static void serviceOnAnimationFrame(Document&, double monotonicAnimationStartTime);
+    static void serviceBeforeGetComputedStyle(Node&, CSSPropertyID);
+    static void serviceAfterStyleRecalc(Document&);
+    static void serviceAfterCompositingUpdate(FrameView&);
 
 private:
-    Vector<std::pair<RefPtr<Player>, double> > m_pending;
-    Vector<RefPtr<Player> > m_waitingForCompositorAnimationStart;
+    DocumentAnimations() { }
 };
 
-} // namespace WebCore
+} // namespace
 
 #endif

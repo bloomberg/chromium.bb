@@ -31,39 +31,63 @@
 #include "config.h"
 #include "core/animation/css/CSSPendingAnimations.h"
 
+#include "core/animation/Animation.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/frame/FrameView.h"
 
 namespace WebCore {
 
-void CSSPendingAnimations::startPendingAnimations()
+void CSSPendingAnimations::add(Player* player)
 {
-    Vector<RefPtr<Player> > unstarted;
-    for (size_t i = 0; i < m_pending.size(); i++) {
-        if (m_pending[i]->maybeStartAnimationOnCompositor())
-            m_waitingForCompositorAnimationStart.append(m_pending[i]);
-        else
-            unstarted.append(m_pending[i]);
+    ASSERT(player->source()->isAnimation());
+    // The actual start time is either this value, or the time that
+    // this animation, or an animation that it is synchronized with
+    // is started on the compositor.
+    const double defaultStartTime = player->timeline().currentTime();
+    m_pending.append(std::make_pair(player, defaultStartTime));
+};
+
+void CSSPendingAnimations::startPendingAnimationsAfterStyleRecalc()
+{
+    // If there's a candidate for animation on compositor wait for compositing update.
+    for (size_t i = 0; i < m_pending.size(); ++i) {
+        Player* player = m_pending[i].first.get();
+        // Note: The player may have been cancelled while waiting to start.
+        if (player->source() && toAnimation(player->source())->isCandidateForAnimationOnCompositor())
+            return;
+    }
+
+    // Otherwise we can start all animations immediately.
+    for (size_t i = 0; i < m_pending.size(); ++i) {
+        m_pending[i].first->setStartTime(m_pending[i].second);
+    }
+    m_pending.clear();
+}
+
+void CSSPendingAnimations::startPendingAnimationsAfterCompositingUpdate()
+{
+    bool startedOnCompositor = false;
+    for (size_t i = 0; i < m_pending.size(); ++i) {
+        if (m_pending[i].first->maybeStartAnimationOnCompositor())
+            startedOnCompositor = true;
     }
 
     // If any animations were started on the compositor, all remaining
-    // need to wait for a start time.
-    if (unstarted.size() < m_pending.size()) {
-        // FIXME: handle case where timeline has not yet started
-        m_waitingForCompositorAnimationStart.append(unstarted);
+    // need to wait for a synchronized start time. Otherwise they may
+    // start immediately.
+    if (startedOnCompositor) {
+        for (size_t i = 0; i < m_pending.size(); ++i)
+            m_waitingForCompositorAnimationStart.append(m_pending[i].first);
     } else {
-        // Otherwise, all players can start immediately.
-        for (size_t i = 0; i < unstarted.size(); i++) {
-            Player* player = unstarted[i].get();
-            // FIXME: ASSERT that the clock backing the timeline is frozen.
-            player->setStartTime(player->timeline().currentTime());
-        }
+        for (size_t i = 0; i < m_pending.size(); ++i)
+            m_pending[i].first->setStartTime(m_pending[i].second);
     }
     m_pending.clear();
 }
 
 void CSSPendingAnimations::notifyCompositorAnimationStarted(double monotonicAnimationStartTime)
 {
-    for (size_t i = 0; i < m_waitingForCompositorAnimationStart.size(); i++) {
+    for (size_t i = 0; i < m_waitingForCompositorAnimationStart.size(); ++i) {
         Player* player = m_waitingForCompositorAnimationStart[i].get();
         player->setStartTime(monotonicAnimationStartTime - player->timeline().zeroTime());
     }

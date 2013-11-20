@@ -29,9 +29,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "StylePropertyShorthand.h"
 #include "bindings/v8/ExceptionState.h"
-#include "core/animation/ActiveAnimations.h"
-#include "core/animation/AnimationClock.h"
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/DocumentAnimations.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSArrayFunctionValue.h"
 #include "core/css/CSSAspectRatioValue.h"
@@ -1625,13 +1623,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
 
         // If a compositor animation is running we may need to service animations
         // in order to generate an up to date value.
-        if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && styledNode->isElementNode()) {
-            const Element* element = toElement(styledNode);
-            if (const ActiveAnimations* activeAnimations = element->activeAnimations()) {
-                if (activeAnimations->hasActiveAnimationsOnCompositor(propertyID))
-                    document.serviceAnimations(monotonicallyIncreasingTime());
-            }
-        }
+        DocumentAnimations::serviceBeforeGetComputedStyle(*styledNode, propertyID);
 
         document.updateStyleForNodeIfNeeded(styledNode);
 

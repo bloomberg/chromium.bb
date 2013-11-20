@@ -11,6 +11,12 @@
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script src="../http/tests/inspector/layers-test.js"></script>
 <script>
+if (window.internals) {
+    document.addEventListener('webkitAnimationStart', function() {
+        internals.pauseAnimations(0);
+    });
+}
+
 function test()
 {
     function dumpCompositingReasons(layer, callback)

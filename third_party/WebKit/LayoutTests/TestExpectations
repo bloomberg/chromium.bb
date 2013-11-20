@@ -51,6 +51,8 @@ crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Fai
 crbug.com/305070 [ Debug ] animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash Pass ]
 crbug.com/305070 [ Debug ] virtual/threaded/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash Pass ]
 
+crbug.com/321460 virtual/web-animations-css/animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
+
 crbug.com/309963 animations/play-state-initially-paused.html [ Timeout ]
 crbug.com/309963 animations/play-state-initially-paused-start-event.html [ Timeout ]
 crbug.com/309963 virtual/threaded/animations/play-state-initially-paused.html [ Timeout ]
@@ -392,8 +394,6 @@ crbug.com/280658  [ Win7 ] inspector-protocol/layers/get-layers.html [ Pass Fail
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 crbug.com/280698 inspector/styles/multiple-imports-edit-crash.html [ Pass Failure ]
 crbug.com/248938 [ SnowLeopard  Debug ] virtual/threaded/animations/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
-crbug.com/281911 [ Debug ] virtual/web-animations-css/animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
-crbug.com/281911 [ XP Release ] virtual/web-animations-css/animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/282081 [ Debug ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Crash Pass ]
 crbug.com/282081 [ Win Release ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Pass Timeout ]
 crbug.com/282082 inspector/debugger/live-edit.html [ Failure Timeout ]

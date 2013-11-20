@@ -622,9 +622,6 @@ public:
     void setCSSTarget(Element*);
     Element* cssTarget() const { return m_cssTarget; }
 
-    void serviceAnimations(double monotonicAnimationStartTime);
-    void dispatchAnimationEvents();
-
     void scheduleStyleRecalc();
     void unscheduleStyleRecalc();
     bool hasPendingStyleRecalc() const;

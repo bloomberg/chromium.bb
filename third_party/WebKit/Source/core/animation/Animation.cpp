@@ -181,9 +181,8 @@ void Animation::cancelAnimationOnCompositor()
         return;
     if (!m_target || !m_target->renderer())
         return;
-    for (size_t i = 0; i < m_compositorAnimationIds.size(); ++i) {
+    for (size_t i = 0; i < m_compositorAnimationIds.size(); ++i)
         CompositorAnimations::instance()->cancelAnimationOnCompositor(*m_target.get(), m_compositorAnimationIds[i]);
-    }
     m_compositorAnimationIds.clear();
 }
 
