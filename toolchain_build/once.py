@@ -25,7 +25,7 @@ import directory_storage
 import file_tools
 import gsd_storage
 import hashing_tools
-import log_tools
+import substituter
 import working_directory
 
 
@@ -33,7 +33,7 @@ class Once(object):
   """Class to memoize slow operations."""
 
   def __init__(self, storage, use_cached_results=True, cache_results=True,
-               print_url=None, check_call=None, system_summary=None):
+               print_url=None, system_summary=None):
     """Constructor.
 
     Args:
@@ -44,17 +44,12 @@ class Once(object):
                      written to the cache.
       print_url: Function that accepts an URL for printing the build result,
                  or None.
-      check_call: A testing hook for allowing build commands to be intercepted.
-                  Same interface as subprocess.check_call.
     """
-    if check_call is None:
-      check_call = log_tools.CheckCall
     self._storage = storage
     self._directory_storage = directory_storage.DirectoryStorageAdapter(storage)
     self._use_cached_results = use_cached_results
     self._cache_results = cache_results
     self._print_url = print_url
-    self._check_call = check_call
     self._system_summary = system_summary
 
   def KeyForOutput(self, package, output_hash):
@@ -194,12 +189,16 @@ class Once(object):
     file_tools.RemoveDirectoryIfPresent(output)
     os.mkdir(output)
 
+    nonpath_subst = { 'package': package }
+
     with wdm as work_dir:
       # Optionally unpack before hashing.
       if unpack_commands is not None:
         for command in unpack_commands:
-          command.Invoke(check_call=self._check_call, package=package,
-                         cwd=work_dir, inputs=inputs, output=output)
+          paths = inputs.copy()
+          paths['output'] = output
+          subst = substituter.Substituter(work_dir, paths, nonpath_subst)
+          command.Invoke(subst)
 
       # Use an alternate input set from here on.
       if hashed_inputs is not None:
@@ -212,10 +211,13 @@ class Once(object):
       # We're done if it's in the cache.
       if self.ReadMemoizedResultFromCache(package, build_signature, output):
         return
+
       for command in commands:
-        command.Invoke(check_call=self._check_call, package=package,
-                       cwd=work_dir, inputs=inputs, output=output,
-                       build_signature=build_signature)
+        paths = inputs.copy()
+        paths['output'] = output
+        nonpath_subst['build_signature'] = build_signature
+        subst = substituter.Substituter(work_dir, paths, nonpath_subst)
+        command.Invoke(subst)
 
     self.WriteResultToCache(package, build_signature, output)
 

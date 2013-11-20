@@ -9,11 +9,14 @@
 # Done first to setup python module path.
 import toolchain_env
 
-import multiprocessing
+import inspect
+
 import os
+import shutil
 import sys
 
 import file_tools
+import log_tools
 
 
 # MSYS tools do not always work with combinations of Windows and MSYS
@@ -30,32 +33,10 @@ path = posixpath
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
-
-def FixPath(path):
-  """Convert to msys paths on windows."""
-  if sys.platform != 'win32':
-    return path
-  drive, path = os.path.splitdrive(path)
-  # Replace X:\... with /x/....
-  # Msys does not like x:\ style paths (especially with mixed slashes).
-  if drive:
-    drive = '/' + drive.lower()[0]
-  path = drive + path
-  path = path.replace('\\', '/')
-  return path
-
-
-def PrepareCommandValues(cwd, inputs, output):
-  values = {}
-  values['cwd'] = FixPath(os.path.abspath(cwd))
-  for key, value in inputs.iteritems():
-    if key.startswith('abs_'):
-      raise Exception('Invalid key starts with "abs_": %s' % key)
-    values['abs_' + key] = FixPath(os.path.abspath(value))
-    values[key] = FixPath(os.path.relpath(value, cwd))
-  values['abs_output'] = FixPath(os.path.abspath(output))
-  values['output'] = FixPath(os.path.relpath(output, cwd))
-  return values
+# Read this module's source file just once, to use in hashes for Callbacks.
+# Don't directly use __file__ because it could be e.g. command.pyc
+with open(os.path.join(SCRIPT_DIR, 'command.py')) as f:
+  FILE_CONTENT = f.read()
 
 
 def PlatformEnvironment(extra_paths):
@@ -69,7 +50,7 @@ def PlatformEnvironment(extra_paths):
   env = os.environ.copy()
   paths = []
   if sys.platform == 'win32':
-    if Command.use_cygwin:
+    if Runnable.use_cygwin:
       # Use the hermetic cygwin.
       paths = [os.path.join(NACL_DIR, 'cygwin', 'bin')]
     else:
@@ -93,106 +74,139 @@ def PlatformEnvironment(extra_paths):
   return env
 
 
-class Command(object):
+class Runnable(object):
   """An object representing a single command."""
   use_cygwin = False
 
-  def __init__(self, command, **kwargs):
-    self._command = command
-    self._kwargs = kwargs
+  def __init__(self, func, *args, **kwargs):
+    """Construct a runnable which will call 'func' with 'args' and 'kwargs'.
+
+    Args:
+      func: Function which will be called by Invoke
+      args: Positional arguments to be passed to func
+      kwargs: Keyword arguments to be passed to func
+
+      RUNNABLES SHOULD ONLY BE IMPLEMENTED IN THIS FILE, because their
+      string representation (which is used to calculate whether targets should
+      be rebuilt) is based on this file's hash and does not attempt to capture
+      the code or bound variables of the function itself (the one exception is
+      once_test.py which injects its own callbacks to verify its expectations).
+
+      When 'func' is called, its first argument will be a substitution object
+      which it can use to substitute %-templates in its arguments.
+    """
+    self._func = func
+    self._args = args or []
+    self._kwargs = kwargs or {}
 
   def __str__(self):
     values = []
-    # TODO(bradnelson): Do something more reasoned here.
-    values += [repr(self._command)]
+
+    sourcefile = inspect.getsourcefile(self._func)
+    if ('command.py' not in sourcefile and
+        'once_test.py' not in sourcefile):
+      print 'Function', self._func.func_name, 'in', sourcefile
+      raise Exception('Python Runnable objects must be implemented in ' +
+                        'command.py!')
+
+    for v in self._args:
+      values += [repr(v)]
     for k, v in self._kwargs.iteritems():
       values += [repr(k), repr(v)]
+    values += [FILE_CONTENT]
+
     return '\n'.join(values)
 
-  def Invoke(self, check_call, package, inputs, output, cwd,
-             build_signature=None):
-    # TODO(bradnelson): Instead of allowing full subprocess functionality,
-    #     move execution here and use polymorphism to implement things like
-    #     mkdir, copy directly in python.
-    kwargs = self._kwargs.copy()
-    kwargs['cwd'] = os.path.join(os.path.abspath(cwd), kwargs.get('cwd', '.'))
-    values = PrepareCommandValues(kwargs['cwd'], inputs, output)
-    try:
-      values['cores'] = multiprocessing.cpu_count()
-    except NotImplementedError:
-      values['cores'] = 4  # Assume 4 if we can't measure.
-    values['package'] = package
-    if build_signature is not None:
-      values['build_signature'] = build_signature
-    values['top_srcdir'] = FixPath(os.path.relpath(NACL_DIR, kwargs['cwd']))
-    values['abs_top_srcdir'] = FixPath(os.path.abspath(NACL_DIR))
+  def Invoke(self, subst):
+    return self._func(subst, *self._args, **self._kwargs)
+
+
+def Command(command, **kwargs):
+  """Return a Runnable which invokes 'command' with check_call.
+
+  Args:
+    command: List or string with a command suitable for check_call
+    kwargs: Keyword arguments suitable for check_call (or 'cwd' or 'path_dirs')
+
+  The command will be %-substituted and paths will be assumed to be relative to
+  the cwd given by Invoke. If kwargs contains 'cwd' it will be appended to the
+  cwd given by Invoke and used as the cwd for the call. If kwargs contains
+  'path_dirs', the directories therein will be added to the paths searched for
+  the command. Any other kwargs will be passed to check_call.
+  """
+  def runcmd(subst, command, **kwargs):
+    check_call_kwargs = kwargs.copy()
+    command = command[:]
+
+    cwd = subst.SubstituteAbsPaths(check_call_kwargs.get('cwd', '.'))
+    subst.SetCwd(cwd)
+    check_call_kwargs['cwd'] = cwd
 
     # Extract paths from kwargs and add to the command environment.
     path_dirs = []
-    if 'path_dirs' in kwargs:
-      path_dirs = [dirname % values for dirname in kwargs['path_dirs']]
-      del kwargs['path_dirs']
-    kwargs['env'] = PlatformEnvironment(path_dirs)
+    if 'path_dirs' in check_call_kwargs:
+      path_dirs = [subst.Substitute(dirname) for dirname
+                   in check_call_kwargs['path_dirs']]
+      del check_call_kwargs['path_dirs']
+    check_call_kwargs['env'] = PlatformEnvironment(path_dirs)
 
-    if isinstance(self._command, str):
-      command = self._command % values
+    if isinstance(command, str):
+      command = subst.Substitute(command)
     else:
-      command = [arg % values for arg in self._command]
-      paths = kwargs['env']['PATH'].split(os.pathsep)
+      command = [subst.Substitute(arg) for arg in command]
+      paths = check_call_kwargs['env']['PATH'].split(os.pathsep)
       command[0] = file_tools.Which(command[0], paths=paths)
-    check_call(command, **kwargs)
+
+    log_tools.CheckCall(command, **check_call_kwargs)
+
+  return Runnable(runcmd, command, **kwargs)
 
 
-def Mkdir(path, parents=False, **kwargs):
+def Mkdir(path, parents=False):
   """Convenience method for generating mkdir commands."""
-  # TODO(bradnelson): Replace with something less hacky.
-  func = 'os.mkdir'
-  if parents:
-    func = 'os.makedirs'
-  return Command([
-      sys.executable, '-c',
-      'import sys,os; ' + func + '(sys.argv[1])', path],
-      **kwargs)
+  def mkdir(subst, path):
+    path = subst.SubstituteAbsPaths(path)
+    if parents:
+      os.makedirs(path)
+    else:
+      os.mkdir(path)
+  return Runnable(mkdir, path)
 
 
-def Copy(src, dst, **kwargs):
+def Copy(src, dst):
   """Convenience method for generating cp commands."""
-  # TODO(bradnelson): Replace with something less hacky.
-  return Command([
-      sys.executable, '-c',
-      'import sys,shutil; shutil.copyfile(sys.argv[1], sys.argv[2])', src, dst],
-      **kwargs)
+  def copy(subst, src, dst):
+    shutil.copyfile(subst.SubstituteAbsPaths(src),
+                    subst.SubstituteAbsPaths(dst))
+  return Runnable(copy, src, dst)
 
 
 def RemoveDirectory(path):
   """Convenience method for generating a command to remove a directory tree."""
-  # TODO(mcgrathr): Windows
-  return Command(['rm', '-rf', path])
+  def remove(subst, path):
+    file_tools.RemoveDirectoryIfPresent(subst.SubstituteAbsPaths(path))
+  return Runnable(remove, path)
 
 
 def Remove(path):
   """Convenience method for generating a command to remove a file."""
-  # TODO(mcgrathr): Replace with something less hacky.
-  return Command([
-      sys.executable, '-c',
-      'import sys, os\n'
-      'if os.path.exists(sys.argv[1]): os.remove(sys.argv[1])', path
-      ])
+  def remove(subst, path):
+    path = subst.SubstituteAbsPaths(path)
+    if os.path.exists(path):
+      os.remove(path)
+  return Runnable(remove, path)
 
 
 def Rename(src, dst):
   """Convenience method for generating a command to rename a file."""
-  # TODO(mcgrathr): Replace with something less hacky.
-  return Command([
-      sys.executable, '-c',
-      'import sys, os; os.rename(sys.argv[1], sys.argv[2])', src, dst
-      ])
+  def rename(subst, src, dst):
+    os.rename(subst.SubstituteAbsPaths(src), subst.SubstituteAbsPaths(dst))
+  return Runnable(rename, src, dst)
 
 
 def WriteData(data, dst):
   """Convenience method to write a file with fixed contents."""
-  # TODO(mcgrathr): Replace with something less hacky.
-  return Command([
-      sys.executable, '-c',
-      'import sys; open(sys.argv[1], "wb").write(%r)' % data, dst
-      ])
+  def writedata(subst, dst, data):
+    with open(subst.SubstituteAbsPaths(dst), 'wb') as f:
+      f.write(data)
+  return Runnable(writedata, dst, data)
