@@ -16,7 +16,7 @@ CertStoreImpl* CertStoreImpl::GetInstance() {
   return Singleton<CertStoreImpl>::get();
 }
 
-CertStoreImpl::CertStoreImpl() : store_() {}
+CertStoreImpl::CertStoreImpl() {}
 
 CertStoreImpl::~CertStoreImpl() {}
 

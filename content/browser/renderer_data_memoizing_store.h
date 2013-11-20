@@ -57,7 +57,6 @@ class RendererDataMemoizingStore : public NotificationObserver {
       // next_item_id_ wraps around, we reset it to 1.
       if (next_item_id_ == 0)
         next_item_id_ = 1;
-      item->AddRef();
       id_to_item_[item_id] = item;
       item_to_id_[item] = item_id;
     } else {
@@ -129,7 +128,7 @@ class RendererDataMemoizingStore : public NotificationObserver {
                    NotificationService::AllBrowserContextsAndSources());
   }
 
-  // Remove the item specified by |item_id| from id_to_item and item_to_id_.
+  // Remove the item specified by |item_id| from id_to_item_ and item_to_id_.
   // NOTE: the caller (RemoveForRenderProcesHost) must hold lock_.
   void RemoveInternal(int item_id) {
     typename ItemMap::iterator item_iter = id_to_item_.find(item_id);
@@ -140,7 +139,6 @@ class RendererDataMemoizingStore : public NotificationObserver {
     DCHECK(id_iter != item_to_id_.end());
     item_to_id_.erase(id_iter);
 
-    item_iter->second->Release();
     id_to_item_.erase(item_iter);
   }
 
