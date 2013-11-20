@@ -352,6 +352,8 @@ def Translate(arch, pexe):
   pnacl_translate = os.path.join(env.pnacl_base, 'bin', 'pnacl-translate')
   args = [ pnacl_translate, '-arch', arch, pexe, '-o', output_file,
            '--allow-llvm-bitcode-input' ]
+  if env.zerocost_eh:
+    args.append('--pnacl-allow-zerocost-eh')
   Run(args)
   return output_file
 
@@ -497,6 +499,9 @@ def ArgSplit(argv):
                             'variable "%s".') % ARCH_ENV_VAR_NAME)
   parser.add_argument('remainder', nargs=argparse.REMAINDER,
                       metavar='nexe/pexe + args')
+  parser.add_argument('--pnacl-allow-zerocost-eh', action='store_true',
+                      default=False, dest='zerocost_eh',
+                      help='Allow non-stable zero-cost exception handling.')
   (options, args) = parser.parse_known_args(argv)
 
   # Copy the options into env.
