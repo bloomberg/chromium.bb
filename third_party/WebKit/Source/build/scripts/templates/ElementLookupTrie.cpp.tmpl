@@ -1,0 +1,23 @@
+{% from "macros.tmpl" import license -%}
+{{ license() }}
+
+#include "config.h"
+#include "{{namespace}}ElementLookupTrie.h"
+
+#include "{{namespace}}Names.h"
+
+namespace WebCore {
+
+using namespace {{namespace}}Names;
+
+StringImpl* lookup{{namespace}}Tag(const UChar* data, unsigned length)
+{
+    ASSERT(data);
+    ASSERT(length);
+    switch (length) {
+{{body}}
+    }
+    return 0;
+}
+
+} // WebCore

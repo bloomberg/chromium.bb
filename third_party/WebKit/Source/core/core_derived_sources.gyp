@@ -617,6 +617,27 @@
             '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLMetaElement.cpp',
           ],
         },
+        {
+          'action_name': 'HTMLElementLookupTrie',
+          'inputs': [
+            '<@(scripts_for_in_files)',
+            '../build/scripts/make_element_lookup_trie.py',
+            '../build/scripts/templates/ElementLookupTrie.cpp.tmpl',
+            '../build/scripts/templates/ElementLookupTrie.h.tmpl',
+            'html/HTMLTagNames.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementLookupTrie.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementLookupTrie.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_element_lookup_trie.py',
+            'html/HTMLTagNames.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+          ],
+        },
       ],
       'rules': [
         {

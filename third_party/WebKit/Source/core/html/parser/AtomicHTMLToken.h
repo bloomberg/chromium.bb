@@ -26,6 +26,7 @@
 #ifndef AtomicHTMLToken_h
 #define AtomicHTMLToken_h
 
+#include "HTMLElementLookupTrie.h"
 #include "core/dom/Attribute.h"
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLToken.h"
@@ -124,7 +125,10 @@ public:
         case HTMLToken::StartTag:
         case HTMLToken::EndTag: {
             m_selfClosing = token.selfClosing();
-            m_name = AtomicString(token.name());
+            if (StringImpl* tagName = lookupHTMLTag(token.name().data(), token.name().size()))
+                m_name = AtomicString(tagName);
+            else
+                m_name = AtomicString(token.name());
             initializeAttributes(token.attributes());
             break;
         }
