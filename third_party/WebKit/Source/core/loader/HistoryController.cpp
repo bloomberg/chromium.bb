@@ -392,7 +392,7 @@ void HistoryController::createItemTree(Frame* targetFrame, bool clipAtTarget)
         m_currentEntry = HistoryEntry::create(newItem.get());
     } else {
         HistoryItem* oldItem = m_currentEntry->itemForFrame(targetFrame);
-        if (!clipAtTarget)
+        if (!clipAtTarget && oldItem)
             newItem->setDocumentSequenceNumber(oldItem->documentSequenceNumber());
         m_previousEntry = m_currentEntry.release();
         m_currentEntry = m_previousEntry->cloneAndReplace(newItem.get(), oldItem, clipAtTarget, m_page);
