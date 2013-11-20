@@ -12,8 +12,6 @@ import json
 import os
 import re
 
-# TODO(miket/asargent) - parameterize this.
-SOURCE_BASE_PATH = 'chrome/common/extensions/api'
 
 def _RemoveDescriptions(node):
   """Returns a copy of |schema| with "description" fields removed.
@@ -36,12 +34,19 @@ class CppBundleGenerator(object):
   """This class contains methods to generate code based on multiple schemas.
   """
 
-  def __init__(self, root, model, api_defs, cpp_type_generator, cpp_namespace):
+  def __init__(self,
+               root,
+               model,
+               api_defs,
+               cpp_type_generator,
+               cpp_namespace,
+               source_file_dir):
     self._root = root
     self._model = model
     self._api_defs = api_defs
     self._cpp_type_generator = cpp_type_generator
     self._cpp_namespace = cpp_namespace
+    self._source_file_dir = source_file_dir
 
     self.api_cc_generator = _APICCGenerator(self)
     self.api_h_generator = _APIHGenerator(self)
@@ -57,8 +62,8 @@ class CppBundleGenerator(object):
     c = code.Code()
     c.Append(cpp_util.CHROMIUM_LICENSE)
     c.Append()
-    c.Append(cpp_util.GENERATED_BUNDLE_FILE_MESSAGE % SOURCE_BASE_PATH)
-    ifndef_name = cpp_util.GenerateIfndefName(SOURCE_BASE_PATH, file_base)
+    c.Append(cpp_util.GENERATED_BUNDLE_FILE_MESSAGE % self._source_file_dir)
+    ifndef_name = cpp_util.GenerateIfndefName(self._source_file_dir, file_base)
     c.Append()
     c.Append('#ifndef %s' % ifndef_name)
     c.Append('#define %s' % ifndef_name)
@@ -165,7 +170,7 @@ class _APICCGenerator(object):
     c = code.Code()
     c.Append(cpp_util.CHROMIUM_LICENSE)
     c.Append()
-    c.Append('#include "%s"' % (os.path.join(SOURCE_BASE_PATH,
+    c.Append('#include "%s"' % (os.path.join(self._bundle._source_file_dir,
                                              'generated_api.h')))
     c.Append()
     for namespace in self._bundle._model.namespaces.values():
@@ -248,7 +253,7 @@ class _SchemasCCGenerator(object):
     c = code.Code()
     c.Append(cpp_util.CHROMIUM_LICENSE)
     c.Append()
-    c.Append('#include "%s"' % (os.path.join(SOURCE_BASE_PATH,
+    c.Append('#include "%s"' % (os.path.join(self._bundle._source_file_dir,
                                              'generated_schemas.h')))
     c.Append()
     c.Append('#include "base/lazy_instance.h"')

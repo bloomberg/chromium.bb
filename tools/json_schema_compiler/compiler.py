@@ -87,7 +87,8 @@ def GenerateSchema(generator,
                                               api_model,
                                               api_defs,
                                               type_generator,
-                                              root_namespace)
+                                              root_namespace,
+                                              namespace.source_file_dir)
     generators = [
       ('generated_api.cc', cpp_bundle_generator.api_cc_generator),
       ('generated_api.h', cpp_bundle_generator.api_h_generator),
