@@ -165,7 +165,7 @@ class FetchRequest;
 
         virtual String doNotTrackValue() = 0;
 
-        virtual void transitionToCommittedForNewPage() = 0;
+        virtual void transitionToCommittedForNewPage(Frame*) = 0;
 
         virtual PassRefPtr<Frame> createFrame(const KURL&, const String& name, const String& referrer, HTMLFrameOwnerElement*) = 0;
         virtual PassRefPtr<Widget> createPlugin(const IntSize&, HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually) = 0;

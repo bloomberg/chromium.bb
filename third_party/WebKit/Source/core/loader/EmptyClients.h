@@ -226,7 +226,7 @@ public:
 
     virtual String doNotTrackValue() OVERRIDE { return String(); }
 
-    virtual void transitionToCommittedForNewPage() OVERRIDE { }
+    virtual void transitionToCommittedForNewPage(Frame*) OVERRIDE { }
 
     virtual bool navigateBackForward(int offset) const OVERRIDE { return false; }
     virtual void didDisplayInsecureContent() OVERRIDE { }

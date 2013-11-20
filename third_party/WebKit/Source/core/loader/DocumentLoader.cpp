@@ -156,10 +156,15 @@ const KURL& DocumentLoader::url() const
     return request().url();
 }
 
-void DocumentLoader::replaceRequestURLForSameDocumentNavigation(const KURL& url)
+void DocumentLoader::updateForSameDocumentNavigation(const KURL& newURL)
 {
-    m_originalRequestCopy.setURL(url);
-    m_request.setURL(url);
+    KURL oldURL = m_request.url();
+    m_originalRequestCopy.setURL(newURL);
+    m_request.setURL(newURL);
+    clearRedirectChain();
+    if (m_isClientRedirect)
+        appendRedirect(oldURL);
+    appendRedirect(newURL);
 }
 
 bool DocumentLoader::isURLValidForNewHistoryEntry() const

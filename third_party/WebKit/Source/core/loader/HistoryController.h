@@ -150,7 +150,6 @@ public:
     void restoreDocumentState(Frame*);
 
     void updateForCommit(Frame*);
-    void updateForSameDocumentNavigation(Frame*);
 
     PassRefPtr<HistoryItem> currentItemForExport(Frame*);
     PassRefPtr<HistoryItem> previousItemForExport(Frame*);
@@ -162,9 +161,6 @@ public:
     void clearProvisionalEntry();
 
     bool inSameDocumentLoad() const { return !m_sameDocumentLoadsInProgress.isEmpty() && m_differentDocumentLoadsInProgress.isEmpty(); }
-
-    void pushState(Frame*, PassRefPtr<SerializedScriptValue>, const String& url);
-    void replaceState(Frame*, PassRefPtr<SerializedScriptValue>, const String& url);
 
     void setDefersLoading(bool);
 

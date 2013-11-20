@@ -519,25 +519,9 @@ bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason)
 void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource, PassRefPtr<SerializedScriptValue> data, UpdateBackForwardListPolicy updateBackForwardList)
 {
     // Update the data source's request with the new URL to fake the URL change
-    KURL oldURL = m_frame->document()->url();
     m_frame->document()->setURL(newURL);
     setOutgoingReferrer(newURL);
-    documentLoader()->replaceRequestURLForSameDocumentNavigation(newURL);
-
-    // updateBackForwardListForFragmentScroll() must happen after
-    // replaceRequestURLForSameDocumentNavigation(), since we add based on
-    // the current request.
-    if (updateBackForwardList == UpdateBackForwardList)
-        history()->updateBackForwardListForFragmentScroll(m_frame);
-
-    if (sameDocumentNavigationSource == SameDocumentNavigationDefault)
-        history()->updateForSameDocumentNavigation(m_frame);
-    else if (sameDocumentNavigationSource == SameDocumentNavigationPushState)
-        history()->pushState(m_frame, data, newURL.string());
-    else if (sameDocumentNavigationSource == SameDocumentNavigationReplaceState)
-        history()->replaceState(m_frame, data, newURL.string());
-    else
-        ASSERT_NOT_REACHED();
+    documentLoader()->updateForSameDocumentNavigation(newURL);
 
     // Generate start and stop notifications only when loader is completed so that we
     // don't fire them for fragment redirection that happens in window.onload handler.
@@ -545,16 +529,20 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     if (m_frame->document()->loadEventFinished())
         m_client->postProgressStartedNotification();
 
-    m_documentLoader->clearRedirectChain();
-    if (m_documentLoader->isClientRedirect())
-        m_documentLoader->appendRedirect(oldURL);
-    m_documentLoader->appendRedirect(newURL);
-
     NavigationHistoryPolicy navigationHistoryPolicy = NavigationReusedHistoryEntry;
     if (updateBackForwardList == UpdateBackForwardList || sameDocumentNavigationSource == SameDocumentNavigationPushState)
         navigationHistoryPolicy = NavigationCreatedHistoryEntry;
     m_client->dispatchDidNavigateWithinPage(navigationHistoryPolicy);
     m_client->dispatchDidReceiveTitle(m_frame->document()->title());
+
+    if (m_currentItem) {
+        m_currentItem->setURL(newURL);
+        if (sameDocumentNavigationSource != SameDocumentNavigationDefault) {
+            m_currentItem->setStateObject(data);
+            m_currentItem->setFormData(0);
+            m_currentItem->setFormContentType(String());
+        }
+    }
 
     if (m_frame->document()->loadEventFinished())
         m_client->postProgressFinishedNotification();
@@ -869,9 +857,7 @@ void FrameLoader::commitProvisionalLoad()
     if (isLoadingMainFrame())
         m_frame->page()->chrome().client().needTouchEvents(false);
 
-    history()->updateForCommit(m_frame);
-    m_client->transitionToCommittedForNewPage();
-
+    m_client->transitionToCommittedForNewPage(m_frame);
     m_frame->navigationScheduler().cancel();
     m_frame->editor().clearLastEditCommand();
 
@@ -1213,7 +1199,6 @@ void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const Navigatio
             m_provisionalDocumentLoader->detachFromFrame();
         m_provisionalDocumentLoader = 0;
     }
-    history()->clearProvisionalEntry();
     loadInSameDocument(request.url(), 0, isNewNavigation, clientRedirect);
 }
 

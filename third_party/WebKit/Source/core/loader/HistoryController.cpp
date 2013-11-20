@@ -175,6 +175,7 @@ void HistoryController::restoreScrollPositionAndViewState(Frame* frame)
 
 void HistoryController::updateBackForwardListForFragmentScroll(Frame* frame)
 {
+    m_provisionalEntry.clear();
     createNewBackForwardItem(frame, false);
 }
 
@@ -333,14 +334,6 @@ void HistoryController::updateForCommit(Frame* frame)
         updateWithoutCreatingNewBackForwardItem(frame);
 }
 
-void HistoryController::updateForSameDocumentNavigation(Frame* frame)
-{
-    if (frame->document()->url().isEmpty())
-        return;
-    if (HistoryItem* item = m_currentEntry->itemForFrame(frame))
-        item->setURL(frame->document()->url());
-}
-
 static PassRefPtr<HistoryItem> itemForExport(HistoryNode* historyNode)
 {
     RefPtr<HistoryItem> item = historyNode->value()->copy();
@@ -477,39 +470,6 @@ void HistoryController::updateWithoutCreatingNewBackForwardItem(Frame* frame)
         // Even if the final URL didn't change, the form data may have changed.
         item->setFormInfoFromRequest(documentLoader->request());
     }
-}
-
-void HistoryController::pushState(Frame* frame, PassRefPtr<SerializedScriptValue> stateObject, const String& urlString)
-{
-    if (!m_currentEntry)
-        return;
-
-    // Get a HistoryItem tree for the current frame tree, then override data to reflect
-    // the pushState() arguments.
-    createItemTree(frame, false);
-    HistoryItem* item = m_currentEntry->itemForFrame(frame);
-    if (!item) {
-        updateForInitialLoadInChildFrame(frame);
-        item = m_currentEntry->itemForFrame(frame);
-    }
-    item->setStateObject(stateObject);
-    item->setURLString(urlString);
-}
-
-void HistoryController::replaceState(Frame* frame, PassRefPtr<SerializedScriptValue> stateObject, const String& urlString)
-{
-    if (!m_currentEntry)
-        return;
-
-    HistoryItem* item = m_currentEntry->itemForFrame(frame);
-    if (!item)
-        return;
-
-    if (!urlString.isEmpty())
-        item->setURLString(urlString);
-    item->setStateObject(stateObject);
-    item->setFormData(0);
-    item->setFormContentType(String());
 }
 
 } // namespace WebCore
