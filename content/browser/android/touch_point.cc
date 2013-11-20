@@ -47,8 +47,11 @@ void MaybeAddTouchPoint(JNIEnv* env,
       Java_TouchPoint_getTouchMajor(env, pt) * 0.5f / dpi_scale);
   const int radiusMinor = static_cast<int>(
       Java_TouchPoint_getTouchMinor(env, pt) * 0.5f / dpi_scale);
+  const float majorAngleInRadiansClockwiseFromVertical =
+      Java_TouchPoint_getOrientation(env, pt);
   const float majorAngleInDegreesClockwiseFromVertical =
-      (Java_TouchPoint_getOrientation(env, pt) * 180.f) / M_PI;
+      std::isnan(majorAngleInRadiansClockwiseFromVertical)
+          ? 0.f : (majorAngleInRadiansClockwiseFromVertical * 180.f) / M_PI;
   // Android provides a major axis orientation clockwise with respect to the
   // vertical of [-90, 90], while the W3C specifies a range of [0, 90].
   if (majorAngleInDegreesClockwiseFromVertical >= 0) {
