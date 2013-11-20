@@ -10341,6 +10341,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Cellular.DHCPOptionFailureDetected"
+    enum="NetworkDHCPOptionFailure">
+  <summary>
+    Chrome OS network metric that tracks the number of DHCP option failures
+    encountered by Shill.  This indicates that Shill is using minimal DHCP
+    options due to suspected MTU issues on the return path from the DHCP server
+    back to the client.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Cellular.Disconnect"
     enum="NetworkDisconnectType">
   <summary>
@@ -10463,6 +10473,16 @@ other types of suffix sets.
   <summary>
     Chrome OS cellular network metric that tracks the number of corrupted
     profiles encountered by Shill.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.DHCPOptionFailureDetected"
+    enum="NetworkDHCPOptionFailure">
+  <summary>
+    Chrome OS network metric that tracks the number of DHCP option failures
+    encountered by Shill.  This indicates that Shill is using minimal DHCP
+    options due to suspected MTU issues on the return path from the DHCP server
+    back to the client.
   </summary>
 </histogram>
 
@@ -10711,6 +10731,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Wifi.DHCPOptionFailureDetected"
+    enum="NetworkDHCPOptionFailure">
+  <summary>
+    Chrome OS network metric that tracks the number of DHCP option failures
+    encountered by Shill.  This indicates that Shill is using minimal DHCP
+    options due to suspected MTU issues on the return path from the DHCP server
+    back to the client.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Wifi.Disconnect" enum="NetworkDisconnectType">
   <summary>
     Chrome OS network usage metric that tracks whether an 802.11 wireless
@@ -10916,6 +10946,16 @@ other types of suffix sets.
     of a WiFi scan (if the scan includes both a progressive scan and a full
     scan, the TimeToScanAndConnect starts with the first scan of the series) and
     the completion of a successful connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiMax.DHCPOptionFailureDetected"
+    enum="NetworkDHCPOptionFailure">
+  <summary>
+    Chrome OS network metric that tracks the number of DHCP option failures
+    encountered by Shill.  This indicates that Shill is using minimal DHCP
+    options due to suspected MTU issues on the return path from the DHCP server
+    back to the client.
   </summary>
 </histogram>
 
@@ -26552,6 +26592,10 @@ other types of suffix sets.
 
 <enum name="NetworkCorruptedProfile" type="int">
   <int value="0" label="Corrupted Profile"/>
+</enum>
+
+<enum name="NetworkDHCPOptionFailure" type="int">
+  <int value="0" label="DHCP Option Failure"/>
 </enum>
 
 <enum name="NetworkDisconnectType" type="int">
