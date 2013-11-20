@@ -37,20 +37,27 @@
  */
 static
 int get_module_name_safely(wchar_t **oldpath) {
-  int length = 128, done;
-  do {
-    *oldpath = HeapAlloc(
-      GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(wchar_t)*(length));
-    if (!*oldpath) return 0;
-    done = GetModuleFileNameW(NULL, *oldpath, length);
-    if (!done) return 0;
-    if (done >= length - 1) {
-      length <<= 1;
-      HeapFree(GetProcessHeap(), 0, oldpath);
-      done = 0;
+  int length = 128;
+  int real_size;
+  wchar_t *result;
+  *oldpath = NULL;
+  while (1) {
+    result = HeapAlloc(
+      GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(wchar_t) * length);
+    if (result == NULL) return 0;
+    real_size = GetModuleFileNameW(NULL, result, length);
+    if (real_size == 0) {
+      HeapFree(GetProcessHeap(), 0, result);
+      return 0;
     }
-  } while (!done);
-  return length;
+    if (real_size < length - 1) {
+      /* Success */
+      *oldpath = result;
+      return real_size;
+    }
+    length <<= 1;
+    HeapFree(GetProcessHeap(), 0, result);
+  }
 }
 
 
@@ -146,7 +153,7 @@ void entry() {
   static PROCESS_INFORMATION pi;
 
   length = get_module_name_safely(&oldpath);
-  if (!oldpath) goto ShowErrorMessage;
+  if (length == 0) goto ShowErrorMessage;
   /* If redirector is called as "redirector.exe", dump redirector table.  */
   if (check_path(oldpath, L"redirector.exe")) {
     output = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -166,7 +173,6 @@ void entry() {
   if (redirect_index >= n_redirects) goto ShowErrorMessage;
   newpath = HeapAlloc(GetProcessHeap(), 0, sizeof(wchar_t)*(length + 64));
   if (!newpath) goto ShowErrorMessage;
-  length = lstrlenW(oldpath);
   length_from = lstrlenW(redirects[redirect_index].from);
   length_to = lstrlenW(redirects[redirect_index].to);
   lstrcpynW(newpath, oldpath, length - length_from + 1);
