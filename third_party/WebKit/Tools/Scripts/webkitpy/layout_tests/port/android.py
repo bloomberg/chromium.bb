@@ -783,6 +783,7 @@ class ChromiumAndroidDriver(driver.Driver):
         self._driver_details = driver_details
         self._debug_logging = self._port._debug_logging
         self._created_cmd_line = False
+        self._device_failed = False
 
         # FIXME: If we taught ProfileFactory about "target" devices we could
         # just use the logic in Driver instead of duplicating it here.
@@ -851,7 +852,7 @@ class ChromiumAndroidDriver(driver.Driver):
         self._md5sum_path = self._port.path_to_md5sum()
         if not self._android_commands.file_exists(MD5SUM_DEVICE_PATH):
             if not self._android_commands.push(self._md5sum_path, MD5SUM_DEVICE_PATH):
-                raise driver.DeviceFailure('Could not push md5sum to device')
+                self._abort('Could not push md5sum to device')
 
         self._push_executable(log_callback)
         self._push_fonts(log_callback)
@@ -895,6 +896,7 @@ class ChromiumAndroidDriver(driver.Driver):
             _log.debug('[%s] %s' % (self._android_commands.get_serial(), message))
 
     def _abort(self, message):
+        self._device_failed = True
         raise driver.DeviceFailure('[%s] %s' % (self._android_commands.get_serial(), message))
 
     @staticmethod
@@ -1183,7 +1185,9 @@ class ChromiumAndroidDriver(driver.Driver):
         return self._pid_from_android_ps_output(ps_output, self._driver_details.package_name())
 
     def stop(self):
-        if self._server_process:
+        if not self._device_failed:
+            # Do not try to stop the application if there's something wrong with the device; adb may hang.
+            # FIXME: crbug.com/305040. Figure out if it's really hanging (and why).
             self._android_commands.run(['shell', 'am', 'force-stop', self._driver_details.package_name()])
 
         if self._read_stdout_process:
@@ -1202,7 +1206,7 @@ class ChromiumAndroidDriver(driver.Driver):
 
         if self._android_devices.is_device_prepared(self._android_commands.get_serial()):
             if not ChromiumAndroidDriver._loop_with_timeout(self._remove_all_pipes, DRIVER_START_STOP_TIMEOUT_SECS):
-                raise driver.DeviceFailure('Failed to remove fifo files. May be locked.')
+                self._abort('Failed to remove fifo files. May be locked.')
 
         self._clean_up_cmd_line()
 
