@@ -528,7 +528,9 @@ void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
     NotifyRetryTime(base::Time());
   } else {
     HandleFailure(session->status_controller().model_neutral_state());
-    if (!pending_configure_params_->retry_task.is_null()) {
+    // Sync cycle might receive response from server that causes scheduler to
+    // stop and draws pending_configure_params_ invalid.
+    if (started_ && !pending_configure_params_->retry_task.is_null()) {
       pending_configure_params_->retry_task.Run();
       pending_configure_params_->retry_task.Reset();
     }

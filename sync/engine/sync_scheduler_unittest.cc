@@ -256,6 +256,10 @@ ACTION_P2(RecordSyncShareMultiple, times, quit_after) {
   return true;
 }
 
+ACTION_P(StopScheduler, scheduler) {
+  scheduler->Stop();
+}
+
 ACTION(AddFailureAndQuitLoopNow) {
   ADD_FAILURE();
   QuitLoopNow();
@@ -362,6 +366,37 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
   RunLoop();
 
   ASSERT_EQ(1, ready_counter.times_called());
+}
+
+// Simuilate SyncSchedulerImpl::Stop being called in the middle of Configure.
+// This can happen if server returns NOT_MY_BIRTHDAY.
+TEST_F(SyncSchedulerTest, ConfigWithStop) {
+  UseMockDelayProvider();
+  EXPECT_CALL(*delay(), GetDelay(_))
+      .WillRepeatedly(Return(TimeDelta::FromMilliseconds(1)));
+  SyncShareTimes times;
+  const ModelTypeSet model_types(BOOKMARKS);
+
+  StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
+
+  // Make ConfigureSyncShare call scheduler->Stop(). It is not supposed to call
+  // retry_task or dereference configuration params.
+  EXPECT_CALL(*syncer(), ConfigureSyncShare(_,_,_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateConfigureFailed),
+                      StopScheduler(scheduler()),
+                      RecordSyncShare(&times)));
+
+  CallbackCounter ready_counter;
+  CallbackCounter retry_counter;
+  ConfigurationParams params(
+      GetUpdatesCallerInfo::RECONFIGURATION,
+      model_types,
+      TypesToRoutingInfo(model_types),
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+  scheduler()->ScheduleConfiguration(params);
+  ASSERT_EQ(0, ready_counter.times_called());
+  ASSERT_EQ(0, retry_counter.times_called());
 }
 
 // Issue a nudge when the config has failed. Make sure both the config and
