@@ -498,6 +498,7 @@ hooks = [
     'download_from_google_storage',
     '--platform=win32',
     '--directory',
+    '--no_auth',
     '--bucket',
     'chromium-gn',
     'src/tools/gn/bin/win'
@@ -513,6 +514,7 @@ hooks = [
     'download_from_google_storage',
     '--platform=darwin',
     '--directory',
+    '--no_auth',
     '--bucket',
     'chromium-gn',
     'src/tools/gn/bin/mac'
@@ -528,6 +530,7 @@ hooks = [
     'download_from_google_storage',
     '--platform=linux*',
     '--directory',
+    '--no_auth',
     '--bucket',
     'chromium-gn',
     'src/tools/gn/bin/linux'
