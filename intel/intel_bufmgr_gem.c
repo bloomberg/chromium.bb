@@ -3033,7 +3033,7 @@ drm_intel_get_reset_stats(drm_intel_context *ctx,
 	if (ctx == NULL)
 		return -EINVAL;
 
-	VG_CLEAR(stats);
+	memset(&stats, 0, sizeof(stats));
 
 	bufmgr_gem = (drm_intel_bufmgr_gem *)ctx->bufmgr;
 	stats.ctx_id = ctx->ctx_id;
