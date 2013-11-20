@@ -343,7 +343,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateResource(
           size, GL_TEXTURE_POOL_UNMANAGED_CHROMIUM, wrap_mode, hint, format);
     case Bitmap:
       DCHECK_EQ(RGBA_8888, format);
-      return CreateBitmap(size);
+      return CreateBitmap(size, wrap_mode);
     case InvalidType:
       break;
   }
@@ -364,7 +364,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateManagedResource(
           size, GL_TEXTURE_POOL_MANAGED_CHROMIUM, wrap_mode, hint, format);
     case Bitmap:
       DCHECK_EQ(RGBA_8888, format);
-      return CreateBitmap(size);
+      return CreateBitmap(size, wrap_mode);
     case InvalidType:
       break;
   }
@@ -391,7 +391,8 @@ ResourceProvider::ResourceId ResourceProvider::CreateGLTexture(
   return id;
 }
 
-ResourceProvider::ResourceId ResourceProvider::CreateBitmap(gfx::Size size) {
+ResourceProvider::ResourceId ResourceProvider::CreateBitmap(
+    gfx::Size size, GLint wrap_mode) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_ptr<SharedBitmap> bitmap;
@@ -406,7 +407,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateBitmap(gfx::Size size) {
 
   ResourceId id = next_id_++;
   Resource resource(
-      pixels, bitmap.release(), size, GL_LINEAR, GL_CLAMP_TO_EDGE);
+      pixels, bitmap.release(), size, GL_LINEAR, wrap_mode);
   resource.allocated = true;
   resources_[id] = resource;
   return id;
@@ -1241,6 +1242,7 @@ void ResourceProvider::TransferResource(WebGraphicsContext3D* context,
   DCHECK(!source->lock_for_read_count);
   DCHECK(!source->external || (source->external && source->mailbox.IsValid()));
   DCHECK(source->allocated);
+  DCHECK_EQ(source->wrap_mode, GL_CLAMP_TO_EDGE);
   resource->id = id;
   resource->format = source->format;
   resource->target = source->target;
@@ -1630,11 +1632,6 @@ void ResourceProvider::CreateForTesting(ResourceId id) {
   LazyCreate(GetResource(id));
 }
 
-GLint ResourceProvider::WrapModeForTesting(ResourceId id) {
-  Resource* resource = GetResource(id);
-  return resource->wrap_mode;
-}
-
 GLenum ResourceProvider::TargetForTesting(ResourceId id) {
   Resource* resource = GetResource(id);
   return resource->target;
@@ -1819,6 +1816,11 @@ base::SharedMemory* ResourceProvider::GetSharedMemory(ResourceId id) {
   if (!resource->shared_bitmap)
     return NULL;
   return resource->shared_bitmap->memory();
+}
+
+GLint ResourceProvider::GetWrapMode(ResourceId id) {
+  Resource* resource = GetResource(id);
+  return resource->wrap_mode;
 }
 
 GLint ResourceProvider::GetActiveTextureUnit(WebGraphicsContext3D* context) {

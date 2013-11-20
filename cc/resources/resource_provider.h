@@ -112,7 +112,7 @@ class CC_EXPORT ResourceProvider {
                              TextureUsageHint hint,
                              ResourceFormat format);
 
-  ResourceId CreateBitmap(gfx::Size size);
+  ResourceId CreateBitmap(gfx::Size size, GLint wrap_mode);
   // Wraps an external texture into a GL resource.
   ResourceId CreateResourceFromExternalTexture(
       unsigned texture_target,
@@ -328,6 +328,8 @@ class CC_EXPORT ResourceProvider {
 
   base::SharedMemory* GetSharedMemory(ResourceId id);
 
+  GLint GetWrapMode(ResourceId id);
+
   // For tests only! This prevents detecting uninitialized reads.
   // Use SetPixels or LockForWrite to allocate implicitly.
   void AllocateForTesting(ResourceId id);
@@ -335,7 +337,6 @@ class CC_EXPORT ResourceProvider {
   // For tests only!
   void CreateForTesting(ResourceId id);
 
-  GLint WrapModeForTesting(ResourceId id);
   GLenum TargetForTesting(ResourceId id);
 
   // Sets the current read fence. If a resource is locked for read
