@@ -133,7 +133,7 @@
             'type': 'none',
             'dependencies': [
                 '<(DEPTH)/net/net.gyp:net_resources',
-                '<(DEPTH)/ui/ui.gyp:ui_resources',
+                '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
                 '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
                 '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
             ],
