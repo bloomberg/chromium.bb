@@ -157,7 +157,6 @@ public:
     PassRefPtr<HistoryItem> provisionalItemForExport(Frame*);
 
     HistoryItem* currentItem(Frame*) const;
-    bool currentItemShouldBeReplaced(Frame*) const;
 
     HistoryItem* previousItem(Frame*) const;
     void clearProvisionalEntry();

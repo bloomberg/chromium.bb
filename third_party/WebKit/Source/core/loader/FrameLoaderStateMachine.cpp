@@ -46,12 +46,17 @@ bool FrameLoaderStateMachine::startedFirstRealLoad() const
 
 bool FrameLoaderStateMachine::committedFirstRealDocumentLoad() const
 {
-    return m_state == CommittedFirstRealLoad;
+    return m_state >= CommittedFirstRealLoad;
 }
 
 bool FrameLoaderStateMachine::creatingInitialEmptyDocument() const
 {
     return m_state == CreatingInitialEmptyDocument;
+}
+
+bool FrameLoaderStateMachine::committedMultipleRealLoads() const
+{
+    return m_state == CommittedMultipleRealLoads;
 }
 
 bool FrameLoaderStateMachine::isDisplayingInitialEmptyDocument() const

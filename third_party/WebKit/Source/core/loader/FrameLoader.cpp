@@ -292,6 +292,8 @@ void FrameLoader::clear(ClearOptions options)
 
     if (m_stateMachine.isDisplayingInitialEmptyDocument())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
+    else if (!m_stateMachine.committedMultipleRealLoads())
+        m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedMultipleRealLoads);
 }
 
 void FrameLoader::receivedFirstData()
@@ -1298,8 +1300,7 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
         m_stateMachine.advanceTo(FrameLoaderStateMachine::StartedFirstRealLoad);
 
     // The current load should replace the history item if it is the first real
-    // load of the frame. FrameLoadTypeRedirectWithLockedBackForwardList is a
-    // proxy for history()->currentItemShouldBeReplaced().
+    // load of the frame.
     bool replacesCurrentHistoryItem = false;
     if (type == FrameLoadTypeRedirectWithLockedBackForwardList
         || !m_stateMachine.committedFirstRealDocumentLoad()) {

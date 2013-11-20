@@ -379,17 +379,6 @@ HistoryItem* HistoryController::currentItem(Frame* frame) const
     return m_currentEntry ? m_currentEntry->itemForFrame(frame) : 0;
 }
 
-bool HistoryController::currentItemShouldBeReplaced(Frame* frame) const
-{
-    // From the HTML5 spec for location.assign():
-    //  "If the browsing context's session history contains only one Document,
-    //   and that was the about:blank Document created when the browsing context
-    //   was created, then the navigation must be done with replacement enabled."
-    if (m_previousEntry && m_previousEntry->itemForFrame(frame))
-        return false;
-    return equalIgnoringCase(frame->document()->url(), blankURL());
-}
-
 HistoryItem* HistoryController::previousItem(Frame* frame) const
 {
     return m_previousEntry ? m_previousEntry->itemForFrame(frame) : 0;
