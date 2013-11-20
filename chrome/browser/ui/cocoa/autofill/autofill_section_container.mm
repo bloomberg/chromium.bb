@@ -49,22 +49,6 @@ const size_t kDetailSectionInset = 10;
 // Vertical padding around the section header.
 const CGFloat kVerticalHeaderPadding = 6;
 
-// Break suggestion text into two lines. TODO(groby): Should be on delegate.
-void BreakSuggestionText(const string16& text,
-                         string16* line1,
-                         string16* line2) {
-  // TODO(estade): does this localize well?
-  string16 line_return(base::ASCIIToUTF16("\n"));
-  size_t position = text.find(line_return);
-  if (position == string16::npos) {
-    *line1 = text;
-    line2->clear();
-  } else {
-    *line1 = text.substr(0, position);
-    *line2 = text.substr(position + line_return.length());
-  }
-}
-
 // If the Autofill data comes from a credit card, make sure to overwrite the
 // CC comboboxes (even if they already have something in them). If the
 // Autofill data comes from an AutofillProfile, leave the comboboxes alone.
@@ -293,12 +277,9 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   const base::string16& text = suggestionState.horizontally_compact_text;
   showSuggestions_ = suggestionState.visible;
 
-  base::string16 line1;
-  base::string16 line2;
-  BreakSuggestionText(text, &line1, &line2);
-  [suggestContainer_ setIcon:suggestionState.icon.AsNSImage()];
-  [suggestContainer_ setSuggestionText:base::SysUTF16ToNSString(line1)
-                                 line2:base::SysUTF16ToNSString(line2)];
+  [suggestContainer_ setSuggestionText:base::SysUTF16ToNSString(text)
+                                  icon:suggestionState.icon.AsNSImage()];
+
   if (!suggestionState.extra_text.empty()) {
     NSString* extraText =
         base::SysUTF16ToNSString(suggestionState.extra_text);

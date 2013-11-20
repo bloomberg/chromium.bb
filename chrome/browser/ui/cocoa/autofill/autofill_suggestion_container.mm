@@ -21,9 +21,6 @@ namespace {
 // Horizontal padding between text and other elements (in pixels).
 const int kAroundTextPadding = 4;
 
-// Vertical padding between individual elements.
-const int kVerticalPadding = 8;
-
 // Padding at the top of suggestions.
 const CGFloat kTopPadding = 10;
 
@@ -38,14 +35,9 @@ const CGFloat kInfiniteSize = 1.0e6;
 // an NSTextField does. (Which UX feedback was based on)
 const CGFloat kLineFragmentPadding = 2.0;
 
-// Centers |rect2| vertically in |rect1|, on an integral y coordinate.
-// Assumes |rect1| has integral origin coordinates.
-NSRect CenterVertically(NSRect rect1, NSRect rect2) {
-  DCHECK_LE(NSHeight(rect2), NSHeight(rect1));
-  CGFloat offset = (NSHeight(rect1) - NSHeight(rect2)) / 2.0;
-  rect2.origin.y = std::floor(rect1.origin.y + offset);
-  return rect2;
-}
+// Padding added on top of the label so its first line looks centered with
+// respect to the input field.
+const CGFloat kLabelTopPadding = 5.0;
 
 }
 
@@ -115,7 +107,10 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   [label_ setSelectable:NO];
   [label_ setDrawsBackground:NO];
 
-  label2_.reset([[self createLabelWithFrame:NSZeroRect] retain]);
+  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+      [[NSMutableParagraphStyle alloc] init]);
+  [paragraphStyle setLineHeightMultiple:1.5];
+  [label_ setDefaultParagraphStyle:paragraphStyle];
 
   inputField_.reset([[AutofillTextField alloc] initWithFrame:NSZeroRect]);
   [inputField_ setHidden:YES];
@@ -126,32 +121,16 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
 
   base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
   [view setSubviews:
-      @[ label_, inputField_, label2_, spacer_ ]];
+      @[ label_, inputField_, spacer_ ]];
   [self setView:view];
 }
 
-- (NSTextField*)createLabelWithFrame:(NSRect)frame {
-  base::scoped_nsobject<NSTextField> label(
-      [[NSTextField alloc] initWithFrame:frame]);
-  [label setEditable:NO];
-  [label setDrawsBackground:NO];
-  [label setBordered:NO];
-  return label.autorelease();
-}
-
-// TODO(groby): Can we make all the individual setters private and just
-// update state as a whole?
-- (void)setIcon:(NSImage*)iconImage {
-  iconImage_.reset([iconImage retain]);
-}
-
-- (void)setSuggestionText:(NSString*)line1
-                    line2:(NSString*)line2 {
+- (void)setSuggestionText:(NSString*)line icon:(NSImage*)icon {
   [label_ setString:@""];
 
-  if (iconImage_.get()) {
+  if ([icon size].width) {
     base::scoped_nsobject<IconAttachmentCell> cell(
-        [[IconAttachmentCell alloc] initImageCell:iconImage_]);
+        [[IconAttachmentCell alloc] initImageCell:icon]);
     base::scoped_nsobject<NSTextAttachment> attachment(
         [[NSTextAttachment alloc] init]);
     [cell adjustBaselineForFont:[NSFont controlContentFontOfSize:0]];
@@ -162,22 +141,19 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   }
 
   NSDictionary* attributes = @{
-    NSCursorAttributeName : [NSCursor arrowCursor],
-      NSFontAttributeName : [NSFont controlContentFontOfSize:0]
+    NSParagraphStyleAttributeName : [label_ defaultParagraphStyle],
+            NSCursorAttributeName : [NSCursor arrowCursor],
+              NSFontAttributeName : [NSFont controlContentFontOfSize:0]
   };
   base::scoped_nsobject<NSAttributedString> str1(
-      [[NSAttributedString alloc] initWithString:line1
+      [[NSAttributedString alloc] initWithString:line
                                       attributes:attributes]);
   [[label_ textStorage] appendAttributedString:str1];
-
-  [label2_ setStringValue:line2];
-  [label2_ setHidden:![line2 length]];
 
   [label_ setVerticallyResizable:YES];
   [label_ setHorizontallyResizable:NO];
   [label_ setFrameSize:NSMakeSize(2 * autofill::kFieldWidth, kInfiniteSize)];
   [label_ sizeToFit];
-  [label2_ sizeToFit];
 }
 
 - (void)showInputField:(NSString*)text withIcon:(NSImage*)icon {
@@ -192,25 +168,15 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   [inputField_ setFrameSize:frameSize];
 }
 
-- (NSSize)preferredSizeForFirstLine {
+
+- (NSSize)preferredSize {
   NSSize size = [label_ bounds].size;
+  size.height += kLabelTopPadding;
 
   // Final inputField_ sizing/spacing depends on a TODO(estade) in Views code.
   if (![inputField_ isHidden]) {
     size.height = std::max(size.height, NSHeight([inputField_ frame]));
     size.width += NSWidth([inputField_ frame])  + kAroundTextPadding;
-  }
-  return size;
-}
-
-- (NSSize)preferredSize {
-  NSSize size = [self preferredSizeForFirstLine];
-
-  if (![label2_ isHidden]) {
-    NSSize size2 = [[label2_ cell] cellSize];
-    size = NSMakeSize(
-        std::ceil(std::max(size.width, size2.width)),
-        std::ceil(size.height) + kVerticalPadding + std::ceil(size2.height));
   }
 
   size.height += kTopPadding;
@@ -227,41 +193,25 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   NSRect spacerFrame = NSMakeRect(0, preferredContainerSize.height - 1,
                                   preferredContainerSize.width, 1);
 
-  NSRect lineFrame;
-  lineFrame.size = [self preferredSizeForFirstLine];
-  lineFrame.origin.x = NSMinX(bounds);
-  lineFrame.origin.y =
-      preferredContainerSize.height - NSHeight(lineFrame) - kTopPadding;
+  NSRect labelFrame = [label_ bounds];
+  labelFrame.origin.x = NSMinX(bounds);
+  labelFrame.origin.y =
+      NSMaxY(bounds) - kLabelTopPadding - NSHeight(labelFrame) - kTopPadding;
 
-  // Ensure text does not exceed the view width.
-  lineFrame.size.width = std::min(NSWidth(lineFrame), NSWidth(bounds));
-
-  // Layout the controls - two lines on two rows, left-aligned. The optional
-  // textfield is on the first line, right-aligned.
-  NSRect labelFrame = lineFrame;
-  NSLayoutManager* layoutManager = [label_ layoutManager];
-  NSTextContainer* textContainer = [label_ textContainer];
-  [layoutManager ensureLayoutForTextContainer:textContainer];
-  NSRect textFrame = [layoutManager usedRectForTextContainer:textContainer];
-
-  labelFrame.size.height = textFrame.size.height;
-  labelFrame = CenterVertically(lineFrame, labelFrame);
-
+  // Position input field - top is aligned to top of label field.
   if (![inputField_ isHidden]) {
-    NSRect dummyFrame;
     NSRect inputfieldFrame = [inputField_ frame];
     inputfieldFrame.origin.x = NSMaxX(bounds) - NSWidth(inputfieldFrame);
-    inputfieldFrame = CenterVertically(lineFrame, inputfieldFrame);
+    inputfieldFrame.origin.y =
+        NSMaxY(labelFrame) + kLabelTopPadding - NSHeight(inputfieldFrame);
     [inputField_ setFrameOrigin:inputfieldFrame.origin];
-    NSDivideRect(labelFrame, &dummyFrame, &labelFrame,
-                 NSWidth(inputfieldFrame) + kAroundTextPadding, NSMaxXEdge);
+
+    // Due to fixed width, fields are guaranteed to not overlap.
+    DCHECK_LE(NSMaxX(labelFrame), NSMinX(inputfieldFrame));
   }
 
   [spacer_ setFrame:spacerFrame];
   [label_ setFrame:labelFrame];
-  [label2_ setFrameOrigin:NSMakePoint(
-          0,
-          NSMinY(lineFrame) - kAroundTextPadding - NSHeight([label2_ frame]))];
   [[self view] setFrameSize:preferredContainerSize];
 }
 
