@@ -84,11 +84,17 @@ PassRefPtr<Node> Text::mergeNextSiblingNodesIfPossible()
         String oldTextData = data();
         setDataWithoutUpdate(data() + nextTextData);
         updateTextRenderer(oldTextData.length(), 0);
+
         // Empty nextText for layout update.
         nextText->setDataWithoutUpdate(emptyString());
+        nextText->updateTextRenderer(0, nextTextData.length());
+
         document().didMergeTextNodes(nextText.get(), offset);
+
         // Restore nextText for mutation event.
         nextText->setDataWithoutUpdate(nextTextData);
+        nextText->updateTextRenderer(0, 0);
+
         document().incDOMTreeVersion();
         didModifyData(oldTextData);
         nextText->remove(IGNORE_EXCEPTION);
