@@ -397,7 +397,7 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             addRegionRule(static_cast<StyleRuleRegion*>(rule), addRuleFlags & RuleHasDocumentSecurityOrigin);
         } else if (rule->isHostRule()) {
             addHostRule(static_cast<StyleRuleHost*>(rule));
-        } else if (rule->isViewportRule() && !(addRuleFlags & ViewportRuleIsProcessed)) {
+        } else if (rule->isViewportRule()) {
             addViewportRule(static_cast<StyleRuleViewport*>(rule));
         } else if (rule->isSupportsRule() && static_cast<StyleRuleSupports*>(rule)->conditionIsSupported()) {
             addChildRules(static_cast<StyleRuleSupports*>(rule)->childRules(), medium, addRuleFlags);

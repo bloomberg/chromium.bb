@@ -938,6 +938,9 @@ String Internals::viewportAsText(Document* document, float, int availableWidth, 
         exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return String();
     }
+
+    document->updateLayoutIgnorePendingStylesheets();
+
     Page* page = document->page();
 
     // Update initial viewport size.

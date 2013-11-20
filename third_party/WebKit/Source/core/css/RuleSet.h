@@ -38,7 +38,6 @@ enum AddRuleFlags {
     RuleHasDocumentSecurityOrigin = 1,
     RuleCanUseFastCheckSelector   = 1 << 1,
     RuleIsInRegionRule            = 1 << 2,
-    ViewportRuleIsProcessed       = 1 << 3
 };
 
 enum PropertyWhitelistType {
@@ -126,7 +125,6 @@ public:
     void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, AddRuleFlags = RuleHasNoSpecialState);
     void addStyleRule(StyleRule*, AddRuleFlags);
     void addRule(StyleRule*, unsigned selectorIndex, AddRuleFlags);
-    void addViewportRule(StyleRuleViewport*);
 
     const RuleFeatureSet& features() const { return m_features; }
 
@@ -177,6 +175,7 @@ private:
 
     void addToRuleSet(StringImpl* key, PendingRuleMap&, const RuleData&);
     void addPageRule(StyleRulePage*);
+    void addViewportRule(StyleRuleViewport*);
     void addFontFaceRule(StyleRuleFontFace*);
     void addKeyframesRule(StyleRuleKeyframes*);
     void addHostRule(StyleRuleHost*);

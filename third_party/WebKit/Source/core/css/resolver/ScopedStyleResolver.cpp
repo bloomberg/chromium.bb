@@ -72,21 +72,12 @@ inline RuleSet* ScopedStyleResolver::ensureAuthorStyle()
     return m_authorStyle.get();
 }
 
-void ScopedStyleResolver::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvaluator& medium, StyleResolver* resolver, bool viewportRuleIsProcessed)
+void ScopedStyleResolver::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvaluator& medium, StyleResolver* resolver)
 {
     AddRuleFlags addRuleFlags = resolver->document().securityOrigin()->canRequest(sheet->baseURL()) ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState;
-
-    if (viewportRuleIsProcessed)
-        addRuleFlags = static_cast<AddRuleFlags>(addRuleFlags | ViewportRuleIsProcessed);
-
     ensureAuthorStyle()->addRulesFromSheet(sheet, medium, addRuleFlags);
     resolver->addMediaQueryResults(m_authorStyle->viewportDependentMediaQueryResults());
     resolver->processScopedRules(*m_authorStyle, sheet->baseURL(), &m_scopingNode);
-}
-
-void ScopedStyleResolver::addViewportRule(StyleRuleViewport* rule)
-{
-    ensureAuthorStyle()->addViewportRule(rule);
 }
 
 inline RuleSet* ScopedStyleResolver::ensureAtHostRuleSetFor(const ShadowRoot* shadowRoot)

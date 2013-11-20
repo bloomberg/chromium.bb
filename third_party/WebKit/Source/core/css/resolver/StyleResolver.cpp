@@ -188,75 +188,11 @@ void StyleResolver::initWatchedSelectorRules(const Vector<RefPtr<StyleRule> >& w
         m_watchedSelectorsRules->addStyleRule(watchedSelectors[i].get(), RuleHasNoSpecialState);
 }
 
-bool StyleResolver::filterViewportRules(const Vector<RefPtr<StyleRuleBase> >& rules)
-{
-    bool needsResolveViewport = false;
-
-    for (unsigned i = 0; i < rules.size(); ++i) {
-        StyleRuleBase* rule = rules[i].get();
-
-        if (rule->isViewportRule()) {
-            m_styleTree.ensureScopedStyleResolver(m_document)->addViewportRule(toStyleRuleViewport(rule));
-            needsResolveViewport = true;
-        } else if (rule->isMediaRule()) {
-            const StyleRuleMedia* mediaRule = toStyleRuleMedia(rule);
-            if ((!mediaRule->mediaQueries() || m_medium->eval(mediaRule->mediaQueries(), viewportDependentMediaQueryResults()))) {
-                if (filterViewportRules(mediaRule->childRules()))
-                    needsResolveViewport = true;
-            }
-        }
-    }
-    return needsResolveViewport;
-}
-
-bool StyleResolver::filterViewportRulesFromSheet(StyleSheetContents* sheet)
-{
-    if (!sheet)
-        return false;
-
-    bool needsResolveViewport = false;
-    const Vector<RefPtr<StyleRuleImport> >& importRules = sheet->importRules();
-    for (unsigned i = 0; i < importRules.size(); ++i) {
-        StyleRuleImport* importRule = importRules[i].get();
-        if (filterViewportRulesFromSheet(importRule->styleSheet()))
-            needsResolveViewport = true;
-    }
-
-    if (filterViewportRules(sheet->childRules()))
-        needsResolveViewport = true;
-    return needsResolveViewport;
-}
-
-bool StyleResolver::filterViewportRulesFromAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >& styleSheets)
-{
-    bool needsResolveViewport = false;
-
-    unsigned size = styleSheets.size();
-    for (unsigned i = firstNew; i < size; ++i) {
-        CSSStyleSheet* cssSheet = styleSheets[i].get();
-        ASSERT(!cssSheet->disabled());
-        if (cssSheet->mediaQueries() && !m_medium->eval(cssSheet->mediaQueries(), &m_viewportDependentMediaQueryResults))
-            continue;
-        if (cssSheet->ownerNode()->isInShadowTree() || !isDocumentScope(ScopedStyleResolver::scopingNodeFor(cssSheet)))
-            continue;
-        if (filterViewportRulesFromSheet(cssSheet->contents()))
-            needsResolveViewport = true;
-    }
-    return needsResolveViewport;
-}
-
 void StyleResolver::lazyAppendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >& styleSheets)
 {
-    // FIXME: Currently We cannot lazy apppend stylesheets if the sheets have @viewport rules.
-    // Need to find the best place to update pending stylesheets for "viewport" rules.
-    bool needsResolveViewport = filterViewportRulesFromAuthorStyleSheets(firstNew, styleSheets);
-
     unsigned size = styleSheets.size();
     for (unsigned i = firstNew; i < size; ++i)
         m_pendingStyleSheets.add(styleSheets[i].get());
-
-    if (needsResolveViewport)
-        collectViewportRules();
 }
 
 void StyleResolver::removePendingAuthorStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& styleSheets)
@@ -281,7 +217,7 @@ void StyleResolver::appendPendingAuthorStyleSheets()
 
         ScopedStyleResolver* resolver = ensureScopedStyleResolver(scopingNode);
         ASSERT(resolver);
-        resolver->addRulesFromSheet(sheet, *m_medium, this, true);
+        resolver->addRulesFromSheet(sheet, *m_medium, this);
         m_inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
     }
     m_pendingStyleSheets.clear();
@@ -306,7 +242,7 @@ void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefP
 
         ScopedStyleResolver* resolver = ensureScopedStyleResolver(scopingNode);
         ASSERT(resolver);
-        resolver->addRulesFromSheet(sheet, *m_medium, this, false);
+        resolver->addRulesFromSheet(sheet, *m_medium, this);
         m_inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
     }
 }

@@ -242,10 +242,6 @@ private:
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont(StyleResolverState&);
 
-    bool filterViewportRules(const Vector<RefPtr<StyleRuleBase> >& rules);
-    bool filterViewportRulesFromSheet(StyleSheetContents*);
-    bool filterViewportRulesFromAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >& styleSheets);
-
     void collectPseudoRulesForElement(Element*, ElementRuleCollector&, PseudoId, unsigned rulesToInclude);
     void matchUARules(ElementRuleCollector&, RuleSet*);
     void matchAuthorRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
