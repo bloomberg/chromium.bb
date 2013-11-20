@@ -12,10 +12,16 @@
 <!-- Isolation should create a stacking context. Test if "isolation:isolate" sets the zIndex to 0, instead of the default "auto" value. -->
 <body>
     <div id="isolator"></div>
+    <div id="isolator_accelerated" style="-webkit-transform: translateZ(0)"></div>
+
     <script src="../../resources/js-test.js"></script>
     <script>
-        var zIndex = getComputedStyle(document.getElementById("isolator")).zIndex
+        // Software path.
+        var zIndex = getComputedStyle(document.getElementById("isolator")).zIndex;
+        shouldBeZero(zIndex);
 
+        // Hardware path.
+        zIndex = getComputedStyle(document.getElementById("isolator_accelerated")).zIndex;
         shouldBeZero(zIndex);
     </script>
 </body>
