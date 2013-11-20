@@ -652,6 +652,11 @@
     { "name": "kinsights.com", "mode": "force-https" },
     { "name": "simbolo.co.uk", "mode": "force-https" },
     { "name": "www.simbolo.co.uk", "mode": "force-https" },
+    { "name": "zenpayroll.com", "mode": "force-https" },
+    { "name": "www.zenpayroll.com", "mode": "force-https" },
+    { "name": "get.zenpayroll.com", "mode": "force-https" },
+    { "name": "errors.zenpayroll.com", "mode": "force-https" },
+    { "name": "manage.zenpayroll.com", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
