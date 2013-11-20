@@ -213,7 +213,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DRM_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Menu_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_Private_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NaCl_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0;
@@ -3045,14 +3045,14 @@ static void Pnacl_M13_PPB_Instance_Private_ExecuteScript(struct PP_Var* _struct_
 
 /* End wrapper methods for PPB_Instance_Private_0_1 */
 
-/* Begin wrapper methods for PPB_IsolatedFileSystem_Private_0_1 */
+/* Begin wrapper methods for PPB_IsolatedFileSystem_Private_0_2 */
 
 static int32_t Pnacl_M33_PPB_IsolatedFileSystem_Private_Open(PP_Instance instance, PP_IsolatedFileSystemType_Private type, PP_Resource* file_system, struct PP_CompletionCallback* callback) {
-  const struct PPB_IsolatedFileSystem_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_1.real_iface;
+  const struct PPB_IsolatedFileSystem_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_2.real_iface;
   return iface->Open(instance, type, file_system, *callback);
 }
 
-/* End wrapper methods for PPB_IsolatedFileSystem_Private_0_1 */
+/* End wrapper methods for PPB_IsolatedFileSystem_Private_0_2 */
 
 /* Begin wrapper methods for PPB_NaCl_Private_1_0 */
 
@@ -4959,7 +4959,7 @@ struct PPB_Instance_Private_0_1 Pnacl_Wrappers_PPB_Instance_Private_0_1 = {
     .ExecuteScript = (struct PP_Var (*)(PP_Instance instance, struct PP_Var script, struct PP_Var* exception))&Pnacl_M13_PPB_Instance_Private_ExecuteScript
 };
 
-struct PPB_IsolatedFileSystem_Private_0_1 Pnacl_Wrappers_PPB_IsolatedFileSystem_Private_0_1 = {
+struct PPB_IsolatedFileSystem_Private_0_2 Pnacl_Wrappers_PPB_IsolatedFileSystem_Private_0_2 = {
     .Open = (int32_t (*)(PP_Instance instance, PP_IsolatedFileSystemType_Private type, PP_Resource* file_system, struct PP_CompletionCallback callback))&Pnacl_M33_PPB_IsolatedFileSystem_Private_Open
 };
 
@@ -5693,9 +5693,9 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_Private_0_1 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_1 = {
-  .iface_macro = PPB_ISOLATEDFILESYSTEM_PRIVATE_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_IsolatedFileSystem_Private_0_1,
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_2 = {
+  .iface_macro = PPB_ISOLATEDFILESYSTEM_PRIVATE_INTERFACE_0_2,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_IsolatedFileSystem_Private_0_2,
   .real_iface = NULL
 };
 
@@ -5930,7 +5930,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Flash_Menu_0_2,
   &Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Instance_Private_0_1,
-  &Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_1,
+  &Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_2,
   &Pnacl_WrapperInfo_PPB_NaCl_Private_1_0,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0,

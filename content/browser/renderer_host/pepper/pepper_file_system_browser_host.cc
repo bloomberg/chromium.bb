@@ -8,8 +8,11 @@
 #include "base/callback.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/pepper_plugin_info.h"
+#include "net/base/mime_util.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
@@ -18,6 +21,7 @@
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
+#include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 namespace content {
@@ -34,19 +38,6 @@ GetFileSystemContextFromRenderId(int render_process_id) {
   if (!storage_partition)
     return NULL;
   return storage_partition->GetFileSystemContext();
-}
-
-// TODO(nhiroki): Move this function somewhere else to be shared.
-std::string IsolatedFileSystemTypeToRootName(
-    PP_IsolatedFileSystemType_Private type) {
-  switch (type) {
-    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_INVALID:
-      break;
-    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_CRX:
-      return "crxfs";
-  }
-  NOTREACHED() << type;
-  return std::string();
 }
 
 }  // namespace
@@ -131,6 +122,7 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgOpen(
                                                         &unused)) {
       return PP_ERROR_FAILED;
   }
+
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI,
       FROM_HERE,
@@ -171,21 +163,8 @@ void PepperFileSystemBrowserHost::GotFileSystemContext(
   fs_context->OpenFileSystem(origin, file_system_type,
       fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&PepperFileSystemBrowserHost::OpenFileSystemComplete,
-                 weak_factory_.GetWeakPtr(),
-                 reply_context));
+                 weak_factory_.GetWeakPtr(), reply_context));
   fs_context_ = fs_context;
-}
-
-void PepperFileSystemBrowserHost::GotIsolatedFileSystemContext(
-    ppapi::host::ReplyMessageContext reply_context,
-    scoped_refptr<fileapi::FileSystemContext> fs_context) {
-  fs_context_ = fs_context;
-  if (fs_context.get())
-    reply_context.params.set_result(PP_OK);
-  else
-    reply_context.params.set_result(PP_ERROR_FAILED);
-  host()->SendReply(reply_context,
-                    PpapiPluginMsg_FileSystem_InitIsolatedFileSystemReply());
 }
 
 void PepperFileSystemBrowserHost::OpenFileSystemComplete(
@@ -202,6 +181,75 @@ void PepperFileSystemBrowserHost::OpenFileSystemComplete(
   host()->SendReply(reply_context, PpapiPluginMsg_FileSystem_OpenReply());
 }
 
+void PepperFileSystemBrowserHost::GotIsolatedFileSystemContext(
+    ppapi::host::ReplyMessageContext reply_context,
+    const std::string& fsid,
+    PP_IsolatedFileSystemType_Private type,
+    scoped_refptr<fileapi::FileSystemContext> fs_context) {
+  fs_context_ = fs_context;
+  if (!fs_context.get()) {
+    SendReplyForIsolatedFileSystem(reply_context, fsid, PP_ERROR_FAILED);
+    return;
+  }
+
+  root_url_ = GURL(fileapi::GetIsolatedFileSystemRootURIString(
+      browser_ppapi_host_->GetDocumentURLForInstance(pp_instance()).GetOrigin(),
+      fsid, ppapi::IsolatedFileSystemTypeToRootName(type)));
+  if (!root_url_.is_valid()) {
+    SendReplyForIsolatedFileSystem(reply_context, fsid, PP_ERROR_FAILED);
+    return;
+  }
+
+  switch (type) {
+    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_CRX:
+      opened_ = true;
+      SendReplyForIsolatedFileSystem(reply_context, fsid, PP_OK);
+      return;
+    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_PLUGINPRIVATE:
+      OpenPluginPrivateFileSystem(reply_context, fsid, fs_context);
+      return;
+    default:
+      NOTREACHED();
+      SendReplyForIsolatedFileSystem(reply_context, fsid, PP_ERROR_BADARGUMENT);
+      return;
+  }
+}
+
+void PepperFileSystemBrowserHost::OpenPluginPrivateFileSystem(
+    ppapi::host::ReplyMessageContext reply_context,
+    const std::string& fsid,
+    scoped_refptr<fileapi::FileSystemContext> fs_context) {
+  GURL origin = browser_ppapi_host_->GetDocumentURLForInstance(
+      pp_instance()).GetOrigin();
+  if (!origin.is_valid()) {
+    SendReplyForIsolatedFileSystem(reply_context, fsid, PP_ERROR_FAILED);
+    return;
+  }
+
+  const std::string& plugin_id = GeneratePluginId(GetPluginMimeType());
+  if (plugin_id.empty()) {
+    SendReplyForIsolatedFileSystem(reply_context, fsid, PP_ERROR_BADARGUMENT);
+    return;
+  }
+
+  fs_context->OpenPluginPrivateFileSystem(
+      origin, fileapi::kFileSystemTypePluginPrivate, fsid, plugin_id,
+      fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      base::Bind(
+          &PepperFileSystemBrowserHost::OpenPluginPrivateFileSystemComplete,
+          weak_factory_.GetWeakPtr(), reply_context, fsid));
+}
+
+void PepperFileSystemBrowserHost::OpenPluginPrivateFileSystemComplete(
+    ppapi::host::ReplyMessageContext reply_context,
+    const std::string& fsid,
+    base::PlatformFileError error) {
+  int32 pp_error = ppapi::PlatformFileErrorToPepperError(error);
+  if (pp_error == PP_OK)
+    opened_ = true;
+  SendReplyForIsolatedFileSystem(reply_context, fsid, pp_error);
+}
+
 int32_t PepperFileSystemBrowserHost::OnHostMsgInitIsolatedFileSystem(
     ppapi::host::HostMessageContext* context,
     const std::string& fsid,
@@ -215,31 +263,70 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgInitIsolatedFileSystem(
   if (!fileapi::ValidateIsolatedFileSystemId(fsid))
     return PP_ERROR_BADARGUMENT;
 
-  const GURL& url =
-      browser_ppapi_host_->GetDocumentURLForInstance(pp_instance());
-  const std::string root_name = IsolatedFileSystemTypeToRootName(type);
-  if (root_name.empty())
-    return PP_ERROR_BADARGUMENT;
-
-  root_url_ = GURL(fileapi::GetIsolatedFileSystemRootURIString(
-      url.GetOrigin(), fsid, root_name));
-  opened_ = true;
-
   int render_process_id = 0;
   int unused;
   if (!browser_ppapi_host_->GetRenderViewIDsForInstance(pp_instance(),
                                                         &render_process_id,
                                                         &unused)) {
+    fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
     return PP_ERROR_FAILED;
   }
+
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&GetFileSystemContextFromRenderId, render_process_id),
       base::Bind(&PepperFileSystemBrowserHost::GotIsolatedFileSystemContext,
                  weak_factory_.GetWeakPtr(),
-                 context->MakeReplyMessageContext()));
+                 context->MakeReplyMessageContext(), fsid, type));
   return PP_OK_COMPLETIONPENDING;
+}
+
+void PepperFileSystemBrowserHost::SendReplyForIsolatedFileSystem(
+    ppapi::host::ReplyMessageContext reply_context,
+    const std::string& fsid,
+    int32_t error) {
+  if (error != PP_OK)
+    fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
+  reply_context.params.set_result(error);
+  host()->SendReply(reply_context,
+                    PpapiPluginMsg_FileSystem_InitIsolatedFileSystemReply());
+}
+
+std::string PepperFileSystemBrowserHost::GetPluginMimeType() const {
+  base::FilePath plugin_path = browser_ppapi_host_->GetPluginPath();
+  PepperPluginInfo* info =
+      PluginService::GetInstance()->GetRegisteredPpapiPluginInfo(plugin_path);
+  if (!info || info->mime_types.empty())
+    return std::string();
+  // Use the first element in |info->mime_types| even if several elements exist.
+  return info->mime_types[0].mime_type;
+}
+
+std::string PepperFileSystemBrowserHost::GeneratePluginId(
+    const std::string& mime_type) const {
+  // TODO(nhiroki): This function is very specialized for specific plugins (MIME
+  // types).  If we bring this API to stable, we might have to make it more
+  // general.
+
+  if (!net::IsMimeType(mime_type))
+    return std::string();
+  std::string output = mime_type;
+
+  // Replace a slash used for type/subtype separator with an underscore.
+  // NOTE: This assumes there is only one slash in the MIME type.
+  ReplaceFirstSubstringAfterOffset(&output, 0, "/", "_");
+
+  // Verify |output| contains only alphabets, digits, or "._-".
+  for (std::string::const_iterator it = output.begin();
+       it != output.end(); ++it) {
+    if (!IsAsciiAlpha(*it) && !IsAsciiDigit(*it) &&
+        *it != '.' && *it != '_' && *it != '-') {
+      LOG(WARNING) << "Failed to generate a plugin id.";
+      return std::string();
+    }
+  }
+  return output;
 }
 
 }  // namespace content

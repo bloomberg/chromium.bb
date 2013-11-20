@@ -22,6 +22,7 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/file_system_util.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 
 namespace chrome {
@@ -49,16 +50,19 @@ PepperIsolatedFileSystemMessageFilter::Create(
   return new PepperIsolatedFileSystemMessageFilter(
       render_process_id,
       host->GetProfileDataDirectory(),
-      host->GetDocumentURLForInstance(instance));
+      host->GetDocumentURLForInstance(instance),
+      host->GetPpapiHost());
 }
 
 PepperIsolatedFileSystemMessageFilter::PepperIsolatedFileSystemMessageFilter(
     int render_process_id,
     const base::FilePath& profile_directory,
-    const GURL& document_url)
+    const GURL& document_url,
+    ppapi::host::PpapiHost* ppapi_host)
     : render_process_id_(render_process_id),
       profile_directory_(profile_directory),
-      document_url_(document_url) {
+      document_url_(document_url),
+      ppapi_host_(ppapi_host) {
   for (size_t i = 0; i < arraysize(kPredefinedAllowedCrxFsOrigins); ++i)
     allowed_crxfs_origins_.insert(kPredefinedAllowedCrxFsOrigins[i]);
 }
@@ -125,7 +129,8 @@ int32_t PepperIsolatedFileSystemMessageFilter::OnOpenFileSystem(
       break;
     case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_CRX:
       return OpenCrxFileSystem(context);
-    // TODO(nhiroki): Other filesystem will be implemented. (crbug.com/286242)
+    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_PLUGINPRIVATE:
+      return OpenPluginPrivateFileSystem(context);
   }
   NOTREACHED();
   context->reply_msg =
@@ -163,6 +168,28 @@ int32_t PepperIsolatedFileSystemMessageFilter::OpenCrxFileSystem(
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
   policy->GrantReadFileSystem(render_process_id_, fsid);
+
+  context->reply_msg = PpapiPluginMsg_IsolatedFileSystem_BrowserOpenReply(fsid);
+  return PP_OK;
+}
+
+int32_t PepperIsolatedFileSystemMessageFilter::OpenPluginPrivateFileSystem(
+    ppapi::host::HostMessageContext* context) {
+  DCHECK(ppapi_host_);
+  // Only plugins with private permission can open the filesystem.
+  if (!ppapi_host_->permissions().HasPermission(ppapi::PERMISSION_PRIVATE))
+    return PP_ERROR_NOACCESS;
+
+  const std::string& root_name = ppapi::IsolatedFileSystemTypeToRootName(
+      PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_PLUGINPRIVATE);
+  const std::string& fsid =
+      fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
+          fileapi::kFileSystemTypePluginPrivate, root_name, base::FilePath());
+
+  // Grant full access of isolated filesystem to renderer process.
+  content::ChildProcessSecurityPolicy* policy =
+      content::ChildProcessSecurityPolicy::GetInstance();
+  policy->GrantCreateReadWriteFileSystem(render_process_id_, fsid);
 
   context->reply_msg = PpapiPluginMsg_IsolatedFileSystem_BrowserOpenReply(fsid);
   return PP_OK;

@@ -10,8 +10,8 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_IsolatedFileSystem_Private_0_1>() {
-  return PPB_ISOLATEDFILESYSTEM_PRIVATE_INTERFACE_0_1;
+template <> const char* interface_name<PPB_IsolatedFileSystem_Private_0_2>() {
+  return PPB_ISOLATEDFILESYSTEM_PRIVATE_INTERFACE_0_2;
 }
 
 }  // namespace
@@ -31,9 +31,9 @@ IsolatedFileSystemPrivate::~IsolatedFileSystemPrivate() {
 
 int32_t IsolatedFileSystemPrivate::Open(
     const CompletionCallbackWithOutput<pp::FileSystem>& cc) {
-  if (!has_interface<PPB_IsolatedFileSystem_Private_0_1>())
+  if (!has_interface<PPB_IsolatedFileSystem_Private_0_2>())
     return cc.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_IsolatedFileSystem_Private_0_1>()->
+  return get_interface<PPB_IsolatedFileSystem_Private_0_2>()->
       Open(instance_, type_, cc.output(), cc.pp_completion_callback());
 }
 

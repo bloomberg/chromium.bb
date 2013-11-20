@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/file_system_util.h"
 
+#include "base/logging.h"
+
 namespace ppapi {
 
 fileapi::FileSystemType PepperFileSystemTypeToFileSystemType(
@@ -30,6 +32,19 @@ bool FileSystemTypeIsValid(PP_FileSystemType type) {
 bool FileSystemTypeHasQuota(PP_FileSystemType type) {
   return (type == PP_FILESYSTEMTYPE_LOCALTEMPORARY ||
           type == PP_FILESYSTEMTYPE_LOCALPERSISTENT);
+}
+
+std::string IsolatedFileSystemTypeToRootName(
+    PP_IsolatedFileSystemType_Private type) {
+  switch (type) {
+    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_CRX:
+      return "crxfs";
+    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_PLUGINPRIVATE:
+      return "pluginprivate";
+    default:
+      NOTREACHED() << type;
+      return std::string();
+  }
 }
 
 }  // namespace ppapi

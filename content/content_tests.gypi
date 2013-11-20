@@ -441,6 +441,7 @@
         'browser/renderer_host/media/web_contents_video_capture_device_unittest.cc',
         'browser/renderer_host/pepper/browser_ppapi_host_test.cc',
         'browser/renderer_host/pepper/browser_ppapi_host_test.h',
+        'browser/renderer_host/pepper/pepper_file_system_browser_host_unittest.cc',
         'browser/renderer_host/pepper/pepper_gamepad_host_unittest.cc',
         'browser/renderer_host/pepper/pepper_printing_host_unittest.cc',
         'browser/renderer_host/pepper/quota_file_io_unittest.cc',

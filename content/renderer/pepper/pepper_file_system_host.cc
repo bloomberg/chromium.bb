@@ -24,23 +24,6 @@
 
 namespace content {
 
-namespace {
-
-// TODO(nhiroki): Move this function somewhere else to be shared.
-std::string IsolatedFileSystemTypeToRootName(
-    PP_IsolatedFileSystemType_Private type) {
-  switch (type) {
-    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_INVALID:
-      break;
-    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_CRX:
-      return "crxfs";
-  }
-  NOTREACHED() << type;
-  return std::string();
-}
-
-}  // namespace
-
 PepperFileSystemHost::PepperFileSystemHost(RendererPpapiHost* host,
                                            PP_Instance instance,
                                            PP_Resource resource,
@@ -156,7 +139,7 @@ int32_t PepperFileSystemHost::OnHostMsgInitIsolatedFileSystem(
     return PP_ERROR_FAILED;
 
   const GURL& url = view->GetWebView()->mainFrame()->document().url();
-  const std::string root_name = IsolatedFileSystemTypeToRootName(type);
+  const std::string root_name = ppapi::IsolatedFileSystemTypeToRootName(type);
   if (root_name.empty())
     return PP_ERROR_BADARGUMENT;
   root_url_ = GURL(fileapi::GetIsolatedFileSystemRootURIString(
