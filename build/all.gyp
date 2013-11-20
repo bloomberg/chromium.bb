@@ -458,6 +458,7 @@
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_gl_tests',
             '../gpu/gpu.gyp:gl_tests',
+            '../gpu/gpu.gyp:angle_unittests',
           ],
           'conditions': [
             ['internal_gles2_conform_tests', {
@@ -495,6 +496,7 @@
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_gl_tests',
             '../gpu/gpu.gyp:gl_tests',
+            '../gpu/gpu.gyp:angle_unittests',
           ],
           'conditions': [
             ['internal_gles2_conform_tests', {
