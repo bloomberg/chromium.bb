@@ -79,6 +79,10 @@ deps = {
   "src/testing/gmock":
     (Var("googlecode_url") % "googlemock") + "/trunk@410",
 
+  "src/third_party/angle":
+    Var("chromium_git") +
+    "/angle/angle.git@a60e0805721f62c28a55faf2df74472cc5fc91fc",
+
   "src/third_party/angle_dx11":
     Var("chromium_git") +
     "/external/angle.git@a60e0805721f62c28a55faf2df74472cc5fc91fc",
@@ -359,6 +363,7 @@ deps_os = {
     "src/media/cdm/ppapi/api": None,
     "src/native_client": None,
     "src/native_client/src/third_party/ppapi": None,
+    "src/third_party/angle": None,
     "src/third_party/angle_dx11": None,
     "src/third_party/bidichecker": None,
     "src/third_party/cld_2/src": None,
