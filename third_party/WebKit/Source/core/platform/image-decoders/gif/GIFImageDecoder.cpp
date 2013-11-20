@@ -114,6 +114,8 @@ ImageFrame* GIFImageDecoder::frameBufferAtIndex(size_t index)
         decode(index);
         PlatformInstrumentation::didDecodeImage();
     }
+
+    frame.notifyBitmapIfPixelsChanged();
     return &frame;
 }
 
@@ -203,6 +205,7 @@ bool GIFImageDecoder::haveDecodedRow(size_t frameIndex, GIFRow::const_iterator r
     if (repeatCount > 1)
         buffer.copyRowNTimes(xBegin, xEnd, yBegin, yEnd);
 
+    buffer.setPixelsChanged(true);
     return true;
 }
 
@@ -362,10 +365,6 @@ bool GIFImageDecoder::initFrameBuffer(size_t frameIndex)
         // Preserve the last frame as the starting state for this frame.
         if (!buffer->copyBitmapData(*prevBuffer))
             return setFailed();
-
-        // We will eventually change the pixels. Notify the bitmap so that it
-        // gets a generation ID different from that of the previous frame.
-        buffer->getSkBitmap().notifyPixelsChanged();
 
         if (prevBuffer->disposalMethod() == ImageFrame::DisposeOverwriteBgcolor) {
             // We want to clear the previous frame to transparent, without

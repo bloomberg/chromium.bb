@@ -657,6 +657,8 @@ ImageFrame* JPEGImageDecoder::frameBufferAtIndex(size_t index)
         decode(false);
         PlatformInstrumentation::didDecodeImage();
     }
+
+    frame.notifyBitmapIfPixelsChanged();
     return &frame;
 }
 
@@ -712,6 +714,7 @@ template <J_COLOR_SPACE colorSpace> bool outputRows(JPEGImageReader* reader, Ima
             setPixel<colorSpace>(buffer, pixel, samples, x);
     }
 
+    buffer.setPixelsChanged(true);
     return true;
 }
 
@@ -749,9 +752,10 @@ bool JPEGImageDecoder::outputScanlines()
             if (qcms_transform* transform = m_reader->colorTransform())
                 qcms_transform_data_type(transform, row, row, info->output_width, rgbOutputColorSpace() == JCS_EXT_BGRA ? QCMS_OUTPUT_BGRX : QCMS_OUTPUT_RGBX);
 #endif
-         }
-         return true;
-     }
+        }
+        buffer.setPixelsChanged(true);
+        return true;
+    }
 #endif
 
     switch (info->out_color_space) {

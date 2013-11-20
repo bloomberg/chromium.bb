@@ -135,6 +135,8 @@ namespace WebCore {
         bool premultiplyAlpha() const { return m_premultiplyAlpha; }
         SkBitmap::Allocator* allocator() const { return m_allocator; }
         const SkBitmap& getSkBitmap() const { return m_bitmap->bitmap(); }
+        // Returns true if the pixels changed, but the bitmap has not yet been notified.
+        bool pixelsChanged() const { return m_pixelsChanged; }
 
         size_t requiredPreviousFrameIndex() const
         {
@@ -153,6 +155,9 @@ namespace WebCore {
         void setPremultiplyAlpha(bool premultiplyAlpha) { m_premultiplyAlpha = premultiplyAlpha; }
         void setMemoryAllocator(SkBitmap::Allocator* allocator) { m_allocator = allocator; }
         void setSkBitmap(const SkBitmap& bitmap) { m_bitmap = NativeImageSkia::create(bitmap); }
+        // The pixelsChanged flag needs to be set when the raw pixel data was directly modified
+        // (e.g. through a pointer or setRGBA). The flag is usually set after a batch of changes was made.
+        void setPixelsChanged(bool pixelsChanged) { m_pixelsChanged = pixelsChanged; }
 
         void setRequiredPreviousFrameIndex(size_t previousFrameIndex)
         {
@@ -198,6 +203,14 @@ namespace WebCore {
             *dest = SkPackARGB32NoCheck(a, r, g, b);
         }
 
+        // Notifies the SkBitmap if any pixels changed and resets the flag.
+        inline void notifyBitmapIfPixelsChanged()
+        {
+            if (m_pixelsChanged)
+                m_bitmap->bitmap().notifyPixelsChanged();
+            m_pixelsChanged = false;
+        }
+
     private:
         int width() const
         {
@@ -220,6 +233,8 @@ namespace WebCore {
         DisposalMethod m_disposalMethod;
         AlphaBlendSource m_alphaBlendSource;
         bool m_premultiplyAlpha;
+        // True if the pixels changed, but the bitmap has not yet been notified.
+        bool m_pixelsChanged;
 
         // The frame that must be decoded before this frame can be decoded.
         // WTF::kNotFound if this frame doesn't require any previous frame.

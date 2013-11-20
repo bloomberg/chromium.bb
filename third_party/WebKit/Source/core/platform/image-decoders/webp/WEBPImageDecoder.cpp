@@ -152,6 +152,7 @@ ImageFrame* WEBPImageDecoder::frameBufferAtIndex(size_t index)
         if (index >= m_frameBufferCache.size() - 1 && isAllDataReceived() && m_demux && m_demuxState != WEBP_DEMUX_DONE)
             setFailed();
 
+        frame.notifyBitmapIfPixelsChanged();
         return &frame;
     }
 
@@ -288,10 +289,6 @@ bool WEBPImageDecoder::initFrameBuffer(size_t frameIndex)
         // Preserve the last frame as the starting state for this frame.
         if (!buffer.copyBitmapData(prevBuffer))
             return setFailed();
-
-        // We will eventually change the pixels. Notify the bitmap so that it
-        // gets a generation ID different from that of the previous frame.
-        buffer.getSkBitmap().notifyPixelsChanged();
 
         if (prevBuffer.disposalMethod() == ImageFrame::DisposeOverwriteBgcolor) {
             // We want to clear the previous frame to transparent, without
@@ -466,6 +463,7 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
     }
 
     m_decodedHeight = decodedHeight;
+    buffer.setPixelsChanged(true);
 }
 
 bool WEBPImageDecoder::decode(const uint8_t* dataBytes, size_t dataSize, bool onlySize, size_t frameIndex)

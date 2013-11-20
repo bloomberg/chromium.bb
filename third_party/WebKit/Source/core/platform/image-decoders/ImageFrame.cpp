@@ -41,6 +41,7 @@ ImageFrame::ImageFrame()
     , m_disposalMethod(DisposeNotSpecified)
     , m_alphaBlendSource(BlendAtopPreviousFrame)
     , m_premultiplyAlpha(true)
+    , m_pixelsChanged(false)
     , m_requiredPreviousFrameIndex(kNotFound)
 #if !ASSERT_DISABLED
     , m_requiredPreviousFrameIndexValid(false)
@@ -57,6 +58,9 @@ ImageFrame& ImageFrame::operator=(const ImageFrame& other)
     // Keep the pixels locked since we will be writing directly into the
     // bitmap throughout this object's lifetime.
     m_bitmap->bitmap().lockPixels();
+    // Be sure to assign this before calling setStatus(), since setStatus() may
+    // call notifyBitmapIfPixelsChanged().
+    m_pixelsChanged = other.m_pixelsChanged;
     setMemoryAllocator(other.allocator());
     setOriginalFrameRect(other.originalFrameRect());
     setStatus(other.status());
@@ -142,6 +146,9 @@ void ImageFrame::setStatus(Status status)
     m_status = status;
     if (m_status == FrameComplete) {
         m_bitmap->bitmap().setAlphaType(m_hasAlpha ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
+        // Send pending pixels changed notifications now, because we can't do this after
+        // the bitmap was set immutable by setDataComplete().
+        notifyBitmapIfPixelsChanged();
         m_bitmap->setDataComplete(); // Tell the bitmap it's done.
     }
 }
