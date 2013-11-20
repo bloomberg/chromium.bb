@@ -115,8 +115,10 @@ ProgressCenter.prototype.updateItem = function(item) {
 
   // Update panels.
   var summarizedItem = this.getSummarizedItem_();
-  for (var i = 0; i < this.panels_.length; i++)
-    this.panels_[i].updateItem(item, summarizedItem);
+  for (var i = 0; i < this.panels_.length; i++) {
+    this.panels_[i].updateItem(item);
+    this.panels_[i].updateCloseView(summarizedItem);
+  }
 
   // Reset if there is no item.
   for (var i = 0; i < this.items_.length; i++) {
@@ -179,10 +181,12 @@ ProgressCenter.prototype.addPanel = function(panel) {
   this.panels_.push(panel);
 
   // Set the current items.
-  var summarizedItem = this.getSummarizedItem_();
   var items = this.applicationItems;
+  var summarizedItem = this.getSummarizedItem_();
   for (var i = 0; i < items.length; i++)
-    panel.updateItem(items[i], summarizedItem);
+    panel.updateItem(items[i]);
+  if (summarizedItem)
+    panel.updateCloseView(summarizedItem);
 
   // Register the cancel callback.
   panel.cancelCallback = this.requestCancel.bind(this);

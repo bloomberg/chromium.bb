@@ -2026,6 +2026,9 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 #progress-center .progress-track {
   background: #787878;
   height: 100%;
+}
+
+#progress-center .progress-track.animated {
   transition: width 300ms linear;
 }
 

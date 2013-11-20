@@ -70,11 +70,13 @@ ProgressCenterPanel.updateItemElement_ = function(element, item) {
   if (item.cancelable)
     element.classList.add('cancelable');
 
-  // If the transition animation is needed, apply it.
+  // Only when the previousWidthRate is not NaN (when style width is already
+  // set) and the progress rate increases, we use transition animation.
   var previousWidthRate =
       parseInt(element.querySelector('.progress-track').style.width);
-  if (item.state === ProgressItemState.COMPLETE &&
-      previousWidthRate !== item.progressRateByPercent) {
+  var animation = !isNaN(previousWidthRate) &&
+      previousWidthRate < item.progressRateInPercent;
+  if (item.state === ProgressItemState.COMPLETE && animation) {
     // The attribute pre-complete means that the actual operation is already
     // done but the UI transition of progress bar is not complete.
     element.setAttribute('pre-complete', '');
@@ -86,22 +88,17 @@ ProgressCenterPanel.updateItemElement_ = function(element, item) {
   // change is done synchronously, assign the width value asynchronously.
   setTimeout(function() {
     var track = element.querySelector('.progress-track');
-    // When the progress rate is reverted, we does not use the transition
-    // animation. Specifying '0' overrides the CSS settings and specifying null
-    // re-enables it.
-    track.style.transitionDuration =
-        previousWidthRate > item.progressRateByPercent ? '0' : null;
-    track.style.width = item.progressRateByPercent + '%';
+    track.classList.toggle('animated', animation);
+    track.style.width = item.progressRateInPercent + '%';
+    track.hidden = false;
   }, 0);
 };
 
 /**
  * Updates an item to the progress center panel.
  * @param {!ProgressCenterItem} item Item including new contents.
- * @param {!ProgressCenterItem} summarizedItem Item to be desplayed in the close
- *     view.
  */
-ProgressCenterPanel.prototype.updateItem = function(item, summarizedItem) {
+ProgressCenterPanel.prototype.updateItem = function(item) {
   // If reset is requested, force to reset.
   if (this.resetRequested_)
     this.reset(true);
@@ -146,8 +143,14 @@ ProgressCenterPanel.prototype.updateItem = function(item, summarizedItem) {
       }
       break;
   }
+};
 
-  // Update close view.
+/**
+ * Updates close showing summarized item.
+ * @param {!ProgressCenterItem} summarizedItem Item to be displayed in the close
+ *     view.
+ */
+ProgressCenterPanel.prototype.updateCloseView = function(summarizedItem) {
   this.closeView_.classList.toggle('single', !summarizedItem.summarized);
   ProgressCenterPanel.updateItemElement_(this.closeViewItem_, summarizedItem);
 };
@@ -168,6 +171,9 @@ ProgressCenterPanel.prototype.reset = function(opt_force) {
 
   // Clear the all compete item.
   this.openView_.innerHTML = '';
+
+  // Clear track width of close view.
+  this.closeViewItem_.querySelector('.progress-track').style.width = '';
 
   // Hide the progress center.
   this.element_.hidden = true;

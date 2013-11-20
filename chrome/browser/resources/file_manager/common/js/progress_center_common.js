@@ -146,10 +146,10 @@ ProgressCenterItem.prototype = {
   },
 
   /**
-   * Gets progress rate by percent.
-   * @return {number} Progress rate by percent.
+   * Gets progress rate in percent.
+   * @return {number} Progress rate in percent.
    */
-  get progressRateByPercent() {
+  get progressRateInPercent() {
     return ~~(100 * this.progressValue / this.progressMax);
   },
 
