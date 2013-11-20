@@ -447,8 +447,6 @@
 
     'SK_IGNORE_QUAD_RR_CORNERS_OPT',
 
-    'SKIA_IGNORE_GPU_MIPMAPS',
-
     # this flag forces Skia not to use typographic metrics with GDI.
     'SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS',
 

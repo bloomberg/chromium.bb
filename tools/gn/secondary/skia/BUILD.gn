@@ -148,8 +148,6 @@ config("skia_library_config") {
 
     "IGNORE_ROT_AA_RECT_OPT",
 
-    "SKIA_IGNORE_GPU_MIPMAPS",
-
     # Forces Skia not to use typographic metrics with GDI.
     "SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS",
   ]
