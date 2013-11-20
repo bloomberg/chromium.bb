@@ -1261,8 +1261,8 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
           UserMetricsAction("Options_DefaultMediaStreamMicSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
-      content::RecordAction(UserMetricsAction(
-          "Options_DefaultMultipleAutomaticDownloadsSettingChanged"));
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultMultipleAutomaticDLSettingChange"));
       break;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       content::RecordAction(

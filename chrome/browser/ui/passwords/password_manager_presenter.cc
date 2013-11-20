@@ -89,8 +89,7 @@ void PasswordManagerPresenter::RemovePasswordException(size_t index) {
     return;
   store->RemoveLogin(*password_exception_list_[index]);
   content::RecordAction(
-      content::UserMetricsAction(
-          "PasswordManager_RemovePasswordException"));
+      content::UserMetricsAction("PasswordManager_RemovePasswordException"));
 }
 
 void PasswordManagerPresenter::RequestShowPassword(size_t index) {

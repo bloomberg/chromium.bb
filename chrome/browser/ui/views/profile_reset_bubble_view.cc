@@ -379,8 +379,8 @@ void ProfileResetBubbleView::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
   if (sender == controls_.reset_button) {
     DCHECK(!resetting_);
-    content::RecordAction(content::UserMetricsAction(
-        "SettingsResetBubble.Reset"));
+    content::RecordAction(
+        content::UserMetricsAction("SettingsResetBubble.Reset"));
 
     // Remember that the user chose to reset, and that resetting is underway.
     chose_to_reset_ = true;
@@ -397,8 +397,8 @@ void ProfileResetBubbleView::ButtonPressed(views::Button* sender,
     }
   } else if (sender == controls_.no_thanks_button) {
     DCHECK(!resetting_);
-    content::RecordAction(content::UserMetricsAction(
-        "SettingsResetBubble.NoThanks"));
+    content::RecordAction(
+        content::UserMetricsAction("SettingsResetBubble.NoThanks"));
 
     if (global_error_)
       global_error_->OnBubbleViewNoThanksButtonPressed();
@@ -413,8 +413,8 @@ void ProfileResetBubbleView::ButtonPressed(views::Button* sender,
 }
 
 void ProfileResetBubbleView::LinkClicked(views::Link* source, int flags) {
-  content::RecordAction(content::UserMetricsAction(
-      "SettingsResetBubble.LearnMore"));
+  content::RecordAction(
+      content::UserMetricsAction("SettingsResetBubble.LearnMore"));
   navigator_->OpenURL(content::OpenURLParams(
       GURL(chrome::kResetProfileSettingsLearnMoreURL), content::Referrer(),
       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));

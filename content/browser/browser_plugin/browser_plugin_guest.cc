@@ -215,8 +215,7 @@ class BrowserPluginGuest::JavaScriptDialogRequest : public PermissionRequest {
   JavaScriptDialogRequest(const DialogClosedCallback& callback)
       : callback_(callback) {
     RecordAction(
-        UserMetricsAction(
-            "BrowserPlugin.Guest.PermissionRequest.JavaScriptDialog"));
+        UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.JSDialog"));
   }
 
   virtual void Respond(bool should_allow,
