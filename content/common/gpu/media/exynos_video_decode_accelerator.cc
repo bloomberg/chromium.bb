@@ -57,7 +57,6 @@ namespace {
 #endif
 
 const char kExynosMfcDevice[] = "/dev/mfc-dec";
-const char kMaliDriver[] = "libmali.so";
 
 }  // anonymous namespace
 
@@ -494,15 +493,6 @@ void ExynosVideoDecodeAccelerator::Destroy() {
 }
 
 bool ExynosVideoDecodeAccelerator::CanDecodeOnIOThread() { return true; }
-
-// static
-void ExynosVideoDecodeAccelerator::PreSandboxInitialization() {
-  DVLOG(3) << "PreSandboxInitialization()";
-  dlerror();
-  if (!dlopen(kMaliDriver, RTLD_LAZY | RTLD_LOCAL)) {
-    DPLOG(ERROR) << "failed to dlopen()" << kMaliDriver << ": " << dlerror();
-  }
-}
 
 void ExynosVideoDecodeAccelerator::DecodeTask(
     const media::BitstreamBuffer& bitstream_buffer) {

@@ -1920,6 +1920,9 @@ void WarmupPolicy(Sandbox::EvaluateSyscall policy,
     // Create a new broker process.
     InitGpuBrokerProcess(policy, broker_process);
 
+    // Preload the Mali library.
+    dlopen("/usr/lib/libmali.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+
     // Preload the Tegra libraries.
     dlopen("/usr/lib/libnvrm.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
     dlopen("/usr/lib/libnvrm_graphics.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
