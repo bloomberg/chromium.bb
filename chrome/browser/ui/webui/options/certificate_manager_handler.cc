@@ -396,10 +396,6 @@ void CertificateManagerHandler::GetLocalizedValues(
 #if defined(OS_CHROMEOS)
   localized_strings->SetString("importAndBindCertificate",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_IMPORT_AND_BIND_BUTTON));
-  localized_strings->SetString("hardwareBackedKeyFormat",
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT));
-  localized_strings->SetString("chromeOSDeviceName",
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_HARDWARE_BACKED));
 #endif  // defined(OS_CHROMEOS)
 }
 

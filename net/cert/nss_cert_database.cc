@@ -318,6 +318,11 @@ bool NSSCertDatabase::IsReadOnly(const X509Certificate* cert) const {
   return slot && PK11_IsReadOnly(slot);
 }
 
+bool NSSCertDatabase::IsHardwareBacked(const X509Certificate* cert) const {
+  PK11SlotInfo* slot = cert->os_cert_handle()->slot;
+  return slot && PK11_IsHW(slot);
+}
+
 void NSSCertDatabase::AddObserver(Observer* observer) {
   observer_list_->AddObserver(observer);
 }

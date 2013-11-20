@@ -178,6 +178,9 @@ class NET_EXPORT NSSCertDatabase {
   // Check whether cert is stored in a readonly slot.
   bool IsReadOnly(const X509Certificate* cert) const;
 
+  // Check whether cert is stored in a hardware slot.
+  bool IsHardwareBacked(const X509Certificate* cert) const;
+
   // Registers |observer| to receive notifications of certificate changes.  The
   // thread on which this is called is the thread on which |observer| will be
   // called back with notifications.

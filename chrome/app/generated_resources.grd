@@ -3252,6 +3252,12 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE" desc="The title in the error dialog for Certification Authority file import errors.">
         Server Certificate Import Error
       </message>
+      <message name="IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT" desc="A format used to create label for hardware-backed keys.">
+        <ph name="KEY_NAME">$1<ex>John Doe</ex></ph> (<ph name="DEVICE">$2<ex>hardware-backed</ex></ph>)
+      </message>
+      <message name="IDS_CERT_MANAGER_HARDWARE_BACKED" desc="A device name to be used for hardware-backed keys.">
+        hardware-backed
+      </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_CERT_MANAGER_IMPORT_AND_BIND_BUTTON" desc="Label for the button in the certificate manager which allows you to import certificates and bind to your device.">
           Import and Bind to Device...
@@ -3259,14 +3265,8 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         <message name="IDS_CERT_MANAGER_KEY_FORMAT_LONG" desc="A longer format for keys in the wifi / vpn config dialogs.">
           <ph name="ISSUED_BY">$1<ex>Google Inc</ex></ph> [<ph name="ISSUED_TO">$2<ex>John Doe</ex></ph>]
         </message>
-        <message name="IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT" desc="A format used to create label for hardware-backed keys.">
-          <ph name="KEY_NAME">$1<ex>John Doe</ex></ph> (<ph name="DEVICE">$2<ex>hardware-backed</ex></ph>)
-        </message>
         <message name="IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT_LONG" desc="A longer format for hardware-backed keys in the wifi / vpn config dialogs.">
           <ph name="ISSUED_BY">$1<ex>Google Inc</ex></ph> [<ph name="ISSUED_TO">$2<ex>John Doe</ex></ph>] (<ph name="DEVICE">$3<ex>hardware-backed</ex></ph>)
-        </message>
-        <message name="IDS_CERT_MANAGER_HARDWARE_BACKED" desc="A device name to be used for ChromeOS device backed keys.">
-          hardware-backed
         </message>
       </if>
 
