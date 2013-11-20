@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/threading/thread.h"
 #include "jni/MojoMain_jni.h"
+#include "mojo/shell/init.h"
 #include "mojo/shell/run.h"
 #include "ui/gl/gl_surface_egl.h"
 
@@ -31,19 +32,6 @@ LazyInstance<scoped_ptr<base::Thread> > g_shell_thread =
 
 LazyInstance<scoped_ptr<shell::Context> > g_context =
     LAZY_INSTANCE_INITIALIZER;
-
-void InitializeLogging() {
-  logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  settings.dcheck_state =
-      logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS;
-  logging::InitLogging(settings);
-  // To view log output with IDs and timestamps use "adb logcat -v threadtime".
-  logging::SetLogItems(false,    // Process ID
-                       false,    // Thread ID
-                       false,    // Timestamp
-                       false);   // Tick count
-}
 
 struct ShellInit {
   scoped_refptr<base::SingleThreadTaskRunner> java_runner;
@@ -74,7 +62,7 @@ static void Init(JNIEnv* env, jclass clazz, jobject context) {
   // TODO(abarth): Currently we leak g_at_exit.
 
   CommandLine::Init(0, 0);
-  InitializeLogging();
+  mojo::shell::InitializeLogging();
 
   g_java_message_loop.Get().reset(
       new base::MessageLoop(base::MessageLoop::TYPE_UI));

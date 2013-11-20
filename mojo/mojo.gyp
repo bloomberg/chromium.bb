@@ -240,6 +240,8 @@
         'shell/app_container.h',
         'shell/context.cc',
         'shell/context.h',
+        'shell/init.cc',
+        'shell/init.h',
         'shell/loader.cc',
         'shell/loader.h',
         'shell/network_delegate.cc',
