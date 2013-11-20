@@ -56,6 +56,10 @@ public class JavaScriptUtils {
             final String code,
             final long timeout, final TimeUnit timeoutUnits)
                     throws InterruptedException, TimeoutException {
+        // Calling this from the UI thread causes it to time-out: the UI thread being blocked won't
+        // have a chance to process the JavaScript eval response).
+        Assert.assertFalse("Executing JavaScript should be done from the test thread, "
+                + " not the UI thread", ThreadUtils.runningOnUiThread());
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
