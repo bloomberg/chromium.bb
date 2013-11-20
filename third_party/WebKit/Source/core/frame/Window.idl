@@ -26,6 +26,7 @@
 
 // HTML 5 draft spec:
 // http://www.w3.org/html/wg/drafts/html/master/browsers.html#window
+// FIXME: explain all uses of [DoNotCheckSecurity]
 [
     CheckSecurity=Frame,
     CustomToV8,
@@ -117,7 +118,7 @@
     [DoNotCheckSecurity, Unforgeable] readonly attribute Window window;
     [Replaceable, DoNotCheckSecurity] readonly attribute  Window frames;
 
-    [DoNotCheckSecurity=Getter, Custom=Setter] attribute Window opener;
+    [DoNotCheckSecurity, Custom=Setter] attribute Window opener;
     [Replaceable, DoNotCheckSecurity] readonly attribute Window parent;
     [DoNotCheckSecurity, Unforgeable] readonly attribute Window top;
 

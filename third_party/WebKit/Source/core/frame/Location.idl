@@ -29,6 +29,11 @@
 [
     CheckSecurity=Frame,
 ] interface Location {
+    // |assign|, |replace|, and *writing* |href| do not require a security
+    // check, as they *change* the page, and thus these do not change any
+    // property of an *existing* document at a different origin.
+    // However, *reading* |href|, or accessing any component, is a security
+    // problem, since that allows tracking navigation.
     [SetterCallWith=ActiveWindow&FirstWindow, DoNotCheckSecurity=Setter, Unforgeable] attribute DOMString href;
 
     [CallWith=ActiveWindow&FirstWindow, DoNotCheckSecurity, Unforgeable, ReadOnly, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] void assign([Default=Undefined] optional DOMString url);

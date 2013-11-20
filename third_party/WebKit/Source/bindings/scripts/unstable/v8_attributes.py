@@ -305,9 +305,7 @@ def access_control_list(attribute):
     access_control = []
     if 'DoNotCheckSecurity' in extended_attributes:
         do_not_check_security = extended_attributes['DoNotCheckSecurity']
-        if do_not_check_security == 'Getter':
-            access_control.append('v8::ALL_CAN_READ')
-        elif do_not_check_security == 'Setter':
+        if do_not_check_security == 'Setter':
             access_control.append('v8::ALL_CAN_WRITE')
         else:
             access_control.append('v8::ALL_CAN_READ')

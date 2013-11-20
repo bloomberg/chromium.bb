@@ -120,7 +120,6 @@ interface TestObjectPython {
     // FIXME: move to TestCheckSecurityInterface when implement [CheckSecurity]
     [DoNotCheckSecurity] attribute long doNotCheckSecurityLongAttribute;
     [DoNotCheckSecurity] readonly attribute long doNotCheckSecurityReadonlyLongAttribute;  // Separate read only attribute to check attribute configuration
-    [DoNotCheckSecurity=Getter] attribute long doNotCheckSecurityOnGetterLongAttribute;
     [DoNotCheckSecurity=Setter] attribute long doNotCheckSecurityOnSetterLongAttribute;
     [EnforceRange] attribute long enforceRangeLongAttribute;
     [ExposeJSAccessors] attribute long exposeJSAccessorsLongAttribute;
