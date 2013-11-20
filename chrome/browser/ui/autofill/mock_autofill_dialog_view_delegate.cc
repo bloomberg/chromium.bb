@@ -41,6 +41,8 @@ MockAutofillDialogViewDelegate::MockAutofillDialogViewDelegate() {
   cc_default_inputs_.push_back(kCreditCardInputs[0]);
   ON_CALL(*this, RequestedFieldsForSection(SECTION_CC))
       .WillByDefault(ReturnRef(cc_default_inputs_));
+  ON_CALL(*this, RequestedFieldsForSection(SECTION_CC_BILLING))
+      .WillByDefault(ReturnRef(cc_default_inputs_));
 
   ON_CALL(*this, GetDialogButtons())
       .WillByDefault(Return(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));

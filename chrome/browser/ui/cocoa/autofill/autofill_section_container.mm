@@ -116,6 +116,10 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 // will clobber existing data and reset fields to the initial values.
 - (void)updateAndClobber:(BOOL)shouldClobber;
 
+// Return YES if this is a section that contains CC info. (And, more
+// importantly, a potential CVV field)
+- (BOOL)isCreditCardSection;
+
 // Create properly styled label for section. Autoreleased.
 - (NSTextField*)makeDetailSectionLabel:(NSString*)labelText;
 
@@ -195,8 +199,8 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   [[self view] setSubviews:
       @[label_, inputs_, [suggestContainer_ view], suggestButton_]];
 
-  if (section_ == autofill::SECTION_CC) {
-    // SECTION_CC *MUST* have a CREDIT_CARD_VERIFICATION_CODE input.
+  if ([self isCreditCardSection]) {
+    // Credit card sections *MUST* have a CREDIT_CARD_VERIFICATION_CODE input.
     DCHECK([self detailInputForType:autofill::CREDIT_CARD_VERIFICATION_CODE]);
     [[suggestContainer_ inputField] setTag:
         autofill::CREDIT_CARD_VERIFICATION_CODE];
@@ -344,8 +348,9 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   NSArray* fields = nil;
   if (![inputs_ isHidden]) {
     fields = [inputs_ subviews];
-  } else if (section_ == autofill::SECTION_CC) {
-    fields = @[ [suggestContainer_ inputField] ];
+  } else if ([self isCreditCardSection]) {
+    if (![[suggestContainer_ inputField] isHidden])
+      fields = @[ [suggestContainer_ inputField] ];
   }
 
   // Ensure only editable fields are validated.
@@ -501,6 +506,11 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   }
   [self updateFieldIcons];
   [self modelChanged];
+}
+
+- (BOOL)isCreditCardSection {
+  return section_ == autofill::SECTION_CC ||
+      section_ == autofill::SECTION_CC_BILLING;
 }
 
 - (MenuButton*)makeSuggestionButton {
