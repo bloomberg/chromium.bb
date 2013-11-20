@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "gin/converter.h"
 #include "gin/gin.h"
+#include "gin/modules/console.h"
 #include "gin/modules/module_registry.h"
 #include "gin/test/gtest.h"
 #include "gin/try_catch.h"
@@ -28,6 +29,7 @@ base::FilePath GetModuleBase() {
 
 FileRunnerDelegate::FileRunnerDelegate()
     : ModuleRunnerDelegate(GetModuleBase()) {
+  AddBuiltinModule(Console::kModuleName, Console::GetTemplate);
   AddBuiltinModule(GTest::kModuleName, GTest::GetTemplate);
 }
 

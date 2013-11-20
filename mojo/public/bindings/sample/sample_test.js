@@ -3,15 +3,20 @@
 // found in the LICENSE file.
 
 define([
+    "console",
+    "mojo/public/bindings/js/test/hexdump",
     "gtest",
     // TODO(abarth): We shouldn't need to depend on codec, but there seems to
     // be a bug in the module loading system whereby this test doesn't run if
     // we don't import codec here.
     "mojo/public/bindings/js/codec",
     "mojo/public/bindings/sample/mojom/sample_service"
-  ], function(gtest, codec, sample) {
+  ], function(console, hexdump, gtest, codec, sample) {
 
   var global = this;
+
+  // Set this variable to true to print the binary message in hex.
+  var dumpMessageAsHex = false;
 
   function makeFoo() {
     var bar = new sample.Bar();
@@ -107,6 +112,8 @@ define([
   }
 
   SimpleMessageReceiver.prototype.accept = function(message) {
+    if (dumpMessageAsHex)
+      console.log(hexdump.dumpArray(message.memory));
     // Imagine some IPC happened here.
     var serviceImpl = new ServiceImpl();
     serviceImpl.accept(message);

@@ -13,6 +13,9 @@
 
 namespace sample {
 
+// Set this variable to true to print the binary message in hex.
+bool g_dump_message_as_hex = true;
+
 // Make a sample |Foo| in the given |ScratchBuffer|.
 Foo* MakeFoo(mojo::ScratchBuffer* buf) {
   const std::string kName("foopy");
@@ -174,6 +177,22 @@ static void Print(int depth, const char* name, const Foo* foo) {
   }
 }
 
+static void DumpHex(const uint8_t* bytes, uint32_t num_bytes) {
+  for (uint32_t i = 0; i < num_bytes; ++i) {
+    printf("%02x", bytes[i]);
+
+    if (i % 16 == 15) {
+      printf("\n");
+      continue;
+    }
+
+    if (i % 2 == 1)
+      printf(" ");
+    if (i % 8 == 7)
+      printf(" ");
+  }
+}
+
 class ServiceImpl : public ServiceStub {
  public:
   virtual void Frobinate(const Foo* foo, bool baz, mojo::Handle port)
@@ -199,6 +218,11 @@ class SimpleMessageReceiver : public mojo::MessageReceiver {
  public:
   virtual bool Accept(mojo::Message* message) MOJO_OVERRIDE {
     // Imagine some IPC happened here.
+
+    if (g_dump_message_as_hex) {
+      DumpHex(reinterpret_cast<const uint8_t*>(message->data),
+              message->data->header.num_bytes);
+    }
 
     // In the receiving process, an implementation of ServiceStub is known to
     // the system. It receives the incoming message.

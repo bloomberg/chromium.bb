@@ -81,6 +81,10 @@ define(function() {
     this.memory = newMemory;
   };
 
+  Buffer.prototype.createViewOfAllocatedMemory = function() {
+    return new Uint8Array(this.memory.buffer, 0, this.next);
+  };
+
   // Constants ----------------------------------------------------------------
 
   var kArrayHeaderSize = 8;
@@ -212,7 +216,7 @@ define(function() {
   };
 
   Encoder.prototype.createAndEncodeEncoder = function(size) {
-    var pointer = this.buffer.alloc(size);
+    var pointer = this.buffer.alloc(align(size));
     this.encodePointer(pointer);
     return new Encoder(this.buffer, this.handles, pointer);
   };
@@ -277,6 +281,8 @@ define(function() {
   // MessageBuilder -----------------------------------------------------------
 
   function MessageBuilder(messageName, payloadSize) {
+    // Currently, we don't compute the payload size correctly ahead of time.
+    // Instead, we overwrite this field at the end.
     var numberOfBytes = kMessageHeaderSize + payloadSize;
     this.buffer = new Buffer(numberOfBytes);
     this.handles = [];
@@ -295,7 +301,11 @@ define(function() {
   };
 
   MessageBuilder.prototype.finish = function() {
-    var message = new Message(this.buffer.memory, this.handles);
+    // TODO(abarth): Rather than resizing the buffer at the end, we could
+    // compute the size we need ahead of time, like we do in C++.
+    var memory = this.buffer.createViewOfAllocatedMemory();
+    store32(memory, 0, memory.length);
+    var message = new Message(memory, this.handles);
     this.buffer = null;
     this.handles = null;
     this.encoder = null;

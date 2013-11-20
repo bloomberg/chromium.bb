@@ -54,7 +54,7 @@ define([
     this.files = [];
   }
 
-  Foo.encodedSize = codec.kStructHeaderSize + 64;
+  Foo.encodedSize = codec.kStructHeaderSize + 56;
 
   Foo.decode = function(decoder) {
     var val = new Foo();
@@ -95,7 +95,7 @@ define([
 
   // Service ------------------------------------------------------------------
 
-  var kService_Frobinate_Name = 1;
+  var kService_Frobinate_Name = 0;
 
   function Service_Frobinate_Params() {
     this.foo = null;

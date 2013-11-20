@@ -102,7 +102,7 @@ define([
     ];
 
     var messageName = 31;
-    var payloadSize = sample.Foo.encodedSize;
+    var payloadSize = 232;
 
     var builder = new codec.MessageBuilder(messageName, payloadSize);
     builder.encodeStruct(sample.Foo, foo);
@@ -110,11 +110,11 @@ define([
     var message = builder.finish();
 
     var expectedMemory = [
-      /*  0: */   80,    0,    0,    0,   31,    0,    0,    0,
-      /*  8: */   72,    0,    0,    0,   10,    0,    0,    0,
+      /*  0: */  240,    0,    0,    0,   31,    0,    0,    0,
+      /*  8: */   64,    0,    0,    0,   10,    0,    0,    0,
       /* 16: */ 0xD5, 0xB4, 0x12, 0x02, 0x93, 0x6E, 0x01,    0,
       /* 24: */    5,    0,    0,    0,    0,    0,    0,    0,
-      /* 32: */   48,    0,    0,    0,    0,    0,    0,    0,
+      /* 32: */   40,    0,    0,    0,    0,    0,    0,    0,
       // TODO(abarth): Test more of the message's raw memory.
     ];
 
