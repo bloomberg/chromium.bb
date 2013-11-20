@@ -97,6 +97,35 @@
             window.internals.stopTrackingRepaints(document);
         }
 
+        container.scrollTop = 0;
+
+        return result;
+    }
+
+    function testOverflowHidden() {
+        var result = "";
+        var container = document.getElementById("container");
+
+        container.style.overflow = "hidden";
+        document.body.offsetTop;
+
+        if (window.internals)
+            window.internals.startTrackingRepaints(document);
+
+        container.scrollTop = 100;
+
+        if (window.internals) {
+            var repaintRects = window.internals.repaintRects(container);
+            var repainted = hasNonScrollbarRepaint(repaintRects);
+            if (repainted === true)
+                result += "PASS repainted when expected\n";
+            else
+                result += "FAIL did not repaint when expected\n";
+            window.internals.stopTrackingRepaints(document);
+        }
+
+        container.scrollTop = 0;
+
         return result;
     }
 
@@ -105,6 +134,7 @@
         marquee.stop();
         var result = testRepaint();
         result += testNoRepaint();
+        result += testOverflowHidden();
         var pre = document.createElement('pre');
         document.body.appendChild(pre);
         pre.innerHTML = result;
