@@ -35,7 +35,6 @@
 #include "components/json_schema/json_schema_constants.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"
-#include "policy/policy_constants.h"
 
 namespace schema = json_schema_constants;
 
@@ -245,10 +244,11 @@ PolicyLoaderWin::~PolicyLoaderWin() {
 
 // static
 scoped_ptr<PolicyLoaderWin> PolicyLoaderWin::Create(
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const string16& chrome_policy_key) {
   return make_scoped_ptr(
       new PolicyLoaderWin(task_runner,
-                          kRegistryChromePolicyKey,
+                          chrome_policy_key,
                           g_win_gpo_list_provider.Pointer()));
 }
 

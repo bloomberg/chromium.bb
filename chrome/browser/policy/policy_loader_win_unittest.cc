@@ -36,7 +36,6 @@
 #include "chrome/browser/policy/preg_parser_win.h"
 #include "chrome/browser/policy/schema_map.h"
 #include "components/json_schema/json_schema_constants.h"
-#include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace schema = json_schema_constants;
@@ -53,6 +52,7 @@ const wchar_t kThirdParty[] = L"3rdparty";
 const wchar_t kMandatory[] = L"policy";
 const wchar_t kRecommended[] = L"recommended";
 const wchar_t kSchema[] = L"schema";
+const wchar_t kTestPolicyKey[] = L"chrome.policy.key";
 
 // Installs |value| in the given registry |path| and |hive|, under the key
 // |name|. Returns false on errors.
@@ -424,7 +424,7 @@ ConfigurationPolicyProvider* RegistryTestHarness::CreateProvider(
     SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   scoped_ptr<AsyncPolicyLoader> loader(
-      new PolicyLoaderWin(task_runner, kRegistryChromePolicyKey, this));
+      new PolicyLoaderWin(task_runner, kTestPolicyKey, this));
   return new AsyncPolicyProvider(registry, loader.Pass());
 }
 
@@ -433,7 +433,7 @@ void RegistryTestHarness::InstallEmptyPolicy() {}
 void RegistryTestHarness::InstallStringPolicy(
     const std::string& policy_name,
     const std::string& policy_value) {
-  RegKey key(hive_, kRegistryChromePolicyKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, kTestPolicyKey, KEY_ALL_ACCESS);
   ASSERT_TRUE(key.Valid());
   ASSERT_HRESULT_SUCCEEDED(key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                                           UTF8ToUTF16(policy_value).c_str()));
@@ -442,7 +442,7 @@ void RegistryTestHarness::InstallStringPolicy(
 void RegistryTestHarness::InstallIntegerPolicy(
     const std::string& policy_name,
     int policy_value) {
-  RegKey key(hive_, kRegistryChromePolicyKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, kTestPolicyKey, KEY_ALL_ACCESS);
   ASSERT_TRUE(key.Valid());
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                  static_cast<DWORD>(policy_value));
@@ -451,7 +451,7 @@ void RegistryTestHarness::InstallIntegerPolicy(
 void RegistryTestHarness::InstallBooleanPolicy(
     const std::string& policy_name,
     bool policy_value) {
-  RegKey key(hive_, kRegistryChromePolicyKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, kTestPolicyKey, KEY_ALL_ACCESS);
   ASSERT_TRUE(key.Valid());
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                  static_cast<DWORD>(policy_value));
@@ -461,7 +461,7 @@ void RegistryTestHarness::InstallStringListPolicy(
     const std::string& policy_name,
     const base::ListValue* policy_value) {
   RegKey key(hive_,
-             (string16(kRegistryChromePolicyKey) + ASCIIToUTF16("\\") +
+             (string16(kTestPolicyKey) + ASCIIToUTF16("\\") +
               UTF8ToUTF16(policy_name)).c_str(),
              KEY_ALL_ACCESS);
   ASSERT_TRUE(key.Valid());
@@ -483,7 +483,7 @@ void RegistryTestHarness::InstallDictionaryPolicy(
     const base::DictionaryValue* policy_value) {
   std::string json;
   base::JSONWriter::Write(policy_value, &json);
-  RegKey key(hive_, kRegistryChromePolicyKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, kTestPolicyKey, KEY_ALL_ACCESS);
   ASSERT_TRUE(key.Valid());
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                  UTF8ToUTF16(json).c_str());
@@ -493,7 +493,7 @@ void RegistryTestHarness::Install3rdPartyPolicy(
     const base::DictionaryValue* policies) {
   // The first level entries are domains, and the second level entries map
   // components to their policy.
-  const string16 kPathPrefix = string16(kRegistryChromePolicyKey) + kPathSep +
+  const string16 kPathPrefix = string16(kTestPolicyKey) + kPathSep +
                                kThirdParty + kPathSep;
   for (base::DictionaryValue::Iterator domain(*policies);
        !domain.IsAtEnd(); domain.Advance()) {
@@ -556,7 +556,7 @@ ConfigurationPolicyProvider* PRegTestHarness::CreateProvider(
     SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   scoped_ptr<AsyncPolicyLoader> loader(
-      new PolicyLoaderWin(task_runner, kRegistryChromePolicyKey, this));
+      new PolicyLoaderWin(task_runner, kTestPolicyKey, this));
   return new AsyncPolicyProvider(registry, loader.Pass());
 }
 
@@ -564,23 +564,23 @@ void PRegTestHarness::InstallEmptyPolicy() {}
 
 void PRegTestHarness::InstallStringPolicy(const std::string& policy_name,
                                           const std::string& policy_value) {
-  AppendStringToPRegFile(kRegistryChromePolicyKey, policy_name, policy_value);
+  AppendStringToPRegFile(kTestPolicyKey, policy_name, policy_value);
 }
 
 void PRegTestHarness::InstallIntegerPolicy(const std::string& policy_name,
                                            int policy_value) {
-  AppendDWORDToPRegFile(kRegistryChromePolicyKey, policy_name, policy_value);
+  AppendDWORDToPRegFile(kTestPolicyKey, policy_name, policy_value);
 }
 
 void PRegTestHarness::InstallBooleanPolicy(const std::string& policy_name,
                                            bool policy_value) {
-  AppendDWORDToPRegFile(kRegistryChromePolicyKey, policy_name, policy_value);
+  AppendDWORDToPRegFile(kTestPolicyKey, policy_name, policy_value);
 }
 
 void PRegTestHarness::InstallStringListPolicy(
     const std::string& policy_name,
     const base::ListValue* policy_value) {
-  AppendPolicyToPRegFile(kRegistryChromePolicyKey, policy_name, policy_value);
+  AppendPolicyToPRegFile(kTestPolicyKey, policy_name, policy_value);
 }
 
 void PRegTestHarness::InstallDictionaryPolicy(
@@ -588,14 +588,14 @@ void PRegTestHarness::InstallDictionaryPolicy(
     const base::DictionaryValue* policy_value) {
   std::string json;
   base::JSONWriter::Write(policy_value, &json);
-  AppendStringToPRegFile(kRegistryChromePolicyKey, policy_name, json);
+  AppendStringToPRegFile(kTestPolicyKey, policy_name, json);
 }
 
 void PRegTestHarness::Install3rdPartyPolicy(
     const base::DictionaryValue* policies) {
   // The first level entries are domains, and the second level entries map
   // components to their policy.
-  const string16 kPathPrefix = string16(kRegistryChromePolicyKey) + kPathSep +
+  const string16 kPathPrefix = string16(kTestPolicyKey) + kPathSep +
                                kThirdParty + kPathSep;
   for (base::DictionaryValue::Iterator domain(*policies);
        !domain.IsAtEnd(); domain.Advance()) {

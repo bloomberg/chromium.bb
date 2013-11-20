@@ -585,7 +585,8 @@ void BrowserPolicyConnector::SetTimezoneIfPolicyAvailable() {
 ConfigurationPolicyProvider* BrowserPolicyConnector::CreatePlatformProvider() {
 #if defined(OS_WIN)
   scoped_ptr<AsyncPolicyLoader> loader(PolicyLoaderWin::Create(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      kRegistryChromePolicyKey));
   return new AsyncPolicyProvider(GetSchemaRegistry(), loader.Pass());
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderMac(

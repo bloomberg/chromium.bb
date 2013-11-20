@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "base/win/object_watcher.h"
@@ -56,7 +57,8 @@ class PolicyLoaderWin : public AsyncPolicyLoader,
 
   // Creates a policy loader that uses the Win API to access GPO.
   static scoped_ptr<PolicyLoaderWin> Create(
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      const string16& chrome_policy_key);
 
   // AsyncPolicyLoader implementation.
   virtual void InitOnBackgroundThread() OVERRIDE;
