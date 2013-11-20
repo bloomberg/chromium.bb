@@ -1035,5 +1035,75 @@ class SafeRunTest(cros_test_lib.TestCase):
                       combine_exceptions=True)
 
 
+class FrozenAttributesTest(cros_test_lib.TestCase):
+  """Tests FrozenAttributesMixin functionality."""
+
+  class DummyClass(object):
+    """Any class that does not override __setattr__."""
+
+  class SetattrClass(object):
+    """Class that does override __setattr__."""
+    SETATTR_OFFSET = 10
+    def __setattr__(self, attr, value):
+      """Adjust value here to later confirm that this code ran."""
+      object.__setattr__(self, attr, self.SETATTR_OFFSET + value)
+
+  def _TestBasics(self, cls):
+    # pylint: disable=W0201
+    def _Expected(val):
+      return getattr(cls, 'SETATTR_OFFSET', 0) + val
+
+    obj = cls()
+    obj.a = 1
+    obj.b = 2
+    self.assertEquals(_Expected(1), obj.a)
+    self.assertEquals(_Expected(2), obj.b)
+
+    obj.Freeze()
+    self.assertRaises(cros_build_lib.AttributeFrozenError, setattr, obj, 'a', 3)
+    self.assertEquals(_Expected(1), obj.a)
+
+    self.assertRaises(cros_build_lib.AttributeFrozenError, setattr, obj, 'c', 3)
+    self.assertFalse(hasattr(obj, 'c'))
+
+  def testFrozenByMetaclass(self):
+    """Test attribute freezing with FrozenAttributesClass."""
+    class DummyByMeta(self.DummyClass):
+      """Class that freezes DummyClass using metaclass construct."""
+      __metaclass__ = cros_build_lib.FrozenAttributesClass
+
+    self._TestBasics(DummyByMeta)
+
+    class SetattrByMeta(self.SetattrClass):
+      """Class that freezes SetattrClass using metaclass construct."""
+      __metaclass__ = cros_build_lib.FrozenAttributesClass
+
+    self._TestBasics(SetattrByMeta)
+
+  def testFrozenByMixinFirst(self):
+    """Test attribute freezing with FrozenAttributesMixin first in hierarchy."""
+    class Dummy(cros_build_lib.FrozenAttributesMixin, self.DummyClass):
+      """Class that freezes DummyClass using mixin construct."""
+
+    self._TestBasics(Dummy)
+
+    class Setattr(cros_build_lib.FrozenAttributesMixin, self.SetattrClass):
+      """Class that freezes SetattrClass using mixin construct."""
+
+    self._TestBasics(Setattr)
+
+  def testFrozenByMixinLast(self):
+    """Test attribute freezing with FrozenAttributesMixin last in hierarchy."""
+    class Dummy(self.DummyClass, cros_build_lib.FrozenAttributesMixin):
+      """Class that freezes DummyClass using mixin construct."""
+
+    self._TestBasics(Dummy)
+
+    class Setattr(self.SetattrClass, cros_build_lib.FrozenAttributesMixin):
+      """Class that freezes SetattrClass using mixin construct."""
+
+    self._TestBasics(Setattr)
+
+
 if __name__ == '__main__':
   cros_test_lib.main()

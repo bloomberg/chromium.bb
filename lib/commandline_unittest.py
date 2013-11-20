@@ -212,5 +212,106 @@ class CacheTest(cros_test_lib.MockTempDirTestCase):
     self._CheckCall(self.CACHE_DIR)
 
 
+class ParseArgsTest(cros_test_lib.TestCase):
+  """Test parse_args behavior of our custom argument parsing classes."""
+
+  def _CreateOptionParser(self, cls):
+    """Create a class of optparse.OptionParser with prepared config.
+
+    Args:
+      cls: Some subclass of optparse.OptionParser.
+
+    Returns:
+      The created OptionParser object.
+    """
+    usage = 'usage: some usage'
+    parser = cls(usage=usage)
+
+    # Add some options.
+    parser.add_option('-x', '--xxx', action='store_true', default=False,
+                      help='Gimme an X')
+    parser.add_option('-y', '--yyy', action='store_true', default=False,
+                      help='Gimme a Y')
+    parser.add_option('-a', '--aaa', type='string', default='Allan',
+                      help='Gimme an A')
+    parser.add_option('-b', '--bbb', type='string', default='Barry',
+                      help='Gimme a B')
+    parser.add_option('-c', '--ccc', type='string', default='Connor',
+                      help='Gimme a C')
+
+    return parser
+
+  def _CreateArgumentParser(self, cls):
+    """Create a class of argparse.ArgumentParser with prepared config.
+
+    Args:
+      cls: Some subclass of argparse.ArgumentParser.
+
+    Returns:
+      The created ArgumentParser object.
+    """
+    usage = 'usage: some usage'
+    parser = cls(usage=usage)
+
+    # Add some options.
+    parser.add_argument('-x', '--xxx', action='store_true', default=False,
+                        help='Gimme an X')
+    parser.add_argument('-y', '--yyy', action='store_true', default=False,
+                        help='Gimme a Y')
+    parser.add_argument('-a', '--aaa', type=str, default='Allan',
+                        help='Gimme an A')
+    parser.add_argument('-b', '--bbb', type=str, default='Barry',
+                        help='Gimme a B')
+    parser.add_argument('-c', '--ccc', type=str, default='Connor',
+                        help='Gimme a C')
+    parser.add_argument('args', type=str, nargs='*', help='args')
+
+    return parser
+
+  def _TestParser(self, parser):
+    """Test the given parser with a prepared argv."""
+    argv = ['-x', '--bbb', 'Bobby', '-c', 'Connor', 'foobar']
+
+    parsed = parser.parse_args(argv)
+
+    if isinstance(parser, commandline.OptionParser):
+      # optparse returns options and args separately.
+      options, args = parsed
+      self.assertEquals(['foobar'], args)
+    else:
+      # argparse returns just options.  Options configured above to have the
+      # args stored at option "args".
+      options = parsed
+      self.assertEquals(['foobar'], parsed.args)
+
+    self.assertTrue(options.xxx)
+    self.assertFalse(options.yyy)
+
+    self.assertEquals('Allan', options.aaa)
+    self.assertEquals('Bobby', options.bbb)
+    self.assertEquals('Connor', options.ccc)
+
+    self.assertRaises(AttributeError, getattr, options, 'xyz')
+
+    # Now try altering option values.
+    options.aaa = 'Arick'
+    self.assertEquals('Arick', options.aaa)
+
+    # Now freeze the options and try altering again.
+    options.Freeze()
+    self.assertRaises(commandline.cros_build_lib.AttributeFrozenError,
+                      setattr, options, 'aaa', 'Arnold')
+    self.assertEquals('Arick', options.aaa)
+
+  def testOptionParser(self):
+    self._TestParser(self._CreateOptionParser(commandline.OptionParser))
+
+  def testFilterParser(self):
+    self._TestParser(self._CreateOptionParser(commandline.FilteringParser))
+
+  def testArgumentParser(self):
+    self._TestParser(self._CreateArgumentParser(commandline.ArgumentParser))
+
+
 if __name__ == '__main__':
   cros_test_lib.main()

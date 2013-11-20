@@ -21,6 +21,7 @@ import tempfile
 # TODO(build): sort the buildbot.constants/lib.constants issue;
 # lib shouldn't have to import from buildbot like this.
 from chromite.buildbot import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -239,7 +240,7 @@ class BaseParser(object):
     This can be anything from logging setup to positional arg count validation.
 
     Args:
-      opts: optparse.Values instance
+      opts: optparse.Values or argparse.Namespace instance
       args: position arguments unconsumed from parsing.
 
     Returns:
@@ -299,6 +300,27 @@ class BaseParser(object):
     group.add_option(*args, **kwargs)
 
 
+class ArgumentNamespace(argparse.Namespace):
+  """Class to mimic argparse.Namespace with value freezing support."""
+  __metaclass__ = cros_build_lib.FrozenAttributesClass
+  _FROZEN_ERR_MSG = 'Option values are frozen, cannot alter %s.'
+
+
+# Note that because optparse.Values is not a new-style class this class
+# must use the mixin FrozenAttributesMixin rather than the metaclass
+# FrozenAttributesClass.
+class OptionValues(cros_build_lib.FrozenAttributesMixin, optparse.Values):
+  """Class to mimic optparse.Values with value freezing support."""
+  _FROZEN_ERR_MSG = 'Option values are frozen, cannot alter %s.'
+
+  def __init__(self, defaults, *args, **kwargs):
+    cros_build_lib.FrozenAttributesMixin.__init__(self)
+    optparse.Values.__init__(self, defaults, *args, **kwargs)
+
+    # Used by FilteringParser.
+    self.parsed_args = None
+
+
 class OptionParser(optparse.OptionParser, BaseParser):
   """Custom parser adding our custom option class in.
 
@@ -319,6 +341,10 @@ class OptionParser(optparse.OptionParser, BaseParser):
     self.SetupOptions()
 
   def parse_args(self, args=None, values=None):
+    # If no Values object is specified then use our custom OptionValues.
+    if values is None:
+      values = OptionValues(defaults=self.defaults)
+
     opts, remaining = optparse.OptionParser.parse_args(
         self, args=args, values=values)
     return self.DoPostParseSetup(opts, remaining)
@@ -334,8 +360,10 @@ class FilteringParser(OptionParser):
   DEFAULT_OPTION_CLASS = FilteringOption
 
   def parse_args(self, args=None, values=None):
+    # If no Values object is specified then use our custom OptionValues.
     if values is None:
-      values = self.get_default_values()
+      values = OptionValues(defaults=self.defaults)
+
     values.parsed_args = []
 
     return OptionParser.parse_args(self, args=args, values=values)
@@ -407,6 +435,10 @@ class ArgumentParser(BaseParser, argparse.ArgumentParser):
 
   def parse_args(self, args=None, namespace=None):
     """Translates OptionParser call to equivalent ArgumentParser call."""
+    # If no Namespace object is specified then use our custom ArgumentNamespace.
+    if namespace is None:
+      namespace = ArgumentNamespace()
+
     # Unlike OptionParser, ArgParser works only with a single namespace and no
     # args. Re-use BaseParser DoPostParseSetup but only take the namespace.
     namespace = argparse.ArgumentParser.parse_args(
