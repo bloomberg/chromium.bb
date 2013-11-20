@@ -109,7 +109,6 @@
     'chrome_browser_ui.gypi',
     'chrome_common.gypi',
     'chrome_installer_util.gypi',
-    'chrome_tests_unit.gypi',
     'version.gypi',
     '../components/nacl/nacl_defines.gypi',
   ],
@@ -123,6 +122,7 @@
         'chrome_installer.gypi',
         'chrome_renderer.gypi',
         'chrome_tests.gypi',
+        'chrome_tests_unit.gypi',
         '../apps/apps.gypi',
       ],
       'targets': [

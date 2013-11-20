@@ -220,7 +220,6 @@
       'type': 'none',
       'dependencies': [
         '../base/base.gyp:base_unittests',
-        '../chrome/chrome.gyp:unit_tests',
         '../crypto/crypto.gyp:crypto_unittests',
         '../net/net.gyp:net_unittests',
         '../sql/sql.gyp:sql_unittests',
@@ -238,6 +237,7 @@
             '../chrome/chrome.gyp:chromedriver2_unittests',
             '../chrome/chrome.gyp:interactive_ui_tests',
             '../chrome/chrome.gyp:sync_integration_tests',
+            '../chrome/chrome.gyp:unit_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../components/components_tests.gyp:components_unittests',
             '../content/content_shell_and_tests.gyp:content_browsertests',
