@@ -62,21 +62,13 @@ public interface PrintingController {
     void pageCountEstimationDone(final int maxPages);
 
     /**
-     * Sets PrintingContext.
+     * Sets PrintingContext currently associated with the controller.
      *
      * This needs to be called after PrintingContext object is created. Firstly its native
      * counterpart is created, and then the Java.  PrintingController implementation
      * needs this to interact with the native side, since JNI is built on PrintingContext.
      **/
     void setPrintingContext(final PrintingContextInterface printingContext);
-
-    /**
-     * TODO(cimamoglu): Remove errorText stuff once KitKat is public and we can move this code.
-     * @param errorText The error message to be shown to user in case something goes wrong in PDF
-     *                  generation in Chromium.  We pass it here as a string because this folder
-     *                  cannot use resources directly (or any other Clank code).
-     */
-    void setErrorText(final String errorText);
 
     /**
      * @return Whether a complete PDF generation cycle inside Chromium has been completed.

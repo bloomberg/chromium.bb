@@ -4,11 +4,13 @@
 
 package org.chromium.printing;
 
-import android.content.Context;
+import org.chromium.base.ThreadUtils;
+
+import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
-import android.os.CancellationSignal.OnCancelListener;
 import android.print.PageRange;
 import android.print.PrintAttributes;
 import android.print.PrintAttributes.MediaSize;
@@ -17,15 +19,10 @@ import android.print.PrintDocumentAdapter;
 import android.print.PrintDocumentAdapter.LayoutResultCallback;
 import android.print.PrintDocumentAdapter.WriteResultCallback;
 import android.print.PrintDocumentInfo;
-import android.print.PrintJob;
-import android.print.PrintManager;
-import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Controls the interactions with Android framework related to printing.
@@ -35,15 +32,26 @@ import java.util.List;
  * print button. The singleton object lives in UI thread. Interaction with the native side is
  * carried through PrintingContext class.
  */
-class PrintingControllerImpl extends PrintDocumentAdapter implements PrintingController {
+public class PrintingControllerImpl extends PrintDocumentAdapter implements PrintingController {
 
     private static final String LOG_TAG = "PrintingControllerImpl";
 
-    private static final String PDF_FILE_NAME = "chrome_print_document.pdf";
+    /**
+     * This is used for both initial state and a completed state (i.e. starting from either
+     * onLayout or onWrite, a PDF generation cycle is completed another new one can safely start).
+     */
+    private static final int PRINTING_STATE_READY = 0;
+    private static final int PRINTING_STATE_STARTED_FROM_ONLAYOUT = 1;
+    private static final int PRINTING_STATE_STARTED_FROM_ONWRITE = 2;
+    /** Printing dialog has been dismissed and cleanup has been done. */
+    private static final int PRINTING_STATE_FINISHED = 3;
 
-    private String mErrorMessage;
+    /** The singleton instance for this class. */
+    private static PrintingController sInstance;
 
-    private final PrintManager mPrintManager;
+    private final String mErrorMessage;
+
+    private final PrintManagerDelegate mPrintManager;
 
     private PrintingContextInterface mPrintingContext;
 
@@ -73,16 +81,6 @@ class PrintingControllerImpl extends PrintDocumentAdapter implements PrintingCon
     /** The object through which native PDF generation process is initiated. */
     private Printable mPrintable;
 
-    /**
-     * This is used for both initial state and a completed state (i.e. starting from either
-     * onLayout or onWrite, a PDF generation cycle is completed another new one can safely start).
-     */
-    private final static int PRINTING_STATE_READY = 0;
-    private final static int PRINTING_STATE_STARTED_FROM_ONLAYOUT = 1;
-    private final static int PRINTING_STATE_STARTED_FROM_ONWRITE = 2;
-    /** Printing dialog has been dismissed and cleanup has been done. */
-    private final static int PRINTING_STATE_FINISHED = 3;
-
     private int mPrintingState = PRINTING_STATE_READY;
 
     /** Whether layouting parameters have been changed to require a new PDF generation. */
@@ -91,18 +89,54 @@ class PrintingControllerImpl extends PrintDocumentAdapter implements PrintingCon
     /** Total number of pages to print with initial print dialog settings. */
     private int mLastKnownMaxPages = PrintDocumentInfo.PAGE_COUNT_UNKNOWN;
 
-    PrintingControllerImpl(final Context context) {
-        mPrintManager = (PrintManager) context.getSystemService(Context.PRINT_SERVICE);
+    private PrintingControllerImpl(PrintManagerDelegate printManager, String errorText) {
+        mPrintManager = printManager;
+        mErrorMessage = errorText;
+    }
+
+    /**
+     * Creates a controller for handling printing with the framework.
+     *
+     * The controller is a singleton, since there can be only one printing action at any time.
+     *
+     * @param errorText The error message to be shown to user in case something goes wrong in PDF
+     *                  generation in Chromium. We pass it here as a string so src/printing/android
+     *                  doesn't need any string dependency.
+     * @return The resulting PrintingController.
+     */
+    public static PrintingController create(PrintManagerDelegate printManager,
+           String errorText) {
+        ThreadUtils.assertOnUiThread();
+
+        if (sInstance == null) {
+            sInstance = new PrintingControllerImpl(printManager, errorText);
+        }
+        return sInstance;
+    }
+
+    /**
+     * Returns the singleton instance, created by the {@link PrintingControllerImpl#create}.
+     *
+     * This method must be called once {@link PrintingControllerImpl#create} is called, and always
+     * thereafter.
+     *
+     * @return The singleton instance.
+     */
+    public static PrintingController getInstance() {
+        return sInstance;
+    }
+
+    /**
+     * @return True if the running version of the Android supports printing.
+     */
+    @SuppressLint("InlinedApi")
+    public static boolean isPrintingSupported() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
     }
 
     @Override
     public boolean hasPrintingFinished() {
       return mPrintingState == PRINTING_STATE_FINISHED;
-    }
-
-    @Override
-    public void setErrorText(final String errorText) {
-      mErrorMessage = errorText;
     }
 
     @Override
@@ -127,7 +161,7 @@ class PrintingControllerImpl extends PrintDocumentAdapter implements PrintingCon
 
     @Override
     public int[] getPageNumbers() {
-        return mPages;
+        return mPages.clone();
     }
 
     @Override
@@ -203,8 +237,7 @@ class PrintingControllerImpl extends PrintDocumentAdapter implements PrintingCon
             mLastKnownMaxPages = maxPages;
         }
         if (mPrintingState == PRINTING_STATE_STARTED_FROM_ONLAYOUT) {
-            // TODO(cimamoglu): Choose a meaningful filename.
-            PrintDocumentInfo info = new PrintDocumentInfo.Builder(PDF_FILE_NAME)
+            PrintDocumentInfo info = new PrintDocumentInfo.Builder(mPrintable.getTitle())
                     .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
                     .setPageCount(mLastKnownMaxPages)
                     .build();
@@ -299,7 +332,7 @@ class PrintingControllerImpl extends PrintDocumentAdapter implements PrintingCon
         mOnLayoutCallback = null;
     }
 
-    private void closeFileDescriptor(int fd) {
+    private static void closeFileDescriptor(int fd) {
         if (fd != -1) return;
         ParcelFileDescriptor fileDescriptor = ParcelFileDescriptor.adoptFd(fd);
         if (fileDescriptor != null) {
@@ -311,7 +344,7 @@ class PrintingControllerImpl extends PrintDocumentAdapter implements PrintingCon
         }
     }
 
-    private PageRange[] convertIntegerArrayToPageRanges(int[] pagesArray) {
+    private static PageRange[] convertIntegerArrayToPageRanges(int[] pagesArray) {
         PageRange[] pageRanges;
         if (pagesArray != null) {
             pageRanges = new PageRange[pagesArray.length];
@@ -329,7 +362,7 @@ class PrintingControllerImpl extends PrintDocumentAdapter implements PrintingCon
     /**
      * Gets an array of page ranges and returns an array of integers with all ranges expanded.
      */
-    private int[] normalizeRanges(final PageRange[] ranges) {
+    private static int[] normalizeRanges(final PageRange[] ranges) {
         // Expand ranges into a list of individual numbers.
         ArrayList<Integer> pages = new ArrayList<Integer>();
         for (PageRange range : ranges) {

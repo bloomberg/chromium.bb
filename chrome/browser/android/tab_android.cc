@@ -21,6 +21,7 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tab_helper.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
+#include "chrome/browser/printing/print_view_manager_basic.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -397,6 +398,20 @@ void TabAndroid::SetActiveNavigationEntryTitleForUrl(JNIEnv* env,
       web_contents()->GetController().GetVisibleEntry();
   if (entry && url == entry->GetVirtualURL().spec())
     entry->SetTitle(title);
+}
+
+bool TabAndroid::Print(JNIEnv* env, jobject obj) {
+  if (!web_contents())
+    return false;
+
+  printing::PrintViewManagerBasic::CreateForWebContents(web_contents());
+  printing::PrintViewManagerBasic* print_view_manager =
+      printing::PrintViewManagerBasic::FromWebContents(web_contents());
+  if (print_view_manager == NULL)
+    return false;
+
+  print_view_manager->PrintNow();
+  return true;
 }
 
 bool TabAndroid::RegisterTabAndroid(JNIEnv* env) {

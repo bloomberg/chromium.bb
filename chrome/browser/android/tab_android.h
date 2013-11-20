@@ -143,6 +143,8 @@ class TabAndroid : public CoreTabHelperDelegate,
                                            jstring jurl,
                                            jstring jtitle);
 
+  bool Print(JNIEnv* env, jobject obj);
+
  protected:
   virtual ~TabAndroid();
 

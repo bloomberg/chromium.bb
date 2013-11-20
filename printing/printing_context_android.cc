@@ -91,7 +91,6 @@ void PrintingContextAndroid::AskUserForSettings(
   if (j_printing_context_.is_null()) {
     j_printing_context_.Reset(Java_PrintingContext_create(
         env,
-        base::android::GetApplicationContext(),
         reinterpret_cast<int>(this)));
   }
 

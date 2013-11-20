@@ -8,9 +8,6 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 
-import android.content.Context;
-
-import android.util.Log;
 import android.util.SparseArray;
 
 /**
@@ -21,17 +18,6 @@ import android.util.SparseArray;
 @JNINamespace("printing")
 public class PrintingContext implements PrintingContextInterface {
 
-    private static final String TAG = "PrintingContext";
-
-    /** Whether the framework supports printing. */
-    public static final boolean sIsPrintingAvailable = isPrintingAvailable();
-
-    /**
-     * The full class name of the print manager used to test whether printing functionality is
-     * available.
-     */
-    private static final String PRINT_MANAGER_CLASS_NAME = "android.print.PrintManager";
-
     /**
      * Mapping from a file descriptor (as originally provided from
      * {@link PrintDocumentAdapter#onWrite}) to a PrintingContext.
@@ -39,7 +25,7 @@ public class PrintingContext implements PrintingContextInterface {
      * This is static because a static method of the native code (inside PrintingContextAndroid)
      * needs to find Java PrintingContext class corresponding to a file descriptor.
      **/
-    private static final SparseArray<PrintingContext> sPrintingContextMap =
+    private static final SparseArray<PrintingContext> PRINTING_CONTEXT_MAP =
             new SparseArray<PrintingContext>();
 
     /** The controller this object interacts with, which in turn communicates with the framework. */
@@ -48,27 +34,13 @@ public class PrintingContext implements PrintingContextInterface {
     /** The pointer to the native PrintingContextAndroid object. */
     private final int mNativeObject;
 
-    private PrintingContext(Context context, int ptr) {
-        mController = PrintingControllerFactory.getPrintingController(context);
+    private PrintingContext(int ptr) {
+        mController = PrintingControllerImpl.getInstance();
         mNativeObject = ptr;
     }
 
     /**
-     * @return Whether printing is supported by the platform.
-     */
-    private static boolean isPrintingAvailable() {
-        // TODO(cimamoglu): Get rid of reflection once Build.VERSION_CODES.KEY_LIME_PIE is fixed.
-        try {
-            Class.forName(PRINT_MANAGER_CLASS_NAME);
-        } catch (ClassNotFoundException e) {
-            Log.d(TAG, "PrintManager not found on device");
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Updates sPrintingContextMap to map from the file descriptor to this object.
+     * Updates PRINTING_CONTEXT_MAP to map from the file descriptor to this object.
      * @param fileDescriptor The file descriptor passed down from
      *                       {@link PrintDocumentAdapter#onWrite}.
      * @param delete If true, delete the entry (if it exists). If false, add it to the map.
@@ -77,9 +49,9 @@ public class PrintingContext implements PrintingContextInterface {
     public void updatePrintingContextMap(int fileDescriptor, boolean delete) {
         ThreadUtils.assertOnUiThread();
         if (delete) {
-            sPrintingContextMap.remove(fileDescriptor);
+            PRINTING_CONTEXT_MAP.remove(fileDescriptor);
         } else {
-            sPrintingContextMap.put(fileDescriptor, this);
+            PRINTING_CONTEXT_MAP.put(fileDescriptor, this);
         }
     }
 
@@ -94,9 +66,9 @@ public class PrintingContext implements PrintingContextInterface {
     }
 
     @CalledByNative
-    public static PrintingContext create(Context context, int nativeObjectPointer) {
+    public static PrintingContext create(int nativeObjectPointer) {
         ThreadUtils.assertOnUiThread();
-        return new PrintingContext(context, nativeObjectPointer);
+        return new PrintingContext(nativeObjectPointer);
     }
 
     @CalledByNative
@@ -127,11 +99,11 @@ public class PrintingContext implements PrintingContextInterface {
     public static void pdfWritingDone(int fd, boolean success) {
         ThreadUtils.assertOnUiThread();
         // TODO(cimamoglu): Do something when fd == -1.
-        if (sPrintingContextMap.get(fd) != null) {
+        if (PRINTING_CONTEXT_MAP.get(fd) != null) {
             ThreadUtils.assertOnUiThread();
-            PrintingContext printingContext = sPrintingContextMap.get(fd);
+            PrintingContext printingContext = PRINTING_CONTEXT_MAP.get(fd);
             printingContext.mController.pdfWritingDone(success);
-            sPrintingContextMap.remove(fd);
+            PRINTING_CONTEXT_MAP.remove(fd);
         }
     }
 
@@ -147,7 +119,7 @@ public class PrintingContext implements PrintingContextInterface {
         // If the printing dialog has already finished, tell Chromium that operation is cancelled.
         if (mController.hasPrintingFinished()) {
             // NOTE: We don't call nativeAskUserForSettingsReply (hence Chromium callback in
-            // AskUserForSettings callback) twice.  See PrintingControllerImpl#onFinish
+            // AskUserForSettings callback) twice.  See {@link PrintingControllerImpl#onFinish}
             // for more explanation.
             nativeAskUserForSettingsReply(mNativeObject, false);
         } else {

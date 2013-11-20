@@ -309,7 +309,6 @@ public abstract class TabBase implements NavigationClient {
     }
 
     /**
-     *
      * @return The infobar container.
      */
     public final InfoBarContainer getInfoBarContainer() {
@@ -321,6 +320,16 @@ public abstract class TabBase implements NavigationClient {
      * requests.
      */
     protected abstract AutoLoginProcessor createAutoLoginProcessor();
+
+    /**
+     * Prints the current page.
+     *
+     * @return Whether the printing process is started successfully.
+     **/
+    public boolean print() {
+        assert mNativeTabAndroid != 0;
+        return nativePrint(mNativeTabAndroid);
+    }
 
     /**
      * Reloads the current page content if it is a {@link ContentView}.
@@ -771,4 +780,5 @@ public abstract class TabBase implements NavigationClient {
     private native int nativeGetSecurityLevel(int nativeTabAndroid);
     private native void nativeSetActiveNavigationEntryTitleForUrl(int nativeTabAndroid, String url,
             String title);
+    private native boolean nativePrint(int nativeTabAndroid);
 }
