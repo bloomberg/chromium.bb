@@ -82,6 +82,10 @@ def additional_include_files(args=[]):
 if __name__ == '__main__':
   args = sys.argv[1:]
 
+  if int(os.environ.get('GYP_CHROMIUM_NO_ACTION', 0)):
+    print 'Skipping gyp_chromium due to GYP_CHROMIUM_NO_ACTION env var.'
+    sys.exit(0)
+
   # Use the Psyco JIT if available.
   if psyco:
     psyco.profile()
