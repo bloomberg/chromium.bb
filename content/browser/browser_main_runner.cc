@@ -7,6 +7,7 @@
 #include "base/allocator/allocator_shim.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -125,6 +126,14 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
   virtual void Shutdown() OVERRIDE {
     DCHECK(initialization_started_);
     DCHECK(!is_shutdown_);
+#ifdef LEAK_SANITIZER
+    // Invoke leak detection now, to avoid dealing with shutdown-only leaks.
+    // Normally this will have already happened in
+    // BroserProcessImpl::ReleaseModule(), so this call has no effect. This is
+    // only for processes which do not instantiate a BrowserProcess.
+    // If leaks are found, the process will exit here.
+    __lsan_do_leak_check();
+#endif
     // The shutdown tracing got enabled in AttemptUserExit earlier, but someone
     // needs to write the result to disc. For that a dumper needs to get created
     // which will dump the traces to disc when it gets destroyed.
