@@ -306,7 +306,7 @@
     this.attachmentStrategy_.onRemovedListener(removedListener);
 
     if (this.listeners_.length == 0) {
-      var i = allAttachedEvents.indexOf(this);
+      var i = $Array.indexOf(allAttachedEvents, this);
       if (i >= 0)
         delete allAttachedEvents[i];
       if (this.eventName_) {
