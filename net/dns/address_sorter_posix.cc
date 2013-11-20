@@ -287,7 +287,7 @@ void AddressSorterPosix::Sort(const AddressList& list,
     rv = socket->GetLocalAddress(&src);
     if (rv != OK) {
       LOG(WARNING) << "Could not get local address for "
-                   << src.ToStringWithoutPort() << " reason " << rv;
+                   << dest.ToStringWithoutPort() << " reason " << rv;
       continue;
     }
 
