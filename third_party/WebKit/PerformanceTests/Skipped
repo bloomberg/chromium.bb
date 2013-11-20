@@ -50,6 +50,7 @@ Layout/RegionsAuto.html
 Layout/RegionsAutoMaxHeight.html
 Layout/RegionsFixed.html
 Layout/RegionsFixedShort.html
+Layout/RegionsSelection.html
 
 # Redundant with chromium's page cyclers.
 Replay
