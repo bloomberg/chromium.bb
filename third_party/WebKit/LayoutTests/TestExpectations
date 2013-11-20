@@ -575,3 +575,5 @@ crbug.com/320334 media/media-can-play-ogg.html [ Failure ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 crbug.com/245556 virtual/softwarecompositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
+
+crbug.com/321787 [ Win ] virtual/gpu/fast/canvas/webgl/premultiplyalpha-test.html [ Pass Failure ]
