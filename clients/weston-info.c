@@ -234,8 +234,20 @@ print_shm_info(void *data)
 	printf("\tformats:");
 
 	wl_list_for_each(format, &shm->formats, link)
-		printf(" %s", (format->format == WL_SHM_FORMAT_ARGB8888) ?
-			      "ARGB8888" : "XRGB8888");
+		switch (format->format) {
+		case WL_SHM_FORMAT_ARGB8888:
+			printf(" ARGB8888");
+			break;
+		case WL_SHM_FORMAT_XRGB8888:
+			printf(" XRGB8888");
+			break;
+		case WL_SHM_FORMAT_RGB565:
+			printf(" RGB565");
+			break;
+		default:
+			printf(" unknown(%08x)", format->format);
+			break;
+		}
 
 	printf("\n");
 }
