@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -757,6 +758,10 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest, TestWithDownloads) {
   close_observer.Wait();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(chrome::BrowserIterator().done());
+  if (browser_defaults::kBrowserAliveWithNoWindows)
+    EXPECT_EQ(1, DownloadService::NonMaliciousDownloadCountAllProfiles());
+  else
+    EXPECT_EQ(0, DownloadService::NonMaliciousDownloadCountAllProfiles());
 }
 
 // Test shutdown with a download in progress from one profile, where the only
@@ -804,6 +809,10 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   close_observer.Wait();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(chrome::BrowserIterator().done());
+  if (browser_defaults::kBrowserAliveWithNoWindows)
+    EXPECT_EQ(1, DownloadService::NonMaliciousDownloadCountAllProfiles());
+  else
+    EXPECT_EQ(0, DownloadService::NonMaliciousDownloadCountAllProfiles());
 }
 
 // Test shutdown with downloads in progress and beforeunload handlers.

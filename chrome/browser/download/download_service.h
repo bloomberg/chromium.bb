@@ -51,6 +51,9 @@ class DownloadService : public BrowserContextKeyedService {
   // Number of non-malicious downloads associated with all profiles.
   static int NonMaliciousDownloadCountAllProfiles();
 
+  // Cancels all in-progress downloads.
+  static void CancelAllDownloads();
+
   // Sets the DownloadManagerDelegate associated with this object and
   // its DownloadManager.  Takes ownership of |delegate|, and destroys
   // the previous delegate.  For testing.

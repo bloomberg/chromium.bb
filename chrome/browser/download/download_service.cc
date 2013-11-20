@@ -113,6 +113,26 @@ int DownloadService::NonMaliciousDownloadCountAllProfiles() {
   return count;
 }
 
+// static
+void DownloadService::CancelAllDownloads() {
+  std::vector<Profile*> profiles(
+      g_browser_process->profile_manager()->GetLoadedProfiles());
+  for (std::vector<Profile*>::iterator it = profiles.begin();
+       it < profiles.end();
+       ++it) {
+    content::DownloadManager* download_manager =
+        content::BrowserContext::GetDownloadManager(*it);
+    content::DownloadManager::DownloadVector downloads;
+    download_manager->GetAllDownloads(&downloads);
+    for (content::DownloadManager::DownloadVector::iterator it =
+             downloads.begin();
+         it != downloads.end();
+         ++it) {
+      (*it)->Cancel(false);
+    }
+  }
+}
+
 void DownloadService::SetDownloadManagerDelegateForTesting(
     ChromeDownloadManagerDelegate* new_delegate) {
   // Set the new delegate first so that if BrowserContext::GetDownloadManager()

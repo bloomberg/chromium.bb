@@ -44,6 +44,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -497,6 +498,13 @@ Browser::~Browser() {
   // away so they don't try and call back to us.
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
+
+  int num_downloads;
+  if (OkToCloseWithInProgressDownloads(&num_downloads) ==
+          DOWNLOAD_CLOSE_BROWSER_SHUTDOWN &&
+      !browser_defaults::kBrowserAliveWithNoWindows) {
+    DownloadService::CancelAllDownloads();
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
