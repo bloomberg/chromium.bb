@@ -71,6 +71,56 @@ weston_compositor_idle_release(struct weston_compositor *compositor)
 }
 
 static void
+pointer_focus_view_destroyed(struct wl_listener *listener, void *data)
+{
+	struct weston_pointer *pointer =
+		container_of(listener, struct weston_pointer,
+			     focus_view_listener);
+
+	weston_pointer_set_focus(pointer, NULL, 0, 0);
+}
+
+static void
+pointer_focus_resource_destroyed(struct wl_listener *listener, void *data)
+{
+	struct weston_pointer *pointer =
+		container_of(listener, struct weston_pointer,
+			     focus_resource_listener);
+
+	weston_pointer_set_focus(pointer, NULL, 0, 0);
+}
+
+static void
+keyboard_focus_resource_destroyed(struct wl_listener *listener, void *data)
+{
+	struct weston_keyboard *keyboard =
+		container_of(listener, struct weston_keyboard,
+			     focus_resource_listener);
+
+	weston_keyboard_set_focus(keyboard, NULL);
+}
+
+static void
+touch_focus_view_destroyed(struct wl_listener *listener, void *data)
+{
+	struct weston_touch *touch =
+		container_of(listener, struct weston_touch,
+			     focus_view_listener);
+
+	weston_touch_set_focus(touch->seat, NULL);
+}
+
+static void
+touch_focus_resource_destroyed(struct wl_listener *listener, void *data)
+{
+	struct weston_touch *touch =
+		container_of(listener, struct weston_touch,
+			     focus_resource_listener);
+
+	weston_touch_set_focus(touch->seat, NULL);
+}
+
+static void
 move_resources(struct wl_list *destination, struct wl_list *source)
 {
 	wl_list_insert_list(destination, source);
@@ -394,11 +444,13 @@ weston_pointer_create(struct weston_seat *seat)
 	wl_list_init(&pointer->focus_resource_list);
 	weston_pointer_set_default_grab(pointer,
 					seat->compositor->default_pointer_grab);
+	wl_list_init(&pointer->focus_resource_listener.link);
+	pointer->focus_resource_listener.notify = pointer_focus_resource_destroyed;
 	pointer->default_grab.pointer = pointer;
 	pointer->grab = &pointer->default_grab;
 	wl_signal_init(&pointer->motion_signal);
 	wl_signal_init(&pointer->focus_signal);
-	wl_list_init(&pointer->focus_listener.link);
+	wl_list_init(&pointer->focus_view_listener.link);
 
 	pointer->sprite_destroy_listener.notify = pointer_handle_sprite_destroy;
 
@@ -417,6 +469,8 @@ weston_pointer_destroy(struct weston_pointer *pointer)
 
 	/* XXX: What about pointer->resource_list? */
 
+	wl_list_remove(&pointer->focus_resource_listener.link);
+	wl_list_remove(&pointer->focus_view_listener.link);
 	free(pointer);
 }
 
@@ -442,6 +496,8 @@ weston_keyboard_create(void)
 
 	wl_list_init(&keyboard->resource_list);
 	wl_list_init(&keyboard->focus_resource_list);
+	wl_list_init(&keyboard->focus_resource_listener.link);
+	keyboard->focus_resource_listener.notify = keyboard_focus_resource_destroyed;
 	wl_array_init(&keyboard->keys);
 	keyboard->default_grab.interface = &default_keyboard_grab_interface;
 	keyboard->default_grab.keyboard = keyboard;
@@ -457,6 +513,7 @@ weston_keyboard_destroy(struct weston_keyboard *keyboard)
 	/* XXX: What about keyboard->resource_list? */
 
 	wl_array_release(&keyboard->keys);
+	wl_list_remove(&keyboard->focus_resource_listener.link);
 	free(keyboard);
 }
 
@@ -471,6 +528,10 @@ weston_touch_create(void)
 
 	wl_list_init(&touch->resource_list);
 	wl_list_init(&touch->focus_resource_list);
+	wl_list_init(&touch->focus_view_listener.link);
+	touch->focus_view_listener.notify = touch_focus_view_destroyed;
+	wl_list_init(&touch->focus_resource_listener.link);
+	touch->focus_resource_listener.notify = touch_focus_resource_destroyed;
 	touch->default_grab.interface = &default_touch_grab_interface;
 	touch->default_grab.touch = touch;
 	touch->grab = &touch->default_grab;
@@ -484,6 +545,8 @@ weston_touch_destroy(struct weston_touch *touch)
 {
 	/* XXX: What about touch->resource_list? */
 
+	wl_list_remove(&touch->focus_view_listener.link);
+	wl_list_remove(&touch->focus_resource_listener.link);
 	free(touch);
 }
 
@@ -503,23 +566,6 @@ seat_send_updated_caps(struct weston_seat *seat)
 	wl_resource_for_each(resource, &seat->base_resource_list) {
 		wl_seat_send_capabilities(resource, caps);
 	}
-}
-
-static void
-destroy_pointer_focus(struct wl_listener *listener, void *data)
-{
-	struct weston_pointer *pointer;
-
-	pointer = container_of(listener, struct weston_pointer,
-			       focus_listener);
-
-	pointer->focus = NULL;
-	move_resources(&pointer->resource_list, &pointer->focus_resource_list);
-
-	wl_list_remove(&pointer->focus_listener.link);
-	wl_list_init(&pointer->focus_listener.link);
-
-	wl_signal_emit(&pointer->focus_signal, pointer);
 }
 
 WL_EXPORT void
@@ -548,6 +594,8 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 					      pointer->focus->surface->resource);
 		}
 
+		wl_list_remove(&pointer->focus_resource_listener.link);
+		wl_list_init(&pointer->focus_resource_listener.link);
 		move_resources(&pointer->resource_list, focus_resource_list);
 	}
 
@@ -576,16 +624,18 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 		}
 
 		pointer->focus_serial = serial;
+		wl_resource_add_destroy_listener(view->surface->resource,
+						 &pointer->focus_resource_listener);
 	}
 
-	if (!wl_list_empty(&pointer->focus_listener.link)) {
-		wl_list_remove(&pointer->focus_listener.link);
-		wl_list_init(&pointer->focus_listener.link);
+	if (!wl_list_empty(&pointer->focus_view_listener.link)) {
+		wl_list_remove(&pointer->focus_view_listener.link);
+		wl_list_init(&pointer->focus_view_listener.link);
 	}
 	pointer->focus = view;
-	pointer->focus_listener.notify = destroy_pointer_focus;
+	pointer->focus_view_listener.notify = pointer_focus_view_destroyed;
 	if (view)
-		wl_signal_add(&view->destroy_signal, &pointer->focus_listener);
+		wl_signal_add(&view->destroy_signal, &pointer->focus_view_listener);
 	wl_signal_emit(&pointer->focus_signal, pointer);
 }
 
@@ -622,6 +672,8 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 			wl_keyboard_send_leave(resource, serial,
 					keyboard->focus->resource);
 		}
+		wl_list_remove(&keyboard->focus_resource_listener.link);
+		wl_list_init(&keyboard->focus_resource_listener.link);
 		move_resources(&keyboard->resource_list, focus_resource_list);
 	}
 
@@ -640,6 +692,8 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 					    surface,
 					    serial);
 		keyboard->focus_serial = serial;
+		wl_resource_add_destroy_listener(surface->resource,
+						 &keyboard->focus_resource_listener);
 	}
 
 	keyboard->focus = surface;
@@ -1258,6 +1312,11 @@ weston_touch_set_focus(struct weston_seat *seat, struct weston_view *view)
 		return;
 	}
 
+	wl_list_remove(&seat->touch->focus_resource_listener.link);
+	wl_list_init(&seat->touch->focus_resource_listener.link);
+	wl_list_remove(&seat->touch->focus_view_listener.link);
+	wl_list_init(&seat->touch->focus_view_listener.link);
+
 	if (!wl_list_empty(focus_resource_list)) {
 		move_resources(&seat->touch->resource_list,
 			       focus_resource_list);
@@ -1269,6 +1328,9 @@ weston_touch_set_focus(struct weston_seat *seat, struct weston_view *view)
 		move_resources_for_client(focus_resource_list,
 					  &seat->touch->resource_list,
 					  surface_client);
+		wl_resource_add_destroy_listener(view->surface->resource,
+						 &seat->touch->focus_resource_listener);
+		wl_signal_add(&view->destroy_signal, &seat->touch->focus_view_listener);
 	}
 	seat->touch->focus = view;
 }
