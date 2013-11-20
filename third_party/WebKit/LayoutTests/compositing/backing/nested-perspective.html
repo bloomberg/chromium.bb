@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <style>
+    .container {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      border: 1px solid blue;
+      -webkit-perspective: 200;
+    }
+    #outer {
+      height: 200px;
+      width: 200px;
+      -webkit-perspective-origin: 10% 10%;
+    }
+    #inner {
+      height: 180px;
+      width: 180px;
+      -webkit-perspective-origin: 80% 80%;
+    }
+    #card
+    {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 160px;
+      height: 160px;
+      background-color: green;
+      border: 4px solid black;
+      -webkit-transform: rotateY(45deg);
+    }
+  </style>
+  <script>
+    if (window.testRunner)
+      testRunner.dumpAsTextWithPixelResults();
+  </script>
+</head>
+<body>
+  <!--
+    This tests that nested perspective transforms are applied correctly (that is,
+    that the deepest one is the one respected). If this test is working correctly,
+    the inner rectangle should be pointed generally down and to the right.
+  -->
+  <div class="container" id="outer">
+    <div class="container" id="inner">
+      <div id="card"></div>
+    </div>
+  </div>
+</body>
+</html>

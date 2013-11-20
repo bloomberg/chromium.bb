@@ -11,13 +11,7 @@ enum CompositingState {
     // The layer paints into its enclosing composited ancestor.
     NotComposited = 0,
 
-    // The layer is composited, but its contents still paint into enclosing composited ancestor.
-    // In this state, repaint invalidations must be sent to the enclosing composited ancestor.
-    // Typically this happens when a layer's properties need to be represented in the compositor
-    // output data structures, but it doesn't actually have any other reasons to be composited.
-    HasOwnBackingButPaintsIntoAncestor = 1,
-
-    PaintsIntoOwnBacking = 2,
+    PaintsIntoOwnBacking = 1,
 };
 
 } // namespace WebCore

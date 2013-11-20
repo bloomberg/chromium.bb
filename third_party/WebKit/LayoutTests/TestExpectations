@@ -283,6 +283,61 @@ crbug.com/243782 fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 crbug.com/246077 fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
 crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 
+# Now that we no longer create a composited layer mapping for layers that used to 'composite-
+# but-paint-into-ancestor', we have radically different graphics layer trees. In all cases
+# simpler.
+Bug(vollick) compositing/backing/no-backing-for-clip-overlap.html [ NeedsRebaseline ]
+Bug(vollick) compositing/backing/no-backing-for-clip.html [ NeedsRebaseline ]
+Bug(vollick) compositing/backing/no-backing-for-perspective.html [ NeedsRebaseline ]
+Bug(vollick) compositing/geometry/preserve-3d-switching.html [ NeedsRebaseline ]
+Bug(vollick) compositing/layer-creation/no-compositing-for-preserve-3d.html [ NeedsRebaseline ]
+Bug(vollick) compositing/layer-creation/overlap-animation.html [ NeedsRebaseline ]
+Bug(vollick) compositing/layer-creation/overlap-transformed-preserved-3d.html [ NeedsRebaseline ]
+Bug(vollick) compositing/layer-creation/overlap-transforms.html [ NeedsRebaseline ]
+Bug(vollick) compositing/overflow/clip-descendents.html [ NeedsRebaseline ]
+Bug(vollick) compositing/repaint/fixed-pos-with-composited-child.html [ NeedsRebaseline ]
+Bug(vollick) compositing/repaint/repaint-into-ancestor-after-layout.html [ NeedsRebaseline ]
+Bug(vollick) compositing/tiling/backface-preserve-3d-tiled.html [ NeedsRebaseline ]
+Bug(vollick) compositing/tiling/rotated-tiled-clamped.html [ NeedsRebaseline ]
+Bug(vollick) compositing/tiling/rotated-tiled-preserve3d-clamped.html [ NeedsRebaseline ]
+Bug(vollick) compositing/visibility/layer-visible-content.html [ NeedsRebaseline ]
+Bug(vollick) inspector/layer-compositing-reasons.html [ NeedsRebaseline ]
+Bug(vollick) virtual/gpu/compositedscrolling/overflow/clip-descendents.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/backing/no-backing-for-clip-overlap.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/backing/no-backing-for-clip.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/backing/no-backing-for-perspective.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/geometry/preserve-3d-switching.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/layer-creation/no-compositing-for-preserve-3d.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/layer-creation/overlap-animation.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/layer-creation/overlap-transformed-preserved-3d.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/layer-creation/overlap-transforms.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/overflow/clip-descendents.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/repaint/fixed-pos-with-composited-child.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/repaint/repaint-into-ancestor-after-layout.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/tiling/backface-preserve-3d-tiled.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/tiling/rotated-tiled-clamped.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/tiling/rotated-tiled-preserve3d-clamped.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/visibility/layer-visible-content.html [ NeedsRebaseline ]
+Bug(vollick) virtual/threaded/compositing/visibility/layer-visible-content.html [ NeedsRebaseline ]
+
+# Imperceptible image differences due to compositing changes now that we no longer create
+# a composited layer mapping fo layers that are 'composited-but-paint-into-ancestor'.
+Bug(vollick) compositing/perpendicular-layer-sorting.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/perpendicular-layer-sorting.html [ NeedsRebaseline ]
+Bug(vollick) transforms/3d/general/perspective-units.html [ NeedsRebaseline ]
+Bug(vollick) transforms/3d/point-mapping/3d-point-mapping-2.html [ NeedsRebaseline ]
+Bug(vollick) transforms/3d/point-mapping/3d-point-mapping-origins.html [ NeedsRebaseline ]
+
+# Removal of the composited-but-paints-into-ancestor state fixes up flake that had
+# been causing errors on this test.
+Bug(vollick) transforms/3d/point-mapping/3d-point-mapping-deep.html [ NeedsRebaseline ]
+
+# New pixel-based tests that need baselines.
+Bug(vollick) compositing/backing/nested-perspective.html [ NeedsRebaseline ]
+Bug(vollick) compositing/backing/rotated-clip.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/backing/nested-perspective.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/backing/rotated-clip.html [ NeedsRebaseline ]
+
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
 

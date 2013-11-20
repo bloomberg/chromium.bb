@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <style>
+    .container {
+      position: absolute;
+      height: 200px;
+      width: 200px;
+      border: 1px solid blue;
+      overflow: hidden;
+    }
+    .rotated {
+      -webkit-transform: rotate(45deg);
+    }
+    .rotated-composited {
+      -webkit-transform: rotate(45deg) translateZ(0);
+    }
+    .composited {
+      -webkit-transform: translateZ(0);
+    }
+    .card
+    {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 180px;
+      height: 180px;
+      border: 1px solid black;
+      background-color: green;
+    }
+  </style>
+  <script>
+    if (window.testRunner)
+      testRunner.dumpAsTextWithPixelResults();
+  </script>
+</head>
+<body>
+  <!--
+    Ensures that if we have ancestors that had previously been in the 'composited-
+    but-paint-into-ancestor' state, that their clips work correctly, even if they
+    are rotated and combined.
+
+    If this test works correctly, you should see two green squares, both of which
+    should have their corners clipped off.
+  -->
+  <div class="container">
+    <div class="container rotated">
+    <div class="card rotated-composited"></div>
+    <div class="card composited"></div>
+    </div>
+  </div>
+</body>
+</html>

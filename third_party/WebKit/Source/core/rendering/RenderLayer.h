@@ -327,10 +327,18 @@ public:
     // Get the perspective transform, which is applied to transformed sublayers.
     // Returns true if the layer has a -webkit-perspective.
     // Note that this transform has the perspective-origin baked in.
-    TransformationMatrix perspectiveTransform() const;
+    // If |adjustOrigin| is true, then we take the perspective origin and transform it to a space
+    // whose origin is the top left of the layer (by default, the transform is applied about the
+    // center of the layer).
+    TransformationMatrix perspectiveTransform(bool adjustOrigin = true) const;
     FloatPoint perspectiveOrigin() const;
     bool preserves3D() const { return renderer()->style()->transformStyle3D() == TransformStyle3DPreserve3D; }
     bool has3DTransform() const { return m_transform && !m_transform->isAffine(); }
+
+    // Returns the first ancestor perspective transforms, up to, but not including, the first composited ancestor.
+    // At every step, the perspective origin is transformed into the space of the composited ancestor before being applied.
+    // The intent is that this transform is meant to be applied at the origin in the composited ancestor layer's space.
+    TransformationMatrix ancestorPerspectiveTransform() const;
 
     void filterNeedsRepaint();
     bool hasFilter() const { return renderer()->hasFilter(); }
