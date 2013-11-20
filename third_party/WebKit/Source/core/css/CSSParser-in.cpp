@@ -229,6 +229,7 @@ CSSParser::~CSSParser()
 void CSSParser::setupParser(const char* prefix, unsigned prefixLength, const String& string, const char* suffix, unsigned suffixLength)
 {
     m_tokenizer.setupTokenizer(prefix, prefixLength, string, suffix, suffixLength);
+    m_ruleHasHeader = true;
 }
 
 void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, const TextPosition& startPosition, SourceDataHandler* sourceDataHandler, bool logErrors)
@@ -8687,7 +8688,6 @@ StyleRuleBase* CSSParser::createFilterRule(const CSSParserString& filterName)
     clearProperties();
     StyleRuleFilter* result = rule.get();
     m_parsedRules.append(rule.release());
-    endRuleBody();
     return result;
 }
 
@@ -9499,14 +9499,11 @@ MediaQuerySet* CSSParser::createMediaQuerySet()
 
 StyleRuleBase* CSSParser::createImportRule(const CSSParserString& url, MediaQuerySet* media)
 {
-    if (!media || !m_allowImportRules) {
-        endRuleBody(true);
+    if (!media || !m_allowImportRules)
         return 0;
-    }
     RefPtr<StyleRuleImport> rule = StyleRuleImport::create(url, media);
     StyleRuleImport* result = rule.get();
     m_parsedRules.append(rule.release());
-    endRuleBody();
     return result;
 }
 
@@ -9522,7 +9519,6 @@ StyleRuleBase* CSSParser::createMediaRule(MediaQuerySet* media, RuleList* rules)
     }
     StyleRuleMedia* result = rule.get();
     m_parsedRules.append(rule.release());
-    endRuleBody();
     return result;
 }
 
@@ -9550,7 +9546,6 @@ StyleRuleBase* CSSParser::createSupportsRule(bool conditionIsSupported, RuleList
 
     StyleRuleSupports* result = rule.get();
     m_parsedRules.append(rule.release());
-    endRuleBody();
 
     return result;
 }
@@ -9678,7 +9673,6 @@ StyleRuleKeyframes* CSSParser::createKeyframesRule(const String& name, PassOwnPt
     rule->setVendorPrefixed(isPrefixed);
     StyleRuleKeyframes* rulePtr = rule.get();
     m_parsedRules.append(rule.release());
-    endRuleBody();
     return rulePtr;
 }
 
@@ -9694,9 +9688,7 @@ StyleRuleBase* CSSParser::createStyleRule(Vector<OwnPtr<CSSParserSelector> >* se
         rule->setProperties(createStylePropertySet());
         result = rule.get();
         m_parsedRules.append(rule.release());
-        endRuleBody();
-    } else
-        endRuleBody(true);
+    }
     clearProperties();
     return result;
 }
@@ -9714,7 +9706,6 @@ StyleRuleBase* CSSParser::createFontFaceRule()
             // have 'initial' value and cannot 'inherit' from parent.
             // See http://dev.w3.org/csswg/css3-fonts/#font-family-desc
             clearProperties();
-            endRuleBody(true);
             return 0;
         }
     }
@@ -9723,7 +9714,6 @@ StyleRuleBase* CSSParser::createFontFaceRule()
     clearProperties();
     StyleRuleFontFace* result = rule.get();
     m_parsedRules.append(rule.release());
-    endRuleBody();
     if (m_styleSheet)
         m_styleSheet->setHasFontFaceRule(true);
     return result;
@@ -9741,7 +9731,6 @@ StyleRuleBase* CSSParser::createHostRule(RuleList* rules)
     }
     StyleRuleHost* result = rule.get();
     m_parsedRules.append(rule.release());
-    endRuleBody();
     return result;
 }
 
@@ -9912,9 +9901,7 @@ StyleRuleBase* CSSParser::createPageRule(PassOwnPtr<CSSParserSelector> pageSelec
         rule->setProperties(createStylePropertySet());
         pageRule = rule.get();
         m_parsedRules.append(rule.release());
-        endRuleBody();
-    } else
-        endRuleBody(true);
+    }
     clearProperties();
     return pageRule;
 }
@@ -9927,10 +9914,8 @@ void CSSParser::setReusableRegionSelectorVector(Vector<OwnPtr<CSSParserSelector>
 
 StyleRuleBase* CSSParser::createRegionRule(Vector<OwnPtr<CSSParserSelector> >* regionSelector, RuleList* rules)
 {
-    if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !regionSelector || !rules) {
-        endRuleBody(true);
+    if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !regionSelector || !rules)
         return 0;
-    }
 
     m_allowImportRules = m_allowNamespaceDeclarations = false;
 
@@ -10002,21 +9987,46 @@ void CSSParser::invalidBlockHit()
         m_styleSheet->setHasSyntacticallyValidCSSHeader(false);
 }
 
+void CSSParser::startRule()
+{
+    if (!m_sourceDataHandler)
+        return;
+
+    ASSERT(m_ruleHasHeader);
+    m_ruleHasHeader = false;
+}
+
+void CSSParser::endRule(bool valid)
+{
+    if (!m_sourceDataHandler)
+        return;
+
+    if (m_ruleHasHeader)
+        m_sourceDataHandler->endRuleBody(m_tokenizer.safeUserStringTokenOffset(), !valid);
+    m_ruleHasHeader = true;
+}
+
 void CSSParser::startRuleHeader(CSSRuleSourceData::Type ruleType)
 {
     resumeErrorLogging();
     m_ruleHeaderType = ruleType;
     m_ruleHeaderStartOffset = m_tokenizer.safeUserStringTokenOffset();
     m_ruleHeaderStartLineNumber = m_tokenizer.m_tokenStartLineNumber;
-    if (m_sourceDataHandler)
+    if (m_sourceDataHandler) {
+        ASSERT(!m_ruleHasHeader);
         m_sourceDataHandler->startRuleHeader(ruleType, m_ruleHeaderStartOffset);
+        m_ruleHasHeader = true;
+    }
 }
 
 void CSSParser::endRuleHeader()
 {
+    ASSERT(m_ruleHeaderType != CSSRuleSourceData::UNKNOWN_RULE);
     m_ruleHeaderType = CSSRuleSourceData::UNKNOWN_RULE;
-    if (m_sourceDataHandler)
+    if (m_sourceDataHandler) {
+        ASSERT(m_ruleHasHeader);
         m_sourceDataHandler->endRuleHeader(m_tokenizer.safeUserStringTokenOffset());
+    }
 }
 
 void CSSParser::startSelector()
@@ -10035,12 +10045,6 @@ void CSSParser::startRuleBody()
 {
     if (m_sourceDataHandler)
         m_sourceDataHandler->startRuleBody(m_tokenizer.safeUserStringTokenOffset());
-}
-
-void CSSParser::endRuleBody(bool discard)
-{
-    if (m_sourceDataHandler)
-        m_sourceDataHandler->endRuleBody(m_tokenizer.safeUserStringTokenOffset(), discard);
 }
 
 void CSSParser::startProperty()
@@ -10066,10 +10070,8 @@ void CSSParser::startEndUnknownRule()
 StyleRuleBase* CSSParser::createViewportRule()
 {
     // Allow @viewport rules from UA stylesheets even if the feature is disabled.
-    if (!RuntimeEnabledFeatures::cssViewportEnabled() && !isUASheetBehavior(m_context.mode)) {
-        endRuleBody(true);
+    if (!RuntimeEnabledFeatures::cssViewportEnabled() && !isUASheetBehavior(m_context.mode))
         return 0;
-    }
 
     m_allowImportRules = m_allowNamespaceDeclarations = false;
 
@@ -10080,7 +10082,6 @@ StyleRuleBase* CSSParser::createViewportRule()
 
     StyleRuleViewport* result = rule.get();
     m_parsedRules.append(rule.release());
-    endRuleBody();
 
     return result;
 }

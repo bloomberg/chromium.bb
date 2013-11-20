@@ -517,19 +517,29 @@ valid_rule:
   | filter
   ;
 
-rule:
-    valid_rule {
-        parser->m_hadSyntacticallyValidCSSRule = true;
+before_rule:
+    /* empty */ {
+        parser->startRule();
     }
-  | invalid_rule {
+  ;
+
+rule:
+    before_rule valid_rule {
+        $$ = $2;
+        parser->m_hadSyntacticallyValidCSSRule = true;
+        parser->endRule(!!$$);
+    }
+  | before_rule invalid_rule {
         $$ = 0;
+        parser->endRule(false);
     }
   ;
 
 block_rule_body:
     block_rule_list
-  | block_rule_list error error_location rule_error_recovery {
-        parser->reportError($3, CSSParser::InvalidRuleError);
+  | block_rule_list before_rule error error_location rule_error_recovery {
+        parser->reportError($4, CSSParser::InvalidRuleError);
+        parser->endRule(false);
     }
     ;
 
@@ -547,25 +557,30 @@ block_rule_list:
 
 region_block_rule_body:
     region_block_rule_list
-  | region_block_rule_list error error_location error_recovery {
-        parser->reportError($3, CSSParser::InvalidRuleError);
+  | region_block_rule_list before_rule error error_location error_recovery {
+        parser->reportError($4, CSSParser::InvalidRuleError);
+        parser->endRule(false);
     }
     ;
 
 region_block_rule_list:
     /* empty */ { $$ = 0; }
   | region_block_rule_list region_block_rule maybe_sgml {
-      $$ = $1;
-      if ($2) {
-          if (!$$)
-              $$ = parser->createRuleList();
-          $$->append($2);
-      }
-  }
+        $$ = $1;
+        if ($2) {
+            if (!$$)
+                $$ = parser->createRuleList();
+            $$->append($2);
+        }
+    }
   ;
 
 region_block_rule:
-    region_block_valid_rule;
+    before_rule region_block_valid_rule {
+        $$ = $2;
+        parser->endRule(!!$$);
+    }
+  ;
 
 region_block_valid_rule:
     ruleset
@@ -593,9 +608,13 @@ block_valid_rule:
   ;
 
 block_rule:
-    block_valid_rule
-  | invalid_rule {
+    before_rule block_valid_rule {
+        $$ = $2;
+        parser->endRule(!!$$);
+    }
+  | before_rule invalid_rule {
         $$ = 0;
+        parser->endRule(false);
     }
   ;
 
@@ -618,11 +637,9 @@ import:
     }
   | import_rule_start string_or_uri maybe_space location_label maybe_media_list invalid_block {
         $$ = 0;
-        parser->endRuleBody(true);
     }
   | import_rule_start at_rule_recovery {
         $$ = 0;
-        parser->endRuleBody(true);
     }
   ;
 
@@ -781,7 +798,6 @@ media:
     }
   | media_rule_start maybe_media_list semi_or_eof {
         $$ = 0;
-        parser->endRuleBody(true);
     }
     ;
 
@@ -796,7 +812,6 @@ supports:
     | before_supports_rule SUPPORTS_SYM error error_location rule_error_recovery at_rule_end {
         $$ = 0;
         parser->reportError($4, CSSParser::InvalidSupportsConditionError);
-        parser->endRuleBody(true);
         parser->popSupportsRuleData();
     }
     ;
@@ -899,7 +914,6 @@ keyframes:
     }
   | keyframes_rule_start at_rule_recovery {
         $$ = 0;
-        parser->endRuleBody(true);
     }
     ;
 
@@ -983,11 +997,9 @@ page:
             parser->clearProperties();
             // Also clear margin at-rules here once we fully implement margin at-rules parsing.
             $$ = 0;
-            parser->endRuleBody(true);
         }
     }
     | before_page_rule PAGE_SYM at_rule_recovery {
-      parser->endRuleBody(true);
       $$ = 0;
     }
     ;
@@ -1089,7 +1101,6 @@ font_face:
     }
     | before_font_face_rule FONT_FACE_SYM at_rule_recovery {
       $$ = 0;
-      parser->endRuleBody(true);
     }
 ;
 
@@ -1106,7 +1117,6 @@ host:
     }
     | before_host_rule HOST_SYM at_rule_recovery {
         $$ = 0;
-        parser->endRuleBody(true);
     }
     ;
 
@@ -1125,7 +1135,6 @@ viewport:
     }
     | before_viewport_rule VIEWPORT_RULE_SYM at_rule_recovery {
         $$ = 0;
-        parser->endRuleBody(true);
         parser->markViewportRuleBodyEnd();
     }
 ;
@@ -1149,7 +1158,6 @@ region:
     }
   | before_region_rule WEBKIT_REGION_RULE_SYM at_rule_recovery {
         $$ = 0;
-        parser->endRuleBody(true);
     }
 ;
 

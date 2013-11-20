@@ -406,12 +406,13 @@ public:
     // tokenizer methods and data
     SourceDataHandler* m_sourceDataHandler;
 
+    void startRule();
+    void endRule(bool valid);
     void startRuleHeader(CSSRuleSourceData::Type);
     void endRuleHeader();
     void startSelector();
     void endSelector();
     void startRuleBody();
-    void endRuleBody(bool discard = false);
     void startProperty();
     void endProperty(bool isImportantFound, bool isPropertyParsed, ErrorType = NoError);
     void startEndUnknownRule();
@@ -533,6 +534,8 @@ private:
     unsigned m_ruleHeaderStartOffset;
     int m_ruleHeaderStartLineNumber;
     OwnPtr<Vector<unsigned> > m_lineEndings;
+
+    bool m_ruleHasHeader;
 
     bool m_allowImportRules;
     bool m_allowNamespaceDeclarations;
