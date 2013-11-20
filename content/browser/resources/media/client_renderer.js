@@ -146,7 +146,9 @@ var ClientRenderer = (function() {
     drawProperties_: function(propertyMap) {
       removeChildren(this.propertiesTable);
 
-      for (key in propertyMap) {
+      var sortedKeys = Object.keys(propertyMap).sort();
+      for (var i = 0; i < sortedKeys.length; ++i) {
+        var key = sortedKeys[i];
         var value = propertyMap[key];
 
         var row = this.propertiesTable.insertRow(-1);
