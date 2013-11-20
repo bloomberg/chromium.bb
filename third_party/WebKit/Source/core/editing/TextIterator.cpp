@@ -440,7 +440,7 @@ UChar TextIterator::characterAt(unsigned index) const
 
 String TextIterator::substring(unsigned position, unsigned length) const
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(position < static_cast<unsigned>(this->length()));
+    ASSERT_WITH_SECURITY_IMPLICATION(position <= static_cast<unsigned>(this->length()));
     ASSERT_WITH_SECURITY_IMPLICATION(position + length <= static_cast<unsigned>(this->length()));
     if (!length)
         return emptyString();

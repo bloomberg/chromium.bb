@@ -59,6 +59,8 @@ protected:
 
     HTMLDocument& document() const;
 
+    Vector<String> iterate(const char* bodyInnerHTML, TextIteratorBehavior = TextIteratorDefaultBehavior);
+
     void setBodyInnerHTML(const char*);
     PassRefPtr<Range> getBodyRange() const;
 
@@ -73,6 +75,20 @@ void TextIteratorTest::SetUp()
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
     m_document = toHTMLDocument(&m_dummyPageHolder->document());
     ASSERT(m_document);
+}
+
+Vector<String> TextIteratorTest::iterate(const char* bodyInnerHTML, TextIteratorBehavior iteratorBehavior)
+{
+    setBodyInnerHTML(bodyInnerHTML);
+
+    RefPtr<Range> range = getBodyRange();
+    TextIterator textIterator(range.get(), iteratorBehavior);
+    Vector<String> textChunks;
+    while (!textIterator.atEnd()) {
+        textChunks.append(textIterator.substring(0, textIterator.length()));
+        textIterator.advance();
+    }
+    return textChunks;
 }
 
 HTMLDocument& TextIteratorTest::document() const
@@ -95,7 +111,7 @@ PassRefPtr<Range> TextIteratorTest::getBodyRange() const
 
 TEST_F(TextIteratorTest, BasicIteration)
 {
-    setBodyInnerHTML("<p>Hello, \ntext</p><p>iterator.</p>");
+    static const char* input = "<p>Hello, \ntext</p><p>iterator.</p>";
     static const char* expectedTextChunksRawString[] = {
         "Hello, ",
         "text",
@@ -103,19 +119,38 @@ TEST_F(TextIteratorTest, BasicIteration)
         "\n",
         "iterator."
     };
-    static const size_t numberOfExpectedTextChunks = WTF_ARRAY_LENGTH(expectedTextChunksRawString);
     Vector<String> expectedTextChunks;
-    expectedTextChunks.append(expectedTextChunksRawString, numberOfExpectedTextChunks);
+    expectedTextChunks.append(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
+    Vector<String> actualTextChunks = iterate(input);
+    EXPECT_EQ(expectedTextChunks, actualTextChunks);
+}
 
-    RefPtr<Range> range = getBodyRange();
-    TextIterator textIterator(range.get());
-    Vector<String> actualTextChunks;
+TEST_F(TextIteratorTest, NotEnteringTextControls)
+{
+    static const char* input = "<p>Hello <input type=\"text\" value=\"input\">!</p>";
+    static const char* expectedTextChunksRawString[] = {
+        "Hello ",
+        "",
+        "!",
+    };
+    Vector<String> expectedTextChunks;
+    expectedTextChunks.append(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
+    Vector<String> actualTextChunks = iterate(input);
+    EXPECT_EQ(expectedTextChunks, actualTextChunks);
+}
 
-    while (!textIterator.atEnd()) {
-        actualTextChunks.append(textIterator.substring(0, textIterator.length()));
-        textIterator.advance();
-    }
-
+TEST_F(TextIteratorTest, EnteringTextControlsWithOption)
+{
+    static const char* input = "<p>Hello <input type=\"text\" value=\"input\">!</p>";
+    static const char* expectedTextChunksRawString[] = {
+        "Hello ",
+        "\n",
+        "input",
+        "!",
+    };
+    Vector<String> expectedTextChunks;
+    expectedTextChunks.append(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
+    Vector<String> actualTextChunks = iterate(input, TextIteratorEntersTextControls);
     EXPECT_EQ(expectedTextChunks, actualTextChunks);
 }
 
