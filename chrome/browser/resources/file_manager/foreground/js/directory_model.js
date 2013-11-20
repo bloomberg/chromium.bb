@@ -19,13 +19,10 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @param {FileWatcher} fileWatcher Instance of FileWatcher.
  * @param {MetadataCache} metadataCache The metadata cache service.
  * @param {VolumeManagerWrapper} volumeManager The volume manager.
- * @param {boolean} showSpecialSearchRoots True if special-search roots are
- *     available. They should be hidden for the dialogs to save files.
  * @constructor
  */
 function DirectoryModel(singleSelection, fileFilter, fileWatcher,
-                        metadataCache, volumeManager,
-                        showSpecialSearchRoots) {
+                        metadataCache, volumeManager) {
   this.fileListSelection_ = singleSelection ?
       new cr.ui.ListSingleSelectionModel() : new cr.ui.ListSelectionModel();
 
@@ -33,7 +30,6 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher,
   this.pendingScan_ = null;
   this.rescanTime_ = null;
   this.scanFailures_ = 0;
-  this.showSpecialSearchRoots_ = showSpecialSearchRoots;
 
   this.fileFilter_ = fileFilter;
   this.fileFilter_.addEventListener('changed',

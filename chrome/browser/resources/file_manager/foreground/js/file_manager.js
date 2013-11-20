@@ -907,11 +907,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.dialogType == DialogType.SELECT_UPLOAD_FOLDER ||
         this.dialogType == DialogType.SELECT_SAVEAS_FILE;
 
-    var showSpecialSearchRoots =
-        this.dialogType == DialogType.SELECT_OPEN_FILE ||
-        this.dialogType == DialogType.SELECT_OPEN_MULTI_FILE ||
-        this.dialogType == DialogType.FULL_PAGE;
-
     this.fileFilter_ = new FileFilter(
         this.metadataCache_,
         true /* Show dot files by default. */);
@@ -926,8 +921,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.fileFilter_,
         this.fileWatcher_,
         this.metadataCache_,
-        this.volumeManager_,
-        showSpecialSearchRoots);
+        this.volumeManager_);
 
     this.folderShortcutsModel_ = new FolderShortcutsDataModel();
 
