@@ -611,7 +611,7 @@ TEST_F(SearchIPCRouterTest,
        SendSetDisplayInstantResultsMsg_EnableInstantOnResultsPage) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch",
-      "Group1 espv:42 suppress_on_srp:0 prefetch_results_srp:1"));
+      "Group1 espv:42 query_extraction:1 prefetch_results_srp:1"));
   NavigateAndCommitActiveTab(GURL("https://foo.com/url?espv&bar=abc"));
 
   // Make sure ChromeViewMsg_SearchBoxSetDisplayInstantResults message param is

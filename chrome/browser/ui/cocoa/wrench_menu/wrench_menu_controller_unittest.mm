@@ -6,7 +6,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
@@ -192,7 +191,6 @@ TEST_F(WrenchMenuControllerTest, RecentTabsElideTitle) {
 // Verify that |RecentTabsMenuModelDelegate| is deleted before the model
 // it's observing.
 TEST_F(WrenchMenuControllerTest, RecentTabDeleteOrder) {
-  chrome::EnableInstantExtendedAPIForTesting();
   [controller_ menuNeedsUpdate:[controller_ menu]];
   // If the delete order is wrong then the test will crash on exit.
 }

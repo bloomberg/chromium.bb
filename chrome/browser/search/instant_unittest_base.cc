@@ -44,7 +44,7 @@ void InstantUnitTestBase::SetUpWithoutCacheableNTP() {
 }
 
 void InstantUnitTestBase::SetUpHelper() {
-  chrome::EnableInstantExtendedAPIForTesting();
+  chrome::EnableQueryExtractionForTesting();
   BrowserWithTestWindowTest::SetUp();
 
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(

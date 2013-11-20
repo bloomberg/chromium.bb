@@ -351,9 +351,6 @@ const char kDisableExtensionsResourceWhitelist[] =
 // Disables Google Now integration.
 const char kDisableGoogleNowIntegration[] = "disable-google-now-integration";
 
-// Disable Instant extended API.
-const char kDisableInstantExtendedAPI[]     = "disable-instant-extended-api";
-
 // Disables improved SafeBrowsing download protection.
 const char kDisableImprovedDownloadProtection[] =
     "disable-improved-download-protection";
@@ -629,10 +626,6 @@ const char kEnableHttp2Draft04[]            = "enable-http2-draft-04";
 // Enables the inline sign in flow on Chrome desktop.
 const char kEnableInlineSignin[]            = "enable-inline-signin";
 
-// Enable Instant extended API. On mobile, this merely enables query extraction,
-// not the rest of the instant-extended functionality.
-const char kEnableInstantExtendedAPI[]      = "enable-instant-extended-api";
-
 // Enables IPv6 support, even if probes suggest that it may not be fully
 // supported. Some probes may require internet connections, and this flag will
 // allow support independent of application testing. This flag overrides
@@ -712,6 +705,9 @@ const char kEnableProfiling[]               = "enable-profiling";
 
 // Enables forwarding preconnection hints to suitable proxy servers.
 const char kEnableProxyPreconnectHints[]    = "enable-proxy-preconnect-hints";
+
+// Enables query in the omnibox.
+const char kEnableQueryExtraction[]         = "enable-query-extraction";
 
 // Enables support for the QUIC protocol.  This is a temporary testing flag.
 const char kEnableQuic[]                    = "enable-quic";

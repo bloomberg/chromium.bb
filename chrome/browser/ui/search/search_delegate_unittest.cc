@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -14,8 +13,6 @@ typedef BrowserWithTestWindowTest SearchDelegateTest;
 // Test the propagation of search "mode" changes from the tab's search model to
 // the browser's search model.
 TEST_F(SearchDelegateTest, SearchModel) {
-  chrome::EnableInstantExtendedAPIForTesting();
-
   // Initial state.
   EXPECT_TRUE(browser()->search_model()->mode().is_default());
 

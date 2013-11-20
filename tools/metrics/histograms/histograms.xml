@@ -5652,6 +5652,9 @@ other types of suffix sets.
 
 <histogram name="InstantExtended.NewOptInState"
     enum="InstantExtended_NewOptInState">
+  <obsolete>
+    Deprecated as of 11/2013.
+  </obsolete>
   <summary>
     Records, on startup, whether the user has chosen to opt-in to or opt-out of
     InstantExtended via chrome://flags.

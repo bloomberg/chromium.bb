@@ -5,7 +5,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/omnibox/omnibox_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -73,7 +72,6 @@ TEST_F(OmniboxControllerTest, CheckDefaultAutocompleteProviders) {
   int providers_with_instant_extended = observed_providers;
   // TODO(beaudoin): remove TYPE_SEARCH once it's no longer needed to pass
   // the Instant suggestion through via FinalizeInstantQuery.
-  chrome::EnableInstantExtendedAPIForTesting();
   CreateController();
   AssertProviders(providers_with_instant_extended);
 }

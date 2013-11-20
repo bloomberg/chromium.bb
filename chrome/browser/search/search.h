@@ -161,10 +161,6 @@ bool ShouldShowInstantNTP();
 // field trials.
 bool ShouldShowRecentTabsOnNTP();
 
-// Returns true if Instant Extended should be disabled on the search results
-// page.
-bool ShouldSuppressInstantExtendedOnSRP();
-
 // Returns when we should show a search button in the omnibox.  This may be any
 // of several values, some of which depend on whether the underlying state of
 // the page would normally be to perform search term replacement; see also
@@ -228,11 +224,8 @@ bool ShouldPrefetchSearchResultsOnSRP();
 // The following APIs are exposed for use in tests only.
 // -----------------------------------------------------
 
-// Forces the Instant Extended API to be enabled for tests.
-void EnableInstantExtendedAPIForTesting();
-
-// Forces the Instant Extended API to be disabled for tests.
-void DisableInstantExtendedAPIForTesting();
+// Forces query in the omnibox to be on for tests.
+void EnableQueryExtractionForTesting();
 
 // Type for a collection of experiment configuration parameters.
 typedef std::vector<std::pair<std::string, std::string> > FieldTrialFlags;

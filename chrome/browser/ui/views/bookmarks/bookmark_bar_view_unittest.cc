@@ -7,7 +7,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
@@ -21,7 +20,6 @@
 class BookmarkBarViewInstantExtendedTest : public BrowserWithTestWindowTest {
  public:
   BookmarkBarViewInstantExtendedTest() {
-    chrome::EnableInstantExtendedAPIForTesting();
   }
 
  protected:

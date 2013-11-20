@@ -26,7 +26,6 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -183,8 +182,6 @@ class SearchProviderTest : public testing::Test,
 const std::string SearchProviderTest::kNotApplicable = "Not Applicable";
 
 void SearchProviderTest::SetUp() {
-  chrome::EnableInstantExtendedAPIForTesting();
-
   // Make sure that fetchers are automatically ungregistered upon destruction.
   test_factory_.set_remove_fetcher_on_delete(true);
 

@@ -258,9 +258,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL) {
                          test_item.should_display_url);
   }
 
-  // Once we enable it, query extraction and search term replacement are
-  // enabled by default.
-  chrome::EnableInstantExtendedAPIForTesting();
+  chrome::EnableQueryExtractionForTesting();
   EXPECT_TRUE(chrome::IsQueryExtractionEnabled());
   EXPECT_TRUE(browser()->toolbar_model()->search_term_replacement_enabled());
   for (size_t i = 0; i < arraysize(test_items); ++i) {
@@ -283,7 +281,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL) {
 
 // Verify that search terms are extracted while the page is loading.
 TEST_F(ToolbarModelTest, SearchTermsWhileLoading) {
-  chrome::EnableInstantExtendedAPIForTesting();
+  chrome::EnableQueryExtractionForTesting();
   AddTab(browser(), GURL(content::kAboutBlankURL));
 
   // While loading, we should be willing to extract search terms.
@@ -309,7 +307,7 @@ TEST_F(ToolbarModelTest, SearchTermsWhileLoading) {
 // search terms from URLs that start with that base URL even when they're not
 // secure.
 TEST_F(ToolbarModelTest, GoogleBaseURL) {
-  chrome::EnableInstantExtendedAPIForTesting();
+  chrome::EnableQueryExtractionForTesting();
   AddTab(browser(), GURL(content::kAboutBlankURL));
 
   // If the Google base URL wasn't specified on the command line, then if it's
