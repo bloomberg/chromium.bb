@@ -496,15 +496,16 @@ hooks = [
     'action':
          [
     'download_from_google_storage',
+    '--no_resume',
     '--platform=win32',
-    '--directory',
     '--no_auth',
     '--bucket',
     'chromium-gn',
-    'src/tools/gn/bin/win'
+    '-s',
+    'src/tools/gn/bin/win/gn.exe.sha1'
 ],
     'pattern':
-         '\\.sha1$',
+         'src/tools/gn/bin/win/gn.exe.sha1',
     'name':
          'gn_win'
 },
@@ -512,15 +513,16 @@ hooks = [
     'action':
          [
     'download_from_google_storage',
+    '--no_resume',
     '--platform=darwin',
-    '--directory',
     '--no_auth',
     '--bucket',
     'chromium-gn',
-    'src/tools/gn/bin/mac'
+    '-s',
+    'src/tools/gn/bin/mac/gn.sha1'
 ],
     'pattern':
-         '\\.sha1$',
+         'src/tools/gn/bin/mac/gn.sha1',
     'name':
          'gn_mac'
 },
@@ -528,15 +530,16 @@ hooks = [
     'action':
          [
     'download_from_google_storage',
+    '--no_resume',
     '--platform=linux*',
-    '--directory',
     '--no_auth',
     '--bucket',
     'chromium-gn',
-    'src/tools/gn/bin/linux'
+    '-s',
+    'src/tools/gn/bin/linux/gn.sha1'
 ],
     'pattern':
-         '\\.sha1$',
+         'src/tools/gn/bin/linux/gn.sha1',
     'name':
          'gn_linux'
 },
