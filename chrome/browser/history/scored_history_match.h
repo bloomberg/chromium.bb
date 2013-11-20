@@ -51,17 +51,29 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
 
   // Return a topicality score based on how many matches appear in the
   // |url| and the page's title and where they are (e.g., at word
-  // boundaries).  |url_matches| and |title_matches| provide details
-  // about where the matches in the URL and title are and what terms
-  // (identified by a term number < |num_terms|) match where.
-  // |word_starts| explains where word boundaries are.  Its parts (title
-  // and url) must be sorted.  Also, |url_matches| and
-  // |titles_matches| should already be sorted and de-duped.
+  // boundaries).  Revises |url_matches| and |title_matches| in the
+  // process so they only reflect matches used for scoring.  (For
+  // instance, some mid-word matches are not given credit in scoring.)
+  // |url_matches| and |title_matches| provide details about where the
+  // matches in the URL and title are and what terms (identified by a
+  // term number < |num_terms|) match where.  |word_starts| explains
+  // where word boundaries are.  Its parts (title and url) must be
+  // sorted.  Also, |url_matches| and |titles_matches| should already
+  // be sorted and de-duped.
   static float GetTopicalityScore(const int num_terms,
                                   const string16& url,
-                                  const TermMatches& url_matches,
-                                  const TermMatches& title_matches,
-                                  const RowWordStarts& word_starts);
+                                  const RowWordStarts& word_starts,
+                                  TermMatches* url_matches,
+                                  TermMatches* title_matches);
+
+  // Helper function for GetTopicalityScore().
+  // Returns |term_matches| after removing all matches that are not at a
+  // word break that starts after position |start_pos|.  If |start_pos| is
+  // string::npos, does no filtering and simply returns |term_matches|.
+  static TermMatches FilterTermMatchesByWordStarts(
+      const TermMatches& term_matches,
+      const WordStarts& word_starts,
+      const size_t start_pos);
 
   // Precalculates raw_term_score_to_topicality_score, used in
   // GetTopicalityScore().
@@ -96,8 +108,13 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // An interim score taking into consideration location and completeness
   // of the match.
   int raw_score;
+
+  // Both these TermMatches contain the set of matches that are considered
+  // important.  At this time, that means they exclude mid-word matches
+  // except in the hostname of the URL.
   TermMatches url_matches;  // Term matches within the URL.
   TermMatches title_matches;  // Term matches within the page title.
+
   bool can_inline;  // True if this is a candidate for in-line autocompletion.
 
   // Pre-computed information to speed up calculating recency scores.

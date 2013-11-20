@@ -101,7 +101,7 @@ float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
   String16SetFromString16(url, &word_starts.url_word_starts_);
   String16SetFromString16(title, &word_starts.title_word_starts_);
   return ScoredHistoryMatch::GetTopicalityScore(
-      1, url, url_matches, title_matches, word_starts);
+      1, url, word_starts, &url_matches, &title_matches);
 }
 
 TEST_F(ScoredHistoryMatchTest, Scoring) {

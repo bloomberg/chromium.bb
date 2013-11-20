@@ -144,7 +144,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
   }
 
   const float topicality_score = GetTopicalityScore(
-      terms.size(), url, url_matches, title_matches, word_starts);
+      terms.size(), url, word_starts, &url_matches, &title_matches);
   const float frecency_score = GetFrecency(now, visits);
   raw_score = GetFinalRelevancyScore(topicality_score, frecency_score);
   raw_score =
@@ -247,9 +247,9 @@ bool ScoredHistoryMatch::MatchScoreGreater(const ScoredHistoryMatch& m1,
 float ScoredHistoryMatch::GetTopicalityScore(
     const int num_terms,
     const string16& url,
-    const TermMatches& url_matches,
-    const TermMatches& title_matches,
-    const RowWordStarts& word_starts) {
+    const RowWordStarts& word_starts,
+    TermMatches* url_matches,
+    TermMatches* title_matches) {
   // Because the below thread is not thread safe, we check that we're
   // only calling it from one thread: the UI thread.  Specifically,
   // we check "if we've heard of the UI thread then we'd better
@@ -270,9 +270,9 @@ float ScoredHistoryMatch::GetTopicalityScore(
   // in the same part of the URL/title.
   DCHECK_GT(num_terms, 0);
   std::vector<int> term_scores(num_terms, 0);
-  std::vector<size_t>::const_iterator next_word_starts =
+  WordStarts::const_iterator next_word_starts =
       word_starts.url_word_starts_.begin();
-  std::vector<size_t>::const_iterator end_word_starts =
+  WordStarts::const_iterator end_word_starts =
       word_starts.url_word_starts_.end();
   const size_t question_mark_pos = url.find('?');
   const size_t colon_pos = url.find(':');
@@ -290,8 +290,12 @@ float ScoredHistoryMatch::GetTopicalityScore(
       url.rfind('.', end_of_hostname_pos) :
       url.rfind('.');
   // Loop through all URL matches and score them appropriately.
-  for (TermMatches::const_iterator iter = url_matches.begin();
-       iter != url_matches.end(); ++iter) {
+  (*url_matches) = FilterTermMatchesByWordStarts(
+      *url_matches,
+      word_starts.url_word_starts_,
+      end_of_hostname_pos);
+  for (TermMatches::const_iterator iter = url_matches->begin();
+       iter != url_matches->end(); ++iter) {
     // Advance next_word_starts until it's >= the position of the term
     // we're considering.
     while ((next_word_starts != end_word_starts) &&
@@ -303,11 +307,13 @@ float ScoredHistoryMatch::GetTopicalityScore(
     if ((question_mark_pos != std::string::npos) &&
         (iter->offset > question_mark_pos)) {
       // match in CGI ?... fragment
-      term_scores[iter->term_num] += at_word_boundary ? 5 : 0;
+      DCHECK(at_word_boundary);
+      term_scores[iter->term_num] += 5;
     } else if ((end_of_hostname_pos != std::string::npos) &&
         (iter->offset > end_of_hostname_pos)) {
       // match in path
-      term_scores[iter->term_num] += at_word_boundary ? 8 : 0;
+      DCHECK(at_word_boundary);
+      term_scores[iter->term_num] += 8;
     } else if ((colon_pos == std::string::npos) ||
          (iter->offset > colon_pos)) {
       // match in hostname
@@ -325,8 +331,10 @@ float ScoredHistoryMatch::GetTopicalityScore(
   next_word_starts = word_starts.title_word_starts_.begin();
   end_word_starts = word_starts.title_word_starts_.end();
   int word_num = 0;
-  for (TermMatches::const_iterator iter = title_matches.begin();
-       iter != title_matches.end(); ++iter) {
+  (*title_matches) = FilterTermMatchesByWordStarts(
+      *title_matches, word_starts.title_word_starts_, 0u);
+  for (TermMatches::const_iterator iter = title_matches->begin();
+       iter != title_matches->end(); ++iter) {
     // Advance next_word_starts until it's >= the position of the term
     // we're considering.
     while ((next_word_starts != end_word_starts) &&
@@ -335,9 +343,9 @@ float ScoredHistoryMatch::GetTopicalityScore(
       ++word_num;
     }
     if (word_num >= 10) break;  // only count the first ten words
-    const bool at_word_boundary = (next_word_starts != end_word_starts) &&
-        (*next_word_starts == iter->offset);
-    term_scores[iter->term_num] += at_word_boundary ? 8 : 0;
+    DCHECK((next_word_starts != end_word_starts) &&
+        (*next_word_starts == iter->offset)) << "not at word boundary";
+    term_scores[iter->term_num] += 8;
   }
   // TODO(mpearson): Restore logic for penalizing out-of-order matches.
   // (Perhaps discount them by 0.8?)
@@ -364,6 +372,33 @@ float ScoredHistoryMatch::GetTopicalityScore(
   // geometric mean of per-term scores rather than the arithmetic mean.
 
   return topicality_score / num_terms;
+}
+
+// static
+TermMatches ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+    const TermMatches& term_matches,
+    const WordStarts& word_starts,
+    const size_t start_pos) {
+  if (start_pos == std::string::npos)
+    return term_matches;
+  TermMatches filtered_matches;
+  WordStarts::const_iterator next_word_starts = word_starts.begin();
+  WordStarts::const_iterator end_word_starts = word_starts.end();
+  for (TermMatches::const_iterator iter = term_matches.begin();
+       iter != term_matches.end(); ++iter) {
+    // Advance next_word_starts until it's >= the position of the term
+    // we're considering.
+    while ((next_word_starts != end_word_starts) &&
+           (*next_word_starts < iter->offset))
+      ++next_word_starts;
+    // Add the match if it's before the position we start filtering at or
+    // if it's at a word boundary.
+    if ((iter->offset < start_pos) ||
+        ((next_word_starts != end_word_starts) &&
+         (*next_word_starts == iter->offset)))
+      filtered_matches.push_back(*iter);
+  }
+  return filtered_matches;
 }
 
 // static
