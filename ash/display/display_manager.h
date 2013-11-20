@@ -247,6 +247,10 @@ class ASH_EXPORT DisplayManager
     return second_display_mode_ == MIRRORING;
   };
 
+  bool virtual_keyboard_root_window_enabled() const {
+    return second_display_mode_ == VIRTUAL_KEYBOARD;
+  };
+
   // Sets/gets second display mode.
   void SetSecondDisplayMode(SecondDisplayMode mode);
   SecondDisplayMode second_display_mode() const {
@@ -313,7 +317,7 @@ private:
 
   int64 first_display_id_;
 
-  // List of current active dispays.
+  // List of current active displays.
   DisplayList displays_;
 
   int num_connected_displays_;
@@ -329,7 +333,7 @@ private:
   // When set to true, the host window's resize event updates
   // the display's size. This is set to true when running on
   // desktop environment (for debugging) so that resizing the host
-  // window wil update the display properly. This is set to false
+  // window will update the display properly. This is set to false
   // on device as well as during the unit tests.
   bool change_display_upon_host_resize_;
 

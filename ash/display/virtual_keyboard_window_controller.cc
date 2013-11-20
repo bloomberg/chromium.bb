@@ -7,6 +7,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/root_window_transformers.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
@@ -16,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/root_window_transformer.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
@@ -61,6 +63,7 @@ void VirtualKeyboardWindowController::UpdateWindow(
     root_window_controller_->dispatcher()->host()->Show();
     root_window_controller_->ActivateKeyboard(
         Shell::GetInstance()->keyboard_controller());
+    FlipDisplay();
   } else {
     aura::RootWindow* root_window = root_window_controller_->dispatcher();
     GetRootWindowSettings(root_window->window())->display_id =
@@ -76,6 +79,23 @@ void VirtualKeyboardWindowController::Close() {
     root_window_controller_->Shutdown();
     root_window_controller_.reset();
   }
+}
+
+void VirtualKeyboardWindowController::FlipDisplay() {
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  if (!display_manager->virtual_keyboard_root_window_enabled()) {
+    NOTREACHED() << "Attempting to flip virtual keyboard root window when it "
+                 << "is not enabled.";
+    return;
+  }
+  display_manager->SetDisplayRotation(
+      display_manager->non_desktop_display().id(), gfx::Display::ROTATE_180);
+
+  aura::RootWindow* root_window = root_window_controller_->dispatcher();
+  scoped_ptr<aura::RootWindowTransformer> transformer(
+      internal::CreateRootWindowTransformerForDisplay(root_window->window(),
+          display_manager->non_desktop_display()));
+  root_window->SetRootWindowTransformer(transformer.Pass());
 }
 
 }  // namespace internal

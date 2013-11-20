@@ -381,6 +381,12 @@ void DisplayManager::SetDisplayRotation(int64 display_id,
     display_info_list.push_back(info);
   }
   AddMirrorDisplayInfoIfAny(&display_info_list);
+  if (virtual_keyboard_root_window_enabled() &&
+      display_id == non_desktop_display_.id()) {
+    DisplayInfo info = GetDisplayInfo(display_id);
+    info.set_rotation(rotation);
+    display_info_list.push_back(info);
+  }
   UpdateDisplays(display_info_list);
 }
 
