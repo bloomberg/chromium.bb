@@ -162,8 +162,22 @@ void GaiaScreenHandler::ReloadGaia() {
 }
 
 void GaiaScreenHandler::DeclareLocalizedValues(
-    LocalizedValuesBuilder* /* builder */) {
-  // TODO (ygorshenin@): add Gaia-specific strings.
+    LocalizedValuesBuilder* builder) {
+  builder->Add("signinScreenTitle", IDS_SIGNIN_SCREEN_TITLE);
+  builder->Add("signinScreenPasswordChanged",
+               IDS_SIGNIN_SCREEN_PASSWORD_CHANGED);
+  builder->Add("createAccount", IDS_CREATE_ACCOUNT_HTML);
+  builder->Add("guestSignin", IDS_BROWSE_WITHOUT_SIGNING_IN_HTML);
+  builder->Add("createLocallyManagedUser",
+               IDS_CREATE_LOCALLY_MANAGED_USER_HTML);
+  builder->Add("createManagedUserFeatureName",
+               IDS_CREATE_LOCALLY_MANAGED_USER_FEATURE_NAME);
+
+  // Strings used by no password warning dialog.
+  builder->Add("noPasswordWarningTitle", IDS_LOGIN_NO_PASSWORD_WARNING_TITLE);
+  builder->Add("noPasswordWarningBody", IDS_LOGIN_NO_PASSWORD_WARNING);
+  builder->Add("noPasswordWarningOkButton",
+               IDS_LOGIN_NO_PASSWORD_WARNING_DISMISS_BUTTON);
 }
 
 void GaiaScreenHandler::Initialize() {}

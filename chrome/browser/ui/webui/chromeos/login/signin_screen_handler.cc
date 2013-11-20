@@ -386,9 +386,6 @@ SigninScreenHandler::~SigninScreenHandler() {
 
 void SigninScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
-  builder->Add("signinScreenTitle", IDS_SIGNIN_SCREEN_TITLE);
-  builder->Add("signinScreenPasswordChanged",
-               IDS_SIGNIN_SCREEN_PASSWORD_CHANGED);
   builder->Add("passwordHint", IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT);
   builder->Add("podMenuButtonAccessibleName",
                IDS_LOGIN_POD_MENU_BUTTON_ACCESSIBLE_NAME);
@@ -403,12 +400,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("browseAsGuest", IDS_GO_INCOGNITO_BUTTON);
   builder->Add("cancel", IDS_CANCEL);
   builder->Add("signOutUser", IDS_SCREEN_LOCK_SIGN_OUT);
-  builder->Add("createAccount", IDS_CREATE_ACCOUNT_HTML);
-  builder->Add("guestSignin", IDS_BROWSE_WITHOUT_SIGNING_IN_HTML);
-  builder->Add("createLocallyManagedUser",
-               IDS_CREATE_LOCALLY_MANAGED_USER_HTML);
-  builder->Add("createManagedUserFeatureName",
-               IDS_CREATE_LOCALLY_MANAGED_USER_FEATURE_NAME);
   builder->Add("offlineLogin", IDS_OFFLINE_LOGIN_HTML);
   builder->Add("ownerUserPattern", IDS_LOGIN_POD_OWNER_USER);
   builder->Add("removeUser", IDS_LOGIN_POD_REMOVE_USER);
@@ -461,12 +452,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("confirmPasswordHint", IDS_LOGIN_CONFIRM_PASSWORD_HINT);
   builder->Add("confirmPasswordConfirmButton",
                IDS_LOGIN_CONFIRM_PASSWORD_CONFIRM_BUTTON);
-
-  // Strings used by no password warning dialog.
-  builder->Add("noPasswordWarningTitle", IDS_LOGIN_NO_PASSWORD_WARNING_TITLE);
-  builder->Add("noPasswordWarningBody", IDS_LOGIN_NO_PASSWORD_WARNING);
-  builder->Add("noPasswordWarningOkButton",
-               IDS_LOGIN_NO_PASSWORD_WARNING_DISMISS_BUTTON);
 
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     builder->Add("demoLoginMessage", IDS_KIOSK_MODE_LOGIN_MESSAGE);
