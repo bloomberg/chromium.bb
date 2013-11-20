@@ -171,6 +171,11 @@ void CompositorAnimations::cancelAnimationOnCompositor(const Element& element, i
     toRenderBoxModelObject(element.renderer())->layer()->compositedLayerMapping()->mainGraphicsLayer()->removeAnimation(id);
 }
 
+void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& element, int id, double pauseTime)
+{
+    ASSERT(canStartAnimationOnCompositor(element));
+    toRenderBoxModelObject(element.renderer())->layer()->compositedLayerMapping()->mainGraphicsLayer()->pauseAnimation(id, pauseTime);
+}
 // -----------------------------------------------------------------------
 // CompositorAnimationsKeyframeEffectHelper
 // -----------------------------------------------------------------------

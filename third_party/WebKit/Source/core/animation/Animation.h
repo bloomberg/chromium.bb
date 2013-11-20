@@ -63,6 +63,7 @@ public:
     bool hasActiveAnimationsOnCompositor() const;
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
     void cancelAnimationOnCompositor();
+    void pauseAnimationForTestingOnCompositor(double pauseTime);
 
 protected:
     // Returns whether style recalc was triggered.

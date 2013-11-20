@@ -159,14 +159,16 @@ void Player::setCurrentTime(double seekTime)
     else
         m_timeDrift = currentTimeBeforeDrift() - seekTime;
 
+    if (m_isPausedForTesting && hasActiveAnimationsOnCompositor())
+        toAnimation(m_content.get())->pauseAnimationForTestingOnCompositor(currentTime());
     update();
 }
 
 void Player::pauseForTesting()
 {
-    // FIXME: Need to support pausing compositor animations to pass virtual/threaded tests.
-    RELEASE_ASSERT(!hasActiveAnimationsOnCompositor());
     RELEASE_ASSERT(!paused());
+    if (!m_isPausedForTesting && hasActiveAnimationsOnCompositor())
+        toAnimation(m_content.get())->pauseAnimationForTestingOnCompositor(currentTime());
     m_isPausedForTesting = true;
     setPausedImpl(true);
 }

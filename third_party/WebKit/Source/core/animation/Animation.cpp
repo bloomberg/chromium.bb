@@ -187,4 +187,13 @@ void Animation::cancelAnimationOnCompositor()
     m_compositorAnimationIds.clear();
 }
 
+void Animation::pauseAnimationForTestingOnCompositor(double pauseTime)
+{
+    ASSERT(hasActiveAnimationsOnCompositor());
+    if (!m_target || !m_target->renderer())
+        return;
+    for (size_t i = 0; i < m_compositorAnimationIds.size(); ++i)
+        CompositorAnimations::instance()->pauseAnimationForTestingOnCompositor(*m_target.get(), m_compositorAnimationIds[i], pauseTime);
+}
+
 } // namespace WebCore

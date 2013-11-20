@@ -63,6 +63,7 @@ public:
     // FIXME: This should return void. We should know ahead of time whether these animations can be started.
     virtual bool startAnimationOnCompositor(const Element&, const Timing&, const AnimationEffect&, Vector<int>& startedAnimationIds);
     virtual void cancelAnimationOnCompositor(const Element&, int id);
+    virtual void pauseAnimationForTestingOnCompositor(const Element&, int id, double pauseTime);
 
 protected:
     CompositorAnimations() { }
