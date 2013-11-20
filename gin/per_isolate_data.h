@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "gin/wrapper_info.h"
+#include "gin/public/wrapper_info.h"
 #include "v8/include/v8.h"
 
 namespace gin {

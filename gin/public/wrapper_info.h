@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GIN_WRAPPER_INFO_H_
-#define GIN_WRAPPER_INFO_H_
+#ifndef GIN_PUBLIC_WRAPPER_INFO_H_
+#define GIN_PUBLIC_WRAPPER_INFO_H_
 
 #include "v8/include/v8.h"
 
@@ -22,4 +22,4 @@ struct WrapperInfo {
 
 }  // namespace gin
 
-#endif  // GIN_WRAPPER_INFO_H_
+#endif  // GIN_PUBLIC_WRAPPER_INFO_H_

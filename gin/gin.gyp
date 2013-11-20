@@ -48,7 +48,7 @@
         'try_catch.cc',
         'try_catch.h',
         'wrapper_info.cc',
-        'wrapper_info.h',
+        'public/wrapper_info.h',
       ],
     },
     {

@@ -10,7 +10,7 @@
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/per_isolate_data.h"
-#include "gin/wrapper_info.h"
+#include "gin/public/wrapper_info.h"
 
 using v8::ObjectTemplate;
 

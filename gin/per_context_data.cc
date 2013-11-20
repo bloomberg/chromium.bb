@@ -5,7 +5,7 @@
 #include "gin/per_context_data.h"
 
 #include "base/logging.h"
-#include "gin/wrapper_info.h"
+#include "gin/public/wrapper_info.h"
 
 namespace gin {
 
