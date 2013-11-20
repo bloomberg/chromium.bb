@@ -139,6 +139,10 @@ different shell plugins.
 .PP
 The entries that can appear in this section are:
 .TP 7
+.BI "client=" file
+sets the path for the shell client to run. If not specified
+weston-desktop-shell is launched (string).
+.TP 7
 .BI "background-image=" file
 sets the path for the background image file (string).
 .TP 7

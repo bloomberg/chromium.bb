@@ -229,6 +229,8 @@ struct desktop_shell {
 
 	struct wl_listener output_create_listener;
 	struct wl_list output_list;
+
+	char *client;
 };
 
 enum shell_surface_type {
@@ -535,6 +537,9 @@ shell_configuration(struct desktop_shell *shell)
 
 	section = weston_config_get_section(shell->compositor->config,
 					    "shell", NULL, NULL);
+	weston_config_section_get_string(section,
+					 "client", &s, LIBEXECDIR "/weston-desktop-shell");
+	shell->client = s;
 	weston_config_section_get_string(section,
 					 "binding-modifier", &s, "super");
 	shell->binding_modifier = get_modifier(s);
@@ -4436,11 +4441,11 @@ desktop_shell_sigchld(struct weston_process *process, int status)
 
 	shell->child.deathcount++;
 	if (shell->child.deathcount > 5) {
-		weston_log("weston-desktop-shell died, giving up.\n");
+		weston_log("%s died, giving up.\n", shell->client);
 		return;
 	}
 
-	weston_log("weston-desktop-shell died, respawning...\n");
+	weston_log("%s died, respawning...\n", shell->client);
 	launch_desktop_shell_process(shell);
 	shell_fade_startup(shell);
 }
@@ -4449,15 +4454,14 @@ static void
 launch_desktop_shell_process(void *data)
 {
 	struct desktop_shell *shell = data;
-	const char *shell_exe = LIBEXECDIR "/weston-desktop-shell";
 
 	shell->child.client = weston_client_launch(shell->compositor,
 						 &shell->child.process,
-						 shell_exe,
+						 shell->client,
 						 desktop_shell_sigchld);
 
 	if (!shell->child.client)
-		weston_log("not able to start %s\n", shell_exe);
+		weston_log("not able to start %s\n", shell->client);
 }
 
 static void
@@ -5851,6 +5855,7 @@ shell_destroy(struct wl_listener *listener, void *data)
 	wl_array_release(&shell->workspaces.array);
 
 	free(shell->screensaver.path);
+	free(shell->client);
 	free(shell);
 }
 
