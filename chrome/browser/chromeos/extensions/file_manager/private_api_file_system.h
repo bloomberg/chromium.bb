@@ -149,16 +149,16 @@ class FileBrowserPrivateValidatePathNameLengthFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
-// Implements the chrome.fileBrowserPrivate.formatDevice method.
-// Formats Device given its mount path.
-class FileBrowserPrivateFormatDeviceFunction
+// Implements the chrome.fileBrowserPrivate.formatVolume method.
+// Formats Volume given its mount path.
+class FileBrowserPrivateFormatVolumeFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.formatDevice",
-                             FILEBROWSERPRIVATE_FORMATDEVICE)
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.formatVolume",
+                             FILEBROWSERPRIVATE_FORMATVOLUME)
 
  protected:
-  virtual ~FileBrowserPrivateFormatDeviceFunction() {}
+  virtual ~FileBrowserPrivateFormatVolumeFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

@@ -740,13 +740,13 @@
         ]
       },
       {
-        "name": "formatDevice",
-        "description": "Formats a mounted device",
+        "name": "formatVolume",
+        "description": "Formats a mounted volume",
         "parameters": [
           {
             "name": "mountPath",
             "type": "string",
-            "description": "Device's mount path."
+            "description": "Volume's mount path."
           }
         ]
       },

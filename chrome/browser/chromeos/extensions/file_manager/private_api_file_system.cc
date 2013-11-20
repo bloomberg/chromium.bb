@@ -497,8 +497,8 @@ void FileBrowserPrivateValidatePathNameLengthFunction::OnFilePathLimitRetrieved(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateFormatDeviceFunction::RunImpl() {
-  using extensions::api::file_browser_private::FormatDevice::Params;
+bool FileBrowserPrivateFormatVolumeFunction::RunImpl() {
+  using extensions::api::file_browser_private::FormatVolume::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
