@@ -328,6 +328,14 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
 // trigger dependent on the available drag distance.
 TEST_F(FrameMaximizeButtonTest,
        MAYBE_TouchDragResizeCloseToCornerDiffersFromMouse) {
+  // The test is uninteresting when windows can only be snapped to a single
+  // width because snapping the window via mouse and touch results in the same
+  // final bounds.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshMultipleSnapWindowWidths)) {
+    return;
+  }
+
   aura::Window* window = widget()->GetNativeWindow();
   views::View* view = maximize_button();
 

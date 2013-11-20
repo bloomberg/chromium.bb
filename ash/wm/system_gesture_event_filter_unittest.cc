@@ -20,6 +20,7 @@
 #include "ash/wm/gestures/long_press_affordance_handler.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/snap_sizer.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -620,8 +621,13 @@ TEST_P(SystemGestureEventFilterTest, DragLeftNearEdgeSnaps) {
   int drag_x = work_area.x() + 20 - points[0].x();
   generator.GestureMultiFingerScroll(
       kTouchPoints, points, 120, kSteps, drag_x, 0);
-  gfx::Rect expected_bounds = gfx::Rect(
-      work_area.x(), 0, 720, work_area.height());
+
+  internal::SnapSizer snap_sizer(
+      wm::GetWindowState(toplevel->GetNativeWindow()),
+      gfx::Point(),
+      internal::SnapSizer::LEFT_EDGE,
+      internal::SnapSizer::OTHER_INPUT);
+  gfx::Rect expected_bounds(snap_sizer.target_bounds());
   EXPECT_EQ(expected_bounds.ToString(),
             toplevel->GetWindowBoundsInScreen().ToString());
 }
@@ -648,8 +654,12 @@ TEST_P(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
   int drag_x = work_area.right() - 20 - points[0].x();
   generator.GestureMultiFingerScroll(
       kTouchPoints, points, 120, kSteps, drag_x, 0);
-  gfx::Rect expected_bounds = gfx::Rect(
-      work_area.right() - 720, 0, 720, work_area.height());
+  internal::SnapSizer snap_sizer(
+      wm::GetWindowState(toplevel->GetNativeWindow()),
+      gfx::Point(),
+      internal::SnapSizer::RIGHT_EDGE,
+      internal::SnapSizer::OTHER_INPUT);
+  gfx::Rect expected_bounds(snap_sizer.target_bounds());
   EXPECT_EQ(expected_bounds.ToString(),
             toplevel->GetWindowBoundsInScreen().ToString());
 }

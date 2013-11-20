@@ -603,30 +603,33 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   wm::WindowState* window_state = wm::GetWindowState(window_.get());
 
   {
+    internal::SnapSizer snap_sizer(window_state, gfx::Point(),
+        internal::SnapSizer::LEFT_EDGE, internal::SnapSizer::OTHER_INPUT);
+    gfx::Rect expected_bounds(snap_sizer.target_bounds());
+
     scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
         window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
-    int bottom =
-        ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
     resizer->CompleteDrag(0);
-    EXPECT_EQ("0,0 720x" + base::IntToString(bottom),
-              window_->bounds().ToString());
+
+    EXPECT_EQ(expected_bounds.ToString(), window_->bounds().ToString());
     ASSERT_TRUE(window_state->HasRestoreBounds());
     EXPECT_EQ("20,30 400x60",
               window_state->GetRestoreBoundsInScreen().ToString());
   }
   // Try the same with the right side.
   {
+    internal::SnapSizer snap_sizer(window_state, gfx::Point(),
+        internal::SnapSizer::RIGHT_EDGE, internal::SnapSizer::OTHER_INPUT);
+    gfx::Rect expected_bounds(snap_sizer.target_bounds());
+
     scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
         window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
-    int bottom =
-        ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
     resizer->CompleteDrag(0);
-    EXPECT_EQ("80,0 720x" + base::IntToString(bottom),
-              window_->bounds().ToString());
+    EXPECT_EQ(expected_bounds.ToString(), window_->bounds().ToString());
     ASSERT_TRUE(window_state->HasRestoreBounds());
     EXPECT_EQ("20,30 400x60",
               window_state->GetRestoreBoundsInScreen().ToString());

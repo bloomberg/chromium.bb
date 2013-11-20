@@ -5,6 +5,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accessibility_delegate.h"
+#include "ash/ash_switches.h"
 #include "ash/caps_lock_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/ime_control_delegate.h"
@@ -20,6 +21,7 @@
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -466,6 +468,9 @@ TEST_F(AcceleratorControllerTest, IsRegistered) {
 }
 
 TEST_F(AcceleratorControllerTest, WindowSnap) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshMultipleSnapWindowWidths);
+
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   const ui::Accelerator dummy;

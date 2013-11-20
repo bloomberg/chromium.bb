@@ -11,6 +11,7 @@
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/gfx/screen.h"
@@ -65,10 +66,8 @@ int GetDefaultWidth(aura::Window* window) {
   gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(window));
 
   int width = 0;
-  if (ash::switches::UseAlternateFrameCaptionButtonStyle()) {
-    // Only the 'half of screen' width is supported when using the alternate
-    // visual style for the frame caption buttons (minimize, maximize, restore,
-    // and close).
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshMultipleSnapWindowWidths)) {
     width = work_area.width() / 2;
   } else {
     width = std::max(kDefaultWidthSmallScreen, work_area.width() / 2);
@@ -84,10 +83,8 @@ int GetDefaultWidth(aura::Window* window) {
 // 90% of the screen size if it is smaller than the biggest value in the
 // |kIdealWidth| list (to get a step between the values).
 std::vector<int> BuildIdealWidthList(aura::Window* window) {
-  if (ash::switches::UseAlternateFrameCaptionButtonStyle()) {
-    // Only the 'half of screen' width is supported when using the alternate
-    // visual style for the frame caption buttons (minimize, maximize,
-    // restore, and close).
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshMultipleSnapWindowWidths)) {
     return std::vector<int>(1u, GetDefaultWidth(window));
   }
 
