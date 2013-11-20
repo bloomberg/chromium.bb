@@ -162,7 +162,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
 
   // RootWindowObserver overrides:
-  virtual void OnWindowTreeHostResized(const aura::RootWindow* root) OVERRIDE;
+  virtual void OnRootWindowHostResized(const aura::RootWindow* root) OVERRIDE;
 
   // aura::DisplayManager::Delegate overrides:
   virtual void CreateOrUpdateNonDesktopDisplay(

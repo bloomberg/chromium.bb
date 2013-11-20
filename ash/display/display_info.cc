@@ -45,7 +45,7 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   static int64 synthesized_display_id = 2200000000LL;
 
 #if defined(OS_WIN)
-  gfx::Rect bounds_in_native(aura::WindowTreeHost::GetNativeScreenSize());
+  gfx::Rect bounds_in_native(aura::RootWindowHost::GetNativeScreenSize());
 #else
   gfx::Rect bounds_in_native(kDefaultHostWindowX, kDefaultHostWindowY,
                              kDefaultHostWindowWidth, kDefaultHostWindowHeight);

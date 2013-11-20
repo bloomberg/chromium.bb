@@ -71,7 +71,7 @@ void X11DesktopWindowMoveClient::OnMoveLoopEnded() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostLinux, aura::client::WindowMoveClient implementation:
+// DesktopRootWindowHostLinux, aura::client::WindowMoveClient implementation:
 
 aura::client::WindowMoveResult X11DesktopWindowMoveClient::RunMoveLoop(
     aura::Window* source,
@@ -90,7 +90,7 @@ void X11DesktopWindowMoveClient::EndMoveLoop() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostLinux, private:
+// DesktopRootWindowHostLinux, private:
 
 void X11DesktopWindowMoveClient::SetHostBounds(const gfx::Rect& rect) {
   root_window_->SetHostBounds(rect);

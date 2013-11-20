@@ -21,25 +21,25 @@ class DesktopNativeWidgetAura;
 class NativeMenuWin;
 }
 
-class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
-                                        public views::DesktopWindowTreeHostWin {
+class BrowserDesktopRootWindowHostWin : public BrowserDesktopRootWindowHost,
+                                        public views::DesktopRootWindowHostWin {
  public:
-  BrowserDesktopWindowTreeHostWin(
+  BrowserDesktopRootWindowHostWin(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
       views::DesktopNativeWidgetAura* desktop_native_widget_aura,
       BrowserView* browser_view,
       BrowserFrame* browser_frame);
-  virtual ~BrowserDesktopWindowTreeHostWin();
+  virtual ~BrowserDesktopRootWindowHostWin();
 
  private:
   views::NativeMenuWin* GetSystemMenu();
 
-  // Overridden from BrowserDesktopWindowTreeHost:
-  virtual DesktopWindowTreeHost* AsDesktopWindowTreeHost() OVERRIDE;
+  // Overridden from BrowserDesktopRootWindowHost:
+  virtual DesktopRootWindowHost* AsDesktopRootWindowHost() OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual bool UsesNativeSystemMenu() const OVERRIDE;
 
-  // Overridden from DesktopWindowTreeHostWin:
+  // Overridden from DesktopRootWindowHostWin:
   virtual int GetInitialShowState() const OVERRIDE;
   virtual bool GetClientAreaInsets(gfx::Insets* insets) const OVERRIDE;
   virtual void HandleCreate() OVERRIDE;
@@ -72,7 +72,7 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
   // Necessary to avoid corruption on NC paint in Aero mode.
   bool did_gdi_clear_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserDesktopWindowTreeHostWin);
+  DISALLOW_COPY_AND_ASSIGN(BrowserDesktopRootWindowHostWin);
 };
 
 

@@ -171,7 +171,7 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
          TopMostFinder::IsTopMostWindowAtPoint(finder.result_, screen_loc,
                                                ignore))) {
 #if defined(USE_AURA)
-      return views::DesktopWindowTreeHostWin::GetContentWindowForHWND(
+      return views::DesktopRootWindowHostWin::GetContentWindowForHWND(
           finder.result_);
 #else
       return finder.result_;
@@ -234,7 +234,7 @@ class DockToWindowFinder : public BaseWindowFinder {
   virtual bool ShouldStopIterating(HWND hwnd) {
 #if defined(USE_AURA)
     BrowserView* window = BrowserView::GetBrowserViewForNativeWindow(
-        views::DesktopWindowTreeHostWin::GetContentWindowForHWND(hwnd));
+        views::DesktopRootWindowHostWin::GetContentWindowForHWND(hwnd));
 #else
     BrowserView* window = BrowserView::GetBrowserViewForNativeWindow(hwnd);
 #endif
@@ -276,7 +276,7 @@ class DockToWindowFinder : public BaseWindowFinder {
       result_.set_in_enable_area(in_enable_area);
 #if defined(USE_AURA)
       result_.set_window(
-          views::DesktopWindowTreeHostWin::GetContentWindowForHWND(hwnd));
+          views::DesktopRootWindowHostWin::GetContentWindowForHWND(hwnd));
 #else
       result_.set_window(hwnd);
 #endif

@@ -102,7 +102,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 // An object that handles messages for a HWND that implements the views
 // "Custom Frame" look. The purpose of this class is to isolate the windows-
 // specific message handling from the code that wraps it. It is intended to be
-// used by both a views::NativeWidget and an aura::WindowTreeHost
+// used by both a views::NativeWidget and an aura::RootWindowHost
 // implementation.
 // TODO(beng): This object should eventually *become* the WindowImpl.
 class VIEWS_EXPORT HWNDMessageHandler :

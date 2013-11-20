@@ -101,7 +101,7 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
   virtual bool DispatchKeyEventPostIME(
       const base::NativeEvent& event) OVERRIDE {
     ui::TranslatedKeyEvent aura_event(event, false /* is_char */);
-    return root_->AsWindowTreeHostDelegate()->OnHostKeyEvent(
+    return root_->AsRootWindowHostDelegate()->OnHostKeyEvent(
         &aura_event);
   }
 
@@ -110,7 +110,7 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
                                                  int flags) OVERRIDE {
     ui::TranslatedKeyEvent aura_event(type == ui::ET_KEY_PRESSED, key_code,
                                       flags);
-    return root_->AsWindowTreeHostDelegate()->OnHostKeyEvent(
+    return root_->AsRootWindowHostDelegate()->OnHostKeyEvent(
         &aura_event);
   }
 

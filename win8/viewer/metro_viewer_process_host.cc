@@ -101,7 +101,7 @@ bool MetroViewerProcessHost::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled ? true :
-      aura::RemoteWindowTreeHostWin::Instance()->OnMessageReceived(message);
+      aura::RemoteRootWindowHostWin::Instance()->OnMessageReceived(message);
 }
 
 void MetroViewerProcessHost::NotifyChannelConnected() {

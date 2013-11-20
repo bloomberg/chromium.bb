@@ -334,7 +334,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                                aura::Window* lost_focus) OVERRIDE;
 
   // Overridden from aura::RootWindowObserver:
-  virtual void OnWindowTreeHostMoved(const aura::RootWindow* root,
+  virtual void OnRootWindowHostMoved(const aura::RootWindow* root,
                                      const gfx::Point& new_origin) OVERRIDE;
 
   // SoftwareFrameManagerClient implementation:

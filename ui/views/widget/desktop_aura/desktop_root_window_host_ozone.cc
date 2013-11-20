@@ -8,12 +8,12 @@
 
 namespace views {
 
-DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
+DesktopRootWindowHost* DesktopRootWindowHost::Create(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura) {
   DesktopFactoryOzone* d_factory = DesktopFactoryOzone::GetInstance();
 
-  return d_factory->CreateWindowTreeHost(native_widget_delegate,
+  return d_factory->CreateRootWindowHost(native_widget_delegate,
                                          desktop_native_widget_aura);
 }
 

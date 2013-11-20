@@ -203,9 +203,9 @@ TEST_F(DesktopScreenX11Test, GetWindowAtScreenPoint) {
   Widget* window_two = BuildTopLevelDesktopWidget(gfx::Rect(50, 50, 10, 10));
   Widget* window_three = BuildTopLevelDesktopWidget(gfx::Rect(15, 15, 20, 20));
 
-  // Make sure the internal state of DesktopWindowTreeHostX11 is set up
+  // Make sure the internal state of DesktopRootWindowHostX11 is set up
   // correctly.
-  ASSERT_EQ(3u, DesktopWindowTreeHostX11::GetAllOpenWindows().size());
+  ASSERT_EQ(3u, DesktopRootWindowHostX11::GetAllOpenWindows().size());
 
   EXPECT_EQ(window_one->GetNativeWindow(),
             screen()->GetWindowAtScreenPoint(gfx::Point(15, 15)));

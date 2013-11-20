@@ -197,7 +197,7 @@ typedef ATL::CWinTraits<WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
     ContainerWindowHWNDTraits;
 
 // A window placed in the parent/child hierarchy between the host (e.g., a
-// ChromeFrameAutomationClient window) and the Aura DesktopWindowTreeHostWin.
+// ChromeFrameAutomationClient window) and the Aura DesktopRootWindowHostWin.
 // This non-activatable window is necessary to prevent focus from warping from
 // the DRWHW up to the CFAC window during reparenting. This is not needed in the
 // non-Aura case because the ExternalTabContainer's primary widget takes this
@@ -279,32 +279,32 @@ class ContainerWindow : public ATL::CWindowImpl<ContainerWindow,
   DISALLOW_COPY_AND_ASSIGN(ContainerWindow);
 };
 
-// A specialization of DesktopWindowTreeHost for an external tab container that
+// A specialization of DesktopRootWindowHost for an external tab container that
 // saves and restores focus as the ETC is blurred and focused. DRWHW ordinarily
 // does this during window activation and deactivation. Since the ETC is a child
 // window, it does not receive activation messages.
-class ExternalTabWindowTreeHost : public views::DesktopWindowTreeHostWin {
+class ExternalTabRootWindowHost : public views::DesktopRootWindowHostWin {
  public:
-  ExternalTabWindowTreeHost(
+  ExternalTabRootWindowHost(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
       views::DesktopNativeWidgetAura* desktop_native_widget_aura)
-      : views::DesktopWindowTreeHostWin(native_widget_delegate,
+      : views::DesktopRootWindowHostWin(native_widget_delegate,
                                         desktop_native_widget_aura) {}
 
  protected:
   // HWNDMessageHandlerDelegate methods:
   virtual void HandleNativeFocus(HWND last_focused_window) OVERRIDE {
-    views::DesktopWindowTreeHostWin::HandleNativeFocus(last_focused_window);
+    views::DesktopRootWindowHostWin::HandleNativeFocus(last_focused_window);
     RestoreFocusOnActivate();
   }
 
   virtual void HandleNativeBlur(HWND focused_window) OVERRIDE {
     SaveFocusOnDeactivate();
-    views::DesktopWindowTreeHostWin::HandleNativeBlur(focused_window);
+    views::DesktopRootWindowHostWin::HandleNativeBlur(focused_window);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ExternalTabWindowTreeHost);
+  DISALLOW_COPY_AND_ASSIGN(ExternalTabRootWindowHost);
 };
 #endif
 
@@ -373,7 +373,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   params.bounds = bounds;
 #if defined(USE_AURA)
   // Create the window that sits between the parent (most likely a
-  // ChromeFrameAutomationClient) and the DesktopWindowTreeHostWin.
+  // ChromeFrameAutomationClient) and the DesktopRootWindowHostWin.
   tab_container_window_ =
       (new ContainerWindow(HWND_DESKTOP, params.bounds))->AsWeakPtr();
 
@@ -381,7 +381,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
       new views::DesktopNativeWidgetAura(widget_);
   params.native_widget = native_widget;
   params.desktop_root_window_host =
-      new ExternalTabWindowTreeHost(widget_, native_widget);
+      new ExternalTabRootWindowHost(widget_, native_widget);
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
 #endif

@@ -12,11 +12,11 @@
 
 namespace aura {
 
-class WindowTreeHostWin : public WindowTreeHost, public gfx::WindowImpl {
+class RootWindowHostWin : public RootWindowHost, public gfx::WindowImpl {
  public:
-  WindowTreeHostWin(const gfx::Rect& bounds);
-  virtual ~WindowTreeHostWin();
-  // WindowTreeHost:
+  RootWindowHostWin(const gfx::Rect& bounds);
+  virtual ~RootWindowHostWin();
+  // RootWindowHost:
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -40,7 +40,7 @@ class WindowTreeHostWin : public WindowTreeHost, public gfx::WindowImpl {
   virtual void PrepareForShutdown() OVERRIDE;
 
  private:
-  BEGIN_MSG_MAP_EX(WindowTreeHostWin)
+  BEGIN_MSG_MAP_EX(RootWindowHostWin)
     // Range handlers must go first!
     MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
     MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)
@@ -79,12 +79,12 @@ class WindowTreeHostWin : public WindowTreeHost, public gfx::WindowImpl {
   DWORD saved_window_style_;
   DWORD saved_window_ex_style_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostWin);
+  DISALLOW_COPY_AND_ASSIGN(RootWindowHostWin);
 };
 
 namespace test {
 
-// Set true to let WindowTreeHostWin use a popup window
+// Set true to let RootWindowHostWin use a popup window
 // with no frame/title so that the window size and test's
 // expectations matches.
 AURA_EXPORT void SetUsePopupAsRootWindowForTest(bool use);

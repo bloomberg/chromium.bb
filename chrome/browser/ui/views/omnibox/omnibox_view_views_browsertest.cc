@@ -67,9 +67,9 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
 #if defined(USE_AURA)
   // Tap the center of the browser window.
   void TapBrowserWindowCenter() {
-    aura::WindowTreeHostDelegate* rwhd =
+    aura::RootWindowHostDelegate* rwhd =
         browser()->window()->GetNativeWindow()->GetRootWindow()->
-        GetDispatcher()->AsWindowTreeHostDelegate();
+        GetDispatcher()->AsRootWindowHostDelegate();
 
     gfx::Point center = BrowserView::GetBrowserViewForBrowser(
         browser())->GetBoundsInScreen().CenterPoint();
@@ -85,9 +85,9 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
   // Touch down and release at the specified locations.
   void Tap(const gfx::Point& press_location,
            const gfx::Point& release_location) {
-    aura::WindowTreeHostDelegate* rwhd =
+    aura::RootWindowHostDelegate* rwhd =
         browser()->window()->GetNativeWindow()->GetRootWindow()->
-        GetDispatcher()->AsWindowTreeHostDelegate();
+        GetDispatcher()->AsRootWindowHostDelegate();
 
     ui::TouchEvent press(ui::ET_TOUCH_PRESSED, press_location,
                          5, base::TimeDelta::FromMilliseconds(0));

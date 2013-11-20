@@ -12,13 +12,13 @@
 #include "ui/events/x/events_x_utils.h"
 
 namespace {
-class TestWindowTreeHostDelegate : public aura::WindowTreeHostDelegate {
+class TestRootWindowHostDelegate : public aura::RootWindowHostDelegate {
  public:
-  TestWindowTreeHostDelegate() : last_touch_type_(ui::ET_UNKNOWN),
+  TestRootWindowHostDelegate() : last_touch_type_(ui::ET_UNKNOWN),
                                  last_touch_id_(-1),
                                  last_touch_location_(0, 0) {
   }
-  virtual ~TestWindowTreeHostDelegate() {}
+  virtual ~TestRootWindowHostDelegate() {}
 
   virtual bool OnHostKeyEvent(ui::KeyEvent* event) OVERRIDE {
     return true;
@@ -77,29 +77,29 @@ class TestWindowTreeHostDelegate : public aura::WindowTreeHostDelegate {
   int last_touch_id_;
   gfx::Point last_touch_location_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWindowTreeHostDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestRootWindowHostDelegate);
 };
 
 }  // namespace
 
 namespace aura {
 
-typedef test::AuraTestBase WindowTreeHostX11Test;
+typedef test::AuraTestBase RootWindowHostX11Test;
 
-// Send X touch events to one WindowTreeHost. The WindowTreeHost's
+// Send X touch events to one RootWindowHost. The RootWindowHost's
 // delegate will get corresponding ui::TouchEvent if the touch events
-// are winthin the bound of the WindowTreeHost.
-TEST_F(WindowTreeHostX11Test, DispatchTouchEventToOneRootWindow) {
+// are winthin the bound of the RootWindowHost.
+TEST_F(RootWindowHostX11Test, DispatchTouchEventToOneRootWindow) {
 #if defined(OS_CHROMEOS)
   // Fake a ChromeOS running env.
   const char* kLsbRelease = "CHROMEOS_RELEASE_NAME=Chromium OS\n";
   base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
 #endif  // defined(OS_CHROMEOS)
 
-  scoped_ptr<WindowTreeHostX11> root_window_host(
-      new WindowTreeHostX11(gfx::Rect(0, 0, 2560, 1700)));
-  scoped_ptr<TestWindowTreeHostDelegate> delegate(
-      new TestWindowTreeHostDelegate());
+  scoped_ptr<RootWindowHostX11> root_window_host(
+      new RootWindowHostX11(gfx::Rect(0, 0, 2560, 1700)));
+  scoped_ptr<TestRootWindowHostDelegate> delegate(
+      new TestRootWindowHostDelegate());
   root_window_host->set_delegate(delegate.get());
 
   std::vector<unsigned int> devices;
@@ -151,26 +151,26 @@ TEST_F(WindowTreeHostX11Test, DispatchTouchEventToOneRootWindow) {
 #endif  // defined(OS_CHROMEOS)
 }
 
-// Send X touch events to two WindowTreeHost. The WindowTreeHost which is
+// Send X touch events to two RootWindowHost. The RootWindowHost which is
 // the event target of the X touch events should generate the corresponding
 // ui::TouchEvent for its delegate.
 #if defined(OS_CHROMEOS)
-TEST_F(WindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
+TEST_F(RootWindowHostX11Test, DispatchTouchEventToTwoRootWindow) {
   // Fake a ChromeOS running env.
   const char* kLsbRelease = "CHROMEOS_RELEASE_NAME=Chromium OS\n";
   base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
 
-  scoped_ptr<WindowTreeHostX11> root_window_host1(
-      new WindowTreeHostX11(gfx::Rect(0, 0, 2560, 1700)));
-  scoped_ptr<TestWindowTreeHostDelegate> delegate1(
-      new TestWindowTreeHostDelegate());
+  scoped_ptr<RootWindowHostX11> root_window_host1(
+      new RootWindowHostX11(gfx::Rect(0, 0, 2560, 1700)));
+  scoped_ptr<TestRootWindowHostDelegate> delegate1(
+      new TestRootWindowHostDelegate());
   root_window_host1->set_delegate(delegate1.get());
 
   int host2_y_offset = 1700;
-  scoped_ptr<WindowTreeHostX11> root_window_host2(
-      new WindowTreeHostX11(gfx::Rect(0, host2_y_offset, 1920, 1080)));
-  scoped_ptr<TestWindowTreeHostDelegate> delegate2(
-      new TestWindowTreeHostDelegate());
+  scoped_ptr<RootWindowHostX11> root_window_host2(
+      new RootWindowHostX11(gfx::Rect(0, host2_y_offset, 1920, 1080)));
+  scoped_ptr<TestRootWindowHostDelegate> delegate2(
+      new TestRootWindowHostDelegate());
   root_window_host2->set_delegate(delegate2.get());
 
   std::vector<unsigned int> devices;
@@ -183,7 +183,7 @@ TEST_F(WindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
   EXPECT_EQ(ui::ET_UNKNOWN, delegate2->last_touch_type());
   EXPECT_EQ(-1, delegate2->last_touch_id());
 
-  // 2 Touch events are targeted at the second WindowTreeHost.
+  // 2 Touch events are targeted at the second RootWindowHost.
   ui::XScopedTouchEvent touch1_begin(ui::CreateTouchEvent(
       0, XI_TouchBegin, 5, gfx::Point(1500, 2500), valuators));
   root_window_host1->Dispatch(touch1_begin);

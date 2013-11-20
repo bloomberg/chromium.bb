@@ -776,7 +776,7 @@ TEST_F(WidgetCaptureTest, MAYBE_MouseEventDispatchedToRightWindow) {
   // |widget2| has capture, |widget1| should still get the event.
   ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
                              ui::EF_NONE);
-  widget1.GetNativeWindow()->GetDispatcher()->AsWindowTreeHostDelegate()->
+  widget1.GetNativeWindow()->GetDispatcher()->AsRootWindowHostDelegate()->
       OnHostMouseEvent(&mouse_event);
   EXPECT_TRUE(widget1.GetAndClearGotMouseEvent());
   EXPECT_FALSE(widget2.GetAndClearGotMouseEvent());

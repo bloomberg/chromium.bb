@@ -57,7 +57,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual void RecordUserMetricsAction(UserMetricsAction action) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       aura::Window* root_window) OVERRIDE;
-  virtual WindowTreeHostFactory* CreateWindowTreeHostFactory() OVERRIDE;
+  virtual RootWindowHostFactory* CreateRootWindowHostFactory() OVERRIDE;
   virtual base::string16 GetProductName() const OVERRIDE;
 
  private:

@@ -11,7 +11,7 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
-class BrowserDesktopWindowTreeHost;
+class BrowserDesktopRootWindowHost;
 class BrowserFrame;
 class BrowserView;
 
@@ -61,7 +61,7 @@ class DesktopBrowserFrameAura : public views::DesktopNativeWidgetAura,
   BrowserFrame* browser_frame_;
 
   // Owned by the RootWindow.
-  BrowserDesktopWindowTreeHost* browser_desktop_root_window_host_;
+  BrowserDesktopRootWindowHost* browser_desktop_root_window_host_;
 
   scoped_ptr<aura::client::UserActionClient> user_action_client_;
   scoped_ptr<views::corewm::VisibilityController> visibility_controller_;

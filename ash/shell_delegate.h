@@ -48,7 +48,7 @@ class LauncherDelegate;
 struct LauncherItem;
 class MediaDelegate;
 class NewWindowDelegate;
-class WindowTreeHostFactory;
+class RootWindowHostFactory;
 class SessionStateDelegate;
 class ShelfModel;
 class SystemTrayDelegate;
@@ -189,7 +189,7 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a root window host factory. Shell takes ownership of the returned
   // value.
-  virtual WindowTreeHostFactory* CreateWindowTreeHostFactory() = 0;
+  virtual RootWindowHostFactory* CreateRootWindowHostFactory() = 0;
 
   // Get the product name.
   virtual base::string16 GetProductName() const = 0;

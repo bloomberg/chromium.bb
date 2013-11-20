@@ -29,7 +29,7 @@ void SendProcessKeyEvent(ui::EventType type,
   ui::TranslatedKeyEvent event(type == ui::ET_KEY_PRESSED,
                                ui::VKEY_PROCESSKEY,
                                ui::EF_NONE);
-  dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(&event);
+  dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
 }
 
 base::LazyInstance<base::Time> g_keyboard_load_time_start =
@@ -92,17 +92,17 @@ bool MoveCursor(int swipe_direction,
   // First deal with the x movement.
   if (codex != ui::VKEY_UNKNOWN) {
     ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codex, modifier_flags, 0);
-    dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(&press_event);
+    dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&press_event);
     ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codex, modifier_flags, 0);
-    dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(&release_event);
+    dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&release_event);
   }
 
   // Then deal with the y movement.
   if (codey != ui::VKEY_UNKNOWN) {
     ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codey, modifier_flags, 0);
-    dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(&press_event);
+    dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&press_event);
     ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codey, modifier_flags, 0);
-    dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(&release_event);
+    dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&release_event);
   }
   return true;
 }
@@ -154,7 +154,7 @@ bool SendKeyEvent(const std::string type,
     }
 
     ui::KeyEvent event(event_type, code, modifiers, false);
-    dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(&event);
+    dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
   }
   return true;
 }

@@ -79,7 +79,7 @@ class AURA_EXPORT Env : public ui::EventTarget {
  private:
   friend class test::EnvTestHelper;
   friend class Window;
-  friend class WindowTreeHost;
+  friend class RootWindowHost;
 
   void Init();
 

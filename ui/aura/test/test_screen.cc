@@ -24,7 +24,7 @@ TestScreen* TestScreen::Create() {
 
 // static
 TestScreen* TestScreen::CreateFullscreen() {
-  return new TestScreen(gfx::Rect(WindowTreeHost::GetNativeScreenSize()));
+  return new TestScreen(gfx::Rect(RootWindowHost::GetNativeScreenSize()));
 }
 
 TestScreen::~TestScreen() {

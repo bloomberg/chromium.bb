@@ -51,15 +51,15 @@
 
 namespace views {
 
-DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::g_current_capture =
+DesktopRootWindowHostX11* DesktopRootWindowHostX11::g_current_capture =
     NULL;
-std::list<XID>* DesktopWindowTreeHostX11::open_windows_ = NULL;
+std::list<XID>* DesktopRootWindowHostX11::open_windows_ = NULL;
 
 DEFINE_WINDOW_PROPERTY_KEY(
     aura::Window*, kViewsWindowForRootWindow, NULL);
 
 DEFINE_WINDOW_PROPERTY_KEY(
-    DesktopWindowTreeHostX11*, kHostForRootWindow, NULL);
+    DesktopRootWindowHostX11*, kHostForRootWindow, NULL);
 
 namespace {
 
@@ -115,9 +115,9 @@ const char* kAtomsToCache[] = {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostX11, public:
+// DesktopRootWindowHostX11, public:
 
-DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
+DesktopRootWindowHostX11::DesktopRootWindowHostX11(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura)
     : close_widget_factory_(this),
@@ -138,26 +138,26 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       window_parent_(NULL) {
 }
 
-DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
+DesktopRootWindowHostX11::~DesktopRootWindowHostX11() {
   root_window_->window()->ClearProperty(kHostForRootWindow);
   aura::client::SetWindowMoveClient(root_window_->window(), NULL);
-  desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(root_window_);
+  desktop_native_widget_aura_->OnDesktopRootWindowHostDestroyed(root_window_);
 }
 
 // static
-aura::Window* DesktopWindowTreeHostX11::GetContentWindowForXID(XID xid) {
+aura::Window* DesktopRootWindowHostX11::GetContentWindowForXID(XID xid) {
   aura::RootWindow* root = aura::RootWindow::GetForAcceleratedWidget(xid);
   return root ? root->window()->GetProperty(kViewsWindowForRootWindow) : NULL;
 }
 
 // static
-DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::GetHostForXID(XID xid) {
+DesktopRootWindowHostX11* DesktopRootWindowHostX11::GetHostForXID(XID xid) {
   aura::RootWindow* root = aura::RootWindow::GetForAcceleratedWidget(xid);
   return root ? root->window()->GetProperty(kHostForRootWindow) : NULL;
 }
 
 // static
-std::vector<aura::Window*> DesktopWindowTreeHostX11::GetAllOpenWindows() {
+std::vector<aura::Window*> DesktopRootWindowHostX11::GetAllOpenWindows() {
   std::vector<aura::Window*> windows(open_windows().size());
   std::transform(open_windows().begin(),
                  open_windows().end(),
@@ -166,11 +166,11 @@ std::vector<aura::Window*> DesktopWindowTreeHostX11::GetAllOpenWindows() {
   return windows;
 }
 
-gfx::Rect DesktopWindowTreeHostX11::GetX11RootWindowBounds() const {
+gfx::Rect DesktopRootWindowHostX11::GetX11RootWindowBounds() const {
   return bounds_;
 }
 
-void DesktopWindowTreeHostX11::HandleNativeWidgetActivationChanged(
+void DesktopRootWindowHostX11::HandleNativeWidgetActivationChanged(
     bool active) {
   if (active) {
     delegate_->OnHostActivated();
@@ -183,31 +183,31 @@ void DesktopWindowTreeHostX11::HandleNativeWidgetActivationChanged(
   native_widget_delegate_->AsWidget()->GetRootView()->SchedulePaint();
 }
 
-void DesktopWindowTreeHostX11::AddObserver(
-    views::DesktopWindowTreeHostObserverX11* observer) {
+void DesktopRootWindowHostX11::AddObserver(
+    views::DesktopRootWindowHostObserverX11* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void DesktopWindowTreeHostX11::RemoveObserver(
-    views::DesktopWindowTreeHostObserverX11* observer) {
+void DesktopRootWindowHostX11::RemoveObserver(
+    views::DesktopRootWindowHostObserverX11* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void DesktopWindowTreeHostX11::CleanUpWindowList() {
+void DesktopRootWindowHostX11::CleanUpWindowList() {
   delete open_windows_;
   open_windows_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostX11, DesktopWindowTreeHost implementation:
+// DesktopRootWindowHostX11, DesktopRootWindowHost implementation:
 
-void DesktopWindowTreeHostX11::Init(
+void DesktopRootWindowHostX11::Init(
     aura::Window* content_window,
     const Widget::InitParams& params,
     aura::RootWindow::CreateParams* rw_create_params) {
   content_window_ = content_window;
 
-  // TODO(erg): Check whether we *should* be building a WindowTreeHost here, or
+  // TODO(erg): Check whether we *should* be building a RootWindowHost here, or
   // whether we should be proxying requests to another DRWHL.
 
   // In some situations, views tries to make a zero sized window, and that
@@ -224,7 +224,7 @@ void DesktopWindowTreeHostX11::Init(
   rw_create_params->host = this;
 }
 
-void DesktopWindowTreeHostX11::OnRootWindowCreated(
+void DesktopRootWindowHostX11::OnRootWindowCreated(
     aura::RootWindow* root,
     const Widget::InitParams& params) {
   root_window_ = root;
@@ -257,20 +257,20 @@ void DesktopWindowTreeHostX11::OnRootWindowCreated(
   native_widget_delegate_->OnNativeWidgetCreated(true);
 }
 
-scoped_ptr<corewm::Tooltip> DesktopWindowTreeHostX11::CreateTooltip() {
+scoped_ptr<corewm::Tooltip> DesktopRootWindowHostX11::CreateTooltip() {
   return scoped_ptr<corewm::Tooltip>(
       new corewm::TooltipAura(gfx::SCREEN_TYPE_NATIVE));
 }
 
 scoped_ptr<aura::client::DragDropClient>
-DesktopWindowTreeHostX11::CreateDragDropClient(
+DesktopRootWindowHostX11::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
   drag_drop_client_ = new DesktopDragDropClientAuraX11(
       root_window_->window(), cursor_manager, xdisplay_, xwindow_);
   return scoped_ptr<aura::client::DragDropClient>(drag_drop_client_).Pass();
 }
 
-void DesktopWindowTreeHostX11::Close() {
+void DesktopRootWindowHostX11::Close() {
   // TODO(erg): Might need to do additional hiding tasks here.
 
   if (!close_widget_factory_.HasWeakPtrs()) {
@@ -280,12 +280,12 @@ void DesktopWindowTreeHostX11::Close() {
     // dereference us when the callback returns).
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&DesktopWindowTreeHostX11::CloseNow,
+        base::Bind(&DesktopRootWindowHostX11::CloseNow,
                    close_widget_factory_.GetWeakPtr()));
   }
 }
 
-void DesktopWindowTreeHostX11::CloseNow() {
+void DesktopRootWindowHostX11::CloseNow() {
   if (xwindow_ == None)
     return;
 
@@ -293,8 +293,8 @@ void DesktopWindowTreeHostX11::CloseNow() {
 
   // If we have children, close them. Use a copy for iteration because they'll
   // remove themselves.
-  std::set<DesktopWindowTreeHostX11*> window_children_copy = window_children_;
-  for (std::set<DesktopWindowTreeHostX11*>::iterator it =
+  std::set<DesktopRootWindowHostX11*> window_children_copy = window_children_;
+  for (std::set<DesktopRootWindowHostX11*>::iterator it =
            window_children_copy.begin(); it != window_children_copy.end();
        ++it) {
     (*it)->CloseNow();
@@ -321,11 +321,11 @@ void DesktopWindowTreeHostX11::CloseNow() {
   desktop_native_widget_aura_->OnHostClosed();
 }
 
-aura::WindowTreeHost* DesktopWindowTreeHostX11::AsWindowTreeHost() {
+aura::RootWindowHost* DesktopRootWindowHostX11::AsRootWindowHost() {
   return this;
 }
 
-void DesktopWindowTreeHostX11::ShowWindowWithState(
+void DesktopRootWindowHostX11::ShowWindowWithState(
     ui::WindowShowState show_state) {
   if (show_state != ui::SHOW_STATE_DEFAULT &&
       show_state != ui::SHOW_STATE_NORMAL) {
@@ -336,23 +336,23 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
   Show();
 }
 
-void DesktopWindowTreeHostX11::ShowMaximizedWithBounds(
+void DesktopRootWindowHostX11::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
   restored_bounds_ = restored_bounds;
   Maximize();
   Show();
 }
 
-bool DesktopWindowTreeHostX11::IsVisible() const {
+bool DesktopRootWindowHostX11::IsVisible() const {
   return window_mapped_;
 }
 
-void DesktopWindowTreeHostX11::SetSize(const gfx::Size& size) {
+void DesktopRootWindowHostX11::SetSize(const gfx::Size& size) {
   // TODO(erg):
   NOTIMPLEMENTED();
 }
 
-void DesktopWindowTreeHostX11::CenterWindow(const gfx::Size& size) {
+void DesktopRootWindowHostX11::CenterWindow(const gfx::Size& size) {
   gfx::Rect parent_bounds = GetWorkAreaBoundsInScreen();
 
   // If |window_|'s transient parent bounds are big enough to contain |size|,
@@ -378,7 +378,7 @@ void DesktopWindowTreeHostX11::CenterWindow(const gfx::Size& size) {
   SetBounds(window_bounds);
 }
 
-void DesktopWindowTreeHostX11::GetWindowPlacement(
+void DesktopRootWindowHostX11::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   *bounds = bounds_;
@@ -396,14 +396,14 @@ void DesktopWindowTreeHostX11::GetWindowPlacement(
   }
 }
 
-gfx::Rect DesktopWindowTreeHostX11::GetWindowBoundsInScreen() const {
+gfx::Rect DesktopRootWindowHostX11::GetWindowBoundsInScreen() const {
   return bounds_;
 }
 
-gfx::Rect DesktopWindowTreeHostX11::GetClientAreaBoundsInScreen() const {
+gfx::Rect DesktopRootWindowHostX11::GetClientAreaBoundsInScreen() const {
   // TODO(erg): The NativeWidgetAura version returns |bounds_|, claiming its
   // needed for View::ConvertPointToScreen() to work
-  // correctly. DesktopWindowTreeHostWin::GetClientAreaBoundsInScreen() just
+  // correctly. DesktopRootWindowHostWin::GetClientAreaBoundsInScreen() just
   // asks windows what it thinks the client rect is.
   //
   // Attempts to calculate the rect by asking the NonClientFrameView what it
@@ -412,7 +412,7 @@ gfx::Rect DesktopWindowTreeHostX11::GetClientAreaBoundsInScreen() const {
   return bounds_;
 }
 
-gfx::Rect DesktopWindowTreeHostX11::GetRestoredBounds() const {
+gfx::Rect DesktopRootWindowHostX11::GetRestoredBounds() const {
   // We can't reliably track the restored bounds of a window, but we can get
   // the 90% case down. When *chrome* is the process that requests maximizing
   // or restoring bounds, we can record the current bounds before we request
@@ -423,7 +423,7 @@ gfx::Rect DesktopWindowTreeHostX11::GetRestoredBounds() const {
   return GetWindowBoundsInScreen();
 }
 
-gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInScreen() const {
+gfx::Rect DesktopRootWindowHostX11::GetWorkAreaBoundsInScreen() const {
   std::vector<int> value;
   if (ui::GetIntArrayProperty(x_root_window_, "_NET_WORKAREA", &value) &&
       value.size() >= 4) {
@@ -444,7 +444,7 @@ gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInScreen() const {
   return gfx::Rect(x, y, width, height);
 }
 
-void DesktopWindowTreeHostX11::SetShape(gfx::NativeRegion native_region) {
+void DesktopRootWindowHostX11::SetShape(gfx::NativeRegion native_region) {
   if (native_region) {
     Region region = gfx::CreateRegionFromSkRegion(*native_region);
     XShapeCombineRegion(
@@ -457,20 +457,20 @@ void DesktopWindowTreeHostX11::SetShape(gfx::NativeRegion native_region) {
   delete native_region;
 }
 
-void DesktopWindowTreeHostX11::Activate() {
+void DesktopRootWindowHostX11::Activate() {
   X11DesktopHandler::get()->ActivateWindow(xwindow_);
 }
 
-void DesktopWindowTreeHostX11::Deactivate() {
+void DesktopRootWindowHostX11::Deactivate() {
   // Deactivating a window means activating nothing.
   X11DesktopHandler::get()->ActivateWindow(None);
 }
 
-bool DesktopWindowTreeHostX11::IsActive() const {
+bool DesktopRootWindowHostX11::IsActive() const {
   return X11DesktopHandler::get()->IsActiveWindow(xwindow_);
 }
 
-void DesktopWindowTreeHostX11::Maximize() {
+void DesktopRootWindowHostX11::Maximize() {
   // When we're the process requesting the maximizing, we can accurately keep
   // track of our restored bounds instead of relying on the heuristics that are
   // in the PropertyNotify and ConfigureNotify handlers.
@@ -481,42 +481,42 @@ void DesktopWindowTreeHostX11::Maximize() {
                  atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
 }
 
-void DesktopWindowTreeHostX11::Minimize() {
+void DesktopRootWindowHostX11::Minimize() {
   XIconifyWindow(xdisplay_, xwindow_, 0);
 }
 
-void DesktopWindowTreeHostX11::Restore() {
+void DesktopRootWindowHostX11::Restore() {
   SetWMSpecState(false,
                  atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
                  atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
 }
 
-bool DesktopWindowTreeHostX11::IsMaximized() const {
+bool DesktopRootWindowHostX11::IsMaximized() const {
   return (HasWMSpecProperty("_NET_WM_STATE_MAXIMIZED_VERT") ||
           HasWMSpecProperty("_NET_WM_STATE_MAXIMIZED_HORZ"));
 }
 
-bool DesktopWindowTreeHostX11::IsMinimized() const {
+bool DesktopRootWindowHostX11::IsMinimized() const {
   return HasWMSpecProperty("_NET_WM_STATE_HIDDEN");
 }
 
 
-bool DesktopWindowTreeHostX11::HasCapture() const {
+bool DesktopRootWindowHostX11::HasCapture() const {
   return g_current_capture == this;
 }
 
-void DesktopWindowTreeHostX11::SetAlwaysOnTop(bool always_on_top) {
+void DesktopRootWindowHostX11::SetAlwaysOnTop(bool always_on_top) {
   is_always_on_top_ = always_on_top;
   SetWMSpecState(always_on_top,
                  atom_cache_.GetAtom("_NET_WM_STATE_ABOVE"),
                  None);
 }
 
-bool DesktopWindowTreeHostX11::IsAlwaysOnTop() const {
+bool DesktopRootWindowHostX11::IsAlwaysOnTop() const {
   return is_always_on_top_;
 }
 
-void DesktopWindowTreeHostX11::SetWindowTitle(const string16& title) {
+void DesktopRootWindowHostX11::SetWindowTitle(const string16& title) {
   std::string utf8str = UTF16ToUTF8(title);
 
   XChangeProperty(xdisplay_,
@@ -535,7 +535,7 @@ void DesktopWindowTreeHostX11::SetWindowTitle(const string16& title) {
   XStoreName(xdisplay_, xwindow_, utf8str.c_str());
 }
 
-void DesktopWindowTreeHostX11::ClearNativeFocus() {
+void DesktopRootWindowHostX11::ClearNativeFocus() {
   // This method is weird and misnamed. Instead of clearing the native focus,
   // it sets the focus to our |content_window_|, which will trigger a cascade
   // of focus changes into views.
@@ -546,7 +546,7 @@ void DesktopWindowTreeHostX11::ClearNativeFocus() {
   }
 }
 
-Widget::MoveLoopResult DesktopWindowTreeHostX11::RunMoveLoop(
+Widget::MoveLoopResult DesktopRootWindowHostX11::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
@@ -563,42 +563,42 @@ Widget::MoveLoopResult DesktopWindowTreeHostX11::RunMoveLoop(
   return Widget::MOVE_LOOP_CANCELED;
 }
 
-void DesktopWindowTreeHostX11::EndMoveLoop() {
+void DesktopRootWindowHostX11::EndMoveLoop() {
   x11_window_move_client_->EndMoveLoop();
 }
 
-void DesktopWindowTreeHostX11::SetVisibilityChangedAnimationsEnabled(
+void DesktopRootWindowHostX11::SetVisibilityChangedAnimationsEnabled(
     bool value) {
   // Much like the previous NativeWidgetGtk, we don't have anything to do here.
 }
 
-bool DesktopWindowTreeHostX11::ShouldUseNativeFrame() {
+bool DesktopRootWindowHostX11::ShouldUseNativeFrame() {
   return false;
 }
 
-void DesktopWindowTreeHostX11::FrameTypeChanged() {
+void DesktopRootWindowHostX11::FrameTypeChanged() {
   // Replace the frame and layout the contents. Even though we don't have a
   // swapable glass frame like on Windows, we still replace the frame because
   // the button assets don't update otherwise.
   native_widget_delegate_->AsWidget()->non_client_view()->UpdateFrame(true);
 }
 
-NonClientFrameView* DesktopWindowTreeHostX11::CreateNonClientFrameView() {
+NonClientFrameView* DesktopRootWindowHostX11::CreateNonClientFrameView() {
   return NULL;
 }
 
-void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
+void DesktopRootWindowHostX11::SetFullscreen(bool fullscreen) {
   is_fullscreen_ = fullscreen;
   SetWMSpecState(fullscreen,
                  atom_cache_.GetAtom("_NET_WM_STATE_FULLSCREEN"),
                  None);
 }
 
-bool DesktopWindowTreeHostX11::IsFullscreen() const {
+bool DesktopRootWindowHostX11::IsFullscreen() const {
   return is_fullscreen_;
 }
 
-void DesktopWindowTreeHostX11::SetOpacity(unsigned char opacity) {
+void DesktopRootWindowHostX11::SetOpacity(unsigned char opacity) {
   // X server opacity is in terms of 32 bit unsigned int space, and counts from
   // the opposite direction.
   // XChangeProperty() expects "cardinality" to be long.
@@ -616,7 +616,7 @@ void DesktopWindowTreeHostX11::SetOpacity(unsigned char opacity) {
   }
 }
 
-void DesktopWindowTreeHostX11::SetWindowIcons(
+void DesktopRootWindowHostX11::SetWindowIcons(
     const gfx::ImageSkia& window_icon, const gfx::ImageSkia& app_icon) {
   // TODO(erg): The way we handle icons across different versions of chrome
   // could be substantially improved. The Windows version does its own thing
@@ -640,7 +640,7 @@ void DesktopWindowTreeHostX11::SetWindowIcons(
     ui::SetAtomArrayProperty(xwindow_, "_NET_WM_ICON", "CARDINAL", data);
 }
 
-void DesktopWindowTreeHostX11::InitModalType(ui::ModalType modal_type) {
+void DesktopRootWindowHostX11::InitModalType(ui::ModalType modal_type) {
   switch (modal_type) {
     case ui::MODAL_TYPE_NONE:
       break;
@@ -652,12 +652,12 @@ void DesktopWindowTreeHostX11::InitModalType(ui::ModalType modal_type) {
   }
 }
 
-void DesktopWindowTreeHostX11::FlashFrame(bool flash_frame) {
+void DesktopRootWindowHostX11::FlashFrame(bool flash_frame) {
   // TODO(erg):
   NOTIMPLEMENTED();
 }
 
-void DesktopWindowTreeHostX11::OnRootViewLayout() const {
+void DesktopRootWindowHostX11::OnRootViewLayout() const {
   if (!window_mapped_)
     return;
 
@@ -686,31 +686,31 @@ void DesktopWindowTreeHostX11::OnRootViewLayout() const {
   XSetWMNormalHints(xdisplay_, xwindow_, &hints);
 }
 
-void DesktopWindowTreeHostX11::OnNativeWidgetFocus() {
+void DesktopRootWindowHostX11::OnNativeWidgetFocus() {
   native_widget_delegate_->AsWidget()->GetInputMethod()->OnFocus();
 }
 
-void DesktopWindowTreeHostX11::OnNativeWidgetBlur() {
+void DesktopRootWindowHostX11::OnNativeWidgetBlur() {
   if (xwindow_)
     native_widget_delegate_->AsWidget()->GetInputMethod()->OnBlur();
 }
 
-bool DesktopWindowTreeHostX11::IsAnimatingClosed() const {
+bool DesktopRootWindowHostX11::IsAnimatingClosed() const {
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostX11, aura::WindowTreeHost implementation:
+// DesktopRootWindowHostX11, aura::RootWindowHost implementation:
 
-aura::RootWindow* DesktopWindowTreeHostX11::GetRootWindow() {
+aura::RootWindow* DesktopRootWindowHostX11::GetRootWindow() {
   return root_window_;
 }
 
-gfx::AcceleratedWidget DesktopWindowTreeHostX11::GetAcceleratedWidget() {
+gfx::AcceleratedWidget DesktopRootWindowHostX11::GetAcceleratedWidget() {
   return xwindow_;
 }
 
-void DesktopWindowTreeHostX11::Show() {
+void DesktopRootWindowHostX11::Show() {
   if (!window_mapped_) {
     // Before we map the window, set size hints. Otherwise, some window managers
     // will ignore toplevel XMoveWindow commands.
@@ -730,22 +730,22 @@ void DesktopWindowTreeHostX11::Show() {
   }
 }
 
-void DesktopWindowTreeHostX11::Hide() {
+void DesktopRootWindowHostX11::Hide() {
   if (window_mapped_) {
     XWithdrawWindow(xdisplay_, xwindow_, 0);
     window_mapped_ = false;
   }
 }
 
-void DesktopWindowTreeHostX11::ToggleFullScreen() {
+void DesktopRootWindowHostX11::ToggleFullScreen() {
   NOTIMPLEMENTED();
 }
 
-gfx::Rect DesktopWindowTreeHostX11::GetBounds() const {
+gfx::Rect DesktopRootWindowHostX11::GetBounds() const {
   return bounds_;
 }
 
-void DesktopWindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
+void DesktopRootWindowHostX11::SetBounds(const gfx::Rect& bounds) {
   bool origin_changed = bounds_.origin() != bounds.origin();
   bool size_changed = bounds_.size() != bounds.size();
   XWindowChanges changes = {0};
@@ -784,18 +784,18 @@ void DesktopWindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
     compositor()->ScheduleRedrawRect(gfx::Rect(bounds.size()));
 }
 
-gfx::Insets DesktopWindowTreeHostX11::GetInsets() const {
+gfx::Insets DesktopRootWindowHostX11::GetInsets() const {
   return gfx::Insets();
 }
 
-void DesktopWindowTreeHostX11::SetInsets(const gfx::Insets& insets) {
+void DesktopRootWindowHostX11::SetInsets(const gfx::Insets& insets) {
 }
 
-gfx::Point DesktopWindowTreeHostX11::GetLocationOnNativeScreen() const {
+gfx::Point DesktopRootWindowHostX11::GetLocationOnNativeScreen() const {
   return bounds_.origin();
 }
 
-void DesktopWindowTreeHostX11::SetCapture() {
+void DesktopRootWindowHostX11::SetCapture() {
   // This is vaguely based on the old NativeWidgetGtk implementation.
   //
   // X11's XPointerGrab() shouldn't be used for everything; it doesn't map
@@ -817,16 +817,16 @@ void DesktopWindowTreeHostX11::SetCapture() {
   // to skip this for now.
 }
 
-void DesktopWindowTreeHostX11::ReleaseCapture() {
+void DesktopRootWindowHostX11::ReleaseCapture() {
   if (g_current_capture)
     g_current_capture->OnCaptureReleased();
 }
 
-void DesktopWindowTreeHostX11::SetCursor(gfx::NativeCursor cursor) {
+void DesktopRootWindowHostX11::SetCursor(gfx::NativeCursor cursor) {
   XDefineCursor(xdisplay_, xwindow_, cursor.platform());
 }
 
-bool DesktopWindowTreeHostX11::QueryMouseLocation(
+bool DesktopRootWindowHostX11::QueryMouseLocation(
     gfx::Point* location_return) {
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(GetRootWindow()->window());
@@ -852,26 +852,26 @@ bool DesktopWindowTreeHostX11::QueryMouseLocation(
           win_y_return >= 0 && win_y_return < bounds_.height());
 }
 
-bool DesktopWindowTreeHostX11::ConfineCursorToRootWindow() {
+bool DesktopRootWindowHostX11::ConfineCursorToRootWindow() {
   NOTIMPLEMENTED();
   return false;
 }
 
-void DesktopWindowTreeHostX11::UnConfineCursor() {
+void DesktopRootWindowHostX11::UnConfineCursor() {
   NOTIMPLEMENTED();
 }
 
-void DesktopWindowTreeHostX11::OnCursorVisibilityChanged(bool show) {
+void DesktopRootWindowHostX11::OnCursorVisibilityChanged(bool show) {
   // TODO(erg): Conditional on us enabling touch on desktop linux builds, do
   // the same tap-to-click disabling here that chromeos does.
 }
 
-void DesktopWindowTreeHostX11::MoveCursorTo(const gfx::Point& location) {
+void DesktopRootWindowHostX11::MoveCursorTo(const gfx::Point& location) {
   XWarpPointer(xdisplay_, None, x_root_window_, 0, 0, 0, 0,
                bounds_.x() + location.x(), bounds_.y() + location.y());
 }
 
-void DesktopWindowTreeHostX11::PostNativeEvent(
+void DesktopRootWindowHostX11::PostNativeEvent(
     const base::NativeEvent& native_event) {
   DCHECK(xwindow_);
   DCHECK(xdisplay_);
@@ -904,17 +904,17 @@ void DesktopWindowTreeHostX11::PostNativeEvent(
   XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
 }
 
-void DesktopWindowTreeHostX11::OnDeviceScaleFactorChanged(
+void DesktopRootWindowHostX11::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
 }
 
-void DesktopWindowTreeHostX11::PrepareForShutdown() {
+void DesktopRootWindowHostX11::PrepareForShutdown() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostX11, private:
+// DesktopRootWindowHostX11, private:
 
-void DesktopWindowTreeHostX11::InitX11Window(
+void DesktopRootWindowHostX11::InitX11Window(
     const Widget::InitParams& params) {
   unsigned long attribute_mask = CWBackPixmap;
   XSetWindowAttributes swa;
@@ -1060,14 +1060,14 @@ void DesktopWindowTreeHostX11::InitX11Window(
   CreateCompositor(GetAcceleratedWidget());
 }
 
-bool DesktopWindowTreeHostX11::IsWindowManagerPresent() {
+bool DesktopRootWindowHostX11::IsWindowManagerPresent() {
   // Per ICCCM 2.8, "Manager Selections", window managers should take ownership
   // of WM_Sn selections (where n is a screen number).
   return XGetSelectionOwner(
       xdisplay_, atom_cache_.GetAtom("WM_S0")) != None;
 }
 
-void DesktopWindowTreeHostX11::SetWMSpecState(bool enabled,
+void DesktopRootWindowHostX11::SetWMSpecState(bool enabled,
                                                 ::Atom state1,
                                                 ::Atom state2) {
   XEvent xclient;
@@ -1088,22 +1088,22 @@ void DesktopWindowTreeHostX11::SetWMSpecState(bool enabled,
              &xclient);
 }
 
-bool DesktopWindowTreeHostX11::HasWMSpecProperty(const char* property) const {
+bool DesktopRootWindowHostX11::HasWMSpecProperty(const char* property) const {
   return window_properties_.find(atom_cache_.GetAtom(property)) !=
       window_properties_.end();
 }
 
-void DesktopWindowTreeHostX11::OnCaptureReleased() {
+void DesktopRootWindowHostX11::OnCaptureReleased() {
   g_current_capture = NULL;
   delegate_->OnHostLostWindowCapture();
   native_widget_delegate_->OnMouseCaptureLost();
 }
 
-void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
+void DesktopRootWindowHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
   if (!g_current_capture || g_current_capture == this) {
     delegate_->OnHostMouseEvent(event);
   } else {
-    // Another DesktopWindowTreeHostX11 has installed itself as
+    // Another DesktopRootWindowHostX11 has installed itself as
     // capture. Translate the event's location and dispatch to the other.
     event->ConvertLocationToTarget(root_window_->window(),
                                    g_current_capture->root_window_->window());
@@ -1111,7 +1111,7 @@ void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-void DesktopWindowTreeHostX11::ResetWindowRegion() {
+void DesktopRootWindowHostX11::ResetWindowRegion() {
   if (!IsMaximized()) {
     gfx::Path window_mask;
     views::Widget* widget = native_widget_delegate_->AsWidget();
@@ -1137,7 +1137,7 @@ void DesktopWindowTreeHostX11::ResetWindowRegion() {
                           0, 0, &r, 1, ShapeSet, YXBanded);
 }
 
-void DesktopWindowTreeHostX11::SerializeImageRepresentation(
+void DesktopRootWindowHostX11::SerializeImageRepresentation(
     const gfx::ImageSkiaRep& rep,
     std::vector<unsigned long>* data) {
   int width = rep.GetWidth();
@@ -1154,19 +1154,19 @@ void DesktopWindowTreeHostX11::SerializeImageRepresentation(
       data->push_back(bitmap.getColor(x, y));
 }
 
-std::list<XID>& DesktopWindowTreeHostX11::open_windows() {
+std::list<XID>& DesktopRootWindowHostX11::open_windows() {
   if (!open_windows_)
     open_windows_ = new std::list<XID>();
   return *open_windows_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostX11, MessageLoop::Dispatcher implementation:
+// DesktopRootWindowHostX11, MessageLoop::Dispatcher implementation:
 
-bool DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
+bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
 
-  TRACE_EVENT1("views", "DesktopWindowTreeHostX11::Dispatch",
+  TRACE_EVENT1("views", "DesktopRootWindowHostX11::Dispatch",
                "event->type", event->type);
 
   // May want to factor CheckXEventForConsistency(xev); into a common location
@@ -1361,13 +1361,13 @@ bool DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
       if (!IsWindowManagerPresent() && focus_when_shown_)
         XSetInputFocus(xdisplay_, xwindow_, RevertToNone, CurrentTime);
 
-      FOR_EACH_OBSERVER(DesktopWindowTreeHostObserverX11,
+      FOR_EACH_OBSERVER(DesktopRootWindowHostObserverX11,
                         observer_list_,
                         OnWindowMapped(xwindow_));
       break;
     }
     case UnmapNotify: {
-      FOR_EACH_OBSERVER(DesktopWindowTreeHostObserverX11,
+      FOR_EACH_OBSERVER(DesktopRootWindowHostObserverX11,
                         observer_list_,
                         OnWindowUnmapped(xwindow_));
       break;
@@ -1378,7 +1378,7 @@ bool DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
         Atom protocol = static_cast<Atom>(xev->xclient.data.l[0]);
         if (protocol == atom_cache_.GetAtom("WM_DELETE_WINDOW")) {
           // We have received a close message from the window manager.
-          root_window_->OnWindowTreeHostCloseRequested();
+          root_window_->OnRootWindowHostCloseRequested();
         } else if (protocol == atom_cache_.GetAtom("_NET_WM_PING")) {
           XEvent reply_event = *xev;
           reply_event.xclient.window = x_root_window_;
@@ -1498,18 +1498,18 @@ bool DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHost, public:
+// DesktopRootWindowHost, public:
 
 // static
-DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
+DesktopRootWindowHost* DesktopRootWindowHost::Create(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura) {
-  return new DesktopWindowTreeHostX11(native_widget_delegate,
+  return new DesktopRootWindowHostX11(native_widget_delegate,
                                       desktop_native_widget_aura);
 }
 
 // static
-ui::NativeTheme* DesktopWindowTreeHost::GetNativeTheme(aura::Window* window) {
+ui::NativeTheme* DesktopRootWindowHost::GetNativeTheme(aura::Window* window) {
   const views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
     ui::NativeTheme* native_theme = linux_ui->GetNativeTheme();

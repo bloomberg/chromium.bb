@@ -239,7 +239,7 @@ DesktopNativeWidgetAura* DesktopNativeWidgetAura::ForWindow(
 
 void DesktopNativeWidgetAura::OnHostClosed() {
   // Don't invoke Widget::OnNativeWidgetDestroying(), its done by
-  // DesktopWindowTreeHost.
+  // DesktopRootWindowHost.
 
   // The WindowModalityController is at the front of the event pretarget
   // handler list. We destroy it first to preserve order symantics.
@@ -254,7 +254,7 @@ void DesktopNativeWidgetAura::OnHostClosed() {
       capture_window->ReleaseCapture();
   }
 
-  // DesktopWindowTreeHost owns the ActivationController which ShadowController
+  // DesktopRootWindowHost owns the ActivationController which ShadowController
   // references. Make sure we destroy ShadowController early on.
   shadow_controller_.reset();
   tooltip_manager_.reset();
@@ -279,10 +279,10 @@ void DesktopNativeWidgetAura::OnHostClosed() {
     delete this;
 }
 
-void DesktopNativeWidgetAura::OnDesktopWindowTreeHostDestroyed(
+void DesktopNativeWidgetAura::OnDesktopRootWindowHostDestroyed(
     aura::RootWindow* root) {
-  // |root_window_| is still valid, but DesktopWindowTreeHost is nearly
-  // destroyed. Do cleanup here of members DesktopWindowTreeHost may also use.
+  // |root_window_| is still valid, but DesktopRootWindowHost is nearly
+  // destroyed. Do cleanup here of members DesktopRootWindowHost may also use.
   aura::client::SetFocusClient(root->window(), NULL);
   aura::client::SetActivationClient(root->window(), NULL);
   focus_client_.reset();
@@ -361,7 +361,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   desktop_root_window_host_ = params.desktop_root_window_host ?
       params.desktop_root_window_host :
-      DesktopWindowTreeHost::Create(native_widget_delegate_, this);
+      DesktopRootWindowHost::Create(native_widget_delegate_, this);
   aura::RootWindow::CreateParams rw_params(params.bounds);
   desktop_root_window_host_->Init(content_window_, params, &rw_params);
 
@@ -377,7 +377,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
         new views::corewm::WindowModalityController(root_window_->window()));
 
   // |root_window_event_filter_| must be created before
-  // OnWindowTreeHostCreated() is invoked.
+  // OnRootWindowHostCreated() is invoked.
 
   // CEF sets focus to the window the user clicks down on.
   // TODO(beng): see if we can't do this some other way. CEF seems a heavy-
@@ -427,7 +427,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   focus_client_->FocusWindow(content_window_);
 
-  OnWindowTreeHostResized(root_window_.get());
+  OnRootWindowHostResized(root_window_.get());
 
   root_window_->AddRootWindowObserver(this);
 
@@ -625,7 +625,7 @@ void DesktopNativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
   // TODO(ananta)
   // This code by default scales the bounds rectangle by 1.
   // We could probably get rid of this and similar logic from
-  // the DesktopNativeWidgetAura::OnWindowTreeHostResized function.
+  // the DesktopNativeWidgetAura::OnRootWindowHostResized function.
   float scale = 1;
   aura::Window* root = root_window_->window();
   if (root) {
@@ -635,7 +635,7 @@ void DesktopNativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
   gfx::Rect bounds_in_pixels(
       gfx::ToCeiledPoint(gfx::ScalePoint(bounds.origin(), scale)),
       gfx::ToFlooredSize(gfx::ScaleSize(bounds.size(), scale)));
-  desktop_root_window_host_->AsWindowTreeHost()->SetBounds(bounds_in_pixels);
+  desktop_root_window_host_->AsRootWindowHost()->SetBounds(bounds_in_pixels);
 }
 
 void DesktopNativeWidgetAura::SetSize(const gfx::Size& size) {
@@ -675,14 +675,14 @@ void DesktopNativeWidgetAura::CloseNow() {
 void DesktopNativeWidgetAura::Show() {
   if (!content_window_)
     return;
-  desktop_root_window_host_->AsWindowTreeHost()->Show();
+  desktop_root_window_host_->AsRootWindowHost()->Show();
   content_window_->Show();
 }
 
 void DesktopNativeWidgetAura::Hide() {
   if (!content_window_)
     return;
-  desktop_root_window_host_->AsWindowTreeHost()->Hide();
+  desktop_root_window_host_->AsRootWindowHost()->Hide();
   content_window_->Hide();
 }
 
@@ -839,7 +839,7 @@ void DesktopNativeWidgetAura::SetVisibilityChangedAnimationsEnabled(
 }
 
 ui::NativeTheme* DesktopNativeWidgetAura::GetNativeTheme() const {
-  return DesktopWindowTreeHost::GetNativeTheme(content_window_);
+  return DesktopRootWindowHost::GetNativeTheme(content_window_);
 }
 
 void DesktopNativeWidgetAura::OnRootViewLayout() const {
@@ -1067,12 +1067,12 @@ int DesktopNativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, aura::RootWindowObserver implementation:
 
-void DesktopNativeWidgetAura::OnWindowTreeHostCloseRequested(
+void DesktopNativeWidgetAura::OnRootWindowHostCloseRequested(
     const aura::RootWindow* root) {
   Close();
 }
 
-void DesktopNativeWidgetAura::OnWindowTreeHostResized(
+void DesktopNativeWidgetAura::OnRootWindowHostResized(
     const aura::RootWindow* root) {
   // Don't update the bounds of the child layers when animating closed. If we
   // did it would force a paint, which we don't want. We don't want the paint
@@ -1088,10 +1088,10 @@ void DesktopNativeWidgetAura::OnWindowTreeHostResized(
   native_widget_delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
 }
 
-void DesktopNativeWidgetAura::OnWindowTreeHostMoved(
+void DesktopNativeWidgetAura::OnRootWindowHostMoved(
     const aura::RootWindow* root,
     const gfx::Point& new_origin) {
-  TRACE_EVENT1("views", "DesktopNativeWidgetAura::OnWindowTreeHostMoved",
+  TRACE_EVENT1("views", "DesktopNativeWidgetAura::OnRootWindowHostMoved",
                "new_origin", new_origin.ToString());
 
   native_widget_delegate_->OnNativeWidgetMove();

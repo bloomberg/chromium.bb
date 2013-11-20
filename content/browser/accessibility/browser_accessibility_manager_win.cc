@@ -31,7 +31,7 @@ namespace content {
 // tree. This HWND is hooked up as the parent of the root object in the
 // BrowserAccessibilityManager tree, so when any accessibility client
 // calls ::WindowFromAccessibleObject, they get this HWND instead of the
-// DesktopWindowTreeHostWin.
+// DesktopRootWindowHostWin.
 class AccessibleHWND
     : public ATL::CWindowImpl<AccessibleHWND,
                               ATL::CWindow,

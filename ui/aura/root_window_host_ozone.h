@@ -15,17 +15,17 @@
 
 namespace aura {
 
-class WindowTreeHostOzone : public WindowTreeHost,
+class RootWindowHostOzone : public RootWindowHost,
                             public base::MessageLoop::Dispatcher {
  public:
-  explicit WindowTreeHostOzone(const gfx::Rect& bounds);
-  virtual ~WindowTreeHostOzone();
+  explicit RootWindowHostOzone(const gfx::Rect& bounds);
+  virtual ~RootWindowHostOzone();
 
  private:
   // Overridden from Dispatcher overrides:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
-  // WindowTreeHost Overrides.
+  // RootWindowHost Overrides.
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -51,7 +51,7 @@ class WindowTreeHostOzone : public WindowTreeHost,
   gfx::AcceleratedWidget widget_;
   gfx::Rect bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostOzone);
+  DISALLOW_COPY_AND_ASSIGN(RootWindowHostOzone);
 };
 
 }  // namespace aura

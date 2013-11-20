@@ -23,14 +23,14 @@ TestMetroViewerProcessHost::~TestMetroViewerProcessHost() {
 
 void TestMetroViewerProcessHost::OnChannelError() {
   closed_unexpectedly_ = true;
-  aura::RemoteWindowTreeHostWin::Instance()->Disconnected();
+  aura::RemoteRootWindowHostWin::Instance()->Disconnected();
 }
 
 void TestMetroViewerProcessHost::OnSetTargetSurface(
     gfx::NativeViewId target_surface) {
   DLOG(INFO) << __FUNCTION__ << ", target_surface = " << target_surface;
   HWND hwnd = reinterpret_cast<HWND>(target_surface);
-  aura::RemoteWindowTreeHostWin::Instance()->Connected(this, hwnd);
+  aura::RemoteRootWindowHostWin::Instance()->Connected(this, hwnd);
 
   backing_surface_.reset(new AcceleratedSurface(hwnd));
 }

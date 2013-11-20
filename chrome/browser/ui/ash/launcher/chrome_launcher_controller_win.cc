@@ -44,7 +44,7 @@ bool ChromeLauncherController::LaunchedInNativeDesktop(
       profile_->GetPath().BaseName().AsUTF8Unsafe().c_str(),
       switches::kAppId,
       app_id.c_str());
-  aura::RemoteWindowTreeHostWin::Instance()->HandleOpenURLOnDesktop(
+  aura::RemoteRootWindowHostWin::Instance()->HandleOpenURLOnDesktop(
       exe_path, UTF8ToUTF16(spec));
   return true;
 }

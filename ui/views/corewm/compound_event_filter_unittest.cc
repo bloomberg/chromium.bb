@@ -65,36 +65,36 @@ TEST_F(CompoundEventFilterTest, CursorVisibilityChange) {
 
   // Send key event to hide the cursor.
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, true);
-  dispatcher()->AsWindowTreeHostDelegate()->OnHostKeyEvent(&key);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostKeyEvent(&key);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
   // Synthesized mouse event should not show the cursor.
   ui::MouseEvent enter(ui::ET_MOUSE_ENTERED, gfx::Point(10, 10),
                        gfx::Point(10, 10), 0);
   enter.set_flags(enter.flags() | ui::EF_IS_SYNTHESIZED);
-  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&enter);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&enter);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
   ui::MouseEvent move(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                       gfx::Point(10, 10), 0);
   move.set_flags(enter.flags() | ui::EF_IS_SYNTHESIZED);
-  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&move);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&move);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
   ui::MouseEvent real_move(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                            gfx::Point(10, 10), 0);
-  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&real_move);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&real_move);
   EXPECT_TRUE(cursor_client.IsCursorVisible());
 
   // Send key event to hide the cursor again.
-  dispatcher()->AsWindowTreeHostDelegate()->OnHostKeyEvent(&key);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostKeyEvent(&key);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
   // Mouse synthesized exit event should not show the cursor.
   ui::MouseEvent exit(ui::ET_MOUSE_EXITED, gfx::Point(10, 10),
                       gfx::Point(10, 10), 0);
   exit.set_flags(enter.flags() | ui::EF_IS_SYNTHESIZED);
-  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&exit);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&exit);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 }
 
@@ -111,29 +111,29 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
 
   ui::MouseEvent mouse0(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                         gfx::Point(10, 10), 0);
-  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&mouse0);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse0);
   EXPECT_TRUE(cursor_client.IsMouseEventsEnabled());
 
   // This press is required for the GestureRecognizer to associate a target
   // with kTouchId
   ui::TouchEvent press0(
       ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), 1, GetTime());
-  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press0);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press0);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
 
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 1, GetTime());
-  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
 
   ui::TouchEvent release(
       ui::ET_TOUCH_RELEASED, gfx::Point(10, 10), 1, GetTime());
-  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
 
   ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                         gfx::Point(10, 10), 0);
   // Move the cursor again. The cursor should be visible.
-  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&mouse1);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse1);
   EXPECT_TRUE(cursor_client.IsMouseEventsEnabled());
 
   // Now activate the window and press on it again.
@@ -141,7 +141,7 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
       ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), 1, GetTime());
   aura::client::GetActivationClient(
       root_window())->ActivateWindow(window.get());
-  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
   aura::Env::GetInstance()->RemovePreTargetHandler(compound_filter.get());
 }

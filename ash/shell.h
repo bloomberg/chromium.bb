@@ -96,7 +96,7 @@ class NestedDispatcherController;
 class NewWindowDelegate;
 class PartialMagnificationController;
 class PowerButtonController;
-class WindowTreeHostFactory;
+class RootWindowHostFactory;
 class ScreenAsh;
 class SessionStateDelegate;
 class ShelfModel;
@@ -499,7 +499,7 @@ class ASH_EXPORT Shell
     return resolution_notification_controller_.get();
   }
 
-  WindowTreeHostFactory* root_window_host_factory() {
+  RootWindowHostFactory* root_window_host_factory() {
     return root_window_host_factory_.get();
   }
 
@@ -636,7 +636,7 @@ class ASH_EXPORT Shell
   scoped_ptr<internal::EventClientImpl> event_client_;
   scoped_ptr<internal::EventTransformationHandler>
       event_transformation_handler_;
-  scoped_ptr<WindowTreeHostFactory> root_window_host_factory_;
+  scoped_ptr<RootWindowHostFactory> root_window_host_factory_;
 
   // An event filter that rewrites or drops an event.
   scoped_ptr<internal::EventRewriterEventFilter> event_rewriter_filter_;

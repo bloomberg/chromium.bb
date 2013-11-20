@@ -140,8 +140,8 @@ void AshTestBase::SetUp() {
     CHECK(metro_viewer_host_->LaunchViewerAndWaitForConnection(
         win8::test::kDefaultTestAppUserModelId,
         L"test_open"));
-    aura::RemoteWindowTreeHostWin* root_window_host =
-        aura::RemoteWindowTreeHostWin::Instance();
+    aura::RemoteRootWindowHostWin* root_window_host =
+        aura::RemoteRootWindowHostWin::Instance();
     CHECK(root_window_host != NULL);
   }
 #endif

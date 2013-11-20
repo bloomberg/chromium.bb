@@ -259,10 +259,10 @@ class UIControlsDesktopX11 : public UIControlsAura {
     // Most interactive_ui_tests run inside of the aura_test_helper
     // environment. This means that we can't rely on gfx::Screen and several
     // other things to work properly. Therefore we hack around this by
-    // iterating across the windows owned DesktopWindowTreeHostX11 since this
+    // iterating across the windows owned DesktopRootWindowHostX11 since this
     // doesn't rely on having a DesktopScreenX11.
     std::vector<aura::Window*> windows =
-        DesktopWindowTreeHostX11::GetAllOpenWindows();
+        DesktopRootWindowHostX11::GetAllOpenWindows();
     for (std::vector<aura::Window*>::const_iterator it = windows.begin();
          it != windows.end(); ++it) {
       if ((*it)->GetBoundsInScreen().Contains(point)) {

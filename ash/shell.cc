@@ -761,7 +761,7 @@ void Shell::Init() {
   focus_cycler_.reset(new internal::FocusCycler());
 
   screen_position_controller_.reset(new internal::ScreenPositionController);
-  root_window_host_factory_.reset(delegate_->CreateWindowTreeHostFactory());
+  root_window_host_factory_.reset(delegate_->CreateRootWindowHostFactory());
 
   display_controller_->Start();
   display_controller_->InitPrimaryDisplay();

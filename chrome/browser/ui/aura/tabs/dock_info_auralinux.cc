@@ -187,7 +187,7 @@ gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
   // is.
   XID xid =
       LocalProcessWindowFinder::GetProcessWindowAtPoint(screen_point, ignore);
-  return views::DesktopWindowTreeHostX11::GetContentWindowForXID(xid);
+  return views::DesktopRootWindowHostX11::GetContentWindowForXID(xid);
 }
 #else
 // static

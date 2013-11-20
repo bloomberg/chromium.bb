@@ -11,7 +11,7 @@
 #include "ui/aura/env_observer.h"
 
 // Tracks the most-recently activated host desktop type by observing
-// WindowTreeHost activations.
+// RootWindowHost activations.
 class ActiveDesktopMonitor : public aura::EnvObserver {
  public:
   // Constructs an ActiveDesktopMonitor which initially uses |initial_desktop|
@@ -20,13 +20,13 @@ class ActiveDesktopMonitor : public aura::EnvObserver {
   virtual ~ActiveDesktopMonitor();
 
   // Returns the host desktop type of the most-recently activated
-  // WindowTreeHost. This desktop type may no longer exist (e.g., the Ash
+  // RootWindowHost. This desktop type may no longer exist (e.g., the Ash
   // desktop may have closed since being active, and no RWHs on the native
   // desktop have yet been activated).
   static chrome::HostDesktopType GetLastActivatedDesktopType();
 
  private:
-  // Returns true if |root_window| is hosted by a DesktopWindowTreeHost.
+  // Returns true if |root_window| is hosted by a DesktopRootWindowHost.
   static bool IsDesktopWindow(aura::RootWindow* root_window);
 
   // aura::EnvObserver methods.

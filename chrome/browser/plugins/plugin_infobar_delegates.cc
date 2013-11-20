@@ -504,7 +504,7 @@ void LaunchDesktopInstanceHelper(const string16& url) {
   // Actually launching the process needs to happen in the metro viewer,
   // otherwise it won't automatically transition to desktop.  So we have
   // to send an IPC to the viewer to do the ShellExecute.
-  aura::RemoteWindowTreeHostWin::Instance()->HandleOpenURLOnDesktop(
+  aura::RemoteRootWindowHostWin::Instance()->HandleOpenURLOnDesktop(
       shortcut_path, url);
 }
 #endif

@@ -31,7 +31,7 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(
 X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostLinux, MessageLoop::Dispatcher implementation:
+// DesktopRootWindowHostLinux, MessageLoop::Dispatcher implementation:
 
 bool X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
@@ -57,7 +57,7 @@ bool X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostLinux, aura::client::WindowMoveClient implementation:
+// DesktopRootWindowHostLinux, aura::client::WindowMoveClient implementation:
 
 bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
                                          gfx::NativeCursor cursor) {

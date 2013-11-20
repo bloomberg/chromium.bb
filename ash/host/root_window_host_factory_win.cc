@@ -12,19 +12,19 @@
 
 namespace {
 
-class WindowTreeHostFactoryImpl : public ash::WindowTreeHostFactory {
+class RootWindowHostFactoryImpl : public ash::RootWindowHostFactory {
  public:
-  WindowTreeHostFactoryImpl() {}
+  RootWindowHostFactoryImpl() {}
 
-  // Overridden from WindowTreeHostFactory:
-  virtual aura::WindowTreeHost* CreateWindowTreeHost(
+  // Overridden from RootWindowHostFactory:
+  virtual aura::RootWindowHost* CreateRootWindowHost(
       const gfx::Rect& initial_bounds) OVERRIDE {
     if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
         !CommandLine::ForCurrentProcess()->HasSwitch(
             ash::switches::kForceAshToDesktop))
-      return aura::RemoteWindowTreeHostWin::Create(initial_bounds);
+      return aura::RemoteRootWindowHostWin::Create(initial_bounds);
 
-    return aura::WindowTreeHost::Create(initial_bounds);
+    return aura::RootWindowHost::Create(initial_bounds);
   }
 };
 
@@ -33,8 +33,8 @@ class WindowTreeHostFactoryImpl : public ash::WindowTreeHostFactory {
 namespace ash {
 
 // static
-WindowTreeHostFactory* WindowTreeHostFactory::Create() {
-  return new WindowTreeHostFactoryImpl;
+RootWindowHostFactory* RootWindowHostFactory::Create() {
+  return new RootWindowHostFactoryImpl;
 }
 
 }  // namespace ash

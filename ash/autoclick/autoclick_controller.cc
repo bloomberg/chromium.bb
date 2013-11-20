@@ -197,8 +197,8 @@ void AutoclickControllerImpl::DoAutoclick() {
                                click_location,
                                mouse_event_flags_ | ui::EF_LEFT_MOUSE_BUTTON);
 
-  dispatcher->AsWindowTreeHostDelegate()->OnHostMouseEvent(&press_event);
-  dispatcher->AsWindowTreeHostDelegate()->OnHostMouseEvent(&release_event);
+  dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&press_event);
+  dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&release_event);
 }
 
 // static.

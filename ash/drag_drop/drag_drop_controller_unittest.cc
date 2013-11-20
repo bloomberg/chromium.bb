@@ -737,7 +737,7 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
     gfx::Point mouse_move_location = drag_view->bounds().CenterPoint();
     ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, mouse_move_location,
                               mouse_move_location, 0);
-    Shell::GetPrimaryRootWindow()->GetDispatcher()->AsWindowTreeHostDelegate()->
+    Shell::GetPrimaryRootWindow()->GetDispatcher()->AsRootWindowHostDelegate()->
         OnHostMouseEvent(&mouse_move);
   }
 

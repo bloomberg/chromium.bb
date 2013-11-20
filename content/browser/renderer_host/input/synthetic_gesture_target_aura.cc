@@ -49,8 +49,8 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
       touch_with_latency, &events, SCREEN_COORDINATES);
   DCHECK(conversion_success);
 
-  aura::WindowTreeHostDelegate* root_window_host_delegate =
-      root_window->GetDispatcher()->AsWindowTreeHostDelegate();
+  aura::RootWindowHostDelegate* root_window_host_delegate =
+      root_window->GetDispatcher()->AsRootWindowHostDelegate();
   for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
       end = events.end(); iter != end; ++iter) {
     root_window_host_delegate->OnHostTouchEvent(*iter);

@@ -25,7 +25,7 @@ void InjectTouchEvent(const gfx::Point& location,
   dispatcher->host()->ConvertPointToHost(&screen_location);
   ui::TouchEvent touch(type, screen_location, 0, 0, ui::EventTimeForNow(),
                        1.0f, 1.0f, 1.0f, 1.0f);
-  dispatcher->AsWindowTreeHostDelegate()->OnHostTouchEvent(&touch);
+  dispatcher->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch);
 }
 
 }  // namespace

@@ -198,7 +198,7 @@ class ASH_EXPORT LockStateController : public aura::RootWindowObserver,
   void SetLockScreenDisplayedCallback(const base::Closure& callback);
 
   // RootWindowObserver override:
-  virtual void OnWindowTreeHostCloseRequested(
+  virtual void OnRootWindowHostCloseRequested(
      const aura::RootWindow* root) OVERRIDE;
 
   // ShellObserver overrides:

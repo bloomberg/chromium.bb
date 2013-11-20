@@ -45,7 +45,7 @@ class TextInputClient;
 // - Keeps track of the focused TextInputClient to see which client can call
 //   APIs, OnTextInputTypeChanged, OnCaretBoundsChanged, and CancelComposition,
 //   that change the state of the input method.
-// In Aura environment, aura::WindowTreeHost creates an instance of
+// In Aura environment, aura::RootWindowHost creates an instance of
 // ui::InputMethod and owns it.
 class InputMethod {
  public:

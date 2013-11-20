@@ -12,7 +12,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace aura {
-class WindowTreeHost;
+class RootWindowHost;
 class Window;
 
 namespace client {
@@ -42,11 +42,11 @@ class NativeWidgetDelegate;
 class DesktopNativeCursorManager;
 class DesktopNativeWidgetAura;
 
-class VIEWS_EXPORT DesktopWindowTreeHost {
+class VIEWS_EXPORT DesktopRootWindowHost {
  public:
-  virtual ~DesktopWindowTreeHost() {}
+  virtual ~DesktopRootWindowHost() {}
 
-  static DesktopWindowTreeHost* Create(
+  static DesktopRootWindowHost* Create(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura);
 
@@ -64,19 +64,19 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   // Creates and returns the Tooltip implementation to use. Return value is
   // owned by DesktopNativeWidgetAura and lives as long as
-  // DesktopWindowTreeHost.
+  // DesktopRootWindowHost.
   virtual scoped_ptr<corewm::Tooltip> CreateTooltip() = 0;
 
   // Creates and returns the DragDropClient implementation to use. Return value
   // is owned by DesktopNativeWidgetAura and lives as long as
-  // DesktopWindowTreeHost.
+  // DesktopRootWindowHost.
   virtual scoped_ptr<aura::client::DragDropClient> CreateDragDropClient(
       DesktopNativeCursorManager* cursor_manager) = 0;
 
   virtual void Close() = 0;
   virtual void CloseNow() = 0;
 
-  virtual aura::WindowTreeHost* AsWindowTreeHost() = 0;
+  virtual aura::RootWindowHost* AsRootWindowHost() = 0;
 
   virtual void ShowWindowWithState(ui::WindowShowState show_state) = 0;
   virtual void ShowMaximizedWithBounds(const gfx::Rect& restored_bounds) = 0;
