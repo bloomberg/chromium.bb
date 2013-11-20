@@ -104,9 +104,11 @@ def AddGTestOptions(option_parser):
   option_parser.add_option('-s', '--suite', dest='suite_name',
                            help=('Executable name of the test suite to run '
                                  '(use -s help to list them).'))
-  option_parser.add_option('-f', '--gtest-filter', dest='test_filter',
+  option_parser.add_option('-f', '--gtest_filter', '--gtest-filter',
+                           dest='test_filter',
                            help='googletest-style filter string.')
-  option_parser.add_option('--gtest-also-run-disabled-tests',
+  option_parser.add_option('--gtest_also_run_disabled_tests',
+                           '--gtest-also-run-disabled-tests',
                            dest='run_disabled', action='store_true',
                            help='Also run disabled tests if applicable.')
   option_parser.add_option('-a', '--test-arguments', dest='test_arguments',
