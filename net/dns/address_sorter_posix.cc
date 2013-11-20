@@ -278,8 +278,8 @@ void AddressSorterPosix::Sort(const AddressList& list,
     IPEndPoint dest(info->address, 80 /* port */);
     int rv = socket->Connect(dest);
     if (rv != OK) {
-      LOG(WARNING) << "Could not connect to " << dest.ToStringWithoutPort()
-                   << " reason " << rv;
+      VLOG(1) << "Could not connect to " << dest.ToStringWithoutPort()
+              << " reason " << rv;
       continue;
     }
     // Filter out unusable destinations.

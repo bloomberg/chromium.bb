@@ -79,7 +79,7 @@ scoped_ptr<DatagramClientSocket> DnsSocketPool::CreateConnectedSocket(
   if (socket.get()) {
     int rv = socket->Connect((*nameservers_)[server_index]);
     if (rv != OK) {
-      LOG(WARNING) << "Failed to connect socket: " << rv;
+      VLOG(1) << "Failed to connect socket: " << rv;
       socket.reset();
     }
   } else {
