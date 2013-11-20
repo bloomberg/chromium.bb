@@ -118,6 +118,14 @@ var TypeUtils = {
             return result;
         }
 
+        // Try to convert to a primitive value via valueOf().
+        if (typeof obj.valueOf === "function") {
+            var value = obj.valueOf();
+            var valueType = typeof value;
+            if (valueType !== "object" && valueType !== "function")
+                return value;
+        }
+
         console.error("ASSERT_NOT_REACHED: failed to clone object: ", obj);
         return obj;
     },
@@ -2750,6 +2758,7 @@ WebGLRenderingContextResource.prototype = {
         var gl = this.wrappedObject();
         var bindingParameter;
         var bindMethodName;
+        target = +target; // Explicitly convert to a number.
         var bindMethodTarget = target;
         switch (target) {
         case gl.ARRAY_BUFFER:
