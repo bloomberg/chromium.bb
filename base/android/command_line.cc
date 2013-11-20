@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/android/command_line.h"
+#include "base/android/command_line.h"
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "jni/CommandLine_jni.h"
 
-using base::android::AppendJavaStringArrayToStringVector;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
 
 namespace {
@@ -20,7 +20,7 @@ void AppendJavaStringArrayToCommandLine(JNIEnv* env,
                                         bool includes_program) {
   std::vector<std::string> vec;
   if (array)
-    AppendJavaStringArrayToStringVector(env, array, &vec);
+    base::android::AppendJavaStringArrayToStringVector(env, array, &vec);
   if (!includes_program)
     vec.insert(vec.begin(), "");
   CommandLine extra_command_line(vec);
@@ -46,7 +46,7 @@ static jstring GetSwitchValue(JNIEnv* env, jclass clazz, jstring jswitch) {
   if (value.empty())
     return 0;
   // OK to release, JNI binding.
-  return base::android::ConvertUTF8ToJavaString(env, value).Release();
+  return ConvertUTF8ToJavaString(env, value).Release();
 }
 
 static void AppendSwitch(JNIEnv* env, jclass clazz, jstring jswitch) {
@@ -67,6 +67,9 @@ static void AppendSwitchesAndArguments(JNIEnv* env, jclass clazz,
   AppendJavaStringArrayToCommandLine(env, array, false);
 }
 
+namespace base {
+namespace android {
+
 void InitNativeCommandLineFromJavaArray(JNIEnv* env, jobjectArray array) {
   // TODO(port): Make an overload of Init() that takes StringVector rather than
   // have to round-trip via AppendArguments.
@@ -77,3 +80,6 @@ void InitNativeCommandLineFromJavaArray(JNIEnv* env, jobjectArray array) {
 bool RegisterCommandLine(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
+
+}  // namespace android
+}  // namespace base

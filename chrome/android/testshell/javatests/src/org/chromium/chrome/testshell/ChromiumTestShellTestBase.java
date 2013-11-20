@@ -11,12 +11,12 @@ import android.net.Uri;
 import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.common.CommandLine;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

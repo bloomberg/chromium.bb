@@ -13,11 +13,12 @@ import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
+import org.chromium.base.CommandLine;
 import org.chromium.content.browser.LongPressDetector.LongPressDelegate;
 import org.chromium.content.browser.third_party.GestureDetector;
 import org.chromium.content.browser.third_party.GestureDetector.OnDoubleTapListener;
 import org.chromium.content.browser.third_party.GestureDetector.OnGestureListener;
-import org.chromium.content.common.CommandLine;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content.common.TraceEvent;
 
 import java.util.ArrayDeque;
@@ -386,7 +387,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
         mPxToDp = 1.0f / context.getResources().getDisplayMetrics().density;
 
         mDisableClickDelay = CommandLine.isInitialized() &&
-                CommandLine.getInstance().hasSwitch(CommandLine.DISABLE_CLICK_DELAY);
+                CommandLine.getInstance().hasSwitch(ContentSwitches.DISABLE_CLICK_DELAY);
 
         initGestureDetectors(context);
     }

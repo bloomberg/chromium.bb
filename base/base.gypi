@@ -39,6 +39,8 @@
           'android/base_jni_registrar.h',
           'android/build_info.cc',
           'android/build_info.h',
+          'android/command_line.cc',
+          'android/command_line.h',
           'android/cpu_features.cc',
           'android/fifo_utils.cc',
           'android/fifo_utils.h',

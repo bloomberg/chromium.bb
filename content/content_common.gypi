@@ -108,8 +108,6 @@
     'common/android/address_parser.h',
     'common/android/address_parser_internal.cc',
     'common/android/address_parser_internal.h',
-    'common/android/command_line.cc',
-    'common/android/command_line.h',
     'common/android/common_jni_registrar.cc',
     'common/android/common_jni_registrar.h',
     'common/android/device_telephony_info.cc',

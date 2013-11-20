@@ -15,6 +15,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import org.chromium.base.BaseSwitches;
+import org.chromium.base.CommandLine;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.testshell.sync.SyncController;
@@ -24,7 +26,6 @@ import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
-import org.chromium.content.common.CommandLine;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
@@ -225,7 +226,7 @@ public class ChromiumTestShellActivity extends Activity implements MenuHandler {
     }
 
     private void waitForDebuggerIfNeeded() {
-        if (CommandLine.getInstance().hasSwitch(CommandLine.WAIT_FOR_JAVA_DEBUGGER)) {
+        if (CommandLine.getInstance().hasSwitch(BaseSwitches.WAIT_FOR_JAVA_DEBUGGER)) {
             Log.e(TAG, "Waiting for Java debugger to connect...");
             android.os.Debug.waitForDebugger();
             Log.e(TAG, "Java debugger connected. Resuming execution.");

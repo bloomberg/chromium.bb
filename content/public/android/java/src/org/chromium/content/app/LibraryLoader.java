@@ -7,9 +7,9 @@ package org.chromium.content.app;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.SysUtils;
-import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content.common.ResultCodes;
 import org.chromium.content.common.TraceEvent;

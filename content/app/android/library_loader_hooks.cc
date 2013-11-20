@@ -5,6 +5,7 @@
 #include "content/public/app/android_library_loader_hooks.h"
 
 #include "base/android/base_jni_registrar.h"
+#include "base/android/command_line.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/jni_string.h"
@@ -20,7 +21,6 @@
 #include "content/app/android/app_jni_registrar.h"
 #include "content/browser/android/browser_jni_registrar.h"
 #include "content/child/android/child_jni_registrar.h"
-#include "content/common/android/command_line.h"
 #include "content/common/android/common_jni_registrar.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -83,7 +83,7 @@ bool EnsureJniRegistered(JNIEnv* env) {
 
 static jint LibraryLoaded(JNIEnv* env, jclass clazz,
                           jobjectArray init_command_line) {
-  InitNativeCommandLineFromJavaArray(env, init_command_line);
+  base::android::InitNativeCommandLineFromJavaArray(env, init_command_line);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 

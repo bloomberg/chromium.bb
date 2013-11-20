@@ -8,8 +8,9 @@ import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.common.CommandLine;
+import org.chromium.content.common.ContentSwitches;
 
 /**
  * Test suite for phone number detection.
@@ -34,7 +35,7 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     private void startActivityWithTestUrlAndCountryIso(String testUrl, String countryIso)
             throws Throwable {
         final String[] cmdlineArgs = countryIso == null ? null : new String[] {
-                "--" + CommandLine.NETWORK_COUNTRY_ISO + "=" + countryIso };
+                "--" + ContentSwitches.NETWORK_COUNTRY_ISO + "=" + countryIso };
         startActivityWithTestUrlAndCommandLineArgs(testUrl, cmdlineArgs);
     }
 

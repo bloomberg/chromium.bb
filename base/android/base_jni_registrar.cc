@@ -6,6 +6,7 @@
 
 #include "base/android/activity_status.h"
 #include "base/android/build_info.h"
+#include "base/android/command_line.h"
 #include "base/android/cpu_features.h"
 #include "base/android/important_file_writer_android.h"
 #include "base/android/java_handler_thread.h"
@@ -31,6 +32,7 @@ namespace android {
 static RegistrationMethod kBaseRegisteredMethods[] = {
   { "ActivityStatus", base::android::ActivityStatus::RegisterBindings },
   { "BuildInfo", base::android::BuildInfo::RegisterBindings },
+  { "CommandLine", base::android::RegisterCommandLine },
 #if defined(GOOGLE_TV)
   { "ContextTypes", base::android::RegisterContextTypes },
 #endif

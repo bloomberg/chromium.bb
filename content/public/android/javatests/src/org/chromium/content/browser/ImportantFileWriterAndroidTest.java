@@ -7,10 +7,10 @@ package org.chromium.content.browser;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ImportantFileWriterAndroid;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.app.LibraryLoader;
-import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell_apk.ContentShellApplication;
 

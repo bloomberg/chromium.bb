@@ -11,7 +11,8 @@ import android.content.IntentFilter;
 import android.os.Debug;
 import android.util.Log;
 
-import org.chromium.content.common.CommandLine;
+import org.chromium.base.CommandLine;
+import org.chromium.content.common.ContentSwitches;
 
 /**
  * Logs Heap stats, such as gc count, alloc count, etc.
@@ -29,7 +30,7 @@ public class HeapStatsLogger {
     private final HeapStatsLoggerIntentFilter mIntentFilter;
 
     public static void init(Context context) {
-        if (CommandLine.getInstance().hasSwitch(CommandLine.ENABLE_TEST_INTENTS)) {
+        if (CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS)) {
             sHeapStats = new HeapStatsLogger(context);
         }
     }

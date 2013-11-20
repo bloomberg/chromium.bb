@@ -7,11 +7,11 @@ package org.chromium.chrome.testshell;
 import android.content.Intent;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.UmaUtils;
 import org.chromium.content.browser.ResourceExtractor;
-import org.chromium.content.common.CommandLine;
 
 import java.util.ArrayList;
 

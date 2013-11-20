@@ -22,10 +22,11 @@ import com.googlecode.eyesfree.braille.selfbraille.WriteData;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.chromium.base.CommandLine;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.JavascriptInterface;
 import org.chromium.content.browser.WebContentsObserverAndroid;
-import org.chromium.content.common.CommandLine;
+import org.chromium.content.common.ContentSwitches;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -112,7 +113,8 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
         mContentViewCore = view;
 
         mAccessibilityScreenReaderUrl = CommandLine.getInstance().getSwitchValue(
-                CommandLine.ACCESSIBILITY_JAVASCRIPT_URL, DEFAULT_ACCESSIBILITY_SCREEN_READER_URL);
+                ContentSwitches.ACCESSIBILITY_JAVASCRIPT_URL,
+                DEFAULT_ACCESSIBILITY_SCREEN_READER_URL);
 
         mHasVibratePermission = mContentViewCore.getContext().checkCallingOrSelfPermission(
                 android.Manifest.permission.VIBRATE) == PackageManager.PERMISSION_GRANTED;
@@ -397,7 +399,7 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
             mView = view;
             mTextToSpeech = new TextToSpeech(context, null, null);
             mSelfBrailleClient = new SelfBrailleClient(context, CommandLine.getInstance().hasSwitch(
-                    CommandLine.ACCESSIBILITY_DEBUG_BRAILLE_SERVICE));
+                    ContentSwitches.ACCESSIBILITY_DEBUG_BRAILLE_SERVICE));
         }
 
         @JavascriptInterface

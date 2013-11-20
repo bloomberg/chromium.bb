@@ -11,7 +11,9 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.util.Printer;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
+import org.chromium.content.common.ContentSwitches;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -167,7 +169,7 @@ public class TraceEvent {
     // Holder for monitor avoids unnecessary construction on non-debug runs
     private final static class LooperMonitorHolder {
         private final static BasicLooperMonitor sInstance =
-                CommandLine.getInstance().hasSwitch(CommandLine.ENABLE_IDLE_TRACING) ?
+                CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_IDLE_TRACING) ?
                         new IdleTracingLooperMonitor() : new BasicLooperMonitor();
     }
 

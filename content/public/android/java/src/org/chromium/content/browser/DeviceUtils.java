@@ -7,7 +7,8 @@ package org.chromium.content.browser;
 import android.content.Context;
 import android.content.pm.PackageManager;
 
-import org.chromium.content.common.CommandLine;
+import org.chromium.base.CommandLine;
+import org.chromium.content.common.ContentSwitches;
 
 /**
  * A utility class that has helper methods for device configuration.
@@ -65,9 +66,9 @@ public class DeviceUtils {
      */
     public static void addDeviceSpecificUserAgentSwitch(Context context) {
         if (isTablet(context)) {
-            CommandLine.getInstance().appendSwitch(CommandLine.TABLET_UI);
+            CommandLine.getInstance().appendSwitch(ContentSwitches.TABLET_UI);
         } else {
-            CommandLine.getInstance().appendSwitch(CommandLine.USE_MOBILE_UA);
+            CommandLine.getInstance().appendSwitch(ContentSwitches.USE_MOBILE_UA);
         }
     }
 }

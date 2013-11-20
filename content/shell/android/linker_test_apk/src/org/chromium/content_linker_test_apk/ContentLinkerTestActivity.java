@@ -12,12 +12,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import org.chromium.base.BaseSwitches;
+import org.chromium.base.CommandLine;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.app.Linker;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
-import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellManager;
@@ -135,7 +136,7 @@ public class ContentLinkerTestActivity extends Activity {
     }
 
     private void waitForDebuggerIfNeeded() {
-        if (CommandLine.getInstance().hasSwitch(CommandLine.WAIT_FOR_JAVA_DEBUGGER)) {
+        if (CommandLine.getInstance().hasSwitch(BaseSwitches.WAIT_FOR_JAVA_DEBUGGER)) {
             Log.e(TAG, "Waiting for Java debugger to connect...");
             android.os.Debug.waitForDebugger();
             Log.e(TAG, "Java debugger connected. Resuming execution.");

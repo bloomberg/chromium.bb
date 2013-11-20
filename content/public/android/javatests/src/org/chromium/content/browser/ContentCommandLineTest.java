@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,14 +8,14 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.app.LibraryLoader;
-import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellApplication;
 
-public class CommandLineTest extends InstrumentationTestCase {
+public class ContentCommandLineTest extends InstrumentationTestCase {
     // A reference command line. Note that switch2 is [brea\d], switch3 is [and "butter"],
     // and switch4 is [a "quoted" 'food'!]
     static final String INIT_SWITCHES[] = { "init_command", "--SWITCH", "Arg",
@@ -102,22 +102,6 @@ public class CommandLineTest extends InstrumentationTestCase {
         assertTrue(CL_ADDED_VALUE_2.equals(cl.getSwitchValue(CL_ADDED_SWITCH_2)));
     }
 
-    void checkTokenizer(String[] expected, String toParse) {
-        String[] actual = CommandLine.tokenizeQuotedAruments(toParse.toCharArray());
-        assertEquals(expected.length, actual.length);
-        for (int i = 0; i < expected.length; ++i) {
-            assertEquals("comparing element " + i, expected[i], actual[i]);
-        }
-    }
-
-    @SmallTest
-    @Feature({"Android-AppBase"})
-    public void testJavaInitialization() {
-        CommandLine.init(INIT_SWITCHES);
-        checkInitSwitches();
-        checkSettingThenGetting();
-    }
-
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testJavaNativeTransition() {
@@ -150,43 +134,6 @@ public class CommandLineTest extends InstrumentationTestCase {
         CommandLine.getInstance().appendSwitchesAndArguments(args);
         checkInitSwitches();
         checkSettingThenGetting();
-    }
-
-    @SmallTest
-    @Feature({"Android-AppBase"})
-    public void testBufferInitialization() {
-        CommandLine.init(CommandLine.tokenizeQuotedAruments(INIT_SWITCHES_BUFFER));
-        checkInitSwitches();
-        checkSettingThenGetting();
-    }
-
-    @SmallTest
-    @Feature({"Android-AppBase"})
-    public void testArgumentTokenizer() {
-        String toParse = " a\"\\bc de\\\"f g\"\\h ij    k\" \"lm";
-        String[] expected = { "a\\bc de\"f g\\h",
-                              "ij",
-                              "k lm" };
-        checkTokenizer(expected, toParse);
-
-        toParse = "";
-        expected = new String[0];
-        checkTokenizer(expected, toParse);
-
-        toParse = " \t\n";
-        checkTokenizer(expected, toParse);
-
-        toParse = " \"a'b\" 'c\"d' \"e\\\"f\" 'g\\'h' \"i\\'j\" 'k\\\"l'" +
-                  " m\"n\\'o\"p q'r\\\"s't";
-        expected = new String[] { "a'b",
-                                  "c\"d",
-                                  "e\"f",
-                                  "g'h",
-                                  "i\\'j",
-                                  "k\\\"l",
-                                  "mn\\'op",
-                                  "qr\\\"st",};
-        checkTokenizer(expected, toParse);
     }
 
     @MediumTest

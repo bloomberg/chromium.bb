@@ -12,6 +12,8 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
+import org.chromium.base.BaseSwitches;
+import org.chromium.base.CommandLine;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
@@ -20,7 +22,7 @@ import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
-import org.chromium.content.common.CommandLine;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellManager;
@@ -75,7 +77,7 @@ public class ContentShellActivity extends Activity {
             mShellManager.setStartupUrl(Shell.sanitizeUrl(startupUrl));
         }
 
-        if (CommandLine.getInstance().hasSwitch(CommandLine.DUMP_RENDER_TREE)) {
+        if (CommandLine.getInstance().hasSwitch(ContentSwitches.DUMP_RENDER_TREE)) {
             if(BrowserStartupController.get(this).startBrowserProcessesSync(
                    BrowserStartupController.MAX_RENDERERS_LIMIT)) {
                 finishInitialization(savedInstanceState);
@@ -133,7 +135,7 @@ public class ContentShellActivity extends Activity {
     }
 
     private void waitForDebuggerIfNeeded() {
-        if (CommandLine.getInstance().hasSwitch(CommandLine.WAIT_FOR_JAVA_DEBUGGER)) {
+        if (CommandLine.getInstance().hasSwitch(BaseSwitches.WAIT_FOR_JAVA_DEBUGGER)) {
             Log.e(TAG, "Waiting for Java debugger to connect...");
             android.os.Debug.waitForDebugger();
             Log.e(TAG, "Java debugger connected. Resuming execution.");
