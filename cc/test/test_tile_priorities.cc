@@ -10,7 +10,7 @@ TilePriorityForSoonBin::TilePriorityForSoonBin()
     : TilePriority(HIGH_RESOLUTION, 0.5, 300.0) {}
 
 TilePriorityForEventualBin::TilePriorityForEventualBin()
-    : TilePriority(NON_IDEAL_RESOLUTION, 1.0, 315.0) {}
+    : TilePriority(HIGH_RESOLUTION, 2.0, 315.0) {}
 
 TilePriorityForNowBin::TilePriorityForNowBin()
     : TilePriority(HIGH_RESOLUTION, 0, 0) {}

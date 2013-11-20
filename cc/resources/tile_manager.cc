@@ -372,24 +372,36 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     TilePriority pending_priority = tile->priority(PENDING_TREE);
     ManagedTileBin pending_bin = BinFromTilePriority(pending_priority);
 
+    bool pending_is_low_res =
+        pending_priority.resolution == LOW_RESOLUTION;
+    bool pending_is_non_ideal =
+        pending_priority.resolution == NON_IDEAL_RESOLUTION;
+    bool active_is_non_ideal =
+        active_priority.resolution == NON_IDEAL_RESOLUTION;
+
     // Adjust pending bin state for low res tiles. This prevents
     // pending tree low-res tiles from being initialized before
     // high-res tiles.
-    if (pending_priority.resolution == LOW_RESOLUTION)
+    if (pending_is_low_res)
       pending_bin = std::max(pending_bin, EVENTUALLY_BIN);
-
-    // Compute combined bin.
-    ManagedTileBin combined_bin = std::min(active_bin, pending_bin);
 
     // Adjust bin state based on if ready to draw.
     active_bin = kBinReadyToDrawMap[tile_is_ready_to_draw][active_bin];
     pending_bin = kBinReadyToDrawMap[tile_is_ready_to_draw][pending_bin];
-    combined_bin = kBinReadyToDrawMap[tile_is_ready_to_draw][combined_bin];
 
     // Adjust bin state based on if active.
     active_bin = kBinIsActiveMap[tile_is_active][active_bin];
     pending_bin = kBinIsActiveMap[tile_is_active][pending_bin];
-    combined_bin = kBinIsActiveMap[tile_is_active][combined_bin];
+
+    // We never want to paint new non-ideal tiles, as we always have
+    // a high-res tile covering that content (paint that instead).
+    if (!tile_is_ready_to_draw && active_is_non_ideal)
+      active_bin = NEVER_BIN;
+    if (!tile_is_ready_to_draw && pending_is_non_ideal)
+      pending_bin = NEVER_BIN;
+
+    // Compute combined bin.
+    ManagedTileBin combined_bin = std::min(active_bin, pending_bin);
 
     ManagedTileBin tree_bin[NUM_TREES];
     tree_bin[ACTIVE_TREE] = kBinPolicyMap[memory_policy][active_bin];
