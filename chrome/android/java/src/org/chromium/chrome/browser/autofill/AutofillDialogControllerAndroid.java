@@ -19,7 +19,7 @@ public class AutofillDialogControllerAndroid {
     private static AutofillDialogFactory sDialogFactory;
     private static boolean sAllowInsecureDialogsForTesting = false;
 
-    private int mNativeDelegate;  // could be 0 after onDestroy().
+    private long mNativeDelegate;  // could be 0 after onDestroy().
     private AutofillDialog mDialog;
 
     /**
@@ -108,7 +108,7 @@ public class AutofillDialogControllerAndroid {
     }
 
     private AutofillDialogControllerAndroid(
-            final int nativeAutofillDialogControllerAndroid,
+            final long nativeAutofillDialogControllerAndroid,
             final WindowAndroid windowAndroid,
             final boolean requestFullBillingAddress, final boolean requestShippingAddress,
             final boolean requestPhoneNumbers,
@@ -159,7 +159,7 @@ public class AutofillDialogControllerAndroid {
 
     @CalledByNative
     private static AutofillDialogControllerAndroid create(
-            final int nativeAutofillDialogControllerAndroid,
+            final long nativeAutofillDialogControllerAndroid,
             final WindowAndroid windowAndroid,
             final boolean requestFullBillingAddress, final boolean requestShippingAddress,
             final boolean requestPhoneNumbers,
@@ -198,8 +198,8 @@ public class AutofillDialogControllerAndroid {
 
     // Calls from Java to C++ AutofillDialogControllerAndroid:
 
-    private native void nativeDialogCancel(int nativeAutofillDialogControllerAndroid);
-    private native void nativeDialogContinue(int nativeAutofillDialogControllerAndroid,
+    private native void nativeDialogCancel(long nativeAutofillDialogControllerAndroid);
+    private native void nativeDialogContinue(long nativeAutofillDialogControllerAndroid,
             Object fullWallet,
             boolean lastUsedChoiceIsAutofill, String lastUsedAccountName,
             String guidLastUsedBilling, String guidLastUsedShipping, String guidLastUsedCard);

@@ -27,7 +27,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     private final String mTitle;
     private final String mMessage;
     private final boolean mShouldShowSuppressCheckBox;
-    private int mNativeDialogPointer;
+    private long mNativeDialogPointer;
     private AlertDialog mDialog;
     private CheckBox mSuppressCheckBox;
     private TextView mPrompTextView;
@@ -66,7 +66,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     }
 
     @CalledByNative
-    void showJavascriptAppModalDialog(WindowAndroid window, int nativeDialogPointer) {
+    void showJavascriptAppModalDialog(WindowAndroid window, long nativeDialogPointer) {
         assert window != null;
         Context context = window.getContext();
 
@@ -272,10 +272,10 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
         }
     }
 
-    private native void nativeDidAcceptAppModalDialog(int nativeJavascriptAppModalDialogAndroid,
+    private native void nativeDidAcceptAppModalDialog(long nativeJavascriptAppModalDialogAndroid,
             String prompt, boolean suppress);
 
-    private native void nativeDidCancelAppModalDialog(int nativeJavascriptAppModalDialogAndroid,
+    private native void nativeDidCancelAppModalDialog(long nativeJavascriptAppModalDialogAndroid,
             boolean suppress);
 
     private static native JavascriptAppModalDialog nativeGetCurrentModalDialog();

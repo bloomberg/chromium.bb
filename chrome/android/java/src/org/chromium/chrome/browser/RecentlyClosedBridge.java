@@ -14,7 +14,7 @@ import java.util.List;
  * This class allows Java code to get and clear the list of recently closed tabs.
  */
 public class RecentlyClosedBridge {
-    private int mNativeRecentlyClosedTabsBridge;
+    private long mNativeRecentlyClosedTabsBridge;
 
     /**
      * Callback interface for getting notified when the list of recently closed tabs is updated.
@@ -110,13 +110,13 @@ public class RecentlyClosedBridge {
         nativeClearRecentlyClosedTabs(mNativeRecentlyClosedTabsBridge);
     }
 
-    private native int nativeInit(Profile profile);
-    private native void nativeDestroy(int nativeRecentlyClosedTabsBridge);
+    private native long nativeInit(Profile profile);
+    private native void nativeDestroy(long nativeRecentlyClosedTabsBridge);
     private native void nativeSetRecentlyClosedCallback(
-            int nativeRecentlyClosedTabsBridge, RecentlyClosedCallback callback);
+            long nativeRecentlyClosedTabsBridge, RecentlyClosedCallback callback);
     private native boolean nativeGetRecentlyClosedTabs(
-            int nativeRecentlyClosedTabsBridge, List<RecentlyClosedTab> tabs);
+            long nativeRecentlyClosedTabsBridge, List<RecentlyClosedTab> tabs);
     private native boolean nativeOpenRecentlyClosedTab(
-            int nativeRecentlyClosedTabsBridge, TabBase tab, int recentTabId);
-    private native void nativeClearRecentlyClosedTabs(int nativeRecentlyClosedTabsBridge);
+            long nativeRecentlyClosedTabsBridge, TabBase tab, int recentTabId);
+    private native void nativeClearRecentlyClosedTabs(long nativeRecentlyClosedTabsBridge);
 }

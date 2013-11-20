@@ -30,7 +30,7 @@ void AutofillPopupViewAndroid::Show() {
 
   java_object_.Reset(Java_AutofillPopupGlue_create(
       env,
-      reinterpret_cast<jint>(this),
+      reinterpret_cast<intptr_t>(this),
       view_android->GetWindowAndroid()->GetJavaObject().obj(),
       view_android->GetJavaObject().obj()));
 

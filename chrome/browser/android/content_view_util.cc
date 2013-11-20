@@ -11,7 +11,7 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/ContentViewUtil_jni.h"
 
-static jint CreateNativeWebContents(
+static jlong CreateNativeWebContents(
     JNIEnv* env, jclass clazz, jboolean incognito) {
   Profile* profile = g_browser_process->profile_manager()->GetLastUsedProfile();
   if (incognito)
@@ -19,11 +19,11 @@ static jint CreateNativeWebContents(
 
   content::WebContents* web_contents =
       content::WebContents::Create(content::WebContents::CreateParams(profile));
-  return reinterpret_cast<jint>(web_contents);
+  return reinterpret_cast<intptr_t>(web_contents);
 }
 
 static void DestroyNativeWebContents(
-    JNIEnv* env, jclass clazz, jint web_contents_ptr) {
+    JNIEnv* env, jclass clazz, jlong web_contents_ptr) {
   content::WebContents* web_contents =
       reinterpret_cast<content::WebContents*>(web_contents_ptr);
   delete web_contents;

@@ -27,7 +27,7 @@ public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid
     }
 
     @CalledByNative
-    public boolean addNewContents(int nativeSourceWebContents, int nativeWebContents,
+    public boolean addNewContents(long nativeSourceWebContents, long nativeWebContents,
             int disposition, Rect initialPosition, boolean userGesture) {
         return false;
     }

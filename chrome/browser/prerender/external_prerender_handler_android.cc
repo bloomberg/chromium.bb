@@ -25,7 +25,7 @@ namespace prerender {
 bool ExternalPrerenderHandlerAndroid::AddPrerender(JNIEnv* env,
                                                    jobject obj,
                                                    jobject jprofile,
-                                                   jint web_contents_ptr,
+                                                   jlong web_contents_ptr,
                                                    jstring jurl,
                                                    jstring jreferrer,
                                                    jint width,
@@ -72,7 +72,7 @@ static jboolean HasPrerenderedUrl(JNIEnv* env,
                                   jclass clazz,
                                   jobject jprofile,
                                   jstring jurl,
-                                  jint web_contents_ptr) {
+                                  jlong web_contents_ptr) {
   if (jurl == NULL)
     return false;
 
@@ -93,10 +93,10 @@ ExternalPrerenderHandlerAndroid::ExternalPrerenderHandlerAndroid() {}
 
 ExternalPrerenderHandlerAndroid::~ExternalPrerenderHandlerAndroid() {}
 
-static jint Init(JNIEnv* env, jclass clazz) {
+static jlong Init(JNIEnv* env, jclass clazz) {
   ExternalPrerenderHandlerAndroid* external_handler =
       new ExternalPrerenderHandlerAndroid();
-  return reinterpret_cast<jint>(external_handler);
+  return reinterpret_cast<intptr_t>(external_handler);
 }
 
 bool ExternalPrerenderHandlerAndroid::RegisterExternalPrerenderHandlerAndroid(

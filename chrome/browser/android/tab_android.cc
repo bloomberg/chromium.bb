@@ -147,7 +147,7 @@ TabAndroid::TabAndroid(JNIEnv* env, jobject obj)
     : weak_java_tab_(env, obj),
       session_tab_id_(),
       synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)) {
-  Java_TabBase_setNativePtr(env, obj, reinterpret_cast<jint>(this));
+  Java_TabBase_setNativePtr(env, obj, reinterpret_cast<intptr_t>(this));
 }
 
 TabAndroid::~TabAndroid() {
@@ -245,7 +245,7 @@ void TabAndroid::SwapTabContents(content::WebContents* old_contents,
   Java_TabBase_swapWebContents(
       env,
       weak_java_tab_.get(env).obj(),
-      reinterpret_cast<jint>(new_contents));
+      reinterpret_cast<intptr_t>(new_contents));
 }
 
 void TabAndroid::Observe(int type,

@@ -44,7 +44,7 @@ public class ConfirmInfoBar extends TwoButtonInfoBar {
                 primaryButtonText, secondaryButtonText);
     }
 
-    public ConfirmInfoBar(int nativeInfoBar, InfoBarListeners.Confirm confirmListener,
+    public ConfirmInfoBar(long nativeInfoBar, InfoBarListeners.Confirm confirmListener,
             int backgroundType, int iconDrawableId, String message, String linkText,
             String primaryButtonText, String secondaryButtonText) {
         super(confirmListener, backgroundType, iconDrawableId);

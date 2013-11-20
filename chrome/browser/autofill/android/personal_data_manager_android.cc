@@ -313,10 +313,10 @@ static jstring ToCountryCode(JNIEnv* env, jclass clazz, jstring jcountry_name) {
           g_browser_process->GetApplicationLocale())).Release();
 }
 
-static jint Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, jobject obj) {
   PersonalDataManagerAndroid* personal_data_manager_android =
       new PersonalDataManagerAndroid(env, obj);
-  return reinterpret_cast<jint>(personal_data_manager_android);
+  return reinterpret_cast<intptr_t>(personal_data_manager_android);
 }
 
 }  // namespace autofill

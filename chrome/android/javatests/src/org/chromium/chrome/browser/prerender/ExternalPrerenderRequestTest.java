@@ -53,7 +53,7 @@ public class ExternalPrerenderRequestTest extends ChromiumTestShellTestBase {
      * Test adding a prerender and canceling that to add a new one.
      */
     public void testAddPrerenderAndCancel() throws InterruptedException {
-        int webContentsPtr = mHandler.addPrerender(mProfile, GOOGLE_URL, "", 0, 0);
+        long webContentsPtr = mHandler.addPrerender(mProfile, GOOGLE_URL, "", 0, 0);
         assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
                 mProfile, GOOGLE_URL, webContentsPtr));
 
@@ -76,7 +76,7 @@ public class ExternalPrerenderRequestTest extends ChromiumTestShellTestBase {
      */
     public void testCancelPrerender() {
         mHandler.cancelCurrentPrerender();
-        int webContentsPtr = mHandler.addPrerender(mProfile, GOOGLE_URL, "", 0, 0);
+        long webContentsPtr = mHandler.addPrerender(mProfile, GOOGLE_URL, "", 0, 0);
         assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
                 mProfile, GOOGLE_URL, webContentsPtr));
     }
@@ -88,11 +88,11 @@ public class ExternalPrerenderRequestTest extends ChromiumTestShellTestBase {
      * Test adding two prerenders without canceling the first one.
      */
     public void testAddingPrerendersInaRow() throws InterruptedException {
-        int webContentsPtr = mHandler.addPrerender(mProfile, GOOGLE_URL, "", 0, 0);
+        long webContentsPtr = mHandler.addPrerender(mProfile, GOOGLE_URL, "", 0, 0);
         assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
                 mProfile, GOOGLE_URL, webContentsPtr));
         Thread.sleep(PRERENDER_DELAY_MS);
-        int newWebContentsPtr = mHandler.addPrerender(mProfile, YOUTUBE_URL, "", 0, 0);
+        long newWebContentsPtr = mHandler.addPrerender(mProfile, YOUTUBE_URL, "", 0, 0);
         assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
                 mProfile, YOUTUBE_URL, newWebContentsPtr));
     }

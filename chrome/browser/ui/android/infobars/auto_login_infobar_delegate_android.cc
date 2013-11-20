@@ -46,7 +46,7 @@ bool AutoLoginInfoBarDelegateAndroid::AttachAccount(
   DCHECK(delegate.obj());
   user_ = base::android::ConvertJavaStringToUTF8(
       Java_AutoLoginDelegate_initializeAccount(
-          env, delegate.obj(), reinterpret_cast<jint>(this), jrealm.obj(),
+          env, delegate.obj(), reinterpret_cast<intptr_t>(this), jrealm.obj(),
           jaccount.obj(), jargs.obj()));
   return !user_.empty();
 }
@@ -63,7 +63,7 @@ bool AutoLoginInfoBarDelegateAndroid::Accept() {
   DCHECK(delegate.obj());
 
   Java_AutoLoginDelegate_logIn(env, delegate.obj(),
-                               reinterpret_cast<jint>(this));
+                               reinterpret_cast<intptr_t>(this));
 
   // Do not close the infobar on accept, it will be closed as part
   // of the log in callback.
@@ -76,7 +76,7 @@ bool AutoLoginInfoBarDelegateAndroid::Cancel() {
       weak_java_auto_login_delegate_.get(env);
   DCHECK(delegate.obj());
   Java_AutoLoginDelegate_cancelLogIn(env, delegate.obj(),
-                                     reinterpret_cast<jint>(this));
+                                     reinterpret_cast<intptr_t>(this));
   return true;
 }
 

@@ -72,7 +72,7 @@ ProfileAndroid::ProfileAndroid(Profile* profile)
     : profile_(profile) {
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> jprofile =
-      Java_Profile_create(env, reinterpret_cast<int>(this));
+      Java_Profile_create(env, reinterpret_cast<intptr_t>(this));
   obj_.Reset(env, jprofile.obj());
 
 }

@@ -16,10 +16,10 @@
 
 using base::android::ConvertJavaStringToUTF8;
 
-static jint Init(JNIEnv* env, jclass clazz, jobject profile) {
+static jlong Init(JNIEnv* env, jclass clazz, jobject profile) {
   NewTabPagePrefs* new_tab_page_prefs =
       new NewTabPagePrefs(ProfileAndroid::FromProfileAndroid(profile));
-  return reinterpret_cast<jint>(new_tab_page_prefs);
+  return reinterpret_cast<intptr_t>(new_tab_page_prefs);
 }
 
 NewTabPagePrefs::NewTabPagePrefs(Profile* profile)

@@ -30,7 +30,7 @@ class ExternalPrerenderHandlerAndroid {
   bool AddPrerender(JNIEnv* env,
                     jobject obj,
                     jobject profile,
-                    jint web_content_ptr,
+                    jlong web_content_ptr,
                     jstring url,
                     jstring referrer,
                     jint width,

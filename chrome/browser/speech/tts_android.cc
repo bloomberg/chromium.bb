@@ -24,7 +24,7 @@ TtsPlatformImplAndroid::TtsPlatformImplAndroid()
   JNIEnv* env = AttachCurrentThread();
   java_ref_.Reset(
       Java_TtsPlatformImpl_create(env,
-                                  reinterpret_cast<jint>(this),
+                                  reinterpret_cast<intptr_t>(this),
                                   base::android::GetApplicationContext()));
 }
 

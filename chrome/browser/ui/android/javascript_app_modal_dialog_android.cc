@@ -98,7 +98,7 @@ void JavascriptAppModalDialogAndroid::ShowAppModalDialog() {
 
   Java_JavascriptAppModalDialog_showJavascriptAppModalDialog(env,
       dialog_object.obj(), parent_jobj.obj(),
-      reinterpret_cast<jint>(this));
+      reinterpret_cast<intptr_t>(this));
 }
 
 void JavascriptAppModalDialogAndroid::ActivateAppModalDialog() {

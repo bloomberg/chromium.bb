@@ -32,7 +32,7 @@ public class ConfirmInfoBarDelegate {
      * @param buttonCancel String to display on the Cancel button.
      */
     @CalledByNative
-    InfoBar showConfirmInfoBar(int nativeInfoBar, int enumeratedIconId, String message,
+    InfoBar showConfirmInfoBar(long nativeInfoBar, int enumeratedIconId, String message,
             String linkText, String buttonOk, String buttonCancel) {
         int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
 

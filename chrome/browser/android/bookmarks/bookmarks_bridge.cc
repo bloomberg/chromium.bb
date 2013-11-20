@@ -75,9 +75,9 @@ bool BookmarksBridge::RegisterBookmarksBridge(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static jint Init(JNIEnv* env, jobject obj, jobject j_profile) {
+static jlong Init(JNIEnv* env, jobject obj, jobject j_profile) {
   BookmarksBridge* delegate = new BookmarksBridge(env, obj, j_profile);
-  return reinterpret_cast<jint>(delegate);
+  return reinterpret_cast<intptr_t>(delegate);
 }
 
 static bool IsEditBookmarksEnabled() {

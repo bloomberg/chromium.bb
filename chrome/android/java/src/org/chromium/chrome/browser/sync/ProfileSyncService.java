@@ -53,7 +53,7 @@ public class ProfileSyncService {
             new CopyOnWriteArrayList<SyncStateChangedListener>();
 
     // Native ProfileSyncServiceAndroid object. Can not be final since we set it to 0 in destroy().
-    private final int mNativeProfileSyncServiceAndroid;
+    private final long mNativeProfileSyncServiceAndroid;
 
     /**
      * A helper method for retrieving the application-wide SyncSetupManager.
@@ -86,7 +86,7 @@ public class ProfileSyncService {
     }
 
     @CalledByNative
-    private static int getProfileSyncServiceAndroid(Context context) {
+    private static long getProfileSyncServiceAndroid(Context context) {
         return get(context).mNativeProfileSyncServiceAndroid;
     }
 
@@ -503,52 +503,53 @@ public class ProfileSyncService {
 
     // Native methods
     private native void nativeNudgeSyncer(
-            int nativeProfileSyncServiceAndroid, int objectSource, String objectId, long version,
+            long nativeProfileSyncServiceAndroid, int objectSource, String objectId, long version,
             String payload);
-    private native void nativeNudgeSyncerForAllTypes(int nativeProfileSyncServiceAndroid);
-    private native int nativeInit();
-    private native void nativeEnableSync(int nativeProfileSyncServiceAndroid);
-    private native void nativeDisableSync(int nativeProfileSyncServiceAndroid);
-    private native void nativeSignInSync(int nativeProfileSyncServiceAndroid);
-    private native void nativeSignOutSync(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeSetSyncSessionsId(int nativeProfileSyncServiceAndroid, String tag);
-    private native String nativeQuerySyncStatusSummary(int nativeProfileSyncServiceAndroid);
-    private native int nativeGetAuthError(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsSyncInitialized(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsFirstSetupInProgress(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsEncryptEverythingEnabled(int nativeProfileSyncServiceAndroid);
-    private native void nativeEnableEncryptEverything(int nativeProfileSyncServiceAndroid);
+    private native void nativeNudgeSyncerForAllTypes(long nativeProfileSyncServiceAndroid);
+    private native long nativeInit();
+    private native void nativeEnableSync(long nativeProfileSyncServiceAndroid);
+    private native void nativeDisableSync(long nativeProfileSyncServiceAndroid);
+    private native void nativeSignInSync(long nativeProfileSyncServiceAndroid);
+    private native void nativeSignOutSync(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeSetSyncSessionsId(
+            long nativeProfileSyncServiceAndroid, String tag);
+    private native String nativeQuerySyncStatusSummary(long nativeProfileSyncServiceAndroid);
+    private native int nativeGetAuthError(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsSyncInitialized(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsFirstSetupInProgress(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsEncryptEverythingEnabled(long nativeProfileSyncServiceAndroid);
+    private native void nativeEnableEncryptEverything(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsPassphraseRequiredForDecryption(
-            int nativeProfileSyncServiceAndroid);
+            long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsPassphraseRequiredForExternalType(
-            int nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsUsingSecondaryPassphrase(int nativeProfileSyncServiceAndroid);
+            long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsUsingSecondaryPassphrase(long nativeProfileSyncServiceAndroid);
     private native boolean nativeSetDecryptionPassphrase(
-            int nativeProfileSyncServiceAndroid, String passphrase);
+            long nativeProfileSyncServiceAndroid, String passphrase);
     private native void nativeSetEncryptionPassphrase(
-            int nativeProfileSyncServiceAndroid, String passphrase, boolean isGaia);
-    private native boolean nativeIsCryptographerReady(int nativeProfileSyncServiceAndroid);
-    private native int nativeGetPassphraseType(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeHasExplicitPassphraseTime(int nativeProfileSyncServiceAndroid);
+            long nativeProfileSyncServiceAndroid, String passphrase, boolean isGaia);
+    private native boolean nativeIsCryptographerReady(long nativeProfileSyncServiceAndroid);
+    private native int nativeGetPassphraseType(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeHasExplicitPassphraseTime(long nativeProfileSyncServiceAndroid);
     private native String nativeGetSyncEnterGooglePassphraseBodyWithDateText(
-            int nativeProfileSyncServiceAndroid);
+            long nativeProfileSyncServiceAndroid);
     private native String nativeGetSyncEnterCustomPassphraseBodyWithDateText(
-            int nativeProfileSyncServiceAndroid);
-    private native String nativeGetCurrentSignedInAccountText(int nativeProfileSyncServiceAndroid);
+            long nativeProfileSyncServiceAndroid);
+    private native String nativeGetCurrentSignedInAccountText(long nativeProfileSyncServiceAndroid);
     private native String nativeGetSyncEnterCustomPassphraseBodyText(
-            int nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsSyncKeystoreMigrationDone(int nativeProfileSyncServiceAndroid);
+            long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsSyncKeystoreMigrationDone(long nativeProfileSyncServiceAndroid);
     private native long nativeGetEnabledDataTypes(
-        int nativeProfileSyncServiceAndroid);
+        long nativeProfileSyncServiceAndroid);
     private native void nativeSetPreferredDataTypes(
-            int nativeProfileSyncServiceAndroid, boolean syncEverything, long modelTypeSelection);
+            long nativeProfileSyncServiceAndroid, boolean syncEverything, long modelTypeSelection);
     private native void nativeSetSetupInProgress(
-            int nativeProfileSyncServiceAndroid, boolean inProgress);
-    private native void nativeSetSyncSetupCompleted(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeHasSyncSetupCompleted(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsStartSuppressed(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeHasKeepEverythingSynced(int nativeProfileSyncServiceAndroid);
-    private native boolean nativeHasUnrecoverableError(int nativeProfileSyncServiceAndroid);
-    private native String nativeGetAboutInfoForTest(int nativeProfileSyncServiceAndroid);
-    private native long nativeGetLastSyncedTimeForTest(int nativeProfileSyncServiceAndroid);
+            long nativeProfileSyncServiceAndroid, boolean inProgress);
+    private native void nativeSetSyncSetupCompleted(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeHasSyncSetupCompleted(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsStartSuppressed(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeHasKeepEverythingSynced(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeHasUnrecoverableError(long nativeProfileSyncServiceAndroid);
+    private native String nativeGetAboutInfoForTest(long nativeProfileSyncServiceAndroid);
+    private native long nativeGetLastSyncedTimeForTest(long nativeProfileSyncServiceAndroid);
 }

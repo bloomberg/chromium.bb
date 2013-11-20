@@ -42,7 +42,7 @@ public class DataReductionProxySettings {
         return sSettings;
     }
 
-    private final int mNativeDataReductionProxySettings;
+    private final long mNativeDataReductionProxySettings;
 
     private DataReductionProxySettings() {
         // Note that this technically leaks the native object, however,
@@ -187,35 +187,35 @@ public class DataReductionProxySettings {
         return percent;
     }
 
-    private native int nativeInit();
+    private native long nativeInit();
     private native void nativeInitDataReductionProxySettings(
-            int nativeDataReductionProxySettingsAndroid);
+            long nativeDataReductionProxySettingsAndroid);
     private native void nativeBypassHostPattern(
-            int nativeDataReductionProxySettingsAndroid, String pattern);
+            long nativeDataReductionProxySettingsAndroid, String pattern);
     private native void nativeBypassURLPattern(
-            int nativeDataReductionProxySettingsAndroid, String pattern);
+            long nativeDataReductionProxySettingsAndroid, String pattern);
     private native boolean nativeIsDataReductionProxyAllowed(
-            int nativeDataReductionProxySettingsAndroid);
+            long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyPromoAllowed(
-            int nativeDataReductionProxySettingsAndroid);
+            long nativeDataReductionProxySettingsAndroid);
     private native String nativeGetDataReductionProxyOrigin(
-            int nativeDataReductionProxySettingsAndroid);
+            long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyEnabled(
-            int nativeDataReductionProxySettingsAndroid);
+            long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyManaged(
-            int nativeDataReductionProxySettingsAndroid);
+            long nativeDataReductionProxySettingsAndroid);
     private native void nativeSetDataReductionProxyEnabled(
-            int nativeDataReductionProxySettingsAndroid, boolean enabled);
+            long nativeDataReductionProxySettingsAndroid, boolean enabled);
     private native long nativeGetDataReductionLastUpdateTime(
-            int nativeDataReductionProxySettingsAndroid);
+            long nativeDataReductionProxySettingsAndroid);
     private native ContentLengths nativeGetContentLengths(
-            int nativeDataReductionProxySettingsAndroid);
+            long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsAcceptableAuthChallenge(
-            int nativeDataReductionProxySettingsAndroid, String host, String realm);
+            long nativeDataReductionProxySettingsAndroid, String host, String realm);
     private native String nativeGetTokenForAuthChallenge(
-            int nativeDataReductionProxySettingsAndroid, String host, String realm);
+            long nativeDataReductionProxySettingsAndroid, String host, String realm);
     private native long[] nativeGetDailyOriginalContentLengths(
-            int nativeDataReductionProxySettingsAndroid);
+            long nativeDataReductionProxySettingsAndroid);
     private native long[] nativeGetDailyReceivedContentLengths(
-            int nativeDataReductionProxySettingsAndroid);
+            long nativeDataReductionProxySettingsAndroid);
 }
