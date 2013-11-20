@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_KEYCODES_KEYCODE_CONVERTER_H_
-#define UI_BASE_KEYCODES_KEYCODE_CONVERTER_H_
+#ifndef UI_EVENTS_KEYCODES_DOM4_KEYCODE_CONVERTER_H_
+#define UI_EVENTS_KEYCODES_DOM4_KEYCODE_CONVERTER_H_
 
 #include <stdint.h>
 #include "base/basictypes.h"
@@ -84,4 +84,4 @@ class KeycodeConverter {
 
 }  // namespace ui
 
-#endif  // UI_BASE_KEYCODE_CONVERTER_H_
+#endif  // UI_EVENTS_KEYCODES_DOM4_KEYCODE_CONVERTER_H_

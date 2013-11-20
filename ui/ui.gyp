@@ -611,18 +611,6 @@
         ]
       }
     },
-    {
-      'target_name': 'keycode_converter',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'sources': [
-        'base/keycodes/keycode_converter.cc',
-        'base/keycodes/keycode_converter.h',
-        'base/keycodes/keycode_converter_data.h',
-      ],
-    }
   ],
   'conditions': [
     ['OS=="android"' , {

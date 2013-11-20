@@ -31,8 +31,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/keycodes/keycode_converter.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 
 namespace content {
 namespace {

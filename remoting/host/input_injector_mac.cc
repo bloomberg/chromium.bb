@@ -4,9 +4,9 @@
 
 #include "remoting/host/input_injector.h"
 
-#include <algorithm>
 #include <ApplicationServices/ApplicationServices.h>
 #include <Carbon/Carbon.h>
+#include <algorithm>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -22,7 +22,7 @@
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/webrtc/modules/desktop_capture/mac/desktop_configuration.h"
-#include "ui/base/keycodes/keycode_converter.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 
 namespace remoting {
 

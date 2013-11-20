@@ -8,11 +8,24 @@
   },
   'targets': [
     {
+      'target_name': 'dom4_keycode_converter',
+      'type': 'static_library',
+      'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
+      ],
+      'sources': [
+        'keycodes/dom4/keycode_converter.cc',
+        'keycodes/dom4/keycode_converter.h',
+        'keycodes/dom4/keycode_converter_data.h',
+      ],
+    },
+    {
       'target_name': 'events_base',
       'type': '<(component)',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        'dom4_keycode_converter',
       ],
       'defines': [
         'EVENTS_BASE_IMPLEMENTATION',

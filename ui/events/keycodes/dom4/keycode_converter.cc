@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/keycodes/keycode_converter.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 
 namespace ui {
 
@@ -17,7 +17,7 @@ namespace {
 #else
 #define USB_KEYMAP(usb, xkb, win, mac, code) {usb, 0, code}
 #endif
-#include "ui/base/keycodes/keycode_converter_data.h"
+#include "ui/events/keycodes/dom4/keycode_converter_data.h"
 
 const size_t kKeycodeMapEntries = arraysize(usb_keycode_map);
 

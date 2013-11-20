@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_KEYCODES_KEYCODE_CONVERTER_DATA_H_
-#define UI_BASE_KEYCODES_KEYCODE_CONVERTER_DATA_H_
+#ifndef UI_EVENTS_KEYCODES_DOM4_KEYCODE_CONVERTER_DATA_H_
+#define UI_EVENTS_KEYCODES_DOM4_KEYCODE_CONVERTER_DATA_H_
 
 // Data in this file was created by referencing:
 //  USB HID Usage Tables (v1.11) 27 June 2001
@@ -376,4 +376,4 @@ const KeycodeMapEntry usb_keycode_map[] = {
   USB_KEYMAP(0x0c028c, 0x00ef, 0x0000, 0xffff, NULL),  // AC_Send
 };
 
-#endif  // UI_BASE_KEYCODES_KEYCODE_CONVERTER_DATA_H_
+#endif  // UI_EVENTS_KEYCODES_DOM4_KEYCODE_CONVERTER_DATA_H_

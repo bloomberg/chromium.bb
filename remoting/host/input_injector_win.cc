@@ -15,9 +15,9 @@
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/event.pb.h"
 // SkSize.h assumes that stdint.h-style types are already defined.
-#include "third_party/skia/include/core/SkTypes.h"
 #include "third_party/skia/include/core/SkSize.h"
-#include "ui/base/keycodes/keycode_converter.h"
+#include "third_party/skia/include/core/SkTypes.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 
 namespace remoting {
 

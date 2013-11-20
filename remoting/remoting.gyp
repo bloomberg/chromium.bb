@@ -275,7 +275,7 @@
             '../google_apis/google_apis.gyp:google_apis',
             '../ipc/ipc.gyp:ipc',
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
-            '../ui/ui.gyp:keycode_converter',
+            '../ui/events/events.gyp:dom4_keycode_converter',
           ],
           'defines': [
             'VERSION=<(version_full)',
