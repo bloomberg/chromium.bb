@@ -106,6 +106,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     base::WeakPtr<ResourceMessageFilter> filter,
     bool is_async)
     : cross_site_handler_(NULL),
+      detachable_handler_(NULL),
       process_type_(process_type),
       child_id_(child_id),
       route_id_(route_id),

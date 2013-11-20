@@ -33,6 +33,7 @@
 #include "content/browser/loader/async_resource_handler.h"
 #include "content/browser/loader/buffered_resource_handler.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
+#include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/power_save_block_resource_throttle.h"
 #include "content/browser/loader/redirect_to_file_resource_handler.h"
 #include "content/browser/loader/resource_message_filter.h"
@@ -126,6 +127,22 @@ const int kUserGestureWindowMs = 3500;
 // Ratio of |max_num_in_flight_requests_| that any one renderer is allowed to
 // use. Arbitrarily chosen.
 const double kMaxRequestsPerProcessRatio = 0.45;
+
+// TODO(jkarlin): The value is high to reduce the chance of the detachable
+// request timing out, forcing a blocked second request to open a new connection
+// and start over. Reduce this value once we have a better idea of what it
+// should be and once we stop blocking multiple simultaneous requests for the
+// same resource (see bugs 46104 and 31014).
+const int kDefaultDetachableCancelDelayMs = 30000;
+
+bool IsDetachableResourceType(ResourceType::Type type) {
+  switch (type) {
+    case ResourceType::PREFETCH:
+      return true;
+    default:
+      return false;
+  }
+}
 
 // Aborts a request before an URLRequest has actually been created.
 void AbortRequestBeforeItStarts(ResourceMessageFilter* filter,
@@ -406,12 +423,15 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
   for (LoaderList::iterator i = loaders_to_cancel.begin();
        i != loaders_to_cancel.end(); ++i) {
     // There is no strict requirement that this be the case, but currently
-    // downloads, streams  and transferred requests are the only requests that
-    // aren't cancelled when the associated processes go away. It may be OK for
-    // this invariant to change in the future, but if this assertion fires
-    // without the invariant changing, then it's indicative of a leak.
+    // downloads, streams, detachable requests, and transferred requests are the
+    // only requests that aren't cancelled when the associated processes go
+    // away. It may be OK for this invariant to change in the future, but if
+    // this assertion fires without the invariant changing, then it's indicative
+    // of a leak.
     DCHECK((*i)->GetRequestInfo()->is_download() ||
            (*i)->GetRequestInfo()->is_stream() ||
+           ((*i)->GetRequestInfo()->detachable_handler() &&
+            (*i)->GetRequestInfo()->detachable_handler()->is_detached()) ||
            (*i)->is_transferring());
   }
 #endif
@@ -694,18 +714,20 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(ResourceLoader* loader,
 
 void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
+
   // There should be an entry in the map created when we dispatched the
-  // request.
+  // request unless it's been detached and the renderer has died.
   OfflineMap::iterator policy_it(
       offline_policy_map_.find(info->GetGlobalRoutingID()));
   if (offline_policy_map_.end() != policy_it) {
     policy_it->second->UpdateStateForSuccessfullyStartedRequest(
         loader->request()->response_info());
   } else {
-    // We should always have an entry in offline_policy_map_ from when
-    // this request traversed Begin{Download,SaveFile,Request}.
+    // Unless detached, we should have an entry in offline_policy_map_ from
+    // when this request traversed Begin{Download,SaveFile,Request}.
     // TODO(rdsmith): This isn't currently true; see http://crbug.com/241176.
-    NOTREACHED();
+    DCHECK(info->detachable_handler() &&
+           info->detachable_handler()->is_detached());
   }
 
   int render_process_id, render_view_id;
@@ -1114,6 +1136,12 @@ void ResourceDispatcherHostImpl::BeginRequest(
     handler.reset(new SyncResourceHandler(request, sync_result, this));
   } else {
     handler.reset(new AsyncResourceHandler(request, this));
+    if (IsDetachableResourceType(request_data.resource_type)) {
+      handler.reset(new DetachableResourceHandler(
+          request,
+          base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs),
+          handler.Pass()));
+    }
   }
 
   // The RedirectToFileResourceHandler depends on being next in the chain.
@@ -1233,7 +1261,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       PAGE_TRANSITION_LINK,
       false,     // should_replace_current_entry
       download,  // is_download
-      false,  // is_stream
+      false,     // is_stream
       download,  // allow_download
       false,     // has_user_gesture
       blink::WebReferrerPolicyDefault,
@@ -1329,8 +1357,8 @@ void ResourceDispatcherHostImpl::ResumeDeferredNavigation(
 }
 
 // The object died, so cancel and detach all requests associated with it except
-// for downloads, which belong to the browser process even if initiated via a
-// renderer.
+// for downloads and detachable resources, which belong to the browser process
+// even if initiated via a renderer.
 void ResourceDispatcherHostImpl::CancelRequestsForProcess(int child_id) {
   CancelRequestsForRoute(child_id, -1 /* cancel all */);
   registered_temp_files_.erase(child_id);
@@ -1355,14 +1383,15 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(int child_id,
 
     GlobalRequestID id(child_id, i->first.request_id);
     DCHECK(id == i->first);
-
-    // Don't cancel navigations that are transferring to another process,
-    // since they belong to another process now.
+    // Don't cancel navigations that are expected to live beyond this process.
     if (IsTransferredNavigation(id))
       any_requests_transferring = true;
-    if (!info->is_download() && !info->is_stream() &&
-        !IsTransferredNavigation(id) &&
-        (route_id == -1 || route_id == info->GetRouteID())) {
+
+    if (info->detachable_handler()) {
+      info->detachable_handler()->Detach();
+    } else if (!info->is_download() && !info->is_stream() &&
+               !IsTransferredNavigation(id) &&
+               (route_id == -1 || route_id == info->GetRouteID())) {
       matching_requests.push_back(id);
     }
   }

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -19,6 +20,7 @@
 
 namespace content {
 class CrossSiteResourceHandler;
+class DetachableResourceHandler;
 class ResourceContext;
 class ResourceMessageFilter;
 struct GlobalRequestID;
@@ -117,6 +119,14 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     return should_replace_current_entry_;
   }
 
+  // DetachableResourceHandler for this request.  May be NULL.
+  DetachableResourceHandler* detachable_handler() const {
+    return detachable_handler_;
+  }
+  void set_detachable_handler(DetachableResourceHandler* h) {
+    detachable_handler_ = h;
+  }
+
   // Identifies the type of process (renderer, plugin, etc.) making the request.
   int process_type() const { return process_type_; }
 
@@ -141,8 +151,13 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   void set_memory_cost(int cost) { memory_cost_ = cost; }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
+                           DeletedFilterDetached);
+  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
+                           DeletedFilterDetachedRedirect);
   // Non-owning, may be NULL.
   CrossSiteResourceHandler* cross_site_handler_;
+  DetachableResourceHandler* detachable_handler_;
 
   int process_type_;
   int child_id_;

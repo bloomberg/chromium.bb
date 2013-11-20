@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
+#include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
@@ -438,6 +439,13 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
   // browser.
   if (from_renderer && (info->is_download() || info->is_stream()))
     return;
+
+  if (from_renderer && info->detachable_handler()) {
+    // TODO(davidben): Fix Blink handling of prefetches so they are not
+    // cancelled on navigate away and end up in the local cache.
+    info->detachable_handler()->Detach();
+    return;
+  }
 
   // TODO(darin): Perhaps we should really be looking to see if the status is
   // IO_PENDING?

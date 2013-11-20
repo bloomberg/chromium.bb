@@ -232,6 +232,7 @@ class TestNetworkDelegate : public NetworkDelegate {
   int created_requests() const { return created_requests_; }
   int destroyed_requests() const { return destroyed_requests_; }
   int completed_requests() const { return completed_requests_; }
+  int canceled_requests() const { return canceled_requests_; }
   int blocked_get_cookies_count() const { return blocked_get_cookies_count_; }
   int blocked_set_cookie_count() const { return blocked_set_cookie_count_; }
   int set_cookie_count() const { return set_cookie_count_; }
@@ -293,6 +294,7 @@ class TestNetworkDelegate : public NetworkDelegate {
   int created_requests_;
   int destroyed_requests_;
   int completed_requests_;
+  int canceled_requests_;
   int cookie_options_bit_mask_;
   int blocked_get_cookies_count_;
   int blocked_set_cookie_count_;

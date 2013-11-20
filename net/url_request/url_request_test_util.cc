@@ -305,6 +305,7 @@ TestNetworkDelegate::TestNetworkDelegate()
       created_requests_(0),
       destroyed_requests_(0),
       completed_requests_(0),
+      canceled_requests_(0),
       cookie_options_bit_mask_(0),
       blocked_get_cookies_count_(0),
       blocked_set_cookie_count_(0),
@@ -337,7 +338,11 @@ bool TestNetworkDelegate::GetLoadTimingInfoBeforeAuth(
 
 void TestNetworkDelegate::InitRequestStatesIfNew(int request_id) {
   if (next_states_.find(request_id) == next_states_.end()) {
-    next_states_[request_id] = kStageBeforeURLRequest;
+    // TODO(davidben): Although the URLRequest documentation does not allow
+    // calling Cancel() before Start(), the ResourceLoader does so. URLRequest's
+    // destructor also calls Cancel. Either officially support this or fix the
+    // ResourceLoader code.
+    next_states_[request_id] = kStageBeforeURLRequest | kStageCompletedError;
     event_order_[request_id] = "";
   }
 }
@@ -477,6 +482,10 @@ void TestNetworkDelegate::OnCompleted(URLRequest* request, bool started) {
   if (request->status().status() == URLRequestStatus::FAILED) {
     error_count_++;
     last_error_ = request->status().error();
+  } else if (request->status().status() == URLRequestStatus::CANCELED) {
+    canceled_requests_++;
+  } else {
+    DCHECK_EQ(URLRequestStatus::SUCCESS, request->status().status());
   }
 }
 

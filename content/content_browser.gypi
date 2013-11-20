@@ -661,6 +661,8 @@
     'browser/loader/certificate_resource_handler.h',
     'browser/loader/cross_site_resource_handler.cc',
     'browser/loader/cross_site_resource_handler.h',
+    'browser/loader/detachable_resource_handler.cc',
+    'browser/loader/detachable_resource_handler.h',
     'browser/loader/global_routing_id.h',
     'browser/loader/layered_resource_handler.cc',
     'browser/loader/layered_resource_handler.h',
