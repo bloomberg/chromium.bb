@@ -207,7 +207,7 @@ my %svgTypeNeedingTearOff = (
     "SVGAngle" => "SVGPropertyTearOff<SVGAngle>",
     "SVGLength" => "SVGPropertyTearOff<SVGLength>",
     "SVGLengthList" => "SVGListPropertyTearOff<SVGLengthList>",
-    "SVGMatrix" => "SVGPropertyTearOff<SVGMatrix>",
+    "SVGMatrix" => "SVGMatrixTearOff",
     "SVGNumber" => "SVGPropertyTearOff<SVGNumber>",
     "SVGNumberList" => "SVGListPropertyTearOff<SVGNumberList>",
     "SVGPathSegList" => "SVGPathSegListPropertyTearOff",
@@ -425,6 +425,8 @@ sub AddIncludesForType
 
     return if IsPrimitiveType($type) or IsEnumType($type) or $type eq "object";
 
+    $type = $1 if $type =~ /SVG\w+TearOff<(\w+)>/;
+
     # Default includes
     if ($type eq "SerializedScriptValue") {
         AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
@@ -505,8 +507,14 @@ END
     }
     for my $setReference (@{$interface->extendedAttributes->{"SetReference"}}) {
         my $setReferenceType = $setReference->type;
-        my $setReferenceName = $setReference->name;
         my $setReferenceV8Type = "V8".$setReferenceType;
+
+        my ($svgPropertyType, $svgListPropertyType, $svgNativeType) = GetSVGPropertyTypes($setReferenceType);
+        if ($svgPropertyType) {
+            $setReferenceType = $svgNativeType;
+        }
+
+        my $setReferenceName = $setReference->name;
 
         AddIncludesForType($setReferenceType);
         $code .= <<END;
@@ -558,6 +566,10 @@ sub GetSVGPropertyTypes
     my $svgWrappedNativeType = GetSVGWrappedTypeNeedingTearOff($implType);
     if ($svgNativeType =~ /SVGPropertyTearOff/) {
         $svgPropertyType = $svgWrappedNativeType;
+        AddToHeaderIncludes("core/svg/properties/SVGAnimatedPropertyTearOff.h");
+    } elsif ($svgNativeType =~ /SVGMatrixTearOff/) {
+        $svgPropertyType = $svgWrappedNativeType;
+        AddToHeaderIncludes("core/svg/properties/SVGMatrixTearOff.h");
         AddToHeaderIncludes("core/svg/properties/SVGAnimatedPropertyTearOff.h");
     } elsif ($svgNativeType =~ /SVGListPropertyTearOff/ or $svgNativeType =~ /SVGStaticListPropertyTearOff/ or $svgNativeType =~ /SVGTransformListPropertyTearOff/) {
         $svgListPropertyType = $svgWrappedNativeType;
@@ -6025,6 +6037,8 @@ sub GetSVGWrappedTypeNeedingTearOff
         $svgTypeNeedingTearOff =~ s/SVGStaticListPropertyTearOff<//;
     }  elsif ($svgTypeNeedingTearOff =~ /SVGTransformListPropertyTearOff/) {
         $svgTypeNeedingTearOff =~ s/SVGTransformListPropertyTearOff<//;
+    } elsif ($svgTypeNeedingTearOff =~ /SVGMatrixTearOff/) {
+        $svgTypeNeedingTearOff = 'SVGMatrix';
     }
 
     $svgTypeNeedingTearOff =~ s/>//;

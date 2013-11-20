@@ -27,6 +27,20 @@ namespace WebCore {
 
 class SVGMatrixTearOff : public SVGPropertyTearOff<SVGMatrix> {
 public:
+    // Used for child types (baseVal/animVal) of a SVGAnimated* property (for example: SVGAnimatedLength::baseVal()).
+    // Also used for list tear offs (for example: text.x.baseVal.getItem(0)).
+    static PassRefPtr<SVGMatrixTearOff> create(SVGAnimatedProperty* animatedProperty, SVGPropertyRole role, SVGMatrix& value)
+    {
+        ASSERT(animatedProperty);
+        return adoptRef(new SVGMatrixTearOff(animatedProperty, role, value));
+    }
+
+    // Used for non-animated POD types (for example: SVGSVGElement::createSVGLength()).
+    static PassRefPtr<SVGMatrixTearOff> create(const SVGMatrix& initialValue)
+    {
+        return adoptRef(new SVGMatrixTearOff(initialValue));
+    }
+
     // Used for non-animated POD types that are not associated with a SVGAnimatedProperty object, nor with a XML DOM attribute
     // and that contain a parent type that's exposed to the bindings via a SVGStaticPropertyTearOff object
     // (for example: SVGTransform::matrix).
@@ -40,11 +54,33 @@ public:
 
     virtual void commitChange()
     {
-        m_parent->propertyReference().updateSVGMatrix();
-        m_parent->commitChange();
+        if (m_parent) {
+            // This is a tear-off from a SVGPropertyTearOff<SVGTransform>.
+            m_parent->propertyReference().updateSVGMatrix();
+            m_parent->commitChange();
+        } else {
+            // This is either a detached tear-off or a reference tear-off from a AnimatedProperty.
+            SVGPropertyTearOff<SVGMatrix>::commitChange();
+        }
     }
 
+    SVGPropertyTearOff<SVGTransform>* parent() { return m_parent; }
+
 private:
+    SVGMatrixTearOff(SVGAnimatedProperty* animatedProperty, SVGPropertyRole role, SVGMatrix& value)
+        : SVGPropertyTearOff<SVGMatrix>(animatedProperty, role, value)
+        , m_parent(0)
+        , m_weakFactory(this)
+    {
+    }
+
+    SVGMatrixTearOff(const SVGMatrix& initialValue)
+        : SVGPropertyTearOff<SVGMatrix>(initialValue)
+        , m_parent(0)
+        , m_weakFactory(this)
+    {
+    }
+
     SVGMatrixTearOff(SVGPropertyTearOff<SVGTransform>* parent, SVGMatrix& value)
         : SVGPropertyTearOff<SVGMatrix>(0, UndefinedRole, value)
         , m_parent(parent)
@@ -52,7 +88,9 @@ private:
     {
     }
 
-    RefPtr<SVGPropertyTearOff<SVGTransform> > m_parent;
+    // m_parent is kept alive from V8 wrapper.
+    SVGPropertyTearOff<SVGTransform>* m_parent;
+
     WeakPtrFactory<SVGPropertyTearOffBase > m_weakFactory;
 };
 
