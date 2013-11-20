@@ -134,3 +134,6 @@ race:net::ProxyResolverV8Tracing::Job::~Job
 
 # http://crbug.com/313726
 race:CallbackWasCalled
+
+# http://crbug.com/321596
+race:content::IndexedDBContextImpl::~IndexedDBContextImpl
