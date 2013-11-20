@@ -44,7 +44,7 @@ class PpbBuffer : public cdm::Buffer {
   }
 
   virtual void SetSize(uint32_t size) OVERRIDE {
-    PP_DCHECK(size < Capacity());
+    PP_DCHECK(size <= Capacity());
     if (size > Capacity()) {
       size_ = 0;
       return;
