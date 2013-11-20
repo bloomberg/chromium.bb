@@ -34,7 +34,7 @@ class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
  protected:
   std::string GetLocationBarText() const {
     return UTF16ToUTF8(
-        browser()->window()->GetLocationBar()->GetLocationEntry()->GetText());
+        browser()->window()->GetLocationBar()->GetOmniboxView()->GetText());
   }
 
   GURL GetLocationBarTextAsURL() const {

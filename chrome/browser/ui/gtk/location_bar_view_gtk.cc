@@ -385,17 +385,17 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_widget_set_redraw_on_allocate(hbox_.get(), TRUE);
 
   // Now initialize the OmniboxViewGtk.
-  location_entry_.reset(new OmniboxViewGtk(this, browser_, browser_->profile(),
-                                           command_updater(),
-                                           popup_window_mode_, hbox_.get()));
-  location_entry_->Init();
+  omnibox_view_.reset(new OmniboxViewGtk(this, browser_, browser_->profile(),
+                                         command_updater(),
+                                         popup_window_mode_, hbox_.get()));
+  omnibox_view_->Init();
 
   g_signal_connect(hbox_.get(), "expose-event",
                    G_CALLBACK(&HandleExposeThunk), this);
 
   BuildSiteTypeArea();
 
-  // Put |tab_to_search_box_|, |location_entry_|, and |tab_to_search_hint_| into
+  // Put |tab_to_search_box_|, |omnibox_view_|, and |tab_to_search_hint_| into
   // a sub hbox, so that we can make this part horizontally shrinkable without
   // affecting other elements in the location bar.
   entry_box_ = gtk_hbox_new(FALSE, InnerPadding());
@@ -448,10 +448,10 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_widget_show_all(tab_to_search_box_);
   gtk_widget_hide(tab_to_search_partial_label_);
 
-  location_entry_alignment_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_container_add(GTK_CONTAINER(location_entry_alignment_),
-                    location_entry_->GetNativeView());
-  gtk_box_pack_start(GTK_BOX(entry_box_), location_entry_alignment_,
+  omnibox_view_alignment_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_container_add(GTK_CONTAINER(omnibox_view_alignment_),
+                    omnibox_view_->GetNativeView());
+  gtk_box_pack_start(GTK_BOX(entry_box_), omnibox_view_alignment_,
                      TRUE, TRUE, 0);
 
   // Tab to search notification (the hint on the right hand side).
@@ -612,9 +612,9 @@ void LocationBarViewGtk::Update(const WebContents* contents) {
   UpdateContentSettingsIcons();
   UpdatePageActions();
   if (contents)
-    location_entry_->OnTabChanged(contents);
+    omnibox_view_->OnTabChanged(contents);
   else
-    location_entry_->Update();
+    omnibox_view_->Update();
   // The security level (background color) could have changed, etc.
   if (theme_service_->UsingNativeTheme()) {
     // In GTK mode, we need our parent to redraw, as it draws the text entry
@@ -629,8 +629,8 @@ void LocationBarViewGtk::Update(const WebContents* contents) {
 void LocationBarViewGtk::OnChanged() {
   UpdateSiteTypeArea();
 
-  const string16 keyword(location_entry_->model()->keyword());
-  const bool is_keyword_hint = location_entry_->model()->is_keyword_hint();
+  const string16 keyword(omnibox_view_->model()->keyword());
+  const bool is_keyword_hint = omnibox_view_->model()->is_keyword_hint();
   show_selected_keyword_ = !keyword.empty() && !is_keyword_hint;
   show_keyword_hint_ = !keyword.empty() && is_keyword_hint;
 
@@ -697,18 +697,18 @@ content::PageTransition LocationBarViewGtk::GetPageTransition() const {
 }
 
 void LocationBarViewGtk::AcceptInput() {
-  location_entry_->model()->AcceptInput(CURRENT_TAB, false);
+  omnibox_view_->model()->AcceptInput(CURRENT_TAB, false);
 }
 
 void LocationBarViewGtk::FocusLocation(bool select_all) {
-  location_entry_->SetFocus();
+  omnibox_view_->SetFocus();
   if (select_all)
-    location_entry_->SelectAll(true);
+    omnibox_view_->SelectAll(true);
 }
 
 void LocationBarViewGtk::FocusSearch() {
-  location_entry_->SetFocus();
-  location_entry_->SetForcedQuery();
+  omnibox_view_->SetFocus();
+  omnibox_view_->SetForcedQuery();
 }
 
 void LocationBarViewGtk::UpdateContentSettingsIcons() {
@@ -796,19 +796,19 @@ void LocationBarViewGtk::UpdateGeneratedCreditCardView() {
 }
 
 void LocationBarViewGtk::SaveStateToContents(WebContents* contents) {
-  location_entry_->SaveStateToTab(contents);
+  omnibox_view_->SaveStateToTab(contents);
 }
 
 void LocationBarViewGtk::Revert() {
-  location_entry_->RevertAll();
+  omnibox_view_->RevertAll();
 }
 
-const OmniboxView* LocationBarViewGtk::GetLocationEntry() const {
-  return location_entry_.get();
+const OmniboxView* LocationBarViewGtk::GetOmniboxView() const {
+  return omnibox_view_.get();
 }
 
-OmniboxView* LocationBarViewGtk::GetLocationEntry() {
-  return location_entry_.get();
+OmniboxView* LocationBarViewGtk::GetOmniboxView() {
+  return omnibox_view_.get();
 }
 
 LocationBarTesting* LocationBarViewGtk::GetLocationBarForTesting() {
@@ -887,7 +887,7 @@ void LocationBarViewGtk::Observe(int type,
         gtk_util::UndoForceFontSize(tab_to_search_hint_leading_label_);
         gtk_util::UndoForceFontSize(tab_to_search_hint_trailing_label_);
 
-        gtk_alignment_set_padding(GTK_ALIGNMENT(location_entry_alignment_),
+        gtk_alignment_set_padding(GTK_ALIGNMENT(omnibox_view_alignment_),
                                   0, 0, 0, 0);
         gtk_alignment_set_padding(GTK_ALIGNMENT(tab_to_search_alignment_),
                                   1, 1, 1, 0);
@@ -912,7 +912,7 @@ void LocationBarViewGtk::Observe(int type,
                                       browser_defaults::kOmniboxFontPixelSize);
 
         const int top_bottom = popup_window_mode_ ? kPopupEdgeThickness : 0;
-        gtk_alignment_set_padding(GTK_ALIGNMENT(location_entry_alignment_),
+        gtk_alignment_set_padding(GTK_ALIGNMENT(omnibox_view_alignment_),
                                   kTopMargin + kBorderThickness,
                                   kBottomMargin + kBorderThickness,
                                   top_bottom, top_bottom);
@@ -992,7 +992,7 @@ void LocationBarViewGtk::BuildSiteTypeArea() {
 }
 
 void LocationBarViewGtk::SetSiteTypeDragSource() {
-  bool enable = !GetLocationEntry()->IsEditingOrEmpty();
+  bool enable = !GetOmniboxView()->IsEditingOrEmpty();
   if (enable_location_drag_ == enable)
     return;
   enable_location_drag_ = enable;
@@ -1107,7 +1107,7 @@ gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
   if (event->button == 1) {
     // Do not show page info if the user has been editing the location
     // bar, or the location bar is at the NTP.
-    if (GetLocationEntry()->IsEditingOrEmpty())
+    if (GetOmniboxView()->IsEditingOrEmpty())
       return FALSE;
 
     // (0,0) event coordinates indicates that the release came at the end of
@@ -1264,13 +1264,13 @@ gboolean LocationBarViewGtk::OnScriptBubbleButtonExpose(GtkWidget* widget,
 void LocationBarViewGtk::UpdateSiteTypeArea() {
   // The icon is always visible except when the |tab_to_search_alignment_| is
   // visible.
-  if (!location_entry_->model()->keyword().empty() &&
-      !location_entry_->model()->is_keyword_hint()) {
+  if (!omnibox_view_->model()->keyword().empty() &&
+      !omnibox_view_->model()->is_keyword_hint()) {
     gtk_widget_hide(site_type_area());
     return;
   }
 
-  int resource_id = location_entry_->GetIcon();
+  int resource_id = omnibox_view_->GetIcon();
   gtk_image_set_from_pixbuf(
       GTK_IMAGE(location_icon_image_),
       theme_service_->GetImageNamed(resource_id).ToGdkPixbuf());
@@ -1309,7 +1309,7 @@ void LocationBarViewGtk::UpdateSiteTypeArea() {
     gtk_widget_hide(GTK_WIDGET(security_info_label_));
   }
 
-  if (GetLocationEntry()->IsEditingOrEmpty()) {
+  if (GetOmniboxView()->IsEditingOrEmpty()) {
     // Do not show the tooltip if the user has been editing the location
     // bar, or the location bar is at the NTP.
     gtk_widget_set_tooltip_text(location_icon_image_, "");
@@ -1433,7 +1433,7 @@ void LocationBarViewGtk::SetKeywordHintLabel(const string16& keyword) {
 }
 
 void LocationBarViewGtk::ShowFirstRunBubbleInternal() {
-  if (!location_entry_.get() || !gtk_widget_get_window(widget()))
+  if (!omnibox_view_.get() || !gtk_widget_get_window(widget()))
     return;
 
   gfx::Rect bounds = gtk_util::WidgetBounds(location_icon_image_);
@@ -1449,7 +1449,7 @@ void LocationBarViewGtk::ShowZoomBubble() {
 }
 
 void LocationBarViewGtk::AdjustChildrenVisibility() {
-  int text_width = location_entry_->TextWidth();
+  int text_width = omnibox_view_->TextWidth();
   int available_width = entry_box_width_ - text_width - InnerPadding();
 
   // Only one of |tab_to_search_alignment_| and |tab_to_search_hint_| can be

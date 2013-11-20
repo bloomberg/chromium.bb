@@ -599,7 +599,7 @@ gfx::Rect ExtensionInstalledBubbleView::GetAnchorRect() {
     LocationBarView* location_bar_view =
         BrowserView::GetBrowserViewForBrowser(bubble_.browser())->
         GetLocationBarView();
-    return gfx::Rect(location_bar_view->GetLocationEntryOrigin(),
+    return gfx::Rect(location_bar_view->GetOmniboxViewOrigin(),
         gfx::Size(0, location_bar_view->omnibox_view()->height()));
   }
   return views::BubbleDelegateView::GetAnchorRect();

@@ -590,7 +590,7 @@ void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
     ZoomBubbleView::ShowBubble(delegate_->GetWebContents(), true);
 }
 
-gfx::Point LocationBarView::GetLocationEntryOrigin() const {
+gfx::Point LocationBarView::GetOmniboxViewOrigin() const {
   gfx::Point origin(omnibox_view_->bounds().origin());
   // If the UI layout is RTL, the coordinate system is not transformed and
   // therefore we need to adjust the X coordinate so that bubble appears on the
@@ -971,7 +971,7 @@ void LocationBarView::Update(const WebContents* contents) {
 void LocationBarView::OnChanged() {
   location_icon_view_->SetImage(
       GetThemeProvider()->GetImageSkiaNamed(omnibox_view_->GetIcon()));
-  location_icon_view_->ShowTooltip(!GetLocationEntry()->IsEditingOrEmpty());
+  location_icon_view_->ShowTooltip(!GetOmniboxView()->IsEditingOrEmpty());
 
   Layout();
   SchedulePaint();
@@ -1064,7 +1064,7 @@ int LocationBarView::GetDragOperationsForView(views::View* sender,
   DCHECK((sender == location_icon_view_) || (sender == ev_bubble_view_));
   WebContents* web_contents = delegate_->GetWebContents();
   return (web_contents && web_contents->GetURL().is_valid() &&
-          !GetLocationEntry()->IsEditingOrEmpty()) ?
+          !GetOmniboxView()->IsEditingOrEmpty()) ?
       (ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK) :
       ui::DragDropTypes::DRAG_NONE;
 }
@@ -1126,11 +1126,11 @@ void LocationBarView::Revert() {
   omnibox_view_->RevertAll();
 }
 
-const OmniboxView* LocationBarView::GetLocationEntry() const {
+const OmniboxView* LocationBarView::GetOmniboxView() const {
   return omnibox_view_;
 }
 
-OmniboxView* LocationBarView::GetLocationEntry() {
+OmniboxView* LocationBarView::GetOmniboxView() {
   return omnibox_view_;
 }
 

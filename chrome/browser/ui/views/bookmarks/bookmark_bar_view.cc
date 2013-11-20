@@ -674,7 +674,7 @@ bool BookmarkBarView::HitTestRect(const gfx::Rect& rect) const {
   // omnibox popup from activating the top few pixels of items on the bookmark
   // bar.
   if (!IsDetached() && browser_view_ &&
-      browser_view_->GetLocationBar()->GetLocationEntry()->model()->
+      browser_view_->GetLocationBar()->GetOmniboxView()->model()->
           popup_model()->IsOpen()) {
     return false;
   }

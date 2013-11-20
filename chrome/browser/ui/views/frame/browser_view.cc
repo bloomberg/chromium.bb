@@ -1114,7 +1114,7 @@ void BrowserView::DestroyBrowser() {
   // the window now so that we are deleted immediately and aren't left holding
   // references to deleted objects.
   GetWidget()->RemoveObserver(this);
-  GetLocationBar()->GetLocationEntry()->model()->popup_model()->RemoveObserver(
+  GetLocationBar()->GetOmniboxView()->model()->popup_model()->RemoveObserver(
       this);
   frame_->CloseNow();
 }
@@ -1712,7 +1712,7 @@ void BrowserView::OnWidgetMove() {
   // Close the omnibox popup, if any.
   LocationBarView* location_bar_view = GetLocationBarView();
   if (location_bar_view)
-    location_bar_view->GetLocationEntry()->CloseOmniboxPopup();
+    location_bar_view->GetOmniboxView()->CloseOmniboxPopup();
 }
 
 views::Widget* BrowserView::GetWidget() {
@@ -2011,8 +2011,7 @@ void BrowserView::InitViews() {
   }
 #endif
 
-  GetLocationBar()->GetLocationEntry()->model()->popup_model()->AddObserver(
-      this);
+  GetLocationBar()->GetOmniboxView()->model()->popup_model()->AddObserver(this);
 }
 
 void BrowserView::LoadingAnimationCallback() {
@@ -2647,7 +2646,7 @@ int BrowserView::GetMaxTopInfoBarArrowHeight() {
   // Only show the arrows when not in fullscreen and when there's no omnibox
   // popup.
   if (!IsFullscreen() &&
-      !GetLocationBar()->GetLocationEntry()->model()->popup_model()->IsOpen()) {
+      !GetLocationBar()->GetOmniboxView()->model()->popup_model()->IsOpen()) {
     gfx::Point icon_bottom(
         toolbar_->location_bar()->GetLocationBarAnchorPoint());
     ConvertPointToTarget(toolbar_->location_bar(), this, &icon_bottom);

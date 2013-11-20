@@ -910,7 +910,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   chrome::FocusLocationBar(browser());
   LocationBar* location_bar = browser()->window()->GetLocationBar();
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, "stuff to search for");
-  OmniboxEditModel* model = location_bar->GetLocationEntry()->model();
+  OmniboxEditModel* model = location_bar->GetOmniboxView()->model();
   EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -947,7 +947,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
   chrome::FocusLocationBar(browser());
   LocationBar* location_bar = browser()->window()->GetLocationBar();
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
-  OmniboxEditModel* model = location_bar->GetLocationEntry()->model();
+  OmniboxEditModel* model = location_bar->GetOmniboxView()->model();
   no_safesearch_observer.Wait();
   EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
   content::WebContents* web_contents =
@@ -973,10 +973,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
 
   // Verify that searching from google.com works.
   chrome::FocusLocationBar(browser());
-  location_bar = browser()->window()->GetLocationBar();
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
   safesearch_observer.Wait();
-  model = location_bar->GetLocationEntry()->model();
   EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
   web_contents = browser()->tab_strip_model()->GetActiveWebContents();
   std::string expected_url("http://google.com/?");
@@ -1058,22 +1056,21 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   // first URL pattern.
   chrome::FocusLocationBar(browser());
   LocationBar* location_bar = browser()->window()->GetLocationBar();
+  OmniboxView* omnibox_view = location_bar->GetOmniboxView();
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
       "https://www.google.com/?espv=1#q=foobar");
   EXPECT_TRUE(
       browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(ASCIIToUTF16("foobar"),
-            location_bar->GetLocationEntry()->GetText());
+  EXPECT_EQ(ASCIIToUTF16("foobar"), omnibox_view->GetText());
 
   // Verify that not using espv=1 does not do search term replacement.
   chrome::FocusLocationBar(browser());
-  location_bar = browser()->window()->GetLocationBar();
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
       "https://www.google.com/?q=foobar");
   EXPECT_FALSE(
       browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
   EXPECT_EQ(ASCIIToUTF16("https://www.google.com/?q=foobar"),
-            location_bar->GetLocationEntry()->GetText());
+            omnibox_view->GetText());
 
   // Verify that searching from the omnibox does search term replacement with
   // second URL pattern.
@@ -1082,8 +1079,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
       "https://www.google.com/search?espv=1#q=banana");
   EXPECT_TRUE(
       browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(ASCIIToUTF16("banana"),
-            location_bar->GetLocationEntry()->GetText());
+  EXPECT_EQ(ASCIIToUTF16("banana"), omnibox_view->GetText());
 
   // Verify that searching from the omnibox does search term replacement with
   // standard search URL pattern.
@@ -1092,8 +1088,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
       "https://www.google.com/search?q=tractor+parts&espv=1");
   EXPECT_TRUE(
       browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(ASCIIToUTF16("tractor parts"),
-            location_bar->GetLocationEntry()->GetText());
+  EXPECT_EQ(ASCIIToUTF16("tractor parts"), omnibox_view->GetText());
 
   // Verify that searching from the omnibox prioritizes hash over query.
   chrome::FocusLocationBar(browser());
@@ -1101,8 +1096,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
       "https://www.google.com/search?q=tractor+parts&espv=1#q=foobar");
   EXPECT_TRUE(
       browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(ASCIIToUTF16("foobar"),
-            location_bar->GetLocationEntry()->GetText());
+  EXPECT_EQ(ASCIIToUTF16("foobar"), omnibox_view->GetText());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {

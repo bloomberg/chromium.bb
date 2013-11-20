@@ -174,8 +174,8 @@ class TestBrowserWindow : public BrowserWindow {
     virtual void UpdateGeneratedCreditCardView() OVERRIDE {}
     virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE {}
     virtual void Revert() OVERRIDE {}
-    virtual const OmniboxView* GetLocationEntry() const OVERRIDE;
-    virtual OmniboxView* GetLocationEntry() OVERRIDE;
+    virtual const OmniboxView* GetOmniboxView() const OVERRIDE;
+    virtual OmniboxView* GetOmniboxView() OVERRIDE;
     virtual LocationBarTesting* GetLocationBarForTesting() OVERRIDE;
 
    private:

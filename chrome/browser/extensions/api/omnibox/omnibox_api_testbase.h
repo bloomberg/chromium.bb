@@ -29,7 +29,7 @@ class OmniboxApiTest : public ExtensionApiTest {
   }
 
   AutocompleteController* GetAutocompleteController(Browser* browser) const {
-    return GetLocationBar(browser)->GetLocationEntry()->model()->popup_model()->
+    return GetLocationBar(browser)->GetOmniboxView()->model()->popup_model()->
         autocomplete_controller();
   }
 

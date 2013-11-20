@@ -133,8 +133,8 @@ class LocationBarViewGtk : public OmniboxEditController,
   virtual void UpdateGeneratedCreditCardView() OVERRIDE;
   virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
-  virtual const OmniboxView* GetLocationEntry() const OVERRIDE;
-  virtual OmniboxView* GetLocationEntry() OVERRIDE;
+  virtual const OmniboxView* GetOmniboxView() const OVERRIDE;
+  virtual OmniboxView* GetOmniboxView() OVERRIDE;
   virtual LocationBarTesting* GetLocationBarForTesting() OVERRIDE;
 
   // LocationBarTesting:
@@ -478,10 +478,10 @@ class LocationBarViewGtk : public OmniboxEditController,
   GtkWidget* tab_to_search_hint_icon_;
   GtkWidget* tab_to_search_hint_trailing_label_;
 
-  scoped_ptr<OmniboxViewGtk> location_entry_;
+  scoped_ptr<OmniboxViewGtk> omnibox_view_;
 
-  // Alignment used to wrap |location_entry_|.
-  GtkWidget* location_entry_alignment_;
+  // Alignment used to wrap |omnibox_view_|.
+  GtkWidget* omnibox_view_alignment_;
 
   Browser* browser_;
 
@@ -497,7 +497,7 @@ class LocationBarViewGtk : public OmniboxEditController,
   // Width of the main |hbox_|. Used to properly elide the EV certificate.
   int hbox_width_;
 
-  // Width of the hbox that holds |tab_to_search_box_|, |location_entry_| and
+  // Width of the hbox that holds |tab_to_search_box_|, |omnibox_view_| and
   // |tab_to_search_hint_|.
   int entry_box_width_;
 

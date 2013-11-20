@@ -35,7 +35,7 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
     ASSERT_TRUE(window);
     LocationBar* location_bar = window->GetLocationBar();
     ASSERT_TRUE(location_bar);
-    *omnibox_view = location_bar->GetLocationEntry();
+    *omnibox_view = location_bar->GetOmniboxView();
     ASSERT_TRUE(*omnibox_view);
   }
 
@@ -111,7 +111,7 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, PasteAndGoDoesNotLeavePopupOpen) {
-  OmniboxView* view = browser()->window()->GetLocationBar()->GetLocationEntry();
+  OmniboxView* view = browser()->window()->GetLocationBar()->GetOmniboxView();
   OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
   views::NativeTextfieldWrapper* native_textfield_wrapper =
       static_cast<views::NativeTextfieldWrapper*>(

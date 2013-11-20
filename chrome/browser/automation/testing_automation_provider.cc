@@ -2887,7 +2887,7 @@ void TestingAutomationProvider::GetOmniboxInfo(Browser* browser,
     reply.SendError("The specified browser does not have a location bar.");
     return;
   }
-  const OmniboxView* omnibox_view = loc_bar->GetLocationEntry();
+  const OmniboxView* omnibox_view = loc_bar->GetOmniboxView();
   const OmniboxEditModel* model = omnibox_view->model();
 
   // Fill up matches.
@@ -2935,7 +2935,7 @@ void TestingAutomationProvider::SetOmniboxText(Browser* browser,
     reply.SendError("The specified browser does not have a location bar.");
     return;
   }
-  OmniboxView* omnibox_view = loc_bar->GetLocationEntry();
+  OmniboxView* omnibox_view = loc_bar->GetOmniboxView();
   omnibox_view->model()->OnSetFocus(false);
   omnibox_view->SetUserText(text);
   reply.SendSuccess(NULL);
@@ -2960,7 +2960,7 @@ void TestingAutomationProvider::OmniboxMovePopupSelection(
     reply.SendError("The specified browser does not have a location bar.");
     return;
   }
-  loc_bar->GetLocationEntry()->model()->OnUpOrDownKeyPressed(count);
+  loc_bar->GetOmniboxView()->model()->OnUpOrDownKeyPressed(count);
   reply.SendSuccess(NULL);
 }
 

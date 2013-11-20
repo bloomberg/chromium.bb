@@ -42,7 +42,7 @@ bool LocationIconDecoration::IsDraggable() {
 
   // Do not drag if the user has been editing the location bar, or the
   // location bar is at the NTP.
-  return (!owner_->GetLocationEntry()->IsEditingOrEmpty());
+  return (!owner_->GetOmniboxView()->IsEditingOrEmpty());
 }
 
 NSPasteboard* LocationIconDecoration::GetDragPasteboard() {
@@ -97,7 +97,7 @@ bool LocationIconDecoration::AcceptsMousePress() {
 bool LocationIconDecoration::OnMousePressed(NSRect frame) {
   // Do not show page info if the user has been editing the location
   // bar, or the location bar is at the NTP.
-  if (owner_->GetLocationEntry()->IsEditingOrEmpty())
+  if (owner_->GetOmniboxView()->IsEditingOrEmpty())
     return true;
 
   WebContents* tab = owner_->GetWebContents();
@@ -115,8 +115,6 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
 }
 
 NSString* LocationIconDecoration::GetToolTip() {
-  if (owner_->GetLocationEntry()->IsEditingOrEmpty())
-    return nil;
-  else
-    return l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_LOCATION_ICON);
+  return owner_->GetOmniboxView()->IsEditingOrEmpty() ?
+      nil : l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_LOCATION_ICON);
 }

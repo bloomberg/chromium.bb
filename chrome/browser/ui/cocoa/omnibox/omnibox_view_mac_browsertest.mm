@@ -14,7 +14,7 @@ class OmniboxViewMacBrowserTest : public InProcessBrowserTest {
  public:
   OmniboxViewMac* GetOmnibox() {
     return static_cast<OmniboxViewMac*>(
-        browser()->window()->GetLocationBar()->GetLocationEntry());
+        browser()->window()->GetLocationBar()->GetOmniboxView());
   }
 };
 

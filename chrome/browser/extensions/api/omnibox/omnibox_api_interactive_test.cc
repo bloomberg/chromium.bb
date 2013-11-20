@@ -19,7 +19,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
       TemplateURLServiceFactory::GetForProfile(browser()->profile()));
 
   LocationBar* location_bar = GetLocationBar(browser());
-  OmniboxView* omnibox_view = location_bar->GetLocationEntry();
+  OmniboxView* omnibox_view = location_bar->GetOmniboxView();
   AutocompleteController* autocomplete_controller =
       GetAutocompleteController(browser());
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();

@@ -1339,7 +1339,7 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
   if (bounds == configure_bounds_)
     return FALSE;
 
-  GetLocationBar()->GetLocationEntry()->CloseOmniboxPopup();
+  GetLocationBar()->GetOmniboxView()->CloseOmniboxPopup();
 
   WebContents* tab = GetDisplayedTab();
   if (tab)

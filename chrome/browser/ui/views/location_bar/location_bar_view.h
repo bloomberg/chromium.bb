@@ -194,9 +194,9 @@ class LocationBarView : public LocationBar,
   // Shows the bookmark prompt.
   void ShowBookmarkPrompt();
 
-  // Returns the screen coordinates of the location entry (where the URL text
-  // appears, not where the icons are shown).
-  gfx::Point GetLocationEntryOrigin() const;
+  // Returns the screen coordinates of the omnibox (where the URL text appears,
+  // not where the icons are shown).
+  gfx::Point GetOmniboxViewOrigin() const;
 
   // Shows |text| as an inline autocompletion.  This is useful for IMEs, where
   // we can't show the autocompletion inside the actual OmniboxView.  See
@@ -286,8 +286,8 @@ class LocationBarView : public LocationBar,
   virtual void UpdateGeneratedCreditCardView() OVERRIDE;
   virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
-  virtual const OmniboxView* GetLocationEntry() const OVERRIDE;
-  virtual OmniboxView* GetLocationEntry() OVERRIDE;
+  virtual const OmniboxView* GetOmniboxView() const OVERRIDE;
+  virtual OmniboxView* GetOmniboxView() OVERRIDE;
   virtual LocationBarTesting* GetLocationBarForTesting() OVERRIDE;
 
   // LocationBarTesting:

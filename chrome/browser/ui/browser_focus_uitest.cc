@@ -919,7 +919,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
   chrome::FocusLocationBar(browser());
 
   OmniboxEditController* controller =
-      browser()->window()->GetLocationBar()->GetLocationEntry()->model()->
+      browser()->window()->GetLocationBar()->GetOmniboxView()->model()->
           controller();
 
   // Simulate an alt-enter.

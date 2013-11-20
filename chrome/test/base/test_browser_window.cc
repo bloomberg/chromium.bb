@@ -66,12 +66,11 @@ content::PageTransition
   return content::PAGE_TRANSITION_LINK;
 }
 
-const OmniboxView*
-    TestBrowserWindow::TestLocationBar::GetLocationEntry() const {
+const OmniboxView* TestBrowserWindow::TestLocationBar::GetOmniboxView() const {
   return NULL;
 }
 
-OmniboxView* TestBrowserWindow::TestLocationBar::GetLocationEntry() {
+OmniboxView* TestBrowserWindow::TestLocationBar::GetOmniboxView() {
   return NULL;
 }
 

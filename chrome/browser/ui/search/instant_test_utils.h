@@ -56,7 +56,7 @@ class InstantTestBase {
   }
 
   OmniboxView* omnibox() {
-    return browser_->window()->GetLocationBar()->GetLocationEntry();
+    return browser_->window()->GetLocationBar()->GetOmniboxView();
   }
 
   const GURL& instant_url() const { return instant_url_; }

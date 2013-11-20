@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
   {
     LocationBar* location_bar = GetLocationBar(browser());
     ResultCatcher catcher;
-    OmniboxView* omnibox_view = location_bar->GetLocationEntry();
+    OmniboxView* omnibox_view = location_bar->GetOmniboxView();
     omnibox_view->OnBeforePossibleChange();
     omnibox_view->SetUserText(ASCIIToUTF16("keyword command"));
     omnibox_view->OnAfterPossibleChange();
@@ -155,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
       TemplateURLServiceFactory::GetForProfile(browser()->profile()));
 
   LocationBar* location_bar = GetLocationBar(browser());
-  OmniboxView* omnibox_view = location_bar->GetLocationEntry();
+  OmniboxView* omnibox_view = location_bar->GetOmniboxView();
   ResultCatcher catcher;
   AutocompleteController* autocomplete_controller =
       GetAutocompleteController(browser());
@@ -167,9 +167,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
       AutocompleteInput(ASCIIToUTF16("keyword command"), string16::npos,
                         string16(), GURL(), AutocompleteInput::NTP,
                         true, false, true, AutocompleteInput::ALL_MATCHES));
-  location_bar->GetLocationEntry()->model()->AcceptInput(
-      CURRENT_TAB,
-      false); // Not for drop operation.
+  omnibox_view->model()->AcceptInput(CURRENT_TAB, false);
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -184,9 +182,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
       AutocompleteInput(ASCIIToUTF16("keyword newtab"), string16::npos,
                         string16(), GURL(), AutocompleteInput::NTP,
                         true, false, true, AutocompleteInput::ALL_MATCHES));
-  location_bar->GetLocationEntry()->model()->AcceptInput(
-      NEW_FOREGROUND_TAB,
-      false); // Not for drop operation.
+  omnibox_view->model()->AcceptInput(NEW_FOREGROUND_TAB, false);
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

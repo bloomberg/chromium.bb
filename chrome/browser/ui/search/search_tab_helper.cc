@@ -384,8 +384,7 @@ void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
   if (!browser)
     return;
 
-  OmniboxView* omnibox_view = browser->window()->GetLocationBar()->
-      GetLocationEntry();
+  OmniboxView* omnibox = browser->window()->GetLocationBar()->GetOmniboxView();
   // Do not add a default case in the switch block for the following reasons:
   // (1) Explicitly handle the new states. If new states are added in the
   // OmniboxFocusState, the compiler will warn the developer to handle the new
@@ -395,24 +394,24 @@ void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
   // doing nothing instead of crashing the browser process (intentional no-op).
   switch (state) {
     case OMNIBOX_FOCUS_VISIBLE:
-      omnibox_view->SetFocus();
-      omnibox_view->model()->SetCaretVisibility(true);
+      omnibox->SetFocus();
+      omnibox->model()->SetCaretVisibility(true);
       break;
     case OMNIBOX_FOCUS_INVISIBLE:
-      omnibox_view->SetFocus();
-      omnibox_view->model()->SetCaretVisibility(false);
+      omnibox->SetFocus();
+      omnibox->model()->SetCaretVisibility(false);
       // If the user clicked on the fakebox, any text already in the omnibox
       // should get cleared when they start typing. Selecting all the existing
       // text is a convenient way to accomplish this. It also gives a slight
       // visual cue to users who really understand selection state about what
       // will happen if they start typing.
-      omnibox_view->SelectAll(false);
+      omnibox->SelectAll(false);
       break;
     case OMNIBOX_FOCUS_NONE:
       // Remove focus only if the popup is closed. This will prevent someone
       // from changing the omnibox value and closing the popup without user
       // interaction.
-      if (!omnibox_view->model()->popup_model()->IsOpen())
+      if (!omnibox->model()->popup_model()->IsOpen())
         web_contents()->GetView()->Focus();
       break;
   }
@@ -479,25 +478,24 @@ void SearchTabHelper::PasteIntoOmnibox(const string16& text) {
   if (!browser)
     return;
 
-  OmniboxView* omnibox_view = browser->window()->GetLocationBar()->
-      GetLocationEntry();
+  OmniboxView* omnibox = browser->window()->GetLocationBar()->GetOmniboxView();
   // The first case is for right click to paste, where the text is retrieved
   // from the clipboard already sanitized. The second case is needed to handle
   // drag-and-drop value and it has to be sanitazed before setting it into the
   // omnibox.
-  string16 text_to_paste = text.empty() ? omnibox_view->GetClipboardText() :
-      omnibox_view->SanitizeTextForPaste(text);
+  string16 text_to_paste = text.empty() ? omnibox->GetClipboardText() :
+      omnibox->SanitizeTextForPaste(text);
 
   if (text_to_paste.empty())
     return;
 
-  if (!omnibox_view->model()->has_focus())
-    omnibox_view->SetFocus();
+  if (!omnibox->model()->has_focus())
+    omnibox->SetFocus();
 
-  omnibox_view->OnBeforePossibleChange();
-  omnibox_view->model()->OnPaste();
-  omnibox_view->SetUserText(text_to_paste);
-  omnibox_view->OnAfterPossibleChange();
+  omnibox->OnBeforePossibleChange();
+  omnibox->model()->OnPaste();
+  omnibox->SetUserText(text_to_paste);
+  omnibox->OnAfterPossibleChange();
 #endif
 }
 

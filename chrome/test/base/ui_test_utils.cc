@@ -383,7 +383,7 @@ void DownloadURL(Browser* browser, const GURL& download_url) {
 
 void SendToOmniboxAndSubmit(LocationBar* location_bar,
                             const std::string& input) {
-  OmniboxView* omnibox = location_bar->GetLocationEntry();
+  OmniboxView* omnibox = location_bar->GetOmniboxView();
   omnibox->model()->OnSetFocus(false);
   omnibox->SetUserText(ASCIIToUTF16(input));
   location_bar->AcceptInput();
