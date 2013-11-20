@@ -32,7 +32,6 @@ col interfaceName=HTMLTableColElement
 colgroup interfaceName=HTMLTableColElement
 command interfaceName=HTMLElement
 content interfaceName=HTMLContentElement
-webkitShadowContent interfaceName=HTMLElement, noConstructor
 datalist interfaceName=HTMLDataListElement
 dd interfaceName=HTMLElement
 del interfaceName=HTMLModElement
