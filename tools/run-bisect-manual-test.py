@@ -114,7 +114,7 @@ def main():
     parser.print_help()
     return 1
 
-  if sys.platform.startswith('linux'):
+  if 'android' not in options.browser_type and sys.platform.startswith('linux'):
     if not os.environ.get('CHROME_DEVEL_SANDBOX'):
       print 'SUID sandbox has not been setup.'\
             ' See https://code.google.com/p/chromium/wiki/'\
