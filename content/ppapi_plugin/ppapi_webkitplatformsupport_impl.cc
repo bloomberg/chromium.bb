@@ -8,11 +8,12 @@
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/child/child_thread.h"
 #include "content/common/child_process_messages.h"
 #include "ppapi/proxy/plugin_globals.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 #if defined(OS_WIN)
@@ -50,6 +51,7 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport
 #elif defined(OS_ANDROID)
   // Empty class.
 #elif defined(OS_POSIX)
+  SandboxSupport();
   virtual void getFontFamilyForCharacter(
       WebUChar32 character,
       const char* preferred_locale,
@@ -61,8 +63,9 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport
   // WebKit likes to ask us for the correct font family to use for a set of
   // unicode code points. It needs this information frequently so we cache it
   // here.
-  base::Lock unicode_font_families_mutex_;
   std::map<int32_t, blink::WebFontFamily> unicode_font_families_;
+  // For debugging crbug.com/312965
+  base::PlatformThreadId creation_thread_;
 #endif
 };
 
@@ -98,12 +101,18 @@ bool PpapiWebKitPlatformSupportImpl::SandboxSupport::loadFont(
 
 #elif defined(OS_POSIX)
 
+PpapiWebKitPlatformSupportImpl::SandboxSupport::SandboxSupport()
+    : creation_thread_(base::PlatformThread::CurrentId()) {
+}
+
 void
 PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
     WebUChar32 character,
     const char* preferred_locale,
     blink::WebFontFamily* family) {
-  base::AutoLock lock(unicode_font_families_mutex_);
+  ppapi::ProxyLock::AssertAcquired();
+  // For debugging crbug.com/312965
+  CHECK_EQ(creation_thread_, base::PlatformThread::CurrentId());
   const std::map<int32_t, blink::WebFontFamily>::const_iterator iter =
       unicode_font_families_.find(character);
   if (iter != unicode_font_families_.end()) {
