@@ -10,7 +10,7 @@ and measure your application's performance.
 .. contents:: Table Of Contents
   :local:
   :backlinks: none
-  :depth: 2
+  :depth: 3
 
 Diagnostic information
 ======================
@@ -213,6 +213,70 @@ Note that this same copy of GDB can be used to debug any NaCl program,
 whether built using newlib or glibc for x86-32, x86-64 or ARM.  In the SDK,
 ``i686-nacl-gdb`` is an alias for ``x86_64-nacl-gdb``, and the ``newlib``
 and ``glibc`` toolchains both contain the same version of GDB.
+
+Debugging PNaCl pexes
+~~~~~~~~~~~~~~~~~~~~~
+
+If you want to use GDB to debug a program that is compiled with the PNaCl
+toolchain, you must convert the ``pexe`` file to a ``nexe``.  (You can skip
+this step if you are using the GCC toolchain.)
+
+* Firstly, make sure you are passing the ``-g`` :ref:`compile option
+  <compile_flags>` to ``pnacl-clang`` to enable generating debugging info.
+  You might also want to omit ``-O2`` from the compile-time and link-time
+  options, otherwise GDB not might be able to print variables' values when
+  debugging (this is more of a problem with the PNaCl/LLVM toolchain than
+  with GCC).
+
+* Secondly, use ``pnacl-translate`` to convert your ``pexe`` to one or more
+  ``nexe`` files.  For example:
+
+  .. naclcode::
+    :prettyprint: 0
+
+    <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-translate ^
+      --allow-llvm-bitcode-input hello_world.pexe -arch x86-32 -o hello_world_x86_32.nexe
+    <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-translate ^
+      --allow-llvm-bitcode-input hello_world.pexe -arch x86-64 -o hello_world_x86_64.nexe
+
+  For this, use the non-finalized ``pexe`` file produced by
+  ``pnacl-clang``, not the ``pexe`` file produced by ``pnacl-finalize``.
+  The latter ``pexe`` has debugging info stripped out.  The option
+  ``--allow-llvm-bitcode-input`` tells ``pnacl-translate`` to accept a
+  non-finalized ``pexe``.
+
+* Replace the ``nmf`` :ref:`manifest file <manifest_file>` that points to
+  your ``pexe`` file with one that points to the ``nexe`` files.  For the
+  example ``nexe`` filenames above, the new ``nmf`` file would contain:
+
+  .. naclcode::
+    :prettyprint: 0
+
+    {
+      "program": {
+        "x86-32": {"url": "hello_world_x86_32.nexe"},
+        "x86-64": {"url": "hello_world_x86_64.nexe"},
+      }
+    }
+
+* Change the ``<embed>`` HTML element to use
+  ``type="application/x-nacl"`` rather than
+  ``type="application/x-pnacl"``.
+
+* Copy the ``nexe`` and ``nmf`` files to the location that your local web
+  server serves files from.
+
+.. Note::
+  :class: note
+
+  **Note:** If you know whether Chrome is using the x86-32 or x86-64
+  version of the NaCl sandbox on your system, you can translate the
+  ``pexe`` once to a single x86-32 or x86-64 ``nexe``.  Otherwise, you
+  might find it easier to translate the ``pexe`` to both ``nexe``
+  formats as described above.
+
+Running nacl-gdb
+~~~~~~~~~~~~~~~~
 
 Before you start using nacl-gdb, make sure you can :doc:`build <building>` your
 module and :doc:`run <running>` your application normally. This will verify
