@@ -435,6 +435,8 @@ sub AddIncludesForType
     } elsif ($type eq "EventHandler") {
         AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
         AddToImplIncludes("bindings/v8/V8EventListenerList.h");
+    } elsif ($type eq "Dictionary") {
+        AddToImplIncludes("bindings/v8/Dictionary.h");
     } elsif (IsTypedArrayType($type)) {
         AddToImplIncludes("bindings/v8/custom/V8${type}Custom.h");
     } elsif (my $arrayType = GetArrayType($type)) {
@@ -2598,7 +2600,7 @@ END
             my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
             my $jsValue = $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(info, $paramIndex)" : "info[$paramIndex]";
             my $stringResourceParameterName = $parameterName;
-            my $isNullable = $parameter->isNullable && !IsRefPtrType($parameter->type);
+            my $isNullable = IsNullableParameter($parameter);
             if ($isNullable) {
                 $parameterCheckString .= "    bool ${parameterName}IsNull = $jsValue->IsNull();\n";
                 $stringResourceParameterName .= "StringResource";
@@ -2637,7 +2639,7 @@ END
             }
             my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
             my $jsValue = $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(info, $paramIndex)" : "info[$paramIndex]";
-            my $isNullable = $parameter->isNullable && !IsRefPtrType($parameter->type);
+            my $isNullable = IsNullableParameter($parameter);
             $parameterCheckString .= "    bool ${parameterName}IsNull = $jsValue->IsNull();\n" if $isNullable;
             $parameterCheckString .= JSValueToNativeStatement($parameter->type, $parameter->extendedAttributes, $humanFriendlyIndex, $jsValue, $parameterName, "    ", "info.GetIsolate()");
             if ($nativeType eq 'Dictionary' or $nativeType eq 'ScriptPromise') {
@@ -5185,7 +5187,7 @@ sub GenerateFunctionCallString
 END
         } elsif ($parameter->type eq "SVGMatrix" and $interfaceName eq "SVGTransformList") {
             push @arguments, "$paramName.get()";
-        } elsif ($parameter->isNullable && !IsRefPtrType($parameter->type)) {
+        } elsif (IsNullableParameter($parameter)) {
             push @arguments, "${paramName}IsNull ? 0 : &$paramName";
         } else {
             push @arguments, $paramName;
@@ -5988,8 +5990,16 @@ sub IsRefPtrType
     return 0 if IsCallbackFunctionType($type);
     return 0 if IsEnumType($type);
     return 0 if IsUnionType($type);
+    return 0 if $type eq "Dictionary";
 
     return 1;
+}
+
+sub IsNullableParameter
+{
+    my $parameter = shift;
+
+    return $parameter->isNullable && !IsRefPtrType($parameter->type) && $parameter->type ne "Dictionary";
 }
 
 sub GetSVGTypeNeedingTearOff

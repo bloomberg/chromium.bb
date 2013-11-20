@@ -94,6 +94,7 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     void methodQueryListListener(MediaQueryListListener listener);
     void serializedValue(SerializedScriptValue serializedArg);
     void optionsObject(Dictionary oo, optional Dictionary ooo);
+    void optionsObjectList(sequence<Dictionary> list);
 
     // Indexed/named properties
     [ImplementedAs=item] getter Node (unsigned long index);

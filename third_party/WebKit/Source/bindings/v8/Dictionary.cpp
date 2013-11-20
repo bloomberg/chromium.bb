@@ -61,7 +61,7 @@ Dictionary::Dictionary()
 {
 }
 
-Dictionary::Dictionary(const v8::Local<v8::Value>& options, v8::Isolate* isolate)
+Dictionary::Dictionary(const v8::Handle<v8::Value>& options, v8::Isolate* isolate)
     : m_options(options)
     , m_isolate(isolate)
 {

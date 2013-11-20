@@ -3111,6 +3111,24 @@ static void optionsObjectMethodCallback(const v8::FunctionCallbackInfo<v8::Value
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void optionsObjectListMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("optionsObjectList", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_VOID(Vector<Dictionary>, list, toNativeArray<Dictionary>(info[0], 1, info.GetIsolate()));
+    imp->optionsObjectList(list);
+}
+
+static void optionsObjectListMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjV8Internal::optionsObjectListMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -5074,6 +5092,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"methodQueryListListener", TestObjV8Internal::methodQueryListListenerMethodCallback, 0, 1},
     {"serializedValue", TestObjV8Internal::serializedValueMethodCallback, 0, 1},
     {"optionsObject", TestObjV8Internal::optionsObjectMethodCallback, 0, 1},
+    {"optionsObjectList", TestObjV8Internal::optionsObjectListMethodCallback, 0, 1},
     {"methodWithException", TestObjV8Internal::methodWithExceptionMethodCallback, 0, 0},
     {"customMethod", TestObjV8Internal::customMethodMethodCallback, 0, 0},
     {"customMethodWithArgs", TestObjV8Internal::customMethodWithArgsMethodCallback, 0, 3},

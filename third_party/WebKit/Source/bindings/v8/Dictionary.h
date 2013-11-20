@@ -55,7 +55,7 @@ class VoidCallback;
 class Dictionary {
 public:
     Dictionary();
-    Dictionary(const v8::Local<v8::Value>& options, v8::Isolate*);
+    Dictionary(const v8::Handle<v8::Value>& options, v8::Isolate*);
     ~Dictionary();
 
     Dictionary& operator=(const Dictionary&);
@@ -100,15 +100,16 @@ public:
 
     bool getWithUndefinedOrNullCheck(const String&, String&) const;
 
+    // Only allow inline allocation.
+    void* operator new(size_t, NotNullTag, void* location) { return location; }
+
 private:
+    // Disallow new allocation.
+    void* operator new(size_t);
+
     bool getKey(const String& key, v8::Local<v8::Value>&) const;
 
-    // This object can only be used safely when stack allocated because of v8::Local.
-    static void* operator new(size_t);
-    static void* operator new[](size_t);
-    static void operator delete(void *);
-
-    v8::Local<v8::Value> m_options;
+    v8::Handle<v8::Value> m_options;
     v8::Isolate* m_isolate;
 };
 

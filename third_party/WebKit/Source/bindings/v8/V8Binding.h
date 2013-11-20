@@ -33,6 +33,7 @@
 #define V8Binding_h
 
 #include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/V8BindingMacros.h"
 #include "bindings/v8/V8PerIsolateData.h"
@@ -430,7 +431,7 @@ namespace WebCore {
 
     template<>
     struct NativeValueTraits<String> {
-        static inline String nativeValue(const v8::Handle<v8::Value>& value)
+        static inline String nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
         {
             V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, value, String());
             return stringValue;
@@ -439,7 +440,7 @@ namespace WebCore {
 
     template<>
     struct NativeValueTraits<unsigned> {
-        static inline unsigned nativeValue(const v8::Handle<v8::Value>& value)
+        static inline unsigned nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
         {
             return toUInt32(value);
         }
@@ -447,7 +448,7 @@ namespace WebCore {
 
     template<>
     struct NativeValueTraits<float> {
-        static inline float nativeValue(const v8::Handle<v8::Value>& value)
+        static inline float nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
         {
             return static_cast<float>(value->NumberValue());
         }
@@ -455,7 +456,7 @@ namespace WebCore {
 
     template<>
     struct NativeValueTraits<double> {
-        static inline double nativeValue(const v8::Handle<v8::Value>& value)
+        static inline double nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
         {
             return static_cast<double>(value->NumberValue());
         }
@@ -463,9 +464,17 @@ namespace WebCore {
 
     template<>
     struct NativeValueTraits<v8::Handle<v8::Value> > {
-        static inline v8::Handle<v8::Value> nativeValue(const v8::Handle<v8::Value>& value)
+        static inline v8::Handle<v8::Value> nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
         {
             return value;
+        }
+    };
+
+    template<>
+    struct NativeValueTraits<Dictionary> {
+        static inline Dictionary nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
+        {
+            return Dictionary(value, isolate);
         }
     };
 
@@ -548,7 +557,7 @@ namespace WebCore {
         typedef NativeValueTraits<T> TraitsType;
         v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
         for (uint32_t i = 0; i < length; ++i)
-            result.uncheckedAppend(TraitsType::nativeValue(object->Get(i)));
+            result.uncheckedAppend(TraitsType::nativeValue(object->Get(i), isolate));
         return result;
     }
 
@@ -561,7 +570,7 @@ namespace WebCore {
         int length = info.Length();
         result.reserveInitialCapacity(length);
         for (int i = startIndex; i < length; ++i)
-            result.uncheckedAppend(TraitsType::nativeValue(info[i]));
+            result.uncheckedAppend(TraitsType::nativeValue(info[i], info.GetIsolate()));
         return result;
     }
 
