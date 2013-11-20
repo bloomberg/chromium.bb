@@ -4992,6 +4992,32 @@ other types of suffix sets.
   <summary>Updates grouped by Extension::HistogramType.</summary>
 </histogram>
 
+<histogram name="Extensions.WebstoreDownload.InterruptReason"
+    enum="InterruptReason">
+  <summary>The reason a webstore download was interrupted.</summary>
+</histogram>
+
+<histogram name="Extensions.WebstoreDownload.InterruptReceivedKBytes"
+    units="KB">
+  <summary>
+    The number of KBytes received for a webstore download before it was
+    interrupted.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.WebstoreDownload.InterruptTotalKBytes" units="KB">
+  <summary>
+    The total expected size in KBytes of an interrupted webstore download.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.WebstoreDownload.InterruptTotalSizeUnknown"
+    enum="Boolean">
+  <summary>
+    Tracks whether the total size of an interrupted webstore download was known.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.Create" enum="FileDialogType">
   <summary>Chrome OS File Browser opening mode.</summary>
 </histogram>

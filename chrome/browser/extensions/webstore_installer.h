@@ -227,6 +227,9 @@ class WebstoreInstaller :public content::NotificationObserver,
   // PendingInstall.
   void ReportSuccess();
 
+  // Records stats regarding an interrupted webstore download item.
+  void RecordInterrupt(const content::DownloadItem* download) const;
+
   content::NotificationRegistrar registrar_;
   Profile* profile_;
   Delegate* delegate_;
