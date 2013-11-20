@@ -71,6 +71,7 @@ CHROMEOS_EXPORT extern const char kSmsTestMessages[];
 CHROMEOS_EXPORT extern const char kStubCrosSettings[];
 CHROMEOS_EXPORT extern const char kDisableUserImageSync[];
 CHROMEOS_EXPORT extern const char kEnableFirstRunUI[];
+CHROMEOS_EXPORT extern const char kForceFirstRunUI[];
 CHROMEOS_EXPORT extern const char kEnableSamlSignin[];
 CHROMEOS_EXPORT extern const char kTestAutoUpdateUI[];
 
