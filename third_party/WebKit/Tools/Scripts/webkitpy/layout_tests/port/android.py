@@ -1178,7 +1178,8 @@ class ChromiumAndroidDriver(driver.Driver):
         return self._pid_from_android_ps_output(ps_output, self._driver_details.package_name())
 
     def stop(self):
-        self._android_commands.run(['shell', 'am', 'force-stop', self._driver_details.package_name()])
+        if self._server_process:
+            self._android_commands.run(['shell', 'am', 'force-stop', self._driver_details.package_name()])
 
         if self._read_stdout_process:
             self._read_stdout_process.kill()
