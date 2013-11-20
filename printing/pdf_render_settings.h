@@ -18,7 +18,7 @@ namespace printing {
 // bool - autorotate pages to fit paper
 typedef Tuple3<gfx::Rect, int, bool> PdfRenderSettingsBase;
 
-struct PdfRenderSettings : public PdfRenderSettingsBase {
+class PdfRenderSettings : public PdfRenderSettingsBase {
  public:
   PdfRenderSettings() : PdfRenderSettingsBase() {}
   PdfRenderSettings(gfx::Rect area, int dpi, bool autorotate)

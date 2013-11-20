@@ -696,8 +696,10 @@ void ChromeMainDelegate::PreSandboxStartup() {
         locale;
 
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-    if (process_type == switches::kUtilityProcess)
+    if (process_type == switches::kUtilityProcess ||
+        process_type == switches::kZygoteProcess) {
       chrome::ChromeContentUtilityClient::PreSandboxStartup();
+    }
 #endif
   }
 

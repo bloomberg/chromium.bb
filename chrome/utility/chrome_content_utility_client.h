@@ -11,7 +11,6 @@
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "content/public/utility/content_utility_client.h"
 #include "ipc/ipc_platform_file.h"
-#include "printing/pdf_render_settings.h"
 
 namespace base {
 class FilePath;
@@ -23,6 +22,7 @@ class Rect;
 }
 
 namespace printing {
+class PdfRenderSettings;
 struct PageRange;
 }
 
@@ -52,7 +52,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void OnRenderPDFPagesToMetafile(
       base::PlatformFile pdf_file,
       const base::FilePath& metafile_path,
-      const printing::PdfRenderSettings& pdf_render_settings,
+      const printing::PdfRenderSettings& settings,
       const std::vector<printing::PageRange>& page_ranges);
   void OnRobustJPEGDecodeImage(
       const std::vector<unsigned char>& encoded_data);
@@ -70,9 +70,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   bool RenderPDFToWinMetafile(
       base::PlatformFile pdf_file,
       const base::FilePath& metafile_path,
-      const gfx::Rect& render_area,
-      int render_dpi,
-      bool autorotate,
+      const printing::PdfRenderSettings& settings,
       const std::vector<printing::PageRange>& page_ranges,
       int* highest_rendered_page_number,
       double* scale_factor);
