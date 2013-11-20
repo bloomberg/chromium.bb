@@ -33,17 +33,13 @@
 
 #include "core/dom/Document.h"
 #include "core/history/HistoryItem.h"
-#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorController.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
-#include "core/loader/FrameLoaderStateMachine.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/page/scrolling/ScrollingCoordinator.h"
 #include "platform/Logging.h"
 #include "wtf/Deque.h"
 #include "wtf/text/CString.h"
@@ -142,37 +138,6 @@ void HistoryController::clearScrollPositionAndViewState()
     m_currentEntry->root()->setPageScaleFactor(0);
 }
 
-/*
- There is a race condition between the layout and load completion that affects restoring the scroll position.
- We try to restore the scroll position at both the first layout and upon load completion.
-
- 1) If first layout happens before the load completes, we want to restore the scroll position then so that the
- first time we draw the page is already scrolled to the right place, instead of starting at the top and later
- jumping down.  It is possible that the old scroll position is past the part of the doc laid out so far, in
- which case the restore silent fails and we will fix it in when we try to restore on doc completion.
- 2) If the layout happens after the load completes, the attempt to restore at load completion time silently
- fails.  We then successfully restore it when the layout happens.
-*/
-void HistoryController::restoreScrollPositionAndViewState(Frame* frame)
-{
-    if (!m_currentEntry || !frame->loader().stateMachine()->committedFirstRealDocumentLoad())
-        return;
-
-    if (FrameView* view = frame->view()) {
-        if (frame->isMainFrame()) {
-            if (ScrollingCoordinator* scrollingCoordinator = m_page->scrollingCoordinator())
-                scrollingCoordinator->frameViewRootLayerDidChange(view);
-        }
-
-        if (!view->wasScrolledByUser()) {
-            if (frame->isMainFrame() && m_currentEntry->root()->pageScaleFactor())
-                m_page->setPageScaleFactor(m_currentEntry->root()->pageScaleFactor(), m_currentEntry->root()->scrollPoint());
-            else
-                view->setScrollPositionNonProgrammatically(m_currentEntry->itemForFrame(frame)->scrollPoint());
-        }
-    }
-}
-
 void HistoryController::updateBackForwardListForFragmentScroll(Frame* frame)
 {
     m_provisionalEntry.clear();
@@ -197,13 +162,6 @@ void HistoryController::saveDocumentAndScrollState(Frame* frame)
     item->setScrollPoint(frame->view()->scrollPosition());
     if (frame->isMainFrame() && !m_page->inspectorController().deviceEmulationEnabled())
         item->setPageScaleFactor(m_page->pageScaleFactor());
-}
-
-void HistoryController::restoreDocumentState(Frame* frame)
-{
-    HistoryItem* item = m_currentEntry ? m_currentEntry->itemForFrame(frame) : 0;
-    if (item && frame->loader().loadType() == FrameLoadTypeBackForward)
-        frame->document()->setStateForNewFormElements(item->documentState());
 }
 
 void HistoryController::goToEntry(PassOwnPtr<HistoryEntry> targetEntry)

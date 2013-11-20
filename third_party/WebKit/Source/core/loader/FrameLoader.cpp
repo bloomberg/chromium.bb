@@ -78,6 +78,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"
+#include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "modules/webdatabase/DatabaseManager.h"
@@ -348,7 +349,8 @@ void FrameLoader::didBeginDocument(bool dispatch)
         }
     }
 
-    history()->restoreDocumentState(m_frame);
+    if (m_currentItem && m_loadType == FrameLoadTypeBackForward)
+        m_frame->document()->setStateForNewFormElements(m_currentItem->documentState());
 }
 
 void FrameLoader::finishedParsing()
@@ -968,10 +970,7 @@ void FrameLoader::checkLoadCompleteForThisFrame()
     // the new page is ready.
 
     // If the user had a scroll point, scroll to it, overriding the anchor point if any.
-    if (m_frame->page()) {
-        if (isBackForwardLoadType(m_loadType) || m_loadType == FrameLoadTypeReload || m_loadType == FrameLoadTypeReloadFromOrigin)
-            history()->restoreScrollPositionAndViewState(m_frame);
-    }
+    restoreScrollPositionAndViewState();
 
     if (!m_stateMachine.committedFirstRealDocumentLoad())
         return;
@@ -986,13 +985,39 @@ void FrameLoader::checkLoadCompleteForThisFrame()
     m_loadType = FrameLoadTypeStandard;
 }
 
-void FrameLoader::didFirstLayout()
+// There is a race condition between the layout and load completion that affects restoring the scroll position.
+// We try to restore the scroll position at both the first layout and upon load completion.
+// 1) If first layout happens before the load completes, we want to restore the scroll position then so that the
+// first time we draw the page is already scrolled to the right place, instead of starting at the top and later
+// jumping down. It is possible that the old scroll position is past the part of the doc laid out so far, in
+// which case the restore silent fails and we will fix it in when we try to restore on doc completion.
+// 2) If the layout happens after the load completes, the attempt to restore at load completion time silently
+// fails. We then successfully restore it when the layout happens.
+void FrameLoader::restoreScrollPositionAndViewState()
 {
-    if (!m_frame->page())
+    if (!isBackForwardLoadType(m_loadType) && m_loadType != FrameLoadTypeReload && m_loadType != FrameLoadTypeReloadFromOrigin)
+        return;
+    if (!m_frame->page() || !m_currentItem || !m_stateMachine.committedFirstRealDocumentLoad())
         return;
 
-    if (isBackForwardLoadType(m_loadType) || m_loadType == FrameLoadTypeReload || m_loadType == FrameLoadTypeReloadFromOrigin)
-        history()->restoreScrollPositionAndViewState(m_frame);
+    if (FrameView* view = m_frame->view()) {
+        if (m_frame->isMainFrame()) {
+            if (ScrollingCoordinator* scrollingCoordinator = m_frame->page()->scrollingCoordinator())
+                scrollingCoordinator->frameViewRootLayerDidChange(view);
+        }
+
+        if (!view->wasScrolledByUser()) {
+            if (m_frame->isMainFrame() && m_currentItem->pageScaleFactor())
+                m_frame->page()->setPageScaleFactor(m_currentItem->pageScaleFactor(), m_currentItem->scrollPoint());
+            else
+                view->setScrollPositionNonProgrammatically(m_currentItem->scrollPoint());
+        }
+    }
+}
+
+void FrameLoader::didFirstLayout()
+{
+    restoreScrollPositionAndViewState();
 }
 
 void FrameLoader::detachChildren()

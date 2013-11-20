@@ -60,15 +60,16 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)
     WebViewImpl* webViewImpl = toWebViewImpl(webView);
     Frame* frame = webViewImpl->mainFrameImpl()->frame();
     HistoryController* history = webViewImpl->page()->history();
+    frame->loader().setLoadType(FrameLoadTypeBackForward);
 
     // Scale and scroll the page and save that state. Then scale and scroll again and restore.
     webViewImpl->setPageScaleFactor(2.0f, WebPoint(0, 200));
     history->saveDocumentAndScrollState(frame);
     webViewImpl->setPageScaleFactor(3.0f, WebPoint(0, 300));
     // Flip back the wasScrolledByUser flag which was set to true by setPageScaleFactor
-    // because otherwise HistoryController::restoreScrollPositionAndViewState does nothing.
+    // because otherwise FrameLoader::restoreScrollPositionAndViewState does nothing.
     frame->view()->setWasScrolledByUser(false);
-    history->restoreScrollPositionAndViewState(frame);
+    frame->loader().restoreScrollPositionAndViewState();
 
     // Expect that both scroll and scale were restored, and that it was not a programmatic scroll.
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
@@ -88,6 +89,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
     WebViewImpl* webViewImpl = toWebViewImpl(webView);
     Frame* frame = webViewImpl->mainFrameImpl()->frame();
     HistoryController* history = webViewImpl->page()->history();
+    frame->loader().setLoadType(FrameLoadTypeBackForward);
 
     // Scale and scroll the page and save that state, but then set scale to zero. Then scale and
     // scroll again and restore.
@@ -95,11 +97,11 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
     history->saveDocumentAndScrollState(frame);
     webViewImpl->setPageScaleFactor(3.0f, WebPoint(0, 500));
     // Flip back the wasScrolledByUser flag which was set to true by setPageScaleFactor
-    // because otherwise HistoryController::restoreScrollPositionAndViewState does nothing.
+    // because otherwise FrameLoader::restoreScrollPositionAndViewState does nothing.
     frame->view()->setWasScrolledByUser(false);
-    // HistoryController::restoreScrollPositionAndViewState flows differently if scale is zero.
+    // FrameLoader::restoreScrollPositionAndViewState flows differently if scale is zero.
     history->currentItem(frame)->setPageScaleFactor(0.0f);
-    history->restoreScrollPositionAndViewState(frame);
+    frame->loader().restoreScrollPositionAndViewState();
 
     // Expect that only the scroll position was restored, and that it was not a programmatic scroll.
     EXPECT_EQ(3.0f, webViewImpl->pageScaleFactor());

@@ -142,12 +142,10 @@ public:
     void goToItem(HistoryItem*);
 
     void clearScrollPositionAndViewState();
-    void restoreScrollPositionAndViewState(Frame*);
 
     void updateBackForwardListForFragmentScroll(Frame*);
 
     void saveDocumentAndScrollState(Frame*);
-    void restoreDocumentState(Frame*);
 
     void updateForCommit(Frame*);
 
