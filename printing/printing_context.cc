@@ -80,7 +80,7 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
     // server.
     gfx::Size paper_size(GetPdfPaperSizeDeviceUnits());
     gfx::Rect paper_rect(0, 0, paper_size.width(), paper_size.height());
-    if (print_to_cloud) {
+    if (print_to_cloud || print_with_privet) {
       paper_rect.Inset(
           kCloudPrintMarginInch * settings_.device_units_per_inch(),
           kCloudPrintMarginInch * settings_.device_units_per_inch());
