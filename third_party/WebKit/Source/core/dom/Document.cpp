@@ -2169,7 +2169,6 @@ void Document::open(Document* ownerDocument)
         setURL(ownerDocument->url());
         m_cookieURL = ownerDocument->cookieURL();
         setSecurityOrigin(ownerDocument->securityOrigin());
-        InspectorInstrumentation::childDocumentOpened(this);
     }
 
     if (m_frame) {
@@ -2187,6 +2186,9 @@ void Document::open(Document* ownerDocument)
         if (m_frame->loader().state() == FrameStateProvisional)
             m_frame->loader().stopAllLoaders();
     }
+
+    if (ownerDocument)
+        InspectorInstrumentation::childDocumentOpened(this);
 
     removeAllEventListeners();
     implicitOpen();

@@ -1,0 +1,15 @@
+<html>
+<head>
+</head>
+<body>
+    <script>
+        var iframe = document.createElement("iframe");
+        document.body.appendChild(iframe);
+        iframe.src = "resources/chatty-iframe.html";
+
+        document.open();
+        document.write("Append to open document.");
+        document.close();
+    </script>
+</body>
+</html>
