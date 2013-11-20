@@ -21,6 +21,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+#if defined(OS_ANDROID)
+#include "base/test/test_file_util.h"
+#endif
+
 namespace net {
 
 namespace {
@@ -1172,6 +1176,55 @@ TEST_F(FileStreamTest, AsyncReadError) {
 
   base::ClosePlatformFile(file);
 }
+
+#if defined(OS_ANDROID)
+TEST_F(FileStreamTest, ContentUriAsyncRead) {
+  base::FilePath test_dir;
+  PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
+  test_dir = test_dir.AppendASCII("net");
+  test_dir = test_dir.AppendASCII("data");
+  test_dir = test_dir.AppendASCII("file_stream_unittest");
+  ASSERT_TRUE(base::PathExists(test_dir));
+  base::FilePath image_file = test_dir.Append(FILE_PATH_LITERAL("red.png"));
+
+  // Insert the image into MediaStore. MediaStore will do some conversions, and
+  // return the content URI.
+  base::FilePath path = file_util::InsertImageIntoMediaStore(image_file);
+  EXPECT_TRUE(path.IsContentUri());
+  EXPECT_TRUE(base::PathExists(path));
+  int64 file_size;
+  EXPECT_TRUE(file_util::GetFileSize(path, &file_size));
+  EXPECT_LT(0, file_size);
+
+  FileStream stream(NULL, base::MessageLoopProxy::current());
+  int flags = base::PLATFORM_FILE_OPEN |
+              base::PLATFORM_FILE_READ |
+              base::PLATFORM_FILE_ASYNC;
+  TestCompletionCallback callback;
+  int rv = stream.Open(path, flags, callback.callback());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  int64 total_bytes_avail = stream.Available();
+  EXPECT_EQ(file_size, total_bytes_avail);
+
+  int total_bytes_read = 0;
+
+  std::string data_read;
+  for (;;) {
+    scoped_refptr<IOBufferWithSize> buf = new IOBufferWithSize(4);
+    rv = stream.Read(buf.get(), buf->size(), callback.callback());
+    if (rv == ERR_IO_PENDING)
+      rv = callback.WaitForResult();
+    EXPECT_LE(0, rv);
+    if (rv <= 0)
+      break;
+    total_bytes_read += rv;
+    data_read.append(buf->data(), rv);
+  }
+  EXPECT_EQ(file_size, total_bytes_read);
+}
+#endif
 
 }  // namespace
 

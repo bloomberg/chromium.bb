@@ -12,6 +12,11 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 
+#if defined(OS_ANDROID)
+#include <jni.h>
+#include "base/basictypes.h"
+#endif
+
 namespace base {
 
 class FilePath;
@@ -57,6 +62,15 @@ base::FilePath WStringAsFilePath(const std::wstring& path);
 // In POSIX, this does not apply to the root user.
 bool MakeFileUnreadable(const base::FilePath& path) WARN_UNUSED_RESULT;
 bool MakeFileUnwritable(const base::FilePath& path) WARN_UNUSED_RESULT;
+
+#if defined(OS_ANDROID)
+// Register the ContentUriTestUrils JNI bindings.
+bool RegisterContentUriTestUtils(JNIEnv* env);
+
+// Insert an image file into the MediaStore, and retrieve the content URI for
+// testing purpose.
+base::FilePath InsertImageIntoMediaStore(const base::FilePath& path);
+#endif  // defined(OS_ANDROID)
 
 // Saves the current permissions for a path, and restores it on destruction.
 class PermissionRestorer {

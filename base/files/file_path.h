@@ -387,6 +387,15 @@ class BASE_EXPORT FilePath {
                                    const StringType& string2);
 #endif
 
+#if defined(OS_ANDROID)
+  // On android, file selection dialog can return a file with content uri
+  // scheme(starting with content://). Content uri needs to be opened with
+  // ContentResolver to guarantee that the app has appropriate permissions
+  // to access it.
+  // Returns true if the path is a content uri, or false otherwise.
+  bool IsContentUri() const;
+#endif
+
  private:
   // Remove trailing separators from this object.  If the path is absolute, it
   // will never be stripped any more than to refer to the absolute root

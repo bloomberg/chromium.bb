@@ -135,6 +135,22 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     return (it->second & permissions) == permissions;
   }
 
+#if defined(OS_ANDROID)
+  // Determine if the certain permissions have been granted to a content URI.
+  bool HasPermissionsForContentUri(const base::FilePath& file,
+                                   int permissions) {
+    DCHECK(!file.empty());
+    DCHECK(file.IsContentUri());
+    if (!permissions)
+      return false;
+    base::FilePath file_path = file.StripTrailingSeparators();
+    FileMap::const_iterator it = file_permissions_.find(file_path);
+    if (it != file_permissions_.end())
+      return (it->second & permissions) == permissions;
+    return false;
+  }
+#endif
+
   void GrantBindings(int bindings) {
     enabled_bindings_ |= bindings;
   }
@@ -171,6 +187,10 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 
   // Determine if the certain permissions have been granted to a file.
   bool HasPermissionsForFile(const base::FilePath& file, int permissions) {
+#if defined(OS_ANDROID)
+    if (file.IsContentUri())
+      return HasPermissionsForContentUri(file, permissions);
+#endif
     if (!permissions || file.empty() || !file.IsAbsolute())
       return false;
     base::FilePath current_path = file.StripTrailingSeparators();

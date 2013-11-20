@@ -41,6 +41,8 @@
           'android/build_info.h',
           'android/command_line.cc',
           'android/command_line.h',
+          'android/content_uri_utils.cc',
+          'android/content_uri_utils.h',
           'android/cpu_features.cc',
           'android/fifo_utils.cc',
           'android/fifo_utils.h',

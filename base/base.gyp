@@ -896,6 +896,15 @@
             'test/test_file_util_linux.cc',
           ],
         }],
+        ['OS == "android"', {
+          'dependencies': [
+            'base_unittests_jni_headers',
+            'base_java_unittest_support',
+          ],
+          'include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)/base',
+          ],
+        }],
       ],
       'sources': [
         'test/expectations/expectation.cc',
@@ -948,6 +957,7 @@
         'test/task_runner_test_template.h',
         'test/test_file_util.cc',
         'test/test_file_util.h',
+        'test/test_file_util_android.cc',
         'test/test_file_util_linux.cc',
         'test/test_file_util_mac.cc',
         'test/test_file_util_posix.cc',
@@ -1215,6 +1225,7 @@
             'android/java/src/org/chromium/base/ActivityStatus.java',
             'android/java/src/org/chromium/base/BuildInfo.java',
             'android/java/src/org/chromium/base/CommandLine.java',
+            'android/java/src/org/chromium/base/ContentUriUtils.java',
             'android/java/src/org/chromium/base/CpuFeatures.java',
             'android/java/src/org/chromium/base/ImportantFileWriterAndroid.java',
             'android/java/src/org/chromium/base/MemoryPressureListener.java',
@@ -1240,6 +1251,17 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
+          'target_name': 'base_unittests_jni_headers',
+          'type': 'none',
+          'sources': [
+            'test/android/java/src/org/chromium/base/ContentUriTestUtils.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'base',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+        {
           'target_name': 'base_java',
           'type': 'none',
           'variables': {
@@ -1257,6 +1279,17 @@
               ],
             }]
           ],
+        },
+        {
+          'target_name': 'base_java_unittest_support',
+          'type': 'none',
+          'dependencies': [
+            'base_java',
+          ],
+          'variables': {
+            'java_in_dir': '../base/test/android/java',
+          },
+          'includes': [ '../build/java.gypi' ],
         },
         {
           'target_name': 'base_java_activity_state',

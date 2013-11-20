@@ -13,6 +13,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
+#include "base/test/test_file_util.h"
 #include "net/android/net_jni_registrar.h"
 #endif
 
@@ -31,6 +32,7 @@ int main(int argc, char** argv) {
   // Register JNI bindings for android. Doing it early as the test suite setup
   // may initiate a call to Java.
   net::android::RegisterJni(base::android::AttachCurrentThread());
+  file_util::RegisterContentUriTestUtils(base::android::AttachCurrentThread());
 #endif
 
   NetTestSuite test_suite(argc, argv);

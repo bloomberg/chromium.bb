@@ -165,27 +165,11 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
             return;
         }
 
-        Cursor cursor = null;
-        try {
-            // We get back a content:// URI from the system if the user picked a file from the
-            // gallery. The ContentView has functionality that will convert that content:// URI to
-            // a file path on disk that Chromium understands.
-            cursor = contentResolver.query(results.getData(),
-                    new String[] { MediaStore.MediaColumns.DATA }, null, null, null);
-            if (cursor != null) {
-                if (cursor.getCount() == 1) {
-                    cursor.moveToFirst();
-                    String path = cursor.getString(0);
-                    if (path != null) {
-                        // Not all providers support the MediaStore.DATA column. For example,
-                        // Gallery3D (com.android.gallery3d.provider) does not support it for
-                        // Picasa Web Album images.
-                        nativeOnFileSelected(mNativeSelectFileDialog, path);
-                        return;
-                    }
-                }
-            }
-        } finally { if (cursor != null) { cursor.close(); } }
+        if (results.getScheme() != null
+                && results.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+            nativeOnFileSelected(mNativeSelectFileDialog, results.getData().toString());
+            return;
+        }
 
         onFileNotSelected();
         window.showError(R.string.opening_file_error);
