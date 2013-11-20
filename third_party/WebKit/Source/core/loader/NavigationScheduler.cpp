@@ -274,7 +274,6 @@ void NavigationScheduler::clear()
     m_timer.stop();
     m_redirect.clear();
     m_additionalFormSubmissions.clear();
-    m_formSubmissionTargets.clear();
 }
 
 inline bool NavigationScheduler::shouldScheduleNavigation() const
@@ -344,13 +343,12 @@ void NavigationScheduler::scheduleLocationChange(SecurityOrigin* securityOrigin,
 void NavigationScheduler::scheduleFormSubmission(PassRefPtr<FormSubmission> submission)
 {
     ASSERT(m_frame->page());
-    if (!submission->target().isEmpty()) {
-        const String& target = submission->target();
-        OwnPtr<ScheduledFormSubmission> redirect = adoptPtr(new ScheduledFormSubmission(submission, mustLockBackForwardList(m_frame)));
-        startTimer(redirect.get());
-        m_formSubmissionTargets.append(target);
-        m_additionalFormSubmissions.set(target, redirect.release());
-        return;
+    if (m_redirect && m_redirect->isForm()) {
+        if (submission->target() != static_cast<ScheduledFormSubmission*>(m_redirect.get())->submission()->target()) {
+            const String& target = submission->target().isNull() ? "" : submission->target();
+            m_additionalFormSubmissions.add(target, adoptPtr(new ScheduledFormSubmission(submission, mustLockBackForwardList(m_frame))));
+            return;
+        }
     }
     schedule(adoptPtr(new ScheduledFormSubmission(submission, mustLockBackForwardList(m_frame))));
 }
@@ -397,13 +395,11 @@ void NavigationScheduler::timerFired(Timer<NavigationScheduler>*)
     OwnPtr<ScheduledNavigation> redirect(m_redirect.release());
     HashMap<String, OwnPtr<ScheduledNavigation> > additionalFormSubmissions;
     additionalFormSubmissions.swap(m_additionalFormSubmissions);
-    Vector<String> targets;
-    targets.swap(m_formSubmissionTargets);
-    if (redirect)
-        redirect->fire(m_frame);
-    for (size_t i = 0; i < targets.size(); ++i) {
-        OwnPtr<ScheduledNavigation> formSubmission = additionalFormSubmissions.take(targets[i]);
-        ASSERT(formSubmission);
+    redirect->fire(m_frame);
+    while (!additionalFormSubmissions.isEmpty()) {
+        HashMap<String, OwnPtr<ScheduledNavigation> >::iterator it = additionalFormSubmissions.begin();
+        OwnPtr<ScheduledNavigation> formSubmission = it->value.release();
+        additionalFormSubmissions.remove(it);
         formSubmission->fire(m_frame);
     }
     InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
@@ -414,23 +410,23 @@ void NavigationScheduler::schedule(PassOwnPtr<ScheduledNavigation> redirect)
     ASSERT(m_frame->page());
     cancel();
     m_redirect = redirect;
-    startTimer(m_redirect.get());
+    startTimer();
 }
 
-void NavigationScheduler::startTimer(ScheduledNavigation* redirect)
+void NavigationScheduler::startTimer()
 {
-    if (!redirect)
+    if (!m_redirect)
         return;
 
     ASSERT(m_frame->page());
     if (m_timer.isActive())
         return;
-    if (!redirect->shouldStartTimer(m_frame))
+    if (!m_redirect->shouldStartTimer(m_frame))
         return;
 
-    m_timer.startOneShot(redirect->delay());
-    redirect->didStartTimer(m_frame, &m_timer);
-    InspectorInstrumentation::frameScheduledNavigation(m_frame, redirect->delay());
+    m_timer.startOneShot(m_redirect->delay());
+    m_redirect->didStartTimer(m_frame, &m_timer);
+    InspectorInstrumentation::frameScheduledNavigation(m_frame, m_redirect->delay());
 }
 
 void NavigationScheduler::cancel()
@@ -439,6 +435,7 @@ void NavigationScheduler::cancel()
         InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
     m_timer.stop();
     m_redirect.clear();
+    m_additionalFormSubmissions.clear();
 }
 
 } // namespace WebCore

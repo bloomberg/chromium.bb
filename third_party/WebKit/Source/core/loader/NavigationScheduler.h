@@ -81,8 +81,7 @@ public:
     void scheduleRefresh();
     void scheduleHistoryNavigation(int steps);
 
-    void startTimer() { startTimer(m_redirect.get()); }
-    void startTimer(ScheduledNavigation*);
+    void startTimer();
 
     void cancel();
     void clear();
@@ -100,7 +99,6 @@ private:
     Timer<NavigationScheduler> m_timer;
     OwnPtr<ScheduledNavigation> m_redirect;
     HashMap<String, OwnPtr<ScheduledNavigation> > m_additionalFormSubmissions;
-    Vector<String> m_formSubmissionTargets;
 };
 
 } // namespace WebCore

@@ -1,5 +1,0 @@
-http://127.0.0.1:8000/misc/resources/success-notify-done.html - willSendRequest <NSURLRequest URL http://127.0.0.1:8000/misc/resources/success-notify-done.html, main document URL http://127.0.0.1:8000/misc/resources/success-notify-done.html, http method GET> redirectResponse (null)
-http://127.0.0.1:8000/misc/resources/slow-frame-with-image.php - willSendRequest <NSURLRequest URL http://127.0.0.1:8000/misc/resources/slow-frame-with-image.php, main document URL http://127.0.0.1:8000/misc/form-target-iframe-inline-location-change.html, http method POST> redirectResponse (null)
-http://127.0.0.1:8000/misc/resources/success-notify-done.html - didReceiveResponse <NSURLResponse http://127.0.0.1:8000/misc/resources/success-notify-done.html, http status code 200>
-http://127.0.0.1:8000/misc/resources/success-notify-done.html - didFinishLoading
-SUCCESS
