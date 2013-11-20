@@ -70,6 +70,8 @@ bool RenderSVGResourceMasker::applyResource(RenderObject* object, RenderStyle*,
     ASSERT_UNUSED(resourceMode, resourceMode == ApplyToDefaultMode);
     ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
 
+    clearInvalidationMask();
+
     FloatRect repaintRect = object->repaintRectInLocalCoordinates();
     if (repaintRect.isEmpty() || !element()->hasChildNodes())
         return false;

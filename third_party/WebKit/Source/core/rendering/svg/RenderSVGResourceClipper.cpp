@@ -76,6 +76,8 @@ bool RenderSVGResourceClipper::applyStatefulResource(RenderObject* object, Graph
     ASSERT(object);
     ASSERT(context);
 
+    clearInvalidationMask();
+
     return applyClippingToContext(object, object->objectBoundingBox(), object->repaintRectInLocalCoordinates(), context, clipperContext);
 }
 

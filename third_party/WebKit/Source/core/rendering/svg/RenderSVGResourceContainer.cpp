@@ -42,6 +42,7 @@ RenderSVGResourceContainer::RenderSVGResourceContainer(SVGElement* node)
     : RenderSVGHiddenContainer(node)
     , m_isInLayout(false)
     , m_id(node->getIdAttribute())
+    , m_invalidationMask(0)
     , m_registered(false)
     , m_isInvalidating(false)
 {
@@ -65,6 +66,8 @@ void RenderSVGResourceContainer::layout()
     TemporaryChange<bool> inLayoutChange(m_isInLayout, true);
 
     RenderSVGHiddenContainer::layout();
+
+    clearInvalidationMask();
 }
 
 void RenderSVGResourceContainer::willBeDestroyed()
@@ -101,6 +104,10 @@ void RenderSVGResourceContainer::markAllClientsForInvalidation(InvalidationMode 
     if ((m_clients.isEmpty() && m_clientLayers.isEmpty()) || m_isInvalidating)
         return;
 
+    if (m_invalidationMask & mode)
+        return;
+
+    m_invalidationMask |= mode;
     m_isInvalidating = true;
     bool needsLayout = mode == LayoutAndBoundariesInvalidation;
     bool markForInvalidation = mode != ParentOnlyInvalidation;
@@ -154,6 +161,7 @@ void RenderSVGResourceContainer::addClient(RenderObject* client)
 {
     ASSERT(client);
     m_clients.add(client);
+    clearInvalidationMask();
 }
 
 void RenderSVGResourceContainer::removeClient(RenderObject* client)
@@ -169,12 +177,14 @@ void RenderSVGResourceContainer::addClientRenderLayer(Node* node)
     if (!node->renderer() || !node->renderer()->hasLayer())
         return;
     m_clientLayers.add(toRenderLayerModelObject(node->renderer())->layer());
+    clearInvalidationMask();
 }
 
 void RenderSVGResourceContainer::addClientRenderLayer(RenderLayer* client)
 {
     ASSERT(client);
     m_clientLayers.add(client);
+    clearInvalidationMask();
 }
 
 void RenderSVGResourceContainer::removeClientRenderLayer(RenderLayer* client)

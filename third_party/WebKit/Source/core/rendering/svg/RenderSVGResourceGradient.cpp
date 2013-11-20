@@ -58,6 +58,8 @@ bool RenderSVGResourceGradient::applyResource(RenderObject* object, RenderStyle*
     ASSERT(context);
     ASSERT(resourceMode != ApplyToDefaultMode);
 
+    clearInvalidationMask();
+
     // Be sure to synchronize all SVG properties on the gradientElement _before_ processing any further.
     // Otherwhise the call to collectGradientAttributes() in createTileImage(), may cause the SVG DOM property
     // synchronization to kick in, which causes removeAllClientsFromCache() to be called, which in turn deletes our
