@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, SocketsUdpExtension) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, SocketsUdpMulticast) {
+IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, DISABLED_SocketsUdpMulticast) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
   ExtensionTestMessageListener listener("info_please", true);
