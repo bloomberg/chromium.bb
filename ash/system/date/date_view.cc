@@ -126,7 +126,10 @@ void BaseDateTimeView::OnLocaleChanged() {
   UpdateText();
 }
 
-DateView::DateView() : actionable_(false) {
+DateView::DateView()
+    : hour_type_(ash::Shell::GetInstance()->system_tray_delegate()->
+                 GetHourClockType()),
+      actionable_(false) {
   SetLayoutManager(
       new views::BoxLayout(
           views::BoxLayout::kVertical, 0, 0, 0));
@@ -145,12 +148,18 @@ void DateView::SetActionable(bool actionable) {
   set_focusable(actionable_);
 }
 
+void DateView::UpdateTimeFormat() {
+  hour_type_ =
+      ash::Shell::GetInstance()->system_tray_delegate()->GetHourClockType();
+  UpdateText();
+}
+
 void DateView::UpdateTextInternal(const base::Time& now) {
   SetAccessibleName(
       base::TimeFormatFriendlyDate(now) +
       ASCIIToUTF16(",") +
       base::TimeFormatTimeOfDayWithHourClockType(
-          now, base::k12HourClock, base:: kKeepAmPm));
+          now, hour_type_, base::kKeepAmPm));
   date_label_->SetText(
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DATE, FormatDayOfWeek(now), FormatDate(now)));

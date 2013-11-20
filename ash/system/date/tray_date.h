@@ -19,6 +19,7 @@ namespace internal {
 #if defined(OS_CHROMEOS)
 class SystemClockObserver;
 #endif
+class DateDefaultView;
 
 namespace tray {
 class TimeView;
@@ -57,7 +58,7 @@ class TrayDate : public SystemTrayItem,
   void SetupLabelForTimeTray(views::Label* label);
 
   tray::TimeView* time_tray_;
-  views::View* default_view_;
+  DateDefaultView* default_view_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<SystemClockObserver> system_clock_observer_;

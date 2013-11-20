@@ -61,6 +61,9 @@ class DateView : public BaseDateTimeView {
   // or enter on the view shows date-related settings.
   void SetActionable(bool actionable);
 
+  // Updates the format of the displayed time.
+  void UpdateTimeFormat();
+
  private:
   // Overridden from BaseDateTimeView.
   virtual void UpdateTextInternal(const base::Time& now) OVERRIDE;
@@ -73,6 +76,9 @@ class DateView : public BaseDateTimeView {
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
   views::Label* date_label_;
+
+  // Time format (12/24hr) used for accessibility string.
+  base::HourClockType hour_type_;
 
   bool actionable_;
 

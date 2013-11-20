@@ -47,32 +47,37 @@ namespace {
 
 const int kPaddingVertical = 19;
 
+}  // namespace
+
+namespace ash {
+namespace internal {
+
 class DateDefaultView : public views::View,
                         public views::ButtonListener {
  public:
   explicit DateDefaultView(ash::user::LoginStatus login)
       : help_(NULL),
         shutdown_(NULL),
-        lock_(NULL) {
+        lock_(NULL),
+        date_view_(NULL) {
     SetLayoutManager(new views::FillLayout);
 
-    ash::internal::tray::DateView* date_view =
-        new ash::internal::tray::DateView();
-    date_view->set_border(views::Border::CreateEmptyBorder(kPaddingVertical,
+    date_view_ = new tray::DateView();
+    date_view_->set_border(views::Border::CreateEmptyBorder(kPaddingVertical,
         ash::kTrayPopupPaddingHorizontal,
         0,
         0));
-    ash::internal::SpecialPopupRow* view = new ash::internal::SpecialPopupRow();
-    view->SetContent(date_view);
+    SpecialPopupRow* view = new SpecialPopupRow();
+    view->SetContent(date_view_);
     AddChildView(view);
 
     if (login == ash::user::LOGGED_IN_LOCKED ||
         login == ash::user::LOGGED_IN_NONE)
       return;
 
-    date_view->SetActionable(true);
+    date_view_->SetActionable(true);
 
-    help_ = new ash::internal::TrayPopupHeaderButton(this,
+    help_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_HELP,
         IDR_AURA_UBER_TRAY_HELP,
         IDR_AURA_UBER_TRAY_HELP_HOVER,
@@ -84,7 +89,7 @@ class DateDefaultView : public views::View,
 #if !defined(OS_WIN)
     if (login != ash::user::LOGGED_IN_LOCKED &&
         login != ash::user::LOGGED_IN_RETAIL_MODE) {
-      shutdown_ = new ash::internal::TrayPopupHeaderButton(this,
+      shutdown_ = new TrayPopupHeaderButton(this,
           IDR_AURA_UBER_TRAY_SHUTDOWN,
           IDR_AURA_UBER_TRAY_SHUTDOWN,
           IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,
@@ -96,7 +101,7 @@ class DateDefaultView : public views::View,
     }
 
     if (ash::Shell::GetInstance()->session_state_delegate()->CanLockScreen()) {
-      lock_ = new ash::internal::TrayPopupHeaderButton(this,
+      lock_ = new TrayPopupHeaderButton(this,
           IDR_AURA_UBER_TRAY_LOCKSCREEN,
           IDR_AURA_UBER_TRAY_LOCKSCREEN,
           IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,
@@ -113,6 +118,10 @@ class DateDefaultView : public views::View,
 
   views::View* GetHelpButtonView() const {
     return help_;
+  }
+
+  tray::DateView* GetDateView() const {
+    return date_view_;
   }
 
  private:
@@ -136,17 +145,13 @@ class DateDefaultView : public views::View,
     }
   }
 
-  ash::internal::TrayPopupHeaderButton* help_;
-  ash::internal::TrayPopupHeaderButton* shutdown_;
-  ash::internal::TrayPopupHeaderButton* lock_;
+  TrayPopupHeaderButton* help_;
+  TrayPopupHeaderButton* shutdown_;
+  TrayPopupHeaderButton* lock_;
+  tray::DateView* date_view_;
 
   DISALLOW_COPY_AND_ASSIGN(DateDefaultView);
 };
-
-}  // namespace
-
-namespace ash {
-namespace internal {
 
 TrayDate::TrayDate(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
@@ -165,7 +170,7 @@ TrayDate::~TrayDate() {
 views::View* TrayDate::GetHelpButtonView() const {
   if (!default_view_)
     return NULL;
-  return static_cast<DateDefaultView*>(default_view_)->GetHelpButtonView();
+  return default_view_->GetHelpButtonView();
 }
 
 views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
@@ -215,11 +220,15 @@ void TrayDate::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 void TrayDate::OnDateFormatChanged() {
   if (time_tray_)
     time_tray_->UpdateTimeFormat();
+  if (default_view_)
+    default_view_->GetDateView()->UpdateTimeFormat();
 }
 
 void TrayDate::OnSystemClockTimeUpdated() {
   if (time_tray_)
     time_tray_->UpdateTimeFormat();
+  if (default_view_)
+    default_view_->GetDateView()->UpdateTimeFormat();
 }
 
 void TrayDate::Refresh() {
