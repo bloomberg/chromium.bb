@@ -176,6 +176,7 @@ v8.log
 /sandbox/linux/seccomp-legacy/
 /sdch/open-vcdiff
 /seccompsandbox
+/skia/tools/clusterfuzz-data/
 /testing/gmock
 /testing/gtest
 /testing/iossim/third_party/
