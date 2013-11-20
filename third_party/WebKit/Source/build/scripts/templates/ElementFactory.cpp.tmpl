@@ -80,16 +80,16 @@ PassRefPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}
 {%- endif %}
     bool createdByParser)
 {
-    if (CustomElement::isValidName(localName) && document.registrationContext()) {
-        RefPtr<Element> element = document.registrationContext()->createCustomTagElement(document, QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI));
-        ASSERT_WITH_SECURITY_IMPLICATION(element->is{{namespace}}Element());
-        return static_pointer_cast<{{namespace}}Element>(element.release());
-    }
-
     if (!g_constructors)
         createFunctionMap();
     if (ConstructorFunction function = g_constructors->get(localName))
         return function(document, {%- if namespace == 'HTML' %}formElement,{% endif %} createdByParser);
+
+    if (document.registrationContext() && CustomElement::isValidName(localName)) {
+        RefPtr<Element> element = document.registrationContext()->createCustomTagElement(document, QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI));
+        ASSERT_WITH_SECURITY_IMPLICATION(element->is{{namespace}}Element());
+        return static_pointer_cast<{{namespace}}Element>(element.release());
+    }
 
     return {{fallback_interface}}::create(QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI), document);
 }
