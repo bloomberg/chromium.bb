@@ -509,6 +509,27 @@ TEST(AutofillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
   EXPECT_EQ(ASCIIToUTF16("John Doe, john.doe@example.com"), labels[2]);
 }
 
+// Test that labels that would otherwise have multiline values are flattened.
+TEST(AutofillProfileTest, CreateInferredLabelsFlattensMultiLineValues) {
+  ScopedVector<AutofillProfile> profiles;
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[0],
+                       "John", "", "Doe", "doe@example.com", "",
+                       "88 Nowhere Ave.", "Apt. 42", "", "", "", "", "");
+
+  // If the only name field in the suggested fields is the excluded field, we
+  // should not fall back to the full name as a distinguishing field.
+  std::vector<ServerFieldType> suggested_fields;
+  suggested_fields.push_back(NAME_FULL);
+  suggested_fields.push_back(ADDRESS_HOME_STREET_ADDRESS);
+  std::vector<base::string16> labels;
+  AutofillProfile::CreateInferredLabels(&profiles.get(), &suggested_fields,
+                                        NAME_FULL, 1, &labels);
+  ASSERT_EQ(1U, labels.size());
+  EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave., Apt. 42"), labels[0]);
+}
+
 TEST(AutofillProfileTest, IsSubsetOf) {
   scoped_ptr<AutofillProfile> a, b;
 

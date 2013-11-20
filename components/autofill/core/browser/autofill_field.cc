@@ -278,6 +278,23 @@ bool FillMonthControl(const base::string16& value, FormFieldData* field) {
   return true;
 }
 
+// Fills |field| with the street address in |value|.  Translates newlines into
+// equivalent separators when necessary, i.e. when filling a single-line field.
+void FillStreetAddress(const base::string16& value,
+                       FormFieldData* field) {
+  if (field->form_control_type == "textarea") {
+    field->value = value;
+    return;
+  }
+
+  base::string16 one_line_value;
+  const char16 kNewline[] = { '\n', 0 };
+  const base::string16 separator =
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_SEPARATOR);
+  ReplaceChars(value, kNewline, separator, &one_line_value);
+  field->value = one_line_value;
+}
+
 std::string Hash32Bit(const std::string& str) {
   std::string hash_bin = base::SHA1HashString(str);
   DCHECK_EQ(20U, hash_bin.length());
@@ -382,6 +399,8 @@ void AutofillField::FillFormField(const AutofillField& field,
     FillSelectControl(type, value, app_locale, field_data);
   else if (field_data->form_control_type == "month")
     FillMonthControl(value, field_data);
+  else if (type.GetStorableType() == ADDRESS_HOME_STREET_ADDRESS)
+    FillStreetAddress(value, field_data);
   else
     field_data->value = value;
 }
