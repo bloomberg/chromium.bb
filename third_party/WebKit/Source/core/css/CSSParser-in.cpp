@@ -9914,6 +9914,9 @@ void CSSParser::setReusableRegionSelectorVector(Vector<OwnPtr<CSSParserSelector>
 
 StyleRuleBase* CSSParser::createRegionRule(Vector<OwnPtr<CSSParserSelector> >* regionSelector, RuleList* rules)
 {
+    if (m_useCounter)
+        m_useCounter->count(UseCounter::CSSWebkitRegionAtRule);
+
     if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !regionSelector || !rules)
         return 0;
 
