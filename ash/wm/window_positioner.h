@@ -85,6 +85,10 @@ class ASH_EXPORT WindowPositioner {
   // operating systems do (default cascading style).
   gfx::Rect GetPopupPosition(const gfx::Rect& old_pos);
 
+  // Accessor to set a flag indicating whether the first window in ASH should
+  // be maximized.
+  static void SetMaximizeFirstWindow(bool maximize);
+
  protected:
   friend class test::WindowPositionerTest;
 

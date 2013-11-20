@@ -92,6 +92,9 @@ scoped_ptr<TestBrowserWindowAura> CreateTestBrowserWindow(
 // Test that the window is sized appropriately for the first run experience
 // where the default window bounds calculation is invoked.
 TEST_F(WindowSizerAshTest, DefaultSizeCase) {
+#if defined(OS_WIN)
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kOpenAsh);
+#endif
   { // 4:3 monitor case, 1024x768, no taskbar
     gfx::Rect window_bounds;
     GetWindowBounds(p1024x768, p1024x768, gfx::Rect(), gfx::Rect(),
@@ -583,7 +586,11 @@ TEST_F(WindowSizerAshTest, PlaceNewBrowserWindowOnEmptyDesktop) {
       gfx::Rect(),                  // Don't request valid bounds.
       &window_bounds,
       &out_show_state3);
+#if defined(OS_WIN)
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, out_show_state3);
+#else
   EXPECT_EQ(ui::SHOW_STATE_DEFAULT, out_show_state3);
+#endif
 }
 
 #if defined(OS_CHROMEOS)
@@ -798,12 +805,19 @@ TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
                             chrome::HOST_DESKTOP_TYPE_ASH)));
 
   // Check that a browser creation state always get used if not given as
-  // SHOW_STATE_DEFAULT.
-  EXPECT_EQ(GetWindowShowState(ui::SHOW_STATE_MAXIMIZED,
-                               ui::SHOW_STATE_MAXIMIZED,
-                               DEFAULT,
-                               browser_window->browser(),
-                               p1600x1200), ui::SHOW_STATE_DEFAULT);
+  // SHOW_STATE_DEFAULT. On Windows ASH it should be SHOW_STATE_MAXIMIZED.
+  ui::WindowShowState window_show_state =
+      GetWindowShowState(ui::SHOW_STATE_MAXIMIZED,
+                         ui::SHOW_STATE_MAXIMIZED,
+                         DEFAULT,
+                         browser_window->browser(),
+                         p1600x1200);
+#if defined(OS_WIN)
+  EXPECT_EQ(window_show_state, ui::SHOW_STATE_MAXIMIZED);
+#else
+  EXPECT_EQ(window_show_state, ui::SHOW_STATE_DEFAULT);
+#endif
+
   browser_window->browser()->set_initial_show_state(ui::SHOW_STATE_MINIMIZED);
   EXPECT_EQ(GetWindowShowState(ui::SHOW_STATE_MAXIMIZED,
                                ui::SHOW_STATE_MAXIMIZED,

@@ -5,6 +5,7 @@
 #include "chrome/browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.h"
 
 #include "ash/shell.h"
+#include "ash/wm/window_positioner.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/browser_process.h"
@@ -112,6 +113,9 @@ void ChromeMetroViewerProcessHost::OnSetTargetSurface(
   chrome::OpenAsh();
   ash::Shell::GetInstance()->CreateLauncher();
   ash::Shell::GetInstance()->ShowLauncher();
+  // On Windows 8 ASH we default to SHOW_STATE_MAXIMIZED for the browser
+  // window. This is to ensure that we honor metro app conventions by default.
+  ash::WindowPositioner::SetMaximizeFirstWindow(true);
   // Tell the rest of Chrome that Ash is running.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_ASH_SESSION_STARTED,

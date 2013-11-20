@@ -17,6 +17,7 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/window_positioner.h"
 #include "base/command_line.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/aura/client/aura_constants.h"
@@ -128,21 +129,22 @@ void AshTestBase::SetUp() {
   ash::Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
 
 #if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      !command_line->HasSwitch(ash::switches::kForceAshToDesktop)) {
-    ipc_thread_.reset(new base::Thread("test_metro_viewer_ipc_thread"));
-    base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
-    ipc_thread_->StartWithOptions(options);
-
-    metro_viewer_host_.reset(
-        new TestMetroViewerProcessHost(ipc_thread_->message_loop_proxy()));
-    CHECK(metro_viewer_host_->LaunchViewerAndWaitForConnection(
-        win8::test::kDefaultTestAppUserModelId,
-        L"test_open"));
-    aura::RemoteRootWindowHostWin* root_window_host =
-        aura::RemoteRootWindowHostWin::Instance();
-    CHECK(root_window_host != NULL);
+  if (!command_line->HasSwitch(ash::switches::kForceAshToDesktop)) {
+    if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+      ipc_thread_.reset(new base::Thread("test_metro_viewer_ipc_thread"));
+      base::Thread::Options options;
+      options.message_loop_type = base::MessageLoop::TYPE_IO;
+      ipc_thread_->StartWithOptions(options);
+      metro_viewer_host_.reset(
+          new TestMetroViewerProcessHost(ipc_thread_->message_loop_proxy()));
+      CHECK(metro_viewer_host_->LaunchViewerAndWaitForConnection(
+          win8::test::kDefaultTestAppUserModelId,
+          L"test_open"));
+      aura::RemoteRootWindowHostWin* root_window_host =
+          aura::RemoteRootWindowHostWin::Instance();
+      CHECK(root_window_host != NULL);
+    }
+    ash::WindowPositioner::SetMaximizeFirstWindow(true);
   }
 #endif
 }

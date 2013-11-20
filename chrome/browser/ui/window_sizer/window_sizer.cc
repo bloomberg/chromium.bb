@@ -188,8 +188,7 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
     if (IsTabbedBrowserInAsh()) {
       GetTabbedBrowserBoundsAsh(bounds, show_state);
       return;
-    } else if (chrome::ShouldOpenAshOnStartup() &&
-               browser_ && browser_->host_desktop_type() ==
+    } else if (browser_ && browser_->host_desktop_type() ==
                chrome::HOST_DESKTOP_TYPE_ASH) {
       // In ash, saved show state takes precidence.  If you have a
       // question or an issue, please contact oshima@chromium.org.
@@ -399,17 +398,13 @@ ui::WindowShowState WindowSizer::GetWindowDefaultShowState() const {
 
 #if defined(USE_ASH)
 bool WindowSizer::IsTabbedBrowserInAsh() const {
-  // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
-  return chrome::ShouldOpenAshOnStartup() &&
-      browser_ &&
+  return browser_ &&
       browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
       browser_->is_type_tabbed();
 }
 
 bool WindowSizer::IsPopupBrowserInAsh() const {
-  // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
-  return chrome::ShouldOpenAshOnStartup() &&
-      browser_ &&
+  return browser_ &&
       browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
       browser_->is_type_popup();
 }

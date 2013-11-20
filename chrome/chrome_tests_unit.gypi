@@ -2179,11 +2179,7 @@
           # We eventually want to compile both in Win Aura builds, see
           # http://crbug.com/155545.
           'conditions': [
-            ['OS=="win"', {
-              'sources!': [
-                'browser/ui/window_sizer/window_sizer_ash_unittest.cc',
-              ],
-            }, { # else: OS!=win
+            ['OS !="win"', {
               'sources!': [
                 'browser/ui/window_sizer/window_sizer_unittest.cc',
               ],

@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/screen.h"
@@ -34,6 +35,9 @@ TEST_F(WindowPositionerTest, OpenMaximizedWindowOnSecondDisplay) {
 TEST_F(WindowPositionerTest, OpenDefaultWindowOnSecondDisplay) {
   if (!SupportsMultipleDisplays())
     return;
+#if defined(OS_WIN)
+  ash::WindowPositioner::SetMaximizeFirstWindow(true);
+#endif
   UpdateDisplay("400x400,1400x900");
   aura::Window* second_root_window = Shell::GetAllRootWindows()[1];
   Shell::GetInstance()->set_target_root_window(
@@ -44,8 +48,12 @@ TEST_F(WindowPositionerTest, OpenDefaultWindowOnSecondDisplay) {
   views::Widget* widget =
       shell::ToplevelWindow::CreateToplevelWindow(params);
   gfx::Rect bounds = widget->GetWindowBoundsInScreen();
+#if defined(OS_WIN)
+  EXPECT_TRUE(widget->IsMaximized());
+#else
   // The window should be in the 2nd display with the default size.
   EXPECT_EQ("300x300", bounds.size().ToString());
+#endif
   EXPECT_TRUE(Shell::GetScreen()->GetDisplayNearestWindow(
       second_root_window).bounds().Contains(bounds));
 }
