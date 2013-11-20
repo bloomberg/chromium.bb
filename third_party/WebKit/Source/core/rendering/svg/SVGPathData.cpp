@@ -74,7 +74,7 @@ static void updatePathFromPathElement(SVGElement* element, Path& path)
 
 static void updatePathFromPolygonElement(SVGElement* element, Path& path)
 {
-    SVGPointList& points = toSVGPolygonElement(element)->pointsCurrentValue();
+    SVGPointList& points = toSVGPolygonElement(element)->animatedPoints()->values();
     if (points.isEmpty())
         return;
 
@@ -89,7 +89,7 @@ static void updatePathFromPolygonElement(SVGElement* element, Path& path)
 
 static void updatePathFromPolylineElement(SVGElement* element, Path& path)
 {
-    SVGPointList& points = toSVGPolylineElement(element)->pointsCurrentValue();
+    SVGPointList& points = toSVGPolylineElement(element)->animatedPoints()->values();
     if (points.isEmpty())
         return;
 
