@@ -39,11 +39,13 @@
         document.getElementById('log').appendChild(div);
     }
     document.addEventListener('webkitAnimationStart', function(event) {
-        log(event.target.id + ': Start event: elapsedTime=' + event.elapsedTime);
+        var pass = event.elapsedTime === 0;
+        log((pass ? 'PASS' : 'FAIL') + ': ' + event.target.id + ': Start event: elapsedTime=' + event.elapsedTime);
     }, false);
     var count = 0;
     document.addEventListener('webkitAnimationEnd', function(event) {
-        log(event.target.id + ': End event: elapsedTime=' + event.elapsedTime);
+        var pass = event.elapsedTime === 0.1;
+        log((pass ? 'PASS' : 'FAIL') + ': ' + event.target.id + ': End event: elapsedTime=' + event.elapsedTime);
         switch (++count) {
         case 1:
             document.getElementById('animation2').classList.add('animation');

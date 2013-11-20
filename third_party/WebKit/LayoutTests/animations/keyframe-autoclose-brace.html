@@ -32,7 +32,10 @@
             testRunner.dumpAsText();
 
         var keyframes = findKeyframesRule("foo");
-        document.getElementById("console").textContent = keyframes && keyframes.cssRules.length == 4 ? "Test passed" : "Test failed";
+        var length = keyframes ? keyframes.cssRules.length : undefined;
+        document.getElementById("console").textContent = length === 4
+            ? "PASS: keyframes rule has length 4"
+            : ("FAIL: keyframes rule should have length 4 but had length " + length);
     }
     
   </script>
