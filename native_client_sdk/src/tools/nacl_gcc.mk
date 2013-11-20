@@ -46,6 +46,8 @@ ARM_LIB ?= $(ARM_TC_BIN)/arm-nacl-ar
 ARM_STRIP ?= $(ARM_TC_BIN)/arm-nacl-strip
 ARM_NM ?= $(ARM_TC_BIN)/arm-nacl-nm
 
+NCVAL ?= python $(NACL_SDK_ROOT)/tools/ncval.py
+
 # Architecture-specific flags
 X86_32_CFLAGS ?=
 X86_64_CFLAGS ?=
@@ -183,6 +185,7 @@ ifneq (,$(findstring x86_32,$(ARCHES)))
 all: $(OUTDIR)/lib$(1)_x86_32.so
 $(OUTDIR)/lib$(1)_x86_32.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32_pic)) $(4)
 	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter-out $(4),$$^) -shared -m32 $(LD_X86_32) $$(LD_FLAGS) $(foreach lib,$(3),-l$(lib)))
+	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so
 install: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so
@@ -199,6 +202,7 @@ ifneq (,$(findstring x86_64,$(ARCHES)))
 all: $(OUTDIR)/lib$(1)_x86_64.so
 $(OUTDIR)/lib$(1)_x86_64.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64_pic)) $(4)
 	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter-out $(4),$$^) -shared -m64 $(LD_X86_64) $$(LD_FLAGS) $(foreach lib,$(3),-l$(lib)))
+	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so
 install: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so
@@ -287,18 +291,21 @@ ifneq (,$(findstring x86_32,$(ARCHES)))
 all: $(OUTDIR)/$(1)_x86_32.nexe
 $(OUTDIR)/$(1)_x86_32.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(X86_32_LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_32/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
+	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 endif
 
 ifneq (,$(findstring x86_64,$(ARCHES)))
 all: $(OUTDIR)/$(1)_x86_64.nexe
 $(OUTDIR)/$(1)_x86_64.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(call LOG,LINK,$$@,$(X86_64_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(X86_64_LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_64/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
+	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 endif
 
 ifneq (,$(findstring arm,$(ARCHES)))
 all: $(OUTDIR)/$(1)_arm.nexe
 $(OUTDIR)/$(1)_arm.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(call LOG,LINK,$$@,$(ARM_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
+	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 endif
 endef
 
