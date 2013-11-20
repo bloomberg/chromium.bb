@@ -150,8 +150,7 @@ void TraceMessageFilter::OnMonitoringTraceDataCollected(
     const std::string& data) {
   scoped_refptr<base::RefCountedString> data_ptr(new base::RefCountedString());
   data_ptr->data() = data;
-  TracingControllerImpl::GetInstance()->OnMonitoringTraceDataCollected(
-      data_ptr);
+  TracingControllerImpl::GetInstance()->OnTraceDataCollected(data_ptr);
 }
 
 void TraceMessageFilter::OnTraceNotification(int notification) {

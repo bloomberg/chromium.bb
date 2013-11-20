@@ -28,94 +28,15 @@ TracingController* TracingController::GetInstance() {
   return TracingControllerImpl::GetInstance();
 }
 
-class TracingControllerImpl::ResultFile {
- public:
-  explicit ResultFile(const base::FilePath& path);
-  void Write(const scoped_refptr<base::RefCountedString>& events_str_ptr) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&TracingControllerImpl::ResultFile::WriteTask,
-                   base::Unretained(this), events_str_ptr));
-  }
-  void Close(const base::Closure& callback) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&TracingControllerImpl::ResultFile::CloseTask,
-                   base::Unretained(this), callback));
-  }
-  const base::FilePath& path() const { return path_; }
-
- private:
-  void OpenTask();
-  void WriteTask(const scoped_refptr<base::RefCountedString>& events_str_ptr);
-  void CloseTask(const base::Closure& callback);
-
-  FILE* file_;
-  base::FilePath path_;
-  bool has_at_least_one_result_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResultFile);
-};
-
-TracingControllerImpl::ResultFile::ResultFile(const base::FilePath& path)
-    : file_(NULL),
-      path_(path),
-      has_at_least_one_result_(false) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&TracingControllerImpl::ResultFile::OpenTask,
-                 base::Unretained(this)));
-}
-
-void TracingControllerImpl::ResultFile::OpenTask() {
-  if (path_.empty())
-    file_util::CreateTemporaryFile(&path_);
-  file_ = file_util::OpenFile(path_, "w");
-  if (!file_) {
-    LOG(ERROR) << "Failed to open " << path_.value();
-    return;
-  }
-  const char* preamble = "{\"traceEvents\": [";
-  size_t written = fwrite(preamble, strlen(preamble), 1, file_);
-  DCHECK(written == 1);
-}
-
-void TracingControllerImpl::ResultFile::WriteTask(
-    const scoped_refptr<base::RefCountedString>& events_str_ptr) {
-  if (!file_)
-    return;
-
-  // If there is already a result in the file, then put a commma
-  // before the next batch of results.
-  if (has_at_least_one_result_)
-    fwrite(",", 1, 1, file_);
-  has_at_least_one_result_ = true;
-  size_t written = fwrite(events_str_ptr->data().c_str(),
-                          events_str_ptr->data().size(), 1,
-                          file_);
-  DCHECK(written == 1);
-}
-
-void TracingControllerImpl::ResultFile::CloseTask(
-    const base::Closure& callback) {
-  if (!file_)
-    return;
-
-  const char* trailout = "]}";
-  size_t written = fwrite(trailout, strlen(trailout), 1, file_);
-  DCHECK(written == 1);
-  file_util::CloseFile(file_);
-  file_ = NULL;
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
-}
-
-
 TracingControllerImpl::TracingControllerImpl() :
     pending_disable_recording_ack_count_(0),
     pending_capture_monitoring_snapshot_ack_count_(0),
     is_recording_(false),
     is_monitoring_(false),
-    trace_options_(TraceLog::RECORD_UNTIL_FULL),
     category_filter_(
-        base::debug::CategoryFilter::kDefaultCategoryFilterString) {
+        base::debug::CategoryFilter::kDefaultCategoryFilterString),
+    result_file_(0),
+    result_file_has_at_least_one_result_(false) {
 }
 
 TracingControllerImpl::~TracingControllerImpl() {
@@ -138,7 +59,7 @@ void TracingControllerImpl::GetCategories(
   EnableRecording(base::debug::CategoryFilter("*"),
                   TracingController::Options(),
                   EnableRecordingDoneCallback());
-  DisableRecording(base::FilePath(), TracingFileResultCallback());
+  DisableRecording(TracingFileResultCallback());
 }
 
 bool TracingControllerImpl::EnableRecording(
@@ -173,7 +94,6 @@ bool TracingControllerImpl::EnableRecording(
 }
 
 bool TracingControllerImpl::DisableRecording(
-    const base::FilePath& result_file_path,
     const TracingFileResultCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -191,8 +111,17 @@ bool TracingControllerImpl::DisableRecording(
     TraceLog::GetInstance()->AddClockSyncMetadataEvent();
 #endif
 
-  if (!callback.is_null() || !result_file_path.empty())
-    result_file_.reset(new ResultFile(result_file_path));
+  // We don't need to create a temporary file when getting categories.
+  if (pending_get_categories_done_callback_.is_null()) {
+    base::FilePath temporary_file;
+    file_util::CreateTemporaryFile(&temporary_file);
+    result_file_path_.reset(new base::FilePath(temporary_file));
+    result_file_ = file_util::OpenFile(*result_file_path_, "w");
+    result_file_has_at_least_one_result_ = false;
+    const char* preamble = "{\"traceEvents\": [";
+    size_t written = fwrite(preamble, strlen(preamble), 1, result_file_);
+    DCHECK(written == 1);
+  }
 
   // There could be a case where there are no child processes and filters_
   // is empty. In that case we can immediately tell the subscriber that tracing
@@ -274,7 +203,6 @@ void TracingControllerImpl::GetMonitoringStatus(
 }
 
 void TracingControllerImpl::CaptureMonitoringSnapshot(
-    const base::FilePath& result_file_path,
     const TracingFileResultCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -283,8 +211,14 @@ void TracingControllerImpl::CaptureMonitoringSnapshot(
 
   pending_capture_monitoring_snapshot_done_callback_ = callback;
 
-  if (!callback.is_null() || !result_file_path.empty())
-    monitoring_snapshot_file_.reset(new ResultFile(result_file_path));
+  base::FilePath temporary_file;
+  file_util::CreateTemporaryFile(&temporary_file);
+  result_file_path_.reset(new base::FilePath(temporary_file));
+  result_file_ = file_util::OpenFile(*result_file_path_, "w");
+  result_file_has_at_least_one_result_ = false;
+  const char* preamble = "{\"traceEvents\": [";
+  size_t written = fwrite(preamble, strlen(preamble), 1, result_file_);
+  DCHECK(written == 1);
 
   // There could be a case where there are no child processes and filters_
   // is empty. In that case we can immediately tell the subscriber that tracing
@@ -374,24 +308,15 @@ void TracingControllerImpl::OnDisableRecordingAcked(
   if (!pending_get_categories_done_callback_.is_null()) {
     pending_get_categories_done_callback_.Run(known_category_groups_);
     pending_get_categories_done_callback_.Reset();
-  } else if (result_file_) {
-    result_file_->Close(
-        base::Bind(&TracingControllerImpl::OnResultFileClosed,
-                   base::Unretained(this)));
-  }
-}
-
-void TracingControllerImpl::OnResultFileClosed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!result_file_)
-    return;
-
-  if (!pending_disable_recording_done_callback_.is_null()) {
-    pending_disable_recording_done_callback_.Run(result_file_->path());
+  } else if (!pending_disable_recording_done_callback_.is_null()) {
+    const char* trailout = "]}";
+    size_t written = fwrite(trailout, strlen(trailout), 1, result_file_);
+    DCHECK(written == 1);
+    file_util::CloseFile(result_file_);
+    result_file_ = 0;
+    pending_disable_recording_done_callback_.Run(result_file_path_.Pass());
     pending_disable_recording_done_callback_.Reset();
   }
-  result_file_.reset();
 }
 
 void TracingControllerImpl::OnCaptureMonitoringSnapshotAcked() {
@@ -417,25 +342,16 @@ void TracingControllerImpl::OnCaptureMonitoringSnapshotAcked() {
   if (pending_capture_monitoring_snapshot_ack_count_ != 0)
     return;
 
-  if (monitoring_snapshot_file_) {
-    monitoring_snapshot_file_->Close(
-        base::Bind(&TracingControllerImpl::OnMonitoringSnapshotFileClosed,
-                   base::Unretained(this)));
-  }
-}
-
-void TracingControllerImpl::OnMonitoringSnapshotFileClosed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!monitoring_snapshot_file_)
-    return;
-
   if (!pending_capture_monitoring_snapshot_done_callback_.is_null()) {
+    const char* trailout = "]}";
+    size_t written = fwrite(trailout, strlen(trailout), 1, result_file_);
+    DCHECK(written == 1);
+    file_util::CloseFile(result_file_);
+    result_file_ = 0;
     pending_capture_monitoring_snapshot_done_callback_.Run(
-        monitoring_snapshot_file_->path());
+        result_file_path_.Pass());
     pending_capture_monitoring_snapshot_done_callback_.Reset();
   }
-  monitoring_snapshot_file_.reset();
 }
 
 void TracingControllerImpl::OnTraceDataCollected(
@@ -449,21 +365,22 @@ void TracingControllerImpl::OnTraceDataCollected(
     return;
   }
 
-  if (result_file_)
-    result_file_->Write(events_str_ptr);
-}
-
-void TracingControllerImpl::OnMonitoringTraceDataCollected(
-    const scoped_refptr<base::RefCountedString>& events_str_ptr) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TracingControllerImpl::OnMonitoringTraceDataCollected,
-                   base::Unretained(this), events_str_ptr));
+  // Drop trace events if we are just getting categories.
+  if (!pending_get_categories_done_callback_.is_null())
     return;
-  }
 
-  if (!monitoring_snapshot_file_)
-    monitoring_snapshot_file_->Write(events_str_ptr);
+  // If there is already a result in the file, then put a commma
+  // before the next batch of results.
+  if (result_file_has_at_least_one_result_) {
+    size_t written = fwrite(",", 1, 1, result_file_);
+    DCHECK(written == 1);
+  } else {
+    result_file_has_at_least_one_result_ = true;
+  }
+  size_t written = fwrite(events_str_ptr->data().c_str(),
+                          events_str_ptr->data().size(), 1,
+                          result_file_);
+  DCHECK(written == 1);
 }
 
 void TracingControllerImpl::OnLocalTraceDataCollected(
@@ -485,7 +402,7 @@ void TracingControllerImpl::OnLocalMonitoringTraceDataCollected(
     const scoped_refptr<base::RefCountedString>& events_str_ptr,
     bool has_more_events) {
   if (events_str_ptr->data().size())
-    OnMonitoringTraceDataCollected(events_str_ptr);
+    OnTraceDataCollected(events_str_ptr);
 
   if (has_more_events)
     return;
