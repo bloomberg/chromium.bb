@@ -580,6 +580,9 @@ region_block_rule:
         $$ = $2;
         parser->endRule(!!$$);
     }
+  | before_rule invalid_at_rule {
+        $$ = 0;
+    }
   ;
 
 region_block_valid_rule:
@@ -796,9 +799,6 @@ media:
     media_rule_start maybe_media_list at_rule_header_end '{' at_rule_body_start maybe_space block_rule_body closing_brace {
         $$ = parser->createMediaRule($2, $7);
     }
-  | media_rule_start maybe_media_list semi_or_eof {
-        $$ = 0;
-    }
     ;
 
 medium:
@@ -808,11 +808,6 @@ medium:
 supports:
     before_supports_rule SUPPORTS_SYM maybe_space supports_condition at_supports_rule_header_end '{' at_rule_body_start maybe_space block_rule_body closing_brace {
         $$ = parser->createSupportsRule($4, $9);
-    }
-    | before_supports_rule SUPPORTS_SYM error error_location rule_error_recovery at_rule_end {
-        $$ = 0;
-        parser->reportError($4, CSSParser::InvalidSupportsConditionError);
-        parser->popSupportsRuleData();
     }
     ;
 
@@ -912,9 +907,6 @@ keyframes:
     keyframes_rule_start keyframe_name at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space location_label keyframes_rule closing_brace {
         $$ = parser->createKeyframesRule($2, parser->sinkFloatingKeyframeVector($8), $1 /* isPrefixed */);
     }
-  | keyframes_rule_start at_rule_recovery {
-        $$ = 0;
-    }
     ;
 
 keyframe_name:
@@ -998,9 +990,6 @@ page:
             // Also clear margin at-rules here once we fully implement margin at-rules parsing.
             $$ = 0;
         }
-    }
-    | before_page_rule PAGE_SYM at_rule_recovery {
-      $$ = 0;
     }
     ;
 
@@ -1099,10 +1088,7 @@ font_face:
     '{' at_rule_body_start maybe_space_before_declaration declaration_list closing_brace {
         $$ = parser->createFontFaceRule();
     }
-    | before_font_face_rule FONT_FACE_SYM at_rule_recovery {
-      $$ = 0;
-    }
-;
+    ;
 
 before_host_rule:
     /* empty */ {
@@ -1131,10 +1117,6 @@ viewport:
     before_viewport_rule VIEWPORT_RULE_SYM at_rule_header_end_maybe_space
     '{' at_rule_body_start maybe_space_before_declaration declaration_list closing_brace {
         $$ = parser->createViewportRule();
-        parser->markViewportRuleBodyEnd();
-    }
-    | before_viewport_rule VIEWPORT_RULE_SYM at_rule_recovery {
-        $$ = 0;
         parser->markViewportRuleBodyEnd();
     }
 ;
@@ -1173,9 +1155,6 @@ filter:
     '{' at_rule_body_start maybe_space_before_declaration declaration_list closing_brace {
         parser->m_inFilterRule = false;
         $$ = parser->createFilterRule($4);
-    }
-  | before_filter_rule WEBKIT_FILTER_RULE_SYM at_rule_recovery {
-        $$ = 0;
     }
     ;
 
@@ -1946,6 +1925,21 @@ at_rule_end:
   | at_invalid_rule_header_end invalid_block
     ;
 
+invalid_at_rule:
+    keyframes_rule_start at_rule_recovery
+  | before_page_rule PAGE_SYM at_rule_recovery
+  | before_font_face_rule FONT_FACE_SYM at_rule_recovery
+  | before_supports_rule SUPPORTS_SYM error error_location rule_error_recovery at_rule_end {
+        parser->reportError($4, CSSParser::InvalidSupportsConditionError);
+        parser->popSupportsRuleData();
+    }
+  | before_viewport_rule VIEWPORT_RULE_SYM at_rule_recovery {
+        parser->markViewportRuleBodyEnd();
+    }
+  | before_filter_rule WEBKIT_FILTER_RULE_SYM at_rule_recovery
+  | media_rule_start maybe_media_list semi_or_eof
+    ;
+
 invalid_rule:
     error error_location rule_error_recovery at_invalid_rule_header_end invalid_block {
         parser->reportError($2, CSSParser::InvalidRuleError);
@@ -1954,6 +1948,7 @@ invalid_rule:
         parser->resumeErrorLogging();
         parser->reportError($1, CSSParser::InvalidRuleError);
     }
+  | invalid_at_rule
     ;
 
 at_invalid_rule_header_end:
