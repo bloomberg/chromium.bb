@@ -66,6 +66,7 @@
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/custom/V8Float32ArrayCustom.h"
+#include "core/css/MediaQueryListListener.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
@@ -3044,6 +3045,24 @@ static void methodThatRequiresAllArgsAndThrowsMethodCallback(const v8::FunctionC
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void methodQueryListListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("methodQueryListListener", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_VOID(RefPtr<MediaQueryListListener>, listener, MediaQueryListListener::create(ScriptValue(info[0], info.GetIsolate())));
+    imp->methodQueryListListener(listener);
+}
+
+static void methodQueryListListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjV8Internal::methodQueryListListenerMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void serializedValueMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -5052,6 +5071,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"methodWithSequenceArg", TestObjV8Internal::methodWithSequenceArgMethodCallback, 0, 1},
     {"methodReturningSequence", TestObjV8Internal::methodReturningSequenceMethodCallback, 0, 1},
     {"methodWithEnumArg", TestObjV8Internal::methodWithEnumArgMethodCallback, 0, 1},
+    {"methodQueryListListener", TestObjV8Internal::methodQueryListListenerMethodCallback, 0, 1},
     {"serializedValue", TestObjV8Internal::serializedValueMethodCallback, 0, 1},
     {"optionsObject", TestObjV8Internal::optionsObjectMethodCallback, 0, 1},
     {"methodWithException", TestObjV8Internal::methodWithExceptionMethodCallback, 0, 0},

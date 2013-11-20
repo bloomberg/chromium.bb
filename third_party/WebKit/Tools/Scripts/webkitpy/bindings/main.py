@@ -51,7 +51,6 @@ SKIP_PYTHON = set([
     'TestImplements.idl',
     'TestInterface.idl',
     'TestInterfaceImplementedAs.idl',
-    'TestMediaQueryListListener.idl',
     'TestNamedConstructor.idl',
     'TestNode.idl',
     'TestObject.idl',
