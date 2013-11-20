@@ -195,25 +195,45 @@ operations which are lock-free on the current platform (``is_lock_free``
 methods). It will rely on the address-free properly discussed in `Memory
 Model for Concurrent Operations`_.
 
-Signal Handling
----------------
+POSIX-style Signal Handling
+---------------------------
 
-Signal handling from user code currently isn't supported by PNaCl. When
-supported, the impact of ``volatile`` and atomics for same-thread signal
-handling will need to be carefully detailed.
+POSIX-style signal handling really consists of two different features:
 
-NaCl supports signal handling.
+* **Hardware exception handling** (synchronous signals): The ability
+  to catch hardware exceptions (such as memory access faults and
+  division by zero) using a signal handler.
 
-Exception Handling
-------------------
+  PNaCl currently doesn't support hardware exception handling.
 
-PNaCl currently doesn't support exception handling. It supports the
-usual ``-fno-exceptions`` flag, and by default it transforms all
-``throw`` statements into ``abort``. We plan to add exception-handling
-support in the very near future, and zero-cost exception handling soon
-thereafter.
+  NaCl supports hardware exception handling via the
+  ``<nacl/nacl_exception.h>`` interface.
 
-NaCl supports exception handling.
+* **Asynchronous interruption of threads** (asynchronous signals): The
+  ability to asynchronously interrupt the execution of a thread,
+  forcing the thread to run a signal handler.
+
+  A similar feature is **thread suspension**: The ability to
+  asynchronously suspend and resume a thread and inspect or modify its
+  execution state (such as register state).
+
+  Neither PNaCl nor NaCl currently support asynchronous interruption
+  or suspension of threads.
+
+If PNaCl were to support either of these, the interaction of
+``volatile`` and atomics with same-thread signal handling would need
+to be carefully detailed.
+
+C++ Exception Handling
+----------------------
+
+PNaCl currently doesn't support C++ exception handling. It supports
+the usual ``-fno-exceptions`` flag, and by default it transforms all
+``throw`` statements into ``abort()`` calls. We plan to add exception
+handling support in the very near future, and zero-cost exception
+handling soon thereafter.
+
+NaCl supports C++ exception handling.
 
 Computed ``goto``
 -----------------
