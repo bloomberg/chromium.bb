@@ -25,6 +25,11 @@ class GCM_EXPORT GCMClient {
   enum Result {
     // Successful operation.
     SUCCESS,
+    // Invalid parameter.
+    INVALID_PARAMETER,
+    // Previous asynchronous operation is still pending to finish. Certain
+    // operation, like register, is only allowed one at a time.
+    ASYNC_OPERATION_PENDING,
     // Network socket error.
     NETWORK_ERROR,
     // Problem at the server.
@@ -36,10 +41,10 @@ class GCM_EXPORT GCMClient {
   };
 
   // Message data consisting of key-value pairs.
-  typedef const std::map<std::string, std::string> MessageData;
+  typedef std::map<std::string, std::string> MessageData;
 
   // Message to be delivered to the other party.
-  struct OutgoingMessage {
+  struct GCM_EXPORT OutgoingMessage {
     OutgoingMessage();
     ~OutgoingMessage();
 
@@ -51,7 +56,7 @@ class GCM_EXPORT GCMClient {
   };
 
   // Message being received from the other party.
-  struct IncomingMessage {
+  struct GCM_EXPORT IncomingMessage {
     IncomingMessage();
     ~IncomingMessage();
 
@@ -59,7 +64,7 @@ class GCM_EXPORT GCMClient {
   };
 
   // The check-in info for the user. Returned by the server.
-  struct CheckInInfo {
+  struct GCM_EXPORT CheckInInfo {
     CheckInInfo() : android_id(0), secret(0) {}
     bool IsValid() const { return android_id != 0 && secret != 0; }
 
@@ -102,10 +107,8 @@ class GCM_EXPORT GCMClient {
 
     // Called when a message has been received.
     // |app_id|: application ID.
-    // |sender_id|: the registration ID of the sender.
     // |message|: message received.
     virtual void OnMessageReceived(const std::string& app_id,
-                                   const std::string& sender_id,
                                    const IncomingMessage& message) = 0;
 
     // Called when some messages have been deleted from the server.
