@@ -63,7 +63,7 @@ WorkerConsole::~WorkerConsole()
 void WorkerConsole::reportMessageToClient(MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack)
 {
     const ScriptCallFrame& lastCaller = callStack->at(0);
-    m_scope->thread()->workerReportingProxy().postConsoleMessageToWorkerObject(ConsoleAPIMessageSource, level, message, lastCaller.lineNumber(), lastCaller.sourceURL());
+    m_scope->thread()->workerReportingProxy().reportConsoleMessage(ConsoleAPIMessageSource, level, message, lastCaller.lineNumber(), lastCaller.sourceURL());
 }
 
 ExecutionContext* WorkerConsole::context()
@@ -81,4 +81,3 @@ bool WorkerConsole::profilerEnabled()
 // FIXME: add memory getter
 
 } // namespace WebCore
-

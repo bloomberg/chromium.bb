@@ -68,13 +68,14 @@ public:
     explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
 
     // WebCore::WorkerReportingProxy methods:
-    virtual void postExceptionToWorkerObject(
+    virtual void reportException(
         const WTF::String&, int, int, const WTF::String&);
-    virtual void postConsoleMessageToWorkerObject(
+    virtual void reportConsoleMessage(
         WebCore::MessageSource, WebCore::MessageLevel,
         const WTF::String&, int, const WTF::String&);
     virtual void postMessageToPageInspector(const WTF::String&);
     virtual void updateInspectorStateCookie(const WTF::String&);
+    virtual void workerGlobalScopeStarted();
     virtual void workerGlobalScopeClosed();
     virtual void workerGlobalScopeDestroyed();
 

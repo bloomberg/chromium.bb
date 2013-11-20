@@ -41,11 +41,14 @@ namespace WebCore {
     public:
         virtual ~WorkerReportingProxy() {}
 
-        virtual void postExceptionToWorkerObject(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) = 0;
-
-        virtual void postConsoleMessageToWorkerObject(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL) = 0;
+        virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) = 0;
+        virtual void reportConsoleMessage(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL) = 0;
         virtual void postMessageToPageInspector(const String&) = 0;
         virtual void updateInspectorStateCookie(const String&) = 0;
+
+        // Invoked when the new WorkerGlobalScope is started.
+        virtual void workerGlobalScopeStarted() = 0;
+
         // Invoked when close() is invoked on the worker context.
         virtual void workerGlobalScopeClosed() = 0;
 

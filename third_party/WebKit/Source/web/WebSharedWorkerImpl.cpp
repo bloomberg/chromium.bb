@@ -160,19 +160,12 @@ WebApplicationCacheHost* WebSharedWorkerImpl::createApplicationCacheHost(WebFram
 
 // WorkerReportingProxy --------------------------------------------------------
 
-void WebSharedWorkerImpl::postExceptionToWorkerObject(const String& errorMessage,
-                                                      int lineNumber,
-                                                      int columnNumber,
-                                                      const String& sourceURL)
+void WebSharedWorkerImpl::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL)
 {
     // Not suppported in SharedWorker.
 }
 
-void WebSharedWorkerImpl::postConsoleMessageToWorkerObject(MessageSource source,
-                                                           MessageLevel level,
-                                                           const String& message,
-                                                           int lineNumber,
-                                                           const String& sourceURL)
+void WebSharedWorkerImpl::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, int lineNumber, const String& sourceURL)
 {
     // Not supported in SharedWorker.
 }
@@ -198,6 +191,10 @@ void WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread()
         client()->workerContextClosed();
 
     stopWorkerThread();
+}
+
+void WebSharedWorkerImpl::workerGlobalScopeStarted()
+{
 }
 
 void WebSharedWorkerImpl::workerGlobalScopeDestroyed()

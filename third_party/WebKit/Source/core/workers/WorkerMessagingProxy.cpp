@@ -313,7 +313,7 @@ void WorkerMessagingProxy::postTaskToLoader(PassOwnPtr<ExecutionContextTask> tas
     m_executionContext->postTask(task);
 }
 
-void WorkerMessagingProxy::postExceptionToWorkerObject(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL)
+void WorkerMessagingProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL)
 {
     m_executionContext->postTask(WorkerExceptionTask::create(errorMessage, lineNumber, columnNumber, sourceURL, this));
 }
@@ -325,7 +325,7 @@ static void postConsoleMessageTask(ExecutionContext* context, WorkerMessagingPro
     context->addConsoleMessage(source, level, message, sourceURL, lineNumber);
 }
 
-void WorkerMessagingProxy::postConsoleMessageToWorkerObject(MessageSource source, MessageLevel level, const String& message, int lineNumber, const String& sourceURL)
+void WorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, int lineNumber, const String& sourceURL)
 {
     m_executionContext->postTask(createCallbackTask(&postConsoleMessageTask, AllowCrossThreadAccess(this), source, level, message, lineNumber, sourceURL));
 }
@@ -402,6 +402,10 @@ void WorkerMessagingProxy::sendMessageToInspector(const String& message)
         return;
     m_workerThread->runLoop().postTaskForMode(createCallbackTask(dispatchOnInspectorBackendTask, String(message)), WorkerDebuggerAgent::debuggerTaskMode);
     WorkerDebuggerAgent::interruptAndDispatchInspectorCommands(m_workerThread.get());
+}
+
+void WorkerMessagingProxy::workerGlobalScopeStarted()
+{
 }
 
 void WorkerMessagingProxy::workerGlobalScopeDestroyed()

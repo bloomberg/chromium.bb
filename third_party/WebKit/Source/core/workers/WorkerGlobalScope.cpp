@@ -91,6 +91,9 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     setClient(this);
     setSecurityOrigin(SecurityOrigin::create(url));
     m_workerClients->reattachThread();
+
+    // Notify proxy that a new WorkerGlobalScope has been created and started.
+    this->thread()->workerReportingProxy().workerGlobalScopeStarted();
 }
 
 WorkerGlobalScope::~WorkerGlobalScope()
@@ -239,7 +242,7 @@ EventTarget* WorkerGlobalScope::errorEventTarget()
 
 void WorkerGlobalScope::logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>)
 {
-    thread()->workerReportingProxy().postExceptionToWorkerObject(errorMessage, lineNumber, columnNumber, sourceURL);
+    thread()->workerReportingProxy().reportException(errorMessage, lineNumber, columnNumber, sourceURL);
 }
 
 void WorkerGlobalScope::reportBlockedScriptExecutionToInspector(const String& directiveText)
@@ -253,7 +256,7 @@ void WorkerGlobalScope::addMessage(MessageSource source, MessageLevel level, con
         postTask(AddConsoleMessageTask::create(source, level, message));
         return;
     }
-    thread()->workerReportingProxy().postConsoleMessageToWorkerObject(source, level, message, lineNumber, sourceURL);
+    thread()->workerReportingProxy().reportConsoleMessage(source, level, message, lineNumber, sourceURL);
     addMessageToWorkerConsole(source, level, message, sourceURL, lineNumber, 0, state);
 }
 
