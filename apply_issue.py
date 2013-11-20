@@ -7,6 +7,7 @@
 """
 
 import getpass
+import json
 import logging
 import optparse
 import os
@@ -16,6 +17,7 @@ import urllib2
 
 import breakpad  # pylint: disable=W0611
 
+import annotated_gclient
 import checkout
 import fix_encoding
 import gclient_utils
@@ -67,6 +69,9 @@ def main():
       help='Rietveld server')
   parser.add_option('--no-auth', action='store_true',
                     help='Do not attempt authenticated requests.')
+  parser.add_option('--revision-mapping', default='{}',
+                    help='When running gclient, annotate the got_revisions '
+                         'using the revision-mapping.')
   options, args = parser.parse_args()
   logging.basicConfig(
       format='%(levelname)5s %(module)11s(%(lineno)4d): %(message)s',
@@ -79,6 +84,8 @@ def main():
   options.server = options.server.rstrip('/')
   if not options.server:
     parser.error('Require a valid server')
+
+  options.revision_mapping = json.loads(options.revision_mapping)
 
   if options.password == '-':
     print('Reading password')
@@ -178,14 +185,24 @@ def main():
       gclient_path = os.path.join(BASE_DIR, 'gclient')
       if sys.platform == 'win32':
         gclient_path += '.bat'
-      return subprocess.call(
-          [
+      with annotated_gclient.temp_filename(suffix='gclient') as f:
+        cmd = [
             gclient_path, 'sync',
             '--revision', base_rev,
             '--nohooks',
             '--delete_unversioned_trees',
-          ],
-          cwd=gclient_root)
+            ]
+        if options.revision_mapping:
+          cmd.extend(['--output-json', f])
+
+        retcode = subprocess.call(cmd, cwd=gclient_root)
+
+        if retcode == 0 and options.revision_mapping:
+          revisions = annotated_gclient.parse_got_revision(
+              f, options.revision_mapping)
+          annotated_gclient.emit_buildprops(revisions)
+
+        return retcode
   return 0
 
 
