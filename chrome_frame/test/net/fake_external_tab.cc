@@ -529,6 +529,11 @@ void FakeExternalTab::Initialize() {
 
   ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
+  base::FilePath resources_pack_path;
+  PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+    resources_pack_path, ui::SCALE_FACTOR_NONE);
+
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   // Disable Device Discovery with switch because this test does not respect
   // BrowserContextKeyedBaseFactory::ServiceIsNULLWhileTesting.

@@ -26,89 +26,57 @@ SimpleFeature* CreateFeature() {
   return new FeatureClass();
 }
 
-class LazyFeatureProvider : public FeatureProvider {
- public:
-  LazyFeatureProvider(const std::string& name,
-                      BaseFeatureProvider::FeatureFactory factory,
-                      int resource_id)
-      : name_(name),
-        factory_(factory),
-        resource_id_(resource_id) {
+static BaseFeatureProvider* LoadProvider(
+      const std::string& name,
+      BaseFeatureProvider::FeatureFactory factory,
+      int resource_id) {
+  const std::string& features_file =
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          resource_id).as_string();
+  int error_code = 0;
+  std::string error_message;
+  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
+      features_file, base::JSON_PARSE_RFC,
+      &error_code, &error_message));
+  DCHECK(value) << "Could not load features: " << name << " "
+      << error_message;
+  scoped_ptr<base::DictionaryValue> value_as_dict;
+  if (value) {
+    CHECK(value->IsType(base::Value::TYPE_DICTIONARY)) << name;
+    value_as_dict.reset(static_cast<base::DictionaryValue*>(value.release()));
+  } else {
+    // http://crbug.com/176381
+    value_as_dict.reset(new base::DictionaryValue());
   }
-
-  virtual Feature* GetFeature(const std::string& name) OVERRIDE {
-    return GetBaseFeatureProvider()->GetFeature(name);
-  }
-
-  virtual Feature* GetParent(Feature* feature) OVERRIDE {
-    return GetBaseFeatureProvider()->GetParent(feature);
-  }
-
-  virtual const std::vector<std::string>& GetAllFeatureNames() OVERRIDE {
-    return GetBaseFeatureProvider()->GetAllFeatureNames();
-  }
-
- private:
-  BaseFeatureProvider* GetBaseFeatureProvider() {
-    if (!features_)
-      features_ = LoadProvider();
-    return features_.get();
-  }
-
-  scoped_ptr<BaseFeatureProvider> LoadProvider() {
-    const std::string& features_file =
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            resource_id_).as_string();
-    int error_code = 0;
-    std::string error_message;
-    scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-        features_file, base::JSON_PARSE_RFC,
-        &error_code, &error_message));
-    DCHECK(value) << "Could not load features: " << name_ << " "
-        << error_message;
-    scoped_ptr<base::DictionaryValue> value_as_dict;
-    if (value) {
-      CHECK(value->IsType(base::Value::TYPE_DICTIONARY)) << name_;
-      value_as_dict.reset(static_cast<base::DictionaryValue*>(value.release()));
-    } else {
-      // http://crbug.com/176381
-      value_as_dict.reset(new base::DictionaryValue());
-    }
-    return make_scoped_ptr(new BaseFeatureProvider(*value_as_dict, factory_));
-  }
-
-  std::string name_;
-  BaseFeatureProvider::FeatureFactory factory_;
-  int resource_id_;
-  scoped_ptr<BaseFeatureProvider> features_;
-};
+  return new BaseFeatureProvider(*value_as_dict, factory);
+}
 
 struct Static {
   Static() {
-    lazy_feature_providers["api"] = make_linked_ptr(
-        new LazyFeatureProvider("api",
-                                &CreateFeature<APIFeature>,
-                                IDR_EXTENSION_API_FEATURES));
-    lazy_feature_providers["permission"] = make_linked_ptr(
-        new LazyFeatureProvider("permission",
-                                &CreateFeature<PermissionFeature>,
-                                IDR_EXTENSION_PERMISSION_FEATURES));
-    lazy_feature_providers["manifest"] = make_linked_ptr(
-        new LazyFeatureProvider("manifest",
-                                &CreateFeature<ManifestFeature>,
-                                IDR_EXTENSION_MANIFEST_FEATURES));
+    feature_providers["api"] = make_linked_ptr(
+        LoadProvider("api",
+                     &CreateFeature<APIFeature>,
+                     IDR_EXTENSION_API_FEATURES));
+    feature_providers["permission"] = make_linked_ptr(
+        LoadProvider("permission",
+                     &CreateFeature<PermissionFeature>,
+                     IDR_EXTENSION_PERMISSION_FEATURES));
+    feature_providers["manifest"] = make_linked_ptr(
+        LoadProvider("manifest",
+                     &CreateFeature<ManifestFeature>,
+                     IDR_EXTENSION_MANIFEST_FEATURES));
   }
 
-  typedef std::map<std::string, linked_ptr<LazyFeatureProvider> >
-      LazyFeatureProviderMap;
+  typedef std::map<std::string, linked_ptr<FeatureProvider> >
+      FeatureProviderMap;
 
-  LazyFeatureProvider* LazyGetFeatures(const std::string& name) {
-    LazyFeatureProviderMap::iterator it = lazy_feature_providers.find(name);
-    CHECK(it != lazy_feature_providers.end());
+  FeatureProvider* GetFeatures(const std::string& name) const {
+    FeatureProviderMap::const_iterator it = feature_providers.find(name);
+    CHECK(it != feature_providers.end());
     return it->second.get();
   }
 
-  LazyFeatureProviderMap lazy_feature_providers;
+  FeatureProviderMap feature_providers;
 };
 
 base::LazyInstance<Static> g_static = LAZY_INSTANCE_INITIALIZER;
@@ -217,7 +185,7 @@ BaseFeatureProvider::~BaseFeatureProvider() {
 // static
 FeatureProvider* BaseFeatureProvider::GetByName(
     const std::string& name) {
-  return g_static.Get().LazyGetFeatures(name);
+  return g_static.Get().GetFeatures(name);
 }
 
 const std::vector<std::string>& BaseFeatureProvider::GetAllFeatureNames() {
