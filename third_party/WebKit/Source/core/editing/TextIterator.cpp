@@ -244,7 +244,6 @@ TextIterator::TextIterator(const Range* r, TextIteratorBehavior behavior)
     , m_emitsOriginalText(behavior & TextIteratorEmitsOriginalText)
     , m_handledFirstLetter(false)
     , m_ignoresStyleVisibility(behavior & TextIteratorIgnoresStyleVisibility)
-    , m_emitsObjectReplacementCharacters(behavior & TextIteratorEmitsObjectReplacementCharacters)
     , m_stopsOnFormControls(behavior & TextIteratorStopsOnFormControls)
     , m_shouldStop(false)
     , m_emitsImageAltText(behavior & TextIteratorEmitsImageAltText)
@@ -677,11 +676,6 @@ bool TextIterator::handleReplacedElement()
     }
 
     m_hasEmitted = true;
-
-    if (m_emitsObjectReplacementCharacters && renderer && renderer->isReplaced()) {
-        emitCharacter(objectReplacementCharacter, m_node->parentNode(), m_node, 0, 1);
-        return true;
-    }
 
     if (m_emitsCharactersBetweenAllVisiblePositions) {
         // We want replaced elements to behave like punctuation for boundary

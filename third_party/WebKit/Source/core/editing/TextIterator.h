@@ -41,10 +41,9 @@ enum TextIteratorBehavior {
     TextIteratorEmitsCharactersBetweenAllVisiblePositions = 1 << 0,
     TextIteratorEntersTextControls = 1 << 1,
     TextIteratorIgnoresStyleVisibility = 1 << 2,
-    TextIteratorEmitsObjectReplacementCharacters = 1 << 3,
-    TextIteratorEmitsOriginalText = 1 << 4,
-    TextIteratorStopsOnFormControls = 1 << 5,
-    TextIteratorEmitsImageAltText = 1 << 6,
+    TextIteratorEmitsOriginalText = 1 << 3,
+    TextIteratorStopsOnFormControls = 1 << 4,
+    TextIteratorEmitsImageAltText = 1 << 5,
 };
 
 // FIXME: Can't really answer this question correctly without knowing the white-space mode.
@@ -197,8 +196,6 @@ private:
     bool m_handledFirstLetter;
     // Used when the visibility of the style should not affect text gathering.
     bool m_ignoresStyleVisibility;
-    // Used when emitting the special 0xFFFC character is required.
-    bool m_emitsObjectReplacementCharacters;
     // Used when the iteration should stop if form controls are reached.
     bool m_stopsOnFormControls;
     // Used when m_stopsOnFormControls is set to determine if the iterator should keep advancing.
