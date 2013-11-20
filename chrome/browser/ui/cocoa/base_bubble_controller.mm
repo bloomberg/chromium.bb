@@ -251,10 +251,19 @@
       NSSize offsets = NSMakeSize(info_bubble::kBubbleArrowXOffset +
                                   info_bubble::kBubbleArrowWidth / 2.0, 0);
       offsets = [[parentWindow_ contentView] convertSize:offsets toView:nil];
-      if ([bubble_ arrowLocation] == info_bubble::kTopRight) {
-        origin.x -= NSWidth([window frame]) - offsets.width;
-      } else {
-        origin.x -= offsets.width;
+      switch ([bubble_ arrowLocation]) {
+        case info_bubble::kTopRight:
+          origin.x -= NSWidth([window frame]) - offsets.width;
+          break;
+        case info_bubble::kTopLeft:
+          origin.x -= offsets.width;
+          break;
+        case info_bubble::kTopCenter:
+          origin.x -= NSWidth([window frame]) / 2.0;
+          break;
+        case info_bubble::kNoArrow:
+          NOTREACHED();
+          break;
       }
       break;
     }

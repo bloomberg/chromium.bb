@@ -114,6 +114,22 @@ TEST_F(BaseBubbleControllerTest, AnchorAlignRightArrow) {
   EXPECT_GE(NSMaxY(frame), kAnchorPointY);
 }
 
+// Test that kAlignArrowToAnchor and a center bubble arrow correctly align
+// the bubble towards the anchor point.
+TEST_F(BaseBubbleControllerTest, AnchorAlignCenterArrow) {
+  [[controller_ bubble] setArrowLocation:info_bubble::kTopCenter];
+  [[controller_ bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
+  [controller_ showWindow:nil];
+
+  NSRect frame = [[controller_ window] frame];
+  // Make sure the bubble size hasn't changed.
+  EXPECT_EQ(frame.size.width, kBubbleWindowWidth);
+  EXPECT_EQ(frame.size.height, kBubbleWindowHeight);
+  // Make sure the bubble arrow points to the anchor.
+  EXPECT_EQ(NSMidX(frame), kAnchorPointX);
+  EXPECT_GE(NSMaxY(frame), kAnchorPointY);
+}
+
 // Tests that when a new window gets key state (and the bubble resigns) that
 // the key window changes.
 TEST_F(BaseBubbleControllerTest, ResignKeyCloses) {
