@@ -37,6 +37,8 @@ deps = {
         Var('git_url') + '/external/googletest.git@a6772271f71672e889776bfe49ec4efd9da036df',
     'src/third_party/WebKit':
         Var('webkit_url') + Var('webkit_rev'),
+    'src/third_party/angle':
+        Var('git_url') + '/angle/angle.git@a60e0805721f62c28a55faf2df74472cc5fc91fc',
     'src/third_party/angle_dx11':
         Var('git_url') + '/external/angle.git@a60e0805721f62c28a55faf2df74472cc5fc91fc',
     'src/third_party/bidichecker':
@@ -197,6 +199,8 @@ deps_os = {
             Var('git_url') + '/chromium/deps/class-dump.git@89bd40883c767584240b4dade8b74e6f57b9bdab',
         'src/third_party/GTM':
             Var('git_url') + '/external/google-toolbox-for-mac.git@471407b943b14bcebe017dc6d098b3f54019eaba',
+        'src/third_party/angle':
+            None,
         'src/third_party/angle_dx11':
             None,
         'src/third_party/bidichecker':
