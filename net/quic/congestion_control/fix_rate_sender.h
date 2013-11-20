@@ -23,9 +23,9 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
   explicit FixRateSender(const QuicClock* clock);
   virtual ~FixRateSender();
 
-  virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
-
   // Start implementation of SendAlgorithmInterface.
+  virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
+  virtual void SetMaxPacketSize(QuicByteCount max_packet_size) OVERRIDE;
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
       QuicTime feedback_receive_time,
@@ -33,14 +33,15 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
   virtual void OnIncomingAck(QuicPacketSequenceNumber acked_sequence_number,
                              QuicByteCount acked_bytes,
                              QuicTime::Delta rtt) OVERRIDE;
-  virtual void OnIncomingLoss(QuicPacketSequenceNumber largest_loss,
+  virtual void OnIncomingLoss(QuicPacketSequenceNumber sequence_number,
                               QuicTime ack_receive_time) OVERRIDE;
   virtual bool OnPacketSent(
       QuicTime sent_time,
-      QuicPacketSequenceNumber equence_number,
+      QuicPacketSequenceNumber sequence_number,
       QuicByteCount bytes,
       TransmissionType transmission_type,
       HasRetransmittableData has_retransmittable_data) OVERRIDE;
+  virtual void OnRetransmissionTimeout() OVERRIDE;
   virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
                                  QuicByteCount abandoned_bytes) OVERRIDE;
   virtual QuicTime::Delta TimeUntilSend(

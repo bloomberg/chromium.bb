@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "net/quic/congestion_control/quic_congestion_manager.h"
 
 using std::string;
 
@@ -229,12 +230,10 @@ QuicConfig::QuicConfig() :
     max_time_before_crypto_handshake_(QuicTime::Delta::Zero()),
     server_initial_congestion_window_(
         kSWND, QuicNegotiableValue::PRESENCE_OPTIONAL),
-    server_max_packet_size_(kSMSS, QuicNegotiableValue::PRESENCE_OPTIONAL),
     initial_round_trip_time_us_(kIRTT, QuicNegotiableValue::PRESENCE_OPTIONAL) {
   // All optional non-zero parameters should be initialized here.
   server_initial_congestion_window_.set(kMaxInitialWindow,
                                         kDefaultInitialWindow);
-  server_max_packet_size_.set(kMaxPacketSize, kDefaultMaxPacketSize);
 }
 
 QuicConfig::~QuicConfig() {}
@@ -295,15 +294,6 @@ uint32 QuicConfig::server_initial_congestion_window() const {
   return server_initial_congestion_window_.GetUint32();
 }
 
-void QuicConfig::set_server_max_packet_size(size_t max_bytes,
-                                            size_t default_bytes) {
-  server_max_packet_size_.set(max_bytes, default_bytes);
-}
-
-uint32 QuicConfig::server_max_packet_size() const {
-  return server_max_packet_size_.GetUint32();
-}
-
 void QuicConfig::set_initial_round_trip_time_us(size_t max_rtt,
                                                 size_t default_rtt) {
   initial_round_trip_time_us_.set(max_rtt, default_rtt);
@@ -322,12 +312,16 @@ bool QuicConfig::negotiated() {
       keepalive_timeout_seconds_.negotiated() &&
       max_streams_per_connection_.negotiated() &&
       server_initial_congestion_window_.negotiated() &&
-      server_max_packet_size_.negotiated() &&
       initial_round_trip_time_us_.negotiated();
 }
 
 void QuicConfig::SetDefaults() {
-  congestion_control_.set(QuicTagVector(1, kQBIC), kQBIC);
+  QuicTagVector congestion_control;
+  if (FLAGS_enable_quic_pacing) {
+    congestion_control.push_back(kPACE);
+  }
+  congestion_control.push_back(kQBIC);
+  congestion_control_.set(congestion_control, kQBIC);
   idle_connection_state_lifetime_seconds_.set(kDefaultTimeoutSecs,
                                               kDefaultInitialTimeoutSecs);
   // kKATO is optional. Return 0 if not negotiated.
@@ -338,7 +332,6 @@ void QuicConfig::SetDefaults() {
       kDefaultMaxTimeForCryptoHandshakeSecs);
   server_initial_congestion_window_.set(kMaxInitialWindow,
                                         kDefaultInitialWindow);
-  server_max_packet_size_.set(kMaxPacketSize, kDefaultMaxPacketSize);
 }
 
 void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
@@ -347,7 +340,6 @@ void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   keepalive_timeout_seconds_.ToHandshakeMessage(out);
   max_streams_per_connection_.ToHandshakeMessage(out);
   server_initial_congestion_window_.ToHandshakeMessage(out);
-  server_max_packet_size_.ToHandshakeMessage(out);
   // TODO(ianswett): Don't transmit parameters which are optional and not set.
   initial_round_trip_time_us_.ToHandshakeMessage(out);
 }
@@ -375,10 +367,6 @@ QuicErrorCode QuicConfig::ProcessClientHello(
   }
   if (error == QUIC_NO_ERROR) {
     error = server_initial_congestion_window_.ProcessClientHello(
-        client_hello, error_details);
-  }
-  if (error == QUIC_NO_ERROR) {
-    error = server_max_packet_size_.ProcessClientHello(
         client_hello, error_details);
   }
   if (error == QUIC_NO_ERROR) {
@@ -411,10 +399,6 @@ QuicErrorCode QuicConfig::ProcessServerHello(
   }
   if (error == QUIC_NO_ERROR) {
     error = server_initial_congestion_window_.ProcessServerHello(
-        server_hello, error_details);
-  }
-  if (error == QUIC_NO_ERROR) {
-    error = server_max_packet_size_.ProcessServerHello(
         server_hello, error_details);
   }
   if (error == QUIC_NO_ERROR) {

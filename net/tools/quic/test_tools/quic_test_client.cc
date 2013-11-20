@@ -220,10 +220,12 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
 
   scoped_ptr<BalsaHeaders> munged_headers(MungeHeaders(message.headers(),
                                           secure_));
-  return GetOrCreateStream()->SendRequest(
+  ssize_t ret = GetOrCreateStream()->SendRequest(
       munged_headers.get() ? *munged_headers.get() : *message.headers(),
       message.body(),
       message.has_complete_message());
+  WaitForWriteToFlush();
+  return ret;
 }
 
 ssize_t QuicTestClient::SendData(string data, bool last_data) {
@@ -426,6 +428,13 @@ void QuicTestClient::UseWriter(QuicTestWriter* writer) {
 void QuicTestClient::UseGuid(QuicGuid guid) {
   DCHECK(!connected());
   reinterpret_cast<QuicEpollClient*>(client_.get())->UseGuid(guid);
+}
+
+void QuicTestClient::WaitForWriteToFlush() {
+  while (connected() &&
+         client()->session()->NumWriteBlockedStreams() != 0) {
+    client_->WaitForEvents();
+  }
 }
 
 }  // namespace test

@@ -55,6 +55,25 @@ size_t GetMinStreamFrameSize(QuicVersion version);
 // Returns QuicConfig set to default values.
 QuicConfig DefaultQuicConfig();
 
+template<typename SaveType>
+class ValueRestore {
+ public:
+  ValueRestore(SaveType* name, SaveType value)
+      : name_(name),
+        value_(*name) {
+    *name_ = value;
+  }
+  ~ValueRestore() {
+    *name_ = value_;
+  }
+
+ private:
+  SaveType* name_;
+  SaveType value_;
+
+  DISALLOW_COPY_AND_ASSIGN(ValueRestore);
+};
+
 class MockFramerVisitor : public QuicFramerVisitorInterface {
  public:
   MockFramerVisitor();
@@ -352,6 +371,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   virtual ~MockSendAlgorithm();
 
   MOCK_METHOD2(SetFromConfig, void(const QuicConfig& config, bool is_server));
+  MOCK_METHOD1(SetMaxPacketSize, void(QuicByteCount max_packet_size));
   MOCK_METHOD3(OnIncomingQuicCongestionFeedbackFrame,
                void(const QuicCongestionFeedbackFrame&,
                     QuicTime feedback_receive_time,
@@ -362,6 +382,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD5(OnPacketSent,
                bool(QuicTime sent_time, QuicPacketSequenceNumber, QuicByteCount,
                     TransmissionType, HasRetransmittableData));
+  MOCK_METHOD0(OnRetransmissionTimeout, void());
   MOCK_METHOD2(OnPacketAbandoned, void(QuicPacketSequenceNumber sequence_number,
                                       QuicByteCount abandoned_bytes));
   MOCK_METHOD4(TimeUntilSend, QuicTime::Delta(QuicTime now, TransmissionType,

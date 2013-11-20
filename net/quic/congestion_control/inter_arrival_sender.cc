@@ -46,7 +46,10 @@ InterArrivalSender::~InterArrivalSender() {
 
 void InterArrivalSender::SetFromConfig(const QuicConfig& config,
                                        bool is_server) {
-  max_segment_size_ = config.server_max_packet_size();
+}
+
+void InterArrivalSender::SetMaxPacketSize(QuicByteCount max_packet_size) {
+  max_segment_size_ = max_packet_size;
   paced_sender_->set_max_segment_size(max_segment_size_);
   probe_->set_max_segment_size(max_segment_size_);
 }
@@ -70,11 +73,11 @@ QuicBandwidth InterArrivalSender::CalculateSentBandwidth(
   QuicTime::Delta max_diff = QuicTime::Delta::Zero();
   for (; history_rit != sent_packets_map.rend(); ++history_rit) {
     QuicTime::Delta diff =
-        feedback_receive_time.Subtract(history_rit->second->SendTimestamp());
+        feedback_receive_time.Subtract(history_rit->second->send_timestamp());
     if (diff > kBitrateSmoothingPeriod) {
       break;
     }
-    sum_bytes_sent += history_rit->second->BytesSent();
+    sum_bytes_sent += history_rit->second->bytes_sent();
     max_diff = diff;
   }
   if (max_diff < kMinBitrateSmoothingPeriod) {
@@ -111,8 +114,8 @@ void InterArrivalSender::OnIncomingQuicCongestionFeedbackFrame(
       continue;
     }
     QuicTime time_received = received_it->second;
-    QuicTime time_sent = sent_it->second->SendTimestamp();
-    QuicByteCount bytes_sent = sent_it->second->BytesSent();
+    QuicTime time_sent = sent_it->second->send_timestamp();
+    QuicByteCount bytes_sent = sent_it->second->bytes_sent();
 
     channel_estimator_->OnAcknowledgedPacket(
         sequence_number, bytes_sent, time_sent, time_received);
@@ -126,7 +129,7 @@ void InterArrivalSender::OnIncomingQuicCongestionFeedbackFrame(
         // No more sent packets; hence this must be the last.
         last_of_send_time = true;
       } else {
-        if (time_sent != next_sent_it->second->SendTimestamp()) {
+        if (time_sent != next_sent_it->second->send_timestamp()) {
           // Next sent packet have a different send time.
           last_of_send_time = true;
         }
@@ -232,7 +235,7 @@ void InterArrivalSender::OnIncomingAck(
 }
 
 void InterArrivalSender::OnIncomingLoss(
-    QuicPacketSequenceNumber /*largest_loss*/,
+    QuicPacketSequenceNumber /*sequence_number*/,
     QuicTime ack_receive_time) {
   // Packet loss was reported.
   if (!probing_) {
@@ -256,6 +259,10 @@ bool InterArrivalSender::OnPacketSent(
   }
   paced_sender_->OnPacketSent(sent_time, bytes);
   return true;
+}
+
+void InterArrivalSender::OnRetransmissionTimeout() {
+  // TODO(ianswett): Decrease the available bandwidth.
 }
 
 void InterArrivalSender::OnPacketAbandoned(

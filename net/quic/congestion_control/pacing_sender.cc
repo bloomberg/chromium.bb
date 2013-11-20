@@ -17,8 +17,12 @@ PacingSender::PacingSender(SendAlgorithmInterface* sender,
 
 PacingSender::~PacingSender() {}
 
+void PacingSender::SetMaxPacketSize(QuicByteCount max_packet_size) {
+  max_segment_size_ = max_packet_size;
+  sender_->SetMaxPacketSize(max_packet_size);
+}
+
 void PacingSender::SetFromConfig(const QuicConfig& config, bool is_server) {
-  max_segment_size_ = config.server_max_packet_size();
   sender_->SetFromConfig(config, is_server);
 }
 
@@ -37,22 +41,34 @@ void PacingSender::OnIncomingAck(
   sender_->OnIncomingAck(acked_sequence_number, acked_bytes, rtt);
 }
 
-void PacingSender::OnIncomingLoss(QuicPacketSequenceNumber largest_loss,
+void PacingSender::OnIncomingLoss(QuicPacketSequenceNumber sequence_number,
                                   QuicTime ack_receive_time) {
-  sender_->OnIncomingLoss(largest_loss, ack_receive_time);
+  sender_->OnIncomingLoss(sequence_number, ack_receive_time);
 }
 
-bool PacingSender::OnPacketSent(QuicTime sent_time,
-                                QuicPacketSequenceNumber sequence_number,
-                                QuicByteCount bytes,
-                                TransmissionType transmission_type,
-                                HasRetransmittableData is_retransmittable) {
-  // The next packet should be sent as soon as the current packets has
-  // been transferred.
-  next_packet_send_time_ =
-      next_packet_send_time_.Add(BandwidthEstimate().TransferTime(bytes));
+bool PacingSender::OnPacketSent(
+    QuicTime sent_time,
+    QuicPacketSequenceNumber sequence_number,
+    QuicByteCount bytes,
+    TransmissionType transmission_type,
+    HasRetransmittableData has_retransmittable_data) {
+  // Only pace data packets.
+  if (has_retransmittable_data == HAS_RETRANSMITTABLE_DATA) {
+    // The next packet should be sent as soon as the current packets has
+    // been transferred.  We pace at twice the rate of the underlying
+    // sender's bandwidth estimate to help ensure that pacing doesn't become
+    // a bottleneck.
+    const float kPacingAggression = 2;
+    QuicTime::Delta delay =
+        BandwidthEstimate().Scale(kPacingAggression).TransferTime(bytes);
+    next_packet_send_time_ = next_packet_send_time_.Add(delay);
+  }
   return sender_->OnPacketSent(sent_time, sequence_number, bytes,
-                               transmission_type, is_retransmittable);
+                               transmission_type, has_retransmittable_data);
+}
+
+void PacingSender::OnRetransmissionTimeout() {
+  sender_->OnRetransmissionTimeout();
 }
 
 void PacingSender::OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
@@ -74,6 +90,12 @@ QuicTime::Delta PacingSender::TimeUntilSend(
     return time_until_send;
   }
 
+  if (has_retransmittable_data == NO_RETRANSMITTABLE_DATA) {
+    // Don't pace ACK packets, since they do not count against CWND and do not
+    // cause CWND to grow.
+    return QuicTime::Delta::Zero();
+  }
+
   if (!was_last_send_delayed_ &&
       (!next_packet_send_time_.IsInitialized() ||
        now > next_packet_send_time_.Add(alarm_granularity_))) {
@@ -86,11 +108,14 @@ QuicTime::Delta PacingSender::TimeUntilSend(
   // If the end of the epoch is far enough in the future, delay the send.
   if (next_packet_send_time_ > now.Add(alarm_granularity_)) {
     was_last_send_delayed_ = true;
+    DVLOG(1) << "Delaying packet: "
+             << next_packet_send_time_.Subtract(now).ToMicroseconds();
     return next_packet_send_time_.Subtract(now);
   }
 
   // Sent it immediately.  The epoch end will be adjusted in OnPacketSent.
   was_last_send_delayed_ = false;
+  DVLOG(1) << "Sending packet now";
   return QuicTime::Delta::Zero();
 }
 

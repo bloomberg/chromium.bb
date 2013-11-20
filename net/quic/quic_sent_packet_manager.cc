@@ -69,22 +69,17 @@ void QuicSentPacketManager::OnSerializedPacket(
   unacked_packets_[serialized_packet.sequence_number] =
       TransmissionInfo(serialized_packet.retransmittable_frames,
                        serialized_packet.sequence_number_length);
-  nack_map_[serialized_packet.sequence_number] = 0;
 }
 
 void QuicSentPacketManager::OnRetransmittedPacket(
     QuicPacketSequenceNumber old_sequence_number,
     QuicPacketSequenceNumber new_sequence_number) {
   DCHECK(ContainsKey(unacked_packets_, old_sequence_number));
-  DCHECK(ContainsKey(nack_map_, old_sequence_number));
   DCHECK(ContainsKey(pending_retransmissions_, old_sequence_number));
   DCHECK(unacked_packets_.empty() ||
          unacked_packets_.rbegin()->first < new_sequence_number);
 
   pending_retransmissions_.erase(old_sequence_number);
-
-  nack_map_.erase(old_sequence_number);
-  nack_map_[new_sequence_number] = 0;
 
   RetransmittableFrames* frames =
       unacked_packets_[old_sequence_number].retransmittable_frames;
@@ -146,34 +141,19 @@ void QuicSentPacketManager::HandleAckForSentPackets(
       break;
     }
 
-    if (!IsAwaitingPacket(received_info, sequence_number)) {
-      // Packet was acked, so remove it from our unacked packet list.
-      DVLOG(1) << ENDPOINT <<"Got an ack for packet " << sequence_number;
-      // If data is associated with the most recent transmission of this
-      // packet, then inform the caller.
-      it = MarkPacketReceivedByPeer(sequence_number);
-
-      // The AckNotifierManager is informed of every ACKed sequence number.
-      ack_notifier_manager_.OnPacketAcked(sequence_number);
-
+    if (IsAwaitingPacket(received_info, sequence_number)) {
+      ++it;
       continue;
     }
 
-    // The peer got packets after this sequence number.  This is an explicit
-    // nack.
+    // Packet was acked, so remove it from our unacked packet list.
+    DVLOG(1) << ENDPOINT <<"Got an ack for packet " << sequence_number;
+    // If data is associated with the most recent transmission of this
+    // packet, then inform the caller.
+    it = MarkPacketReceivedByPeer(sequence_number);
 
-    // TODO(rch): move this to the congestion manager, and fix the logic.
-    // This is a packet which we planned on retransmitting and has not been
-    // seen at the time of this ack being sent out.  See if it's our new
-    // lowest unacked packet.
-    DVLOG(1) << ENDPOINT << "still missing packet " << sequence_number;
-    ++it;
-    NackMap::iterator nack_it = nack_map_.find(sequence_number);
-    if (nack_it == nack_map_.end()) {
-      continue;
-    }
-    ++nack_it->second;
-    helper_->OnPacketNacked(sequence_number, nack_it->second);
+    // The AckNotifierManager is informed of every ACKed sequence number.
+    ack_notifier_manager_.OnPacketAcked(sequence_number);
   }
 
   // If we have received a trunacted ack, then we need to
@@ -193,7 +173,6 @@ void QuicSentPacketManager::HandleAckForSentPackets(
       }
 
       DCHECK(ContainsKey(previous_transmissions_map_, sequence_number));
-      DCHECK(!ContainsKey(nack_map_, sequence_number));
       DCHECK(!HasRetransmittableFrames(sequence_number));
       unacked_packets_.erase(sequence_number);
       SequenceNumberSet* previous_transmissions =
@@ -352,14 +331,12 @@ void QuicSentPacketManager::DiscardPacket(
       unacked_packets_.find(sequence_number);
   // Packet was not meant to be retransmitted.
   if (unacked_it == unacked_packets_.end()) {
-    DCHECK(!ContainsKey(nack_map_, sequence_number));
     return;
   }
 
   // Delete the retransmittable frames.
   delete unacked_it->second.retransmittable_frames;
   unacked_packets_.erase(unacked_it);
-  nack_map_.erase(sequence_number);
   pending_retransmissions_.erase(sequence_number);
   return;
 }
@@ -413,7 +390,6 @@ bool QuicSentPacketManager::IsFecUnacked(
 const RetransmittableFrames& QuicSentPacketManager::GetRetransmittableFrames(
     QuicPacketSequenceNumber sequence_number) const {
   DCHECK(ContainsKey(unacked_packets_, sequence_number));
-  DCHECK(ContainsKey(nack_map_, sequence_number));
 
   return *unacked_packets_.find(sequence_number)->second.retransmittable_frames;
 }

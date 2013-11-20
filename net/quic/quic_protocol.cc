@@ -212,7 +212,6 @@ ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
   return os;
 }
 
-// TODO(ianswett): Initializing largest_observed to 0 should not be necessary.
 ReceivedPacketInfo::ReceivedPacketInfo()
     : largest_observed(0),
       delta_time_largest_observed(QuicTime::Delta::Infinite()),

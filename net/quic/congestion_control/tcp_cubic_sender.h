@@ -35,9 +35,9 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
                  QuicTcpCongestionWindow max_tcp_congestion_window);
   virtual ~TcpCubicSender();
 
-  virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
-
   // Start implementation of SendAlgorithmInterface.
+  virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
+  virtual void SetMaxPacketSize(QuicByteCount max_packet_size) OVERRIDE;
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
       QuicTime feedback_receive_time,
@@ -52,6 +52,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
                             QuicByteCount bytes,
                             TransmissionType transmission_type,
                             HasRetransmittableData is_retransmittable) OVERRIDE;
+  virtual void OnRetransmissionTimeout() OVERRIDE;
   virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
                                  QuicByteCount abandoned_bytes) OVERRIDE;
   virtual QuicTime::Delta TimeUntilSend(

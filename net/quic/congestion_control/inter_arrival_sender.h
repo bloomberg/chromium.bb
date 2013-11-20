@@ -27,41 +27,36 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
   explicit InterArrivalSender(const QuicClock* clock);
   virtual ~InterArrivalSender();
 
-  virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
-
   static QuicBandwidth CalculateSentBandwidth(
       const SendAlgorithmInterface::SentPacketsMap& sent_packets_map,
       QuicTime feedback_receive_time);
 
   // Start implementation of SendAlgorithmInterface.
+  virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
+  virtual void SetMaxPacketSize(QuicByteCount max_packet_size) OVERRIDE;
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
       QuicTime feedback_receive_time,
       const SentPacketsMap& sent_packets) OVERRIDE;
-
   virtual void OnIncomingAck(QuicPacketSequenceNumber acked_sequence_number,
                              QuicByteCount acked_bytes,
                              QuicTime::Delta rtt) OVERRIDE;
-
-  virtual void OnIncomingLoss(QuicPacketSequenceNumber largest_loss,
+  virtual void OnIncomingLoss(QuicPacketSequenceNumber sequence_number,
                               QuicTime ack_receive_time) OVERRIDE;
-
   virtual bool OnPacketSent(
       QuicTime sent_time,
       QuicPacketSequenceNumber sequence_number,
       QuicByteCount bytes,
       TransmissionType transmission_type,
       HasRetransmittableData has_retransmittable_data) OVERRIDE;
-
+  virtual void OnRetransmissionTimeout() OVERRIDE;
   virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
                                  QuicByteCount abandoned_bytes) OVERRIDE;
-
   virtual QuicTime::Delta TimeUntilSend(
       QuicTime now,
       TransmissionType transmission_type,
       HasRetransmittableData has_retransmittable_data,
       IsHandshake handshake) OVERRIDE;
-
   virtual QuicBandwidth BandwidthEstimate() const OVERRIDE;
   virtual QuicTime::Delta SmoothedRtt() const OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;

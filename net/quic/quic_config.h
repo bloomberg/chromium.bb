@@ -167,11 +167,6 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   uint32 server_initial_congestion_window() const;
 
-  // Sets the server's max packet size and default max packet size in bytes.
-  void set_server_max_packet_size(size_t max_bytes, size_t default_bytes);
-
-  uint32 server_max_packet_size() const;
-
   // Sets an estimated initial round trip time in us.
   void set_initial_round_trip_time_us(size_t max_rtt, size_t default_rtt);
 
@@ -210,8 +205,6 @@ class NET_EXPORT_PRIVATE QuicConfig {
   QuicTime::Delta max_time_before_crypto_handshake_;
   // Initial congestion window in packets.
   QuicNegotiableUint32 server_initial_congestion_window_;
-  // Maximum packet size for the server to send in bytes.
-  QuicNegotiableUint32 server_max_packet_size_;
   // Initial round trip time estimate in microseconds.
   QuicNegotiableUint32 initial_round_trip_time_us_;
 };

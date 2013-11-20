@@ -110,6 +110,8 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
 
   void set_priority(QuicPriority priority) { priority_ = priority; }
 
+  void WaitForWriteToFlush();
+
  private:
   void Initialize(IPEndPoint address, const string& hostname, bool secure);
 

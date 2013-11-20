@@ -236,6 +236,14 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
 }
 
+TEST_F(TcpCubicSenderTest, RTOCongestionWindow) {
+  EXPECT_EQ(kDefaultWindowTCP, sender_->SendWindow());
+
+  // Expect the window to decrease to the minimum once the RTO fires.
+  sender_->OnRetransmissionTimeout();
+  EXPECT_EQ(2 * kDefaultTCPMSS, sender_->SendWindow());
+}
+
 TEST_F(TcpCubicSenderTest, RetransmissionDelay) {
   const int64 kRttMs = 10;
   const int64 kDeviationMs = 3;

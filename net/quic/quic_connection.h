@@ -303,8 +303,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // QuicSentPacketManager::HelperInterface
   virtual QuicPacketSequenceNumber GetNextPacketSequenceNumber() OVERRIDE;
-  virtual void OnPacketNacked(QuicPacketSequenceNumber sequence_number,
-                              size_t nack_count) OVERRIDE;
 
   // Accessors
   void set_visitor(QuicConnectionVisitorInterface* visitor) {
@@ -369,11 +367,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   // by the same policy as the RTO alarm, but is a separate alarm.
   QuicTime OnAbandonFecTimeout();
 
-  // Retransmits unacked packets which were sent with initial encryption, if
-  // |initial_encryption_only| is true, otherwise retransmits all unacked
-  // packets. Used when the negotiated protocol version is different than what
-  // was initially assumed and when the visitor wants to re-transmit packets
-  // with initial encryption when the initial encrypter changes.
+  // Retransmits all unacked packets with retransmittable frames if
+  // |retransmission_type| is ALL_PACKETS, otherwise retransmits only initially
+  // encrypted packets. Used when the negotiated protocol version is different
+  // from what was initially assumed and when the visitor wants to re-transmit
+  // initially encrypted packets when the initial encrypter changes.
   void RetransmitUnackedPackets(RetransmissionType retransmission_type);
 
   // Changes the encrypter used for level |level| to |encrypter|. The function
@@ -670,9 +668,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   std::vector<QuicRstStreamFrame> last_rst_frames_;
   std::vector<QuicGoAwayFrame> last_goaway_frames_;
   std::vector<QuicConnectionCloseFrame> last_close_frames_;
-  // Then number of packets retransmitted because of nacks
-  // while processed the current ack frame.
-  size_t retransmitted_nacked_packet_count_;
 
   QuicCongestionFeedbackFrame outgoing_congestion_feedback_;
 
@@ -761,9 +756,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // The state of connection in version negotiation finite state machine.
   QuicVersionNegotiationState version_negotiation_state_;
-
-  // Number of times the RTO timer has fired in a row without receiving an ack.
-  size_t consecutive_rto_count_;
 
   // Tracks if the connection was created by the server.
   bool is_server_;

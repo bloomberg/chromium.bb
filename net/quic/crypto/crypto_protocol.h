@@ -45,6 +45,7 @@ const QuicTag kAESG = TAG('A', 'E', 'S', 'G');  // AES128 + GCM-12
 
 // Congestion control feedback types
 const QuicTag kQBIC = TAG('Q', 'B', 'I', 'C');  // TCP cubic
+const QuicTag kPACE = TAG('P', 'A', 'C', 'E');  // Paced TCP cubic
 const QuicTag kINAR = TAG('I', 'N', 'A', 'R');  // Inter arrival
 
 // Proof types (i.e. certificate types)
@@ -71,7 +72,6 @@ const QuicTag kMSPC = TAG('M', 'S', 'P', 'C');  // Max streams per connection.
 const QuicTag kIRTT = TAG('I', 'R', 'T', 'T');  // Estimated initial RTT in us.
 const QuicTag kSWND = TAG('S', 'W', 'N', 'D');  // Server's Initial congestion
                                                 // window.
-const QuicTag kSMSS = TAG('S', 'M', 'S', 'S');  // Server's maximum packet size.
 const QuicTag kSNI  = TAG('S', 'N', 'I', '\0'); // Server name
                                                 // indication
 const QuicTag kPUBS = TAG('P', 'U', 'B', 'S');  // Public key values

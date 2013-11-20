@@ -53,16 +53,6 @@ namespace {
 // This will likely have to be tuned.
 const QuicPacketSequenceNumber kMaxPacketGap = 5000;
 
-// We want to make sure if we get a nack packet which triggers several
-// retransmissions, we don't queue up too many packets.  10 is TCP's default
-// initial congestion window(RFC 6928).
-const size_t kMaxRetransmissionsPerAck = kDefaultInitialWindow;
-
-// TCP retransmits after 3 nacks.
-// TODO(ianswett): Change to match TCP's rule of retransmitting once an ack
-// at least 3 sequence numbers larger arrives.
-const size_t kNumberOfNacksBeforeRetransmission = 3;
-
 // Limit the number of FEC groups to two.  If we get enough out of order packets
 // that this becomes limiting, we can revisit.
 const size_t kMaxFecGroups = 2;
@@ -234,11 +224,14 @@ QuicConnection::QuicConnection(QuicGuid guid,
       congestion_manager_(clock_, kTCP),
       sent_packet_manager_(is_server, this),
       version_negotiation_state_(START_NEGOTIATION),
-      consecutive_rto_count_(0),
       is_server_(is_server),
       connected_(true),
       received_truncated_ack_(false),
       address_migrating_(false) {
+  if (!is_server_) {
+    // Pacing will be enabled if the client negotiates it.
+    congestion_manager_.MaybeEnablePacing();
+  }
   DLOG(INFO) << ENDPOINT << "Created connection with guid: " << guid;
   timeout_alarm_->Set(clock_->ApproximateNow().Add(idle_network_timeout_));
   framer_.set_visitor(this);
@@ -255,14 +248,8 @@ QuicConnection::~QuicConnection() {
 }
 
 void QuicConnection::SetFromConfig(const QuicConfig& config) {
-  DCHECK_LT(0u, config.server_max_packet_size());
   DCHECK_LT(0u, config.server_initial_congestion_window());
   SetIdleNetworkTimeout(config.idle_connection_state_lifetime());
-  // Set the max packet length only when QUIC_VERSION_12 or later is supported,
-  // with explicitly truncated acks.
-  if (version() > QUIC_VERSION_11 && is_server_) {
-    options()->max_packet_length = config.server_max_packet_size();
-  }
   congestion_manager_.SetFromConfig(config, is_server_);
   // TODO(satyamshekhar): Set congestion control and ICSL also.
 }
@@ -538,7 +525,6 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
   sent_entropy_manager_.ClearEntropyBefore(
       received_packet_manager_.least_packet_awaited_by_peer() - 1);
 
-  retransmitted_nacked_packet_count_ = 0;
   sent_packet_manager_.OnIncomingAck(incoming_ack.received_info,
                                      received_truncated_ack_);
 
@@ -546,10 +532,18 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
   QuicPacketSequenceNumber least_unacked_sent_after =
       sent_packet_manager_.GetLeastUnackedSentPacket();
 
+  SequenceNumberSet retransmission_packets =
+      congestion_manager_.OnIncomingAckFrame(incoming_ack,
+                                             time_of_last_received_packet_);
+
+  for (SequenceNumberSet::const_iterator it = retransmission_packets.begin();
+       it != retransmission_packets.end(); ++it) {
+    RetransmitPacket(*it, NACK_RETRANSMISSION);
+  }
+
   // Used to set RTO and FEC alarms.
   QuicTime::Delta retransmission_delay =
-      congestion_manager_.GetRetransmissionDelay(
-          sent_packet_manager_.GetNumRetransmittablePackets(), 0);
+      congestion_manager_.GetRetransmissionDelay();
 
   // If there are outstanding packets, and the least unacked sequence number
   // has increased after processing this latest AckFrame, then reschedule the
@@ -561,7 +555,7 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
     }
     retransmission_alarm_->Set(
         clock_->ApproximateNow().Add(retransmission_delay));
-    consecutive_rto_count_ = 0;
+    congestion_manager_.OnLeastUnackedIncreased();
   } else if (!sent_packet_manager_.HasUnackedPackets()) {
     retransmission_alarm_->Cancel();
   }
@@ -574,9 +568,6 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
       least_unacked_sent_before < least_unacked_sent_after) {
     abandon_fec_alarm_->Set(clock_->ApproximateNow().Add(retransmission_delay));
   }
-
-  congestion_manager_.OnIncomingAckFrame(incoming_ack,
-                                         time_of_last_received_packet_);
 }
 
 bool QuicConnection::OnCongestionFeedbackFrame(
@@ -1031,6 +1022,14 @@ bool QuicConnection::ProcessValidatedPacket() {
   time_of_last_received_packet_ = clock_->Now();
   DVLOG(1) << ENDPOINT << "time of last received packet: "
            << time_of_last_received_packet_.ToDebuggingValue();
+
+  // Set the max packet length only when QUIC_VERSION_12 or later is supported,
+  // with explicitly truncated acks.
+  if (version() > QUIC_VERSION_11 && is_server_ &&
+      encryption_level_ == ENCRYPTION_NONE &&
+      last_size_ > options()->max_packet_length) {
+    options()->max_packet_length = last_size_;
+  }
   return true;
 }
 
@@ -1161,9 +1160,16 @@ bool QuicConnection::ShouldGeneratePacket(
 bool QuicConnection::CanWrite(TransmissionType transmission_type,
                               HasRetransmittableData retransmittable,
                               IsHandshake handshake) {
+  if (write_blocked_) {
+    return false;
+  }
+
+  // TODO(rch): consider removing this check so that if an ACK comes in
+  // before the alarm goes it, we might be able send out a packet.
   // This check assumes that if the send alarm is set, it applies equally to all
   // types of transmissions.
-  if (write_blocked_ || send_alarm_->IsSet()) {
+  if (send_alarm_->IsSet()) {
+    DLOG(INFO) << "Send alarm set.  Not sending.";
     return false;
   }
 
@@ -1178,6 +1184,7 @@ bool QuicConnection::CanWrite(TransmissionType transmission_type,
   if (!delay.IsZero()) {
     send_alarm_->Cancel();
     send_alarm_->Set(now.Add(delay));
+    DLOG(INFO) << "Delaying sending.";
     return false;
   }
   return true;
@@ -1198,9 +1205,7 @@ void QuicConnection::SetupRetransmission(
   }
 
   QuicTime::Delta retransmission_delay =
-      congestion_manager_.GetRetransmissionDelay(
-          sent_packet_manager_.GetNumRetransmittablePackets(),
-          consecutive_rto_count_);
+      congestion_manager_.GetRetransmissionDelay();
   retransmission_alarm_->Set(
       clock_->ApproximateNow().Add(retransmission_delay));
 }
@@ -1211,9 +1216,7 @@ void QuicConnection::SetupAbandonFecTimer(
     return;
   }
   QuicTime::Delta retransmission_delay =
-      congestion_manager_.GetRetransmissionDelay(
-          sent_packet_manager_.GetNumRetransmittablePackets(),
-          consecutive_rto_count_);
+      congestion_manager_.GetRetransmissionDelay();
   abandon_fec_alarm_->Set(clock_->ApproximateNow().Add(retransmission_delay));
 }
 
@@ -1267,9 +1270,9 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
   }
 
   if (encrypted->length() > options()->max_packet_length) {
-    LOG(DFATAL) << ENDPOINT
-                << "Writing an encrypted packet larger than max_packet_length:"
-                << options()->max_packet_length;
+    LOG(DFATAL) << "Writing an encrypted packet larger than max_packet_length:"
+                << options()->max_packet_length << " encrypted length: "
+                << encrypted->length();
   }
   DLOG(INFO) << ENDPOINT << "Sending packet number " << sequence_number
              << " : " << (packet->is_fec_packet() ? "FEC " :
@@ -1462,15 +1465,6 @@ QuicPacketSequenceNumber QuicConnection::GetNextPacketSequenceNumber() {
   return packet_creator_.sequence_number() + 1;
 }
 
-void QuicConnection::OnPacketNacked(QuicPacketSequenceNumber sequence_number,
-                                    size_t nack_count) {
-  if (nack_count >= kNumberOfNacksBeforeRetransmission &&
-      retransmitted_nacked_packet_count_ < kMaxRetransmissionsPerAck) {
-    ++retransmitted_nacked_packet_count_;
-    RetransmitPacket(sequence_number, NACK_RETRANSMISSION);
-  }
-}
-
 bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
                                        const SerializedPacket& packet,
                                        TransmissionType transmission_type) {
@@ -1522,7 +1516,8 @@ void QuicConnection::OnRetransmissionTimeout() {
   // TODO(ianswett): When an RTO fires, but the connection has not been
   // established as forward secure, re-send the client hello first.
   ++stats_.rto_count;
-  ++consecutive_rto_count_;
+
+  congestion_manager_.OnRetransmissionTimeout();
 
   // Attempt to send all the unacked packets when the RTO fires, let the
   // congestion manager decide how many to send immediately and the remaining
@@ -1561,9 +1556,7 @@ QuicTime QuicConnection::OnAbandonFecTimeout() {
   // Abandon all the FEC packets older than the current RTO, then reschedule
   // the alarm if there are more pending fec packets.
   QuicTime::Delta retransmission_delay =
-      congestion_manager_.GetRetransmissionDelay(
-          sent_packet_manager_.GetNumRetransmittablePackets(),
-          consecutive_rto_count_);
+      congestion_manager_.GetRetransmissionDelay();
   QuicTime max_send_time =
       clock_->ApproximateNow().Subtract(retransmission_delay);
   bool abandoned_packet = false;

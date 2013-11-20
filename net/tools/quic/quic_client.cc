@@ -47,8 +47,6 @@ QuicClient::QuicClient(IPEndPoint server_address,
   config_.SetDefaults();
   // TODO(ianswett): Allow the client to change the server's max packet size and
   // initial congestion window.
-  config_.set_server_max_packet_size(kDefaultMaxPacketSize,
-                                     kDefaultMaxPacketSize);
   config_.set_server_initial_congestion_window(kDefaultInitialWindow,
                                                kDefaultInitialWindow);
 }

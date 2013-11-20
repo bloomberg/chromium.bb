@@ -23,16 +23,30 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
  public:
   class SentPacket {
    public:
-    SentPacket(QuicByteCount bytes, QuicTime timestamp)
+    SentPacket(QuicByteCount bytes,
+               QuicTime timestamp,
+               HasRetransmittableData has_retransmittable_data)
         : bytes_sent_(bytes),
-          send_timestamp_(timestamp) {
+          send_timestamp_(timestamp),
+          has_retransmittable_data_(has_retransmittable_data),
+          nack_count_(0) {
     }
-    QuicByteCount BytesSent() { return bytes_sent_; }
-    QuicTime& SendTimestamp() { return send_timestamp_; }
+    QuicByteCount bytes_sent() const { return bytes_sent_; }
+    const QuicTime& send_timestamp() const { return send_timestamp_; }
+    HasRetransmittableData has_retransmittable_data() const {
+      return has_retransmittable_data_;
+    }
+    size_t nack_count() const { return nack_count_; }
+
+    void Nack() {
+      ++nack_count_;
+    }
 
    private:
     QuicByteCount bytes_sent_;
     QuicTime send_timestamp_;
+    HasRetransmittableData has_retransmittable_data_;
+    size_t nack_count_;
   };
 
   typedef std::map<QuicPacketSequenceNumber, SentPacket*> SentPacketsMap;
@@ -43,6 +57,9 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   virtual ~SendAlgorithmInterface() {}
 
   virtual void SetFromConfig(const QuicConfig& config, bool is_server) = 0;
+
+  // Sets the maximum size of packets that will be sent.
+  virtual void SetMaxPacketSize(QuicByteCount max_packet_size) = 0;
 
   // Called when we receive congestion feedback from remote peer.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
@@ -55,9 +72,9 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
                              QuicByteCount acked_bytes,
                              QuicTime::Delta rtt) = 0;
 
-  // Indicates a loss event of one or more packets. |largest_loss| is the
-  // largest packet lost in this event.
-  virtual void OnIncomingLoss(QuicPacketSequenceNumber largest_loss,
+  // Indicates a loss event of one packet. |sequence_number| is the
+  // sequence number of the lost packet.
+  virtual void OnIncomingLoss(QuicPacketSequenceNumber sequence_number,
                               QuicTime ack_receive_time) = 0;
 
   // Inform that we sent x bytes to the wire, and if that was a retransmission.
@@ -70,6 +87,9 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
                             QuicByteCount bytes,
                             TransmissionType transmission_type,
                             HasRetransmittableData is_retransmittable) = 0;
+
+  // Called when the retransmission timeout fires.
+  virtual void OnRetransmissionTimeout() = 0;
 
   // Called when a packet is timed out.
   virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,

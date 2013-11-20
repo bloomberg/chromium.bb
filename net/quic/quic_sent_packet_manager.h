@@ -23,7 +23,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_track_retransmission_history;
 namespace net {
 
 // Class which tracks the set of packets sent on a QUIC connection.
-// It keeps track of the retransmittable data ssociated with each
+// It keeps track of the retransmittable data associated with each
 // packets. If a packet is retransmitted, it will keep track of each
 // version of a packet so that if a previous transmission is acked,
 // the data will not be retransmitted.
@@ -54,13 +54,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
     // Called to return the sequence number of the next packet to be sent.
     virtual QuicPacketSequenceNumber GetNextPacketSequenceNumber() = 0;
-
-    // Called when a packet has been explicitly NACK'd.  If a packet
-    // has been retransmitted with mutliple sequence numbers, this will
-    // only be called for the sequence number (if any) associated with
-    // retransmittable frames.
-    virtual void OnPacketNacked(QuicPacketSequenceNumber sequence_number,
-                                size_t nack_count) = 0;
   };
 
   QuicSentPacketManager(bool is_server, HelperInterface* helper);
@@ -168,7 +161,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
                           QuicTime> UnackedFecPacketMap;
   typedef linked_hash_map<QuicPacketSequenceNumber,
                           TransmissionType> PendingRetransmissionMap;
-  typedef base::hash_map<QuicPacketSequenceNumber, size_t> NackMap;
   typedef base::hash_map<QuicPacketSequenceNumber, SequenceNumberSet*>
                          PreviousTransmissionMap;
 
@@ -215,10 +207,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Pending retransmissions which have not been packetized and sent yet.
   PendingRetransmissionMap pending_retransmissions_;
-
-  // Map from sequence number to the number of nacks for the packet.
-  // Only the most recent transmission of packets are present in this map.
-  NackMap nack_map_;
 
   // Map from sequence number to set of all sequence number that this packet has
   // been transmitted as.  If a packet has not been retransmitted, it will not

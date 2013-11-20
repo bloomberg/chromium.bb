@@ -27,25 +27,6 @@ namespace net {
 namespace test {
 namespace {
 
-template<typename SaveType>
-class ValueRestore {
- public:
-  ValueRestore(SaveType* name, SaveType value)
-      : name_(name),
-        value_(*name) {
-    *name_ = value;
-  }
-  ~ValueRestore() {
-    *name_ = value_;
-  }
-
- private:
-  SaveType* name_;
-  SaveType value_;
-
-  DISALLOW_COPY_AND_ASSIGN(ValueRestore);
-};
-
 class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
  protected:
   QuicPacketCreatorTest()

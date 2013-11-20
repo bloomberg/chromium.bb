@@ -22,6 +22,7 @@ const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
 const QuicByteCount kDefaultReceiveWindow = 64000;
 const int64 kInitialCongestionWindow = 10;
 const int kMaxBurstLength = 3;
+// Constants used for RTT calculation.
 const int kInitialRttMs = 60;  // At a typical RTT 60 ms.
 const float kAlpha = 0.125f;
 const float kOneMinusAlpha = (1 - kAlpha);
@@ -57,10 +58,12 @@ TcpCubicSender::~TcpCubicSender() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.FinalTcpCwnd", congestion_window_);
 }
 
+void TcpCubicSender::SetMaxPacketSize(QuicByteCount /*max_packet_size*/) {
+}
+
 void TcpCubicSender::SetFromConfig(const QuicConfig& config, bool is_server) {
   if (is_server) {
     // Set the initial window size.
-    // Ignoring the max packet size and always using TCP's default MSS.
     congestion_window_ = config.server_initial_congestion_window();
   }
 }
@@ -100,12 +103,12 @@ void TcpCubicSender::OnIncomingAck(
   }
 }
 
-void TcpCubicSender::OnIncomingLoss(QuicPacketSequenceNumber largest_loss,
+void TcpCubicSender::OnIncomingLoss(QuicPacketSequenceNumber sequence_number,
                                     QuicTime /*ack_receive_time*/) {
   // TCP NewReno (RFC6582) says that once a loss occurs, any losses in packets
   // already sent should be treated as a single loss event, since it's expected.
-  if (largest_loss <= largest_sent_at_last_cutback_) {
-    DLOG(INFO) << "Ignoring loss for largest_missing:" << largest_loss
+  if (sequence_number <= largest_sent_at_last_cutback_) {
+    DLOG(INFO) << "Ignoring loss for largest_missing:" << sequence_number
                << " because it was sent prior to the last CWND cutback.";
     return;
   }
@@ -140,8 +143,11 @@ bool TcpCubicSender::OnPacketSent(QuicTime /*sent_time*/,
   }
 
   bytes_in_flight_ += bytes;
-  DCHECK_LT(largest_sent_sequence_number_, sequence_number);
-  largest_sent_sequence_number_ = sequence_number;
+  if (largest_sent_sequence_number_ < sequence_number) {
+    // TODO(rch): Ensure that packets are really sent in order.
+    // DCHECK_LT(largest_sent_sequence_number_, sequence_number);
+    largest_sent_sequence_number_ = sequence_number;
+  }
   if (transmission_type == NOT_RETRANSMISSION && update_end_sequence_number_) {
     end_sequence_number_ = sequence_number;
     if (AvailableSendWindow() == 0) {
@@ -153,7 +159,7 @@ bool TcpCubicSender::OnPacketSent(QuicTime /*sent_time*/,
 }
 
 void TcpCubicSender::OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
-                                      QuicByteCount abandoned_bytes) {
+                                       QuicByteCount abandoned_bytes) {
   DCHECK_GE(bytes_in_flight_, abandoned_bytes);
   bytes_in_flight_ -= abandoned_bytes;
 }
@@ -274,10 +280,9 @@ void TcpCubicSender::CongestionAvoidance(QuicPacketSequenceNumber ack) {
   }
 }
 
-// TODO(pwestin): what is the timout value?
-void TcpCubicSender::OnTimeOut() {
+void TcpCubicSender::OnRetransmissionTimeout() {
   cubic_.Reset();
-  congestion_window_ = 1;
+  congestion_window_ = kMinimumCongestionWindow;
 }
 
 void TcpCubicSender::AckAccounting(QuicTime::Delta rtt) {

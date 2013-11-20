@@ -4,10 +4,12 @@
 
 #include "net/quic/quic_config.h"
 
+#include "net/quic/congestion_control/quic_congestion_manager.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
@@ -47,6 +49,21 @@ TEST_F(QuicConfigTest, ToHandshakeMessage) {
   error = msg.GetTaglist(kCGST, &out, &out_len);
   EXPECT_EQ(1u, out_len);
   EXPECT_EQ(kQBIC, *out);
+}
+
+TEST_F(QuicConfigTest, ToHandshakeMessageWithPacing) {
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_pacing, true);
+
+  config_.SetDefaults();
+  CryptoHandshakeMessage msg;
+  config_.ToHandshakeMessage(&msg);
+
+  const QuicTag* out;
+  size_t out_len;
+  EXPECT_EQ(QUIC_NO_ERROR, msg.GetTaglist(kCGST, &out, &out_len));
+  EXPECT_EQ(2u, out_len);
+  EXPECT_EQ(kPACE, out[0]);
+  EXPECT_EQ(kQBIC, out[1]);
 }
 
 TEST_F(QuicConfigTest, ProcessClientHello) {
@@ -91,8 +108,6 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   server_config.set_max_streams_per_connection(
       kDefaultMaxStreamsPerConnection / 2,
       kDefaultMaxStreamsPerConnection / 2);
-  server_config.set_server_max_packet_size(kDefaultMaxPacketSize / 2,
-                                           kDefaultMaxPacketSize / 2);
   server_config.set_server_initial_congestion_window(kDefaultInitialWindow / 2,
                                                      kDefaultInitialWindow / 2);
   server_config.set_initial_round_trip_time_us(
@@ -110,7 +125,6 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
             config_.idle_connection_state_lifetime());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection / 2,
             config_.max_streams_per_connection());
-  EXPECT_EQ(kDefaultMaxPacketSize / 2, config_.server_max_packet_size());
   EXPECT_EQ(kDefaultInitialWindow / 2,
             config_.server_initial_congestion_window());
   EXPECT_EQ(QuicTime::Delta::FromSeconds(0), config_.keepalive_timeout());

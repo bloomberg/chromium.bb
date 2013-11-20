@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/congestion_control/quic_congestion_manager.h"
 #include "net/quic/congestion_control/tcp_cubic_sender.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/null_encrypter.h"
@@ -70,11 +71,13 @@ struct TestParams {
   TestParams(const QuicVersionVector& client_supported_versions,
              const QuicVersionVector& server_supported_versions,
              QuicVersion negotiated_version,
-             bool use_padding)
+             bool use_padding,
+             bool use_pacing)
       : client_supported_versions(client_supported_versions),
         server_supported_versions(server_supported_versions),
         negotiated_version(negotiated_version),
-        use_padding(use_padding) {
+        use_padding(use_padding),
+        use_pacing(use_pacing) {
   }
 
   friend ostream& operator<<(ostream& os, const TestParams& p) {
@@ -83,7 +86,8 @@ struct TestParams {
     os << " client_supported_versions: "
        << QuicVersionVectorToString(p.client_supported_versions);
     os << " negotiated_version: " << QuicVersionToString(p.negotiated_version);
-    os << " use_padding: " << p.use_padding << " }";
+    os << " use_padding: " << p.use_padding;
+    os << " use_pacing: " << p.use_pacing << " }";
     return os;
   }
 
@@ -91,6 +95,7 @@ struct TestParams {
   QuicVersionVector server_supported_versions;
   QuicVersion negotiated_version;
   bool use_padding;
+  bool use_pacing;
 };
 
 // Constructs various test permutations.
@@ -98,44 +103,40 @@ vector<TestParams> GetTestParams() {
   vector<TestParams> params;
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
 
-  // Add an entry for server and client supporting all versions.
-  params.push_back(TestParams(all_supported_versions, all_supported_versions,
-                              all_supported_versions[0], true));
-  params.push_back(TestParams(all_supported_versions, all_supported_versions,
-                              all_supported_versions[0], false));
+  for (int use_pacing = 0; use_pacing < 2; ++use_pacing) {
+    for (int use_padding = 0; use_padding < 2; ++use_padding) {
+      // Add an entry for server and client supporting all versions.
+      params.push_back(TestParams(all_supported_versions,
+                                  all_supported_versions,
+                                  all_supported_versions[0],
+                                  use_padding != 0, use_pacing != 0));
 
-  // Test client supporting 1 version and server supporting all versions.
-  // Simulate an old client and exercise version downgrade in the server.
-  // No protocol negotiation should occur. Skip the i = 0 case because it
-  // is essentially the same as the default case.
-  for (size_t i = 1; i < all_supported_versions.size(); ++i) {
-    QuicVersionVector client_supported_versions;
-    client_supported_versions.push_back(all_supported_versions[i]);
-    params.push_back(TestParams(client_supported_versions,
-                                all_supported_versions,
-                                client_supported_versions[0],
-                                true));
-    params.push_back(TestParams(client_supported_versions,
-                                all_supported_versions,
-                                client_supported_versions[0],
-                                false));
-  }
+      // Test client supporting 1 version and server supporting all versions.
+      // Simulate an old client and exercise version downgrade in the server.
+      // No protocol negotiation should occur. Skip the i = 0 case because it
+      // is essentially the same as the default case.
+      for (size_t i = 1; i < all_supported_versions.size(); ++i) {
+        QuicVersionVector client_supported_versions;
+        client_supported_versions.push_back(all_supported_versions[i]);
+        params.push_back(TestParams(client_supported_versions,
+                                    all_supported_versions,
+                                    client_supported_versions[0],
+                                    use_pacing != 0, use_padding != 0));
+      }
 
-  // Test client supporting all versions and server supporting 1 version.
-  // Simulate an old server and exercise version downgrade in the client.
-  // Protocol negotiation should occur. Skip the i = 0 case because it is
-  // essentially the same as the default case.
-  for (size_t i = 1; i < all_supported_versions.size(); ++i) {
-    QuicVersionVector server_supported_versions;
-    server_supported_versions.push_back(all_supported_versions[i]);
-    params.push_back(TestParams(all_supported_versions,
-                                server_supported_versions,
-                                server_supported_versions[0],
-                                true));
-    params.push_back(TestParams(all_supported_versions,
-                                server_supported_versions,
-                                server_supported_versions[0],
-                                false));
+      // Test client supporting all versions and server supporting 1 version.
+      // Simulate an old server and exercise version downgrade in the client.
+      // Protocol negotiation should occur. Skip the i = 0 case because it is
+      // essentially the same as the default case.
+      for (size_t i = 1; i < all_supported_versions.size(); ++i) {
+        QuicVersionVector server_supported_versions;
+        server_supported_versions.push_back(all_supported_versions[i]);
+        params.push_back(TestParams(all_supported_versions,
+                                    server_supported_versions,
+                                    server_supported_versions[0],
+                                    use_pacing != 0, use_padding != 0));
+      }
+    }
   }
   return params;
 }
@@ -149,6 +150,15 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     net::IPAddressNumber ip;
     CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &ip));
     server_address_ = IPEndPoint(ip, 0);
+
+    client_supported_versions_ = GetParam().client_supported_versions;
+    server_supported_versions_ = GetParam().server_supported_versions;
+    negotiated_version_ = GetParam().negotiated_version;
+    FLAGS_limit_rto_increase_for_tests = true;
+    FLAGS_pad_quic_handshake_packets = GetParam().use_padding;
+    FLAGS_enable_quic_pacing = GetParam().use_pacing;
+    LOG(INFO) << "Using Configuration: " << GetParam();
+
     client_config_.SetDefaults();
     server_config_.SetDefaults();
     server_config_.set_initial_round_trip_time_us(kMaxInitialRoundTripTimeUs,
@@ -159,18 +169,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
                "HTTP/1.1", "200", "OK", kFooResponseBody);
     AddToCache("GET", "https://www.google.com/bar",
                "HTTP/1.1", "200", "OK", kBarResponseBody);
-
-    client_supported_versions_ = GetParam().client_supported_versions;
-    server_supported_versions_ = GetParam().server_supported_versions;
-    negotiated_version_ = GetParam().negotiated_version;
-    FLAGS_pad_quic_handshake_packets = GetParam().use_padding;
-    LOG(INFO) << "server running " << QuicVersionVectorToString(
-        server_supported_versions_);
-    LOG(INFO) << "client running " << QuicVersionVectorToString(
-        client_supported_versions_);
-    LOG(INFO) << "negotiated_version_ " << QuicVersionToString(
-        negotiated_version_);
-    LOG(INFO) << "use_padding " << GetParam().use_padding;
   }
 
   virtual ~EndToEndTest() {
@@ -595,6 +593,7 @@ TEST_P(EndToEndTest, DISABLED_PacketTooLarge) {
 
 TEST_P(EndToEndTest, InvalidStream) {
   ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
 
   string body;
   GenerateBody(&body, kMaxPacketSize);
@@ -628,6 +627,7 @@ TEST_P(EndToEndTest, DISABLED_MultipleTermination) {
   ReliableQuicStreamPeer::SetStreamBytesWritten(3, stream);
 
   client_->SendData("bar", true);
+  client_->WaitForWriteToFlush();
 
   // By default the stream protects itself from writes after terminte is set.
   // Override this to test the server handling buggy clients.
@@ -677,11 +677,9 @@ TEST_P(EndToEndTest, LimitMaxOpenStreams) {
   EXPECT_EQ(2u, client_negotiated_config->max_streams_per_connection());
 }
 
-TEST_P(EndToEndTest, LimitMaxPacketSizeAndCongestionWindowAndRTT) {
+TEST_P(EndToEndTest, LimitCongestionWindowAndRTT) {
   // Client tries to negotiate twice the server's max and negotiation settles
   // on the max.
-  client_config_.set_server_max_packet_size(2 * kMaxPacketSize,
-                                            kDefaultMaxPacketSize);
   client_config_.set_server_initial_congestion_window(2 * kMaxInitialWindow,
                                                       kDefaultInitialWindow);
   client_config_.set_initial_round_trip_time_us(1, 1);
@@ -703,16 +701,6 @@ TEST_P(EndToEndTest, LimitMaxPacketSizeAndCongestionWindowAndRTT) {
   const QuicCongestionManager& server_congestion_manager =
       session->connection()->congestion_manager();
 
-  EXPECT_EQ(kMaxPacketSize, client_negotiated_config->server_max_packet_size());
-  EXPECT_EQ(kDefaultMaxPacketSize,
-            client_->client()->options()->max_packet_length);
-  if (negotiated_version_ > QUIC_VERSION_11) {
-    EXPECT_EQ(kMaxPacketSize, session->options()->max_packet_length);
-  } else {
-    EXPECT_EQ(kDefaultMaxPacketSize,
-              session->options()->max_packet_length);
-  }
-
   EXPECT_EQ(kMaxInitialWindow,
             client_negotiated_config->server_initial_congestion_window());
   EXPECT_EQ(kMaxInitialWindow,
@@ -722,6 +710,9 @@ TEST_P(EndToEndTest, LimitMaxPacketSizeAndCongestionWindowAndRTT) {
             client_congestion_manager.GetCongestionWindow());
   EXPECT_EQ(kMaxInitialWindow * kDefaultTCPMSS,
             server_congestion_manager.GetCongestionWindow());
+
+  EXPECT_EQ(FLAGS_enable_quic_pacing, server_congestion_manager.using_pacing());
+  EXPECT_EQ(FLAGS_enable_quic_pacing, client_congestion_manager.using_pacing());
 
   EXPECT_EQ(1u, client_negotiated_config->initial_round_trip_time_us());
   EXPECT_EQ(1u, server_negotiated_config->initial_round_trip_time_us());
@@ -778,6 +769,7 @@ TEST_P(EndToEndTest, InitialRTT) {
 
 TEST_P(EndToEndTest, ResetConnection) {
   ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());

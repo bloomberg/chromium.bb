@@ -55,6 +55,29 @@ class PacingSenderTest : public ::testing::Test {
                                  HAS_RETRANSMITTABLE_DATA);
   }
 
+  void CheckAckIsSentImmediately() {
+    // In order for the ack to be sendable, the underlying sender must
+    // permit it to be sent immediately.
+    EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
+                                             NOT_RETRANSMISSION,
+                                             NO_RETRANSMITTABLE_DATA,
+                                             NOT_HANDSHAKE))
+        .WillOnce(Return(zero_time_));
+    // Verify that the ACK can be sent immediately.
+    EXPECT_EQ(zero_time_,
+              pacing_sender_->TimeUntilSend(clock_.Now(), NOT_RETRANSMISSION,
+                                            NO_RETRANSMITTABLE_DATA,
+                                            NOT_HANDSHAKE));
+
+    // Actually send the packet.
+    EXPECT_CALL(*mock_sender_,
+                OnPacketSent(clock_.Now(), sequence_number_, kMaxPacketSize,
+                             NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA));
+    pacing_sender_->OnPacketSent(clock_.Now(), sequence_number_++,
+                                 kMaxPacketSize, NOT_RETRANSMISSION,
+                                 NO_RETRANSMITTABLE_DATA);
+  }
+
   void CheckPacketIsDelayed(QuicTime::Delta delay) {
     // In order for the packet to be sendable, the underlying sender must
     // permit it to be sent immediately.
@@ -103,10 +126,11 @@ TEST_F(PacingSenderTest, SendNow) {
 }
 
 TEST_F(PacingSenderTest, VariousSending) {
-  // Configure bandwith of 1 packet per 1 ms.
+  // Configure bandwith of 1 packet per 2 ms, for which the pacing rate
+  // will be 1 packet per 1 ms.
   EXPECT_CALL(*mock_sender_, BandwidthEstimate())
       .WillRepeatedly(Return(QuicBandwidth::FromBytesAndTimeDelta(
-          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1))));
+          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(2))));
 
   CheckPacketIsSentImmediately();
   CheckPacketIsSentImmediately();
@@ -121,6 +145,7 @@ TEST_F(PacingSenderTest, VariousSending) {
   CheckPacketIsSentImmediately();
   CheckPacketIsSentImmediately();
   CheckPacketIsDelayed(QuicTime::Delta::FromMilliseconds(2));
+  CheckAckIsSentImmediately();
 
   // Wake up late.
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(4));

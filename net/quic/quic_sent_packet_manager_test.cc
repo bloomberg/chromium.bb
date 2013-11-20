@@ -21,8 +21,6 @@ namespace {
 class MockHelper : public QuicSentPacketManager::HelperInterface {
  public:
   MOCK_METHOD0(GetNextPacketSequenceNumber, QuicPacketSequenceNumber());
-  MOCK_METHOD2(OnPacketNacked, void(QuicPacketSequenceNumber sequence_number,
-                                    size_t nack_count));
 };
 
 class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
@@ -189,7 +187,6 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 2;
   received_info.missing_packets.insert(2);
-  EXPECT_CALL(helper_, OnPacketNacked(2, 1)).Times(1);
   manager_.OnIncomingAck(received_info, false);
 
   // 2 remains unacked, but no packets have retransmittable data.
@@ -230,7 +227,6 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     ReceivedPacketInfo received_info;
     received_info.largest_observed = 3;
     received_info.missing_packets.insert(2);
-    EXPECT_CALL(helper_, OnPacketNacked(2, 1)).Times(1);
     manager_.OnIncomingAck(received_info, false);
 
     QuicPacketSequenceNumber unacked[] = { 2 };
@@ -248,8 +244,6 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     received_info.largest_observed = 5;
     received_info.missing_packets.insert(2);
     received_info.missing_packets.insert(4);
-    EXPECT_CALL(helper_, OnPacketNacked(2, 2)).Times(1);
-    EXPECT_CALL(helper_, OnPacketNacked(4, 1)).Times(1);
     manager_.OnIncomingAck(received_info, false);
 
     QuicPacketSequenceNumber unacked[] = { 2, 4 };
@@ -268,9 +262,6 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     received_info.missing_packets.insert(2);
     received_info.missing_packets.insert(4);
     received_info.missing_packets.insert(6);
-    EXPECT_CALL(helper_, OnPacketNacked(2, 3)).Times(1);
-    EXPECT_CALL(helper_, OnPacketNacked(4, 2)).Times(1);
-    EXPECT_CALL(helper_, OnPacketNacked(6, 1)).Times(1);
     manager_.OnIncomingAck(received_info, false);
 
     QuicPacketSequenceNumber unacked[] = { 2, 4, 6 };
@@ -292,10 +283,6 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     received_info.missing_packets.insert(6);
     received_info.missing_packets.insert(8);
     received_info.missing_packets.insert(9);
-    EXPECT_CALL(helper_, OnPacketNacked(4, 3)).Times(1);
-    EXPECT_CALL(helper_, OnPacketNacked(6, 2)).Times(1);
-    EXPECT_CALL(helper_, OnPacketNacked(8, 1)).Times(1);
-    EXPECT_CALL(helper_, OnPacketNacked(9, 1)).Times(1);
     manager_.OnIncomingAck(received_info, false);
 
     QuicPacketSequenceNumber unacked[] = { 2, 4, 6, 8, 9 };
@@ -320,11 +307,6 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     received_info.missing_packets.insert(9);
     received_info.missing_packets.insert(11);
     received_info.missing_packets.insert(12);
-    EXPECT_CALL(helper_, OnPacketNacked(6, 3)).Times(1);
-    EXPECT_CALL(helper_, OnPacketNacked(8, 2)).Times(1);
-    EXPECT_CALL(helper_, OnPacketNacked(9, 2)).Times(1);
-    EXPECT_CALL(helper_, OnPacketNacked(11, 1)).Times(1);
-    EXPECT_CALL(helper_, OnPacketNacked(12, 1)).Times(1);
     manager_.OnIncomingAck(received_info, false);
 
     QuicPacketSequenceNumber unacked[] = { 2, 4, 6, 8, 9, 11, 12 };
@@ -348,10 +330,6 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     received_info.missing_packets.insert(9);
     received_info.missing_packets.insert(11);
     received_info.missing_packets.insert(12);
-    EXPECT_CALL(helper_, OnPacketNacked(8, 3)).Times(1);
-    EXPECT_CALL(helper_, OnPacketNacked(9, 3)).Times(1);
-    EXPECT_CALL(helper_, OnPacketNacked(11, 2)).Times(1);
-    EXPECT_CALL(helper_, OnPacketNacked(12, 2)).Times(1);
     manager_.OnIncomingAck(received_info, true);
 
     // Truncated ack raises the high water mark by clearing out 2, 4, and 6.
