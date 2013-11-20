@@ -21,6 +21,12 @@
 #include "chrome/browser/shell_integration.h"
 #endif
 
+#if defined(USE_ASH)
+namespace ash {
+class ImmersiveFullscreenController;
+}
+#endif
+
 class ExtensionKeybindingRegistryViews;
 class Profile;
 
@@ -152,7 +158,7 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // NativeAppWindow implementation.
-  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
+  virtual void SetFullscreen(int fullscreen_types) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
   virtual bool IsDetached() const OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
@@ -203,9 +209,18 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
 
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
-  base::WeakPtrFactory<NativeAppWindowViews> weak_ptr_factory_;
+#if defined(USE_ASH)
+  // Used to put non-frameless windows into immersive fullscreen on ChromeOS. In
+  // immersive fullscreen, the window header (title bar and window controls)
+  // slides onscreen as an overlay when the mouse is hovered at the top of the
+  // screen.
+  scoped_ptr<ash::ImmersiveFullscreenController>
+      immersive_fullscreen_controller_;
+#endif
 
   ObserverList<web_modal::ModalDialogHostObserver> observer_list_;
+
+  base::WeakPtrFactory<NativeAppWindowViews> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowViews);
 };

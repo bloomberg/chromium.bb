@@ -66,7 +66,7 @@ class ASH_EXPORT ImmersiveFullscreenController
     // The returned list is used for hittesting when the top-of-window views
     // are revealed. GetVisibleBoundsInScreen() must return a valid value when
     // not in immersive fullscreen for the sake of SetupForTest().
-    virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() = 0;
+    virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() const = 0;
 
    protected:
     virtual ~Delegate() {}

@@ -114,6 +114,12 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
 FrameCaptionButtonContainerView::~FrameCaptionButtonContainerView() {
 }
 
+FrameMaximizeButton*
+FrameCaptionButtonContainerView::GetOldStyleSizeButton() {
+  return switches::UseAlternateFrameCaptionButtonStyle() ?
+      NULL : static_cast<FrameMaximizeButton*>(size_button_);
+}
+
 void FrameCaptionButtonContainerView::ResetWindowControls() {
   minimize_button_->SetState(views::CustomButton::STATE_NORMAL);
   size_button_->SetState(views::CustomButton::STATE_NORMAL);

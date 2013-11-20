@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/touch/touch_uma.h"
+#include "ash/wm/caption_buttons/frame_maximize_button_observer.h"
 #include "ash/wm/caption_buttons/maximize_bubble_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
@@ -101,6 +102,15 @@ FrameMaximizeButton::~FrameMaximizeButton() {
     OnWindowDestroying(frame_->GetNativeWindow());
 }
 
+void FrameMaximizeButton::AddObserver(FrameMaximizeButtonObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void FrameMaximizeButton::RemoveObserver(
+    FrameMaximizeButtonObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void FrameMaximizeButton::SnapButtonHovered(SnapType type) {
   // Make sure to only show hover operations when no button is pressed and
   // a similar snap operation in progress does not get re-applied.
@@ -155,6 +165,12 @@ void FrameMaximizeButton::ExecuteSnapAndCloseMenu(SnapType snap_type) {
   // The ownership of the snap_sizer is taken now.
   scoped_ptr<SnapSizer> snap_sizer(snap_sizer_.release());
   Snap(snap_sizer.get());
+}
+
+void FrameMaximizeButton::OnMaximizeBubbleShown(views::Widget* bubble) {
+  FOR_EACH_OBSERVER(FrameMaximizeButtonObserver,
+                    observer_list_,
+                    OnMaximizeBubbleShown(bubble));
 }
 
 void FrameMaximizeButton::DestroyMaximizeMenu() {

@@ -54,7 +54,7 @@ class MockImmersiveFullscreenControllerDelegate
   virtual void SetVisibleFraction(double visible_fraction) OVERRIDE {
     visible_fraction_ = visible_fraction;
   }
-  virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() OVERRIDE {
+  virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() const OVERRIDE {
     std::vector<gfx::Rect> bounds_in_screen;
     bounds_in_screen.push_back(top_container_view_->GetBoundsInScreen());
     return bounds_in_screen;

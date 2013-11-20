@@ -818,8 +818,10 @@ void MaximizeBubbleController::RequestDestructionThroughOwner() {
 }
 
 void MaximizeBubbleController::CreateBubble() {
-  if (!bubble_)
+  if (!bubble_) {
     bubble_ = new Bubble(this, appearance_delay_ms_, snap_type_for_creation_);
+    frame_maximize_button_->OnMaximizeBubbleShown(bubble_->GetWidget());
+  }
 
   timer_->Stop();
 }

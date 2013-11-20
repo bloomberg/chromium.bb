@@ -7,13 +7,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/views_export.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {
 class Widget;
 
 // A simple WidgetObserver that can be probed for the life of a widget.
-class WidgetDeletionObserver : public WidgetObserver {
+class VIEWS_EXPORT WidgetDeletionObserver : public WidgetObserver {
  public:
   explicit WidgetDeletionObserver(Widget* widget);
   virtual ~WidgetDeletionObserver();

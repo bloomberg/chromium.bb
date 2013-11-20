@@ -65,7 +65,7 @@ class ImmersiveModeControllerAsh
   virtual void OnImmersiveRevealEnded() OVERRIDE;
   virtual void OnImmersiveFullscreenExited() OVERRIDE;
   virtual void SetVisibleFraction(double visible_fraction) OVERRIDE;
-  virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() OVERRIDE;
+  virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() const OVERRIDE;
 
   // ash::wm::WindowStateObserver override:
   virtual void OnWindowShowTypeChanged(
