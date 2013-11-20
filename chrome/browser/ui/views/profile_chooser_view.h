@@ -16,6 +16,10 @@
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
+
+class EditableProfilePhoto;
+class EditableProfileName;
 
 namespace gfx {
 class Image;
@@ -28,7 +32,6 @@ class LabelButton;
 }
 
 class Browser;
-class ProfileItemView;
 
 // This bubble view is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
@@ -36,6 +39,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
                            public views::ButtonListener,
                            public views::LinkListener,
                            public views::MenuButtonListener,
+                           public views::TextfieldController,
                            public AvatarMenuObserver,
                            public OAuth2TokenService::Observer {
  public:
@@ -95,6 +99,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
+  // views::TextfieldController:
+  virtual bool HandleKeyEvent(views::Textfield* sender,
+                              const ui::KeyEvent& key_event) OVERRIDE;
 
   // AvatarMenuObserver:
   virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) OVERRIDE;
@@ -141,7 +148,11 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::Link* manage_accounts_link_;
   views::Link* signout_current_profile_link_;
   views::Link* signin_current_profile_link_;
-  views::Link* change_photo_link_;
+
+  // The profile name and photo in the active profile card. Owned by the
+  // views hierarchy.
+  EditableProfilePhoto* current_profile_photo_;
+  EditableProfileName* current_profile_name_;
 
   // Action buttons.
   views::TextButton* guest_button_;

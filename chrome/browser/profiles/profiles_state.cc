@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -74,6 +76,35 @@ string16 GetActiveProfileDisplayName(Browser* browser) {
       profile_name = cache.GetNameOfProfileAtIndex(index);
   }
   return profile_name;
+}
+
+void UpdateProfileName(Profile* profile,
+                       const base::string16& new_profile_name) {
+  ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+  base::FilePath profile_file_path = profile->GetPath();
+  size_t profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
+
+  if ((new_profile_name ==
+          cache.GetGAIAGivenNameOfProfileAtIndex(profile_index)) ||
+      (new_profile_name == cache.GetGAIANameOfProfileAtIndex(profile_index))) {
+    // Set the profile to use the GAIA name as the profile name. Note, this
+    // is a little weird if the user typed their GAIA name manually but
+    // it's not a big deal.
+    cache.SetIsUsingGAIANameOfProfileAtIndex(profile_index, true);
+  } else {
+    PrefService* pref_service = profile->GetPrefs();
+    // Updating the profile preference will cause the cache to be updated for
+    // this preference.
+    pref_service->SetString(prefs::kProfileName, UTF16ToUTF8(new_profile_name));
+
+    // Changing the profile name can invalidate the profile index.
+    profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
+    if (profile_index == std::string::npos)
+      return;
+
+    cache.SetIsUsingGAIANameOfProfileAtIndex(profile_index, false);
+  }
 }
 
 }  // namespace profiles

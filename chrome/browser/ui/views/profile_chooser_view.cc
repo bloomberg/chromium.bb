@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -30,12 +31,11 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -48,23 +48,8 @@ namespace {
 
 // Helpers --------------------------------------------------------------------
 
-const int kLargeImageSide = 64;
-const int kSmallImageSide = 32;
 const int kMinMenuWidth = 250;
 const int kButtonHeight = 29;
-
-// Current profile avatar image.
-views::View* CreateProfileImageView(const gfx::Image& icon) {
-  views::ImageView* view = new views::ImageView();
-
-  gfx::Image image = profiles::GetSizedAvatarIconWithBorder(
-      icon, true,
-      kLargeImageSide + profiles::kAvatarIconPadding,
-      kLargeImageSide + profiles::kAvatarIconPadding);
-  view->SetImage(image.ToImageSkia());
-
-  return view;
-}
 
 // Creates a GridLayout with a single column. This ensures that all the child
 // views added get auto-expanded to fill the full width of the bubble.
@@ -87,12 +72,12 @@ views::GridLayout* CreateDoubleColumnLayout(views::View* view) {
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(0, views::kUnrelatedControlLargeHorizontalSpacing);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::TRAILING, 1,
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
   return layout;
 }
 
-views::Link* CreateLink(const string16& link_text,
+views::Link* CreateLink(const base::string16& link_text,
                         views::LinkListener* listener) {
   views::Link* link_button = new views::Link(link_text);
   link_button->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -134,7 +119,7 @@ class HorizontalPaddingButtonBorder : public views::TextButtonBorder {
 class BackgroundColorHoverButton : public views::TextButton {
  public:
   BackgroundColorHoverButton(views::ButtonListener* listener,
-                             const string16& text,
+                             const base::string16& text,
                              const gfx::ImageSkia& normal_icon,
                              const gfx::ImageSkia& hover_icon)
       : views::TextButton(listener, text) {
@@ -178,6 +163,129 @@ class BackgroundColorHoverButton : public views::TextButton {
 };
 
 }  // namespace
+
+
+// EditableProfilePhoto -------------------------------------------------
+
+// A custom Image control that shows a "change" button when moused over.
+class EditableProfilePhoto : public views::ImageView {
+ public:
+  EditableProfilePhoto(views::ButtonListener* listener, const gfx::Image& icon)
+      : views::ImageView() {
+    const int kLargeImageSide = 64;
+    const SkColor kBackgroundColor = SkColorSetARGB(125, 0, 0, 0);
+    const int kOverlayHeight = 20;
+
+    gfx::Image image = profiles::GetSizedAvatarIconWithBorder(
+        icon, true,
+        kLargeImageSide + profiles::kAvatarIconPadding,
+        kLargeImageSide + profiles::kAvatarIconPadding);
+    SetImage(image.ToImageSkia());
+    set_notify_enter_exit_on_child(true);
+
+    // Button overlay that appears when hovering over the image.
+    change_photo_button_ = new views::TextButton(listener,
+        l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_CHANGE_PHOTO_BUTTON));
+    change_photo_button_->set_alignment(views::TextButton::ALIGN_CENTER);
+    change_photo_button_->set_border(NULL);
+    change_photo_button_->SetEnabledColor(SK_ColorWHITE);
+    change_photo_button_->SetHoverColor(SK_ColorWHITE);
+
+    change_photo_button_->set_background(
+        views::Background::CreateSolidBackground(kBackgroundColor));
+    // Need to take in account the border padding on the avatar.
+    change_photo_button_->SetBounds(
+        profiles::kAvatarIconPadding,
+        kLargeImageSide - kOverlayHeight,
+        kLargeImageSide - profiles::kAvatarIconPadding,
+        kOverlayHeight);
+    change_photo_button_->SetVisible(false);
+    AddChildView(change_photo_button_);
+  }
+
+  views::TextButton* change_photo_button() {
+    return change_photo_button_;
+  }
+
+ private:
+  // views::View:
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
+    change_photo_button_->SetVisible(true);
+  }
+
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
+    change_photo_button_->SetVisible(false);
+  }
+
+  // Button that is shown when hovering over the image view.
+  views::TextButton* change_photo_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(EditableProfilePhoto);
+};
+
+
+// EditableProfileName -------------------------------------------------
+
+// A custom text control that turns into a textfield for editing when clicked.
+class EditableProfileName : public views::TextButton,
+                            public views::ButtonListener {
+ public:
+  EditableProfileName(views::TextfieldController* controller,
+                      const base::string16& text)
+      : views::TextButton(this, text) {
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    gfx::Font medium_font = rb->GetFont(ui::ResourceBundle::MediumFont);
+
+    SetIcon(*rb->GetImageSkiaNamed(IDR_INFOBAR_AUTOFILL));
+    set_icon_placement(views::TextButton::ICON_ON_RIGHT);
+    SetFont(medium_font);
+    set_border(NULL);
+
+    // Textfield that overlaps the button.
+    profile_name_textfield_ = new views::Textfield();
+    profile_name_textfield_->SetController(controller);
+    profile_name_textfield_->SetFont(medium_font);
+    profile_name_textfield_->SetVisible(false);
+    AddChildView(profile_name_textfield_);
+  }
+
+  views::Textfield* profile_name_textfield() {
+    return profile_name_textfield_;
+  }
+
+  // Hide the editable textfield and show the button displaying the profile
+  // name instead.
+  void ShowReadOnlyView() {
+    profile_name_textfield_->SetVisible(false);
+  }
+
+ private:
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                            const ui::Event& event) OVERRIDE {
+    profile_name_textfield_->SetVisible(true);
+    profile_name_textfield_->SetText(text());
+  }
+
+  // views::CustomButton:
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE {
+    // Override CustomButton's implementation, which presses the button when
+    // you press space and clicks it when you release space, as the space can be
+    // part of the new profile name typed in the textfield.
+    return false;
+  }
+
+  // views::View:
+  virtual void Layout() OVERRIDE {
+    profile_name_textfield_->SetBounds(0, 0, width(), height());
+    views::View::Layout();
+  }
+
+  // Textfield that is shown when editing the profile name.
+  views::Textfield* profile_name_textfield_;
+
+  DISALLOW_COPY_AND_ASSIGN(EditableProfileName);
+};
 
 
 // ProfileChooserView ---------------------------------------------------------
@@ -252,12 +360,13 @@ void ProfileChooserView::ResetView() {
   manage_accounts_link_ = NULL;
   signout_current_profile_link_ = NULL;
   signin_current_profile_link_ = NULL;
-  change_photo_link_ = NULL;
   guest_button_ = NULL;
   end_guest_button_ = NULL;
   users_button_ = NULL;
   add_user_button_ = NULL;
   add_account_button_ = NULL;
+  current_profile_photo_ = NULL;
+  current_profile_name_ = NULL;
   open_other_profile_indexes_map_.clear();
   current_profile_accounts_map_.clear();
 }
@@ -412,6 +521,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         profiles::ProfileSwitchingDoneCallback());
   } else if (sender == add_account_button_) {
     ShowView(GAIA_ADD_ACCOUNT_VIEW, avatar_menu_.get());
+  } else if (sender == current_profile_photo_->change_photo_button()) {
+    avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
   } else {
     // One of the "other profiles" buttons was pressed.
     ButtonIndexes::const_iterator match =
@@ -441,7 +552,8 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
     ShowView(ACCOUNT_MANAGEMENT_VIEW, avatar_menu_.get());
   } else if (sender == signout_current_profile_link_) {
     profiles::LockProfile(browser_->profile());
-  } else if (sender == signin_current_profile_link_) {
+  } else {
+    DCHECK(sender == signin_current_profile_link_);
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableInlineSignin)) {
       ShowView(GAIA_SIGNIN_VIEW, avatar_menu_.get());
@@ -449,11 +561,36 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
       GURL page = signin::GetPromoURL(signin::SOURCE_MENU, false);
       chrome::ShowSingletonTab(browser_, page);
     }
-  } else {
-    DCHECK(sender == change_photo_link_);
-    avatar_menu_->EditProfile(
-        avatar_menu_->GetActiveProfileIndex());
   }
+}
+
+bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
+                                        const ui::KeyEvent& key_event) {
+  views::Textfield* name_textfield =
+      current_profile_name_->profile_name_textfield();
+  DCHECK(sender == name_textfield);
+
+  if (key_event.key_code() == ui::VKEY_RETURN ||
+      key_event.key_code() == ui::VKEY_TAB) {
+    // Pressing Tab/Enter commits the new profile name, unless it's empty.
+    base::string16 new_profile_name = name_textfield->text();
+    if (new_profile_name.empty())
+      return true;
+
+    const AvatarMenu::Item& active_item = avatar_menu_->GetItemAt(
+        avatar_menu_->GetActiveProfileIndex());
+    Profile* profile = g_browser_process->profile_manager()->GetProfile(
+        active_item.profile_path);
+    DCHECK(profile);
+
+    if (profile->IsManaged())
+      return true;
+
+    profiles::UpdateProfileName(profile, new_profile_name);
+    current_profile_name_->ShowReadOnlyView();
+    return true;
+  }
+  return false;
 }
 
 views::View* ProfileChooserView::CreateCurrentProfileView(
@@ -466,19 +603,13 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
                     views::kButtonVEdgeMarginNew,
                     views::kButtonHEdgeMarginNew);
 
-  views::View* photo_image = CreateProfileImageView(avatar_item.icon);
-  view->SetBoundsRect(photo_image->bounds());
-
-  views::Label* name_label =
-      new views::Label(avatar_item.name,
-                       ui::ResourceBundle::GetSharedInstance().GetFont(
-                           ui::ResourceBundle::MediumFont));
-  name_label->SetElideBehavior(views::Label::ELIDE_AT_END);
-  name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  current_profile_photo_ = new EditableProfilePhoto(this, avatar_item.icon);
+  view->SetBoundsRect(current_profile_photo_->bounds());
+  current_profile_name_ = new EditableProfileName(this, avatar_item.name);
 
   layout->StartRow(1, 0);
-  layout->AddView(photo_image, 1, 3);
-  layout->AddView(name_label);
+  layout->AddView(current_profile_photo_, 1, 3);
+  layout->AddView(current_profile_name_);
 
   if (is_guest) {
     layout->StartRow(1, 0);
@@ -523,28 +654,16 @@ views::View* ProfileChooserView::CreateCurrentProfileEditableView(
                     views::kButtonVEdgeMarginNew,
                     views::kButtonHEdgeMarginNew);
 
-  views::View* photo_image = CreateProfileImageView(avatar_item.icon);
-  view->SetBoundsRect(photo_image->bounds());
-
-  // TODO(noms): The name should actually be a textbox and not a label when
-  // we have the functionality to save changes.
-  views::Label* name_label =
-      new views::Label(avatar_item.name,
-                       ui::ResourceBundle::GetSharedInstance().GetFont(
-                           ui::ResourceBundle::MediumFont));
-  name_label->SetElideBehavior(views::Label::ELIDE_AT_END);
-  name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  change_photo_link_ = CreateLink(
-      l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_CHANGE_PHOTO_BUTTON),
-      this);
+  current_profile_photo_ = new EditableProfilePhoto(this, avatar_item.icon);
+  view->SetBoundsRect(current_profile_photo_->bounds());
+  current_profile_name_ = new EditableProfileName(this, avatar_item.name);
 
   layout->StartRow(1, 0);
-  layout->AddView(photo_image, 1, 3);
-  layout->AddView(name_label);
+  layout->AddView(current_profile_photo_, 1, 3);
+  layout->AddView(current_profile_name_);
 
   layout->StartRow(1, 0);
   layout->SkipColumns(1);
-  layout->AddView(change_photo_link_);
 
   layout->StartRow(1, 0);
   layout->SkipColumns(1);
@@ -573,6 +692,7 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
   for (int i = 0; i < num_avatars_to_show; ++i) {
     const size_t index = avatars_to_show[i];
     const AvatarMenu::Item& item = avatar_menu_->GetItemAt(index);
+    const int kSmallImageSide = 32;
 
     gfx::Image image = profiles::GetSizedAvatarIconWithBorder(
         item.icon, true,

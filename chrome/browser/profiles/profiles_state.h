@@ -9,6 +9,7 @@
 
 class Browser;
 class PrefRegistrySimple;
+class Profile;
 namespace base { class FilePath; }
 
 namespace profiles {
@@ -31,6 +32,11 @@ void RegisterPrefs(PrefRegistrySimple* registry);
 
 // Returns the display name of the active on-the-record profile (or guest).
 string16 GetActiveProfileDisplayName(Browser* browser);
+
+// Update the name of |profile| to |new_profile_name|. This updates the
+// profile preferences, which triggers an update in the ProfileInfoCache.
+void UpdateProfileName(Profile* profile,
+                       const base::string16& new_profile_name);
 
 }  // namespace profiles
 

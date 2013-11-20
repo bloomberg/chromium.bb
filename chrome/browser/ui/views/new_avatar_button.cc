@@ -139,4 +139,8 @@ void NewAvatarButton::OnAvatarMenuChanged(AvatarMenu* avatar_menu) {
   // We want the button to resize if the new text is shorter.
   ClearMaxTextSize();
   SetText(GetElidedText(profiles::GetActiveProfileDisplayName(browser_)));
+
+  // Because the width of the button might have changed, the parent browser
+  // frame needs to recalculate the button bounds and redraw it.
+  parent()->Layout();
 }
