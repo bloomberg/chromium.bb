@@ -5,7 +5,7 @@
 #include "content/public/app/android_library_loader_hooks.h"
 
 #include "base/android/base_jni_registrar.h"
-#include "base/android/command_line.h"
+#include "base/android/command_line_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/jni_string.h"
