@@ -15,6 +15,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkScalar.h"
+#include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/size.h"
@@ -322,19 +325,23 @@ TEST_F(ClipboardTest, URLTest) {
 #endif
 }
 
-TEST_F(ClipboardTest, SharedBitmapTest) {
-  unsigned int fake_bitmap[] = {
-    0x46155189, 0xF6A55C8D, 0x79845674, 0xFA57BD89,
-    0x78FD46AE, 0x87C64F5A, 0x36EDC5AF, 0x4378F568,
-    0x91E9F63A, 0xC31EA14F, 0x69AB32DF, 0x643A3FD1,
-  };
-  gfx::Size fake_bitmap_size(3, 4);
-  uint32 bytes = sizeof(fake_bitmap);
-
+// Note that |bitmap_data| is not premultiplied!
+static void TestBitmapWrite(Clipboard* clipboard,
+                            const uint32* bitmap_data,
+                            size_t bitmap_data_size,
+                            const gfx::Size& size) {
   // Create shared memory region.
   base::SharedMemory shared_buf;
-  ASSERT_TRUE(shared_buf.CreateAndMapAnonymous(bytes));
-  memcpy(shared_buf.memory(), fake_bitmap, bytes);
+  ASSERT_TRUE(shared_buf.CreateAndMapAnonymous(bitmap_data_size));
+  memcpy(shared_buf.memory(), bitmap_data, bitmap_data_size);
+  // CBF_SMBITMAP expects premultiplied bitmap data so do that now.
+  uint32* pixel_buffer = static_cast<uint32*>(shared_buf.memory());
+  for (int j = 0; j < size.height(); ++j) {
+    for (int i = 0; i < size.width(); ++i) {
+      uint32& pixel = pixel_buffer[i + j * size.width()];
+      pixel = SkPreMultiplyColor(pixel);
+    }
+  }
   base::SharedMemoryHandle handle_to_share;
   base::ProcessHandle current_process = base::kNullProcessHandle;
 #if defined(OS_WIN)
@@ -346,8 +353,8 @@ TEST_F(ClipboardTest, SharedBitmapTest) {
   // Setup data for clipboard().
   Clipboard::ObjectMapParam placeholder_param;
   Clipboard::ObjectMapParam size_param;
-  const char* size_data = reinterpret_cast<const char*>(&fake_bitmap_size);
-  for (size_t i = 0; i < sizeof(fake_bitmap_size); ++i)
+  const char* size_data = reinterpret_cast<const char*>(&size);
+  for (size_t i = 0; i < sizeof(size); ++i)
     size_param.push_back(size_data[i]);
 
   Clipboard::ObjectMapParams params;
@@ -359,46 +366,48 @@ TEST_F(ClipboardTest, SharedBitmapTest) {
   ASSERT_TRUE(Clipboard::ReplaceSharedMemHandle(
       &objects, handle_to_share, current_process));
 
-  clipboard().WriteObjects(CLIPBOARD_TYPE_COPY_PASTE,
-                           objects);
+  clipboard->WriteObjects(CLIPBOARD_TYPE_COPY_PASTE, objects);
 
-  EXPECT_TRUE(clipboard().IsFormatAvailable(Clipboard::GetBitmapFormatType(),
-                                            CLIPBOARD_TYPE_COPY_PASTE));
+  EXPECT_TRUE(clipboard->IsFormatAvailable(Clipboard::GetBitmapFormatType(),
+                                           CLIPBOARD_TYPE_COPY_PASTE));
+  const SkBitmap& image = clipboard->ReadImage(CLIPBOARD_TYPE_COPY_PASTE);
+  EXPECT_EQ(size, gfx::Size(image.width(), image.height()));
+  SkAutoLockPixels image_lock(image);
+  for (int j = 0; j < image.height(); ++j) {
+    const uint32* row_address = image.getAddr32(0, j);
+    for (int i = 0; i < image.width(); ++i) {
+      int offset = i + j * image.width();
+      uint32 pixel = SkPreMultiplyColor(bitmap_data[offset]);
+#if defined(TOOLKIT_GTK)
+      // Non-Aura GTK doesn't support alpha transparency. Instead, the alpha
+      // channel is always set to 0xFF - see http://crbug.com/154573.
+      // However, since we premultiplied above, we must also premultiply here
+      // before unpremultiplying and setting alpha to 0xFF; otherwise, the
+      // results will not match GTK's.
+      EXPECT_EQ(
+          SkUnPreMultiply::PMColorToColor(pixel) | 0xFF000000, row_address[i])
+          << "i = " << i << ", j = " << j;
+#else
+      EXPECT_EQ(pixel, row_address[i])
+          << "i = " << i << ", j = " << j;
+#endif  // defined(TOOLKIT_GTK)
+    }
+  }
 }
 
-// The following test somehow fails on GTK and linux_aura. The image when read
-// back from the clipboard has the alpha channel set to 0xFF for some
-// reason. The other channels stay intact. So I am turning this on only for
-// aura.
-#if (defined(USE_AURA) && !(defined(OS_WIN) || !defined(OS_CHROMEOS))) || \
-    defined(OS_ANDROID)
-TEST_F(ClipboardTest, MultipleBitmapReadWriteTest) {
-  // Test first bitmap
-  unsigned int fake_bitmap_1[] = {
+TEST_F(ClipboardTest, SharedBitmapTest) {
+  const uint32 fake_bitmap_1[] = {
     0x46155189, 0xF6A55C8D, 0x79845674, 0xFA57BD89,
     0x78FD46AE, 0x87C64F5A, 0x36EDC5AF, 0x4378F568,
     0x91E9F63A, 0xC31EA14F, 0x69AB32DF, 0x643A3FD1,
   };
-  gfx::Size fake_bitmap_1_size(3, 4);
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
-    clipboard_writer.WriteBitmapFromPixels(fake_bitmap_1, fake_bitmap_1_size);
-  }
-  EXPECT_TRUE(clipboard().IsFormatAvailable(Clipboard::GetBitmapFormatType(),
-                                            CLIPBOARD_TYPE_COPY_PASTE));
-  SkBitmap image_1 = clipboard().ReadImage(CLIPBOARD_TYPE_COPY_PASTE);
-  EXPECT_EQ(fake_bitmap_1_size, gfx::Size(image_1.width(), image_1.height()));
-  unsigned int* pixels_1 = reinterpret_cast<unsigned int*>(image_1.getPixels());
-  for (int i = 0; i < fake_bitmap_1_size.width(); ++i) {
-    for (int j = 0; j < fake_bitmap_1_size.height(); ++j) {
-      int id = i * fake_bitmap_1_size.height() + j;
-      EXPECT_EQ(fake_bitmap_1[id], pixels_1[id]);
-    }
+    SCOPED_TRACE("first bitmap");
+    TestBitmapWrite(
+        &clipboard(), fake_bitmap_1, sizeof(fake_bitmap_1), gfx::Size(4, 3));
   }
 
-  // Test second bitmap
-  unsigned int fake_bitmap_2[] = {
+  const uint32 fake_bitmap_2[] = {
     0x46155189, 0xF6A55C8D,
     0x79845674, 0xFA57BD89,
     0x78FD46AE, 0x87C64F5A,
@@ -407,25 +416,12 @@ TEST_F(ClipboardTest, MultipleBitmapReadWriteTest) {
     0x69AB32DF, 0x643A3FD1,
     0xA6DF041D, 0x83046278,
   };
-  gfx::Size fake_bitmap_2_size(7, 2);
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
-    clipboard_writer.WriteBitmapFromPixels(fake_bitmap_2, fake_bitmap_2_size);
-  }
-  EXPECT_TRUE(clipboard().IsFormatAvailable(Clipboard::GetBitmapFormatType(),
-                                            CLIPBOARD_TYPE_COPY_PASTE));
-  SkBitmap image_2 = clipboard().ReadImage(CLIPBOARD_TYPE_COPY_PASTE);
-  EXPECT_EQ(fake_bitmap_2_size, gfx::Size(image_2.width(), image_2.height()));
-  unsigned int* pixels_2 = reinterpret_cast<unsigned int*>(image_2.getPixels());
-  for (int i = 0; i < fake_bitmap_2_size.width(); ++i) {
-    for (int j = 0; j < fake_bitmap_2_size.height(); ++j) {
-      int id = i * fake_bitmap_2_size.height() + j;
-      EXPECT_EQ(fake_bitmap_2[id], pixels_2[id]);
-    }
+    SCOPED_TRACE("second bitmap");
+    TestBitmapWrite(
+        &clipboard(), fake_bitmap_2, sizeof(fake_bitmap_2), gfx::Size(2, 7));
   }
 }
-#endif
 
 TEST_F(ClipboardTest, DataTest) {
   const ui::Clipboard::FormatType kFormat =
@@ -548,23 +544,6 @@ TEST_F(ClipboardTest, WebSmartPasteTest) {
       Clipboard::GetWebKitSmartPasteFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
 }
 
-TEST_F(ClipboardTest, BitmapTest) {
-  unsigned int fake_bitmap[] = {
-    0x46155189, 0xF6A55C8D, 0x79845674, 0xFA57BD89,
-    0x78FD46AE, 0x87C64F5A, 0x36EDC5AF, 0x4378F568,
-    0x91E9F63A, 0xC31EA14F, 0x69AB32DF, 0x643A3FD1,
-  };
-
-  {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
-    clipboard_writer.WriteBitmapFromPixels(fake_bitmap, gfx::Size(3, 4));
-  }
-
-  EXPECT_TRUE(clipboard().IsFormatAvailable(Clipboard::GetBitmapFormatType(),
-                                            CLIPBOARD_TYPE_COPY_PASTE));
-}
-
 void HtmlTestHelper(const std::string& cf_html,
                     const std::string& expected_html) {
   std::string html;
@@ -629,18 +608,14 @@ TEST_F(ClipboardTest, WriteEverything) {
 // Test that if another application writes some text to the pasteboard the
 // clipboard properly invalidates other types.
 TEST_F(ClipboardTest, InternalClipboardInvalidation) {
-  const unsigned int kFakeBitmap[] = {
-    0x46155189, 0xF6A55C8D, 0x79845674, 0xFA57BD89,
-    0x78FD46AE, 0x87C64F5A, 0x36EDC5AF, 0x4378F568,
-    0x91E9F63A, 0xC31EA14F, 0x69AB32DF, 0x643A3FD1,
-  };
-
-  // Write a bitmap in our clipboard().
+  // Write a Webkit smart paste tag to our clipboard.
   {
     ScopedClipboardWriter clipboard_writer(&clipboard(),
                                            CLIPBOARD_TYPE_COPY_PASTE);
-    clipboard_writer.WriteBitmapFromPixels(kFakeBitmap, gfx::Size(3, 4));
+    clipboard_writer.WriteWebSmartPaste();
   }
+  EXPECT_TRUE(clipboard().IsFormatAvailable(
+      Clipboard::GetWebKitSmartPasteFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
 
   //
   // Simulate that another application copied something in the Clipboard
@@ -683,9 +658,9 @@ TEST_F(ClipboardTest, InternalClipboardInvalidation) {
                       set_text,
                       new_value_string.obj());
 
-  // The bitmap that should have been available should be gone.
-  EXPECT_FALSE(clipboard().IsFormatAvailable(Clipboard::GetBitmapFormatType(),
-                                             CLIPBOARD_TYPE_COPY_PASTE));
+  // The WebKit smart paste tag should now be gone.
+  EXPECT_FALSE(clipboard().IsFormatAvailable(
+      Clipboard::GetWebKitSmartPasteFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
 
   // Make sure some text is available
   EXPECT_TRUE(clipboard().IsFormatAvailable(

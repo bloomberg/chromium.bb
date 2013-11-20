@@ -27,7 +27,7 @@ void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
   if (context_) {
     context_->WriteBitmapFromPixels(&objects_, pixels, size);
   } else {
-    ScopedClipboardWriter::WriteBitmapFromPixels(pixels, size);
+    NOTREACHED();
   }
 }
 

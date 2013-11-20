@@ -174,7 +174,7 @@ void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
                     8,
                     32,
                     bitmap.rowBytes(),
-                    base::mac::GetSRGBColorSpace(),  // TODO(avi): do better
+                    base::mac::GetSystemColorSpace(),  // TODO(avi): do better
                     kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
                     data_provider,
                     NULL,

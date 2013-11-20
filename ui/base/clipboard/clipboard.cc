@@ -58,19 +58,6 @@ bool IsBitmapSizeSane(const gfx::Size& size, uint32* bitmap_bytes) {
   return true;
 }
 
-// Validates a plain bitmap on the clipboard.
-// Returns true if the clipboard data makes sense and it's safe to access the
-// bitmap.
-bool ValidatePlainBitmap(const gfx::Size& size,
-                         const Clipboard::ObjectMapParams& params) {
-  uint32 bitmap_bytes = -1;
-  if (!IsBitmapSizeSane(size, &bitmap_bytes))
-    return false;
-  if (bitmap_bytes != params[0].size())
-    return false;
-  return true;
-}
-
 // Valides a shared bitmap on the clipboard.
 // Returns true if the clipboard data makes sense and it's safe to access the
 // bitmap.
@@ -179,8 +166,7 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
   if (type != CBF_WEBKIT && (params.empty() || params[0].empty()))
     return;
   // Some other types need a non-empty 2nd param.
-  if ((type == CBF_BOOKMARK || type == CBF_BITMAP ||
-       type == CBF_SMBITMAP || type == CBF_DATA) &&
+  if ((type == CBF_BOOKMARK || type == CBF_SMBITMAP || type == CBF_DATA) &&
       (params.size() != 2 || params[1].empty()))
     return;
   switch (type) {
@@ -211,20 +197,6 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
     case CBF_WEBKIT:
       WriteWebSmartPaste();
       break;
-
-    case CBF_BITMAP: {
-      gfx::Size size;
-      if (!GetBitmapSizeFromParams(params, &size))
-        return;
-
-      if (!ValidatePlainBitmap(size, params))
-        return;
-
-      const SkBitmap& bitmap = AdoptBytesIntoSkBitmap(
-          static_cast<const void*>(&params[0].front()), size);
-      WriteBitmap(bitmap);
-      break;
-    }
 
     case CBF_SMBITMAP: {
       using base::SharedMemory;

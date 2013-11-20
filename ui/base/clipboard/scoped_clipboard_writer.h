@@ -57,10 +57,6 @@ class UI_EXPORT ScopedClipboardWriter {
   // Used by WebKit to determine whether WebKit wrote the clipboard last
   void WriteWebSmartPaste();
 
-  // Adds a bitmap to the clipboard
-  // Pixel format is assumed to be 32-bit BI_RGB.
-  void WriteBitmapFromPixels(const void* pixels, const gfx::Size& size);
-
   // Adds arbitrary pickled data to clipboard.
   void WritePickledData(const Pickle& pickle,
                         const Clipboard::FormatType& format);
