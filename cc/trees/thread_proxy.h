@@ -193,6 +193,10 @@ class ThreadProxy : public Proxy,
   void StartScrollbarAnimationOnImplThread();
   void MainThreadHasStoppedFlingingOnImplThread();
   void SetInputThrottledUntilCommitOnImplThread(bool is_throttled);
+  LayerTreeHost* layer_tree_host();
+  const LayerTreeHost* layer_tree_host() const;
+  PrioritizedResourceManager* contents_texture_manager_on_main_thread();
+  PrioritizedResourceManager* contents_texture_manager_on_impl_thread();
 
   // Accessed on main thread only.
 
@@ -205,7 +209,12 @@ class ThreadProxy : public Proxy,
   // Set by BeginMainFrame
   bool created_offscreen_context_provider_;
   base::CancelableClosure output_surface_creation_callback_;
-  LayerTreeHost* layer_tree_host_;
+  // Don't use this variable directly, go through layer_tree_host() to ensure it
+  // is only used on the main thread or if the main thread is blocked.
+  LayerTreeHost* layer_tree_host_unsafe_;
+  // Use one of the contents_texture_manager_on functions above instead of using
+  // this variable directly.
+  PrioritizedResourceManager* contents_texture_manager_unsafe_;
   RendererCapabilities renderer_capabilities_main_thread_copy_;
   bool started_;
   bool textures_acquired_;
