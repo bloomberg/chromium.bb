@@ -42,9 +42,10 @@ class PacketDroppingTestWriter : public net::test::QuicTestWriter {
 
   virtual bool IsWriteBlockedDataBuffered() const OVERRIDE;
 
-  // Writes out the next packet to the contained writer and returns the time
+  // Writes out any packet which should have been sent by now
+  // to the contained writer and returns the time
   // for the next delayed packet to be written.
-  QuicTime ReleaseNextPacket();
+  QuicTime ReleaseOldPackets();
 
   QuicBlockedWriterInterface* blocked_writer() { return blocked_writer_; }
 
@@ -96,6 +97,10 @@ class PacketDroppingTestWriter : public net::test::QuicTestWriter {
   }
 
  private:
+  // Writes out the next packet to the contained writer and returns the time
+  // for the next delayed packet to be written.
+  QuicTime ReleaseNextPacket();
+
   // A single packet which will be sent at the supplied send_time.
   class DelayedWrite {
    public:

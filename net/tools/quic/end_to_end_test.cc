@@ -44,6 +44,7 @@ using net::test::ReliableQuicStreamPeer;
 using net::tools::test::PacketDroppingTestWriter;
 using net::tools::test::QuicDispatcherPeer;
 using net::tools::test::QuicServerPeer;
+using std::ostream;
 using std::string;
 using std::vector;
 
@@ -74,6 +75,16 @@ struct TestParams {
         server_supported_versions(server_supported_versions),
         negotiated_version(negotiated_version),
         use_padding(use_padding) {
+  }
+
+  friend ostream& operator<<(ostream& os, const TestParams& p) {
+    os << "{ server_supported_versions: "
+       << QuicVersionVectorToString(p.server_supported_versions);
+    os << " client_supported_versions: "
+       << QuicVersionVectorToString(p.client_supported_versions);
+    os << " negotiated_version: " << QuicVersionToString(p.negotiated_version);
+    os << " use_padding: " << p.use_padding << " }";
+    return os;
   }
 
   QuicVersionVector client_supported_versions;
@@ -138,7 +149,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     net::IPAddressNumber ip;
     CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &ip));
     server_address_ = IPEndPoint(ip, 0);
-    FLAGS_track_retransmission_history = true;
     client_config_.SetDefaults();
     server_config_.SetDefaults();
     server_config_.set_initial_round_trip_time_us(kMaxInitialRoundTripTimeUs,

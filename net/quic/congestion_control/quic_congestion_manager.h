@@ -87,6 +87,9 @@ class NET_EXPORT_PRIVATE QuicCongestionManager {
   // Returns amount of time for delayed ack timer.
   const QuicTime::Delta DelayedAckTime();
 
+  // Returns the current RTO delay.  |unacked_packet_count| is the number of
+  // currently outstanding packets.  |number_retransmissions| is the number of
+  // sequential retransmission timeouts that have occrued.
   const QuicTime::Delta GetRetransmissionDelay(
       size_t unacked_packets_count,
       size_t number_retransmissions) const;
@@ -110,9 +113,6 @@ class NET_EXPORT_PRIVATE QuicCongestionManager {
   friend class test::QuicCongestionManagerPeer;
   typedef std::map<QuicPacketSequenceNumber, size_t> PendingPacketsMap;
 
-  // Get the current(last) rtt. Infinite is returned if invalid.
-  const QuicTime::Delta rtt();
-
   void CleanupPacketHistory();
 
   const QuicClock* clock_;
@@ -121,7 +121,7 @@ class NET_EXPORT_PRIVATE QuicCongestionManager {
   SendAlgorithmInterface::SentPacketsMap packet_history_map_;
   PendingPacketsMap pending_packets_;
   QuicPacketSequenceNumber largest_missing_;
-  QuicTime::Delta current_rtt_;
+  QuicTime::Delta rtt_sample_;  // RTT estimate from the most recent ACK.
 
   DISALLOW_COPY_AND_ASSIGN(QuicCongestionManager);
 };

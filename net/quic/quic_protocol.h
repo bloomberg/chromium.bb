@@ -56,6 +56,10 @@ const QuicByteCount kMaxPacketSize = 1472;
 const size_t kDefaultInitialWindow = 10;
 const size_t kMaxInitialWindow = 100;
 
+// Maximum size of the congestion window, in packets, for TCP congestion control
+// algorithms.
+const size_t kMaxTcpCongestionWindow = 200;
+
 // Don't allow a client to suggest an RTT longer than 15 seconds.
 const size_t kMaxInitialRoundTripTimeUs = 15 * kNumMicrosPerSecond;
 

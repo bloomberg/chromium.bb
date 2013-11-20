@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "net/base/iovec.h"
 #include "net/base/net_export.h"
+#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_spdy_compressor.h"
 #include "net/quic/quic_spdy_decompressor.h"
 #include "net/quic/quic_stream_sequencer.h"
@@ -172,10 +173,14 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
 
   // Sends as many bytes in the first |count| buffers of |iov| to the connection
   // as the connection will consume.
+  // If |ack_notifier_delegate| is provided, then it will be notified once all
+  // the ACKs for this write have been received.
   // Returns the number of bytes consumed by the connection.
-  QuicConsumedData WritevDataInternal(const struct iovec* iov,
-                                      int iov_count,
-                                      bool fin);
+  QuicConsumedData WritevDataInternal(
+      const struct iovec* iov,
+      int iov_count,
+      bool fin,
+      QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
 
  private:
   friend class test::ReliableQuicStreamPeer;

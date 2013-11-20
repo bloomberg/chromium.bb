@@ -316,6 +316,8 @@ void QuicTestClient::ClearPerRequestState() {
   stream_error_ = QUIC_STREAM_NO_ERROR;
   stream_ = NULL;
   response_ = "";
+  response_complete_ = false;
+  response_headers_complete_ = false;
   headers_.Clear();
   bytes_read_ = 0;
   bytes_written_ = 0;
@@ -370,6 +372,22 @@ ssize_t QuicTestClient::Send(const void *buffer, size_t size) {
   return SendData(string(static_cast<const char*>(buffer), size), false);
 }
 
+bool QuicTestClient::response_headers_complete() const {
+  if (stream_ != NULL) {
+    return stream_->headers_decompressed();
+  } else {
+    return response_headers_complete_;
+  }
+}
+
+const BalsaHeaders* QuicTestClient::response_headers() const {
+  if (stream_ != NULL) {
+    return &stream_->headers();
+  } else {
+    return &headers_;
+  }
+}
+
 int QuicTestClient::response_size() const {
   return bytes_read_;
 }
@@ -390,6 +408,8 @@ void QuicTestClient::OnClose(ReliableQuicStream* stream) {
     // TODO(fnk): The stream still buffers the whole thing. Fix that.
     response_ = stream_->data();
   }
+  response_complete_ = true;
+  response_headers_complete_ = stream_->headers_decompressed();
   headers_.CopyFrom(stream_->headers());
   stream_error_ = stream_->stream_error();
   bytes_read_ = stream_->stream_bytes_read();

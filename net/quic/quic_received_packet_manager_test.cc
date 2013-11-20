@@ -114,6 +114,26 @@ TEST_F(QuicReceivedPacketManagerTest, DontWaitForPacketsBefore) {
   EXPECT_TRUE(received_manager_.IsAwaitingPacket(6u));
 }
 
+TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedPacketInfo) {
+  QuicPacketHeader header;
+  header.packet_sequence_number = 2u;
+  QuicTime two_ms = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(2));
+  received_manager_.RecordPacketReceived(header, two_ms);
+
+  ReceivedPacketInfo info;
+  received_manager_.UpdateReceivedPacketInfo(&info, QuicTime::Zero());
+  // When UpdateReceivedPacketInfo with a time earlier than the time of the
+  // largest observed packet, make sure that the delta is 0, not negative.
+  EXPECT_EQ(QuicTime::Delta::Zero(), info.delta_time_largest_observed);
+
+  QuicTime four_ms = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(4));
+  received_manager_.UpdateReceivedPacketInfo(&info, four_ms);
+  // When UpdateReceivedPacketInfo after not having received a new packet,
+  // the delta should still be accurate.
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(2),
+            info.delta_time_largest_observed);
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

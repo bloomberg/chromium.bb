@@ -117,7 +117,19 @@ FramerVisitorCapturingFrames::FramerVisitorCapturingFrames() : frame_count_(0) {
 }
 
 FramerVisitorCapturingFrames::~FramerVisitorCapturingFrames() {
+  Reset();
+}
+
+void FramerVisitorCapturingFrames::Reset() {
   STLDeleteElements(&stream_data_);
+  stream_frames_.clear();
+  frame_count_ = 0;
+  ack_.reset();
+  feedback_.reset();
+  rst_.reset();
+  close_.reset();
+  goaway_.reset();
+  version_negotiation_packet_.reset();
 }
 
 bool FramerVisitorCapturingFrames::OnPacketHeader(
@@ -272,7 +284,7 @@ bool PacketSavingConnection::SendOrQueuePacket(
 
 MockSession::MockSession(QuicConnection* connection, bool is_server)
     : QuicSession(connection, DefaultQuicConfig(), is_server) {
-  ON_CALL(*this, WritevData(_, _, _, _, _))
+  ON_CALL(*this, WritevData(_, _, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
 

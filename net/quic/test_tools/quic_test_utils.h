@@ -12,6 +12,7 @@
 
 #include "base/strings/string_piece.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
+#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_session.h"
@@ -136,6 +137,9 @@ class FramerVisitorCapturingFrames : public NoOpFramerVisitor {
  public:
   FramerVisitorCapturingFrames();
   virtual ~FramerVisitorCapturingFrames();
+
+  // Reset the visitor to it's initial state.
+  void Reset();
 
   // NoOpFramerVisitor
   virtual void OnVersionNegotiationPacket(
@@ -294,11 +298,13 @@ class MockSession : public QuicSession {
                ReliableQuicStream*(QuicStreamId id));
   MOCK_METHOD0(GetCryptoStream, QuicCryptoStream*());
   MOCK_METHOD0(CreateOutgoingReliableStream, ReliableQuicStream*());
-  MOCK_METHOD5(WritevData, QuicConsumedData(QuicStreamId id,
-                                            const struct iovec* iov,
-                                            int count,
-                                            QuicStreamOffset offset,
-                                            bool fin));
+  MOCK_METHOD6(WritevData,
+               QuicConsumedData(QuicStreamId id,
+                                const struct iovec* iov,
+                                int count,
+                                QuicStreamOffset offset,
+                                bool fin,
+                                QuicAckNotifier::DelegateInterface*));
   MOCK_METHOD0(IsHandshakeComplete, bool());
   MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
 

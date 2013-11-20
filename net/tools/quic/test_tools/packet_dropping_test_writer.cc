@@ -41,7 +41,7 @@ class DelayAlarm : public QuicAlarm::Delegate {
       : writer_(writer) { }
 
   virtual QuicTime OnAlarm() OVERRIDE {
-    return writer_->ReleaseNextPacket();
+    return writer_->ReleaseOldPackets();
   }
 
  private:
@@ -80,6 +80,8 @@ WriteResult PacketDroppingTestWriter::WritePacket(
     const net::IPAddressNumber& self_address,
     const net::IPEndPoint& peer_address,
     QuicBlockedWriterInterface* blocked_writer) {
+  ReleaseOldPackets();
+
   base::AutoLock locked(config_mutex_);
   if (fake_packet_loss_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <
@@ -169,6 +171,17 @@ QuicTime PacketDroppingTestWriter::ReleaseNextPacket() {
     return QuicTime::Zero();
   }
   return delayed_packets_.begin()->send_time;
+}
+
+QuicTime PacketDroppingTestWriter::ReleaseOldPackets() {
+  while (!delayed_packets_.empty()) {
+    QuicTime next_send_time = delayed_packets_.front().send_time;
+    if (next_send_time > clock_->Now()) {
+      return next_send_time;
+    }
+    ReleaseNextPacket();
+  }
+  return QuicTime::Zero();
 }
 
 PacketDroppingTestWriter::DelayedWrite::DelayedWrite(

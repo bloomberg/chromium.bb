@@ -122,11 +122,13 @@ class QuicReliableServerStreamTest : public ::testing::Test {
   string body_;
 };
 
-QuicConsumedData ConsumeAllData(QuicStreamId id,
-                                const struct iovec* iov,
-                                int iov_count,
-                                QuicStreamOffset offset,
-                                bool fin) {
+QuicConsumedData ConsumeAllData(
+    QuicStreamId id,
+    const struct iovec* iov,
+    int iov_count,
+    QuicStreamOffset offset,
+    bool fin,
+    QuicAckNotifier::DelegateInterface* /*ack_notifier_delegate*/) {
   ssize_t consumed_length = 0;
   for (int i = 0; i < iov_count; ++i) {
     consumed_length += iov[i].iov_len;
@@ -135,7 +137,7 @@ QuicConsumedData ConsumeAllData(QuicStreamId id,
 }
 
 TEST_F(QuicReliableServerStreamTest, TestFraming) {
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(AnyNumber()).
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
 
   EXPECT_EQ(headers_string_.size(), stream_->ProcessData(
@@ -148,7 +150,7 @@ TEST_F(QuicReliableServerStreamTest, TestFraming) {
 }
 
 TEST_F(QuicReliableServerStreamTest, TestFramingOnePacket) {
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(AnyNumber()).
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
 
   string message = headers_string_ + body_;
@@ -166,7 +168,7 @@ TEST_F(QuicReliableServerStreamTest, TestFramingExtraData) {
   string large_body = "hello world!!!!!!";
 
   // We'll automatically write out an error (headers + body)
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(2).
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(2).
       WillRepeatedly(Invoke(ConsumeAllData));
 
   EXPECT_EQ(headers_string_.size(), stream_->ProcessData(
@@ -193,11 +195,11 @@ TEST_F(QuicReliableServerStreamTest, TestSendResponse) {
   response_headers_.ReplaceOrAppendHeader("content-length", "3");
 
   InSequence s;
-  EXPECT_CALL(session_, WritevData(_, _, 1, _, _)).Times(1)
+  EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1)
       .WillOnce(WithArgs<1>(Invoke(
           this, &QuicReliableServerStreamTest::ValidateHeaders)));
 
-  EXPECT_CALL(session_, WritevData(_, _, 1, _, _)).Times(1).
+  EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1).
       WillOnce(Return(QuicConsumedData(3, true)));
 
   stream_->SendResponse();
@@ -211,11 +213,11 @@ TEST_F(QuicReliableServerStreamTest, TestSendErrorResponse) {
   response_headers_.ReplaceOrAppendHeader("content-length", "3");
 
   InSequence s;
-  EXPECT_CALL(session_, WritevData(_, _, 1, _, _)).Times(1)
+  EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1)
       .WillOnce(WithArgs<1>(Invoke(
           this, &QuicReliableServerStreamTest::ValidateHeaders)));
 
-  EXPECT_CALL(session_, WritevData(_, _, 1, _, _)).Times(1).
+  EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1).
       WillOnce(Return(QuicConsumedData(3, true)));
 
   stream_->SendErrorResponse();

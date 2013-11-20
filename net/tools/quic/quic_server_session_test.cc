@@ -123,10 +123,6 @@ class QuicServerSessionTest : public ::testing::Test {
 TEST_F(QuicServerSessionTest, CloseStreamDueToReset) {
   // Open a stream, then reset it.
   // Send two bytes of payload to open it.
-  QuicPacketHeader header;
-  header.public_header.guid = guid_;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
   QuicStreamFrame data1(3, false, 0, MakeIOVector("HT"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
@@ -156,10 +152,6 @@ TEST_F(QuicServerSessionTest, NeverOpenStreamDueToReset) {
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
 
   // Send two bytes of payload.
-  QuicPacketHeader header;
-  header.public_header.guid = guid_;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
   QuicStreamFrame data1(3, false, 0, MakeIOVector("HT"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
@@ -176,10 +168,6 @@ TEST_F(QuicServerSessionTest, NeverOpenStreamDueToReset) {
 }
 
 TEST_F(QuicServerSessionTest, GoOverPrematureClosedStreamLimit) {
-  QuicPacketHeader header;
-  header.public_header.guid = guid_;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
   QuicStreamFrame data1(3, false, 0, MakeIOVector("H"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
@@ -194,10 +182,6 @@ TEST_F(QuicServerSessionTest, GoOverPrematureClosedStreamLimit) {
 }
 
 TEST_F(QuicServerSessionTest, AcceptClosedStream) {
-  QuicPacketHeader header;
-  header.public_header.guid = guid_;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
   vector<QuicStreamFrame> frames;
   // Send (empty) compressed headers followed by two bytes of data.
   frames.push_back(

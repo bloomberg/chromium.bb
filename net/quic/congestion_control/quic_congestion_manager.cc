@@ -41,7 +41,7 @@ QuicCongestionManager::QuicCongestionManager(
       receive_algorithm_(ReceiveAlgorithmInterface::Create(clock, type)),
       send_algorithm_(SendAlgorithmInterface::Create(clock, type)),
       largest_missing_(0),
-      current_rtt_(QuicTime::Delta::Infinite()) {
+      rtt_sample_(QuicTime::Delta::Infinite()) {
 }
 
 QuicCongestionManager::~QuicCongestionManager() {
@@ -51,11 +51,11 @@ QuicCongestionManager::~QuicCongestionManager() {
 void QuicCongestionManager::SetFromConfig(const QuicConfig& config,
                                           bool is_server) {
   if (config.initial_round_trip_time_us() > 0 &&
-      current_rtt_.IsInfinite()) {
+      rtt_sample_.IsInfinite()) {
     // The initial rtt should already be set on the client side.
     DLOG_IF(INFO, !is_server)
         << "Client did not set an initial RTT, but did negotiate one.";
-    current_rtt_ =
+    rtt_sample_ =
         QuicTime::Delta::FromMicroseconds(config.initial_round_trip_time_us());
   }
   send_algorithm_->SetFromConfig(config, is_server);
@@ -103,13 +103,17 @@ void QuicCongestionManager::OnIncomingAckFrame(const QuicAckFrame& frame,
   SendAlgorithmInterface::SentPacketsMap::iterator history_it =
       packet_history_map_.find(frame.received_info.largest_observed);
   // TODO(satyamshekhar): largest_observed might be missing.
-  if (history_it != packet_history_map_.end() &&
-      !frame.received_info.delta_time_largest_observed.IsInfinite()) {
+  if (history_it != packet_history_map_.end()) {
     QuicTime::Delta send_delta = ack_receive_time.Subtract(
         history_it->second->SendTimestamp());
     if (send_delta > frame.received_info.delta_time_largest_observed) {
-      current_rtt_ = send_delta.Subtract(
+      rtt_sample_ = send_delta.Subtract(
           frame.received_info.delta_time_largest_observed);
+    } else if (rtt_sample_.IsInfinite()) {
+      // Even though we received information from the peer suggesting
+      // an invalid (negative) RTT, we can use the send delta as an
+      // approximation until we get a better estimate.
+      rtt_sample_ = send_delta;
     }
   }
   // We want to.
@@ -126,7 +130,7 @@ void QuicCongestionManager::OnIncomingAckFrame(const QuicAckFrame& frame,
     QuicPacketSequenceNumber sequence_number = it->first;
     if (!IsAwaitingPacket(frame.received_info, sequence_number)) {
       // Not missing, hence implicitly acked.
-      send_algorithm_->OnIncomingAck(sequence_number, it->second, current_rtt_);
+      send_algorithm_->OnIncomingAck(sequence_number, it->second, rtt_sample_);
       pending_packets_.erase(it++);  // Must be incremented post to work.
     } else {
       if (sequence_number > largest_missing_) {
@@ -171,10 +175,6 @@ void QuicCongestionManager::RecordIncomingPacket(
                                            revived);
 }
 
-const QuicTime::Delta QuicCongestionManager::rtt() {
-  return current_rtt_;
-}
-
 const QuicTime::Delta QuicCongestionManager::DefaultRetransmissionTime() {
   return QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
 }
@@ -199,15 +199,21 @@ const QuicTime::Delta QuicCongestionManager::DelayedAckTime() {
 const QuicTime::Delta QuicCongestionManager::GetRetransmissionDelay(
     size_t unacked_packets_count,
     size_t number_retransmissions) const {
+  if (unacked_packets_count <= kTailDropWindowSize) {
+    // Avoid exponential backoff of RTO when there are only a few packets
+    // outstanding.  This helps avoid the situation where fake packet loss
+    // causes a packet and it's retransmission to be dropped causing
+    // test timouts.
+    if (number_retransmissions <= kTailDropMaxRetransmissions) {
+      number_retransmissions = 0;
+    } else {
+      number_retransmissions -= kTailDropMaxRetransmissions;
+    }
+  }
+
   QuicTime::Delta retransmission_delay = send_algorithm_->RetransmissionDelay();
   if (retransmission_delay.IsZero()) {
     // We are in the initial state, use default timeout values.
-    if (unacked_packets_count <= kTailDropWindowSize) {
-      if (number_retransmissions <= kTailDropMaxRetransmissions) {
-        return QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
-      }
-      number_retransmissions -= kTailDropMaxRetransmissions;
-    }
     retransmission_delay =
         QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
   }

@@ -291,7 +291,7 @@ void QuicConnection::OnError(QuicFramer* framer) {
   if (!connected_ || framer->error() == QUIC_DECRYPTION_FAILURE) {
     return;
   }
-  SendConnectionClose(framer->error());
+  SendConnectionCloseWithDetails(framer->error(), framer->detailed_error());
 }
 
 void QuicConnection::OnPacket() {
@@ -549,7 +549,7 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
   // Used to set RTO and FEC alarms.
   QuicTime::Delta retransmission_delay =
       congestion_manager_.GetRetransmissionDelay(
-          sent_packet_manager_.GetNumUnackedPackets(), 0);
+          sent_packet_manager_.GetNumRetransmittablePackets(), 0);
 
   // If there are outstanding packets, and the least unacked sequence number
   // has increased after processing this latest AckFrame, then reschedule the
@@ -1199,7 +1199,8 @@ void QuicConnection::SetupRetransmission(
 
   QuicTime::Delta retransmission_delay =
       congestion_manager_.GetRetransmissionDelay(
-          sent_packet_manager_.GetNumUnackedPackets(), consecutive_rto_count_);
+          sent_packet_manager_.GetNumRetransmittablePackets(),
+          consecutive_rto_count_);
   retransmission_alarm_->Set(
       clock_->ApproximateNow().Add(retransmission_delay));
 }
@@ -1211,7 +1212,8 @@ void QuicConnection::SetupAbandonFecTimer(
   }
   QuicTime::Delta retransmission_delay =
       congestion_manager_.GetRetransmissionDelay(
-          sent_packet_manager_.GetNumUnackedPackets(), consecutive_rto_count_);
+          sent_packet_manager_.GetNumRetransmittablePackets(),
+          consecutive_rto_count_);
   abandon_fec_alarm_->Set(clock_->ApproximateNow().Add(retransmission_delay));
 }
 
@@ -1560,7 +1562,8 @@ QuicTime QuicConnection::OnAbandonFecTimeout() {
   // the alarm if there are more pending fec packets.
   QuicTime::Delta retransmission_delay =
       congestion_manager_.GetRetransmissionDelay(
-          sent_packet_manager_.GetNumUnackedPackets(), consecutive_rto_count_);
+          sent_packet_manager_.GetNumRetransmittablePackets(),
+          consecutive_rto_count_);
   QuicTime max_send_time =
       clock_->ApproximateNow().Subtract(retransmission_delay);
   bool abandoned_packet = false;
@@ -1858,8 +1861,7 @@ QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
     DVLOG(1) << "Entering Batch Mode.";
     connection_->packet_generator_.StartBatchOperations();
   }
-  if (FLAGS_bundle_ack_with_outgoing_packet &&
-      include_ack && connection_->ack_alarm_->IsSet()) {
+  if (include_ack && connection_->ack_alarm_->IsSet()) {
     DVLOG(1) << "Bundling ack with outgoing packet.";
     connection_->SendAck();
   }

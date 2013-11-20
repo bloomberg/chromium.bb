@@ -15,10 +15,12 @@ typedef WriteBlockedList<int> IntWriteBlockedList;
 
 TEST(WriteBlockedListTest, GetHighestPriority) {
   IntWriteBlockedList list;
-  EXPECT_EQ(-1, list.GetHighestPriorityWriteBlockedList());
+  EXPECT_FALSE(list.HasWriteBlockedStreams());
   list.PushBack(1, 1);
+  EXPECT_TRUE(list.HasWriteBlockedStreams());
   EXPECT_EQ(1, list.GetHighestPriorityWriteBlockedList());
   list.PushBack(1, 0);
+  EXPECT_TRUE(list.HasWriteBlockedStreams());
   EXPECT_EQ(0, list.GetHighestPriorityWriteBlockedList());
 }
 
@@ -55,22 +57,19 @@ TEST(WriteBlockedListTest, PopFront) {
   IntWriteBlockedList list;
 
   list.PushBack(1, 4);
-  EXPECT_EQ(1, list.NumBlockedStreams());
+  EXPECT_EQ(1u, list.NumBlockedStreams());
   list.PushBack(2, 4);
   list.PushBack(1, 4);
   list.PushBack(3, 4);
-  EXPECT_EQ(4, list.NumBlockedStreams());
+  EXPECT_EQ(4u, list.NumBlockedStreams());
 
   EXPECT_EQ(1, list.PopFront(4));
   EXPECT_EQ(2, list.PopFront(4));
   EXPECT_EQ(1, list.PopFront(4));
-  EXPECT_EQ(1, list.NumBlockedStreams());
+  EXPECT_EQ(1u, list.NumBlockedStreams());
   EXPECT_EQ(3, list.PopFront(4));
 }
 
 }  // namespace
 }  // namespace test
 }  // namespace net
-
-
-

@@ -56,9 +56,8 @@ class QuicConnectionPeer {
       QuicConnection* connection,
       QuicPacketSequenceNumber sequence_number);
 
-  static size_t GetRetransmissionCount(
-      QuicConnection* connection,
-      QuicPacketSequenceNumber sequence_number);
+  static bool IsRetransmission(QuicConnection* connection,
+                               QuicPacketSequenceNumber sequence_number);
 
   static QuicPacketEntropyHash GetSentEntropyHash(
       QuicConnection* connection,

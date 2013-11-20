@@ -60,8 +60,6 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
 
   QuicPacketCreator::Options* options() { return client_->options(); }
 
-  const BalsaHeaders *response_headers() const {return &headers_;}
-
   void WaitForResponse();
 
   void Connect();
@@ -72,6 +70,9 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   void WaitForResponseForMs(int timeout_ms);
   void WaitForInitialResponseForMs(int timeout_ms);
   ssize_t Send(const void *buffer, size_t size);
+  bool response_complete() const { return response_complete_; }
+  bool response_headers_complete() const;
+  const BalsaHeaders* response_headers() const;
   int response_size() const;
   int response_header_size() const { return response_header_size_; }
   int response_body_size() const { return response_body_size_; }
@@ -119,6 +120,8 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
 
   QuicRstStreamErrorCode stream_error_;
 
+  bool response_complete_;
+  bool response_headers_complete_;
   BalsaHeaders headers_;
   QuicPriority priority_;
   string response_;

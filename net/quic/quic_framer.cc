@@ -1957,6 +1957,8 @@ bool QuicFramer::AppendAckFramePayloadV11(
   }
   uint32 delta_time_largest_observed_us = kInvalidDeltaTime;
   if (!frame.received_info.delta_time_largest_observed.IsInfinite()) {
+    DCHECK_LE(0u,
+              frame.received_info.delta_time_largest_observed.ToMicroseconds());
     delta_time_largest_observed_us =
         frame.received_info.delta_time_largest_observed.ToMicroseconds();
   }
@@ -2095,6 +2097,8 @@ bool QuicFramer::AppendAckFramePayloadAndTypeByte(
 
   uint64 delta_time_largest_observed_us = kUFloat16MaxValue;
   if (!received_info.delta_time_largest_observed.IsInfinite()) {
+    DCHECK_LE(0u,
+              frame.received_info.delta_time_largest_observed.ToMicroseconds());
     delta_time_largest_observed_us =
         received_info.delta_time_largest_observed.ToMicroseconds();
   }

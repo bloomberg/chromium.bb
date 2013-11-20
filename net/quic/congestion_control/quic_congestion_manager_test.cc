@@ -29,10 +29,14 @@ class QuicCongestionManagerPeer : public QuicCongestionManager {
     this->send_algorithm_.reset(send_algorithm);
   }
 
-  using QuicCongestionManager::rtt;
+  QuicTime::Delta rtt() {
+    return rtt_sample_;
+  }
+
   const SendAlgorithmInterface::SentPacketsMap& packet_history_map() {
     return packet_history_map_;
   }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicCongestionManagerPeer);
 };
@@ -162,15 +166,16 @@ TEST_F(QuicCongestionManagerTest, Rtt) {
 }
 
 TEST_F(QuicCongestionManagerTest, RttWithInvalidDelta) {
-  // Expect that the RTT is infinite since the delta_time_largest_observed is
-  // larger than the local time elapsed aka invalid.
+  // Expect that the RTT is equal to the local time elapsed, since the
+  // delta_time_largest_observed is larger than the local time elapsed
+  // and is hence invalid.
   SetUpCongestionType(kFixRate);
 
   MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
   manager_->SetSendAlgorithm(send_algorithm);
 
   QuicPacketSequenceNumber sequence_number = 1;
-  QuicTime::Delta expected_rtt = QuicTime::Delta::Infinite();
+  QuicTime::Delta expected_rtt = QuicTime::Delta::FromMilliseconds(10);
 
   EXPECT_CALL(*send_algorithm, OnPacketSent(_, _, _, _, _))
                                .Times(1).WillOnce(Return(true));
@@ -189,16 +194,16 @@ TEST_F(QuicCongestionManagerTest, RttWithInvalidDelta) {
   EXPECT_EQ(manager_->rtt(), expected_rtt);
 }
 
-TEST_F(QuicCongestionManagerTest, RttInfiniteDelta) {
-  // Expect that the RTT is infinite since the delta_time_largest_observed is
-  // infinite aka invalid.
+TEST_F(QuicCongestionManagerTest, RttWithInfiniteDelta) {
+  // Expect that the RTT is equal to the local time elapsed, since the
+  // delta_time_largest_observed is infinite, and is hence invalid.
   SetUpCongestionType(kFixRate);
 
   MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
   manager_->SetSendAlgorithm(send_algorithm);
 
   QuicPacketSequenceNumber sequence_number = 1;
-  QuicTime::Delta expected_rtt = QuicTime::Delta::Infinite();
+  QuicTime::Delta expected_rtt = QuicTime::Delta::FromMilliseconds(10);
 
   EXPECT_CALL(*send_algorithm, OnPacketSent(_, _, _, _, _))
                                .Times(1).WillOnce(Return(true));
@@ -241,6 +246,71 @@ TEST_F(QuicCongestionManagerTest, RttZeroDelta) {
   ack.received_info.delta_time_largest_observed = QuicTime::Delta::Zero();
   manager_->OnIncomingAckFrame(ack, clock_.Now());
   EXPECT_EQ(manager_->rtt(), expected_rtt);
+}
+
+TEST_F(QuicCongestionManagerTest, GetTransmissionDelayMin) {
+  SetUpCongestionType(kFixRate);
+
+  MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
+  manager_->SetSendAlgorithm(send_algorithm);
+
+  QuicTime::Delta delay = QuicTime::Delta::FromMilliseconds(1);
+  EXPECT_CALL(*send_algorithm, RetransmissionDelay())
+      .WillOnce(Return(delay));
+
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200),
+            manager_->GetRetransmissionDelay(1, 1));
+}
+
+TEST_F(QuicCongestionManagerTest, GetTransmissionDelayMax) {
+  SetUpCongestionType(kFixRate);
+
+  MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
+  manager_->SetSendAlgorithm(send_algorithm);
+
+  QuicTime::Delta delay = QuicTime::Delta::FromSeconds(500);
+  EXPECT_CALL(*send_algorithm, RetransmissionDelay())
+      .WillOnce(Return(delay));
+
+  EXPECT_EQ(QuicTime::Delta::FromSeconds(60),
+            manager_->GetRetransmissionDelay(1, 1));
+}
+
+TEST_F(QuicCongestionManagerTest, GetTransmissionDelay) {
+  SetUpCongestionType(kFixRate);
+
+  MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
+  manager_->SetSendAlgorithm(send_algorithm);
+
+  QuicTime::Delta delay = QuicTime::Delta::FromMilliseconds(500);
+  EXPECT_CALL(*send_algorithm, RetransmissionDelay())
+      .WillRepeatedly(Return(delay));
+
+  const int kUnackedPackets = 6;
+  // Delay should back off exponentially.
+  for (int i = 0; i < 5; ++i) {
+    EXPECT_EQ(delay, manager_->GetRetransmissionDelay(kUnackedPackets, i));
+    delay = delay.Add(delay);
+  }
+}
+
+TEST_F(QuicCongestionManagerTest, GetTransmissionDelayTailDrop) {
+  SetUpCongestionType(kFixRate);
+
+  MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
+  manager_->SetSendAlgorithm(send_algorithm);
+
+  QuicTime::Delta delay = QuicTime::Delta::FromMilliseconds(500);
+  EXPECT_CALL(*send_algorithm, RetransmissionDelay())
+      .WillRepeatedly(Return(delay));
+
+  // No backoff for the first 5 retransmission.
+  for (int i = 0; i < 5; ++i) {
+    EXPECT_EQ(delay, manager_->GetRetransmissionDelay(1, i));
+  }
+
+  // Then backoff starts
+  EXPECT_EQ(delay.Add(delay), manager_->GetRetransmissionDelay(1, 5));
 }
 
 }  // namespace test

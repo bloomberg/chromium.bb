@@ -9,6 +9,7 @@
 #include <deque>
 
 #include "base/logging.h"
+#include "net/spdy/spdy_protocol.h"
 
 namespace net {
 
@@ -22,25 +23,39 @@ class WriteBlockedList {
   typedef std::deque<IdType> BlockedList;
   typedef typename BlockedList::iterator iterator;
 
-  // Returns the priority of the highest priority list with sessions on it, or
-  // -1 if none of the lists have pending sessions.
-  int GetHighestPriorityWriteBlockedList() const {
-    for (int i = 0; i <= kLowestPriority; ++i) {
+  static SpdyPriority ClampPriority(SpdyPriority priority) {
+    if (priority < kHighestPriority) {
+      LOG(DFATAL) << "Invalid priority: " << static_cast<int>(priority);
+      return kHighestPriority;
+    }
+    if (priority > kLowestPriority) {
+      LOG(DFATAL) << "Invalid priority: " << static_cast<int>(priority);
+      return kLowestPriority;
+    }
+    return priority;
+  }
+
+  // Returns the priority of the highest priority list with sessions on it.
+  SpdyPriority GetHighestPriorityWriteBlockedList() const {
+    for (SpdyPriority i = 0; i <= kLowestPriority; ++i) {
       if (write_blocked_lists_[i].size() > 0)
         return i;
     }
-    return -1;
+    LOG(DFATAL) << "No blocked streams";
+    return kHighestPriority;
   }
 
-  int PopFront(int priority) {
+  IdType PopFront(SpdyPriority priority) {
+    priority = ClampPriority(priority);
     DCHECK(!write_blocked_lists_[priority].empty());
     IdType stream_id = write_blocked_lists_[priority].front();
     write_blocked_lists_[priority].pop_front();
     return stream_id;
   }
 
-  bool HasWriteBlockedStreamsGreaterThanPriority(int priority) const {
-    for (int i = kHighestPriority; i < priority; ++i) {
+  bool HasWriteBlockedStreamsGreaterThanPriority(SpdyPriority priority) const {
+    priority = ClampPriority(priority);
+    for (SpdyPriority i = kHighestPriority; i < priority; ++i) {
       if (!write_blocked_lists_[i].empty()) {
         return true;
       }
@@ -49,14 +64,20 @@ class WriteBlockedList {
   }
 
   bool HasWriteBlockedStreams() const {
-    return HasWriteBlockedStreamsGreaterThanPriority(kLowestPriority + 1);
+    for (SpdyPriority i = kHighestPriority; i <= kLowestPriority; ++i) {
+      if (!write_blocked_lists_[i].empty()) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  void PushBack(IdType stream_id, int priority) {
-    write_blocked_lists_[priority].push_back(stream_id);
+  void PushBack(IdType stream_id, SpdyPriority priority) {
+    write_blocked_lists_[ClampPriority(priority)].push_back(stream_id);
   }
 
-  void RemoveStreamFromWriteBlockedList(IdType stream_id, int priority) {
+  void RemoveStreamFromWriteBlockedList(IdType stream_id,
+                                        SpdyPriority priority) {
     iterator it = std::find(write_blocked_lists_[priority].begin(),
                             write_blocked_lists_[priority].end(),
                             stream_id);
@@ -68,17 +89,16 @@ class WriteBlockedList {
     }
   }
 
-  int NumBlockedStreams() {
-    int num_blocked_streams = 0;
-    for (int i = kHighestPriority; i <= kLowestPriority; ++i) {
+  size_t NumBlockedStreams() const {
+    size_t num_blocked_streams = 0;
+    for (SpdyPriority i = kHighestPriority; i <= kLowestPriority; ++i) {
       num_blocked_streams += write_blocked_lists_[i].size();
     }
     return num_blocked_streams;
   }
 
  private:
-  // Priority ranges from 0 to 7
-  BlockedList write_blocked_lists_[8];
+  BlockedList write_blocked_lists_[kLowestPriority + 1];
 };
 
 }  // namespace net

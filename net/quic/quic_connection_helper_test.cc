@@ -4,8 +4,6 @@
 
 #include "net/quic/quic_connection_helper.h"
 
-#include <vector>
-
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/test_task_runner.h"
@@ -13,6 +11,7 @@
 
 namespace net {
 namespace test {
+namespace {
 
 class TestDelegate : public QuicAlarm::Delegate {
  public:
@@ -142,5 +141,6 @@ TEST_F(QuicConnectionHelperTest, CreateAlarmAndResetEarlier) {
   EXPECT_FALSE(delegate->fired());
 }
 
+}  // namespace
 }  // namespace test
 }  // namespace net

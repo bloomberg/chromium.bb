@@ -179,6 +179,10 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
     AddPrematurelyClosedStream(frame.stream_id);
     return;
   }
+  if (stream->stream_bytes_read() > 0 && !stream->headers_decompressed()) {
+    connection()->SendConnectionClose(
+        QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED);
+  }
   stream->OnStreamReset(frame.error_code);
 }
 
@@ -214,12 +218,12 @@ bool QuicSession::OnCanWrite() {
   while (!connection_->HasQueuedData() &&
          remaining_writes > 0) {
     DCHECK(write_blocked_streams_.HasWriteBlockedStreams());
-    int index = write_blocked_streams_.GetHighestPriorityWriteBlockedList();
-    if (index == -1) {
+    if (!write_blocked_streams_.HasWriteBlockedStreams()) {
       LOG(DFATAL) << "WriteBlockedStream is missing";
       connection_->CloseConnection(QUIC_INTERNAL_ERROR, false);
       return true;  // We have no write blocked streams.
     }
+    int index = write_blocked_streams_.GetHighestPriorityWriteBlockedList();
     QuicStreamId stream_id = write_blocked_streams_.PopFront(index);
     if (stream_id == kCryptoStreamId) {
       has_pending_handshake_ = false;  // We just popped it.
@@ -240,14 +244,17 @@ bool QuicSession::HasPendingHandshake() const {
   return has_pending_handshake_;
 }
 
-QuicConsumedData QuicSession::WritevData(QuicStreamId id,
-                                         const struct iovec* iov,
-                                         int iov_count,
-                                         QuicStreamOffset offset,
-                                         bool fin) {
+QuicConsumedData QuicSession::WritevData(
+    QuicStreamId id,
+    const struct iovec* iov,
+    int iov_count,
+    QuicStreamOffset offset,
+    bool fin,
+    QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
   IOVector data;
   data.AppendIovec(iov, iov_count);
-  return connection_->SendStreamData(id, data, offset, fin, NULL);
+  return connection_->SendStreamData(id, data, offset, fin,
+                                     ack_notifier_delegate);
 }
 
 void QuicSession::SendRstStream(QuicStreamId id,

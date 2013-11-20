@@ -4,6 +4,7 @@
 
 #include "net/quic/reliable_quic_stream.h"
 
+#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_spdy_compressor.h"
 #include "net/quic/quic_spdy_decompressor.h"
@@ -37,11 +38,10 @@ const bool kShouldProcessData = true;
 class TestStream : public ReliableQuicStream {
  public:
   TestStream(QuicStreamId id,
-                         QuicSession* session,
-                         bool should_process_data)
+             QuicSession* session,
+             bool should_process_data)
       : ReliableQuicStream(id, session),
-        should_process_data_(should_process_data) {
-  }
+        should_process_data_(should_process_data) {}
 
   virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE {
     EXPECT_NE(0u, data_len);
@@ -126,7 +126,7 @@ TEST_F(ReliableQuicStreamTest, WriteAllData) {
       1 + QuicPacketCreator::StreamFramePacketOverhead(
           connection_->version(), PACKET_8BYTE_GUID, !kIncludeVersion,
           PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP);
-  EXPECT_CALL(*session_, WritevData(kStreamId, _, 1, _, _)).WillOnce(
+  EXPECT_CALL(*session_, WritevData(kStreamId, _, 1, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen, true)));
   EXPECT_EQ(kDataLen, stream_->WriteData(kData1, false).bytes_consumed);
   EXPECT_FALSE(write_blocked_list_->HasWriteBlockedStreams());
@@ -140,7 +140,7 @@ TEST_F(ReliableQuicStreamTest, NoBlockingIfNoDataOrFin) {
   // Write no data and no fin.  If we consume nothing we should not be write
   // blocked.
   EXPECT_DEBUG_DEATH({
-    EXPECT_CALL(*session_, WritevData(kStreamId, _, 1, _, _)).WillOnce(
+    EXPECT_CALL(*session_, WritevData(kStreamId, _, 1, _, _, _)).WillOnce(
         Return(QuicConsumedData(0, false)));
     stream_->WriteData(StringPiece(), false);
     EXPECT_FALSE(write_blocked_list_->HasWriteBlockedStreams());
@@ -153,10 +153,10 @@ TEST_F(ReliableQuicStreamTest, BlockIfOnlySomeDataConsumed) {
 
   // Write some data and no fin.  If we consume some but not all of the data,
   // we should be write blocked a not all the data was consumed.
-  EXPECT_CALL(*session_, WritevData(kStreamId, _, 1, _, _)).WillOnce(
+  EXPECT_CALL(*session_, WritevData(kStreamId, _, 1, _, _, _)).WillOnce(
       Return(QuicConsumedData(1, false)));
   stream_->WriteData(StringPiece(kData1, 2), false);
-  ASSERT_EQ(1, write_blocked_list_->NumBlockedStreams());
+  ASSERT_EQ(1u, write_blocked_list_->NumBlockedStreams());
 }
 
 
@@ -167,10 +167,10 @@ TEST_F(ReliableQuicStreamTest, BlockIfFinNotConsumedWithData) {
   // we should be write blocked because the fin was not consumed.
   // (This should never actually happen as the fin should be sent out with the
   // last data)
-  EXPECT_CALL(*session_, WritevData(kStreamId, _, 1, _, _)).WillOnce(
+  EXPECT_CALL(*session_, WritevData(kStreamId, _, 1, _, _, _)).WillOnce(
       Return(QuicConsumedData(2, false)));
   stream_->WriteData(StringPiece(kData1, 2), true);
-  ASSERT_EQ(1, write_blocked_list_->NumBlockedStreams());
+  ASSERT_EQ(1u, write_blocked_list_->NumBlockedStreams());
 }
 
 TEST_F(ReliableQuicStreamTest, BlockIfSoloFinNotConsumed) {
@@ -178,10 +178,10 @@ TEST_F(ReliableQuicStreamTest, BlockIfSoloFinNotConsumed) {
 
   // Write no data and a fin.  If we consume nothing we should be write blocked,
   // as the fin was not consumed.
-  EXPECT_CALL(*session_, WritevData(kStreamId, _, 1, _, _)).WillOnce(
+  EXPECT_CALL(*session_, WritevData(kStreamId, _, 1, _, _, _)).WillOnce(
       Return(QuicConsumedData(0, false)));
   stream_->WriteData(StringPiece(), true);
-  ASSERT_EQ(1, write_blocked_list_->NumBlockedStreams());
+  ASSERT_EQ(1u, write_blocked_list_->NumBlockedStreams());
 }
 
 TEST_F(ReliableQuicStreamTest, WriteData) {
@@ -192,7 +192,7 @@ TEST_F(ReliableQuicStreamTest, WriteData) {
       1 + QuicPacketCreator::StreamFramePacketOverhead(
           connection_->version(), PACKET_8BYTE_GUID, !kIncludeVersion,
           PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP);
-  EXPECT_CALL(*session_, WritevData(_, _, 1, _, _)).WillOnce(
+  EXPECT_CALL(*session_, WritevData(_, _, 1, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen - 1, false)));
   // The return will be kDataLen, because the last byte gets buffered.
   EXPECT_EQ(kDataLen, stream_->WriteData(kData1, false).bytes_consumed);
@@ -203,14 +203,14 @@ TEST_F(ReliableQuicStreamTest, WriteData) {
 
   // Make sure we get the tail of the first write followed by the bytes_consumed
   InSequence s;
-  EXPECT_CALL(*session_, WritevData(_, _, 1, _, _)).
+  EXPECT_CALL(*session_, WritevData(_, _, 1, _, _, _)).
       WillOnce(Return(QuicConsumedData(1, false)));
-  EXPECT_CALL(*session_, WritevData(_, _, 1, _, _)).
+  EXPECT_CALL(*session_, WritevData(_, _, 1, _, _, _)).
       WillOnce(Return(QuicConsumedData(kDataLen - 2, false)));
   stream_->OnCanWrite();
 
   // And finally the end of the bytes_consumed.
-  EXPECT_CALL(*session_, WritevData(_, _, 1, _, _)).
+  EXPECT_CALL(*session_, WritevData(_, _, 1, _, _, _)).
       WillOnce(Return(QuicConsumedData(2, true)));
   stream_->OnCanWrite();
 }
@@ -245,10 +245,22 @@ TEST_F(ReliableQuicStreamTest, ProcessHeadersWithInvalidHeaderId) {
 
   string compressed_headers = compressor_->CompressHeadersWithPriority(
       kHighestPriority, headers_);
-  compressed_headers.replace(4, 1, 1, '\xFF');  // Illegal header id.
+  compressed_headers[4] = '\xFF';  // Illegal  header id.
   QuicStreamFrame frame(kStreamId, false, 0, MakeIOVector(compressed_headers));
 
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_HEADER_ID));
+  stream_->OnStreamFrame(frame);
+}
+
+TEST_F(ReliableQuicStreamTest, ProcessHeadersWithInvalidPriority) {
+  Initialize(kShouldProcessData);
+
+  string compressed_headers = compressor_->CompressHeadersWithPriority(
+      kHighestPriority, headers_);
+  compressed_headers[0] = '\xFF';  // Illegal priority.
+  QuicStreamFrame frame(kStreamId, false, 0, MakeIOVector(compressed_headers));
+
+  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_PRIORITY));
   stream_->OnStreamFrame(frame);
 }
 

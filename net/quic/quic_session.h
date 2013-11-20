@@ -76,11 +76,16 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // indicating if the fin bit was consumed.  This does not indicate the data
   // has been sent on the wire: it may have been turned into a packet and queued
   // if the socket was unexpectedly blocked.
-  virtual QuicConsumedData WritevData(QuicStreamId id,
-                                      const struct iovec* iov,
-                                      int iov_count,
-                                      QuicStreamOffset offset,
-                                      bool fin);
+  // If provided, |ack_notifier_delegate| will be registered to be notified when
+  // we have seen ACKs for all packets resulting from this call. Not owned by
+  // this class.
+  virtual QuicConsumedData WritevData(
+      QuicStreamId id,
+      const struct iovec* iov,
+      int iov_count,
+      QuicStreamOffset offset,
+      bool fin,
+      QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
 
   // Called by streams when they want to close the stream in both directions.
   virtual void SendRstStream(QuicStreamId id, QuicRstStreamErrorCode error);

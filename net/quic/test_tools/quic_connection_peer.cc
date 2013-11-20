@@ -72,11 +72,10 @@ bool QuicConnectionPeer::IsSavedForRetransmission(
 }
 
 // static
-size_t QuicConnectionPeer::GetRetransmissionCount(
+bool QuicConnectionPeer::IsRetransmission(
     QuicConnection* connection,
     QuicPacketSequenceNumber sequence_number) {
-  return connection->sent_packet_manager_.GetRetransmissionCount(
-      sequence_number);
+  return connection->sent_packet_manager_.IsRetransmission(sequence_number);
 }
 
 // static

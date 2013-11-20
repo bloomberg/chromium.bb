@@ -27,7 +27,8 @@ QuicReceivedPacketManager::QuicReceivedPacketManager()
 QuicReceivedPacketManager::~QuicReceivedPacketManager() {}
 
 void QuicReceivedPacketManager::RecordPacketReceived(
-    const QuicPacketHeader& header, QuicTime receipt_time) {
+    const QuicPacketHeader& header,
+    QuicTime receipt_time) {
   QuicPacketSequenceNumber sequence_number = header.packet_sequence_number;
   DCHECK(IsAwaitingPacket(sequence_number));
 
@@ -55,19 +56,25 @@ bool QuicReceivedPacketManager::IsAwaitingPacket(
 }
 
 void QuicReceivedPacketManager::UpdateReceivedPacketInfo(
-    ReceivedPacketInfo* received_info, QuicTime approximate_now) {
+    ReceivedPacketInfo* received_info,
+    QuicTime approximate_now) {
   *received_info = received_info_;
   received_info->entropy_hash = EntropyHash(received_info_.largest_observed);
-  if (time_largest_observed_ == QuicTime::Zero()) {
-    // We have not received any new higher sequence numbers since we sent our
-    // last ACK.
-    received_info->delta_time_largest_observed = QuicTime::Delta::Infinite();
-  } else {
-    received_info->delta_time_largest_observed =
-        approximate_now.Subtract(time_largest_observed_);
 
-    time_largest_observed_ = QuicTime::Zero();
+  if (time_largest_observed_ == QuicTime::Zero()) {
+    // We have received no packets.
+    received_info->delta_time_largest_observed = QuicTime::Delta::Infinite();
+    return;
   }
+
+  if (approximate_now < time_largest_observed_) {
+    // Approximate now may well be "in the past".
+    received_info->delta_time_largest_observed = QuicTime::Delta::Zero();
+    return;
+  }
+
+  received_info->delta_time_largest_observed =
+      approximate_now.Subtract(time_largest_observed_);
 }
 
 void QuicReceivedPacketManager::RecordPacketEntropyHash(
