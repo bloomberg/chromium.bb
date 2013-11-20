@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
+
         .text
 
 /*
@@ -13,29 +15,39 @@
  * the validator ensures that it accepts all these nop forms.
  */
 
+.macro fill_before length
+        /*
+         * Fill space at the start of a bundle leaving exactly |length|
+         * bytes before the end of the bundle.
+         */
+        .fill ((1 << NACL_BLOCK_SHIFT) - \length) / NACL_HALT_LEN, \
+              NACL_HALT_LEN, NACL_HALT_OPCODE
+.endm
+
 .macro try length
         /*
          * Create the circumstance where exactly |length| bytes must be
-         * filled to perform '.p2align 5', and then let the assembler fill
-         * it with its choice of nops.
+         * filled to perform '.p2align NACL_BLOCK_SHIFT', and then let the
+         * assembler fill it with its choice of nops.
          */
-        .p2align 5
+        .p2align NACL_BLOCK_SHIFT
 test_as_nop_\length\():
-        .fill 32 - \length, 1, 0xf4
-        .p2align 5
-        hlt
+        fill_before \length
+        .p2align NACL_BLOCK_SHIFT
+        nop
 
          /*
           * Now create the same circumstance in the linker when it stitches
           * this section to the next one (which has sh_addralign=32).
           */
-        .pushsection .text.nop.\length, "ax", @progbits
-        .p2align 5
+        .pushsection .text.nop.\length, "ax", %progbits
+        .p2align NACL_BLOCK_SHIFT
 test_ld_nop_\length\():
-        .fill 32 - \length, 1, 0xf4
+        fill_before \length
         .popsection
 .endm
 
+#if NACL_BLOCK_SHIFT == 5 && NACL_HALT_LEN == 1
 try 1
 try 2
 try 3
@@ -66,13 +78,20 @@ try 27
 try 29
 try 30
 try 31
+#elif NACL_BLOCK_SHIFT == 4 && NACL_HALT_LEN == 4
+try 4
+try 8
+try 12
+#else
+# error "architecture not handled by this test"
+#endif
 
         /*
          * This section follows .text.nop.31 and creates (by virtue of its
          * alignment) the need for the linker to generate the last nop
          * sequence.
          */
-        .pushsection .text.nop.end, "ax", @progbits
-        .p2align 5
-        hlt
+        .pushsection .text.nop.end, "ax", %progbits
+        .p2align NACL_BLOCK_SHIFT
+        nop
         .popsection
