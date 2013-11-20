@@ -47,7 +47,7 @@ ScriptRunner::~ScriptRunner()
         m_document->decrementLoadEventDelayCount();
     for (size_t i = 0; i < m_scriptsToExecuteInOrder.size(); ++i)
         m_document->decrementLoadEventDelayCount();
-    for (int i = 0; i < m_pendingAsyncScripts.size(); ++i)
+    for (size_t i = 0; i < m_pendingAsyncScripts.size(); ++i)
         m_document->decrementLoadEventDelayCount();
 }
 

@@ -81,11 +81,11 @@ public:
                 if (!m_ordinalIteration)
                     m_currentOrdinal = m_forward ? 1 : m_largestOrdinal;
                 else {
-                    if (m_ordinalIteration >= m_ordinalValues.size() + 1)
+                    if (static_cast<size_t>(m_ordinalIteration) >= m_ordinalValues.size() + 1)
                         return 0;
 
                     // Only copy+sort the values once per layout even if the iterator is reset.
-                    if (static_cast<size_t>(m_ordinalValues.size()) != m_sortedOrdinalValues.size()) {
+                    if (m_ordinalValues.size() != m_sortedOrdinalValues.size()) {
                         copyToVector(m_ordinalValues, m_sortedOrdinalValues);
                         sort(m_sortedOrdinalValues.begin(), m_sortedOrdinalValues.end());
                     }

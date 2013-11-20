@@ -77,7 +77,7 @@ String CompressionMessageExtensionProcessor::handshakeString()
 
 bool CompressionMessageExtensionProcessor::processResponse(const HashMap<String, String>& parameters)
 {
-    int numProcessedParameters = 0;
+    unsigned numProcessedParameters = 0;
     if (m_responseProcessed) {
         m_failureReason = "Received duplicate permessage-deflate response";
         return false;

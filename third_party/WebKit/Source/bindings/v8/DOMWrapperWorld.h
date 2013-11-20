@@ -113,7 +113,7 @@ public:
     static void setInitializingWindow(bool);
 
 private:
-    static int isolatedWorldCount;
+    static unsigned isolatedWorldCount;
     static PassRefPtr<DOMWrapperWorld> createMainWorld();
     static bool contextHasCorrectPrototype(v8::Handle<v8::Context>);
 

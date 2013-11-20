@@ -46,7 +46,7 @@
 
 namespace WebCore {
 
-int DOMWrapperWorld::isolatedWorldCount = 0;
+unsigned DOMWrapperWorld::isolatedWorldCount = 0;
 static bool initializingWindow = false;
 
 void DOMWrapperWorld::setInitializingWindow(bool initializing)

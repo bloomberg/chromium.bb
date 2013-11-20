@@ -64,8 +64,8 @@ namespace WTF {
 
         void swap(HashMap&);
 
-        int size() const;
-        int capacity() const;
+        unsigned size() const;
+        unsigned capacity() const;
         bool isEmpty() const;
 
         // iterators iterate over pairs of keys and values
@@ -118,13 +118,13 @@ namespace WTF {
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline int HashMap<RefPtr<T>, U, V, W, X>::size() const
+    inline unsigned HashMap<RefPtr<T>, U, V, W, X>::size() const
     {
         return m_impl.size();
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
-    inline int HashMap<RefPtr<T>, U, V, W, X>::capacity() const
+    inline unsigned HashMap<RefPtr<T>, U, V, W, X>::capacity() const
     {
         return m_impl.capacity();
     }

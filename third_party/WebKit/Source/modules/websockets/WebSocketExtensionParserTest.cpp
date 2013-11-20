@@ -49,7 +49,7 @@ TEST(WebSocketExtensionParserTest, simpleExtension)
 
     ASSERT_TRUE(parser.parseExtension(extension, parameters));
     EXPECT_EQ("extension", extension);
-    EXPECT_EQ(0, parameters.size());
+    EXPECT_EQ(0UL, parameters.size());
 }
 
 TEST(WebSocketExtensionParserTest, extensionWithParameters)
@@ -61,7 +61,7 @@ TEST(WebSocketExtensionParserTest, extensionWithParameters)
 
     ASSERT_TRUE(parser.parseExtension(extension, parameters));
     EXPECT_EQ("extension", extension);
-    EXPECT_EQ(3, parameters.size());
+    EXPECT_EQ(3UL, parameters.size());
     EXPECT_EQ("FOO", parameters.get("foo"));
     EXPECT_EQ("BAR", parameters.get("bar"));
     EXPECT_TRUE(parameters.contains("baz"));
@@ -77,7 +77,7 @@ TEST(WebSocketExtensionParserTest, extensionWithQuotedParameter)
 
     ASSERT_TRUE(parser.parseExtension(extension, parameters));
     EXPECT_EQ("extension", extension);
-    EXPECT_EQ(2, parameters.size());
+    EXPECT_EQ(2UL, parameters.size());
     EXPECT_EQ("FOO", parameters.get("foo"));
     EXPECT_EQ("BAR", parameters.get("bar"));
 }

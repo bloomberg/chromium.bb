@@ -420,7 +420,7 @@ void _NPN_UnregisterObject(NPObject* npObject)
         NPObjectSet* set = rootObjectMap().get(npObject);
         while (set->size() > 0) {
 #ifndef NDEBUG
-            int size = set->size();
+            unsigned size = set->size();
 #endif
             NPObject* sub_object = *(set->begin());
             // The sub-object should not be a owner!

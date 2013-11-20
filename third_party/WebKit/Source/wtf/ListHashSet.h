@@ -90,8 +90,8 @@ namespace WTF {
 
         void swap(ListHashSet&);
 
-        int size() const;
-        int capacity() const;
+        unsigned size() const;
+        unsigned capacity() const;
         bool isEmpty() const;
 
         size_t sizeInBytes() const;
@@ -551,13 +551,13 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity, typename U>
-    inline int ListHashSet<T, inlineCapacity, U>::size() const
+    inline unsigned ListHashSet<T, inlineCapacity, U>::size() const
     {
         return m_impl.size();
     }
 
     template<typename T, size_t inlineCapacity, typename U>
-    inline int ListHashSet<T, inlineCapacity, U>::capacity() const
+    inline unsigned ListHashSet<T, inlineCapacity, U>::capacity() const
     {
         return m_impl.capacity();
     }

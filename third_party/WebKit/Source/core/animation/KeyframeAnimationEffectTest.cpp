@@ -81,7 +81,7 @@ TEST(AnimationKeyframeAnimationEffectTest, BasicOperation)
     KeyframeAnimationEffect::KeyframeVector keyframes = keyframesAtZeroAndOne(unknownAnimatableValue(3.0), unknownAnimatableValue(5.0));
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(keyframes);
     OwnPtr<AnimationEffect::CompositableValueMap> values = effect->sample(0, 0.6);
-    ASSERT_EQ(1, values->size());
+    ASSERT_EQ(1UL, values->size());
     EXPECT_EQ(CSSPropertyLeft, values->begin()->key);
     expectDoubleValue(5.0, values->begin()->value->compositeOnto(unknownAnimatableValue(7.0)));
 }
@@ -314,7 +314,7 @@ TEST(AnimationKeyframeAnimationEffectTest, MultipleProperties)
 
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(keyframes);
     OwnPtr<AnimationEffect::CompositableValueMap> values = effect->sample(0, 0.6);
-    ASSERT_EQ(2, values->size());
+    ASSERT_EQ(2UL, values->size());
     ASSERT_TRUE(values->contains(CSSPropertyLeft));
     expectDoubleValue(5.0, values->get(CSSPropertyLeft)->compositeOnto(unknownAnimatableValue(7.0)));
     ASSERT_TRUE(values->contains(CSSPropertyRight));

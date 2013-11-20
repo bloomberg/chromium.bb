@@ -512,7 +512,7 @@ SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, const Docu
         return 0;
     }
 
-    const int maximumSelectorQueryCacheSize = 256;
+    const unsigned maximumSelectorQueryCacheSize = 256;
     if (m_entries.size() == maximumSelectorQueryCacheSize)
         m_entries.remove(m_entries.begin());
 

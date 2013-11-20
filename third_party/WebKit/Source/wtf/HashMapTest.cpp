@@ -129,7 +129,7 @@ TEST(WTF, HashMapWithOwnPtrAsValue)
 
     map.remove(2);
     ASSERT_FALSE(map.contains(2));
-    ASSERT_EQ(0, map.size());
+    ASSERT_EQ(0UL, map.size());
     ASSERT_EQ(1, destructNumber);
 
     ownCounter1.clear();
