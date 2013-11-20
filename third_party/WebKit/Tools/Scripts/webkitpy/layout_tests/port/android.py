@@ -959,6 +959,7 @@ class ChromiumAndroidDriver(driver.Driver):
             self._log_error('The driver crashed, but no tombstone found!')
             return ''
         if tombstones.startswith('/data/tombstones/tombstone_*: Permission denied'):
+            # FIXME: crbug.com/321489 ... figure out why this happens.
             self._log_error('The driver crashed, but we could not read the tombstones!')
             return ''
         tombstones = tombstones.rstrip().split('\n')
@@ -1213,10 +1214,16 @@ class ChromiumAndroidDriver(driver.Driver):
         for dump in dumps.splitlines():
             device_dump = '%s/%s' % (self._driver_details.device_crash_dumps_directory(), dump)
             local_dump = self._port._filesystem.join(self._port._dump_reader.crash_dumps_directory(), dump)
-            self._android_commands.run(['shell', 'chmod', '777', device_dump])
-            self._android_commands.pull(device_dump, local_dump)
-            self._android_commands.run(['shell', 'rm', '-f', device_dump])
-            result.append(local_dump)
+
+            # FIXME: crbug.com/321489. Figure out why these commands would fail ...
+            err = self._android_commands.run(['shell', 'chmod', '777', device_dump])
+            if not err:
+                self._android_commands.pull(device_dump, local_dump)
+            if not err:
+                self._android_commands.run(['shell', 'rm', '-f', device_dump])
+
+            if self._port.filesystem.exists(local_dump):
+                result.append(local_dump)
         return result
 
     def _clean_up_cmd_line(self):
