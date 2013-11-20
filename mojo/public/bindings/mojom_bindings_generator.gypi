@@ -18,10 +18,15 @@
         '<(mojom_bindings_generator)',
         '<(DEPTH)/mojo/public/bindings/parse/mojo_parser.py',
         '<(DEPTH)/mojo/public/bindings/parse/mojo_translate.py',
+        # TODO(abarth): We should list the cpp_templates here too.
+        '<(DEPTH)/mojo/public/bindings/generators/js_templates/module.js.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/mojom.py',
-        '<(DEPTH)/mojo/public/bindings/generators/mojom_data.py',
-        '<(DEPTH)/mojo/public/bindings/generators/mojom_pack.py',
         '<(DEPTH)/mojo/public/bindings/generators/mojom_cpp_generator.py',
+        '<(DEPTH)/mojo/public/bindings/generators/mojom_data.py',
+        '<(DEPTH)/mojo/public/bindings/generators/mojom_generator.py',
+        '<(DEPTH)/mojo/public/bindings/generators/mojom_js_generator.py',
+        '<(DEPTH)/mojo/public/bindings/generators/mojom_pack.py',
+        '<(DEPTH)/mojo/public/bindings/generators/template_expander.py',
       ],
       'outputs': [
         '<(output_dir)/<(RULE_INPUT_ROOT).h',

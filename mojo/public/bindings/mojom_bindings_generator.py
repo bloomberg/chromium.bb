@@ -12,6 +12,7 @@ from optparse import OptionParser
 from parse import mojo_parser
 from parse import mojo_translate
 from generators import mojom_data
+from generators import mojom_js_generator
 from generators import mojom_cpp_generator
 
 
@@ -40,6 +41,9 @@ def Main():
     cpp = mojom_cpp_generator.CPPGenerator(
         module, options.include_dir, options.output_dir)
     cpp.GenerateFiles()
+    js = mojom_js_generator.JSGenerator(
+        module, options.include_dir, options.output_dir)
+    js.GenerateFiles()
 
 
 if __name__ == '__main__':

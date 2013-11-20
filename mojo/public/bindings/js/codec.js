@@ -382,6 +382,12 @@ define(function() {
     this.cls = cls;
   };
 
+  // TODO(abarth): Add missing types:
+  // * String
+  // * Float
+  // * Double
+  // * Signed integers
+
   PointerTo.prototype.encodedSize = 8;
 
   PointerTo.prototype.decode = function(decoder) {
@@ -391,6 +397,20 @@ define(function() {
   PointerTo.prototype.encode = function(encoder, val) {
     var objectEncoder = encoder.createAndEncodeEncoder(this.cls.encodedSize);
     this.cls.encode(objectEncoder, val);
+  };
+
+  function ArrayOf(cls) {
+    this.cls = cls;
+  };
+
+  ArrayOf.prototype.encodedSize = 8;
+
+  ArrayOf.prototype.decode = function(decoder) {
+    return decoder.decodeArrayPointer(self.cls);
+  };
+
+  ArrayOf.prototype.encode = function(encoder, val) {
+    encoder.encodeArrayPointer(self.cls, val);
   };
 
   function Handle() {
@@ -418,6 +438,7 @@ define(function() {
   exports.Uint32 = Uint32;
   exports.Uint64 = Uint64;
   exports.PointerTo = PointerTo;
+  exports.ArrayOf = ArrayOf;
   exports.Handle = Handle;
   return exports;
 });

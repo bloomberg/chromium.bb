@@ -6,6 +6,7 @@
 
 import datetime
 import mojom
+import mojom_generator
 import mojom_pack
 import os
 import re
@@ -39,22 +40,7 @@ class Lines(object):
     return '\n'.join(self.lines)
 
 
-def GetStructFromMethod(interface, method):
-  """Converts a method's parameters into the fields of a struct."""
-  params_class = "%s_%s_Params" % (interface.name, method.name)
-  struct = mojom.Struct(params_class)
-  for param in method.parameters:
-    struct.AddField(param.name, param.kind, param.ordinal)
-  return struct
-
-def IsPointerKind(kind):
-  return isinstance(kind, (mojom.Struct, mojom.Array)) or kind.spec == 's'
-
-def CamelToUnderscores(camel):
-  s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', camel)
-  return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
-
-class CPPGenerator(object):
+class CPPGenerator(mojom_generator.Generator):
 
   struct_serialization_compute_template = \
     Template(" +\n      mojo::internal::ComputeSizeOf($NAME->$FIELD())")
@@ -139,7 +125,7 @@ class CPPGenerator(object):
   @classmethod
   def GetGetterLine(cls, field):
     subs = {'FIELD': field.name, 'TYPE': cls.GetType(field.kind)}
-    if IsPointerKind(field.kind):
+    if mojom_generator.IsPointerKind(field.kind):
       return cls.ptr_getter_template.substitute(subs)
     else:
       return cls.getter_template.substitute(subs)
@@ -147,7 +133,7 @@ class CPPGenerator(object):
   @classmethod
   def GetSetterLine(cls, field):
     subs = {'FIELD': field.name, 'TYPE': cls.GetType(field.kind)}
-    if IsPointerKind(field.kind):
+    if mojom_generator.IsPointerKind(field.kind):
       return cls.ptr_setter_template.substitute(subs)
     else:
       return cls.setter_template.substitute(subs)
@@ -182,7 +168,7 @@ class CPPGenerator(object):
   def GetSerializedFields(cls, ps):
     fields = []
     for pf in ps.packed_fields:
-      if IsPointerKind(pf.field.kind):
+      if mojom_generator.IsPointerKind(pf.field.kind):
         fields.append(pf.field)
     return fields
 
@@ -199,21 +185,14 @@ class CPPGenerator(object):
         (self.module.name.upper(), name.upper())
 
   def GetHeaderFile(self, *components):
-    components = map(lambda c: CamelToUnderscores(c), components)
+    components = map(mojom_generator.CamelToUnderscores, components)
     component_string = '_'.join(components)
     return os.path.join(self.header_dir, "%s.h" % component_string)
 
-  # Pass |output_dir| to emit files to disk. Omit |output_dir| to echo all files
-  # to stdout.
-  def __init__(self, module, header_dir, output_dir=None):
-    self.module = module
-    self.header_dir = header_dir
-    self.output_dir = output_dir
-
   def WriteTemplateToFile(self, template_name, **substitutions):
     template = self.GetTemplate(template_name)
-    filename = \
-        template_name.replace("module", CamelToUnderscores(self.module.name))
+    filename = template_name.replace(
+        "module", mojom_generator.CamelToUnderscores(self.module.name))
     substitutions['YEAR'] = datetime.date.today().year
     substitutions['NAMESPACE'] = self.module.namespace
     if self.output_dir is None:
@@ -252,15 +231,13 @@ class CPPGenerator(object):
       if pad > 0:
         fields.append(self.pad_template.substitute(COUNT=pad_count, PAD=pad))
         pad_count += 1
-      size = offset + pad
-    else:
-      size = 0
+
     subs.update(
         CLASS = name,
         SETTERS = '\n'.join(setters),
         GETTERS = '\n'.join(getters),
         FIELDS = '\n'.join(fields),
-        SIZE = size + self.HEADER_SIZE)
+        SIZE = ps.GetTotalSize() + self.HEADER_SIZE)
     return template.substitute(subs)
 
   def GetStructSerialization(
@@ -345,7 +322,7 @@ class CPPGenerator(object):
         INTERFACE_STUB_DECLARATIONS = self.GetInterfaceStubDeclarations())
 
   def GetParamsDefinition(self, interface, method, next_id):
-    struct = GetStructFromMethod(interface, method)
+    struct = mojom_generator.GetStructFromMethod(interface, method)
     method_name = "k%s_%s_Name" % (interface.name, method.name)
     if method.ordinal is not None:
       next_id = method.ordinal
@@ -372,7 +349,7 @@ class CPPGenerator(object):
       sets = []
       computes = Lines(self.param_struct_compute_template)
       for param in method.parameters:
-        if IsPointerKind(param.kind):
+        if mojom_generator.IsPointerKind(param.kind):
           sets.append(
               self.param_struct_set_template.substitute(NAME=param.name))
           computes.Add(NAME=param.name)
@@ -406,7 +383,7 @@ class CPPGenerator(object):
 
   def GetStructSerializationDefinition(self, struct):
     ps = mojom_pack.PackedStruct(struct)
-    param_name = CamelToUnderscores(struct.name)
+    param_name = mojom_generator.CamelToUnderscores(struct.name)
 
     clones = Lines(self.struct_serialization_clone_template)
     sizes = "  return sizeof(*%s)" % param_name
@@ -435,7 +412,7 @@ class CPPGenerator(object):
     serializations = []
     for interface in self.module.interfaces:
       for method in interface.methods:
-        struct = GetStructFromMethod(interface, method)
+        struct = mojom_generator.GetStructFromMethod(interface, method)
         ps = mojom_pack.PackedStruct(struct)
         serializations.append(self.GetStructSerialization(
             struct.name,
@@ -470,7 +447,7 @@ class CPPGenerator(object):
   def GenerateModuleInternalHeader(self):
     traits = map(
       lambda s: self.GetTemplate("struct_serialization_traits").substitute(
-          NAME = CamelToUnderscores(s.name),
+          NAME = mojom_generator.CamelToUnderscores(s.name),
           FULL_CLASS = "%s::%s" % (self.module.namespace, s.name)),
       self.module.structs);
     self.WriteTemplateToFile("module_internal.h",
