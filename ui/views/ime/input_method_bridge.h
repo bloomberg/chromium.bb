@@ -84,9 +84,15 @@ class InputMethodBridge : public InputMethodBase,
   ui::InputMethod* GetHostInputMethod() const;
 
  private:
+  class HostObserver;
+
   void UpdateViewFocusState();
 
-  ui::InputMethod* const host_;
+  ui::InputMethod* host_;
+
+  // An observer observing the host input method for cases that the host input
+  // method is destroyed before this bridge input method.
+  scoped_ptr<HostObserver> host_observer_;
 
   const bool shared_input_method_;
 
