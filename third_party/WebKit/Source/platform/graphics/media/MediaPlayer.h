@@ -189,7 +189,7 @@ public:
     virtual AudioSourceProvider* audioSourceProvider() = 0;
 #endif
 
-    enum MediaKeyException { NoError, InvalidPlayerState, KeySystemNotSupported };
+    enum MediaKeyException { NoError, InvalidPlayerState, KeySystemNotSupported, InvalidAccess };
     virtual MediaKeyException addKey(const String&, const unsigned char*, unsigned, const unsigned char*, unsigned, const String&) = 0;
     virtual MediaKeyException generateKeyRequest(const String&, const unsigned char*, unsigned) = 0;
     virtual MediaKeyException cancelKeyRequest(const String&, const String&) = 0;

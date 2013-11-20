@@ -79,6 +79,7 @@ public:
         MediaKeyExceptionNoError,
         MediaKeyExceptionInvalidPlayerState,
         MediaKeyExceptionKeySystemNotSupported,
+        MediaKeyExceptionInvalidAccess,
     };
 
     enum CORSMode {

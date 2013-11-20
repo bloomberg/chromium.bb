@@ -166,6 +166,9 @@ static void throwExceptionForMediaKeyException(MediaPlayer::MediaKeyException ex
     case MediaPlayer::KeySystemNotSupported:
         exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
+    case MediaPlayer::InvalidAccess:
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        return;
     }
 
     ASSERT_NOT_REACHED();
