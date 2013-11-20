@@ -385,12 +385,11 @@ PassRefPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const String& cueTe
 
     m_currentNode = fragment;
 
-    OwnPtr<VTTTokenizer> tokenizer(VTTTokenizer::create());
+    VTTTokenizer tokenizer(cueText);
     m_token.clear();
     m_languageStack.clear();
 
-    SegmentedString content(cueText);
-    while (tokenizer->nextToken(content, m_token))
+    while (tokenizer.nextToken(m_token))
         constructTreeFromToken(m_document);
 
     return fragment.release();

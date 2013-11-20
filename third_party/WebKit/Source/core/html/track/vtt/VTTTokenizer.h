@@ -48,32 +48,26 @@ public:
         StartTagClassState,
         StartTagAnnotationState,
         EndTagState,
-        EndTagOpenState,
         TimestampTagState,
     };
 };
 
 class VTTTokenizer {
     WTF_MAKE_NONCOPYABLE(VTTTokenizer);
-    WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<VTTTokenizer> create() { return adoptPtr(new VTTTokenizer); }
+    explicit VTTTokenizer(const String& input);
 
     typedef VTTTokenizerState State;
 
     void reset();
 
-    bool nextToken(SegmentedString&, VTTToken&);
+    bool nextToken(VTTToken&);
 
-    inline bool haveBufferedCharacterToken()
-    {
-        return m_token->type() == VTTToken::Type::Character;
-    }
+    inline bool haveBufferedCharacterToken() { return false; }
 
     inline void bufferCharacter(UChar character)
     {
         ASSERT(character != kEndOfFileMarker);
-        m_token->ensureIsCharacterToken();
         m_token->appendToCharacter(character);
     }
 
@@ -85,15 +79,13 @@ public:
 
     inline bool emitToken(VTTTokenTypes::Type type)
     {
-        ASSERT(m_token->type() == type);
+        m_token->setType(type);
         return true;
     }
 
     bool shouldSkipNullCharacters() const { return true; }
 
 private:
-    VTTTokenizer();
-
     // m_token is owned by the caller. If nextToken is not on the stack,
     // this member might be pointing to unallocated memory.
     VTTToken* m_token;
@@ -103,6 +95,7 @@ private:
     VTTTokenizerState::State m_state;
 
     StringBuilder m_buffer;
+    SegmentedString m_input;
 
     // ://www.whatwg.org/specs/web-apps/current-work/#preprocessing-the-input-stream
     InputStreamPreprocessor<VTTTokenizer> m_inputStreamPreprocessor;

@@ -56,12 +56,12 @@ public:
 
     void appendToName(UChar character)
     {
-        ASSERT(m_type == VTTTokenTypes::StartTag || m_type == VTTTokenTypes::EndTag);
         ASSERT(character);
         m_data.append(character);
     }
 
     Type::Type type() const { return m_type; }
+    void setType(Type::Type type) { m_type = type; }
 
     StringBuilder& name()
     {
@@ -70,70 +70,49 @@ public:
 
     StringBuilder& characters()
     {
-        ASSERT(m_type == Type::Character || m_type == Type::TimestampTag);
         return m_data;
-    }
-
-    // Starting a character token works slightly differently than starting
-    // other types of tokens because we want to save a per-character branch.
-    void ensureIsCharacterToken()
-    {
-        ASSERT(m_type == Type::Uninitialized || m_type == Type::Character);
-        m_type = Type::Character;
     }
 
     void appendToCharacter(char character)
     {
-        ASSERT(m_type == Type::Character);
         m_data.append(character);
     }
 
     void appendToCharacter(UChar character)
     {
-        ASSERT(m_type == Type::Character);
         m_data.append(character);
     }
 
     void appendToCharacter(const StringBuilder& characters)
     {
-        ASSERT(m_type == Type::Character);
         m_data.append(characters);
     }
 
     void beginEmptyStartTag()
     {
-        ASSERT(m_type == Type::Uninitialized);
-        m_type = Type::StartTag;
         m_data.clear();
     }
 
     void beginStartTag(UChar character)
     {
         ASSERT(character);
-        ASSERT(m_type == Type::Uninitialized);
-        m_type = Type::StartTag;
         m_data.append(character);
     }
 
     void beginEndTag(LChar character)
     {
-        ASSERT(m_type == Type::Uninitialized);
-        m_type = Type::EndTag;
         m_data.append(character);
     }
 
     void beginTimestampTag(UChar character)
     {
         ASSERT(character);
-        ASSERT(m_type == Type::Uninitialized);
-        m_type = Type::TimestampTag;
         m_data.append(character);
     }
 
     void appendToTimestamp(UChar character)
     {
         ASSERT(character);
-        ASSERT(m_type == Type::TimestampTag);
         m_data.append(character);
     }
 
@@ -144,7 +123,6 @@ public:
 
     void addNewClass()
     {
-        ASSERT(m_type == Type::StartTag);
         if (!m_classes.isEmpty())
             m_classes.append(' ');
         m_classes.append(m_currentBuffer);
@@ -163,7 +141,6 @@ public:
 
     void addNewAnnotation()
     {
-        ASSERT(m_type == Type::StartTag);
         m_annotation.clear();
         m_annotation.append(m_currentBuffer);
         m_currentBuffer.clear();
@@ -187,7 +164,6 @@ private:
     void appendToStartType(UChar character)
     {
         ASSERT(character);
-        ASSERT(m_type == Type::StartTag);
         m_currentBuffer.append(character);
     }
 
