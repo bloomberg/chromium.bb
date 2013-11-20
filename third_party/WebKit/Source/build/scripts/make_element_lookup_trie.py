@@ -29,31 +29,25 @@
 
 import sys
 import StringIO
+from collections import defaultdict
 
 import in_generator
 import template_expander
 
-from in_file import InFile
-
 
 def _char_dict(tags, index):
-    new_dict = {}
+    new_dict = defaultdict(list)
     for tag in tags:
         if index >= len(tag):
             continue
-        char = tag[index].lower()
-        if char not in new_dict:
-            new_dict[char] = [tag]
-        else:
-            new_dict[char].append(tag)
+        new_dict[tag[index].lower()].append(tag)
     return new_dict
 
 
 def _generate_if(name, index):
     conditions = []
-    while index < len(name):
-        conditions.append("data[%d] == '%c'" % (index, name[index].lower()))
-        index += 1
+    for i in range(index, len(name)):
+        conditions.append("data[%d] == '%c'" % (i, name[i].lower()))
     return "if (%s)\n" % " && ".join(conditions)
 
 
@@ -117,13 +111,9 @@ class ElementLookupTrieWriter(in_generator.Writer):
 
     @template_expander.use_jinja('ElementLookupTrie.cpp.tmpl')
     def generate_implementation(self):
-        size_dict = {}
+        size_dict = defaultdict(list)
         for tag in self._tags:
-            length = len(tag)
-            if length not in size_dict:
-                size_dict[length] = [tag]
-            else:
-                size_dict[length].append(tag)
+            size_dict[len(tag)].append(tag)
 
         buf = StringIO.StringIO()
         for length, tags in size_dict.iteritems():
