@@ -10,12 +10,11 @@ The green box appear angled out from the yellow box and embedded in it.
       (drawsContent 1)
       (children 1
         (GraphicsLayer
-          (position 108.00 73.00)
-          (bounds 304.00 304.00)
-          (childrenTransform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 -0.00] [0.00 0.00 0.00 1.00])
+          (preserves3D 1)
+          (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [-0.52 -0.45 1.00 -0.00] [0.00 0.00 0.00 1.00])
           (children 1
             (GraphicsLayer
-              (position 12.00 12.00)
+              (position 120.00 85.00)
               (bounds 280.00 280.00)
               (opacity 0.80)
               (contentsOpaque 1)

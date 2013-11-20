@@ -14,6 +14,6 @@ Compositing reasons for div#animation: animation,assumedOverlap
 Compositing reasons for div#transformWithCompositedDescendants: assumedOverlap,transformWithCompositedDescendants
 Compositing reasons for div#opacityWithCompositedDescendants: assumedOverlap,opacityWithCompositedDescendants
 Compositing reasons for div#reflectionWithCompositedDescendants: reflectionWithCompositedDescendants
-Compositing reasons for div#perspective: assumedOverlap,perspective
-Compositing reasons for div#preserve3d: assumedOverlap,preserve3D
+Compositing reasons for div#perspective: assumedOverlap
+Compositing reasons for div#preserve3d: assumedOverlap
 
