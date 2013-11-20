@@ -68,6 +68,10 @@ void XMLHttpRequestUpload::dispatchEventAndLoadEnd(PassRefPtr<Event> event)
     dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::loadend));
 }
 
-
+void XMLHttpRequestUpload::handleRequestError(const AtomicString& type)
+{
+    dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::progress, true, m_lastBytesSent, m_lastTotalBytesToBeSent));
+    dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(type));
+}
 
 } // namespace WebCore

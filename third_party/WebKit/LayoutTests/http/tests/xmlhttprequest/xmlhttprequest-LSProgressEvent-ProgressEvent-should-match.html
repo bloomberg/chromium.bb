@@ -29,7 +29,7 @@ function onProgress(e) {
     else
         log("FAILED totalSize and total do not match (or both are null)");
 
-    if (window.testRunner)
+    if (++count == 1 && window.testRunner)
         testRunner.notifyDone();
 }
 

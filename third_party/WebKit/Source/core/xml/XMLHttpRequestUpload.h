@@ -61,6 +61,8 @@ public:
     void dispatchEventAndLoadEnd(PassRefPtr<Event>);
     void dispatchProgressEvent(unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
 
+    void handleRequestError(const AtomicString& type);
+
 private:
     explicit XMLHttpRequestUpload(XMLHttpRequest*);
 

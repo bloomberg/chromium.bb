@@ -1,3 +1,4 @@
+<!doctype html>
 <html>
 <head>
     <title> Test case for bug 18655 </title>
@@ -16,6 +17,10 @@ function log(msg)
 }
 
 function onProgress(e) {
+    if (this.seenProgress)
+        return;
+
+    this.seenProgress = true;
     log("PASSED (" + count + ")");
     if (++count > 2 && window.testRunner)
         testRunner.notifyDone();
@@ -29,12 +34,14 @@ if (window.testRunner) {
 // Test for capture phase 
 var req3 = new XMLHttpRequest();
 req3.addEventListener("progress", onProgress, true);
+req3.seenProgress = false;
 req3.open("GET", "resources/1251.html", true);
 req3.send(null);
 
 // Test for bubble phase 
 var req4 = new XMLHttpRequest();
 req4.addEventListener("progress", onProgress, false);
+req4.seenProgress = false;
 req4.open("GET", "resources/1251.html", true);
 req4.send(null);
 

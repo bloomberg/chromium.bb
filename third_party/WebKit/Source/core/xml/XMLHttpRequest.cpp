@@ -427,8 +427,16 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
 
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchXHRReadyStateChangeEvent(executionContext(), this);
 
-    if (m_async || (m_state <= OPENED || m_state == DONE))
-        m_progressEventThrottle.dispatchReadyStateChangeEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::readystatechange), m_state == DONE ? FlushProgressEvent : DoNotFlushProgressEvent);
+    if (m_async || (m_state <= OPENED || m_state == DONE)) {
+        ProgressEventAction flushAction = DoNotFlushProgressEvent;
+        if (m_state == DONE) {
+            if (m_error)
+                flushAction = FlushDeferredProgressEvent;
+            else
+                flushAction = FlushProgressEvent;
+        }
+        m_progressEventThrottle.dispatchReadyStateChangeEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::readystatechange), flushAction);
+    }
 
     InspectorInstrumentation::didDispatchXHRReadyStateChangeEvent(cookie);
     if (m_state == DONE && !m_error) {
@@ -856,22 +864,11 @@ void XMLHttpRequest::abort()
     // Clear headers as required by the spec
     m_requestHeaders.clear();
 
-    if ((m_state <= OPENED && !sendFlag) || m_state == DONE) {
-        // No readystatechange event is dispatched.
-        m_state = UNSENT;
-        return;
+    if (!((m_state <= OPENED && !sendFlag) || m_state == DONE)) {
+        ASSERT(!m_loader);
+        handleRequestError(0, EventTypeNames::abort);
     }
-
-    ASSERT(!m_loader);
-    changeState(DONE);
     m_state = UNSENT;
-
-    m_progressEventThrottle.dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(EventTypeNames::abort));
-    if (!m_uploadComplete) {
-        m_uploadComplete = true;
-        if (m_upload && m_uploadEventsAllowed)
-            m_upload->dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(EventTypeNames::abort));
-    }
 }
 
 void XMLHttpRequest::clearVariablesForLoading()
@@ -978,17 +975,8 @@ void XMLHttpRequest::handleNetworkError()
 {
     LOG(Network, "XMLHttpRequest %p handleNetworkError()", this);
 
-    m_exceptionCode = NetworkError;
-
     handleDidFailGeneric();
-
-    if (m_async) {
-        changeState(DONE);
-        dispatchEventAndLoadEnd(EventTypeNames::error);
-    } else {
-        m_state = DONE;
-    }
-
+    handleRequestError(NetworkError, EventTypeNames::error);
     internalAbort();
 }
 
@@ -996,17 +984,36 @@ void XMLHttpRequest::handleDidCancel()
 {
     LOG(Network, "XMLHttpRequest %p handleDidCancel()", this);
 
-    m_exceptionCode = AbortError;
-
     handleDidFailGeneric();
+    handleRequestError(AbortError, EventTypeNames::abort);
+}
 
-    if (!m_async) {
+void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const AtomicString& type)
+{
+    LOG(Network, "XMLHttpRequest %p handleRequestError()", this);
+
+    // The request error steps for event 'type' and exception 'exceptionCode'.
+
+    if (!m_async && exceptionCode) {
         m_state = DONE;
+        m_exceptionCode = exceptionCode;
         return;
     }
+    // With m_error set, the state change steps are minimal: any pending
+    // progress event is flushed + a readystatechange is dispatched.
+    // No new progress events dispatched; as required, that happens at
+    // the end here.
+    ASSERT(m_error);
     changeState(DONE);
 
-    dispatchEventAndLoadEnd(EventTypeNames::abort);
+    if (!m_uploadComplete) {
+        m_uploadComplete = true;
+        if (m_upload && m_uploadEventsAllowed)
+            m_upload->handleRequestError(type);
+    }
+
+    dispatchThrottledProgressEvent();
+    m_progressEventThrottle.dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(type));
 }
 
 void XMLHttpRequest::dropProtectionSoon()
@@ -1332,17 +1339,8 @@ void XMLHttpRequest::handleDidTimeout()
     if (!internalAbort())
         return;
 
-    m_exceptionCode = TimeoutError;
-
     handleDidFailGeneric();
-
-    if (!m_async) {
-        m_state = DONE;
-        return;
-    }
-    changeState(DONE);
-
-    dispatchEventAndLoadEnd(EventTypeNames::timeout);
+    handleRequestError(TimeoutError, EventTypeNames::timeout);
 }
 
 void XMLHttpRequest::suspend()

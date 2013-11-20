@@ -1,3 +1,4 @@
+<!doctype html>
 <html>
 <body>
 <p>Test that upload progress events are not dispatched for simple cross-origin requests
@@ -24,11 +25,22 @@ function progress(evt)
     sawProgress = true;
 }
 
-function uploadProgress(evt)
+function allowedUploadProgress()
 {
-    if (!sawUploadProgress)
-        log("FAIL: upload.onprogress");
+    if (sawUploadProgress)
+        return;
+
     sawUploadProgress = true;
+    log("upload.onprogress");
+}
+
+function notAllowedUploadProgress()
+{
+    if (sawUploadProgress)
+        return;
+
+    sawUploadProgress = true;
+    log("FAIL: upload.onprogress");
 }
 
 // Build a long string.
@@ -48,16 +60,16 @@ function test1()
     xhr.open("POST", "http://localhost:8000/xmlhttprequest/resources/cross-site-progress-events.cgi?allow", true);
     xhr.setRequestHeader("Content-Type", "text/plain");
     xhr.send(stringToSend);
-    xhr.upload.onloadstart = function() { log("FAIL: upload.onloadstart") }
-    xhr.upload.onprogress = uploadProgress;
-    xhr.upload.onload = function() { log("FAIL: upload.onload") }
-    xhr.upload.onerror = function() { log("FAIL: upload.onerror") }
-    xhr.onerror = function() { log("onerror") }
+    xhr.upload.onloadstart = function() { log("FAIL: upload.onloadstart"); };
+    xhr.upload.onprogress = notAllowedUploadProgress;
+    xhr.upload.onload = function() { log("FAIL: upload.onload"); };
+    xhr.upload.onerror = function() { log("FAIL: upload.onerror"); };
+    xhr.onerror = function() { log("onerror") };
     xhr.onload = function() {
         log("onload");
         log("Response length: " + xhr.responseText.length);
         test2();
-    }
+    };
 }
 
 function test2()
@@ -72,18 +84,16 @@ function test2()
     xhr.open("POST", "http://localhost:8000/xmlhttprequest/resources/cross-site-progress-events.cgi", true);
     xhr.setRequestHeader("Content-Type", "text/plain");
     xhr.send(stringToSend);
-    xhr.upload.onloadstart = function() { log("FAIL: upload.onloadstart") }
-    xhr.upload.onprogress = uploadProgress;
-    xhr.upload.onload = function() { log("FAIL: upload.onload") }
-    xhr.upload.onerror = function() { log("FAIL: upload.onerror") }
+    xhr.upload.onloadstart = function() { log("FAIL: upload.onloadstart"); };
+    xhr.upload.onprogress = notAllowedUploadProgress;
+    xhr.upload.onload = function() { log("FAIL: upload.onload"); };
+    xhr.upload.onerror = function() { log("FAIL: upload.onerror"); };
+    xhr.onload = function() { log("onload"); };
     xhr.onerror = function() {
         log("onerror (expected)");
         log("Response length: " + xhr.responseText.length);
         test3();
-    }
-    xhr.onload = function() {
-        log("onload");
-    }
+    };
 }
 
 function test3()
@@ -97,22 +107,18 @@ function test3()
     xhr.onprogress = progress;
     xhr.open("POST", "http://localhost:8000/xmlhttprequest/resources/cross-site-progress-events.cgi", true);
     xhr.setRequestHeader("Content-Type", "text/plain");
-    xhr.upload.onloadstart = function() { log("upload.onloadstart") }
+    xhr.upload.onloadstart = function() { log("upload.onloadstart"); };
     xhr.send(stringToSend);
-    xhr.upload.onprogress = uploadProgress;
-    xhr.upload.onload = function() { log("FAIL: upload.onload") }
-    xhr.upload.onerror = function() { 
-        log("upload.onerror (expected)")
-    }
+    xhr.upload.onprogress = allowedUploadProgress;
+    xhr.upload.onload = function() { log("FAIL: upload.onload"); };
+    xhr.upload.onerror = function() { log("upload.onerror (expected)"); };
+    xhr.onload = function() { log("onload"); }
     xhr.onerror = function() {
         log("onerror (expected)");
         log("Response length: " + xhr.responseText.length);
         if (window.testRunner)
             testRunner.notifyDone();
-    }
-    xhr.onload = function() {
-        log("onload");
-    }
+    };
 }
 
 test1();

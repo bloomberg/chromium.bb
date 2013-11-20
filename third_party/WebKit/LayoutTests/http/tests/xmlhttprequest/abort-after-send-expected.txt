@@ -1,0 +1,5 @@
+Correct progress event sequencing on abort(), bug 315488.
+
+PASS Progress event delivery on abort(), post-send() (async) 
+PASS Progress event delivery on abort(), post-send() (sync) 
+

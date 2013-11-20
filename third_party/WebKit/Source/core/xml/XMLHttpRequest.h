@@ -199,6 +199,8 @@ private:
     // Handles didFail() call for timeout.
     void handleDidTimeout();
 
+    void handleRequestError(ExceptionCode, const AtomicString&);
+
     OwnPtr<XMLHttpRequestUpload> m_upload;
 
     KURL m_url;
