@@ -70,9 +70,9 @@ TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsign
     return blink::Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, flags);
 }
 
-void EventTracer::updateTraceEventDuration(TraceEvent::TraceEventHandle handle)
+void EventTracer::updateTraceEventDuration(const unsigned char* categoryEnabledFlag, const char* name, TraceEvent::TraceEventHandle handle)
 {
-    blink::Platform::current()->updateTraceEventDuration(handle);
+    blink::Platform::current()->updateTraceEventDuration(categoryEnabledFlag, name, handle);
 }
 
 } // namespace WebCore

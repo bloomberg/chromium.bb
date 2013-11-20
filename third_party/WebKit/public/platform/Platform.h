@@ -528,7 +528,7 @@ public:
     }
 
     // Set the duration field of a COMPLETE trace event.
-    virtual void updateTraceEventDuration(TraceEventHandle) { }
+    virtual void updateTraceEventDuration(const unsigned char* categoryEnabledFlag, const char* name, TraceEventHandle) { }
 
     // Callbacks for reporting histogram data.
     // CustomCounts histogram has exponential bucket sizes, so that min=1, max=1000000, bucketCount=50 would do.

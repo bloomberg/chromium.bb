@@ -587,7 +587,7 @@
                 name, WebCore::TraceEvent::noEventId, \
                 TRACE_EVENT_FLAG_NONE, ##__VA_ARGS__); \
         INTERNALTRACEEVENTUID(scopedTracer).initialize( \
-            INTERNALTRACEEVENTUID(categoryGroupEnabled), h); \
+            INTERNALTRACEEVENTUID(categoryGroupEnabled), name, h); \
     }
 
 // Implementation detail: internal macro to create static category and add
@@ -841,12 +841,13 @@ public:
     ~ScopedTracer()
     {
         if (m_pdata && *m_pdata->categoryGroupEnabled)
-            TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(m_pdata->eventHandle);
+            TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(m_data.categoryGroupEnabled, m_data.name, m_data.eventHandle);
     }
 
-    void initialize(const unsigned char* categoryGroupEnabled, TraceEventHandle eventHandle)
+    void initialize(const unsigned char* categoryGroupEnabled, const char* name, TraceEventHandle eventHandle)
     {
         m_data.categoryGroupEnabled = categoryGroupEnabled;
+        m_data.name = name;
         m_data.eventHandle = eventHandle;
         m_pdata = &m_data;
     }
@@ -859,6 +860,7 @@ private:
     // uninitialized accesses.
     struct Data {
         const unsigned char* categoryGroupEnabled;
+        const char* name;
         TraceEventHandle eventHandle;
     };
     Data* m_pdata;

@@ -60,7 +60,7 @@ public:
         const unsigned char* argTypes,
         const unsigned long long* argValues,
         unsigned char flags);
-    static void updateTraceEventDuration(TraceEvent::TraceEventHandle);
+    static void updateTraceEventDuration(const unsigned char* categoryEnabledFlag, const char* name, TraceEvent::TraceEventHandle);
 };
 
 } // namespace WebCore
