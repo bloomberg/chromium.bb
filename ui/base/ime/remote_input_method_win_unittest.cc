@@ -1,0 +1,576 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ui/base/ime/remote_input_method_win.h"
+
+#include <InputScope.h>
+
+#include <vector>
+
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/input_method_delegate.h"
+#include "ui/base/ime/remote_input_method_delegate_win.h"
+#include "ui/events/event.h"
+
+namespace ui {
+namespace {
+
+class MockTextInputClient : public DummyTextInputClient {
+ public:
+  MockTextInputClient()
+      : text_input_type_(TEXT_INPUT_TYPE_NONE),
+        text_input_mode_(TEXT_INPUT_MODE_DEFAULT) {
+  }
+
+  const base::string16& inserted_text() const {
+    return inserted_text_;
+  }
+  void Reset() {
+    inserted_text_.clear();
+    text_input_type_ = TEXT_INPUT_TYPE_NONE;
+    text_input_mode_ = TEXT_INPUT_MODE_DEFAULT;
+    caret_bounds_ = gfx::Rect();
+    composition_character_bounds_.clear();
+  }
+  void set_text_input_type(ui::TextInputType type) {
+    text_input_type_ = type;
+  }
+  void set_text_input_mode(ui::TextInputMode mode) {
+    text_input_mode_ = mode;
+  }
+  void set_caret_bounds(const gfx::Rect& caret_bounds) {
+    caret_bounds_ = caret_bounds;
+  }
+  void set_composition_character_bounds(
+      const std::vector<gfx::Rect>& composition_character_bounds) {
+    composition_character_bounds_ = composition_character_bounds;
+  }
+
+ private:
+  virtual void InsertChar(char16 ch, int flags) OVERRIDE{
+    inserted_text_.append(1, ch);
+  }
+  virtual void InsertText(const string16& text) OVERRIDE{
+    EXPECT_TRUE(false) << "RemoteInputMethodWin does not use this method";
+  }
+  virtual ui::TextInputType GetTextInputType() const OVERRIDE {
+    return text_input_type_;
+  }
+  virtual ui::TextInputMode GetTextInputMode() const OVERRIDE {
+    return text_input_mode_;
+  }
+  virtual gfx::Rect GetCaretBounds() const {
+    return caret_bounds_;
+  }
+  virtual bool GetCompositionCharacterBounds(uint32 index,
+                                             gfx::Rect* rect) const OVERRIDE {
+    if (!rect || composition_character_bounds_.size() <= index)
+      return false;
+    *rect = composition_character_bounds_[index];
+    return true;
+  }
+  virtual bool HasCompositionText() const OVERRIDE {
+    return !composition_character_bounds_.empty();
+  }
+
+  ui::TextInputType text_input_type_;
+  ui::TextInputMode text_input_mode_;
+  gfx::Rect caret_bounds_;
+  std::vector<gfx::Rect> composition_character_bounds_;
+  base::string16 inserted_text_;
+  DISALLOW_COPY_AND_ASSIGN(MockTextInputClient);
+};
+
+class MockInputMethodDelegate : public internal::InputMethodDelegate {
+ public:
+  MockInputMethodDelegate() {}
+
+  const std::vector<ui::KeyboardCode>& fabricated_key_events() const {
+    return fabricated_key_events_;
+  }
+  void Reset() {
+    fabricated_key_events_.clear();
+  }
+
+ private:
+  virtual bool DispatchKeyEventPostIME(
+      const base::NativeEvent& native_key_event) OVERRIDE {
+    EXPECT_TRUE(false) << "Not reach here";
+    return true;
+  }
+  virtual bool DispatchFabricatedKeyEventPostIME(ui::EventType type,
+                                                 ui::KeyboardCode key_code,
+                                                 int flags) OVERRIDE {
+    fabricated_key_events_.push_back(key_code);
+    return true;
+  }
+
+  std::vector<ui::KeyboardCode> fabricated_key_events_;
+  DISALLOW_COPY_AND_ASSIGN(MockInputMethodDelegate);
+};
+
+class MockRemoteInputMethodDelegateWin
+    : public internal::RemoteInputMethodDelegateWin {
+ public:
+  MockRemoteInputMethodDelegateWin()
+      : cancel_composition_called_(false),
+        text_input_client_updated_called_(false) {
+  }
+
+  bool cancel_composition_called() const {
+    return cancel_composition_called_;
+  }
+  bool text_input_client_updated_called() const {
+    return text_input_client_updated_called_;
+  }
+  const std::vector<int32>& input_scopes() const {
+    return input_scopes_;
+  }
+  const std::vector<gfx::Rect>& composition_character_bounds() const {
+    return composition_character_bounds_;
+  }
+  void Reset() {
+    cancel_composition_called_ = false;
+    text_input_client_updated_called_ = false;
+    input_scopes_.clear();
+    composition_character_bounds_.clear();
+  }
+
+ private:
+  virtual void CancelComposition() OVERRIDE {
+    cancel_composition_called_ = true;
+  }
+
+  virtual void OnTextInputClientUpdated(
+      const std::vector<int32>& input_scopes,
+      const std::vector<gfx::Rect>& composition_character_bounds) OVERRIDE {
+    text_input_client_updated_called_ = true;
+    input_scopes_ = input_scopes;
+    composition_character_bounds_ = composition_character_bounds;
+  }
+
+  bool cancel_composition_called_;
+  bool text_input_client_updated_called_;
+  std::vector<int32> input_scopes_;
+  std::vector<gfx::Rect> composition_character_bounds_;
+  DISALLOW_COPY_AND_ASSIGN(MockRemoteInputMethodDelegateWin);
+};
+
+TEST(RemoteInputMethodWinTest, RemoteInputMethodPrivateWin) {
+  InputMethod* other_ptr = static_cast<InputMethod*>(NULL) + 1;
+
+  // Use typed NULL to make EXPECT_NE happy until nullptr becomes available.
+  RemoteInputMethodPrivateWin* kNull =
+      static_cast<RemoteInputMethodPrivateWin*>(NULL);
+  EXPECT_EQ(kNull, RemoteInputMethodPrivateWin::Get(other_ptr));
+
+  MockInputMethodDelegate delegate_;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+  EXPECT_NE(kNull, RemoteInputMethodPrivateWin::Get(input_method.get()));
+
+  InputMethod* dangling_ptr = input_method.get();
+  input_method.reset(NULL);
+  EXPECT_EQ(kNull, RemoteInputMethodPrivateWin::Get(dangling_ptr));
+}
+
+TEST(RemoteInputMethodWinTest, OnInputSourceChanged) {
+  MockInputMethodDelegate delegate_;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+  RemoteInputMethodPrivateWin* private_ptr =
+      RemoteInputMethodPrivateWin::Get(input_method.get());
+  ASSERT_TRUE(private_ptr != NULL);
+
+  private_ptr->OnInputSourceChanged(
+      MAKELANGID(LANG_JAPANESE, SUBLANG_JAPANESE_JAPAN), true);
+  EXPECT_EQ("ja-JP", input_method->GetInputLocale());
+  EXPECT_EQ(base::i18n::LEFT_TO_RIGHT,
+           input_method->GetInputTextDirection());
+
+  private_ptr->OnInputSourceChanged(
+      MAKELANGID(LANG_ARABIC, SUBLANG_ARABIC_QATAR), true);
+  EXPECT_EQ("ar-QA", input_method->GetInputLocale());
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT,
+            input_method->GetInputTextDirection());
+}
+
+TEST(RemoteInputMethodWinTest, OnCandidatePopupChanged) {
+  MockInputMethodDelegate delegate_;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+  RemoteInputMethodPrivateWin* private_ptr =
+      RemoteInputMethodPrivateWin::Get(input_method.get());
+  ASSERT_TRUE(private_ptr != NULL);
+
+  // Initial value
+  EXPECT_FALSE(input_method->IsCandidatePopupOpen());
+
+  private_ptr->OnCandidatePopupChanged(true);
+  EXPECT_TRUE(input_method->IsCandidatePopupOpen());
+
+  private_ptr->OnCandidatePopupChanged(false);
+  EXPECT_FALSE(input_method->IsCandidatePopupOpen());
+}
+
+TEST(RemoteInputMethodWinTest, CancelComposition) {
+  MockInputMethodDelegate delegate_;
+  MockTextInputClient mock_text_input_client;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+
+  // This must not cause a crash.
+  input_method->CancelComposition(&mock_text_input_client);
+
+  RemoteInputMethodPrivateWin* private_ptr =
+      RemoteInputMethodPrivateWin::Get(input_method.get());
+  ASSERT_TRUE(private_ptr != NULL);
+  MockRemoteInputMethodDelegateWin mock_remote_delegate;
+  private_ptr->SetRemoteDelegate(&mock_remote_delegate);
+
+  input_method->CancelComposition(&mock_text_input_client);
+  EXPECT_FALSE(mock_remote_delegate.cancel_composition_called());
+
+  input_method->SetFocusedTextInputClient(&mock_text_input_client);
+  input_method->CancelComposition(&mock_text_input_client);
+  EXPECT_TRUE(mock_remote_delegate.cancel_composition_called());
+}
+
+TEST(RemoteInputMethodWinTest, SetFocusedTextInputClient) {
+  MockInputMethodDelegate delegate_;
+  MockTextInputClient mock_text_input_client;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+
+  mock_text_input_client.set_caret_bounds(gfx::Rect(10, 0, 10, 20));
+  mock_text_input_client.set_text_input_type(ui::TEXT_INPUT_TYPE_URL);
+  input_method->SetFocusedTextInputClient(&mock_text_input_client);
+
+  RemoteInputMethodPrivateWin* private_ptr =
+      RemoteInputMethodPrivateWin::Get(input_method.get());
+  ASSERT_TRUE(private_ptr != NULL);
+  MockRemoteInputMethodDelegateWin mock_remote_delegate;
+  private_ptr->SetRemoteDelegate(&mock_remote_delegate);
+
+  // Initial state must be synced.
+  EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
+  ASSERT_EQ(1, mock_remote_delegate.composition_character_bounds().size());
+  EXPECT_EQ(gfx::Rect(10, 0, 10, 20),
+            mock_remote_delegate.composition_character_bounds()[0]);
+  ASSERT_EQ(1, mock_remote_delegate.input_scopes().size());
+  EXPECT_EQ(IS_URL, mock_remote_delegate.input_scopes()[0]);
+
+  // State must be cleared by SetFocusedTextInputClient(NULL).
+  mock_remote_delegate.Reset();
+  input_method->SetFocusedTextInputClient(NULL);
+  EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
+  EXPECT_TRUE(mock_remote_delegate.composition_character_bounds().empty());
+  EXPECT_TRUE(mock_remote_delegate.input_scopes().empty());
+}
+
+TEST(RemoteInputMethodWinTest, DetachTextInputClient) {
+  MockInputMethodDelegate delegate_;
+  MockTextInputClient mock_text_input_client;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+
+  mock_text_input_client.set_caret_bounds(gfx::Rect(10, 0, 10, 20));
+  mock_text_input_client.set_text_input_type(ui::TEXT_INPUT_TYPE_URL);
+  input_method->SetFocusedTextInputClient(&mock_text_input_client);
+
+  RemoteInputMethodPrivateWin* private_ptr =
+      RemoteInputMethodPrivateWin::Get(input_method.get());
+  ASSERT_TRUE(private_ptr != NULL);
+  MockRemoteInputMethodDelegateWin mock_remote_delegate;
+  private_ptr->SetRemoteDelegate(&mock_remote_delegate);
+
+  // Initial state must be synced.
+  EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
+  ASSERT_EQ(1, mock_remote_delegate.composition_character_bounds().size());
+  EXPECT_EQ(gfx::Rect(10, 0, 10, 20),
+    mock_remote_delegate.composition_character_bounds()[0]);
+  ASSERT_EQ(1, mock_remote_delegate.input_scopes().size());
+  EXPECT_EQ(IS_URL, mock_remote_delegate.input_scopes()[0]);
+
+  // State must be cleared by DetachTextInputClient
+  mock_remote_delegate.Reset();
+  input_method->DetachTextInputClient(&mock_text_input_client);
+  EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
+  EXPECT_TRUE(mock_remote_delegate.composition_character_bounds().empty());
+  EXPECT_TRUE(mock_remote_delegate.input_scopes().empty());
+}
+TEST(RemoteInputMethodWinTest, OnCaretBoundsChanged) {
+  MockInputMethodDelegate delegate_;
+  MockTextInputClient mock_text_input_client;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+
+  // This must not cause a crash.
+  input_method->OnCaretBoundsChanged(&mock_text_input_client);
+
+  mock_text_input_client.set_caret_bounds(gfx::Rect(10, 0, 10, 20));
+  input_method->SetFocusedTextInputClient(&mock_text_input_client);
+
+  RemoteInputMethodPrivateWin* private_ptr =
+      RemoteInputMethodPrivateWin::Get(input_method.get());
+  ASSERT_TRUE(private_ptr != NULL);
+  MockRemoteInputMethodDelegateWin mock_remote_delegate;
+  private_ptr->SetRemoteDelegate(&mock_remote_delegate);
+
+  // Initial state must be synced.
+  EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
+  ASSERT_EQ(1, mock_remote_delegate.composition_character_bounds().size());
+  EXPECT_EQ(gfx::Rect(10, 0, 10, 20),
+      mock_remote_delegate.composition_character_bounds()[0]);
+
+  // Redundant OnCaretBoundsChanged must be ignored.
+  mock_remote_delegate.Reset();
+  input_method->OnCaretBoundsChanged(&mock_text_input_client);
+  EXPECT_FALSE(mock_remote_delegate.text_input_client_updated_called());
+
+  // Check OnCaretBoundsChanged is handled. (w/o composition)
+  mock_remote_delegate.Reset();
+  mock_text_input_client.Reset();
+  mock_text_input_client.set_caret_bounds(gfx::Rect(10, 20, 30, 40));
+  input_method->OnCaretBoundsChanged(&mock_text_input_client);
+  EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
+  ASSERT_EQ(1, mock_remote_delegate.composition_character_bounds().size());
+  EXPECT_EQ(gfx::Rect(10, 20, 30, 40),
+      mock_remote_delegate.composition_character_bounds()[0]);
+
+  // Check OnCaretBoundsChanged is handled. (w/ composition)
+  {
+    mock_remote_delegate.Reset();
+    mock_text_input_client.Reset();
+
+    std::vector<gfx::Rect> bounds;
+    bounds.push_back(gfx::Rect(10, 20, 30, 40));
+    bounds.push_back(gfx::Rect(40, 30, 20, 10));
+    mock_text_input_client.set_composition_character_bounds(bounds);
+    input_method->OnCaretBoundsChanged(&mock_text_input_client);
+    EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
+    EXPECT_EQ(bounds, mock_remote_delegate.composition_character_bounds());
+  }
+}
+
+TEST(RemoteInputMethodWinTest, OnTextInputTypeChanged) {
+  MockInputMethodDelegate delegate_;
+  MockTextInputClient mock_text_input_client;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+
+  // This must not cause a crash.
+  input_method->OnCaretBoundsChanged(&mock_text_input_client);
+
+  mock_text_input_client.set_text_input_type(ui::TEXT_INPUT_TYPE_URL);
+  input_method->SetFocusedTextInputClient(&mock_text_input_client);
+
+  RemoteInputMethodPrivateWin* private_ptr =
+      RemoteInputMethodPrivateWin::Get(input_method.get());
+  ASSERT_TRUE(private_ptr != NULL);
+  MockRemoteInputMethodDelegateWin mock_remote_delegate;
+  private_ptr->SetRemoteDelegate(&mock_remote_delegate);
+
+  // Initial state must be synced.
+  EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
+  ASSERT_EQ(1, mock_remote_delegate.input_scopes().size());
+  EXPECT_EQ(IS_URL, mock_remote_delegate.input_scopes()[0]);
+
+  // Check TEXT_INPUT_TYPE_NONE is handled.
+  mock_remote_delegate.Reset();
+  mock_text_input_client.Reset();
+  mock_text_input_client.set_text_input_type(ui::TEXT_INPUT_TYPE_NONE);
+  mock_text_input_client.set_text_input_mode(ui::TEXT_INPUT_MODE_KATAKANA);
+  input_method->OnTextInputTypeChanged(&mock_text_input_client);
+  EXPECT_TRUE(mock_remote_delegate.text_input_client_updated_called());
+  EXPECT_TRUE(mock_remote_delegate.input_scopes().empty());
+
+  // Redundant OnTextInputTypeChanged must be ignored.
+  mock_remote_delegate.Reset();
+  input_method->OnTextInputTypeChanged(&mock_text_input_client);
+  EXPECT_FALSE(mock_remote_delegate.text_input_client_updated_called());
+
+  mock_remote_delegate.Reset();
+  mock_text_input_client.Reset();
+  mock_text_input_client.set_caret_bounds(gfx::Rect(10, 20, 30, 40));
+  input_method->OnCaretBoundsChanged(&mock_text_input_client);
+}
+
+TEST(RemoteInputMethodWinTest, DispatchKeyEvent_NativeKeyEvent) {
+  // Basically RemoteInputMethodWin does not handle native keydown event.
+
+  MockInputMethodDelegate delegate_;
+  MockTextInputClient mock_text_input_client;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+
+  const MSG wm_keydown = { NULL, WM_KEYDOWN, ui::VKEY_A };
+  ui::KeyEvent native_keydown(wm_keydown, false);
+
+  // This must not cause a crash.
+  EXPECT_FALSE(input_method->DispatchKeyEvent(native_keydown));
+  EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
+  EXPECT_TRUE(delegate_.fabricated_key_events().empty());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+
+  RemoteInputMethodPrivateWin* private_ptr =
+      RemoteInputMethodPrivateWin::Get(input_method.get());
+  ASSERT_TRUE(private_ptr != NULL);
+  MockRemoteInputMethodDelegateWin mock_remote_delegate;
+  private_ptr->SetRemoteDelegate(&mock_remote_delegate);
+
+  // TextInputClient is not focused yet here.
+
+  EXPECT_FALSE(input_method->DispatchKeyEvent(native_keydown));
+  EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
+  EXPECT_TRUE(delegate_.fabricated_key_events().empty());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+
+  input_method->SetFocusedTextInputClient(&mock_text_input_client);
+
+  // TextInputClient is now focused here.
+
+  EXPECT_FALSE(input_method->DispatchKeyEvent(native_keydown));
+  EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
+  EXPECT_TRUE(delegate_.fabricated_key_events().empty());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+}
+
+TEST(RemoteInputMethodWinTest, DispatchKeyEvent_NativeCharEvent) {
+  // RemoteInputMethodWin handles native char event if possible.
+
+  MockInputMethodDelegate delegate_;
+  MockTextInputClient mock_text_input_client;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+
+  const MSG wm_char = { NULL, WM_CHAR, 'A', 0 };
+  ui::KeyEvent native_char(wm_char, true);
+
+  // This must not cause a crash.
+  EXPECT_FALSE(input_method->DispatchKeyEvent(native_char));
+  EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
+  EXPECT_TRUE(delegate_.fabricated_key_events().empty());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+
+  RemoteInputMethodPrivateWin* private_ptr =
+      RemoteInputMethodPrivateWin::Get(input_method.get());
+  ASSERT_TRUE(private_ptr != NULL);
+  MockRemoteInputMethodDelegateWin mock_remote_delegate;
+  private_ptr->SetRemoteDelegate(&mock_remote_delegate);
+
+  // TextInputClient is not focused yet here.
+
+  EXPECT_FALSE(input_method->DispatchKeyEvent(native_char));
+  EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
+  EXPECT_TRUE(delegate_.fabricated_key_events().empty());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+
+  input_method->SetFocusedTextInputClient(&mock_text_input_client);
+
+  // TextInputClient is now focused here.
+
+  EXPECT_TRUE(input_method->DispatchKeyEvent(native_char));
+  EXPECT_EQ(L"A", mock_text_input_client.inserted_text());
+  EXPECT_TRUE(delegate_.fabricated_key_events().empty());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+}
+
+TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedKeyDown) {
+  // Fabricated non-char event will be delegated to
+  // InputMethodDelegate::DispatchFabricatedKeyEventPostIME as long as the
+  // delegate is installed.
+
+  MockInputMethodDelegate delegate_;
+  MockTextInputClient mock_text_input_client;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+
+  ui::KeyEvent fabricated_keydown(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false);
+  fabricated_keydown.set_character(L'A');
+
+  // This must not cause a crash.
+  EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_keydown));
+  EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
+  ASSERT_EQ(1, delegate_.fabricated_key_events().size());
+  EXPECT_EQ(L'A', delegate_.fabricated_key_events()[0]);
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+
+  RemoteInputMethodPrivateWin* private_ptr =
+      RemoteInputMethodPrivateWin::Get(input_method.get());
+  ASSERT_TRUE(private_ptr != NULL);
+  MockRemoteInputMethodDelegateWin mock_remote_delegate;
+  private_ptr->SetRemoteDelegate(&mock_remote_delegate);
+
+  // TextInputClient is not focused yet here.
+
+  EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_keydown));
+  EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
+  ASSERT_EQ(1, delegate_.fabricated_key_events().size());
+  EXPECT_EQ(L'A', delegate_.fabricated_key_events()[0]);
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+
+  input_method->SetFocusedTextInputClient(&mock_text_input_client);
+  // TextInputClient is now focused here.
+
+  EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_keydown));
+  EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
+  ASSERT_EQ(1, delegate_.fabricated_key_events().size());
+  EXPECT_EQ(L'A', delegate_.fabricated_key_events()[0]);
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+
+  input_method->SetDelegate(NULL);
+  // RemoteInputMethodDelegateWin is no longer set here.
+
+  EXPECT_FALSE(input_method->DispatchKeyEvent(fabricated_keydown));
+  EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
+}
+
+TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedChar) {
+  // Note: RemoteInputMethodWin::DispatchKeyEvent should always return true
+  // for fabricated character events.
+
+  MockInputMethodDelegate delegate_;
+  MockTextInputClient mock_text_input_client;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+
+  ui::KeyEvent fabricated_char(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, true);
+  fabricated_char.set_character(L'A');
+
+  // This must not cause a crash.
+  EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_char));
+  EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
+  EXPECT_TRUE(delegate_.fabricated_key_events().empty());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+
+  RemoteInputMethodPrivateWin* private_ptr =
+      RemoteInputMethodPrivateWin::Get(input_method.get());
+  ASSERT_TRUE(private_ptr != NULL);
+  MockRemoteInputMethodDelegateWin mock_remote_delegate;
+  private_ptr->SetRemoteDelegate(&mock_remote_delegate);
+
+  // TextInputClient is not focused yet here.
+
+  EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_char));
+  EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
+  EXPECT_TRUE(delegate_.fabricated_key_events().empty());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+
+  input_method->SetFocusedTextInputClient(&mock_text_input_client);
+
+  // TextInputClient is now focused here.
+
+  EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_char));
+  EXPECT_EQ(L"A", mock_text_input_client.inserted_text());
+  EXPECT_TRUE(delegate_.fabricated_key_events().empty());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+}
+
+}  // namespace
+}  // namespace ui
