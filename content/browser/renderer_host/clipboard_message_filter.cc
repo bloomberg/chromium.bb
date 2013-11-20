@@ -94,7 +94,9 @@ void ClipboardMessageFilter::OnWriteObjectsSync(
   DCHECK(base::SharedMemory::IsHandleValid(bitmap_handle))
       << "Bad bitmap handle";
   // Splice the shared memory handle into the clipboard data.
-  ui::Clipboard::ReplaceSharedMemHandle(&objects, bitmap_handle, PeerHandle());
+  if (!ui::Clipboard::ReplaceSharedMemHandle(
+           &objects, bitmap_handle, PeerHandle()))
+    return;
 #if defined(OS_WIN)
   // We cannot write directly from the IO thread, and cannot service the IPC
   // on the UI thread. We'll copy the relevant data and get a handle to any

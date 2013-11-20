@@ -273,8 +273,7 @@ void Clipboard::WriteWebSmartPaste() {
   ::SetClipboardData(GetWebKitSmartPasteFormatType().ToUINT(), NULL);
 }
 
-void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
-  const gfx::Size* size = reinterpret_cast<const gfx::Size*>(size_data);
+void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
   HDC dc = ::GetDC(NULL);
 
   // This doesn't actually cost us a memcpy when the bitmap comes from the
@@ -284,8 +283,8 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
   // TODO(darin): share data in gfx/bitmap_header.cc somehow
   BITMAPINFO bm_info = {0};
   bm_info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-  bm_info.bmiHeader.biWidth = size->width();
-  bm_info.bmiHeader.biHeight = -size->height();  // sets vertical orientation
+  bm_info.bmiHeader.biWidth = bitmap.width();
+  bm_info.bmiHeader.biHeight = -bitmap.height();  // sets vertical orientation
   bm_info.bmiHeader.biPlanes = 1;
   bm_info.bmiHeader.biBitCount = 32;
   bm_info.bmiHeader.biCompression = BI_RGB;
@@ -298,11 +297,15 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
       ::CreateDIBSection(dc, &bm_info, DIB_RGB_COLORS, &bits, NULL, 0);
 
   if (bits && source_hbitmap) {
-    // Copy the bitmap out of shared memory and into GDI
-    memcpy(bits, pixel_data, 4 * size->width() * size->height());
+    {
+      SkAutoLockPixels bitmap_lock(bitmap);
+      // Copy the bitmap out of shared memory and into GDI
+      memcpy(bits, bitmap.getPixels(), bitmap.getSize());
+    }
 
     // Now we have an HBITMAP, we can write it to the clipboard
-    WriteBitmapFromHandle(source_hbitmap, *size);
+    WriteBitmapFromHandle(source_hbitmap,
+                          gfx::Size(bitmap.width(), bitmap.height()));
   }
 
   ::DeleteObject(source_hbitmap);

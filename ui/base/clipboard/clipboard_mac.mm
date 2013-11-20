@@ -156,25 +156,24 @@ void Clipboard::WriteBookmark(const char* title_data,
   [pb setString:title forType:kUTTypeURLName];
 }
 
-void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
-  const gfx::Size* size = reinterpret_cast<const gfx::Size*>(size_data);
-
+void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
+  // TODO(dcheng): Just use gfx::SkBitmapToNSImageWithColorspace().
   // Safe because the image goes away before the call returns.
   base::ScopedCFTypeRef<CFDataRef> data(
       CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
-                                  reinterpret_cast<const UInt8*>(pixel_data),
-                                  size->width() * size->height() * 4,
+                                  static_cast<const UInt8*>(bitmap.getPixels()),
+                                  bitmap.getSize(),
                                   kCFAllocatorNull));
 
   base::ScopedCFTypeRef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithCFData(data));
 
   base::ScopedCFTypeRef<CGImageRef> cgimage(
-      CGImageCreate(size->width(),
-                    size->height(),
+      CGImageCreate(bitmap.width(),
+                    bitmap.height(),
                     8,
                     32,
-                    size->width() * 4,
+                    bitmap.rowBytes(),
                     base::mac::GetSRGBColorSpace(),  // TODO(avi): do better
                     kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
                     data_provider,
@@ -186,12 +185,12 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
   data_provider.reset();
   data.reset();
 
-  base::scoped_nsobject<NSBitmapImageRep> bitmap(
+  base::scoped_nsobject<NSBitmapImageRep> bitmap_rep(
       [[NSBitmapImageRep alloc] initWithCGImage:cgimage]);
   cgimage.reset();
 
   base::scoped_nsobject<NSImage> image([[NSImage alloc] init]);
-  [image addRepresentation:bitmap];
+  [image addRepresentation:bitmap_rep];
 
   // An API to ask the NSImage to write itself to the clipboard comes in 10.6 :(
   // For now, spit out the image as a TIFF.
@@ -354,6 +353,7 @@ SkBitmap Clipboard::ReadImage(ClipboardType type) const {
   if (!image.get())
     return SkBitmap();
 
+  // TODO(dcheng): Just use gfx::NSImageToSkBitmap().
   gfx::ScopedNSGraphicsContextSaveGState scoped_state;
   [image setFlipped:YES];
   int width = [image size].width;

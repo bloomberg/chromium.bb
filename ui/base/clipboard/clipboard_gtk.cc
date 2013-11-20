@@ -305,14 +305,7 @@ void Clipboard::WriteWebSmartPaste() {
   InsertMapping(kMimeTypeWebkitSmartPaste, NULL, 0);
 }
 
-void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
-  const gfx::Size* size = reinterpret_cast<const gfx::Size*>(size_data);
-
-  // Adopt the pixels into a SkBitmap. Note that the pixel order in memory is
-  // actually BGRA.
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, size->width(), size->height());
-  bitmap.setPixels(const_cast<char*>(pixel_data));
+void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(bitmap);
 
   // We store the GdkPixbuf*, and the size_t half of the pair is meaningless.

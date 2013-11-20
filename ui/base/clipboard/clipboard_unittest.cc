@@ -356,7 +356,8 @@ TEST_F(ClipboardTest, SharedBitmapTest) {
 
   Clipboard::ObjectMap objects;
   objects[Clipboard::CBF_SMBITMAP] = params;
-  Clipboard::ReplaceSharedMemHandle(&objects, handle_to_share, current_process);
+  ASSERT_TRUE(Clipboard::ReplaceSharedMemHandle(
+      &objects, handle_to_share, current_process));
 
   clipboard().WriteObjects(CLIPBOARD_TYPE_COPY_PASTE,
                            objects);

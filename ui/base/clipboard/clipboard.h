@@ -305,9 +305,10 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // |objects|.  The pointer is deleted by DispatchObjects().
   //
   // On non-Windows platforms, |process| is ignored.
-  static void ReplaceSharedMemHandle(ObjectMap* objects,
+  static bool ReplaceSharedMemHandle(ObjectMap* objects,
                                      base::SharedMemoryHandle bitmap_handle,
-                                     base::ProcessHandle process);
+                                     base::ProcessHandle process)
+      WARN_UNUSED_RESULT;
 #if defined(OS_WIN)
   // Firefox text/html
   static const FormatType& GetTextHtmlFormatType();
@@ -343,7 +344,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
   void WriteWebSmartPaste();
 
-  void WriteBitmap(const char* pixel_data, const char* size_data);
+  void WriteBitmap(const SkBitmap& bitmap);
 
   void WriteData(const FormatType& format,
                  const char* data_data,

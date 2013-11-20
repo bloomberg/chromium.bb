@@ -295,14 +295,12 @@ SkBitmap Clipboard::ReadImage(ClipboardType type) const {
     DCHECK_LE(sizeof(gfx::Size), input.size());
     const gfx::Size* size = reinterpret_cast<const gfx::Size*>(input.data());
 
-    bmp.setConfig(
-        SkBitmap::kARGB_8888_Config, size->width(), size->height(), 0);
+    bmp.setConfig(SkBitmap::kARGB_8888_Config, size->width(), size->height());
     bmp.allocPixels();
 
-    int bm_size = size->width() * size->height() * 4;
-    DCHECK_EQ(sizeof(gfx::Size) + bm_size, input.size());
+    DCHECK_EQ(sizeof(gfx::Size) + bmp.getSize(), input.size());
 
-    memcpy(bmp.getPixels(), input.data() + sizeof(gfx::Size), bm_size);
+    memcpy(bmp.getPixels(), input.data() + sizeof(gfx::Size), bmp.getSize());
   }
   return bmp;
 }
@@ -407,16 +405,17 @@ void Clipboard::WriteWebSmartPaste() {
   g_map.Get().Set(kWebKitSmartPasteFormat, std::string());
 }
 
-// All platforms use gfx::Size for size data but it is passed as a const char*
-// Further, pixel_data is expected to be 32 bits per pixel
 // Note: we implement this to pass all unit tests but it is currently unclear
 // how some code would consume this.
-void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
-  const gfx::Size* size = reinterpret_cast<const gfx::Size*>(size_data);
-  int bm_size = size->width() * size->height() * 4;
+void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
+  gfx::Size size(bitmap.width(), bitmap.height());
 
-  std::string packed(size_data, sizeof(gfx::Size));
-  packed += std::string(pixel_data, bm_size);
+  std::string packed(reinterpret_cast<const char*>(&size), sizeof(size));
+  {
+    SkAutoLockPixels bitmap_lock(bitmap);
+    packed += std::string(static_cast<const char*>(bitmap.getPixels()),
+                          bitmap.getSize());
+  }
   g_map.Get().Set(kBitmapFormat, packed);
 }
 

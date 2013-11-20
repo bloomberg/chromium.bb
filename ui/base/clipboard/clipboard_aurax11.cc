@@ -755,15 +755,7 @@ void Clipboard::WriteWebSmartPaste() {
                                   scoped_refptr<base::RefCountedMemory>());
 }
 
-void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
-  const gfx::Size* size = reinterpret_cast<const gfx::Size*>(size_data);
-
-  // Adopt the pixels into a SkBitmap. Note that the pixel order in memory is
-  // actually BGRA.
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, size->width(), size->height());
-  bitmap.setPixels(const_cast<char*>(pixel_data));
-
+void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
   // Encode the bitmap as a PNG for transport.
   std::vector<unsigned char> output;
   if (gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, false, &output)) {

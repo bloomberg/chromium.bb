@@ -41,8 +41,7 @@ enum AuraClipboardFormat {
 class ClipboardData {
  public:
   ClipboardData()
-      : bitmap_data_(),
-        web_smart_paste_(false),
+      : web_smart_paste_(false),
         format_(0) {}
 
   virtual ~ClipboardData() {}
@@ -86,15 +85,9 @@ class ClipboardData {
     format_ |= BOOKMARK;
   }
 
-  uint8_t* bitmap_data() const { return bitmap_data_.get(); }
-  const gfx::Size& bitmap_size() const { return bitmap_size_; }
-  void SetBitmapData(const char* pixel_data, const char* size_data) {
-    bitmap_size_ = *reinterpret_cast<const gfx::Size*>(size_data);
-
-    // We assume 4-byte pixel data.
-    size_t bitmap_data_len = 4 * bitmap_size_.width() * bitmap_size_.height();
-    bitmap_data_.reset(new uint8_t[bitmap_data_len]);
-    memcpy(bitmap_data_.get(), pixel_data, bitmap_data_len);
+  const SkBitmap& bitmap() const { return bitmap_; }
+  void SetBitmapData(const SkBitmap& bitmap) {
+    bitmap.copyTo(&bitmap_, bitmap.getConfig());
     format_ |= BITMAP;
   }
 
@@ -137,8 +130,7 @@ class ClipboardData {
   std::vector<std::string> files_;
 
   // Bitmap images.
-  scoped_ptr<uint8_t[]> bitmap_data_;
-  gfx::Size bitmap_size_;
+  SkBitmap bitmap_;
 
   // Data with custom format.
   std::string custom_data_format_;
@@ -253,13 +245,9 @@ class AuraClipboard {
     if (!HasFormat(BITMAP))
       return img;
 
-    const ClipboardData* data = GetData();
-    const gfx::Size size = data->bitmap_size();
-    uint8_t* bitmap = data->bitmap_data();
-    img.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height(), 0);
-    img.allocPixels();
-    img.eraseARGB(0, 0, 0, 0);
-    memcpy(img.getPixels(), bitmap, size.width() * size.height() * 4);
+    // A shallow copy should be fine here, but just to be safe...
+    const SkBitmap& clipboard_bitmap = GetData()->bitmap();
+    clipboard_bitmap.copyTo(&img, clipboard_bitmap.getConfig());
     return img;
   }
 
@@ -387,9 +375,9 @@ class ClipboardDataBuilder {
     data->set_web_smart_paste(true);
   }
 
-  static void WriteBitmap(const char* pixel_data, const char* size_data) {
+  static void WriteBitmap(const SkBitmap& bitmap) {
     ClipboardData* data = GetCurrentData();
-    data->SetBitmapData(pixel_data, size_data);
+    data->SetBitmapData(bitmap);
   }
 
   static void WriteData(const std::string& format,
@@ -597,8 +585,8 @@ void Clipboard::WriteWebSmartPaste() {
   ClipboardDataBuilder::WriteWebSmartPaste();
 }
 
-void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
-  ClipboardDataBuilder::WriteBitmap(pixel_data, size_data);
+void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
+  ClipboardDataBuilder::WriteBitmap(bitmap);
 }
 
 void Clipboard::WriteData(const FormatType& format,
