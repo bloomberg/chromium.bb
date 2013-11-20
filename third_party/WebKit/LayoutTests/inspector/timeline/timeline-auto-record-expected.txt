@@ -1,0 +1,5 @@
+Test auto-recording of Timeline.
+
+Page reloaded.
+Page reloaded.
+
