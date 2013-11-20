@@ -23,38 +23,43 @@ void ModeIndicatorView::SetLabelTextUtf8(const std::string& text_utf8) {
   DCHECK(label_);
 
   label_->SetText(UTF8ToUTF16(text_utf8));
+
+  // If Layout is not called here, the size of the view is not updated.
+  // TODO(komatsu): Investigate a proper way not to call Layout.
   Layout();
 }
 
+namespace {
+const int kMinSize = 43;
+}  // namespace
 
 void ModeIndicatorView::Layout() {
   DCHECK(label_);
 
-  // The inside bounds of the contents.
-  const gfx::Rect cb = GetContentsBounds();
+  // Resize label (simply use the preferred size).
+  label_->SizeToPreferredSize();
+  const gfx::Size label_size = label_->size();
 
-  // The whole bounds including the border.
-  const gfx::Rect b = GetBoundsInScreen();
+  // Calculate the view's base size to fit to the label size or the
+  // minimum size.
+  gfx::Size base_size = label_size;
+  base_size.SetToMax(gfx::Size(kMinSize, kMinSize));
 
-  const int w_offset = b.width() - cb.width();
-  const int h_offset = b.height() - cb.height();
+  // Resize view considering the insets of the border.
+  gfx::Size view_size = base_size;
+  const gfx::Insets insets = border()->GetInsets();
+  view_size.Enlarge(insets.width(), insets.height());
+  SetSize(view_size);
 
-  const int kBaseSize = 43;
-  const gfx::Size ps = label_->GetPreferredSize();
-  const int width =
-      ((ps.width() > kBaseSize) ? ps.width() : kBaseSize) + w_offset;
-  const int height =
-      ((ps.height() > kBaseSize) ? ps.height() : kBaseSize) + h_offset;
-
-  // Set the label in the center of the contents bounds.
-  label_->SetBounds(cb.x() + (cb.width() - ps.width()) / 2,
-                    cb.y() + (cb.height() - ps.height()) / 2,
-                    ps.width(),
-                    ps.height());
-  SetBounds(b.x(), b.y(), width, height);
+  // Relocate label (center of the view considering the insets).
+  const int x = insets.left() + (base_size.width()  - label_size.width())  / 2;
+  const int y = insets.top()  + (base_size.height() - label_size.height()) / 2;
+  label_->SetX(x);
+  label_->SetY(y);
 }
 
 void ModeIndicatorView::Init() {
+  // Initialize view.
   views::BubbleBorder* border = new views::BubbleBorder(
       views::BubbleBorder::TOP_CENTER,
       views::BubbleBorder::NO_SHADOW,
@@ -62,9 +67,8 @@ void ModeIndicatorView::Init() {
   set_border(border);
   set_background(new views::BubbleBackground(border));
 
-  // "xxxx" reserves an enough size of boundary.
-  // It would be nice to reserve in a different way.
-  label_ = new views::Label(UTF8ToUTF16("xxxx"));
+  // Initialize label.
+  label_ = new views::Label;
   label_->set_border(views::Border::CreateEmptyBorder(2, 2, 2, 2));
   label_->set_background(
       views::Background::CreateSolidBackground(

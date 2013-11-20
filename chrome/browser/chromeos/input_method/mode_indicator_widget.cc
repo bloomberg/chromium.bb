@@ -8,7 +8,6 @@
 #include "ash/wm/window_animations.h"
 #include "chrome/browser/chromeos/input_method/mode_indicator_view.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/rect.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_border.h"
 
@@ -36,14 +35,13 @@ ModeIndicatorWidget::ModeIndicatorWidget()
 
   // Pass the ownership.
   SetContentsView(mode_view_);
-
-  SetBounds(gfx::Rect(0, 0, 60, 60));  // x, y, w, h
 }
 
 ModeIndicatorWidget::~ModeIndicatorWidget() {
 }
 
 void ModeIndicatorWidget::SetCursorLocation(const gfx::Rect& cursor_location) {
+  cursor_location_ = cursor_location;
   gfx::Rect bound(GetClientAreaBoundsInScreen());
   bound.set_x(cursor_location.x() - bound.width() / 2);
   bound.set_y(cursor_location.bottom());
@@ -51,21 +49,11 @@ void ModeIndicatorWidget::SetCursorLocation(const gfx::Rect& cursor_location) {
 }
 
 void ModeIndicatorWidget::SetLabelTextUtf8(const std::string& text_utf8) {
-  if (!mode_view_)
-    return;
-
-  const gfx::Rect prev(GetClientAreaBoundsInScreen());
+  DCHECK(mode_view_);
 
   mode_view_->SetLabelTextUtf8(text_utf8);
-
-  const gfx::Rect vb = mode_view_->GetBoundsInScreen();
-
-  // gfx::Rect(x, y, w, h)
-  const gfx::Rect bound(prev.x() - (vb.width()  - prev.width())  / 2,
-                        prev.y() - (vb.height() - prev.height()) / 2,
-                        vb.width(),
-                        vb.height());
-  SetBounds(bound);
+  SetSize(mode_view_->size());
+  SetCursorLocation(cursor_location_);
 }
 
 }  // namespace input_method
