@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/metrics/field_trial.h"
+#include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
@@ -75,19 +78,25 @@ const char kInvalidDownloadError[] =
     "Download was not a valid extension or user script";
 const char kDependencyNotFoundError[] = "Dependency not found";
 const char kDependencyNotSharedModuleError[] =
-  "Dependency is not shared module";
+    "Dependency is not shared module";
 const char kInlineInstallSource[] = "inline";
 const char kDefaultInstallSource[] = "ondemand";
 const char kAppLauncherInstallSource[] = "applauncher";
+
+// Folder for downloading crx files from the webstore. This is used so that the
+// crx files don't go via the usual downloads folder.
+const base::FilePath::CharType kWebstoreDownloadFolder[] =
+    FILE_PATH_LITERAL("Webstore Downloads");
 
 base::FilePath* g_download_directory_for_tests = NULL;
 
 // Must be executed on the FILE thread.
 void GetDownloadFilePath(
-    const base::FilePath& download_directory, const std::string& id,
+    const base::FilePath& download_directory,
+    const std::string& id,
     const base::Callback<void(const base::FilePath&)>& callback) {
   base::FilePath directory(g_download_directory_for_tests ?
-                     *g_download_directory_for_tests : download_directory);
+      *g_download_directory_for_tests : download_directory);
 
 #if defined(OS_CHROMEOS)
   // Do not use drive for extension downloads.
@@ -126,13 +135,23 @@ void GetDownloadFilePath(
                           base::Bind(callback, file));
 }
 
+bool UseSeparateWebstoreDownloadDirectory() {
+  const char kFieldTrial[] = "WebstoreDownloadDirectory";
+  const char kSeparateDirectoryUnderUDD[] = "SeparateDirectoryUnderUDD";
+
+  std::string field_trial_group =
+      base::FieldTrialList::FindFullName(kFieldTrial);
+  return field_trial_group == kSeparateDirectoryUnderUDD;
+}
+
 }  // namespace
 
 namespace extensions {
 
 // static
 GURL WebstoreInstaller::GetWebstoreInstallURL(
-    const std::string& extension_id, InstallSource source) {
+    const std::string& extension_id,
+    InstallSource source) {
   std::string install_source;
   switch (source) {
     case INSTALL_SOURCE_INLINE:
@@ -497,10 +516,20 @@ void WebstoreInstaller::DownloadNextPendingModule() {
 }
 
 void WebstoreInstaller::DownloadCrx(
-    const std::string& extension_id, InstallSource source) {
+    const std::string& extension_id,
+    InstallSource source) {
   download_url_ = GetWebstoreInstallURL(extension_id, source);
-  base::FilePath download_path = DownloadPrefs::FromDownloadManager(
-      BrowserContext::GetDownloadManager(profile_))->DownloadPath();
+
+  base::FilePath download_path;
+  if (UseSeparateWebstoreDownloadDirectory()) {
+    base::FilePath user_data_dir;
+    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    download_path = user_data_dir.Append(kWebstoreDownloadFolder);
+  } else {
+    download_path = DownloadPrefs::FromDownloadManager(
+        BrowserContext::GetDownloadManager(profile_))->DownloadPath();
+  }
+
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&GetDownloadFilePath, download_path, id_,
