@@ -85,8 +85,8 @@ class SnapshotAuraTest : public testing::Test {
   aura::TestScreen* test_screen() { return helper_->test_screen(); }
 
   void WaitForDraw() {
-    dispatcher()->host()->compositor()->ScheduleDraw();
-    ui::DrawWaiterForTest::Wait(dispatcher()->host()->compositor());
+    dispatcher()->compositor()->ScheduleDraw();
+    ui::DrawWaiterForTest::Wait(dispatcher()->compositor());
   }
 
   void SetupTestWindow(const gfx::Rect& window_bounds) {

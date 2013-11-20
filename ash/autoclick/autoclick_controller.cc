@@ -186,7 +186,7 @@ void AutoclickControllerImpl::DoAutoclick() {
   wm::ConvertPointFromScreen(root_window, &click_location);
 
   aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
-  dispatcher->host()->ConvertPointToHost(&click_location);
+  dispatcher->ConvertPointToHost(&click_location);
 
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED,
                              click_location,

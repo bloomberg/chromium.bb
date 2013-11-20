@@ -779,9 +779,9 @@ void DesktopRootWindowHostX11::SetBounds(const gfx::Rect& bounds) {
   if (origin_changed)
     native_widget_delegate_->AsWidget()->OnNativeWidgetMove();
   if (size_changed)
-    NotifyHostResized(bounds.size());
+    delegate_->OnHostResized(bounds.size());
   else
-    compositor()->ScheduleRedrawRect(gfx::Rect(bounds.size()));
+    delegate_->OnHostPaint(gfx::Rect(bounds.size()));
 }
 
 gfx::Insets DesktopRootWindowHostX11::GetInsets() const {
@@ -1057,7 +1057,6 @@ void DesktopRootWindowHostX11::InitX11Window(
   if (window_icon) {
     SetWindowIcons(gfx::ImageSkia(), *window_icon);
   }
-  CreateCompositor(GetAcceleratedWidget());
 }
 
 bool DesktopRootWindowHostX11::IsWindowManagerPresent() {
@@ -1183,7 +1182,7 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
     case Expose: {
       gfx::Rect damage_rect(xev->xexpose.x, xev->xexpose.y,
                             xev->xexpose.width, xev->xexpose.height);
-      compositor()->ScheduleRedrawRect(damage_rect);
+      delegate_->OnHostPaint(damage_rect);
       break;
     }
     case KeyPress: {
@@ -1260,7 +1259,7 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
       previous_bounds_ = bounds_;
       bounds_ = bounds;
       if (size_changed)
-        NotifyHostResized(bounds.size());
+        delegate_->OnHostResized(bounds.size());
       if (origin_changed)
         delegate_->OnHostMoved(bounds_.origin());
       ResetWindowRegion();

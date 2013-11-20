@@ -136,7 +136,6 @@ RemoteRootWindowHostWin::RemoteRootWindowHostWin(const gfx::Rect& bounds)
       ignore_mouse_moves_until_set_cursor_ack_(false),
       event_flags_(0) {
   prop_.reset(new ui::ViewProp(NULL, kRootWindowHostWinKey, this));
-  CreateCompositor(GetAcceleratedWidget());
 }
 
 RemoteRootWindowHostWin::~RemoteRootWindowHostWin() {
@@ -330,7 +329,7 @@ gfx::Rect RemoteRootWindowHostWin::GetBounds() const {
 }
 
 void RemoteRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
-  NotifyHostResized(bounds.size());
+  delegate_->OnHostResized(bounds.size());
 }
 
 gfx::Insets RemoteRootWindowHostWin::GetInsets() const {

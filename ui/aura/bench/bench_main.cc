@@ -351,11 +351,11 @@ int main(int argc, char** argv) {
 
   if (command_line->HasSwitch("bench-software-scroll")) {
     bench.reset(new SoftwareScrollBench(&page_background,
-                                        root_window->host()->compositor(),
+                                        root_window->compositor(),
                                         frames));
   } else {
     bench.reset(new WebGLBench(&page_background,
-                               root_window->host()->compositor(),
+                               root_window->compositor(),
                                frames));
   }
 
