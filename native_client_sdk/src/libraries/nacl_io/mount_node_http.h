@@ -52,11 +52,14 @@ class MountNodeHttp : public MountNode {
                 StringMap_t* out_response_headers);
 
   Error DownloadToCache();
-  Error ReadPartialFromCache(size_t offs,
+  Error ReadPartialFromCache(const HandleAttr& attr,
                              void* buf,
                              int count,
                              int* out_bytes);
-  Error DownloadPartial(size_t offs, void* buf, size_t count, int* out_bytes);
+  Error DownloadPartial(const HandleAttr& attr,
+                        void* buf,
+                        size_t count,
+                        int* out_bytes);
   Error DownloadToBuffer(PP_Resource loader,
                          void* buf,
                          int count,

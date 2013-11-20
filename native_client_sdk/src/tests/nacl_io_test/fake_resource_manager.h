@@ -55,6 +55,14 @@ class FakeResourceTracker {
   void Release() { sdk_util::AtomicAddFetch(&ref_count_, -1); }
   int32_t ref_count() const { return ref_count_; }
 
+  // Give up ownership of this resource. It is the responsibility of the caller
+  // to delete this FakeResource.
+  FakeResource* Pass() {
+    FakeResource* result = resource_;
+    resource_ = NULL;
+    return result;
+  }
+
   template <typename T>
   T* resource() {
     if (!CheckType(T::classname()))
@@ -62,6 +70,8 @@ class FakeResourceTracker {
 
     return static_cast<T*>(resource_);
   }
+
+  FakeResource* resource() { return resource_; }
 
   const char* classname() const { return classname_; }
   const char* file() const { return file_; }
@@ -82,7 +92,11 @@ class FakeResourceTracker {
 class FakeResource {
  public:
   FakeResource() {}
+  // Called when the resource is destroyed. For debugging purposes, this does
+  // not happen until the resource manager is destroyed.
   virtual ~FakeResource() {}
+  // Called when the last reference to the resource is released.
+  virtual void Destroy() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeResource);
@@ -94,6 +108,6 @@ inline T* FakeResourceManager::Get(PP_Resource handle) {
 }
 
 #define CREATE_RESOURCE(MANAGER, TYPE, RESOURCE) \
-  (MANAGER)->Create(RESOURCE, #TYPE, __FILE__, __LINE__)
+  (MANAGER)->Create((RESOURCE), #TYPE, __FILE__, __LINE__)
 
 #endif  // LIBRARIES_NACL_IO_TEST_FAKE_RESOURCE_MANAGER_H_

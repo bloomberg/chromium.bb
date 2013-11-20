@@ -98,29 +98,29 @@ class FakeFileIoInterface : public nacl_io::FileIoInterface {
  public:
   explicit FakeFileIoInterface(FakeCoreInterface* core_interface);
 
-  PP_Resource Create(PP_Resource instance);
-  int32_t Open(PP_Resource file_io,
-               PP_Resource file_ref,
-               int32_t open_flags,
-               PP_CompletionCallback callback);
-  int32_t Query(PP_Resource file_io,
-                PP_FileInfo* info,
-                PP_CompletionCallback callback);
-  int32_t Read(PP_Resource file_io,
-               int64_t offset,
-               char* buffer,
-               int32_t bytes_to_read,
-               PP_CompletionCallback callback);
-  int32_t Write(PP_Resource file_io,
-                int64_t offset,
-                const char* buffer,
-                int32_t bytes_to_write,
-                PP_CompletionCallback callback);
-  int32_t SetLength(PP_Resource file_io,
-                    int64_t length,
-                    PP_CompletionCallback callback);
-  int32_t Flush(PP_Resource file_io, PP_CompletionCallback callback);
-  void Close(PP_Resource file_io);
+  virtual PP_Resource Create(PP_Resource instance);
+  virtual int32_t Open(PP_Resource file_io,
+                       PP_Resource file_ref,
+                       int32_t open_flags,
+                       PP_CompletionCallback callback);
+  virtual int32_t Query(PP_Resource file_io,
+                        PP_FileInfo* info,
+                        PP_CompletionCallback callback);
+  virtual int32_t Read(PP_Resource file_io,
+                       int64_t offset,
+                       char* buffer,
+                       int32_t bytes_to_read,
+                       PP_CompletionCallback callback);
+  virtual int32_t Write(PP_Resource file_io,
+                        int64_t offset,
+                        const char* buffer,
+                        int32_t bytes_to_write,
+                        PP_CompletionCallback callback);
+  virtual int32_t SetLength(PP_Resource file_io,
+                            int64_t length,
+                            PP_CompletionCallback callback);
+  virtual int32_t Flush(PP_Resource file_io, PP_CompletionCallback callback);
+  virtual void Close(PP_Resource file_io);
 
  private:
   FakeCoreInterface* core_interface_;  // Weak reference.
@@ -133,18 +133,18 @@ class FakeFileRefInterface : public nacl_io::FileRefInterface {
   FakeFileRefInterface(FakeCoreInterface* core_interface,
                        FakeVarInterface* var_interface);
 
-  PP_Resource Create(PP_Resource file_system, const char* path);
-  PP_Var GetName(PP_Resource file_ref);
-  int32_t MakeDirectory(PP_Resource directory_ref,
-                        PP_Bool make_ancestors,
+  virtual PP_Resource Create(PP_Resource file_system, const char* path);
+  virtual PP_Var GetName(PP_Resource file_ref);
+  virtual int32_t MakeDirectory(PP_Resource directory_ref,
+                                PP_Bool make_ancestors,
+                                PP_CompletionCallback callback);
+  virtual int32_t Delete(PP_Resource file_ref, PP_CompletionCallback callback);
+  virtual int32_t Query(PP_Resource file_ref,
+                        PP_FileInfo* info,
                         PP_CompletionCallback callback);
-  int32_t Delete(PP_Resource file_ref, PP_CompletionCallback callback);
-  int32_t Query(PP_Resource file_ref,
-                PP_FileInfo* info,
-                PP_CompletionCallback callback);
-  int32_t ReadDirectoryEntries(PP_Resource file_ref,
-                               const PP_ArrayOutput& output,
-                               PP_CompletionCallback callback);
+  virtual int32_t ReadDirectoryEntries(PP_Resource file_ref,
+                                       const PP_ArrayOutput& output,
+                                       PP_CompletionCallback callback);
 
  private:
   FakeCoreInterface* core_interface_;  // Weak reference.
@@ -157,10 +157,10 @@ class FakeFileSystemInterface : public nacl_io::FileSystemInterface {
  public:
   FakeFileSystemInterface(FakeCoreInterface* core_interface);
 
-  PP_Resource Create(PP_Instance instance, PP_FileSystemType type);
-  int32_t Open(PP_Resource file_system,
-               int64_t expected_size,
-               PP_CompletionCallback callback);
+  virtual PP_Resource Create(PP_Instance instance, PP_FileSystemType type);
+  virtual int32_t Open(PP_Resource file_system,
+                       int64_t expected_size,
+                       PP_CompletionCallback callback);
 
  private:
   FakeCoreInterface* core_interface_;  // Weak reference.

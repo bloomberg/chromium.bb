@@ -57,7 +57,7 @@ void FakeResourceManager::AddRef(PP_Resource handle) {
 }
 
 void FakeResourceManager::Release(PP_Resource handle) {
-  AUTO_LOCK(lock_);
+  sdk_util::AutoLock lock(lock_);
   ResourceMap::iterator iter = resource_map_.find(handle);
   ASSERT_NE(resource_map_.end(), iter) << "Releasing unknown resource "
                                        << handle;
@@ -70,6 +70,18 @@ void FakeResourceManager::Release(PP_Resource handle) {
                                               << resource_tracker->file() << ":"
                                               << resource_tracker->line();
   resource_tracker->Release();
+  // It's OK to access the tracker when its refcount is zero; it doesn't
+  // actually destroy the object until the manager is destroyed.
+  if (resource_tracker->ref_count() == 0) {
+    // Remove the resource from this tracker.
+    FakeResource* resource = resource_tracker->Pass();
+    // Release the lock before we call Destroy; resources can call
+    // FakeResourceManager::Release(), which will deadlock if we are already
+    // holding the lock.
+    lock.Unlock();
+
+    resource->Destroy();
+  }
 }
 
 FakeResourceTracker* FakeResourceManager::Get(PP_Resource handle) {

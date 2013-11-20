@@ -151,14 +151,14 @@ void MountNodeHttp::SetCachedSize(off_t size) {
   stat_.st_size = size;
 }
 
-Error MountNodeHttp::FSync() { return ENOSYS; }
+Error MountNodeHttp::FSync() { return EACCES; }
 
 Error MountNodeHttp::GetDents(size_t offs,
                               struct dirent* pdir,
                               size_t count,
                               int* out_bytes) {
   *out_bytes = 0;
-  return ENOSYS;
+  return EACCES;
 }
 
 Error MountNodeHttp::GetStat(struct stat* stat) {
@@ -193,10 +193,8 @@ Error MountNodeHttp::GetStat(struct stat* stat) {
       SetCachedSize(static_cast<off_t>(entity_length));
     } else if (cache_content_ && !has_cached_size_) {
       error = DownloadToCache();
-      // TODO(binji): this error should not be dropped, but it requires a bit
-      // of a refactor of the tests. See crbug.com/245431
-      // if (error)
-      //   return error;
+      if (error)
+        return error;
     } else {
       // Don't use SetCachedSize here -- it is actually unknown.
       stat_.st_size = 0;
@@ -230,13 +228,13 @@ Error MountNodeHttp::Read(const HandleAttr& attr,
         return error;
     }
 
-    return ReadPartialFromCache(attr.offs, buf, count, out_bytes);
+    return ReadPartialFromCache(attr, buf, count, out_bytes);
   }
 
-  return DownloadPartial(attr.offs, buf, count, out_bytes);
+  return DownloadPartial(attr, buf, count, out_bytes);
 }
 
-Error MountNodeHttp::FTruncate(off_t size) { return ENOSYS; }
+Error MountNodeHttp::FTruncate(off_t size) { return EACCES; }
 
 Error MountNodeHttp::Write(const HandleAttr& attr,
                            const void* buf,
@@ -244,7 +242,7 @@ Error MountNodeHttp::Write(const HandleAttr& attr,
                            int* out_bytes) {
   // TODO(binji): support POST?
   *out_bytes = 0;
-  return ENOSYS;
+  return EACCES;
 }
 
 Error MountNodeHttp::GetSize(size_t* out_size) {
@@ -342,6 +340,8 @@ Error MountNodeHttp::OpenUrl(const char* method,
   *out_response_headers =
       ParseHeaders(response_headers_str, response_headers_length);
 
+  var_interface->Release(response_headers_var);
+
   return 0;
 }
 
@@ -404,23 +404,25 @@ Error MountNodeHttp::DownloadToCache() {
   }
 }
 
-Error MountNodeHttp::ReadPartialFromCache(size_t offs,
+Error MountNodeHttp::ReadPartialFromCache(const HandleAttr& attr,
                                           void* buf,
                                           int count,
                                           int* out_bytes) {
   *out_bytes = 0;
+  size_t size = cached_data_.size();
 
-  if (offs > cached_data_.size())
-    return EINVAL;
+  if (attr.offs + count > size)
+    count = size - attr.offs;
 
-  count = std::min(count, static_cast<int>(cached_data_.size() - offs));
-  memcpy(buf, &cached_data_.data()[offs], count);
+  if (count <= 0)
+    return 0;
 
+  memcpy(buf, &cached_data_.data()[attr.offs], count);
   *out_bytes = count;
   return 0;
 }
 
-Error MountNodeHttp::DownloadPartial(size_t offs,
+Error MountNodeHttp::DownloadPartial(const HandleAttr& attr,
                                      void* buf,
                                      size_t count,
                                      int* out_bytes) {
@@ -433,8 +435,8 @@ Error MountNodeHttp::DownloadPartial(size_t offs,
   snprintf(&buffer[0],
            sizeof(buffer),
            "bytes=%" PRIuS "-%" PRIuS,
-           offs,
-           offs + count - 1);
+           attr.offs,
+           attr.offs + count - 1);
   headers["Range"] = buffer;
 
   PP_Resource loader;
@@ -462,12 +464,12 @@ Error MountNodeHttp::DownloadPartial(size_t offs,
     // No partial result, read everything starting from the part we care about.
     size_t content_length;
     if (ParseContentLength(response_headers, &content_length)) {
-      if (offs >= content_length)
+      if (attr.offs >= content_length)
         return EINVAL;
 
       // Clamp count, if trying to read past the end of the file.
-      if (offs + count > content_length) {
-        count = content_length - offs;
+      if (attr.offs + count > content_length) {
+        count = content_length - attr.offs;
       }
     }
   } else if (statuscode == STATUSCODE_PARTIAL_CONTENT) {
@@ -476,7 +478,7 @@ Error MountNodeHttp::DownloadPartial(size_t offs,
     size_t entity_length;
     if (ParseContentRange(
             response_headers, &read_start, &read_end, &entity_length)) {
-      if (read_start > offs || read_start > read_end) {
+      if (read_start > attr.offs || read_start > read_end) {
         // If this error occurs, the server is returning bogus values.
         return EINVAL;
       }
@@ -488,14 +490,14 @@ Error MountNodeHttp::DownloadPartial(size_t offs,
       // exactly what we asked for. This can happen even when the server
       // returns 200 -- the cache may return 206 in this case, but not modify
       // the headers.
-      read_start = offs;
+      read_start = attr.offs;
     }
   }
 
-  if (read_start < offs) {
+  if (read_start < attr.offs) {
     // We aren't yet at the location where we want to start reading. Read into
     // our dummy buffer until then.
-    size_t bytes_to_read = offs - read_start;
+    size_t bytes_to_read = attr.offs - read_start;
     if (buffer_.size() < bytes_to_read)
       buffer_.resize(std::min(bytes_to_read, MAX_READ_BUFFER_SIZE));
 

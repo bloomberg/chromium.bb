@@ -12,6 +12,8 @@
         'fake_core_interface.h',
         'fake_pepper_interface_html5fs.cc',
         'fake_pepper_interface_html5fs.h',
+        'fake_pepper_interface_url_loader.cc',
+        'fake_pepper_interface_url_loader.h',
         'fake_resource_manager.cc',
         'fake_resource_manager.h',
         'fake_var_interface.cc',

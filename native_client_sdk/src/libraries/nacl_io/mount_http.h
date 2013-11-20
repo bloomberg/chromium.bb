@@ -11,11 +11,7 @@
 #include "nacl_io/pepper_interface.h"
 #include "nacl_io/typed_mount_factory.h"
 
-class MountHttpMock;
-
 namespace nacl_io {
-
-class MountNode;
 
 std::string NormalizeHeaderKey(const std::string& s);
 
@@ -44,6 +40,8 @@ class MountHttp : public Mount {
   Error LoadManifest(const std::string& path, char** out_manifest);
   Error ParseManifest(const char *text);
 
+  NodeMap_t* GetNodeCacheForTesting() { return &node_cache_; }
+
  private:
   // Gets the URL to fetch for |path|.
   // |path| is relative to the mount point for the HTTP filesystem.
@@ -59,7 +57,6 @@ class MountHttp : public Mount {
 
   friend class TypedMountFactory<MountHttp>;
   friend class MountNodeHttp;
-  friend class ::MountHttpMock;
 };
 
 }  // namespace nacl_io
