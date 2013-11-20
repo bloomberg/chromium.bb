@@ -9,6 +9,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
+#include "media/cast/logging/logging_defines.h"
 
 using media::cast::AudioSenderConfig;
 using media::cast::CastEnvironment;
@@ -56,13 +57,15 @@ void CastSessionDelegate::StartSending() {
   // CastSender uses the renderer's IO thread as the main thread. This reduces
   // thread hopping for incoming video frames and outgoing network packets.
   // There's no need to decode so no thread assigned for decoding.
+  // Get default logging: All disabled.
   cast_environment_ = new CastEnvironment(
       &clock_,
       base::MessageLoopProxy::current(),
       audio_encode_thread_.message_loop_proxy(),
       NULL,
       video_encode_thread_.message_loop_proxy(),
-      NULL);
+      NULL,
+      media::cast::GetDefaultCastLoggingConfig());
 
   // TODO(hclam): A couple things need to be done here:
   // 1. Connect media::cast::PacketSender to net::Socket interface.

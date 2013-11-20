@@ -17,13 +17,15 @@ CastEnvironment::CastEnvironment(
     scoped_refptr<TaskRunner> audio_encode_thread_proxy,
     scoped_refptr<TaskRunner> audio_decode_thread_proxy,
     scoped_refptr<TaskRunner> video_encode_thread_proxy,
-    scoped_refptr<TaskRunner> video_decode_thread_proxy)
+    scoped_refptr<TaskRunner> video_decode_thread_proxy,
+    const CastLoggingConfig& config)
     : clock_(clock),
       main_thread_proxy_(main_thread_proxy),
       audio_encode_thread_proxy_(audio_encode_thread_proxy),
       audio_decode_thread_proxy_(audio_decode_thread_proxy),
       video_encode_thread_proxy_(video_encode_thread_proxy),
-      video_decode_thread_proxy_(video_decode_thread_proxy) {
+      video_decode_thread_proxy_(video_decode_thread_proxy),
+      logging_(new LoggingImpl(clock, main_thread_proxy, config)) {
   DCHECK(main_thread_proxy) << "Main thread required";
 }
 
@@ -62,7 +64,7 @@ scoped_refptr<TaskRunner> CastEnvironment::GetMessageTaskRunnerForThread(
     case CastEnvironment::VIDEO_DECODER:
       return video_decode_thread_proxy_;
     default:
-      NOTREACHED() << "Invalid Thread ID.";
+      NOTREACHED() << "Invalid Thread identifier";
       return NULL;
   }
 }
@@ -80,13 +82,19 @@ bool CastEnvironment::CurrentlyOn(ThreadId identifier) {
     case CastEnvironment::VIDEO_DECODER:
       return video_decode_thread_proxy_->RunsTasksOnCurrentThread();
     default:
-      NOTREACHED() << "Wrong thread identifier";
+      NOTREACHED() << "Invalid thread identifier";
       return false;
   }
 }
 
-base::TickClock* CastEnvironment::Clock() {
+base::TickClock* CastEnvironment::Clock() const {
   return clock_;
+}
+
+LoggingImpl* CastEnvironment::Logging() {
+  DCHECK(CurrentlyOn(CastEnvironment::MAIN)) <<
+      "Must be called from main thread";
+  return logging_.get();
 }
 
 }  // namespace cast

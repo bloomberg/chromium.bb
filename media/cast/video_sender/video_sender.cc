@@ -60,7 +60,7 @@ VideoSender::VideoSender(
       max_frame_rate_(video_config.max_frame_rate),
       cast_environment_(cast_environment),
       rtcp_feedback_(new LocalRtcpVideoSenderFeedback(this)),
-      rtp_sender_(new RtpSender(cast_environment->Clock(), NULL, &video_config,
+      rtp_sender_(new RtpSender(cast_environment, NULL, &video_config,
                                 paced_packet_sender)),
       last_acked_frame_id_(-1),
       last_sent_frame_id_(-1),
@@ -103,7 +103,7 @@ VideoSender::VideoSender(
   }
 
   rtcp_.reset(new Rtcp(
-      cast_environment_->Clock(),
+      cast_environment_,
       rtcp_feedback_.get(),
       paced_packet_sender,
       rtp_video_sender_statistics_.get(),
@@ -311,6 +311,8 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   base::TimeDelta max_rtt;
 
   if (rtcp_->Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt)) {
+    cast_environment_->Logging()->InsertGenericEvent(kRttMs,
+        rtt.InMilliseconds());
     // Don't use a RTT lower than our average.
     rtt = std::max(rtt, avg_rtt);
   } else {
@@ -365,6 +367,10 @@ void VideoSender::ReceivedAck(uint32 acked_frame_id) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   VLOG(1) << "ReceivedAck:" << acked_frame_id;
   last_acked_frame_id_ = static_cast<int>(acked_frame_id);
+  cast_environment_->Logging()->InsertGenericEvent(kAckReceived,
+                                                   acked_frame_id);
+  VLOG(1) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
+  last_acked_frame_id_ = acked_frame_id;
   UpdateFramesInFlight();
 }
 

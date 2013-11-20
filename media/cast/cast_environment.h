@@ -7,9 +7,12 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "media/cast/logging/logging_defines.h"
+#include "media/cast/logging/logging_impl.h"
 
 namespace media {
 namespace cast {
@@ -38,7 +41,8 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
                   scoped_refptr<base::TaskRunner> audio_encode_thread_proxy,
                   scoped_refptr<base::TaskRunner> audio_decode_thread_proxy,
                   scoped_refptr<base::TaskRunner> video_encode_thread_proxy,
-                  scoped_refptr<base::TaskRunner> video_decode_thread_proxy);
+                  scoped_refptr<base::TaskRunner> video_decode_thread_proxy,
+                  const CastLoggingConfig& config);
 
   // These are the same methods in message_loop.h, but are guaranteed to either
   // get posted to the MessageLoop if it's still alive, or be deleted otherwise.
@@ -56,7 +60,10 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
 
   bool CurrentlyOn(ThreadId identifier);
 
- base::TickClock* Clock();
+  base::TickClock* Clock() const;
+
+  // Logging is not thread safe. Should always be called from the main thread.
+  LoggingImpl* Logging();
 
  protected:
   virtual ~CastEnvironment();
@@ -73,6 +80,8 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   scoped_refptr<base::TaskRunner> audio_decode_thread_proxy_;
   scoped_refptr<base::TaskRunner> video_encode_thread_proxy_;
   scoped_refptr<base::TaskRunner> video_decode_thread_proxy_;
+
+  scoped_ptr<LoggingImpl> logging_;
 
   DISALLOW_COPY_AND_ASSIGN(CastEnvironment);
 };

@@ -13,8 +13,6 @@
 namespace media {
 namespace cast {
 
-const int kNumberOfEvents = 19;
-
 class LoggingStats {
  public:
   explicit LoggingStats(base::TickClock* clock);
@@ -42,7 +40,7 @@ class LoggingStats {
                          uint32 frame_id,
                          uint16 packet_id,
                          uint16 max_packet_id,
-                         int size);
+                         size_t size);
 
   void InsertGenericEvent(CastLoggingEvent event, int value);
 
@@ -62,9 +60,9 @@ class LoggingStats {
   PacketStatsMap packet_stats_;
   GenericStatsMap generic_stats_;
   // Every event has an individual start time
-  base::TimeTicks start_time_[kNumberOfEvents];
+  base::TimeTicks start_time_[kNumOfLoggingEvents];
   // Keep track of event counts.
-  int counts_[kNumberOfEvents];
+  int counts_[kNumOfLoggingEvents];
   base::TickClock* const clock_;  // Not owned by this class.
 
   DISALLOW_COPY_AND_ASSIGN(LoggingStats);

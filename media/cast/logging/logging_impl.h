@@ -10,6 +10,8 @@
 // 2. UMA stats.
 // 3. Tracing of raw events.
 
+#include "base/memory/ref_counted.h"
+#include "base/task_runner.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/logging_raw.h"
 #include "media/cast/logging/logging_stats.h"
@@ -17,12 +19,13 @@
 namespace media {
 namespace cast {
 
-class LoggingImpl {
+static const int kFrameIdUnknown = -1;
+// Should only be called from the main thread.
+class LoggingImpl : public base::NonThreadSafe {
  public:
   LoggingImpl(base::TickClock* clock,
-              bool enable_data_collection,
-              bool enable_uma_stats,
-              bool enable_tracing);
+              scoped_refptr<base::TaskRunner> main_thread_proxy,
+              const CastLoggingConfig& config);
 
   ~LoggingImpl();
 
@@ -42,7 +45,7 @@ class LoggingImpl {
                          uint32 frame_id,
                          uint16 packet_id,
                          uint16 max_packet_id,
-                         int size);
+                         size_t size);
   void InsertGenericEvent(CastLoggingEvent event, int value);
 
   // Get raw data.
@@ -57,11 +60,10 @@ class LoggingImpl {
   void Reset();
 
  private:
+  scoped_refptr<base::TaskRunner> main_thread_proxy_;
+  const CastLoggingConfig config_;
   LoggingRaw raw_;
   LoggingStats stats_;
-  bool enable_data_collection_;
-  bool enable_uma_stats_;
-  bool enable_tracing_;
 
   DISALLOW_COPY_AND_ASSIGN(LoggingImpl);
 };

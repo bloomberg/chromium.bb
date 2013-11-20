@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/pacing/paced_sender.h"
 #include "media/cast/rtcp/rtcp_utility.h"
 #include "net/base/big_endian.h"
@@ -19,12 +19,14 @@ namespace cast {
 static const size_t kRtcpMaxNackFields = 253;
 static const size_t kRtcpMaxCastLossFields = 100;
 
-RtcpSender::RtcpSender(PacedPacketSender* outgoing_transport,
+RtcpSender::RtcpSender(scoped_refptr<CastEnvironment> cast_environment,
+                       PacedPacketSender* outgoing_transport,
                        uint32 sending_ssrc,
                        const std::string& c_name)
      : ssrc_(sending_ssrc),
        c_name_(c_name),
-       transport_(outgoing_transport) {
+       transport_(outgoing_transport),
+       cast_environment_(cast_environment) {
   DCHECK_LT(c_name_.length(), kRtcpCnameSize) << "Invalid config";
 }
 
@@ -249,9 +251,6 @@ void RtcpSender::BuildPli(uint32 remote_ssrc,
   big_endian_writer.WriteU16(2);  // Used fixed length of 2.
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
   big_endian_writer.WriteU32(remote_ssrc);  // Add the remote SSRC.
-  TRACE_EVENT_INSTANT2("cast_rtcp", "RtcpSender::PLI", TRACE_EVENT_SCOPE_THREAD,
-                       "remote_ssrc", remote_ssrc,
-                       "ssrc", ssrc_);
 }
 
 /*
@@ -355,8 +354,8 @@ void RtcpSender::BuildRemb(const RtcpRembMessage* remb,
   for (; it != remb->remb_ssrcs.end(); ++it) {
     big_endian_writer.WriteU32(*it);
   }
-  TRACE_COUNTER_ID1("cast_rtcp", "RtcpSender::RembBitrate", ssrc_,
-                    remb->remb_bitrate);
+  cast_environment_->Logging()->InsertGenericEvent(kRembBitrate,
+                                                   remb->remb_bitrate);
 }
 
 void RtcpSender::BuildNack(const RtcpNackMessage* nack,
@@ -412,8 +411,6 @@ void RtcpSender::BuildNack(const RtcpNackMessage* nack,
   }
   DCHECK_GE(kRtcpMaxNackFields, number_of_nack_fields);
   (*packet)[nack_size_pos] = static_cast<uint8>(2 + number_of_nack_fields);
-  TRACE_COUNTER_ID1("cast_rtcp", "RtcpSender::NACK", ssrc_,
-                    nack->nack_list.size());
 }
 
 void RtcpSender::BuildBye(std::vector<uint8>* packet) const {
@@ -567,10 +564,6 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
   DCHECK_LE(number_of_loss_fields, kRtcpMaxCastLossFields);
   (*packet)[cast_size_pos] = static_cast<uint8>(4 + number_of_loss_fields);
   (*packet)[cast_loss_field_pos] = static_cast<uint8>(number_of_loss_fields);
-
-  // Frames with missing packets.
-  TRACE_COUNTER_ID1("cast_rtcp", "RtcpSender::CastNACK", ssrc_,
-                    cast->missing_frames_and_packets_.size());
 }
 
 void RtcpSender::BuildSenderLog(const RtcpSenderLogMessage* sender_log_message,

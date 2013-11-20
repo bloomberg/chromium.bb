@@ -77,7 +77,8 @@ class AudioReceiverTest : public ::testing::Test {
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
-        task_runner_, task_runner_, task_runner_, task_runner_);
+        task_runner_, task_runner_, task_runner_, task_runner_,
+        GetDefaultCastLoggingConfig());
     test_audio_encoder_callback_ = new TestAudioEncoderCallback();
   }
 

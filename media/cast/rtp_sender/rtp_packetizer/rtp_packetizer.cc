@@ -39,11 +39,8 @@ void RtpPacketizer::IncomingEncodedVideoFrame(
   DCHECK(!config_.audio) << "Invalid state";
   if (config_.audio) return;
 
-  base::TimeTicks zero_time;
-  base::TimeDelta capture_delta = capture_time - zero_time;
-
   // Timestamp is in 90 KHz for video.
-  rtp_timestamp_ = static_cast<uint32>(capture_delta.InMilliseconds() * 90);
+  rtp_timestamp_ = GetVideoRtpTimestamp(capture_time);
   time_last_sent_rtp_timestamp_ = capture_time;
 
   Cast(video_frame->key_frame,
@@ -78,6 +75,7 @@ bool RtpPacketizer::LastSentTimestamp(base::TimeTicks* time_sent,
   return true;
 }
 
+// TODO(mikhal): Switch to pass data with a const_ref.
 void RtpPacketizer::Cast(bool is_key,
                          uint32 frame_id,
                          uint32 reference_frame_id,
