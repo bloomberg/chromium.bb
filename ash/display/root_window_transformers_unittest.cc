@@ -113,7 +113,8 @@ gfx::Display::Rotation GetStoredRotation(int64 id) {
 }
 
 float GetStoredUIScale(int64 id) {
-  return Shell::GetInstance()->display_manager()->GetDisplayInfo(id).ui_scale();
+  return Shell::GetInstance()->display_manager()->GetDisplayInfo(id).
+      GetEffectiveUIScale();
 }
 
 }  // namespace

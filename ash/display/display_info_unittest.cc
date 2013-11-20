@@ -18,7 +18,7 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_EQ("200x100", info.size_in_pixel().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_0, info.rotation());
   EXPECT_EQ("0,0,0,0", info.overscan_insets_in_dip().ToString());
-  EXPECT_EQ(1.0f, info.ui_scale());
+  EXPECT_EQ(1.0f, info.configured_ui_scale());
 
   info = DisplayInfo::CreateFromSpecWithID("10+20-300x400*2/o", 10);
   EXPECT_EQ("10,20 300x400", info.bounds_in_native().ToString());
@@ -42,7 +42,7 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   info = DisplayInfo::CreateFromSpecWithID("10+20-300x400*2/l@1.5", 10);
   EXPECT_EQ("10,20 300x400", info.bounds_in_native().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_270, info.rotation());
-  EXPECT_EQ(1.5f, info.ui_scale());
+  EXPECT_EQ(1.5f, info.configured_ui_scale());
 
   info = DisplayInfo::CreateFromSpecWithID(
       "200x200#300x200|200x200|100x100", 10);

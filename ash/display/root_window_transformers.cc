@@ -123,32 +123,24 @@ gfx::Transform CreateInsetsAndScaleTransform(const gfx::Insets& insets,
   return transform;
 }
 
-gfx::Transform CreateOverscanAndUIScaleTransform(aura::Window* root_window,
-                                                 const gfx::Display& display) {
-  DisplayInfo info =
-      Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
-  return CreateInsetsAndScaleTransform(
-      info.GetOverscanInsetsInPixel(),
-      ui::GetDeviceScaleFactor(root_window->layer()),
-      info.ui_scale());
-}
-
 // RootWindowTransformer for ash environment.
 class AshRootWindowTransformer : public aura::RootWindowTransformer {
  public:
   AshRootWindowTransformer(aura::Window* root,
                            const gfx::Display& display)
       : root_window_(root) {
+    DisplayInfo info = Shell::GetInstance()->display_manager()->
+        GetDisplayInfo(display.id());
+    host_insets_ = info.GetOverscanInsetsInPixel();
+    root_window_ui_scale_ = info.GetEffectiveUIScale();
     root_window_bounds_transform_ =
-        CreateOverscanAndUIScaleTransform(root, display) *
+        CreateInsetsAndScaleTransform(host_insets_,
+                                      display.device_scale_factor(),
+                                      root_window_ui_scale_) *
         CreateRotationTransform(root, display);
     transform_ = root_window_bounds_transform_ * CreateMagnifierTransform(root);
     CHECK(transform_.GetInverse(&invert_transform_));
 
-    DisplayInfo info = Shell::GetInstance()->display_manager()->
-        GetDisplayInfo(display.id());
-    root_window_ui_scale_ = info.ui_scale();
-    host_insets_ = info.GetOverscanInsetsInPixel();
   }
 
   // aura::RootWindowTransformer overrides:

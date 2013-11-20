@@ -476,12 +476,12 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
 
   const ash::internal::DisplayInfo& info1 =
       display_manager->GetDisplayInfo(id1);
-  EXPECT_EQ(1.25f, info1.ui_scale());
+  EXPECT_EQ(1.25f, info1.configured_ui_scale());
 
   const ash::internal::DisplayInfo& info_primary =
       display_manager->GetDisplayInfo(new_primary);
   EXPECT_EQ(gfx::Display::ROTATE_90, info_primary.rotation());
-  EXPECT_EQ(1.0f, info_primary.ui_scale());
+  EXPECT_EQ(1.0f, info_primary.configured_ui_scale());
 }
 
 TEST_F(DisplayPreferencesTest, StorePowerStateNoLogin) {

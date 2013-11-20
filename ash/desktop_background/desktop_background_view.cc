@@ -55,15 +55,15 @@ class LayerControlView : public views::View {
         GetWidget()->GetNativeView());
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
     DisplayInfo info = display_manager->GetDisplayInfo(display.id());
-
+    float ui_scale = info.GetEffectiveUIScale();
     gfx::SizeF pixel_size = display.size();
-    pixel_size.Scale(1.0f / info.ui_scale());
+    pixel_size.Scale(1.0f / ui_scale);
     gfx::Size rounded_size = gfx::ToCeiledSize(pixel_size);
     DCHECK_EQ(1, child_count());
     views::View* child = child_at(0);
     child->SetBounds(0, 0, rounded_size.width(), rounded_size.height());
     gfx::Transform transform;
-    transform.Scale(info.ui_scale(), info.ui_scale());
+    transform.Scale(ui_scale, ui_scale);
     child->SetTransform(transform);
   }
 
@@ -103,7 +103,7 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   DisplayInfo display_info = display_manager->GetDisplayInfo(display.id());
-  float scaling = display_info.ui_scale();
+  float scaling = display_info.GetEffectiveUIScale();
   if (scaling <= 1.0f)
     scaling = 1.0f;
   // Allow scaling up to the UI scaling.

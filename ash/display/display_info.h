@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "base/gtest_prod_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
@@ -98,8 +97,9 @@ class ASH_EXPORT DisplayInfo {
   float device_scale_factor() const { return device_scale_factor_; }
   void set_device_scale_factor(float scale) { device_scale_factor_ = scale; }
 
-  // The native bounds for the display. The size of this can be different from
-  // the |size_in_pixel| when overscan insets are set and/or |ui_scale_| is set.
+  // The native bounds for the display. The size of this can be
+  // different from the |size_in_pixel| when overscan insets are set
+  // and/or |configured_ui_scale_| is set.
   const gfx::Rect bounds_in_native() const {
     return bounds_in_native_;
   }
@@ -112,12 +112,19 @@ class ASH_EXPORT DisplayInfo {
     return overscan_insets_in_dip_;
   }
 
-  float ui_scale() const { return ui_scale_; }
-  void set_ui_scale(float scale) { ui_scale_ = scale; }
+  // Sets/gets configured ui scale. This can be different from the ui
+  // scale actually used when the scale is 2.0 and DSF is 2.0.
+  // (the effective ui scale is 1.0 in this case).
+  float configured_ui_scale() const { return configured_ui_scale_; }
+  void set_configured_ui_scale(float scale) { configured_ui_scale_ = scale; }
 
-  // Copy the display info except for fields that can be modified by a user
-  // (|rotation_| and |ui_scale_|). |rotation_| and |ui_scale_| are copied
-  // when the |another_info| isn't native one.
+  // Returns the ui scale used for the device scale factor. This
+  // return 1.0f if the ui scale and dsf are both set to 2.0.
+  float GetEffectiveUIScale() const;
+
+  // Copy the display info except for fields that can be modified by a
+  // user (|rotation_| and |configured_ui_scale_|). |rotation_| and
+  // |configured_ui_scale_| are copied when the |another_info| isn't native one.
   void Copy(const DisplayInfo& another_info);
 
   // Update the |bounds_in_native_| and |size_in_pixel_| using
@@ -174,8 +181,9 @@ class ASH_EXPORT DisplayInfo {
   // shrink) the desktop over the native display resolution (useful in
   // HighDPI display).  Note that this should not be confused with the
   // device scale factor, which specifies the pixel density of the
-  // display.
-  float ui_scale_;
+  // display. The actuall scale value to be used depends on the device
+  // scale factor.  See |GetEffectiveScaleFactor()|.
+  float configured_ui_scale_;
 
   // True if this comes from native platform (DisplayChangeObserver).
   bool native_;

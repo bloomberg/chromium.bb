@@ -223,7 +223,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
         if (ui_scales[i] == 1.0f)
           resolution_info->SetBoolean("isBest", true);
         resolution_info->SetBoolean(
-            "selected", display_info.ui_scale() == ui_scales[i]);
+            "selected", display_info.configured_ui_scale() == ui_scales[i]);
       } else {
         // Picks the largest one as the "best", which is the last element
         // because |resolutions| is sorted by its area.

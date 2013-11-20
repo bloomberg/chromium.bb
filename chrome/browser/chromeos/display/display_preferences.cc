@@ -194,8 +194,9 @@ void StoreCurrentDisplayProperties() {
     scoped_ptr<base::DictionaryValue> property_value(
         new base::DictionaryValue());
     property_value->SetInteger("rotation", static_cast<int>(info.rotation()));
-    property_value->SetInteger("ui-scale",
-                               static_cast<int>(info.ui_scale() * 1000));
+    property_value->SetInteger(
+        "ui-scale",
+        static_cast<int>(info.configured_ui_scale() * 1000));
     gfx::Size resolution;
     if (!display.IsInternal() &&
         display_manager->GetSelectedResolutionForDisplayId(id, &resolution)) {
