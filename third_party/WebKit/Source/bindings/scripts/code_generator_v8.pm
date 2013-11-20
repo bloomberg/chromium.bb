@@ -372,7 +372,6 @@ sub GenerateInterface
     $header{root}->addFooter("#endif // $defineName");
 
     $implementation{root} = new Block("ROOT", "", "");
-    $conditionalEndif = "\n$conditionalEndif" if !$interface->isCallback and $conditionalEndif;
     $implementation{conditional} = new Block("Conditional", $conditionalIf, $conditionalEndif);
     $implementation{includes} = new Block("Includes", "", "");
 
@@ -380,7 +379,6 @@ sub GenerateInterface
     my $nameSpaceWebCoreBegin = "namespace WebCore {\n";
     my $nameSpaceWebCoreEnd = "} // namespace WebCore";
     $nameSpaceWebCoreBegin = "$nameSpaceWebCoreBegin\n" if !$interface->isCallback;
-    $nameSpaceWebCoreEnd = "$nameSpaceWebCoreEnd\n" if $interface->isCallback;
     $implementation{nameSpaceWebCore} = new Block("Namespace WebCore", $nameSpaceWebCoreBegin, $nameSpaceWebCoreEnd);
     $implementation{nameSpaceInternal} = new Block("Internal namespace", "namespace $internalNamespace {\n", "} // namespace $internalNamespace\n");
 

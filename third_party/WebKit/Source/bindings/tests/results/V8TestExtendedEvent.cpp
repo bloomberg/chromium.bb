@@ -237,5 +237,4 @@ void V8TestExtendedEvent::derefObject(void* object)
 }
 
 } // namespace WebCore
-
 #endif // ENABLE(TEST)

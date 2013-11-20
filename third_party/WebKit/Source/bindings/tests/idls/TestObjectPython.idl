@@ -107,14 +107,14 @@ interface TestObjectPython {
     [CachedAttribute=isValueDirty] attribute any cachedAttributeAnyAttribute;
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
     [CheckSecurity=Node] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute;  // All uses are read only
-    [Conditional=Condition] attribute long conditionalLongAttribute;
-    [Conditional=Condition1&Condition2] attribute long conditionalAndLongAttribute;
-    [Conditional=Condition1|Condition2] attribute long conditionalOrLongAttribute;
+    [Conditional=CONDITION] attribute long conditionalLongAttribute;
+    [Conditional=CONDITION_1&CONDITION_2] attribute long conditionalAndLongAttribute;
+    [Conditional=CONDITION_1|CONDITION_2] attribute long conditionalOrLongAttribute;
     [Custom] attribute object customObjectAttribute;
     [Custom=Getter] attribute long customGetterLongAttribute;
     [Custom=Getter] readonly attribute object customGetterReadonlyObjectAttribute;
     [Custom=Setter] attribute long customSetterLongAttribute;
-    [Conditional=Condition, Custom] attribute long customLongAttribute;
+    [Conditional=CONDITION, Custom] attribute long customLongAttribute;
     [CustomElementCallbacks] readonly attribute long customElementsCallbacksReadonlyLongAttribute;
     [DeprecateAs=LongAttribute] attribute long deprecatedLongAttribute;
     // FIXME: move to TestCheckSecurityInterface when implement [CheckSecurity]
@@ -156,7 +156,7 @@ interface TestObjectPython {
     [Reflect=class] attribute DOMString reflectedClass;
     [Replaceable] readonly attribute long replaceableReadonlyLongAttribute;
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
-    [Conditional=Condition, RuntimeEnabled=FeatureName] attribute long conditionalRuntimeEnabledLongAttribute;
+    [Conditional=CONDITION, RuntimeEnabled=FeatureName] attribute long conditionalRuntimeEnabledLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;
     [RaisesException=Setter] attribute long setterRaisesExceptionLongAttribute;
     [StrictTypeChecking] attribute float strictTypeCheckingFloatAttribute;  // nop for non-interface types
@@ -341,11 +341,11 @@ interface TestObjectPython {
     [CallWith=ActiveWindow] void callWithActiveWindow();
     [CallWith=ActiveWindow&FirstWindow] void callWithActiveWindowScriptWindow();
     [CheckSecurity=Node] void checkSecurityForNodeVoidMethod();
-    [Conditional=Condition] void conditionalConditionVoidMethod();
-    [Conditional=Condition1&Condition2] void conditionalCondition1AndCondition2VoidMethod();
-    [Conditional=Condition] static void conditionalConditionStaticVoidMethod();
+    [Conditional=CONDITION] void conditionalConditionVoidMethod();
+    [Conditional=CONDITION_1&CONDITION_2] void conditionalCondition1AndCondition2VoidMethod();
+    [Conditional=CONDITION] static void conditionalConditionStaticVoidMethod();
     [Custom] void customVoidMethod();
-    [Conditional=Condition, Custom] void conditionalConditionCustomVoidMethod();
+    [Conditional=CONDITION, Custom] void conditionalConditionCustomVoidMethod();
     [CustomElementCallbacks] void customElementCallbacksVoidMethod();
     [DeprecateAs=voidMethod] void deprecatedVoidMethod();
     [DoNotCheckSignature] void doNotCheckSignatureVoidMethod();

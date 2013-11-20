@@ -96,5 +96,4 @@ namespace WebCore {
 
 {% endfor %}
 } // namespace WebCore
-
 {% endfilter %}

@@ -81,6 +81,7 @@ def generate_callback_interface(callback_interface):
     methods = [generate_method(operation)
                for operation in callback_interface.operations]
     template_contents = {
+        'conditional_string': v8_utilities.conditional_string(callback_interface),
         'cpp_class_name': callback_interface.name,
         'v8_class_name': v8_utilities.v8_class_name(callback_interface),
         'header_includes': CALLBACK_INTERFACE_H_INCLUDES,

@@ -236,4 +236,3 @@ bool V8TestCallback::callbackWithThisArg(ScriptValue thisValue, int arg)
 }
 
 } // namespace WebCore
-

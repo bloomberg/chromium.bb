@@ -52,20 +52,20 @@ public:
     static void derefObject(void*);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void customVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-#if ENABLE(Condition)
+#if ENABLE(CONDITION)
     static void conditionalConditionCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-#endif // ENABLE(Condition)
+#endif // ENABLE(CONDITION)
     static void customObjectAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
     static void customObjectAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
     static void customGetterLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
     static void customGetterReadonlyObjectAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
     static void customSetterLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
-#if ENABLE(Condition)
+#if ENABLE(CONDITION)
     static void customLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
-#endif // ENABLE(Condition)
-#if ENABLE(Condition)
+#endif // ENABLE(CONDITION)
+#if ENABLE(CONDITION)
     static void customLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
-#endif // ENABLE(Condition)
+#endif // ENABLE(CONDITION)
     static void customImplementedAsLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
     static void customImplementedAsLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
     static void customGetterImplementedAsLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);

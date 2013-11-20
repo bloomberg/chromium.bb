@@ -40,7 +40,7 @@ from v8_globals import includes
 import v8_methods
 import v8_types
 import v8_utilities
-from v8_utilities import cpp_name, runtime_enabled_function_name
+from v8_utilities import conditional_string, cpp_name, runtime_enabled_function_name
 
 
 INTERFACE_H_INCLUDES = set([
@@ -74,10 +74,11 @@ def generate_interface(interface):
                          'bindings/v8/ExceptionState.h'])
 
     template_contents = {
+        'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class_name': cpp_name(interface),
         'header_includes': INTERFACE_H_INCLUDES,
         'interface_name': interface.name,
-        'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,
+        'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
         'is_check_security': is_check_security,
         'v8_class_name': v8_class_name,
     }

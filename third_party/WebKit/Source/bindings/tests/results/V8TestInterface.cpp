@@ -989,5 +989,4 @@ void V8TestInterface::derefObject(void* object)
 }
 
 } // namespace WebCore
-
 #endif // ENABLE(Condition1) || ENABLE(Condition2)

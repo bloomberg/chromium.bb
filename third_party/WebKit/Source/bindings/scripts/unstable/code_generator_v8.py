@@ -115,7 +115,6 @@ class CodeGeneratorV8:
     def write_header_and_cpp(self):
         interface = self.interface
         template_contents = self.generate_contents(interface)
-        template_contents['conditional_string'] = conditional_string(interface)
         template_contents['header_includes'].add(self.include_for_cpp_class)
         template_contents['header_includes'] = sorted(template_contents['header_includes'])
         template_contents['cpp_includes'] = sorted(includes)
