@@ -911,6 +911,12 @@ bool XMLHttpRequest::internalAbort(DropProtection async)
     // Save to a local variable since we're going to drop protection.
     bool newLoadStarted = m_loader;
 
+    // If abort() called internalAbort() and a nested open() ended up
+    // clearing the error flag, but didn't send(), make sure the error
+    // flag is still set.
+    if (!newLoadStarted)
+        m_error = true;
+
     if (async == DropProtectionAsync)
         dropProtectionSoon();
     else

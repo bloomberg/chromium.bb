@@ -1,9 +1,20 @@
+<!doctype html>
+<html>
+<body>
 <script>
 if (window.testRunner)
     testRunner.dumpAsText();
 
-function addElement() {
-    document.documentElement.appendChild(document.createTextNode('X'));
+function log(str)
+{
+    document.body.appendChild(document.createTextNode(str));
+    document.body.appendChild(document.createElement("br"));
+}
+
+function addElement(e)
+{
+    var txt = (e && e.type) || "insertedText";
+    log(txt);
 }
 document.addEventListener("DOMContentLoaded", addElement, false);
 window.onload = addElement;
@@ -18,4 +29,7 @@ window.addEventListener("DOMSubtreeModified", sendXHR);
 addElement();
 </script>
 This tests that when we re-entrantly create and cancel XHRs, we don't try to disconnect the same CachedResourceClient
-multiple times from its CachedResource. We pass if we don't crash.
+multiple times from its CachedResource. We pass if we don't crash.<br/>
+</body>
+</html>
+
