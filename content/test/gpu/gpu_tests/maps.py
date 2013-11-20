@@ -157,6 +157,10 @@ class Maps(test.Test):
         {
           'name': 'Maps.maps_001',
           'url': 'http://localhost:10020/tracker.html',
+          # TODO: Hack to prevent maps from scaling due to window size.
+          # Remove when the maps team provides a better way of overriding this
+          # behavior
+          'script_to_evaluate_on_commit': 'window.screen = null;',
           'navigate_steps': [
             { 'action': 'navigate' },
             { 'action': 'wait', 'javascript': 'window.testDone' }
