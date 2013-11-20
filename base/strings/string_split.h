@@ -14,9 +14,9 @@
 
 namespace base {
 
-// Splits |str| into a vector of strings delimited by |s|, placing the results
-// in |r|. If several instances of |s| are contiguous, or if |str| begins with
-// or ends with |s|, then an empty string is inserted.
+// Splits |str| into a vector of strings delimited by |c|, placing the results
+// in |r|. If several instances of |c| are contiguous, or if |str| begins with
+// or ends with |c|, then an empty string is inserted.
 //
 // Every substring is trimmed of any leading or trailing white space.
 // NOTE: |c| must be in BMP (Basic Multilingual Plane)
