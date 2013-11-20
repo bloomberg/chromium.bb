@@ -189,10 +189,11 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
   const int data_offset = input.decrypt_config()->data_offset();
   const char* sample =
       reinterpret_cast<const char*>(input.data() + data_offset);
-  int sample_size = input.data_size() - data_offset;
+  DCHECK_GT(input.data_size(), data_offset);
+  size_t sample_size = static_cast<size_t>(input.data_size() - data_offset);
 
-  DCHECK_GT(sample_size, 0) << "No sample data to be decrypted.";
-  if (sample_size <= 0)
+  DCHECK_GT(sample_size, 0U) << "No sample data to be decrypted.";
+  if (sample_size == 0)
     return NULL;
 
   if (input.decrypt_config()->subsamples().empty()) {
@@ -212,13 +213,18 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
   const std::vector<SubsampleEntry>& subsamples =
       input.decrypt_config()->subsamples();
 
-  int total_clear_size = 0;
-  int total_encrypted_size = 0;
+  size_t total_clear_size = 0;
+  size_t total_encrypted_size = 0;
   for (size_t i = 0; i < subsamples.size(); i++) {
     total_clear_size += subsamples[i].clear_bytes;
     total_encrypted_size += subsamples[i].cypher_bytes;
+    // Check for overflow. This check is valid because *_size is unsigned.
+    DCHECK(total_clear_size >= subsamples[i].clear_bytes);
+    if (total_encrypted_size < subsamples[i].cypher_bytes)
+      return NULL;
   }
-  if (total_clear_size + total_encrypted_size != sample_size) {
+  size_t total_size = total_clear_size + total_encrypted_size;
+  if (total_size < total_clear_size || total_size != sample_size) {
     DVLOG(1) << "Subsample sizes do not equal input size";
     return NULL;
   }
