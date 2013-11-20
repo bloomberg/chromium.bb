@@ -4,13 +4,13 @@
 
 package org.chromium.base;
 
-import android.app.Notification;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewTreeObserver;
 import android.widget.RemoteViews;
+import android.widget.TextView;
 
 /**
  * Utility class to use new APIs that were added after ICS (API level 14).
@@ -42,6 +42,17 @@ public class ApiCompatibilityUtils {
             view.setLayoutDirection(layoutDirection);
         } else {
             // Do nothing. RTL layouts aren't supported before JB MR1.
+        }
+    }
+
+    /**
+     * @see android.view.View#setTextDirection(int)
+     */
+    public static void setTextAlignment(View view, int textAlignment) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            view.setTextAlignment(textAlignment);
+        } else {
+            // Do nothing. RTL text isn't supported before JB MR1.
         }
     }
 
@@ -86,6 +97,81 @@ public class ApiCompatibilityUtils {
             return layoutParams.getMarginStart();
         } else {
             return layoutParams.leftMargin;
+        }
+    }
+
+    /**
+     * @see android.view.View#setPaddingRelative(int, int, int, int)
+     */
+    public static void setPaddingRelative(View view, int start, int top, int end, int bottom) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            view.setPaddingRelative(start, top, end, bottom);
+        } else {
+            // Before JB MR1, all layouts are left-to-right, so start == left, etc.
+            view.setPadding(start, top, end, bottom);
+        }
+    }
+
+    /**
+     * @see android.view.View#getPaddingStart()
+     */
+    public static void getPaddingStart(View view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            view.getPaddingStart();
+        } else {
+            // Before JB MR1, all layouts are left-to-right, so start == left.
+            view.getPaddingLeft();
+        }
+    }
+
+    /**
+     * @see android.view.View#getPaddingEnd()
+     */
+    public static void getPaddingEnd(View view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            view.getPaddingEnd();
+        } else {
+            // Before JB MR1, all layouts are left-to-right, so end == right.
+            view.getPaddingRight();
+        }
+    }
+
+    /**
+     * @see android.widget.TextView#setCompoundDrawablesRelative(Drawable, Drawable, Drawable,
+     *      Drawable)
+     */
+    public static void setCompoundDrawablesRelative(TextView textView, Drawable start, Drawable top,
+            Drawable end, Drawable bottom) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            textView.setCompoundDrawablesRelative(start, top, bottom, end);
+        } else {
+            textView.setCompoundDrawables(start, top, bottom, end);
+        }
+    }
+
+    /**
+     * @see android.widget.TextView#setCompoundDrawablesRelativeWithIntrinsicBounds(Drawable,
+     *      Drawable, Drawable, Drawable)
+     */
+    public static void setCompoundDrawablesRelativeWithIntrinsicBounds(TextView textView,
+            Drawable start, Drawable top, Drawable end, Drawable bottom) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            textView.setCompoundDrawablesRelativeWithIntrinsicBounds(start, top, bottom, end);
+        } else {
+            textView.setCompoundDrawablesWithIntrinsicBounds(start, top, bottom, end);
+        }
+    }
+
+    /**
+     * @see android.widget.TextView#setCompoundDrawablesRelativeWithIntrinsicBounds(int, int, int,
+     *      int)
+     */
+    public static void setCompoundDrawablesRelativeWithIntrinsicBounds(TextView textView,
+            int start, int top, int end, int bottom) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            textView.setCompoundDrawablesRelativeWithIntrinsicBounds(start, top, bottom, end);
+        } else {
+            textView.setCompoundDrawablesWithIntrinsicBounds(start, top, bottom, end);
         }
     }
 
