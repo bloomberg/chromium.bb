@@ -341,7 +341,7 @@ def main(argv):
   if not env.getbool('USE_IRT'):
     inputs = UsePrivateLibraries(inputs)
 
-  inputs = FixPrivateLibs(inputs)
+  inputs = ReorderPrivateLibs(inputs)
 
   if env.getbool('RELOCATABLE'):
     bitcode_type = 'po'
@@ -465,52 +465,25 @@ def UsePrivateLibraries(libs):
       result_libs.append(l)
   return result_libs
 
-def FixPrivateLibs(user_libs):
-  """ Private libraries are special: when there's one private library
-  then all libraries that have an equivalent private version should be
-  swapped for their private equivalent, except for the ones that can
-  coexist. Private/non-private coexist by following each other in link
-  order, the non-private one fulfills any lookups the private one fails
-  to implement.
+def ReorderPrivateLibs(libs):
+  """ Place private libraries just before their non-private equivalent
+  if there is one.
   """
-  special_libs = {
-      # Private library name: (public library name, can coexist?)
-      'libnacl_sys_private.a': ('libnacl.a', True),
-      'libpthread_private.a': ('libpthread.a', False),
-      'libnacl_dyncode_private.a': ('libnacl_dyncode.a', False),
+  result_libs = list(libs)
+  bases = {}
+  for l in libs:
+    bases[pathtools.basename(l)] = l
+  lib_map = {
+      'libnacl_sys_private.a': 'libnacl.a',
+      'libpthread_private.a': 'libpthread.a',
+      'libnacl_dyncode_private.a': 'libnacl_dyncode.a'
       }
-
-  # The following code uses a zipped view of (base name, full path) as
-  # well as the unzipped bases and paths.
-  user_libs = [(pathtools.basename(lib_path), lib_path)
-               for lib_path in user_libs]
-  bases_for = lambda libs: zip(*libs)[0]
-  paths_for = lambda libs: zip(*libs)[1]
-
-  # Swap in the private library's base name instead of the public one's
-  # but keep the same path.
-  full_priv_path = (lambda full_pub_path, priv:
-                      pathtools.join(pathtools.dirname(full_pub_path), priv))
-
-  uses_special_libs = set(bases_for(user_libs)) & set(special_libs.keys())
-  if uses_special_libs:
-    for priv_lib, (pub_lib, can_coexist) in special_libs.iteritems():
-      if can_coexist:
-        bases = bases_for(user_libs)
-        if pub_lib in bases and not priv_lib in bases:
-          # The non-private library is present and the private one
-          # isn't. Both can coexist, so insert the private library
-          # before the non-private one.
-          first_lib_idx = bases.index(pub_lib)
-          replacement = (priv_lib, full_priv_path(user_libs[1], priv_lib))
-          user_libs = user_libs.insert(first_lib_idx, replacement)
-      else:
-        # Replace all occurences of the non-private library with the
-        # private one.
-        user_libs = [(priv_lib, full_priv_path(p, priv_lib))
-                     if b == pub_lib else (b, p)
-                     for b, p in user_libs]
-  return list(paths_for(user_libs))
+  for l in libs:
+    base = pathtools.basename(l)
+    if base in lib_map and lib_map[base] in bases:
+      result_libs.remove(l)
+      result_libs.insert(result_libs.index(bases[lib_map[base]]), l)
+  return result_libs
 
 def SplitLinkLine(inputs):
   """ Split the input list into bitcode and native objects (.o, .a)
