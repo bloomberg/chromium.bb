@@ -458,8 +458,9 @@ TEST_F('HistoryWebUITest', 'basicTest', function() {
 
 /**
  * Test bulk deletion of history entries.
+ * Disabled because it is currently very flaky on the Windows XP bot.
  */
-TEST_F('HistoryWebUITest', 'bulkDeletion', function() {
+TEST_F('HistoryWebUITest', 'DISABLED_bulkDeletion', function() {
   var checkboxes = document.querySelectorAll(
       '#results-display input[type=checkbox]');
 
