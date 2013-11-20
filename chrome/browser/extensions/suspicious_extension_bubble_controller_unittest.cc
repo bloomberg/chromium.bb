@@ -123,14 +123,8 @@ class SuspiciousExtensionBubbleTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SuspiciousExtensionBubbleTest);
 };
 
- // The feature this is meant to test is only implemented on Windows.
- #if defined(OS_WIN)
- #define MAYBE_ControllerTest ControllerTest
- #else
- #define MAYBE_ControllerTest DISABLED_ControllerTest
- #endif
-
-TEST_F(SuspiciousExtensionBubbleTest, MAYBE_ControllerTest) {
+// Disabled, see http://crbug.com/321622.
+TEST_F(SuspiciousExtensionBubbleTest, DISABLED_ControllerTest) {
   std::string basic_extension =
       "{\"name\": \"Extension #\","
       "\"version\": \"1.0\","
