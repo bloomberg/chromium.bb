@@ -147,14 +147,14 @@ bool CastSocket::ExtractPeerCert(std::string* cert) {
   bool result = net::X509Certificate::GetDEREncoded(
      ssl_info.cert->os_cert_handle(), cert);
   if (result)
-    DVLOG(1) << "Successfully extracted peer certificate: " << *cert;
+    VLOG(1) << "Successfully extracted peer certificate: " << *cert;
   return result;
 }
 
 int CastSocket::SendAuthChallenge() {
   CastMessage challenge_message;
   CreateAuthChallengeMessage(&challenge_message);
-  DVLOG(1) << "Sending challenge: " << CastMessageToString(challenge_message);
+  VLOG(1) << "Sending challenge: " << CastMessageToString(challenge_message);
   int result = SendMessageInternal(
       challenge_message,
       base::Bind(&CastSocket::OnChallengeEvent, AsWeakPtr()));
@@ -182,7 +182,7 @@ void CastSocket::OnChallengeEvent(int result) {
 void CastSocket::Connect(const net::CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
   int result = net::ERR_CONNECTION_FAILED;
-  DVLOG(1) << "Connect readyState = " << ready_state_;
+  VLOG(1) << "Connect readyState = " << ready_state_;
   if (ready_state_ != READY_STATE_NONE) {
     callback.Run(result);
     return;
@@ -261,7 +261,7 @@ int CastSocket::DoConnectLoop(int result) {
 }
 
 int CastSocket::DoTcpConnect() {
-  DVLOG(1) << "DoTcpConnect";
+  VLOG(1) << "DoTcpConnect";
   next_state_ = CONN_STATE_TCP_CONNECT_COMPLETE;
   tcp_socket_ = CreateTcpSocket();
   return tcp_socket_->Connect(
@@ -269,7 +269,7 @@ int CastSocket::DoTcpConnect() {
 }
 
 int CastSocket::DoTcpConnectComplete(int result) {
-  DVLOG(1) << "DoTcpConnectComplete: " << result;
+  VLOG(1) << "DoTcpConnectComplete: " << result;
   if (result == net::OK) {
     // Enable TCP protocol-level keep-alive.
     bool result = tcp_socket_->SetKeepAlive(true, kTcpKeepAliveDelaySecs);
@@ -280,7 +280,7 @@ int CastSocket::DoTcpConnectComplete(int result) {
 }
 
 int CastSocket::DoSslConnect() {
-  DVLOG(1) << "DoSslConnect";
+  VLOG(1) << "DoSslConnect";
   next_state_ = CONN_STATE_SSL_CONNECT_COMPLETE;
   socket_ = CreateSslSocket();
   return socket_->Connect(
@@ -288,7 +288,7 @@ int CastSocket::DoSslConnect() {
 }
 
 int CastSocket::DoSslConnectComplete(int result) {
-  DVLOG(1) << "DoSslConnectComplete: " << result;
+  VLOG(1) << "DoSslConnectComplete: " << result;
   if (result == net::ERR_CERT_AUTHORITY_INVALID &&
              peer_cert_.empty() &&
              ExtractPeerCert(&peer_cert_)) {
@@ -300,13 +300,13 @@ int CastSocket::DoSslConnectComplete(int result) {
 }
 
 int CastSocket::DoAuthChallengeSend() {
-  DVLOG(1) << "DoAuthChallengeSend";
+  VLOG(1) << "DoAuthChallengeSend";
   next_state_ = CONN_STATE_AUTH_CHALLENGE_SEND_COMPLETE;
   return SendAuthChallenge();
 }
 
 int CastSocket::DoAuthChallengeSendComplete(int result) {
-  DVLOG(1) << "DoAuthChallengeSendComplete: " << result;
+  VLOG(1) << "DoAuthChallengeSendComplete: " << result;
   if (result != net::OK)
     return result;
   next_state_ = CONN_STATE_AUTH_CHALLENGE_REPLY_COMPLETE;
@@ -314,12 +314,12 @@ int CastSocket::DoAuthChallengeSendComplete(int result) {
 }
 
 int CastSocket::DoAuthChallengeReplyComplete(int result) {
-  DVLOG(1) << "DoAuthChallengeReplyComplete: " << result;
+  VLOG(1) << "DoAuthChallengeReplyComplete: " << result;
   if (result != net::OK)
     return result;
   if (!VerifyChallengeReply())
     return net::ERR_FAILED;
-  DVLOG(1) << "Auth challenge verification succeeded";
+  VLOG(1) << "Auth challenge verification succeeded";
   return net::OK;
 }
 
@@ -341,7 +341,7 @@ void CastSocket::DoConnectCallback(int result) {
 
 void CastSocket::Close(const net::CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
-  DVLOG(1) << "Close ReadyState = " << ready_state_;
+  VLOG(1) << "Close ReadyState = " << ready_state_;
   tcp_socket_.reset(NULL);
   socket_.reset(NULL);
   cert_verifier_.reset(NULL);
@@ -353,7 +353,7 @@ void CastSocket::Close(const net::CompletionCallback& callback) {
 void CastSocket::SendMessage(const MessageInfo& message,
                              const net::CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
-  DVLOG(1) << "Send ReadyState " << ready_state_;
+  VLOG(1) << "Send ReadyState " << ready_state_;
   int result = net::ERR_FAILED;
   if (ready_state_ != READY_STATE_OPEN) {
     callback.Run(result);
@@ -371,7 +371,7 @@ void CastSocket::SendMessage(const MessageInfo& message,
 }
 
 int CastSocket::SendMessageInternal(const CastMessage& message_proto,
-                                     const net::CompletionCallback& callback) {
+                                    const net::CompletionCallback& callback) {
   WriteRequest write_request(callback);
   if (!write_request.SetContent(message_proto))
     return net::ERR_FAILED;
@@ -381,14 +381,14 @@ int CastSocket::SendMessageInternal(const CastMessage& message_proto,
 
 int CastSocket::WriteData() {
   DCHECK(CalledOnValidThread());
-  DVLOG(1) << "WriteData q = " << write_queue_.size();
+  VLOG(1) << "WriteData q = " << write_queue_.size();
   if (write_queue_.empty() || write_callback_pending_)
     return net::ERR_FAILED;
 
   WriteRequest& request = write_queue_.front();
 
-  DVLOG(1) << "WriteData byte_count = " << request.io_buffer->size() <<
-    " bytes_written " << request.io_buffer->BytesConsumed();
+  VLOG(1) << "WriteData byte_count = " << request.io_buffer->size()
+          << " bytes_written " << request.io_buffer->BytesConsumed();
 
   write_callback_pending_ = true;
   int result = socket_->Write(
@@ -404,7 +404,7 @@ int CastSocket::WriteData() {
 
 void CastSocket::OnWriteData(int result) {
   DCHECK(CalledOnValidThread());
-  DVLOG(1) << "OnWriteComplete result = " << result;
+  VLOG(1) << "OnWriteComplete result = " << result;
   DCHECK(write_callback_pending_);
   DCHECK(!write_queue_.empty());
   write_callback_pending_ = false;
@@ -414,10 +414,10 @@ void CastSocket::OnWriteData(int result) {
   if (result >= 0) {
     io_buffer->DidConsume(result);
     if (io_buffer->BytesRemaining() > 0) {
-      DVLOG(1) << "OnWriteComplete size = " << io_buffer->size() <<
-        " consumed " << io_buffer->BytesConsumed() <<
-        " remaining " << io_buffer->BytesRemaining() <<
-        " # requests " << write_queue_.size();
+      VLOG(1) << "OnWriteComplete size = " << io_buffer->size()
+              << " consumed " << io_buffer->BytesConsumed()
+              << " remaining " << io_buffer->BytesRemaining()
+              << " # requests " << write_queue_.size();
       WriteData();
       return;
     }
@@ -429,10 +429,10 @@ void CastSocket::OnWriteData(int result) {
   request.callback.Run(result);
   write_queue_.pop();
 
-  DVLOG(1) << "OnWriteComplete size = " << io_buffer->size() <<
-    " consumed " << io_buffer->BytesConsumed() <<
-    " remaining " << io_buffer->BytesRemaining() <<
-    " # requests " << write_queue_.size();
+  VLOG(1) << "OnWriteComplete size = " << io_buffer->size()
+          << " consumed " << io_buffer->BytesConsumed()
+          << " remaining " << io_buffer->BytesRemaining()
+          << " # requests " << write_queue_.size();
 
   if (result < 0) {
     CloseWithError(CHANNEL_ERROR_SOCKET_ERROR);
@@ -467,7 +467,7 @@ int CastSocket::ReadData() {
       current_read_buffer_.get(),
       num_bytes_to_read,
       base::Bind(&CastSocket::OnReadData, AsWeakPtr()));
-  DVLOG(1) << "ReadData result = " << result;
+  VLOG(1) << "ReadData result = " << result;
   if (result > 0) {
     OnReadData(result);
   } else if (result != net::ERR_IO_PENDING) {
@@ -478,9 +478,9 @@ int CastSocket::ReadData() {
 
 void CastSocket::OnReadData(int result) {
   DCHECK(CalledOnValidThread());
-  DVLOG(1) << "OnReadData result = " << result
-           << " header offset = " << header_read_buffer_->offset()
-           << " body offset = " << body_read_buffer_->offset();
+  VLOG(1) << "OnReadData result = " << result
+          << " header offset = " << header_read_buffer_->offset()
+          << " body offset = " << body_read_buffer_->offset();
   read_callback_pending_ = false;
   if (result <= 0) {
     CloseWithError(CHANNEL_ERROR_SOCKET_ERROR);
@@ -515,7 +515,7 @@ bool CastSocket::ProcessHeader() {
     CloseWithError(cast_channel::CHANNEL_ERROR_INVALID_MESSAGE);
     return false;
   }
-  DVLOG(1) << "Parsed header { message_size: " << header.message_size << " }";
+  VLOG(1) << "Parsed header { message_size: " << header.message_size << " }";
   current_message_size_ = header.message_size;
   return true;
 }
@@ -543,7 +543,7 @@ bool CastSocket::ParseMessageFromBody() {
       body_read_buffer_->StartOfBuffer(),
       current_message_size_))
     return false;
-  DVLOG(1) << "Parsed message " << CastMessageToString(message_proto);
+  VLOG(1) << "Parsed message " << CastMessageToString(message_proto);
   // If the message is an auth message then we handle it internally.
   if (IsAuthMessage(message_proto)) {
     challenge_reply_.reset(new CastMessage(message_proto));
@@ -583,7 +583,7 @@ void CastSocket::CloseWithError(ChannelError error) {
 }
 
 bool CastSocket::ParseChannelUrl(const GURL& url) {
-  DVLOG(1) << "url = " + url.spec();
+  VLOG(1) << "url = " + url.spec();
   if (url.SchemeIs(kCastInsecureScheme)) {
     auth_required_ = false;
   } else if (url.SchemeIs(kCastSecureScheme)) {
@@ -609,7 +609,7 @@ bool CastSocket::ParseChannelUrl(const GURL& url) {
   }
   const std::string& ip_address_str = path.substr(2, colon - 2);
   const std::string& port_str = path.substr(colon + 1);
-  DVLOG(1) << "addr " << ip_address_str << " port " << port_str;
+  VLOG(1) << "addr " << ip_address_str << " port " << port_str;
   int port;
   if (!base::StringToInt(port_str, &port))
     return false;
