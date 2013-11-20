@@ -32,6 +32,9 @@ def main(argv):
                         type='int', default='1')
   opt_parser.add_option('--abi', default='x86',
                         help='Platform of emulators to launch (x86 default).')
+  opt_parser.add_option('--api-level', dest='api_level',
+                        help='API level for the image, e.g. 19 for Android 4.4',
+                        type='int', default=constants.ANDROID_SDK_VERSION)
 
   options, _ = opt_parser.parse_args(argv[1:])
 
@@ -40,12 +43,14 @@ def main(argv):
   logging.root.setLevel(logging.INFO)
 
   # Check if KVM is enabled for x86 AVD's and check for x86 system images.
+  # TODO(andrewhayden) Since we can fix all of these with install_emulator_deps
+  # why don't we just run it?
   if options.abi =='x86':
     if not install_emulator_deps.CheckKVM():
       logging.critical('ERROR: KVM must be enabled in BIOS, and installed. '
                        'Enable KVM in BIOS and run install_emulator_deps.py')
       return 1
-    elif not install_emulator_deps.CheckX86Image():
+    elif not install_emulator_deps.CheckX86Image(options.api_level):
       logging.critical('ERROR: System image for x86 AVD not installed. Run '
                        'install_emulator_deps.py')
       return 1
@@ -55,7 +60,13 @@ def main(argv):
                      'install_emulator_deps.py.')
     return 1
 
-  emulator.LaunchEmulators(options.emulator_count, options.abi, True)
+  if not install_emulator_deps.CheckSDKPlatform(options.api_level):
+    logging.critical('ERROR: Emulator SDK missing required target for API %d. '
+                     'Run install_emulator_deps.py.')
+    return 1
+
+  emulator.LaunchEmulators(options.emulator_count, options.abi,
+                           options.api_level, True)
 
 
 if __name__ == '__main__':
