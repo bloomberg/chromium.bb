@@ -1226,7 +1226,7 @@ class ChromiumAndroidDriver(driver.Driver):
             if not err:
                 self._android_commands.run(['shell', 'rm', '-f', device_dump])
 
-            if self._port.filesystem.exists(local_dump):
+            if self._port._filesystem.exists(local_dump):
                 result.append(local_dump)
         return result
 
