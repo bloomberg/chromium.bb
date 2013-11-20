@@ -40,14 +40,17 @@ class Node;
 
 class StaticNodeList FINAL : public NodeList {
 public:
-    static PassRefPtr<StaticNodeList> adopt(Vector<RefPtr<Node> >&);
+    static PassRefPtr<StaticNodeList> adopt(Vector<RefPtr<Node> >& nodes)
+    {
+        RefPtr<StaticNodeList> nodeList = adoptRef(new StaticNodeList);
+        nodeList->m_nodes.swap(nodes);
+        return nodeList.release();
+    }
 
     static PassRefPtr<StaticNodeList> createEmpty()
     {
         return adoptRef(new StaticNodeList);
     }
-
-    virtual ~StaticNodeList();
 
     virtual unsigned length() const OVERRIDE;
     virtual Node* item(unsigned index) const OVERRIDE;
