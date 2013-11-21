@@ -36,10 +36,8 @@ namespace WebCore {
 class CSSFontFace;
 class CSSFontSelector;
 class CSSSegmentedFontFace;
-class FontData;
 class FontDescription;
 class StyleRuleFontFace;
-class Settings;
 
 class CSSSegmentedFontFaceCache {
 public:
@@ -49,7 +47,6 @@ public:
     // a result of egregious spaghettification in CSSFontFace/FontFaceSet.
     void addFontFaceRule(CSSFontSelector*, const StyleRuleFontFace*);
     void removeFontFaceRule(const StyleRuleFontFace*);
-    PassRefPtr<FontData> getFontData(Settings*, const FontDescription&, const AtomicString&);
     CSSSegmentedFontFace* getFontFace(const FontDescription&, const AtomicString& family);
 
     unsigned version() const { return m_version; }

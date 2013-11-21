@@ -161,12 +161,51 @@ void CSSFontSelector::removeFontFaceRule(const StyleRuleFontFace* fontFaceRule)
     m_cssSegmentedFontFaceCache.removeFontFaceRule(fontFaceRule);
 }
 
+static AtomicString familyNameFromSettings(Settings* settings, const FontDescription& fontDescription, const AtomicString& genericFamilyName)
+{
+    if (!settings)
+        return emptyAtom;
+
+    UScriptCode script = fontDescription.script();
+
+    if (fontDescription.genericFamily() == FontDescription::StandardFamily && !fontDescription.isSpecifiedFont())
+        return settings->standardFontFamily(script);
+
+#if OS(ANDROID)
+    return FontCache::getGenericFamilyNameForScript(genericFamilyName, script);
+#else
+    if (genericFamilyName == FontFamilyNames::webkit_serif)
+        return settings->serifFontFamily(script);
+    if (genericFamilyName == FontFamilyNames::webkit_sans_serif)
+        return settings->sansSerifFontFamily(script);
+    if (genericFamilyName == FontFamilyNames::webkit_cursive)
+        return settings->cursiveFontFamily(script);
+    if (genericFamilyName == FontFamilyNames::webkit_fantasy)
+        return settings->fantasyFontFamily(script);
+    if (genericFamilyName == FontFamilyNames::webkit_monospace)
+        return settings->fixedFontFamily(script);
+    if (genericFamilyName == FontFamilyNames::webkit_pictograph)
+        return settings->pictographFontFamily(script);
+    if (genericFamilyName == FontFamilyNames::webkit_standard)
+        return settings->standardFontFamily(script);
+#endif
+    return emptyAtom;
+}
+
 PassRefPtr<FontData> CSSFontSelector::getFontData(const FontDescription& fontDescription, const AtomicString& familyName)
 {
     if (!m_document || !m_document->frame())
         return 0;
 
-    return m_cssSegmentedFontFaceCache.getFontData(m_document->frame()->settings(), fontDescription, familyName);
+    if (CSSSegmentedFontFace* face = m_cssSegmentedFontFaceCache.getFontFace(fontDescription, familyName))
+        return face->getFontData(fontDescription);
+
+    // Try to return the correct font based off our settings, in case we were handed the generic font family name.
+    AtomicString settingsFamilyName = familyNameFromSettings(m_document->frame()->settings(), fontDescription, familyName);
+    if (settingsFamilyName.isEmpty())
+        return 0;
+
+    return fontCache()->getFontResourceData(fontDescription, settingsFamilyName);
 }
 
 CSSSegmentedFontFace* CSSFontSelector::getFontFace(const FontDescription& fontDescription, const AtomicString& familyName)

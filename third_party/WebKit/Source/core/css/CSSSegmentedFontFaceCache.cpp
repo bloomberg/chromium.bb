@@ -38,10 +38,6 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/frame/Frame.h"
-#include "core/page/Settings.h"
-#include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/SimpleFontData.h"
 #include "platform/fonts/FontDescription.h"
 #include "wtf/text/AtomicString.h"
 
@@ -107,39 +103,6 @@ void CSSSegmentedFontFaceCache::removeFontFaceRule(const StyleRuleFontFace* font
     }
     m_styleRuleToFontFace.remove(styleRuleToFontFaceIter);
     m_fonts.clear();
-}
-
-static PassRefPtr<FontData> fontDataForGenericFamily(Settings* settings, const FontDescription& fontDescription, const AtomicString& familyName)
-{
-    if (!settings)
-        return 0;
-
-    AtomicString genericFamily;
-    UScriptCode script = fontDescription.script();
-
-#if OS(ANDROID)
-    genericFamily = FontCache::getGenericFamilyNameForScript(familyName, script);
-#else
-    if (familyName == FontFamilyNames::webkit_serif)
-        genericFamily = settings->serifFontFamily(script);
-    else if (familyName == FontFamilyNames::webkit_sans_serif)
-        genericFamily = settings->sansSerifFontFamily(script);
-    else if (familyName == FontFamilyNames::webkit_cursive)
-        genericFamily = settings->cursiveFontFamily(script);
-    else if (familyName == FontFamilyNames::webkit_fantasy)
-        genericFamily = settings->fantasyFontFamily(script);
-    else if (familyName == FontFamilyNames::webkit_monospace)
-        genericFamily = settings->fixedFontFamily(script);
-    else if (familyName == FontFamilyNames::webkit_pictograph)
-        genericFamily = settings->pictographFontFamily(script);
-    else if (familyName == FontFamilyNames::webkit_standard)
-        genericFamily = settings->standardFontFamily(script);
-#endif
-
-    if (!genericFamily.isEmpty())
-        return fontCache()->getFontResourceData(fontDescription, genericFamily);
-
-    return 0;
 }
 
 static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFontFace* second, FontTraitsMask desiredTraitsMask)
@@ -220,30 +183,6 @@ static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFon
     }
 
     return false;
-}
-
-PassRefPtr<FontData> CSSSegmentedFontFaceCache::getFontData(Settings* settings, const FontDescription& fontDescription, const AtomicString& familyName)
-{
-    if (m_fontFaces.isEmpty()) {
-        if (familyName.startsWith("-webkit-"))
-            return fontDataForGenericFamily(settings, fontDescription, familyName);
-        if (fontDescription.genericFamily() == FontDescription::StandardFamily && !fontDescription.isSpecifiedFont())
-            return fontDataForGenericFamily(settings, fontDescription, "-webkit-standard");
-        return 0;
-    }
-
-    CSSSegmentedFontFace* face = getFontFace(fontDescription, familyName);
-    // If no face was found, then return 0 and let the OS come up with its best match for the name.
-    if (!face) {
-        // If we were handed a generic family, but there was no match, go ahead and return the correct font based off our
-        // settings.
-        if (fontDescription.genericFamily() == FontDescription::StandardFamily && !fontDescription.isSpecifiedFont())
-            return fontDataForGenericFamily(settings, fontDescription, "-webkit-standard");
-        return fontDataForGenericFamily(settings, fontDescription, familyName);
-    }
-
-    // We have a face. Ask it for a font data. If it cannot produce one, it will fail, and the OS will take over.
-    return face->getFontData(fontDescription);
 }
 
 CSSSegmentedFontFace* CSSSegmentedFontFaceCache::getFontFace(const FontDescription& fontDescription, const AtomicString& family)
