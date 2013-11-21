@@ -124,12 +124,17 @@ const int kComputedTitleTopMargin =
 const int kComputedTitleElementSpacing =
     settings::kDescriptionToSwitcherSpace - kButtonPainterInsets - 1;
 
+
+// EntryView ------------------------------------------------------------------
+
 // The view to guarantee the 48px height and place the contents at the
 // middle. It also guarantee the left margin.
 class EntryView : public views::View {
  public:
   EntryView(views::View* contents);
-  virtual ~EntryView(); // Overridden from views::View:
+  virtual ~EntryView();
+
+  // views::View:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
@@ -218,24 +223,26 @@ NotifierGroupMenuButtonBorder::NotifierGroupMenuButtonBorder()
 
 NotifierGroupMenuButtonBorder::~NotifierGroupMenuButtonBorder() {}
 
-// NotifierGroupMenuModel //////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+// NotifierGroupMenuModel -----------------------------------------------------
+
 class NotifierGroupMenuModel : public ui::SimpleMenuModel,
                                public ui::SimpleMenuModel::Delegate {
  public:
   NotifierGroupMenuModel(NotifierSettingsProvider* notifier_settings_provider);
   virtual ~NotifierGroupMenuModel();
 
-  // Overridden from ui::SimpleMenuModel::Delegate:
+  // ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator)
-      OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
  private:
   NotifierSettingsProvider* notifier_settings_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotifierGroupMenuModel);
 };
 
 NotifierGroupMenuModel::NotifierGroupMenuModel(
@@ -258,10 +265,8 @@ NotifierGroupMenuModel::~NotifierGroupMenuModel() {}
 
 bool NotifierGroupMenuModel::IsCommandIdChecked(int command_id) const {
   // If there's no provider, assume only one notifier group - the active one.
-  if (!notifier_settings_provider_)
-    return true;
-
-  return notifier_settings_provider_->IsNotifierGroupActiveAt(command_id);
+  return !notifier_settings_provider_ ||
+      notifier_settings_provider_->IsNotifierGroupActiveAt(command_id);
 }
 
 bool NotifierGroupMenuModel::IsCommandIdEnabled(int command_id) const {
@@ -286,6 +291,9 @@ void NotifierGroupMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
   notifier_settings_provider_->SwitchToNotifierGroup(notifier_group_index);
 }
+
+
+// NotifierSettingsView::NotifierButton ---------------------------------------
 
 // We do not use views::Checkbox class directly because it doesn't support
 // showing 'icon'.
@@ -472,6 +480,9 @@ void NotifierSettingsView::NotifierButton::GridChanged(bool has_learn_more,
 
   Layout();
 }
+
+
+// NotifierSettingsView -------------------------------------------------------
 
 NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
     : title_arrow_(NULL),

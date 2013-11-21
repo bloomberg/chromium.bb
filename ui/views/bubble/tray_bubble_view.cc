@@ -120,8 +120,8 @@ class TrayBubbleBorder : public BubbleBorder {
     const int x = position_relative_to.x() +
         position_relative_to.width() / 2 - border_size.width() / 2;
     // Position the bubble on top of the anchor.
-    const int y = position_relative_to.y() - border_size.height()
-        + insets.height() - kBubbleSpacing;
+    const int y = position_relative_to.y() - border_size.height() +
+        insets.height() - kBubbleSpacing;
     return gfx::Rect(x, y, border_size.width(), border_size.height());
   }
 

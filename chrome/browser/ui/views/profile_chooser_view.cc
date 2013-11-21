@@ -121,46 +121,58 @@ class BackgroundColorHoverButton : public views::TextButton {
   BackgroundColorHoverButton(views::ButtonListener* listener,
                              const base::string16& text,
                              const gfx::ImageSkia& normal_icon,
-                             const gfx::ImageSkia& hover_icon)
-      : views::TextButton(listener, text) {
-    set_border(new HorizontalPaddingButtonBorder);
-    set_min_height(kButtonHeight);
-    set_icon_text_spacing(views::kItemLabelSpacing);
-    SetIcon(normal_icon);
-    SetHoverIcon(hover_icon);
-    SetPushedIcon(hover_icon);
-    SetHoverColor(GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
-    OnHighlightStateChanged();
-  };
-
-  virtual ~BackgroundColorHoverButton(){
-  };
+                             const gfx::ImageSkia& hover_icon);
+  virtual ~BackgroundColorHoverButton();
 
  private:
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
-    views::TextButton::OnMouseEntered(event);
-    OnHighlightStateChanged();
-  };
+  // views::TextButton:
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
-    views::TextButton::OnMouseExited(event);
-    OnHighlightStateChanged();
-  };
-
-  void OnHighlightStateChanged() {
-    bool is_highlighted = (state() == views::TextButton::STATE_PRESSED) ||
-        (state() == views::TextButton::STATE_HOVERED) || HasFocus();
-    ui::NativeTheme::ColorId color_id = is_highlighted ?
-        ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor :
-        ui::NativeTheme::kColorId_MenuBackgroundColor;
-    set_background(views::Background::CreateSolidBackground(
-        GetNativeTheme()->GetSystemColor(color_id)));
-    SchedulePaint();
-  };
+  void OnHighlightStateChanged();
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundColorHoverButton);
 };
+
+BackgroundColorHoverButton::BackgroundColorHoverButton(
+    views::ButtonListener* listener,
+    const string16& text,
+    const gfx::ImageSkia& normal_icon,
+    const gfx::ImageSkia& hover_icon)
+    : views::TextButton(listener, text) {
+  set_border(new HorizontalPaddingButtonBorder);
+  set_min_height(kButtonHeight);
+  set_icon_text_spacing(views::kItemLabelSpacing);
+  SetIcon(normal_icon);
+  SetHoverIcon(hover_icon);
+  SetPushedIcon(hover_icon);
+  SetHoverColor(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
+  OnHighlightStateChanged();
+}
+
+BackgroundColorHoverButton::~BackgroundColorHoverButton() {
+}
+
+void BackgroundColorHoverButton::OnMouseEntered(const ui::MouseEvent& event) {
+  views::TextButton::OnMouseEntered(event);
+  OnHighlightStateChanged();
+}
+
+void BackgroundColorHoverButton::OnMouseExited(const ui::MouseEvent& event) {
+  views::TextButton::OnMouseExited(event);
+  OnHighlightStateChanged();
+}
+
+void BackgroundColorHoverButton::OnHighlightStateChanged() {
+  bool is_highlighted = (state() == views::TextButton::STATE_PRESSED) ||
+      (state() == views::TextButton::STATE_HOVERED) || HasFocus();
+  set_background(views::Background::CreateSolidBackground(
+      GetNativeTheme()->GetSystemColor(is_highlighted ?
+          ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor :
+          ui::NativeTheme::kColorId_MenuBackgroundColor)));
+  SchedulePaint();
+}
 
 }  // namespace
 

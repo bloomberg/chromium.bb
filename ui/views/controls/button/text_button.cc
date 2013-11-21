@@ -65,11 +65,8 @@ const char TextButtonBase::kViewClassName[] = "TextButtonBase";
 // static
 const char TextButton::kViewClassName[] = "TextButton";
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// TextButtonBorder
-//
-////////////////////////////////////////////////////////////////////////////////
+
+// TextButtonBorder -----------------------------------------------------------
 
 TextButtonBorder::TextButtonBorder() {
 }
@@ -93,11 +90,8 @@ const TextButtonBorder* TextButtonBorder::AsTextButtonBorder() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// TextButtonDefaultBorder - constructors, destructors, initialization
-//
-////////////////////////////////////////////////////////////////////////////////
+
+// TextButtonDefaultBorder ----------------------------------------------------
 
 TextButtonDefaultBorder::TextButtonDefaultBorder()
     : vertical_padding_(kPreferredPaddingVertical) {
@@ -110,11 +104,6 @@ TextButtonDefaultBorder::TextButtonDefaultBorder()
 TextButtonDefaultBorder::~TextButtonDefaultBorder() {
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// TextButtonDefaultBorder - painting
-//
-////////////////////////////////////////////////////////////////////////////////
 void TextButtonDefaultBorder::Paint(const View& view, gfx::Canvas* canvas) {
   const TextButton* button = static_cast<const TextButton*>(&view);
   int state = button->state();
@@ -146,11 +135,8 @@ void TextButtonDefaultBorder::Paint(const View& view, gfx::Canvas* canvas) {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// TextButtonNativeThemeBorder
-//
-////////////////////////////////////////////////////////////////////////////////
+
+// TextButtonNativeThemeBorder ------------------------------------------------
 
 TextButtonNativeThemeBorder::TextButtonNativeThemeBorder(
     NativeThemeDelegate* delegate)
@@ -193,8 +179,8 @@ void TextButtonNativeThemeBorder::Paint(const View& view, gfx::Canvas* canvas) {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// TextButtonBase, public:
+
+// TextButtonBase -------------------------------------------------------------
 
 TextButtonBase::TextButtonBase(ButtonListener* listener, const string16& text)
     : CustomButton(listener),
@@ -507,9 +493,6 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// TextButtonBase, View overrides:
-
 gfx::Size TextButtonBase::GetMinimumSize() {
   return max_text_size_;
 }
@@ -544,9 +527,6 @@ void TextButtonBase::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   }
   UpdateColor();
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// TextButtonBase, NativeThemeDelegate overrides:
 
 gfx::Rect TextButtonBase::GetThemePaintRect() const {
   return GetLocalBounds();
@@ -592,11 +572,8 @@ ui::NativeTheme::State TextButtonBase::GetForegroundThemeState(
   return ui::NativeTheme::kHovered;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// TextButton
-//
-////////////////////////////////////////////////////////////////////////////////
+
+// TextButton -----------------------------------------------------------------
 
 TextButton::TextButton(ButtonListener* listener, const string16& text)
     : TextButtonBase(listener, text),

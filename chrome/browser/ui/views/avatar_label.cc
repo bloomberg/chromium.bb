@@ -25,6 +25,7 @@ class AvatarLabelBorder: public views::TextButtonBorder {
  public:
   explicit AvatarLabelBorder();
 
+  // views::TextButtonBorder:
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
 
  private:

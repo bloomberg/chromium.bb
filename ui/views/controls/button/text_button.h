@@ -20,14 +20,8 @@
 
 namespace views {
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// TextButtonBorder
-//
-//  An abstract Border subclass for TextButtons that allows configurable insets
-//  for the button.
-//
-////////////////////////////////////////////////////////////////////////////////
+// A Border subclass for TextButtons that allows configurable insets for the
+// button.
 class VIEWS_EXPORT TextButtonBorder : public Border {
  public:
   TextButtonBorder();
@@ -38,7 +32,7 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
   // Border:
   virtual gfx::Insets GetInsets() const OVERRIDE;
 
-private:
+ private:
   // Border:
   virtual TextButtonBorder* AsTextButtonBorder() OVERRIDE;
   virtual const TextButtonBorder* AsTextButtonBorder() const OVERRIDE;
@@ -48,18 +42,13 @@ private:
   DISALLOW_COPY_AND_ASSIGN(TextButtonBorder);
 };
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// TextButtonDefaultBorder
-//
-//  A Border subclass that paints a TextButton's background layer -
-//  basically the button frame in the hot/pushed states.
+
+// A Border subclass that paints a TextButton's background layer -- basically
+// the button frame in the hot/pushed states.
 //
 // Note that this type of button is not focusable by default and will not be
 // part of the focus chain.  Call set_focusable(true) to make it part of the
 // focus chain.
-//
-////////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT TextButtonDefaultBorder : public TextButtonBorder {
  public:
   TextButtonDefaultBorder();
@@ -71,7 +60,7 @@ class VIEWS_EXPORT TextButtonDefaultBorder : public TextButtonBorder {
   void set_pushed_painter(Painter* painter) { pushed_painter_.reset(painter); }
 
  private:
-  // Implementation of Border:
+  // TextButtonBorder:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
 
   scoped_ptr<Painter> normal_painter_;
@@ -84,21 +73,15 @@ class VIEWS_EXPORT TextButtonDefaultBorder : public TextButtonBorder {
 };
 
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// TextButtonNativeThemeBorder
-//
-//  A Border subclass that paints a TextButton's background layer using the
-//  platform's native theme look.  This handles normal/disabled/hot/pressed
-//  states, with possible animation between states.
-//
-////////////////////////////////////////////////////////////////////////////////
+// A Border subclass that paints a TextButton's background layer using the
+// platform's native theme look.  This handles normal/disabled/hot/pressed
+// states, with possible animation between states.
 class VIEWS_EXPORT TextButtonNativeThemeBorder : public TextButtonBorder {
  public:
   explicit TextButtonNativeThemeBorder(NativeThemeDelegate* delegate);
   virtual ~TextButtonNativeThemeBorder();
 
-  // Implementation of Border:
+  // TextButtonBorder:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
 
  private:
@@ -109,16 +92,10 @@ class VIEWS_EXPORT TextButtonNativeThemeBorder : public TextButtonBorder {
 };
 
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// TextButtonBase
-//
-//  A base class for different types of buttons, like push buttons, radio
-//  buttons, and checkboxes, that do not depend on native components for
-//  look and feel. TextButton reserves space for the largest string
-//  passed to SetText. To reset the cached max size invoke ClearMaxTextSize.
-//
-////////////////////////////////////////////////////////////////////////////////
+// A base class for different types of buttons, like push buttons, radio
+// buttons, and checkboxes, that do not depend on native components for look and
+// feel. TextButton reserves space for the largest string passed to SetText. To
+// reset the cached max size invoke ClearMaxTextSize.
 class VIEWS_EXPORT TextButtonBase : public CustomButton,
                                     public NativeThemeDelegate {
  public:
@@ -310,15 +287,10 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   DISALLOW_COPY_AND_ASSIGN(TextButtonBase);
 };
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// TextButton
-//
-//  A button which displays text and/or and icon that can be changed in
-//  response to actions. TextButton reserves space for the largest string
-//  passed to SetText. To reset the cached max size invoke ClearMaxTextSize.
-//
-////////////////////////////////////////////////////////////////////////////////
+
+// A button which displays text and/or and icon that can be changed in response
+// to actions. TextButton reserves space for the largest string passed to
+// SetText. To reset the cached max size invoke ClearMaxTextSize.
 class VIEWS_EXPORT TextButton : public TextButtonBase {
  public:
   // The button's class name.

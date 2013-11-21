@@ -160,8 +160,8 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   int GetArrowOffset(const gfx::Size& border_size) const;
 
   // Overridden from Border:
-  virtual gfx::Insets GetInsets() const OVERRIDE;
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Insets GetInsets() const OVERRIDE;
 
  private:
   gfx::ImageSkia* GetArrowImage() const;

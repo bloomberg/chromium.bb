@@ -240,24 +240,6 @@ int BubbleBorder::GetArrowOffset(const gfx::Size& border_size) const {
   return std::max(min, std::min(arrow_offset_, edge_length - min));
 }
 
-gfx::Insets BubbleBorder::GetInsets() const {
-  // The insets contain the stroke and shadow pixels outside the bubble fill.
-  const int inset = GetBorderThickness();
-  if (arrow_paint_type_ == PAINT_NONE)
-    return gfx::Insets(inset, inset, inset, inset);
-  const int inset_with_arrow = std::max(inset, images_->arrow_thickness);
-  if (is_arrow_on_horizontal(arrow_)) {
-    if (is_arrow_on_top(arrow_))
-      return gfx::Insets(inset_with_arrow, inset, inset, inset);
-    return gfx::Insets(inset, inset, inset_with_arrow, inset);
-  } else if (has_arrow(arrow_)) {
-    if (is_arrow_on_left(arrow_))
-      return gfx::Insets(inset, inset_with_arrow, inset, inset);
-    return gfx::Insets(inset, inset, inset, inset_with_arrow);
-  }
-  return gfx::Insets(inset, inset, inset, inset);
-}
-
 void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   gfx::Rect bounds(view.GetContentsBounds());
   bounds.Inset(-GetBorderThickness(), -GetBorderThickness());
@@ -277,15 +259,31 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   DrawArrow(canvas, arrow_bounds);
 }
 
+gfx::Insets BubbleBorder::GetInsets() const {
+  // The insets contain the stroke and shadow pixels outside the bubble fill.
+  const int inset = GetBorderThickness();
+  if ((arrow_paint_type_ == PAINT_NONE) || !has_arrow(arrow_))
+    return gfx::Insets(inset, inset, inset, inset);
+
+  int first_inset = inset;
+  int second_inset = std::max(inset, images_->arrow_thickness);
+  if (is_arrow_on_horizontal(arrow_) ?
+      is_arrow_on_top(arrow_) : is_arrow_on_left(arrow_))
+    std::swap(first_inset, second_inset);
+  return is_arrow_on_horizontal(arrow_) ?
+      gfx::Insets(first_inset, inset, second_inset, inset) :
+      gfx::Insets(inset, first_inset, inset, second_inset);
+}
+
 gfx::ImageSkia* BubbleBorder::GetArrowImage() const {
+  if (!has_arrow(arrow_))
+    return NULL;
   if (is_arrow_on_horizontal(arrow_)) {
     return is_arrow_on_top(arrow_) ?
         &images_->top_arrow : &images_->bottom_arrow;
-  } else if (has_arrow(arrow_)) {
-    return is_arrow_on_left(arrow_) ?
-        &images_->left_arrow : &images_->right_arrow;
   }
-  return NULL;
+  return is_arrow_on_left(arrow_) ?
+      &images_->left_arrow : &images_->right_arrow;
 }
 
 gfx::Rect BubbleBorder::GetArrowRect(const gfx::Rect& bounds) const {
