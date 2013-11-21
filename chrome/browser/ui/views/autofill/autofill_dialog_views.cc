@@ -392,10 +392,6 @@ class LoadingAnimationView : public views::View,
  public:
   explicit LoadingAnimationView(const base::string16& text) :
       container_(new views::View()) {
-    set_background(views::Background::CreateSolidBackground(
-        GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_DialogBackground)));
-
     AddChildView(container_);
     container_->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
@@ -415,6 +411,8 @@ class LoadingAnimationView : public views::View,
       dot->SetFont(font);
       container_->AddChildView(dot);
     }
+
+    OnNativeThemeChanged(GetNativeTheme());
   }
 
   virtual ~LoadingAnimationView() {}
@@ -442,6 +440,11 @@ class LoadingAnimationView : public views::View,
       views::View* dot = container_->child_at(i + 1);
       dot->SetY(dot->y() + animation_->GetCurrentValueForDot(i));
     }
+  }
+
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE {
+    set_background(views::Background::CreateSolidBackground(
+        theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
   }
 
   // gfx::AnimationDelegate implementation.
@@ -562,11 +565,10 @@ AutofillDialogViews::OverlayView::OverlayView(
   message_view_->SetAutoColorReadabilityEnabled(false);
   message_view_->SetMultiLine(true);
 
-  set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
-      GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
-
   AddChildView(image_view_);
   AddChildView(message_view_);
+
+  OnNativeThemeChanged(GetNativeTheme());
 }
 
 AutofillDialogViews::OverlayView::~OverlayView() {}
@@ -668,6 +670,12 @@ void AutofillDialogViews::OverlayView::OnPaint(gfx::Canvas* canvas) {
   }
 
   PaintChildren(canvas);
+}
+
+void AutofillDialogViews::OverlayView::OnNativeThemeChanged(
+    const ui::NativeTheme* theme) {
+  set_background(views::Background::CreateSolidBackground(
+      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
 }
 
 views::BubbleBorder* AutofillDialogViews::OverlayView::GetBubbleBorder() {

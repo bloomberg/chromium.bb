@@ -245,6 +245,7 @@ class AutofillDialogViews : public AutofillDialogView,
     virtual void Layout() OVERRIDE;
     virtual const char* GetClassName() const OVERRIDE;
     virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+    virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
    private:
     // Gets the border of the non-client frame view as a BubbleBorder.
