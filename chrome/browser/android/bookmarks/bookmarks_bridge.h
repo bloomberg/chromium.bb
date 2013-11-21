@@ -62,6 +62,7 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
   string16 GetTitle(const BookmarkNode* node) const;
   bool IsReachable(const BookmarkNode* node) const;
   bool IsLoaded() const;
+  bool IsFolderAvailable(const BookmarkNode* folder) const;
   void NotifyIfDoneLoading();
 
   // Override BaseBookmarkModelObserver.
@@ -98,6 +99,7 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
   virtual void PartnerShimLoaded(PartnerBookmarksShim* shim) OVERRIDE;
   virtual void ShimBeingDeleted(PartnerBookmarksShim* shim) OVERRIDE;
 
+  Profile* profile_;
   JavaObjectWeakGlobalRef weak_java_ref_;
   BookmarkModel* bookmark_model_;  // weak
 

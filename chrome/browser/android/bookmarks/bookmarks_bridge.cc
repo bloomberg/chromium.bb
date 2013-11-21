@@ -12,6 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/BookmarksBridge_jni.h"
@@ -35,18 +37,18 @@ BookmarksBridge::BookmarksBridge(JNIEnv* env,
       bookmark_model_(NULL),
       partner_bookmarks_shim_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
+  profile_ = ProfileAndroid::FromProfileAndroid(j_profile);
+  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
 
   // Registers the notifications we are interested.
   bookmark_model_->AddObserver(this);
 
   // Create the partner Bookmarks shim as early as possible (but don't attach).
   partner_bookmarks_shim_ = PartnerBookmarksShim::BuildForBrowserContext(
-      chrome::GetBrowserContextRedirectedInIncognito(profile));
+      chrome::GetBrowserContextRedirectedInIncognito(profile_));
   partner_bookmarks_shim_->AddObserver(this);
 
-  managed_bookmarks_shim_.reset(new ManagedBookmarksShim(profile->GetPrefs()));
+  managed_bookmarks_shim_.reset(new ManagedBookmarksShim(profile_->GetPrefs()));
   managed_bookmarks_shim_->AddObserver(this);
 
   NotifyIfDoneLoading();
@@ -119,6 +121,8 @@ void BookmarksBridge::GetBookmarksForFolder(JNIEnv* env,
   // Get the folder contents
   for (int i = 0; i < folder->child_count(); ++i) {
     const BookmarkNode* node = folder->GetChild(i);
+    if (!IsFolderAvailable(node))
+      continue;
     ExtractBookmarkNodeInformation(node, j_result_obj);
   }
 
@@ -238,8 +242,10 @@ const BookmarkNode* BookmarksBridge::GetNodeByID(long node_id,
 const BookmarkNode* BookmarksBridge::GetFolderWithFallback(
     long folder_id, int type) {
   const BookmarkNode* folder = GetNodeByID(folder_id, type);
-  if (!folder || folder->type() == BookmarkNode::URL)
+  if (!folder || folder->type() == BookmarkNode::URL ||
+      !IsFolderAvailable(folder)) {
     folder = bookmark_model_->mobile_node();
+  }
   return folder;
 }
 
@@ -288,6 +294,14 @@ bool BookmarksBridge::IsReachable(const BookmarkNode* node) const {
 
 bool BookmarksBridge::IsLoaded() const {
   return (bookmark_model_->loaded() && partner_bookmarks_shim_->IsLoaded());
+}
+
+bool BookmarksBridge::IsFolderAvailable(
+    const BookmarkNode* folder) const {
+  return (folder->type() != BookmarkNode::BOOKMARK_BAR &&
+      folder->type() != BookmarkNode::OTHER_NODE) ||
+      !SigninManagerFactory::GetForProfile(
+          profile_)->GetAuthenticatedUsername().empty();
 }
 
 void BookmarksBridge::NotifyIfDoneLoading() {
