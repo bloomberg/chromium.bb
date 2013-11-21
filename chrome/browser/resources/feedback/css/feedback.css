@@ -88,7 +88,7 @@ body {
 }
 
 .content #screenshot-image {
-  -webkit-margin-start: 30px;
+  -webkit-margin-start: 100px;
   display: block;
   height: 60px;
   margin-top: 40px;
@@ -96,9 +96,20 @@ body {
 }
 
 .content #screenshot-image:hover {
-  height: 150px;
+  -webkit-margin-start: 80px;
+  height: 125px;
   margin-top: 80px;
   z-index: 1;
+}
+
+.content #screenshot-image.wide-screen {
+  height: auto;
+  width: 100px;
+}
+
+.content #screenshot-image.wide-screen:hover {
+  height: auto;
+  width: 200px;
 }
 
 .content #privacy-note {

@@ -17,6 +17,11 @@ var MAX_ATTACH_FILE_SIZE = 3 * 1024 * 1024;
  */
 var CONTENT_MARGIN_HEIGHT = 40;
 
+/** @type {number}
+ * @const
+ */
+var MAX_SCREENSHOT_WIDTH = 100;
+
 var attachedFileBlob = null;
 var lastReader = null;
 
@@ -257,6 +262,8 @@ function initialize() {
 
         var screenshotDataUrl = screenshotCanvas.toDataURL('image/png');
         $('screenshot-image').src = screenshotDataUrl;
+        $('screenshot-image').classList.toggle('wide-screen',
+            $('screenshot-image').width > MAX_SCREENSHOT_WIDTH);
         feedbackInfo.screenshot = dataUrlToBlob(screenshotDataUrl);
       });
 
