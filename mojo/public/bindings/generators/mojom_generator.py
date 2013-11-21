@@ -22,6 +22,9 @@ def CamelToUnderscores(camel):
   s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', camel)
   return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
 
+def StudlyCapsToCamel(studly):
+  return studly[0].lower() + studly[1:]
+
 class Generator(object):
   # Pass |output_dir| to emit files to disk. Omit |output_dir| to echo all files
   # to stdout.

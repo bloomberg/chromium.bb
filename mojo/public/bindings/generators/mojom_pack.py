@@ -128,6 +128,9 @@ def GetByteLayout(packed_struct):
     bytes[packed_field.offset].packed_fields.append(packed_field)
     limit_of_previous_field = packed_field.offset + packed_field.size
 
+  for i in xrange(limit_of_previous_field, len(bytes)):
+    bytes[i].is_padding = True
+
   for byte in bytes:
     # A given byte cannot both be padding and have a fields packed into it.
     assert not (byte.is_padding and byte.packed_fields)

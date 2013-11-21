@@ -142,11 +142,11 @@ define([
     gtest.expectEqual(foo2.y, foo.y,
         "foo2.y is " + foo2.y);
 
-    gtest.expectEqual(foo2.a, foo.a & 1,
+    gtest.expectEqual(foo2.a, foo.a & 1 ? true : false,
         "foo2.a is " + foo2.a);
-    gtest.expectEqual(foo2.b, foo.b & 1,
+    gtest.expectEqual(foo2.b, foo.b & 1 ? true : false,
         "foo2.b is " + foo2.b);
-    gtest.expectEqual(foo2.c, foo.c & 1,
+    gtest.expectEqual(foo2.c, foo.c & 1 ? true : false,
         "foo2.c is " + foo2.c);
 
     barMatches(foo2.bar, foo.bar);

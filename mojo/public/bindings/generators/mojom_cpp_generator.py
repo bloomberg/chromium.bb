@@ -191,8 +191,7 @@ class CPPGenerator(mojom_generator.Generator):
 
   def WriteTemplateToFile(self, template_name, **substitutions):
     template = self.GetTemplate(template_name)
-    filename = template_name.replace(
-        "module", mojom_generator.CamelToUnderscores(self.module.name))
+    filename = template_name.replace("module", self.module.name)
     substitutions['YEAR'] = datetime.date.today().year
     substitutions['NAMESPACE'] = self.module.namespace
     if self.output_dir is None:
@@ -321,17 +320,16 @@ class CPPGenerator(mojom_generator.Generator):
         INTERFACE_PROXY_DECLARATIONS = self.GetInterfaceProxyDeclarations(),
         INTERFACE_STUB_DECLARATIONS = self.GetInterfaceStubDeclarations())
 
-  def GetParamsDefinition(self, interface, method, next_id):
+  def GetParamsDefinition(self, interface, method):
     struct = mojom_generator.GetStructFromMethod(interface, method)
     method_name = "k%s_%s_Name" % (interface.name, method.name)
-    if method.ordinal is not None:
-      next_id = method.ordinal
+    assert method.ordinal is not None
     params_def = self.GetStructDeclaration(
         struct.name,
         mojom_pack.PackedStruct(struct),
         self.GetTemplate("params_definition"),
-        {'METHOD_NAME': method_name, 'METHOD_ID': next_id})
-    return params_def, next_id + 1
+        {'METHOD_NAME': method_name, 'METHOD_ID': method.ordinal})
+    return params_def
 
   def GetStructDefinitions(self):
     template = self.GetTemplate("struct_definition")
@@ -425,10 +423,8 @@ class CPPGenerator(mojom_generator.Generator):
   def GetParamsDefinitions(self):
     params_defs = []
     for interface in self.module.interfaces:
-      next_id = 0
       for method in interface.methods:
-        (params_def, next_id) = \
-            self.GetParamsDefinition(interface, method, next_id)
+        params_def = self.GetParamsDefinition(interface, method)
         params_defs.append(params_def)
     return '\n'.join(params_defs)
 

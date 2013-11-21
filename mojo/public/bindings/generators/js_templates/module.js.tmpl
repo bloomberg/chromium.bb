@@ -73,7 +73,7 @@ define([
   }
 
 {%- for method in interface.methods %}
-  {{interface.name}}Proxy.prototype.{{method.name}} = function(
+  {{interface.name}}Proxy.prototype.{{method.name|stylize_method}} = function(
 {%- for parameter in method.parameters -%}
 {{parameter.name}}{% if not loop.last %}, {% endif %}
 {%- endfor %}) {
@@ -100,7 +100,7 @@ define([
 {%- for method in interface.methods %}
     case k{{interface.name}}_{{method.name}}_Name:
       var params = reader.decodeStruct({{interface.name}}_{{method.name}}_Params);
-      this.{{method.name}}(
+      this.{{method.name|stylize_method}}(
 {%- for parameter in method.parameters -%}
 params.{{parameter.name}}{% if not loop.last %}, {% endif %}
 {%- endfor %});

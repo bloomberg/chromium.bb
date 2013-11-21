@@ -161,6 +161,13 @@ def ModuleFromData(data):
     lambda interface: InterfaceFromData(kinds, interface), data['interfaces'])
   return module
 
-
-
-
+def OrderedModuleFromData(data):
+  module = ModuleFromData(data)
+  next_interface_ordinal = 0
+  for interface in module.interfaces:
+    next_ordinal = 0
+    for method in interface.methods:
+      if method.ordinal is None:
+        method.ordinal = next_ordinal
+      next_ordinal = method.ordinal + 1
+  return module

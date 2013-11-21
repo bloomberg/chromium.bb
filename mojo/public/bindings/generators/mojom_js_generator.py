@@ -7,10 +7,10 @@
 import os
 import mojom
 import mojom_pack
+import mojom_generator
 
 from functools import partial
 from template_expander import UseJinja
-from mojom_generator import Generator, GetStructFromMethod, CamelToUnderscores
 
 _kind_to_default_value = {
   mojom.BOOL:   "false",
@@ -21,7 +21,7 @@ _kind_to_default_value = {
   mojom.INT32:  "0",
   mojom.UINT32: "0",
   mojom.FLOAT:  "0",
-  mojom.HANDLE: "codec.kInvalidHandle",
+  mojom.HANDLE: "core.kInvalidHandle",
   mojom.INT64:  "0",
   mojom.UINT64: "0",
   mojom.DOUBLE: "0",
@@ -90,7 +90,7 @@ _kind_to_decode_snippet = {
   mojom.INT64:  "read64()",
   mojom.UINT64: "read64()",
   mojom.DOUBLE: "decodeDouble()",
-  mojom.STRING: "decodeString()",
+  mojom.STRING: "decodeStringPointer()",
 }
 
 
@@ -116,7 +116,7 @@ _kind_to_encode_snippet = {
   mojom.INT64:  "write64(",
   mojom.UINT64: "write64(",
   mojom.DOUBLE: "encodeDouble(",
-  mojom.STRING: "encodeString(",
+  mojom.STRING: "encodeStringPointer(",
 }
 
 
@@ -139,19 +139,20 @@ def GetStructInfo(exported, struct):
   }
 
 
-class JSGenerator(Generator):
+class JSGenerator(mojom_generator.Generator):
   filters = {
     "default_value": DefaultValue,
     "payload_size": PayloadSize,
     "decode_snippet": DecodeSnippet,
     "encode_snippet": EncodeSnippet,
+    "stylize_method": mojom_generator.StudlyCapsToCamel,
   }
 
   def GetStructsFromMethods(self):
     result = []
     for interface in self.module.interfaces:
       for method in interface.methods:
-        result.append(GetStructFromMethod(interface, method))
+        result.append(mojom_generator.GetStructFromMethod(interface, method))
     return map(partial(GetStructInfo, False), result)
 
   def GetStructs(self):
@@ -168,7 +169,7 @@ class JSGenerator(Generator):
     if self.output_dir is None:
       print contents
       return
-    filename = "%s.js" % CamelToUnderscores(self.module.name)
+    filename = "%s.js" % self.module.name
     with open(os.path.join(self.output_dir, filename), "w+") as f:
       f.write(contents)
 

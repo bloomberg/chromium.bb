@@ -37,7 +37,7 @@ def Main():
     # at least avoid generating the serialized Mojom IR.
     tree = mojo_parser.Parse(filename)
     mojom = mojo_translate.Translate(tree, name)
-    module = mojom_data.ModuleFromData(mojom)
+    module = mojom_data.OrderedModuleFromData(mojom)
     cpp = mojom_cpp_generator.CPPGenerator(
         module, options.include_dir, options.output_dir)
     cpp.GenerateFiles()
