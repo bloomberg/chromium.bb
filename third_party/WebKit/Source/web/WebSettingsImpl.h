@@ -114,6 +114,7 @@ public:
     virtual void setJavaScriptCanAccessClipboard(bool);
     virtual void setJavaScriptCanOpenWindowsAutomatically(bool);
     virtual void setJavaScriptEnabled(bool);
+    virtual void setLayerSquashingEnabled(bool);
     virtual void setLayoutFallbackWidth(int);
     virtual void setLoadsImagesAutomatically(bool);
     virtual void setLoadWithOverviewMode(bool);

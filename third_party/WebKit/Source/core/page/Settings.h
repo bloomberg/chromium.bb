@@ -165,6 +165,11 @@ public:
     void setCompositorDrivenAcceleratedScrollingEnabled(bool enabled) { m_compositorDrivenAcceleratedScrollingEnabled = enabled; }
     bool isCompositorDrivenAcceleratedScrollingEnabled() const { return m_compositorDrivenAcceleratedScrollingEnabled; }
 
+    // FIXME: This is a temporary flag and should be removed when squashing is ready.
+    // (crbug.com/261605)
+    void setLayerSquashingEnabled(bool enabled) { m_layerSquashingEnabled = enabled; }
+    bool isLayerSquashingEnabled() const { return m_layerSquashingEnabled; }
+
 private:
     explicit Settings(Page*);
 
@@ -202,6 +207,9 @@ private:
     // FIXME: This is a temporary flag and should be removed once accelerated
     // overflow scroll is ready (crbug.com/254111).
     bool m_compositorDrivenAcceleratedScrollingEnabled : 1;
+
+    // FIXME: This is a temporary flag and should be removed when squashing is ready.
+    bool m_layerSquashingEnabled : 1;
 
     Timer<Settings> m_setImageLoadingSettingsTimer;
     void imageLoadingSettingsTimerFired(Timer<Settings>*);

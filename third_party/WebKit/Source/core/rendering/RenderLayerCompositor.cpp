@@ -274,6 +274,14 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
     m_forceCompositingMode = forceCompositingMode;
 }
 
+bool RenderLayerCompositor::isLayerSquashingEnabled() const
+{
+    if (Settings* settings = m_renderView->document().settings())
+        return settings->isLayerSquashingEnabled();
+
+    return false;
+}
+
 bool RenderLayerCompositor::canRender3DTransforms() const
 {
     return hasAcceleratedCompositing() && (m_compositingTriggers & ChromeClient::ThreeDTransformTrigger);

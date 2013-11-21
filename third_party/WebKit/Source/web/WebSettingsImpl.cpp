@@ -564,6 +564,11 @@ void WebSettingsImpl::setHyperlinkAuditingEnabled(bool enabled)
     m_settings->setHyperlinkAuditingEnabled(enabled);
 }
 
+void WebSettingsImpl::setLayerSquashingEnabled(bool enabled)
+{
+    m_settings->setLayerSquashingEnabled(enabled);
+}
+
 void WebSettingsImpl::setLayoutFallbackWidth(int width)
 {
     m_settings->setLayoutFallbackWidth(width);

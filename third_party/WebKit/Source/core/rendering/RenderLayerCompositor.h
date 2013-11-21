@@ -75,6 +75,7 @@ public:
 
     // Returns true if the accelerated compositing is enabled
     bool hasAcceleratedCompositing() const { return m_hasAcceleratedCompositing; }
+    bool isLayerSquashingEnabled() const;
 
     bool canRender3DTransforms() const;
 

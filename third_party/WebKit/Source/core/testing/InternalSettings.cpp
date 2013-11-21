@@ -75,6 +75,7 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_shouldDisplayTextDescriptions(settings->shouldDisplayTextDescriptions())
     , m_defaultVideoPosterURL(settings->defaultVideoPosterURL())
     , m_originalCompositorDrivenAcceleratedScrollEnabled(settings->isCompositorDrivenAcceleratedScrollingEnabled())
+    , m_originalLayerSquashingEnabled(settings->isLayerSquashingEnabled())
     , m_originalPasswordGenerationDecorationEnabled(settings->passwordGenerationDecorationEnabled())
 {
 }
@@ -99,6 +100,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setShouldDisplayTextDescriptions(m_shouldDisplayTextDescriptions);
     settings->setDefaultVideoPosterURL(m_defaultVideoPosterURL);
     settings->setCompositorDrivenAcceleratedScrollingEnabled(m_originalCompositorDrivenAcceleratedScrollEnabled);
+    settings->setLayerSquashingEnabled(m_originalLayerSquashingEnabled);
     settings->setPasswordGenerationDecorationEnabled(m_originalPasswordGenerationDecorationEnabled);
     settings->resetFontFamilies();
 }
@@ -204,6 +206,14 @@ void InternalSettings::setCompositorDrivenAcceleratedScrollingEnabled(bool enabl
 {
     InternalSettingsGuardForSettings();
     settings()->setCompositorDrivenAcceleratedScrollingEnabled(enabled);
+}
+
+// FIXME: This is a temporary flag and should be removed once squashing is
+// ready (crbug.com/261605).
+void InternalSettings::setLayerSquashingEnabled(bool enabled, ExceptionState& exceptionState)
+{
+    InternalSettingsGuardForSettings();
+    settings()->setLayerSquashingEnabled(enabled);
 }
 
 typedef void (Settings::*SetFontFamilyFunction)(const AtomicString&, UScriptCode);

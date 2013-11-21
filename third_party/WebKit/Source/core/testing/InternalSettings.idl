@@ -50,6 +50,10 @@
     // overflow scroll is ready (crbug.com/254111).
     [RaisesException] void setCompositorDrivenAcceleratedScrollingEnabled(boolean enabled);
 
+    // FIXME: This is a temporary flag and should be removed once squashing is
+    // ready (crbug.com/261605).
+    [RaisesException] void setLayerSquashingEnabled(boolean enabled);
+
     // FIXME: The following are RuntimeEnabledFeatures and likely
     // cannot be changed after process start.  These setters should
     // be removed or moved onto internals.runtimeFlags:
