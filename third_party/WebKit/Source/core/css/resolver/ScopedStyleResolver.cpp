@@ -43,20 +43,23 @@
 
 namespace WebCore {
 
-ContainerNode* ScopedStyleResolver::scopingNodeFor(const CSSStyleSheet* sheet)
+ContainerNode* ScopedStyleResolver::scopingNodeFor(Document& document, const CSSStyleSheet* sheet)
 {
     ASSERT(sheet);
 
-    Document* document = sheet->ownerDocument();
-    if (!document)
+    Document* sheetDocument = sheet->ownerDocument();
+    if (!sheetDocument)
         return 0;
     Node* ownerNode = sheet->ownerNode();
-    if (!ownerNode || !ownerNode->hasTagName(HTMLNames::styleTag))
-        return 0;
+    if (!ownerNode || !isHTMLStyleElement(ownerNode))
+        return &document;
 
     HTMLStyleElement* styleElement = toHTMLStyleElement(ownerNode);
-    if (!styleElement->scoped())
-        return styleElement->isInShadowTree() ? styleElement->containingShadowRoot() : 0;
+    if (!styleElement->scoped()) {
+        if (styleElement->isInShadowTree())
+            return styleElement->containingShadowRoot();
+        return &document;
+    }
 
     ContainerNode* parent = styleElement->parentNode();
     if (!parent)

@@ -162,7 +162,8 @@ public:
 
     ScopedStyleResolver* ensureScopedStyleResolver(ContainerNode* scope)
     {
-        return m_styleTree.ensureScopedStyleResolver(scope ? *scope : document());
+        ASSERT(scope);
+        return m_styleTree.ensureScopedStyleResolver(*scope);
     }
 
     void styleTreeResolveScopedKeyframesRules(const Element* element, Vector<ScopedStyleResolver*, 8>& resolvers)

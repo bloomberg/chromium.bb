@@ -47,7 +47,7 @@ class ScopedStyleResolver {
 public:
     static PassOwnPtr<ScopedStyleResolver> create(ContainerNode& scopingNode) { return adoptPtr(new ScopedStyleResolver(scopingNode)); }
 
-    static ContainerNode* scopingNodeFor(const CSSStyleSheet*);
+    static ContainerNode* scopingNodeFor(Document&, const CSSStyleSheet*);
 
     const ContainerNode& scopingNode() const { return m_scopingNode; }
     const TreeScope& treeScope() const { return m_scopingNode.treeScope(); }

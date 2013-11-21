@@ -108,12 +108,6 @@ using namespace HTMLNames;
 
 RenderStyle* StyleResolver::s_styleNotYetAvailable;
 
-inline bool isDocumentScope(const ContainerNode* scope)
-{
-    // FIXME: scope should not be null. scope should be a ShadowRoot or a Document.
-    return !scope || scope->isDocumentNode();
-}
-
 static StylePropertySet* leftToRightDeclaration()
 {
     DEFINE_STATIC_REF(MutableStylePropertySet, leftToRightDecl, (MutableStylePropertySet::create()));
@@ -211,8 +205,8 @@ void StyleResolver::appendPendingAuthorStyleSheets()
             continue;
 
         StyleSheetContents* sheet = cssSheet->contents();
-        ContainerNode* scopingNode = ScopedStyleResolver::scopingNodeFor(cssSheet);
-        if (!scopingNode && cssSheet->ownerNode() && cssSheet->ownerNode()->isInShadowTree())
+        ContainerNode* scopingNode = ScopedStyleResolver::scopingNodeFor(document(), cssSheet);
+        if (!scopingNode)
             continue;
 
         ScopedStyleResolver* resolver = ensureScopedStyleResolver(scopingNode);
@@ -236,8 +230,8 @@ void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefP
             continue;
 
         StyleSheetContents* sheet = cssSheet->contents();
-        ContainerNode* scopingNode = ScopedStyleResolver::scopingNodeFor(cssSheet);
-        if (!scopingNode && cssSheet->ownerNode() && cssSheet->ownerNode()->isInShadowTree())
+        ContainerNode* scopingNode = ScopedStyleResolver::scopingNodeFor(document(), cssSheet);
+        if (!scopingNode)
             continue;
 
         ScopedStyleResolver* resolver = ensureScopedStyleResolver(scopingNode);
