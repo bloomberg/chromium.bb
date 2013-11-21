@@ -125,9 +125,19 @@ bool StyleSheetCollection::activeLoadingStyleSheetLoaded(const Vector<RefPtr<CSS
 
 static bool styleSheetContentsHasFontFaceRule(Vector<StyleSheetContents*> sheets)
 {
-    for (unsigned i =  0; i < sheets.size(); ++i) {
+    for (unsigned i = 0; i < sheets.size(); ++i) {
         ASSERT(sheets[i]);
         if (sheets[i]->hasFontFaceRule())
+            return true;
+    }
+    return false;
+}
+
+static bool cssStyleSheetHasFontFaceRule(const Vector<RefPtr<CSSStyleSheet> > sheets)
+{
+    for (unsigned i = 0; i < sheets.size(); ++i) {
+        ASSERT(sheets[i]);
+        if (sheets[i]->contents()->hasFontFaceRule())
             return true;
     }
     return false;
@@ -156,6 +166,12 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
                 change.styleResolverUpdateType = ResetStyleResolverAndFontSelector;
                 return;
             }
+            // FIXME: since currently all stylesheets are re-added after reseting styleresolver,
+            // fontSelector should be always reset. After creating RuleSet for each StyleSheetContents,
+            // we can avoid appending all stylesheetcontents in reset case.
+            // So we can remove "styleSheetContentsHasFontFaceRule(newSheets)".
+            if (cssStyleSheetHasFontFaceRule(newStyleSheets))
+                change.styleResolverUpdateType = ResetStyleResolverAndFontSelector;
             change.styleResolverUpdateType = Reset;
         }
     }
