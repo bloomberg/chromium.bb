@@ -12,7 +12,7 @@ namespace test {
 
 class MathCalculatorImpl : public math::CalculatorStub {
  public:
-  explicit MathCalculatorImpl(Handle pipe)
+  explicit MathCalculatorImpl(const MessagePipeHandle& pipe)
       : ui_(pipe),
         total_(0.0) {
     ui_.SetPeer(this);
@@ -39,7 +39,7 @@ class MathCalculatorImpl : public math::CalculatorStub {
 
 class MathCalculatorUIImpl : public math::CalculatorUIStub {
  public:
-  explicit MathCalculatorUIImpl(Handle pipe)
+  explicit MathCalculatorUIImpl(const MessagePipeHandle& pipe)
       : calculator_(pipe),
         output_(0.0) {
     calculator_.SetPeer(this);
@@ -82,8 +82,6 @@ class BindingsRemotePtrTest : public testing::Test {
   }
 
   virtual ~BindingsRemotePtrTest() {
-    Close(pipe0_);
-    Close(pipe1_);
   }
 
   void PumpMessages() {
@@ -91,8 +89,8 @@ class BindingsRemotePtrTest : public testing::Test {
   }
 
  protected:
-  Handle pipe0_;
-  Handle pipe1_;
+  ScopedMessagePipeHandle pipe0_;
+  ScopedMessagePipeHandle pipe1_;
 
  private:
   SimpleBindingsSupport bindings_support_;

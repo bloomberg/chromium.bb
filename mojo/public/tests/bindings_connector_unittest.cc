@@ -39,9 +39,7 @@ class MessageAccumulator : public MessageReceiver {
 
 class BindingsConnectorTest : public testing::Test {
  public:
-  BindingsConnectorTest()
-      : handle0_(kInvalidHandle),
-        handle1_(kInvalidHandle) {
+  BindingsConnectorTest() {
   }
 
   virtual void SetUp() MOJO_OVERRIDE {
@@ -49,8 +47,6 @@ class BindingsConnectorTest : public testing::Test {
   }
 
   virtual void TearDown() MOJO_OVERRIDE {
-    Close(handle0_);
-    Close(handle1_);
   }
 
   void AllocMessage(const char* text, Message* message) {
@@ -67,8 +63,8 @@ class BindingsConnectorTest : public testing::Test {
   }
 
  protected:
-  Handle handle0_;
-  Handle handle1_;
+  ScopedMessagePipeHandle handle0_;
+  ScopedMessagePipeHandle handle1_;
 
  private:
   SimpleBindingsSupport bindings_support_;
@@ -164,7 +160,7 @@ TEST_F(BindingsConnectorTest, WriteToClosedPipe) {
   Message message;
   AllocMessage(kText, &message);
 
-  Close(handle0_);  // Close the handle before writing to it.
+  Close(handle0_.Pass());  // Close the handle before writing to it.
 
   bool ok = connector0.Accept(&message);
   EXPECT_FALSE(ok);
@@ -182,9 +178,9 @@ TEST_F(BindingsConnectorTest, MessageWithHandles) {
   Message message;
   AllocMessage(kText, &message);
 
-  Handle handles[2];
+  ScopedMessagePipeHandle handles[2];
   CreateMessagePipe(&handles[0], &handles[1]);
-  message.handles.push_back(handles[0]);
+  message.handles.push_back(handles[0].release());
 
   connector0.Accept(&message);
 
@@ -208,7 +204,9 @@ TEST_F(BindingsConnectorTest, MessageWithHandles) {
 
   // Now send a message to the transferred handle and confirm it's sent through
   // to the orginal pipe.
-  Connector connector_received(message_received.handles[0]);
+  // TODO(vtl): Do we need a better way of "downcasting" the handle types?
+  Connector connector_received(
+      MessagePipeHandle(message_received.handles[0].value()));
   Connector connector_original(handles[1]);
 
   AllocMessage(kText, &message);

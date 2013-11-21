@@ -13,7 +13,7 @@ namespace mojo {
 
 // ----------------------------------------------------------------------------
 
-Connector::Connector(Handle message_pipe)
+Connector::Connector(const MessagePipeHandle& message_pipe)
     : message_pipe_(message_pipe),
       incoming_receiver_(NULL),
       error_(false) {
@@ -73,12 +73,12 @@ void Connector::ReadMore() {
     MojoResult rv;
 
     uint32_t num_bytes = 0, num_handles = 0;
-    rv = ReadMessage(message_pipe_,
-                     NULL,
-                     &num_bytes,
-                     NULL,
-                     &num_handles,
-                     MOJO_READ_MESSAGE_FLAG_NONE);
+    rv = ReadMessageRaw(message_pipe_,
+                        NULL,
+                        &num_bytes,
+                        NULL,
+                        &num_handles,
+                        MOJO_READ_MESSAGE_FLAG_NONE);
     if (rv == MOJO_RESULT_NOT_FOUND) {
       WaitToReadMore();
       break;
@@ -92,12 +92,13 @@ void Connector::ReadMore() {
     message.data = static_cast<MessageData*>(malloc(num_bytes));
     message.handles.resize(num_handles);
 
-    rv = ReadMessage(message_pipe_,
-                     message.data,
-                     &num_bytes,
-                     message.handles.empty() ? NULL : &message.handles[0],
-                     &num_handles,
-                     MOJO_READ_MESSAGE_FLAG_NONE);
+    rv = ReadMessageRaw(message_pipe_,
+                        message.data,
+                        &num_bytes,
+                        message.handles.empty() ? NULL :
+                            reinterpret_cast<MojoHandle*>(&message.handles[0]),
+                        &num_handles,
+                        MOJO_READ_MESSAGE_FLAG_NONE);
     if (rv != MOJO_RESULT_OK) {
       error_ = true;
       break;
@@ -121,17 +122,18 @@ void Connector::WriteMore() {
 }
 
 void Connector::WriteOne(Message* message, bool* wait_to_write) {
-  // TODO(darin): WriteMessage will eventually start generating an error that
+  // TODO(darin): WriteMessageRaw will eventually start generating an error that
   // it cannot accept more data. In that case, we'll need to wait on the pipe
   // to determine when we can try writing again. This flag will be set to true
   // in that case.
   *wait_to_write = false;
 
-  MojoResult rv = WriteMessage(
+  MojoResult rv = WriteMessageRaw(
       message_pipe_,
       message->data,
       message->data->header.num_bytes,
-      message->handles.empty() ? NULL : &message->handles[0],
+      message->handles.empty() ? NULL :
+          reinterpret_cast<const MojoHandle*>(&message->handles[0]),
       static_cast<uint32_t>(message->handles.size()),
       MOJO_WRITE_MESSAGE_FLAG_NONE);
   if (rv == MOJO_RESULT_OK) {

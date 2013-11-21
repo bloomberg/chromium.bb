@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/examples/hello_world_service/hello_world_service_impl.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/system/core_cpp.h"
 #include "mojo/shell/loader.h"
 
 namespace base {
@@ -48,7 +48,8 @@ class AppContainer
 
   Context* context_;
   base::FilePath app_path_;
-  Handle app_handle_raw_;
+  ScopedMessagePipeHandle shell_handle_;
+  ScopedMessagePipeHandle app_handle_;
   base::Closure ack_closure_;
   scoped_ptr<Loader::Job> request_;
   scoped_ptr<base::DelegateSimpleThread> thread_;

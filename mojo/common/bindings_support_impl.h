@@ -22,7 +22,7 @@ class MOJO_COMMON_EXPORT BindingsSupportImpl
   virtual ~BindingsSupportImpl();
 
   // BindingsSupport methods:
-  virtual AsyncWaitID AsyncWait(Handle handle, MojoWaitFlags flags,
+  virtual AsyncWaitID AsyncWait(const Handle& handle, MojoWaitFlags flags,
                                 AsyncWaitCallback* callback) OVERRIDE;
   virtual void CancelWait(AsyncWaitID async_wait_id) OVERRIDE;
 

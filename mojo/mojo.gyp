@@ -20,7 +20,6 @@
         'mojo_system_unittests',
         'mojo_shell_lib',
         'mojo_shell',
-        'mojo_utility',
         'mojo_js',
         'sample_app',
         'mojo_bindings',
@@ -128,6 +127,7 @@
         'public/tests/bindings_remote_ptr_unittest.cc',
         'public/tests/buffer_unittest.cc',
         'public/tests/math_calculator.mojom',
+        'public/tests/system_core_cpp_unittest.cc',
         'public/tests/system_core_unittest.cc',
       ],
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
@@ -231,7 +231,6 @@
         '../url/url.gyp:url_lib',
         'mojo_bindings',
         'mojo_system',
-        'mojo_utility',
         'native_viewport',
         'hello_world_service_impl',
       ],
@@ -287,17 +286,6 @@
             4267,
           ],
         }],
-      ],
-    },
-    {
-      'target_name': 'mojo_utility',
-      'type': 'static_library',
-      'dependencies': [
-        'mojo_system'
-      ],
-      'sources': [
-        'public/utility/scoped_handle.cc',
-        'public/utility/scoped_handle.h',
       ],
     },
     {

@@ -42,7 +42,7 @@ Foo* MakeFoo(mojo::ScratchBuffer* buf) {
 
   mojo::Array<mojo::Handle>* files = mojo::Array<mojo::Handle>::New(buf, 4);
   for (size_t i = 0; i < files->size(); ++i)
-    (*files)[i].value = static_cast<MojoHandle>(0xFFFF - i);
+    (*files)[i].set_value(static_cast<MojoHandle>(0xFFFF - i));
 
   Foo* foo = Foo::New(buf);
   foo->set_name(name);
@@ -97,7 +97,7 @@ void CheckFoo(const Foo* foo) {
   EXPECT_EQ(4u, foo->files()->size());
   for (size_t i = 0; i < foo->files()->size(); ++i)
     EXPECT_EQ(static_cast<MojoHandle>(0xFFFF - i),
-              foo->files()->at(i).value) << i;
+              foo->files()->at(i).value()) << i;
 }
 
 
@@ -123,7 +123,7 @@ static void Print(int depth, const char* name, uint8_t value) {
 
 static void Print(int depth, const char* name, mojo::Handle value) {
   PrintSpacer(depth);
-  printf("%s: 0x%x\n", name, value.value);
+  printf("%s: 0x%x\n", name, value.value());
 }
 
 static void Print(int depth, const char* name, const mojo::String* str) {
@@ -202,7 +202,7 @@ class ServiceImpl : public ServiceStub {
     // We mainly check that we're given the expected arguments.
     CheckFoo(foo);
     EXPECT_TRUE(baz);
-    EXPECT_EQ(static_cast<MojoHandle>(10), port.value);
+    EXPECT_EQ(static_cast<MojoHandle>(10), port.value());
 
     // Also dump the Foo structure and all of its members.
     // TODO(vtl): Make it optional, so that the test spews less?
@@ -249,7 +249,7 @@ TEST(BindingsSampleTest, Basic) {
   Foo* foo = MakeFoo(&buf);
   CheckFoo(foo);
 
-  mojo::Handle port = { 10 };
+  mojo::Handle port(static_cast<MojoHandle>(10));
 
   service->Frobinate(foo, true, port);
 }

@@ -46,13 +46,13 @@ bool ValidatePointer(const void* ptr, const Message& message) {
 
 void EncodeHandle(Handle* handle, std::vector<Handle>* handles) {
   handles->push_back(*handle);
-  handle->value = static_cast<MojoHandle>(handles->size() - 1);
+  handle->set_value(static_cast<MojoHandle>(handles->size() - 1));
 }
 
 bool DecodeHandle(Handle* handle, const std::vector<Handle>& handles) {
-  if (handle->value >= handles.size())
+  if (handle->value() >= handles.size())
     return false;
-  *handle = handles[handle->value];
+  *handle = handles[handle->value()];
   return true;
 }
 

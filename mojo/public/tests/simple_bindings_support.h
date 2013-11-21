@@ -17,7 +17,7 @@ class SimpleBindingsSupport : public BindingsSupport {
   SimpleBindingsSupport();
   virtual ~SimpleBindingsSupport();
 
-  virtual AsyncWaitID AsyncWait(Handle handle,
+  virtual AsyncWaitID AsyncWait(const Handle& handle,
                                 MojoWaitFlags flags,
                                 AsyncWaitCallback* callback) MOJO_OVERRIDE;
   virtual void CancelWait(AsyncWaitID async_wait_id) MOJO_OVERRIDE;
@@ -28,7 +28,7 @@ class SimpleBindingsSupport : public BindingsSupport {
   void Process();
 
  private:
-  bool IsReady(Handle handle, MojoWaitFlags flags, MojoResult* result);
+  bool IsReady(const Handle& handle, MojoWaitFlags flags, MojoResult* result);
 
   struct Waiter {
     Handle handle;

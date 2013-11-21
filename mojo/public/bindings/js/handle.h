@@ -6,14 +6,14 @@
 #define MOJO_PUBLIC_BINDINGS_JS_HANDLE_H_
 
 #include "gin/converter.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/system/core_cpp.h"
 
 namespace gin {
 
 template<>
 struct Converter<mojo::Handle> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
-                                    mojo::Handle val);
+                                    const mojo::Handle& val);
   static bool FromV8(v8::Handle<v8::Value> val,
                      mojo::Handle* out);
 };

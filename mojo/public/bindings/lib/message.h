@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "mojo/public/system/core.h"
+#include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
 
@@ -38,6 +38,8 @@ class Message {
   void Swap(Message* other);
 
   MessageData* data;  // Heap-allocated using malloc.
+  // TODO(vtl): Should these be ScopedHandles? How does that interact with
+  // encoding/decoding?
   std::vector<Handle> handles;
 
  private:

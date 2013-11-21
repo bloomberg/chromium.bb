@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "gin/gin.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/system/core_cpp.h"
 #include "mojo/public/system/macros.h"
 
 #if defined(WIN32)
@@ -16,8 +16,7 @@
 #define MOJO_APPS_JS_EXPORT __attribute__((visibility("default")))
 #endif
 
-extern "C" MOJO_APPS_JS_EXPORT MojoResult CDECL MojoMain(
-    mojo::Handle pipe) {
+extern "C" MOJO_APPS_JS_EXPORT MojoResult CDECL MojoMain(MojoHandle pipe) {
   gin::Gin instance;
   // TODO(abarth): Load JS off the network and execute it.
   return MOJO_RESULT_OK;

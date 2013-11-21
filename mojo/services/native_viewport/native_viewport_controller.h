@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "mojo/public/system/core.h"
+#include "mojo/public/system/core_cpp.h"
 #include "mojo/services/native_viewport/native_viewport.h"
 
 namespace gpu {
@@ -23,7 +23,7 @@ class NativeViewportController : public services::NativeViewportDelegate {
   //             mojo_shell and the loaded app. This should really be hidden
   //             behind the bindings layer, when that comes up.
   NativeViewportController(shell::Context* context,
-                           Handle pipe);
+                           const MessagePipeHandle& pipe);
   virtual ~NativeViewportController();
 
   void Close();
@@ -40,7 +40,7 @@ class NativeViewportController : public services::NativeViewportDelegate {
 
   void SendString(const std::string& string);
 
-  Handle pipe_;
+  MessagePipeHandle pipe_;
   scoped_ptr<NativeViewport> native_viewport_;
   scoped_ptr<gpu::GLInProcessContext> gl_context_;
 

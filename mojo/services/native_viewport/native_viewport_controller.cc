@@ -18,7 +18,7 @@ namespace mojo {
 namespace services {
 
 NativeViewportController::NativeViewportController(
-    shell::Context* context, Handle pipe)
+    shell::Context* context, const MessagePipeHandle& pipe)
     : pipe_(pipe) {
   native_viewport_ = NativeViewport::Create(context, this);
   native_viewport_->Init();
@@ -73,8 +73,9 @@ void NativeViewportController::OnDestroyed() {
 
 void NativeViewportController::SendString(const std::string& string) {
   DCHECK_LT(string.size() + 1, std::numeric_limits<uint32_t>::max());
-  WriteMessage(pipe_, string.c_str(), static_cast<uint32_t>(string.size() + 1),
-               NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
+  WriteMessageRaw(pipe_, string.c_str(),
+                  static_cast<uint32_t>(string.size() + 1),
+                  NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
 }
 
 }  // namespace services

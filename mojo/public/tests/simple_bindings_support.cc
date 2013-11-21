@@ -21,7 +21,7 @@ SimpleBindingsSupport::~SimpleBindingsSupport() {
 }
 
 BindingsSupport::AsyncWaitID SimpleBindingsSupport::AsyncWait(
-    Handle handle,
+    const Handle& handle,
     MojoWaitFlags flags,
     AsyncWaitCallback* callback) {
   Waiter* waiter = new Waiter();
@@ -77,7 +77,7 @@ void SimpleBindingsSupport::Process() {
   }
 }
 
-bool SimpleBindingsSupport::IsReady(Handle handle, MojoWaitFlags flags,
+bool SimpleBindingsSupport::IsReady(const Handle& handle, MojoWaitFlags flags,
                                     MojoResult* result) {
   *result = Wait(handle, flags, 0);
   return *result != MOJO_RESULT_DEADLINE_EXCEEDED;

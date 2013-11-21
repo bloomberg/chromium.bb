@@ -31,7 +31,7 @@ class Service_Frobinate_Params {
   bool baz() const { return baz_; }
   mojo::Handle port() const {
     // NOTE: port is an optional field!
-    return _header_.num_fields >= 3 ? port_ : mojo::kInvalidHandle;
+    return _header_.num_fields >= 3 ? port_ : mojo::Handle();
   }
 
  private:

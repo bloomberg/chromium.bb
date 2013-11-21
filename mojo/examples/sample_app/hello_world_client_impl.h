@@ -13,7 +13,7 @@ namespace examples {
 
 class HelloWorldClientImpl : public HelloWorldClientStub {
  public:
-  explicit HelloWorldClientImpl(mojo::Handle pipe);
+  explicit HelloWorldClientImpl(const MessagePipeHandle& pipe);
   virtual ~HelloWorldClientImpl();
 
   virtual void DidReceiveGreeting(int32_t result) MOJO_OVERRIDE;
@@ -23,7 +23,7 @@ class HelloWorldClientImpl : public HelloWorldClientStub {
   }
 
  private:
-  mojo::RemotePtr<HelloWorldService> service_;
+  RemotePtr<HelloWorldService> service_;
 };
 
 }  // examples

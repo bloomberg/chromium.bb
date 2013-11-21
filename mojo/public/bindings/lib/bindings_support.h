@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_BINDINGS_LIB_BINDINGS_SUPPORT_H_
 #define MOJO_PUBLIC_BINDINGS_LIB_BINDINGS_SUPPORT_H_
 
-#include "mojo/public/system/core.h"
+#include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
 
@@ -28,7 +28,7 @@ class BindingsSupport {
   // of MojoWait to the given AsyncWaitCallback on the current thread.  Returns
   // an AsyncWaitID that can be used with CancelWait to stop waiting. This
   // identifier becomes invalid once the callback runs.
-  virtual AsyncWaitID AsyncWait(Handle handle,
+  virtual AsyncWaitID AsyncWait(const Handle& handle,
                                 MojoWaitFlags flags,
                                 AsyncWaitCallback* callback) = 0;
 

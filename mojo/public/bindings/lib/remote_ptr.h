@@ -18,7 +18,7 @@ namespace mojo {
 //
 //   class FooClientImpl : public FooClientStub {
 //    public:
-//     explicit FooClientImpl(mojo::Handle message_pipe)
+//     explicit FooClientImpl(const mojo::MessagePipeHandle& message_pipe)
 //         : foo_(message_pipe) {
 //       foo_.SetPeer(this);
 //       foo_.Ping();
@@ -34,7 +34,7 @@ namespace mojo {
 //
 //   class FooImpl : public FooStub {
 //    public:
-//     explicit FooImpl(mojo::Handle message_pipe)
+//     explicit FooImpl(const mojo::MessagePipeHandle& message_pipe)
 //         : client_(message_pipe) {
 //       client_.SetPeer(this);
 //     }
@@ -48,7 +48,7 @@ namespace mojo {
 template <typename S>
 class RemotePtr {
  public:
-  explicit RemotePtr(Handle message_pipe)
+  explicit RemotePtr(const MessagePipeHandle& message_pipe)
       : connector_(message_pipe),
         proxy_(&connector_) {
   }

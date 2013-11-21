@@ -13,12 +13,12 @@ namespace examples {
 
 class HelloWorldServiceImpl : public HelloWorldServiceStub {
  public:
-  explicit HelloWorldServiceImpl(mojo::Handle pipe);
+  explicit HelloWorldServiceImpl(const MessagePipeHandle& pipe);
   virtual ~HelloWorldServiceImpl();
-  virtual void Greeting(const mojo::String* greeting) MOJO_OVERRIDE;
+  virtual void Greeting(const String* greeting) MOJO_OVERRIDE;
 
  private:
-  mojo::RemotePtr<HelloWorldClient> client_;
+  RemotePtr<HelloWorldClient> client_;
 };
 
 }  // examples

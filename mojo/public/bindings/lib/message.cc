@@ -16,7 +16,7 @@ Message::Message()
 
 Message::~Message() {
   free(data);
-  std::for_each(handles.begin(), handles.end(), Close);
+  std::for_each(handles.begin(), handles.end(), CloseRaw);
 }
 
 void Message::Swap(Message* other) {

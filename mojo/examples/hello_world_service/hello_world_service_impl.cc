@@ -5,17 +5,18 @@
 #include "mojo/examples/hello_world_service/hello_world_service_impl.h"
 
 #include <string>
+
 #include "base/logging.h"
 
 namespace mojo {
 namespace examples {
 
-HelloWorldServiceImpl::HelloWorldServiceImpl(mojo::Handle pipe)
+HelloWorldServiceImpl::HelloWorldServiceImpl(const MessagePipeHandle& pipe)
     : client_(pipe) {
   client_.SetPeer(this);
 }
 
-void HelloWorldServiceImpl::Greeting(const mojo::String* greeting) {
+void HelloWorldServiceImpl::Greeting(const String* greeting) {
   LOG(INFO) << greeting->To<std::string>();
   client_->DidReceiveGreeting(42);
 }

@@ -20,17 +20,17 @@ namespace {
 void Close(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
 
-  mojo::Handle handle = mojo::kInvalidHandle;
+  mojo::Handle handle;
   if (!args.GetNext(&handle))
     return args.ThrowError();
 
-  args.Return(mojo::Close(handle));
+  args.Return(mojo::CloseRaw(handle));
 }
 
 void Wait(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
 
-  mojo::Handle handle = mojo::kInvalidHandle;
+  mojo::Handle handle;
   MojoWaitFlags flags = MOJO_WAIT_FLAG_NONE;
   MojoDeadline deadline = MOJO_DEADLINE_INDEFINITE;
 
@@ -56,31 +56,26 @@ void WaitMany(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return args.ThrowError();
   }
 
-  if (handles.size() != flags.size())
-    return args.ThrowTypeError("Arrays must have the same length.");
-
-  args.Return(mojo::WaitMany(handles.data(), flags.data(),
-                             static_cast<uint32_t>(handles.size()), deadline));
+  args.Return(mojo::WaitMany(handles, flags, deadline));
 }
 
 void CreateMessagePipe(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
 
-  mojo::Handle handle_0 = mojo::kInvalidHandle;
-  mojo::Handle handle_1 = mojo::kInvalidHandle;
-  MojoResult result = mojo::CreateMessagePipe(&handle_0, &handle_1);
+  mojo::ScopedMessagePipeHandle handle_0;
+  mojo::ScopedMessagePipeHandle handle_1;
+  mojo::CreateMessagePipe(&handle_0, &handle_1);
 
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(info.GetIsolate());
-  dictionary.Set("result", result);
-  dictionary.Set("handle0", handle_0);
-  dictionary.Set("handle1", handle_1);
+  dictionary.Set("handle0", static_cast<mojo::Handle>(handle_0.release()));
+  dictionary.Set("handle1", static_cast<mojo::Handle>(handle_1.release()));
   args.Return(dictionary);
 }
 
 void WriteMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
 
-  mojo::Handle handle = mojo::kInvalidHandle;
+  mojo::Handle handle;
   gin::ArrayBufferView buffer(args.isolate());
   std::vector<mojo::Handle> handles;
   MojoWriteMessageFlags flags = MOJO_WRITE_MESSAGE_FLAG_NONE;
@@ -92,17 +87,17 @@ void WriteMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return args.ThrowError();
   }
 
-  args.Return(mojo::WriteMessage(handle, buffer.bytes(),
-                                 static_cast<uint32_t>(buffer.num_bytes()),
-                                 handles.data(),
-                                 static_cast<uint32_t>(handles.size()),
-                                 flags));
+  args.Return(mojo::WriteMessageRaw(
+      MessagePipeHandle(handle.value()), buffer.bytes(),
+      static_cast<uint32_t>(buffer.num_bytes()),
+      handles.empty() ? NULL : reinterpret_cast<const MojoHandle*>(&handles[0]),
+      static_cast<uint32_t>(handles.size()), flags));
 }
 
 void ReadMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
 
-  mojo::Handle handle = mojo::kInvalidHandle;
+  mojo::Handle handle;
   gin::ArrayBufferView buffer(args.isolate());
   uint32_t num_handles = 0;
   MojoReadMessageFlags flags = MOJO_READ_MESSAGE_FLAG_NONE;
@@ -116,8 +111,10 @@ void ReadMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   uint32_t num_bytes = static_cast<uint32_t>(buffer.num_bytes());
   std::vector<mojo::Handle> handles(num_handles);
-  MojoResult result = mojo::ReadMessage(handle, buffer.bytes(), &num_bytes,
-                                        handles.data(), &num_handles, flags);
+  MojoResult result = mojo::ReadMessageRaw(
+      MessagePipeHandle(handle.value()), buffer.bytes(), &num_bytes,
+      handles.empty() ? NULL : reinterpret_cast<MojoHandle*>(&handles[0]),
+      &num_handles, flags);
   handles.resize(num_handles);
 
   // TODO(abarth): We should benchmark this codepath to make sure it's ok to
@@ -156,8 +153,10 @@ v8::Local<v8::ObjectTemplate> Core::GetTemplate(v8::Isolate* isolate) {
     templ->Set(gin::StringToSymbol(isolate, "readMessage"),
                v8::FunctionTemplate::New(ReadMessage));
 
+    // TODO(vtl): Change name of "kInvalidHandle", now that there's no such C++
+    // constant?
     templ->Set(gin::StringToSymbol(isolate, "kInvalidHandle"),
-               gin::ConvertToV8(isolate, mojo::kInvalidHandle));
+               gin::ConvertToV8(isolate, mojo::Handle()));
 
     templ->Set(gin::StringToSymbol(isolate, "RESULT_OK"),
                gin::ConvertToV8(isolate, MOJO_RESULT_OK));

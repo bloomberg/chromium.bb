@@ -14,18 +14,16 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "mojo/public/system/core.h"
-#include "mojo/public/utility/scoped_handle.h"
 #include "mojo/services/native_viewport/native_viewport_controller.h"
 #include "mojo/shell/context.h"
 
-typedef MojoResult (*MojoMainFunction)(mojo::Handle pipe);
+typedef MojoResult (*MojoMainFunction)(MojoHandle pipe);
 
 namespace mojo {
 namespace shell {
 
 AppContainer::AppContainer(Context* context)
     : context_(context),
-      app_handle_raw_(mojo::kInvalidHandle),
       weak_factory_(this) {
 }
 
@@ -38,14 +36,10 @@ void AppContainer::Load(const GURL& app_url) {
 
 void AppContainer::DidCompleteLoad(const GURL& app_url,
                                    const base::FilePath& app_path) {
-  Handle shell_handle;
-  MojoResult result = CreateMessagePipe(&shell_handle, &app_handle_raw_);
-  if (result < MOJO_RESULT_OK) {
-    // Failure..
-  }
+  CreateMessagePipe(&shell_handle_, &app_handle_);
 
   hello_world_service_.reset(
-    new examples::HelloWorldServiceImpl(shell_handle));
+    new examples::HelloWorldServiceImpl(shell_handle_));
 
   // Launch the app on its own thread.
   // TODO(beng): Create a unique thread name.
@@ -64,8 +58,6 @@ void AppContainer::DidCompleteLoad(const GURL& app_url,
 void AppContainer::Run() {
   base::ScopedClosureRunner app_deleter(
       base::Bind(base::IgnoreResult(&base::DeleteFile), app_path_, false));
-  ScopedHandle app_handle(app_handle_raw_);
-
   base::ScopedNativeLibrary app_library(
       base::LoadNativeLibrary(app_path_, NULL));
   if (!app_library.is_valid()) {
@@ -80,7 +72,8 @@ void AppContainer::Run() {
     return;
   }
 
-  MojoResult result = main_function(app_handle.get());
+  // |MojoMain()| takes ownership of the app handle.
+  MojoResult result = main_function(app_handle_.release().value());
   if (result < MOJO_RESULT_OK) {
     LOG(ERROR) << "MojoMain returned an error: " << result;
     return;

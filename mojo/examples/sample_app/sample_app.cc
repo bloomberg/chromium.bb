@@ -25,12 +25,12 @@
 namespace mojo {
 namespace examples {
 
-void SayHello(mojo::Handle pipe) {
+void SayHello(const MessagePipeHandle& pipe) {
   // Send message out.
   HelloWorldClientImpl client(pipe);
-  mojo::ScratchBuffer buf;
+  ScratchBuffer buf;
   const std::string kGreeting("hello, world!");
-  mojo::String* greeting = mojo::String::NewCopyOf(&buf, kGreeting);
+  String* greeting = String::NewCopyOf(&buf, kGreeting);
   client.service()->Greeting(greeting);
 
   // Run loop to receieve Ack. The client will quit the loop.
@@ -40,14 +40,13 @@ void SayHello(mojo::Handle pipe) {
 }  // examples
 }  // mojo
 
-extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
-    mojo::Handle pipe) {
+extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(MojoHandle pipe) {
   base::MessageLoop loop;
   // Set the global bindings support.
   mojo::common::BindingsSupportImpl bindings_support;
   mojo::BindingsSupport::Set(&bindings_support);
 
-  mojo::examples::SayHello(pipe);
+  mojo::examples::SayHello(mojo::MessagePipeHandle(pipe));
 
   mojo::BindingsSupport::Set(NULL);
   return MOJO_RESULT_OK;
