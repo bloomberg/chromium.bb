@@ -123,6 +123,8 @@ TEST(IndexedDBLevelDBCodingTest, MaxIDBKey) {
   std::string min_key = MinIDBKey();
   std::string array_key;
   EncodeIDBKey(IndexedDBKey(IndexedDBKey::KeyArray()), &array_key);
+  std::string binary_key;
+  EncodeIDBKey(IndexedDBKey(std::string("\x00\x01\x02")), &binary_key);
   std::string string_key;
   EncodeIDBKey(IndexedDBKey(ASCIIToUTF16("Hello world")), &string_key);
   std::string number_key;
@@ -132,6 +134,7 @@ TEST(IndexedDBLevelDBCodingTest, MaxIDBKey) {
 
   EXPECT_GT(CompareKeys(max_key, min_key), 0);
   EXPECT_GT(CompareKeys(max_key, array_key), 0);
+  EXPECT_GT(CompareKeys(max_key, binary_key), 0);
   EXPECT_GT(CompareKeys(max_key, string_key), 0);
   EXPECT_GT(CompareKeys(max_key, number_key), 0);
   EXPECT_GT(CompareKeys(max_key, date_key), 0);
@@ -143,6 +146,8 @@ TEST(IndexedDBLevelDBCodingTest, MinIDBKey) {
   std::string max_key = MaxIDBKey();
   std::string array_key;
   EncodeIDBKey(IndexedDBKey(IndexedDBKey::KeyArray()), &array_key);
+  std::string binary_key;
+  EncodeIDBKey(IndexedDBKey(std::string("\x00\x01\x02")), &binary_key);
   std::string string_key;
   EncodeIDBKey(IndexedDBKey(ASCIIToUTF16("Hello world")), &string_key);
   std::string number_key;
@@ -152,6 +157,7 @@ TEST(IndexedDBLevelDBCodingTest, MinIDBKey) {
 
   EXPECT_LT(CompareKeys(min_key, max_key), 0);
   EXPECT_LT(CompareKeys(min_key, array_key), 0);
+  EXPECT_LT(CompareKeys(min_key, binary_key), 0);
   EXPECT_LT(CompareKeys(min_key, string_key), 0);
   EXPECT_LT(CompareKeys(min_key, number_key), 0);
   EXPECT_LT(CompareKeys(min_key, date_key), 0);
@@ -473,6 +479,58 @@ TEST(IndexedDBLevelDBCodingTest, CompareEncodedStringsWithLength) {
   }
 }
 
+static std::string WrappedEncodeBinary(std::string value) {
+  std::string buffer;
+  EncodeBinary(value, &buffer);
+  return buffer;
+}
+
+TEST(IndexedDBLevelDBCodingTest, EncodeBinary) {
+  const unsigned char binary_data[] = {0x00, 0x01, 0xfe, 0xff};
+  EXPECT_EQ(
+      static_cast<size_t>(1),
+      WrappedEncodeBinary(std::string(binary_data, binary_data + 0)).size());
+  EXPECT_EQ(
+      static_cast<size_t>(2),
+      WrappedEncodeBinary(std::string(binary_data, binary_data + 1)).size());
+  EXPECT_EQ(
+      static_cast<size_t>(5),
+      WrappedEncodeBinary(std::string(binary_data, binary_data + 4)).size());
+}
+
+TEST(IndexedDBLevelDBCodingTest, DecodeBinary) {
+  const unsigned char binary_data[] = { 0x00, 0x01, 0xfe, 0xff };
+
+  std::vector<std::string> test_cases;
+  test_cases.push_back(std::string(binary_data, binary_data + 0));
+  test_cases.push_back(std::string(binary_data, binary_data + 1));
+  test_cases.push_back(std::string(binary_data, binary_data + 4));
+
+  for (size_t i = 0; i < test_cases.size(); ++i) {
+    std::string value = test_cases[i];
+    std::string v = WrappedEncodeBinary(value);
+    ASSERT_GT(v.size(), static_cast<size_t>(0));
+    StringPiece slice(v);
+    std::string result;
+    EXPECT_TRUE(DecodeBinary(&slice, &result));
+    EXPECT_EQ(value, result);
+    EXPECT_TRUE(slice.empty());
+
+    slice = StringPiece(&*v.begin(), v.size() - 1);
+    EXPECT_FALSE(DecodeBinary(&slice, &result));
+
+    slice = StringPiece(&*v.begin(), static_cast<size_t>(0));
+    EXPECT_FALSE(DecodeBinary(&slice, &result));
+
+    // Verify decoding at an offset, to detect unaligned memory access.
+    v.insert(v.begin(), static_cast<size_t>(1), static_cast<char>(0));
+    slice = StringPiece(&*v.begin() + 1, v.size() - 1);
+    EXPECT_TRUE(DecodeBinary(&slice, &result));
+    EXPECT_EQ(value, result);
+    EXPECT_TRUE(slice.empty());
+  }
+}
+
 static std::string WrappedEncodeDouble(double value) {
   std::string buffer;
   EncodeDouble(value, &buffer);
@@ -524,12 +582,14 @@ TEST(IndexedDBLevelDBCodingTest, EncodeDecodeIDBKey) {
   test_cases.push_back(IndexedDBKey(1234, WebIDBKeyTypeNumber));
   test_cases.push_back(IndexedDBKey(7890, WebIDBKeyTypeDate));
   test_cases.push_back(IndexedDBKey(ASCIIToUTF16("Hello World!")));
+  test_cases.push_back(IndexedDBKey(std::string("\x01\x02")));
   test_cases.push_back(IndexedDBKey(IndexedDBKey::KeyArray()));
 
   IndexedDBKey::KeyArray array;
   array.push_back(IndexedDBKey(1234, WebIDBKeyTypeNumber));
   array.push_back(IndexedDBKey(7890, WebIDBKeyTypeDate));
   array.push_back(IndexedDBKey(ASCIIToUTF16("Hello World!")));
+  array.push_back(IndexedDBKey(std::string("\x01\x02")));
   array.push_back(IndexedDBKey(IndexedDBKey::KeyArray()));
   test_cases.push_back(IndexedDBKey(array));
 
@@ -684,6 +744,15 @@ TEST(IndexedDBLevelDBCodingTest, ExtractAndCompareIDBKeys) {
   keys.push_back(IndexedDBKey(ASCIIToUTF16("baaa")));
   keys.push_back(IndexedDBKey(ASCIIToUTF16("baab")));
   keys.push_back(IndexedDBKey(ASCIIToUTF16("c")));
+
+  keys.push_back(IndexedDBKey(std::string()));
+  keys.push_back(IndexedDBKey(std::string("\x01")));
+  keys.push_back(IndexedDBKey(std::string("\x01\x01")));
+  keys.push_back(IndexedDBKey(std::string("\x01\x02")));
+  keys.push_back(IndexedDBKey(std::string("\x02")));
+  keys.push_back(IndexedDBKey(std::string("\x02\x01")));
+  keys.push_back(IndexedDBKey(std::string("\x02\x02")));
+  keys.push_back(IndexedDBKey(std::string("\xff")));
 
   keys.push_back(CreateArrayIDBKey());
   keys.push_back(CreateArrayIDBKey(IndexedDBKey(0, WebIDBKeyTypeNumber)));

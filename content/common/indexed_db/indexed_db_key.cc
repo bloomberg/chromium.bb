@@ -12,6 +12,7 @@ namespace content {
 using blink::WebIDBKey;
 using blink::WebIDBKeyType;
 using blink::WebIDBKeyTypeArray;
+using blink::WebIDBKeyTypeBinary;
 using blink::WebIDBKeyTypeDate;
 using blink::WebIDBKeyTypeInvalid;
 using blink::WebIDBKeyTypeMin;
@@ -69,6 +70,12 @@ IndexedDBKey::IndexedDBKey(const KeyArray& keys)
       number_(0),
       size_estimate_(kOverheadSize + CalculateArraySize(keys)) {}
 
+IndexedDBKey::IndexedDBKey(const std::string& key)
+    : type_(WebIDBKeyTypeBinary),
+      binary_(key),
+      size_estimate_(kOverheadSize +
+                     (key.length() * sizeof(std::string::value_type))) {}
+
 IndexedDBKey::IndexedDBKey(const string16& key)
     : type_(WebIDBKeyTypeString),
       string_(key),
@@ -94,8 +101,10 @@ int IndexedDBKey::Compare(const IndexedDBKey& other) const {
       if (array_.size() > other.array_.size())
         return 1;
       return 0;
+    case WebIDBKeyTypeBinary:
+      return binary_.compare(other.binary_);
     case WebIDBKeyTypeString:
-      return -other.string_.compare(string_);
+      return string_.compare(other.string_);
     case WebIDBKeyTypeDate:
       return (date_ < other.date_) ? -1 : (date_ > other.date_) ? 1 : 0;
     case WebIDBKeyTypeNumber:

@@ -10,6 +10,7 @@
 using blink::WebIDBKey;
 using blink::WebIDBKeyRange;
 using blink::WebIDBKeyTypeArray;
+using blink::WebIDBKeyTypeBinary;
 using blink::WebIDBKeyTypeDate;
 using blink::WebIDBKeyTypeInvalid;
 using blink::WebIDBKeyTypeMin;
@@ -44,6 +45,9 @@ IndexedDBKey IndexedDBKeyBuilder::Build(const blink::WebIDBKey& key) {
   switch (key.keyType()) {
     case WebIDBKeyTypeArray:
       return IndexedDBKey(CopyKeyArray(key));
+    case WebIDBKeyTypeBinary:
+      return IndexedDBKey(
+          std::string(key.binary().data(), key.binary().size()));
     case WebIDBKeyTypeString:
       return IndexedDBKey(key.string());
     case WebIDBKeyTypeDate:
@@ -72,6 +76,8 @@ WebIDBKey WebIDBKeyBuilder::Build(const IndexedDBKey& key) {
       }
       return WebIDBKey::createArray(web_array);
     }
+    case WebIDBKeyTypeBinary:
+      return WebIDBKey::createBinary(key.binary());
     case WebIDBKeyTypeString:
       return WebIDBKey::createString(key.string());
     case WebIDBKeyTypeDate:

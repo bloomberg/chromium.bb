@@ -30,6 +30,7 @@ CONTENT_EXPORT void EncodeVarInt(int64 value, std::string* into);
 CONTENT_EXPORT void EncodeString(const string16& value, std::string* into);
 CONTENT_EXPORT void EncodeStringWithLength(const string16& value,
                                            std::string* into);
+CONTENT_EXPORT void EncodeBinary(const std::string& value, std::string* into);
 CONTENT_EXPORT void EncodeDouble(double value, std::string* into);
 CONTENT_EXPORT void EncodeIDBKey(const IndexedDBKey& value, std::string* into);
 CONTENT_EXPORT void EncodeIDBKeyPath(const IndexedDBKeyPath& value,
@@ -48,6 +49,8 @@ CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeString(base::StringPiece* slice,
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeStringWithLength(
     base::StringPiece* slice,
     string16* value);
+CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeBinary(base::StringPiece* slice,
+                                                    std::string* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeDouble(base::StringPiece* slice,
                                                     double* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeIDBKey(
