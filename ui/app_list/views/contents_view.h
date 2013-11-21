@@ -85,7 +85,7 @@ class ContentsView : public views::View {
   ShowState show_state_;
   PaginationModel* pagination_model_;  // Owned by AppListController.
 
-  AppsContainerView* apps_container_view_; // Owned by the views hierarchy.
+  AppsContainerView* apps_container_view_;  // Owned by the views hierarchy.
 
   scoped_ptr<views::ViewModel> view_model_;
   scoped_ptr<views::BoundsAnimator> bounds_animator_;

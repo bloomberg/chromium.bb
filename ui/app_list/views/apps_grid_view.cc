@@ -5,6 +5,8 @@
 #include "ui/app_list/views/apps_grid_view.h"
 
 #include <algorithm>
+#include <set>
+#include <string>
 
 #include "base/guid.h"
 #include "content/public/browser/web_contents.h"

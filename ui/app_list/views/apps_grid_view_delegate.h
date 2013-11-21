@@ -5,6 +5,8 @@
 #ifndef UI_APP_LIST_VIEWS_APPS_GRID_VIEW_DELEGATE_H_
 #define UI_APP_LIST_VIEWS_APPS_GRID_VIEW_DELEGATE_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "ui/app_list/app_list_export.h"
 

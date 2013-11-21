@@ -4,6 +4,8 @@
 
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "ui/app_list/app_list_model.h"

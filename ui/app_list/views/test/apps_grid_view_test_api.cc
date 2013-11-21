@@ -29,5 +29,5 @@ void AppsGridViewTestApi::SetPageFlipDelay(int page_flip_delay_in_ms) {
   view_->page_flip_delay_in_ms_ = page_flip_delay_in_ms;
 }
 
-}  // namespace test;
+}  // namespace test
 }  // namespace app_list

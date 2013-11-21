@@ -5,6 +5,7 @@
 #include "ui/app_list/app_list_model.h"
 
 #include <map>
+#include <string>
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"

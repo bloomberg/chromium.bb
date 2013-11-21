@@ -5,6 +5,9 @@
 #ifndef UI_APP_LIST_APP_LIST_FOLDER_ITEM_H_
 #define UI_APP_LIST_APP_LIST_FOLDER_ITEM_H_
 
+#include <string>
+#include <vector>
+
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_item_list_observer.h"
 #include "ui/app_list/app_list_item_model.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_COCOA_ITEM_DRAG_WINDOW_CONTROLLER_H_
-#define UI_APP_LIST_COCOA_ITEM_DRAG_WINDOW_CONTROLLER_H_
+#ifndef UI_APP_LIST_COCOA_ITEM_DRAG_CONTROLLER_H_
+#define UI_APP_LIST_COCOA_ITEM_DRAG_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>
@@ -41,4 +41,4 @@
 
 @end
 
-#endif  // UI_APP_LIST_COCOA_ITEM_DRAG_WINDOW_CONTROLLER_H_
+#endif  // UI_APP_LIST_COCOA_ITEM_DRAG_CONTROLLER_H_

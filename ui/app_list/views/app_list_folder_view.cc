@@ -4,6 +4,8 @@
 
 #include "ui/app_list/views/app_list_folder_view.h"
 
+#include <algorithm>
+
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_model.h"

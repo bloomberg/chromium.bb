@@ -73,6 +73,6 @@ class SearchResultListView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(SearchResultListView);
 };
 
-}  // namespace app_ist
+}  // namespace app_list
 
 #endif  // UI_APP_LIST_VIEWS_SEARCH_RESULT_LIST_VIEW_H_

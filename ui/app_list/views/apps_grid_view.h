@@ -5,6 +5,8 @@
 #ifndef UI_APP_LIST_VIEWS_APPS_GRID_VIEW_H_
 #define UI_APP_LIST_VIEWS_APPS_GRID_VIEW_H_
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"

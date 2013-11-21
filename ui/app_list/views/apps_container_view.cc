@@ -4,6 +4,8 @@
 
 #include "ui/app_list/views/apps_container_view.h"
 
+#include <algorithm>
+
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/pagination_model.h"
@@ -64,7 +66,7 @@ void AppsContainerView::Layout() {
   if (rect.IsEmpty())
     return;
 
-  switch(show_state_) {
+  switch (show_state_) {
     case SHOW_APPS:
       app_list_folder_view_->SetVisible(false);
       apps_grid_view_->SetBoundsRect(rect);

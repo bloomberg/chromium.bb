@@ -5,6 +5,8 @@
 #ifndef UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H_
 #define UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -53,7 +55,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   virtual void OpenFeedback() OVERRIDE {}
   virtual void ToggleSpeechRecognition() OVERRIDE {}
   virtual void ShowForProfileByPath(
-      const base::FilePath& profile_path) OVERRIDE {};
+      const base::FilePath& profile_path) OVERRIDE {}
   virtual content::WebContents* GetStartPageContents() OVERRIDE;
   virtual const Users& GetUsers() const OVERRIDE;
 

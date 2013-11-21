@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_COCOA_APP_LIST_SIGNIN_VIEW_CONTROLLER_H_
-#define UI_APP_LIST_COCOA_APP_LIST_SIGNIN_VIEW_CONTROLLER_H_
+#ifndef UI_APP_LIST_COCOA_SIGNIN_VIEW_CONTROLLER_H_
+#define UI_APP_LIST_COCOA_SIGNIN_VIEW_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -29,4 +29,4 @@ APP_LIST_EXPORT
 
 @end
 
-#endif  // UI_APP_LIST_COCOA_APP_LIST_SIGNIN_VIEW_CONTROLLER_H_
+#endif  // UI_APP_LIST_COCOA_SIGNIN_VIEW_CONTROLLER_H_

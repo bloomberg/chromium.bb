@@ -5,11 +5,11 @@
 #ifndef UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 #define UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/strings/string16.h"
 #include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"
 
