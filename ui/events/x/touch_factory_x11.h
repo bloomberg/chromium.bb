@@ -80,6 +80,11 @@ class EVENTS_BASE_EXPORT TouchFactory {
   // for test purpose, and it does not query from X server.
   void SetTouchDeviceForTest(const std::vector<unsigned int>& devices);
 
+  // Sets up the device id in the list |devices| as pointer devices.
+  // This function is only for test purpose, and it does not query from
+  // X server.
+  void SetPointerDeviceForTest(const std::vector<unsigned int>& devices);
+
  private:
   // Requirement for Singleton
   friend struct DefaultSingletonTraits<TouchFactory>;

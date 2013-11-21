@@ -582,7 +582,9 @@ bool DeviceDataManager::GetDataRange(unsigned int deviceid,
 }
 
 void DeviceDataManager::SetDeviceListForTest(
-    const std::vector<unsigned int>& devices) {
+    const std::vector<unsigned int>& devices,
+    const std::vector<unsigned int>& cmt_devices,
+    const std::vector<unsigned int>& touchpads) {
   for (int i = 0; i < kMaxDeviceNum; ++i) {
     valuator_count_[i] = 0;
     valuator_lookup_[i].clear();
@@ -602,6 +604,18 @@ void DeviceDataManager::SetDeviceListForTest(
     for (int j = 0; j < kMaxSlotNum; j++)
       last_seen_valuator_[deviceid][j].resize(DT_LAST_ENTRY, 0);
   }
+
+  cmt_devices_.reset();
+  for (size_t i = 0; i < cmt_devices.size(); ++i) {
+    unsigned int deviceid = devices[i];
+    cmt_devices_[deviceid] = true;
+  }
+
+  touchpads_.reset();
+  for (size_t i = 0; i < touchpads.size(); ++i) {
+    unsigned int deviceid = devices[i];
+    touchpads_[deviceid] = true;
+  }
 }
 
 void DeviceDataManager::SetDeviceValuatorForTest(int deviceid,
@@ -613,5 +627,12 @@ void DeviceDataManager::SetDeviceValuatorForTest(int deviceid,
   data_type_lookup_[deviceid][val_index] = data_type;
   valuator_min_[deviceid][data_type] = min;
   valuator_max_[deviceid][data_type] = max;
+
+  // Recalulate the number of valuators for the device.
+  valuator_count_[deviceid] = 0;
+  for (size_t i = 0; i < DT_LAST_ENTRY; ++i) {
+    if (valuator_lookup_[deviceid][i] != -1)
+      valuator_count_[deviceid]++;
+  }
 }
 }  // namespace ui

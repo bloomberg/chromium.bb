@@ -72,9 +72,13 @@ class ASH_EXPORT StickyKeys : public ui::EventHandler {
   // Handles mouse event. Returns true if sticky key consumes mouse event.
   bool HandleMouseEvent(ui::MouseEvent* event);
 
+  // Handles scroll event. Returns true if sticky key consumes scroll event.
+  bool HandleScrollEvent(ui::ScrollEvent* event);
+
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
   // Whether sticky keys is activated and modifying events.
   bool enabled_;
@@ -130,6 +134,10 @@ class ASH_EXPORT StickyKeysHandler {
     // Dispatches mouse event synchronously.
     virtual void DispatchMouseEvent(ui::MouseEvent* event,
                                     aura::Window* target) = 0;
+
+    // Dispatches scroll event synchronously.
+    virtual void DispatchScrollEvent(ui::ScrollEvent* event,
+                                     aura::Window* target) = 0;
   };
   // Represents Sticky Key state.
   enum StickyKeyState {
@@ -155,6 +163,9 @@ class ASH_EXPORT StickyKeysHandler {
 
   // Handles a mouse event. Returns true if mouse event is consumed.
   bool HandleMouseEvent(ui::MouseEvent* event);
+
+  // Handles a scroll event. Returns true if scroll event is consumed.
+  bool HandleScrollEvent(ui::ScrollEvent* event);
 
   // Returns current internal state.
   StickyKeyState current_state() const { return current_state_; }
@@ -194,6 +205,7 @@ class ASH_EXPORT StickyKeysHandler {
   // Adds |modifier_flags_| into |event|.
   void AppendModifier(ui::KeyEvent* event);
   void AppendModifier(ui::MouseEvent* event);
+  void AppendModifier(ui::ScrollEvent* event);
 
   // The modifier flag to be monitored and appended.
   const ui::EventFlags modifier_flag_;

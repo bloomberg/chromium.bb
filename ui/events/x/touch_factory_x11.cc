@@ -259,4 +259,13 @@ void TouchFactory::SetTouchDeviceForTest(
   touch_events_disabled_ = false;
 }
 
+void TouchFactory::SetPointerDeviceForTest(
+    const std::vector<unsigned int>& devices) {
+  pointer_device_lookup_.reset();
+  for (std::vector<unsigned int>::const_iterator iter = devices.begin();
+       iter != devices.end(); ++iter) {
+    pointer_device_lookup_[*iter] = true;
+  }
+}
+
 }  // namespace ui

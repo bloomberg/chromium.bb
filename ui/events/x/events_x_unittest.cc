@@ -182,7 +182,7 @@ TEST(EventsXTest, TouchEventBasic) {
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_MAJOR, 20));
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_ORIENTATION, 0.3f));
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_PRESSURE, 100));
-  ui::XScopedTouchEvent event1(CreateTouchEvent(
+  ui::ScopedXI2Event event1(CreateTouchEventForTest(
       0, XI_TouchBegin, 5, gfx::Point(10, 10), valuators));
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(event1));
   EXPECT_EQ("10,10", ui::EventLocationFromNative(event1).ToString());
@@ -194,7 +194,7 @@ TEST(EventsXTest, TouchEventBasic) {
   // Touch update, with new orientation info.
   valuators.clear();
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_ORIENTATION, 0.5f));
-  ui::XScopedTouchEvent event2(CreateTouchEvent(
+  ui::ScopedXI2Event event2(CreateTouchEventForTest(
       0, XI_TouchUpdate, 5, gfx::Point(20, 20), valuators));
   EXPECT_EQ(ui::ET_TOUCH_MOVED, ui::EventTypeFromNative(event2));
   EXPECT_EQ("20,20", ui::EventLocationFromNative(event2).ToString());
@@ -208,7 +208,7 @@ TEST(EventsXTest, TouchEventBasic) {
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_MAJOR, 100));
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_ORIENTATION, 0.9f));
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_PRESSURE, 500));
-  ui::XScopedTouchEvent event3(CreateTouchEvent(
+  ui::ScopedXI2Event event3(CreateTouchEventForTest(
       0, XI_TouchBegin, 6, gfx::Point(200, 200), valuators));
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(event3));
   EXPECT_EQ("200,200", ui::EventLocationFromNative(event3).ToString());
@@ -221,7 +221,7 @@ TEST(EventsXTest, TouchEventBasic) {
   // value.
   valuators.clear();
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_PRESSURE, 50));
-  ui::XScopedTouchEvent event4(CreateTouchEvent(
+  ui::ScopedXI2Event event4(CreateTouchEventForTest(
       0, XI_TouchEnd, 5, gfx::Point(30, 30), valuators));
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(event4));
   EXPECT_EQ("30,30", ui::EventLocationFromNative(event4).ToString());
@@ -234,7 +234,7 @@ TEST(EventsXTest, TouchEventBasic) {
   // radius value.
   valuators.clear();
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_MAJOR, 50));
-  ui::XScopedTouchEvent event5(CreateTouchEvent(
+  ui::ScopedXI2Event event5(CreateTouchEventForTest(
       0, XI_TouchEnd, 6, gfx::Point(200, 200), valuators));
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(event5));
   EXPECT_EQ("200,200", ui::EventLocationFromNative(event5).ToString());

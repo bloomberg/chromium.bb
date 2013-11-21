@@ -15,9 +15,17 @@
 #include "base/memory/scoped_vector.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/x/device_data_manager.h"
 #include "ui/events/x/events_x_utils.h"
 
 namespace ash {
+
+namespace {
+
+// The device id of the test scroll device.
+const unsigned int kScrollDeviceId = 1;
+
+}  // namespace
 
 // A testable and StickyKeysHandler.
 class MockStickyKeysHandlerDelegate :
@@ -59,6 +67,11 @@ class MockStickyKeysHandlerDelegate :
     events_.push_back(new ui::MouseEvent(event->native_event()));
   }
 
+  virtual void DispatchScrollEvent(ui::ScrollEvent* event,
+                                   aura::Window* target) OVERRIDE {
+    events_.push_back(new ui::ScrollEvent(event->native_event()));
+  }
+
   // Returns the count of dispatched events.
   size_t GetEventCount() const {
     return events_.size();
@@ -67,6 +80,11 @@ class MockStickyKeysHandlerDelegate :
   // Returns the |index|-th dispatched event.
   const ui::Event* GetEvent(size_t index) const {
     return events_[index];
+  }
+
+  // Clears all previously dispatched events.
+  void ClearEvents() {
+    events_.clear();
   }
 
  private:
@@ -147,6 +165,23 @@ class StickyKeysTest : public test::AshTestBase,
     return event;
   }
 
+  ui::ScrollEvent* GenerateScrollEvent(int scroll_delta) {
+    EXPECT_FALSE(scroll_delta == 0);
+    XEvent* xev = ui::CreateScrollEventForTest(
+        kScrollDeviceId, // deviceid
+        0,               // x_offset
+        scroll_delta,    // y_offset
+        0,               // x_offset_ordinal
+        scroll_delta,    // y_offset_ordinal
+        2);              // finger_count
+    xi2_evs_.push_back(new ui::ScopedXI2Event(xev));
+
+    ui::ScrollEvent* event = new ui::ScrollEvent(xev);
+    ui::Event::DispatcherApi dispatcher(event);
+    dispatcher.set_target(target_);
+    return event;
+  }
+
   aura::Window* target() { return target_; }
 
  private:
@@ -154,7 +189,11 @@ class StickyKeysTest : public test::AshTestBase,
   aura::Window* target_;
   // The root window of |target_|. Not owned.
   aura::Window* root_window_;
+  // Stores all generated XEvents.
   ScopedVector<XEvent> xevs_;
+  // Stores all generated XInput2 XEvents. We use a scoped wrapper class here
+  // to properly delete these events.
+  ScopedVector<ui::ScopedXI2Event> xi2_evs_;
 };
 
 TEST_F(StickyKeysTest, BasicOneshotScenarioTest) {
@@ -426,8 +465,72 @@ TEST_F(StickyKeysTest, MouseEventLocked) {
   EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
   kev.reset(GenerateKey(true, ui::VKEY_N));
   sticky_key.HandleKeyEvent(kev.get());
+  EXPECT_TRUE(kev->flags() & ui::EF_CONTROL_DOWN);
   kev.reset(GenerateKey(false, ui::VKEY_N));
   sticky_key.HandleKeyEvent(kev.get());
+  EXPECT_TRUE(kev->flags() & ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(StickyKeysHandler::LOCKED, sticky_key.current_state());
+}
+
+TEST_F(StickyKeysTest, ScrollEvents) {
+  ui::SetUpScrollDeviceForTest(kScrollDeviceId);
+  // Australlian scrolling is enabled by default for some reason.
+  ui::DeviceDataManager::GetInstance()->set_natural_scroll_enabled(true);
+
+  scoped_ptr<ui::ScrollEvent> ev;
+  scoped_ptr<ui::KeyEvent> kev;
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
+
+  int scroll_deltas[] = {-10, 10};
+  for (int i = 0; i < 2; ++i) {
+    mock_delegate->ClearEvents();
+
+    // Enable sticky keys.
+    EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+    kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
+    sticky_key.HandleKeyEvent(kev.get());
+    kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
+    sticky_key.HandleKeyEvent(kev.get());
+    EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
+
+    // Test scroll event is correctly modified.
+    ev.reset(GenerateScrollEvent(scroll_deltas[i]));
+    sticky_key.HandleScrollEvent(ev.get());
+    EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
+    EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+
+    ASSERT_EQ(2U, mock_delegate->GetEventCount());
+    EXPECT_EQ(ui::ET_SCROLL, mock_delegate->GetEvent(0)->type());
+    EXPECT_FLOAT_EQ(scroll_deltas[i],
+                    static_cast<const ui::ScrollEvent*>(
+                        mock_delegate->GetEvent(0))->y_offset());
+    EXPECT_EQ(ui::ET_KEY_RELEASED, mock_delegate->GetEvent(1)->type());
+    EXPECT_EQ(ui::VKEY_CONTROL,
+              static_cast<const ui::KeyEvent*>(mock_delegate->GetEvent(1))
+                  ->key_code());
+  }
+
+  // Lock sticky keys.
+  for (int i = 0; i < 2; ++i) {
+    kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
+    sticky_key.HandleKeyEvent(kev.get());
+    kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
+    sticky_key.HandleKeyEvent(kev.get());
+  }
+
+  // Test scroll events are correctly modified in locked state.
+  for (int i = 0; i < 5; ++i) {
+    ev.reset(GenerateScrollEvent(10));
+    sticky_key.HandleScrollEvent(ev.get());
+    EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
+    ev.reset(GenerateScrollEvent(-10));
+    sticky_key.HandleScrollEvent(ev.get());
+    EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
+  }
+
   EXPECT_EQ(StickyKeysHandler::LOCKED, sticky_key.current_state());
 }
 

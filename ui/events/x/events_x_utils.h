@@ -14,13 +14,6 @@ typedef union _XEvent XEvent;
 
 namespace ui {
 
-// Initializes a XEvent that holds XKeyEvent for testing. Note that ui::EF_
-// flags should be passed as |flags|, not the native ones in <X11/X.h>.
-EVENTS_EXPORT void InitXKeyEventForTesting(EventType type,
-                                           KeyboardCode key_code,
-                                           int flags,
-                                           XEvent* event);
-#if defined(USE_XI2_MT)
 struct Valuator {
   Valuator(DeviceDataManager::DataType type, double v)
       : data_type(type), value(v) {}
@@ -29,29 +22,25 @@ struct Valuator {
   double value;
 };
 
-class EVENTS_EXPORT XScopedTouchEvent {
+class EVENTS_EXPORT ScopedXI2Event {
  public:
-  explicit XScopedTouchEvent(XEvent* event);
-  ~XScopedTouchEvent();
+  explicit ScopedXI2Event(XEvent* event);
+  ~ScopedXI2Event();
 
   operator XEvent*() { return event_.get(); }
 
  private:
   scoped_ptr<XEvent> event_;
 
-  DISALLOW_COPY_AND_ASSIGN(XScopedTouchEvent);
+  DISALLOW_COPY_AND_ASSIGN(ScopedXI2Event);
 };
 
-EVENTS_EXPORT XEvent* CreateTouchEvent(int deviceid,
-                                       int evtype,
-                                       int tracking_id,
-                                       const gfx::Point& location,
-                                       const std::vector<Valuator>& valuators);
-
-EVENTS_EXPORT void SetupTouchDevicesForTest(
-    const std::vector<unsigned int>& devices);
-
-#endif  // defined(USE_XI2_MT)
+// Initializes a XEvent that holds XKeyEvent for testing. Note that ui::EF_
+// flags should be passed as |flags|, not the native ones in <X11/X.h>.
+EVENTS_EXPORT void InitXKeyEventForTesting(EventType type,
+                                           KeyboardCode key_code,
+                                           int flags,
+                                           XEvent* event);
 
 // Initializes a XEvent that holds XButtonEvent for testing. Note that ui::EF_
 // flags should be passed as |flags|, not the native ones in <X11/X.h>.
@@ -64,5 +53,34 @@ EVENTS_EXPORT void InitXButtonEventForTesting(EventType type,
 EVENTS_EXPORT void InitXMouseWheelEventForTesting(int wheel_delta,
                                                   int flags,
                                                   XEvent* event);
+
+// Creates a native scroll event, based on a XInput2Event. The caller is
+// responsible for the ownership of the returned XEvent. Consider wrapping
+// the XEvent in a ScopedXI2Event, as XEvent is purely a struct and simply
+// deleting it will result in dangling pointers.
+EVENTS_EXPORT XEvent* CreateScrollEventForTest(
+    int deviceid,
+    int x_offset,
+    int y_offset,
+    int x_offset_ordinal,
+    int y_offset_ordinal,
+    int finger_count);
+
+// Initializes a test touchpad device for scroll events.
+EVENTS_EXPORT void SetUpScrollDeviceForTest(unsigned int deviceid);
+
+#if defined(USE_XI2_MT)
+
+EVENTS_EXPORT XEvent* CreateTouchEventForTest(
+    int deviceid,
+    int evtype,
+    int tracking_id,
+    const gfx::Point& location,
+    const std::vector<Valuator>& valuators);
+
+EVENTS_EXPORT void SetupTouchDevicesForTest(
+    const std::vector<unsigned int>& devices);
+
+#endif
 
 }  // namespace ui
