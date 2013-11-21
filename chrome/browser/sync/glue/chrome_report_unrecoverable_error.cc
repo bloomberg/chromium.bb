@@ -5,38 +5,29 @@
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 
 #include "base/rand_util.h"
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/dump_without_crashing.h"
 
 namespace browser_sync {
 
 void ChromeReportUnrecoverableError() {
-  // TODO(lipalani): Add this for other platforms as well.
-#if defined(OS_WIN)
-  const double kErrorUploadRatio = 0.15;
+  // Only upload on canary/dev builds to avoid overwhelming crash server.
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel != chrome::VersionInfo::CHANNEL_CANARY &&
+      channel != chrome::VersionInfo::CHANNEL_DEV) {
+    return;
+  }
 
   // We only want to upload |kErrorUploadRatio| ratio of errors.
+  const double kErrorUploadRatio = 0.15;
   if (kErrorUploadRatio <= 0.0)
     return; // We are not allowed to upload errors.
   double random_number = base::RandDouble();
   if (random_number > kErrorUploadRatio)
     return;
 
-  // Get the breakpad pointer from chrome.exe
-  typedef void (__cdecl *DumpProcessFunction)();
-  DumpProcessFunction DumpProcess = reinterpret_cast<DumpProcessFunction>(
-      ::GetProcAddress(::GetModuleHandle(
-                       chrome::kBrowserProcessExecutableName),
-                       "DumpProcessWithoutCrash"));
-  if (DumpProcess)
-    DumpProcess();
-#endif  // OS_WIN
-
+  logging::DumpWithoutCrashing();
 }
 
 }  // namespace browser_sync
