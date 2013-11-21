@@ -36,6 +36,8 @@
 #include "wtf/HashSet.h"
 #include "wtf/HashTableDeletedValueType.h"
 
+#include <stdlib.h>
+
 using namespace WebCore;
 
 // FIXME: Consider removing locks if we're singlethreaded already.

@@ -83,6 +83,7 @@
 #include <limits.h>
 #include <limits>
 #include <stdint.h>
+#include <stdlib.h>
 #include <time.h>
 #include "wtf/text/StringBuilder.h"
 

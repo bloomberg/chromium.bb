@@ -35,6 +35,8 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "wtf/StringExtras.h"
 
+#include <stdlib.h>
+
 namespace WebCore {
 
 template<typename Map>

@@ -39,6 +39,8 @@
 #include "core/frame/DOMWindow.h"
 #include "wtf/text/WTFString.h"
 
+#include <stdlib.h>
+
 namespace WebCore {
 
 void convertV8ObjectToNPVariant(v8::Local<v8::Value> object, NPObject* owner, NPVariant* result, v8::Isolate* isolate)

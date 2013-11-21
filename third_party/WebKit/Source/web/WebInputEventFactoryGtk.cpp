@@ -39,6 +39,7 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
+#include <stdlib.h>
 
 #include "wtf/Assertions.h"
 
