@@ -433,8 +433,6 @@ void DesktopRootWindowHostWin::ToggleFullScreen() {
 
 gfx::Rect DesktopRootWindowHostWin::GetBounds() const {
   // Match the logic in HWNDMessageHandler::ClientAreaSizeChanged().
-  if (IsMinimized())
-    return gfx::Rect();
   gfx::Rect bounds(WidgetSizeIsClientSize() ?
       message_handler_->GetClientAreaBoundsInScreen() :
       message_handler_->GetWindowBoundsInScreen());
