@@ -46,6 +46,7 @@ class LocalToRemoteSyncer : public SyncTask {
   void HandleConflict(const SyncStatusCallback& callback);
   void HandleExistingRemoteFile(const SyncStatusCallback& callback);
 
+  void DeleteRemoteFile(const SyncStatusCallback& callback);
   void DidDeleteRemoteFile(const SyncStatusCallback& callback,
                            google_apis::GDataErrorCode error);
 
@@ -63,6 +64,14 @@ class LocalToRemoteSyncer : public SyncTask {
                             int64 change_id,
                             google_apis::GDataErrorCode error,
                             scoped_ptr<google_apis::ResourceEntry> entry);
+
+  void DidDeleteForUploadNewFile(const SyncStatusCallback& callback,
+                                 SyncStatusCode status);
+  void DidDeleteForCreateFolder(const SyncStatusCallback& callback,
+                                SyncStatusCode status);
+
+  void UploadNewFile(const SyncStatusCallback& callback);
+  void CreateRemoteFolder(const SyncStatusCallback& callback);
 
   drive::DriveServiceInterface* drive_service();
   drive::DriveUploaderInterface* drive_uploader();

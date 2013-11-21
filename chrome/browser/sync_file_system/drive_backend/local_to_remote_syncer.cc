@@ -39,6 +39,13 @@ scoped_ptr<FileTracker> FindTracker(MetadataDatabase* metadata_database,
   return scoped_ptr<FileTracker>();
 }
 
+void DidUpdateDatabase(const SyncStatusCallback& callback,
+                       SyncStatusCode status) {
+  if (status == SYNC_STATUS_OK)
+    status = SYNC_STATUS_RETRY;
+  callback.Run(status);
+}
+
 }  // namespace
 
 LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
@@ -123,15 +130,13 @@ void LocalToRemoteSyncer::HandleMissingRemoteFile(
   DCHECK(remote_parent_folder_tracker_);
   if (local_change_.file_type() == SYNC_FILE_TYPE_FILE) {
     // Upload local file as a new file.
-    NOTIMPLEMENTED();
-    callback.Run(SYNC_STATUS_FAILED);
+    UploadNewFile(callback);
     return;
   }
 
   DCHECK_EQ(SYNC_FILE_TYPE_DIRECTORY, local_change_.file_type());
   // Create remote folder.
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
+  UploadNewFile(callback);
 }
 
 void LocalToRemoteSyncer::HandleConflict(const SyncStatusCallback& callback) {
@@ -155,12 +160,7 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     DCHECK(local_change_.IsDelete());
 
     // Local file deletion for existing remote file.
-    drive_service()->DeleteResource(
-        remote_file_tracker_->file_id(),
-        remote_file_tracker_->synced_details().etag(),
-        base::Bind(&LocalToRemoteSyncer::DidDeleteRemoteFile,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+    DeleteRemoteFile(callback);
     return;
   }
 
@@ -180,27 +180,40 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
 
     DCHECK_EQ(FILE_KIND_FOLDER, synced_details.file_kind());
     // Non-conflicting local file update to existing remote *folder*.
-    // Our policy prioritize the folder on this case.
-    // Do nothing to remote folder and mark the tracker dirty to defer it to
-    // next remote-to-local sync phase.
-    metadata_database()->MarkTrackerDirty(remote_file_tracker_->tracker_id(),
-                                          callback);
+    // Assuming this case as local folder deletion + local file creation, delete
+    // the remote folder and upload the file.
+    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::DidDeleteForUploadNewFile,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                callback));
     return;
   }
 
   DCHECK_EQ(SYNC_FILE_TYPE_DIRECTORY, local_change_.file_type());
   if (synced_details.file_kind() == FILE_KIND_FILE) {
     // Non-conflicting local folder creation to existing remote *file*.
-    // Our policy prioritize the folder on this case.
-    // TODO(tzik): Delete remote file and create a folder at the path.
-    NOTIMPLEMENTED();
-    callback.Run(SYNC_STATUS_FAILED);
+    // Assuming this case as local file deletion + local folder creation, delete
+    // the remote file and create a remote folder.
+    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::DidDeleteForCreateFolder,
+                                weak_ptr_factory_.GetWeakPtr(), callback));
     return;
   }
 
   // Non-conflicting local folder creation to existing remote folder.
   DCHECK_EQ(FILE_KIND_FOLDER, synced_details.file_kind());
   callback.Run(SYNC_STATUS_OK);
+}
+
+void LocalToRemoteSyncer::DeleteRemoteFile(
+    const SyncStatusCallback& callback) {
+  DCHECK(remote_file_tracker_);
+  DCHECK(remote_file_tracker_->has_synced_details());
+
+  drive_service()->DeleteResource(
+      remote_file_tracker_->file_id(),
+      remote_file_tracker_->synced_details().etag(),
+      base::Bind(&LocalToRemoteSyncer::DidDeleteRemoteFile,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void LocalToRemoteSyncer::DidDeleteRemoteFile(
@@ -294,7 +307,50 @@ void LocalToRemoteSyncer::DidGetRemoteMetadata(
   metadata_database()->UpdateByFileResource(
       change_id,
       *drive::util::ConvertResourceEntryToFileResource(*entry),
-      callback);
+      base::Bind(&DidUpdateDatabase, callback));
+}
+
+void LocalToRemoteSyncer::DidDeleteForUploadNewFile(
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
+  if (status == SYNC_STATUS_HAS_CONFLICT) {
+    UpdateRemoteMetadata(callback);
+    return;
+  }
+
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  UploadNewFile(callback);
+}
+
+void LocalToRemoteSyncer::DidDeleteForCreateFolder(
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
+  if (status == SYNC_STATUS_HAS_CONFLICT) {
+    UpdateRemoteMetadata(callback);
+    return;
+  }
+
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  CreateRemoteFolder(callback);
+}
+
+void LocalToRemoteSyncer::UploadNewFile(const SyncStatusCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(SYNC_STATUS_FAILED);
+}
+
+void LocalToRemoteSyncer::CreateRemoteFolder(
+    const SyncStatusCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(SYNC_STATUS_FAILED);
 }
 
 drive::DriveServiceInterface* LocalToRemoteSyncer::drive_service() {
