@@ -6446,7 +6446,4 @@
    fun:_ZN6crypto12_GLOBAL__N_116NSSInitSingleton10OpenUserDBERKN4base8FilePathEPKc
    fun:_ZN6crypto12_GLOBAL__N_116NSSInitSingleton13OpenTestNSSDBEv
    fun:_ZN6crypto15ScopedTestNSSDBC1Ev
-   fun:_ZN6crypto20RSAPrivateKeyNSSTestC1Ev
-   fun:_ZN6crypto49RSAPrivateKeyNSSTest_FailedFindFromPublicKey_TestC1Ev
-   fun:_ZN7testing8internal15TestFactoryImplIN6crypto49RSAPrivateKeyNSSTest_FailedFindFromPublicKey_TestEE10CreateTestEv
 }
