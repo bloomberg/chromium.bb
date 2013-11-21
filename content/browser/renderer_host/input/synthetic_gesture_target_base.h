@@ -43,7 +43,7 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
   virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE;
 
   virtual void OnSyntheticGestureCompleted(
-      SyntheticGestureNew::Result result) OVERRIDE;
+      SyntheticGesture::Result result) OVERRIDE;
 
   virtual void SetNeedsFlush() OVERRIDE;
 

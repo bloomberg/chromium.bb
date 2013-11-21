@@ -2,40 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/synthetic_gesture_new.h"
+#include "content/browser/renderer_host/input/synthetic_gesture.h"
 
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
-#include "content/browser/renderer_host/input/synthetic_pinch_gesture_new.h"
-#include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture_new.h"
+#include "content/browser/renderer_host/input/synthetic_pinch_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 
 namespace content {
 namespace {
 
 template <typename GestureType, typename GestureParamsType>
-static scoped_ptr<SyntheticGestureNew> CreateGesture(
+static scoped_ptr<SyntheticGesture> CreateGesture(
     const SyntheticGestureParams& gesture_params) {
-  return scoped_ptr<SyntheticGestureNew>(
+  return scoped_ptr<SyntheticGesture>(
       new GestureType(*GestureParamsType::Cast(&gesture_params)));
 }
 
 }  // namespace
 
-SyntheticGestureNew::SyntheticGestureNew() {}
+SyntheticGesture::SyntheticGesture() {}
 
-SyntheticGestureNew::~SyntheticGestureNew() {}
+SyntheticGesture::~SyntheticGesture() {}
 
-scoped_ptr<SyntheticGestureNew> SyntheticGestureNew::Create(
+scoped_ptr<SyntheticGesture> SyntheticGesture::Create(
     const SyntheticGestureParams& gesture_params) {
   switch (gesture_params.GetGestureType()) {
     case SyntheticGestureParams::SMOOTH_SCROLL_GESTURE:
-      return CreateGesture<SyntheticSmoothScrollGestureNew,
+      return CreateGesture<SyntheticSmoothScrollGesture,
                            SyntheticSmoothScrollGestureParams>(gesture_params);
     case SyntheticGestureParams::PINCH_GESTURE:
-      return CreateGesture<SyntheticPinchGestureNew,
+      return CreateGesture<SyntheticPinchGesture,
                            SyntheticPinchGestureParams>(gesture_params);
   }
   NOTREACHED() << "Invalid synthetic gesture type";
-  return scoped_ptr<SyntheticGestureNew>();
+  return scoped_ptr<SyntheticGesture>();
 }
 
 }  // namespace content

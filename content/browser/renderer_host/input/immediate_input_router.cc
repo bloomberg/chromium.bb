@@ -96,9 +96,7 @@ ImmediateInputRouter::ImmediateInputRouter(IPC::Sender* sender,
 ImmediateInputRouter::~ImmediateInputRouter() {
 }
 
-void ImmediateInputRouter::Flush() {
-  NOTREACHED() << "ImmediateInputRouter will never request a flush.";
-}
+void ImmediateInputRouter::Flush() {}
 
 bool ImmediateInputRouter::SendInput(scoped_ptr<IPC::Message> message) {
   DCHECK(IPC_MESSAGE_ID_CLASS(message->type()) == InputMsgStart);

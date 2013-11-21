@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_PINCH_GESTURE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_PINCH_GESTURE_H_
 
-#include "content/browser/renderer_host/input/synthetic_gesture_new.h"
+#include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/synthetic_web_input_event_builders.h"
 #include "content/common/content_export.h"
@@ -14,13 +14,13 @@
 
 namespace content {
 
-class CONTENT_EXPORT SyntheticPinchGestureNew : public SyntheticGestureNew {
+class CONTENT_EXPORT SyntheticPinchGesture : public SyntheticGesture {
  public:
-  explicit SyntheticPinchGestureNew(const SyntheticPinchGestureParams& params);
-  virtual ~SyntheticPinchGestureNew();
+  explicit SyntheticPinchGesture(const SyntheticPinchGestureParams& params);
+  virtual ~SyntheticPinchGesture();
 
-  virtual Result ForwardInputEvents(const base::TimeDelta& interval,
-                                    SyntheticGestureTarget* target) OVERRIDE;
+  virtual SyntheticGesture::Result ForwardInputEvents(
+      const base::TimeDelta& interval, SyntheticGestureTarget* target) OVERRIDE;
 
  private:
   SyntheticPinchGestureParams params_;
@@ -31,7 +31,7 @@ class CONTENT_EXPORT SyntheticPinchGestureNew : public SyntheticGestureNew {
   bool started_;
   SyntheticWebTouchEvent touch_event_;
 
-  SyntheticGestureNew::Result ForwardTouchInputEvents(
+  SyntheticGesture::Result ForwardTouchInputEvents(
       const base::TimeDelta& interval, SyntheticGestureTarget* target);
 
   void ForwardTouchEvent(SyntheticGestureTarget* target);
@@ -40,7 +40,7 @@ class CONTENT_EXPORT SyntheticPinchGestureNew : public SyntheticGestureNew {
 
   bool HasFinished();
 
-  DISALLOW_COPY_AND_ASSIGN(SyntheticPinchGestureNew);
+  DISALLOW_COPY_AND_ASSIGN(SyntheticPinchGesture);
 };
 
 }  // namespace content

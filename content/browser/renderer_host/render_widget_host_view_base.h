@@ -74,12 +74,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
                                       InputEventAckState ack_result) OVERRIDE;
   virtual scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       OVERRIDE;
-  virtual SyntheticGesture* CreateSmoothScrollGesture(
-      bool scroll_down, int pixels_to_scroll, int mouse_event_x,
-      int mouse_event_y) OVERRIDE;
-  virtual SyntheticGesture* CreatePinchGesture(
-      bool zoom_in, int pixels_to_move, int anchor_x,
-      int anchor_y) OVERRIDE;
   virtual bool CanSubscribeFrame() const OVERRIDE;
   virtual void BeginFrameSubscription(
       scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) OVERRIDE;

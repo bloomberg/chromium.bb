@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
-#include "content/browser/renderer_host/input/synthetic_gesture_new.h"
+#include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_gesture_params.h"
 
@@ -19,29 +19,29 @@ class SyntheticGestureTarget;
 // Controls a synthetic gesture.
 // Repeatedly invokes the gesture object's ForwardInputEvent method to send
 // input events to the platform until the gesture has finished.
-class CONTENT_EXPORT SyntheticGestureControllerNew {
+class CONTENT_EXPORT SyntheticGestureController {
  public:
-  explicit SyntheticGestureControllerNew(
+  explicit SyntheticGestureController(
       scoped_ptr<SyntheticGestureTarget> gesture_target);
-  virtual ~SyntheticGestureControllerNew();
+  virtual ~SyntheticGestureController();
 
   void QueueSyntheticGesture(
-      scoped_ptr<SyntheticGestureNew> synthetic_gesture);
+      scoped_ptr<SyntheticGesture> synthetic_gesture);
 
   // Forward input events of the currently processed gesture.
   void Flush(base::TimeTicks timestamp);
 
  private:
-  void StartGesture(const SyntheticGestureNew& gesture);
-  void StopGesture(const SyntheticGestureNew& gesture,
-                   SyntheticGestureNew::Result result);
+  void StartGesture(const SyntheticGesture& gesture);
+  void StopGesture(const SyntheticGesture& gesture,
+                   SyntheticGesture::Result result);
 
   scoped_ptr<SyntheticGestureTarget> gesture_target_;
-  ScopedVector<SyntheticGestureNew> pending_gesture_queue_;
+  ScopedVector<SyntheticGesture> pending_gesture_queue_;
 
   base::TimeTicks last_tick_time_;
 
-  DISALLOW_COPY_AND_ASSIGN(SyntheticGestureControllerNew);
+  DISALLOW_COPY_AND_ASSIGN(SyntheticGestureController);
 };
 
 }  // namespace content
