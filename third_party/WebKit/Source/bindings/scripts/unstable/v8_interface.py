@@ -80,6 +80,7 @@ def generate_interface(interface):
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
         'is_check_security': is_check_security,
+        'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
         'v8_class_name': v8_class_name,
     }
 
