@@ -232,6 +232,7 @@ ssize_t QuicTestClient::SendData(string data, bool last_data) {
   QuicReliableClientStream* stream = GetOrCreateStream();
   if (!stream) { return 0; }
   GetOrCreateStream()->SendBody(data, last_data);
+  WaitForWriteToFlush();
   return data.length();
 }
 
