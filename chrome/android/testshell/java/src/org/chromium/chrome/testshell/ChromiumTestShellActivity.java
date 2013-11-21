@@ -72,17 +72,17 @@ public class ChromiumTestShellActivity extends Activity implements MenuHandler {
     private void finishInitialization(final Bundle savedInstanceState) {
         setContentView(R.layout.testshell_activity);
         mTabManager = (TabManager) findViewById(R.id.tab_manager);
+
+        mWindow = new ActivityWindowAndroid(this);
+        mWindow.restoreInstanceState(savedInstanceState);
+        mTabManager.setWindow(mWindow);
+
         String startupUrl = getUrlFromIntent(getIntent());
         if (!TextUtils.isEmpty(startupUrl)) {
             mTabManager.setStartupUrl(startupUrl);
         }
         TestShellToolbar mToolbar = (TestShellToolbar) findViewById(R.id.toolbar);
         mToolbar.setMenuHandler(this);
-
-        mWindow = new ActivityWindowAndroid(this);
-        mWindow.restoreInstanceState(savedInstanceState);
-        mTabManager.setWindow(mWindow);
-
         mDevToolsServer = new DevToolsServer("chromium_testshell");
         mDevToolsServer.setRemoteDebuggingEnabled(true);
         mSyncController = SyncController.get(this);
@@ -153,6 +153,13 @@ public class ChromiumTestShellActivity extends Activity implements MenuHandler {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         mWindow.onActivityResult(requestCode, resultCode, data);
+    }
+
+    /**
+     * @return The {@link WindowAndroid} associated with this activity.
+     */
+    public WindowAndroid getWindowAndroid() {
+        return mWindow;
     }
 
     /**

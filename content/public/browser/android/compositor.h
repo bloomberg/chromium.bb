@@ -35,8 +35,10 @@ class CONTENT_EXPORT Compositor {
   // instance can be used. This should be called only once.
   static void Initialize();
 
-  // Creates and returns a compositor instance.
-  static Compositor* Create(CompositorClient* client);
+  // Creates and returns a compositor instance.  |root_window| needs to outlive
+  // the compositor as it manages callbacks on the compositor.
+  static Compositor* Create(CompositorClient* client,
+                            gfx::NativeWindow root_window);
 
   // Attaches the layer tree.
   virtual void SetRootLayer(scoped_refptr<cc::Layer> root) = 0;

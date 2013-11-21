@@ -42,10 +42,17 @@ public class TabManager extends LinearLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+    }
 
+    /**
+     * @param window The window used to generate all ContentViews.
+     */
+    public void setWindow(WindowAndroid window) {
+        assert window != null;
+        mWindow = window;
         mContentViewHolder = (ViewGroup) findViewById(R.id.content_container);
         mToolbar = (TestShellToolbar) findViewById(R.id.toolbar);
-        mContentViewRenderView = new ContentViewRenderView(getContext()) {
+        mContentViewRenderView = new ContentViewRenderView(getContext(), mWindow) {
             @Override
             protected void onReadyToRender() {
                 if (mCurrentTab == null) createTab(mStartupUrl);
@@ -55,13 +62,6 @@ public class TabManager extends LinearLayout {
                 new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
-    }
-
-    /**
-     * @param window The window used to generate all ContentViews.
-     */
-    public void setWindow(WindowAndroid window) {
-        mWindow = window;
     }
 
     /**

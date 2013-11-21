@@ -31,8 +31,11 @@ bool ContentViewRenderView::RegisterContentViewRenderView(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-ContentViewRenderView::ContentViewRenderView(JNIEnv* env, jobject obj)
-    : buffers_swapped_during_composite_(false) {
+ContentViewRenderView::ContentViewRenderView(JNIEnv* env,
+                                             jobject obj,
+                                             gfx::NativeWindow root_window)
+    : buffers_swapped_during_composite_(false),
+      root_window_(root_window) {
   java_obj_.Reset(env, obj);
 }
 
@@ -40,9 +43,11 @@ ContentViewRenderView::~ContentViewRenderView() {
 }
 
 // static
-static jlong Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, jobject obj, jlong native_root_window) {
+  gfx::NativeWindow root_window =
+      reinterpret_cast<gfx::NativeWindow>(native_root_window);
   ContentViewRenderView* content_view_render_view =
-      new ContentViewRenderView(env, obj);
+      new ContentViewRenderView(env, obj, root_window);
   return reinterpret_cast<intptr_t>(content_view_render_view);
 }
 
@@ -110,7 +115,7 @@ void ContentViewRenderView::OnSwapBuffersCompleted() {
 
 void ContentViewRenderView::InitCompositor() {
   if (!compositor_)
-    compositor_.reset(Compositor::Create(this));
+    compositor_.reset(Compositor::Create(this, root_window_));
 }
 
 }  // namespace content

@@ -39,7 +39,7 @@ class CONTENT_EXPORT CompositorImpl
       public cc::LayerTreeHostSingleThreadClient,
       public ImageTransportFactoryAndroidObserver {
  public:
-  explicit CompositorImpl(CompositorClient* client);
+  CompositorImpl(CompositorClient* client, gfx::NativeWindow root_window);
   virtual ~CompositorImpl();
 
   static bool IsInitialized();
@@ -81,7 +81,7 @@ class CONTENT_EXPORT CompositorImpl
       OVERRIDE;
   virtual void DidInitializeOutputSurface(bool success) OVERRIDE {}
   virtual void WillCommit() OVERRIDE {}
-  virtual void DidCommit() OVERRIDE {}
+  virtual void DidCommit() OVERRIDE;
   virtual void DidCommitAndDrawFrame() OVERRIDE {}
   virtual void DidCompleteSwapBuffers() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
@@ -116,6 +116,8 @@ class CONTENT_EXPORT CompositorImpl
   typedef base::ScopedPtrHashMap<cc::UIResourceId, cc::ScopedUIResource>
         UIResourceMap;
   UIResourceMap ui_resource_map_;
+
+  gfx::NativeWindow root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);
 };

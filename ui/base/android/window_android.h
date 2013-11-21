@@ -9,10 +9,13 @@
 #include <vector>
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/observer_list.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/vector2d_f.h"
 
 namespace ui {
+
+class WindowAndroidObserver;
 
 // Android implementation of the activity window.
 class UI_EXPORT WindowAndroid {
@@ -34,11 +37,22 @@ class UI_EXPORT WindowAndroid {
   bool GrabSnapshot(int content_x, int content_y, int width, int height,
                     std::vector<unsigned char>* png_representation);
 
+  // Compositor callback relay.
+  void OnCompositingDidCommit();
+
+  void AttachCompositor();
+  void DetachCompositor();
+
+  void AddObserver(WindowAndroidObserver* observer);
+  void RemoveObserver(WindowAndroidObserver* observer);
+
  private:
   ~WindowAndroid();
 
   JavaObjectWeakGlobalRef weak_java_window_;
   gfx::Vector2dF content_offset_;
+
+  ObserverList<WindowAndroidObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowAndroid);
 };

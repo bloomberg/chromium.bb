@@ -25,6 +25,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "ui/base/android/window_android_observer.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/vector2d_f.h"
 
@@ -61,10 +62,9 @@ struct NativeWebKeyboardEvent;
 class RenderWidgetHostViewAndroid
     : public RenderWidgetHostViewBase,
       public BrowserAccessibilityDelegate,
-      public cc::TextureLayerClient,
-      public cc::DelegatedRendererLayerClient,
       public cc::DelegatedFrameResourceCollectionClient,
-      public ImageTransportFactoryAndroidObserver {
+      public ImageTransportFactoryAndroidObserver,
+      public ui::WindowAndroidObserver {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               ContentViewCoreImpl* content_view_core);
@@ -186,18 +186,13 @@ class RenderWidgetHostViewAndroid
   virtual gfx::Point GetLastTouchEventLocation() const OVERRIDE;
   virtual void FatalAccessibilityTreeError() OVERRIDE;
 
-  // cc::TextureLayerClient implementation.
-  virtual unsigned PrepareTexture() OVERRIDE;
-  virtual bool PrepareTextureMailbox(
-      cc::TextureMailbox* mailbox,
-      scoped_ptr<cc::SingleReleaseCallback>* release_callback,
-      bool use_shared_memory) OVERRIDE;
-
-  // cc::DelegatedRendererLayerClient implementation.
-  virtual void DidCommitFrameData() OVERRIDE;
-
   // cc::DelegatedFrameResourceCollectionClient implementation.
   virtual void UnusedResourcesAreAvailable() OVERRIDE;
+
+  // ui::WindowAndroidObserver implementation.
+  virtual void OnCompositingDidCommit() OVERRIDE;
+  virtual void OnAttachCompositor() OVERRIDE {}
+  virtual void OnDetachCompositor() OVERRIDE;
 
   // ImageTransportFactoryAndroidObserver implementation.
   virtual void OnLostResources() OVERRIDE;
@@ -338,6 +333,8 @@ class RenderWidgetHostViewAndroid
 
   // Size to use if we have no backing ContentViewCore
   gfx::Size default_size_;
+
+  const bool using_synchronous_compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };

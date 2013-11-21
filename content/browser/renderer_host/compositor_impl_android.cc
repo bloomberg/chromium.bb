@@ -38,6 +38,7 @@
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "ui/base/android/window_android.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/frame_time.h"
@@ -103,8 +104,9 @@ static base::LazyInstance<SurfaceMap>
 static base::LazyInstance<base::Lock> g_surface_map_lock;
 
 // static
-Compositor* Compositor::Create(CompositorClient* client) {
-  return client ? new CompositorImpl(client) : NULL;
+Compositor* Compositor::Create(CompositorClient* client,
+                               gfx::NativeWindow root_window) {
+  return client ? new CompositorImpl(client, root_window) : NULL;
 }
 
 // static
@@ -129,17 +131,22 @@ jobject CompositorImpl::GetSurface(int surface_id) {
   return jsurface;
 }
 
-CompositorImpl::CompositorImpl(CompositorClient* client)
+CompositorImpl::CompositorImpl(CompositorClient* client,
+                               gfx::NativeWindow root_window)
     : root_layer_(cc::Layer::Create()),
       has_transparent_background_(false),
       window_(NULL),
       surface_id_(0),
-      client_(client) {
+      client_(client),
+      root_window_(root_window) {
   DCHECK(client);
+  DCHECK(root_window);
   ImageTransportFactoryAndroid::AddObserver(this);
+  root_window->AttachCompositor();
 }
 
 CompositorImpl::~CompositorImpl() {
+  root_window_->DetachCompositor();
   ImageTransportFactoryAndroid::RemoveObserver(this);
   // Clean-up any surface references.
   SetSurface(NULL);
@@ -479,6 +486,10 @@ blink::WGC3Denum CompositorImpl::GetGLTypeForBitmap(gfx::JavaBitmap& bitmap) {
     default:
       return GL_UNSIGNED_SHORT_5_6_5;
   }
+}
+
+void CompositorImpl::DidCommit() {
+  root_window_->OnCompositingDidCommit();
 }
 
 } // namespace content

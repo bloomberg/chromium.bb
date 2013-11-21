@@ -18,6 +18,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.common.TraceEvent;
+import org.chromium.ui.base.WindowAndroid;
 
 /***
  * This view is used by a ContentView to render its content.
@@ -53,10 +54,10 @@ public class ContentViewRenderView extends FrameLayout {
      * Native code should add/remove the layers to be rendered through the ContentViewLayerRenderer.
      * @param context The context used to create this.
      */
-    public ContentViewRenderView(Context context) {
+    public ContentViewRenderView(Context context, WindowAndroid rootWindow) {
         super(context);
-
-        mNativeContentViewRenderView = nativeInit();
+        assert rootWindow != null;
+        mNativeContentViewRenderView = nativeInit(rootWindow.getNativePointer());
         assert mNativeContentViewRenderView != 0;
 
         setBackgroundColor(Color.WHITE);
@@ -289,7 +290,7 @@ public class ContentViewRenderView extends FrameLayout {
         }
     }
 
-    private native long nativeInit();
+    private native long nativeInit(long rootWindowNativePointer);
     private native void nativeDestroy(long nativeContentViewRenderView);
     private native void nativeSetCurrentContentView(long nativeContentViewRenderView,
             long nativeContentView);

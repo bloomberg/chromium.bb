@@ -68,6 +68,7 @@
         'base/android/view_android.h',
         'base/android/window_android.cc',
         'base/android/window_android.h',
+        'base/android/window_android_observer.h',
         'base/base_window.cc',
         'base/base_window.h',
         'base/clipboard/clipboard.cc',

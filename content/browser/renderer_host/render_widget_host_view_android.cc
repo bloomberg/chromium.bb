@@ -45,6 +45,7 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "ui/base/android/window_android.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/display.h"
@@ -112,9 +113,12 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       weak_ptr_factory_(this),
       overscroll_effect_enabled_(true),
       flush_input_requested_(false),
-      accelerated_surface_route_id_(0) {
+      accelerated_surface_route_id_(0),
+      using_synchronous_compositor_(SynchronousCompositorImpl::FromID(
+                                        widget_host->GetProcess()->GetID(),
+                                        widget_host->GetRoutingID()) != NULL) {
   if (!UsingDelegatedRenderer()) {
-    texture_layer_ = cc::TextureLayer::Create(this);
+    texture_layer_ = cc::TextureLayer::Create(NULL);
     layer_ = texture_layer_;
   }
 
@@ -190,6 +194,9 @@ void RenderWidgetHostViewAndroid::WasShown() {
     return;
 
   host_->WasShown();
+
+  if (content_view_core_ && !using_synchronous_compositor_)
+    content_view_core_->GetWindowAndroid()->AddObserver(this);
 }
 
 void RenderWidgetHostViewAndroid::WasHidden() {
@@ -201,6 +208,9 @@ void RenderWidgetHostViewAndroid::WasHidden() {
   // Inform the renderer that we are being hidden so it can reduce its resource
   // utilization.
   host_->WasHidden();
+
+  if (content_view_core_ && !using_synchronous_compositor_)
+    content_view_core_->GetWindowAndroid()->RemoveObserver(this);
 }
 
 void RenderWidgetHostViewAndroid::WasResized() {
@@ -504,7 +514,7 @@ void RenderWidgetHostViewAndroid::RenderProcessGone(
 
 void RenderWidgetHostViewAndroid::Destroy() {
   RemoveLayers();
-  content_view_core_ = NULL;
+  SetContentViewCore(NULL);
 
   // The RenderWidgetHost's destruction led here, so don't call it.
   host_ = NULL;
@@ -682,7 +692,7 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
       frame_provider_ = new cc::DelegatedFrameProvider(
           resource_collection_.get(), frame_data.Pass());
       delegated_renderer_layer_ =
-          cc::DelegatedRendererLayer::Create(this, frame_provider_);
+          cc::DelegatedRendererLayer::Create(NULL, frame_provider_);
       layer_ = delegated_renderer_layer_;
       if (are_layers_attached_)
         AttachLayers();
@@ -820,6 +830,7 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
 
   if (!texture_id_in_layer_) {
     texture_id_in_layer_ = factory->CreateTexture();
+    texture_layer_->SetTextureId(texture_id_in_layer_);
     texture_layer_->SetIsDrawable(true);
     texture_layer_->SetContentsOpaque(true);
   }
@@ -1218,6 +1229,9 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   if (are_layers_attached_)
     RemoveLayers();
 
+  if (content_view_core_ && !using_synchronous_compositor_)
+    content_view_core_->GetWindowAndroid()->RemoveObserver(this);
+
   content_view_core_ = content_view_core;
 
   if (GetBrowserAccessibilityManager()) {
@@ -1228,8 +1242,11 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
         SetContentViewCore(obj);
   }
 
-  if (are_layers_attached_)
+  if (are_layers_attached_) {
     AttachLayers();
+    if (content_view_core_ && !using_synchronous_compositor_)
+      content_view_core_->GetWindowAndroid()->AddObserver(this);
+  }
 }
 
 void RenderWidgetHostViewAndroid::RunAckCallbacks() {
@@ -1245,20 +1262,14 @@ void RenderWidgetHostViewAndroid::HasTouchEventHandlers(
     content_view_core_->HasTouchEventHandlers(need_touch_events);
 }
 
-unsigned RenderWidgetHostViewAndroid::PrepareTexture() {
-  RunAckCallbacks();
-  return texture_id_in_layer_;
-}
-
-void RenderWidgetHostViewAndroid::DidCommitFrameData() {
+void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
   RunAckCallbacks();
 }
 
-bool RenderWidgetHostViewAndroid::PrepareTextureMailbox(
-    cc::TextureMailbox* mailbox,
-    scoped_ptr<cc::SingleReleaseCallback>* release_callback,
-    bool use_shared_memory) {
-  return false;
+void RenderWidgetHostViewAndroid::OnDetachCompositor() {
+  DCHECK(content_view_core_);
+  DCHECK(!using_synchronous_compositor_);
+  RunAckCallbacks();
 }
 
 void RenderWidgetHostViewAndroid::OnLostResources() {
