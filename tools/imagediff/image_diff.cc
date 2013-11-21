@@ -15,6 +15,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/containers/hash_tables.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -32,6 +33,10 @@
 // Causes the app to remain open, waiting for pairs of filenames on stdin.
 // The caller is then responsible for terminating this app.
 static const char kOptionPollStdin[] = "use-stdin";
+// Causes the app to additionally calculate a diff of the color histograms
+// (which is resistant to shifts in layout).
+static const char kOptionCompareHistograms[] = "histogram";
+// Causes the app to output an image that visualizes the difference.
 static const char kOptionGenerateDiff[] = "diff";
 
 // Return codes used by this utility.
@@ -143,7 +148,7 @@ float PercentageDifferent(const Image& baseline, const Image& actual) {
   int w = std::min(baseline.w(), actual.w());
   int h = std::min(baseline.h(), actual.h());
 
-  // compute pixels different in the overlap
+  // Compute pixels different in the overlap.
   int pixels_different = 0;
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
@@ -152,35 +157,88 @@ float PercentageDifferent(const Image& baseline, const Image& actual) {
     }
   }
 
-  // count pixels that are a difference in size as also being different
+  // Count pixels that are a difference in size as also being different.
   int max_w = std::max(baseline.w(), actual.w());
   int max_h = std::max(baseline.h(), actual.h());
-
-  // ...pixels off the right side, but not including the lower right corner
+  // These pixels are off the right side, not including the lower right corner.
   pixels_different += (max_w - w) * h;
-
-  // ...pixels along the bottom, including the lower right corner
+  // These pixels are along the bottom, including the lower right corner.
   pixels_different += (max_h - h) * max_w;
 
   // Like the WebKit ImageDiff tool, we define percentage different in terms
   // of the size of the 'actual' bitmap.
   float total_pixels = static_cast<float>(actual.w()) *
                        static_cast<float>(actual.h());
-  if (total_pixels == 0)
-    return 100.0f;  // when the bitmap is empty, they are 100% different
-  return static_cast<float>(pixels_different) / total_pixels * 100;
+  if (total_pixels == 0) {
+    // When the bitmap is empty, they are 100% different.
+    return 100.0f;
+  }
+  return 100.0f * pixels_different / total_pixels;
+}
+
+typedef base::hash_map<uint32, int32> RgbaToCountMap;
+
+float HistogramPercentageDifferent(const Image& baseline, const Image& actual) {
+  // TODO(johnme): Consider using a joint histogram instead, as described in
+  // "Comparing Images Using Joint Histograms" by Pass & Zabih
+  // http://www.cs.cornell.edu/~rdz/papers/pz-jms99.pdf
+
+  int w = std::min(baseline.w(), actual.w());
+  int h = std::min(baseline.h(), actual.h());
+
+  // Count occurences of each RGBA pixel value of baseline in the overlap.
+  RgbaToCountMap baseline_histogram;
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      // hash_map operator[] inserts a 0 (default constructor) if key not found.
+      baseline_histogram[baseline.pixel_at(x, y)]++;
+    }
+  }
+
+  // Compute pixels different in the histogram of the overlap.
+  int pixels_different = 0;
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      uint32 actual_rgba = actual.pixel_at(x, y);
+      RgbaToCountMap::iterator it = baseline_histogram.find(actual_rgba);
+      if (it != baseline_histogram.end() && it->second > 0)
+        it->second--;
+      else
+        pixels_different++;
+    }
+  }
+
+  // Count pixels that are a difference in size as also being different.
+  int max_w = std::max(baseline.w(), actual.w());
+  int max_h = std::max(baseline.h(), actual.h());
+  // These pixels are off the right side, not including the lower right corner.
+  pixels_different += (max_w - w) * h;
+  // These pixels are along the bottom, including the lower right corner.
+  pixels_different += (max_h - h) * max_w;
+
+  // Like the WebKit ImageDiff tool, we define percentage different in terms
+  // of the size of the 'actual' bitmap.
+  float total_pixels = static_cast<float>(actual.w()) *
+                       static_cast<float>(actual.h());
+  if (total_pixels == 0) {
+    // When the bitmap is empty, they are 100% different.
+    return 100.0f;
+  }
+  return 100.0f * pixels_different / total_pixels;
 }
 
 void PrintHelp() {
   fprintf(stderr,
     "Usage:\n"
-    "  image_diff <compare file> <reference file>\n"
-    "    Compares two files on disk, returning 0 when they are the same\n"
+    "  image_diff [--histogram] <compare file> <reference file>\n"
+    "    Compares two files on disk, returning 0 when they are the same;\n"
+    "    passing \"--histogram\" additionally calculates a diff of the\n"
+    "    RGBA value histograms (which is resistant to shifts in layout)\n"
     "  image_diff --use-stdin\n"
     "    Stays open reading pairs of filenames from stdin, comparing them,\n"
     "    and sending 0 to stdout when they are the same\n"
     "  image_diff --diff <compare file> <reference file> <output file>\n"
-    "    Compares two files on disk, outputs an image that visualizes the"
+    "    Compares two files on disk, outputs an image that visualizes the\n"
     "    difference to <output file>\n");
   /* For unfinished webkit-like-mode (see below)
     "\n"
@@ -192,7 +250,9 @@ void PrintHelp() {
   */
 }
 
-int CompareImages(const base::FilePath& file1, const base::FilePath& file2) {
+int CompareImages(const base::FilePath& file1,
+                  const base::FilePath& file2,
+                  bool compare_histograms) {
   Image actual_image;
   Image baseline_image;
 
@@ -207,16 +267,22 @@ int CompareImages(const base::FilePath& file1, const base::FilePath& file2) {
     return kStatusError;
   }
 
+  if (compare_histograms) {
+    float percent = HistogramPercentageDifferent(actual_image, baseline_image);
+    const char* passed = percent > 0.0 ? "failed" : "passed";
+    printf("histogram diff: %01.2f%% %s\n", percent, passed);
+  }
+
+  const char* diff_name = compare_histograms ? "exact diff" : "diff";
   float percent = PercentageDifferent(actual_image, baseline_image);
+  const char* passed = percent > 0.0 ? "failed" : "passed";
+  printf("%s: %01.2f%% %s\n", diff_name, percent, passed);
   if (percent > 0.0) {
     // failure: The WebKit version also writes the difference image to
     // stdout, which seems excessive for our needs.
-    printf("diff: %01.2f%% failed\n", percent);
     return kStatusDifferent;
   }
-
   // success
-  printf("diff: %01.2f%% passed\n", percent);
   return kStatusSame;
 
 /* Untested mode that acts like WebKit's image comparator. I wrote this but
@@ -341,6 +407,7 @@ int main(int argc, const char* argv[]) {
   base::EnableTerminationOnHeapCorruption();
   CommandLine::Init(argc, argv);
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  bool histograms = parsed_command_line.HasSwitch(kOptionCompareHistograms);
   if (parsed_command_line.HasSwitch(kOptionPollStdin)) {
     // Watch stdin for filenames.
     std::string stdin_buffer;
@@ -352,7 +419,7 @@ int main(int argc, const char* argv[]) {
       if (!filename1.empty()) {
         // CompareImages writes results to stdout unless an error occurred.
         base::FilePath filename2 = FilePathFromASCII(stdin_buffer);
-        if (CompareImages(filename1, filename2) == kStatusError)
+        if (CompareImages(filename1, filename2, histograms) == kStatusError)
           printf("error\n");
         fflush(stdout);
         filename1 = base::FilePath();
@@ -373,7 +440,8 @@ int main(int argc, const char* argv[]) {
                         base::FilePath(args[2]));
     }
   } else if (args.size() == 2) {
-    return CompareImages(base::FilePath(args[0]), base::FilePath(args[1]));
+    return CompareImages(
+        base::FilePath(args[0]), base::FilePath(args[1]), histograms);
   }
 
   PrintHelp();
