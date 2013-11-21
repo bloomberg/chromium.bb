@@ -2,27 +2,33 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
 import time
+
 from telemetry.core.util import TimeoutException
 from telemetry.page import page_measurement
 
-class NewRasterizeAndRecord(page_measurement.PageMeasurement):
+class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
   def __init__(self):
-    super(NewRasterizeAndRecord, self).__init__('', True)
+    super(RasterizeAndRecordMicro, self).__init__('', True)
 
   def AddCommandLineOptions(self, parser):
     parser.add_option('--start-wait-time', dest='start_wait_time',
                       default=2,
                       help='Wait time before the benchmark is started ' +
                       '(must be long enought to load all content)')
-    parser.add_option('--rasterize_repeat', dest='rasterize_repeat',
+    parser.add_option('--rasterize-repeat', dest='rasterize_repeat',
                       default=100,
                       help='Repeat each raster this many times. Increase ' +
                       'this value to reduce variance.')
-    parser.add_option('--record_repeat', dest='record_repeat',
+    parser.add_option('--record-repeat', dest='record_repeat',
                       default=100,
                       help='Repeat each record this many times. Increase ' +
                       'this value to reduce variance.')
+    parser.add_option('--timeout', dest='timeout',
+                      default=120,
+                      help='The length of time to wait for the micro ' +
+                      'benchmark to finish, expressed in seconds.')
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
@@ -33,6 +39,15 @@ class NewRasterizeAndRecord(page_measurement.PageMeasurement):
     ])
 
   def MeasurePage(self, page, tab, results):
+    # TODO(vmpstr): Remove this temporary workaround when reference build has
+    # been updated to branch 1713 or later.
+    backend = tab.browser._browser_backend # pylint: disable=W0212
+    if (not hasattr(backend, 'chrome_branch_number') or
+        (sys.platform != 'android' and backend.chrome_branch_number < 1713)):
+      print ('Warning: rasterize_and_record_micro requires Chrome branch 1713 '
+             'or later. Skipping measurement.')
+      sys.exit(0)
+
     try:
       tab.WaitForJavaScriptExpression("document.readyState == 'complete'", 10)
     except TimeoutException:
@@ -56,7 +71,8 @@ class NewRasterizeAndRecord(page_measurement.PageMeasurement):
             });
     """)
 
-    tab.WaitForJavaScriptExpression('window.benchmark_results.done', 300)
+    tab.WaitForJavaScriptExpression(
+        'window.benchmark_results.done', self.options.timeout)
 
     data = tab.EvaluateJavaScript('window.benchmark_results.results')
 
