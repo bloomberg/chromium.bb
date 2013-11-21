@@ -194,8 +194,11 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
 }
 
 int ToolbarModelImpl::GetIcon() const {
-  if (WouldPerformSearchTermReplacement(false))
-    return IDR_OMNIBOX_SEARCH_SECURED;
+  if (WouldPerformSearchTermReplacement(false)) {
+    return (chrome::GetDisplaySearchButtonConditions() ==
+        chrome::DISPLAY_SEARCH_BUTTON_NEVER) ?
+            IDR_OMNIBOX_SEARCH_SECURED : IDR_OMNIBOX_SEARCH;
+  }
 
   static int icon_ids[NUM_SECURITY_LEVELS] = {
     IDR_LOCATION_BAR_HTTP,

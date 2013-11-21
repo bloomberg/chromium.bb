@@ -513,13 +513,33 @@ size_t CalculatePositionsInFrame(
 
   bool handled;
   if (decoration->AsButtonDecoration()) {
-    handled = decoration->AsButtonDecoration()->OnMousePressedWithView(
-        decorationRect, controlView);
+    ButtonDecoration* button = decoration->AsButtonDecoration();
 
-    // Update tracking areas and make sure the button's state is consistent with
-    // the mouse's location (e.g. "normal" if the mouse is no longer over the
-    // decoration, "hover" otherwise).
-    [self setUpTrackingAreasInRect:cellFrame ofView:controlView];
+    button->SetButtonState(ButtonDecoration::kButtonStatePressed);
+    [controlView setNeedsDisplay:YES];
+
+    // Track the mouse until the user releases the button.
+    [self trackMouse:theEvent
+              inRect:cellFrame
+              ofView:controlView
+        untilMouseUp:YES];
+
+    // Set the proper state (hover or normal) once the mouse has been released,
+    // and call |OnMousePressed| if the button was released while the mouse was
+    // within the bounds of the button.
+    const NSPoint mouseLocation =
+        [[controlView window] mouseLocationOutsideOfEventStream];
+    const NSPoint point = [controlView convertPoint:mouseLocation fromView:nil];
+    if (NSMouseInRect(point, cellFrame, [controlView isFlipped])) {
+      button->SetButtonState(ButtonDecoration::kButtonStateHover);
+      [controlView setNeedsDisplay:YES];
+      handled = decoration->AsButtonDecoration()->OnMousePressed(
+          [self frameForDecoration:decoration inFrame:cellFrame]);
+    } else {
+      button->SetButtonState(ButtonDecoration::kButtonStateNormal);
+      [controlView setNeedsDisplay:YES];
+      handled = true;
+    }
   } else {
     handled = decoration->OnMousePressed(decorationRect);
   }

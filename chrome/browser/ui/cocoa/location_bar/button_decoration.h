@@ -7,8 +7,11 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
+#import "ui/base/cocoa/appkit_utils.h"
 
-// |LocationBarDecoration| which looks and acts like a button.
+// |LocationBarDecoration| which looks and acts like a button. It has a
+// nine-part image as the background, and an icon that is rendered in the center
+// of the nine-part image.
 
 class ButtonDecoration : public LocationBarDecoration {
  public:
@@ -18,36 +21,49 @@ class ButtonDecoration : public LocationBarDecoration {
     kButtonStatePressed
   };
 
-  ButtonDecoration();
+  // Constructs the ButtonDecoration with the specified background 9-part images
+  // and icons for the three button states. Also takes the maximum number of
+  // pixels of inner horizontal padding to be used between the left/right 9-part
+  // images and the icon.
+  ButtonDecoration(ui::NinePartImageIds normal_image_ids,
+                   int normal_icon_id,
+                   ui::NinePartImageIds hover_image_ids,
+                   int hover_icon_id,
+                   ui::NinePartImageIds pressed_image_ids,
+                   int pressed_icon_id,
+                   CGFloat max_inner_padding);
+
   virtual ~ButtonDecoration();
 
   void SetButtonState(ButtonState state);
   ButtonState GetButtonState() const;
 
-  // To be called when a mouse click occurs within the decoration, which will
-  // set and reset the button's state as necessary before calling into
-  // |OnMousePressed| below.
-  bool OnMousePressedWithView(NSRect frame, NSView* control_view);
+  // Changes the icon for the specified button state only.
+  void SetIcon(ButtonState state, int icon_id);
+
+  // Changes the icon for all button states.
+  void SetIcon(int icon_id);
 
   // Implement |LocationBarDecoration|.
   virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
   virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
+  virtual bool AcceptsMousePress() OVERRIDE;
+  virtual bool IsDraggable() OVERRIDE;
   virtual bool OnMousePressed(NSRect frame) OVERRIDE;
   virtual ButtonDecoration* AsButtonDecoration() OVERRIDE;
 
- protected:
-  // Setters for the images for different states.
-  void SetNormalImage(NSImage* normal_image);
-  void SetHoverImage(NSImage* hover_image);
-  void SetPressedImage(NSImage* pressed_image);
-
  private:
-  base::scoped_nsobject<NSImage> normal_image_;
-  base::scoped_nsobject<NSImage> hover_image_;
-  base::scoped_nsobject<NSImage> pressed_image_;
+  ui::NinePartImageIds normal_image_ids_;
+  ui::NinePartImageIds hover_image_ids_;
+  ui::NinePartImageIds pressed_image_ids_;
+  int normal_icon_id_;
+  int hover_icon_id_;
+  int pressed_icon_id_;
   ButtonState state_;
+  CGFloat max_inner_padding_;
 
-  NSImage* GetImage();
+  ui::NinePartImageIds GetImageIds() const;
+  int GetIconId() const;
 
   DISALLOW_COPY_AND_ASSIGN(ButtonDecoration);
 };

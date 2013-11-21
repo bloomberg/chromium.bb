@@ -7,9 +7,50 @@
 #import "chrome/browser/ui/cocoa/location_bar/button_decoration.h"
 
 #include "base/logging.h"
+#import "base/mac/scoped_nsobject.h"
+#import "ui/base/cocoa/appkit_utils.h"
+#include "ui/base/resource/resource_bundle.h"
 
-ButtonDecoration::ButtonDecoration()
-    : state_(kButtonStateNormal) {
+namespace {
+
+NSImage* GetImageFromId(int image_id) {
+  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(image_id)
+      .ToNSImage();
+}
+
+bool IsValidNinePartImageIds(const ui::NinePartImageIds& object) {
+  return (object.top_left >= 0) &&
+         (object.top >= 0) &&
+         (object.top_right >= 0) &&
+         (object.left >= 0) &&
+         (object.center >= 0) &&
+         (object.right >= 0) &&
+         (object.bottom_left >= 0) &&
+         (object.bottom >= 0) &&
+         (object.bottom_right >= 0);
+}
+
+}  // namespace
+
+ButtonDecoration::ButtonDecoration(ui::NinePartImageIds normal_image_ids,
+                                   int normal_icon_id,
+                                   ui::NinePartImageIds hover_image_ids,
+                                   int hover_icon_id,
+                                   ui::NinePartImageIds pressed_image_ids,
+                                   int pressed_icon_id,
+                                   CGFloat max_inner_padding)
+    : normal_image_ids_(normal_image_ids),
+      hover_image_ids_(hover_image_ids),
+      pressed_image_ids_(pressed_image_ids),
+      normal_icon_id_(normal_icon_id),
+      hover_icon_id_(hover_icon_id),
+      pressed_icon_id_(pressed_icon_id),
+      state_(kButtonStateNormal),
+      max_inner_padding_(max_inner_padding) {
+  DCHECK(IsValidNinePartImageIds(normal_image_ids_) && normal_icon_id_ >= 0);
+  DCHECK(IsValidNinePartImageIds(hover_image_ids_) && hover_icon_id_ >= 0);
+  DCHECK(IsValidNinePartImageIds(pressed_image_ids_) && pressed_icon_id_ >= 0);
+  DCHECK_GE(max_inner_padding_, 0);
 }
 
 ButtonDecoration::~ButtonDecoration() {
@@ -23,41 +64,73 @@ ButtonDecoration::ButtonState ButtonDecoration::GetButtonState() const {
   return state_;
 }
 
-bool ButtonDecoration::OnMousePressedWithView(
-    NSRect frame, NSView* control_view) {
-  ButtonState old_state = GetButtonState();
-  SetButtonState(ButtonDecoration::kButtonStatePressed);
-  [control_view setNeedsDisplay:YES];
+void ButtonDecoration::SetIcon(ButtonState state, int icon_id) {
+  switch (state) {
+    case kButtonStateNormal:
+      normal_icon_id_ = icon_id;
+      break;
+    case kButtonStateHover:
+      hover_icon_id_ = icon_id;
+      break;
+    case kButtonStatePressed:
+      pressed_icon_id_ = icon_id;
+      break;
+    default:
+      NOTREACHED();
+  }
+}
 
-  bool handled = OnMousePressed(frame);
-
-  SetButtonState(old_state);
-  return handled;
+void ButtonDecoration::SetIcon(int icon_id) {
+  normal_icon_id_ = icon_id;
+  hover_icon_id_ = icon_id;
+  pressed_icon_id_ = icon_id;
 }
 
 CGFloat ButtonDecoration::GetWidthForSpace(CGFloat width) {
-  NSImage* image = GetImage();
-  if (image) {
-    const CGFloat image_width = [image size].width;
-    if (image_width <= width)
-      return image_width;
-  }
-  return kOmittedWidth;
+  const ui::NinePartImageIds image_ids = GetImageIds();
+  NSImage* icon = GetImageFromId(GetIconId());
+
+  if (!icon)
+    return kOmittedWidth;
+
+  const CGFloat min_width = [GetImageFromId(image_ids.left) size].width +
+                            [icon size].width +
+                            [GetImageFromId(image_ids.right) size].width;
+  if (width < min_width)
+    return kOmittedWidth;
+
+  const CGFloat max_width = min_width + 2 * max_inner_padding_;
+  return std::min(width, max_width);
 }
 
 void ButtonDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
-  NSImage *image = GetImage();
-  const CGFloat x_inset =
-      std::floor((NSWidth(frame) - [image size].width) / 2.0);
-  const CGFloat y_inset =
-      std::floor((NSHeight(frame) - [image size].height) / 2.0);
+  const ui::NinePartImageIds image_ids = GetImageIds();
+  NSImage* icon = GetImageFromId(GetIconId());
 
-  [image drawInRect:NSInsetRect(frame, x_inset, y_inset)
-           fromRect:NSZeroRect  // Entire image
-          operation:NSCompositeSourceOver
-           fraction:1.0
-     respectFlipped:YES
-              hints:nil];
+  if (!icon)
+    return;
+
+  ui::DrawNinePartImage(frame, image_ids, NSCompositeSourceOver, 1.0, YES);
+
+  const CGFloat x_inset =
+      std::floor((NSWidth(frame) - [icon size].width) / 2.0);
+  const CGFloat y_inset =
+      std::floor((NSHeight(frame) - [icon size].height) / 2.0);
+
+  [icon drawInRect:NSInsetRect(frame, x_inset, y_inset)
+          fromRect:NSZeroRect
+         operation:NSCompositeSourceOver
+          fraction:1.0
+    respectFlipped:YES
+             hints:nil];
+}
+
+bool ButtonDecoration::AcceptsMousePress() {
+  return true;
+}
+
+bool ButtonDecoration::IsDraggable() {
+  return false;
 }
 
 bool ButtonDecoration::OnMousePressed(NSRect frame) {
@@ -68,31 +141,26 @@ ButtonDecoration* ButtonDecoration::AsButtonDecoration() {
   return this;
 }
 
-void ButtonDecoration::SetNormalImage(NSImage* normal_image) {
-  normal_image_.reset([normal_image retain]);
-}
-
-void ButtonDecoration::SetHoverImage(NSImage* hover_image) {
-  hover_image_.reset([hover_image retain]);
-}
-
-void ButtonDecoration::SetPressedImage(NSImage* pressed_image) {
-  pressed_image_.reset([pressed_image retain]);
-}
-
-NSImage* ButtonDecoration::GetImage() {
-  switch(state_) {
-    case kButtonStateNormal:
-      DCHECK(normal_image_.get());
-      return normal_image_.get();
+ui::NinePartImageIds ButtonDecoration::GetImageIds() const {
+  switch (state_) {
     case kButtonStateHover:
-      DCHECK(hover_image_.get());
-      return hover_image_.get();
+      return hover_image_ids_;
     case kButtonStatePressed:
-      DCHECK(pressed_image_.get());
-      return pressed_image_.get();
+      return pressed_image_ids_;
+    case kButtonStateNormal:
     default:
-      NOTREACHED();
-      return nil;
+      return normal_image_ids_;
+  }
+}
+
+int ButtonDecoration::GetIconId() const {
+  switch (state_) {
+    case kButtonStateHover:
+      return hover_icon_id_;
+    case kButtonStatePressed:
+      return pressed_icon_id_;
+    case kButtonStateNormal:
+    default:
+      return normal_icon_id_;
   }
 }

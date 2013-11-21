@@ -31,6 +31,7 @@ class LocationIconDecoration;
 class MicSearchDecoration;
 class PageActionDecoration;
 class Profile;
+class SearchButtonDecoration;
 class SelectedKeywordDecoration;
 class StarDecoration;
 class ZoomDecoration;
@@ -233,6 +234,9 @@ class LocationBarViewMac : public LocationBar,
 
   // Generated CC hint decoration.
   scoped_ptr<GeneratedCreditCardDecoration> generated_credit_card_decoration_;
+
+  // The right-hand-side search button that is shown on search result pages.
+  scoped_ptr<SearchButtonDecoration> search_button_decoration_;
 
   Profile* profile_;
 
