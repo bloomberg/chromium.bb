@@ -88,16 +88,22 @@ class MapsValidator(page_test.PageTest):
   def CompareToExpectations(screenshot, expectations, devicePixelRatio):
     for expectation in expectations:
       location = expectation["location"]
-      pixel_color = screenshot.GetPixelColor(
-        location[0] * devicePixelRatio,
-        location[1] * devicePixelRatio)
+      x = location[0] * devicePixelRatio
+      y = location[1] * devicePixelRatio
+
+      if x < 0 or y < 0 or x > screenshot.width or y > screenshot.height:
+        raise page_test.Failure(
+          'Expected pixel location [%d, %d] is out of range on [%d, %d] image' %
+          (x, y, screenshot.width, screenshot.height))
+
+      pixel_color = screenshot.GetPixelColor(x, y)
       expect_color = png_bitmap.PngColor(
           expectation["color"][0],
           expectation["color"][1],
           expectation["color"][2])
       iter_result = pixel_color.IsEqual(expect_color, expectation["tolerance"])
       if not iter_result:
-        raise page_test.Failure('FAILURE: Expected pixel at ' + str(location) +
+        raise page_test.Failure('Expected pixel at ' + str(location) +
             ' to be ' +
             str(expectation["color"]) + " but got [" +
             str(pixel_color.r) + ", " +
