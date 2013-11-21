@@ -147,8 +147,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
 };
 
 // Test that the NaCl plugin isn't blocked for Webstore extensions.
-// Disabled: http://crbug.com/319892
-IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_WebStoreExtension) {
+IN_PROC_BROWSER_TEST_F(NaClExtensionTest, WebStoreExtension) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_FROM_WEBSTORE);
@@ -157,8 +156,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_WebStoreExtension) {
 }
 
 // Test that the NaCl plugin is blocked for non-Webstore extensions.
-// Disabled: http://crbug.com/319892
-IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_NonWebStoreExtension) {
+IN_PROC_BROWSER_TEST_F(NaClExtensionTest, NonWebStoreExtension) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_NON_WEBSTORE);
@@ -167,8 +165,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_NonWebStoreExtension) {
 }
 
 // Test that the NaCl plugin isn't blocked for component extensions.
-// Disabled: http://crbug.com/319892
-IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_ComponentExtension) {
+IN_PROC_BROWSER_TEST_F(NaClExtensionTest, ComponentExtension) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_COMPONENT);
@@ -178,8 +175,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_ComponentExtension) {
 }
 
 // Test that the NaCl plugin isn't blocked for unpacked extensions.
-// Disabled: http://crbug.com/319892
-IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_UnpackedExtension) {
+IN_PROC_BROWSER_TEST_F(NaClExtensionTest, UnpackedExtension) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_UNPACKED);
@@ -190,8 +186,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_UnpackedExtension) {
 
 // Test that the NaCl plugin is blocked for non chrome-extension urls, except
 // if it's a content (MIME type) handler.
-// Disabled: http://crbug.com/319892
-IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_NonExtensionScheme) {
+IN_PROC_BROWSER_TEST_F(NaClExtensionTest, NonExtensionScheme) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_FROM_WEBSTORE);
