@@ -135,8 +135,10 @@ std::string GetTestPublicKeyId() {
 
 void GetX509CertSCT(SignedCertificateTimestamp* sct) {
   sct->log_id = HexToBytes(kTestKeyId);
+  // Time the log issued a SCT for this certificate, which is
+  // Fri Apr  5 10:04:16.089 2013
   sct->timestamp = base::Time::UnixEpoch() +
-      base::TimeDelta::FromMilliseconds(GG_UINT64_C(1365181456089));
+      base::TimeDelta::FromMilliseconds(GG_INT64_C(1365181456089));
   sct->extensions.clear();
 
   sct->signature.hash_algorithm = ct::DigitallySigned::HASH_ALGO_SHA256;
@@ -146,8 +148,10 @@ void GetX509CertSCT(SignedCertificateTimestamp* sct) {
 
 void GetPrecertSCT(SignedCertificateTimestamp* sct) {
   sct->log_id = HexToBytes(kTestKeyId);
+  // Time the log issued a SCT for this Precertificate, which is
+  // Fri Apr  5 10:04:16.275 2013
   sct->timestamp = base::Time::UnixEpoch() +
-    base::TimeDelta::FromMilliseconds(GG_UINT64_C(1365181456275));
+    base::TimeDelta::FromMilliseconds(GG_INT64_C(1365181456275));
   sct->extensions.clear();
 
   sct->signature.hash_algorithm = ct::DigitallySigned::HASH_ALGO_SHA256;
