@@ -25,4 +25,10 @@ public interface DesktopViewInterface {
      * has been changed by the TouchInputHandler, which requires repainting.
      */
     void transformationChanged();
+
+    /**
+     * Starts or stops an animation. Whilst the animation is running, the DesktopView will
+     * periodically call TouchInputHandler.processAnimation() and repaint itself.
+     */
+    void setAnimationEnabled(boolean enabled);
 }

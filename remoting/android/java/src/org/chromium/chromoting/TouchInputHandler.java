@@ -11,7 +11,7 @@ import android.view.MotionEvent;
  * switched. The DesktopView passes the low-level touchscreen events and other events via this
  * interface. The implementation recognizes and processes the touchscreen gestures, and then
  * performs actions on the DesktopView (such as panning/zooming the display, injecting input, or
- * showing/hiding UI elements).
+ * showing/hiding UI elements). All methods are called on the main UI thread.
  */
 public interface TouchInputHandler {
     // These constants must match those in the generated struct protoc::MouseEvent_MouseButton.
@@ -46,4 +46,10 @@ public interface TouchInputHandler {
      * method returns.
      */
     void onHostSizeChanged(int width, int height);
+
+    /**
+     * Whilst an animation is in progress, this method is called repeatedly until the animation is
+     * cancelled. After this method returns, the DesktopView will schedule a repaint.
+     */
+    void processAnimation();
 }

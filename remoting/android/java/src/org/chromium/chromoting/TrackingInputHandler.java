@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.widget.Scroller;
 
 /**
  * This class implements the cursor-tracking behavior and gestures.
@@ -33,6 +34,9 @@ public class TrackingInputHandler implements TouchInputHandler {
     private GestureDetector mScroller;
     private ScaleGestureDetector mZoomer;
     private TapGestureDetector mTapDetector;
+
+    /** Used to calculate the physics for flinging the cursor. */
+    private Scroller mFlingScroller;
 
     /**
      * The current cursor position is stored here as floats, so that the desktop image can be
@@ -77,6 +81,8 @@ public class TrackingInputHandler implements TouchInputHandler {
 
         mZoomer = new ScaleGestureDetector(context, listener);
         mTapDetector = new TapGestureDetector(context, listener);
+
+        mFlingScroller = new Scroller(context);
 
         mCursorPosition = new PointF();
 
@@ -214,7 +220,6 @@ public class TrackingInputHandler implements TouchInputHandler {
         return false;
     }
 
-
     /** Injects a button-up event if the button is currently held down (during a drag event). */
     private void releaseAnyHeldButton() {
         if (mHeldButton != BUTTON_UNDEFINED) {
@@ -232,6 +237,10 @@ public class TrackingInputHandler implements TouchInputHandler {
         handled |= mTapDetector.onTouchEvent(event);
 
         switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                mViewer.setAnimationEnabled(false);
+                break;
+
             case MotionEvent.ACTION_POINTER_DOWN:
                 mTotalMotionY = 0;
                 mSwipeCompleted = false;
@@ -260,6 +269,26 @@ public class TrackingInputHandler implements TouchInputHandler {
     public void onHostSizeChanged(int width, int height) {
         moveCursor((float)width / 2, (float)height / 2);
         repositionImageWithZoom();
+    }
+
+    @Override
+    public void processAnimation() {
+        int previousX = mFlingScroller.getCurrX();
+        int previousY = mFlingScroller.getCurrY();
+        if (!mFlingScroller.computeScrollOffset()) {
+            mViewer.setAnimationEnabled(false);
+            return;
+        }
+        int deltaX = mFlingScroller.getCurrX() - previousX;
+        int deltaY = mFlingScroller.getCurrY() - previousY;
+        float delta[] = {(float)deltaX, (float)deltaY};
+        synchronized (mRenderData) {
+            Matrix canvasToImage = new Matrix();
+            mRenderData.transform.invert(canvasToImage);
+            canvasToImage.mapVectors(delta);
+        }
+
+        moveCursor(mCursorPosition.x + delta[0], mCursorPosition.y + delta[1]);
     }
 
     /** Responds to touch events filtered by the gesture detectors. */
@@ -294,6 +323,28 @@ public class TrackingInputHandler implements TouchInputHandler {
             }
 
             moveCursor(mCursorPosition.x - delta[0], mCursorPosition.y - delta[1]);
+            return true;
+        }
+
+        /**
+         * Called when a fling gesture is recognized.
+         */
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            // The fling physics calculation is based on screen coordinates, so that it will
+            // behave consistently at different zoom levels (and will work nicely at high zoom
+            // levels, since |mFlingScroller| outputs integer coordinates). However, the desktop
+            // will usually be panned as the cursor is moved across the desktop, which means the
+            // transformation mapping from screen to desktop coordinates will change. To deal with
+            // this, the cursor movement is computed from relative coordinate changes from
+            // |mFlingScroller|. This means the fling can be started at (0, 0) with no bounding
+            // constraints - the cursor is already constrained by the desktop size.
+            mFlingScroller.fling(0, 0, (int)velocityX, (int)velocityY, Integer.MIN_VALUE,
+                    Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            // Initialize the scroller's current offset coordinates, since they are used for
+            // calculating the delta values.
+            mFlingScroller.computeScrollOffset();
+            mViewer.setAnimationEnabled(true);
             return true;
         }
 

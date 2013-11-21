@@ -106,6 +106,14 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
 
     private FeedbackAnimator mFeedbackAnimator = new FeedbackAnimator();
 
+    // Variables to control animation by the TouchInputHandler.
+
+    /** Protects mInputAnimationRunning. */
+    private Object mAnimationLock = new Object();
+
+    /** Whether the TouchInputHandler has requested animation to be performed. */
+    private boolean mInputAnimationRunning = false;
+
     public DesktopView(Activity context) {
         super(context);
 
@@ -120,9 +128,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
         getHolder().addCallback(this);
     }
 
-    /**
-     * Request repainting of the desktop view.
-     */
+    /** Request repainting of the desktop view. */
     void requestRepaint() {
         synchronized (mRenderData) {
             if (mRepaintPending) {
@@ -187,20 +193,13 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
         canvas.drawColor(Color.BLACK);
         canvas.drawBitmap(image, 0, 0, new Paint());
 
-        if (mFeedbackAnimator.isAnimationRunning()) {
+        boolean feedbackAnimationRunning = mFeedbackAnimator.isAnimationRunning();
+        if (feedbackAnimationRunning) {
             float scaleFactor;
             synchronized (mRenderData) {
                 scaleFactor = mRenderData.transform.mapRadius(1);
             }
             mFeedbackAnimator.render(canvas, x, y, 40 / scaleFactor);
-
-            // Trigger a repaint request for the next frame of the animation.
-            getHandler().postAtTime(new Runnable() {
-                @Override
-                public void run() {
-                    requestRepaint();
-                }
-            }, startTimeMs + 30);
         }
 
         Bitmap cursorBitmap = JniInterface.getCursorBitmap();
@@ -210,6 +209,31 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
         }
 
         getHolder().unlockCanvasAndPost(canvas);
+
+        synchronized (mAnimationLock) {
+            if (mInputAnimationRunning || feedbackAnimationRunning) {
+                getHandler().postAtTime(new Runnable() {
+                    @Override
+                    public void run() {
+                        processAnimation();
+                    }
+                }, startTimeMs + 30);
+            }
+        };
+    }
+
+    private void processAnimation() {
+        boolean running;
+        synchronized (mAnimationLock) {
+            running = mInputAnimationRunning;
+        }
+        if (running) {
+            mInputHandler.processAnimation();
+        }
+        running |= mFeedbackAnimator.isAnimationRunning();
+        if (running) {
+            requestRepaint();
+        }
     }
 
     /**
@@ -322,5 +346,15 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
     @Override
     public void transformationChanged() {
         requestRepaint();
+    }
+
+    @Override
+    public void setAnimationEnabled(boolean enabled) {
+        synchronized (mAnimationLock) {
+            if (enabled && !mInputAnimationRunning) {
+                requestRepaint();
+            }
+            mInputAnimationRunning = enabled;
+        }
     }
 }
