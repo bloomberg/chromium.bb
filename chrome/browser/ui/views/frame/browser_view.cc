@@ -806,6 +806,10 @@ void BrowserView::SetStarredState(bool is_starred) {
   GetLocationBarView()->SetStarToggled(is_starred);
 }
 
+void BrowserView::SetTranslateIconToggled(bool is_lit) {
+  GetLocationBarView()->SetTranslateIconToggled(is_lit);
+}
+
 void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
                                      content::WebContents* new_contents,
                                      int index,

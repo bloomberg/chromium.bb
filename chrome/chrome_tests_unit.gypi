@@ -1424,6 +1424,7 @@
         'browser/sync_file_system/sync_file_system_test_util.h',
         'browser/sync_file_system/sync_task_manager_unittest.cc',
         'browser/sync_file_system/syncable_file_system_util_unittest.cc',
+        'browser/tab_contents/language_state_unittest.cc',
         'browser/tab_contents/render_view_context_menu_test_util.cc',
         'browser/tab_contents/render_view_context_menu_test_util.h',
         'browser/tab_contents/render_view_context_menu_unittest.cc',

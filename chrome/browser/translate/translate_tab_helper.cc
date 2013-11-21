@@ -58,7 +58,7 @@ void TranslateTabHelper::OnPageTranslated(int32 page_id,
                                           const std::string& original_lang,
                                           const std::string& translated_lang,
                                           TranslateErrors::Type error_type) {
-  language_state_.set_current_language(translated_lang);
+  language_state_.SetCurrentLanguage(translated_lang);
   language_state_.set_translation_pending(false);
   PageTranslatedDetails details;
   details.source_language = original_lang;

@@ -188,6 +188,9 @@ class LocationBarView : public LocationBar,
   // The star. It may not be visible.
   StarView* star_view() { return star_view_; }
 
+  // Toggles the translate icon on or off.
+  void SetTranslateIconToggled(bool on);
+
   // The translate icon. It may not be visible.
   TranslateIconView* translate_icon_view() { return translate_icon_view_; }
 

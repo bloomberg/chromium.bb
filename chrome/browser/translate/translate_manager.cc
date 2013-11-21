@@ -541,7 +541,7 @@ void TranslateManager::RevertTranslation(WebContents* web_contents) {
 
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
-  translate_tab_helper->language_state().set_current_language(
+  translate_tab_helper->language_state().SetCurrentLanguage(
       translate_tab_helper->language_state().original_language());
 }
 

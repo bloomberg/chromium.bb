@@ -18,11 +18,15 @@ TranslateIconView::TranslateIconView(CommandUpdater* command_updater)
     : BubbleIconView(command_updater, IDC_TRANSLATE_PAGE) {
   set_id(VIEW_ID_TRANSLATE_BUTTON);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_TRANSLATE));
-  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_TRANSLATE));
+  SetToggled(false);
 }
 
 TranslateIconView::~TranslateIconView() {
+}
+
+void TranslateIconView::SetToggled(bool on) {
+  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      on ? IDR_TRANSLATE_ACTIVE : IDR_TRANSLATE));
 }
 
 bool TranslateIconView::IsBubbleShowing() const {

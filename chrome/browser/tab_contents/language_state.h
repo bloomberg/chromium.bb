@@ -55,9 +55,7 @@ class LanguageState {
 
   const std::string& original_language() const { return original_lang_; }
 
-  void set_current_language(const std::string& language) {
-    current_lang_ = language;
-  }
+  void SetCurrentLanguage(const std::string& language);
   const std::string& current_language() const { return current_lang_; }
 
   bool page_needs_translation() const { return page_needs_translation_; }
@@ -86,6 +84,11 @@ class LanguageState {
   void set_observer(LanguageStateObserver* observer) { observer_ = observer; }
 
  private:
+  void SetIsPageTranslated(bool value);
+
+  // Whether the page is translated or not.
+  bool is_page_translated_;
+
   // The languages this page is in. Note that current_lang_ is different from
   // original_lang_ when the page has been translated.
   // Note that these might be empty if the page language has not been determined
@@ -97,7 +100,8 @@ class LanguageState {
   std::string prev_original_lang_;
   std::string prev_current_lang_;
 
-  // The navigation controller of the tab we are associated with.
+  // The navigation controller of the tab we are associated with. This may be
+  // NULL only when testing.
   content::NavigationController* navigation_controller_;
 
   // Whether it is OK to offer to translate the page.  Some pages explictly

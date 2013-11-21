@@ -16,6 +16,9 @@ class TranslateIconView : public BubbleIconView {
   explicit TranslateIconView(CommandUpdater* command_updater);
   virtual ~TranslateIconView();
 
+  // Toggles the icon on or off.
+  void SetToggled(bool on);
+
  protected:
   // BubbleIconView:
   virtual bool IsBubbleShowing() const OVERRIDE;

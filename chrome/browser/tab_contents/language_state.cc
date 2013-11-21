@@ -13,7 +13,8 @@
 using content::NavigationController;
 
 LanguageState::LanguageState(NavigationController* nav_controller)
-    : navigation_controller_(nav_controller),
+    : is_page_translated_(false),
+      navigation_controller_(nav_controller),
       page_needs_translation_(false),
       translation_pending_(false),
       translation_declined_(false),
@@ -46,6 +47,8 @@ void LanguageState::DidNavigate(
     current_lang_.clear();
   }
 
+  SetIsPageTranslated(false);
+
   translation_pending_ = false;
   translation_declined_ = false;
 
@@ -63,6 +66,7 @@ void LanguageState::LanguageDetermined(const std::string& page_language,
   page_needs_translation_ = page_needs_translation;
   original_lang_ = page_language;
   current_lang_ = page_language;
+  SetIsPageTranslated(false);
 }
 
 bool LanguageState::InTranslateNavigation() const {
@@ -75,18 +79,20 @@ bool LanguageState::InTranslateNavigation() const {
       !translation_pending_ &&
       prev_original_lang_ == original_lang_ &&
       prev_original_lang_ != prev_current_lang_ &&
+      navigation_controller_ &&
       navigation_controller_->GetActiveEntry() &&
       navigation_controller_->GetActiveEntry()->GetTransitionType() ==
           content::PAGE_TRANSITION_LINK;
 }
 
+void LanguageState::SetCurrentLanguage(const std::string& language) {
+  current_lang_ = language;
+  SetIsPageTranslated(current_lang_ != original_lang_);
+}
 
 std::string LanguageState::AutoTranslateTo() const {
-  if (InTranslateNavigation() &&
-      // The page is not yet translated.
-      original_lang_ == current_lang_ ) {
+  if (InTranslateNavigation() && !is_page_translated_)
     return prev_current_lang_;
-  }
 
   return std::string();
 }
@@ -96,7 +102,7 @@ void LanguageState::SetTranslateEnabled(bool value) {
     return;
 
   translate_enabled_ = value;
-  if (observer_) {
+  if (observer_ && navigation_controller_) {
     content::WebContents* web_contents =
         navigation_controller_->GetWebContents();
     observer_->OnTranslateEnabledChanged(web_contents);
@@ -105,4 +111,16 @@ void LanguageState::SetTranslateEnabled(bool value) {
 
 bool LanguageState::HasLanguageChanged() const {
   return original_lang_ != prev_original_lang_;
+}
+
+void LanguageState::SetIsPageTranslated(bool value) {
+  if (is_page_translated_ == value)
+    return;
+
+  is_page_translated_ = value;
+  if (observer_ && navigation_controller_) {
+    content::WebContents* web_contents =
+        navigation_controller_->GetWebContents();
+    observer_->OnIsPageTranslatedChanged(web_contents);
+  }
 }

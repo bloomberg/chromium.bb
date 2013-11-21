@@ -301,6 +301,10 @@ void BrowserWindowCocoa::SetStarredState(bool is_starred) {
   [controller_ setStarredState:is_starred ? YES : NO];
 }
 
+void BrowserWindowCocoa::SetTranslateIconToggled(bool is_lit) {
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowCocoa::OnActiveTabChanged(content::WebContents* old_contents,
                                             content::WebContents* new_contents,
                                             int index,

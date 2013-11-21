@@ -574,6 +574,10 @@ void LocationBarView::SetStarToggled(bool on) {
     star_view_->SetToggled(on);
 }
 
+void LocationBarView::SetTranslateIconToggled(bool on) {
+  translate_icon_view_->SetToggled(on);
+}
+
 void LocationBarView::ShowBookmarkPrompt() {
   if (star_view_ && star_view_->visible())
     BookmarkPromptView::ShowPrompt(star_view_, profile_->GetPrefs());
@@ -1401,10 +1405,12 @@ void LocationBarView::RefreshTranslateIcon() {
   if (!web_contents || !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTranslateNewUX))
     return;
-  bool enabled = TranslateTabHelper::FromWebContents(
-      web_contents)->language_state().translate_enabled();
+  LanguageState& language_state = TranslateTabHelper::FromWebContents(
+      web_contents)->language_state();
+  bool enabled = language_state.translate_enabled();
   command_updater()->UpdateCommandEnabled(IDC_TRANSLATE_PAGE, enabled);
   translate_icon_view_->SetVisible(enabled);
+  translate_icon_view_->SetToggled(language_state.IsPageTranslated());
 }
 
 void LocationBarView::ShowManagePasswordsBubbleIfNeeded() {

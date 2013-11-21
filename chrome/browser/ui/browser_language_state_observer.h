@@ -22,6 +22,7 @@ class BrowserLanguageStateObserver : public LanguageStateObserver {
   virtual ~BrowserLanguageStateObserver();
 
   // Overridden from LanguageState::Observer
+  virtual void OnIsPageTranslatedChanged(content::WebContents* source) OVERRIDE;
   virtual void OnTranslateEnabledChanged(content::WebContents* source) OVERRIDE;
 
  private:

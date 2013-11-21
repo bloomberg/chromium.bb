@@ -794,6 +794,10 @@ void BrowserWindowGtk::SetStarredState(bool is_starred) {
   toolbar_->GetLocationBarView()->SetStarred(is_starred);
 }
 
+void BrowserWindowGtk::SetTranslateIconToggled(bool is_lit) {
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowGtk::OnActiveTabChanged(WebContents* old_contents,
                                           WebContents* new_contents,
                                           int index,
