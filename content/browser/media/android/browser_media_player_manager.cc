@@ -189,7 +189,7 @@ void BrowserMediaPlayerManager::OnMediaMetadataChanged(
     bool success) {
   Send(new MediaPlayerMsg_MediaMetadataChanged(
       routing_id(), player_id, duration, width, height, success));
-  if (fullscreen_player_id_ != -1)
+  if (fullscreen_player_id_ == player_id)
     video_view_->UpdateMediaMetadata();
 }
 
