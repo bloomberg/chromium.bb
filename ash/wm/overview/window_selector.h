@@ -92,9 +92,6 @@ class ASH_EXPORT WindowSelector
   // Begins positioning windows such that all windows are visible on the screen.
   void StartOverview();
 
-  // Stores the currently focused window and removes focus from it.
-  void RemoveFocusAndSetRestoreWindow();
-
   // Resets the stored window from RemoveFocusAndSetRestoreWindow to NULL. If
   // |focus|, restores focus to the stored window.
   void ResetFocusRestoreWindow(bool focus);
@@ -128,13 +125,14 @@ class ASH_EXPORT WindowSelector
   // Index of the currently selected window if the mode is CYCLE.
   size_t selected_window_;
 
-  // A weak pointer to the window which was focused on entering overview mode.
-  // If overview mode is canceled the focus should be restored to this window.
+  // A weak pointer to the window which was focused on beginning window
+  // selection. If window selection is canceled the focus should be restored to
+  // this window.
   aura::Window* restore_focus_window_;
 
-  // True when restoring focus to the window. This is used to prevent handling
-  // the resulting activation.
-  bool restoring_focus_;
+  // True when performing operations that may cause window activations. This is
+  // used to prevent handling the resulting expected activation.
+  bool ignore_activations_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelector);
 };

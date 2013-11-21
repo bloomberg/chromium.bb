@@ -387,7 +387,11 @@ TEST_F(WindowSelectorTest, BasicCycle) {
 
   Cycle(WindowSelector::FORWARD);
   EXPECT_TRUE(IsSelecting());
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+
   Cycle(WindowSelector::FORWARD);
+  EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
+
   StopCycling();
   EXPECT_FALSE(IsSelecting());
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));

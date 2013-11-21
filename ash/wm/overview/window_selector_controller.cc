@@ -86,14 +86,17 @@ void WindowSelectorController::OnWindowSelected(aura::Window* window) {
 
   wm::ActivateWindow(window);
   last_selection_time_ = base::Time::Now();
+  Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(false);
 }
 
 void WindowSelectorController::OnSelectionCanceled() {
   window_selector_.reset();
   last_selection_time_ = base::Time::Now();
+  Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(false);
 }
 
 void WindowSelectorController::OnSelectionStarted() {
+  Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(true);
   Shell* shell = Shell::GetInstance();
   shell->delegate()->RecordUserMetricsAction(UMA_WINDOW_SELECTION);
   if (!last_selection_time_.is_null()) {

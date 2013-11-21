@@ -196,10 +196,9 @@ void ScopedShowWindow::Show(aura::Window* window) {
   window_ = window;
   stack_window_above_ = GetWindowBelow(window);
   minimized_ = wm::GetWindowState(window)->IsMinimized();
-  window_->Show();
-  window_->SetTransform(gfx::Transform());
   window_->parent()->AddObserver(this);
-  window_->parent()->StackChildAtTop(window_);
+  window_->Show();
+  wm::GetWindowState(window_)->Activate();
 }
 
 ScopedShowWindow::~ScopedShowWindow() {
@@ -247,12 +246,18 @@ WindowSelector::WindowSelector(const WindowList& windows,
           this, &WindowSelector::StartOverview),
       delegate_(delegate),
       selected_window_(0),
-      restore_focus_window_(NULL),
-      restoring_focus_(false) {
+      restore_focus_window_(aura::client::GetFocusClient(
+          Shell::GetPrimaryRootWindow())->GetFocusedWindow()),
+      ignore_activations_(false) {
   DCHECK(delegate_);
+
+  if (restore_focus_window_)
+    restore_focus_window_->AddObserver(this);
+
   std::vector<WindowSelectorPanels*> panels_items;
   for (size_t i = 0; i < windows.size(); ++i) {
-    windows[i]->AddObserver(this);
+    if (windows[i] != restore_focus_window_)
+      windows[i]->AddObserver(this);
     observed_windows_.insert(windows[i]);
 
     if (windows[i]->type() == aura::client::WINDOW_TYPE_PANEL &&
@@ -275,7 +280,6 @@ WindowSelector::WindowSelector(const WindowList& windows,
       windows_.push_back(new WindowSelectorWindow(windows[i]));
     }
   }
-  RemoveFocusAndSetRestoreWindow();
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", windows_.size());
 
   // Observe window activations and switchable containers on all root windows
@@ -338,6 +342,7 @@ void WindowSelector::Step(WindowSelector::Direction direction) {
   if (window_overview_) {
     window_overview_->SetSelection(selected_window_);
   } else {
+    base::AutoReset<bool> restoring_focus(&ignore_activations_, true);
     showing_window_.reset(new ScopedShowWindow);
     showing_window_->Show(windows_[selected_window_]->SelectionWindow());
     start_overview_timer_.Reset();
@@ -442,7 +447,7 @@ void WindowSelector::OnWindowBoundsChanged(aura::Window* window,
 
 void WindowSelector::OnWindowActivated(aura::Window* gained_active,
                                        aura::Window* lost_active) {
-  if (restoring_focus_ || !gained_active)
+  if (ignore_activations_ || !gained_active)
     return;
   // Don't restore focus on exit if a window was just activated.
   ResetFocusRestoreWindow(false);
@@ -451,7 +456,7 @@ void WindowSelector::OnWindowActivated(aura::Window* gained_active,
 
 void WindowSelector::OnAttemptToReactivateWindow(aura::Window* request_active,
                                                  aura::Window* actual_active) {
-  if (restoring_focus_)
+  if (ignore_activations_)
     return;
   // Don't restore focus on exit if a window was just activated.
   ResetFocusRestoreWindow(false);
@@ -460,11 +465,15 @@ void WindowSelector::OnAttemptToReactivateWindow(aura::Window* request_active,
 
 void WindowSelector::StartOverview() {
   DCHECK(!window_overview_);
+  // Remove focus from active window before entering overview.
+  aura::client::GetFocusClient(
+      Shell::GetPrimaryRootWindow())->FocusWindow(NULL);
+
   aura::Window* overview_root = NULL;
   if (mode_ == CYCLE) {
     overview_root = GetOverviewDelayOnCycleMilliseconds() <=
                         kOverviewDelayInitialMonitorThreshold ?
-                    Shell::GetTargetRootWindow() :
+                    windows_.front()->GetRootWindow() :
                     windows_[selected_window_]->GetRootWindow();
   }
   window_overview_.reset(new WindowOverview(this, &windows_, overview_root));
@@ -473,27 +482,11 @@ void WindowSelector::StartOverview() {
   UpdateShelfVisibility();
 }
 
-void WindowSelector::RemoveFocusAndSetRestoreWindow() {
-  aura::client::FocusClient* focus_client = aura::client::GetFocusClient(
-      Shell::GetPrimaryRootWindow());
-  DCHECK(!restore_focus_window_);
-  restore_focus_window_ = focus_client->GetFocusedWindow();
-  if (restore_focus_window_) {
-    // Removing focus from the window could cause the window to be destroyed so
-    // it must be observed before removing focus.
-    if (observed_windows_.find(restore_focus_window_) ==
-            observed_windows_.end()) {
-      restore_focus_window_->AddObserver(this);
-    }
-    focus_client->FocusWindow(NULL);
-  }
-}
-
 void WindowSelector::ResetFocusRestoreWindow(bool focus) {
   if (!restore_focus_window_)
     return;
   if (focus) {
-    base::AutoReset<bool> restoring_focus(&restoring_focus_, true);
+    base::AutoReset<bool> restoring_focus(&ignore_activations_, true);
     restore_focus_window_->Focus();
   }
   // If the window is in the observed_windows_ list it needs to continue to be
