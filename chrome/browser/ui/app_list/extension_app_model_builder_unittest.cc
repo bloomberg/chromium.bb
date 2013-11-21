@@ -138,6 +138,8 @@ class ExtensionAppModelBuilderTest : public ExtensionServiceTestBase {
   scoped_ptr<TestAppListControllerDelegate> controller_;
   scoped_ptr<ExtensionAppModelBuilder> builder_;
 
+  base::ScopedTempDir second_profile_temp_dir_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppModelBuilderTest);
 };
@@ -317,8 +319,11 @@ TEST_F(ExtensionAppModelBuilderTest, SwitchProfile) {
   EXPECT_EQ(kDefaultAppCount, model_->item_list()->item_count());
 
   // Switch to a profile with no apps, ensure all apps are removed.
-  TestingProfile::Builder profile_builder;
-  scoped_ptr<TestingProfile> profile2(profile_builder.Build());
+  ExtensionServiceInitParams params =
+      CreateDefaultInitParamsInTempDir(&second_profile_temp_dir_);
+  scoped_ptr<TestingProfile> profile2 = CreateTestingProfile(params);
+  InitializeExtensionServiceForProfile(params, profile2.get());
+
   builder_->SwitchProfile(profile2.get());
   EXPECT_EQ(0u, model_->item_list()->item_count());
 

@@ -161,8 +161,7 @@ void AppListControllerDelegate::GetApps(Profile* profile,
                                         ExtensionSet* out_apps) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
-    return;
+  DCHECK(service);
   out_apps->InsertAll(*service->extensions());
   out_apps->InsertAll(*service->disabled_extensions());
   out_apps->InsertAll(*service->terminated_extensions());

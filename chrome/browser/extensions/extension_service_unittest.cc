@@ -479,6 +479,17 @@ ExtensionServiceTestBase::~ExtensionServiceTestBase() {
 
 void ExtensionServiceTestBase::InitializeExtensionService(
     const ExtensionServiceTestBase::ExtensionServiceInitParams& params) {
+  profile_ = CreateTestingProfile(params);
+  service_ = InitializeExtensionServiceForProfile(params, profile_.get());
+  management_policy_ =
+      ExtensionSystem::Get(profile_.get())->management_policy();
+  extensions_install_dir_ = params.extensions_install_dir;
+  expected_extensions_count_ = 0;
+}
+
+// static
+scoped_ptr<TestingProfile> ExtensionServiceTestBase::CreateTestingProfile(
+    const ExtensionServiceInitParams& params) {
   TestingProfile::Builder profile_builder;
   // Create a PrefService that only contains user defined preference values.
   PrefServiceMockFactory factory;
@@ -499,10 +510,16 @@ void ExtensionServiceTestBase::InitializeExtensionService(
     profile_builder.SetManagedUserId("asdf");
 
   profile_builder.SetPath(params.profile_path);
-  profile_ = profile_builder.Build();
+  return profile_builder.Build();
+}
 
+// static
+ExtensionService*
+ExtensionServiceTestBase::InitializeExtensionServiceForProfile(
+    const ExtensionServiceInitParams& params,
+    Profile* profile) {
   TestExtensionSystem* system = static_cast<TestExtensionSystem*>(
-      ExtensionSystem::Get(profile_.get()));
+      ExtensionSystem::Get(profile));
   if (!params.is_first_run) {
     ExtensionPrefs* prefs = system->CreateExtensionPrefs(
         CommandLine::ForCurrentProcess(),
@@ -510,34 +527,28 @@ void ExtensionServiceTestBase::InitializeExtensionService(
     prefs->SetAlertSystemFirstRun();
   }
 
-  service_ = system->CreateExtensionService(
+  ExtensionService* service = system->CreateExtensionService(
       CommandLine::ForCurrentProcess(),
       params.extensions_install_dir,
       params.autoupdate_enabled);
 
-  service_->SetFileTaskRunnerForTesting(
+  service->SetFileTaskRunnerForTesting(
       base::MessageLoopProxy::current().get());
-  service_->set_extensions_enabled(true);
-  service_->set_show_extensions_prompts(false);
-  service_->set_install_updates_when_idle_for_test(false);
-
-  management_policy_ =
-      ExtensionSystem::Get(profile_.get())->management_policy();
-
-  extensions_install_dir_ = params.extensions_install_dir;
+  service->set_extensions_enabled(true);
+  service->set_show_extensions_prompts(false);
+  service->set_install_updates_when_idle_for_test(false);
 
   // When we start up, we want to make sure there is no external provider,
   // since the ExtensionService on Windows will use the Registry as a default
   // provider and if there is something already registered there then it will
   // interfere with the tests. Those tests that need an external provider
   // will register one specifically.
-  service_->ClearProvidersForTesting();
+  service->ClearProvidersForTesting();
 
 #if defined(OS_CHROMEOS)
-  extensions::InstallLimiter::Get(profile_.get())->DisableForTest();
+  extensions::InstallLimiter::Get(profile)->DisableForTest();
 #endif
-
-  expected_extensions_count_ = 0;
+  return service;
 }
 
 void ExtensionServiceTestBase::InitializeInstalledExtensionService(
@@ -613,9 +624,16 @@ void ExtensionServiceTestBase::TearDown() {
 
 ExtensionServiceTestBase::ExtensionServiceInitParams
 ExtensionServiceTestBase::CreateDefaultInitParams() {
+  return CreateDefaultInitParamsInTempDir(&temp_dir_);
+}
+
+// static
+ExtensionServiceTestBase::ExtensionServiceInitParams
+ExtensionServiceTestBase::CreateDefaultInitParamsInTempDir(
+    base::ScopedTempDir* temp_dir) {
   ExtensionServiceInitParams params;
-  EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-  base::FilePath path = temp_dir_.path();
+  EXPECT_TRUE(temp_dir->CreateUniqueTempDir());
+  base::FilePath path = temp_dir->path();
   path = path.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
   EXPECT_TRUE(base::DeleteFile(path, true));
   base::PlatformFileError error = base::PLATFORM_FILE_OK;

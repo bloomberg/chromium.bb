@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -28,6 +30,7 @@ AppListSyncableServiceFactory::AppListSyncableServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "AppListSyncableService",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(extensions::ExtensionSystemFactory::GetInstance());
 }
 
 AppListSyncableServiceFactory::~AppListSyncableServiceFactory() {
@@ -35,8 +38,11 @@ AppListSyncableServiceFactory::~AppListSyncableServiceFactory() {
 
 BrowserContextKeyedService*
 AppListSyncableServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return new AppListSyncableService(static_cast<Profile*>(profile));
+    content::BrowserContext* browser_context) const {
+  Profile* profile = static_cast<Profile*>(browser_context);
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  return new AppListSyncableService(profile, extension_service);
 }
 
 void AppListSyncableServiceFactory::RegisterProfilePrefs(

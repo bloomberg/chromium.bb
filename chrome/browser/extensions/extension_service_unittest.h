@@ -46,6 +46,13 @@ class ExtensionServiceTestBase : public testing::Test {
 
   void InitializeExtensionService(const ExtensionServiceInitParams& params);
 
+  static scoped_ptr<TestingProfile> CreateTestingProfile(
+      const ExtensionServiceInitParams& params);
+
+  static ExtensionService* InitializeExtensionServiceForProfile(
+      const ExtensionServiceInitParams& params,
+      Profile* profile);
+
   void InitializeInstalledExtensionService(
       const base::FilePath& prefs_file,
       const base::FilePath& source_install_dir);
@@ -71,6 +78,8 @@ class ExtensionServiceTestBase : public testing::Test {
 
  protected:
   ExtensionServiceInitParams CreateDefaultInitParams();
+  static ExtensionServiceInitParams CreateDefaultInitParamsInTempDir(
+      base::ScopedTempDir* temp_dir);
 
   // Destroying at_exit_manager_ will delete all LazyInstances, so it must come
   // after thread_bundle_ in the destruction order.
