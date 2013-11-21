@@ -65,6 +65,8 @@ class AccessibilityEventRouterViews : public content::NotificationObserver {
 
   FRIEND_TEST_ALL_PREFIXES(AccessibilityEventRouterViewsTest,
                            TestFocusNotification);
+  FRIEND_TEST_ALL_PREFIXES(AccessibilityEventRouterViewsTest,
+                           MenuIndexAndCountForInvisibleMenu);
 
   AccessibilityEventRouterViews();
   virtual ~AccessibilityEventRouterViews();

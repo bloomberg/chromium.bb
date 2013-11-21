@@ -14,8 +14,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/native_widget.h"
@@ -420,4 +424,91 @@ TEST_F(AccessibilityEventRouterViewsTest, AlertsFromWindowAndControl) {
   EXPECT_EQ(kTypeWindow, last_control_type_);
 
   window->CloseNow();
+}
+
+namespace {
+
+class SimpleMenuDelegate : public ui::SimpleMenuModel::Delegate {
+ public:
+  enum {
+    IDC_MENU_ITEM_1,
+    IDC_MENU_ITEM_2,
+    IDC_MENU_INVISIBLE,
+    IDC_MENU_ITEM_3,
+  };
+
+  SimpleMenuDelegate() {}
+  virtual ~SimpleMenuDelegate() {}
+
+  views::MenuItemView* BuildMenu() {
+    menu_model_.reset(new ui::SimpleMenuModel(this));
+    menu_model_->AddItem(IDC_MENU_ITEM_1, ASCIIToUTF16("Item 1"));
+    menu_model_->AddItem(IDC_MENU_ITEM_2, ASCIIToUTF16("Item 2"));
+    menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_->AddItem(IDC_MENU_INVISIBLE, ASCIIToUTF16("Invisible"));
+    menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_->AddItem(IDC_MENU_ITEM_3, ASCIIToUTF16("Item 3"));
+
+    menu_runner_.reset(new views::MenuRunner(menu_model_.get()));
+    return menu_runner_->GetMenu();
+  }
+
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
+    return false;
+  }
+
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
+    return true;
+  }
+
+  virtual bool IsCommandIdVisible(int command_id) const OVERRIDE {
+    return command_id != IDC_MENU_INVISIBLE;
+  }
+
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE {
+    return false;
+  }
+
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
+  }
+
+ private:
+  scoped_ptr<ui::SimpleMenuModel> menu_model_;
+  scoped_ptr<views::MenuRunner> menu_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleMenuDelegate);
+};
+
+}  // namespace
+
+TEST_F(AccessibilityEventRouterViewsTest, MenuIndexAndCountForInvisibleMenu) {
+  SimpleMenuDelegate menu_delegate;
+  views::MenuItemView* menu = menu_delegate.BuildMenu();
+  views::View* menu_container = menu->CreateSubmenu();
+
+  struct TestCase {
+    int command_id;
+    int expected_index;
+    int expected_count;
+  } kTestCases[] = {
+    { SimpleMenuDelegate::IDC_MENU_ITEM_1, 0, 3 },
+    { SimpleMenuDelegate::IDC_MENU_ITEM_2, 1, 3 },
+    { SimpleMenuDelegate::IDC_MENU_INVISIBLE, 0, 3 },
+    { SimpleMenuDelegate::IDC_MENU_ITEM_3, 2, 3 },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+    int index = 0;
+    int count = 0;
+
+    AccessibilityEventRouterViews::RecursiveGetMenuItemIndexAndCount(
+        menu_container,
+        menu->GetMenuItemByID(kTestCases[i].command_id),
+        &index,
+        &count);
+    EXPECT_EQ(kTestCases[i].expected_index, index) << "Case " << i;
+    EXPECT_EQ(kTestCases[i].expected_count, count) << "Case " << i;
+  }
 }

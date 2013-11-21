@@ -448,6 +448,9 @@ void AccessibilityEventRouterViews::RecursiveGetMenuItemIndexAndCount(
     int* count) {
   for (int i = 0; i < menu->child_count(); ++i) {
     views::View* child = menu->child_at(i);
+    if (!child->visible())
+      continue;
+
     int previous_count = *count;
     RecursiveGetMenuItemIndexAndCount(child, item, index, count);
     ui::AccessibleViewState state;
