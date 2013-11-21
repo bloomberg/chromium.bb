@@ -73,6 +73,7 @@ class BASE_EXPORT JSONReader {
     JSON_UNEXPECTED_DATA_AFTER_ROOT,
     JSON_UNSUPPORTED_ENCODING,
     JSON_UNQUOTED_DICTIONARY_KEY,
+    JSON_PARSE_ERROR_COUNT
   };
 
   // String versions of parse error codes.

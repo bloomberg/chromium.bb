@@ -9,6 +9,10 @@
 
 namespace base {
 
+// Values 1000 and above are used by JSONFileValueSerializer::JsonFileError.
+COMPILE_ASSERT(JSONReader::JSON_PARSE_ERROR_COUNT < 1000,
+               json_reader_error_out_of_bounds);
+
 const char* JSONReader::kInvalidEscape =
     "Invalid escape sequence.";
 const char* JSONReader::kSyntaxError =

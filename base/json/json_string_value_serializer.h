@@ -47,7 +47,7 @@ class BASE_EXPORT JSONStringValueSerializer : public base::ValueSerializer {
   // Attempt to deserialize the data structure encoded in the string passed
   // in to the constructor into a structure of Value objects.  If the return
   // value is NULL, and if |error_code| is non-null, |error_code| will
-  // contain an integer error code (either JsonFileError or JsonParseError).
+  // contain an integer error code (a JsonParseError in this case).
   // If |error_message| is non-null, it will be filled in with a formatted
   // error message including the location of the error if appropriate.
   // The caller takes ownership of the returned value.
