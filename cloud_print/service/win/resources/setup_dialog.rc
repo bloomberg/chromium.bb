@@ -5,9 +5,9 @@
 #include "grit\\generated_resources.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
+#include "cloud_print/version.h"
 #include "winres.h"
 #include "verrsrc.h"
-#include "version.h"
 #undef APSTUDIO_READONLY_SYMBOLS
 
 #ifdef APSTUDIO_INVOKED

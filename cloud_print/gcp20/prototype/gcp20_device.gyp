@@ -21,6 +21,7 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '<(DEPTH)/cloud_print/cloud_print_resources.gyp:cloud_print_version_header', 
         '<(DEPTH)/google_apis/google_apis.gyp:google_apis',
         '<(DEPTH)/jingle/jingle.gyp:notifier',
         '<(DEPTH)/net/net.gyp:http_server',

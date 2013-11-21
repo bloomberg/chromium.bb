@@ -23,7 +23,7 @@
         '../virtual_driver.gyp:virtual_driver_lib',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/cloud_print/common/common.gyp:cloud_print_install_lib',
-        '<(DEPTH)/cloud_print/cloud_print.gyp:cloud_print_version_resources',
+        '<(DEPTH)/cloud_print/cloud_print_resources.gyp:cloud_print_version_resources',
         'virtual_driver_setup_resources',
       ],
       'sources': [

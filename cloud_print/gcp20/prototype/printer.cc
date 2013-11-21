@@ -21,6 +21,7 @@
 #include "cloud_print/gcp20/prototype/local_settings.h"
 #include "cloud_print/gcp20/prototype/service_parameters.h"
 #include "cloud_print/gcp20/prototype/special_io.h"
+#include "cloud_print/version.h"
 #include "net/base/net_util.h"
 #include "net/base/url_util.h"
 
@@ -125,6 +126,14 @@ net::IPAddressNumber GetLocalIp(const std::string& interface_name,
   }
 
   return net::IPAddressNumber();
+}
+
+std::string GetDescription() {
+  std::string result = kPrinterDescription;
+  net::IPAddressNumber ip = GetLocalIp("", false);
+  if (!ip.empty())
+    result += " at " + net::IPAddressToString(ip);
+  return result;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
@@ -323,19 +332,18 @@ void Printer::CreateInfo(PrivetHttpServer::DeviceInfo* info) {
   CheckRegistrationExpiration();
 
   // TODO(maksymb): Replace "text" with constants.
-
   *info = PrivetHttpServer::DeviceInfo();
   info->version = "1.0";
   info->name = kPrinterName;
-  info->description = kPrinterDescription;
+  info->description = GetDescription();
   info->url = kCloudPrintUrl;
   info->id = state_.device_id;
   info->device_state = "idle";
   info->connection_state = ConnectionStateToString(connection_state_);
-  info->manufacturer = "Google";
-  info->model = "Prototype";
-  info->serial_number = "2.3.5.7.13.17.19.31.61.89.107.127.521.607.1279.2203";
-  info->firmware = "3.7.31.127.8191.131071.524287.2147483647";
+  info->manufacturer = COMPANY_FULLNAME_STRING;
+  info->model = "Prototype r" + std::string(LASTCHANGE_STRING);
+  info->serial_number = "20CB5FF2-B28C-4EFA-8DCD-516CFF0455A2";
+  info->firmware = CHROME_VERSION_STRING;
   info->uptime = static_cast<int>((base::Time::Now() - starttime_).InSeconds());
 
   info->x_privet_token = xtoken_.GenerateXToken();
@@ -729,7 +737,7 @@ std::vector<std::string> Printer::CreateTxt() const {
   std::vector<std::string> txt;
   txt.push_back("txtvers=1");
   txt.push_back("ty=" + std::string(kPrinterName));
-  txt.push_back("note=" + std::string(kPrinterDescription));
+  txt.push_back("note=" + std::string(GetDescription()));
   txt.push_back("url=" + std::string(kCloudPrintUrl));
   txt.push_back("type=printer");
   txt.push_back("id=" + state_.device_id);
@@ -822,7 +830,8 @@ bool Printer::StartDnsServer() {
   uint16 port = command_line_reader::ReadHttpPort(kHttpPortDefault);
 
   std::string service_name_prefix =
-      command_line_reader::ReadServiceNamePrefix(kServiceNamePrefixDefault);
+      command_line_reader::ReadServiceNamePrefix(net::IPAddressToString(ip) +
+                                                 kServiceNamePrefixDefault);
   std::string service_domain_name =
       command_line_reader::ReadDomainName(kServiceDomainNameDefault);
 

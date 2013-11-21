@@ -49,7 +49,7 @@
       'dependencies': [
         'gcp_portmon_lib<(virtual_driver_suffix)',
         '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
-        '<(DEPTH)/cloud_print/cloud_print.gyp:cloud_print_version_resources',
+        '<(DEPTH)/cloud_print/cloud_print_resources.gyp:cloud_print_version_resources',
       ],
       'include_dirs': [
         # To allow including "version.h"
