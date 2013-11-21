@@ -113,6 +113,8 @@ void TracingControllerImpl::ResultFile::CloseTask(
 TracingControllerImpl::TracingControllerImpl() :
     pending_disable_recording_ack_count_(0),
     pending_capture_monitoring_snapshot_ack_count_(0),
+    pending_trace_buffer_percent_full_ack_count_(0),
+    maximum_trace_buffer_percent_full_(0),
     // Tracing may have been enabled by ContentMainRunner if kTraceStartup
     // is specified in command line.
     is_recording_(TraceLog::GetInstance()->IsEnabled()),
@@ -158,9 +160,15 @@ bool TracingControllerImpl::EnableRecording(
     TraceLog::GetInstance()->AddClockSyncMetadataEvent();
 #endif
 
-  TraceLog::Options trace_options = TraceLog::GetInstance()->trace_options();
-  TraceLog::GetInstance()->SetEnabled(filter, trace_options);
+  TraceLog::Options trace_options = (options & RECORD_CONTINUOUSLY) ?
+      TraceLog::RECORD_CONTINUOUSLY : TraceLog::RECORD_UNTIL_FULL;
+  if (options & ENABLE_SAMPLING) {
+    trace_options = static_cast<TraceLog::Options>(
+        trace_options | TraceLog::ENABLE_SAMPLING);
+  }
+  // TODO(haraken): How to handle ENABLE_SYSTRACE?
 
+  TraceLog::GetInstance()->SetEnabled(filter, trace_options);
   is_recording_ = true;
   category_filter_ = TraceLog::GetInstance()->GetCurrentCategoryFilter();
 
@@ -318,6 +326,34 @@ void TracingControllerImpl::CaptureMonitoringSnapshot(
 #if defined(OS_ANDROID)
   TraceLog::GetInstance()->AddClockSyncMetadataEvent();
 #endif
+}
+
+bool TracingControllerImpl::GetTraceBufferPercentFull(
+    const GetTraceBufferPercentFullCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!can_get_trace_buffer_percent_full() || callback.is_null())
+    return false;
+
+  pending_trace_buffer_percent_full_callback_ = callback;
+
+  // Count myself in pending_trace_buffer_percent_full_ack_count_, acked below.
+  pending_trace_buffer_percent_full_ack_count_ = filters_.size() + 1;
+  maximum_trace_buffer_percent_full_ = 0;
+
+  // Handle special case of zero child processes.
+  if (pending_trace_buffer_percent_full_ack_count_ == 1) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&TracingControllerImpl::OnTraceBufferPercentFullReply,
+                   base::Unretained(this),
+                   TraceLog::GetInstance()->GetBufferPercentFull()));
+  }
+
+  // Notify all child processes.
+  for (FilterMap::iterator it = filters_.begin(); it != filters_.end(); ++it) {
+    it->get()->SendGetTraceBufferPercentFull();
+  }
+  return true;
 }
 
 void TracingControllerImpl::AddFilter(TraceMessageFilter* filter) {
@@ -500,6 +536,37 @@ void TracingControllerImpl::OnLocalMonitoringTraceDataCollected(
 
   // Simulate an CaptureMonitoringSnapshotAcked for the local trace.
   OnCaptureMonitoringSnapshotAcked();
+}
+
+void TracingControllerImpl::OnTraceBufferPercentFullReply(float percent_full) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&TracingControllerImpl::OnTraceBufferPercentFullReply,
+                   base::Unretained(this), percent_full));
+    return;
+  }
+
+  if (pending_trace_buffer_percent_full_ack_count_ == 0)
+    return;
+
+  maximum_trace_buffer_percent_full_ =
+      std::max(maximum_trace_buffer_percent_full_, percent_full);
+
+  if (--pending_trace_buffer_percent_full_ack_count_ == 0) {
+    // Trigger callback if one is set.
+    pending_trace_buffer_percent_full_callback_.Run(
+        maximum_trace_buffer_percent_full_);
+    pending_trace_buffer_percent_full_callback_.Reset();
+  }
+
+  if (pending_trace_buffer_percent_full_ack_count_ == 1) {
+    // The last ack represents local trace, so we need to ack it now. Note that
+    // this code only executes if there were child processes.
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&TracingControllerImpl::OnTraceBufferPercentFullReply,
+                   base::Unretained(this),
+                   TraceLog::GetInstance()->GetBufferPercentFull()));
+  }
 }
 
 }  // namespace content

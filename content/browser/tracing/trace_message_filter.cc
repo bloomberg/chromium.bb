@@ -166,6 +166,8 @@ void TraceMessageFilter::OnTraceBufferPercentFullReply(float percent_full) {
     is_awaiting_buffer_percent_full_ack_ = false;
     TraceControllerImpl::GetInstance()->OnTraceBufferPercentFullReply(
         percent_full);
+    TracingControllerImpl::GetInstance()->OnTraceBufferPercentFullReply(
+        percent_full);
   } else {
     NOTREACHED();
   }

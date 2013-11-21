@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_TRACING_CONTROLLER_H_
 #define CONTENT_PUBLIC_BROWSER_TRACING_CONTROLLER_H_
 
+#include <set>
+
 #include "base/debug/trace_event.h"
 #include "content/common/content_export.h"
 
@@ -25,6 +27,7 @@ class TracingController {
   enum Options {
     ENABLE_SYSTRACE = 1 << 0,
     ENABLE_SAMPLING = 1 << 1,
+    RECORD_CONTINUOUSLY = 1 << 2,  // For EnableRecording() only.
   };
 
   CONTENT_EXPORT static TracingController* GetInstance();
@@ -135,6 +138,13 @@ class TracingController {
   virtual void CaptureMonitoringSnapshot(
       const base::FilePath& result_file_path,
       const TracingFileResultCallback& callback) = 0;
+
+  // Get the maximum across processes of trace buffer percent full state.
+  // When the TraceBufferPercentFull value is determined, the callback is
+  // called.
+  typedef base::Callback<void(float)> GetTraceBufferPercentFullCallback;
+  virtual bool GetTraceBufferPercentFull(
+      const GetTraceBufferPercentFullCallback& callback) = 0;
 
  protected:
   virtual ~TracingController() {}

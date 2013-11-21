@@ -44,6 +44,8 @@ class TracingControllerImpl : public TracingController {
   virtual void CaptureMonitoringSnapshot(
       const base::FilePath& result_file_path,
       const TracingFileResultCallback& callback) OVERRIDE;
+  virtual bool GetTraceBufferPercentFull(
+      const GetTraceBufferPercentFullCallback& callback) OVERRIDE;
 
  private:
   typedef std::set<scoped_refptr<TraceMessageFilter> > FilterMap;
@@ -71,6 +73,10 @@ class TracingControllerImpl : public TracingController {
     return is_monitoring_ && !monitoring_snapshot_file_;
   }
 
+  bool can_get_trace_buffer_percent_full() const {
+    return pending_trace_buffer_percent_full_callback_.is_null();
+  }
+
   // Methods for use by TraceMessageFilter.
   void AddFilter(TraceMessageFilter* filter);
   void RemoveFilter(TraceMessageFilter* filter);
@@ -96,16 +102,26 @@ class TracingControllerImpl : public TracingController {
   void OnCaptureMonitoringSnapshotAcked();
   void OnMonitoringSnapshotFileClosed();
 
+  void OnTraceNotification(int notification);
+  void OnTraceBufferPercentFullReply(float percent_full);
+
   FilterMap filters_;
   // Pending acks for DisableRecording.
   int pending_disable_recording_ack_count_;
   // Pending acks for CaptureMonitoringSnapshot.
   int pending_capture_monitoring_snapshot_ack_count_;
+  // Pending acks for GetTraceBufferPercentFull.
+  int pending_trace_buffer_percent_full_ack_count_;
+  float maximum_trace_buffer_percent_full_;
+
   bool is_recording_;
   bool is_monitoring_;
+
   GetCategoriesDoneCallback pending_get_categories_done_callback_;
   TracingFileResultCallback pending_disable_recording_done_callback_;
   TracingFileResultCallback pending_capture_monitoring_snapshot_done_callback_;
+  GetTraceBufferPercentFullCallback pending_trace_buffer_percent_full_callback_;
+
   std::set<std::string> known_category_groups_;
   base::debug::CategoryFilter category_filter_;
   scoped_ptr<ResultFile> result_file_;
