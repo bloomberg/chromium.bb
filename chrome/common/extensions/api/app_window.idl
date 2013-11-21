@@ -259,11 +259,12 @@ namespace app.window {
     [nocompile] static AppWindow current();
     [nocompile, nodoc] static void initializeAppWindow(object state);
 
-    // Gets an array of all currently created app windows.
+    // Gets an array of all currently created app windows. This method is new in
+    // Chrome 33.
     [nocompile] static AppWindow[] getAll();
 
     // Gets an $ref:AppWindow with the given id. If no window with the given id
-    // exists null is returned.
+    // exists null is returned. This method is new in Chrome 33.
     [nocompile] static AppWindow get(DOMString id);
   };
 
