@@ -69,8 +69,9 @@ weston_logind_take_device(struct weston_logind *wl, uint32_t major,
 			  uint32_t minor, bool *paused_out)
 {
 	DBusMessage *m, *reply;
-	bool b, paused;
+	bool b;
 	int r, fd;
+	dbus_bool_t paused;
 
 	m = dbus_message_new_method_call("org.freedesktop.login1",
 					 wl->spath,
@@ -287,7 +288,7 @@ get_active_cb(DBusPendingCall *pending, void *data)
 	DBusMessage *m;
 	DBusMessageIter iter, sub;
 	int type;
-	bool b;
+	dbus_bool_t b;
 
 	dbus_pending_call_unref(wl->pending_active);
 	wl->pending_active = NULL;
