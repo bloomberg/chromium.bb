@@ -76,8 +76,6 @@
         'controls/button/blue_button.h',
         'controls/button/button.cc',
         'controls/button/button.h',
-        'controls/button/button_dropdown.cc',
-        'controls/button/button_dropdown.h',
         'controls/button/checkbox.cc',
         'controls/button/checkbox.h',
         'controls/button/custom_button.cc',

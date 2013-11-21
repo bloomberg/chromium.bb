@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/views/toolbar/button_dropdown.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/views/controls/button/button_dropdown.h"
 
 class CommandUpdater;
 class LocationBarView;
@@ -25,7 +25,7 @@ class LocationBarView;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class ReloadButton : public views::ButtonDropDown,
+class ReloadButton : public ButtonDropDown,
                      public views::ButtonListener,
                      public ui::SimpleMenuModel::Delegate {
  public:
@@ -45,7 +45,7 @@ class ReloadButton : public views::ButtonDropDown,
   // Enable reload drop-down menu.
   void set_menu_enabled(bool enable) { menu_enabled_ = enable; }
 
-  void LoadImages(ui::ThemeProvider* tp);
+  void LoadImages();
 
   // Overridden from views::View:
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;

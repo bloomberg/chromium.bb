@@ -91,7 +91,7 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
   }
 }
 
-void ReloadButton::LoadImages(ui::ThemeProvider* tp) {
+void ReloadButton::LoadImages() {
   DCHECK_EQ(static_cast<int>(arraysize(kReloadImages)), STATE_COUNT);
   DCHECK_EQ(static_cast<int>(arraysize(kStopImages)), STATE_COUNT);
 
@@ -100,6 +100,7 @@ void ReloadButton::LoadImages(ui::ThemeProvider* tp) {
   if (visible_mode_ == MODE_STOP)
     std::swap(reload_images, stop_images);
 
+  ui::ThemeProvider* tp = GetThemeProvider();
   for (int i = 0; i < STATE_COUNT; i++) {
     reload_images[i] = *(tp->GetImageSkiaNamed(kReloadImages[i]));
     stop_images[i] = *(tp->GetImageSkiaNamed(kStopImages[i]));

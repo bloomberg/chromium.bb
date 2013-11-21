@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_
-#define UI_VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_BUTTON_DROPDOWN_H_
+#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_BUTTON_DROPDOWN_H_
 
 #include "base/memory/weak_ptr.h"
 #include "ui/views/context_menu_controller.h"
@@ -14,8 +14,8 @@ class MenuModel;
 }
 
 namespace views {
-
 class MenuRunner;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -25,14 +25,14 @@ class MenuRunner;
 // display a menu
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT ButtonDropDown : public ImageButton,
-                                    public ContextMenuController {
+class ButtonDropDown : public views::ImageButton,
+                       public views::ContextMenuController {
  public:
   // The button's class name.
   static const char kViewClassName[];
 
   // Takes ownership of the |model|.
-  ButtonDropDown(ButtonListener* listener, ui::MenuModel* model);
+  ButtonDropDown(views::ButtonListener* listener, ui::MenuModel* model);
   virtual ~ButtonDropDown();
 
   // If menu is currently pending for long press - stop it.
@@ -53,7 +53,7 @@ class VIEWS_EXPORT ButtonDropDown : public ImageButton,
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Overridden from views::ContextMenuController
-  virtual void ShowContextMenuForView(View* source,
+  virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point,
                                       ui::MenuSourceType source_type) OVERRIDE;
 
@@ -81,7 +81,7 @@ class VIEWS_EXPORT ButtonDropDown : public ImageButton,
   int y_position_on_lbuttondown_;
 
   // Menu runner to display drop down menu.
-  scoped_ptr<MenuRunner> menu_runner_;
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   // A factory for tasks that show the dropdown context menu for the button.
   base::WeakPtrFactory<ButtonDropDown> show_menu_factory_;
@@ -89,6 +89,4 @@ class VIEWS_EXPORT ButtonDropDown : public ImageButton,
   DISALLOW_COPY_AND_ASSIGN(ButtonDropDown);
 };
 
-}  // namespace views
-
-#endif  // UI_VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_BUTTON_DROPDOWN_H_

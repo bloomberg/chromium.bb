@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/views/location_bar/translate_icon_view.h"
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "chrome/browser/ui/views/toolbar/button_dropdown.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/wrench_menu.h"
@@ -57,7 +58,6 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
-#include "ui/views/controls/button/button_dropdown.h"
 #include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -166,7 +166,7 @@ ToolbarView::~ToolbarView() {
 void ToolbarView::Init() {
   GetWidget()->AddObserver(this);
 
-  back_ = new views::ButtonDropDown(this, new BackForwardMenuModel(
+  back_ = new ButtonDropDown(this, new BackForwardMenuModel(
       browser_, BackForwardMenuModel::BACKWARD_MENU));
   back_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
@@ -177,9 +177,8 @@ void ToolbarView::Init() {
   back_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
   back_->set_id(VIEW_ID_BACK_BUTTON);
 
-  forward_ = new views::ButtonDropDown(
-      this,
-      new BackForwardMenuModel(browser_, BackForwardMenuModel::FORWARD_MENU));
+  forward_ = new ButtonDropDown(this, new BackForwardMenuModel(
+      browser_, BackForwardMenuModel::FORWARD_MENU));
   forward_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
   forward_->set_tag(IDC_FORWARD);
@@ -223,8 +222,6 @@ void ToolbarView::Init() {
   app_menu_->SetTooltipText(l10n_util::GetStringUTF16(IDS_APPMENU_TOOLTIP));
   app_menu_->set_id(VIEW_ID_APP_MENU);
 
-  LoadImages();
-
   // Always add children in order from left to right, for accessibility.
   AddChildView(back_);
   AddChildView(forward_);
@@ -233,6 +230,8 @@ void ToolbarView::Init() {
   AddChildView(location_bar_);
   AddChildView(browser_actions_);
   AddChildView(app_menu_);
+
+  LoadImages();
 
   // Add any necessary badges to the menu item based on the system state.
   // Do this after |app_menu_| has been added as a bubble may be shown that
@@ -732,7 +731,7 @@ void ToolbarView::LoadImages() {
   forward_->SetImage(views::CustomButton::STATE_DISABLED,
       tp->GetImageSkiaNamed(IDR_FORWARD_D));
 
-  reload_->LoadImages(tp);
+  reload_->LoadImages();
 
   home_->SetImage(views::CustomButton::STATE_NORMAL,
       tp->GetImageSkiaNamed(IDR_HOME));

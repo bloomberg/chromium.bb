@@ -197,8 +197,6 @@ void SimpleWebViewDialog::Init() {
   reload_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
   reload_->set_id(VIEW_ID_RELOAD_BUTTON);
 
-  LoadImages();
-
   // Use separate view to setup custom background.
   ToolbarRowView* toolbar_row = new ToolbarRowView;
   toolbar_row->Init(back_, forward_, reload_, location_bar_);
@@ -226,6 +224,8 @@ void SimpleWebViewDialog::Init() {
   layout->StartRow(1, 1);
   layout->AddView(web_view_container_.release());
   layout->AddPaddingRow(0, kInnerMargin);
+
+  LoadImages();
 
   location_bar_->Init();
   UpdateReload(web_view_->web_contents()->IsLoading(), true);
@@ -374,7 +374,7 @@ void SimpleWebViewDialog::LoadImages() {
   forward_->SetImage(views::CustomButton::STATE_DISABLED,
                      tp->GetImageSkiaNamed(IDR_FORWARD_D));
 
-  reload_->LoadImages(tp);
+  reload_->LoadImages();
 }
 
 void SimpleWebViewDialog::UpdateButtons() {

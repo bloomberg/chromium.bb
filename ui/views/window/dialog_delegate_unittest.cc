@@ -6,7 +6,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/button/button_dropdown.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/test/views_test_base.h"
@@ -116,7 +115,6 @@ class DialogTest : public ViewsTestBase {
 TEST_F(DialogTest, DefaultButtons) {
   DialogClientView* client_view = dialog()->GetDialogClientView();
   LabelButton* ok_button = client_view->ok_button();
-  LabelButton* cancel_button = client_view->cancel_button();
 
   // DialogDelegate's default button (ok) should be default (and handle enter).
   EXPECT_EQ(ui::DIALOG_BUTTON_OK, dialog()->GetDefaultDialogButton());
@@ -149,27 +147,6 @@ TEST_F(DialogTest, DefaultButtons) {
   EXPECT_FALSE(button_1->is_default());
   EXPECT_FALSE(button_2->is_default());
   dialog()->PressEnterAndCheckStates(ok_button);
-
-  // A ButtonDropDown will handle events, but ok will be still be default.
-  ButtonDropDown* drop_down = new ButtonDropDown(dialog(), NULL);
-  dialog()->AddChildView(drop_down);
-  drop_down->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
-  const gfx::Point point(1, 1);
-  client_view->OnWillChangeFocus(NULL, drop_down);
-  drop_down->OnMousePressed(ui::MouseEvent(
-      ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON));
-  drop_down->OnMouseReleased(ui::MouseEvent(
-      ui::ET_MOUSE_RELEASED, point, point, ui::EF_LEFT_MOUSE_BUTTON));
-  dialog()->CheckAndResetStates(false, false, drop_down);
-  EXPECT_FALSE(button_1->is_default());
-  EXPECT_FALSE(button_2->is_default());
-  dialog()->PressEnterAndCheckStates(ok_button);
-
-  // Focus the cancel button, it should become the default.
-  client_view->OnWillChangeFocus(drop_down, cancel_button);
-  EXPECT_FALSE(button_1->is_default());
-  EXPECT_FALSE(button_2->is_default());
-  dialog()->PressEnterAndCheckStates(cancel_button);
 }
 
 TEST_F(DialogTest, AcceptAndCancel) {

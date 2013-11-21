@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/toolbar/button_dropdown.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/view_event_test_base.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/test/ui_controls.h"
-#include "ui/views/controls/button/button_dropdown.h"
 
 class ButtonDropDownDragTest : public ViewEventTestBase,
                                ui::SimpleMenuModel::Delegate {
@@ -25,7 +25,7 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
 
   // ViewEventTestBase implementation.
   virtual void SetUp() OVERRIDE {
-    button_ = new views::ButtonDropDown(NULL, new ui::SimpleMenuModel(this));
+    button_ = new ButtonDropDown(NULL, new ui::SimpleMenuModel(this));
 
     ViewEventTestBase::SetUp();
   }
@@ -123,7 +123,7 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
   }
 
  private:
-  views::ButtonDropDown* button_;
+  ButtonDropDown* button_;
   bool menu_shown_;
   bool menu_closed_;
 };

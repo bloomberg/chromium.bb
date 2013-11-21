@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/controls/button/button_dropdown.h"
+#include "chrome/browser/ui/views/toolbar/button_dropdown.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -19,8 +19,6 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 
-namespace views {
-
 // static
 const char ButtonDropDown::kViewClassName[] =
     "ui/views/controls/button/ButtonDropDown";
@@ -34,8 +32,9 @@ const int kMenuTimerDelay = 500;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-ButtonDropDown::ButtonDropDown(ButtonListener* listener, ui::MenuModel* model)
-    : ImageButton(listener),
+ButtonDropDown::ButtonDropDown(views::ButtonListener* listener,
+                               ui::MenuModel* model)
+    : views::ImageButton(listener),
       model_(model),
       menu_showing_(false),
       y_position_on_lbuttondown_(0),
@@ -80,7 +79,7 @@ bool ButtonDropDown::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 bool ButtonDropDown::OnMouseDragged(const ui::MouseEvent& event) {
-  bool result = ImageButton::OnMouseDragged(event);
+  bool result = views::ImageButton::OnMouseDragged(event);
 
   if (show_menu_factory_.HasWeakPtrs()) {
     // If the mouse is dragged to a y position lower than where it was when
@@ -98,7 +97,7 @@ bool ButtonDropDown::OnMouseDragged(const ui::MouseEvent& event) {
 void ButtonDropDown::OnMouseReleased(const ui::MouseEvent& event) {
   if (IsTriggerableEvent(event) ||
       (event.IsRightMouseButton() && !HitTestPoint(event.location()))) {
-    ImageButton::OnMouseReleased(event);
+    views::ImageButton::OnMouseReleased(event);
   }
 
   if (IsTriggerableEvent(event))
@@ -128,7 +127,7 @@ void ButtonDropDown::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void ButtonDropDown::GetAccessibleState(ui::AccessibleViewState* state) {
-  CustomButton::GetAccessibleState(state);
+  views::CustomButton::GetAccessibleState(state);
   state->role = ui::AccessibilityTypes::ROLE_BUTTONDROPDOWN;
   state->default_action = l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
   state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
@@ -196,28 +195,28 @@ void ButtonDropDown::ShowDropDownMenu(ui::MenuSourceType source_type) {
 
   // Create and run menu.  Display an empty menu if model is NULL.
   if (model_.get()) {
-    MenuModelAdapter menu_delegate(model_.get());
+    views::MenuModelAdapter menu_delegate(model_.get());
     menu_delegate.set_triggerable_event_flags(triggerable_event_flags());
-    menu_runner_.reset(new MenuRunner(menu_delegate.CreateMenu()));
-    MenuRunner::RunResult result =
+    menu_runner_.reset(new views::MenuRunner(menu_delegate.CreateMenu()));
+    views::MenuRunner::RunResult result =
         menu_runner_->RunMenuAt(GetWidget(), NULL,
                                 gfx::Rect(menu_position, gfx::Size(0, 0)),
-                                MenuItemView::TOPLEFT,
+                                views::MenuItemView::TOPLEFT,
                                 source_type,
-                                MenuRunner::HAS_MNEMONICS);
-    if (result == MenuRunner::MENU_DELETED)
+                                views::MenuRunner::HAS_MNEMONICS);
+    if (result == views::MenuRunner::MENU_DELETED)
       return;
   } else {
-    MenuDelegate menu_delegate;
-    MenuItemView* menu = new MenuItemView(&menu_delegate);
-    menu_runner_.reset(new MenuRunner(menu));
-    MenuRunner::RunResult result =
+    views::MenuDelegate menu_delegate;
+    views::MenuItemView* menu = new views::MenuItemView(&menu_delegate);
+    menu_runner_.reset(new views::MenuRunner(menu));
+    views::MenuRunner::RunResult result =
         menu_runner_->RunMenuAt(GetWidget(), NULL,
                                 gfx::Rect(menu_position, gfx::Size(0, 0)),
-                                MenuItemView::TOPLEFT,
+                                views::MenuItemView::TOPLEFT,
                                 source_type,
-                                MenuRunner::HAS_MNEMONICS);
-    if (result == MenuRunner::MENU_DELETED)
+                                views::MenuRunner::HAS_MNEMONICS);
+    if (result == views::MenuRunner::MENU_DELETED)
       return;
   }
 
@@ -232,11 +231,3 @@ void ButtonDropDown::ShowDropDownMenu(ui::MenuSourceType source_type) {
   if (state_ != STATE_DISABLED)
     SetState(STATE_NORMAL);
 }
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// ButtonDropDown - Accessibility
-//
-////////////////////////////////////////////////////////////////////////////////
-
-}  // namespace views

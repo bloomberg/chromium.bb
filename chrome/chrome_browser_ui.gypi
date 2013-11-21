@@ -2099,6 +2099,8 @@
         'browser/ui/views/toolbar/browser_action_view.h',
         'browser/ui/views/toolbar/browser_actions_container.cc',
         'browser/ui/views/toolbar/browser_actions_container.h',
+        'browser/ui/views/toolbar/button_dropdown.cc',
+        'browser/ui/views/toolbar/button_dropdown.h',
         'browser/ui/views/toolbar/home_button.cc',
         'browser/ui/views/toolbar/home_button.h',
         'browser/ui/views/toolbar/reload_button.cc',

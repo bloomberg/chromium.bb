@@ -254,7 +254,6 @@
         'browser/ui/toolbar/test_toolbar_model.h',
         'browser/ui/views/ash/tab_scrubber_browsertest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
-        'browser/ui/views/button_dropdown_test.cc',
         'browser/ui/views/constrained_window_views_browsertest.cc',
         'browser/ui/views/find_bar_controller_interactive_uitest.cc',
         'browser/ui/views/find_bar_host_interactive_uitest.cc',
@@ -272,6 +271,7 @@
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
+        'browser/ui/views/toolbar/button_dropdown_test.cc',
         'test/base/interactive_test_utils.cc',
         'test/base/interactive_test_utils.h',
         'test/base/interactive_test_utils_aura.cc',
@@ -297,6 +297,13 @@
           ],
           'sources!': [
             'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
+          ],
+        }],
+        ['OS=="linux" and use_aura==1', {
+          # TODO(gbillock): aura linux does not support the automation for
+          # SendMouseMoveNotifyWhenDone
+          'sources!': [
+            'browser/ui/views/toolbar/button_dropdown_test.cc',
           ],
         }],
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
