@@ -16,6 +16,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace {
@@ -59,11 +60,13 @@ const char* kAtomsToCache[] = {
 namespace views {
 
 X11WindowEventFilter::X11WindowEventFilter(
-    aura::RootWindow* root_window)
+    aura::RootWindow* root_window,
+    DesktopRootWindowHost* root_window_host)
     : xdisplay_(gfx::GetXDisplay()),
       xwindow_(root_window->host()->GetAcceleratedWidget()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
+      root_window_host_(root_window_host),
       is_active_(false) {
 }
 
@@ -99,6 +102,18 @@ void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
       target->delegate()->GetNonClientComponent(event->location());
   if (component == HTCLIENT)
     return;
+
+  if (event->flags() & ui::EF_IS_DOUBLE_CLICK && component == HTCAPTION) {
+    // Our event is a double click in the caption area. We are responsible for
+    // dispatching this as a minimize/maximize on X11 (Windows converts this to
+    // min/max events for us).
+    if (root_window_host_->IsMaximized())
+      root_window_host_->Restore();
+    else
+      root_window_host_->Maximize();
+    event->SetHandled();
+    return;
+  }
 
   // Get the |x_root_window_| location out of the native event.
   if (event->native_event()) {
