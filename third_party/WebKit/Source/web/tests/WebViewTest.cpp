@@ -1289,7 +1289,6 @@ TEST_F(WebViewTest, ChooseValueFromDateTimeChooser)
     WebViewImpl* webViewImpl = toWebViewImpl(m_webViewHelper.initializeAndLoad(url, true, 0, &client));
 
     WebCore::Document* document = webViewImpl->mainFrameImpl()->frame()->document();
-    WebCore::Page* page = document->page();
 
     WebCore::HTMLInputElement* inputElement;
 
