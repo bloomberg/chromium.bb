@@ -19,7 +19,6 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
 
 public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
-    private static final int WAIT_TIMEOUT_SECONDS = 2;
     private static final String SELECT_URL = UrlUtils.encodeHtmlDataUri(
             "<html><body>" +
             "Which animal is the strongest:<br/>" +

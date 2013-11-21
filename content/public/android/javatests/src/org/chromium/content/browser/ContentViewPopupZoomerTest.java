@@ -21,8 +21,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class ContentViewPopupZoomerTest extends ContentShellTestBase {
-    private static final int WAIT_TIMEOUT_SECONDS = 2;
-
     private static PopupZoomer findPopupZoomer(ContentView view) {
         assert view != null;
         for (int i = 0; i < view.getChildCount(); i++) {

@@ -19,7 +19,6 @@ import org.chromium.content_shell_apk.ContentShellTestBase;
 import java.util.concurrent.TimeUnit;
 
 public class TestsJavaScriptEvalTest extends ContentShellTestBase {
-    private static final int WAIT_TIMEOUT_SECONDS = 2;
     private static final String JSTEST_URL = UrlUtils.encodeHtmlDataUri(
             "<html><head><script>" +
             "  function foobar() { return 'foobar'; }" +
