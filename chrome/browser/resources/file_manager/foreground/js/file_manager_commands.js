@@ -483,17 +483,6 @@ CommandHandler.COMMANDS_['new-window'] = {
 };
 
 /**
- * Changed the default app handling inserted media.
- * @type {Command}
- */
-CommandHandler.COMMANDS_['change-default-app'] = {
-  execute: function(event, fileManager) {
-    fileManager.showChangeDefaultAppPicker();
-  },
-  canExecute: CommandUtil.canExecuteAlways
-};
-
-/**
  * Deletes selected files.
  * @type {Command}
  */

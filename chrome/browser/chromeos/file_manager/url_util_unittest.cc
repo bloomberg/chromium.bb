@@ -116,20 +116,6 @@ TEST(FileManagerUrlUtilTest,
             PrettyPrintEscapedJson(url.query()));
 }
 
-TEST(FileManagerUrlUtilTest, GetActionChoiceUrl_RegularMode) {
-  EXPECT_EQ("chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/"
-            "action_choice.html#/foo.txt",
-            GetActionChoiceUrl(base::FilePath::FromUTF8Unsafe("foo.txt"),
-                               false).spec());
-}
-
-TEST(FileManagerUrlUtilTest, GetActionChoiceUrl_AdvancedMode) {
-  EXPECT_EQ("chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/"
-            "action_choice.html?advanced-mode#/foo.txt",
-            GetActionChoiceUrl(base::FilePath::FromUTF8Unsafe("foo.txt"),
-                               true).spec());
-}
-
 }  // namespace
 }  // namespace util
 }  // namespace file_manager

@@ -328,8 +328,6 @@
         'browser/chromeos/external_metrics.h',
         'browser/chromeos/external_protocol_dialog.cc',
         'browser/chromeos/external_protocol_dialog.h',
-        'browser/chromeos/file_manager/action_choice_dialog.cc',
-        'browser/chromeos/file_manager/action_choice_dialog.h',
         'browser/chromeos/file_manager/app_id.h',
         'browser/chromeos/file_manager/app_installer.cc',
         'browser/chromeos/file_manager/app_installer.h',

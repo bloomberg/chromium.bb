@@ -119,15 +119,5 @@ GURL GetFileManagerMainPageUrlWithParams(
   return GURL(url);
 }
 
-GURL GetActionChoiceUrl(const base::FilePath& virtual_path,
-                        bool advanced_mode) {
-  std::string url = GetFileManagerUrl("/action_choice.html").spec();
-  if (advanced_mode)
-    url += "?advanced-mode";
-  url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(),
-                                          false);  // Space to %20 instead of +.
-  return GURL(url);
-}
-
 }  // namespace util
 }  // namespace file_manager

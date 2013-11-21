@@ -78,7 +78,6 @@
 //<include src="commandbutton.js"/>
 //<include src="ui/file_manager_dialog_base.js"/>
 //
-//<include src="action_choice/action_choice_util.js"/>
 //<include src="app_installer.js"/>
 //<include src="butter_bar.js"/>
 //<include src="cws_container_client.js"/>

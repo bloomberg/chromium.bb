@@ -35,8 +35,6 @@ chrome/browser/importer/firefox_profile_lock_win.cc
 # Credits notice for ChromeOS.
 chrome/browser/resources/chromeos/about_os_credits.html
 # String 'copyright' used in code.
-chrome/browser/resources/file_manager/foreground/js/action_choice/action_choice_scripts.js
-# String 'copyright' used in code.
 chrome/browser/resources/file_manager/foreground/js/photo/gallery_scripts.js
 # String 'copyright' used in code.
 chrome/browser/resources/file_manager/foreground/js/main_scripts.js

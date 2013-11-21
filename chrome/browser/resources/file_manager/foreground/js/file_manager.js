@@ -3442,48 +3442,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     });
   };
 
-  /**
-   * Opens the default app change dialog.
-   */
-  FileManager.prototype.showChangeDefaultAppPicker = function() {
-    var onActionsReady = function(actions, rememberedActionId) {
-      var items = [];
-      var defaultIndex = -1;
-      for (var i = 0; i < actions.length; i++) {
-        if (actions[i].hidden)
-          continue;
-        var title = actions[i].title;
-        if (actions[i].id == rememberedActionId) {
-          title += ' ' + loadTimeData.getString('DEFAULT_ACTION_LABEL');
-          defaultIndex = i;
-        }
-        var item = {
-          id: actions[i].id,
-          label: title,
-          class: actions[i].class,
-          iconUrl: actions[i].icon100
-        };
-        items.push(item);
-      }
-      var show = this.defaultTaskPicker.showOkCancelDialog(
-          str('CHANGE_DEFAULT_APP_BUTTON_LABEL'),
-          '',
-          items,
-          defaultIndex,
-          function(action) {
-            ActionChoiceUtil.setRememberedActionId(action.id);
-          });
-      if (!show)
-        console.error('DefaultTaskPicker can\'t be shown.');
-    }.bind(this);
-
-    ActionChoiceUtil.getDefinedActions(loadTimeData, function(actions) {
-      ActionChoiceUtil.getRememberedActionId(function(actionId) {
-        onActionsReady(actions, actionId);
-      });
-    });
-  };
-
   FileManager.prototype.decorateSplitter = function(splitterElement) {
     var self = this;
 
