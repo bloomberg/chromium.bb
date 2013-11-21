@@ -370,6 +370,26 @@ TEST_F(TableViewTest, Sort) {
   EXPECT_EQ("3 1 2 0", GetModelToViewAsString(table_));
 }
 
+// Verfies clicking on the header sorts.
+TEST_F(TableViewTest, SortOnMouse) {
+  EXPECT_TRUE(table_->sort_descriptors().empty());
+
+  const int x = table_->visible_columns()[0].width / 2;
+  EXPECT_NE(0, x);
+  // Press and release the mouse.
+  const ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(x, 0),
+                               gfx::Point(x, 0), ui::EF_LEFT_MOUSE_BUTTON);
+  // The header must return true, else it won't normally get the release.
+  EXPECT_TRUE(helper_->header()->OnMousePressed(pressed));
+  const ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(x, 0),
+                               gfx::Point(x, 0), ui::EF_LEFT_MOUSE_BUTTON);
+  helper_->header()->OnMouseReleased(release);
+
+  ASSERT_EQ(1u, table_->sort_descriptors().size());
+  EXPECT_EQ(0, table_->sort_descriptors()[0].column_id);
+  EXPECT_TRUE(table_->sort_descriptors()[0].ascending);
+}
+
 namespace {
 
 class TableGrouperImpl : public TableGrouper {

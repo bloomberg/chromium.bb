@@ -178,8 +178,10 @@ gfx::NativeCursor TableHeader::GetCursor(const ui::MouseEvent& event) {
 }
 
 bool TableHeader::OnMousePressed(const ui::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton() && StartResize(event))
+  if (event.IsOnlyLeftMouseButton()) {
+    StartResize(event);
     return true;
+  }
 
   // Return false so that context menus on ancestors work.
   return false;
