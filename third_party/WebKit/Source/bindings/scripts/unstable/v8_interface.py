@@ -76,6 +76,7 @@ def generate_interface(interface):
     template_contents = {
         'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class_name': cpp_name(interface),
+        'has_resolve_wrapper_reachability': 'CustomIsReachable' in extended_attributes,  # [CustomIsReachable]
         'header_includes': INTERFACE_H_INCLUDES,
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]

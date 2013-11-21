@@ -385,7 +385,8 @@ v8::Handle<v8::Object> {{v8_class_name}}::createWrapper(PassRefPtr<{{cpp_class_n
 
     installPerContextEnabledProperties(wrapper, impl.get(), isolate);
     {% set wrapper_configuration = 'WrapperConfiguration::Dependent'
-                                   if (is_active_dom_object or
+                                   if (has_resolve_wrapper_reachability or
+                                       is_active_dom_object or
                                        is_dependent_lifetime) else
                                    'WrapperConfiguration::Independent' %}
     V8DOMWrapper::associateObjectWithWrapper<{{v8_class_name}}>(impl, &wrapperTypeInfo, wrapper, isolate, {{wrapper_configuration}});
