@@ -117,10 +117,7 @@ class CC_EXPORT LayerAnimationController
   void PushPropertiesToImplThread(
       LayerAnimationController* controller_impl) const;
 
-  void StartAnimationsWaitingForNextTick(double monotonic_time);
-  void StartAnimationsWaitingForStartTime(double monotonic_time);
-  void StartAnimationsWaitingForTargetAvailability(double monotonic_time);
-  void ResolveConflicts(double monotonic_time);
+  void StartAnimations(double monotonic_time);
   void PromoteStartedAnimations(double monotonic_time,
                                 AnimationEventsVector* events);
   void MarkFinishedAnimations(double monotonic_time);

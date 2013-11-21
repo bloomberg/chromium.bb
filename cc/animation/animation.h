@@ -13,26 +13,21 @@ namespace cc {
 
 class AnimationCurve;
 
-// An Animation, contains all the state required to play an AnimationCurve.
+// An Animation contains all the state required to play an AnimationCurve.
 // Specifically, the affected property, the run state (paused, finished, etc.),
 // loop count, last pause time, and the total time spent paused.
 class CC_EXPORT Animation {
  public:
-  // Animations begin in one of the 'waiting' states. Animations waiting for the
-  // next tick will start the next time the controller animates. Animations
-  // waiting for target availibility will run as soon as their target property
+  // Animations begin in the 'WaitingForTargetAvailability' state. An Animation
+  // waiting for target availibility will run as soon as its target property
   // is free (and all the animations animating with it are also able to run).
-  // Animations waiting for their start time to come have be scheduled to run at
-  // a particular point in time. When this time arrives, the controller will
-  // move the animations into the Starting state, and then into the Running
-  // state. Running animations may toggle between Running and Paused, and may be
-  // stopped by moving into either the Aborted or Finished states. A Finished
-  // animation was allowed to run to completion, but an Aborted animation was
-  // not.
+  // When this time arrives, the controller will move the animation into the
+  // Starting state, and then into the Running state. Running animations may
+  // toggle between Running and Paused, and may be stopped by moving into either
+  // the Aborted or Finished states. A Finished animation was allowed to run to
+  // completion, but an Aborted animation was not.
   enum RunState {
-    WaitingForNextTick = 0,
-    WaitingForTargetAvailability,
-    WaitingForStartTime,
+    WaitingForTargetAvailability = 0,
     WaitingForDeletion,
     Starting,
     Running,

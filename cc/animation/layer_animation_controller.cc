@@ -124,10 +124,7 @@ void LayerAnimationController::Animate(double monotonic_time) {
   if (!HasValueObserver())
     return;
 
-  StartAnimationsWaitingForNextTick(monotonic_time);
-  StartAnimationsWaitingForStartTime(monotonic_time);
-  StartAnimationsWaitingForTargetAvailability(monotonic_time);
-  ResolveConflicts(monotonic_time);
+  StartAnimations(monotonic_time);
   TickAnimations(monotonic_time);
   last_tick_time_ = monotonic_time;
 }
@@ -204,7 +201,7 @@ void LayerAnimationController::UpdateState(bool start_ready_animations,
   MarkAnimationsForDeletion(last_tick_time_, events);
 
   if (start_ready_animations) {
-    StartAnimationsWaitingForTargetAvailability(last_tick_time_);
+    StartAnimations(last_tick_time_);
     PromoteStartedAnimations(last_tick_time_, events);
   }
 
@@ -468,25 +465,7 @@ void LayerAnimationController::PushPropertiesToImplThread(
   }
 }
 
-void LayerAnimationController::StartAnimationsWaitingForNextTick(
-    double monotonic_time) {
-  for (size_t i = 0; i < active_animations_.size(); ++i) {
-    if (active_animations_[i]->run_state() == Animation::WaitingForNextTick)
-      active_animations_[i]->SetRunState(Animation::Starting, monotonic_time);
-  }
-}
-
-void LayerAnimationController::StartAnimationsWaitingForStartTime(
-    double monotonic_time) {
-  for (size_t i = 0; i < active_animations_.size(); ++i) {
-    if (active_animations_[i]->run_state() == Animation::WaitingForStartTime &&
-        active_animations_[i]->start_time() <= monotonic_time)
-      active_animations_[i]->SetRunState(Animation::Starting, monotonic_time);
-  }
-}
-
-void LayerAnimationController::StartAnimationsWaitingForTargetAvailability(
-    double monotonic_time) {
+void LayerAnimationController::StartAnimations(double monotonic_time) {
   // First collect running properties.
   TargetProperties blocked_properties;
   for (size_t i = 0; i < active_animations_.size(); ++i) {
@@ -564,34 +543,6 @@ void LayerAnimationController::MarkFinishedAnimations(double monotonic_time) {
         active_animations_[i]->run_state() != Animation::Aborted &&
         active_animations_[i]->run_state() != Animation::WaitingForDeletion)
       active_animations_[i]->SetRunState(Animation::Finished, monotonic_time);
-  }
-}
-
-void LayerAnimationController::ResolveConflicts(double monotonic_time) {
-  // Find any animations that are animating the same property and resolve the
-  // confict. We could eventually blend, but for now we'll just abort the
-  // previous animation (where 'previous' means: (1) has a prior start time or
-  // (2) has an equal start time, but was added to the queue earlier, i.e.,
-  // has a lower index in active_animations_).
-  for (size_t i = 0; i < active_animations_.size(); ++i) {
-    if (active_animations_[i]->run_state() == Animation::Starting ||
-        active_animations_[i]->run_state() == Animation::Running) {
-      for (size_t j = i + 1; j < active_animations_.size(); ++j) {
-        if ((active_animations_[j]->run_state() == Animation::Starting ||
-             active_animations_[j]->run_state() == Animation::Running) &&
-            active_animations_[i]->target_property() ==
-            active_animations_[j]->target_property()) {
-          if (active_animations_[i]->start_time() >
-              active_animations_[j]->start_time()) {
-            active_animations_[j]->SetRunState(Animation::Aborted,
-                                               monotonic_time);
-          } else {
-            active_animations_[i]->SetRunState(Animation::Aborted,
-                                               monotonic_time);
-          }
-        }
-      }
-    }
   }
 }
 
