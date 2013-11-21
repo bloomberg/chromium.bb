@@ -111,7 +111,9 @@ QuicErrorCode QuicNegotiableUint32::ProcessServerHello(
 }
 
 QuicNegotiableTag::QuicNegotiableTag(QuicTag tag, Presence presence)
-    : QuicNegotiableValue(tag, presence) {
+    : QuicNegotiableValue(tag, presence),
+      negotiated_tag_(0),
+      default_value_(0) {
 }
 
 QuicNegotiableTag::~QuicNegotiableTag() {}
