@@ -57,6 +57,7 @@ crbug.com/309963 animations/play-state-initially-paused.html [ Timeout ]
 crbug.com/309963 animations/play-state-initially-paused-start-event.html [ Timeout ]
 crbug.com/309963 virtual/threaded/animations/play-state-initially-paused.html [ Timeout ]
 crbug.com/309963 virtual/threaded/animations/play-state-initially-paused-start-event.html [ Timeout ]
+crbug.com/321841 virtual/web-animations-css/animations/play-state-initially-paused.html [ Pass Failure ]
 
 # This has flaky output so can't be rebaselined.
 crbug.com/258896 animations/transition-and-animation-3.html [ Failure ]
