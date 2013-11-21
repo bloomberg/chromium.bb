@@ -54,10 +54,10 @@ private:
     static bool isCandidateForCompositor(const KeyframeAnimationEffect&);
     static bool isCandidateForCompositor(const Timing&, const KeyframeAnimationEffect::KeyframeVector&);
     static bool isCandidateForCompositor(const TimingFunction&, const KeyframeAnimationEffect::KeyframeVector*, bool isNestedCall = false);
-    static void getAnimationOnCompositor(const Timing&, const KeyframeAnimationEffect&, Vector<OwnPtr<blink::WebAnimation> >& animations, const IntSize& elementSize);
+    static void getAnimationOnCompositor(const Timing&, const KeyframeAnimationEffect&, Vector<OwnPtr<blink::WebAnimation> >& animations);
 
     template<typename PlatformAnimationCurveType, typename PlatformAnimationKeyframeType>
-    static void addKeyframesToCurve(PlatformAnimationCurveType&, const KeyframeVector&, const TimingFunction&, const IntSize& elementSize);
+    static void addKeyframesToCurve(PlatformAnimationCurveType&, const KeyframeVector&, const TimingFunction&);
 
     friend class CompositorAnimations;
     friend class AnimationCompositorAnimationsTest;

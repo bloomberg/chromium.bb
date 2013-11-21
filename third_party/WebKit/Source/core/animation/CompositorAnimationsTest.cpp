@@ -115,12 +115,10 @@ public:
     {
         return CompositorAnimationsImpl::isCandidateForCompositor(k);
     }
-    void getAnimationOnCompositor(Timing& timing, KeyframeAnimationEffect& effect, Vector<OwnPtr<blink::WebAnimation> >& animations, const IntSize& size = empty)
+    void getAnimationOnCompositor(Timing& timing, KeyframeAnimationEffect& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
     {
-        return CompositorAnimationsImpl::getAnimationOnCompositor(timing, effect, animations, size);
+        return CompositorAnimationsImpl::getAnimationOnCompositor(timing, effect, animations);
     }
-
-    static IntSize empty;
 
     // -------------------------------------------------------------------
 
@@ -151,7 +149,11 @@ public:
 
     PassRefPtr<Keyframe> createDefaultKeyframe(CSSPropertyID id, AnimationEffect::CompositeOperation op, double offset = 0)
     {
-        RefPtr<AnimatableDouble> value = AnimatableDouble::create(10.0);
+        RefPtr<AnimatableValue> value;
+        if (id == CSSPropertyWebkitTransform)
+            value = AnimatableTransform::create(TransformOperations());
+        else
+            value = AnimatableDouble::create(10.0);
 
         RefPtr<Keyframe> keyframe = createReplaceOpKeyframe(id, value.get(), offset);
         keyframe->setComposite(op);
@@ -209,8 +211,6 @@ public:
 
 };
 
-IntSize AnimationCompositorAnimationsTest::empty;
-
 class CustomFilterOperationMock : public FilterOperation {
 public:
     virtual bool operator==(const FilterOperation&) const OVERRIDE FINAL {
@@ -265,7 +265,7 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorKeyframeMultip
     // In this test, we cheat by using an AnimatableDouble even with Transform
     // as the actual value isn't considered.
     RefPtr<Keyframe> keyframeGoodMultiple = createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace);
-    keyframeGoodMultiple->setPropertyValue(CSSPropertyWebkitTransform, AnimatableDouble::create(10.0).get());
+    keyframeGoodMultiple->setPropertyValue(CSSPropertyWebkitTransform, AnimatableTransform::create(TransformOperations()).get());
     EXPECT_TRUE(isCandidateForCompositor(*keyframeGoodMultiple.get()));
 
     RefPtr<Keyframe> keyframeBadMultipleOp = createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeAdd);
