@@ -570,7 +570,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             const std::pair<RefPtr<Animation>, double>& oldTransition = retargetedCompositorTransitions.get(id);
             RefPtr<Animation> oldAnimation = oldTransition.first;
             double oldStartTime = oldTransition.second;
-            oldAnimation->updateInheritedTime(element->document().transitionTimeline()->currentTime() - oldStartTime);
+            double inheritedTime = isNull(oldStartTime) ? 0 : element->document().transitionTimeline()->currentTime() - oldStartTime;
+            oldAnimation->updateInheritedTime(inheritedTime);
             KeyframeAnimationEffect* oldEffect = toKeyframeAnimationEffect(inertAnimation->effect());
             const KeyframeAnimationEffect::KeyframeVector& frames = oldEffect->getFrames();
             KeyframeAnimationEffect::KeyframeVector newFrames;
