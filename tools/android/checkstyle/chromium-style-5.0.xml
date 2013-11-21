@@ -12,7 +12,7 @@
       <property name="severity" value="error"/>
     </module>
     <module name="IllegalCatch">
-      <property name="severity" value="error"/>
+      <property name="severity" value="warning"/>
     </module>
     <module name="RedundantImport">
       <message key="import.redundant" value="Redundant import: {0}. Use :JavaImportOrganize (ECLIM) or Ctrl+Shift+O (Eclipse) to sort imports"/>
@@ -84,6 +84,7 @@
     </module>
     <module name="EmptyBlock">
       <property name="severity" value="error"/>
+      <property name="option" value="text"/>
       <metadata name="altname" value="EmptyCatchBlock"/>
     </module>
     <module name="UpperEll">
@@ -97,7 +98,9 @@
     <module name="WhitespaceAround">
       <property name="severity" value="error"/>
       <property name="tokens" value="ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN, EQUAL, GE, GT, LAND, LE, LITERAL_ASSERT, LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, LITERAL_RETURN, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT, MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, PLUS, PLUS_ASSIGN, QUESTION, SL, SLIST, SL_ASSIGN, SR, SR_ASSIGN, STAR, STAR_ASSIGN, TYPE_EXTENSION_AND" />
-    </module>
+      <property name="allowEmptyConstructors" value="true"/>
+      <property name="allowEmptyMethods" value="true"/>
+   </module>
     <module name="WhitespaceAfter">
       <property name="tokens" value="COMMA, SEMI, TYPECAST"/>
     </module>
@@ -111,7 +114,7 @@
       <property name="tokens" value="SEMI, DOT, POST_DEC, POST_INC"/>
     </module>
     <module name="NoFinalizer">
-      <property name="severity" value="error"/>
+      <property name="severity" value="warning"/>
     </module>
     <module name="ParenPad">
       <property name="severity" value="warning"/>
