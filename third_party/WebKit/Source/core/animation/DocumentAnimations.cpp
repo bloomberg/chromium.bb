@@ -98,18 +98,9 @@ void DocumentAnimations::serviceAfterStyleRecalc(Document& document)
     if (!RuntimeEnabledFeatures::webAnimationsEnabled())
         return;
 
-    document.cssPendingAnimations().startPendingAnimationsAfterStyleRecalc();
+    document.cssPendingAnimations().startPendingAnimations();
     document.animationClock().unfreeze();
     dispatchAnimationEventsAsync(document);
-}
-
-void DocumentAnimations::serviceAfterCompositingUpdate(FrameView& frameView)
-{
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        return;
-
-    for (RefPtr<Frame> frame = &frameView.frame(); frame; frame = frame->tree().traverseNext())
-        frame->document()->cssPendingAnimations().startPendingAnimationsAfterCompositingUpdate();
 }
 
 } // namespace WebCore

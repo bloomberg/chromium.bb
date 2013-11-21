@@ -41,8 +41,7 @@ namespace WebCore {
 class CSSPendingAnimations FINAL {
 public:
     void add(Player*);
-    void startPendingAnimationsAfterStyleRecalc();
-    void startPendingAnimationsAfterCompositingUpdate();
+    void startPendingAnimations();
     void notifyCompositorAnimationStarted(double monotonicAnimationStartTime);
 
 private:

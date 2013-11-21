@@ -44,7 +44,6 @@ public:
     static void serviceOnAnimationFrame(Document&, double monotonicAnimationStartTime);
     static void serviceBeforeGetComputedStyle(Node&, CSSPropertyID);
     static void serviceAfterStyleRecalc(Document&);
-    static void serviceAfterCompositingUpdate(FrameView&);
 
 private:
     DocumentAnimations() { }

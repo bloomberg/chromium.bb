@@ -1546,9 +1546,12 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     ASSERT(change >= Inherit || needsStyleRecalc());
     ASSERT(parentRenderStyle());
 
-    CSSAnimationUpdateScope cssAnimationUpdateScope(this);
     RefPtr<RenderStyle> oldStyle = renderStyle();
-    RefPtr<RenderStyle> newStyle = styleForRenderer();
+    RefPtr<RenderStyle> newStyle;
+    {
+        CSSAnimationUpdateScope cssAnimationUpdateScope(this);
+        newStyle = styleForRenderer();
+    }
     StyleRecalcChange localChange = RenderStyle::compare(oldStyle.get(), newStyle.get());
 
     ASSERT(newStyle);

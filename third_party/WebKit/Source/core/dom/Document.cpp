@@ -1752,7 +1752,6 @@ void Document::updateStyleIfNeeded()
 
     AnimationUpdateBlock animationUpdateBlock(m_frame ? &m_frame->animation() : 0);
     recalcStyle(NoChange);
-
     DocumentAnimations::serviceAfterStyleRecalc(*this);
 }
 

@@ -47,24 +47,7 @@ void CSSPendingAnimations::add(Player* player)
     m_pending.append(std::make_pair(player, defaultStartTime));
 };
 
-void CSSPendingAnimations::startPendingAnimationsAfterStyleRecalc()
-{
-    // If there's a candidate for animation on compositor wait for compositing update.
-    for (size_t i = 0; i < m_pending.size(); ++i) {
-        Player* player = m_pending[i].first.get();
-        // Note: The player may have been cancelled while waiting to start.
-        if (player->source() && toAnimation(player->source())->isCandidateForAnimationOnCompositor())
-            return;
-    }
-
-    // Otherwise we can start all animations immediately.
-    for (size_t i = 0; i < m_pending.size(); ++i) {
-        m_pending[i].first->setStartTime(m_pending[i].second);
-    }
-    m_pending.clear();
-}
-
-void CSSPendingAnimations::startPendingAnimationsAfterCompositingUpdate()
+void CSSPendingAnimations::startPendingAnimations()
 {
     bool startedOnCompositor = false;
     for (size_t i = 0; i < m_pending.size(); ++i) {
