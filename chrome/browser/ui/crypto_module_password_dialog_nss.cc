@@ -12,10 +12,6 @@
 #include "net/base/crypto_module.h"
 #include "net/cert/x509_certificate.h"
 
-#if defined(OS_CHROMEOS)
-#include "crypto/nss_util.h"
-#endif
-
 using content::BrowserThread;
 
 namespace {
@@ -72,20 +68,6 @@ void SlotUnlocker::Start() {
 
   for (; current_ < modules_.size(); ++current_) {
     if (ShouldShowDialog(modules_[current_].get())) {
-#if defined(OS_CHROMEOS)
-      if (crypto::IsTPMTokenReady()) {
-        std::string token_name;
-        std::string user_pin;
-        crypto::GetTPMTokenInfo(&token_name, &user_pin);
-        if (modules_[current_]->GetTokenName() == token_name) {
-          // The user PIN is a well known secret on this machine, and
-          // the user didn't set it, so we need to fetch the value and
-          // supply it for them here.
-          GotPassword(user_pin.c_str());
-          return;
-        }
-      }
-#endif
       ShowCryptoModulePasswordDialog(
           modules_[current_]->GetTokenName(),
           retry_,

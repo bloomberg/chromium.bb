@@ -110,18 +110,6 @@ base::FilePath GetInitialConfigDirectory() {
 // This callback for NSS forwards all requests to a caller-specified
 // CryptoModuleBlockingPasswordDelegate object.
 char* PKCS11PasswordFunc(PK11SlotInfo* slot, PRBool retry, void* arg) {
-#if defined(OS_CHROMEOS)
-  // If we get asked for a password for the TPM, then return the
-  // well known password we use, as long as the TPM slot has been
-  // initialized.
-  if (crypto::IsTPMTokenReady()) {
-    std::string token_name;
-    std::string user_pin;
-    crypto::GetTPMTokenInfo(&token_name, &user_pin);
-    if (PK11_GetTokenName(slot) == token_name)
-      return PORT_Strdup(user_pin.c_str());
-  }
-#endif
   crypto::CryptoModuleBlockingPasswordDelegate* delegate =
       reinterpret_cast<crypto::CryptoModuleBlockingPasswordDelegate*>(arg);
   if (delegate) {
@@ -289,12 +277,7 @@ class NSSInitSingleton {
   }
 
   void GetTPMTokenInfo(std::string* token_name, std::string* user_pin) {
-    // TODO(mattm): Change to DCHECK when callers have been fixed.
-    if (!thread_checker_.CalledOnValidThread()) {
-      DVLOG(1) << "Called on wrong thread.\n"
-               << base::debug::StackTrace().ToString();
-    }
-
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (!tpm_token_enabled_for_nss_) {
       LOG(ERROR) << "GetTPMTokenInfo called before TPM Token is ready.";
       return;
