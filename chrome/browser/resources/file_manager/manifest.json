@@ -26,6 +26,7 @@
     "mediaPlayerPrivate",
     "mediaGalleriesPrivate",
     "metricsPrivate",
+    "notifications",
     "commandLinePrivate",
     "unlimitedStorage",
     "webview",

@@ -10,18 +10,19 @@
  */
 var ProgressCenter = function() {
   /**
-   * Default container.
-   * @type {ProgressItemContainer}
-   * @private
-   */
-  this.targetContainer_ = ProgressItemContainer.CLIENT;
-
-  /**
    * Current items managed by the progress center.
    * @type {Array.<ProgressItem>}
    * @private
    */
   this.items_ = [];
+
+  /**
+   * Map of progress ID and notification ID.
+   * @type {Object.<string, string>}
+   * @private
+   */
+  this.notifications_ = new ProgressCenter.Notifications_(
+      this.requestCancel.bind(this));
 
   /**
    * List of panel UI managed by the progress center.
@@ -32,10 +33,10 @@ var ProgressCenter = function() {
 
   /**
    * Timeout callback to remove items.
-   * @type {TimeoutManager}
+   * @type {ProgressCenter.TimeoutManager_}
    * @private
    */
-  this.resetTimeout_ = new ProgressCenter.TimeoutManager(
+  this.resetTimeout_ = new ProgressCenter.TimeoutManager_(
       this.reset_.bind(this));
 
   Object.seal(this);
@@ -51,12 +52,135 @@ var ProgressCenter = function() {
 ProgressCenter.RESET_DELAY_TIME_MS_ = 5000;
 
 /**
+ * Notifications created by progress center.
+ * @param {function(string)} cancelCallback Callback to notify the progress
+ *     center of cancel operation.
+ * @constructor
+ * @private
+ */
+ProgressCenter.Notifications_ = function(cancelCallback) {
+  /**
+   * ID set of notifications that is progressing now.
+   * @type {Object.<string, ProgressCenter.Notifications_.NotificationState_>}
+   * @private
+   */
+  this.ids_ = {};
+
+  /**
+   * Async queue.
+   * @type {AsyncUtil.Queue}
+   * @private
+   */
+  this.queue_ = new AsyncUtil.Queue();
+
+  /**
+   * Callback to notify the progress center of cancel operation.
+   * @type {function(string)}
+   * @private
+   */
+  this.cancelCallback_ = cancelCallback;
+
+  chrome.notifications.onButtonClicked.addListener(
+      this.onButtonClicked_.bind(this));
+  chrome.notifications.onClosed.addListener(this.onClosed_.bind(this));
+
+  Object.seal(this);
+};
+
+/**
+ * State of notification.
+ * @enum {string}
+ * @const
+ * @private
+ */
+ProgressCenter.Notifications_.NotificationState_ = Object.freeze({
+  VISIBLE: 'visible',
+  DISMISSED: 'dismissed'
+});
+
+/**
+ * Updates the notification according to the item.
+ * @param {ProgressCenterItem} item Item to contain new information.
+ * @param {boolean} newItemAcceptable Whether to accept new item or not.
+ */
+ProgressCenter.Notifications_.prototype.updateItem = function(
+    item, newItemAcceptable) {
+  var NotificationState = ProgressCenter.Notifications_.NotificationState_;
+  var newlyAdded = !(item.id in this.ids_);
+
+  // If new item is not acceptable, just return.
+  if (newlyAdded && !newItemAcceptable)
+    return;
+
+  // Update the ID map and return if we does not show a notification for the
+  // item.
+  if (item.state === ProgressItemState.PROGRESSING) {
+    if (newlyAdded)
+      this.ids_[item.id] = NotificationState.VISIBLE;
+    else if (this.ids_[item.id] === NotificationState.DISMISSED)
+      return;
+  } else {
+    // This notification is no longer tracked.
+    var previousState = this.ids_[item.id];
+    delete this.ids_[item.id];
+    // Clear notifications for complete or canceled items.
+    if (item.state === ProgressItemState.CANCELED ||
+        item.state === ProgressItemState.COMPLETE) {
+      if (previousState === NotificationState.VISIBLE) {
+        this.queue_.run(function(proceed) {
+          chrome.notifications.clear(item.id, proceed);
+        });
+      }
+      return;
+    }
+  }
+
+  // Create/update the notification with the item.
+  this.queue_.run(function(proceed) {
+    var params = {
+      title: chrome.runtime.getManifest().name,
+      iconUrl: chrome.runtime.getURL('/common/images/icon96.png'),
+      type: item.state === ProgressItemState.PROGRESSING ? 'progress' : 'basic',
+      message: item.message,
+      buttons: item.cancelable ? [{title: str('CANCEL_LABEL')}] : undefined,
+      progress: item.state === ProgressItemState.PROGRESSING ?
+          item.progressRateByPercent : undefined
+    };
+    if (newlyAdded)
+      chrome.notifications.create(item.id, params, proceed);
+    else
+      chrome.notifications.update(item.id, params, proceed);
+  }.bind(this));
+};
+
+/**
+ * Handles cancel button click.
+ * @param {string} id Item ID.
+ * @private
+ */
+ProgressCenter.Notifications_.prototype.onButtonClicked_ = function(id) {
+  if (id in this.ids_)
+    this.cancelCallback_(id);
+};
+
+/**
+ * Handles notification close.
+ * @param {string} id Item ID.
+ * @private
+ */
+ProgressCenter.Notifications_.prototype.onClosed_ = function(id) {
+  if (id in this.ids_)
+    this.ids_[id] = ProgressCenter.Notifications_.NotificationState_.DISMISSED;
+};
+
+/**
  * Utility for timeout callback.
  *
- * @param {function(*):*} callback Callbakc function.
+ * @param {function(*):*} callback Callback function.
  * @constructor
+ * @private
  */
-ProgressCenter.TimeoutManager = function(callback) {
+ProgressCenter.TimeoutManager_ = function(callback) {
   this.callback_ = callback;
   this.id_ = null;
   Object.seal(this);
@@ -66,7 +190,7 @@ ProgressCenter.TimeoutManager = function(callback) {
  * Requests timeout. Previous request is canceled.
  * @param {number} milliseconds Time to invoke the callback function.
  */
-ProgressCenter.TimeoutManager.prototype.request = function(milliseconds) {
+ProgressCenter.TimeoutManager_.prototype.request = function(milliseconds) {
   if (this.id_)
     clearTimeout(this.id_);
   this.id_ = setTimeout(function() {
@@ -78,23 +202,11 @@ ProgressCenter.TimeoutManager.prototype.request = function(milliseconds) {
 /**
  * Cancels the timeout and invoke the callback function synchronously.
  */
-ProgressCenter.TimeoutManager.prototype.callImmediately = function() {
+ProgressCenter.TimeoutManager_.prototype.callImmediately = function() {
   if (this.id_)
     clearTimeout(this.id_);
   this.id_ = null;
   this.callback_();
-};
-
-ProgressCenter.prototype = {
-  /**
-   * Obtains the items to be displayed in the application window.
-   * @private
-   */
-  get applicationItems() {
-    return this.items_.filter(function(item) {
-      return item.container == ProgressItemContainer.CLIENT;
-    });
-  }
 };
 
 /**
@@ -106,12 +218,10 @@ ProgressCenter.prototype = {
 ProgressCenter.prototype.updateItem = function(item) {
   // Update item.
   var index = this.getItemIndex_(item.id);
-  if (index === -1) {
-    item.container = this.targetContainer_;
+  if (index === -1)
     this.items_.push(item);
-  } else {
+  else
     this.items_[index] = item;
-  }
 
   // Update panels.
   var summarizedItem = this.getSummarizedItem_();
@@ -119,6 +229,9 @@ ProgressCenter.prototype.updateItem = function(item) {
     this.panels_[i].updateItem(item);
     this.panels_[i].updateCloseView(summarizedItem);
   }
+
+  // Update notifications.
+  this.notifications_.updateItem(item, !this.panels_.length);
 
   // Reset if there is no item.
   for (var i = 0; i < this.items_.length; i++) {
@@ -130,6 +243,7 @@ ProgressCenter.prototype.updateItem = function(item) {
         return;
     }
   }
+
   // Cancel timeout and call reset function immediately.
   this.resetTimeout_.callImmediately();
 };
@@ -145,31 +259,6 @@ ProgressCenter.prototype.requestCancel = function(id) {
 };
 
 /**
- * Switches the default container.
- * @param {ProgressItemContainer} newContainer New value of the default
- *     container.
- */
-ProgressCenter.prototype.switchContainer = function(newContainer) {
-  if (this.targetContainer_ === newContainer)
-    return;
-
-  // Current items to be moved to the notification center.
-  if (newContainer == ProgressItemContainer.NOTIFICATION) {
-    var items = this.applicationItems;
-    for (var i = 0; i < items.length; i++) {
-      items[i].container = ProgressItemContainer.NOTIFICATION;
-      this.postItemToNotification_(items);
-    }
-  }
-
-  // The items in the notification center does not come back to the Files.app
-  // clients.
-
-  // Assign the new value.
-  this.targetContainer_ = newContainer;
-};
-
-/**
  * Adds a panel UI to the notification center.
  * @param {ProgressCenterPanel} panel Panel UI.
  */
@@ -181,10 +270,9 @@ ProgressCenter.prototype.addPanel = function(panel) {
   this.panels_.push(panel);
 
   // Set the current items.
-  var items = this.applicationItems;
+  for (var i = 0; i < this.items_.length; i++)
+    panel.updateItem(this.items_[i]);
   var summarizedItem = this.getSummarizedItem_();
-  for (var i = 0; i < items.length; i++)
-    panel.updateItem(items[i]);
   if (summarizedItem)
     panel.updateCloseView(summarizedItem);
 
@@ -203,6 +291,12 @@ ProgressCenter.prototype.removePanel = function(panel) {
 
   this.panels_.splice(index, 1);
   panel.cancelCallback = null;
+
+  // If there is no panel, show the notifications.
+  if (this.panels_.length)
+    return;
+  for (var i = 0; i < this.items_.length; i++)
+    this.notifications_.updateItem(this.items_[i], true);
 };
 
 /**
@@ -214,11 +308,10 @@ ProgressCenter.prototype.removePanel = function(panel) {
  */
 ProgressCenter.prototype.getSummarizedItem_ = function() {
   // Check the number of application items.
-  var applicationItems = this.applicationItems;
-  if (applicationItems.length == 0)
+  if (this.items_.length == 0)
     return null;
-  if (applicationItems.length == 1)
-    return applicationItems[0];
+  if (this.items_.length == 1)
+    return this.items_[0];
 
   // If it has multiple items, it creates summarized item.
   var summarizedItem = new ProgressCenterItem();
@@ -227,9 +320,9 @@ ProgressCenter.prototype.getSummarizedItem_ = function() {
   var completeCount = 0;
   var progressingCount = 0;
   var errorCount = 0;
-  for (var i = 0; i < applicationItems.length; i++) {
+  for (var i = 0; i < this.items_.length; i++) {
     // Count states.
-    switch (applicationItems[i].state) {
+    switch (this.items_[i].state) {
       case ProgressItemState.ERROR: errorCount++; break;
       case ProgressItemState.PROGRESSING: progressingCount++; break;
       case ProgressItemState.COMPLETE: completeCount++; break;
@@ -237,15 +330,15 @@ ProgressCenter.prototype.getSummarizedItem_ = function() {
 
     // Integrate the type of item.
     if (summarizedItem.type === null)
-      summarizedItem.type = applicationItems[i].type;
-    else if (summarizedItem.type !== applicationItems[i].type)
+      summarizedItem.type = this.items_[i].type;
+    else if (summarizedItem.type !== this.items_[i].type)
       summarizedItem.type = ProgressItemType.TRANSFER;
 
     // Sum up the progress values.
     if (summarizedItem.state === ProgressItemState.PROGRESSING ||
         summarizedItem.state === ProgressItemState.COMPLETE) {
-      summarizedItem.progressMax += applicationItems[i].progressMax;
-      summarizedItem.progressValue += applicationItems[i].progressValue;
+      summarizedItem.progressMax += this.items_[i].progressMax;
+      summarizedItem.progressValue += this.items_[i].progressValue;
     }
   }
   if (!summarizedItem.type)
@@ -308,17 +401,6 @@ ProgressCenter.prototype.getItemIndex_ = function(id) {
       return i;
   }
   return -1;
-};
-
-/**
- * Passes the item to the ChromeOS's message center.
- *
- * TODO(hirono): Implement the method.
- *
- * @private
- */
-ProgressCenter.prototype.passItemsToNotification_ = function() {
-
 };
 
 /**

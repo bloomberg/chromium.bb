@@ -358,6 +358,7 @@ FileOperationManager.EventRouter.prototype.sendDeleteEvent = function(
   var event = new Event('delete');
   event.reason = reason;
   event.urls = urls;
+  event.taskId = taskId;
   this.dispatchEvent(event);
 };
 

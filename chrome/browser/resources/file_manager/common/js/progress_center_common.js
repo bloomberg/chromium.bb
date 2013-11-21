@@ -5,16 +5,6 @@
 'use strict';
 
 /**
- * Where to display the item.
- * @enum {string}
- * @const
- */
-var ProgressItemContainer = Object.freeze({
-  CLIENT: 'client',
-  NOTIFICATION: 'notification'
-});
-
-/**
  * Event of the ProgressCenter class.
  * @enum {string}
  * @const
@@ -97,12 +87,6 @@ var ProgressCenterItem = function() {
    * @type {number}
    */
   this.progressValue = 0;
-
-  /**
-   * Where to the item is displayed.
-   * @type {ProgressItemContainer}
-   */
-  this.container = ProgressItemContainer.CLIENT;
 
   /**
    * Type of progress item.
