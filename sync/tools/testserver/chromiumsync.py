@@ -8,8 +8,10 @@ The details of the protocol are described mostly by comments in the protocol
 buffer definition at chrome/browser/sync/protocol/sync.proto.
 """
 
+import base64
 import cgi
 import copy
+import hashlib
 import operator
 import pickle
 import random
@@ -18,6 +20,7 @@ import sys
 import threading
 import time
 import urlparse
+import uuid
 
 import app_notification_specifics_pb2
 import app_setting_specifics_pb2
@@ -25,6 +28,7 @@ import app_specifics_pb2
 import article_specifics_pb2
 import autofill_specifics_pb2
 import bookmark_specifics_pb2
+import client_commands_pb2
 import dictionary_specifics_pb2
 import get_updates_caller_info_pb2
 import extension_setting_specifics_pb2
@@ -42,6 +46,8 @@ import search_engine_specifics_pb2
 import session_specifics_pb2
 import sync_pb2
 import sync_enums_pb2
+import synced_notification_data_pb2
+import synced_notification_render_pb2
 import synced_notification_specifics_pb2
 import theme_specifics_pb2
 import typed_url_specifics_pb2
@@ -1138,6 +1144,102 @@ class SyncDataModel(object):
   def GetInducedError(self):
     return self.induced_error
 
+  def AddSyncedNotification(self, heading, description, annotation):
+    """Adds a synced notification to the server data.
+
+    The notification will be delivered to the client on the next GetUpdates
+    call.
+
+    Args:
+      heading: The notification heading.
+      description: The notification description.
+      annotation: The notification annotation.
+
+    Returns:
+      The string representation of the added SyncEntity.
+    """
+    # A unique string used wherever a unique ID for this notification is
+    # required.
+    unique_notification_id = str(uuid.uuid4())
+
+    specifics = self._CreateSyncedNotificationEntitySpecifics(
+        unique_notification_id, heading, description, annotation)
+
+    # Create the root SyncEntity representing a single notification.
+    entity = sync_pb2.SyncEntity()
+    entity.specifics.CopyFrom(specifics)
+    entity.parent_id_string = self._ServerTagToId(
+        'google_chrome_synced_notifications')
+    entity.name = 'Synced notification added for testing'
+    entity.server_defined_unique_tag = unique_notification_id
+
+    # Set the version to one more than the greatest version number already seen.
+    entries = sorted(self._entries.values(), key=operator.attrgetter('version'))
+    entity.version = entries[-1].version + 1
+
+    entity.client_defined_unique_tag = self._CreateSyncedNotificationClientTag(
+        specifics.synced_notification.coalesced_notification.key)
+    entity.id_string = self._ClientTagToId(GetEntryType(entity),
+                                          entity.client_defined_unique_tag)
+
+    self._entries[entity.id_string] = copy.deepcopy(entity)
+
+    return entity.SerializeToString()
+
+  def _CreateSyncedNotificationEntitySpecifics(self, unique_id, heading,
+                                               description, annotation):
+    """Create the EntitySpecifics proto for a synced notification."""
+    layout = synced_notification_render_pb2.SimpleCollapsedLayout()
+    layout.heading = heading
+    layout.description = description
+    layout.annotation = annotation
+
+    collapsed_info = synced_notification_render_pb2.CollapsedInfo()
+    collapsed_info.creation_timestamp_usec = 42
+    collapsed_info.simple_collapsed_layout.CopyFrom(layout)
+
+    render_info = synced_notification_render_pb2.SyncedNotificationRenderInfo()
+    render_info.collapsed_info.CopyFrom(collapsed_info)
+
+    # TODO(pvalenzuela): Transition this function to take a
+    # CoalescedSyncedNotification as an argument instead of
+    # creating it here. This will be possible when there is a proper frontend
+    # with pre-populated notification data.
+    coalesced = synced_notification_data_pb2.CoalescedSyncedNotification()
+    coalesced.read_state = synced_notification_data_pb2 \
+        .CoalescedSyncedNotification.UNREAD
+    coalesced.priority = synced_notification_data_pb2 \
+        .CoalescedSyncedNotification.STANDARD
+    coalesced.key = unique_id
+    coalesced.render_info.CopyFrom(render_info)
+
+    notification = coalesced.notification.add()
+    notification.external_id = unique_id
+
+    specifics = sync_pb2.EntitySpecifics()
+    notification_specifics = \
+        synced_notification_specifics_pb2.SyncedNotificationSpecifics()
+    notification_specifics.coalesced_notification.CopyFrom(coalesced)
+    specifics.synced_notification.CopyFrom(notification_specifics)
+
+    return specifics
+
+
+  def _CreateSyncedNotificationClientTag(self, key):
+    """Create the client_defined_unique_tag value for a SyncedNotification.
+
+    Args:
+      key: The entity used to create the client tag.
+
+    Returns:
+      The string value of the to be used as the client_defined_unique_tag.
+    """
+    serialized_type = sync_pb2.EntitySpecifics()
+    specifics = synced_notification_specifics_pb2.SyncedNotificationSpecifics()
+    serialized_type.synced_notification.CopyFrom(specifics)
+    hash_input = serialized_type.SerializeToString() + key
+    return base64.b64encode(hashlib.sha1(hash_input).digest())
+
 
 class TestServer(object):
   """An object to handle requests for one (and only one) Chrome Sync account.
@@ -1164,6 +1266,9 @@ class TestServer(object):
     self.access_token = 'at1'
     self.expires_in = 3600
     self.token_type = 'Bearer'
+    # The ClientCommand to send back on each ServerToClientResponse. If set to
+    # None, no ClientCommand should be sent.
+    self._client_command = None
 
 
   def GetShortClientName(self, query):
@@ -1351,6 +1456,10 @@ class TestServer(object):
 
       response = sync_pb2.ClientToServerResponse()
       response.error_code = sync_enums_pb2.SyncEnums.SUCCESS
+
+      if self._client_command:
+        response.client_command.CopyFrom(self._client_command)
+
       self.CheckStoreBirthday(request)
       response.store_birthday = self.account.store_birthday
       self.CheckTransientError()
@@ -1521,3 +1630,21 @@ class TestServer(object):
             '<p>expires_in: ' + str(self.expires_in) + '</p>'
             '<p>token_type: ' + self.token_type + '</p>'
             '</html>')
+
+  def CustomizeClientCommand(self, sessions_commit_delay_seconds):
+    """Customizes the value of the ClientCommand of ServerToClientResponse.
+
+    Currently, this only allows for changing the sessions_commit_delay_seconds
+    field. This is useful for testing in conjunction with
+    AddSyncedNotification so that synced notifications are seen immediately
+    after triggering them with an HTTP call to the test server.
+
+    Args:
+      sessions_commit_delay_seconds: The desired sync delay time for sessions.
+    """
+    if not self._client_command:
+      self._client_command = client_commands_pb2.ClientCommand()
+
+    self._client_command.sessions_commit_delay_seconds = \
+        sessions_commit_delay_seconds
+    return self._client_command

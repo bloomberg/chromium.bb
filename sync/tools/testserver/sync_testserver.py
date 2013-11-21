@@ -153,7 +153,9 @@ class SyncPageHandler(testserver_base.BasePageHandler):
                     self.ChromiumSyncEnableManagedUserAcknowledgementHandler,
                     self.ChromiumSyncEnablePreCommitGetUpdateAvoidanceHandler,
                     self.GaiaOAuth2TokenHandler,
-                    self.GaiaSetOAuth2TokenResponseHandler]
+                    self.GaiaSetOAuth2TokenResponseHandler,
+                    self.TriggerSyncedNotificationHandler,
+                    self.CustomizeClientCommandHandler]
 
     post_handlers = [self.ChromiumSyncCommandHandler,
                      self.ChromiumSyncTimeHandler,
@@ -496,6 +498,67 @@ class SyncPageHandler(testserver_base.BasePageHandler):
     self.send_header('Content-Length', len(raw_reply))
     self.end_headers()
     self.wfile.write(raw_reply)
+    return True
+
+  def TriggerSyncedNotificationHandler(self):
+    test_name = "/triggersyncednotification"
+    if not self._ShouldHandleRequest(test_name):
+      return False
+
+    query = urlparse.urlparse(self.path)[4]
+    query_params = urlparse.parse_qs(query)
+
+    heading = 'HEADING'
+    description = 'DESCRIPTION'
+    annotation = 'ANNOTATION'
+
+    if 'heading' in query_params:
+      heading = query_params['heading'][0]
+    if 'description' in query_params:
+      description = query_params['description'][0]
+    if 'annotation' in query_params:
+      annotation = query_params['annotation'][0]
+
+    notification_string = self.server._sync_handler.account \
+        .AddSyncedNotification(heading, description, annotation)
+
+    reply = "A synced notification was triggered:\n\n"
+    reply += "<code>{}</code>.".format(notification_string)
+    self.send_response(200)
+    self.send_header('Content-Type', 'text/html')
+    self.send_header('Content-Length', len(reply))
+    self.end_headers()
+    self.wfile.write(reply)
+    return True
+
+  def CustomizeClientCommandHandler(self):
+    test_name = "/customizeclientcommand"
+    if not self._ShouldHandleRequest(test_name):
+      return False
+
+    query = urlparse.urlparse(self.path)[4]
+    query_params = urlparse.parse_qs(query)
+
+    if 'sessions_commit_delay_seconds' in query_params:
+      sessions_commit_delay = query_params['sessions_commit_delay_seconds'][0]
+      try:
+        command_string = self.server._sync_handler.CustomizeClientCommand(
+            int(sessions_commit_delay))
+        response_code = 200
+        reply = "The ClientCommand was customized:\n\n"
+        reply += "<code>{}</code>.".format(command_string)
+      except ValueError:
+        response_code = 400
+        reply = "sessions_commit_delay_seconds was not an int"
+    else:
+      response_code = 400
+      reply = "sessions_commit_delay_seconds is required"
+
+    self.send_response(response_code)
+    self.send_header('Content-Type', 'text/html')
+    self.send_header('Content-Length', len(reply))
+    self.end_headers()
+    self.wfile.write(reply)
     return True
 
 
