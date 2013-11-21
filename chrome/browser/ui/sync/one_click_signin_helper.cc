@@ -1194,6 +1194,10 @@ void OneClickSigninHelper::DidStopLoading(
       continue_url_.is_valid() &&
       url.ReplaceComponents(replacements) ==
         continue_url_.ReplaceComponents(replacements));
+  const bool original_continue_url_match = (
+      original_continue_url_.is_valid() &&
+      url.ReplaceComponents(replacements) ==
+        original_continue_url_.ReplaceComponents(replacements));
 
   if (continue_url_match)
     RemoveSigninRedirectURLHistoryItem(contents);
@@ -1203,7 +1207,12 @@ void OneClickSigninHelper::DidStopLoading(
   // sync.
   if (email_.empty()) {
     VLOG(1) << "OneClickSigninHelper::DidStopLoading: nothing to do";
-    if (continue_url_match) {
+    // Original-url check done because some user actions cans get us to a page
+    // via a POST instead of a GET (and thus to immediate "cuntinue url") but
+    // we still want redirects from the "blank.html" landing page to work for
+    // non-security related redirects like NTP.
+    // https://code.google.com/p/chromium/issues/detail?id=321938
+    if (original_continue_url_match) {
       if (auto_accept_ == AUTO_ACCEPT_EXPLICIT)
         RedirectToSignin();
       std::string unused_value;
