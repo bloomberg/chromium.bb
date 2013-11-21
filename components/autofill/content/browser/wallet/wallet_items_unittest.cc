@@ -363,7 +363,7 @@ const char kWalletItems[] =
     "    {"
     "      \"buyer_email\":\"user2@chromium.org\","
     "      \"gaia_index\":1,"
-    "      \"gaia_id\":\"123456789\","
+    "      \"gaia_id\":\"obfuscated_gaia_id\","
     "      \"buyer_name\":\"Jill Usecase\","
     "      \"is_active\":false,"
     "      \"avatar_url_27x27\":\"https://lh3.googleusercontent.com/27.jpg\","
@@ -513,6 +513,7 @@ TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
                        std::string(),
                        std::string(),
                        std::string(),
+                       0,
                        AMEX_DISALLOWED,
                        std::vector<std::string>());
   EXPECT_EQ(expected, *WalletItems::CreateWalletItems(*dict));
@@ -524,6 +525,7 @@ TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
                                          std::string(),
                                          std::string(),
                                          std::string(),
+                                         0,
                                          AMEX_DISALLOWED,
                                          std::vector<std::string>());
   EXPECT_NE(expected, different_required_actions);
@@ -560,6 +562,7 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
                        "default_instrument_id",
                        "default_address_id",
                        "obfuscated_gaia_id",
+                       1,
                        AMEX_DISALLOWED,
                        users);
 

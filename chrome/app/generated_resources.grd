@@ -10418,6 +10418,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_DIALOG_SIGN_IN" desc="This link text is shown when the user is not signed into a GAIA account.">
         Sign in to pay with Google Wallet
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADD_ACCOUNT" desc="This text is shown to allow the user to sign into a different GAIA account (for multi-login).">
+        Add Account
+      </message>
       <message name="IDS_AUTOFILL_DIALOG_CANCEL_SIGN_IN" desc="This link text is shown when the user is signing into a GAIA account as a way to cancel sign in.">
         Back
       </message>

@@ -236,13 +236,15 @@ scoped_ptr<WalletItems> GetTestWalletItems(
     const std::string& default_instrument_id,
     const std::string& default_address_id,
     AmexPermission amex_permission,
-    const std::vector<std::string>& users) {
+    const std::vector<std::string>& users,
+    size_t user_index) {
   return scoped_ptr<WalletItems>(
       new wallet::WalletItems(required_actions,
                               "google_transaction_id",
                               default_instrument_id,
                               default_address_id,
                               "obfuscated_gaia_id",
+                              user_index,
                               amex_permission,
                               users));
 }
@@ -258,7 +260,8 @@ scoped_ptr<WalletItems> GetTestWalletItemsWithRequiredAction(
                             "default_instrument_id",
                             "default_address_id",
                             AMEX_ALLOWED,
-                            users);
+                            users,
+                            0);
 }
 
 scoped_ptr<WalletItems> GetTestWalletItems(AmexPermission amex_permission) {
@@ -269,12 +272,13 @@ scoped_ptr<WalletItems> GetTestWalletItems(AmexPermission amex_permission) {
 
 
 scoped_ptr<WalletItems> GetTestWalletItemsWithUsers(
-    std::vector<std::string>& users) {
+    const std::vector<std::string>& users, size_t user_index) {
   return GetTestWalletItems(std::vector<RequiredAction>(),
                             "default_instrument_id",
                             "default_address_id",
                             AMEX_ALLOWED,
-                            users);
+                            users,
+                            user_index);
 }
 
 scoped_ptr<WalletItems> GetTestWalletItemsWithDefaultIds(
@@ -286,7 +290,8 @@ scoped_ptr<WalletItems> GetTestWalletItemsWithDefaultIds(
                             default_instrument_id,
                             default_address_id,
                             amex_permission,
-                            users);
+                            users,
+                            0);
 }
 
 }  // namespace wallet

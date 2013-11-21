@@ -431,9 +431,12 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   // data for it.
   void SetUpControllerWithFormData(const FormData& form_data) {
     ResetControllerWithFormData(form_data);
-    EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
-    controller_->OnDidFetchWalletCookieValue(std::string());
-    controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+    if (!profile()->GetPrefs()->GetBoolean(
+            ::prefs::kAutofillDialogPayWithoutWallet)) {
+      EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+      controller_->OnDidFetchWalletCookieValue(std::string());
+      controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+    }
   }
 
   // Fills the inputs in SECTION_CC with data.
@@ -1883,7 +1886,6 @@ TEST_F(AutofillDialogControllerTest, SubmitWithSigninErrorDoesntSetPref) {
 
 // Tests that there's an overlay shown while waiting for full wallet items.
 TEST_F(AutofillDialogControllerTest, WalletFirstRun) {
-  SwitchToWallet();
   EXPECT_TRUE(controller()->GetDialogOverlay().image.IsEmpty());
 
   SubmitWithWalletItems(CompleteAndValidWalletItems());
@@ -1929,9 +1931,10 @@ TEST_F(AutofillDialogControllerTest, ViewSubmitSetsPref) {
       ::prefs::kAutofillDialogPayWithoutWallet));
 
   // Successfully choosing wallet does set the pref.
+  // Note that OnDidGetWalletItems sets the account chooser to wallet mode.
   SetUpControllerWithFormData(DefaultFormData());
 
-  SwitchToWallet();
+  controller()->OnDidFetchWalletCookieValue(std::string());
   scoped_ptr<wallet::WalletItems> wallet_items =
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
@@ -2136,8 +2139,6 @@ TEST_F(AutofillDialogControllerTest, ShippingSectionCanBeHidden) {
 }
 
 TEST_F(AutofillDialogControllerTest, ShippingSectionCanBeHiddenForWallet) {
-  SwitchToWallet();
-
   FormFieldData email_field;
   email_field.autocomplete_attribute = "email";
   FormFieldData cc_field;
@@ -2271,9 +2272,7 @@ TEST_F(AutofillDialogControllerTest, GeneratedCardBubbleShown) {
 // tab hosting the Autofill dialog and back. Also verify that the user's
 // selection is preserved across this re-fetch.
 TEST_F(AutofillDialogControllerTest, ReloadWalletItemsOnActivation) {
-  // Switch into Wallet mode and initialize some Wallet data.
-  SwitchToWallet();
-
+  // Initialize some Wallet data.
   scoped_ptr<wallet::WalletItems> wallet_items =
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
@@ -2331,9 +2330,7 @@ TEST_F(AutofillDialogControllerTest, ReloadWalletItemsOnActivation) {
 // new default values are selected in the dialog.
 TEST_F(AutofillDialogControllerTest,
        ReloadWalletItemsOnActivationWithNewDefaults) {
-  // Switch into Wallet mode and initialize some Wallet data.
-  SwitchToWallet();
-
+  // Initialize some Wallet data.
   scoped_ptr<wallet::WalletItems> wallet_items =
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
@@ -2389,8 +2386,6 @@ TEST_F(AutofillDialogControllerTest,
 }
 
 TEST_F(AutofillDialogControllerTest, ReloadWithEmptyWalletItems) {
-  SwitchToWallet();
-
   controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
   controller()->MenuModelForSection(SECTION_CC_BILLING)->ActivatedAt(1);
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
@@ -2684,6 +2679,24 @@ TEST_F(AutofillDialogControllerTest, DontGetWalletTillNecessary) {
   controller()->OnPassiveSigninFailure(GoogleServiceAuthError(
       GoogleServiceAuthError::CONNECTION_FAILED));
   EXPECT_NE(use_wallet_text, controller()->SignInLinkText());
+}
+
+TEST_F(AutofillDialogControllerTest, MultiAccountSwitch) {
+  std::vector<std::string> users;
+  users.push_back("user_1@example.com");
+  users.push_back("user_2@example.com");
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItemsWithUsers(users, 0));
+
+  // Items should be: Account 1, account 2, add account, disable wallet.
+  EXPECT_EQ(4, controller()->MenuModelForAccountChooser()->GetItemCount());
+  EXPECT_EQ(0U, controller()->GetTestingWalletClient()->user_index());
+
+  // GetWalletItems should be called when the user switches accounts.
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  controller()->MenuModelForAccountChooser()->ActivatedAt(1);
+  // The wallet client should be updated to the new user index.
+  EXPECT_EQ(1U, controller()->GetTestingWalletClient()->user_index());
 }
 
 }  // namespace autofill

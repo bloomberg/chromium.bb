@@ -37,7 +37,10 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/url_constants.h"
@@ -102,7 +105,8 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
                 GetRequestContext(), this, form_data.origin),
         message_loop_runner_(runner),
         use_validation_(false),
-        weak_ptr_factory_(this) {}
+        weak_ptr_factory_(this),
+        sign_in_user_index_(0U) {}
 
   virtual ~TestAutofillDialogController() {}
 
@@ -183,6 +187,10 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return &mock_wallet_client_;
   }
 
+  void set_sign_in_user_index(size_t sign_in_user_index) {
+    sign_in_user_index_ = sign_in_user_index;
+  }
+
  protected:
   virtual PersonalDataManager* GetManager() OVERRIDE {
     return &test_manager_;
@@ -192,7 +200,9 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return &mock_wallet_client_;
   }
 
-  virtual bool IsSignInContinueUrl(const GURL& url) const OVERRIDE {
+  virtual bool IsSignInContinueUrl(const GURL& url, size_t* user_index) const
+      OVERRIDE {
+    *user_index = sign_in_user_index_;
     return url == SignInContinueUrl();
   }
 
@@ -215,7 +225,44 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   // Allows generation of WeakPtrs, so controller liveness can be tested.
   base::WeakPtrFactory<TestAutofillDialogController> weak_ptr_factory_;
 
+  // The user index that is assigned in IsSignInContinueUrl().
+  size_t sign_in_user_index_;
+
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
+};
+
+// This is a copy of ui_test_utils::UrlLoadObserver, except it observes
+// NAV_ENTRY_COMMITTED instead of LOAD_STOP. This is to match the notification
+// that AutofillDialogControllerImpl observes. Since NAV_ENTRY_COMMITTED comes
+// before LOAD_STOP, and the controller deletes the web contents after receiving
+// the former, we will sometimes fail to observe a LOAD_STOP.
+// TODO(estade): Should the controller observe LOAD_STOP instead?
+class NavEntryCommittedObserver : public content::WindowedNotificationObserver {
+ public:
+  NavEntryCommittedObserver(const GURL& url,
+                            const content::NotificationSource& source)
+    : WindowedNotificationObserver(content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                                   source),
+      url_(url) {}
+
+  virtual ~NavEntryCommittedObserver() {}
+
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    content::LoadCommittedDetails* load_details =
+        content::Details<content::LoadCommittedDetails>(details).ptr();
+    if (load_details->entry->GetVirtualURL() != url_)
+      return;
+
+    WindowedNotificationObserver::Observe(type, source, details);
+  }
+
+ private:
+  GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavEntryCommittedObserver);
 };
 
 }  // namespace
@@ -903,7 +950,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
   view->SetTextContentsOfInput(shipping_zip, ASCIIToUTF16("shipping zip"));
 
   // Switch to using Autofill.
-  account_chooser->ActivatedAt(1);
+  account_chooser->ActivatedAt(account_chooser->GetItemCount() - 1);
 
   // Check that appropriate sections are preserved and in manually editing mode
   // (or disabled, in the case of the combined cc + billing section).
@@ -991,7 +1038,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
   controller()->OnDidGetWalletItems(
       wallet::GetTestWalletItemsWithRequiredAction(wallet::GAIA_AUTH));
 
-  ui_test_utils::UrlLoadObserver sign_in_page_observer(
+  NavEntryCommittedObserver sign_in_page_observer(
       controller()->SignInUrl(),
       content::NotificationService::AllSources());
 
@@ -1005,15 +1052,15 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
 
   sign_in_page_observer.Wait();
 
-  ui_test_utils::UrlLoadObserver continue_page_observer(
+  NavEntryCommittedObserver continue_page_observer(
       controller()->SignInContinueUrl(),
       content::NotificationService::AllSources());
 
   EXPECT_EQ(sign_in_contents->GetURL(), controller()->SignInUrl());
 
-  const AccountChooserModel& account_chooser_model =
+  AccountChooserModel* account_chooser_model =
       controller()->AccountChooserModelForTesting();
-  EXPECT_FALSE(account_chooser_model.WalletIsSelected());
+  EXPECT_FALSE(account_chooser_model->WalletIsSelected());
 
   sign_in_contents->GetController().LoadURL(
       controller()->SignInContinueUrl(),
@@ -1032,7 +1079,73 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
 
   // Wallet should now be selected and Chrome shouldn't have crashed (which can
   // happen if the WebContents is deleted while proccessing a nav entry commit).
-  EXPECT_TRUE(account_chooser_model.WalletIsSelected());
+  EXPECT_TRUE(account_chooser_model->WalletIsSelected());
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddAccount) {
+  InitializeController();
+
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  std::vector<std::string> usernames;
+  usernames.push_back("user_0@example.com");
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItemsWithUsers(usernames, 0));
+
+  // Switch to Autofill.
+  AccountChooserModel* account_chooser_model =
+      controller()->AccountChooserModelForTesting();
+  account_chooser_model->ActivatedAt(
+      account_chooser_model->GetItemCount() - 1);
+
+  NavEntryCommittedObserver sign_in_page_observer(
+      controller()->SignInUrl(),
+      content::NotificationService::AllSources());
+
+  // Simulate a user clicking "add account".
+  account_chooser_model->ActivatedAt(
+      account_chooser_model->GetItemCount() - 2);
+  EXPECT_TRUE(controller()->ShouldShowSignInWebView());
+
+  TestableAutofillDialogView* view = controller()->GetTestableView();
+  content::WebContents* sign_in_contents = view->GetSignInWebContents();
+  ASSERT_TRUE(sign_in_contents);
+
+  sign_in_page_observer.Wait();
+
+  NavEntryCommittedObserver continue_page_observer(
+      controller()->SignInContinueUrl(),
+      content::NotificationService::AllSources());
+
+  EXPECT_EQ(sign_in_contents->GetURL(), controller()->SignInUrl());
+
+  EXPECT_FALSE(account_chooser_model->WalletIsSelected());
+
+  // User signs into new account, account 3.
+  controller()->set_sign_in_user_index(3U);
+  sign_in_contents->GetController().LoadURL(
+      controller()->SignInContinueUrl(),
+      content::Referrer(),
+      content::PAGE_TRANSITION_FORM_SUBMIT,
+      std::string());
+
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  continue_page_observer.Wait();
+  content::RunAllPendingInMessageLoop();
+
+  EXPECT_FALSE(controller()->ShouldShowSignInWebView());
+  EXPECT_EQ(3U, controller()->GetTestingWalletClient()->user_index());
+
+  usernames.push_back("user_1@example.com");
+  usernames.push_back("user_2@example.com");
+  usernames.push_back("user_3@example.com");
+  usernames.push_back("user_4@example.com");
+  // Curveball: wallet items comes back with user 4 selected.
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItemsWithUsers(usernames, 4U));
+
+  EXPECT_TRUE(account_chooser_model->WalletIsSelected());
+  EXPECT_EQ(4U, account_chooser_model->GetActiveWalletAccountIndex());
+  EXPECT_EQ(4U, controller()->GetTestingWalletClient()->user_index());
 }
 
 // http://crbug.com/318526

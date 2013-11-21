@@ -20,8 +20,9 @@
 
 namespace autofill {
 
-const int AccountChooserModel::kAutofillItemId = 0;
-const int AccountChooserModel::kWalletAccountsStartId = 1;
+const int AccountChooserModel::kWalletAddAccountId = 0;
+const int AccountChooserModel::kAutofillItemId = 1;
+const int AccountChooserModel::kWalletAccountsStartId = 2;
 
 AccountChooserModelDelegate::~AccountChooserModelDelegate() {}
 
@@ -32,7 +33,6 @@ AccountChooserModel::AccountChooserModel(
     : ui::SimpleMenuModel(this),
       delegate_(delegate),
       checked_item_(kWalletAccountsStartId),
-      active_wallet_account_(0U),
       had_wallet_error_(false),
       metric_logger_(metric_logger) {
   if (profile->GetPrefs()->GetBoolean(
@@ -44,19 +44,19 @@ AccountChooserModel::AccountChooserModel(
   ReconstructMenuItems();
 }
 
-AccountChooserModel::~AccountChooserModel() {
-}
+AccountChooserModel::~AccountChooserModel() {}
 
 void AccountChooserModel::MenuWillShow() {
   ui::SimpleMenuModel::MenuWillShow();
 }
 
-void AccountChooserModel::SelectActiveWalletAccount() {
-  ExecuteCommand(kWalletAccountsStartId + active_wallet_account_, 0);
+void AccountChooserModel::SelectWalletAccount(size_t user_index) {
+  DCHECK(user_index == 0U || user_index < wallet_accounts_.size());
+  checked_item_ = kWalletAccountsStartId + user_index;
 }
 
 void AccountChooserModel::SelectUseAutofill() {
-  ExecuteCommand(kAutofillItemId, 0);
+  checked_item_ = kAutofillItemId;
 }
 
 bool AccountChooserModel::HasAccountsToChoose() const {
@@ -64,8 +64,11 @@ bool AccountChooserModel::HasAccountsToChoose() const {
 }
 
 void AccountChooserModel::SetWalletAccounts(
-    const std::vector<std::string>& accounts) {
+    const std::vector<std::string>& accounts,
+    size_t active_index) {
   wallet_accounts_ = accounts;
+  SelectWalletAccount(active_index);
+
   ReconstructMenuItems();
   delegate_->UpdateAccountChooserView();
 }
@@ -87,7 +90,10 @@ base::string16 AccountChooserModel::GetActiveWalletAccountName() const {
 }
 
 size_t AccountChooserModel::GetActiveWalletAccountIndex() const {
-  return active_wallet_account_;
+  if (!WalletIsSelected())
+    return 0;
+
+  return checked_item_ - kWalletAccountsStartId;
 }
 
 bool AccountChooserModel::IsCommandIdChecked(int command_id) const {
@@ -117,6 +123,9 @@ void AccountChooserModel::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == kAutofillItemId) {
     chooser_event =
         AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_SWITCHED_TO_AUTOFILL;
+  } else if (command_id == kWalletAddAccountId) {
+    chooser_event =
+        AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_TRIED_TO_ADD_ACCOUNT;
   } else if (checked_item_ == kAutofillItemId) {
     chooser_event =
         AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_SWITCHED_TO_WALLET;
@@ -126,10 +135,12 @@ void AccountChooserModel::ExecuteCommand(int command_id, int event_flags) {
   }
   metric_logger_.LogDialogUiEvent(chooser_event);
 
-  checked_item_ = command_id;
-  if (checked_item_ >= kWalletAccountsStartId)
-    active_wallet_account_ = checked_item_ - kWalletAccountsStartId;
+  if (command_id == kWalletAddAccountId) {
+    delegate_->AddAccount();
+    return;
+  }
 
+  checked_item_ = command_id;
   ReconstructMenuItems();
   delegate_->AccountChoiceChanged();
 }
@@ -169,6 +180,8 @@ void AccountChooserModel::ReconstructMenuItems() {
                  l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_GOOGLE_WALLET));
   }
 
+  AddCheckItemWithStringId(kWalletAddAccountId,
+                           IDS_AUTOFILL_DIALOG_ADD_ACCOUNT);
   AddCheckItemWithStringId(kAutofillItemId,
                            IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET);
 }

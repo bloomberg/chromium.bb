@@ -259,6 +259,7 @@ class WalletItems {
   const std::vector<Address*>& addresses() const { return addresses_.get(); }
   const std::string& default_address_id() const { return default_address_id_; }
   const std::string& obfuscated_gaia_id() const { return obfuscated_gaia_id_; }
+  size_t active_account_index() const { return active_account_index_; }
   const std::vector<std::string>& gaia_accounts() const {
     return gaia_accounts_;
   }
@@ -273,7 +274,8 @@ class WalletItems {
       const std::string&,
       const std::string&,
       AmexPermission,
-      const std::vector<std::string>&);
+      const std::vector<std::string>&,
+      size_t);
   friend scoped_ptr<WalletItems> GetTestWalletItemsWithDefaultIds(
       RequiredAction action);
   FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
@@ -285,6 +287,7 @@ class WalletItems {
               const std::string& default_instrument_id,
               const std::string& default_address_id,
               const std::string& obfuscated_gaia_id,
+              size_t active_account_index,
               AmexPermission amex_permission,
               const std::vector<std::string>& gaia_accounts);
 
@@ -301,8 +304,13 @@ class WalletItems {
   // The id of the user's default address.
   std::string default_address_id_;
 
-  // The externalized Gaia id of the user.
+  // The externalized Gaia id of the user. TODO(estade): we can remove this
+  // if |gaia_accounts_| is made to hold more metadata about the accounts.
   std::string obfuscated_gaia_id_;
+
+  // The index into |gaia_accounts_| of the account for which this object
+  // holds data.
+  size_t active_account_index_;
 
   // The user's backing instruments.
   ScopedVector<MaskedInstrument> instruments_;

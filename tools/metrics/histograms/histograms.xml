@@ -21299,6 +21299,7 @@ other types of suffix sets.
   <int value="19" label="Selected 'Add cc+billing' suggestion"/>
   <int value="20" label="Selected 'Add shipping' suggestion"/>
   <int value="21" label="Selected 'Add cc' suggestion"/>
+  <int value="22" label="Account switched: Wallet account added (multilogin)"/>
 </enum>
 
 <enum name="AutofillExperimentId" type="int">

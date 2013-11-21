@@ -725,16 +725,15 @@ string16 AutofillDialogControllerImpl::SaveLocallyTooltip() const {
 }
 
 string16 AutofillDialogControllerImpl::LegalDocumentsText() {
-  if (!IsPayingWithWallet())
+  if (!IsPayingWithWallet() || ShouldShowSignInWebView())
     return string16();
 
   return legal_documents_text_;
 }
 
 bool AutofillDialogControllerImpl::ShouldShowSpinner() const {
-  return account_chooser_model_.WalletIsSelected() &&
-         (SignedInState() == REQUIRES_RESPONSE ||
-          SignedInState() == REQUIRES_PASSIVE_SIGN_IN);
+  return SignedInState() == REQUIRES_RESPONSE ||
+         SignedInState() == REQUIRES_PASSIVE_SIGN_IN;
 }
 
 bool AutofillDialogControllerImpl::ShouldShowSignInWebView() const {
@@ -877,6 +876,8 @@ void AutofillDialogControllerImpl::GetWalletItems() {
   ScopedViewUpdates updates(view_.get());
 
   wallet_items_requested_ = true;
+  wallet::WalletClient* wallet_client = GetWalletClient();
+  wallet_client->CancelRequests();
 
   previously_selected_instrument_id_.clear();
   previously_selected_shipping_address_id_.clear();
@@ -900,7 +901,7 @@ void AutofillDialogControllerImpl::GetWalletItems() {
   // The "Loading..." page should be showing now, which should cause the
   // account chooser to hide.
   view_->UpdateAccountChooser();
-  GetWalletClient()->GetWalletItems();
+  wallet_client->GetWalletItems();
 }
 
 void AutofillDialogControllerImpl::HideSignIn() {
@@ -1336,7 +1337,8 @@ ui::MenuModel* AutofillDialogControllerImpl::MenuModelForAccountChooser() {
   // there's a wallet error.
   if (wallet_error_notification_ ||
       (SignedInState() == SIGNED_IN &&
-       account_chooser_model_.HasAccountsToChoose())) {
+       account_chooser_model_.HasAccountsToChoose() &&
+       !ShouldShowSignInWebView())) {
     return &account_chooser_model_;
   }
 
@@ -2013,13 +2015,11 @@ void AutofillDialogControllerImpl::SignInLinkClicked() {
 
   if (SignedInState() == NOT_CHECKED) {
     handling_use_wallet_link_click_ = true;
-    account_chooser_model_.SelectActiveWalletAccount();
+    account_chooser_model_.SelectWalletAccount(0);
     FetchWalletCookie();
     view_->UpdateAccountChooser();
   } else if (signin_registrar_.IsEmpty()) {
     // Start sign in.
-    DCHECK(!IsPayingWithWallet());
-
     waiting_for_explicit_sign_in_response_ = true;
     content::Source<content::NavigationController> source(view_->ShowSignIn());
     signin_registrar_.Add(
@@ -2037,10 +2037,14 @@ void AutofillDialogControllerImpl::SignInLinkClicked() {
 void AutofillDialogControllerImpl::NotificationCheckboxStateChanged(
     DialogNotification::Type type, bool checked) {
   if (type == DialogNotification::WALLET_USAGE_CONFIRMATION) {
-    if (checked)
-      account_chooser_model_.SelectActiveWalletAccount();
-    else
+    if (checked) {
+      account_chooser_model_.SelectWalletAccount(
+          GetWalletClient()->user_index());
+    } else {
       account_chooser_model_.SelectUseAutofill();
+    }
+
+    AccountChoiceChanged();
   }
 }
 
@@ -2190,9 +2194,9 @@ void AutofillDialogControllerImpl::Observe(
   DCHECK_EQ(type, content::NOTIFICATION_NAV_ENTRY_COMMITTED);
   content::LoadCommittedDetails* load_details =
       content::Details<content::LoadCommittedDetails>(details).ptr();
-  if (IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
-    // TODO(estade): will need to update this when we fix <crbug.com/247755>.
-    account_chooser_model_.SelectActiveWalletAccount();
+  size_t user_index = 0;
+  if (IsSignInContinueUrl(load_details->entry->GetVirtualURL(), &user_index)) {
+    GetWalletClient()->set_user_index(user_index);
     FetchWalletCookie();
 
     // NOTE: |HideSignIn()| may delete the WebContents which doesn't expect to
@@ -2225,7 +2229,7 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
       // data is refreshed as soon as the user switches back to this tab after
       // potentially editing his data.
       last_wallet_items_fetch_timestamp_ = base::TimeTicks();
-      size_t user_index = account_chooser_model_.GetActiveWalletAccountIndex();
+      size_t user_index = GetWalletClient()->user_index();
       url = SectionForSuggestionsMenuModel(*model) == SECTION_SHIPPING ?
           wallet::GetManageAddressesUrl(user_index) :
           wallet::GetManageInstrumentsUrl(user_index);
@@ -2344,11 +2348,14 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
 
   wallet_items_ = wallet_items.Pass();
 
-  // TODO(estade): support multiple users. http://crbug.com/247755
-  std::vector<std::string> username;
-  if (wallet_items_ && !wallet_items_->gaia_accounts().empty())
-    username.push_back(wallet_items_->gaia_accounts()[0]);
-  account_chooser_model_.SetWalletAccounts(username);
+  if (wallet_items_) {
+    // Making sure the user index is in sync shouldn't be necessary, but is an
+    // extra precaution.
+    GetWalletClient()->set_user_index(wallet_items_->active_account_index());
+    account_chooser_model_.SetWalletAccounts(
+        wallet_items_->gaia_accounts(),
+        wallet_items_->active_account_index());
+  }
 
   ConstructLegalDocumentsText();
   OnWalletOrSigninUpdate();
@@ -2408,13 +2415,19 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
       account_chooser_model_.GetActiveWalletAccountIndex();
   if (account_chooser_model_.WalletIsSelected() &&
       client->user_index() != selected_user_index) {
-    client->CancelRequests();
     client->set_user_index(selected_user_index);
+    // Clear |wallet_items_| so we don't try to restore the selected instrument
+    // and address.
+    wallet_items_.reset();
     GetWalletItems();
   } else {
     SuggestionsUpdated();
     UpdateAccountChooserView();
   }
+}
+
+void AutofillDialogControllerImpl::AddAccount() {
+  SignInLinkClicked();
 }
 
 void AutofillDialogControllerImpl::UpdateAccountChooserView() {
@@ -2485,13 +2498,15 @@ void AutofillDialogControllerImpl::
   last_wallet_items_fetch_timestamp_ = base::TimeTicks();
 }
 
-const AccountChooserModel& AutofillDialogControllerImpl::
-    AccountChooserModelForTesting() const {
-  return account_chooser_model_;
+AccountChooserModel* AutofillDialogControllerImpl::
+    AccountChooserModelForTesting() {
+  return &account_chooser_model_;
 }
 
-bool AutofillDialogControllerImpl::IsSignInContinueUrl(const GURL& url) const {
-  return wallet::IsSignInContinueUrl(url);
+bool AutofillDialogControllerImpl::IsSignInContinueUrl(
+    const GURL& url,
+    size_t* user_index) const {
+  return wallet::IsSignInContinueUrl(url, user_index);
 }
 
 AutofillDialogControllerImpl::AutofillDialogControllerImpl(

@@ -142,6 +142,10 @@ class AutofillMetrics {
     DIALOG_UI_SHIPPING_ITEM_ADDED,
     DIALOG_UI_CC_ITEM_ADDED,
 
+    // Also an account switcher menu item. The user selected the
+    // "add account" option.
+    DIALOG_UI_ACCOUNT_CHOOSER_TRIED_TO_ADD_ACCOUNT,
+
     NUM_DIALOG_UI_EVENTS
   };
 

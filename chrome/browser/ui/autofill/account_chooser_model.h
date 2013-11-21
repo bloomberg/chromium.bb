@@ -33,6 +33,9 @@ class AccountChooserModelDelegate {
   // Called when the active account has changed.
   virtual void AccountChoiceChanged() = 0;
 
+  // Called when the user selects the "add account" menu item.
+  virtual void AddAccount() = 0;
+
   // Called when the account chooser UI needs to be updated.
   virtual void UpdateAccountChooserView() = 0;
 };
@@ -63,10 +66,8 @@ class AccountChooserModel : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
   virtual void MenuWillShow(ui::SimpleMenuModel* source) OVERRIDE;
 
-  // Sets the selection to the currently active Online Wallet account.
-  // Should be called if the user attempts to sign into the Online Wallet
-  // (e.g. when the user clicks the "Sign-in" link).
-  void SelectActiveWalletAccount();
+  // Sets the selection to the given wallet account.
+  void SelectWalletAccount(size_t user_index);
 
   // Sets the selection to the local Autofill data.
   void SelectUseAutofill();
@@ -74,8 +75,10 @@ class AccountChooserModel : public ui::SimpleMenuModel,
   // Returns true if there are any accounts for the user to choose from.
   bool HasAccountsToChoose() const;
 
-  // Sets the name of the accounts used to communicate with the Online Wallet.
-  void SetWalletAccounts(const std::vector<std::string>& accounts);
+  // Sets the name of the accounts used to communicate with the Online Wallet
+  // and switches |checked_item_| to point to the menu item for the account.
+  void SetWalletAccounts(const std::vector<std::string>& accounts,
+                         size_t active_index);
 
   // Clears the set of accounts used to communicate with the Online Wallet.
   // Any Wallet error automatically clears the currently active account name.
@@ -102,6 +105,8 @@ class AccountChooserModel : public ui::SimpleMenuModel,
 
  protected:
   // Command IDs of the items in this menu; protected for the tests.
+  // The menu item for adding a new wallet account (for multilogin).
+  static const int kWalletAddAccountId;
   // kAutofillItemId is "Pay without the Wallet" (local autofill data).
   static const int kAutofillItemId;
   // Wallet account menu item IDs are this value + the account index.
@@ -115,9 +120,6 @@ class AccountChooserModel : public ui::SimpleMenuModel,
 
   // The command id of the currently selected item.
   int checked_item_;
-
-  // The index of the active wallet account.
-  size_t active_wallet_account_;
 
   // Whether there has been a Wallet error.
   bool had_wallet_error_;

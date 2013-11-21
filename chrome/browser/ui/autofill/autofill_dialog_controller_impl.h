@@ -206,6 +206,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // AccountChooserModelDelegate implementation.
   virtual void AccountChooserWillShow() OVERRIDE;
   virtual void AccountChoiceChanged() OVERRIDE;
+  virtual void AddAccount() OVERRIDE;
   virtual void UpdateAccountChooserView() OVERRIDE;
 
   // wallet::WalletSigninHelperDelegate implementation.
@@ -307,10 +308,11 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   void ClearLastWalletItemsFetchTimestampForTesting();
 
   // Allows tests to inspect the state of the account chooser.
-  const AccountChooserModel& AccountChooserModelForTesting() const;
+  AccountChooserModel* AccountChooserModelForTesting();
 
-  // Returns whether |url| matches the sign in continue URL.
-  virtual bool IsSignInContinueUrl(const GURL& url) const;
+  // Returns whether |url| matches the sign in continue URL. If so, also fills
+  // in |user_index| with the index of the user account that just signed in.
+  virtual bool IsSignInContinueUrl(const GURL& url, size_t* user_index) const;
 
   // Whether the user is known to be signed in.
   DialogSignedInState SignedInState() const;

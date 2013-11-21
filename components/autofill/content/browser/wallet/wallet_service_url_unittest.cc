@@ -101,5 +101,35 @@ TEST(WalletServiceUrl, IsUsingProd) {
   EXPECT_EQ(fake_service_url.GetOrigin(), flag_get_items_url.GetOrigin());
 }
 
+TEST(WalletServiceUrl, IsSignInContinueUrl) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "1");
+
+  // authuser query param is respected.
+  const char sign_in_url[] = "https://wallet-web.sandbox.google.com/online/v2/"
+      "u/0/passiveauth?isChromePayments=true&authuser=4";
+  size_t user_index = 100;
+  EXPECT_TRUE(IsSignInContinueUrl(GURL(sign_in_url), &user_index));
+  EXPECT_EQ(4U, user_index);
+
+  // No authuser query param means 0 is assumed.
+  user_index = 101;
+  const char sign_in_url_no_user[] = "https://wallet-web.sandbox.google.com/"
+      "online/v2/u/0/passiveauth?isChromePayments=true";
+  EXPECT_TRUE(IsSignInContinueUrl(GURL(sign_in_url_no_user), &user_index));
+  EXPECT_EQ(0U, user_index);
+
+  // A authuser query param that doesn't parse means 0 is assumed.
+  user_index = 102;
+  const char sign_in_url_bad_user[] = "https://wallet-web.sandbox.google.com/"
+      "online/v2/u/0/passiveauth?isChromePayments=true&authuser=yolo";
+  EXPECT_TRUE(IsSignInContinueUrl(GURL(sign_in_url_bad_user), &user_index));
+  EXPECT_EQ(0U, user_index);
+
+  const char not_a_sign_in_url[] = "https://wallet-web.sandbox.google.com/"
+      "online/v2/u/0/example";
+  EXPECT_FALSE(IsSignInContinueUrl(GURL(not_a_sign_in_url), &user_index));
+}
+
 }  // namespace wallet
 }  // namespace autofill

@@ -417,6 +417,7 @@ WalletItems::WalletItems(const std::vector<RequiredAction>& required_actions,
                          const std::string& default_instrument_id,
                          const std::string& default_address_id,
                          const std::string& obfuscated_gaia_id,
+                         size_t active_account_index,
                          AmexPermission amex_permission,
                          const std::vector<std::string>& gaia_accounts)
     : required_actions_(required_actions),
@@ -424,6 +425,7 @@ WalletItems::WalletItems(const std::vector<RequiredAction>& required_actions,
       default_instrument_id_(default_instrument_id),
       default_address_id_(default_address_id),
       obfuscated_gaia_id_(obfuscated_gaia_id),
+      active_account_index_(active_account_index),
       amex_permission_(amex_permission),
       gaia_accounts_(gaia_accounts) {}
 
@@ -475,6 +477,7 @@ scoped_ptr<WalletItems>
   AmexPermission amex_permission =
       amex_disallowed ? AMEX_DISALLOWED : AMEX_ALLOWED;
 
+  size_t active_account_index = 0;
   std::vector<std::string> gaia_accounts;
   const base::ListValue* gaia_profiles;
   if (dictionary.GetList("gaia_profile", &gaia_profiles)) {
@@ -484,6 +487,12 @@ scoped_ptr<WalletItems>
       if (gaia_profiles->GetDictionary(i, &account_dict) &&
           account_dict->GetString("buyer_email", &email)) {
         gaia_accounts.push_back(email);
+
+        std::string gaia_id;
+        if (account_dict->GetString("gaia_id", &gaia_id) &&
+            gaia_id == obfuscated_gaia_id) {
+          active_account_index = i;
+        }
       } else {
         DVLOG(1) << "Response from Google Wallet has malformed GAIA profile.";
       }
@@ -497,6 +506,7 @@ scoped_ptr<WalletItems>
                                                        default_instrument_id,
                                                        default_address_id,
                                                        obfuscated_gaia_id,
+                                                       active_account_index,
                                                        amex_permission,
                                                        gaia_accounts));
 
@@ -569,11 +579,15 @@ bool WalletItems::operator==(const WalletItems& other) const {
          default_address_id_ == other.default_address_id_ &&
          required_actions_ == other.required_actions_ &&
          obfuscated_gaia_id_ == other.obfuscated_gaia_id_ &&
+         active_account_index() == other.active_account_index() &&
          VectorsAreEqual<MaskedInstrument>(instruments(),
-                                           other.instruments()) &&
+                                            other.instruments()) &&
          VectorsAreEqual<Address>(addresses(), other.addresses()) &&
          VectorsAreEqual<LegalDocument>(legal_documents(),
-                                        other.legal_documents());
+                                         other.legal_documents()) &&
+         gaia_accounts().size() == other.gaia_accounts().size() &&
+         std::equal(gaia_accounts().begin(), gaia_accounts().end(),
+                    other.gaia_accounts().begin());
 }
 
 bool WalletItems::operator!=(const WalletItems& other) const {
