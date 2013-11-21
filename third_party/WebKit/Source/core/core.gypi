@@ -2662,8 +2662,6 @@
             'html/track/vtt/VTTTokenizer.h',
         ],
         'webcore_platform_files': [
-            'platform/ContextMenu.cpp',
-            'platform/ContextMenuItem.cpp',
             'platform/Cursor.cpp',
             'platform/DragImage.cpp',
             'platform/OverscrollTheme.cpp',

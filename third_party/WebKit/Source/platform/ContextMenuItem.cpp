@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "core/platform/ContextMenuItem.h"
+#include "platform/ContextMenuItem.h"
 
-#include "core/platform/ContextMenu.h"
+#include "platform/ContextMenu.h"
 
 namespace WebCore {
 

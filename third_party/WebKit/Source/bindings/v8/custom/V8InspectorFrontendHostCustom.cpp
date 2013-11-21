@@ -36,6 +36,7 @@
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendClient.h"
 #include "core/inspector/InspectorFrontendHost.h"
+#include "platform/ContextMenu.h"
 #include "public/platform/Platform.h"
 #include "wtf/text/WTFString.h"
 

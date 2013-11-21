@@ -30,7 +30,6 @@
 #define InspectorFrontendHost_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/platform/ContextMenu.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"

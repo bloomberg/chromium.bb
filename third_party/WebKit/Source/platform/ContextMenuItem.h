@@ -27,62 +27,65 @@
 #ifndef ContextMenuItem_h
 #define ContextMenuItem_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-    class ContextMenu;
+class ContextMenu;
 
-    enum ContextMenuAction {
-        ContextMenuItemBaseCustomTag = 5000,
-        ContextMenuItemCustomTagNoAction = 5998,
-        ContextMenuItemLastCustomTag = 5999
-    };
+enum ContextMenuAction {
+    ContextMenuItemBaseCustomTag = 5000,
+    ContextMenuItemCustomTagNoAction = 5998,
+    ContextMenuItemLastCustomTag = 5999
+};
 
-    enum ContextMenuItemType {
-        ActionType,
-        CheckableActionType,
-        SeparatorType,
-        SubmenuType
-    };
+enum ContextMenuItemType {
+    ActionType,
+    CheckableActionType,
+    SeparatorType,
+    SubmenuType
+};
 
-    class ContextMenuItem {
-        WTF_MAKE_FAST_ALLOCATED;
-    public:
-        ContextMenuItem(ContextMenuItemType, ContextMenuAction, const String&, ContextMenu* subMenu = 0);
-        ContextMenuItem(ContextMenuItemType, ContextMenuAction, const String&, bool enabled, bool checked);
+class PLATFORM_EXPORT ContextMenuItem {
+    WTF_MAKE_FAST_ALLOCATED;
+public:
+    ContextMenuItem(ContextMenuItemType, ContextMenuAction, const String&, ContextMenu* subMenu = 0);
+    ContextMenuItem(ContextMenuItemType, ContextMenuAction, const String&, bool enabled, bool checked);
 
-        ~ContextMenuItem();
+    ~ContextMenuItem();
 
-        void setType(ContextMenuItemType);
-        ContextMenuItemType type() const;
+    void setType(ContextMenuItemType);
+    ContextMenuItemType type() const;
 
-        void setAction(ContextMenuAction);
-        ContextMenuAction action() const;
+    void setAction(ContextMenuAction);
+    ContextMenuAction action() const;
 
-        void setChecked(bool = true);
-        bool checked() const;
+    void setChecked(bool = true);
+    bool checked() const;
 
-        void setEnabled(bool = true);
-        bool enabled() const;
+    void setEnabled(bool = true);
+    bool enabled() const;
 
-        void setSubMenu(ContextMenu*);
+    void setSubMenu(ContextMenu*);
 
-        ContextMenuItem(ContextMenuAction, const String&, bool enabled, bool checked, const Vector<ContextMenuItem>& subMenuItems);
+    ContextMenuItem(ContextMenuAction, const String&, bool enabled, bool checked, const Vector<ContextMenuItem>& subMenuItems);
 
-        void setTitle(const String& title) { m_title = title; }
-        const String& title() const { return m_title; }
+    void setTitle(const String& title) { m_title = title; }
+    const String& title() const { return m_title; }
 
-        const Vector<ContextMenuItem>& subMenuItems() const { return m_subMenuItems; }
-   private:
-        ContextMenuItemType m_type;
-        ContextMenuAction m_action;
-        String m_title;
-        bool m_enabled;
-        bool m_checked;
-        Vector<ContextMenuItem> m_subMenuItems;
-    };
+    const Vector<ContextMenuItem>& subMenuItems() const { return m_subMenuItems; }
+
+private:
+    ContextMenuItemType m_type;
+    ContextMenuAction m_action;
+    String m_title;
+    bool m_enabled;
+    bool m_checked;
+    Vector<ContextMenuItem> m_subMenuItems;
+};
+
 }
 
 #endif // ContextMenuItem_h

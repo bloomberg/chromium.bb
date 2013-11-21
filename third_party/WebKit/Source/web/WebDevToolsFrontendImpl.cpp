@@ -53,8 +53,8 @@
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/ContextMenuItem.h"
 #include "core/platform/Pasteboard.h"
+#include "platform/ContextMenuItem.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/OwnPtr.h"
 
