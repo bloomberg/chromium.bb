@@ -74,7 +74,9 @@ private:
 
 class KeyframeAnimationEffect : public AnimationEffect {
 public:
+    class PropertySpecificKeyframe;
     typedef Vector<RefPtr<Keyframe> > KeyframeVector;
+    typedef Vector<OwnPtr<KeyframeAnimationEffect::PropertySpecificKeyframe> > PropertySpecificKeyframeVector;
     // FIXME: Implement accumulation.
     static PassRefPtr<KeyframeAnimationEffect> create(const KeyframeVector& keyframes)
     {
@@ -95,7 +97,8 @@ public:
 
     virtual bool isKeyframeAnimationEffect() const OVERRIDE { return true; }
 
-private:
+    PropertySet properties() const;
+
     class PropertySpecificKeyframe {
     public:
         PropertySpecificKeyframe(double offset, const AnimatableValue*, CompositeOperation);
@@ -107,40 +110,40 @@ private:
         PropertySpecificKeyframe(double offset, PassRefPtr<CompositableValue>);
         double m_offset;
         RefPtr<CompositableValue> m_value;
-
-        // FIXME: Come up with public API for the PropertySpecificKeyframe stuff and remove this.
-        friend class CompositorAnimations;
     };
 
     class PropertySpecificKeyframeGroup {
     public:
         void appendKeyframe(PassOwnPtr<PropertySpecificKeyframe>);
+        PassRefPtr<CompositableValue> sample(int iteration, double offset) const;
+        const PropertySpecificKeyframeVector& keyframes() const { return m_keyframes; }
+    private:
+        PropertySpecificKeyframeVector m_keyframes;
         void removeRedundantKeyframes();
         void addSyntheticKeyframeIfRequired();
-        PassRefPtr<CompositableValue> sample(int iteration, double offset) const;
-    private:
-        typedef Vector<OwnPtr<PropertySpecificKeyframe> > PropertySpecificKeyframeVector;
-        PropertySpecificKeyframeVector m_keyframes;
 
-        // FIXME: Come up with public API for the PropertySpecificKeyframe stuff and remove this.
-        friend class CompositorAnimationsKeyframeEffectHelper;
+        friend class KeyframeAnimationEffect;
     };
 
+    const PropertySpecificKeyframeVector& getPropertySpecificKeyframes(CSSPropertyID id) const
+    {
+        ensureKeyframeGroups();
+        return m_keyframeGroups->get(id)->keyframes();
+    }
+
+private:
     KeyframeAnimationEffect(const KeyframeVector& keyframes);
 
     KeyframeVector normalizedKeyframes() const;
     // Lazily computes the groups of property-specific keyframes.
-    void ensureKeyframeGroups();
+    void ensureKeyframeGroups() const;
 
     KeyframeVector m_keyframes;
     // The spec describes filtering the normalized keyframes at sampling time
     // to get the 'property-specific keyframes'. For efficiency, we cache the
     // property-specific lists.
     typedef HashMap<CSSPropertyID, OwnPtr<PropertySpecificKeyframeGroup> > KeyframeGroupMap;
-    OwnPtr<KeyframeGroupMap> m_keyframeGroups;
-
-    // FIXME: Come up with public API for the PropertySpecificKeyframe stuff and remove this.
-    friend class CompositorAnimationsKeyframeEffectHelper;
+    mutable OwnPtr<KeyframeGroupMap> m_keyframeGroups;
 };
 
 DEFINE_TYPE_CASTS(KeyframeAnimationEffect, AnimationEffect, value, value->isKeyframeAnimationEffect(), value.isKeyframeAnimationEffect());

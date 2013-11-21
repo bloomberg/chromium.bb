@@ -36,16 +36,7 @@
 
 namespace WebCore {
 
-class CompositorAnimationsKeyframeEffectHelper {
-private:
-    typedef Vector<std::pair<double, const AnimationEffect::CompositableValue*> > KeyframeValues;
-
-    static PassOwnPtr<Vector<CSSPropertyID> > getProperties(const KeyframeAnimationEffect*);
-    static PassOwnPtr<KeyframeValues> getKeyframeValuesForProperty(const KeyframeAnimationEffect*, CSSPropertyID, double scale, bool reverse = false);
-    static PassOwnPtr<KeyframeValues> getKeyframeValuesForProperty(const KeyframeAnimationEffect::PropertySpecificKeyframeGroup*, double scale, bool reverse);
-
-    friend class CompositorAnimationsImpl;
-};
+typedef KeyframeAnimationEffect::PropertySpecificKeyframeVector KeyframeVector;
 
 class CompositorAnimationsImpl {
 private:
@@ -66,7 +57,7 @@ private:
     static void getAnimationOnCompositor(const Timing&, const KeyframeAnimationEffect&, Vector<OwnPtr<blink::WebAnimation> >& animations, const IntSize& elementSize);
 
     template<typename PlatformAnimationCurveType, typename PlatformAnimationKeyframeType>
-    static void addKeyframesToCurve(PlatformAnimationCurveType&, const CompositorAnimationsKeyframeEffectHelper::KeyframeValues&, const TimingFunction&, const IntSize& elementSize);
+    static void addKeyframesToCurve(PlatformAnimationCurveType&, const KeyframeVector&, const TimingFunction&, const IntSize& elementSize);
 
     friend class CompositorAnimations;
     friend class AnimationCompositorAnimationsTest;

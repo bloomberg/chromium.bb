@@ -137,8 +137,8 @@ const AnimatableValue* Keyframe::propertyValue(CSSPropertyID property) const
 
 PropertySet Keyframe::properties() const
 {
-    // This is only used when setting up the keyframe groups, so there's no
-    // need to cache the result.
+    // This is not used in time-critical code, so we probably don't need to
+    // worry about caching this result.
     PropertySet properties;
     for (PropertyValueMap::const_iterator iter = m_propertyValues.begin(); iter != m_propertyValues.end(); ++iter)
         properties.add(*iter.keys());
@@ -155,10 +155,26 @@ PassRefPtr<Keyframe> Keyframe::cloneWithOffset(double offset) const
     return clone.release();
 }
 
-
 KeyframeAnimationEffect::KeyframeAnimationEffect(const KeyframeVector& keyframes)
     : m_keyframes(keyframes)
 {
+}
+
+PropertySet KeyframeAnimationEffect::properties() const
+{
+    PropertySet result;
+    const KeyframeVector& frames = getFrames();
+    if (!frames.size()) {
+        return result;
+    }
+    result = frames[0]->properties();
+    for (size_t i = 1; i < frames.size(); i++) {
+        PropertySet extras = frames[i]->properties();
+        for (PropertySet::const_iterator it = extras.begin(); it != extras.end(); ++it) {
+            result.add(*it);
+        }
+    }
+    return result;
 }
 
 PassOwnPtr<AnimationEffect::CompositableValueMap> KeyframeAnimationEffect::sample(int iteration, double fraction) const
@@ -195,7 +211,7 @@ KeyframeAnimationEffect::KeyframeVector KeyframeAnimationEffect::normalizedKeyfr
     return keyframes;
 }
 
-void KeyframeAnimationEffect::ensureKeyframeGroups()
+void KeyframeAnimationEffect::ensureKeyframeGroups() const
 {
     if (m_keyframeGroups)
         return;

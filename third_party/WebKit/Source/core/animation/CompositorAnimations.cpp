@@ -56,6 +56,28 @@
 
 namespace WebCore {
 
+namespace {
+
+void getKeyframeValuesForProperty(const KeyframeAnimationEffect* effect, CSSPropertyID id, double scale, bool reverse, KeyframeVector& values)
+{
+    ASSERT(values.isEmpty());
+    const KeyframeVector& group = effect->getPropertySpecificKeyframes(id);
+
+    if (reverse) {
+        for (size_t i = group.size(); i--;) {
+            double offset = (1 - group[i]->offset()) * scale;
+            values.append(group[i]->cloneWithOffset(offset));
+        }
+    } else {
+        for (size_t i = 0; i < group.size(); ++i) {
+            double offset = group[i]->offset() * scale;
+            values.append(group[i]->cloneWithOffset(offset));
+        }
+    }
+}
+
+}
+
 // -----------------------------------------------------------------------
 // TimingFunctionReverser methods
 // -----------------------------------------------------------------------
@@ -176,47 +198,6 @@ void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& e
     ASSERT(canStartAnimationOnCompositor(element));
     toRenderBoxModelObject(element.renderer())->layer()->compositedLayerMapping()->mainGraphicsLayer()->pauseAnimation(id, pauseTime);
 }
-// -----------------------------------------------------------------------
-// CompositorAnimationsKeyframeEffectHelper
-// -----------------------------------------------------------------------
-
-PassOwnPtr<Vector<CSSPropertyID> > CompositorAnimationsKeyframeEffectHelper::getProperties(
-    const KeyframeAnimationEffect* effect)
-{
-    const_cast<KeyframeAnimationEffect*>(effect)->ensureKeyframeGroups();
-    OwnPtr<Vector<CSSPropertyID> > propertyIds = adoptPtr(new Vector<CSSPropertyID>(effect->m_keyframeGroups->size()));
-    copyKeysToVector(*(effect->m_keyframeGroups.get()), *propertyIds.get());
-    return propertyIds.release();
-}
-
-PassOwnPtr<CompositorAnimationsKeyframeEffectHelper::KeyframeValues> CompositorAnimationsKeyframeEffectHelper::getKeyframeValuesForProperty(
-    const KeyframeAnimationEffect* effect, CSSPropertyID id, double scale, bool reverse)
-{
-    const_cast<KeyframeAnimationEffect*>(effect)->ensureKeyframeGroups();
-    return getKeyframeValuesForProperty(effect->m_keyframeGroups->get(id), scale, reverse);
-}
-
-PassOwnPtr<CompositorAnimationsKeyframeEffectHelper::KeyframeValues> CompositorAnimationsKeyframeEffectHelper::getKeyframeValuesForProperty(
-    const KeyframeAnimationEffect::PropertySpecificKeyframeGroup* group, double scale, bool reverse)
-{
-    OwnPtr<CompositorAnimationsKeyframeEffectHelper::KeyframeValues> values = adoptPtr(
-        new CompositorAnimationsKeyframeEffectHelper::KeyframeValues());
-
-    for (size_t i = 0; i < group->m_keyframes.size(); i++) {
-        KeyframeAnimationEffect::PropertySpecificKeyframe* frame = group->m_keyframes[i].get();
-
-        double offset = (reverse ? (1 - frame->offset()) : frame->offset()) * scale;
-        values->append(std::make_pair(offset, frame->value()));
-    }
-    if (reverse)
-        values->reverse();
-
-    return values.release();
-}
-
-// -----------------------------------------------------------------------
-// CompositorAnimationsImpl
-// -----------------------------------------------------------------------
 
 bool CompositorAnimationsImpl::isCandidateForCompositor(const Keyframe& keyframe)
 {
@@ -224,7 +205,7 @@ bool CompositorAnimationsImpl::isCandidateForCompositor(const Keyframe& keyframe
     if (keyframe.composite() != AnimationEffect::CompositeReplace)
         return false;
     // Check all the properties can be accelerated
-    const PropertySet properties = keyframe.properties(); // FIXME: properties creates a whole new PropertySet!
+    const PropertySet properties = keyframe.properties();
     for (PropertySet::const_iterator it = properties.begin(); it != properties.end(); ++it) {
         switch (*it) {
         case CSSPropertyOpacity:
@@ -473,11 +454,11 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
 } // namespace anoymous
 
 template<typename PlatformAnimationCurveType, typename PlatformAnimationKeyframeType>
-void CompositorAnimationsImpl::addKeyframesToCurve(PlatformAnimationCurveType& curve, const CompositorAnimationsKeyframeEffectHelper::KeyframeValues& values, const TimingFunction& timingFunction, const IntSize& elementSize)
+void CompositorAnimationsImpl::addKeyframesToCurve(PlatformAnimationCurveType& curve, const KeyframeAnimationEffect::PropertySpecificKeyframeVector& keyframes, const TimingFunction& timingFunction, const IntSize& elementSize)
 {
-    for (size_t i = 0; i < values.size(); i++) {
+    for (size_t i = 0; i < keyframes.size(); i++) {
         const TimingFunction* keyframeTimingFunction = 0;
-        if (i + 1 < values.size()) { // Last keyframe has no timing function
+        if (i + 1 < keyframes.size()) { // Last keyframe has no timing function
             switch (timingFunction.type()) {
             case TimingFunction::LinearFunction:
             case TimingFunction::CubicBezierFunction:
@@ -488,7 +469,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(PlatformAnimationCurveType& c
                 const ChainedTimingFunction& chained = toChainedTimingFunction(timingFunction);
                 // ChainedTimingFunction criteria was checked in isCandidate,
                 // assert it is valid.
-                ASSERT(values.size() == chained.m_segments.size() + 1);
+                ASSERT(keyframes.size() == chained.m_segments.size() + 1);
 
                 keyframeTimingFunction = chained.m_segments[i].m_timingFunction.get();
                 break;
@@ -499,9 +480,9 @@ void CompositorAnimationsImpl::addKeyframesToCurve(PlatformAnimationCurveType& c
             }
         }
 
-        ASSERT(!values[i].second->dependsOnUnderlyingValue());
-        RefPtr<AnimatableValue> value = values[i].second->compositeOnto(0);
-        OwnPtr<PlatformAnimationKeyframeType> keyframe = createPlatformKeyframe<PlatformAnimationKeyframeType>(values[i].first, *value.get(), elementSize);
+        ASSERT(!keyframes[i]->value()->dependsOnUnderlyingValue());
+        RefPtr<AnimatableValue> value = keyframes[i]->value()->compositeOnto(0);
+        OwnPtr<PlatformAnimationKeyframeType> keyframe = createPlatformKeyframe<PlatformAnimationKeyframeType>(keyframes[i]->offset(), *value.get(), elementSize);
         addKeyframeWithTimingFunction(curve, *keyframe.get(), keyframeTimingFunction);
     }
 }
@@ -517,33 +498,33 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(
     if (compositorTiming.reverse)
         timingFunction = CompositorAnimationsTimingFunctionReverser::reverse(timingFunction.get());
 
-    OwnPtr<Vector<CSSPropertyID> > properties = CompositorAnimationsKeyframeEffectHelper::getProperties(&effect);
-    for (size_t i = 0; i < properties->size(); i++) {
+    PropertySet properties = effect.properties();
+    for (PropertySet::iterator it = properties.begin(); it != properties.end(); ++it) {
 
-        OwnPtr<CompositorAnimationsKeyframeEffectHelper::KeyframeValues> values = CompositorAnimationsKeyframeEffectHelper::getKeyframeValuesForProperty(
-            &effect, properties->at(i), compositorTiming.scaledDuration, compositorTiming.reverse);
+        KeyframeVector values;
+        getKeyframeValuesForProperty(&effect, *it, compositorTiming.scaledDuration, compositorTiming.reverse, values);
 
         blink::WebAnimation::TargetProperty targetProperty;
         OwnPtr<blink::WebAnimationCurve> curve;
-        switch (properties->at(i)) {
+        switch (*it) {
         case CSSPropertyOpacity: {
             targetProperty = blink::WebAnimation::TargetPropertyOpacity;
             blink::WebFloatAnimationCurve* floatCurve = blink::Platform::current()->compositorSupport()->createFloatAnimationCurve();
-            addKeyframesToCurve<blink::WebFloatAnimationCurve, blink::WebFloatKeyframe>(*floatCurve, *values.get(), *timingFunction.get(), elementSize);
+            addKeyframesToCurve<blink::WebFloatAnimationCurve, blink::WebFloatKeyframe>(*floatCurve, values, *timingFunction.get(), elementSize);
             curve = adoptPtr(floatCurve);
             break;
         }
         case CSSPropertyWebkitFilter: {
             targetProperty = blink::WebAnimation::TargetPropertyFilter;
             blink::WebFilterAnimationCurve* filterCurve = blink::Platform::current()->compositorSupport()->createFilterAnimationCurve();
-            addKeyframesToCurve<blink::WebFilterAnimationCurve, blink::WebFilterKeyframe>(*filterCurve, *values.get(), *timingFunction, elementSize);
+            addKeyframesToCurve<blink::WebFilterAnimationCurve, blink::WebFilterKeyframe>(*filterCurve, values, *timingFunction, elementSize);
             curve = adoptPtr(filterCurve);
             break;
         }
         case CSSPropertyWebkitTransform: {
             targetProperty = blink::WebAnimation::TargetPropertyTransform;
             blink::WebTransformAnimationCurve* transformCurve = blink::Platform::current()->compositorSupport()->createTransformAnimationCurve();
-            addKeyframesToCurve<blink::WebTransformAnimationCurve, blink::WebTransformKeyframe>(*transformCurve, *values.get(), *timingFunction.get(), elementSize);
+            addKeyframesToCurve<blink::WebTransformAnimationCurve, blink::WebTransformKeyframe>(*transformCurve, values, *timingFunction.get(), elementSize);
             curve = adoptPtr(transformCurve);
             break;
         }
