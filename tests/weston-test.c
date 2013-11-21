@@ -213,7 +213,7 @@ idle_launch_client(void *data)
 
 	path = getenv("WESTON_TEST_CLIENT_PATH");
 	if (path == NULL)
-		exit(EXIT_FAILURE);
+		return;
 	pid = fork();
 	if (pid == -1)
 		exit(EXIT_FAILURE);
