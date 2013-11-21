@@ -96,6 +96,26 @@
       "add_browser_metrics": true
     },
     {
+      "url": "file://tough_video_cases/video.html?src=crowd1080.mp4&type=video",
+      "media_metrics": {"action": "play-action"},
+      "add_browser_metrics": true
+    },
+    {
+      "url": "file://tough_video_cases/video.html?src=crowd2160.mp4&type=video",
+      "media_metrics": {"action": "play-action"},
+      "add_browser_metrics": true
+    },
+    {
+      "url": "file://tough_video_cases/video.html?src=tulip2.mp3&type=audio",
+      "media_metrics": {"action": "play-action"},
+      "add_browser_metrics": true
+    },
+    {
+      "url": "file://tough_video_cases/video.html?src=tulip2.mp4&type=video",
+      "media_metrics": {"action": "play-action"},
+      "add_browser_metrics": true
+    },
+    {
       "url": "file://tough_video_cases/video.html?src=tulip2.ogg&type=audio",
       "skip_basic_metrics": true,
       "media_metrics": {"action": "seek_before_and_after_playhead"}
@@ -112,6 +132,16 @@
     },
     {
       "url": "file://tough_video_cases/video.html?src=tulip2.webm&type=video",
+      "skip_basic_metrics": true,
+      "media_metrics": {"action": "seek_before_and_after_playhead"}
+    },
+    {
+      "url": "file://tough_video_cases/video.html?src=tulip2.mp3&type=audio",
+      "skip_basic_metrics": true,
+      "media_metrics": {"action": "seek_before_and_after_playhead"}
+    },
+    {
+      "url": "file://tough_video_cases/video.html?src=tulip2.mp4&type=video",
       "skip_basic_metrics": true,
       "media_metrics": {"action": "seek_before_and_after_playhead"}
     },
