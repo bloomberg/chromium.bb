@@ -179,7 +179,6 @@ std::string StatisticsRecorder::ToJSON(const std::string& query) {
   Histograms snapshot;
   GetSnapshot(query, &snapshot);
   output += "\"histograms\":[";
-  std::string json;
   bool first_histogram = true;
   for (Histograms::const_iterator it = snapshot.begin(); it != snapshot.end();
        ++it) {
@@ -187,7 +186,7 @@ std::string StatisticsRecorder::ToJSON(const std::string& query) {
       first_histogram = false;
     else
       output += ",";
-    json.clear();
+    std::string json;
     (*it)->WriteJSON(&json);
     output += json;
   }
