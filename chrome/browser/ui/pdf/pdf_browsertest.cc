@@ -45,8 +45,9 @@ class PDFBrowserTest : public InProcessBrowserTest,
       : snapshot_different_(true),
         next_dummy_search_value_(0),
         load_stop_notification_count_(0) {
-    pdf_test_server_.ServeFilesFromDirectory(
-        base::FilePath(FILE_PATH_LITERAL("pdf/test")));
+    base::FilePath src_dir;
+    EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+    pdf_test_server_.ServeFilesFromDirectory(src_dir.AppendASCII("pdf/test"));
   }
 
  protected:
