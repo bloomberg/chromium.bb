@@ -107,7 +107,7 @@ void ArrayBuffer::Private::WeakCallback(
     const v8::WeakCallbackData<v8::ArrayBuffer, Private>& data) {
   Private* parameter = data.GetParameter();
   parameter->array_buffer_.Reset();
-  // parameter->self_reference_.clear();
+  parameter->self_reference_ = NULL;
 }
 
 // ArrayBuffer ----------------------------------------------------------------
