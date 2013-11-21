@@ -13,8 +13,8 @@
 namespace content {
 
 class FrameTree;
-class RenderViewHostImpl;
 class RenderFrameHostImpl;
+class RenderViewHostImpl;
 
 // Manages creation of the RenderFrameHostImpls; when registered, all created
 // RenderFrameHostsImpls will be TestRenderFrameHosts. This

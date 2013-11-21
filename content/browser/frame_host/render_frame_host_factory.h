@@ -49,7 +49,7 @@ class CONTENT_EXPORT RenderFrameHostFactory {
   static void RegisterFactory(RenderFrameHostFactory* factory);
 
   // Unregister the previously registered factory. With no factory registered,
-  // regular RenderViewHostImpls will be created.
+  // regular RenderFrameHostImpls will be created.
   static void UnregisterFactory();
 
  private:
