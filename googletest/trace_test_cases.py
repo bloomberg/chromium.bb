@@ -19,9 +19,8 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if not ROOT_DIR in sys.path:
   sys.path.insert(0, ROOT_DIR)
 
-import run_test_cases
 import trace_inputs
-
+from googletest import run_test_cases
 from utils import threading_utils
 from utils import tools
 

@@ -23,8 +23,8 @@ if not ROOT_DIR in sys.path:
   sys.path.insert(0, ROOT_DIR)
 
 import isolate
-import isolate_test_cases
-import run_test_cases
+from googletest import isolate_test_cases
+from googletest import run_test_cases
 from utils import tools
 
 

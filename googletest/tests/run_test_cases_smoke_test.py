@@ -15,11 +15,11 @@ import unittest
 from xml.dom import minidom
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, os.path.dirname(ROOT_DIR))
 sys.path.append(os.path.join(ROOT_DIR, 'tests', 'gtest_fake'))
 
 import gtest_fake_base
-import run_test_cases
+from googletest import run_test_cases
 
 
 def RunTest(arguments):

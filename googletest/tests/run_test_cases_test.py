@@ -10,10 +10,11 @@ import sys
 import tempfile
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+GOOGLETEST_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(GOOGLETEST_DIR)
 sys.path.insert(0, ROOT_DIR)
 
-import run_test_cases
+from googletest import run_test_cases
 
 
 class ListTestCasesTest(unittest.TestCase):
@@ -50,7 +51,8 @@ def process_output(content, test_cases):
 class RunTestCasesSlow(unittest.TestCase):
   def test_gtest_filter(self):
     old = run_test_cases.run_test_cases
-    exe = os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py')
+    exe = os.path.join(
+        GOOGLETEST_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py')
     def expect(
         executable, cwd, test_cases, jobs, timeout, clusters, retries,
         run_all, max_failures, no_cr, gtest_output, result_file, verbose):

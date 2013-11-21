@@ -18,8 +18,6 @@ def CommonChecks(input_api, output_api):
   try:
     sys.path = [
       input_api.PresubmitLocalPath(),
-      join('googletest'),
-      join('tests', 'gtest_fake'),
       join('tests'),
       join('third_party'),
     ] + sys.path

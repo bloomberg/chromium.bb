@@ -17,13 +17,12 @@ import unittest
 GOOGLETEST_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT_DIR = os.path.dirname(GOOGLETEST_DIR)
 
-sys.path.insert(0, GOOGLETEST_DIR)
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(GOOGLETEST_DIR, '..', 'tests'))
 
 import isolate
-import trace_test_cases
 import trace_test_util
+from googletest import trace_test_cases
 from utils import file_path
 
 
