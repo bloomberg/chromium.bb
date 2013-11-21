@@ -62,14 +62,10 @@ SuspiciousExtensionBubbleController* SuspiciousExtensionBubbleController::Get(
 }
 
 bool SuspiciousExtensionBubbleController::HasSuspiciousExtensions() {
-  if (has_notified_) {
-    LOG(ERROR) << "Has already notified";
+  if (has_notified_)
     return false;
-  }
-  if (!service_) {
-    LOG(ERROR) << "Cannot find service";
-    return false;
-  }
+  if (!service_)
+    return false;  // Can happen during tests.
 
   suspicious_extensions_.clear();
 
@@ -77,23 +73,16 @@ bool SuspiciousExtensionBubbleController::HasSuspiciousExtensions() {
 
   scoped_ptr<const ExtensionSet> extension_set(
       service_->GenerateInstalledExtensionsSet());
-  LOG(ERROR) << "Installed extension set: " << extension_set->size();
   for (ExtensionSet::const_iterator it = extension_set->begin();
        it != extension_set->end(); ++it) {
     std::string id = (*it)->id();
-    LOG(ERROR) << "Checking: " << (*it)->name().c_str() << " " << id.c_str();
-    if (!prefs->IsExtensionDisabled(id)) {
-      LOG(ERROR) << "Not disabled";
+    if (!prefs->IsExtensionDisabled(id))
       continue;
-    }
     int disble_reasons = prefs->GetDisableReasons(id);
     if (disble_reasons & Extension::DISABLE_NOT_VERIFIED) {
-      if (prefs->HasWipeoutBeenAcknowledged(id)) {
-        LOG(ERROR) << "Already acknowledged";
+      if (prefs->HasWipeoutBeenAcknowledged(id))
          continue;
-      }
 
-      LOG(ERROR) << "Found one!";
       suspicious_extensions_.push_back(id);
     }
   }
@@ -164,15 +153,12 @@ string16 SuspiciousExtensionBubbleController::GetDismissButtonLabel() {
 
 std::vector<string16>
 SuspiciousExtensionBubbleController::GetSuspiciousExtensionNames() {
-  if (suspicious_extensions_.empty()) {
-    LOG(ERROR) << "Vector empty";
-     return std::vector<string16>();
-  }
+  if (suspicious_extensions_.empty())
+    return std::vector<string16>();
 
   std::vector<string16> return_value;
   for (ExtensionIdList::const_iterator it = suspicious_extensions_.begin();
        it != suspicious_extensions_.end(); ++it) {
-    LOG(ERROR) << "Adding one ";
     const Extension* extension = service_->GetInstalledExtension(*it);
     if (extension) {
       return_value.push_back(UTF8ToUTF16(extension->name()));
@@ -182,7 +168,6 @@ SuspiciousExtensionBubbleController::GetSuspiciousExtensionNames() {
       // TODO(finnur): Add this as a string to the grd, for next milestone.
     }
   }
-  LOG(ERROR) << "Returning " << return_value.size();
   return return_value;
 }
 

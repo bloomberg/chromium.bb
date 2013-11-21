@@ -181,37 +181,36 @@ TEST_F(SuspiciousExtensionBubbleTest, MAYBE_ControllerTest) {
 
   // Validate that we don't have a suppress value for the extensions.
   ExtensionPrefs* prefs = service->extension_prefs();
-  DCHECK(!prefs->HasWipeoutBeenAcknowledged(extension_id1));
-  DCHECK(!prefs->HasWipeoutBeenAcknowledged(extension_id2));
+  EXPECT_FALSE(prefs->HasWipeoutBeenAcknowledged(extension_id1));
+  EXPECT_FALSE(prefs->HasWipeoutBeenAcknowledged(extension_id2));
 
-  DCHECK(!controller->HasSuspiciousExtensions());
+  EXPECT_FALSE(controller->HasSuspiciousExtensions());
   std::vector<string16> suspicious_extensions =
       controller->GetSuspiciousExtensionNames();
-  DCHECK_EQ(0U, suspicious_extensions.size());
-  DCHECK_EQ(0U, controller->link_click_count());
-  DCHECK_EQ(0U, controller->dismiss_click_count());
+  EXPECT_EQ(0U, suspicious_extensions.size());
+  EXPECT_EQ(0U, controller->link_click_count());
+  EXPECT_EQ(0U, controller->dismiss_click_count());
 
   // Now disable an extension, specifying the wipeout flag.
   service->DisableExtension(extension_id1,
                             Extension::DISABLE_NOT_VERIFIED);
 
-  DCHECK(!prefs->HasWipeoutBeenAcknowledged(extension_id1));
-  DCHECK(!prefs->HasWipeoutBeenAcknowledged(extension_id2));
+  EXPECT_FALSE(prefs->HasWipeoutBeenAcknowledged(extension_id1));
+  EXPECT_FALSE(prefs->HasWipeoutBeenAcknowledged(extension_id2));
   controller.reset(new TestSuspiciousExtensionBubbleController(profile_.get()));
-  DCHECK(controller->HasSuspiciousExtensions());
+  EXPECT_TRUE(controller->HasSuspiciousExtensions());
   suspicious_extensions = controller->GetSuspiciousExtensionNames();
-  DCHECK_EQ(1U, suspicious_extensions.size());
-  if (suspicious_extensions.size() == 1U)
-    DCHECK(ASCIIToUTF16("Extension 1") == suspicious_extensions[0]);
+  ASSERT_EQ(1U, suspicious_extensions.size());
+  EXPECT_TRUE(ASCIIToUTF16("Extension 1") == suspicious_extensions[0]);
   controller->Show(&bubble);  // Simulate showing the bubble.
-  DCHECK_EQ(0U, controller->link_click_count());
-  DCHECK_EQ(1U, controller->dismiss_click_count());
+  EXPECT_EQ(0U, controller->link_click_count());
+  EXPECT_EQ(1U, controller->dismiss_click_count());
   // Now the acknowledge flag should be set only for the first extension.
-  DCHECK(prefs->HasWipeoutBeenAcknowledged(extension_id1));
-  DCHECK(!prefs->HasWipeoutBeenAcknowledged(extension_id2));
+  EXPECT_TRUE(prefs->HasWipeoutBeenAcknowledged(extension_id1));
+  EXPECT_FALSE(prefs->HasWipeoutBeenAcknowledged(extension_id2));
   // Clear the flag.
   prefs->SetWipeoutAcknowledged(extension_id1, false);
-  DCHECK(!prefs->HasWipeoutBeenAcknowledged(extension_id1));
+  EXPECT_FALSE(prefs->HasWipeoutBeenAcknowledged(extension_id1));
 
   // Now disable the other extension and exercise the link click code path.
   service->DisableExtension(extension_id2,
@@ -220,16 +219,14 @@ TEST_F(SuspiciousExtensionBubbleTest, MAYBE_ControllerTest) {
   bubble.set_action_on_show(
       FakeSuspiciousExtensionBubble::BUBBLE_ACTION_CLICK_LINK);
   controller.reset(new TestSuspiciousExtensionBubbleController(profile_.get()));
-  DCHECK(controller->HasSuspiciousExtensions());
+  EXPECT_TRUE(controller->HasSuspiciousExtensions());
   suspicious_extensions = controller->GetSuspiciousExtensionNames();
-  DCHECK_EQ(2U, suspicious_extensions.size());
-  if (suspicious_extensions.size() == 2U) {
-    DCHECK(ASCIIToUTF16("Extension 1") == suspicious_extensions[1]);
-    DCHECK(ASCIIToUTF16("Extension 2") == suspicious_extensions[0]);
-  }
+  ASSERT_EQ(2U, suspicious_extensions.size());
+  EXPECT_TRUE(ASCIIToUTF16("Extension 1") == suspicious_extensions[1]);
+  EXPECT_TRUE(ASCIIToUTF16("Extension 2") == suspicious_extensions[0]);
   controller->Show(&bubble);  // Simulate showing the bubble.
-  DCHECK_EQ(1U, controller->link_click_count());
-  DCHECK_EQ(0U, controller->dismiss_click_count());
+  EXPECT_EQ(1U, controller->link_click_count());
+  EXPECT_EQ(0U, controller->dismiss_click_count());
 }
 
 }  // namespace extensions
