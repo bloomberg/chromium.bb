@@ -1137,7 +1137,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
                                  arraysize(kSwitchNames));
 
   if (browser_cmd.HasSwitch(switches::kTraceStartup) &&
-      TraceControllerImpl::GetInstance()->is_tracing_startup()) {
+      BrowserMainLoop::GetInstance()->is_tracing_startup()) {
     // Pass kTraceStartup switch to renderer only if startup tracing has not
     // finished.
     renderer_cmd->AppendSwitchASCII(

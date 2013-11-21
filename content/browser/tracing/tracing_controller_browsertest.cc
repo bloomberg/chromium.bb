@@ -124,7 +124,7 @@ class TracingControllerTest : public ContentBrowserTest {
       bool result = controller->EnableRecording(
           base::debug::CategoryFilter(""), TracingController::Options(),
           callback);
-      EXPECT_TRUE(result);
+      ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
     }
@@ -136,7 +136,7 @@ class TracingControllerTest : public ContentBrowserTest {
                      base::Unretained(this),
                      run_loop.QuitClosure());
       bool result = controller->DisableRecording(result_file_path, callback);
-      EXPECT_TRUE(result);
+      ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(disable_recording_done_callback_count(), 1);
     }
@@ -157,7 +157,7 @@ class TracingControllerTest : public ContentBrowserTest {
       bool result = controller->EnableMonitoring(
           base::debug::CategoryFilter(""), TracingController::ENABLE_SAMPLING,
           callback);
-      EXPECT_TRUE(result);
+      ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_monitoring_done_callback_count(), 1);
     }
@@ -181,7 +181,7 @@ class TracingControllerTest : public ContentBrowserTest {
                      base::Unretained(this),
                      run_loop.QuitClosure());
       bool result = controller->DisableMonitoring(callback);
-      EXPECT_TRUE(result);
+      ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(disable_monitoring_done_callback_count(), 1);
     }

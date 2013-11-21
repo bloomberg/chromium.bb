@@ -24,27 +24,6 @@ namespace {
 base::LazyInstance<TraceControllerImpl>::Leaky g_controller =
     LAZY_INSTANCE_INITIALIZER;
 
-class AutoStopTraceSubscriberStdio : public TraceSubscriberStdio {
- public:
-  AutoStopTraceSubscriberStdio(const base::FilePath& file_path)
-      : TraceSubscriberStdio(file_path,
-                             FILE_TYPE_PROPERTY_LIST,
-                             false) {}
-
-  static void EndStartupTrace(AutoStopTraceSubscriberStdio* subscriber) {
-    if (!TraceControllerImpl::GetInstance()->EndTracingAsync(subscriber))
-      delete subscriber;
-    // else, the tracing will end asynchronously in OnEndTracingComplete().
-  }
-
-  virtual void OnEndTracingComplete() OVERRIDE {
-    TraceSubscriberStdio::OnEndTracingComplete();
-    delete this;
-    // TODO(joth): this would be the time to automatically open up
-    // chrome://tracing/ and load up the trace data collected.
-  }
-};
-
 }  // namespace
 
 TraceController* TraceController::GetInstance() {
@@ -57,7 +36,6 @@ TraceControllerImpl::TraceControllerImpl() :
     pending_bpf_ack_count_(0),
     maximum_bpf_(0.0f),
     is_tracing_(false),
-    is_tracing_startup_(false),
     is_get_category_groups_(false),
     category_filter_(
         base::debug::CategoryFilter::kDefaultCategoryFilterString) {
@@ -74,43 +52,6 @@ TraceControllerImpl::~TraceControllerImpl() {
 
 TraceControllerImpl* TraceControllerImpl::GetInstance() {
   return g_controller.Pointer();
-}
-
-void TraceControllerImpl::InitStartupTracing(const CommandLine& command_line) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::FilePath trace_file = command_line.GetSwitchValuePath(
-      switches::kTraceStartupFile);
-  // trace_file = "none" means that startup events will show up for the next
-  // begin/end tracing (via about:tracing or AutomationProxy::BeginTracing/
-  // EndTracing, for example).
-  if (trace_file == base::FilePath().AppendASCII("none"))
-    return;
-
-  if (trace_file.empty()) {
-    // Default to saving the startup trace into the current dir.
-    trace_file = base::FilePath().AppendASCII("chrometrace.log");
-  }
-  scoped_ptr<AutoStopTraceSubscriberStdio> subscriber(
-      new AutoStopTraceSubscriberStdio(trace_file));
-  DCHECK(can_begin_tracing(subscriber.get()));
-
-  std::string delay_str = command_line.GetSwitchValueASCII(
-      switches::kTraceStartupDuration);
-  int delay_secs = 5;
-  if (!delay_str.empty() && !base::StringToInt(delay_str, &delay_secs)) {
-    DLOG(WARNING) << "Could not parse --" << switches::kTraceStartupDuration
-        << "=" << delay_str << " defaulting to 5 (secs)";
-    delay_secs = 5;
-  }
-
-  is_tracing_startup_ = true;
-  OnTracingBegan(subscriber.get());
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&AutoStopTraceSubscriberStdio::EndStartupTrace,
-                 base::Unretained(subscriber.release())),
-      base::TimeDelta::FromSeconds(delay_secs));
 }
 
 bool TraceControllerImpl::GetKnownCategoryGroupsAsync(
@@ -159,7 +100,6 @@ bool TraceControllerImpl::EndTracingAsync(TraceSubscriber* subscriber) {
   // Disable local trace early to avoid traces during end-tracing process from
   // interfering with the process.
   TraceLog::GetInstance()->SetDisabled();
-  is_tracing_startup_ = false;
 
 #if defined(OS_ANDROID)
   if (!is_get_category_groups_)
@@ -272,7 +212,7 @@ void TraceControllerImpl::AddFilter(TraceMessageFilter* filter) {
   filters_.insert(filter);
   if (is_tracing_enabled()) {
     std::string cf_str = category_filter_.ToString();
-    filter->SendBeginTracing(cf_str, trace_options_, is_tracing_startup_);
+    filter->SendBeginTracing(cf_str, trace_options_);
     if (!watch_category_.empty())
       filter->SendSetWatchEvent(watch_category_, watch_name_);
   }
@@ -299,8 +239,7 @@ void TraceControllerImpl::OnTracingBegan(TraceSubscriber* subscriber) {
 
   // Notify all child processes.
   for (FilterMap::iterator it = filters_.begin(); it != filters_.end(); ++it) {
-    it->get()->SendBeginTracing(category_filter_.ToString(), trace_options_,
-                                is_tracing_startup_);
+    it->get()->SendBeginTracing(category_filter_.ToString(), trace_options_);
   }
 }
 

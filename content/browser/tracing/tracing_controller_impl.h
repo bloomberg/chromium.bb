@@ -107,7 +107,6 @@ class TracingControllerImpl : public TracingController {
   TracingFileResultCallback pending_disable_recording_done_callback_;
   TracingFileResultCallback pending_capture_monitoring_snapshot_done_callback_;
   std::set<std::string> known_category_groups_;
-  base::debug::TraceLog::Options trace_options_;
   base::debug::CategoryFilter category_filter_;
   scoped_ptr<ResultFile> result_file_;
   scoped_ptr<ResultFile> monitoring_snapshot_file_;

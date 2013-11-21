@@ -41,13 +41,13 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/startup_task_runner.h"
-#include "content/browser/tracing/trace_controller_impl.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_shutdown.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
@@ -318,7 +318,10 @@ BrowserMainLoop::BrowserMainLoop(const MainFunctionParams& parameters)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(RESULT_CODE_NORMAL_EXIT),
-      created_threads_(false) {
+      created_threads_(false),
+      // ContentMainRunner should have enabled tracing of the browser process
+      // when kTraceStartup is in the command line.
+      is_tracing_startup_(base::debug::TraceLog::GetInstance()->IsEnabled()) {
   DCHECK(!g_current_browser_main_loop);
   g_current_browser_main_loop = this;
 }
@@ -474,10 +477,9 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
 
   // Start tracing to a file if needed.
-  if (base::debug::TraceLog::GetInstance()->IsEnabled()) {
+  if (is_tracing_startup_) {
     TRACE_EVENT0("startup", "BrowserMainLoop::InitStartupTracing")
-    TraceControllerImpl::GetInstance()->InitStartupTracing(
-        parsed_command_line_);
+    InitStartupTracing(parsed_command_line_);
   }
 
   {
@@ -1072,6 +1074,44 @@ void BrowserMainLoop::MainMessageLoopRun() {
   base::RunLoop run_loop;
   run_loop.Run();
 #endif
+}
+
+void BrowserMainLoop::InitStartupTracing(const CommandLine& command_line) {
+  DCHECK(is_tracing_startup_);
+
+  base::FilePath trace_file = command_line.GetSwitchValuePath(
+      switches::kTraceStartupFile);
+  // trace_file = "none" means that startup events will show up for the next
+  // begin/end tracing (via about:tracing or AutomationProxy::BeginTracing/
+  // EndTracing, for example).
+  if (trace_file == base::FilePath().AppendASCII("none"))
+    return;
+
+  if (trace_file.empty()) {
+    // Default to saving the startup trace into the current dir.
+    trace_file = base::FilePath().AppendASCII("chrometrace.log");
+  }
+
+  std::string delay_str = command_line.GetSwitchValueASCII(
+      switches::kTraceStartupDuration);
+  int delay_secs = 5;
+  if (!delay_str.empty() && !base::StringToInt(delay_str, &delay_secs)) {
+    DLOG(WARNING) << "Could not parse --" << switches::kTraceStartupDuration
+        << "=" << delay_str << " defaulting to 5 (secs)";
+    delay_secs = 5;
+  }
+
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&BrowserMainLoop::EndStartupTracing,
+                 base::Unretained(this), trace_file),
+      base::TimeDelta::FromSeconds(delay_secs));
+}
+
+void BrowserMainLoop::EndStartupTracing(const base::FilePath& trace_file) {
+  is_tracing_startup_ = false;
+  TracingController::GetInstance()->DisableRecording(
+      trace_file, TracingController::TracingFileResultCallback());
 }
 
 }  // namespace content

@@ -113,9 +113,10 @@ void TracingControllerImpl::ResultFile::CloseTask(
 TracingControllerImpl::TracingControllerImpl() :
     pending_disable_recording_ack_count_(0),
     pending_capture_monitoring_snapshot_ack_count_(0),
-    is_recording_(false),
+    // Tracing may have been enabled by ContentMainRunner if kTraceStartup
+    // is specified in command line.
+    is_recording_(TraceLog::GetInstance()->IsEnabled()),
     is_monitoring_(false),
-    trace_options_(TraceLog::RECORD_UNTIL_FULL),
     category_filter_(
         base::debug::CategoryFilter::kDefaultCategoryFilterString) {
 }
@@ -157,16 +158,15 @@ bool TracingControllerImpl::EnableRecording(
     TraceLog::GetInstance()->AddClockSyncMetadataEvent();
 #endif
 
-  trace_options_ = TraceLog::GetInstance()->trace_options();
-  TraceLog::GetInstance()->SetEnabled(filter, trace_options_);
+  TraceLog::Options trace_options = TraceLog::GetInstance()->trace_options();
+  TraceLog::GetInstance()->SetEnabled(filter, trace_options);
 
   is_recording_ = true;
   category_filter_ = TraceLog::GetInstance()->GetCurrentCategoryFilter();
 
   // Notify all child processes.
   for (FilterMap::iterator it = filters_.begin(); it != filters_.end(); ++it) {
-    it->get()->SendBeginTracing(
-        category_filter_.ToString(), trace_options_, false);
+    it->get()->SendBeginTracing(category_filter_.ToString(), trace_options);
   }
 
   if (!callback.is_null())
@@ -239,6 +239,9 @@ bool TracingControllerImpl::EnableMonitoring(
   if (options & ENABLE_SAMPLING)
     monitoring_tracing_options |= base::debug::TraceLog::MONITOR_SAMPLING;
 
+  TraceLog::GetInstance()->SetEnabled(
+      filter, base::debug::TraceLog::Options(monitoring_tracing_options));
+
   // Notify all child processes.
   for (FilterMap::iterator it = filters_.begin(); it != filters_.end(); ++it) {
     it->get()->SendEnableMonitoring(filter.ToString(),
@@ -257,6 +260,8 @@ bool TracingControllerImpl::DisableMonitoring(
   if (!can_disable_monitoring())
     return false;
   is_monitoring_ = false;
+
+  TraceLog::GetInstance()->SetDisabled();
 
   // Notify all child processes.
   for (FilterMap::iterator it = filters_.begin(); it != filters_.end(); ++it) {
@@ -283,10 +288,11 @@ void TracingControllerImpl::CaptureMonitoringSnapshot(
   if (!can_disable_monitoring())
     return;
 
-  pending_capture_monitoring_snapshot_done_callback_ = callback;
+  if (callback.is_null() && result_file_path.empty())
+    return;
 
-  if (!callback.is_null() || !result_file_path.empty())
-    monitoring_snapshot_file_.reset(new ResultFile(result_file_path));
+  pending_capture_monitoring_snapshot_done_callback_ = callback;
+  monitoring_snapshot_file_.reset(new ResultFile(result_file_path));
 
   // There could be a case where there are no child processes and filters_
   // is empty. In that case we can immediately tell the subscriber that tracing
@@ -325,7 +331,7 @@ void TracingControllerImpl::AddFilter(TraceMessageFilter* filter) {
   filters_.insert(filter);
   if (can_disable_recording()) {
     std::string cf_str = category_filter_.ToString();
-    filter->SendBeginTracing(cf_str, trace_options_, false);
+    filter->SendBeginTracing(cf_str, TraceLog::GetInstance()->trace_options());
   }
 }
 
@@ -464,7 +470,7 @@ void TracingControllerImpl::OnMonitoringTraceDataCollected(
     return;
   }
 
-  if (!monitoring_snapshot_file_)
+  if (monitoring_snapshot_file_)
     monitoring_snapshot_file_->Write(events_str_ptr);
 }
 

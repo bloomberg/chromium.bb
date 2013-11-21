@@ -14,6 +14,7 @@
 class CommandLine;
 
 namespace base {
+class FilePath;
 class HighResolutionTimerManager;
 class MessageLoop;
 class PowerMonitor;
@@ -98,6 +99,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   media::MIDIManager* midi_manager() const { return midi_manager_.get(); }
   base::Thread* indexed_db_thread() const { return indexed_db_thread_.get(); }
 
+  bool is_tracing_startup() const { return is_tracing_startup_; }
+
  private:
   class MemoryObserver;
   // For ShutdownThreadsAndCleanUp.
@@ -117,6 +120,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   int PreMainMessageLoopRun();
 
   void MainMessageLoopRun();
+
+  void InitStartupTracing(const CommandLine& command_line);
+  void EndStartupTracing(const base::FilePath& trace_file);
 
   // Members initialized on construction ---------------------------------------
   const MainFunctionParams& parameters_;
@@ -172,6 +178,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_ptr<MemoryObserver> memory_observer_;
   scoped_ptr<base::debug::TraceMemoryController> trace_memory_controller_;
   scoped_ptr<base::debug::TraceEventSystemStatsMonitor> system_stats_monitor_;
+
+  bool is_tracing_startup_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainLoop);
 };

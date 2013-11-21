@@ -1534,8 +1534,8 @@ void TraceLog::SetEventCallbackDisabled() {
 void TraceLog::Flush(const TraceLog::OutputCallback& cb) {
   if (IsEnabled()) {
     // Can't flush when tracing is enabled because otherwise PostTask would
-    // - it generates more trace events;
-    // - it deschedules the calling thread on some platforms causing inaccurate
+    // - generate more trace events;
+    // - deschedule the calling thread on some platforms causing inaccurate
     //   timing of the trace events.
     scoped_refptr<RefCountedString> empty_result = new RefCountedString;
     if (!cb.is_null())
@@ -1679,9 +1679,6 @@ void TraceLog::OnFlushTimeout(int generation) {
 
 void TraceLog::FlushButLeaveBufferIntact(
     const TraceLog::OutputCallback& flush_output_callback) {
-  if (!sampling_thread_)
-      return;
-
   scoped_ptr<TraceBuffer> previous_logged_events;
   {
     AutoLock lock(lock_);

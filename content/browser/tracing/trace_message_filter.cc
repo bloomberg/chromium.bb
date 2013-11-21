@@ -29,6 +29,7 @@ void TraceMessageFilter::OnChannelClosing() {
       OnTraceBufferPercentFullReply(0.0f);
 
     TraceControllerImpl::GetInstance()->RemoveFilter(this);
+    TracingControllerImpl::GetInstance()->RemoveFilter(this);
   }
 }
 
@@ -57,13 +58,11 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message,
 
 void TraceMessageFilter::SendBeginTracing(
     const std::string& category_filter_str,
-    base::debug::TraceLog::Options options,
-    bool tracing_startup) {
+    base::debug::TraceLog::Options options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Send(new TracingMsg_BeginTracing(category_filter_str,
                                    base::TimeTicks::NowFromSystemTraceTime(),
-                                   options,
-                                   tracing_startup));
+                                   options));
 }
 
 void TraceMessageFilter::SendEndTracing() {
@@ -115,6 +114,7 @@ TraceMessageFilter::~TraceMessageFilter() {}
 void TraceMessageFilter::OnChildSupportsTracing() {
   has_child_ = true;
   TraceControllerImpl::GetInstance()->AddFilter(this);
+  TracingControllerImpl::GetInstance()->AddFilter(this);
 }
 
 void TraceMessageFilter::OnEndTracingAck(
@@ -124,6 +124,8 @@ void TraceMessageFilter::OnEndTracingAck(
   if (is_awaiting_end_ack_) {
     is_awaiting_end_ack_ = false;
     TraceControllerImpl::GetInstance()->OnEndTracingAck(known_categories);
+    TracingControllerImpl::GetInstance()->OnDisableRecordingAcked(
+        known_categories);
   } else {
     NOTREACHED();
   }
@@ -144,6 +146,7 @@ void TraceMessageFilter::OnTraceDataCollected(const std::string& data) {
   scoped_refptr<base::RefCountedString> data_ptr(new base::RefCountedString());
   data_ptr->data() = data;
   TraceControllerImpl::GetInstance()->OnTraceDataCollected(data_ptr);
+  TracingControllerImpl::GetInstance()->OnTraceDataCollected(data_ptr);
 }
 
 void TraceMessageFilter::OnMonitoringTraceDataCollected(

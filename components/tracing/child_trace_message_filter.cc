@@ -52,8 +52,7 @@ ChildTraceMessageFilter::~ChildTraceMessageFilter() {}
 void ChildTraceMessageFilter::OnBeginTracing(
     const std::string& category_filter_str,
     base::TimeTicks browser_time,
-    int options,
-    bool tracing_startup) {
+    int options) {
 #if defined(__native_client__)
   // NaCl and system times are offset by a bit, so subtract some time from
   // the captured timestamps. The value might be off by a bit due to messaging
@@ -63,14 +62,9 @@ void ChildTraceMessageFilter::OnBeginTracing(
   TraceLog::GetInstance()->SetTimeOffset(time_offset);
 #endif
 
-  // Some subprocesses handle --trace-startup by themselves to begin
-  // trace as early as possible. Don't start twice, otherwise the trace
-  // buffer can't be correctly flushed on the end of startup tracing.
-  if (!tracing_startup || !TraceLog::GetInstance()->IsEnabled()) {
-    TraceLog::GetInstance()->SetEnabled(
-        base::debug::CategoryFilter(category_filter_str),
-        static_cast<base::debug::TraceLog::Options>(options));
-  }
+  TraceLog::GetInstance()->SetEnabled(
+      base::debug::CategoryFilter(category_filter_str),
+      static_cast<base::debug::TraceLog::Options>(options));
 }
 
 void ChildTraceMessageFilter::OnEndTracing() {
@@ -104,11 +98,8 @@ void ChildTraceMessageFilter::OnCaptureMonitoringSnapshot() {
   // CaptureMonitoringSnapshotAck below. We are already on the IO thread,
   // so the OnMonitoringTraceDataCollected calls will not be deferred.
   TraceLog::GetInstance()->FlushButLeaveBufferIntact(
-      base::Bind(&ChildTraceMessageFilter::
-                 OnMonitoringTraceDataCollected,
+      base::Bind(&ChildTraceMessageFilter::OnMonitoringTraceDataCollected,
                  this));
-
-  channel_->Send(new TracingHostMsg_CaptureMonitoringSnapshotAck());
 }
 
 void ChildTraceMessageFilter::OnGetTraceBufferPercentFull() {
@@ -161,6 +152,9 @@ void ChildTraceMessageFilter::OnMonitoringTraceDataCollected(
   }
   channel_->Send(new TracingHostMsg_MonitoringTraceDataCollected(
       events_str_ptr->data()));
+
+  if (!has_more_events)
+    channel_->Send(new TracingHostMsg_CaptureMonitoringSnapshotAck());
 }
 
 void ChildTraceMessageFilter::OnTraceNotification(int notification) {
