@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
-#include "chrome/browser/chromeos/input_method/mock_ibus_controller.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/fake_input_method_delegate.h"
 #include "chromeos/ime/mock_component_extension_ime_manager_delegate.h"
@@ -48,7 +47,6 @@ class InputMethodManagerImplTest :  public testing::Test {
  public:
   InputMethodManagerImplTest()
       : delegate_(NULL),
-        controller_(NULL),
         candidate_window_controller_(NULL),
         xkeyboard_(NULL) {
   }
@@ -58,8 +56,6 @@ class InputMethodManagerImplTest :  public testing::Test {
     delegate_ = new FakeInputMethodDelegate();
     manager_.reset(new InputMethodManagerImpl(
         scoped_ptr<InputMethodDelegate>(delegate_)));
-    controller_ = new MockIBusController;
-    manager_->SetIBusControllerForTesting(controller_);
     candidate_window_controller_ = new MockCandidateWindowController;
     manager_->SetCandidateWindowControllerForTesting(
         candidate_window_controller_);
@@ -116,7 +112,6 @@ class InputMethodManagerImplTest :  public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     delegate_ = NULL;
-    controller_ = NULL;
     candidate_window_controller_ = NULL;
     xkeyboard_ = NULL;
     manager_.reset();
@@ -135,7 +130,6 @@ class InputMethodManagerImplTest :  public testing::Test {
 
   scoped_ptr<InputMethodManagerImpl> manager_;
   FakeInputMethodDelegate* delegate_;
-  MockIBusController* controller_;
   MockCandidateWindowController* candidate_window_controller_;
   scoped_ptr<MockIMEEngineHandler> mock_engine_handler_;
   MockXKeyboard* xkeyboard_;
@@ -242,15 +236,16 @@ TEST_F(InputMethodManagerImplTest, TestObserver) {
   EXPECT_EQ(2, observer.input_method_property_changed_count_);
   manager_->ChangeInputMethod("xkb:us:dvorak:eng");
   EXPECT_FALSE(observer.last_show_message_);
+
   // The observer is always notified even when the same input method ID is
   // passed to ChangeInputMethod() more than twice.
+  // TODO(komatsu): Revisit if this is neccessary.
   EXPECT_EQ(3, observer.input_method_changed_count_);
-  EXPECT_EQ(3, observer.input_method_property_changed_count_);
 
-  controller_->NotifyPropertyChangedForTesting();
-  EXPECT_EQ(4, observer.input_method_property_changed_count_);
-  controller_->NotifyPropertyChangedForTesting();
-  EXPECT_EQ(5, observer.input_method_property_changed_count_);
+  // If the same input method ID is passed, PropertyChanged() is not
+  // notified.
+  EXPECT_EQ(2, observer.input_method_property_changed_count_);
+
   manager_->RemoveObserver(&observer);
 }
 
@@ -575,12 +570,17 @@ TEST_F(InputMethodManagerImplTest, TestXkbSetting) {
 }
 
 TEST_F(InputMethodManagerImplTest, TestActivateInputMethodProperty) {
-  manager_->ActivateInputMethodProperty("key");
-  EXPECT_EQ(1, controller_->activate_input_method_property_count_);
-  EXPECT_EQ("key", controller_->activate_input_method_property_key_);
+  const std::string kKey = "key";
+  InputMethodPropertyList property_list;
+  property_list.push_back(InputMethodProperty(kKey, "label", false, false));
+  manager_->SetCurrentInputMethodProperties(property_list);
+
+  manager_->ActivateInputMethodProperty(kKey);
+  EXPECT_EQ(kKey, mock_engine_handler_->last_activated_property());
+
+  // Key2 is not registered, so activated property should not be changed.
   manager_->ActivateInputMethodProperty("key2");
-  EXPECT_EQ(2, controller_->activate_input_method_property_count_);
-  EXPECT_EQ("key2", controller_->activate_input_method_property_key_);
+  EXPECT_EQ(kKey, mock_engine_handler_->last_activated_property());
 }
 
 TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodProperties) {
@@ -601,19 +601,12 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodProperties) {
                                                       "label",
                                                       false,
                                                       false));
-  controller_->SetCurrentPropertiesForTesting(current_property_list);
-  controller_->NotifyPropertyChangedForTesting();
+  manager_->SetCurrentInputMethodProperties(current_property_list);
 
   ASSERT_EQ(1U, manager_->GetCurrentInputMethodProperties().size());
   EXPECT_EQ("key", manager_->GetCurrentInputMethodProperties().at(0).key);
 
   manager_->ChangeInputMethod("xkb:us::eng");
-  EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
-
-  // Delayed asynchronous property update signal from the Mozc IME.
-  controller_->NotifyPropertyChangedForTesting();
-  // When XKB layout is in use, GetCurrentInputMethodProperties() should always
-  // return an empty list.
   EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
 }
 
@@ -634,8 +627,7 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
                                                       "label",
                                                       false,
                                                       false));
-  controller_->SetCurrentPropertiesForTesting(current_property_list);
-  controller_->NotifyPropertyChangedForTesting();
+  manager_->SetCurrentInputMethodProperties(current_property_list);
 
   ASSERT_EQ(1U, manager_->GetCurrentInputMethodProperties().size());
   EXPECT_EQ("key-mozc", manager_->GetCurrentInputMethodProperties().at(0).key);
@@ -650,8 +642,7 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
                                                       "label",
                                                       false,
                                                       false));
-  controller_->SetCurrentPropertiesForTesting(current_property_list);
-  controller_->NotifyPropertyChangedForTesting();
+  manager_->SetCurrentInputMethodProperties(current_property_list);
   ASSERT_EQ(1U, manager_->GetCurrentInputMethodProperties().size());
   EXPECT_EQ("key-chewing",
             manager_->GetCurrentInputMethodProperties().at(0).key);

@@ -39,6 +39,7 @@ void MockIMEEngineHandler::Disable() {
 }
 
 void MockIMEEngineHandler::PropertyActivate(const std::string& property_name) {
+  last_activated_property_ = property_name;
 }
 
 void MockIMEEngineHandler::PropertyShow(const std::string& property_name) {
@@ -81,4 +82,3 @@ void MockIMEEngineHandler::SetSurroundingText(const std::string& text,
 }
 
 } // namespace chromeos
-

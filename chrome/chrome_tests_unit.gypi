@@ -692,8 +692,6 @@
         'browser/chromeos/input_method/browser_state_monitor_unittest.cc',
         'browser/chromeos/input_method/candidate_window_controller_impl_unittest.cc',
         'browser/chromeos/input_method/candidate_window_view_unittest.cc',
-        'browser/chromeos/input_method/ibus_controller_impl_unittest.cc',
-        'browser/chromeos/input_method/ibus_controller_unittest.cc',
         'browser/chromeos/input_method/input_method_configuration_unittest.cc',
         'browser/chromeos/input_method/input_method_manager_impl_unittest.cc',
         'browser/chromeos/input_method/input_method_persistence_unittest.cc',

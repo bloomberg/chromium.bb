@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 
 #include "chrome/browser/chromeos/input_method/candidate_window_controller_impl.h"
-#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 
 namespace chromeos {
 namespace input_method {

@@ -749,10 +749,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "});";
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(), set_menu_item_test_script));
-    EXPECT_EQ(1, mock_property->register_properties_call_count());
 
     const InputMethodPropertyList& props =
-        mock_property->last_registered_properties();
+        InputMethodManager::Get()->GetCurrentInputMethodProperties();
     ASSERT_EQ(5U, props.size());
 
     EXPECT_EQ("ID0", props[0].key);

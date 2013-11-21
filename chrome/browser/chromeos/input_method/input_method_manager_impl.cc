@@ -58,8 +58,6 @@ InputMethodManagerImpl::InputMethodManagerImpl(
 }
 
 InputMethodManagerImpl::~InputMethodManagerImpl() {
-  if (ibus_controller_.get())
-    ibus_controller_->RemoveObserver(this);
   if (candidate_window_controller_.get()) {
     candidate_window_controller_->RemoveObserver(this);
     candidate_window_controller_->Shutdown();
@@ -302,9 +300,6 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
   IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
   const std::string current_input_method_id = current_input_method_.id();
   if (InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch)) {
-    FOR_EACH_OBSERVER(InputMethodManager::Observer,
-                      observers_,
-                      InputMethodPropertyChanged(this));
     if (engine) {
       engine->Disable();
       IBusBridge::Get()->SetEngineHandler(NULL);
@@ -322,26 +317,12 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
   }
 
   if (current_input_method_id != input_method_id_to_switch) {
-    // Clear input method properties unconditionally if
-    // |input_method_id_to_switch| is not equal to |current_input_method_id|.
-    //
-    // When switching to another input method and no text area is focused,
-    // RegisterProperties signal for the new input method will NOT be sent
-    // until a text area is focused. Therefore, we have to clear the old input
-    // method properties here to keep the input method switcher status
-    // consistent.
-    //
-    // When |input_method_id_to_switch| and |current_input_method_id| are the
-    // same, the properties shouldn't be cleared. If we do that, something
-    // wrong happens in step #4 below:
-    // 1. Enable "xkb:us::eng" and "mozc". Switch to "mozc".
-    // 2. Focus Omnibox. IME properties for mozc are sent to Chrome.
-    // 3. Switch to "xkb:us::eng". No function in this file is called.
-    // 4. Switch back to "mozc". ChangeInputMethod("mozc") is called, but it's
-    //    basically NOP since ibus-daemon's current IME is already "mozc".
-    //    IME properties are not sent to Chrome for the same reason.
-    // TODO(nona): Revisit above comment once ibus-daemon is gone.
-    ibus_controller_->ClearProperties();
+    // Clear property list.  Property list would be updated by
+    // extension IMEs via InputMethodEngineIBus::(Set|Update)MenuItems.
+    // If the current input method is a keyboard layout, empty
+    // properties are sufficient.
+    const InputMethodPropertyList empty_property_list;
+    SetCurrentInputMethodProperties(empty_property_list);
 
     const InputMethodDescriptor* descriptor = NULL;
     if (!extension_ime_util::IsExtensionIME(input_method_id_to_switch)) {
@@ -414,7 +395,18 @@ void InputMethodManagerImpl::LoadNecessaryComponentExtensions() {
 void InputMethodManagerImpl::ActivateInputMethodProperty(
     const std::string& key) {
   DCHECK(!key.empty());
-  ibus_controller_->ActivateInputMethodProperty(key);
+
+  for (size_t i = 0; i < property_list_.size(); ++i) {
+    if (property_list_[i].key == key) {
+      IBusEngineHandlerInterface* engine =
+          IBusBridge::Get()->GetEngineHandler();
+      if (engine)
+        engine->PropertyActivate(key);
+      return;
+    }
+  }
+
+  DVLOG(1) << "ActivateInputMethodProperty: unknown key: " << key;
 }
 
 void InputMethodManagerImpl::AddInputMethodExtension(
@@ -463,13 +455,6 @@ void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
   if (i != active_input_method_ids_.end())
     active_input_method_ids_.erase(i);
   extra_input_methods_.erase(id);
-
-  if (ContainsOnlyKeyboardLayout(active_input_method_ids_)) {
-    // Do NOT call ibus_controller_->Stop(); here to work around a crash issue
-    // at crosbug.com/27051.
-    // TODO(yusukes): We can safely call Stop(); here once crosbug.com/26443
-    // is implemented.
-  }
 
   // If |current_input_method| is no longer in |active_input_method_ids_|,
   // switch to the first one in |active_input_method_ids_|.
@@ -688,8 +673,14 @@ InputMethodManagerImpl::GetCurrentInputMethodProperties() const {
   // This check is necessary since an IME property (e.g. for Pinyin) might be
   // sent from ibus-daemon AFTER the current input method is switched to XKB.
   if (InputMethodUtil::IsKeyboardLayout(GetCurrentInputMethod().id()))
-    return InputMethodPropertyList();
-  return ibus_controller_->GetCurrentProperties();
+    return InputMethodPropertyList();  // Empty list.
+  return property_list_;
+}
+
+void InputMethodManagerImpl::SetCurrentInputMethodProperties(
+    const InputMethodPropertyList& property_list) {
+  property_list_ = property_list;
+  PropertyChanged();
 }
 
 XKeyboard* InputMethodManagerImpl::GetXKeyboard() {
@@ -717,12 +708,9 @@ void InputMethodManagerImpl::InitializeComponentExtension() {
 }
 
 void InputMethodManagerImpl::Init(base::SequencedTaskRunner* ui_task_runner) {
-  DCHECK(!ibus_controller_.get());
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  ibus_controller_.reset(IBusController::Create());
   xkeyboard_.reset(XKeyboard::Create());
-  ibus_controller_->AddObserver(this);
 
   // We can't call impl->Initialize here, because file thread is not available
   // at this moment.
@@ -730,12 +718,6 @@ void InputMethodManagerImpl::Init(base::SequencedTaskRunner* ui_task_runner) {
       FROM_HERE,
       base::Bind(&InputMethodManagerImpl::InitializeComponentExtension,
                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-void InputMethodManagerImpl::SetIBusControllerForTesting(
-    IBusController* ibus_controller) {
-  ibus_controller_.reset(ibus_controller);
-  ibus_controller_->AddObserver(this);
 }
 
 void InputMethodManagerImpl::SetCandidateWindowControllerForTesting(

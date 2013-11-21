@@ -164,6 +164,10 @@ class CHROMEOS_EXPORT InputMethodManager {
   // Gets the list of input method properties. The list could be empty().
   virtual InputMethodPropertyList GetCurrentInputMethodProperties() const = 0;
 
+  // Sets the list of input method properties. The list could be empty().
+  virtual void SetCurrentInputMethodProperties(
+      const InputMethodPropertyList& property_list) = 0;
+
   // Returns an X keyboard object which could be used to change the current XKB
   // layout, change the caps lock status, and set the auto repeat rate/interval.
   virtual XKeyboard* GetXKeyboard() = 0;

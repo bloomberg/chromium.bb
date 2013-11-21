@@ -140,6 +140,10 @@ MockInputMethodManager::GetCurrentInputMethodProperties() const {
   return InputMethodPropertyList();
 }
 
+void MockInputMethodManager::SetCurrentInputMethodProperties(
+    const InputMethodPropertyList& property_list) {
+}
+
 XKeyboard* MockInputMethodManager::GetXKeyboard() {
   return &xkeyboard_;
 }

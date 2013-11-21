@@ -13,7 +13,6 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
-#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/input_method_whitelist.h"
@@ -28,18 +27,17 @@ class XKeyboard;
 
 // The implementation of InputMethodManager.
 class InputMethodManagerImpl : public InputMethodManager,
-                               public CandidateWindowController::Observer,
-                               public IBusController::Observer {
+                               public CandidateWindowController::Observer {
  public:
   // Constructs an InputMethodManager instance. The client is responsible for
   // calling |SetState| in response to relevant changes in browser state.
   explicit InputMethodManagerImpl(scoped_ptr<InputMethodDelegate> delegate);
   virtual ~InputMethodManagerImpl();
 
-  // Attach IBusController, CandidateWindowController, and XKeyboard objects
-  // to the InputMethodManagerImpl object. You don't have to call this function
-  // if you attach them yourself (e.g. in unit tests) using the protected
-  // setters.
+  // Attach CandidateWindowController, and XKeyboard objects to the
+  // InputMethodManagerImpl object. You don't have to call this
+  // function if you attach them yourself (e.g. in unit tests) using
+  // the protected setters.
   void Init(base::SequencedTaskRunner* ui_task_runner);
 
   // Receives notification of an InputMethodManager::State transition.
@@ -87,14 +85,15 @@ class InputMethodManagerImpl : public InputMethodManager,
   virtual InputMethodDescriptor GetCurrentInputMethod() const OVERRIDE;
   virtual InputMethodPropertyList
       GetCurrentInputMethodProperties() const OVERRIDE;
+  virtual void SetCurrentInputMethodProperties(
+      const InputMethodPropertyList& property_list) OVERRIDE;
+
   virtual XKeyboard* GetXKeyboard() OVERRIDE;
   virtual InputMethodUtil* GetInputMethodUtil() OVERRIDE;
   virtual ComponentExtensionIMEManager*
       GetComponentExtensionIMEManager() OVERRIDE;
   virtual bool IsLoginKeyboard(const std::string& layout) const OVERRIDE;
 
-  // Sets |ibus_controller_|.
-  void SetIBusControllerForTesting(IBusController* ibus_controller);
   // Sets |candidate_window_controller_|.
   void SetCandidateWindowControllerForTesting(
       CandidateWindowController* candidate_window_controller);
@@ -105,8 +104,8 @@ class InputMethodManagerImpl : public InputMethodManager,
       scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate);
 
  private:
-  // IBusController overrides:
-  virtual void PropertyChanged() OVERRIDE;
+  // Notifies observers that the property list is updated.
+  void PropertyChanged();
 
   // CandidateWindowController::Observer overrides:
   virtual void CandidateWindowOpened() OVERRIDE;
@@ -193,9 +192,8 @@ class InputMethodManagerImpl : public InputMethodManager,
   std::map<std::string, InputMethodDescriptor> extra_input_methods_;
   std::map<std::string, InputMethodEngineIBus*> extra_input_method_instances_;
 
-  // The IBus controller is used to control the input method status and
-  // allow callbacks when the input method status changes.
-  scoped_ptr<IBusController> ibus_controller_;
+  // Property list of the input method.  This is set by extension IMEs.
+  InputMethodPropertyList property_list_;
 
   // The candidate window.  This will be deleted when the APP_TERMINATING
   // message is sent.

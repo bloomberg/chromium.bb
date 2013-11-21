@@ -347,10 +347,10 @@ bool InputMethodEngineIBus::UpdateMenuItems(
     property_list.push_back(property);
   }
 
-  IBusPanelPropertyHandlerInterface* handler =
-      IBusBridge::Get()->GetPropertyHandler();
-  if (handler)
-    handler->RegisterProperties(property_list);
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::Get();
+  if (manager)
+    manager->SetCurrentInputMethodProperties(property_list);
 
   return true;
 }

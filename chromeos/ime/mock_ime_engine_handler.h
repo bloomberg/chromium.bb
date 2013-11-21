@@ -44,6 +44,10 @@ class MockIMEEngineHandler : public IBusEngineHandlerInterface {
     return last_text_input_type_;
   }
 
+  std::string last_activated_property() const {
+    return last_activated_property_;
+  }
+
   std::string last_set_surrounding_text() const {
     return last_set_surrounding_text_;
   }
@@ -79,6 +83,7 @@ class MockIMEEngineHandler : public IBusEngineHandlerInterface {
   int process_key_event_call_count_;
   int reset_call_count_;
   ibus::TextInputType last_text_input_type_;
+  std::string last_activated_property_;
   std::string last_set_surrounding_text_;
   uint32 last_set_surrounding_cursor_pos_;
   uint32 last_set_surrounding_anchor_pos_;
