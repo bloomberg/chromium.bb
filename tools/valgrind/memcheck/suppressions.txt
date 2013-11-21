@@ -6404,7 +6404,13 @@
    fun:_ZN5media18AudioStreamHandler20AudioStreamContainer4PlayEv
 }
 {
-   bug_321975
+   bug_321975_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3gcm21GCMProfileServiceTest5SetUpEv
+}
+{
+   bug_321975_b
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsPN3gcm9GCMClient8DelegateEEEE8allocateEmPKv
