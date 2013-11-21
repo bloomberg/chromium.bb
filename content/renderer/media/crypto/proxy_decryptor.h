@@ -147,6 +147,8 @@ class ProxyDecryptor {
 
   SessionIdMap sessions_;
 
+  bool is_clear_key_;
+
   DISALLOW_COPY_AND_ASSIGN(ProxyDecryptor);
 };
 

@@ -12,6 +12,8 @@
 #if defined(OS_ANDROID)
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #endif  // defined(OS_ANDROID)
+#include "media/cdm/json_web_key.h"
+#include "media/cdm/key_system_names.h"
 
 namespace content {
 
@@ -51,7 +53,8 @@ ProxyDecryptor::ProxyDecryptor(
 #endif  // defined(ENABLE_PEPPER_CDMS)
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
-      key_message_cb_(key_message_cb) {
+      key_message_cb_(key_message_cb),
+      is_clear_key_(false) {
   DCHECK(!key_added_cb_.is_null());
   DCHECK(!key_error_cb_.is_null());
   DCHECK(!key_message_cb_.is_null());
@@ -103,6 +106,9 @@ bool ProxyDecryptor::InitializeCDM(const std::string& key_system,
 
   if (!decryptor_ready_cb_.is_null())
     base::ResetAndReturn(&decryptor_ready_cb_).Run(media_keys_->GetDecryptor());
+
+  is_clear_key_ =
+      media::IsClearKey(key_system) || media::IsExternalClearKey(key_system);
   return true;
 }
 
@@ -135,13 +141,27 @@ void ProxyDecryptor::AddKey(const uint8* key,
     // unrecognized, throw an INVALID_ACCESS_ERR." However, for backwards
     // compatibility the error is not thrown, but rather reported as a
     // KeyError.
-    key_error_cb_.Run(
-        std::string(), media::MediaKeys::kUnknownError, 0);
+    key_error_cb_.Run(std::string(), media::MediaKeys::kUnknownError, 0);
+    return;
   }
-  else {
-    media_keys_->AddKey(
-        reference_id, key, key_length, init_data, init_data_length);
+
+  // EME WD spec only supports a single array passed to the CDM. For
+  // Clear Key using v0.1b, both arrays are used (|init_data| is key_id).
+  // Since the EME WD spec supports the key as a JSON Web Key,
+  // convert the 2 arrays to a JWK and pass it as the single array.
+  // TODO(jrummell): When updating Decryptor interface to match WD, move the
+  // workaround for handling |init_data| == null here.
+  if (is_clear_key_ && init_data_length) {
+    std::string jwk =
+        media::GenerateJWKSet(key, key_length, init_data, init_data_length);
+    DCHECK(!jwk.empty());
+    media_keys_->AddKey(reference_id,
+                        reinterpret_cast<const uint8*>(jwk.data()), jwk.size(),
+                        NULL, 0);
+    return;
   }
+
+  media_keys_->AddKey(reference_id, key, key_length, NULL, 0);
 }
 
 void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
