@@ -190,8 +190,8 @@ class SystemGestureEventFilterTest
     return &GetLongPressAffordance()->timer_;
   }
 
-  int GetLongPressAffordanceTouchId() {
-    return GetLongPressAffordance()->tap_down_touch_id_;
+  aura::Window* GetLongPressAffordanceTarget() {
+    return GetLongPressAffordance()->tap_down_target_;
   }
 
   views::View* GetLongPressAffordanceView() {
@@ -263,7 +263,7 @@ TEST_P(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   base::OneShotTimer<internal::LongPressAffordanceHandler>* timer =
       GetLongPressAffordanceTimer();
   EXPECT_TRUE(timer->IsRunning());
-  EXPECT_EQ(kTouchId, GetLongPressAffordanceTouchId());
+  EXPECT_EQ(window1, GetLongPressAffordanceTarget());
 
   // Force timeout so that the affordance animation can start.
   timer->user_task().Run();
@@ -275,7 +275,7 @@ TEST_P(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   EXPECT_TRUE(window2->HasCapture());
 
   EXPECT_TRUE(GetLongPressAffordance()->is_animating());
-  EXPECT_EQ(kTouchId, GetLongPressAffordanceTouchId());
+  EXPECT_EQ(window1, GetLongPressAffordanceTarget());
 
   // Animate to completion.
   GetLongPressAffordance()->End();  // end grow animation.
@@ -287,7 +287,7 @@ TEST_P(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   GetLongPressAffordance()->End();  // end shrink animation.
 
   // Check if state has reset.
-  EXPECT_EQ(-1, GetLongPressAffordanceTouchId());
+  EXPECT_EQ(NULL, GetLongPressAffordanceTarget());
   EXPECT_EQ(NULL, GetLongPressAffordanceView());
 }
 

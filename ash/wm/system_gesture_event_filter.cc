@@ -75,14 +75,12 @@ void SystemGestureEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
 void SystemGestureEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   ash::TouchUMA::GetInstance()->RecordTouchEvent(target, *event);
-  long_press_affordance_->ProcessEvent(target, event, event->touch_id());
 }
 
 void SystemGestureEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   ash::TouchUMA::GetInstance()->RecordGestureEvent(target, *event);
-  long_press_affordance_->ProcessEvent(target, event,
-      event->GetLowestTouchId());
+  long_press_affordance_->ProcessEvent(target, event);
 
   if (two_finger_drag_->ProcessGestureEvent(target, *event)) {
     event->StopPropagation();

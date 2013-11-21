@@ -236,54 +236,41 @@ class LongPressAffordanceHandler::LongPressAffordanceView
 // LongPressAffordanceHandler, public
 
 LongPressAffordanceHandler::LongPressAffordanceHandler()
-    : gfx::LinearAnimation(kAffordanceFrameRateHz, this),
-      tap_down_touch_id_(-1),
-      tap_down_display_id_(0),
+    : gfx::LinearAnimation(kAffordanceFrameRateHz, NULL),
+      tap_down_target_(NULL),
       current_animation_type_(NONE) {}
 
-LongPressAffordanceHandler::~LongPressAffordanceHandler() {}
+LongPressAffordanceHandler::~LongPressAffordanceHandler() {
+  StopAffordance();
+}
 
 void LongPressAffordanceHandler::ProcessEvent(aura::Window* target,
-                                              ui::LocatedEvent* event,
-                                              int touch_id) {
-  // Once we have a touch id, we are only interested in event of that touch id.
-  if (tap_down_touch_id_ != -1 && tap_down_touch_id_ != touch_id)
+                                              ui::GestureEvent* event) {
+  // Once we have a target, we are only interested in events with that target.
+  if (tap_down_target_ && tap_down_target_ != target)
     return;
-  int64 timer_start_time_ms =
-      ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000;
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-      // Start animation.
+    case ui::ET_GESTURE_TAP_DOWN: {
+      // Start timer that will start animation on "semi-long-press".
       tap_down_location_ = event->root_location();
-      tap_down_touch_id_ = touch_id;
+      SetTapDownTarget(target);
       current_animation_type_ = GROW_ANIMATION;
-      tap_down_display_id_ =
-          Shell::GetScreen()->GetDisplayNearestWindow(target).id();
+      int64 timer_start_time_ms =
+          ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000;
       timer_.Start(FROM_HERE,
                    base::TimeDelta::FromMilliseconds(timer_start_time_ms),
                    this,
                    &LongPressAffordanceHandler::StartAnimation);
       break;
-    case ui::ET_TOUCH_MOVED:
-      // If animation is running, We want it to be robust to small finger
-      // movements. So we stop the animation only when the finger moves a
-      // certain distance.
-      if (!ui::gestures::IsInsideManhattanSquare(
-          event->root_location(), tap_down_location_))
-        StopAnimation();
-      break;
-    case ui::ET_GESTURE_SHOW_PRESS:
-    case ui::ET_TOUCH_CANCELLED:
-    case ui::ET_GESTURE_END:
-      // We will stop the animation on TOUCH_RELEASED.
+    }
+    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_TAP_CANCEL:
+      StopAffordance();
       break;
     case ui::ET_GESTURE_LONG_PRESS:
-      if (is_animating())
-        End();
+      End();
       break;
     default:
-      // On all other touch and gesture events, we hide the animation.
-      StopAnimation();
       break;
   }
 }
@@ -292,13 +279,11 @@ void LongPressAffordanceHandler::ProcessEvent(aura::Window* target,
 // LongPressAffordanceHandler, private
 
 void LongPressAffordanceHandler::StartAnimation() {
-  aura::Window* root_window = NULL;
   switch (current_animation_type_) {
-    case GROW_ANIMATION:
-      root_window = Shell::GetInstance()->display_controller()->
-          GetRootWindowForDisplayId(tap_down_display_id_);
+    case GROW_ANIMATION: {
+      aura::Window* root_window = tap_down_target_->GetRootWindow();
       if (!root_window) {
-        StopAnimation();
+        StopAffordance();
         return;
       }
       view_.reset(new LongPressAffordanceView(tap_down_location_, root_window));
@@ -308,6 +293,7 @@ void LongPressAffordanceHandler::StartAnimation() {
           kAffordanceDelayBeforeShrinkMs);
       Start();
       break;
+    }
     case SHRINK_ANIMATION:
       SetDuration(kAffordanceShrinkAnimationDurationMs);
       Start();
@@ -318,18 +304,27 @@ void LongPressAffordanceHandler::StartAnimation() {
   }
 }
 
-void LongPressAffordanceHandler::StopAnimation() {
+void LongPressAffordanceHandler::StopAffordance() {
   if (timer_.IsRunning())
     timer_.Stop();
-  // Since, Animation::Stop() calls AnimationEnded(), we need to reset the
-  // |current_animation_type_| before Stop(), otherwise AnimationEnded() may
+  // Since, Animation::Stop() calls AnimationStopped(), we need to reset the
+  // |current_animation_type_| before Stop(), otherwise AnimationStopped() may
   // start the timer again.
   current_animation_type_ = NONE;
-  if (is_animating())
-    Stop();
+  Stop();
   view_.reset();
-  tap_down_touch_id_ = -1;
-  tap_down_display_id_ = 0;
+  SetTapDownTarget(NULL);
+}
+
+void LongPressAffordanceHandler::SetTapDownTarget(aura::Window* target) {
+  if (tap_down_target_ == target)
+    return;
+
+  if (tap_down_target_)
+    tap_down_target_->RemoveObserver(this);
+  tap_down_target_ = target;
+  if (tap_down_target_)
+    tap_down_target_->AddObserver(this);
 }
 
 void LongPressAffordanceHandler::AnimateToState(double state) {
@@ -347,12 +342,7 @@ void LongPressAffordanceHandler::AnimateToState(double state) {
   }
 }
 
-bool LongPressAffordanceHandler::ShouldSendCanceledFromStop() {
-  return false;
-}
-
-void LongPressAffordanceHandler::AnimationEnded(
-    const gfx::Animation* animation) {
+void LongPressAffordanceHandler::AnimationStopped() {
   switch (current_animation_type_) {
     case GROW_ANIMATION:
       current_animation_type_ = SHRINK_ANIMATION;
@@ -365,10 +355,14 @@ void LongPressAffordanceHandler::AnimationEnded(
       // fall through to reset the view.
     default:
       view_.reset();
-      tap_down_touch_id_ = -1;
-      tap_down_display_id_ = 0;
+      SetTapDownTarget(NULL);
       break;
   }
+}
+
+void LongPressAffordanceHandler::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(tap_down_target_, window);
+  StopAffordance();
 }
 
 }  // namespace internal
