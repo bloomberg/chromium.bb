@@ -204,7 +204,7 @@ Node* XPathResult::iterateNext(ExceptionState& exceptionState)
 Node* XPathResult::snapshotItem(unsigned long index, ExceptionState& exceptionState)
 {
     if (resultType() != UNORDERED_NODE_SNAPSHOT_TYPE && resultType() != ORDERED_NODE_SNAPSHOT_TYPE) {
-        exceptionState.throwTypeError(ExceptionMessages::failedToExecute("iterateNext", "XPathResult", "The result type is not a snapshot."));
+        exceptionState.throwTypeError(ExceptionMessages::failedToExecute("snapshotItem", "XPathResult", "The result type is not a snapshot."));
         return 0;
     }
 
