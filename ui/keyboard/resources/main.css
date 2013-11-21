@@ -21,58 +21,6 @@ kb-keyboard {
   width: 1280px;
 }
 
-kb-abc-key,
-kb-shift-key,
-kb-modifier-key,
-kb-hide-keyboard-key,
-kb-layout-selector,
-kb-key {
-  background-color: #3b3b3e;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: contain;
-  border-top: 2px solid #4b4b4e;
-  border-radius: 2px;
-  color: #ffffff;
-  display: -webkit-box;
-  font-family: 'Open Sans', 'Noto Sans UI', sans-serif;
-  font-weight: 300;
-  margin-left: 0.25em;
-  position: relative;
-}
-
-kb-abc-key::x-key,
-kb-modifier-key::x-key,
-kb-shift-key::x-key,
-kb-layout-selector::x-key,
-kb-key::x-key {
-  bottom: 0;
-  height: 1.2em;
-  left: 0;
-  margin: auto;
-  padding-left: 0.7em;
-  padding-right: 0.7em;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-kb-key::x-hinttext {
-  color: #7c7c7c;
-  font-size: 70%;
-  position: absolute;
-  right: 7%;
-  top: 5%;
-}
-
-kb-key::x-key[inverted] {
-  color: #7c7c7c;
-}
-
-kb-key::x-hinttext[inverted] {
-  color: #ffffff;
-}
-
 kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl],
 kb-keyboard.alt-active kb-modifier-key[char=Alt] {
   color: lightblue;
@@ -91,17 +39,6 @@ kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key {
   border-top: 2px solid #3a3a3c;
 }
 
-/* TODO(stevet): We can probably share most of this with kb-key::x-key. */
-kb-altkey::x-key {
-  bottom: 0;
-  height: 1.2em;
-  left: 0;
-  margin: auto;
-  position: absolute;
-  right: 0;
-  top: 0;
-  text-align: center;
-}
 
 .caps-locked kb-shift-key,
 .active {

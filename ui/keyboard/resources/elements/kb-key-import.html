@@ -7,10 +7,8 @@
 <polymer-element name="kb-key-import" attributes="importId">
   <template>
     <style>
-      @host {
-        * {
-          display: none;
-        }
+      :host {
+        display: none;
       }
     </style>
   </template>
@@ -27,7 +25,9 @@
        *     the content to import.
        */
       importDoc: function(content) {
-        return content.querySelector('#' + this.importId).content;
+        var id = this.getAttribute('importId');
+        var fragment = content.querySelector('#' + id);
+        return fragment && fragment.content ? fragment.content : fragment;
       }
     });
   </script>

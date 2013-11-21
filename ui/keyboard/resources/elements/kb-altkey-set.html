@@ -7,50 +7,12 @@
 <polymer-element name="kb-altkey-set" attributes="offset char">
   <template>
     <style>
-      /* TODO(stevet): Migrate this to main.css using custom pseudo
-       * selectors.
-       */
-      @host {
-        * {
-           background-color: #3b3b3e;
-           border-radius: 2px;
-           display: -webkit-box;
-           text-align: center;
-           position: absolute;
-        }
-      }
-
-      content::-webkit-distributed(.active) {
-        background-color: #848490 !important;
-        /* This artificial border is used to prevent the key contents from
-         * "bouncing" due to the inactive state having a different border size.
-         */
-        border-radius: 2px;
-        border-top: 1px solid #848490;
-        /* Do not use box shadow until performance improves
-         * http://code.google.com/p/chromium/issues/detail?id=99045
-        box-shadow: 0px 0px 15px #fff;
-        */
-      }
-
-      content::-webkit-distributed(kb-altkey) {
-        -webkit-flex: 1 auto;
-        background-color: #3b3b3e;
-        border-left: 1px solid rgba(0, 0, 0, 0.15);
-        border-top: 2px solid #4b4b4e;
-        color: #ffffff;
-        font-family: 'Open Sans', sans-serif;
-        font-weight: 100;
-      }
-
-      content::-webkit-distributed(kb-altkey:first-child) {
-        border-top-left-radius: 2px;
-        border-bottom-left-radius: 2px;
-      }
-
-      content::-webkit-distributed(kb-altkey:last-child) {
-        border-top-right-radius: 2px;
-        border-bottom-right-radius: 2px;
+      :host {
+         background-color: #3b3b3e;
+         border-radius: 2px;
+         display: -webkit-box;
+         text-align: center;
+         position: absolute;
       }
     </style>
     <content select="*"></content>

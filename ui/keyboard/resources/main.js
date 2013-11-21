@@ -19,7 +19,7 @@ function importHTML(content) {
   var dom = content.querySelector('template').createInstance();
   var keyImports = dom.querySelectorAll('kb-key-import');
   if (keyImports.length != 0) {
-    keyImports.forEach(function(element) {
+    keyImports.array().forEach(function(element) {
       if (element.importDoc(content)) {
         var generatedDom = importHTML(element.importDoc(content));
         element.parentNode.replaceChild(generatedDom, element);
@@ -36,7 +36,7 @@ function importHTML(content) {
 function expandHTML(importedContent) {
   var keySequences = importedContent.querySelectorAll('kb-key-sequence');
   if (keySequences.length != 0) {
-    keySequences.forEach(function(element) {
+    keySequences.array().forEach(function(element) {
       var generatedDom = element.generateDom();
       element.parentNode.replaceChild(generatedDom, element);
     });

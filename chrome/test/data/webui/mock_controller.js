@@ -61,9 +61,12 @@ MockMethod.prototype = {
    * the correct signature for each call.
    */
   verifyMock: function() {
+    var errorMessage =  'Number of method calls did not match expectation.';
+    if (this.functionName)
+      errorMessage = 'Error in ' + this.functionName + ':\n' + errorMessage;
     assertEquals(this.expectations_.length,
                  this.calls_.length,
-                 'Number of method calls did not match expectation.');
+                 errorMessage);
     for (var i = 0; i < this.expectations_.length; i++) {
       this.validateCall(i, this.expectations_[i], this.calls_[i]);
     }
@@ -125,6 +128,7 @@ MockController.prototype = {
         originalFunction: opt_parent[opt_functionName]
       });
       opt_parent[opt_functionName] = fn;
+      fn.functionName = opt_functionName;
     }
     this.mocks_.push(fn);
 

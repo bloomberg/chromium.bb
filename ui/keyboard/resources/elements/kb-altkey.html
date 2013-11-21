@@ -4,22 +4,51 @@
   -- found in the LICENSE file.
   -->
 
-<polymer-element name="kb-altkey" attributes="char" on-pointerover="over"
-    on-pointerout="out" on-pointerup="up">
+<polymer-element name="kb-altkey" attributes="char" on-pointerover="{{over}}"
+    on-pointerout="{{out}}" on-pointerup="{{up}}">
   <template>
     <style>
-      @host {
-        * {
-          -webkit-box-flex: 1;
-          display: -webkit-box;
-          position: relative;
-          background-position: center center;
-          background-repeat: no-repeat;
-          background-size: contain;
-        }
+      :host {
+        -webkit-box-flex: 1;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: contain;
+        border-left: 1px solid rgba(0, 0, 0, 0.15);
+        border-top: 2px solid #4b4b4e;
+        display: -webkit-box;
+        position: relative;
+      }
+
+      :host.active {
+        background-color: #848490;
+        border-top: 1px solid #848490;
+      }
+
+      :host:first-child {
+        border-top-left-radius: 2px;
+        border-bottom-left-radius: 2px;
+      }
+
+      :host:last-child {
+        border-top-right-radius: 2px;
+        border-bottom-right-radius: 2px;
+      }
+
+      ::part(key) {
+        bottom: 0;
+        color: #ffffff;
+        font-family: 'Open Sans', 'Noto Sans UI', sans-serif;
+        font-weight: 100;
+        height: 1.2em;
+        left: 0;
+        margin: auto;
+        position: absolute;
+        right: 0;
+        top: 0;
+        text-align: center;
       }
     </style>
-    <div pseudo="x-key">
+    <div part="key">
       <content></content>
     </div>
   </template>

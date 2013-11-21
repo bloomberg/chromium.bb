@@ -5,15 +5,13 @@
   -->
 
 <polymer-element name="kb-keyset" attributes="nextKeyset isDefault"
-    on-key-up="keyUp" on-key-longpress="keyLongpress">
+    on-key-up="{{keyUp}}" on-key-longpress="{{keyLongpress}}">
   <template>
     <style>
-      @host {
-        * {
-          -webkit-box-orient: vertical;
-          -webkit-box-flex: 1;
-          display: -webkit-box;
-        }
+      :host {
+        -webkit-box-flex: 1;
+        -webkit-box-orient: vertical;
+        display: -webkit-box;
       }
     </style>
     <content select="kb-row"></content>

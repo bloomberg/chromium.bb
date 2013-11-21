@@ -8,16 +8,58 @@
     attributes="keyCode shiftModifier weight">
   <template>
     <style>
-      @host {
-        * {
-          -webkit-box-flex: {{weight}};
-        }
+      :host {
+        /* TODO(kevers): A regression in the Polymer library broke
+         * handling of {{}} in CSS rules. Switch back to
+         * "-webkit-box-flex: {{weight}}" once the regression is fixed
+         * (https://github.com/Polymer/polymer/issues/270). */
+        -webkit-box-flex: 1;
+        background-color: #3b3b3e;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: contain;
+        border-top: 2px solid #4b4b4e;
+        border-radius: 2px;
+        color: #ffffff;
+        display: -webkit-box;
+        font-family: 'Open Sans', 'Noto Sans UI', sans-serif;
+        font-weight: 300;
+        margin-left: 0.25em;
+        position: relative;
+      }
+
+      ::part(key) {
+        bottom: 0;
+        height: 1.2em;
+        left: 0;
+        margin: auto;
+        padding-left: 0.7em;
+        padding-right: 0.7em;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+
+      ::part(key)[inverted] {
+        color: #7c7c7c;
+      }
+
+     ::part(hint) {
+        color: #7c7c7c;
+        font-size: 70%;
+        position: absolute;
+        right: 7%;
+        top: 5%;
+      } 
+
+      ::part(hint)[inverted] {
+        color: #ffffff;
       }
     </style>
-    <div id="key" pseudo="x-key" inverted?={{invert}}>
+    <div id="key" part="key" inverted?={{invert}}>
       <content></content>
     </div>
-    <div pseudo="x-hinttext" inverted?={{invert}}>{{hintText}}</div>
+    <div part="hint" inverted?={{invert}}>{{hintText}}</div>
   </template>
   <script>
     Polymer('kb-key', {
@@ -52,6 +94,17 @@
         details.keyCode = this.keyCode;
         details.shiftModifier = this.shiftModifier;
         return details;
+      },
+
+      /**
+       * Adjusts the CSS rules for rendering the key to reflect the new
+       * weight. The preferred way is to use {{weight}} directly in the CSS
+       * rules; however, this is currently broken in the Polymer library.
+       * TODO(kevers): Cleanup once handling of {{}} in CSS rules is fixed.
+       */
+      weightChanged: function() {
+        if (this.weight > 0)
+          this.style['webkitBoxFlex'] = this.weight;
       },
     });
   </script>

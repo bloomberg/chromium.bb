@@ -5,13 +5,71 @@
  */
 
 /**
- * Queue for running tests asynchronously.
+ * Set to true while debugging virtual keyboard tests, for verbose debug output.
  */
-function TestRunner(subtaskRunner) {
-  this.queue = [];
-  keyboard.addEventListener('stateChange', this.onStateChange.bind(this));
-  this.isBlocked = false;
-  this.subtaskRunner = subtaskRunner;
+var debugging = false;
+
+/**
+ * Display diagnostic messages when debugging tests.
+ * @param {string} Message to conditionally display.
+ */
+function Debug(message) {
+  if (debugging)
+    console.log(message);
+}
+
+/**
+ * Layouts used in testing.
+ * @enum {string}
+ */
+var Layout = {
+  DEFAULT: 'qwerty',
+  SYSTEM: 'system-qwerty',
+  KEYPAD: 'numeric'
+}
+
+/**
+ * Keysets used in testing.
+ * @enum {string}
+ */
+var Keyset = {
+  // Full names.
+  DEFAULT: 'qwerty-lower',
+  DEFAULT_LOWER: 'qwerty-lower',
+  DEFAULT_UPPER: 'qwerty-upper',
+  SYSTEM_LOWER: 'system-qwerty-lower',
+  SYSTEM_UPPER: 'system-qwerty-upper',
+  KEYPAD: 'numeric-symbol',
+  // Shorthand names.
+  LOWER: 'lower',
+  UPPER: 'upper',
+  SYMBOL: 'symbol',
+  MORE_SYMBOLS: 'more'
+};
+
+/**
+ * Key alignments.
+ * @enum {string}
+ */
+var Alignment = {
+  LEFT: 'left',
+  RIGHT: 'right'
+};
+
+var EventType = {
+  KEY_DOWN: 'down',
+  KEY_UP: 'up',
+  KEY_OUT: 'out'
+};
+
+
+/**
+ * Retrieve element with matching ID.
+ * @param {string} name ID of the element.
+ * @return {?Element} Matching element or null.
+ */
+function $(name) {
+  return document.getElementById(name);
 }
 
 /**
@@ -26,151 +84,118 @@ var Modifier = {
   ALT: 8
 };
 
+/**
+ * Queue for running tests asynchronously.
+ */
+function TestRunner() {
+  this.queue = [];
+  this.activeTest = null;
+  $('keyboard').addKeysetChangedObserver(this.scheduleCheckQueue.bind(this));
+}
+
+/**
+ * setTimout and setInterval are mocked to facilitate testing of timed events.
+ * Store off the original setTimeout method so that it may be used to queue
+ * events.
+ */
+var safeSetTimeout = window.setTimeout;
+
 TestRunner.prototype = {
 
-  /**
-   * Queues a test to run after the keyboard has finished initializing.
-   * @param {!Function} callback The deferred function call.
-   */
-  append: function(callback) {
-    this.queue.push(callback);
-  },
+  scheduleTest: function(callback, condition) {
+    this.queue.push({
+      testCallback: callback,
+      waitCondition: condition
+    });
 
-  /**
-   * Notification of a change in the state of the keyboard. Runs all queued
-   * tests if the keyboard has finished initializing.
-   * @param {Object} event The state change event.
-   */
-  onStateChange: function(event) {
-    if (this.isBlocked)
-      return;
-    if (event.detail.state == 'keysetLoaded') {
-      while(this.queue.length > 0) {
-        var test = this.queue.shift();
-        var blocks = this.runTest(test);
-        if (blocks) {
-          return;
-        }
+    if (callback.subtasks) {
+      // Store off original test complete function that reports completion on a
+      // pass or fail.
+      var onTestComplete = callback.onTestComplete;
+      // On completion of the test setup, only mark test as complete if the test
+      // failed. Subtests must finish before reporting a successful test.
+      callback.onTestComplete = function(testFailure) {
+        if (testFailure)
+          onTestComplete(true);
+      };
+      var createSubtaskCompletionCallback = function(test, isLastTest) {
+        return function(testFailure) {
+          if (testFailure) {
+            for (var i = 0; i < test.subtasks.length; i++) {
+              test.subtasks[i].skipTest = true;
+            }
+          }
+          if (testFailure || isLastTest)
+            onTestComplete(testFailure);
+        };
+      };
+      for (var i = 0; i < callback.subtasks.length; i++) {
+        var task = callback.subtasks[i];
+        task.onTestComplete = createSubtaskCompletionCallback(callback,
+            i == callback.subtasks.length - 1);
+        task.testName = callback.testName;
+        this.queue.push({
+          testCallback: task,
+          waitCondition: task.waitCondition
+        });
       }
     }
+    this.checkQueue();
   },
 
-  /**
-   * Runs a single test, notifying the test harness of the results.
-   * @param {function} callback The callback function containing the test.
-   * @return {boolean} If this test blocks the testRunner.
-   */
-  runTest: function(callback) {
-    var testFailure = false;
-    try {
-      // Defers any subtasks to the subtaskRunner.
-      if (callback.subTasks) {
-        subTaskRunner.appendAll(callback.subTasks,
-                                callback.testName,
-                                function(failure) {
-          callback.onTestComplete(failure);
-          this.unblock();
-        });
-        // Call the function after scheduling the subtasks since the subtasks
-        // will be waiting for state changes triggered by the original callback.
-        callback();
-        return true;
-      }
-      // No subtasks, run as normal.
-      callback();
+  checkQueue: function() {
+    if (!!this.activeTest)
+      return;
+    if (!this.queue.length)
+      return;
+    if (!$('keyboard').isReady()) {
+      this.scheduleCheckQueue(10);
+      return;
+    }
+    var waitCondition = this.queue[0].waitCondition;
+    var keyset = $('keyboard').activeKeyset;
+    var id = keyset.id;
+    if (waitCondition.state == 'keysetChanged' && id == waitCondition.value)
+      this.runNextTest();
+    else
+      Debug('waiting on keyset ' + waitCondition.value +', current = ' + id);
+  },
 
+  runNextTest: function() {
+    var testFailure = false;
+    var callback = this.queue[0].testCallback;
+    this.queue.shift();
+    try {
+      this.activeTest = callback;
+      if (!callback.skipTest)
+        callback();
     } catch(err) {
       console.error('Failure in test "' + callback.testName + '"\n' + err);
       console.log(err.stack);
       testFailure = true;
     }
-    callback.onTestComplete(testFailure);
-    return false;
+    this.activeTest = null;
+    if (!callback.skipTest)
+      callback.onTestComplete(testFailure);
+    this.scheduleCheckQueue();
   },
 
   /**
-   * Unblocks the test runner and continues running tests.
+   * Schedule an asynchronous check for an unblocked task on the queue.
+   * @param {number=} opt_delay Optional delay in milliseconds.
    */
-  unblock: function() {
-    this.isBlocked = false;
-    this.onStateChange({detail:{state:"keysetLoaded"}});
+  scheduleCheckQueue: function(opt_delay) {
+    var delay = opt_delay;
+    if (!delay)
+      delay = 0;
+    var self = this;
+    safeSetTimeout(function() {
+      self.checkQueue();
+    }, delay);
   }
 };
 
-/**
- * Handles subtasks that require keyset loading between each task.
- */
-function SubTaskRunner() {
-  this.queue = [];
-  this.onCompletion = undefined;
-  this.testName = undefined;
-}
-
-SubTaskRunner.prototype = {
-
-  /**
-   * Schedules subTasks to run in order. Each subTask waits for the keyboard
-   * to load a new keyset before running. This is useful for tests that change
-   * layouts after the original layout has been loaded.
-   * @param {Array.<function>} subtasks  The subtasks to schedule.
-   * @param {string} testName The name of the test being run.
-   * @param {function(boolean)} onCompletion Callback function to call on
-   *     completion.
-   */
-  appendAll: function(subtasks, testName, onCompletion) {
-    this.queue = this.queue.concat(subtasks);
-    this.onCompletion = onCompletion;
-    this.testName = testName;
-    keyboard.addEventListener('stateChange', this.onStateChange.bind(this));
-  },
-
-  /**
-   * Notification of a change in the state of the keyboard. Runs the task at the
-   * head of the queue in response, if the event was caused by a keysetLoaded.
-   * @param {Object} event The event that triggered the state change.
-   */
-  onStateChange: function(event) {
-    if (event.detail.state == 'keysetLoaded') {
-      if (this.queue.length > 0) {
-        var headSubTask = this.queue.shift();
-        headSubTask();
-      }
-      if (this.queue.length == 0) {
-        this.onCompletion(false);
-        this.reset();
-      }
-    }
-  },
-
-  /**
-   * Resets the subTaskRunner.
-   */
-  reset: function() {
-    keyboard.removeEventListener('stateChange', this.onStateChange);
-    this.onCompletion = undefined;
-    this.testName = undefined;
-    this.queue = [];
-  },
-
-  /**
-   * Runs a single task. Aborts all subtasks if this task fails.
-   * @param {function} task The task to run.
-   */
-  runTask: function(task) {
-    try {
-      task();
-    } catch(err) {
-      console.error('Failure in subtask of test "' +
-          this.testName + '"\n' + err);
-      console.log(err.stack);
-      callback.onTestComplete(true);
-      this.reset();
-    }
-  },
-}
-
 var testRunner;
-var subTaskRunner;
 var mockController;
 var mockTimer;
 
@@ -179,8 +204,7 @@ var mockTimer;
  * calls must set expectations for call signatures.
  */
 function setUp() {
-  subTaskRunner = new SubTaskRunner();
-  testRunner = new TestRunner(subTaskRunner);
+  testRunner = new TestRunner();
   mockController = new MockController();
   mockTimer = new MockTimer();
 
@@ -239,7 +263,8 @@ function tearDown() {
  *     matching key is found.
  */
 function findKey(label) {
-  var keys = keyboard.querySelectorAll('kb-key');
+  var keyset = $('keyboard').activeKeyset;
+  var keys = keyset.querySelectorAll('kb-key');
   for (var i = 0; i < keys.length; i++) {
     if (keys[i].charValue == label)
       return keys[i];
@@ -273,7 +298,7 @@ function mockTypeCharacter(label, keyCode, modifiers, opt_unicode) {
     keyCode: keyCode,
     modifiers: modifiers
   });
-  var mockEvent = { pointerId:1 };
+  var mockEvent = {pointerId: 1};
   // Fake typing the key.
   key.down(mockEvent);
   key.up(mockEvent);
@@ -287,16 +312,31 @@ function mockTypeCharacter(label, keyCode, modifiers, opt_unicode) {
  *     asynchronous test.
  * @param {Function} testDoneCallback Callback function to indicate completion
  *     of a test.
- * @param {Array.<function>=} opt_testSubtasks Subtasks, each of which require
+ * @param {Array.<Function>=} opt_testSubtasks Subtasks, each of which require
  *     the keyboard to load a new keyset before running.
  */
 function onKeyboardReady(testName, runTestCallback, testDoneCallback,
                          opt_testSubtasks) {
+  waitOnKeyset(Keyset.DEFAULT, testName, runTestCallback, testDoneCallback,
+               opt_testSubtasks);
+}
+
+/**
+ * Triggers a callback function to run once a keyset becomes active.
+ * @parma {string} keysetName Full name of the target keyset.
+ * @param {string} testName The name of the test.
+ * @param {Function} runTestCallback Callback function for running an
+ *     asynchronous test.
+ * @param {Function} testDoneCallback Callback function to indicate completion
+ *     of a test.
+ * @param {Array.<function>=} opt_testSubtasks Subtasks, each of which require
+ *     the keyboard to load a new keyset before running.
+ */
+function waitOnKeyset(keysetName, testName, runTestCallback, testDoneCallback,
+                      opt_testSubtasks) {
   runTestCallback.testName = testName;
   runTestCallback.onTestComplete = testDoneCallback;
-  runTestCallback.subTasks = opt_testSubtasks;
-  if (keyboard.initialized && !testRunner.isBlocked)
-    testRunner.runTest(runTestCallback);
-  else
-    testRunner.append(runTestCallback);
+  runTestCallback.subtasks = opt_testSubtasks;
+  testRunner.scheduleTest(runTestCallback,
+                          {state: 'keysetChanged', value: keysetName});
 }
