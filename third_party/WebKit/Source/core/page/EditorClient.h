@@ -43,17 +43,8 @@ public:
     virtual void respondToChangedContents() = 0;
     virtual void respondToChangedSelection(Frame*) = 0;
 
-    virtual void registerUndoStep(PassRefPtr<UndoStep>) = 0;
-    virtual void registerRedoStep(PassRefPtr<UndoStep>) = 0;
-    virtual void clearUndoRedoOperations() = 0;
-
     virtual bool canCopyCut(Frame*, bool defaultValue) const = 0;
     virtual bool canPaste(Frame*, bool defaultValue) const = 0;
-    virtual bool canUndo() const = 0;
-    virtual bool canRedo() const = 0;
-
-    virtual void undo() = 0;
-    virtual void redo() = 0;
 
     virtual void handleKeyboardEvent(KeyboardEvent*) = 0;
 };

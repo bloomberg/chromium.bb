@@ -133,14 +133,6 @@ void EmptyTextCheckerClient::requestCheckingOfString(PassRefPtr<TextCheckingRequ
 {
 }
 
-void EmptyEditorClient::registerUndoStep(PassRefPtr<UndoStep>)
-{
-}
-
-void EmptyEditorClient::registerRedoStep(PassRefPtr<UndoStep>)
-{
-}
-
 void EmptyFrameLoaderClient::didRequestAutocomplete(PassRefPtr<FormState>)
 {
 }

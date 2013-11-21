@@ -32,7 +32,6 @@
 #define EditorClientImpl_h
 
 #include "core/page/EditorClient.h"
-#include "wtf/Deque.h"
 
 namespace WebCore {
 class Frame;
@@ -50,29 +49,16 @@ public:
 
     virtual void respondToChangedContents() OVERRIDE;
     virtual void respondToChangedSelection(WebCore::Frame*) OVERRIDE;
-    virtual void registerUndoStep(PassRefPtr<WebCore::UndoStep>) OVERRIDE;
-    virtual void registerRedoStep(PassRefPtr<WebCore::UndoStep>) OVERRIDE;
-    virtual void clearUndoRedoOperations() OVERRIDE;
     virtual bool canCopyCut(WebCore::Frame*, bool defaultValue) const OVERRIDE;
     virtual bool canPaste(WebCore::Frame*, bool defaultValue) const OVERRIDE;
-    virtual bool canUndo() const OVERRIDE;
-    virtual bool canRedo() const OVERRIDE;
-    virtual void undo() OVERRIDE;
-    virtual void redo() OVERRIDE;
     virtual void handleKeyboardEvent(WebCore::KeyboardEvent*) OVERRIDE;
 
     const char* interpretKeyEvent(const WebCore::KeyboardEvent*);
 
 private:
     bool handleEditingKeyboardEvent(WebCore::KeyboardEvent*);
-    void modifySelection(WebCore::Frame*, WebCore::KeyboardEvent*);
 
     WebViewImpl* m_webView;
-    bool m_inRedo;
-
-    typedef Deque<RefPtr<WebCore::UndoStep> > UndoManagerStack;
-    UndoManagerStack m_undoStack;
-    UndoManagerStack m_redoStack;
 };
 
 } // namespace blink

@@ -53,6 +53,7 @@
 #include "core/editing/SpellChecker.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/TypingCommand.h"
+#include "core/editing/UndoStack.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
@@ -138,6 +139,13 @@ EditorClient& Editor::client() const
     if (Page* page = m_frame.page())
         return page->editorClient();
     return emptyEditorClient();
+}
+
+UndoStack* Editor::undoStack() const
+{
+    if (Page* page = m_frame.page())
+        return &page->undoStack();
+    return 0;
 }
 
 void Editor::handleKeyboardEvent(KeyboardEvent* event)
@@ -755,7 +763,8 @@ void Editor::appliedEditing(PassRefPtr<CompositeEditCommand> cmd)
         // Only register a new undo command if the command passed in is
         // different from the last command
         m_lastEditCommand = cmd;
-        client().registerUndoStep(m_lastEditCommand->ensureComposition());
+        if (UndoStack* undoStack = this->undoStack())
+            undoStack->registerUndoStep(m_lastEditCommand->ensureComposition());
     }
 
     respondToChangedContents(newSelection);
@@ -772,7 +781,8 @@ void Editor::unappliedEditing(PassRefPtr<EditCommandComposition> cmd)
     changeSelectionAfterCommand(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
 
     m_lastEditCommand = 0;
-    client().registerRedoStep(cmd);
+    if (UndoStack* undoStack = this->undoStack())
+        undoStack->registerRedoStep(cmd);
     respondToChangedContents(newSelection);
 }
 
@@ -787,7 +797,8 @@ void Editor::reappliedEditing(PassRefPtr<EditCommandComposition> cmd)
     changeSelectionAfterCommand(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
 
     m_lastEditCommand = 0;
-    client().registerUndoStep(cmd);
+    if (UndoStack* undoStack = this->undoStack())
+        undoStack->registerUndoStep(cmd);
     respondToChangedContents(newSelection);
 }
 
@@ -980,27 +991,34 @@ void Editor::copyImage(const HitTestResult& result)
 
 void Editor::clearUndoRedoOperations()
 {
-    client().clearUndoRedoOperations();
+    if (UndoStack* undoStack = this->undoStack())
+        undoStack->clearUndoRedoOperations();
 }
 
 bool Editor::canUndo()
 {
-    return client().canUndo();
+    if (UndoStack* undoStack = this->undoStack())
+        return undoStack->canUndo();
+    return false;
 }
 
 void Editor::undo()
 {
-    client().undo();
+    if (UndoStack* undoStack = this->undoStack())
+        undoStack->undo();
 }
 
 bool Editor::canRedo()
 {
-    return client().canRedo();
+    if (UndoStack* undoStack = this->undoStack())
+        return undoStack->canRedo();
+    return false;
 }
 
 void Editor::redo()
 {
-    client().redo();
+    if (UndoStack* undoStack = this->undoStack())
+        undoStack->redo();
 }
 
 void Editor::setBaseWritingDirection(WritingDirection direction)

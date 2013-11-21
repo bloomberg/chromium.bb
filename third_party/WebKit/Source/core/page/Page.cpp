@@ -25,6 +25,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/editing/Caret.h"
+#include "core/editing/UndoStack.h"
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/DOMTimer.h"
@@ -107,6 +108,7 @@ Page::Page(PageClients& pageClients)
     , m_history(adoptPtr(new HistoryController(this)))
     , m_settings(Settings::create(this))
     , m_progress(ProgressTracker::create())
+    , m_undoStack(UndoStack::create())
     , m_backForwardClient(pageClients.backForwardClient)
     , m_editorClient(pageClients.editorClient)
     , m_validationMessageClient(0)

@@ -31,50 +31,37 @@
 #ifndef UndoStack_h
 #define UndoStack_h
 
-#include "core/page/EditorClient.h"
 #include "wtf/Deque.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
-class Frame;
-class HTMLInputElement;
-}
 
-namespace blink {
-class WebViewImpl;
+class UndoStep;
 
-class EditorClientImpl : public WebCore::EditorClient {
+class UndoStack {
 public:
-    EditorClientImpl(WebViewImpl*);
+    static PassOwnPtr<UndoStack> create();
 
-    virtual ~EditorClientImpl();
+    ~UndoStack();
 
-    virtual void respondToChangedContents() OVERRIDE;
-    virtual void respondToChangedSelection(WebCore::Frame*) OVERRIDE;
-    virtual void registerUndoStep(PassRefPtr<WebCore::UndoStep>) OVERRIDE;
-    virtual void registerRedoStep(PassRefPtr<WebCore::UndoStep>) OVERRIDE;
-    virtual void clearUndoRedoOperations() OVERRIDE;
-    virtual bool canCopyCut(WebCore::Frame*, bool defaultValue) const OVERRIDE;
-    virtual bool canPaste(WebCore::Frame*, bool defaultValue) const OVERRIDE;
-    virtual bool canUndo() const OVERRIDE;
-    virtual bool canRedo() const OVERRIDE;
-    virtual void undo() OVERRIDE;
-    virtual void redo() OVERRIDE;
-    virtual void handleKeyboardEvent(WebCore::KeyboardEvent*) OVERRIDE;
-
-    const char* interpretKeyEvent(const WebCore::KeyboardEvent*);
+    void registerUndoStep(PassRefPtr<UndoStep>);
+    void registerRedoStep(PassRefPtr<UndoStep>);
+    void clearUndoRedoOperations();
+    bool canUndo() const;
+    bool canRedo() const;
+    void undo();
+    void redo();
 
 private:
-    bool handleEditingKeyboardEvent(WebCore::KeyboardEvent*);
-    void modifySelection(WebCore::Frame*, WebCore::KeyboardEvent*);
+    UndoStack();
 
-    WebViewImpl* m_webView;
     bool m_inRedo;
 
-    typedef Deque<RefPtr<WebCore::UndoStep> > UndoManagerStack;
+    typedef Deque<RefPtr<UndoStep> > UndoManagerStack;
     UndoManagerStack m_undoStack;
     UndoManagerStack m_redoStack;
 };
 
-} // namespace blink
+} // namespace WebCore
 
 #endif

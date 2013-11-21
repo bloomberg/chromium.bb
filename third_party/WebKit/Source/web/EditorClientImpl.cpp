@@ -32,7 +32,6 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/editing/Editor.h"
-#include "core/editing/UndoStep.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/Frame.h"
 #include "core/page/EventHandler.h"
@@ -45,15 +44,8 @@ using namespace WebCore;
 
 namespace blink {
 
-// Arbitrary depth limit for the undo stack, to keep it from using
-// unbounded memory. This is the maximum number of distinct undoable
-// actions -- unbroken stretches of typed characters are coalesced
-// into a single action.
-static const size_t maximumUndoStackDepth = 1000;
-
 EditorClientImpl::EditorClientImpl(WebViewImpl* webview)
     : m_webView(webview)
-    , m_inRedo(false)
 {
 }
 
@@ -73,27 +65,6 @@ void EditorClientImpl::respondToChangedContents()
         m_webView->client()->didChangeContents();
 }
 
-void EditorClientImpl::registerUndoStep(PassRefPtr<UndoStep> step)
-{
-    if (m_undoStack.size() == maximumUndoStackDepth)
-        m_undoStack.removeFirst(); // drop oldest item off the far end
-    if (!m_inRedo)
-        m_redoStack.clear();
-    m_undoStack.append(step);
-}
-
-void EditorClientImpl::registerRedoStep(PassRefPtr<UndoStep> step)
-{
-    m_redoStack.append(step);
-}
-
-void EditorClientImpl::clearUndoRedoOperations()
-{
-    NoEventDispatchAssertion assertNoEventDispatch;
-    m_undoStack.clear();
-    m_redoStack.clear();
-}
-
 bool EditorClientImpl::canCopyCut(Frame* frame, bool defaultValue) const
 {
     if (!m_webView->permissionClient())
@@ -106,42 +77,6 @@ bool EditorClientImpl::canPaste(Frame* frame, bool defaultValue) const
     if (!m_webView->permissionClient())
         return defaultValue;
     return m_webView->permissionClient()->allowReadFromClipboard(WebFrameImpl::fromFrame(frame), defaultValue);
-}
-
-bool EditorClientImpl::canUndo() const
-{
-    return !m_undoStack.isEmpty();
-}
-
-bool EditorClientImpl::canRedo() const
-{
-    return !m_redoStack.isEmpty();
-}
-
-void EditorClientImpl::undo()
-{
-    if (canUndo()) {
-        UndoManagerStack::iterator back = --m_undoStack.end();
-        RefPtr<UndoStep> step(*back);
-        m_undoStack.remove(back);
-        step->unapply();
-        // unapply will call us back to push this command onto the redo stack.
-    }
-}
-
-void EditorClientImpl::redo()
-{
-    if (canRedo()) {
-        UndoManagerStack::iterator back = --m_redoStack.end();
-        RefPtr<UndoStep> step(*back);
-        m_redoStack.remove(back);
-
-        ASSERT(!m_inRedo);
-        m_inRedo = true;
-        step->reapply();
-        // reapply will call us back to push this command onto the undo stack.
-        m_inRedo = false;
-    }
 }
 
 //

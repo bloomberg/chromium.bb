@@ -946,6 +946,8 @@
             'editing/TextInsertionBaseCommand.h',
             'editing/TextIterator.cpp',
             'editing/TypingCommand.cpp',
+            'editing/UndoStack.cpp',
+            'editing/UndoStack.h',
             'editing/UndoStep.h',
             'editing/UnlinkCommand.cpp',
             'editing/UnlinkCommand.h',

@@ -57,6 +57,7 @@ class SpellChecker;
 class StylePropertySet;
 class Text;
 class TextEvent;
+class UndoStack;
 
 enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM, CommandFromDOMWithUserInterface };
 enum EditorParagraphSeparator { EditorParagraphSeparatorIsDiv, EditorParagraphSeparatorIsP };
@@ -255,6 +256,8 @@ private:
     explicit Editor(Frame&);
 
     bool canDeleteRange(Range*) const;
+
+    UndoStack* undoStack() const;
 
     bool tryDHTMLCopy();
     bool tryDHTMLCut();

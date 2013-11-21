@@ -291,17 +291,8 @@ public:
     virtual void respondToChangedContents() OVERRIDE { }
     virtual void respondToChangedSelection(Frame*) OVERRIDE { }
 
-    virtual void registerUndoStep(PassRefPtr<UndoStep>) OVERRIDE;
-    virtual void registerRedoStep(PassRefPtr<UndoStep>) OVERRIDE;
-    virtual void clearUndoRedoOperations() OVERRIDE { }
-
     virtual bool canCopyCut(Frame*, bool defaultValue) const OVERRIDE { return defaultValue; }
     virtual bool canPaste(Frame*, bool defaultValue) const OVERRIDE { return defaultValue; }
-    virtual bool canUndo() const OVERRIDE { return false; }
-    virtual bool canRedo() const OVERRIDE { return false; }
-
-    virtual void undo() OVERRIDE { }
-    virtual void redo() OVERRIDE { }
 
     virtual void handleKeyboardEvent(KeyboardEvent*) OVERRIDE { }
 };

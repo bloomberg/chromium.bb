@@ -75,6 +75,7 @@ class Settings;
 class SharedWorkerRepositoryClient;
 class SpellCheckerClient;
 class StorageNamespace;
+class UndoStack;
 class ValidationMessageClient;
 
 typedef uint64_t LinkHash;
@@ -115,6 +116,7 @@ public:
 
     EditorClient& editorClient() const { return *m_editorClient; }
     SpellCheckerClient& spellCheckerClient() const { return *m_spellCheckerClient; }
+    UndoStack& undoStack() const { return *m_undoStack; }
 
     HistoryController* history() const { return m_history.get(); }
 
@@ -254,6 +256,7 @@ private:
     const OwnPtr<HistoryController> m_history;
     const OwnPtr<Settings> m_settings;
     const OwnPtr<ProgressTracker> m_progress;
+    const OwnPtr<UndoStack> m_undoStack;
 
     RefPtr<Frame> m_mainFrame;
 
