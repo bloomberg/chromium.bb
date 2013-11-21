@@ -5001,6 +5001,16 @@
    fun:gdk_pixbuf_saturate_and_pixelate
 }
 {
+   bug_176889_f
+   Memcheck:Uninitialized
+   fun:cache_magic_matchlet_compare
+   fun:__gio_xdg_cache_get_mime_type_for_data
+   fun:g_content_type_guess
+   obj:/usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0.2600.1
+   obj:/usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0.2600.1
+   fun:gdk_pixbuf_loader_close
+}
+{
    bug_176891a
    Memcheck:Leak
    fun:calloc
