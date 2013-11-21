@@ -736,7 +736,7 @@ void SpellChecker::didEndEditingOnTextField(Element* e)
     if (isGrammarCheckingEnabled() || unifiedTextCheckerEnabled())
         markerTypes.add(DocumentMarker::Grammar);
     for (Node* node = innerText; node; node = NodeTraversal::next(*node, innerText)) {
-        m_frame.document()->markers()->removeMarkers(node, markerTypes);
+        m_frame.document()->markers()->removeMarkers(*node, markerTypes);
     }
 }
 
@@ -841,7 +841,7 @@ bool SpellChecker::selectionStartHasMarkerFor(DocumentMarker::MarkerType markerT
 
     unsigned startOffset = static_cast<unsigned>(from);
     unsigned endOffset = static_cast<unsigned>(from + length);
-    Vector<DocumentMarker*> markers = m_frame.document()->markers()->markersFor(node);
+    Vector<DocumentMarker*> markers = m_frame.document()->markers()->markersFor(*node);
     for (size_t i = 0; i < markers.size(); ++i) {
         DocumentMarker* marker = markers[i];
         if (marker->startOffset() <= startOffset && endOffset <= marker->endOffset() && marker->type() == markerType)

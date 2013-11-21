@@ -3542,7 +3542,7 @@ void Document::didInsertText(Node* text, unsigned offset, unsigned length)
     }
 
     // Update the markers for spelling and grammar checking.
-    m_markers->shiftMarkers(text, offset, length);
+    m_markers->shiftMarkers(*text, offset, length);
 }
 
 void Document::didRemoveText(Node* text, unsigned offset, unsigned length)
@@ -3554,8 +3554,8 @@ void Document::didRemoveText(Node* text, unsigned offset, unsigned length)
     }
 
     // Update the markers for spelling and grammar checking.
-    m_markers->removeMarkers(text, offset, length);
-    m_markers->shiftMarkers(text, offset + length, 0 - length);
+    m_markers->removeMarkers(*text, offset, length);
+    m_markers->shiftMarkers(*text, offset + length, 0 - length);
 }
 
 void Document::didMergeTextNodes(Text* oldNode, unsigned offset)
