@@ -20,6 +20,9 @@ chrome_src = os.path.abspath(os.path.join(script_dir, os.pardir))
 sys.path.insert(0, os.path.join(chrome_src, 'tools', 'gyp', 'pylib'))
 import gyp
 
+# Assume this file is in a one-level-deep subdirectory of the source root.
+SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # Add paths so that pymod_do_main(...) can import files.
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'generate_shim_headers'))
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'grit'))
@@ -50,6 +53,7 @@ if sys.platform == 'win32':
 else:
   psyco = None
 
+
 def additional_include_files(args=[]):
   """
   Returns a list of additional (.gypi) files to include, without
@@ -79,6 +83,33 @@ def additional_include_files(args=[]):
 
   return result
 
+
+def RunGN():
+  """Runs GN, returning True if it succeeded, printing an error and returning
+  false if not."""
+  # The binaries in platform-specific subdirectories in src/tools/gn/bin.
+  gnpath = SRC_DIR + '/tools/gn/bin/'
+  if sys.platform == 'win32':
+    gnpath += 'win/gn.exe'
+  elif sys.platform.startswith('linux'):
+    gnpath += 'linux/gn'
+  elif sys.platform == 'darwin':
+    gnpath += 'mac/gn'
+  else:
+    print 'Unknown platform for GN: ', sys.platform
+    return False
+
+  print 'Generating gyp files from GN...'
+  print 'platform = ', sys.platform
+  print 'binary = ', gnpath
+
+  # Need to pass both the source root (the bots don't run this command from
+  # within the source tree) as well as set the is_gyp value so the BUILD files
+  # to know they're being run under GYP.
+  args = [gnpath, 'gyp', '-q', '--root=' + chrome_src, '--args=is_gyp=true']
+  return subprocess.call(args) == 0
+
+
 if __name__ == '__main__':
   args = sys.argv[1:]
 
@@ -90,6 +121,9 @@ if __name__ == '__main__':
   if psyco:
     psyco.profile()
     print "Enabled Psyco JIT."
+
+  if not RunGN():
+    sys.exit(1)
 
   # Fall back on hermetic python if we happen to get run under cygwin.
   # TODO(bradnelson): take this out once this issue is fixed:
