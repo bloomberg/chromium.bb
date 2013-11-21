@@ -136,6 +136,12 @@ cr.define('help', function() {
     },
 
     /**
+     * Called before overlay is displayed.
+     */
+    onBeforeShow: function() {
+    },
+
+    /**
      * @return {HTMLDivElement} Topmost visible page, or null, if
      * there are no visible pages.
      */
@@ -170,6 +176,9 @@ cr.define('help', function() {
 
       if (visible)
         this.restoreLastFocusedElement_();
+
+      if (visible)
+        this.onBeforeShow();
     },
 
     /**
