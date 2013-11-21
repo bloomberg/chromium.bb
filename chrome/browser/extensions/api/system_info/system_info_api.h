@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_SYSTEM_INFO_API_H_
 
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
-#include "chrome/browser/extensions/event_router.h"
+#include "extensions/browser/event_router.h"
 
 namespace extensions {
 

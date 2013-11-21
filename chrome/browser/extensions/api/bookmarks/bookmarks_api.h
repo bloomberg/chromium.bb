@@ -14,7 +14,7 @@
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/browser/extensions/event_router.h"
+#include "extensions/browser/event_router.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class Profile;

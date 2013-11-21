@@ -8,7 +8,6 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/console_message_level.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "net/base/network_change_notifier.h"

@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "extensions/browser/event_router.h"
 
 namespace extensions {
 class TabsEventRouter;

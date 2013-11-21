@@ -671,8 +671,6 @@
         'browser/extensions/error_console/error_console.h',
         'browser/extensions/event_names.cc',
         'browser/extensions/event_names.h',
-        'browser/extensions/event_router.cc',
-        'browser/extensions/event_router.h',
         'browser/extensions/event_router_forwarder.cc',
         'browser/extensions/event_router_forwarder.h',
         'browser/extensions/extension_action.cc',

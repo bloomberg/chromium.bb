@@ -8,7 +8,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_pref_value_map_factory.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/value_store/testing_value_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
 

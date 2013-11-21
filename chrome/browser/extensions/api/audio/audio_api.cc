@@ -6,9 +6,9 @@
 
 #include "base/lazy_instance.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/audio.h"
+#include "extensions/browser/event_router.h"
 
 namespace extensions {
 

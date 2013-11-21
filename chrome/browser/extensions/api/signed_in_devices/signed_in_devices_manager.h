@@ -10,8 +10,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
+#include "extensions/browser/event_router.h"
 
 class Profile;
 namespace content {

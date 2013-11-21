@@ -10,7 +10,6 @@ include_rules = [
   # TODO(jamescook): Remove these. http://crbug.com/162530
   "+chrome/browser/chrome_notification_types.h",
   "+chrome/browser/extensions/api/runtime/runtime_api.h",
-  "+chrome/browser/extensions/event_router.h",
   "+chrome/browser/extensions/extension_function_dispatcher.h",
   "+chrome/browser/extensions/extension_function_histogram_value.h",
   "+chrome/browser/extensions/extension_host.h",

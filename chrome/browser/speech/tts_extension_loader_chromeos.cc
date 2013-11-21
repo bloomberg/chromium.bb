@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/component_loader.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -18,6 +17,7 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "extensions/browser/event_router.h"
 #include "grit/browser_resources.h"
 
 // Factory to load one instance of TtsExtensionLoaderChromeOs per profile.

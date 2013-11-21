@@ -13,9 +13,9 @@
 #include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_state_tracker.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/common/extensions/api/media_galleries_private.h"
+#include "extensions/browser/event_router.h"
 
 class Profile;
 

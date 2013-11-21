@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_EVENT_ROUTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_EVENT_ROUTER_H_
 
-#include "chrome/browser/extensions/event_router.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "extensions/browser/event_router.h"
 
 class Profile;
 

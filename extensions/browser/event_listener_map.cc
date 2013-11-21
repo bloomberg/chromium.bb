@@ -5,7 +5,7 @@
 #include "extensions/browser/event_listener_map.h"
 
 #include "base/values.h"
-#include "chrome/browser/extensions/event_router.h"
+#include "extensions/browser/event_router.h"
 #include "ipc/ipc_message.h"
 
 using base::DictionaryValue;

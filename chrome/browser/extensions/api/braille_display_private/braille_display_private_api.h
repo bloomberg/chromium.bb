@@ -9,8 +9,8 @@
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/common/extensions/api/braille_display_private.h"
+#include "extensions/browser/event_router.h"
 
 namespace extensions {
 namespace api {

@@ -7,10 +7,10 @@
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/screenlock_private.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "extensions/browser/event_router.h"
 
 namespace screenlock = extensions::api::screenlock_private;
 

@@ -5,7 +5,6 @@
 #include "chrome/browser/guestview/guestview.h"
 
 #include "base/lazy_instance.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/guestview/adview/adview_guest.h"
 #include "chrome/browser/guestview/guestview_constants.h"
 #include "chrome/browser/guestview/webview/webview_guest.h"
@@ -13,6 +12,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/event_router.h"
 #include "net/base/escape.h"
 
 using content::WebContents;

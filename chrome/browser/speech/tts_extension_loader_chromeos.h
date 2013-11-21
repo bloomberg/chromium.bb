@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_SPEECH_TTS_EXTENSION_LOADER_CHROMEOS_H_
 #define CHROME_BROWSER_SPEECH_TTS_EXTENSION_LOADER_CHROMEOS_H_
 
-#include "chrome/browser/extensions/event_router.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "extensions/browser/event_router.h"
 
 class Profile;
 

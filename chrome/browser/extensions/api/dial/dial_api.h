@@ -10,8 +10,8 @@
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
 #include "chrome/browser/extensions/api/dial/dial_registry.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
+#include "extensions/browser/event_router.h"
 
 namespace extensions {
 

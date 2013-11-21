@@ -10,12 +10,12 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/networking_private.h"
+#include "extensions/browser/event_router.h"
 
 using extensions::EventRouter;
 using extensions::ExtensionSystem;

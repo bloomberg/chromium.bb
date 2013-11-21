@@ -11,8 +11,8 @@
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "content/public/browser/notification_observer.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs_scope.h"
 
 class ExtensionPrefValueMap;

@@ -14,13 +14,13 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/alarms.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/event_router.h"
 
 namespace extensions {
 

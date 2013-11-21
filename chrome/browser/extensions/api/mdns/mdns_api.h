@@ -12,7 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/mdns/dns_sd_registry.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
-#include "chrome/browser/extensions/event_router.h"
+#include "extensions/browser/event_router.h"
 
 namespace extensions {
 

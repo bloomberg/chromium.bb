@@ -4,9 +4,9 @@
 
 #include "extensions/browser/event_listener_map.h"
 
-#include "chrome/browser/extensions/event_router.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "extensions/browser/event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::DictionaryValue;
