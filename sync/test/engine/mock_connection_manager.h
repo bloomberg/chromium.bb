@@ -194,9 +194,10 @@ class MockConnectionManager : public ServerConnectionManager {
   const sync_pb::CommitResponse& last_commit_response() const;
 
   // Retrieve the last request submitted to the server (regardless of type).
-  const sync_pb::ClientToServerMessage& last_request() const {
-    return last_request_;
-  }
+  const sync_pb::ClientToServerMessage& last_request() const;
+
+  // Retrieve the cumulative collection of all requests sent by clients.
+  const std::vector<sync_pb::ClientToServerMessage>& requests() const;
 
   void set_conflict_all_commits(bool value) {
     conflict_all_commits_ = value;
@@ -395,7 +396,7 @@ class MockConnectionManager : public ServerConnectionManager {
 
   std::string next_token_;
 
-  sync_pb::ClientToServerMessage last_request_;
+  std::vector<sync_pb::ClientToServerMessage> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnectionManager);
 };

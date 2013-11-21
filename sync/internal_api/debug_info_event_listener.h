@@ -5,7 +5,7 @@
 #ifndef SYNC_INTERNAL_API_DEBUG_INFO_EVENT_LISTENER_H_
 #define SYNC_INTERNAL_API_DEBUG_INFO_EVENT_LISTENER_H_
 
-#include <queue>
+#include <deque>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -75,7 +75,10 @@ class SYNC_EXPORT_PRIVATE DebugInfoEventListener
   void OnIncomingNotification(const ObjectIdInvalidationMap& invalidations);
 
   // DebugInfoGetter implementation.
-  virtual void GetAndClearDebugInfo(sync_pb::DebugInfo* debug_info) OVERRIDE;
+  virtual void GetDebugInfo(sync_pb::DebugInfo* debug_info) OVERRIDE;
+
+  // DebugInfoGetter implementation.
+  virtual void ClearDebugInfo() OVERRIDE;
 
   // DataTypeDebugInfoListener implementation.
   virtual void OnDataTypeConfigureComplete(
@@ -88,11 +91,14 @@ class SYNC_EXPORT_PRIVATE DebugInfoEventListener
  private:
   FRIEND_TEST_ALL_PREFIXES(DebugInfoEventListenerTest, VerifyEventsAdded);
   FRIEND_TEST_ALL_PREFIXES(DebugInfoEventListenerTest, VerifyQueueSize);
-  FRIEND_TEST_ALL_PREFIXES(DebugInfoEventListenerTest, VerifyGetAndClearEvents);
+  FRIEND_TEST_ALL_PREFIXES(DebugInfoEventListenerTest, VerifyGetEvents);
+  FRIEND_TEST_ALL_PREFIXES(DebugInfoEventListenerTest, VerifyClearEvents);
 
   void AddEventToQueue(const sync_pb::DebugEventInfo& event_info);
   void CreateAndAddEvent(sync_pb::DebugEventInfo::SingletonEventType type);
-  std::queue<sync_pb::DebugEventInfo> events_;
+
+  typedef std::deque<sync_pb::DebugEventInfo> DebugEventInfoQueue;
+  DebugEventInfoQueue events_;
 
   // True indicates we had to drop one or more events to keep our limit of
   // |kMaxEntries|.

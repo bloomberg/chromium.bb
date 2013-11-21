@@ -141,10 +141,6 @@ class SYNC_EXPORT_PRIVATE StatusController {
 
   void UpdateStartTime();
 
-  void set_debug_info_sent();
-
-  bool debug_info_sent() const;
-
  private:
   friend class ScopedModelSafeGroupRestriction;
 

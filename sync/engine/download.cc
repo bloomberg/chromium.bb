@@ -94,11 +94,6 @@ void InitDownloadUpdatesContext(
   // (e.g. Bookmark URLs but not their containing folders).
   get_updates->set_fetch_folders(true);
 
-  sync_pb::DebugInfo* debug_info = message->mutable_debug_info();
-  AppendClientDebugInfoIfNeeded(session->context()->debug_info_getter(),
-                                session->mutable_status_controller(),
-                                debug_info);
-
   get_updates->set_create_mobile_bookmarks_folder(
       create_mobile_bookmarks_folder);
   bool need_encryption_key = ShouldRequestEncryptionKey(session->context());
@@ -344,6 +339,11 @@ SyncerError ExecuteDownloadUpdates(
   StatusController* status = session->mutable_status_controller();
   bool need_encryption_key = ShouldRequestEncryptionKey(session->context());
 
+  if (session->context()->debug_info_getter()) {
+    sync_pb::DebugInfo* debug_info = msg->mutable_debug_info();
+    CopyClientDebugInfo(session->context()->debug_info_getter(), debug_info);
+  }
+
   SyncerError result = SyncerProtoUtil::PostClientToServerMessage(
       msg,
       &update_response,
@@ -365,6 +365,12 @@ SyncerError ExecuteDownloadUpdates(
            << " updates and indicated "
            << update_response.get_updates().changes_remaining()
            << " updates left on server.";
+
+  if (session->context()->debug_info_getter()) {
+    // Clear debug info now that we have successfully sent it to the server.
+    DVLOG(1) << "Clearing client debug info.";
+    session->context()->debug_info_getter()->ClearDebugInfo();
+  }
 
   if (need_encryption_key ||
       update_response.get_updates().encryption_keys_size() > 0) {
@@ -392,20 +398,11 @@ SyncerError ExecuteDownloadUpdates(
   }
 }
 
-void AppendClientDebugInfoIfNeeded(
+void CopyClientDebugInfo(
     sessions::DebugInfoGetter* debug_info_getter,
-    StatusController* status,
     sync_pb::DebugInfo* debug_info) {
-  // We want to send the debug info only once per sync cycle. Check if it has
-  // already been sent.
-  if (!status->debug_info_sent()) {
-    DVLOG(1) << "Sending client debug info ...";
-    // Could be null in some unit tests.
-    if (debug_info_getter) {
-      debug_info_getter->GetAndClearDebugInfo(debug_info);
-    }
-    status->set_debug_info_sent();
-  }
+  DVLOG(1) << "Copying client debug info to send.";
+  debug_info_getter->GetDebugInfo(debug_info);
 }
 
 }  // namespace download

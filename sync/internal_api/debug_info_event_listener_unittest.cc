@@ -29,23 +29,33 @@ TEST_F(DebugInfoEventListenerTest, VerifyQueueSize) {
         sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
   }
   sync_pb::DebugInfo debug_info;
-  debug_info_event_listener.GetAndClearDebugInfo(&debug_info);
+  debug_info_event_listener.GetDebugInfo(&debug_info);
+  debug_info_event_listener.ClearDebugInfo();
   ASSERT_TRUE(debug_info.events_dropped());
   ASSERT_EQ(static_cast<int>(kMaxEntries), debug_info.events_size());
 }
 
-TEST_F(DebugInfoEventListenerTest, VerifyGetAndClearEvents) {
+TEST_F(DebugInfoEventListenerTest, VerifyGetEvents) {
   DebugInfoEventListener debug_info_event_listener;
   debug_info_event_listener.CreateAndAddEvent(
       sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
   ASSERT_EQ(debug_info_event_listener.events_.size(), 1U);
   sync_pb::DebugInfo debug_info;
-  debug_info_event_listener.GetAndClearDebugInfo(&debug_info);
-  ASSERT_EQ(debug_info_event_listener.events_.size(), 0U);
+  debug_info_event_listener.GetDebugInfo(&debug_info);
+  ASSERT_EQ(debug_info_event_listener.events_.size(), 1U);
   ASSERT_EQ(debug_info.events_size(), 1);
   ASSERT_TRUE(debug_info.events(0).has_singleton_event());
   ASSERT_EQ(debug_info.events(0).singleton_event(),
             sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
+}
+
+TEST_F(DebugInfoEventListenerTest, VerifyClearEvents) {
+  DebugInfoEventListener debug_info_event_listener;
+  debug_info_event_listener.CreateAndAddEvent(
+      sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
+  ASSERT_EQ(debug_info_event_listener.events_.size(), 1U);
+  debug_info_event_listener.ClearDebugInfo();
+  ASSERT_EQ(debug_info_event_listener.events_.size(), 0U);
 }
 
 }  // namespace syncer

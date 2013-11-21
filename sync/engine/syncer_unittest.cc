@@ -50,6 +50,7 @@
 #include "sync/test/engine/test_syncable_utils.h"
 #include "sync/test/fake_encryptor.h"
 #include "sync/test/fake_sync_encryption_handler.h"
+#include "sync/test/sessions/mock_debug_info_getter.h"
 #include "sync/util/cryptographer.h"
 #include "sync/util/extensions_activity.h"
 #include "sync/util/time.h"
@@ -104,6 +105,7 @@ using syncable::SPECIFICS;
 using syncable::SYNCING;
 using syncable::UNITTEST;
 
+using sessions::MockDebugInfoGetter;
 using sessions::StatusController;
 using sessions::SyncSessionContext;
 using sessions::SyncSession;
@@ -204,6 +206,7 @@ class SyncerTest : public testing::Test,
     dir_maker_.SetUp();
     mock_server_.reset(new MockConnectionManager(directory(),
                                                  &cancelation_signal_));
+    debug_info_getter_.reset(new MockDebugInfoGetter);
     EnableDatatype(BOOKMARKS);
     EnableDatatype(NIGORI);
     EnableDatatype(PREFERENCES);
@@ -222,7 +225,7 @@ class SyncerTest : public testing::Test,
         new SyncSessionContext(
             mock_server_.get(), directory(), workers,
             extensions_activity_,
-            listeners, NULL, &traffic_recorder_,
+            listeners, debug_info_getter_.get(), &traffic_recorder_,
             true,  // enable keystore encryption
             false,  // force enable pre-commit GU avoidance experiment
             "fake_invalidator_client_id"));
@@ -490,6 +493,7 @@ class SyncerTest : public testing::Test,
   ModelTypeSet enabled_datatypes_;
   TrafficRecorder traffic_recorder_;
   sessions::NudgeTracker nudge_tracker_;
+  scoped_ptr<MockDebugInfoGetter> debug_info_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncerTest);
 };
@@ -2513,6 +2517,58 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_CommitConflict) {
   EXPECT_EQ(1U, mock_server_->commit_messages().size());
   EXPECT_EQ(items_to_commit - (kDefaultMaxCommitBatchSize - 1),
             directory()->unsynced_entity_count());
+}
+
+// Tests that sending debug info events works.
+TEST_F(SyncerTest, SendDebugInfoEvents_HappyCase) {
+  debug_info_getter_->AddDebugEvent();
+  debug_info_getter_->AddDebugEvent();
+
+  SyncShareNudge();
+
+  // Verify we received one request with two debug info events.
+  EXPECT_EQ(1U, mock_server_->requests().size());
+  EXPECT_EQ(2, mock_server_->requests().back().debug_info().events_size());
+
+  SyncShareNudge();
+
+  // See that we received another request, but that it contains no debug info
+  // events.
+  EXPECT_EQ(2U, mock_server_->requests().size());
+  EXPECT_EQ(0, mock_server_->requests().back().debug_info().events_size());
+
+  debug_info_getter_->AddDebugEvent();
+
+  SyncShareNudge();
+
+  // See that we received another request and it contains one debug info event.
+  EXPECT_EQ(3U, mock_server_->requests().size());
+  EXPECT_EQ(1, mock_server_->requests().back().debug_info().events_size());
+}
+
+// Tests that debug info events are dropped on server error.
+TEST_F(SyncerTest, SendDebugInfoEvents_PostFailsDontDrop) {
+  debug_info_getter_->AddDebugEvent();
+  debug_info_getter_->AddDebugEvent();
+
+  mock_server_->FailNextPostBufferToPathCall();
+  SyncShareNudge();
+
+  // Verify we attempted to send one request with two debug info events.
+  EXPECT_EQ(1U, mock_server_->requests().size());
+  EXPECT_EQ(2, mock_server_->requests().back().debug_info().events_size());
+
+  SyncShareNudge();
+
+  // See that the client resent the two debug info events.
+  EXPECT_EQ(2U, mock_server_->requests().size());
+  EXPECT_EQ(2, mock_server_->requests().back().debug_info().events_size());
+
+  // The previous send was successful so this next one shouldn't generate any
+  // debug info events.
+  SyncShareNudge();
+  EXPECT_EQ(3U, mock_server_->requests().size());
+  EXPECT_EQ(0, mock_server_->requests().back().debug_info().events_size());
 }
 
 TEST_F(SyncerTest, HugeConflict) {

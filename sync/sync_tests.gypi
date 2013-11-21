@@ -56,6 +56,8 @@
         'test/null_transaction_observer.cc',
         'test/null_transaction_observer.h',
         'test/sessions/test_scoped_session_event_listener.h',
+        'test/sessions/mock_debug_info_getter.h',
+        'test/sessions/mock_debug_info_getter.cc',
         'test/test_directory_backing_store.cc',
         'test/test_directory_backing_store.h',
         'test/test_transaction_observer.cc',

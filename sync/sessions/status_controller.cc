@@ -163,13 +163,5 @@ bool StatusController::ServerSaysNothingMoreToDownload() const {
   return updates_response().get_updates().changes_remaining() == 0;
 }
 
-void StatusController::set_debug_info_sent() {
-  model_neutral_.debug_info_sent = true;
-}
-
-bool StatusController::debug_info_sent() const {
-  return model_neutral_.debug_info_sent;
-}
-
 }  // namespace sessions
 }  // namespace syncer

@@ -15,9 +15,13 @@ namespace sessions {
 // to communicate the debug info data to the syncer.
 class SYNC_EXPORT_PRIVATE DebugInfoGetter {
  public:
-  // Gets the client debug info and clears the state so the same data is not
-  // sent again.
-  virtual void GetAndClearDebugInfo(sync_pb::DebugInfo* debug_info) = 0;
+  // Gets the client debug info. Be sure to clear the info to ensure the data
+  // isn't sent multiple times.
+  virtual void GetDebugInfo(sync_pb::DebugInfo* debug_info) = 0;
+
+  // Clears the debug info.
+  virtual void ClearDebugInfo() = 0;
+
   virtual ~DebugInfoGetter() {}
 };
 
@@ -25,4 +29,3 @@ class SYNC_EXPORT_PRIVATE DebugInfoGetter {
 }  // namespace syncer
 
 #endif  // SYNC_SESSIONS_DEBUG_INFO_GETTER_H_
-

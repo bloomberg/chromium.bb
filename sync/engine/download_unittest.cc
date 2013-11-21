@@ -14,9 +14,12 @@
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/directory.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
+#include "sync/test/sessions/mock_debug_info_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
+
+using sessions::MockDebugInfoGetter;
 
 // A test fixture for tests exercising download updates functions.
 class DownloadUpdatesTest : public ::testing::Test {
@@ -201,24 +204,6 @@ TEST_F(DownloadUpdatesTest, PollTest) {
   EXPECT_TRUE(proto_request_types().Equals(progress_types));
 }
 
-class MockDebugInfoGetter : public sessions::DebugInfoGetter {
- public:
-  MockDebugInfoGetter() {}
-  virtual ~MockDebugInfoGetter() {}
-
-  virtual void GetAndClearDebugInfo(sync_pb::DebugInfo* debug_info) OVERRIDE {
-    debug_info->CopyFrom(debug_info_);
-    debug_info_.Clear();
-  }
-
-  void AddDebugEvent() {
-    debug_info_.add_events();
-  }
-
- private:
-  sync_pb::DebugInfo debug_info_;
-};
-
 class DownloadUpdatesDebugInfoTest : public ::testing::Test {
  public:
   DownloadUpdatesDebugInfoTest() {}
@@ -242,33 +227,20 @@ class DownloadUpdatesDebugInfoTest : public ::testing::Test {
 };
 
 
-// Verify AppendDebugInfo when there are no events to upload.
-TEST_F(DownloadUpdatesDebugInfoTest, VerifyAppendDebugInfo_Empty) {
+// Verify CopyClientDebugInfo when there are no events to upload.
+TEST_F(DownloadUpdatesDebugInfoTest, VerifyCopyClientDebugInfo_Empty) {
   sync_pb::DebugInfo debug_info;
-  download::AppendClientDebugInfoIfNeeded(debug_info_getter(),
-                                          status(),
-                                          &debug_info);
+  download::CopyClientDebugInfo(debug_info_getter(), &debug_info);
   EXPECT_EQ(0, debug_info.events_size());
 }
 
-// We should upload debug info only once per sync cycle.
-TEST_F(DownloadUpdatesDebugInfoTest, TryDoubleAppend) {
-  sync_pb::DebugInfo debug_info1;
-
+TEST_F(DownloadUpdatesDebugInfoTest, VerifyCopyOverwrites) {
+  sync_pb::DebugInfo debug_info;
   AddDebugEvent();
-  download::AppendClientDebugInfoIfNeeded(debug_info_getter(),
-                                          status(),
-                                          &debug_info1);
-  EXPECT_EQ(1, debug_info1.events_size());
-
-
-  // Repeated invocations should not send up more events.
-  AddDebugEvent();
-  sync_pb::DebugInfo debug_info2;
-  download::AppendClientDebugInfoIfNeeded(debug_info_getter(),
-                                          status(),
-                                          &debug_info2);
-  EXPECT_EQ(0, debug_info2.events_size());
+  download::CopyClientDebugInfo(debug_info_getter(), &debug_info);
+  EXPECT_EQ(1, debug_info.events_size());
+  download::CopyClientDebugInfo(debug_info_getter(), &debug_info);
+  EXPECT_EQ(1, debug_info.events_size());
 }
 
 }  // namespace syncer

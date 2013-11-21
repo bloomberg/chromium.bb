@@ -83,7 +83,8 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   CHECK(post.has_protocol_version());
   CHECK(post.has_api_key());
   CHECK(post.has_bag_of_chips());
-  last_request_.CopyFrom(post);
+
+  requests_.push_back(post);
   client_stuck_ = post.sync_problem_detected();
   sync_pb::ClientToServerResponse response;
   response.Clear();
@@ -684,6 +685,17 @@ const CommitMessage& MockConnectionManager::last_sent_commit() const {
 const CommitResponse& MockConnectionManager::last_commit_response() const {
   EXPECT_TRUE(!commit_responses_.empty());
   return *commit_responses_.back();
+}
+
+const sync_pb::ClientToServerMessage&
+    MockConnectionManager::last_request() const {
+  EXPECT_TRUE(!requests_.empty());
+  return requests_.back();
+}
+
+const std::vector<sync_pb::ClientToServerMessage>&
+    MockConnectionManager::requests() const {
+  return requests_;
 }
 
 bool MockConnectionManager::IsModelTypePresentInSpecifics(

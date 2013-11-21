@@ -82,11 +82,10 @@ SYNC_EXPORT_PRIVATE SyncerError
                            sessions::SyncSession* session,
                            sync_pb::ClientToServerMessage* msg);
 
-// Helper function to append client debug info to the message, but only do so
-// once per sync cycle.  Defined here for testing.
-void SYNC_EXPORT_PRIVATE AppendClientDebugInfoIfNeeded(
+// Helper function to copy client debug info from debug_info_getter to
+// debug_info.  Defined here for testing.
+void SYNC_EXPORT_PRIVATE CopyClientDebugInfo(
     sessions::DebugInfoGetter* debug_info_getter,
-    sessions::StatusController* status,
     sync_pb::DebugInfo* debug_info);
 
 }  // namespace download

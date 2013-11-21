@@ -144,22 +144,28 @@ void DebugInfoEventListener::OnIncomingNotification(
   AddEventToQueue(event_info);
 }
 
-void DebugInfoEventListener::GetAndClearDebugInfo(
-    sync_pb::DebugInfo* debug_info) {
+void DebugInfoEventListener::GetDebugInfo(sync_pb::DebugInfo* debug_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_LE(events_.size(), kMaxEntries);
-  while (!events_.empty()) {
+
+  for (DebugEventInfoQueue::const_iterator iter = events_.begin();
+       iter != events_.end();
+       ++iter) {
     sync_pb::DebugEventInfo* event_info = debug_info->add_events();
-    const sync_pb::DebugEventInfo& debug_event_info = events_.front();
-    event_info->CopyFrom(debug_event_info);
-    events_.pop();
+    event_info->CopyFrom(*iter);
   }
 
   debug_info->set_events_dropped(events_dropped_);
   debug_info->set_cryptographer_ready(cryptographer_ready_);
   debug_info->set_cryptographer_has_pending_keys(
       cryptographer_has_pending_keys_);
+}
 
+void DebugInfoEventListener::ClearDebugInfo() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_LE(events_.size(), kMaxEntries);
+
+  events_.clear();
   events_dropped_ = false;
 }
 
@@ -255,10 +261,10 @@ void DebugInfoEventListener::AddEventToQueue(
     DVLOG(1) << "DebugInfoEventListener::AddEventToQueue Dropping an old event "
              << "because of full queue";
 
-    events_.pop();
+    events_.pop_front();
     events_dropped_ = true;
   }
-  events_.push(event_info);
+  events_.push_back(event_info);
 }
 
 }  // namespace syncer
