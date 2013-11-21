@@ -43,7 +43,6 @@ void ki_init_ppapi(void* kp,
     s_kp_owned = false;
   }
 
-
   PepperInterface* ppapi = NULL;
   if (instance && get_browser_interface)
     ppapi = new RealPepperInterface(instance, get_browser_interface);

@@ -44,12 +44,20 @@ void IP4ToSockAddr(uint32_t ip, uint16_t port, struct sockaddr_in* addr) {
   addr->sin_addr.s_addr = htonl(ip);
 }
 
-void SetNonBlocking(int sock) {
-  int flags = fcntl(sock, F_GETFL);
+static int ki_fcntl_wrapper(int fd, int request, ...) {
+  va_list ap;
+  va_start(ap, request);
+  int rtn = ki_fcntl(fd, request, ap);
+  va_end(ap);
+  return rtn;
+}
+
+static void SetNonBlocking(int sock) {
+  int flags = ki_fcntl_wrapper(sock, F_GETFL);
   ASSERT_NE(-1, flags);
   flags |= O_NONBLOCK;
-  ASSERT_EQ(0, fcntl(sock, F_SETFL, flags));
-  ASSERT_EQ(flags, fcntl(sock, F_GETFL));
+  ASSERT_EQ(0, ki_fcntl_wrapper(sock, F_SETFL, flags));
+  ASSERT_EQ(flags, ki_fcntl_wrapper(sock, F_GETFL));
 }
 
 class SocketTest : public ::testing::Test {
@@ -58,9 +66,9 @@ class SocketTest : public ::testing::Test {
 
   void TearDown() {
     if (sock1_ != -1)
-      EXPECT_EQ(0, close(sock1_));
+      EXPECT_EQ(0, ki_close(sock1_));
     if (sock2_ != -1)
-      EXPECT_EQ(0, close(sock2_));
+      EXPECT_EQ(0, ki_close(sock2_));
   }
 
   int Bind(int fd, uint32_t ip, uint16_t port) {
@@ -68,7 +76,7 @@ class SocketTest : public ::testing::Test {
     socklen_t addrlen = sizeof(addr);
 
     IP4ToSockAddr(ip, port, &addr);
-    int err = bind(fd, (sockaddr*)&addr, addrlen);
+    int err = ki_bind(fd, (sockaddr*)&addr, addrlen);
 
     if (err == -1)
       return errno;
@@ -85,8 +93,8 @@ class SocketTestUDP : public SocketTest {
   SocketTestUDP() {}
 
   void SetUp() {
-    sock1_ = socket(AF_INET, SOCK_DGRAM, 0);
-    sock2_ = socket(AF_INET, SOCK_DGRAM, 0);
+    sock1_ = ki_socket(AF_INET, SOCK_DGRAM, 0);
+    sock2_ = ki_socket(AF_INET, SOCK_DGRAM, 0);
 
     EXPECT_GT(sock1_, -1);
     EXPECT_GT(sock2_, -1);
@@ -98,8 +106,8 @@ class SocketTestTCP : public SocketTest {
   SocketTestTCP() {}
 
   void SetUp() {
-    sock1_ = socket(AF_INET, SOCK_STREAM, 0);
-    sock2_ = socket(AF_INET, SOCK_STREAM, 0);
+    sock1_ = ki_socket(AF_INET, SOCK_STREAM, 0);
+    sock2_ = ki_socket(AF_INET, SOCK_STREAM, 0);
 
     EXPECT_GT(sock1_, -1);
     EXPECT_GT(sock2_, -1);
@@ -137,7 +145,7 @@ class SocketTestWithServer : public ::testing::Test {
     pthread_cond_wait(&ready_cond_, &ready_lock_);
     pthread_mutex_unlock(&ready_lock_);
 
-    sock_ = socket(AF_INET, SOCK_STREAM, 0);
+    sock_ = ki_socket(AF_INET, SOCK_STREAM, 0);
     EXPECT_GT(sock_, -1);
   }
 
@@ -145,7 +153,7 @@ class SocketTestWithServer : public ::testing::Test {
     // Stop the echo server and the background thread it runs on
     loop_.PostQuit(true);
     pthread_join(server_thread_, NULL);
-    ASSERT_EQ(0, close(sock_));
+    ASSERT_EQ(0, ki_close(sock_));
   }
 
   static void ServerLog(const char* msg) {
@@ -165,33 +173,33 @@ class SocketTestWithServer : public ::testing::Test {
 }  // namespace
 
 TEST(SocketTestSimple, Socket) {
-  EXPECT_EQ(-1, socket(AF_UNIX, SOCK_STREAM, 0));
+  EXPECT_EQ(-1, ki_socket(AF_UNIX, SOCK_STREAM, 0));
   EXPECT_EQ(errno, EAFNOSUPPORT);
 
   // We don't support RAW sockets
-  EXPECT_EQ(-1, socket(AF_INET, SOCK_RAW, IPPROTO_TCP));
-  EXPECT_EQ(errno, EPROTONOSUPPORT);
+  EXPECT_EQ(-1, ki_socket(AF_INET, SOCK_RAW, IPPROTO_TCP));
+  EXPECT_EQ(EPROTONOSUPPORT, errno);
 
   // Invalid type
-  EXPECT_EQ(-1, socket(AF_INET, -1, 0));
-  EXPECT_EQ(errno, EINVAL);
+  EXPECT_EQ(-1, ki_socket(AF_INET, -1, 0));
+  EXPECT_EQ(EINVAL, errno);
 
-  int sock1_ = socket(AF_INET, SOCK_DGRAM, 0);
+  int sock1_ = ki_socket(AF_INET, SOCK_DGRAM, 0);
   EXPECT_NE(-1, sock1_);
 
-  int sock2_ = socket(AF_INET6, SOCK_DGRAM, 0);
+  int sock2_ = ki_socket(AF_INET6, SOCK_DGRAM, 0);
   EXPECT_NE(-1, sock2_);
 
-  int sock3 = socket(AF_INET, SOCK_STREAM, 0);
+  int sock3 = ki_socket(AF_INET, SOCK_STREAM, 0);
   EXPECT_NE(-1, sock3);
 
-  int sock4 = socket(AF_INET6, SOCK_STREAM, 0);
+  int sock4 = ki_socket(AF_INET6, SOCK_STREAM, 0);
   EXPECT_NE(-1, sock4);
 
-  close(sock1_);
-  close(sock2_);
-  close(sock3);
-  close(sock4);
+  ki_close(sock1_);
+  ki_close(sock2_);
+  ki_close(sock3);
+  ki_close(sock4);
 }
 
 TEST_F(SocketTestUDP, Bind) {
@@ -226,7 +234,7 @@ TEST_F(SocketTestUDP, SendRcv) {
   IP4ToSockAddr(LOCAL_HOST, PORT2, &addr);
 
   int len1 =
-     sendto(sock1_, outbuf, sizeof(outbuf), 0, (sockaddr*) &addr, addrlen);
+     ki_sendto(sock1_, outbuf, sizeof(outbuf), 0, (sockaddr*) &addr, addrlen);
   EXPECT_EQ(sizeof(outbuf), len1);
 
   // Ensure the buffers are different
@@ -235,7 +243,7 @@ TEST_F(SocketTestUDP, SendRcv) {
 
   // Try to receive the previously sent packet
   int len2 =
-    recvfrom(sock2_, inbuf, sizeof(inbuf), 0, (sockaddr*) &addr, &addrlen);
+    ki_recvfrom(sock2_, inbuf, sizeof(inbuf), 0, (sockaddr*) &addr, &addrlen);
   EXPECT_EQ(sizeof(outbuf), len2);
   EXPECT_EQ(sizeof(sockaddr_in), addrlen);
   EXPECT_EQ(PORT1, htons(addr.sin_port));
@@ -306,7 +314,7 @@ TEST_F(SocketTestUDP, FullFifo) {
 
   size_t total = 0;
   while (total < kQueueSize * 8) {
-    int len = sendto(sock1_, outbuf, sizeof(outbuf), MSG_DONTWAIT,
+    int len = ki_sendto(sock1_, outbuf, sizeof(outbuf), MSG_DONTWAIT,
                      (sockaddr*) &addr, addrlen);
 
     if (len <= 0) {
@@ -335,22 +343,22 @@ TEST_F(SocketTestWithServer, TCPConnect) {
 
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
 
-  ASSERT_EQ(0, connect(sock_, (sockaddr*) &addr, addrlen))
+  ASSERT_EQ(0, ki_connect(sock_, (sockaddr*) &addr, addrlen))
       << "Failed with " << errno << ": " << strerror(errno) << "\n";
 
   // Send two different messages to the echo server and verify the
   // response matches.
   strcpy(outbuf, "hello");
   memset(inbuf, 0, sizeof(inbuf));
-  ASSERT_EQ(sizeof(outbuf), write(sock_, outbuf, sizeof(outbuf)))
+  ASSERT_EQ(sizeof(outbuf), ki_write(sock_, outbuf, sizeof(outbuf)))
       << "socket write failed with: " << strerror(errno);
-  ASSERT_EQ(sizeof(outbuf), read(sock_, inbuf, sizeof(inbuf)));
+  ASSERT_EQ(sizeof(outbuf), ki_read(sock_, inbuf, sizeof(inbuf)));
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
 
   strcpy(outbuf, "world");
   memset(inbuf, 0, sizeof(inbuf));
-  ASSERT_EQ(sizeof(outbuf), write(sock_, outbuf, sizeof(outbuf)));
-  ASSERT_EQ(sizeof(outbuf), read(sock_, inbuf, sizeof(inbuf)));
+  ASSERT_EQ(sizeof(outbuf), ki_write(sock_, outbuf, sizeof(outbuf)));
+  ASSERT_EQ(sizeof(outbuf), ki_read(sock_, inbuf, sizeof(inbuf)));
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
 }
 
@@ -366,62 +374,64 @@ TEST_F(SocketTestWithServer, TCPConnectNonBlock) {
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
 
   SetNonBlocking(sock_);
-  ASSERT_EQ(-1, connect(sock_, (sockaddr*) &addr, addrlen));
+  ASSERT_EQ(-1, ki_connect(sock_, (sockaddr*) &addr, addrlen));
   ASSERT_EQ(EINPROGRESS, errno)
      << "expected EINPROGRESS but got: " << strerror(errno) << "\n";
-  ASSERT_EQ(-1, connect(sock_, (sockaddr*) &addr, addrlen));
+  ASSERT_EQ(-1, ki_connect(sock_, (sockaddr*) &addr, addrlen));
   ASSERT_EQ(EALREADY, errno);
 
   // Wait for the socket connection to complete using poll()
   struct pollfd pollfd = { sock_, POLLIN|POLLOUT, 0 };
-  ASSERT_EQ(1, poll(&pollfd, 1, -1));
+  ASSERT_EQ(1, ki_poll(&pollfd, 1, -1));
   ASSERT_EQ(POLLOUT, pollfd.revents);
 
   // Attempts to connect again should yield EISCONN
-  ASSERT_EQ(-1, connect(sock_, (sockaddr*) &addr, addrlen));
+  ASSERT_EQ(-1, ki_connect(sock_, (sockaddr*) &addr, addrlen));
   ASSERT_EQ(EISCONN, errno);
 
   // And SO_ERROR should be 0.
 }
 
 TEST_F(SocketTest, Getsockopt) {
-  sock1_ = socket(AF_INET, SOCK_STREAM, 0);
+  sock1_ = ki_socket(AF_INET, SOCK_STREAM, 0);
   EXPECT_GT(sock1_, -1);
   int socket_error = 99;
   socklen_t len = sizeof(socket_error);
 
   // Test for valid option (SO_ERROR) which should be 0 when a socket
   // is first created.
-  ASSERT_EQ(0, getsockopt(sock1_, SOL_SOCKET, SO_ERROR, &socket_error, &len));
+  ASSERT_EQ(0, ki_getsockopt(sock1_, SOL_SOCKET, SO_ERROR,
+                             &socket_error, &len));
   ASSERT_EQ(0, socket_error);
   ASSERT_EQ(sizeof(socket_error), len);
 
   // Test for an invalid option (-1)
-  ASSERT_EQ(-1, getsockopt(sock1_, SOL_SOCKET, -1, &socket_error, &len));
+  ASSERT_EQ(-1, ki_getsockopt(sock1_, SOL_SOCKET, -1, &socket_error, &len));
   ASSERT_EQ(ENOPROTOOPT, errno);
 }
 
 TEST_F(SocketTest, Setsockopt) {
-  sock1_ = socket(AF_INET, SOCK_STREAM, 0);
+  sock1_ = ki_socket(AF_INET, SOCK_STREAM, 0);
   EXPECT_GT(sock1_, -1);
 
   // It should not be possible to set SO_ERROR using setsockopt.
   int socket_error = 10;
   socklen_t len = sizeof(socket_error);
-  ASSERT_EQ(-1, setsockopt(sock1_, SOL_SOCKET, SO_ERROR, &socket_error, len));
+  ASSERT_EQ(-1, ki_setsockopt(sock1_, SOL_SOCKET, SO_ERROR,
+                              &socket_error, len));
   ASSERT_EQ(ENOPROTOOPT, errno);
 
 }
 
 TEST_F(SocketTest, Sockopt_KEEPALIVE) {
-  sock1_ = socket(AF_INET, SOCK_STREAM, 0);
+  sock1_ = ki_socket(AF_INET, SOCK_STREAM, 0);
   ASSERT_GT(sock1_, -1);
-  sock2_ = socket(AF_INET, SOCK_DGRAM, 0);
+  sock2_ = ki_socket(AF_INET, SOCK_DGRAM, 0);
   ASSERT_GT(sock2_, -1);
 
   int value = 0;
   socklen_t len = sizeof(value);
-  ASSERT_EQ(0, getsockopt(sock1_, SOL_SOCKET, SO_KEEPALIVE, &value, &len));
+  ASSERT_EQ(0, ki_getsockopt(sock1_, SOL_SOCKET, SO_KEEPALIVE, &value, &len));
   ASSERT_EQ(0, value);
   ASSERT_EQ(sizeof(int), len);
 }
@@ -429,18 +439,18 @@ TEST_F(SocketTest, Sockopt_KEEPALIVE) {
 // Disabled until we support SO_LINGER (i.e. syncronouse close()/shutdown())
 // TODO(sbc): re-enable once we fix http://crbug.com/312401
 TEST_F(SocketTest, DISABLED_Sockopt_LINGER) {
-  sock1_ = socket(AF_INET, SOCK_STREAM, 0);
+  sock1_ = ki_socket(AF_INET, SOCK_STREAM, 0);
   ASSERT_GT(sock1_, -1);
-  sock2_ = socket(AF_INET, SOCK_DGRAM, 0);
+  sock2_ = ki_socket(AF_INET, SOCK_DGRAM, 0);
   ASSERT_GT(sock2_, -1);
 
   struct linger linger = { 7, 8 };
   socklen_t len = sizeof(linger);
-  ASSERT_EQ(0, getsockopt(sock1_, SOL_SOCKET, SO_LINGER, &linger, &len));
+  ASSERT_EQ(0, ki_getsockopt(sock1_, SOL_SOCKET, SO_LINGER, &linger, &len));
   ASSERT_EQ(0, linger.l_onoff);
   ASSERT_EQ(0, linger.l_linger);
   ASSERT_EQ(sizeof(struct linger), len);
-  ASSERT_EQ(0, getsockopt(sock2_, SOL_SOCKET, SO_LINGER, &linger, &len));
+  ASSERT_EQ(0, ki_getsockopt(sock2_, SOL_SOCKET, SO_LINGER, &linger, &len));
   ASSERT_EQ(0, linger.l_onoff);
   ASSERT_EQ(0, linger.l_linger);
   ASSERT_EQ(sizeof(struct linger), len);
@@ -448,17 +458,17 @@ TEST_F(SocketTest, DISABLED_Sockopt_LINGER) {
   linger.l_onoff = 1;
   linger.l_linger = 77;
   len = sizeof(linger);
-  ASSERT_EQ(0, setsockopt(sock1_, SOL_SOCKET, SO_LINGER, &linger, len));
+  ASSERT_EQ(0, ki_setsockopt(sock1_, SOL_SOCKET, SO_LINGER, &linger, len));
   linger.l_onoff = 1;
   linger.l_linger = 88;
-  ASSERT_EQ(0, setsockopt(sock2_, SOL_SOCKET, SO_LINGER, &linger, len));
+  ASSERT_EQ(0, ki_setsockopt(sock2_, SOL_SOCKET, SO_LINGER, &linger, len));
 
   len = sizeof(linger);
-  ASSERT_EQ(0, getsockopt(sock1_, SOL_SOCKET, SO_LINGER, &linger, &len));
+  ASSERT_EQ(0, ki_getsockopt(sock1_, SOL_SOCKET, SO_LINGER, &linger, &len));
   ASSERT_EQ(1, linger.l_onoff);
   ASSERT_EQ(77, linger.l_linger);
   ASSERT_EQ(sizeof(struct linger), len);
-  ASSERT_EQ(0, getsockopt(sock2_, SOL_SOCKET, SO_LINGER, &linger, &len));
+  ASSERT_EQ(0, ki_getsockopt(sock2_, SOL_SOCKET, SO_LINGER, &linger, &len));
   ASSERT_EQ(1, linger.l_onoff);
   ASSERT_EQ(88, linger.l_linger);
   ASSERT_EQ(sizeof(struct linger), len);
@@ -467,14 +477,14 @@ TEST_F(SocketTest, DISABLED_Sockopt_LINGER) {
 TEST_F(SocketTest, Sockopt_REUSEADDR) {
   int value = 1;
   socklen_t len = sizeof(value);
-  sock1_ = socket(AF_INET, SOCK_STREAM, 0);
+  sock1_ = ki_socket(AF_INET, SOCK_STREAM, 0);
 
   ASSERT_GT(sock1_, -1);
-  ASSERT_EQ(0, setsockopt(sock1_, SOL_SOCKET, SO_REUSEADDR, &value, len));
+  ASSERT_EQ(0, ki_setsockopt(sock1_, SOL_SOCKET, SO_REUSEADDR, &value, len));
 
   value = 0;
   len = sizeof(value);
-  ASSERT_EQ(0, getsockopt(sock1_, SOL_SOCKET, SO_REUSEADDR, &value, &len));
+  ASSERT_EQ(0, ki_getsockopt(sock1_, SOL_SOCKET, SO_REUSEADDR, &value, &len));
   ASSERT_EQ(1, value);
   ASSERT_EQ(sizeof(int), len);
 }
@@ -501,13 +511,13 @@ TEST_F(SocketTestWithServer, LargeSend) {
   socklen_t addrlen = sizeof(addr);
 
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
-  ASSERT_EQ(0, connect(sock_, (sockaddr*) &addr, addrlen))
+  ASSERT_EQ(0, ki_connect(sock_, (sockaddr*) &addr, addrlen))
       << "Failed with " << errno << ": " << strerror(errno) << "\n";
 
   // Call send an recv until all bytes have been transfered.
   while (bytes_received < LARGE_SEND_BYTES) {
     if (bytes_sent < LARGE_SEND_BYTES) {
-      int sent = send(sock_, outbuf + bytes_sent,
+      int sent = ki_send(sock_, outbuf + bytes_sent,
                       LARGE_SEND_BYTES - bytes_sent, MSG_DONTWAIT);
       if (sent < 0)
         ASSERT_EQ(EWOULDBLOCK, errno) << "send failed: " << strerror(errno);
@@ -515,8 +525,8 @@ TEST_F(SocketTestWithServer, LargeSend) {
         bytes_sent += sent;
     }
 
-    int received = recv(sock_, inbuf + bytes_received,
-                        LARGE_SEND_BYTES - bytes_received, MSG_DONTWAIT);
+    int received = ki_recv(sock_, inbuf + bytes_received,
+                           LARGE_SEND_BYTES - bytes_received, MSG_DONTWAIT);
     if (received < 0)
       ASSERT_EQ(EWOULDBLOCK, errno) << "recv failed: " << strerror(errno);
     else
@@ -525,7 +535,7 @@ TEST_F(SocketTestWithServer, LargeSend) {
 
   // Make sure there is nothing else to recv at this point
   char dummy[10];
-  ASSERT_EQ(-1, recv(sock_, dummy, 10, MSG_DONTWAIT));
+  ASSERT_EQ(-1, ki_recv(sock_, dummy, 10, MSG_DONTWAIT));
   ASSERT_EQ(EWOULDBLOCK, errno);
 
   int errors = 0;
@@ -548,7 +558,7 @@ TEST_F(SocketTestWithServer, LargeSend) {
 }
 
 TEST_F(SocketTestUDP, Listen) {
-  EXPECT_EQ(-1, listen(sock1_, 10));
+  EXPECT_EQ(-1, ki_listen(sock1_, 10));
   EXPECT_EQ(errno, ENOTSUP);
 }
 
@@ -566,22 +576,22 @@ TEST_F(SocketTestTCP, Listen) {
   ASSERT_EQ(-1, accept(server_sock, (sockaddr*)&addr, &addrlen));
 
   // Listen should fail on unbound socket
-  ASSERT_EQ(-1, listen(server_sock, 10));
+  ASSERT_EQ(-1,  ki_listen(server_sock, 10));
 
   // Bind and Listen
   ASSERT_EQ(0, Bind(server_sock, LOCAL_HOST, PORT1));
-  ASSERT_EQ(0, listen(server_sock, 10))
+  ASSERT_EQ(0,  ki_listen(server_sock, 10))
     << "listen failed with: " << strerror(errno);
 
   // Connect to listening socket, and send greeting
   int client_sock = sock2_;
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
   addrlen = sizeof(addr);
-  ASSERT_EQ(0, connect(client_sock, (sockaddr*)&addr, addrlen))
+  ASSERT_EQ(0, ki_connect(client_sock, (sockaddr*)&addr, addrlen))
     << "Failed with " << errno << ": " << strerror(errno) << "\n";
 
-  ASSERT_EQ(greeting_len, send(client_sock, client_greeting,
-                               greeting_len, 0));
+  ASSERT_EQ(greeting_len, ki_send(client_sock, client_greeting,
+                                  greeting_len, 0));
 
   // Pass in addrlen that is larger than our actual address to make
   // sure that it is correctly set back to sizeof(sockaddr_in)
@@ -593,24 +603,24 @@ TEST_F(SocketTestTCP, Listen) {
   // Verify addr and addrlen were set correctly
   ASSERT_EQ(addrlen, sizeof(sockaddr_in));
   sockaddr_in client_addr;
-  ASSERT_EQ(0, getsockname(client_sock, (sockaddr*)&client_addr, &addrlen));
+  ASSERT_EQ(0, ki_getsockname(client_sock, (sockaddr*)&client_addr, &addrlen));
   ASSERT_EQ(client_addr.sin_family, addr.sin_family);
   ASSERT_EQ(client_addr.sin_port, addr.sin_port);
   ASSERT_EQ(client_addr.sin_addr.s_addr, addr.sin_addr.s_addr);
 
   // Recv greeting from client and send reply
   char inbuf[512];
-  ASSERT_EQ(greeting_len, recv(new_socket, inbuf, sizeof(inbuf), 0));
+  ASSERT_EQ(greeting_len, ki_recv(new_socket, inbuf, sizeof(inbuf), 0));
   inbuf[greeting_len] = 0;
   ASSERT_STREQ(inbuf, client_greeting);
-  ASSERT_EQ(reply_len, send(new_socket, server_reply, reply_len, 0));
+  ASSERT_EQ(reply_len, ki_send(new_socket, server_reply, reply_len, 0));
 
   // Recv reply on client socket
-  ASSERT_EQ(reply_len, recv(client_sock, inbuf, sizeof(inbuf), 0));
+  ASSERT_EQ(reply_len, ki_recv(client_sock, inbuf, sizeof(inbuf), 0));
   inbuf[reply_len] = 0;
   ASSERT_STREQ(inbuf, server_reply);
 
-  ASSERT_EQ(0, close(new_socket));
+  ASSERT_EQ(0, ki_close(new_socket));
 }
 
 TEST_F(SocketTestTCP, ListenNonBlocking) {
@@ -621,7 +631,7 @@ TEST_F(SocketTestTCP, ListenNonBlocking) {
 
   // bind and listen
   ASSERT_EQ(0, Bind(server_sock, LOCAL_HOST, PORT1));
-  ASSERT_EQ(0, listen(server_sock, 10))
+  ASSERT_EQ(0, ki_listen(server_sock, 10))
     << "listen failed with: " << strerror(errno);
 
   // Accept should fail with EAGAIN since there is no incomming
@@ -635,25 +645,25 @@ TEST_F(SocketTestTCP, ListenNonBlocking) {
   // not readable to indicate that no connections are available
   // to accept.
   struct pollfd pollfd = { server_sock, POLLIN|POLLOUT, 0 };
-  ASSERT_EQ(0, poll(&pollfd, 1, 0));
+  ASSERT_EQ(0, ki_poll(&pollfd, 1, 0));
 
   // Connect to listening socket
   int client_sock = sock2_;
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
   addrlen = sizeof(addr);
-  ASSERT_EQ(0, connect(client_sock, (sockaddr*)&addr, addrlen))
+  ASSERT_EQ(0, ki_connect(client_sock, (sockaddr*)&addr, addrlen))
     << "Failed with " << errno << ": " << strerror(errno) << "\n";
 
   // Not poll again but with an infintie timeout.
   pollfd.fd = server_sock;
   pollfd.events = POLLIN | POLLOUT;
-  ASSERT_EQ(1, poll(&pollfd, 1, -1));
+  ASSERT_EQ(1, ki_poll(&pollfd, 1, -1));
 
   // Now non-blocking accept should return the new socket
   int new_socket = accept(server_sock, (sockaddr*)&addr, &addrlen);
   ASSERT_NE(-1, new_socket)
     << "accept failed with: " << strerror(errno) << "\n";
-  ASSERT_EQ(0, close(new_socket));
+  ASSERT_EQ(0, ki_close(new_socket));
 
   // Accept calls should once again fail with EAGAIN
   ASSERT_EQ(-1, accept(server_sock, (sockaddr*)&addr, &addrlen));
@@ -662,7 +672,7 @@ TEST_F(SocketTestTCP, ListenNonBlocking) {
   // As should polling the listening socket
   pollfd.fd = server_sock;
   pollfd.events = POLLIN | POLLOUT;
-  ASSERT_EQ(0, poll(&pollfd, 1, 0));
+  ASSERT_EQ(0, ki_poll(&pollfd, 1, 0));
 }
 
 TEST_F(SocketTestTCP, SendRecvAfterRemoteShutdown) {
@@ -674,12 +684,12 @@ TEST_F(SocketTestTCP, SendRecvAfterRemoteShutdown) {
 
   // bind and listen
   ASSERT_EQ(0, Bind(server_sock, LOCAL_HOST, PORT1));
-  ASSERT_EQ(0, listen(server_sock, 10))
+  ASSERT_EQ(0, ki_listen(server_sock, 10))
     << "listen failed with: " << strerror(errno);
 
   // connect to listening socket
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
-  ASSERT_EQ(0, connect(client_sock, (sockaddr*)&addr, addrlen))
+  ASSERT_EQ(0, ki_connect(client_sock, (sockaddr*)&addr, addrlen))
     << "Failed with " << errno << ": " << strerror(errno) << "\n";
 
   addrlen = sizeof(addr);
@@ -687,23 +697,23 @@ TEST_F(SocketTestTCP, SendRecvAfterRemoteShutdown) {
   ASSERT_NE(-1, new_sock);
 
   const char* send_buf = "hello world";
-  ASSERT_EQ(strlen(send_buf), send(new_sock, send_buf, strlen(send_buf), 0));
+  ASSERT_EQ(strlen(send_buf), ki_send(new_sock, send_buf, strlen(send_buf), 0));
 
   // Recv first 10 bytes
   char buf[256];
-  ASSERT_EQ(10, recv(client_sock, buf, 10, 0));
+  ASSERT_EQ(10, ki_recv(client_sock, buf, 10, 0));
 
   // Close the new socket
-  ASSERT_EQ(0, close(new_sock));
+  ASSERT_EQ(0, ki_close(new_sock));
 
   // Recv remainder
   int bytes_remaining = strlen(send_buf) - 10;
-  ASSERT_EQ(bytes_remaining, recv(client_sock, buf, 256, 0));
+  ASSERT_EQ(bytes_remaining, ki_recv(client_sock, buf, 256, 0));
 
   // Attempt to read/write after remote shutdown, with no bytes remainging
-  ASSERT_EQ(0, recv(client_sock, buf, 10, 0));
-  ASSERT_EQ(0, recv(client_sock, buf, 10, 0));
-  ASSERT_EQ(-1, send(client_sock, buf, 10, 0));
+  ASSERT_EQ(0, ki_recv(client_sock, buf, 10, 0));
+  ASSERT_EQ(0, ki_recv(client_sock, buf, 10, 0));
+  ASSERT_EQ(-1, ki_send(client_sock, buf, 10, 0));
   ASSERT_EQ(errno, EPIPE);
 }
 
@@ -716,12 +726,12 @@ TEST_F(SocketTestTCP, SendRecvAfterLocalShutdown) {
 
   // bind and listen
   ASSERT_EQ(0, Bind(server_sock, LOCAL_HOST, PORT1));
-  ASSERT_EQ(0, listen(server_sock, 10))
+  ASSERT_EQ(0, ki_listen(server_sock, 10))
     << "listen failed with: " << strerror(errno);
 
   // connect to listening socket
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
-  ASSERT_EQ(0, connect(client_sock, (sockaddr*)&addr, addrlen))
+  ASSERT_EQ(0, ki_connect(client_sock, (sockaddr*)&addr, addrlen))
     << "Failed with " << errno << ": " << strerror(errno) << "\n";
 
   addrlen = sizeof(addr);
@@ -729,12 +739,12 @@ TEST_F(SocketTestTCP, SendRecvAfterLocalShutdown) {
   ASSERT_NE(-1, new_sock);
 
   // Close the new socket
-  ASSERT_EQ(0, shutdown(client_sock, SHUT_RDWR));
+  ASSERT_EQ(0, ki_shutdown(client_sock, SHUT_RDWR));
 
   // Attempt to read/write after shutdown
   char buffer[10];
-  ASSERT_EQ(0, recv(client_sock, buffer, sizeof(buffer), 0));
-  ASSERT_EQ(-1, send(client_sock, buffer, sizeof(buffer), 0));
+  ASSERT_EQ(0, ki_recv(client_sock, buffer, sizeof(buffer), 0));
+  ASSERT_EQ(-1, ki_send(client_sock, buffer, sizeof(buffer), 0));
   ASSERT_EQ(errno, EPIPE);
 }
 
@@ -748,12 +758,12 @@ TEST_F(SocketTestTCP, SendBufferedDataAfterShutdown) {
 
   // bind and listen
   ASSERT_EQ(0, Bind(server_sock, LOCAL_HOST, PORT1));
-  ASSERT_EQ(0, listen(server_sock, 10))
+  ASSERT_EQ(0, ki_listen(server_sock, 10))
     << "listen failed with: " << strerror(errno);
 
   // connect to listening socket
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
-  ASSERT_EQ(0, connect(client_sock, (sockaddr*)&addr, addrlen))
+  ASSERT_EQ(0, ki_connect(client_sock, (sockaddr*)&addr, addrlen))
     << "Failed with " << errno << ": " << strerror(errno) << "\n";
 
   addrlen = sizeof(addr);
@@ -763,8 +773,8 @@ TEST_F(SocketTestTCP, SendBufferedDataAfterShutdown) {
   // send a fairly large amount of data and immediately close
   // the socket.
   void* buffer = alloca(SEND_BYTES);
-  ASSERT_EQ(SEND_BYTES, send(client_sock, buffer, SEND_BYTES, 0));
-  ASSERT_EQ(0, close(client_sock));
+  ASSERT_EQ(SEND_BYTES, ki_send(client_sock, buffer, SEND_BYTES, 0));
+  ASSERT_EQ(0, ki_close(client_sock));
 
   // avoid double close of sock2_
   sock2_ = -1;
@@ -772,12 +782,12 @@ TEST_F(SocketTestTCP, SendBufferedDataAfterShutdown) {
   // Attempt to recv() all the sent data.  None should be lost.
   int remainder = SEND_BYTES;
   while (remainder > 0) {
-    int rtn = recv(new_sock, buffer, remainder, 0);
+    int rtn = ki_recv(new_sock, buffer, remainder, 0);
     ASSERT_GT(rtn, 0);
     remainder -= rtn;
   }
 
-  ASSERT_EQ(0, close(new_sock));
+  ASSERT_EQ(0, ki_close(new_sock));
 }
 
 #endif  // PROVIDES_SOCKET_API

@@ -20,6 +20,12 @@ HOST_LINK ?= g++
 HOST_LIB ?= ar
 HOST_STRIP ?= strip
 
+# Adding -Wl,-Bsymbolic means that symbols defined within the module are always
+# used by the moulde, and not shadowed by symbols already loaded in, for
+# exmaple, libc.  Without this the libc symbols (or anything injected with
+# LD_PRELOAD will take precedence).
+LDFLAGS ?= -Wl,-Map,$(OUTDIR)/$(TARGET).map -Wl,-Bsymbolic
+
 ifeq (,$(findstring gcc,$(shell $(WHICH) gcc)))
 $(warning To skip the host build use:)
 $(warning "make all_versions NO_HOST_BUILDS=1")
@@ -112,13 +118,13 @@ ifdef STANDALONE
 define LINKER_RULE
 all: $(1)
 $(1): $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
-	$(call LOG,LINK,$$@,$(HOST_LINK) -o $(1) $(2) $(NACL_LDFLAGS) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6))
+	$(call LOG,LINK,$$@,$(HOST_LINK) -o $(1) $(2) $(LDFLAGS) $(NACL_LDFLAGS) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6))
 endef
 else
 define LINKER_RULE
 all: $(1)
 $(1): $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
-	$(call LOG,LINK,$$@,$(HOST_LINK) -shared -o $(1) $(2) $(NACL_LDFLAGS) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6))
+	$(call LOG,LINK,$$@,$(HOST_LINK) -shared -o $(1) $(2) $(LDFLAGS) $(NACL_LDFLAGS) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6))
 endef
 endif
 

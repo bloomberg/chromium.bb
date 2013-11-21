@@ -488,7 +488,7 @@ PAGE_TC_CONFIG ?= "$(PAGE)?tc=$(TOOLCHAIN)&config=$(CONFIG)"
 run: check_for_chrome all $(PAGE)
 	$(RUN_PY) -C $(CURDIR) -P $(PAGE_TC_CONFIG) \
 	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH) $(CHROME_ARGS) \
-	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
+	    --no-sandbox --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 
 .PHONY: run_package
 run_package: check_for_chrome all
