@@ -490,12 +490,6 @@ blink::Platform::TraceEventHandle WebKitPlatformSupportImpl::addTraceEvent(
   return result;
 }
 
-// TODO(wangxianzhu): Remove this.
-void WebKitPlatformSupportImpl::updateTraceEventDuration(
-    TraceEventHandle handle) {
-  updateTraceEventDuration(NULL, NULL, handle);
-}
-
 void WebKitPlatformSupportImpl::updateTraceEventDuration(
     const unsigned char* category_group_enabled,
     const char* name,

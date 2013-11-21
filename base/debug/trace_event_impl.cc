@@ -1930,15 +1930,12 @@ void TraceLog::UpdateTraceEventDuration(
     const unsigned char* category_group_enabled,
     const char* name,
     TraceEventHandle handle) {
-  OptionalAutoLock lock(lock_);
-
   TimeTicks now = OffsetNow();
-  TraceEvent* trace_event = NULL;
-  // TODO(wangxianzhu): Remove the !category_group_enabled condition after
-  // all clients migrate to the new UpdateTraceEventDuration API.
-  if (!category_group_enabled ||
-      (*category_group_enabled & ENABLED_FOR_RECORDING)) {
-    trace_event = GetEventByHandleInternal(handle, &lock);
+
+  if (*category_group_enabled & ENABLED_FOR_RECORDING) {
+    OptionalAutoLock lock(lock_);
+
+    TraceEvent* trace_event = GetEventByHandleInternal(handle, &lock);
     if (trace_event) {
       DCHECK(trace_event->phase() == TRACE_EVENT_PHASE_COMPLETE);
       trace_event->UpdateDuration(now);
@@ -1953,16 +1950,6 @@ void TraceLog::UpdateTraceEventDuration(
     }
   }
 
-  // TODO(wangxianzhu): Remove this block after all clients migrate to the
-  // new UpdateTraceEventDuration API.
-  if (!category_group_enabled || !name) {
-    if (!trace_event)
-      return;
-    category_group_enabled = trace_event->category_group_enabled();
-    name = trace_event->name();
-  }
-
-  lock.EnsureReleased();
   if (*category_group_enabled & ENABLED_FOR_EVENT_CALLBACK) {
     EventCallback event_callback = reinterpret_cast<EventCallback>(
         subtle::NoBarrier_Load(&event_callback_));
