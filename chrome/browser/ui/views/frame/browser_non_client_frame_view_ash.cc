@@ -63,13 +63,6 @@ const int kTabstripTopSpacingShort = 0;
 // to hit easily.
 const int kTabShadowHeight = 4;
 
-// Space between right edge of tabstrip and caption buttons when using the
-// alternate caption button style.
-const int kTabstripRightSpacingAlternateCaptionButtonStyle = 0;
-// Space between top of window and top of tabstrip for short headers when using
-// the alternate caption button style.
-const int kTabstripTopSpacingShortAlternateCaptionButtonStyle = 4;
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -136,19 +129,13 @@ BrowserNonClientFrameViewAsh::GetTabStripInsets() const {
   int left = avatar_button() ? kAvatarSideSpacing +
       browser_view()->GetOTRAvatarIcon().width() + kAvatarSideSpacing :
       kTabstripLeftSpacing;
-  int extra_right = ash::switches::UseAlternateFrameCaptionButtonStyle() ?
-      kTabstripRightSpacingAlternateCaptionButtonStyle :
-      kTabstripRightSpacing;
-  int right = header_painter_->GetRightInset() + extra_right;
+  int right = header_painter_->GetRightInset() + kTabstripRightSpacing;
 
   int top = NonClientTopBorderHeight();
   if (browser_view()->IsTabStripVisible() &&
       !UseImmersiveLightbarHeaderStyle()) {
     if (UseShortHeader()) {
-      if (ash::switches::UseAlternateFrameCaptionButtonStyle())
-        top += kTabstripTopSpacingShortAlternateCaptionButtonStyle;
-      else
-        top += kTabstripTopSpacingShort;
+      top += kTabstripTopSpacingShort;
     } else {
       top += kTabstripTopSpacingTall;
     }

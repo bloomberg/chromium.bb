@@ -422,8 +422,6 @@
         'wm/base_layout_manager.h',
         'wm/boot_splash_screen_chromeos.cc',
         'wm/boot_splash_screen_chromeos.h',
-        'wm/caption_buttons/alternate_frame_caption_button.cc',
-        'wm/caption_buttons/alternate_frame_caption_button.h',
         'wm/caption_buttons/bubble_contents_button_row.cc',
         'wm/caption_buttons/bubble_contents_button_row.h',
         'wm/caption_buttons/frame_caption_button_container_view.cc',

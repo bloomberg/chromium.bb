@@ -71,7 +71,6 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
                            const views::CustomButton& leftmost,
                            const views::CustomButton& rightmost) {
     gfx::Rect expected(container->GetPreferredSize());
-    expected.Inset(container->GetLeftInset(), 0, container->GetRightInset(), 0);
 
     gfx::Rect container_size(container->GetPreferredSize());
     if (leftmost.y() == rightmost.y() &&
@@ -89,26 +88,11 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
     return false;
   }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerViewTest);
-};
-
-class FrameCaptionButtonContainerViewTestOldStyle
-    : public FrameCaptionButtonContainerViewTest {
- public:
-  FrameCaptionButtonContainerViewTestOldStyle() {
-  }
-
-  virtual ~FrameCaptionButtonContainerViewTestOldStyle() {
-  }
-
   // Returns true if the images for |button|'s states match the passed in ids.
-  bool ImagesMatch(views::CustomButton* custom_button,
+  bool ImagesMatch(views::ImageButton* button,
                    int normal_image_id,
                    int hovered_image_id,
                    int pressed_image_id) {
-    views::ImageButton* button =
-        static_cast<views::ImageButton*>(custom_button);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     gfx::ImageSkia* normal = rb.GetImageSkiaNamed(normal_image_id);
     gfx::ImageSkia* hovered = rb.GetImageSkiaNamed(hovered_image_id);
@@ -120,6 +104,19 @@ class FrameCaptionButtonContainerViewTestOldStyle
     return actual_normal.BackedBySameObjectAs(*normal) &&
         actual_hovered.BackedBySameObjectAs(*hovered) &&
         actual_pressed.BackedBySameObjectAs(*pressed);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerViewTest);
+};
+
+class FrameCaptionButtonContainerViewTestOldStyle
+    : public FrameCaptionButtonContainerViewTest {
+ public:
+  FrameCaptionButtonContainerViewTestOldStyle() {
+  }
+
+  virtual ~FrameCaptionButtonContainerViewTestOldStyle() {
   }
 
   virtual void SetUp() OVERRIDE {

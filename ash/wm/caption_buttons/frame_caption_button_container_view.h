@@ -11,7 +11,7 @@
 #include "ui/views/view.h"
 
 namespace views {
-class CustomButton;
+class ImageButton;
 class Widget;
 }
 
@@ -57,15 +57,15 @@ class ASH_EXPORT FrameCaptionButtonContainerView
         : container_view_(container_view) {
     }
 
-    views::CustomButton* minimize_button() const {
+    views::ImageButton* minimize_button() const {
       return container_view_->minimize_button_;
     }
 
-    views::CustomButton* size_button() const {
+    views::ImageButton* size_button() const {
       return container_view_->size_button_;
     }
 
-    views::CustomButton* close_button() const {
+    views::ImageButton* close_button() const {
       return container_view_->close_button_;
     }
 
@@ -101,26 +101,12 @@ class ASH_EXPORT FrameCaptionButtonContainerView
  private:
   friend class FrameCaptionButtonContainerViewTest;
 
-  // Returns the distance between buttons which are next to each other. A
-  // negative value is returned if the buttons overlap.
-  int GetDistanceBetweenButtons() const;
-
-  // Returns the inset of the leftmost visible button from the view's border
-  // (if any).
-  int GetLeftInset() const;
-
-  // Returns the inset of the rightmost visible button from the view's border
-  // (if any).
-  int GetRightInset() const;
-
   // views::ButtonListener override:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // Methods specific to normal button style -----------------------------------
-  //
   // Sets the images for a button based on the given ids.
-  void SetButtonImages(views::CustomButton* button,
+  void SetButtonImages(views::ImageButton* button,
                        int normal_image_id,
                        int hot_image_id,
                        int pushed_image_id);
@@ -135,9 +121,9 @@ class ASH_EXPORT FrameCaptionButtonContainerView
 
   // The buttons. In the normal button style, at most one of |minimize_button_|
   // and |size_button_| is visible.
-  views::CustomButton* minimize_button_;
-  views::CustomButton* size_button_;
-  views::CustomButton* close_button_;
+  views::ImageButton* minimize_button_;
+  views::ImageButton* size_button_;
+  views::ImageButton* close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerView);
 };
