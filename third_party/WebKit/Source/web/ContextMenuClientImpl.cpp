@@ -290,7 +290,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
     data.pageURL = urlFromFrame(m_webView->mainFrameImpl()->frame());
     if (selectedFrame != m_webView->mainFrameImpl()->frame()) {
         data.frameURL = urlFromFrame(selectedFrame);
-        RefPtr<HistoryItem> historyItem = selectedFrame->page()->history()->currentItem(selectedFrame);
+        RefPtr<HistoryItem> historyItem = selectedFrame->loader().currentItem();
         if (historyItem)
             data.frameHistoryItem = WebHistoryItem(historyItem);
     }

@@ -206,6 +206,7 @@ public:
     void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, UpdateBackForwardListPolicy);
 
     void setCurrentItem(HistoryItem* item) { m_currentItem = item; }
+    HistoryItem* currentItem() const { return m_currentItem.get(); }
     void restoreScrollPositionAndViewState();
 
 private:
