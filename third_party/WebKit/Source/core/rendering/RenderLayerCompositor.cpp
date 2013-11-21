@@ -436,12 +436,6 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
             computeCompositingRequirements(0, updateRoot, &overlapTestRequestMap, recursionData, saw3DTransform, unclippedDescendants);
 
             assignLayersToBackings(updateRoot, layersChanged);
-
-            const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView->frameView()->scrollableAreas();
-            if (scrollableAreas) {
-                for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
-                    (*it)->updateHasVisibleNonLayerContent();
-            }
         }
         needHierarchyAndGeometryUpdate |= layersChanged;
     }
@@ -746,7 +740,6 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
 
     // Clear the flag
     layer->setHasCompositingDescendant(false);
-    layer->setHasNonCompositedChild(false);
 
     // Start by assuming this layer will not need to composite.
     CompositingReasons reasonsToComposite = CompositingReasonNone;
@@ -956,9 +949,6 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
 
     // At this point we have finished collecting all reasons to composite this layer.
     layer->setCompositingReasons(reasonsToComposite);
-
-    if (!willBeComposited && layer->parent())
-        layer->parent()->setHasNonCompositedChild(true);
 
     descendantHas3DTransform |= anyDescendantHas3DTransform || layer->has3DTransform();
 

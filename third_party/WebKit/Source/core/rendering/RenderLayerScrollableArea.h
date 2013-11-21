@@ -219,8 +219,6 @@ private:
     virtual void updateNeedsCompositedScrolling() OVERRIDE;
     bool setNeedsCompositedScrolling(bool);
 
-    virtual void updateHasVisibleNonLayerContent() OVERRIDE;
-
     void setForceNeedsCompositedScrolling(ForceNeedsCompositedScrollingMode);
 
     RenderBox* m_box;

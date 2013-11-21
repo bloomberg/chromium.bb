@@ -152,8 +152,6 @@ public:
 
     virtual bool isTrackingRepaints() const OVERRIDE;
 
-    PassOwnPtr<Vector<FloatRect> > collectTrackedRepaintRects() const;
-
 #ifndef NDEBUG
     virtual void verifyNotPainting();
 #endif

@@ -274,6 +274,10 @@ crbug.com/248938 virtual/threaded/transitions/transition-end-event-unprefixed-03
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-unprefixed-04.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
 
+# These produce new clips as of https://codereview.chromium.org/78233006/
+Bug(vollick) compositing/geometry/limit-layer-bounds-clipping-ancestor.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/geometry/limit-layer-bounds-clipping-ancestor.html [ NeedsRebaseline ]
+
 crbug.com/320477 [ Debug ] inspector/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 
 # Switching to content shell failures

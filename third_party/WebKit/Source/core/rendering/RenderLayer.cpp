@@ -119,7 +119,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_hasVisibleContent(false)
     , m_visibleDescendantStatusDirty(false)
     , m_hasVisibleDescendant(false)
-    , m_hasVisibleNonLayerContent(false)
     , m_isPaginated(false)
     , m_3DTransformedDescendantStatusDirty(true)
     , m_has3DTransformedDescendant(false)
@@ -814,20 +813,6 @@ void RenderLayer::updateHasUnclippedDescendant()
     }
 }
 
-// FIXME: this is quite brute-force. We could be more efficient if we were to
-// track state and update it as appropriate as changes are made in the RenderObject tree.
-void RenderLayer::updateHasVisibleNonLayerContent()
-{
-    TRACE_EVENT0("blink_rendering", "RenderLayer::updateHasVisibleNonLayerContent");
-    m_hasVisibleNonLayerContent = false;
-    for (RenderObject* r = renderer()->firstChild(); r; r = r->nextSibling()) {
-        if (!r->hasLayer()) {
-            m_hasVisibleNonLayerContent = true;
-            break;
-        }
-    }
-}
-
 static bool subtreeContainsOutOfFlowPositionedLayer(const RenderLayer* subtreeRoot)
 {
     return (subtreeRoot->renderer() && subtreeRoot->renderer()->isOutOfFlowPositioned()) || subtreeRoot->hasOutOfFlowPositionedDescendant();
@@ -1166,7 +1151,7 @@ RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(bool includeSelf) 
     return 0;
 }
 
-RenderLayer* RenderLayer::ancestorCompositedScrollingLayer() const
+RenderLayer* RenderLayer::ancestorScrollingLayer() const
 {
     if (!acceleratedCompositingForOverflowScrollEnabled())
         return 0;
@@ -1177,20 +1162,6 @@ RenderLayer* RenderLayer::ancestorCompositedScrollingLayer() const
 
     for (RenderLayer* ancestorLayer = containingBlock->enclosingLayer(); ancestorLayer; ancestorLayer = ancestorLayer->parent()) {
         if (ancestorLayer->needsCompositedScrolling())
-            return ancestorLayer;
-    }
-
-    return 0;
-}
-
-RenderLayer* RenderLayer::ancestorScrollingLayer() const
-{
-    RenderObject* containingBlock = renderer()->containingBlock();
-    if (!containingBlock)
-        return 0;
-
-    for (RenderLayer* ancestorLayer = containingBlock->enclosingLayer(); ancestorLayer; ancestorLayer = ancestorLayer->parent()) {
-        if (ancestorLayer->scrollsOverflow())
             return ancestorLayer;
     }
 
@@ -1720,7 +1691,7 @@ RenderLayer* RenderLayer::scrollParent() const
     // our scrolling ancestor, and we will therefore not scroll with it. In this case, we must
     // be a composited layer since the compositor will need to take special measures to ensure
     // that we scroll with our scrolling ancestor and it cannot do this if we do not promote.
-    RenderLayer* scrollParent = ancestorCompositedScrollingLayer();
+    RenderLayer* scrollParent = ancestorScrollingLayer();
 
     if (!scrollParent || scrollParent->stackingNode()->isStackingContainer())
         return 0;
@@ -1789,13 +1760,6 @@ void RenderLayer::updateScrollableArea()
         m_scrollableArea = adoptPtr(new RenderLayerScrollableArea(renderBox()));
     else
         m_scrollableArea = nullptr;
-}
-
-PassOwnPtr<Vector<FloatRect> > RenderLayer::collectTrackedRepaintRects() const
-{
-    if (hasCompositedLayerMapping())
-        return compositedLayerMapping()->collectTrackedRepaintRects();
-    return nullptr;
 }
 
 bool RenderLayer::hasOverflowControls() const
@@ -3424,11 +3388,6 @@ void RenderLayer::repaintBlockSelectionGaps()
         rect.intersect(toRenderBox(renderer())->clipRect(LayoutPoint(), 0)); // FIXME: Regions not accounted for.
     if (!rect.isEmpty())
         renderer()->repaintRectangle(rect);
-}
-
-bool RenderLayer::hasBlockSelectionGapBounds() const
-{
-    return !m_blockSelectionGapsBounds.isEmpty();
 }
 
 bool RenderLayer::intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const RenderLayer* rootLayer, const LayoutPoint* offsetFromRoot) const
