@@ -18,7 +18,8 @@
       "why": "Typical mobile business site",
       "navigate_steps": [
         { "action": "navigate" },
-        { "action": "wait", "condition": "element", "text": "Next 35" }
+        { "action": "wait", "condition": "element", "text": "Next 35" },
+        { "action": "wait", "javascript": "document.body.scrollHeight > 2560"}
       ]
     },
     {
@@ -144,7 +145,12 @@
     },
     {
       "url": "http://answers.yahoo.com/question/index?qid=20110117024343AAopj8f",
-      "why": "#1 Alexa reference"
+      "why": "#1 Alexa reference",
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "condition": "element", "text": "Other Answers (1 - 20 of 149)" },
+        { "action": "click_element", "text": "Other Answers (1 - 20 of 149)" }
+      ]
     },
     {
       "url": "http://sports.yahoo.com/",
@@ -163,10 +169,16 @@
         { "action": "wait", "javascript": "document.getElementById('og_user_warning') !== null" },
         { "action": "wait", "javascript": "document.getElementById('og_user_warning') === null" }
       ],
-      "smoothness": {
-        "action": "scroll",
-        "scrollable_element_function": "function(callback) { callback(document.getElementById('views').childNodes[1].firstChild); }"
-      }
+      "smoothness": [
+        {
+          "action": "scroll",
+          "scrollable_element_function": "function(callback) { callback(document.getElementById('views').childNodes[1].firstChild); }"
+        },
+        {
+          "action": "scroll",
+          "scrollable_element_function": "function(callback) { callback(document.getElementById('views').childNodes[1].firstChild); }"
+        }
+      ]
     },
     {
       "url": "http://mlb.com/",
