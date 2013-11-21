@@ -295,6 +295,11 @@ bool NativeViewGLSurfaceEGL::Initialize(VSyncProvider* sync_provider) {
                                       &surfaceVal);
   supports_post_sub_buffer_ = (surfaceVal && retVal) == EGL_TRUE;
 
+#if defined(OS_WIN)
+  // Partial swaps may be causing performance issues on Windows.
+  supports_post_sub_buffer_ = false;
+#endif
+
   if (sync_provider)
     vsync_provider_.swap(vsync_provider);
   else if (g_egl_sync_control_supported)
