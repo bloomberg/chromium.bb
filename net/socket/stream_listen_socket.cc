@@ -65,13 +65,13 @@ StreamListenSocket::StreamListenSocket(SocketDescriptor s,
 }
 
 StreamListenSocket::~StreamListenSocket() {
+  CloseSocket(socket_);
 #if defined(OS_WIN)
   if (socket_event_) {
     WSACloseEvent(socket_event_);
     socket_event_ = WSA_INVALID_EVENT;
   }
 #endif
-  CloseSocket(socket_);
 }
 
 void StreamListenSocket::Send(const char* bytes, int len,
