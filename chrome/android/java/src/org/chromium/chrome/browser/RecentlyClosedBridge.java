@@ -94,15 +94,6 @@ public class RecentlyClosedBridge {
     }
 
     /**
-     * TODO(newt): remove this before marking http://crbug.com/308820 as fixed.
-     * @return The list of recently closed tabs, with up to 5 elements.
-     */
-    public List<RecentlyClosedTab> getRecentlyClosedTabs() {
-        final int maxTabCount = 5;
-        return getRecentlyClosedTabs(maxTabCount);
-    }
-
-    /**
      * Opens a recently closed tab in the current tab.
      *
      * @param tab The current TabBase.
