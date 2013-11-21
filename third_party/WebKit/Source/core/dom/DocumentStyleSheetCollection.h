@@ -46,7 +46,7 @@ public:
     bool updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
 
 private:
-    void collectStyleSheets(StyleEngine*, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets);
+    void collectStyleSheets(StyleEngine*, StyleSheetCollectionBase&);
 };
 
 }

@@ -40,6 +40,36 @@
 
 namespace WebCore {
 
+StyleSheetCollectionBase::StyleSheetCollectionBase()
+{
+}
+
+StyleSheetCollectionBase::~StyleSheetCollectionBase()
+{
+}
+
+void StyleSheetCollectionBase::swap(StyleSheetCollectionBase& other)
+{
+    m_styleSheetsForStyleSheetList.swap(other.m_styleSheetsForStyleSheetList);
+    m_activeAuthorStyleSheets.swap(other.m_activeAuthorStyleSheets);
+}
+
+void StyleSheetCollectionBase::appendActiveStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& sheets)
+{
+    m_activeAuthorStyleSheets.append(sheets);
+}
+
+void StyleSheetCollectionBase::appendActiveStyleSheet(CSSStyleSheet* sheet)
+{
+    m_activeAuthorStyleSheets.append(sheet);
+}
+
+void StyleSheetCollectionBase::appendSheetForList(StyleSheet* sheet)
+{
+    m_styleSheetsForStyleSheetList.append(sheet);
+}
+
+
 StyleSheetCollection::StyleSheetCollection(TreeScope& treeScope)
     : m_treeScope(treeScope)
     , m_hadActiveLoadingStylesheet(false)
@@ -143,9 +173,9 @@ static bool cssStyleSheetHasFontFaceRule(const Vector<RefPtr<CSSStyleSheet> > sh
     return false;
 }
 
-void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updateMode, const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStyleSheets, StyleSheetChange& change)
+void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updateMode, const StyleSheetCollectionBase& newCollection, StyleSheetChange& change)
 {
-    if (activeLoadingStyleSheetLoaded(newStyleSheets))
+    if (activeLoadingStyleSheetLoaded(newCollection.activeAuthorStyleSheets()))
         return;
 
     if (updateMode != AnalyzedStyleUpdate)
@@ -155,10 +185,10 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
 
     // Find out which stylesheets are new.
     Vector<StyleSheetContents*> addedSheets;
-    if (oldStyleSheets.size() <= newStyleSheets.size()) {
-        change.styleResolverUpdateType = compareStyleSheets(oldStyleSheets, newStyleSheets, addedSheets);
+    if (m_activeAuthorStyleSheets.size() <= newCollection.activeAuthorStyleSheets().size()) {
+        change.styleResolverUpdateType = compareStyleSheets(m_activeAuthorStyleSheets, newCollection.activeAuthorStyleSheets(), addedSheets);
     } else {
-        StyleResolverUpdateType updateType = compareStyleSheets(newStyleSheets, oldStyleSheets, addedSheets);
+        StyleResolverUpdateType updateType = compareStyleSheets(newCollection.activeAuthorStyleSheets(), m_activeAuthorStyleSheets, addedSheets);
         if (updateType != Additive) {
             change.styleResolverUpdateType = updateType;
         } else {
@@ -170,7 +200,7 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
             // fontSelector should be always reset. After creating RuleSet for each StyleSheetContents,
             // we can avoid appending all stylesheetcontents in reset case.
             // So we can remove "styleSheetContentsHasFontFaceRule(newSheets)".
-            if (cssStyleSheetHasFontFaceRule(newStyleSheets))
+            if (cssStyleSheetHasFontFaceRule(newCollection.activeAuthorStyleSheets()))
                 change.styleResolverUpdateType = ResetStyleResolverAndFontSelector;
             change.styleResolverUpdateType = Reset;
         }

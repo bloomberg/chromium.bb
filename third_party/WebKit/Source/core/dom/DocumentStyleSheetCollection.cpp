@@ -52,7 +52,7 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
     ASSERT(treeScope.rootNode() == treeScope.rootNode()->document());
 }
 
-void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
+void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, StyleSheetCollectionBase& collection)
 {
     DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
     DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
@@ -129,32 +129,32 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Vecto
             if (rel.contains("alternate") && title.isEmpty())
                 activeSheet = 0;
         }
+
         if (sheet)
-            styleSheets.append(sheet);
+            collection.appendSheetForList(sheet);
         if (activeSheet)
-            activeSheets.append(activeSheet);
+            collection.appendActiveStyleSheet(activeSheet);
     }
 }
 
-static void collectActiveCSSStyleSheetsFromSeamlessParents(Vector<RefPtr<CSSStyleSheet> >& sheets, Document* document)
+static void collectActiveCSSStyleSheetsFromSeamlessParents(StyleSheetCollectionBase& collection, Document* document)
 {
     HTMLIFrameElement* seamlessParentIFrame = document->seamlessParentIFrame();
     if (!seamlessParentIFrame)
         return;
-    sheets.append(seamlessParentIFrame->document().styleEngine()->activeAuthorStyleSheets());
+    collection.appendActiveStyleSheets(seamlessParentIFrame->document().styleEngine()->activeAuthorStyleSheets());
 }
 
 bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
 {
-    Vector<RefPtr<StyleSheet> > styleSheets;
-    Vector<RefPtr<CSSStyleSheet> > activeCSSStyleSheets;
-    activeCSSStyleSheets.append(engine->injectedAuthorStyleSheets());
-    activeCSSStyleSheets.append(engine->documentAuthorStyleSheets());
-    collectActiveCSSStyleSheetsFromSeamlessParents(activeCSSStyleSheets, document());
-    collectStyleSheets(engine, styleSheets, activeCSSStyleSheets);
+    StyleSheetCollectionBase collection;
+    collection.appendActiveStyleSheets(engine->injectedAuthorStyleSheets());
+    collection.appendActiveStyleSheets(engine->documentAuthorStyleSheets());
+    collectActiveCSSStyleSheetsFromSeamlessParents(collection, document());
+    collectStyleSheets(engine, collection);
 
     StyleSheetChange change;
-    analyzeStyleSheetChange(updateMode, activeAuthorStyleSheets(), activeCSSStyleSheets, change);
+    analyzeStyleSheetChange(updateMode, collection, change);
 
     if (change.styleResolverUpdateType == Reconstruct) {
         engine->clearResolver();
@@ -170,14 +170,13 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, 
             if (change.styleResolverUpdateType == ResetStyleResolverAndFontSelector)
                 styleResolver->resetFontSelector();
             styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
-            styleResolver->lazyAppendAuthorStyleSheets(0, activeCSSStyleSheets);
+            styleResolver->lazyAppendAuthorStyleSheets(0, collection.activeAuthorStyleSheets());
         } else {
-            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), activeCSSStyleSheets);
+            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), collection.activeAuthorStyleSheets());
         }
     }
     m_scopingNodesForStyleScoped.didRemoveScopingNodes();
-    m_activeAuthorStyleSheets.swap(activeCSSStyleSheets);
-    m_styleSheetsForStyleSheetList.swap(styleSheets);
+    collection.swap(*this);
     updateUsesRemUnits();
 
     return change.requiresFullStyleRecalc;

@@ -45,7 +45,7 @@ ShadowTreeStyleSheetCollection::ShadowTreeStyleSheetCollection(ShadowRoot& shado
 {
 }
 
-void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
+void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, StyleSheetCollectionBase& collection)
 {
     DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
     DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
@@ -84,20 +84,19 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Vec
             activeSheet = 0;
 
         if (sheet)
-            styleSheets.append(sheet);
+            collection.appendSheetForList(sheet);
         if (activeSheet)
-            activeSheets.append(activeSheet);
+            collection.appendActiveStyleSheet(activeSheet);
     }
 }
 
 bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
 {
-    Vector<RefPtr<StyleSheet> > styleSheets;
-    Vector<RefPtr<CSSStyleSheet> > activeCSSStyleSheets;
-    collectStyleSheets(engine, styleSheets, activeCSSStyleSheets);
+    StyleSheetCollectionBase collection;
+    collectStyleSheets(engine, collection);
 
     StyleSheetChange change;
-    analyzeStyleSheetChange(updateMode, activeAuthorStyleSheets(), activeCSSStyleSheets, change);
+    analyzeStyleSheetChange(updateMode, collection, change);
 
     if (StyleResolver* styleResolver = engine->resolverIfExists()) {
         // FIXME: We might have already had styles in child treescope. In this case, we cannot use buildScopedStyleTreeInDocumentOrder.
@@ -108,17 +107,16 @@ bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine
             // In this case, we will reset rulesets created from style elements in the shadow tree.
             resetAllRuleSetsInTreeScope(styleResolver);
             styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
-            styleResolver->lazyAppendAuthorStyleSheets(0, activeCSSStyleSheets);
+            styleResolver->lazyAppendAuthorStyleSheets(0, collection.activeAuthorStyleSheets());
         } else {
-            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), activeCSSStyleSheets);
+            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), collection.activeAuthorStyleSheets());
         }
     }
     if (change.requiresFullStyleRecalc)
         toShadowRoot(m_treeScope.rootNode())->host()->setNeedsStyleRecalc();
 
     m_scopingNodesForStyleScoped.didRemoveScopingNodes();
-    m_activeAuthorStyleSheets.swap(activeCSSStyleSheets);
-    m_styleSheetsForStyleSheetList.swap(styleSheets);
+    collection.swap(*this);
     updateUsesRemUnits();
 
     return change.requiresFullStyleRecalc;
