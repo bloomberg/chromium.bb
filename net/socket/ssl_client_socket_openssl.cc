@@ -289,6 +289,7 @@ class SSLSessionCache {
   // Flush removes all entries from the cache. This is called when a client
   // certificate is added.
   void Flush() {
+    base::AutoLock lock(lock_);
     for (HostPortMap::iterator i = host_port_map_.begin();
          i != host_port_map_.end(); i++) {
       SSL_SESSION_free(i->second);
