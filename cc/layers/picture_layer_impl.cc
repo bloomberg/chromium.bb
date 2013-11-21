@@ -5,7 +5,6 @@
 #include "cc/layers/picture_layer_impl.h"
 
 #include <algorithm>
-#include <limits>
 
 #include "base/time/time.h"
 #include "cc/base/math_util.h"
@@ -28,10 +27,6 @@
 
 namespace {
 const float kMaxScaleRatioDuringPinch = 2.0f;
-
-// When creating a new tiling during pinch, snap to an existing
-// tiling's scale if the desired scale is within this ratio.
-const float kSnapToExistingTilingRatio = 0.2f;
 }
 
 namespace cc {
@@ -821,7 +816,13 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
   if (!layer_tree_impl()->device_viewport_valid_for_tile_management())
     return;
 
-  RecalculateRasterScales(animating_transform_to_screen);
+  raster_page_scale_ = ideal_page_scale_;
+  raster_device_scale_ = ideal_device_scale_;
+  raster_source_scale_ = ideal_source_scale_;
+
+  CalculateRasterContentsScale(animating_transform_to_screen,
+                               &raster_contents_scale_,
+                               &low_res_raster_contents_scale_);
 
   PictureLayerTiling* high_res = NULL;
   PictureLayerTiling* low_res = NULL;
@@ -875,12 +876,10 @@ bool PictureLayerImpl::ShouldAdjustRasterScale(
 
   bool is_pinching = layer_tree_impl()->PinchGestureActive();
   if (is_pinching && raster_page_scale_) {
-    // We change our raster scale when it is:
-    // - Higher than ideal (need a lower-res tiling available)
-    // - Too far from ideal (need a higher-res tiling available)
-    float ratio = ideal_page_scale_ / raster_page_scale_;
-    if (raster_page_scale_ > ideal_page_scale_ ||
-        ratio > kMaxScaleRatioDuringPinch)
+    // If the page scale diverges too far during pinch, change raster target to
+    // the current page scale.
+    float ratio = PositiveRatio(ideal_page_scale_, raster_page_scale_);
+    if (ratio >= kMaxScaleRatioDuringPinch)
       return true;
   }
 
@@ -897,66 +896,35 @@ bool PictureLayerImpl::ShouldAdjustRasterScale(
   return false;
 }
 
-float PictureLayerImpl::SnappedContentsScale(float scale) {
-  // If a tiling exists within the max snapping ratio, snap to its scale.
-  float snapped_contents_scale = scale;
-  float snapped_ratio = kSnapToExistingTilingRatio;
-  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
-    float tiling_contents_scale = tilings_->tiling_at(i)->contents_scale();
-    float ratio = PositiveRatio(tiling_contents_scale, scale);
-    if (ratio < snapped_ratio) {
-      snapped_contents_scale = tiling_contents_scale;
-      snapped_ratio = ratio;
-    }
-  }
-  return snapped_contents_scale;
-}
-
-void PictureLayerImpl::RecalculateRasterScales(
-    bool animating_transform_to_screen) {
-  raster_device_scale_ = ideal_device_scale_;
-  raster_source_scale_ = ideal_source_scale_;
-
-  bool is_pinching = layer_tree_impl()->PinchGestureActive();
-  if (!is_pinching) {
-    // When not pinching, we use ideal scale:
-    raster_page_scale_ = ideal_page_scale_;
-    raster_contents_scale_ = ideal_contents_scale_;
-  } else {
-    // See ShouldAdjustRasterScale:
-    // - When zooming out, preemptively create new tiling at lower resolution.
-    // - When zooming in, approximate ideal using multiple of kMaxScaleRatio.
-    bool zooming_out = raster_page_scale_ > ideal_page_scale_;
-    float desired_contents_scale =
-        zooming_out ? raster_contents_scale_ / kMaxScaleRatioDuringPinch
-                    : raster_contents_scale_ * kMaxScaleRatioDuringPinch;
-    raster_contents_scale_ = SnappedContentsScale(desired_contents_scale);
-    raster_page_scale_ = raster_contents_scale_ / raster_device_scale_;
-  }
+void PictureLayerImpl::CalculateRasterContentsScale(
+    bool animating_transform_to_screen,
+    float* raster_contents_scale,
+    float* low_res_raster_contents_scale) const {
+  *raster_contents_scale = ideal_contents_scale_;
 
   // Don't allow animating CSS scales to drop below 1.  This is needed because
   // changes in raster source scale aren't handled.  See the comment in
   // ShouldAdjustRasterScale.
   if (animating_transform_to_screen) {
-    raster_contents_scale_ = std::max(
-        raster_contents_scale_, 1.f * ideal_page_scale_ * ideal_device_scale_);
+    *raster_contents_scale = std::max(
+        *raster_contents_scale, 1.f * ideal_page_scale_ * ideal_device_scale_);
   }
 
   // If this layer would only create one tile at this content scale,
   // don't create a low res tiling.
   gfx::Size content_bounds =
-      gfx::ToCeiledSize(gfx::ScaleSize(bounds(), raster_contents_scale_));
+      gfx::ToCeiledSize(gfx::ScaleSize(bounds(), *raster_contents_scale));
   gfx::Size tile_size = CalculateTileSize(content_bounds);
   if (tile_size.width() >= content_bounds.width() &&
       tile_size.height() >= content_bounds.height()) {
-    low_res_raster_contents_scale_ = raster_contents_scale_;
+    *low_res_raster_contents_scale = *raster_contents_scale;
     return;
   }
 
   float low_res_factor =
       layer_tree_impl()->settings().low_res_contents_scale_factor;
-  low_res_raster_contents_scale_ = std::max(
-      raster_contents_scale_ * low_res_factor,
+  *low_res_raster_contents_scale = std::max(
+      *raster_contents_scale * low_res_factor,
       MinimumContentsScale());
 }
 
