@@ -343,13 +343,13 @@ private:
 
 inline ScrollView* toScrollView(Widget* widget)
 {
-    ASSERT(!widget || widget->isScrollView());
+    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isScrollView());
     return static_cast<ScrollView*>(widget);
 }
 
 inline const ScrollView* toScrollView(const Widget* widget)
 {
-    ASSERT(!widget || widget->isScrollView());
+    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isScrollView());
     return static_cast<const ScrollView*>(widget);
 }
 

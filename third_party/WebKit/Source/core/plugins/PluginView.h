@@ -62,13 +62,13 @@ protected:
 
 inline PluginView* toPluginView(Widget* widget)
 {
-    ASSERT(!widget || widget->isPluginView());
+    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isPluginView());
     return static_cast<PluginView*>(widget);
 }
 
 inline const PluginView* toPluginView(const Widget* widget)
 {
-    ASSERT(!widget || widget->isPluginView());
+    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isPluginView());
     return static_cast<const PluginView*>(widget);
 }
 

@@ -216,7 +216,6 @@ RenderMeter* HTMLMeterElement::renderMeter() const
         return toRenderMeter(renderer());
 
     RenderObject* renderObject = userAgentShadowRoot()->firstChild()->renderer();
-    ASSERT(!renderObject || renderObject->isMeter());
     return toRenderMeter(renderObject);
 }
 
