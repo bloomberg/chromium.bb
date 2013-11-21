@@ -15,6 +15,7 @@ Context::Context()
       storage_(),
       loader_(task_runners_.io_runner(),
               task_runners_.file_runner(),
+              task_runners_.cache_runner(),
               scoped_ptr<net::NetworkDelegate>(new NetworkDelegate()),
               storage_.profile_path()) {
   system::CoreImpl::Init();

@@ -30,6 +30,10 @@ class TaskRunners {
     return file_thread_->message_loop_proxy();
   }
 
+  base::MessageLoopProxy* cache_runner() const {
+    return cache_thread_->message_loop_proxy();
+  }
+
 #if defined(OS_ANDROID)
   void set_java_runner(base::SingleThreadTaskRunner* java_runner) {
     java_runner_ = java_runner;
@@ -42,6 +46,7 @@ class TaskRunners {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> ui_runner_;
+  scoped_ptr<base::Thread> cache_thread_;
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;
 
