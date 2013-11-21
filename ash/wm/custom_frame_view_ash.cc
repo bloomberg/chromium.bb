@@ -386,6 +386,10 @@ bool CustomFrameViewAsh::HitTestRect(const gfx::Rect& rect) const {
   return false;
 }
 
+views::View* CustomFrameViewAsh::GetHeaderView() {
+  return header_view_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh, private:
 

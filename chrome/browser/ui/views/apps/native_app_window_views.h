@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -43,14 +44,20 @@ namespace extensions {
 class Extension;
 }
 
+namespace ui {
+class MenuModel;
+}
+
 namespace views {
+class MenuRunner;
 class WebView;
 }
 
 class NativeAppWindowViews : public apps::NativeAppWindow,
+                             public content::WebContentsObserver,
+                             public views::ContextMenuController,
                              public views::WidgetDelegateView,
-                             public views::WidgetObserver,
-                             public content::WebContentsObserver {
+                             public views::WidgetObserver {
  public:
   NativeAppWindowViews(apps::ShellWindow* shell_window,
                        const apps::ShellWindow::CreateParams& params);
@@ -109,6 +116,11 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   virtual void FlashFrame(bool flash) OVERRIDE;
   virtual bool IsAlwaysOnTop() const OVERRIDE;
   virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
+
+  // Overridden from views::ContextMenuController:
+  virtual void ShowContextMenuForView(views::View* source,
+                                      const gfx::Point& p,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   // WidgetDelegate implementation.
   virtual void OnWidgetMove() OVERRIDE;
@@ -221,6 +233,9 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   ObserverList<web_modal::ModalDialogHostObserver> observer_list_;
 
   base::WeakPtrFactory<NativeAppWindowViews> weak_ptr_factory_;
+
+  // Used to show the system menu.
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowViews);
 };

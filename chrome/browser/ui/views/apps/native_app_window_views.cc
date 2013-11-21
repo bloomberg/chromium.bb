@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -25,6 +26,9 @@
 #include "content/public/browser/web_contents_view.h"
 #include "extensions/common/draggable_region.h"
 #include "extensions/common/extension.h"
+#include "ui/base/hit_test.h"
+#include "ui/base/models/simple_menu_model.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -115,17 +119,17 @@ void CreateIconAndSetRelaunchDetails(
 
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-     NOTREACHED();
-     return;
+    NOTREACHED();
+    return;
   }
   command_line.SetProgram(chrome_exe);
   ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
       shortcut_info.title, hwnd);
 
   if (!base::PathExists(web_app_path) &&
-      !file_util::CreateDirectory(web_app_path)) {
+      !file_util::CreateDirectory(web_app_path))
     return;
-  }
+
   ui::win::SetAppIconForWindow(icon_file.value(), hwnd);
   web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon);
 }
@@ -538,10 +542,10 @@ void NativeAppWindowViews::FlashFrame(bool flash) {
 bool NativeAppWindowViews::IsAlwaysOnTop() const {
   if (shell_window_->window_type_is_panel()) {
 #if defined(USE_ASH)
-  return ash::wm::GetWindowState(window_->GetNativeWindow())->
-      panel_attached();
+    return ash::wm::GetWindowState(window_->GetNativeWindow())->
+        panel_attached();
 #else
-  return true;
+    return true;
 #endif
   } else {
     return window_->IsAlwaysOnTop();
@@ -551,6 +555,34 @@ bool NativeAppWindowViews::IsAlwaysOnTop() const {
 void NativeAppWindowViews::SetAlwaysOnTop(bool always_on_top) {
   window_->SetAlwaysOnTop(always_on_top);
   shell_window_->OnNativeWindowChanged();
+}
+
+void NativeAppWindowViews::ShowContextMenuForView(
+    views::View* source,
+    const gfx::Point& p,
+    ui::MenuSourceType source_type) {
+#if defined(USE_ASH)
+  scoped_ptr<ui::MenuModel> model = CreateMultiUserContextMenu(
+      shell_window_->GetNativeWindow());
+  if (!model.get())
+    return;
+
+  // Only show context menu if point is in caption.
+  gfx::Point point_in_view_coords(p);
+  views::View::ConvertPointFromScreen(window_->non_client_view(),
+                                      &point_in_view_coords);
+  int hit_test = window_->non_client_view()->NonClientHitTest(
+      point_in_view_coords);
+  if (hit_test == HTCAPTION) {
+    menu_runner_.reset(new views::MenuRunner(model.get()));
+    if (menu_runner_->RunMenuAt(source->GetWidget(), NULL,
+          gfx::Rect(p, gfx::Size(0,0)), views::MenuItemView::TOPLEFT,
+          source_type,
+          views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
+        views::MenuRunner::MENU_DELETED)
+      return;
+  }
+#endif
 }
 
 gfx::NativeView NativeAppWindowViews::GetHostView() const {
@@ -718,8 +750,12 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
     if (shell_window_->window_type_is_panel()) {
       ash::PanelFrameView::FrameType frame_type = frameless_ ?
           ash::PanelFrameView::FRAME_NONE : ash::PanelFrameView::FRAME_ASH;
-      return new ash::PanelFrameView(widget, frame_type);
+      views::NonClientFrameView* frame_view =
+          new ash::PanelFrameView(widget, frame_type);
+      frame_view->set_context_menu_controller(this);
+      return frame_view;
     }
+
     if (!frameless_) {
       ash::CustomFrameViewAsh* custom_frame_view =
           new ash::CustomFrameViewAsh(widget);
@@ -735,6 +771,7 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
             immersive_fullscreen_controller_.get());
       }
 #endif
+      custom_frame_view->GetHeaderView()->set_context_menu_controller(this);
       return custom_frame_view;
     }
   }

@@ -316,6 +316,9 @@
         'browser/ui/ash/launcher/shell_window_launcher_item_controller.h',
         'browser/ui/ash/launcher/shell_window_launcher_controller.cc',
         'browser/ui/ash/launcher/shell_window_launcher_controller.h',
+        'browser/ui/ash/multi_user/multi_user_context_menu.cc',
+        'browser/ui/ash/multi_user/multi_user_context_menu.h',
+        'browser/ui/ash/multi_user/multi_user_context_menu_chromeos.cc',
         'browser/ui/ash/multi_user/multi_user_util.cc',
         'browser/ui/ash/multi_user/multi_user_util.h',
         'browser/ui/ash/multi_user/multi_user_window_manager.cc',
@@ -2760,6 +2763,7 @@
           'sources!': [
             'browser/ui/ash/caps_lock_delegate_views.cc',
             'browser/ui/ash/chrome_shell_delegate_views.cc',
+            'browser/ui/ash/multi_user/multi_user_context_menu.cc',
             'browser/ui/ash/session_state_delegate_views.cc',
             'browser/ui/screen_capture_notification_ui_stub.cc',
             'browser/ui/startup/default_browser_prompt.cc',

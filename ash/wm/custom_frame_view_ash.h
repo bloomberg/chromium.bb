@@ -63,6 +63,9 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   virtual void SchedulePaintInRect(const gfx::Rect& r) OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
+  // Get the view of the header.
+  views::View* GetHeaderView();
+
  private:
   class OverlayView;
 
