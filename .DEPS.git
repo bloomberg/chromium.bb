@@ -64,7 +64,7 @@ deps = {
     'src/third_party/leveldatabase/src':
         Var('git_url') + '/external/leveldb.git@2d749ea62f0e47281e82794c8e00eb588cd66616',
     'src/third_party/libaddressinput/src':
-        Var('git_url') + '/external/libaddressinput.git@807fc756351f6008710eed6af7c69ee2ef8f416f',
+        Var('git_url') + '/external/libaddressinput.git@6dccd3f200adcfb8c947bac741b67bd25f9ecddd',
     'src/third_party/libexif/sources':
         Var('git_url') + '/chromium/deps/libexif/sources.git@d815c325bab0d1871d4c7e70600ecdfdab07db9e',
     'src/third_party/libjingle/source/talk':
