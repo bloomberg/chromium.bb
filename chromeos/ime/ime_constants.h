@@ -18,13 +18,6 @@ enum IBusMouseButton {
   IBUS_MOUSE_BUTTON_RIGHT = 3U,
 };
 
-// Following variables indicate state of IBusProperty.
-enum IBusPropertyState {
-  IBUS_PROPERTY_STATE_UNCHECKED = 0,
-  IBUS_PROPERTY_STATE_CHECKED = 1,
-  IBUS_PROPERTY_STATE_INCONSISTENT = 2,
-};
-
 // We can't use ui/gfx/rect.h in chromeos/, so we should use ibus::Rect instead.
 struct Rect {
  Rect() : x(0), y(0), width(0), height(0) {}
