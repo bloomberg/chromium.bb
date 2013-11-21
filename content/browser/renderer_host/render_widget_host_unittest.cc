@@ -1165,7 +1165,7 @@ TEST_F(RenderWidgetHostTest, UnhandledWheelEvent) {
 }
 
 TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
-  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+  SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
                        WebGestureEvent::Touchscreen);
 
   // Make sure we sent the input event to the renderer.
@@ -1174,9 +1174,9 @@ TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
   process_->sink().ClearMessages();
 
   // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::GestureScrollBegin,
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(WebInputEvent::GestureScrollBegin, view_->gesture_event_type());
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, view_->gesture_event_type());
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, view_->ack_result());
 }
 
@@ -1655,7 +1655,9 @@ TEST_F(RenderWidgetHostTest, GestureScrollOverscrolls) {
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  // The scroll end event will have received a synthetic ack from the input
+  // router.
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
 }
 
 // Tests that if the page is scrolled because of a scroll-gesture, then that
@@ -1826,7 +1828,9 @@ TEST_F(RenderWidgetHostTest, GestureScrollDebounceTimerOverscroll) {
 
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  // The scroll end event will have received a synthetic ack from the input
+  // router.
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(0U, host_->GestureEventDebouncingQueueSize());
   EXPECT_EQ(1U, process_->sink().message_count());
 }
@@ -1975,7 +1979,9 @@ TEST_F(RenderWidgetHostTest, TouchGestureEndDispatchedAfterOverscrollComplete) {
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  // The scroll begin event will have received a synthetic ack from the input
+  // router.
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
   process_->sink().ClearMessages();
   SendInputEventACK(WebInputEvent::GestureScrollBegin,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -2020,7 +2026,9 @@ TEST_F(RenderWidgetHostTest, TouchGestureEndDispatchedAfterOverscrollComplete) {
   base::MessageLoop::current()->Run();
   EXPECT_EQ(1U, process_->sink().message_count());
   process_->sink().ClearMessages();
-  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  // The scroll end event will have received a synthetic ack from the input
+  // router.
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(0U, host_->GestureEventDebouncingQueueSize());
 
   SendInputEventACK(blink::WebInputEvent::GestureScrollEnd,
@@ -2033,7 +2041,9 @@ TEST_F(RenderWidgetHostTest, TouchGestureEndDispatchedAfterOverscrollComplete) {
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  // The scroll begin event will have received a synthetic ack from the input
+  // router.
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
   process_->sink().ClearMessages();
   SendInputEventACK(WebInputEvent::GestureScrollBegin,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -2079,7 +2089,9 @@ TEST_F(RenderWidgetHostTest, TouchGestureEndDispatchedAfterOverscrollComplete) {
   base::MessageLoop::current()->Run();
   EXPECT_EQ(1U, process_->sink().message_count());
   process_->sink().ClearMessages();
-  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  // The scroll end event will have received a synthetic ack from the input
+  // router.
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(0U, host_->GestureEventDebouncingQueueSize());
 
   SendInputEventACK(blink::WebInputEvent::GestureScrollEnd,

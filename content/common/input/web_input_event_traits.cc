@@ -289,7 +289,9 @@ bool WebInputEventTraits::IgnoresAckDisposition(
       type == WebInputEvent::GestureShowPress ||
       type == WebInputEvent::GestureTapCancel ||
       type == WebInputEvent::GesturePinchBegin ||
-      type == WebInputEvent::GesturePinchEnd;
+      type == WebInputEvent::GesturePinchEnd ||
+      type == WebInputEvent::GestureScrollBegin ||
+      type == WebInputEvent::GestureScrollEnd;
 }
 
 }  // namespace content
