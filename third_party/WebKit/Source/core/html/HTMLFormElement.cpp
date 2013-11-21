@@ -48,6 +48,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/frame/UseCounter.h"
 #include "core/rendering/RenderTextControl.h"
@@ -400,10 +401,22 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submissi
         document().frame()->script().executeScriptIfJavaScriptURL(submission->action());
         return;
     }
+
+    Frame* targetFrame = document().frame()->loader().findFrameForNavigation(submission->target(), submission->state()->sourceDocument());
+    if (!targetFrame) {
+        if (!DOMWindow::allowPopUp(document().frame()) && !UserGestureIndicator::processingUserGesture())
+            return;
+        targetFrame = document().frame();
+    } else {
+        submission->clearTarget();
+    }
+    if (!targetFrame->page())
+        return;
+
     submission->setReferrer(document().frame()->loader().outgoingReferrer());
     submission->setOrigin(document().frame()->loader().outgoingOrigin());
 
-    document().frame()->navigationScheduler().scheduleFormSubmission(submission);
+    targetFrame->navigationScheduler().scheduleFormSubmission(submission);
 }
 
 void HTMLFormElement::reset()
