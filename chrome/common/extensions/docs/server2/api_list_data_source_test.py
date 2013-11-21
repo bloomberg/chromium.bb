@@ -92,6 +92,7 @@ _TEST_DATA = _ToTestApiSchema(_TEST_API_SCHEMA, {
   'docs': {
     'templates': {
       'json': {
+        'api_availabilities.json': '{}',
         'manifest.json': '{}',
         'permissions.json': '{}',
       },

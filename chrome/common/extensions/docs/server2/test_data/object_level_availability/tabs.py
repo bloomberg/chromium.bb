@@ -10,10 +10,17 @@ from test_file_system import MoveAllTo
 
 TABS_SCHEMA_BRANCHES = MoveAllTo(EXTENSIONS, {
   'trunk': {
+    'docs': {
+      'templates': {
+        'json': {
+          'api_availabilities.json': '{}'
+        }
+      }
+    },
     'api': {
-      '_api_features.json': "{}",
-      '_manifest_features.json': "{}",
-      '_permission_features.json': "{}",
+      '_api_features.json': '{}',
+      '_manifest_features.json': '{}',
+      '_permission_features.json': '{}',
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [

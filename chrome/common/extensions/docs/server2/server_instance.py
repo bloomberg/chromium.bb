@@ -89,7 +89,8 @@ class ServerInstance(object):
         self.compiled_fs_factory,
         host_fs_at_trunk,
         self.availability_finder,
-        branch_utility)
+        self.api_models,
+        self.object_store_creator)
 
     self.api_list_data_source_factory = APIListDataSource.Factory(
         self.compiled_fs_factory,
@@ -141,13 +142,22 @@ class ServerInstance(object):
     self.template_renderer = TemplateRenderer(self)
 
   @staticmethod
-  def ForTest(file_system, base_path='/'):
+  def ForTest(file_system=None, file_system_provider=None, base_path='/'):
     object_store_creator = ObjectStoreCreator.ForTest()
+    if file_system is None and file_system_provider is None:
+      raise ValueError('Either |file_system| or |file_system_provider| '
+                       'must be specified')
+    if file_system and file_system_provider:
+      raise ValueError('Only one of |file_system| and |file_system_provider| '
+                       'can be specified')
+    if file_system_provider is None:
+      file_system_provider = HostFileSystemProvider.ForTest(
+          file_system,
+          object_store_creator)
     return ServerInstance(object_store_creator,
                           CompiledFileSystem.Factory(object_store_creator),
                           TestBranchUtility.CreateWithCannedData(),
-                          HostFileSystemProvider.ForTest(file_system,
-                                                         object_store_creator),
+                          file_system_provider,
                           GithubFileSystemProvider.ForEmpty(),
                           base_path=base_path)
 

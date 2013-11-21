@@ -2,14 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from collections import Mapping, namedtuple
-import os
+from collections import Mapping
 
 from api_schema_graph import APISchemaGraph
 from branch_utility import BranchUtility
-from extensions_paths import API
+from extensions_paths import API, JSON_TEMPLATES
 from file_system import FileNotFoundError
-from third_party.json_schema_compiler import idl_schema, idl_parser
 from third_party.json_schema_compiler.model import UnixName
 
 
@@ -123,6 +121,22 @@ class AvailabilityFinder(object):
       return object_store_creator.Create(AvailabilityFinder, category=category)
     self._top_level_object_store = create_object_store('top_level')
     self._node_level_object_store = create_object_store('node_level')
+    self._json_fs = compiled_fs_factory.ForJson(self._host_file_system)
+
+  def _GetPredeterminedAvailability(self, api_name):
+    '''Checks a configuration file for hardcoded (i.e. predetermined)
+    availability information for an API.
+    '''
+    api_info = self._json_fs.GetFromFile(
+        '%s/api_availabilities.json' % JSON_TEMPLATES).Get().get(api_name)
+    if api_info is None:
+      return None
+    if api_info['channel'] == 'stable':
+      availability = self._branch_utility.GetStableChannelInfo(
+          api_info['version'])
+    else:
+      availability = self._branch_utility.GetChannelInfo(api_info['channel'])
+    return availability
 
   def _CheckStableAvailability(self, api_name, file_system, version):
     '''Checks for availability of an API, |api_name|, on the stable channel.
@@ -195,6 +209,12 @@ class AvailabilityFinder(object):
     '''
     availability = self._top_level_object_store.Get(api_name).Get()
     if availability is not None:
+      return availability
+
+    # Check for predetermined availability and cache this information if found.
+    availability = self._GetPredeterminedAvailability(api_name)
+    if availability is not None:
+      self._top_level_object_store.Set(api_name, availability)
       return availability
 
     def check_api_availability(file_system, channel_info):

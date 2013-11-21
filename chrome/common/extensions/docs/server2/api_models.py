@@ -59,9 +59,10 @@ class APIModels(object):
     # Devtools APIs are in API/devtools/ not API/, and have their
     # "devtools" names removed from the file names.
     basename = posixpath.basename(file_name)
-    if basename.startswith('devtools_'):
+    if 'devtools_' in basename:
       file_name = posixpath.join(
-          'devtools', file_name.replace(basename, basename[len('devtools_'):]))
+          'devtools', file_name.replace(basename,
+                                        basename.replace('devtools_' , '')))
 
     futures = [self._model_cache.GetFromFile('%s/%s.%s' % (API, file_name, ext))
                for ext in ('json', 'idl')]

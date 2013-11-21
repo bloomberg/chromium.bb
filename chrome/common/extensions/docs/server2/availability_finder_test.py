@@ -24,7 +24,7 @@ from third_party.json_schema_compiler.memoize import memoize
 TABS_UNMODIFIED_VERSIONS = (16, 20, 23, 24)
 
 
-class FakeHostFileSystemProvider(object):
+class _FakeHostFileSystemProvider(object):
 
   def __init__(self, file_system_data):
     self._file_system_data = file_system_data
@@ -45,8 +45,8 @@ class AvailabilityFinderTest(unittest.TestCase):
         os.path.join('branch_utility', 'second.json'),
         FakeUrlFetcher(os.path.join(sys.path[0], 'test_data')),
         ObjectStoreCreator.ForTest())
-    api_fs_creator = FakeHostFileSystemProvider(CANNED_API_FILE_SYSTEM_DATA)
-    self._node_fs_creator = FakeHostFileSystemProvider(TABS_SCHEMA_BRANCHES)
+    api_fs_creator = _FakeHostFileSystemProvider(CANNED_API_FILE_SYSTEM_DATA)
+    self._node_fs_creator = _FakeHostFileSystemProvider(TABS_SCHEMA_BRANCHES)
 
     def create_availability_finder(host_fs_creator):
       test_object_store = ObjectStoreCreator.ForTest()
@@ -105,6 +105,20 @@ class AvailabilityFinderTest(unittest.TestCase):
     # for an API in a _features.json file, and using |channel| (i.e. |dev|) to
     # represent the development channel, or phase of development, where an API's
     # availability is being checked.
+
+    # Testing APIs with predetermined availability.
+    self.assertEqual(
+        ChannelInfo('trunk', 'trunk', 'trunk'),
+        self._avail_finder.GetApiAvailability('jsonTrunkAPI'))
+    self.assertEqual(
+        ChannelInfo('dev', CANNED_BRANCHES[28], 28),
+        self._avail_finder.GetApiAvailability('jsonDevAPI'))
+    self.assertEqual(
+        ChannelInfo('beta', CANNED_BRANCHES[27], 27),
+        self._avail_finder.GetApiAvailability('jsonBetaAPI'))
+    self.assertEqual(
+        ChannelInfo('stable', CANNED_BRANCHES[20], 20),
+        self._avail_finder.GetApiAvailability('jsonStableAPI'))
 
     # Testing a whitelisted API.
     self.assertEquals(
