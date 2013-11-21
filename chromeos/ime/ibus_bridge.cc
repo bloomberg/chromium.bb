@@ -18,8 +18,7 @@ class IBusBridgeImpl : public IBusBridge {
   IBusBridgeImpl()
     : input_context_handler_(NULL),
       engine_handler_(NULL),
-      candidate_window_handler_(NULL),
-      panel_handler_(NULL) {
+      candidate_window_handler_(NULL) {
   }
 
   virtual ~IBusBridgeImpl() {
@@ -59,18 +58,6 @@ class IBusBridgeImpl : public IBusBridge {
     candidate_window_handler_ = handler;
   }
 
-  // IBusBridge override.
-  virtual IBusPanelPropertyHandlerInterface*
-      GetPropertyHandler() const OVERRIDE {
-    return panel_handler_;
-  }
-
-  // IBusBridge override.
-  virtual void SetPropertyHandler(
-      IBusPanelPropertyHandlerInterface* handler) OVERRIDE {
-    panel_handler_ = handler;
-  }
-
   virtual void SetCreateEngineHandler(
       const std::string& engine_id,
       const CreateEngineHandler& handler) OVERRIDE {
@@ -95,7 +82,6 @@ class IBusBridgeImpl : public IBusBridge {
   IBusInputContextHandlerInterface* input_context_handler_;
   IBusEngineHandlerInterface* engine_handler_;
   IBusPanelCandidateWindowHandlerInterface* candidate_window_handler_;
-  IBusPanelPropertyHandlerInterface* panel_handler_;
   std::map<std::string, CreateEngineHandler> create_engine_handler_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IBusBridgeImpl);

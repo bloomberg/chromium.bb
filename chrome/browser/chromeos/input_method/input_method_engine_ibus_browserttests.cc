@@ -12,7 +12,6 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/mock_ime_candidate_window_handler.h"
 #include "chromeos/ime/mock_ime_input_context_handler.h"
-#include "chromeos/ime/mock_ime_property_handler.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -162,12 +161,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
       new MockIMEInputContextHandler());
   scoped_ptr<MockIMECandidateWindowHandler> mock_candidate_window(
       new MockIMECandidateWindowHandler());
-  scoped_ptr<MockIMEPropertyHandler> mock_property(
-      new MockIMEPropertyHandler());
 
   IBusBridge::Get()->SetInputContextHandler(mock_input_context.get());
   IBusBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
-  IBusBridge::Get()->SetPropertyHandler(mock_property.get());
 
   IBusEngineHandlerInterface* engine_handler =
       IBusBridge::Get()->GetEngineHandler();
@@ -232,7 +228,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
 
   IBusBridge::Get()->SetInputContextHandler(NULL);
   IBusBridge::Get()->SetCandidateWindowHandler(NULL);
-  IBusBridge::Get()->SetPropertyHandler(NULL);
 }
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
@@ -245,12 +240,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
       new MockIMEInputContextHandler());
   scoped_ptr<MockIMECandidateWindowHandler> mock_candidate_window(
       new MockIMECandidateWindowHandler());
-  scoped_ptr<MockIMEPropertyHandler> mock_property(
-      new MockIMEPropertyHandler());
 
   IBusBridge::Get()->SetInputContextHandler(mock_input_context.get());
   IBusBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
-  IBusBridge::Get()->SetPropertyHandler(mock_property.get());
 
   IBusEngineHandlerInterface* engine_handler =
       IBusBridge::Get()->GetEngineHandler();
@@ -381,7 +373,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("commitText test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     const char commit_text_test_script[] =
         "chrome.input.ime.commitText({"
@@ -398,7 +389,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("setComposition test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     const char set_composition_test_script[] =
         "chrome.input.ime.setComposition({"
@@ -442,7 +432,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("clearComposition test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     const char commite_text_test_script[] =
         "chrome.input.ime.clearComposition({"
@@ -461,7 +450,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("setCandidateWindowProperties:visibility test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     const char set_candidate_window_properties_test_script[] =
         "chrome.input.ime.setCandidateWindowProperties({"
@@ -481,7 +469,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("setCandidateWindowProperties:cursor_visibility test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     const char set_candidate_window_properties_test_script[] =
         "chrome.input.ime.setCandidateWindowProperties({"
@@ -507,7 +494,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("setCandidateWindowProperties:vertical test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     const char set_candidate_window_properties_test_script[] =
         "chrome.input.ime.setCandidateWindowProperties({"
@@ -537,7 +523,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("setCandidateWindowProperties:pageSize test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     const char set_candidate_window_properties_test_script[] =
         "chrome.input.ime.setCandidateWindowProperties({"
@@ -570,7 +555,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("setCandidateWindowProperties:auxTextVisibility test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     const char set_candidate_window_properties_test_script[] =
         "chrome.input.ime.setCandidateWindowProperties({"
@@ -590,7 +574,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("setCandidateWindowProperties:auxText test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     const char set_candidate_window_properties_test_script[] =
         "chrome.input.ime.setCandidateWindowProperties({"
@@ -615,7 +598,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("setCandidates test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     const char set_candidates_test_script[] =
         "chrome.input.ime.setCandidates({"
@@ -683,7 +665,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("setCursorPosition test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     const char set_cursor_position_test_script[] =
         "chrome.input.ime.setCursorPosition({"
@@ -720,7 +701,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("setMenuItem test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     const char set_menu_item_test_script[] =
         "chrome.input.ime.setMenuItems({"
@@ -775,7 +755,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("deleteSurroundingText test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     const char delete_surrounding_text_test_script[] =
         "chrome.input.ime.deleteSurroundingText({"
@@ -796,7 +775,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("onFocus test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();
-    mock_property->Reset();
 
     {
       ExtensionTestMessageListener focus_listener("onFocus:text", false);
@@ -838,7 +816,6 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
 
   IBusBridge::Get()->SetInputContextHandler(NULL);
   IBusBridge::Get()->SetCandidateWindowHandler(NULL);
-  IBusBridge::Get()->SetPropertyHandler(NULL);
 }
 
 }  // namespace

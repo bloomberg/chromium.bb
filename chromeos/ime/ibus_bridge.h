@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/ime/ime_constants.h"
-#include "chromeos/ime/input_method_property.h"
 
 namespace chromeos {
 namespace input_method {
@@ -155,19 +154,6 @@ class CHROMEOS_EXPORT IBusPanelCandidateWindowHandlerInterface {
   IBusPanelCandidateWindowHandlerInterface() {}
 };
 
-// A interface to handle the property related method call.
-class CHROMEOS_EXPORT IBusPanelPropertyHandlerInterface {
- public:
-  virtual ~IBusPanelPropertyHandlerInterface() {}
-
-  // Called when a new property is registered.
-  virtual void RegisterProperties(
-    const chromeos::input_method::InputMethodPropertyList& properties) = 0;
-
- protected:
-  IBusPanelPropertyHandlerInterface() {}
-};
-
 
 // IBusBridge provides access of each IME related handler. This class is used
 // for IME implementation without ibus-daemon. The legacy ibus IME communicates
@@ -215,15 +201,6 @@ class IBusBridge {
   // window service, pass NULL for |handler|. Caller must release |handler|.
   virtual void SetCandidateWindowHandler(
       IBusPanelCandidateWindowHandlerInterface* handler) = 0;
-
-  // Returns current PropertyHandler. This function returns NULL if panel window
-  // is not ready to use.
-  virtual IBusPanelPropertyHandlerInterface* GetPropertyHandler() const = 0;
-
-  // Updates current PropertyHandler. If there is no active property service,
-  // pass NULL for |handler|. Caller must release |handler|.
-  virtual void SetPropertyHandler(
-      IBusPanelPropertyHandlerInterface* handler) = 0;
 
   // Sets create engine handler for |engine_id|. |engine_id| must not be empty
   // and |handler| must not be null.

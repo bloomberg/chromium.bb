@@ -18,6 +18,7 @@ class IBusText;
 
 namespace input_method {
 class CandidateWindow;
+struct InputMethodProperty;
 struct KeyEventHandle;
 }  // namespace input_method
 

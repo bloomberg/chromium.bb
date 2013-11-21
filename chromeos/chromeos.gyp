@@ -434,8 +434,6 @@
         'ime/mock_ime_engine_handler.h',
         'ime/mock_ime_input_context_handler.cc',
         'ime/mock_ime_input_context_handler.h',
-        'ime/mock_ime_property_handler.cc',
-        'ime/mock_ime_property_handler.h',
         'ime/mock_xkeyboard.cc',
         'ime/mock_xkeyboard.h',
       ],
