@@ -44,7 +44,6 @@
 #include "V8Entity.h"
 #include "V8HTMLCollection.h"
 #include "V8HTMLElement.h"
-#include "V8MediaQueryListListener.h"
 #include "V8Node.h"
 #include "V8NodeFilter.h"
 #include "V8ShadowRoot.h"
@@ -3707,19 +3706,6 @@ static void compareHowMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void mediaQueryListListenerMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValue(info, imp->mediaQueryListListenerMethod());
-}
-
-static void mediaQueryListListenerMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectPythonV8Internal::mediaQueryListListenerMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
 static void anyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -4435,6 +4421,24 @@ static void voidMethodXPathNSResolverArgMethodCallback(const v8::FunctionCallbac
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjectPythonV8Internal::voidMethodXPathNSResolverArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodSequenceDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodSequenceDictionaryArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(Vector<Dictionary>, sequenceDictionaryArg, toNativeArray<Dictionary>(info[0], 1, info.GetIsolate()));
+    imp->voidMethodSequenceDictionaryArg(sequenceDictionaryArg);
+}
+
+static void voidMethodSequenceDictionaryArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodSequenceDictionaryArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -6225,7 +6229,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"voidMethodUnsignedShortArg", TestObjectPythonV8Internal::voidMethodUnsignedShortArgMethodCallback, 0, 1},
     {"testInterfaceEmptyMethod", TestObjectPythonV8Internal::testInterfaceEmptyMethodMethodCallback, 0, 0},
     {"compareHowMethod", TestObjectPythonV8Internal::compareHowMethodMethodCallback, 0, 0},
-    {"mediaQueryListListenerMethod", TestObjectPythonV8Internal::mediaQueryListListenerMethodMethodCallback, 0, 0},
     {"anyMethod", TestObjectPythonV8Internal::anyMethodMethodCallback, 0, 0},
     {"voidMethodMediaQueryListListenerArg", TestObjectPythonV8Internal::voidMethodMediaQueryListListenerArgMethodCallback, 0, 1},
     {"voidMethodCompareHowArg", TestObjectPythonV8Internal::voidMethodCompareHowArgMethodCallback, 0, 1},
@@ -6258,6 +6261,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"voidMethodNodeFilterArg", TestObjectPythonV8Internal::voidMethodNodeFilterArgMethodCallback, 0, 1},
     {"voidMethodPromiseArg", TestObjectPythonV8Internal::voidMethodPromiseArgMethodCallback, 0, 1},
     {"voidMethodSerializedScriptValueArg", TestObjectPythonV8Internal::voidMethodSerializedScriptValueArgMethodCallback, 0, 1},
+    {"voidMethodSequenceDictionaryArg", TestObjectPythonV8Internal::voidMethodSequenceDictionaryArgMethodCallback, 0, 1},
     {"voidMethodStringArgLongArg", TestObjectPythonV8Internal::voidMethodStringArgLongArgMethodCallback, 0, 2},
     {"voidMethodOptionalStringArg", TestObjectPythonV8Internal::voidMethodOptionalStringArgMethodCallback, 0, 0},
     {"voidMethodOptionalTestInterfaceEmptyArg", TestObjectPythonV8Internal::voidMethodOptionalTestInterfaceEmptyArgMethodCallback, 0, 0},

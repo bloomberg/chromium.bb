@@ -208,7 +208,6 @@ interface TestObjectPython {
     void voidMethodLongArgTestInterfaceEmptyArg(long longArg, TestInterfaceEmpty testInterfaceEmptyArg);
     // Custom type conversions
     CompareHow compareHowMethod();
-    MediaQueryListListener mediaQueryListListenerMethod();
     any anyMethod();
     void voidMethodMediaQueryListListenerArg(MediaQueryListListener mediaQueryListListenerArg);
     void voidMethodCompareHowArg(CompareHow compareHowArg);
@@ -261,6 +260,7 @@ interface TestObjectPython {
     void voidMethodPromiseArg(Promise promiseArg);
     void voidMethodSerializedScriptValueArg(SerializedScriptValue serializedScriptValueArg);
     void voidMethodXPathNSResolverArg(XPathNSResolver xPathNSResolverArg);
+    void voidMethodSequenceDictionaryArg(sequence<Dictionary> sequenceDictionaryArg);
 
     // Arguments
     void voidMethodStringArgLongArg(DOMString stringArg, long longArg);
