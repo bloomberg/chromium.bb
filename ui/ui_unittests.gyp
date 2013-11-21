@@ -329,16 +329,14 @@
             'base/dragdrop/os_exchange_data_unittest.cc',
             'events/gestures/velocity_calculator_unittest.cc',
           ],
+          'dependencies': [
+            'events/events.gyp:events',
+            'events/events.gyp:events_base',
+          ],
         }, {
           'sources!': [
             'events/event_dispatcher_unittest.cc',
             'events/event_unittest.cc',
-          ],
-        }],
-        ['toolkit_views==1', {
-          'dependencies': [
-            'events/events.gyp:events',
-            'events/events.gyp:events_base',
           ],
         }],
         ['use_aura==1', {
