@@ -13,13 +13,17 @@ package metrics;
 //
 // See $kernel/tools/perf/design.txt for more details.
 
-// Next tag: 5
+// Please do not modify this protobuf directly, except to mirror the upstream
+// version found here:
+// https://chromium.googlesource.com/chromiumos/platform/chromiumos-wide-profiling/+/master/perf_data.proto
+// with some fields omitted for privacy reasons. Because it is a read-only copy
+// of the upstream protobuf, "Next tag:" comments are also absent.
+
 message PerfDataProto {
 
   // Perf event attribute. Stores the event description.
   // This data structure is defined in the linux kernel:
   // $kernel/tools/perf/util/event.h.
-  // Next tag: 36
   message PerfEventAttr {
     // Type of the event. Type is an enumeration and can be:
     // IP: an instruction-pointer was stored in the event.
@@ -139,7 +143,6 @@ message PerfDataProto {
   }
 
   // Describes a perf.data file attribute.
-  // Next tag: 3
   message PerfFileAttr {
     optional PerfEventAttr attr = 1;
 
@@ -149,7 +152,6 @@ message PerfDataProto {
 
   // This message contains information about a perf sample itself, as opposed to
   // a perf event captured by a sample.
-  // Next tag: 6
   message SampleInfo {
     // Process ID / thread ID from which this sample was taken.
     optional uint32 pid = 1;
@@ -167,7 +169,6 @@ message PerfDataProto {
     optional uint32 cpu = 5;
   }
 
-  // Next tag: 7
   message CommEvent {
     // Process id.
     optional uint32 pid = 1;
@@ -187,7 +188,6 @@ message PerfDataProto {
     optional SampleInfo sample_info = 6;
   }
 
-  // Next tag: 9
   message MMapEvent {
     // Process id.
     optional uint32 pid = 1;
@@ -212,7 +212,6 @@ message PerfDataProto {
     optional SampleInfo sample_info = 8;
   }
 
-  // Next tag: 4
   message BranchStackEntry {
     // Branch source address.
     optional uint64 from_ip = 1;
@@ -224,7 +223,6 @@ message PerfDataProto {
     optional bool mispredicted = 3;
   }
 
-  // Next tag: 13
   message SampleEvent {
     // Instruction pointer.
     optional uint64 ip = 1;
@@ -266,7 +264,6 @@ message PerfDataProto {
   // ForkEvent is used for both FORK and EXIT events, which have the same data
   // format.  We don't want to call this "ForkOrExitEvent", in case a separate
   // exit event is introduced in the future.
-  // Next tag: 12
   message ForkEvent {
     // Forked process ID.
     optional uint32 pid = 1;
@@ -287,7 +284,6 @@ message PerfDataProto {
     optional SampleInfo sample_info = 11;
   }
 
-  // Next tag: 4
   message EventHeader {
     // Type of event.
     optional uint32 type = 1;
@@ -296,7 +292,6 @@ message PerfDataProto {
     optional uint32 size = 3;
   }
 
-  // Next tag: 6
   message PerfEvent {
     optional EventHeader header = 1;
 
@@ -306,7 +301,6 @@ message PerfDataProto {
     optional ForkEvent fork_event = 5;
   }
 
-  // Next tag: 8
   message PerfEventStats {
     // Total number of events read from perf data.
     optional uint32 num_events_read = 1;
