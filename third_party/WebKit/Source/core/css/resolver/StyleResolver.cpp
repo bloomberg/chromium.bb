@@ -195,25 +195,30 @@ void StyleResolver::removePendingAuthorStyleSheets(const Vector<RefPtr<CSSStyleS
         m_pendingStyleSheets.remove(styleSheets[i].get());
 }
 
+void StyleResolver::appendCSSStyleSheet(CSSStyleSheet* cssSheet)
+{
+    ASSERT(cssSheet);
+    ASSERT(!cssSheet->disabled());
+    if (cssSheet->mediaQueries() && !m_medium->eval(cssSheet->mediaQueries(), &m_viewportDependentMediaQueryResults))
+        return;
+
+    StyleSheetContents* sheet = cssSheet->contents();
+    ContainerNode* scopingNode = ScopedStyleResolver::scopingNodeFor(document(), cssSheet);
+    if (!scopingNode)
+        return;
+
+    ScopedStyleResolver* resolver = ensureScopedStyleResolver(scopingNode);
+    ASSERT(resolver);
+    resolver->addRulesFromSheet(sheet, *m_medium, this);
+    m_inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
+}
+
 void StyleResolver::appendPendingAuthorStyleSheets()
 {
     setBuildScopedStyleTreeInDocumentOrder(false);
-    for (ListHashSet<CSSStyleSheet*, 16>::iterator it = m_pendingStyleSheets.begin(); it != m_pendingStyleSheets.end(); ++it) {
-        CSSStyleSheet* cssSheet = *it;
-        ASSERT(!cssSheet->disabled());
-        if (cssSheet->mediaQueries() && !m_medium->eval(cssSheet->mediaQueries(), &m_viewportDependentMediaQueryResults))
-            continue;
+    for (ListHashSet<CSSStyleSheet*, 16>::iterator it = m_pendingStyleSheets.begin(); it != m_pendingStyleSheets.end(); ++it)
+        appendCSSStyleSheet(*it);
 
-        StyleSheetContents* sheet = cssSheet->contents();
-        ContainerNode* scopingNode = ScopedStyleResolver::scopingNodeFor(document(), cssSheet);
-        if (!scopingNode)
-            continue;
-
-        ScopedStyleResolver* resolver = ensureScopedStyleResolver(scopingNode);
-        ASSERT(resolver);
-        resolver->addRulesFromSheet(sheet, *m_medium, this);
-        m_inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
-    }
     m_pendingStyleSheets.clear();
     finishAppendAuthorStyleSheets();
 }
@@ -223,22 +228,8 @@ void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefP
     // This handles sheets added to the end of the stylesheet list only. In other cases the style resolver
     // needs to be reconstructed. To handle insertions too the rule order numbers would need to be updated.
     unsigned size = styleSheets.size();
-    for (unsigned i = firstNew; i < size; ++i) {
-        CSSStyleSheet* cssSheet = styleSheets[i].get();
-        ASSERT(!cssSheet->disabled());
-        if (cssSheet->mediaQueries() && !m_medium->eval(cssSheet->mediaQueries(), &m_viewportDependentMediaQueryResults))
-            continue;
-
-        StyleSheetContents* sheet = cssSheet->contents();
-        ContainerNode* scopingNode = ScopedStyleResolver::scopingNodeFor(document(), cssSheet);
-        if (!scopingNode)
-            continue;
-
-        ScopedStyleResolver* resolver = ensureScopedStyleResolver(scopingNode);
-        ASSERT(resolver);
-        resolver->addRulesFromSheet(sheet, *m_medium, this);
-        m_inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
-    }
+    for (unsigned i = firstNew; i < size; ++i)
+        appendCSSStyleSheet(styleSheets[i].get());
 }
 
 void StyleResolver::finishAppendAuthorStyleSheets()
