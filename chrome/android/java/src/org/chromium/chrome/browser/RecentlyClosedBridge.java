@@ -83,12 +83,23 @@ public class RecentlyClosedBridge {
     }
 
     /**
-     * @return The list of recently closed tabs.
+     * @param maxTabCount The maximum number of recently closed tabs to return.
+     * @return The list of recently closed tabs, with up to maxTabCount elements.
+     */
+    public List<RecentlyClosedTab> getRecentlyClosedTabs(int maxTabCount) {
+        List<RecentlyClosedTab> tabs = new ArrayList<RecentlyClosedTab>();
+        boolean received = nativeGetRecentlyClosedTabs(mNativeRecentlyClosedTabsBridge, tabs,
+                maxTabCount);
+        return received ? tabs : null;
+    }
+
+    /**
+     * TODO(newt): remove this before marking http://crbug.com/308820 as fixed.
+     * @return The list of recently closed tabs, with up to 5 elements.
      */
     public List<RecentlyClosedTab> getRecentlyClosedTabs() {
-        List<RecentlyClosedTab> tabs = new ArrayList<RecentlyClosedTab>();
-        boolean received = nativeGetRecentlyClosedTabs(mNativeRecentlyClosedTabsBridge, tabs);
-        return received ? tabs : null;
+        final int maxTabCount = 5;
+        return getRecentlyClosedTabs(maxTabCount);
     }
 
     /**
@@ -114,7 +125,7 @@ public class RecentlyClosedBridge {
     private native void nativeSetRecentlyClosedCallback(
             int nativeRecentlyClosedTabsBridge, RecentlyClosedCallback callback);
     private native boolean nativeGetRecentlyClosedTabs(
-            int nativeRecentlyClosedTabsBridge, List<RecentlyClosedTab> tabs);
+            int nativeRecentlyClosedTabsBridge, List<RecentlyClosedTab> tabs, int maxTabCount);
     private native boolean nativeOpenRecentlyClosedTab(
             int nativeRecentlyClosedTabsBridge, TabBase tab, int recentTabId);
     private native void nativeClearRecentlyClosedTabs(int nativeRecentlyClosedTabsBridge);

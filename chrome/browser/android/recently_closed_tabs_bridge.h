@@ -21,8 +21,13 @@ class RecentlyClosedTabsBridge : public TabRestoreServiceObserver {
 
   void Destroy(JNIEnv* env, jobject obj);
   void SetRecentlyClosedCallback(JNIEnv* env, jobject obj, jobject jcallback);
-  jboolean GetRecentlyClosedTabs(JNIEnv* env, jobject obj, jobject jtabs);
-  jboolean OpenRecentlyClosedTab(JNIEnv* env, jobject obj, jobject jtab,
+  jboolean GetRecentlyClosedTabs(JNIEnv* env,
+                                 jobject obj,
+                                 jobject jtabs,
+                                 jint max_tab_count);
+  jboolean OpenRecentlyClosedTab(JNIEnv* env,
+                                 jobject obj,
+                                 jobject jtab,
                                  jint tab_id);
   void ClearRecentlyClosedTabs(JNIEnv* env, jobject obj);
 
