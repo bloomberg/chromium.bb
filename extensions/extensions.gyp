@@ -156,6 +156,7 @@
       'sources': [
         'browser/admin_policy.cc',
         'browser/admin_policy.h',
+        'browser/app_sorting.h',
         'browser/event_listener_map.cc',
         'browser/event_listener_map.h',
         'browser/extension_prefs_scope.h',

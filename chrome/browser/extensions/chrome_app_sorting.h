@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SORTING_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_SORTING_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_CHROME_APP_SORTING_H_
+#define CHROME_BROWSER_EXTENSIONS_CHROME_APP_SORTING_H_
 
 #include <map>
 #include <set>
@@ -11,98 +11,57 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "extensions/browser/app_sorting.h"
 #include "extensions/common/extension.h"
 #include "sync/api/string_ordinal.h"
 
-class ExtensionScopedPrefs;
 class ExtensionSyncService;
 class PrefService;
 
-class ExtensionSorting {
+namespace extensions {
+
+class ExtensionScopedPrefs;
+
+class ChromeAppSorting : public AppSorting {
  public:
-  explicit ExtensionSorting(ExtensionScopedPrefs* extension_scoped_prefs);
-  ~ExtensionSorting();
+  explicit ChromeAppSorting(ExtensionScopedPrefs* extension_scoped_prefs);
+  virtual ~ChromeAppSorting();
 
-  // Set up the ExtensionSyncService to inform of changes that require syncing.
-  void SetExtensionSyncService(ExtensionSyncService* extension_sync_service);
-
-  // Properly initialize ExtensionSorting internal values that require
-  // |extension_ids|.
-  void Initialize(
-      const extensions::ExtensionIdList& extension_ids);
-
-  // Resolves any conflicts the might be created as a result of syncing that
-  // results in two icons having the same page and app launch ordinal. After
-  // this is called it is guaranteed that there are no collisions of NTP icons.
-  void FixNTPOrdinalCollisions();
-
-  // This ensures that the extension has valid ordinals, and if it doesn't then
-  // properly initialize them. |suggested_page| will be used if it is valid and
-  // the extension has no valid user-set page ordinal.
-  void EnsureValidOrdinals(const std::string& extension_id,
-                           const syncer::StringOrdinal& suggested_page);
-
-  // Updates the app launcher value for the moved extension so that it is now
-  // located after the given predecessor and before the successor.
-  // Empty strings are used to indicate no successor or predecessor.
-  void OnExtensionMoved(const std::string& moved_extension_id,
-                        const std::string& predecessor_extension_id,
-                        const std::string& successor_extension_id);
-
-  // Get the application launch ordinal for an app with |extension_id|. This
-  // determines the order in which the app appears on the page it's on in the
-  // New Tab Page (Note that you can compare app launch ordinals only if the
-  // apps are on the same page). A string value close to |a*| generally
-  // indicates top left. If the extension has no launch ordinal, an invalid
-  // StringOrdinal is returned.
-  syncer::StringOrdinal GetAppLaunchOrdinal(
-      const std::string& extension_id) const;
-
-  // Sets a specific launch ordinal for an app with |extension_id|.
-  void SetAppLaunchOrdinal(const std::string& extension_id,
-                           const syncer::StringOrdinal& new_app_launch_ordinal);
-
-  // Returns a StringOrdinal that is lower than any app launch ordinal for the
-  // given page.
-  syncer::StringOrdinal CreateFirstAppLaunchOrdinal(
-      const syncer::StringOrdinal& page_ordinal) const;
-
-  // Returns a StringOrdinal that is higher than any app launch ordinal for the
-  // given page.
-  syncer::StringOrdinal CreateNextAppLaunchOrdinal(
-      const syncer::StringOrdinal& page_ordinal) const;
-
-  // Returns a StringOrdinal that is lower than any existing page ordinal.
-  syncer::StringOrdinal CreateFirstAppPageOrdinal() const;
-
-  // Gets the page a new app should install to, which is the earliest non-full
-  // page.  The returned ordinal may correspond to a page that doesn't yet exist
-  // if all pages are full.
-  syncer::StringOrdinal GetNaturalAppPageOrdinal() const;
-
-  // Get the page ordinal for an app with |extension_id|. This determines
-  // which page an app will appear on in page-based NTPs.  If the app has no
-  // page specified, an invalid StringOrdinal is returned.
-  syncer::StringOrdinal GetPageOrdinal(const std::string& extension_id) const;
-
-  // Sets a specific page ordinal for an app with |extension_id|.
-  void SetPageOrdinal(const std::string& extension_id,
-                      const syncer::StringOrdinal& new_page_ordinal);
-
-  // Removes the ordinal values for an app.
-  void ClearOrdinals(const std::string& extension_id);
-
-  // Convert the page StringOrdinal value to its integer equivalent. This takes
-  // O(# of apps) worst-case.
-  int PageStringOrdinalAsInteger(
-      const syncer::StringOrdinal& page_ordinal) const;
-
-  // Converts the page index integer to its StringOrdinal equivalent. This takes
-  // O(# of apps) worst-case.
-  syncer::StringOrdinal PageIntegerAsStringOrdinal(size_t page_index);
-
-  // Hidden extensions don't appear in the new tab page.
-  void MarkExtensionAsHidden(const std::string& extension_id);
+  // AppSorting implementation:
+  virtual void SetExtensionSyncService(
+      ExtensionSyncService* extension_sync_service) OVERRIDE;
+  virtual void Initialize(
+      const extensions::ExtensionIdList& extension_ids) OVERRIDE;
+  virtual void FixNTPOrdinalCollisions() OVERRIDE;
+  virtual void EnsureValidOrdinals(
+      const std::string& extension_id,
+      const syncer::StringOrdinal& suggested_page) OVERRIDE;
+  virtual void OnExtensionMoved(
+      const std::string& moved_extension_id,
+      const std::string& predecessor_extension_id,
+      const std::string& successor_extension_id) OVERRIDE;
+  virtual syncer::StringOrdinal GetAppLaunchOrdinal(
+      const std::string& extension_id) const OVERRIDE;
+  virtual void SetAppLaunchOrdinal(
+      const std::string& extension_id,
+      const syncer::StringOrdinal& new_app_launch_ordinal) OVERRIDE;
+  virtual syncer::StringOrdinal CreateFirstAppLaunchOrdinal(
+      const syncer::StringOrdinal& page_ordinal) const OVERRIDE;
+  virtual syncer::StringOrdinal CreateNextAppLaunchOrdinal(
+      const syncer::StringOrdinal& page_ordinal) const OVERRIDE;
+  virtual syncer::StringOrdinal CreateFirstAppPageOrdinal() const OVERRIDE;
+  virtual syncer::StringOrdinal GetNaturalAppPageOrdinal() const OVERRIDE;
+  virtual syncer::StringOrdinal GetPageOrdinal(
+      const std::string& extension_id) const OVERRIDE;
+  virtual void SetPageOrdinal(
+      const std::string& extension_id,
+      const syncer::StringOrdinal& new_page_ordinal) OVERRIDE;
+  virtual void ClearOrdinals(const std::string& extension_id) OVERRIDE;
+  virtual int PageStringOrdinalAsInteger(
+      const syncer::StringOrdinal& page_ordinal) const OVERRIDE;
+  virtual syncer::StringOrdinal PageIntegerAsStringOrdinal(
+      size_t page_index) OVERRIDE;
+  virtual void MarkExtensionAsHidden(const std::string& extension_id) OVERRIDE;
 
  private:
   // The StringOrdinal is the app launch ordinal and the string is the extension
@@ -117,10 +76,10 @@ class ExtensionSorting {
     syncer::StringOrdinal::LessThanFn> PageOrdinalMap;
 
   // Unit tests.
-  friend class ExtensionSortingDefaultOrdinalsBase;
-  friend class ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage;
-  friend class ExtensionSortingInitializeWithNoApps;
-  friend class ExtensionSortingPageOrdinalMapping;
+  friend class ChromeAppSortingDefaultOrdinalsBase;
+  friend class ChromeAppSortingGetMinOrMaxAppLaunchOrdinalsOnPage;
+  friend class ChromeAppSortingInitializeWithNoApps;
+  friend class ChromeAppSortingPageOrdinalMapping;
 
   // An enum used by GetMinOrMaxAppLaunchOrdinalsOnPage to specify which
   // value should be returned.
@@ -218,7 +177,9 @@ class ExtensionSorting {
   // The set of extensions that don't appear in the new tab page.
   std::set<std::string> ntp_hidden_extensions_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionSorting);
+  DISALLOW_COPY_AND_ASSIGN(ChromeAppSorting);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SORTING_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_CHROME_APP_SORTING_H_

@@ -7,7 +7,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/browser/app_sorting.h"
 #include "extensions/common/extension.h"
 #include "grit/theme_resources.h"
 #include "sync/api/string_ordinal.h"
@@ -59,10 +59,10 @@ class ShortcutOverlayImageSource : public gfx::CanvasImageSource {
   DISALLOW_COPY_AND_ASSIGN(ShortcutOverlayImageSource);
 };
 
-ExtensionSorting* GetExtensionSorting(Profile* profile) {
+extensions::AppSorting* GetAppSorting(Profile* profile) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  return service->extension_prefs()->extension_sorting();
+  return service->extension_prefs()->app_sorting();
 }
 
 const color_utils::HSL shift = {-1, 0, 0.6};
@@ -84,8 +84,8 @@ ExtensionAppItem::ExtensionAppItem(Profile* profile,
                                                           shift)),
       is_platform_app_(is_platform_app) {
   Reload();
-  GetExtensionSorting(profile_)->EnsureValidOrdinals(extension_id_,
-                                                     syncer::StringOrdinal());
+  GetAppSorting(profile_)->EnsureValidOrdinals(extension_id_,
+                                               syncer::StringOrdinal());
   UpdatePositionFromExtensionOrdering();
 }
 
@@ -144,7 +144,7 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  ExtensionSorting* sorting = service->extension_prefs()->extension_sorting();
+  extensions::AppSorting* sorting = service->extension_prefs()->app_sorting();
 
   syncer::StringOrdinal page;
   std::string prev_id, next_id;
@@ -279,9 +279,9 @@ void ExtensionAppItem::ExecuteLaunchCommand(int event_flags) {
 
 void ExtensionAppItem::UpdatePositionFromExtensionOrdering() {
   const syncer::StringOrdinal& page =
-      GetExtensionSorting(profile_)->GetPageOrdinal(extension_id_);
+      GetAppSorting(profile_)->GetPageOrdinal(extension_id_);
   const syncer::StringOrdinal& launch =
-     GetExtensionSorting(profile_)->GetAppLaunchOrdinal(extension_id_);
+     GetAppSorting(profile_)->GetAppLaunchOrdinal(extension_id_);
   set_position(syncer::StringOrdinal(
       page.ToInternalValue() + launch.ToInternalValue()));
 }

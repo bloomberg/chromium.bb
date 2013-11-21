@@ -44,7 +44,6 @@
 #include "chrome/browser/extensions/extension_error_ui.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -88,6 +87,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
+#include "extensions/browser/app_sorting.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -392,8 +392,8 @@ ExtensionService::ExtensionService(Profile* profile,
         this, profile_, &external_extension_providers_);
   }
 
-  // Set this as the ExtensionService for extension sorting to ensure it
-  // cause syncs if required.
+  // Set this as the ExtensionService for app sorting to ensure it causes syncs
+  // if required.
   is_first_run_ = !extension_prefs_->SetAlertSystemFirstRun();
 
 #if defined(ENABLE_EXTENSIONS)
@@ -1262,7 +1262,7 @@ void ExtensionService::OnExtensionMoved(
     const std::string& moved_extension_id,
     const std::string& predecessor_extension_id,
     const std::string& successor_extension_id) {
-  extension_prefs_->extension_sorting()->OnExtensionMoved(
+  extension_prefs_->app_sorting()->OnExtensionMoved(
       moved_extension_id,
       predecessor_extension_id,
       successor_extension_id);
@@ -1755,10 +1755,9 @@ void ExtensionService::AddExtension(const Extension* extension) {
     // so we must ensure they have valid ordinals.
     if (extension->RequiresSortOrdinal()) {
       if (!extension->ShouldDisplayInNewTabPage()) {
-        extension_prefs_->extension_sorting()->MarkExtensionAsHidden(
-            extension->id());
+        extension_prefs_->app_sorting()->MarkExtensionAsHidden(extension->id());
       }
-      extension_prefs_->extension_sorting()->EnsureValidOrdinals(
+      extension_prefs_->app_sorting()->EnsureValidOrdinals(
           extension->id(), syncer::StringOrdinal());
     }
 

@@ -33,6 +33,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/blacklist.h"
+#include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps.h"
@@ -41,7 +42,6 @@
 #include "chrome/browser/extensions/extension_error_ui.h"
 #include "chrome/browser/extensions/extension_notification_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -145,6 +145,7 @@ using content::IndexedDBContext;
 using content::PluginService;
 using extensions::APIPermission;
 using extensions::APIPermissionSet;
+using extensions::AppSorting;
 using extensions::Blacklist;
 using extensions::CrxInstaller;
 using extensions::Extension;
@@ -2657,7 +2658,7 @@ TEST_F(ExtensionServiceTest, UpdateApps) {
 // Verifies that the NTP page and launch ordinals are kept when updating apps.
 TEST_F(ExtensionServiceTest, UpdateAppsRetainOrdinals) {
   InitializeEmptyExtensionService();
-  ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
+  AppSorting* sorting = service_->extension_prefs()->app_sorting();
   base::FilePath extensions_path = data_dir_.AppendASCII("app_update");
 
   // First install v1 of a hosted app.
@@ -2693,7 +2694,7 @@ TEST_F(ExtensionServiceTest, EnsureCWSOrdinalsInitialized) {
       IDR_WEBSTORE_MANIFEST, base::FilePath(FILE_PATH_LITERAL("web_store")));
   service_->Init();
 
-  ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
+  AppSorting* sorting = service_->extension_prefs()->app_sorting();
   EXPECT_TRUE(
       sorting->GetPageOrdinal(extension_misc::kWebStoreAppId).IsValid());
   EXPECT_TRUE(
@@ -5591,7 +5592,7 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
     EXPECT_TRUE(initial_ordinal.Equals(app_sync_data.page_ordinal()));
   }
 
-  ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
+  AppSorting* sorting = service_->extension_prefs()->app_sorting();
   sorting->SetAppLaunchOrdinal(app->id(), initial_ordinal.CreateAfter());
   {
     syncer::SyncDataList list = extension_sync_service_->GetAllSyncData(

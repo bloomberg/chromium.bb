@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_sorting.h"
+#include "chrome/browser/extensions/chrome_app_sorting.h"
 
 #include <algorithm>
 #include <vector>
@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #endif
 
-using extensions::ExtensionPrefs;
+namespace extensions {
 
 namespace {
 
@@ -37,37 +37,37 @@ const char kPrefPageOrdinal[] = "page_ordinal";
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// ExtensionSorting::AppOrdinals
+// ChromeAppSorting::AppOrdinals
 
-ExtensionSorting::AppOrdinals::AppOrdinals() {}
+ChromeAppSorting::AppOrdinals::AppOrdinals() {}
 
-ExtensionSorting::AppOrdinals::~AppOrdinals() {}
+ChromeAppSorting::AppOrdinals::~AppOrdinals() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// ExtensionSorting
+// ChromeAppSorting
 
-ExtensionSorting::ExtensionSorting(ExtensionScopedPrefs* extension_scoped_prefs)
+ChromeAppSorting::ChromeAppSorting(ExtensionScopedPrefs* extension_scoped_prefs)
     : extension_scoped_prefs_(extension_scoped_prefs),
       extension_sync_service_(NULL),
       default_ordinals_created_(false) {
 }
 
-ExtensionSorting::~ExtensionSorting() {
+ChromeAppSorting::~ChromeAppSorting() {
 }
 
-void ExtensionSorting::SetExtensionSyncService(
+void ChromeAppSorting::SetExtensionSyncService(
     ExtensionSyncService* extension_sync_service) {
   extension_sync_service_ = extension_sync_service;
 }
 
-void ExtensionSorting::Initialize(
+void ChromeAppSorting::Initialize(
     const extensions::ExtensionIdList& extension_ids) {
   InitializePageOrdinalMap(extension_ids);
 
   MigrateAppIndex(extension_ids);
 }
 
-void ExtensionSorting::CreateOrdinalsIfNecessary(size_t minimum_size) {
+void ChromeAppSorting::CreateOrdinalsIfNecessary(size_t minimum_size) {
   // Create StringOrdinal values as required to ensure |ntp_ordinal_map_| has at
   // least |minimum_size| entries.
   if (ntp_ordinal_map_.empty() && minimum_size > 0)
@@ -81,7 +81,7 @@ void ExtensionSorting::CreateOrdinalsIfNecessary(size_t minimum_size) {
   }
 }
 
-void ExtensionSorting::MigrateAppIndex(
+void ChromeAppSorting::MigrateAppIndex(
     const extensions::ExtensionIdList& extension_ids) {
   if (extension_ids.empty())
     return;
@@ -169,7 +169,7 @@ void ExtensionSorting::MigrateAppIndex(
   }
 }
 
-void ExtensionSorting::FixNTPOrdinalCollisions() {
+void ChromeAppSorting::FixNTPOrdinalCollisions() {
   for (PageOrdinalMap::iterator page_it = ntp_ordinal_map_.begin();
        page_it != ntp_ordinal_map_.end(); ++page_it) {
     AppLaunchOrdinalMap& page = page_it->second;
@@ -215,11 +215,11 @@ void ExtensionSorting::FixNTPOrdinalCollisions() {
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
-      content::Source<ExtensionSorting>(this),
+      content::Source<ChromeAppSorting>(this),
       content::NotificationService::NoDetails());
 }
 
-void ExtensionSorting::EnsureValidOrdinals(
+void ChromeAppSorting::EnsureValidOrdinals(
     const std::string& extension_id,
     const syncer::StringOrdinal& suggested_page) {
   syncer::StringOrdinal page_ordinal = GetPageOrdinal(extension_id);
@@ -247,7 +247,7 @@ void ExtensionSorting::EnsureValidOrdinals(
   }
 }
 
-void ExtensionSorting::OnExtensionMoved(
+void ChromeAppSorting::OnExtensionMoved(
     const std::string& moved_extension_id,
     const std::string& predecessor_extension_id,
     const std::string& successor_extension_id) {
@@ -276,12 +276,12 @@ void ExtensionSorting::OnExtensionMoved(
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
-      content::Source<ExtensionSorting>(this),
+      content::Source<ChromeAppSorting>(this),
       content::Details<const std::string>(&moved_extension_id));
 }
 
 
-syncer::StringOrdinal ExtensionSorting::GetAppLaunchOrdinal(
+syncer::StringOrdinal ChromeAppSorting::GetAppLaunchOrdinal(
     const std::string& extension_id) const {
   std::string raw_value;
   // If the preference read fails then raw_value will still be unset and we
@@ -292,7 +292,7 @@ syncer::StringOrdinal ExtensionSorting::GetAppLaunchOrdinal(
   return syncer::StringOrdinal(raw_value);
 }
 
-void ExtensionSorting::SetAppLaunchOrdinal(
+void ChromeAppSorting::SetAppLaunchOrdinal(
     const std::string& extension_id,
     const syncer::StringOrdinal& new_app_launch_ordinal) {
   // No work is required if the old and new values are the same.
@@ -317,11 +317,11 @@ void ExtensionSorting::SetAppLaunchOrdinal(
   SyncIfNeeded(extension_id);
 }
 
-syncer::StringOrdinal ExtensionSorting::CreateFirstAppLaunchOrdinal(
+syncer::StringOrdinal ChromeAppSorting::CreateFirstAppLaunchOrdinal(
     const syncer::StringOrdinal& page_ordinal) const {
   const syncer::StringOrdinal& min_ordinal =
       GetMinOrMaxAppLaunchOrdinalsOnPage(page_ordinal,
-                                         ExtensionSorting::MIN_ORDINAL);
+                                         ChromeAppSorting::MIN_ORDINAL);
 
   if (min_ordinal.IsValid())
     return min_ordinal.CreateBefore();
@@ -329,11 +329,11 @@ syncer::StringOrdinal ExtensionSorting::CreateFirstAppLaunchOrdinal(
     return syncer::StringOrdinal::CreateInitialOrdinal();
 }
 
-syncer::StringOrdinal ExtensionSorting::CreateNextAppLaunchOrdinal(
+syncer::StringOrdinal ChromeAppSorting::CreateNextAppLaunchOrdinal(
     const syncer::StringOrdinal& page_ordinal) const {
   const syncer::StringOrdinal& max_ordinal =
       GetMinOrMaxAppLaunchOrdinalsOnPage(page_ordinal,
-                                         ExtensionSorting::MAX_ORDINAL);
+                                         ChromeAppSorting::MAX_ORDINAL);
 
   if (max_ordinal.IsValid())
     return max_ordinal.CreateAfter();
@@ -341,14 +341,14 @@ syncer::StringOrdinal ExtensionSorting::CreateNextAppLaunchOrdinal(
     return syncer::StringOrdinal::CreateInitialOrdinal();
 }
 
-syncer::StringOrdinal ExtensionSorting::CreateFirstAppPageOrdinal() const {
+syncer::StringOrdinal ChromeAppSorting::CreateFirstAppPageOrdinal() const {
   if (ntp_ordinal_map_.empty())
     return syncer::StringOrdinal::CreateInitialOrdinal();
 
   return ntp_ordinal_map_.begin()->first;
 }
 
-syncer::StringOrdinal ExtensionSorting::GetNaturalAppPageOrdinal() const {
+syncer::StringOrdinal ChromeAppSorting::GetNaturalAppPageOrdinal() const {
   if (ntp_ordinal_map_.empty())
     return syncer::StringOrdinal::CreateInitialOrdinal();
 
@@ -363,7 +363,7 @@ syncer::StringOrdinal ExtensionSorting::GetNaturalAppPageOrdinal() const {
   return last_element.CreateAfter();
 }
 
-syncer::StringOrdinal ExtensionSorting::GetPageOrdinal(
+syncer::StringOrdinal ChromeAppSorting::GetPageOrdinal(
     const std::string& extension_id) const {
   std::string raw_data;
   // If the preference read fails then raw_data will still be unset and we will
@@ -373,7 +373,7 @@ syncer::StringOrdinal ExtensionSorting::GetPageOrdinal(
   return syncer::StringOrdinal(raw_data);
 }
 
-void ExtensionSorting::SetPageOrdinal(
+void ChromeAppSorting::SetPageOrdinal(
     const std::string& extension_id,
     const syncer::StringOrdinal& new_page_ordinal) {
   // No work is required if the old and new values are the same.
@@ -396,7 +396,7 @@ void ExtensionSorting::SetPageOrdinal(
   SyncIfNeeded(extension_id);
 }
 
-void ExtensionSorting::ClearOrdinals(const std::string& extension_id) {
+void ChromeAppSorting::ClearOrdinals(const std::string& extension_id) {
   RemoveOrdinalMapping(extension_id,
                        GetPageOrdinal(extension_id),
                        GetAppLaunchOrdinal(extension_id));
@@ -407,7 +407,7 @@ void ExtensionSorting::ClearOrdinals(const std::string& extension_id) {
       extension_id, kPrefAppLaunchOrdinal, NULL);
 }
 
-int ExtensionSorting::PageStringOrdinalAsInteger(
+int ChromeAppSorting::PageStringOrdinalAsInteger(
     const syncer::StringOrdinal& page_ordinal) const {
   if (!page_ordinal.IsValid())
     return -1;
@@ -417,7 +417,7 @@ int ExtensionSorting::PageStringOrdinalAsInteger(
       std::distance(ntp_ordinal_map_.begin(), it) : -1;
 }
 
-syncer::StringOrdinal ExtensionSorting::PageIntegerAsStringOrdinal(
+syncer::StringOrdinal ChromeAppSorting::PageIntegerAsStringOrdinal(
     size_t page_index) {
   if (page_index < ntp_ordinal_map_.size()) {
     PageOrdinalMap::const_iterator it = ntp_ordinal_map_.begin();
@@ -429,11 +429,11 @@ syncer::StringOrdinal ExtensionSorting::PageIntegerAsStringOrdinal(
   return ntp_ordinal_map_.rbegin()->first;
 }
 
-void ExtensionSorting::MarkExtensionAsHidden(const std::string& extension_id) {
+void ChromeAppSorting::MarkExtensionAsHidden(const std::string& extension_id) {
   ntp_hidden_extensions_.insert(extension_id);
 }
 
-syncer::StringOrdinal ExtensionSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
+syncer::StringOrdinal ChromeAppSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
     const syncer::StringOrdinal& target_page_ordinal,
     AppLaunchOrdinalReturn return_type) const {
   CHECK(target_page_ordinal.IsValid());
@@ -448,16 +448,16 @@ syncer::StringOrdinal ExtensionSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
     if (app_list.empty())
       return syncer::StringOrdinal();
 
-    if (return_type == ExtensionSorting::MAX_ORDINAL)
+    if (return_type == ChromeAppSorting::MAX_ORDINAL)
       return_value = app_list.rbegin()->first;
-    else if (return_type == ExtensionSorting::MIN_ORDINAL)
+    else if (return_type == ChromeAppSorting::MIN_ORDINAL)
       return_value = app_list.begin()->first;
   }
 
   return return_value;
 }
 
-void ExtensionSorting::InitializePageOrdinalMap(
+void ChromeAppSorting::InitializePageOrdinalMap(
     const extensions::ExtensionIdList& extension_ids) {
   for (extensions::ExtensionIdList::const_iterator ext_it =
            extension_ids.begin(); ext_it != extension_ids.end(); ++ext_it) {
@@ -489,7 +489,7 @@ void ExtensionSorting::InitializePageOrdinalMap(
   }
 }
 
-void ExtensionSorting::AddOrdinalMapping(
+void ChromeAppSorting::AddOrdinalMapping(
     const std::string& extension_id,
     const syncer::StringOrdinal& page_ordinal,
     const syncer::StringOrdinal& app_launch_ordinal) {
@@ -500,7 +500,7 @@ void ExtensionSorting::AddOrdinalMapping(
       std::make_pair(app_launch_ordinal, extension_id));
 }
 
-void ExtensionSorting::RemoveOrdinalMapping(
+void ChromeAppSorting::RemoveOrdinalMapping(
     const std::string& extension_id,
     const syncer::StringOrdinal& page_ordinal,
     const syncer::StringOrdinal& app_launch_ordinal) {
@@ -523,12 +523,12 @@ void ExtensionSorting::RemoveOrdinalMapping(
   }
 }
 
-void ExtensionSorting::SyncIfNeeded(const std::string& extension_id) {
+void ChromeAppSorting::SyncIfNeeded(const std::string& extension_id) {
   if (extension_sync_service_)
     extension_sync_service_->SyncOrderingChange(extension_id);
 }
 
-void ExtensionSorting::CreateDefaultOrdinals() {
+void ChromeAppSorting::CreateDefaultOrdinals() {
   if (default_ordinals_created_)
     return;
   default_ordinals_created_ = true;
@@ -557,7 +557,7 @@ void ExtensionSorting::CreateDefaultOrdinals() {
   }
 }
 
-bool ExtensionSorting::GetDefaultOrdinals(
+bool ChromeAppSorting::GetDefaultOrdinals(
     const std::string& extension_id,
     syncer::StringOrdinal* page_ordinal,
     syncer::StringOrdinal* app_launch_ordinal) {
@@ -573,7 +573,7 @@ bool ExtensionSorting::GetDefaultOrdinals(
   return true;
 }
 
-syncer::StringOrdinal ExtensionSorting::ResolveCollision(
+syncer::StringOrdinal ChromeAppSorting::ResolveCollision(
     const syncer::StringOrdinal& page_ordinal,
     const syncer::StringOrdinal& app_launch_ordinal) const {
   DCHECK(page_ordinal.IsValid() && app_launch_ordinal.IsValid());
@@ -602,7 +602,7 @@ syncer::StringOrdinal ExtensionSorting::ResolveCollision(
   return app_launch_ordinal.CreateBetween(app_it->first);
 }
 
-size_t ExtensionSorting::CountItemsVisibleOnNtp(
+size_t ChromeAppSorting::CountItemsVisibleOnNtp(
     const AppLaunchOrdinalMap& m) const {
   size_t result = 0;
   for (AppLaunchOrdinalMap::const_iterator it = m.begin(); it != m.end();
@@ -613,3 +613,5 @@ size_t ExtensionSorting::CountItemsVisibleOnNtp(
   }
   return result;
 }
+
+}  // namespace extensions

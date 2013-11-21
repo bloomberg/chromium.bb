@@ -14,10 +14,10 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
+#include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_prefs_factory.h"
-#include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
@@ -1225,7 +1225,7 @@ void ExtensionPrefs::OnExtensionInstalled(
 void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
                                             const Manifest::Location& location,
                                             bool external_uninstall) {
-  extension_sorting_->ClearOrdinals(extension_id);
+  app_sorting_->ClearOrdinals(extension_id);
 
   // For external extensions, we save a preference reminding ourself not to try
   // and install the extension anymore (except when |external_uninstall| is
@@ -1702,7 +1702,7 @@ void ExtensionPrefs::InitPrefStore() {
   FixMissingPrefs(extension_ids);
   MigratePermissions(extension_ids);
   MigrateDisableReasons(extension_ids);
-  extension_sorting_->Initialize(extension_ids);
+  app_sorting_->Initialize(extension_ids);
 
   PreferenceAPI::InitExtensionControlledPrefs(this, extension_pref_value_map_);
 
@@ -1781,7 +1781,7 @@ ExtensionPrefs::ExtensionPrefs(
     : prefs_(prefs),
       install_directory_(root_dir),
       extension_pref_value_map_(extension_pref_value_map),
-      extension_sorting_(new ExtensionSorting(this)),
+      app_sorting_(new ChromeAppSorting(this)),
       content_settings_store_(new ContentSettingsStore()),
       time_provider_(time_provider.Pass()),
       extensions_disabled_(extensions_disabled) {
@@ -1963,15 +1963,12 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
   // Clear state that may be registered from a previous install.
   extension_dict->Remove(EventRouter::kRegisteredEvents, NULL);
 
-  // FYI, all code below here races on sudden shutdown because
-  // |extension_dict|, |extension_sorting_|, |extension_pref_value_map_|,
-  // and |content_settings_store_| are updated non-transactionally. This is
-  // probably not fixable without nested transactional updates to pref
-  // dictionaries.
-  if (needs_sort_ordinal) {
-    extension_sorting_->EnsureValidOrdinals(extension_id,
-                                            suggested_page_ordinal);
-  }
+  // FYI, all code below here races on sudden shutdown because |extension_dict|,
+  // |app_sorting_|, |extension_pref_value_map_|, and |content_settings_store_|
+  // are updated non-transactionally. This is probably not fixable without
+  // nested transactional updates to pref dictionaries.
+  if (needs_sort_ordinal)
+    app_sorting_->EnsureValidOrdinals(extension_id, suggested_page_ordinal);
 
   bool is_enabled = false;
   int initial_state;

@@ -14,7 +14,7 @@ namespace extensions {
 
 InstallTracker::InstallTracker(Profile* profile,
                                extensions::ExtensionPrefs* prefs) {
-  ExtensionSorting* sorting = prefs->extension_sorting();
+  AppSorting* sorting = prefs->app_sorting();
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
       content::Source<Profile>(profile));
@@ -25,7 +25,7 @@ InstallTracker::InstallTracker(Profile* profile,
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
       content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
-      content::Source<ExtensionSorting>(sorting));
+      content::Source<AppSorting>(sorting));
   registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
       content::Source<Profile>(profile));
 

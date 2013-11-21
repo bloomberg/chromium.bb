@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SCOPED_PREFS_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SCOPED_PREFS_H_
 
+namespace extensions {
+
 class ExtensionScopedPrefs {
  public:
   ExtensionScopedPrefs() {}
@@ -48,5 +50,7 @@ class ExtensionScopedPrefs {
   // |extension_id|.
   virtual bool HasPrefForExtension(const std::string& extension_id) const = 0;
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SCOPED_PREFS_H_

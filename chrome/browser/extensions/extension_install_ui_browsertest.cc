@@ -8,7 +8,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,9 +23,11 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/app_sorting.h"
 #include "extensions/common/id_util.h"
 
 using content::WebContents;
+using extensions::AppSorting;
 using extensions::Extension;
 
 class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
@@ -225,11 +226,11 @@ IN_PROC_BROWSER_TEST_F(NewTabUISortingBrowserTest,
   const extensions::Extension* webstore_extension =
       service->GetInstalledExtension(extension_misc::kWebStoreAppId);
   EXPECT_TRUE(webstore_extension);
-  ExtensionSorting* sorting = service->extension_prefs()->extension_sorting();
+  AppSorting* sorting = service->extension_prefs()->app_sorting();
 
   // Register for notifications in the same way as AppLauncherHandler.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
-      content::Source<ExtensionSorting>(sorting));
+      content::Source<AppSorting>(sorting));
   // ExtensionAppItem calls this when an app install starts.
   sorting->EnsureValidOrdinals(app_id, syncer::StringOrdinal());
   // Vefify the app is not actually installed yet.

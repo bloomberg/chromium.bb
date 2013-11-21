@@ -16,13 +16,13 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "extensions/browser/app_sorting.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/url_pattern_set.h"
 #include "sync/api/string_ordinal.h"
 
 class ExtensionPrefValueMap;
-class ExtensionSorting;
 class PrefService;
 class Profile;
 
@@ -31,6 +31,7 @@ class PrefRegistrySyncable;
 }
 
 namespace extensions {
+class AppSorting;
 class ContentSettingsStore;
 class ExtensionPrefsUninstallExtension;
 class URLPatternSet;
@@ -493,10 +494,8 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // The underlying PrefService.
   PrefService* pref_service() const { return prefs_; }
 
-  // The underlying ExtensionSorting.
-  ExtensionSorting* extension_sorting() const {
-    return extension_sorting_.get();
-  }
+  // The underlying AppSorting.
+  AppSorting* app_sorting() const { return app_sorting_.get(); }
 
   // Describes the URLs that are able to install extensions. See
   // prefs::kExtensionAllowedInstallSites for more information.
@@ -639,7 +638,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
 
   // Contains all the logic for handling the order for various extension
   // properties.
-  scoped_ptr<ExtensionSorting> extension_sorting_;
+  scoped_ptr<AppSorting> app_sorting_;
 
   scoped_refptr<ContentSettingsStore> content_settings_store_;
 

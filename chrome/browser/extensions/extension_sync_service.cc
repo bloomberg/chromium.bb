@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_error_ui.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_sync_service_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/app_sorting.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
@@ -54,7 +54,7 @@ ExtensionSyncService::ExtensionSyncService(Profile* profile,
       profile_->GetPath()));
 
   extension_service_->set_extension_sync_service(this);
-  extension_prefs_->extension_sorting()->SetExtensionSyncService(this);
+  extension_prefs_->app_sorting()->SetExtensionSyncService(this);
 }
 
 ExtensionSyncService::~ExtensionSyncService() {}
@@ -219,7 +219,7 @@ syncer::SyncError ExtensionSyncService::ProcessSyncChanges(
     }
   }
 
-  extension_prefs_->extension_sorting()->FixNTPOrdinalCollisions();
+  extension_prefs_->app_sorting()->FixNTPOrdinalCollisions();
 
   return syncer::SyncError();
 }
@@ -238,9 +238,8 @@ extensions::AppSyncData ExtensionSyncService::GetAppSyncData(
       extension,
       extension_service_->IsExtensionEnabled(extension.id()),
       extension_util::IsIncognitoEnabled(extension.id(), extension_service_),
-      extension_prefs_->extension_sorting()->GetAppLaunchOrdinal(
-          extension.id()),
-      extension_prefs_->extension_sorting()->GetPageOrdinal(extension.id()));
+      extension_prefs_->app_sorting()->GetAppLaunchOrdinal(extension.id()),
+      extension_prefs_->app_sorting()->GetPageOrdinal(extension.id()));
 }
 
 std::vector<extensions::ExtensionSyncData>
@@ -300,10 +299,10 @@ bool ExtensionSyncService::ProcessAppSyncData(
 
   if (app_sync_data.app_launch_ordinal().IsValid() &&
       app_sync_data.page_ordinal().IsValid()) {
-    extension_prefs_->extension_sorting()->SetAppLaunchOrdinal(
+    extension_prefs_->app_sorting()->SetAppLaunchOrdinal(
         id,
         app_sync_data.app_launch_ordinal());
-    extension_prefs_->extension_sorting()->SetPageOrdinal(
+    extension_prefs_->app_sorting()->SetPageOrdinal(
         id,
         app_sync_data.page_ordinal());
   }

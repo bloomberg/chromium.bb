@@ -1,5 +1,6 @@
 include_rules = [
   "+content/public/browser",
+  "+sync",
 
   # Temporarily allowed includes as part of the app shell/extensions refactor.
   #
@@ -14,6 +15,7 @@ include_rules = [
   "+chrome/browser/extensions/extension_function_histogram_value.h",
   "+chrome/browser/extensions/extension_host.h",
   "+chrome/browser/extensions/extension_host_mac.h",
+  "+chrome/browser/extensions/extension_prefs.h",
   "+chrome/browser/extensions/extension_service.h",
   "+chrome/browser/extensions/extension_system.h",
   "+chrome/browser/extensions/extension_util.h",
