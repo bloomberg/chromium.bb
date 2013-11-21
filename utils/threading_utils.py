@@ -390,11 +390,11 @@ class AutoRetryThreadPool(ThreadPool):
         return
       if channel is None:
         raise
-      channel.send_exception(e)
-    except Exception as e:
+      channel.send_exception()
+    except Exception:
       if channel is None:
         raise
-      channel.send_exception(e)
+      channel.send_exception()
 
 
 class Progress(object):
@@ -711,10 +711,17 @@ class TaskChannel(object):
     """Enqueues a result of task execution."""
     self._queue.put((self._ITEM_RESULT, result))
 
-  def send_exception(self, exc):
-    """Enqueue an exception raised by a task."""
-    assert isinstance(exc, Exception)
-    self._queue.put((self._ITEM_EXCEPTION, exc))
+  def send_exception(self, exc_info=None):
+    """Enqueue an exception raised by a task.
+
+    Arguments:
+      exc_info: If given, should be 3-tuple returned by sys.exc_info(),
+                default is current value of sys.exc_info(). Use default in
+                'except' blocks to capture currently processed exception.
+    """
+    exc_info = exc_info or sys.exc_info()
+    assert isinstance(exc_info, tuple) and len(exc_info) == 3
+    self._queue.put((self._ITEM_EXCEPTION, exc_info))
 
   def pull(self):
     """Dequeues available result or exception."""
@@ -722,7 +729,11 @@ class TaskChannel(object):
     if item_type == self._ITEM_RESULT:
       return value
     if item_type == self._ITEM_EXCEPTION:
-      raise value
+      # 'value' is captured sys.exc_info() 3-tuple. Use extended raise syntax
+      # to preserve stack frame of original exception (that was raised in
+      # another thread).
+      assert isinstance(value, tuple) and len(value) == 3
+      raise value[0], value[1], value[2]
     assert False, 'Impossible queue item type: %r' % item_type
 
   def wrap_task(self, task):
@@ -731,8 +742,8 @@ class TaskChannel(object):
     def wrapped(*args, **kwargs):
       try:
         self.send_result(task(*args, **kwargs))
-      except Exception as exc:
-        self.send_exception(exc)
+      except Exception:
+        self.send_exception()
     return wrapped
 
 

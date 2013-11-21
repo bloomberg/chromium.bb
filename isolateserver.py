@@ -542,7 +542,7 @@ class Storage(object):
         data = ''.join(stream)
       except Exception as exc:
         logging.error('Failed to zip \'%s\': %s', item, exc)
-        channel.send_exception(exc)
+        channel.send_exception()
         return
       self.net_thread_pool.add_task_with_channel(
           channel, priority, push, [data])
@@ -569,7 +569,7 @@ class Storage(object):
         # Verified stream goes to |sink|.
         sink(verifier.run())
       except Exception as err:
-        logging.warning('Failed to fetch %s: %s', digest, err)
+        logging.error('Failed to fetch %s: %s', digest, err)
         raise
       return digest
 
