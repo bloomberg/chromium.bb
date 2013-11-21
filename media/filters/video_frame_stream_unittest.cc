@@ -102,6 +102,7 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
   void Decrypt(Decryptor::StreamType stream_type,
                const scoped_refptr<DecoderBuffer>& encrypted,
                const Decryptor::DecryptCB& decrypt_cb) {
+    DCHECK(encrypted->decrypt_config());
     if (has_no_key_) {
       decrypt_cb.Run(Decryptor::kNoKey, NULL);
       return;

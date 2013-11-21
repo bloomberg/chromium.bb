@@ -18,12 +18,17 @@
 
 namespace media {
 
-static const int kStartTimestampMs = 0;
-static const int kDurationMs = 30;
-static const int kStartWidth = 320;
-static const int kStartHeight = 240;
-static const int kWidthDelta = 4;
-static const int kHeightDelta = 3;
+const int kStartTimestampMs = 0;
+const int kDurationMs = 30;
+const int kStartWidth = 320;
+const int kStartHeight = 240;
+const int kWidthDelta = 4;
+const int kHeightDelta = 3;
+const uint8 kKeyId[] = { 0x00, 0x01, 0x02, 0x03 };
+const uint8 kIv[] = {
+  0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
 
 FakeDemuxerStream::FakeDemuxerStream(int num_configs,
                                      int num_buffers_in_one_config,
@@ -142,6 +147,13 @@ void FakeDemuxerStream::DoRead() {
       video_decoder_config_, current_timestamp_, duration_);
 
   // TODO(xhwang): Output out-of-order buffers if needed.
+  if (is_encrypted_) {
+    buffer->set_decrypt_config(scoped_ptr<DecryptConfig>(
+        new DecryptConfig(std::string(kKeyId, kKeyId + arraysize(kKeyId)),
+                          std::string(kIv, kIv + arraysize(kIv)),
+                          0,
+                          std::vector<SubsampleEntry>())));
+  }
   buffer->set_timestamp(current_timestamp_);
   buffer->set_duration(duration_);
   current_timestamp_ += duration_;

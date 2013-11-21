@@ -28,15 +28,17 @@ static const int kFakeBufferSize = 16;
 static const uint8 kFakeKeyId[] = { 0x4b, 0x65, 0x79, 0x20, 0x49, 0x44 };
 static const uint8 kFakeIv[DecryptConfig::kDecryptionKeySize] = { 0 };
 
-// Create a fake non-empty encrypted buffer.
-static scoped_refptr<DecoderBuffer> CreateFakeEncryptedBuffer() {
+// Create a fake non-empty buffer in an encrypted stream. When |is_clear| is
+// ture, the buffer is not encrypted (signaled by an empty IV).
+static scoped_refptr<DecoderBuffer> CreateFakeEncryptedStreamBuffer(
+    bool is_clear) {
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(kFakeBufferSize));
+  std::string iv = is_clear ? std::string() :
+      std::string(reinterpret_cast<const char*>(kFakeIv), arraysize(kFakeIv));
   buffer->set_decrypt_config(scoped_ptr<DecryptConfig>(new DecryptConfig(
       std::string(reinterpret_cast<const char*>(kFakeKeyId),
                   arraysize(kFakeKeyId)),
-      std::string(reinterpret_cast<const char*>(kFakeIv), arraysize(kFakeIv)),
-      0,
-      std::vector<SubsampleEntry>())));
+      iv, 0, std::vector<SubsampleEntry>())));
   return buffer;
 }
 
@@ -76,7 +78,8 @@ class DecryptingDemuxerStreamTest : public testing::Test {
             new StrictMock<MockDemuxerStream>(DemuxerStream::AUDIO)),
         input_video_stream_(
             new StrictMock<MockDemuxerStream>(DemuxerStream::VIDEO)),
-        encrypted_buffer_(CreateFakeEncryptedBuffer()),
+        clear_buffer_(CreateFakeEncryptedStreamBuffer(true)),
+        encrypted_buffer_(CreateFakeEncryptedStreamBuffer(false)),
         decrypted_buffer_(new DecoderBuffer(kFakeBufferSize)) {
   }
 
@@ -137,6 +140,23 @@ class DecryptingDemuxerStreamTest : public testing::Test {
     demuxer_stream_->Read(base::Bind(&DecryptingDemuxerStreamTest::BufferReady,
                                      base::Unretained(this)));
     message_loop_.RunUntilIdle();
+  }
+
+  void EnterClearReadingState() {
+    EXPECT_TRUE(clear_buffer_->decrypt_config());
+    EXPECT_CALL(*input_audio_stream_, Read(_))
+        .WillOnce(ReturnBuffer(clear_buffer_));
+
+    // For clearbuffer, decryptor->Decrypt() will not be called.
+
+    scoped_refptr<DecoderBuffer> decrypted_buffer;
+    EXPECT_CALL(*this, BufferReady(DemuxerStream::kOk, _))
+        .WillOnce(SaveArg<1>(&decrypted_buffer));
+    demuxer_stream_->Read(base::Bind(&DecryptingDemuxerStreamTest::BufferReady,
+                                     base::Unretained(this)));
+    message_loop_.RunUntilIdle();
+
+    EXPECT_FALSE(decrypted_buffer->decrypt_config());
   }
 
   // Sets up expectations and actions to put DecryptingDemuxerStream in an
@@ -226,6 +246,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
 
   // Constant buffers to be returned by the input demuxer streams and the
   // |decryptor_|.
+  scoped_refptr<DecoderBuffer> clear_buffer_;
   scoped_refptr<DecoderBuffer> encrypted_buffer_;
   scoped_refptr<DecoderBuffer> decrypted_buffer_;
 
@@ -273,10 +294,16 @@ TEST_F(DecryptingDemuxerStreamTest, Initialize_NullDecryptor) {
   InitializeAudioAndExpectStatus(input_config, DECODER_ERROR_NOT_SUPPORTED);
 }
 
-// Test normal read case.
+// Test normal read case where the buffer is encrypted.
 TEST_F(DecryptingDemuxerStreamTest, Read_Normal) {
   Initialize();
   EnterNormalReadingState();
+}
+
+// Test normal read case where the buffer is clear.
+TEST_F(DecryptingDemuxerStreamTest, Read_Clear) {
+  Initialize();
+  EnterClearReadingState();
 }
 
 // Test the case where the decryptor returns error during read.
