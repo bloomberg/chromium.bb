@@ -274,6 +274,8 @@
         'browser/extensions/api/file_system/file_system_api.h',
         'browser/extensions/api/font_settings/font_settings_api.cc',
         'browser/extensions/api/font_settings/font_settings_api.h',
+        'browser/extensions/api/gcm/gcm_api.cc',
+        'browser/extensions/api/gcm/gcm_api.h',
         'browser/extensions/api/history/history_api.h',
         'browser/extensions/api/history/history_api.cc',
         'browser/extensions/api/i18n/i18n_api.cc',

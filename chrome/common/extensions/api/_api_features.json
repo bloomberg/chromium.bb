@@ -317,6 +317,10 @@
     "dependencies": ["permission:fontSettings"],
     "contexts": ["blessed_extension"]
   },
+  "gcm": {
+    "dependencies": ["permission:gcm"],
+    "contexts": ["blessed_extension"]
+  },
   "hangoutsPrivate": {
     "channel": "stable",
     "contexts": ["blessed_extension"],

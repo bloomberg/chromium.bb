@@ -989,6 +989,8 @@ void Dispatcher::PopulateSourceMap() {
                              IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("fileSystemProvider",
                              IDR_FILE_SYSTEM_PROVIDER_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("gcm",
+                             IDR_GCM_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("i18n", IDR_I18N_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("identity", IDR_IDENTITY_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("input.ime", IDR_INPUT_IME_CUSTOM_BINDINGS_JS);

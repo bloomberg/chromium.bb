@@ -72,6 +72,7 @@
               'file_system.idl',
               'file_system_provider.idl',
               'font_settings.json',
+              'gcm.json',
               'hangouts_private.idl',
               'history.json',
               'i18n.json',

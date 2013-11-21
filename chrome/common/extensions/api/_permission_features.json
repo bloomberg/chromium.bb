@@ -372,6 +372,10 @@
     "channel": "stable",
     "extension_types": ["platform_app"]
   },
+  "gcm": {
+    "channel": "dev",
+    "extension_types": ["extension", "platform_app"]
+  },
   "geolocation": {
     "channel": "stable",
     "extension_types": [

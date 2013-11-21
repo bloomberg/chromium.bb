@@ -699,6 +699,8 @@ enum HistogramValue {
   SERIAL_GETINFO,
   SERIAL_GETCONNECTIONS,
   SERIAL_SEND,
+  GCM_REGISTER,
+  GCM_SEND,
   ENUM_BOUNDARY // Last entry: Add new entries above.
 };
 
