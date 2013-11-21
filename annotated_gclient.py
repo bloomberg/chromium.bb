@@ -51,7 +51,7 @@ def parse_got_revision(filename, revision_mapping):
 
 def emit_buildprops(got_revisions):
   for prop, revision in got_revisions.iteritems():
-    print '@@@SET_BUILD_PROPERTY@%s@%s@@@' % (prop, revision)
+    print '@@@SET_BUILD_PROPERTY@%s@%s@@@' % (prop, json.dumps(revision))
 
 
 def main():
