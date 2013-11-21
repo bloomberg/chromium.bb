@@ -230,6 +230,9 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     {% if constants %}
     {{install_constants() | indent}}
     {% endif %}
+    {% if has_custom_legacy_call %}
+    functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class_name}}::legacyCallCustom);
+    {% endif %}
 
     // Custom toString template
     functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

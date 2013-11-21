@@ -157,7 +157,5 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<Te
 }
 
 }
-
 #endif // ENABLE(CONDITION)
-
 #endif // V8TestConditionalInterface_h

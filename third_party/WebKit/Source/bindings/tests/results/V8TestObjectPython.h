@@ -175,5 +175,4 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<Te
 }
 
 }
-
 #endif // V8TestObjectPython_h

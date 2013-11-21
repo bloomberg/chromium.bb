@@ -160,5 +160,4 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<Te
 bool fillTestEventConstructorInit(TestEventConstructorInit&, const Dictionary&);
 
 }
-
 #endif // V8TestEventConstructor_h

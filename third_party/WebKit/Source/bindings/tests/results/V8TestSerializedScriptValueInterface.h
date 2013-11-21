@@ -157,7 +157,5 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<Te
 }
 
 }
-
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
-
 #endif // V8TestSerializedScriptValueInterface_h

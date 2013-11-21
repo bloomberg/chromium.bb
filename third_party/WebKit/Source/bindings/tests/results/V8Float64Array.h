@@ -155,5 +155,4 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<Fl
 }
 
 }
-
 #endif // V8Float64Array_h

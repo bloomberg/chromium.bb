@@ -159,5 +159,4 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<Su
 }
 
 }
-
 #endif // V8SupportTestInterface_h

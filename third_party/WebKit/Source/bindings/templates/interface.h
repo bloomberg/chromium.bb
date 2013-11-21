@@ -35,9 +35,7 @@
 #ifndef {{v8_class_name}}_h
 #define {{v8_class_name}}_h
 
-{% if conditional_string %}
-#if {{conditional_string}}
-{% endif %}
+{% filter conditional(conditional_string) %}
 {% for filename in header_includes %}
 #include "{{filename}}"
 {% endfor %}
@@ -78,6 +76,9 @@ public:
     {% endfilter %}
     {% endif %}
     {% endfor %}
+    {% if has_custom_legacy_call %}
+    static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+    {% endif %}
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline void* toInternalPointer({{cpp_class_name}}* impl)
     {
@@ -187,9 +188,5 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<{{
 }
 
 }
-{% if conditional_string %}
-
-#endif // {{conditional_string}}
-{% endif %}
-
+{% endfilter %}
 #endif // {{v8_class_name}}_h

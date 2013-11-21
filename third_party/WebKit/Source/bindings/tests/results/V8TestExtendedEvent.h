@@ -162,7 +162,5 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<Ev
 bool fillEventInit(EventInit&, const Dictionary&);
 
 }
-
 #endif // ENABLE(TEST)
-
 #endif // V8TestExtendedEvent_h
