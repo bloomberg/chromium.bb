@@ -677,7 +677,9 @@ TEST_P(EndToEndTest, LimitMaxOpenStreams) {
   EXPECT_EQ(2u, client_negotiated_config->max_streams_per_connection());
 }
 
-TEST_P(EndToEndTest, LimitCongestionWindowAndRTT) {
+// TODO(rtenneti): DISABLED_LimitCongestionWindowAndRTT seems to be flaky.
+// http://crbug.com/321870.
+TEST_P(EndToEndTest, DISABLED_LimitCongestionWindowAndRTT) {
   // Client tries to negotiate twice the server's max and negotiation settles
   // on the max.
   client_config_.set_server_initial_congestion_window(2 * kMaxInitialWindow,
