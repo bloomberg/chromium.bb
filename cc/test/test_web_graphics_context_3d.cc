@@ -366,6 +366,17 @@ blink::WebGLId TestWebGraphicsContext3D::BoundTextureId(
   return texture_targets_.BoundTexture(target);
 }
 
+scoped_refptr<TestTexture> TestWebGraphicsContext3D::BoundTexture(
+    WGC3Denum target) {
+  // The caller is expected to lock the namespace for texture access.
+  namespace_->lock.AssertAcquired();
+  return namespace_->textures.TextureForId(BoundTextureId(target));
+}
+
+void TestWebGraphicsContext3D::CheckTextureIsBound(WGC3Denum target) {
+  DCHECK(BoundTextureId(target));
+}
+
 void TestWebGraphicsContext3D::endQueryEXT(WGC3Denum target) {
   if (times_end_query_succeeds_ >= 0) {
     if (!times_end_query_succeeds_) {
@@ -688,6 +699,28 @@ void TestWebGraphicsContext3D::TextureTargets::BindTexture(
   // Make sure this is a supported target by seeing if it was bound to before.
   DCHECK(bound_textures_.find(target) != bound_textures_.end());
   bound_textures_[target] = id;
+}
+
+void TestWebGraphicsContext3D::texParameteri(blink::WGC3Denum target,
+                                             blink::WGC3Denum pname,
+                                             blink::WGC3Dint param) {
+  CheckTextureIsBound(target);
+  base::AutoLock lock_for_texture_access(namespace_->lock);
+  scoped_refptr<TestTexture> texture = BoundTexture(target);
+  DCHECK(texture->IsValidParameter(pname));
+  texture->params[pname] = param;
+}
+
+void TestWebGraphicsContext3D::getTexParameteriv(blink::WGC3Denum target,
+                                                 blink::WGC3Denum pname,
+                                                 blink::WGC3Dint* value) {
+  CheckTextureIsBound(target);
+  base::AutoLock lock_for_texture_access(namespace_->lock);
+  scoped_refptr<TestTexture> texture = BoundTexture(target);
+  DCHECK(texture->IsValidParameter(pname));
+  TestTexture::TextureParametersMap::iterator it = texture->params.find(pname);
+  if (it != texture->params.end())
+    *value = it->second;
 }
 
 void TestWebGraphicsContext3D::TextureTargets::UnbindTexture(

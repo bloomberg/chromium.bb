@@ -47,6 +47,13 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
       blink::WGC3Denum target,
       blink::WebGLId texture_id);
 
+  virtual void texParameteri(blink::WGC3Denum target,
+                             blink::WGC3Denum pname,
+                             blink::WGC3Dint param);
+  virtual void getTexParameteriv(blink::WGC3Denum target,
+                                 blink::WGC3Denum pname,
+                                 blink::WGC3Dint* value);
+
   virtual blink::WGC3Denum checkFramebufferStatus(blink::WGC3Denum target);
 
   virtual Attributes getContextAttributes();
@@ -313,6 +320,8 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   void SwapBuffersComplete();
   void CreateNamespace();
   blink::WebGLId BoundTextureId(blink::WGC3Denum target);
+  scoped_refptr<TestTexture> BoundTexture(blink::WGC3Denum target);
+  void CheckTextureIsBound(blink::WGC3Denum target);
 
   unsigned context_id_;
   Attributes attributes_;

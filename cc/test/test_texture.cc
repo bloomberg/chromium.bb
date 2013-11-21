@@ -4,7 +4,9 @@
 
 #include "cc/test/test_texture.h"
 
+#include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 
 namespace cc {
 
@@ -15,8 +17,15 @@ size_t TextureSizeBytes(gfx::Size size, ResourceFormat format) {
          bytes_per_component;
 }
 
-TestTexture::TestTexture()
-    : format(RGBA_8888), filter(GL_NEAREST_MIPMAP_LINEAR) {}
+TestTexture::TestTexture() : format(RGBA_8888) {
+  // Initialize default parameter values.
+  params[GL_TEXTURE_MAG_FILTER] = GL_LINEAR;
+  params[GL_TEXTURE_MIN_FILTER] = GL_NEAREST_MIPMAP_LINEAR;
+  params[GL_TEXTURE_WRAP_S] = GL_REPEAT;
+  params[GL_TEXTURE_WRAP_T] = GL_REPEAT;
+  params[GL_TEXTURE_POOL_CHROMIUM] = GL_TEXTURE_POOL_UNMANAGED_CHROMIUM;
+  params[GL_TEXTURE_USAGE_ANGLE] = GL_NONE;
+}
 
 TestTexture::~TestTexture() {}
 
@@ -24,6 +33,10 @@ void TestTexture::Reallocate(gfx::Size size, ResourceFormat format) {
   this->size = size;
   this->format = format;
   this->data.reset(new uint8_t[TextureSizeBytes(size, format)]);
+}
+
+bool TestTexture::IsValidParameter(blink::WGC3Denum pname) {
+  return params.find(pname) != params.end();
 }
 
 }  // namespace cc

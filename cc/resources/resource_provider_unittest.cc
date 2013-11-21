@@ -244,16 +244,6 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     SetPixels(xoffset, yoffset, width, height, pixels);
   }
 
-  virtual void texParameteri(WGC3Denum target, WGC3Denum param, WGC3Dint value)
-      OVERRIDE {
-    CheckTextureIsBound(target);
-    base::AutoLock lock_for_texture_access(namespace_->lock);
-    scoped_refptr<TestTexture> texture = BoundTexture(target);
-    if (param != GL_TEXTURE_MIN_FILTER)
-      return;
-    texture->filter = value;
-  }
-
   virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox) OVERRIDE {
     return shared_data_->GenMailbox(mailbox);
   }
@@ -288,22 +278,6 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     ASSERT_EQ(texture->size, size);
     ASSERT_EQ(texture->format, format);
     memcpy(pixels, texture->data.get(), TextureSizeBytes(size, format));
-  }
-
-  WGC3Denum GetTextureFilter() {
-    CheckTextureIsBound(GL_TEXTURE_2D);
-    base::AutoLock lock_for_texture_access(namespace_->lock);
-    return BoundTexture(GL_TEXTURE_2D)->filter;
-  }
-
-  scoped_refptr<TestTexture> BoundTexture(WGC3Denum target) {
-    // The caller is expected to lock the namespace for texture access.
-    namespace_->lock.AssertAcquired();
-    return namespace_->textures.TextureForId(BoundTextureId(target));
-  }
-
-  void CheckTextureIsBound(WGC3Denum target) {
-    ASSERT_TRUE(BoundTextureId(target));
   }
 
  protected:
@@ -2460,6 +2434,13 @@ class AllocationTrackingContext3D : public TestWebGraphicsContext3D {
   MOCK_METHOD1(unmapImageCHROMIUM, void(WGC3Duint));
   MOCK_METHOD2(bindTexImage2DCHROMIUM, void(WGC3Denum, WGC3Dint));
   MOCK_METHOD2(releaseTexImage2DCHROMIUM, void(WGC3Denum, WGC3Dint));
+
+  // We're mocking bindTexture, so we override
+  // TestWebGraphicsContext3D::texParameteri to avoid assertions related to the
+  // currently bound texture.
+  virtual void texParameteri(blink::WGC3Denum target,
+                             blink::WGC3Denum pname,
+                             blink::WGC3Dint param) {}
 };
 
 TEST_P(ResourceProviderTest, TextureAllocation) {
