@@ -2160,6 +2160,11 @@ void RenderBlock::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffs
         return;
     }
 
+    if (paintPhase == PaintPhaseClippingMask && style()->visibility() == VISIBLE) {
+        paintClippingMask(paintInfo, paintOffset);
+        return;
+    }
+
     // We're done.  We don't bother painting any children.
     if (paintPhase == PaintPhaseBlockBackground || paintInfo.paintRootBackgroundOnly())
         return;

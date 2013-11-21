@@ -470,9 +470,16 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (updateMaskLayer(renderer->hasMask()))
         m_graphicsLayer->setMaskLayer(m_maskLayer.get());
 
-    bool needsChildClippingMask = (renderer->style()->hasBorderRadius() || renderer->style()->clipPath()) && isAcceleratedContents(renderer);
-    if (updateClippingMaskLayers(needsChildClippingMask))
-        m_graphicsLayer->setContentsClippingMaskLayer(m_childClippingMaskLayer.get());
+    bool hasChildClippingLayer = compositor->clipsCompositingDescendants(m_owningLayer) && (hasClippingLayer() || hasScrollingLayer());
+    bool needsChildClippingMask = (renderer->style()->clipPath() || renderer->style()->hasBorderRadius()) && (hasChildClippingLayer || isAcceleratedContents(renderer));
+    if (updateClippingMaskLayers(needsChildClippingMask)) {
+        if (hasClippingLayer())
+            clippingLayer()->setMaskLayer(m_childClippingMaskLayer.get());
+        else if (hasScrollingLayer())
+            scrollingLayer()->setMaskLayer(m_childClippingMaskLayer.get());
+        else if (isAcceleratedContents(renderer))
+            m_graphicsLayer->setContentsClippingMaskLayer(m_childClippingMaskLayer.get());
+    }
 
     if (m_owningLayer->reflectionInfo()) {
         if (m_owningLayer->reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping()) {
@@ -643,6 +650,11 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         clipLayer->setPosition(FloatPoint(clippingBox.location() - localCompositingBounds.location()));
         clipLayer->setSize(clippingBox.size());
         clipLayer->setOffsetFromRenderer(toIntSize(clippingBox.location()));
+        if (m_childClippingMaskLayer && !m_scrollingLayer) {
+            m_childClippingMaskLayer->setPosition(clipLayer->position());
+            m_childClippingMaskLayer->setSize(clipLayer->size());
+            m_childClippingMaskLayer->setOffsetFromRenderer(clipLayer->offsetFromRenderer());
+        }
     }
 
     if (m_maskLayer) {
@@ -748,6 +760,12 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
 
         IntSize oldScrollingLayerOffset = m_scrollingLayer->offsetFromRenderer();
         m_scrollingLayer->setOffsetFromRenderer(-toIntSize(clientBox.location()));
+
+        if (m_childClippingMaskLayer) {
+            m_childClippingMaskLayer->setPosition(m_scrollingLayer->position());
+            m_childClippingMaskLayer->setSize(m_scrollingLayer->size());
+            m_childClippingMaskLayer->setOffsetFromRenderer(toIntSize(clientBox.location()));
+        }
 
         bool clientBoxOffsetChanged = oldScrollingLayerOffset != m_scrollingLayer->offsetFromRenderer();
 
@@ -2002,6 +2020,8 @@ String CompositedLayerMapping::debugName(const GraphicsLayer* graphicsLayer)
         name = "Child Containment Layer";
     } else if (graphicsLayer == m_maskLayer.get()) {
         name = "Mask Layer";
+    } else if (graphicsLayer == m_childClippingMaskLayer.get()) {
+        name = "Child Clipping Mask Layer";
     } else if (graphicsLayer == m_layerForHorizontalScrollbar.get()) {
         name = "Horizontal Scrollbar Layer";
     } else if (graphicsLayer == m_layerForVerticalScrollbar.get()) {

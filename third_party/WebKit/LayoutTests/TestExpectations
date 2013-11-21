@@ -497,6 +497,9 @@ crbug.com/310992 animations/play-state.html [ Pass Failure ]
 crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 virtual/web-animations-css/animations/play-state.html [ Pass Failure ]
 
+# Needs rebaseline (current results made with feature disabled)
+crbug.com/157218 fast/clip/overflow-border-radius-composited-parent.html [ NeedsRebaseline ]
+
 crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/309370 [ Mac ] fast/css/font-face-html-as-svg.html [ Timeout ]
 crbug.com/310292 [ Mac ] http/tests/security/video-poster-cross-origin-crash.html [ Failure Pass ]
