@@ -16,9 +16,6 @@ const char kUrlKey[] = "url";
 const char kTitleKey[] = "title";
 const char kChildrenKey[] = "children";
 const char kChildIdsKey[] = "childIds";
-const char kRecursiveKey[] = "recursive";
-const char kDateAddedKey[] = "dateAdded";
-const char kDateFolderModifiedKey[] = "dateGroupModified";
 
 const char kNoNodeError[] = "Can't find bookmark for id.";
 const char kNoParentError[] = "Can't find parent bookmark for id.";

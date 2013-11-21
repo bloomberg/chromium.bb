@@ -20,9 +20,6 @@ extern const char kUrlKey[];
 extern const char kTitleKey[];
 extern const char kChildrenKey[];
 extern const char kChildIdsKey[];
-extern const char kRecursiveKey[];
-extern const char kDateAddedKey[];
-extern const char kDateFolderModifiedKey[];
 
 // Errors.
 extern const char kNoNodeError[];

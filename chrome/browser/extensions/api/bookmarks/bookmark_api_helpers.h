@@ -24,12 +24,6 @@ api::bookmarks::BookmarkTreeNode* GetBookmarkTreeNode(
     bool recurse,
     bool only_folders);
 
-// TODO(mwrosen): Remove this function once chrome.bookmarkManagerPrivate is
-// refactored to use the JSON schema compiler.
-base::DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
-                                         bool recurse,
-                                         bool only_folders);
-
 // Add a JSON representation of |node| to the JSON |nodes|.
 void AddNode(const BookmarkNode* node,
              std::vector<linked_ptr<api::bookmarks::BookmarkTreeNode> >* nodes,
@@ -38,18 +32,6 @@ void AddNode(const BookmarkNode* node,
 void AddNodeFoldersOnly(const BookmarkNode* node,
                         std::vector<linked_ptr<
                             api::bookmarks::BookmarkTreeNode> >* nodes,
-                        bool recurse);
-
-// TODO(mwrosen): Remove this function once chrome.bookmarkManagerPrivate is
-// refactored to use the JSON schema compiler.
-void AddNode(const BookmarkNode* node,
-             base::ListValue* list,
-             bool recurse);
-
-// TODO(mwrosen): Remove this function once chrome.bookmarkManagerPrivate is
-// refactored to use the JSON schema compiler.
-void AddNodeFoldersOnly(const BookmarkNode* node,
-                        base::ListValue* list,
                         bool recurse);
 
 bool RemoveNode(BookmarkModel* model,

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/memory/linked_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -497,12 +498,12 @@ bool BookmarkManagerPrivateGetSubtreeFunction::RunImpl() {
       return false;
   }
 
-  scoped_ptr<base::ListValue> json(new base::ListValue());
+  std::vector<linked_ptr<api::bookmarks::BookmarkTreeNode> > nodes;
   if (params->folders_only)
-    bookmark_api_helpers::AddNodeFoldersOnly(node, json.get(), true);
+    bookmark_api_helpers::AddNodeFoldersOnly(node, &nodes, true);
   else
-    bookmark_api_helpers::AddNode(node, json.get(), true);
-  SetResult(json.release());
+    bookmark_api_helpers::AddNode(node, &nodes, true);
+  results_ = GetSubtree::Results::Create(nodes);
   return true;
 }
 
