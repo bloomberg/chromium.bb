@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/linux_util.h"
@@ -51,11 +52,19 @@ const unsigned kCrashContextSize = sizeof(ExceptionHandler::CrashContext);
 
 // Handles the crash dump and frees the allocated BreakpadInfo struct.
 void CrashDumpTask(CrashHandlerHostLinux* handler, BreakpadInfo* info) {
-  if (handler->IsShuttingDown())
+  if (handler->IsShuttingDown() && info->upload) {
+    base::DeleteFile(base::FilePath(info->filename), false);
+#if defined(ADDRESS_SANITIZER)
+    base::DeleteFile(base::FilePath(info->log_filename), false);
+#endif
     return;
+  }
 
   HandleCrashDump(*info);
   delete[] info->filename;
+#if defined(ADDRESS_SANITIZER)
+  delete[] info->log_filename;
+#endif
   delete[] info->process_type;
   delete[] info->distro;
   delete info->crash_keys;
