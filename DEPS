@@ -29,10 +29,7 @@ vars = {
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "12289",  # native_client/DEPS: tools_rev
   "gtm_revision": "616",
-
-  # TODO(rouslan): Get security approval when including more of the code.
-  "libaddressinput_revision": "146",
-
+  "libaddressinput_revision": "163",
   "libphonenumber_revision": "621",
   "libvpx_revision": "232686",
   "lss_revision": "24",
