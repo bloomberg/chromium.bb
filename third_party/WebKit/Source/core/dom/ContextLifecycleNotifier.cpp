@@ -44,7 +44,7 @@ ContextLifecycleNotifier::~ContextLifecycleNotifier()
 
 void ContextLifecycleNotifier::addObserver(ContextLifecycleNotifier::Observer* observer)
 {
-    LifecycleNotifier::addObserver(observer);
+    LifecycleNotifier<ExecutionContext>::addObserver(observer);
 
     RELEASE_ASSERT(m_iterating != IteratingOverContextObservers);
     if (observer->observerType() == Observer::ActiveDOMObjectType) {
@@ -55,7 +55,7 @@ void ContextLifecycleNotifier::addObserver(ContextLifecycleNotifier::Observer* o
 
 void ContextLifecycleNotifier::removeObserver(ContextLifecycleNotifier::Observer* observer)
 {
-    LifecycleNotifier::removeObserver(observer);
+    LifecycleNotifier<ExecutionContext>::removeObserver(observer);
 
     RELEASE_ASSERT(m_iterating != IteratingOverContextObservers);
     if (observer->observerType() == Observer::ActiveDOMObjectType) {

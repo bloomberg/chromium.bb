@@ -42,7 +42,7 @@ template<> void unobserverContext(DOMWindow* context, LifecycleObserver<DOMWindo
 }
 
 DOMWindowLifecycleObserver::DOMWindowLifecycleObserver(DOMWindow* window)
-    : LifecycleObserver(window, DOMWindowLifecycleObserverType)
+    : LifecycleObserver<DOMWindow>(window, DOMWindowLifecycleObserverType)
 {
 }
 

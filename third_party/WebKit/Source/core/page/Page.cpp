@@ -500,7 +500,7 @@ void Page::didCommitLoad(Frame* frame)
 
 PageLifecycleNotifier& Page::lifecycleNotifier()
 {
-    return static_cast<PageLifecycleNotifier&>(LifecycleContext::lifecycleNotifier());
+    return static_cast<PageLifecycleNotifier&>(LifecycleContext<Page>::lifecycleNotifier());
 }
 
 PassOwnPtr<LifecycleNotifier<Page> > Page::createLifecycleNotifier()

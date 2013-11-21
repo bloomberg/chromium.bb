@@ -30,7 +30,7 @@
 namespace WebCore {
 
 DOMWindowLifecycleNotifier::DOMWindowLifecycleNotifier(DOMWindow* context)
-    : LifecycleNotifier(context)
+    : LifecycleNotifier<DOMWindow>(context)
 {
 }
 
@@ -41,7 +41,7 @@ void DOMWindowLifecycleNotifier::addObserver(DOMWindowLifecycleNotifier::Observe
         m_windowObservers.add(static_cast<DOMWindowLifecycleObserver*>(observer));
     }
 
-    LifecycleNotifier::addObserver(observer);
+    LifecycleNotifier<DOMWindow>::addObserver(observer);
 }
 
 void DOMWindowLifecycleNotifier::removeObserver(DOMWindowLifecycleNotifier::Observer* observer)
@@ -51,7 +51,7 @@ void DOMWindowLifecycleNotifier::removeObserver(DOMWindowLifecycleNotifier::Obse
         m_windowObservers.remove(static_cast<DOMWindowLifecycleObserver*>(observer));
     }
 
-    LifecycleNotifier::removeObserver(observer);
+    LifecycleNotifier<DOMWindow>::removeObserver(observer);
 }
 
 PassOwnPtr<DOMWindowLifecycleNotifier> DOMWindowLifecycleNotifier::create(DOMWindow* context)

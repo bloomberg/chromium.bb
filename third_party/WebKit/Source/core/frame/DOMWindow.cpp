@@ -1865,7 +1865,7 @@ DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index)
 
 DOMWindowLifecycleNotifier& DOMWindow::lifecycleNotifier()
 {
-    return static_cast<DOMWindowLifecycleNotifier&>(LifecycleContext::lifecycleNotifier());
+    return static_cast<DOMWindowLifecycleNotifier&>(LifecycleContext<DOMWindow>::lifecycleNotifier());
 }
 
 PassOwnPtr<LifecycleNotifier<DOMWindow> > DOMWindow::createLifecycleNotifier()

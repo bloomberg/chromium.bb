@@ -30,7 +30,7 @@
 namespace WebCore {
 
 PageLifecycleNotifier::PageLifecycleNotifier(Page* context)
-    : LifecycleNotifier(context)
+    : LifecycleNotifier<Page>(context)
 {
 }
 
@@ -41,7 +41,7 @@ void PageLifecycleNotifier::addObserver(PageLifecycleNotifier::Observer* observe
         m_pageObservers.add(static_cast<PageLifecycleObserver*>(observer));
     }
 
-    LifecycleNotifier::addObserver(observer);
+    LifecycleNotifier<Page>::addObserver(observer);
 }
 
 void PageLifecycleNotifier::removeObserver(PageLifecycleNotifier::Observer* observer)
@@ -51,7 +51,7 @@ void PageLifecycleNotifier::removeObserver(PageLifecycleNotifier::Observer* obse
         m_pageObservers.remove(static_cast<PageLifecycleObserver*>(observer));
     }
 
-    LifecycleNotifier::removeObserver(observer);
+    LifecycleNotifier<Page>::removeObserver(observer);
 }
 
 } // namespace WebCore

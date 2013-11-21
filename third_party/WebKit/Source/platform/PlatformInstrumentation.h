@@ -53,7 +53,7 @@ public:
     class LazyPixelRefTracker: TraceEvent::TraceScopedTrackableObject<void*> {
     public:
         LazyPixelRefTracker(void* instance)
-            : TraceScopedTrackableObject(CategoryName, LazyPixelRef, instance)
+            : TraceEvent::TraceScopedTrackableObject<void*>(CategoryName, LazyPixelRef, instance)
         {
         }
     };

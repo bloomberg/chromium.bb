@@ -42,7 +42,7 @@ template<> void unobserverContext(Page* context, LifecycleObserver<Page>* observ
 }
 
 PageLifecycleObserver::PageLifecycleObserver(Page* page)
-    : LifecycleObserver(page, PageLifecycleObserverType)
+    : LifecycleObserver<Page>(page, PageLifecycleObserverType)
 {
 }
 
