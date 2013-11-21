@@ -82,6 +82,7 @@ public:
     }
 
     void dispatchEvents();
+    void dispatchEventsAsync();
 
 protected:
     DocumentTimeline(Document*, PassOwnPtr<PlatformTiming>);
@@ -89,8 +90,10 @@ protected:
 private:
     double m_zeroTime;
     Document* m_document;
+    Timer<DocumentTimeline> m_eventDistpachTimer;
     Vector<RefPtr<Player> > m_players;
 
+    void eventDispatchTimerFired(Timer<DocumentTimeline>*);
     void wake();
 
     struct EventToDispatch {

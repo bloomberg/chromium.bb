@@ -52,6 +52,7 @@ PassRefPtr<DocumentTimeline> DocumentTimeline::create(Document* document, PassOw
 DocumentTimeline::DocumentTimeline(Document* document, PassOwnPtr<PlatformTiming> timing)
     : m_zeroTime(nullValue())
     , m_document(document)
+    , m_eventDistpachTimer(this, &DocumentTimeline::eventDispatchTimerFired)
 {
     if (!timing)
         m_timing = adoptPtr(new DocumentTimelineTiming(this));
@@ -153,6 +154,18 @@ void DocumentTimeline::dispatchEvents()
     m_events.clear();
     for (size_t i = 0; i < events.size(); i++)
         events[i].target->dispatchEvent(events[i].event.release());
+}
+
+void DocumentTimeline::dispatchEventsAsync()
+{
+    if (m_events.isEmpty() || m_eventDistpachTimer.isActive())
+        return;
+    m_eventDistpachTimer.startOneShot(0);
+}
+
+void DocumentTimeline::eventDispatchTimerFired(Timer<DocumentTimeline>*)
+{
+    dispatchEvents();
 }
 
 size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const

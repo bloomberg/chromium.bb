@@ -61,6 +61,12 @@ void dispatchAnimationEvents(Document& document)
     document.transitionTimeline()->dispatchEvents();
 }
 
+void dispatchAnimationEventsAsync(Document& document)
+{
+    document.timeline()->dispatchEventsAsync();
+    document.transitionTimeline()->dispatchEventsAsync();
+}
+
 } // namespace
 
 void DocumentAnimations::serviceOnAnimationFrame(Document& document, double monotonicAnimationStartTime)
@@ -68,11 +74,6 @@ void DocumentAnimations::serviceOnAnimationFrame(Document& document, double mono
     if (!RuntimeEnabledFeatures::webAnimationsEnabled())
         return;
 
-    // FIXME: Animation events for newly started CSS Animations should be fired
-    // asynchronously after the style recalc that triggered them. For now we fire
-    // them here (a frame late) so that they at least apply against the correct
-    // animation state.
-    dispatchAnimationEvents(document);
     updateAnimationTiming(document, monotonicAnimationStartTime);
     dispatchAnimationEvents(document);
 }
@@ -99,6 +100,7 @@ void DocumentAnimations::serviceAfterStyleRecalc(Document& document)
 
     document.cssPendingAnimations().startPendingAnimationsAfterStyleRecalc();
     document.animationClock().unfreeze();
+    dispatchAnimationEventsAsync(document);
 }
 
 void DocumentAnimations::serviceAfterCompositingUpdate(FrameView& frameView)
