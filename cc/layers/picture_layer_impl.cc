@@ -855,10 +855,10 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
     low_res = AddTiling(low_res_raster_contents_scale_);
 
   high_res->set_resolution(HIGH_RESOLUTION);
+  if (!low_res)
+    low_res = previous_low_res;
   if (low_res && low_res != high_res)
     low_res->set_resolution(LOW_RESOLUTION);
-  else if (!low_res && previous_low_res)
-    previous_low_res->set_resolution(LOW_RESOLUTION);
 
   SanityCheckTilingState();
 }
