@@ -114,8 +114,8 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
     if (m_scopedStyleRegistrationState != RegisteredAsScoped)
         return;
 
-    document().styleEngine()->removeStyleSheetCandidateNode(this, parentNode());
     unregisterWithScopingNode(parentNode());
+    document().styleEngine()->removeStyleSheetCandidateNode(this, parentNode());
 
     // As any <style> in a shadow tree is treated as "scoped",
     // need to add the <style> to its shadow root.
