@@ -754,8 +754,12 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {17, false, "\003www\007lookout\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {15, false, "\011mylookout\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {19, false, "\003www\011mylookout\003com", true, kNoPins, DOMAIN_NOT_PINNED },
-  {16, false, "\002dm\007lookout\003com", true, kNoPins, DOMAIN_NOT_PINNED },
-  {18, false, "\002dm\011mylookout\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {16, true, "\002dm\007lookout\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {22, true, "\010business\007lookout\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {18, true, "\004blog\007lookout\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {17, true, "\003faq\007lookout\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {22, true, "\010platform\007lookout\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {19, true, "\005email\007lookout\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {15, true, "\011itriskltd\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {15, true, "\012stocktrade\002de", true, kNoPins, DOMAIN_NOT_PINNED },
   {22, true, "\011openshift\006redhat\003com", true, kNoPins, DOMAIN_NOT_PINNED },
@@ -853,6 +857,7 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {20, false, "\003get\012zenpayroll\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {23, false, "\006errors\012zenpayroll\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {23, false, "\006manage\012zenpayroll\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {19, true, "\016gernert-server\002de", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 
