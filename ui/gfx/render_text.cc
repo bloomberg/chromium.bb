@@ -999,7 +999,16 @@ Vector2d RenderText::GetAlignmentOffset(size_t line_number) {
     if (horizontal_alignment_ == ALIGN_CENTER)
       offset.set_x(offset.x() / 2);
   }
-  offset.set_y(GetBaseline() - GetLayoutTextBaseline());
+
+  // Vertically center the text.
+  if (multiline_) {
+    const int text_height = lines_.back().preceding_heights +
+        lines_.back().size.height();
+    offset.set_y((display_rect_.height() - text_height) / 2);
+  } else {
+    offset.set_y(GetBaseline() - GetLayoutTextBaseline());
+  }
+
   return offset;
 }
 
