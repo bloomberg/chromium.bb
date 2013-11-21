@@ -2533,6 +2533,10 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate,
     button_type_ = GESTURES_BUTTON_NONE;
     button_down_timeout_ = 0;
     sent_button_down_ = false;
+    // When a buttons_up event is generated, we need to reset the
+    // finger_leave_time_ in order to defer any gesture generation
+    // right after it.
+    finger_leave_time_ = hwstate.timestamp;
   }
 }
 
