@@ -64,13 +64,17 @@ private:
         return m_x == t->m_x && m_y == t->m_y && m_z == t->m_z;
     }
 
-    virtual bool apply(TransformationMatrix& transform, const FloatSize& borderBoxSize) const
+    virtual void apply(TransformationMatrix& transform, const FloatSize& borderBoxSize) const
     {
         transform.translate3d(x(borderBoxSize), y(borderBoxSize), z(borderBoxSize));
-        return m_x.type() == Percent || m_y.type() == Percent;
     }
 
     virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false);
+
+    virtual bool dependsOnBoxSize() const OVERRIDE
+    {
+        return m_x.type() == Percent || m_y.type() == Percent;
+    }
 
     TranslateTransformOperation(const Length& tx, const Length& ty, const Length& tz, OperationType type)
         : m_x(tx)

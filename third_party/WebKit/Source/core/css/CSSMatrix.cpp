@@ -72,13 +72,10 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
 
         // Convert transform operations to a TransformationMatrix. This can fail
         // if a param has a percentage ('%')
+        if (operations.dependsOnBoxSize())
+            exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
         TransformationMatrix t;
-        for (unsigned i = 0; i < operations.operations().size(); ++i) {
-            if (operations.operations()[i].get()->apply(t, IntSize(0, 0))) {
-                exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
-                return;
-            }
-        }
+        operations.apply(FloatSize(0, 0), t);
 
         // set the matrix
         m_matrix = t;

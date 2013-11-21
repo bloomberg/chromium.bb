@@ -51,10 +51,9 @@ private:
         return m_angleX == s->m_angleX && m_angleY == s->m_angleY;
     }
 
-    virtual bool apply(TransformationMatrix& transform, const FloatSize&) const
+    virtual void apply(TransformationMatrix& transform, const FloatSize&) const
     {
         transform.skew(m_angleX, m_angleY);
-        return false;
     }
 
     virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false);

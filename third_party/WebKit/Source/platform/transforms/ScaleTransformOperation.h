@@ -58,10 +58,9 @@ private:
         return m_x == s->m_x && m_y == s->m_y && m_z == s->m_z;
     }
 
-    virtual bool apply(TransformationMatrix& transform, const FloatSize&) const
+    virtual void apply(TransformationMatrix& transform, const FloatSize&) const
     {
         transform.scale3d(m_x, m_y, m_z);
-        return false;
     }
 
     virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false);

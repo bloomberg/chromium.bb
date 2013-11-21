@@ -43,7 +43,7 @@ bool InterpolatedTransformOperation::operator==(const TransformOperation& o) con
     return progress == t->progress && from == t->from && to == t->to;
 }
 
-bool InterpolatedTransformOperation::apply(TransformationMatrix& transform, const FloatSize& borderBoxSize) const
+void InterpolatedTransformOperation::apply(TransformationMatrix& transform, const FloatSize& borderBoxSize) const
 {
     TransformationMatrix fromTransform;
     TransformationMatrix toTransform;
@@ -52,7 +52,6 @@ bool InterpolatedTransformOperation::apply(TransformationMatrix& transform, cons
 
     toTransform.blend(fromTransform, progress);
     transform.multiply(toTransform);
-    return true;
 }
 
 PassRefPtr<TransformOperation> InterpolatedTransformOperation::blend(const TransformOperation* from, double progress, bool blendToIdentity)

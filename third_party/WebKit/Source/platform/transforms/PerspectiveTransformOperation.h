@@ -53,10 +53,9 @@ private:
         return m_p == p->m_p;
     }
 
-    virtual bool apply(TransformationMatrix& transform, const FloatSize&) const
+    virtual void apply(TransformationMatrix& transform, const FloatSize&) const
     {
         transform.applyPerspective(floatValueForLength(m_p, 1));
-        return false;
     }
 
     virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false);

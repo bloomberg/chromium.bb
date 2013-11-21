@@ -50,9 +50,14 @@ private:
     virtual OperationType type() const OVERRIDE { return Interpolated; }
 
     virtual bool operator==(const TransformOperation&) const;
-    virtual bool apply(TransformationMatrix&, const FloatSize& borderBoxSize) const;
+    virtual void apply(TransformationMatrix&, const FloatSize& borderBoxSize) const;
 
     virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false);
+
+    virtual bool dependsOnBoxSize() const OVERRIDE
+    {
+        return from.dependsOnBoxSize() || to.dependsOnBoxSize();
+    }
 
     InterpolatedTransformOperation(const TransformOperations& from, const TransformOperations& to, double progress)
         : from(from)

@@ -59,6 +59,15 @@ public:
         return false;
     }
 
+    bool dependsOnBoxSize() const
+    {
+        for (unsigned i = 0; i < m_operations.size(); ++i) {
+            if (m_operations[i]->dependsOnBoxSize())
+                return true;
+        }
+        return false;
+    }
+
     bool operationsMatch(const TransformOperations&) const;
 
     void clear()

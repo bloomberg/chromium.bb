@@ -45,10 +45,7 @@ private:
         return isSameType(o);
     }
 
-    virtual bool apply(TransformationMatrix&, const FloatSize&) const
-    {
-        return false;
-    }
+    virtual void apply(TransformationMatrix&, const FloatSize&) const { }
 
     virtual PassRefPtr<TransformOperation> blend(const TransformOperation*, double, bool = false)
     {
