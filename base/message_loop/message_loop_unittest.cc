@@ -23,6 +23,8 @@
 
 #if defined(OS_WIN)
 #include "base/message_loop/message_pump_win.h"
+#include "base/process/memory.h"
+#include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #endif
 
@@ -1079,5 +1081,93 @@ TEST(MessageLoopTest, IsType) {
   EXPECT_FALSE(loop.IsType(MessageLoop::TYPE_IO));
   EXPECT_FALSE(loop.IsType(MessageLoop::TYPE_DEFAULT));
 }
+
+#if defined(OS_WIN)
+void EmptyFunction() {}
+
+void PostMultipleTasks() {
+  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&EmptyFunction));
+  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&EmptyFunction));
+}
+
+static const int kSignalMsg = WM_USER + 2;
+
+void PostWindowsMessage(HWND message_hwnd) {
+  PostMessage(message_hwnd, kSignalMsg, 0, 2);
+}
+
+void EndTest(bool* did_run, HWND hwnd) {
+  *did_run = true;
+  PostMessage(hwnd, WM_CLOSE, 0, 0);
+}
+
+int kMyMessageFilterCode = 0x5002;
+
+LRESULT CALLBACK TestWndProcThunk(HWND hwnd, UINT message,
+                                  WPARAM wparam, LPARAM lparam) {
+  if (message == WM_CLOSE)
+    EXPECT_TRUE(DestroyWindow(hwnd));
+  if (message != kSignalMsg)
+    return DefWindowProc(hwnd, message, wparam, lparam);
+
+  switch (lparam) {
+  case 1:
+    // First, we post a task that will post multiple no-op tasks to make sure
+    // that the pump's incoming task queue does not become empty during the
+    // test.
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&PostMultipleTasks));
+    // Next, we post a task that posts a windows message to trigger the second
+    // stage of the test.
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(&PostWindowsMessage, hwnd));
+    break;
+  case 2:
+    // Since we're about to enter a modal loop, tell the message loop that we
+    // intend to nest tasks.
+    MessageLoop::current()->SetNestableTasksAllowed(true);
+    bool did_run = false;
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(&EndTest, &did_run, hwnd));
+    // Run a nested windows-style message loop and verify that our task runs. If
+    // it doesn't, then we'll loop here until the test times out.
+    MSG msg;
+    while (GetMessage(&msg, 0, 0, 0)) {
+      if (!CallMsgFilter(&msg, kMyMessageFilterCode))
+        DispatchMessage(&msg);
+      // If this message is a WM_CLOSE, explicitly exit the modal loop. Posting
+      // a WM_QUIT should handle this, but unfortunately MessagePumpWin eats
+      // WM_QUIT messages even when running inside a modal loop.
+      if (msg.message == WM_CLOSE)
+        break;
+    }
+    EXPECT_TRUE(did_run);
+    MessageLoop::current()->Quit();
+    break;
+  }
+  return 0;
+}
+
+TEST(MessageLoopTest, AlwaysHaveUserMessageWhenNesting) {
+  MessageLoop loop(MessageLoop::TYPE_UI);
+  HINSTANCE instance = GetModuleFromAddress(&TestWndProcThunk);
+  WNDCLASSEX wc = {0};
+  wc.cbSize = sizeof(wc);
+  wc.lpfnWndProc = TestWndProcThunk;
+  wc.hInstance = instance;
+  wc.lpszClassName = L"MessageLoopTest_HWND";
+  ATOM atom = RegisterClassEx(&wc);
+  ASSERT_TRUE(atom);
+
+  HWND message_hwnd = CreateWindow(MAKEINTATOM(atom), 0, 0, 0, 0, 0, 0,
+                                   HWND_MESSAGE, 0, instance, 0);
+  ASSERT_TRUE(message_hwnd) << GetLastError();
+
+  ASSERT_TRUE(PostMessage(message_hwnd, kSignalMsg, 0, 1));
+
+  loop.Run();
+
+  ASSERT_TRUE(UnregisterClass(MAKEINTATOM(atom), instance));
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace base
