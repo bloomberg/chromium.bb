@@ -52,13 +52,13 @@
   # bound %eax, (%eax)
   62 00
 @dis:
-     0:	62                                           	(bad)  
+     0:	62                                           	.byte 0x62
      1:	00                                           	.byte 0x0
 @rdfa_output:
   0: unrecognized instruction
   return code: 1
 @spec:
-  0: ('objdump failed to decode', Instruction(0x0: 62  (bad)))
+  0: ('objdump failed to decode', Instruction(0x0: 62  .byte 0x62))
   1: ('objdump failed to decode', Instruction(0x1: 00  .byte 0x0))
 ----------------------------------------------------------------------
 @hex:

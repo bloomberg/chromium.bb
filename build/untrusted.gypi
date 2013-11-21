@@ -501,7 +501,7 @@
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
                    '--compile_flags=-m32 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
-                   '--link_flags=-m32 -B>(tc_lib_dir_irt32) -Wl,--build-id,--section-start,.note.gnu.build-id=<(NACL_IRT_DATA_START) -Wl,-Ttext-segment=<(NACL_IRT_TEXT_START) ^(link_flags) >(_link_flags)',
+                   '--link_flags=-m32 -B>(tc_lib_dir_irt32) -Wl,-Trodata-segment=<(NACL_IRT_DATA_START) -Wl,-Ttext-segment=<(NACL_IRT_TEXT_START) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_newlib32)',
                  ],
                },

@@ -42,14 +42,14 @@ NACL_TOOL_MAP = {
             'other_libdir': 'lib32',
             'as_flag': '--32',
             'cc_flag': '-m32',
-            'ld_flag': ' -melf_nacl',
+            'ld_flag': ' -melf_i386_nacl',
             },
         '64': {
             'tooldir': 'x86_64-nacl',
             'other_libdir': 'lib64',
             'as_flag': '--64',
             'cc_flag': '-m64',
-            'ld_flag': ' -melf64_nacl',
+            'ld_flag': ' -melf_x86_64_nacl',
             },
         },
     }
