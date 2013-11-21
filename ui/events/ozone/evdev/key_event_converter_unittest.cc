@@ -13,10 +13,15 @@
 
 namespace ui {
 
+const int kInvalidFileDescriptor = -1;
+const int kTestDeviceId = 0;
+
 class MockKeyEventConverterEvdev : public KeyEventConverterEvdev {
  public:
   MockKeyEventConverterEvdev(EventModifiersEvdev* modifiers)
-      : KeyEventConverterEvdev(modifiers) {}
+      : KeyEventConverterEvdev(kInvalidFileDescriptor,
+                               kTestDeviceId,
+                               modifiers) {}
   virtual ~MockKeyEventConverterEvdev() {};
 
   unsigned size() { return dispatched_events_.size(); }

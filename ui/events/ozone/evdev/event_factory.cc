@@ -70,7 +70,7 @@ void EventFactoryEvdev::StartProcessingEvents() {
     if (IsTouchScreen(devinfo))
       converter.reset(new TouchEventConverterEvdev(fd, id));
     else if (devinfo.HasEventType(EV_KEY))
-      converter.reset(new KeyEventConverterEvdev(&modifiers_));
+      converter.reset(new KeyEventConverterEvdev(fd, id, &modifiers_));
 
     if (converter) {
       AddEventConverter(fd, converter.Pass());

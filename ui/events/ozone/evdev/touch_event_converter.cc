@@ -46,7 +46,7 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(int fd, int id)
 }
 
 TouchEventConverterEvdev::~TouchEventConverterEvdev() {
-  if (close(fd_) < 0)
+  if (fd_ >= 0 && close(fd_) < 0)
     DLOG(WARNING) << "failed close on /dev/input/event" << id_;
 }
 
