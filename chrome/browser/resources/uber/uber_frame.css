@@ -51,7 +51,7 @@ button {
   color: #999;
   cursor: pointer;
   font: inherit;
-  line-height: 17px;
+  line-height: 1.417em;  /* 17px based on default 12px font size. */
   margin: 6px 0;
   padding: 0;
 }
