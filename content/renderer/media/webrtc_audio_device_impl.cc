@@ -108,6 +108,7 @@ int WebRtcAudioDeviceImpl::CaptureData(const std::vector<int>& channels,
 void WebRtcAudioDeviceImpl::SetCaptureFormat(
     const media::AudioParameters& params) {
   DVLOG(1) << "WebRtcAudioDeviceImpl::SetCaptureFormat()";
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void WebRtcAudioDeviceImpl::RenderData(uint8* audio_data,

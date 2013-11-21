@@ -793,6 +793,7 @@ MediaStreamImpl::CreateLocalAudioRenderer(
       static_cast<WebRtcLocalAudioTrack*>(audio_track),
       RenderViewObserver::routing_id(),
       session_id,
+      sample_rate,
       buffer_size);
 }
 

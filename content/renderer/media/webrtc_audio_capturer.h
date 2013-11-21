@@ -61,7 +61,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // WebRtcAudioDeviceImpl calls this method on the main render thread but
   // other clients may call it from other threads. The current implementation
   // does not support multi-thread calling.
-  // The first AddTrack will implicitly trigger the Start() of this object.
   // Called on the main render thread or libjingle working thread.
   void AddTrack(WebRtcLocalAudioTrack* track);
 
@@ -110,10 +109,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   const std::string& device_id() const { return device_id_; }
   int session_id() const { return session_id_; }
 
-  // Stops recording audio. This method will empty its track lists since
-  // stopping the capturer will implicitly invalidate all its tracks.
-  // This method is exposed to the public because the media stream track can
-  // call Stop() on its source.
+  // Stops recording audio.
   void Stop();
 
   // Called by the WebAudioCapturerSource to get the audio processing params.
@@ -161,10 +157,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
   // A list of audio tracks that the audio data is fed to.
   TrackList tracks_;
-
-  // A list of audio tracks that the capturer needs to notify the audio format
-  // has changed.
-  TrackList tracks_to_notify_format_;
 
   // The audio data source from the browser process.
   scoped_refptr<media::AudioCapturerSource> source_;

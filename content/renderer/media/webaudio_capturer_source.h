@@ -69,9 +69,6 @@ class WebAudioCapturerSource
 
   media::AudioParameters params_;
 
-  // Flag to help notify the |track_| when the audio format has changed.
-  bool audio_format_changed_;
-
   // Wraps data coming from HandleCapture().
   scoped_ptr<media::AudioBus> wrapper_bus_;
 
