@@ -1736,9 +1736,10 @@ void ResourceProvider::AcquireImage(ResourceId id) {
   resource->allocated = true;
   WebGraphicsContext3D* context3d = Context3d();
   DCHECK(context3d);
-  DCHECK_EQ(RGBA_8888, resource->format);
   resource->image_id = context3d->createImageCHROMIUM(
-      resource->size.width(), resource->size.height(), GL_RGBA8_OES);
+      resource->size.width(),
+      resource->size.height(),
+      TextureToStorageFormat(resource->format));
   DCHECK(resource->image_id);
 }
 

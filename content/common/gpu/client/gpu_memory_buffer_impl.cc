@@ -56,8 +56,8 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImpl::GetHandle() const {
 
 // static
 bool GpuMemoryBufferImpl::IsFormatValid(unsigned internalformat) {
-  // GL_RGBA8_OES is the only supported format at the moment.
   switch (internalformat) {
+    case GL_BGRA8_EXT:
     case GL_RGBA8_OES:
       return true;
     default:
@@ -67,8 +67,8 @@ bool GpuMemoryBufferImpl::IsFormatValid(unsigned internalformat) {
 
 // static
 size_t GpuMemoryBufferImpl::BytesPerPixel(unsigned internalformat) {
-  // GL_RGBA_OES has 4 bytes per pixel.
   switch (internalformat) {
+    case GL_BGRA8_EXT:
     case GL_RGBA8_OES:
       return 4;
     default:

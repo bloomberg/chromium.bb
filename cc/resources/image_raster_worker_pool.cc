@@ -155,8 +155,7 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
 }
 
 ResourceFormat ImageRasterWorkerPool::GetResourceFormat() const {
-  // Only format supported by CHROMIUM_map_image
-  return RGBA_8888;
+  return resource_provider()->best_texture_format();
 }
 
 void ImageRasterWorkerPool::OnRasterTasksFinished() {
