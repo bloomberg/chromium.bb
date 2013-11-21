@@ -79,8 +79,6 @@ public:
     // Also implemented by the platform.
     void platformInit();
 
-    void getTraitsInFamily(const AtomicString&, Vector<unsigned>&);
-
     PassRefPtr<SimpleFontData> getFontResourceData(const FontDescription&, const AtomicString&, bool checkingAlternateName = false, ShouldRetain = Retain);
     PassRefPtr<SimpleFontData> getLastResortFallbackFont(const FontDescription&, ShouldRetain = Retain);
     SimpleFontData* getNonRetainedLastResortFallbackFont(const FontDescription&);

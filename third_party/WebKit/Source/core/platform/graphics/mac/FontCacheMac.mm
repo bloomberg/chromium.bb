@@ -191,11 +191,6 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     return getFontResourceData(fontDescription, lucidaGrandeStr, false, shouldRetain);
 }
 
-void FontCache::getTraitsInFamily(const AtomicString& familyName, Vector<unsigned>& traitsMasks)
-{
-    [WebFontCache getTraits:traitsMasks inFamily:familyName];
-}
-
 FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)
 {
     NSFontTraitMask traits = fontDescription.italic() ? NSFontItalicTrait : 0;

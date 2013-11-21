@@ -40,7 +40,6 @@
 #include "platform/fonts/FontFallbackWin.h"
 #include "platform/win/HWndDC.h"
 #include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
 #include "wtf/text/StringHash.h"
 
 #include <windows.h>
@@ -362,37 +361,6 @@ static void FillLogFont(const FontDescription& fontDescription, LOGFONT* winfont
     winfont->lfWeight = toGDIFontWeight(fontDescription.weight());
 }
 
-struct TraitsInFamilyProcData {
-    TraitsInFamilyProcData(const AtomicString& familyName)
-        : m_familyName(familyName)
-    {
-    }
-
-    const AtomicString& m_familyName;
-    HashSet<unsigned> m_traitsMasks;
-};
-
-static int CALLBACK traitsInFamilyEnumProc(CONST LOGFONT* logFont, CONST TEXTMETRIC* metrics, DWORD fontType, LPARAM lParam)
-{
-    TraitsInFamilyProcData* procData = reinterpret_cast<TraitsInFamilyProcData*>(lParam);
-
-    unsigned traitsMask = 0;
-    traitsMask |= logFont->lfItalic ? FontStyleItalicMask : FontStyleNormalMask;
-    traitsMask |= FontVariantNormalMask;
-    LONG weight = logFont->lfWeight;
-    traitsMask |= weight == FW_THIN ? FontWeight100Mask :
-        weight == FW_EXTRALIGHT ? FontWeight200Mask :
-        weight == FW_LIGHT ? FontWeight300Mask :
-        weight == FW_NORMAL ? FontWeight400Mask :
-        weight == FW_MEDIUM ? FontWeight500Mask :
-        weight == FW_SEMIBOLD ? FontWeight600Mask :
-        weight == FW_BOLD ? FontWeight700Mask :
-        weight == FW_EXTRABOLD ? FontWeight800Mask :
-                                 FontWeight900Mask;
-    procData->m_traitsMasks.add(traitsMask);
-    return 1;
-}
-
 struct GetLastResortFallbackFontProcData {
     GetLastResortFallbackFontProcData(FontCache* fontCache, const FontDescription* fontDescription, FontCache::ShouldRetain shouldRetain, wchar_t* fontName)
         : m_fontCache(fontCache)
@@ -589,22 +557,6 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
 
     ASSERT_NOT_REACHED();
     return 0;
-}
-
-void FontCache::getTraitsInFamily(const AtomicString& familyName, Vector<unsigned>& traitsMasks)
-{
-    HWndDC hdc(0);
-
-    LOGFONT logFont;
-    logFont.lfCharSet = DEFAULT_CHARSET;
-    unsigned familyLength = min(familyName.length(), static_cast<unsigned>(LF_FACESIZE - 1));
-    familyName.string().copyTo(logFont.lfFaceName, 0, familyLength);
-    logFont.lfFaceName[familyLength] = 0;
-    logFont.lfPitchAndFamily = 0;
-
-    TraitsInFamilyProcData procData(familyName);
-    EnumFontFamiliesEx(hdc, &logFont, traitsInFamilyEnumProc, reinterpret_cast<LPARAM>(&procData), 0);
-    copyToVector(procData.m_traitsMasks, traitsMasks);
 }
 
 FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)

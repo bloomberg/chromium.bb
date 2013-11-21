@@ -91,7 +91,7 @@ public:
         Vector<UnicodeRange> m_ranges; // If empty, represents the whole code space.
     };
 
-    FontFace::LoadStatus loadStatus() const { return m_fontFace ? m_fontFace->loadStatus() : FontFace::Loaded; }
+    FontFace::LoadStatus loadStatus() const { return m_fontFace->loadStatus(); }
     void willUseFontData(const FontDescription&);
 
 private:
@@ -100,6 +100,7 @@ private:
         , m_activeSource(0)
         , m_fontFace(fontFace)
     {
+        ASSERT(m_fontFace);
     }
     void setLoadStatus(FontFace::LoadStatus);
 

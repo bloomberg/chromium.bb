@@ -57,10 +57,8 @@ public:
 private:
     typedef HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > TraitsMap;
     typedef HashMap<String, OwnPtr<TraitsMap>, CaseFoldingHash> FamilyToTraitsMap;
-    typedef HashMap<String, OwnPtr<Vector<RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> FamilyToFontFaces;
     typedef HashMap<const StyleRuleFontFace*, RefPtr<CSSFontFace> > StyleRuleToFontFace;
     FamilyToTraitsMap m_fontFaces;
-    FamilyToFontFaces m_locallyInstalledFontFaces;
     FamilyToTraitsMap m_fonts;
     StyleRuleToFontFace m_styleRuleToFontFace;
 

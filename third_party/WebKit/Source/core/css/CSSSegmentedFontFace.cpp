@@ -35,10 +35,9 @@
 
 namespace WebCore {
 
-CSSSegmentedFontFace::CSSSegmentedFontFace(CSSFontSelector* fontSelector, FontTraitsMask traitsMask, bool isLocalFallback)
+CSSSegmentedFontFace::CSSSegmentedFontFace(CSSFontSelector* fontSelector, FontTraitsMask traitsMask)
     : m_fontSelector(fontSelector)
     , m_traitsMask(traitsMask)
-    , m_isLocalFallback(isLocalFallback)
 {
 }
 
@@ -219,9 +218,8 @@ Vector<RefPtr<FontFace> > CSSSegmentedFontFace::fontFaces(const String& text) co
     Vector<RefPtr<FontFace> > fontFaces;
     unsigned size = m_fontFaces.size();
     for (unsigned i = 0; i < size; i++) {
-        RefPtr<FontFace> face = m_fontFaces[i]->fontFace();
-        if (face && m_fontFaces[i]->ranges().intersectsWith(text))
-            fontFaces.append(face);
+        if (m_fontFaces[i]->ranges().intersectsWith(text))
+            fontFaces.append(m_fontFaces[i]->fontFace());
     }
     return fontFaces;
 }

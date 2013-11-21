@@ -106,12 +106,6 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     return getFontResourceData(fontPlatformData, shouldRetain);
 }
 
-void FontCache::getTraitsInFamily(const AtomicString& familyName,
-                                  Vector<unsigned>& traitsMasks)
-{
-    notImplemented();
-}
-
 PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDescription, const AtomicString& family, CString& name)
 {
     name = "";
