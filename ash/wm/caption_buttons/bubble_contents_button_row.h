@@ -17,17 +17,17 @@ namespace ash {
 class BubbleDialogButton;
 class MaximizeBubbleControllerBubble;
 
-// A class that creates all buttons and put them into a view.
+// A class that creates all buttons and puts them into a view.
 class BubbleContentsButtonRow : public views::View,
                                 public views::ButtonListener {
  public:
   explicit BubbleContentsButtonRow(MaximizeBubbleControllerBubble* bubble);
+  virtual ~BubbleContentsButtonRow();
 
-  virtual ~BubbleContentsButtonRow() {}
-
-  // Overridden from ButtonListener.
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
+
   // Called from BubbleDialogButton.
   void ButtonHovered(BubbleDialogButton* sender);
 

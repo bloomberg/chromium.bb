@@ -15,51 +15,50 @@
 namespace ash {
 namespace internal {
 
-namespace {
-
-const int kTrayPopupLabelButtonPaddingHorizontal = 16;
-const int kTrayPopupLabelButtonPaddingVertical = 8;
-
-const int kTrayPopupLabelButtonBorderImagesNormal[] = {
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
-};
-
-const int kTrayPopupLabelButtonBorderImagesHovered[] = {
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_HOVER_BACKGROUND,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
-};
-
-}  // namespace
-
 TrayPopupLabelButtonBorder::TrayPopupLabelButtonBorder()
     : LabelButtonBorder(views::Button::STYLE_TEXTBUTTON) {
+  const int kTrayPopupLabelButtonBorderImagesNormal[] = {
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
+  };
   SetPainter(false, views::Button::STATE_NORMAL,
              views::Painter::CreateImageGridPainter(
                  kTrayPopupLabelButtonBorderImagesNormal));
   SetPainter(false, views::Button::STATE_DISABLED,
              views::Painter::CreateImageGridPainter(
                  kTrayPopupLabelButtonBorderImagesNormal));
+
+  const int kTrayPopupLabelButtonBorderImagesHovered[] = {
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_HOVER_BACKGROUND,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
+      IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
+  };
   SetPainter(false, views::Button::STATE_HOVERED,
              views::Painter::CreateImageGridPainter(
                  kTrayPopupLabelButtonBorderImagesHovered));
   SetPainter(false, views::Button::STATE_PRESSED,
              views::Painter::CreateImageGridPainter(
                  kTrayPopupLabelButtonBorderImagesHovered));
+
+  const int kTrayPopupLabelButtonPaddingHorizontal = 16;
+  const int kTrayPopupLabelButtonPaddingVertical = 8;
+  set_insets(gfx::Insets(kTrayPopupLabelButtonPaddingVertical,
+                         kTrayPopupLabelButtonPaddingHorizontal,
+                         kTrayPopupLabelButtonPaddingVertical,
+                         kTrayPopupLabelButtonPaddingHorizontal));
 }
 
 TrayPopupLabelButtonBorder::~TrayPopupLabelButtonBorder() {}
@@ -96,13 +95,6 @@ void TrayPopupLabelButtonBorder::Paint(const views::View& view,
   } else {
     LabelButtonBorder::Paint(view, canvas);
   }
-}
-
-gfx::Insets TrayPopupLabelButtonBorder::GetInsets() const {
-  return gfx::Insets(kTrayPopupLabelButtonPaddingVertical,
-                     kTrayPopupLabelButtonPaddingHorizontal,
-                     kTrayPopupLabelButtonPaddingVertical,
-                     kTrayPopupLabelButtonPaddingHorizontal);
 }
 
 }  // namespace internal

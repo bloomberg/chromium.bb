@@ -30,8 +30,6 @@ class MaximizeBubbleControllerBubble;
 // A class which shows a helper UI for the maximize button after a delay.
 class ASH_EXPORT MaximizeBubbleController {
  public:
-  class Bubble;
-
   MaximizeBubbleController(FrameMaximizeButton* frame_maximize_button,
                            MaximizeBubbleFrameState maximize_type,
                            int appearance_delay_ms);

@@ -19,9 +19,8 @@ class TrayPopupLabelButtonBorder : public views::LabelButtonBorder {
   TrayPopupLabelButtonBorder();
   virtual ~TrayPopupLabelButtonBorder();
 
-  // Overridden from views::LabelButtonBorder.
+  // views::LabelButtonBorder:
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Insets GetInsets() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TrayPopupLabelButtonBorder);

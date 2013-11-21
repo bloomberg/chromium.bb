@@ -20,27 +20,6 @@
 #include "ui/views/mouse_watcher.h"
 
 
-namespace {
-
-// The text color within the bubble.
-const SkColor kBubbleTextColor = SK_ColorWHITE;
-
-// The line width of the bubble.
-const int kLineWidth = 1;
-
-// The spacing for the top and bottom of the info label.
-const int kLabelSpacing = 4;
-
-// The pixel dimensions of the arrow.
-const int kArrowHeight = 10;
-const int kArrowWidth = 20;
-
-// The animation offset in y for the bubble when appearing.
-const int kBubbleAnimationOffsetY = 5;
-
-}  // namespace
-
-
 namespace ash {
 
 // BubbleContentsView ---------------------------------------------------------
@@ -50,8 +29,7 @@ class BubbleContentsView : public views::View {
  public:
   BubbleContentsView(MaximizeBubbleControllerBubble* bubble,
                      SnapType initial_snap_type);
-
-  virtual ~BubbleContentsView() {}
+  virtual ~BubbleContentsView();
 
   // Set the label content to reflect the currently selected |snap_type|.
   // This function can be executed through the frame maximize button as well as
@@ -60,9 +38,7 @@ class BubbleContentsView : public views::View {
 
   // Added for unit test: Retrieve the button for an action.
   // |state| can be either SNAP_LEFT, SNAP_RIGHT or SNAP_MINIMIZE.
-  views::CustomButton* GetButtonForUnitTest(SnapType state) {
-    return buttons_view_->GetButtonForUnitTest(state);
-  }
+  views::CustomButton* GetButtonForUnitTest(SnapType state);
 
  private:
   // The owning class.
@@ -96,10 +72,15 @@ BubbleContentsView::BubbleContentsView(
   SetSnapType(initial_snap_type);
   label_view_->SetBackgroundColor(
       MaximizeBubbleControllerBubble::kBubbleBackgroundColor);
+  const SkColor kBubbleTextColor = SK_ColorWHITE;
   label_view_->SetEnabledColor(kBubbleTextColor);
+  const int kLabelSpacing = 4;
   label_view_->set_border(views::Border::CreateEmptyBorder(
       kLabelSpacing, 0, kLabelSpacing, 0));
   AddChildView(label_view_);
+}
+
+BubbleContentsView::~BubbleContentsView() {
 }
 
 // Set the label content to reflect the currently selected |snap_type|.
@@ -138,8 +119,20 @@ void BubbleContentsView::SetSnapType(SnapType snap_type) {
   label_view_->SetText(rb.GetLocalizedString(id));
 }
 
+views::CustomButton* BubbleContentsView::GetButtonForUnitTest(SnapType state) {
+  return buttons_view_->GetButtonForUnitTest(state);
+}
+
 
 // MaximizeBubbleBorder -------------------------------------------------------
+
+namespace {
+
+const int kLineWidth = 1;
+const int kArrowHeight = 10;
+const int kArrowWidth = 20;
+
+}  // namespace
 
 class MaximizeBubbleBorder : public views::BubbleBorder {
  public:
@@ -150,11 +143,9 @@ class MaximizeBubbleBorder : public views::BubbleBorder {
   // Get the mouse active area of the window.
   void GetMask(gfx::Path* mask);
 
-  // Overridden from views::BubbleBorder to match the design specs.
+  // views::BubbleBorder:
   virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
                               const gfx::Size& contents_size) const OVERRIDE;
-
-  // Overridden from views::Border.
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
 
  private:
@@ -205,7 +196,7 @@ gfx::Rect MaximizeBubbleBorder::GetBounds(
   border_size.Enlarge(insets.width(), insets.height());
 
   // Position the bubble to center the box on the anchor.
-  int x = (-border_size.width() + anchor_size_.width()) / 2;
+  int x = (anchor_size_.width() - border_size.width()) / 2;
   // Position the bubble under the anchor, overlapping the arrow with it.
   int y = anchor_size_.height() - insets.top();
 
@@ -272,11 +263,10 @@ void MaximizeBubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
 // Note: This object gets destroyed when the MouseWatcher gets destroyed.
 class BubbleMouseWatcherHost: public views::MouseWatcherHost {
  public:
-  explicit BubbleMouseWatcherHost(MaximizeBubbleControllerBubble* bubble)
-      : bubble_(bubble) {}
-  virtual ~BubbleMouseWatcherHost() {}
+  explicit BubbleMouseWatcherHost(MaximizeBubbleControllerBubble* bubble);
+  virtual ~BubbleMouseWatcherHost();
 
-  // Implementation of MouseWatcherHost.
+  // views::MouseWatcherHost:
   virtual bool Contains(const gfx::Point& screen_point,
                         views::MouseWatcherHost::MouseEventType type) OVERRIDE;
  private:
@@ -284,6 +274,14 @@ class BubbleMouseWatcherHost: public views::MouseWatcherHost {
 
   DISALLOW_COPY_AND_ASSIGN(BubbleMouseWatcherHost);
 };
+
+BubbleMouseWatcherHost::BubbleMouseWatcherHost(
+    MaximizeBubbleControllerBubble* bubble)
+    : bubble_(bubble) {
+}
+
+BubbleMouseWatcherHost::~BubbleMouseWatcherHost() {
+}
 
 bool BubbleMouseWatcherHost::Contains(
     const gfx::Point& screen_point,
@@ -387,6 +385,7 @@ void MaximizeBubbleControllerBubble::AnimationProgressed(
   if (!shutting_down_)
     return;
   // Upon fade out an additional shift is required.
+  const int kBubbleAnimationOffsetY = 5;
   int shift = animation->CurrentValueBetween(kBubbleAnimationOffsetY, 0);
   gfx::Rect rect = initial_position_;
 
@@ -418,7 +417,7 @@ void MaximizeBubbleControllerBubble::MouseMovedOutOfHost() {
     gfx::Point screen_location = Shell::GetScreen()->GetCursorScreenPoint();
     if (!owner_->frame_maximize_button()->GetBoundsInScreen().Contains(
         screen_location)) {
-        owner_->RequestDestructionThroughOwner();
+      owner_->RequestDestructionThroughOwner();
     }
   }
 }
@@ -448,8 +447,7 @@ gfx::Size MaximizeBubbleControllerBubble::GetPreferredSize() {
   return contents_view_->GetPreferredSize();
 }
 
-void MaximizeBubbleControllerBubble::OnWidgetDestroying(
-    views::Widget* widget) {
+void MaximizeBubbleControllerBubble::OnWidgetDestroying(views::Widget* widget) {
   if (bubble_widget_ == widget) {
     mouse_watcher_->Stop();
 

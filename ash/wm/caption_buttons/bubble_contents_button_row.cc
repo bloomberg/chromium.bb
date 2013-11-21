@@ -17,17 +17,17 @@ namespace ash {
 // BubbleDialogButton ---------------------------------------------------------
 
 // The image button gets overridden to be able to capture mouse hover events.
-// The constructor also assigns all button states and
+// The constructor also assigns all button states and adds |this| as a child of
+// |button_row|.
 class BubbleDialogButton : public views::ImageButton {
  public:
-  explicit BubbleDialogButton(
-      BubbleContentsButtonRow* button_row_listener,
-      int normal_image,
-      int hovered_image,
-      int pressed_image);
-  virtual ~BubbleDialogButton() {}
+  explicit BubbleDialogButton(BubbleContentsButtonRow* button_row,
+                              int normal_image,
+                              int hovered_image,
+                              int pressed_image);
+  virtual ~BubbleDialogButton();
 
-  // CustomButton overrides:
+  // views::ImageButton:
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
@@ -55,6 +55,9 @@ BubbleDialogButton::BubbleDialogButton(
   SetImage(views::CustomButton::STATE_PRESSED,
            rb.GetImageSkiaNamed(pressed_image));
   button_row->AddChildView(this);
+}
+
+BubbleDialogButton::~BubbleDialogButton() {
 }
 
 void BubbleDialogButton::OnMouseCaptureLost() {
@@ -114,43 +117,45 @@ BubbleContentsButtonRow::BubbleContentsButtonRow(
   }
 }
 
-// Overridden from ButtonListener.
+BubbleContentsButtonRow::~BubbleContentsButtonRow() {
+}
+
 void BubbleContentsButtonRow::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
   // While shutting down, the connection to the owner might already be broken.
   if (!bubble_->controller())
     return;
-  if (sender == left_button_)
+  if (sender == left_button_) {
     bubble_->controller()->OnButtonClicked(
-        bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_LEFT ?
+        (bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_LEFT) ?
             SNAP_RESTORE : SNAP_LEFT);
-  else if (sender == minimize_button_)
+  } else if (sender == minimize_button_) {
     bubble_->controller()->OnButtonClicked(SNAP_MINIMIZE);
-  else if (sender == right_button_)
+  } else {
+    DCHECK(sender == right_button_);
     bubble_->controller()->OnButtonClicked(
-        bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_RIGHT ?
+        (bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_RIGHT) ?
             SNAP_RESTORE : SNAP_RIGHT);
-  else
-    NOTREACHED() << "Unknown button pressed.";
+  }
 }
 
-// Called from BubbleDialogButton.
 void BubbleContentsButtonRow::ButtonHovered(BubbleDialogButton* sender) {
   // While shutting down, the connection to the owner might already be broken.
   if (!bubble_->controller())
     return;
-  if (sender == left_button_)
+  if (sender == left_button_) {
     bubble_->controller()->OnButtonHover(
-        bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_LEFT ?
+        (bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_LEFT) ?
             SNAP_RESTORE : SNAP_LEFT);
-  else if (sender == minimize_button_)
+  } else if (sender == minimize_button_) {
     bubble_->controller()->OnButtonHover(SNAP_MINIMIZE);
-  else if (sender == right_button_)
+  } else if (sender == right_button_) {
     bubble_->controller()->OnButtonHover(
-        bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_RIGHT ?
+        (bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_RIGHT) ?
             SNAP_RESTORE : SNAP_RIGHT);
-  else
+  } else {
     bubble_->controller()->OnButtonHover(SNAP_NONE);
+  }
 }
 
 views::CustomButton* BubbleContentsButtonRow::GetButtonForUnitTest(
