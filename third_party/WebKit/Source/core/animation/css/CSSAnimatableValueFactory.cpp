@@ -448,8 +448,14 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style.shapeMargin(), style);
     case CSSPropertyWebkitTextStrokeColor:
         return createFromColor(property, style);
-    case CSSPropertyWebkitTransform:
+    case CSSPropertyWebkitTransform: {
+        // FIXME: This forces a layer to be created in the presence of a
+        // transform animation.
+        const TransformOperations& transform = style.transform();
+        if (!transform.size())
+            return AnimatableTransform::create(TransformOperations(true));
         return AnimatableTransform::create(style.transform());
+    }
     case CSSPropertyWebkitTransformOriginX:
         return createFromLength(style.transformOriginX(), style);
     case CSSPropertyWebkitTransformOriginY:

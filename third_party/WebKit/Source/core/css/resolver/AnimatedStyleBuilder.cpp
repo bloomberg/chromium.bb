@@ -325,7 +325,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setVisitedLinkColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyFillOpacity:
-        style->setFillOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
+        // FIXME: This forces a layer to be created in the presence of an
+        // opacity animation.
+        style->setFillOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 0.999999));
         return;
     case CSSPropertyFill:
         {
