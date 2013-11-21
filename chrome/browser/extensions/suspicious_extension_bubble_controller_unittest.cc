@@ -200,8 +200,9 @@ TEST_F(SuspiciousExtensionBubbleTest, MAYBE_ControllerTest) {
   controller.reset(new TestSuspiciousExtensionBubbleController(profile_.get()));
   DCHECK(controller->HasSuspiciousExtensions());
   suspicious_extensions = controller->GetSuspiciousExtensionNames();
-  CHECK_EQ(1U, suspicious_extensions.size());
-  DCHECK(ASCIIToUTF16("Extension 1") == suspicious_extensions[0]);
+  DCHECK_EQ(1U, suspicious_extensions.size());
+  if (suspicious_extensions.size() == 1U)
+    DCHECK(ASCIIToUTF16("Extension 1") == suspicious_extensions[0]);
   controller->Show(&bubble);  // Simulate showing the bubble.
   DCHECK_EQ(0U, controller->link_click_count());
   DCHECK_EQ(1U, controller->dismiss_click_count());
@@ -221,9 +222,11 @@ TEST_F(SuspiciousExtensionBubbleTest, MAYBE_ControllerTest) {
   controller.reset(new TestSuspiciousExtensionBubbleController(profile_.get()));
   DCHECK(controller->HasSuspiciousExtensions());
   suspicious_extensions = controller->GetSuspiciousExtensionNames();
-  CHECK_EQ(2U, suspicious_extensions.size());
-  DCHECK(ASCIIToUTF16("Extension 1") == suspicious_extensions[1]);
-  DCHECK(ASCIIToUTF16("Extension 2") == suspicious_extensions[0]);
+  DCHECK_EQ(2U, suspicious_extensions.size());
+  if (suspicious_extensions.size() == 2U) {
+    DCHECK(ASCIIToUTF16("Extension 1") == suspicious_extensions[1]);
+    DCHECK(ASCIIToUTF16("Extension 2") == suspicious_extensions[0]);
+  }
   controller->Show(&bubble);  // Simulate showing the bubble.
   DCHECK_EQ(1U, controller->link_click_count());
   DCHECK_EQ(0U, controller->dismiss_click_count());
