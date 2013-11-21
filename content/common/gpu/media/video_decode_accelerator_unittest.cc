@@ -1518,13 +1518,9 @@ int main(int argc, char **argv) {
 
   base::ShadowingAtExitManager at_exit_manager;
 
-#if defined(OS_WIN)
-  content::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
-#elif defined(OS_CHROMEOS)
-#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   content::VaapiWrapper::PreSandboxInitialization();
-#endif  // ARCH_CPU_ARMEL
-#endif  // OS_CHROMEOS
+#endif  // OS_CHROMEOS && ARCH_CPU_X86_FAMILY
 
   return RUN_ALL_TESTS();
 }
