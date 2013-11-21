@@ -3766,15 +3766,23 @@ void Document::setDomain(const String& newDomain, ExceptionState& exceptionState
         return;
     }
 
-    String exceptionMessage = ExceptionMessages::failedToSet("domain", "Document", "'" + newDomain + "' is not a suffix of '" + domain() + "'.");
     if (newDomain.isEmpty()) {
+        String exceptionMessage = ExceptionMessages::failedToSet("domain", "Document", "'" + newDomain + "' is an empty domain.");
         exceptionState.throwSecurityError(exceptionMessage);
         return;
     }
 
     OriginAccessEntry::IPAddressSetting ipAddressSetting = settings() && settings()->treatIPAddressAsDomain() ? OriginAccessEntry::TreatIPAddressAsDomain : OriginAccessEntry::TreatIPAddressAsIPAddress;
     OriginAccessEntry accessEntry(securityOrigin()->protocol(), newDomain, OriginAccessEntry::AllowSubdomains, ipAddressSetting);
-    if (!accessEntry.matchesOrigin(*securityOrigin())) {
+    OriginAccessEntry::MatchResult result = accessEntry.matchesOrigin(*securityOrigin());
+    if (result == OriginAccessEntry::DoesNotMatchOrigin) {
+        String exceptionMessage = ExceptionMessages::failedToSet("domain", "Document", "'" + newDomain + "' is not a suffix of '" + domain() + "'.");
+        exceptionState.throwSecurityError(exceptionMessage);
+        return;
+    }
+
+    if (result == OriginAccessEntry::MatchesOriginButIsPublicSuffix) {
+        String exceptionMessage = ExceptionMessages::failedToSet("domain", "Document", "'" + newDomain + "' is a top-level domain.");
         exceptionState.throwSecurityError(exceptionMessage);
         return;
     }

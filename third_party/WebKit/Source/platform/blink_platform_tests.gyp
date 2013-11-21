@@ -37,6 +37,7 @@
     'type': 'executable',
     'dependencies': [
       'blink_platform.gyp:blink_platform',
+      'blink_platform.gyp:blink_common',
       '../config.gyp:unittest_config',
       '../wtf/wtf.gyp:wtf',
       '../wtf/wtf_tests.gyp:run_all_tests',

@@ -548,6 +548,7 @@
       'text/DateTimeFormatTest.cpp',
       'weborigin/DatabaseIdentifierTest.cpp',
       'weborigin/KURLTest.cpp',
+      'weborigin/OriginAccessEntryTest.cpp',
       'weborigin/SecurityOriginTest.cpp',
     ],
   },

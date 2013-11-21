@@ -50,9 +50,15 @@ public:
         TreatIPAddressAsIPAddress
     };
 
+    enum MatchResult {
+        MatchesOrigin,
+        MatchesOriginButIsPublicSuffix,
+        DoesNotMatchOrigin
+    };
+
     // If host is empty string and SubdomainSetting is AllowSubdomains, the entry will match all domains in the specified protocol.
     OriginAccessEntry(const String& protocol, const String& host, SubdomainSetting, IPAddressSetting);
-    bool matchesOrigin(const SecurityOrigin&) const;
+    MatchResult matchesOrigin(const SecurityOrigin&) const;
 
     const String& protocol() const { return m_protocol; }
     const String& host() const { return m_host; }
@@ -65,6 +71,7 @@ private:
     SubdomainSetting m_subdomainSettings;
     IPAddressSetting m_ipAddressSettings;
     bool m_hostIsIPAddress;
+    bool m_hostIsPublicSuffix;
 };
 
 PLATFORM_EXPORT inline bool operator==(const OriginAccessEntry& a, const OriginAccessEntry& b)

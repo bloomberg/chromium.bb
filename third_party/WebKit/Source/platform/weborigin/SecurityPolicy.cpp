@@ -93,7 +93,7 @@ bool SecurityPolicy::isAccessWhiteListed(const SecurityOrigin* activeOrigin, con
 {
     if (OriginAccessWhiteList* list = originAccessMap().get(activeOrigin->toString())) {
         for (size_t i = 0; i < list->size();  ++i) {
-            if (list->at(i).matchesOrigin(*targetOrigin))
+            if (list->at(i).matchesOrigin(*targetOrigin) != OriginAccessEntry::DoesNotMatchOrigin)
                 return true;
         }
     }

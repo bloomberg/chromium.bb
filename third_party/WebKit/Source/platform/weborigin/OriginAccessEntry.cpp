@@ -32,6 +32,8 @@
 #include "platform/weborigin/OriginAccessEntry.h"
 
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebPublicSuffixList.h"
 
 namespace WebCore {
 
@@ -40,42 +42,53 @@ OriginAccessEntry::OriginAccessEntry(const String& protocol, const String& host,
     , m_host(host.lower())
     , m_subdomainSettings(subdomainSetting)
     , m_ipAddressSettings(ipAddressSetting)
+    , m_hostIsPublicSuffix(false)
 {
     ASSERT(subdomainSetting == AllowSubdomains || subdomainSetting == DisallowSubdomains);
 
     // Assume that any host that ends with a digit is trying to be an IP address.
     m_hostIsIPAddress = !m_host.isEmpty() && isASCIIDigit(m_host[m_host.length() - 1]);
+
+    // Look for top-level domains, either with or without an additional dot.
+    if (!m_hostIsIPAddress) {
+        blink::WebPublicSuffixList* suffixList = blink::Platform::current()->publicSuffixList();
+        if (suffixList && m_host.length() <= suffixList->getPublicSuffixLength(m_host) + 1)
+            m_hostIsPublicSuffix = true;
+    }
 }
 
-bool OriginAccessEntry::matchesOrigin(const SecurityOrigin& origin) const
+OriginAccessEntry::MatchResult OriginAccessEntry::matchesOrigin(const SecurityOrigin& origin) const
 {
     ASSERT(origin.host() == origin.host().lower());
     ASSERT(origin.protocol() == origin.protocol().lower());
 
     if (m_protocol != origin.protocol())
-        return false;
+        return DoesNotMatchOrigin;
 
     // Special case: Include subdomains and empty host means "all hosts, including ip addresses".
     if (m_subdomainSettings == AllowSubdomains && m_host.isEmpty())
-        return true;
+        return MatchesOrigin;
 
     // Exact match.
     if (m_host == origin.host())
-        return true;
+        return MatchesOrigin;
 
     // Otherwise we can only match if we're matching subdomains.
     if (m_subdomainSettings == DisallowSubdomains)
-        return false;
+        return DoesNotMatchOrigin;
 
-    // Don't try to do subdomain matching on IP addresses.
+    // Don't try to do subdomain matching on IP addresses (except for testing).
     if (m_hostIsIPAddress && m_ipAddressSettings == TreatIPAddressAsIPAddress)
-        return false;
+        return DoesNotMatchOrigin;
 
     // Match subdomains.
-    if (origin.host().length() > m_host.length() && origin.host()[origin.host().length() - m_host.length() - 1] == '.' && origin.host().endsWith(m_host))
-        return true;
+    if (origin.host().length() <= m_host.length() || origin.host()[origin.host().length() - m_host.length() - 1] != '.' || !origin.host().endsWith(m_host))
+        return DoesNotMatchOrigin;
 
-    return false;
+    if (m_hostIsPublicSuffix)
+        return MatchesOriginButIsPublicSuffix;
+
+    return MatchesOrigin;
 }
 
 } // namespace WebCore
