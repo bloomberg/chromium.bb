@@ -31551,6 +31551,25 @@ other types of suffix sets.
       name="NetConnectivity4.StartPacket.Sent21.Success.RTT.Packet20"/>
 </fieldtrial>
 
+<fieldtrial name="NetConnectivity4PacketSizeTest" separator=".">
+  <group name="PacketSizeTest.Connectivity.Failure"
+      label="This histogram records the size of the packet size that was not
+             received from the server."/>
+  <group name="PacketSizeTest.Connectivity.Success"
+      label="This histogram records the size of the packet size that was
+             received from the server."/>
+  <affected-histogram name="NetConnectivity4"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity4PacketSizeTestPort" separator=".">
+  <group name="443" label="Packet is sent on port 443."/>
+  <group name="80" label="Packet is sent on port 80."/>
+  <affected-histogram
+      name="NetConnectivity4.PacketSizeTest.Connectivity.Failure"/>
+  <affected-histogram
+      name="NetConnectivity4.PacketSizeTest.Connectivity.Success"/>
+</fieldtrial>
+
 <fieldtrial name="NetConnectivity4SeriesRecv" separator=".">
   <group name="443.100B" label="100 bytes of data is sent on port 443."/>
   <group name="443.100B.NoProxy"
