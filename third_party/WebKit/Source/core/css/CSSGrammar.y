@@ -268,7 +268,6 @@ inline static CSSParserValue makeOperatorValue(int value)
 
 %type <relation> combinator
 
-%type <rule> charset
 %type <rule> ruleset
 %type <rule> media
 %type <rule> import
@@ -457,11 +456,6 @@ maybe_sgml:
   | maybe_sgml WHITESPACE
   ;
 
-maybe_charset:
-  /* empty */
-  | charset
-  ;
-
 closing_brace:
     '}'
   | %prec LOWEST_PREC TOKEN_EOF
@@ -482,16 +476,14 @@ semi_or_eof:
   | TOKEN_EOF
   ;
 
-charset:
-  CHARSET_SYM maybe_space STRING maybe_space semi_or_eof {
-     if (parser->m_styleSheet)
-         parser->m_styleSheet->parserSetEncodingFromCharsetRule($3);
-     parser->startEndUnknownRule();
-     $$ = 0;
-  }
-  | CHARSET_SYM at_rule_recovery {
-     $$ = 0;
-  }
+maybe_charset:
+    /* empty */
+  | CHARSET_SYM maybe_space STRING maybe_space semi_or_eof {
+       if (parser->m_styleSheet)
+           parser->m_styleSheet->parserSetEncodingFromCharsetRule($3);
+       parser->startEndUnknownRule();
+    }
+  | CHARSET_SYM at_rule_recovery
   ;
 
 rule_list:
@@ -639,20 +631,11 @@ import:
     import_rule_start string_or_uri maybe_space location_label maybe_media_list semi_or_eof {
         $$ = parser->createImportRule($2, $5);
     }
-  | import_rule_start string_or_uri maybe_space location_label maybe_media_list invalid_block {
-        $$ = 0;
-    }
-  | import_rule_start at_rule_recovery {
-        $$ = 0;
-    }
   ;
 
 namespace:
     NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space semi_or_eof {
         parser->addNamespace($3, $4);
-        $$ = 0;
-    }
-  | NAMESPACE_SYM at_rule_recovery {
         $$ = 0;
     }
   ;
@@ -1102,9 +1085,6 @@ host:
     '{' at_rule_body_start maybe_space block_rule_body closing_brace {
         $$ = parser->createHostRule($7);
     }
-    | before_host_rule HOST_SYM at_rule_recovery {
-        $$ = 0;
-    }
     ;
 
 before_viewport_rule:
@@ -1138,9 +1118,6 @@ before_region_rule:
 region:
     before_region_rule WEBKIT_REGION_RULE_SYM maybe_space region_selector at_rule_header_end '{' at_rule_body_start maybe_space region_block_rule_body closing_brace {
         $$ = parser->createRegionRule($4, $9);
-    }
-  | before_region_rule WEBKIT_REGION_RULE_SYM at_rule_recovery {
-        $$ = 0;
     }
 ;
 
@@ -1939,6 +1916,11 @@ invalid_at_rule:
     }
   | before_filter_rule WEBKIT_FILTER_RULE_SYM at_rule_recovery
   | media_rule_start maybe_media_list semi_or_eof
+  | import_rule_start string_or_uri maybe_space location_label maybe_media_list invalid_block
+  | import_rule_start at_rule_recovery
+  | NAMESPACE_SYM at_rule_recovery
+  | before_host_rule HOST_SYM at_rule_recovery
+  | before_region_rule WEBKIT_REGION_RULE_SYM at_rule_recovery
     ;
 
 invalid_rule:
