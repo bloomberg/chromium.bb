@@ -155,7 +155,6 @@ public:
 
     HistoryItem* currentItem(Frame*) const;
 
-    HistoryItem* previousItem(Frame*) const;
     void clearProvisionalEntry();
 
     bool inSameDocumentLoad() const { return !m_sameDocumentLoadsInProgress.isEmpty() && m_differentDocumentLoadsInProgress.isEmpty(); }

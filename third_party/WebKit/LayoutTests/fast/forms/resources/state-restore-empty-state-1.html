@@ -2,7 +2,7 @@
 <script>
 description('State vector should be empty if nothing is saved.');
 if (window.internals) {
-    var states = internals.formControlStateOfPreviousHistoryItem();
+    var states = internals.formControlStateOfHistoryItem();
     shouldBe('states.length', '0');
 } else {
     debug('Need window.internals.formControlStateOfPreviousHistoryItem().');

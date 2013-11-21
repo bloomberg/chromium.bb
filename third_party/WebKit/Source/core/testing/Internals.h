@@ -130,8 +130,8 @@ public:
 
     String visiblePlaceholder(Element*);
     void selectColorInColorChooser(Element*, const String& colorValue);
-    Vector<String> formControlStateOfPreviousHistoryItem(ExceptionState&);
-    void setFormControlStateOfPreviousHistoryItem(const Vector<String>&, ExceptionState&);
+    Vector<String> formControlStateOfHistoryItem(ExceptionState&);
+    void setFormControlStateOfHistoryItem(const Vector<String>&, ExceptionState&);
     void setEnableMockPagePopup(bool, ExceptionState&);
     PassRefPtr<PagePopupController> pagePopupController();
 

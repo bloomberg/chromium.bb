@@ -330,11 +330,6 @@ HistoryItem* HistoryController::currentItem(Frame* frame) const
     return m_currentEntry ? m_currentEntry->itemForFrame(frame) : 0;
 }
 
-HistoryItem* HistoryController::previousItem(Frame* frame) const
-{
-    return m_previousEntry ? m_previousEntry->itemForFrame(frame) : 0;
-}
-
 void HistoryController::clearProvisionalEntry()
 {
     m_provisionalEntry.clear();

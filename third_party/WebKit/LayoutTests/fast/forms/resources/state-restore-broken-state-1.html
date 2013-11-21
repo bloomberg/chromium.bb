@@ -5,11 +5,24 @@
 
 <script>
 function handleLoad() {
-    if (!parent.isGoingBack) {
+    if (!parent.hasReloaded) {
+        parent.hasReloaded = true;
         document.f.name1.value = 'modified';
+        setTimeout("location.reload();", 0);
+    } else if (!parent.isGoingBack) {
+        var stateArray = internals.formControlStateOfHistoryItem();
+        // Omit the signature string because it is volatile.
+        console.log('Generated state: [' + stateArray.slice(1) + ']');
+
         setTimeout(function() {
-            window.location.href = 'state-restore-broken-state-2.html';
+            window.location.href = 'go-back.html';
         }, 0);
+
+        window.onunload = function() {
+            stateArray.push('***broken***');
+            internals.setFormControlStateOfHistoryItem(stateArray);
+            parent.didLoadAnotherDocument();
+        };
     } else {
         parent.didSecondLoad();
     }

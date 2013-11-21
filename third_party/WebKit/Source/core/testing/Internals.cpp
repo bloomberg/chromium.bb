@@ -710,9 +710,9 @@ void Internals::selectColorInColorChooser(Element* element, const String& colorV
     toHTMLInputElement(element)->selectColorInColorChooser(Color(colorValue));
 }
 
-Vector<String> Internals::formControlStateOfPreviousHistoryItem(ExceptionState& exceptionState)
+Vector<String> Internals::formControlStateOfHistoryItem(ExceptionState& exceptionState)
 {
-    HistoryItem* mainItem = frame()->page()->history()->previousItem(frame());
+    HistoryItem* mainItem = frame()->loader().currentItem();
     if (!mainItem) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return Vector<String>();
@@ -720,9 +720,9 @@ Vector<String> Internals::formControlStateOfPreviousHistoryItem(ExceptionState& 
     return mainItem->documentState();
 }
 
-void Internals::setFormControlStateOfPreviousHistoryItem(const Vector<String>& state, ExceptionState& exceptionState)
+void Internals::setFormControlStateOfHistoryItem(const Vector<String>& state, ExceptionState& exceptionState)
 {
-    HistoryItem* mainItem = frame()->page()->history()->previousItem(frame());
+    HistoryItem* mainItem = frame()->loader().currentItem();
     if (!mainItem) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
@@ -2051,7 +2051,7 @@ PassRefPtr<TypeConversions> Internals::typeConversions() const
 Vector<String> Internals::getReferencedFilePaths() const
 {
     frame()->page()->history()->saveDocumentAndScrollState(frame());
-    return FormController::getReferencedFilePaths(frame()->page()->history()->currentItem(frame())->documentState());
+    return FormController::getReferencedFilePaths(frame()->loader().currentItem()->documentState());
 }
 
 void Internals::startTrackingRepaints(Document* document, ExceptionState& exceptionState)
