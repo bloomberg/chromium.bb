@@ -404,7 +404,6 @@ std::string AudioManagerBase::GetAssociatedOutputDeviceID(
 }
 
 std::string AudioManagerBase::GetDefaultOutputDeviceID() {
-  NOTIMPLEMENTED();
   return "";
 }
 
