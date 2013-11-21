@@ -58,12 +58,6 @@ PASS (new File([], 'world.html', {type:'text/html'})).name is 'world.html'
 PASS (new File([], 'world.html', {type:'text/html'})).type is 'text/html'
 PASS (new File([], 'world.html', {type:'text/html'})).size is 0
 PASS (new File([], 'world.html', {type:'text/plain;charset=UTF-8'})).type is 'text/plain;charset=utf-8'
-PASS (new File([], 'world.html', {lastModified: 441532800000})).lastModified is 441532800000
-PASS startTime <= fileTime is true
-PASS fileTime <= endTime is true
-PASS (new File([], 'world.html', {lastModified: new Date(441532800000)})).lastModified is 441532800000
-PASS (new File([], 'world.html', {lastModified: 441532800000})).lastModifiedDate instanceof Date is true
-PASS (new File([], 'world.html', {lastModified: 441532800000})).lastModifiedDate.valueOf() is 441532800000
 PASS window.File.length is 2
 PASS new File([new DataView(new ArrayBuffer(100))], 'world.html').size is 100
 PASS new File([new Uint8Array(100)], 'world.html').size is 100

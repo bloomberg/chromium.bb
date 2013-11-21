@@ -87,23 +87,6 @@ shouldBe("(new File([], 'world.html', {type:'text/html'})).type", "'text/html'")
 shouldBe("(new File([], 'world.html', {type:'text/html'})).size", "0");
 shouldBe("(new File([], 'world.html', {type:'text/plain;charset=UTF-8'})).type", "'text/plain;charset=utf-8'");
 
-// Test that the lastModified is correctly added to the File.
-var aDate = new Date(441532800000);
-shouldBe("(new File([], 'world.html', {lastModified: 441532800000})).lastModified", "441532800000");
-// Unless specified, lastModified should default to now.
-var startTime = Date.now();
-var fileTime = (new File([], 'world.html')).lastModified;
-var endTime = Date.now();
-// FIXME: these checks will fail if time goes backwards, e.g. NTP updates. We should have a generic bullet-proof method for comparing against Date.now(). http://crbug.com/320686
-shouldBeTrue("startTime <= fileTime");
-shouldBeTrue("fileTime <= endTime");
-// Test that Date instances are implicitly converted to numbers.
-shouldBe("(new File([], 'world.html', {lastModified: new Date(441532800000)})).lastModified", "441532800000");
-
-// Test the deprecated attribute lastModifiedDate.
-shouldBeTrue("(new File([], 'world.html', {lastModified: 441532800000})).lastModifiedDate instanceof Date");
-shouldBe("(new File([], 'world.html', {lastModified: 441532800000})).lastModifiedDate.valueOf()", "441532800000");
-
 // Test the number of expected arguments in the File constructor.
 shouldBe("window.File.length", "2");
 

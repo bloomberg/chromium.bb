@@ -38,71 +38,33 @@
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "core/fileapi/BlobBuilder.h"
-#include "wtf/DateMath.h"
 
 namespace WebCore {
 
 namespace V8BlobCustomHelpers {
 
-ParsedProperties::ParsedProperties(bool hasFileProperties)
-    : m_endings("transparent")
-    , m_hasFileProperties(hasFileProperties)
-#ifndef NDEBUG
-    , m_hasLastModified(false)
-#endif // NDEBUG
+bool processBlobPropertyBag(v8::Local<v8::Value> propertyBag, const char* blobClassName, String& contentType, String& endings, v8::Isolate* isolate)
 {
-}
-
-void ParsedProperties::setLastModified(double lastModified)
-{
-    ASSERT(m_hasFileProperties);
-    ASSERT(!m_hasLastModified);
-    m_lastModified = lastModified;
-#ifndef NDEBUG
-    m_hasLastModified = true;
-#endif // NDEBUG
-}
-
-void ParsedProperties::setDefaultLastModified()
-{
-    setLastModified(currentTime());
-}
-
-bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, const char* blobClassName, v8::Isolate* isolate)
-{
-    ASSERT(m_endings == "transparent");
+    ASSERT(endings == "transparent");
 
     V8TRYCATCH_RETURN(Dictionary, dictionary, Dictionary(propertyBag, isolate), false);
 
-    V8TRYCATCH_RETURN(bool, containsEndings, dictionary.get("endings", m_endings), false);
+    V8TRYCATCH_RETURN(bool, containsEndings, dictionary.get("endings", endings), false);
     if (containsEndings) {
-        if (m_endings != "transparent" && m_endings != "native") {
+        if (endings != "transparent" && endings != "native") {
             throwTypeError(ExceptionMessages::failedToConstruct(blobClassName, "The \"endings\" property must be either \"transparent\" or \"native\"."), isolate);
             return false;
         }
     }
 
-    V8TRYCATCH_RETURN(bool, containsType, dictionary.get("type", m_contentType), false);
+    V8TRYCATCH_RETURN(bool, containsType, dictionary.get("type", contentType), false);
     if (containsType) {
-        if (!m_contentType.containsOnlyASCII()) {
+        if (!contentType.containsOnlyASCII()) {
             throwError(v8SyntaxError, ExceptionMessages::failedToConstruct(blobClassName, "The \"type\" property must consist of ASCII characters."), isolate);
             return false;
         }
-        m_contentType = m_contentType.lower();
+        contentType = contentType.lower();
     }
-
-    if (!m_hasFileProperties)
-        return true;
-
-    v8::Local<v8::Value> lastModified;
-    V8TRYCATCH_RETURN(bool, containsLastModified, dictionary.get("lastModified", lastModified), false);
-    if (containsLastModified) {
-        V8TRYCATCH_RETURN(long long, lastModifiedInt, toInt64(lastModified), false);
-        setLastModified(static_cast<double>(lastModifiedInt) / msPerSecond);
-    } else {
-        setDefaultLastModified();
-    }
-
     return true;
 }
 
