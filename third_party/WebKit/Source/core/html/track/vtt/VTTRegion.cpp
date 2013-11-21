@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/html/track/vtt/VTTRegion.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/html/HTMLDivElement.h"
@@ -67,6 +67,23 @@ static const float lineHeight = 5.33;
 // Default scrolling animation time period (s).
 static const float scrollTime = 0.433;
 
+static bool isInfiniteOrNonNumberOrNonPercentage(double value, const char* method, ExceptionState& exceptionState)
+{
+    if (std::isinf(value)) {
+        exceptionState.throwTypeError(ExceptionMessages::failedToSet(method, "VTTRegion", "The width provided is infinite."));
+        return true;
+    }
+    if (std::isnan(value)) {
+        exceptionState.throwTypeError(ExceptionMessages::failedToSet(method, "VTTRegion", "The width provided is not a number."));
+        return true;
+    }
+    if (value < 0 || value > 100) {
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet(method, "VTTRegion", "The value provided (" + String::number(value) + ") is not between 0 and 100."));
+        return true;
+    }
+    return false;
+}
+
 VTTRegion::VTTRegion()
     : m_id(emptyString())
     , m_width(defaultWidth)
@@ -96,15 +113,8 @@ void VTTRegion::setId(const String& id)
 
 void VTTRegion::setWidth(double value, ExceptionState& exceptionState)
 {
-    if (std::isinf(value) || std::isnan(value)) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+    if (isInfiniteOrNonNumberOrNonPercentage(value, "width", exceptionState))
         return;
-    }
-
-    if (value < 0 || value > 100) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
-        return;
-    }
 
     m_width = value;
 }
@@ -112,7 +122,7 @@ void VTTRegion::setWidth(double value, ExceptionState& exceptionState)
 void VTTRegion::setHeight(long value, ExceptionState& exceptionState)
 {
     if (value < 0) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("height", "VTTRegion", "The height provided (" + String::number(value) + ") is negative."));
         return;
     }
 
@@ -121,60 +131,32 @@ void VTTRegion::setHeight(long value, ExceptionState& exceptionState)
 
 void VTTRegion::setRegionAnchorX(double value, ExceptionState& exceptionState)
 {
-    if (std::isinf(value) || std::isnan(value)) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+    if (isInfiniteOrNonNumberOrNonPercentage(value, "regionAnchorX", exceptionState))
         return;
-    }
-
-    if (value < 0 || value > 100) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
-        return;
-    }
 
     m_regionAnchor.setX(value);
 }
 
 void VTTRegion::setRegionAnchorY(double value, ExceptionState& exceptionState)
 {
-    if (std::isinf(value) || std::isnan(value)) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+    if (isInfiniteOrNonNumberOrNonPercentage(value, "regionAnchorY", exceptionState))
         return;
-    }
-
-    if (value < 0 || value > 100) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
-        return;
-    }
 
     m_regionAnchor.setY(value);
 }
 
 void VTTRegion::setViewportAnchorX(double value, ExceptionState& exceptionState)
 {
-    if (std::isinf(value) || std::isnan(value)) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+    if (isInfiniteOrNonNumberOrNonPercentage(value, "viewportAnchorX", exceptionState))
         return;
-    }
-
-    if (value < 0 || value > 100) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
-        return;
-    }
 
     m_viewportAnchor.setX(value);
 }
 
 void VTTRegion::setViewportAnchorY(double value, ExceptionState& exceptionState)
 {
-    if (std::isinf(value) || std::isnan(value)) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+    if (isInfiniteOrNonNumberOrNonPercentage(value, "viewportAnchorY", exceptionState))
         return;
-    }
-
-    if (value < 0 || value > 100) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
-        return;
-    }
 
     m_viewportAnchor.setY(value);
 }
@@ -194,7 +176,7 @@ void VTTRegion::setScroll(const AtomicString& value, ExceptionState& exceptionSt
     DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up", AtomicString::ConstructFromLiteral));
 
     if (value != emptyString() && value != upScrollValueKeyword) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToSet("scroll", "VTTRegion", "The value provided ('" + value + "') is invalid. The 'scroll' property must be either the empty string, or 'up'."));
         return;
     }
 

@@ -14,95 +14,95 @@ EXPECTED (region.width == '100') OK
 
 ** Test that incorrect mutation keeps previous valid values. **
 RUN(region.scroll = 'invalid-scroll-value')
-SyntaxError: An invalid or illegal string was specified.
+SyntaxError: Failed to set the 'scroll' property on 'VTTRegion': The value provided ('invalid-scroll-value') is invalid. The 'scroll' property must be either the empty string, or 'up'.
 EXPECTED (region.scroll == '') OK
 
 Invalid percentage value: -1
 RUN(region.viewportAnchorX = invalidPercentageValues[index])
-IndexSizeError: Index or size was negative, or greater than the allowed value.
+IndexSizeError: Failed to set the 'viewportAnchorX' property on 'VTTRegion': The value provided (-1) is not between 0 and 100.
 EXPECTED (region.viewportAnchorX == '0') OK
 RUN(region.viewportAnchorY = invalidPercentageValues[index])
-IndexSizeError: Index or size was negative, or greater than the allowed value.
+IndexSizeError: Failed to set the 'viewportAnchorY' property on 'VTTRegion': The value provided (-1) is not between 0 and 100.
 EXPECTED (region.viewportAnchorY == '100') OK
 RUN(region.regionAnchorX = invalidPercentageValues[index])
-IndexSizeError: Index or size was negative, or greater than the allowed value.
+IndexSizeError: Failed to set the 'regionAnchorX' property on 'VTTRegion': The value provided (-1) is not between 0 and 100.
 EXPECTED (region.regionAnchorX == '0') OK
 RUN(region.regionAnchorY = invalidPercentageValues[index])
-IndexSizeError: Index or size was negative, or greater than the allowed value.
+IndexSizeError: Failed to set the 'regionAnchorY' property on 'VTTRegion': The value provided (-1) is not between 0 and 100.
 EXPECTED (region.regionAnchorY == '100') OK
 RUN(region.width = invalidPercentageValues[index])
-IndexSizeError: Index or size was negative, or greater than the allowed value.
+IndexSizeError: Failed to set the 'width' property on 'VTTRegion': The value provided (-1) is not between 0 and 100.
 EXPECTED (region.width == '100') OK
 
 Invalid percentage value: 101
 RUN(region.viewportAnchorX = invalidPercentageValues[index])
-IndexSizeError: Index or size was negative, or greater than the allowed value.
+IndexSizeError: Failed to set the 'viewportAnchorX' property on 'VTTRegion': The value provided (101) is not between 0 and 100.
 EXPECTED (region.viewportAnchorX == '0') OK
 RUN(region.viewportAnchorY = invalidPercentageValues[index])
-IndexSizeError: Index or size was negative, or greater than the allowed value.
+IndexSizeError: Failed to set the 'viewportAnchorY' property on 'VTTRegion': The value provided (101) is not between 0 and 100.
 EXPECTED (region.viewportAnchorY == '100') OK
 RUN(region.regionAnchorX = invalidPercentageValues[index])
-IndexSizeError: Index or size was negative, or greater than the allowed value.
+IndexSizeError: Failed to set the 'regionAnchorX' property on 'VTTRegion': The value provided (101) is not between 0 and 100.
 EXPECTED (region.regionAnchorX == '0') OK
 RUN(region.regionAnchorY = invalidPercentageValues[index])
-IndexSizeError: Index or size was negative, or greater than the allowed value.
+IndexSizeError: Failed to set the 'regionAnchorY' property on 'VTTRegion': The value provided (101) is not between 0 and 100.
 EXPECTED (region.regionAnchorY == '100') OK
 RUN(region.width = invalidPercentageValues[index])
-IndexSizeError: Index or size was negative, or greater than the allowed value.
+IndexSizeError: Failed to set the 'width' property on 'VTTRegion': The value provided (101) is not between 0 and 100.
 EXPECTED (region.width == '100') OK
 
 Invalid percentage value: -Infinity
 RUN(region.viewportAnchorX = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'viewportAnchorX' property on 'VTTRegion': The width provided is infinite.
 EXPECTED (region.viewportAnchorX == '0') OK
 RUN(region.viewportAnchorY = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'viewportAnchorY' property on 'VTTRegion': The width provided is infinite.
 EXPECTED (region.viewportAnchorY == '100') OK
 RUN(region.regionAnchorX = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'regionAnchorX' property on 'VTTRegion': The width provided is infinite.
 EXPECTED (region.regionAnchorX == '0') OK
 RUN(region.regionAnchorY = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'regionAnchorY' property on 'VTTRegion': The width provided is infinite.
 EXPECTED (region.regionAnchorY == '100') OK
 RUN(region.width = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'width' property on 'VTTRegion': The width provided is infinite.
 EXPECTED (region.width == '100') OK
 
 Invalid percentage value: Infinity
 RUN(region.viewportAnchorX = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'viewportAnchorX' property on 'VTTRegion': The width provided is infinite.
 EXPECTED (region.viewportAnchorX == '0') OK
 RUN(region.viewportAnchorY = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'viewportAnchorY' property on 'VTTRegion': The width provided is infinite.
 EXPECTED (region.viewportAnchorY == '100') OK
 RUN(region.regionAnchorX = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'regionAnchorX' property on 'VTTRegion': The width provided is infinite.
 EXPECTED (region.regionAnchorX == '0') OK
 RUN(region.regionAnchorY = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'regionAnchorY' property on 'VTTRegion': The width provided is infinite.
 EXPECTED (region.regionAnchorY == '100') OK
 RUN(region.width = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'width' property on 'VTTRegion': The width provided is infinite.
 EXPECTED (region.width == '100') OK
 
 Invalid percentage value: NaN
 RUN(region.viewportAnchorX = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'viewportAnchorX' property on 'VTTRegion': The width provided is not a number.
 EXPECTED (region.viewportAnchorX == '0') OK
 RUN(region.viewportAnchorY = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'viewportAnchorY' property on 'VTTRegion': The width provided is not a number.
 EXPECTED (region.viewportAnchorY == '100') OK
 RUN(region.regionAnchorX = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'regionAnchorX' property on 'VTTRegion': The width provided is not a number.
 EXPECTED (region.regionAnchorX == '0') OK
 RUN(region.regionAnchorY = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'regionAnchorY' property on 'VTTRegion': The width provided is not a number.
 EXPECTED (region.regionAnchorY == '100') OK
 RUN(region.width = invalidPercentageValues[index])
-TypeError: Type error
+TypeError: Failed to set the 'width' property on 'VTTRegion': The width provided is not a number.
 EXPECTED (region.width == '100') OK
 RUN(region.height = -1)
-IndexSizeError: Index or size was negative, or greater than the allowed value.
+IndexSizeError: Failed to set the 'height' property on 'VTTRegion': The height provided (-1) is negative.
 EXPECTED (region.height == '3') OK
 
 ** Test that proper mutation keeps assigned value. **
