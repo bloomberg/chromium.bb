@@ -25,8 +25,8 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/synced_session.h"
+#include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -359,10 +359,10 @@ bool SessionsGetDevicesFunction::RunImpl() {
     return true;
   }
 
-  browser_sync::SessionModelAssociator* associator =
-      service->GetSessionModelAssociator();
+  browser_sync::OpenTabsUIDelegate* open_tabs =
+      service->GetOpenTabsUIDelegate();
   std::vector<const browser_sync::SyncedSession*> sessions;
-  if (!(associator && associator->GetAllForeignSessions(&sessions))) {
+  if (!(open_tabs && open_tabs->GetAllForeignSessions(&sessions))) {
     results_ = GetDevices::Results::Create(
         std::vector<linked_ptr<api::sessions::Device> >());
     return true;
@@ -504,17 +504,17 @@ bool SessionsRestoreFunction::RestoreForeignSession(const SessionId& session_id,
     SetError(kSessionSyncError);
     return false;
   }
-  browser_sync::SessionModelAssociator* associator =
-      service->GetSessionModelAssociator();
-  if (!associator) {
+  browser_sync::OpenTabsUIDelegate* open_tabs =
+      service->GetOpenTabsUIDelegate();
+  if (!open_tabs) {
     SetError(kSessionSyncError);
     return false;
   }
 
   const SessionTab* tab = NULL;
-  if (associator->GetForeignTab(session_id.session_tag(),
-                                session_id.id(),
-                                &tab)) {
+  if (open_tabs->GetForeignTab(session_id.session_tag(),
+                               session_id.id(),
+                               &tab)) {
     TabStripModel* tab_strip = browser->tab_strip_model();
     content::WebContents* contents = tab_strip->GetActiveWebContents();
 
@@ -527,7 +527,7 @@ bool SessionsRestoreFunction::RestoreForeignSession(const SessionId& session_id,
 
   // Restoring a full window.
   std::vector<const SessionWindow*> windows;
-  if (!associator->GetForeignSession(session_id.session_tag(), &windows)) {
+  if (!open_tabs->GetForeignSession(session_id.session_tag(), &windows)) {
     SetInvalidIdError(session_id.ToString());
     return false;
   }

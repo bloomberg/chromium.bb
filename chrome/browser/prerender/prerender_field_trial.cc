@@ -320,7 +320,7 @@ string GetLocalPredictorSpecValue(string spec_key) {
 bool IsUnencryptedSyncEnabled(Profile* profile) {
   ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
       GetForProfile(profile);
-  return service && service->GetSessionModelAssociator() &&
+  return service && service->GetOpenTabsUIDelegate() &&
       !service->EncryptEverythingEnabled();
 }
 

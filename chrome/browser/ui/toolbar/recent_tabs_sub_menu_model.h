@@ -20,7 +20,7 @@ class Browser;
 struct SessionTab;
 
 namespace browser_sync {
-class SessionModelAssociator;
+class OpenTabsUIDelegate;
 }
 
 namespace chrome {
@@ -47,11 +47,11 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   static const int kRecentlyClosedHeaderCommandId;
   static const int kDisabledRecentlyClosedHeaderCommandId;
 
-  // If |associator| is NULL, default associator for |browser|'s profile will
-  // be used.  Testing may require a specific |associator|.
+  // If |open_tabs_delegate| is NULL, the default delegate for |browser|'s
+  // profile will be used. Testing may require a specific |open_tabs_delegate|.
   RecentTabsSubMenuModel(ui::AcceleratorProvider* accelerator_provider,
                          Browser* browser,
-                         browser_sync::SessionModelAssociator* associator);
+                         browser_sync::OpenTabsUIDelegate* open_tabs_delegate);
   virtual ~RecentTabsSubMenuModel();
 
   // Overridden from ui::SimpleMenuModel::Delegate:
@@ -117,7 +117,13 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   // TabNavigationItems, and returns the corresponding local or other devices'
   // TabNavigationItems in |tab_items|.
   int CommandIdToTabVectorIndex(int command_id, TabNavigationItems** tab_items);
-  browser_sync::SessionModelAssociator* GetModelAssociator();
+
+  // Used to access (and lazily initialize) open_tabs_delegate_.
+  // TODO(tim): This lazy-init for member variables is error prone because you
+  // can always skip going through the function and access the field directly.
+  // Consider instead having code just deal with potentially NULL open_tabs_
+  // and have it initialized by an event / callback.
+  browser_sync::OpenTabsUIDelegate* GetOpenTabsUIDelegate();
 
   // Overridden from TabRestoreServiceObserver:
   virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
@@ -125,7 +131,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
 
   Browser* browser_;  // Weak.
 
-  browser_sync::SessionModelAssociator* associator_;  // Weak.
+  browser_sync::OpenTabsUIDelegate* open_tabs_delegate_;  // Weak.
 
   // Accelerator for reopening last closed tab.
   ui::Accelerator reopen_closed_tab_accelerator_;

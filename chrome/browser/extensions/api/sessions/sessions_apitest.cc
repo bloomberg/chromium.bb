@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
@@ -119,7 +120,7 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
   preferred_types.Put(syncer::SESSIONS);
   GoogleServiceAuthError no_error(GoogleServiceAuthError::NONE);
 
-  ON_CALL(*service, GetSessionModelAssociator()).WillByDefault(
+  ON_CALL(*service, GetOpenTabsUIDelegate()).WillByDefault(
       testing::Return(associator_));
   ON_CALL(*service, GetPreferredDataTypes()).WillByDefault(
       testing::Return(preferred_types));

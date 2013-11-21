@@ -40,6 +40,7 @@
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/device_info.h"
+#include "chrome/browser/sync/glue/favicon_cache.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
@@ -47,6 +48,7 @@
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
+#include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
 #include "chrome/browser/sync/sync_global_error.h"
 #include "chrome/browser/sync/user_selectable_sync_type.h"
 #include "chrome/browser/ui/browser.h"
@@ -190,6 +192,11 @@ ProfileSyncService::ProfileSyncService(
   if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
       channel == chrome::VersionInfo::CHANNEL_BETA) {
     sync_service_url_ = GURL(kSyncServerUrl);
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSyncSessionsV2)) {
+    sessions_sync_manager_.reset(new SessionsSyncManager(profile, this));
   }
 }
 
@@ -349,16 +356,50 @@ void ProfileSyncService::RegisterDataTypeController(
 }
 
 browser_sync::SessionModelAssociator*
-    ProfileSyncService::GetSessionModelAssociator() {
+    ProfileSyncService::GetSessionModelAssociatorDeprecated() {
   if (data_type_controllers_.find(syncer::SESSIONS) ==
       data_type_controllers_.end() ||
       data_type_controllers_.find(syncer::SESSIONS)->second->state() !=
       DataTypeController::RUNNING) {
     return NULL;
   }
+
+  // If we're using sessions V2, there's no model associator.
+  if (sessions_sync_manager_.get())
+    return NULL;
+
   return static_cast<browser_sync::SessionDataTypeController*>(
       data_type_controllers_.find(
       syncer::SESSIONS)->second.get())->GetModelAssociator();
+}
+
+browser_sync::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
+  if (data_type_controllers_.find(syncer::SESSIONS) ==
+      data_type_controllers_.end() ||
+      data_type_controllers_.find(syncer::SESSIONS)->second->state() !=
+      DataTypeController::RUNNING) {
+    return NULL;
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSyncSessionsV2)) {
+    return sessions_sync_manager_.get();
+  } else {
+    return GetSessionModelAssociatorDeprecated();
+  }
+}
+
+browser_sync::FaviconCache* ProfileSyncService::GetFaviconCache() {
+  // TODO(tim): Clean this up (or remove) once there's only one implementation.
+  // Bug 98892.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSyncSessionsV2)) {
+    return sessions_sync_manager_->GetFaviconCache();
+  } else if (GetSessionModelAssociatorDeprecated()) {
+    return GetSessionModelAssociatorDeprecated()->GetFaviconCache();
+  } else {
+    return NULL;
+  }
 }
 
 scoped_ptr<browser_sync::DeviceInfo>
@@ -397,7 +438,7 @@ ScopedVector<browser_sync::DeviceInfo>
   return devices.Pass();
 }
 
-std::string ProfileSyncService::GetLocalDeviceGUID() const {
+std::string ProfileSyncService::GetLocalSyncCacheGUID() const {
   if (backend_) {
     browser_sync::SyncedDeviceTracker* device_tracker =
         backend_->GetSyncedDeviceTracker();
@@ -1020,7 +1061,7 @@ void ProfileSyncService::OnBackendInitialized(
 
 void ProfileSyncService::OnSyncCycleCompleted() {
   UpdateLastSyncedTime();
-  if (GetSessionModelAssociator()) {
+  if (GetSessionModelAssociatorDeprecated()) {
     // Trigger garbage collection of old sessions now that we've downloaded
     // any new session data. TODO(zea): Have this be a notification the session
     // model associator listens too. Also consider somehow plumbing the current
@@ -1028,7 +1069,7 @@ void ProfileSyncService::OnSyncCycleCompleted() {
     // rely on the local clock, which may be off significantly.
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&browser_sync::SessionModelAssociator::DeleteStaleSessions,
-                   GetSessionModelAssociator()->AsWeakPtr()));
+                   GetSessionModelAssociatorDeprecated()->AsWeakPtr()));
   }
   DVLOG(2) << "Notifying observers sync cycle completed";
   NotifySyncCycleCompleted();
@@ -2195,6 +2236,10 @@ std::string ProfileSyncService::GetAccountIdToUse() {
 
 WeakHandle<syncer::JsEventHandler> ProfileSyncService::GetJsEventHandler() {
   return MakeWeakHandle(sync_js_controller_.AsWeakPtr());
+}
+
+syncer::SyncableService* ProfileSyncService::GetSessionsSyncableService() {
+  return sessions_sync_manager_.get();
 }
 
 ProfileSyncService::SyncTokenStatus::SyncTokenStatus()

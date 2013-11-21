@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "chrome/browser/sync/glue/tab_node_pool.h"
+#include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 class PrefServiceSyncable;
@@ -54,6 +55,7 @@ class SyncedWindowDelegate;
 // the sync sessions model.
 class SessionModelAssociator
     : public AssociatorInterface,
+      public OpenTabsUIDelegate,
       public base::SupportsWeakPtr<SessionModelAssociator>,
       public base::NonThreadSafe {
  public:
@@ -147,24 +149,6 @@ class SessionModelAssociator
   // local machine. Used primarily for testing.
   bool GetLocalSession(const SyncedSession* * local_session);
 
-  // Builds a list of all foreign sessions. Caller does NOT own SyncedSession
-  // objects.
-  // Returns true if foreign sessions were found, false otherwise.
-  bool GetAllForeignSessions(std::vector<const SyncedSession*>* sessions);
-
-  // Loads all windows for foreign session with session tag |tag|. Caller does
-  // NOT own SyncedSession objects.
-  // Returns true if the foreign session was found, false otherwise.
-  bool GetForeignSession(const std::string& tag,
-                         std::vector<const SessionWindow*>* windows);
-
-  // Looks up the foreign tab identified by |tab_id| and belonging to foreign
-  // session |tag|. Caller does NOT own the SessionTab object.
-  // Returns true if the foreign session and tab were found, false otherwise.
-  bool GetForeignTab(const std::string& tag,
-                     const SessionID::id_type tab_id,
-                     const SessionTab** tab);
-
   // Triggers garbage collection of stale sessions (as defined by
   // |stale_session_threshold_days_|). This is called automatically every
   // time we start up (via AssociateModels).
@@ -173,9 +157,6 @@ class SessionModelAssociator
   // Set the threshold of inactivity (in days) at which we consider sessions
   // stale.
   void SetStaleSessionThreshold(size_t stale_session_threshold_days);
-
-  // Delete a foreign session and all its sync data.
-  void DeleteForeignSession(const std::string& tag);
 
   // Control which local tabs we're interested in syncing.
   // Ensures the profile matches sync's profile and that the tab has valid
@@ -194,11 +175,19 @@ class SessionModelAssociator
   // first.
   void BlockUntilLocalChangeForTest(base::TimeDelta timeout);
 
-  // If a valid favicon for the page at |url| is found, fills |favicon_png| with
-  // the png-encoded image and returns true. Else, returns false.
-  bool GetSyncedFaviconForPageURL(
+  // OpenTabsUIDelegate implementation.
+  virtual bool GetSyncedFaviconForPageURL(
       const std::string& pageurl,
-      scoped_refptr<base::RefCountedMemory>* favicon_png) const;
+      scoped_refptr<base::RefCountedMemory>* favicon_png) const OVERRIDE;
+  virtual bool GetAllForeignSessions(
+      std::vector<const SyncedSession*>* sessions) OVERRIDE;
+  virtual bool GetForeignSession(
+      const std::string& tag,
+      std::vector<const SessionWindow*>* windows) OVERRIDE;
+  virtual bool GetForeignTab(const std::string& tag,
+                             const SessionID::id_type tab_id,
+                             const SessionTab** tab) OVERRIDE;
+  virtual void DeleteForeignSession(const std::string& tag) OVERRIDE;
 
   void SetCurrentMachineTagForTesting(const std::string& machine_tag) {
     current_machine_tag_ = machine_tag;

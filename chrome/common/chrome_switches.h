@@ -220,6 +220,7 @@ extern const char kEnableStreamlinedHostedApps[];
 extern const char kEnableSuggestionsTabPage[];
 extern const char kEnableSyncArticles[];
 extern const char kEnableSyncSyncedNotifications[];
+extern const char kEnableSyncSessionsV2[];
 extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableThumbnailRetargeting[];
 extern const char kEnableTranslateNewUX[];

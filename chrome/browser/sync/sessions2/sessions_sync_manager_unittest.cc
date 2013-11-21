@@ -102,10 +102,7 @@ class SessionsSyncManagerTest
 
   virtual void SetUp() OVERRIDE {
     BrowserWithTestWindowTest::SetUp();
-    manager_.reset(new SessionsSyncManager(
-        profile(),
-        scoped_ptr<SyncPrefs>(new SyncPrefs(profile()->GetPrefs())),
-        this));
+    manager_.reset(new SessionsSyncManager(profile(), this));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -116,14 +113,14 @@ class SessionsSyncManagerTest
 
   virtual scoped_ptr<DeviceInfo> GetLocalDeviceInfo() const OVERRIDE {
     return scoped_ptr<DeviceInfo>(
-        new DeviceInfo(GetCacheGuid(),
+        new DeviceInfo(GetLocalSyncCacheGUID(),
                        "Wayne Gretzky's Hacking Box",
                        "Chromium 10k",
                        "Chrome 10k",
                        sync_pb::SyncEnums_DeviceType_TYPE_LINUX));
   }
 
-  virtual std::string GetCacheGuid() const OVERRIDE {
+  virtual std::string GetLocalSyncCacheGUID() const OVERRIDE {
     return "cache_guid";
   }
 
@@ -522,10 +519,7 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
   SyncData d(SyncData::CreateRemoteData(1, data.GetSpecifics(), base::Time()));
   syncer::SyncDataList in(&d, &d + 1);
   out.clear();
-  SessionsSyncManager manager2(
-      profile(),
-      scoped_ptr<SyncPrefs>(new SyncPrefs(profile()->GetPrefs())),
-      this);
+  SessionsSyncManager manager2(profile(), this);
   syncer::SyncMergeResult result = manager2.MergeDataAndStartSyncing(
       syncer::SESSIONS, in,
       scoped_ptr<syncer::SyncChangeProcessor>(
@@ -754,7 +748,7 @@ TEST_F(SessionsSyncManagerTest, DeleteForeignSession) {
 
   std::vector<const SyncedSession*> foreign_sessions;
   ASSERT_FALSE(manager()->GetAllForeignSessions(&foreign_sessions));
-  manager()->DeleteForeignSession(tag, &changes);
+  manager()->DeleteForeignSessionInternal(tag, &changes);
   ASSERT_FALSE(manager()->GetAllForeignSessions(&foreign_sessions));
   EXPECT_TRUE(changes.empty());
 
@@ -775,7 +769,7 @@ TEST_F(SessionsSyncManagerTest, DeleteForeignSession) {
   ASSERT_EQ(1U, foreign_sessions.size());
 
   // Now delete the foreign session.
-  manager()->DeleteForeignSession(tag, &changes);
+  manager()->DeleteForeignSessionInternal(tag, &changes);
   EXPECT_FALSE(manager()->GetAllForeignSessions(&foreign_sessions));
 
   EXPECT_EQ(5U, changes.size());
@@ -918,10 +912,7 @@ TEST_F(SessionsSyncManagerTest, SaveUnassociatedNodesForReassociation) {
   SyncData d(SyncData::CreateRemoteData(1, entity, base::Time()));
   syncer::SyncDataList in(&d, &d + 1);
   changes.clear();
-  SessionsSyncManager manager2(
-      profile(),
-      scoped_ptr<SyncPrefs>(new SyncPrefs(profile()->GetPrefs())),
-      this);
+  SessionsSyncManager manager2(profile(), this);
   syncer::SyncMergeResult result = manager2.MergeDataAndStartSyncing(
       syncer::SESSIONS, in,
       scoped_ptr<syncer::SyncChangeProcessor>(

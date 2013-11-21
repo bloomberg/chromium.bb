@@ -20,6 +20,7 @@
 #include "chrome/browser/sync/glue/favicon_cache.h"
 #include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
+#include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/sessions2/tab_node_pool2.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "sync/api/syncable_service.h"
@@ -46,7 +47,8 @@ class SyncedWindowDelegate;
 
 // Contains all logic for associating the Chrome sessions model and
 // the sync sessions model.
-class SessionsSyncManager : public syncer::SyncableService {
+class SessionsSyncManager : public syncer::SyncableService,
+                            public OpenTabsUIDelegate {
  public:
   // Isolates SessionsSyncManager from having to depend on sync internals.
   class SyncInternalApiDelegate {
@@ -56,11 +58,10 @@ class SessionsSyncManager : public syncer::SyncableService {
     virtual scoped_ptr<DeviceInfo> GetLocalDeviceInfo() const = 0;
 
     // Used for creation of the machine tag for this local session.
-    virtual std::string GetCacheGuid() const = 0;
+    virtual std::string GetLocalSyncCacheGUID() const = 0;
   };
 
   SessionsSyncManager(Profile* profile,
-                      scoped_ptr<SyncPrefs> sync_prefs,
                       SyncInternalApiDelegate* delegate);
   virtual ~SessionsSyncManager();
 
@@ -88,17 +89,6 @@ class SessionsSyncManager : public syncer::SyncableService {
     return current_machine_tag_;
   }
 
-  // Builds a list of all foreign sessions. Caller does NOT own SyncedSession
-  // objects.
-  // Returns true if foreign sessions were found, false otherwise.
-  bool GetAllForeignSessions(std::vector<const SyncedSession*>* sessions);
-
-  // If a valid favicon for the page at |url| is found, fills |favicon_png| with
-  // the png-encoded image and returns true. Else, returns false.
-  bool GetSyncedFaviconForPageURL(
-      const std::string& page_url,
-      scoped_refptr<base::RefCountedMemory>* favicon_png) const;
-
   // syncer::SyncableService implementation.
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
@@ -117,6 +107,22 @@ class SessionsSyncManager : public syncer::SyncableService {
 
   // Return the favicon url of the current tab, even if it's pending.
   static GURL GetCurrentFaviconURL(const SyncedTabDelegate& tab_delegate);
+
+  FaviconCache* GetFaviconCache();
+
+  // OpenTabsUIDelegate implementation.
+  virtual bool GetSyncedFaviconForPageURL(
+      const std::string& pageurl,
+      scoped_refptr<base::RefCountedMemory>* favicon_png) const OVERRIDE;
+  virtual bool GetAllForeignSessions(
+      std::vector<const SyncedSession*>* sessions) OVERRIDE;
+  virtual bool GetForeignSession(
+      const std::string& tag,
+      std::vector<const SessionWindow*>* windows) OVERRIDE;
+  virtual bool GetForeignTab(const std::string& tag,
+                             const SessionID::id_type tab_id,
+                             const SessionTab** tab) OVERRIDE;
+  virtual void DeleteForeignSession(const std::string& tag) OVERRIDE;
 
  private:
   // Keep all the links to local tab data in one place. A tab_node_id and tab
@@ -200,8 +206,8 @@ class SessionsSyncManager : public syncer::SyncableService {
   // |change_output| *must* be provided as a link to the SyncChange pipeline
   // that exists in the caller's context. This function will append necessary
   // changes for processing later.
-  void DeleteForeignSession(const std::string& tag,
-                            syncer::SyncChangeList* change_output);
+  void DeleteForeignSessionInternal(const std::string& tag,
+                                    syncer::SyncChangeList* change_output);
 
   // Used to populate a session header from the session specifics header
   // provided.
@@ -283,7 +289,7 @@ class SessionsSyncManager : public syncer::SyncableService {
   // Pool of used/available sync nodes associated with local tabs.
   TabNodePool2 local_tab_pool_;
 
-  scoped_ptr<SyncPrefs> sync_prefs_;
+  SyncPrefs sync_prefs_;
 
   const Profile* const profile_;
 

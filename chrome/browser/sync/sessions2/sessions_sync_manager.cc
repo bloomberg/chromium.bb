@@ -8,6 +8,7 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/network_time/navigation_time_helper.h"
 #endif
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/common/url_constants.h"
@@ -38,13 +39,12 @@ static const int kMaxSyncNavigationCount = 6;
 
 SessionsSyncManager::SessionsSyncManager(
     Profile* profile,
-    scoped_ptr<SyncPrefs> sync_prefs,
     SyncInternalApiDelegate* delegate)
     : favicon_cache_(profile, kMaxSyncFavicons),
+      sync_prefs_(profile->GetPrefs()),
       profile_(profile),
       delegate_(delegate),
       local_session_header_node_id_(TabNodePool2::kInvalidTabNodeID) {
-  sync_prefs_ = sync_prefs.Pass();
 }
 
 SessionsSyncManager::~SessionsSyncManager() {
@@ -105,9 +105,10 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
   }
 
 #if defined(OS_ANDROID)
-  std::string sync_machine_tag(BuildMachineTag(delegate_->GetCacheGuid()));
+  std::string sync_machine_tag(BuildMachineTag(
+      delegate_->GetLocalSyncCacheGUID()));
   if (current_machine_tag_.compare(sync_machine_tag) != 0)
-    DeleteForeignSession(sync_machine_tag, &new_changes);
+    DeleteForeignSessionInternal(sync_machine_tag, &new_changes);
 #endif
 
   // Check if anything has changed on the local client side.
@@ -346,8 +347,17 @@ bool SessionsSyncManager::ShouldSyncWindow(
 
 void SessionsSyncManager::ForwardRelevantFaviconUpdatesToFaviconCache(
     const std::set<GURL>& updated_favicon_page_urls) {
-  NOTIMPLEMENTED() <<
-      "TODO(tim): SessionModelAssociator::FaviconsUpdated equivalent.";
+  // TODO(zea): consider a separate container for tabs with outstanding favicon
+  // loads so we don't have to iterate through all tabs comparing urls.
+  for (std::set<GURL>::const_iterator i = updated_favicon_page_urls.begin();
+       i != updated_favicon_page_urls.end(); ++i) {
+    for (TabLinksMap::iterator tab_iter = local_tab_map_.begin();
+         tab_iter != local_tab_map_.end();
+         ++tab_iter) {
+      if (tab_iter->second->url() == *i)
+        favicon_cache_.OnPageFaviconUpdated(*i);
+    }
+  }
 }
 
 void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
@@ -551,14 +561,14 @@ void SessionsSyncManager::UpdateTrackerWithForeignSession(
 void SessionsSyncManager::InitializeCurrentMachineTag() {
   DCHECK(current_machine_tag_.empty());
   std::string persisted_guid;
-  persisted_guid = sync_prefs_->GetSyncSessionsGUID();
+  persisted_guid = sync_prefs_.GetSyncSessionsGUID();
   if (!persisted_guid.empty()) {
     current_machine_tag_ = persisted_guid;
     DVLOG(1) << "Restoring persisted session sync guid: " << persisted_guid;
   } else {
-    current_machine_tag_ = BuildMachineTag(delegate_->GetCacheGuid());
+    current_machine_tag_ = BuildMachineTag(delegate_->GetLocalSyncCacheGUID());
     DVLOG(1) << "Creating session sync guid: " << current_machine_tag_;
-    sync_prefs_->SetSyncSessionsGUID(current_machine_tag_);
+    sync_prefs_.SetSyncSessionsGUID(current_machine_tag_);
   }
 
   local_tab_pool_.SetMachineTag(current_machine_tag_);
@@ -653,7 +663,13 @@ bool SessionsSyncManager::GetSyncedFaviconForPageURL(
   return favicon_cache_.GetSyncedFaviconForPageURL(GURL(page_url), favicon_png);
 }
 
-void SessionsSyncManager::DeleteForeignSession(
+void SessionsSyncManager::DeleteForeignSession(const std::string& tag) {
+  syncer::SyncChangeList changes;
+  DeleteForeignSessionInternal(tag, &changes);
+  sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
+}
+
+void SessionsSyncManager::DeleteForeignSessionInternal(
     const std::string& tag, syncer::SyncChangeList* change_output) {
  if (tag == current_machine_tag()) {
     LOG(ERROR) << "Attempting to delete local session. This is not currently "
@@ -720,6 +736,25 @@ GURL SessionsSyncManager::GetCurrentFaviconURL(
   return (current_entry->GetFavicon().valid ?
           current_entry->GetFavicon().url :
           GURL());
+}
+
+bool SessionsSyncManager::GetForeignSession(
+    const std::string& tag,
+    std::vector<const SessionWindow*>* windows) {
+  return session_tracker_.LookupSessionWindows(tag, windows);
+}
+
+bool SessionsSyncManager::GetForeignTab(
+    const std::string& tag,
+    const SessionID::id_type tab_id,
+    const SessionTab** tab) {
+  const SessionTab* synced_tab = NULL;
+  bool success = session_tracker_.LookupSessionTab(tag,
+                                                   tab_id,
+                                                   &synced_tab);
+  if (success)
+    *tab = synced_tab;
+  return success;
 }
 
 void SessionsSyncManager::LocalTabDelegateToSpecifics(
@@ -831,6 +866,11 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
     }
   }
   session_tab->session_storage_persistent_id.clear();
+}
+
+
+FaviconCache* SessionsSyncManager::GetFaviconCache() {
+  return &favicon_cache_;
 }
 
 };  // namespace browser_sync

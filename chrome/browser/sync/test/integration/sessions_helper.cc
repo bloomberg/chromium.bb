@@ -51,8 +51,8 @@ void ScopedWindowMap::Reset(SessionWindowMap* windows) {
 
 bool GetLocalSession(int index, const browser_sync::SyncedSession** session) {
   return ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-      test()->GetProfile(index))->GetSessionModelAssociator()->GetLocalSession(
-          session);
+      test()->GetProfile(index))->GetSessionModelAssociatorDeprecated()->
+          GetLocalSession(session);
 }
 
 bool ModelAssociatorHasTabWithUrl(int index, const GURL& url) {
@@ -136,7 +136,7 @@ bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
       }
       if (!found) {
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-            test()->GetProfile(index))->GetSessionModelAssociator()->
+            test()->GetProfile(index))->GetSessionModelAssociatorDeprecated()->
             BlockUntilLocalChangeForTest(TestTimeouts::action_max_timeout());
         content::RunMessageLoop();
       }
@@ -200,16 +200,20 @@ int GetNumForeignSessions(int index) {
   SyncedSessionVector sessions;
   if (!ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           test()->GetProfile(index))->
-          GetSessionModelAssociator()->GetAllForeignSessions(&sessions))
+          GetSessionModelAssociatorDeprecated()->GetAllForeignSessions(
+              &sessions)) {
     return 0;
+  }
   return sessions.size();
 }
 
 bool GetSessionData(int index, SyncedSessionVector* sessions) {
   if (!ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           test()->GetProfile(index))->
-          GetSessionModelAssociator()->GetAllForeignSessions(sessions))
+          GetSessionModelAssociatorDeprecated()->GetAllForeignSessions(
+              sessions)) {
     return false;
+  }
   SortSyncedSessions(sessions);
   return true;
 }
@@ -313,7 +317,7 @@ bool CheckForeignSessionsAgainst(
 void DeleteForeignSession(int index, std::string session_tag) {
   ProfileSyncServiceFactory::GetInstance()->GetForProfile(
       test()->GetProfile(index))->
-      GetSessionModelAssociator()->DeleteForeignSession(session_tag);
+      GetSessionModelAssociatorDeprecated()->DeleteForeignSession(session_tag);
 }
 
 }  // namespace sessions_helper

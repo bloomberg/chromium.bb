@@ -71,14 +71,14 @@ void ForeignSessionHandler::OpenForeignSessionTab(
     SessionID::id_type window_num,
     SessionID::id_type tab_id,
     const WindowOpenDisposition& disposition) {
-  SessionModelAssociator* associator = GetModelAssociator(web_ui);
-  if (!associator)
+  OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui);
+  if (!open_tabs)
     return;
 
   // We don't actually care about |window_num|, this is just a sanity check.
   DCHECK_LT(kInvalidId, window_num);
   const SessionTab* tab;
-  if (!associator->GetForeignTab(session_string_value, tab_id, &tab)) {
+  if (!open_tabs->GetForeignTab(session_string_value, tab_id, &tab)) {
     LOG(ERROR) << "Failed to load foreign tab.";
     return;
   }
@@ -95,15 +95,15 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
     content::WebUI* web_ui,
     const std::string& session_string_value,
     SessionID::id_type window_num) {
-  SessionModelAssociator* associator = GetModelAssociator(web_ui);
-  if (!associator)
+  OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui);
+  if (!open_tabs)
     return;
 
   std::vector<const SessionWindow*> windows;
   // Note: we don't own the ForeignSessions themselves.
-  if (!associator->GetForeignSession(session_string_value, &windows)) {
+  if (!open_tabs->GetForeignSession(session_string_value, &windows)) {
     LOG(ERROR) << "ForeignSessionHandler failed to get session data from"
-        "SessionModelAssociator.";
+        "OpenTabsUIDelegate.";
     return;
   }
   std::vector<const SessionWindow*>::const_iterator iter_begin =
@@ -147,15 +147,15 @@ bool ForeignSessionHandler::SessionTabToValue(
 }
 
 // static
-SessionModelAssociator* ForeignSessionHandler::GetModelAssociator(
+OpenTabsUIDelegate* ForeignSessionHandler::GetOpenTabsUIDelegate(
     content::WebUI* web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
-  // Only return the associator if it exists and it is done syncing sessions.
+  // Only return the delegate if it exists and it is done syncing sessions.
   if (service && service->ShouldPushChanges())
-    return service->GetSessionModelAssociator();
+    return service->GetOpenTabsUIDelegate();
 
   return NULL;
 }
@@ -226,11 +226,11 @@ string16 ForeignSessionHandler::FormatSessionTime(const base::Time& time) {
 }
 
 void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
-  SessionModelAssociator* associator = GetModelAssociator(web_ui());
+  OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui());
   std::vector<const SyncedSession*> sessions;
 
   ListValue session_list;
-  if (associator && associator->GetAllForeignSessions(&sessions)) {
+  if (open_tabs && open_tabs->GetAllForeignSessions(&sessions)) {
     // Sort sessions from most recent to least recent.
     std::sort(sessions.begin(), sessions.end(), SortSessionsByRecency);
 
@@ -339,9 +339,9 @@ void ForeignSessionHandler::HandleDeleteForeignSession(const ListValue* args) {
     return;
   }
 
-  SessionModelAssociator* associator = GetModelAssociator(web_ui());
-  if (associator)
-    associator->DeleteForeignSession(session_tag);
+  OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui());
+  if (open_tabs)
+    open_tabs->DeleteForeignSession(session_tag);
 }
 
 void ForeignSessionHandler::HandleSetForeignSessionCollapsed(

@@ -16,8 +16,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/sync/glue/session_model_associator.h"
-#include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -123,11 +122,11 @@ ScopedJavaLocalRef<jobject> FaviconHelper::GetSyncedFaviconImageForURL(
   DCHECK(sync_service);
 
   scoped_refptr<base::RefCountedMemory> favicon_png;
-  browser_sync::SessionModelAssociator* associator =
-      sync_service->GetSessionModelAssociator();
-  DCHECK(associator);
+  browser_sync::OpenTabsUIDelegate* open_tabs =
+      sync_service->GetOpenTabsUIDelegate();
+  DCHECK(open_tabs);
 
-  if (!associator->GetSyncedFaviconForPageURL(page_url, &favicon_png))
+  if (!open_tabs->GetSyncedFaviconForPageURL(page_url, &favicon_png))
     return ScopedJavaLocalRef<jobject>();
 
     // Convert favicon_image_result to java objects.

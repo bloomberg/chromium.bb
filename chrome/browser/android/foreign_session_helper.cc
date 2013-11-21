@@ -13,7 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sessions/session_restore.h"
-#include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
@@ -30,20 +30,20 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
-using browser_sync::SessionModelAssociator;
+using browser_sync::OpenTabsUIDelegate;
 using browser_sync::SyncedSession;
 
 namespace {
 
-SessionModelAssociator* GetSessionModelAssociator(Profile* profile) {
+OpenTabsUIDelegate* GetOpenTabsUIDelegate(Profile* profile) {
   ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
       GetForProfile(profile);
 
-  // Only return the associator if it exists and it is done syncing sessions.
+  // Only return the delegate if it exists and it is done syncing sessions.
   if (!service || !service->ShouldPushChanges())
     return NULL;
 
-  return service->GetSessionModelAssociator();
+  return service->GetOpenTabsUIDelegate();
 }
 
 bool ShouldSkipTab(const SessionTab& session_tab) {
@@ -200,12 +200,12 @@ void ForeignSessionHelper::Observe(
 jboolean ForeignSessionHelper::GetForeignSessions(JNIEnv* env,
                                                   jobject obj,
                                                   jobject result) {
-  SessionModelAssociator* associator = GetSessionModelAssociator(profile_);
-  if (!associator)
+  OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(profile_);
+  if (!open_tabs)
     return false;
 
   std::vector<const browser_sync::SyncedSession*> sessions;
-  if (!associator->GetAllForeignSessions(&sessions))
+  if (!open_tabs->GetAllForeignSessions(&sessions))
     return false;
 
   // Use a pref to keep track of sessions that were collapsed by the user.
@@ -253,17 +253,17 @@ jboolean ForeignSessionHelper::OpenForeignSessionTab(JNIEnv* env,
                                                      jstring session_tag,
                                                      jint session_tab_id,
                                                      jint j_disposition) {
-  SessionModelAssociator* associator = GetSessionModelAssociator(profile_);
-  if (!associator) {
-    LOG(ERROR) << "Null SessionModelAssociator returned.";
+  OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(profile_);
+  if (!open_tabs) {
+    LOG(ERROR) << "Null OpenTabsUIDelegate returned.";
     return false;
   }
 
   const SessionTab* session_tab;
 
-  if (!associator->GetForeignTab(ConvertJavaStringToUTF8(env, session_tag),
-                                 session_tab_id,
-                                 &session_tab)) {
+  if (!open_tabs->GetForeignTab(ConvertJavaStringToUTF8(env, session_tag),
+                                session_tab_id,
+                                &session_tab)) {
     LOG(ERROR) << "Failed to load foreign tab.";
     return false;
   }
@@ -291,9 +291,9 @@ jboolean ForeignSessionHelper::OpenForeignSessionTab(JNIEnv* env,
 
 void ForeignSessionHelper::DeleteForeignSession(JNIEnv* env, jobject obj,
                                                 jstring session_tag) {
-  SessionModelAssociator* associator = GetSessionModelAssociator(profile_);
-  if (associator)
-    associator->DeleteForeignSession(ConvertJavaStringToUTF8(env, session_tag));
+  OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(profile_);
+  if (open_tabs)
+    open_tabs->DeleteForeignSession(ConvertJavaStringToUTF8(env, session_tag));
 }
 
 // static

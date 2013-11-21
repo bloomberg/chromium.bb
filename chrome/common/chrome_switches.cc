@@ -766,6 +766,9 @@ const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
 const char kEnableSyncSyncedNotifications[] =
     "enable-sync-synced-notifications";
 
+// Enables sync/API based session sync implementation (in favor of legacy).
+const char kEnableSyncSessionsV2[] = "enable-sync-sessions-v2";
+
 // Enables synced articles.
 const char kEnableSyncArticles[] = "enable-sync-articles";
 

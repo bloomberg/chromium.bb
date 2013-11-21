@@ -92,7 +92,7 @@ scoped_ptr<DeviceInfo> GetLocalDeviceInfo(const std::string& extension_id,
   if (!pss) {
     return scoped_ptr<DeviceInfo>();
   }
-  std::string guid = pss->GetLocalDeviceGUID();
+  std::string guid = pss->GetLocalSyncCacheGUID();
   scoped_ptr<DeviceInfo> device = GetDeviceInfoForClientId(guid,
                                                            extension_id,
                                                            profile);
