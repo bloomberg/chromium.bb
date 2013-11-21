@@ -141,4 +141,7 @@
     <property name="format" value="[ \t]+$"/>
     <property name="message" value="Trailing whitespace"/>
     </module>
+  <module name="RegexpHeader">
+    <property name="header" value="^// Copyright 20\d\d The Chromium Authors. All rights reserved.$\n^// Use of this source code is governed by a BSD-style license that can be$\n^// found in the LICENSE file.$"/>
+  </module>
 </module>
