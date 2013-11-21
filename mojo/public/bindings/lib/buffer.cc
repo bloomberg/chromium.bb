@@ -34,13 +34,18 @@ ScratchBuffer::~ScratchBuffer() {
 void* ScratchBuffer::Allocate(size_t delta) {
   delta = internal::Align(delta);
 
-  void* result =
-      AllocateInSegment((overflow_ != NULL) ? overflow_ : &fixed_, delta);
+  void* result = AllocateInSegment(&fixed_, delta);
   if (result)
     return result;
 
+  if (overflow_) {
+    result = AllocateInSegment(overflow_, delta);
+    if (result)
+      return result;
+  }
+
   AddOverflowSegment(delta);
-  return Allocate(delta);
+  return AllocateInSegment(overflow_, delta);
 }
 
 void* ScratchBuffer::AllocateInSegment(Segment* segment, size_t delta) {

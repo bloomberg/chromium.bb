@@ -32,10 +32,9 @@ TEST(ScratchBufferTest, Basic) {
   EXPECT_FALSE(large >= &buf && large < (&buf + sizeof(buf)));
 
   // But another small allocation should be back on the stack.
-  // TODO(mpcomplete): but it isn't. We can fix that easily enough.
   small = buf.Allocate(10);
   EXPECT_TRUE(IsZero(small, 10));
-  //EXPECT_TRUE(small >= &buf && small < (&buf + sizeof(buf)));
+  EXPECT_TRUE(small >= &buf && small < (&buf + sizeof(buf)));
 }
 
 // Tests that FixedBuffer allocates memory aligned to 8 byte boundaries.
