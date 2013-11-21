@@ -42,10 +42,6 @@ def _KillPendingServers():
     i *= 2
     if i > 10:
       break
-  # Reset the test port allocation. It's important to do it before starting
-  # to dispatch any step.
-  if not ports.ResetTestServerPortAllocation():
-    raise Exception('Failed to reset test server port.')
 
   forwarder.Forwarder.UseMultiprocessing()
 

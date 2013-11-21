@@ -177,12 +177,6 @@ def AddJavaTestOptions(option_parser):
                            help='Saves the JSON file for each UI Perf test.')
   option_parser.add_option('--official-build', action='store_true',
                            help='Run official build tests.')
-  option_parser.add_option('--keep_test_server_ports',
-                           action='store_true',
-                           help=('Indicates the test server ports must be '
-                                 'kept. When this is run via a sharder '
-                                 'the test server ports should be kept and '
-                                 'should not be reset.'))
   option_parser.add_option('--test_data', action='append', default=[],
                            help=('Each instance defines a directory of test '
                                  'data that should be copied to the target(s) '
@@ -208,10 +202,6 @@ def ProcessJavaTestOptions(options, error_func):
     options.exclude_annotations = options.exclude_annotation_str.split(',')
   else:
     options.exclude_annotations = []
-
-  if not options.keep_test_server_ports:
-    if not ports.ResetTestServerPortAllocation():
-      raise Exception('Failed to reset test server port.')
 
 
 def AddInstrumentationTestOptions(option_parser):
@@ -720,6 +710,8 @@ def RunTestsCommand(command, options, args, option_parser):
   devices = _GetAttachedDevices(options.test_device)
 
   forwarder.Forwarder.RemoveHostLog()
+  if not ports.ResetTestServerPortAllocation():
+    raise Exception('Failed to reset test server port.')
 
   if command == 'gtest':
     return _RunGTests(options, option_parser.error, devices)

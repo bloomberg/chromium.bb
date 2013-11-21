@@ -278,10 +278,6 @@ def Setup(test_options, devices):
   Returns:
     A tuple of (TestRunnerFactory, tests).
   """
-
-  if not ports.ResetTestServerPortAllocation():
-    raise Exception('Failed to reset test server port.')
-
   test_package = test_package_apk.TestPackageApk(test_options.suite_name)
   if not os.path.exists(test_package.suite_path):
     test_package = test_package_exe.TestPackageExecutable(
