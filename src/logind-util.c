@@ -169,9 +169,11 @@ weston_logind_open(struct weston_logind *wl, const char *path,
 
 	r = stat(path, &st);
 	if (r < 0)
-		return -errno;
-	if (!S_ISCHR(st.st_mode))
-		return -ENODEV;
+		return -1;
+	if (!S_ISCHR(st.st_mode)) {
+		errno = ENODEV;
+		return -1;
+	}
 
 	fd = weston_logind_take_device(wl, major(st.st_rdev),
 				       minor(st.st_rdev), NULL);
@@ -221,7 +223,8 @@ err_close:
 	close(fd);
 	weston_logind_release_device(wl, major(st.st_rdev),
 				     minor(st.st_rdev));
-	return r;
+	errno = -r;
+	return -1;
 }
 
 WL_EXPORT void
@@ -264,7 +267,7 @@ weston_logind_activate_vt(struct weston_logind *wl, int vt)
 
 	r = ioctl(wl->vt, VT_ACTIVATE, vt);
 	if (r < 0)
-		return -errno;
+		return -1;
 
 	return 0;
 }
@@ -899,7 +902,8 @@ err_wl:
 	free(wl);
 err_out:
 	weston_log("logind: cannot setup systemd-logind helper (%d), using legacy fallback\n", r);
-	return r;
+	errno = -r;
+	return -1;
 }
 
 WL_EXPORT void
