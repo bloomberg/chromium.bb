@@ -617,7 +617,7 @@
             }],
             ['internal_filter_fuzzer==1', {
               'dependencies': [
-                '../skia/tools/filter_fuzzer/filter_fuzzer.gyp:filter_fuzzer',
+                '../skia/tools/clusterfuzz-data/fuzzers/filter_fuzzer/filter_fuzzer.gyp:filter_fuzzer',
               ],
             }], # internal_filter_fuzzer
             ['OS=="win" and fastbuild==0 and target_arch=="ia32"', {
