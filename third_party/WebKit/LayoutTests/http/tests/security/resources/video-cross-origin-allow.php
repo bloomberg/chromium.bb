@@ -1,18 +1,16 @@
 <?php
 
-if (isset($_GET['no-preflight']) && $_SERVER['REQUEST_METHOD'] == "OPTIONS") {
+if ($_SERVER['REQUEST_METHOD'] == "OPTIONS") {
+    # No preflights should happen.
     echo "FAIL";
     exit;
 }
 
-header("Access-Control-Allow-Origin: *");
-
-if ($_SERVER['REQUEST_METHOD'] == "OPTIONS") {
-    header("Access-Control-Allow-Methods: GET");
-    header("Access-Control-Allow-Headers: origin, accept-encoding, referer, range");
-    exit;
+if (isset($_GET['with_credentials'])) {
+    header("Access-Control-Allow-Origin: http://127.0.0.1:8000");
+    header("Access-Control-Allow-Credentials: true");
+} else {
+    header("Access-Control-Allow-Origin: *");
 }
-
 @include("../../media/resources/serve-video.php");
-
 ?>
