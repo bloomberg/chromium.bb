@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "chrome/browser/policy/async_policy_loader.h"
-#include "chrome/browser/policy/policy_types.h"
+#include "components/policy/core/common/policy_types.h"
 
 namespace base {
 class Value;

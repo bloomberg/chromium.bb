@@ -20,13 +20,19 @@
       'conditions': [
         ['configuration_policy==1', {
           'sources': [
+            'policy/core/common/external_data_fetcher.cc',
+            'policy/core/common/external_data_fetcher.h',
+            'policy/core/common/external_data_manager.h',
             'policy/core/common/policy_details.h',
             'policy/core/common/policy_namespace.cc',
             'policy/core/common/policy_namespace.h',
+            'policy/core/common/policy_map.cc',
+            'policy/core/common/policy_map.h',
             'policy/core/common/policy_pref_names.cc',
             'policy/core/common/policy_pref_names.h',
             'policy/core/common/policy_switches.cc',
             'policy/core/common/policy_switches.h',
+            'policy/core/common/policy_types.h',
             'policy/core/common/schema.cc',
             'policy/core/common/schema.h',
             'policy/core/common/schema_internal.h',
@@ -37,6 +43,11 @@
           # Chrome can always interface with the PolicyService without having
           # to #ifdef on ENABLE_CONFIGURATION_POLICY.
           'sources': [
+            'policy/core/common/external_data_fetcher.h',
+            'policy/core/common/external_data_fetcher.cc',
+            'policy/core/common/external_data_manager.h',
+            'policy/core/common/policy_map.cc',
+            'policy/core/common/policy_map.h',
             'policy/core/common/policy_namespace.cc',
             'policy/core/common/policy_namespace.h',
           ],

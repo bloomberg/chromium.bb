@@ -8,10 +8,10 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/policy/policy_map.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "components/policy/core/common/policy_map.h"
 #include "policy/policy_constants.h"
 
 namespace policy {

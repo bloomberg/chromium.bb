@@ -5,7 +5,8 @@
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
 #include "base/callback.h"
-#include "chrome/browser/policy/external_data_fetcher.h"
+#include "components/policy/core/common/external_data_fetcher.h"
+#include "components/policy/core/common/policy_map.h"
 
 namespace policy {
 

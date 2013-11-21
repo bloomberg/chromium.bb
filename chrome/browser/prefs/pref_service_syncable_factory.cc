@@ -17,7 +17,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/policy_service.h"
-#include "chrome/browser/policy/policy_types.h"
+#include "components/policy/core/common/policy_types.h"
 #endif
 
 PrefServiceSyncableFactory::PrefServiceSyncableFactory() {

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_POLICY_POLICY_SERVICE_STUB_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
+#include "components/policy/core/common/policy_map.h"
 
 namespace policy {
 

@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/policy/policy_types.h"
+#include "components/policy/core/common/policy_types.h"
 
 namespace policy {
 

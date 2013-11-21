@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/external_data_fetcher.h"
+#include "components/policy/core/common/external_data_fetcher.h"
 
 #include "base/callback.h"
-#include "chrome/browser/policy/external_data_manager.h"
+#include "components/policy/core/common/external_data_manager.h"
 
 namespace policy {
 

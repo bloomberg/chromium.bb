@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_EXTERNAL_DATA_FETCHER_H_
-#define CHROME_BROWSER_POLICY_EXTERNAL_DATA_FETCHER_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_EXTERNAL_DATA_FETCHER_H_
+#define COMPONENTS_POLICY_CORE_COMMON_EXTERNAL_DATA_FETCHER_H_
 
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/policy/policy_export.h"
 
 namespace policy {
 
@@ -17,7 +18,7 @@ class ExternalDataManager;
 
 // A helper that encapsulates the parameters required to retrieve the external
 // data for a policy.
-class ExternalDataFetcher {
+class POLICY_EXPORT ExternalDataFetcher {
  public:
   typedef base::Callback<void(scoped_ptr<std::string>)> FetchCallback;
 
@@ -49,4 +50,4 @@ class ExternalDataFetcher {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_EXTERNAL_DATA_FETCHER_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_EXTERNAL_DATA_FETCHER_H_

@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
-#include "chrome/browser/policy/external_data_fetcher.h"
+#include "components/policy/core/common/external_data_fetcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {

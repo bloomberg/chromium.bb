@@ -7,10 +7,10 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/storage/settings_namespace.h"
-#include "chrome/browser/policy/policy_map.h"
-#include "chrome/browser/policy/policy_types.h"
 #include "chrome/browser/value_store/value_store_change.h"
 #include "chrome/browser/value_store/value_store_util.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

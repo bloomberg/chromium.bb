@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chrome/browser/policy/policy_map.h"
+#include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 
 namespace policy {

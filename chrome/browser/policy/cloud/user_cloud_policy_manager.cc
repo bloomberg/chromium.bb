@@ -12,8 +12,8 @@
 #include "chrome/browser/policy/cloud/cloud_policy_service.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_store.h"
-#include "chrome/browser/policy/policy_types.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "components/policy/core/common/policy_types.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace em = enterprise_management;

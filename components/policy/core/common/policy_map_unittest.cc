@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/policy_map.h"
+#include "components/policy/core/common/policy_map.h"
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/policy/external_data_manager.h"
+#include "components/policy/core/common/external_data_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {

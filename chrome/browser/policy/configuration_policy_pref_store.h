@@ -12,9 +12,9 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_store.h"
 #include "base/values.h"
-#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
-#include "chrome/browser/policy/policy_types.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 
 class PrefValueMap;
 

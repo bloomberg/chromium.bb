@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/schema_registry.h"
+#include "components/policy/core/common/policy_map.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {

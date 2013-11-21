@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/policy/external_data_manager.h"
+#include "components/policy/core/common/external_data_manager.h"
 
 namespace net {
 class URLRequestContextGetter;

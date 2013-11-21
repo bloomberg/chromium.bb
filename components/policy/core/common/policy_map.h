@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_POLICY_MAP_H_
-#define CHROME_BROWSER_POLICY_POLICY_MAP_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_POLICY_MAP_H_
+#define COMPONENTS_POLICY_CORE_COMMON_POLICY_MAP_H_
 
 #include <map>
 #include <set>
@@ -11,17 +11,18 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/policy/external_data_fetcher.h"
-#include "chrome/browser/policy/policy_types.h"
+#include "components/policy/core/common/external_data_fetcher.h"
+#include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_export.h"
 
 namespace policy {
 
 // A mapping of policy names to policy values for a given policy namespace.
-class PolicyMap {
+class POLICY_EXPORT PolicyMap {
  public:
   // Each policy maps to an Entry which keeps the policy value as well as other
   // relevant data about the policy.
-  struct Entry {
+  struct POLICY_EXPORT Entry {
     PolicyLevel level;
     PolicyScope scope;
     base::Value* value;
@@ -121,4 +122,4 @@ class PolicyMap {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_POLICY_MAP_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_POLICY_MAP_H_
