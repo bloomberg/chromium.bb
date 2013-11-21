@@ -307,6 +307,11 @@ INTERNAL_PATCH_TAG = 'i'
 EXTERNAL_PATCH_TAG = 'e'
 PATCH_TAGS = (INTERNAL_PATCH_TAG, EXTERNAL_PATCH_TAG)
 
+# Tree status strings
+TREE_OPEN = 'open'
+TREE_THROTTLED = 'throttled'
+TREE_CLOSED = 'closed'
+
 _GERRIT_QUERY_TEMPLATE = ('status:open AND '
                           'label:Code-Review=+2 AND '
                           'label:Verified=+1 AND '

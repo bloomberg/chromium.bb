@@ -1032,7 +1032,7 @@ def SubCommandTimeout(max_run_time):
 
   # pylint: disable=W0613
   def kill_us(sig_num, frame):
-    raise TimeoutError("Timeout occurred- waited %i seconds." % max_run_time)
+    raise TimeoutError("Timeout occurred- waited %s seconds." % max_run_time)
 
   original_handler = signal.signal(signal.SIGALRM, kill_us)
   previous_time = int(time.time())
@@ -1204,28 +1204,62 @@ class ContextManagerStack(object):
     raise exc_type, exc, traceback
 
 
-def WaitForCondition(func, period, timeout):
+def WaitForCondition(*args, **kwargs):
   """Periodically run a function, waiting in between runs.
 
-  Continues to run until the function returns a 'True' value.
+  Continues to run until the function returns True.
 
   Args:
-    func: The function to run to test for condition.  Returns True to indicate
-          condition was met.
-    period: How long to wait in between testing of condition.
-    timeout: The maximum amount of time to wait.
+    See WaitForReturnValue([True], ...)
+
+  Raises:
+    TimeoutError when the timeout is exceeded.
+  """
+  WaitForReturnValue([True], *args, **kwargs)
+
+
+def WaitForReturnValue(values, func, timeout, period=1, side_effect_func=None,
+                       func_args=None, func_kwargs=None):
+  """Periodically run a function, waiting in between runs.
+
+  Continues to run until the function return value is in the list
+  of accepted |values|.
+
+  Args:
+    values: A list or set of acceptable return values from |func|.
+    func: The function to run to test for a value.
+    timeout: The maximum amount of time to wait, in integer seconds. Minimum
+      value: 1.
+    period: Integer number of seconds between calls to |func|. Default: 1
+    side_effect_func: Optional function to be called between polls of func,
+                      typically to output logging messages.
+    func_args: Optional list of positional arguments to be passed to |func|.
+    func_kwargs: Optional dictionary of keyword arguments to be passed to
+                 |func|.
+
+  Returns:
+    The value most recently returned by |func|.
 
   Raises:
     TimeoutError when the timeout is exceeded.
   """
   assert period >= 0
+  # SubCommandTimeout requires timeout >= 1.
+  assert timeout >= 1
+  func_args = func_args or []
+  func_kwargs = func_kwargs or {}
   with SubCommandTimeout(timeout):
-    timestamp = time.time()
-    while not func():
+    while True:
+      timestamp = time.time()
+      value = func(*func_args, **func_kwargs)
+      if value in values:
+        return value
+
       time_remaining = period - int(time.time() - timestamp)
       if time_remaining > 0:
+        if side_effect_func:
+          side_effect_func()
         time.sleep(time_remaining)
-      timestamp = time.time()
 
 
 def RunCurl(args, **kwargs):
@@ -1387,75 +1421,112 @@ def PredicateSplit(func, iterable):
   return trues, falses
 
 
-def TreeOpen(status_url, sleep_timeout, max_timeout=600,
-             throttled_ok=True):
-  """Returns True if the tree is open (or throttled, if |throttled_ok|=True).
+def _GetStatus(status_url):
+  """Polls |status_url| and returns the retrieved tree status.
 
-  At the highest level this function checks to see if the Tree is Open.
-  However, it also does a robustified wait as the server hosting the tree
-  status page is known to be somewhat flaky and these errors can be handled
-  with multiple retries.  In addition, it waits around for the Tree to Open
-  based on |max_timeout| to give a greater chance of returning True as it
-  expects callees to want to do some operation based on a True value.
-  If a caller is not interested in this feature they should set |max_timeout|
-  to 0.
+  This function gets a JSON response from |status_url|, and returns the
+  value associated with the 'general_state' key, if one exists and the
+  http request was successful.
+
+  Returns:
+    The tree status, as a string, if it was successfully retrieved. Otherwise
+    None.
+  """
+  try:
+    # Check for successful response code.
+    response = urllib.urlopen(status_url)
+    if response.getcode() == 200:
+      data = json.load(response)
+      if data.has_key('general_state'):
+        return data['general_state']
+  # We remain robust against IOError's.
+  except IOError as e:
+    logging.error('Could not reach %s: %r', status_url, e)
+
+
+def WaitForTreeStatus(status_url, period=1, timeout=1, throttled_ok=False):
+  """Wait for tree status to be open (or throttled, if |throttled_ok|).
+
+  Args:
+    status_url: The status url to check i.e.
+                'https://status.appspot.com/current?format=json'
+    polling_period: Time in seconds to wait between polling
+
+  Returns:
+    The most recent tree status, either constants.TREE_OPEN or
+    constants.TREE_THROTTLED (if |throttled_ok|)
+
+  Raises:
+    TimeoutError if timeout expired before tree reached acceptable status.
+  """
+  acceptable_states = set([constants.TREE_OPEN])
+  verb = 'open'
+  if throttled_ok:
+    acceptable_states.add(constants.TREE_THROTTLED)
+    verb = 'not be closed'
+
+  timeout = max(timeout, 1)
+
+  end_time = time.time() + timeout
+
+  def _LogMessage():
+    time_left = end_time - time.time()
+    Info('Waiting for the tree to %s (%d minutes left)...', verb,
+         time_left / 60)
+
+  def _get_status():
+    return _GetStatus(status_url)
+
+  return WaitForReturnValue(acceptable_states, _get_status, timeout=timeout,
+                            period=period, side_effect_func=_LogMessage)
+
+
+def IsTreeOpen(status_url, period=1, timeout=1, throttled_ok=False):
+  """Wait for tree status to be open (or throttled, if |throttled_ok|).
+
+  Args:
+    status_url: The status url to check i.e.
+                'https://status.appspot.com/current?format=json'
+    polling_period: Time in seconds to wait between polling
+
+  Returns:
+    True if the tree is open (or throttled, if |throttled_ok|). False if
+    timeout expired before tree reached acceptable status.
+  """
+  try:
+    WaitForTreeStatus(status_url, period, timeout, throttled_ok)
+  except TimeoutError:
+    return False
+  return True
+
+
+def GetTreeStatus(status_url, polling_period=0, timeout=0):
+  """Returns the current tree status as fetched from |status_url|.
+
+  This function returns the tree status as a string, either
+  constants.TREE_OPEN, constants.TREE_THROTTLED, or constants.TREE_CLOSED.
 
   Args:
     status_url: The status url to check i.e.
       'https://status.appspot.com/current?format=json'
-    sleep_timeout: How long to sleep when periodically polling for tree open
-      status.
-    max_timeout: The max length to wait for the tree to open.
-    throttled_ok: Treat a throttled tree as an Open. Default: True
+    polling_period: Time to wait in seconds between polling attempts.
+    timeout: Maximum time in seconds to wait for status.
+
+  Returns:
+    constants.TREE_OPEN, constants.TREE_THROTTLED, or constants.TREE_CLOSED
+
+  Raises:
+    TimeoutError if the timeout expired before the status could be successfully
+    fetched.
   """
-  # Limit sleep interval to max_timeout if set.
-  if max_timeout > 0:
-    sleep_timeout = min(max_timeout, sleep_timeout)
+  acceptable_states = set([constants.TREE_OPEN, constants.TREE_THROTTLED,
+                           constants.TREE_CLOSED])
 
-  acceptable_states = set(['open'])
-  verb = 'open'
-  if throttled_ok:
-    acceptable_states.add('throttled')
-    verb = 'not be closed'
+  def _get_status():
+    return _GetStatus(status_url)
 
-  def _SleepWithExponentialBackOff(current_sleep):
-    """Helper function to sleep with exponential backoff."""
-    time.sleep(current_sleep)
-    return current_sleep * 2
-
-  def _CanSubmit(status_url):
-    """Returns the JSON dictionary response from the status url."""
-    max_attempts = 5
-    current_sleep = 1
-    for _ in range(max_attempts):
-      try:
-        # Check for successful response code.
-        response = urllib.urlopen(status_url)
-        if response.getcode() == 200:
-          data = json.load(response)
-          return data['general_state'] in acceptable_states
-
-      # We remain robust against IOError's and retry.
-      except IOError as e:
-        logging.error('Could not reach %s: %r', status_url, e)
-
-      current_sleep = _SleepWithExponentialBackOff(current_sleep)
-    else:
-      # We go ahead and say the tree is open if we can't get the status.
-      Warning('Could not get a status from %s', status_url)
-      return True
-
-  # Loop until either we run out of time or the tree is open.
-  end_time = time.time() + max_timeout
-  while True:
-    time_left = end_time - time.time()
-    if _CanSubmit(status_url):
-      return True
-    elif time_left <= 0:
-      return False
-    Info('Waiting for the tree to %s (%d minutes left)...', verb,
-         time_left / 60)
-    time.sleep(sleep_timeout)
+  return WaitForReturnValue(acceptable_states, _get_status, timeout,
+                            polling_period)
 
 
 @contextlib.contextmanager

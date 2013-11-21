@@ -1419,8 +1419,8 @@ class ValidationPool(object):
       time_left = end_time - time.time()
 
       # Wait until the tree opens.
-      if check_tree_open and not cros_build_lib.TreeOpen(
-          cls.STATUS_URL, cls.SLEEP_TIMEOUT, max_timeout=time_left,
+      if check_tree_open and not cros_build_lib.IsTreeOpen(
+          cls.STATUS_URL, cls.SLEEP_TIMEOUT, timeout=time_left,
           throttled_ok=throttled_ok):
         raise TreeIsClosedException(closed_or_throttled=not throttled_ok)
 
@@ -1791,9 +1791,10 @@ class ValidationPool(object):
       self.UpdateCLStatus(self.bot, change, self.STATUS_PASSED,
                           dry_run=self.dryrun)
 
-    if check_tree_open and not self.dryrun and not cros_build_lib.TreeOpen(
-        self.STATUS_URL, self.SLEEP_TIMEOUT, max_timeout=self.MAX_TIMEOUT,
-        throttled_ok=throttled_ok):
+    if (check_tree_open and not self.dryrun and not
+       cros_build_lib.IsTreeOpen(self.STATUS_URL, self.SLEEP_TIMEOUT,
+                                      timeout=self.MAX_TIMEOUT,
+                                      throttled_ok=throttled_ok)):
       raise TreeIsClosedException(close_or_throttled=not throttled_ok)
 
     # First, reload all of the changes from the Gerrit server so that we have a

@@ -1571,8 +1571,8 @@ class PreCQLauncherStage(SyncStage):
     verified by either the Pre-CQ or CQ.
     """
     # Submit non-manifest changes if we can.
-    if cros_build_lib.TreeOpen(
-        validation_pool.ValidationPool.STATUS_URL, 0, max_timeout=0):
+    if cros_build_lib.IsTreeOpen(
+        validation_pool.ValidationPool.STATUS_URL):
       pool.SubmitNonManifestChanges(check_tree_open=False)
 
     # Launch trybots for manifest changes.

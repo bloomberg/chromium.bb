@@ -1778,7 +1778,7 @@ class BaseCQTest(StageTest):
                      return_value=committed, autospec=True)
     self.PatchObject(gerrit.GerritOnBorgHelper, 'Query',
                      return_value=my_patches, autospec=True)
-    self.PatchObject(cros_build_lib, 'TreeOpen', return_value=tree_open,
+    self.PatchObject(cros_build_lib, 'IsTreeOpen', return_value=tree_open,
                      autospec=True)
     exit_it = itertools.chain([False] * runs, itertools.repeat(True))
     self.PatchObject(validation_pool.ValidationPool, 'ShouldExitEarly',

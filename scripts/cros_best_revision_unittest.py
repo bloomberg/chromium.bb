@@ -116,7 +116,7 @@ class ChromeCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
   def testCommitNewLKGM(self):
     """Tests that we can commit a new LKGM file."""
     self.committer._lkgm = '4.0.0'
-    self.PatchObject(cros_build_lib, 'TreeOpen', return_value=True)
+    self.PatchObject(cros_build_lib, 'IsTreeOpen', return_value=True)
     self.committer.CommitNewLKGM()
 
     # Check the file was actually written out correctly.
