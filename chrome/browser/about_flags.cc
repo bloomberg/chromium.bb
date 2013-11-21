@@ -1815,11 +1815,11 @@ const Experiment kExperiments[] = {
   },
 #if defined(TOOLKIT_VIEWS)
   {
-    "views-use-rect-based-targeting",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_VIEWS_USE_RECT_BASED_TARGETING_NAME,
-    IDS_FLAGS_VIEWS_USE_RECT_BASED_TARGETING_DESCRIPTION,
+    "disable-views-rect-based-targeting",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_DISABLE_VIEWS_RECT_BASED_TARGETING_NAME,
+    IDS_FLAGS_DISABLE_VIEWS_RECT_BASED_TARGETING_DESCRIPTION,
     kOsCrOS | kOsWin,
-    SINGLE_VALUE_TYPE(views::switches::kViewsUseRectBasedTargeting)
+    SINGLE_VALUE_TYPE(views::switches::kDisableViewsRectBasedTargeting)
   },
 #endif
   {

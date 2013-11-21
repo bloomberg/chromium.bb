@@ -13,11 +13,16 @@ namespace switches {
 
 // Specifies if a heuristic should be used to determine the most probable
 // target of a gesture, where the touch region is represented by a rectangle.
-const char kViewsUseRectBasedTargeting[] = "views-use-rect-based-targeting";
+const char kDisableViewsRectBasedTargeting[] =
+    "disable-views-rect-based-targeting";
 
-bool UseRectBasedTargeting() {
-  return CommandLine::ForCurrentProcess()->
-      HasSwitch(kViewsUseRectBasedTargeting);
+bool IsRectBasedTargetingEnabled() {
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+  return !CommandLine::ForCurrentProcess()->
+      HasSwitch(kDisableViewsRectBasedTargeting);
+#else
+  return false;
+#endif
 }
 
 }  // namespace switches

@@ -288,7 +288,8 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
   }
 
   View* gesture_handler = NULL;
-  if (views::switches::UseRectBasedTargeting()) {
+  if (views::switches::IsRectBasedTargetingEnabled() &&
+      !event->details().bounding_box().IsEmpty()) {
     // TODO(tdanderson): Pass in the bounding box to GetEventHandlerForRect()
     // once crbug.com/313392 is resolved.
     gfx::Rect touch_rect(event->details().bounding_box());

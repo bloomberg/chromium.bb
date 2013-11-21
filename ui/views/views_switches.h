@@ -13,10 +13,10 @@ namespace views {
 namespace switches {
 
 // Please keep alphabetized.
-VIEWS_EXPORT extern const char kViewsUseRectBasedTargeting[];
+VIEWS_EXPORT extern const char kDisableViewsRectBasedTargeting[];
 
 // Returns true if rect-based targeting in views should be used.
-VIEWS_EXPORT bool UseRectBasedTargeting();
+VIEWS_EXPORT bool IsRectBasedTargetingEnabled();
 
 }  // namespace switches
 }  // namespace views
