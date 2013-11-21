@@ -206,7 +206,6 @@ CSSParser::CSSParser(const CSSParserContext& context, UseCounter* counter)
     , m_allowImportRules(true)
     , m_allowNamespaceDeclarations(true)
     , m_inViewport(false)
-    , m_internal(true)
     , m_useCounter(counter)
     , m_tokenizer(*this)
 {
@@ -242,7 +241,7 @@ void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, cons
     m_tokenizer.m_lineNumber = 0;
     m_startPosition = startPosition;
     m_source = &string;
-    m_internal = false;
+    m_tokenizer.m_internal = false;
     setupParser("", string, "");
     cssyyparse(this);
     sheet->shrinkToFit();
@@ -252,7 +251,7 @@ void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, cons
     m_lineEndings.clear();
     m_ignoreErrors = false;
     m_logErrors = false;
-    m_internal = true;
+    m_tokenizer.m_internal = true;
 }
 
 PassRefPtr<StyleRuleBase> CSSParser::parseRule(StyleSheetContents* sheet, const String& string)

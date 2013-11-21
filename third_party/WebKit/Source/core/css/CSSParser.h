@@ -78,7 +78,6 @@ struct CSSParserLocation {
 
 class CSSParser {
     friend inline int cssyylex(void*, CSSParser*);
-    friend class CSSTokenizer;
 
 public:
     class SourceDataHandler;
@@ -544,8 +543,6 @@ private:
     bool parseViewportShorthand(CSSPropertyID propId, CSSPropertyID first, CSSPropertyID second, bool important);
 
     bool m_inViewport;
-
-    bool m_internal;
 
     CSSParserLocation m_locationLabel;
 

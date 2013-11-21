@@ -49,6 +49,7 @@ public:
         , m_token(0)
         , m_lineNumber(0)
         , m_tokenStartLineNumber(0)
+        , m_internal(true)
     {
         m_tokenStart.ptr8 = 0;
     }
@@ -166,6 +167,10 @@ private:
     int m_token;
     int m_lineNumber;
     int m_tokenStartLineNumber;
+
+    // FIXME: This boolean is misnamed. Also it would be nice if we could consolidate it
+    // with the CSSParserMode logic to determine if internal properties are allowed.
+    bool m_internal;
 
     int (CSSTokenizer::*m_lexFunc)(void*);
 };

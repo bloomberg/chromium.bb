@@ -1013,7 +1013,7 @@ inline void CSSTokenizer::detectAtToken(int length, bool hasEscape)
             m_token = VIEWPORT_RULE_SYM;
         }
         CASE("-internal-rule") {
-            if (LIKELY(!hasEscape && m_parser.m_internal))
+            if (LIKELY(!hasEscape && m_internal))
                 m_token = INTERNAL_RULE_SYM;
         }
         CASE("-webkit-region") {
@@ -1025,37 +1025,37 @@ inline void CSSTokenizer::detectAtToken(int length, bool hasEscape)
                 m_token = WEBKIT_FILTER_RULE_SYM;
         }
         CASE("-internal-decls") {
-            if (LIKELY(!hasEscape && m_parser.m_internal))
+            if (LIKELY(!hasEscape && m_internal))
                 m_token = INTERNAL_DECLS_SYM;
         }
         CASE("-internal-value") {
-            if (LIKELY(!hasEscape && m_parser.m_internal))
+            if (LIKELY(!hasEscape && m_internal))
                 m_token = INTERNAL_VALUE_SYM;
         }
         CASE("-webkit-keyframes") {
             m_token = WEBKIT_KEYFRAMES_SYM;
         }
         CASE("-internal-selector") {
-            if (LIKELY(!hasEscape && m_parser.m_internal))
+            if (LIKELY(!hasEscape && m_internal))
                 m_token = INTERNAL_SELECTOR_SYM;
         }
         CASE("-internal-medialist") {
-            if (!m_parser.m_internal)
+            if (!m_internal)
                 return;
             m_parsingMode = MediaQueryMode;
             m_token = INTERNAL_MEDIALIST_SYM;
         }
         CASE("-internal-keyframe-rule") {
-            if (LIKELY(!hasEscape && m_parser.m_internal))
+            if (LIKELY(!hasEscape && m_internal))
                 m_token = INTERNAL_KEYFRAME_RULE_SYM;
         }
         CASE("-internal-keyframe-key-list") {
-            if (!m_parser.m_internal)
+            if (!m_internal)
                 return;
             m_token = INTERNAL_KEYFRAME_KEY_LIST_SYM;
         }
         CASE("-internal-supports-condition") {
-            if (!m_parser.m_internal)
+            if (!m_internal)
                 return;
             m_parsingMode = SupportsMode;
             m_token = INTERNAL_SUPPORTS_CONDITION_SYM;
