@@ -54,8 +54,6 @@
         'public/test/mock_resource_context.h',
         'public/test/nested_message_pump_android.cc',
         'public/test/nested_message_pump_android.h',
-        'public/test/render_view_fake_resources_test.cc',
-        'public/test/render_view_fake_resources_test.h',
         'public/test/render_view_test.cc',
         'public/test/render_view_test.h',
         'public/test/render_widget_test.cc',
