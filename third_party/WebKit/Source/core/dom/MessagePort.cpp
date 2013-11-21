@@ -34,39 +34,16 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/events/MessageEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/DOMWindow.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebString.h"
+#include "wtf/Functional.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
-
-namespace {
-
-class DispatchMessagesTask : public ExecutionContextTask {
-public:
-    explicit DispatchMessagesTask(WeakPtr<MessagePort> port)
-        : m_port(port)
-    {
-    }
-
-private:
-
-    virtual void performTask(ExecutionContext*) OVERRIDE
-    {
-        MessagePort* port = m_port.get();
-        if (port && port->started())
-            port->dispatchMessages();
-    }
-
-    WeakPtr<MessagePort> m_port;
-};
-
-} // namespace
 
 PassRefPtr<MessagePort> MessagePort::create(ExecutionContext& executionContext)
 {
@@ -133,7 +110,7 @@ PassOwnPtr<blink::WebMessagePortChannel> MessagePort::disentangle()
 void MessagePort::messageAvailable()
 {
     ASSERT(executionContext());
-    executionContext()->postTask(adoptPtr(new DispatchMessagesTask(m_weakFactory.createWeakPtr())));
+    executionContext()->postTask(bind(&MessagePort::dispatchMessages, m_weakFactory.createWeakPtr()));
 }
 
 void MessagePort::start()
@@ -192,7 +169,8 @@ void MessagePort::dispatchMessages()
 {
     // Messages for contexts that are not fully active get dispatched too, but JSAbstractEventListener::handleEvent() doesn't call handlers for these.
     // The HTML5 spec specifies that any messages sent to a document that is not fully active should be dropped, so this behavior is OK.
-    ASSERT(started());
+    if (!started())
+        return;
 
     RefPtr<SerializedScriptValue> message;
     OwnPtr<MessagePortChannelArray> channels;

@@ -91,7 +91,6 @@ namespace WebCore {
     private:
         friend class MessageWorkerTask;
         friend class PostMessageToPageInspectorTask;
-        friend class WorkerGlobalScopeDestroyedTask;
         friend class WorkerExceptionTask;
         friend class WorkerThreadActivityReportTask;
 

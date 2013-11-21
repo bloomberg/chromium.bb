@@ -32,13 +32,13 @@
 #include "modules/webdatabase/SQLTransactionClient.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDatabaseObserver.h"
+#include "wtf/Functional.h"
 
 namespace WebCore {
 
@@ -51,32 +51,11 @@ static void databaseModified(DatabaseBackendBase* database)
     }
 }
 
-class NotifyDatabaseChangedTask : public ExecutionContextTask {
-public:
-    static PassOwnPtr<NotifyDatabaseChangedTask> create(DatabaseBackendBase *database)
-    {
-        return adoptPtr(new NotifyDatabaseChangedTask(database));
-    }
-
-    virtual void performTask(ExecutionContext*)
-    {
-        databaseModified(m_database.get());
-    }
-
-private:
-    NotifyDatabaseChangedTask(PassRefPtr<DatabaseBackendBase> database)
-        : m_database(database)
-    {
-    }
-
-    RefPtr<DatabaseBackendBase> m_database;
-};
-
 void SQLTransactionClient::didCommitWriteTransaction(DatabaseBackendBase* database)
 {
     ExecutionContext* executionContext = database->databaseContext()->executionContext();
     if (!executionContext->isContextThread()) {
-        executionContext->postTask(NotifyDatabaseChangedTask::create(database));
+        executionContext->postTask(bind(&databaseModified, PassRefPtr<DatabaseBackendBase>(database)));
         return;
     }
 

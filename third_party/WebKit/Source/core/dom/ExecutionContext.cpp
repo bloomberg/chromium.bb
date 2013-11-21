@@ -47,9 +47,9 @@ namespace {
 
 class CallClosureTask : public ExecutionContextTask {
 public:
-    static PassOwnPtr<ExecutionContextTask> create(const Closure& closure)
+    static PassOwnPtr<CallClosureTask> create(const Closure& closure)
     {
-        return adoptPtr(static_cast<ExecutionContextTask*>(new CallClosureTask(closure)));
+        return adoptPtr(new CallClosureTask(closure));
     }
 
     virtual void performTask(ExecutionContext*)

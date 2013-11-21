@@ -86,8 +86,6 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
     MessagePort* toMessagePort() OVERRIDE { return this; }
 
-    void dispatchMessages();
-
     // ActiveDOMObject implementation.
     virtual bool hasPendingActivity() const OVERRIDE;
     virtual void stop() OVERRIDE { close(); }
@@ -110,6 +108,7 @@ private:
 
     // WebMessagePortChannelClient implementation.
     virtual void messageAvailable() OVERRIDE;
+    void dispatchMessages();
 
     OwnPtr<blink::WebMessagePortChannel> m_entangledChannel;
 
