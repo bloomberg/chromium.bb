@@ -53,16 +53,12 @@ using content::UserMetricsAction;
 using extensions::Extension;
 using extensions::UpdatedExtensionPermissionsInfo;
 
-namespace {
-const int kInvalidExtensionIndex = -1;
-}
-
 BackgroundModeManager::BackgroundModeData::BackgroundModeData(
-    Profile* profile,
-    CommandIdExtensionVector* command_id_extension_vector)
+    int command_id,
+    Profile* profile)
     : applications_(new BackgroundApplicationListModel(profile)),
-      profile_(profile),
-      command_id_extension_vector_(command_id_extension_vector) {
+      command_id_(command_id),
+      profile_(profile) {
 }
 
 BackgroundModeManager::BackgroundModeData::~BackgroundModeData() {
@@ -71,20 +67,17 @@ BackgroundModeManager::BackgroundModeData::~BackgroundModeData() {
 ///////////////////////////////////////////////////////////////////////////////
 //  BackgroundModeManager::BackgroundModeData, StatusIconMenuModel overrides
 void BackgroundModeManager::BackgroundModeData::ExecuteCommand(
-    int command_id,
+    int item,
     int event_flags) {
-  switch (command_id) {
+  switch (item) {
     case IDC_MinimumLabelValue:
       // Do nothing. This is just a label.
       break;
     default:
-      // Launch the app associated with this Command ID.
-      int extension_index = command_id_extension_vector_->at(command_id);
-      if (extension_index != kInvalidExtensionIndex) {
-        const Extension* extension =
-            applications_->GetExtension(extension_index);
-        BackgroundModeManager::LaunchBackgroundApplication(profile_, extension);
-      }
+      // Launch the app associated with this item.
+      const Extension* extension = applications_->
+          GetExtension(item);
+      BackgroundModeManager::LaunchBackgroundApplication(profile_, extension);
       break;
   }
 }
@@ -119,11 +112,7 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
       const gfx::ImageSkia* icon = applications_->GetIcon(cursor->get());
       DCHECK(position == applications_->GetPosition(cursor->get()));
       const std::string& name = (*cursor)->name();
-      int command_id = command_id_extension_vector_->size();
-      // Check that the command ID is within the dynamic range.
-      DCHECK(command_id < IDC_MinimumLabelValue);
-      command_id_extension_vector_->push_back(position);
-      menu->AddItem(command_id, UTF8ToUTF16(name));
+      menu->AddItem(position, UTF8ToUTF16(name));
       if (icon)
         menu->SetIcon(menu->GetItemCount() - 1, gfx::Image(*icon));
 
@@ -139,17 +128,12 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
       if ((*cursor)->location() == extensions::Manifest::COMPONENT) {
         GURL options_page = extensions::ManifestURL::GetOptionsPage(*cursor);
         if (!options_page.is_valid())
-          menu->SetCommandIdEnabled(command_id, false);
+          menu->SetCommandIdEnabled(position, false);
       }
     }
   }
-  if (containing_menu) {
-    int menu_command_id = command_id_extension_vector_->size();
-    // Check that the command ID is within the dynamic range.
-    DCHECK(menu_command_id < IDC_MinimumLabelValue);
-    command_id_extension_vector_->push_back(kInvalidExtensionIndex);
-    containing_menu->AddSubMenu(menu_command_id, name_, menu);
-  }
+  if (containing_menu)
+    containing_menu->AddSubMenu(command_id_, name_, menu);
 }
 
 void BackgroundModeManager::BackgroundModeData::SetName(
@@ -182,7 +166,8 @@ BackgroundModeManager::BackgroundModeManager(
       keep_alive_for_startup_(false),
       keep_alive_for_test_(false),
       background_mode_suspended_(false),
-      keeping_alive_(false) {
+      keeping_alive_(false),
+      current_command_id_(0) {
   // We should never start up if there is no browser process or if we are
   // currently quitting.
   CHECK(g_browser_process != NULL);
@@ -262,8 +247,8 @@ void BackgroundModeManager::RegisterPrefs(PrefRegistrySimple* registry) {
 void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // We don't want to register multiple times for one profile.
   DCHECK(background_mode_data_.find(profile) == background_mode_data_.end());
-  BackgroundModeInfo bmd(new BackgroundModeData(profile,
-                                                &command_id_extension_vector_));
+  BackgroundModeInfo bmd(new BackgroundModeData(current_command_id_++,
+                                                profile));
   background_mode_data_[profile] = bmd;
 
   // Initially set the name for this background mode data.
@@ -714,9 +699,6 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
     DCHECK(keep_alive_for_test_);
     return;
   }
-
-  // We are building a new menu. Reset the Command IDs.
-  command_id_extension_vector_.clear();
 
   // TODO(rlp): Add current profile color or indicator.
   // Create a context menu item for Chrome.
