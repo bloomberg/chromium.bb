@@ -56,6 +56,10 @@ internal::LauncherButton* ShelfViewTestAPI::GetButton(int index) {
       shelf_view_->view_model_->view_at(index));
 }
 
+int ShelfViewTestAPI::GetFirstVisibleIndex() {
+  return shelf_view_->first_visible_index_;
+}
+
 int ShelfViewTestAPI::GetLastVisibleIndex() {
   return shelf_view_->last_visible_index_;
 }
@@ -118,6 +122,10 @@ bool ShelfViewTestAPI::SameDragType(LauncherItemType typea,
 
 void ShelfViewTestAPI::SetLauncherDelegate(LauncherDelegate* delegate) {
   shelf_view_->delegate_ = delegate;
+}
+
+gfx::Rect ShelfViewTestAPI::GetBoundsForDragInsertInScreen() {
+  return shelf_view_->GetBoundsForDragInsertInScreen();
 }
 
 }  // namespace test
