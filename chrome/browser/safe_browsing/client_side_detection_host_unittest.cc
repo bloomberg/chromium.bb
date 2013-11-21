@@ -293,6 +293,10 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     csd_host_->browse_info_->url_redirects = redirect_chain;
   }
 
+  void SetReferrer(const GURL& referrer) {
+    csd_host_->browse_info_->referrer = referrer;
+  }
+
   void SetUnsafeResourceToCurrent() {
     UnsafeResource resource;
     resource.url = GURL("http://www.malware.com/");
@@ -725,6 +729,7 @@ TEST_F(ClientSideDetectionHostTest,
 
   ClientMalwareRequest malware_verdict;
   malware_verdict.set_url(verdict.url());
+  malware_verdict.set_referrer_url("http://referrer.com/");
   ClientMalwareRequest::Feature* feature = malware_verdict.add_feature_map();
   feature->set_name("malwareip1.2.3.4");
   feature->set_value(1.0);
@@ -738,6 +743,7 @@ TEST_F(ClientSideDetectionHostTest,
       .WillOnce(DeleteArg<0>());
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _)).Times(0);
 
+  SetReferrer(GURL("http://referrer.com/"));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
 }
@@ -780,6 +786,9 @@ TEST_F(ClientSideDetectionHostTest,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(SaveArg<1>(&cb));
+
+  // Referrer url using https won't be set and sent out.
+  SetReferrer(GURL("https://referrer.com/"));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));

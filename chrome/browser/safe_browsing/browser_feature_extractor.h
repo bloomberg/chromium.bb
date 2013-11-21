@@ -56,6 +56,9 @@ struct BrowseInfo {
   std::vector<GURL> host_redirects;
   std::vector<GURL> url_redirects;
 
+  // URL of the referrer of this URL load.
+  GURL referrer;
+
   // The HTTP status code from this navigation.
   int http_status_code;
 

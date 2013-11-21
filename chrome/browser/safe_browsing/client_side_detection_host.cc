@@ -331,6 +331,7 @@ void ClientSideDetectionHost::DidNavigateMainFrame(
   }
   browse_info_->host_redirects = cur_host_redirects_;
   browse_info_->url_redirects = params.redirects;
+  browse_info_->referrer = params.referrer.url;
   browse_info_->http_status_code = details.http_status_code;
 
   // Notify the renderer if it should classify this URL.
@@ -404,6 +405,10 @@ void ClientSideDetectionHost::OnPhishingDetectionDone(
       // Start browser-side malware feature extraction.  Once we're done it will
       // send the malware client verdict request.
       malware_verdict->set_url(verdict->url());
+      const GURL& referrer = browse_info_->referrer;
+      if (referrer.SchemeIs("http")) {  // Only send http urls.
+          malware_verdict->set_referrer_url(referrer.spec());
+      }
       // This function doesn't expect browse_info_ to stay around after this
       // function returns.
       feature_extractor_->ExtractMalwareFeatures(
