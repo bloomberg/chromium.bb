@@ -860,6 +860,35 @@
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_32" file="settings_app_icon_32.png" />
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_48" file="settings_app_icon_48.png" />
       </if>
+      <if expr="pp_ifdef('toolkit_views')">
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_BROKENSSL_BOTTOM_LEFT" file="common/chip_brokenssl_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_BROKENSSL_BOTTOM" file="common/chip_brokenssl_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_BROKENSSL_BOTTOM_RIGHT" file="common/chip_brokenssl_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_BROKENSSL_CENTER" file="common/chip_brokenssl_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_BROKENSSL_RIGHT" file="common/chip_brokenssl_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_BROKENSSL_LEFT" file="common/chip_brokenssl_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_BROKENSSL_TOP_LEFT" file="common/chip_brokenssl_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_BROKENSSL_TOP_RIGHT" file="common/chip_brokenssl_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_BROKENSSL_TOP" file="common/chip_brokenssl_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_EV_BOTTOM_LEFT" file="common/chip_extended_validation_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_EV_BOTTOM" file="common/chip_extended_validation_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_EV_BOTTOM_RIGHT" file="common/chip_extended_validation_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_EV_CENTER" file="common/chip_extended_validation_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_EV_RIGHT" file="common/chip_extended_validation_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_EV_LEFT" file="common/chip_extended_validation_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_EV_TOP_LEFT" file="common/chip_extended_validation_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_EV_TOP_RIGHT" file="common/chip_extended_validation_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_EV_TOP" file="common/chip_extended_validation_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_MALWARE_BOTTOM_LEFT" file="common/chip_malware_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_MALWARE_BOTTOM" file="common/chip_malware_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_MALWARE_BOTTOM_RIGHT" file="common/chip_malware_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_MALWARE_CENTER" file="common/chip_malware_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_MALWARE_RIGHT" file="common/chip_malware_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_MALWARE_LEFT" file="common/chip_malware_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_MALWARE_TOP_LEFT" file="common/chip_malware_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_MALWARE_TOP_RIGHT" file="common/chip_malware_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_MALWARE_TOP" file="common/chip_malware_top.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="common/favicon_settings.png" />
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BUTTON_HOVER_TOP_LEFT" file="common/toolbar_button_hover_top_left.png" />
