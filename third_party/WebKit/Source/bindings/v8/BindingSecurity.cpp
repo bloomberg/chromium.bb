@@ -61,7 +61,8 @@ static bool canAccessDocument(Document* targetDocument, ExceptionState& exceptio
     if (isDocumentAccessibleFromDOMWindow(targetDocument, activeWindow))
         return true;
 
-    exceptionState.throwSecurityError(targetDocument->domWindow()->sanitizedCrossDomainAccessErrorMessage(activeWindow), targetDocument->domWindow()->crossDomainAccessErrorMessage(activeWindow));
+    if (targetDocument->domWindow())
+        exceptionState.throwSecurityError(targetDocument->domWindow()->sanitizedCrossDomainAccessErrorMessage(activeWindow), targetDocument->domWindow()->crossDomainAccessErrorMessage(activeWindow));
     return false;
 }
 
@@ -71,7 +72,7 @@ static bool canAccessDocument(Document* targetDocument, SecurityReportingOption 
     if (isDocumentAccessibleFromDOMWindow(targetDocument, activeWindow))
         return true;
 
-    if (reportingOption == ReportSecurityError) {
+    if (reportingOption == ReportSecurityError && targetDocument->domWindow()) {
         if (Frame* frame = targetDocument->frame())
             frame->domWindow()->printErrorMessage(targetDocument->domWindow()->crossDomainAccessErrorMessage(activeWindow));
     }

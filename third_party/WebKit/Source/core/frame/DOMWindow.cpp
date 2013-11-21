@@ -1688,6 +1688,9 @@ void DOMWindow::printErrorMessage(const String& message)
 // http://crbug.com/17325
 String DOMWindow::sanitizedCrossDomainAccessErrorMessage(DOMWindow* activeWindow)
 {
+    if (!activeWindow || !activeWindow->document())
+        return String();
+
     const KURL& activeWindowURL = activeWindow->document()->url();
     if (activeWindowURL.isNull())
         return String();
@@ -1704,6 +1707,9 @@ String DOMWindow::sanitizedCrossDomainAccessErrorMessage(DOMWindow* activeWindow
 
 String DOMWindow::crossDomainAccessErrorMessage(DOMWindow* activeWindow)
 {
+    if (!activeWindow || !activeWindow->document())
+        return String();
+
     const KURL& activeWindowURL = activeWindow->document()->url();
     if (activeWindowURL.isNull())
         return String();
