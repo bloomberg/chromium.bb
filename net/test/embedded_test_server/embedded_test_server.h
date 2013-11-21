@@ -149,7 +149,7 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   bool PostTaskToIOThreadAndWait(
       const base::Closure& closure) WARN_UNUSED_RESULT;
 
-  base::Thread io_thread_;
+  scoped_ptr<base::Thread> io_thread_;
 
   scoped_ptr<HttpListenSocket> listen_socket_;
   int port_;
