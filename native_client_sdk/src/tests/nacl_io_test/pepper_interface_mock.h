@@ -58,8 +58,6 @@ class PepperInterfaceMock : public nacl_io::PepperInterface {
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
     BaseClass##Mock* BaseClass##interface_;
 #include "nacl_io/pepper/all_interfaces.h"
-
-  int dummy_;
 };
 
 

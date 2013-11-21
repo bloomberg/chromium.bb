@@ -7,8 +7,7 @@
       'TYPE' : 'main',
       'SOURCES' : ['testing.cc'],
       'LIBS' : ['ppapi_simple', 'nacl_io', 'ppapi_cpp', 'ppapi', 'gtest', 'pthread'],
-      'CXXFLAGS': ['-Wno-sign-compare', '-Wno-unused-private-field'],
-      'CFLAGS_GCC': ['-Wno-unused-local-typedefs'],
+      'CXXFLAGS': ['-Wno-sign-compare']
     }
   ],
   'DATA': [

@@ -5,22 +5,17 @@
 #include "pepper_interface_mock.h"
 
 PepperInterfaceMock::PepperInterfaceMock(PP_Instance instance)
-    : instance_(instance),
-
+    : instance_(instance) {
     // Initialize interfaces.
 #include "nacl_io/pepper/undef_macros.h"
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    BaseClass##interface_(new BaseClass##Mock),
+    BaseClass##interface_ = new BaseClass##Mock;
 #include "nacl_io/pepper/all_interfaces.h"
-
-    // Dummy value so we can ensure that no interface ends the initializer list.
-    dummy_(0) {
 }
 
 PepperInterfaceMock::~PepperInterfaceMock() {
-
   // Delete interfaces.
 #include "nacl_io/pepper/undef_macros.h"
 #include "nacl_io/pepper/define_empty_macros.h"
