@@ -65,12 +65,6 @@ public:
 
     inline bool haveBufferedCharacterToken() { return false; }
 
-    inline void bufferCharacter(UChar character)
-    {
-        ASSERT(character != kEndOfFileMarker);
-        m_token->appendToCharacter(character);
-    }
-
     inline bool advanceAndEmitToken(SegmentedString& source, VTTTokenTypes::Type type)
     {
         source.advanceAndUpdateLineNumber();

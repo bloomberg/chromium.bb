@@ -54,12 +54,6 @@ public:
 
     VTTToken() { clear(); }
 
-    void appendToName(UChar character)
-    {
-        ASSERT(character);
-        m_data.append(character);
-    }
-
     Type::Type type() const { return m_type; }
     void setType(Type::Type type) { m_type = type; }
 
@@ -73,60 +67,26 @@ public:
         return m_data;
     }
 
-    void appendToCharacter(char character)
+    void appendToData(char character)
     {
         m_data.append(character);
     }
 
-    void appendToCharacter(UChar character)
+    void appendToData(UChar character)
     {
         m_data.append(character);
     }
 
-    void appendToCharacter(const StringBuilder& characters)
+    void appendToData(const StringBuilder& characters)
     {
         m_data.append(characters);
     }
 
-    void beginEmptyStartTag()
-    {
-        m_data.clear();
-    }
-
-    void beginStartTag(UChar character)
-    {
-        ASSERT(character);
-        m_data.append(character);
-    }
-
-    void beginEndTag(LChar character)
-    {
-        m_data.append(character);
-    }
-
-    void beginTimestampTag(UChar character)
-    {
-        ASSERT(character);
-        m_data.append(character);
-    }
-
-    void appendToTimestamp(UChar character)
-    {
-        ASSERT(character);
-        m_data.append(character);
-    }
-
-    void appendToClass(UChar character)
-    {
-        appendToStartType(character);
-    }
-
-    void addNewClass()
+    void addNewClass(const StringBuilder& s)
     {
         if (!m_classes.isEmpty())
             m_classes.append(' ');
-        m_classes.append(m_currentBuffer);
-        m_currentBuffer.clear();
+        m_classes.append(s);
     }
 
     StringBuilder& classes()
@@ -134,16 +94,10 @@ public:
         return m_classes;
     }
 
-    void appendToAnnotation(UChar character)
-    {
-        appendToStartType(character);
-    }
-
-    void addNewAnnotation()
+    void addNewAnnotation(const StringBuilder& s)
     {
         m_annotation.clear();
-        m_annotation.append(m_currentBuffer);
-        m_currentBuffer.clear();
+        m_annotation.append(s);
     }
 
     StringBuilder& annotation()
@@ -157,21 +111,13 @@ public:
         m_data.clear();
         m_annotation.clear();
         m_classes.clear();
-        m_currentBuffer.clear();
     }
 
 private:
-    void appendToStartType(UChar character)
-    {
-        ASSERT(character);
-        m_currentBuffer.append(character);
-    }
-
     Type::Type m_type;
     StringBuilder m_data;
     StringBuilder m_annotation;
     StringBuilder m_classes;
-    StringBuilder m_currentBuffer;
 };
 
 }

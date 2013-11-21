@@ -102,7 +102,7 @@ bool VTTTokenizer::nextToken(VTTToken& token)
             } else if (cc == kEndOfFileMarker) {
                 return advanceAndEmitToken(source, VTTTokenTypes::Character);
             } else {
-                bufferCharacter(cc);
+                m_token->appendToData(cc);
                 WEBVTT_ADVANCE_TO(DataState);
             }
         }
@@ -111,20 +111,20 @@ bool VTTTokenizer::nextToken(VTTToken& token)
         WEBVTT_BEGIN_STATE(EscapeState) {
             if (cc == ';') {
                 if (equalLiteral(m_buffer, "&amp")) {
-                    bufferCharacter('&');
+                    m_token->appendToData('&');
                 } else if (equalLiteral(m_buffer, "&lt")) {
-                    bufferCharacter('<');
+                    m_token->appendToData('<');
                 } else if (equalLiteral(m_buffer, "&gt")) {
-                    bufferCharacter('>');
+                    m_token->appendToData('>');
                 } else if (equalLiteral(m_buffer, "&lrm")) {
-                    bufferCharacter(leftToRightMark);
+                    m_token->appendToData(leftToRightMark);
                 } else if (equalLiteral(m_buffer, "&rlm")) {
-                    bufferCharacter(rightToLeftMark);
+                    m_token->appendToData(rightToLeftMark);
                 } else if (equalLiteral(m_buffer, "&nbsp")) {
-                    bufferCharacter(noBreakSpace);
+                    m_token->appendToData(noBreakSpace);
                 } else {
                     m_buffer.append(static_cast<LChar>(cc));
-                    m_token->appendToCharacter(m_buffer);
+                    m_token->appendToData(m_buffer);
                 }
                 m_buffer.clear();
                 WEBVTT_ADVANCE_TO(DataState);
@@ -132,11 +132,11 @@ bool VTTTokenizer::nextToken(VTTToken& token)
                 m_buffer.append(static_cast<LChar>(cc));
                 WEBVTT_ADVANCE_TO(EscapeState);
             } else if (cc == kEndOfFileMarker) {
-                m_token->appendToCharacter(m_buffer);
+                m_token->appendToData(m_buffer);
                 return advanceAndEmitToken(source, VTTTokenTypes::Character);
             } else {
                 if (!equalLiteral(m_buffer, "&"))
-                    m_token->appendToCharacter(m_buffer);
+                    m_token->appendToData(m_buffer);
                 m_buffer.clear();
                 WEBVTT_ADVANCE_TO(DataState);
             }
@@ -145,21 +145,21 @@ bool VTTTokenizer::nextToken(VTTToken& token)
 
         WEBVTT_BEGIN_STATE(TagState) {
             if (isTokenizerWhitespace(cc)) {
-                m_token->beginEmptyStartTag();
+                ASSERT(m_token->name().isEmpty());
                 WEBVTT_ADVANCE_TO(StartTagAnnotationState);
             } else if (cc == '.') {
-                m_token->beginEmptyStartTag();
+                ASSERT(m_token->name().isEmpty());
                 WEBVTT_ADVANCE_TO(StartTagClassState);
             } else if (cc == '/') {
                 WEBVTT_ADVANCE_TO(EndTagState);
             } else if (WTF::isASCIIDigit(cc)) {
-                m_token->beginTimestampTag(cc);
+                m_token->appendToData(cc);
                 WEBVTT_ADVANCE_TO(TimestampTagState);
             } else if (cc == '>' || cc == kEndOfFileMarker) {
-                m_token->beginEmptyStartTag();
+                ASSERT(m_token->name().isEmpty());
                 return advanceAndEmitToken(source, VTTTokenTypes::StartTag);
             } else {
-                m_token->beginStartTag(cc);
+                m_token->appendToData(cc);
                 WEBVTT_ADVANCE_TO(StartTagState);
             }
         }
@@ -173,7 +173,7 @@ bool VTTTokenizer::nextToken(VTTToken& token)
             } else if (cc == '>' || cc == kEndOfFileMarker) {
                 return advanceAndEmitToken(source, VTTTokenTypes::StartTag);
             } else {
-                m_token->appendToName(cc);
+                m_token->appendToData(cc);
                 WEBVTT_ADVANCE_TO(StartTagState);
             }
         }
@@ -181,28 +181,31 @@ bool VTTTokenizer::nextToken(VTTToken& token)
 
         WEBVTT_BEGIN_STATE(StartTagClassState) {
             if (isTokenizerWhitespace(cc)) {
-                m_token->addNewClass();
+                m_token->addNewClass(m_buffer);
+                m_buffer.clear();
                 WEBVTT_ADVANCE_TO(StartTagAnnotationState);
             } else if (cc == '.') {
-                m_token->addNewClass();
+                m_token->addNewClass(m_buffer);
+                m_buffer.clear();
                 WEBVTT_ADVANCE_TO(StartTagClassState);
             } else if (cc == '>' || cc == kEndOfFileMarker) {
-                m_token->addNewClass();
+                m_token->addNewClass(m_buffer);
+                m_buffer.clear();
                 return advanceAndEmitToken(source, VTTTokenTypes::StartTag);
             } else {
-                m_token->appendToClass(cc);
+                m_buffer.append(cc);
                 WEBVTT_ADVANCE_TO(StartTagClassState);
             }
-
         }
         END_STATE()
 
         WEBVTT_BEGIN_STATE(StartTagAnnotationState) {
             if (cc == '>' || cc == kEndOfFileMarker) {
-                m_token->addNewAnnotation();
+                m_token->addNewAnnotation(m_buffer);
+                m_buffer.clear();
                 return advanceAndEmitToken(source, VTTTokenTypes::StartTag);
             }
-            m_token->appendToAnnotation(cc);
+            m_buffer.append(cc);
             WEBVTT_ADVANCE_TO(StartTagAnnotationState);
         }
         END_STATE()
@@ -210,7 +213,7 @@ bool VTTTokenizer::nextToken(VTTToken& token)
         WEBVTT_BEGIN_STATE(EndTagState) {
             if (cc == '>' || cc == kEndOfFileMarker)
                 return advanceAndEmitToken(source, VTTTokenTypes::EndTag);
-            m_token->appendToName(cc);
+            m_token->appendToData(cc);
             WEBVTT_ADVANCE_TO(EndTagState);
         }
         END_STATE()
@@ -218,7 +221,7 @@ bool VTTTokenizer::nextToken(VTTToken& token)
         WEBVTT_BEGIN_STATE(TimestampTagState) {
             if (cc == '>' || cc == kEndOfFileMarker)
                 return advanceAndEmitToken(source, VTTTokenTypes::TimestampTag);
-            m_token->appendToTimestamp(cc);
+            m_token->appendToData(cc);
             WEBVTT_ADVANCE_TO(TimestampTagState);
         }
         END_STATE()
