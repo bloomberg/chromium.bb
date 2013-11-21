@@ -744,9 +744,9 @@
         "description": "Formats a mounted volume",
         "parameters": [
           {
-            "name": "mountPath",
+            "name": "volumeId",
             "type": "string",
-            "description": "Volume's mount path."
+            "description": "ID of the volume to be formatted."
           }
         ]
       },

@@ -386,18 +386,22 @@ CommandHandler.COMMANDS_['format'] = {
    * @param {FileManager} fileManager The file manager instance.
    */
   execute: function(event, fileManager) {
+    var directoryModel = fileManager.directoryModel;
     var root = CommandUtil.getCommandEntry(event.target);
     // If an entry is not found from the event target, use the current
     // directory. This can happen for the format button for unsupported and
     // unrecognized volumes.
     if (!root)
-      root = fileManager.directoryModel.getCurrentDirEntry();
+      root = directoryModel.getCurrentDirEntry();
 
-    if (root) {
-      var url = util.makeFilesystemUrl(PathUtil.getRootPath(root.fullPath));
+    // TODO(satorux): Stop assuming fullPath to be unique. crbug.com/320967
+    var mountPath = root.fullPath;
+    var volumeInfo = fileManager.volumeManager.getVolumeInfo(mountPath);
+    if (volumeInfo) {
       fileManager.confirm.show(
           loadTimeData.getString('FORMATTING_WARNING'),
-          chrome.fileBrowserPrivate.formatDevice.bind(null, url));
+          chrome.fileBrowserPrivate.formatVolume.bind(null,
+                                                      volumeInfo.volumeId));
     }
   },
   /**

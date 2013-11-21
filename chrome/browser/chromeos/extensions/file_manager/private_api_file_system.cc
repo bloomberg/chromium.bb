@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -502,12 +503,18 @@ bool FileBrowserPrivateFormatVolumeFunction::RunImpl() {
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), GetProfile(), GURL(params->mount_path));
-  if (file_path.empty())
+  using file_manager::VolumeManager;
+  using file_manager::VolumeInfo;
+  VolumeManager* volume_manager = VolumeManager::Get(GetProfile());
+  if (!volume_manager)
     return false;
 
-  DiskMountManager::GetInstance()->FormatMountedDevice(file_path.value());
+  VolumeInfo volume_info;
+  if (!volume_manager->FindVolumeInfoById(params->volume_id, &volume_info))
+    return false;
+
+  DiskMountManager::GetInstance()->FormatMountedDevice(
+      volume_info.mount_path.AsUTF8Unsafe());
   SendResponse(true);
   return true;
 }

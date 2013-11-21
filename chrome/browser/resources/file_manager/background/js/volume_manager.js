@@ -10,6 +10,7 @@
  *
  * @param {util.VolumeType} volumeType The type of the volume.
  * @param {string} mountPath Where the volume is mounted.
+ * @param {string} volumeId ID of the volume.
  * @param {DirectoryEntry} root The root directory entry of this volume.
  * @param {string} error The error if an error is found.
  * @param {string} deviceType The type of device ('usb'|'sd'|'optical'|'mobile'
@@ -19,10 +20,11 @@
  * @constructor
  */
 function VolumeInfo(
-    volumeType, mountPath, root, error, deviceType, isReadOnly) {
+    volumeType, mountPath, volumeId, root, error, deviceType, isReadOnly) {
   this.volumeType = volumeType;
   // TODO(hidehiko): This should include FileSystem instance.
   this.mountPath = mountPath;
+  this.volumeId = volumeId;
   this.root = root;
 
   // Note: This represents if the mounting of the volume is successfully done
@@ -135,6 +137,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
         callback(new VolumeInfo(
             volumeMetadata.volumeType,
             volumeMetadata.mountPath,
+            volumeMetadata.volumeId,
             entry,
             volumeMetadata.mountCondition,
             volumeMetadata.deviceType,
@@ -147,6 +150,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
         callback(new VolumeInfo(
             volumeMetadata.volumeType,
             volumeMetadata.mountPath,
+            volumeMetadata.volumeId,
             null,  // Root entry is not found.
             volumeMetadata.mountCondition,
             volumeMetadata.deviceType,

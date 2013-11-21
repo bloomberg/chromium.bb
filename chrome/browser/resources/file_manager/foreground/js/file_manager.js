@@ -66,6 +66,9 @@ FileManager.prototype = {
   },
   get backgroundPage() {
     return this.backgroundPage_;
+  },
+  get volumeManager() {
+    return this.volumeManager_;
   }
 };
 
