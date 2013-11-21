@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "ui/aura/remote_root_window_host_win.h"
 
@@ -23,9 +24,14 @@ void BrowserFrameAshWin::OnWindowFocused(aura::Window* gained_focus,
   if (GetNativeWindow() != gained_focus)
     return;
 
+  // TODO(shrikant): We need better way to handle chrome activation.
+  // There may be cases where focus events do not follow a user
+  // action to create or focus a window
+
   // If the activated window is in Metro mode, and the viewer process window is
   // not in the foreground, activate Metro Chrome.
-  if (!aura::RemoteRootWindowHostWin::Instance()->IsForegroundWindow()) {
+  if (!aura::RemoteRootWindowHostWin::Instance()->IsForegroundWindow() &&
+      !browser_shutdown::IsTryingToQuit()) {
     // PostTask because ActivateMetroChrome can not be called nested in another
     // ::SendMessage().
     base::MessageLoop::current()->PostTask(
