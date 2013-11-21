@@ -62,6 +62,7 @@ void CreateShortcutInWebAppDir(
 void PopulateUsers(const ProfileInfoCache& profile_info,
                    const base::FilePath& active_profile_path,
                    app_list::AppListViewDelegate::Users* users) {
+  users->clear();
   const size_t count = profile_info.GetNumberOfProfiles();
   for (size_t i = 0; i < count; ++i) {
     // Don't display managed users.
