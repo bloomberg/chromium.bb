@@ -11,7 +11,7 @@ try {
     e = err;
 }
 
-shouldBeEqualToString("e.toString()", "TypeError: Type error");
+shouldBeEqualToString("e.toString()", "TypeError: Failed to read the 'numberValue' property from 'XPathResult': The result type is not a number.");
 shouldBeEqualToString("Object.prototype.toString.call(e)", "[object Error]");
 shouldBeEqualToString("Object.prototype.toString.call(e.__proto__)", "[object Error]");
 shouldBeEqualToString("e.constructor.toString()", "function TypeError() { [native code] }");

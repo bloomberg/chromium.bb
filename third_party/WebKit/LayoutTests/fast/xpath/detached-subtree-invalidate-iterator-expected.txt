@@ -4,7 +4,7 @@ PASS result.invalidIteratorState is false
 PASS result.iterateNext().tagName is 'span'
 Modifying the document...
 PASS result.invalidIteratorState is true
-PASS result.iterateNext() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS result.iterateNext() threw exception InvalidStateError: Failed to execute 'iterateNext' on 'XPathResult': The document has mutated since the result was returned..
 PASS successfullyParsed is true
 
 TEST COMPLETE
