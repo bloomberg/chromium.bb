@@ -181,11 +181,6 @@ void FrameLoader::init()
     m_progressTracker = FrameProgressTracker::create(m_frame);
 }
 
-HistoryController* FrameLoader::history() const
-{
-    return m_frame->page() ? m_frame->page()->history() : 0;
-}
-
 void FrameLoader::setDefersLoading(bool defers)
 {
     if (m_documentLoader)
@@ -223,10 +218,35 @@ void FrameLoader::stopLoading()
     m_frame->navigationScheduler().cancel();
 }
 
+void FrameLoader::saveDocumentAndScrollState()
+{
+    if (!m_currentItem)
+        return;
+
+    Document* document = m_frame->document();
+    if (m_currentItem->isCurrentDocument(document) && document->isActive())
+        m_currentItem->setDocumentState(document->formElementsState());
+
+    if (!m_frame->view())
+        return;
+
+    m_currentItem->setScrollPoint(m_frame->view()->scrollPosition());
+    if (m_frame->isMainFrame() && !m_frame->page()->inspectorController().deviceEmulationEnabled())
+        m_currentItem->setPageScaleFactor(m_frame->page()->pageScaleFactor());
+}
+
+void FrameLoader::clearScrollPositionAndViewState()
+{
+    ASSERT(m_frame->isMainFrame());
+    if (!m_currentItem)
+        return;
+    m_currentItem->clearScrollPoint();
+    m_currentItem->setPageScaleFactor(0);
+}
+
 bool FrameLoader::closeURL()
 {
-    if (m_frame->page())
-        history()->saveDocumentAndScrollState(m_frame);
+    saveDocumentAndScrollState();
 
     // Should only send the pagehide event here if the current document exists.
     if (m_frame->document())

@@ -24,6 +24,7 @@
 #include "core/dom/ViewportDescription.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/frame/UseCounter.h"
+#include "core/loader/HistoryController.h"
 #include "core/rendering/Pagination.h"
 #include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
@@ -52,7 +53,6 @@ class FocusController;
 class Frame;
 class FrameSelection;
 class HaltablePlugin;
-class HistoryController;
 class HistoryItem;
 class InspectorClient;
 class InspectorController;

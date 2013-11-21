@@ -1011,7 +1011,7 @@ WebHistoryItem WebFrameImpl::currentHistoryItem() const
     // clobbering here?
     if (!frame()->page()->history()->inSameDocumentLoad() && (frame()->loader().loadType() == FrameLoadTypeStandard
         || !frame()->loader().activeDocumentLoader()->isLoadingInAPISense()))
-        frame()->page()->history()->saveDocumentAndScrollState(frame());
+        frame()->loader().saveDocumentAndScrollState();
 
     if (RefPtr<HistoryItem> item = frame()->page()->history()->provisionalItemForExport(frame()))
         return WebHistoryItem(item);
@@ -2187,13 +2187,9 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     if (!childFrame->tree().parent())
         return 0;
 
-    HistoryItem* childItem = 0;
     // If we're moving in the back/forward list, we might want to replace the content
     // of this child frame with whatever was there at that point.
-    if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished())
-        childItem = frame()->page()->history()->currentItem(childFrame.get());
-
-    if (childItem)
+    if (HistoryItem* childItem = frame()->page()->history()->itemForNewChildFrame(childFrame.get()))
         childFrame->loader().loadHistoryItem(childItem);
     else
         childFrame->loader().load(FrameLoadRequest(0, request.resourceRequest(), "_self"));

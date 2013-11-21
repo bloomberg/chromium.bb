@@ -37,9 +37,9 @@
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/CachePolicy.h"
 #include "core/fetch/ResourceLoaderOptions.h"
+#include "core/history/HistoryItem.h"
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/loader/FrameLoaderTypes.h"
-#include "core/loader/HistoryController.h"
 #include "core/loader/MixedContentChecker.h"
 #include "platform/Timer.h"
 #include "wtf/Forward.h"
@@ -208,10 +208,10 @@ public:
     void setCurrentItem(HistoryItem* item) { m_currentItem = item; }
     HistoryItem* currentItem() const { return m_currentItem.get(); }
     void restoreScrollPositionAndViewState();
+    void saveDocumentAndScrollState();
+    void clearScrollPositionAndViewState();
 
 private:
-    HistoryController* history() const;
-
     bool allChildrenAreComplete() const; // immediate children, not all descendants
 
     void completed();

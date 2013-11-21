@@ -129,39 +129,10 @@ HistoryController::~HistoryController()
 {
 }
 
-void HistoryController::clearScrollPositionAndViewState()
-{
-    if (!m_currentEntry)
-        return;
-
-    m_currentEntry->root()->clearScrollPoint();
-    m_currentEntry->root()->setPageScaleFactor(0);
-}
-
 void HistoryController::updateBackForwardListForFragmentScroll(Frame* frame)
 {
     m_provisionalEntry.clear();
     createNewBackForwardItem(frame, false);
-}
-
-void HistoryController::saveDocumentAndScrollState(Frame* frame)
-{
-    if (!m_currentEntry || !m_currentEntry->itemForFrame(frame))
-        return;
-
-    Document* document = frame->document();
-    ASSERT(document);
-    HistoryItem* item = m_currentEntry->itemForFrame(frame);
-
-    if (item->isCurrentDocument(document) && document->isActive())
-        item->setDocumentState(document->formElementsState());
-
-    if (!frame->view())
-        return;
-
-    item->setScrollPoint(frame->view()->scrollPosition());
-    if (frame->isMainFrame() && !m_page->inspectorController().deviceEmulationEnabled())
-        item->setPageScaleFactor(m_page->pageScaleFactor());
 }
 
 void HistoryController::goToEntry(PassOwnPtr<HistoryEntry> targetEntry)
@@ -325,14 +296,13 @@ PassRefPtr<HistoryItem> HistoryController::provisionalItemForExport(Frame* frame
     return historyNode ? itemForExport(historyNode) : 0;
 }
 
-HistoryItem* HistoryController::currentItem(Frame* frame) const
+HistoryItem* HistoryController::itemForNewChildFrame(Frame* frame) const
 {
-    return m_currentEntry ? m_currentEntry->itemForFrame(frame) : 0;
-}
-
-void HistoryController::clearProvisionalEntry()
-{
-    m_provisionalEntry.clear();
+    Frame* parent = frame->tree().parent();
+    ASSERT(parent);
+    if (!m_currentEntry || !isBackForwardLoadType(parent->loader().loadType()) || parent->document()->loadEventFinished())
+        return 0;
+    return m_currentEntry->itemForFrame(frame);
 }
 
 void HistoryController::initializeItem(HistoryItem* item, Frame* frame)

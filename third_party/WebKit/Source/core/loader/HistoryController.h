@@ -42,7 +42,6 @@ namespace WebCore {
 class Frame;
 class HistoryEntry;
 class Page;
-class SerializedScriptValue;
 
 
 // A guide to history state in Blink:
@@ -141,21 +140,13 @@ public:
     // navigation, call FrameLoaderClient::navigateBackForward().
     void goToItem(HistoryItem*);
 
-    void clearScrollPositionAndViewState();
-
     void updateBackForwardListForFragmentScroll(Frame*);
-
-    void saveDocumentAndScrollState(Frame*);
-
     void updateForCommit(Frame*);
 
     PassRefPtr<HistoryItem> currentItemForExport(Frame*);
     PassRefPtr<HistoryItem> previousItemForExport(Frame*);
     PassRefPtr<HistoryItem> provisionalItemForExport(Frame*);
-
-    HistoryItem* currentItem(Frame*) const;
-
-    void clearProvisionalEntry();
+    HistoryItem* itemForNewChildFrame(Frame*) const;
 
     bool inSameDocumentLoad() const { return !m_sameDocumentLoadsInProgress.isEmpty() && m_differentDocumentLoadsInProgress.isEmpty(); }
 
