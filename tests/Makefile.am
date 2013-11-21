@@ -11,6 +11,7 @@ module_tests =				\
 weston_test = weston-test.la
 
 weston_tests =				\
+	bad_buffer.weston		\
 	keyboard.weston			\
 	event.weston			\
 	button.weston			\
@@ -96,6 +97,9 @@ weston_test_client_libs =		\
 	$(SIMPLE_CLIENT_LIBS)		\
 	../shared/libshared.la		\
 	libshared-test.la
+
+bad_buffer_weston_SOURCES = bad-buffer-test.c $(weston_test_client_src)
+bad_buffer_weston_LDADD = $(weston_test_client_libs)
 
 keyboard_weston_SOURCES = keyboard-test.c $(weston_test_client_src)
 keyboard_weston_LDADD = $(weston_test_client_libs)
