@@ -472,10 +472,8 @@ gfx::Rect DownloadShelfView::GetFocusRectBounds(
     const DownloadItemView* download_item_view) {
   gfx::Rect bounds = download_item_view->bounds();
 
-#if defined(TOOLKIT_VIEWS)
   bounds.set_height(bounds.height() - 1);
   bounds.Offset(0, 3);
-#endif
 
   return bounds;
 }

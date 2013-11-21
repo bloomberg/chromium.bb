@@ -9,6 +9,7 @@ namespace internal {
 
 FixedSizedScrollView::FixedSizedScrollView() {
   set_notify_enter_exit_on_child(true);
+  set_focus_border(NULL);
 }
 
 FixedSizedScrollView::~FixedSizedScrollView() {

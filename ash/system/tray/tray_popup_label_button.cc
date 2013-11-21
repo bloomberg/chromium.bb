@@ -25,7 +25,7 @@ TrayPopupLabelButton::TrayPopupLabelButton(views::ButtonListener* listener,
 TrayPopupLabelButton::~TrayPopupLabelButton() {}
 
 void TrayPopupLabelButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+  if (HasFocus()) {
     canvas->DrawRect(gfx::Rect(1, 1, width() - 3, height() - 3),
                      ash::kFocusBorderColor);
   }

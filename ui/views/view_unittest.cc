@@ -27,6 +27,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/view_storage.h"
+#include "ui/views/focus_border.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
@@ -221,6 +222,15 @@ class TestView : public View {
     last_gesture_event_was_handled_ = false;
     last_clip_.setEmpty();
     accelerator_count_map_.clear();
+  }
+
+  // Exposed as public for testing.
+  void DoFocus() {
+    views::View::Focus();
+  }
+
+  void DoBlur() {
+    views::View::Blur();
   }
 
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
@@ -2187,6 +2197,41 @@ TEST_F(ViewTest, SetBoundsPaint) {
   gfx::Rect paint_rect = top_view.scheduled_paint_rects_[0];
   paint_rect.Union(top_view.scheduled_paint_rects_[1]);
   EXPECT_EQ(gfx::Rect(10, 10, 40, 40), paint_rect);
+}
+
+// Assertions around painting and focus gain/lost.
+TEST_F(ViewTest, FocusBlurPaints) {
+  TestView parent_view;
+  TestView* child_view1 = new TestView;  // Owned by |parent_view|.
+
+  parent_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+
+  child_view1->SetBoundsRect(gfx::Rect(0, 0, 20, 20));
+  parent_view.AddChildView(child_view1);
+
+  parent_view.scheduled_paint_rects_.clear();
+  child_view1->scheduled_paint_rects_.clear();
+
+  // If no FocusBorder is installed then focus changes shouldn't
+  // SchedulePaint().
+  child_view1->set_focus_border(NULL);
+  child_view1->DoFocus();
+
+  EXPECT_TRUE(parent_view.scheduled_paint_rects_.empty());
+  EXPECT_TRUE(child_view1->scheduled_paint_rects_.empty());
+
+  child_view1->DoBlur();
+  EXPECT_TRUE(parent_view.scheduled_paint_rects_.empty());
+  EXPECT_TRUE(child_view1->scheduled_paint_rects_.empty());
+
+  // Repeat with a FocusBorder, should now paint.
+  child_view1->set_focus_border(FocusBorder::CreateDashedFocusBorder());
+  child_view1->DoFocus();
+  EXPECT_FALSE(child_view1->scheduled_paint_rects_.empty());
+  child_view1->scheduled_paint_rects_.clear();
+
+  child_view1->DoBlur();
+  EXPECT_FALSE(child_view1->scheduled_paint_rects_.empty());
 }
 
 // Verifies SetBounds(same bounds) doesn't trigger a SchedulePaint().

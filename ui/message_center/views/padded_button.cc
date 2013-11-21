@@ -74,7 +74,7 @@ void PaddedButton::OnFocus() {
 }
 
 void PaddedButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+  if (HasFocus()) {
     canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
                      message_center::kFocusBorderColor);
   }

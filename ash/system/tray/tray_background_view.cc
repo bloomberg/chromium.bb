@@ -383,7 +383,7 @@ void TrayBackgroundView::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // The tray itself expands to the right and bottom edge of the screen to make
   // sure clicking on the edges brings up the popup. However, the focus border
   // should be only around the container.
-  if (HasFocus() && (focusable() || IsAccessibilityFocusable()))
+  if (HasFocus())
     DrawBorder(canvas, GetContentsBounds());
 }
 

@@ -60,7 +60,7 @@ void ActionableView::SetAccessibleName(const base::string16& name) {
 }
 
 void ActionableView::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (focusable() || IsAccessibilityFocusable()))
+  if (HasFocus())
     DrawBorder(canvas, GetLocalBounds());
 }
 

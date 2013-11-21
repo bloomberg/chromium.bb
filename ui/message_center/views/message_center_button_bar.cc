@@ -81,7 +81,7 @@ NotificationCenterButton::NotificationCenterButton(
 gfx::Size NotificationCenterButton::GetPreferredSize() { return size_; }
 
 void NotificationCenterButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+  if (HasFocus()) {
     canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
                      kFocusBorderColor);
   }

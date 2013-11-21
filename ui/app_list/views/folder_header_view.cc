@@ -48,7 +48,7 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
 
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE {
     const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
-    if (HasFocus() && focusable()) {
+    if (HasFocus()) {
       gfx::Rect rect = GetLocalBounds();
       rect.Inset(0, 0, 1, 1);
       canvas->DrawRect(rect, kFocusBorderColor);

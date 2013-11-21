@@ -77,6 +77,9 @@ Textfield::Textfield()
     obscured_reveal_duration_ = ViewsDelegate::views_delegate->
         GetDefaultTextfieldObscuredRevealDuration();
   }
+
+  if (!NativeViewHost::kRenderNativeControlFocus)
+    set_focus_border(NULL);
 }
 
 Textfield::Textfield(StyleFlags style)
@@ -104,6 +107,9 @@ Textfield::Textfield(StyleFlags style)
     obscured_reveal_duration_ = ViewsDelegate::views_delegate->
         GetDefaultTextfieldObscuredRevealDuration();
   }
+
+  if (!NativeViewHost::kRenderNativeControlFocus)
+    set_focus_border(NULL);
 }
 
 Textfield::~Textfield() {

@@ -1417,8 +1417,7 @@ void View::OnPaintBorder(gfx::Canvas* canvas) {
 }
 
 void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (focus_border_.get() &&
-      HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+  if (focus_border_.get() && HasFocus()) {
     TRACE_EVENT2("views", "views::OnPaintFocusBorder",
                  "width", canvas->sk_canvas()->getDevice()->width(),
                  "height", canvas->sk_canvas()->getDevice()->height());
@@ -1597,12 +1596,14 @@ void View::OnBlur() {
 }
 
 void View::Focus() {
-  SchedulePaint();
+  if (focus_border_.get())
+    SchedulePaint();
   OnFocus();
 }
 
 void View::Blur() {
-  SchedulePaint();
+  if (focus_border_.get())
+    SchedulePaint();
   OnBlur();
 }
 

@@ -58,7 +58,7 @@ void TrayPopupHeaderButton::OnPaintBorder(gfx::Canvas* canvas) {
 }
 
 void TrayPopupHeaderButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+  if (HasFocus()) {
     canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
                      kFocusBorderColor);
   }
