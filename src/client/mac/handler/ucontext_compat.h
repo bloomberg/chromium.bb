@@ -1,4 +1,4 @@
-// Copyright (c) 2012, Google Inc.
+// Copyright 2013 Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,48 +27,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// ios_exception_minidump_generator.h:  Create a fake minidump from a
-// NSException.
+#ifndef CLIENT_MAC_HANDLER_UCONTEXT_COMPAT_H_
+#define CLIENT_MAC_HANDLER_UCONTEXT_COMPAT_H_
 
-#ifndef CLIENT_IOS_HANDLER_IOS_EXCEPTION_MINIDUMP_GENERATOR_H_
-#define CLIENT_IOS_HANDLER_IOS_EXCEPTION_MINIDUMP_GENERATOR_H_
+#include <sys/ucontext.h>
 
-#include <Foundation/Foundation.h>
+// The purpose of this file is to work around the fact that ucontext_t's
+// uc_mcontext member is an mcontext_t rather than an mcontext64_t on ARM64.
+#if defined(__arm64__)
+// <sys/ucontext.h> doesn't include the below file.
+#include <sys/_types/_ucontext64.h>
+typedef ucontext64_t breakpad_ucontext_t;
+#define breakpad_uc_mcontext uc_mcontext64
+#else
+typedef ucontext_t breakpad_ucontext_t;
+#define breakpad_uc_mcontext uc_mcontext
+#endif  // defined(__arm64__)
 
-#include "client/mac/handler/minidump_generator.h"
-
-namespace google_breakpad {
-
-class IosExceptionMinidumpGenerator : public MinidumpGenerator {
- public:
-  explicit IosExceptionMinidumpGenerator(NSException *exception);
-  virtual ~IosExceptionMinidumpGenerator();
-
- protected:
-  virtual bool WriteExceptionStream(MDRawDirectory *exception_stream);
-  virtual bool WriteThreadStream(mach_port_t thread_id, MDRawThread *thread);
-
- private:
-
-  // Get the crashing program counter from the exception.
-  uintptr_t GetPCFromException();
-
-  // Get the crashing link register from the exception.
-  uintptr_t GetLRFromException();
-
-  // Write a virtual thread context for the crashing site.
-  bool WriteCrashingContext(MDLocationDescriptor *register_location);
-  // Per-CPU implementations of the above method.
-#ifdef HAS_ARM_SUPPORT
-  bool WriteCrashingContextARM(MDLocationDescriptor *register_location);
-#endif
-#ifdef HAS_ARM64_SUPPORT
-  bool WriteCrashingContextARM64(MDLocationDescriptor *register_location);
-#endif
-
-  NSArray *return_addresses_;
-};
-
-}  // namespace google_breakpad
-
-#endif  // CLIENT_IOS_HANDLER_IOS_EXCEPTION_MINIDUMP_GENERATOR_H_
+#endif  // CLIENT_MAC_HANDLER_UCONTEXT_COMPAT_H_

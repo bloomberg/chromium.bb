@@ -114,6 +114,7 @@ typedef struct {
 
 #include "minidump_cpu_amd64.h"
 #include "minidump_cpu_arm.h"
+#include "minidump_cpu_arm64.h"
 #include "minidump_cpu_mips.h"
 #include "minidump_cpu_ppc.h"
 #include "minidump_cpu_ppc64.h"
@@ -636,6 +637,7 @@ typedef enum {
       /* PROCESSOR_ARCHITECTURE_IA32_ON_WIN64 (WoW64) */
   MD_CPU_ARCHITECTURE_SPARC     = 0x8001, /* Breakpad-defined value for SPARC */
   MD_CPU_ARCHITECTURE_PPC64     = 0x8002, /* Breakpad-defined value for PPC64 */
+  MD_CPU_ARCHITECTURE_ARM64     = 0x8003, /* Breakpad-defined value for ARM64 */
   MD_CPU_ARCHITECTURE_UNKNOWN   = 0xffff  /* PROCESSOR_ARCHITECTURE_UNKNOWN */
 } MDCPUArchitecture;
 

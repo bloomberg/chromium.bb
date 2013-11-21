@@ -326,7 +326,7 @@ bool ExceptionHandler::WriteMinidumpForChild(mach_port_t child,
                                     EXC_I386_BPT,
 #elif defined(__ppc__) || defined(__ppc64__)
                                     EXC_PPC_BREAKPOINT,
-#elif defined(__arm__)
+#elif defined(__arm__) || defined(__arm64__)
                                     EXC_ARM_BREAKPOINT,
 #else
 #error architecture not supported
@@ -342,13 +342,14 @@ bool ExceptionHandler::WriteMinidumpForChild(mach_port_t child,
   return result;
 }
 
-bool ExceptionHandler::WriteMinidumpWithException(int exception_type,
-                                                  int exception_code,
-                                                  int exception_subcode,
-                                                  ucontext_t* task_context,
-                                                  mach_port_t thread_name,
-                                                  bool exit_after_write,
-                                                  bool report_current_thread) {
+bool ExceptionHandler::WriteMinidumpWithException(
+    int exception_type,
+    int exception_code,
+    int exception_subcode,
+    breakpad_ucontext_t* task_context,
+    mach_port_t thread_name,
+    bool exit_after_write,
+    bool report_current_thread) {
   bool result = false;
 
   if (directCallback_) {
@@ -453,12 +454,13 @@ kern_return_t ForwardException(mach_port_t task, mach_port_t failed_thread,
   exception_behavior_t target_behavior = current.behaviors[found];
 
   kern_return_t result;
+  // TODO: Handle the case where |target_behavior| has MACH_EXCEPTION_CODES
+  // set. https://code.google.com/p/google-breakpad/issues/detail?id=551
   switch (target_behavior) {
     case EXCEPTION_DEFAULT:
       result = exception_raise(target_port, failed_thread, task, exception,
                                code, code_count);
       break;
-
     default:
       fprintf(stderr, "** Unknown exception behavior: %d\n", target_behavior);
       result = KERN_FAILURE;
@@ -520,7 +522,7 @@ void* ExceptionHandler::WaitForMessage(void* exception_handler_class) {
           exception_code = EXC_I386_BPT;
 #elif defined(__ppc__) || defined(__ppc64__)
           exception_code = EXC_PPC_BREAKPOINT;
-#elif defined(__arm__)
+#elif defined(__arm__) || defined(__arm64__)
           exception_code = EXC_ARM_BREAKPOINT;
 #else
 #error architecture not supported
@@ -611,7 +613,7 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
       EXC_SOFTWARE,
       MD_EXCEPTION_CODE_MAC_ABORT,
       0,
-      static_cast<ucontext_t*>(uc),
+      static_cast<breakpad_ucontext_t*>(uc),
       mach_thread_self(),
       true,
       true);
