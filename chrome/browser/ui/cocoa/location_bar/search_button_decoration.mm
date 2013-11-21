@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/search_button_decoration.h"
 
+#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -14,7 +16,7 @@ const CGFloat kLeftPadding = 3;
 
 }  // namespace
 
-SearchButtonDecoration::SearchButtonDecoration()
+SearchButtonDecoration::SearchButtonDecoration(LocationBarViewMac* owner)
     : ButtonDecoration({
         IDR_OMNIBOX_SEARCH_BUTTON_TOP_LEFT,
         IDR_OMNIBOX_SEARCH_BUTTON_TOP,
@@ -45,7 +47,9 @@ SearchButtonDecoration::SearchButtonDecoration()
         IDR_OMNIBOX_SEARCH_BUTTON_PRESSED_BOTTOM_LEFT,
         IDR_OMNIBOX_SEARCH_BUTTON_PRESSED_BOTTOM,
         IDR_OMNIBOX_SEARCH_BUTTON_PRESSED_BOTTOM_RIGHT
-      }, IDR_OMNIBOX_SEARCH_BUTTON_LOUPE, kInnerPadding) {
+      }, IDR_OMNIBOX_SEARCH_BUTTON_LOUPE, kInnerPadding),
+      owner_(owner) {
+  DCHECK(owner_);
 }
 
 SearchButtonDecoration::~SearchButtonDecoration() {
@@ -68,7 +72,7 @@ void SearchButtonDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
 }
 
 bool SearchButtonDecoration::OnMousePressed(NSRect frame) {
-  // TODO(macourteau): handle click (trigger navigation of what is currently
-  // in the omnibox).
+  owner_->GetOmniboxView()->model()->AcceptInput(
+      owner_->GetWindowOpenDisposition(), false);
   return true;
 }

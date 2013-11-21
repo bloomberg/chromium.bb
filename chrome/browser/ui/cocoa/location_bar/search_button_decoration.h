@@ -9,11 +9,13 @@
 
 #include "chrome/browser/ui/cocoa/location_bar/button_decoration.h"
 
+class LocationBarViewMac;
+
 // |SearchButtonDecoration| adds a search/go button to the right of the omnibox.
 
 class SearchButtonDecoration : public ButtonDecoration {
  public:
-  SearchButtonDecoration();
+  explicit SearchButtonDecoration(LocationBarViewMac* owner);
   virtual ~SearchButtonDecoration();
 
   // Implement |LocationBarDecoration|.
@@ -22,6 +24,9 @@ class SearchButtonDecoration : public ButtonDecoration {
   virtual bool OnMousePressed(NSRect frame) OVERRIDE;
 
  private:
+  // The control view that owns this. Weak.
+  LocationBarViewMac* owner_;
+
   DISALLOW_COPY_AND_ASSIGN(SearchButtonDecoration);
 };
 

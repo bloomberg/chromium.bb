@@ -99,7 +99,7 @@ LocationBarViewMac::LocationBarViewMac(
       mic_search_decoration_(new MicSearchDecoration(command_updater)),
       generated_credit_card_decoration_(
           new GeneratedCreditCardDecoration(this)),
-      search_button_decoration_(new SearchButtonDecoration()),
+      search_button_decoration_(new SearchButtonDecoration(this)),
       profile_(profile),
       browser_(browser),
       weak_ptr_factory_(this) {
