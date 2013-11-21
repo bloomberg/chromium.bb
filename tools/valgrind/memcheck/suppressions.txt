@@ -6437,6 +6437,7 @@
 {
    bug_321976
    Memcheck:Leak
+   ...
    fun:nssList_Create
    fun:nssTrustDomain_UpdateCachedTokenCerts
    fun:nssSlot_Refresh
