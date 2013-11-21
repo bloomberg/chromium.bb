@@ -46,12 +46,18 @@ bool IsBitmapSizeSane(const gfx::Size& size, uint32* bitmap_bytes) {
 
   *bitmap_bytes = -1;
   uint32 total_size = size.width();
-  // Use max uint32 instead of max size_t to put a reasonable bound on things.
-  if (std::numeric_limits<uint32>::max() / size.width() <=
-      static_cast<uint32>(size.height()))
+  // Limit size to max int so SkBitmap::getSize() calculation won't overflow.
+  // TODO(dcheng): Instead of all this custom validation, we should just use a
+  // combination of SkBitmap's setConfig() and getSize64() to detect this, e.g.:
+  //   SkBitmap bitmap;
+  //   if (!bitmap.setConfig(...))
+  //      return false;
+  //   if (bitmap.getSize64().is64())
+  //      return false;
+  if (std::numeric_limits<int>::max() / size.width() <= size.height())
     return false;
   total_size *= size.height();
-  if (std::numeric_limits<uint32>::max() / total_size <= 4)
+  if (std::numeric_limits<int>::max() / total_size <= 4)
     return false;
   total_size *= 4;
   *bitmap_bytes = total_size;
