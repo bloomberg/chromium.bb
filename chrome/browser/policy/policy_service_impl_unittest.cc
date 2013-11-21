@@ -29,6 +29,17 @@ const char kExtension[] = "extension-id";
 const char kSameLevelPolicy[] = "policy-same-level-and-scope";
 const char kDiffLevelPolicy[] = "chrome-diff-level-and-scope";
 
+void SetPolicyMapValue(const std::string& key,
+                       const std::string& value,
+                       PolicyBundle* bundle) {
+  bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .Set(key,
+           POLICY_LEVEL_MANDATORY,
+           POLICY_SCOPE_USER,
+           new base::StringValue(value),
+           NULL);
+}
+
 // Helper to compare the arguments to an EXPECT_CALL of OnPolicyUpdated() with
 // their expected values.
 MATCHER_P(PolicyEquals, expected, "") {
@@ -111,7 +122,8 @@ class PolicyServiceTest : public testing::Test {
     providers.push_back(&provider0_);
     providers.push_back(&provider1_);
     providers.push_back(&provider2_);
-    policy_service_.reset(new PolicyServiceImpl(providers));
+    policy_service_.reset(new PolicyServiceImpl(
+        providers, PolicyServiceImpl::PreprocessCallback()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -522,6 +534,39 @@ TEST_F(PolicyServiceTest, NamespaceMerge) {
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension)).Equals(expected));
 }
 
+TEST_F(PolicyServiceTest, PolicyPreprocessing) {
+  // Reset the PolicyServiceImpl to one that has the preprocessor.
+  PolicyServiceImpl::Providers providers;
+  providers.push_back(&provider0_);
+  policy_service_.reset(new PolicyServiceImpl(
+      providers, base::Bind(&SetPolicyMapValue, kSameLevelPolicy, "bar")));
+
+  // Set the policy value to "foo".
+  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+  PolicyMap& map =
+      bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
+  map.Set(kSameLevelPolicy,
+          POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_USER,
+          base::Value::CreateStringValue("foo"),
+          NULL);
+
+  // Push the update through the provider.
+  provider0_.UpdatePolicy(bundle.Pass());
+  RunUntilIdle();
+
+  // The value should have been changed from "foo" to "bar".
+  const PolicyMap& actual = policy_service_->GetPolicies(
+        PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
+  PolicyMap expected;
+  expected.Set(kSameLevelPolicy,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateStringValue("bar"),
+               NULL);
+  EXPECT_TRUE(actual.Equals(expected));
+}
+
 TEST_F(PolicyServiceTest, IsInitializationComplete) {
   // |provider0| has all domains initialized.
   Mock::VerifyAndClearExpectations(&provider1_);
@@ -534,7 +579,8 @@ TEST_F(PolicyServiceTest, IsInitializationComplete) {
   providers.push_back(&provider0_);
   providers.push_back(&provider1_);
   providers.push_back(&provider2_);
-  policy_service_.reset(new PolicyServiceImpl(providers));
+  policy_service_.reset(new PolicyServiceImpl(
+      providers, PolicyServiceImpl::PreprocessCallback()));
   EXPECT_FALSE(policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   EXPECT_FALSE(
       policy_service_->IsInitializationComplete(POLICY_DOMAIN_EXTENSIONS));

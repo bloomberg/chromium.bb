@@ -1579,6 +1579,8 @@
         'browser/policy/policy_service_stub.h',
         'browser/policy/policy_statistics_collector.cc',
         'browser/policy/policy_statistics_collector.h',
+        'browser/policy/policy_transformations.cc',
+        'browser/policy/policy_transformations.h',
         'browser/policy/policy_types.h',
         'browser/policy/preferences_mac.cc',
         'browser/policy/preferences_mac.h',

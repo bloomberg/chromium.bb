@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/forwarding_policy_provider.h"
 #include "chrome/browser/policy/policy_service_impl.h"
+#include "chrome/browser/policy/policy_transformations.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user.h"
@@ -80,7 +82,8 @@ void ProfilePolicyConnector::Init(
     providers.push_back(special_user_policy_provider_.get());
 #endif
 
-  policy_service_.reset(new PolicyServiceImpl(providers));
+  policy_service_.reset(new PolicyServiceImpl(
+      providers, base::Bind(&policy::FixDeprecatedPolicies)));
 
 #if defined(OS_CHROMEOS)
   if (is_primary_user_) {

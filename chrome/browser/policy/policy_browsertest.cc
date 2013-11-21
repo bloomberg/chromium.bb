@@ -50,6 +50,9 @@
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
@@ -928,6 +931,39 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   // This means that submitting won't trigger any action.
   EXPECT_FALSE(model->CurrentMatch(NULL).destination_url.is_valid());
   EXPECT_EQ(GURL(content::kAboutBlankURL), web_contents->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, PolicyPreprocessing) {
+  // Add an individual proxy policy value.
+  PolicyMap policies;
+  policies.Set(key::kProxyServerMode,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateIntegerValue(3),
+               NULL);
+  UpdateProviderPolicy(policies);
+
+  // It should be removed and replaced with a dictionary.
+  PolicyMap expected;
+  scoped_ptr<base::DictionaryValue> expected_value(new base::DictionaryValue);
+  expected_value->SetInteger(key::kProxyServerMode, 3);
+  expected.Set(key::kProxySettings,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               expected_value.release(),
+               NULL);
+
+  // Check both the browser and the profile.
+  const PolicyMap& actual_from_browser =
+      g_browser_process->browser_policy_connector()
+          ->GetPolicyService()
+          ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
+  EXPECT_TRUE(expected.Equals(actual_from_browser));
+  const PolicyMap& actual_from_profile =
+      ProfilePolicyConnectorFactory::GetForProfile(browser()->profile())
+          ->policy_service()
+          ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
+  EXPECT_TRUE(expected.Equals(actual_from_profile));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {

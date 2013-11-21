@@ -14,7 +14,6 @@
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
-#include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::Mock;
@@ -335,44 +334,6 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
            NULL);
   EXPECT_TRUE(provider_->policies().Equals(bundle));
   provider_->RemoveObserver(&observer);
-}
-
-TEST(ConfigurationPolicyProviderTest, FixDeprecatedPolicies) {
-  PolicyMap policy_map;
-  policy_map.Set(key::kProxyServerMode,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 base::Value::CreateIntegerValue(3),
-                 NULL);
-
-  // Both these policies should be ignored, since there's a higher priority
-  // policy available.
-  policy_map.Set(key::kProxyMode,
-                 POLICY_LEVEL_RECOMMENDED,
-                 POLICY_SCOPE_USER,
-                 base::Value::CreateStringValue("pac_script"),
-                 NULL);
-  policy_map.Set(key::kProxyPacUrl,
-                 POLICY_LEVEL_RECOMMENDED,
-                 POLICY_SCOPE_USER,
-                 base::Value::CreateStringValue("http://example.com/wpad.dat"),
-                 NULL);
-
-  MockConfigurationPolicyProvider provider;
-  provider.Init();
-  provider.UpdateChromePolicy(policy_map);
-
-  PolicyBundle expected_bundle;
-  base::DictionaryValue* expected_value = new base::DictionaryValue();
-  expected_value->SetInteger(key::kProxyServerMode, 3);
-  expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(key::kProxySettings,
-           POLICY_LEVEL_MANDATORY,
-           POLICY_SCOPE_USER,
-           expected_value,
-           NULL);
-  EXPECT_TRUE(provider.policies().Equals(expected_bundle));
-  provider.Shutdown();
 }
 
 Configuration3rdPartyPolicyProviderTest::

@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/policy/configuration_policy_handler_list.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_service_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -25,6 +26,7 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
   virtual void TearDown() OVERRIDE;
   void UpdateProviderPolicy(const PolicyMap& policy);
 
+  PolicyServiceImpl::Providers providers_;
   ConfigurationPolicyHandlerList handler_list_;
   MockConfigurationPolicyProvider provider_;
   scoped_ptr<PolicyService> policy_service_;

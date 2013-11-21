@@ -637,7 +637,8 @@ void TestingProfile::CreateProfilePolicyConnector() {
            policy::SchemaRegistryServiceFactory::GetForContext(this));
 
   std::vector<policy::ConfigurationPolicyProvider*> providers;
-  service.reset(new policy::PolicyServiceImpl(providers));
+  service.reset(new policy::PolicyServiceImpl(
+      providers, policy::PolicyServiceImpl::PreprocessCallback()));
 #else
   service.reset(new policy::PolicyServiceStub());
 #endif

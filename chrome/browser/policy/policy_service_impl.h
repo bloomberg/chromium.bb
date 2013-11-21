@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
@@ -25,12 +26,16 @@ class PolicyServiceImpl : public PolicyService,
                           public ConfigurationPolicyProvider::Observer {
  public:
   typedef std::vector<ConfigurationPolicyProvider*> Providers;
+  typedef base::Callback<void(PolicyBundle*)> PreprocessCallback;
 
   // The PolicyServiceImpl will merge policies from |providers|. |providers|
   // must be sorted in decreasing order of priority; the first provider will
   // have the highest priority. The PolicyServiceImpl does not take ownership of
   // the providers, and they must outlive the PolicyServiceImpl.
-  explicit PolicyServiceImpl(const Providers& providers);
+  // |preprocess_callback| will be applied every PolicyBundle before merginng.
+  PolicyServiceImpl(const Providers& providers,
+                    const PreprocessCallback& preprocess_callback);
+
   virtual ~PolicyServiceImpl();
 
   // PolicyService overrides:
@@ -82,6 +87,9 @@ class PolicyServiceImpl : public PolicyService,
   // Set of providers that have a pending update that was triggered by a
   // call to RefreshPolicies().
   std::set<ConfigurationPolicyProvider*> refresh_pending_;
+
+  // Callback invoked to manipulate a PolicyBundle before it is merged.
+  PreprocessCallback preprocess_callback_;
 
   // List of callbacks to invoke once all providers refresh after a
   // RefreshPolicies() call.

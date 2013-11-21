@@ -1137,6 +1137,7 @@
         'browser/policy/policy_path_parser_unittest.cc',
         'browser/policy/policy_service_impl_unittest.cc',
         'browser/policy/policy_statistics_collector_unittest.cc',
+        'browser/policy/policy_transformations_unittest.cc',
         'browser/policy/preg_parser_win_unittest.cc',
         'browser/policy/registry_dict_win_unittest.cc',
         'browser/policy/schema_map_unittest.cc',
