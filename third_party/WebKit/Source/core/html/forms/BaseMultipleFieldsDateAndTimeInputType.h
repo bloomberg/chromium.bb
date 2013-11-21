@@ -78,6 +78,7 @@ private:
     // PickerIndicatorElement::PickerIndicatorOwner functions
     virtual bool isPickerIndicatorOwnerDisabledOrReadOnly() const OVERRIDE FINAL;
     virtual void pickerIndicatorChooseValue(const String&) OVERRIDE FINAL;
+    virtual void pickerIndicatorChooseValue(double) OVERRIDE FINAL;
     virtual bool setupDateTimeChooserParameters(DateTimeChooserParameters&) OVERRIDE FINAL;
 
     // ClearButtonElement::ClearButtonOwner functions.

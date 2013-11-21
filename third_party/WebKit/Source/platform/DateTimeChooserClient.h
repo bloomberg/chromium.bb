@@ -42,6 +42,8 @@ public:
 
     // Called when user picked a value.
     virtual void didChooseValue(const String&) = 0;
+    // Called when user picked a value.
+    virtual void didChooseValue(double) = 0;
     // Called when chooser has ended.
     virtual void didEndChooser() = 0;
 };

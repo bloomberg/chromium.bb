@@ -81,20 +81,26 @@ WebCore::IntSize DateTimeChooserImpl::contentSize()
     return WebCore::IntSize(0, 0);
 }
 
+static String valueToDateTimeString(double value, AtomicString type)
+{
+    WebCore::DateComponents components;
+    if (type == WebCore::InputTypeNames::date)
+        components.setMillisecondsSinceEpochForDate(value);
+    else if (type == WebCore::InputTypeNames::datetime_local)
+        components.setMillisecondsSinceEpochForDateTimeLocal(value);
+    else if (type == WebCore::InputTypeNames::month)
+        components.setMonthsSinceEpoch(value);
+    else if (type == WebCore::InputTypeNames::time)
+        components.setMillisecondsSinceMidnight(value);
+    else if (type == WebCore::InputTypeNames::week)
+        components.setMillisecondsSinceEpochForWeek(value);
+    else
+        ASSERT_NOT_REACHED();
+    return components.type() == WebCore::DateComponents::Invalid ? String() : components.toString();
+}
+
 void DateTimeChooserImpl::writeDocument(WebCore::DocumentWriter& writer)
 {
-    WebCore::DateComponents minDate;
-    WebCore::DateComponents maxDate;
-    if (m_parameters.type == WebCore::InputTypeNames::month) {
-        minDate.setMonthsSinceEpoch(m_parameters.minimum);
-        maxDate.setMonthsSinceEpoch(m_parameters.maximum);
-    } else if (m_parameters.type == WebCore::InputTypeNames::week) {
-        minDate.setMillisecondsSinceEpochForWeek(m_parameters.minimum);
-        maxDate.setMillisecondsSinceEpochForWeek(m_parameters.maximum);
-    } else {
-        minDate.setMillisecondsSinceEpochForDate(m_parameters.minimum);
-        maxDate.setMillisecondsSinceEpochForDate(m_parameters.maximum);
-    }
     String stepString = String::number(m_parameters.step);
     String stepBaseString = String::number(m_parameters.stepBase, 11, WTF::TruncateTrailingZeros);
     IntRect anchorRectInScreen = m_chromeClient->rootViewToScreen(m_parameters.anchorRectInRootView);
@@ -119,12 +125,12 @@ void DateTimeChooserImpl::writeDocument(WebCore::DocumentWriter& writer)
     addString("</style></head><body><div id=main>Loading...</div><script>\n"
                "window.dialogArguments = {\n", writer);
     addProperty("anchorRectInScreen", anchorRectInScreen, writer);
-    addProperty("min", minDate.toString(), writer);
-    addProperty("max", maxDate.toString(), writer);
+    addProperty("min", valueToDateTimeString(m_parameters.minimum, m_parameters.type), writer);
+    addProperty("max", valueToDateTimeString(m_parameters.maximum, m_parameters.type), writer);
     addProperty("step", stepString, writer);
     addProperty("stepBase", stepBaseString, writer);
     addProperty("required", m_parameters.required, writer);
-    addProperty("currentValue", m_parameters.currentValue, writer);
+    addProperty("currentValue", valueToDateTimeString(m_parameters.doubleValue, m_parameters.type), writer);
     addProperty("locale", m_parameters.locale.string(), writer);
     addProperty("todayLabel", todayLabelString, writer);
     addProperty("clearLabel", locale().queryString(WebLocalizedString::CalendarClear), writer);

@@ -49,7 +49,9 @@ public:
     public:
         virtual ~PickerIndicatorOwner() { }
         virtual bool isPickerIndicatorOwnerDisabledOrReadOnly() const = 0;
+        // FIXME: Remove. Deprecated in favor of double version.
         virtual void pickerIndicatorChooseValue(const String&) = 0;
+        virtual void pickerIndicatorChooseValue(double) = 0;
         virtual bool setupDateTimeChooserParameters(DateTimeChooserParameters&) = 0;
     };
 
@@ -62,6 +64,7 @@ public:
 
     // DateTimeChooserClient implementation.
     virtual void didChooseValue(const String&) OVERRIDE;
+    virtual void didChooseValue(double) OVERRIDE;
     virtual void didEndChooser() OVERRIDE;
 
 private:

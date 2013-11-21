@@ -1837,6 +1837,7 @@ bool HTMLInputElement::setupDateTimeChooserParameters(DateTimeChooserParameters&
 
     parameters.anchorRectInRootView = document().view()->contentsToRootView(pixelSnappedBoundingBox());
     parameters.currentValue = value();
+    parameters.doubleValue = m_inputType->valueAsDouble();
     parameters.isAnchorElementRTL = computedStyle()->direction() == RTL;
     if (RuntimeEnabledFeatures::dataListElementEnabled()) {
         if (HTMLDataListElement* dataList = this->dataList()) {

@@ -262,6 +262,15 @@ void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(const St
         edit->setOnlyYearMonthDay(date);
 }
 
+void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(double value)
+{
+    ASSERT(std::isfinite(value) || std::isnan(value));
+    if (std::isnan(value))
+        element().setValue(emptyString(), DispatchInputAndChangeEvent);
+    else
+        element().setValueAsNumber(value, ASSERT_NO_EXCEPTION, DispatchInputAndChangeEvent);
+}
+
 bool BaseMultipleFieldsDateAndTimeInputType::setupDateTimeChooserParameters(DateTimeChooserParameters& parameters)
 {
     return element().setupDateTimeChooserParameters(parameters);

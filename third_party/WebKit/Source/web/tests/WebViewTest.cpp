@@ -36,6 +36,7 @@
 #include "URLTestHelpers.h"
 #include "WebAutofillClient.h"
 #include "WebContentDetectionResult.h"
+#include "WebDateTimeChooserCompletion.h"
 #include "WebDocument.h"
 #include "WebElement.h"
 #include "WebFrame.h"
@@ -51,9 +52,12 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLDocument.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/frame/FrameView.h"
+#include "core/page/Chrome.h"
 #include "core/page/Settings.h"
+#include "core/platform/chromium/KeyboardCodes.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
@@ -179,6 +183,30 @@ public:
 private:
     WebWidget* m_helperPluginWebWidget;
     WebFrameClient* m_webFrameClient;
+};
+
+class DateTimeChooserWebViewClient : public WebViewClient {
+public:
+    WebDateTimeChooserCompletion* chooserCompletion()
+    {
+        return m_chooserCompletion;
+    }
+
+    void clearChooserCompletion()
+    {
+        m_chooserCompletion = 0;
+    }
+
+    // WebViewClient methods
+    virtual bool openDateTimeChooser(const WebDateTimeChooserParams&, WebDateTimeChooserCompletion* chooser_completion) OVERRIDE
+    {
+        m_chooserCompletion = chooser_completion;
+        return true;
+    }
+
+private:
+    WebDateTimeChooserCompletion* m_chooserCompletion;
+
 };
 
 class WebViewTest : public testing::Test {
@@ -1237,5 +1265,89 @@ TEST_F(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus)
     WebElement element = webView->mainFrame()->document().getElementById("message");
     EXPECT_STREQ("DOMFocusOutDOMFocusIn", element.innerText().utf8().data());
 }
+
+#if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+static void openDateTimeChooser(WebView* webView, WebCore::HTMLInputElement* inputElement)
+{
+    inputElement->focus();
+
+    WebKeyboardEvent keyEvent;
+    keyEvent.windowsKeyCode = WebCore::VKEY_SPACE;
+    keyEvent.type = WebInputEvent::RawKeyDown;
+    keyEvent.setKeyIdentifierFromWindowsKeyCode();
+    webView->handleInputEvent(keyEvent);
+
+    keyEvent.type = WebInputEvent::KeyUp;
+    webView->handleInputEvent(keyEvent);
+}
+
+TEST_F(WebViewTest, ChooseValueFromDateTimeChooser)
+{
+    DateTimeChooserWebViewClient client;
+    std::string url = m_baseURL + "date_time_chooser.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "date_time_chooser.html");
+    WebViewImpl* webViewImpl = toWebViewImpl(m_webViewHelper.initializeAndLoad(url, true, 0, &client));
+
+    WebCore::Document* document = webViewImpl->mainFrameImpl()->frame()->document();
+    WebCore::Page* page = document->page();
+
+    WebCore::HTMLInputElement* inputElement;
+
+    inputElement = toHTMLInputElement(document->getElementById("date"));
+    openDateTimeChooser(webViewImpl, inputElement);
+    client.chooserCompletion()->didChooseValue(0);
+    client.clearChooserCompletion();
+    EXPECT_STREQ("1970-01-01", inputElement->value().utf8().data());
+
+    openDateTimeChooser(webViewImpl, inputElement);
+    client.chooserCompletion()->didChooseValue(std::numeric_limits<double>::quiet_NaN());
+    client.clearChooserCompletion();
+    EXPECT_STREQ("", inputElement->value().utf8().data());
+
+    inputElement = toHTMLInputElement(document->getElementById("datetimelocal"));
+    openDateTimeChooser(webViewImpl, inputElement);
+    client.chooserCompletion()->didChooseValue(0);
+    client.clearChooserCompletion();
+    EXPECT_STREQ("1970-01-01T00:00", inputElement->value().utf8().data());
+
+    openDateTimeChooser(webViewImpl, inputElement);
+    client.chooserCompletion()->didChooseValue(std::numeric_limits<double>::quiet_NaN());
+    client.clearChooserCompletion();
+    EXPECT_STREQ("", inputElement->value().utf8().data());
+
+    inputElement = toHTMLInputElement(document->getElementById("month"));
+    openDateTimeChooser(webViewImpl, inputElement);
+    client.chooserCompletion()->didChooseValue(0);
+    client.clearChooserCompletion();
+    EXPECT_STREQ("1970-01", inputElement->value().utf8().data());
+
+    openDateTimeChooser(webViewImpl, inputElement);
+    client.chooserCompletion()->didChooseValue(std::numeric_limits<double>::quiet_NaN());
+    client.clearChooserCompletion();
+    EXPECT_STREQ("", inputElement->value().utf8().data());
+
+    inputElement = toHTMLInputElement(document->getElementById("time"));
+    openDateTimeChooser(webViewImpl, inputElement);
+    client.chooserCompletion()->didChooseValue(0);
+    client.clearChooserCompletion();
+    EXPECT_STREQ("00:00", inputElement->value().utf8().data());
+
+    openDateTimeChooser(webViewImpl, inputElement);
+    client.chooserCompletion()->didChooseValue(std::numeric_limits<double>::quiet_NaN());
+    client.clearChooserCompletion();
+    EXPECT_STREQ("", inputElement->value().utf8().data());
+
+    inputElement = toHTMLInputElement(document->getElementById("week"));
+    openDateTimeChooser(webViewImpl, inputElement);
+    client.chooserCompletion()->didChooseValue(0);
+    client.clearChooserCompletion();
+    EXPECT_STREQ("1970-W01", inputElement->value().utf8().data());
+
+    openDateTimeChooser(webViewImpl, inputElement);
+    client.chooserCompletion()->didChooseValue(std::numeric_limits<double>::quiet_NaN());
+    client.clearChooserCompletion();
+    EXPECT_STREQ("", inputElement->value().utf8().data());
+}
+#endif
 
 }

@@ -53,6 +53,12 @@ private:
         delete this;
     }
 
+    virtual void didChooseValue(double value) OVERRIDE
+    {
+        m_chooser->didChooseValue(value);
+        delete this;
+    }
+
     virtual void didCancelChooser() OVERRIDE
     {
         m_chooser->didCancelChooser();
@@ -108,6 +114,7 @@ bool ExternalDateTimeChooser::openDateTimeChooser(ChromeClientImpl* chromeClient
     webParams.type = toWebDateTimeInputType(parameters.type);
     webParams.anchorRectInScreen = chromeClient->rootViewToScreen(parameters.anchorRectInRootView);
     webParams.currentValue = parameters.currentValue;
+    webParams.doubleValue = parameters.doubleValue;
     webParams.suggestionValues = parameters.suggestionValues;
     webParams.localizedSuggestionValues = parameters.localizedSuggestionValues;
     webParams.suggestionLabels = parameters.suggestionLabels;
@@ -129,6 +136,17 @@ bool ExternalDateTimeChooser::openDateTimeChooser(ChromeClientImpl* chromeClient
 }
 
 void ExternalDateTimeChooser::didChooseValue(const WebString& value)
+{
+    if (m_client)
+        m_client->didChooseValue(value);
+    // didChooseValue might run JavaScript code, and endChooser() might be
+    // called. However DateTimeChooserCompletionImpl still has one reference to
+    // this object.
+    if (m_client)
+        m_client->didEndChooser();
+}
+
+void ExternalDateTimeChooser::didChooseValue(double value)
 {
     if (m_client)
         m_client->didChooseValue(value);

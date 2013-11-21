@@ -46,6 +46,7 @@ public:
 
     // The following functions are for DateTimeChooserCompletion.
     void didChooseValue(const WebString&);
+    void didChooseValue(double);
     void didCancelChooser();
 
 private:

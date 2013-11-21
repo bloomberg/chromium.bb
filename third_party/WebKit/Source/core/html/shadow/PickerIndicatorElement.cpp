@@ -100,6 +100,12 @@ void PickerIndicatorElement::didChooseValue(const String& value)
     m_pickerIndicatorOwner->pickerIndicatorChooseValue(value);
 }
 
+void PickerIndicatorElement::didChooseValue(double value)
+{
+    if (m_pickerIndicatorOwner)
+        m_pickerIndicatorOwner->pickerIndicatorChooseValue(value);
+}
+
 void PickerIndicatorElement::didEndChooser()
 {
     m_chooser.clear();

@@ -55,6 +55,7 @@ private:
 
     // DateTimeChooserClient functions:
     virtual void didChooseValue(const String&) OVERRIDE;
+    virtual void didChooseValue(double) OVERRIDE;
     virtual void didEndChooser() OVERRIDE;
 
     RefPtr<DateTimeChooser> m_dateTimeChooser;

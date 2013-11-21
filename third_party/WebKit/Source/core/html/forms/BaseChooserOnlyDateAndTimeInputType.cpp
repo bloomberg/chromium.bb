@@ -97,6 +97,15 @@ void BaseChooserOnlyDateAndTimeInputType::didChooseValue(const String& value)
     element().setValue(value, DispatchInputAndChangeEvent);
 }
 
+void BaseChooserOnlyDateAndTimeInputType::didChooseValue(double value)
+{
+    ASSERT(std::isfinite(value) || std::isnan(value));
+    if (std::isnan(value))
+        element().setValue(emptyString(), DispatchInputAndChangeEvent);
+    else
+        element().setValueAsNumber(value, ASSERT_NO_EXCEPTION, DispatchInputAndChangeEvent);
+}
+
 void BaseChooserOnlyDateAndTimeInputType::didEndChooser()
 {
     m_dateTimeChooser.clear();
