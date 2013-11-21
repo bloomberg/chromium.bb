@@ -1003,11 +1003,6 @@ void Editor::redo()
     client().redo();
 }
 
-void Editor::didBeginEditing(Element* rootEditableElement)
-{
-    spellChecker().didBeginEditing(rootEditableElement);
-}
-
 void Editor::setBaseWritingDirection(WritingDirection direction)
 {
     Node* focusedElement = frame().document()->focusedElement();

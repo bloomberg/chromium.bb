@@ -104,7 +104,7 @@ void SpellCheckerClientImpl::toggleContinuousSpellChecking()
             VisibleSelection frameSelection = frame->selection().selection();
             // If a selection is in an editable element spell check its content.
             if (Element* rootEditableElement = frameSelection.rootEditableElement()) {
-                frame->editor().didBeginEditing(rootEditableElement);
+                frame->spellChecker().didBeginEditing(rootEditableElement);
             }
         }
     }

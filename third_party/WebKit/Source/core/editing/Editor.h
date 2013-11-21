@@ -178,8 +178,6 @@ public:
     bool canRedo();
     void redo();
 
-    void didBeginEditing(Element*);
-
     void setBaseWritingDirection(WritingDirection);
 
     // smartInsertDeleteEnabled and selectTrailingWhitespaceEnabled are
