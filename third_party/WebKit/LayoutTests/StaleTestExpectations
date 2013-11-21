@@ -34,9 +34,6 @@ webkit.org/b/56702 [ Win ] http/tests/navigation/ping-cross-origin-from-https.ht
 
 webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/methods.html [ WontFix ]
 
-# New reftest failing on Win7.
-webkit.org/b/76050 [ Win7 ] fast/text/font-kerning.html [ WontFix ]
-
 webkit.org/b/81145 [ SnowLeopard Lion ] fast/frames/invalid.html [ WontFix ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ WontFix ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ WontFix ]
