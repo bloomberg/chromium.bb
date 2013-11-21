@@ -532,12 +532,19 @@ def RunBuild(script, status):
   except StopBuild:
     pass
 
-  # Workaround for an annotator bug.
-  # TODO(bradnelson@google.com) remove when the bug is fixed.
-  if status.ever_failed:
-    with Step('summary', status):
-        print 'There were failed stages.'
+  # Emit a summary step for three reasons:
+  # - The annotator will attribute non-zero exit status to the last build step.
+  #   This can misattribute failures to the last build step.
+  # - runtest.py wraps the builds to scrape perf data. It emits an annotator
+  #   tag on exit which misattributes perf results to the last build step.
+  # - Provide a label step in which to show summary result.
+  #   Otherwise these go back to the preamble.
+  with Step('summary', status):
+    if status.ever_failed:
+      print 'There were failed stages.'
+    else:
+      print 'Success.'
+    # Display a summary of the build.
+    status.DisplayBuildStatus()
 
-  # Display a summary of the build.  Useful when running outside the buildbot.
-  status.DisplayBuildStatus()
   sys.exit(status.ReturnValue())
