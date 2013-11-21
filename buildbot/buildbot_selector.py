@@ -11,7 +11,7 @@ import sys
 python = sys.executable
 bash = '/bin/bash'
 # runtest.py assumes it is being passes an executable, compensate.
-echo = python + '-c "import sys; print ' '.join(sys.argv[1:])"'
+echo = python + ' -c "import sys; print ' '.join(sys.argv[1:])"'
 
 
 BOT_ASSIGNMENT = {
