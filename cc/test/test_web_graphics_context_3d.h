@@ -213,6 +213,9 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   void set_support_compressed_texture_etc1(bool support) {
     test_capabilities_.texture_format_etc1 = support;
   }
+  void set_support_texture_storage(bool support) {
+    test_capabilities_.texture_storage = support;
+  }
 
   // When this context is lost, all contexts in its share group are also lost.
   void add_share_group_context(blink::WebGraphicsContext3D* context3d) {

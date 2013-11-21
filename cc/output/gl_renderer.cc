@@ -616,9 +616,13 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
 
   scoped_ptr<ScopedResource> device_background_texture =
       ScopedResource::create(resource_provider_);
-  if (!device_background_texture->Allocate(window_rect.size(),
-                                           ResourceProvider::TextureUsageAny,
-                                           RGBA_8888)) {
+  // The TextureUsageFramebuffer hint makes ResourceProvider avoid immutable
+  // storage allocation (texStorage2DEXT) for this texture. copyTexImage2D fails
+  // when called on a texture having immutable storage.
+  if (!device_background_texture->Allocate(
+           window_rect.size(),
+           ResourceProvider::TextureUsageFramebuffer,
+           RGBA_8888)) {
     return scoped_ptr<ScopedResource>();
   } else {
     ResourceProvider::ScopedWriteLockGL lock(resource_provider_,

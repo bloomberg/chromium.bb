@@ -1692,7 +1692,8 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   DCHECK_EQ(resource->target, static_cast<GLenum>(GL_TEXTURE_2D));
   ResourceFormat format = resource->format;
   GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->gl_id));
-  if (use_texture_storage_ext_ && IsFormatSupportedForStorage(format)) {
+  if (use_texture_storage_ext_ && IsFormatSupportedForStorage(format) &&
+      resource->hint != TextureUsageFramebuffer) {
     GLenum storage_format = TextureToStorageFormat(format);
     GLC(context3d, context3d->texStorage2DEXT(GL_TEXTURE_2D,
                                               1,

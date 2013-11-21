@@ -2375,6 +2375,12 @@ class AllocationTrackingContext3D : public TestWebGraphicsContext3D {
   MOCK_METHOD0(NextTextureId, WebGLId());
   MOCK_METHOD1(RetireTextureId, void(WebGLId id));
   MOCK_METHOD2(bindTexture, void(WGC3Denum target, WebGLId texture));
+  MOCK_METHOD5(texStorage2DEXT,
+               void(WGC3Denum target,
+                    WGC3Dint levels,
+                    WGC3Duint internalformat,
+                    WGC3Dint width,
+                    WGC3Dint height));
   MOCK_METHOD9(texImage2D,
                void(WGC3Denum target,
                     WGC3Dint level,
@@ -2508,6 +2514,83 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   ASSERT_TRUE(resource_provider->DidSetPixelsComplete(id));
 
   resource_provider->ReleasePixelBuffer(id);
+
+  EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
+  resource_provider->DeleteResource(id);
+
+  Mock::VerifyAndClearExpectations(context);
+}
+
+TEST_P(ResourceProviderTest, TextureAllocationStorageUsageAny) {
+  // Only for GL textures.
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+  scoped_ptr<AllocationTrackingContext3D> context_owned(
+      new StrictMock<AllocationTrackingContext3D>);
+  AllocationTrackingContext3D* context = context_owned.get();
+  context->set_support_texture_storage(true);
+
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
+
+  gfx::Size size(2, 2);
+  ResourceFormat format = RGBA_8888;
+  ResourceProvider::ResourceId id = 0;
+  int texture_id = 123;
+
+  // Lazy allocation. Don't allocate when creating the resource.
+  id = resource_provider->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+
+  EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
+  EXPECT_CALL(*context, texStorage2DEXT(_, _, _, 2, 2)).Times(1);
+  resource_provider->AllocateForTesting(id);
+
+  EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
+  resource_provider->DeleteResource(id);
+
+  Mock::VerifyAndClearExpectations(context);
+}
+
+TEST_P(ResourceProviderTest, TextureAllocationStorageUsageFramebuffer) {
+  // Only for GL textures.
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+  scoped_ptr<AllocationTrackingContext3D> context_owned(
+      new StrictMock<AllocationTrackingContext3D>);
+  AllocationTrackingContext3D* context = context_owned.get();
+  context->set_support_texture_storage(true);
+
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
+
+  gfx::Size size(2, 2);
+  ResourceFormat format = RGBA_8888;
+  ResourceProvider::ResourceId id = 0;
+  int texture_id = 123;
+
+  // Lazy allocation. Don't allocate when creating the resource.
+  id = resource_provider->CreateResource(
+      size,
+      GL_CLAMP_TO_EDGE,
+      ResourceProvider::TextureUsageFramebuffer,
+      format);
+
+  EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
+  EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _)).Times(1);
+  resource_provider->AllocateForTesting(id);
 
   EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
   resource_provider->DeleteResource(id);
