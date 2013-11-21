@@ -847,38 +847,30 @@ int DockedWindowLayoutManager::CalculateWindowHeightsAndRemainingRoom(
 
 int DockedWindowLayoutManager::CalculateIdealWidth(
     const std::vector<WindowWithHeight>& visible_windows) {
-  // Calculate ideal width for the docked area adjusting the dragged window
-  // or other windows as necessary.
-  int ideal_docked_width = 0;
+  int smallest_max_width = kMaxDockWidth;
+  int largest_min_width = kMinDockWidth;
+  // Ideal width of the docked area is as close to kIdealWidth as possible
+  // while still respecting the minimum and maximum width restrictions on the
+  // individual docked windows as well as the width that was possibly set by a
+  // user (which needs to be preserved when dragging and rearranging windows).
   for (std::vector<WindowWithHeight>::const_iterator iter =
            visible_windows.begin();
        iter != visible_windows.end(); ++iter) {
     const aura::Window* window = iter->window();
-
-    // Adjust the dragged window to the dock. If that is not possible then
-    // other docked windows area adjusted to the one that is being dragged.
-    int adjusted_docked_width = window->bounds().width();
-    if (window == dragged_window_) {
-      // Adjust the dragged window width to the current dock size or ideal when
-      // there are no other docked windows.
-      adjusted_docked_width = GetWindowWidthCloseTo(
-          window, (docked_width_ > 0) ? docked_width_ : kIdealWidth);
-    } else if (!is_dragged_from_dock_ && is_dragged_window_docked_) {
-      // When a docked window is dragged-in other docked windows' widths are
-      // adjusted to the new width if necessary.
-      // When there is no dragged docked window the docked windows retain their
-      // widths.
-      // When a dragged window is simply being reordered in the docked area the
-      // other windows are not resized (but the dragged window can be).
-      adjusted_docked_width = GetWindowWidthCloseTo(window, 0);
+    int min_window_width = window->bounds().width();
+    int max_window_width = min_window_width;
+    if (!wm::GetWindowState(window)->bounds_changed_by_user()) {
+      min_window_width = GetWindowWidthCloseTo(window, kMinDockWidth);
+      max_window_width = GetWindowWidthCloseTo(window, kMaxDockWidth);
     }
-    ideal_docked_width = std::max(ideal_docked_width, adjusted_docked_width);
-
-    // Restrict docked area width regardless of window restrictions.
-    ideal_docked_width = std::max(std::min(ideal_docked_width, kMaxDockWidth),
-                                  kMinDockWidth);
+    largest_min_width = std::max(largest_min_width, min_window_width);
+    smallest_max_width = std::min(smallest_max_width, max_window_width);
   }
-  return ideal_docked_width;
+  int ideal_width = std::max(largest_min_width,
+                             std::min(smallest_max_width, kIdealWidth));
+  // Restrict docked area width regardless of window restrictions.
+  ideal_width = std::max(std::min(ideal_width, kMaxDockWidth), kMinDockWidth);
+  return ideal_width;
 }
 
 void DockedWindowLayoutManager::FanOutChildren(
@@ -908,20 +900,20 @@ void DockedWindowLayoutManager::FanOutChildren(
   // windows.
   std::sort(visible_windows->begin(), visible_windows->end(),
             CompareWindowPos(is_dragged_from_dock_ ? dragged_window_ : NULL,
-                delta));
+                             delta));
   for (std::vector<WindowWithHeight>::iterator iter = visible_windows->begin();
-      iter != visible_windows->end(); ++iter) {
+       iter != visible_windows->end(); ++iter) {
     aura::Window* window = iter->window();
     gfx::Rect bounds = ScreenAsh::ConvertRectToScreen(
         window->parent(), window->GetTargetBounds());
-    // A window is extended or shrunk to be as close as possible to the docked
-    // area width. Windows other than the dragged window are kept at their
-    // existing size when the dragged window is just being reordered.
+    // A window is extended or shrunk to be as close as possible to the ideal
+    // docked area width. Windows that were resized by a user are kept at their
+    // existing size.
     // This also enforces the min / max restrictions on the docked area width.
     bounds.set_width(GetWindowWidthCloseTo(
         window,
-        (!is_dragged_from_dock_ || window == dragged_window_) ?
-            ideal_docked_width : bounds.width()));
+        wm::GetWindowState(window)->bounds_changed_by_user() ?
+            bounds.width() : ideal_docked_width));
     DCHECK_LE(bounds.width(), ideal_docked_width);
 
     DockedAlignment alignment = alignment_;

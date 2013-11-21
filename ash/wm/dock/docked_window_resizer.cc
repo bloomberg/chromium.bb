@@ -118,6 +118,10 @@ void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   }
   // Window could get docked by the WorkspaceWindowResizer, update the state.
   is_docked_ = dock_layout_->is_dragged_window_docked();
+  // Whenever a window is dragged out of the dock it will be auto-sized
+  // in the dock if it gets docked again.
+  if (!is_docked_)
+    was_bounds_changed_by_user_ = false;
 }
 
 void DockedWindowResizer::CompleteDrag(int event_flags) {
@@ -170,6 +174,8 @@ DockedWindowResizer::DockedWindowResizer(WindowResizer* next_window_resizer,
       did_move_or_resize_(false),
       was_docked_(false),
       is_docked_(false),
+      was_bounds_changed_by_user_(
+          wm::GetWindowState(details.window)->bounds_changed_by_user()),
       weak_ptr_factory_(this) {
   DCHECK(details_.is_resizable);
   aura::Window* dock_container = Shell::GetContainer(
@@ -216,6 +222,13 @@ bool DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
 }
 
 void DockedWindowResizer::StartedDragging() {
+  // During resizing the window width is preserved by DockedwindowLayoutManager.
+  wm::WindowState* window_state = wm::GetWindowState(GetTarget());
+  if (is_docked_ &&
+      (details_.bounds_change & WindowResizer::kBoundsChange_Resizes)) {
+    window_state->set_bounds_changed_by_user(true);
+  }
+
   // Tell the dock layout manager that we are dragging this window.
   // At this point we are not yet animating the window as it may not be
   // inside the docked area.
@@ -226,7 +239,7 @@ void DockedWindowResizer::StartedDragging() {
   if (GetTarget()->type() != aura::client::WINDOW_TYPE_PANEL &&
       GetTarget()->parent()->id() == kShellWindowId_DefaultContainer) {
     // The window is going to be reparented - avoid completing the drag.
-    wm::GetWindowState(GetTarget())->set_continue_drag_after_reparent(true);
+    window_state->set_continue_drag_after_reparent(true);
 
     // Reparent the window into the docked windows container in order to get it
     // on top of other docked windows.
@@ -245,7 +258,7 @@ void DockedWindowResizer::FinishedDragging() {
   did_move_or_resize_ = false;
   aura::Window* window = GetTarget();
   wm::WindowState* window_state = wm::GetWindowState(window);
-  const bool attached_panel =
+  const bool is_attached_panel =
       window->type() == aura::client::WINDOW_TYPE_PANEL &&
       window_state->panel_attached();
   const bool is_resized =
@@ -253,7 +266,7 @@ void DockedWindowResizer::FinishedDragging() {
 
   // When drag is completed the dragged docked window is resized to the bounds
   // calculated by the layout manager that conform to other docked windows.
-  if (!attached_panel && is_docked_ && !is_resized) {
+  if (!is_attached_panel && is_docked_ && !is_resized) {
     gfx::Rect bounds = ScreenAsh::ConvertRectFromScreen(
         window->parent(), dock_layout_->dragged_bounds());
     if (!bounds.IsEmpty() && bounds.width() != window->bounds().width()) {
@@ -270,11 +283,34 @@ void DockedWindowResizer::FinishedDragging() {
   }
 
   // Check if the window needs to be docked or returned to workspace.
+  DockedAction action = MaybeReparentWindowOnDragCompletion(is_resized,
+                                                            is_attached_panel);
+  dock_layout_->FinishDragging(
+      action,
+      details_.source == aura::client::WINDOW_MOVE_SOURCE_MOUSE ?
+          DOCKED_ACTION_SOURCE_MOUSE : DOCKED_ACTION_SOURCE_TOUCH);
+
+  // If we started the drag in one root window and moved into another root
+  // but then canceled the drag we may need to inform the original layout
+  // manager that the drag is finished.
+  if (initial_dock_layout_ != dock_layout_)
+    initial_dock_layout_->FinishDragging(
+        DOCKED_ACTION_NONE,
+        details_.source == aura::client::WINDOW_MOVE_SOURCE_MOUSE ?
+            DOCKED_ACTION_SOURCE_MOUSE : DOCKED_ACTION_SOURCE_TOUCH);
+  is_docked_ = false;
+}
+
+DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(
+    bool is_resized, bool is_attached_panel) {
+  aura::Window* window = GetTarget();
+
+  // Check if the window needs to be docked or returned to workspace.
   DockedAction action = DOCKED_ACTION_NONE;
   aura::Window* dock_container = Shell::GetContainer(
       window->GetRootWindow(),
       kShellWindowId_DockedContainer);
-  if ((is_resized || !attached_panel) &&
+  if ((is_resized || !is_attached_panel) &&
       is_docked_ != (window->parent() == dock_container)) {
     if (is_docked_) {
       wm::ReparentChildWithTransientChildren(dock_container, window);
@@ -305,20 +341,15 @@ void DockedWindowResizer::FinishedDragging() {
     else
       action = DOCKED_ACTION_NONE;
   }
-  dock_layout_->FinishDragging(
-      action,
-      details_.source == aura::client::WINDOW_MOVE_SOURCE_MOUSE ?
-          DOCKED_ACTION_SOURCE_MOUSE : DOCKED_ACTION_SOURCE_TOUCH);
-
-  // If we started the drag in one root window and moved into another root
-  // but then canceled the drag we may need to inform the original layout
-  // manager that the drag is finished.
-  if (initial_dock_layout_ != dock_layout_)
-    initial_dock_layout_->FinishDragging(
-        DOCKED_ACTION_NONE,
-        details_.source == aura::client::WINDOW_MOVE_SOURCE_MOUSE ?
-            DOCKED_ACTION_SOURCE_MOUSE : DOCKED_ACTION_SOURCE_TOUCH);
-  is_docked_ = false;
+  // When a window is newly docked it is auto-sized by docked layout adjusting
+  // to other windows. If it is just dragged (but not resized) while being
+  // docked it is auto-sized unless it has been resized while being docked
+  // before.
+  if (is_docked_) {
+    wm::GetWindowState(window)->set_bounds_changed_by_user(
+        was_docked_ && (is_resized || was_bounds_changed_by_user_));
+  }
+  return action;
 }
 
 }  // namespace internal

@@ -66,6 +66,15 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
   // of the drag start.
   void FinishedDragging();
 
+  // Reparents dragged window as necessary to the docked container or back to
+  // workspace at the end of the drag. Calculates and returns action taken that
+  // can be reported in UMA stats. |is_resized| reports if the window is merely
+  // being resized rather than repositioned. |attached_panel| is necessary to
+  // avoid docking panels that have been attached to the launcher shelf at the
+  // end of the drag.
+  DockedAction MaybeReparentWindowOnDragCompletion(bool is_resized,
+                                                   bool is_attached_panel);
+
   const Details details_;
 
   gfx::Point last_location_;
@@ -85,6 +94,10 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
 
   // True if the dragged window is docked during the drag.
   bool is_docked_;
+
+  // True if the dragged window had |bounds_changed_by_user| before the drag.
+  // Cleared whenever the target window gets dragged outside of the docked area.
+  bool was_bounds_changed_by_user_;
 
   base::WeakPtrFactory<DockedWindowResizer> weak_ptr_factory_;
 

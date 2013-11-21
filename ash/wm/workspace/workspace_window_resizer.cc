@@ -463,6 +463,7 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
 }
 
 void WorkspaceWindowResizer::RevertDrag() {
+  window_state()->set_bounds_changed_by_user(initial_bounds_changed_by_user_);
   snap_phantom_window_controller_.reset();
 
   if (!did_move_or_resize_)
@@ -509,6 +510,8 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
       attached_windows_(attached_windows),
       did_lock_cursor_(false),
       did_move_or_resize_(false),
+      initial_bounds_changed_by_user_(
+          details.window_state->bounds_changed_by_user()),
       total_min_(0),
       total_initial_size_(0),
       snap_type_(SNAP_NONE),
@@ -1028,11 +1031,15 @@ SnapType WorkspaceWindowResizer::GetSnapType(
 void WorkspaceWindowResizer::SetDraggedWindowDocked(bool should_dock) {
   if (should_dock &&
       dock_layout_->GetAlignmentOfWindow(window()) != DOCKED_ALIGNMENT_NONE) {
-    if (!dock_layout_->is_dragged_window_docked())
+    if (!dock_layout_->is_dragged_window_docked()) {
+      window_state()->set_bounds_changed_by_user(false);
       dock_layout_->DockDraggedWindow(window());
+    }
   } else {
-    if (dock_layout_->is_dragged_window_docked())
+    if (dock_layout_->is_dragged_window_docked()) {
       dock_layout_->UndockDraggedWindow();
+      window_state()->set_bounds_changed_by_user(true);
+    }
   }
 }
 
