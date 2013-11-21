@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/task_runner.h"
 #include "base/time/default_tick_clock.h"
+#include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
@@ -21,6 +22,7 @@
 #include "media/cast/test/transport/transport.h"
 #include "media/cast/test/utility/input_helper.h"
 #include "media/cast/test/video_utility.h"
+#include "ui/gfx/size.h"
 
 #define DEFAULT_SEND_PORT "2344"
 #define DEFAULT_RECEIVE_PORT "2346"
@@ -202,6 +204,7 @@ class SendProcess {
         frame_input_(frame_input),
         synthetic_count_(0),
         clock_(cast_environment->Clock()),
+        start_time_(),
         weak_factory_(this) {
     audio_bus_factory_.reset(new TestAudioBusFactory(kAudioChannels,
         kAudioSamplingFrequency, kSoundFrequency, kSoundVolume));
@@ -222,10 +225,7 @@ class SendProcess {
       fclose(video_file_);
   }
 
-  void ReleaseVideoFrame(const I420VideoFrame* frame) {
-    delete [] frame->y_plane.data;
-    delete [] frame->u_plane.data;
-    delete [] frame->v_plane.data;
+  void ReleaseVideoFrame(const scoped_refptr<media::VideoFrame>&) {
     SendFrame();
   }
 
@@ -245,9 +245,14 @@ class SendProcess {
     frame_input_->InsertAudio(audio_bus_ptr, clock_->NowTicks(),
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
-    I420VideoFrame* video_frame = new I420VideoFrame();
-    video_frame->width = video_config_.width;
-    video_frame->height = video_config_.height;
+    gfx::Size size(video_config_.width, video_config_.height);
+    // TODO(mikhal): Use the provided timestamp.
+    if (start_time_.is_null())
+      start_time_ = clock_->NowTicks();
+    base::TimeDelta time_diff = clock_->NowTicks() - start_time_;
+    scoped_refptr<media::VideoFrame> video_frame =
+        media::VideoFrame::CreateFrame(
+        VideoFrame::I420, size, gfx::Rect(size), size, time_diff);
     if (video_file_) {
       if (!PopulateVideoFrameFromFile(video_frame, video_file_))
         return;
@@ -269,6 +274,7 @@ class SendProcess {
   FILE* video_file_;
   uint8 synthetic_count_;
   base::TickClock* const clock_;  // Not owned by this class.
+  base::TimeTicks start_time_;
   scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
   base::WeakPtrFactory<SendProcess> weak_factory_;
 };

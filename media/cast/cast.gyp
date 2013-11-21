@@ -107,6 +107,7 @@
             '<(DEPTH)/',
           ],
           'dependencies': [
+            '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
             '<(DEPTH)/net/net.gyp:net_test_support',
             'cast_config',
             '<(DEPTH)/media/cast/cast_sender.gyp:*',
@@ -126,6 +127,7 @@
             '<(DEPTH)/',
           ],
           'dependencies': [
+            '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
             '<(DEPTH)/net/net.gyp:net_test_support',
             'cast_config',
             '<(DEPTH)/media/cast/cast_receiver.gyp:*',

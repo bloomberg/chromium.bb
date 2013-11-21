@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "media/base/video_frame.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "media/cast/test/video_utility.h"
@@ -33,23 +34,23 @@ class EncodeDecodeTestFrameCallback :
  public:
   EncodeDecodeTestFrameCallback()
       : num_called_(0) {
-    original_frame_.width = kWidth;
-    original_frame_.height = kHeight;
+  gfx::Size size(kWidth, kHeight);
+  original_frame_ = media::VideoFrame::CreateFrame(
+      VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
   }
 
   void SetFrameStartValue(int start_value) {
-    PopulateVideoFrame(&original_frame_, start_value);
+    PopulateVideoFrame(original_frame_.get(), start_value);
   }
 
   void DecodeComplete(scoped_ptr<I420VideoFrame> decoded_frame,
                       const base::TimeTicks& render_time) {
     ++num_called_;
-    // Compare frames.
     // Compare resolution.
-    EXPECT_EQ(original_frame_.width, decoded_frame->width);
-    EXPECT_EQ(original_frame_.height, decoded_frame->height);
+    EXPECT_EQ(original_frame_->coded_size().width(), decoded_frame->width);
+    EXPECT_EQ(original_frame_->coded_size().height(), decoded_frame->height);
     // Compare data.
-    EXPECT_GT(I420PSNR(original_frame_, *(decoded_frame.get())), 40.0);
+    EXPECT_GT(I420PSNR(*(original_frame_.get()), *(decoded_frame.get())), 40.0);
   }
 
   int num_called() const {
@@ -63,7 +64,7 @@ class EncodeDecodeTestFrameCallback :
   friend class base::RefCountedThreadSafe<EncodeDecodeTestFrameCallback>;
 
   int num_called_;
-  I420VideoFrame original_frame_;
+  scoped_refptr<media::VideoFrame> original_frame_;
 };
 }  // namespace
 
@@ -97,23 +98,17 @@ class EncodeDecodeTest : public ::testing::Test {
   virtual void SetUp() OVERRIDE {
     // Create test frame.
     int start_value = 10;  // Random value to start from.
-    video_frame_.reset(new I420VideoFrame());
-    video_frame_->width = encoder_config_.width;
-    video_frame_->height = encoder_config_.height;
-    PopulateVideoFrame(video_frame_.get(), start_value);
+    gfx::Size size(encoder_config_.width, encoder_config_.height);
+    video_frame_ =  media::VideoFrame::CreateFrame(VideoFrame::I420,
+        size, gfx::Rect(size), size, base::TimeDelta());
+    PopulateVideoFrame(video_frame_, start_value);
     test_callback_->SetFrameStartValue(start_value);
-  }
-
-  virtual void TearDown() OVERRIDE {
-    delete [] video_frame_->y_plane.data;
-    delete [] video_frame_->u_plane.data;
-    delete [] video_frame_->v_plane.data;
   }
 
   VideoSenderConfig encoder_config_;
   scoped_ptr<Vp8Encoder> encoder_;
   scoped_ptr<Vp8Decoder> decoder_;
-  scoped_ptr<I420VideoFrame> video_frame_;
+  scoped_refptr<media::VideoFrame> video_frame_;
   base::SimpleTestTickClock testing_clock_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
@@ -123,7 +118,7 @@ class EncodeDecodeTest : public ::testing::Test {
 TEST_F(EncodeDecodeTest, BasicEncodeDecode) {
   EncodedVideoFrame encoded_frame;
   // Encode frame.
-  encoder_->Encode(*(video_frame_.get()), &encoded_frame);
+  encoder_->Encode(video_frame_, &encoded_frame);
   EXPECT_GT(encoded_frame.data.size(), GG_UINT64_C(0));
   // Decode frame.
   decoder_->Decode(&encoded_frame, base::TimeTicks(), base::Bind(

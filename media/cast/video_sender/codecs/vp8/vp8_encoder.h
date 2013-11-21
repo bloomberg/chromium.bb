@@ -10,6 +10,10 @@
 #include "media/cast/cast_config.h"
 #include "third_party/libvpx/source/libvpx/vpx/vpx_encoder.h"
 
+namespace media {
+class VideoFrame;
+}
+
 // VPX forward declaration.
 typedef struct vpx_codec_ctx vpx_enc_ctx_t;
 
@@ -26,7 +30,7 @@ class Vp8Encoder {
   ~Vp8Encoder();
 
   // Encode a raw image (as a part of a video stream).
-  bool Encode(const I420VideoFrame& input_image,
+  bool Encode(const scoped_refptr<media::VideoFrame>& video_frame,
               EncodedVideoFrame* encoded_image);
 
   // Update the encoder with a new target bit rate.

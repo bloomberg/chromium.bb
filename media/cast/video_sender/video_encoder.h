@@ -13,6 +13,10 @@
 #include "media/cast/video_sender/codecs/vp8/vp8_encoder.h"
 
 namespace media {
+class VideoFrame;
+}
+
+namespace media {
 namespace cast {
 
 // This object is called external from the main cast thread and internally from
@@ -34,7 +38,7 @@ class VideoEncoder : public VideoEncoderController,
   // the encoder is done with the frame; it does not mean that the encoded frame
   // has been sent out.
   // Once the encoded frame is ready the frame_encoded_callback is called.
-  bool EncodeVideoFrame(const I420VideoFrame* video_frame,
+  bool EncodeVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
                         const base::TimeTicks& capture_time,
                         const FrameEncodedCallback& frame_encoded_callback,
                         const base::Closure frame_release_callback);
@@ -50,7 +54,7 @@ class VideoEncoder : public VideoEncoderController,
 
   // The actual encode, called from the video encoder thread.
   void EncodeVideoFrameEncoderThread(
-      const I420VideoFrame* video_frame,
+      const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& capture_time,
       const CodecDynamicConfig& dynamic_config,
       const FrameEncodedCallback& frame_encoded_callback,

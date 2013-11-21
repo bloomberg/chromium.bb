@@ -14,6 +14,10 @@
 #include "media/cast/video_sender/video_sender.h"
 
 namespace media {
+  class VideoFrame;
+}
+
+namespace media {
 namespace cast {
 
 class AudioSender;

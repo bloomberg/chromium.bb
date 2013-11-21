@@ -21,6 +21,7 @@
 
 namespace media {
 class AudioBus;
+class VideoFrame;
 }
 
 namespace media {
@@ -33,9 +34,10 @@ class FrameInput : public base::RefCountedThreadSafe<FrameInput> {
   // The callback is called from the main cast thread as soon as
   // the encoder is done with the frame; it does not mean that the encoded frame
   // has been sent out.
-  virtual void InsertRawVideoFrame(const I420VideoFrame* video_frame,
-                                   const base::TimeTicks& capture_time,
-                                   const base::Closure callback) = 0;
+  virtual void InsertRawVideoFrame(
+      const scoped_refptr<media::VideoFrame>& video_frame,
+      const base::TimeTicks& capture_time,
+      const base::Closure& callback) = 0;
 
   // The video_frame must be valid until the callback is called.
   // The callback is called from the main cast thread as soon as
@@ -60,8 +62,6 @@ class FrameInput : public base::RefCountedThreadSafe<FrameInput> {
   virtual void InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
                                      const base::TimeTicks& recorded_time,
                                      const base::Closure callback) = 0;
-
-  static void DeleteVideoFrame(const I420VideoFrame* video_frame);
 
  protected:
   virtual ~FrameInput() {}

@@ -3,4 +3,5 @@ include_rules = [
    "+net",
   "+third_party/webrtc",
   "+third_party/libyuv",
+  "+ui/gfx",
 ]

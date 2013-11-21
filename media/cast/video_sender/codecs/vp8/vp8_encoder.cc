@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/rtp_common/rtp_defines.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
@@ -121,17 +122,20 @@ void Vp8Encoder::InitEncode(int number_of_cores) {
                     rc_max_intra_target);
 }
 
-bool Vp8Encoder::Encode(const I420VideoFrame& input_image,
+bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
                         EncodedVideoFrame* encoded_image) {
   // Image in vpx_image_t format.
   // Input image is const. VP8's raw image is not defined as const.
-  raw_image_->planes[PLANE_Y] = const_cast<uint8*>(input_image.y_plane.data);
-  raw_image_->planes[PLANE_U] = const_cast<uint8*>(input_image.u_plane.data);
-  raw_image_->planes[PLANE_V] = const_cast<uint8*>(input_image.v_plane.data);
+  raw_image_->planes[PLANE_Y] =
+      const_cast<uint8*>(video_frame->data(VideoFrame::kYPlane));
+  raw_image_->planes[PLANE_U] =
+      const_cast<uint8*>(video_frame->data(VideoFrame::kUPlane));
+  raw_image_->planes[PLANE_V] =
+      const_cast<uint8*>(video_frame->data(VideoFrame::kVPlane));
 
-  raw_image_->stride[VPX_PLANE_Y] = input_image.y_plane.stride;
-  raw_image_->stride[VPX_PLANE_U] = input_image.u_plane.stride;
-  raw_image_->stride[VPX_PLANE_V] = input_image.v_plane.stride;
+  raw_image_->stride[VPX_PLANE_Y] = video_frame->stride(VideoFrame::kYPlane);
+  raw_image_->stride[VPX_PLANE_U] = video_frame->stride(VideoFrame::kUPlane);
+  raw_image_->stride[VPX_PLANE_V] = video_frame->stride(VideoFrame::kVPlane);
 
   uint8 latest_frame_id_to_reference;
   Vp8Buffers buffer_to_update;

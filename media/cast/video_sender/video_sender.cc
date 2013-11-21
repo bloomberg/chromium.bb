@@ -128,9 +128,9 @@ void VideoSender::InitializeTimers() {
 }
 
 void VideoSender::InsertRawVideoFrame(
-    const I420VideoFrame* video_frame,
+    const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& capture_time,
-    const base::Closure callback) {
+    const base::Closure& callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(video_encoder_.get()) << "Invalid state";
 

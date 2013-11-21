@@ -12,6 +12,7 @@
         'vp8_encoder.h',
       ], # source
       'dependencies': [
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
       ],
     },

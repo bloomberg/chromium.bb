@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "media/base/video_frame.h"
 
 namespace media {
 namespace cast {
@@ -31,7 +32,7 @@ VideoEncoder::VideoEncoder(scoped_refptr<CastEnvironment> cast_environment,
 VideoEncoder::~VideoEncoder() {}
 
 bool VideoEncoder::EncodeVideoFrame(
-    const I420VideoFrame* video_frame,
+    const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& capture_time,
     const FrameEncodedCallback& frame_encoded_callback,
     const base::Closure frame_release_callback) {
@@ -54,7 +55,7 @@ bool VideoEncoder::EncodeVideoFrame(
 }
 
 void VideoEncoder::EncodeVideoFrameEncoderThread(
-    const I420VideoFrame* video_frame,
+    const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& capture_time,
     const CodecDynamicConfig& dynamic_config,
     const FrameEncodedCallback& frame_encoded_callback,
@@ -70,7 +71,7 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
   cast_environment_->Logging()->InsertFrameEvent(kVideoFrameSentToEncoder,
       rtp_timestamp, kFrameIdUnknown);
   scoped_ptr<EncodedVideoFrame> encoded_frame(new EncodedVideoFrame());
-  bool retval = vp8_encoder_->Encode(*video_frame, encoded_frame.get());
+  bool retval = vp8_encoder_->Encode(video_frame, encoded_frame.get());
 
   // We are done with the video frame release it.
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,

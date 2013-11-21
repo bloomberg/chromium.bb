@@ -17,6 +17,7 @@
 #include "base/bind_helpers.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
@@ -52,13 +53,6 @@ static const int kFrameTimerMs = 33;
 // frame by 10 ms if there is packets belonging to the previous frame being
 // retransmitted.
 static const int kTimerErrorMs = 11;
-
-namespace {
-// Dummy callback function that does nothing except to accept ownership of
-// |audio_bus| for destruction.
-void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {
-}
-}
 
 // Class that sends the packet direct from sender into the receiver with the
 // ability to drop packets between the two.
@@ -299,15 +293,14 @@ class TestReceiverVideoCallback :
     EXPECT_EQ(expected_video_frame.width, video_frame->width);
     EXPECT_EQ(expected_video_frame.height, video_frame->height);
 
-    I420VideoFrame* expected_I420_frame = new I420VideoFrame();
-    expected_I420_frame->width = expected_video_frame.width;
-    expected_I420_frame->height = expected_video_frame.height;
+    gfx::Size size(expected_video_frame.width, expected_video_frame.height);
+    scoped_refptr<media::VideoFrame> expected_I420_frame =
+        media::VideoFrame::CreateFrame(
+        VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
     PopulateVideoFrame(expected_I420_frame, expected_video_frame.start_value);
 
-    double psnr = I420PSNR(*expected_I420_frame, *(video_frame.get()));
+    double psnr = I420PSNR(*(expected_I420_frame.get()), *(video_frame.get()));
     EXPECT_GE(psnr, kVideoAcceptedPSNR);
-
-    FrameInput::DeleteVideoFrame(expected_I420_frame);
   }
 
   int number_times_called() { return num_called_;}
@@ -331,6 +324,7 @@ class End2EndTest : public ::testing::Test {
         cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
             task_runner_, task_runner_, task_runner_, task_runner_,
             GetDefaultCastLoggingConfig())),
+        start_time_(),
         sender_to_receiver_(cast_environment_),
         receiver_to_sender_(cast_environment_),
         test_receiver_audio_callback_(new TestReceiverAudioCallback()),
@@ -419,12 +413,19 @@ class End2EndTest : public ::testing::Test {
   virtual ~End2EndTest() {}
 
   void SendVideoFrame(int start_value, const base::TimeTicks& capture_time) {
-    I420VideoFrame* video_frame = new I420VideoFrame();
-    video_frame->width = video_sender_config_.width;
-    video_frame->height = video_sender_config_.height;
+    if (start_time_.is_null())
+      start_time_ = testing_clock_.NowTicks();
+      start_time_ = testing_clock_.NowTicks();
+    base::TimeDelta time_diff = testing_clock_.NowTicks() - start_time_;
+    gfx::Size size(kVideoWidth, kVideoHeight);
+    EXPECT_TRUE(VideoFrame::IsValidConfig(VideoFrame::I420,
+                                          size, gfx::Rect(size), size));
+    scoped_refptr<media::VideoFrame> video_frame =
+        media::VideoFrame::CreateFrame(
+        VideoFrame::I420, size, gfx::Rect(size), size, time_diff);
     PopulateVideoFrame(video_frame, start_value);
     frame_input_->InsertRawVideoFrame(video_frame, capture_time,
-        base::Bind(FrameInput::DeleteVideoFrame, video_frame));
+        base::Bind(base::DoNothing));
   }
 
   void RunTasks(int during_ms) {
@@ -443,6 +444,7 @@ class End2EndTest : public ::testing::Test {
   base::SimpleTestTickClock testing_clock_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
+  base::TimeTicks start_time_;
 
   LoopBackTransport sender_to_receiver_;
   LoopBackTransport receiver_to_sender_;
@@ -490,7 +492,7 @@ TEST_F(End2EndTest, LoopNoLossPcm16) {
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
     frame_input_->InsertAudio(audio_bus_ptr, send_time,
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+        base::Bind(base::DoNothing));
 
     SendVideoFrame(video_start, send_time);
 
@@ -540,7 +542,7 @@ TEST_F(End2EndTest, LoopNoLossPcm16ExternalDecoder) {
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
     frame_input_->InsertAudio(audio_bus_ptr, send_time,
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+        base::Bind(base::DoNothing));
 
     RunTasks(10);
     frame_receiver_->GetCodedAudioFrame(
@@ -572,7 +574,7 @@ TEST_F(End2EndTest, LoopNoLossOpus) {
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
     frame_input_->InsertAudio(audio_bus_ptr, send_time,
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+        base::Bind(base::DoNothing));
 
     RunTasks(30);
 
@@ -615,7 +617,7 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
     frame_input_->InsertAudio(audio_bus_ptr, send_time,
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+        base::Bind(base::DoNothing));
 
     SendVideoFrame(video_start, send_time);
     RunTasks(kFrameTimerMs);
@@ -643,7 +645,7 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
     frame_input_->InsertAudio(audio_bus_ptr, send_time,
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+        base::Bind(base::DoNothing));
 
     test_receiver_video_callback_->AddExpectedResult(video_start,
         video_sender_config_.width, video_sender_config_.height, send_time);
@@ -852,7 +854,7 @@ TEST_F(End2EndTest, CryptoAudio) {
     }
     AudioBus* const audio_bus_ptr = audio_bus.get();
     frame_input_->InsertAudio(audio_bus_ptr, send_time,
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+        base::Bind(base::DoNothing));
 
     RunTasks(num_10ms_blocks * 10);
 
