@@ -4,9 +4,11 @@
 
 #include "ui/base/ime/remote_input_method_win.h"
 
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_delegate.h"
+#include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/remote_input_method_delegate_win.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
@@ -104,6 +106,8 @@ class RemoteInputMethodWin : public InputMethod,
       : delegate_(delegate),
         remote_delegate_(NULL),
         text_input_client_(NULL),
+        current_input_type_(ui::TEXT_INPUT_TYPE_NONE),
+        current_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
         is_candidate_popup_open_(false),
         is_ime_(false),
         langid_(kFallbackLangID) {
@@ -111,6 +115,9 @@ class RemoteInputMethodWin : public InputMethod,
   }
 
   virtual ~RemoteInputMethodWin() {
+    FOR_EACH_OBSERVER(InputMethodObserver,
+                      observer_list_,
+                      OnInputMethodDestroyed(this));
     UnregisterInstance(this);
   }
 
@@ -120,14 +127,28 @@ class RemoteInputMethodWin : public InputMethod,
     delegate_ = delegate;
   }
 
-  virtual void Init(bool focused) OVERRIDE {}
+  virtual void Init(bool focused) OVERRIDE {
+    if (focused)
+      OnFocus();
+  }
 
-  virtual void OnFocus() OVERRIDE {}
+  virtual void OnFocus() OVERRIDE {
+    FOR_EACH_OBSERVER(InputMethodObserver,
+                      observer_list_,
+                      OnFocus());
+  }
 
-  virtual void OnBlur() OVERRIDE {}
+  virtual void OnBlur() OVERRIDE {
+    FOR_EACH_OBSERVER(InputMethodObserver,
+                      observer_list_,
+                      OnBlur());
+  }
 
   virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                         NativeEventResult* result) OVERRIDE {
+    FOR_EACH_OBSERVER(InputMethodObserver,
+                      observer_list_,
+                      OnUntranslatedIMEMessage(event));
     return false;
   }
 
@@ -140,9 +161,17 @@ class RemoteInputMethodWin : public InputMethod,
       input_scopes_ = GetInputScopesAsInt(client->GetTextInputType(),
                                           client->GetTextInputMode());
       composition_character_bounds_ = GetCompositionCharacterBounds(client);
+      current_input_type_ = client->GetTextInputType();
+      current_input_mode_ = client->GetTextInputMode();
     }
 
+    const bool text_input_client_changed = text_input_client_ != client;
     text_input_client_ = client;
+    if (text_input_client_changed) {
+      FOR_EACH_OBSERVER(InputMethodObserver,
+                        observer_list_,
+                        OnTextInputStateChanged(client));
+    }
 
     if (!remote_delegate_ || (prev_input_scopes == input_scopes_ &&
                               prev_bounds == composition_character_bounds_))
@@ -191,6 +220,11 @@ class RemoteInputMethodWin : public InputMethod,
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE {
     if (!text_input_client_ || text_input_client_ != client)
       return;
+    const ui::TextInputType prev_type = current_input_type_;
+    const ui::TextInputMode prev_mode = current_input_mode_;
+    current_input_type_ = client->GetTextInputType();
+    current_input_mode_ = client->GetTextInputMode();
+
     std::vector<int32> prev_input_scopes;
     std::swap(input_scopes_, prev_input_scopes);
     input_scopes_ = GetInputScopesAsInt(client->GetTextInputType(),
@@ -198,6 +232,11 @@ class RemoteInputMethodWin : public InputMethod,
     if (input_scopes_ != prev_input_scopes && remote_delegate_) {
       remote_delegate_->OnTextInputClientUpdated(
           input_scopes_, composition_character_bounds_);
+    }
+    if (current_input_type_ != prev_type || current_input_mode_ != prev_mode) {
+      FOR_EACH_OBSERVER(InputMethodObserver,
+                        observer_list_,
+                        OnTextInputTypeChanged(client));
     }
   }
 
@@ -211,6 +250,9 @@ class RemoteInputMethodWin : public InputMethod,
       remote_delegate_->OnTextInputClientUpdated(
           input_scopes_, composition_character_bounds_);
     }
+    FOR_EACH_OBSERVER(InputMethodObserver,
+                      observer_list_,
+                      OnCaretBoundsChanged(client));
   }
 
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE {
@@ -219,7 +261,9 @@ class RemoteInputMethodWin : public InputMethod,
   }
 
   virtual void OnInputLocaleChanged() OVERRIDE {
-    // not supported.
+    FOR_EACH_OBSERVER(InputMethodObserver,
+                      observer_list_,
+                      OnInputLocaleChanged());
   }
 
   virtual std::string GetInputLocale() OVERRIDE {
@@ -272,13 +316,11 @@ class RemoteInputMethodWin : public InputMethod,
   }
 
   virtual void AddObserver(InputMethodObserver* observer) OVERRIDE {
-    // not supported.
-    NOTREACHED();
+    observer_list_.AddObserver(observer);
   }
 
   virtual void RemoveObserver(InputMethodObserver* observer) OVERRIDE {
-    // not supported.
-    NOTREACHED();
+    observer_list_.RemoveObserver(observer);
   }
 
   // Overridden from RemoteInputMethodPrivateWin:
@@ -312,10 +354,14 @@ class RemoteInputMethodWin : public InputMethod,
            remote_delegate_;
   }
 
+  ObserverList<InputMethodObserver> observer_list_;
+
   internal::InputMethodDelegate* delegate_;
   internal::RemoteInputMethodDelegateWin* remote_delegate_;
 
   TextInputClient* text_input_client_;
+  ui::TextInputType current_input_type_;
+  ui::TextInputMode current_input_mode_;
   std::vector<int32> input_scopes_;
   std::vector<gfx::Rect> composition_character_bounds_;
   bool is_candidate_popup_open_;
@@ -329,7 +375,6 @@ class RemoteInputMethodWin : public InputMethod,
 
 RemoteInputMethodPrivateWin::RemoteInputMethodPrivateWin() {}
 
-// static
 scoped_ptr<InputMethod> CreateRemoteInputMethodWin(
     internal::InputMethodDelegate* delegate) {
   return scoped_ptr<InputMethod>(new RemoteInputMethodWin(delegate));

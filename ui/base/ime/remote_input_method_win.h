@@ -33,7 +33,6 @@ class InputMethod;
 //   will call RemoteInputMethodPrivateWin::OnCandidatePopupChanged and/or
 //   RemoteInputMethodPrivateWin::OnInputSourceChanged accordingly so that
 //   the state cache should be updated.
-// Caveats: RemoteInputMethodWin does not support InputMethodObserver yet.
 
 // Returns the public interface of RemoteInputMethodWin.
 // Caveats: Currently only one instance of RemoteInputMethodWin is able to run
