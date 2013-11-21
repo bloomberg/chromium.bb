@@ -478,8 +478,14 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_ResolveIPv4)
 TEST_PPAPI_NACL(HostResolverPrivate_Resolve)
 TEST_PPAPI_NACL(HostResolverPrivate_ResolveIPv4)
 
+// Flaky on official Windows builder. http://crbug.com/95005
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+#define MAYBE_PPAPIURLLoader DISABLED_URLLoader
+#else
+#define MAYBE_PPAPIURLLoader URLLoader
+#endif
 // URLLoader tests.
-IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader) {
+IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_PPAPIURLLoader) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
@@ -509,12 +515,12 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader) {
   );
 }
 // Timing out on Windows dbg. http://crbug.com/95005
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_URLLoader DISABLED_URLLoader
+#if defined(OS_WIN) && (!defined(NDEBUG) || defined(GOOGLE_CHROME_BUILD))
+#define MAYBE_OutOfProcessURLLoader DISABLED_URLLoader
 #else
-#define MAYBE_URLLoader URLLoader
+#define MAYBE_OutOfProcessURLLoader URLLoader
 #endif
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_URLLoader) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_OutOfProcessURLLoader) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
