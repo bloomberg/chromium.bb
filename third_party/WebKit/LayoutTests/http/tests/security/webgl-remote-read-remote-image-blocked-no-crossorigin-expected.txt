@@ -7,7 +7,7 @@ Tainted canvas:
 PASS: Calling texImage2D() with a tainted image was not allowed: Threw error: SecurityError: Failed to execute 'texImage2D' on 'WebGLRenderingContext': the cross-origin image at http://localhost:8000/security/resources/abe-allow-star.php may not be loaded..
 PASS: Calling readPixels() on a canvas where tainting was attempted by a remote image was allowed.
 PASS: Calling toDataURL() on a canvas where tainting was attempted by a remote image was allowed.
-PASS: Calling texImage2D() with a tainted canvas was not allowed: Threw error: SecurityError: Failed to execute 'texImage2D' on 'WebGLRenderingContext': tainted canvases may not be loded..
+PASS: Calling texImage2D() with a tainted canvas was not allowed: Threw error: SecurityError: Failed to execute 'texImage2D' on 'WebGLRenderingContext': tainted canvases may not be loaded..
 PASS: Calling readPixels() on a canvas where tainting was attempted by a tainted canvas was allowed.
 PASS: Calling toDataURL() on a canvas where tainting was attempted by a tainted canvas was allowed.
 

@@ -5162,7 +5162,7 @@ bool WebGLRenderingContext::validateHTMLCanvasElement(const char* functionName, 
         return false;
     }
     if (wouldTaintOrigin(canvas)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute(functionName, "WebGLRenderingContext", "tainted canvases may not be loded."));
+        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute(functionName, "WebGLRenderingContext", "tainted canvases may not be loaded."));
         return false;
     }
     return true;
