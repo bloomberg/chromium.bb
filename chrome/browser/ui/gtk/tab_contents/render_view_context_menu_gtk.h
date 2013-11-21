@@ -31,6 +31,11 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
   // Menu::Delegate implementation ---------------------------------------------
   virtual bool AlwaysShowIconForCmd(int command_id) const OVERRIDE;
 
+  // SimpleMenuModel::Delegate implementation.
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+
   // RenderViewContextMenuDelegate implementation ------------------------------
   virtual void UpdateMenuItem(int command_id,
                               bool enabled,
@@ -45,8 +50,15 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
+  virtual void AppendPlatformEditableItems() OVERRIDE;
 
  private:
+  // Adds writing direction submenu.
+  void AppendBidiSubMenu();
+
+  // Model for the BiDi input submenu.
+  ui::SimpleMenuModel bidi_submenu_model_;
+
   scoped_ptr<MenuGtk> menu_gtk_;
   uint32_t triggering_event_time_;
 };

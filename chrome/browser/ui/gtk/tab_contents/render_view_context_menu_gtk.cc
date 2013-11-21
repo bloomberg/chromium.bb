@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
@@ -77,7 +78,8 @@ RenderViewContextMenuGtk::RenderViewContextMenuGtk(
     WebContents* web_contents,
     const content::ContextMenuParams& params,
     content::RenderWidgetHostView* view)
-    : RenderViewContextMenu(web_contents, params) {
+    : RenderViewContextMenu(web_contents, params),
+      bidi_submenu_model_(this) {
   GdkEventButton* event = view->GetLastMouseDown();
   triggering_event_time_ = event ? event->time : GDK_CURRENT_TIME;
 }
@@ -137,6 +139,87 @@ void RenderViewContextMenuGtk::Popup(const gfx::Point& point) {
 bool RenderViewContextMenuGtk::AlwaysShowIconForCmd(int command_id) const {
   return command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST;
+}
+
+void RenderViewContextMenuGtk::ExecuteCommand(int command_id, int event_flags) {
+  switch (command_id) {
+    case IDC_WRITING_DIRECTION_DEFAULT:
+      // WebKit's current behavior is for this menu item to always be disabled.
+      NOTREACHED();
+      break;
+
+    case IDC_WRITING_DIRECTION_RTL:
+    case IDC_WRITING_DIRECTION_LTR: {
+      content::RenderViewHost* view_host = GetRenderViewHost();
+      blink::WebTextDirection dir = blink::WebTextDirectionLeftToRight;
+      if (command_id == IDC_WRITING_DIRECTION_RTL)
+        dir = blink::WebTextDirectionRightToLeft;
+      view_host->UpdateTextDirection(dir);
+      view_host->NotifyTextDirection();
+      break;
+    }
+
+    default:
+      RenderViewContextMenu::ExecuteCommand(command_id, event_flags);
+      break;
+  }
+}
+
+bool RenderViewContextMenuGtk::IsCommandIdChecked(int command_id) const {
+  switch (command_id) {
+    case IDC_WRITING_DIRECTION_DEFAULT:
+      return params_.writing_direction_default &
+          blink::WebContextMenuData::CheckableMenuItemChecked;
+    case IDC_WRITING_DIRECTION_RTL:
+      return params_.writing_direction_right_to_left &
+          blink::WebContextMenuData::CheckableMenuItemChecked;
+    case IDC_WRITING_DIRECTION_LTR:
+      return params_.writing_direction_left_to_right &
+          blink::WebContextMenuData::CheckableMenuItemChecked;
+
+    default:
+      return RenderViewContextMenu::IsCommandIdChecked(command_id);
+  }
+}
+
+bool RenderViewContextMenuGtk::IsCommandIdEnabled(int command_id) const {
+  switch (command_id) {
+    case IDC_WRITING_DIRECTION_MENU:
+      return true;
+    case IDC_WRITING_DIRECTION_DEFAULT:  // Provided to match OS defaults.
+      return params_.writing_direction_default &
+          blink::WebContextMenuData::CheckableMenuItemEnabled;
+    case IDC_WRITING_DIRECTION_RTL:
+      return params_.writing_direction_right_to_left &
+          blink::WebContextMenuData::CheckableMenuItemEnabled;
+    case IDC_WRITING_DIRECTION_LTR:
+      return params_.writing_direction_left_to_right &
+          blink::WebContextMenuData::CheckableMenuItemEnabled;
+
+    default:
+      return RenderViewContextMenu::IsCommandIdEnabled(command_id);
+  }
+}
+
+void RenderViewContextMenuGtk::AppendPlatformEditableItems() {
+  // OS X and Linux provide a contextual menu to set writing direction for BiDi
+  // languages.
+  // This functionality is exposed as a keyboard shortcut on Windows.
+  AppendBidiSubMenu();
+}
+
+void RenderViewContextMenuGtk::AppendBidiSubMenu() {
+  bidi_submenu_model_.AddCheckItem(IDC_WRITING_DIRECTION_DEFAULT,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT));
+  bidi_submenu_model_.AddCheckItem(IDC_WRITING_DIRECTION_LTR,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR));
+  bidi_submenu_model_.AddCheckItem(IDC_WRITING_DIRECTION_RTL,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL));
+
+  menu_model_.AddSubMenu(
+      IDC_WRITING_DIRECTION_MENU,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU),
+      &bidi_submenu_model_);
 }
 
 void RenderViewContextMenuGtk::UpdateMenuItem(int command_id,
