@@ -20,6 +20,7 @@ monitoring for the deletion of the aforementioned file.
 
 import cStringIO
 import logging
+import optparse
 import os
 import re
 import signal
@@ -52,7 +53,7 @@ def CombineLogFiles(list_of_lists, logger):
       try:
         line = cur_device_log[-1]
         # Used to make sure we only splice on a timestamped line
-        if re.match('^\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3} ', line):
+        if re.match(r'^\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3} ', line):
           common_index = cur_file_lines.index(line)
         else:
           logger.warning('splice error - no timestamp in "%s"?', line.strip())
@@ -76,7 +77,7 @@ def FindLogFiles(base_dir):
   Returns:
     Mapping of device_id to a sorted list of file paths for a given device
   """
-  logcat_filter = re.compile('^logcat_(\w+)_(\d+)$')
+  logcat_filter = re.compile(r'^logcat_(\w+)_(\d+)$')
   # list of tuples (<device_id>, <seq num>, <full file path>)
   filtered_list = []
   for cur_file in os.listdir(base_dir):
@@ -87,7 +88,7 @@ def FindLogFiles(base_dir):
   filtered_list.sort()
   file_map = {}
   for device_id, _, cur_file in filtered_list:
-    if not device_id in file_map:
+    if device_id not in file_map:
       file_map[device_id] = []
 
     file_map[device_id] += [cur_file]
@@ -149,7 +150,19 @@ def ShutdownLogcatMonitor(base_dir, logger):
     logger.exception('Error signaling logcat monitor - continuing')
 
 
-def main(base_dir, output_file):
+def main(argv):
+  parser = optparse.OptionParser(usage='Usage: %prog [options] <log dir>')
+  parser.add_option('--output-path',
+                    help='Output file path (if unspecified, prints to stdout)')
+  options, args = parser.parse_args(argv)
+  if len(args) != 1:
+    parser.error('Wrong number of unparsed args')
+  base_dir = args[0]
+  if options.output_path:
+    output_file = open(options.output_path, 'w')
+  else:
+    output_file = sys.stdout
+
   log_stringio = cStringIO.StringIO()
   logger = logging.getLogger('LogcatPrinter')
   logger.setLevel(LOG_LEVEL)
@@ -196,7 +209,4 @@ def main(base_dir, output_file):
   output_file.write(log_stringio.getvalue())
 
 if __name__ == '__main__':
-  if len(sys.argv) == 1:
-    print 'Usage: %s <base_dir>' % sys.argv[0]
-    sys.exit(1)
-  sys.exit(main(sys.argv[1], sys.stdout))
+  sys.exit(main(sys.argv[1:]))

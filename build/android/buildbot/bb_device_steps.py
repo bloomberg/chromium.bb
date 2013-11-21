@@ -511,11 +511,8 @@ def LogcatDump(options):
   # Print logcat, kill logcat monitor
   bb_annotations.PrintNamedStep('logcat_dump')
   logcat_file = os.path.join(CHROME_OUT_DIR, options.target, 'full_log')
-  with open(logcat_file, 'w') as f:
-    RunCmd([
-        os.path.join(CHROME_SRC_DIR, 'build', 'android',
-                     'adb_logcat_printer.py'),
-        LOGCAT_DIR], stdout=f)
+  RunCmd([SrcPath('build' , 'android', 'adb_logcat_printer.py'),
+          '--output-path', logcat_file, LOGCAT_DIR])
   RunCmd(['cat', logcat_file])
 
 
