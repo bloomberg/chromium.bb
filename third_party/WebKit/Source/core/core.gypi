@@ -877,6 +877,7 @@
             'editing/EditingStyle.cpp',
             'editing/Editor.cpp',
             'editing/EditorCommand.cpp',
+            'editing/EditorKeyBindings.cpp',
             'editing/FormatBlockCommand.cpp',
             'editing/FormatBlockCommand.h',
             'editing/FrameSelection.cpp',

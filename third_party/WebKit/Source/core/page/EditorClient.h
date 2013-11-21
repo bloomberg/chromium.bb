@@ -27,13 +27,12 @@
 #ifndef EditorClient_h
 #define EditorClient_h
 
-#include "wtf/PassRefPtr.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 
 class Element;
 class Frame;
-class KeyboardEvent;
 class UndoStep;
 
 class EditorClient {
@@ -46,7 +45,8 @@ public:
     virtual bool canCopyCut(Frame*, bool defaultValue) const = 0;
     virtual bool canPaste(Frame*, bool defaultValue) const = 0;
 
-    virtual void handleKeyboardEvent(KeyboardEvent*) = 0;
+    virtual void didExecuteCommand(String) = 0;
+    virtual bool handleKeyboardEvent() = 0;
 };
 
 }

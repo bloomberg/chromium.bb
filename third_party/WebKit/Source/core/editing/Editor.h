@@ -241,6 +241,9 @@ public:
     };
     friend class RevealSelectionScope;
 
+    // Export interpretKeyEvent only for testing
+    static const char* interpretKeyEvent(const WebCore::KeyboardEvent*);
+
 private:
     Frame& m_frame;
     RefPtr<CompositeEditCommand> m_lastEditCommand;
@@ -278,6 +281,8 @@ private:
     PassRefPtr<Range> rangeOfString(const String&, Range*, FindOptions);
 
     SpellChecker& spellChecker() const;
+
+    bool handleEditingKeyboardEvent(WebCore::KeyboardEvent*);
 };
 
 inline void Editor::setStartNewKillRingSequence(bool flag)

@@ -294,7 +294,8 @@ public:
     virtual bool canCopyCut(Frame*, bool defaultValue) const OVERRIDE { return defaultValue; }
     virtual bool canPaste(Frame*, bool defaultValue) const OVERRIDE { return defaultValue; }
 
-    virtual void handleKeyboardEvent(KeyboardEvent*) OVERRIDE { }
+    virtual void didExecuteCommand(String) OVERRIDE { }
+    virtual bool handleKeyboardEvent() OVERRIDE { return false; }
 };
 
 class EmptyContextMenuClient : public ContextMenuClient {

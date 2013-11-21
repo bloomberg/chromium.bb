@@ -32,9 +32,9 @@
 
 #include <gtest/gtest.h>
 
-#include "EditorClientImpl.h"
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
+#include "core/editing/Editor.h"
 #include "core/events/EventTarget.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/platform/chromium/KeyboardCodes.h"
@@ -54,11 +54,10 @@ public:
         const WebKeyboardEvent& webKeyboardEvent,
         PlatformEvent::Type keyType)
     {
-        EditorClientImpl editorImpl(0);
         PlatformKeyboardEventBuilder evt(webKeyboardEvent);
         evt.setKeyType(keyType);
         RefPtr<KeyboardEvent> keyboardEvent = KeyboardEvent::create(evt, 0);
-        return editorImpl.interpretKeyEvent(keyboardEvent.get());
+        return Editor::interpretKeyEvent(keyboardEvent.get());
     }
 
     // Set up a WebKeyboardEvent KEY_DOWN event with key code and modifiers.

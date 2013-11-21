@@ -148,11 +148,6 @@ UndoStack* Editor::undoStack() const
     return 0;
 }
 
-void Editor::handleKeyboardEvent(KeyboardEvent* event)
-{
-    client().handleKeyboardEvent(event);
-}
-
 bool Editor::handleTextEvent(TextEvent* event)
 {
     // Default event handling for Drag and Drop will be handled by DragController

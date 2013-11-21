@@ -32,6 +32,7 @@
 #define EditorClientImpl_h
 
 #include "core/page/EditorClient.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 class Frame;
@@ -51,13 +52,10 @@ public:
     virtual void respondToChangedSelection(WebCore::Frame*) OVERRIDE;
     virtual bool canCopyCut(WebCore::Frame*, bool defaultValue) const OVERRIDE;
     virtual bool canPaste(WebCore::Frame*, bool defaultValue) const OVERRIDE;
-    virtual void handleKeyboardEvent(WebCore::KeyboardEvent*) OVERRIDE;
-
-    const char* interpretKeyEvent(const WebCore::KeyboardEvent*);
+    virtual void didExecuteCommand(String commandName) OVERRIDE;
+    virtual bool handleKeyboardEvent() OVERRIDE;
 
 private:
-    bool handleEditingKeyboardEvent(WebCore::KeyboardEvent*);
-
     WebViewImpl* m_webView;
 };
 
