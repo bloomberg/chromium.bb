@@ -73,6 +73,7 @@ class AudioReceiverTest : public ::testing::Test {
     audio_config_.channels = 1;
     audio_config_.codec = kPcm16;
     audio_config_.use_external_decoder = false;
+    audio_config_.feedback_ssrc = 1234;
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
