@@ -87,6 +87,8 @@ private:
     Priority m_priority;
 
     Vector<int> m_compositorAnimationIds;
+
+    friend class CSSAnimations;
 };
 
 DEFINE_TYPE_CASTS(Animation, TimedItem, timedItem, timedItem->isAnimation(), timedItem.isAnimation());

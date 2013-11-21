@@ -63,9 +63,11 @@ public:
     void clearPropertyValue(CSSPropertyID);
     const AnimatableValue* propertyValue(CSSPropertyID) const;
     PropertySet properties() const;
+    PassRefPtr<Keyframe> clone() const { return adoptRef(new Keyframe(*this)); }
     PassRefPtr<Keyframe> cloneWithOffset(double offset) const;
 private:
     Keyframe();
+    Keyframe(const Keyframe&);
     double m_offset;
     AnimationEffect::CompositeOperation m_composite;
     typedef HashMap<CSSPropertyID, RefPtr<AnimatableValue> > PropertyValueMap;

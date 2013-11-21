@@ -74,18 +74,20 @@ static AnimationStack& ensureAnimationStack(Element* element)
 
 bool Animation::applyEffects(bool previouslyInEffect)
 {
-    ASSERT(player());
     if (!m_target || !m_effect)
         return false;
 
-    if (!previouslyInEffect) {
+    if (player() && !previouslyInEffect) {
         ensureAnimationStack(m_target.get()).add(this);
         m_activeInAnimationStack = true;
     }
 
     m_compositableValues = m_effect->sample(currentIteration(), timeFraction());
-    m_target->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
-    return true;
+    if (player()) {
+        m_target->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
+        return true;
+    }
+    return false;
 }
 
 void Animation::clearEffects()

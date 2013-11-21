@@ -119,6 +119,14 @@ Keyframe::Keyframe()
     , m_composite(AnimationEffect::CompositeReplace)
 { }
 
+Keyframe::Keyframe(const Keyframe& copyFrom)
+    : m_offset(copyFrom.m_offset)
+    , m_composite(copyFrom.m_composite)
+{
+    for (PropertyValueMap::const_iterator iter = copyFrom.m_propertyValues.begin(); iter != copyFrom.m_propertyValues.end(); ++iter)
+        setPropertyValue(iter->key, iter->value.get());
+}
+
 void Keyframe::setPropertyValue(CSSPropertyID property, const AnimatableValue* value)
 {
     m_propertyValues.add(property, const_cast<AnimatableValue*>(value));
@@ -147,12 +155,9 @@ PropertySet Keyframe::properties() const
 
 PassRefPtr<Keyframe> Keyframe::cloneWithOffset(double offset) const
 {
-    RefPtr<Keyframe> clone = Keyframe::create();
-    clone->setOffset(offset);
-    clone->setComposite(m_composite);
-    for (PropertyValueMap::const_iterator iter = m_propertyValues.begin(); iter != m_propertyValues.end(); ++iter)
-        clone->setPropertyValue(iter->key, iter->value.get());
-    return clone.release();
+    RefPtr<Keyframe> theClone = clone();
+    theClone->setOffset(offset);
+    return theClone.release();
 }
 
 KeyframeAnimationEffect::KeyframeAnimationEffect(const KeyframeVector& keyframes)

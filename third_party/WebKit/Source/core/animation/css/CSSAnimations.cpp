@@ -531,9 +531,26 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         m_animations.set(iter->name, players);
     }
 
+    // Transitions that are run on the compositor only update main-thread state
+    // lazily. However, we need the new state to know what the from state shoud
+    // be when transitions are retargeted. Instead of triggering complete style
+    // recalculation, we find these cases by searching for new transitions that
+    // have matching cancelled animation property IDs on the compositor.
+    HashMap<CSSPropertyID, std::pair<RefPtr<Animation>, double> > retargetedCompositorTransitions;
     for (HashSet<CSSPropertyID>::iterator iter = update->cancelledTransitions().begin(); iter != update->cancelledTransitions().end(); ++iter) {
-        ASSERT(m_transitions.contains(*iter));
-        m_transitions.take(*iter).transition->player()->cancel();
+        CSSPropertyID id = *iter;
+        ASSERT(m_transitions.contains(id));
+        Player* player = m_transitions.take(id).transition->player();
+        ActiveAnimations* activeAnimations = element->activeAnimations();
+        if (activeAnimations && activeAnimations->hasActiveAnimationsOnCompositor(id)) {
+            for (size_t i = 0; i < update->newTransitions().size(); ++i) {
+                if (update->newTransitions()[i].id == id) {
+                    retargetedCompositorTransitions.add(id, std::pair<RefPtr<Animation>, double>(toAnimation(player->source()), player->startTime()));
+                    break;
+                }
+            }
+        }
+        player->cancel();
     }
 
     for (size_t i = 0; i < update->newTransitions().size(); ++i) {
@@ -546,7 +563,26 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         CSSPropertyID id = newTransition.id;
         InertAnimation* inertAnimation = newTransition.animation.get();
         OwnPtr<TransitionEventDelegate> eventDelegate = adoptPtr(new TransitionEventDelegate(element, id));
-        RefPtr<Animation> transition = Animation::create(element, inertAnimation->effect(), inertAnimation->specified(), Animation::TransitionPriority, eventDelegate.release());
+
+        RefPtr<AnimationEffect> effect = inertAnimation->effect();
+
+        if (retargetedCompositorTransitions.contains(id)) {
+            const std::pair<RefPtr<Animation>, double>& oldTransition = retargetedCompositorTransitions.get(id);
+            RefPtr<Animation> oldAnimation = oldTransition.first;
+            double oldStartTime = oldTransition.second;
+            oldAnimation->updateInheritedTime(element->document().transitionTimeline()->currentTime() - oldStartTime);
+            KeyframeAnimationEffect* oldEffect = toKeyframeAnimationEffect(inertAnimation->effect());
+            const KeyframeAnimationEffect::KeyframeVector& frames = oldEffect->getFrames();
+            KeyframeAnimationEffect::KeyframeVector newFrames;
+            newFrames.append(frames[0]->clone());
+            newFrames[0]->clearPropertyValue(id);
+            AnimationEffect::CompositableValue* compositableValue = oldAnimation->compositableValues()->get(id);
+            ASSERT(!compositableValue->dependsOnUnderlyingValue());
+            newFrames[0]->setPropertyValue(id, compositableValue->compositeOnto(0).get());
+            newFrames.append(frames[1]->clone());
+            effect = KeyframeAnimationEffect::create(newFrames);
+        }
+        RefPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specified(), Animation::TransitionPriority, eventDelegate.release());
         RefPtr<Player> player = element->document().transitionTimeline()->createPlayer(transition.get());
         player->update();
         element->document().cssPendingAnimations().add(player.get());
