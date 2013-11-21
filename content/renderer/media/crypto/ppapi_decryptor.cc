@@ -149,6 +149,14 @@ media::Decryptor* PpapiDecryptor::GetDecryptor() {
 
 void PpapiDecryptor::RegisterNewKeyCB(StreamType stream_type,
                                       const NewKeyCB& new_key_cb) {
+  if (!render_loop_proxy_->BelongsToCurrentThread()) {
+    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &PpapiDecryptor::RegisterNewKeyCB, weak_this_, stream_type,
+        new_key_cb));
+    return;
+  }
+
+  DVLOG(3) << __FUNCTION__ << " - stream_type: " << stream_type;
   switch (stream_type) {
     case kAudio:
       new_audio_key_cb_ = new_key_cb;
@@ -172,13 +180,19 @@ void PpapiDecryptor::Decrypt(
     return;
   }
 
-  DVLOG(3) << "Decrypt() - stream_type: " << stream_type;
+  DVLOG(3) << __FUNCTION__ << " - stream_type: " << stream_type;
   if (!plugin_cdm_delegate_->Decrypt(stream_type, encrypted, decrypt_cb))
     decrypt_cb.Run(kError, NULL);
 }
 
 void PpapiDecryptor::CancelDecrypt(StreamType stream_type) {
-  DVLOG(1) << "CancelDecrypt() - stream_type: " << stream_type;
+  if (!render_loop_proxy_->BelongsToCurrentThread()) {
+    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &PpapiDecryptor::CancelDecrypt, weak_this_, stream_type));
+    return;
+  }
+
+  DVLOG(1) << __FUNCTION__ << " - stream_type: " << stream_type;
   plugin_cdm_delegate_->CancelDecrypt(stream_type);
 }
 
@@ -191,7 +205,7 @@ void PpapiDecryptor::InitializeAudioDecoder(
     return;
   }
 
-  DVLOG(2) << "InitializeAudioDecoder()";
+  DVLOG(2) << __FUNCTION__;
   DCHECK(config.is_encrypted());
   DCHECK(config.IsValidConfig());
 
@@ -212,7 +226,7 @@ void PpapiDecryptor::InitializeVideoDecoder(
     return;
   }
 
-  DVLOG(2) << "InitializeVideoDecoder()";
+  DVLOG(2) << __FUNCTION__;
   DCHECK(config.is_encrypted());
   DCHECK(config.IsValidConfig());
 
@@ -234,7 +248,7 @@ void PpapiDecryptor::DecryptAndDecodeAudio(
     return;
   }
 
-  DVLOG(3) << "DecryptAndDecodeAudio()";
+  DVLOG(3) << __FUNCTION__;
   if (!plugin_cdm_delegate_->DecryptAndDecodeAudio(encrypted, audio_decode_cb))
     audio_decode_cb.Run(kError, AudioBuffers());
 }
@@ -249,7 +263,7 @@ void PpapiDecryptor::DecryptAndDecodeVideo(
     return;
   }
 
-  DVLOG(3) << "DecryptAndDecodeVideo()";
+  DVLOG(3) << __FUNCTION__;
   if (!plugin_cdm_delegate_->DecryptAndDecodeVideo(encrypted, video_decode_cb))
     video_decode_cb.Run(kError, NULL);
 }
@@ -261,7 +275,7 @@ void PpapiDecryptor::ResetDecoder(StreamType stream_type) {
     return;
   }
 
-  DVLOG(2) << "ResetDecoder() - stream_type: " << stream_type;
+  DVLOG(2) << __FUNCTION__ << " - stream_type: " << stream_type;
   plugin_cdm_delegate_->ResetDecoder(stream_type);
 }
 
@@ -272,17 +286,19 @@ void PpapiDecryptor::DeinitializeDecoder(StreamType stream_type) {
     return;
   }
 
-  DVLOG(2) << "DeinitializeDecoder() - stream_type: " << stream_type;
+  DVLOG(2) << __FUNCTION__ << " - stream_type: " << stream_type;
   plugin_cdm_delegate_->DeinitializeDecoder(stream_type);
 }
 
 void PpapiDecryptor::ReportFailureToCallPlugin(uint32 reference_id) {
+  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
   DVLOG(1) << "Failed to call plugin.";
   key_error_cb_.Run(reference_id, kUnknownError, 0);
 }
 
 void PpapiDecryptor::OnDecoderInitialized(StreamType stream_type,
                                           bool success) {
+  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
   switch (stream_type) {
     case kAudio:
       DCHECK(!audio_decoder_init_cb_.is_null());
