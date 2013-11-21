@@ -364,8 +364,8 @@ void MetricsService::StartRecording() {
   if (log_manager_.current_log())
     return;
 
-  MetricsLogManager::LogType log_type = (state_ == INITIALIZED) ?
-      MetricsLogManager::INITIAL_LOG : MetricsLogManager::ONGOING_LOG;
+  MetricsLogBase::LogType log_type = (state_ == INITIALIZED) ?
+      MetricsLogBase::INITIAL_LOG : MetricsLogBase::ONGOING_LOG;
   log_manager_.BeginLoggingWithLog(new MetricsLogBase(GetClientID(),
                                                       session_id_,
                                                       GetVersionString()),

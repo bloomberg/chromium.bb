@@ -155,7 +155,7 @@ TEST_F(MetricsServiceTest, DISABLED_RegisterSyntheticTrial) {
   service.RegisterSyntheticFieldTrial(trial2);
 
   service.log_manager_.BeginLoggingWithLog(new MetricsLog("clientID", 1),
-                                           MetricsLogManager::INITIAL_LOG);
+                                           MetricsLog::INITIAL_LOG);
 
   std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
   service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
@@ -184,7 +184,7 @@ TEST_F(MetricsServiceTest, DISABLED_RegisterSyntheticTrial) {
   // Start a new log.
   service.log_manager_.FinishCurrentLog();
   service.log_manager_.BeginLoggingWithLog(new MetricsLog("clientID", 1),
-                                           MetricsLogManager::ONGOING_LOG);
+                                           MetricsLog::ONGOING_LOG);
   service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
   EXPECT_EQ(3U, synthetic_trials.size());
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "Group2"));

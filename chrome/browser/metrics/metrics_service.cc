@@ -1185,7 +1185,7 @@ void MetricsService::OpenNewLog() {
   DCHECK(!log_manager_.current_log());
 
   log_manager_.BeginLoggingWithLog(new MetricsLog(client_id_, session_id_),
-                                   MetricsLogManager::ONGOING_LOG);
+                                   MetricsLog::ONGOING_LOG);
   if (state_ == INITIALIZED) {
     // We only need to schedule that run once.
     state_ = INIT_TASK_SCHEDULED;
@@ -1229,11 +1229,11 @@ void MetricsService::CloseCurrentLog() {
   DCHECK(current_log);
   std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
-  current_log->RecordEnvironmentProto(plugins_, google_update_metrics_,
-                                      synthetic_trials);
+  current_log->RecordEnvironment(plugins_, google_update_metrics_,
+                                 synthetic_trials);
   PrefService* pref = g_browser_process->local_state();
-  current_log->RecordIncrementalStabilityElements(plugins_,
-                                                  GetIncrementalUptime(pref));
+  current_log->RecordStabilityMetrics(plugins_, GetIncrementalUptime(pref),
+                                      MetricsLog::ONGOING_LOG);
 
   RecordCurrentHistograms();
 
@@ -1467,18 +1467,20 @@ void MetricsService::PrepareInitialLog() {
 
   DCHECK(initial_log_.get());
   initial_log_->set_hardware_class(hardware_class_);
-  PrefService* pref = g_browser_process->local_state();
+
   std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
   initial_log_->RecordEnvironment(plugins_, google_update_metrics_,
-                                  synthetic_trials,
-                                  GetIncrementalUptime(pref));
+                                  synthetic_trials);
+  PrefService* pref = g_browser_process->local_state();
+  initial_log_->RecordStabilityMetrics(plugins_, GetIncrementalUptime(pref),
+                                       MetricsLog::INITIAL_LOG);
 
   // Histograms only get written to the current log, so make the new log current
   // before writing them.
   log_manager_.PauseCurrentLog();
   log_manager_.BeginLoggingWithLog(initial_log_.release(),
-                                   MetricsLogManager::INITIAL_LOG);
+                                   MetricsLog::INITIAL_LOG);
   RecordCurrentHistograms();
   log_manager_.FinishCurrentLog();
   log_manager_.ResumePausedLog();

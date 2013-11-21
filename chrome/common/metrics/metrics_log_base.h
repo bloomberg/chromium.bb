@@ -25,6 +25,13 @@ class HistogramSamples;
 // This class provides base functionality for logging metrics data.
 class MetricsLogBase {
  public:
+  // TODO(asvitkine): Make this a field on the log and remove the NO_LOG value.
+  enum LogType {
+    INITIAL_LOG,  // The first log of a session.
+    ONGOING_LOG,  // Subsequent logs in a session.
+    NO_LOG,       // Placeholder value for when there is no log.
+  };
+
   // Creates a new metrics log
   // client_id is the identifier for this profile on this installation
   // session_id is an integer that's incremented on each application launch

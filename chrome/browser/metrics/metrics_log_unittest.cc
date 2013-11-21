@@ -139,64 +139,6 @@ class MetricsLogTest : public testing::Test {
   MetricsLogTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
 
  protected:
-  void TestRecordEnvironment(bool proto_only) {
-    TestMetricsLog log(kClientId, kSessionId);
-
-    std::vector<content::WebPluginInfo> plugins;
-    GoogleUpdateMetrics google_update_metrics;
-    std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
-    // Add two synthetic trials.
-    synthetic_trials.push_back(kSyntheticTrials[0]);
-    synthetic_trials.push_back(kSyntheticTrials[1]);
-
-    if (proto_only) {
-      log.RecordEnvironmentProto(plugins, google_update_metrics,
-                                 synthetic_trials);
-    } else {
-      log.RecordEnvironment(plugins, google_update_metrics,
-                            synthetic_trials, base::TimeDelta());
-    }
-
-    // Computed from original time of 1373051956.
-    EXPECT_EQ(1373050800, log.system_profile().install_date());
-
-    // Computed from original time of 1373001211.
-    EXPECT_EQ(1373000400, log.system_profile().uma_enabled_date());
-
-    const metrics::SystemProfileProto& system_profile = log.system_profile();
-    ASSERT_EQ(arraysize(kFieldTrialIds) + arraysize(kSyntheticTrials),
-              static_cast<size_t>(system_profile.field_trial_size()));
-    for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
-      const metrics::SystemProfileProto::FieldTrial& field_trial =
-          system_profile.field_trial(i);
-      EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
-      EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
-    }
-    // Verify the right data is present for the synthetic trials.
-    for (size_t i = 0; i < arraysize(kSyntheticTrials); ++i) {
-      const metrics::SystemProfileProto::FieldTrial& field_trial =
-          system_profile.field_trial(i + arraysize(kFieldTrialIds));
-      EXPECT_EQ(kSyntheticTrials[i].name, field_trial.name_id());
-      EXPECT_EQ(kSyntheticTrials[i].group, field_trial.group_id());
-    }
-
-    EXPECT_EQ(kBrandForTesting, system_profile.brand_code());
-
-    const metrics::SystemProfileProto::Hardware& hardware =
-        system_profile.hardware();
-    EXPECT_EQ(kScreenWidth, hardware.primary_screen_width());
-    EXPECT_EQ(kScreenHeight, hardware.primary_screen_height());
-    EXPECT_EQ(kScreenScaleFactor, hardware.primary_screen_scale_factor());
-    EXPECT_EQ(kScreenCount, hardware.screen_count());
-
-    EXPECT_TRUE(hardware.has_cpu());
-    EXPECT_TRUE(hardware.cpu().has_vendor_name());
-    EXPECT_TRUE(hardware.cpu().has_signature());
-
-    // TODO(isherman): Verify other data written into the protobuf as a result
-    // of this call.
-  }
-
   virtual void SetUp() OVERRIDE {
 #if defined(OS_CHROMEOS)
     chromeos::FakeDBusThreadManager* fake_dbus_thread_manager =
@@ -244,10 +186,89 @@ class MetricsLogTest : public testing::Test {
 };
 
 TEST_F(MetricsLogTest, RecordEnvironment) {
-  // Test that recording the environment works via both of the public methods
-  // RecordEnvironment() and RecordEnvironmentProto().
-  TestRecordEnvironment(false);
-  TestRecordEnvironment(true);
+  TestMetricsLog log(kClientId, kSessionId);
+
+  std::vector<content::WebPluginInfo> plugins;
+  GoogleUpdateMetrics google_update_metrics;
+  std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
+  // Add two synthetic trials.
+  synthetic_trials.push_back(kSyntheticTrials[0]);
+  synthetic_trials.push_back(kSyntheticTrials[1]);
+
+  log.RecordEnvironment(plugins, google_update_metrics, synthetic_trials);
+
+  // Computed from original time of 1373051956.
+  EXPECT_EQ(1373050800, log.system_profile().install_date());
+
+  // Computed from original time of 1373001211.
+  EXPECT_EQ(1373000400, log.system_profile().uma_enabled_date());
+
+  const metrics::SystemProfileProto& system_profile = log.system_profile();
+  ASSERT_EQ(arraysize(kFieldTrialIds) + arraysize(kSyntheticTrials),
+            static_cast<size_t>(system_profile.field_trial_size()));
+  for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
+    const metrics::SystemProfileProto::FieldTrial& field_trial =
+        system_profile.field_trial(i);
+    EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
+    EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
+  }
+  // Verify the right data is present for the synthetic trials.
+  for (size_t i = 0; i < arraysize(kSyntheticTrials); ++i) {
+    const metrics::SystemProfileProto::FieldTrial& field_trial =
+        system_profile.field_trial(i + arraysize(kFieldTrialIds));
+    EXPECT_EQ(kSyntheticTrials[i].name, field_trial.name_id());
+    EXPECT_EQ(kSyntheticTrials[i].group, field_trial.group_id());
+  }
+
+  EXPECT_EQ(kBrandForTesting, system_profile.brand_code());
+
+  const metrics::SystemProfileProto::Hardware& hardware =
+      system_profile.hardware();
+  EXPECT_EQ(kScreenWidth, hardware.primary_screen_width());
+  EXPECT_EQ(kScreenHeight, hardware.primary_screen_height());
+  EXPECT_EQ(kScreenScaleFactor, hardware.primary_screen_scale_factor());
+  EXPECT_EQ(kScreenCount, hardware.screen_count());
+
+  EXPECT_TRUE(hardware.has_cpu());
+  EXPECT_TRUE(hardware.cpu().has_vendor_name());
+  EXPECT_TRUE(hardware.cpu().has_signature());
+
+  // TODO(isherman): Verify other data written into the protobuf as a result
+  // of this call.
+}
+
+TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
+  TestMetricsLog log(kClientId, kSessionId);
+  log.RecordStabilityMetrics(std::vector<content::WebPluginInfo>(),
+                             base::TimeDelta(), MetricsLog::INITIAL_LOG);
+  const metrics::SystemProfileProto_Stability& stability =
+      log.system_profile().stability();
+  // Required metrics:
+  EXPECT_TRUE(stability.has_launch_count());
+  EXPECT_TRUE(stability.has_crash_count());
+  // Initial log metrics:
+  EXPECT_TRUE(stability.has_incomplete_shutdown_count());
+  EXPECT_TRUE(stability.has_breakpad_registration_success_count());
+  EXPECT_TRUE(stability.has_breakpad_registration_failure_count());
+  EXPECT_TRUE(stability.has_debugger_present_count());
+  EXPECT_TRUE(stability.has_debugger_not_present_count());
+}
+
+TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
+  TestMetricsLog log(kClientId, kSessionId);
+  log.RecordStabilityMetrics(std::vector<content::WebPluginInfo>(),
+                             base::TimeDelta(), MetricsLog::ONGOING_LOG);
+  const metrics::SystemProfileProto_Stability& stability =
+      log.system_profile().stability();
+  // Required metrics:
+  EXPECT_TRUE(stability.has_launch_count());
+  EXPECT_TRUE(stability.has_crash_count());
+  // Initial log metrics:
+  EXPECT_FALSE(stability.has_incomplete_shutdown_count());
+  EXPECT_FALSE(stability.has_breakpad_registration_success_count());
+  EXPECT_FALSE(stability.has_breakpad_registration_failure_count());
+  EXPECT_FALSE(stability.has_debugger_present_count());
+  EXPECT_FALSE(stability.has_debugger_not_present_count());
 }
 
 // Test that we properly write profiler data to the log.
@@ -401,7 +422,7 @@ TEST_F(MetricsLogTest, MultiProfileUserCount) {
   std::vector<content::WebPluginInfo> plugins;
   GoogleUpdateMetrics google_update_metrics;
   std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
-  log.RecordEnvironmentProto(plugins, google_update_metrics, synthetic_trials);
+  log.RecordEnvironment(plugins, google_update_metrics, synthetic_trials);
   EXPECT_EQ(2u, log.system_profile().multi_profile_user_count());
 }
 
@@ -424,8 +445,8 @@ TEST_F(MetricsLogTest, MultiProfileCountInvalidated) {
 
   user_manager->LoginUser(user2);
   std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
-  log.RecordEnvironmentProto(std::vector<content::WebPluginInfo>(),
-                             GoogleUpdateMetrics(), synthetic_trials);
+  log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
+                        GoogleUpdateMetrics(), synthetic_trials);
   EXPECT_EQ(0u, log.system_profile().multi_profile_user_count());
 }
 #endif  // OS_CHROMEOS

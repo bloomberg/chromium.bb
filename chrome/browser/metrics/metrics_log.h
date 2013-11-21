@@ -93,18 +93,6 @@ class MetricsLog : public MetricsLogBase {
   void RecordEnvironment(
       const std::vector<content::WebPluginInfo>& plugin_list,
       const GoogleUpdateMetrics& google_update_metrics,
-      const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials,
-      base::TimeDelta incremental_uptime);
-
-  // Records the current operating environment.  Takes the list of installed
-  // plugins and Google Update statistics as parameters because those can't be
-  // obtained synchronously from the UI thread.  This is exposed as a separate
-  // method from the |RecordEnvironment()| method above because we record the
-  // environment with *each* protobuf upload, but only with the initial XML
-  // upload.
-  void RecordEnvironmentProto(
-      const std::vector<content::WebPluginInfo>& plugin_list,
-      const GoogleUpdateMetrics& google_update_metrics,
       const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials);
 
   // Records the input text, available choices, and selected entry when the
@@ -117,15 +105,17 @@ class MetricsLog : public MetricsLogBase {
       const tracked_objects::ProcessDataSnapshot& process_data,
       int process_type);
 
-  // Record recent delta for critical stability metrics.  We can't wait for a
-  // restart to gather these, as that delay biases our observation away from
-  // users that run happily for a looooong time.  We send increments with each
-  // uma log upload, just as we send histogram data.  Takes the list of
-  // installed plugins as a parameter because that can't be obtained
+  // Writes application stability metrics (as part of the profile log). Takes
+  // the list of installed plugins as a parameter because that can't be obtained
   // synchronously from the UI thread.
-  void RecordIncrementalStabilityElements(
+  // NOTE: Has the side-effect of clearing those counts.
+  //
+  // If |log_type| is INITIAL_LOG, records additional info such as number of
+  // incomplete shutdowns as well as extra breakpad and debugger stats.
+  void RecordStabilityMetrics(
       const std::vector<content::WebPluginInfo>& plugin_list,
-      base::TimeDelta incremental_uptime);
+      base::TimeDelta incremental_uptime,
+      LogType log_type);
 
   const base::TimeTicks& creation_time() const {
     return creation_time_;
@@ -153,13 +143,6 @@ class MetricsLog : public MetricsLogBase {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);
-
-  // Writes application stability metrics (as part of the profile log).
-  // NOTE: Has the side-effect of clearing those counts.
-  void WriteStabilityElement(
-      const std::vector<content::WebPluginInfo>& plugin_list,
-      base::TimeDelta incremental_uptime,
-      PrefService* pref);
 
   // Within stability group, write plugin crash stats.
   void WritePluginStabilityElements(

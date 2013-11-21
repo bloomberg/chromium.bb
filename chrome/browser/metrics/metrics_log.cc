@@ -423,54 +423,32 @@ const std::string& MetricsLog::version_extension() {
   return g_version_extension.Get();
 }
 
-void MetricsLog::RecordIncrementalStabilityElements(
+void MetricsLog::RecordStabilityMetrics(
     const std::vector<content::WebPluginInfo>& plugin_list,
-    base::TimeDelta incremental_uptime) {
+    base::TimeDelta incremental_uptime,
+    LogType log_type) {
+  DCHECK_NE(NO_LOG, log_type);
   DCHECK(!locked());
 
   PrefService* pref = GetPrefService();
   DCHECK(pref);
-
-  WriteRequiredStabilityAttributes(pref);
-  WriteRealtimeStabilityAttributes(pref, incremental_uptime);
-  WritePluginStabilityElements(plugin_list, pref);
-}
-
-PrefService* MetricsLog::GetPrefService() {
-  return g_browser_process->local_state();
-}
-
-gfx::Size MetricsLog::GetScreenSize() const {
-  return gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().GetSizeInPixel();
-}
-
-float MetricsLog::GetScreenDeviceScaleFactor() const {
-  return gfx::Screen::GetNativeScreen()->
-      GetPrimaryDisplay().device_scale_factor();
-}
-
-int MetricsLog::GetScreenCount() const {
-  // TODO(scottmg): NativeScreen maybe wrong. http://crbug.com/133312
-  return gfx::Screen::GetNativeScreen()->GetNumDisplays();
-}
-
-void MetricsLog::GetFieldTrialIds(
-    std::vector<ActiveGroupId>* field_trial_ids) const {
-  chrome_variations::GetFieldTrialActiveGroupIds(field_trial_ids);
-}
-
-void MetricsLog::WriteStabilityElement(
-    const std::vector<content::WebPluginInfo>& plugin_list,
-    base::TimeDelta incremental_uptime,
-    PrefService* pref) {
-  DCHECK(!locked());
 
   // Get stability attributes out of Local State, zeroing out stored values.
   // NOTE: This could lead to some data loss if this report isn't successfully
   //       sent, but that's true for all the metrics.
 
   WriteRequiredStabilityAttributes(pref);
+  WritePluginStabilityElements(plugin_list, pref);
+
+  // Record recent delta for critical stability metrics.  We can't wait for a
+  // restart to gather these, as that delay biases our observation away from
+  // users that run happily for a looooong time.  We send increments with each
+  // uma log upload, just as we send histogram data.
   WriteRealtimeStabilityAttributes(pref, incremental_uptime);
+
+  // Omit some stats unless this is the initial stability log.
+  if (log_type != INITIAL_LOG)
+    return;
 
   int incomplete_shutdown_count =
       pref->GetInteger(prefs::kStabilityIncompleteSessionEndCount);
@@ -499,8 +477,29 @@ void MetricsLog::WriteStabilityElement(
       breakpad_registration_failure_count);
   stability->set_debugger_present_count(debugger_present_count);
   stability->set_debugger_not_present_count(debugger_not_present_count);
+}
 
-  WritePluginStabilityElements(plugin_list, pref);
+PrefService* MetricsLog::GetPrefService() {
+  return g_browser_process->local_state();
+}
+
+gfx::Size MetricsLog::GetScreenSize() const {
+  return gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().GetSizeInPixel();
+}
+
+float MetricsLog::GetScreenDeviceScaleFactor() const {
+  return gfx::Screen::GetNativeScreen()->
+      GetPrimaryDisplay().device_scale_factor();
+}
+
+int MetricsLog::GetScreenCount() const {
+  // TODO(scottmg): NativeScreen maybe wrong. http://crbug.com/133312
+  return gfx::Screen::GetNativeScreen()->GetNumDisplays();
+}
+
+void MetricsLog::GetFieldTrialIds(
+    std::vector<ActiveGroupId>* field_trial_ids) const {
+  chrome_variations::GetFieldTrialActiveGroupIds(field_trial_ids);
 }
 
 void MetricsLog::WritePluginStabilityElements(
@@ -676,19 +675,6 @@ void MetricsLog::WritePluginList(
 }
 
 void MetricsLog::RecordEnvironment(
-    const std::vector<content::WebPluginInfo>& plugin_list,
-    const GoogleUpdateMetrics& google_update_metrics,
-    const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials,
-    base::TimeDelta incremental_uptime) {
-  DCHECK(!locked());
-
-  PrefService* pref = GetPrefService();
-  WriteStabilityElement(plugin_list, incremental_uptime, pref);
-
-  RecordEnvironmentProto(plugin_list, google_update_metrics, synthetic_trials);
-}
-
-void MetricsLog::RecordEnvironmentProto(
     const std::vector<content::WebPluginInfo>& plugin_list,
     const GoogleUpdateMetrics& google_update_metrics,
     const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials) {

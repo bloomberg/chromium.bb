@@ -38,18 +38,18 @@ void MetricsLogManager::SerializedLog::Swap(
 }
 
 MetricsLogManager::MetricsLogManager()
-    : current_log_type_(NO_LOG),
-      paused_log_type_(NO_LOG),
-      staged_log_type_(NO_LOG),
+    : current_log_type_(MetricsLogBase::NO_LOG),
+      paused_log_type_(MetricsLogBase::NO_LOG),
+      staged_log_type_(MetricsLogBase::NO_LOG),
       max_ongoing_log_store_size_(0),
       last_provisional_store_index_(-1),
-      last_provisional_store_type_(INITIAL_LOG) {}
+      last_provisional_store_type_(MetricsLogBase::INITIAL_LOG) {}
 
 MetricsLogManager::~MetricsLogManager() {}
 
 void MetricsLogManager::BeginLoggingWithLog(MetricsLogBase* log,
                                             LogType log_type) {
-  DCHECK(log_type != NO_LOG);
+  DCHECK_NE(MetricsLogBase::NO_LOG, log_type);
   DCHECK(!current_log_.get());
   current_log_.reset(log);
   current_log_type_ = log_type;
@@ -57,14 +57,14 @@ void MetricsLogManager::BeginLoggingWithLog(MetricsLogBase* log,
 
 void MetricsLogManager::FinishCurrentLog() {
   DCHECK(current_log_.get());
-  DCHECK(current_log_type_ != NO_LOG);
+  DCHECK_NE(MetricsLogBase::NO_LOG, current_log_type_);
   current_log_->CloseLog();
   SerializedLog compressed_log;
   CompressCurrentLog(&compressed_log);
   if (!compressed_log.IsEmpty())
     StoreLog(&compressed_log, current_log_type_, NORMAL_STORE);
   current_log_.reset();
-  current_log_type_ = NO_LOG;
+  current_log_type_ = MetricsLogBase::NO_LOG;
 }
 
 void MetricsLogManager::StageNextLogForUpload() {
@@ -72,13 +72,13 @@ void MetricsLogManager::StageNextLogForUpload() {
   std::vector<SerializedLog>* source_list =
       unsent_initial_logs_.empty() ? &unsent_ongoing_logs_
                                    : &unsent_initial_logs_;
-  LogType source_type = (source_list == &unsent_ongoing_logs_) ? ONGOING_LOG
-                                                               : INITIAL_LOG;
+  LogType source_type = (source_list == &unsent_ongoing_logs_) ?
+      MetricsLogBase::ONGOING_LOG : MetricsLogBase::INITIAL_LOG;
   // CHECK, rather than DCHECK, because swap()ing with an empty list causes
   // hard-to-identify crashes much later.
   CHECK(!source_list->empty());
   DCHECK(staged_log_.IsEmpty());
-  DCHECK(staged_log_type_ == NO_LOG);
+  DCHECK_EQ(MetricsLogBase::NO_LOG, staged_log_type_);
   staged_log_.Swap(&source_list->back());
   staged_log_type_ = source_type;
   source_list->pop_back();
@@ -99,29 +99,29 @@ bool MetricsLogManager::has_staged_log() const {
 
 void MetricsLogManager::DiscardStagedLog() {
   staged_log_.Clear();
-  staged_log_type_ = NO_LOG;
+  staged_log_type_ = MetricsLogBase::NO_LOG;
 }
 
 void MetricsLogManager::DiscardCurrentLog() {
   current_log_->CloseLog();
   current_log_.reset();
-  current_log_type_ = NO_LOG;
+  current_log_type_ = MetricsLogBase::NO_LOG;
 }
 
 void MetricsLogManager::PauseCurrentLog() {
   DCHECK(!paused_log_.get());
-  DCHECK(paused_log_type_ == NO_LOG);
+  DCHECK_EQ(MetricsLogBase::NO_LOG, paused_log_type_);
   paused_log_.reset(current_log_.release());
   paused_log_type_ = current_log_type_;
-  current_log_type_ = NO_LOG;
+  current_log_type_ = MetricsLogBase::NO_LOG;
 }
 
 void MetricsLogManager::ResumePausedLog() {
   DCHECK(!current_log_.get());
-  DCHECK(current_log_type_ == NO_LOG);
+  DCHECK_EQ(MetricsLogBase::NO_LOG, current_log_type_);
   current_log_.reset(paused_log_.release());
   current_log_type_ = paused_log_type_;
-  paused_log_type_ = NO_LOG;
+  paused_log_type_ = MetricsLogBase::NO_LOG;
 }
 
 void MetricsLogManager::StoreStagedLogAsUnsent(StoreType store_type) {
@@ -138,10 +138,10 @@ void MetricsLogManager::StoreStagedLogAsUnsent(StoreType store_type) {
 void MetricsLogManager::StoreLog(SerializedLog* log,
                                  LogType log_type,
                                  StoreType store_type) {
-  DCHECK(log_type != NO_LOG);
+  DCHECK_NE(MetricsLogBase::NO_LOG, log_type);
   std::vector<SerializedLog>* destination_list =
-      (log_type == INITIAL_LOG) ? &unsent_initial_logs_
-                                : &unsent_ongoing_logs_;
+      (log_type == MetricsLogBase::INITIAL_LOG) ? &unsent_initial_logs_
+                                                : &unsent_ongoing_logs_;
   destination_list->push_back(SerializedLog());
   destination_list->back().Swap(log);
 
@@ -155,8 +155,8 @@ void MetricsLogManager::DiscardLastProvisionalStore() {
   if (last_provisional_store_index_ == -1)
     return;
   std::vector<SerializedLog>* source_list =
-      (last_provisional_store_type_ == ONGOING_LOG) ? &unsent_ongoing_logs_
-                                                    : &unsent_initial_logs_;
+      (last_provisional_store_type_ == MetricsLogBase::ONGOING_LOG) ?
+          &unsent_ongoing_logs_ : &unsent_initial_logs_;
   DCHECK_LT(static_cast<unsigned int>(last_provisional_store_index_),
             source_list->size());
   source_list->erase(source_list->begin() + last_provisional_store_index_);
@@ -181,16 +181,20 @@ void MetricsLogManager::PersistUnsentLogs() {
       }
     }
   }
-  log_serializer_->SerializeLogs(unsent_initial_logs_, INITIAL_LOG);
-  log_serializer_->SerializeLogs(unsent_ongoing_logs_, ONGOING_LOG);
+  log_serializer_->SerializeLogs(unsent_initial_logs_,
+                                 MetricsLogBase::INITIAL_LOG);
+  log_serializer_->SerializeLogs(unsent_ongoing_logs_,
+                                 MetricsLogBase::ONGOING_LOG);
 }
 
 void MetricsLogManager::LoadPersistedUnsentLogs() {
   DCHECK(log_serializer_.get());
   if (!log_serializer_.get())
     return;
-  log_serializer_->DeserializeLogs(INITIAL_LOG, &unsent_initial_logs_);
-  log_serializer_->DeserializeLogs(ONGOING_LOG, &unsent_ongoing_logs_);
+  log_serializer_->DeserializeLogs(MetricsLogBase::INITIAL_LOG,
+                                   &unsent_initial_logs_);
+  log_serializer_->DeserializeLogs(MetricsLogBase::ONGOING_LOG,
+                                   &unsent_ongoing_logs_);
 }
 
 void MetricsLogManager::CompressCurrentLog(SerializedLog* compressed_log) {
