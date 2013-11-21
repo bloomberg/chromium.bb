@@ -229,7 +229,7 @@ class GpuChannelHost : public IPC::Sender,
     typedef base::hash_map<int, GpuListenerInfo> ListenerMap;
     ListenerMap listeners_;
 
-    // Protexts all fields below this one.
+    // Protects all fields below this one.
     mutable base::Lock lock_;
 
     // Whether the channel has been lost.

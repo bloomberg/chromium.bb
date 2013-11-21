@@ -494,6 +494,14 @@ IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_CollectRenderingStatsForSurface,
                             int32 /* surface_id */,
                             content::GpuRenderingStats /* stats */)
 
+// Sent by DevTools agent in the inspected renderer process to initiate GPU
+// instrumentation events recording.
+IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_DevToolsStartEventsRecording,
+                            int32 /* route_id */)
+
+// The message is sent when DevTools want to stop events recording.
+IPC_MESSAGE_CONTROL0(GpuChannelMsg_DevToolsStopEventsRecording)
+
 #if defined(OS_ANDROID)
 //------------------------------------------------------------------------------
 // Stream Texture Messages

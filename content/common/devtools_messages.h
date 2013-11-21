@@ -122,6 +122,18 @@ IPC_MESSAGE_ROUTED0(DevToolsHostMsg_ClearBrowserCache)
 // Clears browser cookies.
 IPC_MESSAGE_ROUTED0(DevToolsHostMsg_ClearBrowserCookies)
 
+//-----------------------------------------------------------------------------
+// These are messages sent from the GPU process to the inspected renderer.
+
+IPC_STRUCT_BEGIN(GpuTaskInfo)
+  IPC_STRUCT_MEMBER(double, timestamp)
+  IPC_STRUCT_MEMBER(int, phase)
+  IPC_STRUCT_MEMBER(unsigned, owner_pid)
+IPC_STRUCT_END()
+
+// Recorded events are passed in chunks to the renderer process.
+IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_GpuTasksChunk,
+                    std::vector<GpuTaskInfo> /* gpu_tasks */)
 
 //-----------------------------------------------------------------------------
 // These are messages sent from the inspected page renderer to the worker

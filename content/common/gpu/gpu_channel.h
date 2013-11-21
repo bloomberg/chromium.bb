@@ -49,6 +49,7 @@ class StreamTextureManagerAndroid;
 #endif
 
 namespace content {
+class DevToolsGpuAgent;
 class GpuChannelManager;
 class GpuChannelMessageFilter;
 struct GpuRenderingStats;
@@ -184,6 +185,8 @@ class GpuChannel : public IPC::Listener,
   void OnDestroyCommandBuffer(int32 route_id);
   void OnCreateVideoEncoder(int32* route_id);
   void OnDestroyVideoEncoder(int32 route_id);
+  void OnDevToolsStartEventsRecording(int32* route_id);
+  void OnDevToolsStopEventsRecording();
 
 #if defined(OS_ANDROID)
   // Register the StreamTextureProxy class with the gpu process so that all
@@ -262,6 +265,7 @@ class GpuChannel : public IPC::Listener,
 
   scoped_refptr<GpuChannelMessageFilter> filter_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  scoped_ptr<DevToolsGpuAgent> devtools_gpu_agent_;
 
   size_t num_stubs_descheduled_;
 

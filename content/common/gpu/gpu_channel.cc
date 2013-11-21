@@ -18,6 +18,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
+#include "content/common/gpu/devtools_gpu_agent.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
@@ -487,6 +488,8 @@ bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
   io_message_loop_ = io_message_loop;
   channel_->AddFilter(filter_.get());
 
+  devtools_gpu_agent_.reset(new DevToolsGpuAgent(this));
+
   return true;
 }
 
@@ -757,6 +760,10 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateVideoEncoder, OnCreateVideoEncoder)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyVideoEncoder,
                         OnDestroyVideoEncoder)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_DevToolsStartEventsRecording,
+                        OnDevToolsStartEventsRecording)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_DevToolsStopEventsRecording,
+                        OnDevToolsStopEventsRecording)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_RegisterStreamTextureProxy,
                         OnRegisterStreamTextureProxy)
@@ -916,6 +923,14 @@ void GpuChannel::OnDestroyVideoEncoder(int32 route_id) {
     return;
   router_.RemoveRoute(route_id);
   video_encoders_.Remove(route_id);
+}
+
+void GpuChannel::OnDevToolsStartEventsRecording(int32* route_id) {
+  devtools_gpu_agent_->StartEventsRecording(route_id);
+}
+
+void GpuChannel::OnDevToolsStopEventsRecording() {
+  devtools_gpu_agent_->StopEventsRecording();
 }
 
 #if defined(OS_ANDROID)
