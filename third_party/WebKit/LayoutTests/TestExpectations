@@ -441,8 +441,6 @@ crbug.com/307777 [ Android ] svg/in-html/svg-assert-failure-percentage.html [ Ti
 crbug.com/307777 [ Android ] tables/hittesting/filltable-levels.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] transitions/transition-transform-translate-calculated-length-crash.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] virtual/softwarecompositing/overflow/get-transform-from-non-box-container.html [ Timeout Pass ]
-crbug.com/307777 [ Android ] virtual/softwarecompositing/tiling/crash-huge-layer.html [ Timeout Pass ]
-crbug.com/307777 [ Android ] virtual/softwarecompositing/tiling/preserve3d-tiled.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
