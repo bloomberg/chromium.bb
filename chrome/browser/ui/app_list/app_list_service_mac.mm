@@ -206,8 +206,10 @@ void GetAppListWindowOrigins(
     NSWindow* window, NSPoint* target_origin, NSPoint* start_origin) {
   gfx::Screen* const screen = gfx::Screen::GetScreenFor([window contentView]);
   // Ensure y coordinates are flipped back into AppKit's coordinate system.
-  const CGFloat max_y = NSMaxY([[[NSScreen screens] objectAtIndex:0] frame]);
-  if (!CGCursorIsVisible()) {
+  bool cursor_is_visible = CGCursorIsVisible();
+  gfx::Display display;
+  gfx::Point cursor;
+  if (!cursor_is_visible) {
     // If Chrome is the active application, display on the same display as
     // Chrome's keyWindow since this will catch activations triggered, e.g, via
     // WebStore install. If another application is active, OSX doesn't provide a
@@ -215,33 +217,75 @@ void GetAppListWindowOrigins(
     // since it has the menu bar and is likely to be correct, e.g., for
     // activations from Spotlight.
     const gfx::NativeView key_view = [[NSApp keyWindow] contentView];
-    const gfx::Rect work_area = key_view && [NSApp isActive] ?
-        screen->GetDisplayNearestWindow(key_view).work_area() :
-        screen->GetPrimaryDisplay().work_area();
-    *target_origin = NSMakePoint(work_area.x(), max_y - work_area.bottom());
+    display = key_view && [NSApp isActive] ?
+        screen->GetDisplayNearestWindow(key_view) :
+        screen->GetPrimaryDisplay();
+  } else {
+    cursor = screen->GetCursorScreenPoint();
+    display = screen->GetDisplayNearestPoint(cursor);
+  }
+
+  const NSSize ns_window_size = [window frame].size;
+  gfx::Size window_size(ns_window_size.width, ns_window_size.height);
+  int primary_display_height =
+      NSMaxY([[[NSScreen screens] objectAtIndex:0] frame]);
+  AppListServiceMac::FindAnchorPoint(window_size,
+                                     display,
+                                     primary_display_height,
+                                     cursor_is_visible,
+                                     cursor,
+                                     target_origin,
+                                     start_origin);
+}
+
+}  // namespace
+
+AppListServiceMac::AppListServiceMac()
+    : profile_(NULL),
+      controller_delegate_(new AppListControllerDelegateImpl(this)) {
+  animation_controller_.reset([[AppListAnimationController alloc] init]);
+}
+
+AppListServiceMac::~AppListServiceMac() {}
+
+// static
+AppListServiceMac* AppListServiceMac::GetInstance() {
+  return Singleton<AppListServiceMac,
+                   LeakySingletonTraits<AppListServiceMac> >::get();
+}
+
+// static
+void AppListServiceMac::FindAnchorPoint(const gfx::Size& window_size,
+                                        const gfx::Display& display,
+                                        int primary_display_height,
+                                        bool cursor_is_visible,
+                                        const gfx::Point& cursor,
+                                        NSPoint* target_origin,
+                                        NSPoint* start_origin) {
+  const gfx::Rect work_area = display.work_area();
+  if (!cursor_is_visible) {
+    *target_origin =
+        NSMakePoint(work_area.x(), primary_display_height - work_area.bottom());
     *start_origin = *target_origin;
     return;
   }
 
-  gfx::Point anchor = screen->GetCursorScreenPoint();
-  const gfx::Display display = screen->GetDisplayNearestPoint(anchor);
   const DockLocation dock_location = DockLocationInDisplay(display);
   const gfx::Rect display_bounds = display.bounds();
 
   if (dock_location == DockLocationOtherDisplay) {
     // Just display at the bottom-left of the display the cursor is on.
-    *target_origin = NSMakePoint(display_bounds.x(),
-                                 max_y - display_bounds.bottom());
+    *target_origin = NSMakePoint(
+        display_bounds.x(), primary_display_height - display_bounds.bottom());
     *start_origin = *target_origin;
     return;
   }
 
   // Anchor the center of the window in a region that prevents the window
   // showing outside of the work area.
-  const NSSize window_size = [window frame].size;
-  const gfx::Rect work_area = display.work_area();
   gfx::Rect anchor_area = work_area;
-  anchor_area.Inset(window_size.width / 2, window_size.height / 2);
+  anchor_area.Inset(window_size.width() / 2, window_size.height() / 2);
+  gfx::Point anchor = cursor;
   anchor.SetToMax(anchor_area.origin());
   anchor.SetToMin(anchor_area.bottom_right());
 
@@ -263,8 +307,9 @@ void GetAppListWindowOrigins(
       NOTREACHED();
   }
 
-  *target_origin = NSMakePoint(anchor.x() - window_size.width / 2,
-                               max_y - anchor.y() - window_size.height / 2);
+  *target_origin = NSMakePoint(
+      anchor.x() - window_size.width() / 2,
+      primary_display_height - anchor.y() - window_size.height() / 2);
   *start_origin = *target_origin;
 
   switch (dock_location) {
@@ -280,22 +325,6 @@ void GetAppListWindowOrigins(
     default:
       NOTREACHED();
   }
-}
-
-}  // namespace
-
-AppListServiceMac::AppListServiceMac()
-    : profile_(NULL),
-      controller_delegate_(new AppListControllerDelegateImpl(this)) {
-  animation_controller_.reset([[AppListAnimationController alloc] init]);
-}
-
-AppListServiceMac::~AppListServiceMac() {}
-
-// static
-AppListServiceMac* AppListServiceMac::GetInstance() {
-  return Singleton<AppListServiceMac,
-                   LeakySingletonTraits<AppListServiceMac> >::get();
 }
 
 void AppListServiceMac::Init(Profile* initial_profile) {

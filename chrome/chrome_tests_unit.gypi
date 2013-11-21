@@ -2919,6 +2919,7 @@
           ],
           'sources': [
             'browser/ui/app_list/app_list_positioner_unittest.cc',
+            'browser/ui/app_list/app_list_service_mac_unittest.mm',
             'browser/ui/app_list/app_list_service_unittest.cc',
             'browser/ui/app_list/profile_loader_unittest.cc',
             'browser/ui/app_list/test/app_list_shower_unittest.cc',
@@ -2929,13 +2930,7 @@
             'browser/ui/app_list/test/fake_profile_store.cc',
             'browser/ui/app_list/test/fake_profile_store.h',
             'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'sources': [
-                'browser/ui/views/app_list/win/app_list_win_unittest.cc',
-              ],
-            }],  # 'OS=="win"'
+            'browser/ui/views/app_list/win/app_list_win_unittest.cc',
           ],
         },
       ],

@@ -18,6 +18,11 @@ class AppListControllerDelegateImpl;
 @class AppListWindowController;
 template <typename T> struct DefaultSingletonTraits;
 
+namespace gfx {
+class Display;
+class Point;
+}
+
 // AppListServiceMac manages global resources needed for the app list to
 // operate, and controls when the app list is opened and closed.
 class AppListServiceMac : public AppListServiceImpl,
@@ -26,6 +31,22 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual ~AppListServiceMac();
 
   static AppListServiceMac* GetInstance();
+
+  // Finds the position for a window to anchor it to the dock. This chooses the
+  // most appropriate position for the window based on whether the dock exists,
+  // the position of the dock (calculated by the difference between the display
+  // bounds and display work area), whether the mouse cursor is visible and its
+  // position. Sets |target_origin| to the coordinates for the window to appear
+  // at, and |start_origin| to the coordinates the window should begin animating
+  // from. Coordinates are for the bottom-left coordinate of the window, in
+  // AppKit space (Y positive is up).
+  static void FindAnchorPoint(const gfx::Size& window_size,
+                              const gfx::Display& display,
+                              int primary_display_height,
+                              bool cursor_is_visible,
+                              const gfx::Point& cursor,
+                              NSPoint* target_origin,
+                              NSPoint* start_origin);
 
   void ShowWindowNearDock();
 
