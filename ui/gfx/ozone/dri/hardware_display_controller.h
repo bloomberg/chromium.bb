@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/ozone/dri/dri_wrapper.h"
 
 namespace gfx {
@@ -75,7 +76,7 @@ class DriSurface;
 //
 // TODO(dnicoara) Need to have a way to detect events (such as monitor
 // connected or disconnected).
-class HardwareDisplayController {
+class GFX_EXPORT HardwareDisplayController {
  public:
   // Controller states. The state transitions will happen from top to bottom.
   enum State {

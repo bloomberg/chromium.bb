@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/basictypes.h"
+#include "ui/gfx/gfx_export.h"
 
 typedef struct _drmModeCrtc drmModeCrtc;
 typedef struct _drmModeModeInfo drmModeModeInfo;
@@ -17,7 +18,7 @@ namespace gfx {
 // Wraps DRM calls into a nice interface. Used to provide different
 // implementations of the DRM calls. For the actual implementation the DRM API
 // would be called. In unit tests this interface would be stubbed.
-class DriWrapper {
+class GFX_EXPORT DriWrapper {
  public:
   DriWrapper(const char* device_path);
   virtual ~DriWrapper();

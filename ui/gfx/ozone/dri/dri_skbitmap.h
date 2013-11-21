@@ -7,12 +7,13 @@
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 
 // Extend the SkBitmap interface to keep track of additional parameters used by
 // the DRM stack when allocating buffers.
-class DriSkBitmap : public SkBitmap {
+class GFX_EXPORT DriSkBitmap : public SkBitmap {
  public:
   DriSkBitmap(int fd);
   virtual ~DriSkBitmap();

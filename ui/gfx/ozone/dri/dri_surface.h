@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/skia_util.h"
 
 class SkBitmapDevice;
@@ -116,7 +117,7 @@ class HardwareDisplayController;
 // to the backbuffer.
 //
 // At this point we're back to step 1 and can start a new draw iteration.
-class DriSurface {
+class GFX_EXPORT DriSurface {
  public:
   DriSurface(HardwareDisplayController* controller);
 

@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_libevent.h"
+#include "ui/events/events_export.h"
 
 namespace ui {
 class Event;
@@ -18,7 +19,8 @@ class Event;
 // the file descriptor into |ui::Event| instances. This class provides the
 // functionality needed in common across all converters: dispatching the
 // |ui::Event| to aura.
-class EventConverterOzone : public base::MessagePumpLibevent::Watcher {
+class EVENTS_EXPORT EventConverterOzone
+    : public base::MessagePumpLibevent::Watcher {
  public:
   EventConverterOzone();
   virtual ~EventConverterOzone();
