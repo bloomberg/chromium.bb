@@ -87,7 +87,7 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(USE_GLIB)
 #include <glib-object.h>
 #endif
 
@@ -180,7 +180,7 @@ void SetupSandbox(const CommandLine& parsed_command_line) {
 }
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(USE_GLIB)
 static void GLibLogHandler(const gchar* log_domain,
                            GLogLevelFlags log_level,
                            const gchar* message,
@@ -356,7 +356,7 @@ void BrowserMainLoop::EarlyInitialization() {
   // Due to bugs in GLib we need to initialize GLib/GTK before we start threads;
   // see crbug.com/309093. Sandbox setup spawns sub-processes and a thread
   // running waitpid().
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(USE_GLIB)
   // g_type_init will be deprecated in 2.36. 2.35 is the development
   // version for 2.36, hence do not call g_type_init starting 2.35.
   // http://developer.gnome.org/gobject/unstable/gobject-Type-Information.html#g-type-init
