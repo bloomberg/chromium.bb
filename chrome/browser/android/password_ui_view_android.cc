@@ -86,9 +86,9 @@ void PasswordUIViewAndroid::HandleRemoveSavedPasswordException(
 }
 
 // static
-static jint Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, jobject obj) {
   PasswordUIViewAndroid* controller = new PasswordUIViewAndroid(env, obj);
-  return reinterpret_cast<jint>(controller);
+  return reinterpret_cast<intptr_t>(controller);
 }
 
 bool PasswordUIViewAndroid::RegisterPasswordUIViewAndroid(JNIEnv* env) {

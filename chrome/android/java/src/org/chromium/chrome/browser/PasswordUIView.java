@@ -61,7 +61,7 @@ public final class PasswordUIView {
             new ObserverList<PasswordListObserver>();
 
     // Pointer to native implementation, set to 0 in destroy().
-    private int mNativePasswordUIViewAndroid;
+    private long mNativePasswordUIViewAndroid;
 
     /**
      * Constructor creates the native object as well. Callers should call destroy() after usage.
@@ -149,25 +149,25 @@ public final class PasswordUIView {
         mObservers.clear();
     }
 
-    private native int nativeInit();
+    private native long nativeInit();
 
-    private native void nativeUpdatePasswordLists(int nativePasswordUIViewAndroid);
+    private native void nativeUpdatePasswordLists(long nativePasswordUIViewAndroid);
 
     private native SavedPasswordEntry nativeGetSavedPasswordEntry(
-            int nativePasswordUIViewAndroid,
+            long nativePasswordUIViewAndroid,
             int index);
 
-    private native String nativeGetSavedPasswordException(int nativePasswordUIViewAndroid,
+    private native String nativeGetSavedPasswordException(long nativePasswordUIViewAndroid,
             int index);
 
     private native void nativeHandleRemoveSavedPasswordEntry(
-            int nativePasswordUIViewAndroid,
+            long nativePasswordUIViewAndroid,
             int index);
 
     private native void nativeHandleRemoveSavedPasswordException(
-            int nativePasswordUIViewAndroid,
+            long nativePasswordUIViewAndroid,
             int index);
 
-    private native void nativeDestroy(int nativePasswordUIViewAndroid);
+    private native void nativeDestroy(long nativePasswordUIViewAndroid);
 
 }

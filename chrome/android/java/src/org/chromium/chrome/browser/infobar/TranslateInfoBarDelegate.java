@@ -21,14 +21,14 @@ public class TranslateInfoBarDelegate {
 
     @CalledByNative
     boolean changeTranslateInfoBarTypeAndPointer(
-            int newNativeInfoBar, int translateBarType) {
+            long newNativeInfoBar, int translateBarType) {
         mInfoBar.changeInfoBarTypeAndNativePointer(translateBarType, newNativeInfoBar);
         return true;
     }
 
     @CalledByNative
     InfoBar showTranslateInfoBar(
-            int nativeInfoBar, int translateBarType,
+            long nativeInfoBar, int translateBarType,
             int sourceLanguageIndex, int targetLanguageIndex, boolean autoTranslatePair,
             boolean showNeverInfobar, String[] languages) {
         mInfoBar = new TranslateInfoBar(nativeInfoBar, this, translateBarType,
@@ -37,14 +37,14 @@ public class TranslateInfoBarDelegate {
         return mInfoBar;
     }
 
-    public void applyTranslateOptions(int nativeTranslateInfoBar,
+    public void applyTranslateOptions(long nativeTranslateInfoBar,
             int sourceLanguageIndex, int targetLanguageIndex, boolean alwaysTranslate,
             boolean neverTranslateLanguage, boolean neverTranslateSite) {
         nativeApplyTranslateOptions(nativeTranslateInfoBar, sourceLanguageIndex,
                 targetLanguageIndex, alwaysTranslate, neverTranslateLanguage, neverTranslateSite);
     }
 
-    private native void nativeApplyTranslateOptions(int nativeTranslateInfoBar,
+    private native void nativeApplyTranslateOptions(long nativeTranslateInfoBar,
             int sourceLanguageIndex, int targetLanguageIndex, boolean alwaysTranslate,
             boolean neverTranslateLanguage, boolean neverTranslateSite);
 }

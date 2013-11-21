@@ -25,7 +25,7 @@ public class FaviconHelper {
     public static final int TOUCH_ICON = 1 << 1;
     public static final int TOUCH_PRECOMPOSED_ICON = 1 << 2;
 
-    private int mNativeFaviconHelper;
+    private long mNativeFaviconHelper;
 
     /**
      * Callback interface for getting the result from getLocalFaviconImageForURL method.
@@ -104,13 +104,13 @@ public class FaviconHelper {
         return nativeGetSyncedFaviconImageForURL(mNativeFaviconHelper, profile, pageUrl);
     }
 
-    private static native int nativeInit();
-    private static native void nativeDestroy(int nativeFaviconHelper);
-    private static native boolean nativeGetLocalFaviconImageForURL(int nativeFaviconHelper,
+    private static native long nativeInit();
+    private static native void nativeDestroy(long nativeFaviconHelper);
+    private static native boolean nativeGetLocalFaviconImageForURL(long nativeFaviconHelper,
             Profile profile, String pageUrl, int iconTypes, int desiredSizeInDip,
             FaviconImageCallback faviconImageCallback);
-    private static native Bitmap nativeGetSyncedFaviconImageForURL(int nativeFaviconHelper,
+    private static native Bitmap nativeGetSyncedFaviconImageForURL(long nativeFaviconHelper,
             Profile profile, String pageUrl);
-    private static native int nativeGetDominantColorForBitmap(int nativeFaviconHelper,
+    private static native int nativeGetDominantColorForBitmap(long nativeFaviconHelper,
             Bitmap image);
 }

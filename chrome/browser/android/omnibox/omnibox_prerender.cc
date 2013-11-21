@@ -27,9 +27,9 @@ OmniboxPrerender::OmniboxPrerender(JNIEnv* env, jobject obj)
 OmniboxPrerender::~OmniboxPrerender() {
 }
 
-static jint Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, jobject obj) {
   OmniboxPrerender* omnibox = new OmniboxPrerender(env, obj);
-  return reinterpret_cast<jint>(omnibox);
+  return reinterpret_cast<intptr_t>(omnibox);
 }
 
 bool RegisterOmniboxPrerender(JNIEnv* env) {

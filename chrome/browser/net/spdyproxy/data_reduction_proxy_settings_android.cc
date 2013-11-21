@@ -291,8 +291,8 @@ std::string DataReductionProxySettingsAndroid::GetProxyPacScript() {
 }
 
 // Used by generated jni code.
-static jint Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, jobject obj) {
   DataReductionProxySettingsAndroid* settings =
       new DataReductionProxySettingsAndroid(env, obj);
-  return reinterpret_cast<jint>(settings);
+  return reinterpret_cast<intptr_t>(settings);
 }

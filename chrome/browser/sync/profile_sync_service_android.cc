@@ -501,11 +501,11 @@ ProfileSyncServiceAndroid*
       AttachCurrentThread(), base::android::GetApplicationContext()));
 }
 
-static int Init(JNIEnv* env, jobject obj) {
+static jlong Init(JNIEnv* env, jobject obj) {
   ProfileSyncServiceAndroid* profile_sync_service_android =
       new ProfileSyncServiceAndroid(env, obj);
   profile_sync_service_android->Init();
-  return reinterpret_cast<jint>(profile_sync_service_android);
+  return reinterpret_cast<intptr_t>(profile_sync_service_android);
 }
 
 // static

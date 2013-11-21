@@ -71,7 +71,7 @@ public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
         UiUtils.runOnUiThread(getActivity(), new Runnable() {
             @Override
             public void run() {
-                int nativeWebContents = ContentViewUtil.createNativeWebContents(false);
+                long nativeWebContents = ContentViewUtil.createNativeWebContents(false);
                 WindowAndroid windowAndroid = new ActivityWindowAndroid(getActivity());
                 ContentView contentView = ContentView.newInstance(
                         getActivity(), nativeWebContents, windowAndroid);

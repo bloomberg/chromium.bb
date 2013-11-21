@@ -55,7 +55,7 @@ ScopedJavaLocalRef<jobject> SQLiteCursor::NewJavaSqliteCursor(
     FaviconService* favicon_service) {
   SQLiteCursor* cursor = new SQLiteCursor(column_names, statement, service,
                                           favicon_service);
-  return Java_SQLiteCursor_create(env, reinterpret_cast<jint>(cursor));
+  return Java_SQLiteCursor_create(env, reinterpret_cast<intptr_t>(cursor));
 }
 
 bool SQLiteCursor::RegisterSqliteCursor(JNIEnv* env) {

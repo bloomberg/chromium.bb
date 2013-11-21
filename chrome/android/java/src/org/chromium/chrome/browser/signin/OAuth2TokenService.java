@@ -41,10 +41,10 @@ public final class OAuth2TokenService {
 
     private static final String OAUTH2_SCOPE_PREFIX = "oauth2:";
 
-    private final int mNativeProfileOAuth2TokenService;
+    private final long mNativeProfileOAuth2TokenService;
     private final ObserverList<OAuth2TokenServiceObserver> mObservers;
 
-    private OAuth2TokenService(int nativeOAuth2Service) {
+    private OAuth2TokenService(long nativeOAuth2Service) {
         mNativeProfileOAuth2TokenService = nativeOAuth2Service;
         mObservers = new ObserverList<OAuth2TokenServiceObserver>();
     }
@@ -55,7 +55,7 @@ public final class OAuth2TokenService {
     }
 
     @CalledByNative
-    private static OAuth2TokenService create(int nativeOAuth2Service) {
+    private static OAuth2TokenService create(long nativeOAuth2Service) {
         ThreadUtils.assertOnUiThread();
         return new OAuth2TokenService(nativeOAuth2Service);
     }
@@ -104,7 +104,7 @@ public final class OAuth2TokenService {
      */
     @CalledByNative
     public static void getOAuth2AuthToken(
-            Context context, String username, String scope, final int nativeCallback) {
+            Context context, String username, String scope, final long nativeCallback) {
         Account account = getAccountOrNullFromUsername(context, username);
         if (account == null) {
             nativeOAuth2TokenFetched(null, false, nativeCallback);
@@ -264,13 +264,14 @@ public final class OAuth2TokenService {
 
     private static native Object nativeGetForProfile(Profile profile);
     private static native void nativeOAuth2TokenFetched(
-            String authToken, boolean result, int nativeCallback);
-    private native void nativeValidateAccounts(int nativeAndroidProfileOAuth2TokenService,
-        String[] accounts, String currentlySignedInAccount);
+            String authToken, boolean result, long nativeCallback);
+    private native void nativeValidateAccounts(
+            long nativeAndroidProfileOAuth2TokenService,
+            String[] accounts, String currentlySignedInAccount);
     private native void nativeFireRefreshTokenAvailableFromJava(
-            int nativeAndroidProfileOAuth2TokenService, String accountName);
+            long nativeAndroidProfileOAuth2TokenService, String accountName);
     private native void nativeFireRefreshTokenRevokedFromJava(
-            int nativeAndroidProfileOAuth2TokenService, String accountName);
+            long nativeAndroidProfileOAuth2TokenService, String accountName);
     private native void nativeFireRefreshTokensLoadedFromJava(
-            int nativeAndroidProfileOAuth2TokenService);
+            long nativeAndroidProfileOAuth2TokenService);
 }

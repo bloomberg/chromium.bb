@@ -95,6 +95,6 @@ ScopedJavaLocalRef<jstring> TestShellTab::FixupUrl(JNIEnv* env,
   return ConvertUTF8ToJavaString(env, fixed_spec);
 }
 
-static jint Init(JNIEnv* env, jobject obj) {
-  return reinterpret_cast<jint>(new TestShellTab(env, obj));
+static jlong Init(JNIEnv* env, jobject obj) {
+  return reinterpret_cast<intptr_t>(new TestShellTab(env, obj));
 }

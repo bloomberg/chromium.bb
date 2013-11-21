@@ -11,9 +11,9 @@ import org.chromium.base.CalledByNative;
  */
 public class Profile {
 
-    private int mNativeProfileAndroid;
+    private long mNativeProfileAndroid;
 
-    private Profile(int nativeProfileAndroid) {
+    private Profile(long nativeProfileAndroid) {
         mNativeProfileAndroid = nativeProfileAndroid;
     }
 
@@ -22,7 +22,7 @@ public class Profile {
     }
 
     @CalledByNative
-    private static Profile create(int nativeProfileAndroid) {
+    private static Profile create(long nativeProfileAndroid) {
         return new Profile(nativeProfileAndroid);
     }
 
@@ -32,7 +32,7 @@ public class Profile {
     }
 
     @CalledByNative
-    private int getNativePointer() {
+    private long getNativePointer() {
         return mNativeProfileAndroid;
     }
 

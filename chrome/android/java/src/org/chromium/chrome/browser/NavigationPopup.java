@@ -48,7 +48,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
 
     private final int mFaviconSize;
 
-    private int mNativeNavigationPopup;
+    private long mNativeNavigationPopup;
 
     /**
      * Constructs a new popup with the given history information.
@@ -233,7 +233,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
 
     private static native String nativeGetHistoryUrl();
 
-    private native int nativeInit();
-    private native void nativeDestroy(int nativeNavigationPopup);
-    private native void nativeFetchFaviconForUrl(int nativeNavigationPopup, String url);
+    private native long nativeInit();
+    private native void nativeDestroy(long nativeNavigationPopup);
+    private native void nativeFetchFaviconForUrl(long nativeNavigationPopup, String url);
 }

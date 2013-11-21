@@ -34,13 +34,13 @@ class TtsPlatformImpl {
         private final String mLanguage;
     }
 
-    private int mNativeTtsPlatformImplAndroid;
+    private long mNativeTtsPlatformImplAndroid;
     private final TextToSpeech mTextToSpeech;
     private boolean mInitialized;
     private ArrayList<TtsVoice> mVoices;
     private String mCurrentLanguage;
 
-    private TtsPlatformImpl(int nativeTtsPlatformImplAndroid, Context context) {
+    private TtsPlatformImpl(long nativeTtsPlatformImplAndroid, Context context) {
         mInitialized = false;
         mNativeTtsPlatformImplAndroid = nativeTtsPlatformImplAndroid;
         mTextToSpeech = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
@@ -232,8 +232,8 @@ class TtsPlatformImpl {
         nativeVoicesChanged(mNativeTtsPlatformImplAndroid);
     }
 
-    private native void nativeVoicesChanged(int nativeTtsPlatformImplAndroid);
-    private native void nativeOnEndEvent(int nativeTtsPlatformImplAndroid, int utteranceId);
-    private native void nativeOnStartEvent(int nativeTtsPlatformImplAndroid, int utteranceId);
-    private native void nativeOnErrorEvent(int nativeTtsPlatformImplAndroid, int utteranceId);
+    private native void nativeVoicesChanged(long nativeTtsPlatformImplAndroid);
+    private native void nativeOnEndEvent(long nativeTtsPlatformImplAndroid, int utteranceId);
+    private native void nativeOnStartEvent(long nativeTtsPlatformImplAndroid, int utteranceId);
+    private native void nativeOnErrorEvent(long nativeTtsPlatformImplAndroid, int utteranceId);
 }

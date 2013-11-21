@@ -87,15 +87,15 @@ void InfoBarContainerAndroid::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
 
 // Native JNI methods ---------------------------------------------------------
 
-static int Init(JNIEnv* env,
-                jobject obj,
-                jint native_web_contents,
-                jobject auto_login_delegate) {
+static jlong Init(JNIEnv* env,
+                  jobject obj,
+                  jlong native_web_contents,
+                  jobject auto_login_delegate) {
   InfoBarContainerAndroid* infobar_container =
       new InfoBarContainerAndroid(env, obj, auto_login_delegate);
   infobar_container->ChangeInfoBarService(InfoBarService::FromWebContents(
       reinterpret_cast<content::WebContents*>(native_web_contents)));
-  return reinterpret_cast<int>(infobar_container);
+  return reinterpret_cast<intptr_t>(infobar_container);
 }
 
 bool RegisterInfoBarContainer(JNIEnv* env) {

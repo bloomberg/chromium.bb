@@ -56,7 +56,7 @@ public abstract class InfoBar implements InfoBarView {
     // This cannot be private until the swap in place infrastructure is
     // improved since subclasses need to access a possibly replaced native
     // pointer.
-    protected int mNativeInfoBarPtr;
+    protected long mNativeInfoBarPtr;
 
     // Used by tests to reference infobars.
     private final int mId;
@@ -82,7 +82,7 @@ public abstract class InfoBar implements InfoBarView {
      * Stores a pointer to the native-side counterpart of this InfoBar.
      * @param nativeInfoBarPtr Pointer to the NativeInfoBar.
      */
-    protected void setNativeInfoBar(int nativeInfoBarPtr) {
+    protected void setNativeInfoBar(long nativeInfoBarPtr) {
         if (nativeInfoBarPtr != 0) {
             // The native code takes care of expiring infobars on navigations.
             mExpireOnNavigation = false;
@@ -95,7 +95,7 @@ public abstract class InfoBar implements InfoBarView {
      * responsible for managing the cleanup of the pointer.
      * @param nativeInfoBarPtr Pointer to the NativeInfoBar.
      */
-    protected void replaceNativePointer(int newInfoBarPtr) {
+    protected void replaceNativePointer(long newInfoBarPtr) {
         mNativeInfoBarPtr = newInfoBarPtr;
     }
 
@@ -116,7 +116,7 @@ public abstract class InfoBar implements InfoBarView {
     /**
      * @return true if this java infobar owns this {@code nativePointer}
      */
-    boolean ownsNativeInfoBar(int nativePointer) {
+    boolean ownsNativeInfoBar(long nativePointer) {
         return mNativeInfoBarPtr == nativePointer;
     }
 
@@ -256,8 +256,8 @@ public abstract class InfoBar implements InfoBarView {
         mListener = listener;
     }
 
-    protected native void nativeOnLinkClicked(int nativeInfoBarAndroid);
+    protected native void nativeOnLinkClicked(long nativeInfoBarAndroid);
     protected native void nativeOnButtonClicked(
-            int nativeInfoBarAndroid, int action, String actionValue);
-    protected native void nativeOnCloseButtonClicked(int nativeInfoBarAndroid);
+            long nativeInfoBarAndroid, int action, String actionValue);
+    protected native void nativeOnCloseButtonClicked(long nativeInfoBarAndroid);
 }

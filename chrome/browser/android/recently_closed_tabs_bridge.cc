@@ -154,10 +154,10 @@ void RecentlyClosedTabsBridge::EnsureTabRestoreService() {
   }
 }
 
-static jint Init(JNIEnv* env, jobject obj, jobject jprofile) {
+static jlong Init(JNIEnv* env, jobject obj, jobject jprofile) {
   RecentlyClosedTabsBridge* bridge = new RecentlyClosedTabsBridge(
       ProfileAndroid::FromProfileAndroid(jprofile));
-  return reinterpret_cast<jint>(bridge);
+  return reinterpret_cast<intptr_t>(bridge);
 }
 
 // static

@@ -79,6 +79,7 @@
       ],
       'variables': {
         'jni_gen_package': 'chromium_testshell',
+        'jni_generator_ptr_type': 'long',
       },
       'includes': [ '../build/jni_generator.gypi' ],
     },

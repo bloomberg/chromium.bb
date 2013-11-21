@@ -137,10 +137,10 @@ void CopyWindowsToJava(
 
 }  // namespace
 
-static jint Init(JNIEnv* env, jclass clazz, jobject profile) {
+static jlong Init(JNIEnv* env, jclass clazz, jobject profile) {
   ForeignSessionHelper* foreign_session_helper = new ForeignSessionHelper(
       ProfileAndroid::FromProfileAndroid(profile));
-  return reinterpret_cast<jint>(foreign_session_helper);
+  return reinterpret_cast<intptr_t>(foreign_session_helper);
 }
 
 ForeignSessionHelper::ForeignSessionHelper(Profile* profile)
