@@ -193,6 +193,11 @@ gfx::ImageSkia AppListItemView::GetDragImage() {
   return icon_->GetImage();
 }
 
+void AppListItemView::OnDragEnded() {
+  mouse_drag_timer_.Stop();
+  SetUIState(UI_STATE_NORMAL);
+}
+
 void AppListItemView::SetAsAttemptedFolderTarget(bool is_target_folder) {
   if (is_target_folder)
     SetUIState(UI_STATE_DROPPING_IN_FOLDER);
@@ -372,8 +377,6 @@ bool AppListItemView::OnKeyPressed(const ui::KeyEvent& event) {
 void AppListItemView::OnMouseReleased(const ui::MouseEvent& event) {
   CustomButton::OnMouseReleased(event);
   apps_grid_view_->EndDrag(false);
-  mouse_drag_timer_.Stop();
-  SetUIState(UI_STATE_NORMAL);
 }
 
 void AppListItemView::OnMouseCaptureLost() {
@@ -383,8 +386,6 @@ void AppListItemView::OnMouseCaptureLost() {
 #if !defined(OS_WIN)
   CustomButton::OnMouseCaptureLost();
   apps_grid_view_->EndDrag(true);
-  mouse_drag_timer_.Stop();
-  SetUIState(UI_STATE_NORMAL);
 #endif
 }
 

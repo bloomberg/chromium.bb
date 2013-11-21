@@ -628,6 +628,7 @@ void AppsGridView::EndDrag(bool cancel) {
   drop_attempt_ = DROP_FOR_NONE;
   drag_pointer_ = NONE;
   drop_target_ = Index();
+  drag_view_->OnDragEnded();
   drag_view_ = NULL;
   drag_start_grid_view_ = gfx::Point();
   drag_start_page_ = -1;

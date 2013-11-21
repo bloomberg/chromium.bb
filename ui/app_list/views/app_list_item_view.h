@@ -48,6 +48,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   void CancelContextMenu();
 
   gfx::ImageSkia GetDragImage();
+  void OnDragEnded();
 
   void SetAsAttemptedFolderTarget(bool is_target_folder);
 
