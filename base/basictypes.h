@@ -9,6 +9,7 @@
 #include <stddef.h>         // For size_t
 #include <string.h>         // for memcpy
 
+#include "base/compiler_specific.h"
 #include "base/port.h"    // Types that only need exist on certain systems
 
 #ifndef COMPILER_MSVC
@@ -215,13 +216,21 @@ inline To implicit_cast(From const &f) {
 // the expression is false, most compilers will issue a warning/error
 // containing the name of the variable.
 
+#undef COMPILE_ASSERT
+
+#if __cplusplus >= 201103L
+
+// Under C++11, just use static_assert.
+#define COMPILE_ASSERT(expr, msg) static_assert(expr, #msg)
+
+#else
+
 template <bool>
 struct CompileAssert {
 };
 
-#undef COMPILE_ASSERT
 #define COMPILE_ASSERT(expr, msg) \
-  typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
+  typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1] ALLOW_UNUSED
 
 // Implementation details of COMPILE_ASSERT:
 //
@@ -264,6 +273,7 @@ struct CompileAssert {
 //   This is to avoid running into a bug in MS VC 7.1, which
 //   causes ((0.0) ? 1 : -1) to incorrectly evaluate to 1.
 
+#endif
 
 // bit_cast<Dest,Source> is a template function that implements the
 // equivalent of "*reinterpret_cast<Dest*>(&source)".  We need this in
