@@ -22,7 +22,8 @@ namespace content {
 
 WebAudioCapturerSource::WebAudioCapturerSource()
     : track_(NULL),
-      capturer_(NULL) {
+      capturer_(NULL),
+      audio_format_changed_(false) {
 }
 
 WebAudioCapturerSource::~WebAudioCapturerSource() {
@@ -49,11 +50,7 @@ void WebAudioCapturerSource::setFormat(
   params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                 channel_layout, number_of_channels, 0, sample_rate, 16,
                 sample_rate / 100);
-
-  // Update the downstream client to use the same format as what WebKit
-  // is using.
-  if (track_)
-    track_->SetCaptureFormat(params_);
+  audio_format_changed_ = true;
 
   wrapper_bus_ = AudioBus::CreateWrapper(params_.channels());
   capture_bus_ = AudioBus::Create(params_);
@@ -89,6 +86,12 @@ void WebAudioCapturerSource::consumeAudio(
   base::AutoLock auto_lock(lock_);
   if (!track_)
     return;
+
+  // Update the downstream client if the audio format has been changed.
+  if (audio_format_changed_) {
+    track_->SetCaptureFormat(params_);
+    audio_format_changed_ = false;
+  }
 
   wrapper_bus_->set_frames(number_of_frames);
 
