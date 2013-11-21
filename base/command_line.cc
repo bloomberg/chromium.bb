@@ -321,8 +321,8 @@ FilePath CommandLine::GetSwitchValuePath(
 
 CommandLine::StringType CommandLine::GetSwitchValueNative(
     const std::string& switch_string) const {
-  SwitchMap::const_iterator result = switches_.end();
-  result = switches_.find(LowerASCIIOnWindows(switch_string));
+  SwitchMap::const_iterator result =
+    switches_.find(LowerASCIIOnWindows(switch_string));
   return result == switches_.end() ? StringType() : result->second;
 }
 
