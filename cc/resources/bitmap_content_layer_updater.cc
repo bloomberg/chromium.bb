@@ -66,8 +66,12 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
     devtools_instrumentation::ScopedLayerTask paint_setup(
         devtools_instrumentation::kPaintSetup, layer_id_);
     canvas_size_ = content_rect.size();
-    canvas_ = skia::AdoptRef(skia::CreateBitmapCanvas(
-        canvas_size_.width(), canvas_size_.height(), layer_is_opaque_));
+    bitmap_backing_.setConfig(
+        SkBitmap::kARGB_8888_Config,
+        canvas_size_.width(), canvas_size_.height(),
+        0, layer_is_opaque_ ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
+    bitmap_backing_.allocPixels();
+    canvas_ = skia::AdoptRef(new SkCanvas(bitmap_backing_));
   }
 
   base::TimeTicks start_time =

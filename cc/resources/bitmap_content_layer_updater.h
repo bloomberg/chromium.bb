@@ -8,6 +8,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/resources/content_layer_updater.h"
 #include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class SkCanvas;
 
@@ -65,6 +66,7 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
       int layer_id);
   virtual ~BitmapContentLayerUpdater();
 
+  SkBitmap bitmap_backing_;
   skia::RefPtr<SkCanvas> canvas_;
   gfx::Size canvas_size_;
   bool opaque_;
