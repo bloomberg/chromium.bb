@@ -51,6 +51,7 @@ bool ContainsElement(const std::vector<T>& collection, const T& key) {
 }  // namespace
 
 const char kIPhotoAlbumsDir[] = "Albums";
+const char kIPhotoOriginalsDir[] = "Originals";
 
 IPhotoFileUtil::IPhotoFileUtil(MediaPathFilter* media_path_filter)
     : NativeMediaFileUtil(media_path_filter),
@@ -175,12 +176,28 @@ base::PlatformFileError IPhotoFileUtil::GetFileInfoSync(
       if (ContainsElement(albums, components[1]))
         return MakeDirectoryFileInfo(file_info);
     } else if (components.size() == 3) {
+      if (components[2] == kIPhotoOriginalsDir) {
+        if (GetDataProvider()->HasOriginals(components[1]))
+          return MakeDirectoryFileInfo(file_info);
+        else
+          return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      }
+
       base::FilePath location = GetDataProvider()->GetPhotoLocationInAlbum(
           components[1], components[2]);
-      if (location.empty())
-        return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-      return NativeMediaFileUtil::GetFileInfoSync(
-          context, url, file_info, platform_path);
+      if (!location.empty()) {
+        return NativeMediaFileUtil::GetFileInfoSync(
+            context, url, file_info, platform_path);
+      }
+    } else if (components.size() == 4 &&
+               GetDataProvider()->HasOriginals(components[1]) &&
+               components[2] == kIPhotoOriginalsDir) {
+      base::FilePath location = GetDataProvider()->GetOriginalPhotoLocation(
+          components[1], components[3]);
+      if (!location.empty()) {
+        return NativeMediaFileUtil::GetFileInfoSync(
+            context, url, file_info, platform_path);
+      }
     }
   }
 
@@ -221,11 +238,31 @@ base::PlatformFileError IPhotoFileUtil::ReadDirectorySync(
         return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
       // Album dirs contain all photos in them.
+      if (GetDataProvider()->HasOriginals(components[1])) {
+        file_list->push_back(DirectoryEntry(kIPhotoOriginalsDir,
+                                            DirectoryEntry::DIRECTORY,
+                                            0, base::Time()));
+      }
       std::map<std::string, base::FilePath> locations =
           GetDataProvider()->GetAlbumContents(components[1]);
       for (std::map<std::string, base::FilePath>::const_iterator it =
                locations.begin();
            it != locations.end(); it++) {
+        base::PlatformFileInfo info;
+        if (!file_util::GetFileInfo(it->second, &info))
+          return base::PLATFORM_FILE_ERROR_IO;
+        file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE,
+                                            info.size, info.last_modified));
+      }
+      return base::PLATFORM_FILE_OK;
+    } else if (components.size() == 3 &&
+               components[2] == kIPhotoOriginalsDir &&
+               GetDataProvider()->HasOriginals(components[1])) {
+      std::map<std::string, base::FilePath> originals =
+          GetDataProvider()->GetOriginals(components[1]);
+      for (std::map<std::string, base::FilePath>::const_iterator it =
+               originals.begin();
+           it != originals.end(); it++) {
         base::PlatformFileInfo info;
         if (!file_util::GetFileInfo(it->second, &info))
           return base::PLATFORM_FILE_ERROR_IO;
@@ -262,6 +299,17 @@ base::PlatformFileError IPhotoFileUtil::GetLocalFilePath(
   if (components.size() == 3 && components[0] == kIPhotoAlbumsDir) {
     base::FilePath location = GetDataProvider()->GetPhotoLocationInAlbum(
         components[1], components[2]);
+    if (!location.empty()) {
+      *local_file_path = location;
+      return base::PLATFORM_FILE_OK;
+    }
+  }
+
+  if (components.size() == 4 && components[0] == kIPhotoAlbumsDir &&
+      GetDataProvider()->HasOriginals(components[1]) &&
+      components[2] == kIPhotoOriginalsDir) {
+    base::FilePath location = GetDataProvider()->GetOriginalPhotoLocation(
+        components[1], components[3]);
     if (!location.empty()) {
       *local_file_path = location;
       return base::PLATFORM_FILE_OK;

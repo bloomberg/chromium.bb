@@ -24,6 +24,8 @@ class IPhotoDataProvider;
 //       |- pic2.jpg
 //    |- /AnotherAlbum
 //       |- pic3.jpg
+//       |- /originals  = A directory for originals.
+//          |- pic3.jpg = Original picture. Same name as album photo.
 
 extern const char kIPhotoAlbumsDir[];
 

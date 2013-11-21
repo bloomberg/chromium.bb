@@ -81,6 +81,7 @@ class TestIPhotoDataProvider : public IPhotoDataProvider {
   virtual std::vector<std::string> GetAlbumNames() const OVERRIDE {
     std::vector<std::string> names;
     names.push_back("Album1");
+    names.push_back("has_originals");
     return names;
   }
 
@@ -95,6 +96,23 @@ class TestIPhotoDataProvider : public IPhotoDataProvider {
       const std::string& album,
       const std::string& filename) const OVERRIDE {
     return library_path().AppendASCII("a.jpg");
+  }
+
+  virtual bool HasOriginals(const std::string& album) const OVERRIDE {
+    return (album == "has_originals");
+  }
+
+  virtual std::map<std::string, base::FilePath> GetOriginals(
+      const std::string& album) const OVERRIDE {
+    std::map<std::string, base::FilePath> contents;
+    contents["a.jpg"] = library_path().AppendASCII("orig.jpg");
+    return contents;
+  }
+
+  virtual base::FilePath GetOriginalPhotoLocation(
+      const std::string& album,
+      const std::string& filename) const OVERRIDE {
+    return library_path().AppendASCII("orig.jpg");
   }
 
  private:
@@ -152,6 +170,12 @@ class IPhotoFileUtilTest : public testing::Test {
         0,
         file_util::WriteFile(
             fake_library_dir_.path().AppendASCII("a.jpg"),
+            NULL,
+            0));
+    ASSERT_EQ(
+        0,
+        file_util::WriteFile(
+            fake_library_dir_.path().AppendASCII("orig.jpg"),
             NULL,
             0));
 
@@ -258,11 +282,12 @@ TEST_F(IPhotoFileUtilTest, AlbumsDirectoryContents) {
   ReadDirectoryTestHelper(operation_runner(), url, &contents, &completed);
 
   ASSERT_TRUE(completed);
-  ASSERT_EQ(1u, contents.size());
+  ASSERT_EQ(2u, contents.size());
 
   EXPECT_TRUE(contents.front().is_directory);
 
-  EXPECT_EQ("Album1", contents.back().name);
+  EXPECT_EQ("Album1", contents.front().name);
+  EXPECT_EQ("has_originals", contents.back().name);
 }
 
 TEST_F(IPhotoFileUtilTest, AlbumContents) {
@@ -292,6 +317,30 @@ TEST_F(IPhotoFileUtilTest, BadAccess) {
   ReadDirectoryTestHelper(operation_runner(), url, &contents, &completed);
   ASSERT_FALSE(completed);
   ASSERT_EQ(0u, contents.size());
+}
+
+TEST_F(IPhotoFileUtilTest, Originals) {
+  FileSystemOperation::FileEntryList contents;
+  FileSystemURL url =
+      CreateURL(std::string(kIPhotoAlbumsDir) + "/has_originals");
+  bool completed = false;
+  ReadDirectoryTestHelper(operation_runner(), url, &contents, &completed);
+
+  ASSERT_TRUE(completed);
+  ASSERT_EQ(2u, contents.size());
+  EXPECT_TRUE(contents.front().is_directory);
+  EXPECT_EQ("Originals", contents.front().name);
+  EXPECT_FALSE(contents.back().is_directory);
+  EXPECT_EQ("a.jpg", contents.back().name);
+
+  url = CreateURL(std::string(kIPhotoAlbumsDir) + "/has_originals/Originals");
+  completed = false;
+  ReadDirectoryTestHelper(operation_runner(), url, &contents, &completed);
+  ASSERT_TRUE(completed);
+  ASSERT_EQ(1u, contents.size());
+
+  EXPECT_FALSE(contents.front().is_directory);
+  EXPECT_EQ("a.jpg", contents.front().name);
 }
 
 }  // namespace iphoto
