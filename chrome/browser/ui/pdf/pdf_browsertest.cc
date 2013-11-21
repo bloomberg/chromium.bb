@@ -211,8 +211,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
   net::test_server::EmbeddedTestServer pdf_test_server_;
 };
 
-// Failing on official Windows bot. http://crbug.com/152330
-#if defined(OS_CHROMEOS) || (defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN))
+#if defined(OS_CHROMEOS)
 // TODO(sanjeevr): http://crbug.com/79837
 #define MAYBE_Basic DISABLED_Basic
 #else
@@ -236,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
 #endif
 }
 
-#if defined(OS_CHROMEOS) || (defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN))
+#if defined(OS_CHROMEOS)
 // TODO(sanjeevr): http://crbug.com/79837
 #define MAYBE_Scroll DISABLED_Scroll
 #else
@@ -266,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
   ASSERT_GT(y_offset, 0);
 }
 
-#if defined(OS_CHROMEOS) || (defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN))
+#if defined(OS_CHROMEOS)
 // TODO(sanjeevr): http://crbug.com/79837
 #define MAYBE_FindAndCopy DISABLED_FindAndCopy
 #else
