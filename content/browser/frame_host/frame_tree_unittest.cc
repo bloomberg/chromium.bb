@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/frame_host/navigator.h"
+#include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -105,10 +106,12 @@ TEST_F(FrameTreeTest, Shape) {
 
   // Ensure the top-level node of the FrameTree is initialized by simulating a
   // main frame swap here.
-  RenderFrameHostImpl render_frame_host(static_cast<RenderViewHostImpl*>(rvh()),
-                                        &frame_tree,
-                                        process()->GetNextRoutingID(), false);
-  frame_tree.SwapMainFrame(&render_frame_host);
+  scoped_ptr<RenderFrameHostImpl> render_frame_host =
+      RenderFrameHostFactory::Create(static_cast<RenderViewHostImpl*>(rvh()),
+                                     &frame_tree,
+                                     process()->GetNextRoutingID(),
+                                     false);
+  frame_tree.SwapMainFrame(render_frame_host.get());
   frame_tree.OnFirstNavigationAfterSwap(5);
 
   ASSERT_EQ("5: []", GetTreeState(&frame_tree));

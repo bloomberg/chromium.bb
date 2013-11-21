@@ -34,6 +34,7 @@ class MockRenderProcessHostFactory;
 class NavigationController;
 class RenderProcessHostFactory;
 class RenderViewHostDelegate;
+class TestRenderFrameHostFactory;
 class TestRenderViewHostFactory;
 class WebContents;
 
@@ -116,6 +117,7 @@ class RenderViewHostTestEnabler {
 
   scoped_ptr<MockRenderProcessHostFactory> rph_factory_;
   scoped_ptr<TestRenderViewHostFactory> rvh_factory_;
+  scoped_ptr<TestRenderFrameHostFactory> rfh_factory_;
 };
 
 // RenderViewHostTestHarness ---------------------------------------------------

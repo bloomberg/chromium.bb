@@ -27,6 +27,7 @@
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -189,9 +190,8 @@ RenderViewHostImpl::RenderViewHostImpl(
   if (main_frame_routing_id == MSG_ROUTING_NONE)
     main_frame_routing_id = GetProcess()->GetNextRoutingID();
 
-  main_render_frame_host_.reset(
-      new RenderFrameHostImpl(this, delegate_->GetFrameTree(),
-                              main_frame_routing_id, is_swapped_out_));
+  main_render_frame_host_ = RenderFrameHostFactory::Create(
+      this, delegate_->GetFrameTree(), main_frame_routing_id, is_swapped_out_);
 
   GetProcess()->EnableSendQueue();
 

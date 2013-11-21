@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host.h"
 
 class GURL;
@@ -22,13 +23,6 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
  public:
   static RenderFrameHostImpl* FromID(int process_id, int routing_id);
 
-  // TODO(nasko): Remove dependency on RenderViewHost here. RenderProcessHost
-  // should be the abstraction needed here, but we need RenderViewHost to pass
-  // into WebContentsObserver::FrameDetached for now.
-  RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
-                      FrameTree* frame_tree,
-                      int routing_id,
-                      bool is_swapped_out);
   virtual ~RenderFrameHostImpl();
 
   // IPC::Sender
@@ -48,6 +42,17 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   RenderViewHostImpl* render_view_host() {
     return render_view_host_;
   }
+
+ protected:
+  friend class RenderFrameHostFactory;
+
+  // TODO(nasko): Remove dependency on RenderViewHost here. RenderProcessHost
+  // should be the abstraction needed here, but we need RenderViewHost to pass
+  // into WebContentsObserver::FrameDetached for now.
+  RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
+                      FrameTree* frame_tree,
+                      int routing_id,
+                      bool is_swapped_out);
 
  private:
   // IPC Message handlers.

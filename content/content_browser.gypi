@@ -520,6 +520,8 @@
     'browser/frame_host/navigator.cc',
     'browser/frame_host/navigator.h',
     'browser/frame_host/navigator_delegate.h',
+    'browser/frame_host/render_frame_host_factory.cc',
+    'browser/frame_host/render_frame_host_factory.h',
     'browser/frame_host/render_frame_host_impl.cc',
     'browser/frame_host/render_frame_host_impl.h',
     'browser/frame_host/render_frame_message_filter.cc',

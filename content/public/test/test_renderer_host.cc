@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/test/test_render_frame_host_factory.h"
 #include "content/test/test_render_view_host_factory.h"
 #include "content/test/test_web_contents.h"
 
@@ -64,8 +65,8 @@ bool RenderViewHostTester::HasTouchEventHandler(RenderViewHost* rvh) {
 
 RenderViewHostTestEnabler::RenderViewHostTestEnabler()
     : rph_factory_(new MockRenderProcessHostFactory()),
-      rvh_factory_(new TestRenderViewHostFactory(rph_factory_.get())) {
-}
+      rvh_factory_(new TestRenderViewHostFactory(rph_factory_.get())),
+      rfh_factory_(new TestRenderFrameHostFactory()) {}
 
 RenderViewHostTestEnabler::~RenderViewHostTestEnabler() {
 }

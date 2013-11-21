@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
+#include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
 namespace content {
@@ -166,8 +167,11 @@ scoped_ptr<FrameTreeNode> FrameTree::CreateNode(
     Navigator* navigator,
     RenderProcessHost* render_process_host) {
   scoped_ptr<RenderFrameHostImpl> render_frame_host(
-      new RenderFrameHostImpl(root_->render_frame_host()->render_view_host(),
-                              this, render_frame_host_id, false));
+      RenderFrameHostFactory::Create(
+          root_->render_frame_host()->render_view_host(),
+          this,
+          render_frame_host_id,
+          false));
 
   return make_scoped_ptr(new FrameTreeNode(navigator,
       render_view_delegate_, render_widget_delegate_, manager_delegate_,
