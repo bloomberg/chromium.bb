@@ -551,31 +551,45 @@
         if (toLayoutId)
           this.layout = toLayoutId;
         var char = detail.char;
-        if (enterUpperOnSpace) {
-          enterUpperOnSpace = false;
-          if (char == ' ') {
-            // If shift key defined in layout.
-            if (this.shift) {
-              var shiftDetail = this.shift.onSpaceAfterPunctuation();
-              // Check if transition defined.
-              this.changeKeyset(shiftDetail);
-            } else {
-              console.error('Capitalization on space after punctuation \
-                            enabled, but cannot find target keyset.');
-            }
-          }
-        }
         this.lastPressedKey = null;
+        // Characters that should not be typed.
         switch(char) {
           case 'Invalid':
           case 'Shift':
           case 'Ctrl':
           case 'Alt':
+            enterUpperOnSpace = false;
             swipeStatus.swipeFlags = 0;
             return;
           case 'Microphone':
             this.voiceInput_.onDown();
             return;
+          default:
+            break;
+        }
+        // Tries to type the character. Resorts to insertText if that fails.
+        if(!this.keyTyped(detail))
+          insertText(char);
+        // Post-typing logic.
+        switch(char) {
+          case ' ':
+            if(enterUpperOnSpace) {
+              enterUpperOnSpace = false;
+              if (this.shift) {
+                var shiftDetail = this.shift.onSpaceAfterPunctuation();
+                // Check if transition defined.
+                this.changeKeyset(shiftDetail);
+              } else {
+                console.error('Capitalization on space after punctuation \
+                            enabled, but cannot find target keyset.');
+              }
+              // Immediately return to maintain shift-state. Space is a
+              // non-control key and would otherwise trigger a reset of the
+              // shift key, causing a transition to lower case.
+              // TODO(rsadam): Add unit test after Polymer uprev complete.
+              return;
+            }
+            break;
           case '.':
           case '?':
           case '!':
@@ -584,8 +598,7 @@
           default:
             break;
         }
-        if(!this.keyTyped(detail))
-          insertText(char);
+        // Reset control keys.
         this.onNonControlKeyTyped();
       },
 
