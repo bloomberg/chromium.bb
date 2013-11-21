@@ -126,18 +126,18 @@ class CandidateWindowView : public views::View {
   // Returns 0 if no candidate is present.
   int GetHorizontalOffset();
 
-  void set_cursor_location(const gfx::Rect& cursor_location) {
-    cursor_location_ = cursor_location;
+  void set_cursor_bounds(const gfx::Rect& cursor_bounds) {
+    cursor_bounds_ = cursor_bounds;
   }
 
-  void set_composition_head_location(
-      const gfx::Rect& composition_head_location) {
-    composition_head_location_ = composition_head_location;
+  void set_composition_head_bounds(
+      const gfx::Rect& composition_head_bounds) {
+    composition_head_bounds_ = composition_head_bounds;
   }
 
-  const gfx::Rect& cursor_location() const { return cursor_location_; }
-  const gfx::Rect& composition_head_location() const {
-    return composition_head_location_;
+  const gfx::Rect& cursor_bounds() const { return cursor_bounds_; }
+  const gfx::Rect& composition_head_bounds() const {
+    return composition_head_bounds_;
   }
 
  protected:
@@ -205,11 +205,11 @@ class CandidateWindowView : public views::View {
   gfx::Size previous_candidate_column_size_;
   gfx::Size previous_annotation_column_size_;
 
-  // The last cursor location.
-  gfx::Rect cursor_location_;
+  // The last cursor bounds.
+  gfx::Rect cursor_bounds_;
 
-  // The last compostion head location.
-  gfx::Rect composition_head_location_;
+  // The last compostion head bounds.
+  gfx::Rect composition_head_bounds_;
 
   // True if the candidate window should be shown with aligning with composition
   // text as opposed to the cursor.

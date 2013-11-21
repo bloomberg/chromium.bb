@@ -7,7 +7,7 @@
 namespace chromeos {
 
 MockIMECandidateWindowHandler::MockIMECandidateWindowHandler()
-    : set_cursor_location_call_count_(0),
+    : set_cursor_bounds_call_count_(0),
       update_lookup_table_call_count_(0),
       update_auxiliary_text_call_count_(0) {
 }
@@ -45,14 +45,14 @@ void MockIMECandidateWindowHandler::UpdatePreeditText(const std::string& text,
 void MockIMECandidateWindowHandler::HidePreeditText() {
 }
 
-void MockIMECandidateWindowHandler::SetCursorLocation(
-    const ibus::Rect& cursor_location,
+void MockIMECandidateWindowHandler::SetCursorBounds(
+    const ibus::Rect& cursor_bounds,
     const ibus::Rect& composition_head) {
-  ++set_cursor_location_call_count_;
+  ++set_cursor_bounds_call_count_;
 }
 
 void MockIMECandidateWindowHandler::Reset() {
-  set_cursor_location_call_count_ = 0;
+  set_cursor_bounds_call_count_ = 0;
   update_lookup_table_call_count_ = 0;
   update_auxiliary_text_call_count_ = 0;
 }

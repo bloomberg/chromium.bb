@@ -37,11 +37,11 @@ class MockIMECandidateWindowHandler
   virtual void UpdatePreeditText(const std::string& text, uint32 cursor_pos,
                                  bool visible) OVERRIDE;
   virtual void HidePreeditText() OVERRIDE;
-  virtual void SetCursorLocation(const ibus::Rect& cursor_location,
-                                 const ibus::Rect& composition_head) OVERRIDE;
+  virtual void SetCursorBounds(const ibus::Rect& cursor_bounds,
+                               const ibus::Rect& composition_head) OVERRIDE;
 
-  int set_cursor_location_call_count() const {
-    return set_cursor_location_call_count_;
+  int set_cursor_bounds_call_count() const {
+    return set_cursor_bounds_call_count_;
   }
 
   int update_lookup_table_call_count() const {
@@ -64,7 +64,7 @@ class MockIMECandidateWindowHandler
   void Reset();
 
  private:
-  int set_cursor_location_call_count_;
+  int set_cursor_bounds_call_count_;
   int update_lookup_table_call_count_;
   int update_auxiliary_text_call_count_;
   UpdateLookupTableArg last_update_lookup_table_arg_;

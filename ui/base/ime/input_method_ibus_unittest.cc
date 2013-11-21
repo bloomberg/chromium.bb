@@ -484,7 +484,7 @@ TEST_F(InputMethodIBusTest, FocusIn_Text) {
   EXPECT_EQ(1, mock_ime_engine_handler_->focus_in_call_count());
   EXPECT_EQ(
       1,
-      mock_ime_candidate_window_handler_->set_cursor_location_call_count());
+      mock_ime_candidate_window_handler_->set_cursor_bounds_call_count());
   // ui::TextInputClient::OnInputMethodChanged() should be called when
   // ui::InputMethodIBus connects/disconnects to/from ibus-daemon and the
   // current text input type is not NONE.
@@ -567,24 +567,24 @@ TEST_F(InputMethodIBusTest, OnCaretBoundsChanged) {
   ime_->Init(true);
   EXPECT_EQ(
       1,
-      mock_ime_candidate_window_handler_->set_cursor_location_call_count());
+      mock_ime_candidate_window_handler_->set_cursor_bounds_call_count());
   caret_bounds_ = gfx::Rect(1, 2, 3, 4);
   ime_->OnCaretBoundsChanged(this);
   EXPECT_EQ(
       2,
-      mock_ime_candidate_window_handler_->set_cursor_location_call_count());
+      mock_ime_candidate_window_handler_->set_cursor_bounds_call_count());
   caret_bounds_ = gfx::Rect(0, 2, 3, 4);
   ime_->OnCaretBoundsChanged(this);
   EXPECT_EQ(
       3,
-      mock_ime_candidate_window_handler_->set_cursor_location_call_count());
+      mock_ime_candidate_window_handler_->set_cursor_bounds_call_count());
   caret_bounds_ = gfx::Rect(0, 2, 3, 4);  // unchanged
   ime_->OnCaretBoundsChanged(this);
   // Current InputMethodIBus implementation performs the IPC regardless of the
   // bounds are changed or not.
   EXPECT_EQ(
       4,
-      mock_ime_candidate_window_handler_->set_cursor_location_call_count());
+      mock_ime_candidate_window_handler_->set_cursor_bounds_call_count());
 }
 
 TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_NoAttribute) {

@@ -29,9 +29,9 @@ ModeIndicatorController::~ModeIndicatorController() {
   imm->RemoveObserver(this);
 }
 
-void ModeIndicatorController::SetCursorLocation(
-    const gfx::Rect& cursor_location) {
-  mi_widget_->SetCursorLocation(cursor_location);
+void ModeIndicatorController::SetCursorBounds(
+    const gfx::Rect& cursor_bounds) {
+  mi_widget_->SetCursorBounds(cursor_bounds);
 }
 
 void ModeIndicatorController::FocusStateChanged(bool is_focused) {

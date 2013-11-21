@@ -40,11 +40,11 @@ ModeIndicatorWidget::ModeIndicatorWidget()
 ModeIndicatorWidget::~ModeIndicatorWidget() {
 }
 
-void ModeIndicatorWidget::SetCursorLocation(const gfx::Rect& cursor_location) {
-  cursor_location_ = cursor_location;
+void ModeIndicatorWidget::SetCursorBounds(const gfx::Rect& cursor_bounds) {
+  cursor_bounds_ = cursor_bounds;
   gfx::Rect bound(GetClientAreaBoundsInScreen());
-  bound.set_x(cursor_location.x() - bound.width() / 2);
-  bound.set_y(cursor_location.bottom());
+  bound.set_x(cursor_bounds.x() - bound.width() / 2);
+  bound.set_y(cursor_bounds.bottom());
   SetBounds(bound);
 }
 
@@ -53,7 +53,7 @@ void ModeIndicatorWidget::SetLabelTextUtf8(const std::string& text_utf8) {
 
   mode_view_->SetLabelTextUtf8(text_utf8);
   SetSize(mode_view_->size());
-  SetCursorLocation(cursor_location_);
+  SetCursorBounds(cursor_bounds_);
 }
 
 }  // namespace input_method

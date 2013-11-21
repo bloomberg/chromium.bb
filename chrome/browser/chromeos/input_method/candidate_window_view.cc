@@ -965,22 +965,22 @@ void CandidateWindowView::CommitCandidate() {
 }
 
 void CandidateWindowView::ResizeAndMoveParentFrame() {
-  // If rendering operation comes from mozc-engine, uses mozc specific location,
+  // If rendering operation comes from mozc-engine, uses mozc specific bounds,
   // otherwise candidate window is shown under the cursor.
   const int x = should_show_at_composition_head_?
-      composition_head_location_.x() : cursor_location_.x();
+      composition_head_bounds_.x() : cursor_bounds_.x();
   // To avoid candidate-window overlapping, uses maximum y-position of mozc
-  // specific location and cursor location, because mozc-engine does not
+  // specific bounds and cursor bounds, because mozc-engine does not
   // consider about multi-line composition.
   const int y = should_show_at_composition_head_?
-      std::max(composition_head_location_.y(), cursor_location_.y()) :
-      cursor_location_.y();
-  const int height = cursor_location_.height();
+      std::max(composition_head_bounds_.y(), cursor_bounds_.y()) :
+      cursor_bounds_.y();
+  const int height = cursor_bounds_.height();
   const int horizontal_offset = GetHorizontalOffset();
 
   gfx::Rect old_bounds = parent_frame_->GetClientAreaBoundsInScreen();
   gfx::Rect screen_bounds = ash::Shell::GetScreen()->GetDisplayMatching(
-      cursor_location_).work_area();
+      cursor_bounds_).work_area();
   // The size.
   gfx::Rect frame_bounds = old_bounds;
   frame_bounds.set_size(GetPreferredSize());
@@ -1011,7 +1011,7 @@ void CandidateWindowView::ResizeAndMoveParentFrame() {
 
   // TODO(nona): check top_overflow here.
 
-  // Move the window per the cursor location.
+  // Move the window per the cursor bounds.
   // SetBounds() is not cheap. Only call this when it is really changed.
   if (frame_bounds != old_bounds)
     parent_frame_->SetBounds(frame_bounds);

@@ -24,15 +24,12 @@ class ModeIndicatorWidget : public DelayableWidget {
 
   // Set cursor location, which is the base point to display this indicator.
   // Bacisally this indicator is displayed underneath the cursor.
-  //
-  // TODO(komatsu): Rename it to SetCursorBounds.
-  void SetCursorLocation(const gfx::Rect& corsor_location);
+  void SetCursorBounds(const gfx::Rect& corsor_bounds);
   void SetLabelTextUtf8(const std::string& text_utf8);
 
  private:
   ModeIndicatorView* mode_view_;
-  // TODO(komatsu): Rename it to cursor_bounds_.
-  gfx::Rect cursor_location_;
+  gfx::Rect cursor_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(ModeIndicatorWidget);
 };

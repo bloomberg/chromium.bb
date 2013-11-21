@@ -143,9 +143,9 @@ class CHROMEOS_EXPORT IBusPanelCandidateWindowHandlerInterface {
   // Called when the IME hides the preedit text.
   virtual void HidePreeditText() = 0;
 
-  // Called when the application changes its caret location.
-  virtual void SetCursorLocation(const ibus::Rect& cursor_location,
-                                 const ibus::Rect& composition_head) = 0;
+  // Called when the application changes its caret bounds.
+  virtual void SetCursorBounds(const ibus::Rect& cursor_bounds,
+                               const ibus::Rect& composition_head) = 0;
 
   // Called when the text field's focus state is changed.
   // |is_focused| is true when the text field gains the focus.

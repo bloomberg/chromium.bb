@@ -846,7 +846,7 @@ void InputMethodIBus::OnCaretBoundsChangedInternal(
       chromeos::IBusBridge::Get()->GetCandidateWindowHandler();
   if (!candidate_window)
     return;
-  candidate_window->SetCursorLocation(
+  candidate_window->SetCursorBounds(
       GfxRectToIBusRect(rect),
       GfxRectToIBusRect(composition_head));
 

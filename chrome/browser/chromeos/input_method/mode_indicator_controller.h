@@ -26,9 +26,9 @@ class ModeIndicatorController
   explicit ModeIndicatorController(ModeIndicatorWidget* mi_widget);
   virtual ~ModeIndicatorController();
 
-  // Set cursor location, which is the base point to display this indicator.
+  // Set cursor bounds, which is the base point to display this indicator.
   // Bacisally this indicator is displayed underneath the cursor.
-  void SetCursorLocation(const gfx::Rect& cursor_location);
+  void SetCursorBounds(const gfx::Rect& cursor_location);
 
   // Notify the focus state to the mode indicator.
   void FocusStateChanged(bool is_focused);
