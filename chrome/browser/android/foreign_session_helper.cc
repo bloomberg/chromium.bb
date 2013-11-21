@@ -247,51 +247,6 @@ jboolean ForeignSessionHelper::GetForeignSessions(JNIEnv* env,
   return true;
 }
 
-// TODO(apiccion): Remvoe this method once downstream CL Lands.
-// See: http://crbug.com/257102
-jboolean ForeignSessionHelper::OpenForeignSessionTabOld(JNIEnv* env,
-                                                        jobject obj,
-                                                        jstring session_tag,
-                                                        jint session_tab_id) {
-  SessionModelAssociator* associator = GetSessionModelAssociator(profile_);
-  if (!associator) {
-    LOG(ERROR) << "Null SessionModelAssociator returned.";
-    return false;
-  }
-
-  const SessionTab* session_tab;
-
-  if (!associator->GetForeignTab(ConvertJavaStringToUTF8(env, session_tag),
-                                 session_tab_id, &session_tab)) {
-    LOG(ERROR) << "Failed to load foreign tab.";
-    return false;
-  }
-
-  if (session_tab->navigations.empty()) {
-    LOG(ERROR) << "Foreign tab no longer has valid navigations.";
-    return false;
-  }
-
-  TabModel* tab_model = TabModelList::GetTabModelWithProfile(profile_);
-  DCHECK(tab_model);
-  if (!tab_model)
-    return false;
-
-  std::vector<content::NavigationEntry*> entries =
-      sessions::SerializedNavigationEntry::ToNavigationEntries(
-          session_tab->navigations, profile_);
-  content::WebContents* new_web_contents = content::WebContents::Create(
-      content::WebContents::CreateParams(profile_));
-  int selected_index = session_tab->normalized_navigation_index();
-  new_web_contents->GetController().Restore(
-      selected_index,
-      content::NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
-      &entries);
-  tab_model->CreateTab(new_web_contents);
-
-  return true;
-}
-
 jboolean ForeignSessionHelper::OpenForeignSessionTab(JNIEnv* env,
                                                      jobject obj,
                                                      jobject j_tab,

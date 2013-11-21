@@ -178,18 +178,6 @@ public class ForeignSessionHelper {
     }
 
     /**
-     * TODO(apiccion): Remvoe this method once downstream CL Lands.
-     * See: http://crbug.com/257102
-     * Opens the given foreign tab in a new tab.
-     * @param session Session that the target tab belongs to.
-     * @param tab Target tab to open.
-     * @return {@code True} iff the tab is successfully opened.
-     */
-    public boolean openForeignSessionTab(ForeignSession session, ForeignSessionTab tab) {
-        return nativeOpenForeignSessionTabOld(mNativeForeignSessionHelper, session.tag, tab.id);
-    }
-
-    /**
      * Opens the given foreign tab in a new tab.
      * @param tab Tab to load the session into.
      * @param session Session that the target tab belongs to.
@@ -221,10 +209,6 @@ public class ForeignSessionHelper {
             int nativeForeignSessionHelper, ForeignSessionCallback callback);
     private static native boolean nativeGetForeignSessions(int nativeForeignSessionHelper,
             List<ForeignSession> resultSessions);
-    // TODO(apiccion): Remvoe this method once downstream CL Lands.
-    // See: http://crbug.com/257102
-    private static native boolean nativeOpenForeignSessionTabOld(
-            int nativeForeignSessionHelper, String sessionTag, int tabId);
     private static native boolean nativeOpenForeignSessionTab(
             int nativeForeignSessionHelper, TabBase tab, String sessionTag, int tabId,
             int disposition);

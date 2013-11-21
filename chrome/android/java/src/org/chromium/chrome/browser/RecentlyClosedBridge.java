@@ -92,8 +92,7 @@ public class RecentlyClosedBridge {
     }
 
     /**
-     * Opens a recently closed tab in a new tab.
-     * Note: this will change to open in the current tab once http://crbug.com/257102 is fixed.
+     * Opens a recently closed tab in the current tab.
      *
      * @param tab The current TabBase.
      * @param recentTab The RecentlyClosedTab to open.
