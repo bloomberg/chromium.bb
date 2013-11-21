@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/values.h"
+#include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/navigation_controller.h"
@@ -295,5 +296,21 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                 size());
   EXPECT_EQ(new_size, shell()->web_contents()->GetView()->GetContainerSize());
 }
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLSubframe) {
+
+  // Navigate with source_frame_id 3, FrameTreeNode ID 4.
+  const GURL url("http://foo");
+  OpenURLParams params(url, Referrer(), 3, 4, CURRENT_TAB, PAGE_TRANSITION_LINK,
+                       true);
+  shell()->web_contents()->OpenURL(params);
+
+  // Make sure the NavigationEntry ends up with the FrameTreeNode ID.
+  NavigationController* controller = &shell()->web_contents()->GetController();
+  EXPECT_TRUE(controller->GetPendingEntry());
+  EXPECT_EQ(4, NavigationEntryImpl::FromNavigationEntry(
+                controller->GetPendingEntry())->frame_tree_node_id());
+}
+
 
 }  // namespace content

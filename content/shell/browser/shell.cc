@@ -248,6 +248,7 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
       return NULL;
   NavigationController::LoadURLParams load_url_params(params.url);
   load_url_params.referrer = params.referrer;
+  load_url_params.frame_tree_node_id = params.frame_tree_node_id;
   load_url_params.transition_type = params.transition;
   load_url_params.extra_headers = params.extra_headers;
   load_url_params.should_replace_current_entry =

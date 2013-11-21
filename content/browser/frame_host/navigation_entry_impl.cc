@@ -52,7 +52,8 @@ NavigationEntryImpl::NavigationEntryImpl()
       is_renderer_initiated_(false),
       should_replace_entry_(false),
       should_clear_history_list_(false),
-      can_load_local_resources_(false) {
+      can_load_local_resources_(false),
+      frame_tree_node_id_(-1) {
 }
 
 NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
@@ -80,7 +81,8 @@ NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
       is_renderer_initiated_(is_renderer_initiated),
       should_replace_entry_(false),
       should_clear_history_list_(false),
-      can_load_local_resources_(false) {
+      can_load_local_resources_(false),
+      frame_tree_node_id_(-1) {
 }
 
 NavigationEntryImpl::~NavigationEntryImpl() {
@@ -330,6 +332,7 @@ void NavigationEntryImpl::ResetForCommit() {
   set_should_replace_entry(false);
   redirect_chain_.clear();
   set_should_clear_history_list(false);
+  set_frame_tree_node_id(-1);
 }
 
 void NavigationEntryImpl::SetScreenshotPNGData(

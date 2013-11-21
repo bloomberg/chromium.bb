@@ -216,6 +216,15 @@ class CONTENT_EXPORT NavigationEntryImpl
     should_clear_history_list_ = should_clear_history_list;
   }
 
+  // Indicates which FrameTreeNode to navigate.  Currently only used if the
+  // --site-per-process flag is passed.
+  int64 frame_tree_node_id() const {
+    return frame_tree_node_id_;
+  }
+  void set_frame_tree_node_id(int64 frame_tree_node_id) {
+    frame_tree_node_id_ = frame_tree_node_id;
+  }
+
  private:
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
@@ -322,6 +331,13 @@ class CONTENT_EXPORT NavigationEntryImpl
   // If not empty, the name of the frame to navigate. This field is not
   // persisted, because it is currently only used in tests.
   std::string frame_to_navigate_;
+
+  // If not -1, this indicates which FrameTreeNode to navigate.  This field is
+  // not persisted because it is experimental and only used when the
+  // --site-per-process flag is passed.  It is cleared in |ResetForCommit|
+  // because we only use it while the navigation is pending.
+  // TODO(creis): Move this to FrameNavigationEntry.
+  int64 frame_tree_node_id_;
 
   // Used to store extra data to support browser features. This member is not
   // persisted, unless specific data is taken out/put back in at save/restore

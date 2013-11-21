@@ -687,6 +687,8 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
           params.is_renderer_initiated,
           params.extra_headers,
           browser_context_));
+  if (params.frame_tree_node_id != -1)
+    entry->set_frame_tree_node_id(params.frame_tree_node_id);
   if (params.redirect_chain.size() > 0)
     entry->set_redirect_chain(params.redirect_chain);
   if (params.should_replace_current_entry)

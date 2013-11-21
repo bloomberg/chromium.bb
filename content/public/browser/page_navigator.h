@@ -33,6 +33,7 @@ struct CONTENT_EXPORT OpenURLParams {
   OpenURLParams(const GURL& url,
                 const Referrer& referrer,
                 int64 source_frame_id,
+                int64 frame_tree_node_id,
                 WindowOpenDisposition disposition,
                 PageTransition transition,
                 bool is_renderer_initiated);
@@ -59,8 +60,12 @@ struct CONTENT_EXPORT OpenURLParams {
   // is terminated by \r\n.  May be empty if no extra headers are needed.
   std::string extra_headers;
 
-  // The source frame id or -1 to indicate the main frame.
+  // The renderer-specific source frame id or -1 to indicate the main frame.
+  // TODO(creis): This appears to be dead code and should be removed.
   int64 source_frame_id;
+
+  // The browser-global FrameTreeNode ID or -1 to indicate the main frame.
+  int64 frame_tree_node_id;
 
   // The disposition requested by the navigation source.
   WindowOpenDisposition disposition;

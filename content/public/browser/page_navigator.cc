@@ -16,6 +16,7 @@ OpenURLParams::OpenURLParams(
       referrer(referrer),
       uses_post(false),
       source_frame_id(-1),
+      frame_tree_node_id(-1),
       disposition(disposition),
       transition(transition),
       is_renderer_initiated(is_renderer_initiated),
@@ -27,6 +28,7 @@ OpenURLParams::OpenURLParams(
     const GURL& url,
     const Referrer& referrer,
     int64 source_frame_id,
+    int64 frame_tree_node_id,
     WindowOpenDisposition disposition,
     PageTransition transition,
     bool is_renderer_initiated)
@@ -34,6 +36,7 @@ OpenURLParams::OpenURLParams(
       referrer(referrer),
       uses_post(false),
       source_frame_id(source_frame_id),
+      frame_tree_node_id(frame_tree_node_id),
       disposition(disposition),
       transition(transition),
       is_renderer_initiated(is_renderer_initiated),
@@ -44,6 +47,7 @@ OpenURLParams::OpenURLParams(
 OpenURLParams::OpenURLParams()
     : uses_post(false),
       source_frame_id(-1),
+      frame_tree_node_id(-1),
       disposition(UNKNOWN),
       transition(PageTransitionFromInt(0)),
       is_renderer_initiated(false),

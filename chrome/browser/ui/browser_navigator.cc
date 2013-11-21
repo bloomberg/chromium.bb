@@ -245,6 +245,7 @@ void LoadURLInContents(WebContents* target_contents,
                        chrome::NavigateParams* params) {
   NavigationController::LoadURLParams load_url_params(url);
   load_url_params.referrer = params->referrer;
+  load_url_params.frame_tree_node_id = params->frame_tree_node_id;
   load_url_params.redirect_chain = params->redirect_chain;
   load_url_params.transition_type = params->transition;
   load_url_params.extra_headers = params->extra_headers;
@@ -388,6 +389,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
                                const GURL& a_url,
                                content::PageTransition a_transition)
     : url(a_url),
+      frame_tree_node_id(-1),
       uses_post(false),
       target_contents(NULL),
       source_contents(NULL),
@@ -409,7 +411,8 @@ NavigateParams::NavigateParams(Browser* a_browser,
 
 NavigateParams::NavigateParams(Browser* a_browser,
                                WebContents* a_target_contents)
-    : uses_post(false),
+    : frame_tree_node_id(-1),
+      uses_post(false),
       target_contents(a_target_contents),
       source_contents(NULL),
       disposition(CURRENT_TAB),
@@ -432,6 +435,7 @@ NavigateParams::NavigateParams(Profile* a_profile,
                                const GURL& a_url,
                                content::PageTransition a_transition)
     : url(a_url),
+      frame_tree_node_id(-1),
       uses_post(false),
       target_contents(NULL),
       source_contents(NULL),
@@ -456,6 +460,7 @@ NavigateParams::~NavigateParams() {}
 void FillNavigateParamsFromOpenURLParams(chrome::NavigateParams* nav_params,
                                          const content::OpenURLParams& params) {
   nav_params->referrer = params.referrer;
+  nav_params->frame_tree_node_id = params.frame_tree_node_id;
   nav_params->redirect_chain = params.redirect_chain;
   nav_params->extra_headers = params.extra_headers;
   nav_params->disposition = params.disposition;

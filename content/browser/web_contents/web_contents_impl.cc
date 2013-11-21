@@ -1612,6 +1612,8 @@ bool WebContentsImpl::NavigateToEntry(
     return false;
   }
 
+  // TODO(creis): Use entry->frame_tree_node_id() to pick which
+  // RenderViewHostManager to use.
   RenderViewHostImpl* dest_render_view_host =
       static_cast<RenderViewHostImpl*>(GetRenderManager()->Navigate(entry));
   if (!dest_render_view_host)
@@ -3141,7 +3143,10 @@ void WebContentsImpl::RequestTransferURL(
           GetSiteInstance(), url))
     dest_url = GURL(kAboutBlankURL);
 
-  OpenURLParams params(dest_url, referrer, source_frame_id, disposition,
+  // TODO(creis): Look up the FrameTreeNode ID corresponding to source_frame_id.
+  int frame_tree_node_id = -1;
+  OpenURLParams params(dest_url, referrer, source_frame_id,
+      frame_tree_node_id, disposition,
       page_transition, true /* is_renderer_initiated */);
   if (redirect_chain.size() > 0)
     params.redirect_chain = redirect_chain;
