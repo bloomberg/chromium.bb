@@ -2618,6 +2618,10 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
       host_->Shutdown();
     }
   } else {
+    // Accept return key character events between its press and release events.
+    if (event->key_code() == ui::VKEY_RETURN)
+      accept_return_character_ = event->type() == ui::ET_KEY_PRESSED;
+
     // We don't have to communicate with an input method here.
     if (!event->HasNativeEvent()) {
       NativeWebKeyboardEvent webkit_event(
@@ -2628,8 +2632,6 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
           ui::EventTimeForNow().InSecondsF());
       host_->ForwardKeyboardEvent(webkit_event);
     } else {
-      if (event->key_code() == ui::VKEY_RETURN)
-        accept_return_character_ = event->type() == ui::ET_KEY_PRESSED;
       NativeWebKeyboardEvent webkit_event(event);
       host_->ForwardKeyboardEvent(webkit_event);
     }
