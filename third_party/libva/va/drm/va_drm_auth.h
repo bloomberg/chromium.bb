@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Splitted-Desktop Systems. All Rights Reserved.
+ * Copyright (c) 2012 Intel Corporation. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -8,11 +8,11 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
@@ -22,20 +22,18 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef VA_BACKEND_EGL_H
-#define VA_BACKEND_EGL_H
+#ifndef VA_DRM_AUTH_H
+#define VA_DRM_AUTH_H
 
-#include <va/va.h>
-#include <va/va_backend.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-struct VADriverVTableEGL {
-    /* Get EGL ClientBufer buffer index and device id from surface id*/
-    VAStatus (*vaGetEGLClientBufferFromSurface) (
-        VADriverContextP ctx,
-        VASurfaceID surface,
-        void **buffer
-    );
-    /* TBD: more APIs for EGL */
-};
+DLL_HIDDEN
+bool
+va_drm_is_authenticated(int fd);
 
-#endif /* VA_BACKEND_EGL_H */
+DLL_HIDDEN
+bool
+va_drm_authenticate(int fd, uint32_t magic);
+
+#endif /* VA_DRM_AUTH_H */

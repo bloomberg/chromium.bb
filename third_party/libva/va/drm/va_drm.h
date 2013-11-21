@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2009 Splitted-Desktop Systems. All Rights Reserved.
+ * va_drm.h - Raw DRM API
+ *
+ * Copyright (c) 2012 Intel Corporation. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -16,26 +18,44 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
- * IN NO EVENT SHALL PRECISION INSIGHT AND/OR ITS SUPPLIERS BE LIABLE FOR
+ * IN NO EVENT SHALL INTEL AND/OR ITS SUPPLIERS BE LIABLE FOR
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef VA_BACKEND_EGL_H
-#define VA_BACKEND_EGL_H
+#ifndef VA_DRM_H
+#define VA_DRM_H
 
 #include <va/va.h>
-#include <va/va_backend.h>
 
-struct VADriverVTableEGL {
-    /* Get EGL ClientBufer buffer index and device id from surface id*/
-    VAStatus (*vaGetEGLClientBufferFromSurface) (
-        VADriverContextP ctx,
-        VASurfaceID surface,
-        void **buffer
-    );
-    /* TBD: more APIs for EGL */
-};
+/**
+ * \file va_drm.h
+ * \brief The raw DRM API
+ *
+ * This file contains the \ref api_drm "Raw DRM API".
+ */
 
-#endif /* VA_BACKEND_EGL_H */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * \brief Returns a VA display derived from the specified DRM connection.
+ *
+ * This function returns a (possibly cached) VA display from the
+ * specified DRM connection @fd.
+ *
+ * @param[in]   fd      the DRM connection descriptor
+ * @return the VA display
+ */
+VADisplay
+vaGetDisplayDRM(int fd);
+
+/**@}*/
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* VA_DRM_H */

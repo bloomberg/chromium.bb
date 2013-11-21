@@ -58,12 +58,24 @@ typedef VAStatus (*VaapiCreateContext)(VADisplay dpy,
                                        VASurfaceID *render_targets,
                                        int num_render_targets,
                                        VAContextID *context);
-typedef VAStatus (*VaapiCreateSurfaces)(VADisplay dpy,
-                                        int width,
-                                        int height,
-                                        int format,
-                                        int num_surfaces,
-                                        VASurfaceID *surfaces);
+// In VAAPI version < 0.34, vaCreateSurface has 6 parameters, but in VAAPI
+// version >= 0.34, vaCreateSurface has 8 parameters.
+// TODO(chihchung): Remove the old path once ChromeOS updates to 1.2.1.
+typedef void *VaapiCreateSurfaces;
+typedef VAStatus (*VaapiCreateSurfaces6)(VADisplay dpy,
+                                         int width,
+                                         int height,
+                                         int format,
+                                         int num_surfaces,
+                                         VASurfaceID *surfaces);
+typedef VAStatus (*VaapiCreateSurfaces8)(VADisplay dpy,
+                                         unsigned int format,
+                                         unsigned int width,
+                                         unsigned int height,
+                                         VASurfaceID *surfaces,
+                                         unsigned int num_surfaces,
+                                         VASurfaceAttrib *attrib_list,
+                                         unsigned int num_attribs);
 typedef VAStatus (*VaapiDestroyBuffer)(VADisplay dpy, VABufferID buffer_id);
 typedef VAStatus (*VaapiDestroyConfig)(VADisplay dpy, VAConfigID config_id);
 typedef VAStatus (*VaapiDestroyContext)(VADisplay dpy, VAContextID context);
@@ -207,11 +219,10 @@ bool VaapiWrapper::Initialize(media::VideoCodecProfile profile,
     return false;
   }
 
-  int major_version, minor_version;
   VAStatus va_res;
-  va_res = VAAPI_Initialize(va_display_, &major_version, &minor_version);
+  va_res = VAAPI_Initialize(va_display_, &major_version_, &minor_version_);
   VA_SUCCESS_OR_RETURN(va_res, "vaInitialize failed", false);
-  DVLOG(1) << "VAAPI version: " << major_version << "." << minor_version;
+  DVLOG(1) << "VAAPI version: " << major_version_ << "." << minor_version_;
 
   VAConfigAttrib attrib = {VAConfigAttribRTFormat, 0};
 
@@ -249,6 +260,11 @@ void VaapiWrapper::Deinitialize() {
   va_display_ = NULL;
 }
 
+bool VaapiWrapper::VAAPIVersionLessThan(int major, int minor) {
+  return (major_version_ < major) ||
+      (major_version_ == major && minor_version_ < minor);
+}
+
 bool VaapiWrapper::CreateSurfaces(gfx::Size size,
                                   size_t num_surfaces,
                                    std::vector<VASurfaceID>* va_surfaces) {
@@ -260,11 +276,24 @@ bool VaapiWrapper::CreateSurfaces(gfx::Size size,
   va_surface_ids_.resize(num_surfaces);
 
   // Allocate surfaces in driver.
-  VAStatus va_res = VAAPI_CreateSurfaces(va_display_,
-                                         size.width(), size.height(),
-                                         VA_RT_FORMAT_YUV420,
-                                         va_surface_ids_.size(),
-                                         &va_surface_ids_[0]);
+  VAStatus va_res;
+  if (VAAPIVersionLessThan(0, 34)) {
+    va_res = reinterpret_cast<VaapiCreateSurfaces6>(VAAPI_CreateSurfaces)(
+        va_display_,
+        size.width(), size.height(),
+        VA_RT_FORMAT_YUV420,
+        va_surface_ids_.size(),
+        &va_surface_ids_[0]);
+  } else {
+    va_res = reinterpret_cast<VaapiCreateSurfaces8>(VAAPI_CreateSurfaces)(
+        va_display_,
+        VA_RT_FORMAT_YUV420,
+        size.width(), size.height(),
+        &va_surface_ids_[0],
+        va_surface_ids_.size(),
+        NULL, 0);
+  }
+
   VA_LOG_ON_ERROR(va_res, "vaCreateSurfaces failed");
   if (va_res != VA_STATUS_SUCCESS) {
     va_surface_ids_.clear();

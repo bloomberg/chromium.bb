@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2009 Splitted-Desktop Systems. All Rights Reserved.
+ * va_wayland_drm.h - Wayland/DRM helpers
+ *
+ * Copyright (c) 2012 Intel Corporation. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -16,26 +18,35 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
- * IN NO EVENT SHALL PRECISION INSIGHT AND/OR ITS SUPPLIERS BE LIABLE FOR
+ * IN NO EVENT SHALL INTEL AND/OR ITS SUPPLIERS BE LIABLE FOR
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef VA_BACKEND_EGL_H
-#define VA_BACKEND_EGL_H
+#ifndef VA_WAYLAND_DRM_H
+#define VA_WAYLAND_DRM_H
 
-#include <va/va.h>
-#include <va/va_backend.h>
+#include <stdbool.h>
+#include "va_wayland.h"
+#include "va_backend.h"
+#include "va_backend_wayland.h"
 
-struct VADriverVTableEGL {
-    /* Get EGL ClientBufer buffer index and device id from surface id*/
-    VAStatus (*vaGetEGLClientBufferFromSurface) (
-        VADriverContextP ctx,
-        VASurfaceID surface,
-        void **buffer
-    );
-    /* TBD: more APIs for EGL */
-};
+/**
+ * \brief Initializes Wayland/DRM layer.
+ *
+ * This is an internal function used to initialize the VA/DRM subsystem
+ * if the application is running on a DRM-based server.
+ *
+ * @param[in]   pDisplayContext the VA display context
+ * @return true if successful
+ */
+DLL_HIDDEN
+bool
+va_wayland_drm_create(VADisplayContextP pDisplayContext);
 
-#endif /* VA_BACKEND_EGL_H */
+DLL_HIDDEN
+void
+va_wayland_drm_destroy(VADisplayContextP pDisplayContext);
+
+#endif /* VA_WAYLAND_DRM_H */

@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2009 Splitted-Desktop Systems. All Rights Reserved.
+ * va_wayland_private.h - Wayland private API
+ *
+ * Copyright (c) 2012 Intel Corporation. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -16,26 +18,27 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
- * IN NO EVENT SHALL PRECISION INSIGHT AND/OR ITS SUPPLIERS BE LIABLE FOR
+ * IN NO EVENT SHALL INTEL AND/OR ITS SUPPLIERS BE LIABLE FOR
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef VA_BACKEND_EGL_H
-#define VA_BACKEND_EGL_H
+#ifndef VA_WAYLAND_PRIVATE_H
+#define VA_WAYLAND_PRIVATE_H
 
-#include <va/va.h>
-#include <va/va_backend.h>
+struct va_wayland_context;
 
-struct VADriverVTableEGL {
-    /* Get EGL ClientBufer buffer index and device id from surface id*/
-    VAStatus (*vaGetEGLClientBufferFromSurface) (
-        VADriverContextP ctx,
-        VASurfaceID surface,
-        void **buffer
-    );
-    /* TBD: more APIs for EGL */
-};
+typedef bool (*VADisplayContextCreateFunc)(VADisplayContextP pDisplayContext);
+typedef void (*VADisplayContextDestroyFunc)(VADisplayContextP pDisplayContext);
 
-#endif /* VA_BACKEND_EGL_H */
+/* VA/Wayland base display context */
+typedef struct va_wayland_context {
+    VADisplayContextDestroyFunc destroy;
+} VADisplayContextWayland, *VADisplayContextWaylandP;
+
+DLL_HIDDEN
+void
+va_wayland_error(const char *format, ...);
+
+#endif /* VA_WAYLAND_PRIVATE_H */

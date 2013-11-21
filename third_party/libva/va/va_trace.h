@@ -41,17 +41,13 @@ extern int trace_flag;
                                        VA_TRACE_FLAG_SURFACE_ENCODE | \
                                        VA_TRACE_FLAG_SURFACE_JPEG)
 
-#define VA_TRACE_FUNC(trace_func,...)           \
-    if (trace_flag) {                           \
-        trace_func(__VA_ARGS__);                \
-    }
 #define VA_TRACE_LOG(trace_func,...)            \
-    if (trace_flag & VA_TRACE_FLAG_LOG) {            \
+    if (trace_flag & VA_TRACE_FLAG_LOG) {       \
         trace_func(__VA_ARGS__);                \
     }
-#define VA_TRACE_SURFACE(trace_func,...)        \
-    if (trace_flag & (VA_TRACE_FLAG_SURFACE | VA_TRACE_FLAG_CODEDBUF)) {  \
-        trace_func(__VA_ARGS__);                \
+#define VA_TRACE_SURFACE(trace_func,...)                                \
+    if (trace_flag & (VA_TRACE_FLAG_SURFACE | VA_TRACE_FLAG_CODEDBUF)) { \
+        trace_func(__VA_ARGS__);                                        \
     }
 
 void va_TraceInit(VADisplay dpy);
@@ -78,13 +74,15 @@ void va_TraceCreateConfig(
     VAConfigID *config_id /* out */
 );
 
-void va_TraceCreateSurface(
+void va_TraceCreateSurfaces(
     VADisplay dpy,
     int width,
     int height,
     int format,
     int num_surfaces,
-    VASurfaceID *surfaces	/* out */
+    VASurfaceID *surfaces,	/* out */
+    VASurfaceAttrib    *attrib_list,
+    unsigned int        num_attribs
 );
 
 void va_TraceCreateContext(
@@ -98,6 +96,20 @@ void va_TraceCreateContext(
     VAContextID *context		/* out */
 );
 
+void va_TraceCreateBuffer (
+    VADisplay dpy,
+    VAContextID context,	/* in */
+    VABufferType type,		/* in */
+    unsigned int size,		/* in */
+    unsigned int num_elements,	/* in */
+    void *data,			/* in */
+    VABufferID *buf_id		/* out */
+);
+    
+void va_TraceDestroyBuffer (
+    VADisplay dpy,
+    VABufferID buf_id    /* in */
+);
 
 void va_TraceMapBuffer (
     VADisplay dpy,

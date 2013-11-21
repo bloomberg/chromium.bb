@@ -35,6 +35,23 @@
 typedef struct VADriverContext *VADriverContextP;
 typedef struct VADisplayContext *VADisplayContextP;
 
+/** \brief VA display types. */
+enum {
+    /** \brief Mask to major identifier for VA display type. */
+    VA_DISPLAY_MAJOR_MASK = 0xf0,
+
+    /** \brief VA/X11 API is used, through vaGetDisplay() entry-point. */
+    VA_DISPLAY_X11      = 0x10,
+    /** \brief VA/GLX API is used, through vaGetDisplayGLX() entry-point. */
+    VA_DISPLAY_GLX      = (VA_DISPLAY_X11 | (1 << 0)),
+    /** \brief VA/Android API is used, through vaGetDisplay() entry-point. */
+    VA_DISPLAY_ANDROID  = 0x20,
+    /** \brief VA/DRM API is used, through vaGetDisplayDRM() entry-point. */
+    VA_DISPLAY_DRM      = 0x30,
+    /** \brief VA/Wayland API is used, through vaGetDisplayWl() entry-point. */
+    VA_DISPLAY_WAYLAND  = 0x40,
+};
+
 struct VADriverVTable
 {
 	VAStatus (*vaTerminate) ( VADriverContextP ctx );
@@ -374,6 +391,35 @@ struct VADriverVTable
 		VADriverContextP ctx,
                 VASurfaceID surface
         );
+
+        /* DEPRECATED */
+        VAStatus
+        (*vaGetSurfaceAttributes)(
+            VADriverContextP    dpy,
+            VAConfigID          config,
+            VASurfaceAttrib    *attrib_list,
+            unsigned int        num_attribs
+        );
+
+        VAStatus
+        (*vaCreateSurfaces2)(
+            VADriverContextP    ctx,
+            unsigned int        format,
+            unsigned int        width,
+            unsigned int        height,
+            VASurfaceID        *surfaces,
+            unsigned int        num_surfaces,
+            VASurfaceAttrib    *attrib_list,
+            unsigned int        num_attribs
+        );
+
+        VAStatus
+        (*vaQuerySurfaceAttributes)(
+            VADriverContextP    dpy,
+            VAConfigID          config,
+            VASurfaceAttrib    *attrib_list,
+            unsigned int       *num_attribs
+        );
 };
 
 struct VADriverContext
@@ -427,11 +473,43 @@ struct VADriverContext
     const char *str_vendor;
 
     void *handle;			/* dlopen handle */
-    
-    void *dri_state;
+
+    /**
+     * \brief DRM state.
+     *
+     * This field holds driver specific data for DRM-based
+     * drivers. This structure is allocated from libva with
+     * calloc(). Do not deallocate from within VA driver
+     * implementations.
+     *
+     * All structures shall be derived from struct drm_state. So, for
+     * instance, this field holds a dri_state structure for VA/X11
+     * drivers that use the DRM protocol.
+     */
+    void *drm_state;
+
     void *glx;				/* opaque for GLX code */
-    void *egl;
-    unsigned long reserved[44];         /* reserve for future add-ins, decrease the subscript accordingly */
+
+    /** \brief VA display type. */
+    unsigned long display_type;
+
+    /**
+     * The VA/Wayland implementation hooks.
+     *
+     * This structure is intended for drivers that implement the
+     * VA/Wayland API. libVA allocates this structure with calloc()
+     * and owns the resulting memory.
+     */
+    struct VADriverVTableWayland *vtable_wayland;
+
+    /**
+     * \brief The VA/VPP implementation hooks.
+     *
+     * This structure is allocated from libva with calloc().
+     */
+    struct VADriverVTableVPP *vtable_vpp;
+
+    unsigned long reserved[42];         /* reserve for future add-ins, decrease the subscript accordingly */
 };
 
 #define VA_DISPLAY_MAGIC 0x56414430 /* VAD0 */
@@ -456,16 +534,6 @@ struct VADisplayContext
     );
 
     void *opaque; /* opaque for display extensions (e.g. GLX) */
-
-    VAStatus (*vaCreateNativePixmap) (
-        VADisplayContextP pDisplayContext,
-        unsigned int width,
-        unsigned int height,
-        void **native_pixmap);
-
-    VAStatus (*vaFreeNativePixmap) (
-        VADisplayContextP pDisplayContext,
-        void *native_pixmap);
 };
 
 typedef VAStatus (*VADriverInit) (

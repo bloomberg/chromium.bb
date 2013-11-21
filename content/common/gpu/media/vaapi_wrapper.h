@@ -81,6 +81,9 @@ class CONTENT_EXPORT VaapiWrapper {
   // Do any necessary initialization before the sandbox is enabled.
   static void PreSandboxInitialization();
 
+  // Returns true if the VAAPI version is less than the specified version.
+  bool VAAPIVersionLessThan(int major, int minor);
+
  private:
   VaapiWrapper();
 
@@ -105,6 +108,9 @@ class CONTENT_EXPORT VaapiWrapper {
 
   // Allocated ids for VASurfaces.
   std::vector<VASurfaceID> va_surface_ids_;
+
+  // The VAAPI version.
+  int major_version_, minor_version_;
 
   // VA handles.
   // Both valid after successful Initialize() and until Deinitialize().
