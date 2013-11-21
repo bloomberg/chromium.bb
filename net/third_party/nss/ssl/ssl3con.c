@@ -6639,10 +6639,22 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
     sid->u.ssl3.sessionIDLength = sidBytes.len;
     PORT_Memcpy(sid->u.ssl3.sessionID, sidBytes.data, sidBytes.len);
 
+    /* Copy Signed Certificate Timestamps, if any. */
+    if (ss->xtnData.signedCertTimestamps.data) {
+	rv = SECITEM_CopyItem(NULL, &sid->u.ssl3.signedCertTimestamps,
+			      &ss->xtnData.signedCertTimestamps);
+	if (rv != SECSuccess)
+	    goto loser;
+    }
+
     ss->ssl3.hs.isResuming = PR_FALSE;
     ss->ssl3.hs.ws         = wait_server_cert;
 
 winner:
+    /* Clean up the temporary pointer to the handshake buffer. */
+    ss->xtnData.signedCertTimestamps.data = NULL;
+    ss->xtnData.signedCertTimestamps.len = 0;
+
     /* If we will need a ChannelID key then we make the callback now. This
      * allows the handshake to be restarted cleanly if the callback returns
      * SECWouldBlock. */
@@ -6668,6 +6680,9 @@ alert_loser:
     (void)SSL3_SendAlert(ss, alert_fatal, desc);
 
 loser:
+    /* Clean up the temporary pointer to the handshake buffer. */
+    ss->xtnData.signedCertTimestamps.data = NULL;
+    ss->xtnData.signedCertTimestamps.len = 0;
     errCode = ssl_MapLowLevelError(errCode);
     return SECFailure;
 }

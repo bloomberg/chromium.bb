@@ -173,7 +173,8 @@ static sslOptions ssl_defaults = {
     PR_FALSE,   /* requireSafeNegotiation */
     PR_FALSE,   /* enableFalseStart   */
     PR_TRUE,    /* cbcRandomIV        */
-    PR_FALSE    /* enableOCSPStapling */
+    PR_FALSE,   /* enableOCSPStapling */
+    PR_FALSE    /* enableSignedCertTimestamps */
 };
 
 /*
@@ -865,6 +866,10 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 which, PRBool on)
        ss->opt.enableOCSPStapling = on;
        break;
 
+      case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
+       ss->opt.enableSignedCertTimestamps = on;
+       break;
+
       default:
 	PORT_SetError(SEC_ERROR_INVALID_ARGS);
 	rv = SECFailure;
@@ -935,6 +940,9 @@ SSL_OptionGet(PRFileDesc *fd, PRInt32 which, PRBool *pOn)
     case SSL_ENABLE_FALSE_START:  on = ss->opt.enableFalseStart;   break;
     case SSL_CBC_RANDOM_IV:       on = ss->opt.cbcRandomIV;        break;
     case SSL_ENABLE_OCSP_STAPLING: on = ss->opt.enableOCSPStapling; break;
+    case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
+       on = ss->opt.enableSignedCertTimestamps;
+       break;
 
     default:
 	PORT_SetError(SEC_ERROR_INVALID_ARGS);
@@ -995,6 +1003,9 @@ SSL_OptionGetDefault(PRInt32 which, PRBool *pOn)
     case SSL_CBC_RANDOM_IV:       on = ssl_defaults.cbcRandomIV;        break;
     case SSL_ENABLE_OCSP_STAPLING:
        on = ssl_defaults.enableOCSPStapling;
+       break;
+    case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
+       on = ssl_defaults.enableSignedCertTimestamps;
        break;
 
     default:
@@ -1161,6 +1172,10 @@ SSL_OptionSetDefault(PRInt32 which, PRBool on)
 
       case SSL_ENABLE_OCSP_STAPLING:
        ssl_defaults.enableOCSPStapling = on;
+       break;
+
+      case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
+       ssl_defaults.enableSignedCertTimestamps = on;
        break;
 
       default:
@@ -1991,6 +2006,29 @@ SSL_PeerStapledOCSPResponses(PRFileDesc *fd)
     }
     
     return &ss->sec.ci.sid->peerCertStatus;
+}
+
+const SECItem *
+SSL_PeerSignedCertTimestamps(PRFileDesc *fd)
+{
+    sslSocket *ss = ssl_FindSocket(fd);
+
+    if (!ss) {
+       SSL_DBG(("%d: SSL[%d]: bad socket in SSL_PeerSignedCertTimestamps",
+		SSL_GETPID(), fd));
+       return NULL;
+    }
+
+    if (!ss->sec.ci.sid) {
+       PORT_SetError(SEC_ERROR_NOT_INITIALIZED);
+       return NULL;
+    }
+
+    if (ss->sec.ci.sid->version < SSL_LIBRARY_VERSION_3_0) {
+	PORT_SetError(SSL_ERROR_FEATURE_NOT_SUPPORTED_FOR_SSL2);
+	return NULL;
+    }
+    return &ss->sec.ci.sid->u.ssl3.signedCertTimestamps;
 }
 
 SECStatus
@@ -3133,4 +3171,3 @@ loser:
     }
     return ss;
 }
-

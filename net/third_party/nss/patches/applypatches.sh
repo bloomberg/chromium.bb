@@ -71,3 +71,5 @@ patch -p4 < $patches_dir/paddingextension.patch
 patch -p4 < $patches_dir/paddingextensionall.patch
 
 patch -p4 < $patches_dir/channelid2.patch
+
+patch -p5 < $patches_dir/signedcertificatetimestamps.patch

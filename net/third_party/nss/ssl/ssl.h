@@ -161,6 +161,8 @@ SSL_IMPORT PRFileDesc *DTLS_ImportFD(PRFileDesc *model, PRFileDesc *fd);
  */
 #define SSL_CBC_RANDOM_IV 23
 #define SSL_ENABLE_OCSP_STAPLING       24 /* Request OCSP stapling (client) */
+/* Request Signed Certificate Timestamps via TLS extension (client) */
+#define SSL_ENABLE_SIGNED_CERT_TIMESTAMPS 25
 
 #ifdef SSL_DEPRECATED_FUNCTION 
 /* Old deprecated function names */
@@ -463,6 +465,23 @@ SSL_IMPORT CERTCertList *SSL_PeerCertificateChain(PRFileDesc *fd);
  * any OCSP stapling funtionality, but this may change in future versions.
  */
 SSL_IMPORT const SECItemArray * SSL_PeerStapledOCSPResponses(PRFileDesc *fd);
+
+/* SSL_PeerSignedCertTimestamps returns the signed_certificate_timestamp
+ * extension data provided by the TLS server. The return value is a pointer
+ * to an internal SECItem that contains the returned response (as a serialized
+ * SignedCertificateTimestampList, see RFC 6962). The returned pointer is only
+ * valid until the callback function that calls SSL_PeerSignedCertTimestamps
+ * (e.g. the authenticate certificate hook, or the handshake callback) returns.
+ *
+ * If no Signed Certificate Timestamps were given by the server then the result
+ * will be empty. If there was an error, then the result will be NULL.
+ *
+ * You must set the SSL_ENABLE_SIGNED_CERT_TIMESTAMPS option to indicate support
+ * for Signed Certificate Timestamps to a server.
+ *
+ * libssl does not do any parsing or validation of the response itself.
+ */
+SSL_IMPORT const SECItem * SSL_PeerSignedCertTimestamps(PRFileDesc *fd);
 
 /* SSL_SetStapledOCSPResponses stores an array of one or multiple OCSP responses
  * in the fd's data, which may be sent as part of a server side cert_status

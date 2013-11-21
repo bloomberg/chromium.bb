@@ -312,29 +312,30 @@ typedef struct sslOptionsStr {
      * list of supported protocols. */
     SECItem nextProtoNego;
 
-    unsigned int useSecurity		: 1;  /*  1 */
-    unsigned int useSocks		: 1;  /*  2 */
-    unsigned int requestCertificate	: 1;  /*  3 */
-    unsigned int requireCertificate	: 2;  /*  4-5 */
-    unsigned int handshakeAsClient	: 1;  /*  6 */
-    unsigned int handshakeAsServer	: 1;  /*  7 */
-    unsigned int enableSSL2		: 1;  /*  8 */
-    unsigned int unusedBit9		: 1;  /*  9 */
-    unsigned int unusedBit10		: 1;  /* 10 */
-    unsigned int noCache		: 1;  /* 11 */
-    unsigned int fdx			: 1;  /* 12 */
-    unsigned int v2CompatibleHello	: 1;  /* 13 */
-    unsigned int detectRollBack  	: 1;  /* 14 */
-    unsigned int noStepDown             : 1;  /* 15 */
-    unsigned int bypassPKCS11           : 1;  /* 16 */
-    unsigned int noLocks                : 1;  /* 17 */
-    unsigned int enableSessionTickets   : 1;  /* 18 */
-    unsigned int enableDeflate          : 1;  /* 19 */
-    unsigned int enableRenegotiation    : 2;  /* 20-21 */
-    unsigned int requireSafeNegotiation : 1;  /* 22 */
-    unsigned int enableFalseStart       : 1;  /* 23 */
-    unsigned int cbcRandomIV            : 1;  /* 24 */
-    unsigned int enableOCSPStapling     : 1;  /* 25 */
+    unsigned int useSecurity		    : 1;  /*  1 */
+    unsigned int useSocks		    : 1;  /*  2 */
+    unsigned int requestCertificate	    : 1;  /*  3 */
+    unsigned int requireCertificate	    : 2;  /*  4-5 */
+    unsigned int handshakeAsClient	    : 1;  /*  6 */
+    unsigned int handshakeAsServer	    : 1;  /*  7 */
+    unsigned int enableSSL2		    : 1;  /*  8 */
+    unsigned int unusedBit9		    : 1;  /*  9 */
+    unsigned int unusedBit10		    : 1;  /* 10 */
+    unsigned int noCache		    : 1;  /* 11 */
+    unsigned int fdx			    : 1;  /* 12 */
+    unsigned int v2CompatibleHello	    : 1;  /* 13 */
+    unsigned int detectRollBack  	    : 1;  /* 14 */
+    unsigned int noStepDown                 : 1;  /* 15 */
+    unsigned int bypassPKCS11               : 1;  /* 16 */
+    unsigned int noLocks                    : 1;  /* 17 */
+    unsigned int enableSessionTickets       : 1;  /* 18 */
+    unsigned int enableDeflate              : 1;  /* 19 */
+    unsigned int enableRenegotiation        : 2;  /* 20-21 */
+    unsigned int requireSafeNegotiation     : 1;  /* 22 */
+    unsigned int enableFalseStart           : 1;  /* 23 */
+    unsigned int cbcRandomIV                : 1;  /* 24 */
+    unsigned int enableOCSPStapling	    : 1;  /* 25 */
+    unsigned int enableSignedCertTimestamps : 1;  /* 26 */
 } sslOptions;
 
 typedef enum { sslHandshakingUndetermined = 0,
@@ -713,6 +714,11 @@ struct sslSessionIDStr {
              * negotiated as it's used to bind the ChannelID signature on the
              * resumption handshake to the original handshake. */
 	    SECItem           originalHandshakeHash;
+
+	    /* Signed certificate timestamps received in a TLS extension.
+	    ** (used only in client).
+	    */
+	    SECItem	      signedCertTimestamps;
 	} ssl3;
     } u;
 };
@@ -804,6 +810,18 @@ struct TLSExtensionDataStr {
      * is beyond ssl3_HandleClientHello function. */
     SECItem *sniNameArr;
     PRUint32 sniNameArrSize;
+
+    /* Signed Certificate Timestamps extracted from the TLS extension.
+     * (client only).
+     * This container holds a temporary pointer to the extension data,
+     * until a session structure (the sec.ci.sid of an sslSocket) is setup
+     * that can hold a permanent copy of the data
+     * (in sec.ci.sid.u.ssl3.signedCertTimestamps).
+     * The data pointed to by this structure is neither explicitly allocated
+     * nor copied: the pointer points to the handshake message buffer and is
+     * only valid in the scope of ssl3_HandleServerHello.
+     */
+    SECItem signedCertTimestamps;
 };
 
 typedef SECStatus (*sslRestartTarget)(sslSocket *);
