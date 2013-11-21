@@ -70,7 +70,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestCheckSecurityInte
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestCheckSecurityInterface::wrapperTypeInfo = { V8TestCheckSecurityInterface::GetTemplate, V8TestCheckSecurityInterface::derefObject, 0, 0, 0, V8TestCheckSecurityInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestCheckSecurityInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestCheckSecurityInterface::GetTemplate, V8TestCheckSecurityInterface::derefObject, 0, 0, 0, V8TestCheckSecurityInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestCheckSecurityInterfaceV8Internal {
 

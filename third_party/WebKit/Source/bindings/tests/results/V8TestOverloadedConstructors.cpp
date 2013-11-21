@@ -71,7 +71,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestOverloadedConstru
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestOverloadedConstructors::wrapperTypeInfo = { V8TestOverloadedConstructors::GetTemplate, V8TestOverloadedConstructors::derefObject, 0, 0, 0, V8TestOverloadedConstructors::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestOverloadedConstructors::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestOverloadedConstructors::GetTemplate, V8TestOverloadedConstructors::derefObject, 0, 0, 0, V8TestOverloadedConstructors::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestOverloadedConstructorsV8Internal {
 

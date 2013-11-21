@@ -65,7 +65,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestException* object
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestException::wrapperTypeInfo = { V8TestException::GetTemplate, V8TestException::derefObject, 0, 0, 0, V8TestException::installPerContextEnabledMethods, 0, WrapperTypeErrorPrototype };
+const WrapperTypeInfo V8TestException::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestException::GetTemplate, V8TestException::derefObject, 0, 0, 0, V8TestException::installPerContextEnabledMethods, 0, WrapperTypeErrorPrototype };
 
 namespace TestExceptionV8Internal {
 

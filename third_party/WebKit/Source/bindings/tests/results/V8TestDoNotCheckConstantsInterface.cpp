@@ -65,7 +65,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestDoNotCheckConstan
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestDoNotCheckConstantsInterface::wrapperTypeInfo = { V8TestDoNotCheckConstantsInterface::GetTemplate, V8TestDoNotCheckConstantsInterface::derefObject, 0, 0, 0, V8TestDoNotCheckConstantsInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestDoNotCheckConstantsInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestDoNotCheckConstantsInterface::GetTemplate, V8TestDoNotCheckConstantsInterface::derefObject, 0, 0, 0, V8TestDoNotCheckConstantsInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestDoNotCheckConstantsInterfaceV8Internal {
 

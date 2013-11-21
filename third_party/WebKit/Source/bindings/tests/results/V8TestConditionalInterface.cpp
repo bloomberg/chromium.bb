@@ -66,7 +66,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestConditionalInterf
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestConditionalInterface::wrapperTypeInfo = { V8TestConditionalInterface::GetTemplate, V8TestConditionalInterface::derefObject, 0, 0, 0, V8TestConditionalInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestConditionalInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestConditionalInterface::GetTemplate, V8TestConditionalInterface::derefObject, 0, 0, 0, V8TestConditionalInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestConditionalInterfaceV8Internal {
 

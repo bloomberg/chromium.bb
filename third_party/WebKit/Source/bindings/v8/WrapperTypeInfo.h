@@ -31,6 +31,7 @@
 #ifndef WrapperTypeInfo_h
 #define WrapperTypeInfo_h
 
+#include "gin/public/wrapper_info.h"
 #include "wtf/Assertions.h"
 #include <v8.h>
 
@@ -41,9 +42,9 @@ namespace WebCore {
     class EventTarget;
     class Node;
 
-    static const int v8DOMWrapperTypeIndex = 0;
-    static const int v8DOMWrapperObjectIndex = 1;
-    static const int v8DefaultWrapperInternalFieldCount = 2;
+    static const int v8DOMWrapperTypeIndex = static_cast<int>(gin::kWrapperInfoIndex);
+    static const int v8DOMWrapperObjectIndex = static_cast<int>(gin::kEncodedValueIndex);
+    static const int v8DefaultWrapperInternalFieldCount = static_cast<int>(gin::kNumberOfInternalFields);
     static const int v8PrototypeTypeIndex = 0;
     static const int v8PrototypeInternalFieldcount = 1;
 
@@ -135,6 +136,9 @@ namespace WebCore {
                 resolveWrapperReachabilityFunction(object, wrapper, isolate);
         }
 
+        // This field must be the first member of the struct WrapperTypeInfo. This is also checked by a COMPILE_ASSERT() below.
+        const gin::GinEmbedder ginEmbedder;
+
         const GetTemplateFunction getTemplateFunction;
         const DerefObjectFunction derefObjectFunction;
         const ToActiveDOMObjectFunction toActiveDOMObjectFunction;
@@ -144,6 +148,9 @@ namespace WebCore {
         const WrapperTypeInfo* parentClass;
         const WrapperTypePrototype wrapperTypePrototype;
     };
+
+
+    COMPILE_ASSERT(offsetof(struct WrapperTypeInfo, ginEmbedder) == offsetof(struct gin::WrapperInfo, embedder), wrapper_type_info_compatible_to_gin);
 
     template<typename T, int offset>
     inline T* getInternalField(const v8::Persistent<v8::Object>& persistent)

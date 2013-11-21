@@ -65,7 +65,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestCustomIsReachable
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestCustomIsReachableInterface::wrapperTypeInfo = { V8TestCustomIsReachableInterface::GetTemplate, V8TestCustomIsReachableInterface::derefObject, 0, 0, V8TestCustomIsReachableInterface::resolveWrapperReachability, V8TestCustomIsReachableInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestCustomIsReachableInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestCustomIsReachableInterface::GetTemplate, V8TestCustomIsReachableInterface::derefObject, 0, 0, V8TestCustomIsReachableInterface::resolveWrapperReachability, V8TestCustomIsReachableInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestCustomIsReachableInterfaceV8Internal {
 

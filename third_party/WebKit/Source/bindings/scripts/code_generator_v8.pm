@@ -3008,7 +3008,7 @@ sub GenerateNamedConstructor
     }
 
     $implementation{nameSpaceWebCore}->add(<<END);
-const WrapperTypeInfo ${v8ClassName}Constructor::wrapperTypeInfo = { ${v8ClassName}Constructor::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo ${v8ClassName}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}Constructor::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 END
 
@@ -4190,7 +4190,7 @@ END
         $implementation{nameSpaceWebCore}->addHeader($code);
     }
 
-    my $code = "const WrapperTypeInfo ${v8ClassName}::wrapperTypeInfo = { ${v8ClassName}::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
+    my $code = "const WrapperTypeInfo ${v8ClassName}::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
     $code .= "$resolveWrapperReachability, ${v8ClassName}::installPerContextEnabledMethods, $parentClassInfo, $WrapperTypePrototype };\n";
     $implementation{nameSpaceWebCore}->addHeader($code);
 

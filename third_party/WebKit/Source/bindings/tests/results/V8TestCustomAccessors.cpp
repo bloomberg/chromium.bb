@@ -67,7 +67,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestCustomAccessors* 
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestCustomAccessors::wrapperTypeInfo = { V8TestCustomAccessors::GetTemplate, V8TestCustomAccessors::derefObject, 0, 0, 0, V8TestCustomAccessors::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestCustomAccessors::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestCustomAccessors::GetTemplate, V8TestCustomAccessors::derefObject, 0, 0, 0, V8TestCustomAccessors::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestCustomAccessorsV8Internal {
 

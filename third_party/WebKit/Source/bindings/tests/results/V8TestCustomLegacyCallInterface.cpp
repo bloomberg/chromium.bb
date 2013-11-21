@@ -65,7 +65,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestCustomLegacyCallI
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestCustomLegacyCallInterface::wrapperTypeInfo = { V8TestCustomLegacyCallInterface::GetTemplate, V8TestCustomLegacyCallInterface::derefObject, 0, 0, 0, V8TestCustomLegacyCallInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestCustomLegacyCallInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestCustomLegacyCallInterface::GetTemplate, V8TestCustomLegacyCallInterface::derefObject, 0, 0, 0, V8TestCustomLegacyCallInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestCustomLegacyCallInterfaceV8Internal {
 
