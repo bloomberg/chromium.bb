@@ -1137,7 +1137,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   NavigationEntry* entry = browser()->tab_strip_model()->
-      GetActiveWebContents()->GetController().GetActiveEntry();
+      GetActiveWebContents()->GetController().GetVisibleEntry();
   EXPECT_EQ(expected_favicon_url.spec(), entry->GetFavicon().url.spec());
 }
 
@@ -1157,7 +1157,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_FaviconChange) {
   ui_test_utils::NavigateToURL(browser(), file_url);
 
   NavigationEntry* entry = browser()->tab_strip_model()->
-      GetActiveWebContents()->GetController().GetActiveEntry();
+      GetActiveWebContents()->GetController().GetVisibleEntry();
   static const base::FilePath::CharType* kIcon =
       FILE_PATH_LITERAL("test1.png");
   GURL expected_favicon_url(ui_test_utils::GetTestUrl(base::FilePath(
