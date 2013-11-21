@@ -19,7 +19,7 @@ class Profile;
 class TermMatches;
 
 namespace history {
-struct ScoredHistoryMatch;
+class ScoredHistoryMatch;
 }  // namespace history
 
 // This class is an autocomplete provider (a pseudo-internal component of

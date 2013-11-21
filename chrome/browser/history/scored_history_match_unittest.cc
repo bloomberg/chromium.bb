@@ -95,13 +95,15 @@ float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
     const string16& term,
     const string16& url,
     const string16& title) {
-  TermMatches url_matches = MatchTermInString(term, url, 0);
-  TermMatches title_matches = MatchTermInString(term, title, 0);
+  // Make an empty match and simply populate the fields we need in order
+  // to call GetTopicalityScore().
+  ScoredHistoryMatch scored_match;
+  scored_match.url_matches_ = MatchTermInString(term, url, 0);
+  scored_match.title_matches_ = MatchTermInString(term, title, 0);
   RowWordStarts word_starts;
   String16SetFromString16(url, &word_starts.url_word_starts_);
   String16SetFromString16(title, &word_starts.title_word_starts_);
-  return ScoredHistoryMatch::GetTopicalityScore(
-      1, url, word_starts, &url_matches, &title_matches);
+  return scored_match.GetTopicalityScore(1, url, word_starts);
 }
 
 TEST_F(ScoredHistoryMatchTest, Scoring) {
@@ -128,7 +130,7 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
   ScoredHistoryMatch scored_b(row_b, visits_b, std::string(),
                               ASCIIToUTF16("abc"), Make1Term("abc"),
                               word_starts_b, now, NULL);
-  EXPECT_GT(scored_b.raw_score, scored_a.raw_score);
+  EXPECT_GT(scored_b.raw_score(), scored_a.raw_score());
 
   // Test scores based on last_visit.
   URLRow row_c(MakeURLRow("http://abcdef", "abcd bcd", 3, 10, 1));
@@ -139,7 +141,7 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
   ScoredHistoryMatch scored_c(row_c, visits_c, std::string(),
                               ASCIIToUTF16("abc"), Make1Term("abc"),
                               word_starts_c, now, NULL);
-  EXPECT_GT(scored_c.raw_score, scored_a.raw_score);
+  EXPECT_GT(scored_c.raw_score(), scored_a.raw_score());
 
   // Test scores based on typed_count.
   URLRow row_d(MakeURLRow("http://abcdef", "abcd bcd", 3, 30, 3));
@@ -152,7 +154,7 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
   ScoredHistoryMatch scored_d(row_d, visits_d, std::string(),
                               ASCIIToUTF16("abc"), Make1Term("abc"),
                               word_starts_d, now, NULL);
-  EXPECT_GT(scored_d.raw_score, scored_a.raw_score);
+  EXPECT_GT(scored_d.raw_score(), scored_a.raw_score());
 
   // Test scores based on a terms appearing multiple times.
   URLRow row_e(MakeURLRow("http://csi.csi.csi/csi_csi",
@@ -163,14 +165,14 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
   ScoredHistoryMatch scored_e(row_e, visits_e, std::string(),
                               ASCIIToUTF16("csi"), Make1Term("csi"),
                               word_starts_e, now, NULL);
-  EXPECT_LT(scored_e.raw_score, 1400);
+  EXPECT_LT(scored_e.raw_score(), 1400);
 
   // Test that a result with only a mid-term match (i.e., not at a word
   // boundary) scores 0.
   ScoredHistoryMatch scored_f(row_a, visits_a, std::string(),
                               ASCIIToUTF16("cd"), Make1Term("cd"),
                               word_starts_a, now, NULL);
-  EXPECT_EQ(scored_f.raw_score, 0);
+  EXPECT_EQ(scored_f.raw_score(), 0);
 }
 
 TEST_F(ScoredHistoryMatchTest, Inlining) {
@@ -185,22 +187,22 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
     ScoredHistoryMatch scored_a(row, visits, std::string(),
                                 ASCIIToUTF16("g"), Make1Term("g"),
                                 word_starts, now, NULL);
-    EXPECT_TRUE(scored_a.can_inline);
+    EXPECT_TRUE(scored_a.can_inline());
     EXPECT_FALSE(scored_a.match_in_scheme);
     ScoredHistoryMatch scored_b(row, visits, std::string(),
                                 ASCIIToUTF16("w"), Make1Term("w"),
                                 word_starts, now, NULL);
-    EXPECT_TRUE(scored_b.can_inline);
+    EXPECT_TRUE(scored_b.can_inline());
     EXPECT_FALSE(scored_b.match_in_scheme);
     ScoredHistoryMatch scored_c(row, visits, std::string(),
                                 ASCIIToUTF16("h"), Make1Term("h"),
                                 word_starts, now, NULL);
-    EXPECT_TRUE(scored_c.can_inline);
+    EXPECT_TRUE(scored_c.can_inline());
     EXPECT_TRUE(scored_c.match_in_scheme);
     ScoredHistoryMatch scored_d(row, visits, std::string(),
                                 ASCIIToUTF16("o"), Make1Term("o"),
                                 word_starts, now, NULL);
-    EXPECT_FALSE(scored_d.can_inline);
+    EXPECT_FALSE(scored_d.can_inline());
     EXPECT_FALSE(scored_d.match_in_scheme);
   }
 
@@ -209,17 +211,17 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
     ScoredHistoryMatch scored_a(row, visits, std::string(),
                                 ASCIIToUTF16("t"), Make1Term("t"),
                                 word_starts, now, NULL);
-    EXPECT_TRUE(scored_a.can_inline);
+    EXPECT_TRUE(scored_a.can_inline());
     EXPECT_FALSE(scored_a.match_in_scheme);
     ScoredHistoryMatch scored_b(row, visits, std::string(),
                                 ASCIIToUTF16("f"), Make1Term("f"),
                                 word_starts, now, NULL);
-    EXPECT_FALSE(scored_b.can_inline);
+    EXPECT_FALSE(scored_b.can_inline());
     EXPECT_FALSE(scored_b.match_in_scheme);
     ScoredHistoryMatch scored_c(row, visits, std::string(),
                                 ASCIIToUTF16("o"), Make1Term("o"),
                                 word_starts, now, NULL);
-    EXPECT_FALSE(scored_c.can_inline);
+    EXPECT_FALSE(scored_c.can_inline());
     EXPECT_FALSE(scored_c.match_in_scheme);
   }
 
@@ -228,17 +230,17 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
     ScoredHistoryMatch scored_a(row, visits, std::string(),
                                 ASCIIToUTF16("t"), Make1Term("t"),
                                 word_starts, now, NULL);
-    EXPECT_TRUE(scored_a.can_inline);
+    EXPECT_TRUE(scored_a.can_inline());
     EXPECT_FALSE(scored_a.match_in_scheme);
     ScoredHistoryMatch scored_b(row, visits, std::string(),
                                 ASCIIToUTF16("h"), Make1Term("h"),
                                 word_starts, now, NULL);
-    EXPECT_TRUE(scored_b.can_inline);
+    EXPECT_TRUE(scored_b.can_inline());
     EXPECT_TRUE(scored_b.match_in_scheme);
     ScoredHistoryMatch scored_c(row, visits, std::string(),
                                 ASCIIToUTF16("w"), Make1Term("w"),
                                 word_starts, now, NULL);
-    EXPECT_TRUE(scored_c.can_inline);
+    EXPECT_TRUE(scored_c.can_inline());
     EXPECT_FALSE(scored_c.match_in_scheme);
   }
 }

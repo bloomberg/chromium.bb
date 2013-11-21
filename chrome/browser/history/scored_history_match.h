@@ -18,9 +18,17 @@ class BookmarkService;
 
 namespace history {
 
+class ScoredHistoryMatchTest;
+
 // An HistoryMatch that has a score as well as metrics defining where in the
 // history item's URL and/or page title matches have occurred.
-struct ScoredHistoryMatch : public history::HistoryMatch {
+class ScoredHistoryMatch : public history::HistoryMatch {
+ public:
+  // The maximum number of recent visits to examine in GetFrecency().
+  // Public so url_index_private_data.cc knows how many visits it is
+  // expected to deliver (at minimum) to this class.
+  static const size_t kMaxVisitsToScore;
+
   ScoredHistoryMatch();  // Required by STL.
 
   // Creates a new match with a raw score calculated for the history
@@ -49,22 +57,30 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   static bool MatchScoreGreater(const ScoredHistoryMatch& m1,
                                 const ScoredHistoryMatch& m2);
 
+  // Accessors:
+  int raw_score() const { return raw_score_; }
+  const TermMatches& url_matches() const { return url_matches_; }
+  const TermMatches& title_matches() const { return title_matches_; }
+  bool can_inline() const { return can_inline_; }
+
+ private:
+  friend class ScoredHistoryMatchTest;
+
+  // The number of days of recency scores to precompute.
+  static const int kDaysToPrecomputeRecencyScoresFor;
+
+  // The number of raw term score buckets use; raw term scores
+  // greater this are capped at the score of the largest bucket.
+  static const int kMaxRawTermScore;
+
   // Return a topicality score based on how many matches appear in the
-  // |url| and the page's title and where they are (e.g., at word
-  // boundaries).  Revises |url_matches| and |title_matches| in the
+  // url and the page's title and where they are (e.g., at word
+  // boundaries).  Revises |url_matches_| and |title_matches_| in the
   // process so they only reflect matches used for scoring.  (For
   // instance, some mid-word matches are not given credit in scoring.)
-  // |url_matches| and |title_matches| provide details about where the
-  // matches in the URL and title are and what terms (identified by a
-  // term number < |num_terms|) match where.  |word_starts| explains
-  // where word boundaries are.  Its parts (title and url) must be
-  // sorted.  Also, |url_matches| and |titles_matches| should already
-  // be sorted and de-duped.
-  static float GetTopicalityScore(const int num_terms,
-                                  const string16& url,
-                                  const RowWordStarts& word_starts,
-                                  TermMatches* url_matches,
-                                  TermMatches* title_matches);
+  float GetTopicalityScore(const int num_terms,
+                           const string16& cleaned_up_url,
+                           const RowWordStarts& word_starts);
 
   // Helper function for GetTopicalityScore().
   // Returns |term_matches| after removing all matches that are not at a
@@ -107,15 +123,21 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
 
   // An interim score taking into consideration location and completeness
   // of the match.
-  int raw_score;
+  int raw_score_;
 
   // Both these TermMatches contain the set of matches that are considered
   // important.  At this time, that means they exclude mid-word matches
-  // except in the hostname of the URL.
-  TermMatches url_matches;  // Term matches within the URL.
-  TermMatches title_matches;  // Term matches within the page title.
+  // except in the hostname of the URL.  (Technically, during early
+  // construction of ScoredHistoryMatch, they may contain all matches, but
+  // unimportant matches are eliminated by GetTopicalityScore(), called
+  // during construction.)
+  // Term matches within the URL.
+  TermMatches url_matches_;
+  // Term matches within the page title.
+  TermMatches title_matches_;
 
-  bool can_inline;  // True if this is a candidate for in-line autocompletion.
+  // True if this is a candidate for in-line autocompletion.
+  bool can_inline_;
 
   // Pre-computed information to speed up calculating recency scores.
   // |days_ago_to_recency_score| is a simple array mapping how long
@@ -123,8 +145,7 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // assign it.  This allows easy lookups of scores without requiring
   // math.  This is initialized upon first use of GetRecencyScore(),
   // which calls FillInDaysAgoToRecencyScoreArray(),
-  static const int kDaysToPrecomputeRecencyScoresFor = 366;
-  static float* days_ago_to_recency_score;
+  static float* days_ago_to_recency_score_;
 
   // Pre-computed information to speed up calculating topicality
   // scores.  |raw_term_score_to_topicality_score| is a simple array
@@ -134,20 +155,16 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // it.  This allows easy lookups of scores without requiring math.
   // This is initialized upon first use of GetTopicalityScore(),
   // which calls FillInTermScoreToTopicalityScoreArray().
-  static const int kMaxRawTermScore = 30;
-  static float* raw_term_score_to_topicality_score;
+  static float* raw_term_score_to_topicality_score_;
 
   // Used so we initialize static variables only once (on first use).
   static bool initialized_;
-
-  // The maximum number of recent visits to examine in GetFrecency().
-  static const size_t kMaxVisitsToScore;
 
   // If true, assign raw scores to be max(whatever it normally would be,
   // a score that's similar to the score HistoryURL provider would assign).
   // This variable is set in the constructor by examining the field trial
   // state.
-  static bool also_do_hup_like_scoring;
+  static bool also_do_hup_like_scoring_;
 
   // The maximum score that can be assigned to non-inlineable matches.
   // This is useful because often we want inlineable matches to come
@@ -155,7 +172,7 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // matches) because if a non-inlineable match comes first than all matches
   // will get demoted later in HistoryQuickProvider to non-inlineable scores.
   // Set to -1 to indicate no maximum score.
-  static int max_assigned_score_for_non_inlineable_matches;
+  static int max_assigned_score_for_non_inlineable_matches_;
 };
 typedef std::vector<ScoredHistoryMatch> ScoredHistoryMatches;
 

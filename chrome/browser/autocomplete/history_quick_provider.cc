@@ -224,8 +224,8 @@ void HistoryQuickProvider::DoAutocomplete() {
       (OmniboxFieldTrial::ReorderForLegalDefaultMatch(
          autocomplete_input_.current_page_classification()) ||
        (!PreventInlineAutocomplete(autocomplete_input_) &&
-        matches.begin()->can_inline)) ?
-      matches.begin()->raw_score :
+        matches.begin()->can_inline())) ?
+      matches.begin()->raw_score() :
       (AutocompleteResult::kLowestDefaultScore - 1);
   if (will_have_url_what_you_typed_match_first) {
     max_match_score = std::min(max_match_score,
@@ -240,7 +240,7 @@ void HistoryQuickProvider::DoAutocomplete() {
     if (!template_url ||
         !template_url->IsSearchURL(history_match.url_info.url())) {
       // Set max_match_score to the score we'll assign this result:
-      max_match_score = std::min(max_match_score, history_match.raw_score);
+      max_match_score = std::min(max_match_score, history_match.raw_score());
       matches_.push_back(QuickMatchToACMatch(history_match, max_match_score));
       // Mark this max_match_score as being used:
       max_match_score--;
@@ -252,8 +252,10 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     const ScoredHistoryMatch& history_match,
     int score) {
   const history::URLRow& info = history_match.url_info;
-  AutocompleteMatch match(this, score, !!info.visit_count(),
-      history_match.url_matches.empty() ? AutocompleteMatchType::HISTORY_TITLE :
+  AutocompleteMatch match(
+      this, score, !!info.visit_count(),
+      history_match.url_matches().empty() ?
+          AutocompleteMatchType::HISTORY_TITLE :
           AutocompleteMatchType::HISTORY_URL);
   match.typed_count = info.typed_count();
   match.destination_url = info.url();
@@ -261,7 +263,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
 
   // Format the URL autocomplete presentation.
   std::vector<size_t> offsets =
-      OffsetsFromTermMatches(history_match.url_matches);
+      OffsetsFromTermMatches(history_match.url_matches());
   const net::FormatUrlTypes format_types = net::kFormatUrlOmitAll &
       ~(!history_match.match_in_scheme ? 0 : net::kFormatUrlOmitHTTP);
   match.fill_into_edit =
@@ -269,13 +271,13 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
           net::FormatUrlWithOffsets(info.url(), languages_, format_types,
               net::UnescapeRule::SPACES, NULL, NULL, &offsets));
   history::TermMatches new_matches =
-      ReplaceOffsetsInTermMatches(history_match.url_matches, offsets);
+      ReplaceOffsetsInTermMatches(history_match.url_matches(), offsets);
   match.contents = net::FormatUrl(info.url(), languages_, format_types,
               net::UnescapeRule::SPACES, NULL, NULL, NULL);
   match.contents_class =
       SpansFromTermMatch(new_matches, match.contents.length(), true);
 
-  match.allowed_to_be_default_match = history_match.can_inline &&
+  match.allowed_to_be_default_match = history_match.can_inline() &&
       !PreventInlineAutocomplete(autocomplete_input_);
   if (match.allowed_to_be_default_match) {
     DCHECK(!new_matches.empty());
@@ -294,7 +296,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   // Format the description autocomplete presentation.
   match.description = info.title();
   match.description_class = SpansFromTermMatch(
-      history_match.title_matches, match.description.length(), false);
+      history_match.title_matches(), match.description.length(), false);
 
   match.RecordAdditionalInfo("typed count", info.typed_count());
   match.RecordAdditionalInfo("visit count", info.visit_count());

@@ -1299,7 +1299,7 @@ void URLIndexPrivateData::AddHistoryMatch::operator()(
     ScoredHistoryMatch match(hist_item, visits, languages_, lower_string_,
                              lower_terms_, starts_pos->second, now_,
                              bookmark_service_);
-    if (match.raw_score > 0)
+    if (match.raw_score() > 0)
       scored_matches_.push_back(match);
   }
 }

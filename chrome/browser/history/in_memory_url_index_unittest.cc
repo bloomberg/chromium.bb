@@ -451,7 +451,7 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   EXPECT_EQ(5, matches[0].url_info.id());
   EXPECT_EQ("http://drudgereport.com/", matches[0].url_info.url().spec());
   EXPECT_EQ(ASCIIToUTF16("DRUDGE REPORT 2010"), matches[0].url_info.title());
-  EXPECT_TRUE(matches[0].can_inline);
+  EXPECT_TRUE(matches[0].can_inline());
 
   // Make sure a trailing space prevents inline-ability but still results
   // in the expected result.
@@ -461,47 +461,47 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   EXPECT_EQ(5, matches[0].url_info.id());
   EXPECT_EQ("http://drudgereport.com/", matches[0].url_info.url().spec());
   EXPECT_EQ(ASCIIToUTF16("DRUDGE REPORT 2010"), matches[0].url_info.title());
-  EXPECT_FALSE(matches[0].can_inline);
+  EXPECT_FALSE(matches[0].can_inline());
 
   // Search which should result in multiple results.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("drudge"),
                                              string16::npos);
   ASSERT_EQ(2U, matches.size());
   // The results should be in descending score order.
-  EXPECT_GE(matches[0].raw_score, matches[1].raw_score);
+  EXPECT_GE(matches[0].raw_score(), matches[1].raw_score());
 
   // Search which should result in nearly perfect result.
   matches = url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("Nearly Perfect Result"), string16::npos);
   ASSERT_EQ(1U, matches.size());
   // The results should have a very high score.
-  EXPECT_GT(matches[0].raw_score, 900);
+  EXPECT_GT(matches[0].raw_score(), 900);
   EXPECT_EQ(32, matches[0].url_info.id());
   EXPECT_EQ("https://nearlyperfectresult.com/",
             matches[0].url_info.url().spec());  // Note: URL gets lowercased.
   EXPECT_EQ(ASCIIToUTF16("Practically Perfect Search Result"),
             matches[0].url_info.title());
-  EXPECT_FALSE(matches[0].can_inline);
+  EXPECT_FALSE(matches[0].can_inline());
 
   // Search which should result in very poor result.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("qui c"),
                                              string16::npos);
   ASSERT_EQ(1U, matches.size());
   // The results should have a poor score.
-  EXPECT_LT(matches[0].raw_score, 500);
+  EXPECT_LT(matches[0].raw_score(), 500);
   EXPECT_EQ(33, matches[0].url_info.id());
   EXPECT_EQ("http://quiteuselesssearchresultxyz.com/",
             matches[0].url_info.url().spec());  // Note: URL gets lowercased.
   EXPECT_EQ(ASCIIToUTF16("Practically Useless Search Result"),
             matches[0].url_info.title());
-  EXPECT_FALSE(matches[0].can_inline);
+  EXPECT_FALSE(matches[0].can_inline());
 
   // Search which will match at the end of an URL with encoded characters.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("Mice"),
                                              string16::npos);
   ASSERT_EQ(1U, matches.size());
   EXPECT_EQ(30, matches[0].url_info.id());
-  EXPECT_FALSE(matches[0].can_inline);
+  EXPECT_FALSE(matches[0].can_inline());
 
   // Check that URLs are not escaped an escape time.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("1% wikipedia"),
@@ -520,7 +520,7 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   EXPECT_EQ("http://fubarfubarandfubar.com/", matches[0].url_info.url().spec());
   EXPECT_EQ(ASCIIToUTF16("Situation Normal -- FUBARED"),
             matches[0].url_info.title());
-  EXPECT_TRUE(matches[0].can_inline);
+  EXPECT_TRUE(matches[0].can_inline());
 }
 
 TEST_F(InMemoryURLIndexTest, CursorPositionRetrieval) {
@@ -568,13 +568,13 @@ TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("drudgere"), string16::npos);
   ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(matches[0].can_inline);
+  EXPECT_TRUE(matches[0].can_inline());
 
   // "drudgere" - found, can inline
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("drudgere"),
                                              string16::npos);
   ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(matches[0].can_inline);
+  EXPECT_TRUE(matches[0].can_inline());
 
   // "www.atdmt" - not found
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("www.atdmt"),
@@ -585,32 +585,32 @@ TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("atdmt"),
                                              string16::npos);
   ASSERT_EQ(1U, matches.size());
-  EXPECT_FALSE(matches[0].can_inline);
+  EXPECT_FALSE(matches[0].can_inline());
 
   // "view.atdmt" - found, can inline
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("view.atdmt"),
                                              string16::npos);
   ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(matches[0].can_inline);
+  EXPECT_TRUE(matches[0].can_inline());
 
   // "view.atdmt" - found, can inline
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("view.atdmt"),
                                              string16::npos);
   ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(matches[0].can_inline);
+  EXPECT_TRUE(matches[0].can_inline());
 
   // "cnn.com" - found, can inline
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("cnn.com"),
                                              string16::npos);
   ASSERT_EQ(2U, matches.size());
   // One match should be inline-able, the other not.
-  EXPECT_TRUE(matches[0].can_inline != matches[1].can_inline);
+  EXPECT_TRUE(matches[0].can_inline() != matches[1].can_inline());
 
   // "www.cnn.com" - found, can inline
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("www.cnn.com"),
                                              string16::npos);
   ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(matches[0].can_inline);
+  EXPECT_TRUE(matches[0].can_inline());
 
   // "ww.cnn.com" - found because we allow mid-term matches in hostnames
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("ww.cnn.com"),
@@ -622,7 +622,7 @@ TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
       url_index_->HistoryItemsForTerms(ASCIIToUTF16("www.cnn.com"),
                                        string16::npos);
   ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(matches[0].can_inline);
+  EXPECT_TRUE(matches[0].can_inline());
 
   // "tp://www.cnn.com" - not found because we don't allow tp as a mid-term
   // match
