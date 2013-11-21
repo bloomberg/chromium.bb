@@ -369,7 +369,6 @@ PrivetLocalPrintOperationImpl::PrivetLocalPrintOperationImpl(
     : privet_client_(privet_client), delegate_(delegate),
       use_pdf_(false), has_capabilities_(false), has_extended_workflow_(false),
       started_(false), offline_(false), invalid_job_retries_(0),
-      pwg_raster_converter_(PWGRasterConverter::CreateDefault()),
       weak_factory_(this) {
 }
 
@@ -512,8 +511,11 @@ void PrivetLocalPrintOperationImpl::StartPrinting() {
 }
 
 void PrivetLocalPrintOperationImpl::StartConvertToPWG() {
+  if (!pwg_raster_converter_)
+    pwg_raster_converter_ = PWGRasterConverter::CreateDefault();
   pwg_raster_converter_->Start(
       data_,
+      conversion_settings_,
       base::Bind(&PrivetLocalPrintOperationImpl::OnPWGRasterConverted,
                  base::Unretained(this)));
 }
@@ -531,8 +533,7 @@ void PrivetLocalPrintOperationImpl::OnCapabilitiesResponse(
 
   if (value->GetList(kPrivetCDDKeySupportedContentTypes,
                      &supported_content_types)) {
-    for (size_t i = 0; i < supported_content_types->GetSize();
-         i++) {
+    for (size_t i = 0; i < supported_content_types->GetSize(); i++) {
       const base::DictionaryValue* content_type_value;
       std::string content_type;
 
@@ -671,6 +672,12 @@ void PrivetLocalPrintOperationImpl::SetJobname(const std::string& jobname) {
 void PrivetLocalPrintOperationImpl::SetOffline(bool offline) {
   DCHECK(!started_);
   offline_ = offline;
+}
+
+void PrivetLocalPrintOperationImpl::SetConversionSettings(
+    const printing::PdfRenderSettings& conversion_settings) {
+  DCHECK(!started_);
+  conversion_settings_ = conversion_settings;
 }
 
 void PrivetLocalPrintOperationImpl::SetPWGRasterConverterForTesting(

@@ -105,6 +105,10 @@ const char kSettingPageRangeFrom[] = "from";
 // The last page of a page range. (1-based)
 const char kSettingPageRangeTo[] = "to";
 
+// Page size of document to print.
+const char kSettingPageWidth[] = "pageWidth";
+const char kSettingPageHeight[] = "pageHeight";
+
 const char kSettingPreviewModifiable[] = "previewModifiable";
 
 // Keys that specifies the printable area details.

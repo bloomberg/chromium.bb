@@ -406,7 +406,8 @@ class FakePWGRasterConverter : public PWGRasterConverter {
   virtual ~FakePWGRasterConverter() {
   }
 
-  virtual void Start(base::RefCountedBytes* data,
+  virtual void Start(base::RefCountedMemory* data,
+                     const printing::PdfRenderSettings& conversion_settings,
                      const ResultCallback& callback) OVERRIDE {
     std::string data_str((const char*)data->front(), data->size());
     callback.Run(true, base::FilePath().AppendASCII(data_str + "test.pdf"));

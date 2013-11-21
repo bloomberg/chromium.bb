@@ -4,7 +4,11 @@
 
 #include "chrome/browser/local_discovery/pwg_raster_converter.h"
 
+#include "base/logging.h"
+
 namespace local_discovery {
+
+namespace {
 
 class PWGRasterConverterImpl : public PWGRasterConverter {
  public:
@@ -12,14 +16,12 @@ class PWGRasterConverterImpl : public PWGRasterConverter {
 
   virtual ~PWGRasterConverterImpl();
 
-  virtual void Start(base::RefCountedBytes* data,
+  virtual void Start(base::RefCountedMemory* data,
+                     const printing::PdfRenderSettings& conversion_settings,
                      const ResultCallback& callback) OVERRIDE;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PWGRasterConverterImpl);
 };
-
-// static
-scoped_ptr<PWGRasterConverter> PWGRasterConverter::CreateDefault() {
-  return scoped_ptr<PWGRasterConverter>(new PWGRasterConverterImpl());
-}
 
 PWGRasterConverterImpl::PWGRasterConverterImpl() {
 }
@@ -27,9 +29,18 @@ PWGRasterConverterImpl::PWGRasterConverterImpl() {
 PWGRasterConverterImpl::~PWGRasterConverterImpl() {
 }
 
-void PWGRasterConverterImpl::Start(base::RefCountedBytes* data,
-                                   const ResultCallback& callback) {
+void PWGRasterConverterImpl::Start(
+    base::RefCountedMemory* data,
+    const printing::PdfRenderSettings& conversion_settings,
+    const ResultCallback& callback) {
   NOTIMPLEMENTED();
+}
+
+}  // namespace
+
+// static
+scoped_ptr<PWGRasterConverter> PWGRasterConverter::CreateDefault() {
+  return scoped_ptr<PWGRasterConverter>(new PWGRasterConverterImpl());
 }
 
 }  // namespace local_discovery

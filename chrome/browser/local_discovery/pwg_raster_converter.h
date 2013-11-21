@@ -6,12 +6,18 @@
 #define CHROME_BROWSER_LOCAL_DISCOVERY_PWG_RASTER_CONVERTER_H_
 
 #include "base/callback.h"
-#include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 
 namespace base {
 class FilePath;
+}
+
+namespace gfx {
+class Size;
+}
+
+namespace printing {
+class PdfRenderSettings;
 }
 
 namespace local_discovery {
@@ -29,7 +35,8 @@ class PWGRasterConverter {
 
   static scoped_ptr<PWGRasterConverter> CreateDefault();
 
-  virtual void Start(base::RefCountedBytes* data,
+  virtual void Start(base::RefCountedMemory* data,
+                     const printing::PdfRenderSettings& conversion_settings,
                      const ResultCallback& callback) = 0;
 };
 

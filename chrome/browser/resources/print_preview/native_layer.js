@@ -280,7 +280,9 @@ cr.define('print_preview', function() {
         'deviceName': destination.id,
         'isFirstRequest': false,
         'requestID': -1,
-        'fitToPageEnabled': printTicketStore.fitToPage.getValue()
+        'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
+        'pageWidth': documentInfo.pageSize.width,
+        'pageHeight': documentInfo.pageSize.height,
       };
 
       if (!destination.isLocal) {

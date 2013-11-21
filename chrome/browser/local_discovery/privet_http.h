@@ -16,6 +16,14 @@ namespace base {
 class RefCountedBytes;
 }
 
+namespace gfx {
+class Size;
+}
+
+namespace printing {
+class PdfRenderSettings;
+}
+
 namespace local_discovery {
 
 class PrivetHTTPClient;
@@ -144,6 +152,9 @@ class PrivetLocalPrintOperation {
   // If |offline| is true, we will indicate to the printer not to post the job
   // to Google Cloud Print.
   virtual void SetOffline(bool offline) = 0;
+  // Document page size.
+  virtual void SetConversionSettings(
+      const printing::PdfRenderSettings& conversion_settings) = 0;
 
   // For testing, inject an alternative PWG raster converter.
   virtual void SetPWGRasterConverterForTesting(

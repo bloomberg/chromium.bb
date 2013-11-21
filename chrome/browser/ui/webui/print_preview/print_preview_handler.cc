@@ -63,7 +63,9 @@
 #include "printing/backend/print_backend.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
+#include "printing/pdf_render_settings.h"
 #include "printing/print_settings.h"
+#include "printing/units.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 #if defined(OS_CHROMEOS)
@@ -539,12 +541,11 @@ void PrintPreviewHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("forceOpenNewTab",
       base::Bind(&PrintPreviewHandler::HandleForceOpenNewTab,
-                   base::Unretained(this)));
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getPrivetPrinters",
       base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinters,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getPrivetPrinterCapabilities",
+  web_ui()->RegisterMessageCallback("getPrivetPrinterCapabilities",
       base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinterCapabilities,
                  base::Unretained(this)));
 }
@@ -735,18 +736,23 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   if (print_with_privet && PrivetPrintingEnabled()) {
     std::string printer_name;
     std::string print_ticket;
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintWithPrivet",
-                         page_count);
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintWithPrivet", page_count);
     ReportUserActionHistogram(PRINT_WITH_PRIVET);
 
-    bool success = settings->GetString(printing::kSettingDeviceName,
-                                       &printer_name);
-    DCHECK(success);
-    success = settings->GetString(printing::kSettingTicket,
-                                  &print_ticket);
-    DCHECK(success);
+    int width = 0;
+    int height = 0;
+    if (!settings->GetString(printing::kSettingDeviceName, &printer_name) ||
+        !settings->GetString(printing::kSettingTicket, &print_ticket) ||
+        !settings->GetInteger(printing::kSettingPageWidth, &width) ||
+        !settings->GetInteger(printing::kSettingPageHeight, &height) ||
+        width <= 0 || height <=0) {
+      NOTREACHED();
+      base::FundamentalValue http_code_value(-1);
+      web_ui()->CallJavascriptFunction("onPrivetPrintFailed", http_code_value);
+      return;
+    }
 
-    PrintToPrivetPrinter(printer_name, print_ticket);
+    PrintToPrivetPrinter(printer_name, print_ticket, gfx::Size(width, height));
     return;
   }
 #endif
@@ -1408,15 +1414,17 @@ bool PrintPreviewHandler::PrivetUpdateClient(
 
 void PrintPreviewHandler::PrivetLocalPrintUpdateClient(
     std::string print_ticket,
+    gfx::Size page_size,
     scoped_ptr<local_discovery::PrivetHTTPClient> http_client) {
   if (!PrivetUpdateClient(http_client.Pass()))
     return;
 
-  StartPrivetLocalPrint(print_ticket);
+  StartPrivetLocalPrint(print_ticket, page_size);
 }
 
 void PrintPreviewHandler::StartPrivetLocalPrint(
-    const std::string& print_ticket) {
+    const std::string& print_ticket,
+    const gfx::Size& page_size) {
   privet_local_print_operation_ =
       privet_http_client_->CreateLocalPrintOperation(this);
 
@@ -1433,6 +1441,16 @@ void PrintPreviewHandler::StartPrivetLocalPrint(
 
   privet_local_print_operation_->SetJobname(
       base::UTF16ToUTF8(title));
+
+  const int dpi = printing::kDefaultPdfDpi;
+  double scale = dpi;
+  scale /= printing::kPointsPerInch;
+  // Make vertical rectangle to optimize streaming to printer. Fix orientation
+  // by autorotate.
+  gfx::Rect area(std::min(page_size.width(), page_size.height()) * scale,
+                 std::max(page_size.width(), page_size.height()) * scale);
+  privet_local_print_operation_->SetConversionSettings(
+      printing::PdfRenderSettings(area, dpi, true));
 
   privet_local_print_operation_->SetData(data);
 
@@ -1489,12 +1507,12 @@ void PrintPreviewHandler::SendPrivetCapabilitiesError(
 
 void PrintPreviewHandler::PrintToPrivetPrinter(
     const std::string& device_name,
-    const std::string& ticket) {
-    CreatePrivetHTTP(
-        device_name,
-        base::Bind(&PrintPreviewHandler::PrivetLocalPrintUpdateClient,
-                   base::Unretained(this),
-                   ticket));
+    const std::string& ticket,
+    const gfx::Size& page_size) {
+  CreatePrivetHTTP(
+      device_name,
+      base::Bind(&PrintPreviewHandler::PrivetLocalPrintUpdateClient,
+                 base::Unretained(this), ticket, page_size));
 }
 
 bool PrintPreviewHandler::CreatePrivetHTTP(

@@ -41,6 +41,8 @@ PRINTING_EXPORT extern const char kSettingPreviewPageCount[];
 PRINTING_EXPORT extern const char kSettingPageRange[];
 PRINTING_EXPORT extern const char kSettingPageRangeFrom[];
 PRINTING_EXPORT extern const char kSettingPageRangeTo[];
+PRINTING_EXPORT extern const char kSettingPageWidth[];
+PRINTING_EXPORT extern const char kSettingPageHeight[];
 PRINTING_EXPORT extern const char kSettingPreviewModifiable[];
 PRINTING_EXPORT extern const char kSettingPrintableAreaX[];
 PRINTING_EXPORT extern const char kSettingPrintableAreaY[];

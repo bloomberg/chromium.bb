@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/local_discovery/privet_http.h"
+#include "printing/pdf_render_settings.h"
 
 namespace local_discovery {
 
@@ -165,7 +166,10 @@ class PrivetLocalPrintOperationImpl
 
   virtual void SetJobname(const std::string& jobname) OVERRIDE;
 
-  virtual  void SetOffline(bool offline) OVERRIDE;
+  virtual void SetOffline(bool offline) OVERRIDE;
+
+  virtual void SetConversionSettings(
+      const printing::PdfRenderSettings& conversion_settings) OVERRIDE;
 
   virtual void SetPWGRasterConverterForTesting(
       scoped_ptr<PWGRasterConverter> pwg_raster_converter) OVERRIDE;
@@ -218,6 +222,7 @@ class PrivetLocalPrintOperationImpl
   bool has_extended_workflow_;
   bool started_;
   bool offline_;
+  printing::PdfRenderSettings conversion_settings_;
 
   std::string user_;
   std::string jobname_;

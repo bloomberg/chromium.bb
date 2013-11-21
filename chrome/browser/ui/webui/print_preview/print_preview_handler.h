@@ -31,6 +31,10 @@ namespace content {
 class WebContents;
 }
 
+namespace gfx {
+class Size;
+}
+
 namespace printing {
 struct PageSizeMargins;
 class PrintBackend;
@@ -248,14 +252,17 @@ class PrintPreviewHandler
   void PrivetCapabilitiesUpdateClient(
       scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
   void PrivetLocalPrintUpdateClient(
-      std::string printTicket,
+      std::string print_ticket,
+      gfx::Size page_size,
       scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
   bool PrivetUpdateClient(
       scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
-  void StartPrivetLocalPrint(const std::string& print_ticket);
+  void StartPrivetLocalPrint(const std::string& print_ticket,
+                             const gfx::Size& page_size);
   void SendPrivetCapabilitiesError(const std::string& id);
   void PrintToPrivetPrinter(const std::string& printer_name,
-                            const std::string& print_ticket);
+                            const std::string& print_ticket,
+                            const gfx::Size& page_size);
   bool CreatePrivetHTTP(
       const std::string& name,
       const local_discovery::PrivetHTTPAsynchronousFactory::ResultCallback&
