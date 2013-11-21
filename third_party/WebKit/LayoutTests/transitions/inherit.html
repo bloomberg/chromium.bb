@@ -39,12 +39,12 @@
       var boxes = document.body.getElementsByClassName('box');
       for (var i = 0; i < boxes.length; ++i) {
         var curBox = boxes[i];
-        var curProp = window.getComputedStyle(curBox).webkitTransitionProperty;
+        var curProp = getComputedStyle(curBox).webkitTransitionProperty;
         if (curProp == kExpecteds[i])
-          result += "PASS -- ";
+          result += "PASS: ";
         else
-          result += "FAIL -- ";
-        result += "Box " + (i+1) + " computed transition property: " + curProp + " expected: " + kExpecteds[i] + "<br>";
+          result += "FAIL: ";
+        result += "Box " + (i + 1) + " computed transition-property: " + curProp + ", expected: " + kExpecteds[i] + "<br>";
       }
 
       document.body.removeChild(document.getElementById('container'));
@@ -58,7 +58,7 @@
   </script>
 </head>
 <body>
-
+<p>Tests inheritance of transition-property.
 <div id="container">
   <div id="box1" class="box"></div>
   <div id="box2" class="box transition"></div>

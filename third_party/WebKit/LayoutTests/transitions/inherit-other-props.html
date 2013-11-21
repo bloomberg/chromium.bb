@@ -26,7 +26,7 @@
         testRunner.waitUntilDone();
     }
 
-    var kExpectedProp = [
+    var kExpectedProperty = [
       'all', /* box1 */
       'left', /* box2 */
       'left', /* box3 */
@@ -57,20 +57,20 @@
 
     function testValue(index, name, actual, expected) {
       if (actual == expected)
-        result += "PASS -- ";
+        result += "PASS: ";
       else
-        result += "FAIL -- ";
-      result += "Box " + index + " computed transition " + name + ": " + actual + " expected: " + expected + "<br>";
+        result += "FAIL: ";
+      result += "Box " + index + " computed transition-" + name + ": " + actual + ", expected: " + expected + "<br>";
     }
     
     function testProperties()
     {
       var boxes = document.body.getElementsByClassName('box');
       for (var i = 0; i < boxes.length; ++i) {
-        var curBox = boxes[i];
-        testValue(i+1, "property", window.getComputedStyle(curBox).webkitTransitionProperty, kExpectedProp[i]);
-        testValue(i+1, "duration", window.getComputedStyle(curBox).webkitTransitionDuration, kExpectedDuration[i]);
-        testValue(i+1, "timing function", window.getComputedStyle(curBox).webkitTransitionTimingFunction, kExpectedTimingFunction[i]);
+        var style = getComputedStyle(boxes[i]);
+        testValue(i + 1, "property", style.webkitTransitionProperty, kExpectedProperty[i]);
+        testValue(i + 1, "duration", style.webkitTransitionDuration, kExpectedDuration[i]);
+        testValue(i + 1, "timing-function", style.webkitTransitionTimingFunction, kExpectedTimingFunction[i]);
       }
 
       document.body.removeChild(document.getElementById('container'));
@@ -83,7 +83,7 @@
   </script>
 </head>
 <body>
-
+<p>Tests inheritance of several transition properties.
 <div id="container">
   <div id="box1" class="box"></div>
   <div id="box2" class="box transition"></div>

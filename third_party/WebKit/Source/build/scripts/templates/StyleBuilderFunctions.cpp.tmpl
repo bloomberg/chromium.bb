@@ -67,7 +67,9 @@ namespace WebCore {
         if (list->size() == i)
             list->append(CSSAnimationData::create());
         list->animation(i)->set{{attribute}}(parentList->animation(i)->{{lower_first(attribute)}}());
-        list->animation(i)->setAnimationMode(parentList->animation(i)->animationMode());
+        {%- if property_id == "CSSPropertyWebkitTransitionProperty" %}
+            list->animation(i)->setAnimationMode(parentList->animation(i)->animationMode());
+        {%- endif %}
     }
 
     // Reset any remaining animations to not have the property set.
