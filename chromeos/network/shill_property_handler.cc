@@ -350,7 +350,12 @@ void ShillPropertyHandler::UpdateProperties(ManagedState::ManagedType type,
     if (type == ManagedState::MANAGED_TYPE_FAVORITE &&
         requested_service_updates.count(path) > 0)
       continue;  // Update already requested
-    if (requested_updates.find(path) == requested_updates.end())
+
+    // We add a special case for devices here to work around an issue in shill
+    // that prevents it from sending property changed signals for cellular
+    // devices (see crbug.com/321854).
+    if (type == ManagedState::MANAGED_TYPE_DEVICE ||
+        requested_updates.find(path) == requested_updates.end())
       RequestProperties(type, path);
     new_requested_updates.insert(path);
   }
