@@ -522,7 +522,7 @@ void MessageListView::AnimateNotificationsAboveTarget() {
       break;
     }
   }
-  if (last_index > 0) {
+  if (last_index >= 0) {
     int between_items =
         kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
     int bottom = (reposition_top_ > 0)
