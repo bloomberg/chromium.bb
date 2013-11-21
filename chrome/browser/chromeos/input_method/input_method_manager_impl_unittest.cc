@@ -15,7 +15,6 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_ibus_controller.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/fake_input_method_delegate.h"
 #include "chromeos/ime/mock_component_extension_ime_manager_delegate.h"
@@ -56,10 +55,6 @@ class InputMethodManagerImplTest :  public testing::Test {
   virtual ~InputMethodManagerImplTest() {}
 
   virtual void SetUp() OVERRIDE {
-    fake_dbus_thread_manager_ =
-        new chromeos::FakeDBusThreadManager();
-    chromeos::DBusThreadManager::InitializeForTesting(
-        fake_dbus_thread_manager_);
     delegate_ = new FakeInputMethodDelegate();
     manager_.reset(new InputMethodManagerImpl(
         scoped_ptr<InputMethodDelegate>(delegate_)));
@@ -127,7 +122,6 @@ class InputMethodManagerImplTest :  public testing::Test {
     manager_.reset();
     IBusBridge::Get()->SetEngineHandler(NULL);
     IBusBridge::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
  protected:
@@ -144,7 +138,6 @@ class InputMethodManagerImplTest :  public testing::Test {
   MockIBusController* controller_;
   MockCandidateWindowController* candidate_window_controller_;
   scoped_ptr<MockIMEEngineHandler> mock_engine_handler_;
-  FakeDBusThreadManager* fake_dbus_thread_manager_;
   MockXKeyboard* xkeyboard_;
   base::MessageLoop message_loop_;
   MockComponentExtIMEManagerDelegate* mock_delegate_;

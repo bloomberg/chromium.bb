@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chromeos/ime/ibus_bridge.h"
-#include "dbus/object_path.h"
 
 namespace chromeos {
 
