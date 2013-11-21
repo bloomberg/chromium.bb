@@ -32,6 +32,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
+#include "core/dom/StyleTreeScopeTracker.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefPtr.h"
@@ -52,7 +53,6 @@ class StyleSheet;
 class StyleSheetCollection;
 class StyleSheetContents;
 class StyleSheetList;
-
 
 class StyleEngine {
     WTF_MAKE_FAST_ALLOCATED;
@@ -129,7 +129,7 @@ public:
     void combineCSSFeatureFlags(const RuleFeatureSet&);
     void resetCSSFeatureFlags(const RuleFeatureSet&);
 
-    void didModifySeamlessParentStyleSheet() { m_needsDocumentStyleSheetsUpdate = true; }
+    void didModifySeamlessParentStyleSheet() { m_dirtyTreeScopes.markDocument(); }
     void didRemoveShadowRoot(ShadowRoot*);
     void appendActiveAuthorStyleSheets(StyleResolver*);
     void getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const;
@@ -191,9 +191,8 @@ private:
     DocumentStyleSheetCollection m_documentStyleSheetCollection;
     HashMap<TreeScope*, OwnPtr<StyleSheetCollection> > m_styleSheetCollectionMap;
 
-    TreeScopeSet m_dirtyTreeScopes;
+    StyleTreeScopeTracker m_dirtyTreeScopes;
     TreeScopeSet m_activeTreeScopes;
-    bool m_needsDocumentStyleSheetsUpdate;
 
     String m_preferredStylesheetSetName;
     String m_selectedStylesheetSetName;

@@ -2041,6 +2041,8 @@
             'dom/StyleSheetCollection.h',
             'dom/StyleSheetScopingNodeList.cpp',
             'dom/StyleSheetScopingNodeList.h',
+            'dom/StyleTreeScopeTracker.cpp',
+            'dom/StyleTreeScopeTracker.h',
             'dom/TagNodeList.cpp',
             'dom/TagNodeList.h',
             'dom/Text.cpp',
