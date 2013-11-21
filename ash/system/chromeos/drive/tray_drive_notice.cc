@@ -145,9 +145,7 @@ bool TrayDriveNotice::GetInitialVisibility() {
 }
 
 views::View* TrayDriveNotice::CreateDefaultView(user::LoginStatus status) {
-  DCHECK(status == user::LOGGED_IN_USER);
   CHECK(default_view_ == NULL);
-
   if (!showing_item_)
     return NULL;
 
@@ -159,7 +157,6 @@ views::View* TrayDriveNotice::CreateDetailedView(user::LoginStatus status) {
   if (!showing_item_)
     return NULL;
 
-  DCHECK(status == user::LOGGED_IN_USER);
   detailed_view_ = new DriveNoticeDetailedView(this);
   return detailed_view_;
 }
