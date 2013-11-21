@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc_logging_initializer.h"
+#include "content/renderer/media/webrtc_logging.h"
 
-#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/webrtc_log_message_delegate.h"
-#include "content/renderer/render_thread_impl.h"
 #include "third_party/libjingle/overrides/talk/base/logging.h"
 
 namespace content {
