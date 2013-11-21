@@ -249,10 +249,15 @@ enum ReservedVariationID {
   ANDROID_STABLE_TABLET_NATIVE_NTP_CONTROL = 3311931,
   ANDROID_STABLE_TABLET_NATIVE_NTP_ONE_URL_BAR = 3311932,
 
+  // WebGLDebugRendererInfo trial.
+  WEBGL_DEBUG_RENDERER_INFO_ENABLED = 3311941,
+  WEBGL_DEBUG_RENDERER_INFO_CONTROL = 3311942,
+  WEBGL_DEBUG_RENDERER_INFO_DISABLED = 3311943,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3311941,
+  NEXT_ID = 3311944,
 
   // USABLE IDs END HERE.
   //
