@@ -118,10 +118,18 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     CloseDevToolsWindow();
   }
 
-  void OpenDevToolsWindow(const std::string& test_page) {
-    ASSERT_TRUE(test_server()->Start());
+  void LoadTestPage(const std::string& test_page) {
+    content::WindowedNotificationObserver load_observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     GURL url = test_server()->GetURL(test_page);
     ui_test_utils::NavigateToURL(browser(), url);
+    load_observer.Wait();
+  }
+
+  void OpenDevToolsWindow(const std::string& test_page) {
+    ASSERT_TRUE(test_server()->Start());
+    LoadTestPage(test_page);
 
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
@@ -581,12 +589,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that BeforeUnload event gets called on devtools that are opened
 // on another devtools.
-// Test is flaky; http://crbug.com/321359
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       DISABLED_TestDevToolsOnDevTools) {
+                       TestDevToolsOnDevTools) {
   ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL(kDebuggerTestPage);
-  ui_test_utils::NavigateToURL(browser(), url);
+  LoadTestPage(kDebuggerTestPage);
 
   std::vector<DevToolsWindow*> windows;
   std::vector<content::WindowedNotificationObserver*> close_observers;
