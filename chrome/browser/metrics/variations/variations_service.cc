@@ -133,6 +133,9 @@ enum ResourceRequestsAllowedState {
   RESOURCE_REQUESTS_ALLOWED,
   RESOURCE_REQUESTS_NOT_ALLOWED,
   RESOURCE_REQUESTS_ALLOWED_NOTIFIED,
+  RESOURCE_REQUESTS_NOT_ALLOWED_EULA_NOT_ACCEPTED,
+  RESOURCE_REQUESTS_NOT_ALLOWED_NETWORK_DOWN,
+  RESOURCE_REQUESTS_NOT_ALLOWED_COMMAND_LINE_DISABLED,
   RESOURCE_REQUESTS_ALLOWED_ENUM_SIZE,
 };
 
@@ -140,6 +143,24 @@ enum ResourceRequestsAllowedState {
 void RecordRequestsAllowedHistogram(ResourceRequestsAllowedState state) {
   UMA_HISTOGRAM_ENUMERATION("Variations.ResourceRequestsAllowed", state,
                             RESOURCE_REQUESTS_ALLOWED_ENUM_SIZE);
+}
+
+// Converts ResourceRequestAllowedNotifier::State to the corresponding
+// ResourceRequestsAllowedState value.
+ResourceRequestsAllowedState ResourceRequestStateToHistogramValue(
+    ResourceRequestAllowedNotifier::State state) {
+  switch (state) {
+    case ResourceRequestAllowedNotifier::DISALLOWED_EULA_NOT_ACCEPTED:
+      return RESOURCE_REQUESTS_NOT_ALLOWED_EULA_NOT_ACCEPTED;
+    case ResourceRequestAllowedNotifier::DISALLOWED_NETWORK_DOWN:
+      return RESOURCE_REQUESTS_NOT_ALLOWED_NETWORK_DOWN;
+    case ResourceRequestAllowedNotifier::DISALLOWED_COMMAND_LINE_DISABLED:
+      return RESOURCE_REQUESTS_NOT_ALLOWED_COMMAND_LINE_DISABLED;
+    case ResourceRequestAllowedNotifier::ALLOWED:
+     return RESOURCE_REQUESTS_ALLOWED;
+  }
+  NOTREACHED();
+  return RESOURCE_REQUESTS_NOT_ALLOWED;
 }
 
 enum VariationSeedEmptyState {
@@ -156,7 +177,7 @@ void RecordVariationSeedEmptyHistogram(VariationSeedEmptyState state) {
 
 // Get current form factor and convert it from enum DeviceFormFactor to enum
 // Study_FormFactor.
-Study_FormFactor GetCurrentFormFactor(){
+Study_FormFactor GetCurrentFormFactor() {
   switch (ui::GetDeviceFormFactor()) {
     case ui::DEVICE_FORM_FACTOR_PHONE:
       return Study_FormFactor_PHONE;
@@ -347,8 +368,10 @@ void VariationsService::DoActualFetch() {
 void VariationsService::FetchVariationsSeed() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  if (!resource_request_allowed_notifier_->ResourceRequestsAllowed()) {
-    RecordRequestsAllowedHistogram(RESOURCE_REQUESTS_NOT_ALLOWED);
+  const ResourceRequestAllowedNotifier::State state =
+      resource_request_allowed_notifier_->GetResourceRequestsAllowedState();
+  if (state != ResourceRequestAllowedNotifier::ALLOWED) {
+    RecordRequestsAllowedHistogram(ResourceRequestStateToHistogramValue(state));
     DVLOG(1) << "Resource requests were not allowed. Waiting for notification.";
     return;
   }

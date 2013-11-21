@@ -38,6 +38,14 @@ class ResourceRequestAllowedNotifier
     virtual void OnResourceRequestsAllowed() = 0;
   };
 
+  // Specifies the resource request allowed state.
+  enum State {
+    ALLOWED,
+    DISALLOWED_EULA_NOT_ACCEPTED,
+    DISALLOWED_NETWORK_DOWN,
+    DISALLOWED_COMMAND_LINE_DISABLED,
+  };
+
   ResourceRequestAllowedNotifier();
   virtual ~ResourceRequestAllowedNotifier();
 
@@ -47,11 +55,16 @@ class ResourceRequestAllowedNotifier
   // ResourceRequestAllowedNotifier to pass it the interested service.
   void Init(Observer* observer);
 
-  // Returns true iff all resource request criteria are met. If not, this call
-  // will set some flags so it knows to notify the observer if the criteria
-  // changes. Note that the observer will never be notified unless it calls this
-  // method first. This is virtual so it can be overridden for tests.
-  virtual bool ResourceRequestsAllowed();
+  // Returns whether resource requests are allowed, per the various criteria.
+  // If not, this call will set some flags so it knows to notify the observer
+  // if the criteria change. Note that the observer will not be notified unless
+  // it calls this method first.
+  // This is virtual so it can be overridden for tests.
+  virtual State GetResourceRequestsAllowedState();
+
+  // Convenience function, equivalent to:
+  //   GetResourceRequestsAllowedState() == ALLOWED.
+  bool ResourceRequestsAllowed();
 
   void SetWaitingForNetworkForTesting(bool waiting);
   void SetWaitingForEulaForTesting(bool waiting);

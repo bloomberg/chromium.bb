@@ -29694,9 +29694,12 @@ other types of suffix sets.
 </enum>
 
 <enum name="VariationsResourceRequestsAllowedState" type="int">
-  <int value="0" label="Resource requests allowed"/>
-  <int value="1" label="Resource requests not allowed"/>
+  <int value="0" label="Requests allowed"/>
+  <int value="1" label="Requests not allowed (Obsolete 11/2013)"/>
   <int value="2" label="Notified that requests became allowed"/>
+  <int value="3" label="Requests not allowed: EULA not accepted"/>
+  <int value="4" label="Requests not allowed: network down"/>
+  <int value="5" label="Requests not allowed: disabled by command line"/>
 </enum>
 
 <enum name="VariationsSeedEmpty" type="int">

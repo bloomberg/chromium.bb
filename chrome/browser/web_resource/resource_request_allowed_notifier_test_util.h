@@ -34,7 +34,7 @@ class TestRequestAllowedNotifier : public ResourceRequestAllowedNotifier {
   void NotifyObserver();
 
   // ResourceRequestAllowedNotifier overrides:
-  virtual bool ResourceRequestsAllowed() OVERRIDE;
+  virtual State GetResourceRequestsAllowedState() OVERRIDE;
   virtual EulaAcceptedNotifier* CreateEulaNotifier() OVERRIDE;
 
  private:

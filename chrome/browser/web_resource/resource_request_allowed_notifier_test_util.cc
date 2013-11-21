@@ -34,13 +34,13 @@ void TestRequestAllowedNotifier::NotifyObserver() {
   MaybeNotifyObserver();
 }
 
-bool TestRequestAllowedNotifier::ResourceRequestsAllowed() {
+ResourceRequestAllowedNotifier::State
+    TestRequestAllowedNotifier::GetResourceRequestsAllowedState() {
   if (override_requests_allowed_)
-    return requests_allowed_;
-  return ResourceRequestAllowedNotifier::ResourceRequestsAllowed();
+    return requests_allowed_ ? ALLOWED : DISALLOWED_NETWORK_DOWN;
+  return ResourceRequestAllowedNotifier::GetResourceRequestsAllowedState();
 }
 
 EulaAcceptedNotifier* TestRequestAllowedNotifier::CreateEulaNotifier() {
   return test_eula_notifier_.release();
 }
-

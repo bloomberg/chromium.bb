@@ -36,10 +36,11 @@ void ResourceRequestAllowedNotifier::Init(Observer* observer) {
   }
 }
 
-bool ResourceRequestAllowedNotifier::ResourceRequestsAllowed() {
+ResourceRequestAllowedNotifier::State
+    ResourceRequestAllowedNotifier::GetResourceRequestsAllowedState() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableBackgroundNetworking)) {
-    return false;
+    return DISALLOWED_COMMAND_LINE_DISABLED;
   }
 
   // The observer requested permission. Return the current criteria state and
@@ -47,7 +48,14 @@ bool ResourceRequestAllowedNotifier::ResourceRequestsAllowed() {
   // is met.
   observer_requested_permission_ = waiting_for_user_to_accept_eula_ ||
                                    waiting_for_network_;
-  return !observer_requested_permission_;
+  if (!observer_requested_permission_)
+    return ALLOWED;
+  return waiting_for_user_to_accept_eula_ ? DISALLOWED_EULA_NOT_ACCEPTED :
+                                            DISALLOWED_NETWORK_DOWN;
+}
+
+bool ResourceRequestAllowedNotifier::ResourceRequestsAllowed() {
+  return GetResourceRequestsAllowedState() == ALLOWED;
 }
 
 void ResourceRequestAllowedNotifier::SetWaitingForNetworkForTesting(
