@@ -76,12 +76,11 @@ cr.define('help', function() {
      */
     setOverlayVisible_: function(visible) {
       assert(this.isOverlay);
-      var pageDiv = this.pageDiv;
       this.container.hidden = !visible;
       if (visible)
-        pageDiv.classList.add('showing');
+        this.pageDiv.classList.add('showing');
       else
-        pageDiv.classList.remove('showing');
+        this.pageDiv.classList.remove('showing');
     },
 
     /**

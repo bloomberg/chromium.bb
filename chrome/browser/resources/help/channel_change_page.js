@@ -83,6 +83,12 @@ cr.define('help', function() {
         this.selectOption_(this.targetChannel_);
       else if (this.currentChannel_ != null)
         this.selectOption_(this.currentChannel_);
+      var options = this.getAllChannelOptions_();
+      for (var i = 0; i < options.length; i++) {
+        var option = options[i];
+        if (option.checked)
+          option.focus();
+      }
     },
 
     /**
