@@ -366,9 +366,9 @@ class AndroidDevices(object):
     # Private methods
     def _battery_level_for_device(self, commands):
         battery_status = commands.run(['shell', 'dumpsys', 'battery'])
-        if 'Error' in battery_status:
+        if 'Error' in battery_status or "Can't find service: battery" in battery_status:
             _log.warning('Unable to read the battery level from device with serial "%s".' % commands.get_serial())
-            return 100
+            return 0
 
         return int(re.findall('level: (\d+)', battery_status)[0])
 
