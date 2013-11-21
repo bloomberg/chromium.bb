@@ -374,7 +374,14 @@ class SortHelper {
   [tableView_ deselectAll:self];
 }
 
-// Table view delegate method.
+// Table view delegate methods.
+
+// The selection is being changed by mouse (drag/click).
+- (void)tableViewSelectionIsChanging:(NSNotification*)aNotification {
+  [self adjustSelectionAndEndProcessButton];
+}
+
+// The selection is being changed by keyboard (arrows).
 - (void)tableViewSelectionDidChange:(NSNotification*)aNotification {
   [self adjustSelectionAndEndProcessButton];
 }
