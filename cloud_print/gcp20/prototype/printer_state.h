@@ -7,13 +7,13 @@
 
 #include <string>
 
+#include "base/memory/linked_ptr.h"
 #include "base/time/time.h"
 #include "cloud_print/gcp20/prototype/local_settings.h"
 
 namespace base {
-
+class DictionaryValue;
 class FilePath;
-
 }  // namespace base
 
 struct PrinterState {
@@ -51,6 +51,7 @@ struct PrinterState {
   std::string device_id;
   std::string xmpp_jid;
   LocalSettings local_settings;
+  linked_ptr<base::DictionaryValue> cdd;
 
   // Last valid |access_token|.
   std::string access_token;

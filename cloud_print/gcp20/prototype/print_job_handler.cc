@@ -153,9 +153,6 @@ LocalPrintJob::SaveResult PrintJobHandler::CompleteLocalPrintJob(
     return LocalPrintJob::SAVE_INVALID_PRINT_JOB;
   }
 
-  std::string suffix = StringPrintf("%s:%s",
-                                    job.user_name.c_str(),
-                                    job.client_name.c_str());
   std::string file_extension;
   // TODO(maksymb): Gather together this type checking with Printer
   // supported types in kCdd.
@@ -177,7 +174,6 @@ LocalPrintJob::SaveResult PrintJobHandler::CompleteLocalPrintJob(
                     current_job->second.ticket,
                     base::Time::Now(),
                     StringPrintf("%s", job_id.c_str()),
-                    suffix,
                     current_job->second.data.job_name, file_extension)) {
     SetJobState(job_id, LocalPrintJob::STATE_ABORTED);
     *error_description_out = "IO error";
@@ -214,9 +210,6 @@ bool PrintJobHandler::SavePrintJob(const std::string& content,
                                    const std::string& ticket,
                                    const base::Time& create_time,
                                    const std::string& id,
-                                   const std::string& job_name_suffix,
-                                   // suffix is not extension
-                                   // it may be used to mark local printer jobs
                                    const std::string& title,
                                    const std::string& file_extension) {
   VLOG(1) << "Printing printjob: \"" + title + "\"";
@@ -224,29 +217,21 @@ bool PrintJobHandler::SavePrintJob(const std::string& content,
 
   if (!base::DirectoryExists(directory) &&
       !file_util::CreateDirectory(directory)) {
-    LOG(WARNING) << "Cannot create directory: " << directory.value();
     return false;
   }
 
   base::Time::Exploded create_time_exploded;
   create_time.UTCExplode(&create_time_exploded);
-  std::string job_name =
-      StringPrintf("%.4d%.2d%.2d-%.2d:%.2d:%.2d-%.3dms.%s",
-          create_time_exploded.year,
-          create_time_exploded.month,
-          create_time_exploded.day_of_month,
-          create_time_exploded.hour,
-          create_time_exploded.minute,
-          create_time_exploded.second,
-          create_time_exploded.millisecond,
-          id.c_str());
-  if (!job_name_suffix.empty())
-    job_name += "." + job_name_suffix;
-  directory = directory.AppendASCII(job_name);
-
-  if (!base::DirectoryExists(directory) &&
-      !file_util::CreateDirectory(directory)) {
-    LOG(WARNING) << "Cannot create directory: " << directory.value();
+  base::FilePath::StringType job_prefix =
+      StringPrintf(FILE_PATH_LITERAL("%.4d%.2d%.2d-%.2d%.2d%.2d_"),
+                   create_time_exploded.year,
+                   create_time_exploded.month,
+                   create_time_exploded.day_of_month,
+                   create_time_exploded.hour,
+                   create_time_exploded.minute,
+                   create_time_exploded.second);
+  if (!file_util::CreateTemporaryDirInDir(directory, job_prefix, &directory)) {
+    LOG(WARNING) << "Cannot create directory for " << job_prefix;
     return false;
   }
 
@@ -266,7 +251,7 @@ bool PrintJobHandler::SavePrintJob(const std::string& content,
     return false;
   }
 
-  LOG(INFO) << "Saved printjob: " << job_name << ": " << title;
+  LOG(INFO) << "Job saved at " << directory.value();
   return true;
 }
 

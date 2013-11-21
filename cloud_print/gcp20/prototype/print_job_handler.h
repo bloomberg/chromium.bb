@@ -58,7 +58,6 @@ class PrintJobHandler : public base::SupportsWeakPtr<PrintJobHandler> {
                     const std::string& ticket,
                     const base::Time& create_time,
                     const std::string& id,
-                    const std::string& job_name_suffix,
                     const std::string& title,
                     const std::string& file_extension);
 

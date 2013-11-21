@@ -275,8 +275,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessCapabilities(
     *status_code = net::HTTP_NOT_FOUND;
     return scoped_ptr<base::DictionaryValue>();
   }
-
-  return delegate_->GetCapabilities();
+  return make_scoped_ptr(delegate_->GetCapabilities().DeepCopy());
 }
 
 scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessCreateJob(

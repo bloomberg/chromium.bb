@@ -16,6 +16,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "cloud_print/gcp20/prototype/command_line_reader.h"
 #include "cloud_print/gcp20/prototype/local_settings.h"
@@ -49,60 +50,88 @@ const int kReconnectTimeout = 5;  // in seconds
 const double kTimeToNextAccessTokenUpdate = 0.8;  // relatively to living time.
 
 const char kCdd[] =
-"{\n"
-"  \"version\": \"1.0\",\n"
-"  \"printer\": {\n"
-"    \"supported_content_type\": [\n"
-"      {\n"
-"        \"content_type\": \"application/pdf\"\n"
-"      },\n"
-"      {\n"
-"        \"content_type\": \"image/pwg-raster\"\n"
-"      },\n"
-"      {\n"
-"        \"content_type\": \"image/jpeg\"\n"
-"      }\n"
-"    ],\n"
-"    \"color\": {\n"
-"     \"option\": [\n"
-"        {\n"
-"          \"is_default\": true,\n"
-"          \"type\": \"STANDARD_COLOR\",\n"
-"          \"vendor_id\": \"CMYK\"\n"
-"        },\n"
-"        {\n"
-"          \"is_default\": false,\n"
-"          \"type\": \"STANDARD_MONOCHROME\",\n"
-"          \"vendor_id\": \"Gray\"\n"
-"        }\n"
-"      ]\n"
-"    },\n"
-"    \"vendor_capability\": [\n"
-"      {\n"
-"        \"id\": \"psk:MediaType\",\n"
-"        \"display_name\": \"Media Type\",\n"
-"        \"type\": \"SELECT\",\n"
-"        \"select_cap\": {\n"
-"          \"option\": [\n"
-"            {\n"
-"              \"value\": \"psk:Plain\",\n"
-"              \"display_name\": \"Plain Paper\",\n"
-"              \"is_default\": true\n"
-"            },\n"
-"            {\n"
-"              \"value\": \"ns0000:Glossy\",\n"
-"              \"display_name\": \"Glossy Photo\",\n"
-"              \"is_default\": false\n"
-"            }\n"
-"          ]\n"
-"        }\n"
-"      }\n"
-"    ],\n"
-"    \"reverse_order\": {\n"
-"      \"default\": false\n"
-"    }\n"
-"  }\n"
-"}\n";
+"{"
+"  'version': '1.0',"
+"  'printer': {"
+"    'supported_content_type': ["
+"      {"
+"        'content_type': 'application/pdf'"
+"      },"
+"      {"
+"        'content_type': 'image/pwg-raster'"
+"      },"
+"      {"
+"        'content_type': 'image/jpeg'"
+"      }"
+"    ],"
+"    'color': {"
+"     'option': ["
+"        {"
+"          'is_default': true,"
+"          'type': 'STANDARD_COLOR',"
+"          'vendor_id': 'CMYK'"
+"        },"
+"        {"
+"          'is_default': false,"
+"          'type': 'STANDARD_MONOCHROME',"
+"          'vendor_id': 'Gray'"
+"        }"
+"      ]"
+"    },"
+"    'dpi': {"
+"       'option': [ {"
+"          'horizontal_dpi': 300,"
+"          'is_default': true,"
+"          'vertical_dpi': 300"
+"       }, {"
+"          'horizontal_dpi': 600,"
+"          'is_default': false,"
+"          'vertical_dpi': 600"
+"       } ]"
+"    },"
+"    'duplex': {"
+"       'option': [ {"
+"          'is_default': true,"
+"          'type': 'NO_DUPLEX'"
+"       }, {"
+"          'is_default': false,"
+"          'type': 'SHORT_EDGE'"
+"       }, {"
+"          'is_default': false,"
+"          'type': 'LONG_EDGE'"
+"       } ]"
+"    },"
+"    'media_size': {"
+"       'option': [ {"
+"          'custom_display_name': 'A4',"
+"          'height_microns': 297000,"
+"          'is_continuous_feed': false,"
+"          'is_default': false,"
+"          'name': 'A4',"
+"          'width_microns': 210000"
+"       }, {"
+"          'custom_display_name': 'Letter',"
+"          'height_microns': 279400,"
+"          'is_continuous_feed': false,"
+"          'is_default': true,"
+"          'name': 'LETTER',"
+"          'width_microns': 215900"
+"       } ]"
+"    },"
+"    'page_orientation': {"
+"       'option': [ {"
+"          'is_default': true,"
+"          'type': 'PORTRAIT'"
+"       }, {"
+"          'is_default': false,"
+"          'type': 'LANDSCAPE'"
+"       } ]"
+"    },"
+"    'reverse_order': {"
+"      'default': false"
+"    }"
+"  }"
+"}";
 
 // Returns local IP address number of first interface found (except loopback).
 // Return value is empty if no interface found. Possible interfaces names are
@@ -189,7 +218,11 @@ void Printer::Stop() {
 }
 
 std::string Printer::GetRawCdd() {
-  return kCdd;
+  std::string json_str;
+  base::JSONWriter::WriteWithOptions(&GetCapabilities(),
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &json_str);
+  return json_str;
 }
 
 void Printer::OnAuthError() {
@@ -239,7 +272,7 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationStart(
   }
 
   requester_->StartRegistration(GenerateProxyId(), kPrinterName, user,
-                                state_.local_settings, kCdd);
+                                state_.local_settings, GetRawCdd());
 
   return PrivetHttpServer::REG_ERROR_OK;
 }
@@ -377,11 +410,16 @@ bool Printer::CheckXPrivetTokenHeader(const std::string& token) const {
   return xtoken_.CheckValidXToken(token);
 }
 
-scoped_ptr<base::DictionaryValue> Printer::GetCapabilities() {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(kCdd));
-  base::DictionaryValue* dictionary_value = NULL;
-  value->GetAsDictionary(&dictionary_value);
-  return scoped_ptr<base::DictionaryValue>(dictionary_value->DeepCopy());
+const base::DictionaryValue& Printer::GetCapabilities() {
+  if (!state_.cdd.get()) {
+    std::string cdd_string;
+    ReplaceChars(kCdd, "'", "\"", &cdd_string);
+    scoped_ptr<base::Value> json_val(base::JSONReader::Read(cdd_string));
+    base::DictionaryValue* json = NULL;
+    CHECK(json_val->GetAsDictionary(&json));
+    state_.cdd.reset(json->DeepCopy());
+  }
+  return *state_.cdd;
 }
 
 LocalPrintJob::CreateResult Printer::CreateJob(const std::string& ticket,
@@ -494,7 +532,7 @@ void Printer::OnPrintJobsAvailable(const std::vector<Job>& jobs) {
 void Printer::OnPrintJobDownloaded(const Job& job) {
   VLOG(3) << "Function: " << __FUNCTION__;
   print_job_handler_->SavePrintJob(job.file, job.ticket, job.create_time,
-                                   job.job_id, "remote", job.title, "pdf");
+                                   job.job_id, job.title, "pdf");
   requester_->SendPrintJobDone(job.job_id);
 }
 
@@ -746,7 +784,8 @@ std::vector<std::string> Printer::CreateTxt() const {
   return txt;
 }
 
-void Printer::SaveToFile() const {
+void Printer::SaveToFile() {
+  GetCapabilities();  // Make sure capabilities created.
   base::FilePath file_path;
   file_path = file_path.AppendASCII(
       command_line_reader::ReadStatePath(kPrinterStatePathDefault));
@@ -772,6 +811,7 @@ bool Printer::LoadFromFile() {
 
   if (printer_state::LoadFromFile(file_path, &state_)) {
     LOG(INFO) << "Printer state loaded from file";
+    SaveToFile();
   } else {
     LOG(INFO) << "Reading/parsing printer state from file failed";
   }

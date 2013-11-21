@@ -51,8 +51,7 @@ class Printer : public base::SupportsWeakPtr<Printer>,
     CONNECTING
   };
 
-  // For testing purposes.
-  static std::string GetRawCdd();
+  std::string GetRawCdd();
 
   // PrivetHttpServer::Delegate methods:
   virtual PrivetHttpServer::RegistrationErrorStatus RegistrationStart(
@@ -71,7 +70,7 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   virtual bool IsRegistered() const OVERRIDE;
   virtual bool IsLocalPrintingAllowed() const OVERRIDE;
   virtual bool CheckXPrivetTokenHeader(const std::string& token) const OVERRIDE;
-  virtual scoped_ptr<base::DictionaryValue> GetCapabilities() OVERRIDE;
+  virtual const base::DictionaryValue& GetCapabilities() OVERRIDE;
   virtual LocalPrintJob::CreateResult CreateJob(
       const std::string& ticket,
       std::string* job_id,
@@ -173,7 +172,7 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   std::vector<std::string> CreateTxt() const;
 
   // Saving and loading registration info from file.
-  void SaveToFile() const;
+  void SaveToFile();
   bool LoadFromFile();
 
   // Adds |OnIdle| method to the MessageLoop.

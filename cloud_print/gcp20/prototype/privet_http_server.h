@@ -95,7 +95,7 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
     virtual bool CheckXPrivetTokenHeader(const std::string& token) const = 0;
 
     // Invoked for getting capabilities.
-    virtual scoped_ptr<base::DictionaryValue> GetCapabilities() = 0;
+    virtual const base::DictionaryValue& GetCapabilities() = 0;
 
     // Invoked for creating a job.
     virtual LocalPrintJob::CreateResult CreateJob(

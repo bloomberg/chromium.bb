@@ -13,8 +13,9 @@
 TEST(Printer, ValidateCapabilities) {
   int error_code;
   std::string error_msg;
+  Printer printer;
   scoped_ptr<base::Value> value(
-      base::JSONReader::ReadAndReturnError(Printer::GetRawCdd(), 0,
+      base::JSONReader::ReadAndReturnError(printer.GetRawCdd(), 0,
                                            &error_code, &error_msg));
   ASSERT_TRUE(!!value) << error_msg;
 
