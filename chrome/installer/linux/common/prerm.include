@@ -9,15 +9,10 @@ for icon in "@@INSTALLDIR@@/product_logo_"*.png; do
   "$XDG_ICON_RESOURCE" uninstall --size "${size%.png}" "@@PACKAGE@@"
 done
 
-# Remove the entry from the system menu
-XDG_DESKTOP_MENU="`which xdg-desktop-menu 2> /dev/null || true`"
 UPDATE_MENUS="`which update-menus 2> /dev/null || true`"
-if [ ! -x "$XDG_DESKTOP_MENU" ]; then
-  echo "Error: Could not find xdg-desktop-menu" >&2
-  exit 1
-fi
-"$XDG_DESKTOP_MENU" uninstall @@INSTALLDIR@@/@@PACKAGE@@.desktop
-
 if [ -x "$UPDATE_MENUS" ]; then
   update-menus
 fi
+
+# Update cache of .desktop file MIME types. Non-fatal since it's just a cache.
+update-desktop-database || true

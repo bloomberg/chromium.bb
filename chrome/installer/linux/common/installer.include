@@ -226,8 +226,8 @@ stage_install_common() {
   install -m 755 "${BUILDDIR}/xdg-mime" "${STAGEDIR}${INSTALLDIR}/"
   install -m 755 "${BUILDDIR}/xdg-settings" "${STAGEDIR}${INSTALLDIR}/"
   process_template "${BUILDDIR}/installer/common/desktop.template" \
-    "${STAGEDIR}/${INSTALLDIR}/${PACKAGE}.desktop"
-  chmod 644 "${STAGEDIR}/${INSTALLDIR}/${PACKAGE}.desktop"
+    "${STAGEDIR}/usr/share/applications/${PACKAGE}.desktop"
+  chmod 644 "${STAGEDIR}/usr/share/applications/${PACKAGE}.desktop"
   process_template "${BUILDDIR}/installer/common/default-app.template" \
     "${STAGEDIR}/usr/share/gnome-control-center/default-apps/${PACKAGE}.xml"
   chmod 644 "${STAGEDIR}/usr/share/gnome-control-center/default-apps/${PACKAGE}.xml"
