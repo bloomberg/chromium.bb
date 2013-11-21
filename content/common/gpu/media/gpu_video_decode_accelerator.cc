@@ -462,6 +462,8 @@ void GpuVideoDecodeAccelerator::OnWillDestroyStub() {
   DCHECK(stub_);
   stub_->channel()->RemoveRoute(host_route_id_);
   stub_->RemoveDestructionObserver(this);
+  DebugAutoLock auto_lock(debug_uncleared_textures_lock_);
+  uncleared_textures_.clear();
   if (filter_.get()) {
     // Remove the filter first because the member variables can be accessed on
     // IO thread. When filter is removed, OnFilterRemoved will delete |this|.
