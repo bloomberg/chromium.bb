@@ -45,6 +45,11 @@ void (*g_next_paint_callback)();
 // The distance between the arrow tip and edge of the anchor view.
 const int kArrowOffset = 10;
 
+#if defined(OS_LINUX)
+// The WM_CLASS name for the app launcher window on Linux.
+const char* kAppListWMClass = "chrome_app_list";
+#endif
+
 // Determines whether the current environment supports shadows bubble borders.
 bool SupportsShadow() {
 #if defined(USE_AURA) && defined(OS_WIN)
@@ -252,6 +257,11 @@ void AppListView::OnBeforeBubbleWidgetInit(
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   if (delegate_ && delegate_->ForceNativeDesktop())
     params->native_widget = new views::DesktopNativeWidgetAura(widget);
+#endif
+#if defined(OS_LINUX)
+  // Set up a custom WM_CLASS for the app launcher window. This allows task
+  // switchers in X11 environments to distinguish it from main browser windows.
+  params->wm_class_name = kAppListWMClass;
 #endif
 }
 
