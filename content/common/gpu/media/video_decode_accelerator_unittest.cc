@@ -162,6 +162,9 @@ void ReadGoldenThumbnailMD5s(const TestVideoFile* video_file,
       // Ignore the empty string added by SplitString
       if (!md5_string->length())
         continue;
+      // Ignore comments
+      if (md5_string->at(0) == '#')
+        continue;
 
       CHECK_EQ(static_cast<int>(md5_string->length()),
                kMD5StringLength) << *md5_string;
