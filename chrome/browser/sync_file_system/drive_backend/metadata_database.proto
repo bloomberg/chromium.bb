@@ -44,7 +44,7 @@ message FileDetails {
   optional int64 creation_time = 6;
   optional int64 modification_time = 7;
 
-  optional bool deleted = 8;
+  optional bool missing = 8;
   optional int64 change_id = 9;
 }
 

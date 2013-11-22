@@ -785,7 +785,7 @@ void MetadataDatabase::UpdateByChangeList(
     std::string file_id = file->file_id();
 
     MarkTrackersDirtyByFileID(file_id, batch.get());
-    if (!file->details().deleted())
+    if (!file->details().missing())
       MaybeAddTrackersForNewFile(*file, batch.get());
 
     if (FindTrackersByFileID(file_id, NULL)) {
@@ -818,7 +818,7 @@ void MetadataDatabase::UpdateByFileResource(
 
   // TODO(tzik): Consolidate with UpdateByChangeList.
   MarkTrackersDirtyByFileID(file_id, batch.get());
-  if (!file->details().deleted()) {
+  if (!file->details().missing()) {
     MaybeAddTrackersForNewFile(*file, batch.get());
 
     if (FindTrackersByFileID(file_id, NULL)) {
@@ -889,10 +889,10 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
 
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
 
-  if (updated_details.deleted()) {
+  if (updated_details.missing()) {
     // The update deletes the local file.
     FileByID::iterator found = file_by_id_.find(tracker->file_id());
-    if (found == file_by_id_.end() || found->second->details().deleted()) {
+    if (found == file_by_id_.end() || found->second->details().missing()) {
       // Both the tracker and metadata have the deleted flag, now it's safe to
       // delete the |tracker|.
       RemoveTracker(tracker->tracker_id(), batch.get());
@@ -1510,7 +1510,7 @@ bool MetadataDatabase::ShouldKeepDirty(const FileTracker& tracker) const {
 
   if (local_details.title() != remote_details.title())
     return true;
-  if (local_details.deleted() != remote_details.deleted())
+  if (local_details.missing() != remote_details.missing())
     return true;
 
   return false;

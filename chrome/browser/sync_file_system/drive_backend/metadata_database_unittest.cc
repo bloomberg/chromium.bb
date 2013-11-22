@@ -375,7 +375,7 @@ class MetadataDatabaseTest : public testing::Test {
         new google_apis::ChangeResource);
     change->set_change_id(file.details().change_id());
     change->set_file_id(file.file_id());
-    change->set_deleted(file.details().deleted());
+    change->set_deleted(file.details().missing());
     if (change->is_deleted())
       return change.Pass();
 

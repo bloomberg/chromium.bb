@@ -175,7 +175,7 @@ bool RegisterAppTask::FilterCandidates(const TrackerSet& trackers,
     if (tracker->synced_details().file_kind() != FILE_KIND_FOLDER)
       continue;
 
-    if (tracker->synced_details().deleted())
+    if (tracker->synced_details().missing())
       continue;
 
     if (oldest_tracker && CompareOnCTime(*oldest_tracker, *tracker))

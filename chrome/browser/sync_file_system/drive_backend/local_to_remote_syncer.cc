@@ -76,7 +76,7 @@ void LocalToRemoteSyncer::Run(const SyncStatusCallback& callback) {
 
   if (!remote_file_tracker_ ||
       !remote_file_tracker_->has_synced_details() ||
-      remote_file_tracker_->synced_details().deleted()) {
+      remote_file_tracker_->synced_details().missing()) {
     // Remote file is missing, deleted or not yet synced.
     HandleMissingRemoteFile(callback);
     return;
@@ -85,7 +85,7 @@ void LocalToRemoteSyncer::Run(const SyncStatusCallback& callback) {
   DCHECK(remote_file_tracker_);
   DCHECK(remote_file_tracker_->active());
   DCHECK(remote_file_tracker_->has_synced_details());
-  DCHECK(!remote_file_tracker_->synced_details().deleted());
+  DCHECK(!remote_file_tracker_->synced_details().missing());
 
   // An active tracker is found at the path.
   // Check if the local change conflicts a remote change, and resolve it if

@@ -67,7 +67,7 @@ void PopulateFileDetailsByFileResource(
   details->set_creation_time(file_resource.created_date().ToInternalValue());
   details->set_modification_time(
       file_resource.modified_date().ToInternalValue());
-  details->set_deleted(false);
+  details->set_missing(false);
 }
 
 scoped_ptr<FileMetadata> CreateFileMetadataFromFileResource(
@@ -80,7 +80,7 @@ scoped_ptr<FileMetadata> CreateFileMetadataFromFileResource(
   details->set_change_id(change_id);
 
   if (resource.labels().is_trashed()) {
-    details->set_deleted(true);
+    details->set_missing(true);
     return file.Pass();
   }
 
@@ -97,7 +97,7 @@ scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
   details->set_change_id(change.change_id());
 
   if (change.is_deleted()) {
-    details->set_deleted(true);
+    details->set_missing(true);
     return file.Pass();
   }
 

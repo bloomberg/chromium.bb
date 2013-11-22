@@ -146,15 +146,15 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
   DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
 
   if (!dirty_tracker_->has_synced_details() ||
-      dirty_tracker_->synced_details().deleted()) {
-    if (remote_details.deleted()) {
+      dirty_tracker_->synced_details().missing()) {
+    if (remote_details.missing()) {
       // Remote deletion to local missing file.
       if (dirty_tracker_->has_synced_details() &&
-          dirty_tracker_->synced_details().deleted()) {
+          dirty_tracker_->synced_details().missing()) {
         // This should be handled by MetadataDatabase.
-        // MetadataDatabase should drop a tracker that marked as deleted if
-        // corresponding file metadata is marked as deleted.
-        LOG(ERROR) << "Found a stray deleted tracker: "
+        // MetadataDatabase should drop a tracker that marked as missing if
+        // corresponding file metadata is marked as missing.
+        LOG(ERROR) << "Found a stray missing content tracker: "
                    << dirty_tracker_->file_id();
         NOTREACHED();
       }
@@ -162,7 +162,7 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
       callback.Run(SYNC_STATUS_OK);
       return;
     }
-    DCHECK(!remote_details.deleted());
+    DCHECK(!remote_details.missing());
 
     if (remote_details.file_kind() == FILE_KIND_UNSUPPORTED) {
       // All unsupported file must be inactive.
@@ -185,16 +185,16 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
     return;
   }
   DCHECK(dirty_tracker_->has_synced_details());
-  DCHECK(!dirty_tracker_->synced_details().deleted());
+  DCHECK(!dirty_tracker_->synced_details().missing());
   const FileDetails& synced_details = dirty_tracker_->synced_details();
 
-  if (remote_details.deleted()) {
+  if (remote_details.missing()) {
     HandleDeletion(callback);
     return;
   }
 
   // Most of remote_details field is valid from here.
-  DCHECK(!remote_details.deleted());
+  DCHECK(!remote_details.missing());
 
   if (synced_details.file_kind() != remote_details.file_kind()) {
     LOG(ERROR) << "Found type mismatch between remote and local file: "
@@ -301,11 +301,11 @@ void RemoteToLocalSyncer::HandleNewFile(const SyncStatusCallback& callback) {
   DCHECK(dirty_tracker_->active());
   DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
   DCHECK(!dirty_tracker_->has_synced_details() ||
-         dirty_tracker_->synced_details().deleted());
+         dirty_tracker_->synced_details().missing());
 
   DCHECK(remote_metadata_);
   DCHECK(remote_metadata_->has_details());
-  DCHECK(!remote_metadata_->details().deleted());
+  DCHECK(!remote_metadata_->details().missing());
   DCHECK_EQ(FILE_KIND_FILE, remote_metadata_->details().file_kind());
 
   Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile,
@@ -376,7 +376,7 @@ void RemoteToLocalSyncer::HandleNewFolder(const SyncStatusCallback& callback) {
 
   DCHECK(remote_metadata_);
   DCHECK(remote_metadata_->has_details());
-  DCHECK(!remote_metadata_->details().deleted());
+  DCHECK(!remote_metadata_->details().missing());
   DCHECK_EQ(FILE_KIND_FOLDER, remote_metadata_->details().file_kind());
 
   Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForNewFolder,
@@ -427,11 +427,11 @@ void RemoteToLocalSyncer::HandleDeletion(
   DCHECK(dirty_tracker_->active());
   DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
   DCHECK(dirty_tracker_->has_synced_details());
-  DCHECK(!dirty_tracker_->synced_details().deleted());
+  DCHECK(!dirty_tracker_->synced_details().missing());
 
   DCHECK(remote_metadata_);
   DCHECK(remote_metadata_->has_details());
-  DCHECK(remote_metadata_->details().deleted());
+  DCHECK(remote_metadata_->details().missing());
 
   Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForDeletion,
                      weak_ptr_factory_.GetWeakPtr(), callback));
@@ -475,12 +475,12 @@ void RemoteToLocalSyncer::HandleContentUpdate(
   DCHECK(dirty_tracker_->active());
   DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
   DCHECK(dirty_tracker_->has_synced_details());
-  DCHECK(!dirty_tracker_->synced_details().deleted());
+  DCHECK(!dirty_tracker_->synced_details().missing());
   DCHECK_EQ(FILE_KIND_FILE, dirty_tracker_->synced_details().file_kind());
 
   DCHECK(remote_metadata_);
   DCHECK(remote_metadata_->has_details());
-  DCHECK(!remote_metadata_->details().deleted());
+  DCHECK(!remote_metadata_->details().missing());
 
   DCHECK_NE(dirty_tracker_->synced_details().md5(),
             remote_metadata_->details().md5());
@@ -495,13 +495,13 @@ void RemoteToLocalSyncer::HandleFolderContentListing(
   DCHECK(dirty_tracker_->active());
   DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
   DCHECK(dirty_tracker_->has_synced_details());
-  DCHECK(!dirty_tracker_->synced_details().deleted());
+  DCHECK(!dirty_tracker_->synced_details().missing());
   DCHECK_EQ(FILE_KIND_FOLDER, dirty_tracker_->synced_details().file_kind());
   DCHECK(dirty_tracker_->needs_folder_listing());
 
   DCHECK(remote_metadata_);
   DCHECK(remote_metadata_->has_details());
-  DCHECK(!remote_metadata_->details().deleted());
+  DCHECK(!remote_metadata_->details().missing());
 
   // TODO(tzik): Replace this call with ChildList version.
   drive_service()->GetResourceListInDirectory(
@@ -550,7 +550,7 @@ void RemoteToLocalSyncer::HandleOfflineSolvable(
   DCHECK(dirty_tracker_->active());
   DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
   DCHECK(dirty_tracker_->has_synced_details());
-  DCHECK(!dirty_tracker_->synced_details().deleted());
+  DCHECK(!dirty_tracker_->synced_details().missing());
 
   DCHECK((dirty_tracker_->synced_details().file_kind() == FILE_KIND_FOLDER &&
           !dirty_tracker_->needs_folder_listing()) ||
@@ -560,7 +560,7 @@ void RemoteToLocalSyncer::HandleOfflineSolvable(
 
   DCHECK(remote_metadata_);
   DCHECK(remote_metadata_->has_details());
-  DCHECK(!remote_metadata_->details().deleted());
+  DCHECK(!remote_metadata_->details().missing());
 
   NOTIMPLEMENTED();
   callback.Run(SYNC_STATUS_FAILED);

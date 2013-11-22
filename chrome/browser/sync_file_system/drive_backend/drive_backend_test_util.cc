@@ -41,7 +41,7 @@ void ExpectEquivalentDetails(const FileDetails& left,
   EXPECT_EQ(left.etag(), right.etag());
   EXPECT_EQ(left.creation_time(), right.creation_time());
   EXPECT_EQ(left.modification_time(), right.modification_time());
-  EXPECT_EQ(left.deleted(), right.deleted());
+  EXPECT_EQ(left.missing(), right.missing());
   EXPECT_EQ(left.change_id(), right.change_id());
 }
 
@@ -90,7 +90,7 @@ void ExpectEquivalentResourceAndMetadata(
             base::Time::FromInternalValue(details.creation_time()));
   EXPECT_EQ(resource.modified_date(),
             base::Time::FromInternalValue(details.modification_time()));
-  EXPECT_EQ(resource.labels().is_trashed(), details.deleted());
+  EXPECT_EQ(resource.labels().is_trashed(), details.missing());
 }
 
 void ExpectEquivalentMetadataAndTracker(const FileMetadata& metadata,
