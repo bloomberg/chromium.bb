@@ -16,10 +16,9 @@
 
 
 // static
-InfoBarDelegate* PopupBlockedInfoBarDelegate::Create(
-    InfoBarService* infobar_service,
-    int num_popups) {
-  scoped_ptr<InfoBarDelegate> new_delegate(
+void PopupBlockedInfoBarDelegate::Create(InfoBarService* infobar_service,
+                                         int num_popups) {
+  scoped_ptr<InfoBarDelegate> infobar(
       new PopupBlockedInfoBarDelegate(infobar_service, num_popups));
 
   // See if there is an existing popup infobar already.
@@ -27,14 +26,14 @@ InfoBarDelegate* PopupBlockedInfoBarDelegate::Create(
   // will be shown once, then hide then be shown again.
   // This will be fixed once we have an in place replace infobar mechanism.
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
-    if (infobar_service->infobar_at(i)->AsPopupBlockedInfoBarDelegate()) {
-      return infobar_service->ReplaceInfoBar(
-          infobar_service->infobar_at(i),
-          new_delegate.PassAs<InfoBarDelegate>());
+    InfoBarDelegate* existing_infobar = infobar_service->infobar_at(i);
+    if (existing_infobar->AsPopupBlockedInfoBarDelegate()) {
+      infobar_service->ReplaceInfoBar(existing_infobar, infobar.Pass());
+      return;
     }
   }
 
-  return infobar_service->AddInfoBar(new_delegate.PassAs<InfoBarDelegate>());
+  infobar_service->AddInfoBar(infobar.Pass());
 }
 
 PopupBlockedInfoBarDelegate::~PopupBlockedInfoBarDelegate() {

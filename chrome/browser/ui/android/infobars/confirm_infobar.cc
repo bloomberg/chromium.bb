@@ -24,7 +24,6 @@ InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
 
 ConfirmInfoBar::ConfirmInfoBar(InfoBarService* owner, InfoBarDelegate* delegate)
     : InfoBarAndroid(owner, delegate),
-      delegate_(delegate->AsConfirmInfoBarDelegate()),
       java_confirm_delegate_() {
 }
 
@@ -40,12 +39,13 @@ base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
   base::android::ScopedJavaLocalRef<jstring> cancel_button_text =
       base::android::ConvertUTF16ToJavaString(
           env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+  ConfirmInfoBarDelegate* delegate = GetDelegate();
   base::android::ScopedJavaLocalRef<jstring> message_text =
       base::android::ConvertUTF16ToJavaString(
-          env, delegate_->GetMessageText());
+          env, delegate->GetMessageText());
   base::android::ScopedJavaLocalRef<jstring> link_text =
       base::android::ConvertUTF16ToJavaString(
-          env, delegate_->GetLinkText());
+          env, delegate->GetLinkText());
 
   return Java_ConfirmInfoBarDelegate_showConfirmInfoBar(
       env, java_confirm_delegate_.obj(), reinterpret_cast<intptr_t>(this),
@@ -54,11 +54,10 @@ base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
 }
 
 void ConfirmInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {
-  DCHECK(delegate_);
   if (!owner())
       return; // We're closing; don't call anything, it might access the owner.
 
-  if (delegate_->LinkClicked(NEW_FOREGROUND_TAB))
+  if (GetDelegate()->LinkClicked(NEW_FOREGROUND_TAB))
     RemoveSelf();
 }
 
@@ -66,17 +65,24 @@ void ConfirmInfoBar::ProcessButton(int action,
                                    const std::string& action_value) {
   if (!owner())
     return; // We're closing; don't call anything, it might access the owner.
+
   DCHECK((action == InfoBarAndroid::ACTION_OK) ||
       (action == InfoBarAndroid::ACTION_CANCEL));
+  ConfirmInfoBarDelegate* delegate = GetDelegate();
   if ((action == InfoBarAndroid::ACTION_OK) ?
-      delegate_->Accept() : delegate_->Cancel())
+      delegate->Accept() : delegate->Cancel())
     RemoveSelf();
+}
+
+ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {
+  return delegate()->AsConfirmInfoBarDelegate();
 }
 
 string16 ConfirmInfoBar::GetTextFor(
     ConfirmInfoBarDelegate::InfoBarButton button) {
-  return (delegate_->GetButtons() & button) ?
-      delegate_->GetButtonLabel(button) : string16();
+  ConfirmInfoBarDelegate* delegate = GetDelegate();
+  return (delegate->GetButtons() & button) ?
+      delegate->GetButtonLabel(button) : string16();
 }
 
 

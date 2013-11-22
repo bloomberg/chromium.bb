@@ -29,10 +29,7 @@ const int InfoBar::kDefaultBarTargetHeight = 36;
 // InfoBarAndroid -------------------------------------------------------------
 
 InfoBarAndroid::InfoBarAndroid(InfoBarService* owner, InfoBarDelegate* delegate)
-    : InfoBar(owner, delegate),
-      delegate_(delegate) {
-  DCHECK(delegate_);
-  DCHECK(delegate_->owner());
+    : InfoBar(owner, delegate) {
 }
 
 InfoBarAndroid::~InfoBarAndroid() {
@@ -60,13 +57,12 @@ void InfoBarAndroid::OnButtonClicked(JNIEnv* env,
                                      jobject obj,
                                      jint action,
                                      jstring action_value) {
-  DCHECK(delegate_);
   std::string value = base::android::ConvertJavaStringToUTF8(env, action_value);
   ProcessButton(action, value);
 }
 
 void InfoBarAndroid::OnCloseButtonClicked(JNIEnv* env, jobject obj) {
-  delegate_->InfoBarDismissed();
+  delegate()->InfoBarDismissed();
   RemoveSelf();
 }
 
@@ -78,8 +74,7 @@ void InfoBarAndroid::CloseJavaInfoBar() {
 }
 
 int InfoBarAndroid::GetEnumeratedIconId() {
-  DCHECK(delegate_);
-  return ResourceMapper::MapFromChromiumId(delegate_->GetIconID());
+  return ResourceMapper::MapFromChromiumId(delegate()->GetIconID());
 }
 
 

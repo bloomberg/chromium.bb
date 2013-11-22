@@ -70,8 +70,6 @@ class InfoBarAndroid : public InfoBar {
   void CloseInfoBar();
 
  private:
-  // The InfoBar's delegate.
-  InfoBarDelegate* delegate_;
   base::android::ScopedJavaGlobalRef<jobject> java_info_bar_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarAndroid);

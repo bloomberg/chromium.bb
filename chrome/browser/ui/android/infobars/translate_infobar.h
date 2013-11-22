@@ -37,7 +37,8 @@ class TranslateInfoBar : public InfoBarAndroid {
   void SetJavaDelegate(jobject delegate);
   bool ShouldDisplayNeverTranslateInfoBarOnCancel();
 
-  TranslateInfoBarDelegate* delegate_;
+  TranslateInfoBarDelegate* GetDelegate();
+
   base::android::ScopedJavaGlobalRef<jobject> java_translate_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBar);

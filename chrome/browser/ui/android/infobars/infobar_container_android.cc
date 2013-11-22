@@ -72,10 +72,8 @@ void InfoBarContainerAndroid::AttachJavaInfoBar(InfoBarAndroid* android_bar) {
 void InfoBarContainerAndroid::PlatformSpecificReplaceInfoBar(
     InfoBar* old_infobar,
     InfoBar* new_infobar) {
-  InfoBarAndroid* new_android_bar = static_cast<InfoBarAndroid*>(new_infobar);
-  InfoBarAndroid* old_android_bar = (old_infobar == NULL) ?
-      NULL : static_cast<InfoBarAndroid*>(old_infobar);
-  new_android_bar->PassJavaInfoBar(old_android_bar);
+  static_cast<InfoBarAndroid*>(new_infobar)->PassJavaInfoBar(
+      static_cast<InfoBarAndroid*>(old_infobar));
 }
 
 void InfoBarContainerAndroid::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
