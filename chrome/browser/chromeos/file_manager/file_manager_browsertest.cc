@@ -723,8 +723,13 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     TabIndex,
     FileManagerBrowserTest,
-    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
-                                    "searchBoxFocus")));
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "searchBoxFocus")));
+
+INSTANTIATE_TEST_CASE_P(
+    Thumbnails,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "thumbnailsDownloads"),
+                      TestParameter(IN_GUEST_MODE, "thumbnailsDownloads")));
 
 }  // namespace
 }  // namespace file_manager
