@@ -149,9 +149,15 @@ void ProxyDecryptor::AddKey(const uint8* key,
   // Clear Key using v0.1b, both arrays are used (|init_data| is key_id).
   // Since the EME WD spec supports the key as a JSON Web Key,
   // convert the 2 arrays to a JWK and pass it as the single array.
-  // TODO(jrummell): When updating Decryptor interface to match WD, move the
-  // workaround for handling |init_data| == null here.
-  if (is_clear_key_ && init_data_length) {
+  if (is_clear_key_) {
+    // Decryptor doesn't support empty key ID (see http://crbug.com/123265).
+    // So ensure a non-empty value is passed.
+    if (!init_data) {
+      static const uint8 kDummyInitData[1] = {0};
+      init_data = kDummyInitData;
+      init_data_length = arraysize(kDummyInitData);
+    }
+
     std::string jwk =
         media::GenerateJWKSet(key, key_length, init_data, init_data_length);
     DCHECK(!jwk.empty());

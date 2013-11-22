@@ -38,12 +38,8 @@ const uint8 kKeyId[] = {
     0x00, 0x01, 0x02, 0x03
 };
 
-const uint8 kKey[] = {
-    // base64 equivalent is BAUGBwgJCgsMDQ4PEBESEw
-    0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,
-    0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13
-};
-
+// Key is 0x0405060708090a0b0c0d0e0f10111213,
+// base64 equivalent is BAUGBwgJCgsMDQ4PEBESEw.
 const char kKeyAsJWK[] =
     "{"
     "  \"keys\": ["
@@ -225,25 +221,6 @@ class AesDecryptorTest : public testing::Test {
     KEY_ERROR
   };
 
-  void AddRawKeyAndExpect(const std::vector<uint8>& key_id,
-                          const std::vector<uint8>& key,
-                          AddKeyExpectation result) {
-    // TODO(jrummell): Remove once raw keys no longer supported.
-    DCHECK(!key_id.empty());
-    DCHECK(!key.empty());
-
-    if (result == KEY_ADDED) {
-      EXPECT_CALL(*this, KeyAdded(reference_id_));
-    } else if (result == KEY_ERROR) {
-      EXPECT_CALL(*this, KeyError(reference_id_, MediaKeys::kUnknownError, 0));
-    } else {
-      NOTREACHED();
-    }
-
-    decryptor_.AddKey(
-        reference_id_, &key[0], key.size(), &key_id[0], key_id.size());
-  }
-
   void AddKeyAndExpect(const std::string& key, AddKeyExpectation result) {
     DCHECK(!key.empty());
 
@@ -416,10 +393,6 @@ TEST_F(AesDecryptorTest, KeyReplacement) {
 TEST_F(AesDecryptorTest, WrongSizedKey) {
   GenerateKeyRequest(key_id_);
   AddKeyAndExpect(kWrongSizedKeyAsJWK, KEY_ERROR);
-
-  // Repeat for a raw key. Use "-1" to create a wrong sized key.
-  std::vector<uint8> wrong_sized_key(kKey, kKey + arraysize(kKey) - 1);
-  AddRawKeyAndExpect(key_id_, wrong_sized_key, KEY_ERROR);
 }
 
 TEST_F(AesDecryptorTest, MultipleKeysAndFrames) {
@@ -685,17 +658,6 @@ TEST_F(AesDecryptorTest, JWKKey) {
       "  ]"
       "}";
   AddKeyAndExpect(key8, KEY_ERROR);
-}
-
-TEST_F(AesDecryptorTest, RawKey) {
-  // Verify that v0.1b keys (raw key) is still supported. Raw keys are
-  // 16 bytes long. Use the undecoded value of |kKey|.
-  GenerateKeyRequest(key_id_);
-  AddRawKeyAndExpect(
-      key_id_, std::vector<uint8>(kKey, kKey + arraysize(kKey)), KEY_ADDED);
-  scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
-      encrypted_data_, key_id_, iv_, 0, no_subsample_entries_);
-  DecryptAndExpect(encrypted_buffer, original_data_, SUCCESS);
 }
 
 }  // namespace media

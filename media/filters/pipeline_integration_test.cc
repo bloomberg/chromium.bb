@@ -14,6 +14,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 #include "media/cdm/aes_decryptor.h"
+#include "media/cdm/json_web_key.h"
 #include "media/filters/chunk_demuxer.h"
 
 using testing::AnyNumber;
@@ -189,9 +190,12 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
       key_id_length = arraysize(kKeyId);
     }
 
+    // Convert key into a JSON structure and then add it.
+    std::string jwk = GenerateJWKSet(
+        kSecretKey, arraysize(kSecretKey), key_id, key_id_length);
     decryptor->AddKey(current_reference_id_,
-                      kSecretKey, arraysize(kSecretKey),
-                      key_id, key_id_length);
+                      reinterpret_cast<const uint8*>(jwk.data()), jwk.size(),
+                      NULL, 0);
   }
 
   uint32 current_reference_id_;

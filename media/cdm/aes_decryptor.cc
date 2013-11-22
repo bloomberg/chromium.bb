@@ -300,59 +300,34 @@ void AesDecryptor::AddKey(uint32 reference_id,
                           int init_data_length) {
   CHECK(key);
   CHECK_GT(key_length, 0);
+  DCHECK(!init_data);
+  DCHECK_EQ(init_data_length, 0);
 
   // AddKey() is called from update(), where the key(s) are passed as a JSON
   // Web Key (JWK) set. Each JWK needs to be a symmetric key ('kty' = "oct"),
   // with 'kid' being the base64-encoded key id, and 'k' being the
   // base64-encoded key.
-  //
-  // For backwards compatibility with v0.1b of the spec (where |key| is the raw
-  // key and |init_data| is the key id), if |key| is not valid JSON, then
-  // attempt to process it as a raw key.
-
   std::string key_string(reinterpret_cast<const char*>(key), key_length);
   JWKKeys jwk_keys;
-  if (ExtractJWKKeys(key_string, &jwk_keys)) {
-    // Since |key| represents valid JSON, init_data must be empty.
-    DCHECK(!init_data);
-    DCHECK_EQ(init_data_length, 0);
+  if (!ExtractJWKKeys(key_string, &jwk_keys)) {
+    key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
+    return;
+  }
 
-    // Make sure that at least one key was extracted.
-    if (jwk_keys.empty()) {
-      key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
-      return;
-    }
-    for (JWKKeys::iterator it = jwk_keys.begin() ; it != jwk_keys.end(); ++it) {
-      if (!AddDecryptionKey(it->first, it->second)) {
-        key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
-        return;
-      }
-    }
-  } else {
-    // v0.1b backwards compatibility support.
-    // TODO(jrummell): Remove this code once v0.1b no longer supported.
+  // Make sure that at least one key was extracted.
+  if (jwk_keys.empty()) {
+    key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
+    return;
+  }
 
-    if (key_string.length() !=
+  for (JWKKeys::iterator it = jwk_keys.begin() ; it != jwk_keys.end(); ++it) {
+    if (it->second.length() !=
         static_cast<size_t>(DecryptConfig::kDecryptionKeySize)) {
       DVLOG(1) << "Invalid key length: " << key_string.length();
       key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
       return;
     }
-
-    // TODO(xhwang): Fix the decryptor to accept no |init_data|. See
-    // http://crbug.com/123265. Until then, ensure a non-empty value is passed.
-    static const uint8 kDummyInitData[1] = {0};
-    if (!init_data) {
-      init_data = kDummyInitData;
-      init_data_length = arraysize(kDummyInitData);
-    }
-
-    // TODO(xhwang): For now, use |init_data| for key ID. Make this more spec
-    // compliant later (http://crbug.com/123262, http://crbug.com/123265).
-    std::string key_id_string(reinterpret_cast<const char*>(init_data),
-                              init_data_length);
-    if (!AddDecryptionKey(key_id_string, key_string)) {
-      // Error logged in AddDecryptionKey()
+    if (!AddDecryptionKey(it->first, it->second)) {
       key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
       return;
     }
