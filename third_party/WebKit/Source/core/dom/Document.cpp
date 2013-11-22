@@ -2467,7 +2467,6 @@ void Document::dispatchUnloadEvents()
                 m_frame->domWindow()->dispatchEvent(unloadEvent, m_frame->document());
             }
         }
-        updateStyleIfNeeded();
         m_loadEventProgress = UnloadEventHandled;
     }
 
