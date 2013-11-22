@@ -265,6 +265,8 @@ destroy_surface(struct wl_resource *resource)
 {
 	struct nested_surface *surface = wl_resource_get_user_data(resource);
 
+	wl_list_remove(&surface->link);
+
 	free(surface);
 }
 
