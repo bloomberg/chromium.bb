@@ -230,6 +230,8 @@
         'test/base/chrome_process_util_mac.cc',
         'test/base/chrome_render_view_host_test_harness.cc',
         'test/base/chrome_render_view_host_test_harness.h',
+        'test/base/chrome_test_launcher.cc',
+        'test/base/chrome_test_launcher.h',
         'test/base/chrome_test_suite.cc',
         'test/base/chrome_test_suite.h',
         'test/base/find_in_page_observer.cc',

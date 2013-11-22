@@ -62,24 +62,6 @@
   ],
   'targets': [
     {
-      'target_name': 'test_support_chrome',
-      'type': 'static_library',
-      'dependencies': [
-        'test_support_common',
-        '../testing/gtest.gyp:gtest',
-      ],
-      'export_dependent_settings': [
-        'test_support_common',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/base/chrome_test_launcher.cc',
-        'test/base/chrome_test_launcher.h',
-      ],
-    },
-    {
       'target_name': 'test_support_ui_runner',
       'type': 'static_library',
       'dependencies': [
@@ -157,7 +139,6 @@
         'common/extensions/api/api.gyp:api',
         'debugger',
         'renderer',
-        'test_support_chrome',
         'test_support_common',
         # NOTE: don't add test_support_ui, no more UITests. See
         # http://crbug.com/137365
@@ -927,7 +908,6 @@
         'common/extensions/api/api.gyp:api',
         'renderer',
         'test/perf/perf_test.gyp:*',
-        'test_support_chrome',
         'test_support_common',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -2056,7 +2036,6 @@
         'chrome_resources.gyp:packed_resources',
         'renderer',
         'test/perf/perf_test.gyp:*',
-        'test_support_chrome',
         'test_support_common',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -2324,7 +2303,6 @@
         'common',
         'common/extensions/api/api.gyp:api',
         'renderer',
-        'test_support_chrome',
         'test_support_common',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
@@ -2511,7 +2489,6 @@
         'chrome',
         'common/extensions/api/api.gyp:api',
         'test/perf/perf_test.gyp:*',
-        'test_support_chrome',
         'test_support_common',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',
