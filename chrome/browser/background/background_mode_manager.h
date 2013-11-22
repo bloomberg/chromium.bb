@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
@@ -29,6 +30,8 @@ class StatusTray;
 namespace extensions {
 class Extension;
 }
+
+typedef std::vector<int> CommandIdExtensionVector;
 
 // BackgroundModeManager is responsible for switching Chrome into and out of
 // "background mode" and for providing UI for the user to exit Chrome when there
@@ -101,14 +104,16 @@ class BackgroundModeManager
                            ProfileInfoCacheObserver);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            BackgroundMenuGeneration);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
+                           BackgroundMenuGenerationMultipleProfile);
   FRIEND_TEST_ALL_PREFIXES(BackgroundAppBrowserTest,
                            ReloadBackgroundApp);
 
   class BackgroundModeData : public StatusIconMenuModel::Delegate {
    public:
     explicit BackgroundModeData(
-        int command_id,
-        Profile* profile);
+        Profile* profile,
+        CommandIdExtensionVector* command_id_extension_vector);
     virtual ~BackgroundModeData();
 
     // The cached list of BackgroundApplications.
@@ -145,14 +150,17 @@ class BackgroundModeManager
                                           const BackgroundModeData* bmd2);
 
    private:
-    // Command id for the sub menu for this BackgroundModeData.
-    int command_id_;
-
     // Name associated with this profile which is used to label its submenu.
     string16 name_;
 
     // The profile associated with this background app data.
     Profile* profile_;
+
+    // Weak ref vector owned by BackgroundModeManager where the
+    // indices correspond to Command IDs and values correspond to
+    // extension indices. A value of -1 indicates no extension is associated
+    // with the index.
+    CommandIdExtensionVector* command_id_extension_vector_;
   };
 
   // Ideally we would want our BackgroundModeData to be scoped_ptrs,
@@ -292,6 +300,12 @@ class BackgroundModeManager
   // The profile-keyed data for this background mode manager. Keyed on profile.
   BackgroundModeInfoMap background_mode_data_;
 
+  // Contains the dynamic Command IDs for the entire background menu.
+  CommandIdExtensionVector command_id_extension_vector_;
+
+  // Maintains submenu lifetime for the multiple profile context menu.
+  ScopedVector<StatusIconMenuModel> submenus;
+
   // Reference to our status tray. If null, the platform doesn't support status
   // icons.
   StatusTray* status_tray_;
@@ -323,9 +337,6 @@ class BackgroundModeManager
 
   // Set to true when background mode is keeping Chrome alive.
   bool keeping_alive_;
-
-  // Provides a command id for each profile as they are created.
-  int current_command_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundModeManager);
 };
