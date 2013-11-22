@@ -54,6 +54,23 @@ class StyleSheetCollection;
 class StyleSheetContents;
 class StyleSheetList;
 
+class StyleResolverChange {
+public:
+    StyleResolverChange()
+        : m_needsRepaint(false)
+        , m_needsStyleRecalc(false)
+    { }
+
+    bool needsRepaint() const { return m_needsRepaint; }
+    bool needsStyleRecalc() const { return m_needsStyleRecalc; }
+    void setNeedsRepaint() { m_needsRepaint = true; }
+    void setNeedsStyleRecalc() { m_needsStyleRecalc = true; }
+
+private:
+    bool m_needsRepaint;
+    bool m_needsStyleRecalc;
+};
+
 class StyleEngine {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -156,7 +173,7 @@ public:
     void didAttach();
     void didDetach();
     bool shouldClearResolver() const;
-    bool resolverChanged(StyleResolverUpdateMode);
+    StyleResolverChange resolverChanged(StyleResolverUpdateMode);
     unsigned resolverAccessCount() const;
 
 private:

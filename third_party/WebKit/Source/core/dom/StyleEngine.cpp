@@ -446,10 +446,25 @@ bool StyleEngine::shouldClearResolver() const
     return !m_didCalculateResolver && !haveStylesheetsLoaded();
 }
 
-bool StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
+StyleResolverChange StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
 {
+    StyleResolverChange change;
+
+    // Don't bother updating, since we haven't loaded all our style info yet
+    // and haven't calculated the style selector for the first time.
+    if (!m_document.isActive() || shouldClearResolver()) {
+        clearResolver();
+        return change;
+    }
+
     m_didCalculateResolver = true;
-    return updateActiveStyleSheets(mode);
+    if (m_document.didLayoutWithPendingStylesheets() && !hasPendingSheets())
+        change.setNeedsRepaint();
+
+    if (updateActiveStyleSheets(mode))
+        change.setNeedsStyleRecalc();
+
+    return change;
 }
 
 }

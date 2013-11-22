@@ -3169,23 +3169,16 @@ void Document::evaluateMediaQueryList()
 
 void Document::styleResolverChanged(RecalcStyleTime updateTime, StyleResolverUpdateMode updateMode)
 {
-    // Don't bother updating, since we haven't loaded all our style info yet
-    // and haven't calculated the style selector for the first time.
-    if (!isActive() || m_styleEngine->shouldClearResolver()) {
-        m_styleEngine->clearResolver();
-        return;
-    }
+    StyleResolverChange change = m_styleEngine->resolverChanged(updateMode);
 
-    bool needsRecalc = m_styleEngine->resolverChanged(updateMode);
-
-    if (didLayoutWithPendingStylesheets() && !m_styleEngine->hasPendingSheets()) {
+    if (change.needsRepaint()) {
         // We need to manually repaint because we avoid doing all repaints in layout or style
         // recalc while sheets are still loading to avoid FOUC.
         m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
         renderView()->repaintViewAndCompositedLayers();
     }
 
-    if (!needsRecalc)
+    if (!change.needsStyleRecalc())
         return;
 
     m_evaluateMediaQueriesOnStyleRecalc = true;
