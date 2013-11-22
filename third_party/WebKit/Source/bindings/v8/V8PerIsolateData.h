@@ -29,6 +29,7 @@
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/WrapperTypeInfo.h"
+#include "gin/public/gin_embedders.h"
 #include <v8.h>
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -58,8 +59,8 @@ public:
     static V8PerIsolateData* from(v8::Isolate* isolate)
     {
         ASSERT(isolate);
-        ASSERT(isolate->GetData());
-        return static_cast<V8PerIsolateData*>(isolate->GetData());
+        ASSERT(isolate->GetData(gin::kEmbedderBlink));
+        return static_cast<V8PerIsolateData*>(isolate->GetData(gin::kEmbedderBlink));
     }
     static void dispose(v8::Isolate*);
 

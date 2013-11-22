@@ -58,16 +58,16 @@ V8PerIsolateData::~V8PerIsolateData()
 V8PerIsolateData* V8PerIsolateData::create(v8::Isolate* isolate)
 {
     ASSERT(isolate);
-    ASSERT(!isolate->GetData());
+    ASSERT(!isolate->GetData(gin::kEmbedderBlink));
     V8PerIsolateData* data = new V8PerIsolateData(isolate);
-    isolate->SetData(data);
+    isolate->SetData(gin::kEmbedderBlink, data);
     return data;
 }
 
 void V8PerIsolateData::ensureInitialized(v8::Isolate* isolate)
 {
     ASSERT(isolate);
-    if (!isolate->GetData())
+    if (!isolate->GetData(gin::kEmbedderBlink))
         create(isolate);
 }
 
@@ -80,9 +80,9 @@ v8::Persistent<v8::Value>& V8PerIsolateData::ensureLiveRoot()
 
 void V8PerIsolateData::dispose(v8::Isolate* isolate)
 {
-    void* data = isolate->GetData();
+    void* data = isolate->GetData(gin::kEmbedderBlink);
     delete static_cast<V8PerIsolateData*>(data);
-    isolate->SetData(0);
+    isolate->SetData(gin::kEmbedderBlink, 0);
 }
 
 v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
