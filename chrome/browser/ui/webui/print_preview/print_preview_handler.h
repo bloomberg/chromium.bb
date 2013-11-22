@@ -104,6 +104,9 @@ class PrintPreviewHandler
       const local_discovery::PrivetLocalPrintOperation* print_operation,
         int http_code) OVERRIDE;
 #endif  // ENABLE_MDNS
+  int regenerate_preview_request_count() const {
+    return regenerate_preview_request_count_;
+  }
 
  private:
   class AccessTokenService;
