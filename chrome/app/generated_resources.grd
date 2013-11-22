@@ -15826,6 +15826,14 @@ Do you accept?
     <message name="IDS_TOOLTIP_TAB_MEDIA_STATE_AUDIO_PLAYING" desc="Extra tool tip text, when the tab is playing audio.">
       This tab is playing audio.
     </message>
+
+    <!-- ProcessSingleton -->
+    <message name="IDS_PROFILE_IN_USE_LINUX_QUIT" desc="Text of button in profile in use dialog to quit without doing anything.">
+      Quit
+    </message>
+    <message name="IDS_PROFILE_IN_USE_LINUX_RELAUNCH" desc="Text of button in dialog to delete the profile lock file.">
+      Unlock Profile and Relaunch
+    </message>
   </messages>
 
   <structures fallback_to_english="true">

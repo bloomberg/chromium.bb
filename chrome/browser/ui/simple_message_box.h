@@ -16,10 +16,11 @@ enum MessageBoxResult {
 };
 
 enum MessageBoxType {
-  MESSAGE_BOX_TYPE_INFORMATION, // Shows an OK button.
-  MESSAGE_BOX_TYPE_WARNING,     // Shows an OK button.
-  MESSAGE_BOX_TYPE_QUESTION,    // Shows YES and NO buttons.
-  MESSAGE_BOX_TYPE_OK_CANCEL,   // Shows OK and CANCEL buttons (Windows only).
+  MESSAGE_BOX_TYPE_INFORMATION,  // Shows an OK button.
+  MESSAGE_BOX_TYPE_WARNING,      // Shows an OK button.
+  MESSAGE_BOX_TYPE_QUESTION,     // Shows YES and NO buttons.
+  MESSAGE_BOX_TYPE_OK_CANCEL,    // Shows OK and CANCEL buttons (Windows or aura
+                                 // only).
 };
 
 // Shows a dialog box with the given |title| and |message|. If |parent| is
@@ -33,6 +34,19 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 const string16& title,
                                 const string16& message,
                                 MessageBoxType type);
+
+// Shows a dialog box with the given |title| and |message|, and with two buttons
+// labeled with |yes_text| and |no_text|. If |parent| is non-NULL, the box will
+// be made modal to the |parent|.  (Aura only.)
+//
+// NOTE: In general, you should avoid this since it's usually poor UI.
+// We have a variety of other surfaces such as wrench menu notifications and
+// infobars; consult the UI leads for a recommendation.
+MessageBoxResult ShowMessageBoxWithButtonText(gfx::NativeWindow parent,
+                                              const string16& title,
+                                              const string16& message,
+                                              const string16& yes_text,
+                                              const string16& no_text);
 
 }  // namespace chrome
 

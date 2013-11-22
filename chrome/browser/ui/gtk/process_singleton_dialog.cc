@@ -2,21 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/process_singleton_dialog.h"
+#include "chrome/browser/ui/process_singleton_dialog_linux.h"
 
 #include <gtk/gtk.h>
 
+#include <string>
+
+#include "base/basictypes.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/l10n/l10n_util.h"
 
-// static
-bool ProcessSingletonDialog::ShowAndRun(const std::string& message,
-                                        const std::string& relaunch_text) {
-  ProcessSingletonDialog dialog(message, relaunch_text);
-  return dialog.GetResponseId() == GTK_RESPONSE_ACCEPT;
-}
+namespace {
+
+class ProcessSingletonDialog {
+ public:
+  ProcessSingletonDialog(const std::string& message,
+                         const std::string& relaunch_text);
+
+  int GetResponseId() const { return response_id_; }
+
+ private:
+  CHROMEGTK_CALLBACK_1(ProcessSingletonDialog, void, OnResponse, int);
+
+  GtkWidget* dialog_;
+  int response_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessSingletonDialog);
+};
 
 ProcessSingletonDialog::ProcessSingletonDialog(
     const std::string& message,
@@ -47,4 +63,13 @@ void ProcessSingletonDialog::OnResponse(GtkWidget* dialog, int response_id) {
   response_id_ = response_id;
   gtk_widget_destroy(dialog_);
   base::MessageLoop::current()->Quit();
+}
+
+}  // namespace
+
+bool ShowProcessSingletonDialog(const string16& message,
+                                const string16& relaunch_text) {
+  ProcessSingletonDialog dialog(base::UTF16ToUTF8(message),
+                                base::UTF16ToUTF8(relaunch_text));
+  return dialog.GetResponseId() == GTK_RESPONSE_ACCEPT;
 }

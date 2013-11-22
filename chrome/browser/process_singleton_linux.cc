@@ -77,9 +77,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/process_singleton_dialog.h"
-#endif
+#include "chrome/browser/ui/process_singleton_dialog_linux.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
@@ -305,14 +303,8 @@ bool DisplayProfileInUseError(const base::FilePath& lock_path,
   string16 relaunch_button_text = l10n_util::GetStringUTF16(
       IDS_PROFILE_IN_USE_LINUX_RELAUNCH);
   LOG(ERROR) << base::SysWideToNativeMB(UTF16ToWide(error)).c_str();
-  if (!g_disable_prompt) {
-#if defined(TOOLKIT_GTK)
-    return ProcessSingletonDialog::ShowAndRun(
-        UTF16ToUTF8(error), UTF16ToUTF8(relaunch_button_text));
-#else
-    NOTIMPLEMENTED();
-#endif
-  }
+  if (!g_disable_prompt)
+    return ShowProcessSingletonDialog(error, relaunch_button_text);
   return false;
 }
 

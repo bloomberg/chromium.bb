@@ -42,7 +42,9 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
  public:
   SimpleMessageBoxViews(const string16& title,
                         const string16& message,
-                        MessageBoxType type);
+                        MessageBoxType type,
+                        const string16& yes_text,
+                        const string16& no_text);
 
   MessageBoxResult result() const { return result_; }
 
@@ -69,6 +71,8 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
 
   const string16 window_title_;
   const MessageBoxType type_;
+  string16 yes_text_;
+  string16 no_text_;
   MessageBoxResult result_;
   views::MessageBoxView* message_box_view_;
 
@@ -84,14 +88,36 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
 
 SimpleMessageBoxViews::SimpleMessageBoxViews(const string16& title,
                                              const string16& message,
-                                             MessageBoxType type)
+                                             MessageBoxType type,
+                                             const string16& yes_text,
+                                             const string16& no_text)
     : window_title_(title),
       type_(type),
+      yes_text_(yes_text),
+      no_text_(no_text),
       result_(MESSAGE_BOX_RESULT_NO),
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(message))),
       should_show_dialog_(true) {
   AddRef();
+
+  if (yes_text_.empty()) {
+    if (type_ == MESSAGE_BOX_TYPE_QUESTION)
+      yes_text_ =
+          l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
+    else if (type_ == MESSAGE_BOX_TYPE_OK_CANCEL)
+      yes_text_ = l10n_util::GetStringUTF16(IDS_OK);
+    else
+      yes_text_ = l10n_util::GetStringUTF16(IDS_OK);
+  }
+
+  if (no_text_.empty()) {
+    if (type_ == MESSAGE_BOX_TYPE_QUESTION)
+      no_text_ =
+          l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
+    else if (type_ == MESSAGE_BOX_TYPE_OK_CANCEL)
+      no_text_ = l10n_util::GetStringUTF16(IDS_CANCEL);
+  }
 }
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
@@ -105,18 +131,9 @@ int SimpleMessageBoxViews::GetDialogButtons() const {
 
 string16 SimpleMessageBoxViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  if (type_ == MESSAGE_BOX_TYPE_QUESTION) {
-    return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
-        IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL :
-        IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
-  }
-
-  if (type_ == MESSAGE_BOX_TYPE_OK_CANCEL) {
-    return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
-        IDS_OK : IDS_CANCEL);
-  }
-
-  return l10n_util::GetStringUTF16(IDS_OK);
+  if (button == ui::DIALOG_BUTTON_CANCEL)
+    return no_text_;
+  return yes_text_;
 }
 
 bool SimpleMessageBoxViews::Cancel() {
@@ -171,12 +188,13 @@ bool SimpleMessageBoxViews::Dispatch(const base::NativeEvent& event) {
 SimpleMessageBoxViews::~SimpleMessageBoxViews() {
 }
 
-}  // namespace
+MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
+                                    const string16& title,
+                                    const string16& message,
+                                    MessageBoxType type,
+                                    const string16& yes_text,
+                                    const string16& no_text) {
 
-MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
-                                const string16& title,
-                                const string16& message,
-                                MessageBoxType type) {
 #if defined(USE_AURA) && defined(OS_WIN)
   // If we're very early, we can't show a GPU-based dialog, so fallback to
   // plain Windows MessageBox.
@@ -185,7 +203,7 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
 #endif
 
   scoped_refptr<SimpleMessageBoxViews> dialog(
-      new SimpleMessageBoxViews(title, message, type));
+      new SimpleMessageBoxViews(title, message, type, yes_text, no_text));
   CreateBrowserModalDialogViews(dialog.get(), parent)->Show();
 
 #if defined(USE_AURA)
@@ -210,5 +228,26 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
 #endif
   return dialog->result();
 }
+
+}  // namespace
+
+MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
+                                const string16& title,
+                                const string16& message,
+                                MessageBoxType type) {
+  return ShowMessageBoxImpl(
+      parent, title, message, type, string16(), string16());
+}
+
+#if defined(USE_AURA)
+MessageBoxResult ShowMessageBoxWithButtonText(gfx::NativeWindow parent,
+                                              const string16& title,
+                                              const string16& message,
+                                              const string16& yes_text,
+                                              const string16& no_text) {
+  return ShowMessageBoxImpl(
+      parent, title, message, MESSAGE_BOX_TYPE_QUESTION, yes_text, no_text);
+}
+#endif
 
 }  // namespace chrome

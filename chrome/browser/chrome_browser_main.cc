@@ -1164,6 +1164,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         static_cast<int>(chrome::RESULT_CODE_SHELL_INTEGRATION_FAILED);
   }
 
+#if defined(USE_AURA)
+  // Env creates the compositor. Aura widgets need the compositor to be created
+  // before they can be initialized by the browser.
+  aura::Env::CreateInstance();
+#endif
+
   // Android doesn't support extensions and doesn't implement ProcessSingleton.
 #if !defined(OS_ANDROID)
   // If the command line specifies --pack-extension, attempt the pack extension
@@ -1264,12 +1270,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     return content::RESULT_CODE_NORMAL_EXIT;
 #endif  // defined(OS_WIN)
   }
-
-#if defined(USE_AURA)
-  // Env creates the compositor. Aura widgets need the compositor to be created
-  // before they can be initialized by the browser.
-  aura::Env::CreateInstance();
-#endif
 
   // Profile creation ----------------------------------------------------------
 
