@@ -26,11 +26,12 @@ namespace {
 // If we're attempting to read a partial request, but the server returns a full
 // request, we need to read all of the data up to the start of our partial
 // request into a dummy buffer. This is the maximum size of that buffer.
-const size_t MAX_READ_BUFFER_SIZE = 64 * 1024;
+const int MAX_READ_BUFFER_SIZE = 64 * 1024;
 const int32_t STATUSCODE_OK = 200;
 const int32_t STATUSCODE_PARTIAL_CONTENT = 206;
 const int32_t STATUSCODE_FORBIDDEN = 403;
 const int32_t STATUSCODE_NOT_FOUND = 404;
+const int32_t STATUSCODE_REQUESTED_RANGE_NOT_SATISFIABLE = 416;
 
 StringMap_t ParseHeaders(const char* headers, int32_t headers_length) {
   enum State {
@@ -163,55 +164,7 @@ Error MountNodeHttp::GetDents(size_t offs,
 
 Error MountNodeHttp::GetStat(struct stat* stat) {
   AUTO_LOCK(node_lock_);
-
-  // Assume we need to 'HEAD' if we do not know the size, otherwise, assume
-  // that the information is constant.  We can add a timeout if needed.
-  MountHttp* mount = static_cast<MountHttp*>(mount_);
-  if (stat_.st_size == 0 || !mount->cache_stat_) {
-    StringMap_t headers;
-    PP_Resource loader;
-    PP_Resource request;
-    PP_Resource response;
-    int32_t statuscode;
-    StringMap_t response_headers;
-    Error error = OpenUrl("HEAD",
-                          &headers,
-                          &loader,
-                          &request,
-                          &response,
-                          &statuscode,
-                          &response_headers);
-    if (error)
-      return error;
-
-    ScopedResource scoped_loader(mount_->ppapi(), loader);
-    ScopedResource scoped_request(mount_->ppapi(), request);
-    ScopedResource scoped_response(mount_->ppapi(), response);
-
-    size_t entity_length;
-    if (ParseContentLength(response_headers, &entity_length)) {
-      SetCachedSize(static_cast<off_t>(entity_length));
-    } else if (cache_content_ && !has_cached_size_) {
-      error = DownloadToCache();
-      if (error)
-        return error;
-    } else {
-      // Don't use SetCachedSize here -- it is actually unknown.
-      stat_.st_size = 0;
-    }
-
-    stat_.st_atime = 0;  // TODO(binji): Use "Last-Modified".
-    stat_.st_mtime = 0;
-    stat_.st_ctime = 0;
-
-    stat_.st_mode |= S_IFREG;
-  }
-
-  // Fill the stat structure if provided
-  if (stat)
-    *stat = stat_;
-
-  return 0;
+  return GetStat_Locked(stat);
 }
 
 Error MountNodeHttp::Read(const HandleAttr& attr,
@@ -251,15 +204,10 @@ Error MountNodeHttp::GetSize(size_t* out_size) {
   // TODO(binji): This value should be cached properly; i.e. obey the caching
   // headers returned by the server.
   AUTO_LOCK(node_lock_);
-  if (!has_cached_size_) {
-    // Even if DownloadToCache fails, the best result we can return is what
-    // was written to stat_.st_size.
-    if (cache_content_) {
-      Error error = DownloadToCache();
-      if (error)
-        return error;
-    }
-  }
+  struct stat statbuf;
+  Error error = GetStat_Locked(&statbuf);
+  if (error)
+    return error;
 
   *out_size = stat_.st_size;
   return 0;
@@ -273,24 +221,83 @@ MountNodeHttp::MountNodeHttp(Mount* mount,
       cache_content_(cache_content),
       has_cached_size_(false) {}
 
-void MountNodeHttp::SetMode(int mode) {
-  stat_.st_mode = mode;
+void MountNodeHttp::SetMode(int mode) { stat_.st_mode = mode; }
+
+Error MountNodeHttp::GetStat_Locked(struct stat* stat) {
+  // Assume we need to 'HEAD' if we do not know the size, otherwise, assume
+  // that the information is constant.  We can add a timeout if needed.
+  MountHttp* mount = static_cast<MountHttp*>(mount_);
+  if (!has_cached_size_ || !mount->cache_stat_) {
+    StringMap_t headers;
+    ScopedResource loader(mount_->ppapi());
+    ScopedResource request(mount_->ppapi());
+    ScopedResource response(mount_->ppapi());
+    int32_t statuscode;
+    StringMap_t response_headers;
+    Error error = OpenUrl("HEAD",
+                          &headers,
+                          &loader,
+                          &request,
+                          &response,
+                          &statuscode,
+                          &response_headers);
+    if (error)
+      return error;
+
+    size_t entity_length;
+    if (ParseContentLength(response_headers, &entity_length)) {
+      SetCachedSize(static_cast<off_t>(entity_length));
+    } else if (cache_content_) {
+      // The server didn't give a content length; download the data to memory
+      // via DownloadToCache, which will also set stat_.st_size;
+      error = DownloadToCache();
+      if (error)
+        return error;
+    } else {
+      // The user doesn't want to cache content, but we didn't get a
+      // "Content-Length" header. Read the entire entity, and throw it away.
+      // Don't use DownloadToCache, as that will still allocate enough memory
+      // for the entire entity.
+      int bytes_read;
+      error = DownloadToTemp(&bytes_read);
+      if (error)
+        return error;
+
+      SetCachedSize(bytes_read);
+    }
+
+    stat_.st_atime = 0;  // TODO(binji): Use "Last-Modified".
+    stat_.st_mtime = 0;
+    stat_.st_ctime = 0;
+
+    stat_.st_mode |= S_IFREG;
+  }
+
+  // Fill the stat structure if provided
+  if (stat)
+    *stat = stat_;
+
+  return 0;
 }
 
 Error MountNodeHttp::OpenUrl(const char* method,
                              StringMap_t* request_headers,
-                             PP_Resource* out_loader,
-                             PP_Resource* out_request,
-                             PP_Resource* out_response,
+                             ScopedResource* out_loader,
+                             ScopedResource* out_request,
+                             ScopedResource* out_response,
                              int32_t* out_statuscode,
                              StringMap_t* out_response_headers) {
+  // Clear all out parameters.
+  *out_statuscode = 0;
+  out_response_headers->clear();
+
   // Assume lock_ is already held.
   PepperInterface* ppapi = mount_->ppapi();
 
   MountHttp* mount_http = static_cast<MountHttp*>(mount_);
-  ScopedResource request(
-      ppapi, mount_http->MakeUrlRequestInfo(url_, method, request_headers));
-  if (!request.pp_resource())
+  out_request->Reset(
+      mount_http->MakeUrlRequestInfo(url_, method, request_headers));
+  if (!out_request->pp_resource())
     return EINVAL;
 
   URLLoaderInterface* loader_interface = ppapi->GetURLLoaderInterface();
@@ -298,23 +305,24 @@ Error MountNodeHttp::OpenUrl(const char* method,
       ppapi->GetURLResponseInfoInterface();
   VarInterface* var_interface = ppapi->GetVarInterface();
 
-  ScopedResource loader(ppapi, loader_interface->Create(ppapi->GetInstance()));
-  if (!loader.pp_resource())
+  out_loader->Reset(loader_interface->Create(ppapi->GetInstance()));
+  if (!out_loader->pp_resource())
     return EINVAL;
 
-  int32_t result = loader_interface->Open(
-      loader.pp_resource(), request.pp_resource(), PP_BlockUntilComplete());
+  int32_t result = loader_interface->Open(out_loader->pp_resource(),
+                                          out_request->pp_resource(),
+                                          PP_BlockUntilComplete());
   if (result != PP_OK)
     return PPErrorToErrno(result);
 
-  ScopedResource response(
-      ppapi, loader_interface->GetResponseInfo(loader.pp_resource()));
-  if (!response.pp_resource())
+  out_response->Reset(
+      loader_interface->GetResponseInfo(out_loader->pp_resource()));
+  if (!out_response->pp_resource())
     return EINVAL;
 
   // Get response statuscode.
   PP_Var statuscode = response_interface->GetProperty(
-      response.pp_resource(), PP_URLRESPONSEPROPERTY_STATUSCODE);
+      out_response->pp_resource(), PP_URLRESPONSEPROPERTY_STATUSCODE);
 
   if (statuscode.type != PP_VARTYPE_INT32)
     return EINVAL;
@@ -328,15 +336,12 @@ Error MountNodeHttp::OpenUrl(const char* method,
 
   // Get response headers.
   PP_Var response_headers_var = response_interface->GetProperty(
-      response.pp_resource(), PP_URLRESPONSEPROPERTY_HEADERS);
+      out_response->pp_resource(), PP_URLRESPONSEPROPERTY_HEADERS);
 
   uint32_t response_headers_length;
   const char* response_headers_str =
       var_interface->VarToUtf8(response_headers_var, &response_headers_length);
 
-  *out_loader = loader.Release();
-  *out_request = request.Release();
-  *out_response = response.Release();
   *out_response_headers =
       ParseHeaders(response_headers_str, response_headers_length);
 
@@ -347,9 +352,9 @@ Error MountNodeHttp::OpenUrl(const char* method,
 
 Error MountNodeHttp::DownloadToCache() {
   StringMap_t headers;
-  PP_Resource loader;
-  PP_Resource request;
-  PP_Resource response;
+  ScopedResource loader(mount_->ppapi());
+  ScopedResource request(mount_->ppapi());
+  ScopedResource response(mount_->ppapi());
   int32_t statuscode;
   StringMap_t response_headers;
   Error error = OpenUrl("GET",
@@ -362,16 +367,11 @@ Error MountNodeHttp::DownloadToCache() {
   if (error)
     return error;
 
-  PepperInterface* ppapi = mount_->ppapi();
-  ScopedResource scoped_loader(ppapi, loader);
-  ScopedResource scoped_request(ppapi, request);
-  ScopedResource scoped_response(ppapi, response);
-
   size_t content_length = 0;
   if (ParseContentLength(response_headers, &content_length)) {
     cached_data_.resize(content_length);
     int real_size;
-    error = DownloadToBuffer(
+    error = ReadResponseToBuffer(
         loader, cached_data_.data(), content_length, &real_size);
     if (error)
       return error;
@@ -381,27 +381,13 @@ Error MountNodeHttp::DownloadToCache() {
     return 0;
   }
 
-  // We don't know how big the file is. Read in chunks.
-  cached_data_.resize(MAX_READ_BUFFER_SIZE);
-  int total_bytes_read = 0;
-  int bytes_to_read = MAX_READ_BUFFER_SIZE;
-  while (true) {
-    char* buf = cached_data_.data() + total_bytes_read;
-    int bytes_read;
-    error = DownloadToBuffer(loader, buf, bytes_to_read, &bytes_read);
-    if (error)
-      return error;
+  int bytes_read;
+  error = ReadEntireResponseToCache(loader, &bytes_read);
+  if (error)
+    return error;
 
-    total_bytes_read += bytes_read;
-
-    if (bytes_read < bytes_to_read) {
-      SetCachedSize(total_bytes_read);
-      cached_data_.resize(total_bytes_read);
-      return 0;
-    }
-
-    cached_data_.resize(total_bytes_read + bytes_to_read);
-  }
+  SetCachedSize(bytes_read);
+  return 0;
 }
 
 Error MountNodeHttp::ReadPartialFromCache(const HandleAttr& attr,
@@ -439,9 +425,9 @@ Error MountNodeHttp::DownloadPartial(const HandleAttr& attr,
            attr.offs + count - 1);
   headers["Range"] = buffer;
 
-  PP_Resource loader;
-  PP_Resource request;
-  PP_Resource response;
+  ScopedResource loader(mount_->ppapi());
+  ScopedResource request(mount_->ppapi());
+  ScopedResource response(mount_->ppapi());
   int32_t statuscode;
   StringMap_t response_headers;
   Error error = OpenUrl("GET",
@@ -451,13 +437,15 @@ Error MountNodeHttp::DownloadPartial(const HandleAttr& attr,
                         &response,
                         &statuscode,
                         &response_headers);
-  if (error)
-    return error;
+  if (error) {
+    if (statuscode == STATUSCODE_REQUESTED_RANGE_NOT_SATISFIABLE) {
+      // We're likely trying to read past the end. Return 0 bytes.
+      *out_bytes = 0;
+      return 0;
+    }
 
-  PepperInterface* ppapi = mount_->ppapi();
-  ScopedResource scoped_loader(ppapi, loader);
-  ScopedResource scoped_request(ppapi, request);
-  ScopedResource scoped_response(ppapi, response);
+    return error;
+  }
 
   size_t read_start = 0;
   if (statuscode == STATUSCODE_OK) {
@@ -497,28 +485,127 @@ Error MountNodeHttp::DownloadPartial(const HandleAttr& attr,
   if (read_start < attr.offs) {
     // We aren't yet at the location where we want to start reading. Read into
     // our dummy buffer until then.
-    size_t bytes_to_read = attr.offs - read_start;
-    if (buffer_.size() < bytes_to_read)
-      buffer_.resize(std::min(bytes_to_read, MAX_READ_BUFFER_SIZE));
+    int bytes_to_read = attr.offs - read_start;
+    int bytes_read;
+    error = ReadResponseToTemp(loader, bytes_to_read, &bytes_read);
+    if (error)
+      return error;
 
-    while (bytes_to_read > 0) {
-      int32_t bytes_read;
-      Error error =
-          DownloadToBuffer(loader, buffer_.data(), buffer_.size(), &bytes_read);
-      if (error)
-        return error;
-
-      bytes_to_read -= bytes_read;
+    // Tried to read past the end of the entity.
+    if (bytes_read < bytes_to_read) {
+      *out_bytes = 0;
+      return 0;
     }
   }
 
-  return DownloadToBuffer(loader, buf, count, out_bytes);
+  return ReadResponseToBuffer(loader, buf, count, out_bytes);
 }
 
-Error MountNodeHttp::DownloadToBuffer(PP_Resource loader,
-                                      void* buf,
-                                      int count,
-                                      int* out_bytes) {
+Error MountNodeHttp::DownloadToTemp(int* out_bytes) {
+  StringMap_t headers;
+  ScopedResource loader(mount_->ppapi());
+  ScopedResource request(mount_->ppapi());
+  ScopedResource response(mount_->ppapi());
+  int32_t statuscode;
+  StringMap_t response_headers;
+  Error error = OpenUrl("GET",
+                        &headers,
+                        &loader,
+                        &request,
+                        &response,
+                        &statuscode,
+                        &response_headers);
+  if (error)
+    return error;
+
+  size_t content_length = 0;
+  if (ParseContentLength(response_headers, &content_length)) {
+    *out_bytes = content_length;
+    return 0;
+  }
+
+  return ReadEntireResponseToTemp(loader, out_bytes);
+}
+
+Error MountNodeHttp::ReadEntireResponseToTemp(const ScopedResource& loader,
+                                              int* out_bytes) {
+  *out_bytes = 0;
+
+  const int kBytesToRead = MAX_READ_BUFFER_SIZE;
+  buffer_.resize(kBytesToRead);
+
+  while (true) {
+    int bytes_read;
+    Error error =
+        ReadResponseToBuffer(loader, buffer_.data(), kBytesToRead, &bytes_read);
+    if (error)
+      return error;
+
+    *out_bytes += bytes_read;
+
+    if (bytes_read < kBytesToRead)
+      return 0;
+  }
+}
+
+Error MountNodeHttp::ReadEntireResponseToCache(const ScopedResource& loader,
+                                               int* out_bytes) {
+  *out_bytes = 0;
+  const int kBytesToRead = MAX_READ_BUFFER_SIZE;
+
+  while (true) {
+    // Always recalculate the buf pointer because it may have moved when
+    // cached_data_ was resized.
+    cached_data_.resize(*out_bytes + kBytesToRead);
+    void* buf = cached_data_.data() + *out_bytes;
+
+    int bytes_read;
+    Error error = ReadResponseToBuffer(loader, buf, kBytesToRead, &bytes_read);
+    if (error)
+      return error;
+
+    *out_bytes += bytes_read;
+
+    if (bytes_read < kBytesToRead) {
+      // Shrink the cached data buffer to the correct size.
+      cached_data_.resize(*out_bytes);
+      return 0;
+    }
+  }
+}
+
+Error MountNodeHttp::ReadResponseToTemp(const ScopedResource& loader,
+                                        int count,
+                                        int* out_bytes) {
+  *out_bytes = 0;
+
+  if (buffer_.size() < static_cast<size_t>(count))
+    buffer_.resize(std::min(count, MAX_READ_BUFFER_SIZE));
+
+  int bytes_left = count;
+  while (bytes_left > 0) {
+    int bytes_to_read =
+        std::min(static_cast<size_t>(bytes_left), buffer_.size());
+    int bytes_read;
+    Error error = ReadResponseToBuffer(
+        loader, buffer_.data(), bytes_to_read, &bytes_read);
+    if (error)
+      return error;
+
+    if (bytes_read == 0)
+      return 0;
+
+    bytes_left -= bytes_read;
+    *out_bytes += bytes_read;
+  }
+
+  return 0;
+}
+
+Error MountNodeHttp::ReadResponseToBuffer(const ScopedResource& loader,
+                                          void* buf,
+                                          int count,
+                                          int* out_bytes) {
   *out_bytes = 0;
 
   PepperInterface* ppapi = mount_->ppapi();
@@ -527,8 +614,11 @@ Error MountNodeHttp::DownloadToBuffer(PP_Resource loader,
   char* out_buffer = static_cast<char*>(buf);
   int bytes_to_read = count;
   while (bytes_to_read > 0) {
-    int bytes_read = loader_interface->ReadResponseBody(
-        loader, out_buffer, bytes_to_read, PP_BlockUntilComplete());
+    int bytes_read =
+        loader_interface->ReadResponseBody(loader.pp_resource(),
+                                           out_buffer,
+                                           bytes_to_read,
+                                           PP_BlockUntilComplete());
 
     if (bytes_read == 0) {
       // This is not an error -- it may just be that we were trying to read
@@ -550,4 +640,3 @@ Error MountNodeHttp::DownloadToBuffer(PP_Resource loader,
 }
 
 }  // namespace nacl_io
-

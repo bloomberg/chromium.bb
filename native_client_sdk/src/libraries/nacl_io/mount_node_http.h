@@ -43,11 +43,12 @@ class MountNodeHttp : public MountNode {
   MountNodeHttp(Mount* mount, const std::string& url, bool cache_content);
 
  private:
+  Error GetStat_Locked(struct stat* stat);
   Error OpenUrl(const char* method,
                 StringMap_t* request_headers,
-                PP_Resource* out_loader,
-                PP_Resource* out_request,
-                PP_Resource* out_response,
+                ScopedResource* out_loader,
+                ScopedResource* out_request,
+                ScopedResource* out_response,
                 int32_t* out_statuscode,
                 StringMap_t* out_response_headers);
 
@@ -60,10 +61,26 @@ class MountNodeHttp : public MountNode {
                         void* buf,
                         size_t count,
                         int* out_bytes);
-  Error DownloadToBuffer(PP_Resource loader,
-                         void* buf,
-                         int count,
-                         int* out_bytes);
+
+  Error DownloadToTemp(int* out_bytes);
+
+  // Read as much as possible from |loader|, using |buffer_| as a scratch area.
+  Error ReadEntireResponseToTemp(const ScopedResource& loader, int* out_bytes);
+  // Read as much as possible from |loader|, storing the result in
+  // |cached_data_|.
+  Error ReadEntireResponseToCache(const ScopedResource& loader, int* out_bytes);
+
+  // Read up to |count| bytes from |loader|, using |buffer_| as a scratch area.
+  Error ReadResponseToTemp(const ScopedResource& loader,
+                           int count,
+                           int* out_bytes);
+
+  // Read up to |count| bytes from |loader|, and store the result in |buf|,
+  // which is assumed to have |count| bytes free.
+  Error ReadResponseToBuffer(const ScopedResource& loader,
+                             void* buf,
+                             int count,
+                             int* out_bytes);
 
   std::string url_;
   std::vector<char> buffer_;

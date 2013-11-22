@@ -34,7 +34,30 @@ class MountHttpForTesting : public MountHttp {
   using MountHttp::FindOrCreateDir;
 };
 
-class MountHttpTest : public ::testing::Test {
+enum {
+  kStringMapParamCacheNone = 0,
+  kStringMapParamCacheContent = 1,
+  kStringMapParamCacheStat = 2,
+  kStringMapParamCacheContentStat =
+      kStringMapParamCacheContent | kStringMapParamCacheStat,
+};
+typedef uint32_t StringMapParam;
+
+StringMap_t MakeStringMap(StringMapParam param) {
+  StringMap_t smap;
+  if (param & kStringMapParamCacheContent)
+    smap["cache_content"] = "true";
+  else
+    smap["cache_content"] = "false";
+
+  if (param & kStringMapParamCacheStat)
+    smap["cache_stat"] = "true";
+  else
+    smap["cache_stat"] = "false";
+  return smap;
+}
+
+class MountHttpTest : public ::testing::TestWithParam<StringMapParam> {
  public:
   MountHttpTest();
 
@@ -43,30 +66,14 @@ class MountHttpTest : public ::testing::Test {
   MountHttpForTesting mnt_;
 };
 
-MountHttpTest::MountHttpTest() : mnt_(StringMap_t(), &ppapi_) {}
-
-StringMap_t StringMap_NoCache() {
-  StringMap_t smap;
-  smap["cache_content"] = "false";
-  return smap;
+MountHttpTest::MountHttpTest() :
+    mnt_(MakeStringMap(GetParam()), &ppapi_) {
 }
-
-class MountHttpNoCacheTest : public ::testing::Test {
- public:
-  MountHttpNoCacheTest();
-
- protected:
-  FakePepperInterfaceURLLoader ppapi_;
-  MountHttpForTesting mnt_;
-};
-
-MountHttpNoCacheTest::MountHttpNoCacheTest() :
-    mnt_(StringMap_NoCache(), &ppapi_) {}
 
 }  // namespace
 
 
-TEST_F(MountHttpTest, Access) {
+TEST_P(MountHttpTest, Access) {
   ASSERT_TRUE(ppapi_.server_template()->AddEntity("foo", "", NULL));
 
   ASSERT_EQ(0, mnt_.Access(Path("/foo"), R_OK));
@@ -75,34 +82,74 @@ TEST_F(MountHttpTest, Access) {
   ASSERT_EQ(ENOENT, mnt_.Access(Path("/bar"), F_OK));
 }
 
-TEST_F(MountHttpTest, Read) {
-  const char contents[] = "contents";
+TEST_P(MountHttpTest, OpenAndCloseServerError) {
+  EXPECT_TRUE(ppapi_.server_template()->AddError("file", 500));
+
+  ScopedMountNode node;
+  ASSERT_EQ(ENOENT, mnt_.Open(Path("/file"), O_RDONLY, &node));
+}
+
+TEST_P(MountHttpTest, ReadPartial) {
+  const char contents[] = "0123456789abcdefg";
   ASSERT_TRUE(ppapi_.server_template()->AddEntity("file", contents, NULL));
+  ppapi_.server_template()->set_allow_partial(true);
+
+  int result_bytes = 0;
+
+  char buf[10];
+  memset(&buf[0], 0, sizeof(buf));
 
   ScopedMountNode node;
   ASSERT_EQ(0, mnt_.Open(Path("/file"), O_RDONLY, &node));
-
-  char buffer[10] = {0};
-  int bytes_read = 0;
   HandleAttr attr;
-  EXPECT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
-  EXPECT_EQ(strlen(contents), bytes_read);
-  EXPECT_STREQ(contents, buffer);
+  EXPECT_EQ(0, node->Read(attr, buf, sizeof(buf) - 1, &result_bytes));
+  EXPECT_EQ(sizeof(buf) - 1, result_bytes);
+  EXPECT_STREQ("012345678", &buf[0]);
 
-  // Read nothing past the end of the file.
+  // Read is clamped when reading past the end of the file.
+  attr.offs = 10;
+  ASSERT_EQ(0, node->Read(attr, buf, sizeof(buf) - 1, &result_bytes));
+  ASSERT_EQ(strlen("abcdefg"), result_bytes);
+  buf[result_bytes] = 0;
+  EXPECT_STREQ("abcdefg", &buf[0]);
+
+  // Read nothing when starting past the end of the file.
   attr.offs = 100;
-  EXPECT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
-  EXPECT_EQ(0, bytes_read);
-
-  // Read part of the data.
-  attr.offs = 4;
-  EXPECT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
-  ASSERT_EQ(strlen(contents) - 4, bytes_read);
-  buffer[bytes_read] = 0;
-  EXPECT_STREQ("ents", buffer);
+  EXPECT_EQ(0, node->Read(attr, &buf[0], sizeof(buf), &result_bytes));
+  EXPECT_EQ(0, result_bytes);
 }
 
-TEST_F(MountHttpTest, Write) {
+TEST_P(MountHttpTest, ReadPartialNoServerSupport) {
+  const char contents[] = "0123456789abcdefg";
+  ASSERT_TRUE(ppapi_.server_template()->AddEntity("file", contents, NULL));
+  ppapi_.server_template()->set_allow_partial(false);
+
+  int result_bytes = 0;
+
+  char buf[10];
+  memset(&buf[0], 0, sizeof(buf));
+
+  ScopedMountNode node;
+  ASSERT_EQ(0, mnt_.Open(Path("/file"), O_RDONLY, &node));
+  HandleAttr attr;
+  EXPECT_EQ(0, node->Read(attr, buf, sizeof(buf) - 1, &result_bytes));
+  EXPECT_EQ(sizeof(buf) - 1, result_bytes);
+  EXPECT_STREQ("012345678", &buf[0]);
+
+  // Read is clamped when reading past the end of the file.
+  attr.offs = 10;
+  ASSERT_EQ(0, node->Read(attr, buf, sizeof(buf) - 1, &result_bytes));
+  ASSERT_EQ(strlen("abcdefg"), result_bytes);
+  buf[result_bytes] = 0;
+  EXPECT_STREQ("abcdefg", &buf[0]);
+
+  // Read nothing when starting past the end of the file.
+  attr.offs = 100;
+  EXPECT_EQ(0, node->Read(attr, &buf[0], sizeof(buf), &result_bytes));
+  EXPECT_EQ(0, result_bytes);
+}
+
+TEST_P(MountHttpTest, Write) {
   const char contents[] = "contents";
   ASSERT_TRUE(ppapi_.server_template()->AddEntity("file", contents, NULL));
 
@@ -117,7 +164,7 @@ TEST_F(MountHttpTest, Write) {
   EXPECT_EQ(0, bytes_written);
 }
 
-TEST_F(MountHttpTest, GetStat) {
+TEST_P(MountHttpTest, GetStat) {
   const char contents[] = "contents";
   ASSERT_TRUE(ppapi_.server_template()->AddEntity("file", contents, NULL));
 
@@ -135,7 +182,7 @@ TEST_F(MountHttpTest, GetStat) {
   EXPECT_EQ(0, statbuf.st_mtime);
 }
 
-TEST_F(MountHttpTest, FTruncate) {
+TEST_P(MountHttpTest, FTruncate) {
   const char contents[] = "contents";
   ASSERT_TRUE(ppapi_.server_template()->AddEntity("file", contents, NULL));
 
@@ -143,6 +190,15 @@ TEST_F(MountHttpTest, FTruncate) {
   ASSERT_EQ(0, mnt_.Open(Path("/file"), O_RDWR, &node));
   EXPECT_EQ(EACCES, node->FTruncate(4));
 }
+
+// Instantiate the above tests for all caching types.
+INSTANTIATE_TEST_CASE_P(
+    Default,
+    MountHttpTest,
+    ::testing::Values((uint32_t)kStringMapParamCacheNone,
+                      (uint32_t)kStringMapParamCacheContent,
+                      (uint32_t)kStringMapParamCacheStat,
+                      (uint32_t)kStringMapParamCacheContentStat));
 
 TEST(MountHttpDirTest, Mkdir) {
   StringMap_t args;
@@ -240,90 +296,4 @@ TEST(MountHttpDirTest, ParseManifest) {
 
   EXPECT_EQ(234, sbar.st_size);
   EXPECT_EQ(S_IFREG | S_IRALL | S_IWALL, sbar.st_mode);
-}
-
-TEST_F(MountHttpNoCacheTest, OpenAndClose) {
-  const char contents[] = "contents";
-  ASSERT_TRUE(ppapi_.server_template()->AddEntity("file", contents, NULL));
-
-  ScopedMountNode node;
-  ASSERT_EQ(0, mnt_.Open(Path("/file"), O_RDONLY, &node));
-}
-
-TEST_F(MountHttpNoCacheTest, OpenAndCloseNotFound) {
-  ScopedMountNode node;
-  ASSERT_EQ(ENOENT, mnt_.Open(Path("/file"), O_RDONLY, &node));
-}
-
-TEST_F(MountHttpNoCacheTest, OpenAndCloseServerError) {
-  ASSERT_TRUE(ppapi_.server_template()->AddError("file", 500));
-
-  ScopedMountNode node;
-  ASSERT_EQ(ENOENT, mnt_.Open(Path("/file"), O_RDONLY, &node));
-}
-
-TEST_F(MountHttpNoCacheTest, GetSize) {
-  const char contents[] = "contents";
-  ASSERT_TRUE(ppapi_.server_template()->AddEntity("file", contents, NULL));
-  ppapi_.server_template()->set_send_content_length(true);
-
-  ScopedMountNode node;
-  struct stat statbuf;
-  ASSERT_EQ(0, mnt_.Open(Path("/file"), O_RDONLY, &node));
-  EXPECT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(strlen(contents), statbuf.st_size);
-}
-
-TEST_F(MountHttpNoCacheTest, Access) {
-  ASSERT_TRUE(ppapi_.server_template()->AddEntity("file", "", NULL));
-
-  ASSERT_EQ(0, mnt_.Access(Path("/file"), R_OK));
-  ASSERT_EQ(EACCES, mnt_.Access(Path("/file"), W_OK));
-  ASSERT_EQ(ENOENT, mnt_.Access(Path("/bar"), R_OK));
-}
-
-TEST_F(MountHttpNoCacheTest, ReadPartial) {
-  const char contents[] = "0123456789abcdefghi";
-  ASSERT_TRUE(ppapi_.server_template()->AddEntity("file", contents, NULL));
-  ppapi_.server_template()->set_allow_partial(true);
-
-  int result_bytes = 0;
-
-  char buf[10];
-  memset(&buf[0], 0, sizeof(buf));
-
-  ScopedMountNode node;
-  ASSERT_EQ(0, mnt_.Open(Path("/file"), O_RDONLY, &node));
-  HandleAttr attr;
-  EXPECT_EQ(0, node->Read(attr, buf, sizeof(buf) - 1, &result_bytes));
-  EXPECT_EQ(sizeof(buf) - 1, result_bytes);
-  EXPECT_STREQ("012345678", &buf[0]);
-
-  attr.offs = 10;
-  EXPECT_EQ(0, node->Read(attr, buf, sizeof(buf) - 1, &result_bytes));
-  EXPECT_EQ(sizeof(buf) - 1, result_bytes);
-  EXPECT_STREQ("abcdefghi", &buf[0]);
-}
-
-TEST_F(MountHttpNoCacheTest, ReadPartialNoServerSupport) {
-  const char contents[] = "0123456789abcdefghi";
-  ASSERT_TRUE(ppapi_.server_template()->AddEntity("file", contents, NULL));
-  ppapi_.server_template()->set_allow_partial(false);
-
-  int result_bytes = 0;
-
-  char buf[10];
-  memset(&buf[0], 0, sizeof(buf));
-
-  ScopedMountNode node;
-  ASSERT_EQ(0, mnt_.Open(Path("/file"), O_RDONLY, &node));
-  HandleAttr attr;
-  EXPECT_EQ(0, node->Read(attr, buf, sizeof(buf) - 1, &result_bytes));
-  EXPECT_EQ(sizeof(buf) - 1, result_bytes);
-  EXPECT_STREQ("012345678", &buf[0]);
-
-  attr.offs = 10;
-  EXPECT_EQ(0, node->Read(attr, buf, sizeof(buf) - 1, &result_bytes));
-  EXPECT_EQ(sizeof(buf) - 1, result_bytes);
-  EXPECT_STREQ("abcdefghi", &buf[0]);
 }

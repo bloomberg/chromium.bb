@@ -116,6 +116,70 @@ int32_t RunCompletionCallback(PP_CompletionCallback* callback, int32_t result) {
   return result;
 }
 
+void HandleContentLength(FakeURLLoaderResource* loader,
+                         FakeURLResponseInfoResource* response,
+                         FakeURLLoaderEntity* entity) {
+  size_t content_length = entity->body().size();
+  if (!loader->server->send_content_length())
+    return;
+
+  std::ostringstream ss;
+  ss << "Content-Length: " << content_length << "\n";
+  response->headers += ss.str();
+}
+
+void HandlePartial(FakeURLLoaderResource* loader,
+                   FakeURLRequestInfoResource* request,
+                   FakeURLResponseInfoResource* response,
+                   FakeURLLoaderEntity* entity) {
+  if (!loader->server->allow_partial())
+    return;
+
+  // Read the RFC on byte ranges for more info:
+  // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35.1
+  std::string range;
+  if (!GetHeaderValue(request->headers, "Range", &range))
+    return;
+
+  // We don't support all range requests, just bytes=<num>-<num>
+  unsigned lo;
+  unsigned hi;
+  if (sscanf(range.c_str(), "bytes=%u-%u", &lo, &hi) != 2) {
+    // Couldn't parse the range value.
+    return;
+  }
+
+  size_t content_length = entity->body().size();
+  if (lo > content_length) {
+    // Trying to start reading past the end of the entity is
+    // unsatisfiable.
+    response->status_code = 416;  // Request range not satisfiable.
+    return;
+  }
+
+  // Clamp the hi value to the content length.
+  if (hi >= content_length)
+    hi = content_length - 1;
+
+  if (lo > hi) {
+    // Bad range, ignore it and return the full result.
+    return;
+  }
+
+  // The range is a closed interval; e.g. 0-10 is 11 bytes. We'll
+  // store it as a half-open interval instead--it's more natural
+  // in C that way.
+  loader->read_offset = lo;
+  loader->read_end = hi + 1;
+
+  // Also add a "Content-Range" response header.
+  std::ostringstream ss;
+  ss << "Content-Range: " << lo << "-" << hi << "/" << content_length << "\n";
+  response->headers += ss.str();
+
+  response->status_code = 206;  // Partial content
+}
+
 }  // namespace
 
 FakeURLLoaderEntity::FakeURLLoaderEntity(const std::string& body)
@@ -193,95 +257,64 @@ PP_Resource FakeURLLoaderInterface::Create(PP_Instance instance) {
 }
 
 int32_t FakeURLLoaderInterface::Open(PP_Resource loader,
-                                     PP_Resource request_info,
+                                     PP_Resource request,
                                      PP_CompletionCallback callback) {
   FakeURLLoaderResource* loader_resource =
       core_interface_->resource_manager()->Get<FakeURLLoaderResource>(loader);
   if (loader_resource == NULL)
     return PP_ERROR_BADRESOURCE;
 
-  FakeURLRequestInfoResource* request_info_resource =
+  FakeURLRequestInfoResource* request_resource =
       core_interface_->resource_manager()->Get<FakeURLRequestInfoResource>(
-          request_info);
-  if (request_info_resource == NULL)
+          request);
+  if (request_resource == NULL)
     return PP_ERROR_BADRESOURCE;
 
   // Create a response resource.
-  FakeURLResponseInfoResource* response = new FakeURLResponseInfoResource;
+  FakeURLResponseInfoResource* response_resource =
+      new FakeURLResponseInfoResource;
   loader_resource->response =
       CREATE_RESOURCE(core_interface_->resource_manager(),
                       FakeURLResponseInfoResource,
-                      response);
+                      response_resource);
 
   loader_resource->entity = NULL;
   loader_resource->read_offset = 0;
   loader_resource->read_end = 0;
 
   // Get the URL from the request info.
-  std::string url = request_info_resource->url;
-  std::string method = request_info_resource->method;
+  std::string url = request_resource->url;
+  std::string method = request_resource->method;
 
-  response->url = url;
+  response_resource->url = url;
   // TODO(binji): allow this to be set?
-  response->headers.clear();
+  response_resource->headers.clear();
 
   // Check the error map first, to see if this URL should produce an error.
   EXPECT_TRUE(NULL != loader_resource->server);
   int http_status_code = loader_resource->server->GetError(url);
   if (http_status_code != 0) {
     // Got an error, return that in the response.
-    response->status_code = http_status_code;
-  } else {
-    // Look up the URL in the loader resource entity map.
-    FakeURLLoaderEntity* entity = loader_resource->server->GetEntity(url);
-    response->status_code = entity ? 200 : 404;
+    response_resource->status_code = http_status_code;
+    return RunCompletionCallback(&callback, PP_OK);
+  }
 
-    if (method == "GET") {
-      loader_resource->entity = entity;
-    } else if (method == "HEAD") {
-      // Do nothing, we only set the status code.
-    } else {
-      response->status_code = 405;  // Method not allowed.
-    }
+  // Look up the URL in the loader resource entity map.
+  FakeURLLoaderEntity* entity = loader_resource->server->GetEntity(url);
+  response_resource->status_code = entity ? 200 : 404;
 
-    if (entity != NULL) {
-      size_t content_length = entity->body().size();
-      loader_resource->read_end = content_length;
+  if (method == "GET") {
+    loader_resource->entity = entity;
+  } else if (method != "HEAD") {
+    response_resource->status_code = 405;  // Method not allowed.
+    return RunCompletionCallback(&callback, PP_OK);
+  }
 
-      if (loader_resource->server->send_content_length()) {
-        std::ostringstream ss;
-        ss << "Content-Length: " << content_length << "\n";
-        response->headers += ss.str();
-      }
-
-      if (loader_resource->server->allow_partial()) {
-        std::string headers = request_info_resource->headers;
-        std::string range;
-        if (GetHeaderValue(headers, "Range", &range)) {
-          // We don't support all range requests, just bytes=<num>-<num>
-          int lo;
-          int hi;
-          if (sscanf(range.c_str(), "bytes=%d-%d", &lo, &hi) == 2) {
-            // The range is a closed interval; e.g. 0-10 is 11 bytes. We'll
-            // store it as a half-open interval instead--it's more natural in
-            // C that way.
-            loader_resource->read_offset = lo;
-            loader_resource->read_end = hi + 1;
-
-            // Also add a "Content-Range" response header.
-            std::ostringstream ss;
-            ss << "Content-Range: "
-               << lo << "-" << hi << "/" << content_length << "\n";
-            response->headers += ss.str();
-
-            response->status_code = 206;  // Partial content
-          } else {
-            // Couldn't parse the range.
-            response->status_code = 416;  // Request range not satisfiable.
-          }
-        }
-      }
-    }
+  if (entity != NULL) {
+    size_t content_length = entity->body().size();
+    loader_resource->read_end = content_length;
+    HandleContentLength(loader_resource, response_resource, entity);
+    HandlePartial(loader_resource, request_resource, response_resource, entity);
   }
 
   // Call the callback.

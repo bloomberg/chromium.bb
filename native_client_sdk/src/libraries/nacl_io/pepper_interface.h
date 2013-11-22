@@ -130,11 +130,16 @@ class PepperInterface {
 
 class ScopedResource {
  public:
-  // Does not AddRef by default.
+  // Does not AddRef.
+  explicit ScopedResource(PepperInterface* ppapi);
   ScopedResource(PepperInterface* ppapi, PP_Resource resource);
   ~ScopedResource();
 
-  PP_Resource pp_resource() { return resource_; }
+  PP_Resource pp_resource() const { return resource_; }
+
+  // Set a new resource, releasing the old one. Does not AddRef the new
+  // resource.
+  void Reset(PP_Resource resource);
 
   // Return the resource without decrementing its refcount.
   PP_Resource Release();
