@@ -24,6 +24,18 @@ const size_t WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize = 128;
 
 WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider()
     : is_enabled_(false) {
+  // Get the native audio output hardware sample-rate for the sink.
+  // We need to check if RenderThreadImpl is valid here since the unittests
+  // do not have one and they will inject their own |sink_params_| for testing.
+  if (RenderThreadImpl::current()) {
+    media::AudioHardwareConfig* hardware_config =
+        RenderThreadImpl::current()->GetAudioHardwareConfig();
+    int sample_rate = hardware_config->GetOutputSampleRate();
+    sink_params_.Reset(
+        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+        media::CHANNEL_LAYOUT_STEREO, 2, 0, sample_rate, 16,
+        kWebAudioRenderBufferSize);
+  }
 }
 
 WebRtcLocalAudioSourceProvider::~WebRtcLocalAudioSourceProvider() {
@@ -33,23 +45,12 @@ WebRtcLocalAudioSourceProvider::~WebRtcLocalAudioSourceProvider() {
 
 void WebRtcLocalAudioSourceProvider::SetCaptureFormat(
     const media::AudioParameters& params) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  // We need detach the thread here because it will be a new capture thread
+  // calling SetCaptureFormat() and CaptureData() if the source is restarted.
+  capture_thread_checker_.DetachFromThread();
+  DCHECK(capture_thread_checker_.CalledOnValidThread());
   DCHECK(params.IsValid());
-
-  // Use the native audio output hardware sample-rate for the sink.
-  if (RenderThreadImpl::current()) {
-    media::AudioHardwareConfig* hardware_config =
-        RenderThreadImpl::current()->GetAudioHardwareConfig();
-    int sample_rate = hardware_config->GetOutputSampleRate();
-    sink_params_.Reset(
-        params.format(), media::CHANNEL_LAYOUT_STEREO, 2, 0,
-        sample_rate, params.bits_per_sample(),
-        kWebAudioRenderBufferSize);
-  } else {
-    // This happens on unittests which does not have a valid RenderThreadImpl,
-    // the unittests should have injected their own |sink_params_| for testing.
-    DCHECK(sink_params_.IsValid());
-  }
+  DCHECK(sink_params_.IsValid());
 
   base::AutoLock auto_lock(lock_);
   source_params_ = params;
@@ -77,6 +78,7 @@ int WebRtcLocalAudioSourceProvider::CaptureData(
     int current_volume,
     bool need_audio_processing,
     bool key_pressed) {
+  DCHECK(capture_thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   if (!is_enabled_)
     return 0;
@@ -118,8 +120,9 @@ void WebRtcLocalAudioSourceProvider::provideInput(
     output_wrapper_->SetChannelData(i, audio_data[i]);
 
   base::AutoLock auto_lock(lock_);
-  DCHECK(audio_converter_.get());
-  DCHECK(fifo_.get());
+  if (!audio_converter_)
+    return;
+
   is_enabled_ = true;
   audio_converter_->Convert(output_wrapper_.get());
 }
@@ -140,7 +143,6 @@ double WebRtcLocalAudioSourceProvider::ProvideInput(
 
 void WebRtcLocalAudioSourceProvider::SetSinkParamsForTesting(
     const media::AudioParameters& sink_params) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   sink_params_ = sink_params;
 }
 

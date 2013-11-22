@@ -80,8 +80,8 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
   void SetSinkParamsForTesting(const media::AudioParameters& sink_params);
 
  private:
-  // Used to DCHECK that we are called on the correct thread.
-  base::ThreadChecker thread_checker_;
+  // Used to DCHECK that some methods are called on the capture audio thread.
+  base::ThreadChecker capture_thread_checker_;
 
   scoped_ptr<media::AudioConverter> audio_converter_;
   scoped_ptr<media::AudioFifo> fifo_;

@@ -227,6 +227,8 @@ class WebRtcAudioCapturerSink {
                           bool key_pressed) = 0;
 
   // Set the format for the capture audio parameters.
+  // This is called when the capture format has changed, and it must be called
+  // on the same thread as calling CaptureData().
   virtual void SetCaptureFormat(const media::AudioParameters& params) = 0;
 
  protected:

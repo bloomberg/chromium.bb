@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
@@ -50,7 +51,6 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   WebRtcLocalAudioRenderer(WebRtcLocalAudioTrack* audio_track,
                            int source_render_view_id,
                            int session_id,
-                           int sample_rate,
                            int frames_per_buffer);
 
   // MediaStreamAudioRenderer implementation.
@@ -94,7 +94,14 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
                      int audio_delay_milliseconds) OVERRIDE;
   virtual void OnRenderError() OVERRIDE;
 
-  void StartSink();
+  // Initializes and starts the |sink_| if
+  //  we have received valid |source_params_| &&
+  //  |playing_| has been set to true &&
+  //  |volume_| is not zero.
+  void MaybeStartSink();
+
+  // Sets new |source_params_| and then re-initializes and restarts |sink_|.
+  void ReconfigureSink(const media::AudioParameters& params);
 
   // The audio track which provides data to render. Given that this class
   // implements local loopback, the audio track is getting data from a capture
@@ -108,11 +115,12 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   const int source_render_view_id_;
   const int session_id_;
 
+  // MessageLoop associated with the single thread that performs all control
+  // tasks.  Set to the MessageLoop that invoked the ctor.
+  const scoped_refptr<base::MessageLoopProxy> message_loop_;
+
   // The sink (destination) for rendered audio.
   scoped_refptr<media::AudioOutputDevice> sink_;
-
-  // Used to DCHECK that we are called on the correct thread.
-  base::ThreadChecker thread_checker_;
 
   // Contains copies of captured audio frames.
   scoped_ptr<media::AudioFifo> loopback_fifo_;
@@ -120,13 +128,16 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // Stores last time a render callback was received. The time difference
   // between a new time stamp and this value can be used to derive the
   // total render time.
-  base::Time last_render_time_;
+  base::TimeTicks last_render_time_;
 
   // Keeps track of total time audio has been rendered.
   base::TimeDelta total_render_time_;
 
-  // The audio parameters used by the renderer.
-  media::AudioParameters audio_params_;
+  // The audio parameters of the capture source.
+  media::AudioParameters source_params_;
+
+  // The audio parameters used by the sink.
+  media::AudioParameters sink_params_;
 
   // Set when playing, cleared when paused.
   bool playing_;
@@ -134,8 +145,7 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // Protects |loopback_fifo_|, |playing_| and |sink_|.
   mutable base::Lock thread_lock_;
 
-  // The preferred sample rate and buffer sizes provided via the ctor.
-  const int sample_rate_;
+  // The preferred buffer size provided via the ctor.
   const int frames_per_buffer_;
 
   // The preferred device id of the output device or empty for the default
@@ -145,8 +155,11 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // Cache value for the volume.
   float volume_;
 
-  // Flag to start the sink only once. Used to log correctly in UMA.
+  // Flag to indicate whether |sink_| has been started yet.
   bool sink_started_;
+
+  // Used to DCHECK that some methods are called on the capture audio thread.
+  base::ThreadChecker capture_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLocalAudioRenderer);
 };
