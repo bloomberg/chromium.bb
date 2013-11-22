@@ -29,8 +29,14 @@
 [
     CheckSecurity=Frame,
 ] interface TestCheckSecurityInterface {
-    readonly attribute long excitingAttr;
-    void excitingFunction(Node nextChild);
-    [DoNotCheckSecurity] void postMessage(DOMString message);
-    [DoNotCheckSecurity, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] void perWorldBindingsMethodWithDoNotCheckSecurity(DOMString url);
+    readonly attribute long longAttribute;
+    void voidMethod();
+
+    [DoNotCheckSecurity] attribute long doNotCheckSecurityLongAttribute;
+    [DoNotCheckSecurity] readonly attribute long doNotCheckSecurityReadonlyLongAttribute;  // Separate read only attribute to check attribute configuration
+    [DoNotCheckSecurity=Setter] attribute long doNotCheckSecurityOnSetterLongAttribute;
+    [DoNotCheckSecurity] void doNotCheckSecurityVoidMethod();
+    [DoNotCheckSecurity, PerWorldBindings] void doNotCheckSecurityPerWorldBindingsVoidMethod();
+    [DoNotCheckSecurity, ReadOnly] void doNotCheckSecurityReadOnlyVoidMethod();
+    [DoNotCheckSecurity, Unforgeable] void doNotCheckSecurityUnforgeableVoidMethod();
 };

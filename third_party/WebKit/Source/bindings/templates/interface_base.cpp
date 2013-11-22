@@ -96,7 +96,7 @@ template <typename T> void V8_USE(T) { }
 {% block security_check_functions %}{% endblock %}
 {# Methods #}
 {% from 'methods.cpp' import generate_method, overload_resolution_method,
-       method_callback with context %}
+       method_callback, origin_safe_method_getter with context %}
 {% for method in methods %}
 {% for world_suffix in method.world_suffixes %}
 {% if not method.is_custom %}
@@ -109,8 +109,12 @@ template <typename T> void V8_USE(T) { }
 {# A single callback is generated for overloaded methods #}
 {{method_callback(method, world_suffix)}}
 {% endif %}
+{% if method.is_do_not_check_security %}
+{{origin_safe_method_getter(method, world_suffix)}}
+{% endif %}
 {% endfor %}
 {% endfor %}
+{% block origin_safe_method_setter %}{% endblock %}
 } // namespace {{cpp_class_name}}V8Internal
 
 {% block class_attributes %}{% endblock %}

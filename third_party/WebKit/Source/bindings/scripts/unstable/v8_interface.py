@@ -112,6 +112,9 @@ def generate_interface(interface):
             ('overload_index' not in method or method['overload_index'] == 1))
 
     template_contents.update({
+        'has_origin_safe_method_setter': any(
+            method['is_check_security_for_frame'] and not method['is_read_only']
+            for method in methods),
         'has_method_configuration': any(method['do_generate_method_configuration'] for method in methods),
         'has_per_context_enabled_methods': any(method['per_context_enabled_function_name'] for method in methods),
         'methods': methods,

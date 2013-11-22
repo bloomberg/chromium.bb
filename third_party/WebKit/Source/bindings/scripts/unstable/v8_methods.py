@@ -94,8 +94,8 @@ def generate_method(interface, method):
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
         'do_not_check_signature': not(this_custom_signature or is_static or
             v8_utilities.has_extended_attribute(method,
-                ['DoNotCheckSignature', 'NotEnumerable', 'ReadOnly',
-                 'RuntimeEnabled', 'Unforgeable'])),
+                ['DoNotCheckSecurity', 'DoNotCheckSignature', 'NotEnumerable',
+                 'ReadOnly', 'RuntimeEnabled', 'Unforgeable'])),
         'function_template': function_template(),
         'idl_type': idl_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
@@ -107,8 +107,10 @@ def generate_method(interface, method):
         'is_check_security_for_node': is_check_security_for_node,
         'is_custom': 'Custom' in extended_attributes,
         'is_custom_element_callbacks': is_custom_element_callbacks,
+        'is_do_not_check_security': 'DoNotCheckSecurity' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
         'is_raises_exception': is_raises_exception,
+        'is_read_only': 'ReadOnly' in extended_attributes,
         'is_static': is_static,
         'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,
         'is_variadic': arguments and arguments[-1].is_variadic,

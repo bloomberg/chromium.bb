@@ -3,17 +3,17 @@
 
 {##############################################################################}
 {% macro attribute_configuration(attribute) %}
-{% set getter_callback_name =
+{% set getter_callback =
        '%sV8Internal::%sAttributeGetterCallback' %
             (interface_name, attribute.name)
        if not attribute.constructor_type else
        '{0}V8Internal::{0}ConstructorGetter'.format(interface_name) %}
-{% set getter_callback_name_for_main_world =
+{% set getter_callback_for_main_world =
        '%sV8Internal::%sAttributeGetterCallbackForMainWorld' %
             (interface_name, attribute.name)
        if attribute.is_per_world_bindings else '0' %}
-{% set setter_callback_name = attribute.setter_callback_name %}
-{% set setter_callback_name_for_main_world =
+{% set setter_callback = attribute.setter_callback %}
+{% set setter_callback_for_main_world =
        '%sV8Internal::%sAttributeSetterCallbackForMainWorld' %
            (interface_name, attribute.name)
        if attribute.is_per_world_bindings and not attribute.is_read_only else '0' %}
@@ -27,18 +27,18 @@
                             ' | '.join(attribute.property_attributes) %}
 {% set on_prototype = ', 0 /* on instance */'
        if not attribute.is_expose_js_accessors else '' %}
-{"{{attribute.name}}", {{getter_callback_name}}, {{setter_callback_name}}, {{getter_callback_name_for_main_world}}, {{setter_callback_name_for_main_world}}, {{wrapper_type_info}}, {{access_control}}, {{property_attribute}}{{on_prototype}}}
+{"{{attribute.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, {{wrapper_type_info}}, {{access_control}}, {{property_attribute}}{{on_prototype}}}
 {%- endmacro %}
 
 
 {##############################################################################}
 {% macro method_configuration(method) %}
-{% set method_callback_name =
+{% set method_callback =
    '%sV8Internal::%sMethodCallback' % (interface_name, method.name) %}
-{% set method_callback_name_for_main_world =
+{% set method_callback_for_main_world =
    '%sV8Internal::%sMethodCallbackForMainWorld' % (interface_name, method.name)
    if method.is_per_world_bindings else '0' %}
-{"{{method.name}}", {{method_callback_name}}, {{method_callback_name_for_main_world}}, {{method.number_of_required_or_variadic_arguments}}}
+{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.number_of_required_or_variadic_arguments}}}
 {%- endmacro %}
 
 
@@ -91,6 +91,36 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 {
     {{cpp_class_name}}* imp =  {{v8_class_name}}::toNative(host);
     return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block origin_safe_method_setter %}
+{% if has_origin_safe_method_setter %}
+static void {{cpp_class_name}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    {# FIXME: don't call GetIsolate 3 times #}
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class_name}}::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
+    if (holder.IsEmpty())
+        return;
+    {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(holder);
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+
+    info.This()->SetHiddenValue(name, jsValue);
+}
+
+static void {{cpp_class_name}}OriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    {{cpp_class_name}}V8Internal::{{cpp_class_name}}OriginSafeMethodSetter(name, jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 {% endif %}
@@ -204,6 +234,17 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     {% if not method.overload_index or method.overload_index == 1 %}
     {# For overloaded methods, only generate one accessor #}
     {% filter conditional(method.conditional_string) %}
+    {% if method.is_do_not_check_security %}
+    {% if method.is_per_world_bindings %}
+    if (currentWorldType == MainWorld) {
+        {{install_do_not_check_security_signature(method, 'ForMainWorld')}}
+    } else {
+        {{install_do_not_check_security_signature(method)}}
+    }
+    {% else %}
+    {{install_do_not_check_security_signature(method)}}
+    {% endif %}
+    {% else %}{# is_do_not_check_security #}
     {% if method.is_per_world_bindings %}
     if (currentWorldType == MainWorld) {
         {% filter runtime_enabled(method.runtime_enabled_function_name) %}
@@ -219,13 +260,14 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     {{install_custom_signature(method)}}
     {% endfilter %}
     {% endif %}
+    {% endif %}{# is_do_not_check_security #}
     {% endfilter %}
     {% endif %}{# install_custom_signature #}
     {% endfor %}
     {% for attribute in attributes if attribute.is_static %}
-    {% set getter_callback_name = '%sV8Internal::%sAttributeGetterCallback' %
+    {% set getter_callback = '%sV8Internal::%sAttributeGetterCallback' %
            (interface_name, attribute.name) %}
-    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("{{attribute.name}}"), {{getter_callback_name}}, {{attribute.setter_callback_name}}, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("{{attribute.name}}"), {{getter_callback}}, {{attribute.setter_callback}}, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     {% endfor %}
     {% if constants %}
     {{install_constants() | indent}}
@@ -243,13 +285,33 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
 
 
 {######################################}
+{% macro install_do_not_check_security_signature(method, world_suffix) %}
+{# FIXME: move to V8DOMConfiguration::installDOMCallbacksWithDoNotCheckSecuritySignature #}
+{# Methods that are [DoNotCheckSecurity] are always readable, but if they are
+   changed and then accessed from a different origin, we do not return the
+   underlying value, but instead return a new copy of the original function.
+   This is achieved by storing the changed value as a hidden property. #}
+{% set getter_callback =
+       '%sV8Internal::%sOriginSafeMethodGetterCallback%s' %
+       (cpp_class_name, method.name, world_suffix) %}
+{% set setter_callback =
+    '{0}V8Internal::{0}OriginSafeMethodSetterCallback'.format(cpp_class_name)
+    if not method.is_read_only else '0' %}
+{% set property_attribute =
+    'static_cast<v8::PropertyAttribute>(%s)' %
+    ' | '.join(method.property_attributes or ['v8::DontDelete']) %}
+{{method.function_template}}->SetAccessor(v8::String::NewSymbol("{{method.name}}"), {{getter_callback}}, {{setter_callback}}, v8Undefined(), v8::ALL_CAN_READ, {{property_attribute}});
+{%- endmacro %}
+
+
+{######################################}
 {% macro install_custom_signature(method, world_suffix) %}
 {# FIXME: move to V8DOMConfiguration::installDOMCallbacksWithCustomSignature #}
-{% set callback_name = '%sV8Internal::%sMethodCallback%s' %
-                       (interface_name, method.name, world_suffix) %}
+{% set method_callback = '%sV8Internal::%sMethodCallback%s' %
+                         (interface_name, method.name, world_suffix) %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(method.property_attributes) %}
-{{method.function_template}}->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{callback_name}}, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
+{{method.function_template}}->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{method_callback}}, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
 {%- endmacro %}
 
 

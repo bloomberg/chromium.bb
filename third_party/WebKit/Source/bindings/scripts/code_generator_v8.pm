@@ -1232,8 +1232,8 @@ static void ${funcName}OriginSafeMethodGetter${forMainWorldSuffix}(const v8::Pro
 
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(${v8ClassName}::GetTemplate(info.GetIsolate(), currentWorldType));
     if (holder.IsEmpty()) {
-        // can only reach here by 'object.__proto__.func', and it should passed
-        // domain security check already
+        // This is only reachable via |object.__proto__.func|, in which case it
+        // has already passed the same origin security check
         v8SetReturnValue(info, privateTemplate->GetFunction());
         return;
     }
@@ -3354,10 +3354,6 @@ sub GenerateNonStandardFunction
         # and then accessed on a different domain we do not return the underlying value but instead
         # return a new copy of the original function. This is achieved by storing the changed value
         # as hidden property.
-        $code .= <<END;
-
-    // $commentInfo
-END
         if ($function->extendedAttributes->{"PerWorldBindings"}) {
             $code .= <<END;
     if (currentWorldType == MainWorld) {
