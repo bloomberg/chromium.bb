@@ -587,7 +587,10 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   // Windows has a specific method, DoDragDrop(), which performs the entire
   // drag. We have to emulate this, so we spin off a nested runloop which will
   // track all cursor movement and reroute events to a specific handler.
+  move_loop_.SetDragImage(source_provider_->GetDragImage(),
+                          source_provider_->GetDragImageOffset());
   move_loop_.RunMoveLoop(source_window, grab_cursor_);
+  move_loop_.SetDragImage(gfx::ImageSkia(), gfx::Vector2dF());
 
   source_provider_ = NULL;
   drag_drop_in_progress_ = false;

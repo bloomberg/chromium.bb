@@ -140,6 +140,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                         // specialized to menus.
       TYPE_TOOLTIP,
       TYPE_BUBBLE,
+      TYPE_DRAG,        // An undecorated Window, used during a drag-and-drop to
+                        // show the drag image.
     };
 
     enum WindowOpacity {

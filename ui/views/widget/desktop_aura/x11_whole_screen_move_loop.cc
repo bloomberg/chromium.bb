@@ -18,7 +18,10 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
+#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -47,8 +50,7 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(
     X11WholeScreenMoveLoopDelegate* delegate)
     : delegate_(delegate),
       in_move_loop_(false),
-      grab_input_window_(None) /*,
-                                 root_window_(NULL)*/ {
+      grab_input_window_(None) {
 }
 
 X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() {}
@@ -63,6 +65,12 @@ bool X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
   // keyboard focus even though we took pointer grab.
   switch (xev->type) {
     case MotionNotify: {
+      if (drag_widget_.get()) {
+        gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+        gfx::Point location = gfx::ToFlooredPoint(
+            screen->GetCursorScreenPoint() - drag_offset_);
+        drag_widget_->SetBounds(gfx::Rect(location, drag_image_.size()));
+      }
       delegate_->OnMouseMovement(&xev->xmotion);
       break;
     }
@@ -93,30 +101,11 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
 
   XDisplay* display = gfx::GetXDisplay();
 
-  // Creates an invisible, InputOnly toplevel window. This window will receive
-  // all mouse movement for drags. It turns out that normal windows doing a
-  // grab doesn't redirect pointer motion events if the pointer isn't over the
-  // grabbing window. But InputOnly windows are able to grab everything. This
-  // is what GTK+ does, and I found a patch to KDE that did something similar.
-  unsigned long attribute_mask = CWEventMask | CWOverrideRedirect;
-  XSetWindowAttributes swa;
-  memset(&swa, 0, sizeof(swa));
-  swa.event_mask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask |
-                   StructureNotifyMask;
-  swa.override_redirect = True;
-  grab_input_window_ = XCreateWindow(
-      display,
-      DefaultRootWindow(display),
-      -100, -100, 10, 10,
-      0, 0, InputOnly, CopyFromParent,
-      attribute_mask, &swa);
+  grab_input_window_ = CreateDragInputWindow(display);
+  if (!drag_image_.isNull())
+    CreateDragImageWindow();
   base::MessagePumpX11::Current()->AddDispatcherForWindow(
       this, grab_input_window_);
-
-  // Wait for the window to be mapped. If we don't, XGrabPointer fails.
-  XMapRaised(display, grab_input_window_);
-  base::MessagePumpX11::Current()->BlockUntilWindowMapped(
-      grab_input_window_);
 
   if (!GrabPointerWithCursor(cursor))
     return false;
@@ -156,11 +145,21 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
 
   base::MessagePumpX11::Current()->RemoveDispatcherForWindow(
       grab_input_window_);
+  drag_widget_.reset();
   delegate_->OnMoveLoopEnded();
   XDestroyWindow(display, grab_input_window_);
 
   in_move_loop_ = false;
   quit_closure_.Run();
+}
+
+void X11WholeScreenMoveLoop::SetDragImage(const gfx::ImageSkia& image,
+                                          gfx::Vector2dF offset) {
+  drag_image_ = image;
+  drag_offset_ = offset;
+  // Reset the Y offset, so that the drag-image is always just below the cursor,
+  // so that it is possible to see where the cursor is going.
+  drag_offset_.set_y(0.f);
 }
 
 bool X11WholeScreenMoveLoop::GrabPointerWithCursor(gfx::NativeCursor cursor) {
@@ -185,6 +184,54 @@ bool X11WholeScreenMoveLoop::GrabPointerWithCursor(gfx::NativeCursor cursor) {
   }
 
   return true;
+}
+
+Window X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
+  // Creates an invisible, InputOnly toplevel window. This window will receive
+  // all mouse movement for drags. It turns out that normal windows doing a
+  // grab doesn't redirect pointer motion events if the pointer isn't over the
+  // grabbing window. But InputOnly windows are able to grab everything. This
+  // is what GTK+ does, and I found a patch to KDE that did something similar.
+  unsigned long attribute_mask = CWEventMask | CWOverrideRedirect;
+  XSetWindowAttributes swa;
+  memset(&swa, 0, sizeof(swa));
+  swa.event_mask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask |
+                   StructureNotifyMask;
+  swa.override_redirect = True;
+  Window window = XCreateWindow(display,
+                                DefaultRootWindow(display),
+                                -100, -100, 10, 10,
+                                0, CopyFromParent, InputOnly, CopyFromParent,
+                                attribute_mask, &swa);
+  XMapRaised(display, window);
+  base::MessagePumpX11::Current()->BlockUntilWindowMapped(window);
+  return window;
+}
+
+void X11WholeScreenMoveLoop::CreateDragImageWindow() {
+  Widget* widget = new Widget;
+  Widget::InitParams params(Widget::InitParams::TYPE_DRAG);
+  params.opacity = Widget::InitParams::OPAQUE_WINDOW;
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.accept_events = false;
+
+  gfx::Point location = gfx::ToFlooredPoint(
+      gfx::Screen::GetNativeScreen()->GetCursorScreenPoint() - drag_offset_);
+  params.bounds = gfx::Rect(location, drag_image_.size());
+  widget->set_focus_on_creation(false);
+  widget->set_frame_type(Widget::FRAME_TYPE_FORCE_NATIVE);
+  widget->Init(params);
+  widget->GetNativeWindow()->SetName("DragWindow");
+
+  ImageView* image = new ImageView();
+  image->SetImage(drag_image_);
+  image->SetBounds(0, 0, drag_image_.width(), drag_image_.height());
+  widget->SetContentsView(image);
+
+  widget->Show();
+  widget->GetNativeWindow()->layer()->SetFillsBoundsOpaquely(false);
+
+  drag_widget_.reset(widget);
 }
 
 }  // namespace views
