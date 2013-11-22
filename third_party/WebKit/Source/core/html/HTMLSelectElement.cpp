@@ -29,6 +29,7 @@
 #include "core/html/HTMLSelectElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -1566,7 +1567,7 @@ void HTMLSelectElement::finishParsingChildren()
 bool HTMLSelectElement::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
 {
     if (!value) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::failedToSet(String::number(index), "HTMLSelectElement", "The value provided was not an HTMLOptionElement."));
         return false;
     }
     setOption(index, value.get(), exceptionState);

@@ -3655,12 +3655,12 @@ sub GenerateImplementationIndexedPropertySetter
     push @statements, "collection->${methodName}(index, propertyValue$extraArguments);";
     $code .= GenerateIfElseStatement("bool", "result", \@conditions, \@statements);
 
-    $code .= "    if (!result)\n";
-    $code .= "        return;\n";
     if ($raisesExceptions) {
         $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
     }
+    $code .= "    if (!result)\n";
+    $code .= "        return;\n";
     $code .= "    v8SetReturnValue(info, jsValue);\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
