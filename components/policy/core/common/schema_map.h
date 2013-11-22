@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_SCHEMA_MAP_H_
-#define CHROME_BROWSER_POLICY_SCHEMA_MAP_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_SCHEMA_MAP_H_
+#define COMPONENTS_POLICY_CORE_COMMON_SCHEMA_MAP_H_
 
 #include <map>
 #include <string>
@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"
+#include "components/policy/policy_export.h"
 
 namespace policy {
 
@@ -22,7 +23,7 @@ typedef std::map<PolicyDomain, ComponentMap> DomainMap;
 
 // Contains a mapping of policy namespaces (domain + component ID) to its
 // corresponding Schema.
-class SchemaMap : public base::RefCountedThreadSafe<SchemaMap> {
+class POLICY_EXPORT SchemaMap : public base::RefCountedThreadSafe<SchemaMap> {
  public:
   SchemaMap();
   // Takes ownership of |map| (its contents will be swapped).
@@ -61,4 +62,4 @@ class SchemaMap : public base::RefCountedThreadSafe<SchemaMap> {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_SCHEMA_MAP_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_SCHEMA_MAP_H_

@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/policy/schema_registry.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/policy/core/common/schema_registry.h"
 
 namespace policy {
 

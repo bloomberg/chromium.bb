@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/schema_map.h"
+#include "components/policy/core/common/schema_map.h"
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"

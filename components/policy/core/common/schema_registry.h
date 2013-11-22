@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_SCHEMA_REGISTRY_H_
-#define CHROME_BROWSER_POLICY_SCHEMA_REGISTRY_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_SCHEMA_REGISTRY_H_
+#define COMPONENTS_POLICY_CORE_COMMON_SCHEMA_REGISTRY_H_
 
 #include <set>
 
@@ -12,9 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/policy/schema_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"
+#include "components/policy/core/common/schema_map.h"
 
 namespace policy {
 
@@ -24,9 +24,9 @@ class SchemaMap;
 // observers to get notified whenever it is updated.
 // This object is not thread safe and must be used from the owner's thread,
 // usually UI.
-class SchemaRegistry : public base::NonThreadSafe {
+class POLICY_EXPORT SchemaRegistry : public base::NonThreadSafe {
  public:
-  class Observer {
+  class POLICY_EXPORT Observer {
    public:
     // Invoked whenever schemas are registered or unregistered.
     // |has_new_schemas| is true if a new component has been registered since
@@ -83,8 +83,8 @@ class SchemaRegistry : public base::NonThreadSafe {
 };
 
 // A registry that combines the maps of other registries.
-class CombinedSchemaRegistry : public SchemaRegistry,
-                               public SchemaRegistry::Observer {
+class POLICY_EXPORT CombinedSchemaRegistry : public SchemaRegistry,
+                                             public SchemaRegistry::Observer {
  public:
   CombinedSchemaRegistry();
   virtual ~CombinedSchemaRegistry();
@@ -112,4 +112,4 @@ class CombinedSchemaRegistry : public SchemaRegistry,
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_SCHEMA_REGISTRY_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_SCHEMA_REGISTRY_H_

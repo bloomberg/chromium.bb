@@ -15,8 +15,8 @@
 #include "chrome/browser/policy/cloud/policy_builder.h"
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
-#include "chrome/browser/policy/schema_registry.h"
 #include "components/policy/core/common/external_data_fetcher.h"
+#include "components/policy/core/common/schema_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

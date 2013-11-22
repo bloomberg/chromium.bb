@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/policy/schema_map.h"
+#include "components/policy/core/common/schema_map.h"
 
 namespace base {
 class SequencedTaskRunner;

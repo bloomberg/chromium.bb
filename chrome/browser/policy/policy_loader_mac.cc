@@ -17,11 +17,11 @@
 #include "base/values.h"
 #include "chrome/browser/policy/policy_load_status.h"
 #include "chrome/browser/policy/preferences_mac.h"
-#include "chrome/browser/policy/schema_map.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/schema.h"
+#include "components/policy/core/common/schema_map.h"
 
 using base::mac::CFCast;
 using base::ScopedCFTypeRef;

@@ -14,9 +14,9 @@
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_core.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
-#include "chrome/browser/policy/schema_registry.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/schema_registry.h"
 
 namespace base {
 class SequencedTaskRunner;

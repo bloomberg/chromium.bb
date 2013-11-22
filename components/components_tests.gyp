@@ -173,6 +173,8 @@
               'sources': [
                 'policy/core/common/policy_bundle_unittest.cc',
                 'policy/core/common/policy_map_unittest.cc',
+                'policy/core/common/schema_map_unittest.cc',
+                'policy/core/common/schema_registry_unittest.cc',
                 'policy/core/common/schema_unittest.cc',
               ],
             }],

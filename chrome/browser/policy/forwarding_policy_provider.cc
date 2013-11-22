@@ -4,8 +4,8 @@
 
 #include "chrome/browser/policy/forwarding_policy_provider.h"
 
-#include "chrome/browser/policy/schema_map.h"
-#include "chrome/browser/policy/schema_registry.h"
+#include "components/policy/core/common/schema_map.h"
+#include "components/policy/core/common/schema_registry.h"
 
 namespace policy {
 

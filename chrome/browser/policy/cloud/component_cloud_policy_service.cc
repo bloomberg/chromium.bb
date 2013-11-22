@@ -19,8 +19,8 @@
 #include "chrome/browser/policy/cloud/external_policy_data_fetcher.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
-#include "chrome/browser/policy/schema_map.h"
 #include "components/policy/core/common/schema.h"
+#include "components/policy/core/common/schema_map.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace em = enterprise_management;

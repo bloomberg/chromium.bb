@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/schema_registry.h"
+#include "components/policy/core/common/schema_registry.h"
 
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"

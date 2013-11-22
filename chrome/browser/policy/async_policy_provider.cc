@@ -11,8 +11,8 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/policy/async_policy_loader.h"
-#include "chrome/browser/policy/schema_registry.h"
 #include "components/policy/core/common/policy_bundle.h"
+#include "components/policy/core/common/schema_registry.h"
 
 namespace policy {
 

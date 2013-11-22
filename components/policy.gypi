@@ -38,6 +38,10 @@
             'policy/core/common/schema.cc',
             'policy/core/common/schema.h',
             'policy/core/common/schema_internal.h',
+            'policy/core/common/schema_map.cc',
+            'policy/core/common/schema_map.h',
+            'policy/core/common/schema_registry.cc',
+            'policy/core/common/schema_registry.h',
             'policy/policy_export.h',
           ],
         }, {  # configuration_policy==0

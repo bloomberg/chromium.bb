@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/configuration_policy_handler_list.h"
-#include "chrome/browser/policy/schema_registry.h"
 #include "components/policy/core/common/schema.h"
+#include "components/policy/core/common/schema_registry.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/proxy_policy_provider.h"

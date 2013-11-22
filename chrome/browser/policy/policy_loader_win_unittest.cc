@@ -31,11 +31,11 @@
 #include "chrome/browser/policy/async_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
 #include "chrome/browser/policy/preg_parser_win.h"
-#include "chrome/browser/policy/schema_map.h"
 #include "components/json_schema/json_schema_constants.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/schema_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace schema = json_schema_constants;
