@@ -890,23 +890,14 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
 
   if (updated_details.missing()) {
-    // The update deletes the local file.
     FileByID::iterator found = file_by_id_.find(tracker->file_id());
     if (found == file_by_id_.end() || found->second->details().missing()) {
-      // Both the tracker and metadata have the deleted flag, now it's safe to
+      // Both the tracker and metadata have the missing flag, now it's safe to
       // delete the |tracker|.
       RemoveTracker(tracker->tracker_id(), batch.get());
-    } else {
-      // The local file is deleted, but corresponding remote file isn't.
-      // Put the tracker back to the initial state.
-      tracker->clear_synced_details();
-      tracker->set_dirty(true);
-      tracker->set_active(false);
-      PutTrackerToBatch(*tracker, batch.get());
+      WriteToDatabase(batch.Pass(), callback);
+      return;
     }
-
-    WriteToDatabase(batch.Pass(), callback);
-    return;
   }
 
   // Check if the tracker's parent is still in |parent_tracker_ids|.

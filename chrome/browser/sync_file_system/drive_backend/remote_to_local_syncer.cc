@@ -146,8 +146,16 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
   DCHECK(dirty_tracker_->active());
   DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
 
-  if (!dirty_tracker_->has_synced_details() ||
-      dirty_tracker_->synced_details().missing()) {
+  if (!dirty_tracker_->has_synced_details()) {
+    LOG(ERROR) << "Missing synced_details of a file: "
+               << dirty_tracker_->file_id();
+    NOTREACHED();
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+  DCHECK(dirty_tracker_->has_synced_details());
+
+  if (dirty_tracker_->synced_details().missing()) {
     if (remote_details.missing()) {
       // Remote deletion to local missing file.
       if (dirty_tracker_->has_synced_details() &&
@@ -301,8 +309,8 @@ void RemoteToLocalSyncer::HandleNewFile(const SyncStatusCallback& callback) {
   DCHECK(dirty_tracker_);
   DCHECK(dirty_tracker_->active());
   DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
-  DCHECK(!dirty_tracker_->has_synced_details() ||
-         dirty_tracker_->synced_details().missing());
+  DCHECK(dirty_tracker_->has_synced_details());
+  DCHECK(dirty_tracker_->synced_details().missing());
 
   DCHECK(remote_metadata_);
   DCHECK(remote_metadata_->has_details());
@@ -592,10 +600,12 @@ void RemoteToLocalSyncer::SyncCompleted(const SyncStatusCallback& callback,
   if (!dirty_tracker_->active() ||
       HasDisabledAppRoot(metadata_database(), *dirty_tracker_)) {
     // Operations for an inactive tracker don't update file content.
-    if (dirty_tracker_->has_synced_details())
+    if (dirty_tracker_->has_synced_details()) {
       updated_details.set_md5(dirty_tracker_->synced_details().md5());
-    else
+    } else {
       updated_details.clear_md5();
+      updated_details.set_missing(true);
+    }
   }
   metadata_database()->UpdateTracker(dirty_tracker_->tracker_id(),
                                      updated_details,
