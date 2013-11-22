@@ -283,7 +283,6 @@
         'base/multi_channel_resampler.h',
         'base/pipeline.cc',
         'base/pipeline.h',
-        'base/pipeline_status.cc',
         'base/pipeline_status.h',
         'base/ranges.cc',
         'base/ranges.h',

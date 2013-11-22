@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/cpu.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "media/base/bind_to_loop.h"
@@ -126,6 +127,17 @@ static bool IsCodedSizeSupported(const gfx::Size& coded_size) {
   return os_large_video_support && hw_large_video_support;
 }
 
+// Report |status| to UMA and run |cb| with it.  This is super-specific to the
+// UMA stat reported because the UMA_HISTOGRAM_ENUMERATION API requires a
+// callsite to always be called with the same stat name (can't parameterize it).
+static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
+    const PipelineStatusCB& cb,
+    PipelineStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.GpuVideoDecoderInitializeStatus", status, PIPELINE_STATUS_MAX);
+  cb.Run(status);
+}
+
 void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  const PipelineStatusCB& orig_status_cb) {
   DVLOG(3) << "Initialize()";
@@ -135,9 +147,9 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   weak_this_ = weak_factory_.GetWeakPtr();
 
-  PipelineStatusCB status_cb = CreateUMAReportingPipelineCB(
-      "Media.GpuVideoDecoderInitializeStatus",
-      BindToCurrentLoop(orig_status_cb));
+  PipelineStatusCB status_cb =
+      base::Bind(&ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB,
+                 BindToCurrentLoop(orig_status_cb));
 
   bool previously_initialized = config_.IsValidConfig();
 #if !defined(OS_CHROMEOS) && !defined(OS_WIN)

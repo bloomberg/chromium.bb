@@ -37,11 +37,6 @@ enum PipelineStatus {
 
 typedef base::Callback<void(PipelineStatus)> PipelineStatusCB;
 
-// Wrap & return a callback around |cb| which reports its argument to UMA under
-// the requested |name|.
-PipelineStatusCB CreateUMAReportingPipelineCB(const std::string& name,
-                                              const PipelineStatusCB& cb);
-
 // TODO(scherkus): this should be moved alongside host interface definitions.
 struct PipelineStatistics {
   PipelineStatistics()
