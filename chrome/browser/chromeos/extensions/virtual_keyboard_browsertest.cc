@@ -12,6 +12,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -38,17 +40,13 @@ const base::FilePath kBaseKeyboardTestFramework =
 class VirtualKeyboardBrowserTest : public InProcessBrowserTest {
  public:
 
-  /**
-   * Ensure that the virtual keyboard is enabled.
-   */
+  // Ensure that the virtual keyboard is enabled.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
   }
 
-  /**
-   * Injects javascript in |file| into the keyboard page and runs test methods.
-   */
+  //Injects javascript in |file| into the keyboard page and runs test methods.
   void RunTest(const base::FilePath& file) {
     ui_test_utils::NavigateToURL(browser(), GURL("chrome://keyboard"));
 
@@ -69,12 +67,31 @@ class VirtualKeyboardBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(ExecuteWebUIResourceTest(rvh, resource_ids));
   }
 
+  content::RenderViewHost* GetKeyboardRenderViewHost() {
+    std::string kVirtualKeyboardURL =
+        "chrome-extension://mppnpdlheglhdfmldimlhpnegondlapf/";
+    scoped_ptr<content::RenderWidgetHostIterator> widgets(
+        content::RenderWidgetHost::GetRenderWidgetHosts());
+    while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
+      if (widget->IsRenderView()) {
+        content::RenderViewHost* view = content::RenderViewHost::From(widget);
+        std::string url = view->GetSiteInstance()->GetSiteURL().spec();
+        if (url == kVirtualKeyboardURL) {
+          content::WebContents* wc =
+              content::WebContents::FromRenderViewHost(view);
+          // Waits for Polymer to load.
+          content::WaitForLoadStop(wc);
+          return view;
+        }
+      }
+    }
+    return NULL;
+  }
+
  private:
 
-  /**
-   * Injects javascript into the keyboard page.  The test |file| is in
-   * directory |dir| relative to the root testing directory.
-   */
+  // Injects javascript into the keyboard page.  The test |file| is in
+  // directory |dir| relative to the root testing directory.
   void InjectJavascript(const base::FilePath& dir,
                         const base::FilePath& file) {
     base::FilePath path = ui_test_utils::GetTestFilePath(dir, file);
@@ -99,6 +116,21 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, ControlKeysTest) {
 IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, KeysetTransitionTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("keyset_transition_test.js")));
 }
+
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, IsKeyboardLoaded) {
+  content::RenderViewHost* keyboard_rvh = GetKeyboardRenderViewHost();
+  ASSERT_TRUE(keyboard_rvh);
+  bool loaded = false;
+  std::string script = "!!chrome.virtualKeyboardPrivate";
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      keyboard_rvh,
+      "window.domAutomationController.send(" + script + ");",
+      &loaded));
+  // Catches the regression in crbug.com/308653.
+  ASSERT_TRUE(loaded);
+}
+// TODO(rsadam): Add an end to end test to verify that characters typed in the
+// keyboard actually appear in the other window.
 
 // TODO(kevers|rsadam|bshe):  Add UI tests for remaining virtual keyboard
 // functionality.
