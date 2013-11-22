@@ -1,0 +1,16 @@
+PASS internals.updateStyleAndReturnAffectedElementCount() is 0
+PASS internals.updateStyleAndReturnAffectedElementCount() is 0
+PASS internals.updateStyleAndReturnAffectedElementCount() is 1
+PASS internals.updateStyleAndReturnAffectedElementCount() is 1
+PASS internals.updateStyleAndReturnAffectedElementCount() is 2
+PASS internals.updateStyleAndReturnAffectedElementCount() is 31
+PASS internals.updateStyleAndReturnAffectedElementCount() is 3
+PASS internals.updateStyleAndReturnAffectedElementCount() is 3
+PASS internals.updateStyleAndReturnAffectedElementCount() is 2
+PASS internals.updateStyleAndReturnAffectedElementCount() is 3
+PASS successfullyParsed is true
+
+TEST COMPLETE
+foo
+bar
+baz
