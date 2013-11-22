@@ -2956,16 +2956,17 @@ static Color decorationColor(const RenderObject* object, RenderStyle* style)
     return result;
 }
 
-void RenderObject::getTextDecorationColors(int decorations, Color& underline, Color& overline,
+void RenderObject::getTextDecorationColors(unsigned decorations, Color& underline, Color& overline,
                                            Color& linethrough, bool quirksMode, bool firstlineStyle)
 {
     RenderObject* curr = this;
     RenderStyle* styleToUse = 0;
-    TextDecoration currDecs = TextDecorationNone;
+    unsigned currDecs = TextDecorationNone;
     Color resultColor;
     do {
         styleToUse = curr->style(firstlineStyle);
         currDecs = styleToUse->textDecoration();
+        currDecs &= decorations;
         resultColor = decorationColor(this, styleToUse);
         // Parameter 'decorations' is cast as an int to enable the bitwise operations below.
         if (currDecs) {
