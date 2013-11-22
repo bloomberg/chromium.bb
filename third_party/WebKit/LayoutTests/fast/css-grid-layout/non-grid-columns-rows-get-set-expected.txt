@@ -140,12 +140,12 @@ PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "
 PASS element.style.gridDefinitionRows is "none"
 
 Test setting grid-definition-columns and grid-definition-rows to 'inherit' through JS
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is '50px last'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'first 101%'
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is '50px (last)'
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is '(first) 101%'
 
 Test setting grid-definition-columns and grid-definition-rows to 'initial' through JS
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is '150% last'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'first 1fr'
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is '150% (last)'
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is '(first) 1fr'
 PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
 PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
 PASS successfullyParsed is true

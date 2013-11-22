@@ -137,6 +137,15 @@ inline static CSSParserValue makeOperatorValue(int value)
     return v;
 }
 
+inline static CSSParserValue makeIdentValue(CSSParserString string)
+{
+    CSSParserValue v;
+    v.id = cssValueKeywordID(string);
+    v.unit = CSSPrimitiveValue::CSS_IDENT;
+    v.string = string;
+    return v;
+}
+
 %}
 
 %expect 0
@@ -371,6 +380,9 @@ inline static CSSParserValue makeOperatorValue(int value)
 %type <string> attr_name
 
 %type <location> error_location
+
+%type <valueList> ident_list
+%type <value> track_names_list
 
 %%
 
@@ -1662,6 +1674,29 @@ prio:
     | /* empty */ { $$ = false; }
   ;
 
+ident_list:
+    IDENT maybe_space {
+        $$ = parser->createFloatingValueList();
+        $$->addValue(makeIdentValue($1));
+    }
+    | ident_list IDENT maybe_space {
+        $$ = $1;
+        $$->addValue(makeIdentValue($2));
+    }
+    ;
+
+track_names_list:
+    '(' maybe_space closing_parenthesis {
+        $$.setFromValueList(parser->sinkFloatingValueList(parser->createFloatingValueList()));
+    }
+    | '(' maybe_space ident_list closing_parenthesis {
+        $$.setFromValueList(parser->sinkFloatingValueList($3));
+    }
+    | '(' maybe_space expr_recovery closing_parenthesis {
+        YYERROR;
+    }
+  ;
+
 expr:
     term {
         $$ = parser->createFloatingValueList();
@@ -1697,11 +1732,7 @@ term:
   unary_term maybe_space
   | unary_operator unary_term maybe_space { $$ = $2; $$.fValue *= $1; }
   | STRING maybe_space { $$.id = CSSValueInvalid; $$.string = $1; $$.unit = CSSPrimitiveValue::CSS_STRING; }
-  | IDENT maybe_space {
-      $$.id = cssValueKeywordID($1);
-      $$.unit = CSSPrimitiveValue::CSS_IDENT;
-      $$.string = $1;
-  }
+  | IDENT maybe_space { $$ = makeIdentValue($1); }
   /* We might need to actually parse the number from a dimension, but we can't just put something that uses $$.string into unary_term. */
   | DIMEN maybe_space { $$.id = CSSValueInvalid; $$.string = $1; $$.unit = CSSPrimitiveValue::CSS_DIMENSION; }
   | unary_operator DIMEN maybe_space { $$.id = CSSValueInvalid; $$.string = $2; $$.unit = CSSPrimitiveValue::CSS_DIMENSION; }
@@ -1724,6 +1755,7 @@ term:
   | '%' maybe_space { /* Handle width: %; */
       $$.id = CSSValueInvalid; $$.unit = 0;
   }
+  | track_names_list maybe_space
   ;
 
 unary_term:

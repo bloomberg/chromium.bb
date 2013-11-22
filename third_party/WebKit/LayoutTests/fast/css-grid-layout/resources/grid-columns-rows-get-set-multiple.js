@@ -72,16 +72,16 @@ function testInherit()
     parentElement.style.width = "800px";
     parentElement.style.height = "600px";
     parentElement.style.font = "10px Ahem"; // Used to resolve em font consistently.
-    parentElement.style.gridDefinitionColumns = "50px 1fr 'last'";
-    parentElement.style.gridDefinitionRows = "2em 'middle' 45px";
-    testGridDefinitionsValues(parentElement, "50px 750px last", "20px middle 45px");
+    parentElement.style.gridDefinitionColumns = "50px 1fr (last)";
+    parentElement.style.gridDefinitionRows = "2em (middle) 45px";
+    testGridDefinitionsValues(parentElement, "50px 750px (last)", "20px (middle) 45px");
 
     element = document.createElement("div");
     parentElement.appendChild(element);
     element.style.display = "grid";
     element.style.gridDefinitionColumns = "inherit";
     element.style.gridDefinitionRows = "inherit";
-    testGridDefinitionsValues(element, "50px 0px last", "20px middle 45px");
+    testGridDefinitionsValues(element, "50px 0px (last)", "20px (middle) 45px");
 
     document.body.removeChild(parentElement);
 }
@@ -96,9 +96,9 @@ function testInitial()
     element.style.display = "grid";
     element.style.width = "800px";
     element.style.height = "600px";
-    element.style.gridDefinitionColumns = "150% 'middle' 55px";
-    element.style.gridDefinitionRows = "1fr 'line' 2fr 'line'";
-    testGridDefinitionsValues(element, "1200px middle 55px", "200px line 400px line");
+    element.style.gridDefinitionColumns = "150% (middle) 55px";
+    element.style.gridDefinitionRows = "1fr (line) 2fr (line)";
+    testGridDefinitionsValues(element, "1200px (middle) 55px", "200px (line) 400px (line)");
 
     element.style.gridDefinitionColumns = "initial";
     element.style.gridDefinitionRows = "initial";

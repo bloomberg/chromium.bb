@@ -19,28 +19,56 @@ if (window.testRunner)
     width: 77px;
 }
 .gridWithFixed {
-    grid-definition-columns: "first" 10px;
-    grid-definition-rows: "first" 15px;
+    grid-definition-columns: (first) 10px;
+    grid-definition-rows: (first) 15px;
 }
 .gridWithPercent {
-    grid-definition-columns: 53% "last";
-    grid-definition-rows: 27% "last";
+    grid-definition-columns: 53% (last);
+    grid-definition-rows: 27% (last);
 }
 .gridWithAuto {
-    grid-definition-columns: "first" auto;
-    grid-definition-rows: auto "last";
+    grid-definition-columns: (first) auto;
+    grid-definition-rows: auto (last);
 }
 .gridWithMinMax {
-    grid-definition-columns: "first" minmax(10%, 15px);
-    grid-definition-rows: minmax(20px, 50%) "last";
+    grid-definition-columns: (first) minmax(10%, 15px);
+    grid-definition-rows: minmax(20px, 50%) (last);
 }
 .gridWithFixedMultiple {
-    grid-definition-columns: "first" "nav" 10px "last";
-    grid-definition-rows: "first" "nav" 15px "last";
+    grid-definition-columns: (first nav) 10px (last);
+    grid-definition-rows: (first nav) 15px (last);
 }
 .gridWithPercentageSameStringMultipleTimes {
-    grid-definition-columns: "first" "nav" 10% "nav" 15% "last";
-    grid-definition-rows: "first" "nav2" 25% "nav2" 75% "last";
+    grid-definition-columns: (first nav) 10% (nav) 15% (last);
+    grid-definition-rows: (first nav2) 25% (nav2) 75% (last);
+}
+.gridWithRepeat {
+    grid-definition-columns: (first) 10px repeat(2, (nav nav2) 50%);
+    grid-definition-rows: 100px repeat(2, (nav nav2) 25%) (last);
+}
+.gridWithEmptyParentheses {
+    grid-definition-columns: () 10px;
+    grid-definition-rows: 20px (  ) 50px ();
+}
+.gridWithoutParentheses {
+    grid-definition-columns: first nav 10px;
+    grid-definition-rows: first 50% last;
+}
+.gridWithInvalidNestedParentheses {
+    grid-definition-columns: (first (nav)) 10px (last);
+    grid-definition-rows: (first) 50% (last (nav) nav2);
+}
+.gridWithUnbalancedParentheses {
+    grid-definition-columns: (first nav 10px;
+    grid-definition-rows: (first) 50% last);
+}
+.gridWithMisplacedParentheses {
+    grid-definition-columns: (first 10px) 50%;
+    grid-definition-rows: (first) (nav 50%);
+}
+.gridWithContiguousParentheses {
+    grid-definition-columns: (first) (nav) 10px;
+    grid-definition-rows: 50px (nav nav2) (middle) 10px;
 }
 </style>
 <script src="../../resources/js-test.js"></script>
@@ -55,52 +83,61 @@ if (window.testRunner)
 <div class="grid gridWithMinMax" id="gridWithMinMax"></div>
 <div class="grid gridWithFixedMultiple" id="gridWithFixedMultiple"></div>
 <div class="grid gridWithPercentageSameStringMultipleTimes" id="gridWithPercentageSameStringMultipleTimes"></div>
+<div class="grid gridWithRepeat" id="gridWithRepeatElement"></div>
+<div class="grid gridWithEmptyParentheses" id="gridWithEmptyParentheses"></div>
+<div class="grid gridWithoutParentheses" id="gridWithoutParentheses"></div>
+<div class="grid gridWithInvalidNestedParentheses" id="gridWithInvalidNestedParentheses"></div>
+<div class="grid gridWithUnbalancedParentheses" id="gridWithUnbalancedParentheses"></div>
+<div class="grid gridWithMisplacedParentheses" id="gridWithMisplacedParentheses"></div>
+<div class="grid gridWithContiguousParentheses" id="gridWithContiguousParentheses"></div>
 
 <script src="resources/grid-definitions-parsing-utils.js"></script>
 <script>
     description('Test that setting and getting grid-definition-columns and grid-definition-rows works as expected');
 
     debug("Test getting grid-definition-columns and grid-definition-rows set through CSS");
-    testGridDefinitionsValues(document.getElementById("gridWithFixedElement"), "first 10px", "first 15px");
-    testGridDefinitionsValues(document.getElementById("gridWithPercentElement"), "424px last", "162px last");
-    testGridDefinitionsValues(document.getElementById("gridWithAutoElement"), "first 0px", "0px last");
-    testGridDefinitionsValues(document.getElementById("gridWithAutoWithChildrenElement"), "first 77px", "22px last");
-    testGridDefinitionsValues(document.getElementById("gridWithMinMax"), "first 80px", "300px last");
-    testGridDefinitionsValues(document.getElementById("gridWithFixedMultiple"), "first nav 10px last", "first nav 15px last");
-    testGridDefinitionsValues(document.getElementById("gridWithPercentageSameStringMultipleTimes"), "first nav 80px nav 120px last", "first nav2 150px nav2 450px last");
+    testGridDefinitionsValues(document.getElementById("gridWithFixedElement"), "(first) 10px", "(first) 15px");
+    testGridDefinitionsValues(document.getElementById("gridWithPercentElement"), "424px (last)", "162px (last)");
+    testGridDefinitionsValues(document.getElementById("gridWithAutoElement"), "(first) 0px", "0px (last)");
+    testGridDefinitionsValues(document.getElementById("gridWithAutoWithChildrenElement"), "(first) 77px", "22px (last)");
+    testGridDefinitionsValues(document.getElementById("gridWithMinMax"), "(first) 80px", "300px (last)");
+    testGridDefinitionsValues(document.getElementById("gridWithFixedMultiple"), "(first nav) 10px (last)", "(first nav) 15px (last)");
+    testGridDefinitionsValues(document.getElementById("gridWithPercentageSameStringMultipleTimes"), "(first nav) 80px (nav) 120px (last)", "(first nav2) 150px (nav2) 450px (last)");
+    testGridDefinitionsValues(document.getElementById("gridWithRepeatElement"), "(first) 10px (nav nav2) 400px (nav nav2) 400px", "100px (nav nav2) 150px (nav nav2) 150px (last)");
+    testGridDefinitionsValues(document.getElementById("gridWithEmptyParentheses"), "10px", "20px 50px");
 
     debug("");
     debug("Test getting and setting grid-definition-columns and grid-definition-rows through JS");
-    testGridDefinitionsSetJSValues("'first' 18px", "66px 'last'", "first 18px", "66px last", "first 18px", "66px last");
-    testGridDefinitionsSetJSValues("'first' 55%", "40% 'last'", "first 440px", "240px last", "first 55%", "40% last");
-    testGridDefinitionsSetJSValues("'first' auto", "auto 'last'", "first 0px", "0px last", "first auto", "auto last");
-    testGridDefinitionsSetJSValues("'first' min-content", "min-content 'last'", "first 0px", "0px last", "first min-content", "min-content last");
-    testGridDefinitionsSetJSValues("'first' max-content", "max-content 'last'", "first 0px", "0px last", "first max-content", "max-content last");
-    testGridDefinitionsSetJSValues("'first' minmax(55%, 45px)", "minmax(30px, 40%) 'last'", "first 440px", "240px last", "first minmax(55%, 45px)", "minmax(30px, 40%) last");
-    testGridDefinitionsSetJSValues("'first' minmax(22em, max-content)", "minmax(max-content, 5em) 'last'", "first 220px", "50px last", "first minmax(22em, max-content)", "minmax(max-content, 5em) last");
-    testGridDefinitionsSetJSValues("'first' minmax(22em, min-content)", "minmax(min-content, 5em) 'last'", "first 220px", "50px last", "first minmax(22em, min-content)", "minmax(min-content, 5em) last");
-    testGridDefinitionsSetJSValues("'first' minmax(min-content, max-content)", "minmax(max-content, min-content) 'last'", "first 0px", "0px last", "first minmax(min-content, max-content)", "minmax(max-content, min-content) last");
-    testGridDefinitionsSetJSValues("'first' 'nav' minmax(min-content, max-content) 'last'", "'first' 'nav' minmax(max-content, min-content) 'last'", "first nav 0px last", "first nav 0px last", "first nav minmax(min-content, max-content) last", "first nav minmax(max-content, min-content) last");
-    testGridDefinitionsSetJSValues("'first' 'nav' minmax(min-content, max-content) 'nav' auto 'last'", "'first' 'nav2' minmax(max-content, min-content) 'nav2' minmax(10px, 15px) 'last'", "first nav 0px nav 0px last", "first nav2 0px nav2 15px last", "first nav minmax(min-content, max-content) nav auto last", "first nav2 minmax(max-content, min-content) nav2 minmax(10px, 15px) last");
-    testGridDefinitionsSetJSValues("'foo' 'bar' auto 'foo' auto 'bar'", "'foo' 'bar' auto 'foo' auto 'bar'", "foo bar 0px foo 0px bar", "foo bar 0px foo 0px bar", "foo bar auto foo auto bar", "foo bar auto foo auto bar");
+    testGridDefinitionsSetJSValues("(first) 18px", "66px (last)", "(first) 18px", "66px (last)", "(first) 18px", "66px (last)");
+    testGridDefinitionsSetJSValues("(first) 55%", "40% (last)", "(first) 440px", "240px (last)", "(first) 55%", "40% (last)");
+    testGridDefinitionsSetJSValues("(first) auto", "auto (last)", "(first) 0px", "0px (last)", "(first) auto", "auto (last)");
+    testGridDefinitionsSetJSValues("(first) min-content", "min-content (last)", "(first) 0px", "0px (last)", "(first) min-content", "min-content (last)");
+    testGridDefinitionsSetJSValues("(first) max-content", "max-content (last)", "(first) 0px", "0px (last)", "(first) max-content", "max-content (last)");
+    testGridDefinitionsSetJSValues("(first) minmax(55%, 45px)", "minmax(30px, 40%) (last)", "(first) 440px", "240px (last)", "(first) minmax(55%, 45px)", "minmax(30px, 40%) (last)");
+    testGridDefinitionsSetJSValues("(first) minmax(22em, max-content)", "minmax(max-content, 5em) (last)", "(first) 220px", "50px (last)", "(first) minmax(22em, max-content)", "minmax(max-content, 5em) (last)");
+    testGridDefinitionsSetJSValues("(first) minmax(22em, min-content)", "minmax(min-content, 5em) (last)", "(first) 220px", "50px (last)", "(first) minmax(22em, min-content)", "minmax(min-content, 5em) (last)");
+    testGridDefinitionsSetJSValues("(first) minmax(min-content, max-content)", "minmax(max-content, min-content) (last)", "(first) 0px", "0px (last)", "(first) minmax(min-content, max-content)", "minmax(max-content, min-content) (last)");
+    testGridDefinitionsSetJSValues("(first nav) minmax(min-content, max-content) (last)", "(first nav) minmax(max-content, min-content) (last)", "(first nav) 0px (last)", "(first nav) 0px (last)", "(first nav) minmax(min-content, max-content) (last)", "(first nav) minmax(max-content, min-content) (last)");
+    testGridDefinitionsSetJSValues("(first nav) minmax(min-content, max-content) (nav) auto (last)", "(first nav2) minmax(max-content, min-content) (nav2) minmax(10px, 15px) (last)", "(first nav) 0px (nav) 0px (last)", "(first nav2) 0px (nav2) 15px (last)", "(first nav) minmax(min-content, max-content) (nav) auto (last)", "(first nav2) minmax(max-content, min-content) (nav2) minmax(10px, 15px) (last)");
+    testGridDefinitionsSetJSValues("(foo bar) auto (foo) auto (bar)", "(foo bar) auto (foo) auto (bar)", "(foo bar) 0px (foo) 0px (bar)", "(foo bar) 0px (foo) 0px (bar)", "(foo bar) auto (foo) auto (bar)", "(foo bar) auto (foo) auto (bar)");
+    testGridDefinitionsSetJSValues("(first) auto repeat(2, (foo bar) 20px)", "220px (foo) repeat(1, 50% (baz)", "(first) 0px (foo bar) 20px (foo bar) 20px", "220px (foo) 300px (baz)", "(first) auto (foo bar) 20px (foo bar) 20px", "220px (foo) 50% (baz)");
+
+    debug("");
+    debug("Test getting invalid grid-definition-columns and grid-definition-rows set through CSS");
+    testGridDefinitionsValues(document.getElementById("gridWithoutParentheses"), "none", "none");
+    testGridDefinitionsValues(document.getElementById("gridWithInvalidNestedParentheses"), "none", "none");
+    testGridDefinitionsValues(document.getElementById("gridWithUnbalancedParentheses"), "none", "none");
+    testGridDefinitionsValues(document.getElementById("gridWithMisplacedParentheses"), "none", "none");
+    testGridDefinitionsValues(document.getElementById("gridWithContiguousParentheses"), "none", "none");
 
     debug("");
     debug("Test getting and setting invalid grid-definition-columns and grid-definition-rows through JS");
-    element = document.createElement("div");
-    document.body.appendChild(element);
-    element.style.display = "grid";
-    element.style.gridDefinitionColumns = "'foo'";
-    element.style.gridDefinitionRows = "'bar";
-    shouldBeEqualToString("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "none");
-    shouldBeEqualToString("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "none");
-
-    element = document.createElement("div");
-    document.body.appendChild(element);
-    element.style.display = "grid";
-    element.style.gridDefinitionColumns = "'foo' 'bar'";
-    element.style.gridDefinitionRows = "'bar' 'foo'";
-    shouldBeEqualToString("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "none");
-    shouldBeEqualToString("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "none");
+    testGridDefinitionsSetBadJSValues("(foo)", "(bar");
+    testGridDefinitionsSetBadJSValues("(foo bar)", "(bar foo)");
+    testGridDefinitionsSetBadJSValues("foo bar 10px", "50% baz bar foo 2em");
+    testGridDefinitionsSetBadJSValues("(foo (bar)) 10px", "50% ((baz bar) foo) 2em");
+    testGridDefinitionsSetBadJSValues("(foo bar 10px", "50% (baz bar) foo) 2em");
+    testGridDefinitionsSetBadJSValues("(foo 10px) 2em", "(50% bar) (foo)");
 </script>
 </body>
 </html>

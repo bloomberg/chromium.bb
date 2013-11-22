@@ -98,8 +98,8 @@ function testInherit()
 {
     var parentElement = document.createElement("div");
     document.body.appendChild(parentElement);
-    parentElement.style.gridDefinitionColumns = "50px 'last'";
-    parentElement.style.gridDefinitionRows = "'first' 101%";
+    parentElement.style.gridDefinitionColumns = "50px (last)";
+    parentElement.style.gridDefinitionRows = "(first) 101%";
 
     element = document.createElement("div");
     parentElement.appendChild(element);
@@ -107,8 +107,8 @@ function testInherit()
     element.style.height = "100px";
     element.style.gridDefinitionColumns = "inherit";
     element.style.gridDefinitionRows = "inherit";
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'50px last'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'first 101px'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'50px (last)'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'(first) 101px'");
 
     document.body.removeChild(parentElement);
 }
@@ -123,10 +123,10 @@ function testInitial()
     element.style.display = "grid";
     element.style.width = "300px";
     element.style.height = "150px";
-    element.style.gridDefinitionColumns = "150% 'last'";
-    element.style.gridDefinitionRows = "'first' 1fr";
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'450px last'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'first 150px'");
+    element.style.gridDefinitionColumns = "150% (last)";
+    element.style.gridDefinitionRows = "(first) 1fr";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'450px (last)'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'(first) 150px'");
 
     element.style.display = "grid";
     element.style.gridDefinitionColumns = "initial";

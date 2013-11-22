@@ -38,6 +38,7 @@
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFontValue.h"
 #include "core/css/CSSFunctionValue.h"
+#include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSGridTemplateValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSMixFunctionValue.h"
@@ -997,8 +998,13 @@ static PassRefPtr<CSSValue> specifiedValueForGridTrackSize(const GridTrackSize& 
 static void addValuesForNamedGridLinesAtIndex(const OrderedNamedGridLines& orderedNamedGridLines, size_t i, CSSValueList& list)
 {
     const Vector<String>& namedGridLines = orderedNamedGridLines.get(i);
+    if (namedGridLines.isEmpty())
+        return;
+
+    RefPtr<CSSGridLineNamesValue> lineNames = CSSGridLineNamesValue::create();
     for (size_t j = 0; j < namedGridLines.size(); ++j)
-        list.append(cssValuePool().createValue(namedGridLines[j], CSSPrimitiveValue::CSS_STRING));
+        lineNames->append(cssValuePool().createValue(namedGridLines[j], CSSPrimitiveValue::CSS_STRING));
+    list.append(lineNames.release());
 }
 
 static PassRefPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direction, RenderObject* renderer, const RenderStyle& style, RenderView* renderView)

@@ -105,6 +105,7 @@ public:
     bool isSVGPaint() const { return m_classType == SVGPaintClass; }
     bool isSVGDocumentValue() const { return m_classType == CSSSVGDocumentClass; }
     bool isUnicodeRangeValue() const { return m_classType == UnicodeRangeClass; }
+    bool isGridLineNamesValue() const { return m_classType == GridLineNamesClass; }
 
     bool isCSSOMSafe() const { return m_isCSSOMSafe; }
     bool isSubtypeExposedToCSSOM() const
@@ -172,6 +173,7 @@ protected:
         CSSArrayFunctionValueClass,
         CSSMixFunctionValueClass,
         CSSTransformClass,
+        GridLineNamesClass,
         // Do not append non-list class types here.
     };
 

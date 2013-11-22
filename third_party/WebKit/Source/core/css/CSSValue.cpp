@@ -40,6 +40,7 @@
 #include "core/css/CSSFontValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
+#include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSGridTemplateValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
@@ -182,6 +183,8 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSInheritedValue>(*this, other);
         case InitialClass:
             return compareCSSValues<CSSInitialValue>(*this, other);
+        case GridLineNamesClass:
+            return compareCSSValues<CSSGridLineNamesValue>(*this, other);
         case GridTemplateClass:
             return compareCSSValues<CSSGridTemplateValue>(*this, other);
         case PrimitiveClass:
@@ -270,6 +273,8 @@ String CSSValue::cssText() const
         return toCSSInheritedValue(this)->customCSSText();
     case InitialClass:
         return toCSSInitialValue(this)->customCSSText();
+    case GridLineNamesClass:
+        return toCSSGridLineNamesValue(this)->customCSSText();
     case GridTemplateClass:
         return toCSSGridTemplateValue(this)->customCSSText();
     case PrimitiveClass:
@@ -382,6 +387,9 @@ void CSSValue::destroy()
         return;
     case InitialClass:
         delete toCSSInitialValue(this);
+        return;
+    case GridLineNamesClass:
+        delete toCSSGridLineNamesValue(this);
         return;
     case GridTemplateClass:
         delete toCSSGridTemplateValue(this);

@@ -3,14 +3,14 @@
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .grid {
-    grid-definition-rows: "firstRow" 10px 20px;
-    grid-definition-columns: "firstColumn" 30px 40px;
+    grid-definition-rows: (firstRow) 10px 20px;
+    grid-definition-columns: (firstColumn) 30px 40px;
     grid-auto-flow: row;
 }
 
 .bothSpanRow {
     grid-column: 1;
-    grid-row: span 5 "firstRow" / span 1;
+    grid-row: span 5 (firstRow) / span 1;
 }
 
 .bothSpanColumn {
@@ -20,7 +20,7 @@
 
 .spanAutoRow {
     grid-column: 1;
-    grid-row: span 5 "firstRow" / auto;
+    grid-row: span 5 (firstRow) / auto;
 }
 
 .spanAutoColumn {

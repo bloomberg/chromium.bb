@@ -49,6 +49,7 @@
 #include "core/css/CSSFontValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
+#include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSGridTemplateValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
@@ -1053,16 +1054,16 @@ static bool createGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSiz
     size_t currentNamedGridLine = 0;
     for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
         CSSValue* currValue = i.value();
-        if (currValue->isPrimitiveValue()) {
-            CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(currValue);
-            if (primitiveValue->isString()) {
-                String namedGridLine = primitiveValue->getStringValue();
+        if (currValue->isGridLineNamesValue()) {
+            CSSGridLineNamesValue* lineNamesValue = toCSSGridLineNamesValue(currValue);
+            for (CSSValueListIterator j = lineNamesValue; j.hasMore(); j.advance()) {
+                String namedGridLine = toCSSPrimitiveValue(j.value())->getStringValue();
                 NamedGridLinesMap::AddResult result = namedGridLines.add(namedGridLine, Vector<size_t>());
                 result.iterator->value.append(currentNamedGridLine);
                 OrderedNamedGridLines::AddResult orderedInsertionResult = orderedNamedGridLines.add(currentNamedGridLine, Vector<String>());
                 orderedInsertionResult.iterator->value.append(namedGridLine);
-                continue;
             }
+            continue;
         }
 
         ++currentNamedGridLine;

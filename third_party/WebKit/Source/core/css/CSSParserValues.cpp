@@ -57,6 +57,8 @@ CSSParserValueList::~CSSParserValueList()
     for (size_t i = 0; i < numValues; i++) {
         if (m_values[i].unit == CSSParserValue::Function)
             delete m_values[i].function;
+        else if (m_values[i].unit == CSSParserValue::ValueList)
+            delete m_values[i].valueList;
     }
 }
 
@@ -94,6 +96,8 @@ PassRefPtr<CSSValue> CSSParserValue::createCSSValue()
     }
     if (unit == CSSParserValue::Function)
         return CSSFunctionValue::create(function);
+    if (unit == CSSParserValue::ValueList)
+        return CSSValueList::createFromParserValueList(valueList);
     if (unit >= CSSParserValue::Q_EMS)
         return CSSPrimitiveValue::createAllowingMarginQuirk(fValue, CSSPrimitiveValue::CSS_EMS);
 

@@ -41,6 +41,7 @@
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
+#include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSGridTemplateValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
@@ -4718,6 +4719,28 @@ bool CSSParser::parseSingleGridAreaLonghand(RefPtr<CSSValue>& property)
     return true;
 }
 
+void CSSParser::parseGridLineNames(CSSParserValueList* parserValueList, CSSValueList& valueList)
+{
+    ASSERT(parserValueList->current() && parserValueList->current()->unit == CSSParserValue::ValueList);
+
+    CSSParserValueList* identList = parserValueList->current()->valueList;
+    if (!identList->size()) {
+        parserValueList->next();
+        return;
+    }
+
+    RefPtr<CSSGridLineNamesValue> lineNames = CSSGridLineNamesValue::create();
+    while (CSSParserValue* identValue = identList->current()) {
+        ASSERT(identValue->unit == CSSPrimitiveValue::CSS_IDENT);
+        RefPtr<CSSPrimitiveValue> lineName = createPrimitiveStringValue(identValue);
+        lineNames->append(lineName.release());
+        identList->next();
+    }
+    valueList.append(lineNames.release());
+
+    parserValueList->next();
+}
+
 bool CSSParser::parseGridTrackList(CSSPropertyID propId, bool important)
 {
     ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
@@ -4732,12 +4755,10 @@ bool CSSParser::parseGridTrackList(CSSPropertyID propId, bool important)
     }
 
     RefPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
-    // Handle leading <string>*.
-    while (m_valueList->current() && m_valueList->current()->unit == CSSPrimitiveValue::CSS_STRING) {
-        RefPtr<CSSPrimitiveValue> name = createPrimitiveStringValue(m_valueList->current());
-        values->append(name);
-        m_valueList->next();
-    }
+    // Handle leading  <ident>*.
+    value = m_valueList->current();
+    if (value && value->unit == CSSParserValue::ValueList)
+        parseGridLineNames(m_valueList.get(), *values);
 
     bool seenTrackSizeOrRepeatFunction = false;
     while (CSSParserValue* currentValue = m_valueList->current()) {
@@ -4752,13 +4773,10 @@ bool CSSParser::parseGridTrackList(CSSPropertyID propId, bool important)
             values->append(value);
             seenTrackSizeOrRepeatFunction = true;
         }
-
-        // This will handle the trailing <string>* in the grammar.
-        while (m_valueList->current() && m_valueList->current()->unit == CSSPrimitiveValue::CSS_STRING) {
-            RefPtr<CSSPrimitiveValue> name = createPrimitiveStringValue(m_valueList->current());
-            values->append(name);
-            m_valueList->next();
-        }
+        // This will handle the trailing <ident>* in the grammar.
+        value = m_valueList->current();
+        if (value && value->unit == CSSParserValue::ValueList)
+            parseGridLineNames(m_valueList.get(), *values);
     }
 
     // We should have found a <track-size> or else it is not a valid <track-list>
@@ -4781,12 +4799,10 @@ bool CSSParser::parseGridTrackRepeatFunction(CSSValueList& list)
     arguments->next(); // Skip the repetition count.
     arguments->next(); // Skip the comma.
 
-    // Handle leading <string>*.
-    while (arguments->current() && arguments->current()->unit == CSSPrimitiveValue::CSS_STRING) {
-        RefPtr<CSSPrimitiveValue> name = createPrimitiveStringValue(arguments->current());
-        repeatedValues->append(name);
-        arguments->next();
-    }
+    // Handle leading <ident>*.
+    CSSParserValue* currentValue = arguments->current();
+    if (currentValue && currentValue->unit == CSSParserValue::ValueList)
+        parseGridLineNames(arguments, *repeatedValues);
 
     while (arguments->current()) {
         RefPtr<CSSValue> trackSize = parseGridTrackSize(*arguments);
@@ -4795,12 +4811,10 @@ bool CSSParser::parseGridTrackRepeatFunction(CSSValueList& list)
 
         repeatedValues->append(trackSize);
 
-        // This takes care of any trailing <string>* in the grammar.
-        while (arguments->current() && arguments->current()->unit == CSSPrimitiveValue::CSS_STRING) {
-            RefPtr<CSSPrimitiveValue> name = createPrimitiveStringValue(arguments->current());
-            repeatedValues->append(name);
-            arguments->next();
-        }
+        // This takes care of any trailing <ident>* in the grammar.
+        currentValue = arguments->current();
+        if (currentValue && currentValue->unit == CSSParserValue::ValueList)
+            parseGridLineNames(arguments, *repeatedValues);
     }
 
     for (size_t i = 0; i < repetitions; ++i) {

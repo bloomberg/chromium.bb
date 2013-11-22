@@ -652,6 +652,8 @@
             'css/CSSFunctionValue.h',
             'css/CSSGradientValue.cpp',
             'css/CSSGradientValue.h',
+            'css/CSSGridLineNamesValue.cpp',
+            'css/CSSGridLineNamesValue.h',
             'css/CSSGridTemplateValue.cpp',
             'css/CSSGridTemplateValue.h',
             'css/CSSGroupingRule.cpp',
