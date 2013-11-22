@@ -169,7 +169,7 @@ DesktopBackgroundController::~DesktopBackgroundController() {
 
 gfx::ImageSkia DesktopBackgroundController::GetWallpaper() const {
   if (current_wallpaper_)
-    return current_wallpaper_->wallpaper_image();
+    return current_wallpaper_->image();
   return gfx::ImageSkia();
 }
 
@@ -189,18 +189,18 @@ WallpaperLayout DesktopBackgroundController::GetWallpaperLayout() const {
   return WALLPAPER_LAYOUT_CENTER_CROPPED;
 }
 
-void DesktopBackgroundController::OnRootWindowAdded(
-    aura::Window* root_window) {
+void DesktopBackgroundController::OnRootWindowAdded(aura::Window* root_window) {
   // The background hasn't been set yet.
   if (desktop_background_mode_ == BACKGROUND_NONE)
     return;
-  gfx::Size max_display_size = GetMaxDisplaySizeInNative();
+
   // Handle resolution change for "built-in" images.
-  if (BACKGROUND_IMAGE == desktop_background_mode_ &&
-      current_wallpaper_.get() &&
-      current_max_display_size_ != max_display_size) {
+  gfx::Size max_display_size = GetMaxDisplaySizeInNative();
+  if (current_max_display_size_ != max_display_size) {
     current_max_display_size_ = max_display_size;
-    UpdateWallpaper();
+    if (desktop_background_mode_ == BACKGROUND_IMAGE &&
+        current_wallpaper_.get())
+      UpdateWallpaper();
   }
 
   InstallDesktopController(root_window);
@@ -306,11 +306,14 @@ void DesktopBackgroundController::OnDisplayConfigurationChanged() {
   gfx::Size max_display_size = GetMaxDisplaySizeInNative();
   if (current_max_display_size_ != max_display_size) {
     current_max_display_size_ = max_display_size;
-    timer_.Stop();
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMilliseconds(wallpaper_reload_delay_),
-                 this,
-                 &DesktopBackgroundController::UpdateWallpaper);
+    if (desktop_background_mode_ == BACKGROUND_IMAGE &&
+        current_wallpaper_.get()) {
+      timer_.Stop();
+      timer_.Start(FROM_HERE,
+                   base::TimeDelta::FromMilliseconds(wallpaper_reload_delay_),
+                   this,
+                   &DesktopBackgroundController::UpdateWallpaper);
+    }
   }
 }
 
@@ -327,7 +330,8 @@ bool DesktopBackgroundController::DefaultWallpaperIsAlreadyLoadingOrLoaded(
 bool DesktopBackgroundController::CustomWallpaperIsAlreadyLoaded(
     const gfx::ImageSkia& image) const {
   return current_wallpaper_.get() &&
-      current_wallpaper_->wallpaper_image().BackedBySameObjectAs(image);
+      (WallpaperResizer::GetImageId(image) ==
+       current_wallpaper_->original_image_id());
 }
 
 void DesktopBackgroundController::SetDesktopBackgroundImageMode() {

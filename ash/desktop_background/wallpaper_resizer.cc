@@ -10,7 +10,9 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
 
 using content::BrowserThread;
@@ -91,23 +93,33 @@ void Resize(SkBitmap orig_bitmap,
 
 }  // namespace
 
+// static
+uint32_t WallpaperResizer::GetImageId(const gfx::ImageSkia& image) {
+  const gfx::ImageSkiaRep& image_rep = image.GetRepresentation(1.0f);
+  return image_rep.is_null() ? 0 : image_rep.sk_bitmap().getGenerationID();
+}
+
 WallpaperResizer::WallpaperResizer(int image_resource_id,
                                    const gfx::Size& target_size,
                                    WallpaperLayout layout)
-    : wallpaper_image_(*(ui::ResourceBundle::GetSharedInstance().
+    : image_(*(ui::ResourceBundle::GetSharedInstance().
           GetImageNamed(image_resource_id).ToImageSkia())),
+      original_image_id_(GetImageId(image_)),
       target_size_(target_size),
       layout_(layout),
       weak_ptr_factory_(this) {
+  image_.MakeThreadSafe();
 }
 
 WallpaperResizer::WallpaperResizer(const gfx::ImageSkia& image,
                                    const gfx::Size& target_size,
                                    WallpaperLayout layout)
-    : wallpaper_image_(image),
+    : image_(image),
+      original_image_id_(GetImageId(image_)),
       target_size_(target_size),
       layout_(layout),
       weak_ptr_factory_(this) {
+  image_.MakeThreadSafe();
 }
 
 WallpaperResizer::~WallpaperResizer() {
@@ -118,7 +130,7 @@ void WallpaperResizer::StartResize() {
   SkBitmap* resized_bitmap = new SkBitmap;
   if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
           FROM_HERE,
-          base::Bind(&Resize, *wallpaper_image_.bitmap(), target_size_,
+          base::Bind(&Resize, *image_.bitmap(), target_size_,
                      layout_, resized_bitmap),
           base::Bind(&WallpaperResizer::OnResizeFinished,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -138,7 +150,7 @@ void WallpaperResizer::RemoveObserver(WallpaperResizerObserver* observer) {
 
 void WallpaperResizer::OnResizeFinished(SkBitmap* resized_bitmap) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  wallpaper_image_ = gfx::ImageSkia::CreateFrom1xBitmap(*resized_bitmap);
+  image_ = gfx::ImageSkia::CreateFrom1xBitmap(*resized_bitmap);
   FOR_EACH_OBSERVER(WallpaperResizerObserver, observers_,
                     OnWallpaperResized());
 }

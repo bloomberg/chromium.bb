@@ -27,6 +27,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "content/public/test/test_utils.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -181,9 +182,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   EXPECT_EQ(kSmallWallpaperWidth, wallpaper.width());
   EXPECT_EQ(kSmallWallpaperHeight, wallpaper.height());
 
-  // Hook up another 800x600 display.
+  // Hook up another 800x600 display. This shouldn't trigger a reload.
   UpdateDisplay("800x600,800x600");
-  WaitAsyncWallpaperLoad();
+  content::RunAllPendingInMessageLoop();
   // The small resolution custom wallpaper is expected.
   EXPECT_EQ(kSmallWallpaperWidth, wallpaper.width());
   EXPECT_EQ(kSmallWallpaperHeight, wallpaper.height());

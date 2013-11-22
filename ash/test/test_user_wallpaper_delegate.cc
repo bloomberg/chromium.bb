@@ -4,11 +4,23 @@
 
 #include "ash/test/test_user_wallpaper_delegate.h"
 
+#include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/shell.h"
+
 namespace ash {
 namespace test {
 
+TestUserWallpaperDelegate::TestUserWallpaperDelegate()
+    : update_wallpaper_count_(0) {}
+
+TestUserWallpaperDelegate::~TestUserWallpaperDelegate() {}
+
 void TestUserWallpaperDelegate::UpdateWallpaper() {
   DefaultUserWallpaperDelegate::UpdateWallpaper();
+  if (!custom_wallpaper_.isNull()) {
+    Shell::GetInstance()->desktop_background_controller()->SetCustomWallpaper(
+        custom_wallpaper_, WALLPAPER_LAYOUT_STRETCH);
+  }
   update_wallpaper_count_ ++;
 }
 

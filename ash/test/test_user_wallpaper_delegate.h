@@ -7,21 +7,32 @@
 
 #include "ash/default_user_wallpaper_delegate.h"
 
+#include "ui/gfx/image/image_skia.h"
+
 namespace ash {
 namespace test {
 
 class TestUserWallpaperDelegate : public DefaultUserWallpaperDelegate {
  public:
-  TestUserWallpaperDelegate() : update_wallpaper_count_(0) {}
-  virtual ~TestUserWallpaperDelegate() {}
+  TestUserWallpaperDelegate();
+  virtual ~TestUserWallpaperDelegate();
+
+  void set_custom_wallpaper(const gfx::ImageSkia& wallpaper) {
+    custom_wallpaper_ = wallpaper;
+  }
 
   // DefaultUserWallpaperDelegate overrides:
   virtual void UpdateWallpaper() OVERRIDE;
 
+  // Returns and clears |update_wallpaper_count_|.
   int GetUpdateWallpaperCountAndReset();
 
  private:
+  // Number of times that UpdateWallpaper() has been called.
   int update_wallpaper_count_;
+
+  // If non-null, used as custom wallpaper by UpdateWallpaper().
+  gfx::ImageSkia custom_wallpaper_;
 
   DISALLOW_COPY_AND_ASSIGN(TestUserWallpaperDelegate);
 };

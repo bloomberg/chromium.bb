@@ -21,6 +21,11 @@ class WallpaperResizerObserver;
 // Stores the current wallpaper data and resize it to |target_size| if needed.
 class ASH_EXPORT WallpaperResizer {
  public:
+  // Returns a unique identifier corresponding to |image|, suitable for
+  // comparison against the value returned by original_image_id(). If the image
+  // is modified, its ID will change.
+  static uint32_t GetImageId(const gfx::ImageSkia& image);
+
   WallpaperResizer(int image_resource_id,
                    const gfx::Size& target_size,
                    WallpaperLayout layout);
@@ -31,8 +36,9 @@ class ASH_EXPORT WallpaperResizer {
 
   ~WallpaperResizer();
 
-  const gfx::ImageSkia& wallpaper_image() const { return wallpaper_image_; }
-  const WallpaperLayout layout() const { return layout_; }
+  const gfx::ImageSkia& image() const { return image_; }
+  uint32_t original_image_id() const { return original_image_id_; }
+  WallpaperLayout layout() const { return layout_; }
 
   // Called on the UI thread to run Resize() on the worker pool and post an
   // OnResizeFinished() task back to the UI thread on completion.
@@ -43,8 +49,8 @@ class ASH_EXPORT WallpaperResizer {
   void RemoveObserver(WallpaperResizerObserver* observer);
 
  private:
-  // Copies |resized_bitmap| to |wallpaper_image_| and notifies observers
-  // after Resize() has finished running.
+  // Copies |resized_bitmap| to |image_| and notifies observers after Resize()
+  // has finished running.
   void OnResizeFinished(SkBitmap* resized_bitmap);
 
   ObserverList<WallpaperResizerObserver> observers_;
@@ -52,7 +58,10 @@ class ASH_EXPORT WallpaperResizer {
   // Image that should currently be used for wallpaper. It initially
   // contains the original image and is updated to contain the resized
   // image by OnResizeFinished().
-  gfx::ImageSkia wallpaper_image_;
+  gfx::ImageSkia image_;
+
+  // Unique identifier corresponding to the original (i.e. pre-resize) |image_|.
+  uint32_t original_image_id_;
 
   gfx::Size target_size_;
 

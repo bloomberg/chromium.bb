@@ -21,7 +21,9 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/root_window.h"
@@ -130,6 +132,15 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
   // small value is used to minimize the amount of time spent compressing
   // and writing images.
   static const int kWallpaperSize = 2;
+
+  // Creates an image of size |size|.
+  gfx::ImageSkia CreateImage(int width, int height) {
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+    bitmap.allocPixels();
+    gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+    return image;
+  }
 
   // Runs kAnimatingDesktopController's animation to completion.
   // TODO(bshe): Don't require tests to run animations; it's slow.
@@ -426,82 +437,76 @@ TEST_F(DesktopBackgroundControllerTest, DisplayChange) {
   if (!SupportsHostWindowResize())
     return;
 
-  test::DisplayManagerTestApi display_manager_test_api(
-      Shell::GetInstance()->display_manager());
+  // Set the wallpaper to ensure that UpdateWallpaper() will be called when the
+  // display configuration changes.
+  gfx::ImageSkia image = CreateImage(640, 480);
+  wallpaper_delegate_->set_custom_wallpaper(image);
+  controller_->SetCustomWallpaper(image, WALLPAPER_LAYOUT_STRETCH);
 
   // Small wallpaper images should be used for configurations less than or
   // equal to kSmallWallpaperMaxWidth by kSmallWallpaperMaxHeight, even if
   // multiple displays are connected.
+  test::DisplayManagerTestApi display_manager_test_api(
+      Shell::GetInstance()->display_manager());
   display_manager_test_api.UpdateDisplay("800x600");
   RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_SMALL,
             controller_->GetAppropriateResolution());
-  EXPECT_EQ(0,
-            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+  EXPECT_EQ(0, wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
 
   display_manager_test_api.UpdateDisplay("800x600,800x600");
   RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_SMALL,
             controller_->GetAppropriateResolution());
-  EXPECT_EQ(0,
-            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+  EXPECT_EQ(0, wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
 
   display_manager_test_api.UpdateDisplay("1366x800");
   RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_SMALL,
             controller_->GetAppropriateResolution());
-  EXPECT_EQ(1,
-            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+  EXPECT_EQ(1, wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
 
   // At larger sizes, large wallpapers should be used.
   display_manager_test_api.UpdateDisplay("1367x800");
   RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_LARGE,
             controller_->GetAppropriateResolution());
-  EXPECT_EQ(1,
-            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+  EXPECT_EQ(1, wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
 
   display_manager_test_api.UpdateDisplay("1367x801");
   RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_LARGE,
             controller_->GetAppropriateResolution());
-  EXPECT_EQ(1,
-            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+  EXPECT_EQ(1, wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
 
   display_manager_test_api.UpdateDisplay("2560x1700");
   RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_LARGE,
             controller_->GetAppropriateResolution());
-  EXPECT_EQ(1,
-            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+  EXPECT_EQ(1, wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
 
   // Rotated smaller screen may use larger image.
   display_manager_test_api.UpdateDisplay("800x600/r");
   RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_SMALL,
             controller_->GetAppropriateResolution());
-  EXPECT_EQ(1,
-            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+  EXPECT_EQ(1, wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
 
   display_manager_test_api.UpdateDisplay("800x600/r,800x600");
   RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_SMALL,
             controller_->GetAppropriateResolution());
-  EXPECT_EQ(1,
-            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+  EXPECT_EQ(1, wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
   display_manager_test_api.UpdateDisplay("1366x800/r");
   RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_LARGE,
             controller_->GetAppropriateResolution());
-  EXPECT_EQ(1,
-            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+  EXPECT_EQ(1, wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
 
   // Max display size didn't chagne.
   display_manager_test_api.UpdateDisplay("900x800/r,400x1366");
   RunAllPendingInMessageLoop();
-  EXPECT_EQ(0,
-            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
-
+  EXPECT_EQ(0, wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
 }
 
 // Test that DesktopBackgroundController loads the appropriate wallpaper
@@ -587,6 +592,35 @@ TEST_F(DesktopBackgroundControllerTest, LargeGuestWallpaper) {
   observer.WaitForWallpaperDataChanged();
   EXPECT_TRUE(ImageIsNearColor(controller_->GetWallpaper(),
                                kLargeGuestWallpaperColor));
+}
+
+TEST_F(DesktopBackgroundControllerTest, ResizeCustomWallpaper) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  test::DisplayManagerTestApi display_manager_test_api(
+      Shell::GetInstance()->display_manager());
+  display_manager_test_api.UpdateDisplay("320x200");
+
+  gfx::ImageSkia image = CreateImage(640, 480);
+
+  // Set the image as custom wallpaper, wait for the resize to finish, and check
+  // that the resized image is the expected size.
+  controller_->SetCustomWallpaper(image, WALLPAPER_LAYOUT_STRETCH);
+  EXPECT_TRUE(image.BackedBySameObjectAs(controller_->GetWallpaper()));
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  content::RunAllPendingInMessageLoop();
+  gfx::ImageSkia resized_image = controller_->GetWallpaper();
+  EXPECT_FALSE(image.BackedBySameObjectAs(resized_image));
+  EXPECT_EQ(gfx::Size(320, 200).ToString(), resized_image.size().ToString());
+
+  // Load the original wallpaper again and check that we're still using the
+  // previously-resized image instead of doing another resize
+  // (http://crbug.com/321402).
+  controller_->SetCustomWallpaper(image, WALLPAPER_LAYOUT_STRETCH);
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(resized_image.BackedBySameObjectAs(controller_->GetWallpaper()));
 }
 
 TEST_F(DesktopBackgroundControllerTest, GetMaxDisplaySize) {
