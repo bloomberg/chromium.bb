@@ -436,6 +436,7 @@
       'dependencies': [
         '../base/base.gyp:run_all_unittests',
         '../gin/gin.gyp:gin_test',
+        'mojom_test',
         'mojo_js_bindings',
       ],
       'sources': [
