@@ -10,6 +10,7 @@
 // this file must not introduce any link-time dependencies on websockets.
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/http/http_stream_base.h"
 #include "net/websockets/websocket_stream.h"
@@ -29,12 +30,11 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStreamBase {
    public:
     virtual ~CreateHelper() {}
 
-    // Create a WebSocketBasicHandshakeStream. This function (or the returned
-    // object) takes the ownership of |connection|. This is called after the
+    // Create a WebSocketBasicHandshakeStream. This is called after the
     // underlying connection has been established but before any handshake data
     // has been transferred.
     virtual WebSocketHandshakeStreamBase* CreateBasicStream(
-        ClientSocketHandle* connection,
+        scoped_ptr<ClientSocketHandle> connection,
         bool using_proxy) = 0;
 
     // Create a WebSocketSpdyHandshakeStream (unimplemented as of October 2013)

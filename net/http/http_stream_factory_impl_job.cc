@@ -1067,7 +1067,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
       DCHECK(request_->websocket_handshake_stream_create_helper());
       websocket_stream_.reset(
           request_->websocket_handshake_stream_create_helper()
-              ->CreateBasicStream(connection_.release(), using_proxy));
+              ->CreateBasicStream(connection_.Pass(), using_proxy));
     } else if (!using_proxy && IsRequestEligibleForPipelining()) {
       // TODO(simonjam): Support proxies.
       stream_.reset(

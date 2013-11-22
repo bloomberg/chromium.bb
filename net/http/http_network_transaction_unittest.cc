@@ -11989,7 +11989,7 @@ class FakeWebSocketStreamCreateHelper :
       public WebSocketHandshakeStreamBase::CreateHelper {
  public:
   virtual WebSocketHandshakeStreamBase* CreateBasicStream(
-      ClientSocketHandle* connection,
+      scoped_ptr<ClientSocketHandle> connection,
       bool using_proxy) OVERRIDE {
     NOTREACHED();
     return NULL;

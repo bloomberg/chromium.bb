@@ -31,6 +31,7 @@
 #include "net/http/http_transaction_unittest.h"
 #include "net/http/http_util.h"
 #include "net/http/mock_http_cache.h"
+#include "net/socket/client_socket_handle.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -580,7 +581,7 @@ class FakeWebSocketHandshakeStreamCreateHelper
  public:
   virtual ~FakeWebSocketHandshakeStreamCreateHelper() {}
   virtual net::WebSocketHandshakeStreamBase* CreateBasicStream(
-      net::ClientSocketHandle* connect, bool using_proxy) OVERRIDE {
+      scoped_ptr<net::ClientSocketHandle> connect, bool using_proxy) OVERRIDE {
     return NULL;
   }
   virtual net::WebSocketHandshakeStreamBase* CreateSpdyStream(

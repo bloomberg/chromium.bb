@@ -258,9 +258,10 @@ class WebSocketSpdyHandshakeStream : public MockWebSocketHandshakeStream {
 
 class WebSocketBasicHandshakeStream : public MockWebSocketHandshakeStream {
  public:
-  explicit WebSocketBasicHandshakeStream(ClientSocketHandle* connection)
+  explicit WebSocketBasicHandshakeStream(
+      scoped_ptr<ClientSocketHandle> connection)
       : MockWebSocketHandshakeStream(kStreamTypeBasic),
-        connection_(connection) {}
+        connection_(connection.Pass()) {}
 
   virtual ~WebSocketBasicHandshakeStream() {
     connection_->socket()->Disconnect();
@@ -278,9 +279,9 @@ class WebSocketStreamCreateHelper
   virtual ~WebSocketStreamCreateHelper() {}
 
   virtual WebSocketHandshakeStreamBase* CreateBasicStream(
-      ClientSocketHandle* connection,
+      scoped_ptr<ClientSocketHandle> connection,
       bool using_proxy) OVERRIDE {
-    return new WebSocketBasicHandshakeStream(connection);
+    return new WebSocketBasicHandshakeStream(connection.Pass());
   }
 
   virtual WebSocketHandshakeStreamBase* CreateSpdyStream(
