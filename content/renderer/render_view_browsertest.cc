@@ -126,11 +126,10 @@ class RenderViewImplTest : public RenderViewTest {
 
   virtual void SetUp() OVERRIDE {
     RenderViewTest::SetUp();
-    // This test depends on Blink flag InputModeAttribute, which is enabled
-    // under only test. Content browser test doesn't enable the feature so we
-    // need enable it manually.
-    // TODO(yoichio): Remove this if InputMode feature is enabled by default.
-    WebRuntimeFeatures::enableInputModeAttribute(true);
+    // Enable Blink's experimental and test only features so that test code
+    // does not have to bother enabling each feature.
+    WebRuntimeFeatures::enableExperimentalFeatures(true);
+    WebRuntimeFeatures::enableTestOnlyFeatures(true);
   }
 
   RenderViewImpl* view() {
