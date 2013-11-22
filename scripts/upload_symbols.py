@@ -10,6 +10,7 @@ for those executables involved).
 """
 
 import ctypes
+import functools
 import multiprocessing
 import os
 import poster
@@ -179,7 +180,8 @@ def _UpdateCounter(counter, adj):
 
 
 def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
-                 sleep=0, num_errors=None, watermark_errors=None):
+                 sleep=0, num_errors=None, watermark_errors=None,
+                 failed_queue=None):
   """Upload |sym_file| to |upload_url|
 
   Args:
@@ -189,6 +191,7 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
     sleep: Number of seconds to sleep before running
     num_errors: An object to update with the error count (needs a .value member)
     watermark_errors: An object to track current error behavior (needs a .value)
+    failed_queue: When a symbol fails, add it to this queue
   Returns:
     The number of errors that were encountered.
   """
@@ -227,10 +230,9 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
     file_size = os.path.getsize(upload_file)
     if file_size > CRASH_SERVER_FILE_LIMIT:
       cros_build_lib.PrintBuildbotStepWarnings()
-      cros_build_lib.Error('upload file %s is awfully large, risking rejection '
-                           'by symbol server (%s > %s)', sym_file, file_size,
-                           CRASH_SERVER_FILE_LIMIT)
-      _UpdateCounter(num_errors, 1)
+      cros_build_lib.Warning('upload file %s is awfully large, risking '
+                             'rejection by the symbol server (%s > %s)',
+                             sym_file, file_size, CRASH_SERVER_FILE_LIMIT)
 
     # Upload the symbol file.
     success = False
@@ -254,6 +256,8 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
       else:
         _UpdateCounter(num_errors, 1)
         _UpdateCounter(watermark_errors, ERROR_ADJUST_FAIL)
+        if failed_queue:
+          failed_queue.put(sym_file)
 
   return num_errors.value
 
@@ -279,7 +283,7 @@ def SymbolFinder(paths):
 
 def UploadSymbols(board=None, official=False, breakpad_dir=None,
                   file_limit=DEFAULT_FILE_LIMIT, sleep=DEFAULT_SLEEP_DELAY,
-                  upload_count=None, sym_paths=None, root=None):
+                  upload_count=None, sym_paths=None, root=None, retry=True):
   """Upload all the generated symbols for |board| to the crash server
 
   You can use in a few ways:
@@ -297,6 +301,7 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
     sym_paths: Specific symbol files (or dirs of sym files) to upload,
       otherwise search |breakpad_dir|
     root: The tree to prefix to |breakpad_dir| (if |breakpad_dir| is not set)
+    retry: Whether we should retry failures.
   Returns:
     The number of errors that were encountered.
   """
@@ -317,26 +322,48 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
                         breakpad_dir)
     sym_paths = [breakpad_dir]
 
-  # We need to limit ourselves to one upload at a time to avoid the server
-  # kicking in DoS protection.  See these bugs for more details:
-  # http://crbug.com/209442
-  # http://crbug.com/212496
   bg_errors = multiprocessing.Value('i')
   watermark_errors = multiprocessing.Value('f')
-  with parallel.BackgroundTaskRunner(UploadSymbol, file_limit=file_limit,
-                                     sleep=sleep, num_errors=bg_errors,
-                                     watermark_errors=watermark_errors,
-                                     processes=1) as queue:
-    for sym_file in SymbolFinder(sym_paths):
-      if upload_count == 0:
-        break
+  failed_queue = multiprocessing.Queue()
+  uploader = functools.partial(
+      UploadSymbol, file_limit=file_limit, sleep=sleep, num_errors=bg_errors,
+      watermark_errors=watermark_errors, failed_queue=failed_queue)
 
-      queue.put([sym_file, upload_url])
-
-      if upload_count is not None:
-        upload_count -= 1
+  # For the first run, we collect the symbols that failed.  If the
+  # overall failure rate was low, we'll retry them on the second run.
+  for retry in (retry, False):
+    # We need to limit ourselves to one upload at a time to avoid the server
+    # kicking in DoS protection.  See these bugs for more details:
+    # http://crbug.com/209442
+    # http://crbug.com/212496
+    with parallel.BackgroundTaskRunner(uploader, processes=1) as queue:
+      for sym_file in SymbolFinder(sym_paths):
         if upload_count == 0:
           break
+
+        queue.put([sym_file, upload_url])
+
+        if upload_count is not None:
+          upload_count -= 1
+          if upload_count == 0:
+            break
+
+    # See if we need to retry, and if we haven't failed too many times already.
+    if not retry or ErrorLimitHit(bg_errors, watermark_errors):
+      break
+
+    sym_paths = []
+    while not failed_queue.empty():
+      sym_paths.append(failed_queue.get())
+    if sym_paths:
+      cros_build_lib.Warning('retrying %i symbols', len(sym_paths))
+      upload_count += len(sym_paths)
+      # Decrement the error count in case we recover in the second pass.
+      assert bg_errors.value >= len(sym_paths), 'more failed files than errors?'
+      bg_errors.value -= len(sym_paths)
+    else:
+      # No failed symbols, so just return now.
+      break
 
   return bg_errors.value
 

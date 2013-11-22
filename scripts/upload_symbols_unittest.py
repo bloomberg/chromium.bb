@@ -13,6 +13,7 @@ import urllib2
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -39,7 +40,7 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
     """Helper for checking the url used"""
     m = upload_symbols.UploadSymbol = mock.Mock(return_value=0)
     with parallel_unittest.ParallelMock():
-      ret = upload_symbols.UploadSymbols('', official=official,
+      ret = upload_symbols.UploadSymbols('', official=official, retry=False,
                                          breakpad_dir=self.tempdir, sleep=0)
       self.assertEqual(ret, 0)
       self.assertEqual(m.call_count, 3)
@@ -62,7 +63,8 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
       kwargs['num_errors'].value = 4
     upload_symbols.UploadSymbol = mock.Mock(side_effect=UploadSymbol)
     with parallel_unittest.ParallelMock():
-      ret = upload_symbols.UploadSymbols('', breakpad_dir=self.tempdir, sleep=0)
+      ret = upload_symbols.UploadSymbols('', breakpad_dir=self.tempdir, sleep=0,
+                                         retry=False)
       self.assertEquals(ret, 4)
 
   def testUploadCount(self):
@@ -135,15 +137,17 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
 
   def testTruncateReallyLargeFiles(self):
     """Verify we try to shrink really big files"""
+    warn_mock = self.PatchObject(cros_build_lib, 'PrintBuildbotStepWarnings')
     m = upload_symbols.SymUpload = mock.Mock()
     with open(self.sym_file, 'w+b') as f:
       f.truncate(upload_symbols.CRASH_SERVER_FILE_LIMIT + 100)
       f.seek(0)
       f.write('STACK CFI 1234\n\n')
     ret = upload_symbols.UploadSymbol(self.sym_file, self.url)
-    self.assertEqual(ret, 1)
+    self.assertEqual(ret, 0)
     self.assertNotEqual(m.call_args[0][1], self.sym_file)
     self.assertEqual(m.call_count, 1)
+    self.assertEqual(warn_mock.call_count, 1)
 
 
 class SymUploadTest(cros_test_lib.MockTempDirTestCase):
