@@ -63,6 +63,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   builder.SetManagedUserId(managed_user_id);
 
   TestingProfile* profile = builder.Build().release();
+  profile->set_profile_name(profile_name);
   profile_manager_->AddProfile(profile);  // Takes ownership.
 
   // Update the user metadata.

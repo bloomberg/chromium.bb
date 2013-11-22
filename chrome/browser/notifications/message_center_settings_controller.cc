@@ -115,9 +115,20 @@ MessageCenterSettingsController::MessageCenterSettingsController(
                  chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  content::NotificationService::AllBrowserContextsAndSources());
   RebuildNotifierGroups();
+
+#if defined(OS_CHROMEOS)
+  // UserManager may not exist in some tests.
+  if (chromeos::UserManager::IsInitialized())
+    chromeos::UserManager::Get()->AddSessionStateObserver(this);
+#endif
 }
 
 MessageCenterSettingsController::~MessageCenterSettingsController() {
+#if defined(OS_CHROMEOS)
+  // UserManager may not exist in some tests.
+  if (chromeos::UserManager::IsInitialized())
+    chromeos::UserManager::Get()->RemoveSessionStateObserver(this);
+#endif
 }
 
 void MessageCenterSettingsController::AddObserver(
@@ -392,6 +403,13 @@ void MessageCenterSettingsController::OnFaviconLoaded(
 }
 
 
+#if defined(OS_CHROMEOS)
+void MessageCenterSettingsController::ActiveUserChanged(
+    const chromeos::User* active_user) {
+  RebuildNotifierGroups();
+}
+#endif
+
 void MessageCenterSettingsController::SetAppImage(const std::string& id,
                                                   const gfx::ImageSkia& image) {
   FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
@@ -440,6 +458,16 @@ void MessageCenterSettingsController::RebuildNotifierGroups() {
       continue;
 
 #if defined(OS_CHROMEOS)
+    // Allows the active user only.
+    // UserManager may not exist in some tests.
+    if (chromeos::UserManager::IsInitialized()) {
+      chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+      if (user_manager->GetUserByProfile(group->profile()) !=
+          user_manager->GetActiveUser()) {
+        continue;
+      }
+    }
+
     // In ChromeOS, the login screen first creates a dummy profile which is not
     // actually used, and then the real profile for the user is created when
     // login (or turns into kiosk mode). This profile should be skipped.
