@@ -128,7 +128,8 @@ void DownloadService::CancelAllDownloads() {
              downloads.begin();
          it != downloads.end();
          ++it) {
-      (*it)->Cancel(false);
+      if ((*it)->GetState() == content::DownloadItem::IN_PROGRESS)
+        (*it)->Cancel(false);
     }
   }
 }
