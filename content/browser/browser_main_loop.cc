@@ -344,6 +344,13 @@ void BrowserMainLoop::Init() {
 
 void BrowserMainLoop::EarlyInitialization() {
   TRACE_EVENT0("startup", "BrowserMainLoop::EarlyInitialization");
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+  // No thread should be created before this call, as SetupSandbox()
+  // will end-up using fork().
+  SetupSandbox(parsed_command_line_);
+#endif
+
 #if defined(USE_X11)
   if (parsed_command_line_.HasSwitch(switches::kSingleProcess) ||
       parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
@@ -353,9 +360,9 @@ void BrowserMainLoop::EarlyInitialization() {
   }
 #endif
 
-  // Due to bugs in GLib we need to initialize GLib/GTK before we start threads;
-  // see crbug.com/309093. Sandbox setup spawns sub-processes and a thread
-  // running waitpid().
+  // GLib's spawning of new processes is buggy, so it's important that at this
+  // point GLib does not need to start DBUS. Chrome should always start with
+  // DBUS_SESSION_BUS_ADDRESS properly set. See crbug.com/309093.
 #if defined(USE_GLIB)
   // g_type_init will be deprecated in 2.36. 2.35 is the development
   // version for 2.36, hence do not call g_type_init starting 2.35.
@@ -387,10 +394,6 @@ void BrowserMainLoop::EarlyInitialization() {
   // We want to be sure to init NSPR on the main thread.
   crypto::EnsureNSPRInit();
 #endif  // !defined(USE_OPENSSL)
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  SetupSandbox(parsed_command_line_);
-#endif
 
   if (parsed_command_line_.HasSwitch(switches::kEnableSSLCachedInfo))
     net::SSLConfigService::EnableCachedInfo();
