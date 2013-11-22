@@ -44,12 +44,13 @@ bool PepperFileOpenFlagsToPlatformFileFlags(int32_t pp_open_flags,
   bool pp_exclusive = !!(pp_open_flags & PP_FILEOPENFLAG_EXCLUSIVE);
   bool pp_append = !!(pp_open_flags & PP_FILEOPENFLAG_APPEND);
 
-  int flags = 0;
+  // Pepper allows Touch on any open file, so always set this Windows-only flag.
+  int flags = base::PLATFORM_FILE_WRITE_ATTRIBUTES;
+
   if (pp_read)
     flags |= base::PLATFORM_FILE_READ;
   if (pp_write) {
     flags |= base::PLATFORM_FILE_WRITE;
-    flags |= base::PLATFORM_FILE_WRITE_ATTRIBUTES;
   }
   if (pp_append) {
     if (pp_write)

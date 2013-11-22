@@ -305,6 +305,7 @@ void PepperFileIOHost::GotUIThreadStuffForInternalFileSystems(
     quota_policy_ = quota::kQuotaLimitTypeUnlimited;
   else
     quota_policy_ = quota::kQuotaLimitTypeLimited;
+
   file_system_operation_runner_ =
       file_system_context_->CreateFileSystemOperationRunner();
   file_system_operation_runner_->OpenFile(
@@ -351,30 +352,16 @@ int32_t PepperFileIOHost::OnHostMsgTouch(
   if (rv != PP_OK)
     return rv;
 
-  base::FileUtilProxy::StatusCallback cb =
-      base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
-                 weak_factory_.GetWeakPtr(),
-                 context->MakeReplyMessageContext());
+  if (!base::FileUtilProxy::Touch(
+          file_message_loop_,
+          file_,
+          PPTimeToTime(last_access_time),
+          PPTimeToTime(last_modified_time),
+          base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
+                     weak_factory_.GetWeakPtr(),
+                     context->MakeReplyMessageContext())))
+    return PP_ERROR_FAILED;
 
-  if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
-    // We use FileSystemOperationRunner here instead of working on the
-    // opened file because it may not have been opened with enough
-    // permissions for this operation. See http://crbug.com/313426 for
-    // details.
-    file_system_operation_runner_->TouchFile(
-        file_system_url_,
-        PPTimeToTime(last_access_time),
-        PPTimeToTime(last_modified_time),
-        cb);
-  } else {
-    if (!base::FileUtilProxy::Touch(
-            file_message_loop_,
-            file_,
-            PPTimeToTime(last_access_time),
-            PPTimeToTime(last_modified_time),
-            cb))
-      return PP_ERROR_FAILED;
-  }
   state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
   return PP_OK_COMPLETIONPENDING;
 }
@@ -424,15 +411,9 @@ int32_t PepperFileIOHost::OnHostMsgSetLength(
                  weak_factory_.GetWeakPtr(),
                  context->MakeReplyMessageContext());
 
-  // TODO(teravest): Use QuotaFileIO::SetLength here.
-  // The previous implementation did not use it in the renderer, so I'll
-  // do it in a follow-up change.
   if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
-    // We use FileSystemOperationRunner here instead of working on the
-    // opened file because it may not have been opened with enough
-    // permissions for this operation. See http://crbug.com/313426 for
-    // details.
-    file_system_operation_runner_->Truncate(file_system_url_, length, cb);
+    if (!quota_file_io_->SetLength(length, cb))
+      return PP_ERROR_FAILED;
   } else {
     if (!base::FileUtilProxy::Truncate(file_message_loop_, file_, length, cb))
       return PP_ERROR_FAILED;
