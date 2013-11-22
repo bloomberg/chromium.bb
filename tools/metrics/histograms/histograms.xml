@@ -16447,6 +16447,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Signin.OneClickConfirmation" enum="SigninFlowConfirmations">
+  <summary>
+    Count of the ways users interact with the confirmation dialogs of the new
+    web based sign in to Chrome flow (accessed via the one click signin).
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.App.CheckCRCResult" enum="CheckCRCResult">
   <summary>
     Whether or not the CRC was checked at the moment when the last reference to
@@ -28521,6 +28528,23 @@ other types of suffix sets.
   <int value="0" label="Learn more"/>
   <int value="1" label="Settings page"/>
   <int value="2" label="Dismiss"/>
+</enum>
+
+<enum name="SigninFlowConfirmations" type="int">
+  <int value="0" label="Shown"/>
+  <int value="1" label="OK"/>
+  <int value="2" label="Return"/>
+  <int value="3" label="Advanced"/>
+  <int value="4" label="Close"/>
+  <int value="5" label="Escape"/>
+  <int value="6" label="Undo"/>
+  <int value="7" label="Learn more"/>
+  <int value="8" label="Learn more ok"/>
+  <int value="9" label="Learn more return"/>
+  <int value="10" label="Learn more advanced"/>
+  <int value="11" label="Learn more close"/>
+  <int value="12" label="Learn more escape"/>
+  <int value="13" label="Learn more undo"/>
 </enum>
 
 <enum name="SimpleCache.EntryCreatedAndStream2Omitted" type="int">
