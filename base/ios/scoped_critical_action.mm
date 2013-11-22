@@ -7,22 +7,32 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 
 namespace base {
 namespace ios {
 
+ScopedCriticalAction::ScopedCriticalAction()
+    : core_(new ScopedCriticalAction::Core()) {
+}
+
+ScopedCriticalAction::~ScopedCriticalAction() {
+  core_->EndBackgroundTask();
+}
+
 // This implementation calls |beginBackgroundTaskWithExpirationHandler:| when
 // instantiated and |endBackgroundTask:| when destroyed, creating a scope whose
 // execution will continue (temporarily) even after the app is backgrounded.
-ScopedCriticalAction::ScopedCriticalAction() {
+ScopedCriticalAction::Core::Core() {
+  scoped_refptr<ScopedCriticalAction::Core> core = this;
   background_task_id_ = [[UIApplication sharedApplication]
       beginBackgroundTaskWithExpirationHandler:^{
         DLOG(WARNING) << "Background task with id " << background_task_id_
                       << " expired.";
         // Note if |endBackgroundTask:| is not called for each task before time
         // expires, the system kills the application.
-        EndBackgroundTask();
+        core->EndBackgroundTask();
       }];
   if (background_task_id_ == UIBackgroundTaskInvalid) {
     DLOG(WARNING) <<
@@ -32,11 +42,11 @@ ScopedCriticalAction::ScopedCriticalAction() {
   }
 }
 
-ScopedCriticalAction::~ScopedCriticalAction() {
-  EndBackgroundTask();
+ScopedCriticalAction::Core::~Core() {
+  DCHECK_EQ(background_task_id_, UIBackgroundTaskInvalid);
 }
 
-void ScopedCriticalAction::EndBackgroundTask() {
+void ScopedCriticalAction::Core::EndBackgroundTask() {
   UIBackgroundTaskIdentifier task_id;
   {
     AutoLock lock_scope(background_task_id_lock_);

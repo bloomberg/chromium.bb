@@ -5,6 +5,7 @@
 #ifndef BASE_IOS_SCOPED_CRITICAL_ACTION_H_
 #define BASE_IOS_SCOPED_CRITICAL_ACTION_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 
 namespace base {
@@ -29,15 +30,34 @@ class ScopedCriticalAction {
   ~ScopedCriticalAction();
 
  private:
-  // Informs the OS that the background task has completed.
-  void EndBackgroundTask();
+  // Core logic; ScopedCriticalAction should not be reference counted so
+  // that it follows the normal pattern of stack-allocating ScopedFoo objects,
+  // but the expiration handler needs to have a reference counted object to
+  // refer to.
+  class Core : public base::RefCountedThreadSafe<Core> {
+   public:
+    Core();
 
-  // |UIBackgroundTaskIdentifier| returned by
-  // |beginBackgroundTaskWithExpirationHandler:| when marking the beginning of
-  // a long-running background task. It is defined as an |unsigned int| instead
-  // of a |UIBackgroundTaskIdentifier| so this class can be used in .cc files.
-  unsigned int background_task_id_;
-  Lock background_task_id_lock_;
+    // Informs the OS that the background task has completed.
+    void EndBackgroundTask();
+
+   private:
+    friend base::RefCountedThreadSafe<Core>;
+    ~Core();
+
+    // |UIBackgroundTaskIdentifier| returned by
+    // |beginBackgroundTaskWithExpirationHandler:| when marking the beginning of
+    // a long-running background task. It is defined as an |unsigned int|
+    // instead of a |UIBackgroundTaskIdentifier| so this class can be used in
+    // .cc files.
+    unsigned int background_task_id_;
+    Lock background_task_id_lock_;
+
+    DISALLOW_COPY_AND_ASSIGN(Core);
+  };
+
+  // The instance of the core that drives the background task.
+  scoped_refptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedCriticalAction);
 };
