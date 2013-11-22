@@ -13,14 +13,11 @@ import toolchain_env
 
 import logging
 import os
-import shutil
-import stat
 import sys
 
 import command
 import file_tools
 import platform_tools
-import pnacl_commands
 import repo_tools
 import toolchain_main
 
@@ -53,15 +50,15 @@ GIT_DEPS_FILE = os.path.join(NACL_DIR, 'pnacl', 'COMPONENT_REVISIONS')
 CONFIGURE_CMD = ['sh', '%(src)s/configure']
 MAKE_PARALLEL_CMD = [ 'make', '-j%(cores)s']
 MAKE_BINUTILS_EXTRA = []
-CONFIGURE_FLAGS = []
+
 if platform_tools.IsLinux():
   # TODO(dschuff): handle the 64+32-bit package on Linux, or get rid of it.
   cc = 'gcc -m32'
   cxx = 'g++ -m32'
-  CONFIGURE_FLAGS += ['--build=i686-linux', 'CC=' + cc, 'CXX=' + cxx]
+  CONFIGURE_CMD += ['--build=i686-linux', 'CC=' + cc, 'CXX=' + cxx]
 elif platform_tools.IsWindows():
   command.Command.use_cygwin = True
-  CONFIGURE_FLAGS += ['--disable-nls']
+  CONFIGURE_CMD += ['--disable-nls']
   MAKE_PARALLEL_CMD += ['HAVE_LIBICONV=no']
   # Windows has issues with the intentionally-racy 'chew' target
   MAKE_BINUTILS_EXTRA = ['-j1']
@@ -69,23 +66,12 @@ MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
 def HostTools(revisions):
   tools = {
-      'binutils_pnacl_src': {
-          'type': 'source',
-          'commands': [
-              command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS['binutils'],
-                                  '%(output)s',
-                                  revisions['binutils']),
-          ],
-      },
       'binutils_pnacl': {
-          'dependencies': ['binutils_pnacl_src'],
-          'type': 'build',
+          'git_url': GIT_BASE_URL + '/nacl-binutils.git',
+          'git_revision': revisions['binutils'],
           'commands': [
-              command.SkipForIncrementalCommand([
-                  'sh',
-                  '%(binutils_pnacl_src)s/configure'] +
-                  CONFIGURE_FLAGS +
-                  ['--prefix=',
+              command.Command(CONFIGURE_CMD + [
+                  '--prefix=',
                   '--disable-silent-rules',
                   '--target=arm-pc-nacl',
                   '--program-prefix=le32-nacl-',
@@ -104,58 +90,7 @@ def HostTools(revisions):
               [command.RemoveDirectory(command.path.join('%(abs_output)s', dir))
                for dir in ('arm-pc-nacl', 'lib', 'lib32')]
           },
-      # For some reason, the llvm build using --with-clang-srcdir chokes if the
-      # clang source directory is named something other than 'clang', so don't
-      # rename this target.
-      'clang': {
-          'type': 'source',
-          'commands': [
-              command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS['clang'],
-                                  '%(output)s',
-                                  revisions['clang']),
-          ],
-      },
-      'llvm_src': {
-          'type': 'source',
-          'commands': [
-              command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS['llvm'],
-                                  '%(output)s',
-                                  revisions['llvm']),
-          ],
-      },
-      'llvm': {
-          'dependencies': ['clang', 'llvm_src', 'binutils_pnacl_src'],
-          'type': 'build',
-          'commands': [
-              command.SkipForIncrementalCommand([
-                  'sh',
-                  '%(llvm_src)s/configure'] +
-                  CONFIGURE_FLAGS +
-                  ['--prefix=/',
-                   '--enable-shared',
-                   '--disable-zlib',
-                   '--disable-jit',
-                   '--with-binutils-include=%(abs_binutils_pnacl_src)s/include',
-                   '--enable-targets=x86,arm,mips',
-                   '--program-prefix=',
-                   '--enable-optimized',
-                   '--with-clang-srcdir=%(abs_clang)s']),
-              command.Command(MAKE_PARALLEL_CMD + [
-                  'VERBOSE=1',
-                  'NACL_SANDBOX=0',
-                  'all']),
-              command.Command(MAKE_DESTDIR_CMD + ['install']),
-          ],
-      },
-      'driver': {
-        'type': 'build',
-        'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'driver')},
-        'commands': [
-            command.Runnable(pnacl_commands.InstallDriverScripts,
-                             '%(src)s', '%(output)s')
-        ],
-      },
-  }
+      }
   return tools
 
 
@@ -207,11 +142,14 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('--sync-only', action='store_true')
   args, leftover_args = parser.parse_known_args()
+  print args, leftover_args
   revisions = ParseComponentRevisionsFile(GIT_DEPS_FILE)
   SyncPNaClRepos(revisions)
   if args.sync_only:
     sys.exit(0)
   packages = HostTools(revisions)
   tb = toolchain_main.PackageBuilder(packages,
+                                     ['--no-cache-results',
+                                      '--no-use-cached-results'] +
                                      leftover_args)
   tb.Main()

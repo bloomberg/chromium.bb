@@ -59,49 +59,19 @@ class PackageBuilder(object):
     """Constructor.
 
     Args:
-      packages: A dictionary with the following format. There are two types of
-                packages: source and build (described below)
+      packages: A dictionary with the following format:
         {
           '<package name>': {
-            'type': 'source',
-                # Source packages are for sources; in particular remote sources
-                # where it is not known whether they have changed until they are
-                # synced (it can also or for tarballs which need to be
-                # unpacked). Source package commands are run unconditionally
-                # unless sync is skipped via the command-line option. Source
-                # package contents are not memoized.
-            'commands':
-              [<list of command.Runnable objects to run>],
-            'inputs': # optional
-              {<mapping whose keys are names, and whose values are files or
-                directories (e.g. checked-in tarballs) used as input. Since
-                source targets are unconditional, this is only useful as a
-                convenience for commands, which may refer to the inputs by their
-                key name>},
-           },
-           '<package name>': {
-            'type': 'build',
-                # Build packages are memoized, and will build only if their
-                # inputs have changed. Their inputs consist of the output of
-                # their package dependencies plus any file or directory inputs
-                # given by their 'inputs' member
-            'dependencies':  # optional
-              [<list of package depdenencies>],
-            REPO_SRC_INFO, # optional, legacy (use source targets instead)
-            'inputs': # optional
-              {<mapping whose keys are names, and whose values are files or
-                directories (e.g. checked-in tarballs) used as input>},
+            REPO_SRC_INFO,
             'commands':
               [<list of command.Command objects to run>],
-              # Objects that have a 'skip_for_incremental' attribute that
-              # evaluates to True will not be run on incremental builds.
-            'unpack_commands':  # optional, legacy (use source targets instead)
+            'dependencies':  # optional
+              [<list of package depdenencies>],
+            'unpack_commands':  # optional
               [<list of command.Command objects for unpacking inputs
                 before they are hashed>'],
-            'hashed_inputs':  # optional,
-              {<mapping whose keys are names, and whose values are paths of
-                files or directories (relative to the working directory) to use
-                for the build signature>],
+            'hashed_inputs':  # optional
+              [<list of paths to use for build signature>],
           },
         }
         REPO_SRC_INFO is either:
@@ -126,8 +96,7 @@ class PackageBuilder(object):
       PrintFlush('@@@BUILD_STEP clobber@@@')
       file_tools.RemoveDirectoryIfPresent(self._options.source)
       file_tools.RemoveDirectoryIfPresent(self._options.output)
-    if self._options.sync:
-      self.SyncAll()
+    self.SyncAll()
     self.BuildAll()
 
   def SetupLogging(self):
@@ -154,15 +123,8 @@ class PackageBuilder(object):
     repo_tools.SyncGitRepo(url,
                            destination,
                            revision if self._options.pinned else None,
-                           reclone=self._options.reclone,
-                           clean=not self._options.incremental)
+                           reclone=self._options.reclone)
     logging.info('Done syncing %s.' % package)
-
-  def GetOutputDir(self, package):
-    if ('type' in self._packages[package] and
-        self._packages[package]['type'] == 'source'):
-      return os.path.join(self._options.source, package)
-    return os.path.join(self._options.output, package + '_install')
 
   def BuildPackage(self, package):
     """Build a single package.
@@ -173,56 +135,26 @@ class PackageBuilder(object):
     """
     PrintFlush('@@@BUILD_STEP build %s@@@' % package)
     package_info = self._packages[package]
-    # Validate the package description.
-    if 'commands' not in package_info:
-      raise Exception('package %s does not have any commands' % package)
-    # Default to build targets for backward compatibility.
-    if 'type' not in package_info:
-      is_source_target = False
-    else:
-      is_source_target = package_info['type'] == 'source'
-    if is_source_target:
-      for key in ('hashed_inputs', 'dependencies', 'tar_src', 'git_url',
-                  'git_revision', 'unpack_commands'):
-        if key in package_info:
-          raise Exception('Source package %s must not have %s keys.' %
-                          (package, key))
-      # Source targets do not run when skipping sync.
-      if not self._options.sync:
-        logging.debug('Sync skipped: not running commands for %s' % package)
-        return
-
     dependencies = package_info.get('dependencies', [])
     # Collect a dict of all the inputs.
     inputs = {}
-    # Add in explicit inputs or a tar source or a git source.
-    if 'inputs' in package_info:
-      for key, value in package_info['inputs'].iteritems():
-        if key in dependencies:
-          raise Exception('key "%s" found in both dependencies and inputs of '
-                          'package "%s"' % (key, package))
-        inputs[key] = value
-    elif 'tar_src' in package_info:
+    # Add in either a tar source or a git source.
+    if 'tar_src' in package_info:
       inputs['src'] = os.path.join(ROOT_DIR, package_info['tar_src'])
     else:
       inputs['src'] = os.path.join(self._options.source, package)
     # Add in each dependency by package name.
     for dependency in dependencies:
-      inputs[dependency] = self.GetOutputDir(dependency)
-
+      inputs[dependency] = os.path.join(
+          self._options.output, dependency + '_install')
     # Each package generates intermediate into output/<PACKAGE>_work.
     # Clobbered here explicitly.
     work_dir = os.path.join(self._options.output, package + '_work')
-    if not self._options.incremental:
-      file_tools.RemoveDirectoryIfPresent(work_dir)
-    file_tools.MakeDirectoryIfAbsent(work_dir)
-
-    output = self.GetOutputDir(package)
-    # Outputs of source targets are clobbered explicitly in Main()
-    if not is_source_target:
-      file_tools.RemoveDirectoryIfPresent(output)
-      os.mkdir(output)
-
+    file_tools.RemoveDirectoryIfPresent(work_dir)
+    os.mkdir(work_dir)
+    # Each package emits its output to output/<PACKAGE>_install.
+    # Clobbered implicitly by Run().
+    output = os.path.join(self._options.output, package + '_install')
     # A package may define an alternate set of inputs to be used for
     # computing the build signature. These are assumed to be in the working
     # directory.
@@ -230,20 +162,13 @@ class PackageBuilder(object):
     if hashed_inputs is not None:
       for key, value in hashed_inputs.iteritems():
         hashed_inputs[key] = os.path.join(work_dir, value)
-
-    commands = package_info.get('commands', [])
-    if self._options.incremental:
-      commands = [cmd for cmd in commands if
-                  not (hasattr(cmd, 'skip_for_incremental') and
-                       cmd.skip_for_incremental)]
     # Do it.
     self._build_once.Run(
         package, inputs, output,
-        commands=commands,
+        commands=package_info.get('commands', []),
         unpack_commands=package_info.get('unpack_commands', []),
         hashed_inputs=hashed_inputs,
-        working_dir=work_dir,
-        memoize=not is_source_target)
+        working_dir=work_dir)
 
   def BuildOrder(self, targets):
     """Find what needs to be built in what order to build all targets.
@@ -347,20 +272,6 @@ class PackageBuilder(object):
         '--buildbot', dest='buildbot',
         default=False, action='store_true',
         help='Run and cache as if on a non-trybot buildbot.')
-    # TODO(dschuff): make incremental non-sync builds the default.
-    # Make -y/--sync enable sync (and maybe add --sync-only?)
-    # Rename -i to -f/--full or something else?
-    # Make --trybot and --buildbot imply -y and -f
-    # Another option would be to set different defaults for toolchain_build
-    # and toolchain_build_pnacl, if desired.
-    parser.add_option(
-        '-i', '--incremental', dest='incremental',
-        default=False, action='store_true',
-        help='Incremental build (do not clobber work dir or unpack src')
-    parser.add_option(
-        '-y', '--no-sync', dest='sync',
-        default=True, action='store_false',
-        help='Do not sync git sources or run source target commands')
     options, targets = parser.parse_args(args)
     if options.trybot and options.buildbot:
       PrintFlush('ERROR: Tried to run with both --trybot and --buildbot.')
