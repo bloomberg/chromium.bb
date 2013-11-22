@@ -74,11 +74,11 @@ class RendererOverridesHandlerTest : public ContentBrowserTest {
   }
 
   void OnMessageSent(const std::string& message) {
-    base::DictionaryValue* root =
-        static_cast<base::DictionaryValue*>(base::JSONReader::Read(message));
+    scoped_ptr<base::DictionaryValue> root(
+        static_cast<base::DictionaryValue*>(base::JSONReader::Read(message)));
     base::DictionaryValue* result;
     root->GetDictionary("result", &result);
-    result_.reset(result);
+    result_.reset(result->DeepCopy());
     base::MessageLoop::current()->QuitNow();
   }
 };
