@@ -20,16 +20,16 @@ namespace extensions {
 namespace {
 
 const char kUdpBindPermission[]=
-    "{ \"udp\": { \"bind\": \"127.0.0.1:3007\" } }";
+    "{ \"udp\": { \"bind\": [\"127.0.0.1:3007\", \"a.com:80\"] } }";
 
 const char kUdpSendPermission[]=
-    "{ \"udp\": { \"send\": \"\" } }";
+    "{ \"udp\": { \"send\": [\"\", \"a.com:80\"] } }";
 
 const char kTcpConnectPermission[]=
-    "{ \"tcp\": { \"connect\": \"127.0.0.1:80\" } }";
+    "{ \"tcp\": { \"connect\": [\"127.0.0.1:80\", \"a.com:80\"] } }";
 
 const char kTcpServerListenPermission[]=
-    "{ \"tcpServer\": { \"listen\": \"127.0.0.1:80\" } }";
+    "{ \"tcpServer\": { \"listen\": [\"127.0.0.1:80\", \"a.com:80\"] } }";
 
 static void AssertEmptyPermission(const SocketsManifestPermission* permission) {
   EXPECT_TRUE(permission);
@@ -288,22 +288,22 @@ TEST(SocketsManifestPermissionTest, FromToValue) {
   scoped_ptr<SocketsManifestPermission> permission1(
       new SocketsManifestPermission());
   EXPECT_TRUE(permission1->FromValue(udp_send.get()));
-  EXPECT_EQ(1u, permission1->entries().size());
+  EXPECT_EQ(2u, permission1->entries().size());
 
   scoped_ptr<SocketsManifestPermission> permission2(
       new SocketsManifestPermission());
   EXPECT_TRUE(permission2->FromValue(udp_bind.get()));
-  EXPECT_EQ(1u, permission2->entries().size());
+  EXPECT_EQ(2u, permission2->entries().size());
 
   scoped_ptr<SocketsManifestPermission> permission3(
       new SocketsManifestPermission());
   EXPECT_TRUE(permission3->FromValue(tcp_connect.get()));
-  EXPECT_EQ(1u, permission3->entries().size());
+  EXPECT_EQ(2u, permission3->entries().size());
 
   scoped_ptr<SocketsManifestPermission> permission4(
       new SocketsManifestPermission());
   EXPECT_TRUE(permission4->FromValue(tcp_server_listen.get()));
-  EXPECT_EQ(1u, permission4->entries().size());
+  EXPECT_EQ(2u, permission4->entries().size());
 
   // ToValue()
   scoped_ptr<base::Value> value1 = permission1->ToValue();
@@ -350,7 +350,7 @@ TEST(SocketsManifestPermissionTest, SetOperations) {
       static_cast<SocketsManifestPermission*>(
           permission1->Union(permission2.get())));
   EXPECT_TRUE(union_perm);
-  EXPECT_EQ(2u, union_perm->entries().size());
+  EXPECT_EQ(4u, union_perm->entries().size());
 
   EXPECT_TRUE(union_perm->Contains(permission1.get()));
   EXPECT_TRUE(union_perm->Contains(permission2.get()));
@@ -362,7 +362,7 @@ TEST(SocketsManifestPermissionTest, SetOperations) {
       static_cast<SocketsManifestPermission*>(
           permission1->Diff(permission2.get())));
   EXPECT_TRUE(diff_perm1);
-  EXPECT_EQ(1u, diff_perm1->entries().size());
+  EXPECT_EQ(2u, diff_perm1->entries().size());
 
   EXPECT_TRUE(permission1->Equal(diff_perm1.get()));
   EXPECT_TRUE(diff_perm1->Equal(permission1.get()));
@@ -378,7 +378,7 @@ TEST(SocketsManifestPermissionTest, SetOperations) {
       static_cast<SocketsManifestPermission*>(
           union_perm->Intersect(permission1.get())));
   EXPECT_TRUE(intersect_perm1);
-  EXPECT_EQ(1u, intersect_perm1->entries().size());
+  EXPECT_EQ(2u, intersect_perm1->entries().size());
 
   EXPECT_TRUE(permission1->Equal(intersect_perm1.get()));
   EXPECT_TRUE(intersect_perm1->Equal(permission1.get()));

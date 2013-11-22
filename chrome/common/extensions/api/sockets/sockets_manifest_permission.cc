@@ -79,28 +79,13 @@ static void SetHostPatterns(
       permission->entries().begin(); it != permission->entries().end() ; ++it) {
     if (it->pattern().type == operation_type) {
       host_patterns->as_strings->push_back(it->GetHostPatternAsString());
-      break;
     }
   }
 }
 
-static SocketsManifestPermission::PermissionKind HasOperationType(
-    const SocketsManifestPermission::SocketPermissionEntrySet& set,
-    SocketPermissionRequest::OperationType operation_type,
-    SocketsManifestPermission::PermissionKind kind) {
-  for (SocketsManifestPermission::SocketPermissionEntrySet::const_iterator
-      it = set.begin(); it != set.end() ; ++it) {
-    if (it->pattern().type == operation_type)
-      return kind;
-  }
-  return SocketsManifestPermission::kNone;
-}
-
 }  // namespace
 
-SocketsManifestPermission::SocketsManifestPermission()
-    : kinds_(kNone) {
-}
+SocketsManifestPermission::SocketsManifestPermission() {}
 
 SocketsManifestPermission::~SocketsManifestPermission() {}
 
@@ -114,7 +99,6 @@ scoped_ptr<SocketsManifestPermission> SocketsManifestPermission::FromValue(
 
   scoped_ptr<SocketsManifestPermission> result(new SocketsManifestPermission());
   if (sockets->udp) {
-    result->kinds_ |= kUdpPermission;
     if (!ParseHostPatterns(result.get(),
                            SocketPermissionRequest::UDP_BIND,
                            sockets->udp->bind,
@@ -135,7 +119,6 @@ scoped_ptr<SocketsManifestPermission> SocketsManifestPermission::FromValue(
     }
   }
   if (sockets->tcp) {
-    result->kinds_ |= kTcpPermission;
     if (!ParseHostPatterns(result.get(),
                            SocketPermissionRequest::TCP_CONNECT,
                            sockets->tcp->connect,
@@ -144,7 +127,6 @@ scoped_ptr<SocketsManifestPermission> SocketsManifestPermission::FromValue(
     }
   }
   if (sockets->tcp_server) {
-    result->kinds_ |= kTcpServerPermission;
     if (!ParseHostPatterns(result.get(),
                            SocketPermissionRequest::TCP_LISTEN,
                            sockets->tcp_server->listen,
@@ -175,7 +157,7 @@ std::string SocketsManifestPermission::id() const {
 }
 
 bool SocketsManifestPermission::HasMessages() const {
-  bool is_empty = permissions_.empty() && (kinds_ == kNone);
+  bool is_empty = permissions_.empty();
   return !is_empty;
 }
 
@@ -195,37 +177,44 @@ bool SocketsManifestPermission::FromValue(const base::Value* value) {
   if (!value)
     return false;
   string16 error;
-  scoped_ptr<SocketsManifestPermission> data(
+  scoped_ptr<SocketsManifestPermission> manifest_permission(
       SocketsManifestPermission::FromValue(*value, &error));
 
-  if (!data)
+  if (!manifest_permission)
     return false;
 
-  permissions_ = data->permissions_;
-  kinds_ = data->kinds_;
+  permissions_ = manifest_permission->permissions_;
   return true;
 }
 
 scoped_ptr<base::Value> SocketsManifestPermission::ToValue() const {
   Sockets sockets;
-  if (has_udp()) {
-    sockets.udp.reset(new Sockets::Udp());
-    SetHostPatterns(sockets.udp->bind, this,
-                    SocketPermissionRequest::UDP_BIND);
-    SetHostPatterns(sockets.udp->send, this,
-                    SocketPermissionRequest::UDP_SEND_TO);
-    SetHostPatterns(sockets.udp->multicast_membership, this,
-                    SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP);
+
+  sockets.udp.reset(new Sockets::Udp());
+  SetHostPatterns(sockets.udp->bind, this,
+                  SocketPermissionRequest::UDP_BIND);
+  SetHostPatterns(sockets.udp->send, this,
+                  SocketPermissionRequest::UDP_SEND_TO);
+  SetHostPatterns(sockets.udp->multicast_membership, this,
+                  SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP);
+  if (sockets.udp->bind->as_strings->size() == 0 &&
+      sockets.udp->send->as_strings->size() == 0 &&
+      sockets.udp->multicast_membership->as_strings->size() == 0) {
+    sockets.udp.reset(NULL);
   }
-  if (has_tcp()) {
-    sockets.tcp.reset(new Sockets::Tcp());
-    SetHostPatterns(sockets.tcp->connect, this,
-                    SocketPermissionRequest::TCP_CONNECT);
+
+  sockets.tcp.reset(new Sockets::Tcp());
+  SetHostPatterns(sockets.tcp->connect, this,
+                  SocketPermissionRequest::TCP_CONNECT);
+  if (sockets.tcp->connect->as_strings->size() == 0) {
+    sockets.tcp.reset(NULL);
   }
-  if (has_tcp_server()) {
-    sockets.tcp_server.reset(new Sockets::TcpServer());
-    SetHostPatterns(sockets.tcp_server->listen, this,
-                    SocketPermissionRequest::TCP_LISTEN);
+
+  sockets.tcp_server.reset(new Sockets::TcpServer());
+  SetHostPatterns(sockets.tcp_server->listen, this,
+                  SocketPermissionRequest::TCP_LISTEN);
+  if (sockets.tcp_server->listen->as_strings->size() == 0) {
+    sockets.tcp_server.reset(NULL);
   }
 
   return scoped_ptr<base::Value>(sockets.ToValue().release()).Pass();
@@ -234,7 +223,6 @@ scoped_ptr<base::Value> SocketsManifestPermission::ToValue() const {
 ManifestPermission* SocketsManifestPermission::Clone() const {
   scoped_ptr<SocketsManifestPermission> result(new SocketsManifestPermission());
   result->permissions_ = permissions_;
-  result->kinds_ = kinds_;
   return result.release();
 }
 
@@ -243,28 +231,13 @@ ManifestPermission* SocketsManifestPermission::Diff(
   const SocketsManifestPermission* other =
       static_cast<const SocketsManifestPermission*>(rhs);
 
-  scoped_ptr<SocketsManifestPermission> data(new SocketsManifestPermission());
+  scoped_ptr<SocketsManifestPermission> result(new SocketsManifestPermission());
   std::set_difference(
       permissions_.begin(), permissions_.end(),
       other->permissions_.begin(), other->permissions_.end(),
       std::inserter<SocketPermissionEntrySet>(
-          data->permissions_, data->permissions_.begin()));
-
-  data->kinds_ = (kinds_ & (~other->kinds_));
-
-  // Note: We may need to fix up |kinds_| because any permission entry
-  // in a given group (udp, tcp, etc.) implies the corresponding kind bit set.
-  data->kinds_ |= HasOperationType(data->permissions_,
-      SocketPermissionRequest::UDP_BIND, kUdpPermission);
-  data->kinds_ |= HasOperationType(data->permissions_,
-      SocketPermissionRequest::UDP_SEND_TO, kUdpPermission);
-  data->kinds_ |= HasOperationType(data->permissions_,
-      SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP, kUdpPermission);
-  data->kinds_ |= HasOperationType(data->permissions_,
-      SocketPermissionRequest::TCP_CONNECT, kTcpPermission);
-  data->kinds_ |= HasOperationType(data->permissions_,
-      SocketPermissionRequest::TCP_LISTEN, kTcpServerPermission);
-  return data.release();
+          result->permissions_, result->permissions_.begin()));
+  return result.release();
 }
 
 ManifestPermission* SocketsManifestPermission::Union(
@@ -272,15 +245,13 @@ ManifestPermission* SocketsManifestPermission::Union(
   const SocketsManifestPermission* other =
       static_cast<const SocketsManifestPermission*>(rhs);
 
-  scoped_ptr<SocketsManifestPermission> data(new SocketsManifestPermission());
+  scoped_ptr<SocketsManifestPermission> result(new SocketsManifestPermission());
   std::set_union(
       permissions_.begin(), permissions_.end(),
       other->permissions_.begin(), other->permissions_.end(),
       std::inserter<SocketPermissionEntrySet>(
-          data->permissions_, data->permissions_.begin()));
-
-  data->kinds_ = (kinds_ | other->kinds_);
-  return data.release();
+          result->permissions_, result->permissions_.begin()));
+  return result.release();
 }
 
 ManifestPermission* SocketsManifestPermission::Intersect(
@@ -288,15 +259,13 @@ ManifestPermission* SocketsManifestPermission::Intersect(
   const SocketsManifestPermission* other =
       static_cast<const SocketsManifestPermission*>(rhs);
 
-  scoped_ptr<SocketsManifestPermission> data(new SocketsManifestPermission());
+  scoped_ptr<SocketsManifestPermission> result(new SocketsManifestPermission());
   std::set_intersection(
       permissions_.begin(), permissions_.end(),
       other->permissions_.begin(), other->permissions_.end(),
       std::inserter<SocketPermissionEntrySet>(
-          data->permissions_, data->permissions_.begin()));
-
-  data->kinds_ = (kinds_ & other->kinds_);
-  return data.release();
+          result->permissions_, result->permissions_.begin()));
+  return result.release();
 }
 
 bool SocketsManifestPermission::Contains(const ManifestPermission* rhs) const {
@@ -305,32 +274,27 @@ bool SocketsManifestPermission::Contains(const ManifestPermission* rhs) const {
 
   return std::includes(
       permissions_.begin(), permissions_.end(),
-      other->permissions_.begin(), other->permissions_.end()) &&
-      ((kinds_ | other->kinds_) == kinds_);
+      other->permissions_.begin(), other->permissions_.end());
 }
 
 bool SocketsManifestPermission::Equal(const ManifestPermission* rhs) const {
   const SocketsManifestPermission* other =
       static_cast<const SocketsManifestPermission*>(rhs);
 
-  return (permissions_ == other->permissions_) &&
-      (kinds_ == other->kinds_);
+  return (permissions_ == other->permissions_);
 }
 
 void SocketsManifestPermission::Write(IPC::Message* m) const {
   IPC::WriteParam(m, permissions_);
-  IPC::WriteParam(m, kinds_);
 }
 
 bool SocketsManifestPermission::Read(const IPC::Message* m,
                                      PickleIterator* iter) {
-  return IPC::ReadParam(m, iter, &permissions_) &&
-      IPC::ReadParam(m, iter, &kinds_);
+  return IPC::ReadParam(m, iter, &permissions_);
 }
 
 void SocketsManifestPermission::Log(std::string* log) const {
   IPC::LogParam(permissions_, log);
-  IPC::LogParam(kinds_, log);
 }
 
 void SocketsManifestPermission::AddPermission(

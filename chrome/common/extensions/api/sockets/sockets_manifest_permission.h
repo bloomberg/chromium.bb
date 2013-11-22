@@ -25,13 +25,6 @@ namespace extensions {
 class SocketsManifestPermission : public ManifestPermission {
  public:
   typedef std::set<SocketPermissionEntry> SocketPermissionEntrySet;
-  enum PermissionKind {
-    kNone = 0,
-    kTcpPermission = 1 << 0,
-    kUdpPermission = 1 << 1,
-    kTcpServerPermission = 1 << 2
-  };
-
   SocketsManifestPermission();
   virtual ~SocketsManifestPermission();
 
@@ -66,9 +59,6 @@ class SocketsManifestPermission : public ManifestPermission {
   virtual bool Read(const IPC::Message* m, PickleIterator* iter) OVERRIDE;
   virtual void Log(std::string* log) const OVERRIDE;
 
-  bool has_udp() const { return (kinds_ & kUdpPermission) != 0; }
-  bool has_tcp() const { return (kinds_ & kTcpPermission) != 0; }
-  bool has_tcp_server() const { return (kinds_ & kTcpServerPermission) != 0; }
   const SocketPermissionEntrySet& entries() const { return permissions_; }
 
  private:
@@ -78,7 +68,6 @@ class SocketsManifestPermission : public ManifestPermission {
   void AddNetworkListMessage(PermissionMessages& messages) const;
 
   SocketPermissionEntrySet permissions_;
-  int kinds_;  // PermissionKind bits
 };
 
 }  // namespace extensions
