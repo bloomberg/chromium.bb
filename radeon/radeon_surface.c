@@ -26,6 +26,8 @@
  * Authors:
  *      Jérôme Glisse <jglisse@redhat.com>
  */
+#include <stdbool.h>
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -96,6 +98,8 @@ struct radeon_hw_info {
     unsigned                        allow_2d;
     /* apply to si */
     uint32_t                        tile_mode_array[32];
+    /* apply to cik */
+    uint32_t                        macrotile_mode_array[16];
 };
 
 struct radeon_surface_manager {
@@ -1383,16 +1387,10 @@ static int si_surface_sanity(struct radeon_surface_manager *surf_man,
         break;
     case RADEON_SURF_MODE_1D:
         if (surf->flags & RADEON_SURF_SBUFFER) {
-            if (surf_man->family >= CHIP_BONAIRE)
-                *stencil_tile_mode = CIK_TILE_MODE_DEPTH_STENCIL_1D;
-            else
-                *stencil_tile_mode = SI_TILE_MODE_DEPTH_STENCIL_1D;
+            *stencil_tile_mode = SI_TILE_MODE_DEPTH_STENCIL_1D;
         }
         if (surf->flags & RADEON_SURF_ZBUFFER) {
-            if (surf_man->family >= CHIP_BONAIRE)
-                *tile_mode = CIK_TILE_MODE_DEPTH_STENCIL_1D;
-            else
-                *tile_mode = SI_TILE_MODE_DEPTH_STENCIL_1D;
+            *tile_mode = SI_TILE_MODE_DEPTH_STENCIL_1D;
         } else if (surf->flags & RADEON_SURF_SCANOUT) {
             *tile_mode = SI_TILE_MODE_COLOR_1D_SCANOUT;
         } else {
@@ -1660,10 +1658,7 @@ static int si_surface_init_2d(struct radeon_surface_manager *surf_man,
                 tile_mode = SI_TILE_MODE_COLOR_1D_SCANOUT;
                 break;
             case SI_TILE_MODE_DEPTH_STENCIL_2D:
-                if (surf_man->family >= CHIP_BONAIRE)
-                    tile_mode = CIK_TILE_MODE_DEPTH_STENCIL_1D;
-                else
-                    tile_mode = SI_TILE_MODE_DEPTH_STENCIL_1D;
+                tile_mode = SI_TILE_MODE_DEPTH_STENCIL_1D;
                 break;
             default:
                 return -EINVAL;
@@ -1792,6 +1787,604 @@ static int si_surface_best(struct radeon_surface_manager *surf_man,
 
 
 /* ===========================================================================
+ * Sea Islands family
+ */
+#define CIK__GB_TILE_MODE__PIPE_CONFIG(x)        (((x) >> 6) & 0x1f)
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P2               0
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P4_8x16          4
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P4_16x16         5
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P4_16x32         6
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P4_32x32         7
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P8_16x16_8x16    8
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P8_16x32_8x16    9
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P8_32x32_8x16    10
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P8_16x32_16x16   11
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P8_32x32_16x16   12
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P8_32x32_16x32   13
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P8_32x64_32x32   14
+#define CIK__GB_TILE_MODE__TILE_SPLIT(x)         (((x) >> 11) & 0x7)
+#define     CIK__TILE_SPLIT__64B                         0
+#define     CIK__TILE_SPLIT__128B                        1
+#define     CIK__TILE_SPLIT__256B                        2
+#define     CIK__TILE_SPLIT__512B                        3
+#define     CIK__TILE_SPLIT__1024B                       4
+#define     CIK__TILE_SPLIT__2048B                       5
+#define     CIK__TILE_SPLIT__4096B                       6
+#define CIK__GB_TILE_MODE__SAMPLE_SPLIT(x)         (((x) >> 25) & 0x3)
+#define     CIK__SAMPLE_SPLIT__1                         0
+#define     CIK__SAMPLE_SPLIT__2                         1
+#define     CIK__SAMPLE_SPLIT__4                         2
+#define     CIK__SAMPLE_SPLIT__8                         3
+#define CIK__GB_MACROTILE_MODE__BANK_WIDTH(x)        ((x) & 0x3)
+#define     CIK__BANK_WIDTH__1                           0
+#define     CIK__BANK_WIDTH__2                           1
+#define     CIK__BANK_WIDTH__4                           2
+#define     CIK__BANK_WIDTH__8                           3
+#define CIK__GB_MACROTILE_MODE__BANK_HEIGHT(x)       (((x) >> 2) & 0x3)
+#define     CIK__BANK_HEIGHT__1                          0
+#define     CIK__BANK_HEIGHT__2                          1
+#define     CIK__BANK_HEIGHT__4                          2
+#define     CIK__BANK_HEIGHT__8                          3
+#define CIK__GB_MACROTILE_MODE__MACRO_TILE_ASPECT(x) (((x) >> 4) & 0x3)
+#define     CIK__MACRO_TILE_ASPECT__1                    0
+#define     CIK__MACRO_TILE_ASPECT__2                    1
+#define     CIK__MACRO_TILE_ASPECT__4                    2
+#define     CIK__MACRO_TILE_ASPECT__8                    3
+#define CIK__GB_MACROTILE_MODE__NUM_BANKS(x)         (((x) >> 6) & 0x3)
+#define     CIK__NUM_BANKS__2_BANK                       0
+#define     CIK__NUM_BANKS__4_BANK                       1
+#define     CIK__NUM_BANKS__8_BANK                       2
+#define     CIK__NUM_BANKS__16_BANK                      3
+
+
+static void cik_get_2d_params(struct radeon_surface_manager *surf_man,
+                              unsigned bpe, unsigned nsamples, bool is_color,
+                              unsigned tile_mode,
+                              uint32_t *num_pipes,
+                              uint32_t *tile_split_ptr,
+                              uint32_t *num_banks,
+                              uint32_t *macro_tile_aspect,
+                              uint32_t *bank_w,
+                              uint32_t *bank_h)
+{
+    uint32_t gb_tile_mode = surf_man->hw_info.tile_mode_array[tile_mode];
+    unsigned tileb_1x, tileb;
+    unsigned gb_macrotile_mode;
+    unsigned macrotile_index;
+    unsigned tile_split, sample_split;
+
+    if (num_pipes) {
+        switch (CIK__GB_TILE_MODE__PIPE_CONFIG(gb_tile_mode)) {
+        case CIK__PIPE_CONFIG__ADDR_SURF_P2:
+        default:
+            *num_pipes = 2;
+            break;
+        case CIK__PIPE_CONFIG__ADDR_SURF_P4_8x16:
+        case CIK__PIPE_CONFIG__ADDR_SURF_P4_16x16:
+        case CIK__PIPE_CONFIG__ADDR_SURF_P4_16x32:
+        case CIK__PIPE_CONFIG__ADDR_SURF_P4_32x32:
+            *num_pipes = 4;
+            break;
+        case CIK__PIPE_CONFIG__ADDR_SURF_P8_16x16_8x16:
+        case CIK__PIPE_CONFIG__ADDR_SURF_P8_16x32_8x16:
+        case CIK__PIPE_CONFIG__ADDR_SURF_P8_32x32_8x16:
+        case CIK__PIPE_CONFIG__ADDR_SURF_P8_16x32_16x16:
+        case CIK__PIPE_CONFIG__ADDR_SURF_P8_32x32_16x16:
+        case CIK__PIPE_CONFIG__ADDR_SURF_P8_32x32_16x32:
+        case CIK__PIPE_CONFIG__ADDR_SURF_P8_32x64_32x32:
+            *num_pipes = 8;
+            break;
+        }
+    }
+    switch (CIK__GB_TILE_MODE__TILE_SPLIT(gb_tile_mode)) {
+    default:
+    case CIK__TILE_SPLIT__64B:
+        tile_split = 64;
+        break;
+    case CIK__TILE_SPLIT__128B:
+        tile_split = 128;
+        break;
+    case CIK__TILE_SPLIT__256B:
+        tile_split = 256;
+        break;
+    case CIK__TILE_SPLIT__512B:
+        tile_split = 512;
+        break;
+    case CIK__TILE_SPLIT__1024B:
+        tile_split = 1024;
+        break;
+    case CIK__TILE_SPLIT__2048B:
+        tile_split = 2048;
+        break;
+    case CIK__TILE_SPLIT__4096B:
+        tile_split = 4096;
+        break;
+    }
+    switch (CIK__GB_TILE_MODE__SAMPLE_SPLIT(gb_tile_mode)) {
+    default:
+    case CIK__SAMPLE_SPLIT__1:
+        sample_split = 1;
+        break;
+    case CIK__SAMPLE_SPLIT__2:
+        sample_split = 1;
+        break;
+    case CIK__SAMPLE_SPLIT__4:
+        sample_split = 4;
+        break;
+    case CIK__SAMPLE_SPLIT__8:
+        sample_split = 8;
+        break;
+    }
+
+    /* Adjust the tile split. */
+    tileb_1x = 8 * 8 * bpe;
+    if (is_color) {
+        tile_split = MAX2(256, sample_split * tileb_1x);
+    }
+    tile_split = MIN2(surf_man->hw_info.row_size, tile_split);
+
+    /* Determine the macrotile index. */
+    tileb = MIN2(tile_split, nsamples * tileb_1x);
+
+    for (macrotile_index = 0; tileb > 64; macrotile_index++) {
+        tileb >>= 1;
+    }
+    gb_macrotile_mode = surf_man->hw_info.macrotile_mode_array[macrotile_index];
+
+    if (tile_split_ptr) {
+        *tile_split_ptr = tile_split;
+    }
+    if (num_banks) {
+        switch (CIK__GB_MACROTILE_MODE__NUM_BANKS(gb_macrotile_mode)) {
+        default:
+        case CIK__NUM_BANKS__2_BANK:
+            *num_banks = 2;
+            break;
+        case CIK__NUM_BANKS__4_BANK:
+            *num_banks = 4;
+            break;
+        case CIK__NUM_BANKS__8_BANK:
+            *num_banks = 8;
+            break;
+        case CIK__NUM_BANKS__16_BANK:
+            *num_banks = 16;
+            break;
+        }
+    }
+    if (macro_tile_aspect) {
+        switch (CIK__GB_MACROTILE_MODE__MACRO_TILE_ASPECT(gb_macrotile_mode)) {
+        default:
+        case CIK__MACRO_TILE_ASPECT__1:
+            *macro_tile_aspect = 1;
+            break;
+        case CIK__MACRO_TILE_ASPECT__2:
+            *macro_tile_aspect = 2;
+            break;
+        case CIK__MACRO_TILE_ASPECT__4:
+            *macro_tile_aspect = 4;
+            break;
+        case CIK__MACRO_TILE_ASPECT__8:
+            *macro_tile_aspect = 8;
+            break;
+        }
+    }
+    if (bank_w) {
+        switch (CIK__GB_MACROTILE_MODE__BANK_WIDTH(gb_macrotile_mode)) {
+        default:
+        case CIK__BANK_WIDTH__1:
+            *bank_w = 1;
+            break;
+        case CIK__BANK_WIDTH__2:
+            *bank_w = 2;
+            break;
+        case CIK__BANK_WIDTH__4:
+            *bank_w = 4;
+            break;
+        case CIK__BANK_WIDTH__8:
+            *bank_w = 8;
+            break;
+        }
+    }
+    if (bank_h) {
+        switch (CIK__GB_MACROTILE_MODE__BANK_HEIGHT(gb_macrotile_mode)) {
+        default:
+        case CIK__BANK_HEIGHT__1:
+            *bank_h = 1;
+            break;
+        case CIK__BANK_HEIGHT__2:
+            *bank_h = 2;
+            break;
+        case CIK__BANK_HEIGHT__4:
+            *bank_h = 4;
+            break;
+        case CIK__BANK_HEIGHT__8:
+            *bank_h = 8;
+            break;
+        }
+    }
+}
+
+static int cik_init_hw_info(struct radeon_surface_manager *surf_man)
+{
+    uint32_t tiling_config;
+    drmVersionPtr version;
+    int r;
+
+    r = radeon_get_value(surf_man->fd, RADEON_INFO_TILING_CONFIG,
+                         &tiling_config);
+    if (r) {
+        return r;
+    }
+
+    surf_man->hw_info.allow_2d = 0;
+    version = drmGetVersion(surf_man->fd);
+    if (version && version->version_minor >= 35) {
+        if (!radeon_get_value(surf_man->fd, RADEON_INFO_SI_TILE_MODE_ARRAY, surf_man->hw_info.tile_mode_array) &&
+	    !radeon_get_value(surf_man->fd, RADEON_INFO_CIK_MACROTILE_MODE_ARRAY, surf_man->hw_info.macrotile_mode_array)) {
+            surf_man->hw_info.allow_2d = 1;
+        }
+    }
+    drmFreeVersion(version);
+
+    switch (tiling_config & 0xf) {
+    case 0:
+        surf_man->hw_info.num_pipes = 1;
+        break;
+    case 1:
+        surf_man->hw_info.num_pipes = 2;
+        break;
+    case 2:
+        surf_man->hw_info.num_pipes = 4;
+        break;
+    case 3:
+        surf_man->hw_info.num_pipes = 8;
+        break;
+    default:
+        surf_man->hw_info.num_pipes = 8;
+        surf_man->hw_info.allow_2d = 0;
+        break;
+    }
+
+    switch ((tiling_config & 0xf0) >> 4) {
+    case 0:
+        surf_man->hw_info.num_banks = 4;
+        break;
+    case 1:
+        surf_man->hw_info.num_banks = 8;
+        break;
+    case 2:
+        surf_man->hw_info.num_banks = 16;
+        break;
+    default:
+        surf_man->hw_info.num_banks = 8;
+        surf_man->hw_info.allow_2d = 0;
+        break;
+    }
+
+    switch ((tiling_config & 0xf00) >> 8) {
+    case 0:
+        surf_man->hw_info.group_bytes = 256;
+        break;
+    case 1:
+        surf_man->hw_info.group_bytes = 512;
+        break;
+    default:
+        surf_man->hw_info.group_bytes = 256;
+        surf_man->hw_info.allow_2d = 0;
+        break;
+    }
+
+    switch ((tiling_config & 0xf000) >> 12) {
+    case 0:
+        surf_man->hw_info.row_size = 1024;
+        break;
+    case 1:
+        surf_man->hw_info.row_size = 2048;
+        break;
+    case 2:
+        surf_man->hw_info.row_size = 4096;
+        break;
+    default:
+        surf_man->hw_info.row_size = 4096;
+        surf_man->hw_info.allow_2d = 0;
+        break;
+    }
+    return 0;
+}
+
+static int cik_surface_sanity(struct radeon_surface_manager *surf_man,
+                              struct radeon_surface *surf,
+                              unsigned mode, unsigned *tile_mode, unsigned *stencil_tile_mode)
+{
+    /* check surface dimension */
+    if (surf->npix_x > 16384 || surf->npix_y > 16384 || surf->npix_z > 16384) {
+        return -EINVAL;
+    }
+
+    /* check mipmap last_level */
+    if (surf->last_level > 15) {
+        return -EINVAL;
+    }
+
+    /* force 1d on kernel that can't do 2d */
+    if (mode > RADEON_SURF_MODE_1D &&
+        (!surf_man->hw_info.allow_2d || !(surf->flags & RADEON_SURF_HAS_TILE_MODE_INDEX))) {
+        if (surf->nsamples > 1) {
+            fprintf(stderr, "radeon: Cannot use 1D tiling for an MSAA surface (%i).\n", __LINE__);
+            return -EFAULT;
+        }
+        mode = RADEON_SURF_MODE_1D;
+        surf->flags = RADEON_SURF_CLR(surf->flags, MODE);
+        surf->flags |= RADEON_SURF_SET(mode, MODE);
+    }
+
+    if (surf->nsamples > 1 && mode != RADEON_SURF_MODE_2D) {
+        return -EINVAL;
+    }
+
+    if (!surf->tile_split) {
+        /* default value */
+        surf->mtilea = 1;
+        surf->bankw = 1;
+        surf->bankw = 1;
+        surf->tile_split = 64;
+        surf->stencil_tile_split = 64;
+    }
+
+    switch (mode) {
+    case RADEON_SURF_MODE_2D: {
+        if (surf->flags & RADEON_SURF_Z_OR_SBUFFER) {
+            switch (surf->nsamples) {
+            case 1:
+                *tile_mode = CIK_TILE_MODE_DEPTH_STENCIL_2D_TILESPLIT_64;
+                break;
+            case 2:
+            case 4:
+                *tile_mode = CIK_TILE_MODE_DEPTH_STENCIL_2D_TILESPLIT_128;
+                break;
+            case 8:
+                *tile_mode = CIK_TILE_MODE_DEPTH_STENCIL_2D_TILESPLIT_256;
+                break;
+            default:
+                return -EINVAL;
+            }
+
+            if (surf->flags & RADEON_SURF_SBUFFER) {
+                *stencil_tile_mode = *tile_mode;
+
+                cik_get_2d_params(surf_man, 1, surf->nsamples, false,
+                                  *stencil_tile_mode, NULL,
+                                  &surf->stencil_tile_split,
+                                  NULL, NULL, NULL, NULL);
+            }
+        } else if (surf->flags & RADEON_SURF_SCANOUT) {
+            *tile_mode = CIK_TILE_MODE_COLOR_2D_SCANOUT;
+        } else {
+            *tile_mode = CIK_TILE_MODE_COLOR_2D;
+        }
+
+        /* retrieve tiling mode values */
+        cik_get_2d_params(surf_man, surf->bpe, surf->nsamples,
+                          !(surf->flags & RADEON_SURF_Z_OR_SBUFFER), *tile_mode,
+                          NULL, &surf->tile_split, NULL, &surf->mtilea,
+                          &surf->bankw, &surf->bankh);
+        break;
+    }
+    case RADEON_SURF_MODE_1D:
+        if (surf->flags & RADEON_SURF_SBUFFER) {
+            *stencil_tile_mode = CIK_TILE_MODE_DEPTH_STENCIL_1D;
+        }
+        if (surf->flags & RADEON_SURF_ZBUFFER) {
+            *tile_mode = CIK_TILE_MODE_DEPTH_STENCIL_1D;
+        } else if (surf->flags & RADEON_SURF_SCANOUT) {
+            *tile_mode = SI_TILE_MODE_COLOR_1D_SCANOUT;
+        } else {
+            *tile_mode = SI_TILE_MODE_COLOR_1D;
+        }
+        break;
+    case RADEON_SURF_MODE_LINEAR_ALIGNED:
+    default:
+        *tile_mode = SI_TILE_MODE_COLOR_LINEAR_ALIGNED;
+    }
+
+    return 0;
+}
+
+static int cik_surface_init_2d(struct radeon_surface_manager *surf_man,
+                               struct radeon_surface *surf,
+                               struct radeon_surface_level *level,
+                               unsigned bpe, unsigned tile_mode,
+                               unsigned tile_split,
+                               unsigned num_pipes, unsigned num_banks,
+                               uint64_t offset,
+                               unsigned start_level)
+{
+    uint64_t aligned_offset = offset;
+    unsigned tilew, tileh, tileb_1x, tileb;
+    unsigned mtilew, mtileh, mtileb;
+    unsigned slice_pt;
+    unsigned i;
+
+    /* compute tile values */
+    tilew = 8;
+    tileh = 8;
+    tileb_1x = tilew * tileh * bpe;
+
+    tile_split = MIN2(surf_man->hw_info.row_size, tile_split);
+
+    tileb = surf->nsamples * tileb_1x;
+
+    /* slices per tile */
+    slice_pt = 1;
+    if (tileb > tile_split) {
+        slice_pt = tileb / tile_split;
+        tileb = tileb / slice_pt;
+    }
+
+    /* macro tile width & height */
+    mtilew = (tilew * surf->bankw * num_pipes) * surf->mtilea;
+    mtileh = (tileh * surf->bankh * num_banks) / surf->mtilea;
+
+    /* macro tile bytes */
+    mtileb = (mtilew / tilew) * (mtileh / tileh) * tileb;
+
+    if (start_level <= 1) {
+        unsigned alignment = MAX2(256, mtileb);
+        surf->bo_alignment = MAX2(surf->bo_alignment, alignment);
+
+        if (aligned_offset) {
+            aligned_offset = ALIGN(aligned_offset, alignment);
+        }
+    }
+
+    /* build mipmap tree */
+    for (i = start_level; i <= surf->last_level; i++) {
+        level[i].mode = RADEON_SURF_MODE_2D;
+        si_surf_minify_2d(surf, level+i, bpe, i, slice_pt, mtilew, mtileh, 1, mtileb, aligned_offset);
+        if (level[i].mode == RADEON_SURF_MODE_1D) {
+            switch (tile_mode) {
+            case CIK_TILE_MODE_COLOR_2D:
+                tile_mode = SI_TILE_MODE_COLOR_1D;
+                break;
+            case CIK_TILE_MODE_COLOR_2D_SCANOUT:
+                tile_mode = SI_TILE_MODE_COLOR_1D_SCANOUT;
+                break;
+            case CIK_TILE_MODE_DEPTH_STENCIL_2D_TILESPLIT_64:
+            case CIK_TILE_MODE_DEPTH_STENCIL_2D_TILESPLIT_128:
+            case CIK_TILE_MODE_DEPTH_STENCIL_2D_TILESPLIT_256:
+            case CIK_TILE_MODE_DEPTH_STENCIL_2D_TILESPLIT_512:
+            case CIK_TILE_MODE_DEPTH_STENCIL_2D_TILESPLIT_ROW_SIZE:
+                tile_mode = CIK_TILE_MODE_DEPTH_STENCIL_1D;
+                break;
+            default:
+                return -EINVAL;
+            }
+            return si_surface_init_1d(surf_man, surf, level, bpe, tile_mode, offset, i);
+        }
+        /* level0 and first mipmap need to have alignment */
+        aligned_offset = offset = surf->bo_size;
+        if (i == 0) {
+            aligned_offset = ALIGN(aligned_offset, surf->bo_alignment);
+        }
+        if (surf->flags & RADEON_SURF_HAS_TILE_MODE_INDEX) {
+            if (surf->level == level) {
+                surf->tiling_index[i] = tile_mode;
+                /* it's ok because stencil is done after */
+                surf->stencil_tiling_index[i] = tile_mode;
+            } else {
+                surf->stencil_tiling_index[i] = tile_mode;
+            }
+        }
+    }
+    return 0;
+}
+
+static int cik_surface_init_2d_miptrees(struct radeon_surface_manager *surf_man,
+                                        struct radeon_surface *surf,
+                                        unsigned tile_mode, unsigned stencil_tile_mode)
+{
+    int r;
+    uint32_t num_pipes, num_banks;
+
+    cik_get_2d_params(surf_man, surf->bpe, surf->nsamples,
+                        !(surf->flags & RADEON_SURF_Z_OR_SBUFFER), tile_mode,
+                        &num_pipes, NULL, &num_banks, NULL, NULL, NULL);
+
+    r = cik_surface_init_2d(surf_man, surf, surf->level, surf->bpe, tile_mode,
+                            surf->tile_split, num_pipes, num_banks, 0, 0);
+    if (r) {
+        return r;
+    }
+
+    if (surf->flags & RADEON_SURF_SBUFFER) {
+        r = cik_surface_init_2d(surf_man, surf, surf->stencil_level, 1, stencil_tile_mode,
+                                surf->stencil_tile_split, num_pipes, num_banks,
+                                surf->bo_size, 0);
+        surf->stencil_offset = surf->stencil_level[0].offset;
+    }
+    return r;
+}
+
+static int cik_surface_init(struct radeon_surface_manager *surf_man,
+                            struct radeon_surface *surf)
+{
+    unsigned mode, tile_mode, stencil_tile_mode;
+    int r;
+
+    /* MSAA surfaces support the 2D mode only. */
+    if (surf->nsamples > 1) {
+        surf->flags = RADEON_SURF_CLR(surf->flags, MODE);
+        surf->flags |= RADEON_SURF_SET(RADEON_SURF_MODE_2D, MODE);
+    }
+
+    /* tiling mode */
+    mode = (surf->flags >> RADEON_SURF_MODE_SHIFT) & RADEON_SURF_MODE_MASK;
+
+    if (surf->flags & (RADEON_SURF_ZBUFFER | RADEON_SURF_SBUFFER)) {
+        /* zbuffer only support 1D or 2D tiled surface */
+        switch (mode) {
+        case RADEON_SURF_MODE_1D:
+        case RADEON_SURF_MODE_2D:
+            break;
+        default:
+            mode = RADEON_SURF_MODE_1D;
+            surf->flags = RADEON_SURF_CLR(surf->flags, MODE);
+            surf->flags |= RADEON_SURF_SET(RADEON_SURF_MODE_1D, MODE);
+            break;
+        }
+    }
+
+    r = cik_surface_sanity(surf_man, surf, mode, &tile_mode, &stencil_tile_mode);
+    if (r) {
+        return r;
+    }
+
+    surf->stencil_offset = 0;
+    surf->bo_alignment = 0;
+
+    /* check tiling mode */
+    switch (mode) {
+    case RADEON_SURF_MODE_LINEAR:
+        r = r6_surface_init_linear(surf_man, surf, 0, 0);
+        break;
+    case RADEON_SURF_MODE_LINEAR_ALIGNED:
+        r = si_surface_init_linear_aligned(surf_man, surf, tile_mode, 0, 0);
+        break;
+    case RADEON_SURF_MODE_1D:
+        r = si_surface_init_1d_miptrees(surf_man, surf, tile_mode, stencil_tile_mode);
+        break;
+    case RADEON_SURF_MODE_2D:
+        r = cik_surface_init_2d_miptrees(surf_man, surf, tile_mode, stencil_tile_mode);
+        break;
+    default:
+        return -EINVAL;
+    }
+    return r;
+}
+
+/*
+ * depending on surface
+ */
+static int cik_surface_best(struct radeon_surface_manager *surf_man,
+                            struct radeon_surface *surf)
+{
+    unsigned mode, tile_mode, stencil_tile_mode;
+
+    /* tiling mode */
+    mode = (surf->flags >> RADEON_SURF_MODE_SHIFT) & RADEON_SURF_MODE_MASK;
+
+    if (surf->flags & (RADEON_SURF_ZBUFFER | RADEON_SURF_SBUFFER) &&
+        !(surf->flags & RADEON_SURF_HAS_TILE_MODE_INDEX)) {
+        /* depth/stencil force 1d tiling for old mesa */
+        surf->flags = RADEON_SURF_CLR(surf->flags, MODE);
+        surf->flags |= RADEON_SURF_SET(RADEON_SURF_MODE_1D, MODE);
+    }
+
+    return cik_surface_sanity(surf_man, surf, mode, &tile_mode, &stencil_tile_mode);
+}
+
+
+/* ===========================================================================
  * public API
  */
 struct radeon_surface_manager *radeon_surface_manager_new(int fd)
@@ -1822,12 +2415,18 @@ struct radeon_surface_manager *radeon_surface_manager_new(int fd)
         }
         surf_man->surface_init = &eg_surface_init;
         surf_man->surface_best = &eg_surface_best;
-    } else {
+    } else if (surf_man->family < CHIP_BONAIRE) {
         if (si_init_hw_info(surf_man)) {
             goto out_err;
         }
         surf_man->surface_init = &si_surface_init;
         surf_man->surface_best = &si_surface_best;
+    } else {
+        if (cik_init_hw_info(surf_man)) {
+            goto out_err;
+        }
+        surf_man->surface_init = &cik_surface_init;
+        surf_man->surface_best = &cik_surface_best;
     }
 
     return surf_man;
