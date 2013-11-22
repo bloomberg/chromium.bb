@@ -130,11 +130,13 @@ views::View* DecoratedTextfield::GetEventHandlerForRect(const gfx::Rect& rect) {
 void DecoratedTextfield::OnFocus() {
   border_->set_has_focus(true);
   views::Textfield::OnFocus();
+  SchedulePaint();
 }
 
 void DecoratedTextfield::OnBlur() {
   border_->set_has_focus(false);
   views::Textfield::OnBlur();
+  SchedulePaint();
 }
 
 gfx::Size DecoratedTextfield::GetPreferredSize() {
