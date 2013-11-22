@@ -65,6 +65,7 @@ public:
         TargetIsFavicon,
         TargetIsXHR,
         TargetIsTextTrack,
+        TargetIsPing,
         TargetIsUnspecified,
     };
 

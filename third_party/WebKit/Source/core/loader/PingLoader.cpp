@@ -59,7 +59,7 @@ void PingLoader::loadImage(Frame* frame, const KURL& url)
     }
 
     ResourceRequest request(url);
-    request.setTargetType(ResourceRequest::TargetIsImage);
+    request.setTargetType(ResourceRequest::TargetIsPing);
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
     String referrer = SecurityPolicy::generateReferrerHeader(frame->document()->referrerPolicy(), request.url(), frame->loader().outgoingReferrer());
     if (!referrer.isEmpty())
@@ -76,7 +76,7 @@ void PingLoader::loadImage(Frame* frame, const KURL& url)
 void PingLoader::sendPing(Frame* frame, const KURL& pingURL, const KURL& destinationURL)
 {
     ResourceRequest request(pingURL);
-    request.setTargetType(ResourceRequest::TargetIsSubresource);
+    request.setTargetType(ResourceRequest::TargetIsPing);
     request.setHTTPMethod("POST");
     request.setHTTPContentType("text/ping");
     request.setHTTPBody(FormData::create("PING"));
