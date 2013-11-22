@@ -179,8 +179,8 @@ void Args::SetSystemVars(Scope* dest) const {
   dest->SetValue(variables::kOs, os_val, NULL);
 
   // Host architecture.
-  static const char kIa32[] = "ia32";
-  static const char kIa64[] = "ia64";
+  static const char kX86[] = "x86";
+  static const char kX64[] = "x64";
   const char* arch = NULL;
 #if defined(OS_WIN)
   // ...on Windows, set the CPU architecture based on the underlying OS, not
@@ -188,10 +188,10 @@ void Args::SetSystemVars(Scope* dest) const {
   const base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
   switch (os_info->architecture()) {
     case base::win::OSInfo::X86_ARCHITECTURE:
-      arch = kIa32;
+      arch = kX86;
       break;
     case base::win::OSInfo::X64_ARCHITECTURE:
-      arch = kIa64;
+      arch = kX64;
       break;
     default:
       CHECK(false) << "Windows architecture not handled.";
@@ -201,9 +201,9 @@ void Args::SetSystemVars(Scope* dest) const {
   // ...on all other platforms, just use the bit-tedness of the current
   // process.
   #if defined(ARCH_CPU_X86_64)
-    arch = kIa64;
+    arch = kX64;
   #elif defined(ARCH_CPU_X86)
-    arch = kIa32;
+    arch = kX86;
   #elif defined(ARCH_CPU_ARMEL)
     static const char kArm[] = "arm";
     arch = kArm;
@@ -212,8 +212,8 @@ void Args::SetSystemVars(Scope* dest) const {
   #endif
 #endif
   // Avoid unused var warning.
-  (void)kIa32;
-  (void)kIa64;
+  (void)kX86;
+  (void)kX64;
 
   Value arch_val(NULL, std::string(arch));
   dest->SetValue(variables::kBuildCpuArch, arch_val, NULL);

@@ -40,8 +40,8 @@ const char kCpuArch_Help[] =
     "  set it to whatever value is relevant to your build.\n"
     "\n"
     "Possible initial values set by GN:\n"
-    "  - \"ia32\"\n"
-    "  - \"ia64\"\n"
+    "  - \"x86\"\n"
+    "  - \"x64\"\n"
     "  - \"arm\"\n";
 
 const char kCurrentToolchain[] = "current_toolchain";

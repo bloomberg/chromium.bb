@@ -150,9 +150,9 @@ if (is_win) {
   # Always use 32-bit on Windows, even when compiling on a 64-bit host OS,
   # unless the override flag is specified.
   if (force_win64) {
-    cpu_arch = "ia64"
+    cpu_arch = "x64"
   } else {
-    cpu_arch = "ia32"
+    cpu_arch = "x86"
   }
 }
 
@@ -383,9 +383,9 @@ set_defaults("source_set") {
 # default toolchain.
 
 if (is_win) {
-  if (cpu_arch == "ia64") {
+  if (cpu_arch == "x64") {
     host_toolchain = "//build/toolchain/win:64"
-  } else if (cpu_arch == "ia32") {
+  } else if (cpu_arch == "x86") {
     host_toolchain = "//build/toolchain/win:32"
   }
   set_default_toolchain(host_toolchain)
