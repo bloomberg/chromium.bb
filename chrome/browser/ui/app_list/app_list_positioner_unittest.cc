@@ -153,14 +153,14 @@ TEST_F(AppListPositionerUnitTest, ScreenCorner) {
 TEST_F(AppListPositionerUnitTest, ShelfCorner) {
   // Position the app list on the shelf, aligned with the top or left corner.
   // Shelf on left. Expect app list in top-left corner.
-  SetShelfRect(0, 0, kShelfSize, kScreenHeight);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_LEFT);
   EXPECT_EQ(
       gfx::Point(kShelfSize + kWindowWidth / 2 + kMinDistanceFromEdge,
                  kWindowHeight / 2 + kMinDistanceFromEdge),
       DoGetAnchorPointForShelfCorner(AppListPositioner::SCREEN_EDGE_LEFT));
 
   // Shelf on right. Expect app list in top-right corner.
-  SetShelfRect(kScreenWidth - kShelfSize, 0, kShelfSize, kScreenHeight);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_RIGHT);
   EXPECT_EQ(
       gfx::Point(
           kScreenWidth - kShelfSize - kWindowWidth / 2 - kMinDistanceFromEdge,
@@ -168,13 +168,13 @@ TEST_F(AppListPositionerUnitTest, ShelfCorner) {
       DoGetAnchorPointForShelfCorner(AppListPositioner::SCREEN_EDGE_RIGHT));
 
   // Shelf on top. Expect app list in top-left corner.
-  SetShelfRect(0, 0, kScreenWidth, kShelfSize);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_TOP);
   EXPECT_EQ(gfx::Point(kWindowWidth / 2 + kMinDistanceFromEdge,
                        kShelfSize + kWindowHeight / 2 + kMinDistanceFromEdge),
             DoGetAnchorPointForShelfCorner(AppListPositioner::SCREEN_EDGE_TOP));
 
   // Shelf on bottom. Expect app list in bottom-left corner.
-  SetShelfRect(0, kScreenHeight - kShelfSize, kScreenWidth, kShelfSize);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_BOTTOM);
   EXPECT_EQ(
       gfx::Point(kWindowWidth / 2 + kMinDistanceFromEdge,
                  kScreenHeight - kShelfSize - kWindowHeight / 2 -
@@ -186,7 +186,7 @@ TEST_F(AppListPositionerUnitTest, ShelfCursor) {
   // Position the app list on the shelf, aligned with the mouse cursor.
 
   // Shelf on left. Expect app list in top-left corner.
-  SetShelfRect(0, 0, kShelfSize, kScreenHeight);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_LEFT);
   PlaceCursor(kCursorIgnore, kWindowAwayFromEdge);
   EXPECT_EQ(
       gfx::Point(kShelfSize + kWindowWidth / 2 + kMinDistanceFromEdge,
@@ -194,7 +194,7 @@ TEST_F(AppListPositionerUnitTest, ShelfCursor) {
       DoGetAnchorPointForShelfCursor(AppListPositioner::SCREEN_EDGE_LEFT));
 
   // Shelf on right. Expect app list in top-right corner.
-  SetShelfRect(kScreenWidth - kShelfSize, 0, kShelfSize, kScreenHeight);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_RIGHT);
   PlaceCursor(kCursorIgnore, kWindowAwayFromEdge);
   EXPECT_EQ(
       gfx::Point(
@@ -203,14 +203,14 @@ TEST_F(AppListPositionerUnitTest, ShelfCursor) {
       DoGetAnchorPointForShelfCursor(AppListPositioner::SCREEN_EDGE_RIGHT));
 
   // Shelf on top. Expect app list in top-left corner.
-  SetShelfRect(0, 0, kScreenWidth, kShelfSize);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_TOP);
   PlaceCursor(kWindowAwayFromEdge, kCursorIgnore);
   EXPECT_EQ(gfx::Point(kWindowAwayFromEdge,
                        kShelfSize + kWindowHeight / 2 + kMinDistanceFromEdge),
             DoGetAnchorPointForShelfCursor(AppListPositioner::SCREEN_EDGE_TOP));
 
   // Shelf on bottom. Expect app list in bottom-left corner.
-  SetShelfRect(0, kScreenHeight - kShelfSize, kScreenWidth, kShelfSize);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_BOTTOM);
   PlaceCursor(kWindowAwayFromEdge, kCursorIgnore);
   EXPECT_EQ(
       gfx::Point(kWindowAwayFromEdge,
@@ -219,7 +219,7 @@ TEST_F(AppListPositionerUnitTest, ShelfCursor) {
       DoGetAnchorPointForShelfCursor(AppListPositioner::SCREEN_EDGE_BOTTOM));
 
   // Shelf on bottom. Mouse near left edge. App list must not go off screen.
-  SetShelfRect(0, kScreenHeight - kShelfSize, kScreenWidth, kShelfSize);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_BOTTOM);
   PlaceCursor(kWindowNearEdge, kCursorIgnore);
   EXPECT_EQ(
       gfx::Point(kWindowWidth / 2 + kMinDistanceFromEdge,
@@ -228,7 +228,7 @@ TEST_F(AppListPositionerUnitTest, ShelfCursor) {
       DoGetAnchorPointForShelfCursor(AppListPositioner::SCREEN_EDGE_BOTTOM));
 
   // Shelf on bottom. Mouse near right edge. App list must not go off screen.
-  SetShelfRect(0, kScreenHeight - kShelfSize, kScreenWidth, kShelfSize);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_BOTTOM);
   PlaceCursor(kScreenWidth - kWindowNearEdge, kCursorIgnore);
   EXPECT_EQ(
       gfx::Point(kScreenWidth - kWindowWidth / 2 - kMinDistanceFromEdge,
@@ -239,19 +239,19 @@ TEST_F(AppListPositionerUnitTest, ShelfCursor) {
 
 TEST_F(AppListPositionerUnitTest, GetShelfEdge) {
   // Shelf on left.
-  SetShelfRect(0, 0, kShelfSize, kScreenHeight);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_LEFT);
   EXPECT_EQ(AppListPositioner::SCREEN_EDGE_LEFT, DoGetShelfEdge());
 
   // Shelf on right.
-  SetShelfRect(kScreenWidth - kShelfSize, 0, kShelfSize, kScreenHeight);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_RIGHT);
   EXPECT_EQ(AppListPositioner::SCREEN_EDGE_RIGHT, DoGetShelfEdge());
 
   // Shelf on top.
-  SetShelfRect(0, 0, kScreenWidth, kShelfSize);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_TOP);
   EXPECT_EQ(AppListPositioner::SCREEN_EDGE_TOP, DoGetShelfEdge());
 
   // Shelf on bottom.
-  SetShelfRect(0, kScreenHeight - kShelfSize, kScreenWidth, kShelfSize);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_BOTTOM);
   EXPECT_EQ(AppListPositioner::SCREEN_EDGE_BOTTOM, DoGetShelfEdge());
 
   // A couple of inconclusive cases, which should return unknown.
@@ -267,32 +267,32 @@ TEST_F(AppListPositionerUnitTest, GetShelfEdge) {
 
 TEST_F(AppListPositionerUnitTest, GetCursorDistanceFromShelf) {
   // Shelf on left.
-  SetShelfRect(0, 0, kShelfSize, kScreenHeight);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_LEFT);
   PlaceCursor(kWindowAwayFromEdge, kCursorIgnore);
   EXPECT_EQ(kWindowAwayFromEdge - kShelfSize,
             DoGetCursorDistanceFromShelf(AppListPositioner::SCREEN_EDGE_LEFT));
 
   // Shelf on right.
-  SetShelfRect(kScreenWidth - kShelfSize, 0, kShelfSize, kScreenHeight);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_RIGHT);
   PlaceCursor(kScreenWidth - kWindowAwayFromEdge, kCursorIgnore);
   EXPECT_EQ(kWindowAwayFromEdge - kShelfSize,
             DoGetCursorDistanceFromShelf(AppListPositioner::SCREEN_EDGE_RIGHT));
 
   // Shelf on top.
-  SetShelfRect(0, 0, kScreenWidth, kShelfSize);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_TOP);
   PlaceCursor(kCursorIgnore, kWindowAwayFromEdge);
   EXPECT_EQ(kWindowAwayFromEdge - kShelfSize,
             DoGetCursorDistanceFromShelf(AppListPositioner::SCREEN_EDGE_TOP));
 
   // Shelf on bottom.
-  SetShelfRect(0, kScreenHeight - kShelfSize, kScreenWidth, kShelfSize);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_BOTTOM);
   PlaceCursor(kCursorIgnore, kScreenHeight - kWindowAwayFromEdge);
   EXPECT_EQ(
       kWindowAwayFromEdge - kShelfSize,
       DoGetCursorDistanceFromShelf(AppListPositioner::SCREEN_EDGE_BOTTOM));
 
   // Shelf on bottom. Cursor inside shelf; expect 0.
-  SetShelfRect(0, kScreenHeight - kShelfSize, kScreenWidth, kShelfSize);
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_BOTTOM);
   PlaceCursor(kCursorIgnore, kScreenHeight - kCursorOnShelf);
   EXPECT_EQ(
       0, DoGetCursorDistanceFromShelf(AppListPositioner::SCREEN_EDGE_BOTTOM));
