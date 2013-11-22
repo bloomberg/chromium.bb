@@ -16,6 +16,7 @@ MODULES = [
     'driver_tools_test',
     'expand_response_file_test',
     'filetype_test',
+    'fix_private_libs_test',
     'force_file_type_test',
     'help_message_test',
     'native_objects_test',
