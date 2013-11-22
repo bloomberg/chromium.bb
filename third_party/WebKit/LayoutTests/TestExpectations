@@ -243,8 +243,9 @@ crbug.com/306929 [ Win7 Debug ] fast/js/JSON-stringify.html [ Failure ]
 
 crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 
-crbug.com/231357 [ SnowLeopard Lion Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
+crbug.com/231357 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
+crbug.com/231357 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 
 # Will pass once http://crrev.com/26442004 lands
 crbug.com/285976 http/tests/serviceworker/registration.html [ NeedsManualRebaseline ]
