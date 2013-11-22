@@ -1095,7 +1095,6 @@ bool PrintWebViewHelper::FinalizePrintReadyDocument() {
   DCHECK_GT(buf_size, 0u);
 
   PrintHostMsg_DidPreviewDocument_Params preview_params;
-  preview_params.reuse_existing_data = false;
   preview_params.data_size = buf_size;
   preview_params.document_cookie = print_pages_params_->params.document_cookie;
   preview_params.expected_pages_count =

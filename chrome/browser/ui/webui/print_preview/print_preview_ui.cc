@@ -518,13 +518,6 @@ void PrintPreviewUI::OnDidPreviewPage(int page_number,
     web_ui()->CallJavascriptFunction("autoCancelForTesting");
 }
 
-void PrintPreviewUI::OnReusePreviewData(int preview_request_id) {
-  base::FundamentalValue ui_identifier(id_);
-  base::FundamentalValue ui_preview_request_id(preview_request_id);
-  web_ui()->CallJavascriptFunction("reloadPreviewPages", ui_identifier,
-                                   ui_preview_request_id);
-}
-
 void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                                               int preview_request_id) {
   VLOG(1) << "Print preview request finished with "

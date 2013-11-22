@@ -146,18 +146,6 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
   if (!print_preview_ui)
     return;
 
-  if (params.reuse_existing_data) {
-    // Need to match normal rendering where we are expected to send this.
-    PrintHostMsg_DidGetPreviewPageCount_Params temp_params;
-    temp_params.page_count = params.expected_pages_count;
-    temp_params.document_cookie = params.document_cookie;
-    temp_params.is_modifiable = params.modifiable;
-    temp_params.preview_request_id = params.preview_request_id;
-    print_preview_ui->OnDidGetPreviewPageCount(temp_params);
-    print_preview_ui->OnReusePreviewData(params.preview_request_id);
-    return;
-  }
-
   // TODO(joth): This seems like a good match for using RefCountedStaticMemory
   // to avoid the memory copy, but the SetPrintPreviewData call chain below
   // needs updating to accept the RefCountedMemory* base class.

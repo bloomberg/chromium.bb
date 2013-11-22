@@ -36,7 +36,6 @@ cr.define('print_preview', function() {
         this.onDidGetDefaultPageLayout_.bind(this);
     global['onDidGetPreviewPageCount'] =
         this.onDidGetPreviewPageCount_.bind(this);
-    global['reloadPreviewPages'] = this.onReloadPreviewPages_.bind(this);
     global['onDidPreviewPage'] = this.onDidPreviewPage_.bind(this);
     global['updatePrintPreview'] = this.onUpdatePrintPreview_.bind(this);
     global['printScalingDisabledForSourcePDF'] =
@@ -75,7 +74,6 @@ cr.define('print_preview', function() {
         'print_preview.NativeLayer.PREVIEW_GENERATION_DONE',
     PREVIEW_GENERATION_FAIL:
         'print_preview.NativeLayer.PREVIEW_GENERATION_FAIL',
-    PREVIEW_RELOAD: 'print_preview.NativeLayer.PREVIEW_RELOAD',
     PRINT_TO_CLOUD: 'print_preview.NativeLayer.PRINT_TO_CLOUD',
     SETTINGS_INVALID: 'print_preview.NativeLayer.SETTINGS_INVALID',
     PRIVET_PRINTER_CHANGED: 'print_preview.NativeLayer.PRIVET_PRINTER_CHANGED',
@@ -173,7 +171,6 @@ cr.define('print_preview', function() {
      *   - PAGE_PREVIEW_READY
      *   - PREVIEW_GENERATION_DONE
      *   - PREVIEW_GENERATION_FAIL
-     *   - PREVIEW_RELOAD
      * @param {print_preview.Destination} destination Destination to print to.
      * @param {!print_preview.PrintTicketStore} printTicketStore Used to get the
      *     state of the print ticket.
@@ -557,21 +554,6 @@ cr.define('print_preview', function() {
       pageCountChangeEvent.pageCount = pageCount;
       pageCountChangeEvent.previewResponseId = previewResponseId;
       this.dispatchEvent(pageCountChangeEvent);
-    },
-
-    /**
-     * Called when no pipelining previewed pages.
-     * @param {number} previewUid Preview unique identifier.
-     * @param {number} previewResponseId The preview request id that resulted in
-     *     this response.
-     * @private
-     */
-    onReloadPreviewPages_: function(previewUid, previewResponseId) {
-      var previewReloadEvent = new Event(
-          NativeLayer.EventType.PREVIEW_RELOAD);
-      previewReloadEvent.previewUid = previewUid;
-      previewReloadEvent.previewResponseId = previewResponseId;
-      this.dispatchEvent(previewReloadEvent);
     },
 
     /**

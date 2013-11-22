@@ -205,10 +205,6 @@ cr.define('print_preview', function() {
           this.onPageCountReady_.bind(this));
       this.tracker_.add(
           this.nativeLayer_,
-          print_preview.NativeLayer.EventType.PREVIEW_RELOAD,
-          this.onPreviewReload_.bind(this));
-      this.tracker_.add(
-          this.nativeLayer_,
           print_preview.NativeLayer.EventType.PAGE_PREVIEW_READY,
           this.onPagePreviewReady_.bind(this));
       this.tracker_.add(
@@ -337,25 +333,6 @@ cr.define('print_preview', function() {
       }
       this.documentInfo_.updatePageCount(event.pageCount);
       this.pageRanges_ = this.printTicketStore_.pageRange.getPageRanges();
-    },
-
-    /**
-     * Called when the print preview should be reloaded.
-     * @param {Event} event Contains the preview UID and request ID.
-     * @private
-     */
-    onPreviewReload_: function(event) {
-      if (this.inFlightRequestId_ != event.previewResponseId) {
-        return; // Ignore old response.
-      }
-      var pageNumberSet = this.printTicketStore_.pageRange.getPageNumberSet();
-      this.dispatchPreviewStartEvent_(
-          event.previewUid, pageNumberSet.getPageNumberAt(0) - 1);
-      for (var i = 0; i < pageNumberSet.size; i++) {
-        var pageNumber = pageNumberSet.getPageNumberAt(i);
-        this.dispatchPageReadyEvent_(i, pageNumber, event.previewUid);
-      }
-      cr.dispatchSimpleEvent(this, PreviewGenerator.EventType.DOCUMENT_READY);
     },
 
     /**

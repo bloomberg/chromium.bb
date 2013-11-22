@@ -104,10 +104,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   void OnPreviewDataIsAvailable(int expected_pages_count,
                                 int preview_request_id);
 
-  // Notifies the Web UI renderer to reuse the preview data.
-  // |preview_request_id| indicates which request resulted in this response.
-  void OnReusePreviewData(int preview_request_id);
-
   // Notifies the Web UI that preview dialog has been destroyed. This is the
   // last chance to communicate with the initiator before the association is
   // erased.

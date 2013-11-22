@@ -183,10 +183,6 @@ IPC_STRUCT_TRAITS_END()
 
 // Parameters to describe a rendered document.
 IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewDocument_Params)
-  // True when we can reuse existing preview data. |metafile_data_handle| and
-  // |data_size| should not be used when this is true.
-  IPC_STRUCT_MEMBER(bool, reuse_existing_data)
-
   // A shared memory handle to metafile data.
   IPC_STRUCT_MEMBER(base::SharedMemoryHandle, metafile_data_handle)
 
