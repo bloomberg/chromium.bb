@@ -202,6 +202,7 @@ TEST_F('ManageProfileUITest', 'ShowCreateConfirmationOnSuccess', function() {
   CreateProfileOverlay.onSuccess(this.testProfileInfo_(true));
   assertEquals('managedUserCreateConfirm',
                OptionsPage.getTopmostVisiblePage().name);
+  expectEquals($('managed-user-created-switch'), document.activeElement);
 });
 
 // An error should be shown if creating a new managed user fails.

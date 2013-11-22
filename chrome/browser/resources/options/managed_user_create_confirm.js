@@ -45,6 +45,11 @@ cr.define('options', function() {
       };
     },
 
+    /** @override */
+    didShowPage: function() {
+      $('managed-user-created-switch').focus();
+    },
+
     /**
      * Sets the profile info used in the dialog and updates the profile name
      * displayed. Called by the profile creation overlay when this overlay is
