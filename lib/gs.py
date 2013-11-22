@@ -175,8 +175,9 @@ class GSContext(object):
   # (1*sleep) the first time, then (2*sleep), continuing via attempt * sleep.
   DEFAULT_SLEEP_TIME = 60
 
-  GSUTIL_TAR = 'gsutil_3.25.tar.gz'
+  GSUTIL_TAR = 'gsutil_3.37.tar.gz'
   GSUTIL_URL = PUBLIC_BASE_HTTPS_URL + 'pub/%s' % GSUTIL_TAR
+  GSUTIL_FLAGS = ['-o', 'GSUtil:parallel_composite_upload_threshold=0']
 
   RESUMABLE_UPLOAD_ERROR = ('Too many resumable upload attempts failed without '
                             'progress')
@@ -446,6 +447,11 @@ class GSContext(object):
     kwargs.setdefault('redirect_stderr', True)
 
     cmd = [self.gsutil_bin]
+    # TODO (yjhong): disable parallel composite upload for now because
+    # it is not backward compatible (older gsutil versions cannot
+    # download files uploaded with this option enbaled). Remove this
+    # after all users transition to newer versions (3.37 above).
+    cmd += self.GSUTIL_FLAGS
     for header in headers:
       cmd += ['-h', header]
     cmd.extend(gsutil_cmd)
@@ -523,6 +529,10 @@ class GSContext(object):
       return cros_build_lib.RunCommand(['ls', path], **kwargs)
     return self.DoCommand(['ls', '--', path], **kwargs)
 
+  def DU(self, path, **kwargs):
+    """Returns size of an object."""
+    return self.DoCommand(['du', path], redirect_stdout=True, **kwargs)
+
   def SetACL(self, upload_url, acl=None):
     """Set access on a file already in google storage.
 
@@ -542,7 +552,7 @@ class GSContext(object):
     """Checks whether the given object exists.
 
     Args:
-       path: Full gs:// url of the path to check.
+      path: Full gs:// url of the path to check.
 
     Returns:
       True if the path exists; otherwise returns False.

@@ -233,7 +233,8 @@ class GSDoCommandTest(cros_test_lib.TestCase):
   def _testDoCommand(self, ctx, retries, sleep):
     with mock.patch.object(cros_build_lib, 'GenericRetry', autospec=True):
       ctx.Copy('/blah', 'gs://foon')
-      cmd = [self.ctx.gsutil_bin, 'cp', '--', '/blah', 'gs://foon']
+      cmd = [self.ctx.gsutil_bin] + self.ctx.GSUTIL_FLAGS
+      cmd += ['cp', '--', '/blah', 'gs://foon']
 
       cros_build_lib.GenericRetry.assert_called_once_with(
           ctx._RetryFilter, retries,
