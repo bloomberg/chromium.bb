@@ -29,11 +29,8 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 #endif  // !defined(GOOGLE_TV)
   bool enable_webaudio = false;
 #if defined(ARCH_CPU_ARMEL)
-  // WebAudio needs Android MediaCodec API, and also currently needs NEON
-  // support for the FFT.
-  enable_webaudio =
-      (media::MediaCodecBridge::IsAvailable()) &&
-      ((android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0);
+  // WebAudio needs Android MediaCodec API
+  enable_webaudio = media::MediaCodecBridge::IsAvailable();
 #endif  // defined(ARCH_CPU_ARMEL)
   WebRuntimeFeatures::enableWebAudio(enable_webaudio);
   // Android does not support the Gamepad API.
