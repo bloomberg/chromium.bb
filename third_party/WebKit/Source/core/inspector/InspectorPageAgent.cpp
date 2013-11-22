@@ -323,7 +323,6 @@ InspectorPageAgent::InspectorPageAgent(InstrumentingAgents* instrumentingAgents,
     , m_enabled(false)
     , m_geolocationOverridden(false)
     , m_ignoreScriptsEnabledNotification(false)
-    , m_didForceCompositingMode(false)
     , m_deviceMetricsOverridden(false)
 {
 }
@@ -349,7 +348,7 @@ void InspectorPageAgent::restore()
         bool scriptExecutionDisabled = m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled);
         setScriptExecutionDisabled(0, scriptExecutionDisabled);
         if (m_state->getBoolean(PageAgentState::forceCompositingMode))
-            setForceCompositingMode(0, true);
+            setForceCompositingMode(0);
         bool showPaintRects = m_state->getBoolean(PageAgentState::pageAgentShowPaintRects);
         setShowPaintRects(0, showPaintRects);
         bool showDebugBorders = m_state->getBoolean(PageAgentState::pageAgentShowDebugBorders);
@@ -402,8 +401,6 @@ void InspectorPageAgent::disable(ErrorString*)
     setContinuousPaintingEnabled(0, false);
     setShowScrollBottleneckRects(0, false);
     setShowViewportSizeOnResize(0, false, 0);
-    if (m_didForceCompositingMode)
-        setForceCompositingMode(0, false);
 
     if (!deviceMetricsChanged(0, 0, 1, false, false, 1, false))
         return;
@@ -800,7 +797,7 @@ void InspectorPageAgent::domContentLoadedEventFired(Frame* frame)
 
     m_frontend->domContentEventFired(currentTime());
     if (m_state->getBoolean(PageAgentState::forceCompositingMode))
-        setForceCompositingMode(0, true);
+        setForceCompositingMode(0);
 }
 
 void InspectorPageAgent::loadEventFired(Frame* frame)
@@ -1202,19 +1199,18 @@ void InspectorPageAgent::applyEmulatedMedia(String* media)
         *media = emulatedMedia;
 }
 
-void InspectorPageAgent::setForceCompositingMode(ErrorString* errorString, bool force)
+void InspectorPageAgent::setForceCompositingMode(ErrorString* errorString)
 {
     Settings& settings = m_page->settings();
-    if (force && !settings.acceleratedCompositingEnabled()) {
+    if (!settings.acceleratedCompositingEnabled()) {
         if (errorString)
             *errorString = "Compositing mode is not supported";
         return;
     }
-    m_state->setBoolean(PageAgentState::forceCompositingMode, force);
-    if (settings.forceCompositingMode() == force)
+    m_state->setBoolean(PageAgentState::forceCompositingMode, true);
+    if (settings.forceCompositingMode())
         return;
-    m_didForceCompositingMode = force;
-    settings.setForceCompositingMode(force);
+    settings.setForceCompositingMode(true);
     Frame* mainFrame = m_page->mainFrame();
     if (!mainFrame)
         return;

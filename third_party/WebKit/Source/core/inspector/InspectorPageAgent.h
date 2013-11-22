@@ -114,7 +114,7 @@ public:
     virtual void clearDeviceOrientationOverride(ErrorString*);
     virtual void setTouchEmulationEnabled(ErrorString*, bool);
     virtual void setEmulatedMedia(ErrorString*, const String&);
-    virtual void setForceCompositingMode(ErrorString*, bool force);
+    virtual void setForceCompositingMode(ErrorString*);
     virtual void captureScreenshot(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight, String* data, double* deviceScaleFactor, double* pageScaleFactor, RefPtr<TypeBuilder::DOM::Rect>&);
     virtual void canScreencast(ErrorString*, bool*);
     virtual void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight);
@@ -207,7 +207,6 @@ private:
     bool m_enabled;
     bool m_geolocationOverridden;
     bool m_ignoreScriptsEnabledNotification;
-    bool m_didForceCompositingMode;
     bool m_deviceMetricsOverridden;
     RefPtr<GeolocationPosition> m_geolocationPosition;
     RefPtr<GeolocationPosition> m_platformGeolocationPosition;
