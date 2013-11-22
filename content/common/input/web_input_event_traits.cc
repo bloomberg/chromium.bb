@@ -285,13 +285,20 @@ void WebInputEventTraits::Coalesce(const WebInputEvent& event_to_coalesce,
 
 bool WebInputEventTraits::IgnoresAckDisposition(
     blink::WebInputEvent::Type type) {
-  return type == WebInputEvent::GestureTapDown ||
-      type == WebInputEvent::GestureShowPress ||
-      type == WebInputEvent::GestureTapCancel ||
-      type == WebInputEvent::GesturePinchBegin ||
-      type == WebInputEvent::GesturePinchEnd ||
-      type == WebInputEvent::GestureScrollBegin ||
-      type == WebInputEvent::GestureScrollEnd;
+  switch (type) {
+    case WebInputEvent::GestureTapDown:
+    case WebInputEvent::GestureShowPress:
+    case WebInputEvent::GestureTapCancel:
+    case WebInputEvent::GesturePinchBegin:
+    case WebInputEvent::GesturePinchEnd:
+    case WebInputEvent::GestureScrollBegin:
+    case WebInputEvent::GestureScrollEnd:
+    case WebInputEvent::TouchCancel:
+      return true;
+    default:
+      break;
+  }
+  return false;
 }
 
 }  // namespace content

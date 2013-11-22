@@ -55,7 +55,7 @@ class InputRouterTest : public testing::Test {
       float velocityX,
       float velocityY,
       blink::WebGestureEvent::SourceDevice sourceDevice);
-  void SimulateTouchEvent(int x, int y);
+  void SimulateTouchEvent(blink::WebInputEvent::Type type);
   void SetTouchTimestamp(base::TimeDelta timestamp);
 
   // Sends a touch event (irrespective of whether the page has a touch-event
@@ -65,6 +65,7 @@ class InputRouterTest : public testing::Test {
   int PressTouchPoint(int x, int y);
   void MoveTouchPoint(int index, int x, int y);
   void ReleaseTouchPoint(int index);
+  void CancelTouchPoint(int index);
 
   scoped_ptr<MockRenderProcessHost> process_;
   scoped_ptr<MockInputRouterClient> client_;

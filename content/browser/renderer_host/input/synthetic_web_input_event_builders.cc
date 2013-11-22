@@ -168,6 +168,12 @@ void SyntheticWebTouchEvent::ReleasePoint(int index) {
   type = WebInputEvent::TouchEnd;
 }
 
+void SyntheticWebTouchEvent::CancelPoint(int index) {
+  CHECK(index >= 0 && index < touchesLengthCap);
+  touches[index].state = WebTouchPoint::StateCancelled;
+  type = WebInputEvent::TouchCancel;
+}
+
 void SyntheticWebTouchEvent::SetTimestamp(base::TimeDelta timestamp) {
   timeStampSeconds = timestamp.InSecondsF();
 }

@@ -68,6 +68,7 @@ class CONTENT_EXPORT SyntheticWebTouchEvent
   int PressPoint(int x, int y);
   void MovePoint(int index, int x, int y);
   void ReleasePoint(int index);
+  void CancelPoint(int index);
 
   void SetTimestamp(base::TimeDelta timestamp);
 };

@@ -74,14 +74,12 @@ void InputRouterTest::SimulateWheelEventWithPhase(
           SyntheticWebMouseWheelEventBuilder::Build(phase), ui::LatencyInfo()));
 }
 
-// Inject provided synthetic WebGestureEvent instance.
 void InputRouterTest::SimulateGestureEvent(
     const WebGestureEvent& gesture) {
   GestureEventWithLatencyInfo gesture_with_latency(gesture, ui::LatencyInfo());
   input_router_->SendGestureEvent(gesture_with_latency);
 }
 
-// Inject simple synthetic WebGestureEvent instances.
 void InputRouterTest::SimulateGestureEvent(
     WebInputEvent::Type type,
     WebGestureEvent::SourceDevice sourceDevice) {
@@ -107,7 +105,6 @@ void InputRouterTest::SimulateGesturePinchUpdateEvent(float scale,
                                                         modifiers));
 }
 
-// Inject synthetic GestureFlingStart events.
 void InputRouterTest::SimulateGestureFlingStartEvent(
     float velocityX,
     float velocityY,
@@ -118,18 +115,33 @@ void InputRouterTest::SimulateGestureFlingStartEvent(
                                                   sourceDevice));
 }
 
-void InputRouterTest::SimulateTouchEvent(int x, int y) {
-  PressTouchPoint(x, y);
+void InputRouterTest::SimulateTouchEvent(WebInputEvent::Type type) {
+  touch_event_.ResetPoints();
+  int index = PressTouchPoint(0, 0);
+  switch (type) {
+    case WebInputEvent::TouchStart:
+      // Already handled by |PressTouchPoint()|.
+      break;
+    case WebInputEvent::TouchMove:
+      MoveTouchPoint(index, 5, 5);
+      break;
+    case WebInputEvent::TouchEnd:
+      ReleaseTouchPoint(index);
+      break;
+    case WebInputEvent::TouchCancel:
+      CancelTouchPoint(index);
+      break;
+    default:
+      FAIL() << "Invalid touch event type.";
+      break;
+  }
   SendTouchEvent();
 }
 
-// Set the timestamp for the touch-event.
 void InputRouterTest::SetTouchTimestamp(base::TimeDelta timestamp) {
   touch_event_.SetTimestamp(timestamp);
 }
 
-// Sends a touch event (irrespective of whether the page has a touch-event
-// handler or not).
 void InputRouterTest::SendTouchEvent() {
   input_router_->SendTouchEvent(
       TouchEventWithLatencyInfo(touch_event_, ui::LatencyInfo()));
@@ -146,6 +158,10 @@ void InputRouterTest::MoveTouchPoint(int index, int x, int y) {
 
 void InputRouterTest::ReleaseTouchPoint(int index) {
   touch_event_.ReleasePoint(index);
+}
+
+void InputRouterTest::CancelTouchPoint(int index) {
+  touch_event_.CancelPoint(index);
 }
 
 }  // namespace content

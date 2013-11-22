@@ -561,19 +561,47 @@ TEST_F(ImmediateInputRouterTest, UnhandledWheelEvent) {
   EXPECT_EQ(ack_handler_->acked_wheel_event().deltaY, -5);
 }
 
+TEST_F(ImmediateInputRouterTest, TouchTypesIgnoringAck) {
+  int start_type = static_cast<int>(WebInputEvent::TouchStart);
+  int end_type = static_cast<int>(WebInputEvent::TouchCancel);
+  for (int i = start_type; i <= end_type; ++i) {
+    WebInputEvent::Type type = static_cast<WebInputEvent::Type>(i);
+    if (!WebInputEventTraits::IgnoresAckDisposition(type))
+      continue;
+
+    // The TouchEventQueue requires an initial TouchStart for it to begin
+    // forwarding other touch event types.
+    if (type != WebInputEvent::TouchStart) {
+      SimulateTouchEvent(WebInputEvent::TouchStart);
+      SendInputEventACK(WebInputEvent::TouchStart,
+                        INPUT_EVENT_ACK_STATE_CONSUMED);
+      ASSERT_EQ(1U, GetSentMessageCountAndResetSink());
+      ASSERT_EQ(1U, ack_handler_->GetAndResetAckCount());
+    }
+
+    SimulateTouchEvent(type);
+    EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+    EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+    SendInputEventACK(type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+    EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  }
+}
+
 TEST_F(ImmediateInputRouterTest, GestureTypesIgnoringAck) {
   int start_type = static_cast<int>(WebInputEvent::GestureScrollBegin);
   int end_type = static_cast<int>(WebInputEvent::GesturePinchUpdate);
   for (int i = start_type; i <= end_type; ++i) {
     WebInputEvent::Type type = static_cast<WebInputEvent::Type>(i);
-    if (WebInputEventTraits::IgnoresAckDisposition(type)) {
-      SimulateGestureEvent(type, WebGestureEvent::Touchscreen);
-      EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-      EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
-      SendInputEventACK(type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-      EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-      EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
-    }
+    if (!WebInputEventTraits::IgnoresAckDisposition(type))
+      continue;
+
+    SimulateGestureEvent(type, WebGestureEvent::Touchscreen);
+    EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+    EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+    SendInputEventACK(type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+    EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
   }
 }
 

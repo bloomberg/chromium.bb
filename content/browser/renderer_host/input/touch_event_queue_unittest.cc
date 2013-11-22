@@ -41,6 +41,8 @@ class TouchEventQueueTest : public testing::Test,
       const TouchEventWithLatencyInfo& event) OVERRIDE {
     ++sent_event_count_;
     last_sent_event_ = event.event;
+    if (sync_ack_result_)
+      SendTouchEventACK(*sync_ack_result_.Pass());
   }
 
   virtual void OnTouchEventAck(
@@ -93,6 +95,10 @@ class TouchEventQueueTest : public testing::Test,
     followup_gesture_event_.reset(new WebGestureEvent(event));
   }
 
+  void SetSyncAckResult(InputEventAckState sync_ack_result) {
+    sync_ack_result_.reset(new InputEventAckState(sync_ack_result));
+  }
+
   int PressTouchPoint(int x, int y) {
     return touch_event_.PressPoint(x, y);
   }
@@ -103,6 +109,10 @@ class TouchEventQueueTest : public testing::Test,
 
   void ReleaseTouchPoint(int index) {
     touch_event_.ReleasePoint(index);
+  }
+
+  void CancelTouchPoint(int index) {
+    touch_event_.CancelPoint(index);
   }
 
   size_t GetAndResetAckedEventCount() {
@@ -159,6 +169,7 @@ class TouchEventQueueTest : public testing::Test,
   SyntheticWebTouchEvent touch_event_;
   scoped_ptr<WebTouchEvent> followup_touch_event_;
   scoped_ptr<WebGestureEvent> followup_gesture_event_;
+  scoped_ptr<InputEventAckState> sync_ack_result_;
 };
 
 
@@ -616,6 +627,51 @@ TEST_F(TouchEventQueueTest, AckWithFollowupEvents) {
   // subsequent touch move event be sent to the renderer.
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+}
+
+// Tests that touch-events can be synchronously ack'ed.
+TEST_F(TouchEventQueueTest, SynchronousAcks) {
+  // TouchStart
+  SetSyncAckResult(INPUT_EVENT_ACK_STATE_CONSUMED);
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // TouchMove
+  SetSyncAckResult(INPUT_EVENT_ACK_STATE_CONSUMED);
+  PressTouchPoint(1, 1);
+  MoveTouchPoint(0, 2, 2);
+  SendTouchEvent();
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // TouchEnd
+  SetSyncAckResult(INPUT_EVENT_ACK_STATE_CONSUMED);
+  PressTouchPoint(1, 1);
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // TouchCancel (first inserting a TouchStart so the TouchCancel will be sent)
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  SetSyncAckResult(INPUT_EVENT_ACK_STATE_CONSUMED);
+  PressTouchPoint(1, 1);
+  CancelTouchPoint(0);
+  SendTouchEvent();
+  EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
