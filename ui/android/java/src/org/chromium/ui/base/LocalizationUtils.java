@@ -4,12 +4,12 @@
 
 package org.chromium.ui.base;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
-
 import android.os.Build;
 import android.text.TextUtils;
 import android.view.View;
+
+import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 
 import java.util.Locale;
 
@@ -90,7 +90,19 @@ public class LocalizationUtils {
         return nativeGetFirstStrongCharacterDirection(string);
     }
 
+    /**
+     * Jni binding to ui::TimeFormat::TimeRemaining. Converts milliseconds to
+     * time remaining format : "3 mins left", "2 days left".
+     * @param timeInMillis time in milliseconds
+     * @return time remaining
+     */
+    public static String getDurationString(long timeInMillis) {
+        return nativeGetDurationString(timeInMillis);
+    }
+
     private static native boolean nativeIsRTL();
 
     private static native int nativeGetFirstStrongCharacterDirection(String string);
+
+    private static native String nativeGetDurationString(long timeInMillis);
 }
