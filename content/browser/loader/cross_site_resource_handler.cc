@@ -79,8 +79,7 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
       in_cross_site_transition_(false),
       completed_during_transition_(false),
       did_defer_(false),
-      completed_status_(),
-      response_(NULL) {
+      completed_status_() {
 }
 
 CrossSiteResourceHandler::~CrossSiteResourceHandler() {
@@ -207,7 +206,7 @@ void CrossSiteResourceHandler::ResumeResponse() {
     // Send OnResponseStarted to the new renderer.
     DCHECK(response_);
     bool defer = false;
-    if (!next_handler_->OnResponseStarted(info->GetRequestID(), response_,
+    if (!next_handler_->OnResponseStarted(info->GetRequestID(), response_.get(),
                                           &defer)) {
       controller()->Cancel();
     } else if (!defer) {

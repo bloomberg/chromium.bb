@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_LOADER_CROSS_SITE_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_LOADER_CROSS_SITE_RESOURCE_HANDLER_H_
 
+#include "base/memory/ref_counted.h"
 #include "content/browser/loader/layered_resource_handler.h"
 #include "net/url_request/url_request_status.h"
 
@@ -60,7 +61,7 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   bool did_defer_;
   net::URLRequestStatus completed_status_;
   std::string completed_security_info_;
-  ResourceResponse* response_;
+  scoped_refptr<ResourceResponse> response_;
 
   DISALLOW_COPY_AND_ASSIGN(CrossSiteResourceHandler);
 };
