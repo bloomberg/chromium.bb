@@ -10,8 +10,10 @@
 #include "base/sys_byteorder.h"
 #include "media/base/buffers.h"
 #include "media/base/decrypt_config.h"
+#include "media/filters/webvtt_util.h"
 #include "media/webm/webm_constants.h"
 #include "media/webm/webm_crypto_helpers.h"
+#include "media/webm/webm_webvtt_parser.h"
 
 namespace media {
 
@@ -307,6 +309,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
   }
 
   Track* track = NULL;
+  bool is_text = false;
   std::string encryption_key_id;
   if (track_num == audio_.track_num()) {
     track = &audio_;
@@ -322,6 +325,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
     if (block_duration < 0)  // not specified
       return false;
     track = text_track;
+    is_text = true;
   } else {
     MEDIA_LOG(log_cb_) << "Unexpected track number " << track_num;
     return false;
@@ -339,9 +343,28 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
   bool is_keyframe =
       is_simple_block ? (flags & 0x80) != 0 : track->IsKeyframe(data, size);
 
-  scoped_refptr<StreamParserBuffer> buffer =
-      StreamParserBuffer::CopyFrom(data, size, additional, additional_size,
-                                   is_keyframe);
+  scoped_refptr<StreamParserBuffer> buffer;
+  if (!is_text) {
+    buffer = StreamParserBuffer::CopyFrom(data, size,
+                                          additional, additional_size,
+                                          is_keyframe);
+  } else {
+    std::string id, settings, content;
+    WebMWebVTTParser::Parse(data, size,
+                            &id, &settings, &content);
+
+    std::vector<uint8> side_data;
+    MakeSideData(id.begin(), id.end(),
+                 settings.begin(), settings.end(),
+                 &side_data);
+
+    buffer = StreamParserBuffer::CopyFrom(
+        reinterpret_cast<const uint8*>(content.data()),
+        content.length(),
+        &side_data[0],
+        side_data.size(),
+        is_keyframe);
+  }
 
   // Every encrypted Block has a signal byte and IV prepended to it. Current
   // encrypted WebM request for comments specification is here

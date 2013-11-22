@@ -55,7 +55,6 @@ class MessageLoopProxy;
 
 namespace media {
 class ChunkDemuxer;
-class FFmpegDemuxer;
 class GpuVideoAcceleratorFactories;
 class MediaLog;
 }
@@ -196,9 +195,8 @@ class WebMediaPlayerImpl
                     const std::string& default_url);
   void OnNeedKey(const std::string& type,
                  const std::vector<uint8>& init_data);
-  scoped_ptr<media::TextTrack> OnTextTrack(media::TextKind kind,
-                                           const std::string& label,
-                                           const std::string& language);
+  void OnAddTextTrack(const media::TextTrackConfig& config,
+                      const media::AddTextTrackDoneCB& done_cb);
   void SetOpaque(bool);
 
  private:

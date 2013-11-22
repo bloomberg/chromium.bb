@@ -7,6 +7,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/test_data_util.h"
+#include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
 #include "media/mp3/mp3_stream_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,7 +45,8 @@ class MP3StreamParserTest : public testing::Test {
   }
 
   bool OnNewConfig(const AudioDecoderConfig& audio_config,
-                   const VideoDecoderConfig& video_config) {
+                   const VideoDecoderConfig& video_config,
+                   const StreamParser::TextTrackConfigMap& text_config) {
     DVLOG(1) << __FUNCTION__ << "(" << audio_config.IsValidConfig() << ", "
              << video_config.IsValidConfig() << ")";
     EXPECT_TRUE(audio_config.IsValidConfig());
@@ -79,20 +81,9 @@ class MP3StreamParserTest : public testing::Test {
     return true;
   }
 
-  bool OnNewTextBuffers(TextTrack* text_track,
-                        const StreamParser::BufferQueue& buffers) {
-    return true;
-  }
-
   void OnKeyNeeded(const std::string& type,
                    const std::vector<uint8>& init_data) {
     DVLOG(1) << __FUNCTION__ << "(" << type << ", " << init_data.size() << ")";
-  }
-
-  scoped_ptr<TextTrack> OnAddTextTrack(TextKind kind,
-                                       const std::string& label,
-                                       const std::string& language) {
-    return scoped_ptr<TextTrack>();
   }
 
   void OnNewSegment() {
@@ -110,11 +101,8 @@ class MP3StreamParserTest : public testing::Test {
         base::Bind(&MP3StreamParserTest::OnInitDone, base::Unretained(this)),
         base::Bind(&MP3StreamParserTest::OnNewConfig, base::Unretained(this)),
         base::Bind(&MP3StreamParserTest::OnNewBuffers, base::Unretained(this)),
-        base::Bind(&MP3StreamParserTest::OnNewTextBuffers,
-                   base::Unretained(this)),
+        StreamParser::NewTextBuffersCB(),
         base::Bind(&MP3StreamParserTest::OnKeyNeeded, base::Unretained(this)),
-        base::Bind(&MP3StreamParserTest::OnAddTextTrack,
-                   base::Unretained(this)),
         base::Bind(&MP3StreamParserTest::OnNewSegment, base::Unretained(this)),
         base::Bind(&MP3StreamParserTest::OnEndOfSegment,
                    base::Unretained(this)),

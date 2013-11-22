@@ -22,6 +22,7 @@
 #include "media/base/media_log.h"
 #include "media/base/ranges.h"
 #include "media/base/stream_parser_buffer.h"
+#include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
 
 namespace media {
@@ -48,6 +49,8 @@ class MEDIA_EXPORT SourceBufferStream {
   SourceBufferStream(const AudioDecoderConfig& audio_config,
                      const LogCB& log_cb);
   SourceBufferStream(const VideoDecoderConfig& video_config,
+                     const LogCB& log_cb);
+  SourceBufferStream(const TextTrackConfig& text_config,
                      const LogCB& log_cb);
 
   ~SourceBufferStream();
@@ -107,6 +110,7 @@ class MEDIA_EXPORT SourceBufferStream {
 
   const AudioDecoderConfig& GetCurrentAudioDecoderConfig();
   const VideoDecoderConfig& GetCurrentVideoDecoderConfig();
+  const TextTrackConfig& GetCurrentTextTrackConfig();
 
   // Notifies this object that the audio config has changed and buffers in
   // future Append() calls should be associated with this new config.
@@ -306,6 +310,9 @@ class MEDIA_EXPORT SourceBufferStream {
   // and |append_config_index_| represent indexes into one of these vectors.
   std::vector<AudioDecoderConfig> audio_configs_;
   std::vector<VideoDecoderConfig> video_configs_;
+
+  // Holds the text config for this stream.
+  TextTrackConfig text_track_config_;
 
   // True if more data needs to be appended before the Seek() can complete,
   // false if no Seek() has been requested or the Seek() is completed.

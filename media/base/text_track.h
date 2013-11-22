@@ -13,14 +13,7 @@
 
 namespace media {
 
-// Specifies the varieties of text tracks.
-enum TextKind {
-  kTextSubtitles,
-  kTextCaptions,
-  kTextDescriptions,
-  kTextMetadata,
-  kTextNone
-};
+class TextTrackConfig;
 
 class TextTrack {
  public:
@@ -32,10 +25,12 @@ class TextTrack {
                             const std::string& settings) = 0;
 };
 
-typedef base::Callback<scoped_ptr<TextTrack>
-    (TextKind kind,
-     const std::string& label,
-     const std::string& language)> AddTextTrackCB;
+typedef base::Callback<void
+    (scoped_ptr<TextTrack>)> AddTextTrackDoneCB;
+
+typedef base::Callback<void
+    (const TextTrackConfig& config,
+     const AddTextTrackDoneCB& done_cb)> AddTextTrackCB;
 
 }  // namespace media
 

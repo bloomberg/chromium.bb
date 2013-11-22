@@ -10,6 +10,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffers.h"
 #include "media/base/stream_parser_buffer.h"
+#include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
 #include "media/mp2t/es_parser.h"
 #include "media/mp2t/es_parser_adts.h"
@@ -166,9 +167,8 @@ void Mp2tStreamParser::Init(
     const InitCB& init_cb,
     const NewConfigCB& config_cb,
     const NewBuffersCB& new_buffers_cb,
-    const NewTextBuffersCB& text_cb,
+    const NewTextBuffersCB& /* text_cb */ ,
     const NeedKeyCB& need_key_cb,
-    const AddTextTrackCB& add_text_track_cb,
     const NewMediaSegmentCB& new_segment_cb,
     const base::Closure& end_of_segment_cb,
     const LogCB& log_cb) {
@@ -476,7 +476,8 @@ bool Mp2tStreamParser::FinishInitializationIfNeeded() {
 
   // Pass the config before invoking the initialization callback.
   RCHECK(config_cb_.Run(queue_with_config.audio_config,
-                        queue_with_config.video_config));
+                        queue_with_config.video_config,
+                        TextTrackConfigMap()));
   queue_with_config.is_config_sent = true;
 
   // For Mpeg2 TS, the duration is not known.
@@ -585,7 +586,8 @@ bool Mp2tStreamParser::EmitRemainingBuffers() {
     BufferQueueWithConfig& queue_with_config = buffer_queue_chain_.front();
     if (!queue_with_config.is_config_sent) {
       if (!config_cb_.Run(queue_with_config.audio_config,
-                          queue_with_config.video_config))
+                          queue_with_config.video_config,
+                          TextTrackConfigMap()))
         return false;
       queue_with_config.is_config_sent = true;
     }

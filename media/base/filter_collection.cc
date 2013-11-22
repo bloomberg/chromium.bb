@@ -6,6 +6,7 @@
 
 #include "media/base/audio_renderer.h"
 #include "media/base/demuxer.h"
+#include "media/base/text_renderer.h"
 #include "media/base/video_renderer.h"
 
 namespace media {
@@ -38,6 +39,15 @@ void FilterCollection::SetVideoRenderer(
 
 scoped_ptr<VideoRenderer> FilterCollection::GetVideoRenderer() {
   return video_renderer_.Pass();
+}
+
+void FilterCollection::SetTextRenderer(
+    scoped_ptr<TextRenderer> text_renderer) {
+  text_renderer_ = text_renderer.Pass();
+}
+
+scoped_ptr<TextRenderer> FilterCollection::GetTextRenderer() {
+  return text_renderer_.Pass();
 }
 
 }  // namespace media

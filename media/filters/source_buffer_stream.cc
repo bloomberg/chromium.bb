@@ -368,6 +368,27 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
   video_configs_.push_back(video_config);
 }
 
+SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
+                                       const LogCB& log_cb)
+    : log_cb_(log_cb),
+      current_config_index_(0),
+      append_config_index_(0),
+      text_track_config_(text_config),
+      seek_pending_(false),
+      end_of_stream_(false),
+      seek_buffer_timestamp_(kNoTimestamp()),
+      selected_range_(NULL),
+      media_segment_start_time_(kNoTimestamp()),
+      range_for_next_append_(ranges_.end()),
+      new_media_segment_(false),
+      last_appended_buffer_timestamp_(kNoTimestamp()),
+      last_appended_buffer_is_keyframe_(false),
+      last_output_buffer_timestamp_(kNoTimestamp()),
+      max_interbuffer_distance_(kNoTimestamp()),
+      memory_limit_(kDefaultAudioMemoryLimit),
+      config_change_pending_(false) {
+}
+
 SourceBufferStream::~SourceBufferStream() {
   while (!ranges_.empty()) {
     delete ranges_.front();
@@ -1213,6 +1234,10 @@ const VideoDecoderConfig& SourceBufferStream::GetCurrentVideoDecoderConfig() {
   if (config_change_pending_)
     CompleteConfigChange();
   return video_configs_[current_config_index_];
+}
+
+const TextTrackConfig& SourceBufferStream::GetCurrentTextTrackConfig() {
+  return text_track_config_;
 }
 
 base::TimeDelta SourceBufferStream::GetMaxInterbufferDistance() const {

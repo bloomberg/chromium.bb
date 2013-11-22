@@ -374,11 +374,9 @@ TEST_F(WebMClusterParserTest, IgnoredTracks) {
 TEST_F(WebMClusterParserTest, ParseTextTracks) {
   typedef WebMTracksParser::TextTracks TextTracks;
   TextTracks text_tracks;
-  WebMTracksParser::TextTrackInfo text_track_info;
 
-  text_track_info.kind = kTextSubtitles;
   text_tracks.insert(std::make_pair(TextTracks::key_type(kTextTrackNum),
-                                    text_track_info));
+                                    TextTrackConfig(kTextSubtitles, "", "")));
 
   parser_.reset(new WebMClusterParser(kTimecodeScale,
                                       kAudioTrackNum,
@@ -410,12 +408,10 @@ TEST_F(WebMClusterParserTest, ParseTextTracks) {
 
 TEST_F(WebMClusterParserTest, TextTracksSimpleBlock) {
   typedef WebMTracksParser::TextTracks TextTracks;
-  TextTracks text_tracks;
-  WebMTracksParser::TextTrackInfo text_track_info;
+  WebMTracksParser::TextTracks text_tracks;
 
-  text_track_info.kind = kTextSubtitles;
   text_tracks.insert(std::make_pair(TextTracks::key_type(kTextTrackNum),
-                                    text_track_info));
+                                    TextTrackConfig(kTextSubtitles, "", "")));
 
   parser_.reset(new WebMClusterParser(kTimecodeScale,
                                       kAudioTrackNum,
@@ -441,18 +437,15 @@ TEST_F(WebMClusterParserTest, TextTracksSimpleBlock) {
 TEST_F(WebMClusterParserTest, ParseMultipleTextTracks) {
   typedef WebMTracksParser::TextTracks TextTracks;
   TextTracks text_tracks;
-  WebMTracksParser::TextTrackInfo text_track_info;
 
   const int kSubtitleTextTrackNum = kTextTrackNum;
   const int kCaptionTextTrackNum = kTextTrackNum + 1;
 
-  text_track_info.kind = kTextSubtitles;
   text_tracks.insert(std::make_pair(TextTracks::key_type(kSubtitleTextTrackNum),
-                                    text_track_info));
+                                    TextTrackConfig(kTextSubtitles, "", "")));
 
-  text_track_info.kind = kTextCaptions;
   text_tracks.insert(std::make_pair(TextTracks::key_type(kCaptionTextTrackNum),
-                                    text_track_info));
+                                    TextTrackConfig(kTextCaptions, "", "")));
 
   parser_.reset(new WebMClusterParser(kTimecodeScale,
                                       kAudioTrackNum,

@@ -38,6 +38,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
+#include "media/base/text_renderer.h"
 #include "media/base/video_frame.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/chunk_demuxer.h"
@@ -993,21 +994,26 @@ void WebMediaPlayerImpl::OnNeedKey(const std::string& type,
                          init_data.size());
 }
 
-scoped_ptr<media::TextTrack>
-WebMediaPlayerImpl::OnTextTrack(media::TextKind kind,
-                                const std::string& label,
-                                const std::string& language) {
-  typedef WebInbandTextTrackImpl::Kind webkind_t;
-  const webkind_t webkind = static_cast<webkind_t>(kind);
-  const blink::WebString weblabel = blink::WebString::fromUTF8(label);
-  const blink::WebString weblanguage = blink::WebString::fromUTF8(language);
+void WebMediaPlayerImpl::OnAddTextTrack(
+    const media::TextTrackConfig& config,
+    const media::AddTextTrackDoneCB& done_cb) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
 
-  WebInbandTextTrackImpl* const text_track =
-    new WebInbandTextTrackImpl(webkind, weblabel, weblanguage,
-                               text_track_index_++);
+  const WebInbandTextTrackImpl::Kind web_kind =
+      static_cast<WebInbandTextTrackImpl::Kind>(config.kind());
+  const blink::WebString web_label =
+      blink::WebString::fromUTF8(config.label());
+  const blink::WebString web_language =
+      blink::WebString::fromUTF8(config.language());
 
-  return scoped_ptr<media::TextTrack>(new TextTrackImpl(GetClient(),
-                                                        text_track));
+  scoped_ptr<WebInbandTextTrackImpl> web_inband_text_track(
+      new WebInbandTextTrackImpl(web_kind, web_label, web_language,
+                                 text_track_index_++));
+
+  scoped_ptr<media::TextTrack> text_track(
+      new TextTrackImpl(main_loop_, GetClient(), web_inband_text_track.Pass()));
+
+  done_cb.Run(text_track.Pass());
 }
 
 void WebMediaPlayerImpl::OnKeyError(const std::string& session_id,
@@ -1091,17 +1097,9 @@ void WebMediaPlayerImpl::StartPipeline() {
     DCHECK(!chunk_demuxer_);
     DCHECK(!data_source_);
 
-    media::AddTextTrackCB add_text_track_cb;
-
-    if (cmd_line->HasSwitch(switches::kEnableInbandTextTracks)) {
-      add_text_track_cb =
-          base::Bind(&WebMediaPlayerImpl::OnTextTrack, base::Unretained(this));
-    }
-
     chunk_demuxer_ = new media::ChunkDemuxer(
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey),
-        add_text_track_cb,
         base::Bind(&LogMediaSourceError, media_log_));
     demuxer_.reset(chunk_demuxer_);
 
@@ -1168,6 +1166,15 @@ void WebMediaPlayerImpl::StartPipeline() {
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetOpaque),
           true));
   filter_collection->SetVideoRenderer(video_renderer.Pass());
+
+  if (cmd_line->HasSwitch(switches::kEnableInbandTextTracks)) {
+    scoped_ptr<media::TextRenderer> text_renderer(
+        new media::TextRenderer(
+            media_loop_,
+            BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnAddTextTrack)));
+
+    filter_collection->SetTextRenderer(text_renderer.Pass());
+  }
 
   // ... and we're ready to go!
   starting_ = true;

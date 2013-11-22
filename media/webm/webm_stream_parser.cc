@@ -8,7 +8,6 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "media/webm/webm_cluster_parser.h"
 #include "media/webm/webm_constants.h"
 #include "media/webm/webm_content_encodings.h"
@@ -24,7 +23,6 @@ WebMStreamParser::WebMStreamParser()
 }
 
 WebMStreamParser::~WebMStreamParser() {
-  STLDeleteValues(&text_track_map_);
 }
 
 void WebMStreamParser::Init(const InitCB& init_cb,
@@ -32,7 +30,6 @@ void WebMStreamParser::Init(const InitCB& init_cb,
                             const NewBuffersCB& new_buffers_cb,
                             const NewTextBuffersCB& text_cb,
                             const NeedKeyCB& need_key_cb,
-                            const AddTextTrackCB& add_text_track_cb,
                             const NewMediaSegmentCB& new_segment_cb,
                             const base::Closure& end_of_segment_cb,
                             const LogCB& log_cb) {
@@ -41,7 +38,6 @@ void WebMStreamParser::Init(const InitCB& init_cb,
   DCHECK(!init_cb.is_null());
   DCHECK(!config_cb.is_null());
   DCHECK(!new_buffers_cb.is_null());
-  DCHECK(!text_cb.is_null());
   DCHECK(!need_key_cb.is_null());
   DCHECK(!new_segment_cb.is_null());
   DCHECK(!end_of_segment_cb.is_null());
@@ -52,7 +48,6 @@ void WebMStreamParser::Init(const InitCB& init_cb,
   new_buffers_cb_ = new_buffers_cb;
   text_cb_ = text_cb;
   need_key_cb_ = need_key_cb;
-  add_text_track_cb_ = add_text_track_cb;
   new_segment_cb_ = new_segment_cb;
   end_of_segment_cb_ = end_of_segment_cb;
   log_cb_ = log_cb;
@@ -175,7 +170,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
   cur_size -= result;
   bytes_parsed += result;
 
-  WebMTracksParser tracks_parser(log_cb_, add_text_track_cb_.is_null());
+  WebMTracksParser tracks_parser(log_cb_, text_cb_.is_null());
   result = tracks_parser.Parse(cur, cur_size);
 
   if (result <= 0)
@@ -199,37 +194,18 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
   if (video_config.is_encrypted())
     FireNeedKey(tracks_parser.video_encryption_key_id());
 
-  if (!config_cb_.Run(audio_config, video_config)) {
+  if (!config_cb_.Run(audio_config,
+                      video_config,
+                      tracks_parser.text_tracks())) {
     DVLOG(1) << "New config data isn't allowed.";
     return -1;
-  }
-
-  typedef WebMTracksParser::TextTracks TextTracks;
-  const TextTracks& text_tracks = tracks_parser.text_tracks();
-
-  for (TextTracks::const_iterator itr = text_tracks.begin();
-       itr != text_tracks.end(); ++itr) {
-    const WebMTracksParser::TextTrackInfo& text_track_info = itr->second;
-
-    // TODO(matthewjheaney): verify that WebVTT uses ISO 639-2 for lang
-    scoped_ptr<TextTrack> text_track =
-        add_text_track_cb_.Run(text_track_info.kind,
-                               text_track_info.name,
-                               text_track_info.language);
-
-    // Assume ownership of pointer, and cache the text track object, for use
-    // later when we have text track buffers. (The text track objects are
-    // deallocated in the dtor for this class.)
-
-    if (text_track)
-      text_track_map_.insert(std::make_pair(itr->first, text_track.release()));
   }
 
   cluster_parser_.reset(new WebMClusterParser(
       info_parser.timecode_scale(),
       tracks_parser.audio_track_num(),
       tracks_parser.video_track_num(),
-      text_tracks,
+      tracks_parser.text_tracks(),
       tracks_parser.ignored_tracks(),
       tracks_parser.audio_encryption_key_id(),
       tracks_parser.video_encryption_key_id(),
@@ -301,14 +277,7 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
   const BufferQueue* text_buffers;
 
   while (text_track_iter(&text_track_num, &text_buffers)) {
-    TextTrackMap::iterator find_result = text_track_map_.find(text_track_num);
-
-    if (find_result == text_track_map_.end())
-      continue;
-
-    TextTrack* const text_track = find_result->second;
-
-    if (!text_buffers->empty() && !text_cb_.Run(text_track, *text_buffers))
+    if (!text_buffers->empty() && !text_cb_.Run(text_track_num, *text_buffers))
       return -1;
   }
 

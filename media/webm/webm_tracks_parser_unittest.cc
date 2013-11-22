@@ -37,10 +37,10 @@ static void VerifyTextTrackInfo(const uint8* buffer,
   const WebMTracksParser::TextTracks::const_iterator itr = text_tracks.begin();
   EXPECT_EQ(itr->first, 1);  // track num
 
-  const WebMTracksParser::TextTrackInfo& info = itr->second;
-  EXPECT_EQ(info.kind, text_kind);
-  EXPECT_TRUE(info.name == name);
-  EXPECT_TRUE(info.language == language);
+  const TextTrackConfig& config = itr->second;
+  EXPECT_EQ(config.kind(), text_kind);
+  EXPECT_TRUE(config.label() == name);
+  EXPECT_TRUE(config.language() == language);
 }
 
 TEST_F(WebMTracksParserTest, SubtitleNoNameNoLang) {

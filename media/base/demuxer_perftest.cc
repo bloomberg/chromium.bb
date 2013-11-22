@@ -33,6 +33,9 @@ class DemuxerHostImpl : public media::DemuxerHost {
   // DemuxerHost implementation.
   virtual void SetDuration(base::TimeDelta duration) OVERRIDE {}
   virtual void OnDemuxerError(media::PipelineStatus error) OVERRIDE {}
+  virtual void AddTextStream(media::DemuxerStream* text_stream,
+                             const media::TextTrackConfig& config) OVERRIDE {}
+  virtual void RemoveTextStream(media::DemuxerStream* text_stream) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DemuxerHostImpl);
@@ -182,8 +185,9 @@ static void RunDemuxerBenchmark(const std::string& filename) {
                           need_key_cb,
                           new MediaLog());
 
-    demuxer.Initialize(&demuxer_host, base::Bind(
-        &QuitLoopWithStatus, &message_loop));
+    demuxer.Initialize(&demuxer_host,
+                       base::Bind(&QuitLoopWithStatus, &message_loop),
+                       false);
     message_loop.Run();
     StreamReader stream_reader(&demuxer, false);
 

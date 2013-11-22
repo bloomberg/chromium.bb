@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/stream_parser_buffer.h"
+#include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_util.h"
 #include "media/mp4/box_definitions.h"
@@ -45,7 +46,6 @@ void MP4StreamParser::Init(const InitCB& init_cb,
                            const NewBuffersCB& new_buffers_cb,
                            const NewTextBuffersCB& /* text_cb */ ,
                            const NeedKeyCB& need_key_cb,
-                           const AddTextTrackCB& /* add_text_track_cb */ ,
                            const NewMediaSegmentCB& new_segment_cb,
                            const base::Closure& end_of_segment_cb,
                            const LogCB& log_cb) {
@@ -292,7 +292,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
     }
   }
 
-  RCHECK(config_cb_.Run(audio_config, video_config));
+  RCHECK(config_cb_.Run(audio_config, video_config, TextTrackConfigMap()));
 
   base::TimeDelta duration;
   if (moov_->extends.header.fragment_duration > 0) {

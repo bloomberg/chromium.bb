@@ -40,13 +40,6 @@ const uint8 kVorbisPadding[] = { 0xff, 0xff, 0xff, 0xff };
 
 namespace content {
 
-static scoped_ptr<media::TextTrack> ReturnNullTextTrack(
-    media::TextKind kind,
-    const std::string& label,
-    const std::string& language) {
-  return scoped_ptr<media::TextTrack>();
-}
-
 static void LogMediaSourceError(const scoped_refptr<media::MediaLog>& media_log,
                                 const std::string& error) {
   media_log->AddEvent(media_log->CreateMediaSourceErrorEvent(error));
@@ -164,7 +157,6 @@ void MediaSourceDelegate::InitializeMediaSource(
           &MediaSourceDelegate::OnDemuxerOpened, main_weak_this_)),
       media::BindToCurrentLoop(base::Bind(
           &MediaSourceDelegate::OnNeedKey, main_weak_this_)),
-      base::Bind(&ReturnNullTextTrack),
       base::Bind(&LogMediaSourceError, media_log_)));
   demuxer_ = chunk_demuxer_.get();
 
@@ -179,7 +171,8 @@ void MediaSourceDelegate::InitializeDemuxer() {
   DCHECK(media_loop_->BelongsToCurrentThread());
   demuxer_client_->AddDelegate(demuxer_client_id_, this);
   demuxer_->Initialize(this, base::Bind(&MediaSourceDelegate::OnDemuxerInitDone,
-                                        media_weak_factory_.GetWeakPtr()));
+                                        media_weak_factory_.GetWeakPtr()),
+                       false);
 }
 
 #if defined(GOOGLE_TV)
@@ -504,6 +497,19 @@ void MediaSourceDelegate::OnDemuxerError(media::PipelineStatus status) {
   // |update_network_state_cb_| is bound to the main thread.
   if (status != media::PIPELINE_OK && !update_network_state_cb_.is_null())
     update_network_state_cb_.Run(PipelineErrorToNetworkState(status));
+}
+
+void MediaSourceDelegate::AddTextStream(
+    media::DemuxerStream* /* text_stream */ ,
+    const media::TextTrackConfig& /* config */ ) {
+  // TODO(matthewjheaney): add text stream (http://crbug/322115).
+  NOTIMPLEMENTED();
+}
+
+void MediaSourceDelegate::RemoveTextStream(
+    media::DemuxerStream* /* text_stream */ ) {
+  // TODO(matthewjheaney): remove text stream (http://crbug/322115).
+  NOTIMPLEMENTED();
 }
 
 void MediaSourceDelegate::OnDemuxerInitDone(media::PipelineStatus status) {

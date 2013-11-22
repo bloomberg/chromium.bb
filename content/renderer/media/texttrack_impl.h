@@ -11,7 +11,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/text_track.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace blink {
+class WebInbandTextTrackClient;
 class WebMediaPlayerClient;
 }
 
@@ -22,8 +27,9 @@ class WebInbandTextTrackImpl;
 class TextTrackImpl : public media::TextTrack {
  public:
   // Constructor assumes ownership of the |text_track| object.
-  TextTrackImpl(blink::WebMediaPlayerClient* client,
-                WebInbandTextTrackImpl* text_track);
+  TextTrackImpl(const scoped_refptr<base::MessageLoopProxy>& message_loop,
+                blink::WebMediaPlayerClient* client,
+                scoped_ptr<WebInbandTextTrackImpl> text_track);
 
   virtual ~TextTrackImpl();
 
@@ -34,6 +40,17 @@ class TextTrackImpl : public media::TextTrack {
                             const std::string& settings) OVERRIDE;
 
  private:
+  static void OnAddCue(WebInbandTextTrackImpl* text_track,
+                       const base::TimeDelta& start,
+                       const base::TimeDelta& end,
+                       const std::string& id,
+                       const std::string& content,
+                       const std::string& settings);
+
+  static void OnRemoveTrack(blink::WebMediaPlayerClient* client,
+                            scoped_ptr<WebInbandTextTrackImpl> text_track);
+
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
   blink::WebMediaPlayerClient* client_;
   scoped_ptr<WebInbandTextTrackImpl> text_track_;
   DISALLOW_COPY_AND_ASSIGN(TextTrackImpl);

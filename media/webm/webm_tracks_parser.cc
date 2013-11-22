@@ -192,10 +192,9 @@ bool WebMTracksParser::OnListEnd(int id) {
         MEDIA_LOG(log_cb_) << "Ignoring text track " << track_num_;
         ignored_tracks_.insert(track_num_);
       } else {
-        TextTrackInfo& text_track_info = text_tracks_[track_num_];
-        text_track_info.kind = text_track_kind;
-        text_track_info.name = track_name_;
-        text_track_info.language = track_language_;
+        text_tracks_[track_num_] = TextTrackConfig(text_track_kind,
+                                                   track_name_,
+                                                   track_language_);
       }
     } else {
       MEDIA_LOG(log_cb_) << "Unexpected TrackType " << track_type_;

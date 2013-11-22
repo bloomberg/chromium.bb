@@ -14,6 +14,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/test_data_util.h"
+#include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
 #include "media/mp4/es_descriptor.h"
 #include "media/mp4/mp4_stream_parser.h"
@@ -62,7 +63,9 @@ class MP4StreamParserTest : public testing::Test {
              << ", dur=" << duration.InMilliseconds();
   }
 
-  bool NewConfigF(const AudioDecoderConfig& ac, const VideoDecoderConfig& vc) {
+  bool NewConfigF(const AudioDecoderConfig& ac,
+                  const VideoDecoderConfig& vc,
+                  const StreamParser::TextTrackConfigMap& tc) {
     DVLOG(1) << "NewConfigF: audio=" << ac.IsValidConfig()
              << ", video=" << vc.IsValidConfig();
     configs_received_ = true;
@@ -88,23 +91,11 @@ class MP4StreamParserTest : public testing::Test {
     return true;
   }
 
-  bool NewTextBuffersF(TextTrack* text_track,
-                       const StreamParser::BufferQueue& buffers) {
-    return true;
-  }
-
   void KeyNeededF(const std::string& type,
                   const std::vector<uint8>& init_data) {
     DVLOG(1) << "KeyNeededF: " << init_data.size();
     EXPECT_EQ(kMp4InitDataType, type);
     EXPECT_FALSE(init_data.empty());
-  }
-
-  scoped_ptr<TextTrack> AddTextTrackF(
-      TextKind kind,
-      const std::string& label,
-      const std::string& language) {
-    return scoped_ptr<TextTrack>();
   }
 
   void NewSegmentF() {
@@ -120,10 +111,8 @@ class MP4StreamParserTest : public testing::Test {
         base::Bind(&MP4StreamParserTest::InitF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewConfigF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewBuffersF, base::Unretained(this)),
-        base::Bind(&MP4StreamParserTest::NewTextBuffersF,
-                   base::Unretained(this)),
+        StreamParser::NewTextBuffersCB(),
         base::Bind(&MP4StreamParserTest::KeyNeededF, base::Unretained(this)),
-        base::Bind(&MP4StreamParserTest::AddTextTrackF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewSegmentF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::EndOfSegmentF,
                    base::Unretained(this)),

@@ -30,6 +30,8 @@ namespace media {
 class Clock;
 class FilterCollection;
 class MediaLog;
+class TextRenderer;
+class TextTrackConfig;
 class VideoRenderer;
 
 // Pipeline runs the media pipeline.  Filters are created and called on the
@@ -232,6 +234,9 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // DemuxerHost implementaion.
   virtual void SetDuration(base::TimeDelta duration) OVERRIDE;
   virtual void OnDemuxerError(PipelineStatus error) OVERRIDE;
+  virtual void AddTextStream(DemuxerStream* text_stream,
+                             const TextTrackConfig& config) OVERRIDE;
+  virtual void RemoveTextStream(DemuxerStream* text_stream) OVERRIDE;
 
   // Initiates teardown sequence in response to a runtime error.
   //
@@ -244,6 +249,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // Callbacks executed when a renderer has ended.
   void OnAudioRendererEnded();
   void OnVideoRendererEnded();
+  void OnTextRendererEnded();
 
   // Callback executed by filters to update statistics.
   void OnUpdateStatistics(const PipelineStatistics& stats);
@@ -283,13 +289,21 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // Carries out notifying filters that we are seeking to a new timestamp.
   void SeekTask(base::TimeDelta time, const PipelineStatusCB& seek_cb);
 
-  // Handles audio/video ended logic and running |ended_cb_|.
+  // Handles audio/video/text ended logic and running |ended_cb_|.
   void DoAudioRendererEnded();
   void DoVideoRendererEnded();
+  void DoTextRendererEnded();
   void RunEndedCallbackIfNeeded();
 
   // Carries out disabling the audio renderer.
   void AudioDisabledTask();
+
+  // Carries out adding a new text stream to the text renderer.
+  void AddTextStreamTask(DemuxerStream* text_stream,
+                         const TextTrackConfig& config);
+
+  // Carries out removing a text stream from the text renderer.
+  void RemoveTextStreamTask(DemuxerStream* text_stream);
 
   // Kicks off initialization for each media object, executing |done_cb| with
   // the result when completed.
@@ -392,7 +406,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // reset the pipeline state, and restore this to PIPELINE_OK.
   PipelineStatus status_;
 
-  // Whether the media contains rendered audio and video streams.
+  // Whether the media contains rendered audio or video streams.
   // TODO(fischman,scherkus): replace these with checks for
   // {audio,video}_decoder_ once extraction of {Audio,Video}Decoder from the
   // Filter heirarchy is done.
@@ -405,9 +419,10 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // Member that tracks the current state.
   State state_;
 
-  // Whether we've received the audio/video ended events.
+  // Whether we've received the audio/video/text ended events.
   bool audio_ended_;
   bool video_ended_;
+  bool text_ended_;
 
   // Set to true in DisableAudioRendererTask().
   bool audio_disabled_;
@@ -434,6 +449,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // playback rate, and determining when playback has finished.
   scoped_ptr<AudioRenderer> audio_renderer_;
   scoped_ptr<VideoRenderer> video_renderer_;
+  scoped_ptr<TextRenderer> text_renderer_;
 
   PipelineStatistics statistics_;
 

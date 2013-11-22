@@ -21,6 +21,7 @@ class MEDIA_EXPORT DemuxerStream {
     UNKNOWN,
     AUDIO,
     VIDEO,
+    TEXT,
     NUM_TYPES,  // Always keep this entry as the last one!
   };
 

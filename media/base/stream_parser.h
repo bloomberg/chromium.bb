@@ -6,6 +6,7 @@
 #define MEDIA_BASE_STREAM_PARSER_H_
 
 #include <deque>
+#include <map>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -14,18 +15,19 @@
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
-#include "media/base/text_track.h"
 
 namespace media {
 
 class AudioDecoderConfig;
 class StreamParserBuffer;
+class TextTrackConfig;
 class VideoDecoderConfig;
 
 // Abstract interface for parsing media byte streams.
 class MEDIA_EXPORT StreamParser {
  public:
   typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
+  typedef std::map<int, TextTrackConfig> TextTrackConfigMap;
 
   StreamParser();
   virtual ~StreamParser();
@@ -43,11 +45,14 @@ class MEDIA_EXPORT StreamParser {
   //                   then it means that there isn't an audio stream.
   // Second parameter - The new video configuration. If the config is not valid
   //                    then it means that there isn't an audio stream.
+  // Third parameter - The new text tracks configuration.  If the map is empty,
+  //                   then no text tracks were parsed from the stream.
   // Return value - True if the new configurations are accepted.
   //                False if the new configurations are not supported
   //                and indicates that a parsing error should be signalled.
   typedef base::Callback<bool(const AudioDecoderConfig&,
-                              const VideoDecoderConfig&)> NewConfigCB;
+                              const VideoDecoderConfig&,
+                              const TextTrackConfigMap&)> NewConfigCB;
 
   // New stream buffers have been parsed.
   // First parameter - A queue of newly parsed audio buffers.
@@ -59,12 +64,13 @@ class MEDIA_EXPORT StreamParser {
                               const BufferQueue&)> NewBuffersCB;
 
   // New stream buffers of inband text have been parsed.
-  // First parameter - The text track to which these cues will be added.
+  // First parameter - The id of the text track to which these cues will
+  //                   be added.
   // Second parameter - A queue of newly parsed buffers.
   // Return value - True indicates that the buffers are accepted.
   //                False if something was wrong with the buffers and a parsing
   //                error should be signalled.
-  typedef base::Callback<bool(TextTrack*, const BufferQueue&)> NewTextBuffersCB;
+  typedef base::Callback<bool(int, const BufferQueue&)> NewTextBuffersCB;
 
   // Signals the beginning of a new media segment.
   typedef base::Callback<void()> NewMediaSegmentCB;
@@ -85,7 +91,6 @@ class MEDIA_EXPORT StreamParser {
                     const NewBuffersCB& new_buffers_cb,
                     const NewTextBuffersCB& text_cb,
                     const NeedKeyCB& need_key_cb,
-                    const AddTextTrackCB& add_text_track_cb,
                     const NewMediaSegmentCB& new_segment_cb,
                     const base::Closure& end_of_segment_cb,
                     const LogCB& log_cb) = 0;

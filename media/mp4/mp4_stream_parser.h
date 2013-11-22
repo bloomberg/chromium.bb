@@ -32,7 +32,6 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
                     const NewBuffersCB& new_buffers_cb,
                     const NewTextBuffersCB& text_cb,
                     const NeedKeyCB& need_key_cb,
-                    const AddTextTrackCB& add_text_track_cb,
                     const NewMediaSegmentCB& new_segment_cb,
                     const base::Closure& end_of_segment_cb,
                     const LogCB& log_cb) OVERRIDE;

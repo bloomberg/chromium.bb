@@ -16,6 +16,7 @@
 #include "media/base/demuxer.h"
 #include "media/base/filter_collection.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/text_track.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -30,7 +31,8 @@ class MockDemuxer : public Demuxer {
   virtual ~MockDemuxer();
 
   // Demuxer implementation.
-  MOCK_METHOD2(Initialize, void(DemuxerHost* host, const PipelineStatusCB& cb));
+  MOCK_METHOD3(Initialize,
+               void(DemuxerHost* host, const PipelineStatusCB& cb, bool));
   MOCK_METHOD1(SetPlaybackRate, void(float playback_rate));
   MOCK_METHOD2(Seek, void(base::TimeDelta time, const PipelineStatusCB& cb));
   MOCK_METHOD1(Stop, void(const base::Closure& callback));
@@ -153,6 +155,21 @@ class MockAudioRenderer : public AudioRenderer {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioRenderer);
+};
+
+class MockTextTrack : public TextTrack {
+ public:
+  MockTextTrack();
+  virtual ~MockTextTrack();
+
+  MOCK_METHOD5(addWebVTTCue, void(const base::TimeDelta& start,
+                                  const base::TimeDelta& end,
+                                  const std::string& id,
+                                  const std::string& content,
+                                  const std::string& settings));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockTextTrack);
 };
 
 class MockDecryptor : public Decryptor {

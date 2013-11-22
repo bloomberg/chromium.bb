@@ -70,9 +70,10 @@ struct MediaLogEvent {
     TOTAL_BYTES_SET,
     NETWORK_ACTIVITY_SET,
 
-    // Audio/Video stream playback has ended.
+    // Audio/Video/Text stream playback has ended.
     AUDIO_ENDED,
     VIDEO_ENDED,
+    TEXT_ENDED,
 
     // The audio renderer has been disabled.
     // params: none.

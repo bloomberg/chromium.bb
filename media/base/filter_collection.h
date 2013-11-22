@@ -12,6 +12,7 @@ namespace media {
 
 class AudioRenderer;
 class Demuxer;
+class TextRenderer;
 class VideoRenderer;
 
 // Represents a set of uninitialized demuxer and audio/video decoders and
@@ -33,10 +34,14 @@ class MEDIA_EXPORT FilterCollection {
   void SetVideoRenderer(scoped_ptr<VideoRenderer> video_renderer);
   scoped_ptr<VideoRenderer> GetVideoRenderer();
 
+  void SetTextRenderer(scoped_ptr<TextRenderer> text_renderer);
+  scoped_ptr<TextRenderer> GetTextRenderer();
+
  private:
   Demuxer* demuxer_;
   scoped_ptr<AudioRenderer> audio_renderer_;
   scoped_ptr<VideoRenderer> video_renderer_;
+  scoped_ptr<TextRenderer> text_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(FilterCollection);
 };

@@ -21,6 +21,8 @@
 #include "media/base/clock.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
+#include "media/base/text_renderer.h"
+#include "media/base/text_track_config.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_renderer.h"
@@ -47,6 +49,7 @@ Pipeline::Pipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
       state_(kCreated),
       audio_ended_(false),
       video_ended_(false),
+      text_ended_(false),
       audio_disabled_(false),
       demuxer_(NULL),
       creation_time_(default_tick_clock_.NowTicks()) {
@@ -293,6 +296,19 @@ void Pipeline::OnDemuxerError(PipelineStatus error) {
   SetError(error);
 }
 
+void Pipeline::AddTextStream(DemuxerStream* text_stream,
+                             const TextTrackConfig& config) {
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+    &Pipeline::AddTextStreamTask, base::Unretained(this),
+    text_stream, config));
+}
+
+void Pipeline::RemoveTextStream(DemuxerStream* text_stream) {
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+    &Pipeline::RemoveTextStreamTask, base::Unretained(this),
+    text_stream));
+}
+
 void Pipeline::SetError(PipelineStatus error) {
   DCHECK(IsRunning());
   DCHECK_NE(PIPELINE_OK, error);
@@ -537,6 +553,10 @@ void Pipeline::DoSeek(
     bound_fns.Push(base::Bind(
         &VideoRenderer::Pause, base::Unretained(video_renderer_.get())));
   }
+  if (text_renderer_) {
+    bound_fns.Push(base::Bind(
+        &TextRenderer::Pause, base::Unretained(text_renderer_.get())));
+  }
 
   // Flush.
   if (audio_renderer_) {
@@ -546,6 +566,10 @@ void Pipeline::DoSeek(
   if (video_renderer_) {
     bound_fns.Push(base::Bind(
         &VideoRenderer::Flush, base::Unretained(video_renderer_.get())));
+  }
+  if (text_renderer_) {
+    bound_fns.Push(base::Bind(
+        &TextRenderer::Flush, base::Unretained(text_renderer_.get())));
   }
 
   // Seek demuxer.
@@ -586,6 +610,11 @@ void Pipeline::DoPlay(const PipelineStatusCB& done_cb) {
         &VideoRenderer::Play, base::Unretained(video_renderer_.get())));
   }
 
+  if (text_renderer_) {
+    bound_fns.Push(base::Bind(
+        &TextRenderer::Play, base::Unretained(text_renderer_.get())));
+  }
+
   pending_callbacks_ = SerialRunner::Run(bound_fns, done_cb);
 }
 
@@ -609,6 +638,11 @@ void Pipeline::DoStop(const PipelineStatusCB& done_cb) {
         &VideoRenderer::Stop, base::Unretained(video_renderer_.get())));
   }
 
+  if (text_renderer_) {
+    bound_fns.Push(base::Bind(
+        &TextRenderer::Stop, base::Unretained(text_renderer_.get())));
+  }
+
   pending_callbacks_ = SerialRunner::Run(bound_fns, done_cb);
 }
 
@@ -625,6 +659,7 @@ void Pipeline::OnStopCompleted(PipelineStatus status) {
   filter_collection_.reset();
   audio_renderer_.reset();
   video_renderer_.reset();
+  text_renderer_.reset();
   demuxer_ = NULL;
 
   // If we stop during initialization/seeking we want to run |seek_cb_|
@@ -685,6 +720,13 @@ void Pipeline::OnVideoRendererEnded() {
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::VIDEO_ENDED));
 }
 
+void Pipeline::OnTextRendererEnded() {
+  // Force post to process ended messages after current execution frame.
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+      &Pipeline::DoTextRendererEnded, base::Unretained(this)));
+  media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::TEXT_ENDED));
+}
+
 // Called from any thread.
 void Pipeline::OnUpdateStatistics(const PipelineStatistics& stats) {
   base::AutoLock auto_lock(lock_);
@@ -710,6 +752,13 @@ void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
   seek_cb_ = seek_cb;
   buffering_state_cb_ = buffering_state_cb;
   duration_change_cb_ = duration_change_cb;
+
+  text_renderer_ = filter_collection_->GetTextRenderer();
+
+  if (text_renderer_) {
+    text_renderer_->Initialize(
+        base::Bind(&Pipeline::OnTextRendererEnded, base::Unretained(this)));
+  }
 
   StateTransitionTask(PIPELINE_OK);
 }
@@ -800,6 +849,7 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
   seek_cb_ = seek_cb;
   audio_ended_ = false;
   video_ended_ = false;
+  text_ended_ = false;
 
   // Kick off seeking!
   {
@@ -843,6 +893,18 @@ void Pipeline::DoVideoRendererEnded() {
   RunEndedCallbackIfNeeded();
 }
 
+void Pipeline::DoTextRendererEnded() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+
+  if (state_ != kStarted)
+    return;
+
+  DCHECK(!text_ended_);
+  text_ended_ = true;
+
+  RunEndedCallbackIfNeeded();
+}
+
 void Pipeline::RunEndedCallbackIfNeeded() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
@@ -850,6 +912,9 @@ void Pipeline::RunEndedCallbackIfNeeded() {
     return;
 
   if (video_renderer_ && !video_ended_)
+    return;
+
+  if (text_renderer_ && text_renderer_->HasTracks() && !text_ended_)
     return;
 
   {
@@ -876,11 +941,24 @@ void Pipeline::AudioDisabledTask() {
   StartClockIfWaitingForTimeUpdate_Locked();
 }
 
+void Pipeline::AddTextStreamTask(DemuxerStream* text_stream,
+                                 const TextTrackConfig& config) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  // TODO(matthewjheaney): fix up text_ended_ when text stream
+  // is added (http://crbug.com/321446).
+  text_renderer_->AddTextStream(text_stream, config);
+}
+
+void Pipeline::RemoveTextStreamTask(DemuxerStream* text_stream) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  text_renderer_->RemoveTextStream(text_stream);
+}
+
 void Pipeline::InitializeDemuxer(const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   demuxer_ = filter_collection_->GetDemuxer();
-  demuxer_->Initialize(this, done_cb);
+  demuxer_->Initialize(this, done_cb, text_renderer_);
 }
 
 void Pipeline::InitializeAudioRenderer(const PipelineStatusCB& done_cb) {

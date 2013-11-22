@@ -66,6 +66,10 @@ MockAudioRenderer::MockAudioRenderer() {}
 
 MockAudioRenderer::~MockAudioRenderer() {}
 
+MockTextTrack::MockTextTrack() {}
+
+MockTextTrack::~MockTextTrack() {}
+
 MockDecryptor::MockDecryptor() {}
 
 MockDecryptor::~MockDecryptor() {}

@@ -50,6 +50,8 @@ const char* MediaLog::EventTypeToString(MediaLogEvent::Type type) {
       return "AUDIO_ENDED";
     case MediaLogEvent::VIDEO_ENDED:
       return "VIDEO_ENDED";
+    case MediaLogEvent::TEXT_ENDED:
+      return "TEXT_ENDED";
     case MediaLogEvent::AUDIO_RENDERER_DISABLED:
       return "AUDIO_RENDERER_DISABLED";
     case MediaLogEvent::BUFFERED_EXTENTS_CHANGED:

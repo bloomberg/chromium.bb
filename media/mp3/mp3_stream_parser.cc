@@ -10,6 +10,7 @@
 #include "media/base/bit_reader.h"
 #include "media/base/buffers.h"
 #include "media/base/stream_parser_buffer.h"
+#include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
 #include "net/http/http_util.h"
 
@@ -119,7 +120,6 @@ void MP3StreamParser::Init(const InitCB& init_cb,
                            const NewBuffersCB& new_buffers_cb,
                            const NewTextBuffersCB& text_cb,
                            const NeedKeyCB& need_key_cb,
-                           const AddTextTrackCB& add_text_track_cb,
                            const NewMediaSegmentCB& new_segment_cb,
                            const base::Closure& end_of_segment_cb,
                            const LogCB& log_cb) {
@@ -410,7 +410,7 @@ int MP3StreamParser::ParseMP3Frame(const uint8* data,
     timestamp_helper_->SetBaseTimestamp(base_timestamp);
 
     VideoDecoderConfig video_config;
-    bool success = config_cb_.Run(config_, video_config);
+    bool success = config_cb_.Run(config_, video_config, TextTrackConfigMap());
 
     if (!init_cb_.is_null())
       base::ResetAndReturn(&init_cb_).Run(success, kInfiniteDuration());
