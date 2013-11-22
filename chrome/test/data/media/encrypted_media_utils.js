@@ -104,8 +104,17 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
   }
 
   function verifyHeartbeatMessage(e) {
+    String.prototype.startsWith = function(prefix) {
+      return this.indexOf(prefix) === 0;
+    }
+
+    function isExternalClearKey(keySystem) {
+      return keySystem == EXTERNAL_CLEAR_KEY_KEY_SYSTEM ||
+             keySystem.startsWith(EXTERNAL_CLEAR_KEY_KEY_SYSTEM + '.');
+    }
+
     // Only External Clear Key sends a HEARTBEAT message.
-    if (e.keySystem != EXTERNAL_CLEAR_KEY_KEY_SYSTEM) {
+    if (!isExternalClearKey(e.keySystem)) {
       failTest('Unexpected heartbeat from ' + e.keySystem);
       return;
     }

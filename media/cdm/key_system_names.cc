@@ -4,10 +4,24 @@
 
 #include "media/cdm/key_system_names.h"
 
+#include <string>
+
 namespace media {
 
 const char kPrefixedClearKey[] = "webkit-org.w3.clearkey";
 const char kUnprefixedClearKey[] = "org.w3.clearkey";
 const char kExternalClearKey[] = "org.chromium.externalclearkey";
+
+static bool IsParentKeySystemOf(const std::string& parent_key_system,
+                                const std::string& key_system) {
+  std::string prefix = parent_key_system + '.';
+  return key_system.substr(0, prefix.size()) == prefix;
+}
+
+
+bool IsExternalClearKey(const std::string& key_system) {
+  return key_system == kExternalClearKey ||
+         IsParentKeySystemOf(kExternalClearKey, key_system);
+}
 
 }  // namespace media

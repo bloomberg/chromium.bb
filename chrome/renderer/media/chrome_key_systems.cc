@@ -64,6 +64,10 @@ static void AddExternalClearKey(
     std::vector<KeySystemInfo>* concrete_key_systems) {
   static const char kExternalClearKeyKeySystem[] =
       "org.chromium.externalclearkey";
+  static const char kExternalClearKeyDecryptOnlyKeySystem[] =
+      "org.chromium.externalclearkey.decryptonly";
+  static const char kExternalClearKeyInitializeFailKeySystem[] =
+      "org.chromium.externalclearkey.initializefail";
   static const char kExternalClearKeyPepperType[] =
       "application/x-ppapi-clearkey-cdm";
 
@@ -90,7 +94,11 @@ static void AddExternalClearKey(
   // A key system that Chrome thinks is supported by ClearKeyCdm, but actually
   // will be refused by ClearKeyCdm. This is to test the CDM initialization
   // failure case.
-  info.key_system += ".initializefail";
+  info.key_system = kExternalClearKeyInitializeFailKeySystem;
+  concrete_key_systems->push_back(info);
+
+  // Add support of decrypt-only mode in ClearKeyCdm.
+  info.key_system = kExternalClearKeyDecryptOnlyKeySystem;
   concrete_key_systems->push_back(info);
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)

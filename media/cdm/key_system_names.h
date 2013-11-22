@@ -26,9 +26,7 @@ MEDIA_EXPORT inline bool IsClearKey(const std::string& key_system) {
 }
 
 // Returns true if |key_system| is External Clear Key, false otherwise.
-MEDIA_EXPORT inline bool IsExternalClearKey(const std::string& key_system) {
-  return key_system == kExternalClearKey;
-}
+MEDIA_EXPORT bool IsExternalClearKey(const std::string& key_system);
 
 }  // namespace media
 

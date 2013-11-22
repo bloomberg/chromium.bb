@@ -33,8 +33,11 @@ const char kClearKeyCdmPluginMimeType[] = "application/x-ppapi-clearkey-cdm";
 
 // Available key systems.
 const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
-const char kExternalClearKeyKeySystem[] =
-    "org.chromium.externalclearkey";
+const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
+const char kExternalClearKeyDecryptOnlyKeySystem[] =
+    "org.chromium.externalclearkey.decryptonly";
+const char kExternalClearKeyInitializeFailKeySystem[] =
+    "org.chromium.externalclearkey.initializefail";
 
 // Supported media types.
 const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
@@ -66,18 +69,25 @@ static bool IsMSESupported() {
   return true;
 }
 
+static bool IsParentKeySystemOf(const std::string& parent_key_system,
+                                const std::string& key_system) {
+  std::string prefix = parent_key_system + '.';
+  return key_system.substr(0, prefix.size()) == prefix;
+}
+
 // Base class for encrypted media tests.
 class EncryptedMediaTestBase : public MediaBrowserTest {
  public:
   EncryptedMediaTestBase() : is_pepper_cdm_registered_(false) {}
 
-  bool IsExternalClearKey(const char* key_system) {
-    return (strcmp(key_system, kExternalClearKeyKeySystem) == 0);
+  bool IsExternalClearKey(const std::string& key_system) {
+    return key_system == kExternalClearKeyKeySystem ||
+           IsParentKeySystemOf(kExternalClearKeyKeySystem, key_system);
   }
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
-  bool IsWidevine(const char* key_system) {
-    return (strcmp(key_system, kWidevineKeySystem) == 0);
+  bool IsWidevine(const std::string& key_system) {
+    return key_system == kWidevineKeySystem;
   }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
@@ -148,13 +158,11 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
                                     CommandLine* command_line) {
 #if defined(ENABLE_PEPPER_CDMS)
     if (IsExternalClearKey(key_system)) {
-      RegisterPepperCdm(command_line, kClearKeyCdmAdapterFileName,
-                        kExternalClearKeyKeySystem);
+      RegisterPepperCdm(command_line, kClearKeyCdmAdapterFileName, key_system);
     }
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     else if (IsWidevine(key_system)) {
-      RegisterPepperCdm(command_line, kWidevineCdmAdapterFileName,
-                        kWidevineKeySystem);
+      RegisterPepperCdm(command_line, kWidevineCdmAdapterFileName, key_system);
     }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 #endif  // defined(ENABLE_PEPPER_CDMS)
@@ -187,10 +195,10 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 
   // Adapted from key_systems.cc.
   std::string GetPepperType(const std::string& key_system) {
-    if (key_system == kExternalClearKeyKeySystem)
+    if (IsExternalClearKey(key_system))
       return kClearKeyCdmPluginMimeType;
 #if defined(WIDEVINE_CDM_AVAILABLE)
-    if (key_system == kWidevineKeySystem)
+    if (IsWidevine(key_system))
       return kWidevineCdmPluginMimeType;
 #endif  // WIDEVINE_CDM_AVAILABLE
 
@@ -203,7 +211,8 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 };
 
 #if defined(ENABLE_PEPPER_CDMS)
-// Tests encrypted media playback using ExternalClearKey key system.
+// Tests encrypted media playback using ExternalClearKey key system in
+// decrypt-and-decode mode.
 class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -300,6 +309,9 @@ INSTANTIATE_TEST_CASE_P(SRC_ExternalClearKey, EncryptedMediaTest,
     Combine(Values(kExternalClearKeyKeySystem), Values(SRC)));
 INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKey, EncryptedMediaTest,
     Combine(Values(kExternalClearKeyKeySystem), Values(MSE)));
+// To reduce test time, only run ExternalClearKeyDecryptOnly with MSE.
+INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKeyDecryptOnly, EncryptedMediaTest,
+    Combine(Values(kExternalClearKeyDecryptOnlyKeySystem), Values(MSE)));
 #endif // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
@@ -381,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest,
   RunEncryptedMediaTest("encrypted_media_player.html",
                         "bear-a-enc_a.webm",
                         kWebMAudioOnly,
-                        "org.chromium.externalclearkey.initializefail",
+                        kExternalClearKeyInitializeFailKeySystem,
                         SRC,
                         kEmeKeyError);
 }

@@ -61,6 +61,8 @@ static bool g_ffmpeg_lib_initialized = InitializeFFmpegLibraries();
 
 const char kClearKeyCdmVersion[] = "0.1.0.1";
 const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
+const char kExternalClearKeyDecryptOnlyKeySystem[] =
+    "org.chromium.externalclearkey.decryptonly";
 const int64 kSecondsPerMinute = 60;
 const int64 kMsPerSecond = 1000;
 const int64 kInitialTimerDelayMs = 200;
@@ -125,14 +127,16 @@ void INITIALIZE_CDM_MODULE() {
 void DeinitializeCdmModule() {
 }
 
-void* CreateCdmInstance(
-    int cdm_interface_version,
-    const char* key_system, uint32_t key_system_size,
-    GetCdmHostFunc get_cdm_host_func, void* user_data) {
+void* CreateCdmInstance(int cdm_interface_version,
+                        const char* key_system, uint32_t key_system_size,
+                        GetCdmHostFunc get_cdm_host_func,
+                        void* user_data) {
   DVLOG(1) << "CreateCdmInstance()";
 
-  if (std::string(key_system, key_system_size) != kExternalClearKeyKeySystem) {
-    DVLOG(1) << "Unsupported key system.";
+  std::string key_system_string(key_system, key_system_size);
+  if (key_system_string != kExternalClearKeyKeySystem &&
+      key_system_string != kExternalClearKeyDecryptOnlyKeySystem) {
+    DVLOG(1) << "Unsupported key system:" << key_system_string;
     return NULL;
   }
 
@@ -144,7 +148,8 @@ void* CreateCdmInstance(
   if (!host)
     return NULL;
 
-  return new media::ClearKeyCdm(host);
+  return new media::ClearKeyCdm(
+      host, key_system_string == kExternalClearKeyDecryptOnlyKeySystem);
 }
 
 const char* GetCdmVersion() {
@@ -198,12 +203,13 @@ void ClearKeyCdm::Client::SetSessionId(uint32 reference_id,
   session_id_ = session_id;
 }
 
-ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host)
+ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, bool is_decrypt_only)
     : decryptor_(base::Bind(&Client::KeyAdded, base::Unretained(&client_)),
                  base::Bind(&Client::KeyError, base::Unretained(&client_)),
                  base::Bind(&Client::KeyMessage, base::Unretained(&client_)),
                  base::Bind(&Client::SetSessionId, base::Unretained(&client_))),
       host_(host),
+      is_decrypt_only_(is_decrypt_only),
       timer_delay_ms_(kInitialTimerDelayMs),
       timer_set_(false) {
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
@@ -352,6 +358,9 @@ cdm::Status ClearKeyCdm::Decrypt(
 
 cdm::Status ClearKeyCdm::InitializeAudioDecoder(
     const cdm::AudioDecoderConfig& audio_decoder_config) {
+  if (is_decrypt_only_)
+    return cdm::kSessionError;
+
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   if (!audio_decoder_)
     audio_decoder_.reset(new media::FFmpegCdmAudioDecoder(host_));
@@ -373,6 +382,9 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
 
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
     const cdm::VideoDecoderConfig& video_decoder_config) {
+  if (is_decrypt_only_)
+    return cdm::kSessionError;
+
   if (video_decoder_ && video_decoder_->is_initialized()) {
     DCHECK(!video_decoder_->is_initialized());
     return cdm::kSessionError;
