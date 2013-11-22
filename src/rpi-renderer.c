@@ -385,6 +385,22 @@ rpi_resource_update(struct rpi_resource *resource, struct weston_buffer *buffer,
 	return ret ? -1 : 0;
 }
 
+static inline void
+rpi_buffer_egl_lock(struct weston_buffer *buffer)
+{
+#ifdef ENABLE_EGL
+	vc_dispmanx_set_wl_buffer_in_use(buffer->resource, 1);
+#endif
+}
+
+static inline void
+rpi_buffer_egl_unlock(struct weston_buffer *buffer)
+{
+#ifdef ENABLE_EGL
+	vc_dispmanx_set_wl_buffer_in_use(buffer->resource, 0);
+#endif
+}
+
 static void
 rpir_egl_buffer_destroy(struct rpir_egl_buffer *egl_buffer)
 {
@@ -400,7 +416,7 @@ rpir_egl_buffer_destroy(struct rpir_egl_buffer *egl_buffer)
 		 */
 		vc_dispmanx_resource_delete(egl_buffer->resource_handle);
 	} else {
-		vc_dispmanx_set_wl_buffer_in_use(buffer->resource, 0);
+		rpi_buffer_egl_unlock(buffer);
 		weston_buffer_reference(&egl_buffer->buffer_ref, NULL);
 	}
 
@@ -1294,7 +1310,7 @@ rpi_renderer_repaint_output(struct weston_output *base,
 			struct weston_buffer *buffer;
 			buffer = view->surface->egl_front->buffer_ref.buffer;
 			if (buffer != NULL) {
-				vc_dispmanx_set_wl_buffer_in_use(buffer->resource, 1);
+				rpi_buffer_egl_lock(buffer);
 			} else {
 				weston_log("warning: client destroyed current front buffer\n");
 
