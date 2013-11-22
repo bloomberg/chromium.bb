@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script>
+
+function test()
+{
+    var panel = WebInspector.panel("network");
+    var view = panel._networkLogView;
+
+    function showPanelAndReloadPage(panelName, callback)
+    {
+        InspectorTest.check(!view._recordButton.toggled, "network log is being recorded");
+        InspectorTest.check(!view._requests.length, "network log has already been recorded");
+        WebInspector.showPanel(panelName);
+        InspectorTest.runWhenPageLoads(callback);
+        WebInspector.resourceTreeModel.reloadPage();
+    }
+
+    showPanelAndReloadPage("console", step1);
+
+    function step1()
+    {
+        showPanelAndReloadPage("network", step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.check(view._requests.length, "network log should have been recorded");
+        InspectorTest.check(!view._recordButton.toggled, "network log recording should have finished");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Test auto-recording of Network Log.</p>
+
+</body>
+</html>

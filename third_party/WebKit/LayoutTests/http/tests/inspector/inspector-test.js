@@ -86,6 +86,12 @@ InspectorTest.evaluateInPageWithTimeout = function(code)
     InspectorTest.evaluateInPage("setTimeout(unescape('" + escape(code) + "'))");
 }
 
+InspectorTest.check = function(passCondition, failureText)
+{
+    if (!passCondition)
+        InspectorTest.addResult("FAIL: " + failureText);
+}
+
 InspectorTest.addResult = function(text)
 {
     results.push(text);
@@ -207,6 +213,11 @@ InspectorTest.navigate = function(url, callback)
 
     WebInspector.panel("network")._reset();
     InspectorTest.evaluateInConsole("window.location = '" + url + "'");
+}
+
+InspectorTest.recordNetwork = function()
+{
+    WebInspector.panel("network")._networkLogView._recordButton.toggled = true;
 }
 
 InspectorTest.hardReloadPage = function(callback, scriptToEvaluateOnLoad, scriptPreprocessor)

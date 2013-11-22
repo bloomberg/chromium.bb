@@ -22,6 +22,7 @@ function test()
 
     function step1()
     {
+        InspectorTest.recordNetwork();
         InspectorTest.addConsoleSniffer(step2);
         InspectorTest.evaluateInPage("loadData()");
     }

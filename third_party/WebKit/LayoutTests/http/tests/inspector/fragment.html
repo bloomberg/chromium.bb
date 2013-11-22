@@ -17,6 +17,7 @@ function frameLoaded()
 
 function test()
 {
+    InspectorTest.recordNetwork();
     InspectorTest.addConsoleSniffer(step2);
     InspectorTest.evaluateInPage("loadIFrame()", function() { });
 
@@ -32,7 +33,6 @@ function test()
         InspectorTest.addResult("Child frame url: " + childFrame.url);
         var childFrameResource = childFrame.resources()[0];
         InspectorTest.addResult("Child frame resource url: " + childFrameResource.url);
-        WebInspector.showPanel("network");
 
         function filterFrame(request)
         {

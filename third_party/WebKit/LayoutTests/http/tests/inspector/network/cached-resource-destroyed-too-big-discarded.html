@@ -41,6 +41,7 @@ function forceCachedResourceLoaderGC() {
 function test()
 {
     var imageRequest;
+    InspectorTest.recordNetwork();
     InspectorTest.addConsoleSniffer(step2);
     InspectorTest.evaluateInPage("loadFirstImage()");
 

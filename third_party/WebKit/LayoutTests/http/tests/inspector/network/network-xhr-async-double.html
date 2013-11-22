@@ -22,6 +22,7 @@ function test()
 
     function step1()
     {
+        InspectorTest.recordNetwork();
         var jsonArgs1 = initArgs("POST", "resources/echo-payload.php", true, 'request1');
         var jsonArgs2 = initArgs("POST", "resources/echo-payload.php", true, 'request2');
         InspectorTest.addConsoleSniffer(step2);

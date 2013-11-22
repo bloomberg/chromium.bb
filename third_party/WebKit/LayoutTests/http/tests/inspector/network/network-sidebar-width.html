@@ -5,6 +5,7 @@
 <script>
 function test()
 {
+    InspectorTest.recordNetwork();
     InspectorTest.makeSimpleXHR("GET", "resources/resource.php", true, step2);
 
     var oldSetting;

@@ -26,6 +26,7 @@ function imageLoaded()
 function test()
 {
     InspectorTest.addConsoleSniffer(step2, true);
+    InspectorTest.recordNetwork();
     InspectorTest.evaluateInPage("loadImages()");
 
     function step2(msg)

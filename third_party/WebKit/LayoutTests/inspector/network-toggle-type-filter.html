@@ -4,6 +4,7 @@
 <script>
 function test() {
     var panel = WebInspector.showPanel("network");
+    InspectorTest.recordNetwork();
     var target = panel._networkLogView;
     var types = WebInspector.resourceTypes;
 
@@ -21,7 +22,7 @@ function test() {
         InspectorTest.addResult("Filter: " + results.join(", "));
     }
 
-    var allTypes = WebInspector.NetworkLogView.ALL_TYPES;
+    var allTypes = "all";
 
     toggleAndDump(allTypes, false);
     toggleAndDump(types.Document.name(), false);

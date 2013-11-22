@@ -15,6 +15,7 @@ function setInspectorResourcesDataSizeLimits()
 
 function test()
 {
+    InspectorTest.recordNetwork();
     InspectorTest.addConsoleSniffer(dataSizeLimitsSet);
     InspectorTest.evaluateInPage("setInspectorResourcesDataSizeLimits()");
 

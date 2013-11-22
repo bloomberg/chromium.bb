@@ -11,6 +11,7 @@ function test()
 
     function step1()
     {
+        InspectorTest.recordNetwork();
         InspectorTest.makeSimpleXHR("GET", "resources/resource.php", true, step2);
     }
 

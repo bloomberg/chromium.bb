@@ -38,6 +38,7 @@ function iframeLoadedChangeSrc()
 
 function test()
 {
+    InspectorTest.recordNetwork();
     InspectorTest.addConsoleSniffer(step2);
     InspectorTest.evaluateInPage("loadIframe()");
 

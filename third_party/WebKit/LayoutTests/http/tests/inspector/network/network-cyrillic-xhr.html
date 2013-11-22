@@ -26,6 +26,7 @@ function test()
 
     function step1()
     {
+        InspectorTest.recordNetwork();
         InspectorTest.makeSimpleXHR("GET", "resources/cyrillic.html?sync", false, firstXHRLoaded);
 
         function firstXHRLoaded()

@@ -1,0 +1,5 @@
+Test auto-recording of Network Log.
+
+Page reloaded.
+Page reloaded.
+

@@ -45,7 +45,7 @@ function test()
         {
             function callbackWhenSourceMapRequestIsAvailable(callback)
             {
-                var requests = WebInspector.panel("network").requests;
+                var requests = WebInspector.networkLog.requests;
                 for (var i = 0; i < requests.length; ++i) {
                     if (requests[i].url.indexOf("source-map.json_not_found") === -1 || !requests[i].finished)
                         continue;

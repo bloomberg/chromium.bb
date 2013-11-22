@@ -41,6 +41,7 @@ function test() {
 
     WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, onRequestFinished);
     WebInspector.showPanel("network");
+    InspectorTest.recordNetwork();
     InspectorTest.evaluateInPage("loadResources()");
 }
 

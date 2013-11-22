@@ -40,6 +40,7 @@ function test()
     var imageRequest;
     function step1()
     {
+        InspectorTest.recordNetwork();
         InspectorTest.addConsoleSniffer(step2);
         InspectorTest.evaluateInPage("loadFirstImage()");
     }

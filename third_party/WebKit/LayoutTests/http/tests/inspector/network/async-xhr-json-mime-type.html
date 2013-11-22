@@ -5,6 +5,7 @@
 <script>
 function test()
 {
+    InspectorTest.recordNetwork();
     InspectorTest.makeSimpleXHR("GET", "resources/json.php", true, step2);
 
     function step2()
