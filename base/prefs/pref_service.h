@@ -221,6 +221,13 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // registered preference. In that case, will never return NULL.
   const base::Value* GetDefaultPrefValue(const char* path) const;
 
+  // Deprecated. Do not add calls to this method.
+  // Marks that the user store should not prune out empty values for |key| when
+  // writting to disk.
+  // TODO(gab): Enforce this at a lower level for all values and remove this
+  // method.
+  void MarkUserStoreNeedsEmptyValue(const std::string& key) const;
+
   // Returns true if a value has been set for the specified path.
   // NOTE: this is NOT the same as FindPreference. In particular
   // FindPreference returns whether RegisterXXX has been invoked, where as

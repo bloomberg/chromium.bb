@@ -95,6 +95,10 @@ class PrefMetricsService : public BrowserContextKeyedService {
   // Callback to receive a unique device_id.
   void GetDeviceIdCallback(const std::string& device_id);
 
+  // Marks all tracked preferences as required to save their values even if
+  // empty.
+  void MarkNeedsEmptyValueForTrackedPreferences();
+
   // Checks the tracked preferences against their last known values and reports
   // any discrepancies. This must be called after |device_id| has been set.
   void CheckTrackedPreferences();

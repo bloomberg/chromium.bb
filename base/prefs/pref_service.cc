@@ -297,6 +297,10 @@ const base::Value* PrefService::GetDefaultPrefValue(const char* path) const {
   return value;
 }
 
+void PrefService::MarkUserStoreNeedsEmptyValue(const std::string& key) const {
+  user_pref_store_->MarkNeedsEmptyValue(key);
+}
+
 const base::ListValue* PrefService::GetList(const char* path) const {
   DCHECK(CalledOnValidThread());
 
