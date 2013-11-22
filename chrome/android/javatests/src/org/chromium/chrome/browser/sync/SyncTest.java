@@ -91,7 +91,7 @@ public class SyncTest extends ChromiumTestShellTestBase {
         assertTrue("Couldn't get about info.", gotInfo);
     }
 
-    @DisabledTest
+    @HostDrivenTest
     public void testAboutSyncPageDisplaysCurrentSyncStatus() throws InterruptedException {
         setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
 
