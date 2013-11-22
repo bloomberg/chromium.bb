@@ -1803,6 +1803,8 @@ static int si_surface_best(struct radeon_surface_manager *surf_man,
 #define     CIK__PIPE_CONFIG__ADDR_SURF_P8_32x32_16x16   12
 #define     CIK__PIPE_CONFIG__ADDR_SURF_P8_32x32_16x32   13
 #define     CIK__PIPE_CONFIG__ADDR_SURF_P8_32x64_32x32   14
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P16_32X32_8X16   16
+#define     CIK__PIPE_CONFIG__ADDR_SURF_P16_32X32_16X16  17
 #define CIK__GB_TILE_MODE__TILE_SPLIT(x)         (((x) >> 11) & 0x7)
 #define     CIK__TILE_SPLIT__64B                         0
 #define     CIK__TILE_SPLIT__128B                        1
@@ -1874,6 +1876,10 @@ static void cik_get_2d_params(struct radeon_surface_manager *surf_man,
         case CIK__PIPE_CONFIG__ADDR_SURF_P8_32x32_16x32:
         case CIK__PIPE_CONFIG__ADDR_SURF_P8_32x64_32x32:
             *num_pipes = 8;
+            break;
+        case CIK__PIPE_CONFIG__ADDR_SURF_P16_32X32_8X16:
+        case CIK__PIPE_CONFIG__ADDR_SURF_P16_32X32_16X16:
+            *num_pipes = 16;
             break;
         }
     }
