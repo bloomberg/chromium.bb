@@ -120,7 +120,7 @@ int AndroidUsbSocket::Read(net::IOBuffer* buffer,
     read_buffer_ = read_buffer_.substr(bytes_to_copy);
   else
     read_buffer_ = "";
-  return net::OK;
+  return bytes_to_copy;
 }
 
 int AndroidUsbSocket::Write(net::IOBuffer* buffer,
