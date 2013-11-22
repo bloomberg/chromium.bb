@@ -784,8 +784,8 @@ TEST_F(WindowSelectorTest, MultipleDisplays) {
 }
 
 // Verifies that the single display overview used during alt tab cycling uses
-// the display of the initial window by default.
-TEST_F(WindowSelectorTest, CycleOverviewUsesInitialDisplay) {
+// the display of the selected window by default.
+TEST_F(WindowSelectorTest, CycleOverviewUsesCurrentDisplay) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -803,9 +803,9 @@ TEST_F(WindowSelectorTest, CycleOverviewUsesInitialDisplay) {
   Cycle(WindowSelector::FORWARD);
   FireOverviewStartTimer();
 
-  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
       ToEnclosingRect(GetTransformedTargetBounds(window1.get()))));
-  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
       ToEnclosingRect(GetTransformedTargetBounds(window2.get()))));
   StopCycling();
 }

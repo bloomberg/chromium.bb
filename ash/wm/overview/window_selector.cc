@@ -34,7 +34,7 @@ namespace {
 
 // The time from when the user pressed alt+tab while still holding alt before
 // overview is engaged.
-const int kOverviewDelayOnCycleMilliseconds = 100;
+const int kOverviewDelayOnCycleMilliseconds = 10000;
 
 // If the delay before overview is less than or equal to this threshold the
 // initial monitor is used for multi-display overview, otherwise the monitor
@@ -345,7 +345,6 @@ void WindowSelector::Step(WindowSelector::Direction direction) {
     base::AutoReset<bool> restoring_focus(&ignore_activations_, true);
     showing_window_.reset(new ScopedShowWindow);
     showing_window_->Show(windows_[selected_window_]->SelectionWindow());
-    start_overview_timer_.Reset();
     if (timer_enabled_)
       start_overview_timer_.Reset();
   }
