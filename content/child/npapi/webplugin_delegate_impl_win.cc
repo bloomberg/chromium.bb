@@ -1327,6 +1327,12 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     ResetEvent(handle_event_pump_messages_event_);
   }
 
+  // If we didn't enter a modal loop, need to unhook the filter.
+  if (handle_event_message_filter_hook_) {
+    UnhookWindowsHookEx(handle_event_message_filter_hook_);
+    handle_event_message_filter_hook_ = NULL;
+  }
+
   if (::IsWindow(last_focus_window)) {
     // Restore the nestable tasks allowed state in the message loop and reset
     // the os modal loop state as the plugin returned from the TrackPopupMenu
