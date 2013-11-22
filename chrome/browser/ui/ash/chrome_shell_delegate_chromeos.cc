@@ -10,6 +10,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
@@ -33,7 +34,9 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "grit/generated_resources.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -140,6 +143,28 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
           GetSavedScreenMagnifierScale();
     }
     return std::numeric_limits<double>::min();
+  }
+
+  virtual void TriggerAccessibilityAlert(
+      ash::AccessibilityAlert alert) OVERRIDE {
+    Profile* profile = ProfileManager::GetDefaultProfile();
+    if (profile) {
+      switch (alert) {
+        case ash::A11Y_ALERT_WINDOW_NEEDED: {
+          AccessibilityAlertInfo event(
+              profile, l10n_util::GetStringUTF8(IDS_A11Y_ALERT_WINDOW_NEEDED));
+          SendControlAccessibilityNotification(
+              ui::AccessibilityTypes::EVENT_ALERT, &event);
+          break;
+        }
+        case ash::A11Y_ALERT_NONE:
+          break;
+      }
+    }
+  }
+
+  virtual ash::AccessibilityAlert GetLastAccessibilityAlert() OVERRIDE {
+    return ash::A11Y_ALERT_NONE;
   }
 
  private:

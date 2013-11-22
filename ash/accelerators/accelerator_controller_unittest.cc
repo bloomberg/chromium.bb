@@ -1330,4 +1330,35 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
 }
 #endif
 
+TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
+  const ui::Accelerator dummy;
+  AccessibilityDelegate* delegate =
+      ash::Shell::GetInstance()->accessibility_delegate();
+
+  for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
+    delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
+    EXPECT_TRUE(
+        GetController()->PerformAction(kActionsNeedingWindow[i], dummy));
+    EXPECT_EQ(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);
+  }
+
+  // Make sure we don't alert if we do have a window.
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+  wm::ActivateWindow(window.get());
+  for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
+    delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
+    GetController()->PerformAction(kActionsNeedingWindow[i], dummy);
+    EXPECT_EQ(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_NONE);
+  }
+
+  // Don't alert if we have a minimized window either.
+  GetController()->PerformAction(WINDOW_MINIMIZE, dummy);
+  for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
+    delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
+    GetController()->PerformAction(kActionsNeedingWindow[i], dummy);
+    EXPECT_EQ(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_NONE);
+  }
+}
+
 }  // namespace ash

@@ -35,6 +35,8 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
       AccessibilityNotificationVisibility notify) OVERRIDE;
   virtual void SaveScreenMagnifierScale(double scale) OVERRIDE;
   virtual double GetSavedScreenMagnifierScale() OVERRIDE;
+  virtual void TriggerAccessibilityAlert(AccessibilityAlert alert) OVERRIDE;
+  virtual AccessibilityAlert GetLastAccessibilityAlert() OVERRIDE;
 
  private:
   bool spoken_feedback_enabled_;
@@ -43,7 +45,7 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   MagnifierType screen_magnifier_type_;
   bool large_cursor_enabled_;
   bool autoclick_enabled_;
-
+  AccessibilityAlert accessibility_alert_;
   DISALLOW_COPY_AND_ASSIGN(DefaultAccessibilityDelegate);
 };
 

@@ -413,4 +413,21 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
 const size_t kActionsAllowedInAppModeLength =
     arraysize(kActionsAllowedInAppMode);
 
+const AcceleratorAction kActionsNeedingWindow[] = {
+    ACCESSIBLE_FOCUS_NEXT,
+    ACCESSIBLE_FOCUS_PREVIOUS,
+    CYCLE_BACKWARD_MRU,
+    CYCLE_FORWARD_MRU,
+    CYCLE_LINEAR,
+    WINDOW_SNAP_LEFT,
+    WINDOW_SNAP_RIGHT,
+    WINDOW_MINIMIZE,
+    TOGGLE_FULLSCREEN,
+    TOGGLE_MAXIMIZED,
+    WINDOW_POSITION_CENTER,
+    ROTATE_WINDOW,
+};
+
+const size_t kActionsNeedingWindowLength = arraysize(kActionsNeedingWindow);
+
 }  // namespace ash

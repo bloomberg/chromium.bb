@@ -15,7 +15,8 @@ DefaultAccessibilityDelegate::DefaultAccessibilityDelegate()
       screen_magnifier_enabled_(false),
       screen_magnifier_type_(kDefaultMagnifierType),
       large_cursor_enabled_(false),
-      autoclick_enabled_(false) {
+      autoclick_enabled_(false),
+      accessibility_alert_(A11Y_ALERT_NONE) {
 }
 
 DefaultAccessibilityDelegate::~DefaultAccessibilityDelegate() {}
@@ -81,6 +82,15 @@ void DefaultAccessibilityDelegate::SaveScreenMagnifierScale(double scale) {
 
 double DefaultAccessibilityDelegate::GetSavedScreenMagnifierScale() {
   return std::numeric_limits<double>::min();
+}
+
+void DefaultAccessibilityDelegate::TriggerAccessibilityAlert(
+    AccessibilityAlert alert) {
+  accessibility_alert_ = alert;
+}
+
+AccessibilityAlert DefaultAccessibilityDelegate::GetLastAccessibilityAlert() {
+  return accessibility_alert_;
 }
 
 }  // namespace internal

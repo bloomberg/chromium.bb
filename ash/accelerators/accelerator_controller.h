@@ -169,6 +169,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   std::set<int> nonrepeatable_actions_;
   // Actions allowed in app mode.
   std::set<int> actions_allowed_in_app_mode_;
+  // Actions disallowed if there are no windows.
+  std::set<int> actions_needing_window_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorController);
 };

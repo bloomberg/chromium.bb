@@ -192,6 +192,10 @@ ASH_EXPORT extern const size_t kNonrepeatableActionsLength;
 ASH_EXPORT extern const AcceleratorAction kActionsAllowedInAppMode[];
 ASH_EXPORT extern const size_t kActionsAllowedInAppModeLength;
 
+// Actions that require at least 1 window.
+ASH_EXPORT extern const AcceleratorAction kActionsNeedingWindow[];
+ASH_EXPORT extern const size_t kActionsNeedingWindowLength;
+
 }  // namespace ash
 
 #endif  // ASH_ACCELERATORS_ACCELERATOR_TABLE_H_

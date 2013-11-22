@@ -15834,6 +15834,11 @@ Do you accept?
     <message name="IDS_PROFILE_IN_USE_LINUX_RELAUNCH" desc="Text of button in dialog to delete the profile lock file.">
       Unlock Profile and Relaunch
     </message>
+
+    <!-- Accessibility alerts -->
+    <message name="IDS_A11Y_ALERT_WINDOW_NEEDED" desc="Alert sent to the accessibility api when the user attempts a keyboard command that requires a window to work.">
+      Command unavailable. Press control-N to open a new window.
+    </message>
   </messages>
 
   <structures fallback_to_english="true">

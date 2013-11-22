@@ -15,6 +15,11 @@ enum AccessibilityNotificationVisibility {
   A11Y_NOTIFICATION_SHOW,
 };
 
+enum AccessibilityAlert {
+  A11Y_ALERT_NONE,
+  A11Y_ALERT_WINDOW_NEEDED
+};
+
 // A deletate class to control accessibility features.
 class ASH_EXPORT AccessibilityDelegate {
  public:
@@ -70,6 +75,12 @@ class ASH_EXPORT AccessibilityDelegate {
   // Gets a saved value of the zoom scale of full screen magnifier. If a value
   // is not saved, return a negative value.
   virtual double GetSavedScreenMagnifierScale() = 0;
+
+  // Triggers an accessibility alert to give the user feedback.
+  virtual void TriggerAccessibilityAlert(AccessibilityAlert alert) = 0;
+
+  // Gets the last accessibility alert that was triggered.
+  virtual AccessibilityAlert GetLastAccessibilityAlert() = 0;
 };
 
 }  // namespace ash

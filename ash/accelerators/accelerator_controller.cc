@@ -44,6 +44,7 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/volume_control_delegate.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/power_button_controller.h"
@@ -436,6 +437,8 @@ void AcceleratorController::Init() {
     nonrepeatable_actions_.insert(kNonrepeatableActions[i]);
   for (size_t i = 0; i < kActionsAllowedInAppModeLength; ++i)
     actions_allowed_in_app_mode_.insert(kActionsAllowedInAppMode[i]);
+  for (size_t i = 0; i < kActionsNeedingWindowLength; ++i)
+    actions_needing_window_.insert(kActionsNeedingWindow[i]);
 
   RegisterAccelerators(kAcceleratorData, kAcceleratorDataLength);
 
@@ -523,6 +526,12 @@ bool AcceleratorController::PerformAction(int action,
       actions_allowed_in_app_mode_.find(action) ==
       actions_allowed_in_app_mode_.end()) {
     return false;
+  }
+  if (MruWindowTracker::BuildWindowList(false).empty() &&
+      actions_needing_window_.find(action) != actions_needing_window_.end()) {
+    Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
+        A11Y_ALERT_WINDOW_NEEDED);
+    return true;
   }
 
   const ui::KeyboardCode key_code = accelerator.key_code();
