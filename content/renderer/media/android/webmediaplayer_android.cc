@@ -1239,6 +1239,12 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::generateKeyRequest(
   return e;
 }
 
+bool WebMediaPlayerAndroid::IsKeySystemSupported(const WebString& key_system) {
+  // On Android, EME only works with MSE.
+  return player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE &&
+         IsConcreteSupportedKeySystem(key_system);
+}
+
 WebMediaPlayer::MediaKeyException
 WebMediaPlayerAndroid::GenerateKeyRequestInternal(
     const WebString& key_system,
@@ -1248,7 +1254,7 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
            << std::string(reinterpret_cast<const char*>(init_data),
                           static_cast<size_t>(init_data_length));
 
-  if (!IsConcreteSupportedKeySystem(key_system))
+  if (!IsKeySystemSupported(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   // We do not support run-time switching between key systems for now.
@@ -1301,7 +1307,7 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::AddKeyInternal(
                           static_cast<size_t>(init_data_length))
            << " [" << session_id.utf8().data() << "]";
 
-  if (!IsConcreteSupportedKeySystem(key_system))
+  if (!IsKeySystemSupported(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   if (current_key_system_.isEmpty() || key_system != current_key_system_)
@@ -1325,7 +1331,7 @@ WebMediaPlayer::MediaKeyException
 WebMediaPlayerAndroid::CancelKeyRequestInternal(
     const WebString& key_system,
     const WebString& session_id) {
-  if (!IsConcreteSupportedKeySystem(key_system))
+  if (!IsKeySystemSupported(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   if (current_key_system_.isEmpty() || key_system != current_key_system_)

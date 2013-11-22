@@ -268,6 +268,8 @@ class WebMediaPlayerAndroid
   void DidLoadMediaInfo(MediaInfoLoader::Status status);
   void DoReleaseRemotePlaybackTexture(uint32 sync_point);
 
+  bool IsKeySystemSupported(const blink::WebString& key_system);
+
   // Actually do the work for generateKeyRequest/addKey so they can easily
   // report results to UMA.
   MediaKeyException GenerateKeyRequestInternal(
