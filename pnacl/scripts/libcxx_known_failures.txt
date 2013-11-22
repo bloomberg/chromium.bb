@@ -26,38 +26,38 @@ libc++::language.support/support.start.term/quick_exit.pass.cpp
 # libc++ folks?
 libc++::depr/depr.c.headers/stdio_h.pass.cpp
 
+# Lack of blocking /dev/random support.
+libc++::numerics/rand/rand.device/ctor.pass.cpp
+
 # Need to investigate these.
+libc++::diagnostics/syserr/syserr.errcat/syserr.errcat.objects/system_category.pass.cpp
+libc++::input.output/file.streams/fstreams/fstream.assign/member_swap.pass.cpp
+libc++::input.output/file.streams/fstreams/fstream.assign/nonmember_swap.pass.cpp
+libc++::input.output/file.streams/fstreams/ofstream.assign/member_swap.pass.cpp
+libc++::input.output/file.streams/fstreams/ofstream.assign/nonmember_swap.pass.cpp
+libc++::localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.pass.cpp
 libc++::localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_pointer.pass.cpp
 libc++::localization/locale.categories/category.time/locale.time.put/locale.time.put.members/put2.pass.cpp
-libc++::localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.pass.cpp
+libc++::re/re.traits/isctype.pass.cpp
 libc++::re/re.traits/lookup_classname.pass.cpp
 libc++::strings/c.strings/cuchar.pass.cpp
 libc++::strings/c.strings/version_cuchar.pass.cpp
+libc++::strings/string.conversions/stod.pass.cpp
 libc++::strings/string.conversions/stof.pass.cpp
+libc++::strings/string.conversions/stold.pass.cpp
 libc++::thread/futures/futures.unique_future/copy_assign.fail.cpp
 libc++::utilities/memory/unique.ptr/unique.ptr.runtime/unique.ptr.runtime.ctor/pointer_deleter04.fail.cpp
 libc++::utilities/memory/unique.ptr/unique.ptr.single/unique.ptr.single.asgn/move_convert13.fail.cpp
 libc++::utilities/memory/unique.ptr/unique.ptr.single/unique.ptr.single.ctor/pointer_deleter04.fail.cpp
 libc++::utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp
-libc++::diagnostics/syserr/syserr.errcat/syserr.errcat.objects/system_category.pass.cpp
-libc++::input.output/file.streams/fstreams/fstream.assign/member_swap.pass.cpp
-libc++::input.output/file.streams/fstreams/fstream.assign/nonmember_swap.pass.cpp
-libc++::input.output/file.streams/fstreams/ofstream.assign/nonmember_swap.pass.cpp
-libc++::input.output/file.streams/fstreams/ofstream.assign/member_swap.pass.cpp
-libc++::re/re.traits/isctype.pass.cpp
-
-# Lack of EH support, hiding lack of blocking /dev/random support.
-libc++::numerics/rand/rand.device/ctor.pass.cpp
 
 # There are currently issues with atomics:
 #  - atomic_init of aggregates is broken.
 #  - EmitAtomicExpr calls EmitCall which causes clang to generate an
 #    invalid cast and assert out.
 # Some of these issues are fixed by upstream r186049 which doesn't apply
-# as-is without other patches,
+# as-is without other patches.
 libc++::atomics/atomics.types.generic/address.pass.cpp
-libc++::atomics/atomics.types.generic/bool.pass.cpp
-libc++::atomics/atomics.types.generic/integral.pass.cpp
 libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_compare_exchange_strong.pass.cpp
 libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_compare_exchange_strong_explicit.pass.cpp
 libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_compare_exchange_weak.pass.cpp
@@ -74,56 +74,25 @@ libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_loa
 libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_store.pass.cpp
 libc++::atomics/atomics.types.operations/atomics.types.operations.req/atomic_store_explicit.pass.cpp
 
-# Lack of EH support, aborts at _Unwind_RaiseException.
-# These may be hiding other issues.
-libc++::containers/associative/map/map.access/at.pass.cpp
-libc++::containers/sequences/deque/deque.modifiers/push_back_exception_safety.pass.cpp
-libc++::containers/sequences/deque/deque.modifiers/push_front_exception_safety.pass.cpp
-libc++::containers/sequences/forwardlist/forwardlist.modifiers/push_front_exception_safety.pass.cpp
-libc++::containers/sequences/list/list.modifiers/insert_iter_iter_iter.pass.cpp
-libc++::containers/sequences/list/list.modifiers/insert_iter_size_value.pass.cpp
-libc++::containers/sequences/list/list.modifiers/insert_iter_value.pass.cpp
-libc++::containers/sequences/list/list.modifiers/push_back_exception_safety.pass.cpp
-libc++::containers/sequences/list/list.modifiers/push_front_exception_safety.pass.cpp
-libc++::containers/sequences/vector/vector.capacity/shrink_to_fit.pass.cpp
-libc++::containers/sequences/vector/vector.modifiers/push_back_exception_safety.pass.cpp
-libc++::containers/unord/unord.map/unord.map.elem/at.pass.cpp
+# terminating with uncaught exception of type std::runtime_error:
+# <some class> failed to construct for <some locale like en_US.UTF-8>
 libc++::input.output/file.streams/fstreams/filebuf.virtuals/overflow.pass.cpp
 libc++::input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp
 libc++::input.output/iostream.format/ext.manip/get_money.pass.cpp
 libc++::input.output/iostream.format/ext.manip/get_time.pass.cpp
 libc++::input.output/iostream.format/ext.manip/put_money.pass.cpp
 libc++::input.output/iostream.format/ext.manip/put_time.pass.cpp
-libc++::input.output/iostream.format/output.streams/ostream_sentry/destruct.pass.cpp
 libc++::input.output/iostreams.base/ios.base/ios.base.callback/register_callback.pass.cpp
 libc++::input.output/iostreams.base/ios.base/ios.base.locales/imbue.pass.cpp
 libc++::input.output/iostreams.base/ios/basic.ios.members/copyfmt.pass.cpp
 libc++::input.output/iostreams.base/ios/basic.ios.members/imbue.pass.cpp
 libc++::input.output/iostreams.base/ios/basic.ios.members/move.pass.cpp
-libc++::input.output/iostreams.base/ios/basic.ios.members/set_rdbuf.pass.cpp
 libc++::input.output/iostreams.base/ios/basic.ios.members/swap.pass.cpp
-libc++::input.output/iostreams.base/ios/iostate.flags/clear.pass.cpp
-libc++::input.output/iostreams.base/ios/iostate.flags/exceptions_iostate.pass.cpp
-libc++::input.output/iostreams.base/ios/iostate.flags/setstate.pass.cpp
 libc++::input.output/stream.buffers/streambuf/streambuf.cons/copy.pass.cpp
 libc++::input.output/stream.buffers/streambuf/streambuf.cons/default.pass.cpp
 libc++::input.output/stream.buffers/streambuf/streambuf.members/streambuf.locales/locales.pass.cpp
 libc++::input.output/stream.buffers/streambuf/streambuf.protected/streambuf.assign/assign.pass.cpp
 libc++::input.output/stream.buffers/streambuf/streambuf.protected/streambuf.assign/swap.pass.cpp
-libc++::language.support/support.dynamic/new.delete/new.delete.array/new_array.pass.cpp
-libc++::language.support/support.dynamic/new.delete/new.delete.array/new_array_nothrow.pass.cpp
-libc++::language.support/support.dynamic/new.delete/new.delete.single/new.pass.cpp
-libc++::language.support/support.dynamic/new.delete/new.delete.single/new_nothrow.pass.cpp
-libc++::language.support/support.exception/except.nested/assign.pass.cpp
-libc++::language.support/support.exception/except.nested/ctor_copy.pass.cpp
-libc++::language.support/support.exception/except.nested/ctor_default.pass.cpp
-libc++::language.support/support.exception/except.nested/rethrow_if_nested.pass.cpp
-libc++::language.support/support.exception/except.nested/rethrow_nested.pass.cpp
-libc++::language.support/support.exception/except.nested/throw_with_nested.pass.cpp
-libc++::language.support/support.exception/propagation/current_exception.pass.cpp
-libc++::language.support/support.exception/propagation/make_exception_ptr.pass.cpp
-libc++::language.support/support.exception/propagation/rethrow_exception.pass.cpp
-libc++::language.support/support.exception/uncaught/uncaught_exception.pass.cpp
 libc++::localization/locale.categories/category.collate/locale.collate.byname/compare.pass.cpp
 libc++::localization/locale.categories/category.collate/locale.collate.byname/hash.pass.cpp
 libc++::localization/locale.categories/category.collate/locale.collate.byname/transform.pass.cpp
@@ -179,8 +148,6 @@ libc++::localization/locale.categories/category.time/locale.time.put.byname/put1
 libc++::localization/locale.categories/facet.numpunct/locale.numpunct.byname/decimal_point.pass.cpp
 libc++::localization/locale.categories/facet.numpunct/locale.numpunct.byname/grouping.pass.cpp
 libc++::localization/locale.categories/facet.numpunct/locale.numpunct.byname/thousands_sep.pass.cpp
-libc++::localization/locales/locale.convenience/conversions/conversions.string/ctor_err_string.pass.cpp
-libc++::localization/locales/locale.global.templates/use_facet.pass.cpp
 libc++::localization/locales/locale/locale.cons/assign.pass.cpp
 libc++::localization/locales/locale/locale.cons/char_pointer.pass.cpp
 libc++::localization/locales/locale/locale.cons/copy.pass.cpp
@@ -190,7 +157,6 @@ libc++::localization/locales/locale/locale.cons/locale_facetptr.pass.cpp
 libc++::localization/locales/locale/locale.cons/locale_locale_cat.pass.cpp
 libc++::localization/locales/locale/locale.cons/locale_string_cat.pass.cpp
 libc++::localization/locales/locale/locale.cons/string.pass.cpp
-libc++::localization/locales/locale/locale.members/combine.pass.cpp
 libc++::localization/locales/locale/locale.members/name.pass.cpp
 libc++::localization/locales/locale/locale.operators/eq.pass.cpp
 libc++::localization/locales/locale/locale.statics/classic.pass.cpp
@@ -211,6 +177,44 @@ libc++::re/re.traits/lookup_collatename.pass.cpp
 libc++::re/re.traits/transform.pass.cpp
 libc++::re/re.traits/transform_primary.pass.cpp
 libc++::re/re.traits/translate_nocase.pass.cpp
+
+# Lack of EH support, aborts at _Unwind_RaiseException.
+# These all pass with zerocost EH support, but it's currently not part of
+# the stable PNaCl ABI.
+libc++::containers/associative/map/map.access/at.pass.cpp
+libc++::containers/sequences/deque/deque.modifiers/push_back_exception_safety.pass.cpp
+libc++::containers/sequences/deque/deque.modifiers/push_front_exception_safety.pass.cpp
+libc++::containers/sequences/forwardlist/forwardlist.modifiers/push_front_exception_safety.pass.cpp
+libc++::containers/sequences/list/list.modifiers/insert_iter_iter_iter.pass.cpp
+libc++::containers/sequences/list/list.modifiers/insert_iter_size_value.pass.cpp
+libc++::containers/sequences/list/list.modifiers/insert_iter_value.pass.cpp
+libc++::containers/sequences/list/list.modifiers/push_back_exception_safety.pass.cpp
+libc++::containers/sequences/list/list.modifiers/push_front_exception_safety.pass.cpp
+libc++::containers/sequences/vector/vector.capacity/shrink_to_fit.pass.cpp
+libc++::containers/sequences/vector/vector.modifiers/push_back_exception_safety.pass.cpp
+libc++::containers/unord/unord.map/unord.map.elem/at.pass.cpp
+libc++::input.output/iostream.format/output.streams/ostream_sentry/destruct.pass.cpp
+libc++::input.output/iostreams.base/ios/basic.ios.members/set_rdbuf.pass.cpp
+libc++::input.output/iostreams.base/ios/iostate.flags/clear.pass.cpp
+libc++::input.output/iostreams.base/ios/iostate.flags/exceptions_iostate.pass.cpp
+libc++::input.output/iostreams.base/ios/iostate.flags/setstate.pass.cpp
+libc++::language.support/support.dynamic/new.delete/new.delete.array/new_array.pass.cpp
+libc++::language.support/support.dynamic/new.delete/new.delete.array/new_array_nothrow.pass.cpp
+libc++::language.support/support.dynamic/new.delete/new.delete.single/new.pass.cpp
+libc++::language.support/support.dynamic/new.delete/new.delete.single/new_nothrow.pass.cpp
+libc++::language.support/support.exception/except.nested/assign.pass.cpp
+libc++::language.support/support.exception/except.nested/ctor_copy.pass.cpp
+libc++::language.support/support.exception/except.nested/ctor_default.pass.cpp
+libc++::language.support/support.exception/except.nested/rethrow_if_nested.pass.cpp
+libc++::language.support/support.exception/except.nested/rethrow_nested.pass.cpp
+libc++::language.support/support.exception/except.nested/throw_with_nested.pass.cpp
+libc++::language.support/support.exception/propagation/current_exception.pass.cpp
+libc++::language.support/support.exception/propagation/make_exception_ptr.pass.cpp
+libc++::language.support/support.exception/propagation/rethrow_exception.pass.cpp
+libc++::language.support/support.exception/uncaught/uncaught_exception.pass.cpp
+libc++::localization/locales/locale.convenience/conversions/conversions.string/ctor_err_string.pass.cpp
+libc++::localization/locales/locale.global.templates/use_facet.pass.cpp
+libc++::localization/locales/locale/locale.members/combine.pass.cpp
 libc++::strings/basic.string/string.access/at.pass.cpp
 libc++::strings/basic.string/string.capacity/reserve.pass.cpp
 libc++::strings/basic.string/string.capacity/resize_size.pass.cpp
@@ -235,10 +239,8 @@ libc++::strings/basic.string/string.ops/string_compare/size_size_pointer_size.pa
 libc++::strings/basic.string/string.ops/string_compare/size_size_string.pass.cpp
 libc++::strings/basic.string/string.ops/string_compare/size_size_string_size_size.pass.cpp
 libc++::strings/basic.string/string.ops/string_substr/substr.pass.cpp
-libc++::strings/string.conversions/stod.pass.cpp
 libc++::strings/string.conversions/stoi.pass.cpp
 libc++::strings/string.conversions/stol.pass.cpp
-libc++::strings/string.conversions/stold.pass.cpp
 libc++::strings/string.conversions/stoll.pass.cpp
 libc++::strings/string.conversions/stoul.pass.cpp
 libc++::strings/string.conversions/stoull.pass.cpp
