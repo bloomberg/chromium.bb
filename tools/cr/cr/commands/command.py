@@ -100,6 +100,5 @@ class Command(cr.Plugin, cr.Plugin.Type):
       context: The context to run the command in.
     """
     _ = context
-    print 'Command "{0}" not implemented'.format(self.name)
-    exit(1)
+    raise NotImplementedError('Must be overridden.')
 
