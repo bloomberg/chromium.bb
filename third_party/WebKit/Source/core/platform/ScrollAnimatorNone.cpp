@@ -489,8 +489,6 @@ void ScrollAnimatorNone::animationTimerFired()
     TRACE_EVENT0("webkit", "ScrollAnimatorNone::animationTimerFired");
 
     double currentTime = WTF::monotonicallyIncreasingTime();
-    double deltaToNextFrame = ceil((currentTime - m_startTime) * kFrameRate) / kFrameRate - (currentTime - m_startTime);
-    currentTime += deltaToNextFrame;
 
     bool continueAnimation = false;
     if (m_horizontalData.m_startTime && m_horizontalData.animateScroll(currentTime))
