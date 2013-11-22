@@ -160,6 +160,16 @@ public class WindowAndroid {
     }
 
     /**
+     * Tests that an activity is available to handle the passed in intent.
+     * @param  Intent the intent to check.
+     * @return True if an activity is available to process this intent when started, meaning that
+     *         Context.startActivity will not throw ActivityNotFoundException.
+     */
+    public boolean canResolveActivity(Intent intent) {
+        return mApplicationContext.getPackageManager().resolveActivity(intent, 0) != null;
+    }
+
+    /**
      * Destroys the c++ WindowAndroid object if one has been created.
      */
     public void destroy() {
