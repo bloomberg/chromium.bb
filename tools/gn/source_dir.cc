@@ -11,9 +11,10 @@
 namespace {
 
 void AssertValueSourceDirString(const std::string& s) {
-  DCHECK(!s.empty());
-  DCHECK(s[0] == '/');
-  DCHECK(EndsWithSlash(s));
+  if (!s.empty()) {
+    DCHECK(s[0] == '/');
+    DCHECK(EndsWithSlash(s));
+  }
 }
 
 }  // namespace
@@ -23,6 +24,13 @@ SourceDir::SourceDir() {
 
 SourceDir::SourceDir(const base::StringPiece& p)
     : value_(p.data(), p.size()) {
+  if (!EndsWithSlash(value_))
+    value_.push_back('/');
+  AssertValueSourceDirString(value_);
+}
+
+SourceDir::SourceDir(SwapIn, std::string* s) {
+  value_.swap(*s);
   if (!EndsWithSlash(value_))
     value_.push_back('/');
   AssertValueSourceDirString(value_);
@@ -132,7 +140,7 @@ base::FilePath SourceDir::Resolve(const base::FilePath& source_root) const {
   return source_root.Append(UTF8ToFilePath(converted));
 }
 
-void SourceDir::SwapInValue(std::string* v) {
+void SourceDir::SwapValue(std::string* v) {
   value_.swap(*v);
   AssertValueSourceDirString(value_);
 }

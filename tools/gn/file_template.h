@@ -14,6 +14,7 @@
 
 struct EscapeOptions;
 class ParseNode;
+class Target;
 
 extern const char kSourceExpansion_Help[];
 
@@ -61,6 +62,10 @@ class FileTemplate {
   FileTemplate(const Value& t, Err* err);
   FileTemplate(const std::vector<std::string>& t);
   ~FileTemplate();
+
+  // Returns an output template representing the given target's script
+  // outputs.
+  static FileTemplate GetForTargetOutputs(const Target* target);
 
   // Returns true if the given substitution type is used by this template.
   bool IsTypeUsed(Subrange::Type type) const;

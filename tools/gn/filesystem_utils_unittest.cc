@@ -245,3 +245,85 @@ TEST(FilesystemUtils, RebaseSourceAbsolutePath) {
   EXPECT_EQ("../bar",
             RebaseSourceAbsolutePath("//foo/bar", SourceDir("//foo/bar/")));
 }
+
+TEST(FilesystemUtils, DirectoryWithNoLastSlash) {
+  EXPECT_EQ("", DirectoryWithNoLastSlash(SourceDir()));
+  EXPECT_EQ("/.", DirectoryWithNoLastSlash(SourceDir("/")));
+  EXPECT_EQ("//.", DirectoryWithNoLastSlash(SourceDir("//")));
+  EXPECT_EQ("//foo", DirectoryWithNoLastSlash(SourceDir("//foo/")));
+  EXPECT_EQ("/bar", DirectoryWithNoLastSlash(SourceDir("/bar/")));
+}
+
+TEST(FilesystemUtils, GetToolchainDirs) {
+  BuildSettings build_settings;
+  build_settings.SetBuildDir(SourceDir("//out/Debug/"));
+
+  Settings default_settings(&build_settings, "");
+  EXPECT_EQ("//out/Debug/",
+            GetToolchainOutputDir(&default_settings).value());
+  EXPECT_EQ("//out/Debug/gen/",
+            GetToolchainGenDir(&default_settings).value());
+
+  Settings other_settings(&build_settings, "two");
+  EXPECT_EQ("//out/Debug/two/",
+            GetToolchainOutputDir(&other_settings).value());
+  EXPECT_EQ("//out/Debug/two/gen/",
+            GetToolchainGenDir(&other_settings).value());
+}
+
+TEST(FilesystemUtils, GetOutDirForSourceDir) {
+  BuildSettings build_settings;
+  build_settings.SetBuildDir(SourceDir("//out/Debug/"));
+
+  // Test the default toolchain.
+  Settings default_settings(&build_settings, "");
+  EXPECT_EQ("//out/Debug/obj/",
+            GetOutputDirForSourceDir(&default_settings,
+                                     SourceDir("//")).value());
+  EXPECT_EQ("//out/Debug/obj/foo/bar/",
+            GetOutputDirForSourceDir(&default_settings,
+                                     SourceDir("//foo/bar/")).value());
+
+  // Secondary toolchain.
+  Settings other_settings(&build_settings, "two");
+  EXPECT_EQ("//out/Debug/two/obj/",
+            GetOutputDirForSourceDir(&other_settings, SourceDir("//")).value());
+  EXPECT_EQ("//out/Debug/two/obj/foo/bar/",
+            GetOutputDirForSourceDir(&other_settings,
+                                     SourceDir("//foo/bar/")).value());
+}
+
+TEST(FilesystemUtils, GetGenDirForSourceDir) {
+  BuildSettings build_settings;
+  build_settings.SetBuildDir(SourceDir("//out/Debug/"));
+
+  // Test the default toolchain.
+  Settings default_settings(&build_settings, "");
+  EXPECT_EQ("//out/Debug/gen/",
+            GetGenDirForSourceDir(&default_settings, SourceDir("//")).value());
+  EXPECT_EQ("//out/Debug/gen/foo/bar/",
+            GetGenDirForSourceDir(&default_settings,
+                                  SourceDir("//foo/bar/")).value());
+
+  // Secondary toolchain.
+  Settings other_settings(&build_settings, "two");
+  EXPECT_EQ("//out/Debug/two/gen/",
+            GetGenDirForSourceDir(&other_settings, SourceDir("//")).value());
+  EXPECT_EQ("//out/Debug/two/gen/foo/bar/",
+            GetGenDirForSourceDir(&other_settings,
+                                  SourceDir("//foo/bar/")).value());
+}
+
+// Tests handling of output dirs when build dir is the same as the root.
+TEST(FilesystemUtils, GetDirForEmptyBuildDir) {
+  BuildSettings build_settings;
+  build_settings.SetBuildDir(SourceDir("//"));
+  Settings settings(&build_settings, "");
+
+  EXPECT_EQ("//", GetToolchainOutputDir(&settings).value());
+  EXPECT_EQ("//gen/", GetToolchainGenDir(&settings).value());
+  EXPECT_EQ("//obj/",
+            GetOutputDirForSourceDir(&settings, SourceDir("//")).value());
+  EXPECT_EQ("//gen/",
+            GetGenDirForSourceDir(&settings, SourceDir("//")).value());
+}

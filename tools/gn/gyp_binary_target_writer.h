@@ -17,7 +17,9 @@
 // shared library, or a static library).
 class GypBinaryTargetWriter : public GypTargetWriter {
  public:
-  GypBinaryTargetWriter(const TargetGroup& group, std::ostream& out);
+  GypBinaryTargetWriter(const TargetGroup& group,
+                        const SourceDir& gyp_dir,
+                        std::ostream& out);
   virtual ~GypBinaryTargetWriter();
 
   virtual void Run() OVERRIDE;
@@ -39,9 +41,6 @@ class GypBinaryTargetWriter : public GypTargetWriter {
     std::vector<SourceDir> lib_dirs;
     std::vector<std::string> libs;
   };
-
-  // Writes the given number of spaces to the output stream and returns it.
-  std::ostream& Indent(int spaces);
 
   void WriteName(int indent);
   void WriteType(int indent);
@@ -77,6 +76,13 @@ class GypBinaryTargetWriter : public GypTargetWriter {
   // Fills the given flags structure.
   Flags FlagsFromTarget(const Target* target) const;
   Flags FlagsFromConfigList(const LabelConfigVector& configs) const;
+
+  // Writes the given array with the given name. The indent should be the
+  // indenting for the name, the values will be indented 2 spaces from there.
+  // Writes nothing if there is nothing in the array.
+  void WriteNamedArray(const char* name,
+                       const std::vector<std::string>& values,
+                       int indent);
 
   // All associated targets.
   TargetGroup group_;

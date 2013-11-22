@@ -23,8 +23,13 @@ class SourceFile;
 // Two slashes at the beginning indicate a path relative to the source root.
 class SourceDir {
  public:
+  enum SwapIn { SWAP_IN };
+
   SourceDir();
   explicit SourceDir(const base::StringPiece& p);
+  // Swaps the given string in without copies. The given string will be empty
+  // after this call.
+  SourceDir(SwapIn, std::string* s);
   ~SourceDir();
 
   // Resolves a file or dir name relative to this source directory. Will return
@@ -73,7 +78,7 @@ class SourceDir {
     return base::StringPiece(&value_[1], value_.size() - 1);
   }
 
-  void SwapInValue(std::string* v);
+  void SwapValue(std::string* v);
 
   bool operator==(const SourceDir& other) const {
     return value_ == other.value_;

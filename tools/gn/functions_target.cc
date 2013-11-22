@@ -177,7 +177,7 @@ const char kCustom_Help[] =
     "  files and generate a set of output files.\n"
     "\n"
     "  The script will be executed with the given arguments with the current\n"
-    "  directory being that of the root build directory. If you pass\n"
+    "  directory being that of the root build directory. If you pass files\n"
     "  to your script, see \"gn help to_build_path\" for how to convert\n"
     "  file names to be relative to the build directory (file names in the\n"
     "  sources, outputs, and source_prereqs will be all treated as relative\n"

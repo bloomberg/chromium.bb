@@ -31,14 +31,6 @@ class ScopePerFileProvider : public Scope::ProgrammaticProvider {
   const Value* GetTargetGenDir();
   const Value* GetTargetOutDir();
 
-  static std::string GetRootOutputDirWithNoLastSlash(const Settings* settings);
-  static std::string GetToolchainOutputDirWithNoLastSlash(
-      const Settings* settings);
-  static std::string GetToolchainGenDirWithNoLastSlash(
-      const Settings* settings);
-
-  std::string GetFileDirWithNoLastSlash() const;
-
   // All values are lazily created.
   scoped_ptr<Value> current_toolchain_;
   scoped_ptr<Value> default_toolchain_;

@@ -12,14 +12,20 @@
 #include "tools/gn/builder_record.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/gyp_binary_target_writer.h"
+#include "tools/gn/gyp_script_target_writer.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/target.h"
 
-GypTargetWriter::GypTargetWriter(const Target* target, std::ostream& out)
+GypTargetWriter::GypTargetWriter(const Target* target,
+                                 const SourceDir& gyp_dir,
+                                 std::ostream& out)
     : settings_(target->settings()),
       target_(target),
-      out_(out) {
+      gyp_dir_(gyp_dir),
+      out_(out),
+      // All GYP paths are relative to GYP file.
+      path_output_(gyp_dir, ESCAPE_JSON, false) {
 }
 
 GypTargetWriter::~GypTargetWriter() {
@@ -61,14 +67,19 @@ void GypTargetWriter::WriteFile(const SourceFile& gyp_file,
     const Target* cur = targets[i].debug->item()->AsTarget();
     switch (cur->output_type()) {
       case Target::COPY_FILES:
-      case Target::CUSTOM:
+        break;  // TODO(brettw)
+      case Target::CUSTOM: {
+        GypScriptTargetWriter writer(targets[i], gyp_file.GetDir(), file);
+        writer.Run();
+        break;
+      }
       case Target::GROUP:
         break;  // TODO(brettw)
       case Target::EXECUTABLE:
       case Target::STATIC_LIBRARY:
       case Target::SHARED_LIBRARY:
       case Target::SOURCE_SET: {
-        GypBinaryTargetWriter writer(targets[i], file);
+        GypBinaryTargetWriter writer(targets[i], gyp_file.GetDir(), file);
         writer.Run();
         break;
       }
@@ -84,3 +95,16 @@ void GypTargetWriter::WriteFile(const SourceFile& gyp_file,
                        static_cast<int>(contents.size()));
 }
 
+std::ostream& GypTargetWriter::Indent(int spaces) {
+  return Indent(out_, spaces);
+}
+
+// static
+std::ostream& GypTargetWriter::Indent(std::ostream& out, int spaces) {
+  const char kSpaces[81] =
+      "                                        "
+      "                                        ";
+  CHECK(static_cast<size_t>(spaces) <= arraysize(kSpaces) - 1);
+  out.write(kSpaces, spaces);
+  return out;
+}

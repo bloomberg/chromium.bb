@@ -35,7 +35,10 @@ class NinjaTargetWriter {
   // implicit dependencies, returns the empty string.
   std::string GetSourcesImplicitDeps() const;
 
-  // Returns the FileTemplate constructed from the outputs variable.
+  // Returns the FileTemplate constructed from the outputs variable. This is
+  // like FileTemplate::GetForTargetOutputs except this additionally trims the
+  // build directory from the front so we can just write the names without
+  // further processing.
   FileTemplate GetOutputTemplate() const;
 
   const Settings* settings_;  // Non-owning.
