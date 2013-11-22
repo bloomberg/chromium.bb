@@ -202,7 +202,8 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
             // So we can remove "styleSheetContentsHasFontFaceRule(newSheets)".
             if (cssStyleSheetHasFontFaceRule(newCollection.activeAuthorStyleSheets()))
                 change.styleResolverUpdateType = ResetStyleResolverAndFontSelector;
-            change.styleResolverUpdateType = Reset;
+            else
+                change.styleResolverUpdateType = Reset;
         }
     }
 
