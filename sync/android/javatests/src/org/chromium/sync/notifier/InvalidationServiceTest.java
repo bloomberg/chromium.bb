@@ -41,9 +41,6 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
     /** Id used when creating clients. */
     private static final byte[] CLIENT_ID = new byte[]{0, 4, 7};
 
-    /** Id used to uniquely name this client instance. */
-    private static final byte[] TEST_CLIENT_NAME = "UNIQUE_CLIENT_NAME".getBytes();
-
     /** Intents provided to {@link #startService}. */
     private List<Intent> mStartServiceIntents;
 
@@ -817,7 +814,6 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
     /** Creates an intent to start the InvalidationService. */
     private Intent createStartIntent() {
       Intent intent = new Intent();
-      intent.putExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME, TEST_CLIENT_NAME);
       return intent;
     }
 
@@ -825,14 +821,12 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
     private Intent createStopIntent() {
       Intent intent = new Intent();
       intent.putExtra(InvalidationIntentProtocol.EXTRA_STOP, true);
-      intent.putExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME, TEST_CLIENT_NAME);
       return intent;
     }
 
     /** Creates an intent to register some types with the InvalidationService. */
     private Intent createRegisterIntent(Account account, boolean allTypes, Set<ModelType> types) {
       Intent intent = InvalidationIntentProtocol.createRegisterIntent(account, allTypes, types);
-      intent.putExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME, TEST_CLIENT_NAME);
       return intent;
     }
 
@@ -841,7 +835,6 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         Account account, int[] objectSources, String[] objectNames) {
       Intent intent = InvalidationIntentProtocol.createRegisterIntent(
           account, objectSources, objectNames);
-      intent.putExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME, TEST_CLIENT_NAME);
       return intent;
     }
 

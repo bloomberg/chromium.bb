@@ -75,11 +75,6 @@ public class InvalidationService extends AndroidListener {
      */
     @Nullable private static byte[] sClientId;
 
-    /**
-     * A ID that uniquely identifies this client.  Used for reflection blocking.
-     */
-    @Nullable private byte[] mClientName;
-
     @Override
     public void onHandleIntent(Intent intent) {
         // Ensure that a client is or is not running, as appropriate, and that it is for the
@@ -90,16 +85,6 @@ public class InvalidationService extends AndroidListener {
         Account account = intent.hasExtra(InvalidationIntentProtocol.EXTRA_ACCOUNT) ?
                 (Account) intent.getParcelableExtra(InvalidationIntentProtocol.EXTRA_ACCOUNT)
                 : null;
-
-        // Any intents sent to the InvalidationService should include the EXTRA_CLIENT_NAME.  The
-        // call to ensureClientStartState() might need a client name, and would break if we don't
-        // have one.
-        //
-        // Intents that are addressed to the AndroidListener portion of this class do not need to
-        // include the EXTRA_CLIENT_NAME.
-        if (intent.hasExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME)) {
-            mClientName = intent.getByteArrayExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME);
-        }
 
         ensureAccount(account);
         ensureClientStartState();
@@ -281,8 +266,8 @@ public class InvalidationService extends AndroidListener {
      * {@link InvalidationPreferences#setAccount}.
      */
     private void startClient() {
-        assert (mClientName != null);
-        Intent startIntent = AndroidListener.createStartIntent(this, CLIENT_TYPE, mClientName);
+        byte[] clientName = InvalidationClientNameProvider.get().getInvalidatorClientName();
+        Intent startIntent = AndroidListener.createStartIntent(this, CLIENT_TYPE, clientName);
         startService(startIntent);
         setIsClientStarted(true);
     }

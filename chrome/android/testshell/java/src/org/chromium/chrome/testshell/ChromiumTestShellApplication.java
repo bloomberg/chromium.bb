@@ -11,6 +11,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.UmaUtils;
+import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
 import org.chromium.content.browser.ResourceExtractor;
 
 import java.util.ArrayList;
@@ -41,6 +42,9 @@ public class ChromiumTestShellApplication extends ChromiumApplication {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
 
         mObservers = new ArrayList<ChromiumTestShellApplicationObserver>();
+
+        // Initialize the invalidations ID, just like we would in the downstream code.
+        UniqueIdInvalidationClientNameGenerator.doInitializeAndInstallGenerator(this);
     }
 
     @Override
