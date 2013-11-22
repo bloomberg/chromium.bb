@@ -22,96 +22,40 @@ function ShiftKeyTester(opt_layout, opt_unlocked, opt_locked) {
 
 ShiftKeyTester.prototype = {
   /**
-   * No-op initializer for a shift key test. Simply need to wait on the right
-   * keyset.
+   * Extends the subtask scheduler.
    */
-  init: function() {
-    Debug('Running test ' + this.testName);
-  },
-
-  /**
-   * Schedules a test of the shift key.
-   * @param {string} testName The name of the test.
-   * @param {function} testDoneCallback The function to call on completion of
-   *    the test.
-   */
-  scheduleTest: function(testName, testDoneCallback) {
-    this.testName = testName;
-    onKeyboardReady(testName, this.init.bind(this), testDoneCallback,
-                    this.subtasks);
-  },
-
-  /**
-   * Verifies that the current keyset matches the expected keyset.
-   * @param {boolean} isLocked Indicates if the keyset correspond to uppercase
-   *     characters.
-   * @param {string} message The message to display on an error.
-   */
-  verifyLockState: function(isLocked, message) {
-    var keyset = isLocked ? this.locked : this.unlocked;
-    assertEquals(keyset, $('keyboard').keyset, message);
-    var keys = $('keyboard').activeKeyset.querySelectorAll('kb-shift-key');
-    this.shiftKey = keys[this.alignment == 'left' ? 0 : 1];
-  },
-
-  /**
-   * Sets the condition for starting the subtask. Execution of the test is
-   * blocked until the wait condition is satisfied.
-   * @param {!Function} fn The function to decorate with a wait condition.
-   * @param {boolean} isLocked Indicates if the test is blocked on an uppercase
-   *     keyset.
-   */
-  addWaitCondition: function(fn, isLocked) {
-    var self = this;
-    fn.waitCondition = {
-      state: 'keysetChanged',
-      value: self.layout + '-' + (isLocked ? self.locked : self.unlocked)
-    };
-  },
+  __proto__: SubtaskScheduler.prototype,
 
   /**
    * Adds a subtask for mocking a single key event on a shift key.
    * @param {string} alignment Indicates if triggering on the left or right
    *     shift key.
    * @param {string} keyOp Name of the event.
-   * @param {boolean} isLocked Indicates the expected keyset prior to the key
-   *     event.
+   * @param {string} keysetId Expected keyset at the start of the subtask.
    * @param {boolean=} opt_chording Optional parameter to indicate that the key
    *     event is for a chording operation.
    */
-  keyEvent: function(alignment, keyOp, isLocked, opt_chording) {
+  keyEvent: function(alignment, keyOp, keysetId, opt_chording) {
     var self = this;
     var fn = function() {
       Debug('Mocking shift key event: alignment = ' + alignment + ', keyOp = ' +
-          keyOp + ', isLocked = ' + isLocked + ', chording = ' +
+          keyOp + ', keysetId = ' + keysetId + ', chording = ' +
           (opt_chording ? true : false));
       self.alignment = alignment;
-      self.verifyLockState(isLocked,
+      self.verifyKeyset(keysetId,
           'Unexpected keyset before shift key event.');
-      var mockKeyEvent = {pointerId: 2, isPrimary:true, target: self.shiftKey};
-      self.shiftKey[keyOp](mockKeyEvent);
+      var keys = $('keyboard').activeKeyset.querySelectorAll('kb-shift-key');
+      shiftKey = keys[this.alignment == 'left' ? 0 : 1];
+      var mockKeyEvent = {pointerId: 2, isPrimary:true, target: shiftKey};
+      shiftKey[keyOp](mockKeyEvent);
       // An 'up" event needs to fire a pointer up on the keyboard in order to
       // handle click counting.
       if (keyOp == 'up')
         $('keyboard').up(mockKeyEvent);
       if (opt_chording)
-        self.shiftKey.out(mockKeyEvent);
+        shiftKey.out(mockKeyEvent);
     };
-    this.addWaitCondition(fn, isLocked);
-    this.addSubtask(fn);
-  },
-
-  /**
-   * Adds a subtask for mocking a pause between events.
-   * @param {number} duration The duration of the pause in milliseconds.
-   * @parma {boolean} isLocked Indicates the expected keyset prior to the pause.
-   */
-  wait: function(duration, isLocked) {
-    var self = this;
-    var fn = function() {
-      mockTimer.tick(duration);
-    };
-    this.addWaitCondition(fn, isLocked);
+    this.addWaitCondition(fn, keysetId);
     this.addSubtask(fn);
   },
 
@@ -119,29 +63,19 @@ ShiftKeyTester.prototype = {
    * Adds a subtask for mocking the typing of a lowercase or uppercase 'A'.
    * @param {boolean} isUppercase Indicates the case of the character to type.
    */
-  typeCharacter: function(isUppercase) {
+  typeCharacterA: function(keysetId) {
     var self = this;
     var fn = function() {
+      var isUppercase = keysetId == Keyset.UPPER;
       Debug('Mock typing ' + (isUppercase ? 'A' : 'a'));
-      self.verifyLockState(isUppercase,
+      self.verifyKeyset(keysetId,
           'Unexpected keyset for typed character.');
       mockTypeCharacter(isUppercase ? 'A' : 'a', 0x41,
                         isUppercase ? Modifier.SHIFT : Modifier.NONE);
     };
-    this.addWaitCondition(fn, isUppercase);
+    this.addWaitCondition(fn, keysetId);
     this.addSubtask(fn);
-  },
-
-  /**
-   * Registers a subtask.
-   * @param {Function} task The subtask to add.
-   */
-  addSubtask: function(task) {
-    task.bind(this);
-    if (!task.waitCondition)
-      throw new Error('Subtask is missing a wait condition');
-    this.subtasks.push(task);
-  },
+  }
 };
 
 /**
@@ -207,10 +141,10 @@ function testShiftHighlightAsync(testDoneCallback) {
   var tester = new ShiftKeyTester();
 
   var checkShiftTap = function(alignment) {
-    tester.keyEvent(alignment, EventType.KEY_DOWN, false);
-    tester.keyEvent(alignment, EventType.KEY_UP, true);
-    tester.typeCharacter(true);
-    tester.typeCharacter(false);
+    tester.keyEvent(alignment, EventType.KEY_DOWN, Keyset.LOWER);
+    tester.keyEvent(alignment, EventType.KEY_UP, Keyset.UPPER);
+    tester.typeCharacterA(Keyset.UPPER);
+    tester.typeCharacterA(Keyset.LOWER);
   };
   checkShiftTap(Alignment.LEFT);
   checkShiftTap(Alignment.RIGHT);
@@ -246,18 +180,18 @@ function testShiftDoubleClickAsync(testDoneCallback) {
   var tester = new ShiftKeyTester();
 
   var checkShiftDoubleClick = function(alignment) {
-    tester.keyEvent(alignment, EventType.KEY_DOWN, false);
-    tester.keyEvent(alignment, EventType.KEY_UP, true);
-    tester.keyEvent(alignment, EventType.KEY_DOWN, true);
-    tester.keyEvent(alignment, EventType.KEY_UP, true);
+    tester.keyEvent(alignment, EventType.KEY_DOWN, Keyset.LOWER);
+    tester.keyEvent(alignment, EventType.KEY_UP, Keyset.UPPER);
+    tester.keyEvent(alignment, EventType.KEY_DOWN, Keyset.UPPER);
+    tester.keyEvent(alignment, EventType.KEY_UP, Keyset.UPPER);
 
-    tester.typeCharacter(true);
-    tester.typeCharacter(true);
+    tester.typeCharacterA(Keyset.UPPER);
+    tester.typeCharacterA(Keyset.UPPER);
 
-    tester.keyEvent(alignment, EventType.KEY_DOWN, true);
-    tester.keyEvent(alignment, EventType.KEY_UP, false);
+    tester.keyEvent(alignment, EventType.KEY_DOWN, Keyset.UPPER);
+    tester.keyEvent(alignment, EventType.KEY_UP, Keyset.LOWER);
 
-    tester.typeCharacter(false);
+    tester.typeCharacterA(Keyset.LOWER);
   };
   checkShiftDoubleClick(Alignment.LEFT);
   checkShiftDoubleClick(Alignment.RIGHT);
@@ -275,17 +209,17 @@ function testShiftLongPressAsync(testDoneCallback) {
   var tester = new ShiftKeyTester();
 
   var checkShiftLongPress = function(alignment) {
-    tester.keyEvent(alignment, EventType.KEY_DOWN, false);
-    tester.wait(1000, true);
-    tester.keyEvent(alignment, EventType.KEY_UP, true);
+    tester.keyEvent(alignment, EventType.KEY_DOWN, Keyset.LOWER);
+    tester.wait(1000, Keyset.UPPER);
+    tester.keyEvent(alignment, EventType.KEY_UP, Keyset.UPPER);
 
-    tester.typeCharacter(true);
-    tester.typeCharacter(true);
+    tester.typeCharacterA(Keyset.UPPER);
+    tester.typeCharacterA(Keyset.UPPER);
 
-    tester.keyEvent(alignment, EventType.KEY_DOWN, true);
-    tester.keyEvent(alignment, EventType.KEY_UP, false);
+    tester.keyEvent(alignment, EventType.KEY_DOWN, Keyset.UPPER);
+    tester.keyEvent(alignment, EventType.KEY_UP, Keyset.LOWER);
 
-    tester.typeCharacter(false);
+    tester.typeCharacterA(Keyset.LOWER);
   };
   checkShiftLongPress(Alignment.LEFT);
   checkShiftLongPress(Alignment.RIGHT);
@@ -302,15 +236,15 @@ function testShiftChordingAsync(testDoneCallback) {
   var tester = new ShiftKeyTester();
 
   var checkShiftChording = function(alignment) {
-    tester.keyEvent(alignment, EventType.KEY_DOWN, false /* isLocked */,
+    tester.keyEvent(alignment, EventType.KEY_DOWN, Keyset.LOWER,
         true /* chording */);
 
-    tester.typeCharacter(true);
+    tester.typeCharacterA(Keyset.UPPER);
 
-    tester.wait(1000, true);
-    tester.keyEvent(alignment, EventType.KEY_UP, true);
+    tester.wait(1000, Keyset.UPPER);
+    tester.keyEvent(alignment, EventType.KEY_UP, Keyset.UPPER);
 
-    tester.typeCharacter(false);
+    tester.typeCharacterA(Keyset.LOWER);
   };
   checkShiftChording('left');
   checkShiftChording('right');

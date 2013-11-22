@@ -5,84 +5,163 @@
  */
 
 /**
- * Mocks using the longpress candidate window to enter an alternate character.
- * @param {string} label The label on the key.
- * @param {string} candidateLabel The alternate character being typed.
- * @param {number} keyCode The keyCode for the alternate character, which may
- *     be zero for characters not found on a QWERTY keyboard.
- * @param {number} modifiers Indicates the state of the shift, control and alt
- *     key when entering the character.
- * @param {Object.<string, boolean>=} opt_variant Optional test variant.
+ * Tester for lonpress typing accents.
  */
-function mockLongPressType(label,
-                           candidateLabel,
-                           keyCode,
-                           modifiers,
-                           opt_variant) {
-  // Verify that candidates popup window is initally hidden.
-  var keyset = $('keyboard').activeKeyset;
-  assertTrue(!!keyset, 'Unable to find active keyset.');
-  var mockEvent = { pointerId:1 };
-  var candidatesPopup = keyset.querySelector('kb-altkey-container');
-  assertTrue(!!candidatesPopup, 'Unable to find altkey container.');
-  assertTrue(candidatesPopup.hidden,
-             'Candidate popup should be hidden initially.');
+function LongPressTypingTester(layout) {
+  this.layout = layout;
+  this.subtasks = [];
+}
 
-  // Show candidate window of alternate keys on a long press.
-  var key = findKey(label);
-  var altKey = null;
-  assertTrue(!!key, 'Unable to find key labelled "' + label + '".');
-  key.down(mockEvent);
-  mockTimer.tick(1000);
-  if (opt_variant && opt_variant.noCandidates) {
-    assertTrue(candidatesPopup.hidden, 'Candidate popup should remain hidden.');
-  } else {
-    assertFalse(candidatesPopup.hidden, 'Candidate popup should be visible.');
+LongPressTypingTester.prototype = {
+  /**
+   * Extends the subtask scheduler.
+   */
+  __proto__: SubtaskScheduler.prototype,
 
-    // Verify that the popup window contains the candidate key.
-    var candidates = candidatesPopup.querySelectorAll('kb-altkey');
+  /**
+   * The candidate popup.
+   * @type {?kb-altkey-container}
+   */
+  get candidatesPopup() {
+    var keyset = $('keyboard').activeKeyset;
+    assertTrue(!!keyset, 'Unable to find active keyset.');
+    var popup = keyset.querySelector('kb-altkey-container');
+    assertTrue(!!popup, 'Unable to find altkey container.');
+    return popup;
+  },
+
+  /**
+   * Mocks pressing a key.
+   * @param {string} label The key to press.
+   * @param {string} keysetId Initial keyset.
+   */
+  keyPress: function(label, keysetId) {
+    var self = this;
+    var fn = function() {
+      Debug('mock keypress on \'' + label + '\'');
+
+      // Verify that popup is initially hidden.
+      var popup = self.candidatesPopup;
+      assertTrue(!!popup && popup.hidden,
+                 'Candidate popup should be hidden initially.');
+
+      // Mock keypress.
+      var key = findKey(label);
+      assertTrue(!!key, 'Unable to find key labelled "' + label + '".');
+      key.down({pointerId: 1});
+    };
+    this.addWaitCondition(fn, keysetId);
+    this.addSubtask(fn);
+  },
+
+  /**
+   * Retrieves a key from the candidate popup.
+   * @return {?kb-altkey}  The matching key or undefined if not found.
+   */
+  findCandidate: function(label) {
+    var popup = this.candidatesPopup;
+    var candidates = popup.querySelectorAll('kb-altkey');
     for (var i = 0; i < candidates.length; i++) {
-       if (candidates[i].textContent == candidateLabel) {
-         altKey = candidates[i];
-         break;
-       }
+      if (candidates[i].textContent == label)
+        return candidates[i];
     }
-    assertTrue(!!altKey, 'Unable to find key in candidate list.');
-  }
+  },
 
-  var abortSelection = opt_variant && opt_variant.abortSelection;
-  if (!abortSelection) {
-    // Verify that the candidate key is typed on release of the longpress.
-    var send = chrome.virtualKeyboardPrivate.sendKeyEvent;
-    var unicodeValue = candidateLabel.charCodeAt(0);
-    send.addExpectation({
-      type: 'keydown',
-      charValue: unicodeValue,
-      keyCode: keyCode,
-      modifiers: modifiers
-    });
-    send.addExpectation({
-      type: 'keyup',
-      charValue: unicodeValue,
-      keyCode: keyCode,
-      modifiers: modifiers
-    });
-  }
-  if (altKey) {
-    // A keyout event should be dispatched before a keyover event.
-    key.out(mockEvent);
-    altKey.over({pointerId: 1, relatedTarget: altKey});
-    if (abortSelection)
-      altKey.out({pointerId: 1, relatedTarget: altKey});
-    else
+  /**
+   * Mocks selection of a key from the candidate popup.
+   * @param {string} baseLabel Label for the pressed key.
+   * @param {string} candidateLabel Label for the selected key.
+   * @param {int} keyCode The key code for the selected key.
+   */
+  selectCandidate: function(baseLabel, candidateLabel, keyCode) {
+    var self = this;
+    var fn = function() {
+      Debug('mock keyup on \'' + candidateLabel + '\'');
+
+      // Verify that popup window is visible.
+      var popup = self.candidatesPopup;
+      assertFalse(popup.hidden, 'Candidate popup should be visible.');
+
+      // Verify that the popup window contains the base and candidate keys.
+      var altKey = self.findCandidate(candidateLabel);
+      var baseKey = self.findCandidate(baseLabel);
+      var errorMessage = function(label) {
+        return 'Unable to find \'' + label + '\' in candidate list.'
+      }
+      assertTrue(!!altKey, errorMessage(candidateLabel));
+      assertTrue(!!baseKey, errorMessage(baseLabel));
+
+      // A keyout event should be dispatched before a keyover event.
+      baseKey.out({pointerId: 1, relatedTarget: baseKey});
+      altKey.over({pointerId: 1, relatedTarget: altKey});
+
+      // Verify that the candidate key is typed on release of the longpress.
+      var send = chrome.virtualKeyboardPrivate.sendKeyEvent;
+      var unicodeValue = candidateLabel.charCodeAt(0);
+      send.addExpectation({
+        type: 'keydown',
+        charValue: unicodeValue,
+        keyCode: keyCode,
+        modifiers: Modifier.NONE
+      });
+      send.addExpectation({
+        type: 'keyup',
+        charValue: unicodeValue,
+        keyCode: keyCode,
+        modifiers: Modifier.NONE
+      });
+      var mockEvent = {pointerId: 1};
       altKey.up(mockEvent);
+      popup.up(mockEvent);
+    };
+    fn.waitCondition = {
+      state: 'candidatePopupVisibility',
+      value: true
+    };
+    this.addSubtask(fn);
+  },
 
-    // Verify that the candidate list is hidden on a pointer up event.
-    candidatesPopup.up(mockEvent);
-    assertTrue(candidatesPopup.hidden,
-               'Candidate popup should be hidden after inserting a character.');
-  } else {
-    key.up(mockEvent);
+  /**
+   * Mocks aborting a longpress selection.
+   * @param {string} baselabel The label for the pressed key.
+   */
+  abortSelection: function(baseLabel) {
+    var self = this;
+    var fn = function() {
+      Debug('mock abort on \'' + baseLabel + '\'');
+
+      // Verify that popup window is visible.
+      var popup = self.candidatesPopup;
+      assertFalse(popup.hidden, 'Candidate popup should be visible.');
+
+      // Verify that the popup window contains the base and candidate keys.
+      var baseKey = self.findCandidate(baseLabel);
+      var errorMessage = function(label) {
+        return 'Unable to find \'' + label + '\' in candidate list.'
+      }
+      assertTrue(!!baseKey, errorMessage(baseLabel));
+      baseKey.out({pointerId: 1, relatedTarget: baseKey});
+      popup.up({pointerId: 1});
+    };
+    fn.waitCondition = {
+      state: 'candidatePopupVisibility',
+      value: true
+    };
+    this.addSubtask(fn);
+  },
+
+  /**
+   * Waits for the candidate popup to close.
+   */
+  verifyClosedPopup: function() {
+    var fn = function() {
+      Debug('Validated that candidate popup has closed.');
+    };
+    fn.waitCondition = {
+      state: 'candidatePopupVisibility',
+      value: false
+    };
+    this.addSubtask(fn);
   }
 }
 
@@ -109,35 +188,39 @@ function testLowercaseKeysetAsync(testDoneCallback) {
  * Tests long press on a key that has alternate sugestions. For example,
  * longpressing the 'a' key displays 'a acute' 'a grave', etc. Longpressing
  * characters on the top row of the keyboard displays numbers as alternatives.
- * TODO(kevers): Fix test to use asynchronous task scheduler.  Each transition
- * requires a change observer.
  */
-function disabled_testLongPressTypeAccentedCharacterAsync(testDoneCallback) {
-  var runTest = function() {
-    // Test popup for letters with candidate lists that are derived from a
-    // single source (hintText or accents).
-    // Type lowercase A grave
-    mockLongPressType('a', '\u00E0', 0, Modifier.NONE);
-    // Type the digit '1' (hintText on 'q' key).
-    mockLongPressType('q', '1', 0x31, Modifier.NONE);
+function testLongPressTypeAccentedCharacterAsync(testDoneCallback) {
+  var tester = new LongPressTypingTester(Layout.DEFAULT);
 
-    // Test popup for letter that has a candidate list combining hintText and
-    // accented letters.
-    // Type lowercase E acute.
-    mockLongPressType('e', '\u00E9', 0, Modifier.NONE);
-    // Type the digit '3' (hintText on the 'e' key).
-    mockLongPressType('e', '3', 0x33, Modifier.NONE);
-
-    // Mock longpress typing a character that does not have alternate
-    // candidates.
-    mockLongPressType('z', 'z', 0x5A, Modifier.NONE, {noCandidates: true});
-
-    // Mock aborting a longpress selection.
-    mockLongPressType('e', '3', 0x33, Modifier.NONE, {abortSelection: true});
+  var checkLongPressType = function(key, candidate, keyCode) {
+    tester.keyPress(key, Keyset.LOWER);
+    tester.wait(1000, Keyset.LOWER);
+    tester.selectCandidate(key, candidate, keyCode);
+    tester.verifyClosedPopup();
   };
-  onKeyboardReady('testLongPressTypeAccentedCharacterAsync',
-                  runTest,
-                  testDoneCallback);
+
+  // Test popup for letters with candidate lists that are derived from a
+  // single source (hintText or accents).
+  // Type lowercase A grave
+  checkLongPressType('a', '\u00E0', 0);
+  // Type the digit '1' (hintText on 'q' key).
+  checkLongPressType('q', '1', 0x31);
+
+  // Test popup for letter that has a candidate list combining hintText and
+  // accented letters.
+  // Type lowercase E acute.
+  checkLongPressType('e', '\u00E9', 0, Modifier.NONE);
+  // Type the digit '3' (hintText on the 'e' key).
+  checkLongPressType('e', '3', 0x33, Modifier.NONE);
+
+  // Mock aborting a longpress selection.
+  tester.keyPress('e', Keyset.LOWER);
+  tester.wait(1000, Keyset.LOWER);
+  tester.abortSelection('e');
+  tester.verifyClosedPopup();
+
+  tester.scheduleTest('testLongPressTypeAccentedCharacterAsync',
+                      testDoneCallback);
 }
 
 /**
@@ -162,7 +245,7 @@ function testAutoReleasePreviousKey(testDoneCallback) {
       keyCode: 0x41,
       modifiers: Modifier.NONE
     });
-    var mockEvent = { pointerId:2 };
+    var mockEvent = {pointerId:2};
     key.down(mockEvent);
     mockTypeCharacter('s', 0x53, Modifier.NONE);
   };

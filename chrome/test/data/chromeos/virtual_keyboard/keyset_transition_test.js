@@ -38,51 +38,9 @@ function KeysetTransitionTester(opt_layout) {
 
 KeysetTransitionTester.prototype = {
   /**
-   * No-op initializer for a keyset transition test. Simply need to wait on the
-   * right keyset.
+   * Extends the subtask scheduler.
    */
-  init: function() {
-    Debug('Running test ' + this.testName);
-  },
-
-  /**
-   * Schedules a test of the shift key.
-   * @param {string} testName The name of the test.
-   * @param {Function} testDoneCallback The function to call on completion of
-   *    the test.
-   */
-  scheduleTest: function(testName, testDoneCallback) {
-    this.testName = testName;
-    onKeyboardReady(testName, this.init.bind(this), testDoneCallback,
-                    this.subtasks);
-  },
-
-  /**
-   * Generates the full keyset ID.
-   * @param {string} keysetId Full or partial keyset ID. The layout must be
-   *     specified in the constructor if using a partial ID.
-   */
-  normalizeKeyset: function(keysetId) {
-    return this.layout ? this.layout + '-' + keysetId : keysetId;
-  },
-
-  /**
-   * Validates that the current keyset matches expectations.
-   * @param {string} keysetId Full or partial ID of the expected keyset.
-   * @parma {string} message Error message.
-   */
-  verifyKeyset: function(keysetId, message) {
-    assertEquals(this.normalizeKeyset(keysetId), $('keyboard').activeKeysetId,
-        message);
-  },
-
-  /**
-   * Associates a wait condition with as task.
-   */
-  addWaitCondition: function(fn, keysetId) {
-    fn.waitCondition = {state: 'keysetChanged',
-                        value: this.normalizeKeyset(keysetId)};
-  },
+  __proto__: SubtaskScheduler.prototype,
 
   /**
    * Adds a task for mocking a key event.
@@ -116,20 +74,6 @@ KeysetTransitionTester.prototype = {
   },
 
   /**
-   * Adds a task for mocking a pause between events.
-   * @param {number} duration The duration of the pause in milliseconds.
-   * @param {string} keysetId Expected keyset at the start of the task.
-   */
-  wait: function(duration, keysetId) {
-    var self = this;
-    var fn = function() {
-      mockTimer.tick(duration);
-    };
-    this.addWaitCondition(fn, keysetId);
-    this.addSubtask(fn);
-  },
-
-  /**
    * Updates the input type.
    * @param {string} inputType The new input type.
    * @param {string} keysetId Expected keyset at the start of the task.
@@ -143,31 +87,7 @@ KeysetTransitionTester.prototype = {
     };
     this.addWaitCondition(fn, keysetId);
     this.addSubtask(fn);
-  },
-
-  /**
-   * Verifies that a specific keyset is active.
-   * @param {string} keysetId Name of the expected keyset.
-   */
-  verifyReset: function(keysetId) {
-    var self = this;
-    var fn = function() {
-      self.verifyKeyset(keysetId, 'Unexpected keyset');
-    };
-    this.addWaitCondition(fn, keysetId);
-    this.addSubtask(fn);
-  },
-
-  /**
-   * Registers a subtask.
-   * @param {Function} task The subtask to add.
-   */
-  addSubtask: function(task) {
-    task.bind(this);
-    if (!task.waitCondition)
-      throw new Error('Subtask is missing a wait condition');
-    this.subtasks.push(task);
-  },
+  }
 };
 
 /**

@@ -36,7 +36,14 @@
         this.hidden = true;
         this.resetActiveElement();
         this.keyset = null;
-      }
+      },
+
+      hiddenChanged: function() {
+        this.fire('stateChange', {
+          state: 'candidatePopupVisibility',
+          value: !!this.hidden
+        });
+      },
     });
   </script>
 </polymer-element>

@@ -85,6 +85,110 @@ var Modifier = {
 };
 
 /**
+ * Helper class for constructing a tests as a series of subtasks. Each subtask
+ * is blocked on a wait condition.
+ */
+function SubtaskScheduler() {
+  this.subtasks = [];
+}
+
+SubtaskScheduler.prototype = {
+  /**
+   * Specifying a layout enables shorthand names to be used for keyset IDs.
+   */
+  layout: null,
+
+  /**
+   * No-op initializer for a shift key test. Simply need to wait on the right
+   * keyset.
+   */
+  init: function() {
+    Debug('Running test ' + this.testName);
+  },
+
+  /**
+   * Schedules a test of the shift key.
+   * @param {string} testName The name of the test.
+   * @param {Function} testDoneCallback The function to call on completion of
+   *    the test.
+   */
+  scheduleTest: function(testName, testDoneCallback) {
+    this.testName = testName;
+    onKeyboardReady(testName, this.init.bind(this), testDoneCallback,
+                    this.subtasks);
+  },
+
+  /**
+   * Generates the full keyset ID.
+   * @param {string} keysetId Full or partial keyset ID. The layout must be
+   *     specified in the constructor if using a partial ID.
+   * @return {string} Fully resolved ID of the keyset.
+   */
+  normalizeKeyset: function(keysetId) {
+    return this.layout ? this.layout + '-' + keysetId : keysetId;
+  },
+
+  /**
+   * Associates a wait condition with a task.
+   * @param {Function} fn The function to decorate.
+   * @param {string} keysetId The expected keyset ID at the start of the test.
+   */
+  addWaitCondition: function(fn, keysetId) {
+    fn.waitCondition = {state: 'keysetChanged',
+                        value: this.normalizeKeyset(keysetId)};
+  },
+
+  /**
+   * Validates that the current keyset matches expectations.
+   * @param {string} keysetId Full or partial ID of the expected keyset.
+   * @param {string} message Error message.
+   */
+  verifyKeyset: function(keysetId, message) {
+    assertEquals(this.normalizeKeyset(keysetId), $('keyboard').activeKeysetId,
+        message);
+  },
+
+  /**
+   * Adds a task for mocking a pause between events.
+   * @param {number} duration The duration of the pause in milliseconds.
+   * @param {string} keysetId Expected keyset at the start of the task.
+   */
+  wait: function(duration, keysetId) {
+    var self = this;
+    var fn = function() {
+      Debug('mock wait ' + duration + 'ms');
+      mockTimer.tick(duration);
+    };
+    this.addWaitCondition(fn, keysetId);
+    this.addSubtask(fn);
+  },
+
+  /**
+   * Verifies that a specific keyset is active.
+   * @param {string} keysetId Name of the expected keyset.
+   */
+  verifyReset: function(keysetId) {
+    var self = this;
+    var fn = function() {
+      self.verifyKeyset(keysetId, 'Unexpected keyset');
+    };
+    this.addWaitCondition(fn, keysetId);
+    this.addSubtask(fn);
+  },
+
+  /**
+   * Registers a subtask.
+   * @param {Function} task The subtask to add.
+   */
+  addSubtask: function(task) {
+    task.bind(this);
+    if (!task.waitCondition)
+      throw new Error('Subtask is missing a wait condition');
+    this.subtasks.push(task);
+  }
+};
+
+/**
  * Queue for running tests asynchronously.
  */
 function TestRunner() {
@@ -155,10 +259,23 @@ TestRunner.prototype = {
     var waitCondition = this.queue[0].waitCondition;
     var keyset = $('keyboard').activeKeyset;
     var id = keyset.id;
-    if (waitCondition.state == 'keysetChanged' && id == waitCondition.value)
-      this.runNextTest();
-    else
-      Debug('waiting on keyset ' + waitCondition.value +', current = ' + id);
+    var continueWaiting = true;
+    if (waitCondition.state == 'keysetChanged') {
+      if (id == waitCondition.value) {
+        continueWaiting = false;
+        this.runNextTest();
+      }
+    } else if (waitCondition.state = 'candidatePopupVisibility') {
+      var popup = keyset.querySelector('kb-altkey-container');
+      if (popup && popup.hidden == !waitCondition.value) {
+        continueWaiting = false;
+        this.runNextTest();
+      }
+    }
+    if (continueWaiting) {
+      Debug('waiting on ' + waitCondition.state + ' = ' +
+          waitCondition.value);
+    }
   },
 
   runNextTest: function() {
