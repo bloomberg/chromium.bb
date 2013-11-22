@@ -334,48 +334,31 @@ static const struct wl_data_source_listener data_source_listener = {
 };
 
 static cairo_surface_t *
-create_drag_cursor(struct dnd_drag *dnd_drag,
-		   struct item *item, int32_t x, int32_t y, double opacity)
+create_drag_icon(struct dnd_drag *dnd_drag,
+		 struct item *item, int32_t x, int32_t y, double opacity)
 {
 	struct dnd *dnd = dnd_drag->dnd;
 	cairo_surface_t *surface;
-	struct wl_cursor_image *pointer;
 	struct rectangle rectangle;
 	cairo_pattern_t *pattern;
 	cairo_t *cr;
 
-	pointer = display_get_pointer_image(dnd->display, CURSOR_DRAGGING);
-	if (!pointer) {
-		fprintf(stderr, "WARNING: grabbing cursor image not found\n");
-		pointer = display_get_pointer_image(dnd->display,
-						    CURSOR_LEFT_PTR);
-		assert(pointer && "no cursor image found");
-	}
-
-	rectangle.width = item_width + 2 * pointer->width;
-	rectangle.height = item_height + 2 * pointer->height;
+	rectangle.width = item_width;
+	rectangle.height = item_height;
 	surface = display_create_surface(dnd->display, NULL, &rectangle,
 					 SURFACE_SHM);
 
 	cr = cairo_create(surface);
-	cairo_translate(cr, pointer->width, pointer->height);
-
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_set_source_rgba(cr, 0, 0, 0, 0);
-	cairo_paint(cr);
-
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_set_source_surface(cr, item->surface, 0, 0);
 	pattern = cairo_pattern_create_rgba(0, 0, 0, opacity);
 	cairo_mask(cr, pattern);
 	cairo_pattern_destroy(pattern);
 
-	/* FIXME: more cairo-gl brokeness */
-	surface_flush_device(surface);
 	cairo_destroy(cr);
 
-	dnd_drag->hotspot_x = pointer->width + x - item->x;
-	dnd_drag->hotspot_y = pointer->height + y - item->y;
+	dnd_drag->hotspot_x = x - item->x;
+	dnd_drag->hotspot_y = y - item->y;
 	dnd_drag->width = rectangle.width;
 	dnd_drag->height = rectangle.height;
 
@@ -453,9 +436,9 @@ dnd_button_handler(struct widget *widget,
 		input_set_pointer_image(input, CURSOR_DRAGGING);
 
 		dnd_drag->opaque =
-			create_drag_cursor(dnd_drag, item, x, y, 1);
+			create_drag_icon(dnd_drag, item, x, y, 1);
 		dnd_drag->translucent =
-			create_drag_cursor(dnd_drag, item, x, y, 0.2);
+			create_drag_icon(dnd_drag, item, x, y, 0.2);
 
 		if (dnd->self_only)
 			icon = dnd_drag->opaque;
