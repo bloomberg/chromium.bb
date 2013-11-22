@@ -39,8 +39,8 @@ function test()
 
     function dumpNodeData(node, prefix)
     {
-        var result = prefix + "'" + node.nodeName() + "':'" + node.nodeValue() + "' - '" + node.xPath(true) + "'";
-        InspectorTest.addResult(result.replace(/\n/g, "\\n"));
+        var result = prefix + "'" + node.nodeName() + "':'" + node.nodeValue() + "' - '" + WebInspector.DOMPresentationUtils.xPath(node, true) + "'";
+        InspectorTest.addResult(result.replace(/\r?\n/g, "\\n"));
     }
 }
 //]]>
@@ -57,7 +57,7 @@ function f()
 </head>
 
 <body onload="runTest()">
-<p>Tests DOMNode.xPath()</p>
+<p>Tests node xPath construction</p>
 
 <div id="id1" class="foo"></div>
 <div id="id2" class="foo"></div>

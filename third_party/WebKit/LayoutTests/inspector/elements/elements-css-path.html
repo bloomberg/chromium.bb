@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="../../http/tests/inspector/inspector-test.js" id="script-id"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script id="test-script">
+function matchingElements(selector)
+{
+    return document.querySelectorAll(selector).length;
+}
+
+function test()
+{
+    var nodeQueue = [];
+    InspectorTest.expandElementsTree(enqueueNodes);
+
+    function enqueueNodes()
+    {
+        enqueueNode("", getDocumentElement());
+        dumpNodeData();
+    }
+
+    function dumpNodeData()
+    {
+        var entry = nodeQueue.shift();
+        if (!entry) {
+            InspectorTest.completeTest();
+            return;
+        }
+        var cssPath = WebInspector.DOMPresentationUtils.cssPath(entry.node, true);
+        var result = entry.prefix + cssPath;
+        InspectorTest.addResult(result.replace(/\n/g, "\\n"));
+        var escapedPath = cssPath.replace(/\\/g, "\\\\");
+        InspectorTest.evaluateInPage("matchingElements('" + escapedPath  + "')", callback);
+
+        function callback(result)
+        {
+            InspectorTest.assertEquals(1, result.value);
+            dumpNodeData();
+        }
+    }
+
+    function getDocumentElement()
+    {
+        var map = WebInspector.domAgent._idToDOMNode;
+        for (var id in map) {
+            if (map[id].nodeName() === "#document")
+                return map[id];
+        }
+
+        return null;
+    }
+
+    function enqueueNode(prefix, node)
+    {
+        if (node.nodeType() === Node.ELEMENT_NODE)
+            nodeQueue.push({prefix: prefix, node: node});
+        var children = node.children();
+        for (var i = 0; children && i < children.length; ++i)
+            enqueueNode(prefix + "  ", children[i]);
+    }
+
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Tests DOMNode.cssPath()</p>
+
+<article></article>
+<article></article>
+
+<div id="ids">
+    <div></div>
+    <div></div>
+    <div id="inner-id"></div>
+    <div id="__proto__"></div>
+    <div id='#"ridiculous".id'></div>
+    <div id="'quoted.value'"></div>
+    <div id=".foo.bar"></div>
+    <div id="-"></div>
+    <div id="-a"></div>
+    <div id="-0"></div>
+    <div id="7"></div>
+    <div id="ид">ид</div>
+    <p></p>
+</div>
+
+<div id="classes">
+    <div class="foo bar"></div>
+    <div class=" foo foo "></div>
+    <div class=".foo"></div>
+    <div class=".foo.bar"></div>
+    <div class="-"></div>
+    <div class="-a"></div>
+    <div class="-0"></div>
+    <div class="7"></div>
+    <div class="класс">класс</div>
+    <div class="__proto__"></div>
+    <div class="__proto__ foo"></div>
+    <span class="bar"></span>
+    <div id="id-with-class" class="moo"></div>
+</div>
+
+<div id="non-unique-classes">
+  <span class="c1"></span>
+  <span class="c1"></span>
+  <span class="c1 c2"></span>
+  <span class="c1 c2 c3"></span>
+  <span></span>
+  <div class="c1"></div>
+  <div class="c1 c2"></div>
+  <div class="c3 c2"></div>
+  <div class="c3 c4"></div>
+  <div class="c1 c4"></div>
+  <div></div>
+</div>
+</body>
+</html>

@@ -16,7 +16,7 @@ function test()
         if (!node)
             return;
         if (node.getAttribute("id") == "shadow") {
-            InspectorTest.addResult(node.xPath(false));
+            InspectorTest.addResult(WebInspector.DOMPresentationUtils.xPath(node, false));
             InspectorTest.completeTest();
         }
     }

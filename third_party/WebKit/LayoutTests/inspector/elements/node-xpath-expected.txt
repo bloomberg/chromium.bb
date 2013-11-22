@@ -1,4 +1,4 @@
-Tests DOMNode.xPath()
+Tests node xPath construction
 
 3 Prefix  Suffix
 4
@@ -15,7 +15,7 @@ Tests DOMNode.xPath()
         '':'\nfunction f()\n{\n    document.write("<");\n}\n//' - '/html/head/script[4]/text()[2]'
     'body':'' - '/html/body'
       'p':'' - '/html/body/p'
-        '':'Tests DOMNode.xPath()' - '/html/body/p/text()'
+        '':'Tests node xPath construction' - '/html/body/p/text()'
       'div':'' - '//*[@id="id1"]'
       'div':'' - '//*[@id="id2"]'
       'div':'' - '//*[@id="container"]'
