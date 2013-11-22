@@ -624,6 +624,11 @@ void PasswordAutofillAgent::FillFormOnPasswordRecieved(
     const PasswordFormFillData& fill_data,
     blink::WebInputElement username_element,
     blink::WebInputElement password_element) {
+  // Do not fill if the password field is in an iframe.
+  DCHECK(password_element.document().frame());
+  if (password_element.document().frame()->parent())
+    return;
+
   if (!username_element.form().autoComplete())
     return;
 

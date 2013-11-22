@@ -18,6 +18,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -218,20 +219,29 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     password_element_.setAutofilled(false);
   }
 
-  void SimulateUsernameChange(const std::string& username,
-                              bool move_caret_to_end) {
-    username_element_.setValue(WebString::fromUTF8(username));
+  void SimulateUsernameChangeForElement(const std::string& username,
+                                        bool move_caret_to_end,
+                                        WebFrame* input_frame,
+                                        WebInputElement& username_input) {
+    username_input.setValue(WebString::fromUTF8(username));
     // The field must have focus or AutofillAgent will think the
     // change should be ignored.
-    while (!username_element_.focused())
-      GetMainFrame()->document().frame()->view()->advanceFocus(false);
+    while (!username_input.focused())
+      input_frame->document().frame()->view()->advanceFocus(false);
     if (move_caret_to_end)
-      username_element_.setSelectionRange(username.length(), username.length());
-    autofill_agent_->textFieldDidChange(username_element_);
+      username_input.setSelectionRange(username.length(), username.length());
+    autofill_agent_->textFieldDidChange(username_input);
     // Processing is delayed because of a WebKit bug, see
     // PasswordAutocompleteManager::TextDidChangeInTextField() for details.
     base::MessageLoop::current()->RunUntilIdle();
   }
+
+  void SimulateUsernameChange(const std::string& username,
+                              bool move_caret_to_end) {
+    SimulateUsernameChangeForElement(username, move_caret_to_end,
+                                     GetMainFrame(), username_element_);
+  }
+
 
   void SimulateKeyDownEvent(const WebInputElement& element,
                             ui::KeyboardCode key_code) {
@@ -240,16 +250,27 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     autofill_agent_->textFieldDidReceiveKeyDown(element, key_event);
   }
 
+  void CheckTextFieldsStateForElements(const WebInputElement& username_element,
+                                       const std::string& username,
+                                       bool username_autofilled,
+                                       const WebInputElement& password_element,
+                                       const std::string& password,
+                                       bool password_autofilled) {
+    EXPECT_EQ(username,
+              static_cast<std::string>(username_element.value().utf8()));
+    EXPECT_EQ(username_autofilled, username_element.isAutofilled());
+    EXPECT_EQ(password,
+              static_cast<std::string>(password_element.value().utf8()));
+    EXPECT_EQ(password_autofilled, password_element.isAutofilled());
+  }
+
   void CheckTextFieldsState(const std::string& username,
                             bool username_autofilled,
                             const std::string& password,
                             bool password_autofilled) {
-    EXPECT_EQ(username,
-              static_cast<std::string>(username_element_.value().utf8()));
-    EXPECT_EQ(username_autofilled, username_element_.isAutofilled());
-    EXPECT_EQ(password,
-              static_cast<std::string>(password_element_.value().utf8()));
-    EXPECT_EQ(password_autofilled, password_element_.isAutofilled());
+    CheckTextFieldsStateForElements(username_element_, username,
+                                    username_autofilled, password_element_,
+                                    password, password_autofilled);
   }
 
   void CheckUsernameSelection(int start, int end) {
@@ -696,6 +717,65 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_Redirection) {
   LoadHTML(kWebpageWithDynamicContent);
   EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_PasswordFormsRendered::ID));
+}
+
+// Tests that a password form in an iframe will not be filled in until a user
+// interaction with the form.
+TEST_F(PasswordAutofillAgentTest, IframeNoFillTest) {
+  const char kIframeName[] = "iframe";
+  const char kWebpageWithIframeStart[] =
+      "<html>"
+      "   <head>"
+      "       <meta charset='utf-8' />"
+      "       <title>Title</title>"
+      "   </head>"
+      "   <body>"
+      "       <iframe id='iframe' src=\"";
+  const char kWebpageWithIframeEnd[] =
+      "\"></iframe>"
+      "   </body>"
+      "</html>";
+
+  std::string origin("data:text/html;charset=utf-8,");
+  origin += kSimpleWebpage;
+
+  std::string page_html(kWebpageWithIframeStart);
+  page_html += origin;
+  page_html += kWebpageWithIframeEnd;
+
+  LoadHTML(page_html.c_str());
+
+  // Set the expected form origin and action URLs.
+  fill_data_.basic_data.origin = GURL(origin);
+  fill_data_.basic_data.action = GURL(origin);
+
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Retrieve the input elements from the iframe since that is where we want to
+  // test the autofill.
+  WebFrame* iframe = GetMainFrame()->findChildByName(kIframeName);
+  ASSERT_TRUE(iframe);
+  WebDocument document = iframe->document();
+
+  WebElement username_element = document.getElementById(kUsernameName);
+  WebElement password_element = document.getElementById(kPasswordName);
+  ASSERT_FALSE(username_element.isNull());
+  ASSERT_FALSE(password_element.isNull());
+
+  WebInputElement username_input = username_element.to<WebInputElement>();
+  WebInputElement password_input = password_element.to<WebInputElement>();
+  ASSERT_FALSE(username_element.isNull());
+
+  CheckTextFieldsStateForElements(username_input, "", false,
+                                  password_input, "", false);
+
+  // Simulate the user typing in the username in the iframe, which should cause
+  // an autofill.
+  SimulateUsernameChangeForElement(kAliceUsername, true,
+                                   iframe, username_input);
+
+  CheckTextFieldsStateForElements(username_input, kAliceUsername, true,
+                                  password_input, kAlicePassword, true);
 }
 
 }  // namespace autofill
