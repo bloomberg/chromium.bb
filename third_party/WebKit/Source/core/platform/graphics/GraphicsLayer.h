@@ -81,14 +81,6 @@ protected:
 class GraphicsLayer : public GraphicsContextPainter, public blink::WebAnimationDelegate, public blink::WebLayerScrollClient, public blink::WebLayerClient {
     WTF_MAKE_NONCOPYABLE(GraphicsLayer); WTF_MAKE_FAST_ALLOCATED;
 public:
-    enum ContentsLayerPurpose {
-        NoContentsLayer = 0,
-        ContentsLayerForImage,
-        ContentsLayerForNinePatch,
-        ContentsLayerForVideo,
-        ContentsLayerForCanvas,
-    };
-
     static PassOwnPtr<GraphicsLayer> create(GraphicsLayerFactory*, GraphicsLayerClient*);
 
     virtual ~GraphicsLayer();
@@ -340,7 +332,7 @@ private:
     void updateLayerIsDrawable();
     void updateContentsRect();
 
-    void setContentsTo(ContentsLayerPurpose, blink::WebLayer*);
+    void setContentsTo(blink::WebLayer*);
     void setupContentsLayer(blink::WebLayer*);
     void clearContentsLayerIfUnregistered();
     blink::WebLayer* contentsLayerIfRegistered();
@@ -406,8 +398,6 @@ private:
     Vector<LinkHighlightClient*> m_linkHighlights;
 
     OwnPtr<OpaqueRectTrackingContentLayerDelegate> m_opaqueRectTrackingContentLayerDelegate;
-
-    ContentsLayerPurpose m_contentsLayerPurpose;
 
     ScrollableArea* m_scrollableArea;
     blink::WebCompositingReasons m_compositingReasons;

@@ -101,7 +101,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_paintCount(0)
     , m_contentsLayer(0)
     , m_contentsLayerId(0)
-    , m_contentsLayerPurpose(NoContentsLayer)
     , m_scrollableArea(0)
     , m_compositingReasons(blink::CompositingReasonUnknown)
 {
@@ -449,7 +448,7 @@ void GraphicsLayer::unregisterContentsLayer(WebLayer* layer)
     s_registeredLayerSet->remove(layer->id());
 }
 
-void GraphicsLayer::setContentsTo(ContentsLayerPurpose purpose, WebLayer* layer)
+void GraphicsLayer::setContentsTo(WebLayer* layer)
 {
     bool childrenChanged = false;
     if (layer) {
@@ -458,7 +457,6 @@ void GraphicsLayer::setContentsTo(ContentsLayerPurpose purpose, WebLayer* layer)
             CRASH();
         if (m_contentsLayerId != layer->id()) {
             setupContentsLayer(layer);
-            m_contentsLayerPurpose = purpose;
             childrenChanged = true;
         }
         updateContentsRect();
@@ -962,33 +960,23 @@ void GraphicsLayer::setContentsRect(const IntRect& rect)
 
 void GraphicsLayer::setContentsToImage(Image* image)
 {
-    bool childrenChanged = false;
     RefPtr<NativeImageSkia> nativeImage = image ? image->nativeImageForCurrentFrame() : 0;
     if (nativeImage) {
-        if (m_contentsLayerPurpose != ContentsLayerForImage) {
+        if (!m_imageLayer) {
             m_imageLayer = adoptPtr(Platform::current()->compositorSupport()->createImageLayer());
             registerContentsLayer(m_imageLayer->layer());
-
-            setupContentsLayer(m_imageLayer->layer());
-            m_contentsLayerPurpose = ContentsLayerForImage;
-            childrenChanged = true;
         }
         m_imageLayer->setBitmap(nativeImage->bitmap());
         m_imageLayer->layer()->setOpaque(image->currentFrameKnownToBeOpaque());
         updateContentsRect();
     } else {
         if (m_imageLayer) {
-            childrenChanged = true;
-
             unregisterContentsLayer(m_imageLayer->layer());
             m_imageLayer.clear();
         }
-        // The old contents layer will be removed via updateChildList.
-        m_contentsLayer = 0;
     }
 
-    if (childrenChanged)
-        updateChildList();
+    setContentsTo(m_imageLayer ? m_imageLayer->layer() : 0);
 }
 
 void GraphicsLayer::setContentsToNinePatch(Image* image, const IntRect& aperture)
@@ -1004,17 +992,17 @@ void GraphicsLayer::setContentsToNinePatch(Image* image, const IntRect& aperture
         m_ninePatchLayer->layer()->setOpaque(image->currentFrameKnownToBeOpaque());
         registerContentsLayer(m_ninePatchLayer->layer());
     }
-    setContentsTo(ContentsLayerForNinePatch, m_ninePatchLayer ? m_ninePatchLayer->layer() : 0);
+    setContentsTo(m_ninePatchLayer ? m_ninePatchLayer->layer() : 0);
 }
 
 void GraphicsLayer::setContentsToCanvas(WebLayer* layer)
 {
-    setContentsTo(ContentsLayerForCanvas, layer);
+    setContentsTo(layer);
 }
 
 void GraphicsLayer::setContentsToMedia(WebLayer* layer)
 {
-    setContentsTo(ContentsLayerForVideo, layer);
+    setContentsTo(layer);
 }
 
 bool GraphicsLayer::addAnimation(PassOwnPtr<WebAnimation> popAnimation)
