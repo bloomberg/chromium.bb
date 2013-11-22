@@ -71,8 +71,10 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
       ContentViewCoreImpl* content_view_core_impl =
           static_cast<ContentViewCoreImpl*>(ContentViewCore::FromWebContents(
               browser_media_player_manager->web_contents_));
-      if (!content_view_core_impl->ShouldBlockMediaRequest(url))
+      if (content_view_core_impl &&
+          !content_view_core_impl->ShouldBlockMediaRequest(url)) {
         media_player_bridge->Initialize();
+      }
       return media_player_bridge;
     }
 
