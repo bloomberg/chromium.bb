@@ -322,11 +322,11 @@ class MediaCodecBridge {
             mMediaCodec.queueSecureInputBuffer(index, offset, cryptoInfo, presentationTimeUs, 0);
         } catch (MediaCodec.CryptoException e) {
             Log.e(TAG, "Failed to queue secure input buffer: " + e.toString());
-            // TODO(xhwang): Replace hard coded value with constant/enum.
-            if (e.getErrorCode() == 1) {
-                Log.e(TAG, "No key available.");
+            if (e.getErrorCode() == MediaCodec.CryptoException.ERROR_NO_KEY) {
+                Log.e(TAG, "MediaCodec.CryptoException.ERROR_NO_KEY");
                 return MEDIA_CODEC_NO_KEY;
             }
+            Log.e(TAG, "MediaCodec.CryptoException with error code " + e.getErrorCode());
             return MEDIA_CODEC_ERROR;
         } catch(IllegalStateException e) {
             Log.e(TAG, "Failed to queue secure input buffer: " + e.toString());
