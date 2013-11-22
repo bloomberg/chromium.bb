@@ -789,8 +789,8 @@
                 'overrides/allocator_shim/allocator_stub.h',
               ],
             }],
-            # TODO(mallinath) - Enable SCTP for Android and iOS platforms.
-            ['OS!="android" and OS!="ios"', {
+            # TODO(mallinath) - Enable SCTP for iOS.
+            ['OS!="ios"', {
               'defines': [
                 'HAVE_SCTP',
               ],

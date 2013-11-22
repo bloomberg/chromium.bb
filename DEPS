@@ -190,7 +190,7 @@ deps = {
 
   "src/third_party/usrsctp/usrsctplib":
     (Var("googlecode_url") % "sctp-refimpl") +
-    "/trunk/KERN/usrsctp/usrsctplib@8603",
+    "/trunk/KERN/usrsctp/usrsctplib@8723",
 
   "src/third_party/libsrtp":
     "/trunk/deps/third_party/libsrtp@214783",

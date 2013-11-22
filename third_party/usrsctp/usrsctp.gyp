@@ -115,7 +115,7 @@
         'usrsctplib/usrsctp.h',
       ],  # sources
       'conditions': [
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="android"', {
           'defines': [
             '__Userspace_os_Linux',
           ],
