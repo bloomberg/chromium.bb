@@ -192,15 +192,34 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
   return num_errors.value
 
 
+def SymbolFinder(paths):
+  """Locate symbol files in |paths|
+
+  Args:
+    paths: A list of input paths to walk. Files are returned w/out any checks.
+      Dirs are searched for files that end in ".sym".
+  Returns:
+    Yield every viable sym file.
+  """
+  for p in paths:
+    if os.path.isdir(p):
+      for root, _, files in os.walk(p):
+        for f in files:
+          if f.endswith('.sym'):
+            yield os.path.join(root, f)
+    else:
+      yield p
+
+
 def UploadSymbols(board=None, official=False, breakpad_dir=None,
                   file_limit=DEFAULT_FILE_LIMIT, sleep=DEFAULT_SLEEP_DELAY,
-                  upload_count=None, sym_files=None, root=None):
+                  upload_count=None, sym_paths=None, root=None):
   """Upload all the generated symbols for |board| to the crash server
 
   You can use in a few ways:
     * pass |board| to locate all of its symbols
     * pass |breakpad_dir| to upload all the symbols in there
-    * pass |sym_files| to upload specific symbols
+    * pass |sym_paths| to upload specific symbols (or dirs of symbols)
 
   Args:
     board: The board whose symbols we wish to upload
@@ -209,23 +228,20 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
     file_limit: The max file size of a symbol file before we try to strip it
     sleep: How long to sleep in between uploads
     upload_count: If set, only upload this many symbols (meant for testing)
-    sym_files: Specific symbol files to upload, otherwise search |breakpad_dir|
+    sym_paths: Specific symbol files (or dirs of sym files) to upload,
+      otherwise search |breakpad_dir|
     root: The tree to prefix to |breakpad_dir| (if |breakpad_dir| is not set)
   Returns:
     The number of errors that were encountered.
   """
-  num_errors = 0
-
   if official:
     upload_url = OFFICIAL_UPLOAD_URL
   else:
     cros_build_lib.Warning('unofficial builds upload to the staging server')
     upload_url = STAGING_UPLOAD_URL
 
-  if sym_files:
-    cros_build_lib.Info('uploading specified symbol files to %s', upload_url)
-    sym_file_sets = [('', '', sym_files)]
-    all_files = True
+  if sym_paths:
+    cros_build_lib.Info('uploading specified symbols to %s', upload_url)
   else:
     if breakpad_dir is None:
       breakpad_dir = os.path.join(
@@ -233,8 +249,7 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
           cros_generate_breakpad_symbols.FindBreakpadDir(board).lstrip('/'))
     cros_build_lib.Info('uploading all symbols to %s from %s', upload_url,
                         breakpad_dir)
-    sym_file_sets = os.walk(breakpad_dir)
-    all_files = False
+    sym_paths = [breakpad_dir]
 
   # We need to limit ourselves to one upload at a time to avoid the server
   # kicking in DoS protection.  See these bugs for more details:
@@ -244,28 +259,24 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
   with parallel.BackgroundTaskRunner(UploadSymbol, file_limit=file_limit,
                                      sleep=sleep, num_errors=bg_errors,
                                      processes=1) as queue:
-    for root, _, files in sym_file_sets:
+    for sym_file in SymbolFinder(sym_paths):
       if upload_count == 0:
         break
 
-      for sym_file in files:
-        if all_files or sym_file.endswith('.sym'):
-          sym_file = os.path.join(root, sym_file)
-          queue.put([sym_file, upload_url])
+      queue.put([sym_file, upload_url])
 
-          if upload_count is not None:
-            upload_count -= 1
-            if upload_count == 0:
-              break
-  num_errors += bg_errors.value
+      if upload_count is not None:
+        upload_count -= 1
+        if upload_count == 0:
+          break
 
-  return num_errors
+  return bg_errors.value
 
 
 def main(argv):
   parser = commandline.ArgumentParser(description=__doc__)
 
-  parser.add_argument('sym_files', type='path', nargs='*', default=None)
+  parser.add_argument('sym_paths', type='path', nargs='*', default=None)
   parser.add_argument('--board', default=None,
                       help='board to build packages for')
   parser.add_argument('--breakpad_root', type='path', default=None,
@@ -286,7 +297,7 @@ def main(argv):
 
   opts = parser.parse_args(argv)
 
-  if opts.sym_files:
+  if opts.sym_paths:
     if opts.regenerate:
       cros_build_lib.Die('--regenerate may not be used with specific files')
   else:
@@ -326,7 +337,7 @@ def main(argv):
   ret += UploadSymbols(opts.board, official=opts.official_build,
                        breakpad_dir=opts.breakpad_root,
                        file_limit=opts.strip_cfi, sleep=DEFAULT_SLEEP_DELAY,
-                       upload_count=opts.upload_count, sym_files=opts.sym_files)
+                       upload_count=opts.upload_count, sym_paths=opts.sym_paths)
   if ret:
     cros_build_lib.Error('encountered %i problem(s)', ret)
     # Since exit(status) gets masked, clamp it to 1 so we don't inadvertently
