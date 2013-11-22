@@ -19,6 +19,7 @@
 #include "chrome/browser/component_updater/test/component_patcher_mock.h"
 #include "chrome/browser/component_updater/test/url_request_post_interceptor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +28,10 @@ class TestInstaller;
 
 namespace component_updater {
 
-// Intercepts HTTP POST requests sent to |localhost2|.
+// Intercepts HTTP GET requests sent to "localhost".
+typedef content::URLLocalHostRequestPrepackagedInterceptor GetInterceptor;
+
+// Intercepts HTTP POST requests sent to "localhost2".
 class InterceptorFactory : public URLRequestPostInterceptorFactory {
  public:
   InterceptorFactory();
@@ -148,7 +152,9 @@ class ComponentUpdaterTest : public testing::Test {
   void RunThreadsUntilIdle();
 
   scoped_ptr<component_updater::InterceptorFactory> interceptor_factory_;
+  URLRequestPostInterceptor* post_interceptor_;   // Owned by the factory.
 
+  scoped_ptr<GetInterceptor> get_interceptor_;
  private:
   TestConfigurator* test_config_;
   base::FilePath test_data_dir_;

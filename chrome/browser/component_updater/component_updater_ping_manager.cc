@@ -5,18 +5,13 @@
 #include "chrome/browser/component_updater/component_updater_ping_manager.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
-#include "base/win/windows_version.h"
+#include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/omaha_query_params/omaha_query_params.h"
-#include "net/base/load_flags.h"
-#include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_status.h"
 
 namespace {
 
@@ -69,45 +64,26 @@ void PingSender::SendPing(
   if (!ping_url.is_valid())
     return;
 
-  url_fetcher_.reset(net::URLFetcher::Create(0,
-                                             ping_url,
-                                             net::URLFetcher::POST,
-                                             this));
-
-  url_fetcher_->SetUploadData("application/xml", BuildPing(item));
-  url_fetcher_->SetRequestContext(url_request_context_getter);
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DISABLE_CACHE);
-  url_fetcher_->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher_->Start();
+  url_fetcher_.reset(SendProtocolRequest(ping_url,
+                                         BuildPing(item),
+                                         this,
+                                         url_request_context_getter));
 }
 
 // Builds a ping message for the specified update item.
 std::string PingSender::BuildPing(const CrxUpdateItem* item) {
-  const std::string prod_id(chrome::OmahaQueryParams::GetProdIdString(
-      chrome::OmahaQueryParams::CHROME));
-
-  const char request_format[] =
-      "<o:gupdate xmlns:o=\"http://www.google.com/update2/request\" "
-      "protocol=\"2.0\" version=\"%s-%s\" requestid=\"{%s}\" "
-      "updaterchannel=\"%s\"> "
-      "<o:os platform=\"%s\" version=\"%s\"/> "
-      "<o:app appid=\"%s\" version=\"%s\">"
+  const char app_element_format[] =
+      "<app appid=\"%s\" version=\"%s\" nextversion=\"%s\">"
       "%s"
-      "</o:app></o:gupdate>";
-  const std::string request(
-      base::StringPrintf(request_format,
-                         prod_id.c_str(),
-                         chrome::VersionInfo().Version().c_str(),
-                         base::GenerateGUID().c_str(),
-                         chrome::OmahaQueryParams::GetChannelString(),
-                         chrome::VersionInfo().OSType().c_str(),
-                         base::SysInfo().OperatingSystemVersion().c_str(),
-                         item->id.c_str(),
-                         item->component.version.GetString().c_str(),
-                         BuildPingEventElement(item).c_str()));
-  return request;
+      "</app>";
+  const std::string app_element(base::StringPrintf(
+      app_element_format,
+      item->id.c_str(),                               // "appid"
+      item->previous_version.GetString().c_str(),     // "version"
+      item->next_version.GetString().c_str(),         // "nextversion"
+      BuildPingEventElement(item).c_str()));
+
+  return BuildProtocolRequest(app_element);
 }
 
 // Returns a string representing one ping event xml element for an update item.
@@ -117,13 +93,9 @@ std::string PingSender::BuildPingEventElement(const CrxUpdateItem* item) {
 
   using base::StringAppendF;
 
-  std::string ping_event("<o:event eventtype=\"3\"");
+  std::string ping_event("<event eventtype=\"3\"");
   const int event_result = item->status == CrxUpdateItem::kUpdated;
   StringAppendF(&ping_event, " eventresult=\"%d\"", event_result);
-  StringAppendF(&ping_event, " previousversion=\"%s\"",
-                item->previous_version.GetString().c_str());
-  StringAppendF(&ping_event, " nextversion=\"%s\"",
-                item->next_version.GetString().c_str());
   if (item->error_category)
     StringAppendF(&ping_event, " errorcat=\"%d\"", item->error_category);
   if (item->error_code)

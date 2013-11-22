@@ -18,6 +18,7 @@ using content::BrowserThread;
 
 namespace component_updater {
 
+// Returns a canned response.
 class URLRequestMockJob : public net::URLRequestSimpleJob {
  public:
   URLRequestMockJob(net::URLRequest* request,
@@ -27,6 +28,10 @@ class URLRequestMockJob : public net::URLRequestSimpleJob {
         response_(response) {}
 
  protected:
+  virtual int GetResponseCode() const OVERRIDE {
+    return 200;
+  }
+
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* data,
@@ -45,9 +50,14 @@ class URLRequestMockJob : public net::URLRequestSimpleJob {
 };
 
 URLRequestPostInterceptor::URLRequestPostInterceptor(const GURL& url)
-    : url_(url), hit_count_(0), miss_count_(0) {}
+    : url_(url), hit_count_(0) {}
 
 URLRequestPostInterceptor::~URLRequestPostInterceptor() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ClearExpectations();
+}
+
+void URLRequestPostInterceptor::ClearExpectations() {
   while (!expectations_.empty()) {
     Expectation expectation(expectations_.front());
     delete expectation.first;
@@ -67,10 +77,9 @@ bool URLRequestPostInterceptor::ExpectRequest(
 
 bool URLRequestPostInterceptor::ExpectRequest(
     class RequestMatcher* request_matcher,
-    const std::string& filepath) {
+    const base::FilePath& filepath) {
   std::string response;
-  const base::FilePath path(base::FilePath().AppendASCII(filepath));
-  if (filepath.empty() || !base::ReadFileToString(path, &response))
+  if (filepath.empty() || !base::ReadFileToString(filepath, &response))
     return false;
   expectations_.push(std::make_pair(request_matcher, response));
   return true;
@@ -81,9 +90,9 @@ int URLRequestPostInterceptor::GetHitCount() const {
   return hit_count_;
 }
 
-int URLRequestPostInterceptor::GetMissCount() const {
+int URLRequestPostInterceptor::GetCount() const {
   base::AutoLock auto_lock(interceptor_lock_);
-  return requests_.size() - hit_count_;
+  return static_cast<int>(requests_.size());
 }
 
 std::vector<std::string>
@@ -104,6 +113,13 @@ std::string URLRequestPostInterceptor::GetRequestsAsString() const {
   }
 
   return s;
+}
+
+void URLRequestPostInterceptor::Reset() {
+  base::AutoLock auto_lock(interceptor_lock_);
+  hit_count_ = 0;
+  requests_.clear();
+  ClearExpectations();
 }
 
 
@@ -180,13 +196,12 @@ class URLRequestPostInterceptor::Delegate
       const URLRequestPostInterceptor::Expectation& expectation(
           interceptor->expectations_.front());
       if (expectation.first->Match(request_body)) {
+        const std::string response(expectation.second);
         delete expectation.first;
         interceptor->expectations_.pop();
         ++interceptor->hit_count_;
 
-        return new URLRequestMockJob(request,
-                                     network_delegate,
-                                     expectation.second);
+        return new URLRequestMockJob(request, network_delegate, response);
       }
     }
 
@@ -222,11 +237,11 @@ URLRequestPostInterceptorFactory::~URLRequestPostInterceptorFactory() {
 }
 
 URLRequestPostInterceptor* URLRequestPostInterceptorFactory::CreateInterceptor(
-    const std::string& file_path) {
+    const base::FilePath& filepath) {
   const GURL base_url(base::StringPrintf("%s://%s",
                                          scheme_.c_str(),
                                          hostname_.c_str()));
-  GURL absolute_url(base_url.Resolve(file_path));
+  GURL absolute_url(base_url.Resolve(filepath.MaybeAsASCII()));
   URLRequestPostInterceptor* interceptor(
       new URLRequestPostInterceptor(absolute_url));
   bool res = BrowserThread::PostTask(

@@ -11,9 +11,12 @@
 #include <utility>
 #include <vector>
 #include "base/basictypes.h"
-#include "base/path_service.h"
 #include "base/synchronization/lock.h"
 #include "url/gurl.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace net {
 class URLRequest;
@@ -45,21 +48,23 @@ class URLRequestPostInterceptor {
   // |request_matcher| object. Returns |true| if the expectation was set.
   bool ExpectRequest(class RequestMatcher* request_matcher);
   bool ExpectRequest(class RequestMatcher* request_matcher,
-                     const std::string& filepath);
+                     const base::FilePath& filepath);
 
   // Returns how many requests have been intercepted and matched by
   // an expectation. One expectation can only be matched by one request.
   int GetHitCount() const;
 
-  // Returns how many requests have been intercepted but not matched by
-  // any expectation.
-  int GetMissCount() const;
+  // Returns how many requests in total have been captured by the interceptor.
+  int GetCount() const;
 
   // Returns all requests that have been intercepted, matched or not.
   std::vector<std::string> GetRequests() const;
 
   // Returns all requests as a string for debugging purposes.
   std::string GetRequestsAsString() const;
+
+  // Resets the state of the interceptor so that new expectations can be set.
+  void Reset();
 
   class Delegate;
 
@@ -70,11 +75,11 @@ class URLRequestPostInterceptor {
   explicit URLRequestPostInterceptor(const GURL& url);
   ~URLRequestPostInterceptor();
 
+  void ClearExpectations();
   const GURL url_;
 
   mutable base::Lock interceptor_lock_;
   mutable int hit_count_;
-  mutable int miss_count_;
   mutable std::vector<std::string> requests_;
   mutable std::queue<Expectation> expectations_;
 
@@ -90,7 +95,7 @@ class URLRequestPostInterceptorFactory {
   // Creates an interceptor object for the specified url path. Returns NULL
   // in case of errors or a valid interceptor object otherwise. The caller
   // does not own the returned object.
-  URLRequestPostInterceptor* CreateInterceptor(const std::string& file_path);
+  URLRequestPostInterceptor* CreateInterceptor(const base::FilePath& filepath);
 
  private:
   const std::string scheme_;
