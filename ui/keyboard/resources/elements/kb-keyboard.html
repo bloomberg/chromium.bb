@@ -593,7 +593,7 @@
           case '.':
           case '?':
           case '!':
-            enterUpperOnSpace = true;
+            enterUpperOnSpace = this.shouldUpperOnSpace();
             break;
           default:
             break;
@@ -620,6 +620,17 @@
           if (this.lastPressedKey)
             this.lastPressedKey.classList.remove('active');
         }
+      },
+
+      /**
+       * Whether we should transit to upper case when seeing a space after
+       * punctuation.
+       * @return {boolean}
+       */
+      shouldUpperOnSpace: function() {
+        // TODO(rsadam): Add other input types in which we should not
+        // transition to upper after a space.
+        return this.inputTypeValue != 'password';
       },
 
       /**
@@ -731,7 +742,7 @@
        * @type {string}
        */
       get inputTypeValue() {
-        return inputType;
+        return this.inputType;
       },
 
       /**
