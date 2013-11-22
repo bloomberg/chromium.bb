@@ -46,6 +46,14 @@ class AppListPositioner {
                     const gfx::Size& window_size,
                     int min_distance_from_edge);
 
+  // Subtracts a rectangle from the display's work area. This can be used to
+  // ensure that the app list does not overlap the shelf, even in situations
+  // where the shelf is considered part of the work area.
+  void WorkAreaSubtract(const gfx::Rect& rect);
+
+  // Shrinks the display's work area by the given amount on each side.
+  void WorkAreaInset(int left, int top, int right, int bottom);
+
   // Finds the position for a window to anchor it to a corner of the screen.
   // |corner| specifies which corner to anchor the window to. Returns the
   // intended coordinates for the center of the window. This should only be used
@@ -54,21 +62,18 @@ class AppListPositioner {
   gfx::Point GetAnchorPointForScreenCorner(ScreenCorner corner) const;
 
   // Finds the position for a window to anchor it to the corner of the shelf.
-  // The window will be aligned to the left of screen for horizontal shelves,
-  // or to the top for vertical shelves. |shelf_edge| and |shelf_rect|
-  // specify the location of the shelf. |shelf_edge| must not be
-  // SCREEN_EDGE_UNKNOWN. Returns the intended coordinates for the center of the
-  // window.
-  gfx::Point GetAnchorPointForShelfCorner(ScreenEdge shelf_edge,
-                                          const gfx::Rect shelf_rect) const;
+  // The window will be aligned to the left of the work area for horizontal
+  // shelves, or to the top for vertical shelves. |shelf_edge| specifies the
+  // location of the shelf. |shelf_edge| must not be SCREEN_EDGE_UNKNOWN.
+  // Returns the intended coordinates for the center of the window.
+  gfx::Point GetAnchorPointForShelfCorner(ScreenEdge shelf_edge) const;
 
   // Finds the position for a window to anchor it to the shelf at a point
-  // closest to the user's mouse cursor. |shelf_edge| and |shelf_rect|
-  // specify the location of the shelf; |cursor| specifies the location of the
-  // user's mouse cursor. |shelf_edge| must not be SCREEN_EDGE_UNKNOWN.
-  // Returns the intended coordinates for the center of the window.
+  // closest to the user's mouse cursor. |shelf_edge| specifies the location of
+  // the shelf; |cursor| specifies the location of the user's mouse cursor.
+  // |shelf_edge| must not be SCREEN_EDGE_UNKNOWN. Returns the intended
+  // coordinates for the center of the window.
   gfx::Point GetAnchorPointForShelfCursor(ScreenEdge shelf_edge,
-                                          const gfx::Rect shelf_rect,
                                           const gfx::Point& cursor) const;
 
   // Determines which edge of the screen the shelf is attached to. Returns
@@ -81,18 +86,14 @@ class AppListPositioner {
   // shelves, this is the horizontal distance. If the cursor is inside the
   // shelf, returns 0.
   int GetCursorDistanceFromShelf(ScreenEdge shelf_edge,
-                                 const gfx::Rect& shelf_rect,
                                  const gfx::Point& cursor) const;
 
  private:
   // Ensures that an anchor point will result in a window that is fully within
-  // the work area, and does not overlap the shelf. If the shelf area is not
-  // known, pass an empty rectangle for |shelf_rect|. Returns the updated
-  // anchor point.
-  gfx::Point ClampAnchorPoint(const gfx::Rect shelf_rect,
-                              gfx::Point anchor) const;
+  // the work area. Returns the updated anchor point.
+  gfx::Point ClampAnchorPoint(gfx::Point anchor) const;
 
-  const gfx::Display display_;
+  gfx::Display display_;
 
   // Size of the App List.
   gfx::Size window_size_;

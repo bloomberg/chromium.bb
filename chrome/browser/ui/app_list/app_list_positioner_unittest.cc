@@ -38,47 +38,37 @@ const int kWindowAwayFromEdge = 158;
 
 class AppListPositionerUnitTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
-    display_.set_bounds(gfx::Rect(0, 0, kScreenWidth, kScreenHeight));
-    display_.set_work_area(gfx::Rect(0, 0, kScreenWidth, kScreenHeight));
+  void ResetPositioner() {
     gfx::Size view_size(kWindowWidth, kWindowHeight);
     positioner_.reset(
         new AppListPositioner(display_, view_size, kMinDistanceFromEdge));
-    cursor_ = gfx::Point();
-    shelf_rect_ = gfx::Rect();
   }
 
-  void SetShelfRect(int x, int y, int width, int height) {
-    shelf_rect_ = gfx::Rect(x, y, width, height);
+  virtual void SetUp() OVERRIDE {
+    display_.set_bounds(gfx::Rect(0, 0, kScreenWidth, kScreenHeight));
+    display_.set_work_area(gfx::Rect(0, 0, kScreenWidth, kScreenHeight));
+    ResetPositioner();
+    cursor_ = gfx::Point();
   }
 
   // Sets up the test environment with the shelf along a given edge of the work
   // area.
   void PlaceShelf(AppListPositioner::ScreenEdge edge) {
-    const gfx::Rect& work_area = display_.work_area();
+    ResetPositioner();
     switch (edge) {
       case AppListPositioner::SCREEN_EDGE_UNKNOWN:
-        shelf_rect_ = gfx::Rect();
         break;
       case AppListPositioner::SCREEN_EDGE_LEFT:
-        shelf_rect_ = gfx::Rect(
-            work_area.x(), work_area.y(), kShelfSize, work_area.height());
+        positioner_->WorkAreaInset(kShelfSize, 0, 0, 0);
         break;
       case AppListPositioner::SCREEN_EDGE_RIGHT:
-        shelf_rect_ = gfx::Rect(work_area.x() + work_area.width() - kShelfSize,
-                                work_area.y(),
-                                kShelfSize,
-                                work_area.height());
+        positioner_->WorkAreaInset(0, 0, kShelfSize, 0);
         break;
       case AppListPositioner::SCREEN_EDGE_TOP:
-        shelf_rect_ = gfx::Rect(
-            work_area.x(), work_area.y(), work_area.width(), kShelfSize);
+        positioner_->WorkAreaInset(0, kShelfSize, 0, 0);
         break;
       case AppListPositioner::SCREEN_EDGE_BOTTOM:
-        shelf_rect_ = gfx::Rect(work_area.x(),
-                                work_area.y() + work_area.height() - kShelfSize,
-                                work_area.width(),
-                                kShelfSize);
+        positioner_->WorkAreaInset(0, 0, 0, kShelfSize);
         break;
     }
   }
@@ -95,30 +85,28 @@ class AppListPositionerUnitTest : public testing::Test {
 
   gfx::Point DoGetAnchorPointForShelfCorner(
       AppListPositioner::ScreenEdge shelf_edge) const {
-    return positioner_->GetAnchorPointForShelfCorner(shelf_edge, shelf_rect_);
+    return positioner_->GetAnchorPointForShelfCorner(shelf_edge);
   }
 
   gfx::Point DoGetAnchorPointForShelfCursor(
       AppListPositioner::ScreenEdge shelf_edge) const {
-    return positioner_->GetAnchorPointForShelfCursor(
-        shelf_edge, shelf_rect_, cursor_);
+    return positioner_->GetAnchorPointForShelfCursor(shelf_edge, cursor_);
   }
 
-  AppListPositioner::ScreenEdge DoGetShelfEdge() const {
-    return positioner_->GetShelfEdge(shelf_rect_);
+  AppListPositioner::ScreenEdge DoGetShelfEdge(
+      const gfx::Rect& shelf_rect) const {
+    return positioner_->GetShelfEdge(shelf_rect);
   }
 
-  int DoGetCursorDistanceFromShelf(AppListPositioner::ScreenEdge shelf_edge)
-      const {
-    return positioner_->GetCursorDistanceFromShelf(
-        shelf_edge, shelf_rect_, cursor_);
+  int DoGetCursorDistanceFromShelf(
+      AppListPositioner::ScreenEdge shelf_edge) const {
+    return positioner_->GetCursorDistanceFromShelf(shelf_edge, cursor_);
   }
 
  private:
   gfx::Display display_;
   scoped_ptr<AppListPositioner> positioner_;
   gfx::Point cursor_;
-  gfx::Rect shelf_rect_;
 };
 
 TEST_F(AppListPositionerUnitTest, ScreenCorner) {
@@ -238,31 +226,34 @@ TEST_F(AppListPositionerUnitTest, ShelfCursor) {
 }
 
 TEST_F(AppListPositionerUnitTest, GetShelfEdge) {
+  gfx::Rect shelf_rect;
   // Shelf on left.
-  PlaceShelf(AppListPositioner::SCREEN_EDGE_LEFT);
-  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_LEFT, DoGetShelfEdge());
+  shelf_rect = gfx::Rect(0, 0, kShelfSize, kScreenHeight);
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_LEFT, DoGetShelfEdge(shelf_rect));
 
   // Shelf on right.
-  PlaceShelf(AppListPositioner::SCREEN_EDGE_RIGHT);
-  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_RIGHT, DoGetShelfEdge());
+  shelf_rect =
+      gfx::Rect(kScreenWidth - kShelfSize, 0, kShelfSize, kScreenHeight);
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_RIGHT, DoGetShelfEdge(shelf_rect));
 
   // Shelf on top.
-  PlaceShelf(AppListPositioner::SCREEN_EDGE_TOP);
-  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_TOP, DoGetShelfEdge());
+  shelf_rect = gfx::Rect(0, 0, kScreenWidth, kShelfSize);
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_TOP, DoGetShelfEdge(shelf_rect));
 
   // Shelf on bottom.
-  PlaceShelf(AppListPositioner::SCREEN_EDGE_BOTTOM);
-  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_BOTTOM, DoGetShelfEdge());
+  shelf_rect =
+      gfx::Rect(0, kScreenHeight - kShelfSize, kScreenWidth, kShelfSize);
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_BOTTOM, DoGetShelfEdge(shelf_rect));
 
   // A couple of inconclusive cases, which should return unknown.
-  SetShelfRect(0, 0, 0, 0);
-  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_UNKNOWN, DoGetShelfEdge());
-  SetShelfRect(-10, 0, kScreenWidth, kShelfSize);
-  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_UNKNOWN, DoGetShelfEdge());
-  SetShelfRect(10, 0, kScreenWidth - 20, kShelfSize);
-  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_UNKNOWN, DoGetShelfEdge());
-  SetShelfRect(0, kShelfSize, kScreenWidth, 60);
-  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_UNKNOWN, DoGetShelfEdge());
+  shelf_rect = gfx::Rect();
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_UNKNOWN, DoGetShelfEdge(shelf_rect));
+  shelf_rect = gfx::Rect(-10, 0, kScreenWidth, kShelfSize);
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_UNKNOWN, DoGetShelfEdge(shelf_rect));
+  shelf_rect = gfx::Rect(10, 0, kScreenWidth - 20, kShelfSize);
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_UNKNOWN, DoGetShelfEdge(shelf_rect));
+  shelf_rect = gfx::Rect(0, kShelfSize, kScreenWidth, 60);
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_UNKNOWN, DoGetShelfEdge(shelf_rect));
 }
 
 TEST_F(AppListPositionerUnitTest, GetCursorDistanceFromShelf) {

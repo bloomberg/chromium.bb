@@ -17,6 +17,21 @@ AppListPositioner::AppListPositioner(const gfx::Display& display,
       window_size_(window_size),
       min_distance_from_edge_(min_distance_from_edge) {}
 
+void AppListPositioner::WorkAreaSubtract(const gfx::Rect& rect) {
+  gfx::Rect work_area = display_.work_area();
+  work_area.Subtract(rect);
+  display_.set_work_area(work_area);
+}
+
+void AppListPositioner::WorkAreaInset(int left,
+                                      int top,
+                                      int right,
+                                      int bottom) {
+  gfx::Rect work_area = display_.work_area();
+  work_area.Inset(left, top, right, bottom);
+  display_.set_work_area(work_area);
+}
+
 gfx::Point AppListPositioner::GetAnchorPointForScreenCorner(
     ScreenCorner corner) const {
   const gfx::Rect& screen_rect = display_.bounds();
@@ -38,57 +53,57 @@ gfx::Point AppListPositioner::GetAnchorPointForScreenCorner(
       NOTREACHED();
       anchor = gfx::Point();
   }
-  return ClampAnchorPoint(gfx::Rect(), anchor);
+  return ClampAnchorPoint(anchor);
 }
 
 gfx::Point AppListPositioner::GetAnchorPointForShelfCorner(
-    ScreenEdge shelf_edge,
-    const gfx::Rect shelf_rect) const {
+    ScreenEdge shelf_edge) const {
   const gfx::Rect& screen_rect = display_.bounds();
+  const gfx::Rect& work_area = display_.work_area();
   gfx::Point anchor;
   switch (shelf_edge) {
     case SCREEN_EDGE_LEFT:
-      anchor = gfx::Point(shelf_rect.right(), screen_rect.y());
+      anchor = gfx::Point(work_area.x(), screen_rect.y());
       break;
     case SCREEN_EDGE_RIGHT:
-      anchor = gfx::Point(shelf_rect.x(), screen_rect.y());
+      anchor = gfx::Point(work_area.right(), screen_rect.y());
       break;
     case SCREEN_EDGE_TOP:
-      anchor = gfx::Point(screen_rect.x(), shelf_rect.bottom());
+      anchor = gfx::Point(screen_rect.x(), work_area.y());
       break;
     case SCREEN_EDGE_BOTTOM:
-      anchor = gfx::Point(screen_rect.x(), shelf_rect.y());
+      anchor = gfx::Point(screen_rect.x(), work_area.bottom());
       break;
     default:
       NOTREACHED();
       anchor = gfx::Point();
   }
-  return ClampAnchorPoint(shelf_rect, anchor);
+  return ClampAnchorPoint(anchor);
 }
 
 gfx::Point AppListPositioner::GetAnchorPointForShelfCursor(
     ScreenEdge shelf_edge,
-    const gfx::Rect shelf_rect,
     const gfx::Point& cursor) const {
+  const gfx::Rect& work_area = display_.work_area();
   gfx::Point anchor;
   switch (shelf_edge) {
     case SCREEN_EDGE_LEFT:
-      anchor = gfx::Point(shelf_rect.right(), cursor.y());
+      anchor = gfx::Point(work_area.x(), cursor.y());
       break;
     case SCREEN_EDGE_RIGHT:
-      anchor = gfx::Point(shelf_rect.x(), cursor.y());
+      anchor = gfx::Point(work_area.right(), cursor.y());
       break;
     case SCREEN_EDGE_TOP:
-      anchor = gfx::Point(cursor.x(), shelf_rect.bottom());
+      anchor = gfx::Point(cursor.x(), work_area.y());
       break;
     case SCREEN_EDGE_BOTTOM:
-      anchor = gfx::Point(cursor.x(), shelf_rect.y());
+      anchor = gfx::Point(cursor.x(), work_area.bottom());
       break;
     default:
       NOTREACHED();
       anchor = gfx::Point();
   }
-  return ClampAnchorPoint(shelf_rect, anchor);
+  return ClampAnchorPoint(anchor);
 }
 
 AppListPositioner::ScreenEdge AppListPositioner::GetShelfEdge(
@@ -124,32 +139,27 @@ AppListPositioner::ScreenEdge AppListPositioner::GetShelfEdge(
 
 int AppListPositioner::GetCursorDistanceFromShelf(
     ScreenEdge shelf_edge,
-    const gfx::Rect& shelf_rect,
     const gfx::Point& cursor) const {
+  const gfx::Rect& work_area = display_.work_area();
   switch (shelf_edge) {
     case SCREEN_EDGE_UNKNOWN:
       return 0;
     case SCREEN_EDGE_LEFT:
-      return std::max(0, cursor.x() - shelf_rect.right());
+      return std::max(0, cursor.x() - work_area.x());
     case SCREEN_EDGE_RIGHT:
-      return std::max(0, shelf_rect.x() - cursor.x());
+      return std::max(0, work_area.right() - cursor.x());
     case SCREEN_EDGE_TOP:
-      return std::max(0, cursor.y() - shelf_rect.bottom());
+      return std::max(0, cursor.y() - work_area.y());
     case SCREEN_EDGE_BOTTOM:
-      return std::max(0, shelf_rect.y() - cursor.y());
+      return std::max(0, work_area.bottom() - cursor.y());
     default:
       NOTREACHED();
       return 0;
   }
 }
 
-gfx::Point AppListPositioner::ClampAnchorPoint(const gfx::Rect shelf_rect,
-                                               gfx::Point anchor) const {
-  // Always subtract the shelf area since work_area() will not subtract it
-  // if the shelf is set to auto-hide, and the window should never overlap
-  // the shelf.
+gfx::Point AppListPositioner::ClampAnchorPoint(gfx::Point anchor) const {
   gfx::Rect bounds_rect(display_.work_area());
-  bounds_rect.Subtract(shelf_rect);
 
   // Anchor the center of the window in a region that prevents the window
   // showing outside of the work area.

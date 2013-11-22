@@ -56,6 +56,11 @@ gfx::Point AppListWin::FindAnchorPoint(const gfx::Size view_size,
                                        const gfx::Rect& taskbar_rect) {
   AppListPositioner positioner(display, view_size, kMinDistanceFromEdge);
 
+  // Subtract the taskbar area since the display's default work_area will not
+  // subtract it if the taskbar is set to auto-hide, and the app list should
+  // never overlap the taskbar.
+  positioner.WorkAreaSubtract(taskbar_rect);
+
   // Find which edge of the screen the taskbar is attached to.
   AppListPositioner::ScreenEdge edge = positioner.GetShelfEdge(taskbar_rect);
 
@@ -66,11 +71,11 @@ gfx::Point AppListWin::FindAnchorPoint(const gfx::Size view_size,
     // If we can't find the taskbar, snap to the bottom left.
     return positioner.GetAnchorPointForScreenCorner(
         AppListPositioner::SCREEN_CORNER_BOTTOM_LEFT);
-  } else if (positioner.GetCursorDistanceFromShelf(edge, taskbar_rect, cursor) >
+  } else if (positioner.GetCursorDistanceFromShelf(edge, cursor) >
              kSnapDistance) {
-    return positioner.GetAnchorPointForShelfCorner(edge, taskbar_rect);
+    return positioner.GetAnchorPointForShelfCorner(edge);
   } else {
-    return positioner.GetAnchorPointForShelfCursor(edge, taskbar_rect, cursor);
+    return positioner.GetAnchorPointForShelfCursor(edge, cursor);
   }
 }
 
