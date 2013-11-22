@@ -67,6 +67,8 @@ TEST(MimeUtilTest, LookupTypes) {
   EXPECT_TRUE(IsSupportedImageMimeType("image/jpeg"));
   EXPECT_FALSE(IsSupportedImageMimeType("image/lolcat"));
   EXPECT_TRUE(IsSupportedNonImageMimeType("text/html"));
+  EXPECT_TRUE(IsSupportedNonImageMimeType("text/css"));
+  EXPECT_TRUE(IsSupportedNonImageMimeType("text/"));
   EXPECT_TRUE(IsSupportedNonImageMimeType("text/banana"));
   EXPECT_FALSE(IsSupportedNonImageMimeType("text/vcard"));
   EXPECT_FALSE(IsSupportedNonImageMimeType("application/virus"));
