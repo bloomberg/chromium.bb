@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/compiler_specific.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/password_autofill_manager.h"
+#include "components/autofill/core/browser/test_autofill_driver.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // The name of the username/password element in the form.
@@ -15,11 +18,23 @@ const char kPasswordName[] = "password";
 const char kAliceUsername[] = "alice";
 const char kAlicePassword[] = "password";
 
+namespace {
+
+class MockAutofillDriver : public autofill::TestAutofillDriver {
+ public:
+  MockAutofillDriver() : autofill::TestAutofillDriver(NULL) {}
+  MOCK_METHOD1(RendererShouldAcceptPasswordAutofillSuggestion,
+               void(const base::string16&));
+};
+
+}  // namespace
+
 namespace autofill {
 
 class PasswordAutofillManagerTest : public testing::Test {
  protected:
-  PasswordAutofillManagerTest() : password_autofill_manager_(NULL) {}
+  PasswordAutofillManagerTest() :
+      password_autofill_manager_(&autofill_driver_) {}
 
   virtual void SetUp() OVERRIDE {
     // Add a preferred login and an additional login to the FillData.
@@ -39,6 +54,10 @@ class PasswordAutofillManagerTest : public testing::Test {
                                                       fill_data_);
   }
 
+  MockAutofillDriver* autofill_driver() {
+    return &autofill_driver_;
+  }
+
   PasswordAutofillManager* password_autofill_manager() {
     return &password_autofill_manager_;
   }
@@ -49,12 +68,23 @@ class PasswordAutofillManagerTest : public testing::Test {
   PasswordFormFillData fill_data_;
   FormFieldData username_field_;
 
+  // The TestAutofillDriver uses a SequencedWorkerPool which expects the
+  // existence of a MessageLoop.
+  base::MessageLoop message_loop_;
+  MockAutofillDriver autofill_driver_;
   PasswordAutofillManager password_autofill_manager_;
 };
 
 TEST_F(PasswordAutofillManagerTest, DidAcceptAutofillSuggestion) {
+  EXPECT_CALL(*autofill_driver(),
+      RendererShouldAcceptPasswordAutofillSuggestion(
+          ASCIIToUTF16(kAliceUsername)));
   EXPECT_TRUE(password_autofill_manager()->DidAcceptAutofillSuggestion(
       username_field(), ASCIIToUTF16(kAliceUsername)));
+
+  EXPECT_CALL(*autofill_driver(),
+      RendererShouldAcceptPasswordAutofillSuggestion(
+          ASCIIToUTF16(kInvalidUsername))).Times(0);
   EXPECT_FALSE(password_autofill_manager()->DidAcceptAutofillSuggestion(
       username_field(), ASCIIToUTF16(kInvalidUsername)));
 

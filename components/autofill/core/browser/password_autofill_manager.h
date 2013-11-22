@@ -16,22 +16,20 @@
 
 #include "components/autofill/core/common/password_form_fill_data.h"
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 namespace autofill {
+
+class AutofillDriver;
 
 // This class is responsible for filling password forms.
 class PasswordAutofillManager {
  public:
-  explicit PasswordAutofillManager(content::WebContents* web_contents);
+  explicit PasswordAutofillManager(AutofillDriver* autofill_driver);
   virtual ~PasswordAutofillManager();
 
-  // Fills the password associated with user name |value|. Returns true if the
-  // username and password fields were filled, false otherwise.
+  // Fills the password associated with user name |username|. Returns true if
+  // the username and password fields were filled, false otherwise.
   bool DidAcceptAutofillSuggestion(const FormFieldData& field,
-                                   const base::string16& value);
+                                   const base::string16& username);
 
   // Invoked when a password mapping is added.
   void AddPasswordFormMapping(
@@ -62,10 +60,9 @@ class PasswordAutofillManager {
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;
 
-  // We only need the RenderViewHost pointer in WebContents, but if we attempt
-  // to just store RenderViewHost on creation, it becomes invalid once we start
-  // using it. By having the WebContents we can always get a valid pointer.
-  content::WebContents* web_contents_;  // Weak reference.
+  // Provides driver-level context to the shared code of the component. Must
+  // outlive |this|.
+  AutofillDriver* const autofill_driver_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillManager);
 };

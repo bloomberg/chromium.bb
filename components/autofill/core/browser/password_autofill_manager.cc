@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/logging.h"
+#include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/password_autofill_manager.h"
-#include "components/autofill/core/common/autofill_messages.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace autofill {
@@ -14,7 +13,8 @@ namespace autofill {
 // PasswordAutofillManager, public:
 
 PasswordAutofillManager::PasswordAutofillManager(
-    content::WebContents* web_contents) : web_contents_(web_contents) {
+    AutofillDriver* autofill_driver) : autofill_driver_(autofill_driver) {
+  DCHECK(autofill_driver);
 }
 
 PasswordAutofillManager::~PasswordAutofillManager() {
@@ -22,19 +22,13 @@ PasswordAutofillManager::~PasswordAutofillManager() {
 
 bool PasswordAutofillManager::DidAcceptAutofillSuggestion(
     const FormFieldData& field,
-    const base::string16& value) {
+    const base::string16& username) {
   PasswordFormFillData password;
   if (!FindLoginInfo(field, &password))
     return false;
 
-  if (WillFillUserNameAndPassword(value, password)) {
-    if (web_contents_) {
-      content::RenderViewHost* render_view_host =
-          web_contents_->GetRenderViewHost();
-      render_view_host->Send(new AutofillMsg_AcceptPasswordAutofillSuggestion(
-          render_view_host->GetRoutingID(),
-          value));
-    }
+  if (WillFillUserNameAndPassword(username, password)) {
+    autofill_driver_->RendererShouldAcceptPasswordAutofillSuggestion(username);
     return true;
   }
 

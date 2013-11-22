@@ -34,10 +34,9 @@ class AutofillManager;
 class AutofillExternalDelegate
     : public AutofillPopupDelegate {
  public:
-  // Creates an AutofillExternalDelegate for the specified contents,
-  // AutofillManager, and AutofillDriver.
-  AutofillExternalDelegate(content::WebContents* web_contents,
-                           AutofillManager* autofill_manager,
+  // Creates an AutofillExternalDelegate for the specified AutofillManager and
+  // AutofillDriver.
+  AutofillExternalDelegate(AutofillManager* autofill_manager,
                            AutofillDriver* autofill_driver);
   virtual ~AutofillExternalDelegate();
 

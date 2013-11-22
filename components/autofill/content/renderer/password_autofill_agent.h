@@ -38,10 +38,10 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   bool TextFieldHandlingKeyDown(const blink::WebInputElement& element,
                                 const blink::WebKeyboardEvent& event);
 
-  // Fills the password associated with user name |value|. Returns true if the
-  // username and password fields were filled, false otherwise.
+  // Fills the password associated with user name |username|. Returns true if
+  // the username and password fields were filled, false otherwise.
   bool DidAcceptAutofillSuggestion(const blink::WebNode& node,
-                                   const blink::WebString& value);
+                                   const blink::WebString& username);
   // A no-op.  Password forms are not previewed, so they do not need to be
   // cleared when the selection changes.  However, this method returns
   // true when |node| is fillable by password Autofill.

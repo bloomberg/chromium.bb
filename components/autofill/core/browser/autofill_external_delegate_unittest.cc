@@ -109,7 +109,6 @@ class AutofillExternalDelegateUnitTest
                                 &manager_delegate_));
     external_delegate_.reset(
         new AutofillExternalDelegate(
-            web_contents(),
             autofill_manager_.get(), autofill_driver_.get()));
   }
 

@@ -142,6 +142,11 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
       case AutofillMsg_AcceptDataListSuggestion::ID:
         AutofillMsg_AcceptDataListSuggestion::Read(message, &autofill_param);
         break;
+    case AutofillMsg_AcceptPasswordAutofillSuggestion::ID:
+        AutofillMsg_AcceptPasswordAutofillSuggestion::Read(
+            message,
+            &autofill_param);
+        break;
       default:
         NOTREACHED();
     }
@@ -252,6 +257,16 @@ TEST_F(AutofillDriverImplTest, AcceptDataListSuggestion) {
   driver_->RendererShouldAcceptDataListSuggestion(input_value);
   EXPECT_TRUE(GetString16FromMessageWithID(
       AutofillMsg_AcceptDataListSuggestion::ID,
+      &output_value));
+  EXPECT_EQ(input_value, output_value);
+}
+
+TEST_F(AutofillDriverImplTest, AcceptPasswordAutofillSuggestion) {
+  base::string16 input_value(ASCIIToUTF16("barbaz"));
+  base::string16 output_value;
+  driver_->RendererShouldAcceptPasswordAutofillSuggestion(input_value);
+  EXPECT_TRUE(GetString16FromMessageWithID(
+      AutofillMsg_AcceptPasswordAutofillSuggestion::ID,
       &output_value));
   EXPECT_EQ(input_value, output_value);
 }

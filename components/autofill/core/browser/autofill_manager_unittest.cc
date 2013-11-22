@@ -542,8 +542,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   explicit TestAutofillExternalDelegate(content::WebContents* web_contents,
                                         AutofillManager* autofill_manager,
                                         AutofillDriver* autofill_driver)
-      : AutofillExternalDelegate(web_contents, autofill_manager,
-                                 autofill_driver),
+      : AutofillExternalDelegate(autofill_manager, autofill_driver),
         on_query_seen_(false),
         on_suggestions_returned_seen_(false) {}
   virtual ~TestAutofillExternalDelegate() {}

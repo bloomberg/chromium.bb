@@ -295,7 +295,6 @@ void AutofillMetricsTest::SetUp() {
       autofill_driver_.get(), manager_delegate, personal_data_.get()));
 
   external_delegate_.reset(new AutofillExternalDelegate(
-      web_contents(),
       autofill_manager_.get(),
       autofill_driver_.get()));
   autofill_manager_->SetExternalDelegate(external_delegate_.get());

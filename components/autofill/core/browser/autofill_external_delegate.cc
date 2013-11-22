@@ -8,7 +8,6 @@
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "content/public/browser/web_contents.h"
 #include "grit/component_strings.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -18,12 +17,11 @@ using blink::WebAutofillClient;
 namespace autofill {
 
 AutofillExternalDelegate::AutofillExternalDelegate(
-    content::WebContents* web_contents,
     AutofillManager* autofill_manager,
     AutofillDriver* autofill_driver)
     : autofill_manager_(autofill_manager),
       autofill_driver_(autofill_driver),
-      password_autofill_manager_(web_contents),
+      password_autofill_manager_(autofill_driver),
       autofill_query_id_(0),
       display_warning_if_disabled_(false),
       has_autofill_suggestion_(false),

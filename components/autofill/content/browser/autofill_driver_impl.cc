@@ -61,7 +61,7 @@ AutofillDriverImpl::AutofillDriverImpl(
     : content::WebContentsObserver(web_contents),
       autofill_manager_(new AutofillManager(
           this, delegate, app_locale, enable_download_manager)),
-      autofill_external_delegate_(web_contents, autofill_manager_.get(), this) {
+      autofill_external_delegate_(autofill_manager_.get(), this) {
   autofill_manager_->SetExternalDelegate(&autofill_external_delegate_);
 }
 
@@ -137,6 +137,16 @@ void AutofillDriverImpl::RendererShouldAcceptDataListSuggestion(
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   host->Send(new AutofillMsg_AcceptDataListSuggestion(host->GetRoutingID(),
                                                       value));
+}
+
+void AutofillDriverImpl::RendererShouldAcceptPasswordAutofillSuggestion(
+    const base::string16& username) {
+  if (!RendererIsAvailable())
+    return;
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(
+      new AutofillMsg_AcceptPasswordAutofillSuggestion(host->GetRoutingID(),
+                                                       username));
 }
 
 void AutofillDriverImpl::RendererShouldClearFilledForm() {

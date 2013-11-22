@@ -461,13 +461,13 @@ void AutofillAgent::OnAcceptDataListSuggestion(const base::string16& value) {
 }
 
 void AutofillAgent::OnAcceptPasswordAutofillSuggestion(
-    const base::string16& value) {
+    const base::string16& username) {
   // We need to make sure this is handled here because the browser process
   // skipped it handling because it believed it would be handled here. If it
   // isn't handled here then the browser logic needs to be updated.
   bool handled = password_autofill_agent_->DidAcceptAutofillSuggestion(
       element_,
-      value);
+      username);
   DCHECK(handled);
 }
 

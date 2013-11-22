@@ -55,6 +55,8 @@ class AutofillDriverImpl : public AutofillDriver,
       const std::vector<FormStructure*>& forms) OVERRIDE;
   virtual void RendererShouldAcceptDataListSuggestion(
       const base::string16& value) OVERRIDE;
+  virtual void RendererShouldAcceptPasswordAutofillSuggestion(
+      const base::string16& username) OVERRIDE;
   virtual void RendererShouldClearFilledForm() OVERRIDE;
   virtual void RendererShouldClearPreviewedForm() OVERRIDE;
   virtual void RendererShouldSetNodeText(const base::string16& value) OVERRIDE;

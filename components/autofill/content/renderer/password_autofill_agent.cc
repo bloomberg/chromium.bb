@@ -290,15 +290,15 @@ bool PasswordAutofillAgent::TextFieldHandlingKeyDown(
 
 bool PasswordAutofillAgent::DidAcceptAutofillSuggestion(
     const blink::WebNode& node,
-    const blink::WebString& value) {
+    const blink::WebString& username) {
   blink::WebInputElement input;
   PasswordInfo password;
   if (!FindLoginInfo(node, &input, &password))
     return false;
 
-  // Set the incoming |value| in the text field and |FillUserNameAndPassword|
+  // Set the incoming |username| in the text field and |FillUserNameAndPassword|
   // will do the rest.
-  input.setValue(value, true);
+  input.setValue(username, true);
   return FillUserNameAndPassword(&input, &password.password_field,
                                  password.fill_data,
                                  true /* exact_username_match */,

@@ -35,11 +35,9 @@ namespace {
 
 class MockAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
-  MockAutofillExternalDelegate(content::WebContents* web_contents,
-                               AutofillManager* autofill_manager,
+  MockAutofillExternalDelegate(AutofillManager* autofill_manager,
                                AutofillDriver* autofill_driver)
-      : AutofillExternalDelegate(web_contents, autofill_manager,
-                                 autofill_driver) {}
+      : AutofillExternalDelegate(autofill_manager, autofill_driver) {}
   virtual ~MockAutofillExternalDelegate() {}
 
   virtual void DidSelectSuggestion(int identifier) OVERRIDE {}
@@ -141,7 +139,6 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
         AutofillDriverImpl::FromWebContents(web_contents());
     external_delegate_.reset(
         new NiceMock<MockAutofillExternalDelegate>(
-            web_contents(),
             driver->autofill_manager(),
             driver));
 
@@ -431,8 +428,7 @@ TEST_F(AutofillPopupControllerUnitTest, PopupsWithOnlyDataLists) {
 TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
   AutofillDriverImpl* driver =
       AutofillDriverImpl::FromWebContents(web_contents());
-  MockAutofillExternalDelegate delegate(
-      web_contents(), driver->autofill_manager(), driver);
+  MockAutofillExternalDelegate delegate(driver->autofill_manager(), driver);
 
   WeakPtr<AutofillPopupControllerImpl> controller =
       AutofillPopupControllerImpl::GetOrCreate(
@@ -594,7 +590,7 @@ TEST_F(AutofillPopupControllerUnitTest, GrowPopupInSpace) {
     AutofillDriverImpl* driver =
         AutofillDriverImpl::FromWebContents(web_contents());
     NiceMock<MockAutofillExternalDelegate> external_delegate(
-        web_contents(), driver->autofill_manager(), driver);
+        driver->autofill_manager(), driver);
     TestAutofillPopupController* autofill_popup_controller =
         new TestAutofillPopupController(external_delegate.GetWeakPtr(),
                                         element_bounds[i]);

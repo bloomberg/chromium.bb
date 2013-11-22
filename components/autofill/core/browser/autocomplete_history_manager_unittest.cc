@@ -29,7 +29,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 
-using content::WebContents;
 using testing::_;
 
 namespace autofill {
@@ -182,11 +181,9 @@ namespace {
 
 class MockAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
-  MockAutofillExternalDelegate(content::WebContents* web_contents,
-                               AutofillManager* autofill_manager,
+  MockAutofillExternalDelegate(AutofillManager* autofill_manager,
                                AutofillDriver* autofill_driver)
-      : AutofillExternalDelegate(web_contents, autofill_manager,
-                                 autofill_driver) {}
+      : AutofillExternalDelegate(autofill_manager, autofill_driver) {}
   virtual ~MockAutofillExternalDelegate() {}
 
   MOCK_METHOD5(OnSuggestionsReturned,
@@ -225,8 +222,7 @@ TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
       "en-US",
       AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER));
 
-  MockAutofillExternalDelegate external_delegate(web_contents(),
-                                                 autofill_manager.get(),
+  MockAutofillExternalDelegate external_delegate(autofill_manager.get(),
                                                  autofill_driver_.get());
   autocomplete_history_manager.SetExternalDelegate(&external_delegate);
 
