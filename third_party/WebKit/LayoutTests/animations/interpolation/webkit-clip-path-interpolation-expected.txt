@@ -10,9 +10,9 @@ PASS: -webkit-clip-path from [circle(25px, 75px, 10px)] to [circle(50px, 50px, 5
 PASS: -webkit-clip-path from [circle(25px, 75px, 10px)] to [circle(50px, 50px, 50px)] was [circle(40px, 60px, 34px)] at 0.6
 PASS: -webkit-clip-path from [circle(25px, 75px, 10px)] to [circle(50px, 50px, 50px)] was [circle(50px, 50px, 50px)] at 1
 PASS: -webkit-clip-path from [circle(25px, 75px, 10px)] to [circle(50px, 50px, 50px)] was [circle(62.5px, 37.5px, 70px)] at 1.5
-FAIL: -webkit-clip-path from [none] to [circle(1px, 2px, 3px)] was [circle(1px, 2px, 3px)] at -0.3, expected [none]
-FAIL: -webkit-clip-path from [none] to [circle(1px, 2px, 3px)] was [circle(1px, 2px, 3px)] at 0, expected [none]
-FAIL: -webkit-clip-path from [none] to [circle(1px, 2px, 3px)] was [circle(1px, 2px, 3px)] at 0.3, expected [none]
+PASS: -webkit-clip-path from [none] to [circle(1px, 2px, 3px)] was [none] at -0.3
+PASS: -webkit-clip-path from [none] to [circle(1px, 2px, 3px)] was [none] at 0
+PASS: -webkit-clip-path from [none] to [circle(1px, 2px, 3px)] was [none] at 0.3
 PASS: -webkit-clip-path from [none] to [circle(1px, 2px, 3px)] was [circle(1px, 2px, 3px)] at 0.6
 PASS: -webkit-clip-path from [none] to [circle(1px, 2px, 3px)] was [circle(1px, 2px, 3px)] at 1
 PASS: -webkit-clip-path from [none] to [circle(1px, 2px, 3px)] was [circle(1px, 2px, 3px)] at 1.5

@@ -13,8 +13,8 @@ PASS: Start of animation for element 'both_iterating': Saw something close to 20
 PASS: Start of animation for element 'both_iterating_reverse': Saw something close to 300
 PASS: End of animation for element 'none': Saw something close to 100
 PASS: End of animation for element 'backwards': Saw something close to 100
-FAIL: End of animation for element 'forwards': Expected 240 but saw 300
-FAIL: End of animation for element 'both': Expected 240 but saw 300
-FAIL: End of animation for element 'both_iterating': Expected 240 but saw 300
-FAIL: End of animation for element 'both_iterating_reverse': Expected 260 but saw 300
+PASS: End of animation for element 'forwards': Saw something close to 240
+PASS: End of animation for element 'both': Saw something close to 240
+PASS: End of animation for element 'both_iterating': Saw something close to 240
+PASS: End of animation for element 'both_iterating_reverse': Saw something close to 260
 

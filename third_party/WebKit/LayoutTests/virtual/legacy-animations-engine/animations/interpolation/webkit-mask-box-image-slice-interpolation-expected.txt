@@ -1,0 +1,14 @@
+FAIL: -webkit-mask-box-image-slice from [0%] to [50%] was [-15% fill] at -0.3, expected [0%]
+FAIL: -webkit-mask-box-image-slice from [0%] to [50%] was [0% fill] at 0, expected [0%]
+FAIL: -webkit-mask-box-image-slice from [0%] to [50%] was [20% fill] at 0.4, expected [20%]
+FAIL: -webkit-mask-box-image-slice from [0%] to [50%] was [30% fill] at 0.6, expected [30%]
+FAIL: -webkit-mask-box-image-slice from [0%] to [50%] was [50% fill] at 1, expected [50%]
+FAIL: -webkit-mask-box-image-slice from [0%] to [50%] was [75% fill] at 1.5, expected [75%]
+FAIL: -webkit-mask-box-image-slice from [0%] to [50%] was [500% fill] at 10, expected [500%]
+FAIL: -webkit-mask-box-image-slice from [0%] to [50% fill] was [-15% fill] at -0.3, expected [0%]
+FAIL: -webkit-mask-box-image-slice from [0%] to [50% fill] was [0% fill] at 0, expected [0%]
+FAIL: -webkit-mask-box-image-slice from [0%] to [50% fill] was [20% fill] at 0.4, expected [0%]
+FAIL: -webkit-mask-box-image-slice from [0%] to [50% fill] was [30% fill] at 0.6, expected [50% fill]
+PASS: -webkit-mask-box-image-slice from [0%] to [50% fill] was [50% fill] at 1
+FAIL: -webkit-mask-box-image-slice from [0%] to [50% fill] was [75% fill] at 1.5, expected [50% fill]
+

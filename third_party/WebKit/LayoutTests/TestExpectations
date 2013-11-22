@@ -20,6 +20,8 @@ crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pas
 
 crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
 
+crbug.com/258896 virtual/threaded/animations/keyframe-multiple-timing-functions-transform.html [ NeedsRebaseline ]
+
 # -----------------------------------------------------------------
 # Inspector tests
 # -----------------------------------------------------------------
@@ -48,20 +50,19 @@ crbug.com/321606 plugins/layout-in-beforeload-listener-affects-plugin-loading.ht
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
-crbug.com/305070 [ Debug ] animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash Pass ]
+crbug.com/305070 [ Debug ] virtual/legacy-animations-engine/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash Pass ]
 crbug.com/305070 [ Debug ] virtual/threaded/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash Pass ]
 
-crbug.com/298211 virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
-crbug.com/321460 virtual/web-animations-css/animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
+crbug.com/298211 animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
+crbug.com/321460 animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
 
-crbug.com/309963 animations/play-state-initially-paused.html [ Timeout ]
-crbug.com/309963 animations/play-state-initially-paused-start-event.html [ Timeout ]
-crbug.com/309963 virtual/threaded/animations/play-state-initially-paused.html [ Timeout ]
-crbug.com/309963 virtual/threaded/animations/play-state-initially-paused-start-event.html [ Timeout ]
-crbug.com/321841 virtual/web-animations-css/animations/play-state-initially-paused.html [ Pass Failure ]
+crbug.com/309963 virtual/legacy-animations-engine/animations/play-state-initially-paused.html [ Timeout ]
+crbug.com/309963 virtual/legacy-animations-engine/animations/play-state-initially-paused-start-event.html [ Timeout ]
+crbug.com/321841 animations/play-state-initially-paused.html [ Pass Failure ]
+crbug.com/321841 virtual/threaded/animations/play-state-initially-paused.html [ Pass Failure ]
 
 # This has flaky output so can't be rebaselined.
-crbug.com/258896 animations/transition-and-animation-3.html [ Failure ]
+crbug.com/258896 virtual/legacy-animations-engine/animations/transition-and-animation-3.html [ Failure ]
 
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
@@ -201,6 +202,13 @@ crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ ImageOnlyFailure Pass ]
 crbug.com/318980 [ Linux ] editing/input/reveal-caret-of-multiline-input.html [ ImageOnlyFailure Pass ]
 
+crbug.com/322272 virtual/threaded/transitions/3d/interrupted-transition.html [ Crash ]
+crbug.com/322272 virtual/threaded/transitions/remove-accelerated-transition.html [ Timeout ]
+crbug.com/322272 compositing/repaint/opacity-between-absolute.html [ Pass Failure ]
+crbug.com/322272 compositing/repaint/opacity-between-absolute2.html [ Pass Failure ]
+crbug.com/322272 virtual/softwarecompositing/repaint/opacity-between-absolute.html [ Pass Failure ]
+crbug.com/322272 virtual/softwarecompositing/repaint/opacity-between-absolute2.html [ Pass Failure ]
+
 # Tests that have new baselines but are probably still failing on Linux Aura.
 crbug.com/318980 [ Linux ] editing/selection/7152-1.html [ Pass ]
 crbug.com/318980 [ Linux ] editing/selection/linux_selection_color.html [ Pass ]
@@ -249,6 +257,7 @@ crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Pass Failure
 crbug.com/248938 virtual/threaded/animations/delay-start-event.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/display-change-does-not-terminate-animation.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/display-none-terminates-animation.html  [ Pass Failure ]
+crbug.com/248938 virtual/threaded/animations/timing-properties-do-not-update-running-animation.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure ]
@@ -283,7 +292,7 @@ crbug.com/320477 [ Debug ] inspector/debugger/debugger-pause-in-internal.html [ 
 # Switching to content shell failures
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
 crbug.com/235110 [ Mac ] virtual/softwarecompositing [ Skip ]
-crbug.com/243353 animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
+crbug.com/243353 virtual/legacy-animations-engine/animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/243520 [ Mac ] fast/css/font-weight-1.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/243596 [ Win ] inspector-protocol/input/dispatchMouseEvent.html [ Failure ]
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
@@ -394,7 +403,7 @@ crbug.com/307781 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-x
 
 # Flaky timeouts on android
 crbug.com/307777 [ Android ] accessibility/aria-labelledby-on-input.html [ Timeout Pass ]
-crbug.com/307777 [ Android ] animations/animation-shorthand-overriding.html [ Timeout Pass ]
+crbug.com/307777 [ Android ] virtual/legacy-animations-engine/animations/animation-shorthand-overriding.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] compositing/backing/no-backing-foreground-layer.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] compositing/contents-opaque/layer-transform.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] compositing/empty-render-surface-crasher.html [ Timeout Pass ]
@@ -444,7 +453,7 @@ crbug.com/307777 [ Android ] storage/storagequota-query-usage.html [ Failure Tim
 crbug.com/307777 [ Android ] svg/foreignObject/absolute-position-foreign-object-child-crash.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] svg/in-html/svg-assert-failure-percentage.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] tables/hittesting/filltable-levels.html [ Timeout Pass ]
-crbug.com/307777 [ Android ] transitions/transition-transform-translate-calculated-length-crash.html [ Timeout Pass ]
+crbug.com/307777 [ Android ] virtual/legacy-animations-engine/transitions/transition-transform-translate-calculated-length-crash.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] virtual/softwarecompositing/overflow/get-transform-from-non-box-container.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
@@ -476,10 +485,8 @@ crbug.com/304993 fast/regions/auto-size/autoheight-regions-mark.html [ Failure P
 # WebKit Win7 (dbg)
 crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ ImageOnlyFailure Pass ]
 
-crbug.com/303444 animations/interpolation/webkit-column-count-interpolation.html [ Timeout ]
-crbug.com/303444 animations/unsigned-underflow.html [ Timeout ]
-crbug.com/303444 virtual/threaded/animations/interpolation/webkit-column-count-interpolation.html [ Timeout ]
-crbug.com/303444 virtual/threaded/animations/unsigned-underflow.html [ Timeout ]
+crbug.com/303444 virtual/legacy-animations-engine/animations/interpolation/webkit-column-count-interpolation.html [ Timeout ]
+crbug.com/303444 virtual/legacy-animations-engine/animations/unsigned-underflow.html [ Timeout ]
 
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure Pass ]
 crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
@@ -498,9 +505,9 @@ crbug.com/306595 svg/W3C-SVG-1.1-SE/types-dom-03-b.svg [ Pass Timeout ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg [ Pass Timeout ]
 
 crbug.com/308952 [ XP ] inspector/editor/text-editor-reveal-line.html [ Failure ]
-crbug.com/310992 animations/play-state.html [ Pass Failure ]
+crbug.com/310992 virtual/legacy-animations-engine/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
-crbug.com/310992 virtual/web-animations-css/animations/play-state.html [ Pass Failure ]
+crbug.com/310992 animations/play-state.html [ Pass Failure ]
 
 crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/309370 [ Mac ] fast/css/font-face-html-as-svg.html [ Timeout ]
@@ -566,7 +573,7 @@ crbug.com/316460 [ Mac ] svg/as-object/nested-embedded-svg-size-changes.html [ F
 
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]
 
-crbug.com/258896 animations/animation-controller-drt-api.html [ Pass Failure ]
+crbug.com/258896 virtual/legacy-animations-engine/animations/animation-controller-drt-api.html [ Pass Failure ]
 
 crbug.com/318632 webaudio/audiobuffersource-multi-channels.html [ NeedsManualRebaseline ]
 crbug.com/318632 webaudio/test-basic.html [ NeedsManualRebaseline ]

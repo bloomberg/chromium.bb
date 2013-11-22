@@ -1,0 +1,13 @@
+FAIL: -webkit-mask-box-image-outset from [0px] to [50px] was [-15px] at -0.3, expected [0px]
+PASS: -webkit-mask-box-image-outset from [0px] to [50px] was [0px] at 0
+PASS: -webkit-mask-box-image-outset from [0px] to [50px] was [20px] at 0.4
+PASS: -webkit-mask-box-image-outset from [0px] to [50px] was [30px] at 0.6
+PASS: -webkit-mask-box-image-outset from [0px] to [50px] was [50px] at 1
+PASS: -webkit-mask-box-image-outset from [0px] to [50px] was [75px] at 1.5
+FAIL: -webkit-mask-box-image-outset from [0] to [50] was [-14.999999999999996] at -0.3, expected [0]
+PASS: -webkit-mask-box-image-outset from [0] to [50] was [0] at 0
+PASS: -webkit-mask-box-image-outset from [0] to [50] was [20] at 0.4
+PASS: -webkit-mask-box-image-outset from [0] to [50] was [30] at 0.6
+PASS: -webkit-mask-box-image-outset from [0] to [50] was [50] at 1
+PASS: -webkit-mask-box-image-outset from [0] to [50] was [75] at 1.5
+

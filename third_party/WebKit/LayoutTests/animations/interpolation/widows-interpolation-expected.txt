@@ -1,5 +1,5 @@
-FAIL: widows from [10] to [20] was [-20] at -3, expected [1]
-FAIL: widows from [10] to [20] was [-15] at -2.5, expected [1]
+PASS: widows from [10] to [20] was [1] at -3
+PASS: widows from [10] to [20] was [1] at -2.5
 PASS: widows from [10] to [20] was [5] at -0.5
 PASS: widows from [10] to [20] was [10] at 0
 PASS: widows from [10] to [20] was [13] at 0.3
