@@ -207,8 +207,9 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
         }
     }
 
-    // FIXME: If styleResolverUpdateType is still Reconstruct, we could return early here
-    // as destroying the StyleResolver will recalc the whole document anyway?
+    // FIXME: If styleResolverUpdateType is Reconstruct, we should return early here since
+    // we need to recalc the whole document. It's wrong to use StyleInvalidationAnalysis since
+    // it only looks at the addedSheets.
 
     // If we are already parsing the body and so may have significant amount of elements, put some effort into trying to avoid style recalcs.
     if (!document()->body() || document()->hasNodesWithPlaceholderStyle())
