@@ -131,7 +131,7 @@ void FFTFrame::doFFT(const float* data)
     if (m_forwardContext) {
         AudioFloatArray complexFFT(m_FFTSize + 2);
 
-        omxSP_FFTFwd_RToCCS_F32_Sfs(data, complexFFT.data(), m_forwardContext);
+        omxSP_FFTFwd_RToCCS_F32(data, complexFFT.data(), m_forwardContext);
 
         unsigned len = m_FFTSize / 2;
 
@@ -172,7 +172,7 @@ void FFTFrame::doInverseFFT(float* data)
         fftData[m_FFTSize] = imag[0];
         fftData[m_FFTSize + 1] = 0;
 
-        omxSP_FFTInv_CCSToR_F32_Sfs(fftData, data, m_inverseContext);
+        omxSP_FFTInv_CCSToR_F32(fftData, data, m_inverseContext);
     }
 }
 
