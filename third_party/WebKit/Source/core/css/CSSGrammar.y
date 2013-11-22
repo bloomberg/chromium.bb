@@ -528,10 +528,7 @@ rule:
 
 block_rule_body:
     block_rule_list
-  | block_rule_list before_rule error error_location rule_error_recovery {
-        parser->reportError($4, CSSParser::InvalidRuleError);
-        parser->endRule(false);
-    }
+  | block_rule_list block_rule_recovery
     ;
 
 block_rule_list:
@@ -548,10 +545,7 @@ block_rule_list:
 
 region_block_rule_body:
     region_block_rule_list
-  | region_block_rule_list before_rule error error_location rule_error_recovery {
-        parser->reportError($4, CSSParser::InvalidRuleError);
-        parser->endRule(false);
-    }
+  | region_block_rule_list block_rule_recovery
     ;
 
 region_block_rule_list:
@@ -573,6 +567,12 @@ region_block_rule:
     }
   | before_rule invalid_rule {
         $$ = 0;
+        parser->endRule(false);
+    }
+  ;
+
+block_rule_recovery:
+    before_rule invalid_rule_header {
         parser->endRule(false);
     }
   ;
@@ -1887,35 +1887,44 @@ at_rule_end:
   | at_invalid_rule_header_end invalid_block
     ;
 
-invalid_at_rule:
-    keyframes_rule_start at_rule_recovery
-  | before_page_rule PAGE_SYM at_rule_recovery
-  | before_font_face_rule FONT_FACE_SYM at_rule_recovery
-  | before_supports_rule SUPPORTS_SYM error error_location rule_error_recovery at_rule_end {
+regular_invalid_at_rule_header:
+    keyframes_rule_start at_rule_header_recovery
+  | before_page_rule PAGE_SYM at_rule_header_recovery
+  | before_font_face_rule FONT_FACE_SYM at_rule_header_recovery
+  | before_supports_rule SUPPORTS_SYM error error_location rule_error_recovery {
         parser->reportError($4, CSSParser::InvalidSupportsConditionError);
         parser->popSupportsRuleData();
     }
-  | before_viewport_rule VIEWPORT_RULE_SYM at_rule_recovery {
+  | before_viewport_rule VIEWPORT_RULE_SYM at_rule_header_recovery {
         parser->markViewportRuleBodyEnd();
     }
-  | before_filter_rule WEBKIT_FILTER_RULE_SYM at_rule_recovery
-  | media_rule_start maybe_media_list semi_or_eof
-  | import_rule_start string_or_uri maybe_space location_label maybe_media_list invalid_block
-  | import_rule_start at_rule_recovery
-  | NAMESPACE_SYM at_rule_recovery
-  | before_host_rule HOST_SYM at_rule_recovery
-  | before_region_rule WEBKIT_REGION_RULE_SYM at_rule_recovery
-    ;
+  | before_filter_rule WEBKIT_FILTER_RULE_SYM at_rule_header_recovery
+  | import_rule_start at_rule_header_recovery
+  | NAMESPACE_SYM at_rule_header_recovery
+  | before_host_rule HOST_SYM at_rule_header_recovery
+  | before_region_rule WEBKIT_REGION_RULE_SYM at_rule_header_recovery
+  | error_location invalid_at at_rule_header_recovery {
+        parser->resumeErrorLogging();
+        parser->reportError($1, CSSParser::InvalidRuleError);
+    }
+  ;
 
 invalid_rule:
     error error_location rule_error_recovery at_invalid_rule_header_end invalid_block {
         parser->reportError($2, CSSParser::InvalidRuleError);
     }
-  | error_location invalid_at rule_error_recovery at_invalid_rule_header_end at_rule_end {
-        parser->resumeErrorLogging();
-        parser->reportError($1, CSSParser::InvalidRuleError);
+  | regular_invalid_at_rule_header at_invalid_rule_header_end ';'
+  | regular_invalid_at_rule_header at_invalid_rule_header_end invalid_block
+  | media_rule_start maybe_media_list ';'
+  | import_rule_start string_or_uri maybe_space location_label maybe_media_list invalid_block
+    ;
+
+invalid_rule_header:
+    error error_location rule_error_recovery at_invalid_rule_header_end {
+        parser->reportError($2, CSSParser::InvalidRuleError);
     }
-  | invalid_at_rule
+  | regular_invalid_at_rule_header at_invalid_rule_header_end
+  | media_rule_start maybe_media_list
     ;
 
 at_invalid_rule_header_end:

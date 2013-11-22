@@ -131,6 +131,54 @@ Tests error recovery in @-rules.
 <style>@-webkit-region x {@xxx;} #test42{display: none}</style>
 <div id="test42"></div>
 
+<style>@media all {@keyframes} #test43{display: none}</style>
+<div id="test43"></div>
+
+<style>@media all {@page*} #test44{display: none}</style>
+<div id="test44"></div>
+
+<style>@media all {@font-face x (;)} #test45{display: none}</style>
+<div id="test45"></div>
+
+<style>@media all {@supports not (display: none)} #test46{display: none}</style>
+<div id="test46"></div>
+
+<style>@media all {@viewport ?} #test47{display: none}</style>
+<div id="test47"></div>
+
+<style>@media all {x {} @-webkit-filter} #test48{display: none}</style>
+<div id="test48"></div>
+
+<style>@media all {@xxx} #test49{display: none}</style>
+<div id="test49"></div>
+
+<style>@-webkit-region x {@keyframes} #test50{display: none}</style>
+<div id="test50"></div>
+
+<style>@-webkit-region x {@page*} #test51{display: none}</style>
+<div id="test51"></div>
+
+<style>@-webkit-region x {@font-face x(;)} #test52{display: none}</style>
+<div id="test52"></div>
+
+<style>@-webkit-region x {@supports not (display: none)} #test53{display: none}</style>
+<div id="test53"></div>
+
+<style>@-webkit-region x {@viewport ?} #test54{display: none}</style>
+<div id="test54"></div>
+
+<style>@-webkit-region x {x {} @-webkit-filter} #test55{display: none}</style>
+<div id="test55"></div>
+
+<style>@-webkit-region x {@xxx} #test56{display: none}</style>
+<div id="test56"></div>
+
+<style>@media all {@media all} #test57{display: none}</style>
+<div id="test57"></div>
+
+<style>@media all {@media all;} #test58{display: none}</style>
+<div id="test58"></div>
+
 </div>
 
 <script type="text/javascript">
