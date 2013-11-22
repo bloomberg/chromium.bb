@@ -96,16 +96,7 @@ class CONTENT_EXPORT DownloadResourceHandler
   // on the IO thread.
   void CallStartedCB(DownloadItem* item, net::Error error);
 
-  // If the content-length header is not present (or contains something other
-  // than numbers), the incoming content_length is -1 (unknown size).
-  // Set the content length to 0 to indicate unknown size to DownloadManager.
-  void SetContentLength(const int64& content_length);
-
-  void SetContentDisposition(const std::string& content_disposition);
-
   uint32 download_id_;
-  std::string content_disposition_;
-  int64 content_length_;
   // This is read only on the IO thread, but may only
   // be called on the UI thread.
   DownloadUrlParameters::OnStartedCallback started_cb_;
@@ -122,8 +113,6 @@ class CONTENT_EXPORT DownloadResourceHandler
   base::TimeDelta total_pause_time_;
   size_t last_buffer_size_;
   int64 bytes_read_;
-  std::string accept_ranges_;
-  std::string etag_;
 
   int pause_count_;
   bool was_deferred_;

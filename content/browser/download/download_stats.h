@@ -72,13 +72,18 @@ enum DownloadCountTypes {
   // successful invocation of ScanAndSaveDownloadedFile().
   FILE_MISSING_AFTER_SUCCESSFUL_SCAN_COUNT,
 
-  // Count of downloads that supplies a strong ETag and has a 'Accept-Ranges:
-  // bytes' header. These downloads are candidates for partial resumption.
-  STRONG_ETAG_AND_ACCEPTS_RANGES,
+  // (Deprecated) Count of downloads with a strong ETag and specified
+  // 'Accept-Ranges: bytes'.
+  DOWNLOAD_COUNT_UNUSED_15,
 
   // Count of downloads that didn't have a valid WebContents at the time it was
   // interrupted.
   INTERRUPTED_WITHOUT_WEBCONTENTS,
+
+  // Count of downloads that supplies a strong validator (implying byte-wise
+  // equivalence) and has a 'Accept-Ranges: bytes' header. These downloads are
+  // candidates for partial resumption.
+  STRONG_VALIDATOR_AND_ACCEPTS_RANGES,
 
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
@@ -165,10 +170,12 @@ void RecordBandwidth(double actual_bandwidth, double potential_bandwidth);
 void RecordOpen(const base::Time& end, bool first);
 
 // Record whether or not the server accepts ranges, and the download size. Also
-// counts if a strong ETag is supplied. The combination of range request support
-// and ETag indicates downloads that are candidates for partial resumption.
-void RecordAcceptsRanges(const std::string& accepts_ranges, int64 download_len,
-                         const std::string& etag);
+// counts if a strong validator is supplied. The combination of range request
+// support and ETag indicates downloads that are candidates for partial
+// resumption.
+void RecordAcceptsRanges(const std::string& accepts_ranges,
+                         int64 download_len,
+                         bool has_strong_validator);
 
 // Record the number of downloads removed by ClearAll.
 void RecordClearAllSize(int size);

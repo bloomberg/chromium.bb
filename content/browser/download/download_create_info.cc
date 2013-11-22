@@ -11,20 +11,19 @@
 
 namespace content {
 
-DownloadCreateInfo::DownloadCreateInfo(
-    const base::Time& start_time,
-    int64 total_bytes,
-    const net::BoundNetLog& bound_net_log,
-    bool has_user_gesture,
-    PageTransition transition_type)
+DownloadCreateInfo::DownloadCreateInfo(const base::Time& start_time,
+                                       int64 total_bytes,
+                                       const net::BoundNetLog& bound_net_log,
+                                       bool has_user_gesture,
+                                       PageTransition transition_type,
+                                       scoped_ptr<DownloadSaveInfo> save_info)
     : start_time(start_time),
       total_bytes(total_bytes),
       download_id(DownloadItem::kInvalidId),
       has_user_gesture(has_user_gesture),
       transition_type(transition_type),
-      save_info(new DownloadSaveInfo()),
-      request_bound_net_log(bound_net_log) {
-}
+      save_info(save_info.Pass()),
+      request_bound_net_log(bound_net_log) {}
 
 DownloadCreateInfo::DownloadCreateInfo()
     : total_bytes(0),

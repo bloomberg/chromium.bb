@@ -22082,13 +22082,14 @@ other types of suffix sets.
   <int value="7" label="Cancelled"/>
   <int value="8" label="Started"/>
   <int value="9" label="Interrupted"/>
-  <int value="10" label="Calls to AppendDataToFile (Size) (Obsolete)"/>
-  <int value="11" label="Calls to AppendDataToFile (Count) (Obsolete)"/>
+  <int value="10" label="Calls to AppendDataToFile (Size) (Obsolete 8/2013)"/>
+  <int value="11" label="Calls to AppendDataToFile (Count) (Obsolete 8/2013)"/>
   <int value="12" label="Interrupted at End of Download"/>
   <int value="13" label="Attempt to Append to Detached File"/>
   <int value="14" label="File Missing After Successful Scan"/>
-  <int value="15" label="Supports ranges and strong validation"/>
+  <int value="15" label="Supports ranges and strong ETag (Obsolete 11/2013)"/>
   <int value="16" label="No WebContents at interruption"/>
+  <int value="17" label="Supports ranges and strong validation"/>
 </enum>
 
 <enum name="DownloadDatabaseRecordDroppedType" type="int">
