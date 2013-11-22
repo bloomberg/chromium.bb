@@ -149,6 +149,8 @@ struct _drm_intel_bo_gem {
 
 	/**
 	 * Kenel-assigned global name for this object
+         *
+         * List contains both flink named and prime fd'd objects
 	 */
 	unsigned int global_name;
 	drmMMListHead name_list;
@@ -862,10 +864,6 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 		}
 	}
 
-	bo_gem = calloc(1, sizeof(*bo_gem));
-	if (!bo_gem)
-		return NULL;
-
 	VG_CLEAR(open_arg);
 	open_arg.name = handle;
 	ret = drmIoctl(bufmgr_gem->fd,
@@ -874,9 +872,26 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	if (ret != 0) {
 		DBG("Couldn't reference %s handle 0x%08x: %s\n",
 		    name, handle, strerror(errno));
-		free(bo_gem);
 		return NULL;
 	}
+        /* Now see if someone has used a prime handle to get this
+         * object from the kernel before by looking through the list
+         * again for a matching gem_handle
+         */
+	for (list = bufmgr_gem->named.next;
+	     list != &bufmgr_gem->named;
+	     list = list->next) {
+		bo_gem = DRMLISTENTRY(drm_intel_bo_gem, list, name_list);
+		if (bo_gem->gem_handle == open_arg.handle) {
+			drm_intel_gem_bo_reference(&bo_gem->bo);
+			return &bo_gem->bo;
+		}
+	}
+
+	bo_gem = calloc(1, sizeof(*bo_gem));
+	if (!bo_gem)
+		return NULL;
+
 	bo_gem->bo.size = open_arg.size;
 	bo_gem->bo.offset = 0;
 	bo_gem->bo.virtual = NULL;
@@ -2451,8 +2466,25 @@ drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int s
 	uint32_t handle;
 	drm_intel_bo_gem *bo_gem;
 	struct drm_i915_gem_get_tiling get_tiling;
+	drmMMListHead *list;
 
 	ret = drmPrimeFDToHandle(bufmgr_gem->fd, prime_fd, &handle);
+
+	/*
+	 * See if the kernel has already returned this buffer to us. Just as
+	 * for named buffers, we must not create two bo's pointing at the same
+	 * kernel object
+	 */
+	for (list = bufmgr_gem->named.next;
+	     list != &bufmgr_gem->named;
+	     list = list->next) {
+		bo_gem = DRMLISTENTRY(drm_intel_bo_gem, list, name_list);
+		if (bo_gem->gem_handle == handle) {
+			drm_intel_gem_bo_reference(&bo_gem->bo);
+			return &bo_gem->bo;
+		}
+	}
+
 	if (ret) {
 	  fprintf(stderr,"ret is %d %d\n", ret, errno);
 		return NULL;
@@ -2487,8 +2519,8 @@ drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int s
 	bo_gem->has_error = false;
 	bo_gem->reusable = false;
 
-	DRMINITLISTHEAD(&bo_gem->name_list);
 	DRMINITLISTHEAD(&bo_gem->vma_list);
+	DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
 
 	VG_CLEAR(get_tiling);
 	get_tiling.handle = bo_gem->gem_handle;
@@ -2512,6 +2544,9 @@ drm_intel_bo_gem_export_to_prime(drm_intel_bo *bo, int *prime_fd)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+
+        if (DRMLISTEMPTY(&bo_gem->name_list))
+                DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
 
 	if (drmPrimeHandleToFD(bufmgr_gem->fd, bo_gem->gem_handle,
 			       DRM_CLOEXEC, prime_fd) != 0)
@@ -2542,7 +2577,8 @@ drm_intel_gem_bo_flink(drm_intel_bo *bo, uint32_t * name)
 		bo_gem->global_name = flink.name;
 		bo_gem->reusable = false;
 
-		DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
+                if (DRMLISTEMPTY(&bo_gem->name_list))
+                        DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
 	}
 
 	*name = bo_gem->global_name;
