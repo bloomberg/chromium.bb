@@ -37,16 +37,13 @@ public:
     static PassRefPtr<HTMLTableRowElement> create(Document&);
 
     int rowIndex() const;
-    void setRowIndex(int);
 
     int sectionRowIndex() const;
-    void setSectionRowIndex(int);
 
     PassRefPtr<HTMLElement> insertCell(int index, ExceptionState&);
     void deleteCell(int index, ExceptionState&);
 
     PassRefPtr<HTMLCollection> cells();
-    void setCells(HTMLCollection *, ExceptionState&);
 
 private:
     explicit HTMLTableRowElement(Document&);

@@ -26,6 +26,7 @@
 #include "core/html/HTMLTableRowElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLCollection.h"
@@ -117,7 +118,7 @@ PassRefPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionStat
     RefPtr<HTMLCollection> children = cells();
     int numCells = children ? children->length() : 0;
     if (index < -1 || index > numCells) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("insertCell", "HTMLTableRowElement", "The value provided (" + String::number(index) + ") is outside the range [-1, " + String::number(numCells) + "]."));
         return 0;
     }
 
@@ -145,18 +146,13 @@ void HTMLTableRowElement::deleteCell(int index, ExceptionState& exceptionState)
         RefPtr<Node> cell = children->item(index);
         HTMLElement::removeChild(cell.get(), exceptionState);
     } else {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("deleteCell", "HTMLTableRowElement", "The value provided (" + String::number(index) + ") is outside the range [0, " + String::number(numCells) + ")."));
     }
 }
 
 PassRefPtr<HTMLCollection> HTMLTableRowElement::cells()
 {
     return ensureCachedHTMLCollection(TRCells);
-}
-
-void HTMLTableRowElement::setCells(HTMLCollection*, ExceptionState& exceptionState)
-{
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 }
