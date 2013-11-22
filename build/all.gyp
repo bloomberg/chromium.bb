@@ -25,6 +25,7 @@
         '../third_party/libxml/libxml.gyp:*',
         '../third_party/sqlite/sqlite.gyp:*',
         '../third_party/zlib/zlib.gyp:*',
+        '../ui/accessibility/accessibility.gyp:*',
         '../ui/snapshot/snapshot.gyp:*',
         '../ui/ui.gyp:*',
         '../url/url.gyp:*',
