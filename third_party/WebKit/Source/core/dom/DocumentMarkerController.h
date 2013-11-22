@@ -51,11 +51,11 @@ public:
     void addMarker(Range*, DocumentMarker::MarkerType);
     void addMarker(Range*, DocumentMarker::MarkerType, const String& description);
     void addMarker(Range*, DocumentMarker::MarkerType, const String& description, uint32_t hash);
-    void addMarkerToNode(const Node&, unsigned startOffset, unsigned length, DocumentMarker::MarkerType);
-    void addMarkerToNode(const Node&, unsigned startOffset, unsigned length, DocumentMarker::MarkerType, PassRefPtr<DocumentMarkerDetails>);
+    void addMarkerToNode(Node*, unsigned startOffset, unsigned length, DocumentMarker::MarkerType);
+    void addMarkerToNode(Node*, unsigned startOffset, unsigned length, DocumentMarker::MarkerType, PassRefPtr<DocumentMarkerDetails>);
     void addTextMatchMarker(const Range*, bool activeMatch);
 
-    void copyMarkers(const Node& srcNode, unsigned startOffset, int length, const Node& dstNode, int delta);
+    void copyMarkers(Node* srcNode, unsigned startOffset, int length, Node* dstNode, int delta);
     bool hasMarkers(Range*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
 
     // When a marker partially overlaps with range, if removePartiallyOverlappingMarkers is true, we completely
@@ -63,18 +63,18 @@ public:
     // the portion that is outside of the range.
     enum RemovePartiallyOverlappingMarkerOrNot { DoNotRemovePartiallyOverlappingMarker, RemovePartiallyOverlappingMarker };
     void removeMarkers(Range*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers(), RemovePartiallyOverlappingMarkerOrNot = DoNotRemovePartiallyOverlappingMarker);
-    void removeMarkers(const Node&, unsigned startOffset, int length, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers(),  RemovePartiallyOverlappingMarkerOrNot = DoNotRemovePartiallyOverlappingMarker);
+    void removeMarkers(Node*, unsigned startOffset, int length, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers(),  RemovePartiallyOverlappingMarkerOrNot = DoNotRemovePartiallyOverlappingMarker);
 
     void removeMarkers(DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
-    void removeMarkers(const Node&, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
+    void removeMarkers(Node*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
     void repaintMarkers(DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
     void invalidateRenderedRectsForMarkersInRect(const LayoutRect&);
-    void shiftMarkers(const Node&, unsigned startOffset, int delta);
+    void shiftMarkers(Node*, unsigned startOffset, int delta);
     void setMarkersActive(Range*, bool);
-    void setMarkersActive(const Node&, unsigned startOffset, unsigned endOffset, bool);
+    void setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool);
 
     DocumentMarker* markerContainingPoint(const LayoutPoint&, DocumentMarker::MarkerType);
-    Vector<DocumentMarker*> markersFor(const Node&, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
+    Vector<DocumentMarker*> markersFor(Node*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
     Vector<DocumentMarker*> markersInRange(Range*, DocumentMarker::MarkerTypes);
     Vector<DocumentMarker*> markers();
     Vector<IntRect> renderedRectsForMarkers(DocumentMarker::MarkerType);
@@ -84,7 +84,7 @@ public:
 #endif
 
 private:
-    void addMarker(const Node&, const DocumentMarker&);
+    void addMarker(Node*, const DocumentMarker&);
 
     typedef Vector<RenderedDocumentMarker> MarkerList;
     typedef Vector<OwnPtr<MarkerList>, DocumentMarker::MarkerTypeIndexesCount> MarkerLists;
@@ -92,9 +92,6 @@ private:
     void mergeOverlapping(MarkerList*, DocumentMarker&);
     bool possiblyHasMarkers(DocumentMarker::MarkerTypes);
     void removeMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);
-
-    MarkerMap::iterator findMarkerListsFor(const Node&);
-    MarkerLists* markerListsFor(const Node&) const;
 
     MarkerMap m_markers;
     // Provide a quick way to determine whether a particular marker type is absent without going through the map.
