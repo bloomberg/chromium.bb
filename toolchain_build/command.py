@@ -46,7 +46,7 @@ COMMAND_CODE_FILES += [os.path.join(NACL_DIR, 'build', f)
                                  'platform_tools.py', 'repo_tools.py')]
 
 def HashBuildSystemSources():
-"""Read the build source files to use in hashes for Callbacks."""
+  """Read the build source files to use in hashes for Callbacks."""
   global FILE_CONTENTS_HASH
   h = hashlib.sha1()
   for filename in COMMAND_CODE_FILES:
