@@ -17,12 +17,13 @@ function MockVolumeManager() {
 
 /**
  * Returns the corresponding VolumeInfo.
- * @param {string} mountPath Path to be looking for with.
+ * @param {string} path Path to be looking for with.
  * @return {VolumeInfo} Corresponding VolumeInfo.
  */
-MockVolumeManager.prototype.getVolumeInfo = function(mountPath) {
+MockVolumeManager.prototype.getVolumeInfo = function(path) {
   for (var i = 0; i < this.volumeInfoList.length; i++) {
-    if (this.volumeInfoList.item(i).mountPath === mountPath)
+    if (this.volumeInfoList.item(i).mountPath === path ||
+        path.indexOf(this.volumeInfoList.item(i).mountPath) === 0)
       return this.volumeInfoList.item(i);
   }
   return null;
@@ -54,6 +55,7 @@ MockVolumeManager.createMockVolumeInfo = function(type, path) {
   var volumeInfo = new VolumeInfo(
       type,
       path,
+      '', // Volume ID.
       entry,  // Directory entry.
       '',  // error
       '',  // deviceType

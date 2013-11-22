@@ -150,10 +150,7 @@ function NavigationListModel(volumeManager, shortcutListModel) {
   this.shortcutList_ = [];
   for (var i = 0; i < this.shortcutListModel_.length; i++) {
     var shortcutPath = this.shortcutListModel_.item(i);
-    var mountPath = PathUtil.isDriveBasedPath(shortcutPath) ?
-        RootDirectory.DRIVE :
-        PathUtil.getRootPath(shortcutPath);
-    var volumeInfo = this.volumeManager_.getVolumeInfo(mountPath);
+    var volumeInfo = this.volumeManager_.getVolumeInfo(shortcutPath);
     var isMounted = volumeInfo && !volumeInfo.error;
     if (isMounted)
       this.shortcutList_.push(pathToModelItem(shortcutPath));
@@ -216,10 +213,7 @@ function NavigationListModel(volumeManager, shortcutListModel) {
       }
 
       // Check if the volume where the shortcutPath is is mounted or not.
-      var mountPath = PathUtil.isDriveBasedPath(shortcutPath) ?
-          RootDirectory.DRIVE :
-          PathUtil.getRootPath(shortcutPath);
-      var volumeInfo = this.volumeManager_.getVolumeInfo(mountPath);
+      var volumeInfo = this.volumeManager_.getVolumeInfo(shortcutPath);
       var isMounted = volumeInfo && !volumeInfo.error;
       if (cmp == 0) {
         // There exists an old NavigationModelItem instance.
@@ -242,10 +236,7 @@ function NavigationListModel(volumeManager, shortcutListModel) {
     // Add remaining (new) shortcuts if necessary.
     for (; modelIndex < this.shortcutListModel_.length; modelIndex++) {
       var shortcutPath = this.shortcutListModel_.item(modelIndex);
-      var mountPath = PathUtil.isDriveBasedPath(shortcutPath) ?
-          RootDirectory.DRIVE :
-          PathUtil.getRootPath(shortcutPath);
-      var volumeInfo = this.volumeManager_.getVolumeInfo(mountPath);
+      var volumeInfo = this.volumeManager_.getVolumeInfo(shortcutPath);
       var isMounted = volumeInfo && !volumeInfo.error;
       if (isMounted)
         newList.push(pathToModelItem(shortcutPath));

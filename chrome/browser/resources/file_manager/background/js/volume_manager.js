@@ -49,7 +49,7 @@ var volumeManagerUtil = {};
  */
 volumeManagerUtil.validateError = function(error) {
   for (var key in util.VolumeError) {
-    if (error == util.VolumeError[key])
+    if (error === util.VolumeError[key])
       return;
   }
 
@@ -181,10 +181,10 @@ volumeManagerUtil.compareMountPath = function(mountPath1, mountPath2) {
       PathUtil.getRootType(mountPath1));
   var order2 = volumeManagerUtil.volumeListOrder_.indexOf(
       PathUtil.getRootType(mountPath2));
-  if (order1 != order2)
+  if (order1 !== order2)
     return order1 < order2 ? -1 : 1;
 
-  if (mountPath1 != mountPath2)
+  if (mountPath1 !== mountPath2)
     return mountPath1 < mountPath2 ? -1 : 1;
 
   // The path is same.
@@ -236,7 +236,7 @@ VolumeInfoList.prototype.removeEventListener = function(type, handler) {
 VolumeInfoList.prototype.add = function(volumeInfo) {
   var index = this.findLowerBoundIndex_(volumeInfo.mountPath);
   if (index < this.length &&
-      this.item(index).mountPath == volumeInfo.mountPath) {
+      this.item(index).mountPath === volumeInfo.mountPath) {
     // Replace the VolumeInfo.
     this.model_.splice(index, 1, volumeInfo);
   } else {
@@ -252,7 +252,7 @@ VolumeInfoList.prototype.add = function(volumeInfo) {
  */
 VolumeInfoList.prototype.remove = function(mountPath) {
   var index = this.findLowerBoundIndex_(mountPath);
-  if (index < this.length && this.item(index).mountPath == mountPath)
+  if (index < this.length && this.item(index).mountPath === mountPath)
     this.model_.splice(index, 1);
 };
 
@@ -264,10 +264,25 @@ VolumeInfoList.prototype.remove = function(mountPath) {
  */
 VolumeInfoList.prototype.find = function(mountPath) {
   var index = this.findLowerBoundIndex_(mountPath);
-  if (index < this.length && this.item(index).mountPath == mountPath)
+  if (index < this.length && this.item(index).mountPath === mountPath)
     return this.item(index);
 
   // Not found.
+  return null;
+};
+
+/**
+ * Searches the information of the volume that contains an item pointed by the
+ * path.
+ * @param {string} path Path pointing an entry on a volume.
+ * @return {VolumeInfo} The volume's information, or null if not found.
+ */
+VolumeInfoList.prototype.findByPath = function(path) {
+  for (var i = 0; i < this.length; i++) {
+    var mountPath = this.item(i).mountPath;
+    if (path === mountPath || path.indexOf(mountPath + '/') === 0)
+      return this.item(i);
+  }
   return null;
 };
 
@@ -545,9 +560,7 @@ VolumeManager.prototype.unmount = function(mountPath,
 VolumeManager.prototype.resolvePath = function(
     path, successCallback, errorCallback) {
   // Make sure the path is in the mounted volume.
-  var mountPath = PathUtil.isDriveBasedPath(path) ?
-      RootDirectory.DRIVE : PathUtil.getRootPath(path);
-  var volumeInfo = this.getVolumeInfo(mountPath);
+  var volumeInfo = this.getVolumeInfo(path);
   if (!volumeInfo || !volumeInfo.root) {
     errorCallback(util.createFileError(FileError.NOT_FOUND_ERR));
     return;
@@ -558,12 +571,13 @@ VolumeManager.prototype.resolvePath = function(
 };
 
 /**
- * @param {string} mountPath Volume mounted path.
+ * Obtains the information of the volume that containing an entry pointed by the
+ * specified path.
+ * @param {string} path Path pointing an entry on a volume.
  * @return {VolumeInfo} The data about the volume.
  */
-VolumeManager.prototype.getVolumeInfo = function(mountPath) {
-  volumeManagerUtil.validateMountPath(mountPath);
-  return this.volumeInfoList.find(mountPath);
+VolumeManager.prototype.getVolumeInfo = function(path) {
+  return this.volumeInfoList.findByPath(path);
 };
 
 /**
@@ -620,7 +634,7 @@ VolumeManager.prototype.finishRequest_ = function(key, status, opt_mountPath) {
 
 /**
  * @param {Object} request Structure created in |startRequest_|.
- * @param {util.VolumeError|string} status If status == 'success'
+ * @param {util.VolumeError|string} status If status === 'success'
  *     success callbacks are called.
  * @param {string=} opt_mountPath Mount path. Required if success.
  * @private
@@ -632,7 +646,7 @@ VolumeManager.prototype.invokeRequestCallbacks_ = function(request, status,
       callbacks[i].apply(self, args);
     }
   };
-  if (status == 'success') {
+  if (status === 'success') {
     callEach(request.successCallbacks, this, [opt_mountPath]);
   } else {
     volumeManagerUtil.validateError(status);
