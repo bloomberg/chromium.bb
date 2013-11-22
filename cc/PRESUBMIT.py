@@ -12,7 +12,6 @@ import re
 import string
 
 CC_SOURCE_FILES=(r'^cc/.*\.(cc|h)$',)
-CC_PERF_TEST =(r'^.*_perftest.*\.(cc|h)$',)
 
 def CheckChangeLintsClean(input_api, output_api):
   input_api.cpplint._cpplint_state.ResetErrorCounts()  # reset global state
@@ -103,35 +102,6 @@ def CheckStdAbs(input_api, output_api,
         items=missing_std_prefix_files))
   return result
 
-def CheckSpamLogging(input_api,
-                     output_api,
-                     white_list=CC_SOURCE_FILES,
-                     black_list=None):
-  black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
-  source_file_filter = lambda x: input_api.FilterSourceFile(x,
-                                                            white_list,
-                                                            black_list)
-
-  log_info = []
-  printf = []
-
-  for f in input_api.AffectedSourceFiles(source_file_filter):
-    contents = input_api.ReadFile(f, 'rb')
-    if re.search(r"\bD?LOG\s*\(\s*INFO\s*\)", contents):
-      log_info.append(f.LocalPath())
-    if re.search(r"\bf?printf\(", contents):
-      printf.append(f.LocalPath())
-
-  if log_info:
-    return [output_api.PresubmitError(
-      'These files spam the console log with LOG(INFO):',
-      items=log_info)]
-  if printf:
-    return [output_api.PresubmitError(
-      'These files spam the console log with printf/fprintf:',
-      items=printf)]
-  return []
-
 def CheckPassByValue(input_api,
                      output_api,
                      white_list=CC_SOURCE_FILES,
@@ -187,7 +157,6 @@ def CheckChangeOnUpload(input_api, output_api):
   results = []
   results += CheckAsserts(input_api, output_api)
   results += CheckStdAbs(input_api, output_api)
-  results += CheckSpamLogging(input_api, output_api, black_list=CC_PERF_TEST)
   results += CheckPassByValue(input_api, output_api)
   results += CheckChangeLintsClean(input_api, output_api)
   results += CheckTodos(input_api, output_api)

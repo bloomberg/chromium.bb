@@ -827,6 +827,37 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
   return []
 
 
+def _CheckSpamLogging(input_api, output_api):
+  file_inclusion_pattern = r'.+%s' % _IMPLEMENTATION_EXTENSIONS
+  black_list = (_EXCLUDED_PATHS +
+                _TEST_CODE_EXCLUDED_PATHS +
+                input_api.DEFAULT_BLACK_LIST +
+                (r"^base[\\\/]logging\.h$",))
+  source_file_filter = lambda x: input_api.FilterSourceFile(
+      x, white_list=(file_inclusion_pattern,), black_list=black_list)
+
+  log_info = []
+  printf = []
+
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    contents = input_api.ReadFile(f, 'rb')
+    if re.search(r"\bD?LOG\s*\(\s*INFO\s*\)", contents):
+      log_info.append(f.LocalPath())
+    if re.search(r"\bf?printf\(", contents):
+      printf.append(f.LocalPath())
+
+  if log_info:
+    return [output_api.PresubmitError(
+      'These files spam the console log with LOG(INFO):',
+      items=log_info)]
+  if printf:
+    return [output_api.PresubmitError(
+      'These files spam the console log with printf/fprintf:',
+      items=printf)]
+  return []
+
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -857,6 +888,7 @@ def _CommonChecks(input_api, output_api):
           input_api,
           output_api,
           source_file_filter=lambda x: x.LocalPath().endswith('.grd')))
+  results.extend(_CheckSpamLogging(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
