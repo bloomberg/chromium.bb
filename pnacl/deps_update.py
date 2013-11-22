@@ -104,8 +104,9 @@ def Main(args):
   component_name_map = {'llvm': 'LLVM',
                         'clang': 'Clang',
                         'gcc': 'GCC',
-                        'binutils': 'Binutils'}
-  component_name = component_name_map[options.component]
+                        'binutils': 'Binutils',
+                        'libcxx': 'libc++'}
+  component_name = component_name_map.get(options.component, options.component)
   if options.component == 'gcc':
     pnacl_branch = 'origin/pnacl'
     upstream_branches = []
