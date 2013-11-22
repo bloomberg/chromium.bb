@@ -74,6 +74,7 @@ void DistillerImpl::GetDistilledContent() {
 
 void DistillerImpl::OnExecuteJavaScriptDone(const base::Value* value) {
   std::string result;
+  bool fetched_image = false;
   const base::ListValue* result_list = NULL;
   if (!value->GetAsList(&result_list)) {
     DCHECK(proto_);
@@ -99,12 +100,15 @@ void DistillerImpl::OnExecuteJavaScriptDone(const base::Value* value) {
         int image_number = i - 2;
         std::string image_id = base::StringPrintf("%d", image_number);
         FetchImage(image_id, item);
+        fetched_image = true;
     }
   }
+  if (!fetched_image)
+    distillation_cb_.Run(proto_.Pass());
 }
 
 void DistillerImpl::FetchImage(const std::string& image_id,
-                           const std::string& item) {
+                               const std::string& item) {
   DistillerURLFetcher* fetcher =
       distiller_url_fetcher_factory_.CreateDistillerURLFetcher();
   image_fetchers_[image_id] = fetcher;
@@ -114,14 +118,15 @@ void DistillerImpl::FetchImage(const std::string& image_id,
 }
 
 void DistillerImpl::OnFetchImageDone(const std::string& id,
-                                 const std::string& response) {
+                                     const std::string& response) {
   DCHECK(proto_);
   DistilledPageProto_Image* image = proto_->add_image();
   image->set_name(id);
   image->set_data(response);
   DCHECK(image_fetchers_.end() != image_fetchers_.find(id));
-  delete image_fetchers_[id];
+  DistillerURLFetcher* fetcher = image_fetchers_[id];
   int result = image_fetchers_.erase(id);
+  delete fetcher;
   DCHECK_EQ(1, result);
   if (image_fetchers_.empty()) {
     distillation_cb_.Run(proto_.Pass());
