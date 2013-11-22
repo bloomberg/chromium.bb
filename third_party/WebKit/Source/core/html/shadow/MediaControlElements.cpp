@@ -735,29 +735,7 @@ void MediaControlTextTrackContainerElement::updateDisplay()
         if (!cue->track() || !cue->track()->isRendered() || !cue->isActive())
             continue;
 
-        RefPtr<TextTrackCueBox> displayBox = cue->getDisplayTree(m_videoDisplaySize.size());
-        VTTRegion* region = 0;
-        if (cue->track()->regions())
-            region = cue->track()->regions()->getRegionById(cue->regionId());
-
-        if (!region) {
-            // If cue has an empty text track cue region identifier or there is no
-            // WebVTT region whose region identifier is identical to cue's text
-            // track cue region identifier, run the following substeps:
-            if (displayBox->hasChildNodes() && !contains(displayBox.get()))
-                // Note: the display tree of a cue is removed when the active flag of the cue is unset.
-                appendChild(displayBox);
-        } else {
-            // Let region be the WebVTT region whose region identifier
-            // matches the text track cue region identifier of cue.
-            RefPtr<HTMLDivElement> regionNode = region->getDisplayTree(document());
-
-            // Append the region to the viewport, if it was not already.
-            if (!contains(regionNode.get()))
-                appendChild(regionNode);
-
-            region->appendTextTrackCueBox(displayBox);
-        }
+        cue->updateDisplay(m_videoDisplaySize.size(), *this);
     }
 
     // 11. Return output.

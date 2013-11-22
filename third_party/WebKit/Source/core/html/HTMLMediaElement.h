@@ -32,6 +32,7 @@
 #include "core/html/MediaControllerInterface.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TextTrackCue.h"
+#include "core/html/track/vtt/VTTCue.h"
 #include "platform/PODIntervalTree.h"
 #include "platform/graphics/media/MediaPlayer.h"
 #include "public/platform/WebMimeRegistry.h"
@@ -581,7 +582,7 @@ template <>
 struct ValueToString<TextTrackCue*> {
     static String string(TextTrackCue* const& cue)
     {
-        return String::format("%p id=%s interval=%f-->%f cue=%s)", cue, cue->id().utf8().data(), cue->startTime(), cue->endTime(), cue->text().utf8().data());
+        return cue->toString();
     }
 };
 #endif

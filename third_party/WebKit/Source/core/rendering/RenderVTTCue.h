@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderTextTrackCue_h
-#define RenderTextTrackCue_h
+#ifndef RenderVTTCue_h
+#define RenderVTTCue_h
 
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderInline.h"
@@ -32,11 +32,12 @@
 
 namespace WebCore {
 
-class TextTrackCueBox;
+class VTTCue;
+class VTTCueBox;
 
-class RenderTextTrackCue FINAL : public RenderBlockFlow {
+class RenderVTTCue FINAL : public RenderBlockFlow {
 public:
-    explicit RenderTextTrackCue(TextTrackCueBox*);
+    explicit RenderVTTCue(VTTCueBox*);
 
 private:
     virtual void layout() OVERRIDE;
@@ -55,10 +56,10 @@ private:
     void repositionCueSnapToLinesSet();
     void repositionCueSnapToLinesNotSet();
 
-    TextTrackCue* m_cue;
+    VTTCue* m_cue;
     FloatPoint m_fallbackPosition;
 };
 
 } // namespace WebCore
 
-#endif // RenderTextTrackCue_h
+#endif // RenderVTTCue_h

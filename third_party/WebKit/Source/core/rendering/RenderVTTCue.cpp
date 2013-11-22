@@ -24,21 +24,21 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderTextTrackCue.h"
+#include "core/rendering/RenderVTTCue.h"
 
-#include "core/html/track/TextTrackCue.h"
+#include "core/html/track/vtt/VTTCue.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {
 
-RenderTextTrackCue::RenderTextTrackCue(TextTrackCueBox* element)
+RenderVTTCue::RenderVTTCue(VTTCueBox* element)
     : RenderBlockFlow(element)
     , m_cue(element->getCue())
 {
 }
 
-void RenderTextTrackCue::layout()
+void RenderVTTCue::layout()
 {
     LayoutRectRecorder recorder(*this);
     RenderBlockFlow::layout();
@@ -60,7 +60,7 @@ void RenderTextTrackCue::layout()
     statePusher.pop();
 }
 
-bool RenderTextTrackCue::findFirstLineBox(InlineFlowBox*& firstLineBox)
+bool RenderVTTCue::findFirstLineBox(InlineFlowBox*& firstLineBox)
 {
     if (firstChild()->isRenderInline())
         firstLineBox = toRenderInline(firstChild())->firstLineBox();
@@ -70,7 +70,7 @@ bool RenderTextTrackCue::findFirstLineBox(InlineFlowBox*& firstLineBox)
     return true;
 }
 
-bool RenderTextTrackCue::initializeLayoutParameters(InlineFlowBox* firstLineBox, LayoutUnit& step, LayoutUnit& position)
+bool RenderVTTCue::initializeLayoutParameters(InlineFlowBox* firstLineBox, LayoutUnit& step, LayoutUnit& position)
 {
     ASSERT(firstChild());
 
@@ -78,7 +78,7 @@ bool RenderTextTrackCue::initializeLayoutParameters(InlineFlowBox* firstLineBox,
 
     // 1. Horizontal: Let step be the height of the first line box in boxes.
     //    Vertical: Let step be the width of the first line box in boxes.
-    step = m_cue->getWritingDirection() == TextTrackCue::Horizontal ? firstLineBox->height() : firstLineBox->width();
+    step = m_cue->getWritingDirection() == VTTCue::Horizontal ? firstLineBox->height() : firstLineBox->width();
 
     // 2. If step is zero, then jump to the step labeled done positioning below.
     if (!step)
@@ -88,7 +88,7 @@ bool RenderTextTrackCue::initializeLayoutParameters(InlineFlowBox* firstLineBox,
     int linePosition = m_cue->calculateComputedLinePosition();
 
     // 4. Vertical Growing Left: Add one to line position then negate it.
-    if (m_cue->getWritingDirection() == TextTrackCue::VerticalGrowingLeft)
+    if (m_cue->getWritingDirection() == VTTCue::VerticalGrowingLeft)
         linePosition = -(linePosition + 1);
 
     // 5. Let position be the result of multiplying step and line position.
@@ -96,7 +96,7 @@ bool RenderTextTrackCue::initializeLayoutParameters(InlineFlowBox* firstLineBox,
 
     // 6. Vertical Growing Left: Decrease position by the width of the
     // bounding box of the boxes in boxes, then increase position by step.
-    if (m_cue->getWritingDirection() == TextTrackCue::VerticalGrowingLeft) {
+    if (m_cue->getWritingDirection() == VTTCue::VerticalGrowingLeft) {
         position -= width();
         position += step;
     }
@@ -105,7 +105,7 @@ bool RenderTextTrackCue::initializeLayoutParameters(InlineFlowBox* firstLineBox,
     if (linePosition < 0) {
         // Horizontal / Vertical: ... then increase position by the
         // height / width of the video's rendering area ...
-        position += m_cue->getWritingDirection() == TextTrackCue::Horizontal ? parentBlock->height() : parentBlock->width();
+        position += m_cue->getWritingDirection() == VTTCue::Horizontal ? parentBlock->height() : parentBlock->width();
 
         // ... and negate step.
         step = -step;
@@ -114,15 +114,16 @@ bool RenderTextTrackCue::initializeLayoutParameters(InlineFlowBox* firstLineBox,
     return true;
 }
 
-void RenderTextTrackCue::placeBoxInDefaultPosition(LayoutUnit position, bool& switched)
+void RenderVTTCue::placeBoxInDefaultPosition(LayoutUnit position, bool& switched)
 {
     // 8. Move all boxes in boxes ...
-    if (m_cue->getWritingDirection() == TextTrackCue::Horizontal)
+    if (m_cue->getWritingDirection() == VTTCue::Horizontal) {
         // Horizontal: ... down by the distance given by position
         setY(y() + position);
-    else
+    } else {
         // Vertical: ... right by the distance given by position
         setX(x() + position);
+    }
 
     // 9. Default: Remember the position of all the boxes in boxes as their
     // default position.
@@ -132,12 +133,12 @@ void RenderTextTrackCue::placeBoxInDefaultPosition(LayoutUnit position, bool& sw
     switched = false;
 }
 
-bool RenderTextTrackCue::isOutside() const
+bool RenderVTTCue::isOutside() const
 {
     return !containingBlock()->absoluteBoundingBoxRect().contains(absoluteContentBox());
 }
 
-bool RenderTextTrackCue::isOverlapping() const
+bool RenderVTTCue::isOverlapping() const
 {
     for (RenderObject* box = previousSibling(); box; box = box->previousSibling()) {
         IntRect boxRect = box->absoluteBoundingBoxRect();
@@ -149,7 +150,7 @@ bool RenderTextTrackCue::isOverlapping() const
     return false;
 }
 
-bool RenderTextTrackCue::shouldSwitchDirection(InlineFlowBox* firstLineBox, LayoutUnit step) const
+bool RenderVTTCue::shouldSwitchDirection(InlineFlowBox* firstLineBox, LayoutUnit step) const
 {
     LayoutUnit top = y();
     LayoutUnit left = x();
@@ -162,7 +163,7 @@ bool RenderTextTrackCue::shouldSwitchDirection(InlineFlowBox* firstLineBox, Layo
     // boxes is now below the bottom of the video's rendering area, jump
     // to the step labeled switch direction.
     LayoutUnit parentHeight = containingBlock()->height();
-    if (m_cue->getWritingDirection() == TextTrackCue::Horizontal && ((step < 0 && top < 0) || (step > 0 && bottom > parentHeight)))
+    if (m_cue->getWritingDirection() == VTTCue::Horizontal && ((step < 0 && top < 0) || (step > 0 && bottom > parentHeight)))
         return true;
 
     // 12. Vertical: If step is negative and the left edge of the first line
@@ -171,18 +172,18 @@ bool RenderTextTrackCue::shouldSwitchDirection(InlineFlowBox* firstLineBox, Layo
     // first line box in boxes is now to the right of the right edge of
     // the video's rendering area, jump to the step labeled switch direction.
     LayoutUnit parentWidth = containingBlock()->width();
-    if (m_cue->getWritingDirection() != TextTrackCue::Horizontal && ((step < 0 && left < 0) || (step > 0 && right > parentWidth)))
+    if (m_cue->getWritingDirection() != VTTCue::Horizontal && ((step < 0 && left < 0) || (step > 0 && right > parentWidth)))
         return true;
 
     return false;
 }
 
-void RenderTextTrackCue::moveBoxesByStep(LayoutUnit step)
+void RenderVTTCue::moveBoxesByStep(LayoutUnit step)
 {
     // 13. Horizontal: Move all the boxes in boxes down by the distance
     // given by step. (If step is negative, then this will actually
     // result in an upwards movement of the boxes in absolute terms.)
-    if (m_cue->getWritingDirection() == TextTrackCue::Horizontal)
+    if (m_cue->getWritingDirection() == VTTCue::Horizontal)
         setY(y() + step);
 
     // 13. Vertical: Move all the boxes in boxes right by the distance
@@ -192,7 +193,7 @@ void RenderTextTrackCue::moveBoxesByStep(LayoutUnit step)
         setX(x() + step);
 }
 
-bool RenderTextTrackCue::switchDirection(bool& switched, LayoutUnit& step)
+bool RenderVTTCue::switchDirection(bool& switched, LayoutUnit& step)
 {
     // 15. Switch direction: Move all the boxes in boxes back to their
     // default position as determined in the step above labeled default.
@@ -212,7 +213,7 @@ bool RenderTextTrackCue::switchDirection(bool& switched, LayoutUnit& step)
     return true;
 }
 
-void RenderTextTrackCue::repositionCueSnapToLinesSet()
+void RenderVTTCue::repositionCueSnapToLinesSet()
 {
     InlineFlowBox* firstLineBox;
     LayoutUnit step;
@@ -231,12 +232,13 @@ void RenderTextTrackCue::repositionCueSnapToLinesSet()
     // in output and all the boxes in output are within the video's rendering area
     // then jump to the step labeled done positioning.
     while (isOutside() || isOverlapping()) {
-        if (!shouldSwitchDirection(firstLineBox, step))
+        if (!shouldSwitchDirection(firstLineBox, step)) {
             // 13. Move all the boxes in boxes ...
             // 14. Jump back to the step labeled step loop.
             moveBoxesByStep(step);
-        else if (!switchDirection(switched, step))
+        } else if (!switchDirection(switched, step)) {
             break;
+        }
 
         // 19. Jump back to the step labeled step loop.
     }
@@ -261,7 +263,7 @@ void RenderTextTrackCue::repositionCueSnapToLinesSet()
     }
 }
 
-void RenderTextTrackCue::repositionCueSnapToLinesNotSet()
+void RenderVTTCue::repositionCueSnapToLinesNotSet()
 {
     // FIXME: Implement overlapping detection when snap-to-lines is not set. http://wkb.ug/84296
 }
