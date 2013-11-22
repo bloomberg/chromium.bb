@@ -81,6 +81,10 @@
     [ 'OS == "android" and enable_printing == 0', {
       'sources!': [
         'ext/skia_utils_base.cc',
+      ],
+    }],
+    [ 'enable_printing == 0', {
+      'sources!': [
         'ext/vector_platform_device_skia.cc',
       ],
     }],
