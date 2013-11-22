@@ -32,47 +32,47 @@ TEST_F(CTLogVerifierTest, VerifiesCertSCT) {
   ct::LogEntry cert_entry;
   ct::GetX509CertLogEntry(&cert_entry);
 
-  ct::SignedCertificateTimestamp cert_sct;
+  scoped_refptr<ct::SignedCertificateTimestamp> cert_sct;
   ct::GetX509CertSCT(&cert_sct);
 
-  EXPECT_TRUE(log_->Verify(cert_entry, cert_sct));
+  EXPECT_TRUE(log_->Verify(cert_entry, *cert_sct));
 }
 
 TEST_F(CTLogVerifierTest, VerifiesPrecertSCT) {
   ct::LogEntry precert_entry;
   ct::GetPrecertLogEntry(&precert_entry);
 
-  ct::SignedCertificateTimestamp precert_sct;
+  scoped_refptr<ct::SignedCertificateTimestamp> precert_sct;
   ct::GetPrecertSCT(&precert_sct);
 
-  EXPECT_TRUE(log_->Verify(precert_entry, precert_sct));
+  EXPECT_TRUE(log_->Verify(precert_entry, *precert_sct));
 }
 
 TEST_F(CTLogVerifierTest, FailsInvalidTimestamp) {
   ct::LogEntry cert_entry;
   ct::GetX509CertLogEntry(&cert_entry);
 
-  ct::SignedCertificateTimestamp cert_sct;
+  scoped_refptr<ct::SignedCertificateTimestamp> cert_sct;
   ct::GetX509CertSCT(&cert_sct);
 
   // Mangle the timestamp, so that it should fail signature validation.
-  cert_sct.timestamp = base::Time::Now();
+  cert_sct->timestamp = base::Time::Now();
 
-  EXPECT_FALSE(log_->Verify(cert_entry, cert_sct));
+  EXPECT_FALSE(log_->Verify(cert_entry, *cert_sct));
 }
 
 TEST_F(CTLogVerifierTest, FailsInvalidLogID) {
   ct::LogEntry cert_entry;
   ct::GetX509CertLogEntry(&cert_entry);
 
-  ct::SignedCertificateTimestamp cert_sct;
+  scoped_refptr<ct::SignedCertificateTimestamp> cert_sct;
   ct::GetX509CertSCT(&cert_sct);
 
   // Mangle the log ID, which should cause it to match a different log before
   // attempting signature validation.
-  cert_sct.log_id.assign(cert_sct.log_id.size(), '\0');
+  cert_sct->log_id.assign(cert_sct->log_id.size(), '\0');
 
-  EXPECT_FALSE(log_->Verify(cert_entry, cert_sct));
+  EXPECT_FALSE(log_->Verify(cert_entry, *cert_sct));
 }
 
 }  // namespace net

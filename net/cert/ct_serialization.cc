@@ -317,8 +317,9 @@ bool DecodeSCTList(base::StringPiece* input,
 }
 
 bool DecodeSignedCertificateTimestamp(base::StringPiece* input,
-                                      SignedCertificateTimestamp* output) {
-  SignedCertificateTimestamp result;
+    scoped_refptr<SignedCertificateTimestamp>* output) {
+  scoped_refptr<SignedCertificateTimestamp> result(
+      new SignedCertificateTimestamp());
   unsigned version;
   if (!ReadUint(kVersionLength, input, &version))
     return false;
@@ -327,7 +328,7 @@ bool DecodeSignedCertificateTimestamp(base::StringPiece* input,
     return false;
   }
 
-  result.version = SignedCertificateTimestamp::SCT_VERSION_1;
+  result->version = SignedCertificateTimestamp::SCT_VERSION_1;
   uint64 timestamp;
   base::StringPiece log_id;
   base::StringPiece extensions;
@@ -335,7 +336,7 @@ bool DecodeSignedCertificateTimestamp(base::StringPiece* input,
       !ReadUint(kTimestampLength, input, &timestamp) ||
       !ReadVariableBytes(kExtensionsLengthBytes, input,
                          &extensions) ||
-      !DecodeDigitallySigned(input, &result.signature)) {
+      !DecodeDigitallySigned(input, &result->signature)) {
     return false;
   }
 
@@ -344,13 +345,13 @@ bool DecodeSignedCertificateTimestamp(base::StringPiece* input,
     return false;
   }
 
-  log_id.CopyToString(&result.log_id);
-  extensions.CopyToString(&result.extensions);
-  result.timestamp =
+  log_id.CopyToString(&result->log_id);
+  extensions.CopyToString(&result->extensions);
+  result->timestamp =
       base::Time::UnixEpoch() +
       base::TimeDelta::FromMilliseconds(static_cast<int64>(timestamp));
 
-  *output = result;
+  output->swap(result);
   return true;
 }
 

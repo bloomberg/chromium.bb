@@ -7,9 +7,9 @@
 
 #include <string>
 
-namespace net {
+#include "base/memory/ref_counted.h"
 
-class X509Certificate;
+namespace net {
 
 namespace ct {
 
@@ -42,10 +42,10 @@ std::string GetTestPublicKey();
 std::string GetTestPublicKeyId();
 
 // SCT for the X509Certificate provided above.
-void GetX509CertSCT(SignedCertificateTimestamp* sct);
+void GetX509CertSCT(scoped_refptr<SignedCertificateTimestamp>* sct);
 
 // SCT for the Precertificate log entry provided above.
-void GetPrecertSCT(SignedCertificateTimestamp* sct);
+void GetPrecertSCT(scoped_refptr<SignedCertificateTimestamp>* sct);
 
 // Issuer key hash
 std::string GetDefaultIssuerKeyHash();

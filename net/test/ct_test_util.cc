@@ -133,7 +133,10 @@ std::string GetTestPublicKeyId() {
   return HexToBytes(kTestKeyId);
 }
 
-void GetX509CertSCT(SignedCertificateTimestamp* sct) {
+void GetX509CertSCT(scoped_refptr<SignedCertificateTimestamp>* sct_ref) {
+  CHECK(sct_ref != NULL);
+  *sct_ref = new SignedCertificateTimestamp();
+  SignedCertificateTimestamp *const sct(sct_ref->get());
   sct->log_id = HexToBytes(kTestKeyId);
   // Time the log issued a SCT for this certificate, which is
   // Fri Apr  5 10:04:16.089 2013
@@ -146,7 +149,10 @@ void GetX509CertSCT(SignedCertificateTimestamp* sct) {
   sct->signature.signature_data = HexToBytes(kTestSCTSignatureData);
 }
 
-void GetPrecertSCT(SignedCertificateTimestamp* sct) {
+void GetPrecertSCT(scoped_refptr<SignedCertificateTimestamp>* sct_ref) {
+  CHECK(sct_ref != NULL);
+  *sct_ref = new SignedCertificateTimestamp();
+  SignedCertificateTimestamp *const sct(sct_ref->get());
   sct->log_id = HexToBytes(kTestKeyId);
   // Time the log issued a SCT for this Precertificate, which is
   // Fri Apr  5 10:04:16.275 2013

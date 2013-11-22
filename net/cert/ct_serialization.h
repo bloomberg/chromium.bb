@@ -63,7 +63,7 @@ NET_EXPORT_PRIVATE bool DecodeSCTList(base::StringPiece* input,
 // otherwise.
 NET_EXPORT_PRIVATE bool DecodeSignedCertificateTimestamp(
     base::StringPiece* input,
-    ct::SignedCertificateTimestamp* output);
+    scoped_refptr<ct::SignedCertificateTimestamp>* output);
 
 }  // namespace ct
 

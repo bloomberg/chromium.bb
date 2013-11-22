@@ -36,7 +36,7 @@ class CTObjectsExtractorTest : public ::testing::Test {
   }
 
   void ExtractEmbeddedSCT(scoped_refptr<X509Certificate> cert,
-                          SignedCertificateTimestamp* sct) {
+                          scoped_refptr<SignedCertificateTimestamp>* sct) {
     std::string sct_list;
     EXPECT_TRUE(ExtractEmbeddedSCTList(cert->os_cert_handle(), &sct_list));
 
@@ -57,16 +57,17 @@ class CTObjectsExtractorTest : public ::testing::Test {
 // Test that an SCT can be extracted and the extracted SCT contains the
 // expected data.
 TEST_F(CTObjectsExtractorTest, ExtractEmbeddedSCT) {
-  ct::SignedCertificateTimestamp sct;
+  scoped_refptr<ct::SignedCertificateTimestamp> sct(
+      new ct::SignedCertificateTimestamp());
   ExtractEmbeddedSCT(precert_chain_[0], &sct);
 
-  EXPECT_EQ(sct.version, SignedCertificateTimestamp::SCT_VERSION_1);
-  EXPECT_EQ(ct::GetTestPublicKeyId(), sct.log_id);
+  EXPECT_EQ(sct->version, SignedCertificateTimestamp::SCT_VERSION_1);
+  EXPECT_EQ(ct::GetTestPublicKeyId(), sct->log_id);
 
   base::Time expected_timestamp =
       base::Time::UnixEpoch() +
       base::TimeDelta::FromMilliseconds(1365181456275);
-  EXPECT_EQ(expected_timestamp, sct.timestamp);
+  EXPECT_EQ(expected_timestamp, sct->timestamp);
 }
 
 TEST_F(CTObjectsExtractorTest, ExtractPrecert) {
@@ -97,7 +98,8 @@ TEST_F(CTObjectsExtractorTest, ExtractOrdinaryX509Cert) {
 
 // Test that the embedded SCT verifies
 TEST_F(CTObjectsExtractorTest, ExtractedSCTVerifies) {
-  ct::SignedCertificateTimestamp sct;
+  scoped_refptr<ct::SignedCertificateTimestamp> sct(
+      new ct::SignedCertificateTimestamp());
   ExtractEmbeddedSCT(precert_chain_[0], &sct);
 
   LogEntry entry;
@@ -105,19 +107,20 @@ TEST_F(CTObjectsExtractorTest, ExtractedSCTVerifies) {
                                  precert_chain_[1]->os_cert_handle(),
                                  &entry));
 
-  EXPECT_TRUE(log_->Verify(entry, sct));
+  EXPECT_TRUE(log_->Verify(entry, *sct));
 }
 
 // Test that an externally-provided SCT verifies over the LogEntry
 // of a regular X.509 Certificate
 TEST_F(CTObjectsExtractorTest, ComplementarySCTVerifies) {
-  ct::SignedCertificateTimestamp sct;
+  scoped_refptr<ct::SignedCertificateTimestamp> sct(
+      new ct::SignedCertificateTimestamp());
   GetX509CertSCT(&sct);
 
   LogEntry entry;
   ASSERT_TRUE(GetX509LogEntry(test_cert_->os_cert_handle(), &entry));
 
-  EXPECT_TRUE(log_->Verify(entry, sct));
+  EXPECT_TRUE(log_->Verify(entry, *sct));
 }
 
 }  // namespace ct

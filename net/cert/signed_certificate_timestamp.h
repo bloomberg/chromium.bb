@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_export.h"
@@ -69,7 +70,15 @@ struct NET_EXPORT_PRIVATE DigitallySigned {
 };
 
 // SignedCertificateTimestamp struct in RFC 6962, Section 3.2.
-struct NET_EXPORT SignedCertificateTimestamp {
+struct NET_EXPORT SignedCertificateTimestamp
+    : public base::RefCountedThreadSafe<SignedCertificateTimestamp> {
+  // Predicate functor used in maps when SignedCertificateTimestamp is used as
+  // the key.
+  struct NET_EXPORT LessThan {
+    bool operator()(const scoped_refptr<SignedCertificateTimestamp>& lhs,
+                    const scoped_refptr<SignedCertificateTimestamp>& rhs) const;
+  };
+
   // Version enum in RFC 6962, Section 3.2.
   enum Version {
     SCT_VERSION_1 = 0,
@@ -83,7 +92,6 @@ struct NET_EXPORT SignedCertificateTimestamp {
   };
 
   SignedCertificateTimestamp();
-  ~SignedCertificateTimestamp();
 
   Version version;
   std::string log_id;
@@ -93,6 +101,13 @@ struct NET_EXPORT SignedCertificateTimestamp {
   // The origin should not participate in equality checks
   // as the same SCT can be provided from multiple sources.
   Origin origin;
+
+ private:
+  friend class base::RefCountedThreadSafe<SignedCertificateTimestamp>;
+
+  ~SignedCertificateTimestamp();
+
+  DISALLOW_COPY_AND_ASSIGN(SignedCertificateTimestamp);
 };
 
 }  // namespace ct

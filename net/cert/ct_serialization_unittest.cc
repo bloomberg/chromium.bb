@@ -135,23 +135,23 @@ TEST_F(CtSerializationTest, DecodesSignedCertificateTimestamp) {
   std::string encoded_test_sct(ct::GetTestSignedCertificateTimestamp());
   base::StringPiece encoded_sct(encoded_test_sct);
 
-  ct::SignedCertificateTimestamp sct;
+  scoped_refptr<ct::SignedCertificateTimestamp> sct;
   ASSERT_TRUE(ct::DecodeSignedCertificateTimestamp(&encoded_sct, &sct));
-  EXPECT_EQ(0, sct.version);
-  EXPECT_EQ(ct::GetTestPublicKeyId(), sct.log_id);
+  EXPECT_EQ(0, sct->version);
+  EXPECT_EQ(ct::GetTestPublicKeyId(), sct->log_id);
   base::Time expected_time = base::Time::UnixEpoch() +
       base::TimeDelta::FromMilliseconds(1365181456089);
-  EXPECT_EQ(expected_time, sct.timestamp);
+  EXPECT_EQ(expected_time, sct->timestamp);
   // Subtracting 4 bytes for signature data (hash & sig algs),
   // actual signature data should be 71 bytes.
-  EXPECT_EQ((size_t) 71, sct.signature.signature_data.size());
-  EXPECT_EQ(std::string(""), sct.extensions);
+  EXPECT_EQ((size_t) 71, sct->signature.signature_data.size());
+  EXPECT_EQ(std::string(""), sct->extensions);
 }
 
 TEST_F(CtSerializationTest, FailsDecodingInvalidSignedCertificateTimestamp) {
   // Invalid version
   base::StringPiece invalid_version_sct("\x2\x0", 2);
-  ct::SignedCertificateTimestamp sct;
+  scoped_refptr<ct::SignedCertificateTimestamp> sct;
 
   ASSERT_FALSE(
       ct::DecodeSignedCertificateTimestamp(&invalid_version_sct, &sct));
