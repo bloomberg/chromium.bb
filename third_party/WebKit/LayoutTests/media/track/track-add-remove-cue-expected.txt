@@ -23,6 +23,9 @@ EXPECTED (textCue.position == '50') OK
 EXPECTED (textCue.size == '100') OK
 EXPECTED (textCue.align == 'middle') OK
 
+*** Remove the unadded track, make sure it throws correctly.
+TEST(testTrack.track.removeCue(textCue)) THROWS("NotFoundError: Failed to execute 'removeCue' on 'TextTrack': The specified cue is not listed in the TextTrack's list of cues.") OK
+
 *** Add the new cue to a track, make sure it is inserted correctly.
 RUN(testTrack.track.addCue(textCue))
 EXPECTED (textCue.track == '[object TextTrack]') OK

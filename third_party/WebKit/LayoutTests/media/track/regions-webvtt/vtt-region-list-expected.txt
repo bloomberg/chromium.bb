@@ -38,7 +38,7 @@ EXPECTED (regions.length == '1') OK
 EXPECTED (regions.length == '0') OK
 
 ** In case the region is not found, NotFoundError should be thrown **
-NotFoundError: An attempt was made to reference a Node in a context where it does not exist.
+NotFoundError: Failed to execute 'removeRegion' on 'TextTrack': The specified region is not listed in the TextTrack's list of regions.
 
 END OF TEST
 

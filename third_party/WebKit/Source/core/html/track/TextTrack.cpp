@@ -33,6 +33,8 @@
 #include "core/html/track/TextTrack.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -264,13 +266,13 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
     // 1. If the given cue is not currently listed in the method's TextTrack
     // object's text track's text track list of cues, then throw a NotFoundError exception.
     if (cue->track() != this) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        exceptionState.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeCue", "TextTrack", "The specified cue is not listed in the TextTrack's list of cues."));
         return;
     }
 
     // 2. Remove cue from the method's TextTrack object's text track's text track list of cues.
     if (!m_cues || !m_cues->remove(cue)) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("removeCue", "TextTrack", "Failed to remove the specified cue."));
         return;
     }
 
@@ -338,12 +340,12 @@ void TextTrack::removeRegion(VTTRegion* region, ExceptionState &exceptionState)
     // 1. If the given region is not currently listed in the method's TextTrack
     // object's text track list of regions, then throw a NotFoundError exception.
     if (region->track() != this) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        exceptionState.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeRegion", "TextTrack", "The specified region is not listed in the TextTrack's list of regions."));
         return;
     }
 
     if (!m_regions || !m_regions->remove(region)) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("removeRegion", "TextTrack", "Failed to remove the specified region."));
         return;
     }
 

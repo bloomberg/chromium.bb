@@ -35,6 +35,8 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/events/Event.h"
@@ -112,6 +114,31 @@ static const String& verticalGrowingRightKeyword()
     DEFINE_STATIC_LOCAL(const String, verticallr, ("lr"));
     return verticallr;
 }
+
+static bool isInfiniteOrNonNumber(double value, const char* method, ExceptionState& exceptionState)
+{
+    if (std::isinf(value)) {
+        exceptionState.throwTypeError(ExceptionMessages::failedToSet(method, "TextTrackCue", "The value provided is infinite."));
+        return true;
+    }
+    if (std::isnan(value)) {
+        exceptionState.throwTypeError(ExceptionMessages::failedToSet(method, "TextTrackCue", "The value provided is not a number."));
+        return true;
+    }
+    return false;
+}
+
+static bool isInvalidPercentage(double value, const char* method, ExceptionState& exceptionState)
+{
+    if (isInfiniteOrNonNumber(value, method, exceptionState))
+        return true;
+    if (value < 0 || value > 100) {
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet(method, "TextTrackCue", "The value provided (" + String::number(value) + ") is not between 0 and 100."));
+        return true;
+    }
+    return false;
+}
+
 
 // ----------------------------
 
@@ -275,10 +302,8 @@ void TextTrackCue::setId(const String& id)
 void TextTrackCue::setStartTime(double value, ExceptionState& exceptionState)
 {
     // NaN, Infinity and -Infinity values should trigger a TypeError.
-    if (std::isinf(value) || std::isnan(value)) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+    if (isInfiniteOrNonNumber(value, "startTime", exceptionState))
         return;
-    }
 
     // TODO(93143): Add spec-compliant behavior for negative time values.
     if (m_startTime == value || value < 0)
@@ -292,10 +317,8 @@ void TextTrackCue::setStartTime(double value, ExceptionState& exceptionState)
 void TextTrackCue::setEndTime(double value, ExceptionState& exceptionState)
 {
     // NaN, Infinity and -Infinity values should trigger a TypeError.
-    if (std::isinf(value) || std::isnan(value)) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+    if (isInfiniteOrNonNumber(value, "endTime", exceptionState))
         return;
-    }
 
     // TODO(93143): Add spec-compliant behavior for negative time values.
     if (m_endTime == value || value < 0)
@@ -347,7 +370,7 @@ void TextTrackCue::setVertical(const String& value, ExceptionState& exceptionSta
     else if (value == verticalGrowingRightKeyword())
         direction = VerticalGrowingRight;
     else
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToSet("vertical", "TextTrackCue", "The value provided ('" + value + "') is invalid. Only 'rl', 'lr', and the empty string are accepted."));
 
     if (direction == m_writingDirection)
         return;
@@ -373,7 +396,7 @@ void TextTrackCue::setLine(int position, ExceptionState& exceptionState)
     // On setting, if the text track cue snap-to-lines flag is not set, and the new
     // value is negative or greater than 100, then throw an IndexSizeError exception.
     if (!m_snapToLines && (position < 0 || position > 100)) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("line", "TextTrackCue", "The snap-to-lines flag is not set, and the value provided (" + String::number(position) + ") is not between 0 and 100."));
         return;
     }
 
@@ -392,10 +415,8 @@ void TextTrackCue::setPosition(int position, ExceptionState& exceptionState)
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-position
     // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError exception.
     // Otherwise, set the text track cue text position to the new value.
-    if (position < 0 || position > 100) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+    if (isInvalidPercentage(position, "line", exceptionState))
         return;
-    }
 
     // Otherwise, set the text track cue line position to the new value.
     if (m_textPosition == position)
@@ -411,10 +432,8 @@ void TextTrackCue::setSize(int size, ExceptionState& exceptionState)
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-size
     // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError
     // exception. Otherwise, set the text track cue size to the new value.
-    if (size < 0 || size > 100) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+    if (isInvalidPercentage(size, "line", exceptionState))
         return;
-    }
 
     // Otherwise, set the text track cue line position to the new value.
     if (m_cueSize == size)
@@ -464,7 +483,7 @@ void TextTrackCue::setAlign(const String& value, ExceptionState& exceptionState)
     else if (value == rightKeyword())
         alignment = Right;
     else
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToSet("align", "TextTrackCue", "The value provided ('" + value + "') is invalid. Only 'start', 'middle', 'end', 'left', and 'right' are accepted."));
 
     if (alignment == m_cueAlignment)
         return;
