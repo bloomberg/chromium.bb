@@ -3552,7 +3552,7 @@
               # unspecified what the cwd is when running the compiler,
               # so the normal gyp path-munging fails us.  This hack
               # gets the right path.
-              '-B<(PRODUCT_DIR)/../../third_party/gold',
+              '-B<!(cd <(DEPTH) && pwd -P)/third_party/gold',
             ],
           }],
         ],
