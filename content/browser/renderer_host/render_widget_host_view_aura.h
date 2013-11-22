@@ -550,6 +550,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   BrowserAccessibilityManager* GetOrCreateBrowserAccessibilityManager();
 
+  // Helper function to set keyboard focus to the main window.
+  void SetKeyboardFocus();
+
 #if defined(OS_WIN)
   // Updates the total list of cutout rects, which is the union of transient
   // windows and constrained windows.

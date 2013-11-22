@@ -1460,6 +1460,15 @@ void HWNDMessageHandler::OnKillFocus(HWND focused_window) {
 LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
                                             WPARAM w_param,
                                             LPARAM l_param) {
+#if defined(USE_AURA)
+  // A child window activation should be treated as if we lost activation.
+  POINT cursor_pos = {0};
+  ::GetCursorPos(&cursor_pos);
+  ::ScreenToClient(hwnd(), &cursor_pos);
+  HWND child = ::RealChildWindowFromPoint(hwnd(), cursor_pos);
+  if (::IsWindow(child) && child != hwnd() && ::IsWindowVisible(child))
+    PostProcessActivateMessage(WA_INACTIVE, false);
+#endif
   // TODO(beng): resolve this with the GetWindowLong() check on the subsequent
   //             line.
   if (delegate_->IsWidgetWindow())

@@ -752,6 +752,16 @@ RenderWidgetHostViewAura::GetOrCreateBrowserAccessibilityManager() {
   return manager;
 }
 
+void RenderWidgetHostViewAura::SetKeyboardFocus() {
+#if defined(OS_WIN)
+  if (CanFocus()) {
+    aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
+    if (dispatcher)
+      ::SetFocus(dispatcher->host()->GetAcceleratedWidget());
+  }
+#endif
+}
+
 void RenderWidgetHostViewAura::MovePluginWindows(
     const gfx::Vector2d& scroll_offset,
     const std::vector<WebPluginGeometry>& plugin_window_moves) {
@@ -2675,8 +2685,13 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
       }
       // Forward event to renderer.
       if (CanRendererHandleEvent(event) &&
-          !(event->flags() & ui::EF_FROM_TOUCH))
+          !(event->flags() & ui::EF_FROM_TOUCH)) {
         host_->ForwardMouseEvent(mouse_event);
+        // Ensure that we get keyboard focus on mouse down as a plugin window
+        // may have grabbed keyboard focus.
+        if (event->type() == ui::ET_MOUSE_PRESSED)
+          SetKeyboardFocus();
+      }
     }
     return;
   }
@@ -2720,6 +2735,10 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     blink::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
     ModifyEventMovementAndCoords(&mouse_event);
     host_->ForwardMouseEvent(mouse_event);
+    // Ensure that we get keyboard focus on mouse down as a plugin window may
+    // have grabbed keyboard focus.
+    if (event->type() == ui::ET_MOUSE_PRESSED)
+      SetKeyboardFocus();
   }
 
   switch (event->type()) {
