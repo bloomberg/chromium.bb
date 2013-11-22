@@ -1866,7 +1866,8 @@ ping_timeout_handler(void *data)
 	shsurf->unresponsive = 1;
 
 	wl_list_for_each(seat, &shsurf->surface->compositor->seat_list, link)
-		if (seat->pointer->focus->surface == shsurf->surface)
+		if (seat->pointer->focus &&
+		    seat->pointer->focus->surface == shsurf->surface)
 			set_busy_cursor(shsurf, seat->pointer);
 
 	return 1;
