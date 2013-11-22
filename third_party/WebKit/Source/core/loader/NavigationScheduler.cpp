@@ -245,7 +245,6 @@ void NavigationScheduler::clear()
         InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
     m_timer.stop();
     m_redirect.clear();
-    m_additionalFormSubmissions.clear();
 }
 
 inline bool NavigationScheduler::shouldScheduleNavigation() const
@@ -323,13 +322,6 @@ void NavigationScheduler::scheduleLocationChange(SecurityOrigin* securityOrigin,
 void NavigationScheduler::scheduleFormSubmission(PassRefPtr<FormSubmission> submission)
 {
     ASSERT(m_frame->page());
-    if (m_redirect && m_redirect->isForm()) {
-        if (submission->target() != static_cast<ScheduledFormSubmission*>(m_redirect.get())->submission()->target()) {
-            const String& target = submission->target().isNull() ? "" : submission->target();
-            m_additionalFormSubmissions.add(target, adoptPtr(new ScheduledFormSubmission(submission, mustLockBackForwardList(m_frame))));
-            return;
-        }
-    }
     schedule(adoptPtr(new ScheduledFormSubmission(submission, mustLockBackForwardList(m_frame))));
 }
 
@@ -373,15 +365,7 @@ void NavigationScheduler::timerFired(Timer<NavigationScheduler>*)
     RefPtr<Frame> protect(m_frame);
 
     OwnPtr<ScheduledNavigation> redirect(m_redirect.release());
-    HashMap<String, OwnPtr<ScheduledNavigation> > additionalFormSubmissions;
-    additionalFormSubmissions.swap(m_additionalFormSubmissions);
     redirect->fire(m_frame);
-    while (!additionalFormSubmissions.isEmpty()) {
-        HashMap<String, OwnPtr<ScheduledNavigation> >::iterator it = additionalFormSubmissions.begin();
-        OwnPtr<ScheduledNavigation> formSubmission = it->value.release();
-        additionalFormSubmissions.remove(it);
-        formSubmission->fire(m_frame);
-    }
     InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
 }
 
@@ -414,7 +398,6 @@ void NavigationScheduler::cancel()
         InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
     m_timer.stop();
     m_redirect.clear();
-    m_additionalFormSubmissions.clear();
 }
 
 } // namespace WebCore

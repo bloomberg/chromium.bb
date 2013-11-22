@@ -98,7 +98,6 @@ private:
     Frame* m_frame;
     Timer<NavigationScheduler> m_timer;
     OwnPtr<ScheduledNavigation> m_redirect;
-    HashMap<String, OwnPtr<ScheduledNavigation> > m_additionalFormSubmissions;
 };
 
 } // namespace WebCore
