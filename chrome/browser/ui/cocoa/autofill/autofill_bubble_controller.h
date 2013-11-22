@@ -21,6 +21,9 @@
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    message:(NSString*)message;
 
+// Maximum width that the bubble will occupy, regardless of message size.
+- (CGFloat)maxWidth;
+
 @end
 
 

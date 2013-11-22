@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
+#import "chrome/browser/ui/cocoa/info_bubble_view.h"
 
 @implementation AutofillDetailsContainer
 
@@ -157,14 +158,6 @@
   }
 }
 
-- (NSPoint)anchorPointFromView:(NSView*)view {
-  // All math done in window coordinates, since views might be flipped.
-  NSRect viewRect = [view convertRect:[view bounds] toView:nil];
-  NSPoint anchorPoint =
-      NSMakePoint(NSMidX(viewRect), NSMinY(viewRect));
-  return [[view window] convertBaseToScreen:anchorPoint];
-}
-
 - (void)errorBubbleWindowWillClose:(NSNotification*)notification {
   DCHECK_EQ([notification object], [errorBubbleController_ window]);
 
@@ -195,7 +188,28 @@
 
   // Compute anchor point (in window coords - views might be flipped).
   NSRect viewRect = [field convertRect:[field bounds] toView:nil];
-  NSPoint anchorPoint = NSMakePoint(NSMidX(viewRect), NSMinY(viewRect));
+
+  // If a bubble at maximum size with a left-aligned edge would exceed the
+  // window width, align the right edge of bubble and view. In all other
+  // cases, align the left edge of the bubble and the view.
+  // Alignment is based on maximum width to avoid the arrow changing positions
+  // if the validation bubble stays on the same field but gets a message of
+  // differing length. (E.g. "Field is required"/"Invalid Zip Code. Please
+  // check and try again" if an empty zip field gets changed to a bad zip).
+  NSPoint anchorPoint;
+  if ((NSMinX(viewRect) + [errorBubbleController_ maxWidth]) >
+      NSWidth([parentWindow frame])) {
+    anchorPoint = NSMakePoint(NSMaxX(viewRect), NSMinY(viewRect));
+    [[errorBubbleController_ bubble] setArrowLocation:info_bubble::kTopRight];
+    [[errorBubbleController_ bubble] setAlignment:
+        info_bubble::kAlignRightEdgeToAnchorEdge];
+
+  } else {
+    anchorPoint = NSMakePoint(NSMinX(viewRect), NSMinY(viewRect));
+    [[errorBubbleController_ bubble] setArrowLocation:info_bubble::kTopLeft];
+    [[errorBubbleController_ bubble] setAlignment:
+        info_bubble::kAlignLeftEdgeToAnchorEdge];
+  }
   [errorBubbleController_ setAnchorPoint:
       [parentWindow convertBaseToScreen:anchorPoint]];
 

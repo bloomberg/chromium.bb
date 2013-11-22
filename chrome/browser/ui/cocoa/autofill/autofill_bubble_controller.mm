@@ -14,6 +14,9 @@ namespace {
 // Border inset for error label.
 const CGFloat kLabelInset = 3.0;
 
+const CGFloat kMaxLabelWidth =
+    2 * autofill::kFieldWidth + autofill::kHorizontalFieldPadding;
+
 }  // namespace
 
 
@@ -39,14 +42,10 @@ const CGFloat kLabelInset = 3.0;
     [label_ setBordered:NO];
     [label_ setDrawsBackground:NO];
     [label_ setStringValue:message];
-    NSSize labelSize = [[label_ cell] cellSizeForBounds:
-        NSMakeRect(
-            0, 0,
-            2 * autofill::kFieldWidth + autofill::kHorizontalFieldPadding,
-            CGFLOAT_MAX)];
-    [label_ setFrameSize:labelSize];
-    [label_ setFrameOrigin:NSMakePoint(kLabelInset, kLabelInset)];
-
+    NSRect labelFrame = NSMakeRect(kLabelInset, kLabelInset, 0, 0);
+    labelFrame.size = [[label_ cell] cellSizeForBounds:
+        NSMakeRect(0, 0, kMaxLabelWidth, CGFLOAT_MAX)];
+    [label_ setFrame:labelFrame];
     [[self bubble] addSubview:label_];
 
     NSRect windowFrame = [[self window] frame];
@@ -57,6 +56,10 @@ const CGFloat kLabelInset = 3.0;
     [[self window] setFrame:windowFrame display:NO];
   }
   return self;
+}
+
+- (CGFloat)maxWidth {
+  return kMaxLabelWidth + 2 * kLabelInset;
 }
 
 @end
