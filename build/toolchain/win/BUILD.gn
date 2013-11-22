@@ -23,6 +23,9 @@ gyp_win_tool_source =
   rebase_path("//tools/gyp/pylib/gyp/win_tool.py", ".", root_build_dir)
 exec_script("setup_toolchain.py", [ gyp_win_tool_source ], "value")
 
+stamp_command = "$python_path gyp-win-tool stamp \$out"
+copy_command = "$python_path gyp-win-tool recursive-mirror \$in \$out"
+
 # 32-bit toolchain -------------------------------------------------------------
 
 toolchain("32") {
@@ -30,108 +33,35 @@ toolchain("32") {
   lib_prefix = ""
   lib_dir_prefix="/LIBPATH:"
 
+  cc_command = "ninja -t msvc -e environment.x86 -- cl.exe /nologo /showIncludes /FC @\$out.rsp /c \$in /Fo\$out /Fd\$pdbname"
   tool("cc") {
-    command = "ninja -t msvc -e environment.x86 -- cl.exe /nologo /showIncludes /FC @\$out.rsp /c \$in /Fo\$out /Fd\$pdbname"
+    command = cc_command
     description = "CC \$out"
     rspfile = "\$out.rsp"
     rspfile_content = "\$defines \$includes \$cflags \$cflags_c"
     deps = "msvc"
   }
   tool("cxx") {
-    command = "ninja -t msvc -e environment.x86 -- cl.exe /nologo /showIncludes /FC @\$out.rsp /c \$in /Fo\$out /Fd\$pdbname"
+    command = cc_command  # Same as above
     description = "CXX \$out"
     rspfile = "\$out.rsp"
     rspfile_content = "\$defines \$includes \$cflags \$cflags_cc"
     deps = "msvc"
   }
-  #tool("idl") {
-  #  command = $python_path gyp-win-tool midl-wrapper environment.x86 \$outdir \$tlb \$h \$dlldata \$iid \$
-  #      \$proxy \$in \$idlflags
-  #  description = IDL \$in
-  #}
   tool("rc") {
     command = "$python_path gyp-win-tool rc-wrapper environment.x86 rc.exe \$defines \$includes \$rcflags /fo\$out \$in"
     description = "RC \$in"
   }
-  #tool("asm") {
-  #  command = $python_path gyp-win-tool asm-wrapper environment.x86 ml.exe \$defines \$includes /c /Fo \$
-  #      \$out \$in
-  #  description = ASM \$in
-  #}
+  tool("asm") {
+    command = "$python_path gyp-win-tool asm-wrapper environment.x86 ml.exe \$defines \$includes /c /Fo \$out \$in"
+    description = "ASM \$in"
+  }
   tool("alink") {
     command = "$python_path gyp-win-tool link-wrapper environment.x86 lib.exe /nologo /ignore:4221 /OUT:\$out @\$out.rsp"
     description = "LIB \$out"
     rspfile = "\$out.rsp"
     rspfile_content = "\$in_newline \$libflags"
   }
-  #tool("solink_embed_inc") {
-  #  command = cmd /c $python_path gyp-win-tool link-wrapper environment.x86 link.exe /nologo \$implibflag \$
-  #      /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp && $python_path gyp-win-tool \$
-  #      manifest-wrapper environment.x86 cmd /c if exist \$dll.manifest del \$dll.manifest && \$
-  #      $python_path gyp-win-tool manifest-wrapper environment.x86 mt.exe -nologo -manifest \$manifests \$
-  #      -out:\$dll.manifest && $python_path gyp-win-tool manifest-to-rc environment.x86 \$dll.manifest \$
-  #      \$dll.manifest.rc 2 && $python_path gyp-win-tool rc-wrapper environment.x86 rc.exe \$
-  #      \$dll.manifest.rc && $python_path gyp-win-tool link-wrapper environment.x86 link.exe /nologo \$
-  #      \$implibflag /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp \$dll.manifest.res
-  #  description = LINK_EMBED_INC(DLL) \$dll
-  #  restat = 1
-  #  rspfile = \$dll.rsp
-  #  rspfile_content = \$libs \$in_newline \$ldflags
-  #}
-  #tool("solink_module_embed_inc") {
-  #  command = cmd /c $python_path gyp-win-tool link-wrapper environment.x86 link.exe /nologo \$implibflag \$
-  #      /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp && $python_path gyp-win-tool \$
-  #      manifest-wrapper environment.x86 cmd /c if exist \$dll.manifest del \$dll.manifest && \$
-  #      $python_path gyp-win-tool manifest-wrapper environment.x86 mt.exe -nologo -manifest \$manifests \$
-  #      -out:\$dll.manifest && $python_path gyp-win-tool manifest-to-rc environment.x86 \$dll.manifest \$
-  #      \$dll.manifest.rc 2 && $python_path gyp-win-tool rc-wrapper environment.x86 rc.exe \$
-  #      \$dll.manifest.rc && $python_path gyp-win-tool link-wrapper environment.x86 link.exe /nologo \$
-  #      \$implibflag /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp \$dll.manifest.res
-  #  description = LINK_EMBED_INC(DLL) \$dll
-  #  restat = 1
-  #  rspfile = \$dll.rsp
-  #  rspfile_content = \$libs \$in_newline \$ldflags
-  #}
-  #rule link_embed_inc
-  #  command = cmd /c $python_path gyp-win-tool link-wrapper environment.x86 link.exe /nologo /OUT:\$out \$
-  #      /PDB:\$out.pdb @\$out.rsp && $python_path gyp-win-tool manifest-wrapper environment.x86 cmd /c \$
-  #      if exist \$out.manifest del \$out.manifest && $python_path gyp-win-tool \$
-  #      manifest-wrapper environment.x86 mt.exe -nologo -manifest \$manifests -out:\$out.manifest && \$
-  #      $python_path gyp-win-tool manifest-to-rc environment.x86 \$out.manifest \$out.manifest.rc 1 && \$
-  #      $python_path gyp-win-tool rc-wrapper environment.x86 rc.exe \$out.manifest.rc && \$
-  #      $python_path gyp-win-tool link-wrapper environment.x86 link.exe /nologo /OUT:\$out /PDB:\$out.pdb \$
-  #      @\$out.rsp \$out.manifest.res
-  #  description = LINK_EMBED_INC \$out
-  #  rspfile = \$out.rsp
-  #  rspfile_content = \$in_newline \$libs \$ldflags
-  #rule solink_embed
-  #  command = cmd /c $python_path gyp-win-tool link-wrapper environment.x86 link.exe /nologo \$implibflag \$
-  #      /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp && $python_path gyp-win-tool \$
-  #      manifest-wrapper environment.x86 cmd /c if exist \$dll.manifest del \$dll.manifest && \$
-  #      $python_path gyp-win-tool manifest-wrapper environment.x86 mt.exe -nologo -manifest \$manifests \$
-  #      -outputresource:\$dll;2
-  #  description = LINK_EMBED(DLL) \$dll
-  #  restat = 1
-  #  rspfile = \$dll.rsp
-  #  rspfile_content = \$libs \$in_newline \$ldflags
-  #rule solink_module_embed
-  #  command = cmd /c $python_path gyp-win-tool link-wrapper environment.x86 link.exe /nologo \$implibflag \$
-  #      /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp && $python_path gyp-win-tool \$
-  #      manifest-wrapper environment.x86 cmd /c if exist \$dll.manifest del \$dll.manifest && \$
-  #      $python_path gyp-win-tool manifest-wrapper environment.x86 mt.exe -nologo -manifest \$manifests \$
-  #      -outputresource:\$dll;2
-  #  description = LINK_EMBED(DLL) \$dll
-  #  restat = 1
-  #  rspfile = \$dll.rsp
-  #  rspfile_content = \$libs \$in_newline \$ldflags
-  #rule link_embed
-  #  command = cmd /c $python_path gyp-win-tool link-wrapper environment.x86 link.exe /nologo /OUT:\$out \$
-  #      /PDB:\$out.pdb @\$out.rsp && $python_path gyp-win-tool manifest-wrapper environment.x86 cmd /c \$
-  #      if exist \$out.manifest del \$out.manifest && $python_path gyp-win-tool \$
-  #      manifest-wrapper environment.x86 mt.exe -nologo -manifest \$manifests -outputresource:\$out;1
-  #  description = LINK_EMBED \$out
-  #  rspfile = \$out.rsp
-  #  rspfile_content = \$in_newline \$libs \$ldflags
   tool("solink") {
     command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x86 link.exe /nologo \$implibflag /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp && $python_path gyp-win-tool manifest-wrapper environment.x86 cmd /c if exist \$dll.manifest del \$dll.manifest && $python_path gyp-win-tool manifest-wrapper environment.x86 mt.exe -nologo -manifest \$manifests -out:\$dll.manifest"
     description = "LINK(DLL) \$dll"
@@ -146,11 +76,11 @@ toolchain("32") {
     rspfile_content = "\$in_newline \$libs \$ldflags"
   }
   tool("stamp") {
-    command = "$python_path gyp-win-tool stamp \$out"
+    command = stamp_command
     description = "STAMP \$out"
   }
   tool("copy") {
-    command = "$python_path gyp-win-tool recursive-mirror \$in \$out"
+    command = copy_command
     description = "COPY \$in \$out"
   }
 }
@@ -158,4 +88,67 @@ toolchain("32") {
 # 64-bit toolchain -------------------------------------------------------------
 
 toolchain("64") {
+  # Make these apply to all tools below.
+  lib_prefix = ""
+  lib_dir_prefix="/LIBPATH:"
+
+  cc_command = "ninja -t msvc -e environment.x64 -- cl.exe /nologo /showIncludes /FC @\$out.rsp /c \$in /Fo\$out /Fd\$pdbname"
+  tool("cc") {
+    command = cc_command
+    description = "CC \$out"
+    rspfile = "\$out.rsp"
+    rspfile_content = "\$defines \$includes \$cflags \$cflags_c"
+    deps = "msvc"
+  }
+  tool("cxx") {
+    command = cc_command  # Same as above
+    description = "CXX \$out"
+    rspfile = "\$out.rsp"
+    rspfile_content = "\$defines \$includes \$cflags \$cflags_cc"
+    deps = "msvc"
+  }
+  tool("rc") {
+    command = "$python_path gyp-win-tool rc-wrapper environment.x64 rc.exe \$defines \$includes \$rcflags /fo\$out \$in"
+    description = "RC \$in"
+  }
+  tool("asm") {
+    command = "$python_path gyp-win-tool asm-wrapper environment.x64 ml.exe \$defines \$includes /c /Fo \$out \$in"
+    description = "ASM \$in"
+  }
+  tool("alink") {
+    command = "$python_path gyp-win-tool link-wrapper environment.x64 lib.exe /nologo /ignore:4221 /OUT:\$out @\$out.rsp"
+    description = "LIB \$out"
+    rspfile = "\$out.rsp"
+    rspfile_content = "\$in_newline \$libflags"
+  }
+  tool("solink") {
+    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x64 link.exe /nologo \$implibflag /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp && $python_path gyp-win-tool manifest-wrapper environment.x64 cmd /c if exist \$dll.manifest del \$dll.manifest && $python_path gyp-win-tool manifest-wrapper environment.x64 mt.exe -nologo -manifest \$manifests -out:\$dll.manifest"
+    description = "LINK(DLL) \$dll"
+    restat = "1"
+    rspfile = "\$dll.rsp"
+    rspfile_content = "\$libs \$in_newline \$ldflags"
+  }
+  tool("link") {
+    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x64 link.exe /nologo /OUT:\$out /PDB:\$out.pdb @\$out.rsp && $python_path gyp-win-tool manifest-wrapper environment.x64 cmd /c if exist \$out.manifest del \$out.manifest && $python_path gyp-win-tool manifest-wrapper environment.x64 mt.exe -nologo -manifest \$manifests -out:\$out.manifest"
+    description = "LINK \$out"
+    rspfile = "\$out.rsp"
+    rspfile_content = "\$in_newline \$libs \$ldflags"
+  }
+  tool("stamp") {
+    command = stamp_command
+    description = "STAMP \$out"
+  }
+  tool("copy") {
+    command = copy_command
+    description = "COPY \$in \$out"
+  }
+
+  # When invoking this toolchain not as the default one, these args will be
+  # passed to the build. They are ignored when this is the default toolchain.
+  toolchain_args() {
+    cpu_arch = "ia64"
+    # Normally the build config resets the CPU architecture to 32-bits. Setting
+    # this flag overrides that behavior.
+    force_win64 = true
+  }
 }

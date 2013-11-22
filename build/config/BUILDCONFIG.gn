@@ -43,6 +43,15 @@ declare_args() {
   # TODO(brettw) this should be moved out of the main build config file.
   use_ozone = false
 
+  # Forces a 64-bit build on Windows. Does nothing on other platforms. Normally
+  # we build 32-bit on Windows regardless of the current host OS bit depth.
+  # Setting this flag will override this logic and generate 64-bit toolchains.
+  #
+  # Normally this would get set automatically when you specify a target using
+  # the 64-bit toolchain. You can also set this on the command line to convert
+  # the default toolchain to 64-bit.
+  force_win64 = false
+
   # Set to true on the command line when invoked by GYP. Build files can key
   # off of this to make any GYP-output-specific changes to the build.
   is_gyp = false
@@ -138,10 +147,13 @@ if (os == "win") {
 # =============================================================================
 
 if (is_win) {
-  # Always use 32-bit on Windows, even when compiling on a 64-bit host OS.
-  # TODO(brettw) when we support 64-bit cross-compiles, we probably need to
-  # set a build arg in the toolchain to disable this override.
-  cpu_arch = "ia32"
+  # Always use 32-bit on Windows, even when compiling on a 64-bit host OS,
+  # unless the override flag is specified.
+  if (force_win64) {
+    cpu_arch = "ia64"
+  } else {
+    cpu_arch = "ia32"
+  }
 }
 
 # =============================================================================
@@ -371,7 +383,11 @@ set_defaults("source_set") {
 # default toolchain.
 
 if (is_win) {
-  host_toolchain = "//build/toolchain/win:32"
+  if (cpu_arch == "ia64") {
+    host_toolchain = "//build/toolchain/win:64"
+  } else if (cpu_arch == "ia32") {
+    host_toolchain = "//build/toolchain/win:32"
+  }
   set_default_toolchain(host_toolchain)
 } else if (is_linux) {
   host_toolchain = "//build/toolchain/linux:host"
