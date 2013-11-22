@@ -21870,7 +21870,7 @@ other types of suffix sets.
   <int value="0" label="Short bypass"/>
   <int value="1" label="Long bypass"/>
   <int value="2" label="Bypass due to internal server error"/>
-  <int value="3" label="Bypass due to otehr error"/>
+  <int value="3" label="Bypass due to other error"/>
 </enum>
 
 <enum name="DataReductionProxyProbeURLFetchResult" type="int">
