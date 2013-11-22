@@ -261,7 +261,6 @@ inline static CSSParserValue makeOperatorValue(int value)
 %token <string> MAXFUNCTION
 %token <string> VARFUNCTION
 %token <string> VAR_DEFINITION
-%token <string> PARTFUNCTION
 %token <string> HOSTFUNCTION
 
 %token <string> UNICODERANGE
@@ -1550,21 +1549,6 @@ pseudo:
         }
     }
     | ':' NOTFUNCTION selector_recovery closing_parenthesis {
-        YYERROR;
-    }
-    | ':' ':' PARTFUNCTION maybe_space IDENT maybe_space closing_parenthesis {
-        $$ = parser->createFloatingSelector();
-        $$->setMatch(CSSSelector::PseudoElement);
-        $$->setArgument($5);
-        if ($5.startsWithIgnoringCase("-webkit"))
-            $$->setMatchUserAgentOnly();
-        parser->tokenToLowerCase($3);
-        $$->setValue($3);
-        CSSSelector::PseudoType type = $$->pseudoType();
-        if (type != CSSSelector::PseudoPart)
-            YYERROR;
-    }
-    | ':' ':' PARTFUNCTION selector_recovery closing_parenthesis {
         YYERROR;
     }
     | ':' HOSTFUNCTION maybe_space simple_selector_list maybe_space closing_parenthesis {

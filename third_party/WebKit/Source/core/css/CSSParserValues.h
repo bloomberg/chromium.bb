@@ -221,7 +221,6 @@ public:
     void setForPage() { m_selector->setForPage(); }
     void setRelationIsAffectedByPseudoContent() { m_selector->setRelationIsAffectedByPseudoContent(); }
     bool relationIsAffectedByPseudoContent() const { return m_selector->relationIsAffectedByPseudoContent(); }
-    void setMatchUserAgentOnly() { m_selector->setMatchUserAgentOnly(); }
 
     void adoptSelectorVector(Vector<OwnPtr<CSSParserSelector> >& selectorVector);
 

@@ -249,7 +249,6 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoPastCue:
     case PseudoSeamlessDocument:
     case PseudoDistributed:
-    case PseudoPart:
     case PseudoUnresolved:
     case PseudoContent:
     case PseudoHost:
@@ -341,7 +340,6 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
     DEFINE_STATIC_LOCAL(AtomicString, inRange, ("in-range", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, outOfRange, ("out-of-range", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, scope, ("scope", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, part, ("part(", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, unresolved, ("unresolved", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, content, ("content", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, host, ("host", AtomicString::ConstructFromLiteral));
@@ -426,7 +424,6 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
         nameToPseudoType->set(inRange.impl(), CSSSelector::PseudoInRange);
         nameToPseudoType->set(outOfRange.impl(), CSSSelector::PseudoOutOfRange);
         if (RuntimeEnabledFeatures::shadowDOMEnabled()) {
-            nameToPseudoType->set(part.impl(), CSSSelector::PseudoPart);
             nameToPseudoType->set(host.impl(), CSSSelector::PseudoHost);
             nameToPseudoType->set(hostWithParams.impl(), CSSSelector::PseudoHost);
             nameToPseudoType->set(content.impl(), CSSSelector::PseudoContent);
@@ -485,7 +482,6 @@ void CSSSelector::extractPseudoType() const
     case PseudoSelection:
     case PseudoUserAgentCustomElement:
     case PseudoWebKitCustomElement:
-    case PseudoPart:
     case PseudoContent:
         element = true;
         break;
@@ -668,17 +664,9 @@ String CSSSelector::selectorText(const String& rightSide) const
             str.appendLiteral("::");
             str.append(cs->value());
 
-            switch (cs->pseudoType()) {
-            case PseudoPart:
-                str.append(cs->argument());
-                str.append(')');
-                break;
-            case PseudoContent:
+            if (cs->pseudoType() == PseudoContent) {
                 if (cs->relation() == CSSSelector::SubSelector && cs->tagHistory())
                     return cs->tagHistory()->selectorText() + str.toString() + rightSide;
-                break;
-            default:
-                break;
             }
         } else if (cs->isAttributeSelector()) {
             str.append('[');
@@ -767,12 +755,6 @@ void CSSSelector::setSelectorList(PassOwnPtr<CSSSelectorList> selectorList)
 {
     createRareData();
     m_data.m_rareData->m_selectorList = selectorList;
-}
-
-void CSSSelector::setMatchUserAgentOnly()
-{
-    createRareData();
-    m_data.m_rareData->m_matchUserAgentOnly = true;
 }
 
 static bool validateSubSelector(const CSSSelector* selector)
@@ -864,7 +846,6 @@ CSSSelector::RareData::RareData(PassRefPtr<StringImpl> value)
     , m_b(0)
     , m_attribute(anyQName())
     , m_argument(nullAtom)
-    , m_matchUserAgentOnly(0)
 {
 }
 

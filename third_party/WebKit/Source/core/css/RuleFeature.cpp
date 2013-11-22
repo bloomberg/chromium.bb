@@ -48,9 +48,6 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector* selector)
         m_usesFirstLineRules = true;
         break;
         break;
-    case CSSSelector::PseudoPart:
-        attrsInRules.add(HTMLNames::partAttr.localName().impl());
-        break;
     case CSSSelector::PseudoHost:
         collectFeaturesFromSelectorList(selector->selectorList());
         break;

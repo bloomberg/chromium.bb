@@ -8,13 +8,10 @@ PASS sandbox.firstChild.querySelector("input[type='search']::-webkit-search-deco
 PASS sandbox.firstChild.querySelectorAll("input[type='search']::-webkit-search-decoration").length is 0
 PASS sandbox.firstChild.webkitMatchesSelector("div::x-pseudo") is false
 PASS sandbox.firstChild.webkitMatchesSelector("div::x-part") is false
-PASS sandbox.firstChild.webkitMatchesSelector("div::part(x-part)") is false
 PASS sandbox.firstChild.querySelector("div::x-pseudo") is null
 PASS sandbox.firstChild.querySelector("div::x-part") is null
-PASS sandbox.firstChild.querySelector("div::part(x-part)") is null
 PASS sandbox.firstChild.querySelectorAll("div::x-pseudo").length is 0
 PASS sandbox.firstChild.querySelectorAll("div::x-part").length is 0
-PASS sandbox.firstChild.querySelectorAll("div::part(x-part)").length is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE
