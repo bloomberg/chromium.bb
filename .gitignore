@@ -28,6 +28,7 @@ cscope.out
 /missing
 /stamp-h1
 /test-driver
+/weston.ini
 Makefile
 Makefile.in
 TAGS

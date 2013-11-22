@@ -27,7 +27,7 @@ path=/usr/bin/gnome-terminal
 
 [launcher]
 icon=/usr/share/icons/gnome/24x24/apps/utilities-terminal.png
-path=/usr/bin/weston-terminal
+path=@bindir@/weston-terminal
 
 [launcher]
 icon=/usr/share/icons/hicolor/24x24/apps/google-chrome.png
@@ -35,15 +35,15 @@ path=/usr/bin/google-chrome
 
 [launcher]
 icon=/usr/share/icons/gnome/24x24/apps/arts.png
-path=./clients/weston-flower
+path=@abs_top_builddir@/clients/weston-flower
 
 [screensaver]
 # Uncomment path to disable screensaver
-path=/usr/libexec/weston-screensaver
+path=@libexecdir@/weston-screensaver
 duration=600
 
 [input-method]
-path=/usr/libexec/weston-keyboard
+path=@libexecdir@/weston-keyboard
 
 #[output]
 #name=LVDS1
