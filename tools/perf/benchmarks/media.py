@@ -4,8 +4,22 @@
 from measurements import media
 from telemetry import test
 
-
 class Media(test.Test):
   """Obtains media metrics for key user scenarios."""
   test = media.Media
   page_set = 'page_sets/tough_video_cases.json'
+
+class MediaAndroid(test.Test):
+  """Obtains media metrics for key user scenarios on Android."""
+  test = media.Media
+  tag = 'android'
+  page_set = 'page_sets/tough_video_cases.json'
+  # Exclude crowd* media files (50fps 2160p).
+  options = {
+      'page_filter_exclude': '.*crowd.*'
+  }
+
+  def CustomizeBrowserOptions(self, options):
+    # Needed to run media actions in JS in Android.
+    options.AppendExtraBrowserArgs(
+        '--disable-gesture-requirement-for-media-playback')
