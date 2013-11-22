@@ -60,6 +60,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/dom_distiller/content/dom_distiller_service_factory.h"
+#include "components/dom_distiller/core/dom_distiller_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/syncable_service.h"
 
@@ -418,13 +420,19 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
       return ManagedUserSyncServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
 #endif
-    case syncer::ARTICLES:
-      // TODO(nyquist) Hook up real syncer::SyncableService API here.
+    case syncer::ARTICLES: {
+      dom_distiller::DomDistillerService* service =
+          dom_distiller::DomDistillerServiceFactory::GetForBrowserContext(
+              profile_);
+      if (service)
+        return service->GetSyncableService()->AsWeakPtr();
       return base::WeakPtr<syncer::SyncableService>();
-    case syncer::SESSIONS:
+    }
+    case syncer::SESSIONS: {
       DCHECK(command_line_->HasSwitch(switches::kEnableSyncSessionsV2));
       return ProfileSyncServiceFactory::GetForProfile(profile_)->
           GetSessionsSyncableService()->AsWeakPtr();
+    }
     default:
       // The following datatypes still need to be transitioned to the
       // syncer::SyncableService API:
