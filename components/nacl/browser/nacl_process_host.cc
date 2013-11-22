@@ -272,7 +272,7 @@ NaClProcessHost::~NaClProcessHost() {
         base::StringPrintf("NaCl process exited with status %i (0x%x)",
                            exit_code, exit_code);
     if (exit_code == 0) {
-      VLOG(1) << message;
+      LOG(INFO) << message;
     } else {
       LOG(ERROR) << message;
     }
