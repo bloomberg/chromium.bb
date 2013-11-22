@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NACL_HOST_NACL_HOST_MESSAGE_FILTER_H_
-#define CHROME_BROWSER_NACL_HOST_NACL_HOST_MESSAGE_FILTER_H_
+#ifndef COMPONENTS_NACL_BROWSER_NACL_HOST_MESSAGE_FILTER_H_
+#define COMPONENTS_NACL_BROWSER_NACL_HOST_MESSAGE_FILTER_H_
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
@@ -21,6 +21,8 @@ namespace net {
 class HostResolver;
 class URLRequestContextGetter;
 }
+
+namespace nacl {
 
 // This class filters out incoming Chrome-specific IPC messages for the renderer
 // process on the IPC thread.
@@ -47,14 +49,14 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   virtual ~NaClHostMessageFilter();
 
 #if !defined(DISABLE_NACL)
-  void OnLaunchNaCl(const nacl::NaClLaunchParams& launch_params,
+  void OnLaunchNaCl(const NaClLaunchParams& launch_params,
                     IPC::Message* reply_msg);
   void OnGetReadonlyPnaclFd(const std::string& filename,
                             IPC::Message* reply_msg);
   void OnNaClCreateTemporaryFile(IPC::Message* reply_msg);
   void OnGetNexeFd(int render_view_id,
                    int pp_instance,
-                   const nacl::PnaclCacheInfo& cache_info);
+                   const PnaclCacheInfo& cache_info);
   void OnTranslationFinished(int instance, bool success);
   void OnNaClErrorStatus(int render_view_id, int error_id);
   void OnOpenNaClExecutable(int render_view_id,
@@ -79,4 +81,6 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(NaClHostMessageFilter);
 };
 
-#endif  // CHROME_BROWSER_NACL_HOST_NACL_HOST_MESSAGE_FILTER_H_
+}  // namespace nacl
+
+#endif  // COMPONENTS_NACL_BROWSER_NACL_HOST_MESSAGE_FILTER_H_

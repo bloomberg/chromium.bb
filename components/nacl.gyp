@@ -40,7 +40,6 @@
           'nacl/loader/nacl_validation_db.h',
           'nacl/loader/nacl_validation_query.cc',
           'nacl/loader/nacl_validation_query.h',
-          'nacl/browser/test_nacl_browser_delegate.cc',
         ],
         # TODO(gregoryd): consider switching NaCl to use Chrome OS defines
         'conditions': [
@@ -103,15 +102,38 @@
           'target_name': 'nacl_browser',
           'type': 'static_library',
           'sources': [
+            'nacl/browser/nacl_broker_host_win.cc',
+            'nacl/browser/nacl_broker_host_win.h',
+            'nacl/browser/nacl_broker_service_win.cc',
+            'nacl/browser/nacl_broker_service_win.h',
             'nacl/browser/nacl_browser.cc',
             'nacl/browser/nacl_browser.h',
+            'nacl/browser/nacl_file_host.cc',
+            'nacl/browser/nacl_file_host.h',
+            'nacl/browser/nacl_host_message_filter.cc',
+            'nacl/browser/nacl_host_message_filter.h',
+            'nacl/browser/nacl_process_host.cc',
+            'nacl/browser/nacl_process_host.h',
             'nacl/browser/nacl_validation_cache.cc',
             'nacl/browser/nacl_validation_cache.h',
+            'nacl/browser/pnacl_host.cc',
+            'nacl/browser/pnacl_host.h',
             'nacl/browser/pnacl_translation_cache.cc',
             'nacl/browser/pnacl_translation_cache.h',
+            'nacl/common/nacl_debug_exception_handler_win.cc',
+            'nacl/common/nacl_debug_exception_handler_win.h',
           ],
           'include_dirs': [
             '..',
+          ],
+          'dependencies': [
+            'nacl_common.gyp:nacl_common',
+            'nacl_common.gyp:nacl_switches',
+            '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
+            '../content/content.gyp:content_browser',
+          ],
+          'defines': [
+            '<@(nacl_defines)',
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],

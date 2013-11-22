@@ -134,8 +134,12 @@
             }],
             ['disable_nacl==0', {
               'sources': [
+                'nacl/browser/nacl_file_host_unittest.cc',
+                'nacl/browser/nacl_process_host_unittest.cc',
                 'nacl/browser/nacl_validation_cache_unittest.cc',
+                'nacl/browser/pnacl_host_unittest.cc',
                 'nacl/browser/pnacl_translation_cache_unittest.cc',
+                'nacl/browser/test_nacl_browser_delegate.cc',
               ],
               'dependencies': [
                 'nacl.gyp:nacl_browser',

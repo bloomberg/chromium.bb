@@ -25,8 +25,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
+#include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/browser_thread.h"
 
 using chrome::OmahaQueryParams;

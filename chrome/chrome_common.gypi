@@ -398,9 +398,6 @@
         'common/web_application_info.h',
         'common/worker_thread_ticker.cc',
         'common/worker_thread_ticker.h',
-        '../components/nacl/common/nacl_host_messages.h',
-        '../components/nacl/common/nacl_process_type.h',
-        '../components/nacl/common/nacl_sandbox_type_mac.h',
       ],
       'conditions': [
         ['enable_extensions==1', {

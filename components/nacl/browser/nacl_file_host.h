@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NACL_HOST_NACL_FILE_HOST_H_
-#define CHROME_BROWSER_NACL_HOST_NACL_FILE_HOST_H_
+#ifndef COMPONENTS_NACL_BROWSER_NACL_FILE_HOST_H_
+#define COMPONENTS_NACL_BROWSER_NACL_FILE_HOST_H_
 
 #include <string>
 
 #include "base/memory/ref_counted.h"
 
 class GURL;
-class NaClHostMessageFilter;
 
 namespace base {
 class FilePath;
@@ -20,13 +19,17 @@ namespace IPC {
 class Message;
 }
 
+namespace nacl {
+class NaClHostMessageFilter;
+}
+
 // Opens NaCl Files in the Browser process, on behalf of the NaCl plugin.
 
 namespace nacl_file_host {
 
 // Open a PNaCl file (readonly) on behalf of the NaCl plugin.
 void GetReadonlyPnaclFd(
-    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
+    scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
     const std::string& filename,
     IPC::Message* reply_msg);
 
@@ -37,11 +40,11 @@ bool PnaclCanOpenFile(const std::string& filename,
 
 // Opens a NaCl executable file for reading and executing.
 void OpenNaClExecutable(
-    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
+    scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
     int render_view_id,
     const GURL& file_url,
     IPC::Message* reply_msg);
 
 }  // namespace nacl_file_host
 
-#endif  // CHROME_BROWSER_NACL_HOST_NACL_FILE_HOST_H_
+#endif  // COMPONENTS_NACL_BROWSER_NACL_FILE_HOST_H_

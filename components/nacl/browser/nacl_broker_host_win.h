@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NACL_HOST_NACL_BROKER_HOST_WIN_H_
-#define CHROME_BROWSER_NACL_HOST_NACL_BROKER_HOST_WIN_H_
+#ifndef COMPONENTS_NACL_BROWSER_NACL_BROKER_HOST_WIN_H_
+#define COMPONENTS_NACL_BROWSER_NACL_BROKER_HOST_WIN_H_
 
 #include <string>
 
@@ -15,6 +15,8 @@
 namespace content {
 class BrowserChildProcessHost;
 }
+
+namespace nacl {
 
 class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
  public:
@@ -57,4 +59,6 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
   DISALLOW_COPY_AND_ASSIGN(NaClBrokerHost);
 };
 
-#endif  // CHROME_BROWSER_NACL_HOST_NACL_BROKER_HOST_WIN_H_
+}  // namespace nacl
+
+#endif  // COMPONENTS_NACL_BROWSER_NACL_BROKER_HOST_WIN_H_

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/nacl_host/nacl_broker_service_win.h"
+#include "components/nacl/browser/nacl_broker_service_win.h"
 
-#include "chrome/browser/nacl_host/nacl_process_host.h"
+#include "components/nacl/browser/nacl_process_host.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 
 using content::BrowserChildProcessHostIterator;
+
+namespace nacl {
 
 NaClBrokerService* NaClBrokerService::GetInstance() {
   return Singleton<NaClBrokerService>::get();
@@ -28,7 +30,7 @@ bool NaClBrokerService::StartBroker() {
 }
 
 bool NaClBrokerService::LaunchLoader(
-    base::WeakPtr<NaClProcessHost> nacl_process_host,
+    base::WeakPtr<nacl::NaClProcessHost> nacl_process_host,
     const std::string& loader_channel_id) {
   // Add task to the list
   pending_launches_[loader_channel_id] = nacl_process_host;
@@ -93,10 +95,13 @@ void NaClBrokerService::OnDebugExceptionHandlerLaunched(int32 pid,
 NaClBrokerHost* NaClBrokerService::GetBrokerHost() {
   BrowserChildProcessHostIterator iter(PROCESS_TYPE_NACL_BROKER);
   while (!iter.Done()) {
-    NaClBrokerHost* host = static_cast<NaClBrokerHost*>(iter.GetDelegate());
+    NaClBrokerHost* host = static_cast<NaClBrokerHost*>(
+        iter.GetDelegate());
     if (!host->IsTerminating())
       return host;
     ++iter;
   }
   return NULL;
 }
+
+}  // namespace nacl

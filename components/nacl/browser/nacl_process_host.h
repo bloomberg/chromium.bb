@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NACL_HOST_NACL_PROCESS_HOST_H_
-#define CHROME_BROWSER_NACL_HOST_NACL_PROCESS_HOST_H_
+#ifndef COMPONENTS_NACL_BROWSER_NACL_PROCESS_HOST_H_
+#define COMPONENTS_NACL_BROWSER_NACL_PROCESS_HOST_H_
 
 #include "build/build_config.h"
 
@@ -22,7 +22,6 @@
 #include "url/gurl.h"
 
 class CommandLine;
-class NaClHostMessageFilter;
 
 namespace content {
 class BrowserChildProcessHost;
@@ -34,8 +33,9 @@ class ChannelProxy;
 }
 
 namespace nacl {
+
+class NaClHostMessageFilter;
 void* AllocateAddressSpaceASLR(base::ProcessHandle process, size_t size);
-}
 
 // Represents the browser side of the browser <--> NaCl communication
 // channel. There will be one NaClProcessHost per NaCl process
@@ -142,7 +142,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   // Sends the reply message to the renderer. Either result or
   // error message must be empty.
-  void SendMessageToRenderer(const nacl::NaClLaunchResult& result,
+  void SendMessageToRenderer(const NaClLaunchResult& result,
                              const std::string& error_message);
 
   // Sends the message to the NaCl process to load the plugin. Returns true
@@ -236,4 +236,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);
 };
 
-#endif  // CHROME_BROWSER_NACL_HOST_NACL_PROCESS_HOST_H_
+}  // namespace nacl
+
+#endif  // COMPONENTS_NACL_BROWSER_NACL_PROCESS_HOST_H_

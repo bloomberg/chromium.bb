@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/nacl_host/nacl_broker_host_win.h"
+#include "components/nacl/browser/nacl_broker_host_win.h"
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
-#include "ipc/ipc_switches.h"
-#include "chrome/browser/nacl_host/nacl_broker_service_win.h"
+#include "components/nacl/browser/nacl_broker_service_win.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_cmd_line.h"
 #include "components/nacl/common/nacl_messages.h"
@@ -19,6 +18,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "ipc/ipc_switches.h"
 
 namespace {
 // NOTE: changes to this class need to be reviewed by the security team.
@@ -37,6 +37,8 @@ class NaClBrokerSandboxedProcessLauncherDelegate
 };
 }  // namespace
 
+namespace nacl {
+
 NaClBrokerHost::NaClBrokerHost() : is_terminating_(false) {
   process_.reset(content::BrowserChildProcessHost::Create(
       PROCESS_TYPE_NACL_BROKER, this));
@@ -53,16 +55,16 @@ bool NaClBrokerHost::Init() {
 
   // Create the path to the nacl broker/loader executable.
   base::FilePath nacl_path;
-  if (!nacl::NaClBrowser::GetInstance()->GetNaCl64ExePath(&nacl_path))
+  if (!NaClBrowser::GetInstance()->GetNaCl64ExePath(&nacl_path))
     return false;
 
   CommandLine* cmd_line = new CommandLine(nacl_path);
-  nacl::CopyNaClCommandLineArguments(cmd_line);
+  CopyNaClCommandLineArguments(cmd_line);
 
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kNaClBrokerProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
-  if (nacl::NaClBrowser::GetDelegate()->DialogsAreSuppressed())
+  if (NaClBrowser::GetDelegate()->DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   process_->Launch(new NaClBrokerSandboxedProcessLauncherDelegate, cmd_line);
@@ -112,3 +114,5 @@ void NaClBrokerHost::StopBroker() {
   is_terminating_ = true;
   process_->Send(new NaClProcessMsg_StopBroker());
 }
+
+}  // namespace nacl

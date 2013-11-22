@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/nacl_host/nacl_process_host.h"
+#include "components/nacl/browser/nacl_process_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)

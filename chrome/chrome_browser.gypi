@@ -2834,28 +2834,13 @@
         }],
         ['disable_nacl==0', {
           'sources': [
-            'browser/nacl_host/nacl_broker_host_win.cc',
-            'browser/nacl_host/nacl_broker_host_win.h',
-            'browser/nacl_host/nacl_broker_service_win.cc',
-            'browser/nacl_host/nacl_broker_service_win.h',
             'browser/nacl_host/nacl_browser_delegate_impl.cc',
             'browser/nacl_host/nacl_browser_delegate_impl.h',
-            'browser/nacl_host/nacl_file_host.cc',
-            'browser/nacl_host/nacl_file_host.h',
-            'browser/nacl_host/nacl_host_message_filter.cc',
-            'browser/nacl_host/nacl_host_message_filter.h',
             'browser/nacl_host/nacl_infobar_delegate.cc',
             'browser/nacl_host/nacl_infobar_delegate.h',
-            'browser/nacl_host/nacl_process_host.cc',
-            'browser/nacl_host/nacl_process_host.h',
-            'browser/nacl_host/pnacl_host.cc',
-            'browser/nacl_host/pnacl_host.h',
-            '../components/nacl/common/nacl_debug_exception_handler_win.cc',
-            '../components/nacl/common/nacl_debug_exception_handler_win.h',
           ],
           'dependencies': [
             '../components/nacl.gyp:nacl_browser',
-            '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
           ],
         }],
         ['debug_devtools==1', {

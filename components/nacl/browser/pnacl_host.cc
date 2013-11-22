@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/nacl_host/pnacl_host.h"
+#include "components/nacl/browser/pnacl_host.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -25,6 +25,8 @@ static const base::FilePath::CharType kTranslationCacheDirectoryName[] =
 // Delay to wait for initialization of the cache backend
 static const int kTranslationCacheInitializationDelayMs = 20;
 }
+
+namespace pnacl {
 
 PnaclHost::PnaclHost()
     : pending_backend_operations_(0),
@@ -628,3 +630,5 @@ void PnaclHost::DeInitIfSafe() {
     disk_cache_.reset();
   }
 }
+
+}  // namespace pnacl

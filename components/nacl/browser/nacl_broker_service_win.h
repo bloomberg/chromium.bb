@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NACL_HOST_NACL_BROKER_SERVICE_WIN_H_
-#define CHROME_BROWSER_NACL_HOST_NACL_BROKER_SERVICE_WIN_H_
+#ifndef COMPONENTS_NACL_BROWSER_NACL_BROKER_SERVICE_WIN_H_
+#define COMPONENTS_NACL_BROWSER_NACL_BROKER_SERVICE_WIN_H_
 
 #include <map>
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/nacl_host/nacl_broker_host_win.h"
+#include "components/nacl/browser/nacl_broker_host_win.h"
+
+namespace nacl {
 
 class NaClProcessHost;
 
@@ -63,4 +65,6 @@ class NaClBrokerService {
   DISALLOW_COPY_AND_ASSIGN(NaClBrokerService);
 };
 
-#endif  // CHROME_BROWSER_NACL_HOST_NACL_BROKER_SERVICE_WIN_H_
+}  // namespace nacl
+
+#endif  // COMPONENTS_NACL_BROWSER_NACL_BROKER_SERVICE_WIN_H_

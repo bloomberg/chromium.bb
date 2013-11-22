@@ -49,8 +49,6 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
-#include "chrome/browser/nacl_host/nacl_host_message_filter.h"
-#include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -105,6 +103,8 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/chromeos_constants.h"
 #include "components/nacl/browser/nacl_browser.h"
+#include "components/nacl/browser/nacl_host_message_filter.h"
+#include "components/nacl/browser/nacl_process_host.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "components/translate/common/translate_switches.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -928,7 +928,7 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
       webrtc_logging_handler_host));
 #endif
 #if !defined(DISABLE_NACL)
-  host->AddFilter(new NaClHostMessageFilter(
+  host->AddFilter(new nacl::NaClHostMessageFilter(
       id, profile->IsOffTheRecord(),
       profile->GetPath(),
       context));
@@ -2385,7 +2385,8 @@ content::BrowserPpapiHost*
         int plugin_process_id) {
   BrowserChildProcessHostIterator iter(PROCESS_TYPE_NACL_LOADER);
   while (!iter.Done()) {
-    NaClProcessHost* host = static_cast<NaClProcessHost*>(iter.GetDelegate());
+    nacl::NaClProcessHost* host = static_cast<nacl::NaClProcessHost*>(
+        iter.GetDelegate());
     if (host->process() &&
         host->process()->GetData().id == plugin_process_id) {
       // Found the plugin.

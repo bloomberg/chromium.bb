@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/nacl_host/nacl_file_host.h"
+#include "components/nacl/browser/nacl_file_host.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -11,9 +11,9 @@
 #include "base/platform_file.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/nacl_host/nacl_host_message_filter.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
+#include "components/nacl/browser/nacl_host_message_filter.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
@@ -32,7 +32,7 @@ const char* kExpectedFilePrefix = "pnacl_public_";
 const size_t kMaxFileLength = 40;
 
 void NotifyRendererOfError(
-    NaClHostMessageFilter* nacl_host_message_filter,
+    nacl::NaClHostMessageFilter* nacl_host_message_filter,
     IPC::Message* reply_msg) {
   reply_msg->set_reply_error();
   nacl_host_message_filter->Send(reply_msg);
@@ -53,7 +53,7 @@ bool PnaclDoOpenFile(const base::FilePath& file_to_open,
 }
 
 void DoOpenPnaclFile(
-    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
+    scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
     const std::string& filename,
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
@@ -95,7 +95,7 @@ void DoOpenPnaclFile(
 }
 
 void DoRegisterOpenedNaClExecutableFile(
-    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
+    scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
     base::PlatformFile file,
     base::FilePath file_path,
     IPC::Message* reply_msg) {
@@ -121,7 +121,7 @@ void DoRegisterOpenedNaClExecutableFile(
 // This function is security sensitive.  Be sure to check with a security
 // person before you modify it.
 void DoOpenNaClExecutableOnThreadPool(
-    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
+    scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
     const GURL& file_url,
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
@@ -155,7 +155,7 @@ void DoOpenNaClExecutableOnThreadPool(
 namespace nacl_file_host {
 
 void GetReadonlyPnaclFd(
-    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
+    scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
     const std::string& filename,
     IPC::Message* reply_msg) {
   if (!BrowserThread::PostBlockingPoolTask(
@@ -202,7 +202,7 @@ bool PnaclCanOpenFile(const std::string& filename,
 }
 
 void OpenNaClExecutable(
-    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
+    scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
     int render_view_id,
     const GURL& file_url,
     IPC::Message* reply_msg) {

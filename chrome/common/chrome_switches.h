@@ -114,8 +114,6 @@ extern const char kDisableNTPOtherSessionsMenu[];
 extern const char kDisableOmniboxAutoCompletionForIme[];
 extern const char kDisablePasswordAutofillPublicSuffixDomainMatching[];
 extern const char kDisablePnacl[];
-extern const char kDisablePnaclCrashThrottling[];
-extern const char kDisablePnaclInstall[];
 extern const char kDisablePopupBlocking[];
 extern const char kDisablePreconnect[];
 extern const char kDisablePrerenderLocalPredictor[];

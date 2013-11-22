@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NACL_HOST_PNACL_HOST_H_
-#define CHROME_BROWSER_NACL_HOST_PNACL_HOST_H_
+#ifndef COMPONENTS_NACL_BROWSER_PNACL_HOST_H_
+#define COMPONENTS_NACL_BROWSER_PNACL_HOST_H_
 
 #include <map>
 
@@ -11,7 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/nacl_host/nacl_file_host.h"
+#include "components/nacl/browser/nacl_file_host.h"
 #include "components/nacl/common/pnacl_types.h"
 #include "ipc/ipc_platform_file.h"
 
@@ -20,9 +20,9 @@ class DrainableIOBuffer;
 }
 
 namespace pnacl {
+
 class PnaclHostTest;
 class PnaclTranslationCache;
-}
 
 // Shared state (translation cache) and common utilities (temp file creation)
 // for all PNaCl translations. Unless otherwise specified, all methods should be
@@ -173,4 +173,6 @@ class PnaclHost {
   DISALLOW_COPY_AND_ASSIGN(PnaclHost);
 };
 
-#endif  // CHROME_BROWSER_NACL_HOST_PNACL_HOST_H_
+}  // namespace pnacl
+
+#endif  // COMPONENTS_NACL_BROWSER_PNACL_HOST_H_

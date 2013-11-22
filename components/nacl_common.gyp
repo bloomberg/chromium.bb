@@ -21,8 +21,12 @@
       'sources': [
         'nacl/common/nacl_cmd_line.cc',
         'nacl/common/nacl_cmd_line.h',
+        'nacl/common/nacl_host_messages.h',
+        'nacl/common/nacl_host_messages.cc',
         'nacl/common/nacl_messages.cc',
         'nacl/common/nacl_messages.h',
+        'nacl/common/nacl_process_type.h',
+        'nacl/common/nacl_sandbox_type_mac.h',
         'nacl/common/nacl_types.cc',
         'nacl/common/nacl_types.h',
         'nacl/common/pnacl_types.cc',

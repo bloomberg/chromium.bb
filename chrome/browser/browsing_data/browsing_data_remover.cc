@@ -29,7 +29,6 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/nacl_host/pnacl_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/password_manager/password_store.h"
@@ -58,6 +57,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/nacl/browser/nacl_browser.h"
+#include "components/nacl/browser/pnacl_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/download_manager.h"
@@ -953,7 +953,7 @@ void BrowsingDataRemover::ClearPnaclCacheOnIOThread(base::Time begin,
                                                     base::Time end) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  PnaclHost::GetInstance()->ClearTranslationCacheEntriesBetween(
+  pnacl::PnaclHost::GetInstance()->ClearTranslationCacheEntriesBetween(
       begin, end,
       base::Bind(&BrowsingDataRemover::ClearedPnaclCacheOnIOThread,
                  base::Unretained(this)));

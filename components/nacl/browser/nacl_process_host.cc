@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/nacl_host/nacl_process_host.h"
+#include "components/nacl/browser/nacl_process_host.h"
 
 #include <algorithm>
 #include <string>
@@ -25,9 +25,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
-#include "chrome/browser/nacl_host/nacl_host_message_filter.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/nacl/browser/nacl_browser.h"
+#include "components/nacl/browser/nacl_host_message_filter.h"
 #include "components/nacl/common/nacl_cmd_line.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/nacl_messages.h"
@@ -58,7 +57,7 @@
 
 #include "base/threading/thread.h"
 #include "base/win/scoped_handle.h"
-#include "chrome/browser/nacl_host/nacl_broker_service_win.h"
+#include "components/nacl/browser/nacl_broker_service_win.h"
 #include "components/nacl/common/nacl_debug_exception_handler_win.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
@@ -200,6 +199,8 @@ ppapi::PpapiPermissions GetNaClPermissions(uint32 permission_bits) {
 
 }  // namespace
 
+namespace nacl {
+
 struct NaClProcessHost::NaClInternal {
   NaClHandle socket_for_renderer;
   NaClHandle socket_for_sel_ldr;
@@ -271,7 +272,7 @@ NaClProcessHost::~NaClProcessHost() {
         base::StringPrintf("NaCl process exited with status %i (0x%x)",
                            exit_code, exit_code);
     if (exit_code == 0) {
-      LOG(INFO) << message;
+      VLOG(1) << message;
     } else {
       LOG(ERROR) << message;
     }
@@ -306,18 +307,18 @@ void NaClProcessHost::OnProcessCrashed(int exit_status) {
   if (enable_crash_throttling_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePnaclCrashThrottling)) {
-    nacl::NaClBrowser::GetInstance()->OnProcessCrashed();
+    NaClBrowser::GetInstance()->OnProcessCrashed();
   }
 }
 
 // This is called at browser startup.
 // static
 void NaClProcessHost::EarlyStartup() {
-  nacl::NaClBrowser::GetInstance()->EarlyStartup();
+  NaClBrowser::GetInstance()->EarlyStartup();
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Open the IRT file early to make sure that it isn't replaced out from
   // under us by autoupdate.
-  nacl::NaClBrowser::GetInstance()->EnsureIrtAvailable();
+  NaClBrowser::GetInstance()->EnsureIrtAvailable();
 #endif
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   UMA_HISTOGRAM_BOOLEAN(
@@ -329,7 +330,7 @@ void NaClProcessHost::EarlyStartup() {
   UMA_HISTOGRAM_BOOLEAN(
       "NaCl.enable-nacl-debug",
       cmd->HasSwitch(switches::kEnableNaClDebug));
-  nacl::NaClBrowser::GetDelegate()->SetDebugPatterns(
+  NaClBrowser::GetDelegate()->SetDebugPatterns(
       cmd->GetSwitchValueASCII(switches::kNaClDebugMask));
 }
 
@@ -346,7 +347,7 @@ void NaClProcessHost::Launch(
   if (enable_crash_throttling_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePnaclCrashThrottling) &&
-      nacl::NaClBrowser::GetInstance()->IsThrottled()) {
+      NaClBrowser::GetInstance()->IsThrottled()) {
     SendErrorToRenderer("Process creation was throttled due to excessive"
                         " crashes");
     delete this;
@@ -371,7 +372,7 @@ void NaClProcessHost::Launch(
 
   // Start getting the IRT open asynchronously while we launch the NaCl process.
   // We'll make sure this actually finished in StartWithLaunchedProcess, below.
-  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
   nacl_browser->EnsureAllResourcesAvailable();
   if (!nacl_browser->IsOk()) {
     SendErrorToRenderer("could not find all the resources needed"
@@ -450,7 +451,7 @@ bool NaClProcessHost::LaunchNaClGdb() {
 #endif
   cmd_line.AppendArg("--eval-command");
   base::FilePath::StringType irt_path(
-      nacl::NaClBrowser::GetInstance()->GetIrtFilePath().value());
+      NaClBrowser::GetInstance()->GetIrtFilePath().value());
   // Avoid back slashes because nacl-gdb uses posix escaping rules on Windows.
   // See issue https://code.google.com/p/nativeclient/issues/detail?id=3482.
   std::replace(irt_path.begin(), irt_path.end(), '\\', '/');
@@ -512,7 +513,7 @@ bool NaClProcessHost::LaunchSelLdr() {
 #if defined(OS_WIN)
   // On Windows 64-bit NaCl loader is called nacl64.exe instead of chrome.exe
   if (RunningOnWOW64()) {
-    if (!nacl::NaClBrowser::GetInstance()->GetNaCl64ExePath(&exe_path)) {
+    if (!NaClBrowser::GetInstance()->GetNaCl64ExePath(&exe_path)) {
       SendErrorToRenderer("could not get path to nacl64.exe");
       return false;
     }
@@ -520,12 +521,12 @@ bool NaClProcessHost::LaunchSelLdr() {
 #endif
 
   scoped_ptr<CommandLine> cmd_line(new CommandLine(exe_path));
-  nacl::CopyNaClCommandLineArguments(cmd_line.get());
+  CopyNaClCommandLineArguments(cmd_line.get());
 
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kNaClLoaderProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
-  if (nacl::NaClBrowser::GetDelegate()->DialogsAreSuppressed())
+  if (NaClBrowser::GetDelegate()->DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   if (!nacl_loader_prefix.empty())
@@ -579,7 +580,7 @@ void NaClProcessHost::OnProcessLaunched() {
 
 // Called when the NaClBrowser singleton has been fully initialized.
 void NaClProcessHost::OnResourcesReady() {
-  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
   if (!nacl_browser->IsReady()) {
     SendErrorToRenderer("could not acquire shared resources needed by NaCl");
     delete this;
@@ -604,7 +605,7 @@ bool NaClProcessHost::ReplyToRenderer(
   }
 #endif
 
-  nacl::FileDescriptor handle_for_renderer;
+  FileDescriptor handle_for_renderer;
 #if defined(OS_WIN)
   // Copy the handle into the renderer process.
   HANDLE handle_in_renderer;
@@ -619,12 +620,12 @@ bool NaClProcessHost::ReplyToRenderer(
     SendErrorToRenderer("DuplicateHandle() failed");
     return false;
   }
-  handle_for_renderer = reinterpret_cast<nacl::FileDescriptor>(
+  handle_for_renderer = reinterpret_cast<FileDescriptor>(
       handle_in_renderer);
 #else
   // No need to dup the imc_handle - we don't pass it anywhere else so
   // it cannot be closed.
-  nacl::FileDescriptor imc_handle;
+  FileDescriptor imc_handle;
   imc_handle.fd = internal_->socket_for_renderer;
   imc_handle.auto_close = true;
   handle_for_renderer = imc_handle;
@@ -632,7 +633,7 @@ bool NaClProcessHost::ReplyToRenderer(
 
   const ChildProcessData& data = process_->GetData();
   SendMessageToRenderer(
-      nacl::NaClLaunchResult(handle_for_renderer,
+      NaClLaunchResult(handle_for_renderer,
                              channel_handle,
                              base::GetProcId(data.handle),
                              data.id),
@@ -643,11 +644,11 @@ bool NaClProcessHost::ReplyToRenderer(
 
 void NaClProcessHost::SendErrorToRenderer(const std::string& error_message) {
   LOG(ERROR) << "NaCl process launch failed: " << error_message;
-  SendMessageToRenderer(nacl::NaClLaunchResult(), error_message);
+  SendMessageToRenderer(NaClLaunchResult(), error_message);
 }
 
 void NaClProcessHost::SendMessageToRenderer(
-    const nacl::NaClLaunchResult& result,
+    const NaClLaunchResult& result,
     const std::string& error_message) {
   DCHECK(nacl_host_message_filter_);
   DCHECK(reply_msg_);
@@ -665,7 +666,7 @@ static const int kDebugStubPort = 4014;
 
 #if defined(OS_POSIX)
 net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
-  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
   net::SocketDescriptor s = net::kInvalidSocket;
   // We allocate currently unused TCP port for debug stub tests. The port
   // number is passed to the test via debug stub port listener.
@@ -693,15 +694,15 @@ net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
 #endif
 
 bool NaClProcessHost::StartNaClExecution() {
-  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
 
-  nacl::NaClStartParams params;
+  NaClStartParams params;
   params.validation_cache_enabled = nacl_browser->ValidationCacheIsEnabled();
   params.validation_cache_key = nacl_browser->GetValidationCacheKey();
-  params.version = nacl::NaClBrowser::GetDelegate()->GetVersionString();
+  params.version = NaClBrowser::GetDelegate()->GetVersionString();
   params.enable_exception_handling = enable_exception_handling_;
   params.enable_debug_stub = enable_debug_stub_ &&
-      nacl::NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
+      NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
   // Enable PPAPI proxy channel creation only for renderer processes.
   params.enable_ipc_proxy = enable_ppapi_proxy();
   params.uses_irt = uses_irt_;
@@ -735,7 +736,7 @@ bool NaClProcessHost::StartNaClExecution() {
     DLOG(ERROR) << "Failed to allocate memory buffer";
     return false;
   }
-  nacl::FileDescriptor memory_fd;
+  FileDescriptor memory_fd;
   memory_fd.fd = dup(memory_buffer.handle().fd);
   if (memory_fd.fd < 0) {
     DLOG(ERROR) << "Failed to dup() a file descriptor";
@@ -750,7 +751,7 @@ bool NaClProcessHost::StartNaClExecution() {
     net::SocketDescriptor server_bound_socket = GetDebugStubSocketHandle();
     if (server_bound_socket != net::kInvalidSocket) {
       params.debug_stub_server_bound_socket =
-          nacl::FileDescriptor(server_bound_socket, true);
+          FileDescriptor(server_bound_socket, true);
     }
   }
 #endif
@@ -813,7 +814,7 @@ void NaClProcessHost::OnPpapiChannelCreated(
 
     ppapi_host_->GetPpapiHost()->AddHostFactoryFilter(
         scoped_ptr<ppapi::host::HostFactory>(
-            nacl::NaClBrowser::GetDelegate()->CreatePpapiHostFactory(
+            NaClBrowser::GetDelegate()->CreatePpapiHostFactory(
                 ppapi_host_.get())));
 
     // Send a message to create the NaCl-Renderer channel. The handle is just
@@ -847,7 +848,7 @@ bool NaClProcessHost::OnUntrustedMessageForwarded(const IPC::Message& msg) {
 }
 
 bool NaClProcessHost::StartWithLaunchedProcess() {
-  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
 
   if (nacl_browser->IsReady()) {
     return SendStart();
@@ -864,12 +865,12 @@ bool NaClProcessHost::StartWithLaunchedProcess() {
 
 void NaClProcessHost::OnQueryKnownToValidate(const std::string& signature,
                                              bool* result) {
-  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
   *result = nacl_browser->QueryKnownToValidate(signature, off_the_record_);
 }
 
 void NaClProcessHost::OnSetKnownToValidate(const std::string& signature) {
-  nacl::NaClBrowser::GetInstance()->SetKnownToValidate(
+  NaClBrowser::GetInstance()->SetKnownToValidate(
       signature, off_the_record_);
 }
 
@@ -922,7 +923,7 @@ void NaClProcessHost::OnResolveFileToken(uint64 file_token_lo,
   // TODO(ncbray): track behavior with UMA. If entries are getting evicted or
   // bogus keys are getting queried, this would be good to know.
   base::FilePath file_path;
-  if (!nacl::NaClBrowser::GetInstance()->GetFilePath(
+  if (!NaClBrowser::GetInstance()->GetFilePath(
         file_token_lo, file_token_hi, &file_path)) {
     NaClProcessMsg_ResolveFileToken::WriteReplyParams(
         reply_msg,
@@ -938,7 +939,7 @@ void NaClProcessHost::OnResolveFileToken(uint64 file_token_lo,
   // Open the file.
   if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
           FROM_HERE,
-          base::Bind(nacl::OpenNaClExecutableImpl,
+          base::Bind(OpenNaClExecutableImpl,
                      file_path, data),
           base::Bind(&NaClProcessHost::FileResolved,
                      weak_factory_.GetWeakPtr(),
@@ -1021,3 +1022,5 @@ bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
   }
 }
 #endif
+
+}  // namespace nacl

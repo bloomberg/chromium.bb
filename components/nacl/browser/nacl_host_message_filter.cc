@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/nacl_host/nacl_host_message_filter.h"
+#include "components/nacl/browser/nacl_host_message_filter.h"
 
-#include "chrome/browser/nacl_host/nacl_file_host.h"
-#include "chrome/browser/nacl_host/nacl_process_host.h"
-#include "chrome/browser/nacl_host/pnacl_host.h"
 #include "components/nacl/browser/nacl_browser.h"
+#include "components/nacl/browser/nacl_file_host.h"
+#include "components/nacl/browser/nacl_process_host.h"
+#include "components/nacl/browser/pnacl_host.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
+
+namespace nacl {
 
 NaClHostMessageFilter::NaClHostMessageFilter(
     int render_process_id,
@@ -30,7 +32,7 @@ NaClHostMessageFilter::~NaClHostMessageFilter() {
 }
 
 void NaClHostMessageFilter::OnChannelClosing() {
-  PnaclHost::GetInstance()->RendererClosing(render_process_id_);
+  pnacl::PnaclHost::GetInstance()->RendererClosing(render_process_id_);
 }
 
 bool NaClHostMessageFilter::OnMessageReceived(const IPC::Message& message,
@@ -93,7 +95,7 @@ void NaClHostMessageFilter::OnGetReadonlyPnaclFd(
 
   // This is the first message we receive from the renderer once it knows we
   // want to use PNaCl, so start the translation cache initialization here.
-  PnaclHost::GetInstance()->Init();
+  pnacl::PnaclHost::GetInstance()->Init();
 }
 
 // Return the temporary file via a reply to the
@@ -113,7 +115,7 @@ void NaClHostMessageFilter::SyncReturnTemporaryFile(
 
 void NaClHostMessageFilter::OnNaClCreateTemporaryFile(
     IPC::Message* reply_msg) {
-  PnaclHost::GetInstance()->CreateTemporaryFile(
+  pnacl::PnaclHost::GetInstance()->CreateTemporaryFile(
       base::Bind(&NaClHostMessageFilter::SyncReturnTemporaryFile,
                  this,
                  reply_msg));
@@ -142,7 +144,7 @@ void NaClHostMessageFilter::OnGetNexeFd(
     return;
   }
 
-  PnaclHost::GetInstance()->GetNexeFd(
+  pnacl::PnaclHost::GetInstance()->GetNexeFd(
       render_process_id_,
       render_view_id,
       pp_instance,
@@ -154,7 +156,7 @@ void NaClHostMessageFilter::OnGetNexeFd(
 }
 
 void NaClHostMessageFilter::OnTranslationFinished(int instance, bool success) {
-  PnaclHost::GetInstance()->TranslationFinished(
+  pnacl::PnaclHost::GetInstance()->TranslationFinished(
       render_process_id_, instance, success);
 }
 
@@ -171,3 +173,5 @@ void NaClHostMessageFilter::OnOpenNaClExecutable(int render_view_id,
                                      reply_msg);
 }
 #endif
+
+}  // namespace nacl
