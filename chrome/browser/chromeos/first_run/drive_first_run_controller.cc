@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/first_run/drive_first_run_controller.h"
 
-#include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -378,8 +376,8 @@ void DriveFirstRunController::CleanUp() {
 void DriveFirstRunController::OnOfflineInit(bool success) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (success) {
-    ash::Shell::GetInstance()->system_tray_notifier()
-        ->NotifyDriveOfflineEnabled();
+    // TODO(tengs): Show non-toast notification that offline files will now
+    // be synced.
   }
   FOR_EACH_OBSERVER(Observer, observer_list_, OnCompletion(success));
   CleanUp();
