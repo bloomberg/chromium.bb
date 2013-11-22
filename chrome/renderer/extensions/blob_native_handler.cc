@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/feedback_private_custom_bindings.h"
+#include "chrome/renderer/extensions/blob_native_handler.h"
 
 #include "base/bind.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
@@ -11,8 +11,9 @@
 
 namespace {
 
-void GetBlobUuid(const v8::FunctionCallbackInfo<v8::Value> &args) {
-  DCHECK(args.Length() == 1);
+// Expects a single Blob argument. Returns the Blob's UUID.
+void GetBlobUuid(const v8::FunctionCallbackInfo<v8::Value>& args) {
+  DCHECK_EQ(1, args.Length());
   blink::WebBlob blob = blink::WebBlob::fromV8Value(args[0]);
   args.GetReturnValue().Set(v8::String::New(blob.uuid().utf8().data()));
 }
@@ -21,9 +22,8 @@ void GetBlobUuid(const v8::FunctionCallbackInfo<v8::Value> &args) {
 
 namespace extensions {
 
-FeedbackPrivateCustomBindings::FeedbackPrivateCustomBindings(
-    Dispatcher* dispatcher,
-    ChromeV8Context* context) : ChromeV8Extension(dispatcher, context) {
+BlobNativeHandler::BlobNativeHandler(ChromeV8Context* context)
+    : ObjectBackedNativeHandler(context) {
   RouteFunction("GetBlobUuid", base::Bind(&GetBlobUuid));
 }
 

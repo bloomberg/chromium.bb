@@ -6,7 +6,7 @@
 
 var binding = require('binding').Binding.create('feedbackPrivate');
 
-var feedbackPrivateNatives = requireNative('feedback_private');
+var blobNatives = requireNative('blob_natives');
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -17,10 +17,10 @@ binding.registerCustomHook(function(bindingsAPI) {
 
     if (feedbackInfo.attachedFile)
       attachedFileBlobUuid =
-          feedbackPrivateNatives.GetBlobUuid(feedbackInfo.attachedFile.data);
+          blobNatives.GetBlobUuid(feedbackInfo.attachedFile.data);
     if (feedbackInfo.screenshot)
       screenshotBlobUuid =
-          feedbackPrivateNatives.GetBlobUuid(feedbackInfo.screenshot);
+          blobNatives.GetBlobUuid(feedbackInfo.screenshot);
 
     feedbackInfo.attachedFileBlobUuid = attachedFileBlobUuid;
     feedbackInfo.screenshotBlobUuid = screenshotBlobUuid;
