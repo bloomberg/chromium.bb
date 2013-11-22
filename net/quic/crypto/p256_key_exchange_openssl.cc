@@ -25,7 +25,7 @@ P256KeyExchange::~P256KeyExchange() {}
 // static
 P256KeyExchange* P256KeyExchange::New(StringPiece key) {
   if (key.empty()) {
-    DLOG(INFO) << "Private key is empty";
+    DVLOG(1) << "Private key is empty";
     return NULL;
   }
 
@@ -33,7 +33,7 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
   crypto::ScopedOpenSSL<EC_KEY, EC_KEY_free> private_key(
       d2i_ECPrivateKey(NULL, &keyp, key.size()));
   if (!private_key.get() || !EC_KEY_check_key(private_key.get())) {
-    DLOG(INFO) << "Private key is invalid.";
+    DVLOG(1) << "Private key is invalid.";
     return NULL;
   }
 
@@ -42,7 +42,7 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
                          EC_KEY_get0_public_key(private_key.get()),
                          POINT_CONVERSION_UNCOMPRESSED, public_key,
                          sizeof(public_key), NULL) != sizeof(public_key)) {
-    DLOG(INFO) << "Can't get public key.";
+    DVLOG(1) << "Can't get public key.";
     return NULL;
   }
 
@@ -54,19 +54,19 @@ string P256KeyExchange::NewPrivateKey() {
   crypto::ScopedOpenSSL<EC_KEY, EC_KEY_free> key(
       EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
   if (!key.get() || !EC_KEY_generate_key(key.get())) {
-    DLOG(INFO) << "Can't generate a new private key.";
+    DVLOG(1) << "Can't generate a new private key.";
     return string();
   }
 
   int key_len = i2d_ECPrivateKey(key.get(), NULL);
   if (key_len <= 0) {
-    DLOG(INFO) << "Can't convert private key to string";
+    DVLOG(1) << "Can't convert private key to string";
     return string();
   }
   scoped_ptr<uint8[]> private_key(new uint8[key_len]);
   uint8* keyp = private_key.get();
   if (!i2d_ECPrivateKey(key.get(), &keyp)) {
-    DLOG(INFO) << "Can't convert private key to string.";
+    DVLOG(1) << "Can't convert private key to string.";
     return string();
   }
   return string(reinterpret_cast<char*>(private_key.get()), key_len);
@@ -81,7 +81,7 @@ KeyExchange* P256KeyExchange::NewKeyPair(QuicRandom* /*rand*/) const {
 bool P256KeyExchange::CalculateSharedKey(const StringPiece& peer_public_value,
                                          string* out_result) const {
   if (peer_public_value.size() != kUncompressedP256PointBytes) {
-    DLOG(INFO) << "Peer public value is invalid";
+    DVLOG(1) << "Peer public value is invalid";
     return false;
   }
 
@@ -93,14 +93,14 @@ bool P256KeyExchange::CalculateSharedKey(const StringPiece& peer_public_value,
           point.get(),
           reinterpret_cast<const uint8*>(peer_public_value.data()),
           peer_public_value.size(), NULL)) {
-    DLOG(INFO) << "Can't convert peer public value to curve point.";
+    DVLOG(1) << "Can't convert peer public value to curve point.";
     return false;
   }
 
   uint8 result[kP256FieldBytes];
   if (ECDH_compute_key(result, sizeof(result), point.get(), private_key_.get(),
                        NULL) != sizeof(result)) {
-    DLOG(INFO) << "Can't compute ECDH shared key.";
+    DVLOG(1) << "Can't compute ECDH shared key.";
     return false;
   }
 

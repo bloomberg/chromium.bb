@@ -149,7 +149,7 @@ QuicTcpCongestionWindow Cubic::CongestionWindowAfterAck(
 
   if (!epoch_.IsInitialized()) {
     // First ACK after a loss event.
-    DLOG(INFO) << "Start of epoch";
+    DVLOG(1) << "Start of epoch";
     epoch_ = current_time;  // Start of epoch.
     acked_packets_count_ = 1;  // Reset count.
     // Reset estimated_tcp_congestion_window_ to be in sync with cubic.
@@ -193,7 +193,7 @@ QuicTcpCongestionWindow Cubic::CongestionWindowAfterAck(
   if (target_congestion_window < estimated_tcp_congestion_window_) {
     target_congestion_window = estimated_tcp_congestion_window_;
   }
-  DLOG(INFO) << "Target congestion_window:" << target_congestion_window;
+  DVLOG(1) << "Target congestion_window:" << target_congestion_window;
   return target_congestion_window;
 }
 

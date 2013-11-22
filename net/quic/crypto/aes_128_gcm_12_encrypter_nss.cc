@@ -138,7 +138,7 @@ SECStatus My_Encrypt(PK11SymKey* key,
   DCHECK_EQ(param->len, sizeof(CK_GCM_PARAMS));
 
   if (max_len < static_cast<unsigned int>(Aes128Gcm12Encrypter::kAuthTagSize)) {
-    DLOG(INFO) << "max_len is less than kAuthTagSize";
+    DVLOG(1) << "max_len is less than kAuthTagSize";
     PORT_SetError(SEC_ERROR_OUTPUT_LEN);
     return SECFailure;
   }
@@ -149,7 +149,7 @@ SECStatus My_Encrypt(PK11SymKey* key,
   DCHECK_EQ(gcm_params->ulTagBits,
             static_cast<CK_ULONG>(Aes128Gcm12Encrypter::kAuthTagSize * 8));
   if (gcm_params->ulIvLen != 12u) {
-    DLOG(INFO) << "ulIvLen is not equal to 12";
+    DVLOG(1) << "ulIvLen is not equal to 12";
     PORT_SetError(SEC_ERROR_INPUT_LEN);
     return SECFailure;
   }
@@ -161,20 +161,20 @@ SECStatus My_Encrypt(PK11SymKey* key,
   crypto::ScopedPK11Context ctx(PK11_CreateContextBySymKey(
       CKM_AES_ECB, CKA_ENCRYPT, key, &my_param));
   if (!ctx) {
-    DLOG(INFO) << "PK11_CreateContextBySymKey failed";
+    DVLOG(1) << "PK11_CreateContextBySymKey failed";
     return SECFailure;
   }
   int output_len;
   if (PK11_CipherOp(ctx.get(), ghash_key, &output_len, sizeof(ghash_key),
                     ghash_key, sizeof(ghash_key)) != SECSuccess) {
-    DLOG(INFO) << "PK11_CipherOp failed";
+    DVLOG(1) << "PK11_CipherOp failed";
     return SECFailure;
   }
 
   PK11_Finalize(ctx.get());
 
   if (output_len != sizeof(ghash_key)) {
-    DLOG(INFO) << "Wrong output length";
+    DVLOG(1) << "Wrong output length";
     PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
     return SECFailure;
   }
@@ -195,7 +195,7 @@ SECStatus My_Encrypt(PK11SymKey* key,
   ctx.reset(PK11_CreateContextBySymKey(CKM_AES_CTR, CKA_ENCRYPT, key,
                                        &my_param));
   if (!ctx) {
-    DLOG(INFO) << "PK11_CreateContextBySymKey failed";
+    DVLOG(1) << "PK11_CreateContextBySymKey failed";
     return SECFailure;
   }
 
@@ -203,11 +203,11 @@ SECStatus My_Encrypt(PK11SymKey* key,
   unsigned char tag_mask[16] = {0};
   if (PK11_CipherOp(ctx.get(), tag_mask, &output_len, sizeof(tag_mask),
                     tag_mask, sizeof(tag_mask)) != SECSuccess) {
-    DLOG(INFO) << "PK11_CipherOp failed";
+    DVLOG(1) << "PK11_CipherOp failed";
     return SECFailure;
   }
   if (output_len != sizeof(tag_mask)) {
-    DLOG(INFO) << "Wrong output length";
+    DVLOG(1) << "Wrong output length";
     PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
     return SECFailure;
   }
@@ -217,21 +217,21 @@ SECStatus My_Encrypt(PK11SymKey* key,
   // https://bugzilla.mozilla.org/show_bug.cgi?id=808218).
   if (PK11_CipherOp(ctx.get(), out, &output_len, max_len,
                     const_cast<unsigned char*>(data), data_len) != SECSuccess) {
-    DLOG(INFO) << "PK11_CipherOp failed";
+    DVLOG(1) << "PK11_CipherOp failed";
     return SECFailure;
   }
 
   PK11_Finalize(ctx.get());
 
   if (static_cast<unsigned int>(output_len) != data_len) {
-    DLOG(INFO) << "Wrong output length";
+    DVLOG(1) << "Wrong output length";
     PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
     return SECFailure;
   }
 
   if ((max_len - Aes128Gcm12Encrypter::kAuthTagSize) <
       static_cast<unsigned int>(output_len)) {
-    DLOG(INFO) << "(max_len - kAuthTagSize) is less than output_len";
+    DVLOG(1) << "(max_len - kAuthTagSize) is less than output_len";
     PORT_SetError(SEC_ERROR_OUTPUT_LEN);
     return SECFailure;
   }
@@ -300,7 +300,7 @@ bool Aes128Gcm12Encrypter::Encrypt(StringPiece nonce,
   PK11_FreeSlot(slot);
   slot = NULL;
   if (!aes_key) {
-    DLOG(INFO) << "PK11_ImportSymKey failed";
+    DVLOG(1) << "PK11_ImportSymKey failed";
     return false;
   }
 
@@ -323,12 +323,12 @@ bool Aes128Gcm12Encrypter::Encrypt(StringPiece nonce,
                  output, &output_len, ciphertext_size,
                  reinterpret_cast<const unsigned char*>(plaintext.data()),
                  plaintext.size()) != SECSuccess) {
-    DLOG(INFO) << "My_Encrypt failed";
+    DVLOG(1) << "My_Encrypt failed";
     return false;
   }
 
   if (output_len != ciphertext_size) {
-    DLOG(INFO) << "Wrong output length";
+    DVLOG(1) << "Wrong output length";
     return false;
   }
 

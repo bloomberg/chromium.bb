@@ -83,7 +83,7 @@ bool ReliableQuicStream::WillAcceptStreamFrame(
 bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK_EQ(frame.stream_id, id_);
   if (read_side_closed_) {
-    DLOG(INFO) << ENDPOINT << "Ignoring frame " << frame.stream_id;
+    DVLOG(1) << ENDPOINT << "Ignoring frame " << frame.stream_id;
     // We don't want to be reading: blackhole the data.
     return true;
   }
@@ -296,11 +296,11 @@ void ReliableQuicStream::CloseReadSide() {
   if (read_side_closed_) {
     return;
   }
-  DLOG(INFO) << ENDPOINT << "Done reading from stream " << id();
+  DVLOG(1) << ENDPOINT << "Done reading from stream " << id();
 
   read_side_closed_ = true;
   if (write_side_closed_) {
-    DLOG(INFO) << ENDPOINT << "Closing stream: " << id();
+    DVLOG(1) << ENDPOINT << "Closing stream: " << id();
     session_->CloseStream(id());
   }
 }
@@ -468,11 +468,11 @@ void ReliableQuicStream::CloseWriteSide() {
   if (write_side_closed_) {
     return;
   }
-  DLOG(INFO) << ENDPOINT << "Done writing to stream " << id();
+  DVLOG(1) << ENDPOINT << "Done writing to stream " << id();
 
   write_side_closed_ = true;
   if (read_side_closed_) {
-    DLOG(INFO) << ENDPOINT << "Closing stream: " << id();
+    DVLOG(1) << ENDPOINT << "Closing stream: " << id();
     session_->CloseStream(id());
   }
 }

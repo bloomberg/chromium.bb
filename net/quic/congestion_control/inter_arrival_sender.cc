@@ -109,7 +109,7 @@ void InterArrivalSender::OnIncomingQuicCongestionFeedbackFrame(
     SentPacketsMap::const_iterator sent_it = sent_packets.find(sequence_number);
     if (sent_it == sent_packets.end()) {
       // Too old data; ignore and move forward.
-      DLOG(INFO) << "Too old feedback move forward, sequence_number:"
+      DVLOG(1) << "Too old feedback move forward, sequence_number:"
                  << sequence_number;
       continue;
     }
@@ -200,7 +200,7 @@ bool InterArrivalSender::ProbingPhase(QuicTime feedback_receive_time) {
 
   current_bandwidth_ = new_rate;
   paced_sender_->UpdateBandwidthEstimate(feedback_receive_time, new_rate);
-  DLOG(INFO) << "Probe result; new rate:"
+  DVLOG(1) << "Probe result; new rate:"
              << new_rate.ToKBitsPerSecond() << " Kbits/s "
              << " available estimate:"
              << available_channel_estimate.ToKBitsPerSecond() << " Kbits/s "
@@ -366,7 +366,7 @@ void InterArrivalSender::EstimateNewBandwidth(QuicTime feedback_receive_time,
   }
   paced_sender_->UpdateBandwidthEstimate(feedback_receive_time,
                                          current_bandwidth_);
-  DLOG(INFO) << "New bandwidth estimate in steady state:"
+  DVLOG(1) << "New bandwidth estimate in steady state:"
              << current_bandwidth_.ToKBitsPerSecond()
              << " Kbits/s";
 }
@@ -378,12 +378,12 @@ void InterArrivalSender::EstimateNewBandwidthAfterDraining(
   if (current_bandwidth_ > back_down_bandwidth_) {
     // Do nothing, our current bandwidth is higher than our bandwidth at the
     // previous back down.
-    DLOG(INFO) << "Current bandwidth estimate is higher than before draining";
+    DVLOG(1) << "Current bandwidth estimate is higher than before draining";
     return;
   }
   if (estimated_congestion_delay >= back_down_congestion_delay_) {
     // Do nothing, our estimated delay have increased.
-    DLOG(INFO) << "Current delay estimate is higher than before draining";
+    DVLOG(1) << "Current delay estimate is higher than before draining";
     return;
   }
   DCHECK(back_down_time_.IsInitialized());
@@ -413,7 +413,7 @@ void InterArrivalSender::EstimateNewBandwidthAfterDraining(
       new_estimate = std::max(current_bandwidth_,
                               current_bandwidth_.Add(draining_rate).Scale(
                                   1.0f - kMinBitrateReduction));
-      DLOG(INFO) << "Draining calculation; current rate:"
+      DVLOG(1) << "Draining calculation; current rate:"
                  << current_bandwidth_.ToKBitsPerSecond() << " Kbits/s "
                  << "draining rate:"
                  << draining_rate.ToKBitsPerSecond() << " Kbits/s "
@@ -449,7 +449,7 @@ void InterArrivalSender::EstimateNewBandwidthAfterDraining(
   state_machine_->IncreaseBitrateDecision();
   paced_sender_->UpdateBandwidthEstimate(feedback_receive_time, new_estimate);
   current_bandwidth_ = new_estimate;
-  DLOG(INFO) << "New bandwidth estimate after draining:"
+  DVLOG(1) << "New bandwidth estimate after draining:"
              << new_estimate.ToKBitsPerSecond() << " Kbits/s";
 }
 
@@ -481,7 +481,7 @@ void InterArrivalSender::EstimateBandwidthAfterDelayEvent(
 
   ResetCurrentBandwidth(feedback_receive_time, new_target_bitrate);
 
-  DLOG(INFO) << "New bandwidth estimate after delay event:"
+  DVLOG(1) << "New bandwidth estimate after delay event:"
       << current_bandwidth_.ToKBitsPerSecond()
       << " Kbits/s min delay bitrate:"
       << min_delay_bitrate.ToKBitsPerSecond()
@@ -494,7 +494,7 @@ void InterArrivalSender::EstimateBandwidthAfterLossEvent(
     QuicTime feedback_receive_time) {
   ResetCurrentBandwidth(feedback_receive_time,
                         current_bandwidth_.Scale(kPacketLossBitrateReduction));
-  DLOG(INFO) << "New bandwidth estimate after loss event:"
+  DVLOG(1) << "New bandwidth estimate after loss event:"
              << current_bandwidth_.ToKBitsPerSecond()
              << " Kbits/s";
 }

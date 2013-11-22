@@ -38,7 +38,7 @@ void ChannelEstimator::OnAcknowledgedPacket(
     return;
   }
   if (last_sequence_number_ != sequence_number - 1) {
-    DLOG(INFO) << "Skip channel estimator due to lost packet(s)";
+    DVLOG(1) << "Skip channel estimator due to lost packet(s)";
   } else if (last_send_time_.IsInitialized()) {
     QuicTime::Delta sent_delta = send_time.Subtract(last_send_time_);
     QuicTime::Delta received_delta = receive_time.Subtract(last_receive_time_);
@@ -88,7 +88,7 @@ ChannelEstimateState ChannelEstimator::GetChannelEstimate(
     }
   }
   *estimate = median_bitrate;
-  DLOG(INFO) << "Channel estimate is:"
+  DVLOG(1) << "Channel estimate is:"
              << median_bitrate.ToKBitsPerSecond() << " Kbit/s";
   // If the bitrates in our 25th to 75th percentile window varies more than
   // 25% of the median bitrate we consider the estimate to be uncertain.

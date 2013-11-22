@@ -338,7 +338,7 @@ scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateIfSessionExists(
     const HostPortProxyPair& host_port_proxy_pair,
     const BoundNetLog& net_log) {
   if (!HasActiveSession(host_port_proxy_pair)) {
-    DLOG(INFO) << "No active session";
+    DVLOG(1) << "No active session";
     return scoped_ptr<QuicHttpStream>();
   }
 

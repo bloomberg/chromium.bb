@@ -248,7 +248,7 @@ bool ProofVerifierChromium::VerifySignature(const string& signed_data,
     return false;
   }
 
-  DLOG(INFO) << "VerifyFinal success";
+  DVLOG(1) << "VerifyFinal success";
   return true;
 }
 

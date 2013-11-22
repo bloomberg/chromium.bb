@@ -25,7 +25,7 @@ FixRateSender::FixRateSender(const QuicClock* clock)
       paced_sender_(bitrate_, max_segment_size_),
       data_in_flight_(0),
       latest_rtt_(QuicTime::Delta::Zero()) {
-  DLOG(INFO) << "FixRateSender";
+  DVLOG(1) << "FixRateSender";
 }
 
 FixRateSender::~FixRateSender() {

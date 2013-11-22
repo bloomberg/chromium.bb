@@ -114,7 +114,7 @@ void InterArrivalProbe::OnIncomingFeedback(
   }
   estimate_available_ = true;
   available_channel_estimator_.reset(NULL);
-  DLOG(INFO) << "Probe estimate:"
+  DVLOG(1) << "Probe estimate:"
              << available_channel_estimate_.ToKBitsPerSecond()
              << " Kbits/s";
 }

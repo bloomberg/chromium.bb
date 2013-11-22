@@ -131,7 +131,7 @@ class VerifyNonceIsValidAndUniqueCallback
 
  protected:
   virtual void RunImpl(bool nonce_is_valid_and_unique) OVERRIDE {
-    DLOG(INFO) << "Using client nonce, unique: " << nonce_is_valid_and_unique;
+    DVLOG(1) << "Using client nonce, unique: " << nonce_is_valid_and_unique;
     result_->info.unique = nonce_is_valid_and_unique;
     done_cb_->Run(result_);
   }
@@ -796,14 +796,14 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     info->client_nonce_well_formed = true;
   } else {
     // Invalid client nonce.
-    DLOG(INFO) << "Invalid client nonce.";
+    DVLOG(1) << "Invalid client nonce.";
     helper.ValidationComplete(QUIC_NO_ERROR, "");
     return;
   }
 
   if (!replay_protection_) {
     info->unique = true;
-    DLOG(INFO) << "No replay protection.";
+    DVLOG(1) << "No replay protection.";
     helper.ValidationComplete(QUIC_NO_ERROR, "");
     return;
   }
@@ -812,7 +812,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   if (!info->server_nonce.empty()) {
     // If the server nonce is present, use it establish uniqueness.
     info->unique = ValidateServerNonce(info->server_nonce, info->now);
-    DLOG(INFO) << "Using server nonce, unique: " << info->unique;
+    DVLOG(1) << "Using server nonce, unique: " << info->unique;
     helper.ValidationComplete(QUIC_NO_ERROR, "");
     return;
   }

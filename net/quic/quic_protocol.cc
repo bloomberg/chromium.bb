@@ -161,7 +161,7 @@ QuicVersion QuicTagToQuicVersion(const QuicTag version_tag) {
     }
   }
   // Reading from the client so this should not be considered an ERROR.
-  DLOG(INFO) << "Unsupported QuicTag version: "
+  DVLOG(1) << "Unsupported QuicTag version: "
              << QuicUtils::TagToString(version_tag);
   return QUIC_VERSION_UNSUPPORTED;
 }

@@ -276,7 +276,7 @@ size_t QuicFramer::GetSerializedFrameLength(
     if (CanTruncate(quic_version_, frame, free_bytes)) {
       // Truncate the frame so the packet will not exceed kMaxPacketSize.
       // Note that we may not use every byte of the writer in this case.
-      DLOG(INFO) << "Truncating large frame";
+      DVLOG(1) << "Truncating large frame";
       return free_bytes;
     }
   }
@@ -1033,7 +1033,7 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
           return RaiseError(QUIC_INVALID_STREAM_DATA);
         }
         if (!visitor_->OnStreamFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stop further processing.";
+          DVLOG(1) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
         }
@@ -1047,7 +1047,7 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
           return RaiseError(QUIC_INVALID_ACK_DATA);
         }
         if (!visitor_->OnAckFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stop further processing.";
+          DVLOG(1) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
         }
@@ -1061,7 +1061,7 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
           return RaiseError(QUIC_INVALID_CONGESTION_FEEDBACK_DATA);
         }
         if (!visitor_->OnCongestionFeedbackFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stop further processing.";
+          DVLOG(1) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
         }
@@ -1087,7 +1087,7 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
           return RaiseError(QUIC_INVALID_RST_STREAM_DATA);
         }
         if (!visitor_->OnRstStreamFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stop further processing.";
+          DVLOG(1) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
         }
@@ -1102,14 +1102,14 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
 
         if (version() <= QUIC_VERSION_11) {
           if (!visitor_->OnAckFrame(frame.ack_frame)) {
-            DLOG(INFO) << "Visitor asked to stop further processing.";
+            DVLOG(1) << "Visitor asked to stop further processing.";
             // Returning true since there was no parsing error.
             return true;
           }
         }
 
         if (!visitor_->OnConnectionCloseFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stop further processing.";
+          DVLOG(1) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
         }
@@ -1122,7 +1122,7 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
           return RaiseError(QUIC_INVALID_GOAWAY_DATA);
         }
         if (!visitor_->OnGoAwayFrame(goaway_frame)) {
-          DLOG(INFO) << "Visitor asked to stop further processing.";
+          DVLOG(1) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
         }
@@ -1760,7 +1760,7 @@ size_t QuicFramer::ComputeFrameLength(
           break;
         default:
           set_detailed_error("Illegal feedback type.");
-          DLOG(INFO) << "Illegal feedback type: " << congestion_feedback.type;
+          DVLOG(1) << "Illegal feedback type: " << congestion_feedback.type;
           break;
       }
       return len;
@@ -2281,7 +2281,7 @@ bool QuicFramer::AppendGoAwayFramePayload(const QuicGoAwayFrame& frame,
 }
 
 bool QuicFramer::RaiseError(QuicErrorCode error) {
-  DLOG(INFO) << detailed_error_;
+  DVLOG(1) << detailed_error_;
   set_error(error);
   visitor_->OnError(this);
   reader_.reset(NULL);

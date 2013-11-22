@@ -232,7 +232,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
     // Pacing will be enabled if the client negotiates it.
     congestion_manager_.MaybeEnablePacing();
   }
-  DLOG(INFO) << ENDPOINT << "Created connection with guid: " << guid;
+  DVLOG(1) << ENDPOINT << "Created connection with guid: " << guid;
   timeout_alarm_->Set(clock_->ApproximateNow().Add(idle_network_timeout_));
   framer_.set_visitor(this);
   framer_.set_received_entropy_calculator(&received_packet_manager_);
@@ -298,7 +298,7 @@ void QuicConnection::OnPublicResetPacket(
 }
 
 bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
-  DLOG(INFO) << ENDPOINT << "Received packet with mismatched version "
+  DVLOG(1) << ENDPOINT << "Received packet with mismatched version "
              << received_version;
   // TODO(satyamshekhar): Implement no server state in this mode.
   if (!is_server_) {
@@ -340,7 +340,7 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
 
   version_negotiation_state_ = NEGOTIATED_VERSION;
   visitor_->OnSuccessfulVersionNegotiation(received_version);
-  DLOG(INFO) << ENDPOINT << "version negotiated " << received_version;
+  DVLOG(1) << ENDPOINT << "version negotiated " << received_version;
 
   // Store the new version.
   framer_.set_version(received_version);
@@ -385,7 +385,7 @@ void QuicConnection::OnVersionNegotiationPacket(
     return;
   }
 
-  DLOG(INFO) << ENDPOINT << "negotiating version " << version();
+  DVLOG(1) << ENDPOINT << "negotiating version " << version();
   version_negotiation_state_ = NEGOTIATION_IN_PROGRESS;
   RetransmitUnackedPackets(ALL_PACKETS);
 }
@@ -410,14 +410,14 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   ++stats_.packets_dropped;
 
   if (header.public_header.guid != guid_) {
-    DLOG(INFO) << ENDPOINT << "Ignoring packet from unexpected GUID: "
+    DVLOG(1) << ENDPOINT << "Ignoring packet from unexpected GUID: "
                << header.public_header.guid << " instead of " << guid_;
     return false;
   }
 
   if (!Near(header.packet_sequence_number,
             last_header_.packet_sequence_number)) {
-    DLOG(INFO) << ENDPOINT << "Packet " << header.packet_sequence_number
+    DVLOG(1) << ENDPOINT << "Packet " << header.packet_sequence_number
                << " out of bounds.  Discarding";
     SendConnectionCloseWithDetails(QUIC_INVALID_PACKET_HEADER,
                                    "Packet sequence number out of bounds");
@@ -491,7 +491,7 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
   DVLOG(1) << ENDPOINT << "OnAckFrame: " << incoming_ack;
 
   if (last_header_.packet_sequence_number <= largest_seen_packet_with_ack_) {
-    DLOG(INFO) << ENDPOINT << "Received an old ack frame: ignoring";
+    DVLOG(1) << ENDPOINT << "Received an old ack frame: ignoring";
     return true;
   }
 
@@ -671,7 +671,7 @@ bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
   if (debug_visitor_) {
     debug_visitor_->OnRstStreamFrame(frame);
   }
-  DLOG(INFO) << ENDPOINT << "Stream reset with error "
+  DVLOG(1) << ENDPOINT << "Stream reset with error "
              << QuicUtils::StreamErrorToString(frame.error_code);
   last_rst_frames_.push_back(frame);
   return connected_;
@@ -683,7 +683,7 @@ bool QuicConnection::OnConnectionCloseFrame(
   if (debug_visitor_) {
     debug_visitor_->OnConnectionCloseFrame(frame);
   }
-  DLOG(INFO) << ENDPOINT << "Connection " << guid() << " closed with error "
+  DVLOG(1) << ENDPOINT << "Connection " << guid() << " closed with error "
              << QuicUtils::ErrorToString(frame.error_code)
              << " " << frame.error_details;
   last_close_frames_.push_back(frame);
@@ -692,7 +692,7 @@ bool QuicConnection::OnConnectionCloseFrame(
 
 bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
   DCHECK(connected_);
-  DLOG(INFO) << ENDPOINT << "Go away received with error "
+  DVLOG(1) << ENDPOINT << "Go away received with error "
              << QuicUtils::ErrorToString(frame.error_code)
              << " and reason:" << frame.reason_phrase;
   last_goaway_frames_.push_back(frame);
@@ -706,7 +706,7 @@ void QuicConnection::OnPacketComplete() {
     return;
   }
 
-  DLOG(INFO) << ENDPOINT << (last_packet_revived_ ? "Revived" : "Got")
+  DVLOG(1) << ENDPOINT << (last_packet_revived_ ? "Revived" : "Got")
              << " packet " << last_header_.packet_sequence_number
              << " with " << last_ack_frames_.size() << " acks, "
              << last_congestion_frames_.size() << " congestions, "
@@ -905,7 +905,7 @@ QuicConsumedData QuicConnection::SendStreamData(
 
 void QuicConnection::SendRstStream(QuicStreamId id,
                                    QuicRstStreamErrorCode error) {
-  LOG(INFO) << "Sending RST_STREAM: " << id << " code: " << error;
+  DVLOG(1) << "Sending RST_STREAM: " << id << " code: " << error;
   // Opportunistically bundle an ack with this outgoing packet.
   ScopedPacketBundler ack_bundler(this, true);
   packet_generator_.AddControlFrame(
@@ -1084,7 +1084,7 @@ void QuicConnection::WritePendingRetransmissions() {
         pending.retransmittable_frames.frames(),
         pending.sequence_number_length);
 
-    DLOG(INFO) << ENDPOINT << "Retransmitting " << pending.sequence_number
+    DVLOG(1) << ENDPOINT << "Retransmitting " << pending.sequence_number
                << " as " << serialized_packet.sequence_number;
     if (debug_visitor_) {
       debug_visitor_->OnPacketRetransmitted(
@@ -1169,7 +1169,7 @@ bool QuicConnection::CanWrite(TransmissionType transmission_type,
   // This check assumes that if the send alarm is set, it applies equally to all
   // types of transmissions.
   if (send_alarm_->IsSet()) {
-    DLOG(INFO) << "Send alarm set.  Not sending.";
+    DVLOG(1) << "Send alarm set.  Not sending.";
     return false;
   }
 
@@ -1184,7 +1184,7 @@ bool QuicConnection::CanWrite(TransmissionType transmission_type,
   if (!delay.IsZero()) {
     send_alarm_->Cancel();
     send_alarm_->Set(now.Add(delay));
-    DLOG(INFO) << "Delaying sending.";
+    DVLOG(1) << "Delaying sending.";
     return false;
   }
   return true;
@@ -1274,7 +1274,7 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
                 << options()->max_packet_length << " encrypted length: "
                 << encrypted->length();
   }
-  DLOG(INFO) << ENDPOINT << "Sending packet number " << sequence_number
+  DVLOG(1) << ENDPOINT << "Sending packet number " << sequence_number
              << " : " << (packet->is_fec_packet() ? "FEC " :
                  (retransmittable == HAS_RETRANSMITTABLE_DATA
                       ? "data bearing " : " ack only "))
@@ -1335,7 +1335,7 @@ bool QuicConnection::ShouldDiscardPacket(
     QuicPacketSequenceNumber sequence_number,
     HasRetransmittableData retransmittable) {
   if (!connected_) {
-    DLOG(INFO) << ENDPOINT
+    DVLOG(1) << ENDPOINT
                << "Not sending packet as connection is disconnected.";
     return true;
   }
@@ -1344,7 +1344,7 @@ bool QuicConnection::ShouldDiscardPacket(
       level == ENCRYPTION_NONE) {
     // Drop packets that are NULL encrypted since the peer won't accept them
     // anymore.
-    DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
+    DVLOG(1) << ENDPOINT << "Dropping packet: " << sequence_number
                << " since the packet is NULL encrypted.";
     sent_packet_manager_.DiscardUnackedPacket(sequence_number);
     return true;
@@ -1358,7 +1358,7 @@ bool QuicConnection::ShouldDiscardPacket(
       // then receive a truncated ACK which causes us to raise the
       // high water mark, all before we're able to send the packet
       // then we can simply drop it.
-      DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
+      DVLOG(1) << ENDPOINT << "Dropping packet: " << sequence_number
                  << " since it has already been acked.";
       return true;
     }
@@ -1370,13 +1370,13 @@ bool QuicConnection::ShouldDiscardPacket(
       // We don't want to call DiscardUnackedPacket because in this case
       // the peer has not yet ACK'd the data.  We need the subsequent
       // retransmission to be sent.
-      DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
+      DVLOG(1) << ENDPOINT << "Dropping packet: " << sequence_number
                  << " since it has already been retransmitted.";
       return true;
     }
 
     if (!sent_packet_manager_.HasRetransmittableFrames(sequence_number)) {
-      DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
+      DVLOG(1) << ENDPOINT << "Dropping packet: " << sequence_number
                  << " since a previous transmission has been acked.";
       sent_packet_manager_.DiscardUnackedPacket(sequence_number);
       return true;
@@ -1402,7 +1402,7 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
   pending_write_.reset();
 
   if (result.status == WRITE_STATUS_ERROR) {
-    DLOG(INFO) << "Write failed with error code: " << result.error_code;
+    DVLOG(1) << "Write failed with error code: " << result.error_code;
     // We can't send an error as the socket is presumably borked.
     CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
     return false;
@@ -1524,7 +1524,7 @@ void QuicConnection::OnRetransmissionTimeout() {
   // packets will be queued for future sending.
   SequenceNumberSet unacked_packets =
       sent_packet_manager_.GetUnackedPackets();
-  DLOG(INFO) << "OnRetransmissionTimeout() fired with "
+  DVLOG(1) << "OnRetransmissionTimeout() fired with "
              << unacked_packets.size() << " unacked packets.";
 
   // Abandon all unacked packets to ensure the congestion window
@@ -1707,7 +1707,7 @@ void QuicConnection::SendConnectionCloseWithDetails(QuicErrorCode error,
 
 void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
                                                const string& details) {
-  DLOG(INFO) << ENDPOINT << "Force closing " << guid() << " with error "
+  DVLOG(1) << ENDPOINT << "Force closing " << guid() << " with error "
              << QuicUtils::ErrorToString(error) << " (" << error << ") "
              << details;
   ScopedPacketBundler ack_bundler(this, version() > QUIC_VERSION_11);
@@ -1737,7 +1737,7 @@ void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
 void QuicConnection::SendGoAway(QuicErrorCode error,
                                 QuicStreamId last_good_stream_id,
                                 const string& reason) {
-  DLOG(INFO) << ENDPOINT << "Going away with error "
+  DVLOG(1) << ENDPOINT << "Going away with error "
              << QuicUtils::ErrorToString(error)
              << " (" << error << ")";
 

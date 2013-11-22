@@ -274,11 +274,11 @@ void QuicSession::CloseStream(QuicStreamId stream_id) {
 
 void QuicSession::CloseStreamInner(QuicStreamId stream_id,
                                    bool locally_reset) {
-  DLOG(INFO) << ENDPOINT << "Closing stream " << stream_id;
+  DVLOG(1) << ENDPOINT << "Closing stream " << stream_id;
 
   ReliableStreamMap::iterator it = stream_map_.find(stream_id);
   if (it == stream_map_.end()) {
-    DLOG(INFO) << ENDPOINT << "Stream is already closed: " << stream_id;
+    DVLOG(1) << ENDPOINT << "Stream is already closed: " << stream_id;
     return;
   }
   ReliableQuicStream* stream = it->second;
@@ -392,7 +392,7 @@ QuicConfig* QuicSession::config() {
 }
 
 void QuicSession::ActivateStream(ReliableQuicStream* stream) {
-  DLOG(INFO) << ENDPOINT << "num_streams: " << stream_map_.size()
+  DVLOG(1) << ENDPOINT << "num_streams: " << stream_map_.size()
              << ". activating " << stream->id();
   DCHECK_EQ(stream_map_.count(stream->id()), 0u);
   stream_map_[stream->id()] = stream;

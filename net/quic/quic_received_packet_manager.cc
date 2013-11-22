@@ -81,7 +81,7 @@ void QuicReceivedPacketManager::RecordPacketEntropyHash(
     QuicPacketSequenceNumber sequence_number,
     QuicPacketEntropyHash entropy_hash) {
   if (sequence_number < largest_sequence_number_) {
-    DLOG(INFO) << "Ignoring received packet entropy for sequence_number:"
+    DVLOG(1) << "Ignoring received packet entropy for sequence_number:"
                << sequence_number << " less than largest_peer_sequence_number:"
                << largest_sequence_number_;
     return;
@@ -127,7 +127,7 @@ void QuicReceivedPacketManager::RecalculateEntropyHash(
     QuicPacketEntropyHash entropy_hash) {
   DCHECK_LE(peer_least_unacked, received_info_.largest_observed);
   if (peer_least_unacked < largest_sequence_number_) {
-    DLOG(INFO) << "Ignoring received peer_least_unacked:" << peer_least_unacked
+    DVLOG(1) << "Ignoring received peer_least_unacked:" << peer_least_unacked
                << " less than largest_peer_sequence_number:"
                << largest_sequence_number_;
     return;

@@ -40,7 +40,7 @@ P256KeyExchange::~P256KeyExchange() {
 // static
 P256KeyExchange* P256KeyExchange::New(StringPiece key) {
   if (key.size() < 2) {
-    DLOG(INFO) << "Key pair is too small.";
+    DVLOG(1) << "Key pair is too small.";
     return NULL;
   }
 
@@ -49,14 +49,14 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
                 (static_cast<size_t>(data[1]) << 8);
   key.remove_prefix(2);
   if (key.size() < size) {
-    DLOG(INFO) << "Key pair does not contain key material.";
+    DVLOG(1) << "Key pair does not contain key material.";
     return NULL;
   }
 
   StringPiece private_piece(key.data(), size);
   key.remove_prefix(size);
   if (key.empty()) {
-    DLOG(INFO) << "Key pair does not contain public key.";
+    DVLOG(1) << "Key pair does not contain public key.";
     return NULL;
   }
 
@@ -70,7 +70,7 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
           StringPieceToVector(public_piece)));
 
   if (!key_pair.get()) {
-    DLOG(INFO) << "Can't decrypt private key.";
+    DVLOG(1) << "Can't decrypt private key.";
     return NULL;
   }
 
@@ -80,14 +80,14 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
       public_key->u.ec.publicValue.len != kUncompressedP256PointBytes ||
       !public_key->u.ec.publicValue.data ||
       public_key->u.ec.publicValue.data[0] != kUncompressedECPointForm) {
-    DLOG(INFO) << "Key is invalid.";
+    DVLOG(1) << "Key is invalid.";
     return NULL;
   }
 
   // Ensure that the key is using the correct curve, i.e., NIST P-256.
   const SECOidData* oid_data = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP256R1);
   if (!oid_data) {
-    DLOG(INFO) << "Can't get P-256's OID.";
+    DVLOG(1) << "Can't get P-256's OID.";
     return NULL;
   }
 
@@ -97,7 +97,7 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
       public_key->u.ec.DEREncodedParams.data[1] != oid_data->oid.len ||
       memcmp(public_key->u.ec.DEREncodedParams.data + 2,
              oid_data->oid.data, oid_data->oid.len) != 0) {
-    DLOG(INFO) << "Key is invalid.";
+    DVLOG(1) << "Key is invalid.";
   }
 
   return new P256KeyExchange(key_pair.release(),
@@ -109,7 +109,7 @@ string P256KeyExchange::NewPrivateKey() {
   scoped_ptr<crypto::ECPrivateKey> key_pair(crypto::ECPrivateKey::Create());
 
   if (!key_pair.get()) {
-    DLOG(INFO) << "Can't generate new key pair.";
+    DVLOG(1) << "Can't generate new key pair.";
     return string();
   }
 
@@ -117,7 +117,7 @@ string P256KeyExchange::NewPrivateKey() {
   if (!key_pair->ExportEncryptedPrivateKey(kExportPassword,
                                            1 /* iteration */,
                                            &private_key)) {
-    DLOG(INFO) << "Can't export private key.";
+    DVLOG(1) << "Can't export private key.";
     return string();
   }
 
@@ -126,7 +126,7 @@ string P256KeyExchange::NewPrivateKey() {
   // store the public key.
   vector<uint8> public_key;
   if (!key_pair->ExportPublicKey(&public_key)) {
-    DLOG(INFO) << "Can't export public key.";
+    DVLOG(1) << "Can't export public key.";
     return string();
   }
 
@@ -159,7 +159,7 @@ bool P256KeyExchange::CalculateSharedKey(const StringPiece& peer_public_value,
                                          string* out_result) const {
   if (peer_public_value.size() != kUncompressedP256PointBytes ||
       peer_public_value[0] != kUncompressedECPointForm) {
-    DLOG(INFO) << "Peer public value is invalid.";
+    DVLOG(1) << "Peer public value is invalid.";
     return false;
   }
 
@@ -203,18 +203,18 @@ bool P256KeyExchange::CalculateSharedKey(const StringPiece& peer_public_value,
           NULL));
 
   if (!premaster_secret.get()) {
-    DLOG(INFO) << "Can't derive ECDH shared key.";
+    DVLOG(1) << "Can't derive ECDH shared key.";
     return false;
   }
 
   if (PK11_ExtractKeyValue(premaster_secret.get()) != SECSuccess) {
-    DLOG(INFO) << "Can't extract raw ECDH shared key.";
+    DVLOG(1) << "Can't extract raw ECDH shared key.";
     return false;
   }
 
   SECItem* key_data = PK11_GetKeyData(premaster_secret.get());
   if (!key_data || !key_data->data || key_data->len != kP256FieldBytes) {
-    DLOG(INFO) << "ECDH shared key is invalid.";
+    DVLOG(1) << "ECDH shared key is invalid.";
     return false;
   }
 
