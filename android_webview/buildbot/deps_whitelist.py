@@ -47,6 +47,7 @@ class DepsWhitelist(object):
       'third_party/openssl',
       'third_party/opus/src',
       'third_party/ots',
+      'third_party/sfntly/cpp/src',
       'third_party/skia/gyp',
       'third_party/skia/include',
       'third_party/skia/src',
