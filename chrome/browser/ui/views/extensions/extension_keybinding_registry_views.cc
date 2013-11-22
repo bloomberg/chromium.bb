@@ -29,8 +29,8 @@ ExtensionKeybindingRegistryViews::ExtensionKeybindingRegistryViews(
 }
 
 ExtensionKeybindingRegistryViews::~ExtensionKeybindingRegistryViews() {
-  EventTargets::const_iterator iter;
-  for (iter = event_targets_.begin(); iter != event_targets_.end(); ++iter)
+  for (EventTargets::const_iterator iter = event_targets_.begin();
+       iter != event_targets_.end(); ++iter)
     focus_manager_->UnregisterAccelerator(iter->first, this);
 }
 
@@ -57,8 +57,15 @@ void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
     if (!command_name.empty() && (iter->second.command_name() != command_name))
       continue;
 
-    event_targets_[iter->second.accelerator()] =
-        std::make_pair(extension->id(), iter->second.command_name());
+    event_targets_[iter->second.accelerator()].push_back(
+        std::make_pair(extension->id(), iter->second.command_name()));
+    // Shortcuts except media keys have only one target in the list. See comment
+    // about |event_targets_|.
+    if (!extensions::CommandService::IsMediaKey(iter->second.accelerator()))
+      DCHECK_EQ(1u, event_targets_[iter->second.accelerator()].size());
+    if (event_targets_[iter->second.accelerator()].size() > 1)
+      continue;   // It is already registered with the focus manager.
+
     focus_manager_->RegisterAccelerator(
         iter->second.accelerator(),
         ui::AcceleratorManager::kHighPriority, this);
@@ -73,15 +80,7 @@ void ExtensionKeybindingRegistryViews::RemoveExtensionKeybindingImpl(
 
 bool ExtensionKeybindingRegistryViews::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
-  EventTargets::iterator it = event_targets_.find(accelerator);
-  if (it == event_targets_.end()) {
-    NOTREACHED();  // Shouldn't get this event for something not registered.
-    return false;
-  }
-
-  CommandExecuted(it->second.first, it->second.second);
-
-  return true;
+  return ExtensionKeybindingRegistry::NotifyEventTargets(accelerator);
 }
 
 bool ExtensionKeybindingRegistryViews::CanHandleAccelerators() const {

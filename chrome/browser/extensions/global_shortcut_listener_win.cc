@@ -72,6 +72,13 @@ void GlobalShortcutListenerWin::OnWndProc(HWND hwnd,
 void GlobalShortcutListenerWin::RegisterAccelerator(
     const ui::Accelerator& accelerator,
     GlobalShortcutListener::Observer* observer) {
+  if (hotkey_ids_.find(accelerator) != hotkey_ids_.end()) {
+    // The shortcut has already been registered. Some shortcuts, such as
+    // MediaKeys can have multiple targets, all keyed off of the same
+    // accelerator.
+    return;
+  }
+
   int modifiers = 0;
   modifiers |= accelerator.IsShiftDown() ? MOD_SHIFT : 0;
   modifiers |= accelerator.IsCtrlDown() ? MOD_CONTROL : 0;

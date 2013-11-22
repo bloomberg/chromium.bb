@@ -73,8 +73,13 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
       continue;
 
     ui::Accelerator accelerator(iter->second.accelerator());
-    event_targets_[accelerator] =
-        std::make_pair(extension->id(), iter->second.command_name());
+    event_targets_[accelerator].push_back(
+        std::make_pair(extension->id(), iter->second.command_name()));
+
+    // Shortcuts except media keys have only one target in the list. See comment
+    // about |event_targets_|.
+    if (!extensions::CommandService::IsMediaKey(iter->second.accelerator()))
+      DCHECK_EQ(1u, event_targets_[accelerator].size());
 
     if (!accel_group_) {
       accel_group_ = gtk_accel_group_new();
@@ -99,8 +104,10 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
           &browser_action,
           NULL)) {
     ui::Accelerator accelerator(browser_action.accelerator());
-    event_targets_[accelerator] =
-      std::make_pair(extension->id(), browser_action.command_name());
+    event_targets_[accelerator].push_back(
+        std::make_pair(extension->id(), browser_action.command_name()));
+    // We should have only one target. See comment about |event_targets_|.
+    DCHECK_EQ(1u, event_targets_[accelerator].size());
   }
 
   // Add the Page Action (if any).
@@ -111,8 +118,10 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
           &page_action,
           NULL)) {
     ui::Accelerator accelerator(page_action.accelerator());
-    event_targets_[accelerator] =
-        std::make_pair(extension->id(), page_action.command_name());
+    event_targets_[accelerator].push_back(
+        std::make_pair(extension->id(), page_action.command_name()));
+    // We should have only one target. See comment about |event_targets_|.
+    DCHECK_EQ(1u, event_targets_[accelerator].size());
   }
 
   // Add the Script Badge (if any).
@@ -123,8 +132,10 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
           &script_badge,
           NULL)) {
     ui::Accelerator accelerator(script_badge.accelerator());
-    event_targets_[accelerator] =
-        std::make_pair(extension->id(), script_badge.command_name());
+    event_targets_[accelerator].push_back(
+        std::make_pair(extension->id(), script_badge.command_name()));
+    // We should have only one target. See comment about |event_targets_|.
+    DCHECK_EQ(1u, event_targets_[accelerator].size());
   }
 }
 
@@ -149,12 +160,5 @@ gboolean ExtensionKeybindingRegistryGtk::OnGtkAccelerator(
   ui::Accelerator accelerator = ui::AcceleratorForGdkKeyCodeAndModifier(
       keyval, modifier);
 
-  EventTargets::iterator it = event_targets_.find(accelerator);
-  if (it == event_targets_.end()) {
-    NOTREACHED();  // Shouldn't get this event for something not registered.
-    return FALSE;
-  }
-
-  CommandExecuted(it->second.first, it->second.second);
-  return TRUE;
+  return ExtensionKeybindingRegistry::NotifyEventTargets(accelerator);
 }

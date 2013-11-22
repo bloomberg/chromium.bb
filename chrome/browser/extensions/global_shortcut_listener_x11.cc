@@ -110,6 +110,13 @@ bool GlobalShortcutListenerX11::Dispatch(const base::NativeEvent& event) {
 void GlobalShortcutListenerX11::RegisterAccelerator(
     const ui::Accelerator& accelerator,
     GlobalShortcutListener::Observer* observer) {
+  if (registered_hot_keys_.find(accelerator) != registered_hot_keys_.end()) {
+    // The shortcut has already been registered. Some shortcuts, such as
+    // MediaKeys can have multiple targets, all keyed off of the same
+    // accelerator.
+    return;
+  }
+
   int modifiers = GetNativeModifiers(accelerator);
   KeyCode keycode = XKeysymToKeycode(x_display_, accelerator.key_code());
   base::X11ErrorTracker err_tracker;

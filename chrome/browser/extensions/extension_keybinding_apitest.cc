@@ -261,4 +261,30 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_DontOverwriteSystemShortcuts) {
   ASSERT_TRUE(result);
 }
 
+#if defined(OS_WIN)
+// Currently this feature is implemented on Windows only.
+#define MAYBE_AllowDuplicatedMediaKeys AllowDuplicatedMediaKeys
+#else
+#define MAYBE_AllowDuplicatedMediaKeys DISABLED_AllowDuplicatedMediaKeys
+#endif
+
+// Test that media keys go to all extensions that register for them.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_AllowDuplicatedMediaKeys) {
+  ResultCatcher catcher;
+  ASSERT_TRUE(RunExtensionTest("keybinding/non_global_media_keys_0"))
+      << message_;
+  ASSERT_TRUE(catcher.GetNextResult());
+  ASSERT_TRUE(RunExtensionTest("keybinding/non_global_media_keys_1"))
+      << message_;
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  // Activate the Media Stop key.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_MEDIA_STOP, false, false, false, false));
+
+  // We should get two success result.
+  ASSERT_TRUE(catcher.GetNextResult());
+  ASSERT_TRUE(catcher.GetNextResult());
+}
+
 }  // namespace extensions

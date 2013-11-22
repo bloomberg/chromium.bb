@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,22 +38,27 @@ ExtensionKeybindingRegistry::~ExtensionKeybindingRegistry() {
 void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
     const Extension* extension,
     const std::string& command_name) {
-  EventTargets::iterator iter = event_targets_.begin();
-  while (iter != event_targets_.end()) {
-    if (iter->second.first != extension->id() ||
-        (!command_name.empty() && (iter->second.second != command_name))) {
-      ++iter;
-      continue;  // Not the extension or command we asked for.
+  EventTargets::iterator it = event_targets_.begin();
+  while (it != event_targets_.end()) {
+    TargetList& target_list = it->second;
+    TargetList::iterator target = target_list.begin();
+    while (target != target_list.end()) {
+      if (target->first == extension->id() &&
+          (command_name.empty() || command_name == target->second))
+        target = target_list.erase(target);
+      else
+        target++;
     }
 
-    // Let each platform-specific implementation get a chance to clean up.
-    RemoveExtensionKeybindingImpl(iter->first, command_name);
+    EventTargets::iterator old = it++;
+    if (target_list.empty()) {
+      // Let each platform-specific implementation get a chance to clean up.
+      RemoveExtensionKeybindingImpl(old->first, command_name);
+      event_targets_.erase(old);
+    }
 
-    EventTargets::iterator old = iter++;
-    event_targets_.erase(old);
-
-    // If a specific command_name was requested, it has now been deleted so
-    // no further work is required.
+    // If a specific command_name was requested, it has now been deleted so no
+    // further work is required.
     if (!command_name.empty())
       break;
   }
@@ -76,6 +82,19 @@ bool ExtensionKeybindingRegistry::ShouldIgnoreCommand(
   return command == manifest_values::kPageActionCommandEvent ||
          command == manifest_values::kBrowserActionCommandEvent ||
          command == manifest_values::kScriptBadgeCommandEvent;
+}
+
+bool ExtensionKeybindingRegistry::NotifyEventTargets(
+    const ui::Accelerator& accelerator) {
+  EventTargets::iterator targets = event_targets_.find(accelerator);
+  if (targets == event_targets_.end() || targets->second.empty())
+    return false;
+
+  for (TargetList::const_iterator it = targets->second.begin();
+       it != targets->second.end(); it++)
+    CommandExecuted(it->first, it->second);
+
+  return true;
 }
 
 void ExtensionKeybindingRegistry::CommandExecuted(

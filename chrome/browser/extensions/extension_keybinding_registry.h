@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_KEYBINDING_REGISTRY_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_KEYBINDING_REGISTRY_H_
 
+#include <list>
 #include <map>
 #include <string>
 
@@ -84,17 +85,23 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
   // commands are currently ignored, since they are handled elsewhere.
   bool ShouldIgnoreCommand(const std::string& command) const;
 
+  // Fire event targets which the specified |accelerator| is binding with.
+  // Returns true if we can find the appropriate event targets.
+  bool NotifyEventTargets(const ui::Accelerator& accelerator);
+
   // Notifies appropriate parties that a command has been executed.
   void CommandExecuted(const std::string& extension_id,
                        const std::string& command);
 
-  // Maps an accelerator to a string pair (extension id, command name) for
-  // commands that have been registered. This keeps track of the targets for the
-  // keybinding event (which named command to call in which extension). On GTK,
-  // this map contains registration for pageAction and browserAction commands,
-  // whereas on other platforms it does not.
-  typedef std::map< ui::Accelerator,
-                    std::pair<std::string, std::string> > EventTargets;
+  // Maps an accelerator to a list of string pairs (extension id, command name)
+  // for commands that have been registered. This keeps track of the targets for
+  // the keybinding event (which named command to call in which extension). On
+  // GTK this map contains registration for pageAction and browserAction
+  // commands, whereas on other platforms it does not. Note that normal
+  // accelerator (which isn't media keys) has only one target, while the media
+  // keys can have more than one.
+  typedef std::list<std::pair<std::string, std::string> > TargetList;
+  typedef std::map<ui::Accelerator, TargetList> EventTargets;
   EventTargets event_targets_;
 
  private:

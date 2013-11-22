@@ -67,6 +67,11 @@ class CommandService : public ProfileKeyedAPI,
   // Convenience method to get the CommandService for a profile.
   static CommandService* Get(Profile* profile);
 
+  // Return true if the specified accelerator is one of the following multimedia
+  // keys: Next Track key, Previous Track key, Stop Media key, Play/Pause Media
+  // key, without any modifiers.
+  static bool IsMediaKey(const ui::Accelerator& accelerator);
+
   // Gets the command (if any) for the browser action of an extension given
   // its |extension_id|. The function consults the master list to see if
   // the command is active. Returns false if the extension has no browser

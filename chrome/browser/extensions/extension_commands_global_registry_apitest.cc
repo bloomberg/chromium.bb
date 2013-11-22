@@ -9,6 +9,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/base/base_window.h"
+#include "ui/base/test/ui_controls.h"
 
 #if defined(OS_LINUX)
 #include <X11/Xlib.h>
@@ -126,6 +127,39 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
   // but it might also be because the non-global shortcuts unexpectedly
   // worked.
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+#if defined(OS_WIN)
+// The feature is only fully implemented on Windows, other platforms coming.
+#define MAYBE_GlobalDuplicatedMediaKey GlobalDuplicatedMediaKey
+#else
+#define MAYBE_GlobalDuplicatedMediaKey DISABLED_GlobalDuplicatedMediaKey
+#endif
+
+IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalDuplicatedMediaKey) {
+  FeatureSwitch::ScopedOverride enable_global_commands(
+      FeatureSwitch::global_commands(), true);
+
+  ResultCatcher catcher;
+  ASSERT_TRUE(RunExtensionTest("keybinding/global_media_keys_0")) << message_;
+  ASSERT_TRUE(catcher.GetNextResult());
+  ASSERT_TRUE(RunExtensionTest("keybinding/global_media_keys_1")) << message_;
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  Browser* incognito_browser = CreateIncognitoBrowser();  // Ditto.
+  WindowController* controller =
+      incognito_browser->extension_window_controller();
+
+  ui_controls::SendKeyPress(controller->window()->GetNativeWindow(),
+                            ui::VKEY_MEDIA_NEXT_TRACK,
+                            false,
+                            false,
+                            false,
+                            false);
+
+  // We should get two success result.
+  ASSERT_TRUE(catcher.GetNextResult());
+  ASSERT_TRUE(catcher.GetNextResult());
 }
 
 }  // namespace extensions

@@ -24,8 +24,8 @@ ExtensionCommandsGlobalRegistry::ExtensionCommandsGlobalRegistry(
 }
 
 ExtensionCommandsGlobalRegistry::~ExtensionCommandsGlobalRegistry() {
-  EventTargets::const_iterator iter;
-  for (iter = event_targets_.begin(); iter != event_targets_.end(); ++iter) {
+  for (EventTargets::const_iterator iter = event_targets_.begin();
+       iter != event_targets_.end(); ++iter) {
     GlobalShortcutListener::GetInstance()->UnregisterAccelerator(
         iter->first, this);
   }
@@ -76,8 +76,12 @@ void ExtensionCommandsGlobalRegistry::AddExtensionKeybinding(
             << " " << command_name.c_str()
             << " key: " << iter->second.accelerator().GetShortcutText();
 
-    event_targets_[iter->second.accelerator()] =
-        std::make_pair(extension->id(), iter->second.command_name());
+    event_targets_[iter->second.accelerator()].push_back(
+        std::make_pair(extension->id(), iter->second.command_name()));
+    // Shortcuts except media keys have only one target in the list. See comment
+    // about |event_targets_|.
+    if (!extensions::CommandService::IsMediaKey(iter->second.accelerator()))
+      DCHECK(event_targets_[iter->second.accelerator()].size() == 1);
 
     GlobalShortcutListener::GetInstance()->RegisterAccelerator(
       iter->second.accelerator(), this);
@@ -95,13 +99,7 @@ void ExtensionCommandsGlobalRegistry::RemoveExtensionKeybindingImpl(
 
 void ExtensionCommandsGlobalRegistry::OnKeyPressed(
     const ui::Accelerator& accelerator) {
-  EventTargets::iterator it = event_targets_.find(accelerator);
-  if (it == event_targets_.end()) {
-    NOTREACHED();  // Shouldn't get this event for something not registered.
-    return;
-  }
-
-  CommandExecuted(it->second.first, it->second.second);
+  ExtensionKeybindingRegistry::NotifyEventTargets(accelerator);
 }
 
 }  // namespace extensions
