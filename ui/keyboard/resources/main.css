@@ -108,125 +108,15 @@ kb-key:-webkit-any(.backspace,
 }
 
 /**
- * Images for keys.
+ * The microphone key is handled separately from other images since the image
+ * displayed changes depending on whether it's pressed or not.
  */
-.arrow-down {
- background-image: url('images/down.svg');
-}
-
-.arrow-left {
- background-image: url('images/left.svg');
-}
-
-.arrow-right {
- background-image: url('images/right.svg');
-}
-
-.arrow-up {
- background-image: url('images/up.svg');
-}
-
-.back {
-  background-image: url('images/back.svg');
-}
-
-.brightness-down {
-  background-image: url('images/brightness-down.svg');
-}
-
-.brightness-up {
-  background-image: url('images/brightness-up.svg');
-}
-
-.change-window {
-  background-image: url('images/change-window.svg');
-}
-
-.down {
-  background-image: url('images/down.svg');
-}
-
-.forward {
-  background-image: url('images/forward.svg');
-}
-
-.fullscreen {
-  background-image: url('images/fullscreen.svg');
-}
-
-.keyboard {
-  background-image: url('images/keyboard.svg');
-}
-
-.hide-keyboard,
-.layout-selector {
-  background-image: url('images/keyboard.svg');
-}
-
-.left {
-  background-image: url('images/left.svg');
-}
-
 .microphone {
   background-image: url('images/microphone.svg');
   background-position: 4%;
-  background-size: 25%;
+  background-size: 25% !important;
 }
 
 .audio .microphone {
   background-image: url('images/microphone-green.svg');
-}
-
-.mute {
-  background-image: url('images/mute.svg');
-}
-
-.reload {
-  background-image: url('images/reload.svg');
-}
-
-.right {
-  background-image: url('images/right.svg');
-}
-
-.search{
-  background-image: url('images/search.svg');
-}
-
-.shutdown {
-  background-image: url('images/shutdown.svg');
-}
-
-.up {
-  background-image: url('images/up.svg');
-}
-
-.volume-down {
-  background-image: url('images/volume-down.svg');
-}
-
-.volume-up {
-  background-image: url('images/volume-up.svg');
-}
-
-/**
- * Background size for all images should be the same.
- */
-.back,
-.brightness-down,
-.brightness-up,
-.change-window,
-.down,
-.forward,
-.fullscreen,
-.left,
-.mute,
-.reload,
-.right,
-.search,
-.shutdown,
-.up,
-.volume-down,
-.volume-up {
-  background-size:50%;
 }
