@@ -47,6 +47,7 @@ public:
     // If == 0, a (non-argument) value (e.g., a setter) failed the same check.
     static String notAnArrayTypeArgumentOrValue(int argumentIndex);
     static String notASequenceTypeProperty(const String& propertyName);
+    static String notAFiniteNumber(double value);
 
     static String notEnoughArguments(unsigned expected, unsigned providedleastNumMandatoryParams);
 

@@ -117,12 +117,8 @@ static const String& verticalGrowingRightKeyword()
 
 static bool isInfiniteOrNonNumber(double value, const char* method, ExceptionState& exceptionState)
 {
-    if (std::isinf(value)) {
-        exceptionState.throwTypeError(ExceptionMessages::failedToSet(method, "TextTrackCue", "The value provided is infinite."));
-        return true;
-    }
-    if (std::isnan(value)) {
-        exceptionState.throwTypeError(ExceptionMessages::failedToSet(method, "TextTrackCue", "The value provided is not a number."));
+    if (!std::isfinite(value)) {
+        exceptionState.throwTypeError(ExceptionMessages::failedToSet(method, "TextTrackCue", ExceptionMessages::notAFiniteNumber(value)));
         return true;
     }
     return false;

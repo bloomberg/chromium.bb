@@ -31,6 +31,8 @@
 #include "config.h"
 #include "bindings/v8/ExceptionMessages.h"
 
+#include "wtf/MathExtras.h"
+
 namespace WebCore {
 
 String ExceptionMessages::failedToConstruct(const String& type, const String& detail)
@@ -76,6 +78,12 @@ String ExceptionMessages::notASequenceTypeProperty(const String& propertyName)
 String ExceptionMessages::notEnoughArguments(unsigned expected, unsigned provided)
 {
     return String::number(expected) + " argument" + (expected > 1 ? "s" : "") + " required, but only " + String::number(provided) + " present.";
+}
+
+String ExceptionMessages::notAFiniteNumber(double value)
+{
+    ASSERT(!std::isfinite(value));
+    return std::isinf(value) ? "The value provided is infinite." : "The value provided is not a number.";
 }
 
 String ExceptionMessages::ordinalNumber(int number)

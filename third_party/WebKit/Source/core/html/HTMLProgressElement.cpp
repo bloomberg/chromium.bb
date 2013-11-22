@@ -23,6 +23,7 @@
 #include "core/html/HTMLProgressElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
@@ -100,7 +101,7 @@ double HTMLProgressElement::value() const
 void HTMLProgressElement::setValue(double value, ExceptionState& exceptionState)
 {
     if (!std::isfinite(value)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToSet("value", "HTMLProgressElement", ExceptionMessages::notAFiniteNumber(value)));
         return;
     }
     setAttribute(valueAttr, String::number(value >= 0 ? value : 0));
@@ -115,7 +116,7 @@ double HTMLProgressElement::max() const
 void HTMLProgressElement::setMax(double max, ExceptionState& exceptionState)
 {
     if (!std::isfinite(max)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToSet("max", "HTMLProgressElement", ExceptionMessages::notAFiniteNumber(max)));
         return;
     }
     setAttribute(maxAttr, String::number(max > 0 ? max : 1));

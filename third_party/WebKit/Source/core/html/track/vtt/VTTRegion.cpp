@@ -69,12 +69,8 @@ static const float scrollTime = 0.433;
 
 static bool isInfiniteOrNonNumberOrNonPercentage(double value, const char* method, ExceptionState& exceptionState)
 {
-    if (std::isinf(value)) {
-        exceptionState.throwTypeError(ExceptionMessages::failedToSet(method, "VTTRegion", "The width provided is infinite."));
-        return true;
-    }
-    if (std::isnan(value)) {
-        exceptionState.throwTypeError(ExceptionMessages::failedToSet(method, "VTTRegion", "The width provided is not a number."));
+    if (!std::isfinite(value)) {
+        exceptionState.throwTypeError(ExceptionMessages::failedToSet(method, "VTTRegion", ExceptionMessages::notAFiniteNumber(value)));
         return true;
     }
     if (value < 0 || value > 100) {
