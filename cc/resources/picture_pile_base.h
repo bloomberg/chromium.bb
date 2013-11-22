@@ -70,6 +70,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   void Clear();
 
   gfx::Rect PaddedRect(const PictureMapKey& key);
+  gfx::Rect PadRect(gfx::Rect rect);
 
   // A picture pile is a tiled set of pictures. The picture map is a map of tile
   // indices to picture infos.

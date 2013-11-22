@@ -190,9 +190,14 @@ bool PicturePileBase::CanRaster(float contents_scale, gfx::Rect content_rect) {
 
 gfx::Rect PicturePileBase::PaddedRect(const PictureMapKey& key) {
   gfx::Rect tile = tiling_.TileBounds(key.first, key.second);
-  tile.Inset(
+  return PadRect(tile);
+}
+
+gfx::Rect PicturePileBase::PadRect(gfx::Rect rect) {
+  gfx::Rect padded_rect = rect;
+  padded_rect.Inset(
       -buffer_pixels(), -buffer_pixels(), -buffer_pixels(), -buffer_pixels());
-  return tile;
+  return padded_rect;
 }
 
 scoped_ptr<base::Value> PicturePileBase::AsValue() const {
