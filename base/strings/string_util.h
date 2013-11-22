@@ -47,14 +47,6 @@ int strncmp16(const char16* s1, const char16* s2, size_t count);
 int vsnprintf(char* buffer, size_t size, const char* format, va_list arguments)
     PRINTF_FORMAT(3, 0);
 
-// vswprintf always null-terminates, but when truncation occurs, it will either
-// return -1 or the number of characters that would be in an untruncated
-// formatted string.  The actual return value depends on the underlying
-// C library's vswprintf implementation.
-int vswprintf(wchar_t* buffer, size_t size,
-              const wchar_t* format, va_list arguments)
-    WPRINTF_FORMAT(3, 0);
-
 // Some of these implementations need to be inlined.
 
 // We separate the declaration from the implementation of this inline
@@ -65,18 +57,6 @@ inline int snprintf(char* buffer, size_t size, const char* format, ...) {
   va_list arguments;
   va_start(arguments, format);
   int result = vsnprintf(buffer, size, format, arguments);
-  va_end(arguments);
-  return result;
-}
-
-// We separate the declaration from the implementation of this inline
-// function just so the WPRINTF_FORMAT works.
-inline int swprintf(wchar_t* buffer, size_t size, const wchar_t* format, ...)
-    WPRINTF_FORMAT(3, 4);
-inline int swprintf(wchar_t* buffer, size_t size, const wchar_t* format, ...) {
-  va_list arguments;
-  va_start(arguments, format);
-  int result = vswprintf(buffer, size, format, arguments);
   va_end(arguments);
   return result;
 }
@@ -163,7 +143,6 @@ template<typename Char> struct CaseInsensitiveCompareASCII {
 // used as initializers, function arguments, or return values for functions
 // which return by value or outparam.
 BASE_EXPORT const std::string& EmptyString();
-BASE_EXPORT const std::wstring& EmptyWString();
 BASE_EXPORT const string16& EmptyString16();
 
 BASE_EXPORT extern const wchar_t kWhitespaceWide[];
@@ -199,9 +178,6 @@ BASE_EXPORT bool ReplaceChars(const std::string& input,
 // Removes characters in |trim_chars| from the beginning and end of |input|.
 // |trim_chars| must be null-terminated.
 // NOTE: Safe to use the same variable for both |input| and |output|.
-BASE_EXPORT bool TrimString(const std::wstring& input,
-                            const wchar_t trim_chars[],
-                            std::wstring* output);
 BASE_EXPORT bool TrimString(const string16& input,
                             const char16 trim_chars[],
                             string16* output);
@@ -249,9 +225,6 @@ BASE_EXPORT TrimPositions TrimWhitespace(const std::string& input,
 // (2) If |trim_sequences_with_line_breaks| is true, any other whitespace
 //     sequences containing a CR or LF are trimmed.
 // (3) All other whitespace sequences are converted to single spaces.
-BASE_EXPORT std::wstring CollapseWhitespace(
-    const std::wstring& text,
-    bool trim_sequences_with_line_breaks);
 BASE_EXPORT string16 CollapseWhitespace(
     const string16& text,
     bool trim_sequences_with_line_breaks);
@@ -266,8 +239,6 @@ BASE_EXPORT bool ContainsOnlyWhitespace(const string16& str);
 
 // Returns true if |input| is empty or contains only characters found in
 // |characters|.
-BASE_EXPORT bool ContainsOnlyChars(const std::wstring& input,
-                                   const std::wstring& characters);
 BASE_EXPORT bool ContainsOnlyChars(const string16& input,
                                    const string16& characters);
 BASE_EXPORT bool ContainsOnlyChars(const std::string& input,
@@ -277,10 +248,6 @@ BASE_EXPORT bool ContainsOnlyChars(const std::string& input,
 // beforehand.
 BASE_EXPORT std::string WideToASCII(const std::wstring& wide);
 BASE_EXPORT std::string UTF16ToASCII(const string16& utf16);
-
-// Converts the given wide string to the corresponding Latin1. This will fail
-// (return false) if any characters are more than 255.
-BASE_EXPORT bool WideToLatin1(const std::wstring& wide, std::string* latin1);
 
 // Returns true if the specified string matches the criteria. How can a wide
 // string be 8-bit or UTF8? It contains only characters that are < 256 (in the
@@ -294,7 +261,6 @@ BASE_EXPORT bool WideToLatin1(const std::wstring& wide, std::string* latin1);
 // there's a use case for just checking the structural validity, we have to
 // add a new function for that.
 BASE_EXPORT bool IsStringUTF8(const std::string& str);
-BASE_EXPORT bool IsStringASCII(const std::wstring& str);
 BASE_EXPORT bool IsStringASCII(const base::StringPiece& str);
 BASE_EXPORT bool IsStringASCII(const string16& str);
 
@@ -331,24 +297,17 @@ template <class str> inline str StringToUpperASCII(const str& s) {
 // token, and it is optimized to avoid intermediate string copies.  This API is
 // borrowed from the equivalent APIs in Mozilla.
 BASE_EXPORT bool LowerCaseEqualsASCII(const std::string& a, const char* b);
-BASE_EXPORT bool LowerCaseEqualsASCII(const std::wstring& a, const char* b);
 BASE_EXPORT bool LowerCaseEqualsASCII(const string16& a, const char* b);
 
 // Same thing, but with string iterators instead.
 BASE_EXPORT bool LowerCaseEqualsASCII(std::string::const_iterator a_begin,
                                       std::string::const_iterator a_end,
                                       const char* b);
-BASE_EXPORT bool LowerCaseEqualsASCII(std::wstring::const_iterator a_begin,
-                                      std::wstring::const_iterator a_end,
-                                      const char* b);
 BASE_EXPORT bool LowerCaseEqualsASCII(string16::const_iterator a_begin,
                                       string16::const_iterator a_end,
                                       const char* b);
 BASE_EXPORT bool LowerCaseEqualsASCII(const char* a_begin,
                                       const char* a_end,
-                                      const char* b);
-BASE_EXPORT bool LowerCaseEqualsASCII(const wchar_t* a_begin,
-                                      const wchar_t* a_end,
                                       const char* b);
 BASE_EXPORT bool LowerCaseEqualsASCII(const char16* a_begin,
                                       const char16* a_end,
@@ -362,9 +321,6 @@ BASE_EXPORT bool EqualsASCII(const string16& a, const base::StringPiece& b);
 BASE_EXPORT bool StartsWithASCII(const std::string& str,
                                  const std::string& search,
                                  bool case_sensitive);
-BASE_EXPORT bool StartsWith(const std::wstring& str,
-                            const std::wstring& search,
-                            bool case_sensitive);
 BASE_EXPORT bool StartsWith(const string16& str,
                             const string16& search,
                             bool case_sensitive);
@@ -372,9 +328,6 @@ BASE_EXPORT bool StartsWith(const string16& str,
 // Returns true if str ends with search, or false otherwise.
 BASE_EXPORT bool EndsWith(const std::string& str,
                           const std::string& search,
-                          bool case_sensitive);
-BASE_EXPORT bool EndsWith(const std::wstring& str,
-                          const std::wstring& search,
                           bool case_sensitive);
 BASE_EXPORT bool EndsWith(const string16& str,
                           const string16& search,
@@ -490,9 +443,6 @@ inline typename string_type::value_type* WriteInto(string_type* str,
 // Splits a string into its fields delimited by any of the characters in
 // |delimiters|.  Each field is added to the |tokens| vector.  Returns the
 // number of tokens found.
-BASE_EXPORT size_t Tokenize(const std::wstring& str,
-                            const std::wstring& delimiters,
-                            std::vector<std::wstring>* tokens);
 BASE_EXPORT size_t Tokenize(const string16& str,
                             const string16& delimiters,
                             std::vector<string16>* tokens);

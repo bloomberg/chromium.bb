@@ -196,10 +196,10 @@ BOOL CALLBACK DirectInputEnumDevicesCallback(const DIDEVICEINSTANCE* instance,
   SetDirectInputDeadZone(gamepad, 1000);
   device.mapper = GetGamepadStandardMappingFunction(vendor, product);
   if (device.mapper) {
-    base::swprintf(device.id,
-                   WebGamepad::idLengthCap,
-                   L"STANDARD GAMEPAD (%ls)",
-                   instance->tszProductName);
+    swprintf(device.id,
+             WebGamepad::idLengthCap,
+             L"STANDARD GAMEPAD (%ls)",
+             instance->tszProductName);
     ctxt->directinput_devices->push_back(device);
   } else {
     gamepad->Release();
@@ -349,10 +349,10 @@ bool GamepadPlatformDataFetcherWin::GetXInputPadConnectivity(
     return false;
   } else {
     pad->connected = true;
-    base::swprintf(pad->id,
-                   WebGamepad::idLengthCap,
-                   L"Xbox 360 Controller (XInput STANDARD %ls)",
-                   GamepadSubTypeName(caps.SubType));
+    swprintf(pad->id,
+             WebGamepad::idLengthCap,
+             L"Xbox 360 Controller (XInput STANDARD %ls)",
+             GamepadSubTypeName(caps.SubType));
     return true;
   }
 }
