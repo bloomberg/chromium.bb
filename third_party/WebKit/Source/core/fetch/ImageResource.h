@@ -23,7 +23,7 @@
 #ifndef ImageResource_h
 #define ImageResource_h
 
-#include "core/fetch/Resource.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/svg/graphics/SVGImageCache.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSizeHash.h"
@@ -126,6 +126,8 @@ private:
     bool m_loadingMultipartContent;
     bool m_hasDevicePixelRatioHeaderValue;
 };
+
+DEFINE_RESOURCE_TYPE_CASTS(Image);
 
 }
 

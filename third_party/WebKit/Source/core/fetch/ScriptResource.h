@@ -26,7 +26,7 @@
 #ifndef ScriptResource_h
 #define ScriptResource_h
 
-#include "core/fetch/Resource.h"
+#include "core/fetch/ResourcePtr.h"
 
 namespace WebCore {
 
@@ -50,6 +50,9 @@ private:
     AtomicString m_script;
     OwnPtr<TextResourceDecoder> m_decoder;
 };
+
+DEFINE_RESOURCE_TYPE_CASTS(Script);
+
 }
 
 #endif

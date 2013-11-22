@@ -288,7 +288,7 @@ ResourcePtr<ImageResource> ResourceFetcher::fetchImage(FetchRequest& request)
         preCacheDataURIImage(request);
 
     request.setDefer(clientDefersImage(request.resourceRequest().url()) ? FetchRequest::DeferredByClient : FetchRequest::NoDefer);
-    return static_cast<ImageResource*>(requestResource(Resource::Image, request).get());
+    return toImageResource(requestResource(Resource::Image, request));
 }
 
 void ResourceFetcher::preCacheDataURIImage(const FetchRequest& request)
@@ -305,22 +305,22 @@ void ResourceFetcher::preCacheDataURIImage(const FetchRequest& request)
 
 ResourcePtr<FontResource> ResourceFetcher::fetchFont(FetchRequest& request)
 {
-    return static_cast<FontResource*>(requestResource(Resource::Font, request).get());
+    return toFontResource(requestResource(Resource::Font, request));
 }
 
 ResourcePtr<ShaderResource> ResourceFetcher::fetchShader(FetchRequest& request)
 {
-    return static_cast<ShaderResource*>(requestResource(Resource::Shader, request).get());
+    return toShaderResource(requestResource(Resource::Shader, request));
 }
 
 ResourcePtr<RawResource> ResourceFetcher::fetchImport(FetchRequest& request)
 {
-    return static_cast<RawResource*>(requestResource(Resource::ImportResource, request).get());
+    return toRawResource(requestResource(Resource::ImportResource, request));
 }
 
 ResourcePtr<CSSStyleSheetResource> ResourceFetcher::fetchCSSStyleSheet(FetchRequest& request)
 {
-    return static_cast<CSSStyleSheetResource*>(requestResource(Resource::CSSStyleSheet, request).get());
+    return toCSSStyleSheetResource(requestResource(Resource::CSSStyleSheet, request));
 }
 
 ResourcePtr<CSSStyleSheetResource> ResourceFetcher::fetchUserCSSStyleSheet(FetchRequest& request)
@@ -329,28 +329,28 @@ ResourcePtr<CSSStyleSheetResource> ResourceFetcher::fetchUserCSSStyleSheet(Fetch
 
     if (Resource* existing = memoryCache()->resourceForURL(url)) {
         if (existing->type() == Resource::CSSStyleSheet)
-            return static_cast<CSSStyleSheetResource*>(existing);
+            return toCSSStyleSheetResource(existing);
         memoryCache()->remove(existing);
     }
 
     request.setOptions(ResourceLoaderOptions(DoNotSendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy, DocumentContext));
-    return static_cast<CSSStyleSheetResource*>(requestResource(Resource::CSSStyleSheet, request).get());
+    return toCSSStyleSheetResource(requestResource(Resource::CSSStyleSheet, request));
 }
 
 ResourcePtr<ScriptResource> ResourceFetcher::fetchScript(FetchRequest& request)
 {
-    return static_cast<ScriptResource*>(requestResource(Resource::Script, request).get());
+    return toScriptResource(requestResource(Resource::Script, request));
 }
 
 ResourcePtr<XSLStyleSheetResource> ResourceFetcher::fetchXSLStyleSheet(FetchRequest& request)
 {
     ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-    return static_cast<XSLStyleSheetResource*>(requestResource(Resource::XSLStyleSheet, request).get());
+    return toXSLStyleSheetResource(requestResource(Resource::XSLStyleSheet, request));
 }
 
 ResourcePtr<DocumentResource> ResourceFetcher::fetchSVGDocument(FetchRequest& request)
 {
-    return static_cast<DocumentResource*>(requestResource(Resource::SVGDocument, request).get());
+    return toDocumentResource(requestResource(Resource::SVGDocument, request));
 }
 
 ResourcePtr<Resource> ResourceFetcher::fetchLinkResource(Resource::Type type, FetchRequest& request)
@@ -362,12 +362,12 @@ ResourcePtr<Resource> ResourceFetcher::fetchLinkResource(Resource::Type type, Fe
 
 ResourcePtr<RawResource> ResourceFetcher::fetchRawResource(FetchRequest& request)
 {
-    return static_cast<RawResource*>(requestResource(Resource::Raw, request).get());
+    return toRawResource(requestResource(Resource::Raw, request));
 }
 
 ResourcePtr<RawResource> ResourceFetcher::fetchMainResource(FetchRequest& request)
 {
-    return static_cast<RawResource*>(requestResource(Resource::MainResource, request).get());
+    return toRawResource(requestResource(Resource::MainResource, request));
 }
 
 bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url, MixedContentBlockingTreatment treatment) const

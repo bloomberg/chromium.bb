@@ -113,7 +113,7 @@ void ImageResource::switchClientsToRevalidatedResource()
         for (ContainerSizeRequests::iterator it = m_pendingContainerSizeRequests.begin(); it != m_pendingContainerSizeRequests.end(); ++it)
             switchContainerSizeRequests.set(it->key, it->value);
         Resource::switchClientsToRevalidatedResource();
-        ImageResource* revalidatedImageResource = static_cast<ImageResource*>(resourceToRevalidate());
+        ImageResource* revalidatedImageResource = toImageResource(resourceToRevalidate());
         for (ContainerSizeRequests::iterator it = switchContainerSizeRequests.begin(); it != switchContainerSizeRequests.end(); ++it)
             revalidatedImageResource->setContainerSizeForRenderer(it->key, it->value.first, it->value.second);
         return;

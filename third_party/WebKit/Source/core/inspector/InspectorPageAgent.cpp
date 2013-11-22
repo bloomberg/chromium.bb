@@ -198,10 +198,10 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
     if (cachedResource) {
         switch (cachedResource->type()) {
         case Resource::CSSStyleSheet:
-            *result = static_cast<CSSStyleSheetResource*>(cachedResource)->sheetText(false);
+            *result = toCSSStyleSheetResource(cachedResource)->sheetText(false);
             return true;
         case Resource::Script:
-            *result = static_cast<WebCore::ScriptResource*>(cachedResource)->script();
+            *result = toScriptResource(cachedResource)->script();
             return true;
         case Resource::MainResource:
             return false;
@@ -507,12 +507,12 @@ static Vector<Resource*> cachedResourcesForFrame(Frame* frame)
         switch (cachedResource->type()) {
         case Resource::Image:
             // Skip images that were not auto loaded (images disabled in the user agent).
-            if (static_cast<ImageResource*>(cachedResource)->stillNeedsLoad())
+            if (toImageResource(cachedResource)->stillNeedsLoad())
                 continue;
             break;
         case Resource::Font:
             // Skip fonts that were referenced in CSS but never used/downloaded.
-            if (static_cast<FontResource*>(cachedResource)->stillNeedsLoad())
+            if (toFontResource(cachedResource)->stillNeedsLoad())
                 continue;
             break;
         default:

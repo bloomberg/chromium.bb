@@ -30,7 +30,7 @@
 #ifndef ShaderResource_h
 #define ShaderResource_h
 
-#include "core/fetch/Resource.h"
+#include "core/fetch/ResourcePtr.h"
 
 namespace WebCore {
 
@@ -47,6 +47,8 @@ private:
     OwnPtr<TextResourceDecoder> m_decoder;
     String m_shaderString;
 };
+
+DEFINE_RESOURCE_TYPE_CASTS(Shader);
 
 }
 

@@ -26,8 +26,8 @@
 #ifndef FontResource_h
 #define FontResource_h
 
-#include "core/fetch/Resource.h"
 #include "core/fetch/ResourceClient.h"
+#include "core/fetch/ResourcePtr.h"
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/FontWidthVariant.h"
 #include "wtf/OwnPtr.h"
@@ -72,6 +72,8 @@ private:
 
     friend class MemoryCache;
 };
+
+DEFINE_RESOURCE_TYPE_CASTS(Font);
 
 class FontResourceClient : public ResourceClient {
 public:

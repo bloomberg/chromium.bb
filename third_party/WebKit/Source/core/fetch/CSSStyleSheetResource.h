@@ -26,7 +26,7 @@
 #ifndef CSSStyleSheetResource_h
 #define CSSStyleSheetResource_h
 
-#include "core/fetch/Resource.h"
+#include "core/fetch/ResourcePtr.h"
 
 namespace WebCore {
 
@@ -61,6 +61,8 @@ protected:
 
     RefPtr<StyleSheetContents> m_parsedStyleSheetCache;
 };
+
+DEFINE_RESOURCE_TYPE_CASTS(CSSStyleSheet);
 
 }
 

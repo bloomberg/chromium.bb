@@ -26,7 +26,7 @@
 #ifndef XSLStyleSheetResource_h
 #define XSLStyleSheetResource_h
 
-#include "core/fetch/Resource.h"
+#include "core/fetch/ResourcePtr.h"
 
 namespace WebCore {
 
@@ -49,6 +49,8 @@ protected:
     String m_sheet;
     OwnPtr<TextResourceDecoder> m_decoder;
 };
+
+DEFINE_RESOURCE_TYPE_CASTS(XSLStyleSheet);
 
 } // namespace WebCore
 
