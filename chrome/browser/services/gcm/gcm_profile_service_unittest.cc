@@ -78,6 +78,8 @@ class GCMProfileServiceTest : public testing::Test,
     thread_bundle_.reset(new content::TestBrowserThreadBundle(
         content::TestBrowserThreadBundle::REAL_IO_THREAD));
 
+    GCMProfileService::enable_gcm_for_testing_ = true;
+
     // Mock a signed-in user.
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfile(profile());

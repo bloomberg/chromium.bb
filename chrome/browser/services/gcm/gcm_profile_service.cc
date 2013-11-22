@@ -217,8 +217,13 @@ void GCMProfileService::IOWorker::Send(
   GCMClient::Get()->Send(username, app_id, receiver_id, message);
 }
 
+bool GCMProfileService::enable_gcm_for_testing_ = false;
+
 // static
 bool GCMProfileService::IsGCMEnabled() {
+  if (enable_gcm_for_testing_)
+    return true;
+
   // GCM support is only enabled for Canary/Dev builds.
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   return channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||

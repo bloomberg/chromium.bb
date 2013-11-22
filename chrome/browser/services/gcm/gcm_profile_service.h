@@ -109,6 +109,10 @@ class GCMProfileService : public BrowserContextKeyedService,
   // Returns the event router to fire the event for the given app.
   GCMEventRouter* GetEventRouter(const std::string& app_id);
 
+  // Flag that could be set by the testing code to enable GCM. Otherwise,
+  // tests from official build will fail.
+  static bool enable_gcm_for_testing_;
+
   // The profile which owns this object.
   Profile* profile_;
 
