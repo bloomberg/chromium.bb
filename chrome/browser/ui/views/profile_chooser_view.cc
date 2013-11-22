@@ -87,32 +87,6 @@ views::Link* CreateLink(const base::string16& link_text,
 }
 
 
-// HorizontalPaddingButtonBorder ----------------------------------------------
-
-// A button border that adds padding before the icon and after the text. This
-// is needed so that the button looks like it is spanning the entire parent
-// view (especially when hovered over), but has the icon indented and aligned
-// with the other items in the parent view.
-class HorizontalPaddingButtonBorder : public views::TextButtonBorder {
- public:
-  HorizontalPaddingButtonBorder() : views::TextButtonBorder() {
-    SetInsets(gfx::Insets(0, views::kButtonHEdgeMarginNew,
-                          0, views::kButtonHEdgeMarginNew));
-  };
-
-  virtual ~HorizontalPaddingButtonBorder() {
-  };
-
- private:
-  // This function is pure virtual in the parent, so we must provide an
-  // implementation.
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE {
-  };
-
-  DISALLOW_COPY_AND_ASSIGN(HorizontalPaddingButtonBorder);
-};
-
-
 // BackgroundColorHoverButton -------------------------------------------------
 
 // A custom button that allows for setting a background color when hovered over.
@@ -140,7 +114,11 @@ BackgroundColorHoverButton::BackgroundColorHoverButton(
     const gfx::ImageSkia& normal_icon,
     const gfx::ImageSkia& hover_icon)
     : views::TextButton(listener, text) {
-  set_border(new HorizontalPaddingButtonBorder);
+  scoped_ptr<views::TextButtonBorder> text_button_border(
+      new views::TextButtonBorder());
+  text_button_border->SetInsets(gfx::Insets(0, views::kButtonHEdgeMarginNew,
+                                            0, views::kButtonHEdgeMarginNew));
+  set_border(text_button_border.release());
   set_min_height(kButtonHeight);
   set_icon_text_spacing(views::kItemLabelSpacing);
   SetIcon(normal_icon);

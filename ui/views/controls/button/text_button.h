@@ -30,6 +30,7 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
   void SetInsets(const gfx::Insets& insets);
 
   // Border:
+  virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Insets GetInsets() const OVERRIDE;
 
  private:

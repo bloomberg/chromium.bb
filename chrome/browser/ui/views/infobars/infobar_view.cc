@@ -14,8 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
-#include "chrome/browser/ui/views/infobars/infobar_button_border.h"
-#include "chrome/browser/ui/views/infobars/infobar_label_button_border.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -27,6 +25,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -41,6 +40,12 @@
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/win/hwnd_util.h"
 #endif
+
+namespace {
+
+const int kInfoBarBorderPaddingVertical = 5;
+
+}  // namespace
 
 // static
 const int InfoBar::kSeparatorLineHeight =
@@ -98,9 +103,23 @@ views::Link* InfoBarView::CreateLink(const string16& text,
 views::MenuButton* InfoBarView::CreateMenuButton(
     const string16& text,
     views::MenuButtonListener* menu_button_listener) {
+  scoped_ptr<views::TextButtonDefaultBorder> menu_button_border(
+      new views::TextButtonDefaultBorder());
+  menu_button_border->SetInsets(gfx::Insets(kInfoBarBorderPaddingVertical, 0,
+                                            kInfoBarBorderPaddingVertical, 0));
+  const int kNormalImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_NORMAL);
+  menu_button_border->set_normal_painter(
+      views::Painter::CreateImageGridPainter(kNormalImageSet));
+  const int kHotImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_HOVER);
+  menu_button_border->set_hot_painter(
+      views::Painter::CreateImageGridPainter(kHotImageSet));
+  const int kPushedImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_PRESSED);
+  menu_button_border->set_pushed_painter(
+      views::Painter::CreateImageGridPainter(kPushedImageSet));
+
   views::MenuButton* menu_button = new views::MenuButton(
       NULL, text, menu_button_listener, true);
-  menu_button->set_border(new InfoBarButtonBorder);
+  menu_button->set_border(menu_button_border.release());
   menu_button->set_animate_on_state_change(false);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   menu_button->set_menu_marker(
@@ -117,8 +136,26 @@ views::LabelButton* InfoBarView::CreateLabelButton(
     views::ButtonListener* listener,
     const string16& text,
     bool needs_elevation) {
+  scoped_ptr<views::LabelButtonBorder> label_button_border(
+      new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON));
+  label_button_border->set_insets(gfx::Insets(
+      kInfoBarBorderPaddingVertical, 0,
+      kInfoBarBorderPaddingVertical, 0));
+  const int kNormalImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_NORMAL);
+  label_button_border->SetPainter(
+      false, views::Button::STATE_NORMAL,
+      views::Painter::CreateImageGridPainter(kNormalImageSet));
+  const int kHoveredImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_HOVER);
+  label_button_border->SetPainter(
+      false, views::Button::STATE_HOVERED,
+      views::Painter::CreateImageGridPainter(kHoveredImageSet));
+  const int kPressedImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_PRESSED);
+  label_button_border->SetPainter(
+      false, views::Button::STATE_PRESSED,
+      views::Painter::CreateImageGridPainter(kPressedImageSet));
+
   views::LabelButton* label_button = new views::LabelButton(listener, text);
-  label_button->set_border(new InfoBarLabelButtonBorder);
+  label_button->set_border(label_button_border.release());
   label_button->set_animate_on_state_change(false);
   label_button->SetTextColor(views::Button::STATE_NORMAL, SK_ColorBLACK);
   label_button->SetTextColor(views::Button::STATE_HOVERED, SK_ColorBLACK);

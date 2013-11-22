@@ -66,8 +66,6 @@ const bool kScrollEventChangesTab = false;
 const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle =
     ui::ResourceBundle::BoldFont;
 
-const int kInfoBarBorderPaddingVertical = 5;
-
 #if !defined(OS_ANDROID)
 const bool kPasswordEchoEnabled = false;
 #endif

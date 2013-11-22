@@ -189,39 +189,6 @@ bool EntryView::OnKeyReleased(const ui::KeyEvent& event) {
 
 }  // namespace
 
-// NotifierGroupMenuButtonBorder ///////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-class NotifierGroupMenuButtonBorder : public views::TextButtonDefaultBorder {
- public:
-  NotifierGroupMenuButtonBorder();
-
- private:
-  virtual ~NotifierGroupMenuButtonBorder();
-};
-
-NotifierGroupMenuButtonBorder::NotifierGroupMenuButtonBorder()
-    : views::TextButtonDefaultBorder() {
-  ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-  gfx::Insets insets(kButtonPainterInsets,
-                     kButtonPainterInsets,
-                     kButtonPainterInsets,
-                     kButtonPainterInsets);
-
-  set_normal_painter(views::Painter::CreateImagePainter(
-      *rb.GetImageSkiaNamed(IDR_BUTTON_NORMAL), insets));
-  set_hot_painter(views::Painter::CreateImagePainter(
-      *rb.GetImageSkiaNamed(IDR_BUTTON_HOVER), insets));
-  set_pushed_painter(views::Painter::CreateImagePainter(
-      *rb.GetImageSkiaNamed(IDR_BUTTON_PRESSED), insets));
-
-  SetInsets(gfx::Insets(kMenuButtonVerticalPadding,
-                        kMenuButtonLeftPadding,
-                        kMenuButtonVerticalPadding,
-                        kMenuButtonRightPadding));
-}
-
-NotifierGroupMenuButtonBorder::~NotifierGroupMenuButtonBorder() {}
 
 // NotifierGroupMenuModel -----------------------------------------------------
 
@@ -596,7 +563,21 @@ void NotifierSettingsView::UpdateContentsView(
         active_group.name : active_group.login_info;
     notifier_group_selector_ =
         new views::MenuButton(NULL, notifier_group_text, this, true);
-    notifier_group_selector_->set_border(new NotifierGroupMenuButtonBorder);
+    scoped_ptr<views::TextButtonDefaultBorder> selector_border(
+        new views::TextButtonDefaultBorder());
+    ui::ResourceBundle* rb = &ResourceBundle::GetSharedInstance();
+    gfx::Insets painter_insets(kButtonPainterInsets, kButtonPainterInsets,
+                               kButtonPainterInsets, kButtonPainterInsets);
+    selector_border->set_normal_painter(views::Painter::CreateImagePainter(
+        *rb->GetImageSkiaNamed(IDR_BUTTON_NORMAL), painter_insets));
+    selector_border->set_hot_painter(views::Painter::CreateImagePainter(
+        *rb->GetImageSkiaNamed(IDR_BUTTON_HOVER), painter_insets));
+    selector_border->set_pushed_painter(views::Painter::CreateImagePainter(
+        *rb->GetImageSkiaNamed(IDR_BUTTON_PRESSED), painter_insets));
+    selector_border->SetInsets(gfx::Insets(
+        kMenuButtonVerticalPadding, kMenuButtonLeftPadding,
+        kMenuButtonVerticalPadding, kMenuButtonRightPadding));
+    notifier_group_selector_->set_border(selector_border.release());
     notifier_group_selector_->set_focus_border(NULL);
     notifier_group_selector_->set_animate_on_state_change(false);
     notifier_group_selector_->set_focusable(true);

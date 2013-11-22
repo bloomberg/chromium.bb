@@ -74,6 +74,9 @@ TextButtonBorder::TextButtonBorder() {
 TextButtonBorder::~TextButtonBorder() {
 }
 
+void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
+}
+
 gfx::Insets TextButtonBorder::GetInsets() const {
   return insets_;
 }
