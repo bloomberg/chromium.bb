@@ -1810,8 +1810,6 @@
         'browser/ui/views/find_bar_view.h',
         'browser/ui/views/first_run_bubble.cc',
         'browser/ui/views/first_run_bubble.h',
-        'browser/ui/views/frame/app_non_client_frame_view_ash.cc',
-        'browser/ui/views/frame/app_non_client_frame_view_ash.h',
         'browser/ui/views/frame/app_panel_browser_frame_view.cc',
         'browser/ui/views/frame/app_panel_browser_frame_view.h',
         'browser/ui/views/frame/browser_frame.cc',

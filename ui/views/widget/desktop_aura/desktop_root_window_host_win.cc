@@ -791,7 +791,7 @@ void DesktopRootWindowHostWin::HandleClientSizeChanged(
 void DesktopRootWindowHostWin::HandleFrameChanged() {
   SetWindowTransparency();
   // Replace the frame and layout the contents.
-  GetWidget()->non_client_view()->UpdateFrame(true);
+  GetWidget()->non_client_view()->UpdateFrame();
 }
 
 void DesktopRootWindowHostWin::HandleNativeFocus(HWND last_focused_window) {

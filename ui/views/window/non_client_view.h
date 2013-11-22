@@ -160,9 +160,8 @@ class VIEWS_EXPORT NonClientView : public View {
   void WindowClosing();
 
   // Replaces the frame view with a new one. Used when switching window theme
-  // or frame style. Pass true for |layout| to refresh the window layout (the
-  // common case) or false if you will trigger layout yourself.
-  void UpdateFrame(bool layout);
+  // or frame style.
+  void UpdateFrame();
 
   // Prevents the window from being rendered as deactivated when |disable| is
   // true, until called with |disable| false. Used when a sub-window is to be

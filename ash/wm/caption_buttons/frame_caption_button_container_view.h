@@ -37,10 +37,7 @@ class ASH_EXPORT FrameCaptionButtonContainerView
     HEADER_STYLE_SHORT,
 
     // Restored tabbed browser windows.
-    HEADER_STYLE_TALL,
-
-    // AppNonClientFrameViewAsh.
-    HEADER_STYLE_MAXIMIZED_HOSTED_APP
+    HEADER_STYLE_TALL
   };
 
   // |frame| is the views::Widget that the caption buttons act on.

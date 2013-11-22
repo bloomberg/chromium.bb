@@ -73,14 +73,12 @@ void NonClientView::WindowClosing() {
   client_view_->WidgetClosing();
 }
 
-void NonClientView::UpdateFrame(bool layout) {
+void NonClientView::UpdateFrame() {
   Widget* widget = GetWidget();
   SetFrameView(widget->CreateNonClientFrameView());
   widget->ThemeChanged();
-  if (layout) {
-    Layout();
-    SchedulePaint();
-  }
+  Layout();
+  SchedulePaint();
 }
 
 void NonClientView::SetInactiveRenderingDisabled(bool disable) {

@@ -204,15 +204,6 @@
 
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_BUTTON_SEPARATOR" file="common/window_button_separator.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE" file="common/window_close_fullscreen_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_H" file="common/window_close_fullscreen_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_P" file="common/window_close_fullscreen_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE" file="common/window_size_fullscreen_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_H" file="common/window_size_fullscreen_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_P" file="common/window_size_fullscreen_pressed.png" />
-
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_SHADOW" file="common/window_fullscreen_shadow.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_SHADOW_RTL" file="common/window_fullscreen_shadow_rtl.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_ACTIVE" file="common/window_header_base_active.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_INACTIVE" file="common/window_header_base_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE" file="common/window_header_base_incognito_active.png" />

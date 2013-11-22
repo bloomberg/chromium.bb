@@ -124,9 +124,7 @@ gfx::Size FrameCaptionButtonContainerView::GetPreferredSize() {
       width += kDistanceBetweenButtons;
     first_visible = false;
   }
-  gfx::Insets insets(GetInsets());
-  return gfx::Size(width + insets.width(),
-      close_button_->GetPreferredSize().height() + insets.height());
+  return gfx::Size(width, close_button_->GetPreferredSize().height());
 }
 
 void FrameCaptionButtonContainerView::Layout() {
@@ -134,16 +132,7 @@ void FrameCaptionButtonContainerView::Layout() {
                   IDR_AURA_WINDOW_MINIMIZE_SHORT,
                   IDR_AURA_WINDOW_MINIMIZE_SHORT_H,
                   IDR_AURA_WINDOW_MINIMIZE_SHORT_P);
-  if (header_style_ == HEADER_STYLE_MAXIMIZED_HOSTED_APP) {
-    SetButtonImages(size_button_,
-                    IDR_AURA_WINDOW_FULLSCREEN_RESTORE,
-                    IDR_AURA_WINDOW_FULLSCREEN_RESTORE_H,
-                    IDR_AURA_WINDOW_FULLSCREEN_RESTORE_P);
-    SetButtonImages(close_button_,
-                    IDR_AURA_WINDOW_FULLSCREEN_CLOSE,
-                    IDR_AURA_WINDOW_FULLSCREEN_CLOSE_H,
-                    IDR_AURA_WINDOW_FULLSCREEN_CLOSE_P);
-  } else if (header_style_ == HEADER_STYLE_SHORT) {
+  if (header_style_ == HEADER_STYLE_SHORT) {
     // The new assets only make sense if the window is maximized or fullscreen
     // because we usually use a black header in this case.
     if ((frame_->IsMaximized() || frame_->IsFullscreen()) &&
@@ -178,16 +167,14 @@ void FrameCaptionButtonContainerView::Layout() {
                     IDR_AURA_WINDOW_CLOSE_P);
   }
 
-  gfx::Insets insets(GetInsets());
-  int x = insets.left();
-  int y_inset = insets.top();
+  int x = 0;
   for (int i = 0; i < child_count(); ++i) {
     views::View* child = child_at(i);
     if (!child->visible())
       continue;
 
     gfx::Size size = child->GetPreferredSize();
-    child->SetBounds(x, y_inset, size.width(), size.height());
+    child->SetBounds(x, 0, size.width(), size.height());
     x += size.width() + kDistanceBetweenButtons;
   }
 }
@@ -199,10 +186,8 @@ const char* FrameCaptionButtonContainerView::GetClassName() const {
 void FrameCaptionButtonContainerView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
-  // The alternate button style and AppNonClientFrameViewAsh do not paint the
-  // button separator.
-  if (header_style_ != HEADER_STYLE_MAXIMIZED_HOSTED_APP &&
-      !switches::UseAlternateFrameCaptionButtonStyle()) {
+  // The alternate button style does not paint the button separator.
+  if (!switches::UseAlternateFrameCaptionButtonStyle()) {
     // We should have at most two visible buttons. The button separator is
     // always painted underneath the close button regardless of whether a
     // button other than the close button is visible.

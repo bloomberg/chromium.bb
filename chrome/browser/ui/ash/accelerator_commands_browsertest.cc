@@ -89,40 +89,18 @@ IN_PROC_BROWSER_TEST_F(AcceleratorCommandsBrowserTest, ToggleFullscreen) {
   EXPECT_FALSE(browser_window->IsMaximized());
   EXPECT_FALSE(browser_window->IsFullscreen());
 
-  // 3) ToggleFullscreen() should maximize v1 app browser windows which use
-  // AppNonClientFrameViewAsh.
-  // TODO(pkotwicz): Figure out if we actually want this behavior.
+  // 3) ToggleFullscreen() should put v1 apps into non-immersive fullscreen.
   Browser::CreateParams browser_create_params(Browser::TYPE_POPUP,
       browser()->profile(), chrome::HOST_DESKTOP_TYPE_NATIVE);
 #if defined(OS_WIN)
   browser_create_params.host_desktop_type = chrome::HOST_DESKTOP_TYPE_ASH;
 #endif  // OS_WIN
   browser_create_params.app_name = "Test";
-  browser_create_params.app_type = Browser::APP_TYPE_HOST;
 
   Browser* app_host_browser = new Browser(browser_create_params);
   ASSERT_TRUE(app_host_browser->is_app());
   AddBlankTabAndShow(app_host_browser);
   browser_window = app_host_browser->window();
-  ASSERT_TRUE(browser_window->IsActive());
-  EXPECT_FALSE(browser_window->IsMaximized());
-  EXPECT_FALSE(browser_window->IsFullscreen());
-
-  ash::accelerators::ToggleFullscreen();
-  EXPECT_TRUE(browser_window->IsMaximized());
-
-  ash::accelerators::ToggleFullscreen();
-  EXPECT_FALSE(browser_window->IsMaximized());
-  EXPECT_FALSE(browser_window->IsFullscreen());
-
-  // 4) ToggleFullscreen() should put child windows of v1 apps into
-  // non-immersive fullscreen.
-  browser_create_params.host_desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
-  browser_create_params.app_type = Browser::APP_TYPE_CHILD;
-  Browser* app_child_browser = new Browser(browser_create_params);
-  ASSERT_TRUE(app_child_browser->is_app());
-  AddBlankTabAndShow(app_child_browser);
-  browser_window = app_child_browser->window();
   ASSERT_TRUE(browser_window->IsActive());
   EXPECT_FALSE(browser_window->IsMaximized());
   EXPECT_FALSE(browser_window->IsFullscreen());
@@ -135,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(AcceleratorCommandsBrowserTest, ToggleFullscreen) {
   EXPECT_FALSE(browser_window->IsMaximized());
   EXPECT_FALSE(browser_window->IsFullscreen());
 
-  // 5) ToggleFullscreen() should put popup browser windows into non-immersive
+  // 4) ToggleFullscreen() should put popup browser windows into non-immersive
   // fullscreen.
   browser_create_params.app_name = "";
   Browser* popup_browser = new Browser(browser_create_params);
