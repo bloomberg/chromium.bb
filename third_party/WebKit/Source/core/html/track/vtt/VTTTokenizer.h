@@ -34,7 +34,6 @@
 #include "core/html/parser/InputStreamPreprocessor.h"
 #include "core/html/track/vtt/VTTToken.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -65,15 +64,15 @@ public:
 
     inline bool haveBufferedCharacterToken() { return false; }
 
-    inline bool advanceAndEmitToken(SegmentedString& source, VTTTokenTypes::Type type)
+    inline bool advanceAndEmitToken(SegmentedString& source, const VTTToken& token)
     {
         source.advanceAndUpdateLineNumber();
-        return emitToken(type);
+        return emitToken(token);
     }
 
-    inline bool emitToken(VTTTokenTypes::Type type)
+    inline bool emitToken(const VTTToken& token)
     {
-        m_token->setType(type);
+        *m_token = token;
         return true;
     }
 
@@ -88,7 +87,6 @@ private:
     // The reason it's stored here is because of the use of the ADVANCE_TO state helpers.
     VTTTokenizerState::State m_state;
 
-    StringBuilder m_buffer;
     SegmentedString m_input;
 
     // ://www.whatwg.org/specs/web-apps/current-work/#preprocessing-the-input-stream

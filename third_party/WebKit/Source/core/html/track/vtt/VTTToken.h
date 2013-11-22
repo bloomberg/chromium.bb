@@ -31,8 +31,6 @@
 #ifndef VTTToken_h
 #define VTTToken_h
 
-#include "wtf/text/StringBuilder.h"
-
 namespace WebCore {
 
 class VTTTokenTypes {
@@ -47,77 +45,46 @@ public:
 };
 
 class VTTToken {
-    WTF_MAKE_NONCOPYABLE(VTTToken);
-    WTF_MAKE_FAST_ALLOCATED;
 public:
     typedef VTTTokenTypes Type;
 
-    VTTToken() { clear(); }
+    VTTToken() : m_type(Type::Uninitialized) { }
+
+    static VTTToken StringToken(const String& characterData)
+    {
+        return VTTToken(Type::Character, characterData);
+    }
+    static VTTToken StartTag(const String& tagName, const AtomicString& classes = emptyAtom, const AtomicString& annotation = emptyAtom)
+    {
+        VTTToken token(Type::StartTag, tagName);
+        token.m_classes = classes;
+        token.m_annotation = annotation;
+        return token;
+    }
+    static VTTToken EndTag(const String& tagName)
+    {
+        return VTTToken(Type::EndTag, tagName);
+    }
+    static VTTToken TimestampTag(const String& timestampData)
+    {
+        return VTTToken(Type::TimestampTag, timestampData);
+    }
 
     Type::Type type() const { return m_type; }
-    void setType(Type::Type type) { m_type = type; }
-
-    StringBuilder& name()
-    {
-        return m_data;
-    }
-
-    StringBuilder& characters()
-    {
-        return m_data;
-    }
-
-    void appendToData(char character)
-    {
-        m_data.append(character);
-    }
-
-    void appendToData(UChar character)
-    {
-        m_data.append(character);
-    }
-
-    void appendToData(const StringBuilder& characters)
-    {
-        m_data.append(characters);
-    }
-
-    void addNewClass(const StringBuilder& s)
-    {
-        if (!m_classes.isEmpty())
-            m_classes.append(' ');
-        m_classes.append(s);
-    }
-
-    StringBuilder& classes()
-    {
-        return m_classes;
-    }
-
-    void addNewAnnotation(const StringBuilder& s)
-    {
-        m_annotation.clear();
-        m_annotation.append(s);
-    }
-
-    StringBuilder& annotation()
-    {
-        return m_annotation;
-    }
-
-    void clear()
-    {
-        m_type = Type::Uninitialized;
-        m_data.clear();
-        m_annotation.clear();
-        m_classes.clear();
-    }
+    const String& name() const { return m_data; }
+    const String& characters() const { return m_data; }
+    const AtomicString& classes() const { return m_classes; }
+    const AtomicString& annotation() const { return m_annotation; }
 
 private:
+    VTTToken(Type::Type type, const String& data)
+        : m_type(type)
+        , m_data(data) { }
+
     Type::Type m_type;
-    StringBuilder m_data;
-    StringBuilder m_annotation;
-    StringBuilder m_classes;
+    String m_data;
+    AtomicString m_annotation;
+    AtomicString m_classes;
 };
 
 }

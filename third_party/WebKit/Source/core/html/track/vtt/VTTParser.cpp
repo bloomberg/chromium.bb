@@ -386,7 +386,6 @@ PassRefPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const String& cueTe
     m_currentNode = fragment;
 
     VTTTokenizer tokenizer(cueText);
-    m_token.clear();
     m_languageStack.clear();
 
     while (tokenizer.nextToken(m_token))
@@ -538,8 +537,7 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
 
     switch (m_token.type()) {
     case VTTTokenTypes::Character: {
-        String content = m_token.characters().toString();
-        RefPtr<Text> child = Text::create(document, content);
+        RefPtr<Text> child = Text::create(document, m_token.characters());
         m_currentNode->parserAppendChild(child);
         break;
     }
@@ -550,12 +548,12 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
             child = VTTElement::create(nodeType, &document);
         if (child) {
             if (!m_token.classes().isEmpty())
-                child->setAttribute(classAttr, m_token.classes().toAtomicString());
+                child->setAttribute(classAttr, m_token.classes());
 
             if (child->webVTTNodeType() == VTTNodeTypeVoice) {
-                child->setAttribute(VTTElement::voiceAttributeName(), m_token.annotation().toAtomicString());
+                child->setAttribute(VTTElement::voiceAttributeName(), m_token.annotation());
             } else if (child->webVTTNodeType() == VTTNodeTypeLanguage) {
-                m_languageStack.append(m_token.annotation().toAtomicString());
+                m_languageStack.append(m_token.annotation());
                 child->setAttribute(VTTElement::langAttributeName(), m_languageStack.last());
             }
             if (!m_languageStack.isEmpty())
@@ -577,7 +575,7 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
     }
     case VTTTokenTypes::TimestampTag: {
         unsigned position = 0;
-        String charactersString = m_token.characters().toString();
+        String charactersString = m_token.characters();
         double time = VTTParser::collectTimeStamp(charactersString, &position);
         if (time != malformedTime)
             m_currentNode->parserAppendChild(ProcessingInstruction::create(document, "timestamp", charactersString));
@@ -586,7 +584,6 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
     default:
         break;
     }
-    m_token.clear();
 }
 
 void VTTParser::skipWhiteSpace(const String& line, unsigned* position)
