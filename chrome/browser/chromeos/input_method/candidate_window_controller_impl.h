@@ -11,7 +11,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
 #include "chrome/browser/chromeos/input_method/infolist_window_view.h"
-#include "chromeos/ime/ibus_bridge.h"
+#include "ui/base/ime/chromeos/ibus_bridge.h"
 
 namespace views {
 class Widget;

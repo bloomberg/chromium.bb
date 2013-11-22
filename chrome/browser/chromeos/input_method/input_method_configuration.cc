@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_delegate_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_persistence.h"
-#include "chromeos/ime/ibus_bridge.h"
+#include "ui/base/ime/chromeos/ibus_bridge.h"
 
 namespace chromeos {
 namespace input_method {

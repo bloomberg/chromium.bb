@@ -17,10 +17,10 @@
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/fake_input_method_delegate.h"
 #include "chromeos/ime/mock_component_extension_ime_manager_delegate.h"
-#include "chromeos/ime/mock_ime_engine_handler.h"
 #include "chromeos/ime/mock_xkeyboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace chromeos {

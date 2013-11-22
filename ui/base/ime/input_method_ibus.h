@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/ime/ibus_bridge.h"
 #include "ui/base/ime/character_composer.h"
+#include "ui/base/ime/chromeos/ibus_bridge.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method_base.h"
 

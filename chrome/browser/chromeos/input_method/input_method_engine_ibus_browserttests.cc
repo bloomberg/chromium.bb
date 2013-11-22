@@ -6,15 +6,15 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
-#include "chromeos/ime/ibus_bridge.h"
 #include "chromeos/ime/ibus_text.h"
 #include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_method_manager.h"
-#include "chromeos/ime/mock_ime_candidate_window_handler.h"
-#include "chromeos/ime/mock_ime_input_context_handler.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
+#include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
 
 namespace chromeos {
 namespace input_method {

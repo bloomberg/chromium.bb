@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_MOCK_IME_CANDIDATE_WINDOW_HANDLER_H_
-#define CHROMEOS_IME_MOCK_IME_CANDIDATE_WINDOW_HANDLER_H_
+#ifndef UI_BASE_IME_CHROMEOS_MOCK_IME_CANDIDATE_WINDOW_HANDLER_H_
+#define UI_BASE_IME_CHROMEOS_MOCK_IME_CANDIDATE_WINDOW_HANDLER_H_
 
 #include "chromeos/ime/candidate_window.h"
-#include "chromeos/ime/ibus_bridge.h"
+#include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "ui/base/ui_export.h"
 
 namespace chromeos {
 
-class MockIMECandidateWindowHandler
+class UI_EXPORT MockIMECandidateWindowHandler
     : public IBusPanelCandidateWindowHandlerInterface {
  public:
   struct UpdateLookupTableArg {
@@ -73,4 +74,4 @@ class MockIMECandidateWindowHandler
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_IME_MOCK_IME_CANDIDATE_WINDOW_HANDLER_H_
+#endif  // UI_BASE_IME_CHROMEOS_MOCK_IME_CANDIDATE_WINDOW_HANDLER_H_

@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_MOCK_IME_ENGINE_HANDLER_H_
-#define CHROMEOS_IME_MOCK_IME_ENGINE_HANDLER_H_
+#ifndef UI_BASE_IME_CHROMEOS_MOCK_IME_ENGINE_HANDLER_H_
+#define UI_BASE_IME_CHROMEOS_MOCK_IME_ENGINE_HANDLER_H_
 
-#include "chromeos/ime/ibus_bridge.h"
+#include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "ui/base/ui_export.h"
 
 namespace chromeos {
 
-class MockIMEEngineHandler : public IBusEngineHandlerInterface {
+class UI_EXPORT MockIMEEngineHandler : public IBusEngineHandlerInterface {
  public:
   MockIMEEngineHandler();
   virtual ~MockIMEEngineHandler();
@@ -95,4 +96,4 @@ class MockIMEEngineHandler : public IBusEngineHandlerInterface {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_IME_MOCK_IME_ENGINE_HANDLER_H_
+#endif  // UI_BASE_IME_CHROMEOS_MOCK_IME_ENGINE_HANDLER_H_

@@ -1,16 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // TODO(nona): Rename this file to ime_bridge.h
 
-#ifndef CHROMEOS_IME_IBUS_BRIDGE_H_
-#define CHROMEOS_IME_IBUS_BRIDGE_H_
+#ifndef UI_BASE_IME_CHROMEOS_IBUS_BRIDGE_H_
+#define UI_BASE_IME_CHROMEOS_IBUS_BRIDGE_H_
 
 #include <string>
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/ime/ime_constants.h"
+#include "ui/base/ui_export.h"
 
 namespace chromeos {
 namespace input_method {
@@ -19,7 +19,7 @@ class CandidateWindow;
 
 class IBusText;
 
-class CHROMEOS_EXPORT IBusInputContextHandlerInterface {
+class UI_EXPORT IBusInputContextHandlerInterface {
  public:
   // Called when the engine commit a text.
   virtual void CommitText(const std::string& text) = 0;
@@ -44,7 +44,7 @@ class CHROMEOS_EXPORT IBusInputContextHandlerInterface {
 
 
 // A interface to handle the engine handler method call.
-class CHROMEOS_EXPORT IBusEngineHandlerInterface {
+class UI_EXPORT IBusEngineHandlerInterface {
  public:
   typedef base::Callback<void (bool consumed)> KeyEventDoneCallback;
 
@@ -115,7 +115,7 @@ class CHROMEOS_EXPORT IBusEngineHandlerInterface {
 };
 
 // A interface to handle the candidate window related method call.
-class CHROMEOS_EXPORT IBusPanelCandidateWindowHandlerInterface {
+class UI_EXPORT IBusPanelCandidateWindowHandlerInterface {
  public:
   virtual ~IBusPanelCandidateWindowHandlerInterface() {}
 
@@ -160,20 +160,20 @@ class CHROMEOS_EXPORT IBusPanelCandidateWindowHandlerInterface {
 // their engine with dbus protocol, but new implementation doesn't. Instead of
 // dbus communcation, new implementation calls target service(e.g. PanelService
 // or EngineService) directly by using this class.
-class IBusBridge {
+class UI_EXPORT IBusBridge {
  public:
   typedef base::Callback<void()> CreateEngineHandler;
 
   virtual ~IBusBridge();
 
   // Allocates the global instance. Must be called before any calls to Get().
-  static CHROMEOS_EXPORT void Initialize();
+  static void Initialize();
 
   // Releases the global instance.
-  static CHROMEOS_EXPORT void Shutdown();
+  static void Shutdown();
 
   // Returns IBusBridge global instance. Initialize() must be called first.
-  static CHROMEOS_EXPORT IBusBridge* Get();
+  static IBusBridge* Get();
 
   // Returns current InputContextHandler. This function returns NULL if input
   // context is not ready to use.
@@ -225,4 +225,4 @@ class IBusBridge {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_IME_IBUS_BRIDGE_H_
+#endif  // UI_BASE_IME_CHROMEOS_IBUS_BRIDGE_H_

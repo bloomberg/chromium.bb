@@ -10,7 +10,7 @@
 #include <vector>
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
-#include "chromeos/ime/ibus_bridge.h"
+#include "ui/base/ime/chromeos/ibus_bridge.h"
 
 namespace chromeos {
 

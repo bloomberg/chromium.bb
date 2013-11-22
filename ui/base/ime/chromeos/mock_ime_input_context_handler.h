@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
-#define CHROMEOS_IME_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
+#ifndef UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
+#define UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
 
-#include "chromeos/ime/ibus_bridge.h"
 #include "chromeos/ime/ibus_text.h"
+#include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "ui/base/ui_export.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT MockIMEInputContextHandler
+class UI_EXPORT MockIMEInputContextHandler
     : public IBusInputContextHandlerInterface {
  public:
   struct UpdatePreeditTextArg {
@@ -87,4 +88,4 @@ class CHROMEOS_EXPORT MockIMEInputContextHandler
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_IME_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
+#endif  // UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_

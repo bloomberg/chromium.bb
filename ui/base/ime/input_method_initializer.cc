@@ -9,7 +9,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/ime/ibus_bridge.h"
+#include "ui/base/ime/chromeos/ibus_bridge.h"
 #elif defined(USE_AURA) && defined(USE_X11)
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/linux/fake_input_method_context_factory.h"
