@@ -42,11 +42,18 @@ bool GetTaskbarRect(gfx::Rect* rect) {
 
 }  // namespace
 
-gfx::Point FindAnchorPoint(
-    const gfx::Size view_size,
-    const gfx::Display& display,
-    const gfx::Point& cursor,
-    const gfx::Rect& taskbar_rect) {
+AppListWin::AppListWin(app_list::AppListView* view,
+                       const base::Closure& on_should_dismiss)
+    : view_(view),
+      activation_tracker_(view, on_should_dismiss),
+      window_icon_updated_(false) {}
+
+AppListWin::~AppListWin() {}
+
+gfx::Point AppListWin::FindAnchorPoint(const gfx::Size view_size,
+                                       const gfx::Display& display,
+                                       const gfx::Point& cursor,
+                                       const gfx::Rect& taskbar_rect) {
   AppListPositioner positioner(display, view_size, kMinDistanceFromEdge);
 
   // Find which edge of the screen the taskbar is attached to.
@@ -65,16 +72,6 @@ gfx::Point FindAnchorPoint(
   } else {
     return positioner.GetAnchorPointForShelfCursor(edge, taskbar_rect, cursor);
   }
-}
-
-AppListWin::AppListWin(app_list::AppListView* view,
-                       const base::Closure& on_should_dismiss)
-  : view_(view),
-    activation_tracker_(view, on_should_dismiss),
-    window_icon_updated_(false) {
-}
-
-AppListWin::~AppListWin() {
 }
 
 void AppListWin::Show() {
