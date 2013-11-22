@@ -25,10 +25,15 @@ public class DownloadController {
     public interface DownloadNotificationService {
         /**
          * Notify the host application that a download is finished.
-         * @param context Application context.
          * @param downloadInfo Information about the completed download.
          */
-        void onDownloadCompleted(Context context, DownloadInfo downloadInfo);
+        void onDownloadCompleted(final DownloadInfo downloadInfo);
+
+        /**
+         * Notify the host application that a download is in progress.
+         * @param downloadInfo Information about the in-progress download.
+         */
+        void onDownloadUpdated(final DownloadInfo downloadInfo);
     }
 
     private static DownloadNotificationService sDownloadNotificationService;
@@ -89,10 +94,10 @@ public class DownloadController {
      */
     @CalledByNative
     public void onDownloadStarted(ContentViewCore view, String filename, String mimeType) {
-        ContentViewDownloadDelegate downloadDelagate = downloadDelegateFromView(view);
+        ContentViewDownloadDelegate downloadDelegate = downloadDelegateFromView(view);
 
-        if (downloadDelagate != null) {
-            downloadDelagate.onDownloadStarted(filename, mimeType);
+        if (downloadDelegate != null) {
+            downloadDelegate.onDownloadStarted(filename, mimeType);
         }
     }
 
@@ -102,7 +107,7 @@ public class DownloadController {
      */
     @CalledByNative
     public void onDownloadCompleted(Context context, String url, String mimeType,
-            String filename, String path, long contentLength, boolean successful) {
+            String filename, String path, long contentLength, boolean successful, int downloadId) {
         if (sDownloadNotificationService != null) {
             DownloadInfo downloadInfo = new DownloadInfo.Builder()
                     .setUrl(url)
@@ -112,8 +117,36 @@ public class DownloadController {
                     .setContentLength(contentLength)
                     .setIsSuccessful(successful)
                     .setDescription(filename)
+                    .setDownloadId(downloadId)
+                    .setHasDownloadId(true)
                     .build();
-            sDownloadNotificationService.onDownloadCompleted(context, downloadInfo);
+            sDownloadNotificationService.onDownloadCompleted(downloadInfo);
+        }
+    }
+
+    /**
+     * Notifies the download delegate about progress of a download. Downloads that use Chrome
+     * network stack use custom notification to display the progress of downloads.
+     */
+    @CalledByNative
+    public void onDownloadUpdated(Context context, String url, String mimeType,
+            String filename, String path, long contentLength, boolean successful, int downloadId,
+            int percentCompleted, long timeRemainingInMs) {
+        if(sDownloadNotificationService != null) {
+            DownloadInfo downloadInfo = new DownloadInfo.Builder()
+            .setUrl(url)
+            .setMimeType(mimeType)
+            .setFileName(filename)
+            .setFilePath(path)
+            .setContentLength(contentLength)
+            .setIsSuccessful(successful)
+            .setDescription(filename)
+            .setDownloadId(downloadId)
+            .setHasDownloadId(true)
+            .setPercentCompleted(percentCompleted)
+            .setTimeRemainingInMillis(timeRemainingInMs)
+            .build();
+            sDownloadNotificationService.onDownloadUpdated(downloadInfo);
         }
     }
 

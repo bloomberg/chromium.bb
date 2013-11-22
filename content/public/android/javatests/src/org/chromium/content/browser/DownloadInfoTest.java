@@ -172,7 +172,7 @@ public class DownloadInfoTest extends InstrumentationTestCase {
                 valuesForBuilder.put(signature, Boolean.TRUE);
             } else {
                 // This is a primitive type that is not boolean, probably an integer.
-                valuesForBuilder.put(signature, Integer.valueOf(random.nextInt()));
+                valuesForBuilder.put(signature, Integer.valueOf(random.nextInt(100)));
             }
         }
 
@@ -184,7 +184,7 @@ public class DownloadInfoTest extends InstrumentationTestCase {
                 invokeMethod(setter, builder, valuesForBuilder.get(signature));
             } catch (Exception e) {
                 fail("Exception while setting value in the setter. Signature: " + signature
-                        + " value:" + valuesForBuilder.get(signature));
+                        + " value:" + valuesForBuilder.get(signature) + ":" + e);
             }
         }
         DownloadInfo downloadInfo = builder.build();
@@ -197,6 +197,20 @@ public class DownloadInfoTest extends InstrumentationTestCase {
             } catch (Exception e) {
                 fail("Exception while getting value from getter. Signature: " + signature
                         + " value:" + valuesForBuilder.get(signature));
+            }
+        }
+
+        // Test DownloadInfo.fromDownloadInfo copies all fields.
+        DownloadInfo newDownloadInfo = Builder.fromDownloadInfo(downloadInfo).build();
+        for (AccessorSignature signature : downloadInfoGetters.keySet()) {
+            Method getter = downloadInfoGetters.get(signature);
+            try {
+                Object returnValue1 = invokeMethod(getter, downloadInfo);
+                Object returnValue2 = invokeMethod(getter, newDownloadInfo);
+                assertEquals(signature.toString(), returnValue1, returnValue2);
+            } catch (Exception e) {
+                fail("Exception while getting value from getter. Signature: " + signature
+                        + " value:" + valuesForBuilder.get(signature) + ":" + e);
             }
         }
     }

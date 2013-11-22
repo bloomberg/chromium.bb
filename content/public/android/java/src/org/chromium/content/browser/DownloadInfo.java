@@ -22,6 +22,8 @@ public final class DownloadInfo {
     private final String mContentDisposition;
     private final boolean mIsGETRequest;
     private final boolean mIsSuccessful;
+    private final int mPercentCompleted;
+    private final long mTimeRemainingInMillis;
 
     private DownloadInfo(Builder builder) {
         mUrl = builder.mUrl;
@@ -38,6 +40,8 @@ public final class DownloadInfo {
         mIsSuccessful = builder.mIsSuccessful;
         mIsGETRequest = builder.mIsGETRequest;
         mContentDisposition = builder.mContentDisposition;
+        mPercentCompleted = builder.mPercentCompleted;
+        mTimeRemainingInMillis = builder.mTimeRemainingInMillis;
     }
 
     public String getUrl() {
@@ -96,6 +100,17 @@ public final class DownloadInfo {
         return mContentDisposition;
     }
 
+    /**
+     * @return percent completed as an integer, -1 if there is no download progress.
+     */
+    public int getPercentCompleted() {
+        return mPercentCompleted;
+    }
+
+    public long getTimeRemainingInMillis() {
+        return mTimeRemainingInMillis;
+    }
+
     public static class Builder {
         private String mUrl;
         private String mUserAgent;
@@ -111,6 +126,8 @@ public final class DownloadInfo {
         private int mDownloadId;
         private boolean mIsSuccessful;
         private String mContentDisposition;
+        private int mPercentCompleted = -1;
+        private long mTimeRemainingInMillis;
 
         public Builder setUrl(String url) {
             mUrl = url;
@@ -182,6 +199,17 @@ public final class DownloadInfo {
             return this;
         }
 
+        public Builder setPercentCompleted(int percentCompleted) {
+            assert percentCompleted <= 100;
+            mPercentCompleted = percentCompleted;
+            return this;
+        }
+
+        public Builder setTimeRemainingInMillis(long timeRemainingInMillis) {
+            mTimeRemainingInMillis = timeRemainingInMillis;
+            return this;
+        }
+
         public DownloadInfo build() {
             return new DownloadInfo(this);
         }
@@ -207,7 +235,9 @@ public final class DownloadInfo {
                     .setDownloadId(downloadInfo.getDownloadId())
                     .setContentDisposition(downloadInfo.getContentDisposition())
                     .setIsGETRequest(downloadInfo.isGETRequest())
-                    .setIsSuccessful(downloadInfo.isSuccessful());
+                    .setIsSuccessful(downloadInfo.isSuccessful())
+                    .setPercentCompleted(downloadInfo.getPercentCompleted())
+                    .setTimeRemainingInMillis(downloadInfo.getTimeRemainingInMillis());
             return builder;
         }
 

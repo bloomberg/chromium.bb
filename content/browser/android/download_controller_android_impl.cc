@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
@@ -254,18 +255,9 @@ void DownloadControllerAndroidImpl::OnDownloadStarted(
 
 void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (item->IsDangerous() &&
-      (item->GetState() != DownloadItem::CANCELLED))
+  if (item->IsDangerous() && (item->GetState() != DownloadItem::CANCELLED))
     OnDangerousDownload(item);
 
-  if (item->GetState() != DownloadItem::COMPLETE)
-    return;
-
-  // Multiple OnDownloadUpdated() notifications may be issued while the download
-  // is in the COMPLETE state. Only handle one.
-  item->RemoveObserver(this);
-
-  // Call onDownloadCompleted
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jurl =
       ConvertUTF8ToJavaString(env, item->GetURL().spec());
@@ -276,10 +268,44 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
   ScopedJavaLocalRef<jstring> jfilename = ConvertUTF8ToJavaString(
       env, item->GetTargetFilePath().BaseName().value());
 
-  Java_DownloadController_onDownloadCompleted(
-      env, GetJavaObject()->Controller(env).obj(),
-      base::android::GetApplicationContext(), jurl.obj(), jmime_type.obj(),
-      jfilename.obj(), jpath.obj(), item->GetReceivedBytes(), true);
+  switch (item->GetState()) {
+    case DownloadItem::IN_PROGRESS: {
+      base::TimeDelta time_delta;
+      item->TimeRemaining(&time_delta);
+      Java_DownloadController_onDownloadUpdated(
+          env, GetJavaObject()->Controller(env).obj(),
+          base::android::GetApplicationContext(), jurl.obj(), jmime_type.obj(),
+          jfilename.obj(), jpath.obj(), item->GetReceivedBytes(), true,
+          item->GetId(), item->PercentComplete(), time_delta.InMilliseconds());
+      break;
+    }
+    case DownloadItem::COMPLETE:
+      // Multiple OnDownloadUpdated() notifications may be issued while the
+      // download is in the COMPLETE state. Only handle one.
+      item->RemoveObserver(this);
+
+      // Call onDownloadCompleted
+      Java_DownloadController_onDownloadCompleted(
+          env, GetJavaObject()->Controller(env).obj(),
+          base::android::GetApplicationContext(), jurl.obj(), jmime_type.obj(),
+          jfilename.obj(), jpath.obj(), item->GetReceivedBytes(), true,
+          item->GetId());
+      break;
+    case DownloadItem::CANCELLED:
+    // TODO(shashishekhar): An interrupted download can be resumed. Android
+    // currently does not support resumable downloads. Add handling for
+    // interrupted case based on item->CanResume().
+    case DownloadItem::INTERRUPTED:
+      // Call onDownloadCompleted with success = false.
+      Java_DownloadController_onDownloadCompleted(
+          env, GetJavaObject()->Controller(env).obj(),
+          base::android::GetApplicationContext(), jurl.obj(), jmime_type.obj(),
+          jfilename.obj(), jpath.obj(), item->GetReceivedBytes(), false,
+          item->GetId());
+      break;
+    case DownloadItem::MAX_DOWNLOAD_STATE:
+      NOTREACHED();
+  }
 }
 
 void DownloadControllerAndroidImpl::OnDangerousDownload(DownloadItem* item) {
