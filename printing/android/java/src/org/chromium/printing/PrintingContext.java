@@ -32,9 +32,9 @@ public class PrintingContext implements PrintingContextInterface {
     private final PrintingController mController;
 
     /** The pointer to the native PrintingContextAndroid object. */
-    private final int mNativeObject;
+    private final long mNativeObject;
 
-    private PrintingContext(int ptr) {
+    private PrintingContext(long ptr) {
         mController = PrintingControllerImpl.getInstance();
         mNativeObject = ptr;
     }
@@ -129,6 +129,6 @@ public class PrintingContext implements PrintingContextInterface {
     }
 
     private native void nativeAskUserForSettingsReply(
-            int nativePrintingContextAndroid,
+            long nativePrintingContextAndroid,
             boolean success);
 }

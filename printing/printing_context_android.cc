@@ -91,7 +91,7 @@ void PrintingContextAndroid::AskUserForSettings(
   if (j_printing_context_.is_null()) {
     j_printing_context_.Reset(Java_PrintingContext_create(
         env,
-        reinterpret_cast<int>(this)));
+        reinterpret_cast<intptr_t>(this)));
   }
 
   Java_PrintingContext_pageCountEstimationDone(env,
