@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_bubble_controller.h"
 
+#import "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -12,9 +13,6 @@ namespace {
 
 // Border inset for error label.
 const CGFloat kLabelInset = 3.0;
-
-// Imported constant from Views version. TODO(groby): Share.
-SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
 
 }  // namespace
 
@@ -33,8 +31,6 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
                        parentWindow:parentWindow
                          anchoredAt:NSZeroPoint])) {
     [self setShouldOpenAsKeyWindow:NO];
-    [[self bubble] setBackgroundColor:
-        gfx::SkColorToCalibratedNSColor(kWarningColor)];
     [[self bubble] setArrowLocation:info_bubble::kTopCenter];
     [[self bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
 
@@ -42,9 +38,13 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
     [label_ setEditable:NO];
     [label_ setBordered:NO];
     [label_ setDrawsBackground:NO];
-    [label_ setTextColor:[NSColor whiteColor]];
     [label_ setStringValue:message];
-    [label_ sizeToFit];
+    NSSize labelSize = [[label_ cell] cellSizeForBounds:
+        NSMakeRect(
+            0, 0,
+            2 * autofill::kFieldWidth + autofill::kHorizontalFieldPadding,
+            CGFLOAT_MAX)];
+    [label_ setFrameSize:labelSize];
     [label_ setFrameOrigin:NSMakePoint(kLabelInset, kLabelInset)];
 
     [[self bubble] addSubview:label_];

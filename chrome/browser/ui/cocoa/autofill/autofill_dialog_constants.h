@@ -32,6 +32,9 @@ const int kDetailVerticalPadding = 10;
 // Fixed width for a single input field.
 const CGFloat kFieldWidth = 104;
 
+// Horizontal padding between fields
+const CGFloat kHorizontalFieldPadding = 8;
+
 }  // autofill
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_CONSTANTS__H_
