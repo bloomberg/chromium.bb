@@ -204,6 +204,11 @@ static unsigned long saturateAdd(unsigned long a, unsigned long b)
     return a + b;
 }
 
+static void setInvalidStateErrorForSendMethod(ExceptionState& exceptionState)
+{
+    exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("send", "WebSocket", "Still in CONNECTING state."));
+}
+
 const char* WebSocket::subProtocolSeperator()
 {
     return ", ";
@@ -279,7 +284,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
 
     if (!m_url.isValid()) {
         m_state = CLOSED;
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("connect", "WebSocket", "the URL '" + url + "' is invalid."));
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("connect", "WebSocket", "The URL '" + url + "' is invalid."));
         return;
     }
     if (!m_url.protocolIs("ws") && !m_url.protocolIs("wss")) {
@@ -348,7 +353,7 @@ void WebSocket::handleSendResult(WebSocketChannel::SendResult result, ExceptionS
 {
     switch (result) {
     case WebSocketChannel::InvalidMessage:
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("send", "WebSocket", "the message contains invalid characters."));
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("send", "WebSocket", "The message contains invalid characters."));
         return;
     case WebSocketChannel::SendFail:
         executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "WebSocket send() failed.");
@@ -371,7 +376,7 @@ void WebSocket::send(const String& message, ExceptionState& exceptionState)
 {
     LOG(Network, "WebSocket %p send() Sending String '%s'", this, message.utf8().data());
     if (m_state == CONNECTING) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("send", "WebSocket", "already in CONNECTING state."));
+        setInvalidStateErrorForSendMethod(exceptionState);
         return;
     }
     // No exception is raised if the connection was once established but has subsequently been closed.
@@ -388,7 +393,7 @@ void WebSocket::send(ArrayBuffer* binaryData, ExceptionState& exceptionState)
     LOG(Network, "WebSocket %p send() Sending ArrayBuffer %p", this, binaryData);
     ASSERT(binaryData);
     if (m_state == CONNECTING) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("send", "WebSocket", "already in CONNECTING state."));
+        setInvalidStateErrorForSendMethod(exceptionState);
         return;
     }
     if (m_state == CLOSING || m_state == CLOSED) {
@@ -404,7 +409,7 @@ void WebSocket::send(ArrayBufferView* arrayBufferView, ExceptionState& exception
     LOG(Network, "WebSocket %p send() Sending ArrayBufferView %p", this, arrayBufferView);
     ASSERT(arrayBufferView);
     if (m_state == CONNECTING) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("send", "WebSocket", "already in CONNECTING state."));
+        setInvalidStateErrorForSendMethod(exceptionState);
         return;
     }
     if (m_state == CLOSING || m_state == CLOSED) {
@@ -421,7 +426,7 @@ void WebSocket::send(Blob* binaryData, ExceptionState& exceptionState)
     LOG(Network, "WebSocket %p send() Sending Blob '%s'", this, binaryData->uuid().utf8().data());
     ASSERT(binaryData);
     if (m_state == CONNECTING) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("send", "WebSocket", "already in CONNECTING state."));
+        setInvalidStateErrorForSendMethod(exceptionState);
         return;
     }
     if (m_state == CLOSING || m_state == CLOSED) {
@@ -454,12 +459,12 @@ void WebSocket::closeInternal(int code, const String& reason, ExceptionState& ex
     } else {
         LOG(Network, "WebSocket %p close() code=%d reason='%s'", this, code, reason.utf8().data());
         if (!(code == WebSocketChannel::CloseEventCodeNormalClosure || (WebSocketChannel::CloseEventCodeMinimumUserDefined <= code && code <= WebSocketChannel::CloseEventCodeMaximumUserDefined))) {
-            exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("close", "WebSocket", "the code must be either 1000, or between 3000 and 4999. " + String::number(code) + " is neither."));
+            exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("close", "WebSocket", "The code must be either 1000, or between 3000 and 4999. " + String::number(code) + " is neither."));
             return;
         }
         CString utf8 = reason.utf8(String::StrictConversionReplacingUnpairedSurrogatesWithFFFD);
         if (utf8.length() > maxReasonSizeInBytes) {
-            exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("close", "WebSocket", "the message must be smaller than " + String::number(maxReasonSizeInBytes) + " bytes."));
+            exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("close", "WebSocket", "The message must not be greater than " + String::number(maxReasonSizeInBytes) + " bytes."));
             return;
         }
     }
