@@ -241,7 +241,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
       bool did_escalate);
 
   // Getter and setters for disabled reason.
-  int GetDisableReasons(const std::string& extension_id);
+  int GetDisableReasons(const std::string& extension_id) const;
   void AddDisableReason(const std::string& extension_id,
                         Extension::DisableReason disable_reason);
   void RemoveDisableReason(const std::string& extension_id,

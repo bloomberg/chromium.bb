@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -125,7 +126,7 @@ void ExtensionAppItem::UpdateIcon() {
 
   const ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  const bool enabled = service->IsExtensionEnabledForLauncher(extension_id_);
+  const bool enabled = extension_util::IsAppLaunchable(extension_id_, service);
   if (!enabled) {
     const color_utils::HSL shift = {-1, 0, 0.6};
     icon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
@@ -188,7 +189,7 @@ void ExtensionAppItem::LoadImage(const Extension* extension) {
 bool ExtensionAppItem::RunExtensionEnableFlow() {
   const ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (service->IsExtensionEnabledForLauncher(extension_id_))
+  if (extension_util::IsAppLaunchableWithoutEnabling(extension_id_, service))
     return false;
 
   if (!extension_enable_flow_) {

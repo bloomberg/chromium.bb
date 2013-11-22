@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -646,7 +647,7 @@ void ChromeLauncherController::LaunchApp(const std::string& app_id,
 
   const ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (!service->IsExtensionEnabledForLauncher(app_id)) {
+  if (!extension_util::IsAppLaunchableWithoutEnabling(app_id, service)) {
     // Do nothing if there is already a running enable flow.
     if (extension_enable_flow_)
       return;

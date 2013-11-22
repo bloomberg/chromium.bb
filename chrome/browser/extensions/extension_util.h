@@ -44,6 +44,15 @@ void SetAllowFileAccess(const extensions::Extension* extension,
                         ExtensionService* service,
                         bool allow);
 
+// Whether an app can be launched or not. Apps may require enabling first,
+// but they will still be launchable.
+bool IsAppLaunchable(const std::string& extension_id,
+                     const ExtensionService* service);
+
+// Whether an app can be launched without being enabled first.
+bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
+                                    const ExtensionService* service);
+
 }  // namespace extension_util
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_UTIL_H_

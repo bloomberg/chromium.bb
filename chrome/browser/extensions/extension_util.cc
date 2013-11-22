@@ -124,4 +124,17 @@ void SetAllowFileAccess(const Extension* extension,
     service->ReloadExtension(extension->id());
 }
 
+bool IsAppLaunchable(const std::string& extension_id,
+                     const ExtensionService* service) {
+  return !(service->extension_prefs()->GetDisableReasons(extension_id) &
+           Extension::DISABLE_UNSUPPORTED_REQUIREMENT);
+}
+
+bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
+                                    const ExtensionService* service) {
+  const Extension* launchable_extension = service->GetExtensionById(
+      extension_id, ExtensionService::INCLUDE_ENABLED);
+  return launchable_extension != NULL;
+}
+
 }  // namespace extension_util

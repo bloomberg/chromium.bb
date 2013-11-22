@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -132,7 +133,7 @@ void AppResult::StopObservingInstall() {
 bool AppResult::RunExtensionEnableFlow() {
   const ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (service->IsExtensionEnabledForLauncher(app_id_))
+  if (extension_util::IsAppLaunchableWithoutEnabling(app_id_, service))
     return false;
 
   if (!extension_enable_flow_) {
@@ -151,8 +152,8 @@ void AppResult::UpdateIcon() {
 
   const ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  const bool enabled = service->IsExtensionEnabledForLauncher(app_id_);
-  if (!enabled) {
+  const bool can_launch = extension_util::IsAppLaunchable(app_id_, service);
+  if (!can_launch) {
     const color_utils::HSL shift = {-1, 0, 0.6};
     icon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
   }

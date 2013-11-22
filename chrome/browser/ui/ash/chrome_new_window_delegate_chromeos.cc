@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -28,8 +29,11 @@ void ChromeNewWindowDelegateChromeos::OpenFileManager() {
   Profile* const profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   const ExtensionService* const service = profile->GetExtensionService();
   if (service == NULL ||
-      !service->IsExtensionEnabledForLauncher(kFileManagerAppId))
+      !extension_util::IsAppLaunchableWithoutEnabling(kFileManagerAppId,
+                                                      service)) {
     return;
+  }
+
   const extensions::Extension* const extension =
       service->GetInstalledExtension(kFileManagerAppId);
   // event_flags = 0 means this invokes the same behavior as the launcher

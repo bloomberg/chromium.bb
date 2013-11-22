@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
@@ -106,7 +107,7 @@ bool AppListControllerDelegate::HasOptionsPage(
   const ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   const extensions::Extension* extension = GetExtension(profile, app_id);
-  return service->IsExtensionEnabledForLauncher(app_id) &&
+  return extension_util::IsAppLaunchableWithoutEnabling(app_id, service) &&
          extension &&
          !extensions::ManifestURL::GetOptionsPage(extension).is_empty();
 }

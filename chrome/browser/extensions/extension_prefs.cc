@@ -716,7 +716,7 @@ void ExtensionPrefs::SetDidExtensionEscalatePermissions(
                       new base::FundamentalValue(did_escalate));
 }
 
-int ExtensionPrefs::GetDisableReasons(const std::string& extension_id) {
+int ExtensionPrefs::GetDisableReasons(const std::string& extension_id) const {
   int value = -1;
   if (ReadPrefAsInteger(extension_id, kPrefDisableReasons, &value) &&
       value >= 0) {
