@@ -66,6 +66,17 @@ EVENTS_EXPORT XEvent* CreateScrollEventForTest(
     int y_offset_ordinal,
     int finger_count);
 
+// Creates the native XInput2 based XEvent for an aura scroll event of type
+// ET_SCROLL_FLING_START or ET_SCROLL_FLING_CANCEL. The caller is responsible
+// for the ownership of the returned XEvent.
+EVENTS_EXPORT XEvent* CreateFlingEventForTest(
+    int deviceid,
+    int x_velocity,
+    int y_velocity,
+    int x_velocity_ordinal,
+    int y_velocity_ordinal,
+    bool is_cancel);
+
 // Initializes a test touchpad device for scroll events.
 EVENTS_EXPORT void SetUpScrollDeviceForTest(unsigned int deviceid);
 
