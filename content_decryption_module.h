@@ -593,7 +593,7 @@ class ContentDecryptionModule_3 {
   static const int kVersion = 3;
   typedef Host_3 Host;
 
-  // GenerateKeyRequest(), Update(), and Close() get passed a |reference_id|
+  // GenerateKeyRequest(), Update(), and Release() get passed a |reference_id|
   // which is the reference ID for a MediaKeySession object. It must be used
   // in the reply via Host methods (e.g. Host::SendMessage()).
 
@@ -607,8 +607,8 @@ class ContentDecryptionModule_3 {
   virtual void Update(uint32_t reference_id,
                       const uint8_t* response, uint32_t response_size) = 0;
 
-  // Closes the session specified by |reference_id|.
-  virtual void Close(uint32_t reference_id) = 0;
+  // Releases the resources for the session specified by |reference_id|.
+  virtual void Release(uint32_t reference_id) = 0;
 
   // Performs scheduled operation with |context| when the timer fires.
   virtual void TimerExpired(void* context) = 0;
@@ -719,7 +719,7 @@ class ContentDecryptionModule_3 {
   virtual ~ContentDecryptionModule_3() {}
 };
 
-typedef ContentDecryptionModule_2 ContentDecryptionModule;
+typedef ContentDecryptionModule_3 ContentDecryptionModule;
 
 // Represents a buffer created by Allocator implementations.
 class Buffer {
@@ -866,6 +866,13 @@ class Host_3 {
   // Returns the current epoch wall time in seconds.
   virtual double GetCurrentWallTimeInSeconds() = 0;
 
+  // Sets the session ID for the session represented by |reference_id|.
+  // This must be called before any SendMessage() or SendReady() for
+  // |reference_id|. |session_id_length| should not include null termination.
+  virtual void SetSessionId(
+      uint32_t reference_id,
+      const char* session_id, uint32_t session_id_length) = 0;
+
   // Sends a message event with |message| to the MediaKeySession object
   // represented by |reference_id|. Length parameters should not include
   // null termination.
@@ -887,13 +894,6 @@ class Host_3 {
   virtual void SendError(uint32_t reference_id,
                          MediaKeyError error_code,
                          uint32_t system_code) = 0;
-
-  // Sets the session ID for the session represented by |reference_id|.
-  // This must be called before any SendMessage() or SendReady() for
-  // |reference_id|. |session_id_length| should not include null termination.
-  virtual void SetSessionId(
-      uint32_t reference_id,
-      const char* session_id, uint32_t session_id_length) = 0;
 
   // The following are optional methods that may not be implemented on all
   // platforms.
