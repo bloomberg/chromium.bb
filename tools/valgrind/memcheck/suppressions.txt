@@ -6414,27 +6414,6 @@
    fun:_ZN5media18AudioStreamHandler20AudioStreamContainer4PlayEv
 }
 {
-   bug_321975_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3gcm21GCMProfileServiceTest5SetUpEv
-}
-{
-   bug_321975_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsPN3gcm9GCMClient8DelegateEEEE8allocateEmPKv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN3gcm9GCMClient8DelegateEESt10_Select1stIS6_ESt4lessISsESaIS6_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN3gcm9GCMClient8DelegateEESt10_Select1stIS6_ESt4lessISsESaIS6_EE14_M_create_nodeERKS6_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN3gcm9GCMClient8DelegateEESt10_Select1stIS6_ESt4lessISsESaIS6_EE10_M_insert_EPKSt18_Rb_tree_node_baseSF_RKS6_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN3gcm9GCMClient8DelegateEESt10_Select1stIS6_ESt4lessISsESaIS6_EE16_M_insert_uniqueERKS6_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN3gcm9GCMClient8DelegateEESt10_Select1stIS6_ESt4lessISsESaIS6_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS6_ERKS6_
-   fun:_ZNSt3mapISsPN3gcm9GCMClient8DelegateESt4lessISsESaISt4pairIKSsS3_EEE6insertESt17_Rb_tree_iteratorIS8_ERKS8_
-   fun:_ZNSt3mapISsPN3gcm9GCMClient8DelegateESt4lessISsESaISt4pairIKSsS3_EEEixERS7_
-   fun:_ZN3gcm13GCMClientMock7AddUserERKSsPNS_9GCMClient8DelegateE
-   fun:_ZN3gcm17GCMProfileService8IOWorker7CheckInERKSs
-}
-{
    bug_321976
    Memcheck:Leak
    ...

@@ -17,12 +17,10 @@
 
 namespace gcm {
 
-namespace {
-const char* kTestingUsername = "user@example.com";
-const char* kTestingAppId = "test1";
-const char* kTestingSha1Cert = "testing_cert1";
-const char* kUserId = "user2";
-}  // namespace
+const char kTestingUsername[] = "user@example.com";
+const char kTestingAppId[] = "test1";
+const char kTestingSha1Cert[] = "testing_cert1";
+const char kUserId[] = "user2";
 
 class GCMProfileServiceTest;
 
@@ -65,8 +63,7 @@ class GCMEventRouterMock : public GCMEventRouter {
 class GCMProfileServiceTest : public testing::Test,
                               public GCMProfileService::TestingDelegate {
  public:
-  GCMProfileServiceTest()
-      : gcm_client_mock_(NULL) {
+  GCMProfileServiceTest() {
   }
 
   virtual ~GCMProfileServiceTest() {
@@ -86,8 +83,8 @@ class GCMProfileServiceTest : public testing::Test,
     signin_manager->SetAuthenticatedUsername(kTestingUsername);
 
     // Mock a GCMClient.
-    gcm_client_mock_ = new GCMClientMock();
-    GCMClient::SetForTesting(gcm_client_mock_);
+    gcm_client_mock_.reset(new GCMClientMock());
+    GCMClient::SetForTesting(gcm_client_mock_.get());
 
     // Mock a GCMEventRouter.
     gcm_event_router_mock_.reset(new GCMEventRouterMock(this));
@@ -97,6 +94,10 @@ class GCMProfileServiceTest : public testing::Test,
 
     // Wait till the asynchronous check-in is done.
     WaitForCompleted();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    GCMClient::SetForTesting(NULL);
   }
 
   // Overridden from GCMProfileService::TestingDelegate:
@@ -130,7 +131,7 @@ class GCMProfileServiceTest : public testing::Test,
  protected:
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
-  GCMClientMock* gcm_client_mock_;
+  scoped_ptr<GCMClientMock> gcm_client_mock_;
   scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<GCMEventRouterMock> gcm_event_router_mock_;
   GCMClient::CheckInInfo checkin_info_;
