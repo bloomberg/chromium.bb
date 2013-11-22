@@ -77,7 +77,7 @@ TEST_F(L10nUtilTest, DISABLED_GetString) {
 // On Android, we are disabling this test since GetApplicationLocale() just
 // returns the system's locale, which, similarly, is not easily unit tested.
 
-#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
+#if defined(OS_POSIX) && defined(USE_GLIB) && !defined(OS_CHROMEOS)
 const bool kPlatformHasDefaultLocale = 1;
 const bool kUseLocaleFromEnvironment = 1;
 const bool kSupportsLocalePreference = 0;

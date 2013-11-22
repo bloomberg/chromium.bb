@@ -36,7 +36,7 @@
 #include "ui/base/l10n/l10n_util_android.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(USE_GLIB)
 #include <glib.h>
 #endif
 
@@ -447,19 +447,12 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
     candidates.push_back(base::i18n::GetConfiguredLocale());
   }
 
-#elif defined(OS_CHROMEOS) || (defined(USE_AURA) && !defined(OS_LINUX))
-
-  // On ChromeOS, use the application locale preference.
-  if (!pref_locale.empty())
-    candidates.push_back(pref_locale);
-
 #elif defined(OS_ANDROID)
 
   // On Android, query java.util.Locale for the default locale.
   candidates.push_back(GetDefaultLocale());
 
-#elif defined(OS_POSIX)
-  // If we're on a different Linux system, we have glib.
+#elif defined(USE_GLIB) && !defined(OS_CHROMEOS)
 
   // GLib implements correct environment variable parsing with
   // the precedence order: LANGUAGE, LC_ALL, LC_MESSAGES and LANG.
@@ -475,7 +468,12 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
   }
 
 #else
-#error Unsupported platform, see build/build_config.h
+
+  // By default, use the application locale preference. This applies to ChromeOS
+  // and linux systems without glib.
+  if (!pref_locale.empty())
+    candidates.push_back(pref_locale);
+
 #endif
 
   std::vector<std::string>::const_iterator i = candidates.begin();
