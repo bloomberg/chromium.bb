@@ -863,8 +863,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #if !defined(OS_CHROMEOS)
   // Convert active labs into switches. This needs to be done before
   // ResourceBundle::InitSharedInstanceWithLocale as some loaded resources are
-  // affected by experiment flags (--touch-optimized-ui in particular). Not
-  // needed on Android as there aren't experimental flags.
+  // affected by experiment flags (--touch-optimized-ui in particular).
   // On ChromeOS system level flags are applied from the device settings from
   // the session manager.
   {
