@@ -184,8 +184,9 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   //EXPECT_FALSE(base::PathExists(temp_dir_.path()));
 }
 
+// Disabled (slow), http://crbug.com/322751 .
 TEST_F(ExtensionSettingsFrontendTest,
-       QuotaLimitsEnforcedCorrectlyForSyncAndLocal) {
+       DISABLED_QuotaLimitsEnforcedCorrectlyForSyncAndLocal) {
   const std::string id = "ext";
   ExtensionServiceInterface* esi =
       extensions::ExtensionSystem::Get(profile_.get())->extension_service();
