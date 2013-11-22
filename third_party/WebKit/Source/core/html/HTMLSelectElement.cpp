@@ -1567,7 +1567,7 @@ void HTMLSelectElement::finishParsingChildren()
 bool HTMLSelectElement::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
 {
     if (!value) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::failedToSet(String::number(index), "HTMLSelectElement", "The value provided was not an HTMLOptionElement."));
+        exceptionState.throwTypeError(ExceptionMessages::failedToSet(String::number(index), "HTMLSelectElement", "The value provided was not an HTMLOptionElement."));
         return false;
     }
     setOption(index, value.get(), exceptionState);
