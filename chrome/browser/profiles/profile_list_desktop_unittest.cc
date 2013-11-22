@@ -86,9 +86,11 @@ TEST_F(ProfileListDesktopTest, InitialCreation) {
   string16 name2(ASCIIToUTF16("Test 2"));
 
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0, std::string());
+                                  name1, 0, std::string(),
+                                  TestingProfile::TestingFactories());
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0, std::string());
+                                  name2, 0, std::string(),
+                                  TestingProfile::TestingFactories());
 
   AvatarMenu* model = GetAvatarMenu();
   EXPECT_EQ(0, change_count());
@@ -109,9 +111,11 @@ TEST_F(ProfileListDesktopTest, ActiveItem) {
   string16 name2(ASCIIToUTF16("Test 2"));
 
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0, std::string());
+                                  name1, 0, std::string(),
+                                  TestingProfile::TestingFactories());
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0, std::string());
+                                  name2, 0, std::string(),
+                                  TestingProfile::TestingFactories());
 
   AvatarMenu* model = GetAvatarMenu();
   ASSERT_EQ(2U, model->GetNumberOfItems());
@@ -126,9 +130,11 @@ TEST_F(ProfileListDesktopTest, ModifyingNameResortsCorrectly) {
   string16 newname1(ASCIIToUTF16("Gamma"));
 
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0, std::string());
+                                  name1, 0, std::string(),
+                                  TestingProfile::TestingFactories());
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0, std::string());
+                                  name2, 0, std::string(),
+                                  TestingProfile::TestingFactories());
 
   AvatarMenu* model = GetAvatarMenu();
   EXPECT_EQ(0, change_count());
@@ -161,9 +167,11 @@ TEST_F(ProfileListDesktopTest, ChangeOnNotify) {
   string16 name2(ASCIIToUTF16("Test 2"));
 
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0, std::string());
+                                  name1, 0, std::string(),
+                                  TestingProfile::TestingFactories());
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0, std::string());
+                                  name2, 0, std::string(),
+                                  TestingProfile::TestingFactories());
 
   AvatarMenu* model = GetAvatarMenu();
   EXPECT_EQ(0, change_count());
@@ -171,7 +179,8 @@ TEST_F(ProfileListDesktopTest, ChangeOnNotify) {
 
   string16 name3(ASCIIToUTF16("Test 3"));
   manager()->CreateTestingProfile("p3", scoped_ptr<PrefServiceSyncable>(),
-                                  name3, 0, std::string());
+                                  name3, 0, std::string(),
+                                  TestingProfile::TestingFactories());
 
   // Four changes happened via the call to CreateTestingProfile: adding the
   // profile to the cache, setting the user name, rebuilding the list of
@@ -215,7 +224,8 @@ TEST_F(ProfileListDesktopTest, ShowAvatarMenuInTrial) {
 TEST_F(ProfileListDesktopTest, DontShowAvatarMenu) {
   string16 name1(ASCIIToUTF16("Test 1"));
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0, std::string());
+                                  name1, 0, std::string(),
+                                  TestingProfile::TestingFactories());
 
   EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
 
@@ -226,7 +236,8 @@ TEST_F(ProfileListDesktopTest, DontShowAvatarMenu) {
 
   string16 name2(ASCIIToUTF16("Test 2"));
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0, std::string());
+                                  name2, 0, std::string(),
+                                  TestingProfile::TestingFactories());
 
   EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
 }
@@ -240,9 +251,11 @@ TEST_F(ProfileListDesktopTest, ShowAvatarMenu) {
   string16 name2(ASCIIToUTF16("Test 2"));
 
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0, std::string());
+                                  name1, 0, std::string(),
+                                  TestingProfile::TestingFactories());
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0, std::string());
+                                  name2, 0, std::string(),
+                                  TestingProfile::TestingFactories());
 
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
@@ -257,7 +270,8 @@ TEST_F(ProfileListDesktopTest, SyncState) {
     return;
 
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  ASCIIToUTF16("Test 1"), 0, std::string());
+                                  ASCIIToUTF16("Test 1"), 0, std::string(),
+                                  TestingProfile::TestingFactories());
 
   // Add a managed user profile.
   ProfileInfoCache* cache = manager()->profile_info_cache();

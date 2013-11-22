@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_profile.h"
 
 class PrefServiceSyncable;
 class ProfileInfoCache;
@@ -47,11 +48,14 @@ class TestingProfileManager {
   // ProfileInfoCache and provide the user-visible profile metadata. This will
   // register the TestingProfile with the profile subsystem as well. The
   // subsystem owns the Profile and returns a weak pointer.
-  TestingProfile* CreateTestingProfile(const std::string& profile_name,
-                                       scoped_ptr<PrefServiceSyncable> prefs,
-                                       const string16& user_name,
-                                       int avatar_id,
-                                       const std::string& managed_user_id);
+  // |factories| contains BCKSs to use with the newly created profile.
+  TestingProfile* CreateTestingProfile(
+      const std::string& profile_name,
+      scoped_ptr<PrefServiceSyncable> prefs,
+      const string16& user_name,
+      int avatar_id,
+      const std::string& managed_user_id,
+      const TestingProfile::TestingFactories& factories);
 
   // Small helper for creating testing profiles. Just forwards to above.
   TestingProfile* CreateTestingProfile(const std::string& name);

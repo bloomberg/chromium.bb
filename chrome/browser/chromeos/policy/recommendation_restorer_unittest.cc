@@ -129,7 +129,8 @@ void RecommendationRestorerTest::CreateLoginProfile() {
   ASSERT_FALSE(restorer_);
   TestingProfile* profile = profile_manager_.CreateTestingProfile(
       chrome::kInitialProfile, prefs_owner_.Pass(),
-      UTF8ToUTF16(chrome::kInitialProfile), 0, std::string());
+      UTF8ToUTF16(chrome::kInitialProfile), 0, std::string(),
+      TestingProfile::TestingFactories());
   restorer_ = RecommendationRestorerFactory::GetForProfile(profile);
   EXPECT_TRUE(restorer_);
 }
@@ -137,7 +138,8 @@ void RecommendationRestorerTest::CreateLoginProfile() {
 void RecommendationRestorerTest::CreateUserProfile() {
   ASSERT_FALSE(restorer_);
   TestingProfile* profile = profile_manager_.CreateTestingProfile(
-      "user", prefs_owner_.Pass(), UTF8ToUTF16("user"), 0, std::string());
+      "user", prefs_owner_.Pass(), UTF8ToUTF16("user"), 0, std::string(),
+      TestingProfile::TestingFactories());
   restorer_ = RecommendationRestorerFactory::GetForProfile(profile);
   EXPECT_TRUE(restorer_);
 }

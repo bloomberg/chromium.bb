@@ -8,6 +8,7 @@
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 // static
@@ -32,6 +33,7 @@ ManagedUserServiceFactory::ManagedUserServiceFactory()
         "ManagedUserService",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionSystemFactory::GetInstance());
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
 ManagedUserServiceFactory::~ManagedUserServiceFactory() {}

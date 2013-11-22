@@ -452,7 +452,7 @@ TEST_F(ProfileInfoCacheTest, CreateManagedTestingProfile) {
   string16 managed_user_name = ASCIIToUTF16("Supervised User");
   testing_profile_manager_.CreateTestingProfile(
       "test1", scoped_ptr<PrefServiceSyncable>(),
-      managed_user_name, 0, "TEST_ID");
+      managed_user_name, 0, "TEST_ID", TestingProfile::TestingFactories());
   for (size_t i = 0; i < GetCache()->GetNumberOfProfiles(); i++) {
     bool is_managed =
         GetCache()->GetNameOfProfileAtIndex(i) == managed_user_name;

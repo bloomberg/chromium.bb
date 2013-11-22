@@ -56,8 +56,6 @@
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
@@ -200,7 +198,7 @@ class LoginUtilsImpl
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlz(Profile* user_profile, bool disabled);
 
-  // Starts signing related services. Initiates TokenService token retrieval.
+  // Starts signing related services. Initiates token retrieval.
   void StartSignedInServices(Profile* profile);
 
   // Attempts exiting browser process and esures this does not happen
@@ -552,8 +550,8 @@ void LoginUtilsImpl::RestoreAuthSession(Profile* user_profile,
 
   exit_after_session_restore_ = false;
   // Remove legacy OAuth1 token if we have one. If it's valid, we should already
-  // have OAuth2 refresh token in TokenService that could be used to retrieve
-  // all other tokens and user_context.
+  // have OAuth2 refresh token in OAuth2TokenService that could be used to
+  // retrieve all other tokens and user_context.
   OAuth2LoginManager* login_manager =
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
   login_manager->AddObserver(this);
@@ -647,9 +645,6 @@ void LoginUtilsImpl::InitRlz(Profile* user_profile, bool disabled) {
 }
 
 void LoginUtilsImpl::StartSignedInServices(Profile* user_profile) {
-  // Fetch/Create the SigninManager - this will cause the TokenService to load
-  // tokens for the currently signed-in user if the SigninManager hasn't
-  // already been initialized.
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(user_profile);
   DCHECK(signin);

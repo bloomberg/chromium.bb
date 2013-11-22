@@ -30,9 +30,11 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
     ASSERT_TRUE(manager_.SetUp());
 
     manager_.CreateTestingProfile("test1", scoped_ptr<PrefServiceSyncable>(),
-                                  ASCIIToUTF16("Test 1"), 1, std::string());
+                                  ASCIIToUTF16("Test 1"), 1, std::string(),
+                                  TestingProfile::TestingFactories());
     manager_.CreateTestingProfile("test2", scoped_ptr<PrefServiceSyncable>(),
-                                  ASCIIToUTF16("Test 2"), 0, std::string());
+                                  ASCIIToUTF16("Test 2"), 0, std::string(),
+                                  TestingProfile::TestingFactories());
 
     menu_ = new AvatarMenu(manager_.profile_info_cache(), NULL, NULL);
     menu_->RebuildMenu();
@@ -122,7 +124,8 @@ TEST_F(AvatarMenuBubbleControllerTest, PerformLayout) {
 
   // Now create a new profile and notify the delegate.
   manager()->CreateTestingProfile("test3", scoped_ptr<PrefServiceSyncable>(),
-                                  ASCIIToUTF16("Test 3"), 0, std::string());
+                                  ASCIIToUTF16("Test 3"), 0, std::string(),
+                                  TestingProfile::TestingFactories());
 
   // Testing the bridge is not worth the effort...
   [controller() performLayout];

@@ -13,18 +13,20 @@
 #include "chrome/browser/chromeos/login/oauth2_login_verifier.h"
 #include "chrome/browser/chromeos/login/oauth2_token_fetcher.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
 class GoogleServiceAuthError;
 class Profile;
-class TokenService;
+class ProfileOAuth2TokenService;
 
 namespace chromeos {
 
 // This class is responsible for restoring authenticated web sessions out of
 // OAuth2 refresh tokens or pre-authenticated cookie jar.
 class OAuth2LoginManager : public BrowserContextKeyedService,
+                           public gaia::GaiaOAuthClient::Delegate,
                            public OAuth2LoginVerifier::Delegate,
                            public OAuth2TokenFetcher::Delegate,
                            public OAuth2TokenService::Observer {
@@ -125,6 +127,13 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
+  // gaia::GaiaOAuthClient::Delegate overrides.
+  virtual void OnRefreshTokenResponse(const std::string& access_token,
+                                      int expires_in_seconds) OVERRIDE;
+  virtual void OnGetUserEmailResponse(const std::string& user_email) OVERRIDE;
+  virtual void OnOAuthError() OVERRIDE;
+  virtual void OnNetworkError(int response_code) OVERRIDE;
+
   // OAuth2LoginVerifier::Delegate overrides.
   virtual void OnOAuthLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& gaia_credentials) OVERRIDE;
@@ -141,20 +150,14 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
 
   // Signals delegate that authentication is completed, kicks off token fetching
-  // process in TokenService.
+  // process.
   void CompleteAuthentication();
 
-  // Retrieves TokenService for |user_profile_| and sets up notification
-  // observer events.
-  TokenService* SetupTokenService();
+  // Retrieves ProfileOAuth2TokenService for |user_profile_|.
+  ProfileOAuth2TokenService* GetTokenService();
 
-  // Records OAuth2 tokens fetched through cookies-to-token exchange into
-  // TokenService.
-  void StoreOAuth2Tokens(
-      const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens);
-
-  // Loads previously stored OAuth2 tokens and kicks off its validation.
-  void LoadAndVerifyOAuth2Tokens();
+  // Get the account id corresponding to the specified refresh token.
+  void GetAccountIdOfRefreshToken(const std::string& refresh_token);
 
   // Attempts to fetch OAuth2 tokens by using pre-authenticated cookie jar from
   // provided |auth_profile|.
@@ -170,10 +173,6 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
   // re-attempted.
   bool RetryOnError(const GoogleServiceAuthError& error);
 
-  // On successfuly OAuthLogin, starts token service token fetching process.
-  void StartTokenService(
-      const GaiaAuthConsumer::ClientLoginResult& gaia_credentials);
-
   // Changes |state_|, if needed fires observers (OnSessionRestoreStateChanged).
   void SetSessionRestoreState(SessionRestoreState state);
 
@@ -181,7 +180,7 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
   void SetSessionRestoreStartForTesting(const base::Time& time);
 
   // Keeps the track if we have already reported OAuth2 token being loaded
-  // by TokenService.
+  // by OAuth2TokenService.
   Profile* user_profile_;
   scoped_refptr<net::URLRequestContextGetter> auth_request_context_;
   SessionRestoreStrategy restore_strategy_;
@@ -191,6 +190,7 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
 
   scoped_ptr<OAuth2TokenFetcher> oauth2_token_fetcher_;
   scoped_ptr<OAuth2LoginVerifier> login_verifier_;
+  scoped_ptr<gaia::GaiaOAuthClient> account_id_fetcher_;
 
   // OAuth2 refresh token.
   std::string refresh_token_;

@@ -868,7 +868,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     TestingProfile* profile = profile_manager()->CreateTestingProfile(
         profile_name,
         scoped_ptr<PrefServiceSyncable>(),
-        ASCIIToUTF16(email_string), 0, std::string());
+        ASCIIToUTF16(email_string), 0, std::string(),
+        TestingProfile::TestingFactories());
     profile->set_profile_name(email_string);
     EXPECT_TRUE(profile);
     // Remember the profile name so that we can destroy it upon destruction.

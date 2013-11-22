@@ -20,7 +20,6 @@ OAuth2LoginManagerFactory::OAuth2LoginManagerFactory()
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
-  DependsOn(TokenServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 

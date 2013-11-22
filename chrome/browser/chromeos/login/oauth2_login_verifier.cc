@@ -107,7 +107,7 @@ void OAuth2LoginVerifier::StartOAuthLoginForUberToken() {
 
 void OAuth2LoginVerifier::OnUberAuthTokenSuccess(
     const std::string& uber_token) {
-  LOG(INFO) << "OAuthLogin(uber_token) successful!";
+  VLOG(1) << "OAuthLogin(uber_token) successful!";
   retry_count_ = 0;
   gaia_token_ = uber_token;
   StartMergeSession();
@@ -136,7 +136,7 @@ void OAuth2LoginVerifier::StartOAuthLoginForGaiaCredentials() {
 
 void OAuth2LoginVerifier::OnClientLoginSuccess(
     const ClientLoginResult& gaia_credentials) {
-  LOG(INFO) << "OAuthLogin(SID+LSID) successful!";
+  VLOG(1) << "OAuthLogin(SID+LSID) successful!";
   retry_count_ = 0;
   delegate_->OnOAuthLoginSuccess(gaia_credentials);
 }
@@ -165,9 +165,9 @@ void OAuth2LoginVerifier::StartMergeSession() {
 
 void OAuth2LoginVerifier::OnMergeSessionSuccess(const std::string& data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LOG(INFO) << "MergeSession successful.";
+  VLOG(1) << "MergeSession successful.";
   delegate_->OnSessionMergeSuccess();
-  // Get GAIA credentials needed to kick off TokenService and friends.
+  // Get GAIA credentials needed to kick off OAuth2TokenService and friends.
   StartOAuthLoginForGaiaCredentials();
 }
 
@@ -193,7 +193,7 @@ void OAuth2LoginVerifier::OnGetTokenSuccess(
   DCHECK_EQ(login_token_request_.get(), request);
   login_token_request_.reset();
 
-  LOG(INFO) << "Got OAuth2 access token!";
+  VLOG(1) << "Got OAuth2 access token!";
   retry_count_ = 0;
   access_token_ = access_token;
   StartOAuthLoginForUberToken();

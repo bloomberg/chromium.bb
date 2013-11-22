@@ -98,7 +98,8 @@ class ProfileListChromeOSTest : public testing::Test {
     manager()->CreateTestingProfile(
         chrome::kProfileDirPrefix + email_string + kUserIdHashSuffix,
         scoped_ptr<PrefServiceSyncable>(),
-        ASCIIToUTF16(email_string), 0, std::string());
+        ASCIIToUTF16(email_string), 0, std::string(),
+        TestingProfile::TestingFactories());
   }
 
   AvatarMenu* GetAvatarMenu() {

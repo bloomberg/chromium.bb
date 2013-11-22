@@ -12,21 +12,23 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace chromeos {
+
+static const char kServiceScopeGetUserInfo[] =
+    "https://www.googleapis.com/auth/userinfo.email";
+static const int kMaxRetries = 5;
 
 OAuth2LoginManager::OAuth2LoginManager(Profile* user_profile)
     : user_profile_(user_profile),
       restore_strategy_(RESTORE_FROM_COOKIE_JAR),
       state_(SESSION_RESTORE_NOT_STARTED),
       loading_reported_(false) {
-  ProfileOAuth2TokenServiceFactory::GetForProfile(user_profile_)->
-      AddObserver(this);
+  GetTokenService()->AddObserver(this);
 }
 
 OAuth2LoginManager::~OAuth2LoginManager() {
@@ -67,14 +69,12 @@ void OAuth2LoginManager::ContinueSessionRestore() {
   if (restore_strategy_ == RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN) {
     DCHECK(!refresh_token_.empty());
     restore_strategy_ = RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN;
-    GaiaAuthConsumer::ClientOAuthResult oauth2_tokens;
-    oauth2_tokens.refresh_token = refresh_token_;
-    StoreOAuth2Tokens(oauth2_tokens);
+    GetAccountIdOfRefreshToken(refresh_token_);
     return;
   }
 
   DCHECK(restore_strategy_ == RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN);
-  LoadAndVerifyOAuth2Tokens();
+  GetTokenService()->LoadCredentials();
 }
 
 void OAuth2LoginManager::Stop() {
@@ -94,30 +94,56 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
 
   // TODO(fgorski): Once ProfileOAuth2TokenService supports multi-login, make
   // sure to restore session cookies in the context of the correct account_id.
-  LOG(INFO) << "OnRefreshTokenAvailable";
+  VLOG(1) << "OnRefreshTokenAvailable";
   RestoreSessionCookies();
 }
 
-TokenService* OAuth2LoginManager::SetupTokenService() {
-  TokenService* token_service =
-      TokenServiceFactory::GetForProfile(user_profile_);
+ProfileOAuth2TokenService* OAuth2LoginManager::GetTokenService() {
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(user_profile_);
   return token_service;
 }
 
-void OAuth2LoginManager::StoreOAuth2Tokens(
-    const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens) {
-  TokenService* token_service = SetupTokenService();
-  token_service->UpdateCredentialsWithOAuth2(oauth2_tokens);
+void OAuth2LoginManager::GetAccountIdOfRefreshToken(
+    const std::string& refresh_token) {
+  gaia::OAuthClientInfo client_info;
+  GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
+  client_info.client_id = gaia_urls->oauth2_chrome_client_id();
+  client_info.client_secret = gaia_urls->oauth2_chrome_client_secret();
+
+  account_id_fetcher_.reset(new gaia::GaiaOAuthClient(
+      auth_request_context_.get()));
+  account_id_fetcher_->RefreshToken(client_info, refresh_token,
+      std::vector<std::string>(1, kServiceScopeGetUserInfo), kMaxRetries,
+      this);
+}
+
+void OAuth2LoginManager::OnRefreshTokenResponse(
+    const std::string& access_token,
+    int expires_in_seconds) {
+  account_id_fetcher_->GetUserEmail(access_token, kMaxRetries, this);
+}
+
+void OAuth2LoginManager::OnGetUserEmailResponse(
+    const std::string& user_email)  {
+  DCHECK(!refresh_token_.empty());
+  account_id_fetcher_.reset();
+  GetTokenService()->UpdateCredentials(user_email, refresh_token_);
 
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnNewRefreshTokenAvaiable(user_profile_));
 }
 
-void OAuth2LoginManager::LoadAndVerifyOAuth2Tokens() {
-  // If we have no cookies, try to load saved OAuth2 token from TokenService.
-  TokenService* token_service = SetupTokenService();
-  token_service->Initialize(GaiaConstants::kChromeSource, user_profile_);
-  token_service->LoadTokensFromDB();
+void OAuth2LoginManager::OnOAuthError() {
+  account_id_fetcher_.reset();
+  LOG(ERROR) << "Account id fetch failed!";
+  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_FAILED);
+}
+
+void OAuth2LoginManager::OnNetworkError(int response_code) {
+  account_id_fetcher_.reset();
+  LOG(ERROR) << "Account id fetch failed! response_code=" << response_code;
+  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_FAILED);
 }
 
 void OAuth2LoginManager::FetchOAuth2Tokens() {
@@ -142,8 +168,10 @@ void OAuth2LoginManager::FetchOAuth2Tokens() {
 
 void OAuth2LoginManager::OnOAuth2TokensAvailable(
     const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens) {
-  LOG(INFO) << "OAuth2 tokens fetched";
-  StoreOAuth2Tokens(oauth2_tokens);
+  VLOG(1) << "OAuth2 tokens fetched";
+  DCHECK(refresh_token_.empty());
+  refresh_token_.assign(oauth2_tokens.refresh_token);
+  GetAccountIdOfRefreshToken(refresh_token_);
 }
 
 void OAuth2LoginManager::OnOAuth2TokensFetchFailed() {
@@ -165,16 +193,17 @@ void OAuth2LoginManager::RestoreSessionCookies() {
 }
 
 void OAuth2LoginManager::Shutdown() {
-  ProfileOAuth2TokenServiceFactory::GetForProfile(user_profile_)->
-      RemoveObserver(this);
+  GetTokenService()->RemoveObserver(this);
   login_verifier_.reset();
   oauth2_token_fetcher_.reset();
 }
 
 void OAuth2LoginManager::OnOAuthLoginSuccess(
     const GaiaAuthConsumer::ClientLoginResult& gaia_credentials) {
-  LOG(INFO) << "OAuth2 refresh token successfully exchanged for GAIA token.";
-  StartTokenService(gaia_credentials);
+  VLOG(1) << "OAuth2 refresh token successfully exchanged for GAIA token.";
+
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnSessionAuthenticated(user_profile_));
 }
 
 void OAuth2LoginManager::OnOAuthLoginFailure(bool connection_error) {
@@ -189,7 +218,7 @@ void OAuth2LoginManager::OnOAuthLoginFailure(bool connection_error) {
 }
 
 void OAuth2LoginManager::OnSessionMergeSuccess() {
-  LOG(INFO) << "OAuth2 refresh and/or GAIA token verification succeeded.";
+  VLOG(1) << "OAuth2 refresh and/or GAIA token verification succeeded.";
   UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
                             SESSION_RESTORE_SUCCESS,
                             SESSION_RESTORE_COUNT);
@@ -205,18 +234,6 @@ void OAuth2LoginManager::OnSessionMergeFailure(bool connection_error) {
   SetSessionRestoreState(connection_error ?
       OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED :
       OAuth2LoginManager::SESSION_RESTORE_FAILED);
-}
-
-void OAuth2LoginManager::StartTokenService(
-    const GaiaAuthConsumer::ClientLoginResult& gaia_credentials) {
-  TokenService* token_service = SetupTokenService();
-  token_service->UpdateCredentials(gaia_credentials);
-
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnSessionAuthenticated(user_profile_));
-
-  if (token_service->AreCredentialsValid())
-    token_service->StartFetchingTokens();
 }
 
 void OAuth2LoginManager::SetSessionRestoreState(
