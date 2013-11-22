@@ -450,18 +450,6 @@ void InputMethodEngineIBus::PropertyActivate(const std::string& property_name) {
   observer_->OnMenuItemActivated(engine_id_, property_name);
 }
 
-void InputMethodEngineIBus::PropertyShow(
-    const std::string& property_name) {
-}
-
-void InputMethodEngineIBus::PropertyHide(
-    const std::string& property_name) {
-}
-
-void InputMethodEngineIBus::SetCapability(
-    IBusCapability capability) {
-}
-
 void InputMethodEngineIBus::Reset() {
   observer_->OnReset(engine_id_);
 }

@@ -49,14 +49,6 @@ class UI_EXPORT IBusEngineHandlerInterface {
  public:
   typedef base::Callback<void (bool consumed)> KeyEventDoneCallback;
 
-  // Following capability mask is introduced from
-  // http://ibus.googlecode.com/svn/docs/ibus-1.4/ibus-ibustypes.html#IBusCapabilite
-  // TODO(nona): Move to ibus_contants and merge one in ui/base/ime/*
-  enum IBusCapability {
-    IBUS_CAPABILITY_PREEDIT_TEXT = 1U,
-    IBUS_CAPABILITY_FOCUS = 8U,
-  };
-
   virtual ~IBusEngineHandlerInterface() {}
 
   // Called when the Chrome input field get the focus.
@@ -73,15 +65,6 @@ class UI_EXPORT IBusEngineHandlerInterface {
 
   // Called when a property is activated or changed.
   virtual void PropertyActivate(const std::string& property_name) = 0;
-
-  // Called when a property is shown.
-  virtual void PropertyShow(const std::string& property_name) = 0;
-
-  // Called when a property is hidden.
-  virtual void PropertyHide(const std::string& property_name) = 0;
-
-  // Called when the Chrome input field set their capabilities.
-  virtual void SetCapability(IBusCapability capability) = 0;
 
   // Called when the IME is reset.
   virtual void Reset() = 0;
