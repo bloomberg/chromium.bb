@@ -11,89 +11,124 @@
 # TODO(vtl) Maybe also provide a way to pass command-line arguments to the test
 # binaries.
 
-# We're in src/mojo/tools. We want to get to src.
-cd "$(realpath "$(dirname "$0")")/../.."
-
-build() {
-  ninja -C "out/$1" mojo || exit 1
-}
-
-unittests() {
-  "out/$1/mojo_system_unittests" || exit 1
-  "out/$1/mojo_public_unittests" || exit 1
-  "out/$1/mojo_bindings_test" || exit 1
-}
-
-perftests() {
-  "out/$1/mojo_public_perftests" || exit 1
-}
-
-for arg in "$@"; do
-  case "$arg" in
-    help|--help)
-      cat << EOF
-Usage: $(basename "$0") [command ...]
+do_help() {
+  cat << EOF
+Usage: $(basename "$0") [command|option ...]
 
 command should be one of:
-  build - Build Release and Debug.
-  build-release - Build Release.
-  build-debug - Build Debug.
-  test - Run Release and Debug unit tests (does not build).
-  test-release - Run Release unit tests (does not build).
-  test-debug - Run Debug unit tests (does not build).
+  build - Build.
+  test - Run unit tests (does not build).
   perftest - Run Release and Debug perf tests (does not build).
-  perftest-release - Run Release perf tests (does not build).
-  perftest-debug - Run Debug perf tests (does not build).
   gyp - Run gyp for mojo (does not sync), with clang.
-  gyp-gcc - Run gyp for mojo (does not sync), without clang.
-  gyp-clang - Run gyp for mojo (does not sync), with clang.
   sync - Sync using gclient (does not run gyp).
   show-bash-alias - Outputs an appropriate bash alias for mojob. In bash do:
       \$ eval \`mojo/tools/mojob.sh show-bash-alias\`
 
+option (which will only apply to following commands) should be one of:
+  Build/test options (specified before build/test/perftest):
+    --debug - Build/test in Debug mode.
+    --release - Build/test in Release mode.
+    --debug-and-release - Build/test in both Debug and Release modes (default).
+  Compiler options (specified before gyp):
+    --clang - Use clang (default).
+    --gcc - Use gcc.
+  Component options:
+    --shared Build components as shared libraries (default).
+    --static Build components as static libraries.
+
 Note: It will abort on the first failure (if any).
 EOF
+}
+
+do_build() {
+  echo "Building in out/$1 ..."
+  ninja -C "out/$1" mojo || exit 1
+}
+
+do_unittests() {
+  echo "Running unit tests in out/$1 ..."
+  "out/$1/mojo_system_unittests" || exit 1
+  "out/$1/mojo_public_unittests" || exit 1
+  "out/$1/mojo_bindings_test" || exit 1
+  "out/$1/mojo_js_bindings_unittests" || exit 1
+}
+
+do_perftests() {
+  echo "Running perf tests in out/$1 ..."
+  "out/$1/mojo_public_perftests" || exit 1
+}
+
+do_gyp() {
+  local gyp_defines="$(make_gyp_defines)"
+  echo "Running gyp with GYP_DEFINES=$gyp_defines ..."
+  GYP_DEFINES="$gyp_defines" build/gyp_chromium mojo/mojo.gyp
+}
+
+# Valid values: Debug, Release, or Debug_and_Release.
+BUILD_TEST_TYPE=Debug_and_Release
+should_do_Debug() {
+  test "$BUILD_TEST_TYPE" = Debug -o "$BUILD_TEST_TYPE" = Debug_and_Release
+}
+should_do_Release() {
+  test "$BUILD_TEST_TYPE" = Release -o "$BUILD_TEST_TYPE" = Debug_and_Release
+}
+
+# Valid values: clang or gcc.
+COMPILER=clang
+# Valid values: shared or static.
+COMPONENT=shared
+make_gyp_defines() {
+  local options=()
+  # Always include these options.
+  options+=("use_aura=1")
+  case "$COMPILER" in
+    clang)
+      options+=("clang=1")
+      ;;
+    gcc)
+      options+=("clang=0")
+      ;;
+  esac
+  case "$COMPONENT" in
+    shared)
+      options+=("component=shared_library")
+      ;;
+    static)
+      options+=("component=static_library")
+      ;;
+  esac
+  echo ${options[*]}
+}
+
+# We're in src/mojo/tools. We want to get to src.
+cd "$(realpath "$(dirname "$0")")/../.."
+
+if [ $# -eq 0 ]; then
+  do_help
+  exit 0
+fi
+
+for arg in "$@"; do
+  case "$arg" in
+    # Commands -----------------------------------------------------------------
+    help|--help)
+      do_help
       exit 0
       ;;
     build)
-      build Release
-      build Debug
-      ;;
-    build-release)
-      build Release
-      ;;
-    build-debug)
-      build Debug
+      should_do_Debug && do_build Debug
+      should_do_Release && do_build Release
       ;;
     test)
-      unittests Release
-      unittests Debug
-      ;;
-    test-release)
-      unittests Release
-      ;;
-    test-debug)
-      unittests Debug
+      should_do_Debug && do_unittests Debug
+      should_do_Release && do_unittests Release
       ;;
     perftest)
-      perftests Release
-      perftests Debug
-      ;;
-    perftest-release)
-      perftests Release
-      ;;
-    perftest-debug)
-      perftests Debug
+      should_do_Debug && do_perftests Debug
+      should_do_Release && do_perftests Release
       ;;
     gyp)
-      # Default to clang.
-      GYP_DEFINES=clang=1 build/gyp_chromium mojo/mojo.gyp
-      ;;
-    gyp-gcc)
-      GYP_DEFINES=clang=0 build/gyp_chromium mojo/mojo.gyp
-      ;;
-    gyp-clang)
-      GYP_DEFINES=clang=1 build/gyp_chromium mojo/mojo.gyp
+      do_gyp
       ;;
     sync)
       # Note: sync only, no gyp-ing.
@@ -107,6 +142,28 @@ EOF
       # character.
       echo alias\ mojob\=\'\"\$\(pwd\ \|\ sed\ \'\"\'\"\'s\/\\\(\.\*\\\/src\\\)\
 \.\*\/\\1\/\'\"\'\"\'\)\/mojo\/tools\/mojob\.sh\"\'
+      ;;
+    # Options ------------------------------------------------------------------
+    --debug)
+      BUILD_TEST_TYPE=Debug
+      ;;
+    --release)
+      BUILD_TEST_TYPE=Release
+      ;;
+    --debug-and-release)
+      BUILD_TEST_TYPE=Debug_and_Release
+      ;;
+    --clang)
+      COMPILER=clang
+      ;;
+    --gcc)
+      COMPILER=gcc
+      ;;
+    --shared)
+      COMPONENT=shared
+      ;;
+    --static)
+      COMPONENT=static
       ;;
     *)
       echo "Unknown command \"${arg}\". Try \"$(basename "$0") help\"."
