@@ -5,13 +5,10 @@
 // Test application that simulates a cast sender - Data can be either generated
 // or read from a file.
 
-#include <cmath>
-
 #include "base/at_exit.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/run_loop.h"
-#include "base/task_runner.h"
+#include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
@@ -52,12 +49,7 @@ static const int kSoundFrequency = 1234;  // Frequency of sinusoid wave.
 // a normal video is 30 fps hence the 33 ms between frames.
 static const float kSoundVolume = 0.5f;
 static const int kFrameTimerMs = 33;
-
-// Dummy callback function that does nothing except to accept ownership of
-// |audio_bus| for destruction.
-void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {
-}
-}  // namespace
+} // namespace
 
 void GetPorts(int* tx_port, int* rx_port) {
   test::InputBuilder tx_input("Enter send port.",
@@ -198,13 +190,13 @@ class SendProcess {
   SendProcess(scoped_refptr<CastEnvironment> cast_environment,
                const VideoSenderConfig& video_config,
                FrameInput* frame_input)
-      : cast_environment_(cast_environment),
-        video_config_(video_config),
+      : video_config_(video_config),
         audio_diff_(kFrameTimerMs),
         frame_input_(frame_input),
         synthetic_count_(0),
         clock_(cast_environment->Clock()),
         start_time_(),
+        send_time_(),
         weak_factory_(this) {
     audio_bus_factory_.reset(new TestAudioBusFactory(kAudioChannels,
         kAudioSamplingFrequency, kSoundFrequency, kSoundVolume));
@@ -229,10 +221,6 @@ class SendProcess {
     SendFrame();
   }
 
-  void ReleaseAudioFrame(const PcmAudioFrame* frame) {
-    delete frame;
-  }
-
   void SendFrame() {
     // Make sure that we don't drift.
     int num_10ms_blocks = audio_diff_ / 10;
@@ -243,7 +231,7 @@ class SendProcess {
         base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
     AudioBus* const audio_bus_ptr = audio_bus.get();
     frame_input_->InsertAudio(audio_bus_ptr, clock_->NowTicks(),
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+        base::Bind(base::DoNothing));
 
     gfx::Size size(video_config_.width, video_config_.height);
     // TODO(mikhal): Use the provided timestamp.
@@ -261,13 +249,25 @@ class SendProcess {
       ++synthetic_count_;
     }
 
-    frame_input_->InsertRawVideoFrame(video_frame, clock_->NowTicks(),
+    // Time the sending of the frame to match the set frame rate.
+    // Sleep if that time has yet to elapse.
+    base::TimeTicks now = clock_->NowTicks();
+    base::TimeDelta video_frame_time =
+        base::TimeDelta::FromMilliseconds(kFrameTimerMs);
+    base::TimeDelta elapsed_time = now - send_time_;
+    if (elapsed_time < video_frame_time) {
+      base::PlatformThread::Sleep(video_frame_time - elapsed_time);
+      VLOG(1) << "Sleep" <<
+          (video_frame_time - elapsed_time).InMilliseconds();
+    }
+
+    send_time_ = clock_->NowTicks();
+    frame_input_->InsertRawVideoFrame(video_frame, send_time_,
         base::Bind(&SendProcess::ReleaseVideoFrame, weak_factory_.GetWeakPtr(),
         video_frame));
   }
 
  private:
-  const scoped_refptr<CastEnvironment> cast_environment_;
   const VideoSenderConfig video_config_;
   int audio_diff_;
   const scoped_refptr<FrameInput> frame_input_;
@@ -275,6 +275,7 @@ class SendProcess {
   uint8 synthetic_count_;
   base::TickClock* const clock_;  // Not owned by this class.
   base::TimeTicks start_time_;
+  base::TimeTicks send_time_;
   scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
   base::WeakPtrFactory<SendProcess> weak_factory_;
 };
@@ -286,24 +287,34 @@ class SendProcess {
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   VLOG(1) << "Cast Sender";
+  base::Thread main_thread("Cast main send thread");
+  base::Thread audio_thread("Cast audio encoder thread");
+  base::Thread video_thread("Cast video encoder thread");
+  main_thread.Start();
+  audio_thread.Start();
+  video_thread.Start();
+
   base::DefaultTickClock clock;
-  base::MessageLoopForIO main_message_loop;
-  scoped_refptr<base::SequencedTaskRunner>
-      task_runner(main_message_loop.message_loop_proxy());
+  base::MessageLoopForIO io_message_loop;
 
   // Enable main and send side threads only. Disable logging.
-  media::cast::CastLoggingConfig logging_config;
   scoped_refptr<media::cast::CastEnvironment> cast_environment(new
-      media::cast::CastEnvironment(&clock, task_runner, task_runner, NULL,
-      task_runner, NULL, media::cast::GetDefaultCastLoggingConfig()));
+      media::cast::CastEnvironment(
+      &clock,
+      main_thread.message_loop_proxy(),
+      audio_thread.message_loop_proxy(),
+      NULL,
+      video_thread.message_loop_proxy(),
+      NULL,
+      media::cast::GetDefaultCastLoggingConfig()));
 
   media::cast::AudioSenderConfig audio_config =
       media::cast::GetAudioSenderConfig();
   media::cast::VideoSenderConfig video_config =
       media::cast::GetVideoSenderConfig();
 
-  scoped_ptr<media::cast::test::Transport>
-      transport(new media::cast::test::Transport(cast_environment));
+  scoped_ptr<media::cast::test::Transport> transport(
+      new media::cast::test::Transport(io_message_loop.message_loop_proxy()));
   scoped_ptr<media::cast::CastSender> cast_sender(
       media::cast::CastSender::CreateCastSender(cast_environment,
       audio_config,
@@ -329,7 +340,7 @@ int main(int argc, char** argv) {
       media::cast::SendProcess(cast_environment, video_config, frame_input));
 
   send_process->SendFrame();
-  main_message_loop.Run();
+  io_message_loop.Run();
   transport->StopReceiving();
   return 0;
 }

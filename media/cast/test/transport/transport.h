@@ -22,7 +22,7 @@ class LocalPacketSender;
 // Helper class for Cast test applications.
 class Transport {
  public:
-  Transport(scoped_refptr<CastEnvironment> cast_environment);
+  Transport(scoped_refptr<base::TaskRunner> io_thread_proxy);
   ~Transport();
 
   // Specifies the ports and IP address to receive packets on.
@@ -43,8 +43,9 @@ class Transport {
 
  private:
   scoped_ptr<net::DatagramServerSocket> udp_socket_;
-  scoped_ptr<LocalPacketSender> packet_sender_;
-  scoped_ptr<LocalUdpTransportData> local_udp_transport_data_;
+  scoped_refptr<LocalPacketSender> packet_sender_;
+  scoped_refptr<LocalUdpTransportData> local_udp_transport_data_;
+  scoped_refptr<base::TaskRunner> io_thread_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(Transport);
 };

@@ -10,10 +10,10 @@
 
 #include "base/at_exit.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
+#include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
@@ -136,58 +136,72 @@ VideoReceiverConfig GetVideoReceiverConfig() {
 }
 
 
-class ReceiveProcess {
+class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
  public:
-  ReceiveProcess(scoped_refptr<CastEnvironment> cast_environment,
-                 scoped_refptr<FrameReceiver> frame_receiver)
-      :  cast_environment_(cast_environment),
-         frame_receiver_(frame_receiver),
+  explicit ReceiveProcess(scoped_refptr<FrameReceiver> frame_receiver)
+    : frame_receiver_(frame_receiver),
 #if defined(OS_LINUX)
-         render_(0, 0, kVideoWindowWidth, kVideoWindowHeight, "Cast_receiver"),
+      render_(0, 0, kVideoWindowWidth, kVideoWindowHeight, "Cast_receiver"),
 #endif // OS_LINUX
-         last_playout_time_(),
-         weak_factory_(this) {}
+      last_playout_time_(),
+      last_render_time_() {}
 
   void Start() {
-    GetFrame();
+    GetAudioFrame(base::TimeDelta::FromMilliseconds(kFrameTimerMs));
+    GetVideoFrame();
   }
 
+ protected:
+  virtual ~ReceiveProcess() {}
+
  private:
+  friend class base::RefCountedThreadSafe<ReceiveProcess>;
+
   void DisplayFrame(scoped_ptr<I420VideoFrame> frame,
       const base::TimeTicks& render_time) {
 #ifdef OS_LINUX
     render_.RenderFrame(*frame);
 #endif // OS_LINUX
-    GetFrame();
+    // Print out the delta between frames.
+    if (!last_render_time_.is_null()){
+        base::TimeDelta time_diff = render_time - last_render_time_;
+        VLOG(0) << " RenderDelay[mS] =  " << time_diff.InMilliseconds();
+    }
+    last_render_time_ = render_time;
+    GetVideoFrame();
   }
 
   void ReceiveAudioFrame(scoped_ptr<PcmAudioFrame> audio_frame,
                          const base::TimeTicks& playout_time) {
     // For audio just print the playout delta between audio frames.
+    // Default diff time is kFrameTimerMs.
+    base::TimeDelta time_diff =
+        base::TimeDelta::FromMilliseconds(kFrameTimerMs);
     if (!last_playout_time_.is_null()){
-        base::TimeDelta time_diff = playout_time - last_playout_time_;
+        time_diff = playout_time - last_playout_time_;
         VLOG(0) << " PlayoutDelay[mS] =  " << time_diff.InMilliseconds();
     }
     last_playout_time_ = playout_time;
-    GetFrame();
+    GetAudioFrame(time_diff);
   }
 
-  void GetFrame() {
-    frame_receiver_->GetRawVideoFrame(
-        base::Bind(&ReceiveProcess::DisplayFrame, weak_factory_.GetWeakPtr()));
-    int num_10ms_blocks = kFrameTimerMs / 10;
+  void GetAudioFrame(base::TimeDelta playout_diff) {
+    int num_10ms_blocks = playout_diff.InMilliseconds() / 10;
     frame_receiver_->GetRawAudioFrame(num_10ms_blocks, kAudioSamplingFrequency,
-        base::Bind(&ReceiveProcess::ReceiveAudioFrame,
-        weak_factory_.GetWeakPtr()));
+        base::Bind(&ReceiveProcess::ReceiveAudioFrame, this));
   }
 
-  const scoped_refptr<CastEnvironment> cast_environment_;
-  const  scoped_refptr<FrameReceiver> frame_receiver_;
+  void GetVideoFrame() {
+    frame_receiver_->GetRawVideoFrame(
+        base::Bind(&ReceiveProcess::DisplayFrame, this));
+  }
+
+  scoped_refptr<FrameReceiver> frame_receiver_;
 #ifdef OS_LINUX
   test::LinuxOutputWindow render_;
 #endif // OS_LINUX
   base::TimeTicks last_playout_time_;
-  base::WeakPtrFactory<ReceiveProcess> weak_factory_;
+  base::TimeTicks last_render_time_;
 };
 
 }  // namespace cast
@@ -197,16 +211,23 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::MessageLoopForIO main_message_loop;
   VLOG(1) << "Cast Receiver";
+  base::Thread main_thread("Cast main send thread");
+  base::Thread audio_thread("Cast audio decoder thread");
+  base::Thread video_thread("Cast video decoder thread");
+  main_thread.Start();
+  audio_thread.Start();
+  video_thread.Start();
 
-  // Set up environment.
   base::DefaultTickClock clock;
-  scoped_refptr<base::SequencedTaskRunner>
-      task_runner(main_message_loop.message_loop_proxy());
   // Enable receiver side threads, and disable logging.
   scoped_refptr<media::cast::CastEnvironment> cast_environment(new
       media::cast::CastEnvironment(&clock,
-      task_runner, NULL, task_runner, NULL, task_runner,
-      media::cast::GetDefaultCastLoggingConfig()));
+                                   main_thread.message_loop_proxy(),
+                                   NULL,
+                                   audio_thread.message_loop_proxy(),
+                                   NULL,
+                                   video_thread.message_loop_proxy(),
+                                   media::cast::GetDefaultCastLoggingConfig()));
 
   media::cast::AudioReceiverConfig audio_config =
       media::cast::GetAudioReceiverConfig();
@@ -214,7 +235,7 @@ int main(int argc, char** argv) {
       media::cast::GetVideoReceiverConfig();
 
   scoped_ptr<media::cast::test::Transport> transport(
-      new media::cast::test::Transport(cast_environment));
+      new media::cast::test::Transport(main_message_loop.message_loop_proxy()));
   scoped_ptr<media::cast::CastReceiver> cast_receiver(
       media::cast::CastReceiver::CreateCastReceiver(
       cast_environment,
@@ -225,8 +246,6 @@ int main(int argc, char** argv) {
   media::cast::PacketReceiver* packet_receiver =
       cast_receiver->packet_receiver();
 
-  media::cast::FrameReceiver* frame_receiver = cast_receiver->frame_receiver();
-
   int send_to_port, receive_port;
   media::cast::GetPorts(&send_to_port, &receive_port);
   std::string ip_address = media::cast::GetIpAddress("Enter destination IP.");
@@ -235,8 +254,9 @@ int main(int argc, char** argv) {
                               receive_port);
   transport->SetSendDestination(ip_address, send_to_port);
 
-  media::cast::ReceiveProcess receive_process(cast_environment, frame_receiver);
-  receive_process.Start();
+  scoped_refptr<media::cast::ReceiveProcess> receive_process(
+      new media::cast::ReceiveProcess(cast_receiver->frame_receiver()));
+  receive_process->Start();
   main_message_loop.Run();
   transport->StopReceiving();
   return 0;
