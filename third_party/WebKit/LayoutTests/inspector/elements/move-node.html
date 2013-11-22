@@ -31,7 +31,7 @@ function test()
             {
                 InspectorTest.addResult("===== Moved child2 =====");
                 InspectorTest.dumpElementsTree(containerNode);
-                InspectorTest.addResult("Selection: " + treeOutline.selectedDOMNode().appropriateSelectorFor());
+                InspectorTest.addResult("Selection: " + WebInspector.DOMPresentationUtils.appropriateSelectorFor(treeOutline.selectedDOMNode()));
                 next();
             }
 
