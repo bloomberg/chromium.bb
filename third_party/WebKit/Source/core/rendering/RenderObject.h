@@ -724,6 +724,10 @@ public:
     {
         return isRenderView() || (hasTransform() && isRenderBlock()) || isSVGForeignObject() || isOutOfFlowRenderFlowThread();
     }
+    bool canContainAbsolutePositionObjects() const
+    {
+        return isRenderView() || (hasTransform() && isRenderBlock()) || isSVGForeignObject();
+    }
 
     // Convert the given local point to absolute coordinates
     // FIXME: Temporary. If UseTransforms is true, take transforms into account. Eventually localToAbsolute() will always be transform-aware.
@@ -1047,6 +1051,8 @@ protected:
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const { };
 
 private:
+    RenderBlock* containerForFixedPosition(const RenderLayerModelObject* repaintContainer = 0, bool* repaintContainerSkipped = 0) const;
+
     RenderFlowThread* locateFlowThreadContainingBlock() const;
     void removeFromRenderFlowThread();
     void removeFromRenderFlowThreadRecursive(RenderFlowThread*);

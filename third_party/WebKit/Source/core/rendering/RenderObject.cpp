@@ -796,18 +796,29 @@ void RenderObject::setLayerNeedsFullRepaintForPositionedMovementLayout()
     toRenderLayerModelObject(this)->layer()->repainter().setRepaintStatus(NeedsFullRepaintForPositionedMovementLayout);
 }
 
+RenderBlock* RenderObject::containerForFixedPosition(const RenderLayerModelObject* repaintContainer, bool* repaintContainerSkipped) const
+{
+    ASSERT(!repaintContainerSkipped || !*repaintContainerSkipped);
+    ASSERT(!isText());
+    ASSERT(style()->position() == FixedPosition);
+
+    RenderObject* ancestor = parent();
+    for (; ancestor && !ancestor->canContainFixedPositionObjects(); ancestor = ancestor->parent()) {
+        if (repaintContainerSkipped && ancestor == repaintContainer)
+            *repaintContainerSkipped = true;
+    }
+
+    ASSERT(!ancestor || !ancestor->isAnonymousBlock());
+    return toRenderBlock(ancestor);
+}
+
 RenderBlock* RenderObject::containingBlock() const
 {
     RenderObject* o = parent();
     if (!o && isRenderScrollbarPart())
         o = toRenderScrollbarPart(this)->rendererOwningScrollbar();
     if (!isText() && m_style->position() == FixedPosition) {
-        while (o) {
-            if (o->canContainFixedPositionObjects())
-                break;
-            o = o->parent();
-        }
-        ASSERT(!o || !o->isAnonymousBlock());
+        return containerForFixedPosition();
     } else if (!isText() && m_style->position() == AbsolutePosition) {
         while (o) {
             // For relpositioned inlines, we return the nearest non-anonymous enclosing block. We don't try
@@ -817,17 +828,14 @@ RenderBlock* RenderObject::containingBlock() const
             // inline directly.
             if (o->style()->position() != StaticPosition && (!o->isInline() || o->isReplaced()))
                 break;
-            if (o->isRenderView())
-                break;
-            if (o->hasTransform() && o->isRenderBlock())
+
+            if (o->canContainAbsolutePositionObjects())
                 break;
 
             if (o->style()->hasInFlowPosition() && o->isInline() && !o->isReplaced()) {
                 o = o->containingBlock();
                 break;
             }
-            if (o->isSVGForeignObject()) //foreignObject is the containing block for contents inside it
-                break;
 
             o = o->parent();
         }
@@ -2471,35 +2479,16 @@ RenderObject* RenderObject::container(const RenderLayerModelObject* repaintConta
 
     EPosition pos = m_style->position();
     if (pos == FixedPosition) {
-        // container() can be called on an object that is not in the
-        // tree yet.  We don't call view() since it will assert if it
-        // can't get back to the canvas.  Instead we just walk as high up
-        // as we can.  If we're in the tree, we'll get the root.  If we
-        // aren't we'll get the root of our little subtree (most likely
-        // we'll just return 0).
-        // FIXME: The definition of view() has changed to not crawl up the render tree.  It might
-        // be safe now to use it.
-        while (o && o->parent() && !(o->hasTransform() && o->isRenderBlock())) {
-            // foreignObject is the containing block for its contents.
-            if (o->isSVGForeignObject())
-                break;
-
-            // The render flow thread is the top most containing block
-            // for the fixed positioned elements.
-            if (o->isOutOfFlowRenderFlowThread())
-                break;
-
-            if (repaintContainerSkipped && o == repaintContainer)
-                *repaintContainerSkipped = true;
-
-            o = o->parent();
-        }
+        return containerForFixedPosition(repaintContainer, repaintContainerSkipped);
     } else if (pos == AbsolutePosition) {
-        // Same goes here.  We technically just want our containing block, but
-        // we may not have one if we're part of an uninstalled subtree.  We'll
-        // climb as high as we can though.
-        while (o && o->style()->position() == StaticPosition && !o->isRenderView() && !(o->hasTransform() && o->isRenderBlock())) {
-            if (o->isSVGForeignObject()) // foreignObject is the containing block for contents inside it
+        // We technically just want our containing block, but
+        // we may not have one if we're part of an uninstalled
+        // subtree. We'll climb as high as we can though.
+        while (o) {
+            if (o->style()->position() != StaticPosition)
+                break;
+
+            if (o->canContainFixedPositionObjects())
                 break;
 
             if (repaintContainerSkipped && o == repaintContainer)
