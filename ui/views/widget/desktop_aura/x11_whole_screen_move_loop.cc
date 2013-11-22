@@ -14,11 +14,34 @@
 #include "base/run_loop.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
 
 namespace views {
+
+namespace {
+
+class ScopedCapturer {
+ public:
+  explicit ScopedCapturer(aura::RootWindowHost* host)
+      : host_(host) {
+    host_->SetCapture();
+  }
+
+  ~ScopedCapturer() {
+    host_->ReleaseCapture();
+  }
+
+ private:
+  aura::RootWindowHost* host_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedCapturer);
+};
+
+}  // namespace
 
 X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(
     X11WholeScreenMoveLoopDelegate* delegate)
@@ -61,6 +84,10 @@ bool X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
 
 bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
                                          gfx::NativeCursor cursor) {
+  // Start a capture on the host, so that it continues to receive events during
+  // the drag.
+  ScopedCapturer capturer(source->GetDispatcher()->host());
+
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;
 

@@ -112,23 +112,6 @@ const char* kAtomsToCache[] = {
   NULL
 };
 
-class ScopedCapturer {
- public:
-  explicit ScopedCapturer(DesktopRootWindowHostX11* host)
-      : host_(host) {
-    host_->SetCapture();
-  }
-
-  ~ScopedCapturer() {
-    host_->ReleaseCapture();
-  }
-
- private:
-  aura::RootWindowHost* host_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedCapturer);
-};
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -567,8 +550,6 @@ Widget::MoveLoopResult DesktopRootWindowHostX11::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
-  ScopedCapturer capturer(this);
-
   aura::client::WindowMoveSource window_move_source =
       source == Widget::MOVE_LOOP_SOURCE_MOUSE ?
       aura::client::WINDOW_MOVE_SOURCE_MOUSE :
