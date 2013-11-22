@@ -71,6 +71,8 @@ public:
     }
 
     RenderObject* object() const { return m_obj; }
+    void setObject(RenderObject* object) { m_obj = object; }
+
     unsigned offset() const { return m_pos; }
     RenderObject* root() const { return m_root; }
 
@@ -96,22 +98,22 @@ public:
 
 private:
     RenderObject* m_root;
-
-    // FIXME: These should be private.
-public:
     RenderObject* m_obj;
+
+// FIXME: These should be private.
+public:
     unsigned m_pos;
     int m_nextBreakablePosition;
 };
 
 inline bool operator==(const InlineIterator& it1, const InlineIterator& it2)
 {
-    return it1.m_pos == it2.m_pos && it1.m_obj == it2.m_obj;
+    return it1.m_pos == it2.m_pos && it1.object() == it2.object();
 }
 
 inline bool operator!=(const InlineIterator& it1, const InlineIterator& it2)
 {
-    return it1.m_pos != it2.m_pos || it1.m_obj != it2.m_obj;
+    return it1.m_pos != it2.m_pos || it1.object() != it2.object();
 }
 
 static inline WTF::Unicode::Direction embedCharFromDirection(TextDirection dir, EUnicodeBidi unicodeBidi)
@@ -422,9 +424,9 @@ inline void InlineBidiResolver::increment()
 template <>
 inline bool InlineBidiResolver::isEndOfLine(const InlineIterator& end)
 {
-    bool inEndOfLine = m_current == end || m_current.atEnd() || (inIsolate() && m_current.m_obj == end.m_obj);
+    bool inEndOfLine = m_current == end || m_current.atEnd() || (inIsolate() && m_current.object() == end.object());
     if (inIsolate() && inEndOfLine) {
-        m_current.moveTo(m_current.m_obj, end.m_pos, m_current.m_nextBreakablePosition);
+        m_current.moveTo(m_current.object(), end.m_pos, m_current.m_nextBreakablePosition);
         m_last = m_current;
         updateStatusLastFromCurrentDirection(WTF::Unicode::OtherNeutral);
     }
@@ -556,7 +558,7 @@ static void adjustMidpointsAndAppendRunsForObjectIfNeeded(RenderObject* obj, uns
     if (haveNextMidpoint)
         nextMidpoint = lineMidpointState.midpoints[lineMidpointState.currentMidpoint];
     if (lineMidpointState.betweenMidpoints) {
-        if (!(haveNextMidpoint && nextMidpoint.m_obj == obj))
+        if (!(haveNextMidpoint && nextMidpoint.object() == obj))
             return;
         // This is a new start point. Stop ignoring objects and
         // adjust our start.
@@ -566,7 +568,7 @@ static void adjustMidpointsAndAppendRunsForObjectIfNeeded(RenderObject* obj, uns
         if (start < end)
             return adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, end, resolver, behavior, tracker);
     } else {
-        if (!haveNextMidpoint || (obj != nextMidpoint.m_obj)) {
+        if (!haveNextMidpoint || (obj != nextMidpoint.object())) {
             appendRunObjectIfNecessary(obj, start, end, resolver, behavior, tracker);
             return;
         }
@@ -602,8 +604,8 @@ inline void InlineBidiResolver::appendRun()
         // FIXME: Could this initialize from this->inIsolate() instead of walking up the render tree?
         IsolateTracker isolateTracker(numberOfIsolateAncestors(m_sor));
         int start = m_sor.m_pos;
-        RenderObject* obj = m_sor.m_obj;
-        while (obj && obj != m_eor.m_obj && obj != m_endOfRunAtEndOfLine.m_obj) {
+        RenderObject* obj = m_sor.object();
+        while (obj && obj != m_eor.object() && obj != m_endOfRunAtEndOfLine.object()) {
             if (isolateTracker.inIsolate())
                 addFakeRunIfNecessary(obj, start, obj->length(), *this, isolateTracker);
             else
@@ -612,10 +614,10 @@ inline void InlineBidiResolver::appendRun()
             start = 0;
             obj = bidiNextSkippingEmptyInlines(m_sor.root(), obj, &isolateTracker);
         }
-        bool isEndOfLine = obj == m_endOfLine.m_obj && !m_endOfLine.m_pos;
+        bool isEndOfLine = obj == m_endOfLine.object() && !m_endOfLine.m_pos;
         if (obj && !isEndOfLine) {
-            unsigned pos = obj == m_eor.m_obj ? m_eor.m_pos : INT_MAX;
-            if (obj == m_endOfRunAtEndOfLine.m_obj && m_endOfRunAtEndOfLine.m_pos <= pos) {
+            unsigned pos = obj == m_eor.object() ? m_eor.m_pos : INT_MAX;
+            if (obj == m_endOfRunAtEndOfLine.object() && m_endOfRunAtEndOfLine.m_pos <= pos) {
                 m_reachedEndOfLine = true;
                 pos = m_endOfRunAtEndOfLine.m_pos;
             }
