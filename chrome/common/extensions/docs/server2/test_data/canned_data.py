@@ -57,8 +57,13 @@ CANNED_TEST_FILE_SYSTEM_DATA = MoveTo(EXTENSIONS, {
   },
   'docs': {
     'templates': {
+      'articles': {
+        'test_article.html':
+            '<h1>hi</h1>you<h2>first</h2><h3>inner</h3><h2>second</h2>'
+      },
       'intros': {
-        'test.html': '<h1>hi</h1>you<h2>first</h2><h3>inner</h3><h2>second</h2>'
+        'test_intro.html':
+            'you<h2>first</h2><h3>inner</h3><h2>second</h2>'
       },
       'json': {
         'api_availabilities.json': json.dumps({

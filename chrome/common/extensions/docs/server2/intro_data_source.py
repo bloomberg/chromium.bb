@@ -7,15 +7,13 @@ import logging
 import os
 import re
 
-from extensions_paths import INTROS_TEMPLATES, ARTICLES_TEMPLATES
 from data_source import DataSource
 from docs_server_utils import FormatKey
+from document_parser import ParseDocument, RemoveTitle
+from extensions_paths import INTROS_TEMPLATES, ARTICLES_TEMPLATES
 from file_system import FileNotFoundError
 from future import Future
 from third_party.handlebar import Handlebar
-
-
-_H1_REGEX = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
 
 
 class _HandlebarWithContext(Handlebar):
@@ -34,49 +32,6 @@ class _HandlebarWithContext(Handlebar):
 
 # TODO(kalman): rename this HTMLDataSource or other, then have separate intro
 # article data sources created as instances of it.
-class _IntroParser(HTMLParser):
-  ''' An HTML parser which will parse table of contents and page title info out
-  of an intro.
-  '''
-  def __init__(self):
-    HTMLParser.__init__(self)
-    self.toc = []
-    self.page_title = None
-    self._recent_tag = None
-    self._current_heading = {}
-
-  def handle_starttag(self, tag, attrs):
-    id_ = ''
-    if tag not in ['h1', 'h2', 'h3']:
-      return
-    if tag != 'h1' or self.page_title is None:
-      self._recent_tag = tag
-    for attr in attrs:
-      if attr[0] == 'id':
-        id_ = attr[1]
-    if tag == 'h2':
-      self._current_heading = { 'link': id_, 'subheadings': [], 'title': '' }
-      self.toc.append(self._current_heading)
-    elif tag == 'h3':
-      self._current_heading = { 'link': id_, 'title': '' }
-      self.toc[-1]['subheadings'].append(self._current_heading)
-
-  def handle_endtag(self, tag):
-    if tag in ['h1', 'h2', 'h3']:
-      self._recent_tag = None
-
-  def handle_data(self, data):
-    if self._recent_tag is None:
-      return
-    if self._recent_tag == 'h1':
-      if self.page_title is None:
-        self.page_title = data
-      else:
-        self.page_title += data
-    elif self._recent_tag in ['h2', 'h3']:
-      self._current_heading['title'] += data
-
-
 class IntroDataSource(DataSource):
   '''This class fetches the intros for a given API. From this intro, a table
   of contents dictionary is created, which contains the headings in the intro.
@@ -97,28 +52,42 @@ class IntroDataSource(DataSource):
     intro_with_links = self._ref_resolver.ResolveAllLinks(
             intro, namespace=api_name)
 
+    # The templates generate a title for intros based on the API name.
+    expect_title = '/intros/' not in intro_path
+
     # TODO(kalman): In order to pick up every header tag, and therefore make a
     # complete TOC, the render context of the Handlebar needs to be passed
     # through to here. Even if there were a mechanism to do this it would
     # break caching; we'd need to do the TOC parsing *after* rendering the full
     # template, and that would probably be expensive.
-    intro_parser = _IntroParser()
-    intro_parser.feed(
+    parse_result = ParseDocument(
         self._template_renderer.Render(Handlebar(intro_with_links),
                                        self._request,
                                        # Avoid nasty surprises.
                                        data_sources=('partials', 'strings'),
-                                       warn=False))
+                                       warn=False),
+        expect_title=expect_title)
 
-    # The templates will render the heading themselves, so remove it from the
-    # HTML content.
-    intro_with_links = re.sub(_H1_REGEX, '', intro_with_links, count=1)
+    if parse_result.warnings:
+      logging.warning('%s: %s' % (intro_path, '\n'.join(parse_result.warnings)))
 
-    context = {
-      'title': intro_parser.page_title,
-      'toc': intro_parser.toc,
-    }
-    return _HandlebarWithContext(intro_with_links, intro_path, context)
+    # Convert the TableOfContentEntries into the data the templates want.
+    def make_toc(entries):
+      return [{
+        'link': entry.attributes.get('id', ''),
+        'subheadings': make_toc(entry.entries),
+        'title': entry.name,
+      } for entry in entries]
+
+    if expect_title:
+      intro_with_links, warning = RemoveTitle(intro_with_links)
+      if warning:
+        logging.warning('%s: %s' % (intro_path, warning))
+
+    return _HandlebarWithContext(intro_with_links, intro_path, {
+      'title': parse_result.title,
+      'toc': make_toc(parse_result.document_structure),
+    })
 
   def get(self, key):
     path = FormatKey(key)
