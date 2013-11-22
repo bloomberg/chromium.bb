@@ -6,8 +6,6 @@ package org.chromium.printing;
 
 import org.chromium.base.ThreadUtils;
 
-import android.annotation.SuppressLint;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
@@ -124,14 +122,6 @@ public class PrintingControllerImpl extends PrintDocumentAdapter implements Prin
      */
     public static PrintingController getInstance() {
         return sInstance;
-    }
-
-    /**
-     * @return True if the running version of the Android supports printing.
-     */
-    @SuppressLint("InlinedApi")
-    public static boolean isPrintingSupported() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
     }
 
     @Override

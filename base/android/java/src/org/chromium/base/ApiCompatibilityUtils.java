@@ -35,6 +35,13 @@ public class ApiCompatibilityUtils {
     }
 
     /**
+     * @return True if the running version of the Android supports printing.
+     */
+    public static boolean isPrintingSupported() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+    }
+
+    /**
      * @see android.view.View#setLayoutDirection(int)
      */
     public static void setLayoutDirection(View view, int layoutDirection) {
