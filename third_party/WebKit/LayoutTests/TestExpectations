@@ -294,6 +294,9 @@ crbug.com/248938 virtual/threaded/transitions/transition-end-event-unprefixed-02
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-unprefixed-03.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-unprefixed-04.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/cubic-bezier-overflow-transform.html [ Pass Timeout ]
+crbug.com/248938 [ Win ] virtual/threaded/animations/keyframe-timing-functions-transform.html [ Pass Timeout ]
+
 
 # These produce new clips as of https://codereview.chromium.org/78233006/
 Bug(vollick) compositing/geometry/limit-layer-bounds-clipping-ancestor.html [ NeedsRebaseline ]
