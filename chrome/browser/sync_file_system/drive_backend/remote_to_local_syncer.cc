@@ -77,6 +77,7 @@ RemoteToLocalSyncer::RemoteToLocalSyncer(SyncEngineContext* sync_context,
                                          int priorities)
     : sync_context_(sync_context),
       priorities_(priorities),
+      sync_action_(SYNC_ACTION_NONE),
       weak_ptr_factory_(this) {
 }
 
@@ -327,6 +328,7 @@ void RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile(
   // Check if the local file exists.
   if (local_metadata_->file_type == SYNC_FILE_TYPE_UNKNOWN ||
       (!local_changes_->empty() && local_changes_->back().IsDelete())) {
+    sync_action_ = SYNC_ACTION_ADDED;
     // Missing local file case.
     // Download the file and add it to local as a new file.
     DownloadFile(callback);
@@ -340,6 +342,7 @@ void RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile(
                << url_.DebugString();
 
     if (local_metadata_->file_type == SYNC_FILE_TYPE_FILE) {
+      sync_action_ = SYNC_ACTION_UPDATED;
       // Download the file and overwrite the existing local file.
       DownloadFile(callback);
       return;
@@ -398,6 +401,7 @@ void RemoteToLocalSyncer::DidPrepareForNewFolder(
   // Check if the local file exists.
   if (local_metadata_->file_type == SYNC_FILE_TYPE_UNKNOWN ||
       (!local_changes_->empty() && local_changes_->back().IsDelete())) {
+    sync_action_ = SYNC_ACTION_ADDED;
     // No local file exists at the path.
     CreateFolder(callback);
     return;
@@ -416,6 +420,7 @@ void RemoteToLocalSyncer::DidPrepareForNewFolder(
   }
 
   DCHECK_EQ(SYNC_FILE_TYPE_FILE, local_metadata_->file_type);
+  sync_action_ = SYNC_ACTION_ADDED;
   // Got a remote folder for existing local file.
   // Our policy prioritize folders in this case.
   CreateFolder(callback);
@@ -459,6 +464,7 @@ void RemoteToLocalSyncer::DidPrepareForDeletion(
 
   DCHECK(local_changes_->empty() || local_changes_->back().IsAddOrUpdate());
   if (local_changes_->empty()) {
+    sync_action_ = SYNC_ACTION_DELETED;
     DeleteLocalFile(callback);
     return;
   }

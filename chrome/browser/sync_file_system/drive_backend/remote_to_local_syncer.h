@@ -13,6 +13,7 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
+#include "chrome/browser/sync_file_system/sync_action.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "chrome/browser/sync_file_system/sync_task.h"
@@ -53,6 +54,9 @@ class RemoteToLocalSyncer : public SyncTask {
   virtual ~RemoteToLocalSyncer();
 
   virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
+
+  const fileapi::FileSystemURL& url() const { return url_; }
+  SyncAction sync_action() const { return sync_action_; }
 
  private:
   typedef std::vector<std::string> FileIDList;
@@ -200,6 +204,7 @@ class RemoteToLocalSyncer : public SyncTask {
   scoped_ptr<FileMetadata> remote_metadata_;
 
   fileapi::FileSystemURL url_;
+  SyncAction sync_action_;
 
   scoped_ptr<SyncFileMetadata> local_metadata_;
   scoped_ptr<FileChangeList> local_changes_;

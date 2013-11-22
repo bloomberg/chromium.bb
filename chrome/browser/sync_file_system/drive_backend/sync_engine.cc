@@ -18,6 +18,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/remote_to_local_syncer.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
 #include "chrome/browser/sync_file_system/drive_backend/uninstall_app_task.h"
+#include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/sync_task.h"
 #include "extensions/common/extension.h"
@@ -329,7 +330,17 @@ void SyncEngine::DidInitialize(SyncEngineInitializer* initializer,
 void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
                                         const SyncFileCallback& callback,
                                         SyncStatusCode status) {
-  NOTIMPLEMENTED();
+  if (status != SYNC_STATUS_OK)
+    DCHECK_EQ(SYNC_ACTION_NONE, syncer->sync_action());
+
+  if (syncer->url().is_valid()) {
+    FOR_EACH_OBSERVER(FileStatusObserver,
+                      file_status_observers_,
+                      OnFileStatusChanged(syncer->url(),
+                                          SYNC_FILE_STATUS_SYNCED,
+                                          syncer->sync_action(),
+                                          SYNC_DIRECTION_REMOTE_TO_LOCAL));
+  }
 }
 
 void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
