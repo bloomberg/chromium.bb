@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_GPU_DEVTOOLS_GPU_AGENT_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/process/process.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "content/common/gpu/devtools_gpu_instrumentation.h"
@@ -28,7 +29,7 @@ class DevToolsGpuAgent : public base::NonThreadSafe {
 
   void ProcessEvent(TimeTicks timestamp,
                     GpuEventsDispatcher::EventPhase,
-                    int owner_pid);
+                    base::ProcessId owner_pid);
 
   void StartEventsRecording(int32* route_id);
   void StopEventsRecording();
