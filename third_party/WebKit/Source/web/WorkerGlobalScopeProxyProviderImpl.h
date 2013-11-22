@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,44 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerGlobalScopeProxy_h
-#define WorkerGlobalScopeProxy_h
+#ifndef WorkerGlobalScopeProxyProviderImpl_h
+#define WorkerGlobalScopeProxyProviderImpl_h
 
-#include "core/dom/MessagePort.h"
-#include "core/workers/WorkerThread.h"
-#include "wtf/Forward.h"
+#include "core/workers/WorkerGlobalScopeProxyProvider.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
+class Worker;
+class WorkerGlobalScopeProxy;
+}
 
-    class KURL;
-    class Worker;
+namespace blink {
 
-    // A proxy to talk to the worker global scope.
-    class WorkerGlobalScopeProxy {
-    public:
-        virtual ~WorkerGlobalScopeProxy() { }
+class WorkerGlobalScopeProxyProviderImpl : public WebCore::WorkerGlobalScopeProxyProvider {
+    WTF_MAKE_NONCOPYABLE(WorkerGlobalScopeProxyProviderImpl);
+public:
+    static PassOwnPtr<WorkerGlobalScopeProxyProviderImpl> create()
+    {
+        return adoptPtr(new WorkerGlobalScopeProxyProviderImpl());
+    }
 
-        virtual void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode) = 0;
+    virtual ~WorkerGlobalScopeProxyProviderImpl() { }
+    virtual WebCore::WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(WebCore::Worker*) OVERRIDE;
 
-        virtual void terminateWorkerGlobalScope() = 0;
+private:
+    WorkerGlobalScopeProxyProviderImpl() { }
+};
 
-        virtual void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) = 0;
+} // namespace blink
 
-        virtual bool hasPendingActivity() const = 0;
-
-        virtual void workerObjectDestroyed() = 0;
-
-        class PageInspector {
-        public:
-            virtual ~PageInspector() { }
-            virtual void dispatchMessageFromWorker(const String&) = 0;
-        };
-        virtual void connectToInspector(PageInspector*) { }
-        virtual void disconnectFromInspector() { }
-        virtual void sendMessageToInspector(const String&) { }
-    };
-
-} // namespace WebCore
-
-#endif // WorkerGlobalScopeProxy_h
+#endif // WorkerGlobalScopeProxyProviderImpl_h

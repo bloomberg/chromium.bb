@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,10 +29,23 @@
  */
 
 #include "config.h"
-#include "core/workers/WorkerGlobalScopeProxy.h"
+#include "WorkerGlobalScopeProxyProvider.h"
 
 namespace WebCore {
 
-WorkerGlobalScopeProxy::CreateDelegate* WorkerGlobalScopeProxy::s_createDelegate = 0;
+WorkerGlobalScopeProxyProvider* WorkerGlobalScopeProxyProvider::from(Page* page)
+{
+    return static_cast<WorkerGlobalScopeProxyProvider*>(Supplement<Page>::from(page, supplementName()));
+}
+
+const char* WorkerGlobalScopeProxyProvider::supplementName()
+{
+    return "WorkerGlobalScopeProxyProvider";
+}
+
+void provideWorkerGlobalScopeProxyProviderTo(Page* page, PassOwnPtr<WorkerGlobalScopeProxyProvider> provider)
+{
+    Supplement<Page>::provideTo(page, WorkerGlobalScopeProxyProvider::supplementName(), provider);
+}
 
 } // namespace WebCore

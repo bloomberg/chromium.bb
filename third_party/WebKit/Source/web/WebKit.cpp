@@ -34,7 +34,6 @@
 #include "IDBFactoryBackendProxy.h"
 #include "RuntimeEnabledFeatures.h"
 #include "WebMediaPlayerClientImpl.h"
-#include "WebWorkerClientImpl.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Initializer.h"
 #include "bindings/v8/V8RecursionScope.h"
@@ -170,8 +169,6 @@ void initializeWithoutV8(Platform* platform)
     WebCore::setIDBFactoryBackendInterfaceCreateFunction(blink::IDBFactoryBackendProxy::create);
 
     WebCore::MediaPlayer::setMediaEngineCreateFunction(blink::WebMediaPlayerClientImpl::create);
-
-    WebCore::WorkerGlobalScopeProxy::setCreateDelegate(WebWorkerClientImpl::createWorkerGlobalScopeProxy);
 }
 
 void shutdown()

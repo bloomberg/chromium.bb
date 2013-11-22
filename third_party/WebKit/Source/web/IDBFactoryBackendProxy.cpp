@@ -41,7 +41,6 @@
 #include "WebPermissionClient.h"
 #include "WebSecurityOrigin.h"
 #include "WebViewImpl.h"
-#include "WebWorkerClientImpl.h"
 #include "WorkerPermissionClient.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/DOMError.h"

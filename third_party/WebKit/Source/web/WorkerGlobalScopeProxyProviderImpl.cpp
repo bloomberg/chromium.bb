@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebWorkerClientImpl.h"
+#include "WorkerGlobalScopeProxyProviderImpl.h"
 
 #include "DatabaseClientImpl.h"
 #include "LocalFileSystemClient.h"
@@ -41,20 +41,16 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerMessagingProxy.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebFrameClient.h"
-#include "public/web/WebSecurityOrigin.h"
 #include "public/web/WebWorkerPermissionClientProxy.h"
-#include "wtf/Threading.h"
 
 using namespace WebCore;
 
 namespace blink {
 
-// Chromium-specific decorator of WorkerMessagingProxy.
-
-// static
-WorkerGlobalScopeProxy* WebWorkerClientImpl::createWorkerGlobalScopeProxy(Worker* worker)
+WebCore::WorkerGlobalScopeProxy* WorkerGlobalScopeProxyProviderImpl::createWorkerGlobalScopeProxy(Worker* worker)
 {
     if (worker->executionContext()->isDocument()) {
         Document* document = toDocument(worker->executionContext());
@@ -63,27 +59,10 @@ WorkerGlobalScopeProxy* WebWorkerClientImpl::createWorkerGlobalScopeProxy(Worker
         provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
         provideDatabaseClientToWorker(workerClients.get(), DatabaseClientImpl::create());
         providePermissionClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createWorkerPermissionClientProxy(webFrame)));
-        WebWorkerClientImpl* proxy = new WebWorkerClientImpl(worker, webFrame, workerClients.release());
-        return proxy;
+        return new WorkerMessagingProxy(worker, workerClients.release());
     }
     ASSERT_NOT_REACHED();
     return 0;
-}
-
-void WebWorkerClientImpl::terminateWorkerGlobalScope()
-{
-    m_webFrame = 0;
-    WebCore::WorkerMessagingProxy::terminateWorkerGlobalScope();
-}
-
-WebWorkerClientImpl::WebWorkerClientImpl(Worker* worker, WebFrameImpl* webFrame, PassOwnPtr<WorkerClients> workerClients)
-    : WebCore::WorkerMessagingProxy(worker, workerClients)
-    , m_webFrame(webFrame)
-{
-}
-
-WebWorkerClientImpl::~WebWorkerClientImpl()
-{
 }
 
 } // namespace blink

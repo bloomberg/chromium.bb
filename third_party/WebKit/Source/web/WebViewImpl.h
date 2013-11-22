@@ -112,6 +112,7 @@ class WebPagePopupImpl;
 class WebPrerendererClient;
 class WebSettingsImpl;
 class WebTouchEvent;
+class WorkerGlobalScopeProxyProviderImpl;
 class FullscreenController;
 
 class WebViewImpl : public WebView

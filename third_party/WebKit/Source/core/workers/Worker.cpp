@@ -38,6 +38,7 @@
 #include "core/frame/DOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
+#include "core/workers/WorkerGlobalScopeProxyProvider.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThread.h"
 #include "wtf/MainThread.h"
@@ -46,7 +47,7 @@ namespace WebCore {
 
 inline Worker::Worker(ExecutionContext* context)
     : AbstractWorker(context)
-    , m_contextProxy(WorkerGlobalScopeProxy::create(this))
+    , m_contextProxy(0)
 {
     ScriptWrappable::init(this);
 }
@@ -54,7 +55,11 @@ inline Worker::Worker(ExecutionContext* context)
 PassRefPtr<Worker> Worker::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    UseCounter::count(toDocument(context)->domWindow(), UseCounter::WorkerStart);
+    Document* document = toDocument(context);
+    UseCounter::count(document->domWindow(), UseCounter::WorkerStart);
+    ASSERT(document->page());
+    WorkerGlobalScopeProxyProvider* proxyProvider = WorkerGlobalScopeProxyProvider::from(document->page());
+    ASSERT(proxyProvider);
 
     RefPtr<Worker> worker = adoptRef(new Worker(context));
 
@@ -69,7 +74,7 @@ PassRefPtr<Worker> Worker::create(ExecutionContext* context, const String& url, 
 
     worker->m_scriptLoader = WorkerScriptLoader::create();
     worker->m_scriptLoader->loadAsynchronously(context, scriptURL, DenyCrossOriginRequests, worker.get());
-
+    worker->m_contextProxy = proxyProvider->createWorkerGlobalScopeProxy(worker.get());
     return worker.release();
 }
 
@@ -77,7 +82,8 @@ Worker::~Worker()
 {
     ASSERT(isMainThread());
     ASSERT(executionContext()); // The context is protected by worker context proxy, so it cannot be destroyed while a Worker exists.
-    m_contextProxy->workerObjectDestroyed();
+    if (m_contextProxy)
+        m_contextProxy->workerObjectDestroyed();
 }
 
 const AtomicString& Worker::interfaceName() const

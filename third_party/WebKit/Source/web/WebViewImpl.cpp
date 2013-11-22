@@ -74,6 +74,7 @@
 #include "WebTextInputInfo.h"
 #include "WebViewClient.h"
 #include "WebWindowFeatures.h"
+#include "WorkerGlobalScopeProxyProviderImpl.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
@@ -464,6 +465,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     provideDatabaseClientTo(m_page.get(), DatabaseClientImpl::create());
     m_validationMessage = ValidationMessageClientImpl::create(*this, 0);
     m_page->setValidationMessageClient(m_validationMessage.get());
+    provideWorkerGlobalScopeProxyProviderTo(m_page.get(), WorkerGlobalScopeProxyProviderImpl::create());
 
     m_page->setGroupType(Page::SharedPageGroup);
 
