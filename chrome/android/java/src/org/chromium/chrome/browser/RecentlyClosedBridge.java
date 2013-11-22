@@ -72,6 +72,7 @@ public class RecentlyClosedBridge {
     public void destroy() {
         assert mNativeRecentlyClosedTabsBridge != 0;
         nativeDestroy(mNativeRecentlyClosedTabsBridge);
+        mNativeRecentlyClosedTabsBridge = 0;
     }
 
     /**

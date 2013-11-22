@@ -57,6 +57,7 @@ public class FaviconHelper {
      * Clean up the C++ side of this class. After the call, this class instance shouldn't be used.
      */
     public void destroy() {
+        assert mNativeFaviconHelper != 0;
         nativeDestroy(mNativeFaviconHelper);
         mNativeFaviconHelper = 0;
     }

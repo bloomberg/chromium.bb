@@ -131,6 +131,7 @@ public class ForeignSessionHelper {
     public void destroy() {
         assert mNativeForeignSessionHelper != 0;
         nativeDestroy(mNativeForeignSessionHelper);
+        mNativeForeignSessionHelper = 0;
     }
 
     @Override

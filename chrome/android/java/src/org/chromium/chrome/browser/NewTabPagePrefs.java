@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.profiles.Profile;
  * This class allows Java code to read and modify preferences related to the NTP
  */
 public class NewTabPagePrefs {
-    private final long mNativeNewTabPagePrefs;
+    private long mNativeNewTabPagePrefs;
 
     /**
      * Initialize this class with the given profile.
@@ -27,6 +27,7 @@ public class NewTabPagePrefs {
     public void destroy() {
         assert mNativeNewTabPagePrefs != 0;
         nativeDestroy(mNativeNewTabPagePrefs);
+        mNativeNewTabPagePrefs = 0;
     }
 
     /**
