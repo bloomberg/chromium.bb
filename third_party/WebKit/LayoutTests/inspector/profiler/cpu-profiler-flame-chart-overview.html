@@ -810,11 +810,11 @@ function test()
     var cpuProfileView = new WebInspector.CPUProfileView(profileAndExpectations);
     var dataProvider = new WebInspector.CPUFlameChartDataProvider(cpuProfileView);
     var flameChart = new WebInspector.FlameChart(dataProvider);
-    console.log(Object.values(flameChart._calculateDrawData(16)));
-    console.log(Object.values(flameChart._calculateDrawData(8)));
-    console.log(Object.values(flameChart._calculateDrawData(4)));
-    console.log(Object.values(flameChart._calculateDrawData(2)));
-    console.log(Object.values(flameChart._calculateDrawData(1)));
+    console.log(Object.values(flameChart._overviewPane._calculateDrawData(16)));
+    console.log(Object.values(flameChart._overviewPane._calculateDrawData(8)));
+    console.log(Object.values(flameChart._overviewPane._calculateDrawData(4)));
+    console.log(Object.values(flameChart._overviewPane._calculateDrawData(2)));
+    console.log(Object.values(flameChart._overviewPane._calculateDrawData(1)));
     InspectorTest.completeTest();
 }
 
