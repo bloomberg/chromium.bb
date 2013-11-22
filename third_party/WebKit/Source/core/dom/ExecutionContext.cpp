@@ -43,28 +43,6 @@
 
 namespace WebCore {
 
-namespace {
-
-class CallClosureTask : public ExecutionContextTask {
-public:
-    static PassOwnPtr<CallClosureTask> create(const Closure& closure)
-    {
-        return adoptPtr(new CallClosureTask(closure));
-    }
-
-    virtual void performTask(ExecutionContext*)
-    {
-        m_closure();
-    }
-
-private:
-    explicit CallClosureTask(const Closure& closure) : m_closure(closure) { }
-
-    Closure m_closure;
-};
-
-} // namespace
-
 class ExecutionContext::PendingException {
     WTF_MAKE_NONCOPYABLE(PendingException);
 public:

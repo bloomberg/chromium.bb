@@ -28,7 +28,9 @@
 #define ExecutionContextTask_h
 
 #include "wtf/FastAllocBase.h"
+#include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
@@ -43,6 +45,19 @@ public:
     virtual void performTask(ExecutionContext*) = 0;
     // Certain tasks get marked specially so that they aren't discarded, and are executed, when the context is shutting down its message queue.
     virtual bool isCleanupTask() const { return false; }
+};
+
+class CallClosureTask : public ExecutionContextTask {
+public:
+    static PassOwnPtr<CallClosureTask> create(const Closure& closure)
+    {
+        return adoptPtr(new CallClosureTask(closure));
+    }
+    virtual void performTask(ExecutionContext*) OVERRIDE { m_closure(); }
+
+private:
+    explicit CallClosureTask(const Closure& closure) : m_closure(closure) { }
+    Closure m_closure;
 };
 
 } // namespace
