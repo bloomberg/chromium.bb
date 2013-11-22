@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/xml/XPathExpression.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/xml/XPathExpressionNode.h"
@@ -59,8 +60,13 @@ XPathExpression::~XPathExpression()
 
 PassRefPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionState& exceptionState)
 {
+    if (!contextNode) {
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("evaluate", "XPathExpression", "The context node provided is null."));
+        return 0;
+    }
+
     if (!isValidContextNode(contextNode)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("evaluate", "XPathExpression", "The node provided is '" + contextNode->nodeName() + "', which is not a valid context node type."));
         return 0;
     }
 
@@ -74,7 +80,7 @@ PassRefPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned sh
 
     if (evaluationContext.hadTypeConversionError) {
         // It is not specified what to do if type conversion fails while evaluating an expression.
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("evaluate", "XPathExpression", "Type conversion failed while evaluating the expression."));
         return 0;
     }
 
