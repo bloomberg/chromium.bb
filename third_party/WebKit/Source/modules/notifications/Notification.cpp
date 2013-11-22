@@ -84,6 +84,7 @@ Notification::Notification(const String& title, const String& body, const String
 Notification::Notification(ExecutionContext* context, const String& title)
     : ActiveDOMObject(context)
     , m_title(title)
+    , m_direction("auto")
     , m_state(Idle)
     , m_asyncRunner(adoptPtr(new AsyncMethodRunner<Notification>(this, &Notification::showSoon)))
 {

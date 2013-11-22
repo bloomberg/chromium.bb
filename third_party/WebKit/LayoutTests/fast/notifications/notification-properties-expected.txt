@@ -8,6 +8,15 @@ PASS notification.lang is "nl-NL"
 PASS notification.body is "Hallo, wereld!"
 PASS notification.tag is "notification"
 PASS notification.icon is "http://localhost/my_icon.png"
+PASS emptyNotification.title is "My Notification"
+PASS emptyNotification.dir is "auto"
+PASS emptyNotification.lang is ""
+PASS emptyNotification.body is ""
+PASS emptyNotification.tag is ""
+PASS emptyNotification.icon is ""
+PASS invalidIconNotification.icon is ""
+PASS serializedUrlNotification.icon is "http://example.com/"
+PASS noTagNotification.tag is emptyTagNotification.tag
 PASS successfullyParsed is true
 
 TEST COMPLETE
