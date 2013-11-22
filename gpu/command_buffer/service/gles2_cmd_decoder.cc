@@ -10090,13 +10090,6 @@ void GLES2DecoderImpl::DoPopGroupMarkerEXT(void) {
 void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
     GLenum target, GLint image_id) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoBindTexImage2DCHROMIUM");
-  if (target != GL_TEXTURE_2D) {
-    // This might be supported in the future.
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glBindTexImage2DCHROMIUM", "requires TEXTURE_2D target");
-    return;
-  }
 
   // Default target might be conceptually valid, but disallow it to avoid
   // accidents.
@@ -10120,7 +10113,7 @@ void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
   {
     ScopedGLErrorSuppressor suppressor(
         "GLES2DecoderImpl::DoBindTexImage2DCHROMIUM", GetErrorState());
-    if (!gl_image->BindTexImage()) {
+    if (!gl_image->BindTexImage(target)) {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_OPERATION,
           "glBindTexImage2DCHROMIUM", "fail to bind image with the given ID");
@@ -10138,13 +10131,6 @@ void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
 void GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM(
     GLenum target, GLint image_id) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM");
-  if (target != GL_TEXTURE_2D) {
-    // This might be supported in the future.
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glReleaseTexImage2DCHROMIUM", "requires TEXTURE_2D target");
-    return;
-  }
 
   // Default target might be conceptually valid, but disallow it to avoid
   // accidents.
@@ -10172,7 +10158,7 @@ void GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM(
   {
     ScopedGLErrorSuppressor suppressor(
         "GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM", GetErrorState());
-    gl_image->ReleaseTexImage();
+    gl_image->ReleaseTexImage(target);
   }
 
   texture_manager()->SetLevelInfo(

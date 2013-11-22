@@ -27,11 +27,11 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // Get the size of the image.
   virtual gfx::Size GetSize() = 0;
 
-  // Bind image to texture currently bound to GL_TEXTURE_2D target.
-  virtual bool BindTexImage();
+  // Bind image to texture currently bound to |target|.
+  virtual bool BindTexImage(unsigned target);
 
-  // Release image from texture currently bound to GL_TEXTURE_2D target.
-  virtual void ReleaseTexImage();
+  // Release image from texture currently bound to |target|.
+  virtual void ReleaseTexImage(unsigned target);
 
   // Called before the texture is used for drawing.
   virtual void WillUseTexImage();

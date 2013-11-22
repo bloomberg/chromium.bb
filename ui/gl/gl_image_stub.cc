@@ -20,11 +20,11 @@ gfx::Size GLImageStub::GetSize() {
   return gfx::Size(1, 1);
 }
 
-bool GLImageStub::BindTexImage() {
+bool GLImageStub::BindTexImage(unsigned target) {
   return true;
 }
 
-void GLImageStub::ReleaseTexImage() {
+void GLImageStub::ReleaseTexImage(unsigned target) {
 }
 
 void GLImageStub::WillUseTexImage() {

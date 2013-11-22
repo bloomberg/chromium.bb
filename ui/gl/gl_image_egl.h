@@ -19,8 +19,8 @@ class GL_EXPORT GLImageEGL : public GLImage {
   // Implement GLImage.
   virtual void Destroy() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
-  virtual bool BindTexImage() OVERRIDE;
-  virtual void ReleaseTexImage() OVERRIDE;
+  virtual bool BindTexImage(unsigned target) OVERRIDE;
+  virtual void ReleaseTexImage(unsigned target) OVERRIDE;
   virtual void WillUseTexImage() OVERRIDE;
   virtual void DidUseTexImage() OVERRIDE;
   virtual void SetReleaseAfterUse() OVERRIDE;
@@ -33,6 +33,7 @@ class GL_EXPORT GLImageEGL : public GLImage {
   gfx::Size size_;
   bool release_after_use_;
   bool in_use_;
+  unsigned target_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageEGL);
 };

@@ -8047,8 +8047,8 @@ class MockGLImage : public gfx::GLImage {
   // Overridden from gfx::GLImage:
   MOCK_METHOD0(Destroy, void());
   MOCK_METHOD0(GetSize, gfx::Size());
-  MOCK_METHOD0(BindTexImage, bool());
-  MOCK_METHOD0(ReleaseTexImage, void());
+  MOCK_METHOD1(BindTexImage, bool(unsigned));
+  MOCK_METHOD1(ReleaseTexImage, void(unsigned));
   MOCK_METHOD0(WillUseTexImage, void());
   MOCK_METHOD0(DidUseTexImage, void());
 
@@ -8072,7 +8072,7 @@ TEST_F(GLES2DecoderWithShaderTest, UseTexImage) {
   group().image_manager()->AddImage(image.get(), kImageId);
 
   // Bind image to texture.
-  EXPECT_CALL(*image, BindTexImage())
+  EXPECT_CALL(*image, BindTexImage(GL_TEXTURE_2D))
       .Times(1)
       .WillOnce(Return(true))
       .RetiresOnSaturation();

@@ -13,7 +13,8 @@ GLImageEGL::GLImageEGL(gfx::Size size)
     : egl_image_(EGL_NO_IMAGE_KHR),
       size_(size),
       release_after_use_(false),
-      in_use_(false) {
+      in_use_(false),
+      target_(0) {
 }
 
 GLImageEGL::~GLImageEGL() {
@@ -61,22 +62,28 @@ gfx::Size GLImageEGL::GetSize() {
   return size_;
 }
 
-bool GLImageEGL::BindTexImage() {
+bool GLImageEGL::BindTexImage(unsigned target) {
   if (egl_image_ == EGL_NO_IMAGE_KHR) {
     LOG(ERROR) << "NULL EGLImage in BindTexImage";
     return false;
   }
 
+  if (target_ && target_ != target) {
+    LOG(ERROR) << "EGLImage can only be bound to one target";
+    return false;
+  }
+  target_ = target;
+
   // Defer ImageTargetTexture2D if not currently in use.
   if (!in_use_)
     return true;
 
-  glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, egl_image_);
+  glEGLImageTargetTexture2DOES(target_, egl_image_);
   DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   return true;
 }
 
-void GLImageEGL::ReleaseTexImage() {
+void GLImageEGL::ReleaseTexImage(unsigned target) {
   // Nothing to do here as image is released after each use or there is no need
   // to release image.
 }
@@ -85,7 +92,7 @@ void GLImageEGL::WillUseTexImage() {
   DCHECK(egl_image_);
   DCHECK(!in_use_);
   in_use_ = true;
-  glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, egl_image_);
+  glEGLImageTargetTexture2DOES(target_, egl_image_);
   DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 }
 
@@ -97,7 +104,7 @@ void GLImageEGL::DidUseTexImage() {
     return;
 
   char zero[4] = { 0, };
-  glTexImage2D(GL_TEXTURE_2D,
+  glTexImage2D(target_,
                0,
                GL_RGBA,
                1,

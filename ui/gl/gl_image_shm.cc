@@ -102,7 +102,7 @@ gfx::Size GLImageShm::GetSize() {
   return size_;
 }
 
-bool GLImageShm::BindTexImage() {
+bool GLImageShm::BindTexImage(unsigned target) {
   TRACE_EVENT0("gpu", "GLImageShm::BindTexImage");
   DCHECK(shared_memory_);
   DCHECK(ValidFormat(internalformat_));
@@ -115,7 +115,7 @@ bool GLImageShm::BindTexImage() {
   }
 
   DCHECK(shared_memory_->memory());
-  glTexImage2D(GL_TEXTURE_2D,
+  glTexImage2D(target,
                0,  // mip level
                TextureFormat(internalformat_),
                size_.width(),
@@ -129,7 +129,7 @@ bool GLImageShm::BindTexImage() {
   return true;
 }
 
-void GLImageShm::ReleaseTexImage() {
+void GLImageShm::ReleaseTexImage(unsigned target) {
 }
 
 void GLImageShm::WillUseTexImage() {

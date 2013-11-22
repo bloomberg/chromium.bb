@@ -159,17 +159,21 @@ gfx::Size GLImageGLX::GetSize() {
   return size_;
 }
 
-bool GLImageGLX::BindTexImage() {
+bool GLImageGLX::BindTexImage(unsigned target) {
   if (!glx_pixmap_)
+    return false;
+
+  // Requires TEXTURE_2D target.
+  if (target != GL_TEXTURE_2D)
     return false;
 
   glXBindTexImageEXT(display_, glx_pixmap_, GLX_FRONT_LEFT_EXT, 0);
   return true;
 }
 
-void GLImageGLX::ReleaseTexImage() {
-  if (!glx_pixmap_)
-    return;
+void GLImageGLX::ReleaseTexImage(unsigned target) {
+  DCHECK(glx_pixmap_);
+  DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), target);
 
   glXReleaseTexImageEXT(display_, glx_pixmap_, GLX_FRONT_LEFT_EXT);
 }
