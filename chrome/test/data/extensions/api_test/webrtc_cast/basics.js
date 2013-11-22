@@ -33,7 +33,7 @@ chrome.test.runTests([
       }.bind(null, stream));
     });
   },
-  function sendTransportGetCaps() {
+  function sendTransportGetCapsAudio() {
     tabCapture.capture({audio: true}, function(stream) {
       chrome.test.assertTrue(!!stream);
       udpTransport.create(function(stream, udpInfo) {
@@ -41,13 +41,12 @@ chrome.test.runTests([
             udpInfo.transportId,
             stream.getAudioTracks()[0],
             function(stream, udpInfo, sendTransportId) {
-          sendTransport.getCaps(sendTransportId, function(
-            stream, udpInfo, sendTransportId, caps) {
-              sendTransport.destroy(sendTransportId);
-              udpTransport.destroy(udpInfo.transportId);
-             stream.stop();
-             chrome.test.succeed();
-          }.bind(null, stream, udpInfo, sendTransportId));
+          var caps = sendTransport.getCaps(sendTransportId);
+          sendTransport.destroy(sendTransportId);
+          udpTransport.destroy(udpInfo.transportId);
+          stream.stop();
+          chrome.test.assertEq(caps.payloads[0].codecName, "OPUS");
+          chrome.test.succeed();
         }.bind(null, stream, udpInfo));
       }.bind(null, stream));
     });
@@ -66,13 +65,12 @@ chrome.test.runTests([
             rtcpFeatures: [],
             fecMechanisms: [],
           };
-          sendTransport.createParams(sendTransportId, remoteCaps, function(
-            stream, udpInfo, sendTransportId, caps) {
-              sendTransport.destroy(sendTransportId);
-              udpTransport.destroy(udpInfo.transportId);
-             stream.stop();
-             chrome.test.succeed();
-          }.bind(null, stream, udpInfo, sendTransportId));
+          var params = sendTransport.createParams(sendTransportId, remoteCaps);
+          sendTransport.destroy(sendTransportId);
+          udpTransport.destroy(udpInfo.transportId);
+          stream.stop();
+          chrome.test.assertEq(params.payloads[0].codecName, "OPUS");
+          chrome.test.succeed();
         }.bind(null, stream, udpInfo));
       }.bind(null, stream));
     });

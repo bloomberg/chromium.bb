@@ -19,13 +19,12 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
         webrtc.DestroyCastSendTransport(transportId);
   });
   apiFunctions.setHandleRequest('getCaps',
-      function(transportId, callback) {
-        webrtc.GetCapsCastSendTransport(transportId, callback);
+      function(transportId) {
+        return webrtc.GetCapsCastSendTransport(transportId);
   });
   apiFunctions.setHandleRequest('createParams',
-      function(transportId, remoteCaps, callback) {
-        webrtc.CreateParamsCastSendTransport(transportId, remoteCaps,
-                                             callback);
+      function(transportId, remoteCaps) {
+        return webrtc.CreateParamsCastSendTransport(transportId, remoteCaps);
   });
   apiFunctions.setHandleRequest('start',
       function(transportId, params) {

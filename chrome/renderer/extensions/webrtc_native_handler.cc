@@ -34,7 +34,6 @@ namespace {
 const char kSendTransportNotFound[] = "The send transport cannot be found";
 const char kUdpTransportNotFound[] = "The UDP transport cannot be found";
 const char kInvalidUdpParams[] = "Invalid UDP params";
-const char kInvalidMediaStreamTrack[] = "Invalid value for track";
 const char kInvalidRtpCaps[] = "Invalid value for RTP caps";
 const char kInvalidRtpParams[] = "Invalid value for RTP params";
 const char kUnableToConvertArgs[] = "Unable to convert arguments";
@@ -208,11 +207,8 @@ void WebRtcNativeHandler::CreateCastSendTransport(
 
   blink::WebDOMMediaStreamTrack track =
       blink::WebDOMMediaStreamTrack::fromV8Value(args[1]);
-  if (track.isNull()) {
-    v8::ThrowException(v8::Exception::TypeError(v8::String::New(
-        kInvalidMediaStreamTrack)));
+  if (track.isNull())
     return;
-  }
   int transport_id = last_transport_id_++;
   send_transport_map_[transport_id] =
       linked_ptr<CastSendTransport>(
@@ -236,10 +232,9 @@ void WebRtcNativeHandler::DestroyCastSendTransport(
 
 void WebRtcNativeHandler::CreateParamsCastSendTransport(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK_EQ(3, args.Length());
+  CHECK_EQ(2, args.Length());
   CHECK(args[0]->IsInt32());
   CHECK(args[1]->IsObject());
-  CHECK(args[2]->IsFunction());
 
   const int transport_id = args[0]->ToInt32()->Value();
   CastSendTransport* transport = GetSendTransportOrThrow(transport_id);
@@ -269,17 +264,14 @@ void WebRtcNativeHandler::CreateParamsCastSendTransport(
   FromCastRtpParams(cast_params, &params);
 
   scoped_ptr<base::DictionaryValue> params_value = params.ToValue();
-  v8::Handle<v8::Value> params_v8 = converter->ToV8Value(
-      params_value.get(), context()->v8_context());
-  context()->CallFunction(v8::Handle<v8::Function>::Cast(args[2]), 1,
-                          &params_v8);
+  args.GetReturnValue().Set(converter->ToV8Value(
+      params_value.get(), context()->v8_context()));
 }
 
 void WebRtcNativeHandler::GetCapsCastSendTransport(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK_EQ(2, args.Length());
+  CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsInt32());
-  CHECK(args[1]->IsFunction());
 
   const int transport_id = args[0]->ToInt32()->Value();
   CastSendTransport* transport = GetSendTransportOrThrow(transport_id);
@@ -292,10 +284,8 @@ void WebRtcNativeHandler::GetCapsCastSendTransport(
 
   scoped_ptr<base::DictionaryValue> caps_value = caps.ToValue();
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  v8::Handle<v8::Value> caps_v8 = converter->ToV8Value(
-      caps_value.get(), context()->v8_context());
-  context()->CallFunction(v8::Handle<v8::Function>::Cast(args[1]), 1,
-                          &caps_v8);
+  args.GetReturnValue().Set(converter->ToV8Value(
+      caps_value.get(), context()->v8_context()));
 }
 
 void WebRtcNativeHandler::StartCastSendTransport(

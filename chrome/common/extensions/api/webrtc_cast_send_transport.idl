@@ -64,14 +64,6 @@ namespace webrtc.castSendTransport {
   // |id| : The transport id.
   callback CreateCallback = void (long transportId);
 
-  // Callback from the <code>createParams</code> method.
-  // |params| : The cast transport params.
-  callback CreateParamsCallback = void (RtpParams params);
-
-  // Callback from the <code>getCaps</code> method.
-  // |caps| : Capabilities of the cast transport.
-  callback GetCapsCallback = void (RtpCaps caps);
-
   interface Functions {
     // Creates a cast send transport.
     // |innerTransportId| : the ID of the inner transport. The transport to be
@@ -87,21 +79,16 @@ namespace webrtc.castSendTransport {
     // |transportId| : The transport ID.
     [nocompile] static void destroy(long transportId);
 
-    // Creates suitable params given the capabilities.
-    // |caps| : the capabilities.
-    // |callback| : Called when the params have been created.
-    [nocompile] static void getCaps(
-        long transportId,
-        GetCapsCallback callback);
+    // Returns capabilities of the transport.
+    // |transportId| : The transport ID.
+    [nocompile] static RtpCaps getCaps(long transportId);
 
-    // Creates suitable params given the capabilities.
+    // Returns suitable params given the capabilities.
     // |transportId| : The transport ID.
     // |remoteCaps| : Capabilities of remote peer.
-    // |callback| : Called when the params has been created.
-    [nocompile] static void createParams(
+    [nocompile] static RtpParams createParams(
         long transportId,
-        RtpCaps remoteCaps,
-        CreateParamsCallback callback);
+        RtpCaps remoteCaps);
 
     // Starts to use the transport by providing remote params info.
     // |transportId| : The transport ID.
