@@ -364,6 +364,10 @@ bool GURL::SchemeIsHTTPOrHTTPS() const {
   return SchemeIs("http") || SchemeIs("https");
 }
 
+bool GURL::SchemeIsWSOrWSS() const {
+  return SchemeIs("ws") || SchemeIs("wss");
+}
+
 int GURL::IntPort() const {
   if (parsed_.port.is_nonempty())
     return url_parse::ParsePort(spec_.data(), parsed_.port);

@@ -529,3 +529,15 @@ TEST(GURLTest, IsStandard) {
   GURL c("foo://bar/baz");
   EXPECT_FALSE(c.IsStandard());
 }
+
+TEST(GURLTest, SchemeIsHTTPOrHTTPS) {
+  EXPECT_TRUE(GURL("http://bar/").SchemeIsHTTPOrHTTPS());
+  EXPECT_TRUE(GURL("HTTPS://BAR").SchemeIsHTTPOrHTTPS());
+  EXPECT_FALSE(GURL("ftp://bar/").SchemeIsHTTPOrHTTPS());
+}
+
+TEST(GURLTest, SchemeIsWSOrWSS) {
+  EXPECT_TRUE(GURL("WS://BAR/").SchemeIsWSOrWSS());
+  EXPECT_TRUE(GURL("wss://bar/").SchemeIsWSOrWSS());
+  EXPECT_FALSE(GURL("http://bar/").SchemeIsWSOrWSS());
+}

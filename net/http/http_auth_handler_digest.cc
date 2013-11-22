@@ -18,6 +18,7 @@
 #include "net/http/http_auth.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_util.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -304,7 +305,7 @@ void HttpAuthHandlerDigest::GetRequestMethodAndPath(
   const GURL& url = request->url;
 
   if (target_ == HttpAuth::AUTH_PROXY &&
-      (url.SchemeIs("https") || url.SchemeIs("ws") || url.SchemeIs("wss"))) {
+      (url.SchemeIs("https") || url.SchemeIsWSOrWSS())) {
     *method = "CONNECT";
     *path = GetHostAndPort(url);
   } else {
