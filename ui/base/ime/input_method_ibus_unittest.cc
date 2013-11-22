@@ -533,7 +533,7 @@ TEST_F(InputMethodIBusTest, Focus_Scenario) {
   // Confirm that both FocusIn and FocusOut are NOT called.
   EXPECT_EQ(0, mock_ime_engine_handler_->focus_in_call_count());
   EXPECT_EQ(0, mock_ime_engine_handler_->focus_out_call_count());
-  EXPECT_EQ(chromeos::ibus::TEXT_INPUT_TYPE_NONE,
+  EXPECT_EQ(TEXT_INPUT_TYPE_NONE,
             mock_ime_engine_handler_->last_text_input_type());
 
   input_type_ = TEXT_INPUT_TYPE_TEXT;
@@ -541,14 +541,14 @@ TEST_F(InputMethodIBusTest, Focus_Scenario) {
   // Confirm that only FocusIn is called and the TextInputType is TEXT.
   EXPECT_EQ(1, mock_ime_engine_handler_->focus_in_call_count());
   EXPECT_EQ(0, mock_ime_engine_handler_->focus_out_call_count());
-  EXPECT_EQ(chromeos::ibus::TEXT_INPUT_TYPE_TEXT,
+  EXPECT_EQ(TEXT_INPUT_TYPE_TEXT,
             mock_ime_engine_handler_->last_text_input_type());
 
   ime_->OnTextInputTypeChanged(this);
   // Confirm that both FocusIn and FocusOut are NOT called.
   EXPECT_EQ(1, mock_ime_engine_handler_->focus_in_call_count());
   EXPECT_EQ(0, mock_ime_engine_handler_->focus_out_call_count());
-  EXPECT_EQ(chromeos::ibus::TEXT_INPUT_TYPE_TEXT,
+  EXPECT_EQ(TEXT_INPUT_TYPE_TEXT,
             mock_ime_engine_handler_->last_text_input_type());
 
   input_type_ = TEXT_INPUT_TYPE_URL;
@@ -557,7 +557,7 @@ TEST_F(InputMethodIBusTest, Focus_Scenario) {
   // URL.
   EXPECT_EQ(2, mock_ime_engine_handler_->focus_in_call_count());
   EXPECT_EQ(1, mock_ime_engine_handler_->focus_out_call_count());
-  EXPECT_EQ(chromeos::ibus::TEXT_INPUT_TYPE_URL,
+  EXPECT_EQ(TEXT_INPUT_TYPE_URL,
             mock_ime_engine_handler_->last_text_input_type());
 }
 

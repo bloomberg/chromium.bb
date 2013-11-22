@@ -393,7 +393,7 @@ bool InputMethodEngineIBus::DeleteSurroundingText(int context_id,
   return true;
 }
 
-void InputMethodEngineIBus::FocusIn(ibus::TextInputType text_input_type) {
+void InputMethodEngineIBus::FocusIn(ui::TextInputType text_input_type) {
   focused_ = true;
   if (!active_)
     return;
@@ -403,19 +403,19 @@ void InputMethodEngineIBus::FocusIn(ibus::TextInputType text_input_type) {
   InputContext context;
   context.id = context_id_;
   switch (text_input_type) {
-    case ibus::TEXT_INPUT_TYPE_SEARCH:
+    case ui::TEXT_INPUT_TYPE_SEARCH:
       context.type = "search";
       break;
-    case ibus::TEXT_INPUT_TYPE_TELEPHONE:
+    case ui::TEXT_INPUT_TYPE_TELEPHONE:
       context.type = "tel";
       break;
-    case ibus::TEXT_INPUT_TYPE_URL:
+    case ui::TEXT_INPUT_TYPE_URL:
       context.type = "url";
       break;
-    case ibus::TEXT_INPUT_TYPE_EMAIL:
+    case ui::TEXT_INPUT_TYPE_EMAIL:
       context.type = "email";
       break;
-    case ibus::TEXT_INPUT_TYPE_NUMBER:
+    case ui::TEXT_INPUT_TYPE_NUMBER:
       context.type = "number";
       break;
     default:
@@ -438,7 +438,7 @@ void InputMethodEngineIBus::FocusOut() {
 void InputMethodEngineIBus::Enable() {
   active_ = true;
   observer_->OnActivate(engine_id_);
-  FocusIn(ibus::TEXT_INPUT_TYPE_TEXT);
+  FocusIn(ui::TEXT_INPUT_TYPE_TEXT);
 }
 
 void InputMethodEngineIBus::Disable() {

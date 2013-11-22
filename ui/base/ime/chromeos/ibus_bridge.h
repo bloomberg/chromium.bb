@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "chromeos/ime/ime_constants.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_export.h"
 
 namespace chromeos {
@@ -59,7 +60,7 @@ class UI_EXPORT IBusEngineHandlerInterface {
   virtual ~IBusEngineHandlerInterface() {}
 
   // Called when the Chrome input field get the focus.
-  virtual void FocusIn(ibus::TextInputType text_input_type) = 0;
+  virtual void FocusIn(ui::TextInputType text_input_type) = 0;
 
   // Called when the Chrome input field lose the focus.
   virtual void FocusOut() = 0;

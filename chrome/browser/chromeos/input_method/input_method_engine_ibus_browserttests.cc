@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
 
   // onFocus event should be fired if FocusIn function is called.
   ExtensionTestMessageListener focus_listener("onFocus:text", false);;
-  engine_handler->FocusIn(ibus::TEXT_INPUT_TYPE_TEXT);
+  engine_handler->FocusIn(ui::TEXT_INPUT_TYPE_TEXT);
   ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
   ASSERT_TRUE(focus_listener.was_satisfied());
 
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
       1);
 
   engine_handler->Enable();
-  engine_handler->FocusIn(ibus::TEXT_INPUT_TYPE_TEXT);
+  engine_handler->FocusIn(ui::TEXT_INPUT_TYPE_TEXT);
 
   {
     SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:No, Caps:No");
@@ -778,37 +778,37 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
 
     {
       ExtensionTestMessageListener focus_listener("onFocus:text", false);
-      engine_handler->FocusIn(ibus::TEXT_INPUT_TYPE_TEXT);
+      engine_handler->FocusIn(ui::TEXT_INPUT_TYPE_TEXT);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:search", false);
-      engine_handler->FocusIn(ibus::TEXT_INPUT_TYPE_SEARCH);
+      engine_handler->FocusIn(ui::TEXT_INPUT_TYPE_SEARCH);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:tel", false);
-      engine_handler->FocusIn(ibus::TEXT_INPUT_TYPE_TELEPHONE);
+      engine_handler->FocusIn(ui::TEXT_INPUT_TYPE_TELEPHONE);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:url", false);
-      engine_handler->FocusIn(ibus::TEXT_INPUT_TYPE_URL);
+      engine_handler->FocusIn(ui::TEXT_INPUT_TYPE_URL);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:email", false);
-      engine_handler->FocusIn(ibus::TEXT_INPUT_TYPE_EMAIL);
+      engine_handler->FocusIn(ui::TEXT_INPUT_TYPE_EMAIL);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:number", false);
-      engine_handler->FocusIn(ibus::TEXT_INPUT_TYPE_NUMBER);
+      engine_handler->FocusIn(ui::TEXT_INPUT_TYPE_NUMBER);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
     }
