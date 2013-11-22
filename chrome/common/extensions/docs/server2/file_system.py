@@ -5,19 +5,29 @@
 from future import Gettable, Future
 
 
-class FileNotFoundError(Exception):
+class _BaseFileSystemException(Exception):
+  def __init__(self, message):
+    Exception.__init__(self, message)
+
+  @classmethod
+  def RaiseInFuture(cls, message):
+    def boom(): raise cls(message)
+    return Future(delegate=Gettable(boom))
+
+
+class FileNotFoundError(_BaseFileSystemException):
   '''Raised when a file isn't found for read or stat.
   '''
   def __init__(self, filename):
-    Exception.__init__(self, filename)
+    _BaseFileSystemException.__init__(self, filename)
 
 
-class FileSystemError(Exception):
+class FileSystemError(_BaseFileSystemException):
   '''Raised on when there are errors reading or statting files, such as a
   network timeout.
   '''
   def __init__(self, filename):
-    Exception.__init__(self, filename)
+    _BaseFileSystemException.__init__(self, filename)
 
 
 class StatInfo(object):

@@ -123,91 +123,117 @@ class GithubFileSystem(FileSystem):
   def __init__(self, base_url, owner, repo, object_store_creator, Fetcher):
     self._repo_key = '%s/%s' % (owner, repo)
     self._repo_url = '%s/%s/%s' % (base_url, owner, repo)
-
-    self._blobstore = blobstore.AppEngineBlobstore()
-    # Lookup the chrome github api credentials.
     self._username, self._password = _LoadCredentials(object_store_creator)
+    self._blobstore = blobstore.AppEngineBlobstore()
     self._fetcher = Fetcher(self._repo_url)
-
-    # start_empty=False here to maintain the most recent stat across cron runs.
-    # Refresh() will always re-stat and use that to decide whether to download
-    # the zipball.
+    # Stores whether the github is up-to-date. This will either be True or
+    # empty, the emptiness most likely due to this being a cron run.
+    self._up_to_date_cache = object_store_creator.Create(
+        GithubFileSystem, category='up-to-date')
+    # Caches the zip file's stat. Overrides start_empty=False and use
+    # |self._up_to_date_cache| to determine whether we need to refresh.
     self._stat_cache = object_store_creator.Create(
         GithubFileSystem, category='stat-cache', start_empty=False)
 
-    # A Future to the github zip file. Normally this Future will resolve itself
-    # by querying blobstore for the blob; however, Refresh() may decide to
-    # override this with a new blob if it's out of date.
-    def resolve_from_blobstore():
-      blob = self._blobstore.Get(self._repo_url, _GITHUB_REPOS_NAMESPACE)
-      return _GithubZipFile.Create(self._repo_key, blob) if blob else None
-    self._repo_zip = Future(delegate=Gettable(resolve_from_blobstore))
+    # Created lazily in |_EnsureRepoZip|.
+    self._repo_zip = None
 
-  def _GetCachedVersion(self):
-    '''Returns the currently cached version of the repository. The version is a
-    'sha' hash value.
+  def _EnsureRepoZip(self):
+    '''Initializes |self._repo_zip| if it hasn't already been (i.e. if
+    _EnsureRepoZip has never been called before). In that case |self._repo_zip|
+    will be set to a Future of _GithubZipFile and the fetch process started,
+    whether that be from a blobstore or if necessary all the way from GitHub.
     '''
-    return self._stat_cache.Get(self._repo_key).Get()
+    if self._repo_zip is not None:
+      return
 
-  def _SetCachedVersion(self, version):
-    '''Sets the currently cached version of the repository. The version is a
-    'sha' hash value.
-    '''
-    self._stat_cache.Set(self._repo_key, version)
+    repo_key, repo_url, username, password = (
+        self._repo_key, self._repo_url, self._username, self._password)
 
-  def _FetchLiveVersion(self):
+    def fetch_from_blobstore():
+      '''Returns a Future which resolves to the _GithubZipFile for this repo
+      fetched from blobstore.
+      '''
+      blob = self._blobstore.Get(repo_url, _GITHUB_REPOS_NAMESPACE)
+      if blob is None:
+        return FileSystemError.RaiseInFuture(
+            'No blob for %s found in datastore' % repo_key)
+
+      repo_zip = _GithubZipFile.Create(repo_key, blob)
+      if repo_zip is None:
+        return FileSystemError.RaiseInFuture(
+            'Blob for %s was corrupted in blobstore!?' % repo_key)
+
+      return Future(value=repo_zip)
+
+    def fetch_from_github(version):
+      '''Returns a Future which resolves to the _GithubZipFile for this repo
+      fetched new from GitHub, then writes it to blobstore and |version| to the
+      stat caches.
+      '''
+      github_future = self._fetcher.FetchAsync(
+          'zipball', username=username, password=password)
+      def resolve():
+        try:
+          blob = github_future.Get().content
+        except urlfetch.DownloadError:
+          raise FileSystemError('Failed to download repo %s file from %s' %
+                                (repo_key, repo_url))
+
+        repo_zip = _GithubZipFile.Create(repo_key, blob)
+        if repo_zip is None:
+          raise FileSystemError('Blob for %s was fetched corrupted from %s' %
+                                (repo_key, repo_url))
+
+        self._blobstore.Set(self._repo_url, blob, _GITHUB_REPOS_NAMESPACE)
+        self._up_to_date_cache.Set(repo_key, True)
+        self._stat_cache.Set(repo_key, version)
+        return repo_zip
+      return Future(delegate=Gettable(resolve))
+
+    # To decide whether we need to re-stat, and from there whether to re-fetch,
+    # make use of ObjectStore's start-empty configuration. If
+    # |object_store_creator| is configured to start empty then our creator
+    # wants to refresh (e.g. running a cron), so fetch the live stat from
+    # GitHub. If the stat hasn't changed since last time then no reason to
+    # re-fetch from GitHub, just take from blobstore.
+
+    if self._up_to_date_cache.Get(repo_key).Get() is None:
+      # This is either a cron or an instance where a cron has never been run.
+      cached_version = self._stat_cache.Get(repo_key).Get()
+      live_version = self._FetchLiveVersion(username, password)
+      if cached_version != live_version:
+        # Note: branch intentionally triggered if |cached_version| is None.
+        logging.info('%s has changed, fetching from GitHub.' % repo_url)
+        self._repo_zip = fetch_from_github(live_version)
+      else:
+        # Already up to date. Fetch from blobstore. No need to set up-to-date
+        # to True here since it'll already be set for instances, and it'll
+        # never be set for crons.
+        logging.info('%s is up to date.' % repo_url)
+        self._repo_zip = fetch_from_blobstore()
+    else:
+      # Instance where cron has been run. It should be in blobstore.
+      self._repo_zip = fetch_from_blobstore()
+
+    assert self._repo_zip is not None
+
+  def _FetchLiveVersion(self, username, password):
     '''Fetches the current repository version from github.com and returns it.
     The version is a 'sha' hash value.
     '''
     # TODO(kalman): Do this asynchronously (use FetchAsync).
     result = self._fetcher.Fetch(
-        'commits/HEAD', username=self._username, password=self._password)
+        'commits/HEAD', username=username, password=password)
 
     try:
-      return json.loads(result.content)['commit']['tree']['sha']
+      return json.loads(result.content)['sha']
     except (KeyError, ValueError):
       raise FileSystemError('Error parsing JSON from repo %s: %s' %
                             (self._repo_url, traceback.format_exc()))
 
   def Refresh(self):
-    '''Compares the cached and live stat versions to see if the cached
-    repository is out of date. If it is, an async fetch is started and a
-    Future is returned. When this Future is evaluated, the fetch will be
-    completed and the results cached.
-
-    If no update is needed, None will be returned.
-    '''
-    version = self._FetchLiveVersion()
-    if version == self._GetCachedVersion():
-      logging.info('%s is up to date.' % self._repo_url)
-      # By default this Future will load the blob from datastore.
-      return self._repo_zip
-
-    logging.info('%s has changed. Re-fetching.' % self._repo_url)
-    fetch = self._fetcher.FetchAsync(
-        'zipball', username=self._username, password=self._password)
-
-    def resolve():
-      '''Completes |fetch| and stores the results in blobstore.
-      '''
-      repo_zip_url = self._repo_url + '/zipball'
-      try:
-        blob = fetch.Get().content
-      except urlfetch.DownloadError:
-        raise FileSystemError(
-            '%s: Failed to download zip file from repository %s' % repo_zip_url)
-
-      repo_zip = _GithubZipFile.Create(self._repo_key, blob)
-      if repo_zip is None:
-        raise FileSystemError('%s: failed to create zip' % repo_zip_url)
-
-      # Success. Update blobstore and the version.
-      self._blobstore.Set(self._repo_url, blob, _GITHUB_REPOS_NAMESPACE)
-      self._SetCachedVersion(version)
-      return repo_zip
-
-    self._repo_zip = Future(delegate=Gettable(resolve))
-    return self._repo_zip
+    return self.ReadSingle('')
 
   def Read(self, paths, binary=False):
     '''Returns a directory mapping |paths| to the contents of the file at each
@@ -216,10 +242,9 @@ class GithubFileSystem(FileSystem):
 
     |binary| is ignored.
     '''
+    self._EnsureRepoZip()
     def resolve():
       repo_zip = self._repo_zip.Get()
-      if repo_zip is None:
-        raise FileNotFoundError('"%s" has not been Refreshed' % self._repo_key)
       reads = {}
       for path in paths:
         if path not in repo_zip.Paths():
@@ -229,8 +254,6 @@ class GithubFileSystem(FileSystem):
         else:
           reads[path] = repo_zip.Read(path)
       return reads
-
-    # Delay reading until after self._repo_zip has finished fetching.
     return Future(delegate=Gettable(resolve))
 
   def Stat(self, path):
@@ -244,17 +267,16 @@ class GithubFileSystem(FileSystem):
     Because the repository will only be downloaded once per server version, all
     stat versions are always 0.
     '''
+    self._EnsureRepoZip()
     repo_zip = self._repo_zip.Get()
-    if repo_zip is None:
-      raise FileNotFoundError('"%s" has never been Refreshed' % self._repo_key)
 
     if path not in repo_zip.Paths():
       raise FileNotFoundError('"%s" does not contain file "%s"' %
                               (self._repo_key, path))
 
-    version = self._GetCachedVersion()
-    assert version, ('There was a zipball in datastore; there should be a '
-                     'version cached for it')
+    version = self._stat_cache.Get(self._repo_key).Get()
+    assert version is not None, ('There was a zipball in datastore; there '
+                                 'should be a version cached for it')
 
     stat_info = StatInfo(version)
     if path == '' or path.endswith('/'):

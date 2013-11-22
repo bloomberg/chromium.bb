@@ -107,7 +107,7 @@ class _FakeViewvcServer(_FakeFetcher):
 
 class _FakeGithubStat(_FakeFetcher):
   def fetch(self, url):
-    return '{ "commit": { "tree": { "sha": 0} } }'
+    return '{ "commit": { "sha": 0} }'
 
 
 class _FakeGithubZip(_FakeFetcher):
