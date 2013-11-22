@@ -6,6 +6,8 @@
 
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/metro.h"
+#include "base/win/scoped_handle.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_observer.h"
@@ -372,6 +374,17 @@ class RemoteInputMethodWin : public InputMethod,
 };
 
 }  // namespace
+
+bool IsRemoteInputMethodWinRequired(gfx::AcceleratedWidget widget) {
+  DWORD process_id = 0;
+  if (GetWindowThreadProcessId(widget, &process_id) == 0)
+    return false;
+  base::win::ScopedHandle process_handle(::OpenProcess(
+      PROCESS_QUERY_LIMITED_INFORMATION, FALSE, process_id));
+  if (!process_handle.IsValid())
+    return false;
+  return base::win::IsProcessImmersive(process_handle.Get());
+}
 
 RemoteInputMethodPrivateWin::RemoteInputMethodPrivateWin() {}
 

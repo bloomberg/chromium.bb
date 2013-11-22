@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 namespace internal {
@@ -33,6 +34,9 @@ class InputMethod;
 //   will call RemoteInputMethodPrivateWin::OnCandidatePopupChanged and/or
 //   RemoteInputMethodPrivateWin::OnInputSourceChanged accordingly so that
 //   the state cache should be updated.
+
+// Returns true if |widget| requires RemoteInputMethodWin.
+bool IsRemoteInputMethodWinRequired(gfx::AcceleratedWidget widget);
 
 // Returns the public interface of RemoteInputMethodWin.
 // Caveats: Currently only one instance of RemoteInputMethodWin is able to run

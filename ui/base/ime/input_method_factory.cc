@@ -13,6 +13,7 @@
 #include "base/win/metro.h"
 #include "ui/base/ime/input_method_imm32.h"
 #include "ui/base/ime/input_method_tsf.h"
+#include "ui/base/ime/remote_input_method_win.h"
 #elif defined(USE_AURA) && defined(USE_X11)
 #include "ui/base/ime/input_method_linux_x11.h"
 #else
@@ -26,14 +27,15 @@ bool g_input_method_set_for_testing = false;
 InputMethod* g_shared_input_method = NULL;
 
 #if defined(OS_WIN)
-// Returns a new instance of input method object for IMM32 or TSF.
+// Returns a new instance of input method object for Windows.
 scoped_ptr<InputMethod> CreateInputMethodWinInternal(
     internal::InputMethodDelegate* delegate,
     gfx::AcceleratedWidget widget) {
   if (base::win::IsTSFAwareRequired())
     return scoped_ptr<InputMethod>(new InputMethodTSF(delegate, widget));
-  else
-    return scoped_ptr<InputMethod>(new InputMethodIMM32(delegate, widget));
+  if (IsRemoteInputMethodWinRequired(widget))
+    return CreateRemoteInputMethodWin(delegate);
+  return scoped_ptr<InputMethod>(new InputMethodIMM32(delegate, widget));
 }
 #endif
 
