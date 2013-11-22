@@ -381,8 +381,10 @@ void StickyKeysHandler::AppendNativeEventMask(unsigned int* state) {
 void StickyKeysHandler::AppendModifier(ui::KeyEvent* event) {
 #if defined(USE_X11)
   XEvent* xev = event->native_event();
-  XKeyEvent* xkey = &(xev->xkey);
-  AppendNativeEventMask(&xkey->state);
+  if (xev) {
+    XKeyEvent* xkey = &(xev->xkey);
+    AppendNativeEventMask(&xkey->state);
+  }
 #elif defined(USE_OZONE)
   NOTIMPLEMENTED() << "Modifier key is not handled";
 #endif
@@ -395,8 +397,10 @@ void StickyKeysHandler::AppendModifier(ui::KeyEvent* event) {
 void StickyKeysHandler::AppendModifier(ui::MouseEvent* event) {
 #if defined(USE_X11)
   XEvent* xev = event->native_event();
-  XButtonEvent* xkey = &(xev->xbutton);
-  AppendNativeEventMask(&xkey->state);
+  if (xev) {
+    XButtonEvent* xkey = &(xev->xbutton);
+    AppendNativeEventMask(&xkey->state);
+  }
 #elif defined(USE_OZONE)
   NOTIMPLEMENTED() << "Modifier key is not handled";
 #endif
@@ -406,11 +410,13 @@ void StickyKeysHandler::AppendModifier(ui::MouseEvent* event) {
 void StickyKeysHandler::AppendModifier(ui::ScrollEvent* event) {
 #if defined(USE_X11)
   XEvent* xev = event->native_event();
-  XIDeviceEvent* xievent =
-      static_cast<XIDeviceEvent*>(xev->xcookie.data);
-  if (xievent) {
-    AppendNativeEventMask(reinterpret_cast<unsigned int*>(
-        &xievent->mods.effective));
+  if (xev) {
+    XIDeviceEvent* xievent =
+        static_cast<XIDeviceEvent*>(xev->xcookie.data);
+    if (xievent) {
+      AppendNativeEventMask(reinterpret_cast<unsigned int*>(
+          &xievent->mods.effective));
+    }
   }
 #elif defined(USE_OZONE)
   NOTIMPLEMENTED() << "Modifier key is not handled";

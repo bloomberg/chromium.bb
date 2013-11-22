@@ -98,7 +98,8 @@ class MockStickyKeysHandlerDelegate :
   virtual void DispatchMouseEvent(ui::MouseEvent* event,
                                   aura::Window* target) OVERRIDE {
     ASSERT_EQ(delegate_->GetExpectedTarget(), target);
-    events_.push_back(new ui::MouseEvent(event->native_event()));
+    events_.push_back(
+        new ui::MouseEvent(*event, target, target->GetRootWindow()));
   }
 
   virtual void DispatchScrollEvent(ui::ScrollEvent* event,
@@ -211,6 +212,29 @@ class StickyKeysTest : public test::AshTestBase,
     xi2_evs_.push_back(new ui::ScopedXI2Event(xev));
 
     ui::ScrollEvent* event = new ui::ScrollEvent(xev);
+    ui::Event::DispatcherApi dispatcher(event);
+    dispatcher.set_target(target_);
+    return event;
+  }
+
+  // Creates a synthesized KeyEvent that is not backed by a native event.
+  ui::KeyEvent* GenerateSynthesizedKeyEvent(
+      bool is_key_press, ui::KeyboardCode code) {
+    ui::KeyEvent* event = new ui::KeyEvent(
+        is_key_press ? ui::ET_KEY_PRESSED : ui::ET_MOUSE_RELEASED,
+        code, 0, true);
+    ui::Event::DispatcherApi dispatcher(event);
+    dispatcher.set_target(target_);
+    return event;
+  }
+
+  // Creates a synthesized MouseEvent that is not backed by a native event.
+  ui::MouseEvent* GenerateSynthesizedMouseEvent(bool is_button_press) {
+    ui::MouseEvent* event = new ui::MouseEvent(
+        is_button_press ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
+        gfx::Point(0, 0),
+        gfx::Point(0, 0),
+        ui::EF_LEFT_MOUSE_BUTTON);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);
     return event;
@@ -573,6 +597,44 @@ TEST_F(StickyKeysTest, EventTargetDestroyed) {
   sticky_key.HandleKeyEvent(ev.get());
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
   EXPECT_FALSE(target());
+}
+
+TEST_F(StickyKeysTest, SynthesizedEvents) {
+  // Non-native, internally generated events should be properly handled
+  // by sticky keys.
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
+
+  // Test non-native key events.
+  scoped_ptr<ui::KeyEvent> kev;
+  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
+  EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
+
+  kev.reset(GenerateSynthesizedKeyEvent(true, ui::VKEY_K));
+  sticky_key.HandleKeyEvent(kev.get());
+  EXPECT_TRUE(kev->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+
+  kev.reset(GenerateSynthesizedKeyEvent(false, ui::VKEY_K));
+  sticky_key.HandleKeyEvent(kev.get());
+  EXPECT_FALSE(kev->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+
+  // Test non-native mouse events.
+  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
+  EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
+
+  scoped_ptr<ui::MouseEvent> mev;
+  mev.reset(GenerateSynthesizedMouseEvent(true));
+  sticky_key.HandleMouseEvent(mev.get());
+  EXPECT_TRUE(mev->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
+
+  mev.reset(GenerateSynthesizedMouseEvent(false));
+  sticky_key.HandleMouseEvent(mev.get());
+  EXPECT_TRUE(mev->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
 }
 
 TEST_F(StickyKeysTest, KeyEventDispatchImpl) {
