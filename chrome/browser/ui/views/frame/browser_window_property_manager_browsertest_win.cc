@@ -26,7 +26,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
-#include "content/public/test/test_utils.cc"
+#include "content/public/test/test_utils.h"
 #include "ui/views/win/hwnd_util.h"
 
 namespace {

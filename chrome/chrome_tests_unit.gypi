@@ -189,6 +189,8 @@
         'browser/storage_monitor/test_media_transfer_protocol_manager_linux.h',
         'browser/storage_monitor/test_storage_monitor.cc',
         'browser/storage_monitor/test_storage_monitor.h',
+        'browser/sync/profile_sync_service_mock.cc',
+        'browser/sync/profile_sync_service_mock.h',
         'browser/ui/browser.h',
         'browser/ui/cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm',
         'browser/ui/cocoa/run_loop_testing.h',
@@ -440,8 +442,6 @@
       'sources': [
         'browser/sync/glue/session_sync_test_helper.cc',
         'browser/sync/glue/session_sync_test_helper.h',
-        'browser/sync/profile_sync_service_mock.cc',
-        'browser/sync/profile_sync_service_mock.h',
         'test/base/run_all_unittests.cc',
       ],
       'conditions': [

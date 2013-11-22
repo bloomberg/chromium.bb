@@ -929,7 +929,6 @@
         'test/perf/perf_test.gyp:*',
         'test_support_chrome',
         'test_support_common',
-        'test_support_unit',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
@@ -964,6 +963,9 @@
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
+      'variables': {
+        'win_use_external_manifest': 1,
+      },
       'sources': [
         '../apps/app_restore_service_browsertest.cc',
         '../apps/app_shim/app_shim_host_manager_browsertest_mac.mm',
@@ -1100,8 +1102,6 @@
         'browser/download/download_danger_prompt_browsertest.cc',
         'browser/download/download_started_animation_browsertest.cc',
         'browser/download/save_page_browsertest.cc',
-        'browser/drive/fake_drive_service.cc',
-        'browser/drive/fake_drive_service.h',
         'browser/errorpage_browsertest.cc',
         'browser/extensions/active_tab_apitest.cc',
         'browser/extensions/activity_log/activity_log_browsertest.cc',
@@ -1650,6 +1650,15 @@
           ],
         },
       ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'conditions': [
+            ['incremental_chrome_dll==1', {
+              'UseLibraryDependencyInputs': "true",
+            }],
+          ],
+        },
+      },
       'conditions': [
         ['enable_one_click_signin==0', {
           'sources!': [
