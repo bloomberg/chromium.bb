@@ -34,12 +34,19 @@
 //   last_forced      If this is a forced thumbnail, records the last time it
 //                    was forced. If it's not a forced thumbnail, 0.
 
-namespace history {
+namespace {
 
-// TODO(beaudoin): Fill revision/date details of Version 3 after landing.
-// Version 3:  by beaudoin@chromium.org
+// For this database, schema migrations are deprecated after two
+// years.  This means that the oldest non-deprecated version should be
+// two years old or greater (thus the migrations to get there are
+// older).  Databases containing deprecated versions will be cleared
+// at startup.  Since this database is a cache, losing old data is not
+// fatal (in fact, very old data may be expired immediately at startup
+// anyhow).
+
+// Version 3: b6d6a783/r231648 by beaudoin@chromium.org on 2013-10-29
 // Version 2: eb0b24e6/r87284 by satorux@chromium.org on 2011-05-31
-// Version 1: 809cc4d8/r64072 by sky@chromium.org on 2010-10-27
+// Version 1: 809cc4d8/r64072 by sky@chromium.org on 2010-10-27 (deprecated)
 
 // From the version 1 to 2, one column was added. Old versions of Chrome
 // should be able to read version 2 files just fine. Same thing for version 2
@@ -47,6 +54,50 @@ namespace history {
 // NOTE(shess): When changing the version, add a new golden file for
 // the new version and a test to verify that Init() works with it.
 static const int kVersionNumber = 3;
+static const int kDeprecatedVersionNumber = 1;  // and earlier.
+
+bool InitTables(sql::Connection* db) {
+  const char kThumbnailsSql[] =
+      "CREATE TABLE IF NOT EXISTS thumbnails ("
+      "url LONGVARCHAR PRIMARY KEY,"
+      "url_rank INTEGER,"
+      "title LONGVARCHAR,"
+      "thumbnail BLOB,"
+      "redirects LONGVARCHAR,"
+      "boring_score DOUBLE DEFAULT 1.0,"
+      "good_clipping INTEGER DEFAULT 0,"
+      "at_top INTEGER DEFAULT 0,"
+      "last_updated INTEGER DEFAULT 0,"
+      "load_completed INTEGER DEFAULT 0,"
+      "last_forced INTEGER DEFAULT 0)";
+  return db->Execute(kThumbnailsSql);
+}
+
+// Encodes redirects into a string.
+std::string GetRedirects(const history::MostVisitedURL& url) {
+  std::vector<std::string> redirects;
+  for (size_t i = 0; i < url.redirects.size(); i++)
+    redirects.push_back(url.redirects[i].spec());
+  return JoinString(redirects, ' ');
+}
+
+// Decodes redirects from a string and sets them for the url.
+void SetRedirects(const std::string& redirects, history::MostVisitedURL* url) {
+  std::vector<std::string> redirects_vector;
+  base::SplitStringAlongWhitespace(redirects, &redirects_vector);
+  for (size_t i = 0; i < redirects_vector.size(); ++i)
+    url->redirects.push_back(GURL(redirects_vector[i]));
+}
+
+}  // namespace
+
+namespace history {
+
+// static
+const int TopSitesDatabase::kRankOfForcedURL = -1;
+
+//static
+const int TopSitesDatabase::kRankOfNonExistingURL = -2;
 
 TopSitesDatabase::TopSitesDatabase() {
 }
@@ -55,44 +106,36 @@ TopSitesDatabase::~TopSitesDatabase() {
 }
 
 bool TopSitesDatabase::Init(const base::FilePath& db_name) {
-  bool file_existed = base::PathExists(db_name);
+  const bool file_existed = base::PathExists(db_name);
 
   db_.reset(CreateDB(db_name));
   if (!db_)
     return false;
 
-  bool does_meta_exist = sql::MetaTable::DoesTableExist(db_.get());
+  // An older version had data with no meta table.  Deprecate by razing.
+  // TODO(shess): Just have RazeIfDeprecated() handle this case.
+  const bool does_meta_exist = sql::MetaTable::DoesTableExist(db_.get());
   if (!does_meta_exist && file_existed) {
-    // If the meta file doesn't exist, this version is old. We could remove all
-    // the entries as they are no longer applicable, but it's safest to just
-    // remove the file and start over.
-    db_.reset(NULL);
-    if (!sql::Connection::Delete(db_name)) {
-      LOG(ERROR) << "unable to delete old TopSites file";
-      return false;
-    }
-    db_.reset(CreateDB(db_name));
-    if (!db_)
+    if (!db_->Raze())
       return false;
   }
+
+  // Clear databases which are too old to process.
+  DCHECK_LT(kDeprecatedVersionNumber, kVersionNumber);
+  sql::MetaTable::RazeIfDeprecated(db_.get(), kDeprecatedVersionNumber);
 
   // Scope initialization in a transaction so we can't be partially
   // initialized.
   sql::Transaction transaction(db_.get());
-  transaction.Begin();
+  // TODO(shess): Failure to open transaction is bad, address it.
+  if (!transaction.Begin())
+    return false;
 
   if (!meta_table_.Init(db_.get(), kVersionNumber, kVersionNumber))
     return false;
 
-  if (!InitThumbnailTable())
+  if (!InitTables(db_.get()))
     return false;
-
-  if (meta_table_.GetVersionNumber() == 1) {
-    if (!UpgradeToVersion2()) {
-      LOG(WARNING) << "Unable to upgrade top sites database to version 2.";
-      return false;
-    }
-  }
 
   if (meta_table_.GetVersionNumber() == 2) {
     if (!UpgradeToVersion3()) {
@@ -109,38 +152,6 @@ bool TopSitesDatabase::Init(const base::FilePath& db_name) {
   if (!transaction.Commit())
     return false;
 
-  return true;
-}
-
-bool TopSitesDatabase::InitThumbnailTable() {
-  if (!db_->DoesTableExist("thumbnails")) {
-    if (!db_->Execute("CREATE TABLE thumbnails ("
-                      "url LONGVARCHAR PRIMARY KEY,"
-                      "url_rank INTEGER,"
-                      "title LONGVARCHAR,"
-                      "thumbnail BLOB,"
-                      "redirects LONGVARCHAR,"
-                      "boring_score DOUBLE DEFAULT 1.0,"
-                      "good_clipping INTEGER DEFAULT 0,"
-                      "at_top INTEGER DEFAULT 0,"
-                      "last_updated INTEGER DEFAULT 0,"
-                      "load_completed INTEGER DEFAULT 0,"
-                      "last_forced INTEGER DEFAULT 0)")) {
-      LOG(WARNING) << db_->GetErrorMessage();
-      return false;
-    }
-  }
-  return true;
-}
-
-bool TopSitesDatabase::UpgradeToVersion2() {
-  // Add 'load_completed' column.
-  if (!db_->Execute(
-          "ALTER TABLE thumbnails ADD load_completed INTEGER DEFAULT 0")) {
-    NOTREACHED();
-    return false;
-  }
-  meta_table_.SetVersionNumber(2);
   return true;
 }
 
@@ -197,23 +208,6 @@ void TopSitesDatabase::GetPageThumbnails(MostVisitedURLList* urls,
     thumbnail.thumbnail_score.load_completed = statement.ColumnBool(9);
     (*thumbnails)[gurl] = thumbnail;
   }
-}
-
-// static
-std::string TopSitesDatabase::GetRedirects(const MostVisitedURL& url) {
-  std::vector<std::string> redirects;
-  for (size_t i = 0; i < url.redirects.size(); i++)
-    redirects.push_back(url.redirects[i].spec());
-  return JoinString(redirects, ' ');
-}
-
-// static
-void TopSitesDatabase::SetRedirects(const std::string& redirects,
-                                    MostVisitedURL* url) {
-  std::vector<std::string> redirects_vector;
-  base::SplitStringAlongWhitespace(redirects, &redirects_vector);
-  for (size_t i = 0; i < redirects_vector.size(); ++i)
-    url->redirects.push_back(GURL(redirects_vector[i]));
 }
 
 void TopSitesDatabase::SetPageThumbnail(const MostVisitedURL& url,
@@ -460,11 +454,8 @@ sql::Connection* TopSitesDatabase::CreateDB(const base::FilePath& db_name) {
   db->set_page_size(4096);
   db->set_cache_size(32);
 
-  if (!db->Open(db_name)) {
-    LOG(ERROR) << db->GetErrorMessage();
+  if (!db->Open(db_name))
     return NULL;
-  }
-
   return db.release();
 }
 

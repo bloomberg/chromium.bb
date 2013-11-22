@@ -17,7 +17,7 @@
 namespace {
 
 // URL with url_rank 0 in golden files.
-const GURL kUrl = GURL("http://www.google.com/");
+const GURL kUrl0 = GURL("http://www.google.com/");
 
 // Create the test database at |db_path| from the golden file at
 // |ascii_path| in the "History/" subdir of the test data dir.
@@ -51,6 +51,12 @@ void VerifyTablesAndColumns(sql::Connection* db) {
   EXPECT_EQ(11u, sql::test::CountTableColumns(db, "thumbnails"));
 }
 
+void VerifyDatabaseEmpty(sql::Connection* db) {
+  size_t rows = 0;
+  EXPECT_TRUE(sql::test::CountTableRows(db, "thumbnails", &rows));
+  EXPECT_EQ(0u, rows);
+}
+
 }  // namespace
 
 namespace history {
@@ -67,31 +73,15 @@ class TopSitesDatabaseTest : public testing::Test {
   base::FilePath file_name_;
 };
 
+// Version 1 is deprecated, the resulting schema should be current,
+// with no data.
 TEST_F(TopSitesDatabaseTest, Version1) {
   ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v1.sql"));
 
   TopSitesDatabase db;
   ASSERT_TRUE(db.Init(file_name_));
-
   VerifyTablesAndColumns(db.db_.get());
-
-  // Basic operational check.
-  MostVisitedURLList urls;
-  std::map<GURL, Images> thumbnails;
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(3u, urls.size());
-  ASSERT_EQ(3u, thumbnails.size());
-  EXPECT_EQ(kUrl, urls[0].url);  // [0] because of url_rank.
-  // kGoogleThumbnail includes nul terminator.
-  ASSERT_EQ(sizeof(kGoogleThumbnail) - 1,
-            thumbnails[urls[0].url].thumbnail->size());
-  EXPECT_TRUE(!memcmp(thumbnails[urls[0].url].thumbnail->front(),
-                      kGoogleThumbnail, sizeof(kGoogleThumbnail) - 1));
-
-  ASSERT_TRUE(db.RemoveURL(urls[1]));
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(2u, urls.size());
-  ASSERT_EQ(2u, thumbnails.size());
+  VerifyDatabaseEmpty(db.db_.get());
 }
 
 TEST_F(TopSitesDatabaseTest, Version2) {
@@ -108,7 +98,7 @@ TEST_F(TopSitesDatabaseTest, Version2) {
   db.GetPageThumbnails(&urls, &thumbnails);
   ASSERT_EQ(3u, urls.size());
   ASSERT_EQ(3u, thumbnails.size());
-  EXPECT_EQ(kUrl, urls[0].url);  // [0] because of url_rank.
+  EXPECT_EQ(kUrl0, urls[0].url);  // [0] because of url_rank.
   // kGoogleThumbnail includes nul terminator.
   ASSERT_EQ(sizeof(kGoogleThumbnail) - 1,
             thumbnails[urls[0].url].thumbnail->size());
@@ -135,7 +125,7 @@ TEST_F(TopSitesDatabaseTest, Version3) {
   db.GetPageThumbnails(&urls, &thumbnails);
   ASSERT_EQ(3u, urls.size());
   ASSERT_EQ(3u, thumbnails.size());
-  EXPECT_EQ(kUrl, urls[0].url);  // [0] because of url_rank.
+  EXPECT_EQ(kUrl0, urls[0].url);  // [0] because of url_rank.
   // kGoogleThumbnail includes nul terminator.
   ASSERT_EQ(sizeof(kGoogleThumbnail) - 1,
             thumbnails[urls[0].url].thumbnail->size());
@@ -164,7 +154,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
   db.GetPageThumbnails(&urls, &thumbnails);
   ASSERT_EQ(4u, urls.size());
   ASSERT_EQ(4u, thumbnails.size());
-  EXPECT_EQ(kUrl, urls[0].url);
+  EXPECT_EQ(kUrl0, urls[0].url);
   EXPECT_EQ(mapsUrl, urls[1].url);
 
   // Add a new URL, forced.
@@ -177,7 +167,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
   ASSERT_EQ(5u, urls.size());
   ASSERT_EQ(5u, thumbnails.size());
   EXPECT_EQ(driveUrl, urls[0].url);  // Forced URLs always appear first.
-  EXPECT_EQ(kUrl, urls[1].url);
+  EXPECT_EQ(kUrl0, urls[1].url);
   EXPECT_EQ(mapsUrl, urls[2].url);
 
   // Add a new URL, forced (earlier).
@@ -191,7 +181,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
   ASSERT_EQ(6u, thumbnails.size());
   EXPECT_EQ(plusUrl, urls[0].url);  // New forced URL should appear first.
   EXPECT_EQ(driveUrl, urls[1].url);
-  EXPECT_EQ(kUrl, urls[2].url);
+  EXPECT_EQ(kUrl0, urls[2].url);
   EXPECT_EQ(mapsUrl, urls[3].url);
 
   // Change the last_forced_time of a forced URL.
@@ -203,7 +193,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
   ASSERT_EQ(6u, thumbnails.size());
   EXPECT_EQ(driveUrl, urls[0].url);
   EXPECT_EQ(plusUrl, urls[1].url);  // Forced URL should have moved second.
-  EXPECT_EQ(kUrl, urls[2].url);
+  EXPECT_EQ(kUrl0, urls[2].url);
   EXPECT_EQ(mapsUrl, urls[3].url);
 
   // Change a non-forced URL to forced using UpdatePageRank.
@@ -216,7 +206,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
   EXPECT_EQ(driveUrl, urls[0].url);
   EXPECT_EQ(mapsUrl, urls[1].url);  // Maps moves to second forced URL.
   EXPECT_EQ(plusUrl, urls[2].url);
-  EXPECT_EQ(kUrl, urls[3].url);
+  EXPECT_EQ(kUrl0, urls[3].url);
 
   // Change a forced URL to non-forced using SetPageThumbnail.
   url3.last_forced_time = base::Time();
@@ -227,7 +217,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
   ASSERT_EQ(6u, thumbnails.size());
   EXPECT_EQ(driveUrl, urls[0].url);
   EXPECT_EQ(mapsUrl, urls[1].url);
-  EXPECT_EQ(kUrl, urls[2].url);
+  EXPECT_EQ(kUrl0, urls[2].url);
   EXPECT_EQ(plusUrl, urls[3].url);  // Plus moves to second non-forced URL.
 
   // Change a non-forced URL to earlier non-forced using UpdatePageRank.
@@ -239,7 +229,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
   EXPECT_EQ(driveUrl, urls[0].url);
   EXPECT_EQ(mapsUrl, urls[1].url);
   EXPECT_EQ(plusUrl, urls[2].url);  // Plus moves to first non-forced URL.
-  EXPECT_EQ(kUrl, urls[3].url);
+  EXPECT_EQ(kUrl0, urls[3].url);
 
   // Change a non-forced URL to later non-forced using SetPageThumbnail.
   db.SetPageThumbnail(url3, 2, Images());
@@ -249,7 +239,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
   ASSERT_EQ(6u, thumbnails.size());
   EXPECT_EQ(driveUrl, urls[0].url);
   EXPECT_EQ(mapsUrl, urls[1].url);
-  EXPECT_EQ(kUrl, urls[2].url);
+  EXPECT_EQ(kUrl0, urls[2].url);
   EXPECT_EQ(plusUrl, urls[4].url);  // Plus moves to third non-forced URL.
 
   // Remove a non-forced URL.
@@ -260,7 +250,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
   ASSERT_EQ(5u, thumbnails.size());
   EXPECT_EQ(driveUrl, urls[0].url);
   EXPECT_EQ(mapsUrl, urls[1].url);
-  EXPECT_EQ(kUrl, urls[2].url);
+  EXPECT_EQ(kUrl0, urls[2].url);
 
   // Remove a forced URL.
   db.RemoveURL(url2);
@@ -269,7 +259,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
   ASSERT_EQ(4u, urls.size());
   ASSERT_EQ(4u, thumbnails.size());
   EXPECT_EQ(mapsUrl, urls[0].url);
-  EXPECT_EQ(kUrl, urls[1].url);
+  EXPECT_EQ(kUrl0, urls[1].url);
 }
 
 }  // namespace history

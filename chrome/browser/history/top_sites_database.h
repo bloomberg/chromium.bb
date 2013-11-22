@@ -65,18 +65,10 @@ class TopSitesDatabase {
 
   // Rank of all URLs that are forced and therefore cannot be automatically
   // evicted.
-  static const int kRankOfForcedURL = -1;
+  static const int kRankOfForcedURL;
 
   // Rank used to indicate that a URL is not stored in the database.
-  static const int kRankOfNonExistingURL = -2;
-
-  // Creates the thumbnail table, returning true if the table already exists
-  // or was successfully created.
-  bool InitThumbnailTable();
-
-  // Upgrades the thumbnail table to version 2, returning true if the
-  // upgrade was successful.
-  bool UpgradeToVersion2();
+  static const int kRankOfNonExistingURL;
 
   // Upgrades the thumbnail table to version 3, returning true if the
   // upgrade was successful.
@@ -99,12 +91,6 @@ class TopSitesDatabase {
   int GetURLRank(const MostVisitedURL& url);
 
   sql::Connection* CreateDB(const base::FilePath& db_name);
-
-  // Encodes redirects into a string.
-  static std::string GetRedirects(const MostVisitedURL& url);
-
-  // Decodes redirects from a string and sets them for the url.
-  static void SetRedirects(const std::string& redirects, MostVisitedURL* url);
 
   scoped_ptr<sql::Connection> db_;
   sql::MetaTable meta_table_;
