@@ -159,3 +159,9 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['android'], bug=315976)
     self.Fail('conformance/glsl/misc/gl_position_unset.vert.html',
         ['android'], bug=315976)
+
+    # Skip slow tests.
+    self.Skip('conformance/context/context-creation-and-destruction.html',
+        bug=322689)
+    self.Skip('conformance/rendering/multisample-corruption.html',
+        bug=322689)
