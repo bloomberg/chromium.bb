@@ -636,16 +636,16 @@ void TCPSocketWin::Close() {
     socket_ = INVALID_SOCKET;
   }
 
-  if (accept_event_) {
-    WSACloseEvent(accept_event_);
-    accept_event_ = WSA_INVALID_EVENT;
-  }
-
   if (!accept_callback_.is_null()) {
     accept_watcher_.StopWatching();
     accept_socket_ = NULL;
     accept_address_ = NULL;
     accept_callback_.Reset();
+  }
+
+  if (accept_event_) {
+    WSACloseEvent(accept_event_);
+    accept_event_ = WSA_INVALID_EVENT;
   }
 
   if (core_) {
