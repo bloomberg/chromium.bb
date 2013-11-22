@@ -36,9 +36,29 @@ float GetUnforcedDeviceScaleFactor() {
   return static_cast<float>(gfx::GetDPI().width()) /
       static_cast<float>(kDefaultDPIX);
 }
+
+float GetModernUIScaleWrapper() {
+  float result = 1.0f;
+  typedef float(WINAPI *GetModernUIScalePtr)(VOID);
+  HMODULE lib = LoadLibraryA("metro_driver.dll");
+  if (lib) {
+    GetModernUIScalePtr func =
+        reinterpret_cast<GetModernUIScalePtr>(
+        GetProcAddress(lib, "GetModernUIScale"));
+    if (func)
+      result = func();
+    FreeLibrary(lib);
+  }
+  return result;
+}
+
 }  // namespace
 
 namespace gfx {
+
+float GetModernUIScale() {
+  return GetModernUIScaleWrapper();
+}
 
 void InitDeviceScaleFactor(float scale) {
   DCHECK_NE(0.0f, scale);
@@ -163,14 +183,12 @@ double GetUndocumentedDPIScale() {
   return scale;
 }
 
-
 double GetUndocumentedDPITouchScale() {
   static double scale =
       (base::win::GetVersion() < base::win::VERSION_WIN8_1) ?
       GetUndocumentedDPIScale() : 1.0;
   return scale;
 }
-
 
 }  // namespace win
 }  // namespace gfx

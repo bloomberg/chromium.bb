@@ -65,6 +65,7 @@
 #include "chrome/browser/enumerate_modules_model_win.h"
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "ui/gfx/win/dpi.h"
 #include "win8/util/win8_util.h"
 #endif
 
@@ -544,7 +545,10 @@ void WrenchMenuModel::Build(bool is_new_menu) {
 
 #if defined(USE_AURA)
  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-     content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor()) {
+     content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor() &&
+     gfx::win::GetUndocumentedDPIScale() == 1.0f &&
+     gfx::GetDPIScale() == 1.0 &&
+     gfx::GetModernUIScale() == 1.0f) {
     if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) {
       // Metro mode, add the 'Relaunch Chrome in desktop mode'.
       AddSeparator(ui::NORMAL_SEPARATOR);

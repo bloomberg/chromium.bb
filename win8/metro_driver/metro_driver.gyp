@@ -64,6 +64,7 @@
             'metro_driver_version_resources',
           ],
           'sources': [
+            'display_properties.cc',
             'metro_driver.cc',
             'metro_driver.h',
             'stdafx.h',

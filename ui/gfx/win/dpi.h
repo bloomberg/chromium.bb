@@ -22,8 +22,13 @@ GFX_EXPORT void InitDeviceScaleFactor(float scale);
 GFX_EXPORT Size GetDPI();
 
 // Gets the scale factor of the display. For example, if the display DPI is
-// 96 then the scale factor is 1.0.
+// 96 then the scale factor is 1.0. Note that this is the "desktop" scale, which
+// may be differnt than GetModernUIScale().
 GFX_EXPORT float GetDPIScale();
+
+// Gets the scale factor of the modern (metro) UI display. Returns 1.0 for
+// unscaled or "not running on win8+"
+GFX_EXPORT float GetModernUIScale();
 
 // Tests to see if the command line flag "--high-dpi-support" is set.
 GFX_EXPORT bool IsHighDPIEnabled();
