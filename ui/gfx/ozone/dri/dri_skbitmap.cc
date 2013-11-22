@@ -189,7 +189,6 @@ bool DriSkBitmap::Initialize() {
 uint8_t DriSkBitmap::GetColorDepth() const {
   switch (config()) {
     case SkBitmap::kNo_Config:
-    case SkBitmap::kA1_Config:
     case SkBitmap::kA8_Config:
       return 0;
     case SkBitmap::kIndex8_Config:

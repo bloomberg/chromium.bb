@@ -18,7 +18,6 @@ using app_list::AppListModel;
 // should be incremented.
 enum ImageFormat {
   NONE,
-  A1,
   A8,
   INDEX_8,
   RGB_565,
@@ -30,9 +29,6 @@ bool FormatToConfig(ImageFormat format, SkBitmap::Config* out) {
   switch (format) {
     case NONE:
       *out = SkBitmap::kNo_Config;
-      break;
-    case A1:
-      *out = SkBitmap::kA1_Config;
       break;
     case A8:
       *out = SkBitmap::kA8_Config;
@@ -58,9 +54,6 @@ bool ConfigToFormat(SkBitmap::Config config, ImageFormat* out) {
   switch (config) {
     case SkBitmap::kNo_Config:
       *out = NONE;
-      break;
-    case SkBitmap::kA1_Config:
-      *out = A1;
       break;
     case SkBitmap::kA8_Config:
       *out = A8;
@@ -198,7 +191,7 @@ void CopyOverItem(AppListItemModel* src_item, AppListItemModel* dest_item) {
 
 // The version of the pickle format defined here. This needs to be incremented
 // whenever this format is changed so new clients can invalidate old versions.
-const int FastShowPickler::kVersion = 1;
+const int FastShowPickler::kVersion = 2;
 
 scoped_ptr<Pickle> FastShowPickler::PickleAppListModelForFastShow(
     AppListModel* model) {

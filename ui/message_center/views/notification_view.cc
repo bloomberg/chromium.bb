@@ -117,7 +117,6 @@ bool HasAlpha(gfx::ImageSkia& image, views::Widget* widget) {
       image.GetRepresentation(ui::GetImageScale(factor)).sk_bitmap();
   if (!bitmap.isNull()) {
     SkBitmap alpha;
-    alpha.setConfig(SkBitmap::kA1_Config, bitmap.width(), bitmap.height(), 0);
     bitmap.extractAlpha(&alpha);
     for (int y = 0; y < bitmap.height(); ++y) {
       for (int x = 0; x < bitmap.width(); ++x) {
