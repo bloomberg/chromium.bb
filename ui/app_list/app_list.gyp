@@ -166,6 +166,21 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      'target_name': 'app_list_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../gfx/gfx.gyp:gfx',
+        'app_list',
+      ],
+      'sources': [
+        'test/app_list_test_model.cc',
+        'test/app_list_test_model.h',
+        'test/app_list_test_view_delegate.cc',
+        'test/app_list_test_view_delegate.h',
+      ],
+    },
+    {
       'target_name': 'app_list_unittests',
       'type': 'executable',
       'dependencies': [
@@ -179,17 +194,13 @@
         '../resources/ui_resources.gyp:ui_resources',
         '../ui.gyp:ui',
         '../ui_unittests.gyp:run_ui_unittests',
-        '../ui_unittests.gyp:ui_test_support',
         'app_list',
+        'app_list_test_support',
       ],
       'sources': [
         'app_list_item_list_unittest.cc',
         'app_list_model_unittest.cc',
         'pagination_model_unittest.cc',
-        'test/app_list_test_model.cc',
-        'test/app_list_test_model.h',
-        'test/app_list_test_view_delegate.cc',
-        'test/app_list_test_view_delegate.h',
         'cocoa/app_list_view_controller_unittest.mm',
         'cocoa/app_list_window_controller_unittest.mm',
         'cocoa/apps_grid_controller_unittest.mm',

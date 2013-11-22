@@ -636,6 +636,7 @@
       'dependencies': [
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
+        '../ui/app_list/app_list.gyp:app_list_test_support',
         'ash',
         'ash_resources',
       ],
