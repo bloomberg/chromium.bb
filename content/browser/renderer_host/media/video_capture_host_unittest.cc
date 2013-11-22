@@ -64,7 +64,7 @@ class DumpVideo {
   }
   void NewVideoFrame(const void* buffer) {
     if (file_.get() != NULL) {
-      fwrite(buffer, expected_size_, 1, file_.get());
+      ASSERT_EQ(1U, fwrite(buffer, expected_size_, 1, file_.get()));
     }
   }
 

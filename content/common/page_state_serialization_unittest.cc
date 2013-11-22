@@ -387,7 +387,7 @@ TEST_F(PageStateSerializationTest, DumpExpectedPageStateForBackwardsCompat) {
     size_t length = std::min(base64.size() - offset, kRowSize);
     std::string segment(&base64[offset], length);
     segment.push_back('\n');
-    fwrite(segment.data(), segment.size(), 1, fp);
+    ASSERT_EQ(1U, fwrite(segment.data(), segment.size(), 1, fp));
   }
 
   fclose(fp);
