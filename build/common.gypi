@@ -521,7 +521,7 @@
         }],
 
         # Flags to use glib.
-        ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android"', {
+        ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android" or embedded==1', {
           'use_glib%': 0,
         }, {
           'use_glib%': 1,
