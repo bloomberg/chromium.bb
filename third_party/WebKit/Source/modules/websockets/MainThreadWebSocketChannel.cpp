@@ -441,6 +441,12 @@ bool MainThreadWebSocketChannel::processOneItemFromBuffer()
         if (m_handshake->mode() == WebSocketHandshake::Connected) {
             if (m_identifier)
                 InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(m_document, m_identifier, m_handshake->serverHandshakeResponse());
+
+            if (m_deflateFramer.enabled() && m_document) {
+                const String message = "WebSocket extension \"x-webkit-deflate-frame\" is deprecated";
+                static_cast<ExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, WarningMessageLevel, message, m_sourceURLAtConnection, m_lineNumberAtConnection);
+            }
+
             if (!m_handshake->serverSetCookie().isEmpty()) {
                 if (cookiesEnabled(m_document)) {
                     // Exception (for sandboxed documents) ignored.

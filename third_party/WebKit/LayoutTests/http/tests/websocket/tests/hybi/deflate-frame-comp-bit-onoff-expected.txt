@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 26: WebSocket extension "x-webkit-deflate-frame" is deprecated
 Test compression enabled/disabled frame receiving.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
