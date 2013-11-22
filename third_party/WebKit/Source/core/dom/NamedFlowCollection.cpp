@@ -62,7 +62,7 @@ Vector<RefPtr<NamedFlow> > NamedFlowCollection::namedFlows()
 
 NamedFlow* NamedFlowCollection::flowByName(const String& flowName)
 {
-    NamedFlowSet::iterator it = m_namedFlows.find<String, NamedFlowHashTranslator>(flowName);
+    NamedFlowSet::iterator it = m_namedFlows.find<NamedFlowHashTranslator>(flowName);
     if (it == m_namedFlows.end() || (*it)->flowState() == NamedFlow::FlowStateNull)
         return 0;
 
@@ -71,7 +71,7 @@ NamedFlow* NamedFlowCollection::flowByName(const String& flowName)
 
 PassRefPtr<NamedFlow> NamedFlowCollection::ensureFlowWithName(const String& flowName)
 {
-    NamedFlowSet::iterator it = m_namedFlows.find<String, NamedFlowHashTranslator>(flowName);
+    NamedFlowSet::iterator it = m_namedFlows.find<NamedFlowHashTranslator>(flowName);
     if (it != m_namedFlows.end()) {
         NamedFlow* namedFlow = *it;
         ASSERT(namedFlow->flowState() == NamedFlow::FlowStateNull);

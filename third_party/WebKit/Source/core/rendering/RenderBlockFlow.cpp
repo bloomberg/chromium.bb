@@ -1818,7 +1818,7 @@ void RenderBlockFlow::clearFloats(EClear clear)
 
 bool RenderBlockFlow::containsFloat(RenderBox* renderer) const
 {
-    return m_floatingObjects && m_floatingObjects->set().contains<RenderBox*, FloatingObjectHashTranslator>(renderer);
+    return m_floatingObjects && m_floatingObjects->set().contains<FloatingObjectHashTranslator>(renderer);
 }
 
 void RenderBlockFlow::removeFloatingObjects()
@@ -1941,7 +1941,7 @@ FloatingObject* RenderBlockFlow::insertFloatingObject(RenderBox* floatBox)
     } else {
         // Don't insert the object again if it's already in the list
         const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-        FloatingObjectSetIterator it = floatingObjectSet.find<RenderBox*, FloatingObjectHashTranslator>(floatBox);
+        FloatingObjectSetIterator it = floatingObjectSet.find<FloatingObjectHashTranslator>(floatBox);
         if (it != floatingObjectSet.end())
             return *it;
     }
@@ -1973,7 +1973,7 @@ void RenderBlockFlow::removeFloatingObject(RenderBox* floatBox)
 {
     if (m_floatingObjects) {
         const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-        FloatingObjectSetIterator it = floatingObjectSet.find<RenderBox*, FloatingObjectHashTranslator>(floatBox);
+        FloatingObjectSetIterator it = floatingObjectSet.find<FloatingObjectHashTranslator>(floatBox);
         if (it != floatingObjectSet.end()) {
             FloatingObject* floatingObject = *it;
             if (childrenInline()) {
@@ -2140,7 +2140,7 @@ bool RenderBlockFlow::hasOverhangingFloat(RenderBox* renderer)
         return false;
 
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-    FloatingObjectSetIterator it = floatingObjectSet.find<RenderBox*, FloatingObjectHashTranslator>(renderer);
+    FloatingObjectSetIterator it = floatingObjectSet.find<FloatingObjectHashTranslator>(renderer);
     if (it == floatingObjectSet.end())
         return false;
 

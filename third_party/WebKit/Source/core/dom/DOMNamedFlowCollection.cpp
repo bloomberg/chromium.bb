@@ -61,7 +61,7 @@ PassRefPtr<NamedFlow> DOMNamedFlowCollection::item(unsigned long index) const
 
 PassRefPtr<NamedFlow> DOMNamedFlowCollection::namedItem(const AtomicString& name) const
 {
-    DOMNamedFlowSet::const_iterator it = m_namedFlows.find<String, DOMNamedFlowHashTranslator>(name);
+    DOMNamedFlowSet::const_iterator it = m_namedFlows.find<DOMNamedFlowHashTranslator, String>(name);
     if (it != m_namedFlows.end())
         return *it;
     return 0;
