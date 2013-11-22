@@ -547,11 +547,13 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
     print '%s="%s"' % (key, value)
   gyp_generator_flags = ['-G', 'output_dir=%s' % (out_dir,)]
   gyp_depth = '--depth=.'
-  buildbot_common.Run(
-      [sys.executable, gyp_py_script, gyp_file, gyp_depth] + \
-          gyp_generator_flags,
-      cwd=SRC_DIR,
-      env=gyp_env)
+  cmd = [sys.executable, gyp_py_script, gyp_file, gyp_depth]
+  # Hack added to fix M32 branch windows_sdk_multirel bot, without having to
+  # branch the native_client repo.
+  # TODO(binji): remove after I drover the change to 1700 branch.
+  cmd.append('--no-parallel')
+  cmd.extend(gyp_generator_flags)
+  buildbot_common.Run(cmd, cwd=SRC_DIR, env=gyp_env)
   NinjaBuild(targets, out_dir)
 
 
