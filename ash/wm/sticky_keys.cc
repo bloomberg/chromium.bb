@@ -65,9 +65,15 @@ void StickyKeysHandlerDelegateImpl::DispatchMouseEvent(ui::MouseEvent* event,
                                                        aura::Window* target) {
   DCHECK(target);
   // We need to send a new, untransformed mouse event to the host.
-  ui::MouseEvent release_event(*event, target, target->GetRootWindow());
-  target->GetDispatcher()->AsRootWindowHostDelegate()
-      ->OnHostMouseEvent(&release_event);
+  if (event->IsMouseWheelEvent()) {
+    ui::MouseWheelEvent new_event(*static_cast<ui::MouseWheelEvent*>(event));
+    target->GetDispatcher()->AsRootWindowHostDelegate()
+        ->OnHostMouseEvent(&new_event);
+  } else {
+    ui::MouseEvent new_event(*event, target, target->GetRootWindow());
+    target->GetDispatcher()->AsRootWindowHostDelegate()
+        ->OnHostMouseEvent(&new_event);
+  }
 }
 
 void StickyKeysHandlerDelegateImpl::DispatchScrollEvent(

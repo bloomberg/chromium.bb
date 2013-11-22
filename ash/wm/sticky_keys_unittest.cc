@@ -7,13 +7,16 @@
 #include <X11/Xlib.h>
 #undef None
 #undef Bool
+#undef RootWindow
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host_delegate.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/x/device_data_manager.h"
 #include "ui/events/x/events_x_utils.h"
@@ -26,6 +29,37 @@ namespace {
 const unsigned int kScrollDeviceId = 1;
 
 }  // namespace
+
+// Keeps a buffer of handled events.
+class EventBuffer : public ui::EventHandler {
+ public:
+  EventBuffer() {}
+  virtual ~EventBuffer() {}
+
+  void PopEvents(ScopedVector<ui::Event>* events) {
+    events->clear();
+    events->swap(events_);
+  }
+
+ private:
+  // ui::EventHandler overrides:
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    events_.push_back(event->Copy());
+  }
+
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    if (event->IsMouseWheelEvent()) {
+      events_.push_back(
+          new ui::MouseWheelEvent(*static_cast<ui::MouseWheelEvent*>(event)));
+    } else {
+      events_.push_back(new ui::MouseEvent(event->native_event()));
+    }
+  }
+
+  ScopedVector<ui::Event> events_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventBuffer);
+};
 
 // A testable and StickyKeysHandler.
 class MockStickyKeysHandlerDelegate :
@@ -182,6 +216,24 @@ class StickyKeysTest : public test::AshTestBase,
     return event;
   }
 
+  void SendActivateStickyKeyPattern(StickyKeysHandler* handler,
+                                    ui::KeyboardCode key_code) {
+    scoped_ptr<ui::KeyEvent> ev;
+    ev.reset(GenerateKey(true, key_code));
+    handler->HandleKeyEvent(ev.get());
+    ev.reset(GenerateKey(false, key_code));
+    handler->HandleKeyEvent(ev.get());
+  }
+
+  void SendActivateStickyKeyPattern(aura::RootWindowHostDelegate* delegate,
+                                    ui::KeyboardCode key_code) {
+    scoped_ptr<ui::KeyEvent> ev;
+    ev.reset(GenerateKey(true, key_code));
+    delegate->OnHostKeyEvent(ev.get());
+    ev.reset(GenerateKey(false, key_code));
+    delegate->OnHostKeyEvent(ev.get());
+  }
+
   aura::Window* target() { return target_; }
 
  private:
@@ -191,9 +243,12 @@ class StickyKeysTest : public test::AshTestBase,
   aura::Window* root_window_;
   // Stores all generated XEvents.
   ScopedVector<XEvent> xevs_;
+
   // Stores all generated XInput2 XEvents. We use a scoped wrapper class here
   // to properly delete these events.
   ScopedVector<ui::ScopedXI2Event> xi2_evs_;
+
+  DISALLOW_COPY_AND_ASSIGN(StickyKeysTest);
 };
 
 TEST_F(StickyKeysTest, BasicOneshotScenarioTest) {
@@ -203,13 +258,9 @@ TEST_F(StickyKeysTest, BasicOneshotScenarioTest) {
   StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN, mock_delegate);
 
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
-  ev.reset(GenerateKey(true, ui::VKEY_SHIFT));
-  sticky_key.HandleKeyEvent(ev.get());
-
-  ev.reset(GenerateKey(false, ui::VKEY_SHIFT));
-  sticky_key.HandleKeyEvent(ev.get());
 
   // By typing Shift key, internal state become ENABLED.
+  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_SHIFT);
   EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
 
   ev.reset(GenerateKey(true, ui::VKEY_A));
@@ -250,22 +301,13 @@ TEST_F(StickyKeysTest, BasicLockedScenarioTest) {
   StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN, mock_delegate);
 
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
-  ev.reset(GenerateKey(true, ui::VKEY_SHIFT));
-  sticky_key.HandleKeyEvent(ev.get());
-
-  ev.reset(GenerateKey(false, ui::VKEY_SHIFT));
-  sticky_key.HandleKeyEvent(ev.get());
 
   // By typing shift key, internal state become ENABLED.
+  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_SHIFT);
   EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
 
-  ev.reset(GenerateKey(true, ui::VKEY_SHIFT));
-  sticky_key.HandleKeyEvent(ev.get());
-
-  ev.reset(GenerateKey(false, ui::VKEY_SHIFT));
-  sticky_key.HandleKeyEvent(ev.get());
-
   // By typing shift key again, internal state become LOCKED.
+  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_SHIFT);
   EXPECT_EQ(StickyKeysHandler::LOCKED, sticky_key.current_state());
 
   // All keyboard events including keyUp become shift modified.
@@ -290,13 +332,8 @@ TEST_F(StickyKeysTest, BasicLockedScenarioTest) {
 
   EXPECT_EQ(StickyKeysHandler::LOCKED, sticky_key.current_state());
 
-  ev.reset(GenerateKey(true, ui::VKEY_SHIFT));
-  sticky_key.HandleKeyEvent(ev.get());
-
-  ev.reset(GenerateKey(false, ui::VKEY_SHIFT));
-  sticky_key.HandleKeyEvent(ev.get());
-
   // By typing shift key again, internal state become back to DISABLED.
+  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_SHIFT);
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
 }
 
@@ -317,10 +354,7 @@ TEST_F(StickyKeysTest, NonTargetModifierTest) {
   sticky_key.HandleKeyEvent(ev.get());
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
 
-  ev.reset(GenerateKey(true, ui::VKEY_SHIFT));
-  sticky_key.HandleKeyEvent(ev.get());
-  ev.reset(GenerateKey(false, ui::VKEY_SHIFT));
-  sticky_key.HandleKeyEvent(ev.get());
+  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_SHIFT);
   EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
 
   // Non target modifier key does not affect internal state
@@ -332,10 +366,7 @@ TEST_F(StickyKeysTest, NonTargetModifierTest) {
   sticky_key.HandleKeyEvent(ev.get());
   EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
 
-  ev.reset(GenerateKey(true, ui::VKEY_SHIFT));
-  sticky_key.HandleKeyEvent(ev.get());
-  ev.reset(GenerateKey(false, ui::VKEY_SHIFT));
-  sticky_key.HandleKeyEvent(ev.get());
+  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_SHIFT);
   EXPECT_EQ(StickyKeysHandler::LOCKED, sticky_key.current_state());
 
   // Non target modifier key does not affect internal state
@@ -380,10 +411,7 @@ TEST_F(StickyKeysTest, MouseEventOneshot) {
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
-  kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
-  sticky_key.HandleKeyEvent(kev.get());
-  kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
-  sticky_key.HandleKeyEvent(kev.get());
+  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
   EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
 
   // We should still be in the ENABLED state until we get the mouse
@@ -426,16 +454,9 @@ TEST_F(StickyKeysTest, MouseEventLocked) {
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
 
   // Pressing modifier key twice should make us enter lock state.
-  kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
-  sticky_key.HandleKeyEvent(kev.get());
-  kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
-  sticky_key.HandleKeyEvent(kev.get());
+  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
   EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
-
-  kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
-  sticky_key.HandleKeyEvent(kev.get());
-  kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
-  sticky_key.HandleKeyEvent(kev.get());
+  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
   EXPECT_EQ(StickyKeysHandler::LOCKED, sticky_key.current_state());
 
   // Mouse events should not disable locked mode.
@@ -544,10 +565,7 @@ TEST_F(StickyKeysTest, EventTargetDestroyed) {
 
   // Go into ENABLED state.
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
-  ev.reset(GenerateKey(true, ui::VKEY_CONTROL));
-  sticky_key.HandleKeyEvent(ev.get());
-  ev.reset(GenerateKey(false, ui::VKEY_CONTROL));
-  sticky_key.HandleKeyEvent(ev.get());
+  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
   EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
 
   // CTRL+J is a special shortcut that will destroy the event target.
@@ -555,6 +573,128 @@ TEST_F(StickyKeysTest, EventTargetDestroyed) {
   sticky_key.HandleKeyEvent(ev.get());
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
   EXPECT_FALSE(target());
+}
+
+TEST_F(StickyKeysTest, KeyEventDispatchImpl) {
+  // Test the actual key event dispatch implementation.
+  EventBuffer buffer;
+  ScopedVector<ui::Event> events;
+  aura::RootWindowHostDelegate* delegate = Shell::GetPrimaryRootWindow()
+      ->GetDispatcher()->AsRootWindowHostDelegate();
+  Shell::GetInstance()->AddPreTargetHandler(&buffer);
+  Shell::GetInstance()->sticky_keys()->Enable(true);
+
+  SendActivateStickyKeyPattern(delegate, ui::VKEY_CONTROL);
+  scoped_ptr<ui::KeyEvent> ev;
+  buffer.PopEvents(&events);
+
+  // Test key press event is correctly modified and modifier release
+  // event is sent.
+  ev.reset(GenerateKey(true, ui::VKEY_C));
+  delegate->OnHostKeyEvent(ev.get());
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_EQ(ui::ET_KEY_PRESSED, events[0]->type());
+  EXPECT_EQ(ui::VKEY_C, static_cast<ui::KeyEvent*>(events[0])->key_code());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
+
+  // Test key release event is not modified.
+  ev.reset(GenerateKey(false, ui::VKEY_C));
+  delegate->OnHostKeyEvent(ev.get());
+  buffer.PopEvents(&events);
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[0]->type());
+  EXPECT_EQ(ui::VKEY_C,
+            static_cast<ui::KeyEvent*>(events[0])->key_code());
+  EXPECT_FALSE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+
+  Shell::GetInstance()->RemovePreTargetHandler(&buffer);
+}
+
+TEST_F(StickyKeysTest, MouseEventDispatchImpl) {
+  // Test the actual sticky mouse event dispatch implementation.
+  EventBuffer buffer;
+  ScopedVector<ui::Event> events;
+  aura::RootWindowHostDelegate* delegate = Shell::GetPrimaryRootWindow()
+      ->GetDispatcher()->AsRootWindowHostDelegate();
+  Shell::GetInstance()->AddPreTargetHandler(&buffer);
+  Shell::GetInstance()->sticky_keys()->Enable(true);
+
+  scoped_ptr<ui::MouseEvent> ev;
+  SendActivateStickyKeyPattern(delegate, ui::VKEY_CONTROL);
+  buffer.PopEvents(&events);
+
+  // Test mouse press event is correctly modified.
+  ev.reset(GenerateMouseEvent(true));
+  delegate->OnHostMouseEvent(ev.get());
+  buffer.PopEvents(&events);
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, events[0]->type());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+
+  // Test mouse release event is correctly modified and modifier release
+  // event is sent.
+  ev.reset(GenerateMouseEvent(false));
+  delegate->OnHostMouseEvent(ev.get());
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, events[0]->type());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
+
+  Shell::GetInstance()->RemovePreTargetHandler(&buffer);
+}
+
+TEST_F(StickyKeysTest, MouseWheelEventDispatchImpl) {
+  // Test the actual mouse wheel event dispatch implementation.
+  EventBuffer buffer;
+  ScopedVector<ui::Event> events;
+  aura::RootWindowHostDelegate* delegate = Shell::GetPrimaryRootWindow()
+      ->GetDispatcher()->AsRootWindowHostDelegate();
+  Shell::GetInstance()->AddPreTargetHandler(&buffer);
+  Shell::GetInstance()->sticky_keys()->Enable(true);
+
+  scoped_ptr<ui::MouseWheelEvent> ev;
+  SendActivateStickyKeyPattern(delegate, ui::VKEY_CONTROL);
+  buffer.PopEvents(&events);
+
+  // Test positive mouse wheel event is correctly modified and modifier release
+  // event is sent.
+  ev.reset(GenerateMouseWheelEvent(ui::MouseWheelEvent::kWheelDelta));
+  delegate->OnHostMouseEvent(ev.get());
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_TRUE(events[0]->IsMouseWheelEvent());
+  EXPECT_EQ(ui::MouseWheelEvent::kWheelDelta,
+            static_cast<ui::MouseWheelEvent*>(events[0])->y_offset());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
+
+  // Test negative mouse wheel event is correctly modified and modifier release
+  // event is sent.
+  SendActivateStickyKeyPattern(delegate, ui::VKEY_CONTROL);
+  buffer.PopEvents(&events);
+
+  ev.reset(GenerateMouseWheelEvent(-ui::MouseWheelEvent::kWheelDelta));
+  delegate->OnHostMouseEvent(ev.get());
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_TRUE(events[0]->IsMouseWheelEvent());
+  EXPECT_EQ(-ui::MouseWheelEvent::kWheelDelta,
+            static_cast<ui::MouseWheelEvent*>(events[0])->y_offset());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
+
+  Shell::GetInstance()->RemovePreTargetHandler(&buffer);
 }
 
 }  // namespace ash
