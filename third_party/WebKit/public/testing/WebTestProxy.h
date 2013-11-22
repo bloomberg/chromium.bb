@@ -84,6 +84,7 @@ class WebUserMediaClient;
 class WebValidationMessageClient;
 class WebView;
 class WebWidget;
+struct WebColorSuggestion;
 struct WebConsoleMessage;
 struct WebContextMenuData;
 struct WebFileChooserParams;
@@ -119,6 +120,7 @@ public:
     blink::WebSpellCheckClient *spellCheckClient() const;
     blink::WebValidationMessageClient* validationMessageClient();
     blink::WebColorChooser* createColorChooser(blink::WebColorChooserClient*, const blink::WebColor&);
+    blink::WebColorChooser* createColorChooser(blink::WebColorChooserClient*, const blink::WebColor&, const blink::WebVector<blink::WebColorSuggestion>& suggestions);
     bool runFileChooser(const blink::WebFileChooserParams&, blink::WebFileChooserCompletion*);
 
     std::string captureTree(bool debugRenderTree);
@@ -538,6 +540,10 @@ public:
     virtual blink::WebColorChooser* createColorChooser(blink::WebColorChooserClient* client, const blink::WebColor& color)
     {
         return WebTestProxyBase::createColorChooser(client, color);
+    }
+    virtual blink::WebColorChooser* createColorChooser(blink::WebColorChooserClient* client, const blink::WebColor& color, const blink::WebVector<blink::WebColorSuggestion>& suggestions)
+    {
+        return WebTestProxyBase::createColorChooser(client, color, suggestions);
     }
     virtual bool runFileChooser(const blink::WebFileChooserParams& params, blink::WebFileChooserCompletion* completion)
     {

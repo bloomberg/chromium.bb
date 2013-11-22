@@ -481,6 +481,12 @@ WebColorChooser* WebTestProxyBase::createColorChooser(WebColorChooserClient* cli
     return new MockColorChooser(client, m_delegate, this);
 }
 
+WebColorChooser* WebTestProxyBase::createColorChooser(WebColorChooserClient* client, const blink::WebColor& color, const blink::WebVector<blink::WebColorSuggestion>& suggestions)
+{
+    // This instance is deleted by WebCore::ColorInputType
+    return new MockColorChooser(client, m_delegate, this);
+}
+
 bool WebTestProxyBase::runFileChooser(const blink::WebFileChooserParams&, blink::WebFileChooserCompletion*)
 {
     m_delegate->printMessage("Mock: Opening a file chooser.\n");
