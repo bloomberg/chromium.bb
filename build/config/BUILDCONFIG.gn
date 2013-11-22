@@ -383,20 +383,32 @@ set_defaults("source_set") {
 # default toolchain.
 
 if (is_win) {
-  if (cpu_arch == "x64") {
+  if (build_cpu_arch == "x64") {
     host_toolchain = "//build/toolchain/win:64"
-  } else if (cpu_arch == "x86") {
+  } else if (build_cpu_arch == "x86") {
     host_toolchain = "//build/toolchain/win:32"
   }
-  set_default_toolchain(host_toolchain)
+
+  if (cpu_arch == "x64") {
+    set_default_toolchain("//build/toolchain/win:64")
+  } else if (cpu_arch == "x86") {
+    set_default_toolchain("//build/toolchain/win:32")
+  }
 } else if (is_linux) {
-  host_toolchain = "//build/toolchain/linux:host"
-  if (cpu_arch == "arm" && build_cpu_arch != "arm") {
-    # Special toolchain for ARM cross-compiling.
-    set_default_toolchain("//build/toolchain/linux:arm-cross-compile")
-  } else {
-    # Use whatever GCC is on the current platform.
-    set_default_toolchain(host_toolchain)
+  if (build_cpu_arch == "arm") {
+    host_toolchain = "//build/toolchain/linux:arm"
+  } else if (build_cpu_arch == "x86") {
+    host_toolchain = "//build/toolchain/linux:32"
+  } else if (build_cpu_arch == "x64") {
+    host_toolchain = "//build/toolchain/linux:64"
+  }
+
+  if (build_cpu_arch == "arm") {
+    set_default_toolchain("//build/toolchain/linux:arm")
+  } else if (build_cpu_arch == "x86") {
+    set_default_toolchain("//build/toolchain/linux:32")
+  } else if (build_cpu_arch == "x64") {
+    set_default_toolchain("//build/toolchain/linux:64")
   }
 } else if (is_mac) {
   host_toolchain = "//build/toolchain/mac:clang"

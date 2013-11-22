@@ -39,20 +39,25 @@ config("compiler") {
       cflags += [ "-fstack-protector", "--param=ssp-buffer-size=4" ]
     }
 
-    # Mac-specific compiler flags setup.
-    # ----------------------------------
     if (is_mac) {
+      # Mac-specific compiler flags setup.
+      # ----------------------------------
+
       # These flags are shared between the C compiler and linker.
       common_mac_flags = [
-        # TODO(brettw) obviously this arch flag needs to be parameterized.
-        "-arch i386",
-
         # Set which SDK to use.
         # TODO(brettw) this needs to be configurable somehow.
         "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk",
 
         "-mmacosx-version-min=10.6",
       ]
+
+      # CPU architecture.
+      if (cpu_arch == "x64") {
+        common_mac_flags += "-arch x86_64"
+      } else if (cpu_arch == "x32") {
+        common_mac_flags += "-arch i386"
+      }
 
       cflags += common_mac_flags + [
         # Without this, the constructors and destructors of a C++ object inside
@@ -70,6 +75,19 @@ config("compiler") {
         "-Wl,-rpath,@loader_path/.",
         "-Wl,-rpath,@loader_path/../../..",
       ]
+    } else {
+      # Non-Mac Posix compiler flags setup.
+      # -----------------------------------
+
+      # CPU architecture. We may or may not be doing a cross compile now, so for
+      # simplicity we always explicitly set the architecture.
+      if (cpu_arch == "x64") {
+        cflags += "-m64"
+        ldflags += "-m64"
+      } else if (cpu_arch == "x32") {
+        cflags += "-m32"
+        ldflags += "-m32"
+      }
     }
 
     # Linux-specific compiler flags setup.
