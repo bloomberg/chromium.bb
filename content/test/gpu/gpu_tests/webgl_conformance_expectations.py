@@ -88,6 +88,10 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/textures/texture-size-cube-maps.html',
         ['win7', 'intel'])
 
+    # Mac failures.
+    self.Fail('conformance/glsl/misc/shaders-with-varyings.html',
+        ['mac'], bug=322760)
+
     # Mac/Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['mac', 'intel'], bug=314997)
