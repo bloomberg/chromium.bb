@@ -36,8 +36,8 @@
       'includes': [ '../../build/grit_target.gypi' ],
     },
     {
-      # We build a minimal set of resources so WebKit in content_shell has
-      # access to necessary resources.
+      # This creates a pak file that contains the resources in src/ui.
+      # This pak file can be used by tests.
       'target_name': 'ui_test_pak',
       'type': 'none',
       'dependencies': [
