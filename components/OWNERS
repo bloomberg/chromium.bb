@@ -67,5 +67,7 @@ per-file variations.gypi=asvitkine@chromium.org
 per-file variations.gypi=jwd@chromium.org
 per-file variations.gypi=stevet@chromium.org
 
+per-file wifi.gypi=mef@chromium.org
+
 per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org

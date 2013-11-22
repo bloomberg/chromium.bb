@@ -841,7 +841,6 @@
         'browser/extensions/api/messaging/native_message_process_host_unittest.cc',
         'browser/extensions/api/messaging/native_messaging_host_manifest_unittest.cc',
         'browser/extensions/api/mdns/dns_sd_registry_unittest.cc',
-        'browser/extensions/api/networking_private/networking_private_crypto_unittest.cc',
         'browser/extensions/api/omnibox/omnibox_unittest.cc',
         'browser/extensions/api/permissions/permissions_api_helpers_unittest.cc',
         'browser/extensions/api/power/power_api_unittest.cc',
@@ -2526,6 +2525,7 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
           'sources': [
+            'browser/extensions/api/networking_private/networking_private_crypto_unittest.cc',
             # TODO:  It would be nice to have these pulled in
             # automatically from direct_dependent_settings in
             # their various targets (net.gyp:net_resources, etc.),

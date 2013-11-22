@@ -67,7 +67,6 @@ bool GetDERFromPEM(const std::string& pem_data,
 
 }  // namespace
 
-
 NetworkingPrivateCrypto::NetworkingPrivateCrypto() {}
 
 NetworkingPrivateCrypto::~NetworkingPrivateCrypto() {}

@@ -5,52 +5,29 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_EVENT_ROUTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_EVENT_ROUTER_H_
 
-#include "chromeos/network/network_state_handler_observer.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "extensions/browser/event_router.h"
 
 class Profile;
 
-namespace chromeos {
+namespace extensions {
 
-// This is a factory class used by the BrowserContextDependencyManager
-// to instantiate the event router that will forward events
+// This is an event router that will observe listeners to |NetworksChanged| and
+// |NetworkListChanged| events. On ChromeOS it will forward these events
 // from the NetworkStateHandler to the JavaScript Networking API.
 class NetworkingPrivateEventRouter : public BrowserContextKeyedService,
-                                     public extensions::EventRouter::Observer,
-                                     public NetworkStateHandlerObserver {
+                                     public EventRouter::Observer {
  public:
-  explicit NetworkingPrivateEventRouter(Profile* profile);
-  virtual ~NetworkingPrivateEventRouter();
+  static NetworkingPrivateEventRouter* Create(Profile* profile);
 
  protected:
-  // BrowserContextKeyedService overrides:
-  virtual void Shutdown() OVERRIDE;
-
-  // EventRouter::Observer overrides:
-  virtual void OnListenerAdded(
-      const extensions::EventListenerInfo& details) OVERRIDE;
-  virtual void OnListenerRemoved(
-      const extensions::EventListenerInfo& details) OVERRIDE;
-
-  // NetworkStateHandlerObserver overrides:
-  virtual void NetworkListChanged() OVERRIDE;
-  virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE;
+  NetworkingPrivateEventRouter() {}
 
  private:
-  // Decide if we should listen for network changes or not. If there are any
-  // JavaScript listeners registered for the onNetworkChanged event, then we
-  // want to register for change notification from the network state handler.
-  // Otherwise, we want to unregister and not be listening to network changes.
-  void StartOrStopListeningForNetworkChanges();
-
-  Profile* profile_;
-  bool listening_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateEventRouter);
 };
 
-}  // namespace chromeos
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_EVENT_ROUTER_H_
 

@@ -123,7 +123,7 @@ class NetworkingPrivateCreateNetworkFunction
 
 // Implements the chrome.networkingPrivate.getVisibleNetworks method.
 class NetworkingPrivateGetVisibleNetworksFunction
-    : public ChromeSyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   NetworkingPrivateGetVisibleNetworksFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getVisibleNetworks",
@@ -132,10 +132,12 @@ class NetworkingPrivateGetVisibleNetworksFunction
  protected:
   virtual ~NetworkingPrivateGetVisibleNetworksFunction();
 
-  // SyncExtensionFunction overrides.
+  // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 
  private:
+  void ResultCallback(const base::ListValue& network_list);
+
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetVisibleNetworksFunction);
 };
 

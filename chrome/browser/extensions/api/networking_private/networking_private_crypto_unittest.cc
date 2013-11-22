@@ -1,15 +1,14 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include "chrome/browser/extensions/api/networking_private/networking_private_crypto.h"
 
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_crypto.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Tests of NetworkingPrivateCrypto support for Networking Private API.
-// Based on chromeos_public//.../network_DestinationVerification.py
 class NetworkingPrivateCryptoTest : public testing::Test {
  protected:
   // Verify that decryption of |encrypted| data using |private_key_pem| matches

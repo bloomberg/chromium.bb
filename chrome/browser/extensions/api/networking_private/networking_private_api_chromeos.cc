@@ -303,6 +303,7 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunImpl() {
   }
 
   SetResult(network_properties_list);
+  SendResponse(true);
   return true;
 }
 

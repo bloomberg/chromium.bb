@@ -10,7 +10,7 @@
 
 class Profile;
 
-namespace chromeos {
+namespace extensions {
 
 class NetworkingPrivateEventRouter;
 
@@ -47,7 +47,7 @@ class NetworkingPrivateEventRouterFactory
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateEventRouterFactory);
 };
 
-}  // namespace chromeos
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_EVENT_ROUTER_FACTORY_H_
 

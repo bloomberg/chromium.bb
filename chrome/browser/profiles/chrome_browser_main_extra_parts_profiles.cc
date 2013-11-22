@@ -78,6 +78,7 @@
 #include "chrome/browser/extensions/api/management/management_api.h"
 #include "chrome/browser/extensions/api/mdns/mdns_api.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting_api.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
@@ -141,7 +142,6 @@
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/screenlock_private_api.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_event_router_factory.h"
 #if defined(FILE_MANAGER_EXTENSION)
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
 #endif
@@ -211,9 +211,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(OS_ANDROID)
   ProtectedMediaIdentifierPermissionContextFactory::GetInstance();
 #endif
-#if defined(OS_CHROMEOS)
-  chromeos::NetworkingPrivateEventRouterFactory::GetInstance();
-#endif
 #if defined(ENABLE_FULL_PRINTING)
   CloudPrintProxyServiceFactory::GetInstance();
 #endif
@@ -280,6 +277,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::MediaPlayerAPI::GetFactoryInstance();
 #endif
   extensions::MenuManagerFactory::GetInstance();
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+  extensions::NetworkingPrivateEventRouterFactory::GetInstance();
+#endif  // defined(OS_CHROMEOS) || defined(OS_WIN)
   extensions::OmniboxAPI::GetFactoryInstance();
 #if defined(ENABLE_PLUGINS)
   extensions::PluginManager::GetFactoryInstance();

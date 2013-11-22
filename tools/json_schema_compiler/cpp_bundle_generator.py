@@ -84,9 +84,15 @@ class CppBundleGenerator(object):
     for platform in model_object.platforms:
       if platform == Platforms.CHROMEOS:
         ifdefs.append('defined(OS_CHROMEOS)')
+      elif platform == Platforms.LINUX:
+        ifdefs.append('defined(OS_LINUX)')
+      elif platform == Platforms.MAC:
+        ifdefs.append('defined(OS_MACOSX)')
+      elif platform == Platforms.WIN:
+        ifdefs.append('defined(OS_WIN)')
       else:
         raise ValueError("Unsupported platform ifdef: %s" % platform.name)
-    return ' and '.join(ifdefs)
+    return ' || '.join(ifdefs)
 
   def _GenerateRegisterFunctions(self, namespace_name, function):
     c = code.Code()

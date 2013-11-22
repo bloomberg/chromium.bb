@@ -28,8 +28,8 @@ class NetworkingPrivateCrypto {
                          const std::string& connected_mac);
 
   // Encrypt |data| with |public_key|. |public_key| is a DER-encoded
-  // RSAPublicKey. |data| is some string of bytes at smaller than the
-  // maximum length permissable for encryption with a key of |public_key| size.
+  // RSAPublicKey. |data| is some string of bytes that is smaller than the
+  // maximum length permissible for PKCS#1 v1.5 with a key of |public_key| size.
   //
   // Returns true on success, storing the encrypted result in
   // |encrypted_output|.

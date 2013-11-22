@@ -30,15 +30,53 @@
 #include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#endif  // OS_CHROMEOS
+#else  // !defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/api/networking_private/networking_private_service_client.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_service_client_factory.h"
+#include "components/wifi/wifi_service.h"
+#endif  // defined(OS_CHROMEOS)
 
 using testing::Return;
 using testing::_;
 
-namespace chromeos {
+#if defined(OS_CHROMEOS)
+using chromeos::CryptohomeClient;
+using chromeos::DBUS_METHOD_CALL_SUCCESS;
+using chromeos::DBusMethodCallStatus;
+using chromeos::DBusThreadManager;
+using chromeos::ShillDeviceClient;
+using chromeos::ShillManagerClient;
+using chromeos::ShillProfileClient;
+using chromeos::ShillServiceClient;
+#else  // !defined(OS_CHROMEOS)
+using extensions::NetworkingPrivateServiceClientFactory;
+#endif  // defined(OS_CHROMEOS)
+
+namespace {
 
 #if defined(OS_CHROMEOS)
 const char kUser1ProfilePath[] = "/profile/user1/shill";
+#else  // !defined(OS_CHROMEOS)
+
+// Stub Verify* methods implementation to satisfy expectations of
+// networking_private_apitest.
+// TODO(mef): Fix ChromeOS implementation to use NetworkingPrivateCrypto,
+// and update networking_private_apitest to use and expect valid data.
+// That will eliminate the need for mock implementation.
+class CryptoVerifyStub
+    : public extensions::NetworkingPrivateServiceClient::CryptoVerify {
+  virtual void VerifyDestination(scoped_ptr<base::ListValue> args,
+                                 bool* verified,
+                                 std::string* error) OVERRIDE {
+    *verified = true;
+  }
+
+  virtual void VerifyAndEncryptData(scoped_ptr<base::ListValue> args,
+                                    std::string* encoded_data,
+                                    std::string* error) OVERRIDE {
+    *encoded_data = "encrypted_data";
+  }
+};
 #endif  // defined(OS_CHROMEOS)
 
 class ExtensionNetworkingPrivateApiTest :
@@ -78,10 +116,11 @@ class ExtensionNetworkingPrivateApiTest :
     // TODO(pneubeck): Remove the following hack, once the NetworkingPrivateAPI
     // uses the ProfileHelper to obtain the userhash crbug/238623.
     std::string login_user =
-        command_line->GetSwitchValueNative(switches::kLoginUser);
+        command_line->GetSwitchValueNative(chromeos::switches::kLoginUser);
     std::string sanitized_user = CryptohomeClient::GetStubSanitizedUsername(
         login_user);
-    command_line->AppendSwitchASCII(switches::kLoginProfile, sanitized_user);
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                                    sanitized_user);
     if (GetParam())
       command_line->AppendSwitch(::switches::kMultiProfiles);
   }
@@ -132,8 +171,8 @@ class ExtensionNetworkingPrivateApiTest :
     service_test->SetServiceProperty(
         "stub_ethernet",
         shill::kProfileProperty,
-        base::StringValue(shill_stub_helper::kSharedProfilePath));
-    profile_test->AddService(shill_stub_helper::kSharedProfilePath,
+        base::StringValue(chromeos::shill_stub_helper::kSharedProfilePath));
+    profile_test->AddService(chromeos::shill_stub_helper::kSharedProfilePath,
                              "stub_ethernet");
 
     service_test->AddService("stub_wifi1", "wifi1",
@@ -218,10 +257,21 @@ class ExtensionNetworkingPrivateApiTest :
                                     "epcifkihnkjgphfkloaaleeakhpmgdmn");
   }
 
+  static BrowserContextKeyedService*
+      CreateNetworkingPrivateServiceClient(content::BrowserContext* profile) {
+    return new extensions::NetworkingPrivateServiceClient(
+        wifi::WiFiService::CreateForTest(),
+        new CryptoVerifyStub());
+  }
+
   virtual void SetUpOnMainThread() OVERRIDE {
     ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();
+    NetworkingPrivateServiceClientFactory::GetInstance()->SetTestingFactory(
+        profile(),
+        &CreateNetworkingPrivateServiceClient);
   }
+
 #endif  // OS_CHROMEOS
 
  protected:
@@ -259,10 +309,6 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, CreateNetwork) {
-  EXPECT_TRUE(RunNetworkingSubtest("createNetwork")) << message_;
-}
-
 IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetVisibleNetworks) {
   EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworks")) << message_;
 }
@@ -291,6 +337,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, SetProperties) {
 }
 
 #if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, CreateNetwork) {
+  EXPECT_TRUE(RunNetworkingSubtest("createNetwork")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetStateNonExistent) {
   EXPECT_TRUE(RunNetworkingSubtest("getStateNonExistent")) << message_;
 }
@@ -385,4 +435,5 @@ INSTANTIATE_TEST_CASE_P(ExtensionNetworkingPrivateApiTestInstantiation,
                         ExtensionNetworkingPrivateApiTest,
                         testing::Bool());
 
-}  // namespace chromeos
+}  // namespace
+
