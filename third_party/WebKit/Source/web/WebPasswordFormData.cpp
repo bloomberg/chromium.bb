@@ -108,7 +108,7 @@ KURL stripURL(const KURL& url)
 WebString getElementNameOrId(const HTMLInputElement& element)
 {
     WebString result(element.name());
-    if (result.isEmpty())
+    if (result.isEmpty() && element.hasID())
         result = element.idForStyleResolution();
     return result;
 }
