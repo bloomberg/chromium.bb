@@ -10,7 +10,7 @@ import file_tools
 import log_tools
 import platform_tools
 
-def SyncGitRepo(url, destination, revision, reclone=False, clean=True):
+def SyncGitRepo(url, destination, revision, reclone=False, clean=False):
   """Sync an individual git repo.
 
   Args:
@@ -22,7 +22,6 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=True):
   clean: If True, discard local changes and untracked files.
          Otherwise the checkout will fail if there are uncommitted changes.
   """
-
   if reclone:
     file_tools.RemoveDirectoryIfPresent(destination)
   if platform_tools.IsWindows():
@@ -33,7 +32,7 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=True):
     git = ['cmd.exe', '/c', 'git.bat']
   else:
     git = ['git']
-  if not os.path.exists(destination):
+  if not os.path.exists(destination) or len(os.listdir(destination)) == 0:
     logging.info('Cloning %s...' % url)
     log_tools.CheckCall(git + ['clone', '-n', url, destination])
   if revision is not None:

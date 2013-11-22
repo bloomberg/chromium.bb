@@ -14,30 +14,29 @@ import tempfile
 class FixedWorkingDirectory(object):
   """Working directory manager to be used with 'with'.
 
-  The manager cleanups up the directory initially if it's
-  there, but leaves it in place at the end.
-  Done in this style for drop in compatibility with TemporaryWorkingDirectory
-  below.
+  The context manager does not clean the directory on entry or exit.
 
   Example uses:
-    for WorkingDirectory('mydir') as work_dir:
+    with WorkingDirectory('mydir', clobber=True) as work_dir:
       ...do stuff in work_dir...
   """
 
-  def __init__(self, work_dir=None):
+  def __init__(self, work_dir=None, clobber=False):
     """ Constructor.
 
     Args:
       work_dir: A selected working directory.
     """
     self._work_dir = os.path.abspath(work_dir)
+    self._clobber = clobber
 
   def __enter__(self):
-    if os.path.exists(self._work_dir):
+    if self._clobber and os.path.exists(self._work_dir):
       logging.debug('Removing %s...' % self._work_dir)
       shutil.rmtree(self._work_dir)
-    logging.debug('Creating %s...' % self._work_dir)
-    os.mkdir(self._work_dir)
+    if not os.path.exists(self._work_dir):
+      logging.debug('Creating %s...' % self._work_dir)
+      os.mkdir(self._work_dir)
     return self._work_dir
 
   def __exit__(self, _type, _value, _trackback):
@@ -51,7 +50,7 @@ class TemporaryWorkingDirectory(object):
   up at the end.
 
   Example uses:
-    for TemporaryWorkingDirectory() as work_dir:
+    with TemporaryWorkingDirectory() as work_dir:
       ...do stuff in work_dir...
   """
   def __enter__(self):

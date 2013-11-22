@@ -166,7 +166,7 @@ class Once(object):
     return False
 
   def Run(self, package, inputs, output, commands, unpack_commands=None,
-          hashed_inputs=None, working_dir=None):
+          hashed_inputs=None, working_dir=None, memoize=True):
     """Run an operation once, possibly hitting cache.
 
     Args:
@@ -185,9 +185,7 @@ class Once(object):
     else:
       wdm = working_directory.FixedWorkingDirectory(working_dir)
 
-    # Cleanup destination.
-    file_tools.RemoveDirectoryIfPresent(output)
-    os.mkdir(output)
+    file_tools.MakeDirectoryIfAbsent(output)
 
     nonpath_subst = { 'package': package }
 
@@ -209,7 +207,8 @@ class Once(object):
           package, inputs=inputs, commands=commands)
 
       # We're done if it's in the cache.
-      if self.ReadMemoizedResultFromCache(package, build_signature, output):
+      if (memoize and
+          self.ReadMemoizedResultFromCache(package, build_signature, output)):
         return
 
       for command in commands:
@@ -219,7 +218,8 @@ class Once(object):
         subst = substituter.Substituter(work_dir, paths, nonpath_subst)
         command.Invoke(subst)
 
-    self.WriteResultToCache(package, build_signature, output)
+    if memoize:
+      self.WriteResultToCache(package, build_signature, output)
 
   def SystemSummary(self):
     """Gather a string describing intrinsic properties of the current machine.

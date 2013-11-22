@@ -74,7 +74,7 @@ try:
   subprocess.check_call(command)
 except subprocess.CalledProcessError:
   # Ignore any failures and keep going (but make the bot stage red).
-  print '@@@STEP_FAILED@@@'
+  print '@@@STEP_FAILURE@@@'
   sys.stdout.flush()
 
 
