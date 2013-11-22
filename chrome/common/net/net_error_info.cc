@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/net_error_info.h"
 
 namespace chrome_common_net {
@@ -37,21 +34,6 @@ const char* DnsProbeStatusToString(int status) {
 bool DnsProbeStatusIsFinished(DnsProbeStatus status) {
   return status >= DNS_PROBE_FINISHED_INCONCLUSIVE &&
          status < DNS_PROBE_MAX;
-}
-
-bool DnsProbesEnabled() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-
-  if (command_line->HasSwitch(switches::kDisableDnsProbes))
-    return false;
-  else if (command_line->HasSwitch(switches::kEnableDnsProbes))
-    return true;
-
-  const char kDnsProbeFieldTrialName[] = "DnsProbe-Enable";
-  const char kDnsProbeFieldTrialEnableGroupName[] = "enable";
-
-  return base::FieldTrialList::FindFullName(kDnsProbeFieldTrialName) ==
-         kDnsProbeFieldTrialEnableGroupName;
 }
 
 }  // namespace chrome_common_net

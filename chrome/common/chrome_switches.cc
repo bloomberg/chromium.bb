@@ -328,9 +328,6 @@ const char kDisableDeviceDiscoveryNotifications[] =
 // Disables retrieval of PAC URLs from DHCP as per the WPAD standard.
 const char kDisableDhcpWpad[]               = "disable-dhcp-wpad";
 
-// Force-disables DNS probes on main frame DNS errors.
-const char kDisableDnsProbes[]              = "disable-dns-probes";
-
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
 
@@ -586,10 +583,6 @@ const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 // Enable device discovery notifications.
 const char kEnableDeviceDiscoveryNotifications[] =
     "enable-device-discovery-notifications";
-
-// Force-enables DNS probes on main frame DNS errors.  (The user must still
-// opt in to "Use web service to resolve navigation errors".)
-const char kEnableDnsProbes[]               = "enable-dns-probes";
 
 // Enables the DOM distiller.
 const char kEnableDomDistiller[]               = "enable-dom-distiller";
