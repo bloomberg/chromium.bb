@@ -386,7 +386,7 @@ void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {
 
 void RenderWidgetCompositor::SetNeedsForcedRedraw() {
   layer_tree_host_->SetNextCommitForcesRedraw();
-  setNeedsRedraw();
+  setNeedsAnimate();
 }
 
 void RenderWidgetCompositor::SetLatencyInfo(
@@ -506,12 +506,8 @@ void RenderWidgetCompositor::setNeedsAnimate() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-void RenderWidgetCompositor::setNeedsRedraw() {
-  if (threaded_)
-    layer_tree_host_->SetNeedsAnimate();
-  else
-    widget_->scheduleAnimation();
-}
+// Merged into setNeedsAnimate. Staged for removal.
+void RenderWidgetCompositor::setNeedsRedraw() { setNeedsAnimate(); }
 
 bool RenderWidgetCompositor::commitRequested() const {
   return layer_tree_host_->CommitRequested();
@@ -653,6 +649,10 @@ RenderWidgetCompositor::OffscreenContextProvider() {
 void RenderWidgetCompositor::ScheduleComposite() {
   if (!suppress_schedule_composite_)
     widget_->scheduleComposite();
+}
+
+void RenderWidgetCompositor::ScheduleAnimation() {
+  widget_->scheduleAnimation();
 }
 
 void RenderWidgetCompositor::DidPostSwapBuffers() {

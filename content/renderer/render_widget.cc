@@ -568,24 +568,7 @@ void RenderWidget::ScheduleCompositeWithForcedRedraw() {
     // non-threaded case.
     compositor_->SetNeedsForcedRedraw();
   }
-  ScheduleCompositeImpl(true);
-}
-
-void RenderWidget::ScheduleCompositeImpl(bool force_redraw) {
-  if (RenderThreadImpl::current()->compositor_message_loop_proxy().get() &&
-      compositor_) {
-    if (!force_redraw) {
-      compositor_->setNeedsRedraw();
-    }
-  } else {
-    // TODO(nduca): replace with something a little less hacky.  The reason this
-    // hack is still used is because the Invalidate-DoDeferredUpdate loop
-    // contains a lot of host-renderer synchronization logic that is still
-    // important for the accelerated compositing case. The option of simply
-    // duplicating all that code is less desirable than "faking out" the
-    // invalidation path using a magical damage rect.
-    didInvalidateRect(WebRect(0, 0, 1, 1));
-  }
+  scheduleComposite();
 }
 
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
@@ -1923,7 +1906,18 @@ void RenderWidget::didCompleteSwapBuffers() {
 }
 
 void RenderWidget::scheduleComposite() {
-  ScheduleCompositeImpl(false);
+  if (RenderThreadImpl::current()->compositor_message_loop_proxy().get() &&
+      compositor_) {
+      compositor_->setNeedsAnimate();
+  } else {
+    // TODO(nduca): replace with something a little less hacky.  The reason this
+    // hack is still used is because the Invalidate-DoDeferredUpdate loop
+    // contains a lot of host-renderer synchronization logic that is still
+    // important for the accelerated compositing case. The option of simply
+    // duplicating all that code is less desirable than "faking out" the
+    // invalidation path using a magical damage rect.
+    didInvalidateRect(WebRect(0, 0, 1, 1));
+  }
 }
 
 void RenderWidget::scheduleAnimation() {

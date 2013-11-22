@@ -120,9 +120,8 @@ void WebLayerTreeViewImplForTesting::setNeedsAnimate() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-void WebLayerTreeViewImplForTesting::setNeedsRedraw() {
-  layer_tree_host_->SetNeedsRedraw();
-}
+// Merged into setNeedsAnimate. Staged for removal.
+void WebLayerTreeViewImplForTesting::setNeedsRedraw() { setNeedsAnimate(); }
 
 bool WebLayerTreeViewImplForTesting::commitRequested() const {
   return layer_tree_host_->CommitRequested();

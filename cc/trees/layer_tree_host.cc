@@ -527,7 +527,6 @@ const RendererCapabilities& LayerTreeHost::GetRendererCapabilities() const {
 }
 
 void LayerTreeHost::SetNeedsAnimate() {
-  DCHECK(proxy_->HasImplThread());
   proxy_->SetNeedsAnimate();
 }
 

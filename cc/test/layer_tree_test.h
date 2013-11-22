@@ -68,6 +68,7 @@ class TestHooks : public AnimationDelegate {
   virtual void DidCommitAndDrawFrame() {}
   virtual void DidCompleteSwapBuffers() {}
   virtual void ScheduleComposite() {}
+  virtual void ScheduleAnimation() {}
   virtual void DidDeferCommit() {}
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) {}

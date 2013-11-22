@@ -259,6 +259,10 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->ScheduleComposite();
   }
 
+  virtual void ScheduleAnimation() OVERRIDE {
+    test_hooks_->ScheduleAnimation();
+  }
+
   virtual void DidPostSwapBuffers() OVERRIDE {}
   virtual void DidAbortSwapBuffers() OVERRIDE {}
 

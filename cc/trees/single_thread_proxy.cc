@@ -177,8 +177,8 @@ const RendererCapabilities& SingleThreadProxy::GetRendererCapabilities() const {
 }
 
 void SingleThreadProxy::SetNeedsAnimate() {
-  // Thread-only feature.
-  NOTREACHED();
+  DCHECK(Proxy::IsMainThread());
+  client_->ScheduleAnimation();
 }
 
 void SingleThreadProxy::SetNeedsUpdateLayers() {

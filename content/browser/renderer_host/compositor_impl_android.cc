@@ -429,6 +429,10 @@ void CompositorImpl::ScheduleComposite() {
   client_->ScheduleComposite();
 }
 
+void CompositorImpl::ScheduleAnimation() {
+  ScheduleComposite();
+}
+
 void CompositorImpl::DidPostSwapBuffers() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidPostSwapBuffers");
   client_->OnSwapBuffersPosted();

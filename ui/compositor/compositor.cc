@@ -543,6 +543,10 @@ void Compositor::ScheduleComposite() {
     ScheduleDraw();
 }
 
+void Compositor::ScheduleAnimation() {
+  ScheduleComposite();
+}
+
 void Compositor::DidPostSwapBuffers() {
   DCHECK(!g_compositor_thread);
   posted_swaps_->PostSwap();

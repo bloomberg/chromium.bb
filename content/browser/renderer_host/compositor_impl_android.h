@@ -89,6 +89,7 @@ class CONTENT_EXPORT CompositorImpl
 
   // LayerTreeHostSingleThreadClient implementation.
   virtual void ScheduleComposite() OVERRIDE;
+  virtual void ScheduleAnimation() OVERRIDE;
   virtual void DidPostSwapBuffers() OVERRIDE;
   virtual void DidAbortSwapBuffers() OVERRIDE;
 

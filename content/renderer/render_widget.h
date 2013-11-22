@@ -536,8 +536,6 @@ class CONTENT_EXPORT RenderWidget
 
   bool OnSnapshotHelper(const gfx::Rect& src_subrect, SkBitmap* bitmap);
 
-  void ScheduleCompositeImpl(bool force_redraw);
-
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.
   int32 routing_id_;
