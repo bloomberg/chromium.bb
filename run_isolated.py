@@ -150,6 +150,7 @@ def set_read_only(path, read_only):
   Zaps out access to 'group' and 'others'.
   """
   mode = os.lstat(path).st_mode
+  # TODO(maruel): Stop removing GO bits.
   if read_only:
     mode = mode & 0500
   else:
@@ -180,6 +181,29 @@ def make_tree_read_only(root):
       # It must not be done on Windows.
       for dirname in dirnames:
         set_read_only(os.path.join(dirpath, dirname), True)
+  # TODO(maruel): Investigate if it makes sense.
+  #set_read_only(root, True)
+
+
+def make_tree_writeable(root):
+  """Makes all the files in the directories writeable.
+
+  Also makes the directories writeable, only if it makes sense on the platform.
+
+  It is different from make_tree_deleteable() because it unconditionally affects
+  the files.
+  """
+  logging.debug('make_tree_writeable(%s)', root)
+  assert os.path.isabs(root), root
+  if sys.platform != 'win32':
+    set_read_only(root, False)
+  for dirpath, dirnames, filenames in os.walk(root, topdown=True):
+    for filename in filenames:
+      set_read_only(os.path.join(dirpath, filename), False)
+    if sys.platform != 'win32':
+      # It must not be done on Windows.
+      for dirname in dirnames:
+        set_read_only(os.path.join(dirpath, dirname), False)
 
 
 def make_tree_deleteable(root):
@@ -187,6 +211,7 @@ def make_tree_deleteable(root):
   deleted.
 
   On Windows, the files are modified. On other platforms, modify the directory.
+  It only does the minimum so the files can be deleted safely.
 
   Warning on Windows: since file permission is modified, the file node is
   modified. This means that for hard-linked files, every directory entry for the
@@ -581,6 +606,12 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir):
       # Note that the files themselves are read only anyway. This only inhibits
       # creating files or deleting files in the test directory.
       make_tree_read_only(outdir)
+    else:
+      # This code is safe to keep but DiskCache.touch() must be changed to
+      # verify the hash of the content of the files it is looking at, so that if
+      # a test modifies an input file, the file must be deleted.
+      make_tree_writeable(outdir)
+
     cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
     logging.info('Running %s, cwd=%s' % (settings.command, cwd))
 
