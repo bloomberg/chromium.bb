@@ -19,7 +19,7 @@
  */
 
 [
-    CustomToV8,
+    CustomWrap,
     DependentLifetime,
 ] interface CSSValue {
 

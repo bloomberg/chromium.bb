@@ -29,7 +29,7 @@
  */
 
 [
-    CustomToV8,
+    CustomWrap,
     NoInterfaceObject,
     ActiveDOMObject
 ] interface MIDIOutput : MIDIPort {

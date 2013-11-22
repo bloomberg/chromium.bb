@@ -30,7 +30,6 @@
 [
     CheckSecurity=Frame,
     CustomToV8,
-    DoNotGenerateWrap,
     ImplementedAs=DOMWindow,
 ] interface Window : EventTarget {
     // DOM Level 0

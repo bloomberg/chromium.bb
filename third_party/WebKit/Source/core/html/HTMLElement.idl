@@ -19,7 +19,7 @@
  */
 
 [
-    CustomToV8
+    CustomWrap,
 ] interface HTMLElement : Element {
     [Reflect, TreatNullAs=NullString] attribute DOMString title;
     [Reflect, TreatNullAs=NullString] attribute DOMString lang;

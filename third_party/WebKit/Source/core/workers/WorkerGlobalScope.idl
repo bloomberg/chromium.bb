@@ -25,9 +25,8 @@
  */
 
 [
-    GlobalContext=WorkerGlobalScope,
     CustomToV8,
-    DoNotGenerateWrap
+    GlobalContext=WorkerGlobalScope,
 ] interface WorkerGlobalScope : EventTarget {
 
     // WorkerGlobalScope

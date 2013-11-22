@@ -30,7 +30,7 @@
 
 [
     NoInterfaceObject,
-    CustomToV8
+    CustomWrap,
 ] interface EntrySync {
     readonly attribute boolean isFile;
     readonly attribute boolean isDirectory;

@@ -27,7 +27,7 @@
  */
 
 [
-    CustomToV8
+    CustomWrap,
 ] interface ImageData {
     readonly attribute long width;
     readonly attribute long height;

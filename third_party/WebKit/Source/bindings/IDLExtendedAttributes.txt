@@ -50,6 +50,7 @@ CustomEnumerateProperty
 CustomIsReachable
 CustomLegacyCall
 CustomToV8
+CustomWrap
 Default=NullString|Undefined
 DependentLifetime
 DeprecateAs=*
@@ -57,7 +58,6 @@ DoNotCheckConstants
 DoNotCheckSecurity=|Setter
 DoNotCheckSignature
 DoNotGenerateToV8
-DoNotGenerateWrap
 EnforceRange
 ExposeJSAccessors
 GenerateIsReachable=*

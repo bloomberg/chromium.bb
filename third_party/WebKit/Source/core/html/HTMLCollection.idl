@@ -19,7 +19,7 @@
  */
 
 [
-    CustomToV8,
+    CustomWrap,
     GenerateIsReachable=ownerNode,
     DependentLifetime
 ] interface HTMLCollection {

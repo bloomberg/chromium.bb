@@ -20,7 +20,7 @@
 
 // Introduced in DOM Level 2:
 [
-    CustomToV8,
+    CustomWrap,
     ConstructorTemplate=Event,
 ] interface Event {
 

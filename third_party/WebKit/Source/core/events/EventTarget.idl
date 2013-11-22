@@ -20,7 +20,6 @@
 
 [
     CustomToV8,
-    DoNotGenerateWrap
 ] interface EventTarget {
     void addEventListener(DOMString type,
                           EventListener listener,

@@ -24,9 +24,8 @@
  */
 
 [
-    NoInterfaceObject,
     CustomToV8,
-    DoNotGenerateWrap
+    NoInterfaceObject,
 ] interface IDBAny {
     // This space is intentionally left blank.
 };

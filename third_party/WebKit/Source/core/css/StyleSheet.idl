@@ -20,7 +20,7 @@
 
 // Introduced in DOM Level 2:
 [
-    CustomToV8,
+    CustomWrap,
     GenerateIsReachable=ownerNode
 ] interface StyleSheet {
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString        type;

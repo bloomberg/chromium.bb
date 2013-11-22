@@ -21,7 +21,7 @@
  */
 
 [
-    CustomToV8
+    CustomWrap,
 ] interface SVGElement : Element {
     [TreatNullAs=NullString] attribute DOMString xmlbase;
     readonly attribute SVGSVGElement ownerSVGElement;

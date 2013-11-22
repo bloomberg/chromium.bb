@@ -26,7 +26,7 @@
 
 [
     ConstructorTemplate=TypedArray,
-    CustomToV8,
+    CustomWrap,
     DoNotCheckConstants
 ] interface Float64Array : ArrayBufferView {
     Int32Array foo(Float32Array array);

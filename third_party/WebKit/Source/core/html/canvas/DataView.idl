@@ -26,7 +26,7 @@
 [
     GlobalContext=Window&WorkerGlobalScope,
     CustomConstructor(ArrayBuffer buffer, optional unsigned long byteOffset, optional unsigned long byteLength),
-    CustomToV8
+    CustomWrap,
 ] interface DataView : ArrayBufferView {
     // All these methods raise an exception if they would read or write beyond the end of the view.
 

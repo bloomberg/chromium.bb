@@ -874,7 +874,7 @@ END
     $header{classPublic}->add("\n");  # blank line to separate classPrivate
 
     my $noToV8 = $interface->extendedAttributes->{"DoNotGenerateToV8"};
-    my $noWrap = $interface->extendedAttributes->{"DoNotGenerateWrap"} || $noToV8;
+    my $noWrap = $interface->extendedAttributes->{"CustomToV8"} || $noToV8;
     if (!$noWrap) {
         my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
         $header{classPrivate}->add(<<END);
@@ -896,7 +896,6 @@ END
     if ($noToV8) {
         die "Can't suppress toV8 for subclass\n" if $interface->parent;
     } elsif ($noWrap) {
-        die "Must have custom toV8\n" if !$customWrap;
         $header{nameSpaceWebCore}->add(<<END);
 class ${nativeType};
 v8::Handle<v8::Value> toV8(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
@@ -921,9 +920,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ${nativeType}
 
 END
     } else {
-
-        my $createWrapperCall = $customWrap ? "${v8ClassName}::wrap" : "${v8ClassName}::createWrapper";
-
         if ($customWrap) {
             $header{nameSpaceWebCore}->add(<<END);
 
@@ -936,7 +932,7 @@ inline v8::Handle<v8::Object> wrap(${nativeType}* impl, v8::Handle<v8::Object> c
 {
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<${v8ClassName}>(impl, isolate));
-    return $createWrapperCall(impl, creationContext, isolate);
+    return ${v8ClassName}::createWrapper(impl, creationContext, isolate);
 }
 END
         }
@@ -5008,7 +5004,7 @@ sub GenerateToV8Converters
     my $nativeType = shift;
     my $interfaceName = $interface->name;
 
-    if ($interface->extendedAttributes->{"DoNotGenerateWrap"} || $interface->extendedAttributes->{"DoNotGenerateToV8"}) {
+    if ($interface->extendedAttributes->{"CustomToV8"} || $interface->extendedAttributes->{"DoNotGenerateToV8"}) {
         return;
     }
 
@@ -6340,6 +6336,7 @@ sub NeedsSpecialWrap
     my $interface = shift;
 
     return 1 if $interface->extendedAttributes->{"CustomToV8"};
+    return 1 if $interface->extendedAttributes->{"CustomWrap"};
     return 1 if $interface->extendedAttributes->{"SpecialWrapFor"};
     return 1 if InheritsInterface($interface, "Document");
 
