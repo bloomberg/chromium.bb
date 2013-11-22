@@ -10,13 +10,15 @@
 import toolchain_env
 
 import inspect
-
+import hashlib
 import os
 import shutil
 import sys
 
 import file_tools
 import log_tools
+import repo_tools
+import substituter
 
 
 # MSYS tools do not always work with combinations of Windows and MSYS
@@ -33,10 +35,26 @@ path = posixpath
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
-# Read this module's source file just once, to use in hashes for Callbacks.
-# Don't directly use __file__ because it could be e.g. command.pyc
-with open(os.path.join(SCRIPT_DIR, 'command.py')) as f:
-  FILE_CONTENT = f.read()
+COMMAND_CODE_FILES = [os.path.join(SCRIPT_DIR, f)
+                      for f in ('command.py', 'once.py', 'substituter.py',
+                                'pnacl_commands.py', 'toolchain_env.py',
+                                'toolchain_main.py')]
+COMMAND_CODE_FILES += [os.path.join(NACL_DIR, 'build', f)
+                       for f in ('directory_storage.py', 'file_tools.py',
+                                 'gsd_storage.py', 'hashing_tools.py',
+                                 'local_storage_cache.py', 'log_tools.py',
+                                 'platform_tools.py', 'repo_tools.py')]
+
+def HashBuildSystemSources():
+"""Read the build source files to use in hashes for Callbacks."""
+  global FILE_CONTENTS_HASH
+  h = hashlib.sha1()
+  for filename in COMMAND_CODE_FILES:
+    with open(filename) as f:
+      h.update(f.read())
+  FILE_CONTENTS_HASH = h.hexdigest()
+
+HashBuildSystemSources()
 
 
 def PlatformEnvironment(extra_paths):
@@ -103,17 +121,23 @@ class Runnable(object):
     values = []
 
     sourcefile = inspect.getsourcefile(self._func)
-    if ('command.py' not in sourcefile and
-        'once_test.py' not in sourcefile):
+    # Check that the code for the runnable is implemented in one of the known
+    # source files of the build system (which are included in its hash). This
+    # isn't a perfect test because it could still import code from an outside
+    # module, so we should be sure to add any new build system files to the list
+    found_match = (os.path.basename(sourcefile) in
+                   [os.path.basename(f) for f in
+                    COMMAND_CODE_FILES + ['once_test.py']])
+    if not found_match:
       print 'Function', self._func.func_name, 'in', sourcefile
-      raise Exception('Python Runnable objects must be implemented in ' +
-                        'command.py!')
+      raise Exception('Python Runnable objects must be implemented in one of' +
+                      'the following files: ' + str(COMMAND_CODE_FILES))
 
     for v in self._args:
       values += [repr(v)]
     for k, v in self._kwargs.iteritems():
       values += [repr(k), repr(v)]
-    values += [FILE_CONTENT]
+    values += [FILE_CONTENTS_HASH]
 
     return '\n'.join(values)
 
@@ -161,6 +185,14 @@ def Command(command, **kwargs):
 
   return Runnable(runcmd, command, **kwargs)
 
+def SkipForIncrementalCommand(command, **kwargs):
+  """Return a command which has the skip_for_incremental property set on it.
+
+  This will cause the command to be skipped for incremental builds.
+  """
+  cmd = Command(command, **kwargs)
+  cmd.skip_for_incremental = True
+  return cmd
 
 def Mkdir(path, parents=False):
   """Convenience method for generating mkdir commands."""
@@ -210,3 +242,9 @@ def WriteData(data, dst):
     with open(subst.SubstituteAbsPaths(dst), 'wb') as f:
       f.write(data)
   return Runnable(writedata, dst, data)
+
+def SyncGitRepo(url, destination, revision, reclone=False, clean=False):
+  def sync(subst, url, dest, rev, reclone, clean):
+    repo_tools.SyncGitRepo(url, subst.SubstituteAbsPaths(dest), revision,
+                           reclone, clean)
+  return Runnable(sync, url, destination, revision, reclone, clean)
