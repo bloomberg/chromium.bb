@@ -20,6 +20,7 @@
     </module>
     <module name="UnusedImports">
       <property name="severity" value="error"/>
+      <property name="processJavadoc" value="true"/>
       <message key="import.unused" value="Unused import: {0}. Use :JavaImportOrganize (ECLIM) or Ctrl+Shift+O (Eclipse) to sort imports"/>
     </module>
     <module name="JavadocType">
