@@ -109,6 +109,7 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
   }
 
   virtual void TearDown() OVERRIDE {
+    [owned_apps_grid_controller_ setDelegate:NULL];
     owned_apps_grid_controller_.reset();
     AppsGridControllerTestHelper::TearDown();
   }
@@ -304,8 +305,7 @@ TEST_F(AppsGridControllerTest, SelectionChangesTextColor) {
 }
 
 // Tests basic keyboard navigation on the first page.
-// TODO(stevenjb): Flaky. crbug.com/321284
-TEST_F(AppsGridControllerTest, DISABLED_FirstPageKeyboardNavigation) {
+TEST_F(AppsGridControllerTest, FirstPageKeyboardNavigation) {
   model()->PopulateApps(kItemsPerPage - 2);
   EXPECT_EQ(kItemsPerPage - 2, [[GetPageAt(0) content] count]);
 
