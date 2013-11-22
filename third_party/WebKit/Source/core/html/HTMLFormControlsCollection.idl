@@ -19,8 +19,8 @@
  */
 
 [
-    GenerateIsReachable=ownerNode,
-    DependentLifetime
+    DependentLifetime,
+    GenerateVisitDOMWrapper=ownerNode,
 ] interface HTMLFormControlsCollection : HTMLCollection {
     [ImplementedAs=item] getter Node(unsigned long index);
     [Custom] Node namedItem([Default=Undefined] optional DOMString name);

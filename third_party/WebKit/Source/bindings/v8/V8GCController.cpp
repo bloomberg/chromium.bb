@@ -287,7 +287,7 @@ public:
         } else if (classId == v8DOMObjectClassId) {
             ASSERT(!value->IsIndependent());
             v8::Persistent<v8::Object>* wrapperPersistent = reinterpret_cast<v8::Persistent<v8::Object>*>(value);
-            type->resolveWrapperReachability(object, *wrapperPersistent, m_isolate);
+            type->visitDOMWrapper(object, *wrapperPersistent, m_isolate);
         } else {
             ASSERT_NOT_REACHED();
         }

@@ -128,12 +128,12 @@ namespace WebCore {
             return toEventTargetFunction(object);
         }
 
-        void resolveWrapperReachability(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate) const
+        void visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate) const
         {
-            if (!resolveWrapperReachabilityFunction)
+            if (!visitDOMWrapperFunction)
                 setObjectGroup(object, wrapper, isolate);
             else
-                resolveWrapperReachabilityFunction(object, wrapper, isolate);
+                visitDOMWrapperFunction(object, wrapper, isolate);
         }
 
         // This field must be the first member of the struct WrapperTypeInfo. This is also checked by a COMPILE_ASSERT() below.
@@ -143,7 +143,7 @@ namespace WebCore {
         const DerefObjectFunction derefObjectFunction;
         const ToActiveDOMObjectFunction toActiveDOMObjectFunction;
         const ToEventTargetFunction toEventTargetFunction;
-        const ResolveWrapperReachabilityFunction resolveWrapperReachabilityFunction;
+        const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
         const InstallPerContextEnabledPrototypePropertiesFunction installPerContextEnabledMethodsFunction;
         const WrapperTypeInfo* parentClass;
         const WrapperTypePrototype wrapperTypePrototype;

@@ -20,8 +20,8 @@
 
 [
     CustomWrap,
-    GenerateIsReachable=ownerNode,
-    DependentLifetime
+    DependentLifetime,
+    GenerateVisitDOMWrapper=ownerNode,
 ] interface HTMLCollection {
     readonly attribute unsigned long length;
     getter Node item([Default=Undefined] optional unsigned long index);

@@ -25,9 +25,9 @@
 
 [
     CustomLegacyCall,
+    DependentLifetime,
+    GenerateVisitDOMWrapper=ownerNode,
     MasqueradesAsUndefined,
-    GenerateIsReachable=ownerNode,
-    DependentLifetime
 ] interface HTMLAllCollection {
     readonly attribute unsigned long length;
     [ImplementedAs=item] getter Node (unsigned long index);

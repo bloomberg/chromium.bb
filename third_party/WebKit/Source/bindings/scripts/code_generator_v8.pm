@@ -466,25 +466,25 @@ sub HeaderFilesForInterface
     return @includes;
 }
 
-sub NeedsResolveWrapperReachability
+sub NeedsVisitDOMWrapper
 {
     my $interface = shift;
-    return $interface->extendedAttributes->{"GenerateIsReachable"} || $interface->extendedAttributes->{"CustomIsReachable"} || $interface->extendedAttributes->{"SetReference"} || SVGTypeNeedsToHoldContextElement($interface->name);
+    return $interface->extendedAttributes->{"GenerateVisitDOMWrapper"} || $interface->extendedAttributes->{"CustomVisitDOMWrapper"} || $interface->extendedAttributes->{"SetReference"} || SVGTypeNeedsToHoldContextElement($interface->name);
 }
 
-sub GenerateResolveWrapperReachability
+sub GenerateVisitDOMWrapper
 {
     my $interface = shift;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
-    if ($interface->extendedAttributes->{"CustomIsReachable"}) {
+    if ($interface->extendedAttributes->{"CustomVisitDOMWrapper"}) {
         return;
     }
 
     my $nativeType = GetNativeTypeForConversions($interface);
     my $code = <<END;
-void ${v8ClassName}::resolveWrapperReachability(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+void ${v8ClassName}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
     ${nativeType}* impl = fromInternalPointer(object);
 END
@@ -527,7 +527,7 @@ END
 END
     }
 
-    my $isReachableMethod = $interface->extendedAttributes->{"GenerateIsReachable"};
+    my $isReachableMethod = $interface->extendedAttributes->{"GenerateVisitDOMWrapper"};
     if ($isReachableMethod) {
         AddToImplIncludes("bindings/v8/V8GCController.h");
         AddToImplIncludes("core/dom/Element.h");
@@ -727,8 +727,8 @@ END
     static const WrapperTypeInfo wrapperTypeInfo;
 END
 
-    if (NeedsResolveWrapperReachability($interface)) {
-        $header{classPublic}->add("    static void resolveWrapperReachability(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);\n");
+    if (NeedsVisitDOMWrapper($interface)) {
+        $header{classPublic}->add("    static void visitDOMWrapper(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);\n");
     }
 
     if (InheritsExtendedAttribute($interface, "ActiveDOMObject")) {
@@ -4133,7 +4133,7 @@ sub GenerateImplementation
 
     my $toActiveDOMObject = InheritsExtendedAttribute($interface, "ActiveDOMObject") ? "${v8ClassName}::toActiveDOMObject" : "0";
     my $toEventTarget = InheritsInterface($interface, "EventTarget") ? "${v8ClassName}::toEventTarget" : "0";
-    my $resolveWrapperReachability = NeedsResolveWrapperReachability($interface) ? "${v8ClassName}::resolveWrapperReachability" : "0";
+    my $visitDOMWrapper = NeedsVisitDOMWrapper($interface) ? "${v8ClassName}::visitDOMWrapper" : "0";
 
     # Find the super descriptor.
     my $parentClass = "";
@@ -4183,7 +4183,7 @@ END
     }
 
     my $code = "const WrapperTypeInfo ${v8ClassName}::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
-    $code .= "$resolveWrapperReachability, ${v8ClassName}::installPerContextEnabledMethods, $parentClassInfo, $WrapperTypePrototype };\n";
+    $code .= "$visitDOMWrapper, ${v8ClassName}::installPerContextEnabledMethods, $parentClassInfo, $WrapperTypePrototype };\n";
     $implementation{nameSpaceWebCore}->addHeader($code);
 
     $implementation{nameSpaceInternal}->add("template <typename T> void V8_USE(T) { }\n\n");
@@ -4245,8 +4245,8 @@ END
         GenerateReplaceableAttributeSetterCallback($interface);
     }
 
-    if (NeedsResolveWrapperReachability($interface)) {
-        GenerateResolveWrapperReachability($interface);
+    if (NeedsVisitDOMWrapper($interface)) {
+        GenerateVisitDOMWrapper($interface);
     }
 
     if ($interface->extendedAttributes->{"CheckSecurity"} && $interface->name ne "Window") {
@@ -5015,12 +5015,11 @@ sub GenerateToV8Converters
     my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
     my $baseType = BaseInterfaceName($interface);
 
-    # FIXME: Do we really need to treat "GenerateIsReachable", "CustomIsReachable" and /SVG/
-    # as dependent DOM objects?
+    # FIXME: Do we really need to treat /SVG/ as dependent DOM objects?
     my $wrapperConfiguration = "WrapperConfiguration::Independent";
     if (InheritsExtendedAttribute($interface, "ActiveDOMObject")
         || InheritsExtendedAttribute($interface, "DependentLifetime")
-        || NeedsResolveWrapperReachability($interface)
+        || NeedsVisitDOMWrapper($interface)
         || $v8ClassName =~ /SVG/) {
         $wrapperConfiguration = "WrapperConfiguration::Dependent";
     }

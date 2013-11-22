@@ -19,7 +19,7 @@
  */
 
 [
-    GenerateIsReachable=document
+    GenerateVisitDOMWrapper=document,
 ] interface DOMImplementation {
 
     // DOM Level 1

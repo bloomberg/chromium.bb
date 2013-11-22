@@ -47,9 +47,9 @@ Custom=|Getter|Setter
 CustomConstructor
 CustomElementCallbacks
 CustomEnumerateProperty
-CustomIsReachable
 CustomLegacyCall
 CustomToV8
+CustomVisitDOMWrapper
 CustomWrap
 Default=NullString|Undefined
 DependentLifetime
@@ -60,7 +60,7 @@ DoNotCheckSignature
 DoNotGenerateToV8
 EnforceRange
 ExposeJSAccessors
-GenerateIsReachable=*
+GenerateVisitDOMWrapper=*
 GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope
 Immutable
 ImplementedAs=*

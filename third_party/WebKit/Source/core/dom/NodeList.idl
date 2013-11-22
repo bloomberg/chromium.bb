@@ -19,7 +19,7 @@
  */
 
 [
-    CustomIsReachable,
+    CustomVisitDOMWrapper,
     DependentLifetime
 ] interface NodeList {
 

@@ -21,7 +21,7 @@
 // Introduced in DOM Level 2:
 [
     CustomWrap,
-    GenerateIsReachable=ownerNode
+    GenerateVisitDOMWrapper=ownerNode,
 ] interface StyleSheet {
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString        type;
              attribute boolean          disabled;

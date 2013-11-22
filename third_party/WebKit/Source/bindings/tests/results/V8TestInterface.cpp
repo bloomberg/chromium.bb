@@ -79,7 +79,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterface* object
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface::GetTemplate, V8TestInterface::derefObject, V8TestInterface::toActiveDOMObject, 0, V8TestInterface::resolveWrapperReachability, V8TestInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface::GetTemplate, V8TestInterface::derefObject, V8TestInterface::toActiveDOMObject, 0, V8TestInterface::visitDOMWrapper, V8TestInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestInterfaceV8Internal {
 
@@ -777,7 +777,7 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 } // namespace TestInterfaceV8Internal
 
-void V8TestInterface::resolveWrapperReachability(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+void V8TestInterface::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
     TestInterface* impl = fromInternalPointer(object);
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);

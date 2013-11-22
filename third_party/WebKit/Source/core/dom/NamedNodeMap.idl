@@ -19,7 +19,7 @@
  */
 
 [
-    GenerateIsReachable=element
+    GenerateVisitDOMWrapper=element,
 ] interface NamedNodeMap {
 
     Node getNamedItem([Default=Undefined] optional DOMString name);

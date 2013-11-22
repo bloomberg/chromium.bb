@@ -53,8 +53,8 @@ public:
     }
     static void derefObject(void*);
     static const WrapperTypeInfo wrapperTypeInfo;
-    {% if has_resolve_wrapper_reachability %}
-    static void resolveWrapperReachability(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);
+    {% if has_visit_dom_wrapper %}
+    static void visitDOMWrapper(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);
     {% endif %}
     {% if is_active_dom_object %}
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);

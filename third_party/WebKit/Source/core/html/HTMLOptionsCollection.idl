@@ -20,8 +20,8 @@
  */
 
 [
-    GenerateIsReachable=ownerNode,
-    DependentLifetime
+    DependentLifetime,
+    GenerateVisitDOMWrapper=ownerNode,
 ] interface HTMLOptionsCollection : HTMLCollection {
     attribute long selectedIndex;
     [Custom=Setter, RaisesException=Setter] attribute unsigned long length;

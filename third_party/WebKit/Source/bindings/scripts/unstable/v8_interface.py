@@ -78,7 +78,7 @@ def generate_interface(interface):
         'cpp_class_name': cpp_name(interface),
         'has_custom_legacy_call': 'CustomLegacyCall' in extended_attributes,  # [CustomLegacyCall]
         'has_custom_wrap': 'CustomWrap' in extended_attributes,  # [CustomWrap]
-        'has_resolve_wrapper_reachability': 'CustomIsReachable' in extended_attributes,  # [CustomIsReachable]
+        'has_visit_dom_wrapper': 'CustomVisitDOMWrapper' in extended_attributes,  # [CustomVisitDOMWrapper]
         'header_includes': INTERFACE_H_INCLUDES,
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]

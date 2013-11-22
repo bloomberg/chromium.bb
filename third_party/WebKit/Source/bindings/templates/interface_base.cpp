@@ -64,10 +64,9 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::{{cpp_class_name}}* o
 namespace WebCore {
 {% set to_active_dom_object = '%s::toActiveDOMObject' % v8_class_name
                               if is_active_dom_object else '0' %}
-{% set resolve_wrapper_reachability =
-       '%s::resolveWrapperReachability' % v8_class_name
-       if has_resolve_wrapper_reachability else '0' %}
-const WrapperTypeInfo {{v8_class_name}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class_name}}::GetTemplate, {{v8_class_name}}::derefObject, {{to_active_dom_object}}, 0, {{resolve_wrapper_reachability}}, {{v8_class_name}}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+{% set visit_dom_wrapper = '%s::visitDOMWrapper' % v8_class_name
+                           if has_visit_dom_wrapper else '0' %}
+const WrapperTypeInfo {{v8_class_name}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class_name}}::GetTemplate, {{v8_class_name}}::derefObject, {{to_active_dom_object}}, 0, {{visit_dom_wrapper}}, {{v8_class_name}}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace {{cpp_class_name}}V8Internal {
 

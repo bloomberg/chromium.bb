@@ -29,6 +29,6 @@
  */
 
 [
-    CustomIsReachable,
-] interface TestCustomIsReachableInterface {
+    CustomVisitDOMWrapper,
+] interface TestCustomVisitDOMWrapperInterface {
 };
