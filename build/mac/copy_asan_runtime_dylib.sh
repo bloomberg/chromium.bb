@@ -12,22 +12,35 @@
 set -e
 
 BINARY="${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}"
+
+if [[ ! -f "$BINARY" ]]; then
+  # This is neither an .app bundle nor a standalone executable.
+  # Most certainly the script has been called for a data bundle.
+  exit 0
+fi
+
 BINARY_DIR="$(dirname "${BINARY}")"
-ASAN_DYLIB_NAME=libclang_rt.asan_osx_dynamic.dylib
-ASAN_DYLIB=$(find \
-    "${BUILT_PRODUCTS_DIR}/../../third_party/llvm-build/Release+Asserts/lib/clang/" \
-    -type f -path "*${ASAN_DYLIB_NAME}")
 
 # Find the link to the ASan runtime encoded in the binary.
 BUILTIN_DYLIB_PATH=$(otool -L "${BINARY}" | \
-    sed -Ene 's/^[[:blank:]]+(.*libclang_rt\.asan_osx_dynamic\.dylib).*$/\1/p')
+    sed -Ene 's/^[[:blank:]]+(.*libclang_rt\.asan_.*_dynamic\.dylib).*$/\1/p')
+
+if [[ "${BUILTIN_DYLIB_PATH}" == *asan_iossim_dynamic* ]]; then
+  ASAN_DYLIB_NAME=libclang_rt.asan_iossim_dynamic.dylib
+elif [[ "${BUILTIN_DYLIB_PATH}" == *asan_osx_dynamic* ]]; then
+  ASAN_DYLIB_NAME=libclang_rt.asan_osx_dynamic.dylib
+fi
 
 if [[ -z "${BUILTIN_DYLIB_PATH}" ]]; then
   echo "${BINARY} does not depend on the ASan runtime library!" >&2
-  # TODO(glider): make this return 1 when we fully switch to the dynamic
-  # runtime in ASan.
-  exit 0
+  exit 1
 fi
+
+# TODO(glider): this doesn't work if we set CC and CXX to override the default
+# Clang.
+ASAN_DYLIB=$(find \
+    "${BUILT_PRODUCTS_DIR}/../../third_party/llvm-build/Release+Asserts/lib/clang/" \
+    -type f -path "*${ASAN_DYLIB_NAME}")
 
 DYLIB_BASENAME=$(basename "${ASAN_DYLIB}")
 if [[ "${DYLIB_BASENAME}" != "${ASAN_DYLIB_NAME}" ]]; then
