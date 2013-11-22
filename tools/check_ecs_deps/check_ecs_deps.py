@@ -17,14 +17,65 @@ import optparse
 kUndesiredLibraryList = [
   'libcairo',
   'libpango',
-  'libglib',
+#  'libglib',  # TODO(spang) Stop depending on this.
+]
+
+kAllowedLibraryList = [
+  'linux-vdso',
+  'libfreetype',
+  'librt',
+  'libdl',
+  'libgobject-2.0',
+  'libnss3',
+  'libnssutil3',
+  'libsmime3',
+  'libplc4',
+  'libnspr4',
+  'libfontconfig',
+  'libdrm',
+  'libasound',
+  'libexpat',
+  # 'libudev', # TODO(rjkroege) Decide about this one.
+  'libstdc++',
+  'libm',
+  'libgcc_s',
+  'libpthread',
+  'libc',
+  'libz',
+  'libffi',
+  'libpcre',
+  'libplds4',
 ]
 
 binary_target = 'content_shell'
 
+def stdmsg(final, errors):
+  if errors:
+    for message in errors:
+      print message
+
+def bbmsg(final, errors):
+  if errors:
+    for message in errors:
+      print '@@@STEP_TEXT@%s@@@' % message
+  if final:
+    print '\n@@@STEP_%s@@@' % final
+
+
 def _main():
+  output = {
+    'message': lambda x: stdmsg(None, x),
+    'fail': lambda x: stdmsg('FAILED', x),
+    'warn': lambda x: stdmsg('WARNING', x),
+    'abend': lambda x: stdmsg('FAILED', x),
+    'ok': lambda x: stdmsg('SUCCESS', x),
+  }
+
   parser = optparse.OptionParser(
       "usage: %prog -b <dir> --target <Debug|Release>")
+  parser.add_option("", "--annotate", dest='annotate', action='store_true',
+      default=False, help="include buildbot annotations in output")
+  parser.add_option("", "--noannotate", dest='annotate', action='store_false')
   parser.add_option("-b", "--build-dir",
                     help="the location of the compiler output")
   parser.add_option("--target", help="Debug or Release")
@@ -42,36 +93,61 @@ def _main():
   else:
     target = binary_target
 
-  forbidden_regexp = re.compile(string.join(kUndesiredLibraryList, '|'))
+  if options.annotate:
+    output = {
+      'message': lambda x: bbmsg(None, x),
+      'fail': lambda x: bbmsg('FAILURE', x),
+      'warn': lambda x: bbmsg('WARNINGS', x),
+      'abend': lambda x: bbmsg('EXCEPTIONS', x),
+      'ok': lambda x: bbmsg('SUCCESS', x),
+    }
+
+  forbidden_regexp = re.compile(string.join(map(re.escape,
+                                                kUndesiredLibraryList), '|'))
+  mapping_regexp = re.compile(r"\s*([^/]*) => ")
+  blessed_regexp = re.compile(r"(%s)[-0-9.]*\.so" % string.join(map(re.escape,
+      kAllowedLibraryList), '|')
   success = 0
+  warning = 0
 
   p = subprocess.Popen(['ldd', target], stdout=subprocess.PIPE,
       stderr=subprocess.PIPE)
   out, err = p.communicate()
 
   if err != '':
-    print "Failed to execute ldd to analyze dependencies for " + target + ':'
-    print '    ' + err
-    print "FAILED\n"
+    output['abend']([
+      'Failed to execute ldd to analyze dependencies for ' + target + ':',
+      '    ' + err,
+    ])
     return 1
 
   if out == '':
-    print "No output to scan for forbidden dependencies?\n"
-    print "\nFAILED\n"
+    output['abend']([
+      'No output to scan for forbidden dependencies.'
+    ])
     return 1
 
   success = 1
   deps = string.split(out, '\n')
   for d in deps:
-      if re.search(forbidden_regexp, d) != None:
-        success = 0
-        print "Forbidden library: " +  d
+      libmatch = mapping_regexp.match(d)
+      if libmatch:
+        lib = libmatch.group(1)
+        if forbidden_regexp.search(lib):
+          success = 0
+          output['message'](['Forbidden library: ' +  lib])
+        if not blessed_regexp.match(lib):
+          warning = 1
+          output['message'](['Unexpected library: ' +  lib])
 
   if success == 1:
-    print "\nSUCCESS\n"
+    if warning == 1:
+      output['warn'](None)
+    else:
+      output['ok'](None)
     return 0
   else:
-    print "\nFAILED\n"
+    output['fail'](None)
     return 1
 
 if __name__ == "__main__":
