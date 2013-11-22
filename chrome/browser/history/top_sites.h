@@ -149,6 +149,13 @@ class TopSites
   // Returns the set of prepopulate pages.
   virtual MostVisitedURLList GetPrepopulatePages() = 0;
 
+  // Adds or updates a |url| for which we should force the capture of a
+  // thumbnail next time it's visited. If there is already a non-forced URL
+  // matching this |url| this call has no effect. Indicate this URL was laste
+  // forced at |time| so we can evict the older URLs when needed. Should be
+  // called from the UI thread.
+  virtual bool AddForcedURL(const GURL& url, const base::Time& time) = 0;
+
   struct PrepopulatedPage {
     // The string resource for the url.
     int url_id;

@@ -87,6 +87,7 @@ class TopSitesImpl : public TopSites {
   virtual bool IsForcedFull() OVERRIDE;
   virtual MostVisitedURLList GetPrepopulatePages() OVERRIDE;
   virtual bool loaded() const OVERRIDE;
+  virtual bool AddForcedURL(const GURL& url, const base::Time& time) OVERRIDE;
 
  protected:
   virtual ~TopSitesImpl();

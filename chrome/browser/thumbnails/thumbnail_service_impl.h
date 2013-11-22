@@ -30,6 +30,7 @@ class ThumbnailServiceImpl : public ThumbnailService {
       const GURL& url,
       bool prefix_match,
       scoped_refptr<base::RefCountedMemory>* bytes) OVERRIDE;
+  virtual void AddForcedURL(const GURL& url) OVERRIDE;
   virtual bool ShouldAcquirePageThumbnail(const GURL& url) OVERRIDE;
 
   // Implementation of RefcountedBrowserContextKeyedService.

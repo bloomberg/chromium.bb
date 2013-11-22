@@ -296,6 +296,10 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     top_sites()->SetTopSites(new_top_sites);
   }
 
+  bool AddForcedURL(const GURL& url, base::Time time) {
+    return top_sites()->AddForcedURL(url, time);
+  }
+
   void StartQueryForMostVisited() {
     top_sites()->StartQueryForMostVisited();
   }
@@ -1248,74 +1252,49 @@ TEST_F(TopSitesImplTest, AddPrepopulatedPages) {
 // Ensure calling SetTopSites with forced sites already in the DB works.
 // This test both eviction and
 TEST_F(TopSitesImplTest, SetForcedTopSites) {
-
-  const double old_last_forced_time[] = {
-    1000,
-    4000,
-    7000,
-    10000,
-    11000,
-    12000,
-    13000,
-    18000,
-    21000
-  };
-  size_t num_old_forced = arraysize(old_last_forced_time);
-
-  const double new_last_forced_time[] = {
-    2000,
-    3000,
-    5000,
-    6000,
-    8000,
-    9000,
-    14000,
-    15000,
-    16000,
-    17000,
-    19000,
-    20000,
-    22000
-  };
-  size_t num_new_forced = arraysize(new_last_forced_time);
-
-  const size_t kNumNonForcedURLs = 20;  // Maximum number of non-forced URLs.
-
+  // Create forced elements in old URL list.
   MostVisitedURLList old_url_list;
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/0"), 1000);
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/1"), 4000);
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/2"), 7000);
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/3"), 10000);
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/4"), 11000);
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/5"), 12000);
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/6"), 13000);
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/7"), 18000);
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/8"), 21000);
+  const size_t kNumOldForcedURLs = 9;
+
+  // Create forced elements in new URL list.
   MostVisitedURLList new_url_list;
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/0"), 2000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/1"), 3000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/2"), 5000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/3"), 6000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/4"), 8000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/5"), 9000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/6"), 14000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/7"), 15000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/8"), 16000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/9"), 17000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/10"), 19000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/11"), 20000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/12"), 22000);
 
-  old_url_list.resize(num_old_forced + kNumNonForcedURLs);
-  new_url_list.resize(num_new_forced + kNumNonForcedURLs);
-
-  // Setup a number of forced and non-forced URLs.
-  for (size_t i = 0; i < num_old_forced; ++i) {
+  // Setup a number non-forced URLs in both old and new list.
+  const size_t kNumNonForcedURLs = 20;  // Maximum number of non-forced URLs.
+  for (size_t i = 0; i < kNumNonForcedURLs; ++i) {
     std::ostringstream url;
-    url << "http://oldforced/" << i;
-    old_url_list[i].url = GURL(url.str());
-    old_url_list[i].last_forced_time =
-        base::Time::FromJsTime(old_last_forced_time[i]);
-  }
-  for (size_t i = num_old_forced; i < old_url_list.size(); ++i) {
-    std::ostringstream url;
-    url << "http://oldnonforced/" << (i - num_old_forced);
-    old_url_list[i].url = GURL(url.str());
-  }
-  for (size_t i = 0; i < num_new_forced; ++i) {
-    std::ostringstream url;
-    url << "http://newforced/" << i;
-    new_url_list[i].url = GURL(url.str());
-    new_url_list[i].last_forced_time =
-        base::Time::FromJsTime(new_last_forced_time[i]);
-  }
-  for (size_t i = num_new_forced; i < new_url_list.size(); ++i) {
-    std::ostringstream url;
-    url << "http://newnonforced/" << (i - num_new_forced);
-    new_url_list[i].url = GURL(url.str());
+    url << "http://oldnonforced/" << i;
+    AppendMostVisitedURL(&old_url_list, GURL(url.str()));
+    url.str("");
+    url << "http://newnonforced/" << i;
+    AppendMostVisitedURL(&new_url_list, GURL(url.str()));
   }
 
   // Set the initial list of URLs.
   SetTopSites(old_url_list);
-  EXPECT_EQ(num_old_forced + kNumNonForcedURLs, last_num_urls_changed());
+  EXPECT_EQ(kNumOldForcedURLs + kNumNonForcedURLs, last_num_urls_changed());
 
   TopSitesQuerier querier;
   // Query only non-forced URLs first.
@@ -1327,11 +1306,12 @@ TEST_F(TopSitesImplTest, SetForcedTopSites) {
 
   // Query all URLs.
   querier.QueryAllTopSites(top_sites(), false, true);
-  EXPECT_EQ(num_old_forced + kNumNonForcedURLs, querier.urls().size());
+  EXPECT_EQ(kNumOldForcedURLs + kNumNonForcedURLs, querier.urls().size());
 
   // Check first URLs.
   EXPECT_EQ("http://oldforced/0", querier.urls()[0].url.spec());
-  EXPECT_EQ("http://oldnonforced/0", querier.urls()[num_old_forced].url.spec());
+  EXPECT_EQ("http://oldnonforced/0",
+            querier.urls()[kNumOldForcedURLs].url.spec());
 
   // Set the new list of URLs.
   SetTopSites(new_url_list);
@@ -1344,65 +1324,77 @@ TEST_F(TopSitesImplTest, SetForcedTopSites) {
 
   // Check forced URLs. They follow the order of timestamps above, smaller
   // timestamps since they were evicted.
-  EXPECT_EQ("http://newforced/1", querier.urls()[0].url.spec());    // 3000
-  EXPECT_EQ("http://oldforced/1", querier.urls()[1].url.spec());    // 4000
-  EXPECT_EQ("http://newforced/2", querier.urls()[2].url.spec());    // 5000
-  EXPECT_EQ("http://newforced/3", querier.urls()[3].url.spec());    // 6000
-  EXPECT_EQ("http://oldforced/2", querier.urls()[4].url.spec());    // 7000
-  EXPECT_EQ("http://newforced/4", querier.urls()[5].url.spec());    // 8000
-  EXPECT_EQ("http://newforced/5", querier.urls()[6].url.spec());    // 9000
-  EXPECT_EQ("http://oldforced/3", querier.urls()[7].url.spec());    // 10000
-  EXPECT_EQ("http://oldforced/4", querier.urls()[8].url.spec());    // 11000
-  EXPECT_EQ("http://oldforced/5", querier.urls()[9].url.spec());    // 12000
-  EXPECT_EQ("http://oldforced/6", querier.urls()[10].url.spec());   // 13000
-  EXPECT_EQ("http://newforced/6", querier.urls()[11].url.spec());   // 14000
-  EXPECT_EQ("http://newforced/7", querier.urls()[12].url.spec());   // 15000
-  EXPECT_EQ("http://newforced/8", querier.urls()[13].url.spec());   // 16000
-  EXPECT_EQ("http://newforced/9", querier.urls()[14].url.spec());   // 17000
-  EXPECT_EQ("http://oldforced/7", querier.urls()[15].url.spec());   // 18000
-  EXPECT_EQ("http://newforced/10", querier.urls()[16].url.spec());  // 19000
-  EXPECT_EQ("http://newforced/11", querier.urls()[17].url.spec());  // 20000
-  EXPECT_EQ("http://oldforced/8", querier.urls()[18].url.spec());   // 21000
-  EXPECT_EQ("http://newforced/12", querier.urls()[19].url.spec());  // 22000
+  EXPECT_EQ("http://newforced/1", querier.urls()[0].url.spec());
+  EXPECT_EQ(3000, querier.urls()[0].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://oldforced/1", querier.urls()[1].url.spec());
+  EXPECT_EQ(4000, querier.urls()[1].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://newforced/2", querier.urls()[2].url.spec());
+  EXPECT_EQ(5000, querier.urls()[2].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://newforced/3", querier.urls()[3].url.spec());
+  EXPECT_EQ(6000, querier.urls()[3].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://oldforced/2", querier.urls()[4].url.spec());
+  EXPECT_EQ(7000, querier.urls()[4].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://newforced/4", querier.urls()[5].url.spec());
+  EXPECT_EQ(8000, querier.urls()[5].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://newforced/5", querier.urls()[6].url.spec());
+  EXPECT_EQ(9000, querier.urls()[6].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://oldforced/3", querier.urls()[7].url.spec());
+  EXPECT_EQ(10000, querier.urls()[7].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://oldforced/4", querier.urls()[8].url.spec());
+  EXPECT_EQ(11000, querier.urls()[8].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://oldforced/5", querier.urls()[9].url.spec());
+  EXPECT_EQ(12000, querier.urls()[9].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://oldforced/6", querier.urls()[10].url.spec());
+  EXPECT_EQ(13000, querier.urls()[10].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://newforced/6", querier.urls()[11].url.spec());
+  EXPECT_EQ(14000, querier.urls()[11].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://newforced/7", querier.urls()[12].url.spec());
+  EXPECT_EQ(15000, querier.urls()[12].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://newforced/8", querier.urls()[13].url.spec());
+  EXPECT_EQ(16000, querier.urls()[13].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://newforced/9", querier.urls()[14].url.spec());
+  EXPECT_EQ(17000, querier.urls()[14].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://oldforced/7", querier.urls()[15].url.spec());
+  EXPECT_EQ(18000, querier.urls()[15].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://newforced/10", querier.urls()[16].url.spec());
+  EXPECT_EQ(19000, querier.urls()[16].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://newforced/11", querier.urls()[17].url.spec());
+  EXPECT_EQ(20000, querier.urls()[17].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://oldforced/8", querier.urls()[18].url.spec());
+  EXPECT_EQ(21000, querier.urls()[18].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://newforced/12", querier.urls()[19].url.spec());
+  EXPECT_EQ(22000, querier.urls()[19].last_forced_time.ToJsTime());
 
   // Check first and last non-forced URLs.
   EXPECT_EQ("http://newnonforced/0", querier.urls()[20].url.spec());
+  EXPECT_TRUE(querier.urls()[20].last_forced_time.is_null());
   EXPECT_EQ("http://newnonforced/19", querier.urls()[39].url.spec());
+  EXPECT_TRUE(querier.urls()[39].last_forced_time.is_null());
 }
 
 TEST_F(TopSitesImplTest, SetForcedTopSitesWithCollisions) {
-  MostVisitedURLList old_url_list;
-  MostVisitedURLList new_url_list;
 
-  old_url_list.resize(5);
-  old_url_list[0].url = GURL("http://url/0");
-  old_url_list[0].last_forced_time = base::Time::FromJsTime(1000);
-  old_url_list[1].url = GURL("http://collision/0");  // Evicted
-  old_url_list[1].last_forced_time = base::Time::FromJsTime(4000);
-  old_url_list[2].url = GURL("http://collision/1");  // Evicted
-  old_url_list[2].last_forced_time = base::Time::FromJsTime(6000);
-  old_url_list[3].url = GURL("http://collision/2");  // Evicted
-  old_url_list[3].last_forced_time = base::Time::FromJsTime(7000);
+  // Setup an old URL list in order to generate some collisions.
+  MostVisitedURLList old_url_list;
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://url/0"), 1000);
+  // The following three will be evicted.
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://collision/0"), 4000);
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://collision/1"), 6000);
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://collision/2"), 7000);
   // The following is evicted since all non-forced URLs are, therefore it
   // doesn't cause a collision.
-  old_url_list[4].url = GURL("http://noncollision/0");
-
-  new_url_list.resize(6);
-  new_url_list[0].url = GURL("http://collision/1");
-  new_url_list[0].last_forced_time = base::Time::FromJsTime(2000);
-  new_url_list[1].url = GURL("http://url/2");
-  new_url_list[1].last_forced_time = base::Time::FromJsTime(3000);
-  new_url_list[2].url = GURL("http://collision/0");
-  new_url_list[2].last_forced_time = base::Time::FromJsTime(5000);
-  new_url_list[3].url = GURL("http://noncollision/0");
-  new_url_list[3].last_forced_time = base::Time::FromJsTime(9000);
-  new_url_list[4].url = GURL("http://collision/2");
-  new_url_list[5].url = GURL("http://url/3");
-
-  // Set the initial list of URLs.
+  AppendMostVisitedURL(&old_url_list, GURL("http://noncollision/0"));
   SetTopSites(old_url_list);
 
-  // Set the new list of URLs.
+  // Setup a new URL list that will cause collisions.
+  MostVisitedURLList new_url_list;
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://collision/1"), 2000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://url/2"), 3000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://collision/0"), 5000);
+  AppendForcedMostVisitedURL(&new_url_list, GURL("http://noncollision/0"),
+                             9000);
+  AppendMostVisitedURL(&new_url_list, GURL("http://collision/2"));
+  AppendMostVisitedURL(&new_url_list, GURL("http://url/3"));
   SetTopSites(new_url_list);
 
   // Query all URLs.
@@ -1428,19 +1420,15 @@ TEST_F(TopSitesImplTest, SetForcedTopSitesWithCollisions) {
   ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 7));
 }
 
-
 TEST_F(TopSitesImplTest, SetTopSitesIdentical) {
-  MostVisitedURLList url_list;
-  url_list.resize(3);
-  url_list[0].url = GURL("http://url/0");
-  url_list[0].last_forced_time = base::Time::FromJsTime(1000);
-  url_list[1].url = GURL("http://url/1");  // Evicted
-  url_list[2].url = GURL("http://url/2");  // Evicted
-
   // Set the initial list of URLs.
+  MostVisitedURLList url_list;
+  AppendForcedMostVisitedURL(&url_list, GURL("http://url/0"), 1000);
+  AppendMostVisitedURL(&url_list, GURL("http://url/1"));
+  AppendMostVisitedURL(&url_list, GURL("http://url/2"));
   SetTopSites(url_list);
 
-  // Set the new list of URLs.
+  // Set the new list of URLs to be exactly the same.
   SetTopSites(MostVisitedURLList(url_list));
 
   // Query all URLs.
@@ -1454,6 +1442,107 @@ TEST_F(TopSitesImplTest, SetTopSitesIdentical) {
   EXPECT_EQ("http://url/1", querier.urls()[1].url.spec());
   EXPECT_EQ("http://url/2", querier.urls()[2].url.spec());
   ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 3));
+}
+
+TEST_F(TopSitesImplTest, AddForcedURL) {
+  // Set the initial list of URLs.
+  MostVisitedURLList url_list;
+  AppendForcedMostVisitedURL(&url_list, GURL("http://forced/0"), 2000);
+  AppendForcedMostVisitedURL(&url_list, GURL("http://forced/1"), 4000);
+  AppendMostVisitedURL(&url_list, GURL("http://nonforced/0"));
+  AppendMostVisitedURL(&url_list, GURL("http://nonforced/1"));
+  AppendMostVisitedURL(&url_list, GURL("http://nonforced/2"));
+  SetTopSites(url_list);
+
+  // Add forced sites here and there to exercise a couple of cases.
+  EXPECT_TRUE(AddForcedURL(GURL("http://forced/2"),
+                           base::Time::FromJsTime(5000)));
+  EXPECT_TRUE(AddForcedURL(GURL("http://forced/3"),
+                           base::Time::FromJsTime(1000)));
+  EXPECT_TRUE(AddForcedURL(GURL("http://forced/4"),
+                           base::Time::FromJsTime(3000)));
+
+  // Check URLs.
+  TopSitesQuerier querier;
+  querier.QueryAllTopSites(top_sites(), false, true);
+  ASSERT_EQ(8u + GetPrepopulatePages().size(), querier.urls().size());
+  EXPECT_EQ("http://forced/3", querier.urls()[0].url.spec());
+  EXPECT_EQ(1000u, querier.urls()[0].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://forced/0", querier.urls()[1].url.spec());
+  EXPECT_EQ(2000u, querier.urls()[1].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://forced/4", querier.urls()[2].url.spec());
+  EXPECT_EQ(3000u, querier.urls()[2].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://forced/1", querier.urls()[3].url.spec());
+  EXPECT_EQ(4000u, querier.urls()[3].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://forced/2", querier.urls()[4].url.spec());
+  EXPECT_EQ(5000u, querier.urls()[4].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://nonforced/0", querier.urls()[5].url.spec());
+  EXPECT_TRUE(querier.urls()[5].last_forced_time.is_null());
+  EXPECT_EQ("http://nonforced/1", querier.urls()[6].url.spec());
+  EXPECT_TRUE(querier.urls()[6].last_forced_time.is_null());
+  EXPECT_EQ("http://nonforced/2", querier.urls()[7].url.spec());
+  EXPECT_TRUE(querier.urls()[7].last_forced_time.is_null());
+  ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 8));
+
+  // Add some collisions with forced and non-forced. Non-forced URLs are never
+  // expected to move.
+  EXPECT_TRUE(AddForcedURL(GURL("http://forced/3"),
+                           base::Time::FromJsTime(4000)));
+  EXPECT_TRUE(AddForcedURL(GURL("http://forced/1"),
+                            base::Time::FromJsTime(1000)));
+  EXPECT_FALSE(AddForcedURL(GURL("http://nonforced/0"),
+                            base::Time::FromJsTime(6000)));
+
+  // Check relevant URLs.
+  querier.QueryAllTopSites(top_sites(), false, true);
+  ASSERT_EQ(8u + GetPrepopulatePages().size(), querier.urls().size());
+  EXPECT_EQ("http://forced/1", querier.urls()[0].url.spec());
+  EXPECT_EQ(1000u, querier.urls()[0].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://forced/3", querier.urls()[3].url.spec());
+  EXPECT_EQ(4000u, querier.urls()[3].last_forced_time.ToJsTime());
+  EXPECT_EQ("http://nonforced/0", querier.urls()[5].url.spec());
+  EXPECT_TRUE(querier.urls()[5].last_forced_time.is_null());
+
+  // Add a timestamp collision and make sure things don't break.
+  EXPECT_TRUE(AddForcedURL(GURL("http://forced/5"),
+                           base::Time::FromJsTime(4000)));
+  querier.QueryAllTopSites(top_sites(), false, true);
+  ASSERT_EQ(9u + GetPrepopulatePages().size(), querier.urls().size());
+  EXPECT_EQ(4000u, querier.urls()[3].last_forced_time.ToJsTime());
+  EXPECT_EQ(4000u, querier.urls()[4].last_forced_time.ToJsTime());
+  // We don't care which order they get sorted in.
+  if (querier.urls()[3].url.spec() == "http://forced/3") {
+    EXPECT_EQ("http://forced/3", querier.urls()[3].url.spec());
+    EXPECT_EQ("http://forced/5", querier.urls()[4].url.spec());
+  } else {
+    EXPECT_EQ("http://forced/5", querier.urls()[3].url.spec());
+    EXPECT_EQ("http://forced/3", querier.urls()[4].url.spec());
+  }
+
+  // Make sure the thumbnail is not lost when the timestamp is updated.
+  gfx::Image red_thumbnail(CreateBitmap(SK_ColorRED));
+  ASSERT_TRUE(top_sites()->SetPageThumbnail(
+                  GURL("http://forced/5"), red_thumbnail, ThumbnailScore()));
+
+  // Get the original thumbnail for later comparison. Some compression can
+  // happen in |top_sites| and we don't want to depend on that.
+  SkBitmap orig_thumbnail = GetThumbnail(GURL("http://forced/5"));
+
+  EXPECT_TRUE(AddForcedURL(GURL("http://forced/5"),
+                           base::Time::FromJsTime(6000)));
+
+  // Ensure the thumbnail is still there even if the timestamp changed.
+  querier.QueryAllTopSites(top_sites(), false, true);
+  EXPECT_EQ("http://forced/5", querier.urls()[5].url.spec());
+  EXPECT_EQ(6000u, querier.urls()[5].last_forced_time.ToJsTime());
+  SkBitmap thumbnail = GetThumbnail(GURL("http://forced/5"));
+  ASSERT_EQ(orig_thumbnail.getSize(), thumbnail.getSize());
+  orig_thumbnail.lockPixels();
+  thumbnail.lockPixels();
+  EXPECT_EQ(0, memcmp(orig_thumbnail.getPixels(), thumbnail.getPixels(),
+                      orig_thumbnail.getSize()));
+  thumbnail.unlockPixels();
+  orig_thumbnail.unlockPixels();
 }
 
 }  // namespace history

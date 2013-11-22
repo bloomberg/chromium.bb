@@ -39,9 +39,17 @@ void RenderMostVisitedURLList(
     bool want_thumbnails,
     std::vector<std::string>* out) {
   DCHECK_EQ(mvurl_list.size(), base64_encoded_pngs.size());
-  out->push_back("<div><ul>\n");
+  bool doing_forced_urls = true;
+  out->push_back("<div><b>Forced URLs:</b></div>\n"
+                 "<div><ul>\n");
   for (size_t i = 0; i < mvurl_list.size(); ++i) {
     const history::MostVisitedURL& mvurl = mvurl_list[i];
+    if (doing_forced_urls && mvurl.last_forced_time.is_null()) {
+      out->push_back("</ul></div>\n"
+                     "<div><b>Non-forced URLs:</b></div>\n"
+                     "<div><ul>\n");
+      doing_forced_urls = false;
+    }
     bool has_thumbnail = !base64_encoded_pngs[i].empty();
     if (has_thumbnail == want_thumbnails) {
       out->push_back("<li>\n");
@@ -89,7 +97,7 @@ void ThumbnailListSource::StartDataRequest(
   profile_->GetTopSites()->GetMostVisitedURLs(
       base::Bind(&ThumbnailListSource::OnMostVisitedURLsAvailable,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback), false);
+                 callback), true);
 }
 
 std::string ThumbnailListSource::GetMimeType(const std::string& path) const {

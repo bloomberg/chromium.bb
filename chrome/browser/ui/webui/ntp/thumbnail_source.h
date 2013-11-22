@@ -25,7 +25,7 @@ class ThumbnailService;
 // thumbnails and the history/top-sites backend that serves these.
 class ThumbnailSource : public content::URLDataSource {
  public:
-  ThumbnailSource(Profile* profile, bool prefix_match);
+  ThumbnailSource(Profile* profile, bool capture_thumbnails);
 
   // content::URLDataSource implementation.
   virtual std::string GetSource() const OVERRIDE;
@@ -53,10 +53,15 @@ class ThumbnailSource : public content::URLDataSource {
   // Only used when servicing requests on the UI thread.
   Profile* const profile_;
 
-  // If an exact thumbnail URL match fails, specifies whether or not to try
-  // harder by matching the query thumbnail URL as URL prefix. This affects
-  // GetSource().
-  const bool prefix_match_;
+  // Indicate that, when a URL for which we don't have a thumbnail is requested
+  // from this source, then Chrome should capture a thumbnail next time it
+  // navigates to this URL. This is useful when the thumbnail URLs are generated
+  // by an external service rather than TopSites, so Chrome can learn about the
+  // URLs for which it should get thumbnails. Sources that capture thumbnails
+  // are also be more lenient when matching thumbnail URLs by checking for
+  // existing thumbnails in the database that contain a URL matching the prefix
+  // of the requested URL.
+  const bool capture_thumbnails_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailSource);
 };

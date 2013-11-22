@@ -50,6 +50,10 @@ class ThumbnailService : public RefcountedBrowserContextKeyedService {
       bool prefix_match,
       scoped_refptr<base::RefCountedMemory>* bytes) = 0;
 
+  // Add or updates a |url| for which we should force the capture of a thumbnail
+  // next time it's visited.
+  virtual void AddForcedURL(const GURL& url) = 0;
+
   // Returns true if the page thumbnail should be updated.
   virtual bool ShouldAcquirePageThumbnail(const GURL& url) = 0;
 

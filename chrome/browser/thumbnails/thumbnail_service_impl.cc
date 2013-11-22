@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/time/time.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/thumbnails/content_based_thumbnailing_algorithm.h"
@@ -13,6 +14,8 @@
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 #include "chrome/common/chrome_switches.h"
 #include "url/gurl.h"
+
+using content::BrowserThread;
 
 namespace {
 
@@ -27,6 +30,14 @@ bool IsThumbnailRetargetingEnabled() {
 
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableThumbnailRetargeting);
+}
+
+void AddForcedURLOnUIThread(scoped_refptr<history::TopSites> top_sites,
+                            const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (top_sites.get() != NULL)
+    top_sites->AddForcedURL(url, base::Time::Now());
 }
 
 }  // namespace
@@ -59,6 +70,16 @@ bool ThumbnailServiceImpl::GetPageThumbnail(
     return false;
 
   return local_ptr->GetPageThumbnail(url, prefix_match, bytes);
+}
+
+void ThumbnailServiceImpl::AddForcedURL(const GURL& url) {
+  scoped_refptr<history::TopSites> local_ptr(top_sites_);
+  if (local_ptr.get() == NULL)
+    return;
+
+  // Adding
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(AddForcedURLOnUIThread, local_ptr, url));
 }
 
 ThumbnailingAlgorithm* ThumbnailServiceImpl::GetThumbnailingAlgorithm()
