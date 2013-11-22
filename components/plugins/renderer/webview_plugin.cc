@@ -138,7 +138,9 @@ void WebViewPlugin::updateGeometry(const WebRect& frame_rect,
                                    bool is_visible) {
   if (static_cast<gfx::Rect>(frame_rect) != rect_) {
     rect_ = frame_rect;
-    web_view_->resize(WebSize(frame_rect.width, frame_rect.height));
+    WebSize newSize(frame_rect.width, frame_rect.height);
+    web_view_->setFixedLayoutSize(newSize);
+    web_view_->resize(newSize);
   }
 }
 
