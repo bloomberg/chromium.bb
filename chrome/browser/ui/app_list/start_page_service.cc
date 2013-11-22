@@ -19,9 +19,11 @@
 #include "chrome/common/url_constants.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "extensions/common/extension.h"
@@ -74,7 +76,7 @@ class StartPageService::ProfileDestroyObserver
       : service_(service) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_PROFILE_DESTROYED,
-                   content::NotificationService::AllSources());
+                   content::Source<Profile>(service_->profile()));
   }
   virtual ~ProfileDestroyObserver() {}
 
@@ -84,6 +86,7 @@ class StartPageService::ProfileDestroyObserver
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
+    DCHECK_EQ(service_->profile(), content::Details<Profile>(details).ptr());
     service_->Shutdown();
   }
 

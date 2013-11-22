@@ -42,6 +42,7 @@ class StartPageService : public BrowserContextKeyedService {
 
   content::WebContents* contents() { return contents_.get(); }
   RecommendedApps* recommended_apps() { return recommended_apps_.get(); }
+  Profile* profile() { return profile_; }
   void OnSearch(const base::string16& query);
   void OnSpeechRecognitionStateChanged(bool recognizing);
 
