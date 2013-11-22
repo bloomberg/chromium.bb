@@ -46,9 +46,10 @@ bool VideoEncoder::EncodeVideoFrame(
   }
 
   cast_environment_->PostTask(CastEnvironment::VIDEO_ENCODER, FROM_HERE,
-      base::Bind(&VideoEncoder::EncodeVideoFrameEncoderThread, this,
-          video_frame, capture_time, dynamic_config_, frame_encoded_callback,
-          frame_release_callback));
+      base::Bind(&VideoEncoder::EncodeVideoFrameEncoderThread,
+                 base::Unretained(this), video_frame, capture_time,
+                 dynamic_config_, frame_encoded_callback,
+                 frame_release_callback));
 
   dynamic_config_.key_frame_requested = false;
   return true;

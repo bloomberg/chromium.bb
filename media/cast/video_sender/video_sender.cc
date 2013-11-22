@@ -133,6 +133,8 @@ void VideoSender::InsertRawVideoFrame(
     const base::Closure& callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(video_encoder_.get()) << "Invalid state";
+  cast_environment_->Logging()->InsertFrameEvent(kVideoFrameReceived,
+      GetVideoRtpTimestamp(capture_time), kFrameIdUnknown);
 
   if (!video_encoder_->EncodeVideoFrame(video_frame, capture_time,
       base::Bind(&VideoSender::SendEncodedVideoFrameMainThread,

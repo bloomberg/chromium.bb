@@ -164,7 +164,8 @@ void VideoReceiver::DecodeVideoFrame(
   // Hand the ownership of the encoded frame to the decode thread.
   cast_environment_->PostTask(CastEnvironment::VIDEO_DECODER, FROM_HERE,
       base::Bind(&VideoReceiver::DecodeVideoFrameThread,
-                 weak_factory_.GetWeakPtr(), base::Passed(&encoded_frame),
+                 base::Unretained(this),
+                 base::Passed(&encoded_frame),
                  render_time, callback));
 }
 
@@ -180,13 +181,14 @@ void VideoReceiver::DecodeVideoFrameThread(
                                         frame_decoded_callback))) {
     // This will happen if we decide to decode but not show a frame.
     cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(&VideoReceiver::GetRawVideoFrame,
-                   weak_factory_.GetWeakPtr(), frame_decoded_callback));
+        base::Bind(&VideoReceiver::GetRawVideoFrame, base::Unretained(this),
+                   frame_decoded_callback));
   }
 }
 
 bool VideoReceiver::DecryptVideoFrame(
     scoped_ptr<EncodedVideoFrame>* video_frame) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(decryptor_) << "Invalid state";
 
   if (!decryptor_->SetCounter(GetAesNonce((*video_frame)->frame_id,
@@ -196,7 +198,7 @@ bool VideoReceiver::DecryptVideoFrame(
   }
   std::string decrypted_video_data;
   if (!decryptor_->Decrypt((*video_frame)->data, &decrypted_video_data)) {
-    VLOG(0) << "Decryption error";
+    VLOG(1) << "Decryption error";
     // Give up on this frame, release it from jitter buffer.
     framer_->ReleaseFrame((*video_frame)->frame_id);
     return false;
@@ -241,7 +243,7 @@ void VideoReceiver::GetEncodedVideoFrame(
 // Should we pull the encoded video frame from the framer? decided by if this is
 // the next frame or we are running out of time and have to pull the following
 // frame.
-// If the frame it too old to be rendered we set the don't show flag in the
+// If the frame is too old to be rendered we set the don't show flag in the
 // video bitstream where possible.
 bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
     bool next_frame, scoped_ptr<EncodedVideoFrame>* encoded_frame,
@@ -268,7 +270,7 @@ bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
     cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&VideoReceiver::PlayoutTimeout, weak_factory_.GetWeakPtr()),
         time_until_release);
-    VLOG(0) << "Wait before releasing frame "
+    VLOG(1) << "Wait before releasing frame "
             << static_cast<int>((*encoded_frame)->frame_id)
             << " time " << time_until_release.InMilliseconds();
     return false;
@@ -278,7 +280,7 @@ bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
       base::TimeDelta::FromMilliseconds(-kDontShowTimeoutMs);
   if (codec_ == kVp8 && time_until_render < dont_show_timeout_delta) {
     (*encoded_frame)->data[0] &= 0xef;
-    VLOG(0) << "Don't show frame "
+    VLOG(1) << "Don't show frame "
             << static_cast<int>((*encoded_frame)->frame_id)
             << " time_until_render:" << time_until_render.InMilliseconds();
   } else {

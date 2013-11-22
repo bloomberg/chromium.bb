@@ -142,6 +142,7 @@ void AudioReceiver::InitializeTimers() {
 void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
                                             size_t payload_size,
                                             const RtpCastHeader& rtp_header) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   cast_environment_->Logging()->InsertPacketEvent(kPacketReceived,
       rtp_header.webrtc.header.timestamp, rtp_header.frame_id,
       rtp_header.packet_id, rtp_header.max_packet_id, payload_size);
@@ -196,7 +197,7 @@ void AudioReceiver::GetRawAudioFrame(int number_of_10ms_blocks,
 
   cast_environment_->PostTask(CastEnvironment::AUDIO_DECODER, FROM_HERE,
       base::Bind(&AudioReceiver::DecodeAudioFrameThread,
-                 weak_factory_.GetWeakPtr(),
+                 base::Unretained(this),
                  number_of_10ms_blocks,
                  desired_frequency,
                  callback));
@@ -300,6 +301,7 @@ bool AudioReceiver::PostEncodedAudioFrame(
     scoped_ptr<EncodedAudioFrame>* encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_buffer_) << "Invalid function call in this configuration";
+
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   base::TimeTicks playout_time = GetPlayoutTime(now, rtp_timestamp);
   base::TimeDelta time_until_playout = playout_time - now;

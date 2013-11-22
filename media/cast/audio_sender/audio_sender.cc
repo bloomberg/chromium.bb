@@ -117,6 +117,9 @@ void AudioSender::InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_encoder_.get() == NULL) << "Invalid internal state";
 
+  cast_environment_->Logging()->InsertFrameEvent(kAudioFrameReceived,
+      GetVideoRtpTimestamp(recorded_time), kFrameIdUnknown);
+
   if (encryptor_) {
     EncodedAudioFrame encrypted_frame;
     if (!EncryptAudioFrame(*audio_frame, &encrypted_frame)) {

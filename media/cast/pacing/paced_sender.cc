@@ -28,15 +28,18 @@ PacedSender::PacedSender(scoped_refptr<CastEnvironment> cast_environment,
 PacedSender::~PacedSender() {}
 
 bool PacedSender::SendPackets(const PacketList& packets) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   return SendPacketsToTransport(packets, &packet_list_);
 }
 
 bool PacedSender::ResendPackets(const PacketList& packets) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   return SendPacketsToTransport(packets, &resend_packet_list_);
 }
 
 bool PacedSender::SendPacketsToTransport(const PacketList& packets,
                                          PacketList* packets_not_sent) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   UpdateBurstSize(packets.size());
 
   if (!packets_not_sent->empty()) {
@@ -65,6 +68,7 @@ bool PacedSender::SendPacketsToTransport(const PacketList& packets,
 }
 
 bool PacedSender::SendRtcpPacket(const Packet& packet) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   // We pass the RTCP packets straight through.
   return transport_->SendPacket(packet);
 }
@@ -82,12 +86,14 @@ void PacedSender::ScheduleNextSend() {
 }
 
 void PacedSender::SendNextPacketBurst() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   SendStoredPackets();
   time_last_process_ = cast_environment_->Clock()->NowTicks();
   ScheduleNextSend();
 }
 
 void PacedSender::SendStoredPackets() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (packet_list_.empty() && resend_packet_list_.empty()) return;
 
   size_t packets_to_send = burst_size_;
@@ -123,6 +129,7 @@ void PacedSender::SendStoredPackets() {
 }
 
 void PacedSender::UpdateBurstSize(size_t packets_to_send) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   packets_to_send = std::max(packets_to_send,
       resend_packet_list_.size() + packet_list_.size());
 
