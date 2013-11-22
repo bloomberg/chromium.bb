@@ -573,7 +573,7 @@ void SpellChecker::markAndReplaceFor(PassRefPtr<SpellCheckRequest> request, cons
     bool adjustSelectionForParagraphBoundaries = false;
 
     if (shouldMarkSpelling) {
-        if (m_frame.selection().selectionType() == VisibleSelection::CaretSelection) {
+        if (m_frame.selection().isCaret()) {
             // Attempt to save the caret position so we can restore it later if needed
             Position caretPosition = m_frame.selection().end();
             selectionOffset = paragraph.offsetTo(caretPosition, ASSERT_NO_EXCEPTION);

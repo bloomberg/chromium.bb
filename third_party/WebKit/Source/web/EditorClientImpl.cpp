@@ -31,8 +31,7 @@
 #include "WebPermissionClient.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
-#include "core/editing/FrameSelection.h"
-#include "core/frame/Frame.h"
+#include "core/editing/SelectionType.h"
 
 using namespace WebCore;
 
@@ -47,10 +46,10 @@ EditorClientImpl::~EditorClientImpl()
 {
 }
 
-void EditorClientImpl::respondToChangedSelection(Frame* frame)
+void EditorClientImpl::respondToChangedSelection(WebCore::SelectionType selectionType)
 {
-    if (m_webView->client() && frame)
-        m_webView->client()->didChangeSelection(!frame->selection().isRange());
+    if (m_webView->client())
+        m_webView->client()->didChangeSelection(selectionType != WebCore::RangeSelection);
 }
 
 void EditorClientImpl::respondToChangedContents()

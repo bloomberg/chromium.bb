@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2006, 2007 Apple Inc. All rights reserved.
- * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2004 Apple Computer, Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,32 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EditorClient_h
-#define EditorClient_h
-
-#include "core/editing/SelectionType.h"
-#include "wtf/Forward.h"
+#ifndef SelectionType_h
+#define SelectionType_h
 
 namespace WebCore {
 
-class Element;
-class Frame;
-class UndoStep;
+enum SelectionType { NoSelection, CaretSelection, RangeSelection };
 
-class EditorClient {
-public:
-    virtual ~EditorClient() { }
+} // namespace WebCore
 
-    virtual void respondToChangedContents() = 0;
-    virtual void respondToChangedSelection(SelectionType) = 0;
-
-    virtual bool canCopyCut(Frame*, bool defaultValue) const = 0;
-    virtual bool canPaste(Frame*, bool defaultValue) const = 0;
-
-    virtual void didExecuteCommand(String) = 0;
-    virtual bool handleKeyboardEvent() = 0;
-};
-
-}
-
-#endif // EditorClient_h
+#endif // SelectionType_h

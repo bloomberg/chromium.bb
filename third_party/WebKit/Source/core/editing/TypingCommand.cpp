@@ -402,11 +402,11 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
     VisibleSelection selectionAfterUndo;
 
     switch (endingSelection().selectionType()) {
-    case VisibleSelection::RangeSelection:
+    case RangeSelection:
         selectionToDelete = endingSelection();
         selectionAfterUndo = selectionToDelete;
         break;
-    case VisibleSelection::CaretSelection: {
+    case CaretSelection: {
         // After breaking out of an empty mail blockquote, we still want continue with the deletion
         // so actual content will get deleted, and not just the quote style.
         if (breakOutOfEmptyMailBlockquotedParagraph())
@@ -470,7 +470,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
             selectionAfterUndo.setWithoutValidation(startingSelection().end(), selectionToDelete.extent());
         break;
     }
-    case VisibleSelection::NoSelection:
+    case NoSelection:
         ASSERT_NOT_REACHED();
         break;
     }
@@ -506,11 +506,11 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
     VisibleSelection selectionAfterUndo;
 
     switch (endingSelection().selectionType()) {
-    case VisibleSelection::RangeSelection:
+    case RangeSelection:
         selectionToDelete = endingSelection();
         selectionAfterUndo = selectionToDelete;
         break;
-    case VisibleSelection::CaretSelection: {
+    case CaretSelection: {
         m_smartDelete = false;
 
         // Handle delete at beginning-of-block case.
@@ -563,7 +563,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         }
         break;
     }
-    case VisibleSelection::NoSelection:
+    case NoSelection:
         ASSERT_NOT_REACHED();
         break;
     }

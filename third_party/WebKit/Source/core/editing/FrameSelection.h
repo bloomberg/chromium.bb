@@ -106,7 +106,7 @@ public:
 
     bool contains(const LayoutPoint&);
 
-    VisibleSelection::SelectionType selectionType() const { return m_selection.selectionType(); }
+    SelectionType selectionType() const { return m_selection.selectionType(); }
 
     EAffinity affinity() const { return m_selection.affinity(); }
 

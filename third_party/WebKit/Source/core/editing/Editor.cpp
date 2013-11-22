@@ -494,7 +494,7 @@ bool Editor::shouldDeleteRange(Range* range) const
 
 void Editor::notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions options)
 {
-    client().respondToChangedSelection(&m_frame);
+    client().respondToChangedSelection(m_frame.selection().selectionType());
     setStartNewKillRingSequence(true);
 }
 
@@ -645,13 +645,13 @@ Node* Editor::findEventTargetFromSelection() const
 void Editor::applyStyle(StylePropertySet* style, EditAction editingAction)
 {
     switch (m_frame.selection().selectionType()) {
-    case VisibleSelection::NoSelection:
+    case NoSelection:
         // do nothing
         break;
-    case VisibleSelection::CaretSelection:
+    case CaretSelection:
         computeAndSetTypingStyle(style, editingAction);
         break;
-    case VisibleSelection::RangeSelection:
+    case RangeSelection:
         if (style) {
             ASSERT(m_frame.document());
             ApplyStyleCommand::create(*m_frame.document(), EditingStyle::create(style).get(), editingAction)->apply();
@@ -662,18 +662,10 @@ void Editor::applyStyle(StylePropertySet* style, EditAction editingAction)
 
 void Editor::applyParagraphStyle(StylePropertySet* style, EditAction editingAction)
 {
-    switch (m_frame.selection().selectionType()) {
-    case VisibleSelection::NoSelection:
-        // do nothing
-        break;
-    case VisibleSelection::CaretSelection:
-    case VisibleSelection::RangeSelection:
-        if (style) {
-            ASSERT(m_frame.document());
-            ApplyStyleCommand::create(*m_frame.document(), EditingStyle::create(style).get(), editingAction, ApplyStyleCommand::ForceBlockProperties)->apply();
-        }
-        break;
-    }
+    if (m_frame.selection().isNone() || !style)
+        return;
+    ASSERT(m_frame.document());
+    ApplyStyleCommand::create(*m_frame.document(), EditingStyle::create(style).get(), editingAction, ApplyStyleCommand::ForceBlockProperties)->apply();
 }
 
 void Editor::applyStyleToSelection(StylePropertySet* style, EditAction editingAction)
@@ -1109,7 +1101,7 @@ void Editor::changeSelectionAfterCommand(const VisibleSelection& newSelection,  
     // does not call EditorClient::respondToChangedSelection(), which, on the Mac, sends selection change notifications and
     // starts a new kill ring sequence, but we want to do these things (matches AppKit).
     if (selectionDidNotChangeDOMPosition)
-        client().respondToChangedSelection(&m_frame);
+        client().respondToChangedSelection(m_frame.selection().selectionType());
 }
 
 IntRect Editor::firstRectForRange(Range* range) const

@@ -1777,12 +1777,12 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExt
     LayoutRect rect;
 
     switch (selectionType()) {
-    case VisibleSelection::NoSelection:
+    case NoSelection:
         return;
-    case VisibleSelection::CaretSelection:
+    case CaretSelection:
         rect = absoluteCaretBounds();
         break;
-    case VisibleSelection::RangeSelection:
+    case RangeSelection:
         rect = revealExtentOption == RevealExtent ? VisiblePosition(extent()).absoluteCaretBounds() : enclosingIntRect(bounds(false));
         break;
     }

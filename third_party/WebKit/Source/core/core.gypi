@@ -920,6 +920,7 @@
             'editing/ReplaceNodeWithSpanCommand.cpp',
             'editing/ReplaceNodeWithSpanCommand.h',
             'editing/ReplaceSelectionCommand.cpp',
+            'editing/SelectionType.h',
             'editing/SetNodeAttributeCommand.cpp',
             'editing/SetNodeAttributeCommand.h',
             'editing/SetSelectionCommand.cpp',

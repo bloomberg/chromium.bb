@@ -49,7 +49,7 @@ public:
     virtual ~EditorClientImpl();
 
     virtual void respondToChangedContents() OVERRIDE;
-    virtual void respondToChangedSelection(WebCore::Frame*) OVERRIDE;
+    virtual void respondToChangedSelection(WebCore::SelectionType) OVERRIDE;
     virtual bool canCopyCut(WebCore::Frame*, bool defaultValue) const OVERRIDE;
     virtual bool canPaste(WebCore::Frame*, bool defaultValue) const OVERRIDE;
     virtual void didExecuteCommand(String commandName) OVERRIDE;
