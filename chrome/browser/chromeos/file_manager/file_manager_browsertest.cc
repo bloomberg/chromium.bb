@@ -697,7 +697,7 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "shareDirectory")));
 
 INSTANTIATE_TEST_CASE_P(
-    restoreGeometry,
+    RestoreGeometry,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "restoreGeometry"),
                       TestParameter(IN_GUEST_MODE, "restoreGeometry")));
