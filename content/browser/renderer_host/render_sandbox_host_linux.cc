@@ -25,7 +25,6 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/process/launch.h"
-#include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "content/child/webkitplatformsupport_impl.h"
@@ -708,8 +707,6 @@ void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
   const int child_lifeline_fd = pipefds[0];
   childs_lifeline_fd_ = pipefds[1];
 
-  // We need to be monothreaded before we fork().
-  DCHECK_EQ(1, base::GetNumberOfThreads(base::GetCurrentProcessHandle()));
   pid_ = fork();
   if (pid_ == 0) {
     if (HANDLE_EINTR(close(fds[0])) < 0)
