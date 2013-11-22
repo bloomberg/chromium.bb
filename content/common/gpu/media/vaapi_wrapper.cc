@@ -434,19 +434,11 @@ bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
 }
 
 // static
-bool VaapiWrapper::pre_sandbox_init_done_ = false;
-
-// static
-void VaapiWrapper::PreSandboxInitialization() {
-  DCHECK(!pre_sandbox_init_done_);
+bool VaapiWrapper::PostSandboxInitialization() {
   vaapi_handle = dlopen("libva.so.1", RTLD_NOW);
   vaapi_x11_handle = dlopen("libva-x11.so.1", RTLD_NOW);
-  pre_sandbox_init_done_ = vaapi_handle && vaapi_x11_handle;
-}
 
-// static
-bool VaapiWrapper::PostSandboxInitialization() {
-  if (!pre_sandbox_init_done_)
+  if (!vaapi_handle || !vaapi_x11_handle)
     return false;
 #define VAAPI_DLSYM_OR_RETURN_ON_ERROR(name, handle)                          \
   do {                                                                        \

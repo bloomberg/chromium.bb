@@ -1518,9 +1518,5 @@ int main(int argc, char **argv) {
 
   base::ShadowingAtExitManager at_exit_manager;
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  content::VaapiWrapper::PreSandboxInitialization();
-#endif  // OS_CHROMEOS && ARCH_CPU_X86_FAMILY
-
   return RUN_ALL_TESTS();
 }

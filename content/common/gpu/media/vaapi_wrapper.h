@@ -78,9 +78,6 @@ class CONTENT_EXPORT VaapiWrapper {
                             Pixmap x_pixmap,
                             gfx::Size dest_size);
 
-  // Do any necessary initialization before the sandbox is enabled.
-  static void PreSandboxInitialization();
-
   // Returns true if the VAAPI version is less than the specified version.
   bool VAAPIVersionLessThan(int major, int minor);
 

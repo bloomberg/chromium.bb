@@ -360,10 +360,6 @@ bool WarmUpSandbox(const CommandLine& command_line) {
     }
   }
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
-  VaapiWrapper::PreSandboxInitialization();
-#endif
-
 #if defined(OS_WIN)
   {
     TRACE_EVENT0("gpu", "Preload setupapi.dll");
