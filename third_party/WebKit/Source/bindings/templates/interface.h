@@ -107,12 +107,16 @@ public:
     static const WrapperTypeInfo* wrapperTypeInfo() { return &{{v8_class_name}}::wrapperTypeInfo; }
 };
 
+{% if has_custom_wrap %}
+v8::Handle<v8::Object> wrap({{cpp_class_name}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+{% else %}
 inline v8::Handle<v8::Object> wrap({{cpp_class_name}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<{{v8_class_name}}>(impl, isolate));
     return {{v8_class_name}}::createWrapper(impl, creationContext, isolate);
 }
+{% endif %}
 
 inline v8::Handle<v8::Value> toV8({{cpp_class_name}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

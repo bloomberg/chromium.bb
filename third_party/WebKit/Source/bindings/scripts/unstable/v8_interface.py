@@ -77,6 +77,7 @@ def generate_interface(interface):
         'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class_name': cpp_name(interface),
         'has_custom_legacy_call': 'CustomLegacyCall' in extended_attributes,  # [CustomLegacyCall]
+        'has_custom_wrap': 'CustomWrap' in extended_attributes,  # [CustomWrap]
         'has_resolve_wrapper_reachability': 'CustomIsReachable' in extended_attributes,  # [CustomIsReachable]
         'header_includes': INTERFACE_H_INCLUDES,
         'interface_name': interface.name,
