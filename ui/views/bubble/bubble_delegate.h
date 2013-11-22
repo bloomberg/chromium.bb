@@ -34,12 +34,13 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Create and initialize the bubble Widget(s) with proper bounds.
   static Widget* CreateBubble(BubbleDelegateView* bubble_delegate);
 
-  // WidgetDelegate overrides:
+  // WidgetDelegateView overrides:
   virtual BubbleDelegateView* AsBubbleDelegate() OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
   virtual bool ShouldShowCloseButton() const OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // WidgetObserver overrides:
   virtual void OnWidgetDestroying(Widget* widget) OVERRIDE;

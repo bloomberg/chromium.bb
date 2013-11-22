@@ -174,6 +174,7 @@ void AccessibilityEventRouterViews::DispatchAccessibilityEvent(
 
   switch (state.role) {
   case ui::AccessibilityTypes::ROLE_ALERT:
+  case ui::AccessibilityTypes::ROLE_DIALOG:
   case ui::AccessibilityTypes::ROLE_WINDOW:
     SendWindowNotification(view, type, profile);
     break;
@@ -395,9 +396,11 @@ std::string AccessibilityEventRouterViews::GetViewContext(views::View* view) {
     // Two cases are handled right now. More could be added in the future
     // depending on how the UI evolves.
 
-    // A control in a toolbar should use the toolbar's accessible name
-    // as the context.
-    if (state.role == ui::AccessibilityTypes::ROLE_TOOLBAR &&
+    // A control inside of alert, toolbar or dialog should use that container's
+    // accessible name.
+    if ((state.role == ui::AccessibilityTypes::ROLE_ALERT ||
+         state.role == ui::AccessibilityTypes::ROLE_DIALOG ||
+         state.role == ui::AccessibilityTypes::ROLE_TOOLBAR) &&
         !state.name.empty()) {
       return UTF16ToUTF8(state.name);
     }

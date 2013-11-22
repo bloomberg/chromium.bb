@@ -19,6 +19,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -153,7 +154,8 @@ void BookmarkBubbleView::Init() {
 
   parent_combobox_ = new views::Combobox(&parent_model_);
   parent_combobox_->set_listener(this);
-  parent_combobox_->SetAccessibleName(combobox_label->text());
+  parent_combobox_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_BUBBLE_FOLDER_TEXT));
 
   GridLayout* layout = new GridLayout(this);
   SetLayoutManager(layout);
@@ -199,6 +201,9 @@ void BookmarkBubbleView::Init() {
   layout->AddView(label);
   title_tf_ = new views::Textfield();
   title_tf_->SetText(GetTitle());
+  title_tf_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_BUBBLE_TITLE_TEXT));
+
   layout->AddView(title_tf_, 5, 1);
 
   layout->AddPaddingRow(0, views::kUnrelatedControlHorizontalSpacing);
@@ -287,6 +292,14 @@ gfx::Size BookmarkBubbleView::GetMinimumSize() {
   gfx::Size size(views::BubbleDelegateView::GetPreferredSize());
   size.SetToMax(gfx::Size(kMinBubbleWidth, 0));
   return size;
+}
+
+void BookmarkBubbleView::GetAccessibleState(ui::AccessibleViewState* state) {
+  BubbleDelegateView::GetAccessibleState(state);
+  state->name =
+      l10n_util::GetStringUTF16(
+          newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED :
+                              IDS_BOOKMARK_AX_BUBBLE_PAGE_BOOKMARK);
 }
 
 void BookmarkBubbleView::ButtonPressed(views::Button* sender,

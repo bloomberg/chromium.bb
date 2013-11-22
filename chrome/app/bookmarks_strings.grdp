@@ -183,11 +183,20 @@
   <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK" desc="Title of the bubble when re-clicking on a bookmark">
     Bookmark
   </message>
+  <message name="IDS_BOOKMARK_AX_BUBBLE_PAGE_BOOKMARK" desc="Title of the bubble when re-clicking on a bookmark, read by spoken feedback">
+    Edit bookmark
+  </message>
   <message name="IDS_BOOKMARK_BUBBLE_TITLE_TEXT" desc="Text preceding the title of the page that was bookmarked">
     Name:
   </message>
+  <message name="IDS_BOOKMARK_AX_BUBBLE_TITLE_TEXT" desc="Text preceding the title of the page that was bookmarked, read by spoken feedback">
+    Bookmark name
+  </message>
   <message name="IDS_BOOKMARK_BUBBLE_FOLDER_TEXT" desc="Text preceding the folder selector">
     Folder:
+  </message>
+  <message name="IDS_BOOKMARK_AX_BUBBLE_FOLDER_TEXT" desc="Text preceding the folder selector">
+    Bookmark folder
   </message>
   <message name="IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK" desc="Title of the button for removing the bookmark">
     Remove
@@ -220,8 +229,14 @@
   <message name="IDS_BOOKMARK_EDITOR_NAME_LABEL" desc="Label shown before the title/name of the URL.">
     Name:
   </message>
+  <message name="IDS_BOOKMARK_AX_EDITOR_NAME_LABEL" desc="Spoken text for bookmark name text field in edit folder dialog">
+    Bookmark name
+  </message>
   <message name="IDS_BOOKMARK_BAR_EDIT_FOLDER_LABEL" desc="Title of label before text field in edit folder dialog">
     Name:
+  </message>
+  <message name="IDS_BOOKMARK_AX_EDITOR_URL_LABEL" desc="Spoken text for bookmark URL text field in edit folder dialog.">
+    Bookmark URL
   </message>
   <message name="IDS_BOOKMARK_EDITOR_URL_LABEL" desc="Label shown before the URL.">
     URL:

@@ -4,6 +4,7 @@
 
 #include "ui/views/bubble/bubble_delegate.h"
 
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/rect.h"
@@ -136,6 +137,10 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
     adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
   frame->SetBubbleBorder(new BubbleBorder(adjusted_arrow, shadow(), color()));
   return frame;
+}
+
+void BubbleDelegateView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_DIALOG;
 }
 
 void BubbleDelegateView::OnWidgetDestroying(Widget* widget) {
