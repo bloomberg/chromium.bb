@@ -24,7 +24,7 @@ class IndexedDBBackingStore;
 class IndexedDBContextImpl;
 
 class CONTENT_EXPORT IndexedDBFactory
-    : NON_EXPORTED_BASE(public base::RefCounted<IndexedDBFactory>) {
+    : NON_EXPORTED_BASE(public base::RefCountedThreadSafe<IndexedDBFactory>) {
  public:
   explicit IndexedDBFactory(IndexedDBContextImpl* context);
 
@@ -61,7 +61,7 @@ class CONTENT_EXPORT IndexedDBFactory
   void ContextDestroyed();
 
  protected:
-  friend class base::RefCounted<IndexedDBFactory>;
+  friend class base::RefCountedThreadSafe<IndexedDBFactory>;
 
   virtual ~IndexedDBFactory();
 
