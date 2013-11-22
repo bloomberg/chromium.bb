@@ -4,8 +4,8 @@
 
 #include "base/logging.h"
 #include "gin/arguments.h"
-#include "gin/gin.h"
 #include "gin/per_isolate_data.h"
+#include "gin/public/isolate_holder.h"
 #include "gin/test/v8_test.h"
 #include "gin/wrappable.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gin/gin.h"
+#include "gin/public/isolate_holder.h"
 #include "mojo/public/system/core_cpp.h"
 #include "mojo/public/system/macros.h"
 
@@ -17,7 +17,7 @@
 #endif
 
 extern "C" MOJO_APPS_JS_EXPORT MojoResult CDECL MojoMain(MojoHandle pipe) {
-  gin::Gin instance;
+  gin::IsolateHolder instance;
   // TODO(abarth): Load JS off the network and execute it.
   return MOJO_RESULT_OK;
 }

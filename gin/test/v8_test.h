@@ -13,7 +13,7 @@
 
 namespace gin {
 
-class Gin;
+class IsolateHolder;
 
 // A base class for tests that use v8.
 class V8Test : public testing::Test {
@@ -25,7 +25,7 @@ class V8Test : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
  protected:
-  scoped_ptr<Gin> instance_;
+  scoped_ptr<IsolateHolder> instance_;
   v8::Persistent<v8::Context> context_;
 
  private:

@@ -4,7 +4,7 @@
 
 #include "gin/test/v8_test.h"
 
-#include "gin/gin.h"
+#include "gin/public/isolate_holder.h"
 
 using v8::Context;
 using v8::Local;
@@ -19,7 +19,7 @@ V8Test::~V8Test() {
 }
 
 void V8Test::SetUp() {
-  instance_.reset(new gin::Gin);
+  instance_.reset(new gin::IsolateHolder);
   instance_->isolate()->Enter();
   HandleScope handle_scope(instance_->isolate());
   context_.Reset(instance_->isolate(), Context::New(instance_->isolate()));

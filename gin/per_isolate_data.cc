@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gin/per_isolate_data.h"
+#include "gin/public/gin_embedders.h"
 
 using v8::Eternal;
 using v8::Handle;
@@ -16,14 +17,15 @@ namespace gin {
 
 PerIsolateData::PerIsolateData(Isolate* isolate)
     : isolate_(isolate)  {
-  isolate_->SetData(this);
+  isolate_->SetData(kEmbedderNativeGin, this);
 }
 
 PerIsolateData::~PerIsolateData() {
+  isolate_->SetData(kEmbedderNativeGin, NULL);
 }
 
 PerIsolateData* PerIsolateData::From(Isolate* isolate) {
-  return static_cast<PerIsolateData*>(isolate->GetData());
+  return static_cast<PerIsolateData*>(isolate->GetData(kEmbedderNativeGin));
 }
 
 void PerIsolateData::SetObjectTemplate(WrapperInfo* info,
