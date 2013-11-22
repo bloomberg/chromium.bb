@@ -34,7 +34,7 @@ class InMemoryURLIndex;
 class RefCountedBool;
 
 // Current version of the cache file.
-static const int kCurrentCacheFileVersion = 3;
+static const int kCurrentCacheFileVersion = 4;
 
 // A structure private to InMemoryURLIndex describing its internal data and
 // providing for restoring, rebuilding and updating that internal data. As

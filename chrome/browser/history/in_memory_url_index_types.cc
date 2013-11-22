@@ -20,16 +20,37 @@ namespace history {
 
 // Matches within URL and Title Strings ----------------------------------------
 
+// The maximum length of URL or title returned by the Cleanup functions.
+static const size_t kCleanedUpUrlMaxLength = 1024u;
+static const size_t kCleanedUpTitleMaxLength = 1024u;
+
+// Attempts to shorten a URL safely (i.e., by preventing the end of the URL
+// from being in the middle of an escape sequence) to no more than
+// kCleanedUpUrlMaxLength characters, returning the result.
+std::string TruncateUrl(const std::string& url) {
+  if (url.length() <= kCleanedUpUrlMaxLength)
+    return url;
+
+  // If we're in the middle of an escape sequence, truncate just before it.
+  if (url[kCleanedUpUrlMaxLength - 1] == '%')
+    return url.substr(0, kCleanedUpUrlMaxLength - 1);
+  if (url[kCleanedUpUrlMaxLength - 2] == '%')
+    return url.substr(0, kCleanedUpUrlMaxLength - 2);
+
+  return url.substr(0, kCleanedUpUrlMaxLength);
+}
+
 string16 CleanUpUrlForMatching(const GURL& gurl,
                                const std::string& languages) {
   return base::i18n::ToLower(net::FormatUrl(
-      gurl, languages, net::kFormatUrlOmitUsernamePassword,
+      GURL(TruncateUrl(gurl.spec())), languages,
+      net::kFormatUrlOmitUsernamePassword,
       net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS,
       NULL, NULL, NULL));
 }
 
 string16 CleanUpTitleForMatching(const string16& title) {
-  return base::i18n::ToLower(title);
+  return base::i18n::ToLower(title.substr(0u, kCleanedUpTitleMaxLength));
 }
 
 TermMatches MatchTermInString(const string16& term,
