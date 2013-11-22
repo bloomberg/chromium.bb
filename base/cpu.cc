@@ -8,11 +8,13 @@
 
 #include <algorithm>
 
+#include "base/basictypes.h"
 #include "build/build_config.h"
 
 #if defined(ARCH_CPU_X86_FAMILY)
 #if defined(_MSC_VER)
 #include <intrin.h>
+#include <immintrin.h>  // For _xgetbv()
 #endif
 #endif
 
@@ -33,10 +35,14 @@ CPU::CPU()
     has_ssse3_(false),
     has_sse41_(false),
     has_sse42_(false),
+    has_avx_(false),
+    has_avx_hardware_(false),
     has_non_stop_time_stamp_counter_(false),
     cpu_vendor_("unknown") {
   Initialize();
 }
+
+namespace {
 
 #if defined(ARCH_CPU_X86_FAMILY)
 #ifndef _MSC_VER
@@ -53,16 +59,6 @@ void __cpuid(int cpu_info[4], int info_type) {
   );
 }
 
-void __cpuidex(int cpu_info[4], int info_type, int info_index) {
-  __asm__ volatile (
-    "mov %%ebx, %%edi\n"
-    "cpuid\n"
-    "xchg %%edi, %%ebx\n"
-    : "=a"(cpu_info[0]), "=D"(cpu_info[1]), "=c"(cpu_info[2]), "=d"(cpu_info[3])
-    : "a"(info_type), "c"(info_index)
-  );
-}
-
 #else
 
 void __cpuid(int cpu_info[4], int info_type) {
@@ -73,17 +69,21 @@ void __cpuid(int cpu_info[4], int info_type) {
   );
 }
 
-void __cpuidex(int cpu_info[4], int info_type, int info_index) {
-  __asm__ volatile (
-    "cpuid \n\t"
-    : "=a"(cpu_info[0]), "=b"(cpu_info[1]), "=c"(cpu_info[2]), "=d"(cpu_info[3])
-    : "a"(info_type), "c"(info_index)
-  );
+#endif
+
+// _xgetbv returns the value of an Intel Extended Control Register (XCR).
+// Currently only XCR0 is defined by Intel so |xcr| should always be zero.
+uint64 _xgetbv(uint32 xcr) {
+  uint32 eax, edx;
+
+  __asm__ volatile ("xgetbv" : "=a" (eax), "=d" (edx) : "c" (xcr));
+  return (static_cast<uint64>(edx) << 32) | eax;
 }
 
-#endif
-#endif  // _MSC_VER
+#endif  // !_MSC_VER
 #endif  // ARCH_CPU_X86_FAMILY
+
+}  // anonymous namespace
 
 void CPU::Initialize() {
 #if defined(ARCH_CPU_X86_FAMILY)
@@ -113,14 +113,24 @@ void CPU::Initialize() {
     type_ = (cpu_info[0] >> 12) & 0x3;
     ext_model_ = (cpu_info[0] >> 16) & 0xf;
     ext_family_ = (cpu_info[0] >> 20) & 0xff;
-    has_mmx_ = (cpu_info[3] & 0x00800000) != 0;
-    has_sse_ = (cpu_info[3] & 0x02000000) != 0;
-    has_sse2_ = (cpu_info[3] & 0x04000000) != 0;
-    has_sse3_ = (cpu_info[2] & 0x00000001) != 0;
+    has_mmx_ =   (cpu_info[3] & 0x00800000) != 0;
+    has_sse_ =   (cpu_info[3] & 0x02000000) != 0;
+    has_sse2_ =  (cpu_info[3] & 0x04000000) != 0;
+    has_sse3_ =  (cpu_info[2] & 0x00000001) != 0;
     has_ssse3_ = (cpu_info[2] & 0x00000200) != 0;
     has_sse41_ = (cpu_info[2] & 0x00080000) != 0;
     has_sse42_ = (cpu_info[2] & 0x00100000) != 0;
-    has_avx_ = (cpu_info[2] & 0x10000000) != 0;
+    has_avx_hardware_ =
+                 (cpu_info[2] & 0x10000000) != 0;
+    // AVX instructions will generate an illegal instruction exception unless
+    //   a) they are supported by the CPU,
+    //   b) XSAVE is supported by the CPU and
+    //   c) XSAVE is enabled by the kernel.
+    // See http://software.intel.com/en-us/blogs/2011/04/14/is-avx-enabled
+    has_avx_ =
+        has_avx_hardware_ &&
+        (cpu_info[2] & 0x08000000) != 0 /* OSXSAVE */ &&
+        (_xgetbv(0) & 6) == 6 /* XSAVE enabled by kernel */;
   }
 
   // Get the brand string of the cpu.

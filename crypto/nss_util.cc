@@ -23,6 +23,7 @@
 
 #include <vector>
 
+#include "base/cpu.h"
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
 #include "base/environment.h"
@@ -415,6 +416,8 @@ class NSSInitSingleton {
     // other threads from accessing until the constructor is done.
     thread_checker_.DetachFromThread();
 
+    DisableAESNIIfNeeded();
+
     EnsureNSPRInit();
 
     // We *must* have NSS >= 3.14.3.
@@ -605,6 +608,21 @@ class NSSInitSingleton {
                  << "): " << GetNSSErrorMessage();
     }
     return db_slot;
+  }
+
+  static void DisableAESNIIfNeeded() {
+    if (NSS_VersionCheck("3.15") && !NSS_VersionCheck("3.15.4")) {
+      // Some versions of NSS have a bug that causes AVX instructions to be
+      // used without testing whether XSAVE is enabled by the operating system.
+      // In order to work around this, we disable AES-NI in NSS when we find
+      // that |has_avx()| is false (which includes the XSAVE test). See
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=940794
+      base::CPU cpu;
+
+      if (cpu.has_avx_hardware() && !cpu.has_avx()) {
+        base::Environment::Create()->SetVar("NSS_DISABLE_HW_AES", "1");
+      }
+    }
   }
 
   // If this is set to true NSS is forced to be initialized without a DB.
