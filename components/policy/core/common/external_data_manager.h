@@ -8,6 +8,7 @@
 #include <string>
 
 #include "components/policy/core/common/external_data_fetcher.h"
+#include "components/policy/policy_export.h"
 
 namespace policy {
 
@@ -16,7 +17,7 @@ namespace policy {
 // An implementation of this abstract interface should be provided for each
 // policy source (cloud policy, platform policy) that supports external data
 // references.
-class ExternalDataManager {
+class POLICY_EXPORT ExternalDataManager {
  public:
   // Retrieves the external data referenced by |policy| and invokes |callback|
   // with the result. If |policy| does not reference any external data, the

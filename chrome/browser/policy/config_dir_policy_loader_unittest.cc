@@ -15,7 +15,7 @@
 #include "chrome/browser/policy/async_policy_provider.h"
 #include "chrome/browser/policy/config_dir_policy_loader.h"
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
-#include "chrome/browser/policy/policy_bundle.h"
+#include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 
 namespace policy {

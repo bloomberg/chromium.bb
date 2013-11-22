@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
-#include "chrome/browser/policy/policy_bundle.h"
+#include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 
 namespace policy {

@@ -20,6 +20,8 @@
       'conditions': [
         ['configuration_policy==1', {
           'sources': [
+            'policy/core/common/policy_bundle.cc',
+            'policy/core/common/policy_bundle.h',
             'policy/core/common/external_data_fetcher.cc',
             'policy/core/common/external_data_fetcher.h',
             'policy/core/common/external_data_manager.h',

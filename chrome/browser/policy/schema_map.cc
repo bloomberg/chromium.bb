@@ -5,7 +5,7 @@
 #include "chrome/browser/policy/schema_map.h"
 
 #include "base/values.h"
-#include "chrome/browser/policy/policy_bundle.h"
+#include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 
 namespace policy {

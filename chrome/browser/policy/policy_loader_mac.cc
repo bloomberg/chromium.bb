@@ -15,11 +15,11 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_load_status.h"
 #include "chrome/browser/policy/preferences_mac.h"
 #include "chrome/browser/policy/schema_map.h"
 #include "components/policy/core/common/external_data_fetcher.h"
+#include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/schema.h"
 

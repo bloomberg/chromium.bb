@@ -1560,8 +1560,6 @@
         'browser/policy/forwarding_policy_provider.h',
         'browser/policy/javascript_policy_handler.cc',
         'browser/policy/javascript_policy_handler.h',
-        'browser/policy/policy_bundle.cc',
-        'browser/policy/policy_bundle.h',
         'browser/policy/policy_error_map.cc',
         'browser/policy/policy_error_map.h',
         'browser/policy/policy_load_status.cc',

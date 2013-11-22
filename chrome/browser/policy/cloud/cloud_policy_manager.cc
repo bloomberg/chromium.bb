@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/policy/cloud/cloud_policy_service.h"
-#include "chrome/browser/policy/policy_bundle.h"
+#include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 
 namespace policy {

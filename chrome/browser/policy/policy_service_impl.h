@@ -15,8 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_service.h"
+#include "components/policy/core/common/policy_bundle.h"
 
 namespace policy {
 

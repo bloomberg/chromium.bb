@@ -17,8 +17,8 @@
 #include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
-#include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_load_status.h"
+#include "components/policy/core/common/policy_bundle.h"
 
 namespace policy {
 

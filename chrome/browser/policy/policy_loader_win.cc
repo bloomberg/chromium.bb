@@ -4,10 +4,10 @@
 
 #include "chrome/browser/policy/policy_loader_win.h"
 
+#include <windows.h>
 #include <rpc.h>      // For struct GUID
 #include <shlwapi.h>  // For PathIsUNC()
 #include <userenv.h>  // For GPO functions
-#include <windows.h>
 
 #include <string>
 #include <vector>
@@ -27,11 +27,11 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_load_status.h"
 #include "chrome/browser/policy/preg_parser_win.h"
 #include "chrome/browser/policy/registry_dict_win.h"
 #include "components/json_schema/json_schema_constants.h"
+#include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"

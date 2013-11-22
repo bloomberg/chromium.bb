@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_POLICY_BUNDLE_H_
-#define CHROME_BROWSER_POLICY_POLICY_BUNDLE_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_POLICY_BUNDLE_H_
+#define COMPONENTS_POLICY_CORE_COMMON_POLICY_BUNDLE_H_
 
 #include <map>
 #include <string>
@@ -11,11 +11,12 @@
 #include "base/basictypes.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/policy_export.h"
 
 namespace policy {
 
 // Maps policy namespaces to PolicyMaps.
-class PolicyBundle {
+class POLICY_EXPORT PolicyBundle {
  public:
   typedef std::map<PolicyNamespace, PolicyMap*> MapType;
   typedef MapType::iterator iterator;
@@ -69,4 +70,4 @@ class PolicyBundle {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_POLICY_BUNDLE_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_POLICY_BUNDLE_H_
