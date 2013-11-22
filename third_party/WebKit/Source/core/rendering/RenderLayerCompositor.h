@@ -110,12 +110,6 @@ public:
     // Whether layer's compositedLayerMapping needs a GraphicsLayer to clip z-order children of the given RenderLayer.
     bool clipsCompositingDescendants(const RenderLayer*) const;
 
-    // Returns true if there is a layer that preserves 3d between the given layer and its compositing ancestor (exclusive).
-    bool preserves3DAppliedByNonCompositingAncestor(const RenderLayer*) const;
-
-    // Returns true if there is a layer that applies perspective between the given layer and its compositing ancestor (exclusive).
-    bool perspectiveAppliedByNonCompositingAncestor(const RenderLayer*) const;
-
     // Whether the given layer needs an extra 'contents' layer.
     bool needsContentsCompositingLayer(const RenderLayer*) const;
 

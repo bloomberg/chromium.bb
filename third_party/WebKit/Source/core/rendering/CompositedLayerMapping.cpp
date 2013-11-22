@@ -50,7 +50,6 @@
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/RenderApplet.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderIFrame.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderLayer.h"
@@ -165,6 +164,8 @@ CompositedLayerMapping::CompositedLayerMapping(RenderLayer* layer)
     , m_artificiallyInflatedBounds(false)
     , m_boundsConstrainedByClipping(false)
     , m_isMainFrameRenderViewLayer(false)
+    , m_requiresOwnBackingStoreForIntrinsicReasons(true)
+    , m_requiresOwnBackingStoreForAncestorReasons(true)
     , m_canCompositeFilters(false)
     , m_backgroundLayerPaintsFixedRootBackground(false)
 {
@@ -177,7 +178,6 @@ CompositedLayerMapping::CompositedLayerMapping(RenderLayer* layer)
 CompositedLayerMapping::~CompositedLayerMapping()
 {
     updateClippingLayers(false, false);
-    updateTransformLayer(false, false);
     updateOverflowControlsLayers(false, false, false);
     updateForegroundLayer(false);
     updateBackgroundLayer(false);
@@ -404,7 +404,7 @@ void CompositedLayerMapping::updateAfterLayout(UpdateAfterLayoutFlags flags)
         }
     }
 
-    if (flags & NeedsFullRepaint)
+    if (flags & NeedsFullRepaint && !paintsIntoCompositedAncestor())
         setContentsNeedDisplay();
 }
 
@@ -441,11 +441,6 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
             needsAncestorClip = false;
     }
     if (updateClippingLayers(needsAncestorClip, needsDescendentsClippingLayer))
-        layerConfigChanged = true;
-
-    bool needsAncestorPreserves3D = compositor->preserves3DAppliedByNonCompositingAncestor(m_owningLayer);
-    bool needsAncestorPerspective = compositor->perspectiveAppliedByNonCompositingAncestor(m_owningLayer);
-    if (updateTransformLayer(needsAncestorPreserves3D, needsAncestorPerspective))
         layerConfigChanged = true;
 
     if (updateOverflowControlsLayers(requiresHorizontalScrollbarLayer(), requiresVerticalScrollbarLayer(), requiresScrollCornerLayer()))
@@ -596,12 +591,6 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         graphicsLayerParentLocation = scrollOrigin - scrollOffset;
     }
 
-    if (compAncestor && m_ancestorTransformLayer) {
-        m_ancestorTransformLayer->setTransform(m_owningLayer->ancestorPerspectiveTransform());
-        m_ancestorTransformLayer->setPosition(FloatPoint(-graphicsLayerParentLocation));
-        graphicsLayerParentLocation = IntPoint();
-    }
-
     if (compAncestor && m_ancestorClippingLayer) {
         // Call calculateRects to get the backgroundRect which is what is used to clip the contents of this
         // layer. Note that we call it with temporaryClipRects = true because normally when computing clip rects
@@ -611,8 +600,6 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         ASSERT(parentClipRect != PaintInfo::infiniteRect());
         m_ancestorClippingLayer->setPosition(FloatPoint(parentClipRect.location() - graphicsLayerParentLocation));
         m_ancestorClippingLayer->setSize(parentClipRect.size());
-
-        m_ancestorClippingLayer->setPreserves3D(m_ancestorTransformLayer);
 
         // backgroundRect is relative to compAncestor, so subtract deltaX/deltaY to get back to local coords.
         m_ancestorClippingLayer->setOffsetFromRenderer(parentClipRect.location() - delta);
@@ -791,6 +778,10 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
     if (m_owningLayer->scrollableArea())
         m_owningLayer->scrollableArea()->positionOverflowControls();
 
+    // We can't make this call in RenderLayerCompositor::allocateOrClearCompositedLayerMapping
+    // since it depends on whether compAncestor draws content, which gets updated later.
+    updateRequiresOwnBackingStoreForAncestorReasons(compAncestor);
+
     updateContentsRect(isSimpleContainer);
     updateBackgroundColor(isSimpleContainer);
     updateDrawsContent(isSimpleContainer);
@@ -823,22 +814,13 @@ void CompositedLayerMapping::updateInternalHierarchy()
 {
     // m_foregroundLayer has to be inserted in the correct order with child layers,
     // so it's not inserted here.
-    if (m_ancestorTransformLayer)
-        m_ancestorTransformLayer->removeAllChildren();
-
-    if (m_ancestorClippingLayer) {
-        m_ancestorClippingLayer->removeFromParent();
+    if (m_ancestorClippingLayer)
         m_ancestorClippingLayer->removeAllChildren();
-        if (m_ancestorTransformLayer)
-            m_ancestorTransformLayer->addChild(m_ancestorClippingLayer.get());
-    }
 
     m_graphicsLayer->removeFromParent();
 
     if (m_ancestorClippingLayer)
         m_ancestorClippingLayer->addChild(m_graphicsLayer.get());
-    else if (m_ancestorTransformLayer)
-        m_ancestorTransformLayer->addChild(m_graphicsLayer.get());
 
     if (m_childContainmentLayer) {
         m_childContainmentLayer->removeFromParent();
@@ -945,34 +927,6 @@ bool CompositedLayerMapping::updateClippingLayers(bool needsAncestorClip, bool n
     } else if (hasClippingLayer()) {
         m_childContainmentLayer->removeFromParent();
         m_childContainmentLayer = nullptr;
-        layersChanged = true;
-    }
-
-    return layersChanged;
-}
-
-bool CompositedLayerMapping::updateTransformLayer(bool needsAncestorPreserves3D, bool needsAncestorPerspective)
-{
-    bool layersChanged = false;
-    bool needsAncestorTransformLayer = needsAncestorPreserves3D || needsAncestorPerspective;
-
-    CompositingReasons reasons = CompositingReasonNone;
-    if (needsAncestorPreserves3D)
-        reasons |= CompositingReasonPreserve3D;
-    if (needsAncestorPerspective)
-        reasons |= CompositingReasonPerspective;
-
-    if (needsAncestorTransformLayer) {
-        if (!m_ancestorTransformLayer) {
-            m_ancestorTransformLayer = createGraphicsLayer(reasons);
-            m_ancestorTransformLayer->setPreserves3D(true);
-            layersChanged = true;
-        } else {
-            m_ancestorTransformLayer->setCompositingReasons(reasons);
-        }
-    } else if (m_ancestorTransformLayer) {
-        m_ancestorTransformLayer->removeFromParent();
-        m_ancestorTransformLayer = nullptr;
         layersChanged = true;
     }
 
@@ -1221,16 +1175,17 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
 void CompositedLayerMapping::updateScrollParent(RenderLayer* scrollParent)
 {
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
-        scrollingCoordinator->updateScrollParentForGraphicsLayer(childForSuperlayers(), scrollParent);
-
-        // If we have an ancestor clipping layer, it is the scroll child. The other layer that may have
-        // been the scroll child is the graphics layer. We will ensure that we clear its association
-        // with a scroll parent if it had one.
-        if (m_ancestorClippingLayer && childForSuperlayers() != m_ancestorClippingLayer.get())
-            scrollingCoordinator->updateScrollParentForGraphicsLayer(m_ancestorClippingLayer.get(), 0);
-
-        if (childForSuperlayers() != m_graphicsLayer.get())
+        if (m_ancestorClippingLayer) {
+            ASSERT(childForSuperlayers() == m_ancestorClippingLayer.get());
+            // If we have an ancestor clipping layer, it is the scroll child. The other layer that may have
+            // been the scroll child is the graphics layer. We will ensure that we clear its association
+            // with a scroll parent if it had one.
+            scrollingCoordinator->updateScrollParentForGraphicsLayer(m_ancestorClippingLayer.get(), scrollParent);
             scrollingCoordinator->updateScrollParentForGraphicsLayer(m_graphicsLayer.get(), 0);
+        } else {
+            ASSERT(childForSuperlayers() == m_graphicsLayer.get());
+            scrollingCoordinator->updateScrollParentForGraphicsLayer(m_graphicsLayer.get(), scrollParent);
+        }
     }
 }
 
@@ -1280,7 +1235,7 @@ float CompositedLayerMapping::compositingOpacity(float rendererOpacity) const
         // contribute to. This whole confusion can be avoided by specifying
         // explicitly the composited ancestor where we would stop accumulating
         // opacity.
-        if (curr->compositingState() == PaintsIntoOwnBacking)
+        if (curr->compositingState() == PaintsIntoOwnBacking || curr->compositingState() == HasOwnBackingButPaintsIntoAncestor)
             break;
 
         finalOpacity *= curr->renderer()->opacity();
@@ -1446,7 +1401,7 @@ bool CompositedLayerMapping::hasVisibleNonCompositingDescendantLayers() const
 
 bool CompositedLayerMapping::containsPaintedContent(bool isSimpleContainer) const
 {
-    if (isSimpleContainer || m_artificiallyInflatedBounds || m_owningLayer->isReflection())
+    if (isSimpleContainer || paintsIntoCompositedAncestor() || m_artificiallyInflatedBounds || m_owningLayer->isReflection())
         return false;
 
     if (isDirectlyCompositedImage())
@@ -1587,13 +1542,52 @@ GraphicsLayer* CompositedLayerMapping::parentForSublayers() const
 
 GraphicsLayer* CompositedLayerMapping::childForSuperlayers() const
 {
-    if (m_ancestorTransformLayer)
-        return m_ancestorTransformLayer.get();
-
     if (m_ancestorClippingLayer)
         return m_ancestorClippingLayer.get();
 
     return m_graphicsLayer.get();
+}
+
+bool CompositedLayerMapping::updateRequiresOwnBackingStoreForAncestorReasons(const RenderLayer* compositingAncestorLayer)
+{
+    bool previousRequiresOwnBackingStoreForAncestorReasons = m_requiresOwnBackingStoreForAncestorReasons;
+    bool previousPaintsIntoCompositedAncestor = paintsIntoCompositedAncestor();
+    bool canPaintIntoAncestor = compositingAncestorLayer
+        && (compositingAncestorLayer->compositedLayerMapping()->mainGraphicsLayer()->drawsContent()
+            || compositingAncestorLayer->compositedLayerMapping()->paintsIntoCompositedAncestor());
+    m_requiresOwnBackingStoreForAncestorReasons = !canPaintIntoAncestor;
+
+    if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor)
+        paintsIntoCompositedAncestorChanged();
+    return m_requiresOwnBackingStoreForAncestorReasons != previousRequiresOwnBackingStoreForAncestorReasons;
+}
+
+bool CompositedLayerMapping::updateRequiresOwnBackingStoreForIntrinsicReasons()
+{
+    bool previousRequiresOwnBackingStoreForIntrinsicReasons = m_requiresOwnBackingStoreForIntrinsicReasons;
+    bool previousPaintsIntoCompositedAncestor = paintsIntoCompositedAncestor();
+    RenderObject* renderer = m_owningLayer->renderer();
+    m_requiresOwnBackingStoreForIntrinsicReasons = m_owningLayer->isRootLayer()
+        || (m_owningLayer->compositingReasons() & CompositingReasonComboReasonsThatRequireOwnBacking)
+        || m_owningLayer->transform()
+        || renderer->isTransparent()
+        || renderer->hasMask()
+        || renderer->hasReflection()
+        || renderer->hasFilter();
+
+    if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor)
+        paintsIntoCompositedAncestorChanged();
+    return m_requiresOwnBackingStoreForIntrinsicReasons != previousRequiresOwnBackingStoreForIntrinsicReasons;
+}
+
+void CompositedLayerMapping::paintsIntoCompositedAncestorChanged()
+{
+    // The answer to paintsIntoCompositedAncestor() affects cached clip rects, so when
+    // it changes we have to clear clip rects on descendants.
+    m_owningLayer->clipper().clearClipRectsIncludingDescendants(PaintingClipRects);
+    m_owningLayer->repainter().computeRepaintRectsIncludingDescendants();
+
+    compositor()->repaintInCompositedAncestor(m_owningLayer, compositedBounds());
 }
 
 void CompositedLayerMapping::setBlendMode(BlendMode)
@@ -1602,6 +1596,8 @@ void CompositedLayerMapping::setBlendMode(BlendMode)
 
 void CompositedLayerMapping::setContentsNeedDisplay()
 {
+    ASSERT(!paintsIntoCompositedAncestor());
+
     if (m_graphicsLayer && m_graphicsLayer->drawsContent())
         m_graphicsLayer->setNeedsDisplay();
 
@@ -1624,6 +1620,8 @@ void CompositedLayerMapping::setContentsNeedDisplay()
 // r is in the coordinate space of the layer's render object
 void CompositedLayerMapping::setContentsNeedDisplayInRect(const IntRect& r)
 {
+    ASSERT(!paintsIntoCompositedAncestor());
+
     if (m_graphicsLayer && m_graphicsLayer->drawsContent()) {
         IntRect layerDirtyRect = r;
         layerDirtyRect.move(-m_graphicsLayer->offsetFromRenderer());
@@ -1665,6 +1663,11 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(const IntRect& r)
 void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, GraphicsContext* context,
     const IntRect& clip) // In the coords of rootLayer.
 {
+    if (paintsIntoCompositedAncestor()) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
+
     FontCachePurgePreventer fontCachePurgePreventer;
 
     PaintLayerFlags paintFlags = 0;
@@ -1977,8 +1980,6 @@ String CompositedLayerMapping::debugName(const GraphicsLayer* graphicsLayer)
     String name;
     if (graphicsLayer == m_graphicsLayer.get()) {
         name = m_owningLayer->debugName();
-    } else if (graphicsLayer == m_ancestorTransformLayer.get()) {
-        name = "Ancestor Transform Layer";
     } else if (graphicsLayer == m_ancestorClippingLayer.get()) {
         name = "Ancestor Clipping Layer";
     } else if (graphicsLayer == m_foregroundLayer.get()) {

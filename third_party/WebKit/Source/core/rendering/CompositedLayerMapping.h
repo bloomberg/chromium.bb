@@ -99,9 +99,6 @@ public:
     bool hasAncestorClippingLayer() const { return m_ancestorClippingLayer; }
     GraphicsLayer* ancestorClippingLayer() const { return m_ancestorClippingLayer.get(); }
 
-    bool hasAncestorTransformLayer() const { return m_ancestorTransformLayer; }
-    GraphicsLayer* ancestorTransformLayer() const { return m_ancestorTransformLayer.get(); }
-
     bool hasContentsLayer() const { return m_foregroundLayer; }
     GraphicsLayer* foregroundLayer() const { return m_foregroundLayer.get(); }
 
@@ -117,6 +114,19 @@ public:
 
     GraphicsLayer* parentForSublayers() const;
     GraphicsLayer* childForSuperlayers() const;
+
+    // Returns true for a composited layer that has no backing store of its own, so
+    // paints into some ancestor layer.
+    bool paintsIntoCompositedAncestor() const { return !(m_requiresOwnBackingStoreForAncestorReasons || m_requiresOwnBackingStoreForIntrinsicReasons); }
+
+    // Updates whether a backing store is needed based on the layer's compositing ancestor's
+    // properties; returns true if the need for a backing store for ancestor reasons changed.
+    bool updateRequiresOwnBackingStoreForAncestorReasons(const RenderLayer* compositingAncestor);
+
+    // Updates whether a backing store is needed for intrinsic reasons (that is, based on the
+    // layer's own properties or compositing reasons); returns true if the intrinsic need for
+    // a backing store changed.
+    bool updateRequiresOwnBackingStoreForIntrinsicReasons();
 
     void setContentsNeedDisplay();
     // r is in the coordinate space of the layer's render object
@@ -187,7 +197,6 @@ private:
 
     void updateInternalHierarchy();
     bool updateClippingLayers(bool needsAncestorClip, bool needsDescendantClip);
-    bool updateTransformLayer(bool needsAncestorPreserves3D, bool needsAncestorPerspective);
     bool updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer, bool needsVerticalScrollbarLayer, bool needsScrollCornerLayer);
     bool updateForegroundLayer(bool needsForegroundLayer);
     bool updateBackgroundLayer(bool needsBackgroundLayer);
@@ -241,15 +250,17 @@ private:
 
     bool shouldClipCompositedBounds() const;
 
+    void paintsIntoCompositedAncestorChanged();
+
     void doPaintTask(GraphicsLayerPaintInfo&, GraphicsContext*, const IntRect& clip);
 
     RenderLayer* m_owningLayer;
 
     // The hierarchy of layers that is maintained by the CompositedLayerMapping looks like this:
-    //  + m_ancestorTransformLayer [OPTIONAL]
-    //    + m_ancestorClippingLayer [OPTIONAL]
-    //       + m_graphicsLayer
-    //          + m_childContainmentLayer [OPTIONAL] <-OR-> m_scrollingLayer [OPTIONAL]
+    //
+    //  + m_ancestorClippingLayer [OPTIONAL]
+    //     + m_graphicsLayer
+    //        + m_childContainmentLayer [OPTIONAL] <-OR-> m_scrollingLayer [OPTIONAL]
     //                                                     + m_scrollingContentsLayer [OPTIONAL]
     //
     // We need an ancestor clipping layer if our clipping ancestor is not our ancestor in the
@@ -272,9 +283,6 @@ private:
     // In this case B is clipped by another layer that doesn't happen to be its ancestor: A.
     // So we create an ancestor clipping layer for B, [+], which ensures that B is clipped
     // as if it had been A's descendant.
-    //
-    // We only need an ancestor transform layer if we have an non-composited ancestor that clips composited descendants, preserves 3d, or applies perspective.
-    OwnPtr<GraphicsLayer> m_ancestorTransformLayer;
     OwnPtr<GraphicsLayer> m_ancestorClippingLayer; // Only used if we are clipped by an ancestor which is not a stacking context.
     OwnPtr<GraphicsLayer> m_graphicsLayer;
     OwnPtr<GraphicsLayer> m_childContainmentLayer; // Only used if we have clipping on a stacking context with compositing children.
@@ -323,6 +331,8 @@ private:
     bool m_artificiallyInflatedBounds; // bounds had to be made non-zero to make transform-origin work
     bool m_boundsConstrainedByClipping;
     bool m_isMainFrameRenderViewLayer;
+    bool m_requiresOwnBackingStoreForIntrinsicReasons;
+    bool m_requiresOwnBackingStoreForAncestorReasons;
     bool m_canCompositeFilters;
     bool m_backgroundLayerPaintsFixedRootBackground;
 };

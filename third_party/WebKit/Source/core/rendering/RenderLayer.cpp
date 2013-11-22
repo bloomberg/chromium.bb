@@ -1016,7 +1016,7 @@ bool RenderLayer::updateLayerPosition()
     return positionOrOffsetChanged;
 }
 
-TransformationMatrix RenderLayer::perspectiveTransform(bool adjustOrigin) const
+TransformationMatrix RenderLayer::perspectiveTransform() const
 {
     if (!renderer()->hasTransform())
         return TransformationMatrix();
@@ -1033,12 +1033,10 @@ TransformationMatrix RenderLayer::perspectiveTransform(bool adjustOrigin) const
     float perspectiveOriginX = floatValueForLength(style->perspectiveOriginX(), boxWidth);
     float perspectiveOriginY = floatValueForLength(style->perspectiveOriginY(), boxHeight);
 
-    if (adjustOrigin) {
-        // A perspective origin of 0,0 makes the vanishing point in the center of the element.
-        // We want it to be in the top-left, so subtract half the height and width.
-        perspectiveOriginX -= boxWidth / 2.0f;
-        perspectiveOriginY -= boxHeight / 2.0f;
-    }
+    // A perspective origin of 0,0 makes the vanishing point in the center of the element.
+    // We want it to be in the top-left, so subtract half the height and width.
+    perspectiveOriginX -= boxWidth / 2.0f;
+    perspectiveOriginY -= boxHeight / 2.0f;
 
     TransformationMatrix t;
     t.translate(perspectiveOriginX, perspectiveOriginY);
@@ -1046,31 +1044,6 @@ TransformationMatrix RenderLayer::perspectiveTransform(bool adjustOrigin) const
     t.translate(-perspectiveOriginX, -perspectiveOriginY);
 
     return t;
-}
-
-TransformationMatrix RenderLayer::ancestorPerspectiveTransform() const
-{
-    RenderLayer* compAncestor = ancestorCompositingLayer();
-    for (RenderLayer* ancestor = parent(); ancestor; ancestor = ancestor->parent()) {
-        if (ancestor->hasCompositedLayerMapping())
-            break;
-
-        if (RenderStyle* style = ancestor->renderer()->style()) {
-            if (style->hasPerspective()) {
-                // Apply about the origin of the composited ancestor.
-                IntPoint delta;
-                ancestor->convertToPixelSnappedLayerCoords(compAncestor, delta);
-                int dx = delta.x();
-                int dy = delta.y();
-                TransformationMatrix t;
-                t.translate(dx, dy);
-                t.multiply(ancestor->perspectiveTransform(false));
-                t.translate(-dx, -dy);
-                return t;
-            }
-        }
-    }
-    return TransformationMatrix();
 }
 
 FloatPoint RenderLayer::perspectiveOrigin() const
@@ -1881,7 +1854,9 @@ void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& 
         // but we need to ensure that we don't cache clip rects computed with the wrong root in this case.
         if (context->updatingControlTints() || (paintingInfo.paintBehavior & PaintBehaviorFlattenCompositingLayers)) {
             paintFlags |= PaintLayerTemporaryClipRects;
-        } else if (!shouldDoSoftwarePaint(this, paintFlags & PaintLayerPaintingReflection) && !paintForFixedRootBackground(this, paintFlags)) {
+        } else if (!compositedLayerMapping()->paintsIntoCompositedAncestor()
+            && !shouldDoSoftwarePaint(this, paintFlags & PaintLayerPaintingReflection)
+            && !paintForFixedRootBackground(this, paintFlags)) {
             // If this RenderLayer should paint into its own backing, that will be done via CompositedLayerMapping::paintIntoLayer().
             return;
         }
@@ -3580,6 +3555,14 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
     // This applies to all z-order lists below.
     RenderLayerStackingNodeIterator iterator(*m_stackingNode.get(), AllChildren);
     while (RenderLayerStackingNode* node = iterator.next()) {
+        // Node's compositing ancestor may have changed its draw content status
+        // prior to updating its bounds. The requires-own-backing-store-for-ancestor-reasons
+        // could be stale. Refresh them now.
+        if (node->layer()->hasCompositedLayerMapping()) {
+            RenderLayer* enclosingCompositingLayer = node->layer()->enclosingCompositingLayer(false);
+            node->layer()->compositedLayerMapping()->updateRequiresOwnBackingStoreForAncestorReasons(enclosingCompositingLayer);
+        }
+
         if (flags & IncludeCompositedDescendants || !node->layer()->hasCompositedLayerMapping()) {
             IntRect childUnionBounds = node->layer()->calculateLayerBounds(this, 0, descendantFlags);
             unionBounds.unite(childUnionBounds);
@@ -3615,6 +3598,9 @@ CompositingState RenderLayer::compositingState() const
 
     if (!m_compositedLayerMapping)
         return NotComposited;
+
+    if (m_compositedLayerMapping && compositedLayerMapping()->paintsIntoCompositedAncestor())
+        return HasOwnBackingButPaintsIntoAncestor;
 
     ASSERT(m_compositedLayerMapping);
     return PaintsIntoOwnBacking;

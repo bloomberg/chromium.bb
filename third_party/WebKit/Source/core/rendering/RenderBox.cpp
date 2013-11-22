@@ -1526,6 +1526,10 @@ void RenderBox::paintClippingMask(PaintInfo& paintInfo, const LayoutPoint& paint
     if (!layer() || layer()->compositingState() != PaintsIntoOwnBacking)
         return;
 
+    // We should never have this state in this function. A layer with a mask
+    // should have always created its own backing if it became composited.
+    ASSERT(layer()->compositingState() != HasOwnBackingButPaintsIntoAncestor);
+
     LayoutRect paintRect = LayoutRect(paintOffset, size());
     paintInfo.context->fillRect(pixelSnappedIntRect(paintRect), Color::black);
 }

@@ -544,6 +544,9 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
             if (layer->parent())
                 layer->repainter().computeRepaintRectsIncludingDescendants();
         }
+
+        if (layer->compositedLayerMapping()->updateRequiresOwnBackingStoreForIntrinsicReasons())
+            compositedLayerMappingChanged = true;
     } else {
         if (layer->hasCompositedLayerMapping()) {
             // If we're removing the compositedLayerMapping from a reflection, clear the source GraphicsLayer's pointer to
@@ -936,7 +939,10 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     layer->setHasCompositingDescendant(childRecursionData.m_subtreeIsCompositing);
 
     // Turn overlap testing off for later layers if it's already off, or if we have an animating transform.
-    if ((!childRecursionData.m_testingOverlap) || isRunningAcceleratedTransformAnimation(layer->renderer()))
+    // Note that if the layer clips its descendants, there's no reason to propagate the child animation to the parent layers. That's because
+    // we know for sure the animation is contained inside the clipping rectangle, which is already added to the overlap map.
+    bool isCompositedClippingLayer = canBeComposited(layer) && (reasonsToComposite & CompositingReasonClipsCompositingDescendants);
+    if ((!childRecursionData.m_testingOverlap && !isCompositedClippingLayer) || isRunningAcceleratedTransformAnimation(layer->renderer()))
         currentRecursionData.m_testingOverlap = false;
 
     if (overlapMap && childRecursionData.m_compositingAncestor == layer && !layer->isRootLayer())
@@ -1574,28 +1580,6 @@ bool RenderLayerCompositor::clippedByAncestor(const RenderLayer* layer) const
     return layer->backgroundClipRect(ClipRectsContext(computeClipRoot, 0, TemporaryClipRects)).rect() != PaintInfo::infiniteRect(); // FIXME: Incorrect for CSS regions.
 }
 
-// Returns true if there is a layer that preserves 3d between the given layer and its compositing ancestor (exclusive).
-bool RenderLayerCompositor::preserves3DAppliedByNonCompositingAncestor(const RenderLayer* layer) const
-{
-    for (RenderLayer* ancestor = layer->parent(); ancestor && !ancestor->hasCompositedLayerMapping(); ancestor = ancestor->parent()) {
-        if (ancestor->preserves3D())
-            return true;
-    }
-    return false;
-}
-
-// Returns true if there is a layer that applies perspective between the given layer and its compositing ancestor (exclusive).
-bool RenderLayerCompositor::perspectiveAppliedByNonCompositingAncestor(const RenderLayer* layer) const
-{
-    for (RenderLayer* ancestor = layer->parent(); ancestor && !ancestor->hasCompositedLayerMapping(); ancestor = ancestor->parent()) {
-        if (RenderStyle* style = ancestor->renderer()->style()) {
-            if (style->hasPerspective())
-                return true;
-        }
-    }
-    return false;
-}
-
 // Return true if the given layer is a stacking context and has compositing child
 // layers that it needs to clip. In this case we insert a clipping GraphicsLayer
 // into the hierarchy between this layer and its children in the z-order hierarchy.
@@ -1767,6 +1751,20 @@ CompositingReasons RenderLayerCompositor::subtreeReasonsForCompositing(RenderObj
 
         if (renderer->hasReflection())
             subtreeReasons |= CompositingReasonReflectionWithCompositedDescendants;
+
+        if (renderer->hasClipOrOverflowClip())
+            subtreeReasons |= CompositingReasonClipsCompositingDescendants;
+    }
+
+
+    // A layer with preserve-3d or perspective only needs to be composited if there are descendant layers that
+    // will be affected by the preserve-3d or perspective.
+    if (has3DTransformedDescendants) {
+        if (renderer->style()->transformStyle3D() == TransformStyle3DPreserve3D)
+            subtreeReasons |= CompositingReasonPreserve3D;
+
+        if (renderer->style()->hasPerspective())
+            subtreeReasons |= CompositingReasonPerspective;
     }
 
     return subtreeReasons;
