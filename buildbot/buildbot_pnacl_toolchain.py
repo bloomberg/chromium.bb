@@ -69,7 +69,7 @@ try:
   command = [sys.executable,
              os.path.join(
                  NACL_DIR, 'toolchain_build', 'toolchain_build_pnacl.py'),
-             '--trybot']
+             '-v']
   logging.info('Running: ' + ' '.join(command))
   subprocess.check_call(command)
 except subprocess.CalledProcessError:
