@@ -77,15 +77,13 @@ using extensions::UnloadedExtensionInfo;
 namespace {
 const char* offline_gmail_url = "https://mail.google.com/mail/mu/u";
 const char* gmail_url = "https://mail.google.com/mail/u";
+const char* kGmailLaunchURL = "https://mail.google.com/mail/ca";
 
 // As defined in /chromeos/dbus/cryptohome_client.cc.
 const char kUserIdHashSuffix[] = "-hash";
 
 // An extension prefix.
 const char kCrxAppPrefix[] = "_crx_";
-}
-
-namespace {
 
 // ShelfModelObserver implementation that tracks what messages are invoked.
 class TestShelfModelObserver : public ash::ShelfModelObserver {
@@ -314,7 +312,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     manifest_gmail.SetString(extensions::manifest_keys::kDescription,
                              "for testing pinned Gmail");
     manifest_gmail.SetString(extensions::manifest_keys::kLaunchWebURL,
-                             "https://mail.google.com/mail/ca");
+                             kGmailLaunchURL);
     ListValue* list = new ListValue();
     list->Append(Value::CreateStringValue("*://mail.google.com/mail/ca"));
     manifest_gmail.Set(extensions::manifest_keys::kWebURLs, list);
@@ -721,16 +719,24 @@ class WebContentsDestroyedWatcher : public content::WebContentsObserver {
 };
 
 // A V1 windowed application.
-class V1App {
+class V1App : public TestBrowserWindow {
  public:
   V1App(Profile* profile, const std::string& app_name) {
+    // Create a window.
+    native_window_.reset(new aura::Window(NULL));
+    native_window_->set_id(0);
+    native_window_->SetType(aura::client::WINDOW_TYPE_POPUP);
+    native_window_->Init(ui::LAYER_TEXTURED);
+    native_window_->Show();
+
     Browser::CreateParams params = Browser::CreateParams::CreateForApp(
         Browser::TYPE_POPUP,
         kCrxAppPrefix + app_name,
         gfx::Rect(),
         profile,
         chrome::HOST_DESKTOP_TYPE_ASH);
-    browser_.reset(chrome::CreateBrowserWithTestWindowForParams(&params));
+    params.window = this;
+    browser_.reset(new Browser(params));
     chrome::AddTabAt(browser_.get(), GURL(), 0, true);
   }
 
@@ -741,9 +747,17 @@ class V1App {
 
   Browser* browser() { return browser_.get(); }
 
+  // TestBrowserWindow override:
+  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE {
+    return native_window_.get();
+  }
+
  private:
   // The associated browser with this app.
   scoped_ptr<Browser> browser_;
+
+  // The native window we use.
+  scoped_ptr<aura::Window> native_window_;
 
   DISALLOW_COPY_AND_ASSIGN(V1App);
 };
@@ -887,10 +901,22 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   }
 
   // Creates a running V1 application.
+  // Note that with the use of the app_tab_helper as done below, this is only
+  // usable with a single v1 application.
   V1App* CreateRunningV1App(Profile* profile,
                             const std::string& app_name,
                             const std::string& url) {
     V1App* v1_app = new V1App(profile, app_name);
+    // Create a new app tab helper and assign it to the launcher so that this
+    // app gets properly detected.
+    // TODO(skuhne): Create a more intelligent app tab helper which is able to
+    // detect all running apps properly.
+    TestAppTabHelperImpl* app_tab_helper = new TestAppTabHelperImpl;
+    app_tab_helper->SetAppID(
+        v1_app->browser()->tab_strip_model()->GetWebContentsAt(0),
+        app_name);
+    SetAppTabHelper(app_tab_helper);
+
     NavigateAndCommitActiveTabWithTitle(
         v1_app->browser(), GURL(url), ASCIIToUTF16(""));
     return v1_app;
@@ -1505,6 +1531,85 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   SwitchActiveUser(profile2->GetProfileName());
   EXPECT_EQ(2, model_->item_count());
   SwitchActiveUser(profile()->GetProfileName());
+  EXPECT_EQ(2, model_->item_count());
+}
+
+// Check edge case where a visiting V1 app gets closed (crbug.com/321374).
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
+       V1CloseOnVisitingDesktop) {
+  // Create a browser item in the LauncherController.
+  InitLauncherController();
+
+  chrome::MultiUserWindowManager* manager =
+      chrome::MultiUserWindowManager::GetInstance();
+
+  // First create an app when the user is active.
+  std::string user2 = "user2";
+  TestingProfile* profile2 = CreateMultiUserProfile(user2);
+  {
+    // Create a "windowed gmail app".
+    scoped_ptr<V1App> v1_app(CreateRunningV1App(
+        profile(),
+        extension_misc::kGmailAppId,
+        kGmailLaunchURL));
+    EXPECT_EQ(3, model_->item_count());
+
+    // Transfer the app to the other screen and switch users.
+    manager->ShowWindowForUser(v1_app->browser()->window()->GetNativeWindow(),
+                               user2);
+    EXPECT_EQ(3, model_->item_count());
+    SwitchActiveUser(profile2->GetProfileName());
+    EXPECT_EQ(2, model_->item_count());
+  }
+  // After the app was destroyed, switch back. (which caused already a crash).
+  SwitchActiveUser(profile()->GetProfileName());
+
+  // Create the same app again - which was also causing the crash.
+  EXPECT_EQ(2, model_->item_count());
+  {
+    // Create a "windowed gmail app".
+    scoped_ptr<V1App> v1_app(CreateRunningV1App(
+        profile(),
+        extension_misc::kGmailAppId,
+        kGmailLaunchURL));
+    EXPECT_EQ(3, model_->item_count());
+  }
+  SwitchActiveUser(profile2->GetProfileName());
+  EXPECT_EQ(2, model_->item_count());
+}
+
+// Check edge cases with multi profile V1 apps in the shelf.
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
+       V1AppUpdateOnUserSwitchEdgecases2) {
+  // Create a browser item in the LauncherController.
+  InitLauncherController();
+  TestAppTabHelperImpl* app_tab_helper = new TestAppTabHelperImpl;
+  SetAppTabHelper(app_tab_helper);
+
+  // First test: Create an app when the user is not active.
+  std::string user2 = "user2";
+  TestingProfile* profile2 = CreateMultiUserProfile(user2);
+  SwitchActiveUser(profile2->GetProfileName());
+  {
+    // Create a "windowed gmail app".
+    scoped_ptr<V1App> v1_app(CreateRunningV1App(
+        profile(), extension_misc::kGmailAppId, gmail_url));
+    EXPECT_EQ(2, model_->item_count());
+
+    // However - switching to the user should show it.
+    SwitchActiveUser(profile()->GetProfileName());
+    EXPECT_EQ(3, model_->item_count());
+
+    // Second test: Remove the app when the user is not active and see that it
+    // works.
+    SwitchActiveUser(profile2->GetProfileName());
+    EXPECT_EQ(2, model_->item_count());
+    v1_app.reset();
+  }
+  EXPECT_EQ(2, model_->item_count());
+  SwitchActiveUser(profile()->GetProfileName());
+  EXPECT_EQ(2, model_->item_count());
+  SwitchActiveUser(profile2->GetProfileName());
   EXPECT_EQ(2, model_->item_count());
 }
 

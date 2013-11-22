@@ -30,9 +30,9 @@ void MultiProfileBrowserStatusMonitor::ActiveUserChanged(
     bool owned = multi_user_util::IsProfileFromActiveUser((*it)->profile());
     bool shown = IsV1AppInShelf(*it);
     if (owned && !shown)
-      BrowserStatusMonitor::AddV1AppToShelf(*it);
+      ConnectV1AppToLauncher(*it);
     else if (!owned && shown)
-      BrowserStatusMonitor::RemoveV1AppFromShelf(*it);
+      DisconnectV1AppFromLauncher(*it);
   }
 
   // Handle apps in browser tabs: Add the new applications.
@@ -95,4 +95,24 @@ void MultiProfileBrowserStatusMonitor::RemoveV1AppFromShelf(Browser* browser) {
   if (multi_user_util::IsProfileFromActiveUser(browser->profile())) {
     BrowserStatusMonitor::RemoveV1AppFromShelf(browser);
   }
+}
+
+void MultiProfileBrowserStatusMonitor::ConnectV1AppToLauncher(
+    Browser* browser) {
+  // Adding a V1 app to the launcher consists of two actions: Add the browser
+  // (launcher item) and add the content (launcher item status).
+  BrowserStatusMonitor::AddV1AppToShelf(browser);
+  launcher_controller_->UpdateAppState(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      ChromeLauncherController::APP_STATE_INACTIVE);
+}
+
+void MultiProfileBrowserStatusMonitor::DisconnectV1AppFromLauncher(
+    Browser* browser) {
+  // Removing a V1 app from the launcher requires to remove the content and
+  // the launcher item.
+  launcher_controller_->UpdateAppState(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      ChromeLauncherController::APP_STATE_REMOVED);
+  BrowserStatusMonitor::RemoveV1AppFromShelf(browser);
 }
