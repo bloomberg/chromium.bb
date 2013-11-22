@@ -112,6 +112,8 @@ protected:
 private:
     MainThreadWebSocketChannel(Document*, WebSocketChannelClient*, const String&, unsigned);
 
+    void disconnectHandle();
+
     bool appendToBuffer(const char* data, size_t len);
     void skipBuffer(size_t len);
     // Repeats parsing data from m_buffer until instructed to stop.
@@ -193,6 +195,8 @@ private:
     Timer<MainThreadWebSocketChannel> m_resumeTimer;
     bool m_suspended;
     bool m_didFailOfClientAlreadyRun;
+    // Set to true iff this instance called disconnect() on m_handle.
+    bool m_hasCalledDisconnectOnHandle;
     bool m_receivedClosingHandshake;
     Timer<MainThreadWebSocketChannel> m_closingTimer;
     ChannelState m_state;

@@ -68,6 +68,7 @@ MainThreadWebSocketChannel::MainThreadWebSocketChannel(Document* document, WebSo
     , m_resumeTimer(this, &MainThreadWebSocketChannel::resumeTimerFired)
     , m_suspended(false)
     , m_didFailOfClientAlreadyRun(false)
+    , m_hasCalledDisconnectOnHandle(false)
     , m_receivedClosingHandshake(false)
     , m_closingTimer(this, &MainThreadWebSocketChannel::closingTimerFired)
     , m_state(ChannelIdle)
@@ -186,6 +187,14 @@ void MainThreadWebSocketChannel::close(int code, const String& reason)
         m_closingTimer.startOneShot(2 * TCPMaximumSegmentLifetime);
 }
 
+void MainThreadWebSocketChannel::disconnectHandle()
+{
+    if (!m_handle)
+        return;
+    m_hasCalledDisconnectOnHandle = true;
+    m_handle->disconnect();
+}
+
 void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
 {
     LOG(Network, "MainThreadWebSocketChannel %p fail() reason='%s'", this, reason.utf8().data());
@@ -209,8 +218,8 @@ void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level, 
         if (m_client)
             m_client->didReceiveMessageError();
     }
-    if (m_handle && (m_state != ChannelClosed))
-        m_handle->disconnect(); // Will call didCloseSocketStream().
+    if (m_state != ChannelClosed)
+        disconnectHandle(); // Will call didCloseSocketStream().
 }
 
 void MainThreadWebSocketChannel::disconnect()
@@ -222,8 +231,7 @@ void MainThreadWebSocketChannel::disconnect()
         m_handshake->clearExecutionContext();
     m_client = 0;
     m_document = 0;
-    if (m_handle)
-        m_handle->disconnect();
+    disconnectHandle();
 }
 
 void MainThreadWebSocketChannel::suspend()
@@ -265,6 +273,14 @@ void MainThreadWebSocketChannel::didCloseSocketStream(SocketStreamHandle* handle
     if (m_identifier && m_document)
         InspectorInstrumentation::didCloseWebSocket(m_document, m_identifier);
     ASSERT_UNUSED(handle, handle == m_handle || !m_handle);
+
+    // Show error message on JS console if this is unexpected connection close
+    // during opening handshake.
+    if (!m_hasCalledDisconnectOnHandle && m_handshake->mode() == WebSocketHandshake::Incomplete && m_document) {
+        const String message = "WebSocket connection to '" + m_handshake->url().elidedString() + "' failed: Connection closed before receiving a handshake response";
+        static_cast<ExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message, m_sourceURLAtConnection, m_lineNumberAtConnection);
+    }
+
     m_state = ChannelClosed;
     if (m_closingTimer.isActive())
         m_closingTimer.stop();
@@ -290,12 +306,12 @@ void MainThreadWebSocketChannel::didReceiveSocketStreamData(SocketStreamHandle* 
     if (!m_document)
         return;
     if (len <= 0) {
-        handle->disconnect();
+        disconnectHandle();
         return;
     }
     if (!m_client) {
         m_shouldDiscardReceivedData = true;
-        handle->disconnect();
+        disconnectHandle();
         return;
     }
     if (m_shouldDiscardReceivedData)
@@ -336,8 +352,8 @@ void MainThreadWebSocketChannel::didFailSocketStream(SocketStreamHandle* handle,
         m_didFailOfClientAlreadyRun = true;
         m_client->didReceiveMessageError();
     }
-    if (m_handle && (m_state != ChannelClosed))
-        m_handle->disconnect();
+    if (m_state != ChannelClosed)
+        disconnectHandle();
 }
 
 void MainThreadWebSocketChannel::didStartLoading()
@@ -488,8 +504,7 @@ void MainThreadWebSocketChannel::closingTimerFired(Timer<MainThreadWebSocketChan
 {
     LOG(Network, "MainThreadWebSocketChannel %p closingTimerFired()", this);
     ASSERT_UNUSED(timer, &m_closingTimer == timer);
-    if (m_handle)
-        m_handle->disconnect();
+    disconnectHandle();
 }
 
 
