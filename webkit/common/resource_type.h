@@ -29,6 +29,7 @@ class ResourceType {
     PREFETCH,        // an explicitly requested prefetch
     FAVICON,         // a favicon
     XHR,             // a XMLHttpRequest
+    PING,            // a ping request for <a ping>
     LAST_TYPE        // Place holder so we don't need to change ValidType
                      // everytime.
   };

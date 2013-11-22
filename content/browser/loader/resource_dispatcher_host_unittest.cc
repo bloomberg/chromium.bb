@@ -1021,41 +1021,52 @@ TEST_F(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
 // If the filter has disappeared then detachable resources should continue to
 // load.
 TEST_F(ResourceDispatcherHostTest, DeletedFilterDetached) {
-  ResourceHostMsg_Request request = CreateResourceRequest(
-      "GET", ResourceType::PREFETCH, net::URLRequestTestJob::test_url_4());
+  // test_url_1's data is available synchronously, so use 2 and 3.
+  ResourceHostMsg_Request request_prefetch = CreateResourceRequest(
+      "GET", ResourceType::PREFETCH, net::URLRequestTestJob::test_url_2());
+  ResourceHostMsg_Request request_ping = CreateResourceRequest(
+      "GET", ResourceType::PING, net::URLRequestTestJob::test_url_3());
 
-  ResourceHostMsg_RequestResource msg(0, 1, request);
   bool msg_was_ok;
-  host_.OnMessageReceived(msg, filter_, &msg_was_ok);
+  ResourceHostMsg_RequestResource msg_prefetch(0, 1, request_prefetch);
+  host_.OnMessageReceived(msg_prefetch, filter_, &msg_was_ok);
+  ResourceHostMsg_RequestResource msg_ping(0, 2, request_ping);
+  host_.OnMessageReceived(msg_ping, filter_, &msg_was_ok);
 
-  // Remove the filter before processing the request by simulating channel
+  // Remove the filter before processing the requests by simulating channel
   // closure.
-  GlobalRequestID global_request_id(filter_->child_id(), 1);
-  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
-      host_.GetURLRequest(global_request_id));
-  info->filter_->OnChannelClosing();
-  info->filter_.reset();
+  ResourceRequestInfoImpl* info_prefetch = ResourceRequestInfoImpl::ForRequest(
+      host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 1)));
+  ResourceRequestInfoImpl* info_ping = ResourceRequestInfoImpl::ForRequest(
+      host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 2)));
+  DCHECK_EQ(filter_.get(), info_prefetch->filter());
+  DCHECK_EQ(filter_.get(), info_ping->filter());
+  filter_->OnChannelClosing();
+  info_prefetch->filter_.reset();
+  info_ping->filter_.reset();
 
-  // From the renderer's perspective, the request was cancelled.
+  // From the renderer's perspective, the requests were cancelled.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
   accum_.GetClassifiedMessages(&msgs);
-  ASSERT_EQ(1U, msgs.size());
+  ASSERT_EQ(2U, msgs.size());
   CheckRequestCompleteErrorCode(msgs[0][0], net::ERR_ABORTED);
+  CheckRequestCompleteErrorCode(msgs[1][0], net::ERR_ABORTED);
 
   // But it continues detached.
-  EXPECT_EQ(1, host_.pending_requests());
-  EXPECT_TRUE(info->detachable_handler()->is_detached());
+  EXPECT_EQ(2, host_.pending_requests());
+  EXPECT_TRUE(info_prefetch->detachable_handler()->is_detached());
+  EXPECT_TRUE(info_ping->detachable_handler()->is_detached());
 
   KickOffRequest();
 
-  // Make sure the request wasn't canceled early.
-  EXPECT_EQ(1, host_.pending_requests());
+  // Make sure the requests weren't canceled early.
+  EXPECT_EQ(2, host_.pending_requests());
 
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(0, host_.pending_requests());
-  EXPECT_EQ(1, network_delegate()->completed_requests());
+  EXPECT_EQ(2, network_delegate()->completed_requests());
   EXPECT_EQ(0, network_delegate()->canceled_requests());
   EXPECT_EQ(0, network_delegate()->error_count());
 }

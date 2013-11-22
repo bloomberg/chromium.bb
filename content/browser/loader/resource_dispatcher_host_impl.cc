@@ -138,6 +138,7 @@ const int kDefaultDetachableCancelDelayMs = 30000;
 bool IsDetachableResourceType(ResourceType::Type type) {
   switch (type) {
     case ResourceType::PREFETCH:
+    case ResourceType::PING:
       return true;
     default:
       return false;

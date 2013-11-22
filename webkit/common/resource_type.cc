@@ -40,6 +40,10 @@ ResourceType::Type ResourceType::FromTargetType(
       return ResourceType::FAVICON;
     case WebURLRequest::TargetIsXHR:
       return ResourceType::XHR;
+#if defined(WEBKIT_HAS_TARGET_IS_PING)
+    case WebURLRequest::TargetIsPing:
+      return ResourceType::PING;
+#endif
     default:
       NOTREACHED();
       return ResourceType::SUB_RESOURCE;

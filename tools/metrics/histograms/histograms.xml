@@ -28664,7 +28664,7 @@ other types of suffix sets.
   <int value="11" label="PREFETCH"/>
   <int value="12" label="FAVICON"/>
   <int value="13" label="XHR"/>
-  <int value="14" label="LAST_TYPE"/>
+  <int value="14" label="PING"/>
 </enum>
 
 <enum name="SocketStreamConnectionType" type="int">
