@@ -217,14 +217,6 @@ void ScopedStyleResolver::matchHostRules(ElementRuleCollector& collector, bool i
     collector.sortAndTransferMatchedRules();
 }
 
-void ScopedStyleResolver::matchAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules, bool applyAuthorStyles)
-{
-    collector.clearMatchedRules();
-    collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
-    collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, ignoreCascadeScope);
-    collector.sortAndTransferMatchedRules();
-}
-
 void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope cascadeScope, CascadeOrder cascadeOrder)
 {
     if (!m_authorStyle)

@@ -519,11 +519,12 @@ void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleC
 
 void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
 {
-    if (m_styleTree.hasOnlyScopedResolverForDocument()) {
-        m_styleTree.scopedStyleResolverForDocument()->matchAuthorRules(collector, includeEmptyRules, applyAuthorStylesOf(element));
+    collector.clearMatchedRules();
+    collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
 
-        collector.clearMatchedRules();
-        collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
+    bool applyAuthorStyles = applyAuthorStylesOf(element);
+    if (m_styleTree.hasOnlyScopedResolverForDocument()) {
+        m_styleTree.scopedStyleResolverForDocument()->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, ignoreCascadeScope);
         collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
         collector.sortAndTransferMatchedRules();
         return;
@@ -542,12 +543,8 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
     if (resolvers.isEmpty())
         return;
 
-    bool applyAuthorStyles = applyAuthorStylesOf(element);
     CascadeScope cascadeScope = 0;
     CascadeOrder cascadeOrder = resolvers.size();
-    collector.clearMatchedRules();
-    collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
-
     for (unsigned i = 0; i < resolvers.size(); ++i, --cascadeOrder) {
         ScopedStyleResolver* resolver = resolvers.at(i);
         // FIXME: Need to clarify how to treat style scoped.

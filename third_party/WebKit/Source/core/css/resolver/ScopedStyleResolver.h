@@ -63,7 +63,6 @@ public:
     void addKeyframeStyle(PassRefPtr<StyleRuleKeyframes>);
 
     void matchHostRules(ElementRuleCollector&, bool includeEmptyRules);
-    void matchAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles);
     void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope, CascadeOrder = ignoreCascadeOrder);
     void matchPageRules(PageRuleCollector&);
     void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, StyleResolver*);
