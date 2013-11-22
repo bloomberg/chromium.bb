@@ -183,8 +183,9 @@ void GetMimeTypeAndReplyOnUIThread(
 }
 
 bool IsOpenInBrowserPreferreredForFile(const base::FilePath& path) {
-  // On Android, always prefer opening with an external app.
-#if !defined(OS_ANDROID) && defined(ENABLE_PLUGINS)
+  // On Android, always prefer opening with an external app. On ChromeOS, there
+  // are no external apps so just allow all opens to be handled by the "System."
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && defined(ENABLE_PLUGINS)
   // TODO(asanka): Consider other file types and MIME types.
   if (path.MatchesExtension(FILE_PATH_LITERAL(".pdf")))
     return true;
