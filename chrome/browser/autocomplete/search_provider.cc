@@ -1316,6 +1316,21 @@ bool SearchProvider::IsTopMatchNavigationInKeywordMode(
       (first_match->type == AutocompleteMatchType::NAVSUGGEST);
 }
 
+bool SearchProvider::HasKeywordDefaultMatchInKeywordMode() const {
+  const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
+  // If the user is not in keyword mode, return true to say that this
+  // constraint is not violated.
+  if (keyword_url == NULL)
+    return true;
+  for (ACMatches::const_iterator it = matches_.begin(); it != matches_.end();
+       ++it) {
+    if ((it->keyword == keyword_url->keyword()) &&
+        it->allowed_to_be_default_match)
+      return true;
+  }
+  return false;
+}
+
 bool SearchProvider::IsTopMatchScoreTooLow(
     bool autocomplete_result_will_reorder_for_default_match) const {
   // In reorder mode, there's no such thing as a score that's too low.
@@ -1382,16 +1397,22 @@ void SearchProvider::UpdateMatches() {
         omnibox_will_reorder_for_legal_default_match)) {
       // Correct the suggested relevance scores if the top match is a
       // navigation in keyword mode, since inlining a navigation match
-      // would break the user out of keyword mode.  By the way, if the top
-      // match is a non-keyword match (query or navsuggestion) in keyword
-      // mode, the user would also break out of keyword mode.  However,
-      // that situation is impossible given the current scoring paradigm
-      // and the fact that only one search engine (Google) provides suggested
-      // relevance scores at this time.
+      // would break the user out of keyword mode.  This will only be
+      // triggered in regular (non-reorder) mode; in reorder mode,
+      // navigation matches are marked as not allowed to be the default
+      // match and hence IsTopMatchNavigation() will always return false.
+      DCHECK(!omnibox_will_reorder_for_legal_default_match);
       DemoteKeywordNavigationMatchesPastTopQuery();
       ConvertResultsToAutocompleteMatches();
       DCHECK(!IsTopMatchNavigationInKeywordMode(
           omnibox_will_reorder_for_legal_default_match));
+    }
+    if (!HasKeywordDefaultMatchInKeywordMode()) {
+      // In keyword mode, disregard the keyword verbatim suggested relevance
+      // if necessary so there at least one keyword match that's allowed to
+      // be the default match.
+      keyword_results_.verbatim_relevance = -1;
+      ConvertResultsToAutocompleteMatches();
     }
     if (IsTopMatchScoreTooLow(omnibox_will_reorder_for_legal_default_match)) {
       // Disregard the suggested verbatim relevance if the top score is below
@@ -1431,11 +1452,24 @@ void SearchProvider::UpdateMatches() {
     }
     DCHECK(!IsTopMatchNavigationInKeywordMode(
         omnibox_will_reorder_for_legal_default_match));
+    DCHECK(HasKeywordDefaultMatchInKeywordMode());
     DCHECK(!IsTopMatchScoreTooLow(
         omnibox_will_reorder_for_legal_default_match));
     DCHECK(!IsTopMatchSearchWithURLInput(
         omnibox_will_reorder_for_legal_default_match));
     DCHECK(HasValidDefaultMatch(omnibox_will_reorder_for_legal_default_match));
+  }
+
+  const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
+  if ((keyword_url != NULL) && HasKeywordDefaultMatchInKeywordMode()) {
+    // If there is a keyword match that is allowed to be the default match,
+    // then prohibit default provider matches from being the default match lest
+    // such matches cause the user to break out of keyword mode.
+    for (ACMatches::iterator it = matches_.begin(); it != matches_.end();
+         ++it) {
+      if (it->keyword != keyword_url->keyword())
+        it->allowed_to_be_default_match = false;
+    }
   }
 
   base::TimeTicks update_starred_start_time(base::TimeTicks::Now());
@@ -1839,7 +1873,11 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   if (!input_.prevent_inline_autocomplete() &&
       (inline_autocomplete_offset != string16::npos)) {
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
-    match.allowed_to_be_default_match = true;
+    // A navsuggestion can only be the default match when there is no
+    // keyword provider active, lest it appear first and break the user
+    // out of keyword mode.
+    match.allowed_to_be_default_match =
+        (providers_.GetKeywordProviderURL() == NULL);
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
   }

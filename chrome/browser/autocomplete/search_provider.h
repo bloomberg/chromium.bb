@@ -430,6 +430,7 @@ class SearchProvider : public AutocompleteProvider,
   // See UpdateMatches() for the use and explanation of these constraints.
   bool IsTopMatchNavigationInKeywordMode(
       bool autocomplete_result_will_reorder_for_default_match) const;
+  bool HasKeywordDefaultMatchInKeywordMode() const;
   bool IsTopMatchScoreTooLow(
       bool autocomplete_result_will_reorder_for_default_match) const;
   bool IsTopMatchSearchWithURLInput(

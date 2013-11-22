@@ -45,6 +45,19 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+// Returns the first match in |matches| with |allowed_to_be_default_match|
+// set to true.
+ACMatches::const_iterator FindDefaultMatch(const ACMatches& matches) {
+  ACMatches::const_iterator it = matches.begin();
+  while ((it != matches.end()) && !it->allowed_to_be_default_match)
+    ++it;
+  return it;
+}
+
+} // namespace
+
 // SearchProviderTest ---------------------------------------------------------
 
 // The following environment is configured for these tests:
@@ -60,18 +73,22 @@ class SearchProviderTest : public testing::Test,
                            public AutocompleteProviderListener {
  public:
   struct ResultInfo {
-    ResultInfo() : result_type(AutocompleteMatchType::NUM_TYPES) {
+    ResultInfo() : result_type(AutocompleteMatchType::NUM_TYPES),
+                   allowed_to_be_default_match(false) {
     }
     ResultInfo(GURL gurl,
                AutocompleteMatch::Type result_type,
+               bool allowed_to_be_default_match,
                string16 fill_into_edit)
       : gurl(gurl),
         result_type(result_type),
+        allowed_to_be_default_match(allowed_to_be_default_match),
         fill_into_edit(fill_into_edit) {
     }
 
     const GURL gurl;
     const AutocompleteMatch::Type result_type;
+    const bool allowed_to_be_default_match;
     const string16 fill_into_edit;
   };
 
@@ -261,11 +278,9 @@ void SearchProviderTest::RunTest(TestData* cases,
         EXPECT_EQ(cases[i].output[j].result_type, matches[j].type) <<
             diagnostic_details;
         EXPECT_EQ(cases[i].output[j].fill_into_edit,
-                  matches[j].fill_into_edit) <<
-            diagnostic_details;
-        // All callers that use this helper function at the moment produce
-        // matches that are always allowed to be the default match.
-        EXPECT_TRUE(matches[j].allowed_to_be_default_match);
+                  matches[j].fill_into_edit) << diagnostic_details;
+        EXPECT_EQ(cases[i].output[j].allowed_to_be_default_match,
+                  matches[j].allowed_to_be_default_match) << diagnostic_details;
       }
     }
   }
@@ -830,7 +845,7 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
   EXPECT_GT(result.match_at(1).relevance, result.match_at(2).relevance);
   EXPECT_TRUE(result.match_at(0).allowed_to_be_default_match);
   EXPECT_TRUE(result.match_at(1).allowed_to_be_default_match);
-  EXPECT_TRUE(result.match_at(2).allowed_to_be_default_match);
+  EXPECT_FALSE(result.match_at(2).allowed_to_be_default_match);
 
   // The two keyword results should come with the keyword we expect.
   EXPECT_EQ(ASCIIToUTF16("k"), result.match_at(0).keyword);
@@ -855,9 +870,11 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
     { ASCIIToUTF16("k foo"), 2,
       { ResultInfo(GURL("http://keyword/foo"),
                    AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+                   true,
                    ASCIIToUTF16("k foo")),
         ResultInfo(GURL("http://defaultturl/k%20foo"),
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+                   false,
                    ASCIIToUTF16("k foo") ) } },
 
     // Make sure extra whitespace after the keyword doesn't change the
@@ -865,9 +882,11 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
     { ASCIIToUTF16("k   foo"), 2,
       { ResultInfo(GURL("http://keyword/foo"),
                    AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+                   true,
                    ASCIIToUTF16("k foo")),
         ResultInfo(GURL("http://defaultturl/k%20%20%20foo"),
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+                   false,
                    ASCIIToUTF16("k   foo")) } },
     // Leading whitespace should be stripped before SearchProvider gets the
     // input; hence there are no tests here about how it handles those inputs.
@@ -877,9 +896,11 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
     { ASCIIToUTF16("k  foo  bar"), 2,
       { ResultInfo(GURL("http://keyword/foo%20%20bar"),
                    AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+                   true,
                    ASCIIToUTF16("k foo  bar")),
         ResultInfo(GURL("http://defaultturl/k%20%20foo%20%20bar"),
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+                   false,
                    ASCIIToUTF16("k  foo  bar")) } },
     // Note in the above test case we don't test trailing whitespace because
     // SearchProvider still doesn't handle this well.  See related bugs:
@@ -890,23 +911,29 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
     { ASCIIToUTF16("www.k foo"), 2,
       { ResultInfo(GURL("http://keyword/foo"),
                    AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+                   true,
                    ASCIIToUTF16("k foo")),
         ResultInfo(GURL("http://defaultturl/www.k%20foo"),
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+                   false,
                    ASCIIToUTF16("www.k foo")) } },
     { ASCIIToUTF16("http://k foo"), 2,
       { ResultInfo(GURL("http://keyword/foo"),
                    AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+                   true,
                    ASCIIToUTF16("k foo")),
         ResultInfo(GURL("http://defaultturl/http%3A//k%20foo"),
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+                   false,
                    ASCIIToUTF16("http://k foo")) } },
     { ASCIIToUTF16("http://www.k foo"), 2,
       { ResultInfo(GURL("http://keyword/foo"),
                    AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+                   true,
                    ASCIIToUTF16("k foo")),
         ResultInfo(GURL("http://defaultturl/http%3A//www.k%20foo"),
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+                   false,
                    ASCIIToUTF16("http://www.k foo")) } },
 
     // A keyword with no remaining input shouldn't get a keyword
@@ -914,10 +941,12 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
     { ASCIIToUTF16("k"), 1,
       { ResultInfo(GURL("http://defaultturl/k"),
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+                   true,
                    ASCIIToUTF16("k")) } },
     { ASCIIToUTF16("k "), 1,
       { ResultInfo(GURL("http://defaultturl/k%20"),
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+                   true,
                    ASCIIToUTF16("k ")) } }
 
     // The fact that verbatim queries to keyword are handled by KeywordProvider
@@ -955,9 +984,11 @@ TEST_F(SearchProviderTest, CommandLineOverrides) {
     { ASCIIToUTF16("k a"), 2,
       { ResultInfo(GURL("http://keyword/a"),
                    AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+                   true,
                    ASCIIToUTF16("k a")),
         ResultInfo(GURL("http://www.bar.com/k%20a?a=b"),
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+                   false,
                    ASCIIToUTF16("k a")) } },
   };
 
@@ -1601,10 +1632,13 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevanceWithReorder) {
 
     const std::string description = "for input with json=" + cases[i].json;
     const ACMatches& matches = provider_->matches();
-    // The top match must inline and score as highly as calculated verbatim.
     ASSERT_FALSE(matches.empty());
+    // Find the first match that's allowed to be the default match and check
+    // its inline_autocompletion.
+    ACMatches::const_iterator it = FindDefaultMatch(matches);
+    ASSERT_NE(matches.end(), it);
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
-              matches[0].inline_autocompletion) << description;
+              it->inline_autocompletion) << description;
 
     ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
     size_t j = 0;
@@ -1647,7 +1681,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     // the default provider verbatim.
     { "[\"a\",[\"b\", \"c\"],[],[],{\"google:suggestrelevance\":[1, 2]}]",
       { { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         { "c",   true,  false },
         { "b",   true,  false },
         kEmptyMatch, kEmptyMatch },
@@ -1655,12 +1689,9 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     // Again, check that relevance scores reorder matches, just this
     // time with navigation matches.  This also checks that with
     // suggested relevance scores we allow multiple navsuggest results.
-    // It's odd that navsuggest results that come from a keyword
-    // provider are marked as not a keyword result.  I think this
-    // comes from them not going to a keyword search engine).
-    // TODO(mpearson): Investigate the implications (if any) of
-    // tagging these results appropriately.  If so, do it because it
-    // makes more sense.
+    // Note that navsuggest results that come from a keyword provider
+    // are marked as not a keyword result.  (They don't go to a
+    // keyword search engine.)
     { "[\"a\",[\"http://b.com\", \"http://c.com\", \"d\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
        "\"google:suggestrelevance\":[1301, 1302, 1303]}]",
@@ -1668,7 +1699,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         { "d",     true,  false },
         { "c.com", false, false },
         { "b.com", false, false },
-        { "k a",   false, true },
+        { "k a",   false, false },
         kEmptyMatch },
       std::string() },
 
@@ -1678,7 +1709,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"]}]",
       { { "a",     true,  true },
         { "b.com", false, false },
-        { "k a",   false, true },
+        { "k a",   false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
 
@@ -1688,27 +1719,27 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
                              "\"google:suggestrelevance\":[9998]}]",
       { { "a",   true,  true },
         { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":9998,"
                              "\"google:suggestrelevance\":[9999]}]",
       { { "a1",  true,  true },
         { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       "1" },
     { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":0,"
                              "\"google:suggestrelevance\":[9999]}]",
       { { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch, kEmptyMatch },
       "1" },
     { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":-1,"
                              "\"google:suggestrelevance\":[9999]}]",
       { { "a1",  true,  true },
         { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       "1" },
     { "[\"a\",[\"http://a.com\"],[],[],"
@@ -1716,8 +1747,8 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":9999,"
         "\"google:suggestrelevance\":[9998]}]",
       { { "a",     true,  true },
-        { "a.com", false, true },
-        { "k a",   false, true },
+        { "a.com", false, false },
+        { "k a",   false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
 
@@ -1727,7 +1758,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
       { { "a1",  true,  true },
         { "a",   true,  true },
         { "a2",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch },
       "1" },
 
@@ -1736,14 +1767,14 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     { "[\"a\",[\"b\"],[],[],{\"google:suggestrelevance\":[9999]}]",
       { { "a",   true,  true },
         { "b",   true,  false },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"b\"],[],[],{\"google:suggestrelevance\":[9999],"
                             "\"google:verbatimrelevance\":0}]",
       { { "a",   true,  true },
         { "b",   true,  false },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"http://b.com\"],[],[],"
@@ -1751,7 +1782,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:suggestrelevance\":[9999]}]",
       { { "a",     true,  true },
         { "b.com", false, false },
-        { "k a",   false, true },
+        { "k a",   false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"http://b.com\"],[],[],"
@@ -1760,7 +1791,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":0}]",
       { { "a",     true,  true },
         { "b.com", false, false },
-        { "k a",   false, true },
+        { "k a",   false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
 
@@ -1771,13 +1802,13 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":0}]",
       { { "a",   true,  true },
         { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":1}]",
       { { "a",   true,  true },
         { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     // Continuing the same category of tests, but make sure we keep the
@@ -1786,14 +1817,14 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     { "[\"a\",[\"a1\"],[],[],{\"google:suggestrelevance\":[1],"
                              "\"google:verbatimrelevance\":0}]",
       { { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         { "a1",   true, true },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"a1\", \"a2\"],[],[],{\"google:suggestrelevance\":[1, 2],"
                                      "\"google:verbatimrelevance\":0}]",
       { { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         { "a2",  true,  true },
         { "a1",  true,  true },
         kEmptyMatch, kEmptyMatch },
@@ -1801,7 +1832,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     { "[\"a\",[\"a1\", \"a2\"],[],[],{\"google:suggestrelevance\":[1, 3],"
       "\"google:verbatimrelevance\":2}]",
       { { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         { "a2",  true,  true },
         { "a1",  true,  true },
         kEmptyMatch, kEmptyMatch },
@@ -1811,7 +1842,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     { "[\"a\",[\"b\", \"c\", \"d\", \"e\", \"f\", \"g\", \"h\"],[],[],"
        "{\"google:suggestrelevance\":[1, 2, 3, 4, 5, 6, 7]}]",
       { { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         { "h",   true,  false },
         { "g",   true,  false },
         { "f",   true,  false },
@@ -1826,7 +1857,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
                                 "\"NAVIGATION\"],"
         "\"google:suggestrelevance\":[1, 2, 3, 4, 5, 6, 7]}]",
       { { "a",     true,  true },
-        { "k a",   false, true },
+        { "k a",   false, false },
         { "h.com", false, false },
         { "g.com", false, false },
         { "f.com", false, false },
@@ -1840,13 +1871,13 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
       { { "a",   true,  true },
         { "a1",  true,  true },
         { "a2",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"a1\"],[],[],{\"google:suggestrelevance\":[9999, 1]}]",
       { { "a",   true,  true },
         { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     // In this case, ignoring the suggested relevance scores means we keep
@@ -1855,16 +1886,16 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
         "\"google:suggestrelevance\":[1]}]",
       { { "a",      true,  true },
-        { "a1.com", false, true },
-        { "k a",    false, true },
+        { "a1.com", false, false },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"http://a1.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\"],"
        "\"google:suggestrelevance\":[9999, 1]}]",
       { { "a",      true,  true },
-        { "a1.com", false, true },
-        { "k a",    false, true },
+        { "a1.com", false, false },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
 
@@ -1874,7 +1905,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
       { { "a2",  true,  true },
         { "a",   true,  true },
         { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch },
       "2" },
     { "[\"a\",[\"a\", \"a1\", \"a2\"],[],[],"
@@ -1883,7 +1914,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
       { { "a2",  true,  true },
         { "a",   true,  true },
         { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch },
       "2" },
 
@@ -1892,12 +1923,12 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     // (except when suggested relevances are ignored).
     { "[\"a\",[],[],[],{\"google:verbatimrelevance\":1}]",
       { { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[],[],[],{\"google:verbatimrelevance\":0}]",
       { { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
 
@@ -1911,9 +1942,9 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9998, 9999]}]",
       { { "a",      true,  true },
-        { "a2.com", false, true },
-        { "a1.com", false, true },
-        { "k a",    false, true },
+        { "a2.com", false, false },
+        { "a1.com", false, false },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
@@ -1921,17 +1952,17 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9999, 9998]}]",
       { { "a",      true,  true },
-        { "a1.com", false, true },
-        { "a2.com", false, true },
-        { "k a",    false, true },
+        { "a1.com", false, false },
+        { "a2.com", false, false },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"https://a/\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\"],"
         "\"google:suggestrelevance\":[9999]}]",
-      { { "a",         true, true },
-        { "https://a", false, true },
-        { "k a",       false, true },
+      { { "a",         true,  true },
+        { "https://a", false, false },
+        { "k a",       false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     // Check when navsuggest scores more than verbatim and there is query
@@ -1941,10 +1972,10 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9998, 9999, 1300]}]",
       { { "a",      true,  true },
-        { "a2.com", false, true },
-        { "a1.com", false, true },
+        { "a2.com", false, false },
+        { "a1.com", false, false },
         { "a3",     true,  true },
-        { "k a",    false, true },
+        { "k a",    false, false },
         kEmptyMatch },
       std::string() },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
@@ -1952,10 +1983,10 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9999, 9998, 1300]}]",
       { { "a",      true,  true },
-        { "a1.com", false, true },
-        { "a2.com", false, true },
+        { "a1.com", false, false },
+        { "a2.com", false, false },
         { "a3",     true,  true },
-        { "k a",    false, true },
+        { "k a",    false, false },
         kEmptyMatch },
       std::string() },
     // Check when navsuggest scores more than a query suggestion.  There is
@@ -1965,10 +1996,10 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9998, 9999, 9997]}]",
       { { "a3",     true,  true },
-        { "a2.com", false, true },
-        { "a1.com", false, true },
+        { "a2.com", false, false },
+        { "a1.com", false, false },
         { "a",      true,  true },
-        { "k a",    false, true },
+        { "k a",    false, false },
         kEmptyMatch },
       "3" },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
@@ -1976,10 +2007,10 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9999, 9998, 9997]}]",
       { { "a3",     true,  true },
-        { "a1.com", false, true },
-        { "a2.com", false, true },
+        { "a1.com", false, false },
+        { "a2.com", false, false },
         { "a",      true,  true },
-        { "k a",    false, true },
+        { "k a",    false, false },
         kEmptyMatch },
       "3" },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
@@ -1987,9 +2018,9 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":0,"
         "\"google:suggestrelevance\":[9998, 9999, 9997]}]",
       { { "a3",     true,  true },
-        { "a2.com", false, true },
-        { "a1.com", false, true },
-        { "k a",    false, true },
+        { "a2.com", false, false },
+        { "a1.com", false, false },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch },
       "3" },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
@@ -1997,9 +2028,9 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":0,"
         "\"google:suggestrelevance\":[9999, 9998, 9997]}]",
       { { "a3",     true,  true },
-        { "a1.com", false, true },
-        { "a2.com", false, true },
-        { "k a",    false, true },
+        { "a1.com", false, false },
+        { "a2.com", false, false },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch },
       "3" },
     // Check when there is neither verbatim nor a query suggestion that,
@@ -2014,8 +2045,8 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":0,"
         "\"google:suggestrelevance\":[9998, 9999]}]",
       { { "a",      true,  true },
-        { "a2.com", false, true },
-        { "k a",    false, true },
+        { "a2.com", false, false },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
@@ -2023,8 +2054,8 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":0,"
         "\"google:suggestrelevance\":[9999, 9998]}]",
       { { "a",      true,  true },
-        { "a1.com", false, true },
-        { "k a",    false, true },
+        { "a1.com", false, false },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     // More checks that everything works when it's not necessary to demote.
@@ -2033,10 +2064,10 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9997, 9998, 9999]}]",
       { { "a3",     true,  true },
-        { "a2.com", false, true },
-        { "a1.com", false, true },
+        { "a2.com", false, false },
+        { "a1.com", false, false },
         { "a",      true,  true },
-        { "k a",    false, true },
+        { "k a",    false, false },
         kEmptyMatch },
       "3" },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
@@ -2044,10 +2075,10 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9998, 9997, 9999]}]",
       { { "a3",     true,  true },
-        { "a1.com", false, true },
-        { "a2.com", false, true },
+        { "a1.com", false, false },
+        { "a2.com", false, false },
         { "a",      true,  true },
-        { "k a",    false, true },
+        { "k a",    false, false },
         kEmptyMatch },
       "3" },
   };
@@ -2124,7 +2155,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
     // the default provider verbatim.
     { "[\"a\",[\"b\", \"c\"],[],[],{\"google:suggestrelevance\":[1, 2]}]",
       { { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         { "c",   true,  false },
         { "b",   true,  false },
         kEmptyMatch, kEmptyMatch },
@@ -2132,12 +2163,9 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
     // Again, check that relevance scores reorder matches, just this
     // time with navigation matches.  This also checks that with
     // suggested relevance scores we allow multiple navsuggest results.
-    // It's odd that navsuggest results that come from a keyword
-    // provider are marked as not a keyword result.  I think this
-    // comes from them not going to a keyword search engine.
-    // TODO(mpearson): Investigate the implications (if any) of
-    // tagging these results appropriately.  If so, do it because it
-    // makes more sense.
+    // Note that navsuggest results that come from a keyword provider
+    // are marked as not a keyword result.  (They don't go to a
+    // keyword search engine.)
     { "[\"a\",[\"http://b.com\", \"http://c.com\", \"d\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
        "\"google:suggestrelevance\":[1301, 1302, 1303]}]",
@@ -2145,7 +2173,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
         { "d",     true,  false },
         { "c.com", false, false },
         { "b.com", false, false },
-        { "k a",   false, true },
+        { "k a",   false, false },
         kEmptyMatch },
       std::string() },
 
@@ -2155,7 +2183,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"]}]",
       { { "a",     true,  true },
         { "b.com", false, false },
-        { "k a",   false, true },
+        { "k a",   false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
 
@@ -2165,27 +2193,27 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
                              "\"google:suggestrelevance\":[9998]}]",
       { { "a",   true,  true },
         { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":9998,"
                              "\"google:suggestrelevance\":[9999]}]",
       { { "a1",  true,  true },
         { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       "1" },
     { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":0,"
                              "\"google:suggestrelevance\":[9999]}]",
       { { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch, kEmptyMatch },
       "1" },
     { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":-1,"
                              "\"google:suggestrelevance\":[9999]}]",
       { { "a1",  true,  true },
         { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       "1" },
     { "[\"a\",[\"http://a.com\"],[],[],"
@@ -2193,8 +2221,8 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
         "\"google:verbatimrelevance\":9999,"
         "\"google:suggestrelevance\":[9998]}]",
       { { "a",     true,  true },
-        { "a.com", false, true },
-        { "k a",   false, true },
+        { "a.com", false, false },
+        { "k a",   false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
 
@@ -2204,7 +2232,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
       { { "a1",  true,  true },
         { "a",   true,  true },
         { "a2",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch },
       "1" },
 
@@ -2213,21 +2241,24 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
     { "[\"a\",[\"b\"],[],[],{\"google:suggestrelevance\":[9999]}]",
       { { "b",   true,  false },
         { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
-      std::string() },
-    { "[\"a\",[\"b\"],[],[],{\"google:suggestrelevance\":[9999],"
-                            "\"google:verbatimrelevance\":0}]",
-      { { "b",   true,  false },
-        { "k a", false, true },
-        kEmptyMatch, kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"http://b.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\"],"
         "\"google:suggestrelevance\":[9999]}]",
       { { "b.com", false, false },
         { "a",     true,  true },
-        { "k a",   false, true },
+        { "k a",   false, false },
+        kEmptyMatch, kEmptyMatch, kEmptyMatch },
+      std::string() },
+    // On the other hand, if there is no inlineable match, restore
+    // the keyword verbatim score.
+    { "[\"a\",[\"b\"],[],[],{\"google:suggestrelevance\":[9999],"
+                            "\"google:verbatimrelevance\":0}]",
+      { { "b",   true,  false },
+        { "a",   true,  true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"http://b.com\"],[],[],"
@@ -2235,8 +2266,9 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
         "\"google:suggestrelevance\":[9999],"
         "\"google:verbatimrelevance\":0}]",
       { { "b.com", false, false },
-        { "k a",   false, true },
-        kEmptyMatch, kEmptyMatch, kEmptyMatch, kEmptyMatch },
+        { "a",     true,  true },
+        { "k a",   false, false },
+        kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
 
     // The top result does not have to score as highly as calculated
@@ -2244,43 +2276,43 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
     // this provider.
     { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":0}]",
       { { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch, kEmptyMatch },
       "1" },
     { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":1}]",
       { { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         { "a",   true,  true },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       "1" },
     { "[\"a\",[\"a1\"],[],[],{\"google:suggestrelevance\":[1],"
                              "\"google:verbatimrelevance\":0}]",
-      { { "k a", false, true },
+      { { "k a", false, false },
         { "a1",   true, true },
         kEmptyMatch, kEmptyMatch, kEmptyMatch, kEmptyMatch },
-      std::string() },
+      "1" },
     { "[\"a\",[\"a1\", \"a2\"],[],[],{\"google:suggestrelevance\":[1, 2],"
                                      "\"google:verbatimrelevance\":0}]",
       {
-        { "k a", false, true },
+        { "k a", false, false },
         { "a2",  true,  true },
         { "a1",  true,  true },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
-      std::string() },
+      "2" },
     { "[\"a\",[\"a1\", \"a2\"],[],[],{\"google:suggestrelevance\":[1, 3],"
       "\"google:verbatimrelevance\":2}]",
-      { { "k a", false, true },
+      { { "k a", false, false },
         { "a2",  true,  true },
         { "a",   true,  true },
         { "a1",  true,  true },
         kEmptyMatch, kEmptyMatch },
-      std::string() },
+      "2" },
 
     // Ensure that all suggestions are considered, regardless of order.
     { "[\"a\",[\"b\", \"c\", \"d\", \"e\", \"f\", \"g\", \"h\"],[],[],"
        "{\"google:suggestrelevance\":[1, 2, 3, 4, 5, 6, 7]}]",
       { { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         { "h",   true,  false },
         { "g",   true,  false },
         { "f",   true,  false },
@@ -2295,7 +2327,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
                                 "\"NAVIGATION\"],"
         "\"google:suggestrelevance\":[1, 2, 3, 4, 5, 6, 7]}]",
       { { "a",     true,  true },
-        { "k a",   false, true },
+        { "k a",   false, false },
         { "h.com", false, false },
         { "g.com", false, false },
         { "f.com", false, false },
@@ -2309,13 +2341,13 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
       { { "a",   true,  true },
         { "a1",  true,  true },
         { "a2",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"a1\"],[],[],{\"google:suggestrelevance\":[9999, 1]}]",
       { { "a",   true,  true },
         { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     // In this case, ignoring the suggested relevance scores means we keep
@@ -2324,16 +2356,16 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
         "\"google:suggestrelevance\":[1]}]",
       { { "a",      true,  true },
-        { "a1.com", false, true },
-        { "k a",    false, true },
+        { "a1.com", false, false },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"http://a1.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\"],"
        "\"google:suggestrelevance\":[9999, 1]}]",
       { { "a",      true,  true },
-        { "a1.com", false, true },
-        { "k a",    false, true },
+        { "a1.com", false, false },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
 
@@ -2343,7 +2375,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
       { { "a2",  true,  true },
         { "a",   true,  true },
         { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch },
       "2" },
     { "[\"a\",[\"a\", \"a1\", \"a2\"],[],[],"
@@ -2352,7 +2384,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
       { { "a2",  true,  true },
         { "a",   true,  true },
         { "a1",  true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch },
       "2" },
 
@@ -2360,47 +2392,45 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
     // TODO(mpearson): Ensure the value of verbatimrelevance is respected
     // (except when suggested relevances are ignored).
     { "[\"a\",[],[],[],{\"google:verbatimrelevance\":1}]",
-      { { "k a", false, true },
+      { { "k a", false, false },
         { "a",   true,  true },
         kEmptyMatch, kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[],[],[],{\"google:verbatimrelevance\":0}]",
       { { "a",   true,  true },
-        { "k a", false, true },
+        { "k a", false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
 
-    // Check that navsuggestions will be demoted below queries.
-    // (Navsuggestions are not allowed to appear first.)  In the process,
-    // make sure the navsuggestions still remain in the same order.
-    // First, check the situation where navsuggest scores more than verbatim
-    // and there are no query suggestions.
+    // In reorder mode, navsuggestions will not need to be demoted (because
+    // they are marked as not allowed to be default match and will be
+    // reordered as necessary).
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9998, 9999]}]",
-      { { "a",      true,  true },
-        { "a2.com", false, true },
-        { "a1.com", false, true },
-        { "k a",    false, true },
+      { { "a2.com", false, false },
+        { "a1.com", false, false },
+        { "a",      true,  true },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9999, 9998]}]",
-      { { "a",      true,  true },
-        { "a1.com", false, true },
-        { "a2.com", false, true },
-        { "k a",    false, true },
+      { { "a1.com", false, false },
+        { "a2.com", false, false },
+        { "a",      true,  true },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"https://a/\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\"],"
         "\"google:suggestrelevance\":[9999]}]",
-      { { "a",         true,  true },
-        { "https://a", false, true },
-        { "k a",       false, true },
+      { { "https://a", false, false },
+        { "a",         true,  true },
+        { "k a",       false, false },
         kEmptyMatch, kEmptyMatch, kEmptyMatch },
       std::string() },
     // Check when navsuggest scores more than verbatim and there is query
@@ -2409,22 +2439,22 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9998, 9999, 1300]}]",
-      { { "a",      true,  true },
-        { "a2.com", false, true },
-        { "a1.com", false, true },
+      { { "a2.com", false, false },
+        { "a1.com", false, false },
+        { "a",      true,  true },
         { "a3",     true,  true },
-        { "k a",    false, true },
+        { "k a",    false, false },
         kEmptyMatch },
       std::string() },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9999, 9998, 1300]}]",
-      { { "a",      true,  true },
-        { "a1.com", false, true },
-        { "a2.com", false, true },
+      { { "a1.com", false, false },
+        { "a2.com", false, false },
+        { "a",      true,  true },
         { "a3",     true,  true },
-        { "k a",    false, true },
+        { "k a",    false, false },
         kEmptyMatch },
       std::string() },
     // Check when navsuggest scores more than a query suggestion.  There is
@@ -2433,68 +2463,66 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9998, 9999, 9997]}]",
-      { { "a3",     true,  true },
-        { "a2.com", false, true },
-        { "a1.com", false, true },
+      { { "a2.com", false, false },
+        { "a1.com", false, false },
+        { "a3",     true,  true },
         { "a",      true,  true },
-        { "k a",    false, true },
+        { "k a",    false, false },
         kEmptyMatch },
       "3" },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9999, 9998, 9997]}]",
-      { { "a3",     true,  true },
-        { "a1.com", false, true },
-        { "a2.com", false, true },
+      { { "a1.com", false, false },
+        { "a2.com", false, false },
+        { "a3",     true,  true },
         { "a",      true,  true },
-        { "k a",    false, true },
+        { "k a",    false, false },
         kEmptyMatch },
       "3" },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
         "\"google:verbatimrelevance\":0,"
         "\"google:suggestrelevance\":[9998, 9999, 9997]}]",
-      { { "a3",     true,  true },
-        { "a2.com", false, true },
-        { "a1.com", false, true },
-        { "k a",    false, true },
+      { { "a2.com", false, false },
+        { "a1.com", false, false },
+        { "a3",     true,  true },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch },
       "3" },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\", \"QUERY\"],"
         "\"google:verbatimrelevance\":0,"
         "\"google:suggestrelevance\":[9999, 9998, 9997]}]",
-      { { "a3",     true,  true },
-        { "a1.com", false, true },
-        { "a2.com", false, true },
-        { "k a",    false, true },
+      { { "a1.com", false, false },
+        { "a2.com", false, false },
+        { "a3",     true,  true },
+        { "k a",    false, false },
         kEmptyMatch, kEmptyMatch },
       "3" },
     // Check when there is neither verbatim nor a query suggestion that,
     // because we can't demote navsuggestions below a query suggestion,
-    // we abandon suggested relevance scores entirely.  One consequence is
-    // that this means we restore the keyword verbatim match.  Note
-    // that in this case of abandoning suggested relevance scores, we still
-    // keep the navsuggestions in the same order, but we revert to only allowing
-    // one navigation to appear because the scores are completely local.
+    // we restore the keyword verbatim score.
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
         "\"google:verbatimrelevance\":0,"
         "\"google:suggestrelevance\":[9998, 9999]}]",
-      { { "a",      true,  true },
-        { "a2.com", false, true },
-        { "k a",    false, true },
-        kEmptyMatch, kEmptyMatch, kEmptyMatch },
+      { { "a2.com", false, false },
+        { "a1.com", false, false },
+        { "a",      true,  true },
+        { "k a",    false, false },
+        kEmptyMatch, kEmptyMatch },
       std::string() },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
         "\"google:verbatimrelevance\":0,"
         "\"google:suggestrelevance\":[9999, 9998]}]",
-      { { "a",      true,  true },
-        { "a1.com", false, true },
-        { "k a",    false, true },
-        kEmptyMatch, kEmptyMatch, kEmptyMatch },
+      { { "a1.com", false, false },
+        { "a2.com", false, false },
+        { "a",      true,  true },
+        { "k a",    false, false },
+        kEmptyMatch, kEmptyMatch },
       std::string() },
     // More checks that everything works when it's not necessary to demote.
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
@@ -2502,10 +2530,10 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9997, 9998, 9999]}]",
       { { "a3",     true,  true },
-        { "a2.com", false, true },
-        { "a1.com", false, true },
+        { "a2.com", false, false },
+        { "a1.com", false, false },
         { "a",      true,  true },
-        { "k a",    false, true },
+        { "k a",    false, false },
         kEmptyMatch },
       "3" },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
@@ -2513,10 +2541,10 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
         "\"google:verbatimrelevance\":9990,"
         "\"google:suggestrelevance\":[9998, 9997, 9999]}]",
       { { "a3",     true,  true },
-        { "a1.com", false, true },
-        { "a2.com", false, true },
+        { "a1.com", false, false },
+        { "a2.com", false, false },
         { "a",      true,  true },
-        { "k a",    false, true },
+        { "k a",    false, false },
         kEmptyMatch },
       "3" },
   };
@@ -2554,10 +2582,13 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
 
     const std::string description = "for input with json=" + cases[i].json;
     const ACMatches& matches = provider_->matches();
-    // The top match must inline and score as highly as calculated verbatim.
     ASSERT_FALSE(matches.empty());
+    // Find the first match that's allowed to be the default match and check
+    // its inline_autocompletion.
+    ACMatches::const_iterator it = FindDefaultMatch(matches);
+    ASSERT_NE(matches.end(), it);
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
-              matches[0].inline_autocompletion) << description;
+              it->inline_autocompletion) << description;
 
     ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
     size_t j = 0;
