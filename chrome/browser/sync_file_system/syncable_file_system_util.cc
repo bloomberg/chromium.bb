@@ -25,6 +25,9 @@ namespace {
 const char kEnableSyncFSDirectoryOperation[] =
     "enable-syncfs-directory-operation";
 
+// A command switch to enable V2 Sync FileSystem.
+const char kEnableSyncFileSystemV2[] = "enable-syncfs-v2";
+
 const char kSyncableMountName[] = "syncfs";
 const char kSyncableMountNameForInternalSync[] = "syncfs-internal";
 
@@ -107,9 +110,25 @@ void SetEnableSyncFSDirectoryOperation(bool flag) {
 }
 
 bool IsSyncFSDirectoryOperationEnabled() {
+  return IsSyncFSDirectoryOperationEnabled(GURL());
+}
+
+bool IsSyncFSDirectoryOperationEnabled(const GURL& origin) {
   return is_directory_operation_enabled ||
       CommandLine::ForCurrentProcess()->HasSwitch(
-          kEnableSyncFSDirectoryOperation);
+          kEnableSyncFSDirectoryOperation) ||
+      IsV2EnabledForOrigin(origin);
+}
+
+bool IsV2Enabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(kEnableSyncFileSystemV2);
+}
+
+bool IsV2EnabledForOrigin(const GURL& origin) {
+  if (IsV2Enabled())
+    return true;
+  // TODO: Support white listing and/or command line parameter.
+  return false;
 }
 
 base::FilePath GetSyncFileSystemDir(const base::FilePath& profile_base_dir) {
@@ -119,12 +138,12 @@ base::FilePath GetSyncFileSystemDir(const base::FilePath& profile_base_dir) {
 }
 
 ScopedEnableSyncFSDirectoryOperation::ScopedEnableSyncFSDirectoryOperation() {
-  was_enabled_ = IsSyncFSDirectoryOperationEnabled();
+  was_enabled_ = IsSyncFSDirectoryOperationEnabled(GURL());
   SetEnableSyncFSDirectoryOperation(true);
 }
 
 ScopedEnableSyncFSDirectoryOperation::~ScopedEnableSyncFSDirectoryOperation() {
-  DCHECK(IsSyncFSDirectoryOperationEnabled());
+  DCHECK(IsSyncFSDirectoryOperationEnabled(GURL()));
   SetEnableSyncFSDirectoryOperation(was_enabled_);
 }
 

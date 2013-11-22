@@ -27,7 +27,6 @@ namespace sync_file_system {
 
 namespace {
 const char kDisableLastWriteWin[] = "disable-syncfs-last-write-win";
-const char kEnableSyncFileSystemV2[] = "enable-syncfs-v2";
 }
 
 // static
@@ -71,8 +70,7 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
   scoped_ptr<RemoteFileSyncService> remote_file_service;
   if (mock_remote_file_service_) {
     remote_file_service = mock_remote_file_service_.Pass();
-  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
-      kEnableSyncFileSystemV2)) {
+  } else if (sync_file_system::IsV2Enabled()) {
     GURL base_drive_url(
         google_apis::DriveApiUrlGenerator::kBaseUrlForProduction);
     GURL base_download_url(
