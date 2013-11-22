@@ -37,9 +37,9 @@
 #include "core/rendering/RenderSlider.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/graphics/Color.h"
-
 #include "public/platform/android/WebThemeEngine.h"
 #include "public/platform/Platform.h"
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 
@@ -50,7 +50,7 @@ PassRefPtr<RenderTheme> RenderThemeChromiumAndroid::create()
 
 RenderTheme& RenderTheme::theme()
 {
-    static RenderTheme* renderTheme = RenderThemeChromiumAndroid::create().leakRef();
+    DEFINE_STATIC_REF(RenderTheme, renderTheme, (RenderThemeChromiumAndroid::create()));
     return *renderTheme;
 }
 

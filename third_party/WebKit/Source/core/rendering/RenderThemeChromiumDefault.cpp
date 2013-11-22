@@ -37,7 +37,7 @@
 #include "public/platform/default/WebThemeEngine.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
-
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 
@@ -84,7 +84,7 @@ PassRefPtr<RenderTheme> RenderThemeChromiumDefault::create()
 #if !OS(ANDROID)
 RenderTheme& RenderTheme::theme()
 {
-    static RenderTheme* renderTheme = RenderThemeChromiumDefault::create().leakRef();
+    DEFINE_STATIC_REF(RenderTheme, renderTheme, (RenderThemeChromiumDefault::create()));
     return *renderTheme;
 }
 #endif

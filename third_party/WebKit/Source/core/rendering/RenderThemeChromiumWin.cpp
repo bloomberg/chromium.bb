@@ -48,6 +48,7 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/win/WebThemeEngine.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/StdLibExtras.h"
 
 // FIXME: This dependency should eventually be removed.
 #include <skia/ext/skia_utils_win.h>
@@ -163,7 +164,7 @@ PassRefPtr<RenderTheme> RenderThemeChromiumWin::create()
 
 RenderTheme& RenderTheme::theme()
 {
-    static RenderTheme* renderTheme = RenderThemeChromiumWin::create().leakRef();
+    DEFINE_STATIC_REF(RenderTheme, renderTheme, (RenderThemeChromiumWin::create()));
     return *renderTheme;
 }
 

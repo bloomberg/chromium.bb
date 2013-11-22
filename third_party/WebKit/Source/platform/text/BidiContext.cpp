@@ -22,6 +22,7 @@
 #include "config.h"
 #include "platform/text/BidiContext.h"
 
+#include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -50,20 +51,20 @@ PassRefPtr<BidiContext> BidiContext::create(unsigned char level, Direction direc
     ASSERT(level <= 1);
     if (!level) {
         if (!override) {
-            static BidiContext* ltrContext = createUncached(0, LeftToRight, false, FromStyleOrDOM, 0).leakRef();
+            DEFINE_STATIC_REF(BidiContext, ltrContext, (createUncached(0, LeftToRight, false, FromStyleOrDOM, 0)));
             return ltrContext;
         }
 
-        static BidiContext* ltrOverrideContext = createUncached(0, LeftToRight, true, FromStyleOrDOM, 0).leakRef();
+        DEFINE_STATIC_REF(BidiContext, ltrOverrideContext, (createUncached(0, LeftToRight, true, FromStyleOrDOM, 0)));
         return ltrOverrideContext;
     }
 
     if (!override) {
-        static BidiContext* rtlContext = createUncached(1, RightToLeft, false, FromStyleOrDOM, 0).leakRef();
+        DEFINE_STATIC_REF(BidiContext, rtlContext, (createUncached(1, RightToLeft, false, FromStyleOrDOM, 0)));
         return rtlContext;
     }
 
-    static BidiContext* rtlOverrideContext = createUncached(1, RightToLeft, true, FromStyleOrDOM, 0).leakRef();
+    DEFINE_STATIC_REF(BidiContext, rtlOverrideContext, (createUncached(1, RightToLeft, true, FromStyleOrDOM, 0)));
     return rtlOverrideContext;
 }
 

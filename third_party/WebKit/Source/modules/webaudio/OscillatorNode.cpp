@@ -33,19 +33,15 @@
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/PeriodicWave.h"
-#include <algorithm>
 #include "wtf/MathExtras.h"
+#include "wtf/StdLibExtras.h"
+#include <algorithm>
 
 using namespace std;
 
 namespace WebCore {
 
 using namespace VectorMath;
-
-PeriodicWave* OscillatorNode::s_periodicWaveSine = 0;
-PeriodicWave* OscillatorNode::s_periodicWaveSquare = 0;
-PeriodicWave* OscillatorNode::s_periodicWaveSawtooth = 0;
-PeriodicWave* OscillatorNode::s_periodicWaveTriangle = 0;
 
 PassRefPtr<OscillatorNode> OscillatorNode::create(AudioContext* context, float sampleRate)
 {
@@ -121,26 +117,26 @@ bool OscillatorNode::setType(unsigned type)
     float sampleRate = this->sampleRate();
 
     switch (type) {
-    case SINE:
-        if (!s_periodicWaveSine)
-            s_periodicWaveSine = PeriodicWave::createSine(sampleRate).leakRef();
-        periodicWave = s_periodicWaveSine;
+    case SINE: {
+        DEFINE_STATIC_REF(PeriodicWave, periodicWaveSine, (PeriodicWave::createSine(sampleRate)));
+        periodicWave = periodicWaveSine;
         break;
-    case SQUARE:
-        if (!s_periodicWaveSquare)
-            s_periodicWaveSquare = PeriodicWave::createSquare(sampleRate).leakRef();
-        periodicWave = s_periodicWaveSquare;
+    }
+    case SQUARE: {
+        DEFINE_STATIC_REF(PeriodicWave, periodicWaveSquare, (PeriodicWave::createSquare(sampleRate)));
+        periodicWave = periodicWaveSquare;
         break;
-    case SAWTOOTH:
-        if (!s_periodicWaveSawtooth)
-            s_periodicWaveSawtooth = PeriodicWave::createSawtooth(sampleRate).leakRef();
-        periodicWave = s_periodicWaveSawtooth;
+    }
+    case SAWTOOTH: {
+        DEFINE_STATIC_REF(PeriodicWave, periodicWaveSawtooth, (PeriodicWave::createSawtooth(sampleRate)));
+        periodicWave = periodicWaveSawtooth;
         break;
-    case TRIANGLE:
-        if (!s_periodicWaveTriangle)
-            s_periodicWaveTriangle = PeriodicWave::createTriangle(sampleRate).leakRef();
-        periodicWave = s_periodicWaveTriangle;
+    }
+    case TRIANGLE: {
+        DEFINE_STATIC_REF(PeriodicWave, periodicWaveTriangle, (PeriodicWave::createTriangle(sampleRate)));
+        periodicWave = periodicWaveTriangle;
         break;
+    }
     case CUSTOM:
     default:
         // Return error for invalid types, including CUSTOM since setPeriodicWave() method must be

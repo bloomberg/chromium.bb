@@ -36,6 +36,7 @@
 #include "core/rendering/RenderThemeChromiumFontProvider.h"
 #include "platform/LayoutTestSupport.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 
@@ -243,8 +244,8 @@ bool RenderThemeChromiumSkia::paintSearchFieldCancelButton(RenderObject* cancelB
                                 cancelButtonSize, cancelButtonSize);
     IntRect paintingRect = convertToPaintingRect(inputRenderBox, cancelButtonObject, cancelButtonRect, r);
 
-    static Image* cancelImage = Image::loadPlatformResource("searchCancel").leakRef();
-    static Image* cancelPressedImage = Image::loadPlatformResource("searchCancelPressed").leakRef();
+    DEFINE_STATIC_REF(Image, cancelImage, (Image::loadPlatformResource("searchCancel")));
+    DEFINE_STATIC_REF(Image, cancelPressedImage, (Image::loadPlatformResource("searchCancelPressed")));
     paintInfo.context->drawImage(isPressed(cancelButtonObject) ? cancelPressedImage : cancelImage, paintingRect);
     return false;
 }
@@ -286,7 +287,7 @@ bool RenderThemeChromiumSkia::paintSearchFieldResultsDecoration(RenderObject* ma
                              magnifierSize, magnifierSize);
     IntRect paintingRect = convertToPaintingRect(inputRenderBox, magnifierObject, magnifierRect, r);
 
-    static Image* magnifierImage = Image::loadPlatformResource("searchMagnifier").leakRef();
+    DEFINE_STATIC_REF(Image, magnifierImage, (Image::loadPlatformResource("searchMagnifier")));
     paintInfo.context->drawImage(magnifierImage, paintingRect);
     return false;
 }

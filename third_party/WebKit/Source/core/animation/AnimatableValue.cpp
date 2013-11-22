@@ -31,13 +31,14 @@
 #include "config.h"
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/AnimatableNeutral.h"
+#include "wtf/StdLibExtras.h"
 #include <algorithm>
 
 namespace WebCore {
 
 const AnimatableValue* AnimatableValue::neutralValue()
 {
-    static AnimatableNeutral* neutralSentinelValue = AnimatableNeutral::create().leakRef();
+    DEFINE_STATIC_REF(AnimatableNeutral, neutralSentinelValue, (AnimatableNeutral::create()));
     return neutralSentinelValue;
 }
 

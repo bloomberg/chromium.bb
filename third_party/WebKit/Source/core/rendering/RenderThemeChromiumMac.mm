@@ -1887,7 +1887,7 @@ NSView* FlippedView()
 
 RenderTheme& RenderTheme::theme()
 {
-    static RenderTheme* renderTheme = RenderThemeChromiumMac::create().leakRef();
+    DEFINE_STATIC_REF(RenderTheme, renderTheme, (RenderThemeChromiumMac::create()));
     return *renderTheme;
 }
 
