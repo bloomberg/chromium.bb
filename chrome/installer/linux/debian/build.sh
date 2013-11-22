@@ -63,14 +63,12 @@ stage_install_debian() {
     local DEFAULT_FLAGS="--user-data-dir=\"${SXS_USER_DATA_DIR}\""
 
     # Avoid file collisions between channels.
+    local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
+
     # TODO(phajdan.jr): Do that for all packages for SxS,
     # http://crbug.com/38598 .
-    # We can't do this for now for all packages because of
-    # http://crbug.com/295103 , and ultimately http://crbug.com/22703 .
-    # Also see https://groups.google.com/a/chromium.org/d/msg/chromium-dev/DBEqOORaRiw/pE0bNI6h0kcJ .
     if [ "$CHANNEL" = "trunk" ] || [ "$CHANNEL" = "asan" ]; then
       local PACKAGE="${PACKAGE}-${CHANNEL}"
-      local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
     fi
 
     # Make it possible to distinguish between menu entries
@@ -99,6 +97,24 @@ stage_install_debian() {
   process_template "${BUILDDIR}/installer/debian/postrm" \
     "${STAGEDIR}/DEBIAN/postrm"
   chmod 755 "${STAGEDIR}/DEBIAN/postrm"
+
+  # Compatibility symlinks to avoid breaking Chrome on update.
+  # TODO(phajdan.jr): Remove before enabling SxS (obvious file collisions).
+  # See http://crbug.com/295103 , and ultimately http://crbug.com/22703 .
+  # Also see https://groups.google.com/a/chromium.org/d/msg/chromium-dev/DBEqOORaRiw/pE0bNI6h0kcJ .
+  if [ "${CHANNEL}" != "stable" ] && \
+     [ "${CHANNEL}" != "trunk" ] && \
+     [ "${CHANNEL}" != "asan" ]; then
+    mkdir -p "${STAGEDIR}/opt/google/chrome"
+    for x in chrome chrome-sandbox locales; do
+      ln -s "${INSTALLDIR}/${x}" "${STAGEDIR}/opt/google/chrome/${x}"
+    done
+    pushd "${STAGEDIR}/${INSTALLDIR}"
+    for x in *.pak; do
+      ln -s "${INSTALLDIR}/${x}" "${STAGEDIR}/opt/google/chrome/${x}"
+    done
+    popd
+  fi
 }
 
 # Actually generate the package file.
