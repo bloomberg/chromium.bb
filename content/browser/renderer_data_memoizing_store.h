@@ -9,13 +9,9 @@
 
 #include "base/bind.h"
 #include "base/synchronization/lock.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host_observer.h"
 
 namespace content {
 
@@ -25,19 +21,19 @@ namespace content {
 // object is retained. RendererDataMemoizingStore watches for render process
 // termination and releases objects that are no longer associated with any
 // render process.
+//
+// TODO(jcampan): Rather than watching for render process termination, we should
+//                instead be listening to events such as resource cached/
+//                removed from cache, and remove the items when we know they
+//                are not used anymore.
 template <typename T>
-class RendererDataMemoizingStore : public NotificationObserver {
+class RendererDataMemoizingStore : public RenderProcessHostObserver {
  public:
   RendererDataMemoizingStore() : next_item_id_(1) {
-    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      RegisterForNotification();
-    } else {
-      BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&RendererDataMemoizingStore::RegisterForNotification,
-                     base::Unretained(this)));
-    }
+  }
+
+  ~RendererDataMemoizingStore() {
+    DCHECK_EQ(0U, id_to_item_.size()) << "Failed to outlive render processes";
   }
 
   // Store adds |item| to this collection, associates it with the given render
@@ -66,6 +62,7 @@ class RendererDataMemoizingStore : public NotificationObserver {
     // Let's update process_id_to_item_id_.
     std::pair<IDMap::iterator, IDMap::iterator> process_ids =
         process_id_to_item_id_.equal_range(process_id);
+    bool already_watching_process = (process_ids.first != process_ids.second);
     if (std::find_if(process_ids.first, process_ids.second,
                      MatchSecond<int>(item_id)) == process_ids.second) {
       process_id_to_item_id_.insert(std::make_pair(process_id, item_id));
@@ -77,6 +74,20 @@ class RendererDataMemoizingStore : public NotificationObserver {
     if (std::find_if(item_ids.first, item_ids.second,
                      MatchSecond<int>(process_id)) == item_ids.second) {
       item_id_to_process_id_.insert(std::make_pair(item_id, process_id));
+    }
+
+    // If we're not doing so already, keep an eye for the process host deletion.
+    if (!already_watching_process) {
+      if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+        StartObservingProcess(process_id);
+      } else {
+        BrowserThread::PostTask(
+            BrowserThread::UI,
+            FROM_HERE,
+            base::Bind(&RendererDataMemoizingStore::StartObservingProcess,
+                       base::Unretained(this),
+                       process_id));
+      }
     }
 
     return item_id;
@@ -113,23 +124,22 @@ class RendererDataMemoizingStore : public NotificationObserver {
     M value;
   };
 
-  void RegisterForNotification() {
-    // We watch for RenderProcess termination, as this is how we clear
-    // items for now.
-    // TODO(jcampan): we should be listening to events such as resource cached/
-    //                removed from cache, and remove the item when we know it
-    //                is not used anymore.
+  void StartObservingProcess(int process_id) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    RenderProcessHost* host = RenderProcessHost::FromID(process_id);
+    if (!host) {
+      // We lost the race to observe the host before it was destroyed. Since
+      // this function was called because we're managing objects tied to that
+      // (now destroyed) RenderProcessHost, let's clean up.
+      RemoveRenderProcessItems(process_id);
+      return;
+    }
 
-    registrar_.Add(this,
-                   NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                   NotificationService::AllBrowserContextsAndSources());
-    registrar_.Add(this,
-                   NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                   NotificationService::AllBrowserContextsAndSources());
+    host->AddObserver(this);
   }
 
   // Remove the item specified by |item_id| from id_to_item_ and item_to_id_.
-  // NOTE: the caller (RemoveForRenderProcesHost) must hold lock_.
+  // NOTE: the caller (RemoveRenderProcessItems) must hold lock_.
   void RemoveInternal(int item_id) {
     typename ItemMap::iterator item_iter = id_to_item_.find(item_id);
     DCHECK(item_iter != id_to_item_.end());
@@ -142,8 +152,13 @@ class RendererDataMemoizingStore : public NotificationObserver {
     id_to_item_.erase(item_iter);
   }
 
+  void RenderProcessHostDestroyed(RenderProcessHost* host) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    RemoveRenderProcessItems(host->GetID());
+  }
+
   // Removes all the items associated with the specified process from the store.
-  void RemoveForRenderProcessHost(int process_id) {
+  void RemoveRenderProcessItems(int process_id) {
     base::AutoLock auto_lock(lock_);
 
     // We iterate through all the item ids for that process.
@@ -181,20 +196,6 @@ class RendererDataMemoizingStore : public NotificationObserver {
     if (process_ids.first != process_ids.second)
       process_id_to_item_id_.erase(process_ids.first, process_ids.second);
   }
-
-  // NotificationObserver implementation.
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) OVERRIDE {
-    DCHECK(type == NOTIFICATION_RENDERER_PROCESS_TERMINATED ||
-           type == NOTIFICATION_RENDERER_PROCESS_CLOSED);
-    RenderProcessHost* rph = Source<RenderProcessHost>(source).ptr();
-    DCHECK(rph);
-    RemoveForRenderProcessHost(rph->GetID());
-  }
-
-  // Is only used on the UI Thread.
-  NotificationRegistrar registrar_;
 
   IDMap process_id_to_item_id_;
   IDMap item_id_to_process_id_;
