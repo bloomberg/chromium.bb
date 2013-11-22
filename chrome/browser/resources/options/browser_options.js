@@ -214,21 +214,6 @@ cr.define('options', function() {
       }
 
       if (cr.isChromeOS) {
-        if (!UIAccountTweaks.loggedInAsGuest()) {
-          var pictureWrapper = $('account-picture-wrapper');
-          pictureWrapper.setAttribute('role', 'button');
-          pictureWrapper.tabIndex = 0;
-          function activate(event) {
-            if (event.type == 'click' ||
-                (event.type == 'keydown' && event.keyCode == 32)) {
-              OptionsPage.navigateToPage('changePicture');
-            }
-          };
-          pictureWrapper.onclick = activate;
-          pictureWrapper.addEventListener('keydown', activate);
-
-        }
-
         // Username (canonical email) of the currently logged in user or
         // |kGuestUser| if a guest session is active.
         this.username_ = loadTimeData.getString('username');
@@ -237,6 +222,10 @@ cr.define('options', function() {
 
         $('account-picture-wrapper').oncontextmenu = function(e) {
           e.preventDefault();
+        };
+
+        $('account-picture').onclick = function() {
+          OptionsPage.navigateToPage('changePicture');
         };
 
         $('manage-accounts-button').onclick = function(event) {
