@@ -507,7 +507,7 @@
         }],
 
         # libudev usage.  This currently only affects the content layer.
-        ['OS=="linux"', {
+        ['OS=="linux" and embedded==0', {
           'use_udev%': 1,
         }, {
           'use_udev%': 0,
