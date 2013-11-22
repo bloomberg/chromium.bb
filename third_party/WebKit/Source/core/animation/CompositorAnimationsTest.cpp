@@ -362,7 +362,7 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorIterationSta
     EXPECT_FALSE(convertTimingForCompositor(m_timing, m_compositorTiming));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, DISABLED_ConvertTimingForCompositorIterationCount)
+TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorIterationCount)
 {
     m_timing.iterationCount = 5.0;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
@@ -371,13 +371,23 @@ TEST_F(AnimationCompositorAnimationsTest, DISABLED_ConvertTimingForCompositorIte
     m_timing.iterationCount = 5.5;
     EXPECT_FALSE(convertTimingForCompositor(m_timing, m_compositorTiming));
 
-    m_timing.iterationCount = std::numeric_limits<double>::infinity();
-    EXPECT_FALSE(convertTimingForCompositor(m_timing, m_compositorTiming));
-
-#ifndef NDEBUG
+    // Asserts will only trigger on DEBUG build.
+    // EXPECT_DEATH tests are flaky on Android.
+#if !defined(NDEBUG) && !OS(ANDROID)
     m_timing.iterationCount = -1;
     EXPECT_DEATH(convertTimingForCompositor(m_timing, m_compositorTiming), "");
 #endif
+
+    m_timing.iterationCount = std::numeric_limits<double>::infinity();
+    EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
+    EXPECT_EQ(-1, m_compositorTiming.adjustedIterationCount);
+
+    m_timing.iterationCount = std::numeric_limits<double>::infinity();
+    m_timing.iterationDuration = 5.0;
+    m_timing.startDelay = -6.0;
+    EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
+    EXPECT_DOUBLE_EQ(-1.0, m_compositorTiming.scaledTimeOffset);
+    EXPECT_EQ(-1, m_compositorTiming.adjustedIterationCount);
 }
 
 TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorIterationsAndStartDelay)
@@ -473,20 +483,6 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorDirectionIte
     EXPECT_EQ(2, m_compositorTiming.adjustedIterationCount);
     EXPECT_TRUE(m_compositorTiming.alternate);
     EXPECT_TRUE(m_compositorTiming.reverse);
-}
-
-TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorInfinite)
-{
-    m_timing.iterationCount = std::numeric_limits<double>::infinity();
-    EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
-    EXPECT_EQ(-1, m_compositorTiming.adjustedIterationCount);
-
-    m_timing.iterationCount = std::numeric_limits<double>::infinity();
-    m_timing.iterationDuration = 5.0;
-    m_timing.startDelay = -6.0;
-    EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
-    EXPECT_DOUBLE_EQ(-1.0, m_compositorTiming.scaledTimeOffset);
-    EXPECT_EQ(-1, m_compositorTiming.adjustedIterationCount);
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTiming)
