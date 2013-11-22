@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import contextlib
+import cPickle
 import logging
 import multiprocessing
 import os
@@ -123,8 +124,9 @@ class TestBackgroundWrapper(cros_test_lib.TestCase):
     # Complain if there are any children left over.
     active_children = multiprocessing.active_children()
     for child in active_children:
-      child.Kill(signal.SIGKILL, log_level=logging.WARNING)
-      child.join()
+      if hasattr(child, 'Kill'):
+        child.Kill(signal.SIGKILL, log_level=logging.WARNING)
+        child.join()
     self.assertEqual(multiprocessing.active_children(), [])
     self.assertEqual(active_children, [])
 
@@ -161,10 +163,11 @@ class TestHelloWorld(TestBackgroundWrapper):
 
   def _ParallelHelloWorld(self):
     """Write 'hello world' to stdout using multiple processes."""
-    queue = multiprocessing.Queue()
-    with parallel.BackgroundTaskRunner(self._HelloWorld, queue=queue):
-      queue.put([])
-      self.printed_hello.wait()
+    with multiprocessing.Manager() as manager:
+      queue = manager.Queue()
+      with parallel.BackgroundTaskRunner(self._HelloWorld, queue=queue):
+        queue.put([])
+        self.printed_hello.wait()
 
   def VerifyDefaultQueue(self):
     """Verify that BackgroundTaskRunner will create a queue on it's own."""
@@ -195,23 +198,24 @@ class TestBackgroundTaskRunnerArgs(TestBackgroundWrapper):
 
   def testArgs(self):
     """Test that we can pass args down to the task."""
-    results = multiprocessing.Queue()
-    arg2s = set((1, 2, 3))
-    with parallel.BackgroundTaskRunner(_BackgroundTaskRunnerArgs, results,
-                                       'arg1', kwarg1='kwarg1') as queue:
-      for arg2 in arg2s:
-        queue.put((arg2,))
+    with multiprocessing.Manager() as manager:
+      results = manager.Queue()
+      arg2s = set((1, 2, 3))
+      with parallel.BackgroundTaskRunner(_BackgroundTaskRunnerArgs, results,
+                                         'arg1', kwarg1='kwarg1') as queue:
+        for arg2 in arg2s:
+          queue.put((arg2,))
 
-    # Since the queue is unordered, need to handle arg2 specially.
-    result_arg2s = set()
-    for _ in xrange(3):
-      result = results.get()
-      self.assertEquals(result[0], 'arg1')
-      result_arg2s.add(result[1])
-      self.assertEquals(result[2], 'kwarg1')
-      self.assertEquals(result[3], None)
-    self.assertEquals(arg2s, result_arg2s)
-    self.assertEquals(results.empty(), True)
+      # Since the queue is unordered, need to handle arg2 specially.
+      result_arg2s = set()
+      for _ in xrange(3):
+        result = results.get()
+        self.assertEquals(result[0], 'arg1')
+        result_arg2s.add(result[1])
+        self.assertEquals(result[2], 'kwarg1')
+        self.assertEquals(result[3], None)
+      self.assertEquals(arg2s, result_arg2s)
+      self.assertEquals(results.empty(), True)
 
 
 @unittest.skipIf(_SKIP_FLAKY_TESTS, 'Occasionally fails on buildbots')
@@ -306,6 +310,9 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
     sys.stdout.write(_GREETING)
     raise KeyboardInterrupt()
 
+  def _BadPickler(self):
+    return self._BadPickler
+
   def testExceptionRaising(self):
     # pylint: disable=E1101
     self.StartPatcher(BackgroundTaskVerifier())
@@ -321,6 +328,16 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
             ex_str = str(ex)
         self.assertTrue('Traceback' in ex_str)
         self.assertEqual(output_str, _GREETING)
+
+  def testFailedPickle(self):
+    """PicklingError should be thrown when an argument fails to pickle."""
+    with self.assertRaises(cPickle.PicklingError):
+      parallel.RunTasksInProcessPool(self._SystemExit, [self._SystemExit])
+
+  def testFailedPickleOnReturn(self):
+    """PicklingError should be thrown when a return value fails to pickle."""
+    with self.assertRaises(parallel.BackgroundFailure):
+      parallel.RunParallelSteps([self._BadPickler], return_values=True)
 
 
 @unittest.skipIf(_SKIP_FLAKY_TESTS, 'Fails often on buildbots')

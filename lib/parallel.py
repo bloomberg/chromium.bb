@@ -67,7 +67,8 @@ class _BackgroundTask(multiprocessing.Process):
   # Interval we check for updates from print statements.
   PRINT_INTERVAL = 1
 
-  def __init__(self, task, semaphore=None, task_args=None, task_kwargs=None):
+  def __init__(self, task, queue, semaphore=None, task_args=None,
+               task_kwargs=None):
     """Create a new _BackgroundTask object.
 
     If semaphore is supplied, it will be acquired for the duration of the
@@ -76,13 +77,16 @@ class _BackgroundTask(multiprocessing.Process):
 
     Args:
       task: The task (a functor) to run in the background.
+      queue: A queue to be used for managing communication between the parent
+        and child process. This queue must be valid for the length of the
+        life of the child process, until the parent has collected its status.
       semaphore: The lock to hold while |task| runs.
       task_args: A list of args to pass to the |task|.
       task_kwargs: A dict of optional args to pass to the |task|.
     """
     multiprocessing.Process.__init__(self)
     self._task = task
-    self._queue = multiprocessing.Queue()
+    self._queue = queue
     self._semaphore = semaphore
     self._started = multiprocessing.Event()
     self._killing = multiprocessing.Event()
@@ -379,35 +383,36 @@ class _BackgroundTask(multiprocessing.Process):
       semaphore = multiprocessing.Semaphore(max_parallel)
 
     # First, start all the steps.
-    bg_tasks = collections.deque()
-    for step in steps:
-      task = cls(step, semaphore=semaphore)
-      task.start()
-      bg_tasks.append(task)
+    with multiprocessing.Manager() as manager:
+      bg_tasks = collections.deque()
+      for step in steps:
+        task = cls(step, queue=manager.Queue(), semaphore=semaphore)
+        task.start()
+        bg_tasks.append(task)
 
-    try:
-      yield
-    finally:
-      # Wait for each step to complete.
-      tracebacks = []
-      flaky_tasks = []
-      while bg_tasks:
-        task = bg_tasks.popleft()
-        error, possibly_flaky = task.Wait()
-        if error is not None:
-          flaky_tasks.append(possibly_flaky)
-          tracebacks.append(error)
-          if halt_on_error:
-            break
+      try:
+        yield
+      finally:
+        # Wait for each step to complete.
+        tracebacks = []
+        flaky_tasks = []
+        while bg_tasks:
+          task = bg_tasks.popleft()
+          error, possibly_flaky = task.Wait()
+          if error is not None:
+            flaky_tasks.append(possibly_flaky)
+            tracebacks.append(error)
+            if halt_on_error:
+              break
 
-      # If there are still tasks left, kill them.
-      if bg_tasks:
-        cls._KillChildren(bg_tasks, log_level=logging.DEBUG)
+        # If there are still tasks left, kill them.
+        if bg_tasks:
+          cls._KillChildren(bg_tasks, log_level=logging.DEBUG)
 
-      # Propagate any exceptions.
-      if tracebacks:
-        possibly_flaky = flaky_tasks and all(flaky_tasks)
-        raise BackgroundFailure('\n' + ''.join(tracebacks), possibly_flaky)
+        # Propagate any exceptions.
+        if tracebacks:
+          possibly_flaky = flaky_tasks and all(flaky_tasks)
+          raise BackgroundFailure('\n' + ''.join(tracebacks), possibly_flaky)
 
   @staticmethod
   def TaskRunner(queue, task, onexit=None, task_args=None, task_kwargs=None):
@@ -502,29 +507,28 @@ def RunParallelSteps(steps, max_parallel=None, halt_on_error=False,
 
   full_steps = []
   queues = []
-  manager = None
-  if return_values:
-    # We use a managed queue here, because the child process will wait for the
-    # queue(pipe) to be flushed (i.e., when items are read from the queue)
-    # before exiting, and with a regular queue this may result in hangs for
-    # large return values.  But with a managed queue, the manager process will
-    # read the items and hold on to them until the managed queue goes out of
-    # scope and is cleaned up.
-    manager = multiprocessing.Manager()
-    for step in steps:
-      # pylint: disable=E1101
-      queue = manager.Queue()
-      queues.append(queue)
-      full_steps.append(functools.partial(ReturnWrapper, queue, step))
-  else:
-    full_steps = steps
+  with cros_build_lib.ContextManagerStack() as stack:
+    if return_values:
+      # We use a managed queue here, because the child process will wait for the
+      # queue(pipe) to be flushed (i.e., when items are read from the queue)
+      # before exiting, and with a regular queue this may result in hangs for
+      # large return values.  But with a managed queue, the manager process will
+      # read the items and hold on to them until the managed queue goes out of
+      # scope and is cleaned up.
+      manager = stack.Add(multiprocessing.Manager)
+      for step in steps:
+        queue = manager.Queue()
+        queues.append(queue)
+        full_steps.append(functools.partial(ReturnWrapper, queue, step))
+    else:
+      full_steps = steps
 
-  with _BackgroundTask.ParallelTasks(full_steps, max_parallel=max_parallel,
-                                     halt_on_error=halt_on_error):
-    pass
+    with _BackgroundTask.ParallelTasks(full_steps, max_parallel=max_parallel,
+                                       halt_on_error=halt_on_error):
+      pass
 
-  if return_values:
-    return [queue.get_nowait() for queue in queues]
+    if return_values:
+      return [queue.get_nowait() for queue in queues]
 
 
 class _AllTasksComplete(object):
@@ -574,22 +578,24 @@ def BackgroundTaskRunner(task, *args, **kwargs):
   processes = kwargs.pop('processes', None)
   onexit = kwargs.pop('onexit', None)
 
-  if queue is None:
-    queue = multiprocessing.Queue()
+  with cros_build_lib.ContextManagerStack() as stack:
+    if queue is None:
+      manager = stack.Add(multiprocessing.Manager)
+      queue = manager.Queue()
 
-  if not processes:
-    processes = multiprocessing.cpu_count()
+    if not processes:
+      processes = multiprocessing.cpu_count()
 
-  child = functools.partial(_BackgroundTask.TaskRunner, queue, task,
-                            onexit=onexit, task_args=args,
-                            task_kwargs=kwargs)
-  steps = [child] * processes
-  with _BackgroundTask.ParallelTasks(steps):
-    try:
-      yield queue
-    finally:
-      for _ in xrange(processes):
-        queue.put(_AllTasksComplete())
+    child = functools.partial(_BackgroundTask.TaskRunner, queue, task,
+                              onexit=onexit, task_args=args,
+                              task_kwargs=kwargs)
+    steps = [child] * processes
+    with _BackgroundTask.ParallelTasks(steps):
+      try:
+        yield queue
+      finally:
+        for _ in xrange(processes):
+          queue.put(_AllTasksComplete())
 
 
 def RunTasksInProcessPool(task, inputs, processes=None, onexit=None):
