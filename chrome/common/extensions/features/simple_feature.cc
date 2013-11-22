@@ -40,8 +40,8 @@ struct Mappings {
 
     platforms["chromeos"] = Feature::CHROMEOS_PLATFORM;
     platforms["linux"] = Feature::LINUX_PLATFORM;
-    platforms["macosx"] = Feature::MACOSX_PLATFORM;
-    platforms["windows"] = Feature::WIN_PLATFORM;
+    platforms["mac"] = Feature::MACOSX_PLATFORM;
+    platforms["win"] = Feature::WIN_PLATFORM;
 
     channels["trunk"] = VersionInfo::CHANNEL_UNKNOWN;
     channels["canary"] = VersionInfo::CHANNEL_CANARY;

@@ -22,6 +22,31 @@
         'wifi/wifi_service.cc',
         'wifi/wifi_service.h',
         'wifi/fake_wifi_service.cc',
+        'wifi/wifi_service_win.cc',
+      ],
+      'conditions': [
+        ['OS == "win"', {
+          'link_settings': {
+            'libraries': [
+              '-liphlpapi.lib',
+            ],
+          },
+        }],
+      ],
+    },
+    {
+      'target_name': 'wifi_test',
+      'type': 'executable',
+      'dependencies': [
+        'wifi_component',
+        '../base/base.gyp:base',
+        '../components/components.gyp:onc_component',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'wifi/wifi_test.cc',
       ],
     },
   ],

@@ -81,6 +81,11 @@ class FakeWiFiService : public WiFiService {
     }
   }
 
+  virtual void Initialize(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) OVERRIDE {}
+
+  virtual void UnInitialize() OVERRIDE {}
+
   virtual void GetProperties(const std::string& network_guid,
                               DictionaryValue* properties,
                               std::string* error) OVERRIDE {
@@ -203,6 +208,5 @@ class FakeWiFiService : public WiFiService {
 };
 
 WiFiService* WiFiService::CreateForTest() { return new FakeWiFiService(); }
-WiFiService* WiFiService::Create() { return new FakeWiFiService(); }
 
 }  // namespace wifi

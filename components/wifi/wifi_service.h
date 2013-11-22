@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "components/wifi/wifi_export.h"
 
@@ -28,6 +29,13 @@ class WIFI_EXPORT WiFiService {
       void(const NetworkGuidList& network_guid_list)> NetworkGuidListCallback;
 
   virtual ~WiFiService() {}
+
+  // Initialize WiFiService, store |task_runner| for posting worker tasks.
+  virtual void Initialize(
+      scoped_refptr<base::SequencedTaskRunner> task_runner) = 0;
+
+  // UnInitialize WiFiService.
+  virtual void UnInitialize() = 0;
 
   // Create instance of |WiFiService| for normal use.
   static WiFiService* Create();
@@ -74,6 +82,7 @@ class WIFI_EXPORT WiFiService {
 
   typedef int32 Frequency;
   enum FrequencyEnum {
+    kFrequencyAny = 0,
     kFrequencyUnknown = 0,
     kFrequency2400 = 2400,
     kFrequency5000 = 5000

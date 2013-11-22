@@ -121,6 +121,12 @@ NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
             &NetworkingPrivateServiceClient::
                 OnNetworkListChangedEventOnUIThread,
             weak_factory_.GetWeakPtr())));
+  task_runner_->PostTask(
+    FROM_HERE,
+    base::Bind(
+        &WiFiService::Initialize,
+        base::Unretained(wifi_service_.get()),
+        task_runner_));
 }
 
 NetworkingPrivateServiceClient::~NetworkingPrivateServiceClient() {

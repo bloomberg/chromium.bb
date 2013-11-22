@@ -471,13 +471,13 @@ TEST_F(ExtensionSimpleFeatureTest, ParsePlatforms) {
   EXPECT_EQ(Feature::CHROMEOS_PLATFORM, *feature->platforms()->begin());
 
   platforms->Clear();
-  platforms->AppendString("windows");
+  platforms->AppendString("win");
   feature->Parse(value.get());
   EXPECT_FALSE(feature->platforms()->empty());
   EXPECT_EQ(Feature::WIN_PLATFORM, *feature->platforms()->begin());
 
   platforms->Clear();
-  platforms->AppendString("windows");
+  platforms->AppendString("win");
   platforms->AppendString("chromeos");
   feature->Parse(value.get());
   std::set<Feature::Platform> expected_platforms;
