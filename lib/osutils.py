@@ -530,7 +530,7 @@ def SetEnvironment(env):
   os.environ.update(env)
 
 
-def SourceEnvironment(script, whitelist, ifs=',', env=None):
+def SourceEnvironment(script, whitelist, ifs=',', env=None, multiline=False):
   """Returns the environment exported by a shell script.
 
   Note that the script is actually executed (sourced), so do not use this on
@@ -543,6 +543,7 @@ def SourceEnvironment(script, whitelist, ifs=',', env=None):
     ifs: When showing arrays, what separator to use.
     env: A dict of the initial env to pass down.  You can also pass it None
          (to clear the env) or True (to preserve the current env).
+    multiline: Allow a variable to span multiple lines.
 
   Returns:
     A dictionary containing the values of the whitelisted environment
@@ -563,7 +564,8 @@ def SourceEnvironment(script, whitelist, ifs=',', env=None):
   output = cros_build_lib.RunCommand(['bash'], env=env, redirect_stdout=True,
                                      redirect_stderr=True, print_cmd=False,
                                      input='\n'.join(dump_script)).output
-  return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(output))
+  return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(output),
+                                         multiline=multiline)
 
 
 def StrSignal(sig_num):

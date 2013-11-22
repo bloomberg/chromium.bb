@@ -1033,6 +1033,19 @@ EEE ="Fk  \t  kkkk"\t
 Q = "'q"
 \tQQ ="q'"\x20
  QQQ='"q"'\t
+R = "r
+"
+RR = "rr
+rrr"
+RRR = 'rrr
+ RRRR
+ rrr
+'
+SSS=" ss
+'ssss'
+ss"
+T="
+ttt"
 """
     self.expected = {
         'A': '1',
@@ -1050,27 +1063,36 @@ Q = "'q"
         'Q': "'q",
         'QQ': "q'",
         'QQQ': '"q"',
+        'R': 'r\n',
+        'RR': 'rr\nrrr',
+        'RRR': 'rrr\n RRRR\n rrr\n',
+        'SSS': ' ss\n\'ssss\'\nss',
+        'T': '\nttt'
     }
 
     self.conf_file = os.path.join(self.tempdir, 'file.conf')
     osutils.WriteFile(self.conf_file, self.contents)
 
-  def _RunAndCompare(self, test_input):
-    result = cros_build_lib.LoadKeyValueFile(test_input)
+  def _RunAndCompare(self, test_input, multiline):
+    result = cros_build_lib.LoadKeyValueFile(test_input, multiline=multiline)
     self.assertEqual(self.expected, result)
 
   def testLoadFilePath(self):
     """Verify reading a simple file works"""
-    self._RunAndCompare(self.conf_file)
+    self._RunAndCompare(self.conf_file, True)
 
   def testLoadStringIO(self):
     """Verify passing in StringIO object works."""
-    self._RunAndCompare(StringIO.StringIO(self.contents))
+    self._RunAndCompare(StringIO.StringIO(self.contents), True)
 
   def testLoadFileObject(self):
     """Verify passing in open file object works."""
     with open(self.conf_file) as f:
-      self._RunAndCompare(f)
+      self._RunAndCompare(f, True)
+
+  def testNoMultlineValues(self):
+    """Verify exception is thrown when multiline is disabled."""
+    self.assertRaises(ValueError, self._RunAndCompare, self.conf_file, False)
 
 
 class SafeRunTest(cros_test_lib.TestCase):

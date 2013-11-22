@@ -71,6 +71,7 @@ import codecs
 import logging
 import os
 import re
+import tempfile
 
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
@@ -321,6 +322,60 @@ LICENCES_IGNORE = [
 TMPL = 'about_credits.tmpl'
 ENTRY_TMPL = 'about_credits_entry.tmpl'
 SHARED_LICENSE_TMPL = 'about_credits_shared_license_entry.tmpl'
+
+
+def GetLicenseTypesFromEbuild(ebuild_path):
+  """Returns a list of license types from the ebuild file.
+
+  This function does not always return the correct list, but it is
+  faster than using portageq for not having to access chroot. It is
+  intended to be used for tasks such as presubmission checks.
+  """
+  ebuild_env_tmpl = """
+has() { [[ " ${*:2} " == *" $1 "* ]]; }
+inherit() {
+  local overlay_list="%(overlay_list)s"
+  local eclass overlay f
+  for eclass; do
+    has ${eclass} ${_INHERITED_} && continue
+    _INHERITED_+=" ${eclass}"
+    for overlay in %(overlay_list)s; do
+      f="${overlay}/eclass/${eclass}.eclass"
+      if [[ -e ${f} ]]; then
+        source "${f}"
+        break
+      fi
+     done
+  done
+}
+source %(ebuild)s"""
+
+  # TODO: the overlay_list hard-coded here should be changed to look
+  # at the current overlay, and then the master overlays. E.g. for an
+  # ebuild file in overlay-parrot, we will look at parrot overlay
+  # first, and then look at portage-stable and chromiumos, which are
+  # listed as masters in overlay-parrot/metadata/layout.conf.
+  tmpl_env = {
+      'ebuild': ebuild_path,
+      'overlay_list': '%s %s' % (
+          os.path.join(constants.SOURCE_ROOT,
+                       'src/third_party/chromiumos-overlay'),
+          os.path.join(constants.SOURCE_ROOT,
+                       'src/third_party/portage-stable'))
+  }
+
+  with tempfile.NamedTemporaryFile(bufsize=0) as f:
+    osutils.WriteFile(f.name, ebuild_env_tmpl % tmpl_env)
+    env = osutils.SourceEnvironment(
+        f.name, whitelist=['LICENSE'], ifs=' ', multiline=True)
+
+  if not env.get('LICENSE'):
+    raise ValueError('No LICENSE found in the ebuild.')
+  if re.search(r'[,;]', env['LICENSE']):
+    raise ValueError(
+        'LICENSE field in the ebuild should be whitespace-limited.')
+
+  return env['LICENSE'].split()
 
 
 class PackageLicenseError(Exception):

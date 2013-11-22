@@ -1468,7 +1468,7 @@ def _Open(input):
     yield input
 
 
-def LoadKeyValueFile(input, ignore_missing=False):
+def LoadKeyValueFile(input, ignore_missing=False, multiline=False):
   """Turn a key=value file into a dict
 
   Note: If you're designing a new data store, please use json rather than
@@ -1478,6 +1478,8 @@ def LoadKeyValueFile(input, ignore_missing=False):
   Args:
     input: The file to read.  Can be a path or an open file object.
     ignore_missing: If the file does not exist, return an empty dict.
+    multiline: Allow a value enclosed by quotes to span multiple lines.
+
   Returns:
     a dict of all the key=value pairs found in the file.
   """
@@ -1485,19 +1487,38 @@ def LoadKeyValueFile(input, ignore_missing=False):
 
   try:
     with _Open(input) as f:
+      key = None
+      in_quotes = None
       for raw_line in f:
-        line = raw_line.split('#')[0].strip()
-        if not line:
+        line = raw_line.split('#')[0]
+        if not line.strip():
           continue
+
+        # Continue processing a multiline value.
+        if multiline and in_quotes and key:
+          if line.rstrip()[-1] == in_quotes:
+            # Wrap up the multiline value if the line ends with a quote.
+            d[key] += line.rstrip()[:-1]
+            in_quotes = None
+          else:
+            d[key] += line
+          continue
+
         chunks = line.split('=', 1)
         if len(chunks) != 2:
           raise ValueError('Malformed version file %r; line %r'
                            % (input, raw_line))
+        key = chunks[0].strip()
         val = chunks[1].strip()
-        if len(val) > 1 and val[0] in "\"'" and val[0] == val[-1]:
-          # Only strip quotes if the first & last one match.
+        if len(val) >= 2 and val[0] in "\"'" and val[0] == val[-1]:
+          # Strip matching quotes on the same line.
           val = val[1:-1]
-        d[chunks[0].strip()] = val
+        elif val and multiline and val[0] in "\"'" :
+          # Unmatched quote here indicates a multiline value. Do not
+          # strip the '\n' at the end of the line.
+          in_quotes = val[0]
+          val = chunks[1].lstrip()[1:]
+        d[key] = val
   except EnvironmentError as e:
     if not (ignore_missing and e.errno == errno.ENOENT):
       raise
