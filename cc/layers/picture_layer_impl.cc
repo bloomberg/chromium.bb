@@ -383,7 +383,7 @@ void PictureLayerImpl::DidBeginTracing() {
 
 void PictureLayerImpl::DidLoseOutputSurface() {
   if (tilings_)
-    tilings_->RemoveAllTilings();
+    RemoveAllTilings();
 
   ResetRasterScale();
 }
@@ -553,8 +553,7 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   UpdateLCDTextStatus(other->is_using_lcd_text_);
 
   if (!DrawsContent()) {
-    ResetRasterScale();
-    tilings_->RemoveAllTilings();
+    RemoveAllTilings();
     return;
   }
 
@@ -597,7 +596,7 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
                           tiling_invalidation,
                           MinimumContentsScale());
   } else {
-    tilings_->RemoveAllTilings();
+    RemoveAllTilings();
   }
 
   SanityCheckTilingState();
@@ -778,7 +777,15 @@ void PictureLayerImpl::RemoveTiling(float contents_scale) {
       break;
     }
   }
+  if (tilings_->num_tilings() == 0)
+    ResetRasterScale();
   SanityCheckTilingState();
+}
+
+void PictureLayerImpl::RemoveAllTilings() {
+  tilings_->RemoveAllTilings();
+  // If there are no tilings, then raster scales are no longer meaningful.
+  ResetRasterScale();
 }
 
 namespace {
@@ -806,6 +813,11 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
       raster_contents_scale_ == 0.f ||
       low_res_raster_contents_scale_ == 0.f ||
       ShouldAdjustRasterScale(animating_transform_to_screen);
+
+  if (tilings_->num_tilings() == 0) {
+    DCHECK(change_target_tiling)
+        << "A layer with no tilings shouldn't have valid raster scales";
+  }
 
   // Store the value for the next time ShouldAdjustRasterScale is called.
   raster_source_scale_was_animating_ = animating_transform_to_screen;
@@ -931,6 +943,8 @@ void PictureLayerImpl::CalculateRasterContentsScale(
 void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
     std::vector<PictureLayerTiling*> used_tilings) {
   DCHECK(layer_tree_impl()->IsActiveTree());
+  if (tilings_->num_tilings() == 0)
+    return;
 
   float min_acceptable_high_res_scale = std::min(
       raster_contents_scale_, ideal_contents_scale_);
@@ -974,6 +988,7 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
       twin->RemoveTiling(to_remove[i]->contents_scale());
     tilings_->Remove(to_remove[i]);
   }
+  DCHECK_GT(tilings_->num_tilings(), 0u);
 
   SanityCheckTilingState();
 }

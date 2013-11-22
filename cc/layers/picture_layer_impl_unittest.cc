@@ -68,15 +68,19 @@ class PictureLayerImplTest : public testing::Test {
     SetupTrees(pending_pile, active_pile);
   }
 
+  void ActivateTree() {
+    host_impl_.ActivatePendingTree();
+    CHECK(!host_impl_.pending_tree());
+    pending_layer_ = NULL;
+    active_layer_ = static_cast<FakePictureLayerImpl*>(
+        host_impl_.active_tree()->LayerById(id_));
+  }
+
   void SetupTrees(
       scoped_refptr<PicturePileImpl> pending_pile,
       scoped_refptr<PicturePileImpl> active_pile) {
     SetupPendingTree(active_pile);
-    host_impl_.ActivatePendingTree();
-
-    active_layer_ = static_cast<FakePictureLayerImpl*>(
-        host_impl_.active_tree()->LayerById(id_));
-
+    ActivateTree();
     SetupPendingTree(pending_pile);
   }
 
@@ -589,6 +593,80 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   EXPECT_FLOAT_EQ(
       1.9f * low_res_factor,
       pending_layer_->tilings()->tiling_at(3)->contents_scale());
+}
+
+TEST_F(PictureLayerImplTest, CreateTilingsEvenIfTwinHasNone) {
+  // This test makes sure that if a layer can have tilings, then a commit makes
+  // it not able to have tilings (empty size), and then a future commit that
+  // makes it valid again should be able to create tilings.
+  gfx::Size tile_size(400, 400);
+  gfx::Size layer_bounds(1300, 1900);
+
+  scoped_refptr<FakePicturePileImpl> empty_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, gfx::Size(1000, 0));
+  scoped_refptr<FakePicturePileImpl> valid_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
+  EXPECT_LT(low_res_factor, 1.f);
+
+  float high_res_scale = 1.3f;
+  float low_res_scale = high_res_scale * low_res_factor;
+  float device_scale = 1.7f;
+  float page_scale = 3.2f;
+  float result_scale_x, result_scale_y;
+  gfx::Size result_bounds;
+
+  SetupPendingTree(valid_pile);
+  pending_layer_->CalculateContentsScale(high_res_scale,
+                                         device_scale,
+                                         page_scale,
+                                         false,
+                                         &result_scale_x,
+                                         &result_scale_y,
+                                         &result_bounds);
+  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  EXPECT_FLOAT_EQ(high_res_scale,
+                  pending_layer_->HighResTiling()->contents_scale());
+  EXPECT_FLOAT_EQ(low_res_scale,
+                  pending_layer_->LowResTiling()->contents_scale());
+
+  ActivateTree();
+  SetupPendingTree(empty_pile);
+  pending_layer_->CalculateContentsScale(high_res_scale,
+                                         device_scale,
+                                         page_scale,
+                                         false,
+                                         &result_scale_x,
+                                         &result_scale_y,
+                                         &result_bounds);
+  ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
+  ASSERT_EQ(0u, pending_layer_->tilings()->num_tilings());
+
+  ActivateTree();
+  active_layer_->CalculateContentsScale(high_res_scale,
+                                        device_scale,
+                                        page_scale,
+                                        false,
+                                        &result_scale_x,
+                                        &result_scale_y,
+                                        &result_bounds);
+  ASSERT_EQ(0u, active_layer_->tilings()->num_tilings());
+
+  SetupPendingTree(valid_pile);
+  pending_layer_->CalculateContentsScale(high_res_scale,
+                                         device_scale,
+                                         page_scale,
+                                         false,
+                                         &result_scale_x,
+                                         &result_scale_y,
+                                         &result_bounds);
+  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  ASSERT_EQ(0u, active_layer_->tilings()->num_tilings());
+  EXPECT_FLOAT_EQ(high_res_scale,
+                  pending_layer_->HighResTiling()->contents_scale());
+  EXPECT_FLOAT_EQ(low_res_scale,
+                  pending_layer_->LowResTiling()->contents_scale());
 }
 
 TEST_F(PictureLayerImplTest, CleanUpTilings) {
