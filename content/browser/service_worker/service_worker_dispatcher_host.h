@@ -14,6 +14,7 @@ namespace content {
 
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
+class ServiceWorkerProviderHost;
 
 class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
  public:
@@ -22,6 +23,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void Init(ServiceWorkerContextWrapper* context_wrapper);
 
   // BrowserIOMessageFilter implementation
+  virtual void OnDestruct() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -29,6 +31,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   virtual ~ServiceWorkerDispatcherHost();
 
  private:
+  friend class BrowserThread;
+  friend class base::DeleteHelper<ServiceWorkerDispatcherHost>;
   friend class TestingServiceWorkerDispatcherHost;
 
   // IPC Message handlers
@@ -39,7 +43,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void OnUnregisterServiceWorker(int32 thread_id,
                                  int32 request_id,
                                  const GURL& scope);
+  void OnProviderCreated(int provider_id);
+  void OnProviderDestroyed(int provider_id);
 
+  int render_process_id_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
 };
 

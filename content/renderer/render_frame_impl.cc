@@ -210,8 +210,6 @@ blink::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
     blink::WebServiceWorkerProviderClient* client) {
   return new WebServiceWorkerProviderImpl(
       ChildThread::current()->thread_safe_sender(),
-      ChildThread::current()->service_worker_message_filter(),
-      GURL(frame->document().securityOrigin().toString()),
       make_scoped_ptr(client));
 }
 

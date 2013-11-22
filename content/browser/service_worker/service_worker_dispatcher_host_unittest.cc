@@ -6,7 +6,10 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/message_loop/message_loop.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker_messages.h"
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,25 +20,38 @@ namespace content {
 
 class ServiceWorkerDispatcherHostTest : public testing::Test {
  protected:
+  ServiceWorkerDispatcherHostTest()
+      : io_thread_(BrowserThread::IO, &message_loop_) {}
+
   virtual void SetUp() {
-    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL));
+    context_wrapper_ = new ServiceWorkerContextWrapper;
+    context_wrapper_->Init(base::FilePath(), NULL);
   }
 
   virtual void TearDown() {
-    context_.reset();
+    if (context_wrapper_) {
+      context_wrapper_->Shutdown();
+      context_wrapper_ = NULL;
+    }
   }
 
-  scoped_ptr<ServiceWorkerContextCore> context_;
+  ServiceWorkerContextCore* context() { return context_wrapper_->context(); }
+
+  scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
+  base::MessageLoopForIO message_loop_;
+  BrowserThreadImpl io_thread_;
 };
 
 static const int kRenderProcessId = 1;
 
 class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
  public:
-  TestingServiceWorkerDispatcherHost(int process_id,
-                                     ServiceWorkerContextCore* context)
-      : ServiceWorkerDispatcherHost(process_id) {
-    context_ = context->AsWeakPtr();
+  TestingServiceWorkerDispatcherHost(
+      int process_id,
+      ServiceWorkerContextWrapper* context_wrapper)
+      : ServiceWorkerDispatcherHost(process_id),
+        bad_messages_received_count_(0) {
+    Init(context_wrapper);
   }
 
   virtual bool Send(IPC::Message* message) OVERRIDE {
@@ -43,7 +59,12 @@ class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
     return true;
   }
 
+  virtual void BadMessageReceived() OVERRIDE {
+    ++bad_messages_received_count_;
+  }
+
   ScopedVector<IPC::Message> sent_messages_;
+  int bad_messages_received_count_;
 
  protected:
   virtual ~TestingServiceWorkerDispatcherHost() {}
@@ -54,17 +75,18 @@ TEST_F(ServiceWorkerDispatcherHostTest, DisabledCausesError) {
               switches::kEnableServiceWorker));
 
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host =
-      new TestingServiceWorkerDispatcherHost(kRenderProcessId, context_.get());
+      new TestingServiceWorkerDispatcherHost(kRenderProcessId,
+                                             context_wrapper_.get());
 
   bool handled;
   dispatcher_host->OnMessageReceived(
       ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, GURL(), GURL()),
       &handled);
-  DCHECK(handled);
+  EXPECT_TRUE(handled);
 
   // TODO(alecflett): Pump the message loop when this becomes async.
-  DCHECK_EQ(1UL, dispatcher_host->sent_messages_.size());
-  DCHECK_EQ(
+  ASSERT_EQ(1UL, dispatcher_host->sent_messages_.size());
+  EXPECT_EQ(
       static_cast<uint32>(ServiceWorkerMsg_ServiceWorkerRegistrationError::ID),
       dispatcher_host->sent_messages_[0]->type());
 }
@@ -76,17 +98,18 @@ TEST_F(ServiceWorkerDispatcherHostTest, Enabled) {
       switches::kEnableServiceWorker);
 
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host =
-      new TestingServiceWorkerDispatcherHost(kRenderProcessId, context_.get());
+      new TestingServiceWorkerDispatcherHost(kRenderProcessId,
+                                             context_wrapper_.get());
 
   bool handled;
   dispatcher_host->OnMessageReceived(
       ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, GURL(), GURL()),
       &handled);
-  DCHECK(handled);
+  EXPECT_TRUE(handled);
 
   // TODO(alecflett): Pump the message loop when this becomes async.
-  DCHECK_EQ(1UL, dispatcher_host->sent_messages_.size());
-  DCHECK_EQ(static_cast<uint32>(ServiceWorkerMsg_ServiceWorkerRegistered::ID),
+  ASSERT_EQ(1UL, dispatcher_host->sent_messages_.size());
+  EXPECT_EQ(static_cast<uint32>(ServiceWorkerMsg_ServiceWorkerRegistered::ID),
             dispatcher_host->sent_messages_[0]->type());
 }
 
@@ -97,21 +120,72 @@ TEST_F(ServiceWorkerDispatcherHostTest, EarlyContextDeletion) {
       switches::kEnableServiceWorker);
 
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host =
-      new TestingServiceWorkerDispatcherHost(kRenderProcessId, context_.get());
+      new TestingServiceWorkerDispatcherHost(kRenderProcessId,
+                                             context_wrapper_.get());
 
-  context_.reset();
+  context_wrapper_->Shutdown();
+  context_wrapper_ = NULL;
 
   bool handled;
   dispatcher_host->OnMessageReceived(
       ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, GURL(), GURL()),
       &handled);
-  DCHECK(handled);
+  EXPECT_TRUE(handled);
 
   // TODO(alecflett): Pump the message loop when this becomes async.
-  DCHECK_EQ(1UL, dispatcher_host->sent_messages_.size());
-  DCHECK_EQ(
+  ASSERT_EQ(1UL, dispatcher_host->sent_messages_.size());
+  EXPECT_EQ(
       static_cast<uint32>(ServiceWorkerMsg_ServiceWorkerRegistrationError::ID),
       dispatcher_host->sent_messages_[0]->type());
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
+  scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host =
+      new TestingServiceWorkerDispatcherHost(kRenderProcessId,
+                                             context_wrapper_.get());
+
+  const int kProviderId = 1001;  // Test with a value != kRenderProcessId.
+
+  bool handled = false;
+  dispatcher_host->OnMessageReceived(
+      ServiceWorkerHostMsg_ProviderCreated(kProviderId),
+      &handled);
+  EXPECT_TRUE(handled);
+  EXPECT_TRUE(context()->GetProviderHost(kRenderProcessId, kProviderId));
+
+  // Two with the same ID should be seen as a bad message.
+  handled = false;
+  dispatcher_host->OnMessageReceived(
+      ServiceWorkerHostMsg_ProviderCreated(kProviderId),
+      &handled);
+  EXPECT_TRUE(handled);
+  EXPECT_EQ(1, dispatcher_host->bad_messages_received_count_);
+
+  handled = false;
+  dispatcher_host->OnMessageReceived(
+      ServiceWorkerHostMsg_ProviderDestroyed(kProviderId),
+      &handled);
+  EXPECT_TRUE(handled);
+  EXPECT_FALSE(context()->GetProviderHost(kRenderProcessId, kProviderId));
+
+  // Destroying an ID that does not exist warrants a bad message.
+  handled = false;
+  dispatcher_host->OnMessageReceived(
+      ServiceWorkerHostMsg_ProviderDestroyed(kProviderId),
+      &handled);
+  EXPECT_TRUE(handled);
+  EXPECT_EQ(2, dispatcher_host->bad_messages_received_count_);
+
+  // Deletion of the dispatcher_host should cause providers for that
+  // process to get deleted as well.
+  dispatcher_host->OnMessageReceived(
+      ServiceWorkerHostMsg_ProviderCreated(kProviderId),
+      &handled);
+  EXPECT_TRUE(handled);
+  EXPECT_TRUE(context()->GetProviderHost(kRenderProcessId, kProviderId));
+  EXPECT_TRUE(dispatcher_host->HasOneRef());
+  dispatcher_host = NULL;
+  EXPECT_FALSE(context()->GetProviderHost(kRenderProcessId, kProviderId));
 }
 
 }  // namespace content

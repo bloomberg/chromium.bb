@@ -50,3 +50,12 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistrationError,
                      int32 /* request_id */,
                      blink::WebServiceWorkerError::ErrorType /* code */,
                      string16 /* message */)
+
+// Informs the browser of a new ServiceWorkerProvider in the child process,
+// |provider_id| is unique within its child process.
+IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderCreated,
+                     int /* provider_id */)
+
+// Informs the browser of a ServiceWorkerProvider being destroyed.
+IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderDestroyed,
+                     int /* provider_id */)

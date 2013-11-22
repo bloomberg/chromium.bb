@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/public/common/content_switches.h"
 #include "webkit/browser/quota/quota_manager.h"
 
@@ -26,12 +27,44 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     path_ = user_data_directory.Append(kServiceWorkerDirectory);
 }
 
+ServiceWorkerContextCore::~ServiceWorkerContextCore() {
+}
+
+ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHost(
+    int process_id, int provider_id) {
+  ProviderMap* map = GetProviderMapForProcess(process_id);
+  if (!map)
+    return NULL;
+  return map->Lookup(provider_id);
+}
+
+void ServiceWorkerContextCore::AddProviderHost(
+    scoped_ptr<ServiceWorkerProviderHost> host) {
+  ServiceWorkerProviderHost* host_ptr = host.release();   // we take ownership
+  ProviderMap* map = GetProviderMapForProcess(host_ptr->process_id());
+  if (!map) {
+    map = new ProviderMap;
+    providers_.AddWithID(map, host_ptr->process_id());
+  }
+  map->AddWithID(host_ptr, host_ptr->provider_id());
+}
+
+void ServiceWorkerContextCore::RemoveProviderHost(
+    int process_id, int provider_id) {
+  ProviderMap* map = GetProviderMapForProcess(process_id);
+  DCHECK(map);
+  map->Remove(provider_id);
+}
+
+void ServiceWorkerContextCore::RemoveAllProviderHostsForProcess(
+    int process_id) {
+  if (providers_.Lookup(process_id))
+    providers_.Remove(process_id);
+}
+
 bool ServiceWorkerContextCore::IsEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableServiceWorker);
-}
-
-ServiceWorkerContextCore::~ServiceWorkerContextCore() {
 }
 
 }  // namespace content

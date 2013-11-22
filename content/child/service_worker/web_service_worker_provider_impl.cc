@@ -4,29 +4,42 @@
 
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 
+#include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "content/child/child_thread.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
-#include "content/child/service_worker/service_worker_message_filter.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker_messages.h"
-#include "ipc/ipc_sender.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
-using blink::WebString;
 using blink::WebURL;
 
 namespace content {
 
+namespace {
+
+// Must be unique in the child process.
+int GetNextProviderId() {
+  static base::StaticAtomicSequenceNumber sequence;
+  return sequence.GetNext() + 1;  // We want to start at 1.
+}
+
+}  // namespace
+
 WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
     ThreadSafeSender* thread_safe_sender,
-    ServiceWorkerMessageFilter* message_filter,
-    const blink::WebURL& origin,
     scoped_ptr<blink::WebServiceWorkerProviderClient> client)
-    : thread_safe_sender_(thread_safe_sender), client_(client.Pass()) {}
+    : provider_id_(GetNextProviderId()),
+      thread_safe_sender_(thread_safe_sender),
+      client_(client.Pass()) {
+  thread_safe_sender_->Send(
+      new ServiceWorkerHostMsg_ProviderCreated(provider_id_));
+}
 
-WebServiceWorkerProviderImpl::~WebServiceWorkerProviderImpl() {}
+WebServiceWorkerProviderImpl::~WebServiceWorkerProviderImpl() {
+  thread_safe_sender_->Send(
+      new ServiceWorkerHostMsg_ProviderDestroyed(provider_id_));
+}
 
 void WebServiceWorkerProviderImpl::registerServiceWorker(
     const WebURL& pattern,

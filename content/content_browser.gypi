@@ -1080,6 +1080,8 @@
     'browser/service_worker/service_worker_context_wrapper.h',
     'browser/service_worker/service_worker_dispatcher_host.cc',
     'browser/service_worker/service_worker_dispatcher_host.h',
+    'browser/service_worker/service_worker_provider_host.cc',
+    'browser/service_worker/service_worker_provider_host.h',
     'browser/service_worker/service_worker_registration.cc',
     'browser/service_worker/service_worker_registration.h',
     'browser/service_worker/service_worker_version.cc',

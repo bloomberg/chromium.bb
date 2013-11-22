@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/service_worker_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
@@ -31,10 +32,13 @@ int64 NextWorkerId() {
 }  // namespace
 
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
-    int render_process_id) {
+    int render_process_id)
+    : render_process_id_(render_process_id) {
 }
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
+  if (context_)
+    context_->RemoveAllProviderHostsForProcess(render_process_id_);
 }
 
 void ServiceWorkerDispatcherHost::Init(
@@ -47,6 +51,10 @@ void ServiceWorkerDispatcherHost::Init(
       return;
   }
   context_ = context_wrapper->context()->AsWeakPtr();
+}
+
+void ServiceWorkerDispatcherHost::OnDestruct() const {
+  BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
 bool ServiceWorkerDispatcherHost::OnMessageReceived(
@@ -62,6 +70,10 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnRegisterServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_UnregisterServiceWorker,
                         OnUnregisterServiceWorker)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ProviderCreated,
+                        OnProviderCreated)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ProviderDestroyed,
+                        OnProviderDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -114,6 +126,28 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(int32 thread_id,
   }
 
   Send(new ServiceWorkerMsg_ServiceWorkerUnregistered(thread_id, request_id));
+}
+
+void ServiceWorkerDispatcherHost::OnProviderCreated(int provider_id) {
+  if (!context_)
+    return;
+  if (context_->GetProviderHost(render_process_id_, provider_id)) {
+    BadMessageReceived();
+    return;
+  }
+  scoped_ptr<ServiceWorkerProviderHost> provider_host(
+       new ServiceWorkerProviderHost(render_process_id_, provider_id));
+  context_->AddProviderHost(provider_host.Pass());
+}
+
+void ServiceWorkerDispatcherHost::OnProviderDestroyed(int provider_id) {
+  if (!context_)
+    return;
+  if (!context_->GetProviderHost(render_process_id_, provider_id)) {
+    BadMessageReceived();
+    return;
+  }
+  context_->RemoveProviderHost(render_process_id_, provider_id);
 }
 
 }  // namespace content

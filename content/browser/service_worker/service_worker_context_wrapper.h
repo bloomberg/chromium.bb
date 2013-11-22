@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/service_worker/service_worker_context.h"
+#include "content/common/content_export.h"
 
 namespace base {
 class FilePath;
@@ -26,7 +27,7 @@ class ServiceWorkerContextCore;
 // classes keep references to this class on mutliple threads. The inner core
 // instance is strictly single threaded and is not refcounted, the core object
 // is what is used internally in the service worker lib.
-class ServiceWorkerContextWrapper
+class CONTENT_EXPORT ServiceWorkerContextWrapper
     : NON_EXPORTED_BASE(public ServiceWorkerContext),
       public base::RefCountedThreadSafe<ServiceWorkerContextWrapper> {
  public:
