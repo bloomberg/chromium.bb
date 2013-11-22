@@ -727,6 +727,11 @@ class WebSocketChannelTest : public ::testing::Test {
   // A struct containing the data that will be used to connect the channel.
   // Grouped for readability.
   struct ConnectData {
+    ConnectData() :
+        socket_url("ws://ws/"),
+        origin("http://ws/")
+    {}
+
     // URLRequestContext object.
     URLRequestContext url_request_context;
 
@@ -1150,6 +1155,12 @@ TEST_F(WebSocketChannelEventInterfaceTest, ConnectFailureReported) {
 
   connect_data_.creator.connect_delegate->OnFailure(
       kWebSocketErrorNoStatusReceived);
+}
+
+TEST_F(WebSocketChannelEventInterfaceTest, NonWebSocketSchemeRejected) {
+  EXPECT_CALL(*event_interface_, OnAddChannelResponse(true, ""));
+  connect_data_.socket_url = GURL("http://www.google.com/");
+  CreateChannelAndConnect();
 }
 
 TEST_F(WebSocketChannelEventInterfaceTest, ProtocolPassed) {

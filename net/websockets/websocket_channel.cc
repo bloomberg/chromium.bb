@@ -15,6 +15,7 @@
 #include "net/base/big_endian.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_log.h"
+#include "net/http/http_util.h"
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_frame.h"
@@ -193,7 +194,7 @@ void WebSocketChannel::SendFrame(bool fin,
     AllowUnused(FailChannel(SEND_GOING_AWAY,
                             kWebSocketMuxErrorSendQuotaViolation,
                             "Send quota exceeded"));
-    // |this| is deleted here.
+    // |this| has been deleted.
     return;
   }
   if (!WebSocketFrameHeader::IsKnownDataOpCode(op_code)) {
@@ -269,6 +270,13 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCreator(
     const GURL& origin,
     const WebSocketStreamCreator& creator) {
   DCHECK_EQ(FRESHLY_CONSTRUCTED, state_);
+  if (!socket_url.SchemeIsWSOrWSS()) {
+    // TODO(ricea): Kill the renderer (this error should have been caught by
+    // Javascript).
+    AllowUnused(event_interface_->OnAddChannelResponse(true, ""));
+    // |this| is deleted here.
+    return;
+  }
   socket_url_ = socket_url;
   scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
       new ConnectDelegate(this));
