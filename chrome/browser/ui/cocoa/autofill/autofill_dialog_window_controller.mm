@@ -327,7 +327,13 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
 }
 
 - (void)updateButtonStrip {
+  // For the duration of the overlay, hide the main contents and the header.
+  // This prevents the currently focused text field "shining through". No need
+  // to remember previous state, because the overlay view is always the last
+  // state of the dialog.
   [overlayController_ updateState];
+  [accountChooser_ setHidden:![[overlayController_ view] isHidden]];
+  [[mainContainer_ view] setHidden:![[overlayController_ view] isHidden]];
 }
 
 - (void)updateSection:(autofill::DialogSection)section {
