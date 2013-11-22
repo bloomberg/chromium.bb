@@ -5,7 +5,7 @@
 define([
     "gtest",
     "mojo/public/bindings/js/codec",
-    "mojo/public/bindings/sample/mojom/sample_service"
+    "mojom/sample_service",
   ], function(gtest, codec, sample) {
   testBar();
   testFoo();

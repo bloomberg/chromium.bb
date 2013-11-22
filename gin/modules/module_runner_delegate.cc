@@ -8,8 +8,9 @@
 
 namespace gin {
 
-ModuleRunnerDelegate::ModuleRunnerDelegate(const base::FilePath& module_base)
-    : module_provider_(module_base) {
+ModuleRunnerDelegate::ModuleRunnerDelegate(
+  const std::vector<base::FilePath>& search_paths)
+    : module_provider_(search_paths) {
 }
 
 ModuleRunnerDelegate::~ModuleRunnerDelegate() {

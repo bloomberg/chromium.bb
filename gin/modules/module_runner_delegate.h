@@ -18,7 +18,8 @@ typedef v8::Local<v8::ObjectTemplate> (*ModuleTemplateGetter)(
 
 class ModuleRunnerDelegate : public RunnerDelegate {
  public:
-  explicit ModuleRunnerDelegate(const base::FilePath& module_base);
+  explicit ModuleRunnerDelegate(
+      const std::vector<base::FilePath>& search_paths);
   virtual ~ModuleRunnerDelegate();
 
   void AddBuiltinModule(const std::string& id, ModuleTemplateGetter templ);

@@ -15,14 +15,15 @@ namespace gin {
 namespace {
 
 void AttempToLoadModule(const base::WeakPtr<Runner>& runner,
-                        const base::FilePath& base,
+                        const std::vector<base::FilePath>& search_paths,
                         const std::string& id) {
   if (!runner)
     return;
 
   std::vector<std::string> components;
   base::SplitString(id, '/', &components);
-  base::FilePath path = base;
+
+  base::FilePath path;
   for (size_t i = 0; i < components.size(); ++i) {
     // TODO(abarth): Technically the path components can be UTF-8. We don't
     // handle that case correctly yet.
@@ -30,21 +31,25 @@ void AttempToLoadModule(const base::WeakPtr<Runner>& runner,
   }
   path = path.AddExtension(FILE_PATH_LITERAL("js"));
 
-  std::string source;
-  if (!ReadFileToString(path, &source))
-    return;
+  for (size_t i = 0; i < search_paths.size(); ++i) {
+    std::string source;
+    if (!ReadFileToString(search_paths[i].Append(path), &source))
+      continue;
 
-  Runner::Scope scope(runner.get());
-  v8::Handle<v8::Script> script = v8::Script::New(
-      StringToV8(runner->isolate(), source),
-      StringToV8(runner->isolate(), id));
-  runner->Run(script);
+    Runner::Scope scope(runner.get());
+    v8::Handle<v8::Script> script = v8::Script::New(
+        StringToV8(runner->isolate(), source),
+        StringToV8(runner->isolate(), id));
+    runner->Run(script);
+    return;
+  }
 }
 
 }  // namespace
 
-FileModuleProvider::FileModuleProvider(const base::FilePath& base)
-    : base_(base) {
+FileModuleProvider::FileModuleProvider(
+    const std::vector<base::FilePath>& search_paths)
+    : search_paths_(search_paths) {
 }
 
 FileModuleProvider::~FileModuleProvider() {
@@ -59,8 +64,8 @@ void FileModuleProvider::AttempToLoadModules(
     if (attempted_ids_.count(id))
       continue;
     attempted_ids_.insert(id);
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(AttempToLoadModule, runner->GetWeakPtr(), base_, id));
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        AttempToLoadModule, runner->GetWeakPtr(), search_paths_, id));
   }
 }
 

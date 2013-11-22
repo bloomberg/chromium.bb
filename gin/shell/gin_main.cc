@@ -31,15 +31,15 @@ void Run(base::WeakPtr<Runner> runner, const std::string& source) {
   runner->Run(source);
 }
 
-base::FilePath GetModuleBase() {
-  base::FilePath module_base;
-  CHECK(file_util::GetCurrentDirectory(&module_base));
+std::vector<base::FilePath> GetModuleSearchPaths() {
+  std::vector<base::FilePath> module_base(1);
+  CHECK(file_util::GetCurrentDirectory(&module_base[0]));
   return module_base;
 }
 
 class ShellRunnerDelegate : public ModuleRunnerDelegate {
  public:
-  ShellRunnerDelegate() : ModuleRunnerDelegate(GetModuleBase()) {
+  ShellRunnerDelegate() : ModuleRunnerDelegate(GetModuleSearchPaths()) {
     AddBuiltinModule(Console::kModuleName, Console::GetTemplate);
   }
 

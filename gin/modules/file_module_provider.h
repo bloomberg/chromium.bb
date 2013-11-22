@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "gin/runner.h"
@@ -15,13 +16,14 @@ namespace gin {
 
 class FileModuleProvider {
  public:
-  explicit FileModuleProvider(const base::FilePath& base);
+  explicit FileModuleProvider(
+      const std::vector<base::FilePath>& search_paths);
   ~FileModuleProvider();
 
   void AttempToLoadModules(Runner* runner, const std::set<std::string>& ids);
 
  private:
-  base::FilePath base_;
+  std::vector<base::FilePath> search_paths_;
   std::set<std::string> attempted_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(FileModuleProvider);

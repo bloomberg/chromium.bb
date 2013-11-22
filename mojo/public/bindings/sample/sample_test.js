@@ -10,7 +10,7 @@ define([
     // be a bug in the module loading system whereby this test doesn't run if
     // we don't import codec here.
     "mojo/public/bindings/js/codec",
-    "mojo/public/bindings/sample/mojom/sample_service"
+    "mojom/sample_service"
   ], function(console, hexdump, gtest, codec, sample) {
 
   var global = this;

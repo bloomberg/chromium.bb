@@ -19,16 +19,18 @@ namespace gin {
 
 namespace {
 
-base::FilePath GetModuleBase() {
-  base::FilePath path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &path);
-  return path;
+std::vector<base::FilePath> GetModuleSearchPaths() {
+  std::vector<base::FilePath> search_paths(2);
+  PathService::Get(base::DIR_SOURCE_ROOT, &search_paths[0]);
+  PathService::Get(base::DIR_EXE, &search_paths[1]);
+  search_paths[1] = search_paths[1].AppendASCII("gen");
+  return search_paths;
 }
 
 }  // namespace
 
 FileRunnerDelegate::FileRunnerDelegate()
-    : ModuleRunnerDelegate(GetModuleBase()) {
+    : ModuleRunnerDelegate(GetModuleSearchPaths()) {
   AddBuiltinModule(Console::kModuleName, Console::GetTemplate);
   AddBuiltinModule(GTest::kModuleName, GTest::GetTemplate);
 }
