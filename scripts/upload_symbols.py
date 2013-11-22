@@ -53,9 +53,32 @@ INITIAL_RETRY_DELAY = 1
 # 1+2+4+8+16+32=63 seconds).
 MAX_RETRIES = 6
 
-# Number of total errors, TOTAL_ERROR_COUNT, before retries are no longer
-# attempted.  This is used to avoid lots of errors causing unreasonable delays.
-MAX_TOTAL_ERRORS_FOR_RETRY = 3
+# Number of total errors, before uploads are no longer attempted.
+# This is used to avoid lots of errors causing unreasonable delays.
+# See the related, but independent, error values below.
+MAX_TOTAL_ERRORS_FOR_RETRY = 30
+
+# A watermark of transient errors which we allow recovery from.  If we hit
+# errors infrequently, overall we're probably doing fine.  For example, if
+# we have one failure every 100 passes, then we probably don't want to fail
+# right away.  But if we hit a string of failures in a row, we want to abort.
+#
+# The watermark starts at 0 (and can never go below that).  When this error
+# level is exceeded, we stop uploading.  When a failure happens, we add the
+# fail adjustment, and when an upload succeeds, we add the pass adjustment.
+# We want to penalize failures more so that we ramp up when there is a string
+# of them, but then slowly back off as things start working.
+#
+# A quick example:
+#  0.0: Starting point.
+#  0.0: Upload works, so add -0.5, and then clamp to 0.
+#  1.0: Upload fails, so add 1.0.
+#  2.0: Upload fails, so add 1.0.
+#  1.5: Upload works, so add -0.5.
+#  1.0: Upload works, so add -0.5.
+ERROR_WATERMARK = 3.0
+ERROR_ADJUST_FAIL = 1.0
+ERROR_ADJUST_PASS = -0.5
 
 
 def SymUpload(sym_file, upload_url):
@@ -119,8 +142,44 @@ def TestingSymUpload(sym_file, upload_url):
     return result
 
 
+def ErrorLimitHit(num_errors, watermark_errors):
+  """See if our error limit has been hit
+
+  Args:
+    num_errors: A multiprocessing.Value of the raw number of failures.
+    watermark_errors: A multiprocessing.Value of the current rate of failures.
+  Returns:
+    True if our error limits have been exceeded.
+  """
+  return ((num_errors is not None and
+           num_errors.value > MAX_TOTAL_ERRORS_FOR_RETRY) or
+          (watermark_errors is not None and
+           watermark_errors.value > ERROR_WATERMARK))
+
+
+def _UpdateCounter(counter, adj):
+  """Update |counter| by |adj|
+
+  Handle atomic updates of |counter|.  Also make sure it does not
+  fall below 0.
+
+  Args:
+    counter: A multiprocessing.Value to update
+    adj: The value to add to |counter|
+  """
+  def _Update():
+    clamp = 0 if type(adj) is int else 0.0
+    counter.value = max(clamp, counter.value + adj)
+
+  if hasattr(counter, 'get_lock'):
+    with counter.get_lock():
+      _Update()
+  elif counter is not None:
+    _Update()
+
+
 def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
-                 sleep=0, num_errors=None):
+                 sleep=0, num_errors=None, watermark_errors=None):
   """Upload |sym_file| to |upload_url|
 
   Args:
@@ -129,12 +188,13 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
     file_limit: The max file size of a symbol file before we try to strip it
     sleep: Number of seconds to sleep before running
     num_errors: An object to update with the error count (needs a .value member)
+    watermark_errors: An object to track current error behavior (needs a .value)
   Returns:
     The number of errors that were encountered.
   """
   if num_errors is None:
     num_errors = ctypes.c_int()
-  elif num_errors.value > MAX_TOTAL_ERRORS_FOR_RETRY:
+  if ErrorLimitHit(num_errors, watermark_errors):
     # Abandon ship!  It's on fire!  NOoooooooooooOOOoooooo.
     return 0
 
@@ -170,9 +230,10 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
       cros_build_lib.Error('upload file %s is awfully large, risking rejection '
                            'by symbol server (%s > %s)', sym_file, file_size,
                            CRASH_SERVER_FILE_LIMIT)
-      num_errors.value += 1
+      _UpdateCounter(num_errors, 1)
 
     # Upload the symbol file.
+    success = False
     try:
       cros_build_lib.TimedCommand(
           cros_build_lib.RetryException,
@@ -180,14 +241,19 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
           upload_file, upload_url, sleep=INITIAL_RETRY_DELAY,
           timed_log_msg='upload of %10i bytes took %%s: %s' %
                         (file_size, os.path.basename(sym_file)))
+      success = True
     except urllib2.HTTPError as e:
       cros_build_lib.Warning('could not upload: %s: HTTP %s: %s',
                              os.path.basename(sym_file), e.code, e.reason)
-      num_errors.value += 1
     except urllib2.URLError as e:
       cros_build_lib.Warning('could not upload: %s: %s',
                              os.path.basename(sym_file), e)
-      num_errors.value += 1
+    finally:
+      if success:
+        _UpdateCounter(watermark_errors, ERROR_ADJUST_PASS)
+      else:
+        _UpdateCounter(num_errors, 1)
+        _UpdateCounter(watermark_errors, ERROR_ADJUST_FAIL)
 
   return num_errors.value
 
@@ -256,8 +322,10 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
   # http://crbug.com/209442
   # http://crbug.com/212496
   bg_errors = multiprocessing.Value('i')
+  watermark_errors = multiprocessing.Value('f')
   with parallel.BackgroundTaskRunner(UploadSymbol, file_limit=file_limit,
                                      sleep=sleep, num_errors=bg_errors,
+                                     watermark_errors=watermark_errors,
                                      processes=1) as queue:
     for sym_file in SymbolFinder(sym_paths):
       if upload_count == 0:
