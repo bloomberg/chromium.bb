@@ -30,7 +30,7 @@ class _DromaeoMeasurement(page_measurement.PageMeasurement):
       data_type = 'unimportant'
       if k == suffix:
         data_type = 'default'
-      results.Add(Escape(k), 'runs/s', v, data_type=data_type)
+      results.Add(Escape(k), 'runs/s', float(v), data_type=data_type)
 
 
 class _DromaeoBenchmark(test.Test):

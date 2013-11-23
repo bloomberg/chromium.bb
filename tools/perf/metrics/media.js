@@ -155,7 +155,7 @@
 
     stop: function() {
       // Return delta time since start in millisecs.
-      return ((getCurrentTime() - this.start_)).toFixed(3);
+      return Math.round((getCurrentTime() - this.start_) * 1000) / 1000;
     }
   };
 
