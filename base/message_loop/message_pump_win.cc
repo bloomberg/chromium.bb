@@ -172,30 +172,6 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
                             MESSAGE_LOOP_PROBLEM_MAX);
 }
 
-void MessagePumpForUI::PumpOutPendingPaintMessages() {
-  // If we are being called outside of the context of Run, then don't try to do
-  // any work.
-  if (!state_)
-    return;
-
-  // Create a mini-message-pump to force immediate processing of only Windows
-  // WM_PAINT messages.  Don't provide an infinite loop, but do enough peeking
-  // to get the job done.  Actual common max is 4 peeks, but we'll be a little
-  // safe here.
-  const int kMaxPeekCount = 20;
-  int peek_count;
-  for (peek_count = 0; peek_count < kMaxPeekCount; ++peek_count) {
-    MSG msg;
-    if (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE | PM_QS_PAINT))
-      break;
-    ProcessMessageHelper(msg);
-    if (state_->should_quit)  // Handle WM_QUIT.
-      break;
-  }
-  // Histogram what was really being used, to help to adjust kMaxPeekCount.
-  DHISTOGRAM_COUNTS("Loop.PumpOutPendingPaintMessages Peeks", peek_count);
-}
-
 //-----------------------------------------------------------------------------
 // MessagePumpForUI private:
 

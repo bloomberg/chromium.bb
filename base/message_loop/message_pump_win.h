@@ -169,11 +169,6 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   virtual void ScheduleWork();
   virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time);
 
-  // Applications can call this to encourage us to process all pending WM_PAINT
-  // messages.  This method will process all paint messages the Windows Message
-  // queue can provide, up to some fixed number (to avoid any infinite loops).
-  void PumpOutPendingPaintMessages();
-
  private:
   static LRESULT CALLBACK WndProcThunk(HWND window_handle,
                                        UINT message,
