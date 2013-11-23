@@ -68,7 +68,7 @@ int TestTimeouts::action_max_timeout_ms_ = 30000;
 #endif  // NDEBUG
 int TestTimeouts::large_test_timeout_ms_ = 10 * 60 * 1000;
 
-int TestTimeouts::test_launcher_timeout_ms_ = 70000;
+int TestTimeouts::test_launcher_timeout_ms_ = 45000;
 
 // static
 void TestTimeouts::Initialize() {
