@@ -33,9 +33,14 @@ TEST_VIEW(AutofillOverlayControllerTest, [controller_ view])
 
 TEST_F(AutofillOverlayControllerTest, Subviews) {
   NSView* view = [controller_ view];
-  ASSERT_EQ(1U, [[view subviews] count]);
-
   EXPECT_TRUE([view isKindOfClass:[NSBox class]]);
-  EXPECT_TRUE([[[view subviews] objectAtIndex:0] isMemberOfClass:
-          [NSView class]]);
+
+  ASSERT_EQ(2U, [[view subviews] count]);
+  EXPECT_TRUE(
+      [[[view subviews] objectAtIndex:0] isKindOfClass:[NSView class]]);
+  EXPECT_TRUE(
+      [[[view subviews] objectAtIndex:0] conformsToProtocol:
+          @protocol(AutofillLayout)]);
+  EXPECT_TRUE(
+      [[[view subviews] objectAtIndex:1] isMemberOfClass:[NSImageView class]]);
 }

@@ -217,19 +217,17 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
 - (NSSize)preferredSize {
   NSSize size;
 
-  // Overall size is determined by either main container or sign in view.
-  if ([[signInContainer_ view] isHidden])
-    size = [mainContainer_ preferredSize];
-  else
-    size = [signInContainer_ preferredSize];
-
-  // Always make room for the header.
-  size.height += kDecorationHeight;
-
   if (![[overlayController_ view] isHidden]) {
-    CGFloat height = [overlayController_ heightForWidth:size.width];
-    if (height != 0.0)
-      size.height = height;
+    size.height = [overlayController_ heightForWidth:size.width];
+  } else {
+    // Overall size is determined by either main container or sign in view.
+    if ([[signInContainer_ view] isHidden])
+      size = [mainContainer_ preferredSize];
+    else
+      size = [signInContainer_ preferredSize];
+
+    // Always make room for the header.
+    size.height += kDecorationHeight;
   }
 
   // Show as much of the main view as is possible without going past the

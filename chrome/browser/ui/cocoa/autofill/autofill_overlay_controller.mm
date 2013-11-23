@@ -136,14 +136,14 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
     [view setContentViewMargins:NSZeroSize];
     [view setTitlePosition:NSNoTitle];
 
-    childView_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
     messageView_.reset([[AutofillMessageView alloc] initWithFrame:NSZeroRect]);
     imageView_.reset([[NSImageView alloc] initWithFrame:NSZeroRect]);
     [imageView_ setImageAlignment:NSImageAlignCenter];
 
-    [childView_ setSubviews:@[messageView_, imageView_]];
-    [view addSubview:childView_];
+    [view setSubviews:@[messageView_, imageView_]];
     [self setView:view];
+
+    [view setFillColor:[[view window] backgroundColor]];
   }
   return self;
 }
@@ -156,26 +156,16 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
     return;
   }
 
-  NSBox* view = base::mac::ObjCCastStrict<NSBox>([self view]);
-  [view setFillColor:[[view window] backgroundColor]];
-  [view setAlphaValue:1];
-  [childView_ setAlphaValue:1];
+  [[self view] setHidden:NO];
   [imageView_ setImage:state.image.ToNSImage()];
   [messageView_ setMessage:state.string];
-  [childView_ setHidden:NO];
-  [view setHidden:NO];
 
   NSWindowController* delegate = [[[self view] window] windowController];
   if ([delegate respondsToSelector:@selector(requestRelayout)])
     [delegate performSelector:@selector(requestRelayout)];
 }
 
-- (CGFloat)heightForWidth:(int) width {
-  // 0 means "no preference". Image-only overlays fit the container.
-  if ([messageView_ isHidden])
-    return 0;
-
-  // Overlays with text messages express a size preference.
+- (CGFloat)heightForWidth:(int)width {
   return 2 * kOverlayImageVerticalPadding +
       [messageView_ heightForWidth:width] +
       [[imageView_ image] size].height;
@@ -188,11 +178,6 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
 
 - (void)performLayout {
   NSRect bounds = [[self view] bounds];
-  [childView_ setFrame:bounds];
-  if ([messageView_ isHidden]) {
-    [imageView_ setFrame:bounds];
-    return;
-  }
 
   int messageHeight = [messageView_ heightForWidth:NSWidth(bounds)];
   [messageView_ setFrame:NSMakeRect(0, 0, NSWidth(bounds), messageHeight)];

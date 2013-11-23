@@ -20,10 +20,6 @@ struct DialogOverlayState;
 
 @interface AutofillOverlayController : NSViewController<AutofillLayout> {
  @private
-  // |childView_| contains all overlay UI elements. This is used to fade out
-  // UI elements first, before making the main view transparent to fade out the
-  // overlay shield.
-  base::scoped_nsobject<NSView> childView_;
   base::scoped_nsobject<NSImageView> imageView_;
   base::scoped_nsobject<AutofillMessageView> messageView_;
 
@@ -42,4 +38,3 @@ struct DialogOverlayState;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_OVERLAY_CONTROLLER_H_
-
