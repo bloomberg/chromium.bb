@@ -164,8 +164,9 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   void OnSetKnownToValidate(const std::string& signature);
   void OnResolveFileToken(uint64 file_token_lo, uint64 file_token_hi,
                           IPC::Message* reply_msg);
-  void FileResolved(base::PlatformFile* file, const base::FilePath& file_path,
-                    IPC::Message* reply_msg);
+  void FileResolved(const base::FilePath& file_path,
+                    IPC::Message* reply_msg,
+                    const base::PlatformFile& file);
 
 #if defined(OS_WIN)
   // Message handler for Windows hardware exception handling.

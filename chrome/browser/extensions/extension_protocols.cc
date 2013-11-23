@@ -56,6 +56,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "url/url_util.h"
 
+using content::BrowserThread;
 using content::ResourceRequestInfo;
 using extensions::Extension;
 using extensions::SharedModuleInfo;
@@ -100,12 +101,6 @@ net::HttpResponseHeaders* BuildHttpHeaders(
   return new net::HttpResponseHeaders(raw_headers);
 }
 
-void ReadMimeTypeFromFile(const base::FilePath& filename,
-                          std::string* mime_type,
-                          bool* result) {
-  *result = net::GetMimeTypeFromFile(filename, mime_type);
-}
-
 class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
  public:
   URLRequestResourceBundleJob(net::URLRequest* request,
@@ -138,17 +133,15 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
         base::UintToString(data->size()).c_str()));
 
     std::string* read_mime_type = new std::string;
-    bool* read_result = new bool;
-    bool posted = content::BrowserThread::PostBlockingPoolTaskAndReply(
+    bool posted = base::PostTaskAndReplyWithResult(
+        BrowserThread::GetBlockingPool(),
         FROM_HERE,
-        base::Bind(&ReadMimeTypeFromFile, filename_,
-                   base::Unretained(read_mime_type),
-                   base::Unretained(read_result)),
+        base::Bind(&net::GetMimeTypeFromFile, filename_,
+                   base::Unretained(read_mime_type)),
         base::Bind(&URLRequestResourceBundleJob::OnMimeTypeRead,
                    weak_factory_.GetWeakPtr(),
                    mime_type, charset, data,
                    base::Owned(read_mime_type),
-                   base::Owned(read_result),
                    callback));
     DCHECK(posted);
 
@@ -166,8 +159,8 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
                       std::string* charset,
                       std::string* data,
                       std::string* read_mime_type,
-                      bool* read_result,
-                      const net::CompletionCallback& callback) {
+                      const net::CompletionCallback& callback,
+                      bool read_result) {
     *out_mime_type = *read_mime_type;
     if (StartsWithASCII(*read_mime_type, "text/", false)) {
       // All of our HTML files should be UTF-8 and for other resource types
@@ -175,7 +168,7 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
       DCHECK(IsStringUTF8(*data));
       *charset = "utf-8";
     }
-    int result = *read_result? net::OK: net::ERR_INVALID_URL;
+    int result = read_result ? net::OK : net::ERR_INVALID_URL;
     callback.Run(result);
   }
 
@@ -294,8 +287,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
                          bool send_cors_header)
     : net::URLRequestFileJob(
           request, network_delegate, base::FilePath(),
-          content::BrowserThread::GetBlockingPool()->
-              GetTaskRunnerWithShutdownBehavior(
+          BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
       directory_path_(directory_path),
       // TODO(tc): Move all of these files into resources.pak so we don't break
@@ -313,7 +305,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   virtual void Start() OVERRIDE {
     base::FilePath* read_file_path = new base::FilePath;
     base::Time* last_modified_time = new base::Time();
-    bool posted = content::BrowserThread::PostBlockingPoolTaskAndReply(
+    bool posted = BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(&ReadResourceFilePathAndLastModifiedTime, resource_,
                    directory_path_,

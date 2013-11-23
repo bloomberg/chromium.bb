@@ -19,14 +19,13 @@ using content::BrowserThread;
 
 namespace {
 
-// Gets the file size of |file| and stores it in |size| on the blocking pool.
-void GetFileSizeOnBlockingPool(const base::FilePath& file, int64* size) {
+int64 GetFileSizeOnBlockingPool(const base::FilePath& file) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   // Get file size. In case of error, sets 0 as file size to let the installer
   // run and fail.
-  if (!file_util::GetFileSize(file, size))
-    *size = 0;
+  int64 size;
+  return file_util::GetFileSize(file, &size) ? size : 0;
 }
 
 }  // namespace
@@ -71,21 +70,20 @@ void InstallLimiter::Add(const scoped_refptr<CrxInstaller>& installer,
     return;
   }
 
-  int64* size = new int64(0);  // Owned by reply callback below.
-  BrowserThread::PostBlockingPoolTaskAndReply(
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
       FROM_HERE,
-      base::Bind(&GetFileSizeOnBlockingPool, path, size),
-      base::Bind(&InstallLimiter::AddWithSize, AsWeakPtr(),
-                 installer, path, base::Owned(size)));
+      base::Bind(&GetFileSizeOnBlockingPool, path),
+      base::Bind(&InstallLimiter::AddWithSize, AsWeakPtr(), installer, path));
 }
 
 void InstallLimiter::AddWithSize(
     const scoped_refptr<CrxInstaller>& installer,
     const base::FilePath& path,
-    int64* size) {
+    int64 size) {
   const int64 kBigAppSizeThreshold = 1048576;  // 1MB
 
-  if (*size <= kBigAppSizeThreshold) {
+  if (size <= kBigAppSizeThreshold) {
     RunInstall(installer, path);
 
     // Stop wait timer and let install notification drive deferred installs.

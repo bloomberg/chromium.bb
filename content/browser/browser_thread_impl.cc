@@ -316,6 +316,7 @@ bool BrowserThread::PostBlockingPoolTask(
   return g_globals.Get().blocking_pool->PostWorkerTask(from_here, task);
 }
 
+// static
 bool BrowserThread::PostBlockingPoolTaskAndReply(
     const tracked_objects::Location& from_here,
     const base::Closure& task,

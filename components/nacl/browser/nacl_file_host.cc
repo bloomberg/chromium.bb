@@ -133,8 +133,7 @@ void DoOpenNaClExecutableOnThreadPool(
     return;
   }
 
-  base::PlatformFile file;
-  nacl::OpenNaClExecutableImpl(file_path, &file);
+  base::PlatformFile file = nacl::OpenNaClExecutableImpl(file_path);
   if (file != base::kInvalidPlatformFileValue) {
     // This function is running on the blocking pool, but the path needs to be
     // registered in a structure owned by the IO thread.

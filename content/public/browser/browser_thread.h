@@ -163,6 +163,10 @@ class CONTENT_EXPORT BrowserThread {
   // lookup and is guaranteed unique without you having to come up with a
   // unique string), you can access the sequenced worker pool directly via
   // GetBlockingPool().
+  //
+  // If you need to PostTaskAndReplyWithResult, use
+  // base::PostTaskAndReplyWithResult() with GetBlockingPool() as the task
+  // runner.
   static bool PostBlockingPoolTask(const tracked_objects::Location& from_here,
                                    const base::Closure& task);
   static bool PostBlockingPoolTaskAndReply(

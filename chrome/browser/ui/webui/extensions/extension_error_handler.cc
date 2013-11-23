@@ -32,9 +32,19 @@
 
 namespace extensions {
 
+namespace {
+
 // Keys for objects passed to and from extension error UI.
 const char kPathSuffixKey[] = "pathSuffix";
 const char kTitleKey[] = "title";
+
+std::string ReadFileToString(const base::FilePath& path) {
+  std::string data;
+  base::ReadFileToString(path, &data);
+  return data;
+}
+
+}  // namespace
 
 ExtensionErrorHandler::ExtensionErrorHandler(Profile* profile)
     : profile_(profile) {
@@ -128,9 +138,7 @@ void ExtensionErrorHandler::HandleRequestFileSource(
                          path.BaseName().LossyDisplayName());
   results->SetString(ExtensionError::kMessageKey, error_message);
 
-  base::Closure closure;
-  std::string* contents = NULL;
-
+  base::Callback<void(const std::string&)> reply;
   if (path_suffix_string == kManifestFilename) {
     std::string manifest_key;
     if (!dict->GetString(ManifestError::kManifestKeyKey, &manifest_key)) {
@@ -142,35 +150,30 @@ void ExtensionErrorHandler::HandleRequestFileSource(
     std::string specific;
     dict->GetString(ManifestError::kManifestSpecificKey, &specific);
 
-    contents = new std::string;  // Owned by GetManifestFileCallback(    )
-    closure = base::Bind(&ExtensionErrorHandler::GetManifestFileCallback,
-                         base::Unretained(this),
-                         base::Owned(results.release()),
-                         manifest_key,
-                         specific,
-                         base::Owned(contents));
+    reply = base::Bind(&ExtensionErrorHandler::GetManifestFileCallback,
+                       base::Unretained(this),
+                       base::Owned(results.release()),
+                       manifest_key,
+                       specific);
   } else {
     int line_number = 0;
     dict->GetInteger(RuntimeError::kLineNumberKey, &line_number);
 
-    contents = new std::string;  // Owned by GetSourceFileCallback()
-    closure = base::Bind(&ExtensionErrorHandler::GetSourceFileCallback,
-                         base::Unretained(this),
-                         base::Owned(results.release()),
-                         line_number,
-                         base::Owned(contents));
+    reply = base::Bind(&ExtensionErrorHandler::GetSourceFileCallback,
+                       base::Unretained(this),
+                       base::Owned(results.release()),
+                       line_number);
   }
 
-  content::BrowserThread::PostBlockingPoolTaskAndReply(
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::ReadFileToString),
-                 path,
-                 contents),
-      closure);
+      base::Bind(&ReadFileToString, path),
+      reply);
 }
 
 void ExtensionErrorHandler::HandleOpenDevTools(const base::ListValue* args) {
-  CHECK(args->GetSize() == 1);
+  CHECK_EQ(1U, args->GetSize());
 
   const base::DictionaryValue* dict = NULL;
   int render_process_id = 0;
@@ -234,8 +237,8 @@ void ExtensionErrorHandler::GetManifestFileCallback(
     base::DictionaryValue* results,
     const std::string& key,
     const std::string& specific,
-    std::string* contents) {
-  ManifestHighlighter highlighter(*contents, key, specific);
+    const std::string& contents) {
+  ManifestHighlighter highlighter(contents, key, specific);
   highlighter.SetHighlightedRegions(results);
   web_ui()->CallJavascriptFunction(
       "extensions.ExtensionErrorOverlay.requestFileSourceResponse", *results);
@@ -244,8 +247,8 @@ void ExtensionErrorHandler::GetManifestFileCallback(
 void ExtensionErrorHandler::GetSourceFileCallback(
     base::DictionaryValue* results,
     int line_number,
-    std::string* contents) {
-  SourceHighlighter highlighter(*contents, line_number);
+    const std::string& contents) {
+  SourceHighlighter highlighter(contents, line_number);
   highlighter.SetHighlightedRegions(results);
   web_ui()->CallJavascriptFunction(
       "extensions.ExtensionErrorOverlay.requestFileSourceResponse", *results);

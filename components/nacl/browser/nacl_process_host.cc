@@ -272,7 +272,7 @@ NaClProcessHost::~NaClProcessHost() {
         base::StringPrintf("NaCl process exited with status %i (0x%x)",
                            exit_code, exit_code);
     if (exit_code == 0) {
-      LOG(INFO) << message;
+      VLOG(1) << message;
     } else {
       LOG(ERROR) << message;
     }
@@ -875,12 +875,12 @@ void NaClProcessHost::OnSetKnownToValidate(const std::string& signature) {
 }
 
 void NaClProcessHost::FileResolved(
-    base::PlatformFile* file,
     const base::FilePath& file_path,
-    IPC::Message* reply_msg) {
-  if (*file != base::kInvalidPlatformFileValue) {
+    IPC::Message* reply_msg,
+    const base::PlatformFile& file) {
+  if (file != base::kInvalidPlatformFileValue) {
     IPC::PlatformFileForTransit handle = IPC::GetFileHandleForProcess(
-        *file,
+        file,
         process_->GetData().handle,
         true /* close_source */);
     NaClProcessMsg_ResolveFileToken::WriteReplyParams(
@@ -891,7 +891,7 @@ void NaClProcessHost::FileResolved(
     NaClProcessMsg_ResolveFileToken::WriteReplyParams(
         reply_msg,
         IPC::InvalidPlatformFileForTransit(),
-        base::FilePath(FILE_PATH_LITERAL("")));
+        base::FilePath());
   }
   Send(reply_msg);
 }
@@ -928,28 +928,24 @@ void NaClProcessHost::OnResolveFileToken(uint64 file_token_lo,
     NaClProcessMsg_ResolveFileToken::WriteReplyParams(
         reply_msg,
         IPC::InvalidPlatformFileForTransit(),
-        base::FilePath(FILE_PATH_LITERAL("")));
+        base::FilePath());
     Send(reply_msg);
     return;
   }
 
-  // Scratch space to share between the callbacks.
-  base::PlatformFile* data = new base::PlatformFile();
-
   // Open the file.
-  if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
+  if (!base::PostTaskAndReplyWithResult(
+          content::BrowserThread::GetBlockingPool(),
           FROM_HERE,
-          base::Bind(OpenNaClExecutableImpl,
-                     file_path, data),
+          base::Bind(OpenNaClExecutableImpl, file_path),
           base::Bind(&NaClProcessHost::FileResolved,
                      weak_factory_.GetWeakPtr(),
-                     base::Owned(data),
                      file_path,
                      reply_msg))) {
      NaClProcessMsg_ResolveFileToken::WriteReplyParams(
          reply_msg,
          IPC::InvalidPlatformFileForTransit(),
-         base::FilePath(FILE_PATH_LITERAL("")));
+         base::FilePath());
      Send(reply_msg);
   }
 }

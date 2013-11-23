@@ -162,6 +162,44 @@ ImageLoader::LoadResult::LoadResult(
 ImageLoader::LoadResult::~LoadResult() {
 }
 
+namespace {
+
+// Need to be after ImageRepresentation and LoadResult are defined.
+std::vector<ImageLoader::LoadResult> LoadImagesOnBlockingPool(
+    const std::vector<ImageLoader::ImageRepresentation>& info_list,
+    const std::vector<SkBitmap>& bitmaps) {
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  std::vector<ImageLoader::LoadResult> load_result;
+
+  for (size_t i = 0; i < info_list.size(); ++i) {
+    const ImageLoader::ImageRepresentation& image = info_list[i];
+
+    // If we don't have a path there isn't anything we can do, just skip it.
+    if (image.resource.relative_path().empty())
+      continue;
+
+    SkBitmap bitmap;
+    if (bitmaps[i].isNull())
+      LoadImageOnBlockingPool(image, &bitmap);
+    else
+      bitmap = bitmaps[i];
+
+    // If the image failed to load, skip it.
+    if (bitmap.isNull() || bitmap.empty())
+      continue;
+
+    gfx::Size original_size(bitmap.width(), bitmap.height());
+    bitmap = ResizeIfNeeded(bitmap, image);
+
+    load_result.push_back(
+        ImageLoader::LoadResult(bitmap, original_size, image));
+  }
+
+  return load_result;
+}
+
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // ImageLoader
 
@@ -238,11 +276,10 @@ bool ImageLoader::IsComponentExtensionResource(
   return entry != path_to_resource_id.Get().end();
 }
 
-void ImageLoader::LoadImageAsync(
-    const Extension* extension,
-    const ExtensionResource& resource,
-    const gfx::Size& max_size,
-    const base::Callback<void(const gfx::Image&)>& callback) {
+void ImageLoader::LoadImageAsync(const Extension* extension,
+                                 const ExtensionResource& resource,
+                                 const gfx::Size& max_size,
+                                 const ImageLoaderCallback& callback) {
   std::vector<ImageRepresentation> info_list;
   info_list.push_back(ImageRepresentation(
       resource,
@@ -255,7 +292,7 @@ void ImageLoader::LoadImageAsync(
 void ImageLoader::LoadImagesAsync(
     const Extension* extension,
     const std::vector<ImageRepresentation>& info_list,
-    const base::Callback<void(const gfx::Image&)>& callback) {
+    const ImageLoaderCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Loading an image from the cache and loading resources have to happen
@@ -281,55 +318,22 @@ void ImageLoader::LoadImagesAsync(
   }
 
   DCHECK(!BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  std::vector<LoadResult>* load_result = new std::vector<LoadResult>;
-  BrowserThread::PostBlockingPoolTaskAndReply(
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
       FROM_HERE,
-      base::Bind(LoadImagesOnBlockingPool, info_list, bitmaps, load_result),
+      base::Bind(LoadImagesOnBlockingPool, info_list, bitmaps),
       base::Bind(&ImageLoader::ReplyBack, weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(load_result), callback));
+                 callback));
 }
 
-// static
-void ImageLoader::LoadImagesOnBlockingPool(
-    const std::vector<ImageRepresentation>& info_list,
-    const std::vector<SkBitmap>& bitmaps,
-    std::vector<LoadResult>* load_result) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
-  int i = 0;
-  for (std::vector<ImageRepresentation>::const_iterator it = info_list.begin();
-       it != info_list.end(); ++it, ++i) {
-    // If we don't have a path there isn't anything we can do, just skip it.
-    if (it->resource.relative_path().empty())
-      continue;
-
-    SkBitmap bitmap;
-    if (!bitmaps[i].isNull()) {
-      bitmap = bitmaps[i];
-    } else {
-      LoadImageOnBlockingPool(*it, &bitmap);
-    }
-
-    // If the image failed to load, skip it.
-    if (bitmap.isNull() || bitmap.empty())
-      continue;
-
-    gfx::Size original_size(bitmap.width(), bitmap.height());
-    bitmap = ResizeIfNeeded(bitmap, *it);
-
-    load_result->push_back(LoadResult(bitmap, original_size, *it));
-  }
-}
-
-void ImageLoader::ReplyBack(
-    const std::vector<LoadResult>* load_result,
-    const base::Callback<void(const gfx::Image&)>& callback) {
+void ImageLoader::ReplyBack(const ImageLoaderCallback& callback,
+                            const std::vector<LoadResult>& load_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   gfx::ImageSkia image_skia;
 
-  for (std::vector<LoadResult>::const_iterator it = load_result->begin();
-       it != load_result->end(); ++it) {
+  for (std::vector<LoadResult>::const_iterator it = load_result.begin();
+       it != load_result.end(); ++it) {
     const SkBitmap& bitmap = it->bitmap;
     const ImageRepresentation& image_rep = it->image_representation;
 

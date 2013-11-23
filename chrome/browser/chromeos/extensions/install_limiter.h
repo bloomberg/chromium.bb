@@ -57,7 +57,7 @@ class InstallLimiter : public BrowserContextKeyedService,
   // Otherwise, it just runs the installer.
   void AddWithSize(const scoped_refptr<CrxInstaller>& installer,
                    const base::FilePath& path,
-                   int64* size);
+                   int64 size);
 
   // Checks and runs deferred big app installs when appropriate.
   void CheckAndRunDeferrredInstalls();

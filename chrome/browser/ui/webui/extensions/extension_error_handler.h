@@ -49,18 +49,18 @@ class ExtensionErrorHandler : public content::WebUIMessageHandler {
   // Populate the results for a manifest file's content in response to the
   // "requestFileSource" call. Highlight the part of the manifest which
   // corresponds to the given |key| and |specific| locations. Caller owns
-  // |dict| and |contents|.
+  // |dict|.
   void GetManifestFileCallback(base::DictionaryValue* dict,
                                const std::string& key,
                                const std::string& specific,
-                               std::string* contents);
+                               const std::string& contents);
 
   // Populate the results for a source file's content in response to the
   // "requestFileSource" call. Highlight the part of the source which
   // corresponds to the given |line_number|.
   void GetSourceFileCallback(base::DictionaryValue* results,
                              int line_number,
-                             std::string* contents);
+                             const std::string& contents);
 
   // The profile with which this Handler is associated.
   Profile* profile_;
