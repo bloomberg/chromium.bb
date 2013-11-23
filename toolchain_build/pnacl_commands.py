@@ -15,6 +15,12 @@ import stat
 import file_tools
 import platform_tools
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+NACL_DIR = os.path.dirname(SCRIPT_DIR)
+
+# Path to the hermetic cygwin
+CYGWIN_PATH = os.path.join(NACL_DIR, 'cygwin')
+
 # User-facing tools
 DRIVER_TOOLS = ['pnacl-' + tool + '.py' for tool in
                     ('abicheck', 'ar', 'as', 'clang', 'clang++', 'dis',
@@ -47,4 +53,5 @@ def InstallDriverScripts(subst, srcdir, dstdir):
   # On windows, copy the necessary cygwin DLLs
   if platform_tools.IsWindows():
     for lib in ('gcc_s-1', 'iconv-2', 'win1', 'intl-8', 'stdc++-6', 'z'):
-      shutil.copy('/bin/cyg' + lib + '.dll', dstdir)
+      shutil.copy(os.path.join(CYGWIN_PATH, 'bin', 'cyg' + lib + '.dll'),
+                  dstdir)
