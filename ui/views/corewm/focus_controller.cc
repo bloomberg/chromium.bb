@@ -153,21 +153,13 @@ void FocusController::FocusWindow(aura::Window* window) {
   // Activation change observers may change the focused window. If this happens
   // we must not adjust the focus below since this will clobber that change.
   aura::Window* last_focused_window = focused_window_;
-  aura::Window* last_active_window = active_window_;
   if (!updating_activation_)
     SetActiveWindow(window, activatable);
 
   // If the window's ActivationChangeObserver shifted focus to a valid window,
   // we don't want to focus the window we thought would be focused by default.
-  //
-  // Allow the request through if there was previously no active window. When
-  // there is no active window and an attempt is made to activate a window views
-  // may try to restore focus to the view (and thereby window) that previously
-  // had focus. In this case we want to focus the window passed to this function
-  // and not the previously focused window.
   bool activation_changed_focus = last_focused_window != focused_window_;
-  if (!updating_focus_ && (!activation_changed_focus || !focused_window_ ||
-                           !last_active_window)) {
+  if (!updating_focus_ && (!activation_changed_focus || !focused_window_)) {
     if (active_window_ && focusable)
       DCHECK(active_window_->Contains(focusable));
     SetFocusedWindow(focusable);

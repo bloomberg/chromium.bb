@@ -305,45 +305,12 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   virtual void NoShiftActiveOnActivation() {}
   virtual void NoFocusChangeOnClickOnCaptureWindow() {}
   virtual void ChangeFocusWhenNothingFocusedAndCaptured() {}
-  virtual void ChangeFocusWithinActivate() {}
 
  private:
   scoped_ptr<FocusController> focus_controller_;
   TestFocusRules* test_focus_rules_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerTestBase);
-};
-
-// ActivationChangeObserver that attempts to focus another window on an
-// activation change.
-class TestActivationChangeObserver
-    : public aura::client::ActivationChangeObserver {
- public:
-  TestActivationChangeObserver() : gained_active_(NULL), to_focus_(NULL) {}
-  virtual ~TestActivationChangeObserver() {}
-
-  // Sets the window to focus (|to_focus|) when a window is made active.
-  void SetWindows(aura::Window* gained_active, aura::Window* to_focus) {
-    gained_active_ = gained_active;
-    to_focus_ = to_focus;
-  }
-
-  // aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE {
-    if (gained_active == gained_active_ && to_focus_) {
-      aura::Window* to_focus = to_focus_;
-      to_focus_ = NULL;
-      gained_active_ = NULL;
-      to_focus->Focus();
-    }
-  }
-
- private:
-  aura::Window* gained_active_;
-  aura::Window* to_focus_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestActivationChangeObserver);
 };
 
 // Test base for tests where focus is directly set to a target window.
@@ -649,25 +616,6 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(1, GetFocusedWindowId());
 
     aura::client::GetCaptureClient(root_window())->ReleaseCapture(w1);
-  }
-
-  // Verifies a request to focus a window is honored if the
-  // ActivationChangeObserver changes focus.
-  virtual void ChangeFocusWithinActivate() OVERRIDE {
-    TestActivationChangeObserver test_observer;
-    aura::client::GetActivationClient(root_window())->
-        AddObserver(&test_observer);
-    // Set things such that when |w1| is made active a request is made to focus
-    // |w11|.
-    test_observer.SetWindows(root_window()->GetChildById(1),
-                             root_window()->GetChildById(11));
-    // Attempt to activate |w12|. This should activate |w1| (its the child of
-    // the root
-    ActivateWindowById(12);
-    EXPECT_EQ(1, GetActiveWindowId());
-    EXPECT_EQ(12, GetFocusedWindowId());
-    aura::client::GetActivationClient(root_window())->RemoveObserver(
-        &test_observer);
   }
 
  private:
@@ -1070,8 +1018,6 @@ DIRECT_FOCUS_CHANGE_TESTS(NoFocusChangeOnClickOnCaptureWindow);
 
 FOCUS_CONTROLLER_TEST(FocusControllerApiTest,
                       ChangeFocusWhenNothingFocusedAndCaptured);
-
-FOCUS_CONTROLLER_TEST(FocusControllerApiTest, ChangeFocusWithinActivate);
 
 }  // namespace corewm
 }  // namespace views
