@@ -564,7 +564,7 @@ void PersonalDataManager::GetProfileSuggestions(
     const AutofillType& type,
     const base::string16& field_contents,
     bool field_is_autofilled,
-    std::vector<ServerFieldType> other_field_types,
+    const std::vector<ServerFieldType>& other_field_types,
     std::vector<base::string16>* values,
     std::vector<base::string16>* labels,
     std::vector<base::string16>* icons,
