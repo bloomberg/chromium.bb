@@ -2171,8 +2171,8 @@ void WebContentsImpl::OnDidDisplayInsecureContent() {
 
 void WebContentsImpl::OnDidRunInsecureContent(
     const std::string& security_origin, const GURL& target_url) {
-  LOG(INFO) << security_origin << " ran insecure content from "
-            << target_url.possibly_invalid_spec();
+  LOG(WARNING) << security_origin << " ran insecure content from "
+               << target_url.possibly_invalid_spec();
   RecordAction(UserMetricsAction("SSL.RanInsecureContent"));
   if (EndsWith(security_origin, kDotGoogleDotCom, false))
     RecordAction(UserMetricsAction("SSL.RanInsecureContentGoogle"));
