@@ -154,7 +154,8 @@ void LatencyInfo::AddLatencyNumberWithTimestamp(LatencyComponentType component,
                                                 bool dump_to_trace) {
   if (dump_to_trace && IsBeginComponent(component)) {
     // Should only ever add begin component once.
-    CHECK_EQ(-1, trace_id);
+    // Put the CHECK back once crbug.com/321116 is resolved.
+    // CHECK_EQ(-1, trace_id);
     trace_id = component_sequence_number;
     TRACE_EVENT_ASYNC_BEGIN0("benchmark",
                              "InputLatency",
