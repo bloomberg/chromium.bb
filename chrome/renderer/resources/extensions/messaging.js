@@ -161,7 +161,8 @@
     if (!requestEvent.hasListeners())
       return false;
     var port = createPort(portId, channelName);
-    port.onMessage.addListener(function(request) {
+
+    function messageListener(request) {
       var responseCallbackPreserved = false;
       var responseCallback = function(response) {
         if (port) {
@@ -198,7 +199,13 @@
           port = null;
         }
       }
-    });
+    }
+
+    port.onDestroy_ = function() {
+      port.onMessage.removeListener(messageListener);
+    };
+    port.onMessage.addListener(messageListener);
+
     var eventName = (isSendMessage ?
           (isExternal ?
               "runtime.onMessageExternal" : "runtime.onMessage") :
