@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -111,6 +112,10 @@ bool ChromeExtensionsBrowserClient::DidVersionUpdate(
     return true;
 
   return last_version.IsOlderThan(current_version);
+}
+
+scoped_ptr<AppSorting> ChromeExtensionsBrowserClient::CreateAppSorting() {
+  return scoped_ptr<AppSorting>(new ChromeAppSorting()).Pass();
 }
 
 // static

@@ -14,7 +14,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
-#include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +25,7 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/admin_policy.h"
+#include "extensions/browser/app_sorting.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/feature_switch.h"
@@ -317,10 +317,12 @@ ExtensionPrefs* ExtensionPrefs::Create(
     PrefService* prefs,
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
+    scoped_ptr<AppSorting> app_sorting,
     bool extensions_disabled) {
   return ExtensionPrefs::Create(prefs,
                                 root_dir,
                                 extension_pref_value_map,
+                                app_sorting.Pass(),
                                 extensions_disabled,
                                 make_scoped_ptr(new TimeProvider()));
 }
@@ -330,15 +332,15 @@ ExtensionPrefs* ExtensionPrefs::Create(
     PrefService* pref_service,
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
+    scoped_ptr<AppSorting> app_sorting,
     bool extensions_disabled,
     scoped_ptr<TimeProvider> time_provider) {
-  scoped_ptr<ExtensionPrefs> prefs(
-      new ExtensionPrefs(pref_service,
-                         root_dir,
-                         extension_pref_value_map,
-                         time_provider.Pass(),
-                         extensions_disabled));
-  return prefs.release();
+  return new ExtensionPrefs(pref_service,
+                            root_dir,
+                            extension_pref_value_map,
+                            app_sorting.Pass(),
+                            time_provider.Pass(),
+                            extensions_disabled);
 }
 
 ExtensionPrefs::~ExtensionPrefs() {
@@ -1667,10 +1669,10 @@ void ExtensionPrefs::FixMissingPrefs(const ExtensionIdList& extension_ids) {
   for (ExtensionIdList::const_iterator ext_id = extension_ids.begin();
        ext_id != extension_ids.end(); ++ext_id) {
     if (GetInstallTime(*ext_id) == base::Time()) {
-      LOG(INFO) << "Could not parse installation time of extension "
-                << *ext_id << ". It was probably installed before setting "
-                << kPrefInstallTime << " was introduced. Updating "
-                << kPrefInstallTime << " to the current time.";
+      VLOG(1) << "Could not parse installation time of extension "
+              << *ext_id << ". It was probably installed before setting "
+              << kPrefInstallTime << " was introduced. Updating "
+              << kPrefInstallTime << " to the current time.";
       const base::Time install_time = time_provider_->GetCurrentTime();
       UpdateExtensionPref(*ext_id,
                           kPrefInstallTime,
@@ -1776,15 +1778,17 @@ ExtensionPrefs::ExtensionPrefs(
     PrefService* prefs,
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
+    scoped_ptr<AppSorting> app_sorting,
     scoped_ptr<TimeProvider> time_provider,
     bool extensions_disabled)
     : prefs_(prefs),
       install_directory_(root_dir),
       extension_pref_value_map_(extension_pref_value_map),
-      app_sorting_(new ChromeAppSorting(this)),
+      app_sorting_(app_sorting.Pass()),
       content_settings_store_(new ContentSettingsStore()),
       time_provider_(time_provider.Pass()),
       extensions_disabled_(extensions_disabled) {
+  app_sorting_->SetExtensionScopedPrefs(this),
   MakePathsRelative();
   InitPrefStore();
 }

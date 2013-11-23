@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/constants.h"
 
 namespace extensions {
@@ -53,6 +54,7 @@ BrowserContextKeyedService* ExtensionPrefsFactory::BuildServiceInstanceFor(
       profile->GetPrefs(),
       profile->GetPath().AppendASCII(extensions::kInstallDirectoryName),
       ExtensionPrefValueMapFactory::GetForBrowserContext(profile),
+      ExtensionsBrowserClient::Get()->CreateAppSorting().Pass(),
       extensions_disabled);
 }
 

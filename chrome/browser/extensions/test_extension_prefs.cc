@@ -23,6 +23,7 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "sync/api/string_ordinal.h"
@@ -113,6 +114,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
       pref_service_.get(),
       temp_dir_.path(),
       extension_pref_value_map_.get(),
+      ExtensionsBrowserClient::Get()->CreateAppSorting().Pass(),
       extensions_disabled_,
       // Guarantee that no two extensions get the same installation time
       // stamp and we can reliably assert the installation order in the tests.

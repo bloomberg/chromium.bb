@@ -24,10 +24,11 @@ class ExtensionScopedPrefs;
 
 class ChromeAppSorting : public AppSorting {
  public:
-  explicit ChromeAppSorting(ExtensionScopedPrefs* extension_scoped_prefs);
+  ChromeAppSorting();
   virtual ~ChromeAppSorting();
 
   // AppSorting implementation:
+  virtual void SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) OVERRIDE;
   virtual void SetExtensionSyncService(
       ExtensionSyncService* extension_sync_service) OVERRIDE;
   virtual void Initialize(

@@ -43,6 +43,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual bool DeferLoadingBackgroundHosts(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool DidVersionUpdate(content::BrowserContext* context) OVERRIDE;
+  virtual scoped_ptr<AppSorting> CreateAppSorting() OVERRIDE;
 
   // Get the LazyInstance for ChromeBrowserClient.
   static ChromeExtensionsBrowserClient* GetInstance();

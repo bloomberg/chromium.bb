@@ -46,13 +46,17 @@ ChromeAppSorting::AppOrdinals::~AppOrdinals() {}
 ////////////////////////////////////////////////////////////////////////////////
 // ChromeAppSorting
 
-ChromeAppSorting::ChromeAppSorting(ExtensionScopedPrefs* extension_scoped_prefs)
-    : extension_scoped_prefs_(extension_scoped_prefs),
+ChromeAppSorting::ChromeAppSorting()
+    : extension_scoped_prefs_(NULL),
       extension_sync_service_(NULL),
       default_ordinals_created_(false) {
 }
 
 ChromeAppSorting::~ChromeAppSorting() {
+}
+
+void ChromeAppSorting::SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) {
+  extension_scoped_prefs_ = prefs;
 }
 
 void ChromeAppSorting::SetExtensionSyncService(

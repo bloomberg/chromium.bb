@@ -5,11 +5,15 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSIONS_BROWSER_CLIENT_H_
 #define EXTENSIONS_BROWSER_EXTENSIONS_BROWSER_CLIENT_H_
 
+#include "base/memory/scoped_ptr.h"
+
 namespace content {
 class BrowserContext;
 }
 
 namespace extensions {
+
+class AppSorting;
 
 // Interface to allow the extensions module to make browser-process-specific
 // queries of the embedder. Should be Set() once in the browser process.
@@ -56,6 +60,9 @@ class ExtensionsBrowserClient {
   // implementation may wish to use the BrowserContext to record the current
   // version for later comparison.
   virtual bool DidVersionUpdate(content::BrowserContext* context) = 0;
+
+  // Creates a new AppSorting instance.
+  virtual scoped_ptr<AppSorting> CreateAppSorting() = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

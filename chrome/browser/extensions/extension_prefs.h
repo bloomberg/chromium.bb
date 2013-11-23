@@ -31,6 +31,7 @@ class PrefRegistrySyncable;
 }
 
 namespace extensions {
+
 class AppSorting;
 class ContentSettingsStore;
 class ExtensionPrefsUninstallExtension;
@@ -142,6 +143,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
       PrefService* prefs,
       const base::FilePath& root_dir,
       ExtensionPrefValueMap* extension_pref_value_map,
+      scoped_ptr<AppSorting> app_sorting,
       bool extensions_disabled);
 
   // A version of Create which allows injection of a custom base::Time provider.
@@ -150,6 +152,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
       PrefService* prefs,
       const base::FilePath& root_dir,
       ExtensionPrefValueMap* extension_pref_value_map,
+      scoped_ptr<AppSorting> app_sorting,
       bool extensions_disabled,
       scoped_ptr<TimeProvider> time_provider);
 
@@ -527,6 +530,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   ExtensionPrefs(PrefService* prefs,
                  const base::FilePath& root_dir,
                  ExtensionPrefValueMap* extension_pref_value_map,
+                 scoped_ptr<AppSorting> app_sorting,
                  scoped_ptr<TimeProvider> time_provider,
                  bool extensions_disabled);
 

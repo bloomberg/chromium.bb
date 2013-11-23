@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
 
@@ -67,6 +68,7 @@ ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
       profile_->GetPrefs(),
       install_directory,
       ExtensionPrefValueMapFactory::GetForBrowserContext(profile_),
+      ExtensionsBrowserClient::Get()->CreateAppSorting().Pass(),
       extensions_disabled);
     ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(
         profile_,

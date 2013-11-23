@@ -12,6 +12,7 @@
 #include "extensions/common/extension.h"
 #include "sync/api/string_ordinal.h"
 
+class ExtensionScopedPrefs;
 class ExtensionSyncService;
 
 namespace extensions {
@@ -22,11 +23,15 @@ class AppSorting {
   AppSorting() {}
   virtual ~AppSorting() {}
 
-  // Set up the ExtensionSyncService to inform of changes that require syncing.
+  // Sets the object used to look up preferences. Ownership remains with the
+  // caller.
+  virtual void SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) = 0;
+
+  // Sets up the ExtensionSyncService to inform of changes that require syncing.
   virtual void SetExtensionSyncService(
       ExtensionSyncService* extension_sync_service) = 0;
 
-  // Properly initialize internal values that require |extension_ids|.
+  // Properly initializes internal values that require |extension_ids|.
   virtual void Initialize(const extensions::ExtensionIdList& extension_ids) = 0;
 
   // Resolves any conflicts the might be created as a result of syncing that
