@@ -111,6 +111,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['mac'], bug=322770)
     self.Skip('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
         ['mac'], bug=322795)
+    self.Skip('conformance/ogles/GL/control_flow/control_flow_009_to_010.html',
+        ['mac'], bug=322795)
 
     # Mac/Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
