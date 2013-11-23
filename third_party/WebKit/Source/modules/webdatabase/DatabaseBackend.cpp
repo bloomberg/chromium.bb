@@ -77,7 +77,7 @@ bool DatabaseBackend::performOpenAndVerify(bool setVersionInNewDatabase, Databas
 void DatabaseBackend::close()
 {
     ASSERT(databaseContext()->databaseThread());
-    ASSERT(currentThread() == databaseContext()->databaseThread()->getThreadID());
+    ASSERT(databaseContext()->databaseThread()->isDatabaseThread());
 
     {
         MutexLocker locker(m_transactionInProgressMutex);

@@ -63,7 +63,7 @@ public:
 
     void recordDatabaseOpen(DatabaseBackend*);
     void recordDatabaseClosed(DatabaseBackend*);
-    ThreadIdentifier getThreadID() { return m_threadID; }
+    bool isDatabaseThread() { return currentThread() == m_threadID; }
 
     SQLTransactionClient* transactionClient() { return m_transactionClient.get(); }
     SQLTransactionCoordinator* transactionCoordinator() { return m_transactionCoordinator.get(); }

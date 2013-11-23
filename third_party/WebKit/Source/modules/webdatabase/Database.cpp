@@ -274,7 +274,7 @@ SecurityOrigin* Database::securityOrigin() const
 {
     if (m_executionContext->isContextThread())
         return m_contextThreadSecurityOrigin.get();
-    if (currentThread() == databaseContext()->databaseThread()->getThreadID())
+    if (databaseContext()->databaseThread()->isDatabaseThread())
         return m_databaseThreadSecurityOrigin.get();
     return 0;
 }

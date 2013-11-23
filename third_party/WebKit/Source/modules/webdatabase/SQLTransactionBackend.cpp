@@ -376,7 +376,7 @@ void SQLTransactionBackend::doCleanup()
         return;
     m_frontend = 0; // Break the reference cycle. See comment about the life-cycle above.
 
-    ASSERT(currentThread() == database()->databaseContext()->databaseThread()->getThreadID());
+    ASSERT(database()->databaseContext()->databaseThread()->isDatabaseThread());
 
     MutexLocker locker(m_statementMutex);
     m_statementQueue.clear();
@@ -526,7 +526,7 @@ void SQLTransactionBackend::executeSQL(PassOwnPtr<AbstractSQLStatement> statemen
 
 void SQLTransactionBackend::notifyDatabaseThreadIsShuttingDown()
 {
-    ASSERT(currentThread() == database()->databaseContext()->databaseThread()->getThreadID());
+    ASSERT(database()->databaseContext()->databaseThread()->isDatabaseThread());
 
     // If the transaction is in progress, we should roll it back here, since this
     // is our last opportunity to do something related to this transaction on the
