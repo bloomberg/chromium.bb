@@ -62,23 +62,6 @@
   ],
   'targets': [
     {
-      'target_name': 'test_support_ui_runner',
-      'type': 'static_library',
-      'dependencies': [
-        'test_support_common',
-        '../testing/gtest.gyp:gtest',
-      ],
-      'export_dependent_settings': [
-        'test_support_common',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/ui/run_all_unittests.cc',
-      ],
-    },
-    {
       'target_name': 'test_support_ui',
       'type': 'static_library',
       'dependencies': [
