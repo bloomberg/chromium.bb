@@ -24,6 +24,10 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # self.Fail('gl-enable-vertex-attrib.html',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
+    # Fails everywhere.
+    self.Skip('conformance/glsl/misc/large-loop-compile.html',
+        bug=322764)
+
     # Windows/Intel failures
     self.Fail('conformance/textures/texture-size.html',
         ['win', 'intel'], bug=121139)
