@@ -279,21 +279,26 @@ cr.define('help', function() {
         $('update-status-message').innerHTML = message;
       }
 
-      var container = $('update-status-container');
-      if (container) {
-        container.hidden = status == 'disabled';
-        $('relaunch').hidden = status != 'nearly_updated';
-
-        if (!cr.isMac)
-          $('update-percentage').hidden = status != 'updating';
-      }
-
+      // Following invariant must be established at the end of this function:
+      // { ~$('relaunch_and_powerwash').hidden -> $('relaunch').hidden }
+      var relaunchAndPowerwashHidden = true;
       if ($('relaunch-and-powerwash')) {
         // It's allowed to do powerwash only for customer devices,
         // when user explicitly decides to update to a more stable
         // channel.
-        $('relaunch-and-powerwash').hidden =
+        relaunchAndPowerwashHidden =
             !this.powerwashAfterUpdate_ || status != 'nearly_updated';
+        $('relaunch-and-powerwash').hidden = relaunchAndPowerwashHidden;
+      }
+
+      var container = $('update-status-container');
+      if (container) {
+        container.hidden = status == 'disabled';
+        $('relaunch').hidden =
+            (status != 'nearly_updated') || !relaunchAndPowerwashHidden;
+
+        if (!cr.isMac)
+          $('update-percentage').hidden = status != 'updating';
       }
     },
 
