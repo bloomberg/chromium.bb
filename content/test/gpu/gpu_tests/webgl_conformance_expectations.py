@@ -99,6 +99,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['mac'], bug=322760)
     self.Fail('conformance/context/context-attribute-preserve-drawing-buffer.html',
         ['mac'], bug=322770)
+    self.Skip('conformance/textures/texture-size-limit.html',
+        ['mac'], bug=322789)
 
     # Mac/Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
@@ -158,6 +160,10 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['mac', 'amd'], bug=308328)
     self.Fail('conformance/canvas/drawingbuffer-test.html',
         ['mac', 'amd'], bug=314997)
+
+    # Linux failure.
+    self.Skip('conformance/textures/texture-size-limit.html',
+        ['linux'], bug=322789)
 
     # Android failures
     self.Fail('conformance/textures/texture-npot-video.html',
