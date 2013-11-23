@@ -120,11 +120,6 @@ public:
         m_map.set(*handle, value);
     }
 
-    uint32_t size()
-    {
-        return m_map.size();
-    }
-
 private:
     // This implementation uses GetIdentityHash(), which sets a hidden property on the object containing
     // a random integer (or returns the one that had been previously set). This ensures that the table
@@ -296,13 +291,6 @@ public:
     void writeBooleanObject(bool value)
     {
         append(value ? TrueObjectTag : FalseObjectTag);
-    }
-
-    void writeString(const char* data, int length)
-    {
-        ASSERT(length >= 0);
-        append(StringTag);
-        doWriteString(data, length);
     }
 
     void writeOneByteString(v8::Handle<v8::String>& string)
@@ -1000,11 +988,6 @@ private:
             return serializer.writeSparseArray(numProperties, composite().As<v8::Array>()->Length(), this);
         }
     };
-
-    uint32_t execDepth() const
-    {
-        return m_execDepth;
-    }
 
     StateBase* push(StateBase* state)
     {
@@ -2274,12 +2257,6 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(v8::Handle<v8::V
     return adoptRef(new SerializedScriptValue(value, messagePorts, arrayBuffers, didThrow, isolate));
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(v8::Handle<v8::Value> value, v8::Isolate* isolate)
-{
-    bool didThrow;
-    return adoptRef(new SerializedScriptValue(value, 0, 0, didThrow, isolate));
-}
-
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::createAndSwallowExceptions(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     bool didThrow;
@@ -2355,22 +2332,6 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::undefinedValue(v8::Isol
     return adoptRef(new SerializedScriptValue(wireData));
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::booleanValue(bool value)
-{
-    return booleanValue(value, v8::Isolate::GetCurrent());
-}
-
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::booleanValue(bool value, v8::Isolate* isolate)
-{
-    Writer writer(isolate);
-    if (value)
-        writer.writeTrue();
-    else
-        writer.writeFalse();
-    String wireData = writer.takeWireString();
-    return adoptRef(new SerializedScriptValue(wireData));
-}
-
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::numberValue(double value)
 {
     return numberValue(value, v8::Isolate::GetCurrent());
@@ -2401,13 +2362,6 @@ void SerializedScriptValue::toWireBytes(Vector<char>& result) const
         for (size_t i = 0; i < length; i++)
             dst[i] = htons(src[i]);
     }
-}
-
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::release()
-{
-    RefPtr<SerializedScriptValue> result = adoptRef(new SerializedScriptValue(m_data));
-    m_data = String();
-    return result.release();
 }
 
 SerializedScriptValue::SerializedScriptValue()
@@ -2554,15 +2508,6 @@ v8::Handle<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, M
     // Holding a RefPtr ensures we are alive (along with our internal data) throughout the operation.
     RefPtr<SerializedScriptValue> protect(this);
     return deserializer.deserialize();
-}
-
-ScriptValue SerializedScriptValue::deserializeForInspector(ScriptState* scriptState)
-{
-    v8::Isolate* isolate = scriptState->isolate();
-    v8::HandleScope handleScope(isolate);
-    v8::Context::Scope contextScope(scriptState->context());
-
-    return ScriptValue(deserialize(isolate), isolate);
 }
 
 void SerializedScriptValue::registerMemoryAllocatedWithCurrentScriptContext()
