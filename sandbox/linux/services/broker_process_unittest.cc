@@ -15,10 +15,14 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using file_util::ScopedFD;
 
 namespace sandbox {
 
@@ -68,14 +72,13 @@ TEST(BrokerProcess, CreateAndDestroy) {
   std::vector<std::string> read_whitelist;
   read_whitelist.push_back("/proc/cpuinfo");
 
-  BrokerProcess* open_broker = new BrokerProcess(EPERM,
-                                                 read_whitelist,
-                                                 std::vector<std::string>());
+  scoped_ptr<BrokerProcess> open_broker(
+      new BrokerProcess(EPERM, read_whitelist, std::vector<std::string>()));
   ASSERT_TRUE(open_broker->Init(NULL));
   pid_t broker_pid = open_broker->broker_pid();
-  delete(open_broker);
 
-  // Now we check that the broker has exited properly.
+  // Destroy the broker and check it has exited properly.
+  open_broker.reset();
   int status = 0;
   ASSERT_EQ(waitpid(broker_pid, &status, 0), broker_pid);
   ASSERT_TRUE(WIFEXITED(status));
@@ -224,12 +227,12 @@ void TestOpenFilePerms(bool fast_check_in_client, int denied_errno) {
   ASSERT_EQ(ret, -denied_errno);
 
   // We have some extra sanity check for clearly wrong values.
-  fd = open_broker.Open(kRW_WhiteListed, O_RDONLY|O_WRONLY|O_RDWR);
+  fd = open_broker.Open(kRW_WhiteListed, O_RDONLY | O_WRONLY | O_RDWR);
   ASSERT_EQ(fd, -denied_errno);
 
   // It makes no sense to allow O_CREAT in a 2-parameters open. Ensure this
   // is denied.
-  fd = open_broker.Open(kRW_WhiteListed, O_RDWR|O_CREAT);
+  fd = open_broker.Open(kRW_WhiteListed, O_RDWR | O_CREAT);
   ASSERT_EQ(fd, -denied_errno);
 }
 
@@ -265,15 +268,14 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
   std::vector<std::string> read_whitelist;
   read_whitelist.push_back(kFileCpuInfo);
 
-  BrokerProcess* open_broker = new BrokerProcess(EPERM,
-                                                 read_whitelist,
-                                                 std::vector<std::string>(),
-                                                 fast_check_in_client);
+  scoped_ptr<BrokerProcess> open_broker(new BrokerProcess(
+      EPERM, read_whitelist, std::vector<std::string>(), fast_check_in_client));
   ASSERT_TRUE(open_broker->Init(NULL));
   pid_t broker_pid = open_broker->broker_pid();
 
   int fd = -1;
   fd = open_broker->Open(kFileCpuInfo, O_RDWR);
+  ScopedFD fd_closer(&fd);
   ASSERT_EQ(fd, -EPERM);
 
   // Check we can read /proc/cpuinfo.
@@ -285,6 +287,7 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
 
   // Open cpuinfo via the broker.
   int cpuinfo_fd = open_broker->Open(kFileCpuInfo, O_RDONLY);
+  ScopedFD cpuinfo_fd_closer(&cpuinfo_fd);
   ASSERT_GE(cpuinfo_fd, 0);
   char buf[3];
   memset(buf, 0, sizeof(buf));
@@ -293,6 +296,7 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
 
   // Open cpuinfo directly.
   int cpuinfo_fd2 = open(kFileCpuInfo, O_RDONLY);
+  ScopedFD cpuinfo_fd2_closer(&cpuinfo_fd2);
   ASSERT_GE(cpuinfo_fd2, 0);
   char buf2[3];
   memset(buf2, 1, sizeof(buf2));
@@ -305,14 +309,7 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
   // ourselves.
   ASSERT_EQ(memcmp(buf, buf2, read_len1), 0);
 
-  if (fd >= 0)
-    close(fd);
-  if (cpuinfo_fd >= 0)
-    close(cpuinfo_fd);
-  if (cpuinfo_fd2 >= 0)
-    close(cpuinfo_fd);
-
-  delete(open_broker);
+  open_broker.reset();
 
   // Now we check that the broker has exited properly.
   int status = 0;

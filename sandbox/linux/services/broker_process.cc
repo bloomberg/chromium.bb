@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
@@ -147,13 +148,13 @@ bool BrokerProcess::Init(bool (*sandbox_callback)(void)) {
 
   int child_pid = fork();
   if (child_pid == -1) {
-    (void) HANDLE_EINTR(close(socket_pair[0]));
-    (void) HANDLE_EINTR(close(socket_pair[1]));
+    ignore_result(HANDLE_EINTR(close(socket_pair[0])));
+    ignore_result(HANDLE_EINTR(close(socket_pair[1])));
     return false;
   }
   if (child_pid) {
     // We are the parent and we have just forked our broker process.
-    (void) HANDLE_EINTR(close(socket_pair[0]));
+    ignore_result(HANDLE_EINTR(close(socket_pair[0])));
     // We should only be able to write to the IPC channel. We'll always send
     // a new file descriptor to receive the reply on.
     shutdown(socket_pair[1], SHUT_RD);
@@ -164,7 +165,7 @@ bool BrokerProcess::Init(bool (*sandbox_callback)(void)) {
     return true;
   } else {
     // We are the broker.
-    (void) HANDLE_EINTR(close(socket_pair[1]));
+    ignore_result(HANDLE_EINTR(close(socket_pair[1])));
     // We should only be able to read from this IPC channel. We will send our
     // replies on a new file descriptor attached to the requests.
     shutdown(socket_pair[0], SHUT_WR);
