@@ -1297,6 +1297,8 @@ notify_keyboard_focus_out(struct weston_seat *seat)
 
 	weston_keyboard_set_focus(keyboard, NULL);
 	weston_keyboard_cancel_grab(keyboard);
+	if (seat->pointer)
+		weston_pointer_cancel_grab(seat->pointer);
 }
 
 WL_EXPORT void
