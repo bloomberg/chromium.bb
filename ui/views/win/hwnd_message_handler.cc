@@ -1491,7 +1491,15 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
   // synthesized mouse messages for all points in the client area and places
   // which return HTNOWHERE.
   if (ui::IsMouseEventFromTouch(message)) {
-    LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param);
+    LPARAM l_param_ht = l_param;
+    // For mouse events (except wheel events), location is in window coordinates
+    // and should be converted to screen coordinates for WM_NCHITTEST.
+    if (message != WM_MOUSEWHEEL && message != WM_MOUSEHWHEEL) {
+      CPoint screen_point(l_param_ht);
+      MapWindowPoints(hwnd(), HWND_DESKTOP, &screen_point, 1);
+      l_param_ht = MAKELPARAM(screen_point.x, screen_point.y);
+    }
+    LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param_ht);
     if (hittest == HTCLIENT || hittest == HTNOWHERE)
       return 0;
   }
