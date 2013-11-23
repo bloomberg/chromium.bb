@@ -8,8 +8,6 @@ module_tests =				\
 	surface-test.la			\
 	surface-global-test.la
 
-weston_test = weston-test.la
-
 weston_tests =				\
 	bad_buffer.weston		\
 	keyboard.weston			\
@@ -33,7 +31,7 @@ clean-local:
 export abs_builddir
 
 noinst_LTLIBRARIES =			\
-	$(weston_test)			\
+	weston-test.la			\
 	$(module_tests)			\
 	libtest-runner.la		\
 	libtest-client.la
@@ -57,8 +55,7 @@ surface_global_test_la_LDFLAGS = -module -avoid-version -rpath $(libdir)
 surface_test_la_SOURCES = surface-test.c
 surface_test_la_LDFLAGS = -module -avoid-version -rpath $(libdir)
 
-weston_test_la_LIBADD = $(COMPOSITOR_LIBS)	\
-	../shared/libshared.la
+weston_test_la_LIBADD = $(COMPOSITOR_LIBS) ../shared/libshared.la
 weston_test_la_LDFLAGS = -module -avoid-version -rpath $(libdir)
 weston_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 weston_test_la_SOURCES =		\
@@ -77,6 +74,7 @@ config_parser_test_LDADD =	\
 	$(COMPOSITOR_LIBS)
 config_parser_test_SOURCES =	\
 	config-parser-test.c
+
 vertex_clip_test_SOURCES =		\
 	vertex-clip-test.c		\
 	../src/vertex-clipping.c	\
