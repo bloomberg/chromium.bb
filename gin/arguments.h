@@ -16,8 +16,14 @@ class Arguments {
   ~Arguments();
 
   template<typename T>
+  // TODO(aa): Rename GetHolder().
   bool Holder(T* out) {
     return ConvertFromV8(info_.Holder(), out);
+  }
+
+  template<typename T>
+  bool GetData(T* out) {
+    return ConvertFromV8(info_.Data(), out);
   }
 
   template<typename T>

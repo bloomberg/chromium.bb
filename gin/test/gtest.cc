@@ -4,44 +4,26 @@
 
 #include "gin/test/gtest.h"
 
+#include "base/bind.h"
+#include "base/logging.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
+#include "gin/function_template.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
+#include "gin/wrappable.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using v8::ObjectTemplate;
 
 namespace gin {
 
 namespace {
 
-void ExpectTrue(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Arguments args(info);
-
-  bool value = false;
-  std::string description;
-
-  if (!args.GetNext(&value) ||
-      !args.GetNext(&description)) {
-    return args.ThrowError();
-  }
-
-  EXPECT_TRUE(value) << description;
+void ExpectTrue(bool condition, const std::string& description) {
+  EXPECT_TRUE(condition) << description;
 }
 
-void ExpectFalse(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Arguments args(info);
-
-  bool value = false;
-  std::string description;
-
-  if (!args.GetNext(&value) ||
-      !args.GetNext(&description)) {
-    return args.ThrowError();
-  }
-
-  EXPECT_FALSE(value) << description;
+void ExpectFalse(bool condition, const std::string& description) {
+  EXPECT_FALSE(condition) << description;
 }
 
 void ExpectEqual(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -60,15 +42,16 @@ WrapperInfo g_wrapper_info = { kEmbedderNativeGin };
 
 const char GTest::kModuleName[] = "gtest";
 
-v8::Local<ObjectTemplate> GTest::GetTemplate(v8::Isolate* isolate) {
+v8::Local<v8::ObjectTemplate> GTest::GetTemplate(v8::Isolate* isolate) {
   PerIsolateData* data = PerIsolateData::From(isolate);
-  v8::Local<ObjectTemplate> templ = data->GetObjectTemplate(&g_wrapper_info);
+  v8::Local<v8::ObjectTemplate> templ =
+      data->GetObjectTemplate(&g_wrapper_info);
   if (templ.IsEmpty()) {
-    templ = ObjectTemplate::New();
+    templ = v8::ObjectTemplate::New();
     templ->Set(StringToSymbol(isolate, "expectTrue"),
-               v8::FunctionTemplate::New(ExpectTrue));
+               CreateFunctionTempate(isolate, base::Bind(ExpectTrue)));
     templ->Set(StringToSymbol(isolate, "expectFalse"),
-               v8::FunctionTemplate::New(ExpectFalse));
+               CreateFunctionTempate(isolate, base::Bind(ExpectFalse)));
     templ->Set(StringToSymbol(isolate, "expectEqual"),
                v8::FunctionTemplate::New(ExpectEqual));
     data->SetObjectTemplate(&g_wrapper_info, templ);

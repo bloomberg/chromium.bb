@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "gin/array_buffer.h"
+#include "gin/function_template.h"
 #include "gin/per_isolate_data.h"
 
 namespace gin {
@@ -52,6 +53,7 @@ IsolateHolder::IsolateHolder()
   v8::Isolate::Scope isolate_scope(isolate_);
   v8::HandleScope handle_scope(isolate_);
   isolate_data_.reset(new PerIsolateData(isolate_));
+  CallbackHolderBase::EnsureRegistered(isolate_data_.get());
 }
 
 IsolateHolder::IsolateHolder(v8::Isolate* isolate)
