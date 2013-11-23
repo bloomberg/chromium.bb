@@ -18,12 +18,11 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
-class GURL;
 class CloudPrintWebDialogDelegateTest;
+class GURL;
 
 namespace base {
 class ListValue;
-class StringValue;
 class Value;
 }
 
@@ -36,18 +35,11 @@ class CloudPrintDataSenderHelper {
       : web_ui_(web_ui) {}
   virtual ~CloudPrintDataSenderHelper() {}
 
-  // Virtualize the overrides of these three functions from WebUI to
-  // facilitate unit testing.
-  virtual void CallJavascriptFunction(const std::wstring& function_name);
-  virtual void CallJavascriptFunction(const std::wstring& function_name,
-                                      const base::Value& arg);
-  virtual void CallJavascriptFunction(const std::wstring& function_name,
+  // Virtualize the overrides of this function from WebUI to facilitate unit
+  // testing.
+  virtual void CallJavascriptFunction(const std::string& function_name,
                                       const base::Value& arg1,
                                       const base::Value& arg2);
-  virtual void CallJavascriptFunction(const std::wstring& function_name,
-                                      const base::Value& arg1,
-                                      const base::Value& arg2,
-                                      const base::Value& arg3);
 
  private:
   content::WebUI* web_ui_;

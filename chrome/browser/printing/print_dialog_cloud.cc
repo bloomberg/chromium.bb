@@ -36,8 +36,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "webkit/common/webpreferences.h"
 
 #if defined(USE_AURA)
@@ -140,43 +138,22 @@ bool GetPageSetupParameters(const std::string& json,
   return result;
 }
 
-string16 GetSwitchValueString16(const CommandLine& command_line,
-                                const char* switchName) {
+base::string16 GetSwitchValueString16(const CommandLine& command_line,
+                                      const char* switchName) {
 #if defined(OS_WIN)
-  CommandLine::StringType native_switch_val;
-  native_switch_val = command_line.GetSwitchValueNative(switchName);
-  return string16(native_switch_val);
+  return command_line.GetSwitchValueNative(switchName);
 #elif defined(OS_POSIX)
   // POSIX Command line string types are different.
   CommandLine::StringType native_switch_val;
   native_switch_val = command_line.GetSwitchValueASCII(switchName);
   // Convert the ASCII string to UTF16 to prepare to pass.
-  return string16(ASCIIToUTF16(native_switch_val));
+  return base::ASCIIToUTF16(native_switch_val);
 #endif
 }
 
 void CloudPrintDataSenderHelper::CallJavascriptFunction(
-    const std::wstring& function_name) {
-  web_ui_->CallJavascriptFunction(WideToASCII(function_name));
-}
-
-void CloudPrintDataSenderHelper::CallJavascriptFunction(
-    const std::wstring& function_name, const Value& arg) {
-  web_ui_->CallJavascriptFunction(WideToASCII(function_name), arg);
-}
-
-void CloudPrintDataSenderHelper::CallJavascriptFunction(
-    const std::wstring& function_name, const Value& arg1, const Value& arg2) {
-  web_ui_->CallJavascriptFunction(WideToASCII(function_name), arg1, arg2);
-}
-
-void CloudPrintDataSenderHelper::CallJavascriptFunction(
-    const std::wstring& function_name,
-    const Value& arg1,
-    const Value& arg2,
-    const Value& arg3) {
-  web_ui_->CallJavascriptFunction(
-      WideToASCII(function_name), arg1, arg2, arg3);
+    const std::string& function_name, const Value& arg1, const Value& arg2) {
+  web_ui_->CallJavascriptFunction(function_name, arg1, arg2);
 }
 
 // Clears out the pointer we're using to communicate.  Either routine is
@@ -228,16 +205,16 @@ void CloudPrintDataSender::SendPrintData() {
 
   base::AutoLock lock(lock_);
   if (helper_) {
-    StringValue title(print_job_title_);
-    StringValue ticket(print_ticket_);
+    base::StringValue title(print_job_title_);
+    base::StringValue ticket(print_ticket_);
     // TODO(abodenha): Change Javascript call to pass in print ticket
     // after server side support is added. Add test for it.
 
     // Send the print data to the dialog contents.  The JavaScript
     // function is a preliminary API for prototyping purposes and is
     // subject to change.
-    const_cast<CloudPrintDataSenderHelper*>(helper_)->CallJavascriptFunction(
-        L"printApp._printDataUrl", StringValue(base64_data), title);
+    helper_->CallJavascriptFunction(
+        "printApp._printDataUrl", base::StringValue(base64_data), title);
   }
 }
 
