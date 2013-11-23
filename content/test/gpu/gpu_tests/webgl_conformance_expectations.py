@@ -33,7 +33,7 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win'], bug=322794)
     self.Fail('conformance/ogles/GL/atan/atan_009_to_012.html',
         ['win'], bug=322794)
-    self.Fail('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
+    self.Skip('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
         ['win'], bug=322795)
 
     # Windows/Intel failures
@@ -109,6 +109,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['mac'], bug=322770)
     self.Skip('conformance/textures/texture-size-limit.html',
         ['mac'], bug=322789)
+    self.Skip('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
+        ['mac'], bug=322795)
 
     # Mac/Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
