@@ -68,8 +68,16 @@ class VIEWS_EXPORT Border {
   // Renders the border for the specified view.
   virtual void Paint(const View& view, gfx::Canvas* canvas) = 0;
 
-  // Sets the specified insets to the the border insets.
+  // Returns the border insets.
   virtual gfx::Insets GetInsets() const = 0;
+
+  // Returns the minimum size this border requires.  Note that this may not be
+  // the same as the insets.  For example, a Border may paint images to draw
+  // some graphical border around a view, and this would return the minimum size
+  // such that these images would not be clipped or overlapping -- but the
+  // insets may be larger or smaller, depending on how the view wanted its
+  // content laid out relative to these images.
+  virtual gfx::Size GetMinimumSize() const = 0;
 
   // Manual RTTI for text buttons.
   virtual TextButtonBorder* AsTextButtonBorder();

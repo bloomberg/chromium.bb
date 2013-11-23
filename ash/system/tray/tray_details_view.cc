@@ -53,6 +53,10 @@ class ScrollBorder : public views::Border {
     return gfx::Insets(0, 0, 1, 0);
   }
 
+  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+    return gfx::Size(0, 1);
+  }
+
   bool visible_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollBorder);

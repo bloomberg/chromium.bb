@@ -24,6 +24,7 @@ class VIEWS_EXPORT ShadowBorder : public views::Border {
   // Overridden from views::Border:
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Insets GetInsets() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
  private:
   // Blur amount of the shadow in pixels. For details on how blur is defined see

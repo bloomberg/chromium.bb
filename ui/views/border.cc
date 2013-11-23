@@ -21,6 +21,7 @@ class SidedSolidBorder : public Border {
   // Overridden from Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Insets GetInsets() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
  private:
   const SkColor color_;
@@ -55,6 +56,10 @@ gfx::Insets SidedSolidBorder::GetInsets() const {
   return insets_;
 }
 
+gfx::Size SidedSolidBorder::GetMinimumSize() const {
+  return gfx::Size(insets_.width(), insets_.height());
+}
+
 // A variation of SidedSolidBorder, where each side has the same thickness.
 class SolidBorder : public SidedSolidBorder {
  public:
@@ -76,6 +81,10 @@ class EmptyBorder : public Border {
 
   virtual gfx::Insets GetInsets() const OVERRIDE {
     return insets_;
+  }
+
+  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+    return gfx::Size();
   }
 
  private:
@@ -101,6 +110,10 @@ class BorderPainter : public Border {
 
   virtual gfx::Insets GetInsets() const OVERRIDE {
     return insets_;
+  }
+
+  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+    return painter_->GetMinimumSize();
   }
 
  private:

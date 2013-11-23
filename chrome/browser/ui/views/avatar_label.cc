@@ -27,6 +27,7 @@ class AvatarLabelBorder: public views::TextButtonBorder {
 
   // views::TextButtonBorder:
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
  private:
   scoped_ptr<views::Painter> painter_;
@@ -80,6 +81,12 @@ void AvatarLabelBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   paint.setColor(background_color);
   rect = gfx::Rect(2, 2, view.size().width() - 4, view.size().height() - 4);
   canvas->DrawRoundRect(rect, kRadius, paint);
+}
+
+gfx::Size AvatarLabelBorder::GetMinimumSize() const {
+  gfx::Size size(4, 4);
+  size.SetToMax(painter_->GetMinimumSize());
+  return size;
 }
 
 }  // namespace

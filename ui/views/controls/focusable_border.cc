@@ -60,6 +60,10 @@ gfx::Insets FocusableBorder::GetInsets() const {
   return insets_;
 }
 
+gfx::Size FocusableBorder::GetMinimumSize() const {
+  return gfx::Size();
+}
+
 void FocusableBorder::SetInsets(int top, int left, int bottom, int right) {
   insets_.Set(top, left, bottom, right);
 }

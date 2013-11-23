@@ -38,6 +38,7 @@ class VIEWS_EXPORT FocusableBorder : public Border {
   // Overridden from Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Insets GetInsets() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
  private:
   bool has_focus_;

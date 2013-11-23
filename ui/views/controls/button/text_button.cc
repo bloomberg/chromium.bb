@@ -81,6 +81,10 @@ gfx::Insets TextButtonBorder::GetInsets() const {
   return insets_;
 }
 
+gfx::Size TextButtonBorder::GetMinimumSize() const {
+  return gfx::Size();
+}
+
 void TextButtonBorder::SetInsets(const gfx::Insets& insets) {
   insets_ = insets;
 }
@@ -136,6 +140,17 @@ void TextButtonDefaultBorder::Paint(const View& view, gfx::Canvas* canvas) {
       painter->Paint(canvas, view.size());
     }
   }
+}
+
+gfx::Size TextButtonDefaultBorder::GetMinimumSize() const {
+  gfx::Size size;
+  if (normal_painter_)
+    size.SetToMax(normal_painter_->GetMinimumSize());
+  if (hot_painter_)
+    size.SetToMax(hot_painter_->GetMinimumSize());
+  if (pushed_painter_)
+    size.SetToMax(pushed_painter_->GetMinimumSize());
+  return size;
 }
 
 

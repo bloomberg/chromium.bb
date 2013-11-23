@@ -158,6 +158,17 @@ gfx::Insets LabelButtonBorder::GetInsets() const {
   return insets_;
 }
 
+gfx::Size LabelButtonBorder::GetMinimumSize() const {
+  gfx::Size minimum_size;
+  for (int i = 0; i < 2; ++i) {
+    for (int j = 0; j < Button::STATE_COUNT; ++j) {
+      if (painters_[i][j])
+        minimum_size.SetToMax(painters_[i][j]->GetMinimumSize());
+    }
+  }
+  return minimum_size;
+}
+
 Painter* LabelButtonBorder::GetPainter(bool focused,
                                        Button::ButtonState state) {
   return painters_[focused ? 1 : 0][state].get();

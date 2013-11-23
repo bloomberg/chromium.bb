@@ -163,29 +163,11 @@ BubbleBorder::~BubbleBorder() {}
 
 gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
                                   const gfx::Size& contents_size) const {
-  // Enlarge the contents size by the thickness of the border images.
-  gfx::Size size(contents_size);
-  const gfx::Insets insets = GetInsets();
-  size.Enlarge(insets.width(), insets.height());
-
-  // Ensure the bubble is large enough to not overlap border and arrow images.
-  const int min = 2 * images_->border_thickness;
-  const int min_with_arrow_width = min + images_->top_arrow.width();
-  const int min_with_arrow_thickness = images_->border_thickness +
-      std::max(images_->arrow_thickness + images_->border_interior_thickness,
-               images_->border_thickness);
-  // Only take arrow image sizes into account when the bubble tip is shown.
-  if (arrow_paint_type_ == PAINT_TRANSPARENT || !has_arrow(arrow_))
-    size.SetToMax(gfx::Size(min, min));
-  else if (is_arrow_on_horizontal(arrow_))
-    size.SetToMax(gfx::Size(min_with_arrow_width, min_with_arrow_thickness));
-  else
-    size.SetToMax(gfx::Size(min_with_arrow_thickness, min_with_arrow_width));
-
   int x = anchor_rect.x();
   int y = anchor_rect.y();
   int w = anchor_rect.width();
   int h = anchor_rect.height();
+  const gfx::Size size(GetSizeForContentsSize(contents_size));
   const int arrow_offset = GetArrowOffset(size);
   const int arrow_size =
       images_->arrow_interior_thickness + kStroke - images_->arrow_thickness;
@@ -273,6 +255,33 @@ gfx::Insets BubbleBorder::GetInsets() const {
   return is_arrow_on_horizontal(arrow_) ?
       gfx::Insets(first_inset, inset, second_inset, inset) :
       gfx::Insets(inset, first_inset, inset, second_inset);
+}
+
+gfx::Size BubbleBorder::GetMinimumSize() const {
+  return GetSizeForContentsSize(gfx::Size());
+}
+
+gfx::Size BubbleBorder::GetSizeForContentsSize(
+    const gfx::Size& contents_size) const {
+  // Enlarge the contents size by the thickness of the border images.
+  gfx::Size size(contents_size);
+  const gfx::Insets insets = GetInsets();
+  size.Enlarge(insets.width(), insets.height());
+
+  // Ensure the bubble is large enough to not overlap border and arrow images.
+  const int min = 2 * images_->border_thickness;
+  const int min_with_arrow_width = min + images_->top_arrow.width();
+  const int min_with_arrow_thickness = images_->border_thickness +
+      std::max(images_->arrow_thickness + images_->border_interior_thickness,
+               images_->border_thickness);
+  // Only take arrow image sizes into account when the bubble tip is shown.
+  if (arrow_paint_type_ == PAINT_TRANSPARENT || !has_arrow(arrow_))
+    size.SetToMax(gfx::Size(min, min));
+  else if (is_arrow_on_horizontal(arrow_))
+    size.SetToMax(gfx::Size(min_with_arrow_width, min_with_arrow_thickness));
+  else
+    size.SetToMax(gfx::Size(min_with_arrow_thickness, min_with_arrow_width));
+  return size;
 }
 
 gfx::ImageSkia* BubbleBorder::GetArrowImage() const {

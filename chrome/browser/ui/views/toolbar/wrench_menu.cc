@@ -141,6 +141,12 @@ class MenuButtonBorder : public views::Border {
     return insets_;
   }
 
+  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+    // This size is sufficient for MenuButtonBackground::Paint() to draw any of
+    // the button types.
+    return gfx::Size(4, 4);
+  }
+
  private:
   // The horizontal padding dependent on the layout.
   const int horizontal_padding_;
@@ -207,6 +213,8 @@ class MenuButtonBackground : public views::Background {
     const SkColor background = BackgroundColor(view, state);
     const SkColor border = BorderColor(view, state);
     switch (TypeAdjustedForRTL()) {
+      // TODO(pkasting): Why don't all the following use SkPaths with rounded
+      // corners?
       case LEFT_BUTTON:
         canvas->FillRect(gfx::Rect(1, 1, w, h - 2), background);
         canvas->FillRect(gfx::Rect(2, 0, w, 1), border);

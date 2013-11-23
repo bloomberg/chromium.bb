@@ -32,6 +32,7 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
   // Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Insets GetInsets() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
  private:
   // Border:
@@ -63,6 +64,7 @@ class VIEWS_EXPORT TextButtonDefaultBorder : public TextButtonBorder {
  private:
   // TextButtonBorder:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
   scoped_ptr<Painter> normal_painter_;
   scoped_ptr<Painter> hot_painter_;
@@ -84,6 +86,8 @@ class VIEWS_EXPORT TextButtonNativeThemeBorder : public TextButtonBorder {
 
   // TextButtonBorder:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
+  // We don't override GetMinimumSize(), since there's no easy way to calculate
+  // the minimum size required by the various theme components.
 
  private:
   // The delegate the controls the appearance of this border.

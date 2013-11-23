@@ -26,6 +26,7 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
   // Overridden from Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Insets GetInsets() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
   void set_insets(const gfx::Insets& insets) { insets_ = insets; }
 

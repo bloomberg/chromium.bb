@@ -147,6 +147,7 @@ class MaximizeBubbleBorder : public views::BubbleBorder {
   virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
                               const gfx::Size& contents_size) const OVERRIDE;
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
  private:
   // Note: Animations can continue after then main window frame was destroyed.
@@ -253,6 +254,11 @@ void MaximizeBubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(MaximizeBubbleControllerBubble::kBubbleBackgroundColor);
   canvas->DrawPath(path, paint);
+}
+
+gfx::Size MaximizeBubbleBorder::GetMinimumSize() const {
+  return gfx::Size(kLineWidth * 2 + kArrowWidth,
+                   std::max(kLineWidth, kArrowHeight) + kLineWidth);
 }
 
 
