@@ -91,10 +91,14 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win7', 'intel'])
     self.Fail('conformance/textures/texture-size-cube-maps.html',
         ['win7', 'intel'])
+    self.Fail('conformance/context/context-attribute-preserve-drawing-buffer.html',
+        ['win7', 'intel'], bug=322770)
 
     # Mac failures.
     self.Fail('conformance/glsl/misc/shaders-with-varyings.html',
         ['mac'], bug=322760)
+    self.Fail('conformance/context/context-attribute-preserve-drawing-buffer.html',
+        ['mac'], bug=322770)
 
     # Mac/Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
