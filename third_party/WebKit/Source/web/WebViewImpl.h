@@ -139,7 +139,6 @@ public:
     virtual void paint(WebCanvas*, const WebRect&, PaintOptions = ReadbackFromCompositorIfAvailable);
     virtual bool isTrackingRepaints() const OVERRIDE;
     virtual void themeChanged();
-    virtual void setNeedsRedraw();
     virtual bool handleInputEvent(const WebInputEvent&);
     virtual void setCursorVisibilityState(bool isVisible);
     virtual bool hasTouchEventHandlersAt(const WebPoint&);

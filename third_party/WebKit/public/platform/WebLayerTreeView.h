@@ -98,9 +98,6 @@ public:
     // Indicates that an animation needs to be updated.
     virtual void setNeedsAnimate() = 0;
 
-    // Indicates that the view needs to be redrawn. This is typically used when the frontbuffer is damaged.
-    virtual void setNeedsRedraw() = 0;
-
     // Indicates whether a commit is pending.
     virtual bool commitRequested() const = 0;
 

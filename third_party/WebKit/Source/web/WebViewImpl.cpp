@@ -1909,12 +1909,6 @@ void WebViewImpl::themeChanged()
     view->invalidateRect(damagedRect);
 }
 
-void WebViewImpl::setNeedsRedraw()
-{
-    if (m_layerTreeView && isAcceleratedCompositingActive())
-        m_layerTreeView->setNeedsRedraw();
-}
-
 void WebViewImpl::enterFullScreenForElement(WebCore::Element* element)
 {
     m_fullscreenController->enterFullScreenForElement(element);
@@ -3867,7 +3861,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 
 void WebViewImpl::scheduleCompositingLayerSync()
 {
-    m_layerTreeView->setNeedsRedraw();
+    m_layerTreeView->setNeedsAnimate();
 }
 
 void WebViewImpl::scrollRootLayerRect(const IntSize&, const IntRect&)
@@ -3912,7 +3906,7 @@ WebCore::GraphicsLayer* WebViewImpl::rootGraphicsLayer()
 
 void WebViewImpl::scheduleAnimation()
 {
-    if (isAcceleratedCompositingActive() && Platform::current()->isThreadedCompositingEnabled()) {
+    if (isAcceleratedCompositingActive()) {
         ASSERT(m_layerTreeView);
         m_layerTreeView->setNeedsAnimate();
         return;
