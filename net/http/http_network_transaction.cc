@@ -1509,8 +1509,8 @@ GURL HttpNetworkTransaction::AuthURL(HttpAuth::Target target) const {
 }
 
 bool HttpNetworkTransaction::ForWebSocketHandshake() const {
-  return (websocket_handshake_stream_base_create_helper_ &&
-              (request_->url.SchemeIs("ws") || request_->url.SchemeIs("wss")));
+  return websocket_handshake_stream_base_create_helper_ &&
+         request_->url.SchemeIsWSOrWSS();
 }
 
 #define STATE_CASE(s) \
