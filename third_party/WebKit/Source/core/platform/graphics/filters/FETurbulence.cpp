@@ -428,7 +428,7 @@ bool FETurbulence::applySkia()
     if (!resultImage)
         return false;
 
-    const IntRect filterRegion = absolutePaintRect();
+    const IntRect filterRegion(IntPoint::zero(), absolutePaintRect().size());
 
     SkPaint paint;
     paint.setShader(createShader(filterRegion))->unref();
