@@ -612,6 +612,11 @@ MediaQueryMatcher& Document::mediaQueryMatcher()
     return *m_mediaQueryMatcher;
 }
 
+void Document::mediaQueryAffectingValueChanged()
+{
+    styleEngine()->clearMediaQueryRuleSetStyleSheets();
+}
+
 void Document::setCompatibilityMode(CompatibilityMode mode)
 {
     if (m_compatibilityModeLocked || mode == m_compatibilityMode)

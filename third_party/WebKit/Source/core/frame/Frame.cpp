@@ -559,6 +559,7 @@ void Frame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomFactor
 
 void Frame::deviceOrPageScaleFactorChanged()
 {
+    document()->mediaQueryAffectingValueChanged();
     for (RefPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling())
         child->deviceOrPageScaleFactorChanged();
 }

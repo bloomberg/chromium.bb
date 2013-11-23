@@ -22,12 +22,14 @@
 #define StyleSheetContents_h
 
 #include "core/css/CSSParserMode.h"
+#include "core/css/RuleSet.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicStringHash.h"
+#include "wtf/text/StringHash.h"
 #include "wtf/text/TextPosition.h"
 
 
@@ -140,7 +142,13 @@ public:
     void addedToMemoryCache();
     void removedFromMemoryCache();
 
+    void setHasMediaQueries();
+    bool hasMediaQueries() { return m_hasMediaQueries; }
+
     void shrinkToFit();
+    RuleSet& ruleSet() { ASSERT(m_ruleSet); return *m_ruleSet.get(); }
+    RuleSet& ensureRuleSet(const MediaQueryEvaluator&, AddRuleFlags);
+    void clearRuleSet();
 
 private:
     StyleSheetContents(StyleRuleImport* ownerRule, const String& originalURL, const CSSParserContext&);
@@ -165,10 +173,12 @@ private:
     bool m_isMutable : 1;
     bool m_isInMemoryCache : 1;
     bool m_hasFontFaceRule : 1;
+    bool m_hasMediaQueries : 1;
 
     CSSParserContext m_parserContext;
 
     Vector<CSSStyleSheet*> m_clients;
+    OwnPtr<RuleSet> m_ruleSet;
 };
 
 } // namespace

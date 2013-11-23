@@ -1079,8 +1079,10 @@ void InspectorPageAgent::updateViewMetrics(int width, int height, double deviceS
     m_client->overrideDeviceMetrics(width, height, static_cast<float>(deviceScaleFactor), emulateViewport, fitWindow);
 
     Document* document = mainFrame()->document();
-    if (document)
+    if (document) {
         document->styleResolverChanged(RecalcStyleImmediately);
+        document->mediaQueryAffectingValueChanged();
+    }
     InspectorInstrumentation::mediaQueryResultChanged(document);
 
     // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
@@ -1187,6 +1189,7 @@ void InspectorPageAgent::setEmulatedMedia(ErrorString*, const String& media)
     if (m_page->mainFrame())
         document = m_page->mainFrame()->document();
     if (document) {
+        document->mediaQueryAffectingValueChanged();
         document->styleResolverChanged(RecalcStyleImmediately);
         document->updateLayout();
     }

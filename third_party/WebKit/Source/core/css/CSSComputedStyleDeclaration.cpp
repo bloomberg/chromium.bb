@@ -1642,7 +1642,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
 
         bool forceFullLayout = isLayoutDependent(propertyID, style, renderer)
             || styledNode->isInShadowTree()
-            || (document.styleResolverIfExists() && document.styleResolverIfExists()->hasViewportDependentMediaQueries() && document.ownerElement())
+            || (document.ownerElement() && document.styleResolver()->hasViewportDependentMediaQueries())
             || document.seamlessParentIFrame();
 
         if (forceFullLayout) {

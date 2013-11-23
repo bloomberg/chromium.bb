@@ -222,6 +222,15 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
     return;
 }
 
+void StyleSheetCollection::clearMediaQueryRuleSetStyleSheets()
+{
+    for (size_t i = 0; i < m_activeAuthorStyleSheets.size(); ++i) {
+        StyleSheetContents* contents = m_activeAuthorStyleSheets[i]->contents();
+        if (contents->hasMediaQueries())
+            contents->clearRuleSet();
+    }
+}
+
 void StyleSheetCollection::resetAllRuleSetsInTreeScope(StyleResolver* styleResolver)
 {
     // FIXME: If many web developers use style scoped, implement reset RuleSets in per-scoping node manner.

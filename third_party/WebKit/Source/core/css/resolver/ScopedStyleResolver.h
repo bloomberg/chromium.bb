@@ -51,11 +51,8 @@ public:
 
     const ContainerNode& scopingNode() const { return m_scopingNode; }
     const TreeScope& treeScope() const { return m_scopingNode.treeScope(); }
-    void prepareEmptyRuleSet() { m_authorStyle = RuleSet::create(); }
     void setParent(ScopedStyleResolver* newParent) { m_parent = newParent; }
     ScopedStyleResolver* parent() { return m_parent; }
-
-    bool hasOnlyEmptyRuleSets() const { return (!m_authorStyle || !m_authorStyle->ruleCount()) && m_atHostRules.isEmpty(); }
 
 public:
     bool checkRegionStyle(Element*);
@@ -82,7 +79,7 @@ private:
     ContainerNode& m_scopingNode;
     ScopedStyleResolver* m_parent;
 
-    OwnPtr<RuleSet> m_authorStyle;
+    Vector<StyleSheetContents*> m_authorStyleSheets;
     HashMap<const ShadowRoot*, OwnPtr<RuleSet> > m_atHostRules;
 
     typedef HashMap<const StringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;

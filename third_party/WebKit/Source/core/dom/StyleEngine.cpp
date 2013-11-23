@@ -303,6 +303,24 @@ bool StyleEngine::shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdate
     return !m_dirtyTreeScopes.isSubscopeMarked() || updateMode == FullStyleUpdate;
 }
 
+void StyleEngine::clearMediaQueryRuleSetOnTreeScopeStyleSheets(TreeScopeSet treeScopes)
+{
+    for (TreeScopeSet::iterator it = treeScopes.begin(); it != treeScopes.end(); ++it) {
+        TreeScope& treeScope = **it;
+        ASSERT(treeScope != m_document);
+        ShadowTreeStyleSheetCollection* collection = static_cast<ShadowTreeStyleSheetCollection*>(styleSheetCollectionFor(treeScope));
+        ASSERT(collection);
+        collection->clearMediaQueryRuleSetStyleSheets();
+    }
+}
+
+void StyleEngine::clearMediaQueryRuleSetStyleSheets()
+{
+    m_documentStyleSheetCollection.clearMediaQueryRuleSetStyleSheets();
+    clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_activeTreeScopes);
+    clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_dirtyTreeScopes.subscope());
+}
+
 bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
 {
     if (m_document.inStyleRecalc()) {
@@ -410,6 +428,7 @@ void StyleEngine::createResolver()
 
 void StyleEngine::clearResolver()
 {
+    ASSERT(!m_document.inStyleRecalc());
     m_resolver.clear();
 }
 
