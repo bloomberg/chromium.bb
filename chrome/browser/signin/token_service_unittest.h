@@ -20,43 +20,6 @@
 
 class FakeSigninManagerBase;
 
-// TestNotificationTracker doesn't do a deep copy on the notification details.
-// We have to in order to read it out, or we have a bad ptr, since the details
-// are a reference on the stack.
-class TokenAvailableTracker : public content::TestNotificationTracker {
- public:
-  TokenAvailableTracker();
-  virtual ~TokenAvailableTracker();
-
-  const TokenService::TokenAvailableDetails& details() {
-    return details_;
-  }
-
- private:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  TokenService::TokenAvailableDetails details_;
-};
-
-class TokenFailedTracker : public content::TestNotificationTracker {
- public:
-  TokenFailedTracker();
-  virtual ~TokenFailedTracker();
-
-  const TokenService::TokenRequestFailedDetails& details() {
-    return details_;
-  }
-
- private:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  TokenService::TokenRequestFailedDetails details_;
-};
-
 class TokenServiceTestHarness : public testing::Test {
  protected:
   TokenServiceTestHarness();
@@ -72,8 +35,6 @@ class TokenServiceTestHarness : public testing::Test {
   const GaiaAuthConsumer::ClientLoginResult& credentials() const {
     return credentials_;
   }
-  TokenAvailableTracker* success_tracker() { return &success_tracker_; }
-  TokenFailedTracker* failure_tracker() { return &failure_tracker_; }
 
   void CreateSigninManager(const std::string& username);
 
@@ -82,8 +43,6 @@ class TokenServiceTestHarness : public testing::Test {
 
   FakeSigninManagerBase* signin_manager_;
   TokenService* service_;
-  TokenAvailableTracker success_tracker_;
-  TokenFailedTracker failure_tracker_;
   GaiaAuthConsumer::ClientLoginResult credentials_;
   std::string oauth_token_;
   std::string oauth_secret_;

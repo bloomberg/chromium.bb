@@ -100,9 +100,6 @@ class SigninManagerBase : public BrowserContextKeyedService {
       signin_internals_util::SigninDiagnosticsObserver* observer);
 
  protected:
-  // Lets different platforms initialize TokenService in their own way.
-  virtual void InitTokenService();
-
   // Used by subclass to clear authenticated_username_ instead of using
   // SetAuthenticatedUsername, which enforces special preconditions due
   // to the fact that it is part of the public API and called by clients.

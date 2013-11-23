@@ -21,9 +21,6 @@ FakeSigninManagerBase::FakeSigninManagerBase() {
 FakeSigninManagerBase::~FakeSigninManagerBase() {
 }
 
-void FakeSigninManagerBase::InitTokenService() {
-}
-
 // static
 BrowserContextKeyedService* FakeSigninManagerBase::Build(
     content::BrowserContext* profile) {
@@ -38,9 +35,6 @@ FakeSigninManager::FakeSigninManager(Profile* profile)
 }
 
 FakeSigninManager::~FakeSigninManager() {
-}
-
-void FakeSigninManager::InitTokenService() {
 }
 
 void FakeSigninManager::StartSignInWithCredentials(

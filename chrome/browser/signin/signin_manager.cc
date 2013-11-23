@@ -19,13 +19,13 @@
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/local_auth.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/signin_manager_cookie_helper.h"
 #include "chrome/browser/signin/signin_manager_delegate.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -120,10 +120,10 @@ SigninManager::~SigninManager() {
 }
 
 void SigninManager::InitTokenService() {
-  SigninManagerBase::InitTokenService();
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   if (token_service && !GetAuthenticatedUsername().empty())
-    token_service->LoadTokensFromDB();
+    token_service->LoadCredentials();
 }
 
 std::string SigninManager::SigninTypeToString(
@@ -334,13 +334,15 @@ void SigninManager::SignOut() {
       chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceSignoutDetails>(&details));
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  token_service->ResetCredentialsInMemory();
-  token_service->EraseTokensFromDB();
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  token_service->RevokeAllCredentials();
 }
 
 void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
   SigninManagerBase::Initialize(profile, local_state);
+
+  InitTokenService();
 
   // local_state can be null during unit tests.
   if (local_state) {
@@ -551,17 +553,13 @@ void SigninManager::CompletePendingSignin() {
   DCHECK(!possibly_invalid_username_.empty());
   OnSignedIn(possibly_invalid_username_);
 
-  // If we have oauth2 tokens, tell token service about them so it does not
-  // need to fetch them again.  Its important that the authenticated name has
-  // already been set before sending the oauth2 token to the token service.
-  // Some token service listeners will query the authenticated name when they
-  // receive the token available notification.
-  if (!temp_oauth_login_tokens_.refresh_token.empty()) {
-    TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-    DCHECK(!GetAuthenticatedUsername().empty());
-    token_service->UpdateCredentialsWithOAuth2(temp_oauth_login_tokens_);
-    temp_oauth_login_tokens_ = ClientOAuthResult();
-  }
+  DCHECK(!temp_oauth_login_tokens_.refresh_token.empty());
+  DCHECK(!GetAuthenticatedUsername().empty());
+  ProfileOAuth2TokenService* token_service =
+    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  token_service->UpdateCredentials(GetAuthenticatedUsername(),
+                                   temp_oauth_login_tokens_.refresh_token);
+  temp_oauth_login_tokens_ = ClientOAuthResult();
 }
 
 void SigninManager::OnExternalSigninCompleted(const std::string& username) {

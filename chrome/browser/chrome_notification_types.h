@@ -737,6 +737,8 @@ enum NotificationType {
   // details.
   NOTIFICATION_TOKENS_CLEARED,
 
+  // Signin Manager ----------------------------------------------------------
+
   // Sent when a user signs into Google services such as sync.
   // The source is the Profile. The details are a
   // GoogleServiceSigninSuccessDetails object.

@@ -19,8 +19,6 @@ class FakeSigninManagerBase : public SigninManagerBase {
   explicit FakeSigninManagerBase();
   virtual ~FakeSigninManagerBase();
 
-  virtual void InitTokenService() OVERRIDE;
-
   // Helper function to be used with
   // BrowserContextKeyedService::SetTestingFactory().
   static BrowserContextKeyedService* Build(content::BrowserContext* profile);
@@ -40,7 +38,6 @@ class FakeSigninManager : public SigninManager {
   }
 
   virtual void SignOut() OVERRIDE;
-  virtual void InitTokenService() OVERRIDE;
 
   virtual void StartSignInWithCredentials(
       const std::string& session_index,

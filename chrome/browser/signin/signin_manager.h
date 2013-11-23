@@ -184,9 +184,6 @@ class SigninManager : public SigninManagerBase,
   bool HasSigninProcess() const;
 
  protected:
-  // If user was signed in, load tokens from DB if available.
-  virtual void InitTokenService() OVERRIDE;
-
   // Flag saying whether signing out is allowed.
   bool prohibit_signout_;
 
@@ -202,6 +199,9 @@ class SigninManager : public SigninManagerBase,
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ClearTransientSigninData);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorSuccess);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorFailure);
+
+  // If user was signed in, load tokens from DB if available.
+  void InitTokenService();
 
   // Called to setup the transient signin data during one of the
   // StartSigninXXX methods.  |type| indicates which of the methods is being

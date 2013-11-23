@@ -7,14 +7,18 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service_unittest.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+const char kTestAccountId[] = "test@gmail.com";
 
 class MockUbertokenConsumer : public UbertokenConsumer {
  public:
@@ -44,16 +48,14 @@ class MockUbertokenConsumer : public UbertokenConsumer {
 
 }  // namespace
 
-class UbertokenFetcherTest : public TokenServiceTestHarness {
+class UbertokenFetcherTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
-    TokenServiceTestHarness::SetUp();
-    UpdateCredentialsOnService();
+    profile_ = CreateProfile();
     fetcher_.reset(new UbertokenFetcher(profile(), &consumer_));
-    CreateSigninManager("test@gmail.com");
   }
 
-  virtual scoped_ptr<TestingProfile> CreateProfile() OVERRIDE {
+  scoped_ptr<TestingProfile> CreateProfile() {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               &FakeProfileOAuth2TokenService::Build);
@@ -62,10 +64,13 @@ class UbertokenFetcherTest : public TokenServiceTestHarness {
 
   virtual void TearDown() OVERRIDE {
     fetcher_.reset();
-    TokenServiceTestHarness::TearDown();
   }
 
+  TestingProfile* profile() { return profile_.get(); }
+
  protected:
+  content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<TestingProfile> profile_;
   net::TestURLFetcherFactory factory_;
   MockUbertokenConsumer consumer_;
   scoped_ptr<UbertokenFetcher> fetcher_;
@@ -75,8 +80,8 @@ TEST_F(UbertokenFetcherTest, Basic) {
 }
 
 TEST_F(UbertokenFetcherTest, Success) {
-  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                   "refreshToken");
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())->
+      UpdateCredentials(kTestAccountId, "refreshToken");
   fetcher_->StartFetchingToken();
   fetcher_->OnGetTokenSuccess(NULL, "accessToken", base::Time());
   fetcher_->OnUberAuthTokenSuccess("uberToken");
@@ -96,8 +101,8 @@ TEST_F(UbertokenFetcherTest, NoRefreshToken) {
 TEST_F(UbertokenFetcherTest, FailureToGetAccessToken) {
   GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
 
-  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                   "refreshToken");
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())->
+      UpdateCredentials(kTestAccountId, "refreshToken");
   fetcher_->StartFetchingToken();
   fetcher_->OnGetTokenFailure(NULL, error);
 
@@ -109,8 +114,8 @@ TEST_F(UbertokenFetcherTest, FailureToGetAccessToken) {
 TEST_F(UbertokenFetcherTest, FailureToGetUberToken) {
   GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
 
-  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                   "refreshToken");
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())->
+      UpdateCredentials(kTestAccountId, "refreshToken");
   fetcher_->StartFetchingToken();
   fetcher_->OnGetTokenSuccess(NULL, "accessToken", base::Time());
   fetcher_->OnUberAuthTokenFailure(error);

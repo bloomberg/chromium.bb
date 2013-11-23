@@ -23,39 +23,8 @@
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 
-TokenAvailableTracker::TokenAvailableTracker() {}
-
-TokenAvailableTracker::~TokenAvailableTracker() {}
-
-void TokenAvailableTracker::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  TestNotificationTracker::Observe(type, source, details);
-  if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
-    content::Details<const TokenService::TokenAvailableDetails> full = details;
-    details_ = *full.ptr();
-  }
-}
-
-TokenFailedTracker::TokenFailedTracker() {}
-
-TokenFailedTracker::~TokenFailedTracker() {}
-
-void TokenFailedTracker::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  TestNotificationTracker::Observe(type, source, details);
-  if (type == chrome::NOTIFICATION_TOKEN_REQUEST_FAILED) {
-    content::Details<const TokenService::TokenRequestFailedDetails> full =
-        details;
-    details_ = *full.ptr();
-  }
-}
-
 TokenServiceTestHarness::TokenServiceTestHarness()
-    : signin_manager_(NULL), service_(NULL) {
-}
+    : signin_manager_(NULL), service_(NULL) {}
 
 TokenServiceTestHarness::~TokenServiceTestHarness() {}
 
@@ -79,11 +48,6 @@ void TokenServiceTestHarness::SetUp() {
   base::RunLoop().RunUntilIdle();
 
   service_ = TokenServiceFactory::GetForProfile(profile_.get());
-
-  success_tracker_.ListenFor(chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                             content::Source<TokenService>(service_));
-  failure_tracker_.ListenFor(chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-                             content::Source<TokenService>(service_));
 
   service()->Initialize("test", profile_.get());
 }

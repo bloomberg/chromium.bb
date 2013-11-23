@@ -39,16 +39,13 @@ class Profile;
 // SigninTracker, SigninManager only knows about the GAIA login state and is
 // not aware of the state of any signed in services.
 //
-// TokenService - Uses credentials provided by SigninManager to generate tokens
-// for all signed-in services in Chrome.
-//
 // OAuth2TokenService - Maintains and manages OAuth2 tokens for the accounts
 // connected to this profile.
 //
 // ProfileSyncService - Provides the external API for interacting with the
-// sync framework. Listens for notifications from the TokenService to know
-// when to startup sync, and provides an Observer interface to notify the UI
-// layer of changes in sync state so they can be reflected in the UI.
+// sync framework. Listens for notifications for tokens to know when to startup
+// sync, and provides an Observer interface to notify the UI layer of changes
+// in sync state so they can be reflected in the UI.
 class SigninTracker : public content::NotificationObserver,
                       public OAuth2TokenService::Observer {
  public:

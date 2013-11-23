@@ -15,9 +15,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
-class TokenService;
-
-
 // A specialization of ProfileOAuth2TokenService that will be returned by
 // ProfileOAuth2TokenServiceFactory for OS_ANDROID.  This instance uses
 // native Android features to lookup OAuth2 tokens.
