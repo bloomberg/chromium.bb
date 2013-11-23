@@ -197,7 +197,7 @@ void BrowserMediaPlayerManager::OnMediaMetadataChanged(
 
 void BrowserMediaPlayerManager::OnPlaybackComplete(int player_id) {
   Send(new MediaPlayerMsg_MediaPlaybackCompleted(routing_id(), player_id));
-  if (fullscreen_player_id_ != -1)
+  if (fullscreen_player_id_ == player_id)
     video_view_->OnPlaybackComplete();
 }
 
@@ -211,7 +211,7 @@ void BrowserMediaPlayerManager::OnBufferingUpdate(
     int player_id, int percentage) {
   Send(new MediaPlayerMsg_MediaBufferingUpdate(
       routing_id(), player_id, percentage));
-  if (fullscreen_player_id_ != -1)
+  if (fullscreen_player_id_ == player_id)
     video_view_->OnBufferingUpdate(percentage);
 }
 
@@ -229,7 +229,7 @@ void BrowserMediaPlayerManager::OnSeekComplete(
 
 void BrowserMediaPlayerManager::OnError(int player_id, int error) {
   Send(new MediaPlayerMsg_MediaError(routing_id(), player_id, error));
-  if (fullscreen_player_id_ != -1)
+  if (fullscreen_player_id_ == player_id)
     video_view_->OnMediaPlayerError(error);
 }
 
@@ -237,7 +237,7 @@ void BrowserMediaPlayerManager::OnVideoSizeChanged(
     int player_id, int width, int height) {
   Send(new MediaPlayerMsg_MediaVideoSizeChanged(routing_id(), player_id,
       width, height));
-  if (fullscreen_player_id_ != -1)
+  if (fullscreen_player_id_ == player_id)
     video_view_->OnVideoSizeChanged(width, height);
 }
 
