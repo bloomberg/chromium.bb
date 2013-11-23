@@ -53,8 +53,6 @@ using namespace std;
 
 namespace WebCore {
 
-// FIXME: Next two functions look lifted verbatim from JSCSSStyleDeclarationCustom. Please remove duplication.
-
 // Check for a CSS prefix.
 // Passed prefix is all lowercase.
 // First character of the prefix within the property name may be upper or lowercase.
