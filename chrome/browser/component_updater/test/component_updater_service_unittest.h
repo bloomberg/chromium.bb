@@ -109,7 +109,10 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
 
   void SetQuitClosure(const base::Closure& quit_closure);
 
+  void SetInitialDelay(int seconds);
+
  private:
+  int initial_time_;
   int times_;
   int recheck_time_;
   int ondemand_time_;

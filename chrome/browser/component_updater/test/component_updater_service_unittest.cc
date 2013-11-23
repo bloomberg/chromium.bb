@@ -12,9 +12,13 @@
 #include "chrome/browser/component_updater/test/test_installer.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_controller.h"
+#include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/resource_throttle.h"
 #include "libxml/globals.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_test_util.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -36,7 +40,8 @@ MockComponentObserver::~MockComponentObserver() {
 }
 
 TestConfigurator::TestConfigurator()
-    : times_(1),
+    : initial_time_(0),
+      times_(1),
       recheck_time_(0),
       ondemand_time_(0),
       cus_(NULL),
@@ -47,7 +52,7 @@ TestConfigurator::TestConfigurator()
 TestConfigurator::~TestConfigurator() {
 }
 
-int TestConfigurator::InitialDelay() { return 0; }
+int TestConfigurator::InitialDelay() { return initial_time_; }
 
 int TestConfigurator::NextCheckDelay() {
   // This is called when a new full cycle of checking for updates is going
@@ -124,6 +129,9 @@ void TestConfigurator::SetQuitClosure(const base::Closure& quit_closure) {
   quit_closure_ = quit_closure;
 }
 
+void TestConfigurator::SetInitialDelay(int seconds) {
+  initial_time_ = seconds;
+}
 
 InterceptorFactory::InterceptorFactory()
     : URLRequestPostInterceptorFactory(POST_INTERCEPT_SCHEME,
@@ -1184,6 +1192,90 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
       "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"2.0\">"
       "<updatecheck /><packages><package fp=\"22\"/></packages></app>"))
       << post_interceptor_->GetRequestsAsString();
+}
+
+void RequestAndDeleteResourceThrottle(
+    ComponentUpdateService* cus, const char* crx_id) {
+  // By requesting a throttle and deleting it immediately we ensure that we
+  // hit the case where the component updater tries to use the weak
+  // pointer to a dead Resource throttle.
+  class  NoCallResourceController : public content::ResourceController {
+   public:
+    virtual ~NoCallResourceController() {}
+    virtual void Cancel() OVERRIDE { CHECK(false); }
+    virtual void CancelAndIgnore() OVERRIDE { CHECK(false); }
+    virtual void CancelWithError(int error_code) OVERRIDE { CHECK(false); }
+    virtual void Resume() OVERRIDE { CHECK(false); }
+  };
+
+  net::TestURLRequestContext context;
+  net::TestURLRequest url_request(
+      GURL("http://foo.example.com/thing.bin"),
+      net::DEFAULT_PRIORITY,
+      NULL,
+      &context);
+
+  content::ResourceThrottle* rt =
+      cus->GetOnDemandResourceThrottle(&url_request, crx_id);
+  NoCallResourceController controller;
+  rt->set_controller_for_testing(&controller);
+  delete rt;
+}
+
+TEST_F(ComponentUpdaterTest, ResourceThrottleNoUpdate) {
+  MockComponentObserver observer;
+  EXPECT_CALL(observer,
+              OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+              .Times(1);
+  EXPECT_CALL(observer,
+              OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+              .Times(1);
+
+  EXPECT_CALL(observer,
+              OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+              .Times(1);
+
+  TestInstaller installer;
+  CrxComponent com;
+  com.observer = &observer;
+  EXPECT_EQ(ComponentUpdateService::kOk,
+            RegisterComponent(&com,
+                              kTestComponent_abag,
+                              Version("1.1"),
+                              &installer));
+
+  const GURL expected_update_url(
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Dabagagagagagagagagagagagagagagag%26v%3D1.1%26fp%3D%26uc"
+      "%26installsource%3Dondemand");
+  // The following two calls ensure that we don't do an update check via the
+  // timer, so the only update check should be the on-demand one.
+  test_configurator()->SetInitialDelay(1000000);
+  test_configurator()->SetRecheckTime(1000000);
+  test_configurator()->SetLoopCount(1);
+  component_updater()->Start();
+
+  RunThreadsUntilIdle();
+
+  EXPECT_EQ(0, post_interceptor_->GetHitCount());
+
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(new PartialMatch(
+      "updatecheck"), test_file("updatecheck_reply_1.xml")));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&RequestAndDeleteResourceThrottle,
+                 component_updater(),
+                 "abagagagagagagagagagagagagagagag"));
+
+  RunThreads();
+
+  EXPECT_EQ(1, post_interceptor_->GetHitCount());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
+
+  component_updater()->Stop();
 }
 
 }  // namespace component_updater
