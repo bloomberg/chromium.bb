@@ -111,8 +111,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['mac'], bug=322770)
     self.Skip('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
         ['mac'], bug=322795)
-    self.Skip('conformance/ogles/GL/control_flow/control_flow_009_to_010.html',
-        ['mac'], bug=322795)
 
     # Mac/Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
@@ -133,6 +131,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Radar 13499623
     self.Fail('conformance/textures/texture-size.html',
         ['mac', 'intel'], bug=225642)
+    self.Skip('conformance/ogles/GL/control_flow/control_flow_009_to_010.html',
+        ['mac', 'intel'], bug=322795)
 
     # Mac/Intel failures on 10.7
     self.Skip('conformance/glsl/functions/glsl-function-asin.html',
@@ -154,6 +154,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'])
     self.Skip('conformance/rendering/line-loop-tri-fan.html',
         ['lion', 'intel'])
+    self.Skip('conformance/ogles/GL/control_flow/control_flow_009_to_010.html',
+        ['lion'], bug=322795)
 
     # Mac/ATI failures
     self.Skip('conformance/extensions/oes-texture-float-with-image-data.html',
