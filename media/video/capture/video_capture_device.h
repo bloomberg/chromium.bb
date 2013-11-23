@@ -20,6 +20,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
+#include "media/base/video_frame.h"
 #include "media/video/capture/video_capture_types.h"
 
 namespace media {
@@ -172,7 +173,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
         int rotation,  // Clockwise.
         bool flip_vert,
         bool flip_horiz,
-        const VideoCaptureCapability& frame_info) = 0;
+        const VideoCaptureFormat& frame_format) = 0;
 
     // Captured a new video frame, held in |buffer|.
     //
@@ -208,12 +209,10 @@ class MEDIA_EXPORT VideoCaptureDevice {
                                         VideoCaptureCapabilities* formats);
 
   // Prepare the camera for use. After this function has been called no other
-  // applications can use the camera. On completion Client::OnFrameInfo()
-  // is called informing of the resulting resolution and frame rate.
-  // StopAndDeAllocate() must be called before the object is deleted.
-  virtual void AllocateAndStart(
-      const VideoCaptureCapability& capture_format,
-      scoped_ptr<Client> client) = 0;
+  // applications can use the camera. StopAndDeAllocate() must be called before
+  // the object is deleted.
+  virtual void AllocateAndStart(const VideoCaptureParams& params,
+                                scoped_ptr<Client> client) = 0;
 
   // Deallocates the camera, possibly asynchronously.
   //

@@ -281,11 +281,10 @@
       addressToPass = adjustedAddress;
       frameSize = frameHeight * expectedBytesPerRow;
     }
-    media::VideoCaptureCapability captureCapability;
-    captureCapability.width = frameWidth;
-    captureCapability.height = frameHeight;
-    captureCapability.frame_rate = frameRate_;
-    captureCapability.color = media::PIXEL_FORMAT_UYVY;
+
+    media::VideoCaptureFormat captureFormat(gfx::Size(frameWidth, frameHeight),
+                                            frameRate_,
+                                            media::PIXEL_FORMAT_UYVY);
 
     // The aspect ratio dictionary is often missing, in which case we report
     // a pixel aspect ratio of 0:0.
@@ -305,7 +304,7 @@
     }
 
     // Deliver the captured video frame.
-    frameReceiver_->ReceiveFrame(addressToPass, frameSize, captureCapability,
+    frameReceiver_->ReceiveFrame(addressToPass, frameSize, captureFormat,
         aspectNumerator, aspectDenominator);
 
     CVPixelBufferUnlockBaseAddress(videoFrame, kLockFlags);

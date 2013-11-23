@@ -9,44 +9,28 @@
 namespace media {
 
 VideoCaptureFormat::VideoCaptureFormat()
-    : width(0),
-      height(0),
-      frame_rate(0),
-      frame_size_type(ConstantResolutionVideoCaptureDevice) {}
+    : frame_rate(0), pixel_format(PIXEL_FORMAT_UNKNOWN) {}
 
-VideoCaptureFormat::VideoCaptureFormat(
-    int width,
-    int height,
-    int frame_rate,
-    VideoCaptureResolutionType frame_size_type)
-    : width(width),
-      height(height),
+VideoCaptureFormat::VideoCaptureFormat(const gfx::Size& frame_size,
+                                       int frame_rate,
+                                       VideoPixelFormat pixel_format)
+    : frame_size(frame_size),
       frame_rate(frame_rate),
-      frame_size_type(frame_size_type) {}
+      pixel_format(pixel_format) {}
 
 bool VideoCaptureFormat::IsValid() const {
-  return (width > 0) && (height > 0) && (frame_rate > 0) &&
+  return (frame_size.width() < media::limits::kMaxDimension) &&
+         (frame_size.height() < media::limits::kMaxDimension) &&
+         (frame_size.GetArea() > 0) &&
+         (frame_size.GetArea() < media::limits::kMaxCanvas) &&
+         (frame_rate > 0) &&
          (frame_rate < media::limits::kMaxFramesPerSecond) &&
-         (width < media::limits::kMaxDimension) &&
-         (height < media::limits::kMaxDimension) &&
-         (width * height < media::limits::kMaxCanvas) &&
-         (frame_size_type >= 0) &&
-         (frame_size_type < media::MaxVideoCaptureResolutionType);
+         (pixel_format >= PIXEL_FORMAT_UNKNOWN) &&
+         (pixel_format < PIXEL_FORMAT_MAX);
 }
 
-VideoCaptureParams::VideoCaptureParams()
-    : session_id(0) {}
+VideoCaptureParams::VideoCaptureParams() : allow_resolution_change(false) {}
 
-VideoCaptureCapability::VideoCaptureCapability()
-    : color(PIXEL_FORMAT_UNKNOWN) {}
-
-VideoCaptureCapability::VideoCaptureCapability(
-    int width,
-    int height,
-    int frame_rate,
-    VideoPixelFormat color,
-    VideoCaptureResolutionType frame_size_type)
-    : VideoCaptureFormat(width, height, frame_rate, frame_size_type),
-      color(color) {}
+VideoCaptureCapability::VideoCaptureCapability() {}
 
 }  // namespace media

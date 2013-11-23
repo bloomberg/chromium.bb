@@ -11,11 +11,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
-using ::testing::AllOf;
 using ::testing::AnyNumber;
-using ::testing::Field;
 using ::testing::Mock;
 using ::testing::Return;
+using ::testing::SaveArg;
 using ::testing::StrictMock;
 
 namespace content {
@@ -82,15 +81,17 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
   int buffer_id = 22;
   base::Time timestamp = base::Time::FromInternalValue(1);
 
-  media::VideoCaptureFormat format(234, 512, 30,
-      media::ConstantResolutionVideoCaptureDevice);
-  EXPECT_CALL(delegate, OnBufferReceived(buffer_id, timestamp,
-      AllOf(Field(&media::VideoCaptureFormat::width, 234),
-            Field(&media::VideoCaptureFormat::height, 512),
-            Field(&media::VideoCaptureFormat::frame_rate, 30))));
+  media::VideoCaptureFormat format(
+      gfx::Size(234, 512), 30, media::PIXEL_FORMAT_I420);
+  media::VideoCaptureFormat saved_format;
+  EXPECT_CALL(delegate, OnBufferReceived(buffer_id, timestamp, _))
+      .WillRepeatedly(SaveArg<2>(&saved_format));
   filter->OnMessageReceived(VideoCaptureMsg_BufferReady(
       delegate.device_id(), buffer_id, timestamp, format));
   Mock::VerifyAndClearExpectations(&delegate);
+  EXPECT_EQ(234, saved_format.frame_size.width());
+  EXPECT_EQ(512, saved_format.frame_size.height());
+  EXPECT_EQ(30, saved_format.frame_rate);
 
   // VideoCaptureMsg_FreeBuffer
   EXPECT_CALL(delegate, OnBufferDestroyed(buffer_id));

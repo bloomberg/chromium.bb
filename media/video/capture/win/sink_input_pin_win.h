@@ -24,10 +24,10 @@ class SinkInputPin : public PinBase {
   SinkInputPin(IBaseFilter* filter, SinkFilterObserver* observer);
   virtual ~SinkInputPin();
 
-  void SetRequestedMediaCapability(const VideoCaptureCapability& capability);
+  void SetRequestedMediaFormat(const VideoCaptureFormat& format);
   // Returns the capability that is negotiated when this
   // pin is connected to a media filter.
-  const VideoCaptureCapability& ResultingCapability();
+  const VideoCaptureFormat& ResultingFormat();
 
   // Implement PinBase.
   virtual bool IsMediaTypeValid(const AM_MEDIA_TYPE* media_type);
@@ -36,8 +36,8 @@ class SinkInputPin : public PinBase {
   STDMETHOD(Receive)(IMediaSample* media_sample);
 
  private:
-  VideoCaptureCapability requested_capability_;
-  VideoCaptureCapability resulting_capability_;
+  VideoCaptureFormat requested_format_;
+  VideoCaptureFormat resulting_format_;
   SinkFilterObserver* observer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(SinkInputPin);

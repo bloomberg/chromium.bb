@@ -53,7 +53,7 @@ class DesktopCaptureDevice::Core
        scoped_ptr<webrtc::DesktopCapturer> capturer);
 
   // Implementation of VideoCaptureDevice methods.
-  void AllocateAndStart(const media::VideoCaptureCapability& capture_format,
+  void AllocateAndStart(const media::VideoCaptureParams& params,
                         scoped_ptr<Client> client);
   void StopAndDeAllocate();
 
@@ -67,7 +67,7 @@ class DesktopCaptureDevice::Core
 
   // Helper methods that run on the |task_runner_|. Posted from the
   // corresponding public methods.
-  void DoAllocateAndStart(const media::VideoCaptureCapability& capture_format,
+  void DoAllocateAndStart(const media::VideoCaptureParams& params,
                           scoped_ptr<Client> client);
   void DoStopAndDeAllocate();
 
@@ -97,10 +97,10 @@ class DesktopCaptureDevice::Core
   scoped_ptr<Client> client_;
 
   // Requested video capture format (width, height, frame rate, etc).
-  media::VideoCaptureCapability requested_format_;
+  media::VideoCaptureParams requested_params_;
 
   // Actual video capture format being generated.
-  media::VideoCaptureCapability capture_format_;
+  media::VideoCaptureFormat capture_format_;
 
   // Size of frame most recently captured from the source.
   webrtc::DesktopSize previous_frame_size_;
@@ -136,18 +136,15 @@ DesktopCaptureDevice::Core::~Core() {
 }
 
 void DesktopCaptureDevice::Core::AllocateAndStart(
-    const media::VideoCaptureCapability& capture_format,
+    const media::VideoCaptureParams& params,
     scoped_ptr<Client> client) {
-  DCHECK_GT(capture_format.width, 0);
-  DCHECK_GT(capture_format.height, 0);
-  DCHECK_GT(capture_format.frame_rate, 0);
+  DCHECK_GT(params.requested_format.frame_size.GetArea(), 0);
+  DCHECK_GT(params.requested_format.frame_rate, 0);
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Core::DoAllocateAndStart,
-                 this,
-                 capture_format,
-                 base::Passed(&client)));
+      base::Bind(
+          &Core::DoAllocateAndStart, this, params, base::Passed(&client)));
 }
 
 void DesktopCaptureDevice::Core::StopAndDeAllocate() {
@@ -181,8 +178,8 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
   // Handle initial frame size and size changes.
   RefreshCaptureFormat(frame->size());
 
-  webrtc::DesktopSize output_size(capture_format_.width,
-                                  capture_format_.height);
+  webrtc::DesktopSize output_size(capture_format_.frame_size.width(),
+                                  capture_format_.frame_size.height());
   size_t output_bytes = output_size.width() * output_size.height() *
       webrtc::DesktopFrame::kBytesPerPixel;
   const uint8_t* output_data = NULL;
@@ -228,7 +225,7 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
 }
 
 void DesktopCaptureDevice::Core::DoAllocateAndStart(
-    const media::VideoCaptureCapability& capture_format,
+    const media::VideoCaptureParams& params,
     scoped_ptr<Client> client) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(desktop_capturer_);
@@ -236,19 +233,12 @@ void DesktopCaptureDevice::Core::DoAllocateAndStart(
   DCHECK(!client_.get());
 
   client_ = client.Pass();
-  requested_format_ = capture_format;
+  requested_params_ = params;
 
-  capture_format_.frame_rate = requested_format_.frame_rate;
-
-  // Support dynamic changes in resolution only if requester also does.
-  if (requested_format_.frame_size_type ==
-      media::VariableResolutionVideoCaptureDevice) {
-    capture_format_.frame_size_type =
-        media::VariableResolutionVideoCaptureDevice;
-  }
+  capture_format_ = requested_params_.requested_format;
 
   // This capturer always outputs ARGB, non-interlaced.
-  capture_format_.color = media::PIXEL_FORMAT_ARGB;
+  capture_format_.pixel_format = media::PIXEL_FORMAT_ARGB;
 
   desktop_capturer_->Start(this);
 
@@ -273,28 +263,31 @@ void DesktopCaptureDevice::Core::RefreshCaptureFormat(
   output_frame_.reset();
 
   if (previous_frame_size_.is_empty() ||
-      requested_format_.frame_size_type ==
-          media::VariableResolutionVideoCaptureDevice) {
+      requested_params_.allow_resolution_change) {
     // If this is the first frame, or the receiver supports variable resolution
     // then determine the output size by treating the requested width & height
     // as maxima.
-    if (frame_size.width() > requested_format_.width ||
-        frame_size.height() > requested_format_.height) {
+    if (frame_size.width() >
+            requested_params_.requested_format.frame_size.width() ||
+        frame_size.height() >
+            requested_params_.requested_format.frame_size.height()) {
       output_rect_ = ComputeLetterboxRect(
-          webrtc::DesktopSize(requested_format_.width,
-                              requested_format_.height),
+          webrtc::DesktopSize(
+              requested_params_.requested_format.frame_size.width(),
+              requested_params_.requested_format.frame_size.height()),
           frame_size);
       output_rect_.Translate(-output_rect_.left(), -output_rect_.top());
     } else {
       output_rect_ = webrtc::DesktopRect::MakeSize(frame_size);
     }
-    capture_format_.width = output_rect_.width();
-    capture_format_.height = output_rect_.height();
+    capture_format_.frame_size.SetSize(output_rect_.width(),
+                                       output_rect_.height());
   } else {
     // Otherwise the output frame size cannot change, so just scale and
     // letterbox.
     output_rect_ = ComputeLetterboxRect(
-        webrtc::DesktopSize(capture_format_.width, capture_format_.height),
+        webrtc::DesktopSize(capture_format_.frame_size.width(),
+                            capture_format_.frame_size.height()),
         frame_size);
   }
 
@@ -411,9 +404,9 @@ DesktopCaptureDevice::~DesktopCaptureDevice() {
 }
 
 void DesktopCaptureDevice::AllocateAndStart(
-    const media::VideoCaptureCapability& capture_format,
+    const media::VideoCaptureParams& params,
     scoped_ptr<Client> client) {
-  core_->AllocateAndStart(capture_format, client.Pass());
+  core_->AllocateAndStart(params, client.Pass());
 }
 
 void DesktopCaptureDevice::StopAndDeAllocate() {

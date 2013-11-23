@@ -5,6 +5,7 @@
 #include "content/renderer/media/rtc_video_capture_delegate.h"
 
 #include "base/bind.h"
+#include "media/base/video_frame.h"
 
 namespace content {
 

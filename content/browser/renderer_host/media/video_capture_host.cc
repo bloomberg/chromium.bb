@@ -164,36 +164,43 @@ bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void VideoCaptureHost::OnStartCapture(int device_id,
+                                      media::VideoCaptureSessionId session_id,
                                       const media::VideoCaptureParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DVLOG(1) << "VideoCaptureHost::OnStartCapture, device_id " << device_id
-           << ", (" << params.requested_format.width
-           << ", " << params.requested_format.height
-           << ", " << params.requested_format.frame_rate
-           << ", " << params.session_id << ", variable resolution device:"
-           << ((params.requested_format.frame_size_type ==
-               media::VariableResolutionVideoCaptureDevice) ? "yes" : "no")
+  DVLOG(1) << "VideoCaptureHost::OnStartCapture:"
+           << " session_id=" << session_id
+           << ", device_id=" << device_id
+           << ", format=" << params.requested_format.frame_size.ToString()
+           << "@" << params.requested_format.frame_rate
+           << " (" << (params.allow_resolution_change ? "variable" : "constant")
            << ")";
   VideoCaptureControllerID controller_id(device_id);
   DCHECK(entries_.find(controller_id) == entries_.end());
 
   entries_[controller_id] = base::WeakPtr<VideoCaptureController>();
   media_stream_manager_->video_capture_manager()->StartCaptureForClient(
-      params, PeerHandle(), controller_id, this, base::Bind(
-          &VideoCaptureHost::OnControllerAdded, this, device_id, params));
+      session_id,
+      params,
+      PeerHandle(),
+      controller_id,
+      this,
+      base::Bind(&VideoCaptureHost::OnControllerAdded, this, device_id));
 }
 
 void VideoCaptureHost::OnControllerAdded(
-    int device_id, const media::VideoCaptureParams& params,
+    int device_id,
     const base::WeakPtr<VideoCaptureController>& controller) {
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::IO,
+      FROM_HERE,
       base::Bind(&VideoCaptureHost::DoControllerAddedOnIOThread,
-                 this, device_id, params, controller));
+                 this,
+                 device_id,
+                 controller));
 }
 
 void VideoCaptureHost::DoControllerAddedOnIOThread(
-    int device_id, const media::VideoCaptureParams& params,
+    int device_id,
     const base::WeakPtr<VideoCaptureController>& controller) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   VideoCaptureControllerID controller_id(device_id);

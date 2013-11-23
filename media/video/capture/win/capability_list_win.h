@@ -16,7 +16,7 @@
 
 namespace media {
 
-struct VideoCaptureCapabilityWin : public VideoCaptureCapability {
+struct VideoCaptureCapabilityWin {
   explicit VideoCaptureCapabilityWin(int index)
       : stream_index(index),
         frame_rate_numerator(0),
@@ -26,6 +26,7 @@ struct VideoCaptureCapabilityWin : public VideoCaptureCapability {
   // so framerates can be properly represented, f.i. 29.971fps= 30000/1001.
   int frame_rate_numerator;
   int frame_rate_denominator;
+  VideoCaptureFormat supported_format;
 };
 
 class CapabilityList : public base::NonThreadSafe {
@@ -41,8 +42,9 @@ class CapabilityList : public base::NonThreadSafe {
   // Loops through the list of capabilities and returns an index of the best
   // matching capability.  The algorithm prioritizes height, width, frame rate
   // and color format in that order.
-  const VideoCaptureCapabilityWin& GetBestMatchedCapability(
-      int requested_width, int requested_height,
+  const VideoCaptureCapabilityWin& GetBestMatchedFormat(
+      int requested_width,
+      int requested_height,
       int requested_frame_rate) const;
 
  private:
