@@ -11,6 +11,7 @@
 #include "ui/views/controls/button/menu_button_listener.h"
 
 class Browser;
+
 namespace views {
 class ImageView;
 class MenuButton;

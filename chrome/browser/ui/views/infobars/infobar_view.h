@@ -17,6 +17,7 @@
 namespace ui {
 class MenuModel;
 }
+
 namespace views {
 class ImageButton;
 class ImageView;
@@ -27,7 +28,7 @@ class LinkListener;
 class MenuButton;
 class MenuButtonListener;
 class MenuRunner;
-}
+}  // namespace views
 
 class InfoBarView : public InfoBar,
                     public views::View,

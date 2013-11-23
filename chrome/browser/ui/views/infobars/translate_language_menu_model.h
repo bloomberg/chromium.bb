@@ -9,6 +9,7 @@
 
 class TranslateInfoBarBase;
 class TranslateInfoBarDelegate;
+
 namespace views {
 class MenuButton;
 }

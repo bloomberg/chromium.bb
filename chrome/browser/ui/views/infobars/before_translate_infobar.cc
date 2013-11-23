@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/views/infobars/before_translate_infobar.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/ui/views/infobars/translate_language_menu_model.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/label_button.h"
@@ -24,8 +26,7 @@ BeforeTranslateInfoBar::BeforeTranslateInfoBar(
       deny_button_(NULL),
       never_translate_button_(NULL),
       always_translate_button_(NULL),
-      options_menu_button_(NULL),
-      options_menu_model_(delegate) {
+      options_menu_button_(NULL) {
 }
 
 BeforeTranslateInfoBar::~BeforeTranslateInfoBar() {
@@ -133,6 +134,7 @@ void BeforeTranslateInfoBar::ViewHierarchyChanged(
 
   options_menu_button_ = CreateMenuButton(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS), this);
+  options_menu_model_.reset(new OptionsMenuModel(delegate));
   AddChildView(options_menu_button_);
 
   // This must happen after adding all other children so InfoBarView can ensure
@@ -190,7 +192,7 @@ void BeforeTranslateInfoBar::OnMenuButtonClicked(views::View* source,
               views::MenuItemView::TOPLEFT);
   } else {
     DCHECK_EQ(options_menu_button_, source);
-    RunMenuAt(&options_menu_model_, options_menu_button_,
+    RunMenuAt(options_menu_model_.get(), options_menu_button_,
               views::MenuItemView::TOPRIGHT);
   }
 }
