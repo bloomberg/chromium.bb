@@ -56,6 +56,18 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
   [super mouseDown:event];
 }
 
+// Intercept key down messages and forward them to the text fields delegate.
+// This needs to happen in the field editor, since it handles all keyDown
+// messages for NSTextField.
+- (void)keyDown:(NSEvent*)event {
+  AutofillTextField* textfield =
+      base::mac::ObjCCastStrict<AutofillTextField>([self delegate]);
+  if ([[textfield inputDelegate] keyEvent:event
+                                 forInput:textfield] != kKeyEventHandled) {
+    [super keyDown:event];
+  }
+}
+
 @end
 
 

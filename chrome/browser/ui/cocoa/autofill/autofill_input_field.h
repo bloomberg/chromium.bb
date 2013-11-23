@@ -21,6 +21,17 @@
 // Delegate to handle editing events on the AutofillInputFields.
 @protocol AutofillInputDelegate<NSObject>
 
+// Indicates if an event should be forwarded on.
+enum KeyEventHandled {
+  kKeyEventNotHandled,
+  kKeyEventHandled
+};
+
+// The input field received a key event. This should return kKeyEventHandled if
+// it handled the event, or kEventNotHandled if it should be forwarded to the
+// input's super class.
+- (KeyEventHandled)keyEvent:(NSEvent*)event forInput:(id)sender;
+
 // Input field or its editor received a mouseDown: message.
 - (void)onMouseDown:(NSControl<AutofillInputField>*)sender;
 

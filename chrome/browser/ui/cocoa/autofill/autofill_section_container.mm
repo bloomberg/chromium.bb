@@ -20,6 +20,7 @@
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -249,6 +250,19 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   [inputs_ setHidden:showSuggestions_];
   [[suggestContainer_ view] setHidden:!showSuggestions_];
   [view_ setFrameSize:viewFrame.size];
+}
+
+- (KeyEventHandled)keyEvent:(NSEvent*)event forInput:(id)sender {
+  content::NativeWebKeyboardEvent webEvent(event);
+
+  // Only handle keyDown, to handle key repeats without duplicates.
+  if (webEvent.type != content::NativeWebKeyboardEvent::KeyDown)
+    return kKeyEventNotHandled;
+
+  // Allow the delegate to intercept key messages.
+  if (delegate_->HandleKeyPressEventInInput(webEvent))
+    return kKeyEventHandled;
+  return kKeyEventNotHandled;
 }
 
 - (void)onMouseDown:(NSControl<AutofillInputField>*)field {
