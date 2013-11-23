@@ -94,7 +94,7 @@ weston_test_client_src =		\
 	wayland-test-protocol.c		\
 	wayland-test-client-protocol.h
 weston_test_client_libs =		\
-	$(SIMPLE_CLIENT_LIBS)		\
+	$(TEST_CLIENT_LIBS)		\
 	../shared/libshared.la		\
 	libshared-test.la
 

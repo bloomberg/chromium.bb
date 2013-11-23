@@ -266,6 +266,8 @@ AC_SUBST(JPEG_LIBS)
 
 PKG_CHECK_MODULES(CAIRO, [cairo])
 
+PKG_CHECK_MODULES(TEST_CLIENT, [wayland-client])
+
 AC_ARG_ENABLE(simple-clients,
               AS_HELP_STRING([--disable-simple-clients],
                              [do not build the simple wl_shm clients]),,
