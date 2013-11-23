@@ -121,6 +121,7 @@ bool DoFindAndCompareScheme(const CHAR* str,
 
 template<typename CHAR>
 bool DoCanonicalize(const CHAR* in_spec, int in_spec_len,
+                    bool trim_path_end,
                     url_canon::CharsetConverter* charset_converter,
                     url_canon::CanonOutput* output,
                     url_parse::Parsed* output_parsed) {
@@ -188,7 +189,7 @@ bool DoCanonicalize(const CHAR* in_spec, int in_spec_len,
 
   } else {
     // "Weird" URLs like data: and javascript:
-    url_parse::ParsePathURL(spec, spec_len, &parsed_input);
+    url_parse::ParsePathURL(spec, spec_len, trim_path_end, &parsed_input);
     success = url_canon::CanonicalizePathURL(spec, spec_len, parsed_input,
                                              output, output_parsed);
   }
@@ -252,7 +253,8 @@ bool DoResolveRelative(const char* base_spec,
       // The output_parsed is incorrect at this point (because it was built
       // based on base_parsed_authority instead of base_parsed) and needs to be
       // re-created.
-      ParsePathURL(output->data(), output->length(), output_parsed);
+      ParsePathURL(output->data(), output->length(), true,
+                   output_parsed);
       return did_resolve_succeed;
     }
   } else if (is_relative) {
@@ -266,7 +268,7 @@ bool DoResolveRelative(const char* base_spec,
   }
 
   // Not relative, canonicalize the input.
-  return DoCanonicalize(relative, relative_length, charset_converter,
+  return DoCanonicalize(relative, relative_length, true, charset_converter,
                         output, output_parsed);
 }
 
@@ -314,7 +316,7 @@ bool DoReplaceComponents(const char* spec,
     // may have changed with the different scheme.
     url_canon::RawCanonOutput<128> recanonicalized;
     url_parse::Parsed recanonicalized_parsed;
-    DoCanonicalize(scheme_replaced.data(), scheme_replaced.length(),
+    DoCanonicalize(scheme_replaced.data(), scheme_replaced.length(), true,
                    charset_converter,
                    &recanonicalized, &recanonicalized_parsed);
 
@@ -429,19 +431,21 @@ bool FindAndCompareScheme(const base::char16* str,
 
 bool Canonicalize(const char* spec,
                   int spec_len,
+                  bool trim_path_end,
                   url_canon::CharsetConverter* charset_converter,
                   url_canon::CanonOutput* output,
                   url_parse::Parsed* output_parsed) {
-  return DoCanonicalize(spec, spec_len, charset_converter,
+  return DoCanonicalize(spec, spec_len, trim_path_end, charset_converter,
                         output, output_parsed);
 }
 
 bool Canonicalize(const base::char16* spec,
                   int spec_len,
+                  bool trim_path_end,
                   url_canon::CharsetConverter* charset_converter,
                   url_canon::CanonOutput* output,
                   url_parse::Parsed* output_parsed) {
-  return DoCanonicalize(spec, spec_len, charset_converter,
+  return DoCanonicalize(spec, spec_len, trim_path_end, charset_converter,
                         output, output_parsed);
 }
 

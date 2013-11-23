@@ -350,6 +350,29 @@ TEST(GURLTest, Replacements) {
   }
 }
 
+TEST(GURLTest, ClearFragmentOnDataUrl) {
+  // http://crbug.com/291747 - a data URL may legitimately have trailing
+  // whitespace in the spec after the ref is cleared. Test this does not trigger
+  // the url_parse::Parsed importing validation DCHECK in GURL.
+  GURL url(" data: one ? two # three ");
+
+  // By default the trailing whitespace will have been stripped.
+  EXPECT_EQ("data: one ? two # three", url.spec());
+  GURL::Replacements repl;
+  repl.ClearRef();
+  GURL url_no_ref = url.ReplaceComponents(repl);
+
+  EXPECT_EQ("data: one ? two ", url_no_ref.spec());
+
+  // Importing a parsed url via this constructor overload will retain trailing
+  // whitespace.
+  GURL import_url(url_no_ref.spec(),
+                  url_no_ref.parsed_for_possibly_invalid_spec(),
+                  url_no_ref.is_valid());
+  EXPECT_EQ(url_no_ref, import_url);
+  EXPECT_EQ(import_url.query(), " two ");
+}
+
 TEST(GURLTest, PathForRequest) {
   struct TestCase {
     const char* input;

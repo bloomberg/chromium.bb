@@ -343,11 +343,11 @@ static PathURLParseCase path_cases[] = {
 {":",                                       "",            NULL},
 {":/",                                      "",            "/"},
 {"/",                                       NULL,          "/"},
-{" This is \\interesting// \t",             NULL,          "This is \\interesting//"},
+{" This is \\interesting// \t",             NULL,          "This is \\interesting// \t"},
 {"about:",                                  "about",       NULL},
 {"about:blank",                             "about",       "blank"},
-{"  about: blank ",                         "about",       " blank"},
-{"javascript :alert(\"He:/l\\l#o?foo\"); ", "javascript ", "alert(\"He:/l\\l#o?foo\");"},
+{"  about: blank ",                         "about",       " blank "},
+{"javascript :alert(\"He:/l\\l#o?foo\"); ", "javascript ", "alert(\"He:/l\\l#o?foo\"); "},
 };
 
 TEST(URLParser, PathURL) {
@@ -356,18 +356,18 @@ TEST(URLParser, PathURL) {
   url_parse::Parsed parsed;
   for (size_t i = 0; i < arraysize(path_cases); i++) {
     const char* url = path_cases[i].input;
-    url_parse::ParsePathURL(url, static_cast<int>(strlen(url)), &parsed);
+    url_parse::ParsePathURL(url, static_cast<int>(strlen(url)), false, &parsed);
 
-    EXPECT_TRUE(ComponentMatches(url, path_cases[i].scheme, parsed.scheme));
-    EXPECT_TRUE(ComponentMatches(url, path_cases[i].path, parsed.path));
+    EXPECT_TRUE(ComponentMatches(url, path_cases[i].scheme, parsed.scheme))
+        << i;
+    EXPECT_TRUE(ComponentMatches(url, path_cases[i].path, parsed.GetContent()))
+        << i;
 
     // The remaining components are never used for path urls.
     ExpectInvalidComponent(parsed.username);
     ExpectInvalidComponent(parsed.password);
     ExpectInvalidComponent(parsed.host);
     ExpectInvalidComponent(parsed.port);
-    ExpectInvalidComponent(parsed.query);
-    ExpectInvalidComponent(parsed.ref);
   }
 }
 

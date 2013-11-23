@@ -19,25 +19,6 @@
 
 namespace {
 
-// External template that can handle initialization of either character type.
-// The input spec is given, and the canonical version will be placed in
-// |*canonical|, along with the parsing of the canonical spec in |*parsed|.
-template<typename STR>
-bool InitCanonical(const STR& input_spec,
-                   std::string* canonical,
-                   url_parse::Parsed* parsed) {
-  // Reserve enough room in the output for the input, plus some extra so that
-  // we have room if we have to escape a few things without reallocating.
-  canonical->reserve(input_spec.size() + 32);
-  url_canon::StdStringCanonOutput output(canonical);
-  bool success = url_util::Canonicalize(
-      input_spec.data(), static_cast<int>(input_spec.length()),
-      NULL, &output, parsed);
-
-  output.Complete();  // Must be done before using string.
-  return success;
-}
-
 static std::string* empty_string = NULL;
 static GURL* empty_gurl = NULL;
 
@@ -94,21 +75,15 @@ GURL::GURL(const GURL& other)
 }
 
 GURL::GURL(const std::string& url_string) {
-  is_valid_ = InitCanonical(url_string, &spec_, &parsed_);
-  if (is_valid_ && SchemeIsFileSystem()) {
-    inner_url_.reset(
-        new GURL(spec_.data(), parsed_.Length(),
-                 *parsed_.inner_parsed(), true));
-  }
+  InitCanonical(url_string, true);
 }
 
 GURL::GURL(const base::string16& url_string) {
-  is_valid_ = InitCanonical(url_string, &spec_, &parsed_);
-  if (is_valid_ && SchemeIsFileSystem()) {
-    inner_url_.reset(
-        new GURL(spec_.data(), parsed_.Length(),
-                 *parsed_.inner_parsed(), true));
-  }
+  InitCanonical(url_string, true);
+}
+
+GURL::GURL(const std::string& url_string, RetainWhiteSpaceSelector) {
+  InitCanonical(url_string, false);
 }
 
 GURL::GURL(const char* canonical_spec, size_t canonical_spec_len,
@@ -127,6 +102,23 @@ GURL::GURL(std::string canonical_spec,
   InitializeFromCanonicalSpec();
 }
 
+template<typename STR>
+void GURL::InitCanonical(const STR& input_spec, bool trim_path_end) {
+  // Reserve enough room in the output for the input, plus some extra so that
+  // we have room if we have to escape a few things without reallocating.
+  spec_.reserve(input_spec.size() + 32);
+  url_canon::StdStringCanonOutput output(&spec_);
+  is_valid_ = url_util::Canonicalize(
+      input_spec.data(), static_cast<int>(input_spec.length()), trim_path_end,
+      NULL, &output, &parsed_);
+
+  output.Complete();  // Must be done before using string.
+  if (is_valid_ && SchemeIsFileSystem()) {
+    inner_url_.reset(new GURL(spec_.data(), parsed_.Length(),
+                              *parsed_.inner_parsed(), true));
+  }
+}
+
 void GURL::InitializeFromCanonicalSpec() {
   if (is_valid_ && SchemeIsFileSystem()) {
     inner_url_.reset(
@@ -140,13 +132,17 @@ void GURL::InitializeFromCanonicalSpec() {
   // and we can't always canonicalize then reproducabely.
   if (is_valid_) {
     url_parse::Component scheme;
+    // We can't do this check on the inner_url of a filesystem URL, as
+    // canonical_spec actually points to the start of the outer URL, so we'd
+    // end up with infinite recursion in this constructor.
     if (!url_util::FindAndCompareScheme(spec_.data(), spec_.length(),
                                         "filesystem", &scheme) ||
         scheme.begin == parsed_.scheme.begin) {
-      // We can't do this check on the inner_url of a filesystem URL, as
-      // canonical_spec actually points to the start of the outer URL, so we'd
-      // end up with infinite recursion in this constructor.
-      GURL test_url(spec_);
+      // We need to retain trailing whitespace on path URLs, as the |parsed_|
+      // spec we originally received may legitimately contain trailing white-
+      // space on the path or  components e.g. if the #ref has been
+      // removed from a "foo:hello #ref" URL (see http://crbug.com/291747).
+      GURL test_url(spec_, RETAIN_TRAILING_PATH_WHITEPACE);
 
       DCHECK(test_url.is_valid_ == is_valid_);
       DCHECK(test_url.spec_ == spec_);

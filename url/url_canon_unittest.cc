@@ -1609,7 +1609,7 @@ TEST(URLCanonTest, ReplacePathURL) {
     const ReplaceCase& cur = replace_cases[i];
     int base_len = static_cast<int>(strlen(cur.base));
     url_parse::Parsed parsed;
-    url_parse::ParsePathURL(cur.base, base_len, &parsed);
+    url_parse::ParsePathURL(cur.base, base_len, false, &parsed);
 
     url_canon::Replacements<char> r;
     typedef url_canon::Replacements<char> R;  // Clean up syntax.
@@ -1830,7 +1830,7 @@ TEST(URLCanonTest, CanonicalizePathURL) {
   for (size_t i = 0; i < ARRAYSIZE(path_cases); i++) {
     int url_len = static_cast<int>(strlen(path_cases[i].input));
     url_parse::Parsed parsed;
-    url_parse::ParsePathURL(path_cases[i].input, url_len, &parsed);
+    url_parse::ParsePathURL(path_cases[i].input, url_len, true, &parsed);
 
     url_parse::Parsed out_parsed;
     std::string out_str;
@@ -1848,8 +1848,8 @@ TEST(URLCanonTest, CanonicalizePathURL) {
 
     // When we end with a colon at the end, there should be no path.
     if (path_cases[i].input[url_len - 1] == ':') {
-      EXPECT_EQ(0, out_parsed.path.begin);
-      EXPECT_EQ(-1, out_parsed.path.len);
+      EXPECT_EQ(0, out_parsed.GetContent().begin);
+      EXPECT_EQ(-1, out_parsed.GetContent().len);
     }
   }
 }
@@ -2156,7 +2156,7 @@ TEST(URLCanonTest, ResolveRelativeURL) {
     else if (cur_case.is_base_hier)
       url_parse::ParseStandardURL(cur_case.base, base_len, &parsed);
     else
-      url_parse::ParsePathURL(cur_case.base, base_len, &parsed);
+      url_parse::ParsePathURL(cur_case.base, base_len, false, &parsed);
 
     // First see if it is relative.
     int test_len = static_cast<int>(strlen(cur_case.test));
@@ -2188,12 +2188,15 @@ TEST(URLCanonTest, ResolveRelativeURL) {
       // the URL freshly.
       url_parse::Parsed ref_parsed;
       int resolved_len = static_cast<int>(resolved.size());
-      if (cur_case.is_base_file)
+      if (cur_case.is_base_file) {
         url_parse::ParseFileURL(resolved.c_str(), resolved_len, &ref_parsed);
-      else if (cur_case.is_base_hier)
-        url_parse::ParseStandardURL(resolved.c_str(), resolved_len, &ref_parsed);
-      else
-        url_parse::ParsePathURL(resolved.c_str(), resolved_len, &ref_parsed);
+      } else if (cur_case.is_base_hier) {
+        url_parse::ParseStandardURL(resolved.c_str(), resolved_len,
+                                    &ref_parsed);
+      } else {
+        url_parse::ParsePathURL(resolved.c_str(), resolved_len, false,
+                                &ref_parsed);
+      }
       EXPECT_TRUE(ParsedIsEqual(ref_parsed, resolved_parsed));
     }
   }

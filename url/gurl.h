@@ -358,6 +358,17 @@ class URL_EXPORT GURL {
   }
 
  private:
+  // Variant of the string parsing constructor that allows the caller to elect
+  // retain trailing whitespace, if any, on the passed URL spec but only  if the
+  // scheme is one that allows trailing whitespace. The primary use-case is
+  // for data: URLs. In most cases, you want to use the single parameter
+  // constructor above.
+  enum RetainWhiteSpaceSelector { RETAIN_TRAILING_PATH_WHITEPACE };
+  GURL(const std::string& url_string, RetainWhiteSpaceSelector);
+
+  template<typename STR>
+  void InitCanonical(const STR& input_spec, bool trim_path_end);
+
   void InitializeFromCanonicalSpec();
 
   // Returns the substring of the input identified by the given component.

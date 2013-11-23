@@ -93,7 +93,7 @@ static std::string CheckReplaceScheme(const char* base_url,
   // Make sure the input is canonicalized.
   url_canon::RawCanonOutput<32> original;
   url_parse::Parsed original_parsed;
-  url_util::Canonicalize(base_url, strlen(base_url), NULL,
+  url_util::Canonicalize(base_url, strlen(base_url), true, NULL,
                          &original, &original_parsed);
 
   url_canon::Replacements<char> replacements;
@@ -135,6 +135,9 @@ TEST(URLUtilTest, ReplaceScheme) {
   // http://crbug.com/160 which should also be an acceptable result.
   EXPECT_EQ("about://google.com/",
             CheckReplaceScheme("http://google.com/", "about"));
+
+  EXPECT_EQ("http://example.com/%20hello%20# world",
+            CheckReplaceScheme("myscheme:example.com/ hello # world ", "http"));
 }
 
 TEST(URLUtilTest, DecodeURLEscapeSequences) {
@@ -270,12 +273,20 @@ TEST(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
       // Resolving should fail if the base URL is authority-based but is
       // missing a path component (the '/' at the end).
     {"scheme://Authority", "path", false, ""},
+      // Test resolving a fragment (only) against any kind of base-URL.
+    {"about:blank", "#id42", true, "about:blank#id42" },
+    {"about:blank", " #id42", true, "about:blank#id42" },
+    {"about:blank#oldfrag", "#newfrag", true, "about:blank#newfrag" },
+      // A surprising side effect of allowing fragments to resolve against
+      // any URL scheme is we might break javascript: URLs by doing so...
+    {"javascript:alert('foo#bar')", "#badfrag", true,
+      "javascript:alert('foo#badfrag" },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resolve_non_standard_cases); i++) {
     const ResolveRelativeCase& test_data = resolve_non_standard_cases[i];
     url_parse::Parsed base_parsed;
-    url_parse::ParsePathURL(test_data.base, strlen(test_data.base),
+    url_parse::ParsePathURL(test_data.base, strlen(test_data.base), false,
                             &base_parsed);
 
     std::string resolved;

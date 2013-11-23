@@ -238,9 +238,13 @@ URL_EXPORT void ParseStandardURL(const base::char16* url,
 // section but that aren't file URLs either. The scheme is parsed, and
 // everything after the scheme is considered as the path. This is used for
 // things like "about:" and "javascript:"
-URL_EXPORT void ParsePathURL(const char* url, int url_len, Parsed* parsed);
+URL_EXPORT void ParsePathURL(const char* url,
+                             int url_len,
+                             bool trim_path_end,
+                             Parsed* parsed);
 URL_EXPORT void ParsePathURL(const base::char16* url,
                              int url_len,
+                             bool trim_path_end,
                              Parsed* parsed);
 
 // FileURL is for file URLs. There are some special rules for interpreting

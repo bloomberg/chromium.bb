@@ -3026,9 +3026,9 @@ TEST(NetUtilTest, SimplifyUrlForRequest) {
       "ftp://user:pass@google.com:80/sup?yo#X#X",
       "ftp://google.com:80/sup?yo",
     },
-    { // Try an nonstandard URL
+    { // Try a nonstandard URL
       "foobar://user:pass@google.com:80/sup?yo#X#X",
-      "foobar://user:pass@google.com:80/sup?yo#X#X",
+      "foobar://user:pass@google.com:80/sup?yo",
     },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {

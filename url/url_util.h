@@ -112,11 +112,13 @@ inline bool IsStandard(const char* spec, int spec_len,
 // but they will not represent a loadable URL.
 URL_EXPORT bool Canonicalize(const char* spec,
                              int spec_len,
+                             bool trim_path_end,
                              url_canon::CharsetConverter* charset_converter,
                              url_canon::CanonOutput* output,
                              url_parse::Parsed* output_parsed);
 URL_EXPORT bool Canonicalize(const base::char16* spec,
                              int spec_len,
+                             bool trim_path_end,
                              url_canon::CharsetConverter* charset_converter,
                              url_canon::CanonOutput* output,
                              url_parse::Parsed* output_parsed);
