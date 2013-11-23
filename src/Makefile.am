@@ -36,7 +36,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = wayland-client.pc wayland-server.pc
 
 AM_CPPFLAGS = $(FFI_CFLAGS)
-AM_CFLAGS = $(GCC_CFLAGS)
+AM_CFLAGS = $(GCC_CFLAGS) -pthread
 
 protocoldir = $(top_srcdir)/protocol
 
