@@ -23,3 +23,14 @@ class MediaAndroid(test.Test):
     # Needed to run media actions in JS in Android.
     options.AppendExtraBrowserArgs(
         '--disable-gesture-requirement-for-media-playback')
+
+class MediaSourceExtensions(test.Test):
+  """Obtains media metrics for key media source extensions functions."""
+  test = media.Media
+  page_set = 'page_sets/mse_cases.json'
+
+  def CustomizeBrowserOptions(self, options):
+    # Needed to allow XHR requests to return stream objects.
+    options.AppendExtraBrowserArgs(
+        '--enable-experimental-web-platform-features')
+
