@@ -2006,7 +2006,6 @@
         '../components/webdata/common/web_database_migration_unittest.cc',
         '../components/webdata/common/web_data_service_test_util.cc',
         '../components/webdata/common/web_data_service_test_util.h',
-        '../components/webdata/encryptor/ie7_password_unittest_win.cc',
 
         # TODO(joi): Move the google_apis tests to a separate
         # google_apis_unittests executable.
