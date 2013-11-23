@@ -38,7 +38,6 @@
 
 namespace WebCore {
 class IDBRequest;
-class IDBDatabaseBackendInterface;
 }
 
 namespace blink {
@@ -84,7 +83,8 @@ public:
 
 private:
     WebPrivatePtr<WebCore::IDBRequest> m_private;
-    WebPrivatePtr<WebCore::IDBDatabaseBackendInterface> m_databaseProxy;
+    // FIXME: Eliminate this flag by having Chromium call onSuccess() with null.
+    bool m_upgradeNeededCalled;
 };
 
 } // namespace blink

@@ -29,7 +29,6 @@
 #include "config.h"
 #include "public/platform/WebIDBCallbacks.h"
 
-#include "IDBDatabaseBackendProxy.h"
 #include "core/dom/DOMError.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBMetadata.h"
@@ -47,13 +46,13 @@ namespace blink {
 
 WebIDBCallbacks::WebIDBCallbacks(PassRefPtr<WebCore::IDBRequest> callbacks)
     : m_private(callbacks)
+    , m_upgradeNeededCalled(false)
 {
 }
 
 WebIDBCallbacks::~WebIDBCallbacks()
 {
     m_private.reset();
-    m_databaseProxy.reset();
 }
 
 void WebIDBCallbacks::onError(const WebIDBDatabaseError& error)
@@ -74,15 +73,13 @@ void WebIDBCallbacks::onSuccess(WebIDBCursor* cursor, const WebIDBKey& key, cons
     m_private->onSuccess(adoptPtr(cursor), key, primaryKey, value);
 }
 
-void WebIDBCallbacks::onSuccess(WebIDBDatabase* webKitInstance, const WebIDBMetadata& metadata)
+void WebIDBCallbacks::onSuccess(WebIDBDatabase* database, const WebIDBMetadata& metadata)
 {
-    if (!m_databaseProxy.isNull()) {
-        m_private->onSuccess(m_databaseProxy.get(), metadata);
-        m_databaseProxy.reset();
-        return;
-    }
-    RefPtr<IDBDatabaseBackendInterface> localDatabaseProxy = IDBDatabaseBackendProxy::create(adoptPtr(webKitInstance));
-    m_private->onSuccess(localDatabaseProxy.release(), metadata);
+    // FIXME: Update Chromium to not pass |database| in onSuccess if onUpgradeNeeded
+    // was previously called. It's not used and is not an ownership transfer.
+    if (m_upgradeNeededCalled)
+        database = 0;
+    m_private->onSuccess(adoptPtr(database), metadata);
 }
 
 void WebIDBCallbacks::onSuccess(const WebIDBKey& key)
@@ -122,8 +119,8 @@ void WebIDBCallbacks::onBlocked(long long oldVersion)
 
 void WebIDBCallbacks::onUpgradeNeeded(long long oldVersion, WebIDBDatabase* database, const WebIDBMetadata& metadata, unsigned short dataLoss, WebString dataLossMessage)
 {
-    m_databaseProxy = IDBDatabaseBackendProxy::create(adoptPtr(database));
-    m_private->onUpgradeNeeded(oldVersion, m_databaseProxy.get(), metadata, static_cast<WebIDBDataLoss>(dataLoss), dataLossMessage);
+    m_upgradeNeededCalled = true;
+    m_private->onUpgradeNeeded(oldVersion, adoptPtr(database), metadata, static_cast<WebIDBDataLoss>(dataLoss), dataLossMessage);
 }
 
 } // namespace blink

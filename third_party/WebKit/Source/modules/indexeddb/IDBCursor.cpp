@@ -33,13 +33,21 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "modules/indexeddb/IDBAny.h"
+#include "modules/indexeddb/IDBDatabase.h"
+#include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBObjectStore.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBTransaction.h"
+#include "platform/SharedBuffer.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebIDBCallbacks.h"
 #include "public/platform/WebIDBCursor.h"
+#include "public/platform/WebIDBDatabase.h"
+#include "public/platform/WebIDBKeyRange.h"
 #include <limits>
+
+using blink::WebIDBDatabase;
 
 namespace WebCore {
 
@@ -135,7 +143,7 @@ PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value,
         }
     }
 
-    return objectStore->put(IDBDatabaseBackendInterface::CursorUpdate, IDBAny::create(this), state, value, m_primaryKey, exceptionState);
+    return objectStore->put(WebIDBDatabase::CursorUpdate, IDBAny::create(this), state, value, m_primaryKey, exceptionState);
 }
 
 void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
@@ -258,7 +266,7 @@ PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ExecutionContext* context, Exce
     ASSERT(!exceptionState.hadException());
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
-    m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange, request);
+    m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange.release(), new blink::WebIDBCallbacks(request));
     return request.release();
 }
 

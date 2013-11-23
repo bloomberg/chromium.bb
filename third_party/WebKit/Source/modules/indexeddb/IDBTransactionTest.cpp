@@ -42,6 +42,16 @@
 
 using namespace WebCore;
 
+using blink::WebData;
+using blink::WebIDBCallbacks;
+using blink::WebIDBDatabase;
+using blink::WebIDBDatabaseCallbacks;
+using blink::WebIDBKey;
+using blink::WebIDBKeyPath;
+using blink::WebIDBKeyRange;
+using blink::WebString;
+using blink::WebVector;
+
 namespace {
 
 class IDBTransactionTest : public testing::Test {
@@ -64,32 +74,16 @@ private:
     RefPtr<Document> m_document;
 };
 
-class FakeIDBDatabaseBackendProxy : public IDBDatabaseBackendInterface {
+class FakeWebIDBDatabase : public WebIDBDatabase {
 public:
-    static PassRefPtr<FakeIDBDatabaseBackendProxy> create() { return adoptRef(new FakeIDBDatabaseBackendProxy()); }
+    static PassOwnPtr<FakeWebIDBDatabase> create() { return adoptPtr(new FakeWebIDBDatabase()); }
 
-    virtual void createObjectStore(int64_t transactionId, int64_t objectStoreId, const String& name, const IDBKeyPath&, bool autoIncrement) OVERRIDE { }
-    virtual void deleteObjectStore(int64_t transactionId, int64_t objectStoreId) OVERRIDE { }
-    virtual void createTransaction(int64_t transactionId, const Vector<int64_t>& objectStoreIds, unsigned short mode) OVERRIDE { }
+    virtual void commit(long long transactionId) OVERRIDE { }
+    virtual void abort(long long transactionId) OVERRIDE { }
     virtual void close() OVERRIDE { }
 
-    virtual void commit(int64_t transactionId) OVERRIDE { }
-    virtual void abort(int64_t transactionId) OVERRIDE { }
-
-    virtual void createIndex(int64_t transactionId, int64_t objectStoreId, int64_t indexId, const String& name, const IDBKeyPath&, bool unique, bool multiEntry) OVERRIDE { }
-    virtual void deleteIndex(int64_t transactionId, int64_t objectStoreId, int64_t indexId) OVERRIDE { }
-
-    virtual void get(int64_t transactionId, int64_t objectStoreId, int64_t indexId, PassRefPtr<IDBKeyRange>, bool keyOnly, PassRefPtr<IDBRequest>) OVERRIDE { }
-    virtual void put(int64_t transactionId, int64_t objectStoreId, PassRefPtr<SharedBuffer> value, PassRefPtr<IDBKey>, PutMode, PassRefPtr<IDBRequest>, const Vector<int64_t>& indexIds, const Vector<IndexKeys>&) OVERRIDE { }
-    virtual void setIndexKeys(int64_t transactionId, int64_t objectStoreId, PassRefPtr<IDBKey>, const Vector<int64_t>& indexIds, const Vector<IndexKeys>&) OVERRIDE { }
-    virtual void setIndexesReady(int64_t transactionId, int64_t objectStoreId, const Vector<int64_t>& indexIds) OVERRIDE { }
-    virtual void openCursor(int64_t transactionId, int64_t objectStoreId, int64_t indexId, PassRefPtr<IDBKeyRange>, IndexedDB::CursorDirection, bool keyOnly, TaskType, PassRefPtr<IDBRequest>) OVERRIDE { }
-    virtual void count(int64_t transactionId, int64_t objectStoreId, int64_t indexId, PassRefPtr<IDBKeyRange>, PassRefPtr<IDBRequest>) OVERRIDE { }
-    virtual void deleteRange(int64_t transactionId, int64_t objectStoreId, PassRefPtr<IDBKeyRange>, PassRefPtr<IDBRequest>) OVERRIDE { }
-    virtual void clear(int64_t transactionId, int64_t objectStoreId, PassRefPtr<IDBRequest>) OVERRIDE { }
-
 private:
-    FakeIDBDatabaseBackendProxy() { }
+    FakeWebIDBDatabase() { }
 };
 
 class FakeIDBDatabaseCallbacks : public IDBDatabaseCallbacks {
@@ -105,9 +99,9 @@ private:
 
 TEST_F(IDBTransactionTest, EnsureLifetime)
 {
-    RefPtr<FakeIDBDatabaseBackendProxy> proxy = FakeIDBDatabaseBackendProxy::create();
+    OwnPtr<FakeWebIDBDatabase> backend = FakeWebIDBDatabase::create();
     RefPtr<FakeIDBDatabaseCallbacks> connection = FakeIDBDatabaseCallbacks::create();
-    RefPtr<IDBDatabase> db = IDBDatabase::create(executionContext(), proxy, connection);
+    RefPtr<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), connection);
 
     const int64_t transactionId = 1234;
     const Vector<String> transactionScope;
@@ -132,9 +126,9 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
 
 TEST_F(IDBTransactionTest, TransactionFinish)
 {
-    RefPtr<FakeIDBDatabaseBackendProxy> proxy = FakeIDBDatabaseBackendProxy::create();
+    OwnPtr<FakeWebIDBDatabase> backend = FakeWebIDBDatabase::create();
     RefPtr<FakeIDBDatabaseCallbacks> connection = FakeIDBDatabaseCallbacks::create();
-    RefPtr<IDBDatabase> db = IDBDatabase::create(executionContext(), proxy, connection);
+    RefPtr<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), connection);
 
     const int64_t transactionId = 1234;
     const Vector<String> transactionScope;

@@ -67,6 +67,8 @@ public:
         CursorUpdate
     };
 
+    static const long long minimumIndexId = 30;
+
     typedef WebVector<WebIDBKey> WebIndexKeys;
 
     virtual void get(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange&, bool keyOnly, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }

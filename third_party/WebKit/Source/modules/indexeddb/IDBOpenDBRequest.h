@@ -27,6 +27,7 @@
 #define IDBOpenDBRequest_h
 
 #include "modules/indexeddb/IDBRequest.h"
+#include "public/platform/WebIDBDatabase.h"
 
 namespace WebCore {
 
@@ -40,8 +41,8 @@ public:
     using IDBRequest::onSuccess;
 
     virtual void onBlocked(int64_t existingVersion) OVERRIDE;
-    virtual void onUpgradeNeeded(int64_t oldVersion, PassRefPtr<IDBDatabaseBackendInterface>, const IDBDatabaseMetadata&, blink::WebIDBDataLoss, String dataLossMessage) OVERRIDE;
-    virtual void onSuccess(PassRefPtr<IDBDatabaseBackendInterface>, const IDBDatabaseMetadata&) OVERRIDE;
+    virtual void onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<blink::WebIDBDatabase>, const IDBDatabaseMetadata&, blink::WebIDBDataLoss, String dataLossMessage) OVERRIDE;
+    virtual void onSuccess(PassOwnPtr<blink::WebIDBDatabase>, const IDBDatabaseMetadata&) OVERRIDE;
 
     // EventTarget
     virtual const AtomicString& interfaceName() const;

@@ -360,7 +360,6 @@
       'indexeddb/IDBCursorWithValue.h',
       'indexeddb/IDBDatabase.cpp',
       'indexeddb/IDBDatabase.h',
-      'indexeddb/IDBDatabaseBackendInterface.h',
       'indexeddb/IDBDatabaseCallbacks.cpp',
       'indexeddb/IDBDatabaseCallbacks.h',
       'indexeddb/IDBEventDispatcher.cpp',
@@ -791,7 +790,6 @@
       'vibration/testing/InternalsVibration.h',
     ],
     'modules_unittest_files': [
-      'indexeddb/IDBDatabaseTest.cpp',
       'indexeddb/IDBKeyPathTest.cpp',
       'indexeddb/IDBRequestTest.cpp',
       'indexeddb/IDBTransactionTest.cpp',

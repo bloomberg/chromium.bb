@@ -35,7 +35,6 @@
 #include "public/platform/WebIDBDatabaseError.h"
 #include "public/platform/WebIDBFactory.h"
 #include "public/platform/WebVector.h"
-#include "IDBDatabaseBackendProxy.h"
 #include "WebFrameImpl.h"
 #include "WebKit.h"
 #include "WebPermissionClient.h"

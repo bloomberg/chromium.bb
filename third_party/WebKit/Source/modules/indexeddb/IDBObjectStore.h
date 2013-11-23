@@ -30,13 +30,13 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "modules/indexeddb/IDBCursor.h"
-#include "modules/indexeddb/IDBDatabaseBackendInterface.h"
 #include "modules/indexeddb/IDBIndex.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTransaction.h"
+#include "public/platform/WebIDBDatabase.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -80,10 +80,10 @@ public:
     PassRefPtr<IDBRequest> count(ExecutionContext*, const ScriptValue& range, ExceptionState&);
 
     // Used by IDBCursor::update():
-    PassRefPtr<IDBRequest> put(IDBDatabaseBackendInterface::PutMode, PassRefPtr<IDBAny> source, ScriptState*, ScriptValue&, PassRefPtr<IDBKey>, ExceptionState&);
+    PassRefPtr<IDBRequest> put(blink::WebIDBDatabase::PutMode, PassRefPtr<IDBAny> source, ScriptState*, ScriptValue&, PassRefPtr<IDBKey>, ExceptionState&);
 
     // Used internally and by InspectorIndexedDBAgent:
-    PassRefPtr<IDBRequest> openCursor(ExecutionContext*, PassRefPtr<IDBKeyRange>, IndexedDB::CursorDirection, IDBDatabaseBackendInterface::TaskType = IDBDatabaseBackendInterface::NormalTask);
+    PassRefPtr<IDBRequest> openCursor(ExecutionContext*, PassRefPtr<IDBKeyRange>, IndexedDB::CursorDirection, blink::WebIDBDatabase::TaskType = blink::WebIDBDatabase::NormalTask);
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const { return m_deleted; }
@@ -95,14 +95,15 @@ public:
     typedef Vector<RefPtr<IDBKey> > IndexKeys;
     typedef HashMap<String, IndexKeys> IndexKeyMap;
 
-    IDBDatabaseBackendInterface* backendDB() const;
+    blink::WebIDBDatabase* backendDB() const;
+
 
 private:
     IDBObjectStore(const IDBObjectStoreMetadata&, IDBTransaction*);
 
     PassRefPtr<IDBIndex> createIndex(ExecutionContext*, const String& name, const IDBKeyPath&, const Dictionary&, ExceptionState&);
     PassRefPtr<IDBIndex> createIndex(ExecutionContext*, const String& name, const IDBKeyPath&, bool unique, bool multiEntry, ExceptionState&);
-    PassRefPtr<IDBRequest> put(IDBDatabaseBackendInterface::PutMode, PassRefPtr<IDBAny> source, ScriptState*, ScriptValue&, const ScriptValue& key, ExceptionState&);
+    PassRefPtr<IDBRequest> put(blink::WebIDBDatabase::PutMode, PassRefPtr<IDBAny> source, ScriptState*, ScriptValue&, const ScriptValue& key, ExceptionState&);
 
     int64_t findIndexId(const String& name) const;
     bool containsIndex(const String& name) const

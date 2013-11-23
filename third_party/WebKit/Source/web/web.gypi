@@ -49,8 +49,6 @@
       'GeolocationClientProxy.h',
       'GraphicsLayerFactoryChromium.cpp',
       'GraphicsLayerFactoryChromium.h',
-      'IDBDatabaseBackendProxy.cpp',
-      'IDBDatabaseBackendProxy.h',
       'IDBFactoryBackendProxy.cpp',
       'IDBFactoryBackendProxy.h',
       'InspectorClientImpl.cpp',

@@ -378,9 +378,9 @@ void IDBTransaction::enqueueEvent(PassRefPtr<Event> event)
     eventQueue->enqueueEvent(event);
 }
 
-IDBDatabaseBackendInterface* IDBTransaction::backendDB() const
+blink::WebIDBDatabase* IDBTransaction::backendDB() const
 {
-    return db()->backend();
+    return m_database->backend();
 }
 
 } // namespace WebCore
