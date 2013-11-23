@@ -35,17 +35,19 @@ void GetMachineIdCallback(const std::string& extension_id,
 
   if (machine_id.empty()) {
     callback.Run("");
+    return;
   }
 
   std::string device_id;
   if (!ComputeHmacSha256(machine_id, extension_id, &device_id)) {
     DLOG(ERROR) << "Error while computing HMAC-SHA256 of device id.";
     callback.Run("");
+    return;
   }
   callback.Run(device_id);
 }
 
-}
+}  // namespace
 
 namespace extensions {
 namespace api {

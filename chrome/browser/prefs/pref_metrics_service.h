@@ -125,6 +125,9 @@ class PrefMetricsService : public BrowserContextKeyedService {
   std::string device_id_;
   const char** tracked_pref_paths_;
   const int tracked_pref_path_count_;
+
+  // TODO(gab): preprocessor define this member out on builds that don't use
+  // DCHECKs (http://crbug.com/322713).
   bool checked_tracked_prefs_;
 
   PrefChangeRegistrar pref_registrar_;

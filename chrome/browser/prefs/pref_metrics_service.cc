@@ -263,10 +263,14 @@ void PrefMetricsService::LogIntegerPrefChange(int boundary_value,
 }
 
 void PrefMetricsService::GetDeviceIdCallback(const std::string& device_id) {
+#if !defined(OS_WIN) || defined(ENABLE_RLZ)
+  // A device_id is expected in all scenarios except when RLZ is disabled on
+  // Windows.
+  DCHECK(!device_id.empty());
+#endif
+
   device_id_ = device_id;
-  // On Aura, this seems to be called twice.
-  if (!checked_tracked_prefs_)
-    CheckTrackedPreferences();
+  CheckTrackedPreferences();
 }
 
 void PrefMetricsService::MarkNeedsEmptyValueForTrackedPreferences() {
@@ -289,7 +293,9 @@ void PrefMetricsService::MarkNeedsEmptyValueForTrackedPreferences() {
 // profile. To make the system more resistant to spoofing, pref values are
 // hashed with the pref path and the device id.
 void PrefMetricsService::CheckTrackedPreferences() {
+  // Make sure this is only called once per instance of this service.
   DCHECK(!checked_tracked_prefs_);
+  checked_tracked_prefs_ = true;
 
   const base::DictionaryValue* pref_hash_dicts =
       local_state_->GetDictionary(prefs::kProfilePreferenceHashes);
@@ -347,8 +353,6 @@ void PrefMetricsService::CheckTrackedPreferences() {
       UpdateTrackedPreference(tracked_pref_paths_[i]);
     }
   }
-
-  checked_tracked_prefs_ = true;
 
   // Now that we've checked the incoming preferences, register for change
   // notifications, unless this is test code.
