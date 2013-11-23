@@ -9,14 +9,7 @@
 
 namespace {
 
-// This test fails on Linux ASAN bots: <http://crbug.com/161709>.
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_SuccessfulLoadUMA DISABLED_SuccessfulLoadUMA
-#else
-#define MAYBE_SuccessfulLoadUMA SuccessfulLoadUMA
-#endif
-
-NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SuccessfulLoadUMA, {
+NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {
   // Load a NaCl module to generate UMA data.
   RunLoadTest(FILE_PATH_LITERAL("nacl_load_test.html"));
 
