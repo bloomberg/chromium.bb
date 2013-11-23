@@ -256,6 +256,7 @@ WindowSelector::WindowSelector(const WindowList& windows,
 
   std::vector<WindowSelectorPanels*> panels_items;
   for (size_t i = 0; i < windows.size(); ++i) {
+    WindowSelectorItem* item = NULL;
     if (windows[i] != restore_focus_window_)
       windows[i]->AddObserver(this);
     observed_windows_.insert(windows[i]);
@@ -276,9 +277,13 @@ WindowSelector::WindowSelector(const WindowList& windows,
         panels_item = *iter;
       }
       panels_item->AddWindow(windows[i]);
+      item = panels_item;
     } else {
-      windows_.push_back(new WindowSelectorWindow(windows[i]));
+      item = new WindowSelectorWindow(windows[i]);
+      windows_.push_back(item);
     }
+    // Verify that the window has been added to an item in overview.
+    CHECK(item->TargetedWindow(windows[i]));
   }
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", windows_.size());
 
@@ -396,8 +401,11 @@ void WindowSelector::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
   if (window == restore_focus_window_)
     restore_focus_window_ = NULL;
-  if (iter == windows_.end())
+  if (iter == windows_.end()) {
+    CHECK(std::find(observed_windows_.begin(),
+              observed_windows_.end(), window) == observed_windows_.end());
     return;
+  }
 
   observed_windows_.erase(window);
   (*iter)->RemoveWindow(window);
