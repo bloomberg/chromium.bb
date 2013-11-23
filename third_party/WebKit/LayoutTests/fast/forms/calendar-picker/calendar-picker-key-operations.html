@@ -20,7 +20,7 @@ openPicker(document.getElementById('date'), test1);
 function test1() {
     debug('Check that page popup exists.');
     shouldBe('popupWindow.pagePopupController.toString()', '"[object PagePopupController]"');
-    
+
     shouldBeFalse('isCalendarTableScrollingWithAnimation()');
     shouldBeEqualToString('currentMonth()', '2000-01');
     shouldBeEqualToString('selectedValue()', '2000-01-02');
@@ -46,7 +46,7 @@ function test1() {
     shouldBeEqualToString('selectedDayCells()', '');
     shouldBeEqualToString('highlightedValue()', '1999-12-19');
     shouldBeEqualToString('highlightedDayCells()', '1999-12-19');
-    
+
     debug('press down');
     eventSender.keyDown('downArrow');
     shouldBeEqualToString('currentMonth()', '1999-12');
@@ -254,7 +254,7 @@ function test2AfterClosing() {
 
 function testToday() {
     eventSender.keyDown('t');
-    shouldBeTrue('isCalendarTableScrollingWithAnimation()', true /* quiet */);
+    shouldBeTrue('isCalendarTableScrollingWithAnimation()');
     var now = new Date();
     var expectedDate = serializeDate(now.getFullYear(), now.getMonth(), now.getDate());
     var expectedMonth = (new popupWindow.Month(now.getFullYear(), now.getMonth())).toString();

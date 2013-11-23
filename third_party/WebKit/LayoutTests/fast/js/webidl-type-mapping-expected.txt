@@ -5,8 +5,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 converter = window.internals.typeConversions()
 
-PASS 'testLong' in converter is true
-PASS typeof converter.testLong === 'number' is true
 converter.testLong = 0
 PASS converter.testLong is 0
 converter.testLong = -0
@@ -81,8 +79,6 @@ converter.testLong = undefined
 PASS converter.testLong is 0
 PASS converter.testLong = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testEnforceRangeLong' in converter is true
-PASS typeof converter.testEnforceRangeLong === 'number' is true
 converter.testEnforceRangeLong = 0
 PASS converter.testEnforceRangeLong is 0
 converter.testEnforceRangeLong = -0
@@ -146,8 +142,6 @@ PASS converter.testEnforceRangeLong is 0
 PASS converter.testEnforceRangeLong = undefined threw exception TypeError: Type error.
 PASS converter.testEnforceRangeLong = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testUnsignedLong' in converter is true
-PASS typeof converter.testUnsignedLong === 'number' is true
 converter.testUnsignedLong = 0
 PASS converter.testUnsignedLong is 0
 converter.testUnsignedLong = -0
@@ -222,8 +216,6 @@ converter.testUnsignedLong = undefined
 PASS converter.testUnsignedLong is 0
 PASS converter.testUnsignedLong = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testEnforceRangeUnsignedLong' in converter is true
-PASS typeof converter.testEnforceRangeUnsignedLong === 'number' is true
 converter.testEnforceRangeUnsignedLong = 0
 PASS converter.testEnforceRangeUnsignedLong is 0
 converter.testEnforceRangeUnsignedLong = -0
@@ -282,8 +274,6 @@ PASS converter.testEnforceRangeUnsignedLong is 0
 PASS converter.testEnforceRangeUnsignedLong = undefined threw exception TypeError: Type error.
 PASS converter.testEnforceRangeUnsignedLong = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testLongLong' in converter is true
-PASS typeof converter.testLongLong === 'number' is true
 converter.testLongLong = 0
 PASS converter.testLongLong is 0
 converter.testLongLong = -0
@@ -358,8 +348,6 @@ converter.testLongLong = undefined
 PASS converter.testLongLong is 0
 PASS converter.testLongLong = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testEnforceRangeLongLong' in converter is true
-PASS typeof converter.testEnforceRangeLongLong === 'number' is true
 converter.testEnforceRangeLongLong = 0
 PASS converter.testEnforceRangeLongLong is 0
 converter.testEnforceRangeLongLong = -0
@@ -426,8 +414,6 @@ PASS converter.testEnforceRangeLongLong is 0
 PASS converter.testEnforceRangeLongLong = undefined threw exception TypeError: Type error.
 PASS converter.testEnforceRangeLongLong = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testUnsignedLongLong' in converter is true
-PASS typeof converter.testUnsignedLongLong === 'number' is true
 converter.testUnsignedLongLong = 0
 PASS converter.testUnsignedLongLong is 0
 converter.testUnsignedLongLong = -0
@@ -502,8 +488,6 @@ converter.testUnsignedLongLong = undefined
 PASS converter.testUnsignedLongLong is 0
 PASS converter.testUnsignedLongLong = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testEnforceRangeUnsignedLongLong' in converter is true
-PASS typeof converter.testEnforceRangeUnsignedLongLong === 'number' is true
 converter.testEnforceRangeUnsignedLongLong = 0
 PASS converter.testEnforceRangeUnsignedLongLong is 0
 converter.testEnforceRangeUnsignedLongLong = -0
@@ -562,8 +546,6 @@ PASS converter.testEnforceRangeUnsignedLongLong is 0
 PASS converter.testEnforceRangeUnsignedLongLong = undefined threw exception TypeError: Type error.
 PASS converter.testEnforceRangeUnsignedLongLong = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testByte' in converter is true
-PASS typeof converter.testByte === 'number' is true
 converter.testByte = 0
 PASS converter.testByte is 0
 converter.testByte = -0
@@ -622,8 +604,6 @@ converter.testByte = undefined
 PASS converter.testByte is 0
 PASS converter.testByte = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testEnforceRangeByte' in converter is true
-PASS typeof converter.testEnforceRangeByte === 'number' is true
 converter.testEnforceRangeByte = 0
 PASS converter.testEnforceRangeByte is 0
 converter.testEnforceRangeByte = -0
@@ -669,8 +649,6 @@ PASS converter.testEnforceRangeByte is 0
 PASS converter.testEnforceRangeByte = undefined threw exception TypeError: Type error.
 PASS converter.testEnforceRangeByte = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testOctet' in converter is true
-PASS typeof converter.testOctet === 'number' is true
 converter.testOctet = 0
 PASS converter.testOctet is 0
 converter.testOctet = -0
@@ -733,8 +711,6 @@ converter.testOctet = undefined
 PASS converter.testOctet is 0
 PASS converter.testOctet = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testEnforceRangeOctet' in converter is true
-PASS typeof converter.testEnforceRangeOctet === 'number' is true
 converter.testEnforceRangeOctet = 0
 PASS converter.testEnforceRangeOctet is 0
 converter.testEnforceRangeOctet = -0
@@ -780,8 +756,6 @@ PASS converter.testEnforceRangeOctet is 0
 PASS converter.testEnforceRangeOctet = undefined threw exception TypeError: Type error.
 PASS converter.testEnforceRangeOctet = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testShort' in converter is true
-PASS typeof converter.testShort === 'number' is true
 converter.testShort = 0
 PASS converter.testShort is 0
 converter.testShort = -0
@@ -846,8 +820,6 @@ converter.testShort = undefined
 PASS converter.testShort is 0
 PASS converter.testShort = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testEnforceRangeShort' in converter is true
-PASS typeof converter.testEnforceRangeShort === 'number' is true
 converter.testEnforceRangeShort = 0
 PASS converter.testEnforceRangeShort is 0
 converter.testEnforceRangeShort = -0
@@ -901,8 +873,6 @@ PASS converter.testEnforceRangeShort is 0
 PASS converter.testEnforceRangeShort = undefined threw exception TypeError: Type error.
 PASS converter.testEnforceRangeShort = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testUnsignedShort' in converter is true
-PASS typeof converter.testUnsignedShort === 'number' is true
 converter.testUnsignedShort = 0
 PASS converter.testUnsignedShort is 0
 converter.testUnsignedShort = -0
@@ -969,8 +939,6 @@ converter.testUnsignedShort = undefined
 PASS converter.testUnsignedShort is 0
 PASS converter.testUnsignedShort = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
-PASS 'testEnforceRangeUnsignedShort' in converter is true
-PASS typeof converter.testEnforceRangeUnsignedShort === 'number' is true
 converter.testEnforceRangeUnsignedShort = 0
 PASS converter.testEnforceRangeUnsignedShort is 0
 converter.testEnforceRangeUnsignedShort = -0

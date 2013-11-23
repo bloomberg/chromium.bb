@@ -12,8 +12,8 @@ shouldBe('typeof window.internals.observeGC', '"function"',
 var valueA = {};
 observationA = internals.observeGC(valueA);
 gc();
-shouldBeFalse('observationA.wasCollected',
-              'value ineligible for GC should not be flagged as collected');
+shouldBeFalse('observationA.wasCollected');
+// value ineligible for GC should not be flagged as collected
 valueA = null;
 observationA = null;
 
@@ -23,8 +23,8 @@ var valueB = {};
 observationB = internals.observeGC(valueB);
 valueB = null;
 gc();
-shouldBeTrue('observationB.wasCollected',
-             'value eligible for GC should be flagged as collected');
+shouldBeTrue('observationB.wasCollected');
+// value eligible for GC should be flagged as collected
 observationB = null;
 
 // "One DOM Tree Hill": A family struggles with the loss of
@@ -34,8 +34,8 @@ var valueC = document.createElement('div');
 observationC = internals.observeGC(valueC);
 valueC = null;
 gc();
-shouldBeTrue('observationC.wasCollected',
-             'DOM node eligible for GC should be flagged as collected');
+shouldBeTrue('observationC.wasCollected');
+// DOM node eligible for GC should be flagged as collected
 observationC = null;
 
 // Now, movies that failed:

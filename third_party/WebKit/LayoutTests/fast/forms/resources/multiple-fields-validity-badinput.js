@@ -34,7 +34,7 @@ function testBadInput(type) {
         else
             input.value = '2012-02-01T03:04';
         shouldNotBe('colorOf(input)', 'invalidStyleColor', quiet);
-        shouldBeFalse('input.validity.badInput', quiet);
+        shouldBeFalse('input.validity.badInput');
         eventSender.keyDown('rightArrow'); // -> 02/[01]/2012 ...
         eventSender.keyDown('downArrow'); //  -> 02/[31]/2012 ...
         shouldBeEqualToString('input.value', '');
