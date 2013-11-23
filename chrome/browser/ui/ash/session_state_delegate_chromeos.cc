@@ -42,7 +42,10 @@ bool SessionStateDelegateChromeos::IsActiveUserSessionStarted() const {
 }
 
 bool SessionStateDelegateChromeos::CanLockScreen() const {
-  return chromeos::UserManager::Get()->CanCurrentUserLock();
+  const chromeos::UserList unlock_users =
+      chromeos::UserManager::Get()->GetUnlockUsers();
+  DCHECK_LE(unlock_users.size(), 1u);
+  return !unlock_users.empty() && unlock_users[0]->can_lock();
 }
 
 bool SessionStateDelegateChromeos::IsScreenLocked() const {
@@ -51,7 +54,13 @@ bool SessionStateDelegateChromeos::IsScreenLocked() const {
 }
 
 bool SessionStateDelegateChromeos::ShouldLockScreenBeforeSuspending() const {
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  const chromeos::UserList unlock_users =
+      chromeos::UserManager::Get()->GetUnlockUsers();
+  DCHECK_LE(unlock_users.size(), 1u);
+  Profile* profile =
+      !unlock_users.empty()
+          ? chromeos::UserManager::Get()->GetProfileByUser(unlock_users[0])
+          : NULL;
   return profile && profile->GetPrefs()->GetBoolean(prefs::kEnableScreenLock);
 }
 

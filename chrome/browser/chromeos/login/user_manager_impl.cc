@@ -302,8 +302,8 @@ const UserList& UserManagerImpl::GetLRULoggedInUsers() {
 
 UserList UserManagerImpl::GetUnlockUsers() const {
   UserList unlock_users;
-  CHECK(primary_user_);
-  unlock_users.push_back(primary_user_);
+  if (primary_user_)
+    unlock_users.push_back(primary_user_);
   return unlock_users;
 }
 
