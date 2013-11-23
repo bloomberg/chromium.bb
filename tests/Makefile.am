@@ -34,7 +34,9 @@ export abs_builddir
 
 noinst_LTLIBRARIES =			\
 	$(weston_test)			\
-	$(module_tests)
+	$(module_tests)			\
+	libtest-runner.la		\
+	libtest-client.la
 
 noinst_PROGRAMS =			\
 	$(setbacklight)			\
@@ -64,19 +66,14 @@ weston_test_la_SOURCES =		\
 	wayland-test-protocol.c		\
 	wayland-test-server-protocol.h
 
-weston_test_runner_src =		\
-	weston-test-runner.c		\
+libtest_runner_la_SOURCES =	\
+	weston-test-runner.c	\
 	weston-test-runner.h
-
-check_LTLIBRARIES = libshared-test.la
-
-libshared_test_la_SOURCES =	\
-	$(weston_test_runner_src)
-libshared_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+libtest_runner_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 
 config_parser_test_LDADD =	\
 	../shared/libshared.la	\
-	libshared-test.la	\
+	libtest-runner.la	\
 	$(COMPOSITOR_LIBS)
 config_parser_test_SOURCES =	\
 	config-parser-test.c
@@ -85,43 +82,39 @@ vertex_clip_test_SOURCES =		\
 	../src/vertex-clipping.c	\
 	../src/vertex-clipping.h
 vertex_clip_test_LDADD =	\
-	libshared-test.la	\
+	libtest-runner.la	\
 	-lm -lrt
 
-weston_test_client_src =		\
+libtest_client_la_SOURCES =		\
 	weston-test-client-helper.c	\
 	weston-test-client-helper.h	\
 	wayland-test-protocol.c		\
 	wayland-test-client-protocol.h
-weston_test_client_libs =		\
+libtest_client_la_LIBADD =		\
 	$(TEST_CLIENT_LIBS)		\
 	../shared/libshared.la		\
-	libshared-test.la
+	libtest-runner.la
 
-bad_buffer_weston_SOURCES = bad-buffer-test.c $(weston_test_client_src)
-bad_buffer_weston_LDADD = $(weston_test_client_libs)
+bad_buffer_weston_SOURCES = bad-buffer-test.c
+bad_buffer_weston_LDADD = libtest-client.la
 
-keyboard_weston_SOURCES = keyboard-test.c $(weston_test_client_src)
-keyboard_weston_LDADD = $(weston_test_client_libs)
+keyboard_weston_SOURCES = keyboard-test.c
+keyboard_weston_LDADD = libtest-client.la
 
-event_weston_SOURCES = event-test.c $(weston_test_client_src)
-event_weston_LDADD = $(weston_test_client_libs)
+event_weston_SOURCES = event-test.c
+event_weston_LDADD = libtest-client.la
 
-button_weston_SOURCES = button-test.c $(weston_test_client_src)
-button_weston_LDADD = $(weston_test_client_libs)
+button_weston_SOURCES = button-test.c
+button_weston_LDADD = libtest-client.la
 
-text_weston_SOURCES =				\
-	text-test.c				\
-	../clients/text-protocol.c		\
-	$(weston_test_client_src)
-text_weston_LDADD = $(weston_test_client_libs)
+text_weston_SOURCES = text-test.c ../clients/text-protocol.c
+text_weston_LDADD = libtest-client.la
 
-subsurface_weston_SOURCES = subsurface-test.c $(weston_test_client_src)
-subsurface_weston_LDADD = $(weston_test_client_libs)
+subsurface_weston_SOURCES = subsurface-test.c
+subsurface_weston_LDADD = libtest-client.la
 
-xwayland_weston_SOURCES = xwayland-test.c	$(weston_test_client_src)
-
-xwayland_weston_LDADD = $(weston_test_client_libs) $(XWAYLAND_TEST_LIBS)
+xwayland_weston_SOURCES = xwayland-test.c
+xwayland_weston_LDADD = libtest-client.la $(XWAYLAND_TEST_LIBS)
 
 if ENABLE_XWAYLAND_TEST
 xwayland_test = xwayland.weston
