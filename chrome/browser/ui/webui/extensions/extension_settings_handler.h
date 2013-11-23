@@ -95,7 +95,7 @@ class ExtensionSettingsHandler
   // content::WebContentsObserver implementation.
   virtual void RenderViewDeleted(
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void NavigateToPendingEntry(
+  virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) OVERRIDE;
 

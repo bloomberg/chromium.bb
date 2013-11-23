@@ -95,7 +95,7 @@ void OmniboxNavigationObserver::Observe(
         controller->GetBrowserContext()->GetRequestContext());
   }
   WebContentsObserver::Observe(controller->GetWebContents());
-  // NavigateToPendingEntry() will be called for this load as well.
+  // DidStartNavigationToPendingEntry() will be called for this load as well.
 }
 
 void OmniboxNavigationObserver::NavigationEntryCommitted(
@@ -113,7 +113,7 @@ void OmniboxNavigationObserver::WebContentsDestroyed(
   delete this;
 }
 
-void OmniboxNavigationObserver::NavigateToPendingEntry(
+void OmniboxNavigationObserver::DidStartNavigationToPendingEntry(
     const GURL& url,
     content::NavigationController::ReloadType reload_type) {
   if (load_state_ == LOAD_NOT_SEEN) {

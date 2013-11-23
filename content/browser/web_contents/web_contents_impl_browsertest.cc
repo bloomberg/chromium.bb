@@ -135,7 +135,7 @@ class RenderViewSizeObserver : public WebContentsObserver {
     rwhv_create_size_ = rvh->GetView()->GetViewBounds().size();
   }
 
-  virtual void NavigateToPendingEntry(
+  virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type) OVERRIDE {
     ResizeWebContentsView(shell_, wcv_new_size_, false);
@@ -288,8 +288,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // RenderWidgetHostView is created at specified size.
   init_size.Enlarge(size_insets.width(), size_insets.height());
   EXPECT_EQ(init_size, observer.rwhv_create_size());
-  // RenderViewSizeObserver resizes WebContentsView in NavigateToPendingEntry,
-  // so both WebContentsView and RenderWidgetHostView adopt this new size.
+  // RenderViewSizeObserver resizes WebContentsView in
+  // DidStartNavigationToPendingEntry, so both WebContentsView and
+  // RenderWidgetHostView adopt this new size.
   new_size.Enlarge(size_insets.width(), size_insets.height());
   EXPECT_EQ(new_size,
             shell()->web_contents()->GetRenderWidgetHostView()->GetViewBounds().

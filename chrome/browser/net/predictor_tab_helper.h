@@ -19,7 +19,7 @@ class PredictorTabHelper
   virtual ~PredictorTabHelper();
 
   // content::WebContentsObserver implementation
-  virtual void NavigateToPendingEntry(
+  virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) OVERRIDE;
   virtual void DidNavigateMainFrame(

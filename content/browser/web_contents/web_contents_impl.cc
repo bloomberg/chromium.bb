@@ -1658,9 +1658,10 @@ bool WebContentsImpl::NavigateToEntry(
   }
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(WebContentsObserver,
-                    observers_,
-                    NavigateToPendingEntry(entry.GetURL(), reload_type));
+  FOR_EACH_OBSERVER(
+      WebContentsObserver,
+      observers_,
+      DidStartNavigationToPendingEntry(entry.GetURL(), reload_type));
 
   if (delegate_)
     delegate_->DidNavigateToPendingEntry(this);

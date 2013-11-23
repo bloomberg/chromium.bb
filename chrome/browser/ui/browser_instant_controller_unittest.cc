@@ -56,14 +56,14 @@ class FakeWebContentsObserver : public content::WebContentsObserver {
         url_(contents->GetURL()),
         num_reloads_(0) {}
 
-  virtual void NavigateToPendingEntry(
+  virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) OVERRIDE {
     // The tab reload event doesn't work with BrowserWithTestWindowTest.
-    // So we capture the NavigateToPendingEntry, and use the
+    // So we capture the DidStartNavigationToPendingEntry, and use the
     // BrowserWithTestWindowTest::NavigateAndCommit to simulate the complete
-    // reload. Note that this will again trigger NavigateToPendingEntry, so we
-    // remove this as observer.
+    // reload. Note that this will again trigger
+    // DidStartNavigationToPendingEntry, so we remove this as observer.
     content::NavigationController* controller =
         &web_contents()->GetController();
     Observe(NULL);

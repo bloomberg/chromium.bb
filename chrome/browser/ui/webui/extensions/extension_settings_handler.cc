@@ -457,7 +457,8 @@ void ExtensionSettingsHandler::RenderViewDeleted(
   MaybeUpdateAfterNotification();
 }
 
-void ExtensionSettingsHandler::NavigateToPendingEntry(const GURL& url,
+void ExtensionSettingsHandler::DidStartNavigationToPendingEntry(
+    const GURL& url,
     content::NavigationController::ReloadType reload_type) {
   if (reload_type != content::NavigationController::NO_RELOAD)
     ReloadUnpackedExtensions();

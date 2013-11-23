@@ -226,7 +226,7 @@ class OneClickSigninHelper
   void PasswordSubmitted(const autofill::PasswordForm& form);
 
   // content::WebContentsObserver overrides.
-  virtual void NavigateToPendingEntry(
+  virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) OVERRIDE;
   virtual void DidNavigateMainFrame(

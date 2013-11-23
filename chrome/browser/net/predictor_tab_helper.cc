@@ -41,7 +41,7 @@ PredictorTabHelper::PredictorTabHelper(content::WebContents* web_contents)
 PredictorTabHelper::~PredictorTabHelper() {
 }
 
-void PredictorTabHelper::NavigateToPendingEntry(
+void PredictorTabHelper::DidStartNavigationToPendingEntry(
     const GURL& url,
     content::NavigationController::ReloadType reload_type) {
   Profile* profile =

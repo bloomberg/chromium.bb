@@ -1099,10 +1099,11 @@ void OneClickSigninHelper::set_do_not_start_sync_for_testing() {
   do_not_start_sync_for_testing_ = true;
 }
 
-void OneClickSigninHelper::NavigateToPendingEntry(
+void OneClickSigninHelper::DidStartNavigationToPendingEntry(
     const GURL& url,
     content::NavigationController::ReloadType reload_type) {
-  VLOG(1) << "OneClickSigninHelper::NavigateToPendingEntry: url=" << url.spec();
+  VLOG(1) << "OneClickSigninHelper::DidStartNavigationToPendingEntry: url=" <<
+      url.spec();
   // If the tab navigates to a new page, and this page is not a valid Gaia
   // sign in redirect or reponse, or the expected continue URL, make sure to
   // clear the internal state.  This is needed to detect navigations in the

@@ -193,7 +193,7 @@ class NavigationControllerTest
   }
 
   // WebContentsObserver:
-  virtual void NavigateToPendingEntry(
+  virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type) OVERRIDE {
     navigated_url_ = url;

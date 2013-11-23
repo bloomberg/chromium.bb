@@ -278,7 +278,7 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
 
   // Enlarge WebContentsView by |wcv_resize_insets_| while the navigation entry
   // is pending.
-  virtual void NavigateToPendingEntry(
+  virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type) OVERRIDE {
     if (wcv_resize_insets_.IsEmpty())
@@ -319,7 +319,8 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
 
   typedef std::map<content::RenderViewHost*, Sizes> RenderViewSizes;
   RenderViewSizes render_view_sizes_;
-  // Enlarge WebContentsView by this size insets in NavigateToPendingEntry.
+  // Enlarge WebContentsView by this size insets in
+  // DidStartNavigationToPendingEntry.
   gfx::Size wcv_resize_insets_;
   BrowserWindow* browser_window_;  // Weak ptr.
 
@@ -2544,8 +2545,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_GetSizeForNewRenderView) {
                       initial_wcv_size.height() + height_inset),
             rwhv_create_size2);
   // WebContentsView was resized in
-  // RenderViewSizeObserver::NavigateToPendingEntry after RenderWidgetHostView
-  // was created, so the commit size should be resized accordingly.
+  // RenderViewSizeObserver::DidStartNavigationToPendingEntry after
+  // RenderWidgetHostView was created, so the commit size should be resized
+  // accordingly.
   gfx::Size exp_commit_size(initial_wcv_size);
   exp_commit_size.Enlarge(wcv_resize_insets.width(),
                           wcv_resize_insets.height() + height_inset);
