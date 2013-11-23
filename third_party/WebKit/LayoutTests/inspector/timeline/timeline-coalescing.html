@@ -4,6 +4,24 @@
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
+function initialize_TimelineCoalescing()
+{
+
+InspectorTest.dumpAggrergatedStats = function(record)
+{
+    var aggregatedStats = record.aggregatedStats;
+    var result = "";
+    
+    for (category in aggregatedStats) {
+        if (result)
+            result += ", ";
+        result += category + ": " + aggregatedStats[category].toFixed(5);
+    }
+    return result ? "(" + result + ")" : "";
+}
+
+}
+
 function test()
 {
     var records = [
@@ -62,7 +80,7 @@ function test()
     InspectorTest.loadTimelineRecords(records);
 
     var rootRecord = WebInspector.panels.timeline._presentationModel.rootRecord();
-    InspectorTest.dumpTimelineRecord(rootRecord);
+    InspectorTest.dumpTimelineRecord(rootRecord, InspectorTest.dumpAggrergatedStats);
     var coalesced = rootRecord.children[0];
     InspectorTest.addResult("coalesced record's hasWarnings(): " + coalesced.hasWarnings());
     InspectorTest.addResult("coalesced record's childHasWarnings(): " + coalesced.childHasWarnings());

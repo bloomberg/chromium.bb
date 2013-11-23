@@ -1,28 +1,28 @@
 Test timeline records coalescing
 
-Root
-----> Layout x 3
---------> Layout
---------> Layout
---------> Layout
-----> Layout
-----> FunctionCall x 2
---------> FunctionCall
-------------> Layout x 2
-----------------> Layout
-----------------> Layout
---------> FunctionCall
-------------> Layout x 2
-----------------> Layout
-----------------> Layout
-----> TimeStamp x 2
---------> TimeStamp : foo
---------> TimeStamp : foo
-----> TimeStamp : bar
-----> EventDispatch x 2
---------> EventDispatch
---------> EventDispatch
-----> EventDispatch
+Root 
+----> Layout x 3 (rendering: 0.29970)
+--------> Layout (rendering: 0.09990)
+--------> Layout (rendering: 0.09990)
+--------> Layout (rendering: 0.09990)
+----> Layout (rendering: 0.09490)
+----> FunctionCall x 2 (rendering: 0.39960, scripting: 0.00040)
+--------> FunctionCall (rendering: 0.19980, scripting: 0.00020)
+------------> Layout x 2 (rendering: 0.19980)
+----------------> Layout (rendering: 0.09990)
+----------------> Layout (rendering: 0.09990)
+--------> FunctionCall (rendering: 0.19980, scripting: 0.00020)
+------------> Layout x 2 (rendering: 0.19980)
+----------------> Layout (rendering: 0.09990)
+----------------> Layout (rendering: 0.09990)
+----> TimeStamp x 2 (scripting: 0.19980)
+--------> TimeStamp : foo (scripting: 0.09990)
+--------> TimeStamp : foo (scripting: 0.09990)
+----> TimeStamp : bar (scripting: 0.09990)
+----> EventDispatch x 2 (scripting: 0.19980)
+--------> EventDispatch (scripting: 0.09990)
+--------> EventDispatch (scripting: 0.09990)
+----> EventDispatch (scripting: 0.09990)
 coalesced record's hasWarnings(): false
 coalesced record's childHasWarnings(): true
 

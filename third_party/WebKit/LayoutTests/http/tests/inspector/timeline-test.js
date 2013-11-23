@@ -137,7 +137,7 @@ InspectorTest.innerPrintTimelineRecords = function(records, typeName, formatter)
 };
 
 // Dump just the record name, indenting output on separate lines for subrecords
-InspectorTest.dumpTimelineRecord = function(record, level) 
+InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level)
 {
     if (typeof level !== "number")
         level = 0;
@@ -154,12 +154,14 @@ InspectorTest.dumpTimelineRecord = function(record, level)
         || record.type === WebInspector.TimelineModel.RecordType.TimeEnd) {
         suffix = " : " + record.data.message;
     }
+    if (detailsCallback)
+        suffix += " " + detailsCallback(record);
     InspectorTest.addResult(prefix + InspectorTest._timelineAgentTypeToString(record.type) + suffix);
 
     var numChildren = record.children ? record.children.length : 0;
     for (var i = 0; i < numChildren; ++i)
-        InspectorTest.dumpTimelineRecord(record.children[i], level + 1);
-};
+        InspectorTest.dumpTimelineRecord(record.children[i], detailsCallback, level + 1);
+}
 
 InspectorTest.dumpTimelineRecords = function(timelineRecords)
 {
