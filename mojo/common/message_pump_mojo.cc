@@ -37,7 +37,7 @@ struct MessagePumpMojo::RunState {
   bool should_quit;
 };
 
-MessagePumpMojo::MessagePumpMojo() : run_state_(NULL) {
+MessagePumpMojo::MessagePumpMojo() : run_state_(NULL), next_handler_id_(0) {
 }
 
 MessagePumpMojo::~MessagePumpMojo() {
@@ -45,18 +45,22 @@ MessagePumpMojo::~MessagePumpMojo() {
 
 void MessagePumpMojo::AddHandler(MessagePumpMojoHandler* handler,
                                  MojoHandle handle,
-                                 MojoWaitFlags wait_flags) {
+                                 MojoWaitFlags wait_flags,
+                                 base::TimeTicks deadline) {
   DCHECK(handler);
   DCHECK_NE(MOJO_HANDLE_INVALID, handle);
-  handlers_[handle].handler = handler;
-  handlers_[handle].wait_flags = wait_flags;
-
-  SignalControlPipe();
+  // Assume it's an error if someone tries to reregister an existing handle.
+  DCHECK_EQ(0u, handlers_.count(handle));
+  Handler handler_data;
+  handler_data.handler = handler;
+  handler_data.wait_flags = wait_flags;
+  handler_data.deadline = deadline;
+  handler_data.id = next_handler_id_++;
+  handlers_[handle] = handler_data;
 }
 
 void MessagePumpMojo::RemoveHandler(MojoHandle handle) {
   handlers_.erase(handle);
-  SignalControlPipe();
 }
 
 void MessagePumpMojo::Run(Delegate* delegate) {
@@ -115,15 +119,7 @@ void MessagePumpMojo::ScheduleDelayedWork(
 }
 
 void MessagePumpMojo::DoInternalWork(bool block) {
-  MojoDeadline deadline;
-  if (block && !run_state_->delayed_work_time.is_null()) {
-    const base::TimeDelta delta = run_state_->delayed_work_time -
-        base::TimeTicks::Now();
-    deadline = std::max(static_cast<MojoDeadline>(0),
-                        static_cast<MojoDeadline>(delta.InMicroseconds()));
-  } else {
-    deadline = 0;
-  }
+  const MojoDeadline deadline = block ? GetDeadlineForWait() : 0;
   const WaitState wait_state = GetWaitState();
   const MojoResult result = MojoWaitMany(
       &wait_state.handles.front(),
@@ -152,6 +148,21 @@ void MessagePumpMojo::DoInternalWork(bool block) {
         NOTREACHED();
     }
   }
+
+  // Notify and remove any handlers whose time has expired. Make a copy in case
+  // someone tries to add/remove new handlers from notification.
+  const HandleToHandler cloned_handlers(handlers_);
+  const base::TimeTicks now(base::TimeTicks::Now());
+  for (HandleToHandler::const_iterator i = cloned_handlers.begin();
+       i != cloned_handlers.end(); ++i) {
+    // Since we're iterating over a clone of the handlers, verify the handler is
+    // still valid before notifying.
+    if (!i->second.deadline.is_null() && i->second.deadline < now &&
+        handlers_.find(i->first) != handlers_.end() &&
+        handlers_[i->first].id == i->second.id) {
+      i->second.handler->OnHandleError(i->first, MOJO_RESULT_DEADLINE_EXCEEDED);
+    }
+  }
 }
 
 void MessagePumpMojo::RemoveFirstInvalidHandle(const WaitState& wait_state) {
@@ -161,6 +172,8 @@ void MessagePumpMojo::RemoveFirstInvalidHandle(const WaitState& wait_state) {
         MojoWait(wait_state.handles[i], wait_state.wait_flags[i], 0);
     if (result == MOJO_RESULT_INVALID_ARGUMENT ||
         result == MOJO_RESULT_FAILED_PRECONDITION) {
+      // Remove the handle first, this way if OnHandleError() tries to remove
+      // the handle our iterator isn't invalidated.
       DCHECK(handlers_.find(wait_state.handles[i]) != handlers_.end());
       MessagePumpMojoHandler* handler =
           handlers_[wait_state.handles[i]].handler;
@@ -193,6 +206,19 @@ MessagePumpMojo::WaitState MessagePumpMojo::GetWaitState() const {
     wait_state.wait_flags.push_back(i->second.wait_flags);
   }
   return wait_state;
+}
+
+MojoDeadline MessagePumpMojo::GetDeadlineForWait() const {
+  base::TimeTicks min_time = run_state_->delayed_work_time;
+  for (HandleToHandler::const_iterator i = handlers_.begin();
+       i != handlers_.end(); ++i) {
+    if (min_time.is_null() && i->second.deadline < min_time)
+      min_time = i->second.deadline;
+  }
+  return min_time.is_null() ? MOJO_DEADLINE_INDEFINITE :
+      std::max(static_cast<MojoDeadline>(0),
+               static_cast<MojoDeadline>(
+                   (min_time - base::TimeTicks::Now()).InMicroseconds()));
 }
 
 }  // namespace common

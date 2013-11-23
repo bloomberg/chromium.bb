@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/message_loop/message_pump.h"
+#include "base/time/time.h"
 #include "mojo/common/mojo_common_export.h"
 #include "mojo/public/system/core.h"
 
@@ -23,13 +24,11 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
   virtual ~MessagePumpMojo();
 
   // Registers a MessagePumpMojoHandler for the specified handle. Only one
-  // handler can be registered for a specified handle. If there is an existing
-  // handler registered it is clobbered and silently removed.
-  // The handler is notified either when the handle is ready, or when it becomes
-  // invalid. If the handle becomes invalid the handler is removed and notified.
+  // handler can be registered for a specified handle.
   void AddHandler(MessagePumpMojoHandler* handler,
                   MojoHandle handle,
-                  MojoWaitFlags wait_flags);
+                  MojoWaitFlags wait_flags,
+                  base::TimeTicks deadline);
 
   void RemoveHandler(MojoHandle handle);
 
@@ -47,10 +46,13 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
   // Creates a MessagePumpMojoHandler and the set of MojoWaitFlags it was
   // registered with.
   struct Handler {
-    Handler() : handler(NULL), wait_flags(MOJO_WAIT_FLAG_NONE) {}
+    Handler() : handler(NULL), wait_flags(MOJO_WAIT_FLAG_NONE), id(0) {}
 
     MessagePumpMojoHandler* handler;
     MojoWaitFlags wait_flags;
+    base::TimeTicks deadline;
+    // See description of |MessagePumpMojo::next_handler_id_| for details.
+    int id;
   };
 
   typedef std::map<MojoHandle, Handler> HandleToHandler;
@@ -67,11 +69,21 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
 
   WaitState GetWaitState() const;
 
+  // Returns the deadline for the call to MojoWaitMany().
+  MojoDeadline GetDeadlineForWait() const;
+
   // If non-NULL we're running (inside Run()). Member is reference to value on
   // stack.
   RunState* run_state_;
 
   HandleToHandler handlers_;
+
+  // An ever increasing value assigned to each Handler::id. Used to detect
+  // uniqueness while notifying. That is, while notifying expired timers we copy
+  // |handlers_| and only notify handlers whose id match. If the id does not
+  // match it means the handler was removed then added so that we shouldn't
+  // notify it.
+  int next_handler_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpMojo);
 };
