@@ -1232,7 +1232,7 @@ void MetricsService::CloseCurrentLog() {
   current_log->RecordEnvironment(plugins_, google_update_metrics_,
                                  synthetic_trials);
   PrefService* pref = g_browser_process->local_state();
-  current_log->RecordStabilityMetrics(plugins_, GetIncrementalUptime(pref),
+  current_log->RecordStabilityMetrics(GetIncrementalUptime(pref),
                                       MetricsLog::ONGOING_LOG);
 
   RecordCurrentHistograms();
@@ -1473,7 +1473,7 @@ void MetricsService::PrepareInitialLog() {
   initial_log_->RecordEnvironment(plugins_, google_update_metrics_,
                                   synthetic_trials);
   PrefService* pref = g_browser_process->local_state();
-  initial_log_->RecordStabilityMetrics(plugins_, GetIncrementalUptime(pref),
+  initial_log_->RecordStabilityMetrics(GetIncrementalUptime(pref),
                                        MetricsLog::INITIAL_LOG);
 
   // Histograms only get written to the current log, so make the new log current

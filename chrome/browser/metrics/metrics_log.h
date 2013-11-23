@@ -105,15 +105,14 @@ class MetricsLog : public MetricsLogBase {
       const tracked_objects::ProcessDataSnapshot& process_data,
       int process_type);
 
-  // Writes application stability metrics (as part of the profile log). Takes
-  // the list of installed plugins as a parameter because that can't be obtained
-  // synchronously from the UI thread.
-  // NOTE: Has the side-effect of clearing those counts.
+  // Writes application stability metrics (as part of the profile log). The
+  // system profile portion of the log must have already been filled in by a
+  // call to RecordEnvironment().
+  // NOTE: Has the side-effect of clearing the stability prefs..
   //
   // If |log_type| is INITIAL_LOG, records additional info such as number of
   // incomplete shutdowns as well as extra breakpad and debugger stats.
   void RecordStabilityMetrics(
-      const std::vector<content::WebPluginInfo>& plugin_list,
       base::TimeDelta incremental_uptime,
       LogType log_type);
 
@@ -139,15 +138,13 @@ class MetricsLog : public MetricsLogBase {
   // Fills |field_trial_ids| with the list of initialized field trials name and
   // group ids.
   virtual void GetFieldTrialIds(
-    std::vector<chrome_variations::ActiveGroupId>* field_trial_ids) const;
+      std::vector<chrome_variations::ActiveGroupId>* field_trial_ids) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);
 
   // Within stability group, write plugin crash stats.
-  void WritePluginStabilityElements(
-      const std::vector<content::WebPluginInfo>& plugin_list,
-      PrefService* pref);
+  void WritePluginStabilityElements(PrefService* pref);
 
   // Within the stability group, write required attributes.
   void WriteRequiredStabilityAttributes(PrefService* pref);

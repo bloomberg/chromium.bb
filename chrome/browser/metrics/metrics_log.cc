@@ -424,11 +424,12 @@ const std::string& MetricsLog::version_extension() {
 }
 
 void MetricsLog::RecordStabilityMetrics(
-    const std::vector<content::WebPluginInfo>& plugin_list,
     base::TimeDelta incremental_uptime,
     LogType log_type) {
   DCHECK_NE(NO_LOG, log_type);
   DCHECK(!locked());
+  // Check UMA enabled date presence to ensure system profile has been filled.
+  DCHECK(uma_proto()->system_profile().has_uma_enabled_date());
 
   PrefService* pref = GetPrefService();
   DCHECK(pref);
@@ -438,7 +439,7 @@ void MetricsLog::RecordStabilityMetrics(
   //       sent, but that's true for all the metrics.
 
   WriteRequiredStabilityAttributes(pref);
-  WritePluginStabilityElements(plugin_list, pref);
+  WritePluginStabilityElements(pref);
 
   // Record recent delta for critical stability metrics.  We can't wait for a
   // restart to gather these, as that delay biases our observation away from
@@ -502,9 +503,7 @@ void MetricsLog::GetFieldTrialIds(
   chrome_variations::GetFieldTrialActiveGroupIds(field_trial_ids);
 }
 
-void MetricsLog::WritePluginStabilityElements(
-    const std::vector<content::WebPluginInfo>& plugin_list,
-    PrefService* pref) {
+void MetricsLog::WritePluginStabilityElements(PrefService* pref) {
   // Now log plugin stability info.
   const ListValue* plugin_stats_list = pref->GetList(
       prefs::kStabilityPluginStats);
@@ -514,7 +513,6 @@ void MetricsLog::WritePluginStabilityElements(
 #if defined(ENABLE_PLUGINS)
   SystemProfileProto::Stability* stability =
       uma_proto()->mutable_system_profile()->mutable_stability();
-  PluginPrefs* plugin_prefs = GetPluginPrefs();
   for (ListValue::const_iterator iter = plugin_stats_list->begin();
        iter != plugin_stats_list->end(); ++iter) {
     if (!(*iter)->IsType(Value::TYPE_DICTIONARY)) {
@@ -523,34 +521,30 @@ void MetricsLog::WritePluginStabilityElements(
     }
     DictionaryValue* plugin_dict = static_cast<DictionaryValue*>(*iter);
 
-    // Write the protobuf version.
     // Note that this search is potentially a quadratic operation, but given the
     // low number of plugins installed on a "reasonable" setup, this should be
     // fine.
     // TODO(isherman): Verify that this does not show up as a hotspot in
     // profiler runs.
-    const content::WebPluginInfo* plugin_info = NULL;
+    const SystemProfileProto::Plugin* system_profile_plugin = NULL;
     std::string plugin_name;
     plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
-    const string16 plugin_name_utf16 = UTF8ToUTF16(plugin_name);
-    for (std::vector<content::WebPluginInfo>::const_iterator iter =
-             plugin_list.begin();
-         iter != plugin_list.end(); ++iter) {
-      if (iter->name == plugin_name_utf16) {
-        plugin_info = &(*iter);
+    const SystemProfileProto& system_profile = uma_proto()->system_profile();
+    for (int i = 0; i < system_profile.plugin_size(); ++i) {
+      if (system_profile.plugin(i).name() == plugin_name) {
+        system_profile_plugin = &system_profile.plugin(i);
         break;
       }
     }
 
-    if (!plugin_info) {
+    if (!system_profile_plugin) {
       NOTREACHED();
       continue;
     }
 
     SystemProfileProto::Stability::PluginStability* plugin_stability =
         stability->add_plugin_stability();
-    SetPluginInfo(*plugin_info, plugin_prefs,
-                  plugin_stability->mutable_plugin());
+    *plugin_stability->mutable_plugin() = *system_profile_plugin;
 
     int launches = 0;
     plugin_dict->GetInteger(prefs::kStabilityPluginLaunches, &launches);
@@ -599,7 +593,7 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
     base::TimeDelta incremental_uptime) {
   // Update the stats which are critical for real-time stability monitoring.
   // Since these are "optional," only list ones that are non-zero, as the counts
-  // are aggergated (summed) server side.
+  // are aggregated (summed) server side.
 
   SystemProfileProto::Stability* stability =
       uma_proto()->mutable_system_profile()->mutable_stability();

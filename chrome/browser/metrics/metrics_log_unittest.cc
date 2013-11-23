@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/metrics/metrics_log.h"
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -10,15 +12,16 @@
 #include "base/metrics/field_trial.h"
 #include "base/port.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/proto/profiler_event.pb.h"
@@ -70,6 +73,24 @@ const chrome_variations::ActiveGroupId kSyntheticTrials[] = {
   {55, 15},
   {66, 16}
 };
+
+#if defined(ENABLE_PLUGINS)
+content::WebPluginInfo CreateFakePluginInfo(
+    const std::string& name,
+    const base::FilePath::CharType* path,
+    const std::string& version,
+    bool is_pepper) {
+  content::WebPluginInfo plugin(UTF8ToUTF16(name),
+                                base::FilePath(path),
+                                UTF8ToUTF16(version),
+                                base::string16());
+  if (is_pepper)
+    plugin.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
+  else
+    plugin.type = content::WebPluginInfo::PLUGIN_TYPE_NPAPI;
+  return plugin;
+}
+#endif  // defined(ENABLE_PLUGINS)
 
 class TestMetricsLog : public MetricsLog {
  public:
@@ -239,8 +260,10 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
 
 TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
   TestMetricsLog log(kClientId, kSessionId);
-  log.RecordStabilityMetrics(std::vector<content::WebPluginInfo>(),
-                             base::TimeDelta(), MetricsLog::INITIAL_LOG);
+  log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
+                        GoogleUpdateMetrics(),
+                        std::vector<chrome_variations::ActiveGroupId>());
+  log.RecordStabilityMetrics(base::TimeDelta(), MetricsLog::INITIAL_LOG);
   const metrics::SystemProfileProto_Stability& stability =
       log.system_profile().stability();
   // Required metrics:
@@ -256,8 +279,10 @@ TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
 
 TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
   TestMetricsLog log(kClientId, kSessionId);
-  log.RecordStabilityMetrics(std::vector<content::WebPluginInfo>(),
-                             base::TimeDelta(), MetricsLog::ONGOING_LOG);
+  log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
+                        GoogleUpdateMetrics(),
+                        std::vector<chrome_variations::ActiveGroupId>());
+  log.RecordStabilityMetrics(base::TimeDelta(), MetricsLog::ONGOING_LOG);
   const metrics::SystemProfileProto_Stability& stability =
       log.system_profile().stability();
   // Required metrics:
@@ -270,6 +295,56 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
   EXPECT_FALSE(stability.has_debugger_present_count());
   EXPECT_FALSE(stability.has_debugger_not_present_count());
 }
+
+#if defined(ENABLE_PLUGINS)
+TEST_F(MetricsLogTest, Plugins) {
+  TestMetricsLog log(kClientId, kSessionId);
+
+  std::vector<content::WebPluginInfo> plugins;
+  plugins.push_back(CreateFakePluginInfo("p1", FILE_PATH_LITERAL("p1.plugin"),
+                                         "1.5", true));
+  plugins.push_back(CreateFakePluginInfo("p2", FILE_PATH_LITERAL("p2.plugin"),
+                                         "2.0", false));
+  log.RecordEnvironment(plugins, GoogleUpdateMetrics(),
+                        std::vector<chrome_variations::ActiveGroupId>());
+
+  const metrics::SystemProfileProto& system_profile = log.system_profile();
+  ASSERT_EQ(2, system_profile.plugin_size());
+  EXPECT_EQ("p1", system_profile.plugin(0).name());
+  EXPECT_EQ("p1.plugin", system_profile.plugin(0).filename());
+  EXPECT_EQ("1.5", system_profile.plugin(0).version());
+  EXPECT_TRUE(system_profile.plugin(0).is_pepper());
+  EXPECT_EQ("p2", system_profile.plugin(1).name());
+  EXPECT_EQ("p2.plugin", system_profile.plugin(1).filename());
+  EXPECT_EQ("2.0", system_profile.plugin(1).version());
+  EXPECT_FALSE(system_profile.plugin(1).is_pepper());
+
+  // Now set some plugin stability stats for p2 and verify they're recorded.
+  scoped_ptr<base::DictionaryValue> plugin_dict(new DictionaryValue);
+  plugin_dict->SetString(prefs::kStabilityPluginName, "p2");
+  plugin_dict->SetInteger(prefs::kStabilityPluginLaunches, 1);
+  plugin_dict->SetInteger(prefs::kStabilityPluginCrashes, 2);
+  plugin_dict->SetInteger(prefs::kStabilityPluginInstances, 3);
+  plugin_dict->SetInteger(prefs::kStabilityPluginLoadingErrors, 4);
+  {
+    ListPrefUpdate update(log.GetPrefService(), prefs::kStabilityPluginStats);
+    update.Get()->Append(plugin_dict.release());
+  }
+
+  log.RecordStabilityMetrics(base::TimeDelta(), MetricsLog::ONGOING_LOG);
+  const metrics::SystemProfileProto_Stability& stability =
+      log.system_profile().stability();
+  ASSERT_EQ(1, stability.plugin_stability_size());
+  EXPECT_EQ("p2", stability.plugin_stability(0).plugin().name());
+  EXPECT_EQ("p2.plugin", stability.plugin_stability(0).plugin().filename());
+  EXPECT_EQ("2.0", stability.plugin_stability(0).plugin().version());
+  EXPECT_FALSE(stability.plugin_stability(0).plugin().is_pepper());
+  EXPECT_EQ(1, stability.plugin_stability(0).launch_count());
+  EXPECT_EQ(2, stability.plugin_stability(0).crash_count());
+  EXPECT_EQ(3, stability.plugin_stability(0).instance_count());
+  EXPECT_EQ(4, stability.plugin_stability(0).loading_error_count());
+}
+#endif  // defined(ENABLE_PLUGINS)
 
 // Test that we properly write profiler data to the log.
 TEST_F(MetricsLogTest, RecordProfilerData) {
