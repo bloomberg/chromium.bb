@@ -23,6 +23,10 @@ CastLoggingConfig GetDefaultCastLoggingConfig() {
 
 std::string CastLoggingToString(CastLoggingEvent event) {
   switch (event) {
+    case(kUnknown):
+      // Can happen if the sender and receiver of RTCP log messages are not
+      // aligned.
+      return "Unknown";
     case(kRttMs):
       return "RttMs";
     case(kPacketLoss):

@@ -52,7 +52,9 @@ RtcpNackMessage::~RtcpNackMessage() {}
 RtcpRembMessage::RtcpRembMessage() {}
 RtcpRembMessage::~RtcpRembMessage() {}
 
-RtcpReceiverFrameLogMessage::RtcpReceiverFrameLogMessage() {}
+RtcpReceiverFrameLogMessage::RtcpReceiverFrameLogMessage(uint32 timestamp)
+    : rtp_timestamp_(timestamp) {}
+
 RtcpReceiverFrameLogMessage::~RtcpReceiverFrameLogMessage() {}
 
 class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {

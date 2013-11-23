@@ -96,6 +96,12 @@ class RtcpReceiver {
       const RtcpField* rtcp_field,
       MissingFramesAndPacketsMap* missing_frames_and_packets);
 
+  void HandleApplicationSpecificCastReceiverLog(RtcpParser* rtcp_parser);
+  void HandleApplicationSpecificCastSenderLog(RtcpParser* rtcp_parser);
+  void HandleApplicationSpecificCastReceiverEventLog(
+      RtcpParser* rtcp_parser,
+      RtcpReceiverEventLogMessages* event_log_messages);
+
   const uint32 ssrc_;
   uint32 remote_ssrc_;
 

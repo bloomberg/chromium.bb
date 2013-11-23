@@ -29,6 +29,7 @@ CastLoggingConfig GetDefaultCastLoggingConfig();
 
 enum CastLoggingEvent {
   // Generic events.
+  kUnknown,
   kRttMs,
   kPacketLoss,
   kJitterMs,

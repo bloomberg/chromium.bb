@@ -56,6 +56,15 @@ RtcpFieldTypes RtcpParser::Iterate() {
     case kStateBye:
       IterateByeItem();
       break;
+    case kStateApplicationSpecificCastReceiverFrameLog:
+      IterateCastReceiverLogFrame();
+      break;
+    case kStateApplicationSpecificCastReceiverEventLog:
+      IterateCastReceiverLogEvent();
+      break;
+    case kStateApplicationSpecificCastSenderLog:
+      IterateCastSenderLog();
+      break;
     case kStateExtendedReportBlock:
       IterateExtendedReportItem();
       break;
@@ -119,6 +128,12 @@ void RtcpParser::IterateTopLevel() {
       case kPacketTypeBye:
         number_of_blocks_ = header.IC;
         if (!ParseBye()) {
+          // Nothing supported found, continue to next block!
+          break;
+        }
+        return;
+      case kPacketTypeApplicationDefined:
+        if (!ParseApplicationDefined(header.IC)) {
           // Nothing supported found, continue to next block!
           break;
         }
@@ -200,6 +215,21 @@ void RtcpParser::IteratePayloadSpecificCastItem() {
 
 void RtcpParser::IteratePayloadSpecificCastNackItem() {
   bool success = ParsePayloadSpecificCastNackItem();
+  if (!success) Iterate();
+}
+
+void RtcpParser::IterateCastReceiverLogFrame() {
+  bool success = ParseCastReceiverLogFrameItem();
+  if (!success) Iterate();
+}
+
+void RtcpParser::IterateCastReceiverLogEvent() {
+  bool success = ParseCastReceiverLogEventItem();
+  if (!success) Iterate();
+}
+
+void RtcpParser::IterateCastSenderLog() {
+  bool success = ParseCastSenderLogItem();
   if (!success) Iterate();
 }
 
@@ -466,6 +496,124 @@ bool RtcpParser::ParseByeItem() {
   return true;
 }
 
+bool RtcpParser::ParseApplicationDefined(uint8 subtype) {
+  ptrdiff_t length = rtcp_block_end_ - rtcp_data_;
+  if (length < 16 ||
+      !(subtype == kSenderLogSubtype || subtype == kReceiverLogSubtype)) {
+    state_ = kStateTopLevel;
+    EndCurrentBlock();
+    return false;
+  }
+
+  uint32 sender_ssrc;
+  uint32 name;
+
+  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  big_endian_reader.Skip(4);  // Skip header.
+  big_endian_reader.ReadU32(&sender_ssrc);
+  big_endian_reader.ReadU32(&name);
+
+  if (name != kCast) {
+    state_ = kStateTopLevel;
+    EndCurrentBlock();
+    return false;
+  }
+  rtcp_data_ += 12;
+  switch (subtype) {
+    case kSenderLogSubtype:
+      state_ = kStateApplicationSpecificCastSenderLog;
+      field_type_ = kRtcpApplicationSpecificCastSenderLogCode;
+      field_.cast_sender_log.sender_ssrc = sender_ssrc;
+      break;
+    case kReceiverLogSubtype:
+      state_ = kStateApplicationSpecificCastReceiverFrameLog;
+      field_type_ = kRtcpApplicationSpecificCastReceiverLogCode;
+      field_.cast_receiver_log.sender_ssrc = sender_ssrc;
+      break;
+    default:
+      NOTREACHED();
+  }
+  return true;
+}
+
+bool RtcpParser::ParseCastReceiverLogFrameItem() {
+  ptrdiff_t length = rtcp_block_end_ - rtcp_data_;
+  if (length < 12) {
+    state_ = kStateTopLevel;
+    EndCurrentBlock();
+    return false;
+  }
+  uint32 rtp_timestamp;
+  uint32 data;
+  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  big_endian_reader.ReadU32(&rtp_timestamp);
+  big_endian_reader.ReadU32(&data);
+
+  rtcp_data_ += 8;
+
+  field_.cast_receiver_log.rtp_timestamp = rtp_timestamp;
+  // We have 24 LSB of the event timestamp base on the wire.
+  field_.cast_receiver_log.event_timestamp_base = data & 0xffffff;
+
+  number_of_blocks_ = 1 + static_cast<uint8>(data >> 24);
+  state_ = kStateApplicationSpecificCastReceiverEventLog;
+  field_type_ = kRtcpApplicationSpecificCastReceiverLogFrameCode;
+  return true;
+}
+
+bool RtcpParser::ParseCastReceiverLogEventItem() {
+  ptrdiff_t length = rtcp_block_end_ - rtcp_data_;
+  if (length < 4) {
+    state_ = kStateTopLevel;
+    EndCurrentBlock();
+    return false;
+  }
+  if (number_of_blocks_ == 0) {
+    // Continue parsing the next receiver frame event.
+    state_ = kStateApplicationSpecificCastReceiverFrameLog;
+    return false;
+  }
+  number_of_blocks_--;
+
+  uint16 delay_delta_or_packet_id;
+  uint16 event_type_and_timestamp_delta;
+  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  big_endian_reader.ReadU16(&delay_delta_or_packet_id);
+  big_endian_reader.ReadU16(&event_type_and_timestamp_delta);
+
+  rtcp_data_ += 4;
+
+  field_.cast_receiver_log.event =
+      static_cast<uint8>(event_type_and_timestamp_delta >> 12);
+  field_.cast_receiver_log.delay_delta_or_packet_id = delay_delta_or_packet_id;
+  field_.cast_receiver_log.event_timestamp_delta =
+      event_type_and_timestamp_delta & 0xfff;
+
+  field_type_ = kRtcpApplicationSpecificCastReceiverLogEventCode;
+  return true;
+}
+
+bool RtcpParser::ParseCastSenderLogItem() {
+  ptrdiff_t length = rtcp_block_end_ - rtcp_data_;
+
+  if (length < 4) {
+    state_ = kStateTopLevel;
+    EndCurrentBlock();
+    return false;
+  }
+  uint32 data;
+  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  big_endian_reader.ReadU32(&data);
+
+  rtcp_data_ += 4;
+
+  field_.cast_sender_log.status = static_cast<uint8>(data >> 24);
+  // We have 24 LSB of the RTP timestamp on the wire.
+  field_.cast_sender_log.rtp_timestamp = data & 0xffffff;
+  field_type_ = kRtcpApplicationSpecificCastSenderLogCode;
+  return true;
+}
+
 bool RtcpParser::ParseFeedBackCommon(const RtcpCommonHeader& header) {
   DCHECK((header.PT == kPacketTypeGenericRtpFeedback) ||
          (header.PT == kPacketTypePayloadSpecific)) << "Invalid state";
@@ -686,7 +834,6 @@ bool RtcpParser::ParsePayloadSpecificRembItem() {
 
 bool RtcpParser::ParsePayloadSpecificCastItem() {
   ptrdiff_t length = rtcp_block_end_ - rtcp_data_;
-
   if (length < 4) {
     state_ = kStateTopLevel;
     EndCurrentBlock();

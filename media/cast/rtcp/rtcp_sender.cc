@@ -16,9 +16,6 @@
 namespace media {
 namespace cast {
 
-static const size_t kRtcpMaxNackFields = 253;
-static const size_t kRtcpMaxCastLossFields = 100;
-
 RtcpSender::RtcpSender(scoped_refptr<CastEnvironment> cast_environment,
                        PacedPacketSender* outgoing_transport,
                        uint32 sending_ssrc,

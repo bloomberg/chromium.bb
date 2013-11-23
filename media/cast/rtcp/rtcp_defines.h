@@ -50,13 +50,15 @@ struct RtcpReceiverEventLogMessage {
   uint16 packet_id;
 };
 
+typedef std::list<RtcpReceiverEventLogMessage> RtcpReceiverEventLogMessages;
+
 class RtcpReceiverFrameLogMessage {
  public:
-  RtcpReceiverFrameLogMessage();
+  explicit RtcpReceiverFrameLogMessage(uint32 rtp_timestamp);
   ~RtcpReceiverFrameLogMessage();
 
-  uint32 rtp_timestamp;
-  std::list<RtcpReceiverEventLogMessage> event_log_messages;
+  uint32 rtp_timestamp_;
+  RtcpReceiverEventLogMessages event_log_messages_;
 };
 
 typedef std::list<RtcpReceiverFrameLogMessage> RtcpReceiverLogMessage;

@@ -59,6 +59,93 @@ class SenderFeedbackCastVerification : public RtcpSenderFeedback {
  private:
   bool called_;
 };
+
+class RtcpReceiverCastLogVerification : public RtcpReceiverFeedback {
+ public:
+  RtcpReceiverCastLogVerification()
+      : called_on_received_sender_log_(false),
+        called_on_received_receiver_log_(false) {}
+
+  virtual void OnReceivedSenderReport(
+      const RtcpSenderInfo& remote_sender_info) OVERRIDE {};
+
+  virtual void OnReceiverReferenceTimeReport(
+      const RtcpReceiverReferenceTimeReport& remote_time_report) OVERRIDE {};
+
+  virtual void OnReceivedSendReportRequest() OVERRIDE {};
+
+  virtual void OnReceivedReceiverLog(
+      const RtcpReceiverLogMessage& receiver_log) OVERRIDE {
+    EXPECT_EQ(expected_receiver_log_.size(), receiver_log.size());
+    RtcpReceiverLogMessage::const_iterator expected_it =
+       expected_receiver_log_.begin();
+    RtcpReceiverLogMessage::const_iterator incoming_it = receiver_log.begin();
+    for (; incoming_it != receiver_log.end(); ++incoming_it) {
+      EXPECT_EQ(expected_it->rtp_timestamp_, incoming_it->rtp_timestamp_);
+      EXPECT_EQ(expected_it->event_log_messages_.size(),
+                incoming_it->event_log_messages_.size());
+
+      RtcpReceiverEventLogMessages::const_iterator event_incoming_it =
+          incoming_it->event_log_messages_.begin();
+      RtcpReceiverEventLogMessages::const_iterator event_expected_it =
+          expected_it->event_log_messages_.begin();
+      for (; event_incoming_it != incoming_it->event_log_messages_.end();
+           ++event_incoming_it, ++event_expected_it) {
+        EXPECT_EQ(event_expected_it->type, event_incoming_it->type);
+        EXPECT_EQ(event_expected_it->event_timestamp,
+                  event_incoming_it->event_timestamp);
+        if (event_expected_it->type == kPacketReceived) {
+          EXPECT_EQ(event_expected_it->packet_id, event_incoming_it->packet_id);
+        } else {
+          EXPECT_EQ(event_expected_it->delay_delta,
+                    event_incoming_it->delay_delta);
+        }
+      }
+      expected_receiver_log_.pop_front();
+      expected_it = expected_receiver_log_.begin();
+    }
+    called_on_received_receiver_log_ = true;
+  }
+
+  virtual void OnReceivedSenderLog(
+      const RtcpSenderLogMessage& sender_log) OVERRIDE {
+    EXPECT_EQ(expected_sender_log_.size(), sender_log.size());
+
+    RtcpSenderLogMessage::const_iterator expected_it =
+       expected_sender_log_.begin();
+    RtcpSenderLogMessage::const_iterator incoming_it = sender_log.begin();
+    for (; expected_it != expected_sender_log_.end();
+        ++expected_it, ++incoming_it) {
+      EXPECT_EQ(expected_it->frame_status, incoming_it->frame_status);
+      EXPECT_EQ(0xffffff & expected_it->rtp_timestamp,
+                incoming_it->rtp_timestamp);
+    }
+    called_on_received_sender_log_ = true;
+  }
+
+  bool OnReceivedSenderLogCalled() {
+    return called_on_received_sender_log_;
+  }
+
+  bool OnReceivedReceiverLogCalled() {
+    return called_on_received_receiver_log_ && expected_receiver_log_.empty();
+  }
+
+  void SetExpectedReceiverLog(const RtcpReceiverLogMessage& receiver_log) {
+    expected_receiver_log_ = receiver_log;
+  }
+
+  void SetExpectedSenderLog(const RtcpSenderLogMessage& sender_log) {
+    expected_sender_log_ = sender_log;
+  }
+
+ private:
+  RtcpReceiverLogMessage expected_receiver_log_;
+  RtcpSenderLogMessage expected_sender_log_;
+  bool called_on_received_sender_log_;
+  bool called_on_received_receiver_log_;
+};
+
 }  // namespace
 
 class RtcpReceiverTest : public ::testing::Test {
@@ -359,6 +446,141 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithCastVerification) {
 
   EXPECT_TRUE(sender_feedback_cast_verification.called());
 }
+
+TEST_F(RtcpReceiverTest, InjectSenderReportWithCastSenderLogVerification) {
+  RtcpReceiverCastLogVerification cast_log_verification;
+  RtcpReceiver rtcp_receiver(cast_environment_,
+                             &mock_sender_feedback_,
+                             &cast_log_verification,
+                             &mock_rtt_feedback_,
+                             kSourceSsrc);
+  rtcp_receiver.SetRemoteSSRC(kSenderSsrc);
+
+  RtcpSenderLogMessage sender_log;
+  for (int j = 0; j < 359; ++j) {
+    RtcpSenderFrameLogMessage sender_frame_log;
+    sender_frame_log.frame_status = kRtcpSenderFrameStatusSentToNetwork;
+    sender_frame_log.rtp_timestamp = kRtpTimestamp + j * 90;
+    sender_log.push_back(sender_frame_log);
+  }
+  cast_log_verification.SetExpectedSenderLog(sender_log);
+
+  TestRtcpPacketBuilder p;
+  p.AddSr(kSenderSsrc, 0);
+  p.AddSdesCname(kSenderSsrc, kCName);
+  p.AddSenderLog(kSenderSsrc);
+
+  for (int i = 0; i < 359; ++i) {
+    p.AddSenderFrameLog(kRtcpSenderFrameStatusSentToNetwork,
+                        kRtpTimestamp + i * 90);
+  }
+  RtcpParser rtcp_parser(p.Packet(), p.Length());
+  rtcp_receiver.IncomingRtcpPacket(&rtcp_parser);
+
+  EXPECT_TRUE(cast_log_verification.OnReceivedSenderLogCalled());
+}
+
+TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationBase) {
+  static const uint32 kTimeBaseMs = 12345678;
+  static const uint32 kTimeDelayMs = 10;
+  static const uint32 kDelayDeltaMs = 123;
+  base::SimpleTestTickClock testing_clock;
+  testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeBaseMs));
+
+  RtcpReceiverCastLogVerification cast_log_verification;
+  RtcpReceiver rtcp_receiver(cast_environment_,
+                             &mock_sender_feedback_,
+                             &cast_log_verification,
+                             &mock_rtt_feedback_,
+                             kSourceSsrc);
+  rtcp_receiver.SetRemoteSSRC(kSenderSsrc);
+
+  RtcpReceiverLogMessage receiver_log;
+  RtcpReceiverFrameLogMessage frame_log(kRtpTimestamp);
+  RtcpReceiverEventLogMessage event_log;
+
+  event_log.type = kAckSent;
+  event_log.event_timestamp = testing_clock.NowTicks();
+  event_log.delay_delta = base::TimeDelta::FromMilliseconds(kDelayDeltaMs);
+  frame_log.event_log_messages_.push_back(event_log);
+
+  testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeDelayMs));
+  event_log.type = kPacketReceived;
+  event_log.event_timestamp = testing_clock.NowTicks();
+  event_log.packet_id = kLostPacketId1;
+  frame_log.event_log_messages_.push_back(event_log);
+  receiver_log.push_back(frame_log);
+
+  cast_log_verification.SetExpectedReceiverLog(receiver_log);
+
+  TestRtcpPacketBuilder p;
+  p.AddRr(kSenderSsrc, 1);
+  p.AddRb(kSourceSsrc);
+  p.AddReceiverLog(kSenderSsrc);
+  p.AddReceiverFrameLog(kRtpTimestamp, 2, kTimeBaseMs);
+  p.AddReceiverEventLog(kDelayDeltaMs, 1, 0);
+  p.AddReceiverEventLog(kLostPacketId1, 6, kTimeDelayMs);
+
+  EXPECT_CALL(mock_rtt_feedback_,
+      OnReceivedDelaySinceLastReport(kSourceSsrc, kLastSr, kDelayLastSr)).
+          Times(1);
+
+  RtcpParser rtcp_parser(p.Packet(), p.Length());
+  rtcp_receiver.IncomingRtcpPacket(&rtcp_parser);
+
+  EXPECT_TRUE(cast_log_verification.OnReceivedReceiverLogCalled());
+}
+
+TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationMulti) {
+  static const uint32 kTimeBaseMs = 12345678;
+  static const uint32 kTimeDelayMs = 10;
+  static const uint32 kDelayDeltaMs = 123;
+  base::SimpleTestTickClock testing_clock;
+  testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeBaseMs));
+
+  RtcpReceiverCastLogVerification cast_log_verification;
+  RtcpReceiver rtcp_receiver(cast_environment_,
+                             &mock_sender_feedback_,
+                             &cast_log_verification,
+                             &mock_rtt_feedback_,
+                             kSourceSsrc);
+  rtcp_receiver.SetRemoteSSRC(kSenderSsrc);
+
+  RtcpReceiverLogMessage receiver_log;
+
+  for (int j = 0; j < 100; ++j) {
+    RtcpReceiverFrameLogMessage frame_log(kRtpTimestamp);
+    RtcpReceiverEventLogMessage event_log;
+    event_log.type = kAckSent;
+    event_log.event_timestamp = testing_clock.NowTicks();
+    event_log.delay_delta = base::TimeDelta::FromMilliseconds(kDelayDeltaMs);
+    frame_log.event_log_messages_.push_back(event_log);
+    receiver_log.push_back(frame_log);
+    testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeDelayMs));
+  }
+
+  cast_log_verification.SetExpectedReceiverLog(receiver_log);
+
+  TestRtcpPacketBuilder p;
+  p.AddRr(kSenderSsrc, 1);
+  p.AddRb(kSourceSsrc);
+  p.AddReceiverLog(kSenderSsrc);
+  for (int i = 0; i < 100; ++i) {
+    p.AddReceiverFrameLog(kRtpTimestamp, 1, kTimeBaseMs +  i * kTimeDelayMs);
+    p.AddReceiverEventLog(kDelayDeltaMs, 1, 0);
+  }
+
+  EXPECT_CALL(mock_rtt_feedback_,
+      OnReceivedDelaySinceLastReport(kSourceSsrc, kLastSr, kDelayLastSr)).
+          Times(1);
+
+  RtcpParser rtcp_parser(p.Packet(), p.Length());
+  rtcp_receiver.IncomingRtcpPacket(&rtcp_parser);
+
+  EXPECT_TRUE(cast_log_verification.OnReceivedReceiverLogCalled());
+}
+
+
 
 }  // namespace cast
 }  // namespace media

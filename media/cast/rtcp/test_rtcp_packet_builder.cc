@@ -211,6 +211,47 @@ void TestRtcpPacketBuilder::AddCast(uint32 sender_ssrc, uint32 media_ssrc) {
   big_endian_writer_.WriteU8(0);  // Lost packet id mask.
 }
 
+void TestRtcpPacketBuilder::AddSenderLog(uint32 sender_ssrc) {
+  AddRtcpHeader(204, 1);
+  big_endian_writer_.WriteU32(sender_ssrc);
+  big_endian_writer_.WriteU8('C');
+  big_endian_writer_.WriteU8('A');
+  big_endian_writer_.WriteU8('S');
+  big_endian_writer_.WriteU8('T');
+}
+
+void TestRtcpPacketBuilder::AddSenderFrameLog(uint8 event_id,
+                                              uint32 rtp_timestamp) {
+  big_endian_writer_.WriteU32(
+      (static_cast<uint32>(event_id) << 24) + (rtp_timestamp & 0xffffff));
+}
+
+void TestRtcpPacketBuilder::AddReceiverLog(uint32 sender_ssrc) {
+  AddRtcpHeader(204, 2);
+  big_endian_writer_.WriteU32(sender_ssrc);
+  big_endian_writer_.WriteU8('C');
+  big_endian_writer_.WriteU8('A');
+  big_endian_writer_.WriteU8('S');
+  big_endian_writer_.WriteU8('T');
+}
+
+void TestRtcpPacketBuilder::AddReceiverFrameLog(uint32 rtp_timestamp,
+    int num_events, uint32 event_timesamp_base) {
+  big_endian_writer_.WriteU32(rtp_timestamp);
+  big_endian_writer_.WriteU8(static_cast<uint8>(num_events - 1));
+  big_endian_writer_.WriteU8(static_cast<uint8>(event_timesamp_base >> 16));
+  big_endian_writer_.WriteU8(static_cast<uint8>(event_timesamp_base >> 8));
+  big_endian_writer_.WriteU8(static_cast<uint8>(event_timesamp_base));
+}
+
+void TestRtcpPacketBuilder::AddReceiverEventLog(uint16 event_data,
+    uint8 event_id, uint16 event_timesamp_delta) {
+  big_endian_writer_.WriteU16(event_data);
+  uint16 type_and_delta = static_cast<uint16>(event_id) << 12;
+  type_and_delta += event_timesamp_delta & 0x0fff;
+  big_endian_writer_.WriteU16(type_and_delta);
+}
+
 const uint8* TestRtcpPacketBuilder::Packet() {
   PatchLengthField();
   return buffer_;

@@ -19,7 +19,7 @@ namespace {
 // Sender report.
 static const int kNtpHigh = 0x01020304;
 static const int kNtpLow = 0x05060708;
-static const int kRtpTimestamp = 0x10203;
+static const int kRtpTimestamp = 0x10203040;
 static const int kSendPacketCount = 987;
 static const int kSendOctetCount = 87654;
 
@@ -77,6 +77,13 @@ class TestRtcpPacketBuilder {
   void AddRpsi(uint32 sender_ssrc, uint32 media_ssrc);
   void AddRemb(uint32 sender_ssrc, uint32 media_ssrc);
   void AddCast(uint32 sender_ssrc, uint32 media_ssrc);
+  void AddSenderLog(uint32 sender_ssrc);
+  void AddSenderFrameLog(uint8 event_id, uint32 rtp_timestamp);
+  void AddReceiverLog(uint32 sender_ssrc);
+  void AddReceiverFrameLog(uint32 rtp_timestamp, int num_events,
+                           uint32 event_timesamp_base);
+  void AddReceiverEventLog(uint16 event_data, uint8 event_id,
+                           uint16 event_timesamp_delta);
 
   const uint8* Packet();
   int Length() { return kIpPacketSize - big_endian_writer_.remaining(); }
