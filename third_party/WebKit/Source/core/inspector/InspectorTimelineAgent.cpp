@@ -42,6 +42,7 @@
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorMemoryAgent.h"
+#include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -266,6 +267,8 @@ bool InspectorTimelineAgent::isStarted()
 
 void InspectorTimelineAgent::innerStart()
 {
+    if (m_overlay)
+        m_overlay->startedRecordingProfile();
     m_state->setBoolean(TimelineAgentState::started, true);
     m_timeConverter.reset();
     m_instrumentingAgents->setInspectorTimelineAgent(this);
@@ -317,6 +320,9 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
     m_consoleTimelines.clear();
 
     m_frontend->stopped(&fromConsole);
+
+    if (m_overlay)
+        m_overlay->finishedRecordingProfile();
 }
 
 void InspectorTimelineAgent::didBeginFrame(int frameId)
@@ -883,7 +889,7 @@ void InspectorTimelineAgent::unwindRecordStack()
     }
 }
 
-InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorMemoryAgent* memoryAgent, InspectorDOMAgent* domAgent, InspectorCompositeState* state, InspectorType type, InspectorClient* client)
+InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorMemoryAgent* memoryAgent, InspectorDOMAgent* domAgent, InspectorOverlay* overlay, InspectorCompositeState* state, InspectorType type, InspectorClient* client)
     : InspectorBaseAgent<InspectorTimelineAgent>("Timeline", instrumentingAgents, state)
     , m_pageAgent(pageAgent)
     , m_memoryAgent(memoryAgent)
@@ -898,6 +904,7 @@ InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentin
     , m_styleRecalcElementCounter(0)
     , m_layerTreeId(0)
     , m_imageBeingPainted(0)
+    , m_overlay(overlay)
 {
 }
 

@@ -43,6 +43,7 @@ namespace WebCore {
 class InjectedScriptManager;
 class InspectorConsoleAgent;
 class InspectorFrontend;
+class InspectorOverlay;
 class InstrumentingAgents;
 class ScriptCallStack;
 class ScriptProfile;
@@ -52,7 +53,7 @@ typedef String ErrorString;
 class InspectorProfilerAgent : public InspectorBaseAgent<InspectorProfilerAgent>, public InspectorBackendDispatcher::ProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<InspectorProfilerAgent> create(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*);
+    static PassOwnPtr<InspectorProfilerAgent> create(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*, InspectorOverlay*);
     virtual ~InspectorProfilerAgent();
 
     void addProfile(PassRefPtr<ScriptProfile> prpProfile, PassRefPtr<ScriptCallStack>);
@@ -82,7 +83,7 @@ public:
     void didLeaveNestedRunLoop();
 
 private:
-    InspectorProfilerAgent(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*);
+    InspectorProfilerAgent(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*, InspectorOverlay*);
 
     void doEnable();
 
@@ -105,6 +106,7 @@ private:
     typedef HashMap<String, double> ProfileNameIdleTimeMap;
     ProfileNameIdleTimeMap* m_profileNameIdleTimeMap;
     double m_idleStartTime;
+    InspectorOverlay* m_overlay;
 
     void idleStarted();
     void idleFinished();

@@ -140,6 +140,9 @@ public:
 
     InspectorOverlayHost* overlayHost() const { return m_overlayHost.get(); }
 
+    void startedRecordingProfile();
+    void finishedRecordingProfile() { m_activeProfilerCount--; }
+
     // Methods supporting underlying overlay page.
     void invalidate();
 private:
@@ -174,6 +177,7 @@ private:
     bool m_drawViewSize;
     bool m_drawViewSizeWithGrid;
     Timer<InspectorOverlay> m_timer;
+    int m_activeProfilerCount;
 };
 
 } // namespace WebCore

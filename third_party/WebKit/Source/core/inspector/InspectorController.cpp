@@ -109,7 +109,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     m_memoryAgent = memoryAgentPtr.get();
     m_agents.append(memoryAgentPtr.release());
 
-    OwnPtr<InspectorTimelineAgent> timelineAgentPtr(InspectorTimelineAgent::create(m_instrumentingAgents.get(), pageAgent, m_memoryAgent, domAgent, m_state.get(),
+    OwnPtr<InspectorTimelineAgent> timelineAgentPtr(InspectorTimelineAgent::create(m_instrumentingAgents.get(), pageAgent, m_memoryAgent, domAgent, m_overlay.get(), m_state.get(),
         InspectorTimelineAgent::PageInspector, inspectorClient));
     m_timelineAgent = timelineAgentPtr.get();
     m_agents.append(timelineAgentPtr.release());
@@ -130,7 +130,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     m_agents.append(InspectorDOMDebuggerAgent::create(m_instrumentingAgents.get(), m_state.get(), domAgent, debuggerAgent));
 
-    m_agents.append(InspectorProfilerAgent::create(m_instrumentingAgents.get(), consoleAgent, m_state.get(), m_injectedScriptManager.get()));
+    m_agents.append(InspectorProfilerAgent::create(m_instrumentingAgents.get(), consoleAgent, m_state.get(), m_injectedScriptManager.get(), m_overlay.get()));
 
     m_agents.append(InspectorHeapProfilerAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get()));
 

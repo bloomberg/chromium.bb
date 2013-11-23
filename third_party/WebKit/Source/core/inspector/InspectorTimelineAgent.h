@@ -58,6 +58,7 @@ class InspectorClient;
 class InspectorDOMAgent;
 class InspectorFrontend;
 class InspectorMemoryAgent;
+class InspectorOverlay;
 class InspectorPageAgent;
 class InstrumentingAgents;
 class KURL;
@@ -121,9 +122,9 @@ public:
         bool foreign;
     };
 
-    static PassOwnPtr<InspectorTimelineAgent> create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorMemoryAgent* memoryAgent, InspectorDOMAgent* domAgent, InspectorCompositeState* state, InspectorType type, InspectorClient* client)
+    static PassOwnPtr<InspectorTimelineAgent> create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorMemoryAgent* memoryAgent, InspectorDOMAgent* domAgent, InspectorOverlay* overlay, InspectorCompositeState* state, InspectorType type, InspectorClient* client)
     {
-        return adoptPtr(new InspectorTimelineAgent(instrumentingAgents, pageAgent, memoryAgent, domAgent, state, type, client));
+        return adoptPtr(new InspectorTimelineAgent(instrumentingAgents, pageAgent, memoryAgent, domAgent, overlay, state, type, client));
     }
 
     ~InspectorTimelineAgent();
@@ -253,7 +254,7 @@ private:
         size_t usedHeapSizeAtStart;
     };
 
-    InspectorTimelineAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorMemoryAgent*, InspectorDOMAgent*, InspectorCompositeState*, InspectorType, InspectorClient*);
+    InspectorTimelineAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorMemoryAgent*, InspectorDOMAgent*, InspectorOverlay*, InspectorCompositeState*, InspectorType, InspectorClient*);
 
     void didFinishLoadingResource(unsigned long, bool didFail, double finishTime, Frame*);
 
@@ -325,6 +326,7 @@ private:
     RenderImage* m_imageBeingPainted;
     Vector<String> m_consoleTimelines;
     RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> > m_bufferedEvents;
+    InspectorOverlay* m_overlay;
 };
 
 } // namespace WebCore

@@ -252,6 +252,7 @@ InspectorOverlay::InspectorOverlay(Page* page, InspectorClient* client)
     , m_drawViewSize(false)
     , m_drawViewSizeWithGrid(false)
     , m_timer(this, &InspectorOverlay::onTimer)
+    , m_activeProfilerCount(0)
 {
 }
 
@@ -397,6 +398,8 @@ Node* InspectorOverlay::highlightedNode() const
 
 bool InspectorOverlay::isEmpty()
 {
+    if (m_activeProfilerCount)
+        return true;
     bool hasAlwaysVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad || !m_size.isEmpty() || m_drawViewSize;
     bool hasInvisibleInInspectModeElements = !m_pausedInDebuggerMessage.isNull();
     return !(hasAlwaysVisibleElements || (hasInvisibleInInspectModeElements && !m_inspectModeEnabled));
@@ -681,6 +684,12 @@ void InspectorOverlay::freePage()
     m_overlayPage.clear();
     m_overlayChromeClient.clear();
     m_timer.stop();
+}
+
+void InspectorOverlay::startedRecordingProfile()
+{
+    if (!m_activeProfilerCount++)
+        freePage();
 }
 
 } // namespace WebCore

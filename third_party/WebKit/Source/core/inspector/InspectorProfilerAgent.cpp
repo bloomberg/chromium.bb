@@ -36,6 +36,7 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorConsoleAgent.h"
+#include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -54,12 +55,12 @@ static const char profilerEnabled[] = "profilerEnabled";
 
 static const char CPUProfileType[] = "CPU";
 
-PassOwnPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager)
+PassOwnPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
 {
-    return adoptPtr(new InspectorProfilerAgent(instrumentingAgents, consoleAgent, inspectorState, injectedScriptManager));
+    return adoptPtr(new InspectorProfilerAgent(instrumentingAgents, consoleAgent, inspectorState, injectedScriptManager, overlay));
 }
 
-InspectorProfilerAgent::InspectorProfilerAgent(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager)
+InspectorProfilerAgent::InspectorProfilerAgent(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
     : InspectorBaseAgent<InspectorProfilerAgent>("Profiler", instrumentingAgents, inspectorState)
     , m_consoleAgent(consoleAgent)
     , m_injectedScriptManager(injectedScriptManager)
@@ -69,6 +70,7 @@ InspectorProfilerAgent::InspectorProfilerAgent(InstrumentingAgents* instrumentin
     , m_nextUserInitiatedProfileNumber(1)
     , m_profileNameIdleTimeMap(ScriptProfiler::currentProfileNameIdleTimeMap())
     , m_idleStartTime(0.0)
+    , m_overlay(overlay)
 {
 }
 
@@ -225,6 +227,8 @@ void InspectorProfilerAgent::start(ErrorString*)
         enable(&error);
     }
     m_recordingCPUProfile = true;
+    if (m_overlay)
+        m_overlay->startedRecordingProfile();
     String title = getCurrentUserInitiatedProfileName(true);
     ScriptProfiler::start(title);
     toggleRecordButton(true);
@@ -244,6 +248,8 @@ PassRefPtr<TypeBuilder::Profiler::ProfileHeader> InspectorProfilerAgent::stop(Er
         return 0;
     }
     m_recordingCPUProfile = false;
+    if (m_overlay)
+        m_overlay->finishedRecordingProfile();
     String title = getCurrentUserInitiatedProfileName();
     RefPtr<ScriptProfile> profile = ScriptProfiler::stop(title);
     RefPtr<TypeBuilder::Profiler::ProfileHeader> profileHeader;

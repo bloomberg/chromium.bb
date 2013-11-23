@@ -97,11 +97,11 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
 {
     m_agents.append(WorkerRuntimeAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get(), m_debugServer.get(), workerGlobalScope));
 
-    OwnPtr<InspectorTimelineAgent> timelineAgent = InspectorTimelineAgent::create(m_instrumentingAgents.get(), 0, 0, 0, m_state.get(), InspectorTimelineAgent::WorkerInspector, 0);
+    OwnPtr<InspectorTimelineAgent> timelineAgent = InspectorTimelineAgent::create(m_instrumentingAgents.get(), 0, 0, 0, 0, m_state.get(), InspectorTimelineAgent::WorkerInspector, 0);
     OwnPtr<InspectorConsoleAgent> consoleAgent = WorkerConsoleAgent::create(m_instrumentingAgents.get(), timelineAgent.get(), m_state.get(), m_injectedScriptManager.get());
     m_agents.append(WorkerDebuggerAgent::create(m_instrumentingAgents.get(), m_state.get(), m_debugServer.get(), workerGlobalScope, m_injectedScriptManager.get()));
 
-    m_agents.append(InspectorProfilerAgent::create(m_instrumentingAgents.get(), consoleAgent.get(), m_state.get(), m_injectedScriptManager.get()));
+    m_agents.append(InspectorProfilerAgent::create(m_instrumentingAgents.get(), consoleAgent.get(), m_state.get(), m_injectedScriptManager.get(), 0));
     m_agents.append(InspectorHeapProfilerAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get()));
     m_agents.append(timelineAgent.release());
     m_agents.append(consoleAgent.release());
