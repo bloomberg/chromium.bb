@@ -413,6 +413,15 @@ const Experiment kExperiments[] = {
          switches::kDisableUniversalAcceleratedOverflowScroll)
   },
   {
+    "enable-layer-squashing",
+    IDS_FLAGS_LAYER_SQUASHING_NAME,
+    IDS_FLAGS_LAYER_SQUASHING_DESCRIPTION,
+    kOsAll,
+    ENABLE_DISABLE_VALUE_TYPE(
+        switches::kEnableLayerSquashing,
+        switches::kDisableLayerSquashing)
+  },
+  {
     "present-with-GDI",
     IDS_FLAGS_PRESENT_WITH_GDI_NAME,
     IDS_FLAGS_PRESENT_WITH_GDI_DESCRIPTION,

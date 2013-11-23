@@ -91,6 +91,10 @@ const char kDisableAcceleratedLayers[]      = "disable-accelerated-layers";
 const char kDisableAcceleratedOverflowScroll[] =
     "disable-accelerated-overflow-scroll";
 
+// Disables layer squashing.
+const char kDisableLayerSquashing[] =
+    "disable-layer-squashing";
+
 // Disable accelerated compositing for scrollable frames.
 const char kDisableAcceleratedScrollableFrames[] =
      "disable-accelerated-scrollable-frames";
@@ -345,6 +349,11 @@ const char kEnableAcceleratedFixedRootBackground[] =
 // overflow:scroll elements to layers to enable accelerated scrolling for them.
 const char kEnableAcceleratedOverflowScroll[] =
     "enable-accelerated-overflow-scroll";
+
+// Enables experimental feature that maps multiple RenderLayers to
+// one composited layer to avoid pathological layer counts.
+const char kEnableLayerSquashing[] =
+    "enable-layer-squashing";
 
 // Enables accelerated compositing for scrollable frames for accelerated
 // scrolling for them. Requires kForceCompositingMode.

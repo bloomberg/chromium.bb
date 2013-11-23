@@ -374,6 +374,12 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
   if (command_line.HasSwitch(switches::kDisableAcceleratedOverflowScroll))
     prefs.accelerated_compositing_for_overflow_scroll_enabled = false;
 
+  prefs.layer_squashing_enabled = false;
+  if (command_line.HasSwitch(switches::kEnableLayerSquashing))
+      prefs.layer_squashing_enabled = true;
+  if (command_line.HasSwitch(switches::kDisableLayerSquashing))
+      prefs.layer_squashing_enabled = false;
+
   prefs.accelerated_compositing_for_scrollable_frames_enabled = false;
   if (command_line.HasSwitch(switches::kEnableAcceleratedScrollableFrames))
     prefs.accelerated_compositing_for_scrollable_frames_enabled = true;

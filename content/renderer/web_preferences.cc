@@ -212,6 +212,8 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   // Uses the mock theme engine for scrollbars.
   settings->setMockScrollbarsEnabled(prefs.mock_scrollbars_enabled);
 
+  settings->setLayerSquashingEnabled(prefs.layer_squashing_enabled);
+
   settings->setThreadedHTMLParser(prefs.threaded_html_parser);
 
   // Display visualization of what has changed on the screen using an
