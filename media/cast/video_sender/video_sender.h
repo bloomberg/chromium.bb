@@ -121,7 +121,7 @@ class VideoSender : public base::NonThreadSafe,
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<LocalRtcpVideoSenderFeedback> rtcp_feedback_;
   scoped_ptr<LocalRtpVideoSenderStatistics> rtp_video_sender_statistics_;
-  scoped_refptr<VideoEncoder> video_encoder_;
+  scoped_ptr<VideoEncoder> video_encoder_;
   scoped_ptr<Rtcp> rtcp_;
   scoped_ptr<RtpSender> rtp_sender_;
   VideoEncoderController* video_encoder_controller_;

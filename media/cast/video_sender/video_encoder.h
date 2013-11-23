@@ -5,8 +5,8 @@
 #ifndef MEDIA_CAST_VIDEO_SENDER_VIDEO_ENCODER_H_
 #define MEDIA_CAST_VIDEO_SENDER_VIDEO_ENCODER_H_
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
@@ -21,8 +21,7 @@ namespace cast {
 
 // This object is called external from the main cast thread and internally from
 // the video encoder thread.
-class VideoEncoder : public VideoEncoderController,
-                     public base::RefCountedThreadSafe<VideoEncoder> {
+class VideoEncoder : public VideoEncoderController {
  public:
   typedef base::Callback<void(scoped_ptr<EncodedVideoFrame>,
                               const base::TimeTicks&)> FrameEncodedCallback;
@@ -30,6 +29,8 @@ class VideoEncoder : public VideoEncoderController,
   VideoEncoder(scoped_refptr<CastEnvironment> cast_environment,
                const VideoSenderConfig& video_config,
                uint8 max_unacked_frames);
+
+  virtual ~VideoEncoder();
 
   // Called from the main cast thread. This function post the encode task to the
   // video encoder thread;
@@ -44,8 +45,6 @@ class VideoEncoder : public VideoEncoderController,
                         const base::Closure frame_release_callback);
 
  protected:
-  virtual ~VideoEncoder();
-
   struct CodecDynamicConfig {
     bool key_frame_requested;
     uint32 latest_frame_id_to_reference;
@@ -68,8 +67,6 @@ class VideoEncoder : public VideoEncoderController,
   virtual int NumberOfSkippedFrames() const OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<VideoEncoder>;
-
   const VideoSenderConfig video_config_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<Vp8Encoder> vp8_encoder_;

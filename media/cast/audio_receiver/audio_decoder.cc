@@ -52,7 +52,15 @@ bool AudioDecoder::GetRawAudioFrame(int number_of_10ms_blocks,
                                     int desired_frequency,
                                     PcmAudioFrame* audio_frame,
                                     uint32* rtp_timestamp) {
-  if (!have_received_packets_) return false;
+  // We don't care about the race case where a packet arrives at the same time
+  // as this function in called. The data will be there the next time this
+  // function is called.
+  lock_.Acquire();
+  // Get a local copy under lock.
+  bool have_received_packets = have_received_packets_;
+  lock_.Release();
+
+  if (!have_received_packets) return false;
 
   audio_frame->samples.clear();
 
@@ -92,7 +100,10 @@ void AudioDecoder::IncomingParsedRtpPacket(const uint8* payload_data,
   DCHECK_LE(payload_size, kIpPacketSize);
   audio_decoder_->IncomingPacket(payload_data, static_cast<int32>(payload_size),
                                  rtp_header.webrtc);
+
+  lock_.Acquire();
   have_received_packets_ = true;
+  lock_.Release();
 }
 
 }  // namespace cast

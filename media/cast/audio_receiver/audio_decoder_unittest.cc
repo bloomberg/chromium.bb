@@ -15,10 +15,10 @@ class AudioDecoderTest : public ::testing::Test {
   virtual ~AudioDecoderTest() {}
 
   void Configure(const AudioReceiverConfig& audio_config) {
-    audio_decoder_ = new AudioDecoder(audio_config);
+    audio_decoder_.reset(new AudioDecoder(audio_config));
   }
 
-  scoped_refptr<AudioDecoder> audio_decoder_;
+  scoped_ptr<AudioDecoder> audio_decoder_;
 };
 
 TEST_F(AudioDecoderTest, Pcm16MonoNoResampleOnePacket) {
@@ -41,6 +41,15 @@ TEST_F(AudioDecoderTest, Pcm16MonoNoResampleOnePacket) {
   rtp_header.webrtc.type.Audio.isCNG = false;
 
   std::vector<int16> payload(640, 0x1234);
+  int number_of_10ms_blocks = 4;
+  int desired_frequency = 16000;
+  PcmAudioFrame audio_frame;
+  uint32 rtp_timestamp;
+
+  EXPECT_FALSE(audio_decoder_->GetRawAudioFrame(number_of_10ms_blocks,
+                                                desired_frequency,
+                                                &audio_frame,
+                                                &rtp_timestamp));
 
   uint8* payload_data = reinterpret_cast<uint8*>(&payload[0]);
   size_t payload_size = payload.size() * sizeof(int16);
@@ -48,16 +57,10 @@ TEST_F(AudioDecoderTest, Pcm16MonoNoResampleOnePacket) {
   audio_decoder_->IncomingParsedRtpPacket(payload_data,
       payload_size, rtp_header);
 
-  int number_of_10ms_blocks = 4;
-  int desired_frequency = 16000;
-  PcmAudioFrame audio_frame;
-  uint32 rtp_timestamp;
-
   EXPECT_TRUE(audio_decoder_->GetRawAudioFrame(number_of_10ms_blocks,
                                                desired_frequency,
                                                &audio_frame,
                                                &rtp_timestamp));
-
   EXPECT_EQ(1, audio_frame.channels);
   EXPECT_EQ(16000, audio_frame.frequency);
   EXPECT_EQ(640ul, audio_frame.samples.size());

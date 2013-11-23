@@ -97,7 +97,7 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                                    true,
                                    0));
   } else {
-    audio_decoder_ = new AudioDecoder(audio_config);
+    audio_decoder_.reset(new AudioDecoder(audio_config));
   }
   if (audio_config.aes_iv_mask.size() == kAesKeySize &&
       audio_config.aes_key.size() == kAesKeySize) {
@@ -195,6 +195,7 @@ void AudioReceiver::GetRawAudioFrame(int number_of_10ms_blocks,
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_decoder_) << "Invalid function call in this configuration";
 
+  // TODO(pwestin): we can skip this function by posting direct to the decoder.
   cast_environment_->PostTask(CastEnvironment::AUDIO_DECODER, FROM_HERE,
       base::Bind(&AudioReceiver::DecodeAudioFrameThread,
                  base::Unretained(this),
@@ -216,6 +217,8 @@ void AudioReceiver::DecodeAudioFrameThread(
                                         desired_frequency,
                                         audio_frame.get(),
                                         &rtp_timestamp)) {
+    // TODO(pwestin): This looks wrong, we would loose the pending call to
+    // the application provided callback.
     return;
   }
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();

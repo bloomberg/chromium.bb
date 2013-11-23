@@ -92,8 +92,8 @@ class VideoEncoderTest : public ::testing::Test {
   }
 
   void Configure(uint8 max_unacked_frames) {
-    video_encoder_= new VideoEncoder(cast_environment_, video_config_,
-       max_unacked_frames);
+    video_encoder_.reset(new VideoEncoder(cast_environment_, video_config_,
+       max_unacked_frames));
     video_encoder_controller_ = video_encoder_.get();
   }
 
@@ -101,7 +101,7 @@ class VideoEncoderTest : public ::testing::Test {
   scoped_refptr<TestVideoEncoderCallback> test_video_encoder_callback_;
   VideoSenderConfig video_config_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
-  scoped_refptr<VideoEncoder> video_encoder_;
+  scoped_ptr<VideoEncoder> video_encoder_;
   VideoEncoderController* video_encoder_controller_;
   scoped_refptr<media::VideoFrame> video_frame_;
 

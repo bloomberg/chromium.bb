@@ -85,8 +85,8 @@ VideoSender::VideoSender(
     DCHECK(video_encoder_controller) << "Invalid argument";
     video_encoder_controller_ = video_encoder_controller;
   } else {
-    video_encoder_ = new VideoEncoder(cast_environment, video_config,
-        max_unacked_frames_);
+    video_encoder_.reset(new VideoEncoder(cast_environment, video_config,
+        max_unacked_frames_));
     video_encoder_controller_ = video_encoder_.get();
   }
 

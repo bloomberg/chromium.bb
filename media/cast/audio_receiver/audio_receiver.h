@@ -110,7 +110,7 @@ class AudioReceiver : public base::NonThreadSafe,
   const int frequency_;
   base::TimeDelta target_delay_delta_;
   scoped_ptr<Framer> audio_buffer_;
-  scoped_refptr<AudioDecoder> audio_decoder_;
+  scoped_ptr<AudioDecoder> audio_decoder_;
   scoped_ptr<LocalRtpAudioData> incoming_payload_callback_;
   scoped_ptr<LocalRtpAudioFeedback> incoming_payload_feedback_;
   scoped_ptr<RtpReceiver> rtp_receiver_;
