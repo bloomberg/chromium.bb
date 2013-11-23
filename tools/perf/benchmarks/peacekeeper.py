@@ -20,7 +20,7 @@ from metrics import statistics
 from telemetry import test
 from telemetry.page import page_measurement
 from telemetry.page import page_set
-
+from telemetry.value import merge_values
 
 class PeaceKeeperMeasurement(page_measurement.PageMeasurement):
 
@@ -60,10 +60,11 @@ class PeaceKeeperMeasurement(page_measurement.PageMeasurement):
 
   def DidRunTest(self, browser, results):
     # Calculate geometric mean as the total for the combined tests.
-    scores = []
-    for result in results.page_results:
-      scores.append(result['Score'].output_value)
-    total = statistics.GeometricMean(scores)
+    combined = merge_values.MergeLikeValuesFromDifferentPages(
+        results.all_page_specific_values,
+        group_by_name_suffix=True)
+    combined_score = [x for x in combined if x.name == 'Score'][0]
+    total = statistics.GeometricMean(combined_score.values)
     results.AddSummary('Score', 'score', total, 'Total')
 
 
@@ -254,4 +255,3 @@ class PeaceKeeperHTML5Capabilities(PeaceKeeperBenchmark):
                 'workerContrast01',
                 'workerContrast02'
                 ]
-

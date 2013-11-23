@@ -184,31 +184,39 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
 
     # Make a results object and add results to it from the smoothness metric.
     results = PageMeasurementResults()
-    results.WillMeasurePage(page.Page('http://foo.com/', None))
+    p0 = page.Page('http://foo.com/', None)
+    results.WillMeasurePage(p0)
     smoothness_metric = smoothness.SmoothnessMetric(None)
     smoothness_metric.SetStats(stats)
     smoothness_metric.AddResults(None, results)
     results.DidMeasurePage()
 
+    frame_times = results.FindPageSpecificValuesForPage(p0, 'frame_times')[0]
     self.assertEquals(
         expected_frame_times,
-        results.page_results[0]['frame_times'].value)
+        frame_times.values)
+
+    mean_frame_time = results.FindPageSpecificValuesForPage(
+        p0, 'mean_frame_time')[0]
     self.assertAlmostEquals(
         1000.0 * (total_time_seconds / num_frames_sent),
-        results.page_results[0]['mean_frame_time'].value,
+        mean_frame_time.value,
         places=2)
 
     # We don't verify the correctness of the discrepancy computation itself,
     # because we have a separate unit test for that purpose.
+    jank = results.FindPageSpecificValuesForPage(p0, 'jank')[0]
     self.assertAlmostEquals(
         statistics.FrameDiscrepancy(stats.frame_timestamps, True),
-        results.page_results[0]['jank'].value,
+        jank.value,
         places=4)
 
     # We do not verify the correctness of Percentile here; Percentile should
     # have its own test.
     # The 17 here represents a threshold of 17 ms; this should match the value
     # in the smoothness metric.
+    mostly_smooth = results.FindPageSpecificValuesForPage(
+        p0, 'mostly_smooth')[0]
     self.assertEquals(
         statistics.Percentile(expected_frame_times, 95.0) < 17.0,
-        results.page_results[0]['mostly_smooth'].value)
+        mostly_smooth.value)

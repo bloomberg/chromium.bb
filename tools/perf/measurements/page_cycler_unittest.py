@@ -120,16 +120,18 @@ class PageCyclerUnitTest(unittest.TestCase):
       self.assertEqual(max(0, i - 2), tab.clear_cache_calls,
                        "Iteration %d tab.clear_cache_calls %d" %
                        (i, tab.clear_cache_calls))
-      num_results = len(results.page_results)
       results.WillMeasurePage(page)
       cycler.MeasurePage(page, tab, results)
+
+      values = results.page_specific_values_for_current_page
       results.DidMeasurePage()
-      self.assertEqual(num_results+1, len(results.page_results))
-      result = results[-1]
-      self.assertEqual(result.page, page)
-      self.assertEqual(1, len(result.values))
-      self.assertEqual(result.values[0].trace_name, 'page_load_time')
-      self.assertEqual(result.values[0].units, 'ms')
-      self.assertEqual(result.values[0].chart_name,
-                       'warm_times' if i < 3 else 'cold_times')
+
+      self.assertEqual(1, len(values))
+      self.assertEqual(values[0].page, page)
+
+      chart_name = 'warm_times' if i > 3 else 'cold_times'
+      print values[0].name
+      self.assertEqual(values[0].name, '%s.page_load_time' % chart_name)
+      self.assertEqual(values[0].units, 'ms')
+
       cycler.DidNavigateToPage(page, tab)
