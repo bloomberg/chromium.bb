@@ -36,9 +36,9 @@ class CONTENT_EXPORT SyntheticPinchGesture : public SyntheticGesture {
 
   void ForwardTouchEvent(SyntheticGestureTarget* target);
 
-  float GetPositionDelta(const base::TimeDelta& interval);
-
-  bool HasFinished();
+  float GetDeltaForPointer0(const base::TimeDelta& interval) const;
+  float ComputeAbsoluteRemainingDistance() const;
+  bool HasFinished() const;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticPinchGesture);
 };

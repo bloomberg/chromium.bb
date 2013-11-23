@@ -4,8 +4,6 @@
 
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 
-#include <cmath>
-
 #include "content/common/input/input_event.h"
 #include "ui/events/latency_info.h"
 
@@ -93,16 +91,29 @@ void SyntheticSmoothScrollGesture::ForwardMouseWheelEvent(
 }
 
 float SyntheticSmoothScrollGesture::GetPositionDelta(
-    const base::TimeDelta& interval) {
-  float delta = params_.speed_in_pixels_s * interval.InSecondsF();
-  // A positive value indicates scrolling down, which means the touch pointer
+    const base::TimeDelta& interval) const {
+  float abs_delta = params_.speed_in_pixels_s * interval.InSecondsF();
+
+  // Make sure we're not scrolling too far.
+  abs_delta = std::min(abs_delta, ComputeAbsoluteRemainingDistance());
+
+  // A positive distance indicates scrolling down, which means the touch pointer
   // moves up or the scroll wheel moves down. In either case, the delta is
   // negative when scrolling down and positive when scrolling up.
-  return (params_.distance > 0) ? -delta : delta;
+  return params_.distance > 0 ? -abs_delta : abs_delta;
 }
 
-bool SyntheticSmoothScrollGesture::HasFinished() {
-  return abs(current_y_ - params_.anchor.y()) >= abs(params_.distance);
+float SyntheticSmoothScrollGesture::ComputeAbsoluteRemainingDistance() const {
+  float remaining_distance =
+      params_.distance - (params_.anchor.y() - current_y_);
+  float abs_remaining_distance =
+      params_.distance > 0 ? remaining_distance : -remaining_distance;
+  DCHECK_GE(abs_remaining_distance, 0);
+  return abs_remaining_distance;
+}
+
+bool SyntheticSmoothScrollGesture::HasFinished() const {
+  return ComputeAbsoluteRemainingDistance() == 0;
 }
 
 }  // namespace content

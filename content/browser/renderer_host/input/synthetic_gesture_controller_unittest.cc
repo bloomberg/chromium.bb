@@ -348,7 +348,7 @@ TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureTouch) {
 
   SyntheticSmoothScrollGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-  params.distance = 100;
+  params.distance = 123;
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
@@ -357,8 +357,9 @@ TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureTouch) {
 
   EXPECT_EQ(1, target_->num_success());
   EXPECT_EQ(0, target_->num_failure());
-  EXPECT_LE(params.distance, static_cast<MockSyntheticSmoothScrollTouchTarget*>(
-                                 target_)->scroll_distance());
+  EXPECT_FLOAT_EQ(params.distance,
+                  static_cast<MockSyntheticSmoothScrollTouchTarget*>(target_)
+                      ->scroll_distance());
 }
 
 TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureMouse) {
@@ -366,7 +367,7 @@ TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureMouse) {
 
   SyntheticSmoothScrollGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
-  params.distance = -100;
+  params.distance = -234;
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
@@ -375,8 +376,9 @@ TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureMouse) {
 
   EXPECT_EQ(1, target_->num_success());
   EXPECT_EQ(0, target_->num_failure());
-  EXPECT_GE(params.distance, static_cast<MockSyntheticSmoothScrollTouchTarget*>(
-                                 target_)->scroll_distance());
+  EXPECT_FLOAT_EQ(params.distance,
+                  static_cast<MockSyntheticSmoothScrollTouchTarget*>(target_)
+                      ->scroll_distance());
 }
 
 TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomIn) {
@@ -385,10 +387,9 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomIn) {
   SyntheticPinchGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
   params.zoom_in = true;
-  params.total_num_pixels_covered = 100;
+  params.total_num_pixels_covered = 345;
 
-  scoped_ptr<SyntheticPinchGesture> gesture(
-      new SyntheticPinchGesture(params));
+  scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
   controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
   FlushInputUntilComplete();
 
@@ -397,10 +398,9 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomIn) {
   EXPECT_EQ(
       static_cast<MockSyntheticPinchTouchTarget*>(target_)->zoom_direction(),
       MockSyntheticPinchTouchTarget::ZOOM_IN);
-  EXPECT_LE(
-      params.total_num_pixels_covered,
-      static_cast<MockSyntheticPinchTouchTarget*>(target_)
-          ->total_num_pixels_covered());
+  EXPECT_FLOAT_EQ(params.total_num_pixels_covered,
+                  static_cast<MockSyntheticPinchTouchTarget*>(target_)
+                      ->total_num_pixels_covered());
 }
 
 TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomOut) {
@@ -409,10 +409,9 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomOut) {
   SyntheticPinchGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
   params.zoom_in = false;
-  params.total_num_pixels_covered = 100;
+  params.total_num_pixels_covered = 456;
 
-  scoped_ptr<SyntheticPinchGesture> gesture(
-      new SyntheticPinchGesture(params));
+  scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
   controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
   FlushInputUntilComplete();
 
@@ -421,10 +420,9 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomOut) {
   EXPECT_EQ(
       static_cast<MockSyntheticPinchTouchTarget*>(target_)->zoom_direction(),
       MockSyntheticPinchTouchTarget::ZOOM_OUT);
-  EXPECT_LE(
-      params.total_num_pixels_covered,
-      static_cast<MockSyntheticPinchTouchTarget*>(target_)
-          ->total_num_pixels_covered());
+  EXPECT_FLOAT_EQ(params.total_num_pixels_covered,
+                  static_cast<MockSyntheticPinchTouchTarget*>(target_)
+                      ->total_num_pixels_covered());
 }
 
 }  // namespace

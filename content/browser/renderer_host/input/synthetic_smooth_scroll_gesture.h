@@ -38,9 +38,9 @@ class CONTENT_EXPORT SyntheticSmoothScrollGesture : public SyntheticGesture {
   void ForwardMouseWheelEvent(SyntheticGestureTarget* target,
                               float delta);
 
-  float GetPositionDelta(const base::TimeDelta& interval);
-
-  bool HasFinished();
+  float GetPositionDelta(const base::TimeDelta& interval) const;
+  float ComputeAbsoluteRemainingDistance() const;
+  bool HasFinished() const;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticSmoothScrollGesture);
 };
