@@ -11339,6 +11339,13 @@ other types of suffix sets.
   <summary>Time spent on the Suggested Sites NTP pane, in seconds.</summary>
 </histogram>
 
+<histogram name="NewTabPage.SuggestionsType" enum="NtpSuggestionsType">
+  <summary>
+    Indicate, for each impression of the New Tab Page, whether the suggestions
+    were obtained from the client or server.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.ThumbnailErrorRate">
   <summary>
     The percentage of errors per attempts to load image thumbnails on the New
@@ -26794,6 +26801,11 @@ other types of suffix sets.
   <int value="0" label="NTP Promo viewed"/>
   <int value="1" label="NTP Promo closed"/>
   <int value="2" label="NTP Promo link clicked"/>
+</enum>
+
+<enum name="NtpSuggestionsType" type="int">
+  <int value="0" label="Client suggestion"/>
+  <int value="1" label="Server suggestion"/>
 </enum>
 
 <enum name="NtpTileExperimentActions" type="int">

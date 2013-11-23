@@ -29,6 +29,10 @@ class NTPUserDataLogger
   // session to UMA histogram. Called when the user navigates to a URL.
   void EmitThumbnailErrorRate();
 
+  // Logs the type of the suggestions that were shown on this NTP. Called when
+  // the user navigates to a URL.
+  void EmitSuggestionsType();
+
   // Logs total number of mouseovers per NTP session to UMA histogram. Called
   // when an NTP tab is about to be deactivated (be it by switching tabs, losing
   // focus or closing the tab/shutting down Chrome), or when the user navigates
@@ -71,6 +75,10 @@ class NTPUserDataLogger
   // Total number of errors that occurred while trying to load the primary
   // thumbnail image and that caused a fallback to the secondary thumbnail.
   size_t number_of_fallback_thumbnails_used_;
+
+  // True if at least one iframe came from a server-side suggestion. In
+  // practice, either all the iframes are server-side suggestions or none are.
+  bool server_side_suggestions_;
 
   // The URL of this New Tab Page - varies based on NTP version.
   GURL ntp_url_;

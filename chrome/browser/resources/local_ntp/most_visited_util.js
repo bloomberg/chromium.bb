@@ -29,7 +29,9 @@ var NTP_LOGGING_EVENT_TYPE = {
   NTP_FALLBACK_THUMBNAIL_REQUESTED: 3,
   // The primary thumbnail image failed to load and caused us to use the
   // secondary thumbnail as a fallback.
-  NTP_FALLBACK_THUMBNAIL_USED: 4
+  NTP_FALLBACK_THUMBNAIL_USED: 4,
+  // The suggestion is coming from the server.
+  NTP_SERVER_SIDE_SUGGESTION: 5
 };
 
 
@@ -155,7 +157,7 @@ function fillMostVisited(location, fill) {
     return;
   var data = {};
   if (params.url) {
-    // Means that we get suggestion data from the server. Create data object.
+    // Means that the suggestion data comes from the server. Create data object.
     data.url = params.url;
     data.thumbnailUrl = params.tu || '';
     data.thumbnailUrl2 = params.tu2 || '';
@@ -163,6 +165,9 @@ function fillMostVisited(location, fill) {
     data.direction = params.di || '';
     data.domain = params.dom || '';
     data.ping = params.ping || '';
+    // Log the fact that suggestion was obtained from the server.
+    var ntpApiHandle = chrome.embeddedSearch.newTabPage;
+    ntpApiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_SERVER_SIDE_SUGGESTION);
   } else {
     var apiHandle = chrome.embeddedSearch.searchBox;
     data = apiHandle.getMostVisitedItemData(params.rid);

@@ -25,6 +25,9 @@ enum NTPLoggingEventType {
   // secondary thumbnail as a fallback.
   NTP_FALLBACK_THUMBNAIL_USED = 4,
 
+  // The suggestion is coming from the server.
+  NTP_SERVER_SIDE_SUGGESTION = 5,
+
   NTP_NUM_EVENT_TYPES
 };
 

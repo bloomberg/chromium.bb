@@ -10,6 +10,17 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_details.h"
 
+namespace {
+
+// Used to track if suggestions were issued by the client or the server.
+enum SuggestionsType {
+  CLIENT_SIDE = 0,
+  SERVER_SIDE = 1,
+  SUGGESTIONS_TYPE_COUNT = 2
+};
+
+}  // namespace
+
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(NTPUserDataLogger);
 
 NTPUserDataLogger::~NTPUserDataLogger() {}
@@ -36,6 +47,14 @@ void NTPUserDataLogger::EmitThumbnailErrorRate() {
   number_of_fallback_thumbnails_used_ = 0;
 }
 
+void NTPUserDataLogger::EmitSuggestionsType() {
+  UMA_HISTOGRAM_ENUMERATION(
+      "NewTabPage.SuggestionsType",
+      server_side_suggestions_ ? SERVER_SIDE : CLIENT_SIDE,
+      SUGGESTIONS_TYPE_COUNT);
+  server_side_suggestions_ = false;
+}
+
 void NTPUserDataLogger::EmitMouseoverCount() {
   UMA_HISTOGRAM_COUNTS("NewTabPage.NumberOfMouseOvers", number_of_mouseovers_);
   number_of_mouseovers_ = 0;
@@ -58,6 +77,9 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event) {
     case NTP_FALLBACK_THUMBNAIL_USED:
       number_of_fallback_thumbnails_used_++;
       break;
+    case NTP_SERVER_SIDE_SUGGESTION:
+      server_side_suggestions_ = true;
+      break;
     default:
       NOTREACHED();
   }
@@ -71,6 +93,7 @@ void NTPUserDataLogger::NavigationEntryCommitted(
 
   if (search::MatchesOriginAndPath(ntp_url_, load_details.previous_url)) {
     EmitMouseoverCount();
+    EmitSuggestionsType();
     // Only log thumbnail error rates for Instant NTP pages, as we do not have
     // this data for non-Instant NTPs.
     if (ntp_url_ != GURL(chrome::kChromeUINewTabURL))
@@ -84,7 +107,8 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
       number_of_thumbnail_attempts_(0),
       number_of_thumbnail_errors_(0),
       number_of_fallback_thumbnails_requested_(0),
-      number_of_fallback_thumbnails_used_(0) {
+      number_of_fallback_thumbnails_used_(0),
+      server_side_suggestions_(false) {
 }
 
 size_t NTPUserDataLogger::GetPercentError(size_t errors, size_t events) const {
