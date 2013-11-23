@@ -40,10 +40,15 @@ extern const char kSwitchDisablePings[] = "disable-pings";
 // Sets the URL for updates.
 const char kSwitchUrlSource[] = "url-source";
 
+#define COMPONENT_UPDATER_SERVICE_ENDPOINT \
+    "//clients2.google.com/service/update2"
+
 // The default url for the v3 protocol service endpoint. Can be
 // overridden with --component-updater=url-source=someurl.
-const char kDefaultUrlSource[] =
-    "http://clients2.google.com/service/update2";
+const char kDefaultUrlSource[] = "https:" COMPONENT_UPDATER_SERVICE_ENDPOINT;
+
+// The url to send the pings to.
+const char kPingUrl[] = "http:" COMPONENT_UPDATER_SERVICE_ENDPOINT;
 
 #if defined(OS_WIN)
 // Disables differential updates.
@@ -176,7 +181,7 @@ GURL ChromeConfigurator::UpdateUrl() {
 }
 
 GURL ChromeConfigurator::PingUrl() {
-  return pings_enabled_ ? UpdateUrl() : GURL();
+  return pings_enabled_ ? GURL(kPingUrl) : GURL();
 }
 
 const char* ChromeConfigurator::ExtraRequestParams() {
