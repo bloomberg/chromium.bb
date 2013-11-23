@@ -791,6 +791,7 @@ void BrowserOptionsHandler::InitializePage() {
   SetupPageZoomSelector();
   SetupAutoOpenFileTypes();
   SetupProxySettingsSection();
+  SetupManageCertificatesSection();
   SetupManagingSupervisedUsers();
 
 #if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
@@ -1580,7 +1581,8 @@ void BrowserOptionsHandler::SetupProxySettingsSection() {
   // to a user in Ash).
   bool is_win_ash = false;
 #if defined(OS_WIN)
-  is_win_ash = (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::HostDesktopType desktop_type = helper::GetDesktopType(web_ui());
+  is_win_ash = (desktop_type == chrome::HOST_DESKTOP_TYPE_ASH);
 #endif
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   const PrefService::Preference* proxy_config =
@@ -1595,6 +1597,19 @@ void BrowserOptionsHandler::SetupProxySettingsSection() {
                                    disabled, extension_controlled);
 
 #endif  // !defined(OS_CHROMEOS)
+}
+
+void BrowserOptionsHandler::SetupManageCertificatesSection() {
+#if defined(OS_WIN)
+  // Disable the button if the settings page is displayed in Windows Ash,
+  // otherwise the proxy settings dialog will open on the Windows desktop and
+  // be invisible to a user in Ash.
+  if (helper::GetDesktopType(web_ui()) == chrome::HOST_DESKTOP_TYPE_ASH) {
+    base::FundamentalValue enabled(false);
+    web_ui()->CallJavascriptFunction("BrowserOptions.enableCertificateButton",
+                                     enabled);
+  }
+#endif  // defined(OS_WIN)
 }
 
 void BrowserOptionsHandler::SetupManagingSupervisedUsers() {
