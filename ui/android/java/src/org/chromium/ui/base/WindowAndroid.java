@@ -58,6 +58,20 @@ public class WindowAndroid {
     }
 
     /**
+     * Removes a callback from the list of pending intents, so that nothing happens if/when the
+     * result for that intent is received.
+     * @param callback The object that should have received the results
+     * @return True if the callback was removed, false if it was not found.
+    */
+    public boolean removeIntentCallback(IntentCallback callback) {
+        int requestCode = mOutstandingIntents.indexOfValue(callback);
+        if (requestCode < 0) return false;
+        mOutstandingIntents.remove(requestCode);
+        mIntentErrors.remove(requestCode);
+        return true;
+    }
+
+    /**
      * Displays an error message with a provided error message string.
      * @param error The error message string to be displayed.
      */
