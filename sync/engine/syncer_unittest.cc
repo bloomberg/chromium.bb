@@ -461,6 +461,18 @@ class SyncerTest : public testing::Test,
     return directory()->GetCryptographer(trans);
   }
 
+  // Configures SyncSessionContext and NudgeTracker so Syncer won't call
+  // GetUpdates prior to Commit. This method can be used to ensure a Commit is
+  // not preceeded by GetUpdates.
+  void ConfigureNoGetUpdatesRequired() {
+    context_->set_server_enabled_pre_commit_update_avoidance(true);
+    nudge_tracker_.OnInvalidationsEnabled();
+    nudge_tracker_.RecordSuccessfulSyncCycle();
+
+    ASSERT_FALSE(context_->ShouldFetchUpdatesBeforeCommit());
+    ASSERT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
+  }
+
   base::MessageLoop message_loop_;
 
   // Some ids to aid tests. Only the root one's value is specific. The rest
@@ -2520,55 +2532,128 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_CommitConflict) {
 }
 
 // Tests that sending debug info events works.
-TEST_F(SyncerTest, SendDebugInfoEvents_HappyCase) {
+TEST_F(SyncerTest, SendDebugInfoEventsOnGetUpdates_HappyCase) {
   debug_info_getter_->AddDebugEvent();
   debug_info_getter_->AddDebugEvent();
 
   SyncShareNudge();
 
-  // Verify we received one request with two debug info events.
+  // Verify we received one GetUpdates request with two debug info events.
   EXPECT_EQ(1U, mock_server_->requests().size());
-  EXPECT_EQ(2, mock_server_->requests().back().debug_info().events_size());
+  ASSERT_TRUE(mock_server_->last_request().has_get_updates());
+  EXPECT_EQ(2, mock_server_->last_request().debug_info().events_size());
 
   SyncShareNudge();
 
-  // See that we received another request, but that it contains no debug info
-  // events.
+  // See that we received another GetUpdates request, but that it contains no
+  // debug info events.
   EXPECT_EQ(2U, mock_server_->requests().size());
-  EXPECT_EQ(0, mock_server_->requests().back().debug_info().events_size());
+  ASSERT_TRUE(mock_server_->last_request().has_get_updates());
+  EXPECT_EQ(0, mock_server_->last_request().debug_info().events_size());
 
   debug_info_getter_->AddDebugEvent();
 
   SyncShareNudge();
 
-  // See that we received another request and it contains one debug info event.
+  // See that we received another GetUpdates request and it contains one debug
+  // info event.
   EXPECT_EQ(3U, mock_server_->requests().size());
-  EXPECT_EQ(1, mock_server_->requests().back().debug_info().events_size());
+  ASSERT_TRUE(mock_server_->last_request().has_get_updates());
+  EXPECT_EQ(1, mock_server_->last_request().debug_info().events_size());
 }
 
 // Tests that debug info events are dropped on server error.
-TEST_F(SyncerTest, SendDebugInfoEvents_PostFailsDontDrop) {
+TEST_F(SyncerTest, SendDebugInfoEventsOnGetUpdates_PostFailsDontDrop) {
   debug_info_getter_->AddDebugEvent();
   debug_info_getter_->AddDebugEvent();
 
   mock_server_->FailNextPostBufferToPathCall();
   SyncShareNudge();
 
-  // Verify we attempted to send one request with two debug info events.
+  // Verify we attempted to send one GetUpdates request with two debug info
+  // events.
   EXPECT_EQ(1U, mock_server_->requests().size());
-  EXPECT_EQ(2, mock_server_->requests().back().debug_info().events_size());
+  ASSERT_TRUE(mock_server_->last_request().has_get_updates());
+  EXPECT_EQ(2, mock_server_->last_request().debug_info().events_size());
 
   SyncShareNudge();
 
   // See that the client resent the two debug info events.
   EXPECT_EQ(2U, mock_server_->requests().size());
-  EXPECT_EQ(2, mock_server_->requests().back().debug_info().events_size());
+  ASSERT_TRUE(mock_server_->last_request().has_get_updates());
+  EXPECT_EQ(2, mock_server_->last_request().debug_info().events_size());
 
   // The previous send was successful so this next one shouldn't generate any
   // debug info events.
   SyncShareNudge();
   EXPECT_EQ(3U, mock_server_->requests().size());
-  EXPECT_EQ(0, mock_server_->requests().back().debug_info().events_size());
+  ASSERT_TRUE(mock_server_->last_request().has_get_updates());
+  EXPECT_EQ(0, mock_server_->last_request().debug_info().events_size());
+}
+
+// Tests that sending debug info events on Commit works.
+TEST_F(SyncerTest, SendDebugInfoEventsOnCommit_HappyCase) {
+  // Make sure GetUpdate isn't call as it would "steal" debug info events before
+  // Commit has a chance to send them.
+  ConfigureNoGetUpdatesRequired();
+
+  // Generate a debug info event and trigger a commit.
+  debug_info_getter_->AddDebugEvent();
+  CreateUnsyncedDirectory("X", "id_X");
+  SyncShareNudge();
+
+  // Verify that the last request received is a Commit and that it contains a
+  // debug info event.
+  EXPECT_EQ(1U, mock_server_->requests().size());
+  ASSERT_TRUE(mock_server_->last_request().has_commit());
+  EXPECT_EQ(1, mock_server_->last_request().debug_info().events_size());
+
+  // Generate another commit, but no debug info event.
+  CreateUnsyncedDirectory("Y", "id_Y");
+  SyncShareNudge();
+
+  // See that it was received and contains no debug info events.
+  EXPECT_EQ(2U, mock_server_->requests().size());
+  ASSERT_TRUE(mock_server_->last_request().has_commit());
+  EXPECT_EQ(0, mock_server_->last_request().debug_info().events_size());
+}
+
+// Tests that debug info events are not dropped on server error.
+TEST_F(SyncerTest, SendDebugInfoEventsOnCommit_PostFailsDontDrop) {
+  // Make sure GetUpdate isn't call as it would "steal" debug info events before
+  // Commit has a chance to send them.
+  ConfigureNoGetUpdatesRequired();
+
+  mock_server_->FailNextPostBufferToPathCall();
+
+  // Generate a debug info event and trigger a commit.
+  debug_info_getter_->AddDebugEvent();
+  CreateUnsyncedDirectory("X", "id_X");
+  SyncShareNudge();
+
+  // Verify that the last request sent is a Commit and that it contains a debug
+  // info event.
+  EXPECT_EQ(1U, mock_server_->requests().size());
+  ASSERT_TRUE(mock_server_->last_request().has_commit());
+  EXPECT_EQ(1, mock_server_->last_request().debug_info().events_size());
+
+  // Try again.
+  SyncShareNudge();
+
+  // Verify that we've received another Commit and that it contains a debug info
+  // event (just like the previous one).
+  EXPECT_EQ(2U, mock_server_->requests().size());
+  ASSERT_TRUE(mock_server_->last_request().has_commit());
+  EXPECT_EQ(1, mock_server_->last_request().debug_info().events_size());
+
+  // Generate another commit and try again.
+  CreateUnsyncedDirectory("Y", "id_Y");
+  SyncShareNudge();
+
+  // See that it was received and contains no debug info events.
+  EXPECT_EQ(3U, mock_server_->requests().size());
+  ASSERT_TRUE(mock_server_->last_request().has_commit());
+  EXPECT_EQ(0, mock_server_->last_request().debug_info().events_size());
 }
 
 TEST_F(SyncerTest, HugeConflict) {

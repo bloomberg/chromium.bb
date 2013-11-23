@@ -110,6 +110,11 @@ SyncerError Commit::PostAndProcessResponse(
   }
   session->mutable_status_controller()->set_commit_request_types(request_types);
 
+  if (session->context()->debug_info_getter()) {
+    sync_pb::DebugInfo* debug_info = message_.mutable_debug_info();
+    session->context()->debug_info_getter()->GetDebugInfo(debug_info);
+  }
+
   DVLOG(1) << "Sending commit message.";
   TRACE_EVENT_BEGIN0("sync", "PostCommit");
   const SyncerError post_result = SyncerProtoUtil::PostClientToServerMessage(
@@ -134,6 +139,12 @@ SyncerError Commit::PostAndProcessResponse(
        << "Expected: " << message_entries << ", "
        << "Got: " << response_entries;
     return SERVER_RESPONSE_VALIDATION_FAILED;
+  }
+
+  if (session->context()->debug_info_getter()) {
+    // Clear debug info now that we have successfully sent it to the server.
+    DVLOG(1) << "Clearing client debug info.";
+    session->context()->debug_info_getter()->ClearDebugInfo();
   }
 
   // Let the contributors process the responses to each of their requests.
