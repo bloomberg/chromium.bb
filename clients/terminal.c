@@ -814,7 +814,6 @@ terminal_resize_cells(struct terminal *terminal,
 		terminal->data = data;
 		terminal->data_attr = data_attr;
 		terminal->tab_ruler = tab_ruler;
-		terminal_init_tabs(terminal);
 		terminal->start = 0;
 	}
 
@@ -822,6 +821,7 @@ terminal_resize_cells(struct terminal *terminal,
 		height - (terminal->height - terminal->margin_bottom);
 	terminal->width = width;
 	terminal->height = height;
+	terminal_init_tabs(terminal);
 
 	/* Update the window size */
 	ws.ws_row = terminal->height;
