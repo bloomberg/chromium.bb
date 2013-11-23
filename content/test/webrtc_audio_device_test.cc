@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
@@ -284,7 +285,6 @@ void MAYBE_WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
   MockRTCResourceContext* resource_context =
       static_cast<MockRTCResourceContext*>(resource_context_.get());
   resource_context->set_request_context(test_request_context_.get());
-  media_internals_.reset(new MockMediaInternals());
 
   // Create our own AudioManager, AudioMirroringManager and MediaStreamManager.
   audio_manager_.reset(media::AudioManager::Create());
@@ -317,9 +317,12 @@ void MAYBE_WebRTCAudioDeviceTest::CreateChannel(const char* name) {
   ASSERT_TRUE(channel_->Connect());
 
   static const int kRenderProcessId = 1;
-  audio_render_host_ = new TestAudioRendererHost(
-      kRenderProcessId, audio_manager_.get(), mirroring_manager_.get(),
-      media_internals_.get(), media_stream_manager_.get(), channel_.get());
+  audio_render_host_ = new TestAudioRendererHost(kRenderProcessId,
+                                                 audio_manager_.get(),
+                                                 mirroring_manager_.get(),
+                                                 MediaInternals::GetInstance(),
+                                                 media_stream_manager_.get(),
+                                                 channel_.get());
   audio_render_host_->set_peer_pid_for_testing(base::GetCurrentProcId());
 
   audio_input_renderer_host_ =

@@ -155,11 +155,6 @@ class MAYBE_WebRTCAudioDeviceTest : public ::testing::Test,
   void WaitForAudioManagerCompletion();
   void WaitForMessageLoopCompletion(base::MessageLoopProxy* loop);
 
-  // Convenience getter for gmock.
-  MockMediaInternals& media_observer() const {
-    return *media_internals_.get();
-  }
-
   std::string GetTestDataPath(const base::FilePath::StringType& file_name);
 
   scoped_ptr<ReplaceContentClientRenderer> saved_content_renderer_;
@@ -167,7 +162,6 @@ class MAYBE_WebRTCAudioDeviceTest : public ::testing::Test,
   ContentRendererClient content_renderer_client_;
   RenderThreadImpl* render_thread_;  // Owned by mock_process_.
   scoped_ptr<WebRTCMockRenderProcess> mock_process_;
-  scoped_ptr<MockMediaInternals> media_internals_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
   scoped_ptr<media::AudioManager> audio_manager_;
   scoped_ptr<AudioMirroringManager> mirroring_manager_;

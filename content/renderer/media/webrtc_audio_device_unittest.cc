@@ -512,19 +512,9 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_StartPlayout) {
   scoped_ptr<media::AudioHardwareConfig> config =
       CreateRealHardwareConfig(audio_manager_.get());
   SetAudioHardwareConfig(config.get());
-  media::AudioParameters params(config->GetOutputConfig());
 
   if (!HardwareSampleRatesAreValid())
     return;
-
-  EXPECT_CALL(media_observer(),
-      OnAudioStreamCreated(_, 1, params, StrEq(""))).Times(1);
-  EXPECT_CALL(media_observer(),
-      OnSetAudioStreamPlaying(_, 1, true)).Times(1);
-  EXPECT_CALL(media_observer(),
-      OnSetAudioStreamStatus(_, 1, StrEq("closed"))).Times(1);
-  EXPECT_CALL(media_observer(),
-      OnDeleteAudioStream(_, 1)).Times(AnyNumber());
 
   WebRTCAutoDelete<webrtc::VoiceEngine> engine(webrtc::VoiceEngine::Create());
   ASSERT_TRUE(engine.valid());
@@ -698,19 +688,9 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_PlayLocalFile) {
   scoped_ptr<media::AudioHardwareConfig> config =
       CreateRealHardwareConfig(audio_manager_.get());
   SetAudioHardwareConfig(config.get());
-  media::AudioParameters params(config->GetOutputConfig());
 
   if (!HardwareSampleRatesAreValid())
     return;
-
-  EXPECT_CALL(media_observer(),
-      OnAudioStreamCreated(_, 1, params, StrEq(""))).Times(1);
-  EXPECT_CALL(media_observer(),
-      OnSetAudioStreamPlaying(_, 1, true)).Times(1);
-  EXPECT_CALL(media_observer(),
-      OnSetAudioStreamStatus(_, 1, StrEq("closed"))).Times(1);
-  EXPECT_CALL(media_observer(),
-      OnDeleteAudioStream(_, 1)).Times(AnyNumber());
 
   WebRTCAutoDelete<webrtc::VoiceEngine> engine(webrtc::VoiceEngine::Create());
   ASSERT_TRUE(engine.valid());
@@ -779,19 +759,9 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   scoped_ptr<media::AudioHardwareConfig> config =
       CreateRealHardwareConfig(audio_manager_.get());
   SetAudioHardwareConfig(config.get());
-  media::AudioParameters params(config->GetOutputConfig());
 
   if (!HardwareSampleRatesAreValid())
     return;
-
-  EXPECT_CALL(media_observer(),
-      OnAudioStreamCreated(_, 1, params, StrEq(""))).Times(1);
-  EXPECT_CALL(media_observer(),
-      OnSetAudioStreamPlaying(_, 1, true));
-  EXPECT_CALL(media_observer(),
-      OnSetAudioStreamStatus(_, 1, StrEq("closed")));
-  EXPECT_CALL(media_observer(),
-      OnDeleteAudioStream(_, 1)).Times(AnyNumber());
 
   WebRTCAutoDelete<webrtc::VoiceEngine> engine(webrtc::VoiceEngine::Create());
   ASSERT_TRUE(engine.valid());
@@ -933,19 +903,9 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_WebRtcPlayoutSetupTime) {
   scoped_ptr<media::AudioHardwareConfig> config =
       CreateRealHardwareConfig(audio_manager_.get());
   SetAudioHardwareConfig(config.get());
-  media::AudioParameters params(config->GetOutputConfig());
 
   if (!HardwareSampleRatesAreValid())
     return;
-
-  EXPECT_CALL(media_observer(),
-      OnAudioStreamCreated(_, 1, params, StrEq(""))).Times(1);
-  EXPECT_CALL(media_observer(),
-              OnSetAudioStreamStatus(_, 1, _)).Times(AnyNumber());
-  EXPECT_CALL(media_observer(),
-              OnSetAudioStreamPlaying(_, 1, true));
-  EXPECT_CALL(media_observer(),
-              OnDeleteAudioStream(_, 1)).Times(AnyNumber());
 
   base::WaitableEvent event(false, false);
   scoped_ptr<MockWebRtcAudioRendererSource> renderer_source(
