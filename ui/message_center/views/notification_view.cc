@@ -19,6 +19,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_switches.h"
+#include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
@@ -419,11 +420,11 @@ namespace message_center {
 // NotificationView ////////////////////////////////////////////////////////////
 
 // static
-MessageView* NotificationView::Create(const Notification& notification,
-                                      MessageCenter* message_center,
-                                      MessageCenterTray* tray,
-                                      bool expanded,
-                                      bool top_level) {
+NotificationView* NotificationView::Create(const Notification& notification,
+                                           MessageCenter* message_center,
+                                           MessageCenterTray* tray,
+                                           bool expanded,
+                                           bool top_level) {
   switch (notification.type()) {
     case NOTIFICATION_TYPE_BASE_FORMAT:
     case NOTIFICATION_TYPE_IMAGE:
@@ -443,7 +444,7 @@ MessageView* NotificationView::Create(const Notification& notification,
   }
 
   // Currently all roads lead to the generic NotificationView.
-  MessageView* notification_view =
+  NotificationView* notification_view =
       new NotificationView(notification, message_center, tray, expanded);
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -460,7 +461,11 @@ NotificationView::NotificationView(const Notification& notification,
                                    MessageCenter* message_center,
                                    MessageCenterTray* tray,
                                    bool expanded)
-    : MessageView(notification, message_center, tray),
+    : MessageView(notification.display_source()),
+      message_center_(message_center),
+      tray_(tray),
+      notification_id_(notification.id()),
+      notifier_id_(notification.notifier_id()),
       clickable_(notification.clickable()),
       is_expanded_(expanded) {
   std::vector<string16> accessible_lines;
@@ -738,7 +743,7 @@ views::View* NotificationView::GetEventHandlerForRect(const gfx::Rect& rect) {
 }
 
 gfx::NativeCursor NotificationView::GetCursor(const ui::MouseEvent& event) {
-  if (!clickable_ || !message_center()->HasClickedListener(notification_id()))
+  if (!clickable_ || !message_center_->HasClickedListener(notification_id_))
     return views::View::GetCursor(event);
 
 #if defined(USE_AURA)
@@ -754,7 +759,7 @@ void NotificationView::ButtonPressed(views::Button* sender,
   // See if the button pressed was an action button.
   for (size_t i = 0; i < action_buttons_.size(); ++i) {
     if (sender == action_buttons_[i]) {
-      message_center()->ClickOnNotificationButton(notification_id(), i);
+      message_center_->ClickOnNotificationButton(notification_id_, i);
       return;
     }
   }
@@ -769,7 +774,7 @@ void NotificationView::ButtonPressed(views::Button* sender,
       image_view_->SetVisible(true);
 
     is_expanded_ = true;
-    message_center()->ExpandNotification(notification_id());
+    message_center_->ExpandNotification(notification_id_);
     return;
   }
 
@@ -777,6 +782,22 @@ void NotificationView::ButtonPressed(views::Button* sender,
   // Warning: This may cause the NotificationView itself to be deleted,
   // so don't do anything afterwards.
   MessageView::ButtonPressed(sender, event);
+}
+
+void NotificationView::ClickOnNotification() {
+  message_center_->ClickOnNotification(notification_id_);
+}
+
+void NotificationView::RemoveNotification(bool by_user) {
+  message_center_->RemoveNotification(notification_id_, by_user);
+}
+
+void NotificationView::DisableNotificationsFromThisSource() {
+  message_center_->DisableNotificationsByNotifier(notifier_id_);
+}
+
+void NotificationView::ShowNotifierSettingsBubble() {
+  tray_->ShowNotifierSettingsBubble();
 }
 
 bool NotificationView::IsExpansionNeeded(int width) {

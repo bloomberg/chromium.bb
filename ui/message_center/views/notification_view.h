@@ -18,6 +18,7 @@ namespace message_center {
 
 class BoundedLabel;
 class MessageCenter;
+class NotificationView;
 class PaddedButton;
 
 // View that displays all current types of notification (web, basic, image, and
@@ -32,11 +33,11 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
   // notification type. A notification is top level if it needs to be rendered
   // outside the browser window. No custom shadows are created for top level
   // notifications on Linux with Aura.
-  static MessageView* Create(const Notification& notification,
-                             MessageCenter* message_center,
-                             MessageCenterTray* tray,
-                             bool expanded,
-                             bool top_level);
+  static NotificationView* Create(const Notification& notification,
+                                  MessageCenter* message_center,
+                                  MessageCenterTray* tray,
+                                  bool expanded,
+                                  bool top_level);
 
   virtual ~NotificationView();
 
@@ -53,11 +54,19 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
+  std::string notification_id() { return notification_id_; }
+
  protected:
   NotificationView(const Notification& notification,
                    MessageCenter* message_center,
                    MessageCenterTray* tray,
                    bool expanded);
+
+  // Overrides from base class MessageView:
+  virtual void ClickOnNotification() OVERRIDE;
+  virtual void RemoveNotification(bool by_user) OVERRIDE;
+  virtual void DisableNotificationsFromThisSource() OVERRIDE;
+  virtual void ShowNotifierSettingsBubble() OVERRIDE;
 
  private:
   bool IsExpansionNeeded(int width);
@@ -65,6 +74,11 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
   int GetMessageLineLimit(int width);
   int GetMessageLines(int width, int limit);
   int GetMessageHeight(int width, int limit);
+
+  MessageCenter* message_center_;  // Weak.
+  MessageCenterTray* tray_;  // Weak.
+  std::string notification_id_;
+  message_center::NotifierId notifier_id_;
 
   // Describes whether the view should display a hand pointer or not.
   bool clickable_;

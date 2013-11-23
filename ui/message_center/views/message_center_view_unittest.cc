@@ -31,62 +31,50 @@ class MockNotificationView : public NotificationView {
  public:
   class Test {
    public:
-    virtual void RegisterCall(int receiver_id, CallType type) = 0;
+    virtual void RegisterCall(CallType type) = 0;
   };
 
   explicit MockNotificationView(const Notification& notification,
                                 MessageCenter* message_center,
-                                Test* test,
-                                int view_id);
+                                Test* test);
   virtual ~MockNotificationView();
 
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual int GetHeightForWidth(int w) OVERRIDE;
   virtual void Layout() OVERRIDE;
 
-  int get_id() { return id_; };
-
  private:
-  void RegisterCall(CallType type);
-
   Test* test_;
-  int id_;
 
   DISALLOW_COPY_AND_ASSIGN(MockNotificationView);
 };
 
 MockNotificationView::MockNotificationView(const Notification& notification,
                                            MessageCenter* message_center,
-                                           Test* test,
-                                           int view_id)
+                                           Test* test)
     : NotificationView(notification, message_center, NULL, true),
-      test_(test),
-      id_(view_id) {
+      test_(test) {
 }
 
 MockNotificationView::~MockNotificationView() {
 }
 
 gfx::Size MockNotificationView::GetPreferredSize() {
-  RegisterCall(GET_PREFERRED_SIZE);
-  return child_count() ? NotificationView::GetPreferredSize() :
-                         gfx::Size(id_, id_);
+  test_->RegisterCall(GET_PREFERRED_SIZE);
+  DCHECK(child_count() > 0);
+  return NotificationView::GetPreferredSize();
 }
 
 int MockNotificationView::GetHeightForWidth(int width) {
-  RegisterCall(GET_HEIGHT_FOR_WIDTH);
-  return child_count() ? NotificationView::GetHeightForWidth(width) : (id_);
+  test_->RegisterCall(GET_HEIGHT_FOR_WIDTH);
+  DCHECK(child_count() > 0);
+  return NotificationView::GetHeightForWidth(width);
 }
 
 void MockNotificationView::Layout() {
-  RegisterCall(LAYOUT);
-  if (child_count())
-    NotificationView::Layout();
-}
-
-void MockNotificationView::RegisterCall(CallType type) {
-  if (test_)
-    test_->RegisterCall(id_, type);
+  test_->RegisterCall(LAYOUT);
+  DCHECK(child_count() > 0);
+  NotificationView::Layout();
 }
 
 /* Test fixture ***************************************************************/
@@ -104,7 +92,7 @@ class MessageCenterViewTest : public testing::Test,
   int GetNotificationCount();
   int GetCallCount(CallType type);
 
-  virtual void RegisterCall(int receiver_id, CallType type) OVERRIDE;
+  virtual void RegisterCall(CallType type) OVERRIDE;
 
   void LogBounds(int depth, views::View* view);
 
@@ -150,8 +138,8 @@ void MessageCenterViewTest::SetUp() {
   // MessageListView and replace it with an instrumented MockNotificationView
   // that will become owned by the MessageListView.
   MockNotificationView* mock;
-  mock = new MockNotificationView(notification, &message_center_, this, 42);
-  message_center_view_->message_views_.push_back(mock);
+  mock = new MockNotificationView(notification, &message_center_, this);
+  message_center_view_->notification_views_[notification.id()] = mock;
   message_center_view_->SetNotificationViewForTest(mock);
 }
 
@@ -171,7 +159,7 @@ int MessageCenterViewTest::GetCallCount(CallType type) {
   return callCounts_[type];
 }
 
-void MessageCenterViewTest::RegisterCall(int receiver_id, CallType type) {
+void MessageCenterViewTest::RegisterCall(CallType type) {
   callCounts_[type] += 1;
 }
 

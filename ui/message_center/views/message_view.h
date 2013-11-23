@@ -33,10 +33,14 @@ const int kWebNotificationIconSize = 40;
 class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
                                           public views::ButtonListener {
  public:
-  MessageView(const Notification& notification,
-              MessageCenter* message_center,
-              MessageCenterTray* tray);
+  MessageView(const string16& display_source);
   virtual ~MessageView();
+
+  // Overrided by derived classes.
+  virtual void ClickOnNotification() = 0;
+  virtual void RemoveNotification(bool by_user) = 0;
+  virtual void DisableNotificationsFromThisSource() = 0;
+  virtual void ShowNotifierSettingsBubble() = 0;
 
   // Returns the insets for the shadow it will have for rich notification.
   static gfx::Insets GetShadowInsets();
@@ -63,23 +67,16 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  const std::string& notification_id() { return notification_id_; }
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
 
  protected:
-  MessageView();
-
   // Overridden from views::SlideOutView:
   virtual void OnSlideOut() OVERRIDE;
 
-  MessageCenter* message_center() { return message_center_; }
   views::ImageButton* close_button() { return close_button_.get(); }
   views::ScrollView* scroller() { return scroller_; }
 
  private:
-  MessageCenter* message_center_;  // Weak reference.
-  std::string notification_id_;
-
   scoped_ptr<MessageViewContextMenuController> context_menu_controller_;
   scoped_ptr<views::ImageButton> close_button_;
   views::ScrollView* scroller_;
