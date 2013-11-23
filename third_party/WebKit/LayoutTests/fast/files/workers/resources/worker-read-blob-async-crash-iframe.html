@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+var worker = new Worker('worker-read-blob-async-crash.js');
+worker.postMessage({count:10000});
+</script>
+</body>
+</html>
