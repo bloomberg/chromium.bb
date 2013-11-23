@@ -30,9 +30,9 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   virtual ~VideoCaptureDeviceMac();
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(
-      const VideoCaptureCapability& capture_format,
-      scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
+  virtual void AllocateAndStart(const VideoCaptureParams& params,
+                                scoped_ptr<VideoCaptureDevice::Client> client)
+      OVERRIDE;
   virtual void StopAndDeAllocate() OVERRIDE;
 
   bool Init();
@@ -40,7 +40,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   // Called to deliver captured video frames.
   void ReceiveFrame(const uint8* video_frame,
                     int video_frame_length,
-                    const VideoCaptureCapability& frame_info,
+                    const VideoCaptureFormat& frame_format,
                     int aspect_numerator,
                     int aspect_denominator);
 
@@ -61,7 +61,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   Name device_name_;
   scoped_ptr<VideoCaptureDevice::Client> client_;
 
-  VideoCaptureCapability current_settings_;
+  VideoCaptureFormat capture_format_;
   bool sent_frame_info_;
   bool tried_to_square_pixels_;
 

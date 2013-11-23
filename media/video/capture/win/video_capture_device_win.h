@@ -40,9 +40,9 @@ class VideoCaptureDeviceWin
   bool Init();
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(
-      const VideoCaptureCapability& capture_format,
-      scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
+  virtual void AllocateAndStart(const VideoCaptureParams& params,
+                                scoped_ptr<VideoCaptureDevice::Client> client)
+      OVERRIDE;
   virtual void StopAndDeAllocate() OVERRIDE;
 
   static void GetDeviceNames(Names* device_names);
@@ -79,7 +79,7 @@ class VideoCaptureDeviceWin
 
   // Map of all capabilities this device support.
   CapabilityList capabilities_;
-  VideoCaptureCapability current_setting_;
+  VideoCaptureFormat capture_format_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceWin);
 };

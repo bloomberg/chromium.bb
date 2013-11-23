@@ -365,11 +365,11 @@ void PepperVideoCaptureHost::SetRequestedInfo(
   // Clamp the buffer count to between 1 and |kMaxBuffers|.
   buffer_count_hint_ = std::min(std::max(buffer_count, 1U), kMaxBuffers);
 
-  video_capture_params_.requested_format =
-      media::VideoCaptureFormat(device_info.width,
-                                device_info.height,
-                                device_info.frames_per_second,
-                                media::ConstantResolutionVideoCaptureDevice);
+  video_capture_params_.requested_format = media::VideoCaptureFormat(
+      gfx::Size(device_info.width, device_info.height),
+      device_info.frames_per_second,
+      media::PIXEL_FORMAT_I420);
+  video_capture_params_.allow_resolution_change = false;
 }
 
 void PepperVideoCaptureHost::DetachPlatformVideoCapture() {

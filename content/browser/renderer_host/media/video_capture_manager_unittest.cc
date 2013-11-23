@@ -99,16 +99,21 @@ class VideoCaptureManagerTest : public testing::Test {
 
   VideoCaptureControllerID StartClient(int session_id, bool expect_success) {
     media::VideoCaptureParams params;
-    params.session_id = session_id;
     params.requested_format = media::VideoCaptureFormat(
-        320, 240, 30, media::ConstantResolutionVideoCaptureDevice);
+        gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
 
     VideoCaptureControllerID client_id(next_client_id_++);
     base::RunLoop run_loop;
     vcm_->StartCaptureForClient(
-        params, base::kNullProcessHandle, client_id, frame_observer_.get(),
+        session_id,
+        params,
+        base::kNullProcessHandle,
+        client_id,
+        frame_observer_.get(),
         base::Bind(&VideoCaptureManagerTest::OnGotControllerCallback,
-                   base::Unretained(this), client_id, run_loop.QuitClosure(),
+                   base::Unretained(this),
+                   client_id,
+                   run_loop.QuitClosure(),
                    expect_success));
     run_loop.Run();
     return client_id;

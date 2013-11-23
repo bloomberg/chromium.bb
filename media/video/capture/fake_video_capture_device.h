@@ -29,9 +29,9 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
                                         VideoCaptureCapabilities* formats);
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(
-      const VideoCaptureCapability& capture_format,
-      scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
+  virtual void AllocateAndStart(const VideoCaptureParams& params,
+                                scoped_ptr<VideoCaptureDevice::Client> client)
+      OVERRIDE;
   virtual void StopAndDeAllocate() OVERRIDE;
 
  private:
@@ -49,19 +49,19 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   // EXPERIMENTAL, similar to allocate, but changes resolution and calls
   // client->OnFrameInfoChanged(VideoCaptureCapability&)
   void Reallocate();
-  void PopulateCapabilitiesRoster();
+  void PopulateFormatRoster();
 
   scoped_ptr<VideoCaptureDevice::Client> client_;
   InternalState state_;
   base::Thread capture_thread_;
   scoped_ptr<uint8[]> fake_frame_;
   int frame_count_;
-  VideoCaptureCapability capture_format_;
+  VideoCaptureFormat capture_format_;
 
   // When the device is configured as mutating video captures, this vector
   // holds the available ones which are used in sequence, restarting at the end.
-  std::vector<VideoCaptureCapability> capabilities_roster_;
-  int capabilities_roster_index_;
+  std::vector<VideoCaptureFormat> format_roster_;
+  int format_roster_index_;
 
   static bool fail_next_create_;
 

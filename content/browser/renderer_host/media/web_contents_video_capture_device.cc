@@ -411,7 +411,6 @@ ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
       capture_size_(capture_size),
       frame_rate_(frame_rate) {}
 
-
 bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     VideoCaptureOracle::Event event,
     base::Time event_time,
@@ -961,9 +960,7 @@ class WebContentsVideoCaptureDevice::Impl : public base::SupportsWeakPtr<Impl> {
   virtual ~Impl();
 
   // Asynchronous requests to change WebContentsVideoCaptureDevice::Impl state.
-  void AllocateAndStart(int width,
-                        int height,
-                        int frame_rate,
+  void AllocateAndStart(const media::VideoCaptureParams& params,
                         scoped_ptr<media::VideoCaptureDevice::Client> client);
   void StopAndDeAllocate();
 
@@ -1025,9 +1022,7 @@ WebContentsVideoCaptureDevice::Impl::Impl(int render_process_id,
       render_thread_("WebContentsVideo_RenderThread") {}
 
 void WebContentsVideoCaptureDevice::Impl::AllocateAndStart(
-    int width,
-    int height,
-    int frame_rate,
+    const media::VideoCaptureParams& params,
     scoped_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -1036,8 +1031,8 @@ void WebContentsVideoCaptureDevice::Impl::AllocateAndStart(
     return;
   }
 
-  if (frame_rate <= 0) {
-    DVLOG(1) << "invalid frame_rate: " << frame_rate;
+  if (params.requested_format.frame_rate <= 0) {
+    DVLOG(1) << "invalid frame_rate: " << params.requested_format.frame_rate;
     client->OnError();
     return;
   }
@@ -1050,23 +1045,26 @@ void WebContentsVideoCaptureDevice::Impl::AllocateAndStart(
 
   // Frame dimensions must each be a positive, even integer, since the client
   // wants (or will convert to) YUV420.
-  width = MakeEven(width);
-  height = MakeEven(height);
-  if (width < kMinFrameWidth || height < kMinFrameHeight) {
-    DVLOG(1) << "invalid width (" << width << ") and/or height ("
-             << height << ")";
+  gfx::Size frame_size(MakeEven(params.requested_format.frame_size.width()),
+                       MakeEven(params.requested_format.frame_size.height()));
+  if (frame_size.width() < kMinFrameWidth ||
+      frame_size.height() < kMinFrameHeight) {
+    DVLOG(1) << "invalid frame size: " << frame_size.ToString();
     client->OnError();
     return;
   }
 
   base::TimeDelta capture_period = base::TimeDelta::FromMicroseconds(
-      1000000.0 / frame_rate + 0.5);
+      1000000.0 / params.requested_format.frame_rate + 0.5);
 
   scoped_ptr<VideoCaptureOracle> oracle(
       new VideoCaptureOracle(capture_period,
                              kAcceleratedSubscriberIsSupported));
-  oracle_proxy_ = new ThreadSafeCaptureOracle(
-      client.Pass(), oracle.Pass(), gfx::Size(width, height), frame_rate);
+  oracle_proxy_ =
+      new ThreadSafeCaptureOracle(client.Pass(),
+                                  oracle.Pass(),
+                                  frame_size,
+                                  params.requested_format.frame_rate);
 
   // Allocates the CaptureMachine. The CaptureMachine will be tracking render
   // view swapping over its lifetime, and we don't want to lose our reference to
@@ -1189,14 +1187,10 @@ media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
 }
 
 void WebContentsVideoCaptureDevice::AllocateAndStart(
-    const media::VideoCaptureCapability& capture_format,
+    const media::VideoCaptureParams& params,
     scoped_ptr<Client> client) {
-  DVLOG(1) << "Allocating " << capture_format.width << "x"
-           << capture_format.height;
-  impl_->AllocateAndStart(capture_format.width,
-                          capture_format.height,
-                          capture_format.frame_rate,
-                          client.Pass());
+  DVLOG(1) << "Allocating " << params.requested_format.frame_size.ToString();
+  impl_->AllocateAndStart(params, client.Pass());
 }
 
 void WebContentsVideoCaptureDevice::StopAndDeAllocate() {

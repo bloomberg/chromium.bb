@@ -32,11 +32,10 @@ class __declspec(uuid("88cdbbdc-a73b-4afa-acbf-15d5e2ce12c3"))
   explicit SinkFilter(SinkFilterObserver* observer);
   virtual ~SinkFilter();
 
-  void SetRequestedMediaCapability(
-      const VideoCaptureCapability& capability);
-  // Returns the capability that is negotiated when this
+  void SetRequestedMediaFormat(const VideoCaptureFormat& format);
+  // Returns the format that is negotiated when this
   // filter is connected to a media filter.
-  const VideoCaptureCapability& ResultingCapability();
+  const VideoCaptureFormat& ResultingFormat();
 
   // Implement FilterBase.
   virtual size_t NoOfPins();

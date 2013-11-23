@@ -94,12 +94,11 @@ bool FormatFromGuid(const GUID& guid, VideoPixelFormat* format) {
   return false;
 }
 
-bool GetFrameSize(IMFMediaType* type, int* width, int* height) {
+bool GetFrameSize(IMFMediaType* type, gfx::Size* frame_size) {
   UINT32 width32, height32;
   if (FAILED(MFGetAttributeSize(type, MF_MT_FRAME_SIZE, &width32, &height32)))
     return false;
-  *width = width32;
-  *height = height32;
+  frame_size->SetSize(width32, height32);
   return true;
 }
 
@@ -121,15 +120,15 @@ bool FillCapabilitiesFromType(IMFMediaType* type,
                               VideoCaptureCapabilityWin* capability) {
   GUID type_guid;
   if (FAILED(type->GetGUID(MF_MT_SUBTYPE, &type_guid)) ||
-      !FormatFromGuid(type_guid, &capability->color) ||
-      !GetFrameSize(type, &capability->width, &capability->height) ||
+      !GetFrameSize(type, &capability->supported_format.frame_size) ||
       !GetFrameRate(type,
                     &capability->frame_rate_numerator,
-                    &capability->frame_rate_denominator)) {
+                    &capability->frame_rate_denominator) ||
+      !FormatFromGuid(type_guid, &capability->supported_format.pixel_format)) {
     return false;
   }
   // Keep the integer version of the frame_rate for (potential) returns.
-  capability->frame_rate =
+  capability->supported_format.frame_rate =
       capability->frame_rate_numerator / capability->frame_rate_denominator;
 
   return true;
@@ -337,7 +336,7 @@ bool VideoCaptureDeviceMFWin::Init() {
 }
 
 void VideoCaptureDeviceMFWin::AllocateAndStart(
-    const VideoCaptureCapability& capture_format,
+    const VideoCaptureParams& params,
     scoped_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(CalledOnValidThread());
 
@@ -354,13 +353,10 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   }
 
   VideoCaptureCapabilityWin found_capability =
-      capabilities.GetBestMatchedCapability(capture_format.width,
-                                            capture_format.height,
-                                            capture_format.frame_rate);
-  DLOG(INFO) << "Chosen capture format= (" << found_capability.width << "x"
-             << found_capability.height << ")@("
-             << found_capability.frame_rate_numerator << "/"
-             << found_capability.frame_rate_denominator << ")fps";
+      capabilities.GetBestMatchedFormat(
+          params.requested_format.frame_size.width(),
+          params.requested_format.frame_size.height(),
+          params.requested_format.frame_rate);
 
   ScopedComPtr<IMFMediaType> type;
   if (FAILED(hr = reader_->GetNativeMediaType(
@@ -377,7 +373,7 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
     OnError(hr);
     return;
   }
-  current_setting_ = found_capability;
+  capture_format_ = found_capability.supported_format;
   capture_ = true;
 }
 
@@ -424,7 +420,7 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedFrame(
                                      rotation,
                                      flip_vert,
                                      flip_horiz,
-                                     current_setting_);
+                                     capture_format_);
 
   if (capture_) {
     HRESULT hr = reader_->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0,

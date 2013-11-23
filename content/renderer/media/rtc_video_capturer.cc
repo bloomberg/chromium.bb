@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "media/base/video_frame.h"
 
 namespace content {
 
@@ -30,11 +31,10 @@ cricket::CaptureState RtcVideoCapturer::Start(
   }
 
   media::VideoCaptureParams request;
-  request.requested_format =
-      media::VideoCaptureFormat(capture_format.width,
-                                capture_format.height,
-                                capture_format.framerate(),
-                                media::ConstantResolutionVideoCaptureDevice);
+  request.requested_format = media::VideoCaptureFormat(
+      gfx::Size(capture_format.width, capture_format.height),
+      capture_format.framerate(),
+      media::PIXEL_FORMAT_I420);
 
   SetCaptureFormat(&capture_format);
 

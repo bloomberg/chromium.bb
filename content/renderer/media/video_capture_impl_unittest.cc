@@ -81,6 +81,7 @@ class VideoCaptureImplTest : public ::testing::Test {
     }
 
     void DeviceStartCapture(int device_id,
+                            media::VideoCaptureSessionId session_id,
                             const media::VideoCaptureParams& params) {
       OnStateChanged(VIDEO_CAPTURE_STATE_STARTED);
     }
@@ -96,10 +97,10 @@ class VideoCaptureImplTest : public ::testing::Test {
 
   VideoCaptureImplTest() {
     params_small_.requested_format = media::VideoCaptureFormat(
-        176, 144, 30, media::ConstantResolutionVideoCaptureDevice);
+        gfx::Size(176, 144), 30, media::PIXEL_FORMAT_I420);
 
     params_large_.requested_format = media::VideoCaptureFormat(
-        320, 240, 30, media::ConstantResolutionVideoCaptureDevice);
+        gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
 
     message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
     message_loop_proxy_ = base::MessageLoopProxy::current().get();

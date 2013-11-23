@@ -38,9 +38,8 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
   virtual ~DesktopCaptureDevice();
 
   // VideoCaptureDevice interface.
-  virtual void AllocateAndStart(
-      const media::VideoCaptureCapability& capture_format,
-      scoped_ptr<Client> client) OVERRIDE;
+  virtual void AllocateAndStart(const media::VideoCaptureParams& params,
+                                scoped_ptr<Client> client) OVERRIDE;
   virtual void StopAndDeAllocate() OVERRIDE;
 
  private:

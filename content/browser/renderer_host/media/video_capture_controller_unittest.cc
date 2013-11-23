@@ -113,18 +113,13 @@ class VideoCaptureControllerTest : public testing::Test {
 // track of clients.
 TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
   media::VideoCaptureParams session_100;
-  session_100.session_id = 100;
   session_100.requested_format = media::VideoCaptureFormat(
-      320, 240, 30, media::ConstantResolutionVideoCaptureDevice);
-
+      gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
   media::VideoCaptureParams session_200 = session_100;
-  session_200.session_id = 200;
 
   media::VideoCaptureParams session_300 = session_100;
-  session_300.session_id = 300;
 
   media::VideoCaptureParams session_400 = session_100;
-  session_400.session_id = 400;
 
   // Intentionally use the same route ID for two of the clients: the device_ids
   // are a per-VideoCaptureHost namespace, and can overlap across hosts.
@@ -136,18 +131,27 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
   // Clients in controller: []
   ASSERT_EQ(0, controller_->GetClientCount())
       << "Client count should initially be zero.";
-  controller_->AddClient(client_a_route_1, client_a_.get(),
-                         base::kNullProcessHandle, session_100);
+  controller_->AddClient(client_a_route_1,
+                         client_a_.get(),
+                         base::kNullProcessHandle,
+                         100,
+                         session_100);
   // Clients in controller: [A/1]
   ASSERT_EQ(1, controller_->GetClientCount())
       << "Adding client A/1 should bump client count.";;
-  controller_->AddClient(client_a_route_2, client_a_.get(),
-                         base::kNullProcessHandle, session_200);
+  controller_->AddClient(client_a_route_2,
+                         client_a_.get(),
+                         base::kNullProcessHandle,
+                         200,
+                         session_200);
   // Clients in controller: [A/1, A/2]
   ASSERT_EQ(2, controller_->GetClientCount())
       << "Adding client A/2 should bump client count.";
-  controller_->AddClient(client_b_route_1, client_b_.get(),
-                         base::kNullProcessHandle, session_300);
+  controller_->AddClient(client_b_route_1,
+                         client_b_.get(),
+                         base::kNullProcessHandle,
+                         300,
+                         session_300);
   // Clients in controller: [A/1, A/2, B/1]
   ASSERT_EQ(3, controller_->GetClientCount())
       << "Adding client B/1 should bump client count.";
@@ -166,8 +170,11 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
       << "Removing client B/1 should return its session_id.";
   // Clients in controller: [A/1]
   ASSERT_EQ(1, controller_->GetClientCount());
-  controller_->AddClient(client_b_route_2, client_b_.get(),
-                         base::kNullProcessHandle, session_400);
+  controller_->AddClient(client_b_route_2,
+                         client_b_.get(),
+                         base::kNullProcessHandle,
+                         400,
+                         session_400);
   // Clients in controller: [A/1, B/2]
 
   EXPECT_CALL(*client_a_, DoEnded(client_a_route_1)).Times(1);
@@ -207,26 +214,21 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
 // thread and is intended to behave deterministically.
 TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   media::VideoCaptureParams session_100;
-  session_100.session_id = 100;
   session_100.requested_format = media::VideoCaptureFormat(
-      320, 240, 30, media::ConstantResolutionVideoCaptureDevice);
+      gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
 
   media::VideoCaptureParams session_200 = session_100;
-  session_200.session_id = 200;
 
   media::VideoCaptureParams session_300 = session_100;
-  session_300.session_id = 300;
 
   media::VideoCaptureParams session_1 = session_100;
-  session_1.session_id = 1;
 
   gfx::Size capture_resolution(444, 200);
 
   // The device format needn't match the VideoCaptureParams (the camera can do
   // what it wants). Pick something random.
-  media::VideoCaptureCapability device_format(
-      10, 10, 25, media::PIXEL_FORMAT_RGB24,
-      media::ConstantResolutionVideoCaptureDevice);
+  media::VideoCaptureFormat device_format(
+      gfx::Size(10, 10), 25, media::PIXEL_FORMAT_RGB24);
 
   const VideoCaptureControllerID client_a_route_1(0xa1a1a1a1);
   const VideoCaptureControllerID client_a_route_2(0xa2a2a2a2);
@@ -234,12 +236,21 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   const VideoCaptureControllerID client_b_route_2(0xb2b2b2b2);
 
   // Start with two clients.
-  controller_->AddClient(client_a_route_1, client_a_.get(),
-                         base::kNullProcessHandle, session_100);
-  controller_->AddClient(client_b_route_1, client_b_.get(),
-                         base::kNullProcessHandle, session_300);
-  controller_->AddClient(client_a_route_2, client_a_.get(),
-                         base::kNullProcessHandle, session_200);
+  controller_->AddClient(client_a_route_1,
+                         client_a_.get(),
+                         base::kNullProcessHandle,
+                         100,
+                         session_100);
+  controller_->AddClient(client_b_route_1,
+                         client_b_.get(),
+                         base::kNullProcessHandle,
+                         300,
+                         session_300);
+  controller_->AddClient(client_a_route_2,
+                         client_a_.get(),
+                         base::kNullProcessHandle,
+                         200,
+                         session_200);
   ASSERT_EQ(3, controller_->GetClientCount());
 
   // Now, simulate an incoming captured buffer from the capture device. As a
@@ -299,8 +310,11 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   Mock::VerifyAndClearExpectations(client_b_.get());
 
   // Add a fourth client now that some buffers have come through.
-  controller_->AddClient(client_b_route_2, client_b_.get(),
-                         base::kNullProcessHandle, session_1);
+  controller_->AddClient(client_b_route_2,
+                         client_b_.get(),
+                         base::kNullProcessHandle,
+                         1,
+                         session_1);
   Mock::VerifyAndClearExpectations(client_b_.get());
 
   // Third, fourth, and fifth buffers. Pretend they all arrive at the same time.
@@ -381,20 +395,18 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
 // behavior of various operations after the error state has been signalled.
 TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
   media::VideoCaptureParams session_100;
-  session_100.session_id = 100;
   session_100.requested_format = media::VideoCaptureFormat(
-    320, 240, 30, media::ConstantResolutionVideoCaptureDevice);
+      gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
 
   media::VideoCaptureParams session_200 = session_100;
-  session_200.session_id = 200;
 
   const gfx::Size capture_resolution(320, 240);
 
   const VideoCaptureControllerID route_id(0x99);
 
   // Start with one client.
-  controller_->AddClient(route_id, client_a_.get(),
-                         base::kNullProcessHandle, session_100);
+  controller_->AddClient(
+      route_id, client_a_.get(), base::kNullProcessHandle, 100, session_100);
   device_->OnError();
   EXPECT_CALL(*client_a_, DoError(route_id)).Times(1);
   base::RunLoop().RunUntilIdle();
@@ -403,8 +415,8 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
   // Second client connects after the error state. It also should get told of
   // the error.
   EXPECT_CALL(*client_b_, DoError(route_id)).Times(1);
-  controller_->AddClient(route_id, client_b_.get(),
-                         base::kNullProcessHandle, session_200);
+  controller_->AddClient(
+      route_id, client_b_.get(), base::kNullProcessHandle, 200, session_200);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_b_.get());
 
@@ -423,22 +435,18 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
 // behavior of various operations after the error state has been signalled.
 TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   media::VideoCaptureParams session_100;
-  session_100.session_id = 100;
   session_100.requested_format = media::VideoCaptureFormat(
-      320, 240, 30, media::ConstantResolutionVideoCaptureDevice);
+      gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
 
   media::VideoCaptureParams session_200 = session_100;
-  session_200.session_id = 200;
 
   const VideoCaptureControllerID route_id(0x99);
 
   // Start with one client.
-  controller_->AddClient(route_id, client_a_.get(),
-                         base::kNullProcessHandle, session_100);
-  // OnFrameInfo from the VCD should become a no-op after the error occurs.
-  media::VideoCaptureCapability device_format(
-      10, 10, 25, media::PIXEL_FORMAT_ARGB,
-      media::ConstantResolutionVideoCaptureDevice);
+  controller_->AddClient(
+      route_id, client_a_.get(), base::kNullProcessHandle, 100, session_100);
+  media::VideoCaptureFormat device_format(
+      gfx::Size(10, 10), 25, media::PIXEL_FORMAT_ARGB);
 
   // Start the device. Then, before the first buffer, signal an error and
   // deliver the buffer. The error should be propagated to clients; the buffer
@@ -466,8 +474,8 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   // Second client connects after the error state. It also should get told of
   // the error.
   EXPECT_CALL(*client_b_, DoError(route_id)).Times(1);
-  controller_->AddClient(route_id, client_b_.get(),
-                         base::kNullProcessHandle, session_200);
+  controller_->AddClient(
+      route_id, client_b_.get(), base::kNullProcessHandle, 200, session_200);
   Mock::VerifyAndClearExpectations(client_b_.get());
 }
 
