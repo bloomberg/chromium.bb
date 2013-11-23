@@ -27,7 +27,7 @@ class ScopedLocale {
     } kLocales[] = {
       { "da", "da_DK.UTF-8" },
       { "he", "he_IL.UTF-8" },
-      { "zh-TW", "zh-TW.UTF-8" }
+      { "zh-TW", "zh_TW.UTF-8" }
     };
     bool found_locale = false;
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kLocales); ++i) {
