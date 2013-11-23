@@ -49,7 +49,7 @@ void SimulateGPUCrash(Browser* browser) {
 
 } // namespace
 
-class WebGLInfobarTest : public InProcessBrowserTest {
+class WebGLInfoBarTest : public InProcessBrowserTest {
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     base::FilePath test_dir;
@@ -59,7 +59,7 @@ class WebGLInfobarTest : public InProcessBrowserTest {
   base::FilePath gpu_test_dir_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossRaisesInfobar) {
+IN_PROC_BROWSER_TEST_F(WebGLInfoBarTest, ContextLossRaisesInfoBar) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossRaisesInfobar) {
                     infobar_count());
 }
 
-IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossInfobarReload) {
+IN_PROC_BROWSER_TEST_F(WebGLInfoBarTest, ContextLossInfoBarReload) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
