@@ -28,12 +28,13 @@ SinkFilter::~SinkFilter() {
   input_pin_->SetOwner(NULL);
 }
 
-void SinkFilter::SetRequestedMediaFormat(const VideoCaptureFormat& format) {
-  input_pin_->SetRequestedMediaFormat(format);
+void SinkFilter::SetRequestedMediaCapability(
+    const VideoCaptureCapability& capability) {
+  input_pin_->SetRequestedMediaCapability(capability);
 }
 
-const VideoCaptureFormat& SinkFilter::ResultingFormat() {
-  return input_pin_->ResultingFormat();
+const VideoCaptureCapability& SinkFilter::ResultingCapability() {
+  return input_pin_->ResultingCapability();
 }
 
 size_t SinkFilter::NoOfPins() {

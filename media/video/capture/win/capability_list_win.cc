@@ -33,8 +33,7 @@ bool CompareFrameRate(const ResolutionDiff& item1,
 }
 
 bool CompareColor(const ResolutionDiff& item1, const ResolutionDiff& item2) {
-  return item1.capability->supported_format.pixel_format <
-         item2.capability->supported_format.pixel_format;
+  return item1.capability->color < item2.capability->color;
 }
 
 }  // namespace.
@@ -51,7 +50,7 @@ void CapabilityList::Add(const VideoCaptureCapabilityWin& capability) {
   capabilities_.push_back(capability);
 }
 
-const VideoCaptureCapabilityWin& CapabilityList::GetBestMatchedFormat(
+const VideoCaptureCapabilityWin& CapabilityList::GetBestMatchedCapability(
     int requested_width,
     int requested_height,
     int requested_frame_rate) const {
@@ -66,9 +65,8 @@ const VideoCaptureCapabilityWin& CapabilityList::GetBestMatchedFormat(
        it != capabilities_.end(); ++it) {
     ResolutionDiff diff;
     diff.capability = &(*it);
-    diff.diff_width = it->supported_format.frame_size.width() - requested_width;
-    diff.diff_height =
-        it->supported_format.frame_size.height() - requested_height;
+    diff.diff_width = it->width - requested_width;
+    diff.diff_height = it->height - requested_height;
     // The 1000 allows using integer arithmetic for f.i. 29.971 fps.
     diff.diff_frame_rate =
         1000 * ((static_cast<float>(it->frame_rate_numerator) /

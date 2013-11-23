@@ -37,13 +37,12 @@ void FakeVideoCaptureDevice::GetDeviceNames(Names* const device_names) {
 void FakeVideoCaptureDevice::GetDeviceSupportedFormats(
     const Name& device,
     VideoCaptureCapabilities* formats) {
-  VideoCaptureCapability capture_format_640x480;
-  capture_format_640x480.supported_format.frame_size.SetSize(640, 480);
-  capture_format_640x480.supported_format.frame_rate =
-      1000 / kFakeCaptureTimeoutMs;
-  capture_format_640x480.supported_format.pixel_format =
-      media::PIXEL_FORMAT_I420;
-  formats->push_back(capture_format_640x480);
+  VideoCaptureCapability capture_format;
+  capture_format.color = media::PIXEL_FORMAT_I420;
+  capture_format.width = 640;
+  capture_format.height = 480;
+  capture_format.frame_rate = 1000 / kFakeCaptureTimeoutMs;
+  formats->push_back(capture_format);
 }
 
 VideoCaptureDevice* FakeVideoCaptureDevice::Create(const Name& device_name) {
@@ -68,7 +67,8 @@ FakeVideoCaptureDevice::FakeVideoCaptureDevice()
     : state_(kIdle),
       capture_thread_("CaptureThread"),
       frame_count_(0),
-      format_roster_index_(0) {}
+      capabilities_roster_index_(0) {
+}
 
 FakeVideoCaptureDevice::~FakeVideoCaptureDevice() {
   // Check if the thread is running.
@@ -77,27 +77,31 @@ FakeVideoCaptureDevice::~FakeVideoCaptureDevice() {
 }
 
 void FakeVideoCaptureDevice::AllocateAndStart(
-    const VideoCaptureParams& params,
+    const VideoCaptureCapability& capture_format,
     scoped_ptr<VideoCaptureDevice::Client> client) {
-  if (params.allow_resolution_change)
-    PopulateFormatRoster();
+  capture_format_.frame_size_type = capture_format.frame_size_type;
+  if (capture_format.frame_size_type == VariableResolutionVideoCaptureDevice)
+    PopulateCapabilitiesRoster();
 
   if (state_ != kIdle) {
     return;  // Wrong state.
   }
 
   client_ = client.Pass();
-  capture_format_.pixel_format = PIXEL_FORMAT_I420;
-  if (params.requested_format.frame_size.width() > 320) {  // VGA
-    capture_format_.frame_size.SetSize(640, 480);
+  capture_format_.color = PIXEL_FORMAT_I420;
+  if (capture_format.width > 320) {  // VGA
+    capture_format_.width = 640;
+    capture_format_.height = 480;
     capture_format_.frame_rate = 30;
   } else {  // QVGA
-    capture_format_.frame_size.SetSize(320, 240);
+    capture_format_.width = 320;
+    capture_format_.height = 240;
     capture_format_.frame_rate = 30;
   }
 
-  const size_t fake_frame_size =
-      VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
+  const size_t fake_frame_size = VideoFrame::AllocationSize(
+      VideoFrame::I420,
+      gfx::Size(capture_format_.width, capture_format_.height));
   fake_frame_.reset(new uint8[fake_frame_size]);
 
   state_ = kCapturing;
@@ -110,14 +114,15 @@ void FakeVideoCaptureDevice::AllocateAndStart(
 
 void FakeVideoCaptureDevice::Reallocate() {
   DCHECK_EQ(state_, kCapturing);
-  capture_format_ =
-      format_roster_.at(++format_roster_index_ % format_roster_.size());
-  DCHECK_EQ(capture_format_.pixel_format, PIXEL_FORMAT_I420);
-  DVLOG(3) << "Reallocating FakeVideoCaptureDevice, new capture resolution "
-           << capture_format_.frame_size.ToString();
+  capture_format_ = capabilities_roster_.at(++capabilities_roster_index_ %
+                                            capabilities_roster_.size());
+  DCHECK_EQ(capture_format_.color, PIXEL_FORMAT_I420);
+  DVLOG(3) << "Reallocating FakeVideoCaptureDevice, new capture resolution ("
+           << capture_format_.width << "x" << capture_format_.height << ")";
 
-  const size_t fake_frame_size =
-      VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
+  const size_t fake_frame_size = VideoFrame::AllocationSize(
+      VideoFrame::I420,
+      gfx::Size(capture_format_.width, capture_format_.height));
   fake_frame_.reset(new uint8[fake_frame_size]);
 }
 
@@ -134,28 +139,25 @@ void FakeVideoCaptureDevice::OnCaptureTask() {
     return;
   }
 
-  const size_t frame_size =
-      VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
+  const size_t frame_size = VideoFrame::AllocationSize(
+      VideoFrame::I420,
+      gfx::Size(capture_format_.width, capture_format_.height));
   memset(fake_frame_.get(), 0, frame_size);
 
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kA8_Config,
-                   capture_format_.frame_size.width(),
-                   capture_format_.frame_size.height(),
-                   capture_format_.frame_size.width()),
-      bitmap.setPixels(fake_frame_.get());
+                   capture_format_.width,
+                   capture_format_.height,
+                   capture_format_.width);
+  bitmap.setPixels(fake_frame_.get());
 
   SkCanvas canvas(bitmap);
 
   // Draw a sweeping circle to show an animation.
-  int radius = std::min(capture_format_.frame_size.width(),
-                        capture_format_.frame_size.height()) /
-               4;
-  SkRect rect =
-      SkRect::MakeXYWH(capture_format_.frame_size.width() / 2 - radius,
-                       capture_format_.frame_size.height() / 2 - radius,
-                       2 * radius,
-                       2 * radius);
+  int radius = std::min(capture_format_.width, capture_format_.height) / 4;
+  SkRect rect = SkRect::MakeXYWH(
+      capture_format_.width / 2 - radius, capture_format_.height / 2 - radius,
+      2 * radius, 2 * radius);
 
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
@@ -201,7 +203,8 @@ void FakeVideoCaptureDevice::OnCaptureTask() {
                                    false,
                                    capture_format_);
   if (!(frame_count_ % kFakeCaptureCapabilityChangePeriod) &&
-      format_roster_.size() > 0U) {
+      (capture_format_.frame_size_type ==
+       VariableResolutionVideoCaptureDevice)) {
     Reallocate();
   }
   // Reschedule next CaptureTask.
@@ -212,15 +215,27 @@ void FakeVideoCaptureDevice::OnCaptureTask() {
       base::TimeDelta::FromMilliseconds(kFakeCaptureTimeoutMs));
 }
 
-void FakeVideoCaptureDevice::PopulateFormatRoster() {
-  format_roster_.push_back(
-      media::VideoCaptureFormat(gfx::Size(320, 240), 30, PIXEL_FORMAT_I420));
-  format_roster_.push_back(
-      media::VideoCaptureFormat(gfx::Size(640, 480), 30, PIXEL_FORMAT_I420));
-  format_roster_.push_back(
-      media::VideoCaptureFormat(gfx::Size(800, 600), 30, PIXEL_FORMAT_I420));
+void FakeVideoCaptureDevice::PopulateCapabilitiesRoster() {
+  capabilities_roster_.push_back(
+      media::VideoCaptureCapability(320,
+                                    240,
+                                    30,
+                                    PIXEL_FORMAT_I420,
+                                    VariableResolutionVideoCaptureDevice));
+  capabilities_roster_.push_back(
+      media::VideoCaptureCapability(640,
+                                    480,
+                                    30,
+                                    PIXEL_FORMAT_I420,
+                                    VariableResolutionVideoCaptureDevice));
+  capabilities_roster_.push_back(
+      media::VideoCaptureCapability(800,
+                                    600,
+                                    30,
+                                    PIXEL_FORMAT_I420,
+                                    VariableResolutionVideoCaptureDevice));
 
-  format_roster_index_ = 0;
+  capabilities_roster_index_ = 0;
 }
 
 }  // namespace media

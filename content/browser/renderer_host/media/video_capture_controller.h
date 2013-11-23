@@ -82,7 +82,6 @@ class CONTENT_EXPORT VideoCaptureController {
   void AddClient(const VideoCaptureControllerID& id,
                  VideoCaptureControllerEventHandler* event_handler,
                  base::ProcessHandle render_process,
-                 media::VideoCaptureSessionId session_id,
                  const media::VideoCaptureParams& params);
 
   // Stop video capture. This will take back all buffers held by by

@@ -58,7 +58,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 
   // Called by VideoCaptureHost to locate a capture device for |capture_params|,
   // adding the Host as a client of the device's controller if successful. The
-  // value of |session_id| controls which device is selected;
+  // value of |capture_params.session_id| controls which device is selected;
   // this value should be a session id previously returned by Open().
   //
   // If the device is not already started (i.e., no other client is currently
@@ -68,8 +68,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // On success, the controller is returned via calling |done_cb|, indicating
   // that the client was successfully added. A NULL controller is passed to
   // the callback on failure.
-  void StartCaptureForClient(media::VideoCaptureSessionId session_id,
-                             const media::VideoCaptureParams& capture_params,
+  void StartCaptureForClient(const media::VideoCaptureParams& capture_params,
                              base::ProcessHandle client_render_process,
                              VideoCaptureControllerID client_id,
                              VideoCaptureControllerEventHandler* client_handler,
@@ -121,7 +120,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // the device.
   void DoStartDeviceOnDeviceThread(
       DeviceEntry* entry,
-      const media::VideoCaptureParams& params,
+      const media::VideoCaptureCapability& capture_params,
       scoped_ptr<media::VideoCaptureDevice::Client> client);
 
   // Stop and destroy the VideoCaptureDevice held in

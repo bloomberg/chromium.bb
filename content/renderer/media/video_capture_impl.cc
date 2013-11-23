@@ -10,7 +10,6 @@
 #include "content/common/media/video_capture_messages.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/limits.h"
-#include "media/base/video_frame.h"
 
 namespace content {
 
@@ -160,23 +159,24 @@ void VideoCaptureImpl::DoStartCaptureOnCaptureThread(
       clients_[handler] = params;
     } else if (state_ == VIDEO_CAPTURE_STATE_STOPPING) {
       clients_pending_on_restart_[handler] = params;
-      DVLOG(1) << "StartCapture: Got new resolution "
-               << params.requested_format.frame_size.ToString()
-               << " during stopping.";
+      DVLOG(1) << "StartCapture: Got new resolution ("
+               << params.requested_format.width << ", "
+               << params.requested_format.height << ") "
+               << ", during stopping.";
     } else {
-      // TODO(sheu): Allowing resolution change will require that all
-      // outstanding clients of a capture session support resolution change.
-      DCHECK(!params.allow_resolution_change);
+      DCHECK_EQ(params.session_id, 0);
       clients_[handler] = params;
       DCHECK_EQ(1ul, clients_.size());
       params_ = params;
+      params_.session_id = session_id_;
       if (params_.requested_format.frame_rate >
           media::limits::kMaxFramesPerSecond) {
         params_.requested_format.frame_rate =
             media::limits::kMaxFramesPerSecond;
       }
-      DVLOG(1) << "StartCapture: starting with first resolution "
-               << params_.requested_format.frame_size.ToString();
+      DVLOG(1) << "StartCapture: starting with first resolution ("
+               << params_.requested_format.width << ","
+               << params_.requested_format.height << ")";
 
       StartCaptureInternal();
     }
@@ -252,6 +252,7 @@ void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
   }
 
   last_frame_format_ = format;
+  gfx::Size size(format.width, format.height);
 
   ClientBufferMap::iterator iter = client_buffers_.find(buffer_id);
   DCHECK(iter != client_buffers_.end());
@@ -259,9 +260,9 @@ void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalPackedMemory(
           media::VideoFrame::I420,
-          last_frame_format_.frame_size,
-          gfx::Rect(last_frame_format_.frame_size),
-          last_frame_format_.frame_size,
+          size,
+          gfx::Rect(size),
+          size,
           reinterpret_cast<uint8*>(buffer->buffer->memory()),
           buffer->buffer_size,
           buffer->buffer->handle(),
@@ -359,7 +360,7 @@ void VideoCaptureImpl::StopDevice() {
   if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
     state_ = VIDEO_CAPTURE_STATE_STOPPING;
     Send(new VideoCaptureHostMsg_Stop(device_id_));
-    params_.requested_format.frame_size.SetSize(0, 0);
+    params_.requested_format.width = params_.requested_format.height = 0;
   }
 }
 
@@ -371,19 +372,20 @@ void VideoCaptureImpl::RestartCapture() {
   int height = 0;
   for (ClientInfo::iterator it = clients_.begin();
        it != clients_.end(); ++it) {
-    width = std::max(width, it->second.requested_format.frame_size.width());
-    height = std::max(height, it->second.requested_format.frame_size.height());
+    width = std::max(width, it->second.requested_format.width);
+    height = std::max(height, it->second.requested_format.height);
   }
   for (ClientInfo::iterator it = clients_pending_on_restart_.begin();
        it != clients_pending_on_restart_.end(); ) {
-    width = std::max(width, it->second.requested_format.frame_size.width());
-    height = std::max(height, it->second.requested_format.frame_size.height());
+    width = std::max(width, it->second.requested_format.width);
+    height = std::max(height, it->second.requested_format.height);
     clients_[it->first] = it->second;
     clients_pending_on_restart_.erase(it++);
   }
-  params_.requested_format.frame_size.SetSize(width, height);
-  DVLOG(1) << "RestartCapture, "
-           << params_.requested_format.frame_size.ToString();
+  params_.requested_format.width = width;
+  params_.requested_format.height = height;
+  DVLOG(1) << "RestartCapture, " << params_.requested_format.width << ", "
+           << params_.requested_format.height;
   StartCaptureInternal();
 }
 
@@ -391,7 +393,7 @@ void VideoCaptureImpl::StartCaptureInternal() {
   DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
   DCHECK(device_id_);
 
-  Send(new VideoCaptureHostMsg_Start(device_id_, session_id_, params_));
+  Send(new VideoCaptureHostMsg_Start(device_id_, params_));
   state_ = VIDEO_CAPTURE_STATE_STARTED;
 }
 

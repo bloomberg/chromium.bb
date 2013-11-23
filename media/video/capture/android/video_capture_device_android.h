@@ -29,8 +29,9 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   static bool RegisterVideoCaptureDevice(JNIEnv* env);
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(const VideoCaptureParams& params,
-                                scoped_ptr<Client> client) OVERRIDE;
+  virtual void AllocateAndStart(
+      const VideoCaptureCapability& capture_format,
+      scoped_ptr<Client> client) OVERRIDE;
   virtual void StopAndDeAllocate() OVERRIDE;
 
   // Implement org.chromium.media.VideoCapture.nativeOnFrameAvailable.
@@ -72,7 +73,7 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   scoped_ptr<VideoCaptureDevice::Client> client_;
 
   Name device_name_;
-  VideoCaptureFormat capture_format_;
+  VideoCaptureCapability current_settings_;
 
   // Java VideoCaptureAndroid instance.
   base::android::ScopedJavaGlobalRef<jobject> j_capture_;

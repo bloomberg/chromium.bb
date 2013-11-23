@@ -5,16 +5,19 @@
 #ifndef MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_TYPES_H_
 #define MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_TYPES_H_
 
-#include <vector>
-
-#include "media/base/media_export.h"
-#include "ui/gfx/size.h"
+#include "media/base/video_frame.h"
 
 namespace media {
 
 // TODO(wjia): this type should be defined in a common place and
 // shared with device manager.
 typedef int VideoCaptureSessionId;
+
+enum VideoCaptureResolutionType {
+  ConstantResolutionVideoCaptureDevice = 0,
+  VariableResolutionVideoCaptureDevice,
+  MaxVideoCaptureResolutionType,  // Must be last.
+};
 
 // Color formats from camera.
 enum VideoPixelFormat {
@@ -27,52 +30,49 @@ enum VideoPixelFormat {
   PIXEL_FORMAT_MJPEG,
   PIXEL_FORMAT_NV21,
   PIXEL_FORMAT_YV12,
-  PIXEL_FORMAT_MAX,
 };
 
 // Video capture format specification.
-// This class is used by the video capture device to specify the format of every
-// frame captured and returned to a client.
 class MEDIA_EXPORT VideoCaptureFormat {
  public:
   VideoCaptureFormat();
-  VideoCaptureFormat(const gfx::Size& frame_size,
+  VideoCaptureFormat(int width,
+                     int height,
                      int frame_rate,
-                     VideoPixelFormat pixel_format);
+                     VideoCaptureResolutionType frame_size_type);
 
   // Checks that all values are in the expected range. All limits are specified
   // in media::Limits.
   bool IsValid() const;
 
-  gfx::Size frame_size;
+  int width;
+  int height;
   int frame_rate;
-  VideoPixelFormat pixel_format;
+  VideoCaptureResolutionType frame_size_type;
 };
 
 // Parameters for starting video capture.
-// This class is used by the client of a video capture device to specify the
-// format of frames in which the client would like to have captured frames
-// returned.
 class MEDIA_EXPORT VideoCaptureParams {
  public:
   VideoCaptureParams();
+  // Identifies which device is to be started.
+  VideoCaptureSessionId session_id;
 
   // Requests a resolution and format at which the capture will occur.
   VideoCaptureFormat requested_format;
-
-  // Allow mid-capture resolution change.
-  bool allow_resolution_change;
 };
 
 // Capabilities describe the format a camera captures video in.
-// This class is used by the video capture device to report the formats in which
-// it is capable of capturing frames.
-class MEDIA_EXPORT VideoCaptureCapability {
+class MEDIA_EXPORT VideoCaptureCapability : public VideoCaptureFormat {
  public:
   VideoCaptureCapability();
+  VideoCaptureCapability(int width,
+                         int height,
+                         int frame_rate,
+                         VideoPixelFormat color,
+                         VideoCaptureResolutionType frame_size_type);
 
-  // Supported resolution and format.
-  VideoCaptureFormat supported_format;
+  VideoPixelFormat color;      // Desired video type.
 };
 
 typedef std::vector<VideoCaptureCapability> VideoCaptureCapabilities;

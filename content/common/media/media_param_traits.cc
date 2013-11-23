@@ -12,7 +12,7 @@
 using media::AudioParameters;
 using media::ChannelLayout;
 using media::VideoCaptureFormat;
-using media::VideoPixelFormat;
+using media::VideoCaptureSessionId;
 
 namespace IPC {
 
@@ -56,24 +56,25 @@ void ParamTraits<AudioParameters>::Log(const AudioParameters& p,
 
 void ParamTraits<VideoCaptureFormat>::Write(Message* m,
                                             const VideoCaptureFormat& p) {
-  m->WriteInt(p.frame_size.width());
-  m->WriteInt(p.frame_size.height());
+  m->WriteInt(p.width);
+  m->WriteInt(p.height);
   m->WriteInt(p.frame_rate);
-  m->WriteInt(static_cast<int>(p.pixel_format));
+  m->WriteInt(static_cast<int>(p.frame_size_type));
 }
 
 bool ParamTraits<VideoCaptureFormat>::Read(const Message* m,
                                            PickleIterator* iter,
                                            VideoCaptureFormat* r) {
-  int frame_size_width, frame_size_height, pixel_format;
-  if (!m->ReadInt(iter, &frame_size_width) ||
-      !m->ReadInt(iter, &frame_size_height) ||
+  int frame_size_type;
+  if (!m->ReadInt(iter, &r->width) ||
+      !m->ReadInt(iter, &r->height) ||
       !m->ReadInt(iter, &r->frame_rate) ||
-      !m->ReadInt(iter, &pixel_format))
+      !m->ReadInt(iter, &frame_size_type))
     return false;
 
-  r->frame_size.SetSize(frame_size_width, frame_size_height);
-  r->pixel_format = static_cast<VideoPixelFormat>(pixel_format);
+  r->frame_size_type =
+      static_cast<media::VideoCaptureResolutionType>(
+          frame_size_type);
   if (!r->IsValid())
     return false;
   return true;

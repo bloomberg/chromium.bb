@@ -14,14 +14,12 @@
 #define IPC_MESSAGE_START VideoCaptureMsgStart
 
 IPC_ENUM_TRAITS(content::VideoCaptureState)
+IPC_ENUM_TRAITS_MAX_VALUE(media::VideoCaptureResolutionType,
+                          media::MaxVideoCaptureResolutionType - 1)
 
 IPC_STRUCT_TRAITS_BEGIN(media::VideoCaptureParams)
+  IPC_STRUCT_TRAITS_MEMBER(session_id)
   IPC_STRUCT_TRAITS_MEMBER(requested_format)
-  IPC_STRUCT_TRAITS_MEMBER(allow_resolution_change)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(media::VideoCaptureCapability)
-  IPC_STRUCT_TRAITS_MEMBER(supported_format)
 IPC_STRUCT_TRAITS_END()
 
 // TODO(nick): device_id in these messages is basically just a route_id. We
@@ -55,9 +53,8 @@ IPC_MESSAGE_CONTROL4(VideoCaptureMsg_BufferReady,
 
 // Start a video capture as |device_id|, a new id picked by the renderer
 // process. The session to be started is determined by |params.session_id|.
-IPC_MESSAGE_CONTROL3(VideoCaptureHostMsg_Start,
+IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_Start,
                      int /* device_id */,
-                     media::VideoCaptureSessionId, /* session_id */
                      media::VideoCaptureParams /* params */)
 
 // Pause the video capture specified by |device_id|.

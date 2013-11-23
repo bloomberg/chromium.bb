@@ -341,7 +341,7 @@ bool VideoCaptureDeviceWin::Init() {
 }
 
 void VideoCaptureDeviceWin::AllocateAndStart(
-    const VideoCaptureParams& params,
+    const VideoCaptureCapability& capture_format,
     scoped_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(CalledOnValidThread());
   if (state_ != kIdle)
@@ -351,16 +351,15 @@ void VideoCaptureDeviceWin::AllocateAndStart(
 
   // Get the camera capability that best match the requested resolution.
   const VideoCaptureCapabilityWin& found_capability =
-      capabilities_.GetBestMatchedFormat(
-          params.requested_format.frame_size.width(),
-          params.requested_format.frame_size.height(),
-          params.requested_format.frame_rate);
-  VideoCaptureFormat format = found_capability.supported_format;
+      capabilities_.GetBestMatchedCapability(capture_format.width,
+                                             capture_format.height,
+                                             capture_format.frame_rate);
+  VideoCaptureCapability capability = found_capability;
 
   // Reduce the frame rate if the requested frame rate is lower
   // than the capability.
-  if (format.frame_rate > params.requested_format.frame_rate)
-    format.frame_rate = params.requested_format.frame_rate;
+  if (capability.frame_rate > capture_format.frame_rate)
+    capability.frame_rate = capture_format.frame_rate;
 
   AM_MEDIA_TYPE* pmt = NULL;
   VIDEO_STREAM_CONFIG_CAPS caps;
@@ -378,19 +377,20 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   if (SUCCEEDED(hr)) {
     if (pmt->formattype == FORMAT_VideoInfo) {
       VIDEOINFOHEADER* h = reinterpret_cast<VIDEOINFOHEADER*>(pmt->pbFormat);
-      if (format.frame_rate > 0)
-        h->AvgTimePerFrame = kSecondsToReferenceTime / format.frame_rate;
+      if (capability.frame_rate > 0)
+        h->AvgTimePerFrame = kSecondsToReferenceTime / capability.frame_rate;
     }
-    // Set the sink filter to request this format.
-    sink_filter_->SetRequestedMediaFormat(format);
-    // Order the capture device to use this format.
+    // Set the sink filter to request this capability.
+    sink_filter_->SetRequestedMediaCapability(capability);
+    // Order the capture device to use this capability.
     hr = stream_config->SetFormat(pmt);
   }
 
   if (FAILED(hr))
     SetErrorState("Failed to set capture device output format");
 
-  if (format.pixel_format == PIXEL_FORMAT_MJPEG && !mjpg_filter_.get()) {
+  if (capability.color == PIXEL_FORMAT_MJPEG &&
+      !mjpg_filter_.get()) {
     // Create MJPG filter if we need it.
     hr = mjpg_filter_.CreateInstance(CLSID_MjpegDec, NULL, CLSCTX_INPROC);
 
@@ -408,7 +408,8 @@ void VideoCaptureDeviceWin::AllocateAndStart(
     }
   }
 
-  if (format.pixel_format == PIXEL_FORMAT_MJPEG && mjpg_filter_.get()) {
+  if (capability.color == PIXEL_FORMAT_MJPEG &&
+      mjpg_filter_.get()) {
     // Connect the camera to the MJPEG decoder.
     hr = graph_builder_->ConnectDirect(output_capture_pin_, input_mjpg_pin_,
                                        NULL);
@@ -432,9 +433,9 @@ void VideoCaptureDeviceWin::AllocateAndStart(
     return;
   }
 
-  // Get the format back from the sink filter after the filter have been
+  // Get the capability back from the sink filter after the filter have been
   // connected.
-  capture_format_ = sink_filter_->ResultingFormat();
+  current_setting_ = sink_filter_->ResultingCapability();
 
   // Start capturing.
   hr = media_control_->Run();
@@ -478,7 +479,7 @@ void VideoCaptureDeviceWin::StopAndDeAllocate() {
 void VideoCaptureDeviceWin::FrameReceived(const uint8* buffer,
                                           int length) {
   client_->OnIncomingCapturedFrame(
-      buffer, length, base::Time::Now(), 0, false, false, capture_format_);
+      buffer, length, base::Time::Now(), 0, false, false, current_setting_);
 }
 
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {
@@ -521,8 +522,8 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
       VideoCaptureCapabilityWin capability(i);
       VIDEOINFOHEADER* h =
           reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
-      capability.supported_format.frame_size.SetSize(h->bmiHeader.biWidth,
-                                                     h->bmiHeader.biHeight);
+      capability.width = h->bmiHeader.biWidth;
+      capability.height = h->bmiHeader.biHeight;
 
       // Try to get a better |time_per_frame| from IAMVideoControl.  If not, use
       // the value from VIDEOINFOHEADER.
@@ -530,8 +531,7 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
       if (video_control) {
         ScopedCoMem<LONGLONG> max_fps;
         LONG list_size = 0;
-        SIZE size = {capability.supported_format.frame_size.width(),
-                     capability.supported_format.frame_size.height()};
+        SIZE size = { capability.width, capability.height };
 
         // GetFrameRateList doesn't return max frame rate always
         // eg: Logitech Notebook. This may be due to a bug in that API
@@ -549,32 +549,30 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
         }
       }
 
-      capability.supported_format.frame_rate =
-          (time_per_frame > 0)
-              ? static_cast<int>(kSecondsToReferenceTime / time_per_frame)
-              : 0;
+      capability.frame_rate = (time_per_frame > 0) ?
+          static_cast<int>(kSecondsToReferenceTime / time_per_frame) : 0;
 
       // DirectShow works at the moment only on integer frame_rate but the
       // best capability matching class works on rational frame rates.
-      capability.frame_rate_numerator = capability.supported_format.frame_rate;
+      capability.frame_rate_numerator = capability.frame_rate;
       capability.frame_rate_denominator = 1;
 
       // We can't switch MEDIATYPE :~(.
       if (media_type->subtype == kMediaSubTypeI420) {
-        capability.supported_format.pixel_format = PIXEL_FORMAT_I420;
+        capability.color = PIXEL_FORMAT_I420;
       } else if (media_type->subtype == MEDIASUBTYPE_IYUV) {
         // This is identical to PIXEL_FORMAT_I420.
-        capability.supported_format.pixel_format = PIXEL_FORMAT_I420;
+        capability.color = PIXEL_FORMAT_I420;
       } else if (media_type->subtype == MEDIASUBTYPE_RGB24) {
-        capability.supported_format.pixel_format = PIXEL_FORMAT_RGB24;
+        capability.color = PIXEL_FORMAT_RGB24;
       } else if (media_type->subtype == MEDIASUBTYPE_YUY2) {
-        capability.supported_format.pixel_format = PIXEL_FORMAT_YUY2;
+        capability.color = PIXEL_FORMAT_YUY2;
       } else if (media_type->subtype == MEDIASUBTYPE_MJPG) {
-        capability.supported_format.pixel_format = PIXEL_FORMAT_MJPEG;
+        capability.color = PIXEL_FORMAT_MJPEG;
       } else if (media_type->subtype == MEDIASUBTYPE_UYVY) {
-        capability.supported_format.pixel_format = PIXEL_FORMAT_UYVY;
+        capability.color = PIXEL_FORMAT_UYVY;
       } else if (media_type->subtype == MEDIASUBTYPE_ARGB32) {
-        capability.supported_format.pixel_format = PIXEL_FORMAT_ARGB;
+        capability.color = PIXEL_FORMAT_ARGB;
       } else {
         WCHAR guid_str[128];
         StringFromGUID2(media_type->subtype, guid_str, arraysize(guid_str));

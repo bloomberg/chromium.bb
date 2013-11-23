@@ -51,7 +51,7 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                     int rotation,
                     bool flip_vert,
                     bool flip_horiz,
-                    const media::VideoCaptureFormat& frame_format));
+                    const media::VideoCaptureCapability& frame_info));
   MOCK_METHOD5(OnIncomingCapturedBuffer,
                void(const scoped_refptr<Buffer>& buffer,
                     media::VideoFrame::Format format,
@@ -120,7 +120,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   DesktopCaptureDevice capture_device(
       worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()),
       capturer.Pass());
-  media::VideoCaptureFormat format;
+  media::VideoCaptureCapability caps;
   base::WaitableEvent done_event(false, false);
   int frame_size;
 
@@ -129,25 +129,23 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _, _, _))
       .WillRepeatedly(
            DoAll(SaveArg<1>(&frame_size),
-                 SaveArg<6>(&format),
+                 SaveArg<6>(&caps),
                  InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
-  media::VideoCaptureParams capture_params;
-  capture_params.requested_format.frame_size.SetSize(640, 480);
-  capture_params.requested_format.frame_rate = kFrameRate;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
-  capture_params.allow_resolution_change = false;
+  media::VideoCaptureCapability capture_format(
+      640, 480, kFrameRate, media::PIXEL_FORMAT_I420,
+      media::ConstantResolutionVideoCaptureDevice);
   capture_device.AllocateAndStart(
-      capture_params, client.PassAs<media::VideoCaptureDevice::Client>());
+      capture_format, client.PassAs<media::VideoCaptureDevice::Client>());
   EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
   capture_device.StopAndDeAllocate();
 
-  EXPECT_GT(format.frame_size.width(), 0);
-  EXPECT_GT(format.frame_size.height(), 0);
-  EXPECT_EQ(kFrameRate, format.frame_rate);
-  EXPECT_EQ(media::PIXEL_FORMAT_ARGB, format.pixel_format);
+  EXPECT_GT(caps.width, 0);
+  EXPECT_GT(caps.height, 0);
+  EXPECT_EQ(kFrameRate, caps.frame_rate);
+  EXPECT_EQ(media::PIXEL_FORMAT_ARGB, caps.color);
 
-  EXPECT_EQ(format.frame_size.GetArea() * 4, frame_size);
+  EXPECT_EQ(caps.width * caps.height * 4, frame_size);
   worker_pool_->FlushForTesting();
 }
 
@@ -160,7 +158,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
       worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()),
       scoped_ptr<webrtc::DesktopCapturer>(mock_capturer));
 
-  media::VideoCaptureFormat format;
+  media::VideoCaptureCapability caps;
   base::WaitableEvent done_event(false, false);
   int frame_size;
 
@@ -169,18 +167,18 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
   EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _, _, _))
       .WillRepeatedly(
            DoAll(SaveArg<1>(&frame_size),
-                 SaveArg<6>(&format),
+                 SaveArg<6>(&caps),
                  InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
-  media::VideoCaptureParams capture_params;
-  capture_params.requested_format.frame_size.SetSize(kTestFrameWidth1,
-                                                     kTestFrameHeight1);
-  capture_params.requested_format.frame_rate = kFrameRate;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
-  capture_params.allow_resolution_change = false;
+  media::VideoCaptureCapability capture_format(
+      kTestFrameWidth1,
+      kTestFrameHeight1,
+      kFrameRate,
+      media::PIXEL_FORMAT_I420,
+      media::ConstantResolutionVideoCaptureDevice);
 
   capture_device.AllocateAndStart(
-      capture_params, client.PassAs<media::VideoCaptureDevice::Client>());
+      capture_format, client.PassAs<media::VideoCaptureDevice::Client>());
 
   // Capture at least two frames, to ensure that the source frame size has
   // changed while capturing.
@@ -190,12 +188,12 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
 
   capture_device.StopAndDeAllocate();
 
-  EXPECT_EQ(kTestFrameWidth1, format.frame_size.width());
-  EXPECT_EQ(kTestFrameHeight1, format.frame_size.height());
-  EXPECT_EQ(kFrameRate, format.frame_rate);
-  EXPECT_EQ(media::PIXEL_FORMAT_ARGB, format.pixel_format);
+  EXPECT_EQ(kTestFrameWidth1, caps.width);
+  EXPECT_EQ(kTestFrameHeight1, caps.height);
+  EXPECT_EQ(kFrameRate, caps.frame_rate);
+  EXPECT_EQ(media::PIXEL_FORMAT_ARGB, caps.color);
 
-  EXPECT_EQ(format.frame_size.GetArea() * 4, frame_size);
+  EXPECT_EQ(caps.width * caps.height * 4, frame_size);
   worker_pool_->FlushForTesting();
 }
 
@@ -208,25 +206,25 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
       worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()),
       scoped_ptr<webrtc::DesktopCapturer>(mock_capturer));
 
-  media::VideoCaptureFormat format;
+  media::VideoCaptureCapability caps;
   base::WaitableEvent done_event(false, false);
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError()).Times(0);
   EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _, _, _))
       .WillRepeatedly(
-           DoAll(SaveArg<6>(&format),
+           DoAll(SaveArg<6>(&caps),
                  InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
-  media::VideoCaptureParams capture_params;
-  capture_params.requested_format.frame_size.SetSize(kTestFrameWidth2,
-                                                     kTestFrameHeight2);
-  capture_params.requested_format.frame_rate = kFrameRate;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
-  capture_params.allow_resolution_change = false;
+  media::VideoCaptureCapability capture_format(
+      kTestFrameWidth2,
+      kTestFrameHeight2,
+      kFrameRate,
+      media::PIXEL_FORMAT_I420,
+      media::VariableResolutionVideoCaptureDevice);
 
   capture_device.AllocateAndStart(
-      capture_params, client.PassAs<media::VideoCaptureDevice::Client>());
+      capture_format, client.PassAs<media::VideoCaptureDevice::Client>());
 
   // Capture at least three frames, to ensure that the source frame size has
   // changed at least twice while capturing.
@@ -238,10 +236,10 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
 
   capture_device.StopAndDeAllocate();
 
-  EXPECT_EQ(kTestFrameWidth1, format.frame_size.width());
-  EXPECT_EQ(kTestFrameHeight1, format.frame_size.height());
-  EXPECT_EQ(kFrameRate, format.frame_rate);
-  EXPECT_EQ(media::PIXEL_FORMAT_ARGB, format.pixel_format);
+  EXPECT_EQ(kTestFrameWidth1, caps.width);
+  EXPECT_EQ(kTestFrameHeight1, caps.height);
+  EXPECT_EQ(kFrameRate, caps.frame_rate);
+  EXPECT_EQ(media::PIXEL_FORMAT_ARGB, caps.color);
   worker_pool_->FlushForTesting();
 }
 

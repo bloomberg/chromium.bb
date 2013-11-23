@@ -20,7 +20,7 @@
 #include "third_party/libyuv/include/libyuv.h"
 #endif
 
-using media::VideoCaptureFormat;
+using media::VideoCaptureCapability;
 
 namespace content {
 
@@ -48,28 +48,27 @@ class PoolBuffer : public media::VideoCaptureDevice::Client::Buffer {
 }  // anonymous namespace
 
 struct VideoCaptureController::ControllerClient {
-  ControllerClient(const VideoCaptureControllerID& id,
-                   VideoCaptureControllerEventHandler* handler,
-                   base::ProcessHandle render_process,
-                   media::VideoCaptureSessionId session_id,
-                   const media::VideoCaptureParams& params)
+  ControllerClient(
+      const VideoCaptureControllerID& id,
+      VideoCaptureControllerEventHandler* handler,
+      base::ProcessHandle render_process,
+      const media::VideoCaptureParams& params)
       : controller_id(id),
         event_handler(handler),
         render_process_handle(render_process),
-        session_id(session_id),
         parameters(params),
-        session_closed(false) {}
+        session_closed(false) {
+  }
 
   ~ControllerClient() {}
 
   // ID used for identifying this object.
-  const VideoCaptureControllerID controller_id;
-  VideoCaptureControllerEventHandler* const event_handler;
+  VideoCaptureControllerID controller_id;
+  VideoCaptureControllerEventHandler* event_handler;
 
   // Handle to the render process that will receive the capture buffers.
-  const base::ProcessHandle render_process_handle;
-  const media::VideoCaptureSessionId session_id;
-  const media::VideoCaptureParams parameters;
+  base::ProcessHandle render_process_handle;
+  media::VideoCaptureParams parameters;
 
   // Buffers that are currently known to this client.
   std::set<int> known_buffers;
@@ -116,7 +115,7 @@ class VideoCaptureController::VideoCaptureDeviceClient
                                        int rotation,
                                        bool flip_vert,
                                        bool flip_horiz,
-                                       const VideoCaptureFormat& frame_format)
+                                       const VideoCaptureCapability& frame_info)
       OVERRIDE;
   virtual void OnIncomingCapturedBuffer(const scoped_refptr<Buffer>& buffer,
                                         media::VideoFrame::Format format,
@@ -168,13 +167,13 @@ void VideoCaptureController::AddClient(
     const VideoCaptureControllerID& id,
     VideoCaptureControllerEventHandler* event_handler,
     base::ProcessHandle render_process,
-    media::VideoCaptureSessionId session_id,
     const media::VideoCaptureParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "VideoCaptureController::AddClient, id " << id.device_id
-           << ", " << params.requested_format.frame_size.ToString()
+           << ", (" << params.requested_format.width
+           << ", " << params.requested_format.height
            << ", " << params.requested_format.frame_rate
-           << ", " << session_id
+           << ", " << params.session_id
            << ")";
 
   // Signal error in case device is already in error state.
@@ -187,8 +186,8 @@ void VideoCaptureController::AddClient(
   if (FindClient(id, event_handler, controller_clients_))
     return;
 
-  ControllerClient* client = new ControllerClient(
-      id, event_handler, render_process, session_id, params);
+  ControllerClient* client = new ControllerClient(id, event_handler,
+                                                  render_process, params);
   // If we already have gotten frame_info from the device, repeat it to the new
   // client.
   if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
@@ -216,7 +215,7 @@ int VideoCaptureController::RemoveClient(
   }
   client->active_buffers.clear();
 
-  int session_id = client->session_id;
+  int session_id = client->parameters.session_id;
   controller_clients_.remove(client);
   delete client;
 
@@ -267,24 +266,24 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
     int rotation,
     bool flip_vert,
     bool flip_horiz,
-    const VideoCaptureFormat& frame_format) {
+    const VideoCaptureCapability& frame_info) {
   TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedFrame");
 
-  if (!frame_format.IsValid())
+  if (!frame_info.IsValid())
     return;
 
   // Chopped pixels in width/height in case video capture device has odd
   // numbers for width/height.
   int chopped_width = 0;
   int chopped_height = 0;
-  int new_width = frame_format.frame_size.width();
-  int new_height = frame_format.frame_size.height();
+  int new_width = frame_info.width;
+  int new_height = frame_info.height;
 
-  if (new_width & 1) {
+  if (frame_info.width & 1) {
     --new_width;
     chopped_width = 1;
   }
-  if (new_height & 1) {
+  if (frame_info.height & 1) {
     --new_height;
     chopped_height = 1;
   }
@@ -325,7 +324,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
   else if (new_rotation_angle == 270)
     rotation_mode = libyuv::kRotate270;
 
-  switch (frame_format.pixel_format) {
+  switch (frame_info.color) {
     case media::PIXEL_FORMAT_UNKNOWN:  // Color format not set.
       break;
     case media::PIXEL_FORMAT_I420:
@@ -365,7 +364,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
 #if defined(OS_WIN)
   // kRGB24 on Windows start at the bottom line and has a negative stride. This
   // is not supported by libyuv, so the media API is used instead.
-  if (frame_format.pixel_format == media::PIXEL_FORMAT_RGB24) {
+  if (frame_info.color == media::PIXEL_FORMAT_RGB24) {
     // Rotation and flipping is not supported in kRGB24 and OS_WIN case.
     DCHECK(!rotation && !flip_vert && !flip_horiz);
     need_convert_rgb24_on_win = true;
@@ -435,7 +434,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
           controller_,
           buffer,
           dimensions,
-          frame_format.frame_rate,
+          frame_info.frame_rate,
           timestamp));
 }
 
@@ -525,8 +524,11 @@ void VideoCaptureController::DoIncomingCapturedI420BufferOnIOThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_NE(buffer->id(), VideoCaptureBufferPool::kInvalidId);
 
-  VideoCaptureFormat frame_format(
-      dimensions, frame_rate, media::PIXEL_FORMAT_I420);
+  media::VideoCaptureFormat frame_format(
+      dimensions.width(),
+      dimensions.height(),
+      frame_rate,
+      media::VariableResolutionVideoCaptureDevice);
 
   int count = 0;
   if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
@@ -609,7 +611,7 @@ VideoCaptureController::FindClient(
     const ControllerClients& clients) {
   for (ControllerClients::const_iterator client_it = clients.begin();
        client_it != clients.end(); ++client_it) {
-    if ((*client_it)->session_id == session_id) {
+    if ((*client_it)->parameters.session_id == session_id) {
       return *client_it;
     }
   }

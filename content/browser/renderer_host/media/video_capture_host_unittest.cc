@@ -199,14 +199,13 @@ class MockVideoCaptureHost : public VideoCaptureHost {
     ASSERT_TRUE(dib != NULL);
     if (dump_video_) {
       if (!format_.IsValid()) {
-        dumper_.StartDump(frame_format.frame_size.width(),
-                          frame_format.frame_size.height());
+        dumper_.StartDump(frame_format.width, frame_format.height);
         format_ = frame_format;
       }
-      ASSERT_EQ(format_.frame_size.width(), frame_format.frame_size.width())
+      ASSERT_EQ(format_.width, frame_format.width)
           << "Dump format does not handle variable resolution.";
-      ASSERT_EQ(format_.frame_size.height(), frame_format.frame_size.height())
-          << "Dump format does not handle variable resolution.";
+      ASSERT_EQ(format_.height, frame_format.height)
+          << "Dump format does not handle variable resolution.";;
       dumper_.NewVideoFrame(dib->memory());
     }
 
@@ -348,8 +347,9 @@ class VideoCaptureHostTest : public testing::Test {
 
     media::VideoCaptureParams params;
     params.requested_format = media::VideoCaptureFormat(
-        gfx::Size(352, 288), 30, media::PIXEL_FORMAT_I420);
-    host_->OnStartCapture(kDeviceId, opened_session_id_, params);
+        352, 288, 30, media::ConstantResolutionVideoCaptureDevice);
+    params.session_id = opened_session_id_;
+    host_->OnStartCapture(kDeviceId, params);
     run_loop.Run();
   }
 
@@ -361,8 +361,9 @@ class VideoCaptureHostTest : public testing::Test {
     EXPECT_CALL(*host_, OnStateChanged(kDeviceId, VIDEO_CAPTURE_STATE_STOPPED));
     media::VideoCaptureParams params;
     params.requested_format = media::VideoCaptureFormat(
-        gfx::Size(352, 288), 30, media::PIXEL_FORMAT_I420);
-    host_->OnStartCapture(kDeviceId, opened_session_id_, params);
+        352, 288, 30, media::ConstantResolutionVideoCaptureDevice);
+    params.session_id = opened_session_id_;
+    host_->OnStartCapture(kDeviceId, params);
     host_->OnStopCapture(kDeviceId);
     run_loop.RunUntilIdle();
   }
@@ -379,10 +380,11 @@ class VideoCaptureHostTest : public testing::Test {
         .WillOnce(ExitMessageLoop(message_loop_, run_loop.QuitClosure()));
 
     media::VideoCaptureParams params;
-    params.requested_format =
-        media::VideoCaptureFormat(gfx::Size(width, height), frame_rate);
+    params.requested_format = media::VideoCaptureFormat(
+        width, height, frame_rate, media::ConstantResolutionVideoCaptureDevice);
+    params.session_id = opened_session_id_;
     host_->SetDumpVideo(true);
-    host_->OnStartCapture(kDeviceId, opened_session_id_, params);
+    host_->OnStartCapture(kDeviceId, params);
     run_loop.Run();
   }
 #endif

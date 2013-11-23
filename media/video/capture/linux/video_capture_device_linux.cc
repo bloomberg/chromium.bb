@@ -159,25 +159,22 @@ void VideoCaptureDevice::GetDeviceSupportedFormats(
 
   formats->clear();
 
-  VideoCaptureCapability capture_capability;
+  VideoCaptureCapability capture_format;
   // Retrieve the caps one by one, first get colorspace, then sizes, then
   // framerates. See http://linuxtv.org/downloads/v4l-dvb-apis for reference.
   v4l2_fmtdesc pixel_format = {};
   pixel_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   while (ioctl(fd, VIDIOC_ENUM_FMT, &pixel_format) == 0) {
-    capture_capability.supported_format.pixel_format =
+    capture_format.color =
         V4l2ColorToVideoCaptureColorFormat((int32)pixel_format.pixelformat);
-    if (capture_capability.supported_format.pixel_format ==
-        PIXEL_FORMAT_UNKNOWN) {
-      continue;
-    }
+    if (capture_format.color == PIXEL_FORMAT_UNKNOWN) continue;
 
     v4l2_frmsizeenum frame_size = {};
     frame_size.pixel_format = pixel_format.pixelformat;
     while (ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frame_size) == 0) {
       if (frame_size.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
-        capture_capability.supported_format.frame_size.SetSize(
-            frame_size.discrete.width, frame_size.discrete.height);
+        capture_format.width = frame_size.discrete.width;
+        capture_format.height = frame_size.discrete.height;
       } else if (frame_size.type == V4L2_FRMSIZE_TYPE_STEPWISE) {
         // TODO(mcasas): see http://crbug.com/249953, support these devices.
         NOTIMPLEMENTED();
@@ -192,11 +189,11 @@ void VideoCaptureDevice::GetDeviceSupportedFormats(
       while (ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frame_interval) == 0) {
         if (frame_interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
           if (frame_interval.discrete.numerator != 0) {
-            capture_capability.supported_format.frame_rate =
+            capture_format.frame_rate =
                 static_cast<float>(frame_interval.discrete.denominator) /
                 static_cast<float>(frame_interval.discrete.numerator);
           } else {
-            capture_capability.supported_format.frame_rate = 0;
+            capture_format.frame_rate = 0;
           }
         } else if (frame_interval.type == V4L2_FRMIVAL_TYPE_CONTINUOUS) {
           // TODO(mcasas): see http://crbug.com/249953, support these devices.
@@ -207,7 +204,7 @@ void VideoCaptureDevice::GetDeviceSupportedFormats(
           NOTIMPLEMENTED();
           break;
         }
-        formats->push_back(capture_capability);
+        formats->push_back(capture_format);
         ++frame_interval.index;
       }
       ++frame_size.index;
@@ -294,7 +291,7 @@ VideoCaptureDeviceLinux::~VideoCaptureDeviceLinux() {
 }
 
 void VideoCaptureDeviceLinux::AllocateAndStart(
-    const VideoCaptureParams& params,
+    const VideoCaptureCapability& capture_format,
     scoped_ptr<VideoCaptureDevice::Client> client) {
   if (v4l2_thread_.IsRunning()) {
     return;  // Wrong state.
@@ -304,9 +301,9 @@ void VideoCaptureDeviceLinux::AllocateAndStart(
       FROM_HERE,
       base::Bind(&VideoCaptureDeviceLinux::OnAllocateAndStart,
                  base::Unretained(this),
-                 params.requested_format.frame_size.width(),
-                 params.requested_format.frame_size.height(),
-                 params.requested_format.frame_rate,
+                 capture_format.width,
+                 capture_format.height,
+                 capture_format.frame_rate,
                  base::Passed(&client)));
 }
 
@@ -412,11 +409,12 @@ void VideoCaptureDeviceLinux::OnAllocateAndStart(int width,
   // framerate configuration, or the actual one is different from the desired?
 
   // Store our current width and height.
-  capture_format_.frame_size.SetSize(video_fmt.fmt.pix.width,
-                                     video_fmt.fmt.pix.height);
-  capture_format_.frame_rate = frame_rate;
-  capture_format_.pixel_format =
+  frame_info_.color =
       V4l2ColorToVideoCaptureColorFormat(video_fmt.fmt.pix.pixelformat);
+  frame_info_.width = video_fmt.fmt.pix.width;
+  frame_info_.height = video_fmt.fmt.pix.height;
+  frame_info_.frame_rate = frame_rate;
+  frame_info_.frame_size_type = VariableResolutionVideoCaptureDevice;
 
   // Start capturing.
   if (!AllocateVideoBuffers()) {
@@ -521,7 +519,7 @@ void VideoCaptureDeviceLinux::OnCaptureTask() {
           0,
           false,
           false,
-          capture_format_);
+          frame_info_);
 
       // Enqueue the buffer again.
       if (ioctl(device_fd_, VIDIOC_QBUF, &buffer) == -1) {

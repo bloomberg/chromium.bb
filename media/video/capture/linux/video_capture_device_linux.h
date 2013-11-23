@@ -24,7 +24,7 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   virtual ~VideoCaptureDeviceLinux();
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(const VideoCaptureParams& params,
+  virtual void AllocateAndStart(const VideoCaptureCapability& capture_format,
                                 scoped_ptr<Client> client) OVERRIDE;
 
   virtual void StopAndDeAllocate() OVERRIDE;
@@ -64,7 +64,7 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   Buffer* buffer_pool_;
   int buffer_pool_size_;  // Number of allocated buffers.
   int timeout_count_;
-  VideoCaptureFormat capture_format_;
+  VideoCaptureCapability frame_info_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceLinux);
 };
