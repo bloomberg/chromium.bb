@@ -79,10 +79,6 @@ void RulesCacheDelegate::Init(RulesRegistry* registry) {
   if (store)
     store->RegisterKey(storage_key_);
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
-
   if (profile_->IsOffTheRecord())
     log_storage_init_delay_ = false;
 
@@ -112,29 +108,6 @@ void RulesCacheDelegate::WriteToStorage(const std::string& extension_id,
   StateStore* store = ExtensionSystem::Get(profile_)->rules_store();
   if (store)
     store->SetExtensionValue(extension_id, storage_key_, value.Pass());
-}
-
-void RulesCacheDelegate::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_LOADED, type);
-
-  const extensions::Extension* extension =
-      content::Details<const extensions::Extension>(details).ptr();
-  // TODO(mpcomplete): This API check should generalize to any use of
-  // declarative rules, not just webRequest.
-  if (extension->HasAPIPermission(APIPermission::kDeclarativeContent) ||
-      extension->HasAPIPermission(APIPermission::kDeclarativeWebRequest)) {
-    InfoMap* extension_info_map = ExtensionSystem::Get(profile_)->info_map();
-    if (profile_->IsOffTheRecord() &&
-        !extension_info_map->IsIncognitoEnabled(extension->id())) {
-      // Ignore this extension.
-    } else {
-      ReadFromStorage(extension->id());
-    }
-  }
 }
 
 void RulesCacheDelegate::CheckIfReady() {

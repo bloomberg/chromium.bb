@@ -119,7 +119,7 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
   ASSERT_TRUE(get_rules_4b[0]->id.get());
   EXPECT_EQ(kRuleId, *get_rules_4b[0]->id);
 
-  registry->OnExtensionUnloaded(kExtensionId);
+  registry->OnExtensionUninstalled(kExtensionId);
   EXPECT_EQ(0u /*extensions*/ + 0u /*rules*/,
             registry->GetNumberOfUsedRuleIdentifiersForTesting());
 

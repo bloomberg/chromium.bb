@@ -10,7 +10,8 @@ var redirectDataURI = 'data:text/html;charset=utf-8,<html><head><title>' +
 
 var rule = {
   conditions: [
-    new chrome.declarativeWebRequest.RequestMatcher({})
+    new chrome.declarativeWebRequest.RequestMatcher({
+        url: {schemes: ['http']}})
   ],
   actions: [
     new chrome.declarativeWebRequest.RedirectRequest({

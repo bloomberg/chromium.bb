@@ -11,8 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
@@ -24,7 +22,7 @@ class RulesRegistry;
 // the UI thread. It should only be used on the UI thread.
 // If |log_storage_init_delay| is set, the delay caused by loading and
 // registering rules on initialization will be logged with UMA.
-class RulesCacheDelegate : public content::NotificationObserver {
+class RulesCacheDelegate {
  public:
 
   explicit RulesCacheDelegate(bool log_storage_init_delay);
@@ -56,11 +54,6 @@ class RulesCacheDelegate : public content::NotificationObserver {
 
   static const char kRulesStoredKey[];
 
-  // NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Check if we are done reading all data from storage on startup, and notify
   // the RulesRegistry on its thread if so. The notification is delivered
   // exactly once.
@@ -82,8 +75,6 @@ class RulesCacheDelegate : public content::NotificationObserver {
   // Modify the preference to |rules_stored|.
   void SetDeclarativeRulesStored(const std::string& extension_id,
                                  bool rules_stored);
-
-  content::NotificationRegistrar registrar_;
 
   Profile* profile_;
 

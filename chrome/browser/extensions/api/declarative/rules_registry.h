@@ -120,9 +120,11 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   void GetAllRules(const std::string& extension_id,
                    std::vector<linked_ptr<RulesRegistry::Rule> >* out);
 
-  // Called to notify the RulesRegistry that an extension has been unloaded
-  // and all rules of this extension need to be removed.
+  // Called to notify the RulesRegistry that the extension availability has
+  // changed, so that the registry can update which rules are active.
   void OnExtensionUnloaded(const std::string& extension_id);
+  void OnExtensionUninstalled(const std::string& extension_id);
+  void OnExtensionLoaded(const std::string& extension_id);
 
   // Returns the number of entries in used_rule_identifiers_ for leak detection.
   // Every ExtensionId counts as one entry, even if it contains no rules.

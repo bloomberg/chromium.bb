@@ -89,7 +89,8 @@ class RulesRegistryService : public ProfileKeyedAPI,
   void RemoveWebViewRulesRegistries(int process_id);
 
   // For testing.
-  void SimulateExtensionUnloaded(const std::string& extension_id);
+  void SimulateExtensionUninstalled(const std::string& extension_id);
+
  private:
   friend class ProfileKeyedAPIFactory<RulesRegistryService>;
 
@@ -98,15 +99,18 @@ class RulesRegistryService : public ProfileKeyedAPI,
   typedef std::map<RulesRegistryKey, scoped_refptr<RulesRegistry> >
       RulesRegistryMap;
 
-  // Notifies all RulesRegistries that |extension_id| was unloaded.
-  // It is not guaranteed that this notification is processed synchronously.
-  // If extensions live on another thread, the notification is posted.
-  void OnExtensionUnloaded(const std::string& extension_id);
-
   // Implementation of content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Iterates over all registries, and calls |notification_callback| on them
+  // with |extension_id| as the argument. If a registry lives on a different
+  // thread, the call is posted to that thread, so no guarantee of synchronous
+  // processing.
+  void NotifyRegistriesHelper(
+      void (RulesRegistry::*notification_callback)(const std::string&),
+      const std::string& extension_id);
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {

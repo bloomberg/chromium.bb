@@ -94,9 +94,9 @@ TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
 
   message_loop_.RunUntilIdle();
 
-  // Test extension unloading.
+  // Test extension uninstalling.
 
-  registry_service.SimulateExtensionUnloaded(kExtensionId);
+  registry_service.SimulateExtensionUninstalled(kExtensionId);
 
   content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,

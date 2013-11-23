@@ -6,12 +6,16 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/thread_test_helper.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -19,17 +23,79 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
 
+using content::BrowserThread;
+using extensions::Extension;
 using extensions::RulesRegistry;
 using extensions::RulesRegistryService;
+using extensions::TestExtensionDir;
 using extensions::WebRequestRulesRegistry;
 
 namespace {
 
-const char kArbitraryUrl[] = "http://www.example.com";
+const char kArbitraryUrl[] = "http://www.example.com";  // Must be http://.
 
 // The extension in "declarative/redirect_to_data" redirects every navigation to
 // a page with title |kTestTitle|.
-const char kTestTitle[] = ":TEST:";
+#define TEST_TITLE_STRING ":TEST:"
+const char kTestTitle[] = TEST_TITLE_STRING;
+
+// All methods and constands below containing "RedirectToData" in their names
+// are parts of a test extension "Redirect to 'data:'".
+std::string GetRedirectToDataManifestWithVersion(unsigned version) {
+  return base::StringPrintf(
+      "{\n"
+      "  \"name\": \"Redirect to 'data:' (declarative apitest)\",\n"
+      "  \"version\": \"%d\",\n"
+      "  \"manifest_version\": 2,\n"
+      "  \"description\": \"Redirects all requests to a fixed data: URI.\",\n"
+      "  \"background\": {\n"
+      "    \"scripts\": [\"background.js\"]\n"
+      "  },\n"
+      "  \"permissions\": [\n"
+      "    \"declarativeWebRequest\", \"<all_urls>\"\n"
+      "  ]\n"
+      "}\n",
+      version);
+}
+
+const char kRedirectToDataConstants[] =
+    "var redirectDataURI =\n"
+    "    'data:text/html;charset=utf-8,<html><head><title>' +\n"
+    "    '" TEST_TITLE_STRING "' +\n"
+    "    '<%2Ftitle><%2Fhtml>';\n";
+#undef TEST_TITLE_STRING
+
+const char kRedirectToDataRules[] =
+    "var rules = [{\n"
+    "  conditions: [\n"
+    "    new chrome.declarativeWebRequest.RequestMatcher({\n"
+    "        url: {schemes: ['http']}})\n"
+    "  ],\n"
+    "  actions: [\n"
+    "    new chrome.declarativeWebRequest.RedirectRequest({\n"
+    "      redirectUrl: redirectDataURI\n"
+    "    })\n"
+    "  ]\n"
+    "}];\n";
+
+const char kRedirectToDataInstallRules[] =
+    "function report(details) {\n"
+    "  if (chrome.extension.lastError) {\n"
+    "    chrome.test.log(chrome.extension.lastError.message);\n"
+    "  } else {\n"
+    "    chrome.test.sendMessage(\"ready\", function(reply) {})\n"
+    "  }\n"
+    "}\n"
+    "\n"
+    "chrome.runtime.onInstalled.addListener(function(details) {\n"
+    "  if (details.reason == 'install')\n"
+    "    chrome.declarativeWebRequest.onRequest.addRules(rules, report);\n"
+    "});\n";
+
+const char kRedirectToDataNoRules[] =
+    "chrome.runtime.onInstalled.addListener(function(details) {\n"
+    "  chrome.test.sendMessage(\"ready\", function(reply) {})\n"
+    "});\n";
 
 }  // namespace
 
@@ -40,46 +106,117 @@ class DeclarativeApiTest : public ExtensionApiTest {
         browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
     return base::UTF16ToUTF8(title);
   }
+
+  // Reports the number of rules registered for the |extension_id| with the
+  // non-webview rules registry.
+  size_t NumberOfRegisteredRules(const std::string& extension_id) {
+    RulesRegistryService* rules_registry_service =
+        extensions::RulesRegistryService::Get(browser()->profile());
+    scoped_refptr<RulesRegistry> rules_registry =
+        rules_registry_service->GetRulesRegistry(
+            RulesRegistry::WebViewKey(0, 0),
+            extensions::declarative_webrequest_constants::kOnRequest);
+    std::vector<linked_ptr<RulesRegistry::Rule> > rules;
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(
+            &RulesRegistry::GetAllRules, rules_registry, extension_id, &rules));
+    scoped_refptr<base::ThreadTestHelper> io_helper(new base::ThreadTestHelper(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get()));
+    EXPECT_TRUE(io_helper->Run());
+    return rules.size();
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, DeclarativeApi) {
   ASSERT_TRUE(RunExtensionTest("declarative/api")) << message_;
 
-  // Check that unloading the page has removed all rules.
+  // Check that uninstalling the extension has removed all rules.
   std::string extension_id = GetSingleLoadedExtension()->id();
-  UnloadExtension(extension_id);
+  UninstallExtension(extension_id);
 
   // UnloadExtension posts a task to the owner thread of the extension
   // to process this unloading. The next task to retrive all rules
   // is therefore processed after the UnloadExtension task has been executed.
-
-  RulesRegistryService* rules_registry_service =
-      extensions::RulesRegistryService::Get(browser()->profile());
-  scoped_refptr<RulesRegistry> rules_registry =
-      rules_registry_service->GetRulesRegistry(
-          RulesRegistry::WebViewKey(0, 0),
-          extensions::declarative_webrequest_constants::kOnRequest);
-
-  std::vector<linked_ptr<RulesRegistry::Rule> > known_rules;
-
-  content::BrowserThread::PostTask(
-      rules_registry->owner_thread(),
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&RulesRegistry::GetAllRules),
-                 rules_registry, extension_id, &known_rules));
-
-  content::RunAllPendingInMessageLoop(rules_registry->owner_thread());
-
-  EXPECT_TRUE(known_rules.empty());
+  EXPECT_EQ(0u, NumberOfRegisteredRules(extension_id));
 }
 
 // PersistRules test first installs an extension, which registers some rules.
 // Then after browser restart, it checks that the rules are still in effect.
 IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, PRE_PersistRules) {
+  // Note that we cannot use an extension generated by *GetRedirectToData*
+  // helpers in a TestExtensionDir, because we need the extension to persist
+  // until the PersistRules test is run.
   ASSERT_TRUE(RunExtensionTest("declarative/redirect_to_data")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, PersistRules) {
   ui_test_utils::NavigateToURL(browser(), GURL(kArbitraryUrl));
   EXPECT_EQ(kTestTitle, GetTitle());
+}
+
+// Test that the rules are correctly persisted and (de)activated during
+// changing the "installed" and "enabled" status of an extension.
+IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, ExtensionLifetimeRulesHandling) {
+  TestExtensionDir ext_dir;
+
+  // 1. Install the extension. Rules should become active.
+  ext_dir.WriteManifest(GetRedirectToDataManifestWithVersion(1));
+  ext_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                    base::StringPrintf("%s%s%s",
+                                       kRedirectToDataConstants,
+                                       kRedirectToDataRules,
+                                       kRedirectToDataInstallRules));
+  ExtensionTestMessageListener ready("ready", /*will_reply=*/false);
+  const Extension* extension = InstallExtensionWithUIAutoConfirm(
+      ext_dir.Pack(), 1 /*+1 installed extension*/, browser());
+  ASSERT_TRUE(extension);
+  std::string extension_id(extension->id());
+  ASSERT_TRUE(ready.WaitUntilSatisfied());
+  ui_test_utils::NavigateToURL(browser(), GURL(kArbitraryUrl));
+  EXPECT_EQ(kTestTitle, GetTitle());
+  EXPECT_EQ(1u, NumberOfRegisteredRules(extension_id));
+
+  // 2. Disable the extension. Rules are no longer active, but are still
+  // registered.
+  DisableExtension(extension_id);
+  ui_test_utils::NavigateToURL(browser(), GURL(kArbitraryUrl));
+  EXPECT_NE(kTestTitle, GetTitle());
+  EXPECT_EQ(1u, NumberOfRegisteredRules(extension_id));
+
+  // 3. Enable the extension again. Rules are active again.
+  EnableExtension(extension_id);
+  ui_test_utils::NavigateToURL(browser(), GURL(kArbitraryUrl));
+  EXPECT_EQ(kTestTitle, GetTitle());
+  EXPECT_EQ(1u, NumberOfRegisteredRules(extension_id));
+
+  // 4. Bump the version and update, without the code to add the rules. Rules
+  // are still active, because the registry does not drop them unless the
+  // extension gets uninstalled.
+  ext_dir.WriteManifest(GetRedirectToDataManifestWithVersion(2));
+  ext_dir.WriteFile(
+      FILE_PATH_LITERAL("background.js"),
+      base::StringPrintf(
+          "%s%s", kRedirectToDataConstants, kRedirectToDataNoRules));
+  ExtensionTestMessageListener ready_after_update("ready",
+                                                  /*will_reply=*/false);
+  EXPECT_TRUE(UpdateExtension(
+      extension_id, ext_dir.Pack(), 0 /*no new installed extension*/));
+  ASSERT_TRUE(ready_after_update.WaitUntilSatisfied());
+  ui_test_utils::NavigateToURL(browser(), GURL(kArbitraryUrl));
+  EXPECT_EQ(kTestTitle, GetTitle());
+  EXPECT_EQ(1u, NumberOfRegisteredRules(extension_id));
+
+  // 5. Reload the extension. Rules remain active.
+  ReloadExtension(extension_id);
+  ui_test_utils::NavigateToURL(browser(), GURL(kArbitraryUrl));
+  EXPECT_EQ(kTestTitle, GetTitle());
+  EXPECT_EQ(1u, NumberOfRegisteredRules(extension_id));
+
+  // 6. Uninstall the extension. Rules are gone.
+  UninstallExtension(extension_id);
+  ui_test_utils::NavigateToURL(browser(), GURL(kArbitraryUrl));
+  EXPECT_NE(kTestTitle, GetTitle());
+  EXPECT_EQ(0u, NumberOfRegisteredRules(extension_id));
 }

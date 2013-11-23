@@ -203,13 +203,13 @@ TEST_F(RulesRegistryWithCacheTest, GetAllRules) {
                 kRule2Id == *(gotten_rules[0]->id)) );
 }
 
-TEST_F(RulesRegistryWithCacheTest, OnExtensionUnloaded) {
+TEST_F(RulesRegistryWithCacheTest, OnExtensionUninstalled) {
   // Prime registry.
   EXPECT_EQ("", AddRule(kExtensionId, kRuleId));
   EXPECT_EQ("", AddRule(kExtension2Id, kRuleId));
 
   // Check that the correct rules are removed.
-  registry_->OnExtensionUnloaded(kExtensionId);
+  registry_->OnExtensionUninstalled(kExtensionId);
   EXPECT_EQ(0, GetNumberOfRules(kExtensionId));
   EXPECT_EQ(1, GetNumberOfRules(kExtension2Id));
 }

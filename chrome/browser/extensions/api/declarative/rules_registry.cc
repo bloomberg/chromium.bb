@@ -151,9 +151,9 @@ std::string RulesRegistry::RemoveRules(
   if (!error.empty())
     return error;
 
-  // Commit removal of rules from |rules_| on success.
-  for (std::vector<std::string>::const_iterator i =
-      rule_identifiers.begin(); i != rule_identifiers.end(); ++i) {
+  for (std::vector<std::string>::const_iterator i = rule_identifiers.begin();
+       i != rule_identifiers.end();
+       ++i) {
     RulesDictionaryKey lookup_key(extension_id, *i);
     rules_.erase(lookup_key);
   }
@@ -171,7 +171,6 @@ std::string RulesRegistry::RemoveAllRules(const std::string& extension_id) {
   if (!error.empty())
     return error;
 
-  // Commit removal of rules from |rules_| on success.
   for (RulesDictionary::const_iterator i = rules_.begin();
       i != rules_.end();) {
     const RulesDictionaryKey& key = i->first;
@@ -213,10 +212,25 @@ void RulesRegistry::GetAllRules(const std::string& extension_id,
 
 void RulesRegistry::OnExtensionUnloaded(const std::string& extension_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
+  std::string error = RemoveAllRulesImpl(extension_id);
+  if (!error.empty())
+    LOG(ERROR) << error;
+}
+
+void RulesRegistry::OnExtensionUninstalled(const std::string& extension_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
   std::string error = RemoveAllRules(extension_id);
   if (!error.empty())
     LOG(ERROR) << error;
-  used_rule_identifiers_.erase(extension_id);
+}
+
+void RulesRegistry::OnExtensionLoaded(const std::string& extension_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
+  std::vector<linked_ptr<Rule> > rules;
+  GetAllRules(extension_id, &rules);
+  std::string error = AddRulesImpl(extension_id, rules);
+  if (!error.empty())
+    LOG(ERROR) << error;
 }
 
 size_t RulesRegistry::GetNumberOfUsedRuleIdentifiersForTesting() const {

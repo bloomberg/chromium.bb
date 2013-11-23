@@ -46,6 +46,11 @@ RulesRegistryService::RulesRegistryService(Profile* profile)
   if (profile) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
         content::Source<Profile>(profile->GetOriginalProfile()));
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+        content::Source<Profile>(profile->GetOriginalProfile()));
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_LOADED,
+                   content::Source<Profile>(profile_->GetOriginalProfile()));
     registrar_.Add(
         this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         content::NotificationService::AllBrowserContextsAndSources());
@@ -175,24 +180,24 @@ void RulesRegistryService::RemoveWebViewRulesRegistries(int process_id) {
   }
 }
 
-void RulesRegistryService::SimulateExtensionUnloaded(
+void RulesRegistryService::SimulateExtensionUninstalled(
     const std::string& extension_id) {
-  OnExtensionUnloaded(extension_id);
+  NotifyRegistriesHelper(&RulesRegistry::OnExtensionUninstalled, extension_id);
 }
 
-void RulesRegistryService::OnExtensionUnloaded(
+void RulesRegistryService::NotifyRegistriesHelper(
+    void (RulesRegistry::*notification_callback)(const std::string&),
     const std::string& extension_id) {
   RulesRegistryMap::iterator i;
   for (i = rule_registries_.begin(); i != rule_registries_.end(); ++i) {
     scoped_refptr<RulesRegistry> registry = i->second;
     if (content::BrowserThread::CurrentlyOn(registry->owner_thread())) {
-      registry->OnExtensionUnloaded(extension_id);
+      (registry->*notification_callback)(extension_id);
     } else {
       content::BrowserThread::PostTask(
           registry->owner_thread(),
           FROM_HERE,
-          base::Bind(
-              &RulesRegistry::OnExtensionUnloaded, registry, extension_id));
+          base::Bind(notification_callback, registry, extension_id));
     }
   }
 }
@@ -205,7 +210,22 @@ void RulesRegistryService::Observe(
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
           content::Details<UnloadedExtensionInfo>(details)->extension;
-      OnExtensionUnloaded(extension->id());
+      NotifyRegistriesHelper(&RulesRegistry::OnExtensionUnloaded,
+                             extension->id());
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      NotifyRegistriesHelper(&RulesRegistry::OnExtensionUninstalled,
+                             extension->id());
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      NotifyRegistriesHelper(&RulesRegistry::OnExtensionLoaded,
+                             extension->id());
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
