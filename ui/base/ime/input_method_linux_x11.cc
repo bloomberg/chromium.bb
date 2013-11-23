@@ -104,7 +104,6 @@ void InputMethodLinuxX11::CancelComposition(const TextInputClient* client) {
 }
 
 void InputMethodLinuxX11::OnInputLocaleChanged() {
-  InputMethodBase::OnInputLocaleChanged();
 }
 
 std::string InputMethodLinuxX11::GetInputLocale() {

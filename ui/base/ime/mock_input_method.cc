@@ -51,9 +51,6 @@ void MockInputMethod::OnBlur() {
 
 bool MockInputMethod::OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                                NativeEventResult* result) {
-  FOR_EACH_OBSERVER(InputMethodObserver,
-                    observer_list_,
-                    OnUntranslatedIMEMessage(event));
   if (result)
     *result = NativeEventResult();
   return false;
@@ -78,9 +75,6 @@ void MockInputMethod::CancelComposition(const TextInputClient* client) {
 }
 
 void MockInputMethod::OnInputLocaleChanged() {
-  FOR_EACH_OBSERVER(InputMethodObserver,
-                    observer_list_,
-                    OnInputLocaleChanged());
 }
 
 std::string MockInputMethod::GetInputLocale() {

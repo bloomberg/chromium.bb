@@ -129,6 +129,8 @@ class SimpleMockInputMethodBase : public InputMethodBase {
   }
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE {
   }
+  virtual void OnInputLocaleChanged() OVERRIDE {
+  }
   virtual std::string GetInputLocale() OVERRIDE{
     return "";
   }
@@ -184,9 +186,6 @@ class SimpleMockInputMethodObserver : public InputMethodObserver {
   size_t on_caret_bounds_changed() const {
     return on_caret_bounds_changed_;
   }
-  size_t on_input_locale_changed() const {
-    return on_input_locale_changed_;
-  }
 
  private:
   // Overriden from InputMethodObserver.
@@ -196,14 +195,8 @@ class SimpleMockInputMethodObserver : public InputMethodObserver {
   }
   virtual void OnBlur() OVERRIDE{
   }
-  virtual void OnUntranslatedIMEMessage(
-    const base::NativeEvent& event) OVERRIDE{
-  }
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE{
     ++on_caret_bounds_changed_;
-  }
-  virtual void OnInputLocaleChanged() OVERRIDE{
-    ++on_input_locale_changed_;
   }
   virtual void OnTextInputStateChanged(const TextInputClient* client) OVERRIDE{
   }
@@ -384,33 +377,6 @@ TEST(InputMethodBaseTest, OnCaretBoundsChanged) {
     input_method_observer.Reset();
     input_method.OnCaretBoundsChanged(&text_input_client_the_other);
     EXPECT_EQ(0u, input_method_observer.on_caret_bounds_changed());
-  }
-}
-
-TEST(InputMethodBaseTest, OnInputLocaleChanged) {
-  DummyTextInputClient text_input_client;
-
-  SimpleMockInputMethodBase input_method;
-  SimpleMockInputMethodObserver input_method_observer;
-  InputMethodScopedObserver scoped_observer(&input_method_observer);
-  scoped_observer.Add(&input_method);
-
-  // Assume that the top-level-widget gains focus.
-  input_method.OnFocus();
-
-  {
-    SCOPED_TRACE("OnInputLocaleChanged callback can be fired even when no text "
-        "input client is focused");
-    ASSERT_EQ(NULL, input_method.GetTextInputClient());
-
-    input_method_observer.Reset();
-    input_method.OnInputLocaleChanged();
-    EXPECT_EQ(1u, input_method_observer.on_input_locale_changed());
-
-    input_method.SetFocusedTextInputClient(&text_input_client);
-    input_method_observer.Reset();
-    input_method.OnInputLocaleChanged();
-    EXPECT_EQ(1u, input_method_observer.on_input_locale_changed());
   }
 }
 

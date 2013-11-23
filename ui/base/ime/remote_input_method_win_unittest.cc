@@ -168,7 +168,6 @@ class MockInputMethodObserver : public InputMethodObserver {
   MockInputMethodObserver()
     : on_text_input_type_changed_(0),
       on_caret_bounds_changed_(0),
-      on_input_locale_changed_(0),
       on_text_input_state_changed_(0),
       on_input_method_destroyed_changed_(0) {
   }
@@ -177,7 +176,6 @@ class MockInputMethodObserver : public InputMethodObserver {
   void Reset() {
     on_text_input_type_changed_ = 0;
     on_caret_bounds_changed_ = 0;
-    on_input_locale_changed_ = 0;
     on_text_input_state_changed_ = 0;
     on_input_method_destroyed_changed_ = 0;
   }
@@ -186,9 +184,6 @@ class MockInputMethodObserver : public InputMethodObserver {
   }
   size_t on_caret_bounds_changed() const {
     return on_caret_bounds_changed_;
-  }
-  size_t on_input_locale_changed() const {
-    return on_input_locale_changed_;
   }
   size_t on_text_input_state_changed() const {
     return on_text_input_state_changed_;
@@ -206,14 +201,8 @@ class MockInputMethodObserver : public InputMethodObserver {
   }
   virtual void OnBlur() OVERRIDE {
   }
-  virtual void OnUntranslatedIMEMessage(
-    const base::NativeEvent& event) OVERRIDE {
-  }
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE {
     ++on_caret_bounds_changed_;
-  }
-  virtual void OnInputLocaleChanged() OVERRIDE {
-    ++on_input_locale_changed_;
   }
   virtual void OnTextInputStateChanged(const TextInputClient* client) OVERRIDE {
     ++on_text_input_state_changed_;
@@ -224,7 +213,6 @@ class MockInputMethodObserver : public InputMethodObserver {
 
   size_t on_text_input_type_changed_;
   size_t on_caret_bounds_changed_;
-  size_t on_input_locale_changed_;
   size_t on_text_input_state_changed_;
   size_t on_input_method_destroyed_changed_;
   DISALLOW_COPY_AND_ASSIGN(MockInputMethodObserver);
@@ -719,32 +707,6 @@ TEST(RemoteInputMethodWinTest, OnCaretBoundsChanged_Observer) {
     input_method_observer.Reset();
     input_method->OnCaretBoundsChanged(&text_input_client_the_other);
     EXPECT_EQ(0u, input_method_observer.on_caret_bounds_changed());
-  }
-}
-
-TEST(RemoteInputMethodWinTest, OnInputLocaleChanged_Observer) {
-  DummyTextInputClient text_input_client;
-
-  MockInputMethodObserver input_method_observer;
-
-  MockInputMethodDelegate delegate_;
-  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
-  InputMethodScopedObserver scoped_observer(&input_method_observer);
-  scoped_observer.Add(input_method.get());
-
-  {
-    SCOPED_TRACE("OnInputLocaleChanged callback can be fired even when no text "
-                 "input client is focused");
-    ASSERT_EQ(NULL, input_method->GetTextInputClient());
-
-    input_method_observer.Reset();
-    input_method->OnInputLocaleChanged();
-    EXPECT_EQ(1u, input_method_observer.on_input_locale_changed());
-
-    input_method->SetFocusedTextInputClient(&text_input_client);
-    input_method_observer.Reset();
-    input_method->OnInputLocaleChanged();
-    EXPECT_EQ(1u, input_method_observer.on_input_locale_changed());
   }
 }
 

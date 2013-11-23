@@ -237,6 +237,10 @@ void InputMethodIBus::CancelComposition(const TextInputClient* client) {
     ResetContext();
 }
 
+void InputMethodIBus::OnInputLocaleChanged() {
+  // Not supported.
+}
+
 std::string InputMethodIBus::GetInputLocale() {
   // Not supported.
   return "";

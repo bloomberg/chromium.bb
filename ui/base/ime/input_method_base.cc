@@ -70,12 +70,6 @@ void InputMethodBase::OnCaretBoundsChanged(const TextInputClient* client) {
                     OnCaretBoundsChanged(client));
 }
 
-void InputMethodBase::OnInputLocaleChanged() {
-  FOR_EACH_OBSERVER(InputMethodObserver,
-                    observer_list_,
-                    OnInputLocaleChanged());
-}
-
 TextInputType InputMethodBase::GetTextInputType() const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->GetTextInputType() : TEXT_INPUT_TYPE_NONE;

@@ -27,11 +27,8 @@ class InputMethodBridge::HostObserver : public ui::InputMethodObserver {
       const ui::TextInputClient* client) OVERRIDE {}
   virtual void OnFocus() OVERRIDE {}
   virtual void OnBlur() OVERRIDE {}
-  virtual void OnUntranslatedIMEMessage(
-      const base::NativeEvent& event) OVERRIDE {}
   virtual void OnCaretBoundsChanged(
       const ui::TextInputClient* client) OVERRIDE {}
-  virtual void OnInputLocaleChanged() OVERRIDE {}
   virtual void OnTextInputStateChanged(
       const ui::TextInputClient* client) OVERRIDE {}
   virtual void OnInputMethodDestroyed(

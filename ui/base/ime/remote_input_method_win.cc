@@ -148,9 +148,6 @@ class RemoteInputMethodWin : public InputMethod,
 
   virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                         NativeEventResult* result) OVERRIDE {
-    FOR_EACH_OBSERVER(InputMethodObserver,
-                      observer_list_,
-                      OnUntranslatedIMEMessage(event));
     return false;
   }
 
@@ -263,9 +260,6 @@ class RemoteInputMethodWin : public InputMethod,
   }
 
   virtual void OnInputLocaleChanged() OVERRIDE {
-    FOR_EACH_OBSERVER(InputMethodObserver,
-                      observer_list_,
-                      OnInputLocaleChanged());
   }
 
   virtual std::string GetInputLocale() OVERRIDE {
