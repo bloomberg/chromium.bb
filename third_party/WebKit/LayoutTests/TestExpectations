@@ -602,3 +602,8 @@ crbug.com/245556 virtual/softwarecompositing/transitions/transform-on-large-laye
 crbug.com/321787 [ Win ] virtual/gpu/fast/canvas/webgl/premultiplyalpha-test.html [ Pass Failure ]
 crbug.com/321793 [ Win ] fast/frames/sandboxed-iframe-navigation-windowopen.html [ Pass Timeout ]
 crbug.com/321857 [ Win7 Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Pass Failure ]
+
+crbug.com/322887 fast/dom/HTMLAnchorElement/set-href-attribute-hash.html [ NeedsRebaseline ]
+crbug.com/322887 fast/dom/HTMLAnchorElement/set-href-attribute-search.html [ NeedsRebaseline ]
+crbug.com/322887 fast/loader/about-blank-hash-kept.html [ NeedsRebaseline ]
+crbug.com/322887 fast/url/segments-from-data-url.html [ Failure ]
