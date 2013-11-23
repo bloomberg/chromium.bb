@@ -101,12 +101,14 @@ class CC_EXPORT ResourceProvider {
   // Creates a resource which is tagged as being managed for GPU memory
   // accounting purposes.
   ResourceId CreateManagedResource(gfx::Size size,
+                                   GLenum target,
                                    GLint wrap_mode,
                                    TextureUsageHint hint,
                                    ResourceFormat format);
 
   // You can also explicitly create a specific resource type.
   ResourceId CreateGLTexture(gfx::Size size,
+                             GLenum target,
                              GLenum texture_pool,
                              GLint wrap_mode,
                              TextureUsageHint hint,
@@ -221,18 +223,18 @@ class CC_EXPORT ResourceProvider {
    public:
     ScopedSamplerGL(ResourceProvider* resource_provider,
                     ResourceProvider::ResourceId resource_id,
-                    GLenum target,
                     GLenum filter);
     ScopedSamplerGL(ResourceProvider* resource_provider,
                     ResourceProvider::ResourceId resource_id,
-                    GLenum target,
                     GLenum unit,
                     GLenum filter);
     virtual ~ScopedSamplerGL();
 
+    GLenum target() const { return target_; }
+
    private:
-    GLenum target_;
     GLenum unit_;
+    GLenum target_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedSamplerGL);
   };
@@ -465,12 +467,11 @@ class CC_EXPORT ResourceProvider {
   void LazyAllocate(Resource* resource);
 
   // Binds the given GL resource to a texture target for sampling using the
-  // specified filter for both minification and magnification. The resource
-  // must be locked for reading.
-  void BindForSampling(ResourceProvider::ResourceId resource_id,
-                       GLenum target,
-                       GLenum unit,
-                       GLenum filter);
+  // specified filter for both minification and magnification. Returns the
+  // texture target used. The resource must be locked for reading.
+  GLenum BindForSampling(ResourceProvider::ResourceId resource_id,
+                         GLenum unit,
+                         GLenum filter);
 
   // Returns NULL if the output_surface_ does not have a ContextProvider.
   blink::WebGraphicsContext3D* Context3d() const;

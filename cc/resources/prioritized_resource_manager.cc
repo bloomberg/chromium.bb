@@ -447,6 +447,7 @@ PrioritizedResource::Backing* PrioritizedResourceManager::CreateBacking(
   ResourceProvider::ResourceId resource_id =
       resource_provider->CreateManagedResource(
           size,
+          GL_TEXTURE_2D,
           GL_CLAMP_TO_EDGE,
           ResourceProvider::TextureUsageAny,
           format);

@@ -111,6 +111,20 @@ Float4 PremultipliedColor(SkColor color) {
   return result;
 }
 
+SamplerType SamplerTypeFromTextureTarget(GLenum target) {
+  switch (target) {
+    case GL_TEXTURE_2D:
+      return SamplerType2D;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      return SamplerType2DRect;
+    case GL_TEXTURE_EXTERNAL_OES:
+      return SamplerTypeExternalOES;
+    default:
+      NOTREACHED();
+      return SamplerType2D;
+  }
+}
+
 // Smallest unit that impact anti-aliasing output. We use this to
 // determine when anti-aliasing is unnecessary.
 const float kAntiAliasingEpsilon = 1.0f / 1024.0f;
@@ -813,7 +827,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   // TODO(danakj): use the background_texture and blend the background in with
   // this draw instead of having a separate copy of the background texture.
 
-  scoped_ptr<ResourceProvider::ScopedReadLockGL> contents_resource_lock;
+  scoped_ptr<ResourceProvider::ScopedSamplerGL> contents_resource_lock;
   if (filter_bitmap.getTexture()) {
     GrTexture* texture =
         reinterpret_cast<GrTexture*>(filter_bitmap.getTexture());
@@ -823,8 +837,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     contents_resource_lock = make_scoped_ptr(
         new ResourceProvider::ScopedSamplerGL(resource_provider_,
                                               contents_texture->id(),
-                                              GL_TEXTURE_2D,
                                               GL_LINEAR));
+    DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
+              contents_resource_lock->target());
   }
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
@@ -1001,7 +1016,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                                       tex_scale_x,
                                       -tex_scale_y));
 
-  scoped_ptr<ResourceProvider::ScopedReadLockGL> shader_mask_sampler_lock;
+  scoped_ptr<ResourceProvider::ScopedSamplerGL> shader_mask_sampler_lock;
   if (shader_mask_sampler_location != -1) {
     DCHECK_NE(shader_mask_tex_coord_scale_location, 1);
     DCHECK_NE(shader_mask_tex_coord_offset_location, 1);
@@ -1025,9 +1040,10 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     shader_mask_sampler_lock = make_scoped_ptr(
         new ResourceProvider::ScopedSamplerGL(resource_provider_,
                                               quad->mask_resource_id,
-                                              GL_TEXTURE_2D,
                                               GL_TEXTURE1,
                                               GL_LINEAR));
+    DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
+              shader_mask_sampler_lock->target());
   }
 
   if (shader_edge_location != -1) {
@@ -1336,13 +1352,6 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
       context_, &highp_threshold_cache_, highp_threshold_min_,
       quad->texture_size);
 
-  // Map to normalized texture coordinates.
-  gfx::Size texture_size = quad->texture_size;
-  float fragment_tex_translate_x = clamp_tex_rect.x() / texture_size.width();
-  float fragment_tex_translate_y = clamp_tex_rect.y() / texture_size.height();
-  float fragment_tex_scale_x = clamp_tex_rect.width() / texture_size.width();
-  float fragment_tex_scale_y = clamp_tex_rect.height() / texture_size.height();
-
   gfx::Transform device_transform =
       frame->window_matrix * frame->projection_matrix * quad->quadTransform();
   device_transform.FlattenTo2d();
@@ -1354,28 +1363,58 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
   bool use_aa = settings_->allow_antialiasing && SetupQuadForAntialiasing(
       device_transform, quad, &local_quad, edge);
 
+  bool scaled = (tex_to_geom_scale_x != 1.f || tex_to_geom_scale_y != 1.f);
+  GLenum filter = (use_aa || scaled ||
+                   !quad->quadTransform().IsIdentityOrIntegerTranslation())
+                  ? GL_LINEAR
+                  : GL_NEAREST;
+  ResourceProvider::ScopedSamplerGL quad_resource_lock(
+      resource_provider_, resource_id, filter);
+  SamplerType sampler = SamplerTypeFromTextureTarget(
+      quad_resource_lock.target());
+
+  float fragment_tex_translate_x = clamp_tex_rect.x();
+  float fragment_tex_translate_y = clamp_tex_rect.y();
+  float fragment_tex_scale_x = clamp_tex_rect.width();
+  float fragment_tex_scale_y = clamp_tex_rect.height();
+
+  // Map to normalized texture coordinates.
+  if (sampler != SamplerType2DRect) {
+    gfx::Size texture_size = quad->texture_size;
+    DCHECK(!texture_size.IsEmpty());
+    fragment_tex_translate_x /= texture_size.width();
+    fragment_tex_translate_y /= texture_size.height();
+    fragment_tex_scale_x /= texture_size.width();
+    fragment_tex_scale_y /= texture_size.height();
+  }
+
   TileProgramUniforms uniforms;
   if (use_aa) {
     if (quad->swizzle_contents) {
-      TileUniformLocation(GetTileProgramSwizzleAA(tex_coord_precision),
-                          &uniforms);
+      TileUniformLocation(
+          GetTileProgramSwizzleAA(tex_coord_precision, sampler),
+          &uniforms);
     } else {
-      TileUniformLocation(GetTileProgramAA(tex_coord_precision), &uniforms);
+      TileUniformLocation(GetTileProgramAA(tex_coord_precision, sampler),
+                          &uniforms);
     }
   } else {
     if (quad->ShouldDrawWithBlending()) {
       if (quad->swizzle_contents) {
-        TileUniformLocation(GetTileProgramSwizzle(tex_coord_precision),
-                            &uniforms);
+        TileUniformLocation(
+            GetTileProgramSwizzle(tex_coord_precision, sampler),
+            &uniforms);
       } else {
-        TileUniformLocation(GetTileProgram(tex_coord_precision), &uniforms);
+        TileUniformLocation(GetTileProgram(tex_coord_precision, sampler),
+                            &uniforms);
       }
     } else {
       if (quad->swizzle_contents) {
-        TileUniformLocation(GetTileProgramSwizzleOpaque(tex_coord_precision),
-                            &uniforms);
+        TileUniformLocation(
+            GetTileProgramSwizzleOpaque(tex_coord_precision, sampler),
+            &uniforms);
       } else {
-        TileUniformLocation(GetTileProgramOpaque(tex_coord_precision),
+        TileUniformLocation(GetTileProgramOpaque(tex_coord_precision, sampler),
                             &uniforms);
       }
     }
@@ -1383,13 +1422,6 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
 
   SetUseProgram(uniforms.program);
   GLC(Context(), Context()->uniform1i(uniforms.sampler_location, 0));
-  bool scaled = (tex_to_geom_scale_x != 1.f || tex_to_geom_scale_y != 1.f);
-  GLenum filter = (use_aa || scaled ||
-                   !quad->quadTransform().IsIdentityOrIntegerTranslation())
-                  ? GL_LINEAR
-                  : GL_NEAREST;
-  ResourceProvider::ScopedSamplerGL quad_resource_lock(
-      resource_provider_, resource_id, GL_TEXTURE_2D, filter);
 
   if (use_aa) {
     float viewport[4] = {
@@ -1468,29 +1500,29 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   ResourceProvider::ScopedSamplerGL y_plane_lock(
       resource_provider_,
       quad->y_plane_resource_id,
-      GL_TEXTURE_2D,
       GL_TEXTURE1,
       GL_LINEAR);
+  DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), y_plane_lock.target());
   ResourceProvider::ScopedSamplerGL u_plane_lock(
       resource_provider_,
       quad->u_plane_resource_id,
-      GL_TEXTURE_2D,
       GL_TEXTURE2,
       GL_LINEAR);
+  DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), u_plane_lock.target());
   ResourceProvider::ScopedSamplerGL v_plane_lock(
       resource_provider_,
       quad->v_plane_resource_id,
-      GL_TEXTURE_2D,
       GL_TEXTURE3,
       GL_LINEAR);
+  DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), v_plane_lock.target());
   scoped_ptr<ResourceProvider::ScopedSamplerGL> a_plane_lock;
   if (use_alpha_plane) {
     a_plane_lock.reset(new ResourceProvider::ScopedSamplerGL(
         resource_provider_,
         quad->a_plane_resource_id,
-        GL_TEXTURE_2D,
         GL_TEXTURE4,
         GL_LINEAR));
+    DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), a_plane_lock->target());
   }
 
   int tex_scale_location = -1;
@@ -1666,6 +1698,7 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
 
     on_demand_tile_raster_resource_id_ = resource_provider_->CreateGLTexture(
         quad->texture_size,
+        GL_TEXTURE_2D,
         GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
         GL_CLAMP_TO_EDGE,
         ResourceProvider::TextureUsageAny,
@@ -2526,7 +2559,9 @@ GLRenderer::GetTileCheckerboardProgram() {
   if (!tile_checkerboard_program_.initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::checkerboardProgram::initalize");
     tile_checkerboard_program_.Initialize(
-        output_surface_->context_provider(), TexCoordPrecisionNA);
+        output_surface_->context_provider(),
+        TexCoordPrecisionNA,
+        SamplerTypeNA);
   }
   return &tile_checkerboard_program_;
 }
@@ -2535,7 +2570,9 @@ const GLRenderer::DebugBorderProgram* GLRenderer::GetDebugBorderProgram() {
   if (!debug_border_program_.initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::debugBorderProgram::initialize");
     debug_border_program_.Initialize(
-        output_surface_->context_provider(), TexCoordPrecisionNA);
+        output_surface_->context_provider(),
+        TexCoordPrecisionNA,
+        SamplerTypeNA);
   }
   return &debug_border_program_;
 }
@@ -2544,7 +2581,9 @@ const GLRenderer::SolidColorProgram* GLRenderer::GetSolidColorProgram() {
   if (!solid_color_program_.initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::solidColorProgram::initialize");
     solid_color_program_.Initialize(
-        output_surface_->context_provider(), TexCoordPrecisionNA);
+        output_surface_->context_provider(),
+        TexCoordPrecisionNA,
+        SamplerTypeNA);
   }
   return &solid_color_program_;
 }
@@ -2553,221 +2592,254 @@ const GLRenderer::SolidColorProgramAA* GLRenderer::GetSolidColorProgramAA() {
   if (!solid_color_program_aa_.initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::solidColorProgramAA::initialize");
     solid_color_program_aa_.Initialize(
-        output_surface_->context_provider(), TexCoordPrecisionNA);
+        output_surface_->context_provider(),
+        TexCoordPrecisionNA,
+        SamplerTypeNA);
   }
   return &solid_color_program_aa_;
 }
 
 const GLRenderer::RenderPassProgram* GLRenderer::GetRenderPassProgram(
       TexCoordPrecision precision) {
-  RenderPassProgram* program =
-      (precision == TexCoordPrecisionHigh) ? &render_pass_program_highp_
-                                           : &render_pass_program_;
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  RenderPassProgram* program = &render_pass_program_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::renderPassProgram::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
 
 const GLRenderer::RenderPassProgramAA* GLRenderer::GetRenderPassProgramAA(
       TexCoordPrecision precision) {
-  RenderPassProgramAA* program =
-      (precision == TexCoordPrecisionHigh) ? &render_pass_program_aa_highp_
-                                           : &render_pass_program_aa_;
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  RenderPassProgramAA* program = &render_pass_program_aa_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::renderPassProgramAA::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
 
 const GLRenderer::RenderPassMaskProgram*
 GLRenderer::GetRenderPassMaskProgram(TexCoordPrecision precision) {
-  RenderPassMaskProgram* program =
-      (precision == TexCoordPrecisionHigh) ? &render_pass_mask_program_highp_
-                                           : &render_pass_mask_program_;
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  RenderPassMaskProgram* program = &render_pass_mask_program_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::renderPassMaskProgram::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
 
 const GLRenderer::RenderPassMaskProgramAA*
 GLRenderer::GetRenderPassMaskProgramAA(TexCoordPrecision precision) {
-  RenderPassMaskProgramAA* program =
-      (precision == TexCoordPrecisionHigh) ? &render_pass_mask_program_aa_highp_
-                                           : &render_pass_mask_program_aa_;
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  RenderPassMaskProgramAA* program = &render_pass_mask_program_aa_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::renderPassMaskProgramAA::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
 
 const GLRenderer::RenderPassColorMatrixProgram*
 GLRenderer::GetRenderPassColorMatrixProgram(TexCoordPrecision precision) {
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
   RenderPassColorMatrixProgram* program =
-      (precision == TexCoordPrecisionHigh) ?
-          &render_pass_color_matrix_program_highp_ :
-          &render_pass_color_matrix_program_;
+      &render_pass_color_matrix_program_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::renderPassColorMatrixProgram::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
 
 const GLRenderer::RenderPassColorMatrixProgramAA*
 GLRenderer::GetRenderPassColorMatrixProgramAA(TexCoordPrecision precision) {
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
   RenderPassColorMatrixProgramAA* program =
-      (precision == TexCoordPrecisionHigh) ?
-          &render_pass_color_matrix_program_aa_highp_ :
-          &render_pass_color_matrix_program_aa_;
+      &render_pass_color_matrix_program_aa_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc",
                  "GLRenderer::renderPassColorMatrixProgramAA::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
 
 const GLRenderer::RenderPassMaskColorMatrixProgram*
 GLRenderer::GetRenderPassMaskColorMatrixProgram(TexCoordPrecision precision) {
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
   RenderPassMaskColorMatrixProgram* program =
-      (precision == TexCoordPrecisionHigh) ?
-          &render_pass_mask_color_matrix_program_highp_ :
-          &render_pass_mask_color_matrix_program_;
+      &render_pass_mask_color_matrix_program_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc",
                  "GLRenderer::renderPassMaskColorMatrixProgram::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
 
 const GLRenderer::RenderPassMaskColorMatrixProgramAA*
 GLRenderer::GetRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision) {
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
   RenderPassMaskColorMatrixProgramAA* program =
-      (precision == TexCoordPrecisionHigh) ?
-          &render_pass_mask_color_matrix_program_aa_highp_ :
-          &render_pass_mask_color_matrix_program_aa_;
+      &render_pass_mask_color_matrix_program_aa_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc",
                  "GLRenderer::renderPassMaskColorMatrixProgramAA::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
 
 const GLRenderer::TileProgram* GLRenderer::GetTileProgram(
-    TexCoordPrecision precision) {
-  TileProgram* program =
-      (precision == TexCoordPrecisionHigh) ? &tile_program_highp_
-                                           : &tile_program_;
+    TexCoordPrecision precision, SamplerType sampler) {
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  DCHECK_GE(sampler, 0);
+  DCHECK_LT(sampler, NumSamplerTypes);
+  TileProgram* program = &tile_program_[precision][sampler];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgram::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, sampler);
   }
   return program;
 }
 
 const GLRenderer::TileProgramOpaque* GLRenderer::GetTileProgramOpaque(
-    TexCoordPrecision precision) {
-  TileProgramOpaque* program =
-      (precision == TexCoordPrecisionHigh) ? &tile_program_opaque_highp_
-                                           : &tile_program_opaque_;
-  DCHECK(program);
+    TexCoordPrecision precision, SamplerType sampler) {
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  DCHECK_GE(sampler, 0);
+  DCHECK_LT(sampler, NumSamplerTypes);
+  TileProgramOpaque* program = &tile_program_opaque_[precision][sampler];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramOpaque::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, sampler);
   }
   return program;
 }
 
 const GLRenderer::TileProgramAA* GLRenderer::GetTileProgramAA(
-    TexCoordPrecision precision) {
-  TileProgramAA* program =
-      (precision == TexCoordPrecisionHigh) ? &tile_program_aa_highp_
-                                           : &tile_program_aa_;
+    TexCoordPrecision precision, SamplerType sampler) {
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  DCHECK_GE(sampler, 0);
+  DCHECK_LT(sampler, NumSamplerTypes);
+  TileProgramAA* program = &tile_program_aa_[precision][sampler];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramAA::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, sampler);
   }
   return program;
 }
 
 const GLRenderer::TileProgramSwizzle* GLRenderer::GetTileProgramSwizzle(
-    TexCoordPrecision precision) {
-  TileProgramSwizzle* program =
-      (precision == TexCoordPrecisionHigh) ? &tile_program_swizzle_highp_
-                                           : &tile_program_swizzle_;
+    TexCoordPrecision precision, SamplerType sampler) {
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  DCHECK_GE(sampler, 0);
+  DCHECK_LT(sampler, NumSamplerTypes);
+  TileProgramSwizzle* program = &tile_program_swizzle_[precision][sampler];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzle::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, sampler);
   }
   return program;
 }
 
 const GLRenderer::TileProgramSwizzleOpaque*
-GLRenderer::GetTileProgramSwizzleOpaque(TexCoordPrecision precision) {
+GLRenderer::GetTileProgramSwizzleOpaque(
+    TexCoordPrecision precision, SamplerType sampler) {
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  DCHECK_GE(sampler, 0);
+  DCHECK_LT(sampler, NumSamplerTypes);
   TileProgramSwizzleOpaque* program =
-      (precision == TexCoordPrecisionHigh) ? &tile_program_swizzle_opaque_highp_
-                                           : &tile_program_swizzle_opaque_;
+      &tile_program_swizzle_opaque_[precision][sampler];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzleOpaque::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, sampler);
   }
   return program;
 }
 
 const GLRenderer::TileProgramSwizzleAA* GLRenderer::GetTileProgramSwizzleAA(
-    TexCoordPrecision precision) {
+    TexCoordPrecision precision, SamplerType sampler) {
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  DCHECK_GE(sampler, 0);
+  DCHECK_LT(sampler, NumSamplerTypes);
   TileProgramSwizzleAA* program =
-      (precision == TexCoordPrecisionHigh) ? &tile_program_swizzle_aa_highp_
-                                           : &tile_program_swizzle_aa_;
+      &tile_program_swizzle_aa_[precision][sampler];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzleAA::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, sampler);
   }
   return program;
 }
 
 const GLRenderer::TextureProgram* GLRenderer::GetTextureProgram(
     TexCoordPrecision precision) {
-  TextureProgram* program =
-      (precision == TexCoordPrecisionHigh) ? &texture_program_highp_
-                                           : &texture_program_;
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  TextureProgram* program = &texture_program_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::textureProgram::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
 
 const GLRenderer::NonPremultipliedTextureProgram*
     GLRenderer::GetNonPremultipliedTextureProgram(TexCoordPrecision precision) {
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
   NonPremultipliedTextureProgram* program =
-      (precision == TexCoordPrecisionHigh) ?
-         &nonpremultiplied_texture_program_highp_ :
-         &nonpremultiplied_texture_program_;
+      &nonpremultiplied_texture_program_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc",
                  "GLRenderer::NonPremultipliedTextureProgram::Initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
 
 const GLRenderer::TextureBackgroundProgram*
 GLRenderer::GetTextureBackgroundProgram(TexCoordPrecision precision) {
-  TextureBackgroundProgram* program =
-      (precision == TexCoordPrecisionHigh) ? &texture_background_program_highp_
-                                           : &texture_background_program_;
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  TextureBackgroundProgram* program = &texture_background_program_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::textureProgram::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
@@ -2775,50 +2847,54 @@ GLRenderer::GetTextureBackgroundProgram(TexCoordPrecision precision) {
 const GLRenderer::NonPremultipliedTextureBackgroundProgram*
 GLRenderer::GetNonPremultipliedTextureBackgroundProgram(
     TexCoordPrecision precision) {
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
   NonPremultipliedTextureBackgroundProgram* program =
-      (precision == TexCoordPrecisionHigh) ?
-         &nonpremultiplied_texture_background_program_highp_ :
-         &nonpremultiplied_texture_background_program_;
+      &nonpremultiplied_texture_background_program_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc",
                  "GLRenderer::NonPremultipliedTextureProgram::Initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
 
-const GLRenderer::TextureIOSurfaceProgram*
+const GLRenderer::TextureProgram*
 GLRenderer::GetTextureIOSurfaceProgram(TexCoordPrecision precision) {
-  TextureIOSurfaceProgram* program =
-      (precision == TexCoordPrecisionHigh) ? &texture_io_surface_program_highp_
-                                           : &texture_io_surface_program_;
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  TextureProgram* program = &texture_io_surface_program_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::textureIOSurfaceProgram::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2DRect);
   }
   return program;
 }
 
 const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram(
     TexCoordPrecision precision) {
-  VideoYUVProgram* program =
-      (precision == TexCoordPrecisionHigh) ? &video_yuv_program_highp_
-                                           : &video_yuv_program_;
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  VideoYUVProgram* program = &video_yuv_program_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::videoYUVProgram::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
 
 const GLRenderer::VideoYUVAProgram* GLRenderer::GetVideoYUVAProgram(
     TexCoordPrecision precision) {
-  VideoYUVAProgram* program =
-      (precision == TexCoordPrecisionHigh) ? &video_yuva_program_highp_
-                                           : &video_yuva_program_;
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  VideoYUVAProgram* program = &video_yuva_program_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::videoYUVAProgram::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(), precision, SamplerType2D);
   }
   return program;
 }
@@ -2827,12 +2903,16 @@ const GLRenderer::VideoStreamTextureProgram*
 GLRenderer::GetVideoStreamTextureProgram(TexCoordPrecision precision) {
   if (!Capabilities().using_egl_image)
     return NULL;
-  VideoStreamTextureProgram* program = (precision == TexCoordPrecisionHigh)
-      ? &video_stream_texture_program_highp_
-      : &video_stream_texture_program_;
+  DCHECK_GE(precision, 0);
+  DCHECK_LT(precision, NumTexCoordPrecisions);
+  VideoStreamTextureProgram* program =
+      &video_stream_texture_program_[precision];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::streamTextureProgram::initialize");
-    program->Initialize(output_surface_->context_provider(), precision);
+    program->Initialize(
+        output_surface_->context_provider(),
+        precision,
+        SamplerTypeExternalOES);
   }
   return program;
 }
@@ -2842,58 +2922,37 @@ void GLRenderer::CleanupSharedObjects() {
 
   shared_geometry_.reset();
 
-  tile_program_.Cleanup(context_);
-  tile_program_opaque_.Cleanup(context_);
-  tile_program_swizzle_.Cleanup(context_);
-  tile_program_swizzle_opaque_.Cleanup(context_);
-  tile_program_aa_.Cleanup(context_);
-  tile_program_swizzle_aa_.Cleanup(context_);
+  for (int i = 0; i < NumTexCoordPrecisions; ++i) {
+    for (int j = 0; j < NumSamplerTypes; ++j) {
+      tile_program_[i][j].Cleanup(context_);
+      tile_program_opaque_[i][j].Cleanup(context_);
+      tile_program_swizzle_[i][j].Cleanup(context_);
+      tile_program_swizzle_opaque_[i][j].Cleanup(context_);
+      tile_program_aa_[i][j].Cleanup(context_);
+      tile_program_swizzle_aa_[i][j].Cleanup(context_);
+    }
+
+    render_pass_mask_program_[i].Cleanup(context_);
+    render_pass_program_[i].Cleanup(context_);
+    render_pass_mask_program_aa_[i].Cleanup(context_);
+    render_pass_program_aa_[i].Cleanup(context_);
+    render_pass_color_matrix_program_[i].Cleanup(context_);
+    render_pass_mask_color_matrix_program_aa_[i].Cleanup(context_);
+    render_pass_color_matrix_program_aa_[i].Cleanup(context_);
+    render_pass_mask_color_matrix_program_[i].Cleanup(context_);
+
+    texture_program_[i].Cleanup(context_);
+    nonpremultiplied_texture_program_[i].Cleanup(context_);
+    texture_background_program_[i].Cleanup(context_);
+    nonpremultiplied_texture_background_program_[i].Cleanup(context_);
+    texture_io_surface_program_[i].Cleanup(context_);
+
+    video_yuv_program_[i].Cleanup(context_);
+    video_yuva_program_[i].Cleanup(context_);
+    video_stream_texture_program_[i].Cleanup(context_);
+  }
+
   tile_checkerboard_program_.Cleanup(context_);
-
-  tile_program_highp_.Cleanup(context_);
-  tile_program_opaque_highp_.Cleanup(context_);
-  tile_program_swizzle_highp_.Cleanup(context_);
-  tile_program_swizzle_opaque_highp_.Cleanup(context_);
-  tile_program_aa_highp_.Cleanup(context_);
-  tile_program_swizzle_aa_highp_.Cleanup(context_);
-
-  render_pass_mask_program_.Cleanup(context_);
-  render_pass_program_.Cleanup(context_);
-  render_pass_mask_program_aa_.Cleanup(context_);
-  render_pass_program_aa_.Cleanup(context_);
-  render_pass_color_matrix_program_.Cleanup(context_);
-  render_pass_mask_color_matrix_program_aa_.Cleanup(context_);
-  render_pass_color_matrix_program_aa_.Cleanup(context_);
-  render_pass_mask_color_matrix_program_.Cleanup(context_);
-
-  render_pass_mask_program_highp_.Cleanup(context_);
-  render_pass_program_highp_.Cleanup(context_);
-  render_pass_mask_program_aa_highp_.Cleanup(context_);
-  render_pass_program_aa_highp_.Cleanup(context_);
-  render_pass_color_matrix_program_highp_.Cleanup(context_);
-  render_pass_mask_color_matrix_program_aa_highp_.Cleanup(context_);
-  render_pass_color_matrix_program_aa_highp_.Cleanup(context_);
-  render_pass_mask_color_matrix_program_highp_.Cleanup(context_);
-
-  texture_program_.Cleanup(context_);
-  nonpremultiplied_texture_program_.Cleanup(context_);
-  texture_background_program_.Cleanup(context_);
-  nonpremultiplied_texture_background_program_.Cleanup(context_);
-  texture_io_surface_program_.Cleanup(context_);
-
-  texture_program_highp_.Cleanup(context_);
-  nonpremultiplied_texture_program_highp_.Cleanup(context_);
-  texture_background_program_highp_.Cleanup(context_);
-  nonpremultiplied_texture_background_program_highp_.Cleanup(context_);
-  texture_io_surface_program_highp_.Cleanup(context_);
-
-  video_yuv_program_.Cleanup(context_);
-  video_yuva_program_.Cleanup(context_);
-  video_stream_texture_program_.Cleanup(context_);
-
-  video_yuv_program_highp_.Cleanup(context_);
-  video_yuva_program_highp_.Cleanup(context_);
-  video_stream_texture_program_highp_.Cleanup(context_);
 
   debug_border_program_.Cleanup(context_);
   solid_color_program_.Cleanup(context_);

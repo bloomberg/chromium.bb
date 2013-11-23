@@ -2132,7 +2132,11 @@ TEST_P(ResourceProviderTest, ManagedResource) {
 
   // Check that the texture gets created with the right sampler settings.
   ResourceProvider::ResourceId id = resource_provider->CreateManagedResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size,
+      GL_TEXTURE_2D,
+      GL_CLAMP_TO_EDGE,
+      ResourceProvider::TextureUsageAny,
+      format);
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
   EXPECT_CALL(*context,
               texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -2180,6 +2184,7 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
     // Check that the texture gets created with the right sampler settings.
     ResourceProvider::ResourceId id =
         resource_provider->CreateGLTexture(size,
+                                           GL_TEXTURE_2D,
                                            texture_pool,
                                            wrap_mode,
                                            ResourceProvider::TextureUsageAny,

@@ -14,20 +14,26 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
   virtual ~ImageRasterWorkerPool();
 
   static scoped_ptr<RasterWorkerPool> Create(
-      ResourceProvider* resource_provider, size_t num_threads) {
+      ResourceProvider* resource_provider,
+      size_t num_threads,
+      GLenum texture_target) {
     return make_scoped_ptr<RasterWorkerPool>(
-        new ImageRasterWorkerPool(resource_provider, num_threads));
+        new ImageRasterWorkerPool(resource_provider,
+                                  num_threads,
+                                  texture_target));
   }
 
   // Overridden from RasterWorkerPool:
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE;
+  virtual GLenum GetResourceTarget() const OVERRIDE;
   virtual ResourceFormat GetResourceFormat() const OVERRIDE;
   virtual void OnRasterTasksFinished() OVERRIDE;
   virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE;
 
  private:
   ImageRasterWorkerPool(ResourceProvider* resource_provider,
-                        size_t num_threads);
+                        size_t num_threads,
+                        GLenum texture_target);
 
   void OnRasterTaskCompleted(
       scoped_refptr<internal::RasterWorkerPoolTask> task, bool was_canceled);
@@ -42,6 +48,8 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
       internal::GraphNode* raster_required_for_activation_finished_node,
       internal::GraphNode* raster_finished_node,
       TaskGraph* graph);
+
+  const GLenum texture_target_;
 
   TaskMap image_tasks_;
 

@@ -56,7 +56,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       bool use_map_image,
       size_t max_transfer_buffer_usage_bytes,
-      size_t max_raster_usage_bytes);
+      size_t max_raster_usage_bytes,
+      GLenum map_image_texture_target);
   virtual ~TileManager();
 
   void ManageTiles(const GlobalStateThatImpactsTilePriority& state);
@@ -93,7 +94,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
           mts.tile_versions[HIGH_QUALITY_NO_LCD_RASTER_MODE];
 
       tile_version.resource_ = resource_pool_->AcquireResource(
-          gfx::Size(1, 1), resource_provider->best_texture_format());
+          gfx::Size(1, 1));
 
       bytes_releasable_ += BytesConsumedIfAllocated(tiles[i]);
       ++resources_releasable_;

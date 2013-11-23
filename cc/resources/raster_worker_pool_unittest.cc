@@ -104,7 +104,7 @@ class RasterWorkerPoolTest : public testing::Test,
   void RunTest(bool use_map_image) {
     if (use_map_image) {
       raster_worker_pool_ = ImageRasterWorkerPool::Create(
-          resource_provider(), 1);
+          resource_provider(), 1, GL_TEXTURE_2D);
     } else {
       raster_worker_pool_ =
           PixelBufferRasterWorkerPool::Create(

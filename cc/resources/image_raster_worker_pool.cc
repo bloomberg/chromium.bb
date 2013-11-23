@@ -57,8 +57,11 @@ class ImageWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 }  // namespace
 
 ImageRasterWorkerPool::ImageRasterWorkerPool(
-    ResourceProvider* resource_provider, size_t num_threads)
+    ResourceProvider* resource_provider,
+    size_t num_threads,
+    GLenum texture_target)
     : RasterWorkerPool(resource_provider, num_threads),
+      texture_target_(texture_target),
       raster_tasks_pending_(false),
       raster_tasks_required_for_activation_pending_(false) {
 }
@@ -152,6 +155,10 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   TRACE_EVENT_ASYNC_STEP_INTO1(
       "cc", "ScheduledTasks", this, "rasterizing",
       "state", TracedValue::FromValue(StateAsValue().release()));
+}
+
+GLenum ImageRasterWorkerPool::GetResourceTarget() const {
+  return texture_target_;
 }
 
 ResourceFormat ImageRasterWorkerPool::GetResourceFormat() const {

@@ -10,9 +10,11 @@ namespace cc {
 
 ResourcePool::Resource::Resource(cc::ResourceProvider* resource_provider,
                                  gfx::Size size,
+                                 GLenum target,
                                  ResourceFormat format)
     : cc::Resource(resource_provider->CreateManagedResource(
                        size,
+                       target,
                        GL_CLAMP_TO_EDGE,
                        ResourceProvider::TextureUsageAny,
                        format),
@@ -28,8 +30,12 @@ ResourcePool::Resource::~Resource() {
   resource_provider_->DeleteResource(id());
 }
 
-ResourcePool::ResourcePool(ResourceProvider* resource_provider)
+ResourcePool::ResourcePool(ResourceProvider* resource_provider,
+                           GLenum target,
+                           ResourceFormat format)
     : resource_provider_(resource_provider),
+      target_(target),
+      format_(format),
       max_memory_usage_bytes_(0),
       max_unused_memory_usage_bytes_(0),
       max_resource_count_(0),
@@ -52,15 +58,13 @@ ResourcePool::~ResourcePool() {
 }
 
 scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
-    gfx::Size size, ResourceFormat format) {
+    gfx::Size size) {
   for (ResourceList::iterator it = unused_resources_.begin();
        it != unused_resources_.end(); ++it) {
     Resource* resource = *it;
     DCHECK(resource_provider_->CanLockForWrite(resource->id()));
 
     if (resource->size() != size)
-      continue;
-    if (resource->format() != format)
       continue;
 
     unused_resources_.erase(it);
@@ -69,7 +73,8 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
   }
 
   // Create new resource.
-  Resource* resource = new Resource(resource_provider_, size, format);
+  Resource* resource = new Resource(
+      resource_provider_, size, target_, format_);
 
   // Extend all read locks on all resources until the resource is
   // finished being used, such that we know when resources are

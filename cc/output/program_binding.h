@@ -53,7 +53,8 @@ class ProgramBinding : public ProgramBindingBase {
   ProgramBinding() {}
 
   void Initialize(ContextProvider* context_provider,
-                  TexCoordPrecision precision) {
+                  TexCoordPrecision precision,
+                  SamplerType sampler) {
     DCHECK(context_provider);
     DCHECK(!initialized_);
 
@@ -63,7 +64,7 @@ class ProgramBinding : public ProgramBindingBase {
     if (!ProgramBindingBase::Init(
             context_provider->Context3d(),
             vertex_shader_.GetShaderString(),
-            fragment_shader_.GetShaderString(precision))) {
+            fragment_shader_.GetShaderString(precision, sampler))) {
       DCHECK(context_provider->IsContextLost());
       return;
     }

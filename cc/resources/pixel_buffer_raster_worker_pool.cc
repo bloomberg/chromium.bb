@@ -217,6 +217,10 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
       "state", TracedValue::FromValue(StateAsValue().release()));
 }
 
+GLenum PixelBufferRasterWorkerPool::GetResourceTarget() const {
+  return GL_TEXTURE_2D;
+}
+
 ResourceFormat PixelBufferRasterWorkerPool::GetResourceFormat() const {
   return resource_provider()->memory_efficient_texture_format();
 }

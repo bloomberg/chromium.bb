@@ -56,6 +56,7 @@
 #include "cc/trees/quad_culler.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -101,6 +102,22 @@ size_t GetMaxRasterTasksUsageBytes(cc::ContextProvider* context_provider) {
   // transfer buffers we should still limit raster to something similar, to
   // preserve caching behavior (and limit memory waste when priorities change).
   return GetMaxTransferBufferUsageBytes(context_provider);
+}
+
+GLenum GetMapImageTextureTarget(cc::ContextProvider* context_provider) {
+  if (!context_provider)
+    return GL_TEXTURE_2D;
+
+  // TODO(reveman): Determine if GL_TEXTURE_EXTERNAL_OES works well on
+  // Android before we enable this. crbug.com/322780
+#if !defined(OS_ANDROID)
+  if (context_provider->ContextCapabilities().egl_image_external)
+    return GL_TEXTURE_EXTERNAL_OES;
+  if (context_provider->ContextCapabilities().texture_rectangle)
+    return GL_TEXTURE_RECTANGLE_ARB;
+#endif
+
+  return GL_TEXTURE_2D;
 }
 
 }  // namespace
@@ -1660,7 +1677,8 @@ void LayerTreeHostImpl::CreateAndSetTileManager(
                           rendering_stats_instrumentation_,
                           using_map_image,
                           GetMaxTransferBufferUsageBytes(context_provider),
-                          GetMaxRasterTasksUsageBytes(context_provider));
+                          GetMaxRasterTasksUsageBytes(context_provider),
+                          GetMapImageTextureTarget(context_provider));
 
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
   need_to_update_visible_tiles_before_draw_ = false;

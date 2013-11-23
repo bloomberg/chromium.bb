@@ -76,12 +76,6 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
   }
 
   void TestShadersWithTexCoordPrecision(TexCoordPrecision precision) {
-    EXPECT_PROGRAM_VALID(renderer()->GetTileProgram(precision));
-    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramOpaque(precision));
-    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramAA(precision));
-    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramSwizzle(precision));
-    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramSwizzleOpaque(precision));
-    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramSwizzleAA(precision));
     EXPECT_PROGRAM_VALID(renderer()->GetRenderPassProgram(precision));
     EXPECT_PROGRAM_VALID(renderer()->GetRenderPassProgramAA(precision));
     EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskProgram(precision));
@@ -108,6 +102,24 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
       EXPECT_PROGRAM_VALID(renderer()->GetVideoStreamTextureProgram(precision));
     else
       EXPECT_FALSE(renderer()->GetVideoStreamTextureProgram(precision));
+    TestShadersWithSamplerType(precision, SamplerType2D);
+    TestShadersWithSamplerType(precision, SamplerType2DRect);
+    // This is unlikely to be ever true in tests due to usage of osmesa.
+    if (renderer()->Capabilities().using_egl_image)
+      TestShadersWithSamplerType(precision, SamplerTypeExternalOES);
+  }
+
+  void TestShadersWithSamplerType(
+      TexCoordPrecision precision, SamplerType sampler) {
+    EXPECT_PROGRAM_VALID(renderer()->GetTileProgram(precision, sampler));
+    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramOpaque(precision, sampler));
+    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramAA(precision, sampler));
+    EXPECT_PROGRAM_VALID(
+        renderer()->GetTileProgramSwizzle(precision, sampler));
+    EXPECT_PROGRAM_VALID(
+        renderer()->GetTileProgramSwizzleOpaque(precision, sampler));
+    EXPECT_PROGRAM_VALID(
+        renderer()->GetTileProgramSwizzleAA(precision, sampler));
   }
 };
 
@@ -261,51 +273,59 @@ class GLRendererShaderTest : public testing::Test {
     renderer_->Initialize();
   }
 
-  void TestRenderPassProgram() {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_program_);
-    EXPECT_EQ(renderer_->render_pass_program_.program(),
+  void TestRenderPassProgram(TexCoordPrecision precision) {
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_program_[precision]);
+    EXPECT_EQ(renderer_->render_pass_program_[precision].program(),
               renderer_->program_shadow_);
   }
 
-  void TestRenderPassColorMatrixProgram() {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_color_matrix_program_);
-    EXPECT_EQ(renderer_->render_pass_color_matrix_program_.program(),
+  void TestRenderPassColorMatrixProgram(TexCoordPrecision precision) {
+    EXPECT_PROGRAM_VALID(
+        &renderer_->render_pass_color_matrix_program_[precision]);
+    EXPECT_EQ(
+        renderer_->render_pass_color_matrix_program_[precision].program(),
+        renderer_->program_shadow_);
+  }
+
+  void TestRenderPassMaskProgram(TexCoordPrecision precision) {
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_program_[precision]);
+    EXPECT_EQ(renderer_->render_pass_mask_program_[precision].program(),
               renderer_->program_shadow_);
   }
 
-  void TestRenderPassMaskProgram() {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_program_);
-    EXPECT_EQ(renderer_->render_pass_mask_program_.program(),
+  void TestRenderPassMaskColorMatrixProgram(TexCoordPrecision precision) {
+    EXPECT_PROGRAM_VALID(
+        &renderer_->render_pass_mask_color_matrix_program_[precision]);
+    EXPECT_EQ(renderer_->
+              render_pass_mask_color_matrix_program_[precision].program(),
               renderer_->program_shadow_);
   }
 
-  void TestRenderPassMaskColorMatrixProgram() {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_color_matrix_program_);
-    EXPECT_EQ(renderer_->render_pass_mask_color_matrix_program_.program(),
+  void TestRenderPassProgramAA(TexCoordPrecision precision) {
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_program_aa_[precision]);
+    EXPECT_EQ(renderer_->render_pass_program_aa_[precision].program(),
               renderer_->program_shadow_);
   }
 
-  void TestRenderPassProgramAA() {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_program_aa_);
-    EXPECT_EQ(renderer_->render_pass_program_aa_.program(),
+  void TestRenderPassColorMatrixProgramAA(TexCoordPrecision precision) {
+    EXPECT_PROGRAM_VALID(
+        &renderer_->render_pass_color_matrix_program_aa_[precision]);
+    EXPECT_EQ(renderer_->
+              render_pass_color_matrix_program_aa_[precision].program(),
               renderer_->program_shadow_);
   }
 
-  void TestRenderPassColorMatrixProgramAA() {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_color_matrix_program_aa_);
-    EXPECT_EQ(renderer_->render_pass_color_matrix_program_aa_.program(),
+  void TestRenderPassMaskProgramAA(TexCoordPrecision precision) {
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_program_aa_[precision]);
+    EXPECT_EQ(renderer_->render_pass_mask_program_aa_[precision].program(),
               renderer_->program_shadow_);
   }
 
-  void TestRenderPassMaskProgramAA() {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_program_aa_);
-    EXPECT_EQ(renderer_->render_pass_mask_program_aa_.program(),
-              renderer_->program_shadow_);
-  }
-
-  void TestRenderPassMaskColorMatrixProgramAA() {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_color_matrix_program_aa_);
-    EXPECT_EQ(renderer_->render_pass_mask_color_matrix_program_aa_.program(),
+  void TestRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision) {
+    EXPECT_PROGRAM_VALID(
+        &renderer_->render_pass_mask_color_matrix_program_aa_[precision]);
+    EXPECT_EQ(renderer_->
+              render_pass_mask_color_matrix_program_aa_[precision].program(),
               renderer_->program_shadow_);
   }
 
@@ -1367,7 +1387,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
       *renderer_client_.render_passes_in_draw_order());
   renderer_->DrawFrame(
       renderer_client_.render_passes_in_draw_order(), NULL, 1.f, true, false);
-  TestRenderPassProgram();
+  TestRenderPassProgram(TexCoordPrecisionMedium);
 
   // RenderPassColorMatrixProgram
   render_passes->clear();
@@ -1384,7 +1404,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
       *renderer_client_.render_passes_in_draw_order());
   renderer_->DrawFrame(
       renderer_client_.render_passes_in_draw_order(), NULL, 1.f, true, false);
-  TestRenderPassColorMatrixProgram();
+  TestRenderPassColorMatrixProgram(TexCoordPrecisionMedium);
 
   // RenderPassMaskProgram
   render_passes->clear();
@@ -1405,7 +1425,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
       *renderer_client_.render_passes_in_draw_order());
   renderer_->DrawFrame(
       renderer_client_.render_passes_in_draw_order(), NULL, 1.f, true, false);
-  TestRenderPassMaskProgram();
+  TestRenderPassMaskProgram(TexCoordPrecisionMedium);
 
   // RenderPassMaskColorMatrixProgram
   render_passes->clear();
@@ -1422,7 +1442,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
       *renderer_client_.render_passes_in_draw_order());
   renderer_->DrawFrame(
       renderer_client_.render_passes_in_draw_order(), NULL, 1.f, true, false);
-  TestRenderPassMaskColorMatrixProgram();
+  TestRenderPassMaskColorMatrixProgram(TexCoordPrecisionMedium);
 
   // RenderPassProgramAA
   render_passes->clear();
@@ -1443,7 +1463,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
       *renderer_client_.render_passes_in_draw_order());
   renderer_->DrawFrame(
       renderer_client_.render_passes_in_draw_order(), NULL, 1.f, true, false);
-  TestRenderPassProgramAA();
+  TestRenderPassProgramAA(TexCoordPrecisionMedium);
 
   // RenderPassColorMatrixProgramAA
   render_passes->clear();
@@ -1460,7 +1480,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
       *renderer_client_.render_passes_in_draw_order());
   renderer_->DrawFrame(
       renderer_client_.render_passes_in_draw_order(), NULL, 1.f, true, false);
-  TestRenderPassColorMatrixProgramAA();
+  TestRenderPassColorMatrixProgramAA(TexCoordPrecisionMedium);
 
   // RenderPassMaskProgramAA
   render_passes->clear();
@@ -1478,7 +1498,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
       *renderer_client_.render_passes_in_draw_order());
   renderer_->DrawFrame(
       renderer_client_.render_passes_in_draw_order(), NULL, 1.f, true, false);
-  TestRenderPassMaskProgramAA();
+  TestRenderPassMaskProgramAA(TexCoordPrecisionMedium);
 
   // RenderPassMaskColorMatrixProgramAA
   render_passes->clear();
@@ -1495,7 +1515,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
       *renderer_client_.render_passes_in_draw_order());
   renderer_->DrawFrame(
       renderer_client_.render_passes_in_draw_order(), NULL, 1.f, true, false);
-  TestRenderPassMaskColorMatrixProgramAA();
+  TestRenderPassMaskColorMatrixProgramAA(TexCoordPrecisionMedium);
 }
 
 // At this time, the AA code path cannot be taken if the surface's rect would
@@ -1547,7 +1567,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
 
   // If use_aa incorrectly ignores clipping, it will use the
   // RenderPassProgramAA shader instead of the RenderPassProgram.
-  TestRenderPassProgram();
+  TestRenderPassProgram(TexCoordPrecisionMedium);
 }
 
 TEST_F(GLRendererShaderTest, DrawSolidColorShader) {

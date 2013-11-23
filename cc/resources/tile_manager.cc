@@ -172,13 +172,16 @@ scoped_ptr<TileManager> TileManager::Create(
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     bool use_map_image,
     size_t max_transfer_buffer_usage_bytes,
-    size_t max_raster_usage_bytes) {
+    size_t max_raster_usage_bytes,
+    GLenum map_image_texture_target) {
   return make_scoped_ptr(
       new TileManager(client,
                       resource_provider,
                       use_map_image ?
                       ImageRasterWorkerPool::Create(
-                          resource_provider, num_raster_threads) :
+                          resource_provider,
+                          num_raster_threads,
+                          map_image_texture_target) :
                       PixelBufferRasterWorkerPool::Create(
                           resource_provider,
                           num_raster_threads,
@@ -196,7 +199,10 @@ TileManager::TileManager(
     size_t max_raster_usage_bytes,
     RenderingStatsInstrumentation* rendering_stats_instrumentation)
     : client_(client),
-      resource_pool_(ResourcePool::Create(resource_provider)),
+      resource_pool_(ResourcePool::Create(
+                         resource_provider,
+                         raster_worker_pool->GetResourceTarget(),
+                         raster_worker_pool->GetResourceFormat())),
       raster_worker_pool_(raster_worker_pool.Pass()),
       prioritized_tiles_dirty_(false),
       all_tiles_that_need_to_be_rasterized_have_memory_(true),
@@ -844,9 +850,7 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
   ManagedTileState& mts = tile->managed_state();
 
   scoped_ptr<ResourcePool::Resource> resource =
-      resource_pool_->AcquireResource(
-          tile->tile_size_.size(),
-          raster_worker_pool_->GetResourceFormat());
+      resource_pool_->AcquireResource(tile->tile_size_.size());
   const Resource* const_resource = resource.get();
 
   // Create and queue all image decode tasks that this tile depends on.

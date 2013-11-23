@@ -33,6 +33,9 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
       completed_tasks_.pop_front();
     }
   }
+  virtual GLenum GetResourceTarget() const OVERRIDE {
+    return GL_TEXTURE_2D;
+  }
   virtual ResourceFormat GetResourceFormat() const OVERRIDE {
     return RGBA_8888;
   }

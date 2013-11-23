@@ -21,9 +21,18 @@ namespace blink { class WebGraphicsContext3D; }
 namespace cc {
 
 enum TexCoordPrecision {
-  TexCoordPrecisionNA,
-  TexCoordPrecisionMedium,
-  TexCoordPrecisionHigh,
+  TexCoordPrecisionNA = 0,
+  TexCoordPrecisionMedium = 1,
+  TexCoordPrecisionHigh = 2,
+  NumTexCoordPrecisions = 3
+};
+
+enum SamplerType {
+  SamplerTypeNA = 0,
+  SamplerType2D = 1,
+  SamplerType2DRect = 2,
+  SamplerTypeExternalOES = 3,
+  NumSamplerTypes = 4
 };
 
 // Note: The highp_threshold_cache must be provided by the caller to make
@@ -340,77 +349,67 @@ class FragmentTexBackgroundBinding {
 
 class FragmentShaderRGBATexVaryingAlpha : public FragmentTexOpaqueBinding {
  public:
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 };
 
 class FragmentShaderRGBATexPremultiplyAlpha : public FragmentTexOpaqueBinding {
  public:
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 };
 
 class FragmentShaderTexBackgroundVaryingAlpha
     : public FragmentTexBackgroundBinding {
  public:
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 };
 
 class FragmentShaderTexBackgroundPremultiplyAlpha
     : public FragmentTexBackgroundBinding {
  public:
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 };
 
 class FragmentShaderRGBATexAlpha : public FragmentTexAlphaBinding {
  public:
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 };
 
 class FragmentShaderRGBATexColorMatrixAlpha
     : public FragmentTexColorMatrixAlphaBinding {
  public:
-    std::string GetShaderString(TexCoordPrecision precision) const;
-};
-
-class FragmentShaderRGBATexRectVaryingAlpha : public FragmentTexOpaqueBinding {
- public:
-  std::string GetShaderString(TexCoordPrecision precision) const;
+    std::string GetShaderString(
+        TexCoordPrecision precision, SamplerType sampler) const;
 };
 
 class FragmentShaderRGBATexOpaque : public FragmentTexOpaqueBinding {
  public:
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 };
 
 class FragmentShaderRGBATex : public FragmentTexOpaqueBinding {
  public:
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 };
 
 // Swizzles the red and blue component of sampled texel with alpha.
 class FragmentShaderRGBATexSwizzleAlpha : public FragmentTexAlphaBinding {
  public:
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 };
 
 // Swizzles the red and blue component of sampled texel without alpha.
 class FragmentShaderRGBATexSwizzleOpaque : public FragmentTexOpaqueBinding {
  public:
-  std::string GetShaderString(TexCoordPrecision precision) const;
-};
-
-// Fragment shader for external textures.
-class FragmentShaderOESImageExternal : public FragmentTexAlphaBinding {
- public:
-  FragmentShaderOESImageExternal();
-
-  std::string GetShaderString(TexCoordPrecision precision) const;
-  void Init(blink::WebGraphicsContext3D* context,
-            unsigned program,
-            int* base_uniform_index);
- private:
-  int sampler_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(FragmentShaderOESImageExternal);
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 };
 
 class FragmentShaderRGBATexAlphaAA {
@@ -420,7 +419,8 @@ class FragmentShaderRGBATexAlphaAA {
   void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 
   int alpha_location() const { return alpha_location_; }
   int sampler_location() const { return sampler_location_; }
@@ -456,20 +456,23 @@ class FragmentTexClampAlphaAABinding {
 class FragmentShaderRGBATexClampAlphaAA
     : public FragmentTexClampAlphaAABinding {
  public:
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 };
 
 // Swizzles the red and blue component of sampled texel.
 class FragmentShaderRGBATexClampSwizzleAlphaAA
     : public FragmentTexClampAlphaAABinding {
  public:
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 };
 
 class FragmentShaderRGBATexAlphaMask {
  public:
   FragmentShaderRGBATexAlphaMask();
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 
   void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
@@ -497,7 +500,8 @@ class FragmentShaderRGBATexAlphaMask {
 class FragmentShaderRGBATexAlphaMaskAA {
  public:
   FragmentShaderRGBATexAlphaMaskAA();
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 
   void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
@@ -525,7 +529,8 @@ class FragmentShaderRGBATexAlphaMaskAA {
 class FragmentShaderRGBATexAlphaMaskColorMatrixAA {
  public:
   FragmentShaderRGBATexAlphaMaskColorMatrixAA();
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 
   void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
@@ -555,7 +560,8 @@ class FragmentShaderRGBATexAlphaMaskColorMatrixAA {
 class FragmentShaderRGBATexAlphaColorMatrixAA {
  public:
   FragmentShaderRGBATexAlphaColorMatrixAA();
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 
   void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
@@ -575,7 +581,8 @@ class FragmentShaderRGBATexAlphaColorMatrixAA {
 class FragmentShaderRGBATexAlphaMaskColorMatrix {
  public:
   FragmentShaderRGBATexAlphaMaskColorMatrix();
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 
   void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
@@ -605,7 +612,8 @@ class FragmentShaderRGBATexAlphaMaskColorMatrix {
 class FragmentShaderYUVVideo {
  public:
   FragmentShaderYUVVideo();
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 
   void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
@@ -632,7 +640,8 @@ class FragmentShaderYUVVideo {
 class FragmentShaderYUVAVideo {
  public:
   FragmentShaderYUVAVideo();
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 
   void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
@@ -661,7 +670,8 @@ class FragmentShaderYUVAVideo {
 class FragmentShaderColor {
  public:
   FragmentShaderColor();
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 
   void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
@@ -677,7 +687,8 @@ class FragmentShaderColor {
 class FragmentShaderColorAA {
  public:
   FragmentShaderColorAA();
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 
   void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
@@ -693,7 +704,8 @@ class FragmentShaderColorAA {
 class FragmentShaderCheckerboard {
  public:
   FragmentShaderCheckerboard();
-  std::string GetShaderString(TexCoordPrecision precision) const;
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
 
   void Init(blink::WebGraphicsContext3D* context,
             unsigned program,

@@ -339,8 +339,12 @@ ResourceProvider::ResourceId ResourceProvider::CreateResource(
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case GLTexture:
-      return CreateGLTexture(
-          size, GL_TEXTURE_POOL_UNMANAGED_CHROMIUM, wrap_mode, hint, format);
+      return CreateGLTexture(size,
+                             GL_TEXTURE_2D,
+                             GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
+                             wrap_mode,
+                             hint,
+                             format);
     case Bitmap:
       DCHECK_EQ(RGBA_8888, format);
       return CreateBitmap(size, wrap_mode);
@@ -354,14 +358,19 @@ ResourceProvider::ResourceId ResourceProvider::CreateResource(
 
 ResourceProvider::ResourceId ResourceProvider::CreateManagedResource(
     gfx::Size size,
+    GLenum target,
     GLint wrap_mode,
     TextureUsageHint hint,
     ResourceFormat format) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case GLTexture:
-      return CreateGLTexture(
-          size, GL_TEXTURE_POOL_MANAGED_CHROMIUM, wrap_mode, hint, format);
+      return CreateGLTexture(size,
+                             target,
+                             GL_TEXTURE_POOL_MANAGED_CHROMIUM,
+                             wrap_mode,
+                             hint,
+                             format);
     case Bitmap:
       DCHECK_EQ(RGBA_8888, format);
       return CreateBitmap(size, wrap_mode);
@@ -375,6 +384,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateManagedResource(
 
 ResourceProvider::ResourceId ResourceProvider::CreateGLTexture(
     gfx::Size size,
+    GLenum target,
     GLenum texture_pool,
     GLint wrap_mode,
     TextureUsageHint hint,
@@ -385,7 +395,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateGLTexture(
 
   ResourceId id = next_id_++;
   Resource resource(
-      0, size, GL_TEXTURE_2D, GL_LINEAR, texture_pool, wrap_mode, hint, format);
+      0, size, target, GL_LINEAR, texture_pool, wrap_mode, hint, format);
   resource.allocated = false;
   resources_[id] = resource;
   return id;
@@ -789,24 +799,20 @@ ResourceProvider::ScopedReadLockGL::~ScopedReadLockGL() {
 ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
     ResourceProvider* resource_provider,
     ResourceProvider::ResourceId resource_id,
-    GLenum target,
     GLenum filter)
     : ScopedReadLockGL(resource_provider, resource_id),
-      target_(target),
-      unit_(GL_TEXTURE0) {
-  resource_provider->BindForSampling(resource_id, target, unit_, filter);
+      unit_(GL_TEXTURE0),
+      target_(resource_provider->BindForSampling(resource_id, unit_, filter)) {
 }
 
 ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
     ResourceProvider* resource_provider,
     ResourceProvider::ResourceId resource_id,
-    GLenum target,
     GLenum unit,
     GLenum filter)
     : ScopedReadLockGL(resource_provider, resource_id),
-      target_(target),
-      unit_(unit) {
-  resource_provider->BindForSampling(resource_id, target, unit, filter);
+      unit_(unit),
+      target_(resource_provider->BindForSampling(resource_id, unit_, filter)) {
 }
 
 ResourceProvider::ScopedSamplerGL::~ScopedSamplerGL() {
@@ -1487,10 +1493,10 @@ void ResourceProvider::UnmapPixelBuffer(ResourceId id) {
   }
 }
 
-void ResourceProvider::BindForSampling(ResourceProvider::ResourceId resource_id,
-                                       GLenum target,
-                                       GLenum unit,
-                                       GLenum filter) {
+GLenum ResourceProvider::BindForSampling(
+    ResourceProvider::ResourceId resource_id,
+    GLenum unit,
+    GLenum filter) {
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = Context3d();
   ResourceMap::iterator it = resources_.find(resource_id);
@@ -1500,9 +1506,9 @@ void ResourceProvider::BindForSampling(ResourceProvider::ResourceId resource_id,
   DCHECK(!resource->locked_for_write || resource->set_pixels_completion_forced);
 
   ScopedSetActiveTexture scoped_active_tex(context3d, unit);
+  GLenum target = resource->target;
   GLC(context3d, context3d->bindTexture(target, resource->gl_id));
   if (filter != resource->filter) {
-    DCHECK_EQ(resource->target, target);
     GLC(context3d,
         context3d->texParameteri(target, GL_TEXTURE_MIN_FILTER, filter));
     GLC(context3d,
@@ -1518,6 +1524,8 @@ void ResourceProvider::BindForSampling(ResourceProvider::ResourceId resource_id,
     resource->bound_image_id = resource->image_id;
     resource->dirty_image = false;
   }
+
+  return target;
 }
 
 void ResourceProvider::BeginSetPixels(ResourceId id) {
