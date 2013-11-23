@@ -88,7 +88,6 @@
         '../third_party/libpng/libpng.gyp:libpng',
         '../url/url.gyp:url_lib',
         'base/strings/ui_strings.gyp:ui_strings',
-        'events/events.gyp:dom4_keycode_converter',
         'events/events.gyp:events_base',
         'resources/ui_resources.gyp:ui_resources',
         'run_ui_unittests',
@@ -170,12 +169,6 @@
         'base/view_prop_unittest.cc',
         'base/webui/web_ui_util_unittest.cc',
         'base/x/x11_util_unittest.cc',
-        'events/event_dispatcher_unittest.cc',
-        'events/event_unittest.cc',
-        'events/keycodes/dom4/keycode_converter_unittest.cc',
-        'events/latency_info_unittest.cc',
-        'events/ozone/evdev/key_event_converter_unittest.cc',
-        'events/ozone/evdev/touch_event_converter_unittest.cc',
         'gfx/animation/tween_unittest.cc',
         'gfx/blit_unittest.cc',
         'gfx/break_list_unittest.cc',
@@ -250,11 +243,6 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         }],
-        ['OS == "linux" and toolkit_views==1', {
-          'sources': [
-            'events/x/events_x_unittest.cc',
-          ],
-        }],
         ['OS != "mac" and OS != "ios"', {
           'sources': [
             'gfx/transform_unittest.cc',
@@ -323,16 +311,10 @@
         ['use_aura==1 or toolkit_views==1',  {
           'sources': [
             'base/dragdrop/os_exchange_data_unittest.cc',
-            'events/gestures/velocity_calculator_unittest.cc',
           ],
           'dependencies': [
             'events/events.gyp:events',
             'events/events.gyp:events_base',
-          ],
-        }, {
-          'sources!': [
-            'events/event_dispatcher_unittest.cc',
-            'events/event_unittest.cc',
           ],
         }],
         ['use_aura==1', {
