@@ -53,6 +53,7 @@
 #include "processor/stackwalker_x86.h"
 #include "processor/stackwalker_amd64.h"
 #include "processor/stackwalker_arm.h"
+#include "processor/stackwalker_arm64.h"
 #include "processor/stackwalker_mips.h"
 
 namespace google_breakpad {
@@ -239,6 +240,7 @@ Stackwalker* Stackwalker::StackwalkerForCPU(
       break;
 
     case MD_CONTEXT_ARM:
+    {
       int fp_register = -1;
       if (system_info->os_short == "ios")
         fp_register = MD_CONTEXT_ARM_REG_IOS_FP;
@@ -246,6 +248,14 @@ Stackwalker* Stackwalker::StackwalkerForCPU(
                                            context->GetContextARM(),
                                            fp_register, memory, modules,
                                            frame_symbolizer);
+      break;
+    }
+    
+    case MD_CONTEXT_ARM64:
+      cpu_stackwalker = new StackwalkerARM64(system_info,
+                                             context->GetContextARM64(),
+                                             memory, modules,
+                                             frame_symbolizer);
       break;
   }
 

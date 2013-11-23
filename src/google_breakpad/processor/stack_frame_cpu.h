@@ -270,6 +270,70 @@ struct StackFrameARM : public StackFrame {
   int context_validity;
 };
 
+struct StackFrameARM64 : public StackFrame {
+  // A flag for each register we might know. Note that we can't use an enum
+  // here as there are 33 values to represent.
+  static const uint64_t CONTEXT_VALID_NONE = 0;
+  static const uint64_t CONTEXT_VALID_X0   = 1ULL << 0;
+  static const uint64_t CONTEXT_VALID_X1   = 1ULL << 1;
+  static const uint64_t CONTEXT_VALID_X2   = 1ULL << 2;
+  static const uint64_t CONTEXT_VALID_X3   = 1ULL << 3;
+  static const uint64_t CONTEXT_VALID_X4   = 1ULL << 4;
+  static const uint64_t CONTEXT_VALID_X5   = 1ULL << 5;
+  static const uint64_t CONTEXT_VALID_X6   = 1ULL << 6;
+  static const uint64_t CONTEXT_VALID_X7   = 1ULL << 7;
+  static const uint64_t CONTEXT_VALID_X8   = 1ULL << 8;
+  static const uint64_t CONTEXT_VALID_X9   = 1ULL << 9;
+  static const uint64_t CONTEXT_VALID_X10  = 1ULL << 10;
+  static const uint64_t CONTEXT_VALID_X11  = 1ULL << 11;
+  static const uint64_t CONTEXT_VALID_X12  = 1ULL << 12;
+  static const uint64_t CONTEXT_VALID_X13  = 1ULL << 13;
+  static const uint64_t CONTEXT_VALID_X14  = 1ULL << 14;
+  static const uint64_t CONTEXT_VALID_X15  = 1ULL << 15;
+  static const uint64_t CONTEXT_VALID_X16  = 1ULL << 16;
+  static const uint64_t CONTEXT_VALID_X17  = 1ULL << 17;
+  static const uint64_t CONTEXT_VALID_X18  = 1ULL << 18;
+  static const uint64_t CONTEXT_VALID_X19  = 1ULL << 19;
+  static const uint64_t CONTEXT_VALID_X20  = 1ULL << 20;
+  static const uint64_t CONTEXT_VALID_X21  = 1ULL << 21;
+  static const uint64_t CONTEXT_VALID_X22  = 1ULL << 22;
+  static const uint64_t CONTEXT_VALID_X23  = 1ULL << 23;
+  static const uint64_t CONTEXT_VALID_X24  = 1ULL << 24;
+  static const uint64_t CONTEXT_VALID_X25  = 1ULL << 25;
+  static const uint64_t CONTEXT_VALID_X26  = 1ULL << 26;
+  static const uint64_t CONTEXT_VALID_X27  = 1ULL << 27;
+  static const uint64_t CONTEXT_VALID_X28  = 1ULL << 28;
+  static const uint64_t CONTEXT_VALID_X29  = 1ULL << 29;
+  static const uint64_t CONTEXT_VALID_X30  = 1ULL << 30;
+  static const uint64_t CONTEXT_VALID_X31  = 1ULL << 31;
+  static const uint64_t CONTEXT_VALID_X32  = 1ULL << 32;
+  static const uint64_t CONTEXT_VALID_ALL  = ~CONTEXT_VALID_NONE;
+
+  // Aliases for registers with dedicated or conventional roles.
+  static const uint64_t CONTEXT_VALID_FP   = CONTEXT_VALID_X29;
+  static const uint64_t CONTEXT_VALID_LR   = CONTEXT_VALID_X30;
+  static const uint64_t CONTEXT_VALID_SP   = CONTEXT_VALID_X31;
+  static const uint64_t CONTEXT_VALID_PC   = CONTEXT_VALID_X32;
+
+  StackFrameARM64() : context(),
+                      context_validity(CONTEXT_VALID_NONE) {}
+
+  // Return the validity flag for register xN.
+  static uint64_t RegisterValidFlag(int n) {
+    return 1ULL << n;
+  }
+
+  // Register state.  This is only fully valid for the topmost frame in a
+  // stack.  In other frames, the values of nonvolatile registers may be
+  // present, given sufficient debugging information.  Refer to
+  // context_validity.
+  MDRawContextARM64 context;
+
+  // For each register in context whose value has been recovered, we set
+  // the corresponding CONTEXT_VALID_ bit in context_validity.
+  uint64_t context_validity;
+};
+
 struct StackFrameMIPS : public StackFrame {  
   // MIPS callee save registers for o32 ABI (32bit registers) are: 
   // 1. $s0-$s7, 

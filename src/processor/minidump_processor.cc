@@ -505,6 +505,11 @@ bool MinidumpProcessor::GetCPUInfo(Minidump *dump, SystemInfo *info) {
       break;
     }
 
+    case MD_CPU_ARCHITECTURE_ARM64: {
+      info->cpu = "arm64";
+      break;
+    }
+
     case MD_CPU_ARCHITECTURE_MIPS: {
       info->cpu = "mips";
       break;
@@ -668,7 +673,9 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, uint64_t *address) {
             default:
               // arm and ppc overlap
               if (raw_system_info->processor_architecture ==
-                  MD_CPU_ARCHITECTURE_ARM) {
+                  MD_CPU_ARCHITECTURE_ARM ||
+                  raw_system_info->processor_architecture ==
+                  MD_CPU_ARCHITECTURE_ARM64) {
                 switch (exception_flags) {
                   case MD_EXCEPTION_CODE_MAC_ARM_DA_ALIGN:
                     reason.append("EXC_ARM_DA_ALIGN");
@@ -708,7 +715,8 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, uint64_t *address) {
         case MD_EXCEPTION_MAC_BAD_INSTRUCTION:
           reason = "EXC_BAD_INSTRUCTION / ";
           switch (raw_system_info->processor_architecture) {
-            case MD_CPU_ARCHITECTURE_ARM: {
+            case MD_CPU_ARCHITECTURE_ARM:
+            case MD_CPU_ARCHITECTURE_ARM64: {
               switch (exception_flags) {
                 case MD_EXCEPTION_CODE_MAC_ARM_UNDEFINED:
                   reason.append("EXC_ARM_UNDEFINED");
@@ -887,7 +895,8 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, uint64_t *address) {
         case MD_EXCEPTION_MAC_BREAKPOINT:
           reason = "EXC_BREAKPOINT / ";
           switch (raw_system_info->processor_architecture) {
-            case MD_CPU_ARCHITECTURE_ARM: {
+            case MD_CPU_ARCHITECTURE_ARM:
+            case MD_CPU_ARCHITECTURE_ARM64: {
               switch (exception_flags) {
                 case MD_EXCEPTION_CODE_MAC_ARM_DA_ALIGN:
                   reason.append("EXC_ARM_DA_ALIGN");

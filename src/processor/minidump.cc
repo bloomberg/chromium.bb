@@ -73,6 +73,30 @@ using std::ifstream;
 using std::numeric_limits;
 using std::vector;
 
+// Returns true iff |context_size| matches exactly one of the sizes of the
+// various MDRawContext* types.
+// TODO(blundell): This function can be removed once
+// http://code.google.com/p/google-breakpad/issues/detail?id=550 is fixed.
+static bool IsContextSizeUnique(uint32_t context_size) {
+  int num_matching_contexts = 0;
+  if (context_size == sizeof(MDRawContextX86))
+    num_matching_contexts++;
+  if (context_size == sizeof(MDRawContextPPC))
+    num_matching_contexts++;
+  if (context_size == sizeof(MDRawContextPPC64))
+    num_matching_contexts++;
+  if (context_size == sizeof(MDRawContextAMD64))
+    num_matching_contexts++;
+  if (context_size == sizeof(MDRawContextSPARC))
+    num_matching_contexts++;
+  if (context_size == sizeof(MDRawContextARM))
+    num_matching_contexts++;
+  if (context_size == sizeof(MDRawContextARM64))
+    num_matching_contexts++;
+  if (context_size == sizeof(MDRawContextMIPS))
+    num_matching_contexts++;
+  return num_matching_contexts == 1;
+}
 
 //
 // Swapping routines
@@ -361,6 +385,23 @@ MinidumpContext::~MinidumpContext() {
 bool MinidumpContext::Read(uint32_t expected_size) {
   valid_ = false;
 
+  // Certain raw context types are currently assumed to have unique sizes.
+  if (!IsContextSizeUnique(sizeof(MDRawContextAMD64))) {
+    BPLOG(ERROR) << "sizeof(MDRawContextAMD64) cannot match the size of any "
+                 << "other raw context";
+    return false;
+  }
+  if (!IsContextSizeUnique(sizeof(MDRawContextPPC64))) {
+    BPLOG(ERROR) << "sizeof(MDRawContextPPC64) cannot match the size of any "
+                 << "other raw context";
+    return false;
+  }
+  if (!IsContextSizeUnique(sizeof(MDRawContextARM64))) {
+    BPLOG(ERROR) << "sizeof(MDRawContextARM64) cannot match the size of any "
+                 << "other raw context";
+    return false;
+  }
+
   FreeContext();
 
   // First, figure out what type of CPU this context structure is for.
@@ -390,9 +431,8 @@ bool MinidumpContext::Read(uint32_t expected_size) {
     }
 
     if (cpu_type != MD_CONTEXT_AMD64) {
-      // TODO: fall through to switch below?
-      // need a Tell method to be able to SeekSet back to beginning
-      // http://code.google.com/p/google-breakpad/issues/detail?id=224
+      // TODO: Fall through to switch below.
+      // http://code.google.com/p/google-breakpad/issues/detail?id=550
       BPLOG(ERROR) << "MinidumpContext not actually amd64 context";
       return false;
     }
@@ -483,6 +523,21 @@ bool MinidumpContext::Read(uint32_t expected_size) {
     uint32_t cpu_type = context_flags & MD_CONTEXT_CPU_MASK;
     scoped_ptr<MDRawContextPPC64> context_ppc64(new MDRawContextPPC64());
 
+    if (cpu_type == 0) {
+      if (minidump_->GetContextCPUFlagsFromSystemInfo(&cpu_type)) {
+        context_ppc64->context_flags |= cpu_type;
+      } else {
+        BPLOG(ERROR) << "Failed to preserve the current stream position";
+        return false;
+      }
+    }
+
+    if (cpu_type != MD_CONTEXT_PPC64) {
+      // TODO: Fall through to switch below.
+      // http://code.google.com/p/google-breakpad/issues/detail?id=550
+      BPLOG(ERROR) << "MinidumpContext not actually ppc64 context";
+      return false;
+    }
 
     // Set the context_flags member, which has already been read, and
     // read the rest of the structure beginning with the first member
@@ -548,6 +603,83 @@ bool MinidumpContext::Read(uint32_t expected_size) {
     }
 
     context_.ppc64 = context_ppc64.release();
+    context_flags_ = context_flags;
+  } else if (expected_size == sizeof(MDRawContextARM64)) {
+    // |context_flags| of MDRawContextARM64 is 64 bits, but other MDRawContext
+    // in the else case have 32 bits |context_flags|, so special case it here.
+    uint64_t context_flags;
+
+    BPLOG(INFO) << "MinidumpContext: looks like ARM64 context";
+
+    if (!minidump_->ReadBytes(&context_flags, sizeof(context_flags))) {
+      BPLOG(ERROR) << "MinidumpContext could not read context flags";
+      return false;
+    }
+    if (minidump_->swap())
+      Swap(&context_flags);
+
+    scoped_ptr<MDRawContextARM64> context_arm64(new MDRawContextARM64());
+
+    uint32_t cpu_type = context_flags & MD_CONTEXT_CPU_MASK;
+    if (cpu_type == 0) {
+      if (minidump_->GetContextCPUFlagsFromSystemInfo(&cpu_type)) {
+        context_arm64->context_flags |= cpu_type;
+      } else {
+        BPLOG(ERROR) << "Failed to preserve the current stream position";
+        return false;
+      }
+    }
+
+    if (cpu_type != MD_CONTEXT_ARM64) {
+      // TODO: Fall through to switch below.
+      // http://code.google.com/p/google-breakpad/issues/detail?id=550
+      BPLOG(ERROR) << "MinidumpContext not actually arm64 context";
+      return false;
+    }
+
+    // Set the context_flags member, which has already been read, and
+    // read the rest of the structure beginning with the first member
+    // after context_flags.
+    context_arm64->context_flags = context_flags;
+
+    size_t flags_size = sizeof(context_arm64->context_flags);
+    uint8_t* context_after_flags =
+        reinterpret_cast<uint8_t*>(context_arm64.get()) + flags_size;
+    if (!minidump_->ReadBytes(context_after_flags,
+                              sizeof(MDRawContextARM64) - flags_size)) {
+      BPLOG(ERROR) << "MinidumpContext could not read arm64 context";
+      return false;
+    }
+
+    // Do this after reading the entire MDRawContext structure because
+    // GetSystemInfo may seek minidump to a new position.
+    if (!CheckAgainstSystemInfo(cpu_type)) {
+      BPLOG(ERROR) << "MinidumpContext arm64 does not match system info";
+      return false;
+    }
+
+    if (minidump_->swap()) {
+      // context_arm64->context_flags was already swapped.
+      for (unsigned int ireg_index = 0;
+           ireg_index < MD_CONTEXT_ARM64_GPR_COUNT;
+           ++ireg_index) {
+        Swap(&context_arm64->iregs[ireg_index]);
+      }
+      Swap(&context_arm64->cpsr);
+      Swap(&context_arm64->float_save.fpsr);
+      Swap(&context_arm64->float_save.fpcr);
+      for (unsigned int fpr_index = 0;
+           fpr_index < MD_FLOATINGSAVEAREA_ARM64_FPR_COUNT;
+           ++fpr_index) {
+        // While ARM64 is bi-endian, iOS (currently the only platform
+        // for which ARM64 support has been brought up) uses ARM64 exclusively
+        // in little-endian mode.
+        Normalize128(&context_arm64->float_save.regs[fpr_index], false);
+        Swap(&context_arm64->float_save.regs[fpr_index]);
+      }
+    }
+    context_.arm64 = context_arm64.release();
+    context_flags_ = context_flags;
   } else {
     uint32_t context_flags;
     if (!minidump_->ReadBytes(&context_flags, sizeof(context_flags))) {
@@ -954,6 +1086,9 @@ bool MinidumpContext::GetInstructionPointer(uint64_t* ip) const {
   case MD_CONTEXT_ARM:
     *ip = context_.arm->iregs[MD_CONTEXT_ARM_REG_PC];
     break;
+  case MD_CONTEXT_ARM64:
+    *ip = context_.arm64->iregs[MD_CONTEXT_ARM64_REG_PC];
+    break;
   case MD_CONTEXT_PPC:
     *ip = context_.ppc->srr0;
     break;
@@ -1033,6 +1168,15 @@ const MDRawContextARM* MinidumpContext::GetContextARM() const {
   return context_.arm;
 }
 
+const MDRawContextARM64* MinidumpContext::GetContextARM64() const {
+  if (GetContextCPU() != MD_CONTEXT_ARM64) {
+    BPLOG(ERROR) << "MinidumpContext cannot get arm64 context";
+    return NULL;
+  }
+
+  return context_.arm64;
+}
+
 const MDRawContextMIPS* MinidumpContext::GetContextMIPS() const {
   if (GetContextCPU() != MD_CONTEXT_MIPS) {
     BPLOG(ERROR) << "MinidumpContext cannot get MIPS context";
@@ -1066,6 +1210,10 @@ void MinidumpContext::FreeContext() {
 
     case MD_CONTEXT_ARM:
       delete context_.arm;
+      break;
+
+    case MD_CONTEXT_ARM64:
+      delete context_.arm64;
       break;
 
     case MD_CONTEXT_MIPS:
@@ -1139,6 +1287,11 @@ bool MinidumpContext::CheckAgainstSystemInfo(uint32_t context_cpu_type) {
 
     case MD_CONTEXT_ARM:
       if (system_info_cpu_type == MD_CPU_ARCHITECTURE_ARM)
+        return_value = true;
+      break;
+
+    case MD_CONTEXT_ARM64:
+      if (system_info_cpu_type == MD_CPU_ARCHITECTURE_ARM64)
         return_value = true;
       break;
 
@@ -1421,6 +1574,31 @@ void MinidumpContext::Print() {
                fpe_index, context_arm->float_save.extra[fpe_index]);
       }
 
+      break;
+    }
+  
+    case MD_CONTEXT_ARM64: {
+      const MDRawContextARM64* context_arm64 = GetContextARM64();
+      printf("MDRawContextARM64\n");
+      printf("  context_flags       = 0x%llx\n",
+             context_arm64->context_flags);
+      for (unsigned int ireg_index = 0;
+           ireg_index < MD_CONTEXT_ARM64_GPR_COUNT;
+           ++ireg_index) {
+        printf("  iregs[%2d]            = 0x%llx\n",
+               ireg_index, context_arm64->iregs[ireg_index]);
+      }
+      printf("  cpsr                = 0x%x\n", context_arm64->cpsr);
+      printf("  float_save.fpsr     = 0x%x\n", context_arm64->float_save.fpsr);
+      printf("  float_save.fpcr     = 0x%x\n", context_arm64->float_save.fpcr);
+
+      for (unsigned int freg_index = 0;
+           freg_index < MD_FLOATINGSAVEAREA_ARM64_FPR_COUNT;
+           ++freg_index) {
+        uint128_struct fp_value = context_arm64->float_save.regs[freg_index];
+        printf("  float_save.regs[%2d]            = 0x%llx%llx\n",
+               freg_index, fp_value.high, fp_value.low);
+      }
       break;
     }
 
@@ -3530,6 +3708,10 @@ string MinidumpSystemInfo::GetCPU() {
       cpu = "arm";
       break;
 
+    case MD_CPU_ARCHITECTURE_ARM64:
+      cpu = "arm64";
+      break;
+
     default:
       BPLOG(ERROR) << "MinidumpSystemInfo unknown CPU for architecture " <<
                       HexString(system_info_.processor_architecture);
@@ -4264,6 +4446,9 @@ bool Minidump::GetContextCPUFlagsFromSystemInfo(uint32_t *context_cpu_flags) {
         break;
       case MD_CPU_ARCHITECTURE_ARM:
         *context_cpu_flags = MD_CONTEXT_ARM;
+        break;
+      case MD_CPU_ARCHITECTURE_ARM64:
+        *context_cpu_flags = MD_CONTEXT_ARM64;
         break;
       case MD_CPU_ARCHITECTURE_IA64:
         *context_cpu_flags = MD_CONTEXT_IA64;
