@@ -68,6 +68,11 @@ bool GLImageEGL::BindTexImage(unsigned target) {
     return false;
   }
 
+  if (target == GL_TEXTURE_RECTANGLE_ARB) {
+    LOG(ERROR) << "EGLImage cannot be bound to TEXTURE_RECTANGLE_ARB target";
+    return false;
+  }
+
   if (target_ && target_ != target) {
     LOG(ERROR) << "EGLImage can only be bound to one target";
     return false;
