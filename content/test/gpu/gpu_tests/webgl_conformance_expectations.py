@@ -27,6 +27,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Fails everywhere.
     self.Skip('conformance/glsl/misc/large-loop-compile.html',
         bug=322764)
+    self.Skip('conformance/textures/texture-size-limit.html',
+        bug=322789)
 
     # Windows failures.
     self.Fail('conformance/ogles/GL/atan/atan_001_to_008.html',
@@ -107,8 +109,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['mac'], bug=322760)
     self.Fail('conformance/context/context-attribute-preserve-drawing-buffer.html',
         ['mac'], bug=322770)
-    self.Skip('conformance/textures/texture-size-limit.html',
-        ['mac'], bug=322789)
     self.Skip('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
         ['mac'], bug=322795)
 
@@ -170,10 +170,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['mac', 'amd'], bug=308328)
     self.Fail('conformance/canvas/drawingbuffer-test.html',
         ['mac', 'amd'], bug=314997)
-
-    # Linux failure.
-    self.Skip('conformance/textures/texture-size-limit.html',
-        ['linux'], bug=322789)
 
     # Android failures
     self.Fail('conformance/textures/texture-npot-video.html',
