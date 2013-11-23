@@ -19,6 +19,7 @@
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -29,6 +30,13 @@ namespace {
 // Padding between buttons and the last suggestion or details view. The mock
 // has a total of 30px - but 10px are already provided by details/suggestions.
 const CGFloat kButtonVerticalPadding = 20.0;
+
+// Padding around the text for the legal documents.
+const CGFloat kLegalDocumentsPadding = 20.0;
+
+// The font color for the legal documents text. Set to match the Views
+// implementation.
+const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
 
 }  // namespace
 
@@ -100,6 +108,8 @@ const CGFloat kButtonVerticalPadding = 20.0;
                                  blue:0.96
                                 alpha:1.0]];
   [legalDocumentsView_ setDrawsBackground:YES];
+  [legalDocumentsView_ setTextContainerInset:
+      NSMakeSize(kLegalDocumentsPadding, kLegalDocumentsPadding)];
   [legalDocumentsView_ setHidden:YES];
   [legalDocumentsView_ setDelegate:self];
   legalDocumentsSizeDirty_ = YES;
@@ -267,6 +277,9 @@ const CGFloat kButtonVerticalPadding = 20.0;
   [legalDocumentsView_ setFrame:currentFrame];
   newFrame.size.width = width;
 
+  // Account for the padding around the text.
+  newFrame.size.height += 2 * kLegalDocumentsPadding;
+
   legalDocumentsSizeDirty_ = NO;
   legalDocumentsSize_ = newFrame.size;
   return legalDocumentsSize_;
@@ -291,10 +304,10 @@ const CGFloat kButtonVerticalPadding = 20.0;
   NSString* text = base::SysUTF16ToNSString(delegate_->LegalDocumentsText());
 
   if ([text length]) {
-    NSFont* font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
-    [legalDocumentsView_ setMessage:text
-                           withFont:font
-                       messageColor:[NSColor blackColor]];
+    NSFont* font =
+        [NSFont labelFontOfSize:[[legalDocumentsView_ font] pointSize]];
+    NSColor* color = gfx::SkColorToCalibratedNSColor(kLegalDocumentsTextColor);
+    [legalDocumentsView_ setMessage:text withFont:font messageColor:color];
 
     const std::vector<gfx::Range>& link_ranges =
         delegate_->LegalDocumentLinks();
