@@ -37,7 +37,7 @@ class TraceSubscriberStdio::TraceSubscriberStdioWorker
       return;
     }
 
-    LOG(INFO) << "Logging performance trace to file: " << path_.value();
+    VLOG(0) << "Logging performance trace to file: " << path_.value();
     if (file_type_ == FILE_TYPE_PROPERTY_LIST)
       WriteString("{\"traceEvents\":");
     WriteString("[");

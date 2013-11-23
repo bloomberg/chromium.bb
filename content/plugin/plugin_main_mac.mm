@@ -19,7 +19,7 @@ void TrimInterposeEnvironment() {
 
   std::string interpose_list;
   if (!env->GetVar(kDYLDInsertLibrariesKey, &interpose_list)) {
-    LOG(INFO) << "No Carbon Interpose library found.";
+    VLOG(0) << "No Carbon Interpose library found.";
     return;
   }
 

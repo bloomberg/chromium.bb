@@ -490,7 +490,7 @@ void ChildThread::OnProcessFinalRelease() {
 }
 
 void ChildThread::EnsureConnected() {
-  LOG(INFO) << "ChildThread::EnsureConnected()";
+  VLOG(0) << "ChildThread::EnsureConnected()";
   base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
 }
 

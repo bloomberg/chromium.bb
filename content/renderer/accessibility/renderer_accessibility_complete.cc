@@ -273,7 +273,7 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
     if (logging_) {
       AccessibilityNodeDataTreeNode tree;
       MakeAccessibilityNodeDataTree(event_msg.nodes, &tree);
-      LOG(INFO) << "Accessibility update: \n"
+      VLOG(0) << "Accessibility update: \n"
           << "routing id=" << routing_id()
           << " event="
           << AccessibilityEventToString(event.event_type)

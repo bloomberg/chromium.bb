@@ -38,7 +38,7 @@ namespace content {
 static bool IsMSESupported() {
 #if defined(OS_ANDROID)
   if (base::android::BuildInfo::GetInstance()->sdk_int() < 16) {
-    LOG(INFO) << "MSE is only supported in Android 4.1 and later.";
+    VLOG(0) << "MSE is only supported in Android 4.1 and later.";
     return false;
   }
 #endif  // defined(OS_ANDROID)
@@ -74,7 +74,7 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
 
   void TestConfigChange() {
     if (CurrentSourceType() != MSE || !IsMSESupported()) {
-      LOG(INFO) << "Skipping test - config change test requires MSE.";
+      VLOG(0) << "Skipping test - config change test requires MSE.";
       return;
     }
 
@@ -91,7 +91,7 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
                              SrcType src_type,
                              const char* expectation) {
     if (src_type == MSE && !IsMSESupported()) {
-      LOG(INFO) << "Skipping test - MSE not supported.";
+      VLOG(0) << "Skipping test - MSE not supported.";
       return;
     }
 

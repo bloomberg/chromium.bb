@@ -136,7 +136,7 @@ jboolean RunChecks(bool in_browser_process, bool need_relros) {
     }
   }
 
-  LOG(INFO)
+  VLOG(0)
       << prefix
       << base::StringPrintf(
              "There are %d shared RELRO sections in this process, %d are bad",
@@ -162,7 +162,7 @@ jboolean RunChecks(bool in_browser_process, bool need_relros) {
     }
   }
 
-  LOG(INFO) << prefix << "SUCCESS";
+  VLOG(0) << prefix << "SUCCESS";
   return true;
 }
 

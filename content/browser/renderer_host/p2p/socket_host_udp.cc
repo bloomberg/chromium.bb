@@ -185,7 +185,7 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
     }
 
     if (throttler_->DropNextPacket(data.size())) {
-      LOG(INFO) << "STUN message is dropped due to high volume.";
+      VLOG(0) << "STUN message is dropped due to high volume.";
       // Do not reset socket.
       return;
     }
@@ -264,7 +264,7 @@ void P2PSocketHostUdp::HandleSendResult(uint64 packet_id, int result) {
   if (result > 0) {
     message_sender_->Send(new P2PMsg_OnSendComplete(id_));
   } else if (IsTransientError(result)) {
-    LOG(INFO) << "sendto() has failed twice returning a "
+    VLOG(0) << "sendto() has failed twice returning a "
         " transient error. Dropping the packet.";
   } else if (result < 0) {
     LOG(ERROR) << "Error when sending data in UDP socket: " << result;

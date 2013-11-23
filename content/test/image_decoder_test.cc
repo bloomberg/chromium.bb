@@ -112,7 +112,7 @@ void ImageDecoderTest::SetUp() {
   if (!base::PathExists(data_dir_)) {
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
-    LOG(INFO) << test_info->name() <<
+    VLOG(0) << test_info->name() <<
                  " not running because test data wasn't found.";
     data_dir_.clear();
     return;

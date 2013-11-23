@@ -195,7 +195,7 @@ class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
         guest_->GetWebContents()->GetBrowserPluginGuestManager()->
             GetGuestByInstanceID(instance_id_, embedder_render_process_id);
     if (!guest) {
-      LOG(INFO) << "Guest not found. Instance ID: " << instance_id_;
+      VLOG(0) << "Guest not found. Instance ID: " << instance_id_;
       return;
     }
 
@@ -411,7 +411,7 @@ void BrowserPluginGuest::RespondToPermissionRequest(
     const std::string& user_input) {
   RequestMap::iterator request_itr = permission_request_map_.find(request_id);
   if (request_itr == permission_request_map_.end()) {
-    LOG(INFO) << "Not a valid request ID.";
+    VLOG(0) << "Not a valid request ID.";
     return;
   }
   request_itr->second->Respond(should_allow, user_input);

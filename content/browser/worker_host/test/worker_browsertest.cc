@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitTotal) {
 IN_PROC_BROWSER_TEST_F(WorkerTest, LimitTotal) {
 #endif
   if (base::SysInfo::AmountOfPhysicalMemoryMB() < 8192) {
-    LOG(INFO) << "WorkerTest.LimitTotal not running because it needs 8 GB RAM.";
+    VLOG(0) << "WorkerTest.LimitTotal not running because it needs 8 GB RAM.";
     return;
   }
 

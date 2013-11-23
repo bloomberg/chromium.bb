@@ -92,8 +92,8 @@ class PluginTest : public ContentBrowserTest {
     if (title == ASCIIToUTF16("plugin_not_found")) {
       const testing::TestInfo* const test_info =
           testing::UnitTest::GetInstance()->current_test_info();
-      LOG(INFO) << "PluginTest." << test_info->name() <<
-                   " not running because plugin not installed.";
+      VLOG(0) << "PluginTest." << test_info->name()
+              << " not running because plugin not installed.";
     } else {
       EXPECT_EQ(expected_title, title);
     }
@@ -117,8 +117,8 @@ class PluginTest : public ContentBrowserTest {
     if (!base::PathExists(path)) {
       const testing::TestInfo* const test_info =
           testing::UnitTest::GetInstance()->current_test_info();
-      LOG(INFO) << "PluginTest." << test_info->name() <<
-                   " not running because test data wasn't found.";
+      VLOG(0) << "PluginTest." << test_info->name()
+              << " not running because test data wasn't found.";
       return;
     }
 

@@ -126,7 +126,7 @@ void InitChildProcess(JNIEnv* env,
 }
 
 void ExitChildProcess(JNIEnv* env, jclass clazz) {
-  LOG(INFO) << "ChildProcessService: Exiting child process.";
+  VLOG(0) << "ChildProcessService: Exiting child process.";
   LibraryLoaderExitHook();
   _exit(0);
 }

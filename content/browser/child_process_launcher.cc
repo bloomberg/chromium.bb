@@ -373,7 +373,7 @@ class ChildProcessLauncher::Context
 #endif
       base::ProcessHandle handle) {
 #if defined(OS_ANDROID)
-    LOG(INFO) << "ChromeProcess: Stopping process with handle " << handle;
+    VLOG(0) << "ChromeProcess: Stopping process with handle " << handle;
     StopChildProcess(handle);
 #else
     base::Process process(handle);

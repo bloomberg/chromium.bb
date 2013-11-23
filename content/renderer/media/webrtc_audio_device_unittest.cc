@@ -815,7 +815,7 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   proxy->Start();
   proxy->Play();
 
-  LOG(INFO) << ">> You should now be able to hear yourself in loopback...";
+  VLOG(0) << ">> You should now be able to hear yourself in loopback...";
   message_loop_.PostDelayedTask(FROM_HERE,
                                 base::MessageLoop::QuitClosure(),
                                 base::TimeDelta::FromSeconds(2));

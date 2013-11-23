@@ -456,10 +456,10 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_EmbedderSameAfterNav) {
   const string16 expected_title = ASCIIToUTF16("done");
   content::TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   NavigateToURL(shell(), test_url_new);
-  LOG(INFO) << "Start waiting for title";
+  VLOG(0) << "Start waiting for title";
   string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
-  LOG(INFO) << "Done navigating to second page";
+  VLOG(0) << "Done navigating to second page";
 
   TestBrowserPluginEmbedder* test_embedder_after_nav =
       static_cast<TestBrowserPluginEmbedder*>(

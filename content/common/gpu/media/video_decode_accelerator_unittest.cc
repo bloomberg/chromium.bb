@@ -1269,7 +1269,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
       EXPECT_EQ(client->num_done_bitstream_buffers(),
                 client->num_queued_fragments());
     }
-    LOG(INFO) << "Decoder " << i << " fps: " << client->frames_per_second();
+    VLOG(0) << "Decoder " << i << " fps: " << client->frames_per_second();
     if (!render_as_thumbnails) {
       int min_fps = suppress_rendering ?
           video_file->min_fps_no_render : video_file->min_fps_render;
@@ -1456,7 +1456,7 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
   int decode_time_median = client->decode_time_median();
   std::string output_string =
       base::StringPrintf("Decode time median: %d ms", decode_time_median);
-  LOG(INFO) << output_string;
+  VLOG(0) << output_string;
   ASSERT_GT(decode_time_median, 0);
 
   if (g_output_log != NULL)

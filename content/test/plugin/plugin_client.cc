@@ -264,7 +264,7 @@ void NPP_URLRedirectNotify(NPP instance, const char* url, int32_t status,
 NPError NPP_ClearSiteData(const char* site,
                           uint64 flags,
                           uint64 max_age) {
-  LOG(INFO) << "NPP_ClearSiteData called";
+  VLOG(0) << "NPP_ClearSiteData called";
   return NPERR_NO_ERROR;
 }
 } // extern "C"

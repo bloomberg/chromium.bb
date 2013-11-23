@@ -133,7 +133,7 @@ void EnableThemeSupportOnAllWindowStations() {
 
   HWINSTA winsta0 = ::OpenWindowStationA("WinSta0", FALSE, GENERIC_READ);
   if (!winsta0) {
-    DLOG(INFO) << "Unable to open to WinSta0, we: "<< ::GetLastError();
+    DVLOG(0) << "Unable to open to WinSta0, we: "<< ::GetLastError();
     return;
   }
   if (!::SetProcessWindowStation(winsta0)) {

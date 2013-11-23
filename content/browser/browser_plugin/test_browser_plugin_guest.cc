@@ -83,7 +83,7 @@ void TestBrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
   exit_observed_ = true;
   if (status != base::TERMINATION_STATUS_NORMAL_TERMINATION &&
       status != base::TERMINATION_STATUS_STILL_RUNNING)
-    LOG(INFO) << "Guest crashed status: " << status;
+    VLOG(0) << "Guest crashed status: " << status;
   if (crash_message_loop_runner_.get())
     crash_message_loop_runner_->Quit();
   BrowserPluginGuest::RenderProcessGone(status);

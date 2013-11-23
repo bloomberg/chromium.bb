@@ -132,7 +132,7 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
 
 #ifndef NDEBUG
   if (logging_) {
-    LOG(INFO) << "Accessibility update: \n"
+    VLOG(0) << "Accessibility update: \n"
         << "routing id=" << routing_id()
         << " event="
         << AccessibilityEventToString(event.event_type)

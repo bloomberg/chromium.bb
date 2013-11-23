@@ -266,7 +266,7 @@ void GpuVideoDecodeAccelerator::Initialize(
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
-  DLOG(INFO) << "Initializing DXVA HW decoder for windows.";
+  DVLOG(0) << "Initializing DXVA HW decoder for windows.";
   video_decode_accelerator_.reset(new DXVAVideoDecodeAccelerator(
       this, make_context_current_));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)

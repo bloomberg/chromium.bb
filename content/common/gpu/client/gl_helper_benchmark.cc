@@ -296,7 +296,7 @@ TEST_F(GLHelperTest, DISABLED_ScaleTestImage) {
       std::string filename = base::StringPrintf("testoutput_%s_%d.ppm",
                                                 kQualityNames[q],
                                                 percents[p]);
-      LOG(INFO) << "Writing " <<  filename;
+      VLOG(0) << "Writing " <<  filename;
       SaveToFile(&output_pixels, base::FilePath::FromUTF8Unsafe(filename));
     }
   }

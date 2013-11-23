@@ -33,9 +33,9 @@ class FileSystemBrowserTest : public ContentBrowserTest {
     // a #pass or #fail ref.
     Shell* the_browser = incognito ? CreateOffTheRecordBrowser() : shell();
 
-    LOG(INFO) << "Navigating to URL and blocking.";
+    VLOG(0) << "Navigating to URL and blocking.";
     NavigateToURLBlockUntilNavigationsComplete(the_browser, test_url, 2);
-    LOG(INFO) << "Navigation done.";
+    VLOG(0) << "Navigation done.";
     std::string result =
         the_browser->web_contents()->GetLastCommittedURL().ref();
     if (result != "pass") {

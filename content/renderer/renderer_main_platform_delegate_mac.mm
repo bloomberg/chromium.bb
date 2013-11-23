@@ -101,7 +101,7 @@ static void LogTestMessage(std::string message, bool is_error) {
   if (is_error)
     LOG(ERROR) << message;
   else
-    LOG(INFO) << message;
+    VLOG(0) << message;
 }
 
 bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {

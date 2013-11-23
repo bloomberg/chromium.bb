@@ -736,7 +736,7 @@ void PluginServiceImpl::AddExtraPluginPath(const base::FilePath& path) {
  if (!NPAPIPluginsSupported()) {
     // TODO(jam): remove and just have CHECK once we're sure this doesn't get
     // triggered.
-    DLOG(INFO) << "NPAPI plugins not supported";
+    DVLOG(0) << "NPAPI plugins not supported";
     return;
   }
   PluginList::Singleton()->AddExtraPluginPath(path);
@@ -755,7 +755,7 @@ void PluginServiceImpl::RegisterInternalPlugin(
     bool add_at_beginning) {
   if (!NPAPIPluginsSupported() &&
       info.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) {
-    DLOG(INFO) << "Don't register NPAPI plugins when they're not supported";
+    DVLOG(0) << "Don't register NPAPI plugins when they're not supported";
     return;
   }
   PluginList::Singleton()->RegisterInternalPlugin(info, add_at_beginning);

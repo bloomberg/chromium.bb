@@ -550,7 +550,7 @@ void GpuDataManagerImplPrivate::GetGLStrings(std::string* gl_vendor,
 void GpuDataManagerImplPrivate::Initialize() {
   TRACE_EVENT0("startup", "GpuDataManagerImpl::Initialize");
   if (finalized_) {
-    DLOG(INFO) << "GpuDataManagerImpl marked as finalized; skipping Initialize";
+    DVLOG(0) << "GpuDataManagerImpl marked as finalized; skipping Initialize";
     return;
   }
 

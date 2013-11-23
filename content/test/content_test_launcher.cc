@@ -82,7 +82,7 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
     // as it also tries to set MessagePumpForUIFactory.
     if (!base::MessageLoop::InitMessagePumpForUIFactory(
             &CreateMessagePumpForUI))
-      LOG(INFO) << "MessagePumpForUIFactory already set, unable to override.";
+      VLOG(0) << "MessagePumpForUIFactory already set, unable to override.";
 #endif
 
     ContentTestSuiteBase::Initialize();
