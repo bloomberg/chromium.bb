@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LAUNCHER_LAUNCHER_BUTTON_H_
-#define ASH_LAUNCHER_LAUNCHER_BUTTON_H_
+#ifndef ASH_SHELF_SHELF_BUTTON_H_
+#define ASH_SHELF_SHELF_BUTTON_H_
 
 #include "ash/ash_export.h"
 #include "ui/gfx/shadow_value.h"
@@ -17,7 +17,7 @@ class ShelfButtonHost;
 class ShelfLayoutManager;
 
 // Button used for items on the launcher, except for the AppList.
-class ASH_EXPORT LauncherButton : public views::CustomButton {
+class ASH_EXPORT ShelfButton : public views::CustomButton {
  public:
   // Used to indicate the current state of the button.
   enum State {
@@ -37,12 +37,12 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
     STATE_HIDDEN = 1 << 5,
   };
 
-  virtual ~LauncherButton();
+  virtual ~ShelfButton();
 
-  // Called to create an instance of a LauncherButton.
-  static LauncherButton* Create(views::ButtonListener* listener,
-                                ShelfButtonHost* host,
-                                ShelfLayoutManager* shelf_layout_manager);
+  // Called to create an instance of a ShelfButton.
+  static ShelfButton* Create(views::ButtonListener* listener,
+                             ShelfButtonHost* host,
+                             ShelfLayoutManager* shelf_layout_manager);
 
   // Sets the image to display for this entry.
   void SetImage(const gfx::ImageSkia& image);
@@ -69,9 +69,9 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
   virtual void OnMouseCaptureLost() OVERRIDE;
 
  protected:
-  LauncherButton(views::ButtonListener* listener,
-                 ShelfButtonHost* host,
-                 ShelfLayoutManager* shelf_layout_manager);
+  ShelfButton(views::ButtonListener* listener,
+              ShelfButtonHost* host,
+              ShelfLayoutManager* shelf_layout_manager);
 
   // Class that draws the icon part of a button, so it can be animated
   // independently of the rest. This can be subclassed to provide a custom
@@ -150,10 +150,10 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
   // showing and used to detect if the menu was deleted while running.
   bool* destroyed_flag_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherButton);
+  DISALLOW_COPY_AND_ASSIGN(ShelfButton);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_LAUNCHER_LAUNCHER_BUTTON_H_
+#endif  // ASH_SHELF_SHELF_BUTTON_H_

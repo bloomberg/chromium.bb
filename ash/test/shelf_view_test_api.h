@@ -18,8 +18,8 @@ namespace ash {
 class LauncherDelegate;
 
 namespace internal {
-class LauncherButton;
 class OverflowBubble;
+class ShelfButton;
 class ShelfView;
 }
 
@@ -35,7 +35,7 @@ class ShelfViewTestAPI {
   int GetButtonCount();
 
   // Retrieve the button at |index|.
-  internal::LauncherButton* GetButton(int index);
+  internal::ShelfButton* GetButton(int index);
 
   // First visible button index.
   int GetFirstVisibleIndex();

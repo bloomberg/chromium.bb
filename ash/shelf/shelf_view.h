@@ -41,9 +41,9 @@ class ShelfModel;
 namespace internal {
 
 class DragImageView;
-class LauncherButton;
 class OverflowBubble;
 class OverflowButton;
+class ShelfButton;
 class ShelfLayoutManager;
 class ShelfTooltipManager;
 

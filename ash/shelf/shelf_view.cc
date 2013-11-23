@@ -9,7 +9,6 @@
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/drag_drop/drag_image_view.h"
-#include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_item_delegate.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
@@ -19,6 +18,7 @@
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_button.h"
+#include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
@@ -241,10 +241,10 @@ class LauncherFocusSearch : public views::FocusSearch {
   DISALLOW_COPY_AND_ASSIGN(LauncherFocusSearch);
 };
 
-class LauncherButtonFocusBorder : public views::FocusBorder {
+class ShelfButtonFocusBorder : public views::FocusBorder {
  public:
-  LauncherButtonFocusBorder() {}
-  virtual ~LauncherButtonFocusBorder() {}
+  ShelfButtonFocusBorder() {}
+  virtual ~ShelfButtonFocusBorder() {}
 
  private:
   // views::FocusBorder overrides:
@@ -254,7 +254,7 @@ class LauncherButtonFocusBorder : public views::FocusBorder {
     canvas->DrawRect(rect, kFocusBorderColor);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherButtonFocusBorder);
+  DISALLOW_COPY_AND_ASSIGN(ShelfButtonFocusBorder);
 };
 
 // AnimationDelegate used when inserting a new item. This steadily increases the
@@ -285,28 +285,27 @@ class FadeInAnimationDelegate
   DISALLOW_COPY_AND_ASSIGN(FadeInAnimationDelegate);
 };
 
-void ReflectItemStatus(const ash::LauncherItem& item,
-                       LauncherButton* button) {
+void ReflectItemStatus(const ash::LauncherItem& item, ShelfButton* button) {
   switch (item.status) {
     case STATUS_CLOSED:
-      button->ClearState(LauncherButton::STATE_ACTIVE);
-      button->ClearState(LauncherButton::STATE_RUNNING);
-      button->ClearState(LauncherButton::STATE_ATTENTION);
+      button->ClearState(ShelfButton::STATE_ACTIVE);
+      button->ClearState(ShelfButton::STATE_RUNNING);
+      button->ClearState(ShelfButton::STATE_ATTENTION);
       break;
     case STATUS_RUNNING:
-      button->ClearState(LauncherButton::STATE_ACTIVE);
-      button->AddState(LauncherButton::STATE_RUNNING);
-      button->ClearState(LauncherButton::STATE_ATTENTION);
+      button->ClearState(ShelfButton::STATE_ACTIVE);
+      button->AddState(ShelfButton::STATE_RUNNING);
+      button->ClearState(ShelfButton::STATE_ATTENTION);
       break;
     case STATUS_ACTIVE:
-      button->AddState(LauncherButton::STATE_ACTIVE);
-      button->ClearState(LauncherButton::STATE_RUNNING);
-      button->ClearState(LauncherButton::STATE_ATTENTION);
+      button->AddState(ShelfButton::STATE_ACTIVE);
+      button->ClearState(ShelfButton::STATE_RUNNING);
+      button->ClearState(ShelfButton::STATE_ATTENTION);
       break;
     case STATUS_ATTENTION:
-      button->ClearState(LauncherButton::STATE_ACTIVE);
-      button->ClearState(LauncherButton::STATE_RUNNING);
-      button->AddState(LauncherButton::STATE_ATTENTION);
+      button->ClearState(ShelfButton::STATE_ACTIVE);
+      button->ClearState(ShelfButton::STATE_RUNNING);
+      button->AddState(ShelfButton::STATE_ATTENTION);
       break;
   }
 }
@@ -487,8 +486,7 @@ gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(LauncherID id) {
     return gfx::Rect();
   const gfx::Rect& ideal_bounds(view_model_->ideal_bounds(index));
   DCHECK_NE(TYPE_APP_LIST, model_->items()[index].type);
-  LauncherButton* button =
-      static_cast<LauncherButton*>(view_model_->view_at(index));
+  ShelfButton* button = static_cast<ShelfButton*>(view_model_->view_at(index));
   gfx::Rect icon_bounds = button->GetIconBounds();
   return gfx::Rect(GetMirroredXWithWidthInView(
                        ideal_bounds.x() + icon_bounds.x(), icon_bounds.width()),
@@ -921,8 +919,7 @@ views::View* ShelfView::CreateViewForItem(const LauncherItem& item) {
     case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
     case TYPE_APP_PANEL: {
-      LauncherButton* button =
-          LauncherButton::Create(this, this, layout_manager_);
+      ShelfButton* button = ShelfButton::Create(this, this, layout_manager_);
       button->SetImage(item.image);
       ReflectItemStatus(item, button);
       view = button;
@@ -935,7 +932,7 @@ views::View* ShelfView::CreateViewForItem(const LauncherItem& item) {
                                           this,
                                           layout_manager_->shelf_widget());
       } else {
-        // TODO(dave): turn this into a LauncherButton too.
+        // TODO(dave): turn this into a ShelfButton too.
         AppListButton* button = new AppListButton(this, this);
         button->SetImageAlignment(
             layout_manager_->SelectValueForShelfAlignment(
@@ -957,7 +954,7 @@ views::View* ShelfView::CreateViewForItem(const LauncherItem& item) {
       break;
   }
   view->set_context_menu_controller(this);
-  view->set_focus_border(new LauncherButtonFocusBorder);
+  view->set_focus_border(new ShelfButtonFocusBorder);
 
   DCHECK(view);
   ConfigureChildView(view);
@@ -1103,7 +1100,7 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
   int delta = CalculateShelfDistance(event.root_location());
   if (delta > kRipOffDistance) {
     // Create a proxy view item which can be moved anywhere.
-    LauncherButton* button = static_cast<LauncherButton*>(drag_view_);
+    ShelfButton* button = static_cast<ShelfButton*>(drag_view_);
     CreateDragIconProxy(event.root_location(),
                         button->GetImage(),
                         drag_view_,
@@ -1178,8 +1175,8 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
       // animation end the flag gets cleared if |snap_back_from_rip_off_view_|
       // is set.
       snap_back_from_rip_off_view_ = drag_view_;
-      LauncherButton* button = static_cast<LauncherButton*>(drag_view_);
-      button->AddState(LauncherButton::STATE_HIDDEN);
+      ShelfButton* button = static_cast<ShelfButton*>(drag_view_);
+      button->AddState(ShelfButton::STATE_HIDDEN);
       // When a canceling drag model is happening, the view model is diverged
       // from the menu model and movements / animations should not be done.
       model_->Move(current_index, start_drag_index_);
@@ -1560,7 +1557,7 @@ void ShelfView::ShelfItemChanged(int model_index,
     case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
     case TYPE_APP_PANEL: {
-      LauncherButton* button = static_cast<LauncherButton*>(view);
+      ShelfButton* button = static_cast<ShelfButton*>(view);
       ReflectItemStatus(item, button);
       // The browser shortcut is currently not a "real" item and as such the
       // the image is bogous as well. We therefore keep the image as is for it.
@@ -1903,15 +1900,15 @@ void ShelfView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
 void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
   if (snap_back_from_rip_off_view_ && animator == bounds_animator_) {
     if (!animator->IsAnimating(snap_back_from_rip_off_view_)) {
-      // Coming here the animation of the LauncherButton is finished and the
+      // Coming here the animation of the ShelfButton is finished and the
       // previously hidden status can be shown again. Since the button itself
       // might have gone away or changed locations we check that the button
       // is still in the shelf and show its status again.
       for (int index = 0; index < view_model_->view_size(); index++) {
         views::View* view = view_model_->view_at(index);
         if (view == snap_back_from_rip_off_view_) {
-          LauncherButton* button = static_cast<LauncherButton*>(view);
-          button->ClearState(LauncherButton::STATE_HIDDEN);
+          ShelfButton* button = static_cast<ShelfButton*>(view);
+          button->ClearState(ShelfButton::STATE_HIDDEN);
           break;
         }
       }

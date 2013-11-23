@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/launcher/launcher.h"
-#include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
+#include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
@@ -27,7 +27,7 @@
 
 typedef ash::test::AshTestBase LauncherTest;
 using ash::internal::ShelfView;
-using ash::internal::LauncherButton;
+using ash::internal::ShelfButton;
 
 namespace ash {
 
@@ -101,8 +101,8 @@ TEST_F(LauncherTest, StatusReflection) {
   item.status = STATUS_RUNNING;
   int index = shelf_model()->Add(item);
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
-  LauncherButton* button = test_api()->GetButton(index);
-  EXPECT_EQ(LauncherButton::STATE_RUNNING, button->state());
+  ShelfButton* button = test_api()->GetButton(index);
+  EXPECT_EQ(ShelfButton::STATE_RUNNING, button->state());
 
   // Remove it.
   shelf_model()->RemoveItemAt(index);
@@ -127,10 +127,10 @@ TEST_F(LauncherTest, checkHoverAfterMenu) {
                                           delegate.Pass());
 
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
-  LauncherButton* button = test_api()->GetButton(index);
-  button->AddState(LauncherButton::STATE_HOVERED);
+  ShelfButton* button = test_api()->GetButton(index);
+  button->AddState(ShelfButton::STATE_HOVERED);
   button->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
-  EXPECT_FALSE(button->state() & LauncherButton::STATE_HOVERED);
+  EXPECT_FALSE(button->state() & ShelfButton::STATE_HOVERED);
 
   // Remove it.
   shelf_model()->RemoveItemAt(index);

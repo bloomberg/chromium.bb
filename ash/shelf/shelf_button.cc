@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/launcher_button.h"
+#include "ash/shelf/shelf_button.h"
 
 #include <algorithm>
 
@@ -39,14 +39,14 @@ const int kHopDownMS = 200;
 const int kAttentionThrobDurationMS = 800;
 
 bool ShouldHop(int state) {
-  return state & ash::internal::LauncherButton::STATE_HOVERED ||
-      state & ash::internal::LauncherButton::STATE_ACTIVE ||
-      state & ash::internal::LauncherButton::STATE_FOCUSED;
+  return state & ash::internal::ShelfButton::STATE_HOVERED ||
+         state & ash::internal::ShelfButton::STATE_ACTIVE ||
+         state & ash::internal::ShelfButton::STATE_FOCUSED;
 }
 
 // Simple AnimationDelegate that owns a single ThrobAnimation instance to
 // keep all Draw Attention animations in sync.
-class LauncherButtonAnimation : public gfx::AnimationDelegate {
+class ShelfButtonAnimation : public gfx::AnimationDelegate {
  public:
   class Observer {
    public:
@@ -56,8 +56,8 @@ class LauncherButtonAnimation : public gfx::AnimationDelegate {
     virtual ~Observer() {}
   };
 
-  static LauncherButtonAnimation* GetInstance() {
-    static LauncherButtonAnimation* s_instance = new LauncherButtonAnimation();
+  static ShelfButtonAnimation* GetInstance() {
+    static ShelfButtonAnimation* s_instance = new ShelfButtonAnimation();
     return s_instance;
   }
 
@@ -80,13 +80,13 @@ class LauncherButtonAnimation : public gfx::AnimationDelegate {
   }
 
  private:
-  LauncherButtonAnimation()
+  ShelfButtonAnimation()
       : animation_(this) {
     animation_.SetThrobDuration(kAttentionThrobDurationMS);
     animation_.SetTweenType(gfx::Tween::SMOOTH_IN_OUT);
   }
 
-  virtual ~LauncherButtonAnimation() {
+  virtual ~ShelfButtonAnimation() {
   }
 
   gfx::ThrobAnimation& GetThrobAnimation() {
@@ -109,7 +109,7 @@ class LauncherButtonAnimation : public gfx::AnimationDelegate {
   gfx::ThrobAnimation animation_;
   ObserverList<Observer> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherButtonAnimation);
+  DISALLOW_COPY_AND_ASSIGN(ShelfButtonAnimation);
 };
 
 }  // namespace
@@ -118,19 +118,19 @@ namespace ash {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
-// LauncherButton::BarView
+// ShelfButton::BarView
 
-class LauncherButton::BarView : public views::ImageView,
-                                public LauncherButtonAnimation::Observer {
+class ShelfButton::BarView : public views::ImageView,
+                             public ShelfButtonAnimation::Observer {
  public:
-  BarView(LauncherButton* host)
+  BarView(ShelfButton* host)
       : host_(host),
         show_attention_(false) {
   }
 
   virtual ~BarView() {
     if (show_attention_)
-      LauncherButtonAnimation::GetInstance()->RemoveObserver(this);
+      ShelfButtonAnimation::GetInstance()->RemoveObserver(this);
   }
 
   // View
@@ -141,7 +141,7 @@ class LauncherButton::BarView : public views::ImageView,
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     if (show_attention_) {
-      int alpha = LauncherButtonAnimation::GetInstance()->GetAlpha();
+      int alpha = ShelfButtonAnimation::GetInstance()->GetAlpha();
       canvas->SaveLayerAlpha(alpha);
       views::ImageView::OnPaint(canvas);
       canvas->Restore();
@@ -150,7 +150,7 @@ class LauncherButton::BarView : public views::ImageView,
     }
   }
 
-  // LauncherButtonAnimation::Observer
+  // ShelfButtonAnimation::Observer
   virtual void AnimationProgressed() OVERRIDE {
     UpdateBounds();
     SchedulePaint();
@@ -165,9 +165,9 @@ class LauncherButton::BarView : public views::ImageView,
     if (show_attention_ != show) {
       show_attention_ = show;
       if (show_attention_)
-        LauncherButtonAnimation::GetInstance()->AddObserver(this);
+        ShelfButtonAnimation::GetInstance()->AddObserver(this);
       else
-        LauncherButtonAnimation::GetInstance()->RemoveObserver(this);
+        ShelfButtonAnimation::GetInstance()->RemoveObserver(this);
     }
     UpdateBounds();
   }
@@ -179,7 +179,7 @@ class LauncherButton::BarView : public views::ImageView,
       // Scale from .35 to 1.0 of the total width (which is wider than the
       // visible width of the image, so the animation "rests" briefly at full
       // visible width.
-      double animation = LauncherButtonAnimation::GetInstance()->GetAnimation();
+      double animation = ShelfButtonAnimation::GetInstance()->GetAnimation();
       double scale = (.35 + .65 * animation);
       if (host_->shelf_layout_manager()->GetAlignment() ==
           SHELF_ALIGNMENT_BOTTOM) {
@@ -195,7 +195,7 @@ class LauncherButton::BarView : public views::ImageView,
     SetBoundsRect(bounds);
   }
 
-  LauncherButton* host_;
+  ShelfButton* host_;
   bool show_attention_;
   gfx::Rect base_bounds_;
 
@@ -203,35 +203,33 @@ class LauncherButton::BarView : public views::ImageView,
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// LauncherButton::IconView
+// ShelfButton::IconView
 
-LauncherButton::IconView::IconView() : icon_size_(kIconSize) {
+ShelfButton::IconView::IconView() : icon_size_(kIconSize) {
 }
 
-LauncherButton::IconView::~IconView() {
+ShelfButton::IconView::~IconView() {
 }
 
-bool LauncherButton::IconView::HitTestRect(const gfx::Rect& rect) const {
-  // Return false so that LauncherButton gets all the mouse events.
+bool ShelfButton::IconView::HitTestRect(const gfx::Rect& rect) const {
+  // Return false so that ShelfButton gets all the mouse events.
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LauncherButton
+// ShelfButton
 
-LauncherButton* LauncherButton::Create(
-    views::ButtonListener* listener,
-    ShelfButtonHost* host,
-    ShelfLayoutManager* shelf_layout_manager) {
-  LauncherButton* button =
-      new LauncherButton(listener, host, shelf_layout_manager);
+ShelfButton* ShelfButton::Create(views::ButtonListener* listener,
+                                 ShelfButtonHost* host,
+                                 ShelfLayoutManager* shelf_layout_manager) {
+  ShelfButton* button = new ShelfButton(listener, host, shelf_layout_manager);
   button->Init();
   return button;
 }
 
-LauncherButton::LauncherButton(views::ButtonListener* listener,
-                               ShelfButtonHost* host,
-                               ShelfLayoutManager* shelf_layout_manager)
+ShelfButton::ShelfButton(views::ButtonListener* listener,
+                         ShelfButtonHost* host,
+                         ShelfLayoutManager* shelf_layout_manager)
     : CustomButton(listener),
       host_(host),
       icon_view_(NULL),
@@ -251,17 +249,17 @@ LauncherButton::LauncherButton(views::ButtonListener* listener,
   AddChildView(bar_);
 }
 
-LauncherButton::~LauncherButton() {
+ShelfButton::~ShelfButton() {
   if (destroyed_flag_)
     *destroyed_flag_ = true;
 }
 
-void LauncherButton::SetShadowedImage(const gfx::ImageSkia& image) {
+void ShelfButton::SetShadowedImage(const gfx::ImageSkia& image) {
   icon_view_->SetImage(gfx::ImageSkiaOperations::CreateImageWithDropShadow(
       image, icon_shadows_));
 }
 
-void LauncherButton::SetImage(const gfx::ImageSkia& image) {
+void ShelfButton::SetImage(const gfx::ImageSkia& image) {
   if (image.isNull()) {
     // TODO: need an empty image.
     icon_view_->SetImage(image);
@@ -293,11 +291,11 @@ void LauncherButton::SetImage(const gfx::ImageSkia& image) {
       skia::ImageOperations::RESIZE_BEST, gfx::Size(width, height)));
 }
 
-const gfx::ImageSkia& LauncherButton::GetImage() const {
+const gfx::ImageSkia& ShelfButton::GetImage() const {
   return icon_view_->GetImage();
 }
 
-void LauncherButton::AddState(State state) {
+void ShelfButton::AddState(State state) {
   if (!(state_ & state)) {
     if (!ash::switches::UseAlternateShelfLayout() &&
         (ShouldHop(state) || !ShouldHop(state_))) {
@@ -313,7 +311,7 @@ void LauncherButton::AddState(State state) {
   }
 }
 
-void LauncherButton::ClearState(State state) {
+void ShelfButton::ClearState(State state) {
   if (state_ & state) {
     if (!ash::switches::UseAlternateShelfLayout() &&
         (!ShouldHop(state) || ShouldHop(state_))) {
@@ -330,12 +328,12 @@ void LauncherButton::ClearState(State state) {
   }
 }
 
-gfx::Rect LauncherButton::GetIconBounds() const {
+gfx::Rect ShelfButton::GetIconBounds() const {
   return icon_view_->bounds();
 }
 
-void LauncherButton::ShowContextMenu(const gfx::Point& p,
-                                     ui::MenuSourceType source_type) {
+void ShelfButton::ShowContextMenu(const gfx::Point& p,
+                                  ui::MenuSourceType source_type) {
   if (!context_menu_controller())
     return;
 
@@ -353,52 +351,52 @@ void LauncherButton::ShowContextMenu(const gfx::Point& p,
   }
 }
 
-bool LauncherButton::OnMousePressed(const ui::MouseEvent& event) {
+bool ShelfButton::OnMousePressed(const ui::MouseEvent& event) {
   CustomButton::OnMousePressed(event);
   host_->PointerPressedOnButton(this, ShelfButtonHost::MOUSE, event);
   return true;
 }
 
-void LauncherButton::OnMouseReleased(const ui::MouseEvent& event) {
+void ShelfButton::OnMouseReleased(const ui::MouseEvent& event) {
   CustomButton::OnMouseReleased(event);
   host_->PointerReleasedOnButton(this, ShelfButtonHost::MOUSE, false);
 }
 
-void LauncherButton::OnMouseCaptureLost() {
+void ShelfButton::OnMouseCaptureLost() {
   ClearState(STATE_HOVERED);
   host_->PointerReleasedOnButton(this, ShelfButtonHost::MOUSE, true);
   CustomButton::OnMouseCaptureLost();
 }
 
-bool LauncherButton::OnMouseDragged(const ui::MouseEvent& event) {
+bool ShelfButton::OnMouseDragged(const ui::MouseEvent& event) {
   CustomButton::OnMouseDragged(event);
   host_->PointerDraggedOnButton(this, ShelfButtonHost::MOUSE, event);
   return true;
 }
 
-void LauncherButton::OnMouseMoved(const ui::MouseEvent& event) {
+void ShelfButton::OnMouseMoved(const ui::MouseEvent& event) {
   CustomButton::OnMouseMoved(event);
   host_->MouseMovedOverButton(this);
 }
 
-void LauncherButton::OnMouseEntered(const ui::MouseEvent& event) {
+void ShelfButton::OnMouseEntered(const ui::MouseEvent& event) {
   AddState(STATE_HOVERED);
   CustomButton::OnMouseEntered(event);
   host_->MouseEnteredButton(this);
 }
 
-void LauncherButton::OnMouseExited(const ui::MouseEvent& event) {
+void ShelfButton::OnMouseExited(const ui::MouseEvent& event) {
   ClearState(STATE_HOVERED);
   CustomButton::OnMouseExited(event);
   host_->MouseExitedButton(this);
 }
 
-void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
+void ShelfButton::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
   state->name = host_->GetAccessibleName(this);
 }
 
-void LauncherButton::Layout() {
+void ShelfButton::Layout() {
   const gfx::Rect button_bounds(GetContentsBounds());
   int icon_pad = kIconPad;
   if (ash::switches::UseAlternateShelfLayout()) {
@@ -458,21 +456,21 @@ void LauncherButton::Layout() {
   UpdateState();
 }
 
-void LauncherButton::ChildPreferredSizeChanged(views::View* child) {
+void ShelfButton::ChildPreferredSizeChanged(views::View* child) {
   Layout();
 }
 
-void LauncherButton::OnFocus() {
+void ShelfButton::OnFocus() {
   AddState(STATE_FOCUSED);
   CustomButton::OnFocus();
 }
 
-void LauncherButton::OnBlur() {
+void ShelfButton::OnBlur() {
   ClearState(STATE_FOCUSED);
   CustomButton::OnBlur();
 }
 
-void LauncherButton::OnGestureEvent(ui::GestureEvent* event) {
+void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
       AddState(STATE_HOVERED);
@@ -498,7 +496,7 @@ void LauncherButton::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void LauncherButton::Init() {
+void ShelfButton::Init() {
   icon_view_ = CreateIconView();
 
   // TODO: refactor the layers so each button doesn't require 2.
@@ -510,15 +508,15 @@ void LauncherButton::Init() {
   AddChildView(icon_view_);
 }
 
-LauncherButton::IconView* LauncherButton::CreateIconView() {
+ShelfButton::IconView* ShelfButton::CreateIconView() {
   return new IconView;
 }
 
-bool LauncherButton::IsShelfHorizontal() const {
+bool ShelfButton::IsShelfHorizontal() const {
   return shelf_layout_manager_->IsHorizontalAlignment();
 }
 
-void LauncherButton::UpdateState() {
+void ShelfButton::UpdateState() {
   UpdateBar();
 
   icon_view_->SetHorizontalAlignment(
@@ -530,7 +528,7 @@ void LauncherButton::UpdateState() {
   SchedulePaint();
 }
 
-void LauncherButton::UpdateBar() {
+void ShelfButton::UpdateBar() {
   if (state_ & STATE_HIDDEN) {
     bar_->SetVisible(false);
     return;
