@@ -28,6 +28,14 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Skip('conformance/glsl/misc/large-loop-compile.html',
         bug=322764)
 
+    # Windows failures.
+    self.Fail('conformance/ogles/GL/atan/atan_001_to_008.html',
+        ['win'], bug=322794)
+    self.Fail('conformance/ogles/GL/atan/atan_009_to_012.html',
+        ['win'], bug=322794)
+    self.Fail('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
+        ['win'], bug=322795)
+
     # Windows/Intel failures
     self.Fail('conformance/textures/texture-size.html',
         ['win', 'intel'], bug=121139)
