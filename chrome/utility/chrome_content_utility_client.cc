@@ -21,6 +21,8 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
+#include "chrome/utility/cloud_print/bitmap_image.h"
+#include "chrome/utility/cloud_print/pwg_encoder.h"
 #include "chrome/utility/extensions/unpacker.h"
 #include "chrome/utility/profile_import_handler.h"
 #include "chrome/utility/web_resource_unpacker.h"
@@ -327,6 +329,8 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_DecodeImageBase64, OnDecodeImageBase64)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafile,
                         OnRenderPDFPagesToMetafile)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToPWGRaster,
+                        OnRenderPDFPagesToPWGRaster)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RobustJPEGDecodeImage,
                         OnRobustJPEGDecodeImage)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseJSON, OnParseJSON)
@@ -529,6 +533,22 @@ void ChromeContentUtilityClient::OnRenderPDFPagesToMetafile(
   ReleaseProcessIfNeeded();
 }
 
+void ChromeContentUtilityClient::OnRenderPDFPagesToPWGRaster(
+    IPC::PlatformFileForTransit pdf_transit,
+    const printing::PdfRenderSettings& settings,
+    IPC::PlatformFileForTransit bitmap_transit) {
+  base::PlatformFile pdf =
+      IPC::PlatformFileForTransitToPlatformFile(pdf_transit);
+  base::PlatformFile bitmap =
+      IPC::PlatformFileForTransitToPlatformFile(bitmap_transit);
+  if (RenderPDFPagesToPWGRaster(pdf, settings, bitmap)) {
+    Send(new ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Succeeded());
+  } else {
+    Send(new ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Failed());
+  }
+  ReleaseProcessIfNeeded();
+}
+
 #if defined(OS_WIN)
 bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
     base::PlatformFile pdf_file,
@@ -605,6 +625,59 @@ bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
   return ret;
 }
 #endif  // defined(OS_WIN)
+
+bool ChromeContentUtilityClient::RenderPDFPagesToPWGRaster(
+    base::PlatformFile pdf_file,
+    const printing::PdfRenderSettings& settings,
+    base::PlatformFile bitmap_file) {
+  bool autoupdate = true;
+  if (!g_pdf_lib.Get().IsValid())
+    return false;
+
+  base::PlatformFileInfo info;
+  if (!base::GetPlatformFileInfo(pdf_file, &info) || info.size <= 0)
+    return false;
+
+  std::string data(info.size, 0);
+  int data_size = base::ReadPlatformFile(pdf_file, 0, &data[0], data.size());
+  if (data_size != static_cast<int>(data.size()))
+    return false;
+
+  int total_page_count = 0;
+  if (!g_pdf_lib.Get().GetPDFDocInfo(data.data(), data.size(),
+                                     &total_page_count, NULL)) {
+    return false;
+  }
+
+  cloud_print::PwgEncoder encoder;
+  std::string pwg_header;
+  encoder.EncodeDocumentHeader(&pwg_header);
+  int bytes_written = base::WritePlatformFileAtCurrentPos(bitmap_file,
+                                                          pwg_header.data(),
+                                                          pwg_header.size());
+  if (bytes_written != static_cast<int>(pwg_header.size()))
+    return false;
+
+  cloud_print::BitmapImage image(settings.area().size(),
+                                 cloud_print::BitmapImage::BGRA);
+  for (int i = 0; i < total_page_count; ++i) {
+    if (!g_pdf_lib.Get().RenderPDFPageToBitmap(
+             data.data(), data.size(), i, image.pixel_data(),
+             image.size().width(), image.size().height(), settings.dpi(),
+             settings.dpi(), autoupdate)) {
+      return false;
+    }
+    std::string pwg_page;
+    if (!encoder.EncodePage(image, settings.dpi(), total_page_count, &pwg_page))
+      return false;
+    bytes_written = base::WritePlatformFileAtCurrentPos(bitmap_file,
+                                                        pwg_page.data(),
+                                                        pwg_page.size());
+    if (bytes_written != static_cast<int>(pwg_page.size()))
+      return false;
+  }
+  return true;
+}
 
 void ChromeContentUtilityClient::OnRobustJPEGDecodeImage(
     const std::vector<unsigned char>& encoded_data) {

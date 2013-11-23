@@ -54,6 +54,10 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
       const base::FilePath& metafile_path,
       const printing::PdfRenderSettings& settings,
       const std::vector<printing::PageRange>& page_ranges);
+  void OnRenderPDFPagesToPWGRaster(
+      IPC::PlatformFileForTransit pdf_transit,
+      const printing::PdfRenderSettings& settings,
+      IPC::PlatformFileForTransit bitmap_transit);
   void OnRobustJPEGDecodeImage(
       const std::vector<unsigned char>& encoded_data);
   void OnParseJSON(const std::string& json);
@@ -75,6 +79,11 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
       int* highest_rendered_page_number,
       double* scale_factor);
 #endif   // defined(OS_WIN)
+
+  bool RenderPDFPagesToPWGRaster(
+      base::PlatformFile pdf_file,
+      const printing::PdfRenderSettings& settings,
+      base::PlatformFile bitmap_file);
 
   void OnGetPrinterCapsAndDefaults(const std::string& printer_name);
   void OnStartupPing();
