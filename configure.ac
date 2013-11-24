@@ -102,6 +102,8 @@ if test x$enable_xwayland = xyes; then
   fi
 fi
 
+PKG_CHECK_MODULES(LIBDRM, [libdrm],
+                  [AC_DEFINE(HAVE_LIBDRM, 1, [Define if libdrm is available]) have_libdrm=yes], have_libdrm=no)
 
 AC_ARG_ENABLE(x11-compositor, [  --enable-x11-compositor],,
 	      enable_x11_compositor=yes)
@@ -145,9 +147,6 @@ AM_CONDITIONAL(ENABLE_DRM_COMPOSITOR, test x$enable_drm_compositor = xyes -a x$e
 if test x$enable_drm_compositor = xyes -a x$enable_egl = xyes; then
   AC_DEFINE([BUILD_DRM_COMPOSITOR], [1], [Build the DRM compositor])
   PKG_CHECK_MODULES(DRM_COMPOSITOR, [libudev >= 136 libdrm >= 2.4.30 gbm mtdev >= 1.1.0])
-
-  # For libdrm usage in launcher-util.c
-  COMPOSITOR_MODULES="$COMPOSITOR_MODULES libdrm"
 fi
 
 PKG_CHECK_MODULES(COMPOSITOR, [$COMPOSITOR_MODULES])
@@ -332,13 +331,12 @@ AS_IF([test "x$have_systemd_login_209" = "xyes"],
 AC_ARG_ENABLE(weston-launch, [  --enable-weston-launch],, enable_weston_launch=yes)
 AM_CONDITIONAL(BUILD_WESTON_LAUNCH, test x$enable_weston_launch == xyes)
 if test x$enable_weston_launch == xyes; then
-  PKG_CHECK_MODULES(WESTON_LAUNCH, [libdrm])
-
   AC_CHECK_LIB([pam], [pam_open_session], [have_pam=yes], [have_pam=no])
   if test x$have_pam == xno; then
     AC_ERROR([weston-launch requires pam])
   fi
-  WESTON_LAUNCH_LIBS="$WESTON_LAUNCH_LIBS -lpam"
+  PAM_LIBS=-lpam
+  AC_SUBST(PAM_LIBS)
 fi
 
 if test x$enable_egl = xyes; then

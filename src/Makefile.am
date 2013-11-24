@@ -80,10 +80,13 @@ DIST_SUBDIRS = xwayland
 if BUILD_WESTON_LAUNCH
 weston_launch = weston-launch
 weston_launch_SOURCES = weston-launch.c weston-launch.h
-weston_launch_CFLAGS= $(GCC_CFLAGS)
-weston_launch_CPPFLAGS = $(WESTON_LAUNCH_CFLAGS) $(SYSTEMD_LOGIN_CFLAGS) \
-		 -DBINDIR='"$(bindir)"'
-weston_launch_LDADD = $(WESTON_LAUNCH_LIBS) $(SYSTEMD_LOGIN_LIBS)
+weston_launch_CPPFLAGS = -DBINDIR='"$(bindir)"'
+weston_launch_CFLAGS=				\
+	$(GCC_CFLAGS)				\
+	$(PAM_CFLAGS)				\
+	$(SYSTEMD_LOGIN_CFLAGS)			\
+	$(LIBDRM_CFLAGS)
+weston_launch_LDADD = $(PAM_LIBS) $(SYSTEMD_LOGIN_LIBS) $(LIBDRM_LIBS)
 
 if ENABLE_SETUID_INSTALL
 install-exec-hook:
@@ -206,11 +209,13 @@ rpi_backend_la_LDFLAGS = -module -avoid-version
 rpi_backend_la_LIBADD = $(COMPOSITOR_LIBS)	\
 	$(RPI_COMPOSITOR_LIBS)			\
 	$(RPI_BCM_HOST_LIBS)			\
+	$(LIBDRM_LIBS)				\
 	../shared/libshared.la
 rpi_backend_la_CFLAGS =				\
 	$(GCC_CFLAGS)				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(RPI_COMPOSITOR_CFLAGS)		\
+	$(LIBDRM_CFLAGS)				\
 	$(RPI_BCM_HOST_CFLAGS)
 rpi_backend_la_SOURCES =			\
 	compositor-rpi.c			\
@@ -247,11 +252,13 @@ fbdev_backend_la_LDFLAGS = -module -avoid-version
 fbdev_backend_la_LIBADD = \
 	$(COMPOSITOR_LIBS) \
 	$(FBDEV_COMPOSITOR_LIBS) \
+	$(LIBDRM_LIBS) \
 	../shared/libshared.la
 fbdev_backend_la_CFLAGS = \
 	$(COMPOSITOR_CFLAGS) \
 	$(EGL_CFLAGS) \
 	$(FBDEV_COMPOSITOR_CFLAGS) \
+	$(LIBDRM_CFLAGS) \
 	$(PIXMAN_CFLAGS) \
 	$(GCC_CFLAGS)
 fbdev_backend_la_SOURCES = \

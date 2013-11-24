@@ -40,10 +40,6 @@
 #include <linux/kd.h>
 #include <linux/major.h>
 
-#ifdef BUILD_DRM_COMPOSITOR
-#include <xf86drm.h>
-#endif
-
 #include "compositor.h"
 #include "launcher-util.h"
 #include "logind-util.h"
@@ -55,42 +51,54 @@
 #define KDSKBMUTE	0x4B51
 #endif
 
-union cmsg_data { unsigned char b[4]; int fd; };
+#ifdef HAVE_LIBDRM
 
-struct weston_launcher {
-	struct weston_logind *logind;
-	struct weston_compositor *compositor;
-	int fd;
-	struct wl_event_source *source;
+#include <xf86drm.h>
 
-	int kb_mode, tty, drm_fd;
-	struct wl_event_source *vt_source;
-};
-
-#ifdef BUILD_DRM_COMPOSITOR
-static int
-drm_drop_master(int drm_fd)
-{
-	return drmDropMaster(drm_fd);
-}
-static int
-drm_set_master(int drm_fd)
-{
-	return drmSetMaster(drm_fd);
-}
-static int
-drm_is_master(int drm_fd)
+static inline int
+is_drm_master(int drm_fd)
 {
 	drm_magic_t magic;
 
 	return drmGetMagic(drm_fd, &magic) == 0 &&
 		drmAuthMagic(drm_fd, magic) == 0;
 }
+
 #else
-static int drm_drop_master(int drm_fd) {return 0;}
-static int drm_set_master(int drm_fd) {return 0;}
-static int drm_is_master(int drm_fd) {return 1;}
+
+static inline int
+drmDropMaster(int drm_fd)
+{
+	return 0;
+}
+
+static inline int
+drmSetMaster(int drm_fd)
+{
+	return 0;
+}
+
+static inline int
+is_drm_master(int drm_fd)
+{
+	return 0;
+}
+
 #endif
+
+
+union cmsg_data { unsigned char b[4]; int fd; };
+
+struct weston_launcher {
+	struct weston_compositor *compositor;
+	struct weston_logind *logind;
+	struct wl_event_loop *loop;
+	int fd;
+	struct wl_event_source *source;
+
+	int kb_mode, tty, drm_fd;
+	struct wl_event_source *vt_source;
+};
 
 int
 weston_launcher_open(struct weston_launcher *launcher,
@@ -121,7 +129,7 @@ weston_launcher_open(struct weston_launcher *launcher,
 
 		if (major(s.st_rdev) == DRM_MAJOR) {
 			launcher->drm_fd = fd;
-			if (!drm_is_master(fd)) {
+			if (!is_drm_master(fd)) {
 				weston_log("drm fd not master\n");
 				close(fd);
 				return -1;
@@ -205,7 +213,7 @@ weston_launcher_restore(struct weston_launcher *launcher)
 	/* We have to drop master before we switch the VT back in
 	 * VT_AUTO, so we don't risk switching to a VT with another
 	 * display server, that will then fail to set drm master. */
-	drm_drop_master(launcher->drm_fd);
+	drmDropMaster(launcher->drm_fd);
 
 	mode.mode = VT_AUTO;
 	if (ioctl(launcher->tty, VT_SETMODE, &mode) < 0)
@@ -259,11 +267,11 @@ vt_handler(int signal_number, void *data)
 	if (compositor->session_active) {
 		compositor->session_active = 0;
 		wl_signal_emit(&compositor->session_signal, compositor);
-		drm_drop_master(launcher->drm_fd);
+		drmDropMaster(launcher->drm_fd);
 		ioctl(launcher->tty, VT_RELDISP, 1);
 	} else {
 		ioctl(launcher->tty, VT_RELDISP, VT_ACKACQ);
-		drm_set_master(launcher->drm_fd);
+		drmSetMaster(launcher->drm_fd);
 		compositor->session_active = 1;
 		wl_signal_emit(&compositor->session_signal, compositor);
 	}

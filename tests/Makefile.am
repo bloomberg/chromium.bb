@@ -112,6 +112,7 @@ subsurface_weston_SOURCES = subsurface-test.c
 subsurface_weston_LDADD = libtest-client.la
 
 xwayland_weston_SOURCES = xwayland-test.c
+xwayland_weston_CFLAGS = $(GCC_CFLAGS) $(XWAYLAND_TEST_CFLAGS)
 xwayland_weston_LDADD = libtest-client.la $(XWAYLAND_TEST_LIBS)
 
 if ENABLE_XWAYLAND_TEST

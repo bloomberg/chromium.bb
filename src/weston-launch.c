@@ -50,8 +50,6 @@
 #include <grp.h>
 #include <security/pam_appl.h>
 
-#include <xf86drm.h>
-
 #ifdef HAVE_SYSTEMD_LOGIN
 #include <systemd/sd-login.h>
 #endif
@@ -69,6 +67,26 @@
 #endif
 
 #define MAX_ARGV_SIZE 256
+
+#ifdef HAVE_LIBDRM
+
+#include <xf86drm.h>
+
+#else
+
+static inline int
+drmDropMaster(int drm_fd)
+{
+	return 0;
+}
+
+static inline int
+drmSetMaster(int drm_fd)
+{
+	return 0;
+}
+
+#endif
 
 struct weston_launch {
 	struct pam_conv pc;
