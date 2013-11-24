@@ -37,7 +37,7 @@ void AutofillDialogCocoa::Show() {
   DCHECK(!sheet_delegate_.get());
   sheet_delegate_.reset([[AutofillDialogWindowController alloc]
        initWithWebContents:delegate_->GetWebContents()
-            autofillDialog:this]);
+                    dialog:this]);
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc]
           initWithCustomWindow:[sheet_delegate_ window]]);

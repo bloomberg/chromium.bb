@@ -9,9 +9,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/chrome_style.h"
-#import "chrome/browser/ui/cocoa/autofill/autofill_account_chooser.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_cocoa.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_header.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_input_field.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_loading_shield_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
@@ -28,14 +28,9 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
-const CGFloat kAccountChooserHeight = 20.0;
+
 const CGFloat kMinimumContentsHeight = 101;
 
-// Height of all decorations & paddings on main dialog together.
-const CGFloat kDecorationHeight = kAccountChooserHeight +
-                                  autofill::kDetailVerticalPadding +
-                                  chrome_style::kClientBottomPadding +
-                                  chrome_style::kTitleTopPadding;
 }  // namespace
 
 #pragma mark Field Editor
@@ -107,7 +102,7 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
 @implementation AutofillDialogWindowController
 
 - (id)initWithWebContents:(content::WebContents*)webContents
-      autofillDialog:(autofill::AutofillDialogCocoa*)autofillDialog {
+                   dialog:(autofill::AutofillDialogCocoa*)dialog {
   DCHECK(webContents);
 
   base::scoped_nsobject<ConstrainedWindowCustomWindow> window(
@@ -117,38 +112,26 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
   if ((self = [super initWithWindow:window])) {
     [window setDelegate:self];
     webContents_ = webContents;
-    autofillDialog_ = autofillDialog;
+    dialog_ = dialog;
+
+    header_.reset([[AutofillHeader alloc] initWithDelegate:dialog->delegate()]);
 
     mainContainer_.reset([[AutofillMainContainer alloc]
-                             initWithDelegate:autofillDialog->delegate()]);
+                             initWithDelegate:dialog->delegate()]);
     [mainContainer_ setTarget:self];
 
     signInContainer_.reset(
-        [[AutofillSignInContainer alloc] initWithDialog:autofillDialog]);
+        [[AutofillSignInContainer alloc] initWithDialog:dialog]);
     [[signInContainer_ view] setHidden:YES];
 
-    // Set dialog title.
-    titleTextField_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
-    [titleTextField_ setEditable:NO];
-    [titleTextField_ setBordered:NO];
-    [titleTextField_ setDrawsBackground:NO];
-    [titleTextField_ setFont:[NSFont systemFontOfSize:15.0]];
-    [titleTextField_ setStringValue:
-        base::SysUTF16ToNSString(autofillDialog->delegate()->DialogTitle())];
-    [titleTextField_ sizeToFit];
-
-    accountChooser_.reset([[AutofillAccountChooser alloc]
-                              initWithFrame:NSZeroRect
-                                   delegate:autofillDialog->delegate()]);
-
     loadingShieldController_.reset(
-        [[AutofillLoadingShieldController alloc]
-            initWithDelegate:autofillDialog->delegate()]);
+        [[AutofillLoadingShieldController alloc] initWithDelegate:
+            dialog->delegate()]);
     [[loadingShieldController_ view] setHidden:YES];
 
     overlayController_.reset(
         [[AutofillOverlayController alloc] initWithDelegate:
-            autofillDialog->delegate()]);
+            dialog->delegate()]);
     [[overlayController_ view] setHidden:YES];
 
     // This needs a flipped content view because otherwise the size
@@ -158,8 +141,7 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
         [[FlippedView alloc] initWithFrame:
             [[[self window] contentView] frame]]);
     [flippedContentView setSubviews:
-        @[accountChooser_,
-          titleTextField_,
+        @[[header_ view],
           [mainContainer_ view],
           [signInContainer_ view],
           [loadingShieldController_ view],
@@ -167,7 +149,7 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
     [flippedContentView setAutoresizingMask:
         (NSViewWidthSizable | NSViewHeightSizable)];
     [[[self window] contentView] addSubview:flippedContentView];
-    [mainContainer_ setAnchorView:[[accountChooser_ subviews] objectAtIndex:1]];
+    [mainContainer_ setAnchorView:[header_ anchorView]];
   }
   return self;
 }
@@ -189,8 +171,10 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
 
 - (void)updateSignInSizeConstraints {
   // Adjust for the size of all decorations and paddings outside main content.
-  CGFloat minHeight = kMinimumContentsHeight - kDecorationHeight;
-  CGFloat maxHeight = std::max([self maxHeight] - kDecorationHeight, minHeight);
+  CGFloat decorationHeight =
+      [[header_ view] frame].size.height + chrome_style::kClientBottomPadding;
+  CGFloat minHeight = kMinimumContentsHeight - decorationHeight;
+  CGFloat maxHeight = std::max([self maxHeight] - decorationHeight, minHeight);
   CGFloat width = NSWidth([[[self window] contentView] frame]);
 
   [signInContainer_ constrainSizeToMinimum:NSMakeSize(width, minHeight)
@@ -226,8 +210,10 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
     else
       size = [signInContainer_ preferredSize];
 
-    // Always make room for the header.
-    size.height += kDecorationHeight;
+    // Always make room for the header and bottom padding.
+    size.height +=
+        [header_ heightForWidth:size.width] +
+        chrome_style::kClientBottomPadding;
   }
 
   // Show as much of the main view as is possible without going past the
@@ -241,33 +227,15 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
   NSRect contentRect = NSZeroRect;
   contentRect.size = [self preferredSize];
   NSRect clientRect = contentRect;
-  clientRect.origin.y = chrome_style::kTitleTopPadding;
-  clientRect.size.height -= chrome_style::kTitleTopPadding +
-                            chrome_style::kClientBottomPadding;
+  clientRect.size.height -= chrome_style::kClientBottomPadding;
 
-  [titleTextField_ setStringValue:
-      base::SysUTF16ToNSString(autofillDialog_->delegate()->DialogTitle())];
-  [titleTextField_ sizeToFit];
+  CGFloat headerHeight = [header_ heightForWidth:NSWidth(clientRect)];
+  NSRect headerRect, mainRect;
+  NSDivideRect(clientRect, &headerRect, &mainRect, headerHeight, NSMinYEdge);
 
-  NSRect headerRect, mainRect, titleRect, dummyRect;
-  NSDivideRect(clientRect, &headerRect, &mainRect,
-               kAccountChooserHeight, NSMinYEdge);
-  NSDivideRect(mainRect, &dummyRect, &mainRect,
-               autofill::kDetailVerticalPadding, NSMinYEdge);
-  headerRect = NSInsetRect(headerRect, chrome_style::kHorizontalPadding, 0);
-  NSDivideRect(headerRect, &titleRect, &headerRect,
-               NSWidth([titleTextField_ frame]), NSMinXEdge);
+  [[header_ view] setFrame:headerRect];
+  [header_ performLayout];
 
-  // Align baseline of title with bottom of accountChooser.
-  base::scoped_nsobject<NSLayoutManager> layout_manager(
-      [[NSLayoutManager alloc] init]);
-  NSFont* titleFont = [titleTextField_ font];
-  titleRect.origin.y += NSHeight(titleRect) -
-      [layout_manager defaultBaselineOffsetForFont:titleFont];
-  [titleTextField_ setFrame:titleRect];
-
-  [accountChooser_ setFrame:headerRect];
-  [accountChooser_ performLayout];
   if ([[signInContainer_ view] isHidden]) {
     [[mainContainer_ view] setFrame:mainRect];
     [mainContainer_ performLayout];
@@ -288,14 +256,14 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
 
 - (IBAction)accept:(id)sender {
   if ([mainContainer_ validate])
-    autofillDialog_->delegate()->OnAccept();
+    dialog_->delegate()->OnAccept();
   else
     [mainContainer_ makeFirstInvalidInputFirstResponder];
 }
 
 - (IBAction)cancel:(id)sender {
-  autofillDialog_->delegate()->OnCancel();
-  autofillDialog_->PerformClose();
+  dialog_->delegate()->OnCancel();
+  dialog_->PerformClose();
 }
 
 - (void)show {
@@ -316,8 +284,8 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
 }
 
 - (void)hide {
-  autofillDialog_->delegate()->OnCancel();
-  autofillDialog_->PerformClose();
+  dialog_->delegate()->OnCancel();
+  dialog_->PerformClose();
 }
 
 - (void)updateNotificationArea {
@@ -325,7 +293,7 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
 }
 
 - (void)updateAccountChooser {
-  [accountChooser_ update];
+  [header_ update];
   [mainContainer_ updateLegalDocuments];
 
   // For the duration of the loading shield, hide the main contents.
@@ -342,7 +310,7 @@ const CGFloat kDecorationHeight = kAccountChooserHeight +
   // to remember previous state, because the overlay view is always the last
   // state of the dialog.
   [overlayController_ updateState];
-  [accountChooser_ setHidden:![[overlayController_ view] isHidden]];
+  [[header_ view] setHidden:![[overlayController_ view] isHidden]];
   [[mainContainer_ view] setHidden:![[overlayController_ view] isHidden]];
 }
 

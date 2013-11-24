@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 
-@class AutofillAccountChooser;
 @class AutofillDialogWindowController;
+@class AutofillHeader;
 @class AutofillLoadingShieldController;
 @class AutofillMainContainer;
 @class AutofillOverlayController;
@@ -57,22 +57,20 @@ class AutofillDialogCocoa;
     NSWindowController<NSWindowDelegate, AutofillLayout, AutofillDialogBridge> {
  @private
   content::WebContents* webContents_;  // weak.
-  autofill::AutofillDialogCocoa* autofillDialog_;  // weak.
+  autofill::AutofillDialogCocoa* dialog_;  // weak.
 
+  base::scoped_nsobject<AutofillHeader> header_;
   base::scoped_nsobject<AutofillMainContainer> mainContainer_;
   base::scoped_nsobject<AutofillSignInContainer> signInContainer_;
-  base::scoped_nsobject<AutofillAccountChooser> accountChooser_;
   base::scoped_nsobject<AutofillOverlayController> overlayController_;
   base::scoped_nsobject<AutofillLoadingShieldController>
       loadingShieldController_;
-  base::scoped_nsobject<NSTextField> loadingShieldTextField_;
-  base::scoped_nsobject<NSTextField> titleTextField_;
   base::scoped_nsobject<NSTextView> fieldEditor_;
 }
 
 // Designated initializer. The WebContents cannot be NULL.
 - (id)initWithWebContents:(content::WebContents*)webContents
-           autofillDialog:(autofill::AutofillDialogCocoa*)autofillDialog;
+                   dialog:(autofill::AutofillDialogCocoa*)dialog;
 
 // Requests a re-layout for the entire dialog. The layout will be postponed
 // until the next cycle of the runloop.

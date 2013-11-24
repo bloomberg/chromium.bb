@@ -11,24 +11,18 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
-#import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "ui/gfx/size.h"
 
 namespace content {
-  class NavigationController;
+class NavigationController;
 }
 
 namespace autofill {
-  class AutofillDialogViewDelegate;
+class AutofillDialogViewDelegate;
 }
 
-@class AutofillAccountChooser;
 @class AutofillDialogWindowController;
-@class AutofillLoadingShieldController;
-@class AutofillMainContainer;
-@class AutofillOverlayController;
-@class AutofillSignInContainer;
 
 namespace autofill {
 
