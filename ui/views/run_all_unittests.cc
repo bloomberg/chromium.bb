@@ -10,7 +10,6 @@
 #include "base/test/test_suite.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/views/view.h"
 
 class ViewTestSuite : public base::TestSuite {
  public:
@@ -28,6 +27,11 @@ class ViewTestSuite : public base::TestSuite {
     pak_file = pak_dir.Append(FILE_PATH_LITERAL("ui_test.pak"));
 
     ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
+  }
+
+  virtual void Shutdown() OVERRIDE {
+    ui::ResourceBundle::CleanupSharedInstance();
+    base::TestSuite::Shutdown();
   }
 
  private:
