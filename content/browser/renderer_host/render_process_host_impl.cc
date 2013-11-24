@@ -505,8 +505,8 @@ bool RenderProcessHostImpl::Init() {
 
   CreateMessageFilters();
 
-  // Single-process mode not supported in multiple-dll mode currently.
-  if (run_renderer_in_process() && g_renderer_main_thread_factory) {
+  if (run_renderer_in_process()) {
+    DCHECK(g_renderer_main_thread_factory);
     // Crank up a thread and run the initialization there.  With the way that
     // messages flow between the browser and renderer, this thread is required
     // to prevent a deadlock in single-process mode.  Since the primordial

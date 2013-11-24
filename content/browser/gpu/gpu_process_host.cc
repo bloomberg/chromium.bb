@@ -563,7 +563,8 @@ bool GpuProcessHost::Init() {
   if (channel_id.empty())
     return false;
 
-  if (in_process_ && g_gpu_main_thread_factory) {
+  if (in_process_) {
+    DCHECK(g_gpu_main_thread_factory);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableGpuWatchdog);
 

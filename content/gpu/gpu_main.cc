@@ -94,23 +94,18 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   base::Time start_time = base::Time::Now();
 
-  bool in_browser_process = command_line.HasSwitch(switches::kSingleProcess) ||
-                            command_line.HasSwitch(switches::kInProcessGPU);
-
-  if (!in_browser_process) {
 #if defined(OS_WIN)
-    // Prevent Windows from displaying a modal dialog on failures like not being
-    // able to load a DLL.
-    SetErrorMode(
-        SEM_FAILCRITICALERRORS |
-        SEM_NOGPFAULTERRORBOX |
-        SEM_NOOPENFILEERRORBOX);
+  // Prevent Windows from displaying a modal dialog on failures like not being
+  // able to load a DLL.
+  SetErrorMode(
+      SEM_FAILCRITICALERRORS |
+      SEM_NOGPFAULTERRORBOX |
+      SEM_NOOPENFILEERRORBOX);
 #elif defined(USE_X11)
-    ui::SetDefaultX11ErrorHandlers();
+  ui::SetDefaultX11ErrorHandlers();
 #endif
 
-    logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
-  }
+  logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
 
   if (command_line.HasSwitch(switches::kSupportsDualGpus)) {
     std::string types = command_line.GetSwitchValueASCII(

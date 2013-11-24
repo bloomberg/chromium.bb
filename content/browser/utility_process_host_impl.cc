@@ -148,9 +148,8 @@ bool UtilityProcessHostImpl::StartProcess() {
   if (channel_id.empty())
     return false;
 
-  // Single process not supported in multiple dll mode currently.
-  if (RenderProcessHost::run_renderer_in_process() &&
-      g_utility_main_thread_factory) {
+  if (RenderProcessHost::run_renderer_in_process()) {
+    DCHECK(g_utility_main_thread_factory);
     // See comment in RenderProcessHostImpl::Init() for the background on why we
     // support single process mode this way.
     in_process_thread_.reset(g_utility_main_thread_factory(channel_id));
