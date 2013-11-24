@@ -485,14 +485,14 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
 
     if (renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing()) {
         PluginView* pluginView = toPluginView(toRenderWidget(renderer)->widget());
-        m_graphicsLayer->setContentsToMedia(pluginView->platformLayer());
+        m_graphicsLayer->setContentsToPlatformLayer(pluginView->platformLayer());
     } else if (renderer->isVideo()) {
         HTMLMediaElement* mediaElement = toHTMLMediaElement(renderer->node());
-        m_graphicsLayer->setContentsToMedia(mediaElement->platformLayer());
+        m_graphicsLayer->setContentsToPlatformLayer(mediaElement->platformLayer());
     } else if (isAcceleratedCanvas(renderer)) {
         HTMLCanvasElement* canvas = toHTMLCanvasElement(renderer->node());
         if (CanvasRenderingContext* context = canvas->renderingContext())
-            m_graphicsLayer->setContentsToCanvas(context->platformLayer());
+            m_graphicsLayer->setContentsToPlatformLayer(context->platformLayer());
         layerConfigChanged = true;
     }
     if (renderer->isRenderPart())

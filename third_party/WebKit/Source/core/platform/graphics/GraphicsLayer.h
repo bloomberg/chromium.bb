@@ -225,13 +225,9 @@ public:
     void setContentsToImage(Image*);
     void setContentsToNinePatch(Image*, const IntRect& aperture);
     bool shouldDirectlyCompositeImage(Image*) const { return true; }
-    void setContentsToMedia(blink::WebLayer*); // video or plug-in
     // Pass an invalid color to remove the contents layer.
     void setContentsToSolidColor(const Color&) { }
-    void setContentsToCanvas(blink::WebLayer*);
-    // FIXME: webkit.org/b/109658
-    // Should unify setContentsToMedia and setContentsToCanvas
-    void setContentsToPlatformLayer(blink::WebLayer* layer) { setContentsToMedia(layer); }
+    void setContentsToPlatformLayer(blink::WebLayer* layer) { setContentsTo(layer); }
     bool hasContentsLayer() const { return m_contentsLayer; }
 
     // Callback from the underlying graphics system to draw layer contents.

@@ -995,16 +995,6 @@ void GraphicsLayer::setContentsToNinePatch(Image* image, const IntRect& aperture
     setContentsTo(m_ninePatchLayer ? m_ninePatchLayer->layer() : 0);
 }
 
-void GraphicsLayer::setContentsToCanvas(WebLayer* layer)
-{
-    setContentsTo(layer);
-}
-
-void GraphicsLayer::setContentsToMedia(WebLayer* layer)
-{
-    setContentsTo(layer);
-}
-
 bool GraphicsLayer::addAnimation(PassOwnPtr<WebAnimation> popAnimation)
 {
     OwnPtr<WebAnimation> animation(popAnimation);
