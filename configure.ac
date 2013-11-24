@@ -143,8 +143,8 @@ fi
 
 AC_ARG_ENABLE(drm-compositor, [  --enable-drm-compositor],,
 	      enable_drm_compositor=yes)
-AM_CONDITIONAL(ENABLE_DRM_COMPOSITOR, test x$enable_drm_compositor = xyes -a x$enable_egl = xyes)
-if test x$enable_drm_compositor = xyes -a x$enable_egl = xyes; then
+AM_CONDITIONAL(ENABLE_DRM_COMPOSITOR, test x$enable_drm_compositor = xyes)
+if test x$enable_drm_compositor = xyes; then
   AC_DEFINE([BUILD_DRM_COMPOSITOR], [1], [Build the DRM compositor])
   PKG_CHECK_MODULES(DRM_COMPOSITOR, [libudev >= 136 libdrm >= 2.4.30 gbm mtdev >= 1.1.0])
 fi
