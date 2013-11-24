@@ -56,7 +56,7 @@ bool DatabaseBackend::openAndVerifyVersion(bool setVersionInNewDatabase, Databas
     DatabaseTracker::tracker().prepareToOpenDatabase(this);
     bool success = false;
     OwnPtr<DatabaseOpenTask> task = DatabaseOpenTask::create(this, setVersionInNewDatabase, &synchronizer, error, errorMessage, success);
-    databaseContext()->databaseThread()->scheduleImmediateTask(task.release());
+    databaseContext()->databaseThread()->scheduleTask(task.release());
     synchronizer.waitForTaskCompletion();
 
     return success;

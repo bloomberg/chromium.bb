@@ -148,7 +148,7 @@ void Database::markAsDeletedAndClose()
     }
 
     OwnPtr<DatabaseCloseTask> task = DatabaseCloseTask::create(this, &synchronizer);
-    databaseContext()->databaseThread()->scheduleImmediateTask(task.release());
+    databaseContext()->databaseThread()->scheduleTask(task.release());
     synchronizer.waitForTaskCompletion();
 }
 
@@ -158,7 +158,7 @@ void Database::closeImmediately()
     DatabaseThread* databaseThread = databaseContext()->databaseThread();
     if (databaseThread && !databaseThread->terminationRequested() && opened()) {
         logErrorMessage("forcibly closing database");
-        databaseThread->scheduleImmediateTask(DatabaseCloseTask::create(this, 0));
+        databaseThread->scheduleTask(DatabaseCloseTask::create(this, 0));
     }
 }
 
@@ -264,7 +264,7 @@ Vector<String> Database::tableNames()
         return result;
 
     OwnPtr<DatabaseTableNamesTask> task = DatabaseTableNamesTask::create(this, &synchronizer, result);
-    databaseContext()->databaseThread()->scheduleImmediateTask(task.release());
+    databaseContext()->databaseThread()->scheduleTask(task.release());
     synchronizer.waitForTaskCompletion();
 
     return result;

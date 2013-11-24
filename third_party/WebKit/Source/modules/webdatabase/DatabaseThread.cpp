@@ -161,12 +161,6 @@ void DatabaseThread::scheduleTask(PassOwnPtr<DatabaseTask> task)
     m_queue.append(task);
 }
 
-void DatabaseThread::scheduleImmediateTask(PassOwnPtr<DatabaseTask> task)
-{
-    ASSERT(!task->hasSynchronizer() || task->hasCheckedForTermination());
-    m_queue.prepend(task);
-}
-
 class SameDatabasePredicate {
 public:
     SameDatabasePredicate(const DatabaseBackend* database) : m_database(database) { }
