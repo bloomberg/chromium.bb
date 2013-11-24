@@ -96,7 +96,8 @@
         var actualDuration = loopTimer.stop();
         var idealDuration = metric.element.duration * loopCount;
         var avg_loop_time = (actualDuration - idealDuration) / loopCount;
-        metric.metrics['avg_loop_time'] = avg_loop_time.toFixed(3);
+        metric.metrics['avg_loop_time'] =
+            Math.round(avg_loop_time * 1000) / 1000;
         e.target.removeEventListener('endLoop', onEndLoop);
       };
     this.element.addEventListener('endLoop', onEndLoop);
