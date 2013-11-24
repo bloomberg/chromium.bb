@@ -10,8 +10,8 @@ Security Critical: no
 
 Description:
 This library allows users to input their address, and perform validation on this
-by talking to an address data server at http://i18napis.appspot.com/address. The
-library is used in requestAutocomplete() dialog to enable internationalized
+by talking to an address data server at https://i18napis.appspot.com/address.
+The library is used in requestAutocomplete() dialog to enable internationalized
 address input and validation for payment forms.
 
 Local Modifications:
