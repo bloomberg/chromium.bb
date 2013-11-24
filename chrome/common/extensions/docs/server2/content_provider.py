@@ -71,7 +71,7 @@ class ContentProvider(object):
       content = text
     return ContentAndType(content, mimetype)
 
-  def GetContentAndType(self, host, path):
+  def GetContentAndType(self, path):
     path = path.lstrip('/')
     base, ext = os.path.splitext(path)
 

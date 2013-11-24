@@ -16,9 +16,6 @@ from test_file_system import TestFileSystem
 from third_party.handlebar import Handlebar
 
 
-_HOST = 'https://developer.chrome.com/'
-
-
 _REDIRECTS_JSON = json.dumps({
   'oldfile.html': 'storage.html',
   'index.html': 'https://developers.google.com/chrome',
@@ -75,26 +72,26 @@ class ContentProviderUnittest(unittest.TestCase):
   def testPlainText(self):
     self._assertContent(
         u'a.txt content', 'text/plain',
-        self._content_provider.GetContentAndType(_HOST, 'dir/a.txt').Get())
+        self._content_provider.GetContentAndType('dir/a.txt').Get())
     self._assertContent(
         u'd.txt content', 'text/plain',
-        self._content_provider.GetContentAndType(_HOST, 'dir/c/d.txt').Get())
+        self._content_provider.GetContentAndType('dir/c/d.txt').Get())
     self._assertContent(
         u'read.txt content', 'text/plain',
-        self._content_provider.GetContentAndType(_HOST, 'read.txt').Get())
+        self._content_provider.GetContentAndType('read.txt').Get())
     self._assertContent(
         unicode(_REDIRECTS_JSON, 'utf-8'), 'application/json',
-        self._content_provider.GetContentAndType(_HOST, 'redirects.json').Get())
+        self._content_provider.GetContentAndType('redirects.json').Get())
     self._assertContent(
         u'run.js content', 'application/javascript',
-        self._content_provider.GetContentAndType(_HOST, 'run.js').Get())
+        self._content_provider.GetContentAndType('run.js').Get())
     self._assertContent(
         u'site.css content', 'text/css',
-        self._content_provider.GetContentAndType(_HOST, 'site.css').Get())
+        self._content_provider.GetContentAndType('site.css').Get())
 
   def testTemplate(self):
     content_and_type = self._content_provider.GetContentAndType(
-        _HOST, 'storage.html').Get()
+        'storage.html').Get()
     self.assertEqual(Handlebar, type(content_and_type.content))
     content_and_type.content = content_and_type.content.source
     self._assertContent(u'storage.html content', 'text/html', content_and_type)
@@ -102,12 +99,11 @@ class ContentProviderUnittest(unittest.TestCase):
   def testImage(self):
     self._assertContent(
         'img.png content', 'image/png',
-        self._content_provider.GetContentAndType(_HOST, 'img.png').Get())
+        self._content_provider.GetContentAndType('img.png').Get())
 
   def testZipTopLevel(self):
     zip_content_provider = self._CreateContentProvider(supports_zip=True)
-    content_and_type = zip_content_provider.GetContentAndType(
-        _HOST, 'dir.zip').Get()
+    content_and_type = zip_content_provider.GetContentAndType('dir.zip').Get()
     zipfile = ZipFile(StringIO(content_and_type.content))
     content_and_type.content = zipfile.namelist()
     self._assertContent(
@@ -117,7 +113,7 @@ class ContentProviderUnittest(unittest.TestCase):
   def testZip2ndLevel(self):
     zip_content_provider = self._CreateContentProvider(supports_zip=True)
     content_and_type = zip_content_provider.GetContentAndType(
-        _HOST, 'dir2/dir3.zip').Get()
+        'dir2/dir3.zip').Get()
     zipfile = ZipFile(StringIO(content_and_type.content))
     content_and_type.content = zipfile.namelist()
     self._assertContent(
@@ -127,7 +123,7 @@ class ContentProviderUnittest(unittest.TestCase):
   def testNotFound(self):
     self.assertRaises(
         FileNotFoundError,
-        self._content_provider.GetContentAndType(_HOST, 'oops').Get)
+        self._content_provider.GetContentAndType('oops').Get)
 
 
 if __name__ == '__main__':

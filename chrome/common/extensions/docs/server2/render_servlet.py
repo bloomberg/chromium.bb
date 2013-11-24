@@ -92,8 +92,7 @@ class RenderServlet(Servlet):
     if redirect is not None:
       return Response.Redirect(redirect, permanent=False)
 
-    content_and_type = content_provider.GetContentAndType(
-        self._request.host, path).Get()
+    content_and_type = content_provider.GetContentAndType(path).Get()
     if not content_and_type.content:
       logging.error('%s had empty content' % path)
 
