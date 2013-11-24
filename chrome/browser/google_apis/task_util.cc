@@ -8,12 +8,12 @@
 
 namespace google_apis {
 
-void RunTaskOnThread(scoped_refptr<base::MessageLoopProxy> relay_proxy,
+void RunTaskOnThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                      const base::Closure& task) {
-  if (relay_proxy->BelongsToCurrentThread()) {
+  if (task_runner->BelongsToCurrentThread()) {
     task.Run();
   } else {
-    const bool posted = relay_proxy->PostTask(FROM_HERE, task);
+    const bool posted = task_runner->PostTask(FROM_HERE, task);
     DCHECK(posted);
   }
 }
