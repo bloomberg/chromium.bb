@@ -10,6 +10,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/metro_viewer/ime_types.h"
 
 #define IPC_MESSAGE_START MetroViewerMsgStart
 
@@ -164,3 +165,51 @@ IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_SearchRequest,
 IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_WindowSizeChanged,
                      uint32,   /* width */
                      uint32)   /* height */
+
+IPC_STRUCT_TRAITS_BEGIN(metro_viewer::UnderlineInfo)
+  IPC_STRUCT_TRAITS_MEMBER(start_offset)
+  IPC_STRUCT_TRAITS_MEMBER(end_offset)
+  IPC_STRUCT_TRAITS_MEMBER(thick)
+IPC_STRUCT_TRAITS_END()
+
+// Sent from the metro viewer process to the browser process to update the
+// composition string.
+IPC_MESSAGE_CONTROL4(
+    MetroViewerHostMsg_ImeCompositionChanged,
+    string16,                                  /* text */
+    int32,                                     /* selection_start */
+    int32,                                     /* selection_end */
+    std::vector<metro_viewer::UnderlineInfo>)  /* underlines */
+
+// Sent from the metro viewer process to the browser process to update the
+// status of popup window that is managed by an IME.
+IPC_MESSAGE_CONTROL1(
+    MetroViewerHostMsg_ImeCandidatePopupChanged,
+    bool)                                      /* UI visibility */
+
+// Sent from the metro viewer process to the browser process to commit strings.
+IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_ImeTextCommitted,
+                     string16)                 /* text */
+
+// Sent from the metro viewer process to the browser process to notify that the
+// active text input source is changed.
+IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_ImeInputSourceChanged,
+                     uint16,                   /* Win32 LangID */
+                     bool)                     /* is IME or not */
+
+// Requests the viewer to cancel the on-going composition.
+IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_ImeCancelComposition)
+
+IPC_STRUCT_TRAITS_BEGIN(metro_viewer::CharacterBounds)
+  IPC_STRUCT_TRAITS_MEMBER(left)
+  IPC_STRUCT_TRAITS_MEMBER(top)
+  IPC_STRUCT_TRAITS_MEMBER(right)
+  IPC_STRUCT_TRAITS_MEMBER(bottom)
+IPC_STRUCT_TRAITS_END()
+
+// Requests the viewer to update the document context such as attached
+// InputScopes and character bounds.
+IPC_MESSAGE_CONTROL2(
+    MetroViewerHostMsg_ImeTextInputClientUpdated,
+    std::vector<int32>,                           /* InputScope enums */
+    std::vector<metro_viewer::CharacterBounds>)   /* character bounds */

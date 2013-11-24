@@ -14,6 +14,8 @@
         '../../base/base.gyp:base',
       ],
       'sources': [
+        'ime_types.cc',
+        'ime_types.h',
         'metro_viewer_message_generator.cc',
         'metro_viewer_message_generator.h',
         'metro_viewer_messages.h',
