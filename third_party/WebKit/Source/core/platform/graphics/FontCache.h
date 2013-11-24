@@ -90,10 +90,6 @@ public:
     unsigned short generation();
     void invalidate();
 
-    size_t fontDataCount();
-    size_t inactiveFontDataCount();
-    void purgeInactiveFontData(int count = INT_MAX);
-
 #if OS(WIN)
     PassRefPtr<SimpleFontData> fontDataFromDescriptionAndLogFont(const FontDescription&, ShouldRetain, const LOGFONT&, wchar_t* outFontFamilyName);
 #endif
@@ -126,6 +122,7 @@ private:
             purgeInactiveFontDataIfNeeded();
     }
 
+    void purgeInactiveFontData(int count = INT_MAX);
     void purgeInactiveFontDataIfNeeded();
 
     // FIXME: This method should eventually be removed.

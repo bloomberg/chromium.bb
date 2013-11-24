@@ -344,20 +344,6 @@ void FontCache::purgeInactiveFontData(int count)
     isPurging = false;
 }
 
-size_t FontCache::fontDataCount()
-{
-    if (gFontDataCache)
-        return gFontDataCache->size();
-    return 0;
-}
-
-size_t FontCache::inactiveFontDataCount()
-{
-    if (gInactiveFontData)
-        return gInactiveFontData->size();
-    return 0;
-}
-
 static HashSet<FontSelector*>* gClients;
 
 void FontCache::addClient(FontSelector* client)

@@ -38,17 +38,8 @@ namespace blink {
 // An interface to query and configure WebKit's font cache.
 class WebFontCache {
 public:
-    // Returns the number of items in the font data cache.
-    BLINK_EXPORT static size_t fontDataCount();
-
-    // Returns the number of inactive items in the font data cache.
-    BLINK_EXPORT static size_t inactiveFontDataCount();
-
     // Clears the cache.
     BLINK_EXPORT static void clear();
-
-    // Purges inactive font data.
-    BLINK_EXPORT static void prune();
 
 private:
     WebFontCache();  // Not intended to be instanced.

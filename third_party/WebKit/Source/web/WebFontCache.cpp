@@ -38,27 +38,9 @@ using namespace WebCore;
 namespace blink {
 
 // static
-size_t WebFontCache::fontDataCount()
-{
-    return fontCache()->fontDataCount();
-}
-
-// static
-size_t WebFontCache::inactiveFontDataCount()
-{
-    return fontCache()->inactiveFontDataCount();
-}
-
-// static
 void WebFontCache::clear()
 {
     fontCache()->invalidate();
-}
-
-// static
-void WebFontCache::prune()
-{
-    fontCache()->purgeInactiveFontData();
 }
 
 }  // namespace blink
