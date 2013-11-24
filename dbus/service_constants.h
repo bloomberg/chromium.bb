@@ -234,7 +234,7 @@ namespace power_manager {
 const char kPowerManagerInterface[] = "org.chromium.PowerManager";
 const char kPowerManagerServicePath[] = "/org/chromium/PowerManager";
 const char kPowerManagerServiceName[] = "org.chromium.PowerManager";
-// powerd methods
+// Methods exposed by powerd.
 const char kDecreaseScreenBrightness[] = "DecreaseScreenBrightness";
 const char kIncreaseScreenBrightness[] = "IncreaseScreenBrightness";
 const char kGetScreenBrightnessPercent[] = "GetScreenBrightnessPercent";
@@ -252,6 +252,8 @@ const char kSetPolicyMethod[] = "SetPolicy";
 const char kRegisterSuspendDelayMethod[] = "RegisterSuspendDelay";
 const char kUnregisterSuspendDelayMethod[] = "UnregisterSuspendDelay";
 const char kHandleSuspendReadinessMethod[] = "HandleSuspendReadiness";
+const char kHandlePowerButtonAcknowledgmentMethod[] =
+    "HandlePowerButtonAcknowledgment";
 // Signals emitted by powerd.
 const char kCleanShutdown[] = "CleanShutdown";
 const char kBrightnessChangedSignal[] = "BrightnessChanged";
