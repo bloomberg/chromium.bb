@@ -26,6 +26,24 @@ CertificateList CreateCertificateListFromFile(
                                                          format);
 }
 
+scoped_refptr<X509Certificate> CreateCertificateChainFromFile(
+    const base::FilePath& certs_dir,
+    const std::string& cert_file,
+    int format) {
+  CertificateList certs = CreateCertificateListFromFile(
+      certs_dir, cert_file, format);
+  if (certs.empty())
+    return NULL;
+
+  X509Certificate::OSCertHandles intermediates;
+  for (size_t i = 1; i < certs.size(); ++i)
+    intermediates.push_back(certs[i]->os_cert_handle());
+
+  scoped_refptr<X509Certificate> result(X509Certificate::CreateFromHandle(
+        certs[0]->os_cert_handle(), intermediates));
+  return result;
+}
+
 scoped_refptr<X509Certificate> ImportCertFromFile(
     const base::FilePath& certs_dir,
     const std::string& cert_file) {

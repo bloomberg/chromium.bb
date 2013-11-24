@@ -355,6 +355,13 @@ bool DecodeSignedCertificateTimestamp(base::StringPiece* input,
   return true;
 }
 
+bool EncodeSCTListForTesting(const base::StringPiece& sct,
+                             std::string* output) {
+  std::string encoded_sct;
+  return WriteVariableBytes(kSerializedSCTLengthBytes, sct, &encoded_sct) &&
+      WriteVariableBytes(kSCTListLengthBytes, encoded_sct, output);
+}
+
 }  // namespace ct
 
 }  // namespace net

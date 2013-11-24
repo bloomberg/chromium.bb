@@ -227,5 +227,11 @@ unit tests.
      net/data/ssl/scripts/generate-policy-certs.sh
 
 - ct-test-embedded-cert.pem
-     Test certificate chain for Certificate Transparency: The leaf certificate
-     in this file contains embedded SCTs, followed by the issuer certificate. 
+- ct-test-embedded-with-intermediate-chain.pem
+- ct-test-embedded-with-intermediate-preca-chain.pem
+- ct-test-embedded-with-preca-chain.pem
+     Test certificate chains for Certificate Transparency: Each of these
+     files contains a leaf certificate as the first certificate, which has
+     embedded SCTs, followed by the issuer certificates chain.
+     All files are from the src/test/testdada directory in
+     https://code.google.com/p/certificate-transparency/

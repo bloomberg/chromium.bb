@@ -19,12 +19,22 @@ namespace net {
 
 class EVRootCAMetadata;
 
+// Imports all of the certificates in |cert_file|, a file in |certs_dir|,
+// // into a CertificateList.
 CertificateList CreateCertificateListFromFile(const base::FilePath& certs_dir,
                                               const std::string& cert_file,
                                               int format);
 
-// Imports a certificate file in the directory net::GetTestCertsDirectory()
-// returns.
+// Imports all of the certificates in |cert_file|, a file in |certs_dir|, into
+// a new X509Certificate. The first certificate in the chain will be used for
+// the returned cert, with any additional certificates configured as
+// intermediate certificates.
+scoped_refptr<X509Certificate> CreateCertificateChainFromFile(
+    const base::FilePath& certs_dir,
+    const std::string& cert_file,
+    int format);
+
+// Imports a single certificate from |cert_file|.
 // |certs_dir| represents the test certificates directory. |cert_file| is the
 // name of the certificate file. If cert_file contains multiple certificates,
 // the first certificate found will be returned.
