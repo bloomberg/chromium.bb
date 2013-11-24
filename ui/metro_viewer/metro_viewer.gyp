@@ -12,7 +12,6 @@
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
-        '../../skia/skia.gyp:skia',
       ],
       'sources': [
         'metro_viewer_message_generator.cc',
