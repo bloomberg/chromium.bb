@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/html/track/BufferedLineReader.h"
+#include "core/html/track/vtt/BufferedLineReader.h"
 
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
