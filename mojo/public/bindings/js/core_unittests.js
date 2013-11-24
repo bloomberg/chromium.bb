@@ -42,20 +42,20 @@ define([
 
     var receiverData = new Uint8Array(50);
 
-    var mesage = core.readMessage(
-      pipe.handle1, receiverData, 10,
-      core.READ_MESSAGE_FLAG_NONE)
+    var read = core.readMessage(
+      pipe.handle1, core.READ_MESSAGE_FLAG_NONE)
 
-    gtest.expectEqual(mesage.result, core.RESULT_OK,
-        "mesage.result is " + mesage.result);
-    gtest.expectEqual(mesage.bytesRead, 42,
-        "mesage.bytesRead is " + mesage.bytesRead);
-    gtest.expectEqual(mesage.handles.length, 0,
-        "mesage.handles.length is " + mesage.handles.length);
+    gtest.expectEqual(read.result, core.RESULT_OK,
+        "read.result is " + read.result);
+    gtest.expectEqual(read.buffer.byteLength, 42,
+        "read.buffer.byteLength is " + read.buffer.byteLength);
+    gtest.expectEqual(read.handles.length, 0,
+        "read.handles.length is " + read.handles.length);
 
-    for (var i = 0; i < mesage.bytesRead; ++i) {
-      gtest.expectEqual(receiverData[i], (i * i) & 0xFF,
-          "receiverData[" + i + "] is " + receiverData[i]);
+    var memory = new Uint8Array(read.buffer);
+    for (var i = 0; i < memory.length; ++i) {
+      gtest.expectEqual(memory[i], (i * i) & 0xFF,
+          "memory[" + i + "] is " + memory[i]);
     }
   }
 });

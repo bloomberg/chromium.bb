@@ -4,6 +4,7 @@
 
 #include "mojo/public/bindings/js/core.h"
 
+#include "base/logging.h"
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
 #include "gin/converter.h"
@@ -62,22 +63,23 @@ void WaitMany(const v8::FunctionCallbackInfo<v8::Value>& info) {
 void CreateMessagePipe(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
 
-  mojo::ScopedMessagePipeHandle handle_0;
-  mojo::ScopedMessagePipeHandle handle_1;
-  mojo::CreateMessagePipe(&handle_0, &handle_1);
+  MojoHandle handle_0 = MOJO_HANDLE_INVALID;
+  MojoHandle handle_1 = MOJO_HANDLE_INVALID;
+  MojoResult result = MojoCreateMessagePipe(&handle_0, &handle_1);
+  CHECK(result == MOJO_RESULT_OK);
 
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(info.GetIsolate());
-  dictionary.Set("handle0", static_cast<mojo::Handle>(handle_0.release()));
-  dictionary.Set("handle1", static_cast<mojo::Handle>(handle_1.release()));
+  dictionary.Set("handle0", handle_0);
+  dictionary.Set("handle1", handle_1);
   args.Return(dictionary);
 }
 
 void WriteMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
 
-  mojo::Handle handle;
+  MojoHandle handle = MOJO_HANDLE_INVALID;
   gin::ArrayBufferView buffer(args.isolate());
-  std::vector<mojo::Handle> handles;
+  std::vector<MojoHandle> handles;
   MojoWriteMessageFlags flags = MOJO_WRITE_MESSAGE_FLAG_NONE;
 
   if (!args.GetNext(&handle) ||
@@ -87,46 +89,61 @@ void WriteMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return args.ThrowError();
   }
 
-  args.Return(mojo::WriteMessageRaw(
-      MessagePipeHandle(handle.value()), buffer.bytes(),
-      static_cast<uint32_t>(buffer.num_bytes()),
-      handles.empty() ? NULL : reinterpret_cast<const MojoHandle*>(&handles[0]),
-      static_cast<uint32_t>(handles.size()), flags));
+  args.Return(MojoWriteMessage(handle,
+                               buffer.bytes(),
+                               static_cast<uint32_t>(buffer.num_bytes()),
+                               handles.empty() ? NULL : handles.data(),
+                               static_cast<uint32_t>(handles.size()),
+                               flags));
 }
 
 void ReadMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
 
-  mojo::Handle handle;
-  gin::ArrayBufferView buffer(args.isolate());
-  uint32_t num_handles = 0;
+  MojoHandle handle = MOJO_HANDLE_INVALID;
   MojoReadMessageFlags flags = MOJO_READ_MESSAGE_FLAG_NONE;
 
   if (!args.GetNext(&handle) ||
-      !args.GetNext(&buffer) ||
-      !args.GetNext(&num_handles) ||
       !args.GetNext(&flags)) {
     return args.ThrowError();
   }
 
-  uint32_t num_bytes = static_cast<uint32_t>(buffer.num_bytes());
-  std::vector<mojo::Handle> handles(num_handles);
-  MojoResult result = mojo::ReadMessageRaw(
-      MessagePipeHandle(handle.value()), buffer.bytes(), &num_bytes,
-      handles.empty() ? NULL : reinterpret_cast<MojoHandle*>(&handles[0]),
-      &num_handles, flags);
-  handles.resize(num_handles);
+  uint32_t num_bytes = 0;
+  uint32_t num_handles = 0;
+  MojoResult result = MojoReadMessage(
+      handle, NULL, &num_bytes, NULL, &num_handles, flags);
+  if (result != MOJO_RESULT_RESOURCE_EXHAUSTED) {
+    gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(
+        info.GetIsolate());
+    dictionary.Set("result", result);
+    args.Return(dictionary);
+  }
 
-  // TODO(abarth): We should benchmark this codepath to make sure it's ok to
-  // allocate all this memory on each read.
+  v8::Handle<v8::ArrayBuffer> array_buffer = v8::ArrayBuffer::New(num_bytes);
+  std::vector<MojoHandle> handles(num_handles);
+
+  gin::ArrayBuffer buffer(args.isolate());
+  ConvertFromV8(array_buffer, &buffer);
+  CHECK(buffer.num_bytes() == num_bytes);
+
+  result = MojoReadMessage(handle,
+                           buffer.bytes(),
+                           &num_bytes,
+                           handles.empty() ? NULL : handles.data(),
+                           &num_handles,
+                           flags);
+
+  CHECK(buffer.num_bytes() == num_bytes);
+  CHECK(handles.size() == num_handles);
+
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(info.GetIsolate());
   dictionary.Set("result", result);
-  dictionary.Set("bytesRead", num_bytes);
+  dictionary.Set("buffer", array_buffer);
   dictionary.Set("handles", handles);
   args.Return(dictionary);
 }
 
-gin::WrapperInfo g_core_wrapper_info = { gin::kEmbedderNativeGin };
+gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };
 
 }  // namespace
 
@@ -135,7 +152,7 @@ const char Core::kModuleName[] = "mojo/public/bindings/js/core";
 v8::Local<v8::ObjectTemplate> Core::GetTemplate(v8::Isolate* isolate) {
   gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);
   v8::Local<v8::ObjectTemplate> templ = data->GetObjectTemplate(
-      &g_core_wrapper_info);
+      &g_wrapper_info);
 
   if (templ.IsEmpty()) {
     templ = v8::ObjectTemplate::New();
@@ -211,7 +228,7 @@ v8::Local<v8::ObjectTemplate> Core::GetTemplate(v8::Isolate* isolate) {
     templ->Set(gin::StringToSymbol(isolate, "READ_MESSAGE_FLAG_MAY_DISCARD"),
                gin::ConvertToV8(isolate, MOJO_READ_MESSAGE_FLAG_MAY_DISCARD));
 
-    data->SetObjectTemplate(&g_core_wrapper_info, templ);
+    data->SetObjectTemplate(&g_wrapper_info, templ);
   }
 
   return templ;

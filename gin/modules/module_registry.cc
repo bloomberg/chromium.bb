@@ -12,6 +12,7 @@
 #include "gin/converter.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
+#include "gin/try_catch.h"
 
 using v8::Context;
 using v8::External;
@@ -89,19 +90,6 @@ Local<FunctionTemplate> GetDefineTemplate(Isolate* isolate) {
 
 Handle<String> GetHiddenValueKey(Isolate* isolate) {
   return StringToSymbol(isolate, "::gin::ModuleRegistry");
-}
-
-std::string GetImplicitModuleName(const std::string& explicit_name) {
-  if (!explicit_name.empty())
-    return explicit_name;
-  std::string implicit_name;
-  Handle<StackTrace> trace = StackTrace::CurrentStackTrace(1);
-  if (!trace->GetFrameCount())
-    return implicit_name;
-  Handle<String> script_name = trace->GetFrame(0)->GetScriptName();
-  if (!script_name.IsEmpty())
-    ConvertFromV8(script_name, &implicit_name);
-  return implicit_name;
 }
 
 }  // namespace
@@ -196,11 +184,17 @@ void ModuleRegistry::Load(Isolate* isolate, scoped_ptr<PendingModule> pending) {
   Handle<Function> factory;
   if (ConvertFromV8(module, &factory)) {
     Handle<Object> global = isolate->GetCurrentContext()->Global();
-    module = factory->Call(global, argc, argv.data());
-    // TODO(abarth): What should we do with exceptions?
+    {
+      gin::TryCatch try_catch;
+      module = factory->Call(global, argc, argv.data());
+      if (try_catch.HasCaught())
+        return;  // TODO(abarth): What should we do with the exception?
+    }
+    if (pending->id.empty())
+      ConvertFromV8(factory->GetScriptOrigin().ResourceName(), &pending->id);
   }
 
-  RegisterModule(isolate, GetImplicitModuleName(pending->id), module);
+  RegisterModule(isolate, pending->id, module);
 }
 
 bool ModuleRegistry::AttemptToLoad(Isolate* isolate,

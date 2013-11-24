@@ -29,9 +29,10 @@
         '<(DEPTH)/mojo/public/bindings/generators/template_expander.py',
       ],
       'outputs': [
-        '<(output_dir)/<(RULE_INPUT_ROOT).h',
-        '<(output_dir)/<(RULE_INPUT_ROOT)_internal.h',
         '<(output_dir)/<(RULE_INPUT_ROOT).cc',
+        '<(output_dir)/<(RULE_INPUT_ROOT).h',
+        '<(output_dir)/<(RULE_INPUT_ROOT).js',
+        '<(output_dir)/<(RULE_INPUT_ROOT)_internal.h',
       ],
       'action': [
         'python', '<@(mojom_bindings_generator)',

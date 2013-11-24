@@ -88,6 +88,14 @@ struct Converter<v8::Handle<v8::Object> > {
 };
 
 template<>
+struct Converter<v8::Handle<v8::ArrayBuffer> > {
+  static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
+                                    v8::Handle<v8::ArrayBuffer> val);
+  static bool FromV8(v8::Handle<v8::Value> val,
+                     v8::Handle<v8::ArrayBuffer>* out);
+};
+
+template<>
 struct Converter<v8::Handle<v8::External> > {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     v8::Handle<v8::External> val);
