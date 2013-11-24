@@ -44,22 +44,27 @@ weston_SOURCES =				\
 	../shared/matrix.c			\
 	../shared/matrix.h			\
 	../shared/zalloc.h			\
-	weston-launch.h				\
 	weston-egl-ext.h
 
-if ENABLE_DBUS
-weston_SOURCES +=				\
-	dbus.h					\
-	dbus.c
-weston_CFLAGS += $(DBUS_CFLAGS)
-weston_LDADD += $(DBUS_LIBS)
+noinst_LTLIBRARIES =				\
+	libsession-helper.la
 
+libsession_helper_la_SOURCES =			\
+	weston-launch.h				\
+	launcher-util.c				\
+	launcher-util.h
+libsession_helper_la_CFLAGS = $(GCC_CFLAGS) $(LIBDRM_CFLAGS) $(PIXMAN_CFLAGS)
+libsession_helper_la_LIBADD = $(LIBDRM_LIBS)
+
+if ENABLE_DBUS
 if HAVE_SYSTEMD_LOGIN
-weston_SOURCES +=				\
+libsession_helper_la_SOURCES +=			\
+	dbus.h					\
+	dbus.c					\
 	logind-util.h				\
 	logind-util.c
-weston_CFLAGS += $(SYSTEMD_LOGIN_CFLAGS)
-weston_LDADD += $(SYSTEMD_LOGIN_LIBS)
+libsession_helper_la_CFLAGS += $(SYSTEMD_LOGIN_CFLAGS) $(DBUS_CFLAGS)
+libsession_helper_la_LIBADD += $(SYSTEMD_LOGIN_LIBS) $(DBUS_LIBS)
 endif
 endif
 
@@ -121,8 +126,6 @@ module_LTLIBRARIES =				\
 	$(fbdev_backend)			\
 	$(rdp_backend)
 
-noinst_LTLIBRARIES =
-
 if INSTALL_RPI_COMPOSITOR
 module_LTLIBRARIES += $(rpi_backend)
 else
@@ -162,8 +165,11 @@ endif
 if ENABLE_DRM_COMPOSITOR
 drm_backend = drm-backend.la
 drm_backend_la_LDFLAGS = -module -avoid-version
-drm_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(DRM_COMPOSITOR_LIBS) \
-	../shared/libshared.la -lrt
+drm_backend_la_LIBADD =				\
+	$(COMPOSITOR_LIBS)			\
+	$(DRM_COMPOSITOR_LIBS)			\
+	../shared/libshared.la -lrt		\
+	libsession-helper.la
 drm_backend_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(EGL_CFLAGS)				\
@@ -176,8 +182,6 @@ drm_backend_la_SOURCES =			\
 	evdev.c					\
 	evdev.h					\
 	evdev-touchpad.c			\
-	launcher-util.c				\
-	launcher-util.h				\
 	libbacklight.c				\
 	libbacklight.h
 
@@ -191,7 +195,10 @@ endif
 if ENABLE_WAYLAND_COMPOSITOR
 wayland_backend = wayland-backend.la
 wayland_backend_la_LDFLAGS = -module -avoid-version
-wayland_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(WAYLAND_COMPOSITOR_LIBS) \
+wayland_backend_la_LIBADD =			\
+	$(COMPOSITOR_LIBS)			\
+	$(WAYLAND_COMPOSITOR_LIBS)		\
+	libsession-helper.la			\
 	../shared/libshared-cairo.la
 wayland_backend_la_CFLAGS =			\
 	$(COMPOSITOR_CFLAGS)			\
@@ -209,21 +216,17 @@ rpi_backend_la_LDFLAGS = -module -avoid-version
 rpi_backend_la_LIBADD = $(COMPOSITOR_LIBS)	\
 	$(RPI_COMPOSITOR_LIBS)			\
 	$(RPI_BCM_HOST_LIBS)			\
-	$(LIBDRM_LIBS)				\
 	../shared/libshared.la
 rpi_backend_la_CFLAGS =				\
 	$(GCC_CFLAGS)				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(RPI_COMPOSITOR_CFLAGS)		\
-	$(LIBDRM_CFLAGS)				\
 	$(RPI_BCM_HOST_CFLAGS)
 rpi_backend_la_SOURCES =			\
 	compositor-rpi.c			\
 	rpi-renderer.c				\
 	rpi-renderer.h				\
 	rpi-bcm-stubs.h 			\
-	launcher-util.c				\
-	launcher-util.h				\
 	evdev.c					\
 	evdev.h					\
 	evdev-touchpad.c
@@ -252,13 +255,12 @@ fbdev_backend_la_LDFLAGS = -module -avoid-version
 fbdev_backend_la_LIBADD = \
 	$(COMPOSITOR_LIBS) \
 	$(FBDEV_COMPOSITOR_LIBS) \
-	$(LIBDRM_LIBS) \
+	libsession-helper.la \
 	../shared/libshared.la
 fbdev_backend_la_CFLAGS = \
 	$(COMPOSITOR_CFLAGS) \
 	$(EGL_CFLAGS) \
 	$(FBDEV_COMPOSITOR_CFLAGS) \
-	$(LIBDRM_CFLAGS) \
 	$(PIXMAN_CFLAGS) \
 	$(GCC_CFLAGS)
 fbdev_backend_la_SOURCES = \
@@ -267,9 +269,7 @@ fbdev_backend_la_SOURCES = \
 	udev-seat.h \
 	evdev.c \
 	evdev.h \
-	evdev-touchpad.c \
-	launcher-util.c \
-	launcher-util.h
+	evdev-touchpad.c
 endif
 
 if ENABLE_RDP_COMPOSITOR
