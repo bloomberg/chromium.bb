@@ -289,9 +289,6 @@ public:
 
     blink::WebContentLayer* contentLayer() const { return m_layer.get(); }
 
-    // Exposed for tests. FIXME - name is too similar to contentLayer(), very error prone.
-    blink::WebLayer* contentsLayer() const { return m_contentsLayer; }
-
     static void registerContentsLayer(blink::WebLayer*);
     static void unregisterContentsLayer(blink::WebLayer*);
 
@@ -309,6 +306,9 @@ protected:
     explicit GraphicsLayer(GraphicsLayerClient*);
     // GraphicsLayerFactoryChromium that wants to create a GraphicsLayer need to be friends.
     friend class blink::GraphicsLayerFactoryChromium;
+
+    // Exposed for tests.
+    virtual blink::WebLayer* contentsLayer() const { return m_contentsLayer; }
 
 private:
     // Adds a child without calling updateChildList(), so that adding children

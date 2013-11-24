@@ -102,6 +102,8 @@ class GraphicsLayerForTesting : public GraphicsLayer {
 public:
     explicit GraphicsLayerForTesting(GraphicsLayerClient* client)
         : GraphicsLayer(client) { };
+
+    virtual blink::WebLayer* contentsLayer() const { return GraphicsLayer::contentsLayer(); }
 };
 
 TEST(ImageLayerChromiumTest, opaqueImages)
