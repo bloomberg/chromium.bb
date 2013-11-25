@@ -9,6 +9,7 @@
 #include "ash/caps_lock_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/ime_control_delegate.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/brightness_control_delegate.h"
@@ -534,6 +535,37 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
     GetController()->PerformAction(WINDOW_MINIMIZE, dummy);
     EXPECT_TRUE(window_state->IsMinimized());
   }
+}
+
+TEST_F(AcceleratorControllerTest, CenterWindowAccelerator) {
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+  const ui::Accelerator dummy;
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window_state->Activate();
+
+  // Center the window using accelerator.
+  GetController()->PerformAction(WINDOW_POSITION_CENTER, dummy);
+  gfx::Rect work_area =
+      Shell::GetScreen()->GetDisplayNearestWindow(window.get()).work_area();
+  gfx::Rect bounds = window->GetBoundsInScreen();
+  EXPECT_NEAR(bounds.x() - work_area.x(),
+              work_area.right() - bounds.right(),
+              1);
+  EXPECT_NEAR(bounds.y() - work_area.y(),
+              work_area.bottom() - bounds.bottom(),
+              1);
+
+  // Add the window to docked container and try to center it.
+  window->SetBounds(gfx::Rect(0, 0, 20, 20));
+  aura::Window* docked_container = Shell::GetContainer(
+      window->GetRootWindow(), internal::kShellWindowId_DockedContainer);
+  docked_container->AddChild(window.get());
+  gfx::Rect docked_bounds = window->GetBoundsInScreen();
+  GetController()->PerformAction(WINDOW_POSITION_CENTER, dummy);
+  // It should not get centered and should remain docked.
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+  EXPECT_EQ(docked_bounds.ToString(), window->GetBoundsInScreen().ToString());
 }
 
 TEST_F(AcceleratorControllerTest, ControllerContext) {

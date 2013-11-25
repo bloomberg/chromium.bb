@@ -851,7 +851,7 @@ bool AcceleratorController::PerformAction(int action,
     case WINDOW_SNAP_LEFT:
     case WINDOW_SNAP_RIGHT: {
       wm::WindowState* window_state = wm::GetActiveWindowState();
-      // Disable window docking shortcut key for full screen window due to
+      // Disable window snapping shortcut key for full screen window due to
       // http://crbug.com/135487.
       if (!window_state ||
           window_state->window()->type() != aura::client::WINDOW_TYPE_NORMAL ||
@@ -879,8 +879,10 @@ bool AcceleratorController::PerformAction(int action,
       return true;
     }
     case WINDOW_POSITION_CENTER: {
+      content::RecordAction(content::UserMetricsAction("Accel_Center"));
       aura::Window* window = wm::GetActiveWindow();
-      if (window) {
+      // Docked windows do not support centering and ignore accelerator.
+      if (window && !wm::GetWindowState(window)->IsDocked()) {
         wm::CenterWindow(window);
         return true;
       }

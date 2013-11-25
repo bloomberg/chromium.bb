@@ -9,6 +9,7 @@
 #include "ash/ash_constants.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -55,11 +56,18 @@ bool IsWindowMinimized(aura::Window* window) {
 }
 
 void CenterWindow(aura::Window* window) {
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  if (!window_state->IsNormalShowState())
+    return;
   const gfx::Display display =
       Shell::GetScreen()->GetDisplayNearestWindow(window);
   gfx::Rect center = display.work_area();
-  center.ClampToCenteredSize(window->bounds().size());
-  window->SetBoundsInScreen(center, display);
+  gfx::Size size = window_state->HasRestoreBounds() ?
+      window_state->GetRestoreBoundsInScreen().size() :
+      window->bounds().size();
+  center.ClampToCenteredSize(size);
+  window_state->SetRestoreBoundsInScreen(center);
+  window_state->Restore();
 }
 
 void AdjustBoundsToEnsureMinimumWindowVisibility(const gfx::Rect& visible_area,
