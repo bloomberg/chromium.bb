@@ -74,8 +74,8 @@ class WatcherBackend : public MessagePumpMojoHandler {
   bool GetMojoHandleByWatcherID(WatcherID watcher_id, Handle* handle) const;
 
   // MessagePumpMojoHandler overrides:
-  virtual void OnHandleReady(MojoHandle handle) OVERRIDE;
-  virtual void OnHandleError(MojoHandle handle, MojoResult result) OVERRIDE;
+  virtual void OnHandleReady(const Handle& handle) OVERRIDE;
+  virtual void OnHandleError(const Handle& handle, MojoResult result) OVERRIDE;
 
   // Maps from assigned id to WatchData.
   HandleToWatchDataMap handle_to_data_;
@@ -95,7 +95,7 @@ void WatcherBackend::StartWatching(const WatchData& data) {
   DCHECK_EQ(0u, handle_to_data_.count(data.handle));
 
   handle_to_data_[data.handle] = data;
-  message_pump_mojo->AddHandler(this, data.handle.value(),
+  message_pump_mojo->AddHandler(this, data.handle,
                                 data.wait_flags,
                                 data.deadline);
 }
@@ -108,7 +108,7 @@ void WatcherBackend::StopWatching(WatcherID watcher_id) {
     return;
 
   handle_to_data_.erase(handle);
-  message_pump_mojo->RemoveHandler(handle.value());
+  message_pump_mojo->RemoveHandler(handle);
 }
 
 void WatcherBackend::RemoveAndNotify(const Handle& handle,
@@ -118,7 +118,7 @@ void WatcherBackend::RemoveAndNotify(const Handle& handle,
 
   const WatchData data(handle_to_data_[handle]);
   handle_to_data_.erase(handle);
-  message_pump_mojo->RemoveHandler(handle.value());
+  message_pump_mojo->RemoveHandler(handle);
   data.message_loop->PostTask(FROM_HERE, base::Bind(data.callback, result));
 }
 
@@ -134,12 +134,12 @@ bool WatcherBackend::GetMojoHandleByWatcherID(WatcherID watcher_id,
   return false;
 }
 
-void WatcherBackend::OnHandleReady(MojoHandle handle) {
-  RemoveAndNotify(Handle(handle), MOJO_RESULT_OK);
+void WatcherBackend::OnHandleReady(const Handle& handle) {
+  RemoveAndNotify(handle, MOJO_RESULT_OK);
 }
 
-void WatcherBackend::OnHandleError(MojoHandle handle, MojoResult result) {
-  RemoveAndNotify(Handle(handle), result);
+void WatcherBackend::OnHandleError(const Handle& handle, MojoResult result) {
+  RemoveAndNotify(handle, result);
 }
 
 // WatcherThreadManager --------------------------------------------------------

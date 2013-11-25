@@ -6,7 +6,7 @@
 #define MOJO_COMMON_MESSAGE_PUMP_MOJO_HANDLER_H_
 
 #include "mojo/common/mojo_common_export.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
 namespace common {
@@ -15,9 +15,9 @@ namespace common {
 // invalid.
 class MOJO_COMMON_EXPORT MessagePumpMojoHandler {
  public:
-  virtual void OnHandleReady(MojoHandle handle) = 0;
+  virtual void OnHandleReady(const Handle& handle) = 0;
 
-  virtual void OnHandleError(MojoHandle handle, MojoResult result) = 0;
+  virtual void OnHandleError(const Handle& handle, MojoResult result) = 0;
 
  protected:
   virtual ~MessagePumpMojoHandler() {}

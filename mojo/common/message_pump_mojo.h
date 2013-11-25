@@ -26,11 +26,11 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
   // Registers a MessagePumpMojoHandler for the specified handle. Only one
   // handler can be registered for a specified handle.
   void AddHandler(MessagePumpMojoHandler* handler,
-                  MojoHandle handle,
+                  const Handle& handle,
                   MojoWaitFlags wait_flags,
                   base::TimeTicks deadline);
 
-  void RemoveHandler(MojoHandle handle);
+  void RemoveHandler(const Handle& handle);
 
   // MessagePump:
   virtual void Run(Delegate* delegate) OVERRIDE;
@@ -55,7 +55,7 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
     int id;
   };
 
-  typedef std::map<MojoHandle, Handler> HandleToHandler;
+  typedef std::map<Handle, Handler> HandleToHandler;
 
   // Services the set of handles ready. If |block| is true this waits for a
   // handle to become ready, otherwise this does not block.
