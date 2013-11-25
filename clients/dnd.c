@@ -365,14 +365,11 @@ create_drag_icon(struct dnd_drag *dnd_drag,
 	return surface;
 }
 
-static void
-dnd_button_handler(struct widget *widget,
-		   struct input *input, uint32_t time,
-		   uint32_t button, enum wl_pointer_button_state state,
-		   void *data)
+static int
+create_drag_source(struct dnd *dnd,
+		struct input *input, uint32_t time,
+		int32_t x, int32_t y)
 {
-	struct dnd *dnd = data;
-	int32_t x, y;
 	struct item *item;
 	struct rectangle allocation;
 	struct dnd_drag *dnd_drag;
@@ -384,12 +381,11 @@ dnd_button_handler(struct widget *widget,
 	cairo_surface_t *icon;
 
 	widget_get_allocation(dnd->widget, &allocation);
-	input_get_position(input, &x, &y);
 	item = dnd_get_item(dnd, x, y);
 	x -= allocation.x;
 	y -= allocation.y;
 
-	if (item && state == WL_POINTER_BUTTON_STATE_PRESSED) {
+	if (item) {
 		dnd_drag = xmalloc(sizeof *dnd_drag);
 		dnd_drag->dnd = dnd;
 		dnd_drag->input = input;
@@ -411,8 +407,6 @@ dnd_button_handler(struct widget *widget,
 		dnd_drag->drag_surface =
 			wl_compositor_create_surface(compositor);
 
-		input_ungrab(input);
-
 		if (dnd->self_only) {
 			dnd_drag->data_source = NULL;
 		} else {
@@ -433,8 +427,6 @@ dnd_button_handler(struct widget *widget,
 					  dnd_drag->drag_surface,
 					  serial);
 
-		input_set_pointer_image(input, CURSOR_DRAGGING);
-
 		dnd_drag->opaque =
 			create_drag_icon(dnd_drag, item, x, y, 1);
 		dnd_drag->translucent =
@@ -454,7 +446,44 @@ dnd_button_handler(struct widget *widget,
 
 		dnd->current_drag = dnd_drag;
 		window_schedule_redraw(dnd->window);
+
+		return 0;
+	} else
+		return -1;
+}
+
+static void
+dnd_button_handler(struct widget *widget,
+		   struct input *input, uint32_t time,
+		   uint32_t button, enum wl_pointer_button_state state,
+		   void *data)
+{
+	struct dnd *dnd = data;
+	int32_t x, y;
+
+	input_get_position(input, &x, &y);
+	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
+		input_ungrab(input);
+		if (create_drag_source(dnd, input, time, x, y) == 0)
+			input_set_pointer_image(input, CURSOR_DRAGGING);
 	}
+}
+
+static void
+dnd_touch_down_handler(struct widget *widget,
+		struct input *input, uint32_t serial,
+		uint32_t time, int32_t id,
+		float x, float y, void *data)
+{
+	struct dnd *dnd = data;
+	int32_t int_x, int_y;
+
+	if (id > 0)
+		return;
+
+	int_x = (int32_t)x;
+	int_y = (int32_t)y;
+	create_drag_source(dnd, input, time, int_x, int_y);
 }
 
 static int
@@ -597,6 +626,7 @@ dnd_create(struct display *display)
 	widget_set_enter_handler(dnd->widget, dnd_enter_handler);
 	widget_set_motion_handler(dnd->widget, dnd_motion_handler);
 	widget_set_button_handler(dnd->widget, dnd_button_handler);
+	widget_set_touch_down_handler(dnd->widget, dnd_touch_down_handler);
 
 	width = 4 * (item_width + item_padding) + item_padding;
 	height = 4 * (item_height + item_padding) + item_padding;

@@ -3248,6 +3248,8 @@ data_device_enter(void *data, struct wl_data_device *data_device,
 	input->pointer_enter_serial = serial;
 	window = wl_surface_get_user_data(surface);
 	input->pointer_focus = window;
+	input->sx = x;
+	input->sy = y;
 
 	if (offer) {
 		input->drag_offer = wl_data_offer_get_user_data(offer);
