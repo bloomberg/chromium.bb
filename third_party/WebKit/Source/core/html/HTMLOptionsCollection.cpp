@@ -21,6 +21,7 @@
 #include "config.h"
 #include "core/html/HTMLOptionsCollection.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NamedNodesCollection.h"
@@ -51,12 +52,12 @@ void HTMLOptionsCollection::add(PassRefPtr<HTMLOptionElement> element, int index
     HTMLOptionElement* newOption = element.get();
 
     if (!newOption) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::failedToExecute("add", "HTMLOptionsElement", "The element provided was not an HTMLOptionElement."));
         return;
     }
 
     if (index < -1) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("add", "HTMLOptionsElement", "The index provided (" + String::number(index) + ") is less than -1."));
         return;
     }
 
@@ -124,7 +125,7 @@ bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, PassRefPtr<HT
 {
     HTMLSelectElement* base = toHTMLSelectElement(ownerNode());
     if (!value) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::failedToSet(String::number(index), "HTMLOptionsElement", "The element provided was not an HTMLOptionElement."));
         return true;
     }
     base->setOption(index, value.get(), exceptionState);
