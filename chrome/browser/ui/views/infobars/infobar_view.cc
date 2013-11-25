@@ -41,12 +41,6 @@
 #include "ui/gfx/win/hwnd_util.h"
 #endif
 
-namespace {
-
-const int kInfoBarBorderPaddingVertical = 5;
-
-}  // namespace
-
 // static
 const int InfoBar::kSeparatorLineHeight =
     views::NonClientFrameView::kClientEdgeThickness;
@@ -105,8 +99,6 @@ views::MenuButton* InfoBarView::CreateMenuButton(
     views::MenuButtonListener* menu_button_listener) {
   scoped_ptr<views::TextButtonDefaultBorder> menu_button_border(
       new views::TextButtonDefaultBorder());
-  menu_button_border->SetInsets(gfx::Insets(kInfoBarBorderPaddingVertical, 0,
-                                            kInfoBarBorderPaddingVertical, 0));
   const int kNormalImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_NORMAL);
   menu_button_border->set_normal_painter(
       views::Painter::CreateImageGridPainter(kNormalImageSet));
@@ -138,9 +130,6 @@ views::LabelButton* InfoBarView::CreateLabelButton(
     bool needs_elevation) {
   scoped_ptr<views::LabelButtonBorder> label_button_border(
       new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON));
-  label_button_border->set_insets(gfx::Insets(
-      kInfoBarBorderPaddingVertical, 0,
-      kInfoBarBorderPaddingVertical, 0));
   const int kNormalImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_NORMAL);
   label_button_border->SetPainter(
       false, views::Button::STATE_NORMAL,
