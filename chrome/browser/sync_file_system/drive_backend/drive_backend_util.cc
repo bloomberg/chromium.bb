@@ -14,10 +14,17 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
+#include "net/base/mime_util.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace sync_file_system {
 namespace drive_backend {
+
+namespace {
+
+const char kMimeTypeOctetStream[] = "application/octet-stream";
+
+}  // namespace
 
 void PutServiceMetadataToBatch(const ServiceMetadata& service_metadata,
                                leveldb::WriteBatch* batch) {
@@ -136,6 +143,15 @@ bool HasFileAsParent(const FileDetails& details, const std::string& file_id) {
       return true;
   }
   return false;
+}
+
+std::string GetMimeTypeFromTitle(const base::FilePath& title) {
+  base::FilePath::StringType extension = title.Extension();
+  std::string mime_type;
+  if (extension.empty() ||
+      !net::GetWellKnownMimeTypeFromExtension(extension.substr(1), &mime_type))
+    return kMimeTypeOctetStream;
+  return mime_type;
 }
 
 }  // namespace drive_backend

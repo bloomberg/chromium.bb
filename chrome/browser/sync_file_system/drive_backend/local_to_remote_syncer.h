@@ -71,6 +71,15 @@ class LocalToRemoteSyncer : public SyncTask {
                                 SyncStatusCode status);
 
   void UploadNewFile(const SyncStatusCallback& callback);
+  void DidUploadNewFile(const SyncStatusCallback& callback,
+                        int64 change_id,
+                        google_apis::GDataErrorCode error,
+                        const GURL& upload_location,
+                        scoped_ptr<google_apis::ResourceEntry> entry);
+  void DidUpdateDatabaseForUpload(const SyncStatusCallback& callback,
+                                  const std::string& file_id,
+                                  SyncStatusCode status);
+
   void CreateRemoteFolder(const SyncStatusCallback& callback);
 
   drive::DriveServiceInterface* drive_service();

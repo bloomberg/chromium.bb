@@ -45,6 +45,8 @@ std::string FileKindToString(FileKind file_kind);
 
 bool HasFileAsParent(const FileDetails& details, const std::string& file_id);
 
+std::string GetMimeTypeFromTitle(const base::FilePath& title);
+
 }  // namespace drive_backend
 }  // namespace sync_file_system
 

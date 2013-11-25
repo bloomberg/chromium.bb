@@ -13,10 +13,12 @@
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -44,6 +46,21 @@ void DidUpdateDatabase(const SyncStatusCallback& callback,
   if (status == SYNC_STATUS_OK)
     status = SYNC_STATUS_RETRY;
   callback.Run(status);
+}
+
+bool FindTrackerByParentAndFileID(MetadataDatabase* metadata_database,
+                                  int64 parent_tracker_id,
+                                  const std::string& file_id,
+                                  FileMetadata* file_metadata,
+                                  FileTracker* tracker) {
+  // TODO(tzik): Call MetadataDatabase::FindFileByFileID() and
+  // MetadataDatabase::FindTrackersByFileID().
+  // Assign the metadata to |file_metadata|.
+  // Find a tracker that have empty synced_details or the same title to
+  // |file_metadata|.  And assign it to |tracker|.
+  // If either of them failed, return false.
+  NOTIMPLEMENTED();
+  return false;
 }
 
 }  // namespace
@@ -343,8 +360,71 @@ void LocalToRemoteSyncer::DidDeleteForCreateFolder(
 }
 
 void LocalToRemoteSyncer::UploadNewFile(const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
+  DCHECK(remote_parent_folder_tracker_);
+
+  base::FilePath title = fileapi::VirtualPath::BaseName(url_.path());
+  drive_uploader()->UploadNewFile(
+      remote_parent_folder_tracker_->file_id(),
+      local_path_,
+      title.AsUTF8Unsafe(),
+      GetMimeTypeFromTitle(title),
+      base::Bind(&LocalToRemoteSyncer::DidUploadNewFile,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 metadata_database()->GetLargestKnownChangeID()),
+      google_apis::ProgressCallback());
+}
+
+void LocalToRemoteSyncer::DidUploadNewFile(
+    const SyncStatusCallback& callback,
+    int64 change_id,
+    google_apis::GDataErrorCode error,
+    const GURL& upload_location,
+    scoped_ptr<google_apis::ResourceEntry> entry) {
+  if (error != google_apis::HTTP_SUCCESS &&
+      error != google_apis::HTTP_CREATED) {
+    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+    return;
+  }
+
+  // TODO(tzik): Add a function to update both FileMetadata and FileTracker to
+  // MetadataDatabase.
+  metadata_database()->UpdateByFileResource(
+      change_id,
+      *drive::util::ConvertResourceEntryToFileResource(*entry),
+      base::Bind(&LocalToRemoteSyncer::DidUpdateDatabaseForUpload,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback, entry->resource_id()));
+}
+
+void LocalToRemoteSyncer::DidUpdateDatabaseForUpload(
+    const SyncStatusCallback& callback,
+    const std::string& file_id,
+    SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  FileMetadata metadata;
+  FileTracker tracker;
+  bool should_success =
+      FindTrackerByParentAndFileID(
+          metadata_database(),
+          remote_parent_folder_tracker_->tracker_id(),
+          file_id,
+          &metadata,
+          &tracker);
+  if (!should_success) {
+    NOTREACHED();
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+
+  metadata_database()->UpdateTracker(
+      tracker.tracker_id(),
+      metadata.details(),
+      callback);
 }
 
 void LocalToRemoteSyncer::CreateRemoteFolder(

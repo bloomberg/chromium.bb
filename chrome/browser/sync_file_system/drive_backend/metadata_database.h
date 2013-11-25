@@ -130,6 +130,9 @@ class MetadataDatabase {
   // Returns all file metadata for the given |app_id|.
   scoped_ptr<base::ListValue> DumpFiles(const std::string& app_id);
 
+  // TODO(tzik): Move GetLargestKnownChangeID() to private section, and hide its
+  // handling in the class, instead of letting user do.
+  //
   // Gets / updates the largest known change ID.
   // The largest known change ID is on-memory and not persist over restart.
   // This is supposed to use when a task fetches ChangeList in parallel to other

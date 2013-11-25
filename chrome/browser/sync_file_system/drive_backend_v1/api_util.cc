@@ -29,7 +29,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "net/base/mime_util.h"
 
 namespace sync_file_system {
 namespace drive_backend {
