@@ -14,9 +14,6 @@ from test_file_system import TestFileSystem
 from test_util import DisableLogging
 
 
-_HOST = 'https://developer.chrome.com'
-
-
 _CONTENT_PROVIDERS = {
   'apples': {
     'chromium': {
@@ -114,26 +111,25 @@ class ContentProvidersTest(unittest.TestCase):
     provider = self._content_providers.GetByName('apples')
     self.assertEqual(
         'gala apples',
-        provider.GetContentAndType(_HOST, 'gala.txt').Get().content)
+        provider.GetContentAndType('gala.txt').Get().content)
     self.assertEqual(
         'granny smith apples',
-        provider.GetContentAndType(_HOST, 'green/granny smith.txt').Get()
-            .content)
+        provider.GetContentAndType('green/granny smith.txt').Get().content)
 
   def testComplexRootPath(self):
     provider = self._content_providers.GetByName('tomatoes')
     self.assertEqual(
         'no they aren\'t',
-        provider.GetContentAndType(_HOST, 'vegetable.txt').Get().content)
+        provider.GetContentAndType('vegetable.txt').Get().content)
     self.assertEqual(
         'cherry tomatoes',
-        provider.GetContentAndType(_HOST, 'fruit/cherry.txt').Get().content)
+        provider.GetContentAndType('fruit/cherry.txt').Get().content)
 
   def testParentRootPath(self):
     provider = self._content_providers.GetByName('bananas')
     self.assertEqual(
         'gala apples',
-        provider.GetContentAndType(_HOST, 'apples/gala.txt').Get().content)
+        provider.GetContentAndType('apples/gala.txt').Get().content)
 
   def testSimpleServlet(self):
     provider, path = self._content_providers.GetByServeFrom('apples-dir')
@@ -175,7 +171,7 @@ class ContentProvidersTest(unittest.TestCase):
                      self._github_fs_provider.GetAndReset())
     self.assertEqual(
         'granny smith apples',
-        provider.GetContentAndType(_HOST, path).Get().content)
+        provider.GetContentAndType(path).Get().content)
 
   def testGithubContentProviderWithDir(self):
     provider, path = self._content_providers.GetByServeFrom(
@@ -186,7 +182,7 @@ class ContentProvidersTest(unittest.TestCase):
                      self._github_fs_provider.GetAndReset())
     self.assertEqual(
         'cherry tomatoes',
-        provider.GetContentAndType(_HOST, path).Get().content)
+        provider.GetContentAndType(path).Get().content)
 
 if __name__ == '__main__':
   unittest.main()

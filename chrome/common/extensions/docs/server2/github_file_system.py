@@ -195,7 +195,7 @@ class GithubFileSystem(FileSystem):
 
     # Parse response JSON - but sometimes github gives us invalid JSON.
     try:
-      version = json.loads(result.content)['commit']['sha']
+      version = json.loads(result.content)['sha']
       self._stat_object_store.Set(path, version)
       return StatInfo(version)
     except StandardError as e:
