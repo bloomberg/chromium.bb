@@ -52,6 +52,10 @@ class ScopedHandleBase {
     handle_ = handle;
   }
 
+  bool is_valid() const {
+    return handle_.is_valid();
+  }
+
  private:
   void CloseIfNecessary() {
     if (!handle_.is_valid())

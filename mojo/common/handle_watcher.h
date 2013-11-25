@@ -9,7 +9,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/common/mojo_common_export.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/system/core_cpp.h"
 
 namespace base {
 class Thread;

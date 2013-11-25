@@ -8,23 +8,31 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "mojo/common/scoped_message_pipe.h"
+#include "mojo/public/system/core_cpp.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace common {
 namespace test {
 
-MojoResult WriteToHandle(MojoHandle handle) {
-  return MojoWriteMessage(handle, NULL, 0, NULL, 0,
-                          MOJO_WRITE_MESSAGE_FLAG_NONE);
+struct MessagePipe {
+  MessagePipe() { CreateMessagePipe(&handle_0, &handle_1); }
+  ~MessagePipe() {}
+
+  ScopedMessagePipeHandle handle_0;
+  ScopedMessagePipeHandle handle_1;
+
+  DISALLOW_COPY_AND_ASSIGN(MessagePipe);
+};
+
+MojoResult WriteToHandle(const MessagePipeHandle& handle) {
+  return WriteMessageRaw(handle, NULL, 0, NULL, 0,
+                         MOJO_WRITE_MESSAGE_FLAG_NONE);
 }
 
-MojoResult ReadFromHandle(MojoHandle handle) {
-  uint32_t num_bytes = 0;
-  uint32_t num_handles = 0;
-  return MojoReadMessage(handle, NULL, &num_bytes, NULL, &num_handles,
-                         MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
+MojoResult ReadFromHandle(const MessagePipeHandle& handle) {
+  return ReadMessageRaw(handle, NULL, NULL, NULL, NULL,
+                        MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
 }
 
 void RunUntilIdle() {
@@ -71,14 +79,15 @@ class CallbackHelper {
     return base::Bind(&CallbackHelper::OnCallback, weak_factory_.GetWeakPtr());
   }
 
-  void Start(HandleWatcher* watcher, MojoHandle handle) {
+  void Start(HandleWatcher* watcher, const MessagePipeHandle& handle) {
     StartWithCallback(watcher, handle, GetCallback());
   }
 
-  void StartWithCallback(HandleWatcher* watcher, MojoHandle handle,
+  void StartWithCallback(HandleWatcher* watcher,
+                         const MessagePipeHandle& handle,
                          const base::Callback<void(MojoResult)>& callback) {
-    watcher->Start(handle, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE,
-                   callback);
+    watcher->Start(handle.value(), MOJO_WAIT_FLAG_READABLE,
+                   MOJO_DEADLINE_INDEFINITE, callback);
   }
 
  private:
@@ -122,14 +131,14 @@ class HandleWatcherTest : public testing::Test {
 
 // Trivial test case with a single handle to watch.
 TEST_F(HandleWatcherTest, SingleHandler) {
-  ScopedMessagePipe test_pipe;
-  ASSERT_NE(MOJO_HANDLE_INVALID, test_pipe.handle_0());
+  MessagePipe test_pipe;
+  ASSERT_TRUE(test_pipe.handle_0.is_valid());
   CallbackHelper callback_helper;
   HandleWatcher watcher;
-  callback_helper.Start(&watcher, test_pipe.handle_0());
+  callback_helper.Start(&watcher, test_pipe.handle_0);
   RunUntilIdle();
   EXPECT_FALSE(callback_helper.got_callback());
-  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe.handle_1()));
+  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe.handle_1));
   callback_helper.RunUntilGotCallback();
   EXPECT_TRUE(callback_helper.got_callback());
 }
@@ -137,39 +146,39 @@ TEST_F(HandleWatcherTest, SingleHandler) {
 // Creates three handles and notfies them in reverse order ensuring each one is
 // notified appropriately.
 TEST_F(HandleWatcherTest, ThreeHandles) {
-  ScopedMessagePipe test_pipe1;
-  ScopedMessagePipe test_pipe2;
-  ScopedMessagePipe test_pipe3;
+  MessagePipe test_pipe1;
+  MessagePipe test_pipe2;
+  MessagePipe test_pipe3;
   CallbackHelper callback_helper1;
   CallbackHelper callback_helper2;
   CallbackHelper callback_helper3;
-  ASSERT_NE(MOJO_HANDLE_INVALID, test_pipe1.handle_0());
-  ASSERT_NE(MOJO_HANDLE_INVALID, test_pipe2.handle_0());
-  ASSERT_NE(MOJO_HANDLE_INVALID, test_pipe3.handle_0());
+  ASSERT_TRUE(test_pipe1.handle_0.is_valid());
+  ASSERT_TRUE(test_pipe2.handle_0.is_valid());
+  ASSERT_TRUE(test_pipe3.handle_0.is_valid());
 
   HandleWatcher watcher1;
-  callback_helper1.Start(&watcher1, test_pipe1.handle_0());
+  callback_helper1.Start(&watcher1, test_pipe1.handle_0);
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
   EXPECT_FALSE(callback_helper3.got_callback());
 
   HandleWatcher watcher2;
-  callback_helper2.Start(&watcher2, test_pipe2.handle_0());
+  callback_helper2.Start(&watcher2, test_pipe2.handle_0);
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
   EXPECT_FALSE(callback_helper3.got_callback());
 
   HandleWatcher watcher3;
-  callback_helper3.Start(&watcher3, test_pipe3.handle_0());
+  callback_helper3.Start(&watcher3, test_pipe3.handle_0);
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
   EXPECT_FALSE(callback_helper3.got_callback());
 
   // Write to 3 and make sure it's notified.
-  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe3.handle_1()));
+  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe3.handle_1));
   callback_helper3.RunUntilGotCallback();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
@@ -178,8 +187,8 @@ TEST_F(HandleWatcherTest, ThreeHandles) {
 
   // Write to 1 and 3. Only 1 should be notified since 3 was is no longer
   // running.
-  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe1.handle_1()));
-  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe3.handle_1()));
+  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe1.handle_1));
+  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe3.handle_1));
   callback_helper1.RunUntilGotCallback();
   EXPECT_TRUE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
@@ -187,8 +196,8 @@ TEST_F(HandleWatcherTest, ThreeHandles) {
   callback_helper1.clear_callback();
 
   // Write to 1 and 2. Only 2 should be notified (since 1 was already notified).
-  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe1.handle_1()));
-  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe2.handle_1()));
+  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe1.handle_1));
+  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe2.handle_1));
   callback_helper2.RunUntilGotCallback();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_TRUE(callback_helper2.got_callback());
@@ -197,48 +206,48 @@ TEST_F(HandleWatcherTest, ThreeHandles) {
 
 // Verifies Start() invoked a second time works.
 TEST_F(HandleWatcherTest, Restart) {
-  ScopedMessagePipe test_pipe1;
-  ScopedMessagePipe test_pipe2;
+  MessagePipe test_pipe1;
+  MessagePipe test_pipe2;
   CallbackHelper callback_helper1;
   CallbackHelper callback_helper2;
-  ASSERT_NE(MOJO_HANDLE_INVALID, test_pipe1.handle_0());
-  ASSERT_NE(MOJO_HANDLE_INVALID, test_pipe2.handle_0());
+  ASSERT_TRUE(test_pipe1.handle_0.is_valid());
+  ASSERT_TRUE(test_pipe2.handle_0.is_valid());
 
   HandleWatcher watcher1;
-  callback_helper1.Start(&watcher1, test_pipe1.handle_0());
+  callback_helper1.Start(&watcher1, test_pipe1.handle_0);
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
 
   HandleWatcher watcher2;
-  callback_helper2.Start(&watcher2, test_pipe2.handle_0());
+  callback_helper2.Start(&watcher2, test_pipe2.handle_0);
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
 
   // Write to 1 and make sure it's notified.
-  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe1.handle_1()));
+  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe1.handle_1));
   callback_helper1.RunUntilGotCallback();
   EXPECT_TRUE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
   callback_helper1.clear_callback();
-  EXPECT_EQ(MOJO_RESULT_OK, ReadFromHandle(test_pipe1.handle_0()));
+  EXPECT_EQ(MOJO_RESULT_OK, ReadFromHandle(test_pipe1.handle_0));
 
   // Write to 2 and make sure it's notified.
-  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe2.handle_1()));
+  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe2.handle_1));
   callback_helper2.RunUntilGotCallback();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_TRUE(callback_helper2.got_callback());
   callback_helper2.clear_callback();
 
   // Listen on 1 again.
-  callback_helper1.Start(&watcher1, test_pipe1.handle_0());
+  callback_helper1.Start(&watcher1, test_pipe1.handle_0);
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
 
   // Write to 1 and make sure it's notified.
-  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe1.handle_1()));
+  EXPECT_EQ(MOJO_RESULT_OK, WriteToHandle(test_pipe1.handle_1));
   callback_helper1.RunUntilGotCallback();
   EXPECT_TRUE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
@@ -248,19 +257,19 @@ TEST_F(HandleWatcherTest, Restart) {
 TEST_F(HandleWatcherTest, Deadline) {
   InstallTickClock();
 
-  ScopedMessagePipe test_pipe1;
-  ScopedMessagePipe test_pipe2;
-  ScopedMessagePipe test_pipe3;
+  MessagePipe test_pipe1;
+  MessagePipe test_pipe2;
+  MessagePipe test_pipe3;
   CallbackHelper callback_helper1;
   CallbackHelper callback_helper2;
   CallbackHelper callback_helper3;
-  ASSERT_NE(MOJO_HANDLE_INVALID, test_pipe1.handle_0());
-  ASSERT_NE(MOJO_HANDLE_INVALID, test_pipe2.handle_0());
-  ASSERT_NE(MOJO_HANDLE_INVALID, test_pipe3.handle_0());
+  ASSERT_TRUE(test_pipe1.handle_0.is_valid());
+  ASSERT_TRUE(test_pipe2.handle_0.is_valid());
+  ASSERT_TRUE(test_pipe3.handle_0.is_valid());
 
   // Add a watcher with an infinite timeout.
   HandleWatcher watcher1;
-  callback_helper1.Start(&watcher1, test_pipe1.handle_0());
+  callback_helper1.Start(&watcher1, test_pipe1.handle_0);
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
@@ -268,8 +277,8 @@ TEST_F(HandleWatcherTest, Deadline) {
 
   // Add another watcher wth a timeout of 500 microseconds.
   HandleWatcher watcher2;
-  watcher2.Start(test_pipe2.handle_0(), MOJO_WAIT_FLAG_READABLE, 500,
-                 callback_helper2.GetCallback());
+  watcher2.Start(test_pipe2.handle_0.get().value(), MOJO_WAIT_FLAG_READABLE,
+                 500, callback_helper2.GetCallback());
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
@@ -280,7 +289,7 @@ TEST_F(HandleWatcherTest, Deadline) {
   tick_clock_.Advance(base::TimeDelta::FromMicroseconds(501));
 
   HandleWatcher watcher3;
-  callback_helper3.Start(&watcher3, test_pipe3.handle_0());
+  callback_helper3.Start(&watcher3, test_pipe3.handle_0);
 
   callback_helper2.RunUntilGotCallback();
   EXPECT_FALSE(callback_helper1.got_callback());
@@ -289,15 +298,15 @@ TEST_F(HandleWatcherTest, Deadline) {
 }
 
 TEST_F(HandleWatcherTest, DeleteInCallback) {
-  ScopedMessagePipe test_pipe;
+  MessagePipe test_pipe;
   CallbackHelper callback_helper;
 
   HandleWatcher* watcher = new HandleWatcher();
-  callback_helper.StartWithCallback(watcher, test_pipe.handle_1(),
+  callback_helper.StartWithCallback(watcher, test_pipe.handle_1,
                                     base::Bind(&DeleteWatcherAndForwardResult,
                                                watcher,
                                                callback_helper.GetCallback()));
-  WriteToHandle(test_pipe.handle_0());
+  WriteToHandle(test_pipe.handle_0);
   callback_helper.RunUntilGotCallback();
   EXPECT_TRUE(callback_helper.got_callback());
 }

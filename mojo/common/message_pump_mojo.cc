@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "mojo/common/message_pump_mojo_handler.h"
-#include "mojo/common/scoped_message_pipe.h"
 
 namespace mojo {
 namespace common {
@@ -24,15 +23,15 @@ struct MessagePumpMojo::WaitState {
 
 struct MessagePumpMojo::RunState {
  public:
-  RunState() : should_quit(false) {}
-
-  MojoHandle read_handle() const { return control_pipe.handle_0(); }
-  MojoHandle write_handle() const { return control_pipe.handle_1(); }
+  RunState() : should_quit(false) {
+    CreateMessagePipe(&read_handle, &write_handle);
+  }
 
   base::TimeTicks delayed_work_time;
 
   // Used to wake up WaitForWork().
-  ScopedMessagePipe control_pipe;
+  ScopedMessagePipeHandle read_handle;
+  ScopedMessagePipeHandle write_handle;
 
   bool should_quit;
 };
@@ -67,8 +66,8 @@ void MessagePumpMojo::Run(Delegate* delegate) {
   RunState* old_state = run_state_;
   RunState run_state;
   // TODO: better deal with error handling.
-  CHECK_NE(run_state.control_pipe.handle_0(), MOJO_HANDLE_INVALID);
-  CHECK_NE(run_state.control_pipe.handle_1(), MOJO_HANDLE_INVALID);
+  CHECK(run_state.read_handle.is_valid());
+  CHECK(run_state.write_handle.is_valid());
   run_state_ = &run_state;
   bool more_work_is_plausible = true;
   for (;;) {
@@ -129,8 +128,8 @@ void MessagePumpMojo::DoInternalWork(bool block) {
   if (result == 0) {
     // Control pipe was written to.
     uint32_t num_bytes = 0;
-    MojoReadMessage(run_state_->read_handle(), NULL, &num_bytes, NULL, 0,
-                    MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
+    ReadMessageRaw(run_state_->read_handle, NULL, &num_bytes, NULL, NULL,
+                   MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
   } else if (result > 0) {
     const size_t index = static_cast<size_t>(result);
     DCHECK(handlers_.find(wait_state.handles[index]) != handlers_.end());
@@ -191,13 +190,13 @@ void MessagePumpMojo::SignalControlPipe() {
     return;
 
   // TODO(sky): deal with error?
-  MojoWriteMessage(run_state_->write_handle(), NULL, 0, NULL, 0,
-                   MOJO_WRITE_MESSAGE_FLAG_NONE);
+  WriteMessageRaw(run_state_->write_handle, NULL, 0, NULL, 0,
+                  MOJO_WRITE_MESSAGE_FLAG_NONE);
 }
 
 MessagePumpMojo::WaitState MessagePumpMojo::GetWaitState() const {
   WaitState wait_state;
-  wait_state.handles.push_back(run_state_->read_handle());
+  wait_state.handles.push_back(run_state_->read_handle.get().value());
   wait_state.wait_flags.push_back(MOJO_WAIT_FLAG_READABLE);
 
   for (HandleToHandler::const_iterator i = handlers_.begin();

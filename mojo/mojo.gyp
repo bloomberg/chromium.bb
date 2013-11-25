@@ -76,8 +76,6 @@
         'common/message_pump_mojo.cc',
         'common/message_pump_mojo.h',
         'common/message_pump_mojo_handler.h',
-        'common/scoped_message_pipe.cc',
-        'common/scoped_message_pipe.h',
       ],
       'conditions': [
         ['OS == "win"', {

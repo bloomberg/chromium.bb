@@ -51,6 +51,8 @@ do_unittests() {
   "out/$1/mojo_public_unittests" || exit 1
   "out/$1/mojo_bindings_test" || exit 1
   "out/$1/mojo_js_bindings_unittests" || exit 1
+  "out/$1/mojo_common_unittests" || exit 1
+  "out/$1/mojo_shell_unittests" || exit 1
 }
 
 do_perftests() {
