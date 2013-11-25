@@ -59,12 +59,7 @@ var test = function()
             return "[domain]";
         };
 
-        var launcherView = WebInspector.panels.audits._launcherView;
-        launcherView._selectAllClicked(true);
-        launcherView._auditPresentStateElement.checked = true;
-        launcherView._launchButtonClicked();
-
-        InspectorTest.runAfterPendingDispatches(step2);
+        InspectorTest.launchAllAudits(false, step2);
     }
 
     function step2()

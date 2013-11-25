@@ -12,6 +12,15 @@ InspectorTest.collectAuditResults = function()
     InspectorTest.collectTextContent(WebInspector.panels.audits.visibleView.element, 0);
 }
 
+InspectorTest.launchAllAudits = function(shouldReload, callback)
+{
+    var launcherView = WebInspector.panels.audits._launcherView;
+    launcherView._selectAllClicked(true);
+    launcherView._auditPresentStateElement.checked = !shouldReload;
+    launcherView._launchButtonClicked();
+    InspectorTest.runAfterPendingDispatches(callback);
+}
+
 InspectorTest.collectTextContent = function(element, level)
 {
     var nodeOutput = "";
