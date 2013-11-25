@@ -255,8 +255,7 @@ if zerocost_eh_env.AllowNonStableBitcode():
        ('opt_noframe', MakeEnv(zerocost_eh_env, True, False))])
 
 for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
-  for src in ['unwind_trace.cc',
-              'stack_frame.cc',
+  for src in ['stack_frame.cc',
               'eh_return.c',
               'eh_virtual_dtor.cc',
               'eh_loop_single.cc',
@@ -286,7 +285,6 @@ for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
 
     # The following tests don't work as PNaCl ABI-stable pexes.
     non_abi_stable_tests = [
-        'unwind_trace.cc', # Tests _Unwind_* functions
         'eh_floating_point.cc', # Uses vector types
         'stack_frame.cc', # Uses llvm.eh.dwarf.cfa
         'eh_return.c', # Uses llvm.eh.dwarf.cfa, and llvm.eh.return.i32
