@@ -57,30 +57,6 @@ volumeManagerUtil.validateError = function(error) {
 };
 
 /**
- * The regex pattern which matches valid mount paths.
- * The valid paths are:
- * - Either of '/drive', '/drive_shared_with_me', '/drive_offline',
- *   '/drive_recent' or '/Download'
- * - For archive, drive, removable can have (exactly one) sub directory in the
- *  root path. E.g. '/archive/foo', '/removable/usb1' etc.
- *
- * @type {RegExp}
- * @private
- */
-volumeManagerUtil.validateMountPathRegExp_ = new RegExp(
-    '^/(drive|drive_shared_with_me|drive_offline|drive_recent|Downloads|' +
-    '((archive|drive|removable)\/[^/]+))$');
-
-/**
- * Throws an Error if the validation fails.
- * @param {string} mountPath The target path of the validation.
- */
-volumeManagerUtil.validateMountPath = function(mountPath) {
-  if (!volumeManagerUtil.validateMountPathRegExp_.test(mountPath))
-    throw new Error('Invalid mount path: ' + mountPath);
-};
-
-/**
  * Returns the root entry of a volume mounted at mountPath.
  *
  * @param {string} mountPath The mounted path of the volume.
@@ -463,7 +439,6 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     }
   } else if (event.eventType === 'unmount') {
     var mountPath = event.volumeMetadata.mountPath;
-    volumeManagerUtil.validateMountPath(mountPath);
     var status = event.status;
     if (status === util.VolumeError.PATH_UNMOUNTED) {
       console.warn('Volume already unmounted: ', mountPath);
@@ -523,7 +498,6 @@ VolumeManager.prototype.mountArchive = function(
 VolumeManager.prototype.unmount = function(mountPath,
                                            successCallback,
                                            errorCallback) {
-  volumeManagerUtil.validateMountPath(mountPath);
   var volumeInfo = this.volumeInfoList.find(mountPath);
   if (!volumeInfo) {
     errorCallback(util.VolumeError.NOT_MOUNTED);
