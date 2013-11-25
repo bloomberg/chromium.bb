@@ -45,8 +45,7 @@ BindingsSupport::AsyncWaitID BindingsSupportImpl::AsyncWait(
   // This instance will be deleted when done or cancelled.
   HandleWatcher* watcher = new HandleWatcher();
 
-  // TODO(darin): Standardize on mojo::Handle instead of MojoHandle?
-  watcher->Start(handle.value(),
+  watcher->Start(handle,
                  flags,
                  MOJO_DEADLINE_INDEFINITE,
                  base::Bind(&Context::CallOnHandleReady,

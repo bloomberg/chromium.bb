@@ -35,7 +35,7 @@ class MOJO_COMMON_EXPORT HandleWatcher {
   // Start() multiple times, but it cancels any existing watches. |callback| is
   // notified when the handle is ready, invalid or deadline has passed and is
   // notified on the thread Start() was invoked on.
-  void Start(MojoHandle handle,
+  void Start(const Handle& handle,
              MojoWaitFlags wait_flags,
              MojoDeadline deadline,
              const base::Callback<void(MojoResult)>& callback);

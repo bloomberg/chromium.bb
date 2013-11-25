@@ -39,12 +39,11 @@ scoped_ptr<base::MessagePump> CreateMessagePumpMojo() {
 struct WatchData {
   WatchData()
       : id(0),
-        handle(MOJO_HANDLE_INVALID),
         wait_flags(MOJO_WAIT_FLAG_NONE),
         message_loop(NULL) {}
 
   WatcherID id;
-  MojoHandle handle;
+  Handle handle;
   MojoWaitFlags wait_flags;
   base::TimeTicks deadline;
   base::Callback<void(MojoResult)> callback;
@@ -65,14 +64,14 @@ class WatcherBackend : public MessagePumpMojoHandler {
   void StopWatching(WatcherID watcher_id);
 
  private:
-  typedef std::map<MojoHandle, WatchData> HandleToWatchDataMap;
+  typedef std::map<Handle, WatchData> HandleToWatchDataMap;
 
   // Invoked when a handle needs to be removed and notified.
-  void RemoveAndNotify(MojoHandle handle, MojoResult result);
+  void RemoveAndNotify(const Handle& handle, MojoResult result);
 
   // Searches through |handle_to_data_| for |watcher_id|. Returns true if found
-  // and sets |handle| to the MojoHandle. Returns false if not a known id.
-  bool GetMojoHandleByWatcherID(WatcherID watcher_id, MojoHandle* handle) const;
+  // and sets |handle| to the Handle. Returns false if not a known id.
+  bool GetMojoHandleByWatcherID(WatcherID watcher_id, Handle* handle) const;
 
   // MessagePumpMojoHandler overrides:
   virtual void OnHandleReady(MojoHandle handle) OVERRIDE;
@@ -96,7 +95,7 @@ void WatcherBackend::StartWatching(const WatchData& data) {
   DCHECK_EQ(0u, handle_to_data_.count(data.handle));
 
   handle_to_data_[data.handle] = data;
-  message_pump_mojo->AddHandler(this, data.handle,
+  message_pump_mojo->AddHandler(this, data.handle.value(),
                                 data.wait_flags,
                                 data.deadline);
 }
@@ -104,27 +103,27 @@ void WatcherBackend::StartWatching(const WatchData& data) {
 void WatcherBackend::StopWatching(WatcherID watcher_id) {
   // Because of the thread hop it is entirely possible to get here and not
   // have a valid handle registered for |watcher_id|.
-  MojoHandle handle;
+  Handle handle;
   if (!GetMojoHandleByWatcherID(watcher_id, &handle))
     return;
 
   handle_to_data_.erase(handle);
-  message_pump_mojo->RemoveHandler(handle);
+  message_pump_mojo->RemoveHandler(handle.value());
 }
 
-void WatcherBackend::RemoveAndNotify(MojoHandle handle,
+void WatcherBackend::RemoveAndNotify(const Handle& handle,
                                      MojoResult result) {
   if (handle_to_data_.count(handle) == 0)
     return;
 
   const WatchData data(handle_to_data_[handle]);
   handle_to_data_.erase(handle);
-  message_pump_mojo->RemoveHandler(handle);
+  message_pump_mojo->RemoveHandler(handle.value());
   data.message_loop->PostTask(FROM_HERE, base::Bind(data.callback, result));
 }
 
 bool WatcherBackend::GetMojoHandleByWatcherID(WatcherID watcher_id,
-                                              MojoHandle* handle) const {
+                                              Handle* handle) const {
   for (HandleToWatchDataMap::const_iterator i = handle_to_data_.begin();
        i != handle_to_data_.end(); ++i) {
     if (i->second.id == watcher_id) {
@@ -136,11 +135,11 @@ bool WatcherBackend::GetMojoHandleByWatcherID(WatcherID watcher_id,
 }
 
 void WatcherBackend::OnHandleReady(MojoHandle handle) {
-  RemoveAndNotify(handle, MOJO_RESULT_OK);
+  RemoveAndNotify(Handle(handle), MOJO_RESULT_OK);
 }
 
 void WatcherBackend::OnHandleError(MojoHandle handle, MojoResult result) {
-  RemoveAndNotify(handle, result);
+  RemoveAndNotify(Handle(handle), result);
 }
 
 // WatcherThreadManager --------------------------------------------------------
@@ -156,7 +155,7 @@ class WatcherThreadManager {
   // stop watching the handle. When the handle is ready |callback| is notified
   // on the thread StartWatching() was invoked on.
   // This may be invoked on any thread.
-  WatcherID StartWatching(MojoHandle handle,
+  WatcherID StartWatching(const Handle& handle,
                           MojoWaitFlags wait_flags,
                           base::TimeTicks deadline,
                           const base::Callback<void(MojoResult)>& callback);
@@ -187,7 +186,7 @@ WatcherThreadManager* WatcherThreadManager::GetInstance() {
 }
 
 WatcherID WatcherThreadManager::StartWatching(
-    MojoHandle handle,
+    const Handle& handle,
     MojoWaitFlags wait_flags,
     base::TimeTicks deadline,
     const base::Callback<void(MojoResult)>& callback) {
@@ -266,11 +265,11 @@ HandleWatcher::~HandleWatcher() {
   Stop();
 }
 
-void HandleWatcher::Start(MojoHandle handle,
+void HandleWatcher::Start(const Handle& handle,
                           MojoWaitFlags wait_flags,
                           MojoDeadline deadline,
                           const base::Callback<void(MojoResult)>& callback) {
-  DCHECK_NE(MOJO_HANDLE_INVALID, handle);
+  DCHECK(handle.is_valid());
   DCHECK_NE(MOJO_WAIT_FLAG_NONE, wait_flags);
 
   Stop();
