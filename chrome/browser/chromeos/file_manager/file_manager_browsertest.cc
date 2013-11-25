@@ -418,7 +418,7 @@ class FileManagerTestListener : public content::NotificationObserver {
   struct Message {
     int type;
     std::string message;
-    extensions::TestSendMessageFunction* function;
+    scoped_refptr<extensions::TestSendMessageFunction> function;
   };
 
   FileManagerTestListener() {

@@ -106,7 +106,6 @@ bool TestSendMessageFunction::RunImpl() {
   scoped_ptr<PassMessage::Params> params(
       PassMessage::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  AddRef();  // balanced in Reply
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
       content::Source<TestSendMessageFunction>(this),
@@ -119,7 +118,6 @@ TestSendMessageFunction::~TestSendMessageFunction() {}
 void TestSendMessageFunction::Reply(const std::string& message) {
   SetResult(new base::StringValue(message));
   SendResponse(true);
-  Release();  // balanced in RunImpl
 }
 
 // static

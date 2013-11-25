@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
@@ -51,7 +52,7 @@ class SetInputMethodListener : public content::NotificationObserver {
       chromeos::input_method::InputMethodManager::Get()->
           ChangeInputMethod(base::StringPrintf("xkb:%s", kNewInputMethod));
 
-      extensions::TestSendMessageFunction* function =
+      scoped_refptr<extensions::TestSendMessageFunction> function =
           content::Source<extensions::TestSendMessageFunction>(
               source).ptr();
       EXPECT_GT(count_--, 0);

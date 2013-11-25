@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -98,7 +99,7 @@ class ExtensionTestMessageListener : public content::NotificationObserver {
   bool failed_;
 
   // The function we need to reply to.
-  extensions::TestSendMessageFunction* function_;
+  scoped_refptr<extensions::TestSendMessageFunction> function_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_MESSAGE_LISTENER_H_
