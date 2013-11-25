@@ -21,10 +21,12 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "grit/generated_resources.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace {
@@ -204,4 +206,43 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
   ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
   EXPECT_EQ(test_identity, params.a);
   ASSERT_FALSE(params.b);
+}
+
+class TabTitleObserver : public content::WebContentsObserver {
+ public:
+  explicit TabTitleObserver(content::WebContents* contents)
+      : WebContentsObserver(contents) {}
+
+  string16 title_on_start() { return title_on_start_; }
+  string16 title_on_commit() { return title_on_commit_; }
+
+ private:
+  virtual void DidStartProvisionalLoadForFrame(
+      int64 /* frame_id */,
+      int64 /* parent_frame_id */,
+      bool /* is_main_frame */,
+      const GURL& /* validated_url */,
+      bool /* is_error_page */,
+      bool /* is_iframe_srcdoc */,
+      content::RenderViewHost* /* render_view_host */) OVERRIDE {
+    title_on_start_ = web_contents()->GetTitle();
+  }
+
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& /* details */,
+      const content::FrameNavigateParams& /* params */) OVERRIDE {
+    title_on_commit_ = web_contents()->GetTitle();
+  }
+
+  string16 title_on_start_;
+  string16 title_on_commit_;
+};
+
+TEST_F(SearchTabHelperTest, TitleIsSetForNTP) {
+  TabTitleObserver title_observer(web_contents());
+  NavigateAndCommit(GURL(chrome::kChromeUINewTabURL));
+  const string16 title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
+  EXPECT_EQ(title, title_observer.title_on_start());
+  EXPECT_EQ(title, title_observer.title_on_commit());
+  EXPECT_EQ(title, web_contents()->GetTitle());
 }

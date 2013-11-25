@@ -314,6 +314,26 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
   EXPECT_EQ(ASCIIToUTF16("Lots O' Whitespace"), contents()->GetTitle());
 }
 
+TEST_F(WebContentsImplTest, DontUseTitleFromPendingEntry) {
+  const GURL kGURL("chrome://blah");
+  controller().LoadURL(
+      kGURL, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_EQ(string16(), contents()->GetTitle());
+}
+
+TEST_F(WebContentsImplTest, UseTitleFromPendingEntryIfSet) {
+  const GURL kGURL("chrome://blah");
+  const string16 title = ASCIIToUTF16("My Title");
+  controller().LoadURL(
+      kGURL, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+
+  NavigationEntry* entry = controller().GetVisibleEntry();
+  ASSERT_EQ(kGURL, entry->GetURL());
+  entry->SetTitle(title);
+
+  EXPECT_EQ(title, contents()->GetTitle());
+}
+
 // Test view source mode for a webui page.
 TEST_F(WebContentsImplTest, NTPViewSource) {
   NavigationControllerImpl& cont =

@@ -221,6 +221,19 @@ void SearchTabHelper::RenderViewCreated(
   ipc_router_.SetPromoInformation(IsAppLauncherEnabled());
 }
 
+void SearchTabHelper::DidStartNavigationToPendingEntry(
+    const GURL& url,
+    content::NavigationController::ReloadType /* reload_type */) {
+  if (chrome::IsNTPURL(url, profile())) {
+    // Set the title on any pending entry corresponding to the NTP. This
+    // prevents any flickering of the tab title.
+    content::NavigationEntry* entry =
+        web_contents_->GetController().GetPendingEntry();
+    if (entry)
+      entry->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+  }
+}
+
 void SearchTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
