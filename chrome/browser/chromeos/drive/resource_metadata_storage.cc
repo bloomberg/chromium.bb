@@ -211,6 +211,7 @@ void ResourceMetadataStorage::Iterator::Advance() {
   for (it_->Next() ; it_->Valid(); it_->Next()) {
     if (!IsChildEntryKey(it_->key()) &&
         !IsCacheEntryKey(it_->key()) &&
+        !IsIdEntryKey(it_->key()) &&
         entry_.ParseFromArray(it_->value().data(), it_->value().size()))
       break;
   }
@@ -420,7 +421,7 @@ bool ResourceMetadataStorage::Initialize() {
     bool should_discard_db = true;
     if (db_version != kDBVersion) {
       open_existing_result = DB_INIT_INCOMPATIBLE;
-      LOG(INFO) << "Reject incompatible DB.";
+      DVLOG(1) << "Reject incompatible DB.";
     } else if (!CheckValidity()) {
       open_existing_result = DB_INIT_BROKEN;
       LOG(ERROR) << "Reject invalid DB.";
