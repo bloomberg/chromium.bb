@@ -77,22 +77,22 @@ shouldBe("m.high", "200.0");
 shouldBe("m.optimum", "12.5");
 
 debug("Set value to invalid value");
-shouldThrow('m.value = "value";', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
+shouldThrow('m.value = "value";', '"NotSupportedError: Failed to set the \'value\' property on \'HTMLMeterElement\': The value provided is not a number."');
 
 debug("Set min to NaN");
-shouldThrow('m.min = NaN;', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
+shouldThrow('m.min = NaN;', '"NotSupportedError: Failed to set the \'min\' property on \'HTMLMeterElement\': The value provided is not a number."');
 
 debug("Set max to Infinity");
-shouldThrow('m.max = Infinity;', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
+shouldThrow('m.max = Infinity;', '"NotSupportedError: Failed to set the \'max\' property on \'HTMLMeterElement\': The value provided is infinite."');
 
 debug("Set low to invalid value");
-shouldThrow('m.low = "low";', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
+shouldThrow('m.low = "low";', '"NotSupportedError: Failed to set the \'low\' property on \'HTMLMeterElement\': The value provided is not a number."');
 
 debug("Set high to NaN");
-shouldThrow('m.high = NaN;', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
+shouldThrow('m.high = NaN;', '"NotSupportedError: Failed to set the \'high\' property on \'HTMLMeterElement\': The value provided is not a number."');
 
 debug("Set optimum to Infinity");
-shouldThrow('m.optimum = Infinity;', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
+shouldThrow('m.optimum = Infinity;', '"NotSupportedError: Failed to set the \'optimum\' property on \'HTMLMeterElement\': The value provided is infinite."');
 
 debug("Set attributes to valid numbers");
 m.setAttribute("min", 0);
