@@ -171,7 +171,7 @@ void SyncClient::StartCheckingExistingPinnedFiles() {
 void SyncClient::AddFetchTask(const std::string& local_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  AddTaskToQueue(FETCH, local_id, delay_);
+  AddTaskToQueue(FETCH, ClientContext(BACKGROUND), local_id, delay_);
 }
 
 void SyncClient::RemoveFetchTask(const std::string& local_id) {
@@ -181,13 +181,15 @@ void SyncClient::RemoveFetchTask(const std::string& local_id) {
   pending_fetch_list_.erase(local_id);
 }
 
-void SyncClient::AddUploadTask(const std::string& local_id) {
+void SyncClient::AddUploadTask(const ClientContext& context,
+                               const std::string& local_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  AddTaskToQueue(UPLOAD, local_id, delay_);
+  AddTaskToQueue(UPLOAD, context, local_id, delay_);
 }
 
 void SyncClient::AddTaskToQueue(SyncType type,
+                                const ClientContext& context,
                                 const std::string& local_id,
                                 const base::TimeDelta& delay) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -203,7 +205,7 @@ void SyncClient::AddTaskToQueue(SyncType type,
       }
       break;
     case UPLOAD:
-    case UPLOAD_NO_CONTENT_CHECK:
+    case UPLOAD_RETRY:
       if (upload_list_.find(local_id) == upload_list_.end()) {
         upload_list_.insert(local_id);
       } else {
@@ -217,11 +219,14 @@ void SyncClient::AddTaskToQueue(SyncType type,
       base::Bind(&SyncClient::StartTask,
                  weak_ptr_factory_.GetWeakPtr(),
                  type,
+                 context,
                  local_id),
       delay);
 }
 
-void SyncClient::StartTask(SyncType type, const std::string& local_id) {
+void SyncClient::StartTask(SyncType type,
+                           const ClientContext& context,
+                           const std::string& local_id) {
   switch (type) {
     case FETCH:
       // Check if the resource has been removed from the start list.
@@ -231,7 +236,7 @@ void SyncClient::StartTask(SyncType type, const std::string& local_id) {
 
         download_operation_->EnsureFileDownloadedByLocalId(
             local_id,
-            ClientContext(BACKGROUND),
+            context,
             GetFileContentInitializedCallback(),
             google_apis::GetContentCallback(),
             base::Bind(&SyncClient::OnFetchFileComplete,
@@ -243,13 +248,17 @@ void SyncClient::StartTask(SyncType type, const std::string& local_id) {
       }
       break;
     case UPLOAD:
-    case UPLOAD_NO_CONTENT_CHECK:
+    case UPLOAD_RETRY:
       DVLOG(1) << "Uploading " << local_id;
+
+      const file_system::UpdateOperation::ContentCheckMode check_mode(
+          type == UPLOAD_RETRY ?
+              file_system::UpdateOperation::NO_CONTENT_CHECK :
+              file_system::UpdateOperation::RUN_CONTENT_CHECK);
       update_operation_->UpdateFileByLocalId(
           local_id,
-          ClientContext(BACKGROUND),
-          type == UPLOAD ? file_system::UpdateOperation::RUN_CONTENT_CHECK
-                         : file_system::UpdateOperation::NO_CONTENT_CHECK,
+          context,
+          check_mode,
           base::Bind(&SyncClient::OnUploadFileComplete,
                      weak_ptr_factory_.GetWeakPtr(),
                      local_id));
@@ -267,13 +276,13 @@ void SyncClient::OnGetLocalIdsOfBacklog(
   for (size_t i = 0; i < to_upload->size(); ++i) {
     const std::string& local_id = (*to_upload)[i];
     DVLOG(1) << "Queuing to upload: " << local_id;
-    AddTaskToQueue(UPLOAD_NO_CONTENT_CHECK, local_id, delay_);
+    AddTaskToQueue(UPLOAD_RETRY, ClientContext(BACKGROUND), local_id, delay_);
   }
 
   for (size_t i = 0; i < to_fetch->size(); ++i) {
     const std::string& local_id = (*to_fetch)[i];
     DVLOG(1) << "Queuing to fetch: " << local_id;
-    AddTaskToQueue(FETCH, local_id, delay_);
+    AddTaskToQueue(FETCH, ClientContext(BACKGROUND), local_id, delay_);
   }
 }
 
@@ -304,11 +313,11 @@ void SyncClient::OnFetchFileComplete(const std::string& local_id,
         break;
       case FILE_ERROR_NO_CONNECTION:
         // Re-queue the task so that we'll retry once the connection is back.
-        AddTaskToQueue(FETCH, local_id, delay_);
+        AddTaskToQueue(FETCH, ClientContext(BACKGROUND), local_id, delay_);
         break;
       case FILE_ERROR_SERVICE_UNAVAILABLE:
         // Re-queue the task so that we'll retry once the service is back.
-        AddTaskToQueue(FETCH, local_id, long_delay_);
+        AddTaskToQueue(FETCH, ClientContext(BACKGROUND), local_id, long_delay_);
         break;
       default:
         LOG(WARNING) << "Failed to fetch " << local_id
@@ -329,11 +338,13 @@ void SyncClient::OnUploadFileComplete(const std::string& local_id,
     switch (error) {
       case FILE_ERROR_NO_CONNECTION:
         // Re-queue the task so that we'll retry once the connection is back.
-        AddTaskToQueue(UPLOAD_NO_CONTENT_CHECK, local_id, delay_);
+        AddTaskToQueue(UPLOAD_RETRY, ClientContext(BACKGROUND), local_id,
+                       delay_);
         break;
       case FILE_ERROR_SERVICE_UNAVAILABLE:
         // Re-queue the task so that we'll retry once the service is back.
-        AddTaskToQueue(UPLOAD_NO_CONTENT_CHECK, local_id, long_delay_);
+        AddTaskToQueue(UPLOAD_RETRY, ClientContext(BACKGROUND), local_id,
+                       long_delay_);
         break;
       default:
         LOG(WARNING) << "Failed to upload " << local_id << ": "

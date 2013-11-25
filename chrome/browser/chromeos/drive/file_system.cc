@@ -883,7 +883,7 @@ void FileSystem::OnDirectoryChangedByOperation(
 
 void FileSystem::OnCacheFileUploadNeededByOperation(
     const std::string& local_id) {
-  sync_client_->AddUploadTask(local_id);
+  sync_client_->AddUploadTask(ClientContext(USER_INITIATED), local_id);
 }
 
 void FileSystem::OnDirectoryChanged(const base::FilePath& directory_path) {

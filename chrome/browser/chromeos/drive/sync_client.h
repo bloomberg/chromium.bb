@@ -23,6 +23,7 @@ namespace drive {
 class FileCacheEntry;
 class JobScheduler;
 class ResourceEntry;
+struct ClientContext;
 
 namespace file_system {
 class DownloadOperation;
@@ -47,10 +48,9 @@ class SyncClient {
   enum SyncType {
     FETCH,  // Fetch a file from the Drive server.
     UPLOAD,  // Upload a file to the Drive server.
-    UPLOAD_NO_CONTENT_CHECK,  // Upload a file without checking if the file is
-                              // really modified. This type is used for upload
-                              // retry tasks that should have already run the
-                              // check at least once.
+    UPLOAD_RETRY,  // Upload a file that once put back to the queue due to
+                   // offline networks etc, or a dirty file in cache that wasn't
+                   // uploaded during the previous session.
   };
 
   SyncClient(base::SequencedTaskRunner* blocking_task_runner,
@@ -68,7 +68,8 @@ class SyncClient {
   void RemoveFetchTask(const std::string& local_id);
 
   // Adds an upload task to the queue.
-  void AddUploadTask(const std::string& local_id);
+  void AddUploadTask(const ClientContext& context,
+                     const std::string& local_id);
 
   // Starts processing the backlog (i.e. pinned-but-not-filed files and
   // dirty-but-not-uploaded files). Kicks off retrieval of the local
@@ -92,11 +93,14 @@ class SyncClient {
   // Adds the given task to the queue. If the same task is queued, remove the
   // existing one, and adds a new one to the end of the queue.
   void AddTaskToQueue(SyncType type,
+                      const ClientContext& context,
                       const std::string& local_id,
                       const base::TimeDelta& delay);
 
   // Called when a task is ready to be added to the queue.
-  void StartTask(SyncType type, const std::string& local_id);
+  void StartTask(SyncType type,
+                 const ClientContext& context,
+                 const std::string& local_id);
 
   // Called when the local IDs of files in the backlog are obtained.
   void OnGetLocalIdsOfBacklog(const std::vector<std::string>* to_fetch,

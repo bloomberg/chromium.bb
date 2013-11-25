@@ -320,7 +320,8 @@ TEST_F(SyncClientTest, RetryOnDisconnection) {
 
   // Try fetch and upload.
   sync_client_->AddFetchTask(GetLocalId("foo"));
-  sync_client_->AddUploadTask(GetLocalId("dirty"));
+  sync_client_->AddUploadTask(ClientContext(USER_INITIATED),
+                              GetLocalId("dirty"));
   base::RunLoop().RunUntilIdle();
 
   // Not yet fetched nor uploaded.
