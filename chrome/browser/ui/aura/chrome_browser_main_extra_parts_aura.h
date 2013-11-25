@@ -21,9 +21,16 @@ class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void ToolkitInitialized() OVERRIDE;
   virtual void PreCreateThreads() OVERRIDE;
+  virtual void PreProfileInit() OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // On the Linux desktop, we want to prevent the user from logging in as root,
+  // so that we don't destroy the profile.
+  void DetectRunningAsRoot();
+#endif
+
   scoped_ptr<ActiveDesktopMonitor> active_desktop_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAura);

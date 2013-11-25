@@ -1049,6 +1049,9 @@ void ChromeBrowserMainParts::PreMainMessageLoopRun() {
 void ChromeBrowserMainParts::PreProfileInit() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreProfileInit");
 
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->PreProfileInit();
+
 #if !defined(OS_ANDROID)
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
@@ -1074,9 +1077,6 @@ void ChromeBrowserMainParts::PreProfileInit() {
         base::Bind(&ProfileManager::CleanUpStaleProfiles, profiles_to_delete));
   }
 #endif  // OS_ANDROID
-
-  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
-    chrome_extra_parts_[i]->PreProfileInit();
 }
 
 void ChromeBrowserMainParts::PostProfileInit() {
