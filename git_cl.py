@@ -2160,7 +2160,10 @@ def CMDset_close(parser, args):
 def CMDdiff(parser, args):
   """shows differences between local tree and last upload."""
   cl = Changelist()
+  issue = cl.GetIssue()
   branch = cl.GetBranch()
+  if not issue:
+    DieWithError('No issue found for current branch (%s)' % branch)
   TMP_BRANCH = 'git-cl-diff'
   base_branch = RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip()
 
@@ -2168,7 +2171,7 @@ def CMDdiff(parser, args):
   RunGit(['checkout', '-q', '-b', TMP_BRANCH, base_branch])
   try:
     # Patch in the latest changes from rietveld.
-    rtn = PatchIssue(cl.GetIssue(), False, False, None)
+    rtn = PatchIssue(issue, False, False, None)
     if rtn != 0:
       return rtn
 
