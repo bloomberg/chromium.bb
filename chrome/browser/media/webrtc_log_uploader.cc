@@ -63,6 +63,7 @@ void WebRtcLogUploader::OnURLFetchComplete(
   }
   NotifyUploadDone(response_code, report_id, upload_done_data_[source]);
   upload_done_data_.erase(source);
+  delete source;
 }
 
 void WebRtcLogUploader::OnURLFetchUploadProgress(
