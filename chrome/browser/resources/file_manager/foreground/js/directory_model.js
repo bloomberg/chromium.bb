@@ -220,7 +220,8 @@ DirectoryModel.prototype.isPathReadOnly = function(path) {
   // TODO(hidehiko): Migrate this into VolumeInfo.
   switch (PathUtil.getRootType(path)) {
     case RootType.REMOVABLE:
-      var volumeInfo = this.volumeManager_.getVolumeInfo(path);
+      var volumeInfo = this.volumeManager_.getVolumeInfo(
+          PathUtil.getRootPath(path));
       // Returns true if the volume is actually read only, or if an error
       // is found during the mounting.
       // TODO(hidehiko): Remove "error" check here, by removing error'ed volume
@@ -1064,9 +1065,17 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
     }
   }
 
+  var rootPath = this.getCurrentRootPath();
+  var rootType = PathUtil.getRootType(rootPath);
+
+  // If the path is on drive, reduce to the Drive's mount point.
+  if (rootType === RootType.DRIVE)
+    rootPath = RootDirectory.DRIVE;
+
   // When the volume where we are is unmounted, fallback to
   // DEFAULT_DIRECTORY.
-  if (!this.volumeManager_.getVolumeInfo(this.getCurrentDirPath()))
+  // Note: during the initialization, rootType can be undefined.
+  if (rootType && !this.volumeManager_.getVolumeInfo(rootPath))
     this.changeDirectory(PathUtil.DEFAULT_DIRECTORY);
 };
 
