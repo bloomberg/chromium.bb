@@ -204,14 +204,14 @@ class APIKeyCache {
     std::string temp;
     if (environment->GetVar(environment_variable_name, &temp)) {
       key_value = temp;
-      LOG(INFO) << "Overriding API key " << environment_variable_name
-                << " with value " << key_value << " from environment variable.";
+      VLOG(1) << "Overriding API key " << environment_variable_name
+              << " with value " << key_value << " from environment variable.";
     }
 
     if (command_line_switch && command_line->HasSwitch(command_line_switch)) {
       key_value = command_line->GetSwitchValueASCII(command_line_switch);
-      LOG(INFO) << "Overriding API key " << environment_variable_name
-                << " with value " << key_value << " from command-line switch.";
+      VLOG(1) << "Overriding API key " << environment_variable_name
+              << " with value " << key_value << " from command-line switch.";
     }
 
     if (key_value == DUMMY_API_TOKEN) {
@@ -222,8 +222,8 @@ class APIKeyCache {
       CHECK(false);
 #endif
       if (default_if_unset.size() > 0) {
-        LOG(INFO) << "Using default value \"" << default_if_unset
-                  << "\" for API key " << environment_variable_name;
+        VLOG(1) << "Using default value \"" << default_if_unset
+                << "\" for API key " << environment_variable_name;
         key_value = default_if_unset;
       }
     }
