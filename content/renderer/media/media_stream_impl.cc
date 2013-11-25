@@ -473,8 +473,6 @@ void MediaStreamImpl::CreateWebKitSourceVector(
             base::Bind(&MediaStreamImpl::OnLocalSourceStop, AsWeakPtr())));
     // |source_extra_data| is owned by webkit_sources[i].
     webkit_sources[i].setExtraData(source_extra_data);
-    webkit_sources[i].setDeviceId(UTF8ToUTF16(
-        base::IntToString(devices[i].session_id)));
     local_sources_.push_back(LocalStreamSource(frame, webkit_sources[i]));
   }
 }
