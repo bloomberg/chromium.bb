@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -91,10 +92,15 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
     const std::string& account_id) {
   if (state_ == SESSION_RESTORE_NOT_STARTED)
     return;
-
   // TODO(fgorski): Once ProfileOAuth2TokenService supports multi-login, make
   // sure to restore session cookies in the context of the correct account_id.
   VLOG(1) << "OnRefreshTokenAvailable";
+  // Do not validate tokens for supervised users, as they don't actually have
+  // oauth2 token.
+  if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
+    LOG(WARNING) << "Logged in as managed user, skip token validation.";
+    return;
+  }
   RestoreSessionCookies();
 }
 
