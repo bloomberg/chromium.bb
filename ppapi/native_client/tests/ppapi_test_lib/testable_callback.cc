@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/private/ppb_testing_private.h"
 #include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "ppapi/native_client/tests/ppapi_test_lib/testable_callback.h"
 
@@ -23,7 +23,7 @@ int32_t TestableCallback::WaitForResult() {
 
     // This waits until PPBTestingDev()->QuitMessageLoop() is called
     // by the "Handler" which represents the actual callback code.
-    PPBTestingDev()->RunMessageLoop(instance_);
+    PPBTestingPrivate()->RunMessageLoop(instance_);
   }
   have_result_ = false;
   return result_;
@@ -48,6 +48,6 @@ void TestableCallback::Handler(void* user_data, int32_t result) {
   ++callback->run_count_;
   if (callback->post_quit_task_) {
     callback->post_quit_task_ = false;
-    PPBTestingDev()->QuitMessageLoop(callback->instance_);
+    PPBTestingPrivate()->QuitMessageLoop(callback->instance_);
   }
 }

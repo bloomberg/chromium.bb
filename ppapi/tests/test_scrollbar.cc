@@ -6,7 +6,6 @@
 
 #include <cstring>
 
-#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"

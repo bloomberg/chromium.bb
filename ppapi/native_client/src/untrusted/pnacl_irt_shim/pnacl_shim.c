@@ -23,7 +23,6 @@
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/dev/ppb_resource_array_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
-#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_trace_event_dev.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
@@ -109,6 +108,7 @@
 #include "ppapi/c/private/ppb_talk_private.h"
 #include "ppapi/c/private/ppb_tcp_server_socket_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
+#include "ppapi/c/private/ppb_testing_private.h"
 #include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/c/private/ppb_video_destination_private.h"
@@ -187,9 +187,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_7;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_9;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_91;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_92;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7;
@@ -227,6 +224,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_5;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_4;
@@ -2015,142 +2013,6 @@ static int32_t Pnacl_M23_PPB_Printing_Dev_GetDefaultPrintSettings(PP_Resource re
 
 /* Not generating wrapper methods for PPB_Scrollbar_Dev_0_5 */
 
-/* Not generating wrapper methods for PPB_Testing_Dev_0_7 */
-
-/* Not generating wrapper methods for PPB_Testing_Dev_0_8 */
-
-/* Begin wrapper methods for PPB_Testing_Dev_0_9 */
-
-static PP_Bool Pnacl_M17_PPB_Testing_Dev_ReadImageData(PP_Resource device_context_2d, PP_Resource image, const struct PP_Point* top_left) {
-  const struct PPB_Testing_Dev_0_9 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_9.real_iface;
-  return iface->ReadImageData(device_context_2d, image, top_left);
-}
-
-static void Pnacl_M17_PPB_Testing_Dev_RunMessageLoop(PP_Instance instance) {
-  const struct PPB_Testing_Dev_0_9 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_9.real_iface;
-  iface->RunMessageLoop(instance);
-}
-
-static void Pnacl_M17_PPB_Testing_Dev_QuitMessageLoop(PP_Instance instance) {
-  const struct PPB_Testing_Dev_0_9 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_9.real_iface;
-  iface->QuitMessageLoop(instance);
-}
-
-static uint32_t Pnacl_M17_PPB_Testing_Dev_GetLiveObjectsForInstance(PP_Instance instance) {
-  const struct PPB_Testing_Dev_0_9 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_9.real_iface;
-  return iface->GetLiveObjectsForInstance(instance);
-}
-
-static PP_Bool Pnacl_M17_PPB_Testing_Dev_IsOutOfProcess(void) {
-  const struct PPB_Testing_Dev_0_9 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_9.real_iface;
-  return iface->IsOutOfProcess();
-}
-
-static void Pnacl_M17_PPB_Testing_Dev_SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
-  const struct PPB_Testing_Dev_0_9 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_9.real_iface;
-  iface->SimulateInputEvent(instance, input_event);
-}
-
-static void Pnacl_M17_PPB_Testing_Dev_GetDocumentURL(struct PP_Var* _struct_result, PP_Instance instance, struct PP_URLComponents_Dev* components) {
-  const struct PPB_Testing_Dev_0_9 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_9.real_iface;
-  *_struct_result = iface->GetDocumentURL(instance, components);
-}
-
-/* End wrapper methods for PPB_Testing_Dev_0_9 */
-
-/* Begin wrapper methods for PPB_Testing_Dev_0_91 */
-
-static PP_Bool Pnacl_M18_PPB_Testing_Dev_ReadImageData(PP_Resource device_context_2d, PP_Resource image, const struct PP_Point* top_left) {
-  const struct PPB_Testing_Dev_0_91 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_91.real_iface;
-  return iface->ReadImageData(device_context_2d, image, top_left);
-}
-
-static void Pnacl_M18_PPB_Testing_Dev_RunMessageLoop(PP_Instance instance) {
-  const struct PPB_Testing_Dev_0_91 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_91.real_iface;
-  iface->RunMessageLoop(instance);
-}
-
-static void Pnacl_M18_PPB_Testing_Dev_QuitMessageLoop(PP_Instance instance) {
-  const struct PPB_Testing_Dev_0_91 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_91.real_iface;
-  iface->QuitMessageLoop(instance);
-}
-
-static uint32_t Pnacl_M18_PPB_Testing_Dev_GetLiveObjectsForInstance(PP_Instance instance) {
-  const struct PPB_Testing_Dev_0_91 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_91.real_iface;
-  return iface->GetLiveObjectsForInstance(instance);
-}
-
-static PP_Bool Pnacl_M18_PPB_Testing_Dev_IsOutOfProcess(void) {
-  const struct PPB_Testing_Dev_0_91 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_91.real_iface;
-  return iface->IsOutOfProcess();
-}
-
-static void Pnacl_M18_PPB_Testing_Dev_SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
-  const struct PPB_Testing_Dev_0_91 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_91.real_iface;
-  iface->SimulateInputEvent(instance, input_event);
-}
-
-static void Pnacl_M18_PPB_Testing_Dev_GetDocumentURL(struct PP_Var* _struct_result, PP_Instance instance, struct PP_URLComponents_Dev* components) {
-  const struct PPB_Testing_Dev_0_91 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_91.real_iface;
-  *_struct_result = iface->GetDocumentURL(instance, components);
-}
-
-static uint32_t Pnacl_M18_PPB_Testing_Dev_GetLiveVars(struct PP_Var live_vars[], uint32_t array_size) {
-  const struct PPB_Testing_Dev_0_91 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_91.real_iface;
-  return iface->GetLiveVars(live_vars, array_size);
-}
-
-/* End wrapper methods for PPB_Testing_Dev_0_91 */
-
-/* Begin wrapper methods for PPB_Testing_Dev_0_92 */
-
-static PP_Bool Pnacl_M28_PPB_Testing_Dev_ReadImageData(PP_Resource device_context_2d, PP_Resource image, const struct PP_Point* top_left) {
-  const struct PPB_Testing_Dev_0_92 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_92.real_iface;
-  return iface->ReadImageData(device_context_2d, image, top_left);
-}
-
-static void Pnacl_M28_PPB_Testing_Dev_RunMessageLoop(PP_Instance instance) {
-  const struct PPB_Testing_Dev_0_92 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_92.real_iface;
-  iface->RunMessageLoop(instance);
-}
-
-static void Pnacl_M28_PPB_Testing_Dev_QuitMessageLoop(PP_Instance instance) {
-  const struct PPB_Testing_Dev_0_92 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_92.real_iface;
-  iface->QuitMessageLoop(instance);
-}
-
-static uint32_t Pnacl_M28_PPB_Testing_Dev_GetLiveObjectsForInstance(PP_Instance instance) {
-  const struct PPB_Testing_Dev_0_92 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_92.real_iface;
-  return iface->GetLiveObjectsForInstance(instance);
-}
-
-static PP_Bool Pnacl_M28_PPB_Testing_Dev_IsOutOfProcess(void) {
-  const struct PPB_Testing_Dev_0_92 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_92.real_iface;
-  return iface->IsOutOfProcess();
-}
-
-static void Pnacl_M28_PPB_Testing_Dev_SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
-  const struct PPB_Testing_Dev_0_92 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_92.real_iface;
-  iface->SimulateInputEvent(instance, input_event);
-}
-
-static void Pnacl_M28_PPB_Testing_Dev_GetDocumentURL(struct PP_Var* _struct_result, PP_Instance instance, struct PP_URLComponents_Dev* components) {
-  const struct PPB_Testing_Dev_0_92 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_92.real_iface;
-  *_struct_result = iface->GetDocumentURL(instance, components);
-}
-
-static uint32_t Pnacl_M28_PPB_Testing_Dev_GetLiveVars(struct PP_Var live_vars[], uint32_t array_size) {
-  const struct PPB_Testing_Dev_0_92 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_92.real_iface;
-  return iface->GetLiveVars(live_vars, array_size);
-}
-
-static void Pnacl_M28_PPB_Testing_Dev_SetMinimumArrayBufferSizeForShmem(PP_Instance instance, uint32_t threshold) {
-  const struct PPB_Testing_Dev_0_92 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_92.real_iface;
-  iface->SetMinimumArrayBufferSizeForShmem(instance, threshold);
-}
-
-/* End wrapper methods for PPB_Testing_Dev_0_92 */
-
 /* Not generating wrapper methods for PPB_TextInput_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_TextInput_Dev_0_2 */
@@ -3586,6 +3448,55 @@ static int32_t Pnacl_M27_PPB_TCPSocket_Private_SetOption(PP_Resource tcp_socket,
 
 /* End wrapper methods for PPB_TCPSocket_Private_0_5 */
 
+/* Begin wrapper methods for PPB_Testing_Private_1_0 */
+
+static PP_Bool Pnacl_M33_PPB_Testing_Private_ReadImageData(PP_Resource device_context_2d, PP_Resource image, const struct PP_Point* top_left) {
+  const struct PPB_Testing_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_Testing_Private_1_0.real_iface;
+  return iface->ReadImageData(device_context_2d, image, top_left);
+}
+
+static void Pnacl_M33_PPB_Testing_Private_RunMessageLoop(PP_Instance instance) {
+  const struct PPB_Testing_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_Testing_Private_1_0.real_iface;
+  iface->RunMessageLoop(instance);
+}
+
+static void Pnacl_M33_PPB_Testing_Private_QuitMessageLoop(PP_Instance instance) {
+  const struct PPB_Testing_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_Testing_Private_1_0.real_iface;
+  iface->QuitMessageLoop(instance);
+}
+
+static uint32_t Pnacl_M33_PPB_Testing_Private_GetLiveObjectsForInstance(PP_Instance instance) {
+  const struct PPB_Testing_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_Testing_Private_1_0.real_iface;
+  return iface->GetLiveObjectsForInstance(instance);
+}
+
+static PP_Bool Pnacl_M33_PPB_Testing_Private_IsOutOfProcess(void) {
+  const struct PPB_Testing_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_Testing_Private_1_0.real_iface;
+  return iface->IsOutOfProcess();
+}
+
+static void Pnacl_M33_PPB_Testing_Private_SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
+  const struct PPB_Testing_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_Testing_Private_1_0.real_iface;
+  iface->SimulateInputEvent(instance, input_event);
+}
+
+static void Pnacl_M33_PPB_Testing_Private_GetDocumentURL(struct PP_Var* _struct_result, PP_Instance instance, struct PP_URLComponents_Dev* components) {
+  const struct PPB_Testing_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_Testing_Private_1_0.real_iface;
+  *_struct_result = iface->GetDocumentURL(instance, components);
+}
+
+static uint32_t Pnacl_M33_PPB_Testing_Private_GetLiveVars(struct PP_Var live_vars[], uint32_t array_size) {
+  const struct PPB_Testing_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_Testing_Private_1_0.real_iface;
+  return iface->GetLiveVars(live_vars, array_size);
+}
+
+static void Pnacl_M33_PPB_Testing_Private_SetMinimumArrayBufferSizeForShmem(PP_Instance instance, uint32_t threshold) {
+  const struct PPB_Testing_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_Testing_Private_1_0.real_iface;
+  iface->SetMinimumArrayBufferSizeForShmem(instance, threshold);
+}
+
+/* End wrapper methods for PPB_Testing_Private_1_0 */
+
 /* Begin wrapper methods for PPB_UDPSocket_Private_0_2 */
 
 static PP_Resource Pnacl_M17_PPB_UDPSocket_Private_Create(PP_Instance instance_id) {
@@ -4655,43 +4566,6 @@ struct PPB_Printing_Dev_0_7 Pnacl_Wrappers_PPB_Printing_Dev_0_7 = {
 
 /* Not generating wrapper interface for PPB_Scrollbar_Dev_0_5 */
 
-/* Not generating wrapper interface for PPB_Testing_Dev_0_7 */
-
-/* Not generating wrapper interface for PPB_Testing_Dev_0_8 */
-
-struct PPB_Testing_Dev_0_9 Pnacl_Wrappers_PPB_Testing_Dev_0_9 = {
-    .ReadImageData = (PP_Bool (*)(PP_Resource device_context_2d, PP_Resource image, const struct PP_Point* top_left))&Pnacl_M17_PPB_Testing_Dev_ReadImageData,
-    .RunMessageLoop = (void (*)(PP_Instance instance))&Pnacl_M17_PPB_Testing_Dev_RunMessageLoop,
-    .QuitMessageLoop = (void (*)(PP_Instance instance))&Pnacl_M17_PPB_Testing_Dev_QuitMessageLoop,
-    .GetLiveObjectsForInstance = (uint32_t (*)(PP_Instance instance))&Pnacl_M17_PPB_Testing_Dev_GetLiveObjectsForInstance,
-    .IsOutOfProcess = (PP_Bool (*)(void))&Pnacl_M17_PPB_Testing_Dev_IsOutOfProcess,
-    .SimulateInputEvent = (void (*)(PP_Instance instance, PP_Resource input_event))&Pnacl_M17_PPB_Testing_Dev_SimulateInputEvent,
-    .GetDocumentURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M17_PPB_Testing_Dev_GetDocumentURL
-};
-
-struct PPB_Testing_Dev_0_91 Pnacl_Wrappers_PPB_Testing_Dev_0_91 = {
-    .ReadImageData = (PP_Bool (*)(PP_Resource device_context_2d, PP_Resource image, const struct PP_Point* top_left))&Pnacl_M18_PPB_Testing_Dev_ReadImageData,
-    .RunMessageLoop = (void (*)(PP_Instance instance))&Pnacl_M18_PPB_Testing_Dev_RunMessageLoop,
-    .QuitMessageLoop = (void (*)(PP_Instance instance))&Pnacl_M18_PPB_Testing_Dev_QuitMessageLoop,
-    .GetLiveObjectsForInstance = (uint32_t (*)(PP_Instance instance))&Pnacl_M18_PPB_Testing_Dev_GetLiveObjectsForInstance,
-    .IsOutOfProcess = (PP_Bool (*)(void))&Pnacl_M18_PPB_Testing_Dev_IsOutOfProcess,
-    .SimulateInputEvent = (void (*)(PP_Instance instance, PP_Resource input_event))&Pnacl_M18_PPB_Testing_Dev_SimulateInputEvent,
-    .GetDocumentURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M18_PPB_Testing_Dev_GetDocumentURL,
-    .GetLiveVars = (uint32_t (*)(struct PP_Var live_vars[], uint32_t array_size))&Pnacl_M18_PPB_Testing_Dev_GetLiveVars
-};
-
-struct PPB_Testing_Dev_0_92 Pnacl_Wrappers_PPB_Testing_Dev_0_92 = {
-    .ReadImageData = (PP_Bool (*)(PP_Resource device_context_2d, PP_Resource image, const struct PP_Point* top_left))&Pnacl_M28_PPB_Testing_Dev_ReadImageData,
-    .RunMessageLoop = (void (*)(PP_Instance instance))&Pnacl_M28_PPB_Testing_Dev_RunMessageLoop,
-    .QuitMessageLoop = (void (*)(PP_Instance instance))&Pnacl_M28_PPB_Testing_Dev_QuitMessageLoop,
-    .GetLiveObjectsForInstance = (uint32_t (*)(PP_Instance instance))&Pnacl_M28_PPB_Testing_Dev_GetLiveObjectsForInstance,
-    .IsOutOfProcess = (PP_Bool (*)(void))&Pnacl_M28_PPB_Testing_Dev_IsOutOfProcess,
-    .SimulateInputEvent = (void (*)(PP_Instance instance, PP_Resource input_event))&Pnacl_M28_PPB_Testing_Dev_SimulateInputEvent,
-    .GetDocumentURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M28_PPB_Testing_Dev_GetDocumentURL,
-    .GetLiveVars = (uint32_t (*)(struct PP_Var live_vars[], uint32_t array_size))&Pnacl_M28_PPB_Testing_Dev_GetLiveVars,
-    .SetMinimumArrayBufferSizeForShmem = (void (*)(PP_Instance instance, uint32_t threshold))&Pnacl_M28_PPB_Testing_Dev_SetMinimumArrayBufferSizeForShmem
-};
-
 /* Not generating wrapper interface for PPB_TextInput_Dev_0_1 */
 
 /* Not generating wrapper interface for PPB_TextInput_Dev_0_2 */
@@ -5096,6 +4970,18 @@ struct PPB_TCPSocket_Private_0_5 Pnacl_Wrappers_PPB_TCPSocket_Private_0_5 = {
     .Write = (int32_t (*)(PP_Resource tcp_socket, const char* buffer, int32_t bytes_to_write, struct PP_CompletionCallback callback))&Pnacl_M27_PPB_TCPSocket_Private_Write,
     .Disconnect = (void (*)(PP_Resource tcp_socket))&Pnacl_M27_PPB_TCPSocket_Private_Disconnect,
     .SetOption = (int32_t (*)(PP_Resource tcp_socket, PP_TCPSocketOption_Private name, struct PP_Var value, struct PP_CompletionCallback callback))&Pnacl_M27_PPB_TCPSocket_Private_SetOption
+};
+
+struct PPB_Testing_Private_1_0 Pnacl_Wrappers_PPB_Testing_Private_1_0 = {
+    .ReadImageData = (PP_Bool (*)(PP_Resource device_context_2d, PP_Resource image, const struct PP_Point* top_left))&Pnacl_M33_PPB_Testing_Private_ReadImageData,
+    .RunMessageLoop = (void (*)(PP_Instance instance))&Pnacl_M33_PPB_Testing_Private_RunMessageLoop,
+    .QuitMessageLoop = (void (*)(PP_Instance instance))&Pnacl_M33_PPB_Testing_Private_QuitMessageLoop,
+    .GetLiveObjectsForInstance = (uint32_t (*)(PP_Instance instance))&Pnacl_M33_PPB_Testing_Private_GetLiveObjectsForInstance,
+    .IsOutOfProcess = (PP_Bool (*)(void))&Pnacl_M33_PPB_Testing_Private_IsOutOfProcess,
+    .SimulateInputEvent = (void (*)(PP_Instance instance, PP_Resource input_event))&Pnacl_M33_PPB_Testing_Private_SimulateInputEvent,
+    .GetDocumentURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M33_PPB_Testing_Private_GetDocumentURL,
+    .GetLiveVars = (uint32_t (*)(struct PP_Var live_vars[], uint32_t array_size))&Pnacl_M33_PPB_Testing_Private_GetLiveVars,
+    .SetMinimumArrayBufferSizeForShmem = (void (*)(PP_Instance instance, uint32_t threshold))&Pnacl_M33_PPB_Testing_Private_SetMinimumArrayBufferSizeForShmem
 };
 
 struct PPB_UDPSocket_Private_0_2 Pnacl_Wrappers_PPB_UDPSocket_Private_0_2 = {
@@ -5537,24 +5423,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_7 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_9 = {
-  .iface_macro = PPB_TESTING_DEV_INTERFACE_0_9,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Testing_Dev_0_9,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_91 = {
-  .iface_macro = PPB_TESTING_DEV_INTERFACE_0_91,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Testing_Dev_0_91,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_92 = {
-  .iface_macro = PPB_TESTING_DEV_INTERFACE_0_92,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Testing_Dev_0_92,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1 = {
   .iface_macro = PPB_TRUETYPEFONT_DEV_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_TrueTypeFont_Dev_0_1,
@@ -5777,6 +5645,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_5 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Private_1_0 = {
+  .iface_macro = PPB_TESTING_PRIVATE_INTERFACE_1_0,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Testing_Private_1_0,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_2 = {
   .iface_macro = PPB_UDPSOCKET_PRIVATE_INTERFACE_0_2,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_UDPSocket_Private_0_2,
@@ -5905,9 +5779,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_Printing_Dev_0_7,
-  &Pnacl_WrapperInfo_PPB_Testing_Dev_0_9,
-  &Pnacl_WrapperInfo_PPB_Testing_Dev_0_91,
-  &Pnacl_WrapperInfo_PPB_Testing_Dev_0_92,
   &Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7,
@@ -5944,6 +5815,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_3,
   &Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_4,
   &Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_5,
+  &Pnacl_WrapperInfo_PPB_Testing_Private_1_0,
   &Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_2,
   &Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_3,
   &Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_4,

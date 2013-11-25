@@ -254,13 +254,14 @@ void TestCase::DoQuitMainMessageLoop(void* pp_instance, int32_t result) {
   delete instance;
 }
 
-void TestCase::RunOnThreadInternal(void (*thread_func)(void*),
-                                   void* thread_param,
-                                   const PPB_Testing_Dev* testing_interface) {
-    PP_ThreadType thread;
-    PP_CreateThread(&thread, thread_func, thread_param);
-    // Run a message loop so pepper calls can be dispatched. The background
-    // thread will set result_ and make us Quit when it's done.
-    testing_interface->RunMessageLoop(instance_->pp_instance());
-    PP_JoinThread(thread);
+void TestCase::RunOnThreadInternal(
+    void (*thread_func)(void*),
+    void* thread_param,
+    const PPB_Testing_Private* testing_interface) {
+  PP_ThreadType thread;
+  PP_CreateThread(&thread, thread_func, thread_param);
+  // Run a message loop so pepper calls can be dispatched. The background
+  // thread will set result_ and make us Quit when it's done.
+  testing_interface->RunMessageLoop(instance_->pp_instance());
+  PP_JoinThread(thread);
 }

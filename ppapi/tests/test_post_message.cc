@@ -9,7 +9,6 @@
 #include <map>
 #include <sstream>
 
-#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/cpp/dev/var_resource_dev.h"
@@ -128,7 +127,7 @@ bool VarsEqual(const pp::Var& expected,
 
 class ScopedArrayBufferSizeSetter {
  public:
-  ScopedArrayBufferSizeSetter(const PPB_Testing_Dev* interface,
+  ScopedArrayBufferSizeSetter(const PPB_Testing_Private* interface,
                               PP_Instance instance,
                               uint32_t threshold)
      : interface_(interface),
@@ -139,7 +138,7 @@ class ScopedArrayBufferSizeSetter {
     interface_->SetMinimumArrayBufferSizeForShmem(instance_, 0);
   }
  private:
-  const PPB_Testing_Dev* interface_;
+  const PPB_Testing_Private* interface_;
   PP_Instance instance_;
 };
 

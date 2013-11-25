@@ -22,7 +22,7 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_var.h"
-#include "ppapi/c/dev/ppb_testing_dev.h"
+#include "ppapi/c/private/ppb_testing_private.h"
 
 #include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "ppapi/native_client/tests/ppapi_test_lib/internal_utils.h"
@@ -224,7 +224,8 @@ bool IsImageRectOnScreen(PP_Resource graphics2d,
         (origin.x + size.width) <= stride &&
         (origin.y + size.height) <= image_desc.size.height);
 
-  CHECK(PP_TRUE == PPBTestingDev()->ReadImageData(graphics2d, image, &kOrigin));
+  CHECK(PP_TRUE == PPBTestingPrivate()->ReadImageData(
+      graphics2d, image, &kOrigin));
   bool found_error = false;
   for (int y = origin.y; y < origin.y + size.height && !found_error; y++) {
     for (int x = origin.x; x < origin.x + size.width && !found_error; x++) {

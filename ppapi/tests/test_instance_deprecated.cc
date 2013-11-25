@@ -35,7 +35,7 @@ class InstanceSO : public pp::deprecated::ScriptableObject {
   // For out-of-process, the InstanceSO might be deleted after the instance was
   // already destroyed, so we can't rely on test_instance_->testing_interface()
   // being valid. Therefore we store our own.
-  const PPB_Testing_Dev* testing_interface_;
+  const PPB_Testing_Private* testing_interface_;
 };
 
 InstanceSO::InstanceSO(TestInstance* i)

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/dev/ppb_testing_dev.h"
+#include "ppapi/c/private/ppb_testing_private.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/shared_impl/host_resource.h"
 
@@ -46,7 +46,7 @@ class PPB_Testing_Proxy : public InterfaceProxy {
   // When this proxy is in the host side, this value caches the interface
   // pointer so we don't have to retrieve it from the dispatcher each time.
   // In the plugin, this value is always NULL.
-  const PPB_Testing_Dev* ppb_testing_impl_;
+  const PPB_Testing_Private* ppb_testing_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Testing_Proxy);
 };

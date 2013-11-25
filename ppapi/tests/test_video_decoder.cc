@@ -5,7 +5,6 @@
 #include "ppapi/tests/test_video_decoder.h"
 
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
-#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/tests/testing_instance.h"

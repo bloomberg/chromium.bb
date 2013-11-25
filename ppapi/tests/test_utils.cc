@@ -36,10 +36,11 @@ bool IsBigEndian() {
 
 const int kActionTimeoutMs = 10000;
 
-const PPB_Testing_Dev* GetTestingInterface() {
-  static const PPB_Testing_Dev* g_testing_interface =
-      static_cast<const PPB_Testing_Dev*>(
-          pp::Module::Get()->GetBrowserInterface(PPB_TESTING_DEV_INTERFACE));
+const PPB_Testing_Private* GetTestingInterface() {
+  static const PPB_Testing_Private* g_testing_interface =
+      static_cast<const PPB_Testing_Private*>(
+          pp::Module::Get()->GetBrowserInterface(
+              PPB_TESTING_PRIVATE_INTERFACE));
   return g_testing_interface;
 }
 
@@ -63,7 +64,7 @@ bool GetLocalHostPort(PP_Instance instance, std::string* host, uint16_t* port) {
   if (!host || !port)
     return false;
 
-  const PPB_Testing_Dev* testing = GetTestingInterface();
+  const PPB_Testing_Private* testing = GetTestingInterface();
   if (!testing)
     return false;
 

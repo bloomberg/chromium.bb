@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <limits>
 
-#include "ppapi/c/dev/ppb_testing_dev.h"
+#include "ppapi/c/private/ppb_testing_private.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/video_frame_private.h"

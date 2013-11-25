@@ -6,7 +6,6 @@
 
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
-#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
@@ -28,6 +27,7 @@
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_view.h"
+#include "ppapi/c/private/ppb_testing_private.h"
 
 #include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "ppapi/native_client/tests/ppapi_test_lib/internal_utils.h"
@@ -171,10 +171,9 @@ const PPB_Memory_Dev* PPBMemoryDev() {
       GetBrowserInterface(PPB_MEMORY_DEV_INTERFACE));
 }
 
-const PPB_Testing_Dev* PPBTestingDev() {
-  return  reinterpret_cast<const PPB_Testing_Dev*>(
-      // Change to GetBrowserInterfaceSafe when moving out of dev.
-      GetBrowserInterface(PPB_TESTING_DEV_INTERFACE));
+const PPB_Testing_Private* PPBTestingPrivate() {
+  return reinterpret_cast<const PPB_Testing_Private*>(
+      GetBrowserInterface(PPB_TESTING_PRIVATE_INTERFACE));
 }
 
 const PPB_View* PPBView() {

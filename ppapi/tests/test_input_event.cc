@@ -4,7 +4,6 @@
 
 #include "ppapi/tests/test_input_event.h"
 
-#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/input_event.h"

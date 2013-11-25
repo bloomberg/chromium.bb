@@ -8,7 +8,6 @@
 
 #include <limits>
 
-#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/cpp/instance.h"

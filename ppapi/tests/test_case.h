@@ -11,9 +11,9 @@
 #include <set>
 #include <string>
 
-#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_time.h"
+#include "ppapi/c/private/ppb_testing_private.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"
 #include "ppapi/cpp/message_loop.h"
 #include "ppapi/cpp/view.h"
@@ -84,7 +84,7 @@ class TestCase {
 
   TestingInstance* instance() { return instance_; }
 
-  const PPB_Testing_Dev* testing_interface() { return testing_interface_; }
+  const PPB_Testing_Private* testing_interface() { return testing_interface_; }
 
   static void QuitMainMessageLoop(PP_Instance instance);
 
@@ -157,7 +157,7 @@ class TestCase {
   TestingInstance* instance_;
 
   // NULL unless InitTestingInterface is called.
-  const PPB_Testing_Dev* testing_interface_;
+  const PPB_Testing_Private* testing_interface_;
 
   void set_callback_type(CallbackType callback_type) {
     callback_type_ = callback_type;
@@ -213,7 +213,7 @@ class TestCase {
   // for it to complete using RunMessageLoop(), then joins.
   void RunOnThreadInternal(void (*thread_func)(void*),
                            void* thread_param,
-                           const PPB_Testing_Dev* testing_interface);
+                           const PPB_Testing_Private* testing_interface);
 
   static void DoQuitMainMessageLoop(void* pp_instance, int32_t result);
 

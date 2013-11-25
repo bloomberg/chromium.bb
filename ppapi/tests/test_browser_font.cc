@@ -31,7 +31,7 @@ void TestBrowserFont::RunTests(const std::string& filter) {
 // Just tests that GetFontFamilies is hooked up & returns something.
 std::string TestBrowserFont::TestFontFamilies() {
   // This function is only supported out-of-process.
-  const PPB_Testing_Dev* testing_interface = GetTestingInterface();
+  const PPB_Testing_Private* testing_interface = GetTestingInterface();
   if (testing_interface && !testing_interface->IsOutOfProcess())
     PASS();
 

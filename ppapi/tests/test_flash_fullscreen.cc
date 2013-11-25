@@ -8,7 +8,6 @@
 #include <string.h>
 #include <string>
 
-#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/private/ppb_flash_fullscreen.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/instance.h"

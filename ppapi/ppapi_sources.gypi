@@ -82,7 +82,6 @@
       'c/dev/ppb_printing_dev.h',
       'c/dev/ppb_resource_array_dev.h',
       'c/dev/ppb_scrollbar_dev.h',
-      'c/dev/ppb_testing_dev.h',
       'c/dev/ppb_text_input_dev.h',
       'c/dev/ppb_truetype_font_dev.h',
       'c/dev/ppb_url_util_dev.h',
@@ -121,7 +120,7 @@
       'c/private/ppb_pdf.h',
       'c/private/ppb_platform_verification_private.h',
       'c/private/ppb_proxy_private.h',
-      'c/private/ppp_instance_private.h',
+      'c/private/ppb_testing_private.h',
       'c/private/ppb_tcp_server_socket_private.h',
       'c/private/ppb_tcp_socket_private.h',
       'c/private/ppb_udp_socket_private.h',
@@ -129,6 +128,7 @@
       'c/private/ppb_video_source_private.h',
       'c/private/ppb_x509_certificate_private.h',
       'c/private/ppp_content_decryptor_private.h',
+      'c/private/ppp_instance_private.h',
 
       # Deprecated interfaces.
       'c/dev/deprecated_bool.h',

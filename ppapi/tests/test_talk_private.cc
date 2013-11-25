@@ -8,7 +8,6 @@
 #include <string.h>
 #include <string>
 
-#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_talk_private.h"
 #include "ppapi/cpp/instance.h"

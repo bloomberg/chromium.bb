@@ -5,7 +5,7 @@
 #include "ppapi/proxy/ppb_testing_proxy.h"
 
 #include "base/message_loop/message_loop.h"
-#include "ppapi/c/dev/ppb_testing_dev.h"
+#include "ppapi/c/private/ppb_testing_private.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -127,7 +127,7 @@ void SetMinimumArrayBufferSizeForShmem(PP_Instance instance,
           API_ID_PPB_TESTING, threshold));
 }
 
-const PPB_Testing_Dev testing_interface = {
+const PPB_Testing_Private testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
   &QuitMessageLoop,
@@ -149,8 +149,8 @@ PPB_Testing_Proxy::PPB_Testing_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
       ppb_testing_impl_(NULL) {
   if (!dispatcher->IsPlugin()) {
-    ppb_testing_impl_ = static_cast<const PPB_Testing_Dev*>(
-        dispatcher->local_get_interface()(PPB_TESTING_DEV_INTERFACE));
+    ppb_testing_impl_ = static_cast<const PPB_Testing_Private*>(
+        dispatcher->local_get_interface()(PPB_TESTING_PRIVATE_INTERFACE));
   }
 }
 
@@ -161,7 +161,7 @@ PPB_Testing_Proxy::~PPB_Testing_Proxy() {
 const InterfaceProxy::Info* PPB_Testing_Proxy::GetInfo() {
   static const Info info = {
     &testing_interface,
-    PPB_TESTING_DEV_INTERFACE,
+    PPB_TESTING_PRIVATE_INTERFACE,
     API_ID_PPB_TESTING,
     false,
     &CreateTestingProxy,

@@ -1,23 +1,38 @@
-/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
+/* From private/ppb_testing_private.idl modified Mon Nov 18 14:42:33 2013. */
+
+#ifndef PPAPI_C_PRIVATE_PPB_TESTING_PRIVATE_H_
+#define PPAPI_C_PRIVATE_PPB_TESTING_PRIVATE_H_
+
+#include "ppapi/c/dev/ppb_url_util_dev.h"
+#include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_point.h"
+#include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_var.h"
+
+#define PPB_TESTING_PRIVATE_INTERFACE_1_0 "PPB_Testing_Private;1.0"
+#define PPB_TESTING_PRIVATE_INTERFACE PPB_TESTING_PRIVATE_INTERFACE_1_0
+
 /**
+ * @file
  * This file contains interface functions used for unit testing. Do not use in
  * production code. They are not guaranteed to be available in normal plugin
  * environments so you should not depend on them.
  */
 
-label Chrome {
-  M14 = 0.7,
-  M15 = 0.8,
-  M17 = 0.9,
-  M18 = 0.91,
-  M28 = 0.92
-};
 
-interface PPB_Testing_Dev {
+/**
+ * @addtogroup Interfaces
+ * @{
+ */
+struct PPB_Testing_Private_1_0 {
   /**
    * Reads the bitmap data out of the backing store for the given
    * DeviceContext2D and into the given image. If the data was successfully
@@ -47,10 +62,9 @@ interface PPB_Testing_Dev {
    * the backing store (and hence ReadImageData) until after a Flush()
    * operation has completed.
    */
-  PP_Bool ReadImageData([in] PP_Resource device_context_2d,
-                        [in] PP_Resource image,
-                        [in] PP_Point top_left);
-
+  PP_Bool (*ReadImageData)(PP_Resource device_context_2d,
+                           PP_Resource image,
+                           const struct PP_Point* top_left);
   /**
    * Runs a nested message loop. The plugin will be reentered from this call.
    * This function is used for unit testing the API. The normal pattern is to
@@ -61,27 +75,23 @@ interface PPB_Testing_Dev {
    * pop back up and continue with the test. This avoids having to write a
    * complicated state machine for simple tests for asynchronous APIs.
    */
-  void RunMessageLoop([in] PP_Instance instance);
-
+  void (*RunMessageLoop)(PP_Instance instance);
   /**
    * Posts a quit message for the outermost nested message loop. Use this to
    * exit and return back to the caller after you call RunMessageLoop.
    */
-  void QuitMessageLoop([in] PP_Instance instance);
-
+  void (*QuitMessageLoop)(PP_Instance instance);
   /**
    * Returns the number of live objects (resources + strings + objects)
    * associated with this plugin instance. Used for detecting leaks. Returns
    * (uint32_t)-1 on failure.
    */
-  uint32_t GetLiveObjectsForInstance([in] PP_Instance instance);
-
+  uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
   /**
    * Returns PP_TRUE if the plugin is running out-of-process, PP_FALSE
    * otherwise.
    */
-  PP_Bool IsOutOfProcess();
-
+  PP_Bool (*IsOutOfProcess)(void);
   /**
    * Passes the input event to the browser, which sends it back to the
    * plugin. The plugin should implement PPP_InputEvent and register for
@@ -102,10 +112,7 @@ interface PPB_Testing_Dev {
    * slightly alter the mouse position, due to coordinate transforms it
    * performs.
    */
-  [version=0.8]
-  void SimulateInputEvent([in] PP_Instance instance,
-                          [in] PP_Resource input_event);
-
+  void (*SimulateInputEvent)(PP_Instance instance, PP_Resource input_event);
   /**
    * Returns the URL for the document. This is a safe way to retrieve
    * window.location.href.
@@ -113,10 +120,8 @@ interface PPB_Testing_Dev {
    * and fill in the components structure. This pointer may be NULL
    * to specify that no component information is necessary.
    */
-  [version=0.9]
-  PP_Var GetDocumentURL([in] PP_Instance instance,
-                        [out] PP_URLComponents_Dev components);
-
+  struct PP_Var (*GetDocumentURL)(PP_Instance instance,
+                                  struct PP_URLComponents_Dev* components);
   /**
    * Fetches up to |array_size| active PP_Vars in the tracker. Returns the
    * number of vars in the tracker. The active vars are written to |live_vars|
@@ -125,10 +130,7 @@ interface PPB_Testing_Dev {
    * subset of |array_size| vars is written to |live_vars|. The reference count
    * of the returned PP_Vars will *not* be affected by this call.
    */
-  [version=0.91]
-  uint32_t GetLiveVars([size_as=array_size] PP_Var[] live_vars,
-                       [in] uint32_t array_size);
-
+  uint32_t (*GetLiveVars)(struct PP_Var live_vars[], uint32_t array_size);
   /**
    * Sets the threshold size at which point we switch from transmitting
    * array buffers in IPC messages to using shared memory. This is only used
@@ -136,7 +138,14 @@ interface PPB_Testing_Dev {
    * (in order to have fast tests). Passing a value of 0 resets the threshold
    * to its default. The threshold is in bytes.
    */
-  [version=0.92]
-  void SetMinimumArrayBufferSizeForShmem([in] PP_Instance instance,
-                                         [in] uint32_t threshold);
+  void (*SetMinimumArrayBufferSizeForShmem)(PP_Instance instance,
+                                            uint32_t threshold);
 };
+
+typedef struct PPB_Testing_Private_1_0 PPB_Testing_Private;
+/**
+ * @}
+ */
+
+#endif  /* PPAPI_C_PRIVATE_PPB_TESTING_PRIVATE_H_ */
+

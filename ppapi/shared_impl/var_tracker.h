@@ -114,8 +114,8 @@ class PPAPI_SHARED_EXPORT VarTracker {
   // does not exist, returns NULL.
   virtual ResourceVar* MakeResourceVar(PP_Resource pp_resource) = 0;
 
-  // Return a vector containing all PP_Vars that are in the tracker. This is
-  // to help implement PPB_Testing_Dev.GetLiveVars and should generally not be
+  // Return a vector containing all PP_Vars that are in the tracker. This is to
+  // help implement PPB_Testing_Private.GetLiveVars and should generally not be
   // used in production code. The PP_Vars are returned in no particular order,
   // and their reference counts are unaffected.
   std::vector<PP_Var> GetLiveVars();
