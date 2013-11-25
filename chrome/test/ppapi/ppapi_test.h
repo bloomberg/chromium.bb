@@ -5,7 +5,6 @@
 #ifndef CHROME_TEST_PPAPI_PPAPI_TEST_H_
 #define CHROME_TEST_PPAPI_PPAPI_TEST_H_
 
-#include <list>
 #include <string>
 
 #include "base/basictypes.h"
@@ -63,18 +62,23 @@ class PPAPITestBase : public InProcessBrowserTest {
  protected:
   class InfoBarObserver : public content::NotificationObserver {
    public:
-    InfoBarObserver();
+    explicit InfoBarObserver(PPAPITestBase* test_base);
     ~InfoBarObserver();
-
-    virtual void Observe(int type,
-                         const content::NotificationSource& source,
-                         const content::NotificationDetails& details) OVERRIDE;
 
     void ExpectInfoBarAndAccept(bool should_accept);
 
    private:
+    // content::NotificationObserver:
+    virtual void Observe(int type,
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) OVERRIDE;
+
+    void VerifyInfoBarState();
+
     content::NotificationRegistrar registrar_;
-    std::list<bool> expected_infobars_;
+    PPAPITestBase* test_base_;
+    bool expecting_infobar_;
+    bool should_accept_;
   };
 
   // Runs the test for a tab given the tab that's already navigated to the

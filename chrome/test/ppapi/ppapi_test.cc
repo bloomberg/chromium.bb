@@ -6,19 +6,15 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/test_timeouts.h"
-#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -26,12 +22,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_paths.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_renderer_host.h"
 #include "net/base/net_util.h"
 #include "net/base/test_data_directory.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -73,13 +64,23 @@ void PPAPITestMessageHandler::Reset() {
   message_.clear();
 }
 
-PPAPITestBase::InfoBarObserver::InfoBarObserver() {
+PPAPITestBase::InfoBarObserver::InfoBarObserver(PPAPITestBase* test_base)
+    : test_base_(test_base),
+      expecting_infobar_(false),
+      should_accept_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
                  content::NotificationService::AllSources());
 }
 
 PPAPITestBase::InfoBarObserver::~InfoBarObserver() {
-  EXPECT_EQ(0u, expected_infobars_.size()) << "Missing an expected infobar";
+  EXPECT_FALSE(expecting_infobar_) << "Missing an expected infobar";
+}
+
+void PPAPITestBase::InfoBarObserver::ExpectInfoBarAndAccept(
+    bool should_accept) {
+  ASSERT_FALSE(expecting_infobar_);
+  expecting_infobar_ = true;
+  should_accept_ = should_accept;
 }
 
 void PPAPITestBase::InfoBarObserver::Observe(
@@ -87,25 +88,36 @@ void PPAPITestBase::InfoBarObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   ASSERT_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED, type);
-  InfoBarDelegate* infobar =
-      content::Details<InfoBarAddedDetails>(details).ptr();
-  ConfirmInfoBarDelegate* confirm_infobar_delegate =
-      infobar->AsConfirmInfoBarDelegate();
-  ASSERT_TRUE(confirm_infobar_delegate);
-
-  ASSERT_FALSE(expected_infobars_.empty()) << "Unexpected infobar";
-  if (expected_infobars_.front())
-    confirm_infobar_delegate->Accept();
-  else
-    confirm_infobar_delegate->Cancel();
-  expected_infobars_.pop_front();
-
-  // TODO(bauerb): We should close the infobar.
+  // It's not safe to remove the infobar here, since other observers (e.g. the
+  // InfoBarContainer) may still need to access it.  Instead, post a task to
+  // do all necessary infobar manipulation as soon as this call stack returns.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&InfoBarObserver::VerifyInfoBarState,
+                            base::Unretained(this)));
 }
 
-void PPAPITestBase::InfoBarObserver::ExpectInfoBarAndAccept(
-    bool should_accept) {
-  expected_infobars_.push_back(should_accept);
+void PPAPITestBase::InfoBarObserver::VerifyInfoBarState() {
+  content::WebContents* web_contents =
+      test_base_->browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents != NULL);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  ASSERT_TRUE(infobar_service != NULL);
+
+  EXPECT_EQ(expecting_infobar_ ? 1U : 0U, infobar_service->infobar_count());
+  if (!expecting_infobar_)
+    return;
+  expecting_infobar_ = false;
+
+  InfoBarDelegate* infobar = infobar_service->infobar_at(0);
+  ConfirmInfoBarDelegate* delegate = infobar->AsConfirmInfoBarDelegate();
+  ASSERT_TRUE(delegate != NULL);
+  if (should_accept_)
+    delegate->Accept();
+  else
+    delegate->Cancel();
+
+  infobar_service->RemoveInfoBar(infobar);
 }
 
 PPAPITestBase::PPAPITestBase() {

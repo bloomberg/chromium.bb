@@ -140,7 +140,7 @@ TEST_PPAPI_OUT_OF_PROCESS(DISABLED_Broker)
 
 IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Accept) {
   // Accepting the infobar should grant permission to access the PPAPI broker.
-  InfoBarObserver observer;
+  InfoBarObserver observer(this);
   observer.ExpectInfoBarAndAccept(true);
 
   // PPB_Broker_Trusted::IsAllowed should return false before the infobar is
@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Accept) {
 
 IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Deny) {
   // Canceling the infobar should deny permission to access the PPAPI broker.
-  InfoBarObserver observer;
+  InfoBarObserver observer(this);
   observer.ExpectInfoBarAndAccept(false);
 
   // PPB_Broker_Trusted::IsAllowed should return false before and after the
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Blocked) {
       CONTENT_SETTINGS_TYPE_PPAPI_BROKER, CONTENT_SETTING_BLOCK);
 
   // We shouldn't see an infobar.
-  InfoBarObserver observer;
+  InfoBarObserver observer(this);
 
   RunTest("Broker_ConnectPermissionDenied");
   RunTest("Broker_IsAllowedPermissionDenied");
@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Allowed) {
       CONTENT_SETTINGS_TYPE_PPAPI_BROKER, CONTENT_SETTING_ALLOW);
 
   // We shouldn't see an infobar.
-  InfoBarObserver observer;
+  InfoBarObserver observer(this);
 
   RunTest("Broker_ConnectPermissionGranted");
   RunTest("Broker_IsAllowedPermissionGranted");
