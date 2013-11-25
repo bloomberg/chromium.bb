@@ -54,6 +54,7 @@ class CC_EXPORT PictureLayer : public Layer {
   InvalidationRegion pending_invalidation_;
   // Invalidation from the last time update was called.
   Region pile_invalidation_;
+  gfx::Rect last_updated_visible_content_rect_;
   bool is_mask_;
 
   int update_source_frame_number_;

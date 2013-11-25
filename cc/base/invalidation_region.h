@@ -22,6 +22,7 @@ class CC_EXPORT InvalidationRegion {
   void Swap(Region* region);
   void Clear();
   void Union(gfx::Rect rect);
+  bool IsEmpty() const { return region_.IsEmpty(); }
 
  private:
   void SimplifyIfNeeded();

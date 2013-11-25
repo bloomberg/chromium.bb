@@ -84,15 +84,19 @@ void PictureLayer::SetNeedsDisplayRect(const gfx::RectF& layer_rect) {
 
 bool PictureLayer::Update(ResourceUpdateQueue* queue,
                           const OcclusionTracker* occlusion) {
-  // Do not early-out of this function so that PicturePile::Update has a chance
-  // to record pictures due to changing visibility of this layer.
-
   TRACE_EVENT1("cc", "PictureLayer::Update",
                "source_frame_number",
                layer_tree_host()->source_frame_number());
 
   update_source_frame_number_ = layer_tree_host()->source_frame_number();
   bool updated = Layer::Update(queue, occlusion);
+
+  if (last_updated_visible_content_rect_ == visible_content_rect() &&
+      pile_->size() == paint_properties().bounds &&
+      pending_invalidation_.IsEmpty()) {
+    // Only early out if the visible content rect of this layer hasn't changed.
+    return updated;
+  }
 
   pile_->Resize(paint_properties().bounds);
 
@@ -116,6 +120,8 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
                            pile_invalidation_,
                            visible_layer_rect,
                            rendering_stats_instrumentation());
+  last_updated_visible_content_rect_ = visible_content_rect();
+
   if (updated) {
     SetNeedsPushProperties();
   } else {
