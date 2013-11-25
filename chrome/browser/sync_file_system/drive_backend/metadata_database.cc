@@ -1259,7 +1259,7 @@ void MetadataDatabase::RemoveTracker(int64 tracker_id,
   RemoveTrackerInternal(tracker_id, batch, false);
 }
 
-void MetadataDatabase::RemoveTrackerIgnoringSiblings(
+void MetadataDatabase::RemoveTrackerIgnoringSameTitle(
     int64 tracker_id,
     leveldb::WriteBatch* batch) {
   RemoveTrackerInternal(tracker_id, batch, true);
@@ -1268,7 +1268,7 @@ void MetadataDatabase::RemoveTrackerIgnoringSiblings(
 void MetadataDatabase::RemoveTrackerInternal(
     int64 tracker_id,
     leveldb::WriteBatch* batch,
-    bool ignoring_siblings) {
+    bool ignoring_same_title) {
   scoped_ptr<FileTracker> tracker(
       FindAndEraseItem(&tracker_by_id_, tracker_id));
   if (!tracker)
@@ -1280,7 +1280,8 @@ void MetadataDatabase::RemoveTrackerInternal(
   EraseTrackerFromPathIndex(tracker.get());
 
   MarkTrackersDirtyByFileID(tracker->file_id(), batch);
-  if (!ignoring_siblings) {
+  if (!ignoring_same_title) {
+    // Mark trackers having the same title with the given tracker as dirty.
     MarkTrackersDirtyByPath(tracker->parent_tracker_id(),
                             GetTrackerTitle(*tracker),
                             batch);
@@ -1345,7 +1346,7 @@ void MetadataDatabase::RemoveAllDescendantTrackers(int64 root_tracker_id,
     PushChildTrackersToContainer(trackers_by_parent_and_title_,
                                  tracker_id,
                                  std::back_inserter(pending_trackers));
-    RemoveTrackerIgnoringSiblings(tracker_id, batch);
+    RemoveTrackerIgnoringSameTitle(tracker_id, batch);
   }
 }
 

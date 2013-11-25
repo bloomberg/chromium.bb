@@ -320,11 +320,11 @@ class MetadataDatabase {
                                        leveldb::WriteBatch* batch);
 
   void RemoveTracker(int64 tracker_id, leveldb::WriteBatch* batch);
-  void RemoveTrackerIgnoringSiblings(int64 tracker_id,
-                                     leveldb::WriteBatch* batch);
+  void RemoveTrackerIgnoringSameTitle(int64 tracker_id,
+                                      leveldb::WriteBatch* batch);
   void RemoveTrackerInternal(int64 tracker_id,
                              leveldb::WriteBatch* batch,
-                             bool ignoring_siblings);
+                             bool ignoring_same_title);
   void MaybeAddTrackersForNewFile(const FileMetadata& file,
                                   leveldb::WriteBatch* batch);
 
