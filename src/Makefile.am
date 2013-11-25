@@ -53,7 +53,7 @@ libsession_helper_la_SOURCES =			\
 	weston-launch.h				\
 	launcher-util.c				\
 	launcher-util.h
-libsession_helper_la_CFLAGS = $(GCC_CFLAGS) $(LIBDRM_CFLAGS) $(PIXMAN_CFLAGS)
+libsession_helper_la_CFLAGS = $(GCC_CFLAGS) $(LIBDRM_CFLAGS) $(PIXMAN_CFLAGS) $(COMPOSITOR_CFLAGS)
 libsession_helper_la_LIBADD = $(LIBDRM_LIBS)
 
 if ENABLE_DBUS
