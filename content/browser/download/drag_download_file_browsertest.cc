@@ -94,12 +94,9 @@ IN_PROC_BROWSER_TEST_F(DragDownloadFileTest, DragDownloadFileTest_NetError) {
       "download-test.lib"))));
   Referrer referrer;
   std::string referrer_encoding;
-  DragDownloadFile* file = new DragDownloadFile(name,
-                                                scoped_ptr<net::FileStream>(),
-                                                url,
-                                                referrer,
-                                                referrer_encoding,
-                                                shell()->web_contents());
+  scoped_refptr<DragDownloadFile> file(
+      new DragDownloadFile(name, scoped_ptr<net::FileStream>(), url, referrer,
+                           referrer_encoding, shell()->web_contents()));
   scoped_refptr<MockDownloadFileObserver> observer(
       new MockDownloadFileObserver());
   EXPECT_CALL(*observer.get(), OnDownloadAborted())
@@ -119,9 +116,9 @@ IN_PROC_BROWSER_TEST_F(DragDownloadFileTest, DragDownloadFileTest_Complete) {
   std::string referrer_encoding;
   net::FileStream* stream = NULL;
   SetUpServer();
-  DragDownloadFile* file = new DragDownloadFile(
+  scoped_refptr<DragDownloadFile> file(new DragDownloadFile(
       name, scoped_ptr<net::FileStream>(stream), url, referrer,
-      referrer_encoding, shell()->web_contents());
+      referrer_encoding, shell()->web_contents()));
   scoped_refptr<MockDownloadFileObserver> observer(
       new MockDownloadFileObserver());
   EXPECT_CALL(*observer.get(), OnDownloadCompleted(_))
