@@ -256,11 +256,16 @@ void SearchTabHelper::DidFailProvisionalLoad(
     int64 /* frame_id */,
     const string16& frame_unique_name,
     bool is_main_frame,
-    const GURL& /* validated_url */,
+    const GURL& validated_url,
     int /* error_code */,
     const string16& /* error_description */,
     content::RenderViewHost* /* render_view_host */) {
-  if (is_main_frame && IsCacheableNTP(web_contents_)) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  if (is_main_frame &&
+      chrome::ShouldUseCacheableNTP() &&
+      validated_url != GURL(chrome::kChromeSearchLocalNtpUrl) &&
+      chrome::IsNTPURL(validated_url, profile)) {
     RedirectToLocalNTP();
     RecordCacheableNTPLoadHistogram(false);
   }
