@@ -697,13 +697,13 @@ void TabSpecificContentSettings::DidNavigateMainFrame(
     ClearBlockedContentSettingsExceptForCookies();
     GeolocationDidNavigate(details);
     MIDIDidNavigate(details);
+    // Reset password states for next page.
+    manage_passwords_icon_to_be_shown_ = false;
+    password_to_be_saved_ = false;
+    manage_passwords_bubble_needs_showing_ = false;
+    NotifySiteDataObservers();
+    NotifyPasswordObserver();
   }
-  // Reset password states for next page.
-  manage_passwords_icon_to_be_shown_ = false;
-  password_to_be_saved_ = false;
-  manage_passwords_bubble_needs_showing_ = false;
-  NotifySiteDataObservers();
-  NotifyPasswordObserver();
 }
 
 void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
