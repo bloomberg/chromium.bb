@@ -2041,6 +2041,13 @@ get_output_panel_height(struct desktop_shell *shell,
 }
 
 static void
+shell_surface_set_parent(struct shell_surface *shsurf,
+                         struct weston_surface *parent)
+{
+	shsurf->parent = parent;
+}
+
+static void
 shell_surface_set_output(struct shell_surface *shsurf,
                          struct weston_output *output)
 {
@@ -2059,6 +2066,8 @@ shell_surface_set_output(struct shell_surface *shsurf,
 static void
 set_toplevel(struct shell_surface *shsurf)
 {
+	shell_surface_set_parent(shsurf, NULL);
+
 	shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
 }
 
@@ -2075,11 +2084,14 @@ static void
 set_transient(struct shell_surface *shsurf,
 	      struct weston_surface *parent, int x, int y, uint32_t flags)
 {
-	/* assign to parents output */
-	shsurf->parent = parent;
+	assert(parent != NULL);
+
 	shsurf->transient.x = x;
 	shsurf->transient.y = y;
 	shsurf->transient.flags = flags;
+
+	shell_surface_set_parent(shsurf, parent);
+
 	shsurf->next_type = SHELL_SURFACE_TRANSIENT;
 }
 
@@ -2107,6 +2119,9 @@ set_fullscreen(struct shell_surface *shsurf,
 	shsurf->fullscreen_output = shsurf->output;
 	shsurf->fullscreen.type = method;
 	shsurf->fullscreen.framerate = framerate;
+
+	shell_surface_set_parent(shsurf, NULL);
+
 	shsurf->next_type = SHELL_SURFACE_FULLSCREEN;
 
 	shsurf->client->send_configure(shsurf->surface, 0,
@@ -2175,12 +2190,15 @@ set_popup(struct shell_surface *shsurf,
           int32_t x,
           int32_t y)
 {
+	assert(parent != NULL);
+
 	shsurf->type = SHELL_SURFACE_POPUP;
-	shsurf->parent = parent;
 	shsurf->popup.shseat = get_shell_seat(seat);
 	shsurf->popup.serial = serial;
 	shsurf->popup.x = x;
 	shsurf->popup.y = y;
+
+	shell_surface_set_parent(shsurf, parent);
 }
 
 static void
@@ -2215,6 +2233,8 @@ set_maximized(struct shell_surface *shsurf,
 	shsurf->client->send_configure(shsurf->surface, edges,
 	                               shsurf->output->width,
 	                               shsurf->output->height - panel_height);
+
+	shell_surface_set_parent(shsurf, NULL);
 
 	shsurf->next_type = SHELL_SURFACE_MAXIMIZED;
 }
@@ -2513,6 +2533,9 @@ set_xwayland(struct shell_surface *shsurf, int x, int y, uint32_t flags)
 	shsurf->transient.x = x;
 	shsurf->transient.y = y;
 	shsurf->transient.flags = flags;
+
+	shell_surface_set_parent(shsurf, NULL);
+
 	shsurf->next_type = SHELL_SURFACE_XWAYLAND;
 }
 
