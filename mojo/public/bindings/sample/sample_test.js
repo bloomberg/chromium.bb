@@ -5,13 +5,13 @@
 define([
     "console",
     "mojo/public/bindings/js/test/hexdump",
-    "gtest",
+    "gin/test/expect",
     // TODO(abarth): We shouldn't need to depend on codec, but there seems to
     // be a bug in the module loading system whereby this test doesn't run if
     // we don't import codec here.
     "mojo/public/bindings/js/codec",
     "mojom/sample_service"
-  ], function(console, hexdump, gtest, codec, sample) {
+  ], function(console, hexdump, expect, codec, sample) {
 
   var global = this;
 
@@ -59,41 +59,31 @@ define([
 
   // Check that the given |Foo| is identical to the one made by |MakeFoo()|.
   function checkFoo(foo) {
-    gtest.expectEqual(foo.name, "foopy", "foo.name is " + foo.name);
-    gtest.expectEqual(foo.x, 1, "foo.x is " + foo.x);
-    gtest.expectEqual(foo.y, 2, "foo.y is " + foo.y);
-    gtest.expectFalse(foo.a, "foo.a is " + foo.a);
-    gtest.expectTrue(foo.b, "foo.b is " + foo.b);
-    gtest.expectFalse(foo.c, "foo.c is " + foo.c);
-    gtest.expectEqual(foo.bar.alpha, 20, "foo.bar.alpha is " + foo.bar.alpha);
-    gtest.expectEqual(foo.bar.beta, 40, "foo.bar.beta is " + foo.bar.beta);
-    gtest.expectEqual(foo.bar.gamma, 60, "foo.bar.gamma is " + foo.bar.gamma);
+    expect(foo.name).toBe("foopy");
+    expect(foo.x).toBe(1);
+    expect(foo.y).toBe(2);
+    expect(foo.a).toBeFalsy();
+    expect(foo.b).toBeTruthy();
+    expect(foo.c).toBeFalsy();
+    expect(foo.bar.alpha).toBe(20);
+    expect(foo.bar.beta).toBe(40);
+    expect(foo.bar.gamma).toBe(60);
 
-    gtest.expectEqual(foo.extra_bars.length, 3,
-        "foo.extra_bars.length is " + foo.extra_bars.length);
+    expect(foo.extra_bars.length).toBe(3);
     for (var i = 0; i < foo.extra_bars.length; ++i) {
       var base = i * 100;
-      gtest.expectEqual(foo.extra_bars[i].alpha, base,
-          "foo.extra_bars[" + i + "].alpha is " + foo.extra_bars[i].alpha);
-      gtest.expectEqual(foo.extra_bars[i].beta, base + 20,
-          "foo.extra_bars[" + i + "].beta is " + foo.extra_bars[i].beta);
-      gtest.expectEqual(foo.extra_bars[i].gamma, base + 40,
-          "foo.extra_bars[" + i + "].gamma is " + foo.extra_bars[i].gamma);
+      expect(foo.extra_bars[i].alpha).toBe(base);
+      expect(foo.extra_bars[i].beta).toBe(base + 20);
+      expect(foo.extra_bars[i].gamma).toBe(base + 40);
     }
 
-    gtest.expectEqual(foo.data.length, 10,
-        "foo.data.length is " + foo.data.length);
-    for (var i = 0; i < foo.data.length; ++i) {
-      gtest.expectEqual(foo.data[i], foo.data.length - i,
-          "foo.data[" + i + "] is " + foo.data[i]);
-    }
+    expect(foo.data.length).toBe(10);
+    for (var i = 0; i < foo.data.length; ++i)
+      expect(foo.data[i]).toBe(foo.data.length - i);
 
-    gtest.expectEqual(foo.files.length, 4,
-        "foo.files.length " + foo.files.length);
-    for (var i = 0; i < foo.files.length; ++i) {
-      gtest.expectEqual(foo.files[i], 0xFFFF - i,
-          "foo.files[" + i + "] is " + foo.files[i]);
-    }
+    expect(foo.files.length).toBe(4);
+    for (var i = 0; i < foo.files.length; ++i)
+      expect(foo.files[i]).toBe(0xFFFF - i);
   }
 
   function ServiceImpl() {
@@ -103,8 +93,8 @@ define([
 
   ServiceImpl.prototype.frobinate = function(foo, baz, port) {
     checkFoo(foo);
-    gtest.expectTrue(baz, "baz is " + baz);
-    gtest.expectEqual(port, 10, "port is " + port);
+    expect(baz).toBeTruthy();
+    expect(port).toBe(10);
     global.result = "PASS";
   };
 

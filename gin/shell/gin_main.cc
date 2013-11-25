@@ -24,11 +24,11 @@ std::string Load(const base::FilePath& path) {
   return source;
 }
 
-void Run(base::WeakPtr<Runner> runner, const std::string& source) {
+void Run(base::WeakPtr<Runner> runner, const base::FilePath& path) {
   if (!runner)
     return;
   Runner::Scope scope(runner.get());
-  runner->Run(source);
+  runner->Run(Load(path), path.AsUTF8Unsafe());
 }
 
 std::vector<base::FilePath> GetModuleSearchPaths() {
@@ -46,7 +46,7 @@ class ShellRunnerDelegate : public ModuleRunnerDelegate {
   virtual void UnhandledException(Runner* runner,
                                   TryCatch& try_catch) OVERRIDE {
     ModuleRunnerDelegate::UnhandledException(runner, try_catch);
-    LOG(ERROR) << try_catch.GetPrettyMessage();
+    LOG(ERROR) << try_catch.GetStackTrace();
   }
 
  private:
@@ -68,11 +68,16 @@ int main(int argc, char** argv) {
   gin::ShellRunnerDelegate delegate;
   gin::Runner runner(&delegate, instance.isolate());
 
+  {
+    gin::Runner::Scope scope(&runner);
+    v8::V8::SetCaptureStackTraceForUncaughtExceptions(true);
+  }
+
   CommandLine::StringVector args = CommandLine::ForCurrentProcess()->GetArgs();
   for (CommandLine::StringVector::const_iterator it = args.begin();
        it != args.end(); ++it) {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        gin::Run, runner.GetWeakPtr(), gin::Load(base::FilePath(*it))));
+        gin::Run, runner.GetWeakPtr(), base::FilePath(*it)));
   }
 
   message_loop.RunUntilIdle();

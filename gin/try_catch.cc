@@ -4,6 +4,9 @@
 
 #include "gin/try_catch.h"
 
+#include <sstream>
+
+#include "base/logging.h"
 #include "gin/converter.h"
 
 namespace gin {
@@ -18,15 +21,26 @@ bool TryCatch::HasCaught() {
   return try_catch_.HasCaught();
 }
 
-std::string TryCatch::GetPrettyMessage() {
-  std::string info;
-  ConvertFromV8(try_catch_.Message()->Get(), &info);
+std::string TryCatch::GetStackTrace() {
+  std::stringstream ss;
+  v8::Handle<v8::Message> message = try_catch_.Message();
+  ss << V8ToString(message->Get()) << std::endl
+     << V8ToString(message->GetSourceLine()) << std::endl;
 
-  std::string sounce_line;
-  if (ConvertFromV8(try_catch_.Message()->GetSourceLine(), &sounce_line))
-    info += "\n" + sounce_line;
+  v8::Handle<v8::StackTrace> trace = message->GetStackTrace();
+  if (trace.IsEmpty())
+    return ss.str();
 
-  return info;
+  int len = trace->GetFrameCount();
+  for (int i = 0; i < len; ++i) {
+    v8::Handle<v8::StackFrame> frame = trace->GetFrame(i);
+    ss << V8ToString(frame->GetScriptName()) << ":"
+       << frame->GetLineNumber() << ":"
+       << frame->GetColumn() << ": "
+       << V8ToString(frame->GetFunctionName())
+       << std::endl;
+  }
+  return ss.str();
 }
 
 }  // namespace gin

@@ -58,8 +58,9 @@ Runner::Runner(RunnerDelegate* delegate, Isolate* isolate)
 Runner::~Runner() {
 }
 
-void Runner::Run(const std::string& script) {
-  Run(Script::New(StringToV8(isolate(), script)));
+void Runner::Run(const std::string& source, const std::string& resource_name) {
+  Run(Script::New(StringToV8(isolate(), source),
+                  StringToV8(isolate(), resource_name)));
 }
 
 void Runner::Run(v8::Handle<Script> script) {

@@ -105,6 +105,8 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   excluded_dirs_list.append('chrome/tools/test/reference_build')
   # This is tests directory, doesn't exist in the snapshot
   excluded_dirs_list.append('content/test/data')
+  # This is a tests directory that doesn't exist in the shipped product.
+  excluded_dirs_list.append('gin/test')
   # This is a test output directory
   excluded_dirs_list.append('data/dom_perf')
   # Histogram tools, doesn't exist in the snapshot

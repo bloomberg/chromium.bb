@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 define([
-    "gtest",
+    "gin/test/expect",
     "mojo/public/bindings/js/core",
-  ], function(gtest, core) {
+  ], function(expect, core) {
   runWithPipe(testNop);
   runWithPipe(testReadAndWriteMessage);
   this.result = "PASS";
@@ -15,13 +15,8 @@ define([
 
     test(pipe);
 
-    var result0 = core.close(pipe.handle0);
-    gtest.expectEqual(result0, core.RESULT_OK,
-        "result0 is " + result0);
-
-    var result1 = core.close(pipe.handle1);
-    gtest.expectEqual(result1, core.RESULT_OK,
-        "result1 is " + result1);
+    expect(core.close(pipe.handle0)).toBe(core.RESULT_OK);
+    expect(core.close(pipe.handle1)).toBe(core.RESULT_OK);
   }
 
   function testNop(pipe) {
@@ -37,25 +32,19 @@ define([
       pipe.handle0, senderData, [],
       core.WRITE_MESSAGE_FLAG_NONE);
 
-    gtest.expectEqual(result, core.RESULT_OK,
-      "writeMessage returned RESULT_OK: " + result);
+    expect(result).toBe(core.RESULT_OK);
 
     var receiverData = new Uint8Array(50);
 
     var read = core.readMessage(
       pipe.handle1, core.READ_MESSAGE_FLAG_NONE)
 
-    gtest.expectEqual(read.result, core.RESULT_OK,
-        "read.result is " + read.result);
-    gtest.expectEqual(read.buffer.byteLength, 42,
-        "read.buffer.byteLength is " + read.buffer.byteLength);
-    gtest.expectEqual(read.handles.length, 0,
-        "read.handles.length is " + read.handles.length);
+    expect(read.result).toBe(core.RESULT_OK);
+    expect(read.buffer.byteLength).toBe(42);
+    expect(read.handles.length).toBe(0);
 
     var memory = new Uint8Array(read.buffer);
-    for (var i = 0; i < memory.length; ++i) {
-      gtest.expectEqual(memory[i], (i * i) & 0xFF,
-          "memory[" + i + "] is " + memory[i]);
-    }
+    for (var i = 0; i < memory.length; ++i)
+      expect(memory[i]).toBe((i * i) & 0xFF);
   }
 });

@@ -41,7 +41,7 @@ FileRunnerDelegate::~FileRunnerDelegate() {
 void FileRunnerDelegate::UnhandledException(Runner* runner,
                                             TryCatch& try_catch) {
   ModuleRunnerDelegate::UnhandledException(runner, try_catch);
-  EXPECT_FALSE(try_catch.HasCaught()) << try_catch.GetPrettyMessage();
+  FAIL() << try_catch.GetStackTrace();
 }
 
 void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate) {
@@ -55,15 +55,14 @@ void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate) {
   gin::Runner runner(delegate, instance.isolate());
   {
     gin::Runner::Scope scope(&runner);
-    runner.Run(source);
+    v8::V8::SetCaptureStackTraceForUncaughtExceptions(true);
+    runner.Run(source, path.AsUTF8Unsafe());
 
     message_loop.RunUntilIdle();
 
     v8::Handle<v8::Value> result = runner.context()->Global()->Get(
         StringToSymbol(runner.isolate(), "result"));
-    std::string result_string;
-    ASSERT_TRUE(ConvertFromV8(result, &result_string));
-    EXPECT_EQ("PASS", result_string);
+    EXPECT_EQ("PASS", V8ToString(result));
   }
 }
 

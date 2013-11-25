@@ -32,7 +32,8 @@ void RunMojoJS(MojoHandle pipe) {
 
   {
     gin::Runner::Scope scope(&runner);
-    runner.Run("define(['mojo/apps/js/main'], function(main) {});");
+    runner.Run("define(['mojo/apps/js/main'], function(main) {});",
+               "mojo.js");
   }
 
   base::MessageLoop::current()->Run();

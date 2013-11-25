@@ -18,6 +18,16 @@ namespace gin {
 
 namespace {
 
+void Fail(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  Arguments args(info);
+
+  std::string description;
+  if (!args.GetNext(&description))
+    return args.ThrowError();
+
+  FAIL() << description;
+}
+
 void ExpectTrue(bool condition, const std::string& description) {
   EXPECT_TRUE(condition) << description;
 }
@@ -48,6 +58,8 @@ v8::Local<v8::ObjectTemplate> GTest::GetTemplate(v8::Isolate* isolate) {
       data->GetObjectTemplate(&g_wrapper_info);
   if (templ.IsEmpty()) {
     templ = v8::ObjectTemplate::New();
+    templ->Set(StringToSymbol(isolate, "fail"),
+               v8::FunctionTemplate::New(Fail));
     templ->Set(StringToSymbol(isolate, "expectTrue"),
                CreateFunctionTempate(isolate, base::Bind(ExpectTrue)));
     templ->Set(StringToSymbol(isolate, "expectFalse"),

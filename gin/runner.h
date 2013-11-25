@@ -33,7 +33,7 @@ class Runner : public ContextHolder {
   Runner(RunnerDelegate* delegate, v8::Isolate* isolate);
   ~Runner();
 
-  void Run(const std::string& script);
+  void Run(const std::string& source, const std::string& resource_name);
   void Run(v8::Handle<v8::Script> script);
 
   v8::Handle<v8::Value> Call(v8::Handle<v8::Function> function,

@@ -25,7 +25,7 @@ TEST(RunnerTest, Run) {
   Isolate* isolate = instance.isolate();
   Runner runner(&delegate, isolate);
   Runner::Scope scope(&runner);
-  runner.Run(source);
+  runner.Run(source, "test_data.js");
 
   std::string result;
   EXPECT_TRUE(Converter<std::string>::FromV8(

@@ -3,30 +3,14 @@
 // found in the LICENSE file.
 
 define([
-    "gtest",
+    "gin/test/expect",
     "mojo/public/bindings/js/codec",
     "mojom/sample_service",
-  ], function(gtest, codec, sample) {
+  ], function(expect, codec, sample) {
   testBar();
   testFoo();
   testAlign();
   this.result = "PASS";
-
-  function barMatches(bar, expected) {
-    gtest.expectEqual(bar.alpha, expected.alpha,
-        "bar.alpha is " + bar.alpha);
-    gtest.expectEqual(bar.beta, expected.beta,
-        "bar.beta is " + bar.beta);
-    gtest.expectEqual(bar.gamma, expected.gamma,
-        "bar.gamma is " + bar.gamma);
-  }
-
-  function equalsArray(actual, expected, tag) {
-    for (var i = 0; i < expected.length; ++i) {
-      gtest.expectEqual(actual[i], expected[i],
-          tag + "[" + i + "] is " + actual[i]);
-    }
-  }
 
   function testBar() {
     var bar = new sample.Bar();
@@ -43,7 +27,7 @@ define([
 
     var message = builder.finish();
 
-    var expectedMemory = [
+    var expectedMemory = new Uint8Array([
       24, 0, 0, 0,
       42, 0, 0, 0,
 
@@ -52,25 +36,21 @@ define([
 
        1, 2, 3, 0,
        0, 0, 0, 0,
-    ];
+    ]);
 
-    for (var i = 0; i < expectedMemory.length; ++i) {
-      gtest.expectEqual(message.memory[i], expectedMemory[i],
-          "message.memory[" + i + "] is " + message.memory[i]);
-    }
+    expect(message.memory).toEqual(expectedMemory);
 
     var reader = new codec.MessageReader(message);
 
-    gtest.expectEqual(reader.payloadSize, payloadSize,
-        "reader.payloadSize is " + reader.payloadSize);
-    gtest.expectEqual(reader.messageName, messageName,
-        "reader.messageName is " + reader.messageName);
+    expect(reader.payloadSize).toBe(payloadSize);
+    expect(reader.messageName).toBe(messageName);
 
     var bar2 = reader.decodeStruct(sample.Bar);
 
-    barMatches(bar2, bar);
-    gtest.expectFalse("extraProperty" in bar2,
-        "extraProperty appeared in bar2")
+    expect(bar2.alpha).toBe(bar.alpha);
+    expect(bar2.beta).toBe(bar.beta);
+    expect(bar2.gamma).toBe(bar.gamma);
+    expect("extraProperty" in bar2).toBeFalsy();
   }
 
   function testFoo() {
@@ -109,58 +89,45 @@ define([
 
     var message = builder.finish();
 
-    var expectedMemory = [
+    var expectedMemory = new Uint8Array([
       /*  0: */  240,    0,    0,    0,   31,    0,    0,    0,
       /*  8: */   64,    0,    0,    0,   10,    0,    0,    0,
       /* 16: */ 0xD5, 0xB4, 0x12, 0x02, 0x93, 0x6E, 0x01,    0,
       /* 24: */    5,    0,    0,    0,    0,    0,    0,    0,
       /* 32: */   40,    0,    0,    0,    0,    0,    0,    0,
-      // TODO(abarth): Test more of the message's raw memory.
-    ];
+    ]);
+    // TODO(abarth): Test more of the message's raw memory.
+    var actualMemory = new Uint8Array(message.memory.buffer,
+                                      0, expectedMemory.length);
 
-    equalsArray(message.memory, expectedMemory, "message.memory");
+    expect(actualMemory).toEqual(expectedMemory);
 
     var expectedHandles = [
       23423782, 32549823, 98320423, 38502383, 92834093,
     ];
 
-    equalsArray(message.handles, expectedHandles, "message.handles");
+    expect(message.handles).toEqual(expectedHandles);
 
     var reader = new codec.MessageReader(message);
 
-    gtest.expectEqual(reader.payloadSize, payloadSize,
-        "reader.payloadSize is " + reader.payloadSize);
-    gtest.expectEqual(reader.messageName, messageName,
-        "reader.messageName is " + reader.messageName);
+    expect(reader.payloadSize).toBe(payloadSize);
+    expect(reader.messageName).toBe(messageName);
 
     var foo2 = reader.decodeStruct(sample.Foo);
 
-    gtest.expectEqual
+    expect(foo2.x).toBe(foo.x);
+    expect(foo2.y).toBe(foo.y);
 
-    gtest.expectEqual(foo2.x, foo.x,
-        "foo2.x is " + foo2.x);
-    gtest.expectEqual(foo2.y, foo.y,
-        "foo2.y is " + foo2.y);
+    expect(foo2.a).toBe(foo.a & 1 ? true : false);
+    expect(foo2.b).toBe(foo.b & 1 ? true : false);
+    expect(foo2.c).toBe(foo.c & 1 ? true : false);
 
-    gtest.expectEqual(foo2.a, foo.a & 1 ? true : false,
-        "foo2.a is " + foo2.a);
-    gtest.expectEqual(foo2.b, foo.b & 1 ? true : false,
-        "foo2.b is " + foo2.b);
-    gtest.expectEqual(foo2.c, foo.c & 1 ? true : false,
-        "foo2.c is " + foo2.c);
+    expect(foo2.bar).toEqual(foo.bar);
+    expect(foo2.data).toEqual(foo.data);
 
-    barMatches(foo2.bar, foo.bar);
-    equalsArray(foo2.data, foo.data, "foo2.data");
-
-    var actualExtraBarsJSON = JSON.stringify(foo2.extra_bars);
-    var expectedExtraBarsJSON = JSON.stringify(foo.extra_bars);
-    gtest.expectEqual(actualExtraBarsJSON, expectedExtraBarsJSON,
-        actualExtraBarsJSON);
-
-    gtest.expectEqual(foo2.name, foo.name,
-        "foo2.name is " + foo2.name);
-
-    equalsArray(foo2.files, foo.files, "foo2.files");
+    expect(foo2.extra_bars).toEqual(foo.extra_bars);
+    expect(foo2.name).toBe(foo.name);
+    expect(foo2.files).toEqual(foo.files);
   }
 
   function testAlign() {
@@ -187,9 +154,7 @@ define([
       24, // 19
       24, // 20
     ];
-    for (var i = 0; i < aligned.length; ++i) {
-      gtest.expectEqual(codec.align(i), aligned[i],
-          "codec.align(" + i + ") is " + codec.align(i));
-    }
+    for (var i = 0; i < aligned.length; ++i)
+      expect(codec.align(i)).toBe(aligned[i]);
   }
 });

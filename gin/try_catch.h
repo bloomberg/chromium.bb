@@ -18,7 +18,7 @@ class TryCatch {
   ~TryCatch();
 
   bool HasCaught();
-  std::string GetPrettyMessage();
+  std::string GetStackTrace();
 
  private:
   v8::TryCatch try_catch_;

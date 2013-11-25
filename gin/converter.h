@@ -162,6 +162,8 @@ bool ConvertFromV8(v8::Handle<v8::Value> input, T* result) {
   return Converter<T>::FromV8(input, result);
 }
 
+std::string V8ToString(v8::Handle<v8::Value> value);
+
 }  // namespace gin
 
 #endif  // GIN_CONVERTER_H_

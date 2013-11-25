@@ -171,5 +171,13 @@ v8::Handle<v8::String> StringToSymbol(v8::Isolate* isolate,
                              static_cast<uint32_t>(val.length()));
 }
 
+std::string V8ToString(v8::Handle<v8::Value> value) {
+  if (value.IsEmpty())
+    return std::string();
+  std::string result;
+  if (!ConvertFromV8(value, &result))
+    return std::string();
+  return result;
+}
 
 }  // namespace gin

@@ -43,7 +43,7 @@ MojoRunnerDelegate::~MojoRunnerDelegate() {
 void MojoRunnerDelegate::UnhandledException(gin::Runner* runner,
                                             gin::TryCatch& try_catch) {
   gin::ModuleRunnerDelegate::UnhandledException(runner, try_catch);
-  LOG(ERROR) << try_catch.GetPrettyMessage();
+  LOG(ERROR) << try_catch.GetStackTrace();
 }
 
 }  // namespace apps
