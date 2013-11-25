@@ -404,8 +404,8 @@ void MediaSourcePlayer::SetDrmBridge(MediaDrmBridge* drm_bridge) {
   // TODO(qinmin): support DRM change after playback has started.
   // http://crbug.com/253792.
   if (GetCurrentTime() > base::TimeDelta()) {
-    LOG(INFO) << "Setting DRM bridge after playback has started. "
-              << "This is not well supported!";
+    VLOG(0) << "Setting DRM bridge after playback has started. "
+            << "This is not well supported!";
   }
 
   drm_bridge_ = drm_bridge;

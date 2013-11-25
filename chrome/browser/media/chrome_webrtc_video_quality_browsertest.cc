@@ -159,7 +159,7 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
     pywebsocket_command.AppendArg("-d");
     pywebsocket_command.AppendArgPath(path_to_data_handler);
 
-    LOG(INFO) << "Running " << pywebsocket_command.GetCommandLineString();
+    VLOG(0) << "Running " << pywebsocket_command.GetCommandLineString();
     return base::LaunchProcess(pywebsocket_command, base::LaunchOptions(),
                                &pywebsocket_server_);
   }
@@ -229,10 +229,10 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
 
     // We produce an output file that will later be used as an input to the
     // barcode decoder and frame analyzer tools.
-    LOG(INFO) << "Running " << converter_command.GetCommandLineString();
+    VLOG(0) << "Running " << converter_command.GetCommandLineString();
     std::string result;
     bool ok = base::GetAppOutput(converter_command, &result);
-    LOG(INFO) << "Output was:\n\n" << result;
+    VLOG(0) << "Output was:\n\n" << result;
     return ok;
   }
 
@@ -287,7 +287,7 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
     compare_command.AppendArg("--stats_file");
     compare_command.AppendArgPath(stats_file);
 
-    LOG(INFO) << "Running " << compare_command.GetCommandLineString();
+    VLOG(0) << "Running " << compare_command.GetCommandLineString();
     std::string output;
     bool ok = base::GetAppOutput(compare_command, &output);
     // Print to stdout to ensure the perf numbers are parsed properly by the

@@ -20,13 +20,13 @@
 namespace media {
 
 // Helper macro to skip the test if MediaCodecBridge isn't available.
-#define SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE() \
-  do { \
-    if (!MediaCodecBridge::IsAvailable()) { \
-      LOG(INFO) << "Could not run test - not supported on device."; \
-      return; \
-    } \
-  } while (0) \
+#define SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE()        \
+  do {                                                            \
+    if (!MediaCodecBridge::IsAvailable()) {                       \
+      VLOG(0) << "Could not run test - not supported on device."; \
+      return;                                                     \
+    }                                                             \
+  } while (0)
 
 static const int kDefaultDurationInMs = 10000;
 
@@ -1836,7 +1836,7 @@ TEST_F(MediaSourcePlayerTest, SurfaceChangeClearedEvenIfMediaCryptoAbsent) {
 // TODO(xhwang): Enable this test when the test devices are updated.
 TEST_F(MediaSourcePlayerTest, DISABLED_IsTypeSupported_Widevine) {
   if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
+    VLOG(0) << "Could not run test - not supported on device.";
     return;
   }
 
@@ -1888,7 +1888,7 @@ TEST_F(MediaSourcePlayerTest, DISABLED_IsTypeSupported_Widevine) {
 
 TEST_F(MediaSourcePlayerTest, IsTypeSupported_InvalidUUID) {
   if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
+    VLOG(0) << "Could not run test - not supported on device.";
     return;
   }
 

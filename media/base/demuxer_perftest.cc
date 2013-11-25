@@ -49,7 +49,7 @@ static void QuitLoopWithStatus(base::MessageLoop* message_loop,
 
 static void NeedKey(const std::string& type,
                     const std::vector<uint8>& init_data) {
-  LOG(INFO) << "File is encrypted.";
+  VLOG(0) << "File is encrypted.";
 }
 
 typedef std::vector<media::DemuxerStream* > Streams;

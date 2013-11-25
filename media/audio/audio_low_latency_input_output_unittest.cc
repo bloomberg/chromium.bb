@@ -158,7 +158,7 @@ class FullDuplexAudioSinkSource
 
     FILE* text_file = file_util::OpenFile(file_name, "wt");
     DLOG_IF(ERROR, !text_file) << "Failed to open log file.";
-    LOG(INFO) << ">> Output file " << file_name.value() << " has been created.";
+    VLOG(0) << ">> Output file " << file_name.value() << " has been created.";
 
     // Write the array which contains time-stamps, buffer size and
     // audio delays values to a text file.
@@ -421,10 +421,10 @@ TEST_F(AudioLowLatencyInputOutputTest, DISABLED_FullDuplexDelayMeasurement) {
   FullDuplexAudioSinkSource full_duplex(
       aisw.sample_rate(), aisw.samples_per_packet(), aisw.channels());
 
-  LOG(INFO) << ">> You should now be able to hear yourself in loopback...";
-  DLOG(INFO) << "   sample_rate       : " << aisw.sample_rate();
-  DLOG(INFO) << "   samples_per_packet: " << aisw.samples_per_packet();
-  DLOG(INFO) << "   channels          : " << aisw.channels();
+  VLOG(0) << ">> You should now be able to hear yourself in loopback...";
+  DVLOG(0) << "   sample_rate       : " << aisw.sample_rate();
+  DVLOG(0) << "   samples_per_packet: " << aisw.samples_per_packet();
+  DVLOG(0) << "   channels          : " << aisw.channels();
 
   ais->Start(&full_duplex);
   aos->Start(&full_duplex);

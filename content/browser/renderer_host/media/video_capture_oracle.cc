@@ -131,10 +131,10 @@ void SmoothEventSampler::RecordSample() {
   bool is_paused = overdue_sample_count_ == redundant_capture_goal_;
 
   VLOG_IF(0, !was_paused && is_paused)
-        << "Tab content unchanged for " << redundant_capture_goal_
-        << " frames; capture will halt until content changes.";
+      << "Tab content unchanged for " << redundant_capture_goal_
+      << " frames; capture will halt until content changes.";
   VLOG_IF(0, was_paused && !is_paused)
-        << "Content changed; capture will resume.";
+      << "Content changed; capture will resume.";
 }
 
 bool SmoothEventSampler::IsOverdueForSamplingAt(base::Time event_time) const {

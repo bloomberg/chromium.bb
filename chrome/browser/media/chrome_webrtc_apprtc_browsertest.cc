@@ -78,7 +78,7 @@ class WebrtcApprtcBrowserTest : public WebRtcTestBase {
     command_line.AppendArg("--admin_port=9998");
     command_line.AppendArg("--skip_sdk_update_check");
 
-    LOG(INFO) << "Running " << command_line.GetCommandLineString();
+    VLOG(0) << "Running " << command_line.GetCommandLineString();
     return base::LaunchProcess(command_line, base::LaunchOptions(),
                                &dev_appserver_);
   }
@@ -122,7 +122,7 @@ class WebrtcApprtcBrowserTest : public WebRtcTestBase {
 IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost());
   while (!LocalApprtcInstanceIsUp())
-    LOG(INFO) << "Waiting for AppRTC to come up...";
+    VLOG(0) << "Waiting for AppRTC to come up...";
 
   GURL room_url = GURL(base::StringPrintf("localhost:9999?r=room_%d",
                                           base::RandInt(0, 65536)));

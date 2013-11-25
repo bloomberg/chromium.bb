@@ -16,7 +16,7 @@
 
 // Creates a 32-bit XImage.
 static XImage* CreateImage(Display* display, int width, int height) {
-  LOG(INFO) << "Allocating XImage " << width << "x" << height;
+  VLOG(0) << "Allocating XImage " << width << "x" << height;
   return  XCreateImage(display,
                        DefaultVisual(display, DefaultScreen(display)),
                        DefaultDepth(display, DefaultScreen(display)),
@@ -181,7 +181,7 @@ void X11VideoRenderer::Paint(media::VideoFrame* video_frame) {
 void X11VideoRenderer::Initialize(gfx::Size coded_size,
                                   gfx::Rect visible_rect) {
   CHECK(!image_);
-  LOG(INFO) << "Initializing X11 Renderer...";
+  VLOG(0) << "Initializing X11 Renderer...";
 
   // Resize the window to fit that of the video.
   XResizeWindow(display_, window_, visible_rect.width(), visible_rect.height());
@@ -194,7 +194,7 @@ void X11VideoRenderer::Initialize(gfx::Size coded_size,
   use_render_ = XRenderQueryExtension(display_, &dummy, &dummy);
 
   if (use_render_) {
-    LOG(INFO) << "Using XRender extension.";
+    VLOG(0) << "Using XRender extension.";
 
     // If we are using XRender, we'll create a picture representing the
     // window.

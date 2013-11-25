@@ -93,7 +93,7 @@ bool PeerConnectionServerRunner::Start() {
 
   CommandLine command_line(peerconnection_server);
   command_line.AppendSwitchASCII("port", kDefaultPort);
-  LOG(INFO) << "Running " << command_line.GetCommandLineString();
+  VLOG(0) << "Running " << command_line.GetCommandLineString();
   return base::LaunchProcess(command_line,
                              base::LaunchOptions(),
                              &server_pid_);

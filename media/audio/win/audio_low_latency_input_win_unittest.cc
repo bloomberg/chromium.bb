@@ -102,8 +102,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
     file_path = file_path.AppendASCII(file_name);
     binary_file_ = file_util::OpenFile(file_path, "wb");
     DLOG_IF(ERROR, !binary_file_) << "Failed to open binary PCM data file.";
-    LOG(INFO) << ">> Output file: " << file_path.value()
-              << " has been created.";
+    VLOG(0) << ">> Output file: " << file_path.value() << " has been created.";
   }
 
   virtual ~WriteToFileAudioSink() {
@@ -501,13 +500,13 @@ TEST(WinAudioInputTest, DISABLED_WASAPIAudioInputStreamRecordToFile) {
   ScopedAudioInputStream ais(aisw.Create());
   EXPECT_TRUE(ais->Open());
 
-  LOG(INFO) << ">> Sample rate: " << aisw.sample_rate() << " [Hz]";
+  VLOG(0) << ">> Sample rate: " << aisw.sample_rate() << " [Hz]";
   WriteToFileAudioSink file_sink(file_name);
-  LOG(INFO) << ">> Speak into the default microphone while recording.";
+  VLOG(0) << ">> Speak into the default microphone while recording.";
   ais->Start(&file_sink);
   base::PlatformThread::Sleep(TestTimeouts::action_timeout());
   ais->Stop();
-  LOG(INFO) << ">> Recording has stopped.";
+  VLOG(0) << ">> Recording has stopped.";
   ais.Close();
 }
 

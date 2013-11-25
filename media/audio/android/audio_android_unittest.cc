@@ -142,7 +142,7 @@ class FileAudioSource : public AudioOutputStream::AudioSourceCallback {
 
     // Log the name of the file which is used as input for this test.
     base::FilePath file_path = GetTestDataFilePath(name);
-    LOG(INFO) << "Reading from file: " << file_path.value().c_str();
+    VLOG(0) << "Reading from file: " << file_path.value().c_str();
   }
 
   virtual ~FileAudioSource() {}
@@ -220,7 +220,7 @@ class FileAudioSink : public AudioInputStream::AudioInputCallback {
     file_path = file_path.AppendASCII(file_name.c_str());
     binary_file_ = file_util::OpenFile(file_path, "wb");
     DLOG_IF(ERROR, !binary_file_) << "Failed to open binary PCM data file.";
-    LOG(INFO) << "Writing to file: " << file_path.value().c_str();
+    VLOG(0) << "Writing to file: " << file_path.value().c_str();
   }
 
   virtual ~FileAudioSink() {
@@ -443,10 +443,10 @@ class AudioAndroidTest : public testing::Test {
 
     double average_time_between_callbacks_ms =
         AverageTimeBetweenCallbacks(num_callbacks);
-    LOG(INFO) << "expected time between callbacks: "
-              << expected_time_between_callbacks_ms << " ms";
-    LOG(INFO) << "average time between callbacks: "
-              << average_time_between_callbacks_ms << " ms";
+    VLOG(0) << "expected time between callbacks: "
+            << expected_time_between_callbacks_ms << " ms";
+    VLOG(0) << "average time between callbacks: "
+            << average_time_between_callbacks_ms << " ms";
     EXPECT_GE(average_time_between_callbacks_ms,
               0.70 * expected_time_between_callbacks_ms);
     EXPECT_LE(average_time_between_callbacks_ms,
@@ -483,10 +483,10 @@ class AudioAndroidTest : public testing::Test {
 
     double average_time_between_callbacks_ms =
         AverageTimeBetweenCallbacks(num_callbacks);
-    LOG(INFO) << "expected time between callbacks: "
-              << expected_time_between_callbacks_ms << " ms";
-    LOG(INFO) << "average time between callbacks: "
-              << average_time_between_callbacks_ms << " ms";
+    VLOG(0) << "expected time between callbacks: "
+            << expected_time_between_callbacks_ms << " ms";
+    VLOG(0) << "average time between callbacks: "
+            << average_time_between_callbacks_ms << " ms";
     EXPECT_GE(average_time_between_callbacks_ms,
               0.70 * expected_time_between_callbacks_ms);
     EXPECT_LE(average_time_between_callbacks_ms,
@@ -520,8 +520,8 @@ TEST_F(AudioAndroidTest, IsAudioLowLatencySupported) {
   AudioManagerAndroid* manager =
       static_cast<AudioManagerAndroid*>(audio_manager());
   bool low_latency = manager->IsAudioLowLatencySupported();
-  low_latency ? LOG(INFO) << "Low latency output is supported"
-              : LOG(INFO) << "Low latency output is *not* supported";
+  low_latency ? VLOG(0) << "Low latency output is supported"
+              : VLOG(0) << "Low latency output is *not* supported";
 }
 
 // Ensure that a default input stream can be created and closed.
@@ -639,7 +639,7 @@ TEST_F(AudioAndroidTest, DISABLED_RunOutputStreamWithFileAsSource) {
   EXPECT_TRUE(aos->Open());
   aos->SetVolume(1.0);
   aos->Start(&source);
-  LOG(INFO) << ">> Verify that the file is played out correctly...";
+  VLOG(0) << ">> Verify that the file is played out correctly...";
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
   aos->Stop();
   aos->Close();
@@ -666,7 +666,7 @@ TEST_F(AudioAndroidTest, DISABLED_RunSimplexInputStreamWithFileAsSink) {
 
   EXPECT_TRUE(ais->Open());
   ais->Start(&sink);
-  LOG(INFO) << ">> Speak into the microphone to record audio...";
+  VLOG(0) << ">> Speak into the microphone to record audio...";
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
   ais->Stop();
   ais->Close();
@@ -706,7 +706,7 @@ TEST_F(AudioAndroidTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
   EXPECT_TRUE(aos->Open());
   ais->Start(&sink);
   aos->Start(&source);
-  LOG(INFO) << ">> Speak into the microphone to record audio";
+  VLOG(0) << ">> Speak into the microphone to record audio";
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
   aos->Stop();
   ais->Stop();
@@ -756,7 +756,7 @@ TEST_F(AudioAndroidTest,
   aos->Start(&full_duplex);
   VLOG(1) << "HINT: an estimate of the extra FIFO delay will be updated "
           << "once per second during this test.";
-  LOG(INFO) << ">> Speak into the mic and listen to the audio in loopback...";
+  VLOG(0) << ">> Speak into the mic and listen to the audio in loopback...";
   fflush(stdout);
   base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(20));
   printf("\n");

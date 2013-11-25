@@ -101,7 +101,7 @@ AUAudioInputStream::AUAudioInputStream(
 
   requested_size_bytes_ = requested_size_frames * format_.mBytesPerFrame;
   DVLOG(1) << "Requested buffer size in bytes : " << requested_size_bytes_;
-  DLOG_IF(INFO, requested_size_frames > number_of_frames_) << "FIFO is used";
+  DVLOG_IF(0, requested_size_frames > number_of_frames_) << "FIFO is used";
 
   const int number_of_bytes = number_of_frames_ * format_.mBytesPerFrame;
   fifo_delay_bytes_ = requested_size_bytes_ - number_of_bytes;

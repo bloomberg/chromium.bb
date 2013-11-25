@@ -76,7 +76,7 @@ class UnifiedSourceCallback : public AudioOutputStream::AudioSourceCallback {
     EXPECT_TRUE(!text_file_);
     text_file_ = file_util::OpenFile(file_name, "wt");
     DLOG_IF(ERROR, !text_file_) << "Failed to open log file.";
-    LOG(INFO) << ">> Output file " << file_name.value() << " has been created.";
+    VLOG(0) << ">> Output file " << file_name.value() << " has been created.";
 
     // Write the array which contains delta times to a text file.
     size_t elements_written = 0;

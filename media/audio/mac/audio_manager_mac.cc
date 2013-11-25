@@ -545,7 +545,7 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     // For I/O, the simplest case is when the default input and output
     // devices are the same.
     GetDefaultOutputDevice(&device);
-    LOG(INFO) << "UNIFIED: default input and output devices are identical";
+    VLOG(0) << "UNIFIED: default input and output devices are identical";
   } else {
     // Some audio hardware is presented as separate input and output devices
     // even though they are really the same physical hardware and
@@ -558,7 +558,7 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     // so we get the lowest latency and use fewer threads.
     device = aggregate_device_manager_.GetDefaultAggregateDevice();
     if (device != kAudioObjectUnknown)
-      LOG(INFO) << "Using AGGREGATE audio device";
+      VLOG(0) << "Using AGGREGATE audio device";
   }
 
   if (device != kAudioObjectUnknown &&

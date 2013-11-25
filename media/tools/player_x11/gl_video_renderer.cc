@@ -140,7 +140,7 @@ void GlVideoRenderer::Paint(media::VideoFrame* video_frame) {
 
 void GlVideoRenderer::Initialize(gfx::Size coded_size, gfx::Rect visible_rect) {
   CHECK(!gl_context_);
-  LOG(INFO) << "Initializing GL Renderer...";
+  VLOG(0) << "Initializing GL Renderer...";
 
   // Resize the window to fit that of the video.
   XResizeWindow(display_, window_, visible_rect.width(), visible_rect.height());
