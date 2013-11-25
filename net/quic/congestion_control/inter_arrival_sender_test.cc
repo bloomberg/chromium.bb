@@ -153,7 +153,7 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
       acc_arrival_time.ToMicroseconds();
   EXPECT_NEAR(0.7f * probe_rate,
               sender_.BandwidthEstimate().ToBytesPerSecond(), 1000);
-  DVLOG(0) << "After probe";
+  DLOG(INFO) << "After probe";
   // Send 50 bursts, make sure that we move fast in the beginning.
   for (int i = 0; i < 50; ++i) {
     SendAvailableCongestionWindow();
@@ -198,7 +198,7 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
   EXPECT_NEAR(0.99f * probe_rate,
               sender_.BandwidthEstimate().ToBytesPerSecond(), 1000);
   EXPECT_NEAR(SenderDeltaSinceStart().ToMilliseconds(), 1560, 10);
-  DVLOG(0) << "Near available channel estimate";
+  DLOG(INFO) << "Near available channel estimate";
 
   // Send 50 bursts, make sure that we move very slow close to the probe rate.
   for (int i = 0; i < 50; ++i) {
@@ -214,7 +214,7 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
   EXPECT_NEAR(1.00f * probe_rate,
               sender_.BandwidthEstimate().ToBytesPerSecond(), 2000);
   EXPECT_NEAR(SenderDeltaSinceStart().ToMilliseconds(), 2000, 100);
-  DVLOG(0) << "At available channel estimate";
+  DLOG(INFO) << "At available channel estimate";
 
   // Send 50 bursts, make sure that we move very slow close to the probe rate.
   for (int i = 0; i < 50; ++i) {
@@ -280,7 +280,7 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
   EXPECT_NEAR(halfway_rate,
               sender_.BandwidthEstimate().ToBytesPerSecond(), 5000);
   EXPECT_NEAR(SenderDeltaSinceStart().ToMilliseconds(), 6600, 100);
-  DVLOG(0) << "Near halfway point";
+  DLOG(INFO) << "Near halfway point";
 
   // Send until we reach max channel capacity.
   for (int i = 0; i < 1500; ++i) {

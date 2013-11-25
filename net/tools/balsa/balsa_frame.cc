@@ -630,7 +630,7 @@ void BalsaFrame::ProcessContentLengthLine(
   if (value_begin >= line_end) {
     // There is no non-whitespace value data.
 #if DEBUGFRAMER
-      VLOG(0) << "invalid content-length -- no non-whitespace value data";
+      LOG(INFO) << "invalid content-length -- no non-whitespace value data";
 #endif
     *status = BalsaHeadersEnums::INVALID_CONTENT_LENGTH;
     return;
@@ -642,7 +642,7 @@ void BalsaFrame::ProcessContentLengthLine(
       // bad! content-length found, and couldn't parse all of it!
       *status = BalsaHeadersEnums::INVALID_CONTENT_LENGTH;
 #if DEBUGFRAMER
-      VLOG(0) << "invalid content-length - non numeric character detected";
+      LOG(INFO) << "invalid content-length - non numeric character detected";
 #endif  // DEBUGFRAMER
       return;
     }
@@ -653,7 +653,7 @@ void BalsaFrame::ProcessContentLengthLine(
         (std::numeric_limits<size_t>::max() - length_x_10) < c) {
       *status = BalsaHeadersEnums::CONTENT_LENGTH_OVERFLOW;
 #if DEBUGFRAMER
-      VLOG(0) << "content-length overflow";
+      LOG(INFO) << "content-length overflow";
 #endif  // DEBUGFRAMER
       return;
     }
@@ -661,7 +661,7 @@ void BalsaFrame::ProcessContentLengthLine(
     ++value_begin;
   }
 #if DEBUGFRAMER
-  VLOG(0) << "content_length parsed: " << *length;
+  LOG(INFO) << "content_length parsed: " << *length;
 #endif  // DEBUGFRAMER
   *status = BalsaHeadersEnums::VALID_CONTENT_LENGTH;
 }
@@ -758,7 +758,7 @@ void BalsaFrame::ProcessHeaderLines() {
 
   DCHECK(!lines_.empty());
 #if DEBUGFRAMER
-  VLOG(0) << "******@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@**********\n";
+  LOG(INFO) << "******@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@**********\n";
 #endif  // DEBUGFRAMER
 
   // There is no need to attempt to process headers if no header lines exist.
@@ -786,7 +786,7 @@ void BalsaFrame::ProcessHeaderLines() {
       const size_t key_len = key_end - key_begin;
       const char c = *key_begin;
 #if DEBUGFRAMER
-      VLOG(0) << "[" << i << "]: " << std::string(key_begin, key_len)
+      LOG(INFO) << "[" << i << "]: " << std::string(key_begin, key_len)
                 << " c: '" << c << "' key_len: " << key_len;
 #endif  // DEBUGFRAMER
       // If a header begins with either lowercase or uppercase 'c' or 't', then
@@ -1011,8 +1011,8 @@ size_t BalsaFrame::ProcessHeaders(const char* message_start,
             checkpoint = message_current + 1;
             const char* begin = headers_->OriginalHeaderStreamBegin();
 #if DEBUGFRAMER
-          VLOG(0) << "First line " << std::string(begin, lines_[0].second);
-          VLOG(0) << "is_request_: " << is_request_;
+          LOG(INFO) << "First line " << std::string(begin, lines_[0].second);
+          LOG(INFO) << "is_request_: " << is_request_;
 #endif
             ProcessFirstLine(begin, begin + lines_[0].second);
             if (parse_state_ == BalsaFrameEnums::MESSAGE_FULLY_READ)
@@ -1055,8 +1055,8 @@ size_t BalsaFrame::ProcessHeaders(const char* message_start,
           checkpoint = message_current + 1;
           const char* begin = headers_->OriginalHeaderStreamBegin();
 #if DEBUGFRAMER
-          VLOG(0) << "First line " << std::string(begin, lines_[0].second);
-          VLOG(0) << "is_request_: " << is_request_;
+          LOG(INFO) << "First line " << std::string(begin, lines_[0].second);
+          LOG(INFO) << "is_request_: " << is_request_;
 #endif
           ProcessFirstLine(begin, begin + lines_[0].second);
           if (parse_state_ == BalsaFrameEnums::MESSAGE_FULLY_READ)
@@ -1219,7 +1219,7 @@ size_t BalsaFrame::ProcessInput(const char* input, size_t size) {
   const char* on_entry = current;
   const char* end = current + size;
 #if DEBUGFRAMER
-  VLOG(0) << "\n=============="
+  LOG(INFO) << "\n=============="
             << BalsaFrameEnums::ParseStateToString(parse_state_)
             << "===============\n";
 #endif  // DEBUGFRAMER
@@ -1514,7 +1514,7 @@ size_t BalsaFrame::ProcessInput(const char* input, size_t size) {
         // label_reading_content:
       case BalsaFrameEnums::READING_CONTENT:
 #if DEBUGFRAMER
-        VLOG(0) << "ReadingContent: " << content_length_remaining_;
+        LOG(INFO) << "ReadingContent: " << content_length_remaining_;
 #endif  // DEBUGFRAMER
         while (content_length_remaining_ && current < end) {
           // read in the content
@@ -1543,14 +1543,14 @@ size_t BalsaFrame::ProcessInput(const char* input, size_t size) {
   }
  bottom:
 #if DEBUGFRAMER
-  VLOG(0) << "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
+  LOG(INFO) << "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
     << std::string(input, current)
     << "\n$$$$$$$$$$$$$$"
     << BalsaFrameEnums::ParseStateToString(parse_state_)
     << "$$$$$$$$$$$$$$$"
     << " consumed: " << (current - input);
   if (Error()) {
-    VLOG(0) << BalsaFrameEnums::ErrorCodeToString(ErrorCode());
+    LOG(INFO) << BalsaFrameEnums::ErrorCodeToString(ErrorCode());
   }
 #endif  // DEBUGFRAMER
   return current - input;

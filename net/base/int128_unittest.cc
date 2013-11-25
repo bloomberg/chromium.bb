@@ -109,6 +109,9 @@ TEST(Int128, AllTests) {
   EXPECT_EQ(two, -((-one) - 1));
   EXPECT_EQ(kuint128max, -one);
   EXPECT_EQ(zero, -zero);
+
+  LOG(INFO) << one;
+  LOG(INFO) << big_minus_one;
 }
 
 TEST(Int128, PodTests) {

@@ -100,6 +100,8 @@ SHA1HashValue CalculateFingerprintNSS(CERTCertificate* cert) {
 
 NSSCertificate::NSSCertificate(SecCertificateRef cert_handle) {
   nss_cert_handle_ = CreateNSSCertHandleFromOSHandle(cert_handle);
+  DLOG_IF(INFO, cert_handle && !nss_cert_handle_)
+      << "Could not convert SecCertificateRef to CERTCertificate*";
 }
 
 NSSCertificate::~NSSCertificate() {

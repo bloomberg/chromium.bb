@@ -310,7 +310,7 @@ QuicData* DecryptWithNonce(Aes128Gcm12Decrypter* decrypter,
 
 TEST(Aes128Gcm12DecrypterTest, Decrypt) {
   if (!Aes128Gcm12Decrypter::IsSupported()) {
-    VLOG(0) << "AES GCM not supported. Test skipped.";
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;
   }
 

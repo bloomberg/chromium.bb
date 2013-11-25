@@ -275,26 +275,26 @@ int main (int argc, char**argv)
   settings.lock_log = logging::DONT_LOCK_LOG_FILE;
   logging::InitLogging(settings);
 
-  VLOG(0) << "Flip SPDY proxy started with configuration:";
-  VLOG(0) << "Logging destination     : " << g_proxy_config.log_destination_;
-  VLOG(0) << "Log file                : " << g_proxy_config.log_filename_;
-  VLOG(0) << "Forward IP Header       : "
+  LOG(INFO) << "Flip SPDY proxy started with configuration:";
+  LOG(INFO) << "Logging destination     : " << g_proxy_config.log_destination_;
+  LOG(INFO) << "Log file                : " << g_proxy_config.log_filename_;
+  LOG(INFO) << "Forward IP Header       : "
             << (net::SpdySM::forward_ip_header().length() ?
                net::SpdySM::forward_ip_header() : "<disabled>");
-  VLOG(0) << "Wait for interfaces     : " << (wait_for_iface?"true":"false");
-  VLOG(0) << "Accept backlog size     : " << FLAGS_accept_backlog_size;
-  VLOG(0) << "Accepts per wake        : " << FLAGS_accepts_per_wake;
-  VLOG(0) << "Disable nagle           : "
+  LOG(INFO) << "Wait for interfaces     : " << (wait_for_iface?"true":"false");
+  LOG(INFO) << "Accept backlog size     : " << FLAGS_accept_backlog_size;
+  LOG(INFO) << "Accepts per wake        : " << FLAGS_accepts_per_wake;
+  LOG(INFO) << "Disable nagle           : "
             << (FLAGS_disable_nagle?"true":"false");
-  VLOG(0) << "Reuseport               : "
+  LOG(INFO) << "Reuseport               : "
             << (FLAGS_reuseport?"true":"false");
-  VLOG(0) << "Force SPDY              : "
+  LOG(INFO) << "Force SPDY              : "
             << (FLAGS_force_spdy?"true":"false");
-  VLOG(0) << "SSL session expiry      : "
+  LOG(INFO) << "SSL session expiry      : "
             << g_proxy_config.ssl_session_expiry_;
-  VLOG(0) << "SSL disable compression : "
+  LOG(INFO) << "SSL disable compression : "
             << g_proxy_config.ssl_disable_compression_;
-  VLOG(0) << "Connection idle timeout : "
+  LOG(INFO) << "Connection idle timeout : "
             << g_proxy_config.idle_socket_timeout_s_;
 
   // Proxy Acceptors

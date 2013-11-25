@@ -173,11 +173,11 @@ void StreamerSM::ProcessHeaders(const BalsaHeaders& headers) {
   BalsaHeaders mod_headers;
   mod_headers.CopyFrom(headers);
   if (forward_ip_header_.length()) {
-    VLOG(0) << "Adding forward header: " << forward_ip_header_;
+    LOG(INFO) << "Adding forward header: " << forward_ip_header_;
     mod_headers.ReplaceOrAppendHeader(forward_ip_header_,
                                       connection_->client_ip());
   } else {
-    VLOG(0) << "NOT adding forward header.";
+    LOG(INFO) << "NOT adding forward header.";
   }
   SimpleBuffer sb;
   char* buffer;

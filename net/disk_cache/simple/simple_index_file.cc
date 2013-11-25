@@ -434,7 +434,7 @@ void SimpleIndexFile::SyncRestoreFromDisk(
     const base::FilePath& cache_directory,
     const base::FilePath& index_file_path,
     SimpleIndexLoadResult* out_result) {
-  VLOG(0) << "Simple Cache Index is being restored from disk.";
+  LOG(INFO) << "Simple Cache Index is being restored from disk.";
   base::DeleteFile(index_file_path, /* recursive = */ false);
   out_result->Reset();
   SimpleIndex::EntrySet* entries = &out_result->entries;

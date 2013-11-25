@@ -720,10 +720,10 @@ class EpollServer {
 
     // When a number of events equals the record threshold,
     // the collected data summary for all FDs will be written
-    // to VLOG(0). Note that this does not include the
+    // to LOG(INFO). Note that this does not include the
     // individual events (if you'reinterested in those, you'll
     // have to get at them programmatically).
-    // After any such flushing to VLOG(0) all events will
+    // After any such flushing to LOG(INFO) all events will
     // be cleared.
     // Note that the definition of an 'event' is a bit 'hazy',
     // as it includes the 'Unregistration' event, and perhaps
@@ -745,7 +745,7 @@ class EpollServer {
       ++num_records_;
       if ((num_records_ > record_threshold_) &&
           (record_threshold_ > 0)) {
-        VLOG(0) << "\n" << *this;
+        LOG(INFO) << "\n" << *this;
         num_records_ = 0;
         Clear();
       }

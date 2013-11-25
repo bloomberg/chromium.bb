@@ -28,13 +28,13 @@ void QuicReliableServerStream::SendResponse() {
     return;
   }
 
-  DVLOG(0) << "Sending response for stream " << id();
+  DLOG(INFO) << "Sending response for stream " << id();
   SendHeaders(response->headers());
   WriteData(response->body(), true);
 }
 
 void QuicReliableServerStream::SendErrorResponse() {
-  DVLOG(0) << "Sending error response for stream " << id();
+  DLOG(INFO) << "Sending error response for stream " << id();
   BalsaHeaders headers;
   headers.SetResponseFirstlineFromStringPieces(
       "HTTP/1.1", "500", "Server Error");

@@ -174,7 +174,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   EXPECT_EQ(2, client->num_sent_client_hellos());
 
   // Now do another handshake, hopefully in 0-RTT.
-  VLOG(0) << "Resetting for 0-RTT handshake attempt";
+  LOG(INFO) << "Resetting for 0-RTT handshake attempt";
 
   client_conn = new PacketSavingConnection(guid, addr, false);
   server_conn = new PacketSavingConnection(guid, addr, false);

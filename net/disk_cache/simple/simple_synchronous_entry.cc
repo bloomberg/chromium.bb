@@ -488,7 +488,7 @@ void SimpleSynchronousEntry::WriteSparseData(
   // This is a pessimistic estimate; it assumes the entire buffer is going to
   // be appended as a new range, not written over existing ranges.
   if (sparse_data_size + buf_len > max_sparse_data_size) {
-    DVLOG(0) << "Truncating sparse data file (" << sparse_data_size << " + "
+    DLOG(INFO) << "Truncating sparse data file (" << sparse_data_size << " + "
                << buf_len << " > " << max_sparse_data_size << ")";
     TruncateSparseFile();
   }
@@ -624,7 +624,7 @@ void SimpleSynchronousEntry::CheckEOFRecord(int index,
     return;
   }
   if (has_crc32 && crc32 != expected_crc32) {
-    DVLOG(0) << "EOF record had bad crc.";
+    DLOG(INFO) << "EOF record had bad crc.";
     *out_result = net::ERR_CACHE_CHECKSUM_MISMATCH;
     RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_CRC_MISMATCH);
     Doom();
@@ -645,7 +645,7 @@ void SimpleSynchronousEntry::Close(
                         stream_0_data->data(),
                         entry_stat.data_size(0)) != entry_stat.data_size(0)) {
     RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
-    DVLOG(0) << "Could not write stream 0 data.";
+    DLOG(INFO) << "Could not write stream 0 data.";
     Doom();
   }
 
@@ -670,7 +670,7 @@ void SimpleSynchronousEntry::Close(
     if (stream_index == 0 &&
         !TruncatePlatformFile(files_[file_index], eof_offset)) {
       RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
-      DVLOG(0) << "Could not truncate stream 0 file.";
+      DLOG(INFO) << "Could not truncate stream 0 file.";
       Doom();
       break;
     }
@@ -679,7 +679,7 @@ void SimpleSynchronousEntry::Close(
                           reinterpret_cast<const char*>(&eof_record),
                           sizeof(eof_record)) != sizeof(eof_record)) {
       RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
-      DVLOG(0) << "Could not write eof record.";
+      DLOG(INFO) << "Could not write eof record.";
       Doom();
       break;
     }
@@ -1005,7 +1005,7 @@ int SimpleSynchronousEntry::InitializeForOpen(
   DCHECK(CanOmitEmptyFile(stream2_file_index));
   if (!empty_file_omitted_[stream2_file_index] &&
       out_entry_stat->data_size(2) == 0) {
-    DVLOG(0) << "Removing empty stream 2 file.";
+    DLOG(INFO) << "Removing empty stream 2 file.";
     CloseFile(stream2_file_index);
     DeleteFileForEntryHash(path_, entry_hash_, stream2_file_index);
     empty_file_omitted_[stream2_file_index] = true;
@@ -1113,7 +1113,7 @@ int SimpleSynchronousEntry::ReadAndValidateStream0(
                   reinterpret_cast<const Bytef*>((*stream_0_data)->data()),
                   stream_0_size);
   if (has_crc32 && read_crc32 != expected_crc32) {
-    DVLOG(0) << "EOF record had bad crc.";
+    DLOG(INFO) << "EOF record had bad crc.";
     RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_CRC_MISMATCH);
     return net::ERR_FAILED;
   }
@@ -1140,7 +1140,7 @@ int SimpleSynchronousEntry::GetEOFRecordData(int index,
 
   if (eof_record.final_magic_number != kSimpleFinalMagicNumber) {
     RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_MAGIC_NUMBER_MISMATCH);
-    DVLOG(0) << "EOF record had bad magic number.";
+    DLOG(INFO) << "EOF record had bad magic number.";
     return net::ERR_CACHE_CHECKSUM_READ_FAILURE;
   }
 

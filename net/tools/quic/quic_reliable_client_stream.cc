@@ -16,7 +16,7 @@ ssize_t QuicReliableClientStream::SendBody(const string& data, bool fin) {
 
 bool QuicReliableClientStream::OnStreamFrame(const QuicStreamFrame& frame) {
   if (!write_side_closed()) {
-    DVLOG(0) << "Got a response before the request was complete.  "
+    DLOG(INFO) << "Got a response before the request was complete.  "
                << "Aborting request.";
     CloseWriteSide();
   }

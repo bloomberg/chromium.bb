@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
   if (line->HasSwitch("hostname")) {
     FLAGS_hostname = line->GetSwitchValueASCII("hostname");
   }
-  VLOG(0) << "server port: " << FLAGS_port
+  LOG(INFO) << "server port: " << FLAGS_port
             << " address: " << FLAGS_address
             << " hostname: " << FLAGS_hostname;
 

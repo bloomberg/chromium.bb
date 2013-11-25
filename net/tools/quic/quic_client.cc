@@ -243,7 +243,7 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
     session_->connection()->OnCanWrite();
   }
   if (event->in_events & EPOLLERR) {
-    DVLOG(0) << "Epollerr";
+    DLOG(INFO) << "Epollerr";
   }
 }
 
@@ -310,11 +310,11 @@ bool QuicClient::ReadAndProcessPacket() {
   QuicGuid packet_guid;
 
   if (!QuicFramer::ReadGuidFromPacket(packet, &packet_guid)) {
-    DVLOG(0) << "Could not read GUID from packet";
+    DLOG(INFO) << "Could not read GUID from packet";
     return true;
   }
   if (packet_guid != our_guid) {
-    DVLOG(0) << "Ignoring packet from unexpected GUID: "
+    DLOG(INFO) << "Ignoring packet from unexpected GUID: "
                << packet_guid << " instead of " << our_guid;
     return true;
   }

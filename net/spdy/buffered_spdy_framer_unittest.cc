@@ -24,14 +24,14 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   }
 
   virtual void OnError(SpdyFramer::SpdyError error_code) OVERRIDE {
-    VLOG(0) << "SpdyFramer Error: " << error_code;
+    LOG(INFO) << "SpdyFramer Error: " << error_code;
     error_count_++;
   }
 
   virtual void OnStreamError(
       SpdyStreamId stream_id,
       const std::string& description) OVERRIDE {
-    VLOG(0) << "SpdyFramer Error on stream: " << stream_id  << " "
+    LOG(INFO) << "SpdyFramer Error on stream: " << stream_id  << " "
               << description;
     error_count_++;
   }

@@ -170,7 +170,7 @@ bool QuicTimeWaitListManager::OnCanWrite() {
 }
 
 void QuicTimeWaitListManager::OnError(QuicFramer* framer) {
-  DVLOG(0) << QuicUtils::ErrorToString(framer->error());
+  DLOG(INFO) << QuicUtils::ErrorToString(framer->error());
 }
 
 bool QuicTimeWaitListManager::OnProtocolVersionMismatch(

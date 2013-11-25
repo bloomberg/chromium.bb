@@ -147,7 +147,7 @@ EpollServer::~EpollServer() {
   DCHECK_EQ(in_shutdown_, false);
   in_shutdown_ = true;
 #ifdef EPOLL_SERVER_EVENT_TRACING
-  VLOG(0) << "\n" << event_recorder_;
+  LOG(INFO) << "\n" << event_recorder_;
 #endif
   VLOG(2) << "Shutting down epoll server ";
   CleanupFDToCBMap();
@@ -635,7 +635,7 @@ void EpollServer::WaitForEventsAndCallHandleEvents(int64 timeout_in_us,
     // If ready list is not empty, then don't sleep at all.
     timeout_in_us = 0;
   } else if (timeout_in_us < 0) {
-    VLOG(0) << "Negative epoll timeout: " << timeout_in_us
+    LOG(INFO) << "Negative epoll timeout: " << timeout_in_us
               << "us; epoll will wait forever for events.";
     // If timeout_in_us is < 0 we are supposed to Wait forever.  This means we
     // should set timeout_in_us to -1000 so we will

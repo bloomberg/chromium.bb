@@ -40,8 +40,8 @@ SimpleCacheDumper::~SimpleCacheDumper() {
 int SimpleCacheDumper::Run() {
   base::MessageLoopForIO main_message_loop;
 
-  VLOG(0) << "Reading cache from: " << input_path_.value();
-  VLOG(0) << "Writing cache to: " << output_path_.value();
+  LOG(INFO) << "Reading cache from: " << input_path_.value();
+  LOG(INFO) << "Writing cache to: " << output_path_.value();
 
   if (!cache_thread_->StartWithOptions(
           base::Thread::Options(base::MessageLoop::TYPE_IO, 0))) {

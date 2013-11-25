@@ -160,7 +160,7 @@ void MemoryCache::ReadAndStoreFileContents(const char* filename) {
       LOG(ERROR) << "Unable to make forward progress, or error"
         " framing file: " << filename;
       if (framer.Error()) {
-        VLOG(0) << "********************************************ERROR!";
+        LOG(INFO) << "********************************************ERROR!";
         return;
       }
       return;
@@ -196,7 +196,7 @@ void MemoryCache::ReadAndStoreFileContents(const char* filename) {
   DCHECK_EQ(std::string(filename).substr(0, cwd_.size()), cwd_);
   DCHECK_EQ(filename[cwd_.size()], '/');
   std::string filename_stripped = std::string(filename).substr(cwd_.size() + 1);
-  VLOG(0) << "Adding file (" << visitor.body.length() << " bytes): "
+  LOG(INFO) << "Adding file (" << visitor.body.length() << " bytes): "
             << filename_stripped;
   size_t slash_pos = filename_stripped.find('/');
   if (slash_pos == std::string::npos) {

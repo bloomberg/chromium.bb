@@ -90,25 +90,25 @@ class NetWatcher :
 
   // net::NetworkChangeNotifier::IPAddressObserver implementation.
   virtual void OnIPAddressChanged() OVERRIDE {
-    VLOG(0) << "OnIPAddressChanged()";
+    LOG(INFO) << "OnIPAddressChanged()";
   }
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver implementation.
   virtual void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE {
-    VLOG(0) << "OnConnectionTypeChanged("
+    LOG(INFO) << "OnConnectionTypeChanged("
               << ConnectionTypeToString(type) << ")";
   }
 
   // net::NetworkChangeNotifier::DNSObserver implementation.
   virtual void OnDNSChanged() OVERRIDE {
-    VLOG(0) << "OnDNSChanged()";
+    LOG(INFO) << "OnDNSChanged()";
   }
 
   // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
   virtual void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE {
-    VLOG(0) << "OnNetworkChanged("
+    LOG(INFO) << "OnNetworkChanged("
               << ConnectionTypeToString(type) << ")";
   }
 
@@ -116,7 +116,7 @@ class NetWatcher :
   virtual void OnProxyConfigChanged(
       const net::ProxyConfig& config,
       net::ProxyConfigService::ConfigAvailability availability) OVERRIDE {
-    VLOG(0) << "OnProxyConfigChanged("
+    LOG(INFO) << "OnProxyConfigChanged("
               << ProxyConfigToString(config) << ", "
               << ConfigAvailabilityToString(availability) << ")";
   }
@@ -168,7 +168,7 @@ int main(int argc, char* argv[]) {
 
   proxy_config_service->AddObserver(&net_watcher);
 
-  VLOG(0) << "Initial connection type: "
+  LOG(INFO) << "Initial connection type: "
             << ConnectionTypeToString(
                 network_change_notifier->GetCurrentConnectionType());
 
@@ -176,12 +176,12 @@ int main(int argc, char* argv[]) {
     net::ProxyConfig config;
     const net::ProxyConfigService::ConfigAvailability availability =
         proxy_config_service->GetLatestProxyConfig(&config);
-    VLOG(0) << "Initial proxy config: "
+    LOG(INFO) << "Initial proxy config: "
               << ProxyConfigToString(config) << ", "
               << ConfigAvailabilityToString(availability);
   }
 
-  VLOG(0) << "Watching for network events...";
+  LOG(INFO) << "Watching for network events...";
 
   // Start watching for events.
   network_loop.Run();

@@ -131,7 +131,7 @@ bool QuicServer::Listen(const IPEndPoint& address) {
     return false;
   }
 
-  VLOG(0) << "Listening on " << address.ToString();
+  LOG(INFO) << "Listening on " << address.ToString();
   if (port_ == 0) {
     SockaddrStorage storage;
     IPEndPoint server_address;
@@ -141,7 +141,7 @@ bool QuicServer::Listen(const IPEndPoint& address) {
       return false;
     }
     port_ = server_address.port();
-    VLOG(0) << "Kernel assigned port is " << port_;
+    LOG(INFO) << "Kernel assigned port is " << port_;
   }
 
   epoll_server_.RegisterFD(fd_, this, kEpollFlags);

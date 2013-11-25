@@ -895,7 +895,7 @@ void Rankings::InvalidateIterators(CacheRankingsBlock* node) {
   for (IteratorList::iterator it = iterators_.begin(); it != iterators_.end();
        ++it) {
     if (it->first == address) {
-      DVLOG(0) << "Invalidating iterator at 0x" << std::hex << address;
+      DLOG(INFO) << "Invalidating iterator at 0x" << std::hex << address;
       it->second->Discard();
     }
   }

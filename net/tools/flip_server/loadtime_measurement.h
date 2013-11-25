@@ -61,7 +61,7 @@ class LoadtimeMeasurement {
     if (action.find("test_complete") == 0) {
       for (std::map<std::string, int>::const_iterator it = loadtimes_.begin();
            it != loadtimes_.end(); ++it) {
-        VLOG(0) << it->first << " " << it->second;
+        LOG(INFO) << it->first << " " << it->second;
       }
       loadtimes_.clear();
       output.append("OK");
