@@ -19,6 +19,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/login_profile_policy_provider.h"
 #endif
@@ -59,6 +60,11 @@ void ProfilePolicyConnector::Init(
     forwarding_policy_provider_->Init(schema_registry);
     providers.push_back(forwarding_policy_provider_.get());
   }
+
+#if defined(OS_CHROMEOS)
+  if (connector->GetDeviceCloudPolicyManager())
+    providers.push_back(connector->GetDeviceCloudPolicyManager());
+#endif
 
   if (user_cloud_policy_manager)
     providers.push_back(user_cloud_policy_manager);
