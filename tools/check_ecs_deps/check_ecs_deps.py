@@ -106,7 +106,7 @@ def _main():
                                                 kUndesiredLibraryList), '|'))
   mapping_regexp = re.compile(r"\s*([^/]*) => ")
   blessed_regexp = re.compile(r"(%s)[-0-9.]*\.so" % string.join(map(re.escape,
-      kAllowedLibraryList), '|')
+      kAllowedLibraryList), '|'))
   success = 0
   warning = 0
 
