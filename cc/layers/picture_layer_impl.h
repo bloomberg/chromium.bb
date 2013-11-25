@@ -82,13 +82,12 @@ class CC_EXPORT PictureLayerImpl
   void ManageTilings(bool animating_transform_to_screen);
   virtual bool ShouldAdjustRasterScale(
       bool animating_transform_to_screen) const;
-  virtual void CalculateRasterContentsScale(
-      bool animating_transform_to_screen,
-      float* raster_contents_scale,
-      float* low_res_raster_contents_scale) const;
+  virtual void RecalculateRasterScales(
+      bool animating_transform_to_screen);
   void CleanUpTilingsOnActiveLayer(
       std::vector<PictureLayerTiling*> used_tilings);
   float MinimumContentsScale() const;
+  float SnappedContentsScale(float new_contents_scale);
   void UpdateLCDTextStatus(bool new_status);
   void ResetRasterScale();
   void MarkVisibleResourcesAsRequired() const;

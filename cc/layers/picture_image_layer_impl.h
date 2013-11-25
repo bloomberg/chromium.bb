@@ -34,10 +34,8 @@ class CC_EXPORT PictureImageLayerImpl : public PictureLayerImpl {
 
   virtual bool ShouldAdjustRasterScale(
       bool animating_transform_to_screen) const OVERRIDE;
-  virtual void CalculateRasterContentsScale(
-      bool animating_transform_to_screen,
-      float* raster_contents_scale,
-      float* low_res_raster_contents_scale) const OVERRIDE;
+  virtual void RecalculateRasterScales(
+      bool animating_transform_to_screen) OVERRIDE;
   virtual void GetDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;
 

@@ -58,15 +58,16 @@ bool PictureImageLayerImpl::ShouldAdjustRasterScale(
   return false;
 }
 
-void PictureImageLayerImpl::CalculateRasterContentsScale(
-    bool animating_transform_to_screen,
-    float* raster_contents_scale,
-    float* low_res_raster_contents_scale) const {
+void PictureImageLayerImpl::RecalculateRasterScales(
+    bool animating_transform_to_screen) {
+  // Defaults from PictureLayerImpl.
+  PictureLayerImpl::RecalculateRasterScales(animating_transform_to_screen);
+
   // Don't scale images during rastering to ensure image quality, save memory
   // and avoid frequent re-rastering on change of scale.
-  *raster_contents_scale = std::max(1.f, MinimumContentsScale());
+  raster_contents_scale_ = std::max(1.f, MinimumContentsScale());
   // We don't need low res tiles.
-  *low_res_raster_contents_scale = *raster_contents_scale;
+  low_res_raster_contents_scale_ = raster_contents_scale_;
 }
 
 }  // namespace cc
