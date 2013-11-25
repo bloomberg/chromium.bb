@@ -21,8 +21,7 @@ scoped_ptr<DamageTracker> DamageTracker::Create() {
 }
 
 DamageTracker::DamageTracker()
-    : current_rect_history_(new RectMap),
-      next_rect_history_(new RectMap) {}
+  : mailboxId_(0) {}
 
 DamageTracker::~DamageTracker() {}
 
@@ -105,23 +104,23 @@ void DamageTracker::UpdateDamageTrackingState(
   // - See comments in the rest of the code to see what exactly is considered a
   //   "change" in a layer/surface.
   //
-  // - To correctly manage exposed rects, two RectMaps are maintained:
+  // - To correctly manage exposed rects, SortedRectMap is maintained:
   //
-  //      1. The "current" map contains all the layer bounds that contributed to
+  //      1. All existing rects from the previous frame are marked as
+  //         not updated.
+  //      2. The map contains all the layer bounds that contributed to
   //         the previous frame (even outside the previous damaged area). If a
   //         layer changes or does not exist anymore, those regions are then
   //         exposed and damage the target surface. As the algorithm progresses,
-  //         entries are removed from the map until it has only leftover layers
-  //         that no longer exist.
+  //         entries are updated in the map until only leftover layers
+  //         that no longer exist stay marked not updated.
   //
-  //      2. The "next" map starts out empty, and as the algorithm progresses,
-  //         every layer/surface that contributes to the surface is added to the
-  //         map.
-  //
-  //      3. After the damage rect is computed, the two maps are swapped, so
-  //         that the damage tracker is ready for the next frame.
+  //      3. After the damage rect is computed, the leftover not marked regions
+  //         in a map are used to compute are damaged by deleted layers and
+  //         erased from map.
   //
 
+  PrepareRectHistoryForUpdate();
   // These functions cannot be bypassed with early-exits, even if we know what
   // the damage will be for this frame, because we need to update the damage
   // tracker state to correctly track the next frame.
@@ -154,31 +153,23 @@ void DamageTracker::UpdateDamageTrackingState(
   // Damage accumulates until we are notified that we actually did draw on that
   // frame.
   current_damage_rect_.Union(damage_rect_for_this_update);
-
-  // The next history map becomes the current map for the next frame. Note this
-  // must happen every frame to correctly track changes, even if damage
-  // accumulates over multiple frames before actually being drawn.
-  swap(current_rect_history_, next_rect_history_);
 }
 
-gfx::RectF DamageTracker::RemoveRectFromCurrentFrame(int layer_id,
-                                                     bool* layer_is_new) {
-  RectMap::iterator iter = current_rect_history_->find(layer_id);
-  *layer_is_new = iter == current_rect_history_->end();
-  if (*layer_is_new)
-    return gfx::RectF();
+DamageTracker::RectMapData& DamageTracker::RectDataForLayer(
+    int layer_id,
+    bool* layer_is_new) {
 
-  gfx::RectF ret = iter->second;
-  current_rect_history_->erase(iter);
-  return ret;
-}
+  RectMapData data(layer_id);
 
-void DamageTracker::SaveRectForNextFrame(int layer_id,
-                                         const gfx::RectF& target_space_rect) {
-  // This layer should not yet exist in next frame's history.
-  DCHECK_GT(layer_id, 0);
-  DCHECK(next_rect_history_->find(layer_id) == next_rect_history_->end());
-  (*next_rect_history_)[layer_id] = target_space_rect;
+  SortedRectMap::iterator it = std::lower_bound(rect_history_.begin(),
+    rect_history_.end(), data);
+
+  if (it == rect_history_.end() || it->layer_id_ != layer_id) {
+    *layer_is_new = true;
+    it = rect_history_.insert(it, data);
+  }
+
+  return *it;
 }
 
 gfx::RectF DamageTracker::TrackDamageFromActiveLayers(
@@ -225,19 +216,46 @@ gfx::RectF DamageTracker::TrackDamageFromSurfaceMask(
   return damage_rect;
 }
 
+void DamageTracker::PrepareRectHistoryForUpdate() {
+  mailboxId_++;
+}
+
 gfx::RectF DamageTracker::TrackDamageFromLeftoverRects() {
   // After computing damage for all active layers, any leftover items in the
   // current rect history correspond to layers/surfaces that no longer exist.
   // So, these regions are now exposed on the target surface.
 
   gfx::RectF damage_rect = gfx::RectF();
+  SortedRectMap::iterator cur_pos = rect_history_.begin();
+  SortedRectMap::iterator copy_pos = cur_pos;
 
-  for (RectMap::iterator it = current_rect_history_->begin();
-       it != current_rect_history_->end();
-       ++it)
-    damage_rect.Union(it->second);
+  // Loop below basically implements std::remove_if loop with and extra
+  // processing (adding deleted rect to damage_rect) for deleted items.
+  // cur_pos iterator runs through all elements of the vector, but copy_pos
+  // always points to the element after the last not deleted element. If new
+  // not deleted element found then it is copied to the *copy_pos and copy_pos
+  // moved to the next position.
+  // If there are no deleted elements then copy_pos iterator is in sync with
+  // cur_pos and no copy happens.
+  while (cur_pos < rect_history_.end()) {
+    if (cur_pos->mailboxId_ == mailboxId_) {
+      if (cur_pos != copy_pos)
+        *copy_pos = *cur_pos;
 
-  current_rect_history_->clear();
+      ++copy_pos;
+    } else {
+      damage_rect.Union(cur_pos->rect_);
+    }
+
+    ++cur_pos;
+  }
+
+  if (copy_pos != rect_history_.end())
+    rect_history_.erase(copy_pos, rect_history_.end());
+
+  // If the vector has excessive storage, shrink it
+  if (rect_history_.capacity() > rect_history_.size() * 4)
+    SortedRectMap(rect_history_).swap(rect_history_);
 
   return damage_rect;
 }
@@ -263,13 +281,13 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
   // ancestor surface, ExtendDamageForRenderSurface() must be called instead.
 
   bool layer_is_new = false;
-  gfx::RectF old_rect_in_target_space =
-      RemoveRectFromCurrentFrame(layer->id(), &layer_is_new);
+  RectMapData& data = RectDataForLayer(layer->id(), &layer_is_new);
+  gfx::RectF old_rect_in_target_space = data.rect_;
 
   gfx::RectF rect_in_target_space = MathUtil::MapClippedRect(
       layer->draw_transform(),
       gfx::RectF(gfx::PointF(), layer->content_bounds()));
-  SaveRectForNextFrame(layer->id(), rect_in_target_space);
+  data.Update(rect_in_target_space, mailboxId_);
 
   if (layer_is_new || layer->LayerPropertyChanged()) {
     // If a layer is new or has changed, then its entire layer rect affects the
@@ -310,13 +328,13 @@ void DamageTracker::ExtendDamageForRenderSurface(
   RenderSurfaceImpl* render_surface = layer->render_surface();
 
   bool surface_is_new = false;
-  gfx::RectF old_surface_rect = RemoveRectFromCurrentFrame(layer->id(),
-                                                           &surface_is_new);
+  RectMapData& data = RectDataForLayer(layer->id(), &surface_is_new);
+  gfx::RectF old_surface_rect = data.rect_;
 
   // The drawableContextRect() already includes the replica if it exists.
   gfx::RectF surface_rect_in_target_space =
       render_surface->DrawableContentRect();
-  SaveRectForNextFrame(layer->id(), surface_rect_in_target_space);
+  data.Update(surface_rect_in_target_space, mailboxId_);
 
   gfx::RectF damage_rect_in_local_space;
   if (surface_is_new || render_surface->SurfacePropertyChanged()) {
@@ -353,14 +371,15 @@ void DamageTracker::ExtendDamageForRenderSurface(
     LayerImpl* replica_mask_layer = layer->replica_layer()->mask_layer();
 
     bool replica_is_new = false;
-    RemoveRectFromCurrentFrame(replica_mask_layer->id(), &replica_is_new);
+    RectMapData& data =
+        RectDataForLayer(replica_mask_layer->id(), &replica_is_new);
 
     const gfx::Transform& replica_draw_transform =
         render_surface->replica_draw_transform();
     gfx::RectF replica_mask_layer_rect = MathUtil::MapClippedRect(
         replica_draw_transform,
         gfx::RectF(gfx::PointF(), replica_mask_layer->bounds()));
-    SaveRectForNextFrame(replica_mask_layer->id(), replica_mask_layer_rect);
+    data.Update(replica_mask_layer_rect, mailboxId_);
 
     // In the current implementation, a change in the replica mask damages the
     // entire replica region.
