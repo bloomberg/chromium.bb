@@ -9,7 +9,7 @@ PASS textArea.maxLength is -1
 PASS textArea.maxLength is 1
 PASS textArea.maxLength is 256
 PASS textArea.getAttribute("maxlength") is "13"
-PASS textArea.maxLength = -1 threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS textArea.maxLength = -1 threw exception IndexSizeError: Failed to set the 'maxLength' property on 'HTMLTextAreaElement': The value provided (-1) is not positive or 0..
 PASS textArea.getAttribute("maxlength") is "13"
 PASS textArea.maxLength is 0
 PASS textArea.getAttribute("maxlength") is "0"

@@ -26,6 +26,7 @@
 #include "core/html/HTMLTextFormControlElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -213,7 +214,7 @@ void HTMLTextFormControlElement::setRangeText(const String& replacement, Excepti
 void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState& exceptionState)
 {
     if (start > end) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("setRangeText", "HTMLElement", "The provided start value (" + String::number(start) + ") is larger than the provided end value (" + String::number(end) + ")."));
         return;
     }
 

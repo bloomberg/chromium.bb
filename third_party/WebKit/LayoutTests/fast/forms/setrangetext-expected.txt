@@ -120,7 +120,7 @@ PASS element.value is "01234567A"
 PASS element.selectionStart is 8
 PASS element.selectionEnd is 9
 element.value = '0123456789'
-PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Failed to execute 'setRangeText' on 'HTMLElement': The provided start value (7) is larger than the provided end value (3)..
 
 Running tests on input with attributes: {"type":"tel"}
 
@@ -238,7 +238,7 @@ PASS element.value is "01234567A"
 PASS element.selectionStart is 8
 PASS element.selectionEnd is 9
 element.value = '0123456789'
-PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Failed to execute 'setRangeText' on 'HTMLElement': The provided start value (7) is larger than the provided end value (3)..
 
 Running tests on input with attributes: {"type":"text"}
 
@@ -356,7 +356,7 @@ PASS element.value is "01234567A"
 PASS element.selectionStart is 8
 PASS element.selectionEnd is 9
 element.value = '0123456789'
-PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Failed to execute 'setRangeText' on 'HTMLElement': The provided start value (7) is larger than the provided end value (3)..
 
 Running tests on input with attributes: {"type":"text","dir":"rtl"}
 
@@ -474,7 +474,7 @@ PASS element.value is "01234567A"
 PASS element.selectionStart is 8
 PASS element.selectionEnd is 9
 element.value = '0123456789'
-PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Failed to execute 'setRangeText' on 'HTMLElement': The provided start value (7) is larger than the provided end value (3)..
 
 Running tests on input with attributes: {"type":"url"}
 
@@ -592,7 +592,7 @@ PASS element.value is "01234567A"
 PASS element.selectionStart is 8
 PASS element.selectionEnd is 9
 element.value = '0123456789'
-PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Failed to execute 'setRangeText' on 'HTMLElement': The provided start value (7) is larger than the provided end value (3)..
 
 Check that setRangeText() on disconnected elements doesn't crash and has proper values.
 element.value = '0123456789'

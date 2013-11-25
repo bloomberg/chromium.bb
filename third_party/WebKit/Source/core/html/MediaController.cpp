@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/html/MediaController.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
@@ -260,7 +261,7 @@ void MediaController::setVolume(double level, ExceptionState& exceptionState)
     // If the new value is outside the range 0.0 to 1.0 inclusive, then, on setting, an
     // IndexSizeError exception must be raised instead.
     if (level < 0 || level > 1) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("volume", "MediaController", "The value provided (" + String::number(level) + ") is not in the range [0.0, 1.0]."));
         return;
     }
 

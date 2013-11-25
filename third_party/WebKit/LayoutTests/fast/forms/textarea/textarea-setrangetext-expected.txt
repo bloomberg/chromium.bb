@@ -120,7 +120,7 @@ PASS element.value is "01234567A"
 PASS element.selectionStart is 8
 PASS element.selectionEnd is 9
 element.value = '0123456789'
-PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Failed to execute 'setRangeText' on 'HTMLElement': The provided start value (7) is larger than the provided end value (3)..
 
 Check that setRangeText() on textareas doesn't affect scroll position.
 element.value = longString
@@ -248,7 +248,7 @@ PASS element.value is "01234567A"
 PASS element.selectionStart is 8
 PASS element.selectionEnd is 9
 element.value = '0123456789'
-PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS element.setRangeText('A', 7, 3) threw exception IndexSizeError: Failed to execute 'setRangeText' on 'HTMLElement': The provided start value (7) is larger than the provided end value (3)..
 PASS successfullyParsed is true
 
 TEST COMPLETE
