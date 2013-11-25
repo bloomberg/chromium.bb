@@ -123,7 +123,7 @@ String MediaStreamTrack::readyState() const
 
 void MediaStreamTrack::getSources(ExecutionContext* context, PassRefPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& exceptionState)
 {
-    RefPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequest::create(context, callback);
+    RefPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequest::create(context->securityOrigin()->toString(), callback);
     if (!MediaStreamCenter::instance().getMediaStreamTrackSources(request.release()))
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("getSources", "MediaStreamTrack", "Functionality not implemented yet"));
 }

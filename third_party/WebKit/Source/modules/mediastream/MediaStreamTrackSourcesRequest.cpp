@@ -27,23 +27,22 @@
 
 #include "modules/mediastream/MediaStreamTrackSourcesRequest.h"
 
-#include "core/dom/ExecutionContext.h"
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebSourceInfo.h"
 
 namespace WebCore {
 
-PassRefPtr<MediaStreamTrackSourcesRequest> MediaStreamTrackSourcesRequest::create(ExecutionContext* context, PassRefPtr<MediaStreamTrackSourcesCallback> callback)
+PassRefPtr<MediaStreamTrackSourcesRequest> MediaStreamTrackSourcesRequest::create(String origin, PassRefPtr<MediaStreamTrackSourcesCallback> callback)
 {
-    return adoptRef(new MediaStreamTrackSourcesRequest(context, callback));
+    return adoptRef(new MediaStreamTrackSourcesRequest(origin, callback));
 }
 
-MediaStreamTrackSourcesRequest::MediaStreamTrackSourcesRequest(ExecutionContext* context, PassRefPtr<MediaStreamTrackSourcesCallback> callback)
+MediaStreamTrackSourcesRequest::MediaStreamTrackSourcesRequest(String origin, PassRefPtr<MediaStreamTrackSourcesCallback> callback)
     : m_callback(callback)
     , m_scheduledEventTimer(this, &MediaStreamTrackSourcesRequest::scheduledEventTimerFired)
 {
-    m_origin = context->securityOrigin()->toString();
+    m_origin = origin;
 }
 
 MediaStreamTrackSourcesRequest::~MediaStreamTrackSourcesRequest()
