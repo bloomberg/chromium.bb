@@ -2097,11 +2097,36 @@ shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 	struct workspace *ws;
 
 	switch (shsurf->type) {
-	case SHELL_SURFACE_POPUP:
+	case SHELL_SURFACE_POPUP: {
+		/* Popups should go at the front of the workspace of their
+		 * parent surface, rather than just in front of the parent. This
+		 * fixes the situation where there are two top-level windows:
+		 *  - Above
+		 *  - Below
+		 * and a pop-up menu is created for 'Below'. We want:
+		 *  - Popup
+		 *  - Above
+		 *  - Below
+		 * not:
+		 *  - Above
+		 *  - Popup
+		 *  - Below
+		 */
+		struct shell_surface *parent_shsurf;
+
+		parent_shsurf = get_shell_surface(shsurf->parent);
+		if (parent_shsurf != NULL)
+			return shell_surface_calculate_layer_link(parent_shsurf);
+
+		break;
+	}
+
 	case SHELL_SURFACE_TRANSIENT: {
 		/* Move the surface to its parent layer so that surfaces which
 		 * are transient for fullscreen surfaces don't get hidden by the
-		 * fullscreen surfaces. */
+		 * fullscreen surfaces. However, unlike popups, transient
+		 * surfaces are stacked in front of their parent but not in
+		 * front of other surfaces of the same type. */
 		struct weston_view *parent;
 
 		/* TODO: Handle a parent with multiple views */
