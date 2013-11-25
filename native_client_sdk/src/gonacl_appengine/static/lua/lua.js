@@ -5,7 +5,7 @@
  */
 
 NaClTerm.prefix = 'lua'
-NaClTerm.nmf = 'http://commondatastorage.googleapis.com/gonacl/demos/publish/234230_dev/lua/lua.nmf'
+NaClTerm.nmf = '//commondatastorage.googleapis.com/gonacl/demos/publish/234230_dev/lua/lua.nmf'
 
 window.onload = function() {
   lib.init(function() {
