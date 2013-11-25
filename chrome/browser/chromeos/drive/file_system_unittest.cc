@@ -434,23 +434,17 @@ TEST_F(FileSystemTest, ReadDirectory_Root) {
       ReadDirectorySync(base::FilePath::FromUTF8Unsafe("drive")));
   // The root directory should be read correctly.
   ASSERT_TRUE(entries);
-  ASSERT_EQ(2U, entries->size());
+  ASSERT_EQ(3U, entries->size());
 
-  // The found two directories should be /drive/root and /drive/other.
-  bool found_other = false;
-  bool found_my_drive = false;
-  for (size_t i = 0; i < entries->size(); ++i) {
-    const base::FilePath title =
-        base::FilePath::FromUTF8Unsafe((*entries)[i].title());
-    if (title == base::FilePath(util::kDriveOtherDirName)) {
-      found_other = true;
-    } else if (title == base::FilePath(util::kDriveMyDriveRootDirName)) {
-      found_my_drive = true;
-    }
-  }
-
-  EXPECT_TRUE(found_other);
-  EXPECT_TRUE(found_my_drive);
+  // The found three directories should be /drive/root, /drive/other and
+  // /drive/trash.
+  std::set<base::FilePath> found;
+  for (size_t i = 0; i < entries->size(); ++i)
+    found.insert(base::FilePath::FromUTF8Unsafe((*entries)[i].title()));
+  EXPECT_EQ(3U, found.size());
+  EXPECT_EQ(1U, found.count(base::FilePath(util::kDriveMyDriveRootDirName)));
+  EXPECT_EQ(1U, found.count(base::FilePath(util::kDriveOtherDirName)));
+  EXPECT_EQ(1U, found.count(base::FilePath(util::kDriveTrashDirName)));
 
   ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
   EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive")),

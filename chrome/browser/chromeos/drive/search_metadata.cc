@@ -88,6 +88,52 @@ class ScopedPriorityQueue {
   DISALLOW_COPY_AND_ASSIGN(ScopedPriorityQueue);
 };
 
+// Classifies the given entry as trashed if it's placed under the trash.
+class TrashedEntryClassifier {
+ public:
+  explicit TrashedEntryClassifier(ResourceMetadata* metadata)
+      : metadata_(metadata) {
+    trashed_[""] = false;
+    trashed_[util::kDriveTrashDirLocalId] = true;
+  }
+
+  // |result| is set to true if |entry| is under the trash.
+  FileError IsTrashed(const ResourceEntry& entry, bool* result) {
+    // parent_local_id cannot be used to classify the trash itself.
+    if (entry.local_id() == util::kDriveTrashDirLocalId) {
+      *result = true;
+      return FILE_ERROR_OK;
+    }
+
+    // Look up for parents recursively.
+    std::vector<std::string> undetermined_ids;
+    undetermined_ids.push_back(entry.parent_local_id());
+
+    std::map<std::string, bool>::iterator it =
+        trashed_.find(undetermined_ids.back());
+    for (; it == trashed_.end(); it = trashed_.find(undetermined_ids.back())) {
+      ResourceEntry parent;
+      FileError error =
+          metadata_->GetResourceEntryById(undetermined_ids.back(), &parent);
+      if (error != FILE_ERROR_OK)
+        return error;
+      undetermined_ids.push_back(parent.parent_local_id());
+    }
+
+    // Cache the result to |trashed_|.
+    undetermined_ids.pop_back();  // The last one is already in |trashed_|.
+    for (size_t i = 0; i < undetermined_ids.size(); ++i)
+      trashed_[undetermined_ids[i]] = it->second;
+
+    *result = it->second;
+    return FILE_ERROR_OK;
+  }
+
+ private:
+  ResourceMetadata* metadata_;
+  std::map<std::string, bool> trashed_;  // local ID to is_trashed map.
+};
+
 // Returns true if |entry| is eligible for the search |options| and should be
 // tested for the match with the query.  If
 // SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS is requested, the hosted documents
@@ -131,12 +177,13 @@ bool IsEligibleEntry(const ResourceEntry& entry,
 // Adds entry to the result when appropriate.
 // In particular, if |query| is non-null, only adds files with the name matching
 // the query.
-void MaybeAddEntryToResult(
+FileError MaybeAddEntryToResult(
     ResourceMetadata* resource_metadata,
     ResourceMetadata::Iterator* it,
     base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents* query,
     int options,
     size_t at_most_num_matches,
+    TrashedEntryClassifier* trashed_entry_classifier,
     ScopedPriorityQueue<ResultCandidate,
                         ResultCandidateComparator>* result_candidates) {
   DCHECK_GE(at_most_num_matches, result_candidates->size());
@@ -148,7 +195,7 @@ void MaybeAddEntryToResult(
   // or FilePath lookup as much as possible.
   if (result_candidates->size() == at_most_num_matches &&
       !CompareByTimestamp(entry, result_candidates->top()->entry))
-    return;
+    return FILE_ERROR_OK;
 
   // Add |entry| to the result if the entry is eligible for the given
   // |options| and matches the query. The base name of the entry must
@@ -156,12 +203,19 @@ void MaybeAddEntryToResult(
   std::string highlighted;
   if (!IsEligibleEntry(entry, it, options) ||
       (query && !FindAndHighlight(entry.base_name(), query, &highlighted)))
-    return;
+    return FILE_ERROR_OK;
+
+  // Trashed entry should not be returned.
+  bool trashed = false;
+  FileError error = trashed_entry_classifier->IsTrashed(entry, &trashed);
+  if (error != FILE_ERROR_OK || trashed)
+    return error;
 
   // Make space for |entry| when appropriate.
   if (result_candidates->size() == at_most_num_matches)
     result_candidates->pop();
   result_candidates->push(new ResultCandidate(it->GetID(), entry, highlighted));
+  return FILE_ERROR_OK;
 }
 
 // Implements SearchMetadata().
@@ -178,12 +232,17 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
       base::UTF8ToUTF16(query_text));
 
   // Iterate over entries.
+  TrashedEntryClassifier trashed_entry_classifier(resource_metadata);
   scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
-    MaybeAddEntryToResult(resource_metadata, it.get(),
-                          query_text.empty() ? NULL : &query,
-                          options,
-                          at_most_num_matches, &result_candidates);
+    FileError error = MaybeAddEntryToResult(resource_metadata, it.get(),
+                                            query_text.empty() ? NULL : &query,
+                                            options,
+                                            at_most_num_matches,
+                                            &trashed_entry_classifier,
+                                            &result_candidates);
+    if (error != FILE_ERROR_OK)
+      return error;
   }
 
   // Prepare the result.

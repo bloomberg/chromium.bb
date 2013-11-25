@@ -114,7 +114,7 @@ ResourceMetadata::~ResourceMetadata() {
 bool ResourceMetadata::SetUpDefaultEntries() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  // Initialize the grand root and "other" entries. "/drive" and "/drive/other".
+  // Initialize "/drive", "/drive/other" and "drive/trash".
   ResourceEntry entry;
   if (!storage_->GetEntry(util::kDriveGrandRootLocalId, &entry)) {
     ResourceEntry root;
@@ -136,6 +136,15 @@ bool ResourceMetadata::SetUpDefaultEntries() {
     other_dir.set_parent_local_id(util::kDriveGrandRootLocalId);
     other_dir.set_title(util::kDriveOtherDirName);
     if (!PutEntryUnderDirectory(other_dir))
+      return false;
+  }
+  if (!storage_->GetEntry(util::kDriveTrashDirLocalId, &entry)) {
+    ResourceEntry trash_dir;
+    trash_dir.mutable_file_info()->set_is_directory(true);
+    trash_dir.set_local_id(util::kDriveTrashDirLocalId);
+    trash_dir.set_parent_local_id(util::kDriveGrandRootLocalId);
+    trash_dir.set_title(util::kDriveTrashDirName);
+    if (!PutEntryUnderDirectory(trash_dir))
       return false;
   }
   return true;
@@ -202,8 +211,10 @@ FileError ResourceMetadata::RemoveEntry(const std::string& id) {
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
 
-  // Disallow deletion of special entries "/drive" and "/drive/other".
-  if (util::IsSpecialResourceId(id))
+  // Disallow deletion of default entries.
+  if (id == util::kDriveGrandRootLocalId ||
+      id == util::kDriveOtherDirLocalId ||
+      id == util::kDriveTrashDirLocalId)
     return FILE_ERROR_ACCESS_DENIED;
 
   ResourceEntry entry;
