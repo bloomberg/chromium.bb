@@ -100,6 +100,20 @@ class FakeEchoSerialConnection : public SerialConnection {
     return true;
   }
 
+  virtual bool GetInfo(api::serial::ConnectionInfo* info) const {
+    info->paused = false;
+    info->persistent = false;
+    info->buffer_size = 4096;
+    info->receive_timeout = 0;
+    info->send_timeout = 0;
+    info->bitrate.reset(new int(9600));
+    info->data_bits = api::serial::DATA_BITS_EIGHT;
+    info->parity_bit = api::serial::PARITY_BIT_NO;
+    info->stop_bits = api::serial::STOP_BITS_ONE;
+    info->cts_flow_control.reset(new bool(false));
+    return true;
+  }
+
   MOCK_METHOD1(SetControlSignals, bool(const api::serial::ControlSignals&));
 
  private:
@@ -109,7 +123,7 @@ class FakeEchoSerialConnection : public SerialConnection {
   DISALLOW_COPY_AND_ASSIGN(FakeEchoSerialConnection);
 };
 
-class FakeSerialOpenFunction : public api::SerialOpenFunction {
+class FakeSerialConnectFunction : public api::SerialConnectFunction {
  protected:
   virtual SerialConnection* CreateSerialConnection(
       const std::string& port,
@@ -122,7 +136,7 @@ class FakeSerialOpenFunction : public api::SerialOpenFunction {
   }
 
  protected:
-  virtual ~FakeSerialOpenFunction() {}
+  virtual ~FakeSerialConnectFunction() {}
 };
 
 }  // namespace extensions
@@ -131,8 +145,8 @@ ExtensionFunction* FakeSerialGetDevicesFunctionFactory() {
   return new extensions::FakeSerialGetDevicesFunction();
 }
 
-ExtensionFunction* FakeSerialOpenFunctionFactory() {
-  return new extensions::FakeSerialOpenFunction();
+ExtensionFunction* FakeSerialConnectFunctionFactory() {
+  return new extensions::FakeSerialConnectFunction();
 }
 
 // Disable SIMULATE_SERIAL_PORTS only if all the following are true:
@@ -164,8 +178,8 @@ IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialFakeHardware) {
       "serial.getDevices",
       FakeSerialGetDevicesFunctionFactory));
   ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
-      "serial.open",
-      FakeSerialOpenFunctionFactory));
+      "serial.connect",
+      FakeSerialConnectFunctionFactory));
 #endif
 
   ASSERT_TRUE(RunExtensionTest("serial/api")) << message_;

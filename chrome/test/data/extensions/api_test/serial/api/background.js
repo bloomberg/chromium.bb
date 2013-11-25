@@ -39,9 +39,9 @@ var testSerial = function() {
       break;
       case 1:
       var bitrate = 57600;
-      console.log('Opening serial device ' + serialPort + ' at ' +
+      console.log('Connecting to serial device ' + serialPort + ' at ' +
                   bitrate + ' bps.');
-      serial.open(serialPort, {bitrate: bitrate}, onOpen);
+      serial.connect(serialPort, {bitrate: bitrate}, onConnect);
       break;
       case 2:
       serial.setControlSignals(connectionId, {dtr: true}, onSetControlSignals);
@@ -55,7 +55,7 @@ var testSerial = function() {
       serial.send(connectionId, sendBuffer, onSend);
       break;
       case 50:  // GOTO 4 EVER
-      serial.close(connectionId, onClose);
+      serial.disconnect(connectionId, onDisconnect);
       break;
       default:
       // Beware! If you forget to assign a case for your next test, the whole
@@ -75,7 +75,7 @@ var testSerial = function() {
     doNextOperation();
   }
 
-  var onClose = function(result) {
+  var onDisconnect = function(result) {
     chrome.test.assertTrue(result);
     doNextOperation();
   };
@@ -117,9 +117,10 @@ var testSerial = function() {
     doNextOperation();
   };
 
-  var onOpen = function(connectionInfo) {
+  var onConnect = function(connectionInfo) {
+    chrome.test.assertTrue(!!connectionInfo,
+                           'Failed to connect to serial port.');
     connectionId = connectionInfo.connectionId;
-    chrome.test.assertTrue(connectionId > 0, 'Failed to open serial port.');
     doNextOperation();
   };
 

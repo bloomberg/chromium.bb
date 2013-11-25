@@ -8,7 +8,8 @@ namespace serial {
 
   dictionary DeviceInfo {
     // The device's system path. This should be passed as the <code>path</code>
-    // argument to <code>chrome.serial.open</code> in order to open this device.
+    // argument to <code>chrome.serial.connect</code> in order to connect to
+    // this device.
     DOMString path;
   };
 
@@ -68,24 +69,6 @@ namespace serial {
     long? sendTimeout;
   };
 
-  // Result of the <code>open</code> method.
-  dictionary OpenInfo {
-    // The id of the opened connection.
-    long connectionId;
-  };
-
-  // Callback from the <code>open</code> method;
-  callback OpenCallback = void (OpenInfo openInfo);
-
-  // Callback from the <code>update</code> method.
-  callback UpdateCallback = void (boolean result);
-
-  // Returns true if operation was successful.
-  callback CloseCallback = void (boolean result);
-
-  // Callback from the <code>setPaused</code> method.
-  callback SetPausedCallback = void ();
-
   // Result of the <code>getInfo</code> method.
   dictionary ConnectionInfo {
     // The id of the serial port connection.
@@ -132,13 +115,28 @@ namespace serial {
     boolean? ctsFlowControl;
   };
 
+  // Callback from the <code>connect</code> method;
+  callback ConnectCallback = void (ConnectionInfo connectionInfo);
+
+  // Callback from the <code>update</code> method.
+  callback UpdateCallback = void (boolean result);
+
+  // Callback from the <code>disconnect</code> method. Returns true if the
+  // operation was successful.
+  callback DisconnectCallback = void (boolean result);
+
+  // Callback from the <code>setPaused</code> method.
+  callback SetPausedCallback = void ();
+
+  // Callback from the <code>getInfo</code> method.
   callback GetInfoCallback = void (ConnectionInfo connectionInfo);
 
+  // Callback from the <code>getConnections</code> method.
   callback GetConnectionsCallback = void (ConnectionInfo[] connectionInfos);
 
   enum SendError {
-    // The connection was closed.
-    closed,
+    // The connection was disconnected.
+    disconnected,
 
     // A send was already pending.
     pending,
@@ -201,8 +199,8 @@ namespace serial {
   };
 
   enum ReceiveError {
-    // The connection was closed.
-    closed,
+    // The connection was disconnected.
+    disconnected,
 
     // No data has been received for <code>receiveTimeout</code> milliseconds.
     timeout,
@@ -229,15 +227,15 @@ namespace serial {
     // |callback| : Called with the list of <code>DeviceInfo</code> objects.
     static void getDevices(GetDevicesCallback callback);
 
-    // Opens a connection to the given serial port.
+    // Connects to a given serial port.
     // |path| : The system path of the serial port to open.
     // |options| : Port configuration options.
     // |callback| : Called when the connection has been opened.
-    static void open(DOMString path,
-                     optional ConnectionOptions options,
-                     OpenCallback callback);
+    static void connect(DOMString path,
+                        optional ConnectionOptions options,
+                        ConnectCallback callback);
 
-    // Update the option settings on an open serial port.
+    // Update the option settings on an open serial port connection.
     // |connectionId| : The id of the opened connection.
     // |options| : Port configuration options.
     // |callback| : Called when the configuation has completed.
@@ -245,10 +243,10 @@ namespace serial {
                        ConnectionOptions options,
                        UpdateCallback callback);
 
-    // Closes an open connection.
+    // Disconnects from a serial port.
     // |connectionId| : The id of the opened connection.
     // |callback| : Called when the connection has been closed.
-    static void close(long connectionId, CloseCallback callback);
+    static void disconnect(long connectionId, DisconnectCallback callback);
 
     // Pauses or unpauses an open connection.
     // |connectionId| : The id of the opened connection.
@@ -300,8 +298,9 @@ namespace serial {
     static void onReceive(ReceiveInfo info);
 
     // Event raised when an error occurred while the runtime was waiting for
-    // data on the serial port. Once this event is raised, the connection is set
-    // to <code>paused</code>.
+    // data on the serial port. Once this event is raised, the connection may be
+    // set to <code>paused</code>. A <code>"timeout"</code> error does not pause
+    // the connection.
     static void onReceiveError(ReceiveErrorInfo info);
   };
 };

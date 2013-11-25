@@ -37,7 +37,7 @@ const serial::StopBits kDefaultStopBits = serial::STOP_BITS_ONE;
 const int kDefaultReceiveTimeout = 0;
 const int kDefaultSendTimeout = 0;
 
-const char kErrorOpenFailed[] = "Failed to open the port.";
+const char kErrorConnectFailed[] = "Failed to connect to the port.";
 const char kErrorSerialConnectionNotFound[] = "Serial connection not found.";
 const char kErrorGetControlSignalsFailed[] = "Failed to get control signals.";
 
@@ -98,12 +98,12 @@ void SerialGetDevicesFunction::Work() {
   results_ = serial::GetDevices::Results::Create(devices);
 }
 
-SerialOpenFunction::SerialOpenFunction() {}
+SerialConnectFunction::SerialConnectFunction() {}
 
-SerialOpenFunction::~SerialOpenFunction() {}
+SerialConnectFunction::~SerialConnectFunction() {}
 
-bool SerialOpenFunction::Prepare() {
-  params_ = serial::Open::Params::Create(*args_);
+bool SerialConnectFunction::Prepare() {
+  params_ = serial::Connect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   // Fill in any omitted options to ensure a known initial configuration.
@@ -131,13 +131,13 @@ bool SerialOpenFunction::Prepare() {
   return true;
 }
 
-void SerialOpenFunction::AsyncWorkStart() {
+void SerialConnectFunction::AsyncWorkStart() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   connection_ = CreateSerialConnection(params_->path, extension_->id());
-  connection_->Open(base::Bind(&SerialOpenFunction::OnOpen, this));
+  connection_->Open(base::Bind(&SerialConnectFunction::OnConnected, this));
 }
 
-void SerialOpenFunction::OnOpen(bool success) {
+void SerialConnectFunction::OnConnected(bool success) {
   DCHECK(connection_);
 
   if (success) {
@@ -152,25 +152,31 @@ void SerialOpenFunction::OnOpen(bool success) {
   }
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&SerialOpenFunction::FinishOpen, this));
+                          base::Bind(&SerialConnectFunction::FinishConnect,
+                                     this));
 }
 
-void SerialOpenFunction::FinishOpen() {
+void SerialConnectFunction::FinishConnect() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!connection_) {
-    error_ = kErrorOpenFailed;
+    error_ = kErrorConnectFailed;
   } else {
     int id = manager_->Add(connection_);
-    serial_event_dispatcher_->PollConnection(extension_->id(), id);
-
-    serial::OpenInfo open_info;
-    open_info.connection_id = id;
-    results_ = serial::Open::Results::Create(open_info);
+    serial::ConnectionInfo info;
+    info.connection_id = id;
+    if (connection_->GetInfo(&info)) {
+      serial_event_dispatcher_->PollConnection(extension_->id(), id);
+      results_ = serial::Connect::Results::Create(info);
+    } else {
+      connection_->Close();
+      RemoveSerialConnection(id);
+      error_ = kErrorConnectFailed;
+    }
   }
   AsyncWorkCompleted();
 }
 
-SerialConnection* SerialOpenFunction::CreateSerialConnection(
+SerialConnection* SerialConnectFunction::CreateSerialConnection(
     const std::string& port, const std::string& extension_id) const {
   return new SerialConnection(port, extension_id);
 }
@@ -196,18 +202,18 @@ void SerialUpdateFunction::Work() {
   results_ = serial::Update::Results::Create(success);
 }
 
-SerialCloseFunction::SerialCloseFunction() {}
+SerialDisconnectFunction::SerialDisconnectFunction() {}
 
-SerialCloseFunction::~SerialCloseFunction() {}
+SerialDisconnectFunction::~SerialDisconnectFunction() {}
 
-bool SerialCloseFunction::Prepare() {
-  params_ = serial::Close::Params::Create(*args_);
+bool SerialDisconnectFunction::Prepare() {
+  params_ = serial::Disconnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   return true;
 }
 
-void SerialCloseFunction::Work() {
+void SerialDisconnectFunction::Work() {
   SerialConnection* connection = GetSerialConnection(params_->connection_id);
   if (!connection) {
     error_ = kErrorSerialConnectionNotFound;
@@ -215,7 +221,7 @@ void SerialCloseFunction::Work() {
   }
   connection->Close();
   RemoveSerialConnection(params_->connection_id);
-  results_ = serial::Close::Results::Create(true);
+  results_ = serial::Disconnect::Results::Create(true);
 }
 
 SerialSendFunction::SerialSendFunction() {}

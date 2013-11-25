@@ -49,8 +49,8 @@ SerialConnection::SerialConnection(const std::string& port,
 
 SerialConnection::~SerialConnection() {
   DCHECK(open_complete_.is_null());
-  io_handler_->CancelRead(api::serial::RECEIVE_ERROR_CLOSED);
-  io_handler_->CancelWrite(api::serial::SEND_ERROR_CLOSED);
+  io_handler_->CancelRead(api::serial::RECEIVE_ERROR_DISCONNECTED);
+  io_handler_->CancelWrite(api::serial::SEND_ERROR_DISCONNECTED);
   Close();
 }
 

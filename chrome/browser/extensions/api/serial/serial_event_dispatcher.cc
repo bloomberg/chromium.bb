@@ -20,7 +20,7 @@ namespace {
 bool ShouldPauseOnReceiveError(serial::ReceiveError error) {
   return error == serial::RECEIVE_ERROR_DEVICE_LOST ||
       error == serial::RECEIVE_ERROR_SYSTEM_ERROR ||
-      error == serial::RECEIVE_ERROR_CLOSED;
+      error == serial::RECEIVE_ERROR_DISCONNECTED;
 }
 
 }  // namespace

@@ -51,14 +51,14 @@ class SerialGetDevicesFunction : public SerialAsyncApiFunction {
   virtual void Work() OVERRIDE;
 };
 
-class SerialOpenFunction : public SerialAsyncApiFunction {
+class SerialConnectFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("serial.open", SERIAL_OPEN)
+  DECLARE_EXTENSION_FUNCTION("serial.connect", SERIAL_CONNECT)
 
-  SerialOpenFunction();
+  SerialConnectFunction();
 
  protected:
-  virtual ~SerialOpenFunction();
+  virtual ~SerialConnectFunction();
 
   // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
@@ -69,16 +69,16 @@ class SerialOpenFunction : public SerialAsyncApiFunction {
       const std::string& extension_id) const;
 
  private:
-  void OnOpen(bool success);
-  void FinishOpen();
+  void OnConnected(bool success);
+  void FinishConnect();
 
-  scoped_ptr<serial::Open::Params> params_;
+  scoped_ptr<serial::Connect::Params> params_;
 
   // SerialEventDispatcher is owned by a Profile.
   SerialEventDispatcher* serial_event_dispatcher_;
 
-  // This connection is created within SerialOpenFunction.
-  // From there it is either destroyed in OnOpen (upon failure)
+  // This connection is created within SerialConnectFunction.
+  // From there it is either destroyed in OnConnected (upon failure)
   // or its ownership is transferred to the profile's.
   // ApiResourceManager<SerialConnection>.
   SerialConnection* connection_;
@@ -101,21 +101,21 @@ class SerialUpdateFunction : public SerialAsyncApiFunction {
   scoped_ptr<serial::Update::Params> params_;
 };
 
-class SerialCloseFunction : public SerialAsyncApiFunction {
+class SerialDisconnectFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("serial.close", SERIAL_CLOSE)
+  DECLARE_EXTENSION_FUNCTION("serial.disconnect", SERIAL_DISCONNECT)
 
-  SerialCloseFunction();
+  SerialDisconnectFunction();
 
  protected:
-  virtual ~SerialCloseFunction();
+  virtual ~SerialDisconnectFunction();
 
   // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
 
  private:
-  scoped_ptr<serial::Close::Params> params_;
+  scoped_ptr<serial::Disconnect::Params> params_;
 };
 
 class SerialSetPausedFunction : public SerialAsyncApiFunction {
