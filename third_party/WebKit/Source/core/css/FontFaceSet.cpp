@@ -27,7 +27,6 @@
 #include "core/css/FontFaceSet.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8FontFaceSet.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptScope.h"

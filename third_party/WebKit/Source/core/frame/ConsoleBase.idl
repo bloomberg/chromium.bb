@@ -28,8 +28,8 @@
  */
 
 [
-    CustomToV8,
     NoInterfaceObject,
+    DoNotGenerateToV8,
 ] interface ConsoleBase {
     [CallWith=ScriptArguments&ScriptState] void debug();
     [CallWith=ScriptArguments&ScriptState] void error();

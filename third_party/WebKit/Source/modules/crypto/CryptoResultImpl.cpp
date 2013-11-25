@@ -31,11 +31,9 @@
 #include "config.h"
 #include "modules/crypto/CryptoResultImpl.h"
 
-#include "V8Key.h" // Must precede ScriptPromiseResolver.h
-#include "V8KeyPair.h" // Must precede ScriptPromiseResolver.h
-#include "bindings/v8/custom/V8ArrayBufferCustom.h" // Must precede ScriptPromiseResolver.h
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "modules/crypto/Key.h"
+#include "modules/crypto/KeyPair.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebArrayBuffer.h"

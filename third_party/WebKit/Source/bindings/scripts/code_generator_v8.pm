@@ -4744,6 +4744,16 @@ void ${v8ClassName}::derefObject(void* object)
 }
 
 END
+    if (!$interface->extendedAttributes->{"DoNotGenerateToV8"}) {
+        $implementation{nameSpaceWebCore}->add(<<END);
+template<>
+v8::Handle<v8::Value> toV8NoInline(${nativeType}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    return toV8(impl, creationContext, isolate);
+}
+
+END
+    }
 }
 
 sub GenerateHeaderContentHeader

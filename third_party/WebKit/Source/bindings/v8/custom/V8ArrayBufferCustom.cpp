@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/V8Binding.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/StdLibExtras.h"
@@ -97,6 +98,12 @@ ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
     arraybufferPtr = object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);
     ASSERT(arraybufferPtr);
     return reinterpret_cast<ArrayBuffer*>(arraybufferPtr);
+}
+
+template<>
+v8::Handle<v8::Value> toV8NoInline(ArrayBuffer* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    return toV8(impl, creationContext, isolate);
 }
 
 } // namespace WebCore

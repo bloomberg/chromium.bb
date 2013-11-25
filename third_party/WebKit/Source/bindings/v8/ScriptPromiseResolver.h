@@ -31,11 +31,13 @@
 #ifndef ScriptPromiseResolver_h
 #define ScriptPromiseResolver_h
 
+#include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8Binding.h"
 #include "wtf/RefPtr.h"
 
 #include <v8.h>
@@ -83,12 +85,38 @@ public:
         return m_promise;
     }
 
-    // Resolve with a C++ object which can be converted to a v8 object by toV8.
+    // To use following template methods, T must be a DOM class.
+
+    // This method will be implemented by the code generator.
     template<typename T>
-    inline void resolve(PassRefPtr<T>);
-    // Reject with a C++ object which can be converted to a v8 object by toV8.
+    void resolve(T* value, v8::Handle<v8::Object> creationContext) { resolve(toV8NoInline(value, creationContext, m_isolate)); }
     template<typename T>
-    inline void reject(PassRefPtr<T>);
+    void reject(T* value, v8::Handle<v8::Object> creationContext) { reject(toV8NoInline(value, creationContext, m_isolate)); }
+
+    template<typename T>
+    void resolve(PassRefPtr<T> value, v8::Handle<v8::Object> creationContext) { resolve(value.get(), creationContext); }
+    template<typename T>
+    void reject(PassRefPtr<T> value, v8::Handle<v8::Object> creationContext) { reject(value.get(), creationContext); }
+
+    template<typename T>
+    inline void resolve(T* value, ExecutionContext*);
+    template<typename T>
+    inline void reject(T* value, ExecutionContext*);
+
+    template<typename T>
+    void resolve(PassRefPtr<T> value, ExecutionContext* context) { resolve(value.get(), context); }
+    template<typename T>
+    void reject(PassRefPtr<T> value, ExecutionContext* context) { reject(value.get(), context); }
+
+    template<typename T>
+    inline void resolve(T* value);
+    template<typename T>
+    inline void reject(T* value);
+
+    template<typename T>
+    void resolve(PassRefPtr<T> value) { resolve(value.get()); }
+    template<typename T>
+    void reject(PassRefPtr<T> value) { reject(value.get()); }
 
     void resolve(ScriptValue);
     void reject(ScriptValue);
@@ -103,17 +131,33 @@ private:
 };
 
 template<typename T>
-void ScriptPromiseResolver::resolve(PassRefPtr<T> value)
+void ScriptPromiseResolver::resolve(T* value, ExecutionContext* context)
 {
     ASSERT(v8::Context::InContext());
-    resolve(toV8(value.get(), v8::Object::New(), m_isolate));
+    v8::Handle<v8::Context> v8Context = toV8Context(context, DOMWrapperWorld::current());
+    resolve(value, v8Context->Global());
 }
 
 template<typename T>
-void ScriptPromiseResolver::reject(PassRefPtr<T> value)
+void ScriptPromiseResolver::reject(T* value, ExecutionContext* context)
 {
     ASSERT(v8::Context::InContext());
-    reject(toV8(value.get(), v8::Object::New(), m_isolate));
+    v8::Handle<v8::Context> v8Context = toV8Context(context, DOMWrapperWorld::current());
+    reject(value, v8Context->Global());
+}
+
+template<typename T>
+void ScriptPromiseResolver::resolve(T* value)
+{
+    ASSERT(v8::Context::InContext());
+    resolve(value, v8::Object::New());
+}
+
+template<typename T>
+void ScriptPromiseResolver::reject(T* value)
+{
+    ASSERT(v8::Context::InContext());
+    reject(value, v8::Object::New());
 }
 
 } // namespace WebCore

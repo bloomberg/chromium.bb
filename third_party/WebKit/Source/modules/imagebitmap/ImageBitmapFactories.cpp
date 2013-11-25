@@ -31,7 +31,6 @@
 #include "config.h"
 #include "modules/imagebitmap/ImageBitmapFactories.h"
 
-#include "V8ImageBitmap.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptScope.h"

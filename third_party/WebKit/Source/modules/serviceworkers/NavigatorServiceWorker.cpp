@@ -31,8 +31,6 @@
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8ServiceWorker.h"
-#include "bindings/V8DOMError.h"
 #include "bindings/v8/CallbackPromiseAdapter.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/Document.h"

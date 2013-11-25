@@ -725,6 +725,13 @@ namespace WebCore {
 
     // Can only be called by blink::initialize
     void setMainThreadIsolate(v8::Isolate*);
+
+    // Converts a DOM object to a v8 value.
+    // This is a no-inline version of toV8(). If you want to call toV8()
+    // without creating #include cycles, you can use this function instead.
+    // Each specialized implementation will be generated.
+    template<typename T>
+    v8::Handle<v8::Value> toV8NoInline(T* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 } // namespace WebCore
 
 #endif // V8Binding_h
