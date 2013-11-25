@@ -21,12 +21,12 @@
 #include "ppapi/shared_impl/file_io_state_manager.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/common/quota/quota_types.h"
 
 using ppapi::host::ReplyMessageContext;
 
 namespace content {
+class PepperFileSystemBrowserHost;
 class QuotaFileIO;
 
 class PepperFileIOHost : public ppapi::host::ResourceHost,
@@ -120,10 +120,10 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   // PP_FILESYSTEMTYPE_INVALID before open was called. This value does not
   // indicate that the open command actually succeeded.
   PP_FileSystemType file_system_type_;
+  base::WeakPtr<PepperFileSystemBrowserHost> file_system_host_;
 
   // Valid only for PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY}.
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-  scoped_ptr<fileapi::FileSystemOperationRunner> file_system_operation_runner_;
   fileapi::FileSystemURL file_system_url_;
   base::Closure on_close_callback_;
 

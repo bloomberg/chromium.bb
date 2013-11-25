@@ -19,6 +19,7 @@
 
 namespace content {
 class PepperFileRefHost;
+class PepperFileSystemBrowserHost;
 
 // Internal and external filesystems have very different codepaths for
 // performing FileRef operations. The logic is split into separate classes
@@ -79,6 +80,7 @@ class CONTENT_EXPORT PepperFileRefHost
 
   // Required to support FileIO.
   base::FilePath GetExternalFilePath() const;
+  base::WeakPtr<PepperFileSystemBrowserHost> GetFileSystemHost() const;
 
   int32_t CanRead() const;
   int32_t CanWrite() const;
@@ -100,6 +102,7 @@ class CONTENT_EXPORT PepperFileRefHost
 
   BrowserPpapiHost* host_;
   scoped_ptr<PepperFileRefBackend> backend_;
+  base::WeakPtr<PepperFileSystemBrowserHost> file_system_host_;
   PP_FileSystemType fs_type_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFileRefHost);

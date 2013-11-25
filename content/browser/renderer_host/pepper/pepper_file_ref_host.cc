@@ -60,6 +60,7 @@ PepperFileRefHost::PepperFileRefHost(BrowserPpapiHost* host,
 
   PepperFileSystemBrowserHost* file_system_host =
       static_cast<PepperFileSystemBrowserHost*>(fs_resource_host);
+  file_system_host_ = file_system_host->AsWeakPtr();
   fs_type_ = file_system_host->GetType();
   if ((fs_type_ != PP_FILESYSTEMTYPE_LOCALPERSISTENT) &&
       (fs_type_ != PP_FILESYSTEMTYPE_LOCALTEMPORARY) &&
@@ -119,6 +120,11 @@ base::FilePath PepperFileRefHost::GetExternalFilePath() const {
   if (backend_)
     return backend_->GetExternalFilePath();
   return base::FilePath();
+}
+
+base::WeakPtr<PepperFileSystemBrowserHost>
+PepperFileRefHost::GetFileSystemHost() const {
+  return file_system_host_;
 }
 
 int32_t PepperFileRefHost::CanRead() const {

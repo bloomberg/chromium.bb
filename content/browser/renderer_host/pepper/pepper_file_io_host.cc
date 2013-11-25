@@ -10,6 +10,7 @@
 #include "base/files/file_util_proxy.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"
+#include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"
 #include "content/browser/renderer_host/pepper/pepper_security_helper.h"
 #include "content/browser/renderer_host/pepper/quota_file_io.h"
 #include "content/common/fileapi/file_system_messages.h"
@@ -30,6 +31,7 @@
 #include "ppapi/shared_impl/time_conversion.h"
 #include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_system_context.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -236,6 +238,8 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
   if (file_ref_host->GetFileSystemType() == PP_FILESYSTEMTYPE_INVALID)
     return PP_ERROR_FAILED;
 
+  file_system_host_ = file_ref_host->GetFileSystemHost();
+
   open_flags_ = open_flags;
   file_system_type_ = file_ref_host->GetFileSystemType();
   file_system_url_ = file_ref_host->GetFileSystemURL();
@@ -306,9 +310,9 @@ void PepperFileIOHost::GotUIThreadStuffForInternalFileSystems(
   else
     quota_policy_ = quota::kQuotaLimitTypeLimited;
 
-  file_system_operation_runner_ =
-      file_system_context_->CreateFileSystemOperationRunner();
-  file_system_operation_runner_->OpenFile(
+  DCHECK(file_system_host_.get());
+  DCHECK(file_system_host_->GetFileSystemOperationRunner());
+  file_system_host_->GetFileSystemOperationRunner()->OpenFile(
       file_system_url_,
       platform_file_flags,
       base::Bind(&PepperFileIOHost::DidOpenInternalFile,

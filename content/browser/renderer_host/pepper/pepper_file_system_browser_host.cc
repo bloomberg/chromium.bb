@@ -49,10 +49,17 @@ PepperFileSystemBrowserHost::PepperFileSystemBrowserHost(BrowserPpapiHost* host,
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       browser_ppapi_host_(host),
       type_(type),
-      opened_(false),
-      fs_context_(NULL),
       called_open_(false),
+      opened_(false),
+      file_system_context_(NULL),
       weak_factory_(this) {
+}
+
+PepperFileSystemBrowserHost::~PepperFileSystemBrowserHost() {
+  // All FileRefs and FileIOs that reference us must have been destroyed. Cancel
+  // all pending file system operations.
+  if (file_system_operation_runner_)
+    file_system_operation_runner_->Shutdown();
 }
 
 void PepperFileSystemBrowserHost::OpenExisting(const GURL& root_url,
@@ -73,12 +80,6 @@ void PepperFileSystemBrowserHost::OpenExisting(const GURL& root_url,
       base::Bind(&GetFileSystemContextFromRenderId, render_process_id),
       base::Bind(&PepperFileSystemBrowserHost::OpenExistingWithContext,
                  weak_factory_.GetWeakPtr(), callback));
-}
-
-PepperFileSystemBrowserHost::~PepperFileSystemBrowserHost() {
-  // TODO(teravest): Create a FileSystemOperationRunner
-  // per-PepperFileSystemBrowserHost, force users of this FileSystem to use it,
-  // and call Shutdown() on it here.
 }
 
 int32_t PepperFileSystemBrowserHost::OnResourceMessageReceived(
@@ -136,8 +137,8 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgOpen(
 
 void PepperFileSystemBrowserHost::OpenExistingWithContext(
     const base::Closure& callback,
-    scoped_refptr<fileapi::FileSystemContext> fs_context) {
-  if (fs_context.get()) {
+    scoped_refptr<fileapi::FileSystemContext> file_system_context) {
+  if (file_system_context.get()) {
     opened_ = true;
   } else {
     // If there is no file system context, we log a warning and continue with an
@@ -145,26 +146,26 @@ void PepperFileSystemBrowserHost::OpenExistingWithContext(
     // way to communicate the error to the caller.
     LOG(WARNING) << "Could not retrieve file system context.";
   }
-  fs_context_ = fs_context;
+  SetFileSystemContext(file_system_context);
   callback.Run();
 }
 
 void PepperFileSystemBrowserHost::GotFileSystemContext(
     ppapi::host::ReplyMessageContext reply_context,
     fileapi::FileSystemType file_system_type,
-    scoped_refptr<fileapi::FileSystemContext> fs_context) {
-  if (!fs_context.get()) {
+    scoped_refptr<fileapi::FileSystemContext> file_system_context) {
+  if (!file_system_context.get()) {
     OpenFileSystemComplete(
         reply_context, GURL(), std::string(), base::PLATFORM_FILE_ERROR_FAILED);
     return;
   }
   GURL origin = browser_ppapi_host_->GetDocumentURLForInstance(
       pp_instance()).GetOrigin();
-  fs_context->OpenFileSystem(origin, file_system_type,
+  file_system_context->OpenFileSystem(origin, file_system_type,
       fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&PepperFileSystemBrowserHost::OpenFileSystemComplete,
                  weak_factory_.GetWeakPtr(), reply_context));
-  fs_context_ = fs_context;
+  SetFileSystemContext(file_system_context);
 }
 
 void PepperFileSystemBrowserHost::OpenFileSystemComplete(
@@ -185,12 +186,12 @@ void PepperFileSystemBrowserHost::GotIsolatedFileSystemContext(
     ppapi::host::ReplyMessageContext reply_context,
     const std::string& fsid,
     PP_IsolatedFileSystemType_Private type,
-    scoped_refptr<fileapi::FileSystemContext> fs_context) {
-  fs_context_ = fs_context;
-  if (!fs_context.get()) {
+    scoped_refptr<fileapi::FileSystemContext> file_system_context) {
+  if (!file_system_context.get()) {
     SendReplyForIsolatedFileSystem(reply_context, fsid, PP_ERROR_FAILED);
     return;
   }
+  SetFileSystemContext(file_system_context);
 
   root_url_ = GURL(fileapi::GetIsolatedFileSystemRootURIString(
       browser_ppapi_host_->GetDocumentURLForInstance(pp_instance()).GetOrigin(),
@@ -206,7 +207,7 @@ void PepperFileSystemBrowserHost::GotIsolatedFileSystemContext(
       SendReplyForIsolatedFileSystem(reply_context, fsid, PP_OK);
       return;
     case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_PLUGINPRIVATE:
-      OpenPluginPrivateFileSystem(reply_context, fsid, fs_context);
+      OpenPluginPrivateFileSystem(reply_context, fsid, file_system_context_);
       return;
     default:
       NOTREACHED();
@@ -218,7 +219,7 @@ void PepperFileSystemBrowserHost::GotIsolatedFileSystemContext(
 void PepperFileSystemBrowserHost::OpenPluginPrivateFileSystem(
     ppapi::host::ReplyMessageContext reply_context,
     const std::string& fsid,
-    scoped_refptr<fileapi::FileSystemContext> fs_context) {
+    scoped_refptr<fileapi::FileSystemContext> file_system_context) {
   GURL origin = browser_ppapi_host_->GetDocumentURLForInstance(
       pp_instance()).GetOrigin();
   if (!origin.is_valid()) {
@@ -232,7 +233,7 @@ void PepperFileSystemBrowserHost::OpenPluginPrivateFileSystem(
     return;
   }
 
-  fs_context->OpenPluginPrivateFileSystem(
+  file_system_context->OpenPluginPrivateFileSystem(
       origin, fileapi::kFileSystemTypePluginPrivate, fsid, plugin_id,
       fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(
@@ -291,6 +292,15 @@ void PepperFileSystemBrowserHost::SendReplyForIsolatedFileSystem(
   reply_context.params.set_result(error);
   host()->SendReply(reply_context,
                     PpapiPluginMsg_FileSystem_InitIsolatedFileSystemReply());
+}
+
+void PepperFileSystemBrowserHost::SetFileSystemContext(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context) {
+  file_system_context_ = file_system_context;
+  if (type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
+    file_system_operation_runner_ =
+        file_system_context_->CreateFileSystemOperationRunner();
+  }
 }
 
 std::string PepperFileSystemBrowserHost::GetPluginMimeType() const {

@@ -52,7 +52,13 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   bool IsOpened() const { return opened_; }
   GURL GetRootUrl() const { return root_url_; }
   scoped_refptr<fileapi::FileSystemContext> GetFileSystemContext() const {
-    return fs_context_;
+    return file_system_context_;
+  }
+
+  // Supports FileIOs direct access on the host side.
+  // Non-NULL only for PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY}.
+  fileapi::FileSystemOperationRunner* GetFileSystemOperationRunner() const {
+    return file_system_operation_runner_.get();
   }
 
  private:
@@ -60,11 +66,11 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
 
   void OpenExistingWithContext(
       const base::Closure& callback,
-      scoped_refptr<fileapi::FileSystemContext> fs_context);
+      scoped_refptr<fileapi::FileSystemContext> file_system_context);
   void GotFileSystemContext(
       ppapi::host::ReplyMessageContext reply_context,
       fileapi::FileSystemType file_system_type,
-      scoped_refptr<fileapi::FileSystemContext> fs_context);
+      scoped_refptr<fileapi::FileSystemContext> file_system_context);
   void OpenFileSystemComplete(
       ppapi::host::ReplyMessageContext reply_context,
       const GURL& root,
@@ -74,11 +80,11 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
       ppapi::host::ReplyMessageContext reply_context,
       const std::string& fsid,
       PP_IsolatedFileSystemType_Private type,
-      scoped_refptr<fileapi::FileSystemContext> fs_context);
+      scoped_refptr<fileapi::FileSystemContext> file_system_context);
   void OpenPluginPrivateFileSystem(
       ppapi::host::ReplyMessageContext reply_context,
       const std::string& fsid,
-      scoped_refptr<fileapi::FileSystemContext> fs_context);
+      scoped_refptr<fileapi::FileSystemContext> file_system_context);
   void OpenPluginPrivateFileSystemComplete(
       ppapi::host::ReplyMessageContext reply_context,
       const std::string& fsid,
@@ -96,6 +102,9 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
       const std::string& fsid,
       int32_t error);
 
+  void SetFileSystemContext(
+      scoped_refptr<fileapi::FileSystemContext> file_system_context);
+
   std::string GetPluginMimeType() const;
 
   // Returns plugin ID generated from plugin's MIME type.
@@ -104,10 +113,12 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   BrowserPpapiHost* browser_ppapi_host_;
 
   PP_FileSystemType type_;
-  bool opened_;  // whether open is successful.
-  GURL root_url_;
-  scoped_refptr<fileapi::FileSystemContext> fs_context_;
   bool called_open_;  // whether open has been called.
+  bool opened_;  // whether open has succeeded.
+  GURL root_url_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+
+  scoped_ptr<fileapi::FileSystemOperationRunner> file_system_operation_runner_;
 
   std::string fsid_;  // used only for isolated filesystems.
 
