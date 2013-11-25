@@ -30,7 +30,7 @@ class TestBubbleDelegateView : public BubbleDelegateView {
   virtual ~TestBubbleDelegateView() {}
 
   void SetAnchorRectForTest(gfx::Rect rect) {
-    set_anchor_rect(rect);
+    SetAnchorRect(rect);
   }
 
   void SetAnchorViewForTest(View* view) {

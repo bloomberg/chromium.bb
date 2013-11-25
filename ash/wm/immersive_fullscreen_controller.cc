@@ -210,7 +210,7 @@ void ImmersiveFullscreenController::BubbleManager::UpdateRevealedLock() {
     // visibility change.
     for (std::set<aura::Window*>::const_iterator it = bubbles_.begin();
          it != bubbles_.end(); ++it) {
-      AsBubbleDelegate(*it)->OnAnchorViewBoundsChanged();
+      AsBubbleDelegate(*it)->OnAnchorBoundsChanged();
     }
   }
 }

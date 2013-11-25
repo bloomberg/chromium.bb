@@ -91,6 +91,7 @@ BubbleDelegateView::BubbleDelegateView(
 }
 
 BubbleDelegateView::~BubbleDelegateView() {
+  SetLayoutManager(NULL);
   SetAnchorView(NULL);
 }
 
@@ -235,7 +236,7 @@ void BubbleDelegateView::SetArrowPaintType(
   SizeToContents();
 }
 
-void BubbleDelegateView::OnAnchorViewBoundsChanged() {
+void BubbleDelegateView::OnAnchorBoundsChanged() {
   SizeToContents();
 }
 
@@ -294,9 +295,17 @@ void BubbleDelegateView::SetAnchorView(View* anchor_view) {
   ViewStorage* view_storage = ViewStorage::GetInstance();
   if (view_storage->RetrieveView(anchor_view_storage_id_))
     view_storage->RemoveView(anchor_view_storage_id_);
-
   if (anchor_view)
     view_storage->StoreView(anchor_view_storage_id_, anchor_view);
+
+  if (GetWidget())
+    OnAnchorBoundsChanged();
+}
+
+void BubbleDelegateView::SetAnchorRect(const gfx::Rect& rect) {
+  anchor_rect_ = rect;
+  if (GetWidget())
+    OnAnchorBoundsChanged();
 }
 
 void BubbleDelegateView::SizeToContents() {

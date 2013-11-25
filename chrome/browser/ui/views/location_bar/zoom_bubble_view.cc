@@ -146,11 +146,7 @@ void ZoomBubbleView::AdjustForFullscreen(const gfx::Rect& screen_bounds) {
   const int x_pos = base::i18n::IsRTL() ?
       screen_bounds.x() + bubble_half_width + kFullscreenPaddingEnd :
       screen_bounds.right() - bubble_half_width - kFullscreenPaddingEnd;
-  set_anchor_rect(gfx::Rect(x_pos, screen_bounds.y(), 0, 0));
-
-  // Used to update |views::BubbleDelegate::anchor_rect_| in a semi-hacky way.
-  // TODO(dbeam): update only the bounds of this view or its border or frame.
-  SizeToContents();
+  SetAnchorRect(gfx::Rect(x_pos, screen_bounds.y(), 0, 0));
 }
 
 void ZoomBubbleView::Refresh() {

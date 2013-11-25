@@ -21,6 +21,8 @@ void FillLayout::Layout(View* host) {
 }
 
 gfx::Size FillLayout::GetPreferredSize(View* host) {
+  if (!host->has_children())
+    return gfx::Size();
   DCHECK_EQ(1, host->child_count());
   gfx::Rect rect(host->child_at(0)->GetPreferredSize());
   rect.Inset(-host->GetInsets());
@@ -28,6 +30,8 @@ gfx::Size FillLayout::GetPreferredSize(View* host) {
 }
 
 int FillLayout::GetPreferredHeightForWidth(View* host, int width) {
+  if (!host->has_children())
+    return 0;
   DCHECK_EQ(1, host->child_count());
   const gfx::Insets insets = host->GetInsets();
   return host->child_at(0)->GetHeightForWidth(width - insets.width()) +

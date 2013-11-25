@@ -26,7 +26,7 @@ ValidationMessageBubbleDelegate::ValidationMessageBubbleDelegate(
     : observer_(observer), width_(0), height_(0) {
   set_use_focusless(true);
   set_arrow(views::BubbleBorder::TOP_LEFT);
-  set_anchor_rect(anchor_in_screen);
+  SetAnchorRect(anchor_in_screen);
 
   ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
   views::ImageView* icon = new views::ImageView();
@@ -86,8 +86,7 @@ void ValidationMessageBubbleDelegate::Close() {
 
 void ValidationMessageBubbleDelegate::SetPositionRelativeToAnchor(
     const gfx::Rect& anchor_in_screen) {
-  set_anchor_rect(anchor_in_screen);
-  SizeToContents();
+  SetAnchorRect(anchor_in_screen);
 }
 
 gfx::Size ValidationMessageBubbleDelegate::GetPreferredSize() {

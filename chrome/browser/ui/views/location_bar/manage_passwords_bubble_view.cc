@@ -91,10 +91,7 @@ void ManagePasswordsBubbleView::AdjustForFullscreen(
   const int x_pos = base::i18n::IsRTL() ?
       screen_bounds.x() + bubble_half_width + kFullscreenPaddingEnd :
       screen_bounds.right() - bubble_half_width - kFullscreenPaddingEnd;
-  set_anchor_rect(gfx::Rect(x_pos, screen_bounds.y(), 0, 0));
-  // TODO(npentrel) change set_anchor_rect to update its view on being called
-  // instead of using SizeToContents().
-  SizeToContents();
+  SetAnchorRect(gfx::Rect(x_pos, screen_bounds.y(), 0, 0));
 }
 
 void ManagePasswordsBubbleView::Close() {

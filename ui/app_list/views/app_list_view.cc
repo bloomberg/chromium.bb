@@ -104,7 +104,7 @@ void AppListView::InitAsBubbleAtFixedLocation(
     views::BubbleBorder::Arrow arrow,
     bool border_accepts_events) {
   SetAnchorView(NULL);
-  set_anchor_rect(gfx::Rect(anchor_point_in_screen, gfx::Size()));
+  SetAnchorRect(gfx::Rect(anchor_point_in_screen, gfx::Size()));
   InitAsBubbleInternal(
       parent, pagination_model, arrow, border_accepts_events, gfx::Vector2d());
 }
@@ -116,8 +116,7 @@ void AppListView::SetBubbleArrow(views::BubbleBorder::Arrow arrow) {
 }
 
 void AppListView::SetAnchorPoint(const gfx::Point& anchor_point) {
-  set_anchor_rect(gfx::Rect(anchor_point, gfx::Size()));
-  SizeToContents();  // Repositions view relative to the anchor.
+  SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
 }
 
 void AppListView::SetDragAndDropHostOfCurrentAppList(

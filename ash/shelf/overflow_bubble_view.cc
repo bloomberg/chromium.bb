@@ -69,7 +69,10 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
 }
 
 bool OverflowBubbleView::IsHorizontalAlignment() const {
-  return GetShelfLayoutManagerForLauncher()->IsHorizontalAlignment();
+  ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManagerForLauncher();
+  return shelf_layout_manager ?
+      shelf_layout_manager->IsHorizontalAlignment() :
+      false;
 }
 
 const gfx::Size OverflowBubbleView::GetContentsSize() const {
@@ -78,11 +81,14 @@ const gfx::Size OverflowBubbleView::GetContentsSize() const {
 
 // Gets arrow location based on shelf alignment.
 views::BubbleBorder::Arrow OverflowBubbleView::GetBubbleArrow() const {
-  return GetShelfLayoutManagerForLauncher()->SelectValueForShelfAlignment(
-      views::BubbleBorder::BOTTOM_LEFT,
-      views::BubbleBorder::LEFT_TOP,
-      views::BubbleBorder::RIGHT_TOP,
-      views::BubbleBorder::TOP_LEFT);
+  ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManagerForLauncher();
+  return shelf_layout_manager ?
+      shelf_layout_manager->SelectValueForShelfAlignment(
+          views::BubbleBorder::BOTTOM_LEFT,
+          views::BubbleBorder::LEFT_TOP,
+          views::BubbleBorder::RIGHT_TOP,
+          views::BubbleBorder::TOP_LEFT) :
+      views::BubbleBorder::NONE;
 }
 
 void OverflowBubbleView::ScrollByXOffset(int x_offset) {
@@ -161,8 +167,10 @@ bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 
 ShelfLayoutManager*
 OverflowBubbleView::GetShelfLayoutManagerForLauncher() const {
-  return ShelfLayoutManager::ForLauncher(
-      GetAnchorView()->GetWidget()->GetNativeView());
+  return GetAnchorView() ?
+      ShelfLayoutManager::ForLauncher(
+          GetAnchorView()->GetWidget()->GetNativeView()) :
+      NULL;
 }
 
 void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {
