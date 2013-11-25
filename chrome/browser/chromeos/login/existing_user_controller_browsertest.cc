@@ -663,6 +663,16 @@ IN_PROC_BROWSER_TEST_P(ExistingUserControllerPublicSessionTest,
   EXPECT_FALSE(auto_login_timer()->IsRunning());
 }
 
+IN_PROC_BROWSER_TEST_P(ExistingUserControllerPublicSessionTest,
+                       PRE_TestLoadingPublicUsersFromLocalState) {
+  // First run propagates public accounts and stores them in Local State.
+}
+
+IN_PROC_BROWSER_TEST_P(ExistingUserControllerPublicSessionTest,
+                       TestLoadingPublicUsersFromLocalState) {
+  // Second run loads list of public accounts from Local State.
+}
+
 INSTANTIATE_TEST_CASE_P(ExistingUserControllerTestInstantiation,
                         ExistingUserControllerTest,
                         testing::Bool());
