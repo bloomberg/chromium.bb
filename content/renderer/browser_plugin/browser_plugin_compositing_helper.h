@@ -62,6 +62,7 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
 
   // cc::DelegatedFrameProviderClient implementation.
   virtual void UnusedResourcesAreAvailable() OVERRIDE;
+  void SetContentsOpaque(bool);
 
  protected:
   // Friend RefCounted so that the dtor can be non-public.
@@ -85,9 +86,9 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
     base::SharedMemory* shared_memory;
   };
   virtual ~BrowserPluginCompositingHelper();
-  void CheckSizeAndAdjustLayerBounds(const gfx::Size& new_size,
-                                     float device_scale_factor,
-                                     cc::Layer* layer);
+  void CheckSizeAndAdjustLayerProperties(const gfx::Size& new_size,
+                                         float device_scale_factor,
+                                         cc::Layer* layer);
   void OnBuffersSwappedPrivate(const SwapBuffersInfo& mailbox,
                                unsigned sync_point,
                                float device_scale_factor);
@@ -104,6 +105,7 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
   bool last_mailbox_valid_;
   bool ack_pending_;
   bool software_ack_pending_;
+  bool opaque_;
   std::vector<unsigned> unacked_software_frames_;
 
   gfx::Size buffer_size_;
