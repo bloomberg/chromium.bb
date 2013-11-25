@@ -216,6 +216,7 @@ rpi_backend_la_LDFLAGS = -module -avoid-version
 rpi_backend_la_LIBADD = $(COMPOSITOR_LIBS)	\
 	$(RPI_COMPOSITOR_LIBS)			\
 	$(RPI_BCM_HOST_LIBS)			\
+	libsession-helper.la			\
 	../shared/libshared.la
 rpi_backend_la_CFLAGS =				\
 	$(GCC_CFLAGS)				\
