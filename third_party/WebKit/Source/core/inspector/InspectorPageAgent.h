@@ -115,7 +115,7 @@ public:
     virtual void setTouchEmulationEnabled(ErrorString*, bool);
     virtual void setEmulatedMedia(ErrorString*, const String&);
     virtual void setForceCompositingMode(ErrorString*);
-    virtual void captureScreenshot(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight, String* data, double* deviceScaleFactor, double* pageScaleFactor, RefPtr<TypeBuilder::DOM::Rect>&);
+    virtual void captureScreenshot(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight, String* data, RefPtr<TypeBuilder::Page::ScreencastFrameMetadata>& out_metadata);
     virtual void canScreencast(ErrorString*, bool*);
     virtual void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight);
     virtual void stopScreencast(ErrorString*);
