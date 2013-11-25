@@ -602,37 +602,37 @@ FAIL element.value should be ABC0123456789. Was 0123456789.
 Running tests on input with attributes: {"type":"button"}
 
 element.value = '0123456789XYZ'
-PASS element.setRangeText('ABC', 0, 0) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS element.setRangeText('ABC', 0, 0) threw exception InvalidStateError: Failed to execute 'setRangeText' on 'HTMLInputElement': The input element's type ('button') does not support selection..
 PASS element.value is "0123456789XYZ"
 
 Running tests on input with attributes: {"type":"checkbox"}
 
 element.value = '0123456789XYZ'
-PASS element.setRangeText('ABC', 0, 0) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS element.setRangeText('ABC', 0, 0) threw exception InvalidStateError: Failed to execute 'setRangeText' on 'HTMLInputElement': The input element's type ('checkbox') does not support selection..
 PASS element.value is "0123456789XYZ"
 
 Running tests on input with attributes: {"type":"email"}
 
 element.value = '0123456789XYZ'
-PASS element.setRangeText('ABC', 0, 0) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS element.setRangeText('ABC', 0, 0) threw exception InvalidStateError: Failed to execute 'setRangeText' on 'HTMLInputElement': The input element's type ('email') does not support selection..
 PASS element.value is "0123456789XYZ"
 
 Running tests on input with attributes: {"type":"radio"}
 
 element.value = '0123456789XYZ'
-PASS element.setRangeText('ABC', 0, 0) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS element.setRangeText('ABC', 0, 0) threw exception InvalidStateError: Failed to execute 'setRangeText' on 'HTMLInputElement': The input element's type ('radio') does not support selection..
 PASS element.value is "0123456789XYZ"
 
 Running tests on input with attributes: {"type":"reset"}
 
 element.value = '0123456789XYZ'
-PASS element.setRangeText('ABC', 0, 0) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS element.setRangeText('ABC', 0, 0) threw exception InvalidStateError: Failed to execute 'setRangeText' on 'HTMLInputElement': The input element's type ('reset') does not support selection..
 PASS element.value is "0123456789XYZ"
 
 Running tests on input with attributes: {"type":"submit"}
 
 element.value = '0123456789XYZ'
-PASS element.setRangeText('ABC', 0, 0) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS element.setRangeText('ABC', 0, 0) threw exception InvalidStateError: Failed to execute 'setRangeText' on 'HTMLInputElement': The input element's type ('submit') does not support selection..
 PASS element.value is "0123456789XYZ"
 PASS successfullyParsed is true
 

@@ -16,7 +16,7 @@ PASS number.size = 10; number.offsetWidth is text.offsetWidth
 PASS number.size is 10
 PASS number.size = 100; number.offsetWidth is text.offsetWidth
 PASS number.size is 100
-PASS number.size = null threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS number.size = null threw exception IndexSizeError: Failed to set the 'size' property on 'HTMLInputElement': The value provided is 0, which is an invalid size..
 
 If min or max is absent, the number input has the same width as input[type=text]
 PASS numberWidth(0, null, null) is text.offsetWidth

@@ -13,7 +13,7 @@ PASS input.setAttribute('size', 'a'); input.size is 20
 PASS input.removeAttribute('size'); input.size is 20
 PASS input.setAttribute('size', '0'); input.size is 20
 PASS input.setAttribute('size', '10'); input.size is 10
-PASS input.size = 0 threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS input.size = 0 threw exception IndexSizeError: Failed to set the 'size' property on 'HTMLInputElement': The value provided is 0, which is an invalid size..
 PASS successfullyParsed is true
 
 TEST COMPLETE

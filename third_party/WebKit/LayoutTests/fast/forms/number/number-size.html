@@ -63,7 +63,7 @@ shouldBe('number.size = 10; number.offsetWidth', 'text.offsetWidth');
 shouldBe('number.size', '10');
 shouldBe('number.size = 100; number.offsetWidth', 'text.offsetWidth');
 shouldBe('number.size', '100');
-shouldThrow('number.size = null', '"IndexSizeError: Index or size was negative, or greater than the allowed value."');
+shouldThrow('number.size = null', '"IndexSizeError: Failed to set the \'size\' property on \'HTMLInputElement\': The value provided is 0, which is an invalid size."');
 debug('');
 
 function numberWidth(min, max, step, className) {
