@@ -151,76 +151,51 @@ const char kDisable4444Textures[] = "disable-4444-textures";
 const char kDisableCompositorTouchHitTesting[] =
     "disable-compositor-touch-hit-testing";
 
-struct Switches {
-  Switches()
-    : has_initialized_switches_(false)
-    , impl_side_painting_enabled_(false)
-    , map_image_enabled_(false)
-    , lcd_text_enabled_(false) {
-  }
+bool IsLCDTextEnabled() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(cc::switches::kDisableLCDText))
+    return false;
+  else if (command_line->HasSwitch(cc::switches::kEnableLCDText))
+    return true;
 
-  bool has_initialized_switches_ : 1;
-  bool impl_side_painting_enabled_ : 1;
-  bool map_image_enabled_ : 1;
-  bool lcd_text_enabled_ : 1;
-};
-static Switches g_switches;
-
-void InitializeSwitchesIfRequired() {
-  if (g_switches.has_initialized_switches_)
-    return;
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  // Impl-side painting.
-  if (command_line.HasSwitch(cc::switches::kDisableImplSidePainting)) {
-    g_switches.impl_side_painting_enabled_ = false;
-  } else if (command_line.HasSwitch(cc::switches::kEnableImplSidePainting)) {
-    g_switches.impl_side_painting_enabled_ = true;
-  } else {
 #if defined(OS_ANDROID)
-    g_switches.impl_side_painting_enabled_ = true;
+  return false;
 #else
-    g_switches.impl_side_painting_enabled_ = false;
+  return true;
 #endif
-  }
-
-  // Map-Image.
-  if (command_line.HasSwitch(cc::switches::kDisableMapImage))
-    g_switches.map_image_enabled_ = false;
-  else if (command_line.HasSwitch(cc::switches::kEnableMapImage))
-    g_switches.map_image_enabled_ = true;
-  else
-    g_switches.map_image_enabled_ = false;
-
-  // LCD-Text.
-  if (command_line.HasSwitch(cc::switches::kDisableLCDText)) {
-    g_switches.lcd_text_enabled_ = false;
-  } else if (command_line.HasSwitch(cc::switches::kEnableLCDText)) {
-    g_switches.lcd_text_enabled_ = true;
-  } else {
-#if defined(OS_ANDROID)
-    g_switches.lcd_text_enabled_ = false;
-#else
-    g_switches.lcd_text_enabled_ = true;
-#endif
-  }
-
-  g_switches.has_initialized_switches_ = true;
 }
 
+namespace {
+bool CheckImplSidePaintingStatus() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(cc::switches::kDisableImplSidePainting))
+    return false;
+  else if (command_line.HasSwitch(cc::switches::kEnableImplSidePainting))
+    return true;
+
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+}  // namespace
+
 bool IsImplSidePaintingEnabled() {
-  InitializeSwitchesIfRequired();
-  return g_switches.impl_side_painting_enabled_;
+  static bool enabled = CheckImplSidePaintingStatus();
+  return enabled;
 }
 
 bool IsMapImageEnabled() {
-  InitializeSwitchesIfRequired();
-  return g_switches.map_image_enabled_;
-}
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-bool IsLCDTextEnabled() {
-  InitializeSwitchesIfRequired();
-  return g_switches.lcd_text_enabled_;
+  if (command_line.HasSwitch(cc::switches::kDisableMapImage))
+    return false;
+  else if (command_line.HasSwitch(cc::switches::kEnableMapImage))
+    return true;
+
+  return false;
 }
 
 }  // namespace switches
