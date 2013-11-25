@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_BLOB_READER_H_
-#define CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_BLOB_READER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_BLOB_READER_H_
+#define CHROME_BROWSER_EXTENSIONS_BLOB_READER_H_
 
 #include <string>
 
@@ -29,6 +29,8 @@ class BlobReader : public net::URLFetcherDelegate {
              BlobReadCallback callback);
   virtual ~BlobReader();
 
+  void SetByteRange(int64 offset, int64 length);
+
   void Start();
 
  private:
@@ -41,4 +43,4 @@ class BlobReader : public net::URLFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(BlobReader);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_BLOB_READER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_BLOB_READER_H_

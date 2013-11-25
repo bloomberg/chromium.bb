@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/feedback_private/blob_reader.h"
+#include "chrome/browser/extensions/blob_reader.h"
 
+#include "base/format_macros.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/http/http_request_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -30,6 +33,19 @@ BlobReader::BlobReader(Profile* profile,
 }
 
 BlobReader::~BlobReader() {
+}
+
+void BlobReader::SetByteRange(int64 offset, int64 length) {
+  CHECK_GE(offset, 0);
+  CHECK_GT(length, 0);
+  CHECK_LE(offset, kint64max - length);
+
+  net::HttpRequestHeaders headers;
+  headers.SetHeader(
+      net::HttpRequestHeaders::kRange,
+      base::StringPrintf("bytes=%" PRId64 "-%" PRId64, offset,
+                         offset + length - 1));
+  fetcher_->SetExtraRequestHeaders(headers.ToString());
 }
 
 void BlobReader::Start() {

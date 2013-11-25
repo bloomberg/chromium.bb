@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/api/feedback_private/blob_reader.h"
+#include "chrome/browser/extensions/blob_reader.h"
 #include "chrome/browser/feedback/feedback_data.h"
 #include "chrome/common/extensions/api/feedback_private.h"
 
