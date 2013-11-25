@@ -1023,6 +1023,8 @@ InjectedScript.RemoteObject.prototype = {
                 var type = typeof value;
                 if (!descriptor.enumerable && type === "function")
                     continue;
+                if (type === "undefined" && injectedScript._isHTMLAllCollection(value))
+                    type = "object";
 
                 if (InjectedScript.primitiveTypes[type]) {
                     if (type === "string" && value.length > maxLength) {
