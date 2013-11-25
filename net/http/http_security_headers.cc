@@ -325,7 +325,18 @@ bool ParseHPKPHeader(const std::string& value,
   *include_subdomains = include_subdomains_candidate;
   for (HashValueVector::const_iterator i = pins.begin();
        i != pins.end(); ++i) {
-    hashes->push_back(*i);
+    bool found = false;
+
+    for (HashValueVector::const_iterator j = hashes->begin();
+         j != hashes->end(); ++j) {
+      if (j->Equals(*i)) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found)
+      hashes->push_back(*i);
   }
 
   return true;

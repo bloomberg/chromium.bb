@@ -416,6 +416,20 @@ static void TestValidPKPHeaders(HashValueTag tag) {
   expect_max_age = base::TimeDelta::FromSeconds(kMaxHSTSAgeSecs);
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
+
+  // Test that parsing the same header twice doesn't duplicate the recorded
+  // hashes.
+  hashes.clear();
+  EXPECT_TRUE(ParseHPKPHeader(
+      "  max-age=999;  " +
+          backup_pin + ";" + good_pin + ";   ",
+      chain_hashes, &max_age, &include_subdomains, &hashes));
+  EXPECT_EQ(2u, hashes.size());
+  EXPECT_TRUE(ParseHPKPHeader(
+      "  max-age=999;  " +
+          backup_pin + ";" + good_pin + ";   ",
+      chain_hashes, &max_age, &include_subdomains, &hashes));
+  EXPECT_EQ(2u, hashes.size());
 }
 
 TEST_F(HttpSecurityHeadersTest, BogusPinsHeadersSHA1) {
