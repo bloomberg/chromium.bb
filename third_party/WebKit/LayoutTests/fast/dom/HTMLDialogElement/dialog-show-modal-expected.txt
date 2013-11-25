@@ -6,10 +6,10 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS computedStyle.getPropertyValue('display') is "none"
 PASS computedStyle.getPropertyValue('display') is "block"
 "If dialog already has an open attribute, then throw an InvalidStateError exception."
-PASS dialog.showModal(); threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS dialog.showModal(); threw exception InvalidStateError: Failed to execute 'showModal' on 'HTMLDialogElement': The element already has an 'open' attribute, and therefore cannot be opened modally..
 PASS computedStyle.getPropertyValue('display') is "none"
 "If dialog is not in a Document, then throw an InvalidStateError exception."
-PASS dialog.showModal(); threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS dialog.showModal(); threw exception InvalidStateError: Failed to execute 'showModal' on 'HTMLDialogElement': The element is not in a Document..
 PASS dialog.open is false
 Although the document is not attached to any pages, showModal() should execute as normal.
 PASS dialog.open is true
