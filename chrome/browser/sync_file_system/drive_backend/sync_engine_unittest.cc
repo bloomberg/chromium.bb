@@ -26,6 +26,11 @@ namespace {
 
 const char kAppID[] = "app_id";
 
+void EmptyTask(SyncStatusCode status, const SyncStatusCallback& callback) {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, status));
+}
+
 }  // namespace
 
 class MockExtensionService : public TestExtensionService {
@@ -75,7 +80,9 @@ class MockExtensionService : public TestExtensionService {
   DISALLOW_COPY_AND_ASSIGN(MockExtensionService);
 };
 
-class SyncEngineTest : public testing::Test {
+class SyncEngineTest
+    : public testing::Test,
+      public base::SupportsWeakPtr<SyncEngineTest> {
  public:
   SyncEngineTest() {}
   virtual ~SyncEngineTest() {}
@@ -112,6 +119,17 @@ class SyncEngineTest : public testing::Test {
 
   void UpdateRegisteredApps() {
     sync_engine_->UpdateRegisteredApps();
+  }
+
+  SyncTaskManager* GetSyncEngineTaskManager() {
+    return sync_engine_->task_manager_.get();
+  }
+
+  void CheckServiceState(SyncStatusCode expected_sync_status,
+                         RemoteServiceState expected_service_status,
+                         SyncStatusCode sync_status) {
+    EXPECT_EQ(expected_sync_status, sync_status);
+    EXPECT_EQ(expected_service_status, sync_engine_->GetCurrentState());
   }
 
  private:
@@ -234,6 +252,77 @@ TEST_F(SyncEngineTest, GetOriginStatusMap) {
   ASSERT_EQ(2u, status_map.size());
   EXPECT_EQ("Enabled", status_map[GURL("chrome-extension://app_0")]);
   EXPECT_EQ("Disabled", status_map[GURL("chrome-extension://app_1")]);
+}
+
+TEST_F(SyncEngineTest, UpdateServiceState) {
+  //SyncStatusCode sync_status = SYNC_STATUS_UNKNOWN;
+
+  EXPECT_EQ(REMOTE_SERVICE_OK, sync_engine()->GetCurrentState());
+
+  GetSyncEngineTaskManager()->ScheduleTask(
+      base::Bind(&EmptyTask, SYNC_STATUS_AUTHENTICATION_FAILED),
+      base::Bind(&SyncEngineTest::CheckServiceState,
+                 AsWeakPtr(),
+                 SYNC_STATUS_AUTHENTICATION_FAILED,
+                 REMOTE_SERVICE_AUTHENTICATION_REQUIRED));
+
+  GetSyncEngineTaskManager()->ScheduleTask(
+      base::Bind(&EmptyTask, SYNC_STATUS_ACCESS_FORBIDDEN),
+      base::Bind(&SyncEngineTest::CheckServiceState,
+                 AsWeakPtr(),
+                 SYNC_STATUS_ACCESS_FORBIDDEN,
+                 REMOTE_SERVICE_AUTHENTICATION_REQUIRED));
+
+  GetSyncEngineTaskManager()->ScheduleTask(
+      base::Bind(&EmptyTask, SYNC_STATUS_SERVICE_TEMPORARILY_UNAVAILABLE),
+      base::Bind(&SyncEngineTest::CheckServiceState,
+                 AsWeakPtr(),
+                 SYNC_STATUS_SERVICE_TEMPORARILY_UNAVAILABLE,
+                 REMOTE_SERVICE_TEMPORARY_UNAVAILABLE));
+
+  GetSyncEngineTaskManager()->ScheduleTask(
+      base::Bind(&EmptyTask, SYNC_STATUS_NETWORK_ERROR),
+      base::Bind(&SyncEngineTest::CheckServiceState,
+                 AsWeakPtr(),
+                 SYNC_STATUS_NETWORK_ERROR,
+                 REMOTE_SERVICE_TEMPORARY_UNAVAILABLE));
+
+  GetSyncEngineTaskManager()->ScheduleTask(
+      base::Bind(&EmptyTask, SYNC_STATUS_ABORT),
+      base::Bind(&SyncEngineTest::CheckServiceState,
+                 AsWeakPtr(),
+                 SYNC_STATUS_ABORT,
+                 REMOTE_SERVICE_TEMPORARY_UNAVAILABLE));
+
+  GetSyncEngineTaskManager()->ScheduleTask(
+      base::Bind(&EmptyTask, SYNC_STATUS_FAILED),
+      base::Bind(&SyncEngineTest::CheckServiceState,
+                 AsWeakPtr(),
+                 SYNC_STATUS_FAILED,
+                 REMOTE_SERVICE_TEMPORARY_UNAVAILABLE));
+
+  GetSyncEngineTaskManager()->ScheduleTask(
+      base::Bind(&EmptyTask, SYNC_DATABASE_ERROR_CORRUPTION),
+      base::Bind(&SyncEngineTest::CheckServiceState,
+                 AsWeakPtr(),
+                 SYNC_DATABASE_ERROR_CORRUPTION,
+                 REMOTE_SERVICE_DISABLED));
+
+  GetSyncEngineTaskManager()->ScheduleTask(
+      base::Bind(&EmptyTask, SYNC_DATABASE_ERROR_IO_ERROR),
+      base::Bind(&SyncEngineTest::CheckServiceState,
+                 AsWeakPtr(),
+                 SYNC_DATABASE_ERROR_IO_ERROR,
+                 REMOTE_SERVICE_DISABLED));
+
+  GetSyncEngineTaskManager()->ScheduleTask(
+      base::Bind(&EmptyTask, SYNC_DATABASE_ERROR_FAILED),
+      base::Bind(&SyncEngineTest::CheckServiceState,
+                 AsWeakPtr(),
+                 SYNC_DATABASE_ERROR_FAILED,
+                 REMOTE_SERVICE_DISABLED));
+
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace drive_backend

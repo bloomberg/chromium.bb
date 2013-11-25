@@ -140,9 +140,7 @@ class SyncEngine : public RemoteFileSyncService,
   void DidFetchChangeList(SyncStatusCallback& callback);
 
   void MaybeStartFetchChanges();
-  void UpdateServiceStateFromSyncStatusCode(
-      SyncStatusCode state,
-      const std::string& description);
+  void UpdateServiceStateFromSyncStatusCode(SyncStatusCode state);
   void UpdateServiceState(RemoteServiceState state,
                           const std::string& description);
   void UpdateRegisteredApps();

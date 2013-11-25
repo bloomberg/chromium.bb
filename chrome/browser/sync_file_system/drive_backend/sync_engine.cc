@@ -251,7 +251,7 @@ void SyncEngine::MaybeScheduleNextTask() {
 }
 
 void SyncEngine::NotifyLastOperationStatus(SyncStatusCode sync_status) {
-  NOTIMPLEMENTED();
+  UpdateServiceStateFromSyncStatusCode(sync_status);
 }
 
 void SyncEngine::OnNotificationReceived() {
@@ -271,8 +271,8 @@ void SyncEngine::OnReadyToSendRequests() {
 }
 
 void SyncEngine::OnRefreshTokenInvalid() {
-  UpdateServiceStateFromSyncStatusCode(
-      SYNC_STATUS_AUTHENTICATION_FAILED,
+  UpdateServiceState(
+      REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
       "Found invalid refresh token.");
 }
 
@@ -365,11 +365,47 @@ void SyncEngine::MaybeStartFetchChanges() {
   }
 }
 
-void SyncEngine::UpdateServiceStateFromSyncStatusCode(
-    SyncStatusCode status,
-    const std::string& description) {
-  // TODO(tzik): Map |status| to RemoteServiceState and update |service_state_|.
-  NOTIMPLEMENTED();
+void SyncEngine::UpdateServiceStateFromSyncStatusCode(SyncStatusCode status) {
+  switch (status) {
+    case SYNC_STATUS_OK:
+      // FIXME(keishi) Do not turn remote service back on if the task did not
+      // involve network access.
+      UpdateServiceState(REMOTE_SERVICE_OK, std::string());
+      break;
+
+    // Authentication error.
+    case SYNC_STATUS_AUTHENTICATION_FAILED:
+      UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
+                         "Authentication required");
+      break;
+
+    // OAuth token error.
+    case SYNC_STATUS_ACCESS_FORBIDDEN:
+      UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
+                         "Access forbidden");
+      break;
+
+    // Errors which could make the service temporarily unavailable.
+    case SYNC_STATUS_SERVICE_TEMPORARILY_UNAVAILABLE:
+    case SYNC_STATUS_NETWORK_ERROR:
+    case SYNC_STATUS_ABORT:
+    case SYNC_STATUS_FAILED:
+      UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
+                         "Network or temporary service error.");
+      break;
+
+    // Errors which would require manual user intervention to resolve.
+    case SYNC_DATABASE_ERROR_CORRUPTION:
+    case SYNC_DATABASE_ERROR_IO_ERROR:
+    case SYNC_DATABASE_ERROR_FAILED:
+      UpdateServiceState(REMOTE_SERVICE_DISABLED,
+                         "Unrecoverable database error");
+      break;
+
+    default:
+      // Other errors don't affect service state
+      break;
+  }
 }
 
 void SyncEngine::UpdateServiceState(RemoteServiceState state,
