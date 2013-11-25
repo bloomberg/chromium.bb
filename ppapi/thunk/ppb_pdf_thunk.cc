@@ -133,6 +133,20 @@ PP_Resource GetResourceImageForScale(PP_Instance instance,
   return enter.functions()->GetResourceImageForScale(image_id, scale);
 }
 
+PP_Var ModalPromptForPassword(PP_Instance instance_id,
+                              PP_Var message) {
+  // TODO(raymes): Implement or remove this function.
+  NOTIMPLEMENTED();
+  return PP_MakeUndefined();
+}
+
+PP_Bool IsOutOfProcess(PP_Instance instance) {
+  EnterInstanceAPI<PPB_PDF_API> enter(instance);
+  if (enter.failed())
+    return PP_FALSE;
+  return enter.functions()->IsOutOfProcess();
+}
+
 const PPB_PDF g_ppb_pdf_thunk = {
   &GetLocalizedString,
   &GetResourceImage,
@@ -148,7 +162,9 @@ const PPB_PDF g_ppb_pdf_thunk = {
   &SaveAs,
   &Print,
   &IsFeatureEnabled,
-  &GetResourceImageForScale
+  &GetResourceImageForScale,
+  &ModalPromptForPassword,
+  &IsOutOfProcess,
 };
 
 }  // namespace

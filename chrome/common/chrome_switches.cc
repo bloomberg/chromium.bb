@@ -1081,6 +1081,9 @@ const char kOriginToForceQuicOn[]           = "origin-to-force-quic-on";
 // chrome process started. (See ProcessSingleton for more details.)
 const char kOriginalProcessStartTime[]      = "original-process-start-time";
 
+// Enable the out of process PDF plugin.
+const char kOutOfProcessPdf[] = "out-of-process-pdf";
+
 // Packages an extension to a .crx installable file from a given directory.
 const char kPackExtension[]                 = "pack-extension";
 

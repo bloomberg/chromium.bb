@@ -146,4 +146,8 @@ interface PPB_PDF_0_1 {
   PP_Var ModalPromptForPassword(
       [in] PP_Instance instance,
       [in] PP_Var message);
+
+  /* Returns PP_TRUE if the plugin is out of process. */
+  PP_Bool IsOutOfProcess(
+      [in] PP_Instance instance);
 };

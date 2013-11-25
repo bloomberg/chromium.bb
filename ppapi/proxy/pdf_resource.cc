@@ -188,5 +188,9 @@ PP_Resource PDFResource::GetResourceImage(PP_ResourceImage image_id) {
   return GetResourceImageForScale(image_id, 1.0f);
 }
 
+PP_Bool PDFResource::IsOutOfProcess() {
+  return PP_TRUE;
+}
+
 }  // namespace proxy
 }  // namespace ppapi

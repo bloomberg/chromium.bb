@@ -54,6 +54,7 @@ class PPAPI_PROXY_EXPORT PDFResource
   virtual PP_Resource GetResourceImageForScale(PP_ResourceImage image_id,
                                                float scale) OVERRIDE;
   virtual PP_Resource GetResourceImage(PP_ResourceImage image_id) OVERRIDE;
+  virtual PP_Bool IsOutOfProcess() OVERRIDE;
 
  private:
   std::string locale_;

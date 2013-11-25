@@ -419,6 +419,10 @@ PP_Var ModalPromptForPassword(PP_Instance instance_id,
   return ppapi::StringVar::StringToPPVar(actual_value);
 }
 
+PP_Bool IsOutOfProcess(PP_Instance instance_id) {
+  return PP_FALSE;
+}
+
 const PPB_PDF ppb_pdf = {
   &GetLocalizedString,
   &GetResourceImage,
@@ -436,6 +440,7 @@ const PPB_PDF ppb_pdf = {
   &IsFeatureEnabled,
   &GetResourceImageForScale,
   &ModalPromptForPassword,
+  &IsOutOfProcess,
 };
 
 }  // namespace

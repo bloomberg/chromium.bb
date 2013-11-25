@@ -184,6 +184,7 @@ ImageData PDF::GetResourceImageForScale(const InstanceHandle& instance,
   return ImageData();
 }
 
+// static
 Var PDF::ModalPromptForPassword(const InstanceHandle& instance,
                                 Var message) {
   if (has_interface<PPB_PDF>()) {
@@ -194,4 +195,14 @@ Var PDF::ModalPromptForPassword(const InstanceHandle& instance,
   }
   return Var();
 }
+
+// static
+bool PDF::IsOutOfProcess(const InstanceHandle& instance) {
+  if (has_interface<PPB_PDF>()) {
+    return PP_ToBool(get_interface<PPB_PDF>()->IsOutOfProcess(
+        instance.pp_instance()));
+  }
+  return false;
+}
+
 }  // namespace pp

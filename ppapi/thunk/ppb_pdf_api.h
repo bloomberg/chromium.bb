@@ -31,6 +31,7 @@ class PPB_PDF_API {
   virtual void Print() = 0;
   virtual PP_Resource GetResourceImageForScale(PP_ResourceImage image_id,
                                                float scale) = 0;
+  virtual PP_Bool IsOutOfProcess() = 0;
 
   static const SingletonResourceID kSingletonResourceID = PDF_SINGLETON_ID;
 };

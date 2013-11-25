@@ -159,6 +159,10 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       pdf.mime_types.push_back(pdf_mime_type);
       pdf.mime_types.push_back(print_preview_pdf_mime_type);
       pdf.permissions = kPDFPluginPermissions;
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kOutOfProcessPdf)) {
+        pdf.is_out_of_process = true;
+      }
       plugins->push_back(pdf);
 
       skip_pdf_file_check = true;
