@@ -1127,9 +1127,6 @@ weston_view_configure(struct weston_view *view,
 		      float x, float y, int width, int height);
 
 void
-weston_view_restack(struct weston_view *surface, struct wl_list *below);
-
-void
 weston_view_set_position(struct weston_view *view,
 			 float x, float y);
 

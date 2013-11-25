@@ -3698,7 +3698,12 @@ alt_tab_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 
 		preview->view = v = weston_view_create(view->surface);
 		v->output = view->output;
-		weston_view_restack(v, &ws->layer.view_list);
+
+		wl_list_remove(&v->layer_link);
+		wl_list_insert(&ws->layer.view_list, &v->layer_link);
+		weston_view_damage_below(v);
+		weston_surface_damage(v->surface);
+
 		weston_view_configure(v, x, y, view->geometry.width, view->geometry.height);
 
 		preview->listener.notify = alt_tab_handle_surface_destroy;
@@ -3890,6 +3895,9 @@ rotate_binding(struct weston_seat *seat, uint32_t time, uint32_t button,
 	surface_rotate(surface, seat);
 }
 
+/* Move all fullscreen layers down to the current workspace in a non-reversible
+ * manner. This should be used when implementing shell-wide overlays, such as
+ * the alt-tab switcher, which need to de-promote fullscreen layers. */
 static void
 lower_fullscreen_layer(struct desktop_shell *shell)
 {
@@ -3899,8 +3907,12 @@ lower_fullscreen_layer(struct desktop_shell *shell)
 	ws = get_current_workspace(shell);
 	wl_list_for_each_reverse_safe(view, prev,
 				      &shell->fullscreen_layer.view_list,
-				      layer_link)
-		weston_view_restack(view, &ws->layer.view_list);
+				      layer_link) {
+		wl_list_remove(&view->layer_link);
+		wl_list_insert(&ws->layer.view_list, &view->layer_link);
+		weston_view_damage_below(view);
+		weston_surface_damage(view->surface);
+	}
 }
 
 static void
@@ -3908,7 +3920,6 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	 struct weston_seat *seat)
 {
 	struct weston_surface *main_surface;
-	struct weston_view *main_view;
 	struct focus_state *state;
 	struct workspace *ws;
 	struct weston_surface *old_es;
@@ -3940,15 +3951,17 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	case SHELL_SURFACE_NONE:
 	default:
 		restore_all_output_modes(shell->compositor);
-		ws = get_current_workspace(shell);
-		main_view = get_default_view(main_surface);
-		if (main_view)
-			weston_view_restack(main_view, &ws->layer.view_list);
 		break;
 	}
 
-	if (shell->focus_animation_type != ANIMATION_NONE)
+	if (shell->focus_animation_type != ANIMATION_NONE) {
+		ws = get_current_workspace(shell);
 		animate_focus_change(shell, ws, get_default_view(old_es), get_default_view(es));
+	}
+
+	/* Update the surface’s layer. This brings it to the top of the stacking
+	 * order as appropriate. */
+	shell_surface_update_layer(get_shell_surface(main_surface));
 }
 
 /* no-op func for checking black surface */

@@ -1423,15 +1423,6 @@ weston_surface_attach(struct weston_surface *surface,
 }
 
 WL_EXPORT void
-weston_view_restack(struct weston_view *view, struct wl_list *below)
-{
-	wl_list_remove(&view->layer_link);
-	wl_list_insert(below, &view->layer_link);
-	weston_view_damage_below(view);
-	weston_surface_damage(view->surface);
-}
-
-WL_EXPORT void
 weston_compositor_damage_all(struct weston_compositor *compositor)
 {
 	struct weston_output *output;
