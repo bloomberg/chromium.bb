@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "content/common/clipboard_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -17,13 +19,12 @@
 
 namespace content {
 
-#if defined(OS_WIN)
 
 namespace {
 
-// The write must be performed on the UI thread because the clipboard object
-// from the IO thread cannot create windows so it cannot be the "owner" of the
-// clipboard's contents.  // See http://crbug.com/5823.
+// On Windows, the write must be performed on the UI thread because the
+// clipboard object from the IO thread cannot create windows so it cannot be
+// the "owner" of the clipboard's contents. See http://crbug.com/5823.
 void WriteObjectsOnUIThread(ui::Clipboard::ObjectMap* objects) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   static ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
@@ -32,7 +33,6 @@ void WriteObjectsOnUIThread(ui::Clipboard::ObjectMap* objects) {
 
 }  // namespace
 
-#endif
 
 ClipboardMessageFilter::ClipboardMessageFilter() {}
 
@@ -89,29 +89,32 @@ ClipboardMessageFilter::~ClipboardMessageFilter() {
 }
 
 void ClipboardMessageFilter::OnWriteObjectsSync(
-    ui::Clipboard::ObjectMap objects,
+    const ui::Clipboard::ObjectMap& objects,
     base::SharedMemoryHandle bitmap_handle) {
   DCHECK(base::SharedMemory::IsHandleValid(bitmap_handle))
       << "Bad bitmap handle";
-  // Splice the shared memory handle into the clipboard data.
+
+  // On Windows, we can't write directly from the IO thread, so we copy the data
+  // into a heap allocated map and post a task to the UI thread. On other
+  // platforms, to lower the amount of time the renderer has to wait for the
+  // sync IPC to complete, we also take a copy and post a task to flush the data
+  // to the clipboard later.
+  scoped_ptr<ui::Clipboard::ObjectMap> long_living_objects(
+      new ui::Clipboard::ObjectMap(objects));
+  // Splice the shared memory handle into the data. |long_living_objects| now
+  // contains a heap-allocated SharedMemory object that references
+  // |bitmap_handle|. This reference will keep the shared memory section alive
+  // when this IPC returns, and the SharedMemory object will eventually be
+  // freed by ui::Clipboard::WriteObjects().
   if (!ui::Clipboard::ReplaceSharedMemHandle(
-           &objects, bitmap_handle, PeerHandle()))
+           long_living_objects.get(), bitmap_handle, PeerHandle()))
     return;
-#if defined(OS_WIN)
-  // We cannot write directly from the IO thread, and cannot service the IPC
-  // on the UI thread. We'll copy the relevant data and get a handle to any
-  // shared memory so it doesn't go away when we resume the renderer, and post
-  // a task to perform the write on the UI thread.
-  ui::Clipboard::ObjectMap* long_living_objects = new ui::Clipboard::ObjectMap;
-  long_living_objects->swap(objects);
 
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&WriteObjectsOnUIThread, base::Owned(long_living_objects)));
-#else
-  GetClipboard()->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE, objects);
-#endif
+      base::Bind(&WriteObjectsOnUIThread,
+                 base::Owned(long_living_objects.release())));
 }
 
 void ClipboardMessageFilter::OnWriteObjectsAsync(
