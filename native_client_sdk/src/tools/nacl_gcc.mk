@@ -7,20 +7,11 @@
 #   http://www.gnu.org/software/make/manual/make.html
 #
 
-
-#
-# Default library paths
-#
-LD_X86_32 := -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)
-LD_X86_64 := -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_64/$(CONFIG)
-LD_ARM := -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_arm/$(CONFIG)
-
-
 #
 # Macros for TOOLS
 #
 # We always link with the C++ compiler but include -Wl,-as-needed flag
-# in LD_FLAGS so the linker should drop libc++ unless it's actually needed.
+# in LDFLAGS so the linker should drop libc++ unless it's actually needed.
 #
 X86_TC_BIN ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin
 ARM_TC_BIN ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin
@@ -60,6 +51,8 @@ ARM_CXXFLAGS ?=
 X86_32_LDFLAGS ?= -Wl,-Map,$(OUTDIR)/$(TARGET)_x86_32.map
 X86_64_LDFLAGS ?= -Wl,-Map,$(OUTDIR)/$(TARGET)_x86_64.map
 ARM_LDFLAGS ?= -Wl,-Map,$(OUTDIR)/$(TARGET)_arm.map
+
+LDFLAGS_SHARED = -shared
 
 #
 # Compile Macro
@@ -178,13 +171,14 @@ GLIBC_REMAP :=
 # $2 = List of Sources
 # $3 = List of LIBS
 # $4 = List of DEPS
-# $5 = 1 => Don't add to NMF.
+# $5 = Library Paths
+# $6 = 1 => Don't add to NMF.
 #
-define SO_RULE
+define SO_LINKER_RULE
 ifneq (,$(findstring x86_32,$(ARCHES)))
 all: $(OUTDIR)/lib$(1)_x86_32.so
-$(OUTDIR)/lib$(1)_x86_32.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32_pic)) $(4)
-	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter-out $(4),$$^) -shared -m32 $(LD_X86_32) $$(LD_FLAGS) $(foreach lib,$(3),-l$(lib)))
+$(OUTDIR)/lib$(1)_x86_32.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32_pic)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter %.o,$$^) $(LDFLAGS_SHARED) -m32 $(NACL_LDFLAGS) $(X86_32_LDFLAGS) $(foreach path,$(5),-L$(path)/$(TOOLCHAIN)_x86_32/$(CONFIG)) $(foreach lib,$(3),-l$(lib)))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so
@@ -192,7 +186,7 @@ install: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so
 $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so: $(OUTDIR)/lib$(1)_x86_32.so
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
-ifneq ($(5),1)
+ifneq ($(6),1)
 GLIBC_SO_LIST += $(OUTDIR)/lib$(1)_x86_32.so
 GLIBC_REMAP += -n lib$(1)_x86_32.so,lib$(1).so
 endif
@@ -200,8 +194,8 @@ endif
 
 ifneq (,$(findstring x86_64,$(ARCHES)))
 all: $(OUTDIR)/lib$(1)_x86_64.so
-$(OUTDIR)/lib$(1)_x86_64.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64_pic)) $(4)
-	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter-out $(4),$$^) -shared -m64 $(LD_X86_64) $$(LD_FLAGS) $(foreach lib,$(3),-l$(lib)))
+$(OUTDIR)/lib$(1)_x86_64.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64_pic)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter %.o,$$^) $(LDFLAGS_SHARED) -m64 $(NACL_LDFLAGS) $(X86_64_LDFLAGS) $(foreach path,$(5),-L$(path)/$(TOOLCHAIN)_x86_64/$(CONFIG)) $(foreach lib,$(3),-l$(lib)))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so
@@ -209,11 +203,22 @@ install: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so
 $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so: $(OUTDIR)/lib$(1)_x86_64.so
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
-ifneq ($(5),1)
+ifneq ($(6),1)
 GLIBC_SO_LIST += $(OUTDIR)/lib$(1)_x86_64.so
 GLIBC_REMAP += -n lib$(1)_x86_64.so,lib$(1).so
 endif
 endif
+endef
+
+#
+# $1 = Target Name
+# $2 = List of Sources
+# $3 = List of LIBS
+# $4 = List of DEPS
+# $5 = 1 => Don't add to NMF.
+#
+define SO_RULE
+$(call SO_LINKER_RULE,$(1),$(2),$(filter-out pthread,$(3)),$(4),$(LIB_PATHS),$(5))
 endef
 
 #
