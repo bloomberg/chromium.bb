@@ -1507,14 +1507,6 @@ void RenderBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool)
             m_overflow->setLayoutClientAfterEdge(oldClientAfterEdge);
     }
 
-    // Allow our overflow to catch cases where the caret in an empty editable element with negative text indent needs to get painted.
-    LayoutUnit textIndent = textIndentOffset();
-    if (textIndent < 0) {
-        LayoutRect clientRect(noOverflowRect());
-        LayoutRect rectToApply = LayoutRect(clientRect.x() + textIndent, clientRect.y(), clientRect.width() - textIndent, clientRect.height());
-        addContentsVisualOverflow(rectToApply);
-    }
-
     // Add visual overflow from box-shadow and border-image-outset.
     addVisualEffectOverflow();
 

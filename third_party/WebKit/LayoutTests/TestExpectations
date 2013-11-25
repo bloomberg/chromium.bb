@@ -302,6 +302,8 @@ crbug.com/248938 [ Win ] virtual/threaded/animations/keyframe-timing-functions-t
 Bug(vollick) compositing/geometry/limit-layer-bounds-clipping-ancestor.html [ NeedsRebaseline ]
 Bug(vollick) virtual/softwarecompositing/geometry/limit-layer-bounds-clipping-ancestor.html [ NeedsRebaseline ]
 
+Bug(seokju) fast/repaint/paint-caret-in-div-with-negative-indent.html [ NeedsRebaseline ]
+
 crbug.com/320477 [ Debug ] inspector/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 
 # Switching to content shell failures
