@@ -121,7 +121,9 @@ void BrowserFrame::InitBrowserFrame() {
     params.wm_class_name += " (" + user_data_dir + ")";
   }
   const char kX11WindowRoleBrowser[] = "browser";
-  params.wm_role_name = std::string(kX11WindowRoleBrowser);
+  const char kX11WindowRolePopup[] = "pop-up";
+  params.wm_role_name = browser_view_->browser()->is_type_tabbed() ?
+      std::string(kX11WindowRoleBrowser) : std::string(kX11WindowRolePopup);
 #endif  // defined(OS_LINUX)
 
   Init(params);
