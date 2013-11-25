@@ -56,6 +56,11 @@ std::string GetPlatformKeybindingKeyForAccelerator(
   return key;
 }
 
+bool IsForCurrentPlatform(const std::string& key) {
+  return StartsWithASCII(
+      key, extensions::Command::CommandPlatform() + ":", true);
+}
+
 void SetInitialBindingsHaveBeenAssigned(
     ExtensionPrefs* prefs, const std::string& extension_id) {
   prefs->UpdateExtensionPref(extension_id, kInitialBindingsHaveBeenAssigned,
@@ -313,18 +318,18 @@ Command CommandService::FindCommandByName(
     item->GetString(kCommandName, &command_name);
     if (command != command_name)
       continue;
+    // Format stored in Preferences is: "Platform:Shortcut[:ExtensionId]".
+    std::string shortcut = it.key();
+    if (!IsForCurrentPlatform(shortcut))
+      continue;
     bool global = false;
     if (FeatureSwitch::global_commands()->IsEnabled())
       item->GetBoolean(kGlobal, &global);
 
-    // Format stored in Preferences is: "Platform:Shortcut[:ExtensionId]".
-    std::string shortcut = it.key();
-    if (StartsWithASCII(shortcut, Command::CommandPlatform() + ":", true)) {
-      std::vector<std::string> tokens;
-      base::SplitString(shortcut, ':', &tokens);
-      CHECK(tokens.size() >= 2);
-      shortcut = tokens[1];
-    }
+    std::vector<std::string> tokens;
+    base::SplitString(shortcut, ':', &tokens);
+    CHECK(tokens.size() >= 2);
+    shortcut = tokens[1];
 
     return Command(command_name, string16(), shortcut, global);
   }
@@ -410,6 +415,10 @@ void CommandService::RemoveKeybindingPrefs(const std::string& extension_id,
   KeysToRemove keys_to_remove;
   for (base::DictionaryValue::Iterator it(*bindings); !it.IsAtEnd();
        it.Advance()) {
+    // Removal of keybinding preference should be limited to current platform.
+    if (!IsForCurrentPlatform(it.key()))
+      continue;
+
     const base::DictionaryValue* item = NULL;
     it.value().GetAsDictionary(&item);
 
