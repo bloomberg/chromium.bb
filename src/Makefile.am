@@ -198,7 +198,6 @@ wayland_backend_la_LDFLAGS = -module -avoid-version
 wayland_backend_la_LIBADD =			\
 	$(COMPOSITOR_LIBS)			\
 	$(WAYLAND_COMPOSITOR_LIBS)		\
-	libsession-helper.la			\
 	../shared/libshared-cairo.la
 wayland_backend_la_CFLAGS =			\
 	$(COMPOSITOR_CFLAGS)			\
