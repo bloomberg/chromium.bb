@@ -56,6 +56,7 @@ def parse_options():
     parser.add_option('--workerglobalscope-constructors-file', help='output file')
     parser.add_option('--sharedworkerglobalscope-constructors-file', help='output file')
     parser.add_option('--dedicatedworkerglobalscope-constructors-file', help='output file')
+    parser.add_option('--serviceworkerglobalscope-constructors-file', help='output file')
     parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
     options, args = parser.parse_args()
     if options.event_names_file is None:
@@ -68,10 +69,12 @@ def parse_options():
         parser.error('Must specify an output file using --window-constructors-file.')
     if options.workerglobalscope_constructors_file is None:
         parser.error('Must specify an output file using --workerglobalscope-constructors-file.')
-    if options.workerglobalscope_constructors_file is None:
+    if options.sharedworkerglobalscope_constructors_file is None:
         parser.error('Must specify an output file using --sharedworkerglobalscope-constructors-file.')
-    if options.workerglobalscope_constructors_file is None:
+    if options.dedicatedworkerglobalscope_constructors_file is None:
         parser.error('Must specify an output file using --dedicatedworkerglobalscope-constructors-file.')
+    if options.serviceworkerglobalscope_constructors_file is None:
+        parser.error('Must specify an output file using --serviceworkerglobalscope-constructors-file.')
     if options.main_idl_files_list is None:
         parser.error('Must specify a file listing main IDL files using --main-idl-files-list.')
     if options.support_idl_files_list is None:
@@ -384,6 +387,7 @@ def main():
         'WorkerGlobalScope': options.workerglobalscope_constructors_file,
         'SharedWorkerGlobalScope': options.sharedworkerglobalscope_constructors_file,
         'DedicatedWorkerGlobalScope': options.dedicatedworkerglobalscope_constructors_file,
+        'ServiceWorkerGlobalScope': options.serviceworkerglobalscope_constructors_file,
         }
 
     interfaces, dependencies, bindings_derived_sources, global_constructors, event_names = parse_idl_files(main_idl_files, support_idl_files, global_constructors_filenames)

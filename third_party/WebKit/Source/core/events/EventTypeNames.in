@@ -11,6 +11,7 @@ DOMNodeRemoved
 DOMNodeRemovedFromDocument
 DOMSubtreeModified
 abort
+activate
 addsourcebuffer
 addstream
 addtrack
@@ -75,6 +76,7 @@ ended
 enter
 error
 exit
+fetch
 focus
 focusin
 focusout
@@ -89,6 +91,7 @@ hashchange
 icecandidate
 iceconnectionstatechange
 input
+install
 invalid
 keydown
 keypress

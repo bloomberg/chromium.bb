@@ -61,7 +61,7 @@ DoNotGenerateToV8
 EnforceRange
 ExposeJSAccessors
 GenerateVisitDOMWrapper=*
-GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope
+GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope|ServiceWorkerGlobalScope
 Immutable
 ImplementedAs=*
 InitializedByEventConstructor

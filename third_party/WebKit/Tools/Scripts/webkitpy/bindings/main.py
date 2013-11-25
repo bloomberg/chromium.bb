@@ -168,6 +168,7 @@ class BindingsTests(object):
         _, workerglobalscope_constructors_file = provider.newtempfile()
         _, sharedworkerglobalscope_constructors_file = provider.newtempfile()
         _, dedicatedworkerglobalscope_constructors_file = provider.newtempfile()
+        _, serviceworkersglobalscope_constructors_file = provider.newtempfile()
         cmd = ['python',
                'bindings/scripts/compute_dependencies.py',
                '--main-idl-files-list', main_idl_files_list_filename,
@@ -178,6 +179,7 @@ class BindingsTests(object):
                '--workerglobalscope-constructors-file', workerglobalscope_constructors_file,
                '--sharedworkerglobalscope-constructors-file', sharedworkerglobalscope_constructors_file,
                '--dedicatedworkerglobalscope-constructors-file', dedicatedworkerglobalscope_constructors_file,
+               '--serviceworkerglobalscope-constructors-file', serviceworkersglobalscope_constructors_file,
                '--event-names-file', self.event_names_filename,
                '--write-file-only-if-changed', '0']
 

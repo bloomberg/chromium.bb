@@ -90,6 +90,7 @@
          '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
          '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
          '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
     ],
 
     'conditions': [
@@ -185,6 +186,8 @@
          '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
          '--dedicatedworkerglobalscope-constructors-file',
          '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
+         '--serviceworkerglobalscope-constructors-file',
+         '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
          '--event-names-file',
          '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
          '<@(write_file_only_if_changed)',

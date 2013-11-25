@@ -69,6 +69,7 @@ namespace WebCore {
 
         virtual bool isSharedWorkerGlobalScope() const { return false; }
         virtual bool isDedicatedWorkerGlobalScope() const { return false; }
+        virtual bool isServiceWorkerGlobalScope() const { return false; }
 
         const KURL& url() const { return m_url; }
         KURL completeURL(const String&) const;

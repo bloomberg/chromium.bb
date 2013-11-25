@@ -33,6 +33,7 @@
 #include "bindings/v8/WorkerScriptController.h"
 
 #include "V8DedicatedWorkerGlobalScope.h"
+#include "V8ServiceWorkerGlobalScope.h"
 #include "V8SharedWorkerGlobalScope.h"
 #include "V8WorkerGlobalScope.h"
 #include "bindings/v8/ScriptSourceCode.h"
@@ -45,6 +46,7 @@
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/frame/DOMTimer.h"
+#include "core/workers/SharedWorkerGlobalScope.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -115,7 +117,9 @@ bool WorkerScriptController::initializeContextIfNeeded()
 
     // Create a new JS object and use it as the prototype for the shadow global object.
     const WrapperTypeInfo* contextType = &V8DedicatedWorkerGlobalScope::wrapperTypeInfo;
-    if (!m_workerGlobalScope.isDedicatedWorkerGlobalScope())
+    if (m_workerGlobalScope.isServiceWorkerGlobalScope())
+        contextType = &V8ServiceWorkerGlobalScope::wrapperTypeInfo;
+    else if (!m_workerGlobalScope.isDedicatedWorkerGlobalScope())
         contextType = &V8SharedWorkerGlobalScope::wrapperTypeInfo;
     v8::Handle<v8::Function> workerGlobalScopeConstructor = m_perContextData->constructorForType(contextType);
     v8::Local<v8::Object> jsWorkerGlobalScope = V8ObjectConstructor::newInstance(workerGlobalScopeConstructor);
