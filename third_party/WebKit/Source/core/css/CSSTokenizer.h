@@ -85,8 +85,6 @@ private:
     template <typename CharacterType>
     inline void setTokenStart(CharacterType*);
 
-    inline UChar tokenStartChar();
-
     template <typename CharacterType>
     inline bool isIdentifierStart();
 

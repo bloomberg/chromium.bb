@@ -1507,13 +1507,6 @@ inline void CSSTokenizer::setTokenStart<UChar>(UChar* tokenStart)
     m_tokenStart.ptr16 = tokenStart;
 }
 
-inline UChar CSSTokenizer::tokenStartChar()
-{
-    if (is8BitSource())
-        return *m_tokenStart.ptr8;
-    return *m_tokenStart.ptr16;
-}
-
 void CSSTokenizer::setupTokenizer(const char* prefix, unsigned prefixLength, const String& string, const char* suffix, unsigned suffixLength)
 {
     m_parsedTextPrefixLength = prefixLength;
