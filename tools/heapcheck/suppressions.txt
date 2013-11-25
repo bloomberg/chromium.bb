@@ -885,7 +885,7 @@
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
 {
-  bug_323149
+  bug_323149a
   Heapcheck:Leak
   fun:Genesis
   fun:v8::internal::Bootstrapper::CreateEnvironment
@@ -895,4 +895,13 @@
   fun:_init
   fun:net::ProxyResolverV8Tracing::Job::ExecuteProxyResolver
   fun:net::ProxyResolverV8Tracing::Job::ExecuteBlocking
+}
+{
+  bug_323149b
+  Heapcheck:Leak
+  fun:Genesis
+  fun:v8::internal::Bootstrapper::CreateEnvironment
+  fun:CreateEnvironment
+  fun:v8::Context::New
+  fun:V8UnitTest::SetUp
 }
