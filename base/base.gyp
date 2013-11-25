@@ -347,6 +347,8 @@
         'i18n/string_search.h',
         'i18n/time_formatting.cc',
         'i18n/time_formatting.h',
+        'i18n/timezone.cc',
+        'i18n/timezone.h',
       ],
     },
     {
@@ -529,6 +531,7 @@
         'i18n/rtl_unittest.cc',
         'i18n/string_search_unittest.cc',
         'i18n/time_formatting_unittest.cc',
+        'i18n/timezone_unittest.cc',
         'ini_parser_unittest.cc',
         'ios/device_util_unittest.mm',
         'json/json_parser_unittest.cc',
