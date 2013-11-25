@@ -55,14 +55,17 @@ const content::MediaStreamDevice* FindDeviceWithId(
   return NULL;
 };
 
-// This is a short-term solution to grant microphone access to the
-// virtual keyboard extension and the Google Voice Search Hotword
-// extension for voice input. Once http://crbug.com/292856 is fixed,
-// remove this whitelist.
+// This is a short-term solution to grant camera and/or microphone access to
+// extensions:
+// 1. Virtual keyboard extension.
+// 2. Google Voice Search Hotword extension.
+// 3. Flutter gesture recognition extension.
+// Once http://crbug.com/292856 is fixed, remove this whitelist.
 bool IsMediaRequestWhitelistedForExtension(
     const extensions::Extension* extension) {
   return extension->id() == "mppnpdlheglhdfmldimlhpnegondlapf" ||
-      extension->id() == "bepbmhgboaologfdajaanbcjmnhjmhfn";
+      extension->id() == "bepbmhgboaologfdajaanbcjmnhjmhfn" ||
+      extension->id() == "jokbpnebhdcladagohdnfgjcpejggllo";
 }
 
 // This is a short-term solution to allow testing of the the Screen Capture API
