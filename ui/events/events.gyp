@@ -123,8 +123,6 @@
         'ozone/events_ozone.cc',
         'win/events_win.cc',
         'x/events_x.cc',
-        'x/events_x_utils.cc',
-        'x/events_x_utils.h',
       ],
       'conditions': [
         # We explicitly enumerate the platforms we _do_ provide native cracking
@@ -145,6 +143,27 @@
       ],
     },
     {
+      'target_name': 'events_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        'events',
+        'events_base',
+      ],
+      'sources': [
+        'test/events_test_utils.cc',
+        'test/events_test_utils.h',
+        'test/events_test_utils_x11.cc',
+        'test/events_test_utils_x11.h',
+      ],
+      'conditions': [
+        ['use_x11==1', {
+          'dependencies': [
+            '<(DEPTH)/build/linux/system.gyp:x11',
+          ],
+        }],
+      ],
+    },
+    {
       'target_name': 'events_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -155,6 +174,7 @@
         'dom4_keycode_converter',
         'events_base',
         'events',
+        'events_test_support',
       ],
       'sources': [
         'event_dispatcher_unittest.cc',

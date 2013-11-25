@@ -5,10 +5,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
+#include "ui/events/test/events_test_utils.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
-#include "ui/events/x/events_x_utils.h"
+#include "ui/events/test/events_test_utils_x11.h"
 #include "ui/gfx/x/x11_types.h"
 #endif
 
@@ -68,8 +69,8 @@ TEST(EventTest, Repeated) {
   const gfx::Point origin(0, 0);
   MouseEvent mouse_ev1(ET_MOUSE_PRESSED, origin, origin, 0);
   MouseEvent mouse_ev2(ET_MOUSE_PRESSED, origin, origin, 0);
-  MouseEvent::TestApi test_ev1(&mouse_ev1);
-  MouseEvent::TestApi test_ev2(&mouse_ev2);
+  LocatedEventTestApi test_ev1(&mouse_ev1);
+  LocatedEventTestApi test_ev2(&mouse_ev2);
 
   base::TimeDelta start = base::TimeDelta::FromMilliseconds(0);
   base::TimeDelta soon = start + base::TimeDelta::FromMilliseconds(1);

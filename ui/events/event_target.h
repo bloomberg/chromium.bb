@@ -18,21 +18,6 @@ class EVENTS_EXPORT EventTarget : public EventHandler {
  public:
   typedef std::vector<EventTarget*> EventTargets;
 
-  class TestApi {
-   public:
-    explicit TestApi(EventTarget* target) : target_(target) {}
-
-    const EventHandlerList& pre_target_handlers() {
-      return target_->pre_target_list_;
-    }
-
-   private:
-    TestApi();
-    EventTarget* target_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
-  };
-
   class DispatcherApi {
    public:
     explicit DispatcherApi(EventTarget* target) : target_(target) {}
@@ -88,6 +73,7 @@ class EVENTS_EXPORT EventTarget : public EventHandler {
 
  private:
   friend class EventDispatcher;
+  friend class EventTargetTestApi;
 
   // Returns the list of handlers that should receive the event before the
   // target. The handlers from the outermost target are first in the list, and

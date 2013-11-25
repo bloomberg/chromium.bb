@@ -33,7 +33,7 @@
 
 #if defined(USE_AURA) && defined(USE_X11)
 #include <X11/Xlib.h>
-#include "ui/events/x/events_x_utils.h"
+#include "ui/events/test/events_test_utils_x11.h"
 #endif
 
 using web_modal::WebContentsModalDialogManager;

@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/keyboard_driven_event_rewriter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
-#include "ui/events/x/events_x_utils.h"
+#include "ui/events/test/events_test_utils_x11.h"
 
 #include <X11/keysym.h>
 #include <X11/XF86keysym.h>

@@ -143,6 +143,7 @@
         '../compositor/compositor.gyp:compositor_test_support',
         '../events/events.gyp:events',
         '../events/events.gyp:events_base',
+        '../events/events.gyp:events_test_support',
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui_unittests.gyp:ui_test_support',

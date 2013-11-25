@@ -19,6 +19,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/test/events_test_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -231,7 +232,7 @@ TEST_F(ShelfTooltipManagerTest, HideForMouseMoveEvent) {
   // Shouldn't hide if the mouse is in the tooltip.
   ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, tooltip_rect.CenterPoint(),
                              tooltip_rect.CenterPoint(), ui::EF_NONE);
-  ui::LocatedEvent::TestApi test_api(&mouse_event);
+  ui::LocatedEventTestApi test_api(&mouse_event);
 
   SetEventTarget(root_window, &mouse_event);
   event_handler->OnMouseEvent(&mouse_event);
@@ -271,7 +272,7 @@ TEST_F(ShelfTooltipManagerTest, HideForMouseClickEvent) {
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 
-  ui::LocatedEvent::TestApi test_api(&mouse_event);
+  ui::LocatedEventTestApi test_api(&mouse_event);
   test_api.set_location(tooltip_rect.origin() + gfx::Vector2d(-1, -1));
 
   SetEventTarget(root_window, &mouse_event);

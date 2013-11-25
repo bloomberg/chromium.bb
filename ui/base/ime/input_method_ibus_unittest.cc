@@ -24,7 +24,7 @@
 #include "ui/base/ime/input_method_ibus.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
-#include "ui/events/x/events_x_utils.h"
+#include "ui/events/test/events_test_utils_x11.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {

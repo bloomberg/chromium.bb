@@ -1706,6 +1706,11 @@
             '../ash/ash.gyp:ash_test_support',
           ],
         }],
+        ['use_aura==1 or toolkit_views==1', {
+          'dependencies': [
+            '../ui/events/events.gyp:events_test_support',
+          ],
+        }],
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],

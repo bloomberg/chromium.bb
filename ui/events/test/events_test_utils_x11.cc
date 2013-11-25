@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/x/events_x_utils.h"
+#include "ui/events/test/events_test_utils_x11.h"
 
 #include <X11/extensions/XI2.h>
 #include <X11/keysym.h>
@@ -191,9 +191,9 @@ void InitXButtonEventForTesting(EventType type,
   event->xbutton = button_event;
 }
 
-EVENTS_EXPORT void InitXMouseWheelEventForTesting(int wheel_delta,
-                                                  int flags,
-                                                  XEvent* event) {
+void InitXMouseWheelEventForTesting(int wheel_delta,
+                                    int flags,
+                                    XEvent* event) {
   InitXButtonEventForTesting(ui::ET_MOUSEWHEEL, flags, event);
   // MouseWheelEvents are not taking horizontal scrolls into account
   // at the moment.
@@ -213,7 +213,7 @@ ScopedXI2Event::~ScopedXI2Event() {
   }
 }
 
-EVENTS_EXPORT XEvent* CreateScrollEventForTest(
+XEvent* CreateScrollEventForTest(
     int deviceid,
     int x_offset,
     int y_offset,
@@ -236,7 +236,7 @@ EVENTS_EXPORT XEvent* CreateScrollEventForTest(
   return event;
 }
 
-EVENTS_EXPORT void SetUpScrollDeviceForTest(unsigned int deviceid) {
+ void SetUpScrollDeviceForTest(unsigned int deviceid) {
   std::vector<unsigned int> device_list;
   device_list.push_back(deviceid);
 

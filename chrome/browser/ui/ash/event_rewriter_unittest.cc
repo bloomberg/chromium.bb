@@ -28,7 +28,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/mock_xkeyboard.h"
 #include "ui/aura/window.h"
-#include "ui/events/x/events_x_utils.h"
+#include "ui/events/test/events_test_utils_x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace {

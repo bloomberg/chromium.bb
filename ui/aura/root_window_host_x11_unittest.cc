@@ -9,7 +9,7 @@
 #include "ui/aura/root_window_host_x11.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window_tree_host_delegate.h"
-#include "ui/events/x/events_x_utils.h"
+#include "ui/events/test/events_test_utils_x11.h"
 
 namespace {
 class TestRootWindowHostDelegate : public aura::RootWindowHostDelegate {

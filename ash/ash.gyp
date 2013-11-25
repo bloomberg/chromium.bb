@@ -720,6 +720,7 @@
         '../ui/aura/aura.gyp:aura_test_support',
         '../ui/compositor/compositor.gyp:compositor',
         '../ui/events/events.gyp:events',
+        '../ui/events/events.gyp:events_test_support',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/keyboard/keyboard.gyp:keyboard',
         '../ui/message_center/message_center.gyp:message_center',

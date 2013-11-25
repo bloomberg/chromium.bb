@@ -47,20 +47,6 @@ class EVENTS_EXPORT Event {
     DISALLOW_COPY_AND_ASSIGN(DispatcherApi);
   };
 
-  // For testing.
-  class TestApi {
-   public:
-    explicit TestApi(Event* event) : event_(event) {}
-
-    void set_time_stamp(base::TimeDelta time_stamp) {
-      event_->time_stamp_ = time_stamp;
-    }
-
-   private:
-    TestApi();
-    Event* event_;
-  };
-
   const base::NativeEvent& native_event() const { return native_event_; }
   EventType type() const { return type_; }
   const std::string& name() const { return name_; }
@@ -213,6 +199,8 @@ class EVENTS_EXPORT Event {
   void InitLatencyInfo();
 
  private:
+  friend class EventTestApi;
+
   // Safely initializes the native event members of this class.
   void Init();
   void InitWithNativeEvent(const base::NativeEvent& native_event);
@@ -238,22 +226,6 @@ class EVENTS_EXPORT CancelModeEvent : public Event {
 
 class EVENTS_EXPORT LocatedEvent : public Event {
  public:
-  // For testing.
-  class TestApi : public Event::TestApi {
-   public:
-    explicit TestApi(LocatedEvent* located_event)
-        : Event::TestApi(located_event),
-          located_event_(located_event) {}
-
-    void set_location(const gfx::Point& location) {
-      located_event_->location_ = location;
-    }
-
-   private:
-    TestApi();
-    LocatedEvent* located_event_;
-  };
-
   virtual ~LocatedEvent();
 
   int x() const { return location_.x(); }
@@ -276,6 +248,7 @@ class EVENTS_EXPORT LocatedEvent : public Event {
   }
 
  protected:
+  friend class LocatedEventTestApi;
   explicit LocatedEvent(const base::NativeEvent& native_event);
 
   // Create a new LocatedEvent which is identical to the provided model.

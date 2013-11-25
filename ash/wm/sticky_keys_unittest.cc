@@ -18,8 +18,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_delegate.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/x/device_data_manager.h"
-#include "ui/events/x/events_x_utils.h"
 
 namespace ash {
 

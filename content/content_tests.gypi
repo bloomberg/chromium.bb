@@ -765,6 +765,11 @@
             'browser/accessibility/browser_accessibility_win_unittest.cc',
           ],
         }],
+        ['use_aura==1 or toolkit_views==1', {
+          'dependencies': [
+            '../ui/events/events.gyp:events_test_support',
+          ],
+        }],
         ['OS == "android"', {
           'sources': [
             'browser/renderer_host/java/jni_helper_unittest.cc',
@@ -1082,6 +1087,11 @@
             ['use_aura==1 and OS!="win"', {
               'sources!': [
                 'browser/plugin_browsertest.cc',
+              ],
+            }],
+            ['use_aura==1 or toolkit_views==1', {
+              'dependencies': [
+                '../ui/events/events.gyp:events_test_support',
               ],
             }],
             ['OS!="android" and OS!="ios"', {

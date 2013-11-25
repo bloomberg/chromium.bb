@@ -30,6 +30,7 @@
 #include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/window.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/events/test/events_test_utils.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -390,9 +391,6 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
 }
 
 TEST_F(ShellTest, ManagedWindowModeBasics) {
-  Shell* shell = Shell::GetInstance();
-  Shell::TestApi test_api(shell);
-
   // We start with the usual window containers.
   ExpectAllContainers();
   // Shelf is visible.
@@ -495,7 +493,7 @@ TEST_F(ShellTest, ToggleAutoHide) {
 
 TEST_F(ShellTest, TestPreTargetHandlerOrder) {
   Shell* shell = Shell::GetInstance();
-  Shell::TestApi test_api(shell);
+  ui::EventTargetTestApi test_api(shell);
   test::ShellTestApi shell_test_api(shell);
 
   const ui::EventHandlerList& handlers = test_api.pre_target_handlers();

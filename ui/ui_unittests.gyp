@@ -315,6 +315,7 @@
           'dependencies': [
             'events/events.gyp:events',
             'events/events.gyp:events_base',
+            'events/events.gyp:events_test_support',
           ],
         }],
         ['use_aura==1', {

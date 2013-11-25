@@ -2201,6 +2201,11 @@
             ['exclude', '^browser/ui/libgtk2ui/'],
           ],
         }],
+        ['use_aura==1 or toolkit_views==1', {
+          'dependencies': [
+            '../ui/events/events.gyp:events_test_support',
+          ],
+        }],
         ['use_aura==1 and component=="shared_library"', {
           'sources!': [
             # TODO(erg): This file does not compile in shared library mode
