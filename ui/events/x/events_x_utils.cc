@@ -16,17 +16,14 @@
 
 namespace {
 
-const int kScrollValuatorNum = 8;
+const int kScrollValuatorNum = 5;
 const int kScrollValuatorMap[kScrollValuatorNum][4] = {
   // { valuator_index, valuator_type, min_val, max_val }
   { 0, ui::DeviceDataManager::DT_CMT_SCROLL_X, -100, 100 },
   { 1, ui::DeviceDataManager::DT_CMT_SCROLL_Y, -100, 100 },
-  { 2, ui::DeviceDataManager::DT_CMT_FLING_X, -100, 100 },
-  { 3, ui::DeviceDataManager::DT_CMT_FLING_Y, -100, 100 },
-  { 4, ui::DeviceDataManager::DT_CMT_ORDINAL_X, -100, 100 },
-  { 5, ui::DeviceDataManager::DT_CMT_ORDINAL_Y, -100, 100 },
-  { 6, ui::DeviceDataManager::DT_CMT_FINGER_COUNT, 0, 3},
-  { 7, ui::DeviceDataManager::DT_CMT_FLING_STATE, 0, 1},
+  { 2, ui::DeviceDataManager::DT_CMT_ORDINAL_X, -100, 100 },
+  { 3, ui::DeviceDataManager::DT_CMT_ORDINAL_Y, -100, 100 },
+  { 4, ui::DeviceDataManager::DT_CMT_FINGER_COUNT, 0, 3},
 };
 
 #if defined(USE_XI2_MT)
@@ -109,23 +106,11 @@ unsigned int XButtonEventButton(ui::EventType type,
   return 0;
 }
 
-void ClearValuatorsForXIDeviceEvent(XIDeviceEvent* xiev, int valuator_count) {
+void InitValuatorsForXIDeviceEvent(XIDeviceEvent* xiev, int valuator_count) {
   xiev->valuators.mask_len = (valuator_count / 8) + 1;
   xiev->valuators.mask = new unsigned char[xiev->valuators.mask_len];
   memset(xiev->valuators.mask, 0, xiev->valuators.mask_len);
   xiev->valuators.values = new double[valuator_count];
-}
-
-void SetValuatorsForXIDeviceEvent(XIDeviceEvent* xiev,
-                                  const int* valuator_data,
-                                  int valuator_data_count,
-                                  int total_valuator_count,
-                                  const unsigned char* valuator_mask) {
-  ClearValuatorsForXIDeviceEvent(xiev, total_valuator_count);
-  memcpy(xiev->valuators.mask, valuator_mask, xiev->valuators.mask_len);
-  for(int i = 0; i < valuator_data_count; ++i) {
-    xiev->valuators.values[i] = valuator_data[i];
-  }
 }
 
 XEvent* CreateXInput2Event(int deviceid,
@@ -206,9 +191,9 @@ void InitXButtonEventForTesting(EventType type,
   event->xbutton = button_event;
 }
 
-void InitXMouseWheelEventForTesting(int wheel_delta,
-                                    int flags,
-                                    XEvent* event) {
+EVENTS_EXPORT void InitXMouseWheelEventForTesting(int wheel_delta,
+                                                  int flags,
+                                                  XEvent* event) {
   InitXButtonEventForTesting(ui::ET_MOUSEWHEEL, flags, event);
   // MouseWheelEvents are not taking horizontal scrolls into account
   // at the moment.
@@ -228,7 +213,7 @@ ScopedXI2Event::~ScopedXI2Event() {
   }
 }
 
-XEvent* CreateScrollEventForTest(
+EVENTS_EXPORT XEvent* CreateScrollEventForTest(
     int deviceid,
     int x_offset,
     int y_offset,
@@ -238,48 +223,20 @@ XEvent* CreateScrollEventForTest(
   XEvent* event = CreateXInput2Event(
       deviceid, XI_Motion, deviceid, gfx::Point(0, 0));
 
-  // Set the valuator data for the event. Please ensure that |valuator_mask|
-  // is the same size as the valuators mask length.
-  unsigned char valuator_mask = 0x73; // 01110011
   int valuator_data[kScrollValuatorNum] =
-      { x_offset, y_offset, x_offset_ordinal, y_offset_ordinal, finger_count};
+      { x_offset, y_offset, x_offset_ordinal, y_offset_ordinal, finger_count };
+  XIDeviceEvent* xiev =
+      static_cast<XIDeviceEvent*>(event->xcookie.data);
+  InitValuatorsForXIDeviceEvent(xiev, kScrollValuatorNum);
+  for(int i = 0; i < kScrollValuatorNum; i++) {
+    XISetMask(xiev->valuators.mask, i);
+    xiev->valuators.values[i] = valuator_data[i];
+  }
 
-  SetValuatorsForXIDeviceEvent(
-      static_cast<XIDeviceEvent*>(event->xcookie.data),
-      valuator_data,
-      5,
-      kScrollValuatorNum,
-      &valuator_mask);
   return event;
 }
 
-XEvent* CreateFlingEventForTest(
-    int deviceid,
-    int x_velocity,
-    int y_velocity,
-    int x_velocity_ordinal,
-    int y_velocity_ordinal,
-    bool is_cancel) {
-  XEvent* event = CreateXInput2Event(
-      deviceid, XI_Motion, deviceid, gfx::Point(0, 0));
-
-  // Set the valuator data for the event. Please ensure that |valuator_mask|
-  // is the same size as the valuators mask length.
-  unsigned char valuator_mask = 0xBC; // 10111100
-  int valuator_data[kScrollValuatorNum] =
-      { x_velocity, y_velocity, x_velocity_ordinal, y_velocity_ordinal,
-        is_cancel ? 1 : 0 };
-
-  SetValuatorsForXIDeviceEvent(
-      static_cast<XIDeviceEvent*>(event->xcookie.data),
-      valuator_data,
-      5,
-      kScrollValuatorNum,
-      &valuator_mask);
-  return event;
-}
-
-void SetUpScrollDeviceForTest(unsigned int deviceid) {
+EVENTS_EXPORT void SetUpScrollDeviceForTest(unsigned int deviceid) {
   std::vector<unsigned int> device_list;
   device_list.push_back(deviceid);
 
@@ -309,7 +266,7 @@ XEvent* CreateTouchEventForTest(int deviceid,
 
   XIDeviceEvent* xiev =
       static_cast<XIDeviceEvent*>(event->xcookie.data);
-  ClearValuatorsForXIDeviceEvent(xiev, valuators.size());
+  InitValuatorsForXIDeviceEvent(xiev, valuators.size());
   int val_count = 0;
   for (int i = 0; i < kTouchValuatorNum; i++) {
     for(size_t j = 0; j < valuators.size(); j++) {

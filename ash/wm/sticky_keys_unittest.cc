@@ -201,6 +201,7 @@ class StickyKeysTest : public test::AshTestBase,
   }
 
   ui::ScrollEvent* GenerateScrollEvent(int scroll_delta) {
+    EXPECT_FALSE(scroll_delta == 0);
     XEvent* xev = ui::CreateScrollEventForTest(
         kScrollDeviceId, // deviceid
         0,               // x_offset
@@ -213,22 +214,6 @@ class StickyKeysTest : public test::AshTestBase,
     ui::ScrollEvent* event = new ui::ScrollEvent(xev);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);
-    return event;
-  }
-
-  ui::ScrollEvent* GenerateScrollFlingEvent(int fling_delta,
-                                            bool is_cancel) {
-    XEvent* xev = ui::CreateFlingEventForTest(
-        kScrollDeviceId, // deviceid
-        0,               // x_velocity
-        fling_delta,     // y_velocity
-        0,               // x_velocity_ordinal
-        fling_delta,     // y_velocity_ordinal
-        is_cancel); // is_cancel
-    ui::ScrollEvent* event = new ui::ScrollEvent(xev);
-    ui::Event::DispatcherApi dispatcher(event);
-    dispatcher.set_target(target_);
-
     return event;
   }
 
@@ -533,9 +518,9 @@ TEST_F(StickyKeysTest, MouseEventLocked) {
   EXPECT_EQ(StickyKeysHandler::LOCKED, sticky_key.current_state());
 }
 
-TEST_F(StickyKeysTest, ScrollEventOneshot) {
+TEST_F(StickyKeysTest, ScrollEvents) {
   ui::SetUpScrollDeviceForTest(kScrollDeviceId);
-  // Disable Australlian scrolling.
+  // Australlian scrolling is enabled by default for some reason.
   ui::DeviceDataManager::GetInstance()->set_natural_scroll_enabled(true);
 
   scoped_ptr<ui::ScrollEvent> ev;
@@ -550,32 +535,20 @@ TEST_F(StickyKeysTest, ScrollEventOneshot) {
 
     // Enable sticky keys.
     EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
-    SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
+    kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
+    sticky_key.HandleKeyEvent(kev.get());
+    kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
+    sticky_key.HandleKeyEvent(kev.get());
     EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
 
-    // Test a scroll sequence. Sticky keys should only be disabled at the end
-    // of the scroll sequence. Fling cancel event starts the scroll sequence.
-    ev.reset(GenerateScrollFlingEvent(0, true));
-    sticky_key.HandleScrollEvent(ev.get());
-    EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
-    EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
-
-    // Scrolls should all be modified but not disable sticky keys.
-    for (int j = 0; j < 3; ++j) {
-      ev.reset(GenerateScrollEvent(scroll_deltas[i]));
-      sticky_key.HandleScrollEvent(ev.get());
-      EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
-      EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
-    }
-
-    // Fling start event ends scroll sequence.
-    ev.reset(GenerateScrollFlingEvent(scroll_deltas[i], false));
+    // Test scroll event is correctly modified.
+    ev.reset(GenerateScrollEvent(scroll_deltas[i]));
     sticky_key.HandleScrollEvent(ev.get());
     EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
     EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
 
     ASSERT_EQ(2U, mock_delegate->GetEventCount());
-    EXPECT_EQ(ui::ET_SCROLL_FLING_START, mock_delegate->GetEvent(0)->type());
+    EXPECT_EQ(ui::ET_SCROLL, mock_delegate->GetEvent(0)->type());
     EXPECT_FLOAT_EQ(scroll_deltas[i],
                     static_cast<const ui::ScrollEvent*>(
                         mock_delegate->GetEvent(0))->y_offset());
@@ -584,78 +557,23 @@ TEST_F(StickyKeysTest, ScrollEventOneshot) {
               static_cast<const ui::KeyEvent*>(mock_delegate->GetEvent(1))
                   ->key_code());
   }
-}
-
-TEST_F(StickyKeysTest, ScrollDirectionChanged) {
-  ui::SetUpScrollDeviceForTest(kScrollDeviceId);
-  // Disable Australlian scrolling.
-  ui::DeviceDataManager::GetInstance()->set_natural_scroll_enabled(true);
-
-  scoped_ptr<ui::ScrollEvent> ev;
-  scoped_ptr<ui::KeyEvent> kev;
-  MockStickyKeysHandlerDelegate* mock_delegate =
-      new MockStickyKeysHandlerDelegate(this);
-  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
-
-  // Test direction change with both boundary value and negative value.
-  const int direction_change_values[2] = {0, -10};
-  for (int i = 0; i < 2; ++i) {
-    SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
-    EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
-
-    // Fling cancel starts scroll sequence.
-    ev.reset(GenerateScrollFlingEvent(0, true));
-    sticky_key.HandleScrollEvent(ev.get());
-    EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
-
-    // Test that changing directions in a scroll sequence will
-    // return sticky keys to DISABLED state.
-    for (int j = 0; j < 3; ++j) {
-      ev.reset(GenerateScrollEvent(10));
-      sticky_key.HandleScrollEvent(ev.get());
-      EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
-      EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
-    }
-
-    ev.reset(GenerateScrollEvent(direction_change_values[i]));
-    sticky_key.HandleScrollEvent(ev.get());
-    EXPECT_FALSE(ev->flags() & ui::EF_CONTROL_DOWN);
-    EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
-  }
-}
-
-TEST_F(StickyKeysTest, ScrollEventLocked) {
-  ui::SetUpScrollDeviceForTest(kScrollDeviceId);
-  // Disable Australlian scrolling.
-  ui::DeviceDataManager::GetInstance()->set_natural_scroll_enabled(true);
-
-  scoped_ptr<ui::ScrollEvent> ev;
-  scoped_ptr<ui::KeyEvent> kev;
-  MockStickyKeysHandlerDelegate* mock_delegate =
-      new MockStickyKeysHandlerDelegate(this);
-  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   // Lock sticky keys.
-  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
-  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
-  EXPECT_EQ(StickyKeysHandler::LOCKED, sticky_key.current_state());
+  for (int i = 0; i < 2; ++i) {
+    kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
+    sticky_key.HandleKeyEvent(kev.get());
+    kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
+    sticky_key.HandleKeyEvent(kev.get());
+  }
 
   // Test scroll events are correctly modified in locked state.
   for (int i = 0; i < 5; ++i) {
-    // Fling cancel starts scroll sequence.
-    ev.reset(GenerateScrollFlingEvent(0, true));
-    sticky_key.HandleScrollEvent(ev.get());
-
     ev.reset(GenerateScrollEvent(10));
     sticky_key.HandleScrollEvent(ev.get());
     EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
     ev.reset(GenerateScrollEvent(-10));
     sticky_key.HandleScrollEvent(ev.get());
     EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
-
-    // Fling start ends scroll sequence.
-    ev.reset(GenerateScrollFlingEvent(-10, false));
-    sticky_key.HandleScrollEvent(ev.get());
   }
 
   EXPECT_EQ(StickyKeysHandler::LOCKED, sticky_key.current_state());
