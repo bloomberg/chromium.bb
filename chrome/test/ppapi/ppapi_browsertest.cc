@@ -719,13 +719,7 @@ TEST_PPAPI_OUT_OF_PROCESS(MAYBE_VarDeprecated)
 #undef PostMessage
 #endif
 // PostMessage tests.
-// Fails on ChromeOS http://crbug.com/323144
-#if defined(OS_CHROMEOS)
-#define MAYBE_PostMessage DISABLED_PostMessage
-#else
-#define MAYBE_PostMessage PostMessage
-#endif
-IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_PostMessage) {
+IN_PROC_BROWSER_TEST_F(PPAPITest, PostMessage) {
   RunTestViaHTTP(
       LIST_TEST(PostMessage_SendInInit)
       LIST_TEST(PostMessage_SendingData)
@@ -739,10 +733,9 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_PostMessage) {
       LIST_TEST(PostMessage_ExtraParam)
   );
 }
-#undef MAYBE_PostMessage
 
-// Flaky: crbug.com/269530 crbug.com/323144
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// Flaky: crbug.com/269530
+#if defined(OS_WIN)
 #define MAYBE_PostMessage DISABLED_PostMessage
 #else
 #define MAYBE_PostMessage PostMessage
@@ -1581,8 +1574,8 @@ TEST_PPAPI_OUT_OF_PROCESS(Flash_GetLocalTimeZoneOffset)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetProxyForURL)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetSetting)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_SetCrashData)
-// http://crbug.com/176822 http://crbug.com/323144
-#if !defined(OS_WIN) && !defined(OS_CHROMEOS)
+// http://crbug.com/176822
+#if !defined(OS_WIN)
 TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
 #endif
 TEST_PPAPI_OUT_OF_PROCESS(FlashFile)
