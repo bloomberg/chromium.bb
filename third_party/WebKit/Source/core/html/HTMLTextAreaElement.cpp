@@ -433,7 +433,7 @@ void HTMLTextAreaElement::setMaxLength(int newValue, ExceptionState& exceptionSt
     if (newValue < 0)
         exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
     else
-        setAttribute(maxlengthAttr, String::number(newValue));
+        setIntegralAttribute(maxlengthAttr, newValue);
 }
 
 String HTMLTextAreaElement::validationMessage() const
@@ -488,12 +488,12 @@ void HTMLTextAreaElement::accessKeyAction(bool)
 
 void HTMLTextAreaElement::setCols(int cols)
 {
-    setAttribute(colsAttr, String::number(cols));
+    setIntegralAttribute(colsAttr, cols);
 }
 
 void HTMLTextAreaElement::setRows(int rows)
 {
-    setAttribute(rowsAttr, String::number(rows));
+    setIntegralAttribute(rowsAttr, rows);
 }
 
 bool HTMLTextAreaElement::shouldUseInputMethod()

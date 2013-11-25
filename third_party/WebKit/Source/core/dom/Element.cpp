@@ -2752,8 +2752,7 @@ int Element::getIntegralAttribute(const QualifiedName& attributeName) const
 
 void Element::setIntegralAttribute(const QualifiedName& attributeName, int value)
 {
-    // FIXME: Need an AtomicString version of String::number.
-    setAttribute(attributeName, String::number(value));
+    setAttribute(attributeName, AtomicString::number(value));
 }
 
 unsigned Element::getUnsignedIntegralAttribute(const QualifiedName& attributeName) const
@@ -2763,8 +2762,17 @@ unsigned Element::getUnsignedIntegralAttribute(const QualifiedName& attributeNam
 
 void Element::setUnsignedIntegralAttribute(const QualifiedName& attributeName, unsigned value)
 {
-    // FIXME: Need an AtomicString version of String::number.
-    setAttribute(attributeName, String::number(value));
+    setAttribute(attributeName, AtomicString::number(value));
+}
+
+double Element::getFloatingPointAttribute(const QualifiedName& attributeName, double fallbackValue) const
+{
+    return parseToDoubleForNumberType(getAttribute(attributeName), fallbackValue);
+}
+
+void Element::setFloatingPointAttribute(const QualifiedName& attributeName, double value)
+{
+    setAttribute(attributeName, AtomicString::number(value));
 }
 
 bool Element::childShouldCreateRenderer(const Node& child) const

@@ -53,7 +53,7 @@ Storage::~Storage()
 
 String Storage::anonymousIndexedGetter(unsigned index, ExceptionState& exceptionState)
 {
-    return anonymousNamedGetter(String::number(index), exceptionState);
+    return anonymousNamedGetter(AtomicString::number(index), exceptionState);
 }
 
 String Storage::anonymousNamedGetter(const AtomicString& name, ExceptionState& exceptionState)
@@ -75,7 +75,7 @@ bool Storage::anonymousNamedSetter(const AtomicString& name, const AtomicString&
 
 bool Storage::anonymousIndexedSetter(unsigned index, const AtomicString& value, ExceptionState& exceptionState)
 {
-    return anonymousNamedSetter(String::number(index), value, exceptionState);
+    return anonymousNamedSetter(AtomicString::number(index), value, exceptionState);
 }
 
 bool Storage::anonymousNamedDeleter(const AtomicString& name, ExceptionState& exceptionState)
@@ -91,7 +91,7 @@ bool Storage::anonymousNamedDeleter(const AtomicString& name, ExceptionState& ex
 
 bool Storage::anonymousIndexedDeleter(unsigned index, ExceptionState& exceptionState)
 {
-    return anonymousNamedDeleter(String::number(index), exceptionState);
+    return anonymousNamedDeleter(AtomicString::number(index), exceptionState);
 }
 
 void Storage::namedPropertyEnumerator(Vector<String>& names, ExceptionState& exceptionState)

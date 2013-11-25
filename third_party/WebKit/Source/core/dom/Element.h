@@ -114,6 +114,8 @@ public:
     void setIntegralAttribute(const QualifiedName& attributeName, int value);
     unsigned getUnsignedIntegralAttribute(const QualifiedName& attributeName) const;
     void setUnsignedIntegralAttribute(const QualifiedName& attributeName, unsigned value);
+    double getFloatingPointAttribute(const QualifiedName& attributeName, double fallbackValue = std::numeric_limits<double>::quiet_NaN()) const;
+    void setFloatingPointAttribute(const QualifiedName& attributeName, double value);
 
     // Call this to get the value of an attribute that is known not to be the style
     // attribute or one of the SVG animatable attributes.

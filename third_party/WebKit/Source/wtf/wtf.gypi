@@ -231,6 +231,7 @@
             'TreeNodeTest.cpp',
             'VectorTest.cpp',
             'testing/WTFTestHelpers.h',
+            'text/AtomicStringTest.cpp',
             'text/CStringTest.cpp',
             'text/StringBuilderTest.cpp',
             'text/StringImplTest.cpp',

@@ -26,6 +26,8 @@
 #include "StringHash.h"
 #include "wtf/HashSet.h"
 #include "wtf/WTFThreadData.h"
+#include "wtf/dtoa.h"
+#include "wtf/text/IntegerToStringConversion.h"
 #include "wtf/unicode/UTF8.h"
 
 namespace WTF {
@@ -485,6 +487,42 @@ AtomicString AtomicString::fromUTF8Internal(const char* charactersStart, const c
     AtomicString atomicString;
     atomicString.m_string = addToStringTable<HashAndUTF8Characters, HashAndUTF8CharactersTranslator>(buffer);
     return atomicString;
+}
+
+AtomicString AtomicString::number(int number)
+{
+    return numberToStringSigned<AtomicString>(number);
+}
+
+AtomicString AtomicString::number(unsigned number)
+{
+    return numberToStringUnsigned<AtomicString>(number);
+}
+
+AtomicString AtomicString::number(long number)
+{
+    return numberToStringSigned<AtomicString>(number);
+}
+
+AtomicString AtomicString::number(unsigned long number)
+{
+    return numberToStringUnsigned<AtomicString>(number);
+}
+
+AtomicString AtomicString::number(long long number)
+{
+    return numberToStringSigned<AtomicString>(number);
+}
+
+AtomicString AtomicString::number(unsigned long long number)
+{
+    return numberToStringUnsigned<AtomicString>(number);
+}
+
+AtomicString AtomicString::number(double number, unsigned precision, TrailingZerosTruncatingPolicy trailingZerosTruncatingPolicy)
+{
+    NumberToStringBuffer buffer;
+    return AtomicString(numberToFixedPrecisionString(number, precision, buffer, trailingZerosTruncatingPolicy == TruncateTrailingZeros));
 }
 
 #ifndef NDEBUG

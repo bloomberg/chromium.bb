@@ -132,12 +132,12 @@ void HTMLCanvasElement::removeObserver(CanvasObserver* observer)
 
 void HTMLCanvasElement::setHeight(int value)
 {
-    setAttribute(heightAttr, String::number(value));
+    setIntegralAttribute(heightAttr, value);
 }
 
 void HTMLCanvasElement::setWidth(int value)
 {
-    setAttribute(widthAttr, String::number(value));
+    setIntegralAttribute(widthAttr, value);
 }
 
 CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, CanvasContextAttributes* attrs)

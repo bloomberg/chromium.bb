@@ -83,7 +83,7 @@ public:
     }
     bool anonymousIndexedDeleter(uint32_t index, ExceptionState& exceptionState)
     {
-        return anonymousNamedDeleter(AtomicString(String::number(index)), exceptionState);
+        return anonymousNamedDeleter(AtomicString::number(index), exceptionState);
     }
 
     virtual Element* element() = 0;

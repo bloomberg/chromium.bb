@@ -1294,7 +1294,7 @@ void HTMLInputElement::setMaxLength(int maxLength, ExceptionState& exceptionStat
     if (maxLength < 0)
         exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
     else
-        setAttribute(maxlengthAttr, String::number(maxLength));
+        setIntegralAttribute(maxlengthAttr, maxLength);
 }
 
 bool HTMLInputElement::multiple() const
@@ -1304,7 +1304,7 @@ bool HTMLInputElement::multiple() const
 
 void HTMLInputElement::setSize(unsigned size)
 {
-    setAttribute(sizeAttr, String::number(size));
+    setUnsignedIntegralAttribute(sizeAttr, size);
 }
 
 void HTMLInputElement::setSize(unsigned size, ExceptionState& exceptionState)
@@ -1766,12 +1766,12 @@ unsigned HTMLInputElement::width() const
 
 void HTMLInputElement::setHeight(unsigned height)
 {
-    setAttribute(heightAttr, String::number(height));
+    setUnsignedIntegralAttribute(heightAttr, height);
 }
 
 void HTMLInputElement::setWidth(unsigned width)
 {
-    setAttribute(widthAttr, String::number(width));
+    setUnsignedIntegralAttribute(widthAttr, width);
 }
 
 PassOwnPtr<ListAttributeTargetObserver> ListAttributeTargetObserver::create(const AtomicString& id, HTMLInputElement* element)

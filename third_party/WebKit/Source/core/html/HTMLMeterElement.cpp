@@ -72,7 +72,7 @@ void HTMLMeterElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
 double HTMLMeterElement::min() const
 {
-    return parseToDoubleForNumberType(getAttribute(minAttr), 0);
+    return getFloatingPointAttribute(minAttr, 0);
 }
 
 void HTMLMeterElement::setMin(double min, ExceptionState& exceptionState)
@@ -81,12 +81,12 @@ void HTMLMeterElement::setMin(double min, ExceptionState& exceptionState)
         exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
-    setAttribute(minAttr, String::number(min));
+    setFloatingPointAttribute(minAttr, min);
 }
 
 double HTMLMeterElement::max() const
 {
-    return std::max(parseToDoubleForNumberType(getAttribute(maxAttr), std::max(1.0, min())), min());
+    return std::max(getFloatingPointAttribute(maxAttr, std::max(1.0, min())), min());
 }
 
 void HTMLMeterElement::setMax(double max, ExceptionState& exceptionState)
@@ -95,12 +95,12 @@ void HTMLMeterElement::setMax(double max, ExceptionState& exceptionState)
         exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
-    setAttribute(maxAttr, String::number(max));
+    setFloatingPointAttribute(maxAttr, max);
 }
 
 double HTMLMeterElement::value() const
 {
-    double value = parseToDoubleForNumberType(getAttribute(valueAttr), 0);
+    double value = getFloatingPointAttribute(valueAttr, 0);
     return std::min(std::max(value, min()), max());
 }
 
@@ -110,12 +110,12 @@ void HTMLMeterElement::setValue(double value, ExceptionState& exceptionState)
         exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
-    setAttribute(valueAttr, String::number(value));
+    setFloatingPointAttribute(valueAttr, value);
 }
 
 double HTMLMeterElement::low() const
 {
-    double low = parseToDoubleForNumberType(getAttribute(lowAttr), min());
+    double low = getFloatingPointAttribute(lowAttr, min());
     return std::min(std::max(low, min()), max());
 }
 
@@ -125,12 +125,12 @@ void HTMLMeterElement::setLow(double low, ExceptionState& exceptionState)
         exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
-    setAttribute(lowAttr, String::number(low));
+    setFloatingPointAttribute(lowAttr, low);
 }
 
 double HTMLMeterElement::high() const
 {
-    double high = parseToDoubleForNumberType(getAttribute(highAttr), max());
+    double high = getFloatingPointAttribute(highAttr, max());
     return std::min(std::max(high, low()), max());
 }
 
@@ -140,12 +140,12 @@ void HTMLMeterElement::setHigh(double high, ExceptionState& exceptionState)
         exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
-    setAttribute(highAttr, String::number(high));
+    setFloatingPointAttribute(highAttr, high);
 }
 
 double HTMLMeterElement::optimum() const
 {
-    double optimum = parseToDoubleForNumberType(getAttribute(optimumAttr), (max() + min()) / 2);
+    double optimum = getFloatingPointAttribute(optimumAttr, (max() + min()) / 2);
     return std::min(std::max(optimum, min()), max());
 }
 
@@ -155,7 +155,7 @@ void HTMLMeterElement::setOptimum(double optimum, ExceptionState& exceptionState
         exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
-    setAttribute(optimumAttr, String::number(optimum));
+    setFloatingPointAttribute(optimumAttr, optimum);
 }
 
 HTMLMeterElement::GaugeRegion HTMLMeterElement::gaugeRegion() const

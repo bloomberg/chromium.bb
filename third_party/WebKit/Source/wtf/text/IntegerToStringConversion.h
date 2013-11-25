@@ -44,6 +44,11 @@ template<> struct ConversionTrait<StringBuilder> {
     typedef StringBuilder AdditionalArgumentType;
     static inline ReturnType flush(LChar* characters, unsigned length, StringBuilder* stringBuilder) { stringBuilder->append(characters, length); }
 };
+template<> struct ConversionTrait<AtomicString> {
+    typedef AtomicString ReturnType;
+    typedef void AdditionalArgumentType;
+    static inline ReturnType flush(LChar* characters, unsigned length, void*) { return AtomicString(characters, length); }
+};
 
 template<typename T> struct UnsignedIntegerTrait;
 

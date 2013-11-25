@@ -28,7 +28,6 @@
 #include <limits>
 #include "core/dom/QualifiedName.h"
 #include "core/html/parser/HTMLIdentifier.h"
-#include "platform/Decimal.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuilder.h"
@@ -115,11 +114,6 @@ Decimal parseToDecimalForNumberType(const String& string, const Decimal& fallbac
     return value.isZero() ? Decimal(0) : value;
 }
 
-Decimal parseToDecimalForNumberType(const String& string)
-{
-    return parseToDecimalForNumberType(string, Decimal::nan());
-}
-
 double parseToDoubleForNumberType(const String& string, double fallbackValue)
 {
     // See HTML5 2.5.4.3 `Real numbers.'
@@ -145,11 +139,6 @@ double parseToDoubleForNumberType(const String& string, double fallbackValue)
 
     // The following expression converts -0 to +0.
     return value ? value : 0;
-}
-
-double parseToDoubleForNumberType(const String& string)
-{
-    return parseToDoubleForNumberType(string, std::numeric_limits<double>::quiet_NaN());
 }
 
 template <typename CharacterType>

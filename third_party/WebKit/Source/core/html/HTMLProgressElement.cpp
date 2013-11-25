@@ -94,7 +94,7 @@ void HTMLProgressElement::attach(const AttachContext& context)
 
 double HTMLProgressElement::value() const
 {
-    double value = parseToDoubleForNumberType(fastGetAttribute(valueAttr));
+    double value = getFloatingPointAttribute(valueAttr);
     return !std::isfinite(value) || value < 0 ? 0 : std::min(value, max());
 }
 
@@ -104,12 +104,12 @@ void HTMLProgressElement::setValue(double value, ExceptionState& exceptionState)
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToSet("value", "HTMLProgressElement", ExceptionMessages::notAFiniteNumber(value)));
         return;
     }
-    setAttribute(valueAttr, String::number(value >= 0 ? value : 0));
+    setFloatingPointAttribute(valueAttr, std::max(value, 0.));
 }
 
 double HTMLProgressElement::max() const
 {
-    double max = parseToDoubleForNumberType(getAttribute(maxAttr));
+    double max = getFloatingPointAttribute(maxAttr);
     return !std::isfinite(max) || max <= 0 ? 1 : max;
 }
 
@@ -119,7 +119,8 @@ void HTMLProgressElement::setMax(double max, ExceptionState& exceptionState)
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToSet("max", "HTMLProgressElement", ExceptionMessages::notAFiniteNumber(max)));
         return;
     }
-    setAttribute(maxAttr, String::number(max > 0 ? max : 1));
+    // FIXME: The specification says we should ignore the input value if it is inferior or equal to 0.
+    setFloatingPointAttribute(maxAttr, max > 0 ? max : 1);
 }
 
 double HTMLProgressElement::position() const

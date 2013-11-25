@@ -95,7 +95,7 @@ void HTMLOListElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
 void HTMLOListElement::setStart(int start)
 {
-    setAttribute(startAttr, String::number(start));
+    setIntegralAttribute(startAttr, start);
 }
 
 void HTMLOListElement::updateItemValues()

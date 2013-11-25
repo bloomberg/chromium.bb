@@ -138,6 +138,15 @@ public:
     float toFloat(bool* ok = 0) const { return m_string.toFloat(ok); }
     bool percentage(int& p) const { return m_string.percentage(p); }
 
+    static AtomicString number(int);
+    static AtomicString number(unsigned);
+    static AtomicString number(long);
+    static AtomicString number(unsigned long);
+    static AtomicString number(long long);
+    static AtomicString number(unsigned long long);
+
+    static AtomicString number(double, unsigned precision = 6, TrailingZerosTruncatingPolicy = TruncateTrailingZeros);
+
     bool isNull() const { return m_string.isNull(); }
     bool isEmpty() const { return m_string.isEmpty(); }
 

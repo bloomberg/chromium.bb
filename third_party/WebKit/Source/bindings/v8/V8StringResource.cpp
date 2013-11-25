@@ -187,7 +187,7 @@ String int32ToWebCoreStringFast(int value)
     if (0 <= value && value <= kLowNumbers) {
         webCoreString = lowNumbers[value];
         if (!webCoreString) {
-            AtomicString valueString = AtomicString(String::number(value));
+            AtomicString valueString = AtomicString::number(value);
             lowNumbers[value] = valueString;
             webCoreString = valueString;
         }

@@ -27,12 +27,11 @@
 
 #include "core/dom/QualifiedName.h"
 #include "core/html/parser/HTMLIdentifier.h"
+#include "platform/Decimal.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-
-class Decimal;
 
 // Space characters as defined by the HTML specification.
 bool isHTMLSpace(UChar);
@@ -54,10 +53,8 @@ String serializeForNumberType(double);
 // Convert the specified string to a decimal/double. If the conversion fails, the return value is fallback value or NaN if not specified.
 // Leading or trailing illegal characters cause failure, as does passing an empty string.
 // The double* parameter may be 0 to check if the string can be parsed without getting the result.
-Decimal parseToDecimalForNumberType(const String&);
-Decimal parseToDecimalForNumberType(const String&, const Decimal& fallbackValue);
-double parseToDoubleForNumberType(const String&);
-double parseToDoubleForNumberType(const String&, double fallbackValue);
+Decimal parseToDecimalForNumberType(const String&, const Decimal& fallbackValue = Decimal::nan());
+double parseToDoubleForNumberType(const String&, double fallbackValue = std::numeric_limits<double>::quiet_NaN());
 
 // http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-integers
 bool parseHTMLInteger(const String&, int&);

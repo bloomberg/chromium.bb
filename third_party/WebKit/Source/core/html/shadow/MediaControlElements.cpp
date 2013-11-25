@@ -519,7 +519,7 @@ void MediaControlTimelineElement::setPosition(double currentTime)
 
 void MediaControlTimelineElement::setDuration(double duration)
 {
-    setAttribute(maxAttr, String::number(std::isfinite(duration) ? duration : 0));
+    setFloatingPointAttribute(maxAttr, std::isfinite(duration) ? duration : 0);
 }
 
 
