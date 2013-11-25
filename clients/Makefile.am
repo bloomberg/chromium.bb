@@ -77,6 +77,7 @@ clients_programs =				\
 	weston-clickdot				\
 	weston-transformed			\
 	weston-fullscreen			\
+	weston-stacking				\
 	weston-calibrator			\
 	$(subsurfaces)				\
 	$(full_gl_client_programs)		\
@@ -156,6 +157,9 @@ weston_transformed_LDADD = libtoytoolkit.la
 
 weston_fullscreen_SOURCES = fullscreen.c
 weston_fullscreen_LDADD = libtoytoolkit.la
+
+weston_stacking_SOURCES = stacking.c
+weston_stacking_LDADD = libtoytoolkit.la
 
 weston_calibrator_SOURCES = calibrator.c	\
 	../shared/matrix.c			\
