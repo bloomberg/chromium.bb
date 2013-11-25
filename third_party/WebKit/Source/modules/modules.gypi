@@ -10,6 +10,7 @@
     'modules_idl_files': [
       '<@(extra_blink_module_idl_files)',
       'crypto/AesCbcParams.idl',
+      'crypto/AesCtrParams.idl',
       'crypto/AesKeyGenParams.idl',
       'crypto/Algorithm.idl',
       'crypto/Crypto.idl',
@@ -210,6 +211,8 @@
       '<@(extra_blink_module_files)',
       'crypto/AesCbcParams.cpp',
       'crypto/AesCbcParams.h',
+      'crypto/AesCtrParams.cpp',
+      'crypto/AesCtrParams.h',
       'crypto/AesKeyGenParams.cpp',
       'crypto/AesKeyGenParams.h',
       'crypto/Algorithm.cpp',

@@ -32,6 +32,7 @@
 #include "modules/crypto/Algorithm.h"
 
 #include "modules/crypto/AesCbcParams.h"
+#include "modules/crypto/AesCtrParams.h"
 #include "modules/crypto/AesKeyGenParams.h"
 #include "modules/crypto/HmacKeyParams.h"
 #include "modules/crypto/HmacParams.h"
@@ -60,6 +61,8 @@ PassRefPtr<Algorithm> Algorithm::create(const blink::WebCryptoAlgorithm& algorit
         return RsaSsaParams::create(algorithm);
     case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
         return RsaKeyGenParams::create(algorithm);
+    case blink::WebCryptoAlgorithmParamsTypeAesCtrParams:
+        return AesCtrParams::create(algorithm);
     case blink::WebCryptoAlgorithmParamsTypeAesGcmParams:
     case blink::WebCryptoAlgorithmParamsTypeRsaOaepParams:
         // TODO

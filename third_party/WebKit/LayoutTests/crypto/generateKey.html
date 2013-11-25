@@ -9,7 +9,7 @@
 <div id="console"></div>
 
 <script>
-description("Tests cypto.subtle.generateKey.");
+description("Tests crypto.subtle.generateKey.");
 
 extractable = true;
 keyUsages = ['encrypt', 'decrypt'];
@@ -28,6 +28,15 @@ shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc' }, extractable, keyUsag
 shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc', length: 70000 }, extractable, keyUsages)");
 shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc', length: -3 }, extractable, keyUsages)");
 shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc', length: -Infinity }, extractable, keyUsages)");
+
+// ---------------------------------------------------
+// AES-CTR normalization failures (AesKeyGenParams)
+// ---------------------------------------------------
+
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-ctr' }, extractable, keyUsages)");
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-ctr', length: 70000 }, extractable, keyUsages)");
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-ctr', length: -3 }, extractable, keyUsages)");
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-ctr', length: -Infinity }, extractable, keyUsages)");
 
 // ---------------------------------------------------
 // HMAC normalization failures (HmacKeyParams)

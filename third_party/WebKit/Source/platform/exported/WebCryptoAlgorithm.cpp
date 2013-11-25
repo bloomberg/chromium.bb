@@ -91,6 +91,14 @@ const WebCryptoAesCbcParams* WebCryptoAlgorithm::aesCbcParams() const
     return 0;
 }
 
+const WebCryptoAesCtrParams* WebCryptoAlgorithm::aesCtrParams() const
+{
+    ASSERT(!isNull());
+    if (paramsType() == WebCryptoAlgorithmParamsTypeAesCtrParams)
+        return static_cast<WebCryptoAesCtrParams*>(m_private->params.get());
+    return 0;
+}
+
 const WebCryptoAesKeyGenParams* WebCryptoAlgorithm::aesKeyGenParams() const
 {
     ASSERT(!isNull());

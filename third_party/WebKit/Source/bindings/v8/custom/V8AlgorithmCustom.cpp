@@ -32,6 +32,7 @@
 #include "V8Algorithm.h"
 
 #include "V8AesCbcParams.h"
+#include "V8AesCtrParams.h"
 #include "V8AesKeyGenParams.h"
 #include "V8HmacKeyParams.h"
 #include "V8HmacParams.h"
@@ -61,6 +62,8 @@ v8::Handle<v8::Object> wrap(Algorithm* impl, v8::Handle<v8::Object> creationCont
         return wrap(static_cast<RsaSsaParams*>(impl), creationContext, isolate);
     case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
         return wrap(static_cast<RsaKeyGenParams*>(impl), creationContext, isolate);
+    case blink::WebCryptoAlgorithmParamsTypeAesCtrParams:
+        return wrap(static_cast<AesCtrParams*>(impl), creationContext, isolate);
     case blink::WebCryptoAlgorithmParamsTypeAesGcmParams:
     case blink::WebCryptoAlgorithmParamsTypeRsaOaepParams:
         // TODO

@@ -69,6 +69,7 @@ struct OperationParamsMapping {
 
 const AlgorithmNameMapping algorithmNameMappings[] = {
     {"AES-CBC", blink::WebCryptoAlgorithmIdAesCbc},
+    {"AES-CTR", blink::WebCryptoAlgorithmIdAesCtr},
     {"HMAC", blink::WebCryptoAlgorithmIdHmac},
     {"RSASSA-PKCS1-v1_5", blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
     {"RSAES-PKCS1-v1_5", blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5},
@@ -86,6 +87,12 @@ const OperationParamsMapping operationParamsMappings[] = {
     {blink::WebCryptoAlgorithmIdAesCbc, Encrypt, blink::WebCryptoAlgorithmParamsTypeAesCbcParams},
     {blink::WebCryptoAlgorithmIdAesCbc, GenerateKey, blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
     {blink::WebCryptoAlgorithmIdAesCbc, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
+
+    // AES-CTR
+    {blink::WebCryptoAlgorithmIdAesCtr, Decrypt, blink::WebCryptoAlgorithmParamsTypeAesCtrParams},
+    {blink::WebCryptoAlgorithmIdAesCtr, Encrypt, blink::WebCryptoAlgorithmParamsTypeAesCtrParams},
+    {blink::WebCryptoAlgorithmIdAesCtr, GenerateKey, blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
+    {blink::WebCryptoAlgorithmIdAesCtr, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
 
     // HMAC
     {blink::WebCryptoAlgorithmIdHmac, Sign, blink::WebCryptoAlgorithmParamsTypeHmacParams},
@@ -320,6 +327,15 @@ bool getUint16(const Dictionary& raw, const char* propertyName, uint16_t& value,
     return true;
 }
 
+bool getUint8(const Dictionary& raw, const char* propertyName, uint8_t& value, const ExceptionContext& context, ExceptionState& exceptionState)
+{
+    double number;
+    if (!getInteger(raw, propertyName, number, 0, 0xFF, context, exceptionState))
+        return false;
+    value = number;
+    return true;
+}
+
 bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& hasValue, uint32_t& value, const ExceptionContext& context, ExceptionState& exceptionState)
 {
     double number;
@@ -418,6 +434,20 @@ bool parseRsaKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorith
     return true;
 }
 
+bool parseAesCtrParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
+{
+    RefPtr<Uint8Array> counter;
+    if (!getUint8Array(raw, "counter", counter, context, es))
+        return false;
+
+    uint8_t length;
+    if (!getUint8(raw, "length", length, context, es))
+        return false;
+
+    params = adoptPtr(new blink::WebCryptoAesCtrParams(length, static_cast<const unsigned char*>(counter->baseAddress()), counter->byteLength()));
+    return true;
+}
+
 bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParamsType type, OwnPtr<blink::WebCryptoAlgorithmParams>& params, ExceptionContext& context, ExceptionState& exceptionState)
 {
     switch (type) {
@@ -441,6 +471,9 @@ bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParams
     case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
         context.add("RsaKeyGenParams");
         return parseRsaKeyGenParams(raw, params, context, exceptionState);
+    case blink::WebCryptoAlgorithmParamsTypeAesCtrParams:
+        context.add("AesCtrParams");
+        return parseAesCtrParams(raw, params, context, exceptionState);
     case blink::WebCryptoAlgorithmParamsTypeAesGcmParams:
     case blink::WebCryptoAlgorithmParamsTypeRsaOaepParams:
         // TODO

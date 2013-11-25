@@ -8,12 +8,15 @@ function importTestKeys()
     var hmacPromise = crypto.subtle.importKey(keyFormat, data, {name: 'hmac', hash: {name: 'sha-1'}}, extractable, keyUsages);
     var aesCbcPromise = crypto.subtle.importKey(keyFormat, data, {name: 'AES-CBC'}, extractable, keyUsages);
     var aesCbcJustDecrypt = crypto.subtle.importKey(keyFormat, data, {name: 'AES-CBC'}, false, ['decrypt']);
+    // TODO(ellyjones): use AES-CTR key type once it's implemented
+    var aesCtrPromise = crypto.subtle.importKey(keyFormat, data, {name: 'AES-CBC'}, extractable, keyUsages);
 
-    return Promise.all([hmacPromise, aesCbcPromise, aesCbcJustDecrypt]).then(function(results) {
+    return Promise.all([hmacPromise, aesCbcPromise, aesCbcJustDecrypt, aesCtrPromise]).then(function(results) {
         return {
             hmacSha1: results[0],
             aesCbc: results[1],
             aesCbcJustDecrypt: results[2],
+            aesCtr: results[3],
         };
     });
 }
