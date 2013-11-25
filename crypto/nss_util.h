@@ -102,12 +102,6 @@ CRYPTO_EXPORT void OpenPersistentNSSDB();
 // GetPrivateNSSKeySlot() will return the TPM slot if one was found.
 CRYPTO_EXPORT void EnableTPMTokenForNSS();
 
-// Get name and user PIN for the built-in TPM token on ChromeOS.
-// Either one can safely be NULL.  Should only be called after
-// EnableTPMTokenForNSS has been called with a non-null delegate.
-CRYPTO_EXPORT void GetTPMTokenInfo(std::string* token_name,
-                                   std::string* user_pin);
-
 // Returns true if the TPM is owned and PKCS#11 initialized with the
 // user and security officer PINs, and has been enabled in NSS by
 // calling EnableTPMForNSS, and Chaps has been successfully
@@ -115,9 +109,7 @@ CRYPTO_EXPORT void GetTPMTokenInfo(std::string* token_name,
 CRYPTO_EXPORT bool IsTPMTokenReady();
 
 // Initialize the TPM token.  Does nothing if it is already initialized.
-CRYPTO_EXPORT bool InitializeTPMToken(const std::string& token_name,
-                                      int token_slot_id,
-                                      const std::string& user_pin);
+CRYPTO_EXPORT bool InitializeTPMToken(int token_slot_id);
 #endif
 
 // Convert a NSS PRTime value into a base::Time object.

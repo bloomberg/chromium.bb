@@ -234,9 +234,7 @@ class NSSInitSingleton {
     tpm_token_enabled_for_nss_ = true;
   }
 
-  bool InitializeTPMToken(const std::string& token_name,
-                          int token_slot_id,
-                          const std::string& user_pin) {
+  bool InitializeTPMToken(int token_slot_id) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     // If EnableTPMTokenForNSS hasn't been called, return false.
@@ -246,9 +244,6 @@ class NSSInitSingleton {
     // If everything is already initialized, then return true.
     if (chaps_module_ && tpm_slot_)
       return true;
-
-    tpm_token_name_ = token_name;
-    tpm_user_pin_ = user_pin;
 
     // This tries to load the Chaps module so NSS can talk to the hardware
     // TPM.
@@ -275,18 +270,6 @@ class NSSInitSingleton {
       return tpm_slot_ != NULL;
     }
     return false;
-  }
-
-  void GetTPMTokenInfo(std::string* token_name, std::string* user_pin) {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    if (!tpm_token_enabled_for_nss_) {
-      LOG(ERROR) << "GetTPMTokenInfo called before TPM Token is ready.";
-      return;
-    }
-    if (token_name)
-      *token_name = tpm_token_name_;
-    if (user_pin)
-      *user_pin = tpm_user_pin_;
   }
 
   bool IsTPMTokenReady() {
@@ -629,8 +612,6 @@ class NSSInitSingleton {
   static bool force_nodb_init_;
 
   bool tpm_token_enabled_for_nss_;
-  std::string tpm_token_name_;
-  std::string tpm_user_pin_;
   SECMODModule* chaps_module_;
   PK11SlotInfo* software_slot_;
   PK11SlotInfo* test_slot_;
@@ -800,19 +781,12 @@ void EnableTPMTokenForNSS() {
   g_nss_singleton.Get().EnableTPMTokenForNSS();
 }
 
-void GetTPMTokenInfo(std::string* token_name, std::string* user_pin) {
-  g_nss_singleton.Get().GetTPMTokenInfo(token_name, user_pin);
-}
-
 bool IsTPMTokenReady() {
   return g_nss_singleton.Get().IsTPMTokenReady();
 }
 
-bool InitializeTPMToken(const std::string& token_name,
-                        int token_slot_id,
-                        const std::string& user_pin) {
-  return g_nss_singleton.Get().InitializeTPMToken(
-      token_name, token_slot_id, user_pin);
+bool InitializeTPMToken(int token_slot_id) {
+  return g_nss_singleton.Get().InitializeTPMToken(token_slot_id);
 }
 #endif  // defined(OS_CHROMEOS)
 

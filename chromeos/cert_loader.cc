@@ -212,10 +212,7 @@ void CertLoader::InitializeTokenAndLoadCertificates() {
       base::PostTaskAndReplyWithResult(
           crypto_task_runner_.get(),
           FROM_HERE,
-          base::Bind(&crypto::InitializeTPMToken,
-                     tpm_token_name_,
-                     tpm_token_slot_id_,
-                     tpm_user_pin_),
+          base::Bind(&crypto::InitializeTPMToken, tpm_token_slot_id_),
           base::Bind(&CertLoader::OnTPMTokenInitialized,
                      initialize_token_factory_.GetWeakPtr()));
       return;
