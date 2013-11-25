@@ -58,6 +58,15 @@ MediaStreamDevice::MediaStreamDevice(
 
 MediaStreamDevice::~MediaStreamDevice() {}
 
+bool MediaStreamDevice::IsEqual(const MediaStreamDevice& second) const {
+  const AudioDeviceParameters& input_second = second.input;
+  return type == second.type &&
+      name == second.name &&
+      id == second.id &&
+      input.sample_rate == input_second.sample_rate &&
+      input.channel_layout == input_second.channel_layout;
+}
+
 MediaStreamRequest::MediaStreamRequest(
     int render_process_id,
     int render_view_id,

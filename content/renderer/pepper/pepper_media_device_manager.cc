@@ -153,7 +153,9 @@ void PepperMediaDeviceManager::OnStreamGenerated(
 void PepperMediaDeviceManager::OnStreamGenerationFailed(int request_id) {
 }
 
-void PepperMediaDeviceManager::OnStopGeneratedStream(const std::string& label) {
+void PepperMediaDeviceManager::OnDeviceStopped(
+    const std::string& label,
+    const StreamDeviceInfo& device_info) {
 }
 
 void PepperMediaDeviceManager::OnDevicesEnumerated(

@@ -33,8 +33,9 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
       const StreamDeviceInfoArray& audio_devices,
       const StreamDeviceInfoArray& video_devices) OVERRIDE;
   virtual void StreamGenerationFailed(const std::string& label) OVERRIDE;
-  virtual void StopGeneratedStream(int render_view_id,
-                                   const std::string& label) OVERRIDE;
+  virtual void DeviceStopped(int render_view_id,
+                             const std::string& label,
+                             const StreamDeviceInfo& device) OVERRIDE;
   virtual void DevicesEnumerated(const std::string& label,
                                  const StreamDeviceInfoArray& devices) OVERRIDE;
   virtual void DeviceOpened(const std::string& label,

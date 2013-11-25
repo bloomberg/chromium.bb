@@ -399,16 +399,46 @@ void MediaStreamImpl::OnStreamGenerationFailed(int request_id) {
 }
 
 // Callback from MediaStreamDispatcher.
-// The user has requested to stop the media stream.
-void MediaStreamImpl::OnStopGeneratedStream(const std::string& label) {
+// The browser process has stopped a device used by a MediaStream.
+void MediaStreamImpl::OnDeviceStopped(
+    const std::string& label,
+    const StreamDeviceInfo& device_info) {
   DCHECK(CalledOnValidThread());
-  DVLOG(1) << "MediaStreamImpl::OnStopGeneratedStream(" << label << ")";
+  DVLOG(1) << "MediaStreamImpl::OnDeviceStopped("
+           << "{device_id = " << device_info.device.id << "})";
 
-  UserMediaRequestInfo* user_media_request = FindUserMediaRequestInfo(label);
-  if (user_media_request) {
-    DeleteUserMediaRequestInfo(user_media_request);
+  const blink::WebMediaStreamSource* source_ptr = FindLocalSource(device_info);
+  if (!source_ptr) {
+    // This happens if the same device is used in several guM requests or
+    // if a user happen stop a track from JS at the same time
+    // as the underlying media device is unplugged from the system.
+    return;
   }
-  StopUnreferencedSources(false);
+  // By creating |source| it is guaranteed that the blink::WebMediaStreamSource
+  // object is valid during the cleanup.
+  blink::WebMediaStreamSource source(*source_ptr);
+  StopLocalSource(source, false);
+
+  for (LocalStreamSources::iterator device_it = local_sources_.begin();
+       device_it != local_sources_.end(); ++device_it) {
+    if (device_it->source.id() == source.id()) {
+      local_sources_.erase(device_it);
+      break;
+    }
+  }
+
+  // Remove the reference to this source from all |user_media_requests_|.
+  // TODO(perkj): The below is not necessary once we don't need to support
+  // MediaStream::Stop().
+  UserMediaRequests::iterator it = user_media_requests_.begin();
+  while (it != user_media_requests_.end()) {
+    RemoveSource(source, &(*it)->sources);
+    if ((*it)->sources.empty()) {
+      it = user_media_requests_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 void MediaStreamImpl::CreateWebKitSourceVector(

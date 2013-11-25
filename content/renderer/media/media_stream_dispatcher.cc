@@ -140,7 +140,6 @@ void MediaStreamDispatcher::StopStreamDevice(
     const StreamDeviceInfo& device_info) {
   DVLOG(1) << "MediaStreamDispatcher::StopStreamDevice"
            << ", {device_id = " << device_info.device.id << "}";
-
   // Remove |device_info| from all streams in |label_stream_map_|.
   bool device_found = false;
   LabelStreamMap::iterator stream_it = label_stream_map_.begin();
@@ -281,8 +280,8 @@ bool MediaStreamDispatcher::OnMessageReceived(const IPC::Message& message) {
                         OnStreamGenerated)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerationFailed,
                         OnStreamGenerationFailed)
-    IPC_MESSAGE_HANDLER(MediaStreamMsg_StopGeneratedStream,
-                        OnStopGeneratedStream)
+    IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceStopped,
+                        OnDeviceStopped)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_DevicesEnumerated,
                         OnDevicesEnumerated)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_DevicesEnumerationFailed,
@@ -341,18 +340,31 @@ void MediaStreamDispatcher::OnStreamGenerationFailed(int request_id) {
   }
 }
 
-void MediaStreamDispatcher::OnStopGeneratedStream(const std::string& label) {
+void MediaStreamDispatcher::OnDeviceStopped(
+    const std::string& label,
+    const StreamDeviceInfo& device_info) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  LabelStreamMap::iterator it = label_stream_map_.find(label);
-  if (it == label_stream_map_.end())
-    return;
+  DVLOG(1) << "MediaStreamDispatcher::OnDeviceStopped("
+           << "{label = " << label << "})"
+           << ", {device_id = " << device_info.device.id << "})";
 
-  if (it->second.handler.get()) {
-    it->second.handler->OnStopGeneratedStream(label);
-    DVLOG(1) << "MediaStreamDispatcher::OnStopGeneratedStream("
-             << label << ")\n";
+  LabelStreamMap::iterator it = label_stream_map_.find(label);
+  if (it == label_stream_map_.end()) {
+    // This can happen if a user happen stop a the device from JS at the same
+    // time as the underlying media device is unplugged from the system.
+    return;
   }
-  label_stream_map_.erase(it);
+  Stream* stream = &it->second;
+  if (IsAudioMediaType(device_info.device.type))
+    RemoveStreamDeviceFromArray(device_info, &stream->audio_array);
+  else
+    RemoveStreamDeviceFromArray(device_info, &stream->video_array);
+
+  if (stream->handler.get())
+    stream->handler->OnDeviceStopped(label, device_info);
+
+  if (stream->audio_array.empty() && stream->video_array.empty())
+    label_stream_map_.erase(it);
 }
 
 void MediaStreamDispatcher::OnDevicesEnumerated(

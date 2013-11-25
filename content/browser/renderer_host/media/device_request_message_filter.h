@@ -34,8 +34,9 @@ class CONTENT_EXPORT DeviceRequestMessageFilter : public BrowserMessageFilter,
       const std::string& label, const StreamDeviceInfoArray& audio_devices,
       const StreamDeviceInfoArray& video_devices) OVERRIDE;
   virtual void StreamGenerationFailed(const std::string& label) OVERRIDE;
-  virtual void StopGeneratedStream(int render_view_id,
-                                   const std::string& label) OVERRIDE;
+  virtual void DeviceStopped(int render_view_id,
+                             const std::string& label,
+                             const StreamDeviceInfo& device) OVERRIDE;
   virtual void DeviceOpened(const std::string& label,
                             const StreamDeviceInfo& video_device) OVERRIDE;
   // DevicesEnumerated() is the only callback we're interested in.

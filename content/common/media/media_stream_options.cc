@@ -56,15 +56,7 @@ StreamDeviceInfo::StreamDeviceInfo(MediaStreamType service_param,
 // static
 bool StreamDeviceInfo::IsEqual(const StreamDeviceInfo& first,
                                const StreamDeviceInfo& second) {
-  const MediaStreamDevice::AudioDeviceParameters& input_first =
-      first.device.input;
-  const MediaStreamDevice::AudioDeviceParameters& input_second =
-      second.device.input;
-  return first.device.type == second.device.type &&
-      first.device.name == second.device.name &&
-      first.device.id == second.device.id &&
-      input_first.sample_rate == input_second.sample_rate &&
-      input_first.channel_layout == input_second.channel_layout &&
+  return first.device.IsEqual(second.device) &&
       first.session_id == second.session_id;
 }
 

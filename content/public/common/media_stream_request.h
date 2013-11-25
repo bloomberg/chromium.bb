@@ -87,6 +87,8 @@ struct CONTENT_EXPORT MediaStreamDevice {
 
   ~MediaStreamDevice();
 
+  bool IsEqual(const MediaStreamDevice& second) const;
+
   // The device's type.
   MediaStreamType type;
 

@@ -68,9 +68,10 @@ void DeviceRequestMessageFilter::StreamGenerationFailed(
   NOTIMPLEMENTED();
 }
 
-void DeviceRequestMessageFilter::StopGeneratedStream(
+void DeviceRequestMessageFilter::DeviceStopped(
     int render_view_id,
-    const std::string& label) {
+    const std::string& label,
+    const StreamDeviceInfo& device) {
   NOTIMPLEMENTED();
 }
 

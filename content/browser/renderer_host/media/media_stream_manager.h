@@ -202,8 +202,14 @@ class CONTENT_EXPORT MediaStreamManager
   // Checks if all devices that was requested in the request identififed by
   // |label| has been opened and set the request state accordingly.
   void HandleRequestDone(const std::string& label,
-                                   DeviceRequest* request);
-  void StopDevice(const StreamDeviceInfo& device_info);
+                         DeviceRequest* request);
+  // Stop the use of the device associated with |session_id| of type |type| in
+  // all |requests_|. The device is removed from the request. If a request
+  /// doesn't use any devices as a consequence, the request is deleted.
+  void StopDevice(MediaStreamType type, int session_id);
+  // Calls the correct capture manager and close the device with |session_id|.
+  // All requests that uses the device are updated.
+  void CloseDevice(MediaStreamType type, int session_id);
   // Returns true if a request for devices has been completed and the devices
   // has either been opened or an error has occurred.
   bool RequestDone(const DeviceRequest& request) const;
@@ -224,11 +230,6 @@ class CONTENT_EXPORT MediaStreamManager
                                        StreamDeviceInfo* device_info,
                                        MediaRequestState* request_state) const;
 
-  // Returns the label of the first request for a MediaStream that uses
-  // |device|.
-  std::string FindFirstMediaStreamRequestWithDevice(
-      const MediaStreamDevice& device) const;
-
   // Sends cached device list to a client corresponding to the request
   // identified by |label|.
   void SendCachedDeviceList(EnumerationCache* cache, const std::string& label);
@@ -240,6 +241,9 @@ class CONTENT_EXPORT MediaStreamManager
   // list of currently available devices.
   void StopRemovedDevices(const StreamDeviceInfoArray& old_devices,
                           const StreamDeviceInfoArray& new_devices);
+  // Helper method used by StopRemovedDevices to stop the use of a certain
+  // device.
+  void StopRemovedDevice(const MediaStreamDevice& device);
 
   // Helpers to start and stop monitoring devices.
   void StartMonitoring();

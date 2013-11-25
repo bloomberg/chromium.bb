@@ -46,14 +46,16 @@ void MediaStreamDispatcherHost::StreamGenerationFailed(
                                                  request.page_request_id));
 }
 
-void MediaStreamDispatcherHost::StopGeneratedStream(
-    int render_view_id,
-    const std::string& label) {
+void MediaStreamDispatcherHost::DeviceStopped(int render_view_id,
+                                              const std::string& label,
+                                              const StreamDeviceInfo& device) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DVLOG(1) << "MediaStreamDispatcherHost::StopGeneratedStream("
-           << ", {label = " << label <<  "})";
+  DVLOG(1) << "MediaStreamDispatcherHost::DeviceStopped("
+           << "{label = " << label << "}, "
+           << "{type = " << device.device.type << "}, "
+           << "{device_id = " << device.device.id << "})";
 
-  Send(new MediaStreamMsg_StopGeneratedStream(render_view_id, label));
+  Send(new MediaStreamMsg_DeviceStopped(render_view_id, label, device));
 }
 
 void MediaStreamDispatcherHost::DevicesEnumerated(

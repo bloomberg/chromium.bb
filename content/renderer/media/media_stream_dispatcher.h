@@ -91,8 +91,10 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // Returns an audio session_id given a label and an index.
   virtual int audio_session_id(const std::string& label, int index);
 
+ protected:
+  int GetNextIpcIdForTest() { return next_ipc_id_; }
+
  private:
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicStream);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicStreamForDevice);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicVideoDevice);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, TestFailure);
@@ -146,7 +148,8 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const StreamDeviceInfoArray& audio_array,
       const StreamDeviceInfoArray& video_array);
   void OnStreamGenerationFailed(int request_id);
-  void OnStopGeneratedStream(const std::string& label);
+  void OnDeviceStopped(const std::string& label,
+                       const StreamDeviceInfo& device_info);
   void OnDevicesEnumerated(
       int request_id,
       const std::string& label,

@@ -57,11 +57,11 @@ IPC_MESSAGE_ROUTED4(MediaStreamMsg_StreamGenerated,
 IPC_MESSAGE_ROUTED1(MediaStreamMsg_StreamGenerationFailed,
                     int /* request id */)
 
-// The browser requests to stop streaming.
-// Note that this differs from MediaStreamHostMsg_StopGeneratedStream below
-// which is a request from the renderer.
-IPC_MESSAGE_ROUTED1(MediaStreamMsg_StopGeneratedStream,
-                    std::string /* label */)
+// The browser reports that a media device has been stopped. Stopping was
+// triggered from the browser process.
+IPC_MESSAGE_ROUTED2(MediaStreamMsg_DeviceStopped,
+                    std::string /* label */,
+                    content::StreamDeviceInfo /* the device */)
 
 // The browser has enumerated devices successfully.
 // Used by Pepper.
