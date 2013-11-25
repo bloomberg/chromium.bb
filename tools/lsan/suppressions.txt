@@ -68,9 +68,6 @@ leak:gpu::gles2::GLES2DecoderImpl::DoRenderbufferStorage
 # Leak in cc_unittests. http://crbug.com/317965
 leak:cc::ThreadProxy::ReadyToFinalizeTextureUpdates
 
-# Leak in cc_unittests. http://crbug.com/317966
-leak:cc::TileManager::InitializeTilesWithResourcesForTesting
-
 # Leak in unit_tests. http://crbug.com/309468
 leak:TranslateBubbleViewTest::SetUp
 
