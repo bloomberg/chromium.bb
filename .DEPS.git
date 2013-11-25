@@ -28,7 +28,7 @@ deps = {
     'src/media/cdm/ppapi/api':
         Var('git_url') + '/chromium/cdm.git@020cdb85250bd4294500c9b21e748b8da16aab7c',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@74bc8d5a5c103e9a459811f0a51756484f010f49',
+        Var('git_url') + '/native_client/src/native_client.git@1f69c2554a29c2a0b99b9f7a13c6b7bca3f4f4f7',
     'src/sdch/open-vcdiff':
         Var('git_url') + '/external/open-vcdiff.git@438f2a5be6d809bc21611a94cd37bfc8c28ceb33',
     'src/testing/gmock':
