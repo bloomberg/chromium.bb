@@ -6,6 +6,7 @@
 
 #include <iterator>
 
+#include "base/command_line.h"
 #include "base/prefs/pref_notifier.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -1073,10 +1074,15 @@ bool ExtensionPrefs::HasAllowFileAccessSetting(
 }
 
 ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
-    const Extension* extension,
-    ExtensionPrefs::LaunchType default_pref_value) {
+    const Extension* extension) {
   int value = -1;
-  LaunchType result = LAUNCH_TYPE_REGULAR;
+  LaunchType result = LAUNCH_TYPE_DEFAULT;
+
+  // Launch hosted apps as windows by default for streamlined hosted apps.
+  if (CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableStreamlinedHostedApps)) {
+    result = LAUNCH_TYPE_WINDOW;
+  }
 
   if (ReadPrefAsInteger(extension->id(), kPrefLaunchType, &value) &&
       (value == LAUNCH_TYPE_PINNED ||
@@ -1084,8 +1090,6 @@ ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
        value == LAUNCH_TYPE_FULLSCREEN ||
        value == LAUNCH_TYPE_WINDOW)) {
     result = static_cast<LaunchType>(value);
-  } else {
-    result = default_pref_value;
   }
 #if defined(OS_MACOSX)
     // App windows are not yet supported on mac.  Pref sync could make
@@ -1104,9 +1108,7 @@ ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
   return result;
 }
 
-LaunchContainer ExtensionPrefs::GetLaunchContainer(
-    const Extension* extension,
-    ExtensionPrefs::LaunchType default_pref_value) {
+LaunchContainer ExtensionPrefs::GetLaunchContainer(const Extension* extension) {
   LaunchContainer manifest_launch_container =
       AppLaunchInfo::GetLaunchContainer(extension);
 
@@ -1120,12 +1122,9 @@ LaunchContainer ExtensionPrefs::GetLaunchContainer(
     // manifest setting.
     result = manifest_launch_container;
   } else if (manifest_launch_container == LAUNCH_TAB) {
-    // Look for prefs that indicate the user's choice of launch
-    // container.  The app's menu on the NTP provides a UI to set
-    // this preference.  If no preference is set, |default_pref_value|
-    // is used.
-    ExtensionPrefs::LaunchType prefs_launch_type =
-        GetLaunchType(extension, default_pref_value);
+    // Look for prefs that indicate the user's choice of launch container. The
+    // app's menu on the NTP provides a UI to set this preference.
+    ExtensionPrefs::LaunchType prefs_launch_type = GetLaunchType(extension);
 
     if (prefs_launch_type == LAUNCH_TYPE_WINDOW) {
       // If the pref is set to launch a window (or no pref is set, and
@@ -1159,6 +1158,14 @@ LaunchContainer ExtensionPrefs::GetLaunchContainer(
   }
 
   return result;
+}
+
+bool ExtensionPrefs::HasPreferredLaunchContainer(const Extension* extension) {
+  int value = -1;
+  LaunchContainer manifest_launch_container =
+      AppLaunchInfo::GetLaunchContainer(extension);
+  return manifest_launch_container == LAUNCH_TAB &&
+      ReadPrefAsInteger(extension->id(), kPrefLaunchType, &value);
 }
 
 void ExtensionPrefs::SetLaunchType(const std::string& extension_id,

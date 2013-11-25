@@ -192,20 +192,23 @@ bool GetAppLaunchContainer(
   ExtensionService* extensions_service = profile->GetExtensionService();
   const Extension* extension =
       extensions_service->GetExtensionById(app_id, false);
-
+      LOG(ERROR) << app_id;
   // The extension with id |app_id| may have been uninstalled.
   if (!extension)
     return false;
-
+LOG(ERROR) << app_id;
   // Don't launch platform apps in incognito mode.
   if (profile->IsOffTheRecord() && extension->is_platform_app())
     return false;
-
-  // Look at preferences to find the right launch container.  If no
+LOG(ERROR) << app_id;
+  // Look at preferences to find the right launch container. If no
   // preference is set, launch as a window.
   extensions::LaunchContainer launch_container =
-      extensions_service->extension_prefs()->GetLaunchContainer(
-          extension, extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW);
+      extensions_service->extension_prefs()->GetLaunchContainer(extension);
+
+  if (!extensions_service->extension_prefs()->HasPreferredLaunchContainer(
+          extension))
+    launch_container = extensions::LAUNCH_WINDOW;
 
   *out_extension = extension;
   *out_launch_container = launch_container;

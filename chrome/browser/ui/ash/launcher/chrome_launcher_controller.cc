@@ -713,8 +713,7 @@ extensions::ExtensionPrefs::LaunchType
     return extensions::ExtensionPrefs::LAUNCH_TYPE_DEFAULT;
 
   return profile_->GetExtensionService()->extension_prefs()->GetLaunchType(
-      extension,
-      extensions::ExtensionPrefs::LAUNCH_TYPE_DEFAULT);
+      extension);
 }
 
 ash::LauncherID ChromeLauncherController::GetLauncherIDForAppID(

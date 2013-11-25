@@ -161,8 +161,7 @@ ui::WindowShowState DetermineWindowShowState(
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   ExtensionPrefs::LaunchType launch_type =
-      service->extension_prefs()->GetLaunchType(
-          extension, ExtensionPrefs::LAUNCH_TYPE_DEFAULT);
+      service->extension_prefs()->GetLaunchType(extension);
   if (launch_type == ExtensionPrefs::LAUNCH_TYPE_FULLSCREEN)
     return ui::SHOW_STATE_MAXIMIZED;
   else if (launch_type == ExtensionPrefs::LAUNCH_TYPE_WINDOW)
@@ -253,8 +252,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params) {
   DCHECK(extension_service);
 
   ExtensionPrefs::LaunchType launch_type =
-      extension_service->extension_prefs()->GetLaunchType(
-          extension, ExtensionPrefs::LAUNCH_TYPE_DEFAULT);
+      extension_service->extension_prefs()->GetLaunchType(extension);
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType", launch_type, 100);
 
   int add_type = TabStripModel::ADD_ACTIVE;
@@ -414,8 +412,7 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
 
   // Look up the app preference to find out the right launch container. Default
   // is to launch as a regular tab.
-  container = service->extension_prefs()->GetLaunchContainer(
-      extension, extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR);
+  container = service->extension_prefs()->GetLaunchContainer(extension);
 }
 
 AppLaunchParams::AppLaunchParams(Profile* profile,
@@ -441,8 +438,7 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
 
     // Look at preference to find the right launch container.  If no preference
     // is set, launch as a regular tab.
-    container = service->extension_prefs()->GetLaunchContainer(
-        extension, extensions::ExtensionPrefs::LAUNCH_TYPE_DEFAULT);
+    container = service->extension_prefs()->GetLaunchContainer(extension);
     disposition = NEW_FOREGROUND_TAB;
   }
 }

@@ -393,19 +393,23 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   void SetAllowFileAccess(const std::string& extension_id, bool allow);
   bool HasAllowFileAccessSetting(const std::string& extension_id) const;
 
-  // Get the launch type preference.  If no preference is set, return
-  // |default_pref_value|.
-  LaunchType GetLaunchType(const Extension* extension,
-                           LaunchType default_pref_value);
+  // Get the launch type preference. If no preference is set, return
+  // LAUNCH_DEFAULT.
+  // Returns LAUNCH_WINDOW if there's no preference and
+  // 'streamlined hosted apps' are enabled.
+  LaunchType GetLaunchType(const Extension* extension);
 
   void SetLaunchType(const std::string& extension_id, LaunchType launch_type);
 
   // Find the right launch container based on the launch type.
-  // If |extension|'s prefs do not have a launch type set, then
-  // use |default_pref_value|.
-  LaunchContainer GetLaunchContainer(
-      const Extension* extension,
-      LaunchType default_pref_value);
+  // If |extension|'s prefs do not have a launch type set, then the default
+  // value from GetLaunchType() is used to decide the launch container.
+  LaunchContainer GetLaunchContainer(const Extension* extension);
+
+  // Returns true if a launch container preference has been specified for
+  // |extension|. GetLaunchContainer() will still return a default value even if
+  // this returns false.
+  bool HasPreferredLaunchContainer(const Extension* extension);
 
   // Saves ExtensionInfo for each installed extension with the path to the
   // version directory and the location. Blacklisted extensions won't be saved

@@ -155,8 +155,7 @@ void AppLauncherHandler::CreateAppInfo(
                     extensions::AppLaunchInfo::GetLaunchContainer(extension));
   ExtensionPrefs* prefs = service->extension_prefs();
   value->SetInteger("launch_type",
-      prefs->GetLaunchType(extension,
-                           ExtensionPrefs::LAUNCH_TYPE_DEFAULT));
+      prefs->GetLaunchType(extension));
   value->SetBoolean("is_component",
                     extension->location() == extensions::Manifest::COMPONENT);
   value->SetBoolean("is_webstore",

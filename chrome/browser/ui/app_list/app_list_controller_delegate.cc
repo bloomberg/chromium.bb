@@ -133,8 +133,7 @@ AppListControllerDelegate::GetExtensionLaunchType(
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   return service->extension_prefs()->
-      GetLaunchType(GetExtension(profile, app_id),
-                    extensions::ExtensionPrefs::LAUNCH_TYPE_DEFAULT);
+      GetLaunchType(GetExtension(profile, app_id));
 }
 
 void AppListControllerDelegate::SetExtensionLaunchType(

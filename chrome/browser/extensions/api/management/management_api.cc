@@ -432,11 +432,10 @@ bool ManagementLaunchAppFunction::RunImpl() {
   }
 
   // Look at prefs to find the right launch container.
-  // |default_pref_value| is set to LAUNCH_DEFAULT so that if
-  // the user has not set a preference, we open the app in a tab.
+  // If the user has not set a preference, the default launch value will be
+  // returned.
   LaunchContainer launch_container =
-      service()->extension_prefs()->GetLaunchContainer(
-          extension, ExtensionPrefs::LAUNCH_TYPE_DEFAULT);
+      service()->extension_prefs()->GetLaunchContainer(extension);
   OpenApplication(AppLaunchParams(
       GetProfile(), extension, launch_container, NEW_FOREGROUND_TAB));
 #if !defined(OS_ANDROID)
