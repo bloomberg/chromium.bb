@@ -2118,19 +2118,24 @@ static void
 unset_fullscreen(struct shell_surface *shsurf)
 {
 	struct workspace *ws;
-	/* undo all fullscreen things here */
+
+	/* Unset the fullscreen output, driver configuration and transforms. */
 	if (shsurf->fullscreen.type == WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER &&
 	    shell_surface_is_top_fullscreen(shsurf)) {
 		restore_output_mode(shsurf->fullscreen_output);
 	}
+	shsurf->fullscreen_output = NULL;
+
 	shsurf->fullscreen.type = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 	shsurf->fullscreen.framerate = 0;
+
 	wl_list_remove(&shsurf->fullscreen.transform.link);
 	wl_list_init(&shsurf->fullscreen.transform.link);
+
 	if (shsurf->fullscreen.black_view)
 		weston_surface_destroy(shsurf->fullscreen.black_view->surface);
 	shsurf->fullscreen.black_view = NULL;
-	shsurf->fullscreen_output = NULL;
+
 	weston_view_set_position(shsurf->view,
 				 shsurf->saved_x, shsurf->saved_y);
 	if (shsurf->saved_rotation_valid) {
