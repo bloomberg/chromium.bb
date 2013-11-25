@@ -1235,19 +1235,24 @@ workspace_has_only(struct workspace *ws, struct weston_surface *surface)
 }
 
 static void
-move_view_to_workspace(struct desktop_shell *shell,
-		       struct weston_view *view,
-		       uint32_t workspace)
+move_surface_to_workspace(struct desktop_shell *shell,
+                          struct shell_surface *shsurf,
+                          uint32_t workspace)
 {
 	struct workspace *from;
 	struct workspace *to;
 	struct weston_seat *seat;
 	struct weston_surface *focus;
-
-	assert(weston_surface_get_main_surface(view->surface) == view->surface);
+	struct weston_view *view;
 
 	if (workspace == shell->workspaces.current)
 		return;
+
+	view = get_default_view(shsurf->surface);
+	if (!view)
+		return;
+
+	assert(weston_surface_get_main_surface(view->surface) == view->surface);
 
 	if (workspace >= shell->workspaces.num)
 		workspace = shell->workspaces.num - 1;
@@ -1296,6 +1301,8 @@ take_surface_to_workspace_by_seat(struct desktop_shell *shell,
 	wl_list_remove(&view->layer_link);
 	wl_list_insert(&to->layer.view_list, &view->layer_link);
 
+	shsurf = get_shell_surface(surface);
+
 	replace_focus_state(shell, to, seat);
 	drop_focus_state(shell, from, surface);
 
@@ -1319,7 +1326,6 @@ take_surface_to_workspace_by_seat(struct desktop_shell *shell,
 	    workspace_has_only(to, surface))
 		update_workspace(shell, index, from, to);
 	else {
-		shsurf = get_shell_surface(surface);
 		if (wl_list_empty(&shsurf->workspace_transform.link))
 			wl_list_insert(&shell->workspaces.anim_sticky_list,
 				       &shsurf->workspace_transform.link);
@@ -1344,13 +1350,14 @@ workspace_manager_move_surface(struct wl_client *client,
 	struct weston_surface *surface =
 		wl_resource_get_user_data(surface_resource);
 	struct weston_surface *main_surface;
-	struct weston_view *view;
+	struct shell_surface *shell_surface;
 
 	main_surface = weston_surface_get_main_surface(surface);
-	view = get_default_view(main_surface);
-	if (!view)
+	shell_surface = get_shell_surface(main_surface);
+	if (shell_surface == NULL)
 		return;
-	move_view_to_workspace(shell, view, workspace);
+
+	move_surface_to_workspace(shell, shell_surface, workspace);
 }
 
 static const struct workspace_manager_interface workspace_manager_implementation = {
