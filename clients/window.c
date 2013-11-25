@@ -3976,6 +3976,12 @@ window_is_fullscreen(struct window *window)
 	return window->type == TYPE_FULLSCREEN;
 }
 
+int
+window_is_transient(struct window *window)
+{
+	return window->type == TYPE_TRANSIENT;
+}
+
 static void
 configure_request_completed(void *data, struct wl_callback *callback, uint32_t  time)
 {

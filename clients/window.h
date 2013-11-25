@@ -358,6 +358,9 @@ void
 window_set_buffer_type(struct window *window, enum window_buffer_type type);
 
 int
+window_is_transient(struct window *window);
+
+int
 window_is_fullscreen(struct window *window);
 
 void
