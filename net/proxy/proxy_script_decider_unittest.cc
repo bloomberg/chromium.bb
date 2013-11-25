@@ -126,6 +126,55 @@ class RuleBasedProxyScriptFetcher : public ProxyScriptFetcher {
   URLRequestContext* request_context_;
 };
 
+// A mock retriever, returns asynchronously when CompleteRequests() is called.
+class MockDhcpProxyScriptFetcher : public DhcpProxyScriptFetcher {
+ public:
+  MockDhcpProxyScriptFetcher();
+  virtual ~MockDhcpProxyScriptFetcher();
+
+  virtual int Fetch(base::string16* utf16_text,
+                    const CompletionCallback& callback) OVERRIDE;
+  virtual void Cancel() OVERRIDE;
+  virtual const GURL& GetPacURL() const OVERRIDE;
+
+  virtual void SetPacURL(const GURL& url);
+
+  virtual void CompleteRequests(int result, const base::string16& script);
+
+ private:
+  CompletionCallback callback_;
+  base::string16* utf16_text_;
+  GURL gurl_;
+  DISALLOW_COPY_AND_ASSIGN(MockDhcpProxyScriptFetcher);
+};
+
+MockDhcpProxyScriptFetcher::MockDhcpProxyScriptFetcher() { }
+
+MockDhcpProxyScriptFetcher::~MockDhcpProxyScriptFetcher() { }
+
+int MockDhcpProxyScriptFetcher::Fetch(base::string16* utf16_text,
+                                      const CompletionCallback& callback) {
+  utf16_text_ = utf16_text;
+  callback_ = callback;
+  return ERR_IO_PENDING;
+}
+
+void MockDhcpProxyScriptFetcher::Cancel() { }
+
+const GURL& MockDhcpProxyScriptFetcher::GetPacURL() const {
+  return gurl_;
+}
+
+void MockDhcpProxyScriptFetcher::SetPacURL(const GURL& url) {
+  gurl_ = url;
+}
+
+void MockDhcpProxyScriptFetcher::CompleteRequests(
+    int result, const base::string16& script) {
+  *utf16_text_ = script;
+  callback_.Run(result);
+}
+
 // Succeed using custom PAC script.
 TEST(ProxyScriptDeciderTest, CustomPacSucceeds) {
   Rules rules;
@@ -278,17 +327,15 @@ class ProxyScriptDeciderQuickCheckTest : public ::testing::Test {
   Rules rules_;
   Rules::Rule rule_;
   TestCompletionCallback callback_;
+  RuleBasedProxyScriptFetcher fetcher_;
+  ProxyConfig config_;
 
  private:
   URLRequestContext request_context_;
 
-  RuleBasedProxyScriptFetcher fetcher_;
   DoNothingDhcpProxyScriptFetcher dhcp_fetcher_;
-
-  ProxyConfig config_;
 };
 
-#if 0
 // Fails if a synchronous DNS lookup success for wpad causes QuickCheck to fail.
 TEST_F(ProxyScriptDeciderQuickCheckTest, SyncSuccess) {
   resolver_.set_synchronous_mode(true);
@@ -339,7 +386,32 @@ TEST_F(ProxyScriptDeciderQuickCheckTest, AsyncTimeout) {
   EXPECT_FALSE(resolver_.has_pending_requests());
   EXPECT_FALSE(decider_->effective_config().has_pac_url());
 }
-#endif
+
+// Fails if DHCP check doesn't take place before QuickCheck.
+TEST_F(ProxyScriptDeciderQuickCheckTest, QuickCheckInhibitsDhcp) {
+  MockDhcpProxyScriptFetcher dhcp_fetcher;
+  const char *kPac = "function FindProxyForURL(u,h) { return \"DIRECT\"; }";
+  base::string16 pac_contents = base::UTF8ToUTF16(kPac);
+  GURL url("http://foobar/baz");
+  dhcp_fetcher.SetPacURL(url);
+  decider_.reset(new ProxyScriptDecider(&fetcher_, &dhcp_fetcher, NULL));
+  EXPECT_EQ(ERR_IO_PENDING, StartDecider());
+  dhcp_fetcher.CompleteRequests(OK, pac_contents);
+  EXPECT_TRUE(decider_->effective_config().has_pac_url());
+  EXPECT_EQ(decider_->effective_config().pac_url(), url);
+}
+
+TEST_F(ProxyScriptDeciderQuickCheckTest, ExplicitPacUrl) {
+  const char *kCustomUrl = "http://custom/proxy.pac";
+  config_.set_pac_url(GURL(kCustomUrl));
+  Rules::Rule rule = rules_.AddSuccessRule(kCustomUrl);
+  resolver_.rules()->AddSimulatedFailure("wpad");
+  resolver_.rules()->AddRule("custom", "1.2.3.4");
+  EXPECT_EQ(ERR_IO_PENDING, StartDecider());
+  callback_.WaitForResult();
+  EXPECT_TRUE(decider_->effective_config().has_pac_url());
+  EXPECT_EQ(rule.url, decider_->effective_config().pac_url());
+}
 
 // Fails at WPAD (downloading), but succeeds in choosing the custom PAC.
 TEST(ProxyScriptDeciderTest, AutodetectFailCustomSuccess1) {
