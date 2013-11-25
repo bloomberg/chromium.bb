@@ -199,7 +199,7 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
   }
 
   virtual void OnError(QuicFramer* f) OVERRIDE {
-    DLOG(INFO) << "QuicFramer Error: " << QuicUtils::ErrorToString(f->error())
+    DVLOG(0) << "QuicFramer Error: " << QuicUtils::ErrorToString(f->error())
                << " (" << f->error() << ")";
     error_count_++;
   }
@@ -221,7 +221,7 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
   }
 
   virtual bool OnProtocolVersionMismatch(QuicVersion version) OVERRIDE {
-    DLOG(INFO) << "QuicFramer Version Mismatch, version: " << version;
+    DVLOG(0) << "QuicFramer Version Mismatch, version: " << version;
     version_mismatch_++;
     return true;
   }
@@ -2471,7 +2471,7 @@ TEST_P(QuicFramerTest, PublicResetPacket) {
   // Now test framing boundaries
   for (size_t i = 0; i < GetPublicResetPacketSize(); ++i) {
     string expected_error;
-    DLOG(INFO) << "iteration: " << i;
+    DVLOG(0) << "iteration: " << i;
     if (i < kGuidOffset) {
       expected_error = "Unable to read public flags.";
       CheckProcessingFails(packet, i, expected_error,

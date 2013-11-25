@@ -157,7 +157,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     FLAGS_limit_rto_increase_for_tests = true;
     FLAGS_pad_quic_handshake_packets = GetParam().use_padding;
     FLAGS_enable_quic_pacing = GetParam().use_pacing;
-    LOG(INFO) << "Using Configuration: " << GetParam();
+    VLOG(0) << "Using Configuration: " << GetParam();
 
     client_config_.SetDefaults();
     server_config_.SetDefaults();

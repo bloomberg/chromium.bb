@@ -110,7 +110,7 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
     }
 
     if (session == NULL) {
-      DLOG(INFO) << "Failed to create session for " << guid;
+      DVLOG(0) << "Failed to create session for " << guid;
       // Add this guid fo the time-wait state, to safely reject future packets.
       // We don't know the version here, so assume latest.
       // TODO(ianswett): Produce a no-version version negotiation packet.
@@ -123,7 +123,7 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
                                              packet);
       return;
     }
-    DLOG(INFO) << "Created new session for " << guid;
+    DVLOG(0) << "Created new session for " << guid;
     session_map_.insert(make_pair(guid, session));
   } else {
     session = it->second;
@@ -200,7 +200,7 @@ void QuicDispatcher::OnConnectionClosed(QuicGuid guid, QuicErrorCode error) {
     return;
   }
 
-  DLOG_IF(INFO, error != QUIC_NO_ERROR) << "Closing connection (" << guid
+  DVLOG_IF(0, error != QUIC_NO_ERROR) << "Closing connection (" << guid
                                         << ") due to error: "
                                         << QuicUtils::ErrorToString(error);
 

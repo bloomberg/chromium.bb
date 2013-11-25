@@ -367,7 +367,7 @@ class WebSocketFrameTestMaskBenchmark : public testing::Test {
     std::copy(kMaskingKey,
               kMaskingKey + WebSocketFrameHeader::kMaskingKeyLength,
               masking_key.key);
-    LOG(INFO) << "Benchmarking MaskWebSocketFramePayload() for " << iterations_
+    VLOG(0) << "Benchmarking MaskWebSocketFramePayload() for " << iterations_
               << " iterations";
     using base::TimeTicks;
     TimeTicks start = TimeTicks::HighResNow();
@@ -378,7 +378,7 @@ class WebSocketFrameTestMaskBenchmark : public testing::Test {
     double total_time_ms =
         1000 * (TimeTicks::HighResNow() - start).InMillisecondsF() /
         iterations_;
-    LOG(INFO) << "Payload size " << size
+    VLOG(0) << "Payload size " << size
               << base::StringPrintf(" took %.03f microseconds per iteration",
                                     total_time_ms);
   }

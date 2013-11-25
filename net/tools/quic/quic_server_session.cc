@@ -40,12 +40,12 @@ void QuicServerSession::OnConnectionClosed(QuicErrorCode error,
 
 bool QuicServerSession::ShouldCreateIncomingReliableStream(QuicStreamId id) {
   if (id % 2 == 0) {
-    DLOG(INFO) << "Invalid incoming even stream_id:" << id;
+    DVLOG(0) << "Invalid incoming even stream_id:" << id;
     connection()->SendConnectionClose(QUIC_INVALID_STREAM_ID);
     return false;
   }
   if (GetNumOpenStreams() >= get_max_open_streams()) {
-    DLOG(INFO) << "Failed to create a new incoming stream with id:" << id
+    DVLOG(0) << "Failed to create a new incoming stream with id:" << id
                << " Already " << GetNumOpenStreams() << " open.";
     connection()->SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS);
     return false;

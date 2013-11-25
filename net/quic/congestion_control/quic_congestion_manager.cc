@@ -74,7 +74,7 @@ void QuicCongestionManager::SetFromConfig(const QuicConfig& config,
   if (config.initial_round_trip_time_us() > 0 &&
       rtt_sample_.IsInfinite()) {
     // The initial rtt should already be set on the client side.
-    DLOG_IF(INFO, !is_server)
+    DVLOG_IF(0, !is_server)
         << "Client did not set an initial RTT, but did negotiate one.";
     rtt_sample_ =
         QuicTime::Delta::FromMicroseconds(config.initial_round_trip_time_us());

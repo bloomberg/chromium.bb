@@ -323,7 +323,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   }
 
   virtual void OnError(SpdyFramer* f) OVERRIDE {
-    LOG(INFO) << "SpdyFramer Error: "
+    VLOG(0) << "SpdyFramer Error: "
               << SpdyFramer::ErrorCodeToString(f->error_code());
     error_count_++;
   }
@@ -438,7 +438,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       if (!framer_.ParseCredentialData(credential_buffer_.get(),
                                        credential_buffer_length_,
                                        &credential_)) {
-        LOG(INFO) << "Error parsing credential data.";
+        VLOG(0) << "Error parsing credential data.";
         ++error_count_;
       }
       return true;

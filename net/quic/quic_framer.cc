@@ -2026,7 +2026,7 @@ bool QuicFramer::AppendAckFramePayloadAndTypeByte(
   max_num_ranges =
       min(static_cast<size_t>(numeric_limits<uint8>::max()), max_num_ranges);
   bool truncated = ack_info.nack_ranges.size() > max_num_ranges;
-  DLOG_IF(INFO, truncated) << "Truncating ack from "
+  DVLOG_IF(0, truncated) << "Truncating ack from "
                            << ack_info.nack_ranges.size() << " ranges to "
                            << max_num_ranges;
 

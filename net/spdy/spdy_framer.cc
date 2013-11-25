@@ -61,7 +61,7 @@ const size_t SpdyFramer::kControlFrameBufferSize = 18;
 #ifdef DEBUG_SPDY_STATE_CHANGES
 #define CHANGE_STATE(newstate)                                  \
   do {                                                          \
-    LOG(INFO) << "Changing state from: "                        \
+    VLOG(0) << "Changing state from: "                        \
               << StateToString(state_)                          \
               << " to " << StateToString(newstate) << "\n";     \
     DCHECK(state_ != SPDY_ERROR);                               \
@@ -652,7 +652,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   } else if (version != spdy_version_) {
     // We check version before we check validity: version can never be
     // 'invalid', it can only be unsupported.
-    DLOG(INFO) << "Unsupported SPDY version " << version
+    DVLOG(0) << "Unsupported SPDY version " << version
                << " (expected " << spdy_version_ << ")";
     set_error(SPDY_UNSUPPORTED_VERSION);
   } else {
@@ -675,7 +675,7 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
   current_frame_type_ = static_cast<SpdyFrameType>(control_frame_type_field);
 
   if (current_frame_type_ == NOOP) {
-    DLOG(INFO) << "NOOP control frame found. Ignoring.";
+    DVLOG(0) << "NOOP control frame found. Ignoring.";
     CHANGE_STATE(SPDY_AUTO_RESET);
     return;
   }
@@ -1517,13 +1517,13 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
   if (spdy_version_ < 3) {
     uint16 temp;
     if (!reader.ReadUInt16(&temp)) {
-      DLOG(INFO) << "Unable to read number of headers.";
+      DVLOG(0) << "Unable to read number of headers.";
       return 0;
     }
     num_headers = temp;
   } else {
     if (!reader.ReadUInt32(&num_headers)) {
-      DLOG(INFO) << "Unable to read number of headers.";
+      DVLOG(0) << "Unable to read number of headers.";
       return 0;
     }
   }
@@ -1535,7 +1535,7 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
     // Read header name.
     if ((spdy_version_ < 3) ? !reader.ReadStringPiece16(&temp)
                             : !reader.ReadStringPiece32(&temp)) {
-      DLOG(INFO) << "Unable to read header name (" << index + 1 << " of "
+      DVLOG(0) << "Unable to read header name (" << index + 1 << " of "
                  << num_headers << ").";
       return 0;
     }
@@ -1544,7 +1544,7 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
     // Read header value.
     if ((spdy_version_ < 3) ? !reader.ReadStringPiece16(&temp)
                             : !reader.ReadStringPiece32(&temp)) {
-      DLOG(INFO) << "Unable to read header value (" << index + 1 << " of "
+      DVLOG(0) << "Unable to read header value (" << index + 1 << " of "
                  << num_headers << ").";
       return 0;
     }
@@ -1552,7 +1552,7 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
 
     // Ensure no duplicates.
     if (block->find(name) != block->end()) {
-      DLOG(INFO) << "Duplicate header '" << name << "' (" << index + 1 << " of "
+      DVLOG(0) << "Duplicate header '" << name << "' (" << index + 1 << " of "
                  << num_headers << ").";
       return 0;
     }

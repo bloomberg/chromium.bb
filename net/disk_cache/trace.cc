@@ -121,7 +121,7 @@ void Trace(const char* format, ...) {
 
 #if defined(DISK_CACHE_TRACE_TO_LOG)
   line[kEntrySize] = '\0';
-  LOG(INFO) << line;
+  VLOG(0) << line;
 #endif
 
   va_end(ap);

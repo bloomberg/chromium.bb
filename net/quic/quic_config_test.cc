@@ -190,7 +190,7 @@ TEST_F(QuicConfigTest, NoOverLapInCGST) {
   string error_details;
   server_config.ToHandshakeMessage(&msg);
   const QuicErrorCode error = config_.ProcessClientHello(msg, &error_details);
-  LOG(INFO) << QuicUtils::ErrorToString(error);
+  VLOG(0) << QuicUtils::ErrorToString(error);
   EXPECT_EQ(QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP, error);
 }
 

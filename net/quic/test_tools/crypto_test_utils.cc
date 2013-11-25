@@ -226,15 +226,15 @@ void CryptoTestUtils::CommunicateHandshakeMessages(
   size_t a_i = 0, b_i = 0;
   while (!a->handshake_confirmed()) {
     ASSERT_GT(a_conn->packets_.size(), a_i);
-    LOG(INFO) << "Processing " << a_conn->packets_.size() - a_i
+    VLOG(0) << "Processing " << a_conn->packets_.size() - a_i
               << " packets a->b";
     MovePackets(a_conn, &a_i, b, b_conn);
 
     ASSERT_GT(b_conn->packets_.size(), b_i);
-    LOG(INFO) << "Processing " << b_conn->packets_.size() - b_i
+    VLOG(0) << "Processing " << b_conn->packets_.size() - b_i
               << " packets b->a";
     if (b_conn->packets_.size() - b_i == 2) {
-      LOG(INFO) << "here";
+      VLOG(0) << "here";
     }
     MovePackets(b_conn, &b_i, a, a_conn);
   }
@@ -247,14 +247,14 @@ pair<size_t, size_t> CryptoTestUtils::AdvanceHandshake(
     PacketSavingConnection* b_conn,
     QuicCryptoStream* b,
     size_t b_i) {
-  LOG(INFO) << "Processing " << a_conn->packets_.size() - a_i
+  VLOG(0) << "Processing " << a_conn->packets_.size() - a_i
             << " packets a->b";
   MovePackets(a_conn, &a_i, b, b_conn);
 
-  LOG(INFO) << "Processing " << b_conn->packets_.size() - b_i
+  VLOG(0) << "Processing " << b_conn->packets_.size() - b_i
             << " packets b->a";
   if (b_conn->packets_.size() - b_i == 2) {
-    LOG(INFO) << "here";
+    VLOG(0) << "here";
   }
   MovePackets(b_conn, &b_i, a, a_conn);
 
