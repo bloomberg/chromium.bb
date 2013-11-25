@@ -15,9 +15,10 @@ namespace content {
 
 WebRTCIdentityServiceHost::WebRTCIdentityServiceHost(
     int renderer_process_id,
-    WebRTCIdentityStore* identity_store)
+    scoped_refptr<WebRTCIdentityStore> identity_store)
     : renderer_process_id_(renderer_process_id),
-      identity_store_(identity_store) {}
+      identity_store_(identity_store),
+      weak_factory_(this) {}
 
 WebRTCIdentityServiceHost::~WebRTCIdentityServiceHost() {
   if (!cancel_callback_.is_null())
@@ -60,7 +61,7 @@ void WebRTCIdentityServiceHost::OnRequestIdentity(
       identity_name,
       common_name,
       base::Bind(&WebRTCIdentityServiceHost::OnComplete,
-                 base::Unretained(this),
+                 weak_factory_.GetWeakPtr(),
                  sequence_number));
   if (cancel_callback_.is_null()) {
     SendErrorMessage(sequence_number, net::ERR_UNEXPECTED);

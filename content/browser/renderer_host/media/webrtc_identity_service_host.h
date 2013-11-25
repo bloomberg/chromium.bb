@@ -26,8 +26,8 @@ class WebRTCIdentityStore;
 // ERR_INSUFFICIENT_RESOURCES will be sent back to the renderer.
 class CONTENT_EXPORT WebRTCIdentityServiceHost : public BrowserMessageFilter {
  public:
-  explicit WebRTCIdentityServiceHost(int renderer_process_id,
-                                     WebRTCIdentityStore* identity_store);
+  WebRTCIdentityServiceHost(int renderer_process_id,
+                            scoped_refptr<WebRTCIdentityStore> identity_store);
 
  protected:
   virtual ~WebRTCIdentityServiceHost();
@@ -60,7 +60,8 @@ class CONTENT_EXPORT WebRTCIdentityServiceHost : public BrowserMessageFilter {
 
   int renderer_process_id_;
   base::Closure cancel_callback_;
-  WebRTCIdentityStore* identity_store_;
+  scoped_refptr<WebRTCIdentityStore> identity_store_;
+  base::WeakPtrFactory<WebRTCIdentityServiceHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRTCIdentityServiceHost);
 };
