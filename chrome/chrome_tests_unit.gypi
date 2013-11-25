@@ -1374,6 +1374,7 @@
         'browser/sync_file_system/drive_backend/list_changes_task_unittest.cc',
         'browser/sync_file_system/drive_backend/metadata_database_unittest.cc',
         'browser/sync_file_system/drive_backend/metadata_db_migration_util_unittest.cc',
+        'browser/sync_file_system/drive_backend/remote_to_local_syncer_unittest.cc',
         'browser/sync_file_system/drive_backend_v1/api_util_unittest.cc',
         'browser/sync_file_system/drive_backend_v1/drive_file_sync_service_fake_unittest.cc',
         'browser/sync_file_system/drive_backend_v1/drive_file_sync_service_sync_unittest.cc',
