@@ -2040,6 +2040,49 @@ get_output_panel_height(struct desktop_shell *shell,
 	return panel_height;
 }
 
+/* The surface will be inserted into the list immediately after the link
+ * returned by this function (i.e. will be stacked immediately above the
+ * returned link). */
+static struct wl_list *
+shell_surface_calculate_layer_link (struct shell_surface *shsurf)
+{
+	struct workspace *ws;
+
+	switch (shsurf->type) {
+	case SHELL_SURFACE_POPUP:
+	case SHELL_SURFACE_TRANSIENT: {
+		/* Move the surface to its parent layer so that surfaces which
+		 * are transient for fullscreen surfaces don't get hidden by the
+		 * fullscreen surfaces. */
+		struct weston_view *parent;
+
+		/* TODO: Handle a parent with multiple views */
+		parent = get_default_view(shsurf->parent);
+		if (parent)
+			return parent->layer_link.prev;
+
+		break;
+	}
+
+	case SHELL_SURFACE_FULLSCREEN:
+		return &shsurf->shell->fullscreen_layer.view_list;
+
+	case SHELL_SURFACE_XWAYLAND:
+	case SHELL_SURFACE_TOPLEVEL:
+	case SHELL_SURFACE_MAXIMIZED:
+	case SHELL_SURFACE_NONE:
+	default:
+		/* Go to the fallback, below. */
+		break;
+	}
+
+	/* Move the surface to a normal workspace layer so that surfaces
+	 * which were previously fullscreen or transient are no longer
+	 * rendered on top. */
+	ws = get_current_workspace(shsurf->shell);
+	return &ws->layer.view_list;
+}
+
 static void
 shell_surface_set_parent(struct shell_surface *shsurf,
                          struct weston_surface *parent)
@@ -4313,11 +4356,10 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
     int32_t width, int32_t height, int32_t sx, int32_t sy)
 {
 	struct weston_compositor *compositor = shell->compositor;
-	struct weston_view *parent;
 	struct weston_seat *seat;
-	struct workspace *ws;
 	int panel_height = 0;
 	int32_t surf_x, surf_y;
+	struct wl_list *new_layer_link;
 
 	shsurf->view->geometry.width = width;
 	shsurf->view->geometry.height = height;
@@ -4355,30 +4397,14 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 		;
 	}
 
-	/* surface stacking order, see also activate() */
-	switch (shsurf->type) {
-	case SHELL_SURFACE_POPUP:
-	case SHELL_SURFACE_TRANSIENT:
-		/* TODO: Handle a parent with multiple views */
-		parent = get_default_view(shsurf->parent);
-		if (parent) {
-			wl_list_remove(&shsurf->view->layer_link);
-			wl_list_insert(parent->layer_link.prev,
-				       &shsurf->view->layer_link);
-		}
-		break;
-	case SHELL_SURFACE_FULLSCREEN:
-	case SHELL_SURFACE_NONE:
-		break;
-	case SHELL_SURFACE_XWAYLAND:
-	case SHELL_SURFACE_TOPLEVEL:
-	case SHELL_SURFACE_MAXIMIZED:
-	default:
-		ws = get_current_workspace(shell);
-		wl_list_remove(&shsurf->view->layer_link);
-		wl_list_insert(&ws->layer.view_list, &shsurf->view->layer_link);
-		break;
-	}
+	/* Surface stacking order, see also activate().
+	 *
+	 * If any child surfaces exist and are mapped, ensure they’re in the
+	 * same layer as this surface. */
+	new_layer_link = shell_surface_calculate_layer_link(shsurf);
+	wl_list_remove(&shsurf->view->layer_link);
+	wl_list_insert(new_layer_link,
+	               &shsurf->view->layer_link);
 
 	if (shsurf->type != SHELL_SURFACE_NONE) {
 		weston_view_update_transform(shsurf->view);
