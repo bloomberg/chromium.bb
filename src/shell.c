@@ -251,6 +251,44 @@ struct ping_timer {
 	uint32_t serial;
 };
 
+/*
+ * Surface stacking and ordering.
+ *
+ * This is handled using several linked lists of surfaces, organised into
+ * ‘layers’. The layers are ordered, and each of the surfaces in one layer are
+ * above all of the surfaces in the layer below. The set of layers is static and
+ * in the following order (top-most first):
+ *  • Lock layer (only ever displayed on its own)
+ *  • Cursor layer
+ *  • Fullscreen layer
+ *  • Panel layer
+ *  • Input panel layer
+ *  • Workspace layers
+ *  • Background layer
+ *
+ * The list of layers may be manipulated to remove whole layers of surfaces from
+ * display. For example, when locking the screen, all layers except the lock
+ * layer are removed.
+ *
+ * A surface’s layer is modified on configuring the surface, in
+ * set_surface_type() (which is only called when the surface’s type change is
+ * _committed_). If a surface’s type changes (e.g. when making a window
+ * fullscreen) its layer changes too.
+ *
+ * In order to allow popup and transient surfaces to be correctly stacked above
+ * their parent surfaces, each surface tracks both its parent surface, and a
+ * linked list of its children. When a surface’s layer is updated, so are the
+ * layers of its children. Note that child surfaces are *not* the same as
+ * subsurfaces — child/parent surfaces are purely for maintaining stacking
+ * order.
+ *
+ * The children_link list of siblings of a surface (i.e. those surfaces which
+ * have the same parent) only contains weston_surfaces which have a
+ * shell_surface. Stacking is not implemented for non-shell_surface
+ * weston_surfaces. This means that the following implication does *not* hold:
+ *     (shsurf->parent != NULL) ⇒ !wl_list_is_empty(shsurf->children_link)
+ */
+
 struct shell_surface {
 	struct wl_resource *resource;
 	struct wl_signal destroy_signal;
@@ -259,6 +297,8 @@ struct shell_surface {
 	struct weston_view *view;
 	struct wl_listener surface_destroy_listener;
 	struct weston_surface *parent;
+	struct wl_list children_list;  /* child surfaces of this one */
+	struct wl_list children_link;  /* sibling surfaces of this one */
 	struct desktop_shell *shell;
 
 	enum shell_surface_type type, next_type;
@@ -368,6 +408,9 @@ shell_fade_startup(struct desktop_shell *shell);
 
 static struct shell_seat *
 get_shell_seat(struct weston_seat *seat);
+
+static void
+shell_surface_update_child_surface_layers(struct shell_surface *shsurf);
 
 static bool
 shell_surface_is_top_fullscreen(struct shell_surface *shsurf)
@@ -1263,6 +1306,8 @@ move_surface_to_workspace(struct desktop_shell *shell,
 	wl_list_remove(&view->layer_link);
 	wl_list_insert(&to->layer.view_list, &view->layer_link);
 
+	shell_surface_update_child_surface_layers(shsurf);
+
 	drop_focus_state(shell, from, view->surface);
 	wl_list_for_each(seat, &shell->compositor->seat_list, link) {
 		if (!seat->keyboard)
@@ -1302,6 +1347,8 @@ take_surface_to_workspace_by_seat(struct desktop_shell *shell,
 	wl_list_insert(&to->layer.view_list, &view->layer_link);
 
 	shsurf = get_shell_surface(surface);
+	if (shsurf != NULL)
+		shell_surface_update_child_surface_layers(shsurf);
 
 	replace_focus_state(shell, to, seat);
 	drop_focus_state(shell, from, surface);
@@ -2083,8 +2130,36 @@ shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 	return &ws->layer.view_list;
 }
 
+static void
+shell_surface_update_child_surface_layers (struct shell_surface *shsurf)
+{
+	struct shell_surface *child;
+
+	/* Move the child layers to the same workspace as shsurf. They will be
+	 * stacked above shsurf. */
+	wl_list_for_each_reverse(child, &shsurf->children_list, children_link) {
+		if (shsurf->view->layer_link.prev != &child->view->layer_link) {
+			weston_view_geometry_dirty(child->view);
+			wl_list_remove(&child->view->layer_link);
+			wl_list_insert(shsurf->view->layer_link.prev,
+			               &child->view->layer_link);
+			weston_view_geometry_dirty(child->view);
+			weston_surface_damage(child->surface);
+
+			/* Recurse. We don’t expect this to recurse very far (if
+			 * at all) because that would imply we have transient
+			 * (or popup) children of transient surfaces, which
+			 * would be unusual. */
+			shell_surface_update_child_surface_layers(child);
+		}
+	}
+}
+
 /* Update the surface’s layer. Mark both the old and new views as having dirty
- * geometry to ensure the changes are redrawn. */
+ * geometry to ensure the changes are redrawn.
+ *
+ * If any child surfaces exist and are mapped, ensure they’re in the same layer
+ * as this surface. */
 static void
 shell_surface_update_layer(struct shell_surface *shsurf)
 {
@@ -2100,6 +2175,8 @@ shell_surface_update_layer(struct shell_surface *shsurf)
 	wl_list_insert(new_layer_link, &shsurf->view->layer_link);
 	weston_view_geometry_dirty(shsurf->view);
 	weston_surface_damage(shsurf->surface);
+
+	shell_surface_update_child_surface_layers(shsurf);
 }
 
 static void
@@ -2107,6 +2184,17 @@ shell_surface_set_parent(struct shell_surface *shsurf,
                          struct weston_surface *parent)
 {
 	shsurf->parent = parent;
+
+	wl_list_remove(&shsurf->children_link);
+	wl_list_init(&shsurf->children_link);
+
+	/* Insert into the parent surface’s child list. */
+	if (parent != NULL) {
+		struct shell_surface *parent_shsurf = get_shell_surface(parent);
+		if (parent_shsurf != NULL)
+			wl_list_insert(&parent_shsurf->children_list,
+			               &shsurf->children_link);
+	}
 }
 
 static void
@@ -2131,6 +2219,9 @@ set_toplevel(struct shell_surface *shsurf)
 	shell_surface_set_parent(shsurf, NULL);
 
 	shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
+
+	/* The layer_link is updated in set_surface_type(),
+	 * called from configure. */
 }
 
 static void
@@ -2155,6 +2246,9 @@ set_transient(struct shell_surface *shsurf,
 	shell_surface_set_parent(shsurf, parent);
 
 	shsurf->next_type = SHELL_SURFACE_TRANSIENT;
+
+	/* The layer_link is updated in set_surface_type(),
+	 * called from configure. */
 }
 
 static void
@@ -2189,6 +2283,9 @@ set_fullscreen(struct shell_surface *shsurf,
 	shsurf->client->send_configure(shsurf->surface, 0,
 				       shsurf->output->width,
 				       shsurf->output->height);
+
+	/* The layer_link is updated in set_surface_type(),
+	 * called from configure. */
 }
 
 static void
@@ -2851,6 +2948,8 @@ destroy_shell_surface(struct shell_surface *shsurf)
 
 	weston_view_destroy(shsurf->view);
 
+	wl_list_remove(&shsurf->children_link);
+
 	wl_list_remove(&shsurf->link);
 	free(shsurf);
 }
@@ -2940,6 +3039,10 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 	weston_matrix_init(&shsurf->rotation.rotation);
 
 	wl_list_init(&shsurf->workspace_transform.link);
+
+	wl_list_init(&shsurf->children_link);
+	wl_list_init(&shsurf->children_list);
+	shsurf->parent = NULL;
 
 	shsurf->type = SHELL_SURFACE_NONE;
 	shsurf->next_type = SHELL_SURFACE_NONE;
