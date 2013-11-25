@@ -576,7 +576,10 @@ class DistributedBuilder(SimpleBuilder):
       self.completion_stage_class = stages.PreCQCompletionStage
       self.patch_pool.gerrit_patches = []
     elif cbuildbot_config.IsCQType(self.build_config['build_type']):
-      sync_stage = self._GetStageInstance(stages.CommitQueueSyncStage)
+      if self.build_config['do_not_apply_cq_patches']:
+        sync_stage = self._GetStageInstance(stages.MasterSlaveSyncStage)
+      else:
+        sync_stage = self._GetStageInstance(stages.CommitQueueSyncStage)
       self.completion_stage_class = stages.CommitQueueCompletionStage
     elif cbuildbot_config.IsPFQType(self.build_config['build_type']):
       sync_stage = self._GetStageInstance(stages.MasterSlaveSyncStage)

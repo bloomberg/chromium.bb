@@ -243,6 +243,13 @@ _settings = dict(
 #                 really needed to build this config.
   dev_manifest=constants.DEFAULT_MANIFEST,
 
+# do_not_apply_cq_patches -- Applies only to paladin builders. If True, Sync to
+#                            the master manifest without applying any of the
+#                            test patches, rather than running CommitQueueSync.
+#                            This is basically ToT immediately prior to the
+#                            current commit queue run.
+  do_not_apply_cq_patches=False,
+
 # useflags -- emerge use flags to use while setting up the board, building
 #             packages, making images, etc.
   useflags=[],
@@ -1263,6 +1270,17 @@ internal_paladin.add_config('x86-mario-paladin',
 # Something like the following:
 # master_paladin = internal_paladin.add_config(...)
 # master_paladin.AddSlave(internal_paladin.add_config(...))
+
+# Sanity check builder, part of the CQ but builds without the patches
+# under test.
+paladin.add_config('link-tot-paladin',
+  boards=['link'],
+  paladin_builder_name='link ToT paladin',
+  do_not_apply_cq_patches=True,
+  important=False,
+  vm_tests=constants.SIMPLE_AU_TEST_TYPE,
+  prebuilts=False,
+)
 
 internal_paladin.add_config('x86-alex-paladin',
   boards=['x86-alex'],
