@@ -5,6 +5,7 @@
 #include "cc/animation/animation_curve.h"
 
 #include "base/logging.h"
+#include "cc/animation/scroll_offset_animation_curve.h"
 
 namespace cc {
 
@@ -41,6 +42,17 @@ const FilterAnimationCurve* AnimationCurve::ToFilterAnimationCurve() const {
 
 AnimationCurve::CurveType FilterAnimationCurve::Type() const {
   return Filter;
+}
+
+const ScrollOffsetAnimationCurve* AnimationCurve::ToScrollOffsetAnimationCurve()
+    const {
+  DCHECK(Type() == AnimationCurve::ScrollOffset);
+  return static_cast<const ScrollOffsetAnimationCurve*>(this);
+}
+
+ScrollOffsetAnimationCurve* AnimationCurve::ToScrollOffsetAnimationCurve() {
+  DCHECK(Type() == AnimationCurve::ScrollOffset);
+  return static_cast<ScrollOffsetAnimationCurve*>(this);
 }
 
 }  // namespace cc

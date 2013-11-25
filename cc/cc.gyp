@@ -42,6 +42,8 @@
         'animation/layer_animation_controller.h',
         'animation/layer_animation_event_observer.h',
         'animation/layer_animation_value_observer.h',
+        'animation/scroll_offset_animation_curve.cc',
+        'animation/scroll_offset_animation_curve.h',
         'animation/scrollbar_animation_controller.h',
         'animation/scrollbar_animation_controller_linear_fade.cc',
         'animation/scrollbar_animation_controller_linear_fade.h',

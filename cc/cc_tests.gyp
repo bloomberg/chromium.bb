@@ -9,6 +9,7 @@
       'animation/animation_unittest.cc',
       'animation/keyframed_animation_curve_unittest.cc',
       'animation/layer_animation_controller_unittest.cc',
+      'animation/scroll_offset_animation_curve_unittest.cc',
       'animation/scrollbar_animation_controller_linear_fade_unittest.cc',
       'animation/scrollbar_animation_controller_thinning_unittest.cc',
       'animation/timing_function_unittest.cc',

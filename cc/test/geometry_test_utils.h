@@ -62,6 +62,12 @@ do { \
   EXPECT_EQ((expected).y(), (actual).y()); \
 } while (false)
 
+#define EXPECT_VECTOR2DF_EQ(expected, actual) \
+do { \
+  EXPECT_FLOAT_EQ((expected).x(), (actual).x()); \
+  EXPECT_FLOAT_EQ((expected).y(), (actual).y()); \
+} while (false)
+
 #define EXPECT_FLOAT_ARRAY_EQ(expected, actual, count) \
 do { \
   for (int i = 0; i < count; i++) { \
