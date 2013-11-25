@@ -71,12 +71,13 @@ function testEmptyScriptUrl()
 {
     try {
         var worker = new Worker("");
-        worker.onerror = function() {
-            log("FAIL: onerror invoked for an empty script URL.");
+        worker.onerror = function(e) {
+            log("PASS: onerror invoked for an empty script URL, resolving to this HTML document's URL.");
+            e.preventDefault();
             runNextTest();
         }
     } catch (ex) {
-        log("PASS: invoking Worker constructor with empty script URL resulted in an exception (" + ex + ")");
+        log("FAIL: invoking Worker constructor with empty script URL resulted in a exception (" + ex + ")");
         runNextTest();
     }
 }

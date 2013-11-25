@@ -51,11 +51,6 @@ AbstractWorker::~AbstractWorker()
 
 KURL AbstractWorker::resolveURL(const String& url, ExceptionState& exceptionState)
 {
-    if (url.isEmpty()) {
-        exceptionState.throwDOMException(SyntaxError, "Failed to create a worker: an empty URL was provided.");
-        return KURL();
-    }
-
     // FIXME: This should use the dynamic global scope (bug #27887)
     KURL scriptURL = executionContext()->completeURL(url);
     if (!scriptURL.isValid()) {
