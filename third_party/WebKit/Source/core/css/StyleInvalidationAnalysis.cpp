@@ -88,17 +88,6 @@ static bool hasDistributedRule(StyleSheetContents* styleSheetContents)
     return false;
 }
 
-static bool hasAtHostRule(StyleSheetContents* styleSheetContents)
-{
-    const Vector<RefPtr<StyleRuleBase> >& rules = styleSheetContents->childRules();
-    for (unsigned i = 0; i < rules.size(); i++) {
-        const StyleRuleBase* rule = rules[i].get();
-        if (rule->isHostRule())
-            return true;
-    }
-    return false;
-}
-
 static Node* determineScopingNodeForStyleScoped(HTMLStyleElement* ownerElement, StyleSheetContents* styleSheetContents)
 {
     ASSERT(ownerElement && ownerElement->isRegisteredAsScoped());
@@ -112,7 +101,7 @@ static Node* determineScopingNodeForStyleScoped(HTMLStyleElement* ownerElement, 
 
             return scope;
         }
-        if (ownerElement->isRegisteredAsScoped() && hasAtHostRule(styleSheetContents))
+        if (ownerElement->isRegisteredAsScoped())
             return ownerElement->containingShadowRoot()->shadowHost();
     }
 
@@ -136,7 +125,6 @@ static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
     // FIXME: Unclear if any of the rest need to cause style recalc:
     case StyleRule::Region:
     case StyleRule::Filter:
-    case StyleRule::HostInternal:
         return true;
 
     // These should all be impossible to reach:

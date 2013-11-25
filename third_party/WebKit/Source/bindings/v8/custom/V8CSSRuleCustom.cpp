@@ -33,7 +33,6 @@
 
 #include "V8CSSCharsetRule.h"
 #include "V8CSSFontFaceRule.h"
-#include "V8CSSHostRule.h"
 #include "V8CSSImportRule.h"
 #include "V8CSSKeyframeRule.h"
 #include "V8CSSKeyframesRule.h"
@@ -78,8 +77,6 @@ v8::Handle<v8::Object> wrap(CSSRule* impl, v8::Handle<v8::Object> creationContex
         return wrap(static_cast<CSSViewportRule*>(impl), creationContext, isolate);
     case CSSRule::WEBKIT_REGION_RULE:
         return wrap(static_cast<CSSRegionRule*>(impl), creationContext, isolate);
-    case CSSRule::HOST_RULE:
-        return wrap(static_cast<CSSHostRule*>(impl), creationContext, isolate);
     case CSSRule::WEBKIT_FILTER_RULE:
         return wrap(static_cast<CSSFilterRule*>(impl), creationContext, isolate);
     }

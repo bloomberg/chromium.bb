@@ -54,8 +54,7 @@ public:
         SUPPORTS_RULE = 12,
         VIEWPORT_RULE = 15,
         WEBKIT_REGION_RULE = 16,
-        WEBKIT_FILTER_RULE = 17,
-        HOST_RULE = 1001,
+        WEBKIT_FILTER_RULE = 17
     };
 
     virtual Type type() const = 0;

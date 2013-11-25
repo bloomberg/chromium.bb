@@ -462,10 +462,6 @@ static bool childRulesHaveFailedOrCanceledSubresources(const Vector<RefPtr<Style
             if (childRulesHaveFailedOrCanceledSubresources(static_cast<const StyleRuleRegion*>(rule)->childRules()))
                 return true;
             break;
-        case StyleRuleBase::HostInternal:
-            if (childRulesHaveFailedOrCanceledSubresources(static_cast<const StyleRuleHost*>(rule)->childRules()))
-                return true;
-            break;
         case StyleRuleBase::Import:
             ASSERT_NOT_REACHED();
         case StyleRuleBase::Page:

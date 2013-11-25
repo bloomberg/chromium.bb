@@ -30,7 +30,6 @@
 #include "core/css/InspectorCSSOMWrappers.h"
 
 #include "core/css/CSSDefaultStyleSheets.h"
-#include "core/css/CSSHostRule.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSMediaRule.h"
 #include "core/css/CSSRegionRule.h"
@@ -75,9 +74,6 @@ void InspectorCSSOMWrappers::collect(ListType* listType)
             break;
         case CSSRule::WEBKIT_REGION_RULE:
             collect(static_cast<CSSRegionRule*>(cssRule));
-            break;
-        case CSSRule::HOST_RULE:
-            collect(static_cast<CSSHostRule*>(cssRule));
             break;
         case CSSRule::STYLE_RULE:
             m_styleRuleToCSSOMWrapperMap.add(static_cast<CSSStyleRule*>(cssRule)->styleRule(), static_cast<CSSStyleRule*>(cssRule));

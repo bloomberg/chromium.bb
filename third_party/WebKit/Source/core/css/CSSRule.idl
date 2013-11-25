@@ -40,7 +40,6 @@
     [RuntimeEnabled=CSSViewport] const unsigned short VIEWPORT_RULE = 15;
     [RuntimeEnabled=CSSRegions] const unsigned short WEBKIT_REGION_RULE = 16;
     const unsigned short WEBKIT_FILTER_RULE = 17;
-    const unsigned short HOST_RULE = 1001;
 
     readonly attribute unsigned short   type;
 

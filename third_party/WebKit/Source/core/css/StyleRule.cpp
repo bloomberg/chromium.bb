@@ -25,7 +25,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSFilterRule.h"
 #include "core/css/CSSFontFaceRule.h"
-#include "core/css/CSSHostRule.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSMediaRule.h"
@@ -82,9 +81,6 @@ void StyleRuleBase::destroy()
     case Keyframes:
         delete static_cast<StyleRuleKeyframes*>(this);
         return;
-    case HostInternal:
-        delete static_cast<StyleRuleHost*>(this);
-        return;
     case Viewport:
         delete static_cast<StyleRuleViewport*>(this);
         return;
@@ -121,8 +117,6 @@ PassRefPtr<StyleRuleBase> StyleRuleBase::copy() const
         return 0;
     case Keyframes:
         return static_cast<const StyleRuleKeyframes*>(this)->copy();
-    case HostInternal:
-        return static_cast<const StyleRuleHost*>(this)->copy();
     case Viewport:
         return static_cast<const StyleRuleViewport*>(this)->copy();
     case Filter:
@@ -168,9 +162,6 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
         break;
     case Viewport:
         rule = CSSViewportRule::create(static_cast<StyleRuleViewport*>(self), parentSheet);
-        break;
-    case HostInternal:
-        rule = CSSHostRule::create(static_cast<StyleRuleHost*>(self), parentSheet);
         break;
     case Filter:
         rule = CSSFilterRule::create(static_cast<StyleRuleFilter*>(self), parentSheet);

@@ -333,12 +333,6 @@ void RuleSet::addKeyframesRule(StyleRuleKeyframes* rule)
     m_keyframesRules.append(rule);
 }
 
-void RuleSet::addHostRule(StyleRuleHost* rule)
-{
-    ensurePendingRules(); // So that m_hostRules.shrinkToFit() gets called.
-    m_hostRules.append(rule);
-}
-
 void RuleSet::addRegionRule(StyleRuleRegion* regionRule, bool hasDocumentSecurityOrigin)
 {
     ensurePendingRules(); // So that m_regionSelectorsAndRuleSets.shrinkToFit() gets called.
@@ -394,8 +388,6 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             addKeyframesRule(static_cast<StyleRuleKeyframes*>(rule));
         } else if (rule->isRegionRule()) {
             addRegionRule(static_cast<StyleRuleRegion*>(rule), addRuleFlags & RuleHasDocumentSecurityOrigin);
-        } else if (rule->isHostRule()) {
-            addHostRule(static_cast<StyleRuleHost*>(rule));
         } else if (rule->isViewportRule()) {
             addViewportRule(static_cast<StyleRuleViewport*>(rule));
         } else if (rule->isSupportsRule() && static_cast<StyleRuleSupports*>(rule)->conditionIsSupported()) {
@@ -458,7 +450,6 @@ void RuleSet::compactRules()
     m_viewportRules.shrinkToFit();
     m_fontFaceRules.shrinkToFit();
     m_keyframesRules.shrinkToFit();
-    m_hostRules.shrinkToFit();
     m_treeBoundaryCrossingRules.shrinkToFit();
     m_shadowDistributedRules.shrinkToFit();
 }

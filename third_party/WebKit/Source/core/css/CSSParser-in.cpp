@@ -9732,21 +9732,6 @@ StyleRuleBase* CSSParser::createFontFaceRule()
     return result;
 }
 
-StyleRuleBase* CSSParser::createHostRule(RuleList* rules)
-{
-    m_allowImportRules = m_allowNamespaceDeclarations = false;
-    RefPtr<StyleRuleHost> rule;
-    if (rules)
-        rule = StyleRuleHost::create(*rules);
-    else {
-        RuleList emptyRules;
-        rule = StyleRuleHost::create(emptyRules);
-    }
-    StyleRuleHost* result = rule.get();
-    m_parsedRules.append(rule.release());
-    return result;
-}
-
 void CSSParser::addNamespace(const AtomicString& prefix, const AtomicString& uri)
 {
     if (!m_styleSheet || !m_allowNamespaceDeclarations)

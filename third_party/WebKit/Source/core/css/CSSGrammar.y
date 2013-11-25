@@ -181,7 +181,6 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %token MEDIA_SYM
 %token SUPPORTS_SYM
 %token FONT_FACE_SYM
-%token HOST_SYM
 %token CHARSET_SYM
 %token NAMESPACE_SYM
 %token VIEWPORT_RULE_SYM
@@ -283,7 +282,6 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %type <rule> page
 %type <rule> margin_box
 %type <rule> font_face
-%type <rule> host
 %type <rule> keyframes
 %type <rule> rule
 %type <rule> valid_rule
@@ -515,7 +513,6 @@ valid_rule:
   | import
   | region
   | supports
-  | host
   | viewport
   | filter
   ;
@@ -1082,19 +1079,6 @@ font_face:
     before_font_face_rule FONT_FACE_SYM at_rule_header_end_maybe_space
     '{' at_rule_body_start maybe_space_before_declaration declaration_list closing_brace {
         $$ = parser->createFontFaceRule();
-    }
-    ;
-
-before_host_rule:
-    /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::HOST_RULE);
-    }
-    ;
-
-host:
-    before_host_rule HOST_SYM at_rule_header_end_maybe_space
-    '{' at_rule_body_start maybe_space block_rule_body closing_brace {
-        $$ = parser->createHostRule($7);
     }
     ;
 
@@ -1933,7 +1917,6 @@ regular_invalid_at_rule_header:
   | before_filter_rule WEBKIT_FILTER_RULE_SYM at_rule_header_recovery
   | import_rule_start at_rule_header_recovery
   | NAMESPACE_SYM at_rule_header_recovery
-  | before_host_rule HOST_SYM at_rule_header_recovery
   | before_region_rule WEBKIT_REGION_RULE_SYM at_rule_header_recovery
   | error_location invalid_at at_rule_header_recovery {
         parser->resumeErrorLogging();

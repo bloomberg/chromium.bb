@@ -78,55 +78,16 @@ void ScopedStyleResolver::addRulesFromSheet(StyleSheetContents* sheet, const Med
     resolver->processScopedRules(ruleSet, sheet->baseURL(), &m_scopingNode);
 }
 
-inline RuleSet* ScopedStyleResolver::ensureAtHostRuleSetFor(const ShadowRoot* shadowRoot)
-{
-    HashMap<const ShadowRoot*, OwnPtr<RuleSet> >::AddResult addResult = m_atHostRules.add(shadowRoot, nullptr);
-    if (addResult.isNewEntry)
-        addResult.iterator->value = RuleSet::create();
-    return addResult.iterator->value.get();
-}
-
-void ScopedStyleResolver::addHostRule(StyleRuleHost* hostRule, bool hasDocumentSecurityOrigin, const ContainerNode* scopingNode)
-{
-    if (!scopingNode)
-        return;
-
-    ShadowRoot* shadowRoot = scopingNode->containingShadowRoot();
-    if (!shadowRoot || !shadowRoot->host())
-        return;
-
-    RuleSet* rule = ensureAtHostRuleSetFor(shadowRoot);
-
-    const Vector<RefPtr<StyleRuleBase> >& childRules = hostRule->childRules();
-    AddRuleFlags addRuleFlags = static_cast<AddRuleFlags>(hasDocumentSecurityOrigin ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState);
-    for (unsigned i = 0; i < childRules.size(); ++i) {
-        StyleRuleBase* hostStylingRule = childRules[i].get();
-        if (hostStylingRule->isStyleRule())
-            rule->addStyleRule(static_cast<StyleRule*>(hostStylingRule), addRuleFlags);
-    }
-}
-
 void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features)
 {
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
         features.add(m_authorStyleSheets[i]->ruleSet().features());
-
-    if (m_atHostRules.isEmpty())
-        return;
-
-    for (HashMap<const ShadowRoot*, OwnPtr<RuleSet> >::iterator it = m_atHostRules.begin(); it != m_atHostRules.end(); ++it)
-        features.add(it->value->features());
 }
 
 void ScopedStyleResolver::resetAuthorStyle()
 {
     m_authorStyleSheets.clear();
     m_keyframesRuleMap.clear();
-}
-
-void ScopedStyleResolver::resetAtHostRules(const ShadowRoot* shadowRoot)
-{
-    m_atHostRules.remove(shadowRoot);
 }
 
 bool ScopedStyleResolver::checkRegionStyle(Element* regionElement)
@@ -166,49 +127,6 @@ void ScopedStyleResolver::addKeyframeStyle(PassRefPtr<StyleRuleKeyframes> rule)
     } else {
         m_keyframesRuleMap.set(s.impl(), rule);
     }
-}
-
-inline RuleSet* ScopedStyleResolver::atHostRuleSetFor(const ShadowRoot* shadowRoot) const
-{
-    HashMap<const ShadowRoot*, OwnPtr<RuleSet> >::const_iterator it = m_atHostRules.find(shadowRoot);
-    return it != m_atHostRules.end() ? it->value.get() : 0;
-}
-
-void ScopedStyleResolver::matchHostRules(ElementRuleCollector& collector, bool includeEmptyRules)
-{
-    // FIXME: Determine tree position.
-    CascadeScope cascadeScope = ignoreCascadeScope;
-
-    if (m_atHostRules.isEmpty() || !m_scopingNode.isElementNode())
-        return;
-
-    ElementShadow* shadow = toElement(m_scopingNode).shadow();
-    if (!shadow)
-        return;
-
-    collector.clearMatchedRules();
-    collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
-
-    // FIXME(99827): https://bugs.webkit.org/show_bug.cgi?id=99827
-    // add a new flag to ElementShadow and cache whether any @host @-rules are
-    // applied to the element or not. So we can quickly exit this method
-    // by using the flag.
-    ShadowRoot* shadowRoot = shadow->youngestShadowRoot();
-    for (; shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
-        if (!shadowRoot->containsShadowElements())
-            break;
-    // All shadow roots have <shadow>.
-    if (!shadowRoot)
-        shadowRoot = shadow->oldestShadowRoot();
-
-    RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
-    SelectorChecker::BehaviorAtBoundary boundary = static_cast<SelectorChecker::BehaviorAtBoundary>(SelectorChecker::DoesNotCrossBoundary | SelectorChecker::ScopeContainsLastMatchedElement);
-    for (; shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot()) {
-        if (RuleSet* ruleSet = atHostRuleSetFor(shadowRoot))
-            collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, &m_scopingNode), ruleRange, boundary, cascadeScope);
-    }
-
-    collector.sortAndTransferMatchedRules();
 }
 
 void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope cascadeScope, CascadeOrder cascadeOrder)

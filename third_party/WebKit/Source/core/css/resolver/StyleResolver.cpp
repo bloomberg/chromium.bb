@@ -267,16 +267,6 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, const KURL& s
     for (unsigned i = 0; i < keyframesRules.size(); ++i)
         ensureScopedStyleResolver(scope)->addKeyframeStyle(keyframesRules[i]);
 
-    const Vector<StyleRuleHost*> hostRules = authorRules.hostRules();
-    if (hostRules.size() && scope && scope->isInShadowTree()) {
-        bool enabled = buildScopedStyleTreeInDocumentOrder();
-        setBuildScopedStyleTreeInDocumentOrder(false);
-        bool hasDocumentSecurityOrigin = document().securityOrigin()->canRequest(sheetBaseURL);
-        for (unsigned i = 0; i < hostRules.size(); ++i)
-            ensureScopedStyleResolver(scope->shadowHost())->addHostRule(hostRules[i], hasDocumentSecurityOrigin, scope);
-        setBuildScopedStyleTreeInDocumentOrder(enabled);
-    }
-
     addTreeBoundaryCrossingRules(authorRules.treeBoundaryCrossingRules(), scope);
 
     // FIXME(BUG 72461): We don't add @font-face rules of scoped style sheets for the moment.
@@ -317,24 +307,7 @@ void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
     if (!scopingNode)
         return;
 
-    if (scopingNode->isInShadowTree())
-        resetAtHostRules(scopingNode->containingShadowRoot());
     m_styleTree.remove(scopingNode);
-}
-
-void StyleResolver::resetAtHostRules(const ShadowRoot* shadowRoot)
-{
-    if (!shadowRoot)
-        return;
-
-    const ContainerNode* shadowHost = shadowRoot->shadowHost();
-    ASSERT(shadowHost);
-    ScopedStyleResolver* resolver = m_styleTree.lookupScopedStyleResolverFor(shadowHost);
-    if (!resolver)
-        return;
-
-    resolver->resetAtHostRules(shadowRoot);
-    m_styleTree.remove(shadowHost);
 }
 
 static PassOwnPtr<RuleSet> makeRuleSet(const Vector<RuleFeature>& rules)
@@ -473,13 +446,6 @@ inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, El
     }
 }
 
-void StyleResolver::matchHostRules(Element* element, ScopedStyleResolver* resolver, ElementRuleCollector& collector, bool includeEmptyRules)
-{
-    if (element != &resolver->scopingNode())
-        return;
-    resolver->matchHostRules(collector, includeEmptyRules);
-}
-
 static inline bool applyAuthorStylesOf(const Element* element)
 {
     return element->treeScope().applyAuthorStyles() || (element->shadow() && element->shadow()->applyAuthorStyles());
@@ -505,9 +471,6 @@ void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleC
 
     collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
     collector.sortAndTransferMatchedRules();
-
-    if (!resolvers.isEmpty())
-        matchHostRules(element, resolvers.first(), collector, includeEmptyRules);
 }
 
 void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
@@ -546,8 +509,6 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
 
     collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
     collector.sortAndTransferMatchedRules();
-
-    matchHostRules(element, resolvers.first(), collector, includeEmptyRules);
 }
 
 void StyleResolver::matchWatchSelectorRules(ElementRuleCollector& collector)

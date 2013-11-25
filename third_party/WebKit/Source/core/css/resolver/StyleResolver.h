@@ -141,7 +141,6 @@ public:
     // https://bugs.webkit.org/show_bug.cgi?id=108890
     void appendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >&);
     void resetAuthorStyle(const ContainerNode*);
-    void resetAtHostRules(const ShadowRoot*);
     void finishAppendAuthorStyleSheets();
     void resetFontSelector();
 
@@ -249,7 +248,6 @@ private:
     void matchUARules(ElementRuleCollector&, RuleSet*);
     void matchAuthorRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
     void matchAuthorRulesForShadowHost(Element*, ElementRuleCollector&, bool includeEmptyRules, Vector<ScopedStyleResolver*, 8>& resolvers, Vector<ScopedStyleResolver*, 8>& resolversInShadowTree);
-    void matchHostRules(Element*, ScopedStyleResolver*, ElementRuleCollector&, bool includeEmptyRules);
     void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
     void matchUARules(ElementRuleCollector&);
     // FIXME: watched selectors should be implemented using injected author stylesheets: http://crbug.com/316960

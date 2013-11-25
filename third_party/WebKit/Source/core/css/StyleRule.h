@@ -50,8 +50,7 @@ public:
         Supports = 12,
         Viewport = 15,
         Region = 16,
-        Filter = 17,
-        HostInternal = 18, // Spec says Host = 1001, but we can use only 5 bit for type().
+        Filter = 17
     };
 
     Type type() const { return static_cast<Type>(m_type); }
@@ -66,7 +65,6 @@ public:
     bool isSupportsRule() const { return type() == Supports; }
     bool isViewportRule() const { return type() == Viewport; }
     bool isImportRule() const { return type() == Import; }
-    bool isHostRule() const { return type() == HostInternal; }
     bool isFilterRule() const { return type() == Filter; }
 
     PassRefPtr<StyleRuleBase> copy() const;
@@ -254,20 +252,6 @@ private:
     StyleRuleRegion(const StyleRuleRegion&);
 
     CSSSelectorList m_selectorList;
-};
-
-class StyleRuleHost : public StyleRuleGroup {
-public:
-    static PassRefPtr<StyleRuleHost> create(Vector<RefPtr<StyleRuleBase> >& adoptRules)
-    {
-        return adoptRef(new StyleRuleHost(adoptRules));
-    }
-
-    PassRefPtr<StyleRuleHost> copy() const { return adoptRef(new StyleRuleHost(*this)); }
-
-private:
-    StyleRuleHost(Vector<RefPtr<StyleRuleBase> >& adoptRules) : StyleRuleGroup(HostInternal, adoptRules) { }
-    StyleRuleHost(const StyleRuleHost& o) : StyleRuleGroup(o) { }
 };
 
 class StyleRuleViewport : public StyleRuleBase {

@@ -140,7 +140,6 @@ public:
     const Vector<StyleRuleViewport*>& viewportRules() const { ASSERT(!m_pendingRules); return m_viewportRules; }
     const Vector<StyleRuleFontFace*>& fontFaceRules() const { return m_fontFaceRules; }
     const Vector<StyleRuleKeyframes*>& keyframesRules() const { return m_keyframesRules; }
-    const Vector<StyleRuleHost*>& hostRules() const { return m_hostRules; }
     const Vector<MinimalRuleData>& treeBoundaryCrossingRules() const { return m_treeBoundaryCrossingRules; }
     const Vector<MinimalRuleData>& shadowDistributedRules() const { return m_shadowDistributedRules; }
     const MediaQueryResultList& viewportDependentMediaQueryResults() const { return m_viewportDependentMediaQueryResults; }
@@ -178,7 +177,6 @@ private:
     void addViewportRule(StyleRuleViewport*);
     void addFontFaceRule(StyleRuleFontFace*);
     void addKeyframesRule(StyleRuleKeyframes*);
-    void addHostRule(StyleRuleHost*);
     void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin);
 
     void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, AddRuleFlags);
@@ -214,7 +212,6 @@ private:
     Vector<StyleRuleViewport*> m_viewportRules;
     Vector<StyleRuleFontFace*> m_fontFaceRules;
     Vector<StyleRuleKeyframes*> m_keyframesRules;
-    Vector<StyleRuleHost*> m_hostRules;
     Vector<MinimalRuleData> m_treeBoundaryCrossingRules;
     Vector<MinimalRuleData> m_shadowDistributedRules;
 

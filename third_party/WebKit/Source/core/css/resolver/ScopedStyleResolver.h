@@ -59,28 +59,22 @@ public:
     const StyleRuleKeyframes* keyframeStylesForAnimation(const StringImpl* animationName);
     void addKeyframeStyle(PassRefPtr<StyleRuleKeyframes>);
 
-    void matchHostRules(ElementRuleCollector&, bool includeEmptyRules);
     void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope, CascadeOrder = ignoreCascadeOrder);
     void matchPageRules(PageRuleCollector&);
     void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, StyleResolver*);
-    void addHostRule(StyleRuleHost*, bool hasDocumentSecurityOrigin, const ContainerNode* scopingNode);
     void collectFeaturesTo(RuleFeatureSet&);
     void resetAuthorStyle();
-    void resetAtHostRules(const ShadowRoot*);
     void collectViewportRulesTo(StyleResolver*) const;
 
 private:
     explicit ScopedStyleResolver(ContainerNode& scopingNode) : m_scopingNode(scopingNode), m_parent(0) { }
 
-    RuleSet* ensureAtHostRuleSetFor(const ShadowRoot*);
-    RuleSet* atHostRuleSetFor(const ShadowRoot*) const;
     RuleSet* ensureAuthorStyle();
 
     ContainerNode& m_scopingNode;
     ScopedStyleResolver* m_parent;
 
     Vector<StyleSheetContents*> m_authorStyleSheets;
-    HashMap<const ShadowRoot*, OwnPtr<RuleSet> > m_atHostRules;
 
     typedef HashMap<const StringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;

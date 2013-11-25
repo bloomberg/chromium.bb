@@ -27,7 +27,6 @@ Boolean
 CDATASection
 CSSCharsetRule
 CSSFontFaceRule
-CSSHostRule
 CSSImportRule
 CSSKeyframeRule
 CSSKeyframesRule

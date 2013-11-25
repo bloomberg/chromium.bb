@@ -936,9 +936,6 @@ inline void CSSTokenizer::detectAtToken(int length, bool hasEscape)
         CASE("font-face") {
             m_token = FONT_FACE_SYM;
         }
-        CASE("host") {
-            m_token = HOST_SYM;
-        }
         CASE("import") {
             m_parsingMode = MediaQueryMode;
             m_token = IMPORT_SYM;

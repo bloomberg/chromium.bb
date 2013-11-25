@@ -30,7 +30,6 @@
 #include "SVGNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/css/CSSHostRule.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSMediaRule.h"
 #include "core/css/CSSParser.h"
@@ -107,8 +106,6 @@ void ParsedStyleSheet::flattenSourceData(RuleSourceDataList* dataList)
             m_sourceData->append(data);
         } else if (data->type == CSSRuleSourceData::MEDIA_RULE) {
             m_sourceData->append(data);
-            flattenSourceData(&data->childRules);
-        } else if (data->type == CSSRuleSourceData::HOST_RULE) {
             flattenSourceData(&data->childRules);
         } else if (data->type == CSSRuleSourceData::SUPPORTS_RULE) {
             flattenSourceData(&data->childRules);
@@ -484,9 +481,6 @@ static PassRefPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
 
     if (rule->type() == CSSRule::KEYFRAMES_RULE)
         return static_cast<CSSKeyframesRule*>(rule)->cssRules();
-
-    if (rule->type() == CSSRule::HOST_RULE)
-        return static_cast<CSSHostRule*>(rule)->cssRules();
 
     if (rule->type() == CSSRule::SUPPORTS_RULE)
         return static_cast<CSSSupportsRule*>(rule)->cssRules();
