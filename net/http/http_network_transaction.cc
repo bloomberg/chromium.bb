@@ -1293,7 +1293,21 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
         // version_max should match the maximum protocol version supported
         // by the SSLClientSocket class.
         version_max--;
-        should_fallback = true;
+
+        // Fallback to the lower SSL version.
+        // While SSL 3.0 fallback should be eliminated because of security
+        // reasons, there is a high risk of breaking the servers if this is
+        // done in general.
+        // For now SSL 3.0 fallback is disabled for Google servers first,
+        // and will be expanded to other servers after enough experiences
+        // have been gained showing that this experiment works well with
+        // today's Internet.
+        if (version_max > SSL_PROTOCOL_VERSION_SSL3 ||
+            (server_ssl_config_.unrestricted_ssl3_fallback_enabled ||
+             !TransportSecurityState::IsGooglePinnedProperty(
+                 request_->url.host(), true /* include SNI */))) {
+          should_fallback = true;
+        }
       }
       break;
     case ERR_SSL_BAD_RECORD_MAC_ALERT:
@@ -1307,22 +1321,6 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
         should_fallback = true;
       }
       break;
-  }
-
-  // While fallback should be eliminated because of security reasons,
-  // there is a high risk of breaking the servers if this is done in
-  // general.
-  //
-  // For now fallback is disabled for Google servers first, and will be
-  // expanded to other servers after enough experiences have been gained
-  // showing that this experiment works well with today's Internet.
-  //
-  // The --enable-unrestricted-ssl3-fallback command-line flag exists to allow
-  // fallback to any version, all the way down to SSLv3.
-  if (!server_ssl_config_.unrestricted_ssl3_fallback_enabled &&
-      TransportSecurityState::IsGooglePinnedProperty(request_->url.host(),
-                                                     true /* include SNI */)) {
-    should_fallback = false;
   }
 
   if (should_fallback) {
