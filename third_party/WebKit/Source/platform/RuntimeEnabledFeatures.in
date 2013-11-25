@@ -125,6 +125,7 @@ VideoTrack depends_on=Media, status=stable
 WebAnimations status=experimental
 WebAnimationsCSS depends_on=WebAnimations, status=experimental
 WebAnimationsSVG depends_on=WebAnimations
+WebAnimationsAPI depends_on=WebAnimationsCSS, status=experimental
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental
 WebMIDI status=test
