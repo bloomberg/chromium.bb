@@ -467,7 +467,7 @@ struct terminal {
 	uint32_t hide_cursor_serial;
 
 	struct wl_data_source *selection;
-	uint32_t button_time;
+	uint32_t click_time;
 	int dragging, click_count;
 	int selection_start_x, selection_start_y;
 	int selection_end_x, selection_end_y;
@@ -2688,33 +2688,38 @@ show_menu(struct terminal *terminal, struct input *input, uint32_t time)
 }
 
 static void
+click_handler(struct widget *widget, struct terminal *terminal,
+		struct input *input, int32_t x, int32_t y,
+		uint32_t time)
+{
+	if (time - terminal->click_time < 500)
+		terminal->click_count++;
+	else
+		terminal->click_count = 1;
+
+	terminal->click_time = time;
+	terminal->dragging = (terminal->click_count - 1) % 3 + SELECT_CHAR;
+
+	terminal->selection_end_x = terminal->selection_start_x = x;
+	terminal->selection_end_y = terminal->selection_start_y = y;
+	if (recompute_selection(terminal))
+			widget_schedule_redraw(widget);
+}
+
+static void
 button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
 	       uint32_t button,
 	       enum wl_pointer_button_state state, void *data)
 {
 	struct terminal *terminal = data;
+	int32_t x, y;
 
 	switch (button) {
 	case BTN_LEFT:
 		if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
-
-			if (time - terminal->button_time < 500)
-				terminal->click_count++;
-			else
-				terminal->click_count = 1;
-
-			terminal->button_time = time;
-			terminal->dragging =
-				(terminal->click_count - 1) % 3 + SELECT_CHAR;
-
-			input_get_position(input,
-					   &terminal->selection_start_x,
-					   &terminal->selection_start_y);
-			terminal->selection_end_x = terminal->selection_start_x;
-			terminal->selection_end_y = terminal->selection_start_y;
-			if (recompute_selection(terminal))
-				widget_schedule_redraw(widget);
+			input_get_position(input, &x, &y);
+			click_handler(widget, terminal, input, x, y, time);
 		} else {
 			terminal->dragging = SELECT_NONE;
 		}
@@ -2768,6 +2773,43 @@ output_handler(struct window *window, struct output *output, int enter,
 	window_schedule_redraw(window);
 }
 
+static void
+touch_down_handler(struct widget *widget, struct input *input,
+		uint32_t serial, uint32_t time, int32_t id,
+		float x, float y, void *data)
+{
+	struct terminal *terminal = data;
+
+	if (id == 0)
+		click_handler(widget, terminal, input, x, y, time);
+}
+
+static void
+touch_up_handler(struct widget *widget, struct input *input,
+		uint32_t serial, uint32_t time, int32_t id, void *data)
+{
+	struct terminal *terminal = data;
+
+	if (id == 0)
+		terminal->dragging = SELECT_NONE;
+}
+
+static void
+touch_motion_handler(struct widget *widget, struct input *input,
+		uint32_t time, int32_t id, float x, float y, void *data)
+{
+	struct terminal *terminal = data;
+
+	if (terminal->dragging &&
+		id == 0) {
+		terminal->selection_end_x = (int)x;
+		terminal->selection_end_y = (int)y;
+
+		if (recompute_selection(terminal))
+			widget_schedule_redraw(widget);
+	}
+}
+
 #ifndef howmany
 #define howmany(x, y) (((x) + ((y) - 1)) / (y))
 #endif
@@ -2815,6 +2857,9 @@ terminal_create(struct display *display)
 	widget_set_button_handler(terminal->widget, button_handler);
 	widget_set_enter_handler(terminal->widget, enter_handler);
 	widget_set_motion_handler(terminal->widget, motion_handler);
+	widget_set_touch_up_handler(terminal->widget, touch_up_handler);
+	widget_set_touch_down_handler(terminal->widget, touch_down_handler);
+	widget_set_touch_motion_handler(terminal->widget, touch_motion_handler);
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
 	cr = cairo_create(surface);
