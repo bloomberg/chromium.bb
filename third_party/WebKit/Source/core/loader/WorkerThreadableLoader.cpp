@@ -110,11 +110,11 @@ void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(ExecutionC
     OwnPtr<ResourceRequest> request(ResourceRequest::adopt(requestData));
     request->setHTTPReferrer(outgoingReferrer);
     options.requestInitiatorContext = WorkerContext;
+    // FIXME: If the a site requests a local resource, then this will return a non-zero value but the sync path
+    // will return a 0 value.  Either this should return 0 or the other code path should do a callback with
+    // a failure.
     thisPtr->m_mainThreadLoader = DocumentThreadableLoader::create(document, thisPtr, *request, options);
-    if (!thisPtr->m_mainThreadLoader) {
-        // DocumentThreadableLoader::create may return 0 when the document loader has been already changed.
-        thisPtr->didFail(ResourceError(errorDomainWebKitInternal, 0, request->url().string(), "Can't create DocumentThreadableLoader"));
-    }
+    ASSERT(thisPtr->m_mainThreadLoader);
 }
 
 void WorkerThreadableLoader::MainThreadBridge::mainThreadDestroy(ExecutionContext* context, MainThreadBridge* thisPtr)
