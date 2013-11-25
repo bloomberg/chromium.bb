@@ -61,6 +61,8 @@ class RemoteToLocalSyncer : public SyncTask {
  private:
   typedef std::vector<std::string> FileIDList;
 
+  // TODO(tzik): Update documentation here.
+  //
   // Dispatches remote change to handlers or to SyncCompleted() directly.
   // This function uses information only in MetadataDatabase.
   //
@@ -69,15 +71,15 @@ class RemoteToLocalSyncer : public SyncTask {
   //   - Dispatch to HandleMissingRemoteMetadata to fetch remote metadata.
   // Else, if the tracker is not active or the dominating app-root is disabled:
   //   # Assume the file has remote metadata.
-  //   - Dispatch to HandleInactiveTracker() to resolve offline solvable
-  //     dirtiness.
+  //   - Update the tracker with |missing| flag and empty |md5|.
+  //   Note: MetadataDatabase may activate the tracker if possible.
   // Else, if the tracker doesn't have synced metadata:
   //   # Assume the tracker has remote metadata and the tracker is active.
   //   # The tracker is not yet synced ever.
   //   - If the file is remotely deleted, do nothing to local file and dispatch
   //     directly to SyncCompleted().
   //   - Else, if the file is a regular file, dispatch to HandleNewFile().
-  //   - Else, if the file is a folder, dispatch to HandleNewFolder().
+  //   - Else, if the file is a folder, dispatch to HandleFolderUpdate().
   //   - Else, the file should be an unsupported active file. This should not
   //     happen.
   // Else, if the remote metadata is marked as deleted:
@@ -116,9 +118,6 @@ class RemoteToLocalSyncer : public SyncTask {
   void DidUpdateDatabaseForRemoteMetadata(const SyncStatusCallback& callback,
                                           SyncStatusCode status);
 
-  // Handles remotely added file.  Needs Prepare() call.
-  void HandleNewFile(const SyncStatusCallback& callback);
-
   // This implements the body of the HandleNewFile and HandleContentUpdate.
   // If the file doesn't have corresponding local file:
   //   - Dispatch to DownloadFile.
@@ -136,9 +135,9 @@ class RemoteToLocalSyncer : public SyncTask {
 
   // Handles remotely added folder.  Needs Prepare() call.
   // TODO(tzik): Write details and implement this.
-  void HandleNewFolder(const SyncStatusCallback& callback);
-  void DidPrepareForNewFolder(const SyncStatusCallback& callback,
-                              SyncStatusCode status);
+  void HandleFolderUpdate(const SyncStatusCallback& callback);
+  void DidPrepareForFolderUpdate(const SyncStatusCallback& callback,
+                                 SyncStatusCode status);
 
   // Handles deleted remote file.  Needs Prepare() call.
   // If the deleted tracker is the sync-root:
@@ -159,14 +158,12 @@ class RemoteToLocalSyncer : public SyncTask {
   // Handles new file.  Needs Prepare() call.
   void HandleContentUpdate(const SyncStatusCallback& callback);
 
-  void HandleFolderContentListing(const SyncStatusCallback& callback);
+  void ListFolderContent(const SyncStatusCallback& callback);
   void DidListFolderContent(
       const SyncStatusCallback& callback,
       scoped_ptr<FileIDList> children,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> resource_list);
-
-  void HandleOfflineSolvable(const SyncStatusCallback& callback);
 
   void SyncCompleted(const SyncStatusCallback& callback, SyncStatusCode status);
 

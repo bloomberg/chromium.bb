@@ -69,6 +69,8 @@ message FileTracker {
   optional string app_id = 4;
   optional TrackerKind tracker_kind = 5;
 
+  // Available on an active tracker.
+  // Represents detailed file information on last remote-to-local sync.
   optional FileDetails synced_details = 6;
 
   // True if the file is changed since the last update for this file.

@@ -143,62 +143,32 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
     callback.Run(SYNC_STATUS_OK);
     return;
   }
+
   DCHECK(dirty_tracker_->active());
   DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
 
   if (!dirty_tracker_->has_synced_details()) {
-    LOG(ERROR) << "Missing synced_details of a file: "
-               << dirty_tracker_->file_id();
+    LOG(ERROR) << "Missing synced_details of an active tracker: "
+               << dirty_tracker_->tracker_id();
     NOTREACHED();
     callback.Run(SYNC_STATUS_FAILED);
     return;
   }
+
   DCHECK(dirty_tracker_->has_synced_details());
-
-  if (dirty_tracker_->synced_details().missing()) {
-    if (remote_details.missing()) {
-      // Remote deletion to local missing file.
-      if (dirty_tracker_->has_synced_details() &&
-          dirty_tracker_->synced_details().missing()) {
-        // This should be handled by MetadataDatabase.
-        // MetadataDatabase should drop a tracker that marked as missing if
-        // corresponding file metadata is marked as missing.
-        LOG(ERROR) << "Found a stray missing content tracker: "
-                   << dirty_tracker_->file_id();
-        NOTREACHED();
-      }
-
-      callback.Run(SYNC_STATUS_OK);
-      return;
-    }
-    DCHECK(!remote_details.missing());
-
-    if (remote_details.file_kind() == FILE_KIND_UNSUPPORTED) {
-      // All unsupported file must be inactive.
-      LOG(ERROR) << "Found an unsupported active file: "
-                 << remote_metadata_->file_id();
-      NOTREACHED();
-      callback.Run(SYNC_STATUS_FAILED);
-      return;
-    }
-    DCHECK(remote_details.file_kind() == FILE_KIND_FILE ||
-           remote_details.file_kind() == FILE_KIND_FOLDER);
-
-    if (remote_details.file_kind() == FILE_KIND_FILE) {
-      HandleNewFile(callback);
-      return;
-    }
-
-    DCHECK(remote_details.file_kind() == FILE_KIND_FOLDER);
-    HandleNewFolder(callback);
-    return;
-  }
-  DCHECK(dirty_tracker_->has_synced_details());
-  DCHECK(!dirty_tracker_->synced_details().missing());
   const FileDetails& synced_details = dirty_tracker_->synced_details();
 
   if (remote_details.missing()) {
-    HandleDeletion(callback);
+    if (!synced_details.missing()) {
+      HandleDeletion(callback);
+      return;
+    }
+
+    DCHECK(synced_details.missing());
+    LOG(ERROR) << "Found a stray missing tracker: "
+               << dirty_tracker_->file_id();
+    NOTREACHED();
+    callback.Run(SYNC_STATUS_OK);
     return;
   }
 
@@ -261,13 +231,11 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
     }
   } else {
     DCHECK_EQ(FILE_KIND_FOLDER, synced_details.file_kind());
-    if (dirty_tracker_->needs_folder_listing()) {
-      HandleFolderContentListing(callback);
-      return;
-    }
+    HandleFolderUpdate(callback);
+    return;
   }
 
-  HandleOfflineSolvable(callback);
+  callback.Run(SYNC_STATUS_OK);
 }
 
 void RemoteToLocalSyncer::HandleMissingRemoteMetadata(
@@ -305,22 +273,6 @@ void RemoteToLocalSyncer::DidUpdateDatabaseForRemoteMetadata(
   callback.Run(SYNC_STATUS_RETRY);  // Do not update |dirty_tracker_|.
 }
 
-void RemoteToLocalSyncer::HandleNewFile(const SyncStatusCallback& callback) {
-  DCHECK(dirty_tracker_);
-  DCHECK(dirty_tracker_->active());
-  DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
-  DCHECK(dirty_tracker_->has_synced_details());
-  DCHECK(dirty_tracker_->synced_details().missing());
-
-  DCHECK(remote_metadata_);
-  DCHECK(remote_metadata_->has_details());
-  DCHECK(!remote_metadata_->details().missing());
-  DCHECK_EQ(FILE_KIND_FILE, remote_metadata_->details().file_kind());
-
-  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
 void RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
@@ -345,10 +297,6 @@ void RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile(
 
   DCHECK(local_changes_->empty() || local_changes_->back().IsAddOrUpdate());
   if (local_changes_->empty()) {
-    // No local change for the local file.
-    LOG(ERROR) << "Detected local-only file without pending local change: "
-               << url_.DebugString();
-
     if (local_metadata_->file_type == SYNC_FILE_TYPE_FILE) {
       sync_action_ = SYNC_ACTION_UPDATED;
       // Download the file and overwrite the existing local file.
@@ -357,6 +305,7 @@ void RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile(
     }
 
     DCHECK_EQ(SYNC_FILE_TYPE_DIRECTORY, local_metadata_->file_type);
+
     // Got a remote regular file modification for existing local folder.
     // Our policy prioritize folders in this case.
     // Lower the priority of the tracker to prevent repeated remote sync to the
@@ -380,7 +329,8 @@ void RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile(
   callback.Run(SYNC_STATUS_RETRY);
 }
 
-void RemoteToLocalSyncer::HandleNewFolder(const SyncStatusCallback& callback) {
+void RemoteToLocalSyncer::HandleFolderUpdate(
+    const SyncStatusCallback& callback) {
   DCHECK(dirty_tracker_);
   DCHECK(dirty_tracker_->active());
   DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
@@ -390,11 +340,11 @@ void RemoteToLocalSyncer::HandleNewFolder(const SyncStatusCallback& callback) {
   DCHECK(!remote_metadata_->details().missing());
   DCHECK_EQ(FILE_KIND_FOLDER, remote_metadata_->details().file_kind());
 
-  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForNewFolder,
+  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForFolderUpdate,
                      weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void RemoteToLocalSyncer::DidPrepareForNewFolder(
+void RemoteToLocalSyncer::DidPrepareForFolderUpdate(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
@@ -415,15 +365,12 @@ void RemoteToLocalSyncer::DidPrepareForNewFolder(
     return;
   }
 
-  DCHECK(local_changes_->empty() || local_changes_->back().IsAddOrUpdate());
-  if (local_changes_->empty()) {
-    LOG(ERROR) << "Detected local-only file without pending local change: "
-               << url_.DebugString();
-  }
-
   if (local_metadata_->file_type == SYNC_FILE_TYPE_DIRECTORY) {
     // There already exists a folder, nothing left to do.
-    callback.Run(SYNC_STATUS_OK);
+    if (dirty_tracker_->needs_folder_listing())
+      ListFolderContent(callback);
+    else
+      callback.Run(SYNC_STATUS_OK);
     return;
   }
 
@@ -489,7 +436,6 @@ void RemoteToLocalSyncer::HandleContentUpdate(
   DCHECK(dirty_tracker_->active());
   DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
   DCHECK(dirty_tracker_->has_synced_details());
-  DCHECK(!dirty_tracker_->synced_details().missing());
   DCHECK_EQ(FILE_KIND_FILE, dirty_tracker_->synced_details().file_kind());
 
   DCHECK(remote_metadata_);
@@ -503,7 +449,7 @@ void RemoteToLocalSyncer::HandleContentUpdate(
                      weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void RemoteToLocalSyncer::HandleFolderContentListing(
+void RemoteToLocalSyncer::ListFolderContent(
     const SyncStatusCallback& callback) {
   DCHECK(dirty_tracker_);
   DCHECK(dirty_tracker_->active());
@@ -556,28 +502,6 @@ void RemoteToLocalSyncer::DidListFolderContent(
 
   metadata_database()->PopulateFolderByChildList(
       dirty_tracker_->file_id(), *children, callback);
-}
-
-void RemoteToLocalSyncer::HandleOfflineSolvable(
-    const SyncStatusCallback& callback) {
-  DCHECK(dirty_tracker_);
-  DCHECK(dirty_tracker_->active());
-  DCHECK(!HasDisabledAppRoot(metadata_database(), *dirty_tracker_));
-  DCHECK(dirty_tracker_->has_synced_details());
-  DCHECK(!dirty_tracker_->synced_details().missing());
-
-  DCHECK((dirty_tracker_->synced_details().file_kind() == FILE_KIND_FOLDER &&
-          !dirty_tracker_->needs_folder_listing()) ||
-         (dirty_tracker_->synced_details().file_kind() == FILE_KIND_FILE &&
-          dirty_tracker_->synced_details().md5() ==
-          remote_metadata_->details().md5()));
-
-  DCHECK(remote_metadata_);
-  DCHECK(remote_metadata_->has_details());
-  DCHECK(!remote_metadata_->details().missing());
-
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
 }
 
 void RemoteToLocalSyncer::SyncCompleted(const SyncStatusCallback& callback,

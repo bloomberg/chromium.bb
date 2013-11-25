@@ -251,6 +251,9 @@ TEST_F(RemoteToLocalSyncerTest, AddNewFile) {
 
   // Create expected changes.
   // TODO(nhiroki): Clean up creating URL part.
+  expected_changes[CreateURL(kOrigin, "/")].push_back(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY));
   expected_changes[CreateURL(kOrigin, "/folder1")].push_back(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_DIRECTORY));
