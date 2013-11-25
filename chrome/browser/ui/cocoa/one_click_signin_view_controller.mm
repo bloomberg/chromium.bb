@@ -67,7 +67,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   // the window and nothing else has initiated the sync, we must do so here
   if (isSyncDialog_ && !startSyncCallback_.is_null()) {
     base::ResetAndReturn(&startSyncCallback_).Run(
-        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+        OneClickSigninSyncStarter::UNDO_SYNC);
   }
 }
 

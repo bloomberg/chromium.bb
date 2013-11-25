@@ -402,6 +402,6 @@ void OneClickSigninBubbleView::WindowClosing() {
 
   if (is_sync_dialog_ && !start_sync_callback_.is_null()) {
     base::ResetAndReturn(&start_sync_callback_).Run(
-        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+        OneClickSigninSyncStarter::UNDO_SYNC);
   }
 }

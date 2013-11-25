@@ -139,7 +139,7 @@ TEST_F(OneClickSigninBubbleViewTest, HideDialog) {
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
   EXPECT_TRUE(on_start_sync_called_);
-  EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
+  EXPECT_EQ(OneClickSigninSyncStarter::UNDO_SYNC, mode_);
 }
 
 TEST_F(OneClickSigninBubbleViewTest, BubbleOkButton) {
