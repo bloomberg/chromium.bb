@@ -74,6 +74,27 @@ KeysetTransitionTester.prototype = {
   },
 
   /**
+   * Adds a task for mocking a key typed event.
+   * @param {string} key Text label on the key.
+   * @param {number} keyCode The legacy key code for the character.
+   * @param {number} modifiers Indicates which if any of the shift, control and
+   *     alt keys are being virtually pressed.
+   * @param {string} keysetId Name of the expected keyset at the start of the
+   *     task.
+   */
+  typeKey: function(key, keyCode, modifiers, keysetId) {
+    var self = this;
+    var fn = function () {
+      Debug('Generating key typed event for key = ' + key + " and keycode = "
+          + keyCode);
+      self.verifyKeyset(keysetId, 'Unexpected keyset.');
+      mockTypeCharacter(key, keyCode, modifiers)
+    };
+    this.addWaitCondition(fn, keysetId);
+    this.addSubtask(fn);
+  },
+
+  /**
    * Updates the input type.
    * @param {string} inputType The new input type.
    * @param {string} keysetId Expected keyset at the start of the task.
@@ -193,4 +214,19 @@ function testKeysetTransitionsAsync(testDoneCallback) {
   checkBasicTransitions(Alignment.RIGHT);
 
   tester.scheduleTest('testKeysetTransitionsAsync', testDoneCallback);
+}
+
+/**
+ * Tests that we transition to uppercase on punctuation followed by a space.
+ * The test is run asynchronously since the keyboard loads keysets dynamically.
+ * @param {Function} testDoneCallback The function to be called on completion.
+ */
+function testUpperOnSpaceAfterPunctuation(testDoneCallback) {
+  var tester = new KeysetTransitionTester('qwerty');
+  tester.typeKey('a', 0x41, Modifier.NONE, Keyset.LOWER);
+  tester.typeKey('.', 0xBE, Modifier.NONE, Keyset.LOWER);
+  tester.typeKey(' ', 0x20, Modifier.NONE, Keyset.LOWER);
+  tester.typeKey('A', 0x41, Modifier.SHIFT, Keyset.UPPER);
+  tester.typeKey('a', 0x41, Modifier.NONE, Keyset.LOWER);
+  tester.scheduleTest('testUpperOnSpaceAfterPunctuation', testDoneCallback);
 }
