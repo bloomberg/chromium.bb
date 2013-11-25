@@ -88,6 +88,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxDirectoryDatabase {
   // creation/destruction of SandboxDirectoryDatabase objects.
   bool GetNextInteger(int64* next);
 
+  bool IsDirectory(FileId file_id);
+
   // Returns true if the database looks consistent with local filesystem.
   bool IsFileSystemConsistent();
 
@@ -108,7 +110,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxDirectoryDatabase {
   void ReportInitStatus(const leveldb::Status& status);
   bool StoreDefaultValues();
   bool GetLastFileId(FileId* file_id);
-  bool VerifyIsDirectory(FileId file_id);
   bool AddFileInfoHelper(
       const FileInfo& info, FileId file_id, leveldb::WriteBatch* batch);
   bool RemoveFileInfoHelper(FileId file_id, leveldb::WriteBatch* batch);

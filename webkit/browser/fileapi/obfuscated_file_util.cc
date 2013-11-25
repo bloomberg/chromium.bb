@@ -371,6 +371,8 @@ PlatformFileError ObfuscatedFileUtil::CreateDirectory(
     if (!db->GetChildWithName(parent_id, name, &parent_id))
       break;
   }
+  if (!db->IsDirectory(parent_id))
+    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
   if (!recursive && components.size() - index > 1)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   bool first = true;

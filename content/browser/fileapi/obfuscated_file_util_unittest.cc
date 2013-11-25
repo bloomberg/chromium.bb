@@ -2464,4 +2464,27 @@ TEST_F(ObfuscatedFileUtilTest, OpenPathInNonDirectory) {
                                    false /* recursive */));
 }
 
+TEST_F(ObfuscatedFileUtilTest, CreateDirectory_NotADirectoryInRecursive) {
+  FileSystemURL file(CreateURLFromUTF8("file"));
+  FileSystemURL path_in_file(CreateURLFromUTF8("file/child"));
+  FileSystemURL path_in_file_in_file(
+      CreateURLFromUTF8("file/child/grandchild"));
+  bool created;
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(UnlimitedContext().get(), file, &created));
+  ASSERT_TRUE(created);
+
+  ASSERT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY,
+            ofu()->CreateDirectory(UnlimitedContext().get(),
+                                   path_in_file,
+                                   false /* exclusive */,
+                                   true /* recursive */));
+  ASSERT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY,
+            ofu()->CreateDirectory(UnlimitedContext().get(),
+                                   path_in_file_in_file,
+                                   false /* exclusive */,
+                                   true /* recursive */));
+}
+
 }  // namespace fileapi
