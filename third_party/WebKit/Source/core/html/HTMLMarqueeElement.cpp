@@ -26,6 +26,7 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/rendering/RenderMarquee.h"
@@ -130,7 +131,7 @@ int HTMLMarqueeElement::scrollAmount() const
 void HTMLMarqueeElement::setScrollAmount(int scrollAmount, ExceptionState& exceptionState)
 {
     if (scrollAmount < 0)
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("scrollAmount", "HTMLMarqueeElement", "The provided value (" + String::number(scrollAmount) + ") is negative."));
     else
         setIntegralAttribute(scrollamountAttr, scrollAmount);
 }
@@ -145,7 +146,7 @@ int HTMLMarqueeElement::scrollDelay() const
 void HTMLMarqueeElement::setScrollDelay(int scrollDelay, ExceptionState& exceptionState)
 {
     if (scrollDelay < 0)
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("scrollDelay", "HTMLMarqueeElement", "The provided value (" + String::number(scrollDelay) + ") is negative."));
     else
         setIntegralAttribute(scrolldelayAttr, scrollDelay);
 }
@@ -160,7 +161,7 @@ int HTMLMarqueeElement::loop() const
 void HTMLMarqueeElement::setLoop(int loop, ExceptionState& exceptionState)
 {
     if (loop <= 0 && loop != -1)
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("loop", "HTMLMarqueeElement", "The provided value (" + String::number(loop) + ") is neither positive nor -1."));
     else
         setIntegralAttribute(loopAttr, loop);
 }
