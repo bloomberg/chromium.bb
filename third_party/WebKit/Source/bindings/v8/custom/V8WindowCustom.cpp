@@ -67,6 +67,7 @@
 #include "platform/PlatformScreen.h"
 #include "platform/graphics/media/MediaPlayer.h"
 #include "wtf/ArrayBuffer.h"
+#include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
@@ -198,6 +199,24 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
 
     v8::Handle<v8::String> eventSymbol = V8HiddenPropertyName::event(info.GetIsolate());
     context->Global()->SetHiddenValue(eventSymbol, value);
+}
+
+void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    DOMWindow* imp = V8Window::toNative(info.Holder());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToNode(imp->frameElement(), exceptionState)) {
+        v8SetReturnValueNull(info);
+        exceptionState.throwIfNeeded();
+        return;
+    }
+
+    // The wrapper for an <iframe> should get its prototype from the context of the frame it's in, rather than its own frame.
+    // So, use its containing document as the creation context when wrapping.
+    v8::Handle<v8::Value> creationContext = toV8(&imp->frameElement()->document(), v8::Handle<v8::Object>(), info.GetIsolate());
+    RELEASE_ASSERT(!creationContext.IsEmpty());
+    v8::Handle<v8::Value> wrapper = toV8(imp->frameElement(), v8::Handle<v8::Object>::Cast(creationContext), info.GetIsolate());
+    v8SetReturnValue(info, wrapper);
 }
 
 void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
