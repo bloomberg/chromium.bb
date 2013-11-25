@@ -42,6 +42,11 @@ extern const char* const kSecWebSocketAccept;
 // "Sec-WebSocket-Version"
 extern const char* const kSecWebSocketVersion;
 
+// This implementation only supports one version of the WebSocket protocol,
+// "13", as specified in RFC6455. If support for multiple versions is added in
+// future, it will probably no longer be worth having a constant for this.
+extern const char* const kSupportedVersion;
+
 // "Upgrade"
 extern const char* const kUpgrade;
 
