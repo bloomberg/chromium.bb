@@ -88,7 +88,7 @@ class DriveServiceInterface {
   // completion.
   // If the list is too long, it may be paged. In such a case, a URL to fetch
   // remaining results will be included in the returned result. See also
-  // ContinueGetResourceList.
+  // GetRemainingFileList.
   //
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetAllResourceList(
@@ -98,7 +98,7 @@ class DriveServiceInterface {
   // |callback| will be called upon completion.
   // If the list is too long, it may be paged. In such a case, a URL to fetch
   // remaining results will be included in the returned result. See also
-  // ContinueGetResourceList.
+  // GetRemainingFileList.
   //
   // |directory_resource_id| must not be empty.
   // |callback| must not be null.
@@ -110,7 +110,7 @@ class DriveServiceInterface {
   // resources. |callback| will be called upon completion.
   // If the list is too long, it may be paged. In such a case, a URL to fetch
   // remaining results will be included in the returned result. See also
-  // ContinueGetResourceList.
+  // GetRemainingFileList.
   //
   // |search_query| must not be empty.
   // |callback| must not be null.
@@ -124,7 +124,7 @@ class DriveServiceInterface {
   // the resources directly under the directory with |directory_resource_id|.
   // If the list is too long, it may be paged. In such a case, a URL to fetch
   // remaining results will be included in the returned result. See also
-  // ContinueGetResourceList.
+  // GetRemainingFileList.
   //
   // |title| must not be empty, and |callback| must not be null.
   virtual google_apis::CancelCallback SearchByTitle(
@@ -136,7 +136,7 @@ class DriveServiceInterface {
   // called upon completion.
   // If the list is too long, it may be paged. In such a case, a URL to fetch
   // remaining results will be included in the returned result. See also
-  // ContinueGetResourceList.
+  // GetRemainingChangeList.
   //
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetChangeList(
