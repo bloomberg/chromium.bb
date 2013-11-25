@@ -169,16 +169,14 @@ function updateGetUserMediaConstraints() {
       }
     }
     if ($('video').checked == true) {
+      // Default optional constraints placed here.
+      constraints.video = {optional: [{minWidth: $('video-width').value},
+                                      {minHeight: $('video-height').value},
+                                      {googCpuOveruseDetection: true},
+                                      {googLeakyBucket: true}]
+      };
       if (devices.video_id != null) {
-        constraints.video = {optional: [{sourceId: devices.video_id},
-                                        {minWidth: $('video-width').value},
-                                        {minHeight: $('video-height').value}]
-        };
-      }
-      else {
-        constraints.video = {optional: [{minWidth: $('video-width').value},
-                                        {minHeight: $('video-height').value}]
-        };
+        constraints.video.optional.push({sourceId: devices.video_id});
       }
     }
   }
