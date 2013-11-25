@@ -1373,7 +1373,8 @@ take_surface_to_workspace_by_seat(struct desktop_shell *shell,
 	    workspace_has_only(to, surface))
 		update_workspace(shell, index, from, to);
 	else {
-		if (wl_list_empty(&shsurf->workspace_transform.link))
+		if (shsurf != NULL &&
+		    wl_list_empty(&shsurf->workspace_transform.link))
 			wl_list_insert(&shell->workspaces.anim_sticky_list,
 				       &shsurf->workspace_transform.link);
 
