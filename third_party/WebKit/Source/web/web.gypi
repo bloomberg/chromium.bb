@@ -302,6 +302,7 @@
       'tests/WebPageNewSerializerTest.cpp',
       'tests/WebPageSerializerTest.cpp',
       'tests/WebPluginContainerTest.cpp',
+      'tests/WebSearchableFormDataTest.cpp',
       'tests/WebSelectorTest.cpp',
       'tests/WebURLRequestTest.cpp',
       'tests/WebURLResponseTest.cpp',
