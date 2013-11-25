@@ -54,7 +54,7 @@ scoped_ptr<VideoDecoderVpx> VideoDecoderVpx::CreateForVP8() {
   vpx_codec_err_t ret =
       vpx_codec_dec_init(codec.get(), vpx_codec_vp8_dx(), &config, 0);
   if (ret != VPX_CODEC_OK) {
-    LOG(INFO) << "Cannot initialize codec.";
+    LOG(ERROR) << "Cannot initialize codec.";
     return scoped_ptr<VideoDecoderVpx>();
   }
 
@@ -74,7 +74,7 @@ scoped_ptr<VideoDecoderVpx> VideoDecoderVpx::CreateForVP9() {
   vpx_codec_err_t ret =
       vpx_codec_dec_init(codec.get(), vpx_codec_vp9_dx(), &config, 0);
   if (ret != VPX_CODEC_OK) {
-    LOG(INFO) << "Cannot initialize codec.";
+    LOG(ERROR) << "Cannot initialize codec.";
     return scoped_ptr<VideoDecoderVpx>();
   }
 
@@ -99,9 +99,9 @@ bool VideoDecoderVpx::DecodePacket(const VideoPacket& packet) {
       codec_.get(), reinterpret_cast<const uint8*>(packet.data().data()),
       packet.data().size(), NULL, 0);
   if (ret != VPX_CODEC_OK) {
-    LOG(INFO) << "Decoding failed:" << vpx_codec_err_to_string(ret) << "\n"
-              << "Details: " << vpx_codec_error(codec_.get()) << "\n"
-              << vpx_codec_error_detail(codec_.get());
+    LOG(ERROR) << "Decoding failed:" << vpx_codec_err_to_string(ret) << "\n"
+               << "Details: " << vpx_codec_error(codec_.get()) << "\n"
+               << vpx_codec_error_detail(codec_.get());
     return false;
   }
 
@@ -109,7 +109,7 @@ bool VideoDecoderVpx::DecodePacket(const VideoPacket& packet) {
   vpx_codec_iter_t iter = NULL;
   vpx_image_t* image = vpx_codec_get_frame(codec_.get(), &iter);
   if (!image) {
-    LOG(INFO) << "No video frame decoded";
+    LOG(ERROR) << "No video frame decoded";
     return false;
   }
   last_image_ = image;

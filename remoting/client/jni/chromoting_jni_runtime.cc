@@ -138,11 +138,9 @@ ChromotingJniRuntime::ChromotingJniRuntime() {
 
   // On Android, the UI thread is managed by Java, so we need to attach and
   // start a special type of message loop to allow Chromium code to run tasks.
-  LOG(INFO) << "Starting main message loop";
   ui_loop_.reset(new base::MessageLoopForUI());
   ui_loop_->Start();
 
-  LOG(INFO) << "Spawning additional threads";
   // TODO(solb) Stop pretending to control the managed UI thread's lifetime.
   ui_task_runner_ = new AutoThreadTaskRunner(ui_loop_->message_loop_proxy(),
                                              base::MessageLoop::QuitClosure());

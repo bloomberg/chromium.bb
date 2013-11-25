@@ -180,7 +180,6 @@ void ChromotingJniInstance::OnConnectionState(
   EnableStatsLogging(state == protocol::ConnectionToHost::CONNECTED);
 
   if (create_pairing_ && state == protocol::ConnectionToHost::CONNECTED) {
-    LOG(INFO) << "Attempting to pair with host";
     protocol::PairingRequest request;
     request.set_client_name("Android");
     connection_->host_stub()->RequestPairing(request);
@@ -204,7 +203,6 @@ void ChromotingJniInstance::SetCapabilities(const std::string& capabilities) {
 
 void ChromotingJniInstance::SetPairingResponse(
     const protocol::PairingResponse& response) {
-  LOG(INFO) << "Successfully established pairing with host";
 
   jni_runtime_->ui_task_runner()->PostTask(
       FROM_HERE,
@@ -318,7 +316,6 @@ void ChromotingJniInstance::FetchSecret(
   if (!client_config_.client_pairing_id.empty()) {
     // We attempted to connect using an existing pairing that was rejected.
     // Unless we forget about the stale credentials, we'll continue trying them.
-    LOG(INFO) << "Deleting rejected pairing credentials";
     jni_runtime_->CommitPairingCredentials(host_id_, "", "");
   }
 

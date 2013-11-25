@@ -142,7 +142,7 @@ void XmppSignalStrategy::RemoveListener(Listener* listener) {
 bool XmppSignalStrategy::SendStanza(scoped_ptr<buzz::XmlElement> stanza) {
   DCHECK(CalledOnValidThread());
   if (!xmpp_client_) {
-    LOG(INFO) << "Dropping signalling message because XMPP "
+    VLOG(0) << "Dropping signalling message because XMPP "
         "connection has been terminated.";
     return false;
   }
@@ -199,8 +199,8 @@ void XmppSignalStrategy::OnConnectionStateChanged(
     // Make sure we dump errors to the log.
     int subcode;
     buzz::XmppEngine::Error error = xmpp_client_->GetError(&subcode);
-    LOG(INFO) << "XMPP connection was closed: error=" << error
-              << ", subcode=" << subcode;
+    VLOG(0) << "XMPP connection was closed: error=" << error
+            << ", subcode=" << subcode;
 
     keep_alive_timer_.Stop();
 

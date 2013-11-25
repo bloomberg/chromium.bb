@@ -103,8 +103,6 @@ void Me2MeBrowserTest::TestKeyboardInput() {
   std::string content;
   EXPECT_TRUE(base::ReadFileToString(temp_file, &content));
 
-  LOG(INFO) << temp_file.value();
-
   EXPECT_EQ(text, content);
 
   EXPECT_TRUE(base::DeleteFile(temp_file, false));

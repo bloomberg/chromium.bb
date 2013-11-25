@@ -163,8 +163,8 @@ void DatagramConnectionTester::CheckResults() {
 
   // Verify that we've received at least one packet.
   EXPECT_GT(packets_received_, 0);
-  LOG(INFO) << "Received " << packets_received_ << " packets out of "
-            << message_count_;
+  VLOG(0) << "Received " << packets_received_ << " packets out of "
+          << message_count_;
 }
 
 void DatagramConnectionTester::Done() {

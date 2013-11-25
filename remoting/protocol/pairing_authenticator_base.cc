@@ -108,7 +108,7 @@ bool PairingAuthenticatorBase::HasErrorMessage(
       message->FirstNamed(kPairingFailedTag);
   if (pairing_failed_tag) {
     std::string error = pairing_failed_tag->Attr(kPairingErrorAttribute);
-    LOG(INFO) << "Pairing failed: " << error;
+    LOG(ERROR) << "Pairing failed: " << error;
   }
   return pairing_failed_tag != NULL;
 }

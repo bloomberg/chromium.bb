@@ -83,7 +83,7 @@ void JniFrameConsumer::ApplyBuffer(const webrtc::DesktopSize& view_size,
 
 void JniFrameConsumer::ReturnBuffer(webrtc::DesktopFrame* buffer) {
   DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
-  LOG(INFO) << "Returning image buffer";
+  VLOG(0) << "Returning image buffer";
   FreeBuffer(buffer);
 }
 

@@ -169,8 +169,8 @@ class VideoDecoderTester {
     EXPECT_LE(max_error, max_error_limit);
     double mean_error = sum_error / error_num;
     EXPECT_LE(mean_error, mean_error_limit);
-    LOG(INFO) << "Max error: " << max_error;
-    LOG(INFO) << "Mean error: " << mean_error;
+    VLOG(0) << "Max error: " << max_error;
+    VLOG(0) << "Mean error: " << mean_error;
   }
 
   double CalculateError(const uint8* original, const uint8* decoded) {

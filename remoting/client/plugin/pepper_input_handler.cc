@@ -176,7 +176,7 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
       return true;
 
     default: {
-      LOG(INFO) << "Unhandled input event: " << event.GetType();
+      VLOG(0) << "Unhandled input event: " << event.GetType();
       break;
     }
   }
