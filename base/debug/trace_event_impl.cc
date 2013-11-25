@@ -1953,9 +1953,11 @@ void TraceLog::UpdateTraceEventDuration(
   if (*category_group_enabled & ENABLED_FOR_EVENT_CALLBACK) {
     EventCallback event_callback = reinterpret_cast<EventCallback>(
         subtle::NoBarrier_Load(&event_callback_));
-    event_callback(now, TRACE_EVENT_PHASE_END, category_group_enabled, name,
-                   trace_event_internal::kNoEventId, 0, NULL, NULL, NULL,
-                   TRACE_EVENT_FLAG_NONE);
+    if (event_callback) {
+      event_callback(now, TRACE_EVENT_PHASE_END, category_group_enabled, name,
+                     trace_event_internal::kNoEventId, 0, NULL, NULL, NULL,
+                     TRACE_EVENT_FLAG_NONE);
+    }
   }
 }
 
