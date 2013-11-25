@@ -62,9 +62,4 @@ if env.Bit('bitcode'):
   AddLibcTest(env, 'printf_to_puts.c', '0',
               compile_env=unopt_env, link_env=opt_env)
 
-if env.Bit('nacl_glibc'):
-  memalign_env = env
-else:
-  memalign_env = env.Clone()
-  memalign_env.Append(CPPDEFINES=['NEWLIB=1'])
-AddLibcTest(memalign_env, 'posix_memalign.c')
+AddLibcTest(env, 'posix_memalign.c')

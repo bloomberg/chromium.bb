@@ -7,14 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Newlib currently does not have posix_memalign in its headers, though
- * the malloc implementation (dlmalloc) does support it.
- * http://code.google.com/p/nativeclient/issues/detail?id=2505
- */
-#if defined(NEWLIB)
-extern int posix_memalign(void **memptr, size_t alignment, size_t size);
-#endif
-
 int main(int argc, char* argv[]) {
   char *outp;
   /* Try a few alignments, some of them might be the standard malloc align.
