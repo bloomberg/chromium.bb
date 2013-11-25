@@ -98,8 +98,9 @@ IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
       fr_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                                   source);
   fr_language_detected_signal.Wait();
-  // TODO(hajimehoshi): The bubble of an unactivate tab should not exist then
-  // (crbug/317431).
+
+  // The bubble is not shown because the tab is not activated.
+  EXPECT_FALSE(TranslateBubbleView::IsShowing());
 
   // Close the French page tab immediately.
   chrome::CloseWebContents(browser(), web_contents, false);

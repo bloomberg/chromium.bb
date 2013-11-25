@@ -431,9 +431,10 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
 
   if (IsEnabledTranslateNewUX()) {
     language_state.SetTranslateEnabled(true);
-    if (language_state.HasLanguageChanged())
+    if (language_state.HasLanguageChanged()) {
       ShowBubble(web_contents,
                  TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
+    }
   } else {
     // Prompts the user if he/she wants the page translated.
     TranslateInfoBarDelegate::Create(
@@ -716,7 +717,21 @@ void TranslateManager::ShowBubble(WebContents* web_contents,
   // The bubble is implemented only on the desktop platforms.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  BrowserWindow* window = browser ? browser->window() : NULL;
+
+  // |browser| might be NULL when testing. In this case, Show(...) should be
+  // called because the implementation for testing is used.
+  if (!browser) {
+    TranslateBubbleFactory::Show(NULL, web_contents, view_state);
+    return;
+  }
+
+  if (web_contents != browser->tab_strip_model()->GetActiveWebContents())
+    return;
+
+  BrowserWindow* window = browser->window();
+  if (window && !window->IsActive())
+    return;
+
   TranslateBubbleFactory::Show(window, web_contents, view_state);
 #else
   NOTREACHED();
