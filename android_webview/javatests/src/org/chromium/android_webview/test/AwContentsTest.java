@@ -408,12 +408,12 @@ public class AwContentsTest extends AwTestBase {
               SCRIPT));
 
         // Forcing "offline".
-        awContents.setNetworkAvailable(false);
+        setNetworkAvailableOnUiThread(awContents, false);
         assertEquals("false", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
               SCRIPT));
 
         // Forcing "online".
-        awContents.setNetworkAvailable(true);
+        setNetworkAvailableOnUiThread(awContents, true);
         assertEquals("true", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
               SCRIPT));
     }

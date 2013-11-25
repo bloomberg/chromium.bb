@@ -79,7 +79,6 @@ class AwContents : public FindHelper::Listener,
                     jobject io_thread_client,
                     jobject intercept_navigation_delegate);
   jint GetWebContents(JNIEnv* env, jobject obj);
-  jint GetAwContentsClientBridge(JNIEnv* env, jobject obj);
 
   void Destroy(JNIEnv* env, jobject obj);
   void DocumentHasImages(JNIEnv* env, jobject obj, jobject message);

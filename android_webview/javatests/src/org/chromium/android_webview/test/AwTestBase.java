@@ -85,6 +85,16 @@ public class AwTestBase
         });
     }
 
+    protected void setNetworkAvailableOnUiThread(final AwContents awContents,
+            final boolean networkUp) {
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                awContents.setNetworkAvailable(networkUp);
+            }
+        });
+    }
+
     /**
      * Loads url on the UI thread and blocks until onPageFinished is called.
      */
