@@ -72,8 +72,12 @@ class StartupMetric(Metric):
         [t.load_start_ms + t.load_duration_ms for t in tab_load_times])
     load_complete_times.sort()
 
-    foreground_tab_stats = (
-        [t for t in tab_load_times if t.is_foreground_tab == True])
+    if 'android' in tab.browser.browser_type:
+      # document.hidden is broken on Android - crbug.com/322544.
+      foreground_tab_stats = [tab_load_times[0]]
+    else:
+      foreground_tab_stats = (
+          [t for t in tab_load_times if t.is_foreground_tab == True])
     if (len(foreground_tab_stats) != 1):
       raise Exception ("More than one foreground tab? ", foreground_tab_stats)
     foreground_tab_stats = foreground_tab_stats[0]
