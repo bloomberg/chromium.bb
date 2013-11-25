@@ -73,8 +73,8 @@ function browserSupportsPNaCl() {
  * @return {string}
  */
 function getDataURL(name) {
-  var revision = '234120_dev';
-  var baseUrl = 'http://commondatastorage.googleapis.com/gonacl/demos/publish/';
+  var revision = '236779';
+  var baseUrl = '//commondatastorage.googleapis.com/gonacl/demos/publish/';
   return baseUrl + revision + '/smoothlife/' + name;
 }
 

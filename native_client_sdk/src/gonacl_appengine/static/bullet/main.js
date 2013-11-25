@@ -64,8 +64,8 @@ function pageDidLoad() {
   embedWrap.addEventListener('progress', moduleLoadProgress, true);
   embedWrap.addEventListener('crash', moduleCrash, true);
 
-  var revision = 233080;
-  var url = 'http://commondatastorage.googleapis.com/gonacl/demos/publish/' +
+  var revision = 236779;
+  var url = '//commondatastorage.googleapis.com/gonacl/demos/publish/' +
       revision + '/bullet/NaClAMBullet.nmf';
 
   var embed = document.createElement('embed');
