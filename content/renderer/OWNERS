@@ -1,5 +1,4 @@
 jamesr@chromium.org
-jochen@chromium.org
 
 # Mac Sandbox profiles.
 per-file *.sb=set noparent
