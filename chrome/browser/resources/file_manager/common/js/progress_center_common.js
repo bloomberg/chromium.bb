@@ -28,7 +28,7 @@ var ProgressCenterEvent = Object.freeze({
  */
 var ProgressItemState = Object.freeze({
   PROGRESSING: 'progressing',
-  COMPLETE: 'complete',
+  COMPLETED: 'completed',
   ERROR: 'error',
   CANCELED: 'canceled'
 });
@@ -92,7 +92,7 @@ var ProgressCenterItem = function() {
    * Type of progress item.
    * @type {ProgressItemType}
    */
-  this.type = ProgressItemType.TRANSFER;
+  this.type = null;
 
   /**
    * Whether the item is summarized item or not.

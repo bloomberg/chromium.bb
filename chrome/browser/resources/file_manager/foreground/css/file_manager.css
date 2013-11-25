@@ -2072,10 +2072,10 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 }
 
 /*
- * If the progress center only one item,
+ * If the closed progress center has only one item,
  * toggle button turned into cancel button the item.
  */
-#progress-center-close-view.single button.toggle,
+#progress-center:not(.opened) #progress-center-close-view.single button.toggle,
 #progress-center button.cancel {
   background: -webkit-image-set(
       url(../images/files/ui/close_bar.png) 1x,
@@ -2083,7 +2083,8 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
       no-repeat;
 }
 
-#progress-center-close-view.single li:not(.cancelable) button.toggle,
+#progress-center:not(.opened) #progress-center-close-view.single
+    li:not(.cancelable) button.toggle,
 #progress-center li:not(.cancelable) button.cancel {
   visibility: hidden;
 }

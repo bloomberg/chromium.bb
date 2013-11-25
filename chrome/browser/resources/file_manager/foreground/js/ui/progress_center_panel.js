@@ -76,7 +76,7 @@ ProgressCenterPanel.updateItemElement_ = function(element, item) {
       parseInt(element.querySelector('.progress-track').style.width);
   var animation = !isNaN(previousWidthRate) &&
       previousWidthRate < item.progressRateInPercent;
-  if (item.state === ProgressItemState.COMPLETE && animation) {
+  if (item.state === ProgressItemState.COMPLETED && animation) {
     // The attribute pre-complete means that the actual operation is already
     // done but the UI transition of progress bar is not complete.
     element.setAttribute('pre-complete', '');
@@ -124,7 +124,7 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
       break;
 
     // Should not show the item.
-    case ProgressItemState.COMPLETE:
+    case ProgressItemState.COMPLETED:
     case ProgressItemState.CANCELED:
       // If itemElement is not shown, just break.
       if (!itemElement)
@@ -132,12 +132,12 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
 
       // If the item is complete state, once update it because it may turn to
       // have the pre-complete attribute.
-      if (item.state === ProgressItemState.COMPLETE)
+      if (item.state === ProgressItemState.COMPLETED)
         ProgressCenterPanel.updateItemElement_(itemElement, item);
 
       // If the item has the pre-complete attribute, keep showing it. Otherwise,
       // just remove it.
-      if (item.state !== ProgressItemState.COMPLETE ||
+      if (item.state !== ProgressItemState.COMPLETED ||
           !itemElement.hasAttribute('pre-complete')) {
         this.openView_.removeChild(itemElement);
       }
@@ -247,13 +247,16 @@ ProgressCenterPanel.prototype.onItemTransitionEnd_ = function(event) {
  * @private
  */
 ProgressCenterPanel.prototype.onClick_ = function(event) {
+  // Toggle button.
   if (event.target.classList.contains('toggle') &&
-      !this.closeView_.classList.contains('single'))
+      (!this.closeView_.classList.contains('single') ||
+       this.element_.classList.contains('opened'))) {
     this.element_.classList.toggle('opened');
-  else if ((event.target.classList.contains('toggle') &&
-            this.closeView_.classList.contains('single')) ||
-           event.target.classList.contains('cancel'))
-    if (this.cancelCallback)
-      this.cancelCallback(
-          event.target.parentNode.parentNode.getAttribute('data-progress-id'));
+    return;
+  }
+
+  // Cancel button.
+  if (this.cancelCallback)
+    this.cancelCallback(
+        event.target.parentNode.parentNode.getAttribute('data-progress-id'));
 };

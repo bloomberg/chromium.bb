@@ -125,7 +125,7 @@ ProgressCenter.Notifications_.prototype.updateItem = function(
     delete this.ids_[item.id];
     // Clear notifications for complete or canceled items.
     if (item.state === ProgressItemState.CANCELED ||
-        item.state === ProgressItemState.COMPLETE) {
+        item.state === ProgressItemState.COMPLETED) {
       if (previousState === NotificationState.VISIBLE) {
         this.queue_.run(function(proceed) {
           chrome.notifications.clear(item.id, proceed);
@@ -307,76 +307,105 @@ ProgressCenter.prototype.removePanel = function(panel) {
  * @private
  */
 ProgressCenter.prototype.getSummarizedItem_ = function() {
-  // Check the number of application items.
-  if (this.items_.length == 0)
-    return null;
-  if (this.items_.length == 1)
-    return this.items_[0];
-
-  // If it has multiple items, it creates summarized item.
   var summarizedItem = new ProgressCenterItem();
-  summarizedItem.summarized = true;
-  summarizedItem.type = null;
-  var completeCount = 0;
-  var progressingCount = 0;
-  var errorCount = 0;
+  var progressingItems = [];
+  var completedItems = [];
+  var canceledItems = [];
+  var errorItems = [];
+
   for (var i = 0; i < this.items_.length; i++) {
     // Count states.
     switch (this.items_[i].state) {
-      case ProgressItemState.ERROR: errorCount++; break;
-      case ProgressItemState.PROGRESSING: progressingCount++; break;
-      case ProgressItemState.COMPLETE: completeCount++; break;
+      case ProgressItemState.PROGRESSING:
+        progressingItems.push(this.items_[i]);
+        break;
+      case ProgressItemState.COMPLETED:
+        completedItems.push(this.items_[i]);
+        break;
+      case ProgressItemState.CANCELED:
+        canceledItems.push(this.items_[i]);
+        break;
+      case ProgressItemState.ERROR:
+        errorItems.push(this.items_[i]);
+        break;
     }
 
-    // Integrate the type of item.
-    if (summarizedItem.type === null)
-      summarizedItem.type = this.items_[i].type;
-    else if (summarizedItem.type !== this.items_[i].type)
-      summarizedItem.type = ProgressItemType.TRANSFER;
+    // If all of the progressing items have the same type, then use
+    // it. Otherwise use TRANSFER, since it is the most generic.
+    if (this.items_[i].state === ProgressItemState.PROGRESSING) {
+      if (summarizedItem.type === null)
+        summarizedItem.type = this.items_[i].type;
+      else if (summarizedItem.type !== this.items_[i].type)
+        summarizedItem.type = ProgressItemType.TRANSFER;
+    }
 
     // Sum up the progress values.
-    if (summarizedItem.state === ProgressItemState.PROGRESSING ||
-        summarizedItem.state === ProgressItemState.COMPLETE) {
+    if (this.items_[i].state === ProgressItemState.PROGRESSING ||
+        this.items_[i].state === ProgressItemState.COMPLETED) {
       summarizedItem.progressMax += this.items_[i].progressMax;
       summarizedItem.progressValue += this.items_[i].progressValue;
     }
   }
-  if (!summarizedItem.type)
-    summarizedItem.type = ProgressItemType.TRANSFER;
 
-  // Set item state.
-  summarizedItem.state =
-      completeCount + progressingCount == 0 ? ProgressItemState.CANCELED :
-      progressingCount > 0 ? ProgressItemState.PROGRESSING :
-      ProgressItemState.COMPLETE;
-
-  // Set item message.
-  var messages = [];
-  if (summarizedItem.state === ProgressItemState.PROGRESSING) {
-    switch (summarizedItem.type) {
-      case ProgressItemType.COPY:
-        messages.push(str('COPY_PROGRESS_SUMMARY'));
-        break;
-      case ProgressItemType.MOVE:
-        messages.push(str('MOVE_PROGRESS_SUMMARY'));
-        break;
-      case ProgressItemType.DELETE:
-        messages.push(str('DELETE_PROGRESS_SUMMARY'));
-        break;
-      case ProgressItemType.ZIP:
-        messages.push(str('ZIP_PROGRESS_SUMMARY'));
-        break;
-      case ProgressItemType.TRANSFER:
-        messages.push(str('TRANSFER_PROGRESS_SUMMARY'));
-        break;
+  // If there are multiple visible (progressing and error) items, show the
+  // summarized message.
+  if (progressingItems.length + errorItems.length > 1) {
+    // Set item message.
+    var messages = [];
+    if (progressingItems.length > 0) {
+      switch (summarizedItem.type) {
+        case ProgressItemType.COPY:
+          messages.push(str('COPY_PROGRESS_SUMMARY'));
+          break;
+        case ProgressItemType.MOVE:
+          messages.push(str('MOVE_PROGRESS_SUMMARY'));
+          break;
+        case ProgressItemType.DELETE:
+          messages.push(str('DELETE_PROGRESS_SUMMARY'));
+          break;
+        case ProgressItemType.ZIP:
+          messages.push(str('ZIP_PROGRESS_SUMMARY'));
+          break;
+        case ProgressItemType.TRANSFER:
+          messages.push(str('TRANSFER_PROGRESS_SUMMARY'));
+          break;
+      }
     }
+    if (errorItems.length === 1)
+      messages.push(str('ERROR_PROGRESS_SUMMARY'));
+    else if (errorItems.length > 1)
+      messages.push(strf('ERROR_PROGRESS_SUMMARY_PLURAL', errorItems.length));
+
+    summarizedItem.summarized = true;
+    summarizedItem.message = messages.join(' ');
+    summarizedItem.state = progressingItems.length > 0 ?
+        ProgressItemState.PROGRESSING : ProgressItemState.ERROR;
+    return summarizedItem;
   }
-  if (errorCount == 1)
-    messages.push(str('ERROR_PROGRESS_SUMMARY'));
-  else if (errorCount > 1)
-    messages.push(strf('ERROR_PROGRESS_SUMMARY_PLURAL', errorCount));
-  summarizedItem.message = messages.join(' ');
-  return summarizedItem;
+
+  // If there is 1 visible item, show the item message.
+  if (progressingItems.length + errorItems.length === 1) {
+    var visibleItem = progressingItems[0] || errorItems[0];
+    summarizedItem.id = visibleItem.id;
+    summarizedItem.cancelCallback = visibleItem.cancelCallback;
+    summarizedItem.type = visibleItem.type;
+    summarizedItem.message = visibleItem.message;
+    summarizedItem.state = visibleItem.state;
+    return summarizedItem;
+  }
+
+  // If there is no visible item, the message can be empty.
+  if (completedItems.length > 0) {
+    summarizedItem.state = ProgressItemState.COMPLETED;
+    return summarizedItem;
+  }
+  if (canceledItems.length > 0) {
+    summarizedItem.state = ProgressItemState.CANCELED;
+    return summarizedItem;
+  }
+
+  // If there is no item, return null.
+  return null;
 };
 
 /**
@@ -615,7 +644,7 @@ ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
       }
       if (event.reason === 'SUCCESS') {
         item.message = '';
-        item.state = ProgressItemState.COMPLETE;
+        item.state = ProgressItemState.COMPLETED;
         item.progressValue = item.progressMax;
       } else if (event.reason === 'CANCELED') {
         item.message = ProgressCenterHandler.getMessage_(event);
@@ -678,7 +707,7 @@ ProgressCenterHandler.prototype.onDeleteProgress_ = function(event) {
       // Update the item.
       item.message = ProgressCenterHandler.getDeleteMessage_(event);
       if (event.reason === 'SUCCESS') {
-        item.state = ProgressItemState.COMPLETE;
+        item.state = ProgressItemState.COMPLETED;
         item.progressValue = item.progressMax;
       } else {
         item.state = ProgressItemState.ERROR;
