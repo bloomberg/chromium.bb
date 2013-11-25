@@ -483,7 +483,8 @@ dnd_touch_down_handler(struct widget *widget,
 
 	int_x = (int32_t)x;
 	int_y = (int32_t)y;
-	create_drag_source(dnd, input, time, int_x, int_y);
+	if (create_drag_source(dnd, input, time, int_x, int_y) == 0)
+		touch_grab(input, 0);
 }
 
 static int

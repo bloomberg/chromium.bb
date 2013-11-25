@@ -523,6 +523,12 @@ uint32_t
 input_get_modifiers(struct input *input);
 
 void
+touch_grab(struct input *input, int32_t touch_id);
+
+void
+touch_ungrab(struct input *input);
+
+void
 input_grab(struct input *input, struct widget *widget, uint32_t button);
 
 void

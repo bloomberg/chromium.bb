@@ -320,6 +320,11 @@ struct input {
 	struct wl_data_device *data_device;
 	struct data_offer *drag_offer;
 	struct data_offer *selection_offer;
+	uint32_t touch_grab;
+	int32_t touch_grab_id;
+	float drag_x, drag_y;
+	struct window *drag_focus;
+	uint32_t drag_enter_serial;
 
 	struct {
 		struct xkb_keymap *keymap;
@@ -2546,6 +2551,31 @@ input_set_focus_widget(struct input *input, struct widget *focus,
 }
 
 void
+touch_grab(struct input  *input, int32_t touch_id)
+{
+	input->touch_grab = 1;
+	input->touch_grab_id = touch_id;
+}
+
+void
+touch_ungrab(struct input *input)
+{
+	struct touch_point *tp, *tmp;
+
+	input->touch_grab = 0;
+
+	wl_list_for_each_safe(tp, tmp,
+			&input->touch_point_list, link) {
+		if (tp->id != input->touch_grab_id)
+			continue;
+		wl_list_remove(&tp->link);
+		free(tp);
+
+		return;
+	}
+}
+
+void
 input_grab(struct input *input, struct widget *widget, uint32_t button)
 {
 	input->grab = widget;
@@ -3245,11 +3275,14 @@ data_device_enter(void *data, struct wl_data_device *data_device,
 	float y = wl_fixed_to_double(y_w);
 	char **p;
 
-	input->pointer_enter_serial = serial;
 	window = wl_surface_get_user_data(surface);
-	input->pointer_focus = window;
-	input->sx = x;
-	input->sy = y;
+	input->drag_enter_serial = serial;
+	input->drag_focus = window,
+	input->drag_x = x;
+	input->drag_y = y;
+
+	if (!input->touch_grab)
+		input->pointer_enter_serial = serial;
 
 	if (offer) {
 		input->drag_offer = wl_data_offer_get_user_data(offer);
@@ -3263,7 +3296,6 @@ data_device_enter(void *data, struct wl_data_device *data_device,
 		types_data = NULL;
 	}
 
-	window = input->pointer_focus;
 	if (window->data_handler)
 		window->data_handler(window, input, x, y, types_data,
 				     window->user_data);
@@ -3285,13 +3317,13 @@ data_device_motion(void *data, struct wl_data_device *data_device,
 		   uint32_t time, wl_fixed_t x_w, wl_fixed_t y_w)
 {
 	struct input *input = data;
-	struct window *window = input->pointer_focus;
+	struct window *window = input->drag_focus;
 	float x = wl_fixed_to_double(x_w);
 	float y = wl_fixed_to_double(y_w);
 	void *types_data;
 
-	input->sx = x;
-	input->sy = y;
+	input->drag_x = x;
+	input->drag_y = y;
 
 	if (input->drag_offer)
 		types_data = input->drag_offer->types.data;
@@ -3307,11 +3339,18 @@ static void
 data_device_drop(void *data, struct wl_data_device *data_device)
 {
 	struct input *input = data;
-	struct window *window = input->pointer_focus;
+	struct window *window = input->drag_focus;
+	float x, y;
+
+	x = input->drag_x;
+	y = input->drag_y;
 
 	if (window->drop_handler)
 		window->drop_handler(window, input,
-				     input->sx, input->sy, window->user_data);
+				     x, y, window->user_data);
+
+	if (input->touch_grab)
+		touch_ungrab(input);
 }
 
 static void
@@ -3480,7 +3519,7 @@ void
 input_accept(struct input *input, const char *type)
 {
 	wl_data_offer_accept(input->drag_offer->offer,
-			     input->pointer_enter_serial, type);
+			     input->drag_enter_serial, type);
 }
 
 static void
@@ -3528,8 +3567,8 @@ input_receive_drag_data(struct input *input, const char *mime_type,
 			data_func_t func, void *data)
 {
 	data_offer_receive_data(input->drag_offer, mime_type, func, data);
-	input->drag_offer->x = input->sx;
-	input->drag_offer->y = input->sy;
+	input->drag_offer->x = input->drag_x;
+	input->drag_offer->y = input->drag_y;
 }
 
 int
