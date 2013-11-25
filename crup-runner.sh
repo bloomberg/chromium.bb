@@ -90,7 +90,8 @@ cd "$solution" 1>/dev/null
 
 if [ "$solution" = "$1" ]; then
   # Skip git checkouts not managed by crup.
-  if ! grep -q -s "The Chromium Authors" ".git/description"; then
+  gitdir="$(git rev-parse --git-dir)"
+  if ! grep -q -s "The Chromium Authors" "$gitdir/description"; then
     echo "Skipping unmanaged git directory $1" 1>&2
     exit 0
   fi
