@@ -359,8 +359,9 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
   VLOG(1) << "Portal detection completed: "
           << "name=" << default_network_name_ << ", "
           << "id=" << default_network_id_ << ", "
-          << "result=" << CaptivePortalDetector::CaptivePortalResultToString(
-              results.result) << ", "
+          << "result="
+          << CaptivePortalDetector::CaptivePortalResultToString(results.result)
+          << ", "
           << "response_code=" << results.response_code;
 
   state_ = STATE_IDLE;
@@ -373,11 +374,12 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
   state.response_code = response_code;
   switch (result) {
     case captive_portal::RESULT_NO_RESPONSE:
-      if (attempt_count_ >= kMaxRequestAttempts) {
-        if (state.response_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
-          state.status = CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED;
-        } else if (default_network && (default_network->connection_state() ==
-                                       shill::kStatePortal)) {
+      if (state.response_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
+        state.status = CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED;
+        SetCaptivePortalState(default_network, state);
+      } else if (attempt_count_ >= kMaxRequestAttempts) {
+        if (default_network &&
+            (default_network->connection_state() == shill::kStatePortal)) {
           // Take into account shill's detection results.
           state.status = CAPTIVE_PORTAL_STATUS_PORTAL;
           LOG(WARNING) << "Network name=" << default_network->name() << ", "
