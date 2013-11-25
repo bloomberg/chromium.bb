@@ -167,6 +167,18 @@ Tests error recovery in @-rules.
 <style>@media all {@media all;} #test54{display: none}</style>
 <div id="test54"></div>
 
+<style>@media all {@import} #test59{display: none}</style>
+<div id="test59"></div>
+
+<style>@media all {@import;} #test60{display: none}</style>
+<div id="test60"></div>
+
+<style>@media all {@import url("")} #test61{display: none}</style>
+<div id="test61"></div>
+
+<style>@media all {@import url("");} #test62{display: none}</style>
+<div id="test62"></div>
+
 </div>
 
 <script type="text/javascript">

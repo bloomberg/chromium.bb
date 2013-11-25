@@ -9600,6 +9600,15 @@ CSSParser::RuleList* CSSParser::createRuleList()
     return listPtr;
 }
 
+CSSParser::RuleList* CSSParser::appendRule(RuleList* ruleList, StyleRuleBase* rule)
+{
+    if (rule) {
+        if (!ruleList)
+            ruleList = createRuleList();
+        ruleList->append(rule);
+    }
+    return ruleList;
+}
 
 template <typename CharacterType>
 ALWAYS_INLINE static void makeLower(const CharacterType* input, CharacterType* output, unsigned length)

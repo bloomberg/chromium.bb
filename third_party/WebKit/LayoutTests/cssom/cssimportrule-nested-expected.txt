@@ -1,0 +1,3 @@
+
+PASS doc.styleSheets[0].cssRules[0].cssRules.length == 0 
+

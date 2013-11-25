@@ -543,12 +543,7 @@ block_rule_body:
 block_rule_list:
     /* empty */ { $$ = 0; }
   | block_rule_list block_rule maybe_sgml {
-      $$ = $1;
-      if ($2) {
-          if (!$$)
-              $$ = parser->createRuleList();
-          $$->append($2);
-      }
+      $$ = parser->appendRule($1, $2);
     }
     ;
 
@@ -560,12 +555,7 @@ region_block_rule_body:
 region_block_rule_list:
     /* empty */ { $$ = 0; }
   | region_block_rule_list region_block_rule maybe_sgml {
-        $$ = $1;
-        if ($2) {
-            if (!$$)
-                $$ = parser->createRuleList();
-            $$->append($2);
-        }
+        $$ = parser->appendRule($1, $2);
     }
   ;
 
@@ -607,7 +597,6 @@ block_valid_rule:
   | viewport
   | filter
   | namespace
-  | import
   | region
   ;
 
@@ -638,6 +627,9 @@ import_rule_start:
 import:
     import_rule_start string_or_uri maybe_space location_label maybe_media_list semi_or_eof {
         $$ = parser->createImportRule($2, $5);
+    }
+  | import_rule_start string_or_uri maybe_space location_label maybe_media_list invalid_block {
+        $$ = 0;
     }
   ;
 
@@ -1931,7 +1923,6 @@ invalid_rule:
   | regular_invalid_at_rule_header at_invalid_rule_header_end ';'
   | regular_invalid_at_rule_header at_invalid_rule_header_end invalid_block
   | media_rule_start maybe_media_list ';'
-  | import_rule_start string_or_uri maybe_space location_label maybe_media_list invalid_block
     ;
 
 invalid_rule_header:
