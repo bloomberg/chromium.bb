@@ -108,6 +108,9 @@ crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas.html [ 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
+crbug.com/120453 fast/text/capitalize-boundaries.html [ NeedsRebaseline ]
+crbug.com/120453 fast/css/rtl-ordering.html [ NeedsRebaseline ]
+crbug.com/120453 fast/css/font-face-synthetic-bold-italic-for-locally-installed.html [ NeedsRebaseline ]
 crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 
 crbug.com/313659 [ Linux Release ] fast/line-grid/line-align-left-edges.html [ Pass Timeout ]

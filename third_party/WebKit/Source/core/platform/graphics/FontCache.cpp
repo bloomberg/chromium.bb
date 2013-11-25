@@ -89,6 +89,7 @@ FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& 
     }
 
     FontCacheKey key = fontDescription.cacheKey(familyName);
+    key.setSynthetic(fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic());
     FontPlatformData* result = 0;
     bool foundResult;
     FontPlatformDataCache::iterator it = gFontPlatformDataCache->find(key);
