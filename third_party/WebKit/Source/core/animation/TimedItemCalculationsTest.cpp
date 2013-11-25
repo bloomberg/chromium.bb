@@ -96,13 +96,13 @@ TEST(AnimationTimedItemCalculationsTest, ScaledActiveTime)
 
     // if the playback rate is negative
     timing.playbackRate = -1;
-    ASSERT_EQ(-5, calculateScaledActiveTime(10, 20, 5, timing));
+    ASSERT_EQ(35, calculateScaledActiveTime(40, 10, 5, timing));
 
     // otherwise
     timing.playbackRate = 0;
-    ASSERT_EQ(5, calculateScaledActiveTime(10, 20, 5, timing));
+    ASSERT_EQ(5, calculateScaledActiveTime(40, 10, 5, timing));
     timing.playbackRate = 1;
-    ASSERT_EQ(25, calculateScaledActiveTime(10, 20, 5, timing));
+    ASSERT_EQ(15, calculateScaledActiveTime(40, 10, 5, timing));
 }
 
 TEST(AnimationTimedItemCalculationsTest, IterationTime)

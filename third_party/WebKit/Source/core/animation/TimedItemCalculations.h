@@ -100,8 +100,7 @@ static inline double calculateScaledActiveTime(double activeDuration, double act
     if (isNull(activeTime))
         return nullValue();
 
-    ASSERT(activeTime >= 0);
-
+    ASSERT(activeTime >= 0 && activeTime <= activeDuration);
     return (specified.playbackRate < 0 ? activeTime - activeDuration : activeTime) * specified.playbackRate + startOffset;
 }
 
