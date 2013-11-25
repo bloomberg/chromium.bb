@@ -554,7 +554,6 @@ bool NativeAppWindowViews::IsAlwaysOnTop() const {
 
 void NativeAppWindowViews::SetAlwaysOnTop(bool always_on_top) {
   window_->SetAlwaysOnTop(always_on_top);
-  shell_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowViews::ShowContextMenuForView(

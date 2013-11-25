@@ -98,7 +98,7 @@ void AppWindowContents::NativeWindowChanged(
                          native_app_window->IsFullscreenOrPending());
   dictionary->SetBoolean("minimized", native_app_window->IsMinimized());
   dictionary->SetBoolean("maximized", native_app_window->IsMaximized());
-  dictionary->SetBoolean("alwaysOnTop", native_app_window->IsAlwaysOnTop());
+  dictionary->SetBoolean("alwaysOnTop", host_->IsAlwaysOnTop());
 
   const ShellWindow::SizeConstraints& size_constraints =
       host_->size_constraints();

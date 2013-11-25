@@ -362,7 +362,6 @@ void NativeAppWindowGtk::SetAlwaysOnTop(bool always_on_top) {
     // GDK_WINDOW_STATE_ABOVE bit. Cache the current state.
     always_on_top_ = always_on_top;
     gtk_window_set_keep_above(window_, always_on_top_ ? TRUE : FALSE);
-    shell_window_->OnNativeWindowChanged();
   }
 }
 

@@ -71,6 +71,16 @@ void SetFullScreenCollectionBehavior(NSWindow* window, bool allow_fullscreen) {
   [window setCollectionBehavior:behavior];
 }
 
+void InitCollectionBehavior(NSWindow* window) {
+  // Since always-on-top windows have a higher window level
+  // than NSNormalWindowLevel, they will default to
+  // NSWindowCollectionBehaviorTransient. Set the value
+  // explicitly here to match normal windows.
+  NSWindowCollectionBehavior behavior = [window collectionBehavior];
+  behavior |= NSWindowCollectionBehaviorManaged;
+  [window setCollectionBehavior:behavior];
+}
+
 // Returns the level for windows that are configured to be always on top.
 // This is not a constant because NSFloatingWindowLevel is a macro defined
 // as a function call.
@@ -327,6 +337,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
 
   if (params.always_on_top)
     [window setLevel:AlwaysOnTopWindowLevel()];
+  InitCollectionBehavior(window);
 
   // Set the window to participate in Lion Fullscreen mode. Setting this flag
   // has no effect on Snow Leopard or earlier. UI controls for fullscreen are
@@ -984,7 +995,6 @@ void NativeAppWindowCocoa::ShowWithApp() {
 void NativeAppWindowCocoa::SetAlwaysOnTop(bool always_on_top) {
   [window() setLevel:(always_on_top ? AlwaysOnTopWindowLevel() :
                                       NSNormalWindowLevel)];
-  shell_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowCocoa::HideWithoutMarkingHidden() {

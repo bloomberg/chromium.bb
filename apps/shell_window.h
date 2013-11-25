@@ -328,6 +328,15 @@ class ShellWindow : public content::NotificationObserver,
     return size_constraints_;
   }
 
+  // Set whether the window should stay above other windows which are not
+  // configured to be always-on-top.
+  void SetAlwaysOnTop(bool always_on_top);
+
+  // Whether the always-on-top property has been set by the chrome.app.window
+  // API. Note that the actual value of this property in the native app window
+  // will be false in fullscreen mode.
+  bool IsAlwaysOnTop() const;
+
  protected:
   virtual ~ShellWindow();
 
@@ -414,6 +423,9 @@ class ShellWindow : public content::NotificationObserver,
   // Called when size_constraints is changed.
   void OnSizeConstraintsChanged();
 
+  // Set the fullscreen state in the native app window.
+  void SetNativeWindowFullscreen(int fullscreen_types);
+
   // extensions::ExtensionKeybindingRegistry::Delegate implementation.
   virtual extensions::ActiveTabPermissionGranter*
       GetActiveTabPermissionGranter() OVERRIDE;
@@ -477,6 +489,11 @@ class ShellWindow : public content::NotificationObserver,
 
   // Whether the delayed Show() call was for an active or inactive window.
   ShowType delayed_show_type_;
+
+  // Cache the desired value of the always-on-top property. When windows enter
+  // fullscreen, this property will be automatically switched off for security
+  // reasons. It is reinstated when the window exits fullscreen.
+  bool cached_always_on_top_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);
 };

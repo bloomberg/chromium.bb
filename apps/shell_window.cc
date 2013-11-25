@@ -143,7 +143,8 @@ ShellWindow::ShellWindow(Profile* profile,
       image_loader_ptr_factory_(this),
       fullscreen_types_(FULLSCREEN_TYPE_NONE),
       show_on_first_paint_(false),
-      first_paint_complete_(false) {
+      first_paint_complete_(false),
+      cached_always_on_top_(false) {
 }
 
 void ShellWindow::Init(const GURL& url,
@@ -172,6 +173,12 @@ void ShellWindow::Init(const GURL& url,
   window_key_ = new_params.window_key;
   size_constraints_ = SizeConstraints(new_params.minimum_size,
                                       new_params.maximum_size);
+
+  // Windows cannot be always-on-top in fullscreen mode for security reasons.
+  cached_always_on_top_ = new_params.always_on_top;
+  if (new_params.state == ui::SHOW_STATE_FULLSCREEN)
+    new_params.always_on_top = false;
+
   native_app_window_.reset(delegate_->CreateNativeAppWindow(this, new_params));
 
   if (!new_params.hidden) {
@@ -404,7 +411,7 @@ void ShellWindow::Fullscreen() {
     return;
 #endif
   fullscreen_types_ |= FULLSCREEN_TYPE_WINDOW_API;
-  GetBaseWindow()->SetFullscreen(fullscreen_types_);
+  SetNativeWindowFullscreen(fullscreen_types_);
 }
 
 void ShellWindow::Maximize() {
@@ -418,7 +425,7 @@ void ShellWindow::Minimize() {
 void ShellWindow::Restore() {
   if (fullscreen_types_ != FULLSCREEN_TYPE_NONE) {
     fullscreen_types_ = FULLSCREEN_TYPE_NONE;
-    GetBaseWindow()->SetFullscreen(fullscreen_types_);
+    SetNativeWindowFullscreen(fullscreen_types_);
   } else {
     GetBaseWindow()->Restore();
   }
@@ -431,7 +438,7 @@ void ShellWindow::OSFullscreen() {
     return;
 #endif
   fullscreen_types_ |= FULLSCREEN_TYPE_OS;
-  GetBaseWindow()->SetFullscreen(fullscreen_types_);
+  SetNativeWindowFullscreen(fullscreen_types_);
 }
 
 void ShellWindow::SetMinimumSize(const gfx::Size& min_size) {
@@ -472,6 +479,25 @@ void ShellWindow::Hide() {
   // show will not be delayed.
   show_on_first_paint_ = false;
   GetBaseWindow()->Hide();
+}
+
+void ShellWindow::SetAlwaysOnTop(bool always_on_top) {
+  if (cached_always_on_top_ == always_on_top)
+    return;
+
+  cached_always_on_top_ = always_on_top;
+
+  // As a security measure, do not allow fullscreen windows to be on top.
+  // The property will be applied when the window exits fullscreen.
+  bool fullscreen = (fullscreen_types_ != FULLSCREEN_TYPE_NONE);
+  if (!fullscreen)
+    native_app_window_->SetAlwaysOnTop(always_on_top);
+
+  OnNativeWindowChanged();
+}
+
+bool ShellWindow::IsAlwaysOnTop() const {
+  return cached_always_on_top_;
 }
 
 //------------------------------------------------------------------------------
@@ -530,6 +556,23 @@ void ShellWindow::OnSizeConstraintsChanged() {
     native_app_window_->SetBounds(bounds);
   }
   OnNativeWindowChanged();
+}
+
+void ShellWindow::SetNativeWindowFullscreen(int fullscreen_types) {
+  native_app_window_->SetFullscreen(fullscreen_types);
+
+  if (!cached_always_on_top_)
+    return;
+
+  bool is_on_top = native_app_window_->IsAlwaysOnTop();
+  bool fullscreen = (fullscreen_types != FULLSCREEN_TYPE_NONE);
+  if (fullscreen && is_on_top) {
+    // When entering fullscreen, ensure windows are not always-on-top.
+    native_app_window_->SetAlwaysOnTop(false);
+  } else if (!fullscreen && !is_on_top) {
+    // When exiting fullscreen, reinstate always-on-top.
+    native_app_window_->SetAlwaysOnTop(true);
+  }
 }
 
 void ShellWindow::CloseContents(WebContents* contents) {
@@ -597,7 +640,7 @@ void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,
     fullscreen_types_ |= FULLSCREEN_TYPE_HTML_API;
   else
     fullscreen_types_ &= ~FULLSCREEN_TYPE_HTML_API;
-  GetBaseWindow()->SetFullscreen(fullscreen_types_);
+  SetNativeWindowFullscreen(fullscreen_types_);
 }
 
 bool ShellWindow::IsFullscreenForTabOrPending(

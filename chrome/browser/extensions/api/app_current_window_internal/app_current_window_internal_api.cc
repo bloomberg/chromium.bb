@@ -286,7 +286,7 @@ bool AppCurrentWindowInternalSetAlwaysOnTopFunction::RunWithWindow(
   scoped_ptr<SetAlwaysOnTop::Params> params(
       SetAlwaysOnTop::Params::Create(*args_));
   CHECK(params.get());
-  window->GetBaseWindow()->SetAlwaysOnTop(params->always_on_top);
+  window->SetAlwaysOnTop(params->always_on_top);
   return true;
 }
 
