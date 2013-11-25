@@ -53,6 +53,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
@@ -365,11 +366,11 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
 
   default_host_ = NULL;
   // TODO(dzhioev): find better place for starting tutorial.
-  if (CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kEnableFirstRunUI) &&
-      (chromeos::UserManager::Get()->IsCurrentUserNew() ||
-       CommandLine::ForCurrentProcess()->
-           HasSwitch(switches::kForceFirstRunUI))) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kDisableFirstRunUI) &&
+      ((chromeos::UserManager::Get()->IsCurrentUserNew() &&
+        !command_line->HasSwitch(::switches::kTestType)) ||
+       command_line->HasSwitch(switches::kForceFirstRunUI))) {
     // FirstRunController manages its lifetime and destructs after tutorial
     // completion.
     FirstRunController::Start();

@@ -6916,11 +6916,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Disables sync of user account image between different ChromeOS devices.
       </message>
       <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_FLAGS_ENABLE_FIRST_RUN_UI_NAME" desc="Name of the flag to enable new first-run UI.">
-          Enable new first-run UI.
+        <message name="IDS_FLAGS_DISABLE_FIRST_RUN_UI_NAME" desc="Name of the flag to disable new first-run UI.">
+          Disable new first-run UI.
         </message>
-        <message name="IDS_FLAGS_ENABLE_FIRST_RUN_UI_DESCRIPTION" desc="Description for the flag to enable new first-run UI.">
-          If enabled, overlay tutorial will be shown after first login.
+        <message name="IDS_FLAGS_DISABLE_FIRST_RUN_UI_DESCRIPTION" desc="Description for the flag to disable new first-run UI.">
+          If disabled, overlay tutorial won't be shown after first login.
         </message>
       </if>
       <message name="IDS_FLAGS_HIDPI_NAME" desc="Name of flag to enable/disable HiDPI Support.">

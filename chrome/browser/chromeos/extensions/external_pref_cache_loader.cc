@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -19,6 +20,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -167,6 +170,12 @@ void ExternalPrefCacheLoader::StartLoading() {
 }
 
 void ExternalPrefCacheLoader::LoadFinished() {
+  // TODO(dzhioev): Remove "Tips & Tricks" app from default apps till M33.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableFirstRunUI) &&
+      prefs_.get() && prefs_->HasKey(extension_misc::kTipsAndTricksAppId)) {
+    prefs_->Remove(extension_misc::kTipsAndTricksAppId, NULL);
+  }
   cache_dispatcher_->UpdateExtensionsList(prefs_.Pass());
 }
 

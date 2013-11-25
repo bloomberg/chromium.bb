@@ -186,8 +186,8 @@ const char kDisableUserImageSync[]          = "disable-user-image-sync";
 // Enables SAML sigin support.
 const char kEnableSamlSignin[]              = "enable-saml-signin";
 
-// Enables new first-run overlay UI.
-const char kEnableFirstRunUI[] = "enable-first-run-ui";
+// Disables new first-run overlay UI.
+const char kDisableFirstRunUI[] = "disable-first-run-ui";
 
 // Forces first-run UI to be shown for every login.
 const char kForceFirstRunUI[] = "force-first-run-ui";
