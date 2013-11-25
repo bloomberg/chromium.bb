@@ -13,7 +13,6 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
-#include "base/environment.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/composition_text.h"
@@ -100,28 +99,6 @@ X11InputMethodContextImplGtk2::X11InputMethodContextImplGtk2(
       gtk_multicontext_(NULL),
       gtk_context_(NULL) {
   CHECK(delegate_);
-
-  {
-    // Force a IBus IM context to run in synchronous mode.
-    //
-    // Background: IBus IM context runs by default in asynchronous mode.  In
-    // this mode, gtk_im_context_filter_keypress() consumes all the key events
-    // and returns true while asynchronously sending the event to an underlying
-    // IME implementation.  When the event has not actually been consumed by
-    // the underlying IME implementation, the context pushes the event back to
-    // the GDK event queue marking the event as already handled by the IBus IM
-    // context.
-    //
-    // The problem here is that those pushed-back GDK events are never handled
-    // when base::MessagePumpX11 is used, which only handles X events.  So, we
-    // make a IBus IM context run in synchronous mode by setting an environment
-    // variable.  This is only the interface to change the mode.
-    //
-    // Another possible solution is to use GDK event loop instead of X event
-    // loop.
-    scoped_ptr<base::Environment> env(base::Environment::Create());
-    env->SetVar("IBUS_ENABLE_SYNC_MODE", "1");
-  }
 
   {
     XModifierKeymap* keymap = XGetModifierMapping(

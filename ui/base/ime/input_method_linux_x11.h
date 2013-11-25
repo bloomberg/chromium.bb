@@ -20,6 +20,11 @@ class InputMethodLinuxX11 : public InputMethodBase,
   explicit InputMethodLinuxX11(internal::InputMethodDelegate* delegate);
   virtual ~InputMethodLinuxX11();
 
+  // Initializes input methods.  This function must be called once prior to
+  // any use of this instance.  This function is supposed to be called from
+  // ui::InitializeInputMethod().
+  static void Initialize();
+
   // Overriden from InputMethod.
   virtual void Init(bool focused) OVERRIDE;
   virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
