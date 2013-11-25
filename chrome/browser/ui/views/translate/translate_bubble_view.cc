@@ -155,12 +155,10 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
       new TranslateUIDelegate(web_contents, source_language, target_language));
   scoped_ptr<TranslateBubbleModel> model(
       new TranslateBubbleModelImpl(type, ui_delegate.Pass()));
-  bool is_in_incognito_window =
-      web_contents->GetBrowserContext()->IsOffTheRecord();
   TranslateBubbleView* view = new TranslateBubbleView(anchor_view,
                                                       model.Pass(),
-                                                      is_in_incognito_window,
-                                                      browser);
+                                                      browser,
+                                                      web_contents);
   views::BubbleDelegateView::CreateBubble(view)->Show();
 }
 
@@ -201,10 +199,14 @@ void TranslateBubbleView::ButtonPressed(views::Button* sender,
 }
 
 void TranslateBubbleView::WindowClosing() {
-  if (!translate_executed_ &&
-      (browser_ == NULL || !browser_->IsAttemptingToCloseBrowser())) {
+  // The operations for |model_| are valid only when a WebContents is alive.
+  // TODO(hajimehoshi): TranslateBubbleViewModel(Impl) should not hold a
+  // WebContents as a member variable because the WebContents might be destroyed
+  // while the TranslateBubbleViewModel(Impl) is still alive. Instead,
+  // TranslateBubbleViewModel should take a reference of a WebContents at each
+  // method. (crbug/320497)
+  if (!translate_executed_ && web_contents())
     model_->TranslationDeclined();
-  }
 
   // We have to reset |translate_bubble_view_| here, not in our destructor,
   // because we'll be destroyed asynchronously and the shown state will be
@@ -263,6 +265,11 @@ void TranslateBubbleView::LinkClicked(views::Link* source, int event_flags) {
   HandleLinkClicked(static_cast<LinkID>(source->id()));
 }
 
+void TranslateBubbleView::WebContentsDestroyed(
+    content::WebContents* web_contents) {
+  GetWidget()->CloseNow();
+}
+
 TranslateBubbleModel::ViewState TranslateBubbleView::GetViewState() const {
   return model_->GetViewState();
 }
@@ -270,9 +277,10 @@ TranslateBubbleModel::ViewState TranslateBubbleView::GetViewState() const {
 TranslateBubbleView::TranslateBubbleView(
     views::View* anchor_view,
     scoped_ptr<TranslateBubbleModel> model,
-    bool is_in_incognito_window,
-    Browser* browser)
+    Browser* browser,
+    content::WebContents* web_contents)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+      WebContentsObserver(web_contents),
       before_translate_view_(NULL),
       translating_view_(NULL),
       after_translate_view_(NULL),
@@ -283,7 +291,9 @@ TranslateBubbleView::TranslateBubbleView(
       target_language_combobox_(NULL),
       always_translate_checkbox_(NULL),
       model_(model.Pass()),
-      is_in_incognito_window_(is_in_incognito_window),
+      is_in_incognito_window_(
+          web_contents ?
+          web_contents->GetBrowserContext()->IsOffTheRecord() : false),
       browser_(browser),
       translate_executed_(false) {
   if (model_->GetViewState() !=

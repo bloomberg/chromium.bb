@@ -133,7 +133,7 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
     scoped_ptr<TranslateBubbleModel> model(mock_model_);
     bubble_ = new TranslateBubbleView(anchor_widget_->GetContentsView(),
                                       model.Pass(),
-                                      false,
+                                      NULL,
                                       NULL);
     views::BubbleDelegateView::CreateBubble(bubble_)->Show();
   }
