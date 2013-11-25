@@ -131,7 +131,6 @@ static bool shouldIgnoreHeaderForCacheReuse(AtomicString headerName)
     // FIXME: This list of headers that don't affect cache policy almost certainly isn't complete.
     DEFINE_STATIC_LOCAL(HashSet<AtomicString>, m_headers, ());
     if (m_headers.isEmpty()) {
-        m_headers.add("Accept");
         m_headers.add("Cache-Control");
         m_headers.add("If-Modified-Since");
         m_headers.add("If-None-Match");

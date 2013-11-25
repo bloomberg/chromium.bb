@@ -3542,6 +3542,7 @@
             'dom/MainThreadTaskRunnerTest.cpp',
             'fetch/ImageResourceTest.cpp',
             'fetch/MemoryCacheTest.cpp',
+            'fetch/RawResourceTest.cpp',
             'fetch/ResourceFetcherTest.cpp',
             'html/HTMLDimensionTest.cpp',
             'html/LinkRelAttributeTest.cpp',
