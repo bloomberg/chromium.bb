@@ -157,7 +157,7 @@ void DateView::UpdateTimeFormat() {
 void DateView::UpdateTextInternal(const base::Time& now) {
   SetAccessibleName(
       base::TimeFormatFriendlyDate(now) +
-      ASCIIToUTF16(",") +
+      ASCIIToUTF16(", ") +
       base::TimeFormatTimeOfDayWithHourClockType(
           now, hour_type_, base::kKeepAmPm));
   date_label_->SetText(
