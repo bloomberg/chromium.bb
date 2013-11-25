@@ -103,6 +103,7 @@ void CSSSegmentedFontFaceCache::removeFontFaceRule(const StyleRuleFontFace* font
     }
     m_styleRuleToFontFace.remove(styleRuleToFontFaceIter);
     m_fonts.clear();
+    ++m_version;
 }
 
 static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFontFace* second, FontTraitsMask desiredTraitsMask)
