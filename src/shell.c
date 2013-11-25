@@ -366,6 +366,9 @@ surface_rotate(struct shell_surface *surface, struct weston_seat *seat);
 static void
 shell_fade_startup(struct desktop_shell *shell);
 
+static struct shell_seat *
+get_shell_seat(struct weston_seat *seat);
+
 static bool
 shell_surface_is_top_fullscreen(struct shell_surface *shsurf)
 {
@@ -2010,8 +2013,93 @@ restore_all_output_modes(struct weston_compositor *compositor)
 		restore_output_mode(output);
 }
 
+static int
+get_output_panel_height(struct desktop_shell *shell,
+			struct weston_output *output)
+{
+	struct weston_view *view;
+	int panel_height = 0;
+
+	if (!output)
+		return 0;
+
+	wl_list_for_each(view, &shell->panel_layer.view_list, layer_link) {
+		if (view->surface->output == output) {
+			panel_height = view->geometry.height;
+			break;
+		}
+	}
+
+	return panel_height;
+}
+
 static void
-shell_unset_fullscreen(struct shell_surface *shsurf)
+set_toplevel(struct shell_surface *shsurf)
+{
+	shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
+}
+
+static void
+shell_surface_set_toplevel(struct wl_client *client,
+			   struct wl_resource *resource)
+{
+	struct shell_surface *surface = wl_resource_get_user_data(resource);
+
+	set_toplevel(surface);
+}
+
+static void
+set_transient(struct shell_surface *shsurf,
+	      struct weston_surface *parent, int x, int y, uint32_t flags)
+{
+	/* assign to parents output */
+	shsurf->parent = parent;
+	shsurf->transient.x = x;
+	shsurf->transient.y = y;
+	shsurf->transient.flags = flags;
+	shsurf->next_type = SHELL_SURFACE_TRANSIENT;
+}
+
+static void
+shell_surface_set_transient(struct wl_client *client,
+			    struct wl_resource *resource,
+			    struct wl_resource *parent_resource,
+			    int x, int y, uint32_t flags)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+	struct weston_surface *parent =
+		wl_resource_get_user_data(parent_resource);
+
+	set_transient(shsurf, parent, x, y, flags);
+}
+
+static void
+set_fullscreen(struct shell_surface *shsurf,
+	       uint32_t method,
+	       uint32_t framerate,
+	       struct weston_output *output)
+{
+	struct weston_surface *es = shsurf->surface;
+
+	if (output)
+		shsurf->output = output;
+	else if (es->output)
+		shsurf->output = es->output;
+	else
+		shsurf->output = get_default_output(es->compositor);
+
+	shsurf->fullscreen_output = shsurf->output;
+	shsurf->fullscreen.type = method;
+	shsurf->fullscreen.framerate = framerate;
+	shsurf->next_type = SHELL_SURFACE_FULLSCREEN;
+
+	shsurf->client->send_configure(shsurf->surface, 0,
+				       shsurf->output->width,
+				       shsurf->output->height);
+}
+
+static void
+unset_fullscreen(struct shell_surface *shsurf)
 {
 	struct workspace *ws;
 	/* undo all fullscreen things here */
@@ -2031,7 +2119,7 @@ shell_unset_fullscreen(struct shell_surface *shsurf)
 				 shsurf->saved_x, shsurf->saved_y);
 	if (shsurf->saved_rotation_valid) {
 		wl_list_insert(&shsurf->view->geometry.transformation_list,
-        	               &shsurf->rotation.transform.link);
+		               &shsurf->rotation.transform.link);
 		shsurf->saved_rotation_valid = false;
 	}
 
@@ -2041,9 +2129,88 @@ shell_unset_fullscreen(struct shell_surface *shsurf)
 }
 
 static void
-shell_unset_maximized(struct shell_surface *shsurf)
+shell_surface_set_fullscreen(struct wl_client *client,
+			     struct wl_resource *resource,
+			     uint32_t method,
+			     uint32_t framerate,
+			     struct wl_resource *output_resource)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+	struct weston_output *output;
+
+	if (output_resource)
+		output = wl_resource_get_user_data(output_resource);
+	else
+		output = NULL;
+
+	set_fullscreen(shsurf, method, framerate, output);
+}
+
+static void
+set_popup(struct shell_surface *shsurf,
+          struct weston_surface *parent,
+          struct weston_seat *seat,
+          uint32_t serial,
+          int32_t x,
+          int32_t y)
+{
+	shsurf->type = SHELL_SURFACE_POPUP;
+	shsurf->parent = parent;
+	shsurf->popup.shseat = get_shell_seat(seat);
+	shsurf->popup.serial = serial;
+	shsurf->popup.x = x;
+	shsurf->popup.y = y;
+}
+
+static void
+shell_surface_set_popup(struct wl_client *client,
+			struct wl_resource *resource,
+			struct wl_resource *seat_resource,
+			uint32_t serial,
+			struct wl_resource *parent_resource,
+			int32_t x, int32_t y, uint32_t flags)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+
+	set_popup(shsurf,
+	          wl_resource_get_user_data(parent_resource),
+	          wl_resource_get_user_data(seat_resource),
+	          serial, x, y);
+}
+
+static void
+set_maximized(struct shell_surface *shsurf,
+              struct weston_output *output)
+{
+	struct desktop_shell *shell;
+	uint32_t edges = 0, panel_height = 0;
+	struct weston_surface *es = shsurf->surface;
+
+	/* get the default output, if the client set it as NULL
+	   check whether the ouput is available */
+	if (output)
+		shsurf->output = output;
+	else if (es->output)
+		shsurf->output = es->output;
+	else
+		shsurf->output = get_default_output(es->compositor);
+
+	shell = shell_surface_get_shell(shsurf);
+	panel_height = get_output_panel_height(shell, shsurf->output);
+	edges = WL_SHELL_SURFACE_RESIZE_TOP | WL_SHELL_SURFACE_RESIZE_LEFT;
+
+	shsurf->client->send_configure(shsurf->surface, edges,
+	                               shsurf->output->width,
+	                               shsurf->output->height - panel_height);
+
+	shsurf->next_type = SHELL_SURFACE_MAXIMIZED;
+}
+
+static void
+unset_maximized(struct shell_surface *shsurf)
 {
 	struct workspace *ws;
+
 	/* undo all maximized things here */
 	shsurf->output = get_default_output(shsurf->surface->compositor);
 	weston_view_set_position(shsurf->view,
@@ -2061,15 +2228,31 @@ shell_unset_maximized(struct shell_surface *shsurf)
 	wl_list_insert(&ws->layer.view_list, &shsurf->view->layer_link);
 }
 
+static void
+shell_surface_set_maximized(struct wl_client *client,
+                            struct wl_resource *resource,
+                            struct wl_resource *output_resource)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+	struct weston_output *output;
+
+	if (output_resource)
+		output = wl_resource_get_user_data(output_resource);
+	else
+		output = NULL;
+
+	set_maximized(shsurf, output);
+}
+
 static int
-reset_shell_surface_type(struct shell_surface *surface)
+reset_surface_type(struct shell_surface *surface)
 {
 	switch (surface->type) {
 	case SHELL_SURFACE_FULLSCREEN:
-		shell_unset_fullscreen(surface);
+		unset_fullscreen(surface);
 		break;
 	case SHELL_SURFACE_MAXIMIZED:
-		shell_unset_maximized(surface);
+		unset_maximized(surface);
 		break;
 	case SHELL_SURFACE_NONE:
 	case SHELL_SURFACE_TOPLEVEL:
@@ -2089,7 +2272,7 @@ set_surface_type(struct shell_surface *shsurf)
 	struct weston_surface *pes = shsurf->parent;
 	struct weston_view *pev = get_default_view(pes);
 
-	reset_shell_surface_type(shsurf);
+	reset_surface_type(shsurf);
 
 	shsurf->type = shsurf->next_type;
 	shsurf->next_type = SHELL_SURFACE_NONE;
@@ -2128,100 +2311,10 @@ set_surface_type(struct shell_surface *shsurf)
 	}
 }
 
-static void
-set_toplevel(struct shell_surface *shsurf)
-{
-       shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
-}
-
-static void
-shell_surface_set_toplevel(struct wl_client *client,
-			   struct wl_resource *resource)
-{
-	struct shell_surface *surface = wl_resource_get_user_data(resource);
-
-	set_toplevel(surface);
-}
-
-static void
-set_transient(struct shell_surface *shsurf,
-	      struct weston_surface *parent, int x, int y, uint32_t flags)
-{
-	/* assign to parents output */
-	shsurf->parent = parent;
-	shsurf->transient.x = x;
-	shsurf->transient.y = y;
-	shsurf->transient.flags = flags;
-	shsurf->next_type = SHELL_SURFACE_TRANSIENT;
-}
-
-static void
-shell_surface_set_transient(struct wl_client *client,
-			    struct wl_resource *resource,
-			    struct wl_resource *parent_resource,
-			    int x, int y, uint32_t flags)
-{
-	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
-	struct weston_surface *parent =
-		wl_resource_get_user_data(parent_resource);
-
-	set_transient(shsurf, parent, x, y, flags);
-}
-
 static struct desktop_shell *
 shell_surface_get_shell(struct shell_surface *shsurf)
 {
 	return shsurf->shell;
-}
-
-static int
-get_output_panel_height(struct desktop_shell *shell,
-			struct weston_output *output)
-{
-	struct weston_view *view;
-	int panel_height = 0;
-
-	if (!output)
-		return 0;
-
-	wl_list_for_each(view, &shell->panel_layer.view_list, layer_link) {
-		if (view->surface->output == output) {
-			panel_height = view->geometry.height;
-			break;
-		}
-	}
-
-	return panel_height;
-}
-
-static void
-shell_surface_set_maximized(struct wl_client *client,
-			    struct wl_resource *resource,
-			    struct wl_resource *output_resource )
-{
-	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
-	struct weston_surface *es = shsurf->surface;
-	struct desktop_shell *shell = NULL;
-	uint32_t edges = 0, panel_height = 0;
-
-	/* get the default output, if the client set it as NULL
-	   check whether the ouput is available */
-	if (output_resource)
-		shsurf->output = wl_resource_get_user_data(output_resource);
-	else if (es->output)
-		shsurf->output = es->output;
-	else
-		shsurf->output = get_default_output(es->compositor);
-
-	shell = shell_surface_get_shell(shsurf);
-	panel_height = get_output_panel_height(shell, shsurf->output);
-	edges = WL_SHELL_SURFACE_RESIZE_TOP|WL_SHELL_SURFACE_RESIZE_LEFT;
-
-	shsurf->client->send_configure(shsurf->surface, edges,
-				       shsurf->output->width,
-				       shsurf->output->height - panel_height);
-
-	shsurf->next_type = SHELL_SURFACE_MAXIMIZED;
 }
 
 static void
@@ -2395,49 +2488,6 @@ shell_map_fullscreen(struct shell_surface *shsurf)
 {
 	shell_stack_fullscreen(shsurf);
 	shell_configure_fullscreen(shsurf);
-}
-
-static void
-set_fullscreen(struct shell_surface *shsurf,
-	       uint32_t method,
-	       uint32_t framerate,
-	       struct weston_output *output)
-{
-	struct weston_surface *es = shsurf->surface;
-
-	if (output)
-		shsurf->output = output;
-	else if (es->output)
-		shsurf->output = es->output;
-	else
-		shsurf->output = get_default_output(es->compositor);
-
-	shsurf->fullscreen_output = shsurf->output;
-	shsurf->fullscreen.type = method;
-	shsurf->fullscreen.framerate = framerate;
-	shsurf->next_type = SHELL_SURFACE_FULLSCREEN;
-
-	shsurf->client->send_configure(shsurf->surface, 0,
-				       shsurf->output->width,
-				       shsurf->output->height);
-}
-
-static void
-shell_surface_set_fullscreen(struct wl_client *client,
-			     struct wl_resource *resource,
-			     uint32_t method,
-			     uint32_t framerate,
-			     struct wl_resource *output_resource)
-{
-	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
-	struct weston_output *output;
-
-	if (output_resource)
-		output = wl_resource_get_user_data(output_resource);
-	else
-		output = NULL;
-
-	set_fullscreen(shsurf, method, framerate, output);
 }
 
 static void
@@ -2677,24 +2727,6 @@ shell_map_popup(struct shell_surface *shsurf)
 		wl_shell_surface_send_popup_done(shsurf->resource);
 		shseat->popup_grab.client = NULL;
 	}
-}
-
-static void
-shell_surface_set_popup(struct wl_client *client,
-			struct wl_resource *resource,
-			struct wl_resource *seat_resource,
-			uint32_t serial,
-			struct wl_resource *parent_resource,
-			int32_t x, int32_t y, uint32_t flags)
-{
-	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
-
-	shsurf->type = SHELL_SURFACE_POPUP;
-	shsurf->parent = wl_resource_get_user_data(parent_resource);
-	shsurf->popup.shseat = get_shell_seat(wl_resource_get_user_data(seat_resource));
-	shsurf->popup.serial = serial;
-	shsurf->popup.x = x;
-	shsurf->popup.y = y;
 }
 
 static const struct wl_shell_surface_interface shell_surface_implementation = {
