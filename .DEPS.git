@@ -16,7 +16,7 @@ vars = {
 
 deps = {
     'src/breakpad/src':
-        Var('git_url') + '/external/google-breakpad/src.git@c8d669904ad7843c295cf6653972b73a71fac455',
+        Var('git_url') + '/external/google-breakpad/src.git@29269172e3317f396c202a85586b44638753c9db',
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
         Var('git_url') + '/native_client/src/native_client/tests/prebuilt.git@3e17365176c94624f46cace174f61834b7f3c35d',
     'src/chrome/test/data/perf/canvas_bench':
