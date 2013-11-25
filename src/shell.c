@@ -3978,6 +3978,8 @@ shell_fade_done(struct weston_view_animation *animation, void *data)
 	case FADE_OUT:
 		lock(shell);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -4379,6 +4381,7 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 		case ANIMATION_ZOOM:
 			weston_zoom_run(shsurf->view, 0.5, 1.0, NULL, NULL);
 			break;
+		case ANIMATION_NONE:
 		default:
 			break;
 		}
