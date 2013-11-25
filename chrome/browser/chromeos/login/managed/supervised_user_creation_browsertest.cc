@@ -156,13 +156,12 @@ void SupervisedUserTest::LogInAsManagerAndFillUserData() {
   JSEval("$('managed-user-creation-start-button').click()");
 
   // Check that both users appear as managers, and test-manager@gmail.com is
-  // the first one. As no manager is selected, 'next' button is disabled
+  // the first one.
   JSExpect("$('managed-user-creation').currentPage_ == 'manager'");
 
   JSExpect(std::string("document.querySelectorAll(")
       .append("'#managed-user-creation-managers-pane .manager-pod.focused')")
-      .append(".length == 0"));
-  JSExpect("$('managed-user-creation-next-button').disabled");
+      .append(".length == 1"));
 
   JSExpect("$('managed-user-creation').managerList_.pods.length == 2");
   JSExpect(std::string("document.querySelectorAll(")
@@ -172,10 +171,6 @@ void SupervisedUserTest::LogInAsManagerAndFillUserData() {
       .append("'#managed-user-creation-managers-pane .manager-pod')")
       .append("[0].user.emailAddress == '").append(kTestManager).append("'"));
   // Select the first user as manager, and enter password.
-  JSEval(std::string("supervisedUserManagerPod = ")
-      .append("$('managed-user-creation').managerList_.pods[0]"));
-  JSEval(std::string("$('managed-user-creation').managerList_")
-      .append(".selectPod(supervisedUserManagerPod)"));
   JSExpect("$('managed-user-creation-next-button').disabled");
   JSSetTextField(
       "#managed-user-creation .manager-pod.focused input",

@@ -37,6 +37,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
                             this.handleMouseDown_.bind(this));
       var screen = $('managed-user-creation');
       var managerPod = this;
+      var managerPodList = screen.managerList_;
       var hideManagerPasswordError = function(element) {
         managerPod.passwordElement.classList.remove('password-error');
         $('bubble').hide();
@@ -50,6 +51,19 @@ login.createScreen('LocallyManagedUserCreationScreen',
             screen.getScreenButton('next').focus();
           },
           hideManagerPasswordError);
+
+      this.passwordElement.addEventListener('keydown', function(e) {
+        switch (e.keyIdentifier) {
+          case 'Up':
+            managerPodList.selectNextPod(-1);
+            e.stopPropagation();
+            break;
+          case 'Down':
+            managerPodList.selectNextPod(+1);
+            e.stopPropagation();
+            break;
+        }
+      });
     },
 
     /**
@@ -196,6 +210,31 @@ login.createScreen('LocallyManagedUserCreationScreen',
       chrome.send('managerSelectedOnLocallyManagedUserCreationFlow',
           [podToSelect.user.username]);
     },
+
+    /**
+     * Select pod next to currently selected one in given |direction|.
+     * @param {integer} direction - +1 for selecting pod below current, -1 for
+     *     selecting pod above current.
+     * @type {boolean} returns if selected pod has changed.
+     */
+    selectNextPod: function(direction) {
+      if (!this.selectedPod_)
+        return false;
+      var index = -1;
+      for (var i = 0, pod; pod = this.pods[i]; ++i) {
+        if (pod == this.selectedPod_) {
+          index = i;
+          break;
+        }
+      }
+      if (-1 == index)
+        return false;
+      index = index + direction;
+      if (index < 0 || index >= this.pods.length)
+        return false;
+      this.selectPod(this.pods[index]);
+      return true;
+    }
   };
 
   var ImportPod = cr.ui.define(function() {
@@ -1028,8 +1067,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
       if (visiblePage == 'manager' || visiblePage == 'intro') {
         $('managed-user-creation-password').classList.remove('password-error');
-        this.managerList_.selectPod(null);
-        if (this.managerList_.pods.length == 1)
+        if (this.managerList_.pods.length > 0)
           this.managerList_.selectPod(this.managerList_.pods[0]);
       }
 
@@ -1222,7 +1260,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.managerList_.clearPods();
       for (var i = 0; i < userList.length; ++i)
         this.managerList_.addPod(userList[i]);
-      if (userList.length == 1)
+      if (userList.length > 0)
         this.managerList_.selectPod(this.managerList_.pods[0]);
     },
 
