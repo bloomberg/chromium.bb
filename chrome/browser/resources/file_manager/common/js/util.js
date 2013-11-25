@@ -456,7 +456,7 @@ util.deduplicatePath = function(dirEntry, relativePath, onSuccess, onError) {
 
     // Found a path that doesn't exist.
     onSuccess(trialPath);
-  }
+  };
 
   var numRetry = MAX_RETRY;
   var onResolved = function(entry) {
