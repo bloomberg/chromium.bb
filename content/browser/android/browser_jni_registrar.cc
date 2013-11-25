@@ -22,7 +22,6 @@
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/android/tracing_controller_android.h"
-#include "content/browser/android/vibration_message_filter.h"
 #include "content/browser/android/web_contents_observer_android.h"
 #include "content/browser/device_orientation/data_fetcher_impl_android.h"
 #include "content/browser/geolocation/location_api_adapter_android.h"
@@ -33,6 +32,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
+#include "content/browser/vibration/vibration_provider_android.h"
 
 using content::SurfaceTexturePeerBrowserImpl;
 
@@ -69,7 +69,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
      content::SyntheticGestureTargetAndroid::RegisterTouchEventSynthesizer},
     {"TouchPoint", content::RegisterTouchPoint},
     {"TracingControllerAndroid", content::RegisterTracingControllerAndroid},
-    {"VibrationMessageFilter", content::VibrationMessageFilter::Register},
+    {"VibrationProvider", content::VibrationProviderAndroid::Register},
     {"WebContentsObserverAndroid", content::RegisterWebContentsObserverAndroid},
     {"WebViewStatics", content::RegisterWebViewStatics}, };
 

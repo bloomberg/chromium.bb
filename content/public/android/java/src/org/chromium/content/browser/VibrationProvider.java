@@ -12,17 +12,17 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
 /**
- * This is the implementation of the C++ counterpart VibrationMessageFilter.
+ * This is the implementation of the C++ counterpart VibrationProvider.
  */
 @JNINamespace("content")
-class VibrationMessageFilter {
+class VibrationProvider {
 
     private final AudioManager mAudioManager;
     private final Vibrator mVibrator;
 
     @CalledByNative
-    private static VibrationMessageFilter create(Context context) {
-        return new VibrationMessageFilter(context);
+    private static VibrationProvider create(Context context) {
+        return new VibrationProvider(context);
     }
 
     @CalledByNative
@@ -36,7 +36,7 @@ class VibrationMessageFilter {
         mVibrator.cancel();
     }
 
-    private VibrationMessageFilter(Context context) {
+    private VibrationProvider(Context context) {
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
     }

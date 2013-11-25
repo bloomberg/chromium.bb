@@ -288,6 +288,10 @@ LocationProvider* ContentBrowserClient::OverrideSystemLocationProvider() {
   return NULL;
 }
 
+VibrationProvider* ContentBrowserClient::OverrideVibrationProvider() {
+  return NULL;
+}
+
 #if defined(OS_WIN)
 const wchar_t* ContentBrowserClient::GetResourceDllName() {
   return NULL;

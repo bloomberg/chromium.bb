@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/vibration_message_filter.h"
+#include "content/browser/vibration/vibration_message_filter.h"
 
 #include <algorithm>
 
 #include "base/safe_numerics.h"
 #include "content/common/view_messages.h"
-#include "jni/VibrationMessageFilter_jni.h"
+#include "content/port/browser/vibration_provider.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "third_party/WebKit/public/platform/WebVibration.h"
-
-using base::android::AttachCurrentThread;
 
 namespace content {
 
@@ -19,14 +19,12 @@ namespace content {
 const int64 kMinimumVibrationDurationMs = 1;
 
 VibrationMessageFilter::VibrationMessageFilter() {
+  provider_.reset(GetContentClient()->browser()->OverrideVibrationProvider());
+  if (!provider_.get())
+    provider_.reset(CreateProvider());
 }
 
 VibrationMessageFilter::~VibrationMessageFilter() {
-}
-
-// static
-bool VibrationMessageFilter::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 bool VibrationMessageFilter::OnMessageReceived(
@@ -44,30 +42,28 @@ bool VibrationMessageFilter::OnMessageReceived(
 }
 
 void VibrationMessageFilter::OnVibrate(int64 milliseconds) {
+  if (!provider_.get())
+    return;
+
   // Though the Blink implementation already sanitizes vibration times, don't
   // trust any values passed from the renderer.
-  milliseconds = std::max(kMinimumVibrationDurationMs,
-      std::min(milliseconds,
+  milliseconds = std::max(kMinimumVibrationDurationMs, std::min(milliseconds,
           base::checked_numeric_cast<int64>(blink::kVibrationDurationMax)));
 
-  if (j_vibration_message_filter_.is_null()) {
-    j_vibration_message_filter_.Reset(
-        Java_VibrationMessageFilter_create(
-            AttachCurrentThread(),
-            base::android::GetApplicationContext()));
-  }
-  Java_VibrationMessageFilter_vibrate(AttachCurrentThread(),
-                                      j_vibration_message_filter_.obj(),
-                                      milliseconds);
+  provider_->Vibrate(milliseconds);
 }
 
 void VibrationMessageFilter::OnCancelVibration() {
-  // If somehow a cancel message is received before this object was
-  // instantiated, it means there is no current vibration anyway. Just return.
-  if (j_vibration_message_filter_.is_null())
+  if (!provider_.get())
     return;
-  Java_VibrationMessageFilter_cancelVibration(AttachCurrentThread(),
-      j_vibration_message_filter_.obj());
+
+  provider_->CancelVibration();
 }
 
+#if !defined(OS_ANDROID)
+// static
+VibrationProvider* VibrationMessageFilter::CreateProvider() {
+  return NULL;
+}
+#endif
 }  // namespace content

@@ -103,6 +103,7 @@
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/tracing/trace_controller_impl.h"
 #include "content/browser/tracing/trace_message_filter.h"
+#include "content/browser/vibration/vibration_message_filter.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_storage_partition.h"
@@ -141,10 +142,6 @@
 #include "ui/gl/gl_switches.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/common/resource_type.h"
-
-#if defined(OS_ANDROID)
-#include "content/browser/android/vibration_message_filter.h"
-#endif
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
@@ -762,9 +759,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       switches::kEnableMemoryBenchmarking))
     AddFilter(new MemoryBenchmarkMessageFilter());
 #endif
-#if defined(OS_ANDROID)
   AddFilter(new VibrationMessageFilter());
-#endif
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {
