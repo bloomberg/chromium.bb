@@ -1388,8 +1388,9 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
   render_view_termination_status_ =
       static_cast<base::TerminationStatus>(status);
 
-  // Reset state.
+  // Reset frame tree state.
   main_frame_id_ = -1;
+  delegate_->GetFrameTree()->SwapMainFrame(main_render_frame_host_.get());
 
   // Our base class RenderWidgetHost needs to reset some stuff.
   RendererExited(render_view_termination_status_, exit_code);

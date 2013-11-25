@@ -41,6 +41,7 @@ const int32 kOpenerId = -2;
 const int32 kRouteId = 5;
 const int32 kMainFrameRouteId = 6;
 const int32 kNewWindowRouteId = 7;
+const int32 kNewFrameRouteId = 10;
 const int32 kSurfaceId = 42;
 
 }  // namespace
@@ -140,6 +141,7 @@ void RenderViewTest::SetUp() {
   render_thread_->set_routing_id(kRouteId);
   render_thread_->set_surface_id(kSurfaceId);
   render_thread_->set_new_window_routing_id(kNewWindowRouteId);
+  render_thread_->set_new_frame_routing_id(kNewFrameRouteId);
 
   command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   params_.reset(new MainFunctionParams(*command_line_));

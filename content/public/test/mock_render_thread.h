@@ -98,6 +98,10 @@ class MockRenderThread : public RenderThread {
     new_window_routing_id_ = id;
   }
 
+  void set_new_frame_routing_id(int32 id) {
+    new_frame_routing_id_ = id;
+  }
+
   // Simulates the Widget receiving a close message. This should result
   // on releasing the internal reference counts and destroying the internal
   // state.
@@ -127,6 +131,13 @@ class MockRenderThread : public RenderThread {
     int* surface_id,
     int64* cloned_session_storage_namespace_id);
 
+  // The Frame expects to be returned a valid route_id different from its own.
+  void OnCreateChildFrame(int new_frame_routing_id,
+                          int64 parent_frame_id,
+                          int64 frame_id,
+                          const std::string& frame_name,
+                          int* new_render_frame_id);
+
 #if defined(OS_WIN)
   void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
                           base::SharedMemoryHandle* browser_handle);
@@ -151,6 +162,7 @@ class MockRenderThread : public RenderThread {
   // Routing id that will be assigned to a CreateWindow Widget.
   int32 new_window_routing_id_;
   int32 new_window_main_frame_routing_id_;
+  int32 new_frame_routing_id_;
 
   // The last known good deserializer for sync messages.
   scoped_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;

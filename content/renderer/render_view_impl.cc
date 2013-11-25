@@ -3167,6 +3167,10 @@ void RenderViewImpl::didDisownOpener(blink::WebFrame* frame) {
 }
 
 void RenderViewImpl::frameDetached(WebFrame* frame) {
+  // NOTE: We may get here for either the main frame or for subframes.  The
+  // RenderFrameImpl will be deleted immediately after this call for subframes
+  // but not for the main frame, which is kept around in a scoped_ptr.
+
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameDetached(frame));
 }
 
