@@ -255,7 +255,8 @@ void DomStorageDispatcher::ProxyImpl::SetItem(
 void DomStorageDispatcher::ProxyImpl::LogGetItem(
     int connection_id, const string16& key,
     const base::NullableString16& value) {
-  sender_->Send(new DOMStorageHostMsg_LogGetItem(connection_id, key, value));
+  throttling_filter_->SendThrottled(new DOMStorageHostMsg_LogGetItem(
+      connection_id, key, value));
 }
 
 void DomStorageDispatcher::ProxyImpl::RemoveItem(

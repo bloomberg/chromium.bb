@@ -34,7 +34,6 @@ DOMStorageNamespace::DOMStorageNamespace(
       directory_(directory),
       task_runner_(task_runner),
       num_aliases_(0),
-      old_master_for_close_area_(NULL),
       master_alias_count_decremented_(false),
       ready_for_deletion_pending_aliases_(false),
       must_persist_at_shutdown_(false) {
@@ -50,7 +49,6 @@ DOMStorageNamespace::DOMStorageNamespace(
       task_runner_(task_runner),
       session_storage_database_(session_storage_database),
       num_aliases_(0),
-      old_master_for_close_area_(NULL),
       master_alias_count_decremented_(false),
       ready_for_deletion_pending_aliases_(false),
       must_persist_at_shutdown_(false) {
@@ -85,10 +83,7 @@ void DOMStorageNamespace::CloseStorageArea(DOMStorageArea* area) {
   AreaHolder* holder = GetAreaHolder(area->origin());
   if (alias_master_namespace_) {
     DCHECK(!holder);
-    if (old_master_for_close_area_)
-      old_master_for_close_area_->CloseStorageArea(area);
-    else
-      alias_master_namespace_->CloseStorageArea(area);
+    alias_master_namespace_->CloseStorageArea(area);
     return;
   }
   DCHECK(holder);
@@ -405,13 +400,8 @@ void DOMStorageNamespace::SwitchToNewAliasMaster(
   // All three of these things are accomplished with the following call below.
   // |context| will be NULL in unit tests, which is when this will
   // not apply, of course.
-  // During this call, open areas will be closed & reopened, so that they now
-  // come from the correct new master. Therefore, we must send close operations
-  // to the old master.
-  old_master_for_close_area_ = old_master.get();
   if (context)
     context->NotifyAliasSessionMerged(namespace_id(), old_master.get());
-  old_master_for_close_area_ = NULL;
 }
 
 DOMStorageNamespace::TransactionData::TransactionData()

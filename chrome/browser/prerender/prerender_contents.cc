@@ -263,9 +263,7 @@ void PrerenderContents::StartPrerendering(
 
   prerendering_has_started_ = true;
 
-  alias_session_storage_namespace = session_storage_namespace->CreateAlias();
-  prerender_contents_.reset(
-      CreateWebContents(alias_session_storage_namespace.get()));
+  prerender_contents_.reset(CreateWebContents(session_storage_namespace));
   BrowserTabContents::AttachTabHelpers(prerender_contents_.get());
 #if defined(OS_ANDROID)
   // Delay icon fetching until the contents are getting swapped in
@@ -283,9 +281,10 @@ void PrerenderContents::StartPrerendering(
   child_id_ = GetRenderViewHost()->GetProcess()->GetID();
   route_id_ = GetRenderViewHost()->GetRoutingID();
 
-  // Log transactions to see if we could merge session storage namespaces in
-  // the event of a mismatch.
-  alias_session_storage_namespace->AddTransactionLogProcessId(child_id_);
+  // For Local Predictor based prerendering, log transactions to see if we could
+  // merge session storage namespaces in the event of a mismatch.
+  if (origin_ == ORIGIN_LOCAL_PREDICTOR)
+    session_storage_namespace->AddTransactionLogProcessId(child_id_);
 
   // Register this with the ResourceDispatcherHost as a prerender
   // RenderViewHost. This must be done before the Navigate message to catch all
@@ -697,8 +696,10 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
 WebContents* PrerenderContents::ReleasePrerenderContents() {
   prerender_contents_->SetDelegate(NULL);
   content::WebContentsObserver::Observe(NULL);
-  if (alias_session_storage_namespace)
-    alias_session_storage_namespace->RemoveTransactionLogProcessId(child_id_);
+  SessionStorageNamespace* session_storage_namespace =
+      GetSessionStorageNamespace();
+  if (session_storage_namespace && origin_ == ORIGIN_LOCAL_PREDICTOR)
+    session_storage_namespace->RemoveTransactionLogProcessId(child_id_);
   return prerender_contents_.release();
 }
 

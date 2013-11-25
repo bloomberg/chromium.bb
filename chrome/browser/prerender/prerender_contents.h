@@ -431,10 +431,6 @@ class PrerenderContents : public content::NotificationObserver,
   // Caches pages to be added to the history.
   AddPageVector add_page_vector_;
 
-  // The alias session storage namespace for this prerender.
-  scoped_refptr<content::SessionStorageNamespace>
-      alias_session_storage_namespace;
-
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };
 

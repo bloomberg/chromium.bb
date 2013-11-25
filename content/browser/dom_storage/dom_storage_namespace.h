@@ -164,7 +164,6 @@ class CONTENT_EXPORT DOMStorageNamespace
   std::map<int, TransactionData*> transactions_;
   int num_aliases_;
   scoped_refptr<DOMStorageNamespace> alias_master_namespace_;
-  DOMStorageNamespace* old_master_for_close_area_;
   // Indicates whether we have already decremented |num_aliases_| for this
   // namespace in its alias master. We may only decrement it once, and around
   // deletion, this instance will stick around a bit longer until its refcount

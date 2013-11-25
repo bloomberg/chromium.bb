@@ -387,11 +387,6 @@ void PrerenderHistograms::RecordFinalStatus(
   }
 }
 
-void PrerenderHistograms::RecordEvent(PrerenderEvent event) const {
-  DCHECK_LT(event, PRERENDER_EVENT_MAX);
-  UMA_HISTOGRAM_ENUMERATION("Prerender.Event", event, PRERENDER_EVENT_MAX);
-}
-
 uint8 PrerenderHistograms::GetCurrentExperimentId() const {
   if (!WithinWindow())
     return kNoExperiment;

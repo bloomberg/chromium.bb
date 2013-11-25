@@ -90,9 +90,6 @@ const char* const kValidHttpMethods[] = {
 // Length of prerender history, for display in chrome://net-internals
 const int kHistoryLength = 100;
 
-// Timeout, in ms, for a session storage namespace merge.
-const int kSessionStorageNamespaceMergeTimeoutMs = 500;
-
 // Indicates whether a Prerender has been cancelled such that we need
 // a dummy replacement for the purpose of recording the correct PPLT for
 // the Match Complete case.
@@ -434,89 +431,6 @@ void PrerenderManager::CancelAllPrerenders() {
   }
 }
 
-void PrerenderManager::ProcessMergeResult(
-    PrerenderData* prerender_data,
-    bool timed_out,
-    content::SessionStorageNamespace::MergeResult result) {
-  PendingSwap* pending_swap = prerender_data->pending_swap();
-  DCHECK(pending_swap);
-  // No pending_swap should never happen. If it does anyways (in a retail
-  // build), log this and bail.
-  if (!pending_swap) {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_NO_PENDING_SWAPIN);
-    return;
-  }
-  if (timed_out) {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_TIMEOUT_CB);
-  } else {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_CB);
-    UMA_HISTOGRAM_TIMES("Prerender.SessionStorageNamespaceMergeTime",
-                        pending_swap->GetElapsedTime());
-  }
-
-  // Any return here must call ClearPendingSwap on |prerender_data| before
-  // returning, with one exception: when the prerender was ultimately swapped
-  // in. In that case, SwapInternal will take care of deleting
-  // |prerender_data| and sending the appropriate notifications to the tracker.
-  if (timed_out) {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_TIMED_OUT);
-    prerender_data->ClearPendingSwap();
-    return;
-  }
-
-  RecordEvent(PRERENDER_EVENT_MERGE_RESULT_MERGE_DONE);
-
-  // Log the exact merge result in a histogram.
-  switch (result) {
-    case content::SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_FOUND:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_NAMESPACE_NOT_FOUND);
-      break;
-    case content::SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_ALIAS:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_NAMESPACE_NOT_ALIAS);
-      break;
-    case content::SessionStorageNamespace::MERGE_RESULT_NOT_LOGGING:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_NOT_LOGGING);
-      break;
-    case content::SessionStorageNamespace::MERGE_RESULT_NO_TRANSACTIONS:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_NO_TRANSACTIONS);
-      break;
-    case content::SessionStorageNamespace::MERGE_RESULT_TOO_MANY_TRANSACTIONS:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_TOO_MANY_TRANSACTIONS);
-      break;
-    case content::SessionStorageNamespace::MERGE_RESULT_NOT_MERGEABLE:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_NOT_MERGEABLE);
-      break;
-    case content::SessionStorageNamespace::MERGE_RESULT_MERGEABLE:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_MERGEABLE);
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  if (result != content::SessionStorageNamespace::MERGE_RESULT_MERGEABLE &&
-      result !=
-      content::SessionStorageNamespace::MERGE_RESULT_NO_TRANSACTIONS) {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_MERGE_FAILED);
-    prerender_data->ClearPendingSwap();
-    return;
-  }
-
-  RecordEvent(PRERENDER_EVENT_MERGE_RESULT_SWAPPING_IN);
-  // Notice that SwapInInternal, on success, will delete |prerender_data|
-  // and |pending_swap|. Therefore, we have to pass a new GURL object rather
-  // than a reference to the one in |pending_swap|.
-  content::WebContents* new_web_contents =
-      SwapInternal(GURL(pending_swap->url()),
-                   pending_swap->target_contents(),
-                   prerender_data);
-  if (new_web_contents) {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_SWAPIN_SUCCESSFUL);
-  } else {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_SWAPIN_FAILED);
-    prerender_data->ClearPendingSwap();
-  }
-}
-
 bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
                                                chrome::NavigateParams* params) {
   DCHECK(CalledOnValidThread());
@@ -528,121 +442,22 @@ bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
   if (params->uses_post || !params->extra_headers.empty())
     return false;
 
-  content::WebContents* new_web_contents = SwapInternal(url, web_contents,
-                                                          NULL);
-  if (!new_web_contents)
-    return false;
-
-  // Record the new target_contents for the callers.
-  params->target_contents = new_web_contents;
-  return true;
-}
-
-content::WebContents* PrerenderManager::SwapInternal(
-    const GURL& url,
-    content::WebContents* web_contents,
-    PrerenderData* swap_candidate) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!IsWebContentsPrerendering(web_contents, NULL));
-
   DeleteOldEntries();
   to_delete_prerenders_.clear();
   // TODO(ajwong): This doesn't handle isolated apps correctly.
-
-  // Only if this WebContents is used in a tabstrip may be swap.
-  // We check this by examining whether its CoreTabHelper has a delegate.
-  CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(web_contents);
-  if (!core_tab_helper || !core_tab_helper->delegate()) {
-    RecordEvent(PRERENDER_EVENT_SWAPIN_NO_DELEGATE);
-    return NULL;
-  }
-
-  // First, try to find prerender data with the correct session storage
-  // namespace.
   PrerenderData* prerender_data = FindPrerenderData(
-      url,
-      web_contents->GetController().GetDefaultSessionStorageNamespace());
-
-  // If this failed, we may still find a prerender for the same URL, but a
-  // different session storage namespace. If we do, we might have to perform
-  // a merge.
-  if (!prerender_data) {
-    prerender_data = FindPrerenderData(url, NULL);
-  } else {
-    RecordEvent(PRERENDER_EVENT_SWAPIN_CANDIDATE_NAMESPACE_MATCHES);
-  }
-
+          url,
+          web_contents->GetController().GetDefaultSessionStorageNamespace());
   if (!prerender_data)
-    return NULL;
-  RecordEvent(PRERENDER_EVENT_SWAPIN_CANDIDATE);
+    return false;
   DCHECK(prerender_data->contents());
-
-  // If there is currently a merge pending for this prerender data,
-  // or this webcontents, do not swap in, but give the merge a chance to
-  // finish and swap into the intended target webcontents.
-  if (prerender_data != swap_candidate && prerender_data->pending_swap()) {
-    return NULL;
-  }
-
-  RecordEvent(PRERENDER_EVENT_SWAPIN_NO_MERGE_PENDING);
-  SessionStorageNamespace* target_namespace =
-      web_contents->GetController().GetDefaultSessionStorageNamespace();
-  SessionStorageNamespace* prerender_namespace =
-      prerender_data->contents()->GetSessionStorageNamespace();
-  // Only when actually prerendering is session storage namespace merging an
-  // issue. For the control group, it will be assumed that the merge succeeded.
-  if (prerender_namespace && prerender_namespace != target_namespace &&
-      !prerender_namespace->IsAliasOf(target_namespace)) {
-    if (!ShouldMergeSessionStorageNamespaces()) {
-      RecordEvent(PRERENDER_EVENT_SWAPIN_MERGING_DISABLED);
-      return NULL;
-    }
-    RecordEvent(PRERENDER_EVENT_SWAPIN_ISSUING_MERGE);
-    // There should never be a |pending_swap| if we get to here:
-    // Per check above, |pending_swap| may only be != NULL when
-    // processing a successful merge, as indicated by |swap_candidate|
-    // != NULL. But in that case, there should be no need for yet another merge.
-    DCHECK(!prerender_data->pending_swap());
-    if (prerender_data->pending_swap()) {
-      // In retail builds, log this error and bail.
-      RecordEvent(PRERENDER_EVENT_MERGE_FOR_SWAPIN_CANDIDATE);
-      return NULL;
-    }
-    PendingSwap* pending_swap = new PendingSwap(
-        prerender_tracker_,
-        web_contents,
-        prerender_data,
-        url,
-        base::Bind(&PrerenderManager::ProcessMergeResult,
-                   AsWeakPtr(),
-                   prerender_data,
-                   true,
-                   SessionStorageNamespace::MERGE_RESULT_NOT_MERGEABLE),
-        base::Bind(&PrerenderManager::ProcessMergeResult,
-                   AsWeakPtr(),
-                   prerender_data,
-                   false));
-    prerender_data->set_pending_swap(pending_swap);
-    prerender_namespace->Merge(
-        true,
-        prerender_data->contents()->child_id(),
-        target_namespace,
-        pending_swap->GetMergeResultCallback());
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        pending_swap->GetTimeoutCallback(),
-        base::TimeDelta::FromMilliseconds(
-            kSessionStorageNamespaceMergeTimeoutMs));
-    return NULL;
-  }
-
   if (IsNoSwapInExperiment(prerender_data->contents()->experiment_id()))
-    return NULL;
+    return false;
 
   if (WebContents* new_web_contents =
       prerender_data->contents()->prerender_contents()) {
     if (web_contents == new_web_contents)
-      return NULL;  // Do not swap in to ourself.
+      return false;  // Do not swap in to ourself.
 
     // We cannot swap in if there is no last committed entry, because we would
     // show a blank page under an existing entry from the current tab.  Even if
@@ -652,20 +467,20 @@ content::WebContents* PrerenderManager::SwapInternal(
     if (!new_web_contents->GetController().CanPruneAllButLastCommitted()) {
       // Abort this prerender so it is not used later. http://crbug.com/292121
       prerender_data->contents()->Destroy(FINAL_STATUS_NAVIGATION_UNCOMMITTED);
-      return NULL;
+      return false;
     }
   }
 
   // Do not use the prerendered version if there is an opener object.
   if (web_contents->HasOpener()) {
     prerender_data->contents()->Destroy(FINAL_STATUS_WINDOW_OPENER);
-    return NULL;
+    return false;
   }
 
   // Do not swap in the prerender if the current WebContents is being captured.
   if (web_contents->GetCapturerCount() > 0) {
     prerender_data->contents()->Destroy(FINAL_STATUS_PAGE_BEING_CAPTURED);
-    return NULL;
+    return false;
   }
 
   // If we are just in the control group (which can be detected by noticing
@@ -675,7 +490,7 @@ content::WebContents* PrerenderManager::SwapInternal(
     MarkWebContentsAsWouldBePrerendered(web_contents,
                                         prerender_data->contents()->origin());
     prerender_data->contents()->Destroy(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
-    return NULL;
+    return false;
   }
 
   // Don't use prerendered pages if debugger is attached to the tab.
@@ -683,7 +498,7 @@ content::WebContents* PrerenderManager::SwapInternal(
   if (content::DevToolsAgentHost::IsDebuggerAttached(web_contents)) {
     DestroyAndMarkMatchCompleteAsUsed(prerender_data->contents(),
                                       FINAL_STATUS_DEVTOOLS_ATTACHED);
-    return NULL;
+    return false;
   }
 
   // If the prerendered page is in the middle of a cross-site navigation,
@@ -692,7 +507,7 @@ content::WebContents* PrerenderManager::SwapInternal(
     DestroyAndMarkMatchCompleteAsUsed(
         prerender_data->contents(),
         FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING);
-    return NULL;
+    return false;
   }
 
   // For bookkeeping purposes, we need to mark this WebContents to
@@ -701,7 +516,7 @@ content::WebContents* PrerenderManager::SwapInternal(
     MarkWebContentsAsWouldBePrerendered(web_contents,
                                         prerender_data->contents()->origin());
     prerender_data->contents()->Destroy(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
-    return NULL;
+    return false;
   }
 
   int child_id, route_id;
@@ -712,11 +527,9 @@ content::WebContents* PrerenderManager::SwapInternal(
   // cancel on other threads will fail.  If this fails because the prerender
   // was already cancelled, possibly on another thread, fail.
   if (!prerender_tracker_->TryUse(child_id, route_id))
-    return NULL;
+    return false;
 
   // At this point, we've determined that we will use the prerender.
-  if (prerender_data->pending_swap())
-    prerender_data->pending_swap()->SwapSuccessful();
   ScopedVector<PrerenderData>::iterator to_erase =
       FindIteratorForPrerenderContents(prerender_data->contents());
   DCHECK(active_prerenders_.end() != to_erase);
@@ -761,6 +574,9 @@ content::WebContents* PrerenderManager::SwapInternal(
       SwapTabContents(old_web_contents, new_web_contents);
   prerender_contents->CommitHistory(new_web_contents);
 
+  // Record the new target_contents for the callers.
+  params->target_contents = new_web_contents;
+
   GURL icon_url = prerender_contents->icon_url();
 
   if (!icon_url.is_empty()) {
@@ -803,7 +619,7 @@ content::WebContents* PrerenderManager::SwapInternal(
   //                 list, instead of deleting directly here?
   AddToHistory(prerender_contents.get());
   RecordNavigation(url);
-  return new_web_contents;
+  return true;
 }
 
 void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
@@ -834,7 +650,6 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
   } else {
     to_delete_prerenders_.push_back(*it);
     active_prerenders_.weak_erase(it);
-    (*it)->ClearPendingSwap();
   }
 
   // Destroy the old WebContents relatively promptly to reduce resource usage.
@@ -1255,107 +1070,8 @@ void PrerenderManager::PrerenderData::OnHandleCanceled(
   }
 }
 
-void PrerenderManager::PrerenderData::ClearPendingSwap() {
-  pending_swap_.reset(NULL);
-}
-
 PrerenderContents* PrerenderManager::PrerenderData::ReleaseContents() {
   return contents_.release();
-}
-
-PrerenderManager::PendingSwap::PendingSwap(
-    PrerenderTracker* prerender_tracker,
-    content::WebContents* target_contents,
-    PrerenderData* prerender_data,
-    const GURL& url,
-    const base::Closure& timeout_cb,
-    const SessionStorageNamespace::MergeResultCallback& merge_result_cb)
-    : content::WebContentsObserver(target_contents),
-      prerender_tracker_(prerender_tracker),
-      target_contents_(target_contents),
-      prerender_data_(prerender_data),
-      url_(url),
-      timeout_cb_(timeout_cb),
-      merge_result_cb_(merge_result_cb),
-      start_time_(base::TimeTicks::Now()) {
-  RenderViewCreated(target_contents->GetRenderViewHost());
-}
-
-PrerenderManager::PendingSwap::~PendingSwap() {
-    timeout_cb_.Cancel();
-    merge_result_cb_.Cancel();
-    for (size_t i = 0; i < rvh_ids_.size(); i++) {
-      prerender_tracker_->RemovePrerenderPendingSwap(rvh_ids_[i], false);
-    }
-}
-
-const base::Closure& PrerenderManager::PendingSwap::GetTimeoutCallback() {
-  return timeout_cb_.callback();
-}
-
-void PrerenderManager::PendingSwap::SwapSuccessful() {
-  for (size_t i = 0; i < rvh_ids_.size(); i++) {
-    prerender_tracker_->RemovePrerenderPendingSwap(rvh_ids_[i], true);
-  }
-  rvh_ids_.clear();
-}
-
-const SessionStorageNamespace::MergeResultCallback&
-PrerenderManager::PendingSwap::GetMergeResultCallback() {
-  return merge_result_cb_.callback();
-}
-
-void PrerenderManager::PendingSwap::ProvisionalChangeToMainFrameUrl(
-        const GURL& url,
-        content::RenderViewHost* render_view_host) {
-  // We must only cancel the pending swap if the |url| navigated to is not
-  // the URL being attempted to be swapped in. That's because in the normal
-  // flow, a ProvisionalChangeToMainFrameUrl will happen for the URL attempted
-  // to be swapped in immediately after the pending swap has issued its merge.
-  if (url != url_)
-    prerender_data_->ClearPendingSwap();
-}
-
-void PrerenderManager::PendingSwap::DidCommitProvisionalLoadForFrame(
-        int64 frame_id,
-        const string16& frame_unique_name,
-        bool is_main_frame,
-        const GURL& validated_url,
-        content::PageTransition transition_type,
-        content::RenderViewHost* render_view_host){
-  if (!is_main_frame)
-    return;
-  if (validated_url != url_)
-    prerender_data_->ClearPendingSwap();
-}
-
-void PrerenderManager::PendingSwap::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
-  int child_id = render_view_host->GetProcess()->GetID();
-  int route_id = render_view_host->GetRoutingID();
-  PrerenderTracker::ChildRouteIdPair child_route_id_pair(child_id, route_id);
-  rvh_ids_.push_back(child_route_id_pair);
-  prerender_tracker_->AddPrerenderPendingSwap(child_route_id_pair, url_);
-}
-
-void PrerenderManager::PendingSwap::DidFailProvisionalLoad(
-        int64 frame_id,
-        const string16& frame_unique_name,
-        bool is_main_frame,
-        const GURL& validated_url,
-        int error_code,
-        const string16& error_description,
-        content::RenderViewHost* render_view_host) {
-  prerender_data_->ClearPendingSwap();
-}
-
-void PrerenderManager::PendingSwap::WebContentsDestroyed(
-    content::WebContents* web_contents) {
-  prerender_data_->ClearPendingSwap();
-}
-
-base::TimeDelta PrerenderManager::PendingSwap::GetElapsedTime() {
-  return base::TimeTicks::Now() - start_time_;
 }
 
 void PrerenderManager::SetPrerenderContentsFactory(
@@ -1363,7 +1079,6 @@ void PrerenderManager::SetPrerenderContentsFactory(
   DCHECK(CalledOnValidThread());
   prerender_contents_factory_.reset(prerender_contents_factory);
 }
-
 
 void PrerenderManager::StartPendingPrerenders(
     const int process_id,
@@ -1921,10 +1636,6 @@ void PrerenderManager::LoggedInPredictorDataReceived(
     scoped_ptr<LoggedInStateMap> new_map) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   logged_in_state_.swap(new_map);
-}
-
-void PrerenderManager::RecordEvent(PrerenderEvent event) const {
-  histograms_->RecordEvent(event);
 }
 
 }  // namespace prerender
