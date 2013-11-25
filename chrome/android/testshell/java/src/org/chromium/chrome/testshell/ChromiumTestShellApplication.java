@@ -6,7 +6,6 @@ package org.chromium.chrome.testshell;
 
 import android.content.Intent;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.chrome.browser.ChromiumApplication;

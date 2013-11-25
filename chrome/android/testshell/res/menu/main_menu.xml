@@ -10,6 +10,8 @@
            android:visible="false">
         <item android:id="@+id/signin"
               android:title="@string/signin_sign_in" />
+        <item android:id="@+id/print"
+              android:title="@string/print_menu" />
     </group>
 </menu>
 

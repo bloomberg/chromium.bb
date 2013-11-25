@@ -15,10 +15,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.chrome.browser.DevToolsServer;
+import org.chromium.chrome.browser.printing.PrintingControllerFactory;
+import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.testshell.sync.SyncController;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.BrowserStartupController;
@@ -26,6 +29,7 @@ import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
+import org.chromium.printing.PrintingController;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
@@ -40,6 +44,7 @@ public class ChromiumTestShellActivity extends Activity implements MenuHandler {
     private TabManager mTabManager;
     private DevToolsServer mDevToolsServer;
     private SyncController mSyncController;
+    private PrintingController mPrintingController;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -85,6 +90,9 @@ public class ChromiumTestShellActivity extends Activity implements MenuHandler {
         mToolbar.setMenuHandler(this);
         mDevToolsServer = new DevToolsServer("chromium_testshell");
         mDevToolsServer.setRemoteDebuggingEnabled(true);
+
+        mPrintingController = PrintingControllerFactory.create(this);
+
         mSyncController = SyncController.get(this);
         // In case this method is called after the first onStart(), we need to inform the
         // SyncController that we have started.
@@ -204,6 +212,7 @@ public class ChromiumTestShellActivity extends Activity implements MenuHandler {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
+        menu.findItem(R.id.print).setVisible(ApiCompatibilityUtils.isPrintingSupported());
         return true;
     }
 
@@ -215,6 +224,11 @@ public class ChromiumTestShellActivity extends Activity implements MenuHandler {
                     SyncController.openSignOutDialog(getFragmentManager());
                 else
                     SyncController.openSigninDialog(getFragmentManager());
+                return true;
+            case R.id.print:
+                if (getActiveTab() != null) {
+                    mPrintingController.startPrint(new TabPrinter(getActiveTab()));
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
