@@ -63,6 +63,10 @@ function logToConsole()
 
     console.log("Object with a document.all property");
     console.log({all: document.all});
+
+    console.log("Object with special numbers");
+    var obj = { nan: NaN, posInf: Infinity, negInf: -Infinity, negZero: -0 };
+    console.log(obj);
 }
 
 function test()

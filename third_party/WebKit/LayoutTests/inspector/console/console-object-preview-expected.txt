@@ -20,6 +20,8 @@ CONSOLE MESSAGE: line 55: Object with properties containing whitespaces
 CONSOLE MESSAGE: line 62: [object Object]
 CONSOLE MESSAGE: line 64: Object with a document.all property
 CONSOLE MESSAGE: line 65: [object Object]
+CONSOLE MESSAGE: line 67: Object with special numbers
+CONSOLE MESSAGE: line 69: [object Object]
 Tests that console produces instant previews for arrays and objects.
 
 Mutating object in a loop console-object-preview.html:9 console-message-text source-code > console-message-url webkit-html-resource-link
@@ -44,4 +46,6 @@ Object with properties containing whitespaces console-object-preview.html:55 con
 Object {$foo5_: 0, " a b ": " a b ", c d: "c d", "": "", "  ": "  ", "a↵↵b↵c": "a↵↵b↵c"} console-object-preview.html:62 console-message-text source-code > console-formatted-object source-code > console-object-preview > name > console-formatted-number > name > console-formatted-string > name > console-formatted-string > name > console-formatted-string > name > console-formatted-string > name > console-formatted-string > console-message-url webkit-html-resource-link
 Object with a document.all property console-object-preview.html:64 console-message-text source-code > console-message-url webkit-html-resource-link
 Object {all: HTMLAllCollection[7]} console-object-preview.html:65 console-message-text source-code > console-formatted-object source-code > section > header monospace > subtitle > title > console-object-preview > name > console-formatted-object > object-info-state-note > properties properties-tree monospace > console-message-url webkit-html-resource-link
+Object with special numbers console-object-preview.html:67 console-message-text source-code > console-message-url webkit-html-resource-link
+Object {nan: NaN, posInf: Infinity, negInf: -Infinity, negZero: -0} console-object-preview.html:69 console-message-text source-code > console-formatted-object source-code > console-object-preview > name > console-formatted-number > name > console-formatted-number > name > console-formatted-number > name > console-formatted-number > console-message-url webkit-html-resource-link
 

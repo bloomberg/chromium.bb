@@ -10,6 +10,8 @@ Catch
     e: Error
 Local
     innerFunctionLocalVar: 2012
+    negInf: -Infinity
+    negZero: -0
     this: Window
     x: 2010
 Closure

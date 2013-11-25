@@ -1,7 +1,7 @@
 CONSOLE MESSAGE: line 9: test1,test2
 CONSOLE MESSAGE: line 10: [object NodeList]
 CONSOLE MESSAGE: line 11: [object XPathResult]
-CONSOLE MESSAGE: line 20: [object Object]
+CONSOLE MESSAGE: line 21: [object Object]
 Tests that console logging dumps proper messages.
 
 
@@ -34,5 +34,6 @@ Object
     $foo5_: 0
     "a↵↵b↵c": "a↵↵b↵c"
     c d: "c d"
-    __proto__: Object console-dir.html:20
+    negZero: -0
+    __proto__: Object console-dir.html:21
 

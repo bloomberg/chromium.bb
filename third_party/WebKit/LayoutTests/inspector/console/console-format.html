@@ -50,12 +50,13 @@ function onload()
         getFoo: { value: function() { return this.foo; } },
         bar: { get: function() { return this.bar; }, set: function(x) { this.bar = x; } }
     });
+    var negZero = 1 / Number.NEGATIVE_INFINITY;
 
     globals = [
         regex1, regex2, str, str2, error, errorWithMessage, node, func, multilinefunc, num, linkify,
         null, undefined, valuelessAttribute, valuedAttribute, existingAttribute, throwingLengthGetter,
         NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, array, {}, [function() {}], bar, svg,
-        objectWithNonEnumerables, Object.create(null), Object, Object.prototype
+        objectWithNonEnumerables, negZero, Object.create(null), Object, Object.prototype
     ];
 
     runTest();

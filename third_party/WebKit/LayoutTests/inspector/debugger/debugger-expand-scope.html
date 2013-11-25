@@ -8,6 +8,8 @@ function makeClosure(n) {
   var makeClosureLocalVar = 'local.' + n;
   return function innerFunction(x) {
     var innerFunctionLocalVar = x + 2;
+    var negInf = -Infinity;
+    var negZero = 1 / negInf;
     try {
       throw new Error("An exception");
     } catch (e) {
