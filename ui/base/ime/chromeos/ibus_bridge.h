@@ -9,7 +9,6 @@
 #include <string>
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chromeos/ime/ime_constants.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_export.h"
 
@@ -18,6 +17,16 @@ class Rect;
 }  // namespace gfx
 
 namespace chromeos {
+namespace ibus {
+// Following button indicator value is introduced from
+// http://developer.gnome.org/gdk/stable/gdk-Event-Structures.html#GdkEventButton
+enum IBusMouseButton {
+  IBUS_MOUSE_BUTTON_LEFT = 1U,
+  IBUS_MOUSE_BUTTON_MIDDLE = 2U,
+  IBUS_MOUSE_BUTTON_RIGHT = 3U,
+};
+}  // namespace ibus
+
 namespace input_method {
 class CandidateWindow;
 }  // namespace input_method
