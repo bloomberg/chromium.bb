@@ -884,3 +884,15 @@
    fun:AppKeepAliveServiceUnitTest_Basic_Test::AppKeepAliveServiceUnitTest_Basic_Test
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
+{
+  bug_323149
+  Heapcheck:Leak
+  fun:Genesis
+  fun:v8::internal::Bootstrapper::CreateEnvironment
+  fun:CreateEnvironment
+  fun:v8::Context::New
+  fun:net::ProxyResolverV8::Context::InitV8
+  fun:_init
+  fun:net::ProxyResolverV8Tracing::Job::ExecuteProxyResolver
+  fun:net::ProxyResolverV8Tracing::Job::ExecuteBlocking
+}
