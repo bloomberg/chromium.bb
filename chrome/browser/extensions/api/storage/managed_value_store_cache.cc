@@ -38,6 +38,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/api_permission.h"
 
 using content::BrowserThread;
@@ -106,6 +107,13 @@ void ManagedValueStoreCache::ExtensionTracker::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  // Some extensions are installed on the first run before the ExtensionService
+  // becomes ready. Wait until all of them are ready before registering the
+  // schemas of managed extensions, so that the policy loaders are reloaded at
+  // most once.
+  if (!ExtensionSystem::Get(profile_)->ready().is_signaled())
+    return;
+
   scoped_ptr<ExtensionSet> added;
   const Extension* removed = NULL;
 
@@ -269,8 +277,7 @@ void ManagedValueStoreCache::DeleteStorageSoon(
   // It's possible that the store exists, but hasn't been loaded yet
   // (because the extension is unloaded, for example). Open the database to
   // clear it if it exists.
-  // TODO(joaodasilva): move this check to a ValueStore method.
-  if (!base::DirectoryExists(base_path_.AppendASCII(extension_id)))
+  if (!HasStore(extension_id))
     return;
   GetStoreFor(extension_id)->DeleteStorage();
   store_map_.erase(extension_id);
@@ -328,6 +335,14 @@ void ManagedValueStoreCache::UpdatePolicyOnFILE(
     const std::string& extension_id,
     scoped_ptr<policy::PolicyMap> current_policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  if (!HasStore(extension_id) && current_policy->empty()) {
+    // Don't create the store now if there are no policies configured for this
+    // extension. If the extension uses the storage.managed API then the store
+    // will be created at RunWithValueStoreForExtension().
+    return;
+  }
+
   GetStoreFor(extension_id)->SetCurrentPolicy(*current_policy);
 }
 
@@ -348,6 +363,11 @@ PolicyValueStore* ManagedValueStoreCache::GetStoreFor(
   store_map_[extension_id] = make_linked_ptr(store);
 
   return store;
+}
+
+bool ManagedValueStoreCache::HasStore(const std::string& extension_id) const {
+  // TODO(joaodasilva): move this check to a ValueStore method.
+  return base::DirectoryExists(base_path_.AppendASCII(extension_id));
 }
 
 }  // namespace extensions

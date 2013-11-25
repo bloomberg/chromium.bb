@@ -170,4 +170,44 @@ TEST_F(ForwardingPolicyProviderTest, DelegateUpdates) {
   Mock::VerifyAndClearExpectations(&observer_);
 }
 
+TEST_F(ForwardingPolicyProviderTest, RemoveAndAddComponent) {
+  EXPECT_CALL(mock_provider_, RefreshPolicies());
+  const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, "xyz");
+  schema_registry_.SetReady(POLICY_DOMAIN_CHROME);
+  schema_registry_.RegisterComponent(ns, Schema());
+  schema_registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
+  Mock::VerifyAndClearExpectations(&mock_provider_);
+
+  // Serve policy for |ns|.
+  PolicyBundle platform_policy;
+  platform_policy.Get(ns).Set("foo", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                              base::Value::CreateStringValue("omg"), NULL);
+  scoped_ptr<PolicyBundle> copy(new PolicyBundle);
+  copy->CopyFrom(platform_policy);
+  EXPECT_CALL(observer_, OnUpdatePolicy(_));
+  mock_provider_.UpdatePolicy(copy.Pass());
+  Mock::VerifyAndClearExpectations(&observer_);
+  EXPECT_TRUE(forwarding_provider_.policies().Equals(platform_policy));
+
+  // Now remove that component.
+  EXPECT_CALL(observer_, OnUpdatePolicy(_));
+  schema_registry_.UnregisterComponent(ns);
+  Mock::VerifyAndClearExpectations(&observer_);
+  const PolicyBundle empty;
+  EXPECT_TRUE(forwarding_provider_.policies().Equals(empty));
+
+  // Adding it back should serve the current policies again, even though they
+  // haven't changed on the platform provider.
+  EXPECT_CALL(mock_provider_, RefreshPolicies());
+  schema_registry_.RegisterComponent(ns, Schema());
+  Mock::VerifyAndClearExpectations(&mock_provider_);
+
+  EXPECT_CALL(observer_, OnUpdatePolicy(_));
+  copy.reset(new PolicyBundle);
+  copy->CopyFrom(platform_policy);
+  mock_provider_.UpdatePolicy(copy.Pass());
+  Mock::VerifyAndClearExpectations(&observer_);
+  EXPECT_TRUE(forwarding_provider_.policies().Equals(platform_policy));
+}
+
 }  // namespace policy

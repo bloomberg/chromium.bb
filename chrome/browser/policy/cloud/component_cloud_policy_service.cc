@@ -145,10 +145,15 @@ void ComponentCloudPolicyService::Backend::Init(
   OnSchemasUpdated(schema_map, scoped_ptr<PolicyNamespaceList>());
 
   // Read the initial policy. Note that this does not trigger notifications
-  // through OnComponentCloudPolicyStoreUpdated.
+  // through OnComponentCloudPolicyStoreUpdated. Note also that the cached
+  // data may contain names or values that don't match the schema for that
+  // component; the data must be cached without modifications so that its
+  // integrity can be verified using the hash, but it must also be filtered
+  // right after a Load().
   store_.Load();
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle);
   bundle->CopyFrom(store_.policy());
+  schema_map_->FilterBundle(bundle.get());
 
   // Start downloading any pending data.
   updater_.reset(new ComponentCloudPolicyUpdater(

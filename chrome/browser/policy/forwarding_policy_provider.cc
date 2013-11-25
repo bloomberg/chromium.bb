@@ -60,9 +60,16 @@ void ForwardingPolicyProvider::OnSchemaRegistryReady() {
 }
 
 void ForwardingPolicyProvider::OnSchemaRegistryUpdated(bool has_new_schemas) {
-  if (!has_new_schemas || state_ != READY)
+  if (state_ != READY)
     return;
-  RefreshPolicies();
+  if (has_new_schemas) {
+    RefreshPolicies();
+  } else {
+    // Remove the policies that were being served for the component that have
+    // been removed. This is important so that update notifications are also
+    // sent in case those component are reinstalled during the current session.
+    OnUpdatePolicy(delegate_);
+  }
 }
 
 void ForwardingPolicyProvider::OnUpdatePolicy(

@@ -57,6 +57,16 @@ const char kTestPolicy[] =
     "  }"
     "}";
 
+const char kInvalidTestPolicy[] =
+    "{"
+    "  \"Name\": {"
+    "    \"Value\": \"published\""
+    "  },"
+    "  \"Undeclared Name\": {"
+    "    \"Value\": \"not published\""
+    "  }"
+    "}";
+
 const char kTestSchema[] =
     "{"
     "  \"type\": \"object\","
@@ -514,6 +524,31 @@ TEST_F(ComponentCloudPolicyServiceTest, SignOut) {
   EXPECT_TRUE(service_->policy().Equals(empty_bundle));
   cache_->LoadAllSubkeys("extension-policy", &contents);
   ASSERT_EQ(0u, contents.size());
+}
+
+TEST_F(ComponentCloudPolicyServiceTest, LoadInvalidPolicyFromCache) {
+  // Put the invalid test policy in the cache. One of its policies will be
+  // loaded, the other should be filtered out by the schema.
+  builder_.payload().set_secure_hash(base::SHA1HashString(kInvalidTestPolicy));
+  EXPECT_TRUE(cache_->Store(
+      "extension-policy", kTestExtension, CreateSerializedResponse()));
+  EXPECT_TRUE(cache_->Store(
+      "extension-policy-data", kTestExtension, kInvalidTestPolicy));
+
+  LoadStore();
+  InitializeRegistry();
+
+  // The initial, cached policy will be served once the backend is initialized.
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
+  RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&delegate_);
+
+  PolicyBundle expected_bundle;
+  const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
+  expected_bundle.Get(ns).Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                              base::Value::CreateStringValue("published"),
+                              NULL);
+  EXPECT_TRUE(service_->policy().Equals(expected_bundle));
 }
 
 }  // namespace policy

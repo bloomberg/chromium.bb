@@ -585,7 +585,7 @@ void PolicyUIHandler::SendPolicyNames() const {
         schema_map->GetSchema(policy::PolicyNamespace(
             policy::POLICY_DOMAIN_EXTENSIONS, extension->id()));
     base::DictionaryValue* policy_names = new base::DictionaryValue;
-    if (schema) {
+    if (schema && schema->valid()) {
       // Get policy names from the extension's policy schema.
       // Store in a map, not an array, for faster lookup on JS side.
       for (policy::Schema::Iterator prop = schema->GetPropertiesIterator();

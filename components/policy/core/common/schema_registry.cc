@@ -29,6 +29,9 @@ void SchemaRegistry::RegisterComponent(const PolicyNamespace& ns,
 
 void SchemaRegistry::RegisterComponents(PolicyDomain domain,
                                         const ComponentMap& components) {
+  // Don't issue notifications if nothing is being registered.
+  if (components.empty())
+    return;
   // Assume that a schema was updated if the namespace was already registered
   // before.
   DomainMap map(schema_map_->GetDomains());

@@ -72,6 +72,9 @@ class ManagedValueStoreCache : public ValueStoreCache,
   // Returns an existing PolicyValueStore for |extension_id|, or NULL.
   PolicyValueStore* GetStoreFor(const std::string& extension_id);
 
+  // Returns true if a backing store has been created for |extension_id|.
+  bool HasStore(const std::string& extension_id) const;
+
   // The profile that owns the extension system being used. This is used to
   // get the PolicyService, the EventRouter and the ExtensionService.
   Profile* profile_;
