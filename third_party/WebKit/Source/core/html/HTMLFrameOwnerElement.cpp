@@ -21,6 +21,7 @@
 #include "config.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/loader/FrameLoader.h"
@@ -117,8 +118,6 @@ SVGDocument* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& exceptionStat
     Document* doc = contentDocument();
     if (doc && doc->isSVGDocument())
         return toSVGDocument(doc);
-    // Spec: http://www.w3.org/TR/SVG/struct.html#InterfaceGetSVGDocument
-    exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
     return 0;
 }
 
